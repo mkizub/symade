@@ -245,8 +245,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	Struct() {
 		super(new StructImpl(0,0));
@@ -1798,8 +1798,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		root.params.copyFrom(found.params);
 		root.pos = found.pos;
 		foreach (FormPar fp; root.params) {
-			fp.stype = new TypeRef(fp.stype.getErasedType());
-			fp.vtype = new TypeRef(fp.stype.getErasedType());
+			fp.stype = new TypeRef(fp.stype.getType().getErasedType());
+			fp.vtype = new TypeRef(fp.stype.getType().getErasedType());
 		}
 		members.append(root);
 		// check if we already have this method in this class
@@ -1932,8 +1932,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Method bridge = new Method(m.name.name, m.etype.ret, ACC_BRIDGE | ACC_SYNTHETIC | mo.flags);
 			bridge.params.copyFrom(m.params);
 			foreach (FormPar fp; bridge.params) {
-				fp.stype = new TypeRef(fp.stype.getErasedType());
-				fp.vtype = new TypeRef(fp.stype.getErasedType());
+				fp.stype = new TypeRef(fp.stype.getType().getErasedType());
+				fp.vtype = new TypeRef(fp.stype.getType().getErasedType());
 				fp.pos = mo.pos;
 			}
 			bridge.pos = mo.pos;

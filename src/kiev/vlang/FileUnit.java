@@ -50,8 +50,8 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		public				boolean					scanned_for_interface_only;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public FileUnit() {
 		this(KString.Empty, Env.root);

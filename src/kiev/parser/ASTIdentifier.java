@@ -34,8 +34,8 @@ public class ASTIdentifier extends ENode {
 		public KString name;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ASTIdentifier() {
 		super(new ASTIdentifierImpl());

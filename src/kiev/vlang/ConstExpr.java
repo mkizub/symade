@@ -30,7 +30,7 @@ import syntax kiev.Syntax;
  */
 
 
-public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
+public final class ConstBoolExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
@@ -50,8 +50,8 @@ public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 		public boolean	value;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstBoolExpr() { super(new ConstBoolExprImpl()); }
 	public ConstBoolExpr(boolean value) { super(new ConstBoolExprImpl(value)); }
@@ -91,8 +91,8 @@ public final class ConstNullExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstNullExpr() { super(new ConstNullExprImpl()); }
 
@@ -127,8 +127,8 @@ public final class ConstByteExpr extends ConstExpr {
 		public byte		value;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstByteExpr() { super(new ConstByteExprImpl()); }
 	public ConstByteExpr(byte value) { super(new ConstByteExprImpl(value)); }
@@ -164,8 +164,8 @@ public final class ConstShortExpr extends ConstExpr {
 		public short		value;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstShortExpr() { super(new ConstShortExprImpl()); }
 	public ConstShortExpr(short value) { super(new ConstShortExprImpl(value)); }
@@ -201,8 +201,8 @@ public final class ConstIntExpr extends ConstExpr {
 		public int		value;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstIntExpr() { super(new ConstIntExprImpl()); }
 	public ConstIntExpr(int value) { super(new ConstIntExprImpl(value)); }
@@ -238,8 +238,8 @@ public final class ConstLongExpr extends ConstExpr {
 		public long		value;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstLongExpr() { super(new ConstLongExprImpl()); }
 	public ConstLongExpr(long value) { super(new ConstLongExprImpl(value)); }
@@ -275,8 +275,8 @@ public final class ConstCharExpr extends ConstExpr {
 		public char		value;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstCharExpr() { super(new ConstCharExprImpl()); }
 	public ConstCharExpr(char value) { super(new ConstCharExprImpl(value)); }
@@ -313,8 +313,8 @@ public final class ConstFloatExpr extends ConstExpr {
 		public float		value;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstFloatExpr() { super(new ConstFloatExprImpl()); }
 	public ConstFloatExpr(float value) { super(new ConstFloatExprImpl(value)); }
@@ -351,8 +351,8 @@ public final class ConstDoubleExpr extends ConstExpr {
 		public double		value;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstDoubleExpr() { super(new ConstDoubleExprImpl()); }
 	public ConstDoubleExpr(double value) { super(new ConstDoubleExprImpl(value)); }
@@ -388,8 +388,8 @@ public final class ConstStringExpr extends ConstExpr {
 		public KString		value;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstStringExpr() { super(new ConstStringExprImpl()); }
 	public ConstStringExpr(KString value) { super(new ConstStringExprImpl(value)); }
@@ -425,6 +425,9 @@ public abstract class ConstExpr extends ENode {
 			super($view);
 		}
 	}
+
+	public abstract VView getVView() alias operator(210,fy,$cast);
+	public abstract JView getJView() alias operator(210,fy,$cast);
 
 	public ConstExpr(ConstExprImpl impl) {
 		super(impl);

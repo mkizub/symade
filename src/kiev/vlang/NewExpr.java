@@ -57,8 +57,8 @@ public final class NewExpr extends ENode {
 		public				Method			func;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public NewExpr() {
 		super(new NewExprImpl());
@@ -239,8 +239,8 @@ public final class NewArrayExpr extends ENode {
 		public				Type			arrtype;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public NewArrayExpr() {
 		super(new NewArrayExprImpl());
@@ -351,8 +351,8 @@ public final class NewInitializedArrayExpr extends ENode {
 		@getter public final int	get$dim()	{ return this.$view.dims.length; }
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public NewInitializedArrayExpr() {
 		super(new NewInitializedArrayExprImpl());
@@ -441,8 +441,8 @@ public final class NewClosure extends ENode {
 		public Method			func;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public NewClosure() {
 		super(new NewClosureImpl());

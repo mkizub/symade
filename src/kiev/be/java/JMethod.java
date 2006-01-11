@@ -190,7 +190,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 @nodeview
 public final view JInitializerView of InitializerImpl extends JDNodeView {
-	public access:ro	JENodeView		body;
+	public access:ro	JBlockStatView		body;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Initializer");

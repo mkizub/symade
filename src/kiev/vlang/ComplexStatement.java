@@ -59,8 +59,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		public access:ro	NArr<ENode>		stats;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public CaseLabel() {
 		super(new CaseLabelImpl());
@@ -274,8 +274,8 @@ public class SwitchStat extends ENode implements BreakTarget {
 		public access:ro	Label					lblbrk;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public SwitchStat() {
 		super(new SwitchStatImpl());
@@ -552,8 +552,8 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		public ENode			body;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public CatchInfo() {
 		super(new CatchInfoImpl());
@@ -611,8 +611,8 @@ public class FinallyInfo extends CatchInfo {
 		public Var			ret_arg;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public FinallyInfo() {
 		super(new FinallyInfoImpl());
@@ -664,8 +664,8 @@ public class TryStat extends ENode {
 		public				FinallyInfo			finally_catcher;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public TryStat() {
 		super(new TryStatImpl());
@@ -753,8 +753,8 @@ public class SynchronizedStat extends ENode {
 		public ENode			body;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public SynchronizedStat() {
 		super(new SynchronizedStatImpl());
@@ -808,8 +808,8 @@ public class WithStat extends ENode {
 		public LvalDNode	var_or_field;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public WithStat() {
 		super(new WithStatImpl());

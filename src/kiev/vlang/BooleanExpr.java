@@ -24,12 +24,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public interface IBoolExpr {
-	public abstract void generate_iftrue(Code code, CodeLabel label);
-	public abstract void generate_iffalse(Code code, CodeLabel label);
-}
-
-public abstract class BoolExpr extends ENode implements IBoolExpr {
+public abstract class BoolExpr extends ENode {
 
 	@virtual typedef NImpl = BoolExprImpl;
 	@virtual typedef VView = BoolExprView;
@@ -51,22 +46,6 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 	public BoolExpr(BoolExprImpl impl) { super(impl); }
 
 	public Type getType() { return Type.tpBoolean; }
-
-	public final void generate_iftrue(Code code, CodeLabel label) {
-		this.getJView().generate_iftrue(code, label);
-	}
-
-	public final void generate_iffalse(Code code, CodeLabel label) {
-		this.getJView().generate_iffalse(code, label);
-	}
-
-	public static void gen_iftrue(Code code, ENode expr, CodeLabel label) {
-		JBoolExprView.gen_iftrue(code, expr.getJView(), label);
-	}
-	
-	public static void gen_iffalse(Code code, ENode expr, CodeLabel label) {
-		JBoolExprView.gen_iffalse(code, expr.getJView(), label);
-	}
 
 	public static void checkBool(ENode e) {
 		Type et = e.getType();
@@ -115,8 +94,8 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		public ENode		expr2;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public BinaryBooleanOrExpr() {
 		super(new BinaryBooleanOrExprImpl());
@@ -199,8 +178,8 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		public ENode		expr2;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public BinaryBooleanAndExpr() {
 		super(new BinaryBooleanAndExprImpl());
@@ -279,8 +258,8 @@ public class BinaryBoolExpr extends BoolExpr {
 		public ENode			expr2;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public BinaryBoolExpr() {
 		super(new BinaryBoolExprImpl());
@@ -507,8 +486,8 @@ public class InstanceofExpr extends BoolExpr {
 		public TypeRef	type;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public InstanceofExpr() {
 		super(new InstanceofExprImpl());
@@ -649,8 +628,8 @@ public class BooleanNotExpr extends BoolExpr {
 		public ENode		expr;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public BooleanNotExpr() {
 		super(new BooleanNotExprImpl());

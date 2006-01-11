@@ -31,7 +31,7 @@ public class TypeClosureRef extends TypeRef {
 		public access:ro	NArr<TypeRef>			types;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	TypeClosureRef() {
 		super(new TypeClosureRefImpl());

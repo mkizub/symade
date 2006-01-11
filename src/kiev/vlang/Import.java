@@ -50,7 +50,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		public				DNode				resolved;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public Import() { super(new ImportImpl()); }
 
@@ -195,7 +195,7 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		public	TypeDef		arg;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public TypeOpDef() {
 		super(new TypeOpDefImpl());

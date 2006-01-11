@@ -78,8 +78,8 @@ public class AccessExpr extends LvalueExpr {
 		public NameRef	ident;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public AccessExpr() {
 		super(new AccessExprImpl());
@@ -322,8 +322,8 @@ public final class IFldExpr extends AccessExpr {
 		public Field		var;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public IFldExpr() {
 		super(new IFldExprImpl());
@@ -457,8 +457,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		public ENode		index;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public ContainerAccessExpr() {
 		super(new ContainerAccessExprImpl());
@@ -583,8 +583,8 @@ public final class ThisExpr extends LvalueExpr {
 		public ThisExprView(ThisExprImpl $view) { super($view); }
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public ThisExpr() {
 		super(new ThisExprImpl());
@@ -657,8 +657,8 @@ public final class LVarExpr extends LvalueExpr {
 		public Var		var;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public LVarExpr() {
 		super(new LVarExprImpl());
@@ -802,8 +802,8 @@ public final class SFldExpr extends AccessExpr {
 		public Field		var;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public SFldExpr() {
 		super(new SFldExprImpl());
@@ -909,8 +909,8 @@ public final class OuterThisAccessExpr extends AccessExpr {
 		public access:ro	NArr<Field>		outer_refs;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public OuterThisAccessExpr() {
 		super(new OuterThisAccessExprImpl());

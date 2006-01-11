@@ -43,8 +43,8 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		public				ClosureType					ctype;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ASTAnonymouseClosure() {
 		super(new ASTAnonymouseClosureImpl());

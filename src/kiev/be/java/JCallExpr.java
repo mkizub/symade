@@ -77,11 +77,12 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			else if( fname.indexOf("trace") >= 0 ) mode = 2;
 			if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
 				ok_label = code.newLabel();
-				if( args[0] instanceof IBoolExpr ) {
-					if( mode == 1 ) ((IBoolExpr)args[0]).generate_iftrue(code,ok_label);
-					else ((IBoolExpr)args[0]).generate_iffalse(code,ok_label);
+				JENodeView arg0 = args[0];
+				if( arg0 instanceof IBoolExpr ) {
+					if( mode == 1 ) arg0.generate_iftrue(code,ok_label);
+					else arg0.generate_iffalse(code,ok_label);
 				} else {
-					args[0].generate(code,null);
+					arg0.generate(code,null);
 					if( mode == 1 ) code.addInstr(Instr.op_ifne,ok_label);
 					else code.addInstr(Instr.op_ifeq,ok_label);
 				}

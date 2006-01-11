@@ -38,7 +38,7 @@ public class TypeExpr extends TypeRef {
 		public KString				op;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public TypeExpr() {
 		super(new TypeExprImpl());

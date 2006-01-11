@@ -36,7 +36,7 @@ public class ASTCastOperator extends ASTOperator {
 		public boolean  sure;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 	
 	public ASTCastOperator() {
 		super(new ASTCastOperatorImpl());

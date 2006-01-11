@@ -29,7 +29,7 @@ public abstract class MetaSpecial extends ASTNode implements NodeData {
 	@nodeview
 	public static view MetaSpecialView of NodeImpl extends NodeView {}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public MetaSpecial(MetaSpecialImpl impl, MetaAttrSlot attr) {
 		super(impl);
@@ -69,7 +69,7 @@ public final class MetaVirtual extends MetaSpecial {
 		public Method		set;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public MetaVirtual() { super(new MetaVirtualImpl(), MetaVirtualAttr); }
 
@@ -109,7 +109,7 @@ public class MetaPacked extends MetaSpecial {
 		public Field			 packer;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public MetaPacked() { super(new MetaPackedImpl(), MetaPackedAttr); }
 
@@ -161,7 +161,7 @@ public class MetaPacker extends MetaSpecial {
 		public ENode			 size;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public MetaPacker() { super(new MetaPackerImpl(), MetaPackerAttr); }
 
@@ -194,7 +194,7 @@ public class MetaAlias extends MetaSpecial {
 		public access:ro NArr<ENode>		 aliases;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public MetaAlias() {
 		super(new MetaAliasImpl(), MetaAliasAttr);
@@ -227,7 +227,7 @@ public class MetaThrows extends MetaSpecial {
 		public access:ro NArr<TypeNameRef>		 exceptions;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public MetaThrows() {
 		super(new MetaThrowsImpl(), MetaThrowsAttr);
@@ -261,7 +261,7 @@ public class MetaPizzaCase extends MetaSpecial {
 		public int							 tag;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public MetaPizzaCase() {
 		super(new MetaPizzaCaseImpl(), MetaPizzaCaseAttr);

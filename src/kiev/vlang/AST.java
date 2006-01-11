@@ -365,8 +365,8 @@ public abstract class ASTNode implements Constants {
 	}
 	
 	public NImpl $v_impl;
-	public VView getVView()	alias operator(210,fy,$cast) { return new VView($v_impl); }
-	public JView getJView()	alias operator(210,fy,$cast) { return new JView($v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView($v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView($v_impl); }
 	
 	public forward abstract virtual access:ro VView theView;
 	@getter public final VView get$theView() { return getVView(); }
@@ -770,8 +770,8 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public DNode(NImpl v_impl) { super(v_impl); }
 
@@ -836,8 +836,8 @@ public abstract class LvalDNode extends DNode {
 			}
 		}
 	}
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public LvalDNode(LvalDNodeImpl v_impl) { super(v_impl); }
 
@@ -1003,8 +1003,8 @@ public /*abstract*/ class ENode extends ASTNode {
 		}
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public static final ENode[] emptyArray = new ENode[0];
 	
@@ -1091,8 +1091,8 @@ public final class VarDecl extends ENode implements Named {
 		public Var		var;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public VarDecl() { super(new VarDeclImpl()); }
 	
@@ -1135,8 +1135,8 @@ public final class LocalStructDecl extends ENode implements Named {
 		public Struct		clazz;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public LocalStructDecl() { super(new LocalStructDeclImpl()); }
 	public LocalStructDecl(Struct clazz) {
@@ -1187,8 +1187,8 @@ public final class NopExpr extends ENode {
 		public ENode		expr;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public NopExpr() { super(new NopExprImpl()); }
 	public NopExpr(ENode expr) {
@@ -1252,8 +1252,8 @@ public class TypeRef extends ENode {
 		public Type	lnk;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public TypeRef() {
 		super(new TypeRefImpl());

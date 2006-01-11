@@ -37,7 +37,7 @@ public class TypeDef extends TypeDecl {
 		public ArgumentType			lnk;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public TypeDef() { super(new TypeDefImpl()); }
 

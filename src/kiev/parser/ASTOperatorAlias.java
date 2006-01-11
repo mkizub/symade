@@ -28,21 +28,22 @@ public final class ASTOperatorAlias extends ASTAlias {
 
 	@node
 	public static class ASTOperatorAliasImpl extends ASTAliasImpl {
+		@virtual typedef ImplOf = ASTOperatorAlias;
 		@att public int					prior;
 		@att public int					opmode;
 		@att public KString				image;
 		@att public int					xfix;
 	}
 	@nodeview
-	public static view ASTOperatorAliasView of ASTAliasImpl extends ASTAliasView {
+	public static view ASTOperatorAliasView of ASTOperatorAliasImpl extends ASTAliasView {
 		public int					prior;
 		public int					opmode;
 		public KString				image;
 		public int					xfix;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ASTOperatorAlias() { super(new ASTOperatorAliasImpl()); }
 	

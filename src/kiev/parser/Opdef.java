@@ -44,8 +44,8 @@ public class Opdef extends DNode {
 		@setter public final void set$image(KString val)		{ this.impl.image = val; }
 		@setter public final void set$resolved(Operator val)	{ this.impl.resolved = val; }
 	}
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public Opdef() {
 		super(new OpdefImpl());

@@ -29,8 +29,8 @@ public final class MetaSet extends ASTNode {
 		public access:ro	NArr<Meta>			metas;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public MetaSet() {
 		super(new MetaSetImpl());
@@ -160,8 +160,8 @@ public class Meta extends ENode {
 		public access:ro	NArr<MetaValue>			values;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public Meta() {
 		super(new MetaImpl());
@@ -545,8 +545,8 @@ public final class MetaValueScalar extends MetaValue {
 		public ENode			value;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public MetaValueScalar() {
 		super(new MetaValueScalarImpl());
@@ -603,8 +603,8 @@ public final class MetaValueArray extends MetaValue {
 		public access:ro	NArr<ENode>			values;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public MetaValueArray() {
 		super(new MetaValueArrayImpl());

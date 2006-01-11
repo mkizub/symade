@@ -50,8 +50,8 @@ public class RuleMethod extends Method {
 		public				int					index;		// index counter for RuleNode.idx
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleMethod() {
 		super(new RuleMethodImpl());
@@ -412,8 +412,8 @@ public final class RuleBlock extends BlockStat {
 		public StringBuffer		fields_buf;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleBlock() {
 		super(new RuleBlockImpl());
@@ -514,8 +514,8 @@ public final class RuleOrExpr extends ASTRuleNode {
 		public void set$idx(int i) {}
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleOrExpr() {
 		super(new RuleOrExprImpl());
@@ -588,8 +588,8 @@ public final class RuleAndExpr extends ASTRuleNode {
 		public access:ro	NArr<ASTRuleNode>			rules;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleAndExpr() {
 		super(new RuleAndExprImpl());
@@ -693,8 +693,8 @@ public final class RuleIstheExpr extends ASTRuleNode {
 		public ENode		expr;		// expression to check/unify
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleIstheExpr() {
 		super(new RuleIstheExprImpl());
@@ -779,8 +779,8 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		public int			mode;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleIsoneofExpr() {
 		super(new RuleIsoneofExprImpl());
@@ -937,8 +937,8 @@ public final class RuleCutExpr extends ASTRuleNode {
 		public RuleCutExprView(RuleCutExprImpl $view) { super($view); }
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public RuleCutExpr() {
 		super(new RuleCutExprImpl());
@@ -994,8 +994,8 @@ public final class RuleCallExpr extends ASTRuleNode {
 		public				int				env_var;
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleCallExpr() {
 		super(new RuleCallExprImpl());
@@ -1151,8 +1151,8 @@ public final class RuleWhileExpr extends RuleExprBase {
 		public RuleWhileExprView(RuleWhileExprImpl $view) { super($view); }
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public RuleWhileExpr() {
 		super(new RuleWhileExprImpl());
@@ -1222,8 +1222,8 @@ public final class RuleExpr extends RuleExprBase {
 		public RuleExprView(RuleExprImpl $view) { super($view); }
 	}
 	
-	public VView getVView() { return new VView(this.$v_impl); }
-	public JView getJView() { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public RuleExpr() {
 		super(new RuleExprImpl());

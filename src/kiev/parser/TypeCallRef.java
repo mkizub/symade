@@ -36,7 +36,7 @@ public class TypeCallRef extends TypeRef {
 		public				TypeRef					ret;
 	}
 
-	public VView getVView() { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
 	public TypeCallRef() {
 		super(new TypeCallRefImpl());
