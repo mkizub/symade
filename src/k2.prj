@@ -601,5 +601,7 @@ kiev.vlang.WrapperTypeProvider kiev/vlang/WrapperTypeProvider kiev\vlang\TypePro
 kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
 kiev.vlang.dflow kiev/vlang/dflow kiev\vlang\Tree.java
 kiev.vlang.node kiev/vlang/node kiev\vlang\Tree.java
+kiev.vlang.nodeimpl kiev/vlang/nodeimpl kiev\vlang\Tree.java
+kiev.vlang.nodeset kiev/vlang/nodeset kiev\vlang\Tree.java
 kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java

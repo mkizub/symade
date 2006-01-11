@@ -31,6 +31,10 @@ public @interface node {
 }
 // syntax-tree node view
 public @interface nodeview {}
+// syntax-tree node set (ASTNode sub-classes)
+public @interface nodeset {}
+// syntax-tree node implementation
+public @interface nodeimpl {}
 // syntax-tree attribute field
 public @interface att {
 	boolean copyable() default true;
