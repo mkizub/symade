@@ -32,6 +32,7 @@ import syntax kiev.Syntax;
  */
 
 
+@nodeset
 public class Shadow extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -40,7 +41,7 @@ public class Shadow extends ENode {
 	@virtual typedef VView = ShadowView;
 	@virtual typedef JView = JShadowView;
 
-	@node
+	@nodeimpl
 	public static final class ShadowImpl extends ENodeImpl {
 		@virtual typedef ImplOf = Shadow;
 		public ShadowImpl() {}
@@ -91,6 +92,7 @@ public class Shadow extends ENode {
 
 }
 
+@nodeset
 public class ArrayLengthExpr extends AccessExpr {
 	
 	@dflow(out="obj") private static class DFI {
@@ -101,7 +103,7 @@ public class ArrayLengthExpr extends AccessExpr {
 	@virtual typedef VView = ArrayLengthExprView;
 	@virtual typedef JView = JArrayLengthExprView;
 
-	@node
+	@nodeimpl
 	public static final class ArrayLengthExprImpl extends AccessExprImpl {
 		@virtual typedef ImplOf = ArrayLengthExpr;
 		public ArrayLengthExprImpl() {}
@@ -162,6 +164,7 @@ public class ArrayLengthExpr extends AccessExpr {
 	}
 }
 
+@nodeset
 public class TypeClassExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -170,7 +173,7 @@ public class TypeClassExpr extends ENode {
 	@virtual typedef VView = TypeClassExprView;
 	@virtual typedef JView = JTypeClassExprView;
 
-	@node
+	@nodeimpl
 	public static final class TypeClassExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = TypeClassExpr;
 		public TypeClassExprImpl() {}
@@ -221,6 +224,7 @@ public class TypeClassExpr extends ENode {
 	}
 }
 
+@nodeset
 public class AssignExpr extends LvalueExpr {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -232,7 +236,7 @@ public class AssignExpr extends LvalueExpr {
 	@virtual typedef VView = AssignExprView;
 	@virtual typedef JView = JAssignExprView;
 
-	@node
+	@nodeimpl
 	public static class AssignExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = AssignExpr;
 		@ref public AssignOperator	op;
@@ -490,6 +494,7 @@ public class AssignExpr extends LvalueExpr {
 }
 
 
+@nodeset
 public class BinaryExpr extends ENode {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -501,7 +506,7 @@ public class BinaryExpr extends ENode {
 	@virtual typedef VView = BinaryExprView;
 	@virtual typedef JView = JBinaryExprView;
 
-	@node
+	@nodeimpl
 	public static class BinaryExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = BinaryExpr;
 		@ref public BinaryOperator	op;
@@ -904,6 +909,7 @@ public class BinaryExpr extends ENode {
 	}
 }
 
+@nodeset
 public class StringConcatExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -914,7 +920,7 @@ public class StringConcatExpr extends ENode {
 	@virtual typedef VView = StringConcatExprView;
 	@virtual typedef JView = JStringConcatExprView;
 
-	@node
+	@nodeimpl
 	public static class StringConcatExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = StringConcatExpr;
 		@att public NArr<ENode>			args;
@@ -980,6 +986,7 @@ public class StringConcatExpr extends ENode {
 	}
 }
 
+@nodeset
 public class CommaExpr extends ENode {
 	
 	@dflow(out="exprs") private static class DFI {
@@ -990,7 +997,7 @@ public class CommaExpr extends ENode {
 	@virtual typedef VView = CommaExprView;
 	@virtual typedef JView = JCommaExprView;
 
-	@node
+	@nodeimpl
 	public static class CommaExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = CommaExpr;
 		@att public NArr<ENode>		exprs;
@@ -1053,6 +1060,7 @@ public class CommaExpr extends ENode {
 	}
 }
 
+@nodeset
 public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -1064,7 +1072,7 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef VView = BlockExprView;
 	@virtual typedef JView = JBlockExprView;
 
-	@node
+	@nodeimpl
 	public static class BlockExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = BlockExpr;
 		@att public NArr<ENode>			stats;
@@ -1225,6 +1233,7 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 }
 
+@nodeset
 public class UnaryExpr extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -1235,7 +1244,7 @@ public class UnaryExpr extends ENode {
 	@virtual typedef VView = UnaryExprView;
 	@virtual typedef JView = JUnaryExprView;
 
-	@node
+	@nodeimpl
 	public static class UnaryExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = UnaryExpr;
 		@ref public Operator		op;
@@ -1408,6 +1417,7 @@ public class UnaryExpr extends ENode {
 	}
 }
 
+@nodeset
 public class IncrementExpr extends ENode {
 	
 	@dflow(out="lval") private static class DFI {
@@ -1418,7 +1428,7 @@ public class IncrementExpr extends ENode {
 	@virtual typedef VView = IncrementExprView;
 	@virtual typedef JView = JIncrementExprView;
 
-	@node
+	@nodeimpl
 	public static class IncrementExprImpl extends ENodeImpl {		
 		@virtual typedef ImplOf = IncrementExpr;
 		@ref public Operator			op;
@@ -1486,6 +1496,7 @@ public class IncrementExpr extends ENode {
 	}
 }
 
+@nodeset
 public class ConditionalExpr extends ENode {
 	
 	@dflow(out="join expr1 expr2") private static class DFI {
@@ -1498,7 +1509,7 @@ public class ConditionalExpr extends ENode {
 	@virtual typedef VView = ConditionalExprView;
 	@virtual typedef JView = JConditionalExprView;
 
-	@node
+	@nodeimpl
 	public static class ConditionalExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ConditionalExpr;
 		@att public ENode			cond;
@@ -1580,6 +1591,7 @@ public class ConditionalExpr extends ENode {
 	}
 }
 
+@nodeset
 public class CastExpr extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -1590,7 +1602,7 @@ public class CastExpr extends ENode {
 	@virtual typedef VView = CastExprView;
 	@virtual typedef JView = JCastExprView;
 
-	@node
+	@nodeimpl
 	public static class CastExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = CastExpr;
 		@att public ENode		expr;

@@ -16,6 +16,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 
 	public static final KString mnNode				= KString.from("kiev.vlang.node"); 
 	public static final KString mnNodeView			= KString.from("kiev.vlang.nodeview"); 
+	public static final KString mnNodeImpl			= KString.from("kiev.vlang.nodeimpl"); 
+	public static final KString mnNodeSet			= KString.from("kiev.vlang.nodeset"); 
 	public static final KString mnAtt				= KString.from("kiev.vlang.att"); 
 	public static final KString mnRef				= KString.from("kiev.vlang.ref"); 
 	public static final KString nameNArr			= KString.from("kiev.vlang.NArr"); 
@@ -32,6 +34,18 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	
 	private ProcessVNode() {
 		super(Kiev.Ext.VNode);
+	}
+	
+	private boolean isNodeImpl(Struct s) {
+		return s.meta.get(mnNode) != null || s.meta.get(mnNodeImpl) != null;
+	}
+	private boolean isNodeKind(Struct s) {
+		return s.meta.get(mnNode) != null || s.meta.get(mnNodeImpl) != null || s.meta.get(mnNodeSet) != null;
+	}
+	private boolean isNodeKind(Type t) {
+		if (t.getStruct() != null)
+			return isNodeKind(t.getStruct());
+		return false;
 	}
 
 	/////////////////////////////////////////////
@@ -51,26 +65,25 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	public void pass3(Struct:ASTNode s) {
 		foreach (Struct sub; s.sub_clazz)
 			pass3(sub);
-		Meta m = s.meta.get(mnNode);
-		if (m != null) {
-			// Check fields of the @node
+		if (isNodeKind(s)) {
+			// Check fields of the @nodeimpl
 			foreach (ASTNode n; s.members; n instanceof Field)
 				pass3(n);
+			return;
 		}
-		else if (s.super_bound.getType() != null && s.super_type.getMeta(mnNode) != null) {
+		
+		if (s.super_bound.getType() != null && isNodeKind(s.super_type)) {
 			if (s.meta.get(mnNodeView) == null)
 				Kiev.reportError(s,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
 			return;
 		}
-		else {
-			// Check fields to not have @att and @ref
-			foreach (DNode n; s.members; n instanceof Field) {
-				Field f = (Field)n;
-				Meta fmatt = f.meta.get(mnAtt);
-				Meta fmref = f.meta.get(mnRef);
-				if (fmatt != null || fmref != null) {
-					Kiev.reportError(f,"Field "+f+" of non-@node class "+f.parent+" may not be @att or @ref");
-				}
+		// Check fields to not have @att and @ref
+		foreach (DNode n; s.members; n instanceof Field) {
+			Field f = (Field)n;
+			Meta fmatt = f.meta.get(mnAtt);
+			Meta fmref = f.meta.get(mnRef);
+			if (fmatt != null || fmref != null) {
+				Kiev.reportError(f,"Field "+f+" of non-@node class "+f.parent+" may not be @att or @ref");
 			}
 		}
 	}
@@ -110,7 +123,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		else if !(f.isStatic()) {
 			if (f.type.isInstanceOf(tpNArr))
 				Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
-			else if (f.type.getMeta(mnNode) != null)
+			else if (isNodeKind(f.type))
 				Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
 		}
 	}
@@ -152,14 +165,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			this.autoGenerateMembers(dn);
 		if (!s.isClazz())
 			return;
-		Meta mnMeta = s.meta.get(mnNode);
-		if (mnMeta == null)
+		if (!isNodeImpl(s))
 			return;
 		// attribute names array
 		Vector<Field> aflds = new Vector<Field>();
-		{
+		if (isNodeImpl(s)) {
 			Struct ss = s;
-			while (ss != null && ss.meta.get(mnNode) != null) {
+			while (ss != null && isNodeImpl(ss)) {
 				foreach (DNode n; ss.members; n instanceof Field && !n.isStatic() && (n.meta.get(mnAtt) != null || n.meta.get(mnRef) != null)) {
 					Field f = (Field)n;
 					aflds.append(f);
@@ -243,7 +255,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			);
 		}
 		// copy()
-		if (!mnMeta.getZ(nameCopyable) || s.isAbstract()) {
+		if (s.meta.get(mnNode) != null && !s.meta.get(mnNode).getZ(nameCopyable) || s.isAbstract()) {
 			// node is not copyable
 		}
 		else if (hasMethod(s, KString.from("copy"))) {
@@ -270,7 +282,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			copyV.body = new BlockStat();
 			NArr<ENode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0,KString.from("node"),s.concr_type,0);
-			if (s.super_bound.getType() != null && s.super_type.getMeta(mnNode) != null) {
+			if (s.super_bound.getType() != null && isNodeKind(s.super_type)) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
 				cae.obj = new ASTIdentifier(0,KString.from("super"));
 				cae.func = new NameRef(0,KString.from("copyTo"));
@@ -292,7 +304,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
-				boolean isNode = (f.getType().getMeta(mnNode) != null);
+				boolean isNode = (isNodeKind(f.getType()));
 				boolean isArr = f.getType().isInstanceOf(tpNArr);
 				if (f.meta.get(mnAtt) != null && (isNode || isArr)) {
 					if (isArr) {

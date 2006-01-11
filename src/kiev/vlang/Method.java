@@ -21,6 +21,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
@@ -32,7 +33,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@virtual typedef VView = MethodView;
 	@virtual typedef JView = JMethodView;
 
-	@node
+	@nodeimpl
 	public static class MethodImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Method;
 		public MethodImpl() {}
@@ -254,6 +255,11 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	public static Method[]	emptyArray = new Method[0];
 
+	@getter public PrescannedBody	get$pbody()			{ return this.getVView().pbody; }
+	@getter public Access			get$acc()			{ return this.getVView().acc; }
+	@setter public void set$pbody(PrescannedBody val)	{ this.getVView().pbody = val; }
+	@setter public void set$acc(Access val)			{ this.getVView().acc = val; }
+	
 	public Method() {
 		super(new MethodImpl());
 	}
@@ -719,6 +725,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 }
 
+@nodeset
 public class Constructor extends Method {
 	
 	@dflow(in="root()") private static class DFI {
@@ -730,7 +737,7 @@ public class Constructor extends Method {
 	@virtual typedef NImpl = ConstructorImpl;
 	@virtual typedef VView = ConstructorView;
 
-	@node
+	@nodeimpl
 	public static final class ConstructorImpl extends MethodImpl {
 		@virtual typedef ImplOf = Constructor;
 		@att public NArr<ENode>			addstats;
@@ -763,6 +770,7 @@ public class Constructor extends Method {
 	}
 }
 
+@nodeset
 public class Initializer extends DNode implements SetBody, PreScanneable {
 	
 	@dflow(out="body") private static class DFI {
@@ -773,7 +781,7 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	@virtual typedef VView = InitializerView;
 	@virtual typedef JView = JInitializerView;
 
-	@node
+	@nodeimpl
 	public static final class InitializerImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Initializer;
 		@att public BlockStat				body;
@@ -790,6 +798,9 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
+	@getter public PrescannedBody	get$pbody()			{ return this.getVView().pbody; }
+	@setter public void set$pbody(PrescannedBody val)	{ this.getVView().pbody = val; }
+	
 	public Initializer() {
 		super(new InitializerImpl());
 	}
@@ -830,6 +841,7 @@ public enum WBCType {
 	CondInvariant;
 }
 
+@nodeset
 public class WBCCondition extends DNode {
 	
 	@dflow(out="body") private static class DFI {
@@ -840,7 +852,7 @@ public class WBCCondition extends DNode {
 	@virtual typedef VView = WBCConditionView;
 	@virtual typedef JView = JWBCConditionView;
 
-	@node
+	@nodeimpl
 	public static final class WBCConditionImpl extends DNodeImpl {
 		@virtual typedef ImplOf = WBCCondition;
 		@att public WBCType				cond;

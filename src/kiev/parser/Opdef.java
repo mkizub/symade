@@ -14,11 +14,12 @@ import static kiev.vlang.Operator.*;
  *
  */
 
+@nodeset
 public class Opdef extends DNode {
 	@virtual typedef NImpl = OpdefImpl;
 	@virtual typedef VView = OpdefView;
 
-	@node
+	@nodeimpl
 	static class OpdefImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Opdef;
 		OpdefImpl() {}

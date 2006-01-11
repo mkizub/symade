@@ -16,12 +16,13 @@ import syntax kiev.Syntax;
 /**
  * Base class to represent unresolved, temporary created expressions.
  */
+@nodeset
 public abstract class UnresExpr extends ENode {
 
 	@virtual typedef NImpl = UnresExprImpl;
 	@virtual typedef VView = UnresExprView;
 
-	@node
+	@nodeimpl
 	public static class UnresExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = UnresExpr;
 		@ref public Operator				op;
@@ -56,12 +57,13 @@ public abstract class UnresExpr extends ENode {
  * 'expr' field is @ref to not change the owner of the expression.
  * The owner will be changed when concrete, resolved unary expression is created.
  */
+@nodeset
 public class PrefixExpr extends UnresExpr {
 	
 	@virtual typedef NImpl = PrefixExprImpl;
 	@virtual typedef VView = PrefixExprView;
 
-	@node
+	@nodeimpl
 	public static class PrefixExprImpl extends UnresExprImpl {
 		@virtual typedef ImplOf = PrefixExpr;
 		@ref public ENode				expr;
@@ -108,12 +110,13 @@ public class PrefixExpr extends UnresExpr {
  * 'expr' field is @ref to not change the owner of the expression.
  * The owner will be changed when concrete, resolved unary expression is created.
  */
+@nodeset
 public class PostfixExpr extends UnresExpr {
 	
 	@virtual typedef NImpl = PostfixExprImpl;
 	@virtual typedef VView = PostfixExprView;
 
-	@node
+	@nodeimpl
 	public static class PostfixExprImpl extends UnresExprImpl {
 		@virtual typedef ImplOf = PostfixExpr;
 		@ref public ENode				expr;
@@ -158,12 +161,13 @@ public class PostfixExpr extends UnresExpr {
  * 'expr1' and 'expr2' fields are @ref to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved binary expression is created.
  */
+@nodeset
 public class InfixExpr extends UnresExpr {
 
 	@virtual typedef NImpl = InfixExprImpl;
 	@virtual typedef VView = InfixExprView;
 
-	@node
+	@nodeimpl
 	public static class InfixExprImpl extends UnresExprImpl {
 		@virtual typedef ImplOf = InfixExpr;
 		@ref public ENode				expr1;
@@ -226,12 +230,13 @@ public class InfixExpr extends UnresExpr {
  * 'exprs' field is @ref to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
+@nodeset
 public class MultiExpr extends UnresExpr {
 
 	@virtual typedef NImpl = MultiExprImpl;
 	@virtual typedef VView = MultiExprView;
 
-	@node
+	@nodeimpl
 	public static final class MultiExprImpl extends UnresExprImpl {
 		@virtual typedef ImplOf = MultiExpr;
 		@ref public NArr<ENode>			exprs;
@@ -296,12 +301,13 @@ public class MultiExpr extends UnresExpr {
  * 'exprs' field is @ref to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
+@nodeset
 public class UnresCallExpr extends UnresExpr {
 
 	@virtual typedef NImpl = UnresCallExprImpl;
 	@virtual typedef VView = UnresCallExprView;
 
-	@node
+	@nodeimpl
 	public static class UnresCallExprImpl extends UnresExprImpl {
 		@virtual typedef ImplOf = UnresCallExpr;
 		@ref public ENode				obj;

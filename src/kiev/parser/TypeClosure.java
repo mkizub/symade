@@ -12,6 +12,7 @@ import kiev.vlang.TypeRef.TypeRefView;
  *
  */
 
+@nodeset
 public class TypeClosureRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -19,7 +20,7 @@ public class TypeClosureRef extends TypeRef {
 	@virtual typedef NImpl = TypeClosureRefImpl;
 	@virtual typedef VView = TypeClosureRefView;
 
-	@node
+	@nodeimpl
 	public static final class TypeClosureRefImpl extends TypeRefImpl {
 		@virtual typedef ImplOf = TypeClosureRef;
 		@att public NArr<TypeRef>		types;

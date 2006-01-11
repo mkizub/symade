@@ -12,6 +12,7 @@ import kiev.stdlib.*;
  *
  */
 
+@nodeset
 public class ASTNewAccessExpression extends ENode {
 
 	@dflow(out="args") private static class DFI {
@@ -22,7 +23,7 @@ public class ASTNewAccessExpression extends ENode {
 	@virtual typedef NImpl = ASTNewAccessExpressionImpl;
 	@virtual typedef VView = ASTNewAccessExpressionView;
 
-	@node
+	@nodeimpl
 	public static class ASTNewAccessExpressionImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ASTNewAccessExpression;
 		@att public ENode				obj;

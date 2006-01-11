@@ -6,12 +6,13 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
 
+@nodeset
 public final class ASTPragma extends DNode {
 
 	@virtual typedef NImpl = ASTPragmaImpl;
 	@virtual typedef VView = ASTPragmaView;
 
-	@node
+	@nodeimpl
 	static class ASTPragmaImpl extends DNodeImpl {
 		@virtual typedef ImplOf = ASTPragma;
 		ASTPragmaImpl() {}

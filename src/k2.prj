@@ -97,6 +97,7 @@ kiev.be.java.JLvalDNodeView kiev/be/java/JLvalDNodeView kiev\be\java\JNode.java
 kiev.be.java.JLvalueExprView kiev/be/java/JLvalueExprView kiev\be\java\JLvalueExpr.java
 kiev.be.java.JMethodType kiev/be/java/JMethodType kiev\be\java\JType.java
 kiev.be.java.JMethodView kiev/be/java/JMethodView kiev\be\java\JMethod.java
+kiev.be.java.JNameRefView kiev/be/java/JNameRefView kiev\be\java\JNode.java
 kiev.be.java.JNewArrayExprView kiev/be/java/JNewArrayExprView kiev\be\java\JNewExpr.java
 kiev.be.java.JNewClosureView kiev/be/java/JNewClosureView kiev\be\java\JNewExpr.java
 kiev.be.java.JNewExprView kiev/be/java/JNewExprView kiev\be\java\JNewExpr.java
@@ -932,5 +933,7 @@ kiev.vlang.WrapperTypeProvider kiev/vlang/WrapperTypeProvider kiev\vlang\TypePro
 kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
 kiev.vlang.dflow kiev/vlang/dflow kiev\vlang\Tree.java
 kiev.vlang.node kiev/vlang/node kiev\vlang\Tree.java
+kiev.vlang.nodeimpl kiev/vlang/nodeimpl kiev\vlang\Tree.java
+kiev.vlang.nodeset kiev/vlang/nodeset kiev\vlang\Tree.java
 kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java

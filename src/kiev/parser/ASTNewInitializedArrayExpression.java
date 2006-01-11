@@ -13,6 +13,7 @@ import kiev.transf.*;
  *
  */
 
+@nodeset
 public class ASTNewInitializedArrayExpression extends ENode {
 
 	@dflow(out="args") private static class DFI {
@@ -22,7 +23,7 @@ public class ASTNewInitializedArrayExpression extends ENode {
 	@virtual typedef NImpl = ASTNewInitializedArrayExpressionImpl;
 	@virtual typedef VView = ASTNewInitializedArrayExpressionView;
 
-	@node
+	@nodeimpl
 	public static class ASTNewInitializedArrayExpressionImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ASTNewInitializedArrayExpression;
 		@att public int					dim;

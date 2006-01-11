@@ -30,6 +30,7 @@ import syntax kiev.Syntax;
  */
 
 
+@nodeset
 public final class ConstBoolExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -38,7 +39,7 @@ public final class ConstBoolExpr extends ConstExpr {
 	@virtual typedef VView = ConstBoolExprView;
 	@virtual typedef JView = JConstBoolExprView;
 
-	@node
+	@nodeimpl
 	public static class ConstBoolExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstBoolExpr;
 		@att public boolean value;
@@ -71,6 +72,7 @@ public final class ConstBoolExpr extends ConstExpr {
 	}
 }
 
+@nodeset
 public final class ConstNullExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -79,7 +81,7 @@ public final class ConstNullExpr extends ConstExpr {
 	@virtual typedef VView = ConstNullExprView;
 	@virtual typedef JView = JConstNullExprView;
 
-	@node
+	@nodeimpl
 	public static class ConstNullExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstNullExpr;
 		public ConstNullExprImpl() {}
@@ -107,6 +109,7 @@ public final class ConstNullExpr extends ConstExpr {
 	}
 }
 
+@nodeset
 public final class ConstByteExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -115,7 +118,7 @@ public final class ConstByteExpr extends ConstExpr {
 	@virtual typedef VView = ConstByteExprView;
 	@virtual typedef JView = JConstByteExprView;
 
-	@node
+	@nodeimpl
 	public static class ConstByteExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstByteExpr;
 		@att public byte value;
@@ -144,6 +147,7 @@ public final class ConstByteExpr extends ConstExpr {
 	}
 }
 
+@nodeset
 public final class ConstShortExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -152,7 +156,7 @@ public final class ConstShortExpr extends ConstExpr {
 	@virtual typedef VView = ConstShortExprView;
 	@virtual typedef JView = JConstShortExprView;
 
-	@node
+	@nodeimpl
 	public static class ConstShortExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstShortExpr;
 		@att public short value;
@@ -181,6 +185,7 @@ public final class ConstShortExpr extends ConstExpr {
 	}
 }
 
+@nodeset
 public final class ConstIntExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -189,7 +194,7 @@ public final class ConstIntExpr extends ConstExpr {
 	@virtual typedef VView = ConstIntExprView;
 	@virtual typedef JView = JConstIntExprView;
 
-	@node
+	@nodeimpl
 	public static class ConstIntExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstIntExpr;
 		@att public int value;
@@ -218,6 +223,7 @@ public final class ConstIntExpr extends ConstExpr {
 	}
 }
 
+@nodeset
 public final class ConstLongExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -226,7 +232,7 @@ public final class ConstLongExpr extends ConstExpr {
 	@virtual typedef VView = ConstLongExprView;
 	@virtual typedef JView = JConstLongExprView;
 
-	@node
+	@nodeimpl
 	public static class ConstLongExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstLongExpr;
 		@att public long value;
@@ -255,6 +261,7 @@ public final class ConstLongExpr extends ConstExpr {
 	}
 }
 
+@nodeset
 public final class ConstCharExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -263,7 +270,7 @@ public final class ConstCharExpr extends ConstExpr {
 	@virtual typedef VView = ConstCharExprView;
 	@virtual typedef JView = JConstCharExprView;
 
-	@node
+	@nodeimpl
 	public static class ConstCharExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstCharExpr;
 		@att public char value;
@@ -293,6 +300,7 @@ public final class ConstCharExpr extends ConstExpr {
 }
 
 
+@nodeset
 public final class ConstFloatExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -301,7 +309,7 @@ public final class ConstFloatExpr extends ConstExpr {
 	@virtual typedef VView = ConstFloatExprView;
 	@virtual typedef JView = JConstFloatExprView;
 
-	@node
+	@nodeimpl
 	public static class ConstFloatExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstFloatExpr;
 		@att public float value;
@@ -331,6 +339,7 @@ public final class ConstFloatExpr extends ConstExpr {
 }
 
 
+@nodeset
 public final class ConstDoubleExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -339,7 +348,7 @@ public final class ConstDoubleExpr extends ConstExpr {
 	@virtual typedef VView = ConstDoubleExprView;
 	@virtual typedef JView = JConstDoubleExprView;
 
-	@node
+	@nodeimpl
 	public static class ConstDoubleExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstDoubleExpr;
 		@att public double value;
@@ -368,6 +377,7 @@ public final class ConstDoubleExpr extends ConstExpr {
 	}
 }
 
+@nodeset
 public final class ConstStringExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -376,7 +386,7 @@ public final class ConstStringExpr extends ConstExpr {
 	@virtual typedef VView = ConstStringExprView;
 	@virtual typedef JView = JConstStringExprView;
 
-	@node
+	@nodeimpl
 	public static class ConstStringExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstStringExpr;
 		@att public KString value;
@@ -406,14 +416,14 @@ public final class ConstStringExpr extends ConstExpr {
 }
 
 
-
+@nodeset
 public abstract class ConstExpr extends ENode {
 
 	@virtual typedef NImpl = ConstExprImpl;
 	@virtual typedef VView = ConstExprView;
 	@virtual typedef JView = JConstExprView;
 
-	@node
+	@nodeimpl
 	public abstract static class ConstExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ConstExpr;
 		public ConstExprImpl() {}

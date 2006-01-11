@@ -14,6 +14,7 @@ import kiev.vlang.TypeRef.TypeRefView;
  *
  */
 
+@nodeset
 public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -24,7 +25,7 @@ public class TypeExpr extends TypeRef {
 	@virtual typedef NImpl = TypeExprImpl;
 	@virtual typedef VView = TypeExprView;
 
-	@node
+	@nodeimpl
 	public static final class TypeExprImpl extends TypeRefImpl {
 		@virtual typedef ImplOf = TypeExpr;
 		@att public TypeRef					arg;

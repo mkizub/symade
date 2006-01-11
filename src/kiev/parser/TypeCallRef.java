@@ -14,6 +14,7 @@ import kiev.vlang.TypeRef.TypeRefView;
  *
  */
 
+@nodeset
 public class TypeCallRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -21,7 +22,7 @@ public class TypeCallRef extends TypeRef {
 	@virtual typedef NImpl = TypeCallRefImpl;
 	@virtual typedef VView = TypeCallRefView;
 
-	@node
+	@nodeimpl
 	public static final class TypeCallRefImpl extends TypeRefImpl {
 		@virtual typedef ImplOf = TypeCallRef;
 		@ref public NArr<TypeDef>			targs;

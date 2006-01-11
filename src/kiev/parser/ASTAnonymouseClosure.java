@@ -14,6 +14,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -21,7 +22,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 	@virtual typedef NImpl = ASTAnonymouseClosureImpl;
 	@virtual typedef VView = ASTAnonymouseClosureView;
 	
-	@node
+	@nodeimpl
 	public static class ASTAnonymouseClosureImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ASTAnonymouseClosure;
 		@att public NArr<FormPar>				params;

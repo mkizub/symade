@@ -12,6 +12,7 @@ import kiev.stdlib.*;
  *
  */
 
+@nodeset
 public class ASTOperator extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -19,7 +20,7 @@ public class ASTOperator extends ENode {
 	@virtual typedef NImpl = ASTOperatorImpl;
 	@virtual typedef VView = ASTOperatorView;
 
-	@node
+	@nodeimpl
 	static class ASTOperatorImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ASTOperator;
 		@att public KString		image;

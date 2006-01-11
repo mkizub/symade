@@ -18,6 +18,7 @@ import kiev.vlang.VarDecl.VarDeclImpl;
 import kiev.vlang.LocalStructDecl.LocalStructDeclImpl;
 import kiev.vlang.TypeDecl.TypeDeclImpl;
 import kiev.vlang.TypeRef.TypeRefImpl;
+import kiev.vlang.NameRef.NameRefImpl;
 
 @nodeview
 public view JNodeView of NodeImpl implements Constants {
@@ -182,6 +183,15 @@ public abstract view JTypeDeclView of TypeDeclImpl extends JDNodeView {
 @nodeview
 public static final view JTypeRefView of TypeRefImpl extends JENodeView {
 	public access:ro Type	lnk;
+
+	public void generate(Code code, Type reqType) {
+		// don't generate here
+	}
+}
+
+@nodeview
+public static final view JNameRefView of NameRefImpl extends JNodeView {
+	public access:ro KString name;
 
 	public void generate(Code code, Type reqType) {
 		// don't generate here

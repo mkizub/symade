@@ -15,6 +15,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public class ASTCallAccessExpression extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -25,7 +26,7 @@ public class ASTCallAccessExpression extends ENode {
 	@virtual typedef NImpl = ASTCallAccessExpressionImpl;
 	@virtual typedef VView = ASTCallAccessExpressionView;
 
-	@node
+	@nodeimpl
 	public static class ASTCallAccessExpressionImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ASTCallAccessExpression;
 		@att public ENode				obj;

@@ -16,6 +16,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public class ASTIdentifier extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -25,7 +26,7 @@ public class ASTIdentifier extends ENode {
 	@virtual typedef NImpl = ASTIdentifierImpl;
 	@virtual typedef VView = ASTIdentifierView;
 
-	@node
+	@nodeimpl
 	public static class ASTIdentifierImpl extends ENodeImpl {
 		@att public KString name;
 	}

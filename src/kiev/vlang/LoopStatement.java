@@ -27,12 +27,13 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public abstract class LoopStat extends ENode implements BreakTarget, ContinueTarget {
 	@virtual typedef NImpl = LoopStatImpl;
 	@virtual typedef VView = LoopStatView;
 	@virtual typedef JView = JLoopStatView;
 
-	@node
+	@nodeimpl
 	public static abstract class LoopStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = LoopStat;
 		@att(copyable=false)	public Label		lblcnt;
@@ -55,6 +56,7 @@ public abstract class LoopStat extends ENode implements BreakTarget, ContinueTar
 }
 
 
+@nodeset
 public final class Label extends DNode {
 	
 	@dflow(out="this:out()") private static class DFI {}
@@ -63,7 +65,7 @@ public final class Label extends DNode {
 	@virtual typedef VView = LabelView;
 	@virtual typedef JView = JLabelView;
 
-	@node
+	@nodeimpl
 	public final static class LabelImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Label;
 		LabelImpl() {}
@@ -131,6 +133,7 @@ public final class Label extends DNode {
 	}
 }
 
+@nodeset
 public class WhileStat extends LoopStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -144,7 +147,7 @@ public class WhileStat extends LoopStat {
 	@virtual typedef VView = WhileStatView;
 	@virtual typedef JView = JWhileStatView;
 
-	@node
+	@nodeimpl
 	public static final class WhileStatImpl extends LoopStatImpl {
 		@virtual typedef ImplOf = WhileStat;
 		@att public ENode		cond;
@@ -196,6 +199,7 @@ public class WhileStat extends LoopStat {
 	}
 }
 
+@nodeset
 public class DoWhileStat extends LoopStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -209,7 +213,7 @@ public class DoWhileStat extends LoopStat {
 	@virtual typedef VView = DoWhileStatView;
 	@virtual typedef JView = JDoWhileStatView;
 
-	@node
+	@nodeimpl
 	public static final class DoWhileStatImpl extends LoopStatImpl {
 		@virtual typedef ImplOf = DoWhileStat;
 		@att public ENode		cond;
@@ -267,6 +271,7 @@ public class DoWhileStat extends LoopStat {
 	}
 }
 
+@nodeset
 public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="decls") private static class DFI {
@@ -277,7 +282,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef VView = ForInitView;
 	@virtual typedef JView = JForInitView;
 
-	@node
+	@nodeimpl
 	public static final class ForInitImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ForInit;
 		@att public final NArr<Var>		decls;
@@ -336,6 +341,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
+@nodeset
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -351,7 +357,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef VView = ForStatView;
 	@virtual typedef JView = JForStatView;
 
-	@node
+	@nodeimpl
 	public static final class ForStatImpl extends LoopStatImpl {
 		@virtual typedef ImplOf = ForStat;
 		@att public ENode		init;
@@ -463,6 +469,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
+@nodeset
 public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -490,7 +497,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	@virtual typedef VView = ForEachStatView;
 	@virtual typedef JView = JForEachStatView;
 
-	@node
+	@nodeimpl
 	public static final class ForEachStatImpl extends LoopStatImpl {
 		@virtual typedef ImplOf = ForEachStat;
 		@att public int			mode;

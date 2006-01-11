@@ -32,6 +32,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public class InlineMethodStat extends ENode implements ScopeOfNames {
 	
 	@dflow(in="root()", out="this:out()") private static class DFI {}
@@ -46,7 +47,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	@virtual typedef VView = InlineMethodStatView;
 	@virtual typedef JView = JInlineMethodStatView;
 
-	@node
+	@nodeimpl
 	public static final class InlineMethodStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = InlineMethodStat;
 		@att public Method			method;
@@ -162,6 +163,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	}
 }
 
+@nodeset
 public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -172,7 +174,7 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef VView = BlockStatView;
 	@virtual typedef JView = JBlockStatView;
 
-	@node
+	@nodeimpl
 	public static class BlockStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = BlockStat;
 		@att public NArr<ENode>		stats;
@@ -353,6 +355,7 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 }
 
+@nodeset
 public class EmptyStat extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -361,7 +364,7 @@ public class EmptyStat extends ENode {
 	@virtual typedef VView = EmptyStatView;
 	@virtual typedef JView = JEmptyStatView;
 
-	@node
+	@nodeimpl
 	public static class EmptyStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = EmptyStat;
 		public EmptyStatImpl() {}
@@ -391,6 +394,7 @@ public class EmptyStat extends ENode {
 	}
 }
 
+@nodeset
 public class ExprStat extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -401,7 +405,7 @@ public class ExprStat extends ENode {
 	@virtual typedef VView = ExprStatView;
 	@virtual typedef JView = JExprStatView;
 
-	@node
+	@nodeimpl
 	public static final class ExprStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ExprStat;
 		@att public ENode	expr;
@@ -451,6 +455,7 @@ public class ExprStat extends ENode {
 	}
 }
 
+@nodeset
 public class ReturnStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
@@ -461,7 +466,7 @@ public class ReturnStat extends ENode {
 	@virtual typedef VView = ReturnStatView;
 	@virtual typedef JView = JReturnStatView;
 
-	@node
+	@nodeimpl
 	public static final class ReturnStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ReturnStat;
 		@att public ENode	expr;
@@ -514,6 +519,7 @@ public class ReturnStat extends ENode {
 	}
 }
 
+@nodeset
 public class ThrowStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
@@ -524,7 +530,7 @@ public class ThrowStat extends ENode {
 	@virtual typedef VView = ThrowStatView;
 	@virtual typedef JView = JThrowStatView;
 
-	@node
+	@nodeimpl
 	public static final class ThrowStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ThrowStat;
 		@att public ENode	expr;
@@ -566,6 +572,7 @@ public class ThrowStat extends ENode {
 	}
 }
 
+@nodeset
 public class IfElseStat extends ENode {
 	
 	@dflow(out="join thenSt elseSt") private static class DFI {
@@ -578,7 +585,7 @@ public class IfElseStat extends ENode {
 	@virtual typedef VView = IfElseStatView;
 	@virtual typedef JView = JIfElseStatView;
 
-	@node
+	@nodeimpl
 	public static class IfElseStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = IfElseStat;
 		@att public ENode			cond;
@@ -663,6 +670,7 @@ public class IfElseStat extends ENode {
 	}
 }
 
+@nodeset
 public class CondStat extends ENode {
 	
 	@dflow(out="cond:true") private static class DFI {
@@ -674,7 +682,7 @@ public class CondStat extends ENode {
 	@virtual typedef VView = CondStatView;
 	@virtual typedef JView = JCondStatView;
 
-	@node
+	@nodeimpl
 	public static class CondStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = CondStat;
 		@att public ENode			cond;
@@ -723,6 +731,7 @@ public class CondStat extends ENode {
 	}
 }
 
+@nodeset
 public class LabeledStat extends ENode implements Named {
 	
 	@dflow(out="stat") private static class DFI {
@@ -736,7 +745,7 @@ public class LabeledStat extends ENode implements Named {
 	@virtual typedef VView = LabeledStatView;
 	@virtual typedef JView = JLabeledStatView;
 
-	@node
+	@nodeimpl
 	public static class LabeledStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = LabeledStat;
 		@att                 public NameRef		ident;
@@ -776,6 +785,7 @@ public class LabeledStat extends ENode implements Named {
 	}
 }
 
+@nodeset
 public class BreakStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -784,7 +794,7 @@ public class BreakStat extends ENode {
 	@virtual typedef VView = BreakStatView;
 	@virtual typedef JView = JBreakStatView;
 
-	@node
+	@nodeimpl
 	public static class BreakStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = BreakStat;
 		@att public NameRef		ident;
@@ -931,6 +941,7 @@ public class BreakStat extends ENode {
 	}
 }
 
+@nodeset
 public class ContinueStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -939,7 +950,7 @@ public class ContinueStat extends ENode {
 	@virtual typedef VView = ContinueStatView;
 	@virtual typedef JView = JContinueStatView;
 
-	@node
+	@nodeimpl
 	public static class ContinueStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ContinueStat;
 		@att public NameRef		ident;
@@ -1029,6 +1040,7 @@ public class ContinueStat extends ENode {
 	}
 }
 
+@nodeset
 public class GotoStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -1037,7 +1049,7 @@ public class GotoStat extends ENode {
 	@virtual typedef VView = GotoStatView;
 	@virtual typedef JView = JGotoStatView;
 
-	@node
+	@nodeimpl
 	public static class GotoStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = GotoStat;
 		@att public NameRef		ident;
@@ -1204,6 +1216,7 @@ public class GotoStat extends ENode {
 	}
 }
 
+@nodeset
 public class GotoCaseStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
@@ -1214,7 +1227,7 @@ public class GotoCaseStat extends ENode {
 	@virtual typedef VView = GotoCaseStatView;
 	@virtual typedef JView = JGotoCaseStatView;
 
-	@node
+	@nodeimpl
 	public static class GotoCaseStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = GotoCaseStat;
 		@att public ENode		expr;

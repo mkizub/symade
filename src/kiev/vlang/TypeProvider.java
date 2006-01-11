@@ -106,18 +106,18 @@ public final class TVarSet {
 		if (ASSERT_MORE) checkIntegrity();
 	}
 	
-	public void set(TVar v, Type bnd)
+	public boolean set(TVar v, Type bnd)
 		require { v.set == this && bnd != null; }
 	{
 		TVar[] tvars = this.tvars;
 		if (v.bound() ≡ bnd)
-			return; // ignore duplicated alias
+			return false; // ignore duplicated alias
 		while (v.isAlias()) {
 			TVarAlias va = (TVarAlias)v;
 			// alias of another var, must point to 
 			v = va.bnd;
 			if (v.bound() ≡ bnd)
-				return; // ignore duplicated alias
+				return false; // ignore duplicated alias
 		}
 		// non-aliased var, just bind or alias it
 		final int n = tvars.length;
@@ -134,16 +134,18 @@ public final class TVarSet {
 					for (i=0; i < n; i++)
 						this.tvars[i].resolve(i);
 					if (ASSERT_MORE) checkIntegrity();
-					return;
+					return true;
 				}
 			}
 		}
+		if (v instanceof TVarBound && v.bnd ≡ bnd)
+			return false;
 		// not an alias, just bind
 		tvars[v.idx] = new TVarBound(this,v.idx,v.var,bnd);
 		for (int i=0; i < n; i++)
 			this.tvars[i].resolve(i);
 		if (ASSERT_MORE) checkIntegrity();
-		return;
+		return true;
 	}
 
 	// Bind free (unbound) variables of current type to values
@@ -169,6 +171,7 @@ public final class TVarSet {
 		final int my_size = my_vars.length;
 		final int vs_size = vs_vars.length;
 		TVarSet sr = this.copy();
+		boolean modified = false;
 
 	next_my:
 		for(int i=0; i < my_size; i++) {
@@ -182,7 +185,7 @@ public final class TVarSet {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(sr.tvars[i], y.result());
+						modified |= sr.set(sr.tvars[i], y.result());
 						continue next_my;
 					}
 				}
@@ -190,24 +193,26 @@ public final class TVarSet {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (y.var.definer == null) {
-						sr.set(sr.tvars[i], y.result());
+						modified |= sr.set(sr.tvars[i], y.result());
 						continue next_my;
 					}
 				}
 				// bind to itself
-				sr.set(sr.tvars[i], sr.tvars[i].result());
+				modified |= sr.set(sr.tvars[i], sr.tvars[i].result());
 			}
 			// bind virtual aliases
 			if (x.var.isVirtual()) {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(sr.tvars[i], y.result());
+						modified |= sr.set(sr.tvars[i], y.result());
 						continue next_my;
 					}
 				}
 			}
 		}
+		if (!modified)
+			return this;
 		if (ASSERT_MORE) sr.checkIntegrity();
 		return sr;
 	}
@@ -219,6 +224,7 @@ public final class TVarSet {
 		final int my_size = my_vars.length;
 		final int vs_size = vs_vars.length;
 		TVarSet sr = this.copy();
+		boolean modified = false;
 
 	next_my:
 		for(int i=0; i < my_size; i++) {
@@ -228,7 +234,7 @@ public final class TVarSet {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(sr.tvars[i], y.result());
+						modified |= sr.set(sr.tvars[i], y.result());
 						continue next_my;
 					}
 				}
@@ -239,13 +245,15 @@ public final class TVarSet {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
-						sr.set(sr.tvars[i], y.result());
+						modified |= sr.set(sr.tvars[i], y.result());
 						continue next_my;
 					}
 				}
 				continue next_my;
 			}
 		}
+		if (!modified)
+			return this;
 		if (ASSERT_MORE) sr.checkIntegrity();
 		return sr;
 	}
@@ -279,28 +287,32 @@ public final class TVarSet {
 		final int my_size = my_vars.length;
 		final int vs_size = vs_vars.length;
 		TVarSet sr = this.copy();
+		boolean modified = false;
+
 	next_my:
 		for(int i=0; i < my_size; i++) {
 			TVar x = my_vars[i];
 			Type bnd = x.bound();
-			if (bnd == null || !bnd.isAbstract())
+			if (bnd == null)
 				continue;
 			if (bnd instanceof ArgType) {
 				for(int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (bnd ≡ y.var) {
 						// re-bind
-						sr.set(sr.tvars[i], y.result());
+						modified |= sr.set(sr.tvars[i], y.result());
 						continue next_my;
 					}
 				}
 			} else {
 				// recursive
 				Type t = bnd.applay(vs);
-				if (t ≉ bnd)
-					sr.set(sr.tvars[i], t);
+				if (t ≢ bnd)
+					modified |= sr.set(sr.tvars[i], t);
 			}
 		}
+		if (!modified)
+			return this;
 		if (ASSERT_MORE) sr.checkIntegrity();
 		return sr;
 	}
@@ -483,17 +495,27 @@ public class CompaundTypeProvider extends TypeProvider {
 	}
 	
 	public Type bind(Type t, TVarSet bindings) {
-		if (!t.isAbstract()) return t;
-		return new ConcreteType(this, t.bindings().bind(bindings));
+		if (t.bindings().length == 0 || bindings.length == 0) return t;
+		TVarSet vs = t.bindings().bind(bindings);
+		if (vs == t.bindings())
+			return t;
+		return new ConcreteType(this, vs);
 	}
 	
 	public Type rebind(Type t, TVarSet bindings) {
-		return new ConcreteType(this, t.bindings().rebind(bindings));
+		if (t.bindings().length == 0 || bindings.length == 0) return t;
+		TVarSet vs = t.bindings().rebind(bindings);
+		if (vs == t.bindings())
+			return t;
+		return new ConcreteType(this, vs);
 	}
 	
 	public Type applay(Type t, TVarSet bindings) {
-		if (!t.isAbstract() || bindings.length == 0) return t;
-		return new ConcreteType(this, t.bindings().applay(bindings));
+		if (t.bindings().length == 0 || bindings.length == 0) return t;
+		TVarSet vs = t.bindings().applay(bindings);
+		if (vs == t.bindings())
+			return t;
+		return new ConcreteType(this, vs);
 	}
 	
 }
@@ -508,8 +530,12 @@ public class ArrayTypeProvider extends TypeProvider {
 		throw new RuntimeException("rebind() in ArrayType");
 	}
 	public Type applay(Type t, TVarSet bindings) {
-		if( !t.isAbstract() || bindings.length == 0 ) return t;
-		return ArrayType.newArrayType(((ArrayType)t).arg.applay(bindings));
+		if (bindings.length == 0) return t;
+		ArrayType arr = (ArrayType)t;
+		Type arg = arr.arg.applay(bindings);
+		if (arg ≡ arr.arg)
+			return arr;
+		return ArrayType.newArrayType(arg);
 	}
 }
 
@@ -548,14 +574,28 @@ public class WrapperTypeProvider extends TypeProvider {
 		this.field = clazz.getWrappedField(true);
 	}
 	public Type bind(Type t, TVarSet bindings) {
-		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().bind(bindings));
+		if (bindings.length == 0) return t;
+		WrapperType wrp = (WrapperType)t;
+		Type arg = wrp.getUnwrappedType().bind(bindings);
+		if (arg ≡ wrp.getUnwrappedType())
+			return wrp;
+		return WrapperType.newWrapperType(arg);
 	}
 	public Type rebind(Type t, TVarSet bindings) {
-		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().rebind(bindings));
+		if (bindings.length == 0) return t;
+		WrapperType wrp = (WrapperType)t;
+		Type arg = wrp.getUnwrappedType().rebind(bindings);
+		if (arg ≡ wrp.getUnwrappedType())
+			return wrp;
+		return WrapperType.newWrapperType(arg);
 	}
 	public Type applay(Type t, TVarSet bindings) {
-		if (!t.isAbstract() || bindings.length == 0) return t;
-		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().applay(bindings));
+		if (bindings.length == 0) return t;
+		WrapperType wrp = (WrapperType)t;
+		Type arg = wrp.getUnwrappedType().applay(bindings);
+		if (arg ≡ wrp.getUnwrappedType())
+			return wrp;
+		return WrapperType.newWrapperType(arg);
 	}
 }
 
@@ -572,14 +612,28 @@ public class OuterTypeProvider extends TypeProvider {
 		this.tdef = tdef;
 	}
 	public Type bind(Type t, TVarSet bindings) {
-		return OuterType.newOuterType(clazz,((OuterType)t).outer.bind(bindings));
+		if (bindings.length == 0) return t;
+		OuterType out = (OuterType)t;
+		Type arg = out.outer.bind(bindings);
+		if (arg ≡ out.outer)
+			return out;
+		return OuterType.newOuterType(clazz,arg);
 	}
 	public Type rebind(Type t, TVarSet bindings) {
-		return OuterType.newOuterType(clazz,((OuterType)t).outer.rebind(bindings));
+		if (bindings.length == 0) return t;
+		OuterType out = (OuterType)t;
+		Type arg = out.outer.rebind(bindings);
+		if (arg ≡ out.outer)
+			return out;
+		return OuterType.newOuterType(clazz,arg);
 	}
 	public Type applay(Type t, TVarSet bindings) {
-		if (!t.isAbstract() || bindings.length == 0) return t;
-		return OuterType.newOuterType(clazz,((OuterType)t).outer.applay(bindings));
+		if (bindings.length == 0) return t;
+		OuterType out = (OuterType)t;
+		Type arg = out.outer.applay(bindings);
+		if (arg ≡ out.outer)
+			return out;
+		return OuterType.newOuterType(clazz,arg);
 	}
 }
 
@@ -587,28 +641,40 @@ public class CallTypeProvider extends TypeProvider {
 	public static final CallTypeProvider instance = new CallTypeProvider();
 	private CallTypeProvider() {}
 	public Type bind(Type t, TVarSet bindings) {
-		if (!t.isAbstract() || bindings.length == 0 || t.bindings().length == 0) return t;
+		if (bindings.length == 0 || t.bindings().length == 0) return t;
 		if!(t instanceof MethodType) return t;
 		MethodType mt = (MethodType)t;
-		mt = new MethodType(mt.bindings().bind(bindings),mt.args,mt.ret);
-		mt = (MethodType)this.applay(mt,mt.bindings());
-		return mt;
+		TVarSet vs = mt.bindings().bind(bindings);
+		if (vs == mt.bindings())
+			return mt;
+		mt = new MethodType(vs,mt.args,mt.ret);
+		return this.applay(mt,mt.bindings());
 	}
 	public Type rebind(Type t, TVarSet bindings) {
-		if (!t.isAbstract() || bindings.length == 0 || t.bindings().length == 0) return t;
+		if (bindings.length == 0 || t.bindings().length == 0) return t;
 		if!(t instanceof MethodType) return t;
 		MethodType mt = (MethodType)t;
-		mt = new MethodType(mt.bindings().rebind(bindings),mt.args,mt.ret);
-		mt = (MethodType)this.applay(mt,mt.bindings());
-		return mt;
+		TVarSet vs = mt.bindings().rebind(bindings);
+		if (vs == mt.bindings())
+			return mt;
+		mt = new MethodType(vs,mt.args,mt.ret);
+		return this.applay(mt,mt.bindings());
 	}
 	public Type applay(Type t, TVarSet bindings) {
-		if( !t.isAbstract() || bindings.length == 0 ) return t;
+		if (bindings.length == 0) return t;
+		boolean modified = false;
 		CallableType ct = (CallableType)t;
 		Type[] tpargs = new Type[ct.args.length];
-		for(int i=0; i < tpargs.length; i++)
+		for(int i=0; i < tpargs.length; i++) {
 			tpargs[i] = ct.args[i].applay(bindings);
+			if (tpargs[i] ≢ ct.args[i])
+				modified = true;
+		}
 		Type ret = ct.ret.applay(bindings);
+		if (ret ≢ ct.ret)
+			modified = true;
+		if (!modified)
+			return t;
 		if (t instanceof MethodType)
 			return new MethodType(tpargs,ret);
 		else if (t instanceof ClosureType)

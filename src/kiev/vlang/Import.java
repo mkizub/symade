@@ -15,6 +15,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public final class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
@@ -28,7 +29,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 	@virtual typedef NImpl = ImportImpl;
 	@virtual typedef VView = ImportView;
 
-	@node
+	@nodeimpl
 	static final class ImportImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Import;
 		ImportImpl() {}
@@ -172,6 +173,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 
 }
 
+@nodeset
 public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -179,7 +181,7 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 	@virtual typedef NImpl = TypeOpDefImpl;
 	@virtual typedef VView = TypeOpDefView;
 
-	@node
+	@nodeimpl
 	static final class TypeOpDefImpl extends TypeDeclImpl {
 		@virtual typedef ImplOf = TypeOpDef;
 		TypeOpDefImpl() {}

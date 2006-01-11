@@ -20,13 +20,14 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
 
 	@virtual typedef NImpl = FileUnitImpl;
 	@virtual typedef VView = FileUnitView;
 	@virtual typedef JView = JFileUnitView;
 
-	@node
+	@nodeimpl
 	public static class FileUnitImpl extends DNodeImpl {
 		@virtual typedef ImplOf = FileUnit;
 		FileUnitImpl() {}

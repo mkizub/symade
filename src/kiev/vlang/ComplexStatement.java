@@ -27,6 +27,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public class CaseLabel extends ENode implements ScopeOfNames {
 	
 	@dflow(in="this:in()", out="stats") private static class DFI {
@@ -40,7 +41,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	@virtual typedef VView = CaseLabelView;
 	@virtual typedef JView = JCaseLabelView;
 
-	@node
+	@nodeimpl
 	public static final class CaseLabelImpl extends ENodeImpl {
 		@virtual typedef ImplOf = CaseLabel;
 		@att public ENode			val;
@@ -229,6 +230,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	}
 }
 
+@nodeset
 public class SwitchStat extends ENode implements BreakTarget {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -247,7 +249,7 @@ public class SwitchStat extends ENode implements BreakTarget {
 	@virtual typedef VView = SwitchStatView;
 	@virtual typedef JView = JSwitchStatView;
 
-	@node
+	@nodeimpl
 	public static class SwitchStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = SwitchStat;
 		@att                 public int mode; /* = NORMAL_SWITCH; */
@@ -523,6 +525,7 @@ public class SwitchStat extends ENode implements BreakTarget {
 	}
 }
 
+@nodeset
 public class CatchInfo extends ENode implements ScopeOfNames {
 	
 	@dflow(out="body") private static class DFI {
@@ -536,7 +539,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	@virtual typedef VView = CatchInfoView;
 	@virtual typedef JView = JCatchInfoView;
 
-	@node
+	@nodeimpl
 	public static class CatchInfoImpl extends ENodeImpl {
 		@virtual typedef ImplOf = CatchInfo;
 		@att public Var				arg;
@@ -587,6 +590,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	}
 }
 
+@nodeset
 public class FinallyInfo extends CatchInfo {
 	
 	@dflow(out="body") private static class DFI {
@@ -598,7 +602,7 @@ public class FinallyInfo extends CatchInfo {
 	@virtual typedef VView = FinallyInfoView;
 	@virtual typedef JView = JFinallyInfoView;
 
-	@node
+	@nodeimpl
 	public static class FinallyInfoImpl extends CatchInfoImpl {
 		@virtual typedef ImplOf = FinallyInfo;
 		@att public Var			ret_arg;
@@ -635,6 +639,7 @@ public class FinallyInfo extends CatchInfo {
 
 }
 
+@nodeset
 public class TryStat extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -647,7 +652,7 @@ public class TryStat extends ENode {
 	@virtual typedef VView = TryStatView;
 	@virtual typedef JView = JTryStatView;
 
-	@node
+	@nodeimpl
 	public static final class TryStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = TryStat;
 		@att public ENode				body;
@@ -723,6 +728,7 @@ public class TryStat extends ENode {
 
 }
 
+@nodeset
 public class SynchronizedStat extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -734,7 +740,7 @@ public class SynchronizedStat extends ENode {
 	@virtual typedef VView = SynchronizedStatView;
 	@virtual typedef JView = JSynchronizedStatView;
 
-	@node
+	@nodeimpl
 	public static final class SynchronizedStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = SynchronizedStat;
 		@att public ENode			expr;
@@ -780,6 +786,7 @@ public class SynchronizedStat extends ENode {
 
 }
 
+@nodeset
 public class WithStat extends ENode {
 
 	@dflow(out="body") private static class DFI {
@@ -791,7 +798,7 @@ public class WithStat extends ENode {
 	@virtual typedef VView = WithStatView;
 	@virtual typedef JView = JWithStatView;
 
-	@node
+	@nodeimpl
 	public static final class WithStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = WithStat;
 		@att public ENode		expr;

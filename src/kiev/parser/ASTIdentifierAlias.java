@@ -13,13 +13,14 @@ import kiev.transf.*;
  *
  */
 
+@nodeset
 public abstract class ASTAlias extends ASTNode {
 	public static ASTAlias[]	emptyArray = new ASTAlias[0];
 	
 	@virtual typedef NImpl = ASTAliasImpl;
 	@virtual typedef VView = ASTAliasView;
 
-	@node
+	@nodeimpl
 	public static class ASTAliasImpl extends NodeImpl {
 		@virtual typedef ImplOf = ASTAlias;
 	}
@@ -34,12 +35,13 @@ public abstract class ASTAlias extends ASTNode {
 
 }
 
+@nodeset
 public final class ASTIdentifierAlias extends ASTAlias {
 
 	@virtual typedef NImpl = ASTIdentifierAliasImpl;
 	@virtual typedef VView = ASTIdentifierAliasView;
 
-	@node
+	@nodeimpl
 	public static class ASTIdentifierAliasImpl extends ASTAliasImpl {
 		@virtual typedef ImplOf = ASTIdentifierAlias;
 		@att public NameRef		name;

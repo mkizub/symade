@@ -13,12 +13,13 @@ import syntax kiev.Syntax;
  */
 
 // Meta information about a node
+@nodeset
 public final class MetaSet extends ASTNode {
 	
 	@virtual typedef NImpl = MetaSetImpl;
 	@virtual typedef VView = MetaSetView;
 
-	@node
+	@nodeimpl
 	public static final class MetaSetImpl extends NodeImpl {
 		@virtual typedef ImplOf = MetaSet;
 		@att public NArr<Meta>			metas;
@@ -141,13 +142,14 @@ public final class MetaValueType {
 	}
 }
 
+@nodeset
 public class Meta extends ENode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
 	@virtual typedef NImpl = MetaImpl;
 	@virtual typedef VView = MetaView;
 
-	@node
+	@nodeimpl
 	public static class MetaImpl extends ENodeImpl {
 		@virtual typedef ImplOf = Meta;
 		@att public TypeRef					type;
@@ -453,13 +455,14 @@ public class Meta extends ENode {
 	}
 }
 
+@nodeset
 public abstract class MetaValue extends ASTNode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
 	@virtual typedef NImpl = MetaValueImpl;
 	@virtual typedef VView = MetaValueView;
 
-	@node
+	@nodeimpl
 	public static abstract class MetaValueImpl extends NodeImpl {
 		@virtual typedef ImplOf = MetaValue;
 		@att public MetaValueType			type;
@@ -529,12 +532,13 @@ public abstract class MetaValue extends ASTNode {
 	public abstract boolean valueEquals(MetaValue mv);
 }
 
+@nodeset
 public final class MetaValueScalar extends MetaValue {
 
 	@virtual typedef NImpl = MetaValueScalarImpl;
 	@virtual typedef VView = MetaValueScalarView;
 
-	@node
+	@nodeimpl
 	public static final class MetaValueScalarImpl extends MetaValueImpl {
 		@virtual typedef ImplOf = MetaValueScalar;
 		@att public ENode			value;
@@ -587,12 +591,13 @@ public final class MetaValueScalar extends MetaValue {
 	}
 }
 
+@nodeset
 public final class MetaValueArray extends MetaValue {
 
 	@virtual typedef NImpl = MetaValueArrayImpl;
 	@virtual typedef VView = MetaValueArrayView;
 
-	@node
+	@nodeimpl
 	public static final class MetaValueArrayImpl extends MetaValueImpl {
 		@virtual typedef ImplOf = MetaValueArray;
 		@att public NArr<ENode>			values;

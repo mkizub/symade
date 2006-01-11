@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public final class ASTOperatorAlias extends ASTAlias {
 	public static final int	XFIX_UNKNOWN = 0;
 	public static final int	XFIX_PREFIX  = 1;
@@ -26,7 +27,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 	@virtual typedef NImpl = ASTOperatorAliasImpl;
 	@virtual typedef VView = ASTOperatorAliasView;
 
-	@node
+	@nodeimpl
 	public static class ASTOperatorAliasImpl extends ASTAliasImpl {
 		@virtual typedef ImplOf = ASTOperatorAlias;
 		@att public int					prior;

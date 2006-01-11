@@ -13,6 +13,7 @@ import kiev.transf.*;
  *
  */
 
+@nodeset
 public class ASTCastOperator extends ASTOperator {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -22,7 +23,7 @@ public class ASTCastOperator extends ASTOperator {
 	@virtual typedef NImpl = ASTCastOperatorImpl;
 	@virtual typedef VView = ASTCastOperatorView;
 
-	@node
+	@nodeimpl
 	public static class ASTCastOperatorImpl extends ASTOperatorImpl {
 		@virtual typedef ImplOf = ASTCastOperator;
 		@att public TypeRef	type;

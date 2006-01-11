@@ -23,6 +23,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public final class ProjectFile extends ASTNode {
 	public ClazzName	name;
 	public File			file;
@@ -55,6 +56,7 @@ public final class ProjectFile extends ASTNode {
 	static methods and data for kiev compiler
  */
 
+@nodeset
 public class Env extends Struct {
 
 	/** Hashtable of all defined and loaded classes */

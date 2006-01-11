@@ -24,6 +24,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public final class NewExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -34,7 +35,7 @@ public final class NewExpr extends ENode {
 	@virtual typedef VView = NewExprView;
 	@virtual typedef JView = JNewExprView;
 
-	@node
+	@nodeimpl
 	public static final class NewExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = NewExpr;
 		@att public TypeRef				type;
@@ -220,6 +221,7 @@ public final class NewExpr extends ENode {
 	}
 }
 
+@nodeset
 public final class NewArrayExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -230,7 +232,7 @@ public final class NewArrayExpr extends ENode {
 	@virtual typedef VView = NewArrayExprView;
 	@virtual typedef JView = JNewArrayExprView;
 
-	@node
+	@nodeimpl
 	public static final class NewArrayExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = NewArrayExpr;
 		@att public TypeRef				type;
@@ -330,6 +332,7 @@ public final class NewArrayExpr extends ENode {
 	}
 }
 
+@nodeset
 public final class NewInitializedArrayExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -340,7 +343,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	@virtual typedef VView = NewInitializedArrayExprView;
 	@virtual typedef JView = JNewInitializedArrayExprView;
 
-	@node
+	@nodeimpl
 	public static final class NewInitializedArrayExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = NewInitializedArrayExpr;
 		@att public TypeRef				type;
@@ -426,6 +429,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	}
 }
 
+@nodeset
 public final class NewClosure extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -434,7 +438,7 @@ public final class NewClosure extends ENode {
 	@virtual typedef VView = NewClosureView;
 	@virtual typedef JView = JNewClosureView;
 
-	@node
+	@nodeimpl
 	public static final class NewClosureImpl extends ENodeImpl {
 		@virtual typedef ImplOf = NewClosure;
 		@att public TypeClosureRef		type;

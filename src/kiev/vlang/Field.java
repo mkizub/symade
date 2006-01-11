@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
@@ -28,7 +29,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	@virtual typedef VView = FieldView;
 	@virtual typedef JView = JFieldView;
 
-	@node
+	@nodeimpl
 	public static class FieldImpl extends LvalDNodeImpl {
 		@virtual typedef ImplOf = Field;
 		public FieldImpl() {}
@@ -105,6 +106,9 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+
+	@getter public Access			get$acc()			{ return this.getVView().acc; }
+	@setter public void set$acc(Access val)			{ this.getVView().acc = val; }
 
 	public Field() { super(new FieldImpl()); }
 	

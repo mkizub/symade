@@ -20,6 +20,7 @@ import syntax kiev.Syntax;
  */
 
 
+@nodeset
 public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 	
 	@dflow(in="root()") private static class DFI {
@@ -30,7 +31,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@virtual typedef VView = StructView;
 	@virtual typedef JView = JStructView;
 
-	@node(copyable=false)
+	@nodeimpl
 	public static final class StructImpl extends TypeDeclImpl {
 		@virtual typedef ImplOf = Struct;
 		public StructImpl() {}
@@ -278,6 +279,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+
+	@getter public Access			get$acc()			{ return this.getVView().acc; }
+	@setter public void set$acc(Access val)			{ this.getVView().acc = val; }
 
 	Struct() {
 		super(new StructImpl(0,0));

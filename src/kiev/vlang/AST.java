@@ -19,6 +19,7 @@ import kiev.be.java.JLocalStructDeclView;
 import kiev.be.java.JLvalueExprView;
 import kiev.be.java.JTypeDeclView;
 import kiev.be.java.JTypeRefView;
+import kiev.be.java.JNameRefView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -47,6 +48,7 @@ public enum TopLevelPass {
 
 public interface NodeData {
 	public KString	getNodeDataId();
+	public NodeData nodeCopiedTo(NodeImpl node);
 	public void nodeAttached(NodeImpl node);
 	public void dataAttached(NodeImpl node);
 	public void nodeDetached(NodeImpl node);
@@ -59,6 +61,7 @@ public class TreeWalker {
 	public void post_exec(ASTNode n) {}
 }
 
+@nodeset
 public abstract class ASTNode implements Constants, Cloneable {
 
 	@virtual typedef NImpl = NodeImpl;
@@ -68,6 +71,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 	public static ASTNode[] emptyArray = new ASTNode[0];
     public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
 
+	@nodeimpl
 	public static class NodeImpl {
 		@virtual typedef ImplOf  = ASTNode;
 		public		ImplOf			_self;		
@@ -157,8 +161,23 @@ public abstract class ASTNode implements Constants, Cloneable {
 			NodeImpl node = (NodeImpl)to$node;
 			node.pos			= this.pos;
 			node.compileflags	= this.compileflags;
-			if (this.ndata != null)
-				node.ndata = (NodeData[])this.ndata.clone();
+			if (this.ndata != null) {
+				for (int i=0; i < this.ndata.length; i++) {
+					NodeData nd = this.ndata[i].nodeCopiedTo(node);
+					if (nd == null)
+						continue;
+					if (node.ndata == null) {
+						node.ndata = new NodeData[]{nd};
+					} else {
+						int sz = node.ndata.length;
+						NodeData[] tmp = new NodeData[sz+1];
+						for (int j=0; j < sz; j++)
+							tmp[j] = node.ndata[j];
+						tmp[sz] = nd;
+						node.ndata = tmp;
+					}
+				}
+			}
 			return node;
 		}
 
@@ -559,6 +578,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 /**
  * A node that is a declaration: class, formal parameters and vars, methods, fields, etc.
  */
+@nodeset
 public abstract class DNode extends ASTNode {
 
 	@virtual typedef NImpl = DNodeImpl;
@@ -567,7 +587,7 @@ public abstract class DNode extends ASTNode {
 	
 	public static final DNode[] emptyArray = new DNode[0];
 	
-	@node
+	@nodeimpl
 	public static class DNodeImpl extends NodeImpl {		
 		@virtual typedef ImplOf  = DNode;
 		     public		int			flags;
@@ -793,13 +813,14 @@ public abstract class DNode extends ASTNode {
 /**
  * An lvalue dnode (var or field)
  */
+@nodeset
 public abstract class LvalDNode extends DNode {
 
 	@virtual typedef NImpl = LvalDNodeImpl;
 	@virtual typedef VView = LvalDNodeView;
 	@virtual typedef JView = JLvalDNodeView;
 
-	@node
+	@nodeimpl
 	public static class LvalDNodeImpl extends DNodeImpl {
 		@virtual typedef ImplOf = LvalDNode;
 		public LvalDNodeImpl() {}
@@ -845,6 +866,7 @@ public abstract class LvalDNode extends DNode {
  * A node that may be part of expression: statements, declarations, operators,
  * type reference, and expressions themselves
  */
+@nodeset
 public /*abstract*/ class ENode extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -853,7 +875,7 @@ public /*abstract*/ class ENode extends ASTNode {
 	@virtual typedef VView = ENodeView;
 	@virtual typedef JView = JENodeView;
 
-	@node
+	@nodeimpl
 	public static class ENodeImpl extends NodeImpl {
 		@virtual typedef ImplOf = ENode;
 		public ENodeImpl() {}
@@ -1065,6 +1087,7 @@ public /*abstract*/ class ENode extends ASTNode {
 
 }
 
+@nodeset
 public final class VarDecl extends ENode implements Named {
 
 	@dflow(out="var") private static class DFI {
@@ -1075,7 +1098,7 @@ public final class VarDecl extends ENode implements Named {
 	@virtual typedef VView = VarDeclView;
 	@virtual typedef JView = JVarDeclView;
 
-	@node
+	@nodeimpl
 	public static final class VarDeclImpl extends ENodeImpl {
 		@virtual typedef ImplOf = VarDecl;
 		public VarDeclImpl() {}
@@ -1111,6 +1134,7 @@ public final class VarDecl extends ENode implements Named {
 	
 }
 
+@nodeset
 public final class LocalStructDecl extends ENode implements Named {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -1119,7 +1143,7 @@ public final class LocalStructDecl extends ENode implements Named {
 	@virtual typedef VView = LocalStructDeclView;
 	@virtual typedef JView = JLocalStructDeclView;
 
-	@node
+	@nodeimpl
 	public static final class LocalStructDeclImpl extends ENodeImpl {
 		@virtual typedef ImplOf = LocalStructDecl;
 		public LocalStructDeclImpl() {}
@@ -1164,6 +1188,7 @@ public final class LocalStructDecl extends ENode implements Named {
 }
 
 
+@nodeset
 public final class NopExpr extends ENode {
 
 	@dflow(out="expr") private static class DFI {
@@ -1173,7 +1198,7 @@ public final class NopExpr extends ENode {
 	@virtual typedef NImpl = NopExprImpl;
 	@virtual typedef VView = NopExprView;
 
-	@node
+	@nodeimpl
 	public static final class NopExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = NopExpr;
 		public NopExprImpl() {}
@@ -1201,13 +1226,14 @@ public final class NopExpr extends ENode {
 	}
 }
 
+@nodeset
 public abstract class TypeDecl extends DNode implements Named {
 
 	@virtual typedef NImpl = TypeDeclImpl;
 	@virtual typedef VView = TypeDeclView;
 	@virtual typedef JView = JTypeDeclView;
 
-	@node
+	@nodeimpl
 	public static abstract class TypeDeclImpl extends DNodeImpl {		
 		@virtual typedef ImplOf = TypeDecl;
 		public TypeDeclImpl() {}
@@ -1241,6 +1267,7 @@ public abstract class TypeDecl extends DNode implements Named {
 }
 
 
+@nodeset
 public class TypeRef extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -1249,7 +1276,7 @@ public class TypeRef extends ENode {
 	@virtual typedef VView = TypeRefView;
 	@virtual typedef JView = JTypeRefView;
 
-	@node
+	@nodeimpl
 	public static class TypeRefImpl extends ENodeImpl {
 		@virtual typedef ImplOf = TypeRef;
 		public TypeRefImpl() {}
@@ -1368,23 +1395,41 @@ public class TypeRef extends ENode {
 	}
 }
 
+@nodeset
 public class NameRef extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	public KString name;
+	@virtual typedef NImpl = NameRefImpl;
+	@virtual typedef VView = NameRefView;
+	@virtual typedef JView = JNameRefView;
+
+	@nodeimpl
+	public static class NameRefImpl extends NodeImpl {
+		@virtual typedef ImplOf = NameRef;
+		@att public KString name;
+	}
+	@nodeview
+	public static view NameRefView of NameRefImpl extends NodeView {
+		public KString name;
+	}
+
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+
 
 	public NameRef() {
-		super(new NodeImpl());
+		super(new NameRefImpl());
 	}
 
 	public NameRef(KString name) {
-		super(new NodeImpl());
+		super(new NameRefImpl());
 		this.name = name;
 	}
 
 	public NameRef(int pos, KString name) {
-		super(new NodeImpl(pos));
+		super(new NameRefImpl());
+		this.pos = pos;
 		this.name = name;
 	}
 

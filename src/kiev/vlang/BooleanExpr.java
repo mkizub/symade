@@ -24,13 +24,14 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public abstract class BoolExpr extends ENode {
 
 	@virtual typedef NImpl = BoolExprImpl;
 	@virtual typedef VView = BoolExprView;
 	@virtual typedef JView = JBoolExprView;
 
-	@node
+	@nodeimpl
 	public abstract static class BoolExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = BoolExpr;
 		public BoolExprImpl() {}
@@ -69,6 +70,7 @@ public abstract class BoolExpr extends ENode {
 	
 }
 
+@nodeset
 public class BinaryBooleanOrExpr extends BoolExpr {
 
 	@dflow(tru="join expr1:true expr2:true", fls="expr2:false") private static class DFI {
@@ -80,7 +82,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	@virtual typedef VView = BinaryBooleanOrExprView;
 	@virtual typedef JView = JBinaryBooleanOrExprView;
 
-	@node
+	@nodeimpl
 	public static class BinaryBooleanOrExprImpl extends BoolExprImpl {
 		@virtual typedef ImplOf = BinaryBooleanOrExpr;
 		@att public ENode			expr1;
@@ -153,6 +155,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 }
 
 
+@nodeset
 public class BinaryBooleanAndExpr extends BoolExpr {
 
 	@dflow(fls="join expr1:false expr2:false", tru="expr2:true") private static class DFI {
@@ -164,7 +167,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	@virtual typedef VView = BinaryBooleanAndExprView;
 	@virtual typedef JView = JBinaryBooleanAndExprView;
 
-	@node
+	@nodeimpl
 	public static class BinaryBooleanAndExprImpl extends BoolExprImpl {
 		@virtual typedef ImplOf = BinaryBooleanAndExpr;
 		@att public ENode			expr1;
@@ -231,6 +234,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 }
 
+@nodeset
 public class BinaryBoolExpr extends BoolExpr {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -242,7 +246,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	@virtual typedef VView = BinaryBoolExprView;
 	@virtual typedef JView = JBinaryBoolExprView;
 
-	@node
+	@nodeimpl
 	public static class BinaryBoolExprImpl extends BoolExprImpl {
 		@virtual typedef ImplOf = BinaryBoolExpr;
 		@ref public BinaryOperator	op;
@@ -462,6 +466,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 }
 
+@nodeset
 public class InstanceofExpr extends BoolExpr {
 
 	@dflow(tru="this:tru()", fls="expr") private static class DFI {
@@ -472,7 +477,7 @@ public class InstanceofExpr extends BoolExpr {
 	@virtual typedef VView = InstanceofExprView;
 	@virtual typedef JView = JInstanceofExprView;
 
-	@node
+	@nodeimpl
 	public static class InstanceofExprImpl extends BoolExprImpl {
 		@virtual typedef ImplOf = InstanceofExpr;
 		@att public ENode		expr;
@@ -606,6 +611,7 @@ public class InstanceofExpr extends BoolExpr {
 	}
 }
 
+@nodeset
 public class BooleanNotExpr extends BoolExpr {
 	
 	@dflow(fls="expr:true", tru="expr:false") private static class DFI {
@@ -616,7 +622,7 @@ public class BooleanNotExpr extends BoolExpr {
 	@virtual typedef VView = BooleanNotExprView;
 	@virtual typedef JView = JBooleanNotExprView;
 
-	@node
+	@nodeimpl
 	public static class BooleanNotExprImpl extends BoolExprImpl {
 		@virtual typedef ImplOf = BooleanNotExpr;
 		@att public ENode		expr;

@@ -14,6 +14,7 @@ import kiev.vlang.TypeDecl.TypeDeclView;
  *
  */
 
+@nodeset
 public class TypeDef extends TypeDecl {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -21,7 +22,7 @@ public class TypeDef extends TypeDecl {
 	@virtual typedef NImpl = TypeDefImpl;
 	@virtual typedef VView = TypeDefView;
 
-	@node
+	@nodeimpl
 	public static final class TypeDefImpl extends TypeDeclImpl {
 		@virtual typedef ImplOf = TypeDef;
 		@att public NameRef					name;

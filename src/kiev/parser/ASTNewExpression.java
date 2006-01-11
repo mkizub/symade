@@ -16,6 +16,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public class ASTNewExpression extends ENode {
 
 	@dflow(out="args") private static class DFI {
@@ -25,7 +26,7 @@ public class ASTNewExpression extends ENode {
 	@virtual typedef NImpl = ASTNewExpressionImpl;
 	@virtual typedef VView = ASTNewExpressionView;
 
-	@node
+	@nodeimpl
 	public static class ASTNewExpressionImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ASTNewExpression;
 		@att public TypeRef				type;

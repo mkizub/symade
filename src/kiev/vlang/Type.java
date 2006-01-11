@@ -135,9 +135,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 		return false;
 	}
 
-	public Type betterCast(Type t1, Type t2) {
-		if( equals(t1) ) return t1;
-		if( equals(t2) ) return t2;
+	public Type chooseMoreSpecific(Type t1, Type t2) {
 		if( isBoolean() && t1.isBoolean() ) return t1;
 		if( isBoolean() && t2.isBoolean() ) return t2;
 		if( this.isReference() ) {
@@ -145,16 +143,18 @@ public abstract class Type implements StdTypes, AccessFlags {
 			else if( !t1.isReference() && t2.isReference() ) return t2;
 			else if( !t1.isReference() && !t2.isReference() ) return null;
 			if( this ≡ tpNull ) return null;
-			if( isInstanceOf(t1) ) {
-				if( !isInstanceOf(t2) ) return t1;
-				else if( t2.isInstanceOf(t1) ) return t2;
-				else return t1;
+			if( this.isInstanceOf(t1) ) {
+				if (t1.isInstanceOf(t2))
+					return t1;
 			}
-			else if( isInstanceOf(t2) ) return t2;
+			if( this.isInstanceOf(t2) ) {
+				if (t2.isInstanceOf(t1))
+					return t2;
+			}
 			if( t1.isWrapper() && t2.isWrapper() ) {
 				Type tp1 = t1.getWrappedType();
 				Type tp2 = t2.getWrappedType();
-				Type tp_better = betterCast(tp1,tp2);
+				Type tp_better = chooseMoreSpecific(tp1,tp2);
 				if( tp_better != null ) {
 					if( tp_better ≡ tp1 ) return t1;
 					if( tp_better ≡ tp2 ) return t2;
@@ -292,7 +292,7 @@ public final class CoreType extends Type {
 		return super.isAutoCastableTo(t);
 	}
 
-	public Type betterCast(Type t1, Type t2) {
+	public Type chooseMoreSpecific(Type t1, Type t2) {
 		if(this ≡ t1) return t1;
 		if(this ≡ t2) return t2;
 		if( isBoolean() && t1.isBoolean() ) return t1;
@@ -334,7 +334,7 @@ public final class CoreType extends Type {
 					else return null;
 			}
 		}
-		return super.betterCast(t1, t2);
+		return super.chooseMoreSpecific(t1, t2);
 	}
 
 	public static Type upperCastNumbers(Type tp1, Type tp2) {
@@ -451,22 +451,10 @@ public abstract class CompaundType extends Type {
 		this.bindings = bindings;
 	}
 	
-	protected final void checkAbstract() {
-		flags &= ~flAbstract;
-		foreach(TVar v; this.bindings().tvars; !v.isAlias()) {
-			Type r = v.result();
-			if (r.isAbstract() || r == v.var)
-				flags |= flAbstract;
-			if (v.var.isUnerasable())
-				flags |= flUnerasable;
-		}
-	}
-	
 	public final TVarSet bindings() {
 		if (this.version != this.meta_type.version) {
 			this.bindings = makeBindings(true);
 			this.version = this.meta_type.version;
-			checkAbstract();
 		}
 		return this.bindings;
 	}
@@ -684,7 +672,6 @@ public final class TemplateType extends CompaundType {
 	
 	TemplateType(CompaundTypeProvider meta_type, TVarSet bindings) {
 		super(meta_type, bindings);
-		checkAbstract();
 	}
 	
 	protected final TVarSet makeBindings(boolean with_lower) {
@@ -712,7 +699,6 @@ public final class ConcreteType extends CompaundType {
 	
 	ConcreteType(CompaundTypeProvider meta_type, TVarSet bindings) {
 		super(meta_type, bindings);
-		checkAbstract();
 	}
 	
 	protected TVarSet makeBindings(boolean with_lower) {
@@ -730,7 +716,6 @@ public final class BaseType extends CompaundType {
 	{
 		super(meta_type, bindings);
 		this.lower_bound = (ConcreteType)lower_bound;
-		checkAbstract();
 	}
 	
 	protected TVarSet makeBindings(boolean with_lower) {
@@ -757,7 +742,6 @@ public class ArrayType extends Type {
 		super(ArrayTypeProvider.instance);
 		this.arg = arg;
 		this.flags |= flReference | flArray;
-		if( arg.isAbstract() ) this.flags |= flAbstract;
 	}
 
 	public TVarSet bindings()			{ return new TVarSet(tpArrayArg, arg); }
@@ -847,7 +831,6 @@ public class WrapperType extends Type {
 		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()));
 		this.unwrapped_type = unwrapped_type;
 		this.flags	 = flReference | flWrapper;
-		if (unwrapped_type.isAbstract()) this.flags |= flAbstract;
 	}
 
 	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
@@ -966,7 +949,6 @@ public class OuterType extends Type {
 		super(meta_type);
 		this.outer = outer;
 		this.flags |= flReference;
-		if( outer.isAbstract() ) this.flags |= flAbstract;
 	}
 
 	public TVarSet bindings()		{ return outer.bindings(); }
@@ -1037,8 +1019,6 @@ public class ClosureType extends Type implements CallableType {
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		this.ret  = (ret  == null) ? Type.tpAny : ret;
 		flags |= flReference | flCallable;
-		foreach(Type a; args; a.isAbstract() ) { flags |= flAbstract; break; }
-		if( this.ret.isAbstract() ) flags |= flAbstract;
 	}
 
 	@getter public Type[]	get$args()	{ return args; }
@@ -1127,8 +1107,6 @@ public class MethodType extends Type implements CallableType {
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		this.ret  = (ret  == null) ? Type.tpAny : ret;
 		flags |= flCallable;
-		foreach(Type a; args; a.isAbstract() ) { flags |= flAbstract; break; }
-		if( this.ret.isAbstract() ) flags |= flAbstract;
 	}
 	public static MethodType createMethodType(Type[] targs, Type[] args, Type ret)
 		alias operator(210,lfy,new)

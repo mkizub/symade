@@ -18,6 +18,7 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
+@nodeset
 public class CallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -29,7 +30,7 @@ public class CallExpr extends ENode {
 	@virtual typedef VView = CallExprView;
 	@virtual typedef JView = JCallExprView;
 
-	@node
+	@nodeimpl
 	public static class CallExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = CallExpr;
 		@att public ENode				obj;
@@ -180,6 +181,7 @@ public class CallExpr extends ENode {
 	}
 }
 
+@nodeset
 public class ClosureCallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -191,7 +193,7 @@ public class ClosureCallExpr extends ENode {
 	@virtual typedef VView = ClosureCallExprView;
 	@virtual typedef JView = JClosureCallExprView;
 
-	@node
+	@nodeimpl
 	public static class ClosureCallExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ClosureCallExpr;
 		@att public ENode				expr;

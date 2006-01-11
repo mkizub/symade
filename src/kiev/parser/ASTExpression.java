@@ -19,6 +19,7 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
  *
  */
 
+@nodeset
 public class ASTExpression extends ENode {
 
 	@dflow(out="nodes") private static class DFI {
@@ -28,7 +29,7 @@ public class ASTExpression extends ENode {
 	@virtual typedef NImpl = ASTExpressionImpl;
 	@virtual typedef VView = ASTExpressionView;
 
-	@node
+	@nodeimpl
 	public static final class ASTExpressionImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ASTExpression;
 		@att public NArr<ENode>			nodes;

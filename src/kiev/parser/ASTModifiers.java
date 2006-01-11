@@ -14,12 +14,13 @@ import kiev.vlang.TypeRef.TypeRefView;
  *
  */
 
+@nodeset
 public final class ASTModifiers extends ASTNode {
 	
 	@virtual typedef NImpl = ASTModifiersImpl;
 	@virtual typedef VView = ASTModifiersView;
 
-	@node
+	@nodeimpl
 	public static final class ASTModifiersImpl extends NodeImpl {
 		@virtual typedef ImplOf = ASTModifiers;
 		@att public Access 				acc;

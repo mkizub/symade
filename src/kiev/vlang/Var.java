@@ -20,6 +20,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public class Var extends LvalDNode implements Named, Typed {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -30,7 +31,7 @@ public class Var extends LvalDNode implements Named, Typed {
 	@virtual typedef VView = VarView;
 	@virtual typedef JView = JVarView;
 
-	@node
+	@nodeimpl
 	public static class VarImpl extends LvalDNodeImpl {
 		@virtual typedef ImplOf = Var;
 		public VarImpl() {}
@@ -224,6 +225,7 @@ public class Var extends LvalDNode implements Named, Typed {
 
 }
 
+@nodeset
 public final class FormPar extends Var {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -233,7 +235,7 @@ public final class FormPar extends Var {
 	@virtual typedef NImpl = FormParImpl;
 	@virtual typedef VView = FormParView;
 
-	@node
+	@nodeimpl
 	public static final class FormParImpl extends VarImpl {
 		@virtual typedef ImplOf = FormPar;
 		public FormParImpl() {}
@@ -678,7 +680,7 @@ public interface DataFlowSlots {
 	public final int FLS = 3;
 	public final int JMP = 4;
 	
-	public final boolean ASSERT_MORE = false;
+	public final boolean ASSERT_MORE = true;
 }
 
 public final class DataFlowInfo implements NodeData, DataFlowSlots {
@@ -928,6 +930,10 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 				return new DFFunc.DFFuncChildOut(getSocket(func));
 			throw new RuntimeException("Internal error: DFFunc.make("+func+":"+port+")");
 		}
+	}
+	
+	public NodeData nodeCopiedTo(NodeImpl node) {
+		return null; // do not copy on node copy
 	}
 	
 	public void nodeAttached(NodeImpl node) {

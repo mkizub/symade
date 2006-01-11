@@ -27,13 +27,14 @@ import syntax kiev.Syntax;
  *
  */
 
+@nodeset
 public abstract class LvalueExpr extends ENode {
 
 	@virtual typedef NImpl = LvalueExprImpl;
 	@virtual typedef VView = LvalueExprView;
 	@virtual typedef JView = JLvalueExprView;
 
-	@node
+	@nodeimpl
 	public abstract static class LvalueExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = LvalueExpr;
 		public LvalueExprImpl() {}
@@ -49,6 +50,7 @@ public abstract class LvalueExpr extends ENode {
 	public LvalueExpr(LvalueExprImpl impl) { super(impl); }
 }
 
+@nodeset
 public class AccessExpr extends LvalueExpr {
 	
 	@dflow(out="obj") private static class DFI {
@@ -61,7 +63,7 @@ public class AccessExpr extends LvalueExpr {
 	@virtual typedef VView = AccessExprView;
 	@virtual typedef JView = JAccessExprView;
 
-	@node
+	@nodeimpl
 	public static class AccessExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = AccessExpr;
 		@att public ENode			obj;
@@ -297,6 +299,7 @@ public class AccessExpr extends LvalueExpr {
 	}
 }
 
+@nodeset
 public final class IFldExpr extends AccessExpr {
 	
 	@dflow(out="obj") private static class DFI {
@@ -307,7 +310,7 @@ public final class IFldExpr extends AccessExpr {
 	@virtual typedef VView = IFldExprView;
 	@virtual typedef JView = JIFldExprView;
 
-	@node
+	@nodeimpl
 	public static final class IFldExprImpl extends AccessExprImpl {		
 		@virtual typedef ImplOf = IFldExpr;
 		@ref public Field		var;
@@ -429,6 +432,7 @@ public final class IFldExpr extends AccessExpr {
 	}
 }
 
+@nodeset
 public final class ContainerAccessExpr extends LvalueExpr {
 	
 	@dflow(out="index") private static class DFI {
@@ -440,7 +444,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	@virtual typedef VView = ContainerAccessExprView;
 	@virtual typedef JView = JContainerAccessExprView;
 
-	@node
+	@nodeimpl
 	public static final class ContainerAccessExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = ContainerAccessExpr;
 		@att public ENode		obj;
@@ -560,6 +564,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	}
 }
 
+@nodeset
 public final class ThisExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -570,7 +575,7 @@ public final class ThisExpr extends LvalueExpr {
 	@virtual typedef VView = ThisExprView;
 	@virtual typedef JView = JThisExprView;
 
-	@node
+	@nodeimpl
 	public static final class ThisExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = ThisExpr;
 		public ThisExprImpl() {}
@@ -630,6 +635,7 @@ public final class ThisExpr extends LvalueExpr {
 	}
 }
 
+@nodeset
 public final class LVarExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -640,7 +646,7 @@ public final class LVarExpr extends LvalueExpr {
 	@virtual typedef VView = LVarExprView;
 	@virtual typedef JView = JLVarExprView;
 
-	@node
+	@nodeimpl
 	public static final class LVarExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = LVarExpr;
 		@att public NameRef		ident;
@@ -779,6 +785,7 @@ public final class LVarExpr extends LvalueExpr {
 	}
 }
 
+@nodeset
 public final class SFldExpr extends AccessExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -787,7 +794,7 @@ public final class SFldExpr extends AccessExpr {
 	@virtual typedef VView = SFldExprView;
 	@virtual typedef JView = JSFldExprView;
 
-	@node
+	@nodeimpl
 	public static final class SFldExprImpl extends AccessExprImpl {		
 		@virtual typedef ImplOf = SFldExpr;
 		@ref public Field		var;
@@ -884,6 +891,7 @@ public final class SFldExpr extends AccessExpr {
 
 }
 
+@nodeset
 public final class OuterThisAccessExpr extends AccessExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -892,7 +900,7 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	@virtual typedef VView = OuterThisAccessExprView;
 	@virtual typedef JView = JOuterThisAccessExprView;
 
-	@node
+	@nodeimpl
 	public static final class OuterThisAccessExprImpl extends AccessExprImpl {		
 		@virtual typedef ImplOf = OuterThisAccessExpr;
 		@ref public Struct			outer;

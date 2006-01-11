@@ -17,6 +17,7 @@ import kiev.vlang.Method.MethodView;
  *
  */
 
+@nodeset
 public class RuleMethod extends Method {
 	
 	@dflow(in="root()") private static class DFI {
@@ -28,7 +29,7 @@ public class RuleMethod extends Method {
 	@virtual typedef NImpl = RuleMethodImpl;
 	@virtual typedef VView = RuleMethodView;
 
-	@node
+	@nodeimpl
 	public static final class RuleMethodImpl extends MethodImpl {
 		@virtual typedef ImplOf = RuleMethod;
 		@att public NArr<Var>			localvars;
@@ -320,13 +321,14 @@ d) if rule is successive, it returns it's own frame
 object, if fails - returns null.
 */
 
+@nodeset
 public abstract class ASTRuleNode extends ENode {
 	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
 	@virtual typedef NImpl = ASTRuleNodeImpl;
 	@virtual typedef VView = ASTRuleNodeView;
 
-	@node
+	@nodeimpl
 	public static abstract class ASTRuleNodeImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ASTRuleNode;
 		@att public JumpNodes			jn;
@@ -395,6 +397,7 @@ public abstract class ASTRuleNode extends ENode {
 }
 
 
+@nodeset
 public final class RuleBlock extends BlockStat {
 	
 	@dflow(out="node") private static class DFI {
@@ -404,7 +407,7 @@ public final class RuleBlock extends BlockStat {
 	@virtual typedef NImpl = RuleBlockImpl;
 	@virtual typedef VView = RuleBlockView;
 
-	@node
+	@nodeimpl
 	public static final class RuleBlockImpl extends BlockStatImpl {
 		@virtual typedef ImplOf = RuleBlock;
 		@att public ASTRuleNode		node;
@@ -493,6 +496,7 @@ public final class RuleBlock extends BlockStat {
 }
 
 
+@nodeset
 public final class RuleOrExpr extends ASTRuleNode {
 	
 	@dflow(out="rules") private static class DFI {
@@ -502,7 +506,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 	@virtual typedef NImpl = RuleOrExprImpl;
 	@virtual typedef VView = RuleOrExprView;
 
-	@node
+	@nodeimpl
 	public static final class RuleOrExprImpl extends ASTRuleNodeImpl {
 		@virtual typedef ImplOf = RuleOrExpr;
 		@att public NArr<ASTRuleNode>			rules;
@@ -513,10 +517,10 @@ public final class RuleOrExpr extends ASTRuleNode {
 	public static final view RuleOrExprView of RuleOrExprImpl extends ASTRuleNodeView {
 		public access:ro	NArr<ASTRuleNode>			rules;
 
-		public int get$base() {	return rules.length == 0 ? 0 : rules[0].base; }
+		public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base(); }
 		public void set$base(int b) {}
 	
-		public int get$idx() {	return rules.length == 0 ? 0 : rules[0].idx; }
+		public int get$idx() {	return rules.length == 0 ? 0 : rules[0].get$idx(); }
 		public void set$idx(int i) {}
 	}
 
@@ -567,6 +571,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 	}
 }
 
+@nodeset
 public final class RuleAndExpr extends ASTRuleNode {
 	
 	@dflow(out="rules") private static class DFI {
@@ -576,22 +581,22 @@ public final class RuleAndExpr extends ASTRuleNode {
 	@virtual typedef NImpl = RuleAndExprImpl;
 	@virtual typedef VView = RuleAndExprView;
 
-	@node
+	@nodeimpl
 	public static final class RuleAndExprImpl extends ASTRuleNodeImpl {
 		@virtual typedef ImplOf = RuleAndExpr;
 		@att public NArr<ASTRuleNode>			rules;
 		public RuleAndExprImpl() {}
 		public RuleAndExprImpl(int pos) { super(pos); }
-
-		public int get$base() {	return rules.length == 0 ? 0 : rules[0].base;	}
-		public void set$base(int b) {}
-	
-		public int get$idx() {	return rules.length == 0 ? 0 : rules[0].idx; }
-		public void set$idx(int i) {}
 	}
 	@nodeview
 	public static final view RuleAndExprView of RuleAndExprImpl extends ASTRuleNodeView {
 		public access:ro	NArr<ASTRuleNode>			rules;
+
+		public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base();	}
+		public void set$base(int b) {}
+	
+		public int get$idx() {	return rules.length == 0 ? 0 : rules[0].get$idx(); }
+		public void set$idx(int i) {}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -676,6 +681,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 	}
 }
 
+@nodeset
 public final class RuleIstheExpr extends ASTRuleNode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -685,7 +691,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	@virtual typedef NImpl = RuleIstheExprImpl;
 	@virtual typedef VView = RuleIstheExprView;
 
-	@node
+	@nodeimpl
 	public static final class RuleIstheExprImpl extends ASTRuleNodeImpl {
 		@virtual typedef ImplOf = RuleIstheExpr;
 		@att public LVarExpr	var;		// variable of type PVar<...>
@@ -751,6 +757,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 }
 
+@nodeset
 public final class RuleIsoneofExpr extends ASTRuleNode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -765,7 +772,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	@virtual typedef NImpl = RuleIsoneofExprImpl;
 	@virtual typedef VView = RuleIsoneofExprView;
 
-	@node
+	@nodeimpl
 	public static final class RuleIsoneofExprImpl extends ASTRuleNodeImpl {
 		@virtual typedef ImplOf = RuleIsoneofExpr;
 		@att public LVarExpr	var;		// variable of type PVar<...>
@@ -925,6 +932,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 }
 
+@nodeset
 public final class RuleCutExpr extends ASTRuleNode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -932,7 +940,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	@virtual typedef NImpl = RuleCutExprImpl;
 	@virtual typedef VView = RuleCutExprView;
 
-	@node
+	@nodeimpl
 	public static final class RuleCutExprImpl extends ASTRuleNodeImpl {
 		@virtual typedef ImplOf = RuleCutExpr;
 		public RuleCutExprImpl() {}
@@ -972,6 +980,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	}
 }
 
+@nodeset
 public final class RuleCallExpr extends ASTRuleNode {
 	
 	@dflow(out="args") private static class DFI {
@@ -982,7 +991,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	@virtual typedef NImpl = RuleCallExprImpl;
 	@virtual typedef VView = RuleCallExprView;
 
-	@node
+	@nodeimpl
 	public static final class RuleCallExprImpl extends ASTRuleNodeImpl {
 		@virtual typedef ImplOf = RuleCallExpr;
 		@att public ENode				obj;
@@ -1087,12 +1096,13 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 }
 
+@nodeset
 public abstract class RuleExprBase extends ASTRuleNode {
 
 	@virtual typedef NImpl = RuleExprBaseImpl;
 	@virtual typedef VView = RuleExprBaseView;
 
-	@node
+	@nodeimpl
 	public static abstract class RuleExprBaseImpl extends ASTRuleNodeImpl {
 		@virtual typedef ImplOf = RuleExprBase;
 		@att public ENode				expr;
@@ -1136,6 +1146,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 	}
 }
 
+@nodeset
 public final class RuleWhileExpr extends RuleExprBase {
 	
 	@dflow(out="expr") private static class DFI {
@@ -1146,7 +1157,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	@virtual typedef NImpl = RuleWhileExprImpl;
 	@virtual typedef VView = RuleWhileExprView;
 
-	@node
+	@nodeimpl
 	public static final class RuleWhileExprImpl extends RuleExprBaseImpl {
 		@virtual typedef ImplOf = RuleWhileExpr;
 		public RuleWhileExprImpl() {}
@@ -1207,6 +1218,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 }
 
+@nodeset
 public final class RuleExpr extends RuleExprBase {
 	
 	@dflow(out="expr") private static class DFI {
@@ -1217,7 +1229,7 @@ public final class RuleExpr extends RuleExprBase {
 	@virtual typedef NImpl = RuleExprImpl;
 	@virtual typedef VView = RuleExprView;
 
-	@node
+	@nodeimpl
 	public static final class RuleExprImpl extends RuleExprBaseImpl {
 		@virtual typedef ImplOf = RuleExpr;
 		public RuleExprImpl() {}
