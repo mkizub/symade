@@ -25,7 +25,7 @@ public class ASTOperator extends ENode {
 		@att public KString		image;
 	}
 	@nodeview
-	static view ASTOperatorView of ASTOperatorImpl extends ENodeView {
+	public static view ASTOperatorView of ASTOperatorImpl extends ENodeView {
 		public KString		image;
 	}
 	

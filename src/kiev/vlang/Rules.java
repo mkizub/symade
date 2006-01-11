@@ -342,6 +342,12 @@ public abstract class ASTRuleNode extends ENode {
 		public int			base;
 		public int			idx;
 		public int			depth;
+
+		public int get$base() {	return this.$view.base; }
+		public void set$base(int b) { this.$view.base = b; }
+	
+		public int get$idx() {	return this.$view.idx; }
+		public void set$idx(int i) { this.$view.idx = i; }
 	}
 
 	public ASTRuleNode(ASTRuleNodeImpl $view) { super($view); }
@@ -689,7 +695,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 	@nodeview
 	public static final view RuleIstheExprView of RuleIstheExprImpl extends ASTRuleNodeView {
-		public LVarExpr	var;		// variable of type PVar<...>
+		public LVarExpr		var;		// variable of type PVar<...>
 		public ENode		expr;		// expression to check/unify
 	}
 

@@ -40,7 +40,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		     public boolean				scanned_for_interface_only;
 	}
 	@nodeview
-	static final view FileUnitView of FileUnitImpl extends DNodeView {
+	public static final view FileUnitView of FileUnitImpl extends DNodeView {
 		public				KString					filename;
 		public				TypeNameRef				pkg;
 		public access:ro	NArr<DNode>				syntax;

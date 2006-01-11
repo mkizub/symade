@@ -28,7 +28,7 @@ public class Opdef extends DNode {
 		@ref Operator				resolved;
 	}
 	@nodeview
-	static class OpdefView extends DNodeView {
+	public static class OpdefView extends DNodeView {
 		final OpdefImpl impl;
 		OpdefView(OpdefImpl impl) {
 			super(impl);

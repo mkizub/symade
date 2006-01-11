@@ -41,7 +41,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		@ref DNode					resolved;
 	}
 	@nodeview
-	static final view ImportView of ImportImpl extends DNodeView {
+	public static final view ImportView of ImportImpl extends DNodeView {
 		public				NameRef				name;
 		public				ImportMode			mode;
 		public				boolean				star;
@@ -189,7 +189,7 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		@att TypeDef		arg;
 	}
 	@nodeview
-	static final view TypeOpDefView of TypeOpDefImpl extends TypeDeclView {
+	public static final view TypeOpDefView of TypeOpDefImpl extends TypeDeclView {
 		public	ASTOperator		op;
 		public	TypeRef			type;
 		public	TypeDef			arg;

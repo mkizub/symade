@@ -59,7 +59,7 @@ public class TreeWalker {
 	public void post_exec(ASTNode n) {}
 }
 
-public abstract class ASTNode implements Constants {
+public abstract class ASTNode implements Constants, Cloneable {
 
 	@virtual typedef NImpl = NodeImpl;
 	@virtual typedef VView = NodeView;
@@ -402,13 +402,11 @@ public abstract class ASTNode implements Constants {
 		return this;
 	}
 	
-	public /*abstract*/ Object copy() {
-		throw new CompilerException(this,"Internal error: method copy() is not implemented");
-	};
-
-	public /*abstract*/ Object copyTo(Object to$node) {
-        ASTNode node = (ASTNode)to$node;
-		$v_impl.copyTo(node.$v_impl);
+	public Object copy() {
+		ASTNode node = (ASTNode)this.clone();
+		node.$v_impl = this.$v_impl.getClass().newInstance();
+		node.$v_impl._self = node;
+		this.$v_impl.copyTo(node.$v_impl);
 		return node;
 	};
 

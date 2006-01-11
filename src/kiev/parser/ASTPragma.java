@@ -19,7 +19,7 @@ public final class ASTPragma extends DNode {
 		@att NArr<ConstStringExpr>	options;
 	}
 	@nodeview
-	static view ASTPragmaView of ASTPragmaImpl extends DNodeView {
+	public static view ASTPragmaView of ASTPragmaImpl extends DNodeView {
 		ASTPragmaView(ASTPragmaImpl $view) {
 			super($view);
 			this.$view = $view;
