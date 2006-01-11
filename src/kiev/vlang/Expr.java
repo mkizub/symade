@@ -207,7 +207,7 @@ public class TypeClassExpr extends ENode {
 	public void resolve(Type reqType) {
 		Type tp = type.getType();
 		if (!tp.isReference()) {
-			Type rt = Type.getRefTypeForPrimitive((CoreType)tp);
+			Type rt = ((CoreType)tp).getRefTypeForPrimitive();
 			Field f = rt.clazz.resolveField(KString.from("TYPE"));
 			replaceWithNodeResolve(reqType,new SFldExpr(pos,f));
 			return;
@@ -1318,7 +1318,7 @@ public class UnaryExpr extends ENode {
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
 			if (ctx_clazz != null && opt.method != null && opt.method.type.args.length == 1) {
-				if ( !ctx_clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
+				if ( !ctx_clazz.concr_type.isInstanceOf(opt.method.ctx_clazz.concr_type) )
 					continue;
 			}
 			Type[] tps = new Type[]{null,et};
@@ -1547,7 +1547,7 @@ public class ConditionalExpr extends ENode {
 		}
 		if( t1.isNumber() && t2.isNumber() ) {
 			if( t1 ≡ t2 ) return t1;
-			return Type.upperCastNumbers(t1,t2);
+			return CoreType.upperCastNumbers(t1,t2);
 		}
 		return expr1.getType();
 	}
@@ -1745,7 +1745,7 @@ public class CastExpr extends ENode {
 		if( !Kiev.javaMode && type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
 			if (type.isIntegerInCode())
 				return;
-			Method cm = ((BaseType)type).clazz.resolveMethod(nameCastOp,type,Type.tpInt);
+			Method cm = ((CompaundType)type).clazz.resolveMethod(nameCastOp,type,Type.tpInt);
 			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{(ENode)~expr}));
 			return;
 		}
@@ -1779,7 +1779,7 @@ public class CastExpr extends ENode {
 		if( et.isReference() && type.isReference() && et.getStruct() != null
 		 && et.getStruct().package_clazz.isClazz()
 		 && !et.isArgument()
-		 && !et.isStaticClazz() && et.getStruct().package_clazz.type.isAutoCastableTo(type)
+		 && !et.isStaticClazz() && et.getStruct().package_clazz.concr_type.isAutoCastableTo(type)
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,
@@ -1844,9 +1844,9 @@ public class CastExpr extends ENode {
 		assert(ex.isAttached());
 		Type at = ex.getType();
 		if( !at.equals(tp) ) {
-			if( at.isReference() && !tp.isReference() && Type.getRefTypeForPrimitive((CoreType)tp).equals(at) )
+			if( at.isReference() && !tp.isReference() && ((CoreType)tp).getRefTypeForPrimitive() ≈ at )
 				autoCastToPrimitive(ex);
-			else if( !at.isReference() && tp.isReference() && Type.getRefTypeForPrimitive((CoreType)at).equals(tp) )
+			else if( !at.isReference() && tp.isReference() && ((CoreType)at).getRefTypeForPrimitive() ≈ tp )
 				autoCastToReference(ex);
 			else if( at.isReference() && tp.isReference() && at.isInstanceOf(tp) )
 				;

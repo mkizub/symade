@@ -62,7 +62,7 @@ public class CallExpr extends ENode {
 			if !(func.isStatic() || func instanceof Constructor) {
 				throw new RuntimeException("Call to non-static method "+func+" without accessor");
 			}
-			this.obj = new TypeRef(((Struct)func.parent).type);
+			this.obj = new TypeRef(((Struct)func.parent).concr_type);
 		} else {
 			this.obj = obj;
 		}
@@ -111,7 +111,7 @@ public class CallExpr extends ENode {
 		func.makeArgs(args, reqType);
 		if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
 			Method mmm = ctx_method;
-			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.type;
+			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.concr_type;
 			assert(ctx_method.name.equals(nameInit));
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?

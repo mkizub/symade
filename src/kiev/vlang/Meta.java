@@ -94,7 +94,7 @@ public final class MetaSet extends ASTNode {
 			throw new NullPointerException();
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (((BaseType)metas[i].type.getType()).clazz.name.name == name) {
+			if (((ConcreteType)metas[i].type.getType()).clazz.name.name == name) {
 				Meta m = metas[i];
 				metas.del(i);
 				return m;
@@ -199,7 +199,7 @@ public class Meta extends ENode {
 		if (mt == null || !mt.isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
-		KString name = ((BaseType)mt).clazz.name.name;
+		KString name = ((ConcreteType)mt).clazz.name.name;
 		Meta m = this;
 		if (m != this) {
 			this.replaceWithNode(m);

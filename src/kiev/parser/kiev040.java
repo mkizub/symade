@@ -375,7 +375,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(SEMICOLON);
                 TypeNameRef tr = new TypeNameRef(qn);
                 Struct pkg = Env.newPackage(qn.name);
-                tr.lnk = pkg.type;
+                tr.lnk = pkg.concr_type;
                 {if (true) return tr;}
     throw new Error("Missing return statement in function");
   }
@@ -524,7 +524,7 @@ public abstract class kiev040 implements kiev040Constants {
       n.type = Type();
     } else if (jj_2_5(1)) {
                   n = new TypeDef();
-      n.super_bound = Type();
+      n.upper_bound = Type();
       n.name = Name();
     } else {
       jj_consume_token(-1);
@@ -913,7 +913,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(CASE);
     name = Name();
                 clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
-                clazz.super_type = parent.type;
+                clazz.super_type = parent.concr_type.toTypeWithLowerBound(clazz.concr_type);
                 clazz.setPizzaCase(true);
                 clazz.setSingleton(true);
     args = ClazzArguments();
@@ -988,7 +988,7 @@ public abstract class kiev040 implements kiev040Constants {
     switch (jj_nt.kind) {
     case ASSIGN:
       jj_consume_token(ASSIGN);
-      arg.super_bound = NArrType();
+      arg.upper_bound = NArrType();
       break;
     default:
       ;
@@ -1001,11 +1001,11 @@ public abstract class kiev040 implements kiev040Constants {
   final public TypeDef ArgumentDeclaration() throws ParseException {
   NameRef name; TypeDef arg;
     name      = Name();
-          arg = mkTypeDef(name,null);
+          arg = mkTypeDef(name,null); arg.setAbstract(true);
     switch (jj_nt.kind) {
     case EXTENDS:
       jj_consume_token(EXTENDS);
-      arg.super_bound = NArrType();
+      arg.upper_bound = NArrType();
       break;
     default:
       ;

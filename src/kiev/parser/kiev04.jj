@@ -908,7 +908,7 @@ TypeNameRef Package() :
 	{
 		TypeNameRef tr = new TypeNameRef(qn);
 		Struct pkg = Env.newPackage(qn.name);
-		tr.lnk = pkg.type;
+		tr.lnk = pkg.concr_type;
 		return tr;
 	}
 }
@@ -976,7 +976,7 @@ TypeDecl Typedef() :
 		n.type = Type()
 	|
 		{ n = new TypeDef(); }
-		n.super_bound = Type()
+		n.upper_bound = Type()
 		n.name = Name()
 	) ";"
 	{ return n; }
@@ -1160,7 +1160,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 	name = Name()
 	{
 		clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
-		clazz.super_type = parent.type;
+		clazz.super_type = parent.concr_type.toTypeWithLowerBound(clazz.concr_type);
 		clazz.setPizzaCase(true);
 		clazz.setSingleton(true);
 	}
@@ -1207,7 +1207,7 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 	{ arg = mkTypeDef(name,modifiers); }
 	[
 		"="
-		arg.super_bound = NArrType()
+		arg.upper_bound = NArrType()
 	]
 	";"
 	{ return arg; }
@@ -1217,10 +1217,10 @@ TypeDef ArgumentDeclaration() :
 { NameRef name; TypeDef arg; }
 {
 	name      = Name()
-	{ arg = mkTypeDef(name,null); }
+	{ arg = mkTypeDef(name,null); arg.setAbstract(true); }
 	[
 		"extends"
-		arg.super_bound = NArrType()
+		arg.upper_bound = NArrType()
 	]
 	{ return arg; }
 }

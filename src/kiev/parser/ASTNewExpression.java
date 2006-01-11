@@ -116,16 +116,17 @@ public class ASTNewExpression extends ENode {
 			return;
 		}
 		// Local anonymouse class
-		BaseType sup  = (BaseType)tp;
+		CompaundType sup  = (CompaundType)tp;
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
 		clazz.setStatic(ctx_method==null || ctx_method.isStatic());
+		TypeRef sup_tr = (TypeRef)this.type.copy();
 		if( sup.isInterface() ) {
 			clazz.super_type = Type.tpObject;
-			clazz.interfaces.add(new TypeRef(sup));
+			clazz.interfaces.add(sup_tr);
 		} else {
-			clazz.super_type = sup;
+			clazz.super_bound = sup_tr;
 		}
 
 		{
@@ -145,7 +146,7 @@ public class ASTNewExpression extends ENode {
 
         // Process inner classes and cases
 		Kiev.runProcessorsOn(clazz);
-		ENode ne = new NewExpr(pos,clazz.type,args.toArray());
+		ENode ne = new NewExpr(pos,clazz.concr_type,args.toArray());
 		ne.clazz = (Struct)~clazz;
 		replaceWithNodeResolve(reqType, ne);
 	}

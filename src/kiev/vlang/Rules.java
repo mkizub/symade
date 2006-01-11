@@ -111,7 +111,7 @@ public class RuleMethod extends Method {
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_clazz.type.resolveNameAccessR(node,path,name)
+		this.ctx_clazz.concr_type.resolveNameAccessR(node,path,name)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
@@ -808,7 +808,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		if( ctype.isArray() ) {
 			TVarSet set = new TVarSet();
 			set.append(Type.tpArrayEnumerator.clazz.args[0].getAType(), ((ArrayType)ctype).arg);
-			itype = Type.tpArrayEnumerator.bind(set);
+			itype = ((CompaundTypeProvider)Type.tpArrayEnumerator.meta_type).templ_type.bind(set);
 			mode = ARRAY;
 		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
 			itype = ctype;

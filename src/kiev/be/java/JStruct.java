@@ -27,16 +27,16 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 
 	public access:ro	Access				acc;
 	public access:ro	ClazzName			name;
-	public access:ro	BaseType			type;
+	public access:ro	ConcreteType		concr_type;
 	public access:ro	JBaseType			jtype;
 	public access:ro	JStructView[]		sub_clazz;
 	public				Attr[]				attrs;
 	public access:ro	JDNodeView[]		members;
 
-	public final JBaseType		get$jtype()			{ return (JBaseType)this.type.getJType(); }
+	public final JBaseType		get$jtype()			{ return (JBaseType)this.concr_type.getJType(); }
 	public final Type[]			get$interfaces()	{ return this.$view.interfaces.toTypeArray(); }
 	public final Type[]			get$args()			{ return this.$view.args.toTypeArray(); }
-	public final BaseType		get$super_type()	{ return getStruct().super_type; }
+	public final CompaundType	get$super_type()	{ return getStruct().super_type; }
 	public final JStructView[]	get$sub_clazz()		{ return (JStructView[])this.$view.sub_clazz.toJViewArray(JStructView.class); }
 	public final JDNodeView[]	get$members()		{ return (JDNodeView[])this.$view.members.toJViewArray(JDNodeView.class); }
 
@@ -175,7 +175,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		}
 
 		ConstPool constPool = new ConstPool();
-		constPool.addClazzCP(this.type.getJType().java_signature);
+		constPool.addClazzCP(this.concr_type.getJType().java_signature);
 		if( super_type != null ) {
 			super_type.clazz.checkResolved();
 			constPool.addClazzCP(this.super_type.getJType().java_signature);
@@ -187,7 +187,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		if( !isPackage() ) {
 			foreach (JStructView sub; sub_clazz) {
 				sub.checkResolved();
-				constPool.addClazzCP(sub.type.getJType().java_signature);
+				constPool.addClazzCP(sub.concr_type.getJType().java_signature);
 			}
 		}
 		
@@ -210,7 +210,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 				inner[j] = sub_clazz[j];
 				outer[j] = this;
 				inner_access[j] = sub_clazz[j].getJavaFlags();
-				constPool.addClazzCP(inner[j].type.getJType().java_signature);
+				constPool.addClazzCP(inner[j].concr_type.getJType().java_signature);
 			}
 			a.inner = inner;
 			a.outer = outer;

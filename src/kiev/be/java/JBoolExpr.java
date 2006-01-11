@@ -16,7 +16,7 @@ import kiev.vlang.BinaryBoolExpr.BinaryBoolExprImpl;
 import kiev.vlang.InstanceofExpr.InstanceofExprImpl;
 import kiev.vlang.BooleanNotExpr.BooleanNotExprImpl;
 
-public interface IBoolExpr {
+interface IBoolExpr {
 	public abstract void generate_iftrue(Code code, CodeLabel label);
 	public abstract void generate_iffalse(Code code, CodeLabel label);
 }

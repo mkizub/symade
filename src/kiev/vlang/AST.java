@@ -768,6 +768,16 @@ public abstract class DNode extends ASTNode {
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
+
+		@getter public final boolean isForward() {
+			return this.$view.is_forward;
+		}
+		@setter public final void setForward(boolean on) {
+			if (this.$view.is_forward != on) {
+				this.$view.is_forward = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -780,7 +790,6 @@ public abstract class DNode extends ASTNode {
 
 	public int getFlags() { return flags; }
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
-
 }
 
 /**
@@ -805,16 +814,6 @@ public abstract class LvalDNode extends DNode {
 			super($view);
 		}
 
-		// use no proxy	
-		@getter public final boolean isForward() {
-			return this.$view.is_forward;
-		}
-		@setter public final void setForward(boolean on) {
-			if (this.$view.is_forward != on) {
-				this.$view.is_forward = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
 		// init wrapper
 		@getter public final boolean isInitWrapper() {
 			return this.$view.is_init_wrapper;
@@ -1211,16 +1210,21 @@ public abstract class TypeDecl extends DNode implements Named {
 	@virtual typedef JView = JTypeDeclView;
 
 	@node
-	public static class TypeDeclImpl extends DNodeImpl {		
+	public static abstract class TypeDeclImpl extends DNodeImpl {		
 		@virtual typedef ImplOf = TypeDecl;
 		public TypeDeclImpl() {}
 		public TypeDeclImpl(int pos) { super(pos); }
 		public TypeDeclImpl(int pos, int fl) { super(pos, fl); }
+
+		public void callbackSuperTypeChanged(TypeDeclImpl chg) {}
 	}
 	@nodeview
 	public static view TypeDeclView of TypeDeclImpl extends DNodeView {
 		public TypeDeclView(TypeDeclImpl $view) {
 			super($view);
+		}
+		public void callbackSuperTypeChanged(TypeDeclImpl chg) {
+			this.$view.callbackSuperTypeChanged(chg);
 		}
 	}
 
@@ -1228,7 +1232,14 @@ public abstract class TypeDecl extends DNode implements Named {
 
 	public abstract NodeName	getName();
 	public abstract boolean		checkResolved();
+	public abstract Type		getSuperType();
+	public abstract Struct		getStruct();
 
+	public final boolean isTypeAbstract()		{ return this.isAbstract(); }
+	public final boolean isTypeVirtual()		{ return this.isVirtual(); }
+	public final boolean isTypeFinal()			{ return this.isFinal(); }
+	public final boolean isTypeStatic()		{ return this.isStatic(); }
+	public final boolean isTypeForward()		{ return this.isForward(); }
 }
 
 
@@ -1279,14 +1290,12 @@ public class TypeRef extends ENode {
 	
 	public boolean isArray() { return getType().isArray(); }
 	public boolean checkResolved() { return getType().checkResolved(); } 
-	public Struct getStruct() { return getType().getStruct(); }
+	public Struct getStruct() { if (lnk == null) return null; return lnk.getStruct(); }
 	public JType getJType() { return getType().getJType(); }
 
 	public Type getType()
 		alias operator(210,fy,$cast)
 	{
-//		if (lnk == null)
-//			throw new CompilerException(this,"Type "+this+" is not found");
 		return lnk;
 	}
 	

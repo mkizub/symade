@@ -44,6 +44,9 @@ public class TypeClosureRef extends TypeRef {
 	public boolean isBound() {
 		return true;
 	}
+	public Struct getStruct() {
+		return null;
+	}
 
 	public Type getType() {
 		if (this.lnk != null)

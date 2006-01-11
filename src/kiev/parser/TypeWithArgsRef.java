@@ -51,12 +51,18 @@ public class TypeWithArgsRef extends TypeRef {
 		return true;
 	}
 
+	public Struct getStruct() {
+		if (this.lnk != null) return this.lnk.getStruct();
+		return base_type.getStruct();
+	}
+
 	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
 		Type tp = base_type.getType();
-		if (tp == null || !(tp instanceof BaseType))
-			throw new CompilerException(this,"Type "+base_type+" is not found");
+		if (tp == null || !(tp instanceof CompaundType))
+			throw new CompilerException(this,"Compaund type "+base_type+" is not found");
+		tp = ((CompaundTypeProvider)tp.meta_type).templ_type;
 		TVarSet tpset = tp.bindings();
 		TVarSet set = new TVarSet();
 		int a = 0;
@@ -73,7 +79,8 @@ public class TypeWithArgsRef extends TypeRef {
 		}
 		if (a < args.length)
 			Kiev.reportError(this,"Type "+tp+" has only "+a+" unbound type parameters");
-		this.lnk = tp.bind(set);
+		tp = tp.bind(set);
+		this.lnk = tp;
 		return this.lnk;
 	}
 

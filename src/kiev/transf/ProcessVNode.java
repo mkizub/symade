@@ -43,7 +43,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	
 	public void pass3(FileUnit:ASTNode fu) {
 		if (tpNArr == null)
-			tpNArr = Env.getStruct(nameNArr).type;
+			tpNArr = Env.getStruct(nameNArr).concr_type;
 		foreach (ASTNode n; fu.members; n instanceof Struct)
 			pass3(n);
 	}
@@ -57,7 +57,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			foreach (ASTNode n; s.members; n instanceof Field)
 				pass3(n);
 		}
-		else if (s.super_bound.isBound() && s.super_type.getMeta(mnNode) != null) {
+		else if (s.super_bound.getType() != null && s.super_type.getMeta(mnNode) != null) {
 			if (s.meta.get(mnNodeView) == null)
 				Kiev.reportError(s,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
 			return;
@@ -143,7 +143,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	
 	private void autoGenerateMembers(Struct:ASTNode s) {
 		if (tpNArr == null)
-			tpNArr = Env.getStruct(nameNArr).type;
+			tpNArr = Env.getStruct(nameNArr).concr_type;
 		if (tpNArr == null) {
 			Kiev.reportError(s,"Cannot find class "+nameNArr);
 			return;
@@ -164,7 +164,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					Field f = (Field)n;
 					aflds.append(f);
 				}
-				ss = ss.super_type.getStruct();
+				ss = ss.super_bound.getStruct();
 			}
 		}
 		if (hasField(s, nameEnumValuesFld)) {
@@ -255,9 +255,9 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			s.addMethod(copyV);
 			copyV.body = new BlockStat(0);
 			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
-			Var v = new Var(0, KString.from("node"),s.type,0);
+			Var v = new Var(0, KString.from("node"),s.concr_type,0);
 			stats.append(new ReturnStat(0,new ASTCallExpression(0,
-				KString.from("copyTo"),	new ENode[]{new NewExpr(0,s.type,ENode.emptyArray)})));
+				KString.from("copyTo"),	new ENode[]{new NewExpr(0,s.concr_type,ENode.emptyArray)})));
 		}
 		// copyTo(Object)
 		if (hasMethod(s, KString.from("copyTo"))) {
@@ -269,16 +269,16 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			s.addMethod(copyV);
 			copyV.body = new BlockStat();
 			NArr<ENode> stats = ((BlockStat)copyV.body).stats;
-			Var v = new Var(0,KString.from("node"),s.type,0);
-			if (s.super_bound.isBound() && s.super_type.getMeta(mnNode) != null) {
+			Var v = new Var(0,KString.from("node"),s.concr_type,0);
+			if (s.super_bound.getType() != null && s.super_type.getMeta(mnNode) != null) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
 				cae.obj = new ASTIdentifier(0,KString.from("super"));
 				cae.func = new NameRef(0,KString.from("copyTo"));
 				cae.args.append(new ASTIdentifier(0,KString.from("to$node")));
-				v.init = new CastExpr(0,s.type,cae);
+				v.init = new CastExpr(0,s.concr_type,cae);
 				((BlockStat)copyV.body).addSymbol(v);
 			} else {
-				v.init = new CastExpr(0,s.type,new ASTIdentifier(0,KString.from("to$node")));
+				v.init = new CastExpr(0,s.concr_type,new ASTIdentifier(0,KString.from("to$node")));
 				((BlockStat)copyV.body).addSymbol(v);
 			}
 			foreach (ASTNode n; s.members; n instanceof Field) {
@@ -360,7 +360,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				if (atp.isReference())
 					ee = new CastExpr(0,atp,new LVarExpr(0, setV.params[1]));
 				else
-					ee = new CastExpr(0,Type.getRefTypeForPrimitive((CoreType)atp),new LVarExpr(0, setV.params[1]));
+					ee = new CastExpr(0,((CoreType)atp).getRefTypeForPrimitive(),new LVarExpr(0, setV.params[1]));
 				((BlockStat)setV.body).addStatement(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,

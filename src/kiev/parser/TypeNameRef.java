@@ -72,6 +72,7 @@ public class TypeNameRef extends TypeRef {
 	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
+		Type tp;
 		if (this.outer != null) {
 			Type outer = this.outer.getType();
 			ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
@@ -79,15 +80,33 @@ public class TypeNameRef extends TypeRef {
 			if!(outer.resolveStaticNameR(td,info,name))
 				throw new CompilerException(this,"Unresolved type "+name+" in "+outer);
 			td.checkResolved();
-			this.lnk = td.getType().bind(outer.bindings());
+			tp = td.getType().bind(outer.bindings());
 		} else {
 			TypeDecl@ td;
 			if( !PassInfo.resolveQualifiedNameR(this,td,new ResInfo(this,ResInfo.noForwards),name) )
 				throw new CompilerException(this,"Unresolved type "+name);
 			td.checkResolved();
-			this.lnk = td.getType();
+			tp = td.getType();
 		}
+		this.lnk = tp;
 		return this.lnk;
+	}
+
+	public Struct getStruct() {
+		if (this.lnk != null) return this.lnk.getStruct();
+		if (this.outer != null) {
+			Struct outer = this.outer.getStruct();
+			ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
+			TypeDecl@ td;
+			if!(outer.resolveNameR(td,info,name))
+				throw new CompilerException(this,"Unresolved type "+name+" in "+outer);
+			return td.getStruct();
+		} else {
+			TypeDecl@ td;
+			if( !PassInfo.resolveQualifiedNameR(this,td,new ResInfo(this,ResInfo.noForwards),name) )
+				throw new CompilerException(this,"Unresolved type "+name);
+			return td.getStruct();
+		}
 	}
 
 	public String toString() {

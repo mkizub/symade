@@ -400,8 +400,8 @@ kiev.vlang.AccessExpr.AccessExprView kiev/vlang/AccessExpr$AccessExprView kiev\v
 kiev.vlang.AccessExpr.DFI kiev/vlang/AccessExpr$DFI kiev\vlang\LvalueExpr.java
 kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
 kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
-kiev.vlang.ArgumentType kiev/vlang/ArgumentType kiev\vlang\Type.java
-kiev.vlang.ArgumentTypeProvider kiev/vlang/ArgumentTypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.ArgType kiev/vlang/ArgType kiev\vlang\Type.java
+kiev.vlang.ArgTypeProvider kiev/vlang/ArgTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.ArrayLengthExpr kiev/vlang/ArrayLengthExpr kiev\vlang\Expr.java
 kiev.vlang.ArrayLengthExpr.ArrayLengthExprImpl kiev/vlang/ArrayLengthExpr$ArrayLengthExprImpl kiev\vlang\Expr.java
 kiev.vlang.ArrayLengthExpr.ArrayLengthExprView kiev/vlang/ArrayLengthExpr$ArrayLengthExprView kiev\vlang\Expr.java
@@ -416,7 +416,6 @@ kiev.vlang.AssignExpr.DFI kiev/vlang/AssignExpr$DFI kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
 kiev.vlang.BaseType kiev/vlang/BaseType kiev\vlang\Type.java
-kiev.vlang.BaseTypeProvider kiev/vlang/BaseTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBoolExpr.BinaryBoolExprImpl kiev/vlang/BinaryBoolExpr$BinaryBoolExprImpl kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBoolExpr.BinaryBoolExprView kiev/vlang/BinaryBoolExpr$BinaryBoolExprView kiev\vlang\BooleanExpr.java
@@ -486,7 +485,10 @@ kiev.vlang.CommaExpr kiev/vlang/CommaExpr kiev\vlang\Expr.java
 kiev.vlang.CommaExpr.CommaExprImpl kiev/vlang/CommaExpr$CommaExprImpl kiev\vlang\Expr.java
 kiev.vlang.CommaExpr.CommaExprView kiev/vlang/CommaExpr$CommaExprView kiev\vlang\Expr.java
 kiev.vlang.CommaExpr.DFI kiev/vlang/CommaExpr$DFI kiev\vlang\Expr.java
+kiev.vlang.CompaundType kiev/vlang/CompaundType kiev\vlang\Type.java
+kiev.vlang.CompaundTypeProvider kiev/vlang/CompaundTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.CompilerException kiev/vlang/CompilerException kiev\vlang\AST.java
+kiev.vlang.ConcreteType kiev/vlang/ConcreteType kiev\vlang\Type.java
 kiev.vlang.CondStat kiev/vlang/CondStat kiev\vlang\Statement.java
 kiev.vlang.CondStat.CondStatImpl kiev/vlang/CondStat$CondStatImpl kiev\vlang\Statement.java
 kiev.vlang.CondStat.CondStatView kiev/vlang/CondStat$CondStatView kiev\vlang\Statement.java
@@ -772,6 +774,8 @@ kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueE
 kiev.vlang.OuterThisAccessExpr.DFI kiev/vlang/OuterThisAccessExpr$DFI kiev\vlang\LvalueExpr.java
 kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprImpl kiev/vlang/OuterThisAccessExpr$OuterThisAccessExprImpl kiev\vlang\LvalueExpr.java
 kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprView kiev/vlang/OuterThisAccessExpr$OuterThisAccessExprView kiev\vlang\LvalueExpr.java
+kiev.vlang.OuterType kiev/vlang/OuterType kiev\vlang\Type.java
+kiev.vlang.OuterTypeProvider kiev/vlang/OuterTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.ParentEnumerator kiev/vlang/ParentEnumerator kiev\vlang\PassInfo.java
 kiev.vlang.PassInfo kiev/vlang/PassInfo kiev\vlang\PassInfo.java
 kiev.vlang.PostfixOperator kiev/vlang/PostfixOperator kiev\vlang\Operator.java
@@ -868,6 +872,7 @@ kiev.vlang.TVar kiev/vlang/TVar kiev\vlang\TypeProvider.java
 kiev.vlang.TVarAlias kiev/vlang/TVarAlias kiev\vlang\TypeProvider.java
 kiev.vlang.TVarBound kiev/vlang/TVarBound kiev\vlang\TypeProvider.java
 kiev.vlang.TVarSet kiev/vlang/TVarSet kiev\vlang\TypeProvider.java
+kiev.vlang.TemplateType kiev/vlang/TemplateType kiev\vlang\Type.java
 kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ThisExpr.DFI kiev/vlang/ThisExpr$DFI kiev\vlang\LvalueExpr.java
 kiev.vlang.ThisExpr.ThisExprImpl kiev/vlang/ThisExpr$ThisExprImpl kiev\vlang\LvalueExpr.java

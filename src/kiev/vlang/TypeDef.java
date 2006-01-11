@@ -25,16 +25,18 @@ public class TypeDef extends TypeDecl {
 	public static final class TypeDefImpl extends TypeDeclImpl {
 		@virtual typedef ImplOf = TypeDef;
 		@att public NameRef					name;
-		@att public TypeRef					super_bound;
-		@att public ArgumentType			lnk;
+		@att public TypeRef					upper_bound;
+		@att public TypeRef					lower_bound;
+		@att public ArgType					lnk;
 		public TypeDefImpl() {}
 		public TypeDefImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view TypeDefView of TypeDefImpl extends TypeDeclView {
 		public NameRef				name;
-		public TypeRef				super_bound;
-		public ArgumentType			lnk;
+		public TypeRef				upper_bound;
+		public TypeRef				lower_bound;
+		public ArgType				lnk;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -54,7 +56,13 @@ public class TypeDef extends TypeDecl {
 	public TypeDef(NameRef nm, TypeRef sup) {
 		super(new TypeDefImpl(nm.getPos()));
 		this.name = nm;
-		this.super_bound = sup;
+		this.upper_bound = sup;
+	}
+
+	public TypeDef(KString nm, Type sup) {
+		super(new TypeDefImpl());
+		this.name = new NameRef(nm);
+		this.upper_bound = new TypeRef(sup);
 	}
 
 	public NodeName getName() {
@@ -68,25 +76,31 @@ public class TypeDef extends TypeDecl {
 		return true;
 	}
 	
-	// a typedef's argument is virtual
-	public final boolean isTypeVirtual() { return getMetaVirtual() != null; }
-
-	public final MetaVirtual getMetaVirtual() {
-		return (MetaVirtual)this.getNodeData(MetaVirtual.ID);
+	public Type getSuperType() {
+		Type sup = Type.tpObject;
+		if (upper_bound != null)
+			sup = upper_bound.getType();
+		return sup;
 	}
 
+	public Struct getStruct() {
+		return getSuperType().getStruct();
+	}
+	
+	public void setLowerBound(Type tp) {
+		this.lower_bound = new TypeRef(tp);
+		this.lnk = null;
+	}
+	
 	public Type getType() {
 		return getAType();
 	}
-	public ArgumentType getAType() {
+	public ArgType getAType() {
 		if (this.lnk != null)
 			return this.lnk;
 		if (this.meta != null)
 			this.meta.verify();
-		Type sup = Type.tpObject;
-		if (super_bound != null)
-			sup = super_bound.getType();
-		this.lnk = new ArgumentType(name.name,this,sup,isTypeUnerasable(),isTypeVirtual());
+		this.lnk = new ArgType(name.name,this);
 		return this.lnk;
 	}
 

@@ -56,8 +56,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 		foreach (DNode n; fu.syntax) {
 			try {
-				if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
-					continue; // process later
 				processSyntax(n);
 				if (n instanceof Import) {
 					if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(java_lang_name))
@@ -86,7 +84,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	}
 
 	public void processSyntax(Import:ASTNode astn) {
-		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return;
 		KString name = astn.name.name;
 		Struct scope = Env.root;
 		DNode n;
@@ -117,8 +114,10 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			Kiev.reportError(astn,"Identifier "+name+" is not a field");
 		else if (astn.mode == Import.ImportMode.IMPORT_SYNTAX && !(n instanceof Struct && ((Struct)n).isSyntax()))
 			Kiev.reportError(astn,"Identifier "+name+" is not a syntax");
-		else
+		else {
+			assert (n != null);
 			astn.resolved = n;
+		}
 	}
 
 	
@@ -204,13 +203,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	}
 
 	public void processSyntax(Struct:ASTNode astn) {
-		// Verify meta-data to the new structure
 		Struct me = astn;
-		me.meta.verify();
-		foreach (DNode dn; me.members; dn.meta != null)
-			dn.meta.verify();
-		
-		
 		if (me.isAnnotation() || me.isEnum() || me.isSyntax()) {
 			if( me.args.length > 0 ) {
 				Kiev.reportError(me,"Type parameters are not allowed for "+me);
@@ -225,17 +218,19 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					int n = 0;
 					for(Struct p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz) n++;
 					TypeDef td = new TypeDef(
-						new NameRef(me.pos,KString.from(nameThis+"$"+n+"$type")),
-						new TypeRef(pkg.type));
+						new NameRef(me.pos,KString.from("outer$"+n+"$type")),
+						new TypeRef(pkg.imeta_type.templ_type));
 					me.members.append(td);
-					Field f = new Field(
-						KString.from(nameThis+"$"+n),
-						td.getAType(),
-						ACC_FORWARD|ACC_FINAL);
+					OuterTypeProvider.instance(me,td);
+					Field f = new Field(KString.from(nameThis+"$"+n),td.getAType(),ACC_FORWARD|ACC_FINAL);
 					f.pos = me.pos;
 					me.members.append(f);
 				}
 			}
+		}
+		if (me.isTypeUnerasable()) {
+			foreach (TypeDef a; me.args)
+				a.setTypeUnerasable(true);
 		}
 		
 		if (me.isTypeUnerasable()) {
@@ -300,7 +295,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void pass2(Struct:ASTNode astn) {
 		try {
 			Struct clazz = (Struct)astn;
-			getStructType(clazz);
+			// Verify meta-data to the new structure
+			clazz.meta.verify();
+			foreach (DNode dn; clazz.members; dn.meta != null)
+				dn.meta.verify();
+			getStructType(clazz, new Stack<Struct>());
 			if( !clazz.isPackage() ) {
 				foreach (DNode s; clazz.members; s instanceof Struct)
 					pass2(s);
@@ -308,33 +307,34 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}
 	
-	private BaseType getStructType(Struct clazz) {
+	private ConcreteType getStructType(Struct clazz, Stack<Struct> path) {
 		if (clazz.isTypeResolved()) {
 			if (!clazz.isArgsResolved())
-				throw new CompilerException(clazz, "Recursive type declaration for class "+clazz);
-			return clazz.type;
+				throw new CompilerException(clazz, "Recursive type declaration for class "+clazz+" via "+path);
+			return clazz.concr_type;
 		}
+		path.push(clazz);
 		
 		clazz.setTypeResolved(true);
 		
 		for (Struct p = clazz.package_clazz; p != null; p = p.package_clazz)
-			getStructType(p);
+			getStructType(p, path);
 
 		if (clazz.parent instanceof FileUnit)
 			clazz.setStatic(true);
 
 		if (clazz.isAnnotation()) {
-			clazz.super_type = Type.tpObject;
+			clazz.super_type = Type.tpObject.toTypeWithLowerBound(clazz.concr_type);
 			clazz.interfaces.add(new TypeRef(Type.tpAnnotation));
 		}
 		else if (clazz.isEnum()) {
 			clazz.setStatic(true);
-			clazz.super_type = Type.tpEnum;
+			clazz.super_type = Type.tpEnum.toTypeWithLowerBound(clazz.concr_type);
 			// assign type of enum fields
 			if (clazz.isEnum()) {
 				foreach (DNode n; clazz.members; n instanceof Field && ((Field)n).isEnumField()) {
 					Field f = (Field)n;
-					f.ftype = new TypeRef(clazz.type);
+					f.ftype = new TypeRef(clazz.concr_type);
 				}
 			}
 		}
@@ -342,8 +342,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			clazz.setStatic(true);
 			Struct p = clazz.ctx_clazz;
 			p.addCase(clazz);
-			getStructType(p);
-			TypeWithArgsRef sup_ref = new TypeWithArgsRef(new TypeRef(p.type));
+			getStructType(p, path);
+			TypeWithArgsRef sup_ref = new TypeWithArgsRef(new TypeRef(p.concr_type));
 		next_case_arg:
 			for(int i=0; i < p.args.length; i++) {
 				for(int j=0; j < clazz.args.length; j++) {
@@ -355,20 +355,19 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				sup_ref.args.add(new TypeRef(p.args[i].getAType()));
 			}
 			clazz.super_bound = sup_ref;
-			sup_ref.getType();
 		}
-		else if (clazz.isSyntax()) {
+		else if (clazz.isSyntax() || clazz.isPackage()) {
 			clazz.setAbstract(true);
 			clazz.setMembersGenerated(true);
 			clazz.setStatementsGenerated(true);
 			clazz.super_type = null;
 		}
 		else if( clazz.isInterface() ) {
-			clazz.super_type = Type.tpObject;
+			clazz.super_type = Type.tpObject.toTypeWithLowerBound(clazz.concr_type);
 			foreach(TypeRef tr; clazz.interfaces) {
 				Struct s = tr.getType().getStruct();
 				if (s != null)
-					getStructType(s);
+					getStructType(s, path);
 			}
 		}
 		else {
@@ -376,21 +375,22 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				clazz.view_of.getType();
 			Type sup = clazz.super_bound == null ? null : clazz.super_bound.getType();
 			if (sup == null && !clazz.name.name.equals(Type.tpObject.clazz.name.name))
-				clazz.super_type = Type.tpObject;
+				clazz.super_type = sup = Type.tpObject.toTypeWithLowerBound(clazz.concr_type);
 			if (sup != null) {
 				Struct s = sup.getStruct();
 				if (s != null)
-					getStructType(s);
+					getStructType(s, path);
 			}
 			foreach(TypeRef tr; clazz.interfaces) {
 				Struct s = tr.getType().getStruct();
 				if (s != null)
-					getStructType(s);
+					getStructType(s, path);
 			}
 		}
 		
-		clazz.type.bindings(); // update the type
-		if (clazz.type.isRtArgumented()) {
+		clazz.imeta_type.version++;
+		clazz.concr_type.bindings(); // update the type
+		if (clazz.concr_type.isUnerasable()) {
 			if (!clazz.isTypeUnerasable()) {
 				Kiev.reportWarning(clazz,"Type "+clazz+" must be annotated as @unerasable");
 				clazz.setTypeUnerasable(true);
@@ -401,8 +401,9 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 
 		clazz.setArgsResolved(true);
-			
-		return clazz.type;
+		path.pop();
+		
+		return clazz.concr_type;
 	}
 
 	////////////////////////////////////////////////////
@@ -476,7 +477,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						}
 					}
 				}
-				f.init = new NewExpr(f.pos,me.type,new ENode[]{
+				f.init = new NewExpr(f.pos,me.concr_type,new ENode[]{
 							new ConstStringExpr(f.name.name),
 							new ConstIntExpr(next_enum_val)
 							//new ConstStringExpr(text)
@@ -587,9 +588,9 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		if (me.isSingleton()) {
 			me.setFinal(true);
 			if (me.resolveField(nameInstance, false) == null) {
-				Field inst = new Field(nameInstance, me.type, ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
+				Field inst = new Field(nameInstance, me.concr_type, ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
 				inst.pos = me.pos;
-				inst.init = new NewExpr(me.pos, me.type, ENode.emptyArray);
+				inst.init = new NewExpr(me.pos, me.concr_type, ENode.emptyArray);
 				me.addField(inst);
 			}
 		}

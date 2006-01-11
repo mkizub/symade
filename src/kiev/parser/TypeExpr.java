@@ -64,11 +64,29 @@ public class TypeExpr extends TypeRef {
 	public boolean isBound() {
 		return true;
 	}
+	public Struct getStruct() {
+		if (this.lnk != null)
+			return this.lnk.getStruct();
+		if (op == Constants.nameArrayOp)
+			return null;
+		DNode@ v;
+		if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {
+			if (op == opPVar)
+				return WrapperType.tpWrappedPrologVar.getStruct();
+			else if (op == opRef)
+				return WrapperType.tpWrappedRefProxy.getStruct();
+			else
+				throw new CompilerException(this,"Typedef for type operator "+op+" not found");
+		}
+		if (v instanceof TypeDecl)
+			return ((TypeDecl)v).getStruct();
+		throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
+	}
 
 	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
-	    Type tp = arg.getType();
+		Type tp = arg.getType();
 		DNode@ v;
 		if (op == Constants.nameArrayOp) {
 			tp = new ArrayType(tp);
@@ -95,7 +113,7 @@ public class TypeExpr extends TypeRef {
 			if (t.getStruct().args.length != 1)
 				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
 			set.append(t.getStruct().args[0].getAType(), tp);
-			tp = t.rebind(set);
+			tp = t.applay(set);
 		}
 		this.lnk = tp;
 		return tp;

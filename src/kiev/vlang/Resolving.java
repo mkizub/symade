@@ -91,12 +91,15 @@ public class ResInfo {
 	}
 
 	public void enterSuper() {
-		enterSuper(1);
+		enterSuper(1,0);
 	}
 	public void enterSuper(int incr) {
+		enterSuper(incr,0);
+	}
+	public void enterSuper(int incr, int mode) {
 		assert ((flags & noSuper) == 0);
 		flags_stack[flags_p++] = flags;
-		flags |= noImports;
+		flags |= noImports | mode;
 		transforms += incr;
 		trace(Kiev.debugResolve,"Entering super, now "+this);
 	}
@@ -221,7 +224,7 @@ public class ResInfo {
 				if !(meth.isStatic())
 					throw new CompilerException(at, "Don't know how to build call of "+meth+" via "+this);
 				//return new CallExpr(pos,meth,args);
-				return new UnresCallExpr(at.pos, new TypeRef(((Struct)meth.parent).type), meth, mt, args, false);
+				return new UnresCallExpr(at.pos, new TypeRef(meth.ctx_clazz.concr_type), meth, mt, args, false);
 			}
 			ENode expr = from;
 			if (forwards_p > 0)
@@ -233,7 +236,7 @@ public class ResInfo {
 			if (from == null && forwards_p == 0) {
 				if !(node.isStatic())
 					throw new CompilerException(at, "Don't know how to build closure for "+node+" via "+this);
-				return new UnresCallExpr(at.pos, new TypeRef(((Struct)f.parent).type), f, mt, args, false);
+				return new UnresCallExpr(at.pos, new TypeRef(f.ctx_clazz.concr_type), f, mt, args, false);
 			}
 			ENode expr = buildAccess(at, from, f);
 			return new UnresCallExpr(at.pos,expr,f,mt,args,false);

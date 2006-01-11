@@ -99,7 +99,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 				if( !isBad() ) {
 					JVarView thisPar = null;
 					if( !isStatic() ) {
-						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
+						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.concr_type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 						code.addVar(thisPar);
 					}
 					code.addVars(params);
@@ -221,7 +221,7 @@ public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView
 			try {
 				JVarView thisPar = null;
 				if( !isStatic() ) {
-					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
+					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.concr_type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 					code.addVar(thisPar);
 				}
 				code.addVars(m.params);

@@ -337,8 +337,8 @@ public final class MetaForward extends MetaFlag {
 
 	private MetaForward() { super(MetaForwardAttr); }
 	
-	public void    setZ(ASTNode node, boolean val)		{ ((LvalDNode)node).setForward(val); }
-	public boolean getZ(ASTNode node)					{ return ((LvalDNode)node).isForward(); }
+	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setForward(val); }
+	public boolean getZ(ASTNode node)					{ return ((DNode)node).isForward(); }
 }
 
 @singleton

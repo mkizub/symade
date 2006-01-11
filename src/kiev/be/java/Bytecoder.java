@@ -46,14 +46,13 @@ public class Bytecoder implements JConstants {
 		cl.setStatementsGenerated(true);
 
 		trace(Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
-		//cl.type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(bcclazz.getClazzName()));
 
 		// This class's superclass name (load if not loaded)
 		if( bcclazz.getSuperClazzName() != null ) {
 			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
 			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
-		    cl.super_type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
-			if( Env.getStruct(((BaseType)cl.super_type).clazz.name) == null )
+		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name)).toTypeWithLowerBound(cl.concr_type);
+			if( Env.getStruct(cl.super_type.clazz.name) == null )
 				throw new RuntimeException("Class "+cl.super_type.clazz.name+" not found");
 		}
 
@@ -61,8 +60,8 @@ public class Bytecoder implements JConstants {
 		KString[] interfs = bcclazz.getInterfaceNames();
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
-			BaseType interf = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
-			if( Env.getStruct(((BaseType)interf).clazz.name) == null )
+			BaseType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i])).toTypeWithLowerBound(cl.concr_type);
+			if( Env.getStruct(interf.clazz.name) == null )
 				throw new RuntimeException("Class "+interf+" not found");
 			if( !interf.isInterface() )
 				throw new RuntimeException("Class "+interf+" is not an interface");
@@ -220,7 +219,7 @@ public class Bytecoder implements JConstants {
 				if( m.isStatic() )
 					throw new RuntimeException("Assign operator can't be static");
 				else if( !m.isStatic() && m.type.args.length == 1 )
-					{ oparg1 = ((Struct)m.parent).type; oparg2 = m.type.args[0]; }
+					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[0]; }
 				else
 					throw new RuntimeException("Method "+m+" must be virtual and have 1 argument");
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
@@ -236,9 +235,9 @@ public class Bytecoder implements JConstants {
 				else if( m.isStatic() && m instanceof RuleMethod && m.type.args.length == 3 )
 					{ oparg1 = m.type.args[1]; oparg2 = m.type.args[2]; }
 				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					{ oparg1 = ((Struct)m.parent).type; oparg2 = m.type.args[0]; }
+					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[0]; }
 				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 2 )
-					{ oparg1 = ((Struct)m.parent).type; oparg2 = m.type.args[1]; }
+					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[1]; }
 				else
 					throw new RuntimeException("Method "+m+" must have 2 arguments");
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
@@ -254,11 +253,11 @@ public class Bytecoder implements JConstants {
 				else if( m.isStatic() && m instanceof RuleMethod && m.type.args.length == 2 )
 					oparg1 = m.type.args[1];
 				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 0 )
-					oparg1 = ((Struct)m.parent).type;
+					oparg1 = m.ctx_clazz.concr_type;
 				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
 					oparg1 = m.type.args[0];
 				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 1 )
-					oparg1 = ((Struct)m.parent).type;
+					oparg1 = m.ctx_clazz.concr_type;
 				else
 					throw new RuntimeException("Method "+m+" must have 1 argument");
 				if( Kiev.verbose ) System.out.println("Attached unary "+op+" to method "+m);
@@ -509,7 +508,7 @@ public class Bytecoder implements JConstants {
 	    	bcclazz.flags |= ACC_SUPER;
 
 		// This class name
-		KString cl_sig = cl.type.getJType().java_signature;
+		KString cl_sig = cl.concr_type.getJType().java_signature;
 		trace(Kiev.debugBytecodeGen,"note: class "+cl+" class signature = "+cl_sig);
 		bcclazz.cp_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(cl_sig).pos];
 	    // This class's superclass name

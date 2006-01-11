@@ -100,40 +100,50 @@ public final class NewExpr extends ENode {
 
 	public Type getType() {
 		Type type = this.type.getType();
-		if (outer == null) return type;
-		return type.bind(new TVarSet(type.getOuterArg(), outer.getType()));
+		Struct clazz = type.getStruct();
+		if (outer == null && type.getStruct() != null && type.getStruct().ometa_type != null) {
+			if (ctx_method != null || !ctx_method.isStatic())
+				outer = new ThisExpr(pos);
+		}
+		if (outer == null)
+			return type;
+		TVarSet vset = new TVarSet(
+			type.getStruct().ometa_type.tdef.getAType(),
+			new OuterType(type.getStruct(),outer.getType()) );
+		return type.rebind(vset);
 	}
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		BaseType type;
+		CompaundType type;
 		{
 			Type t = this.type.getType();
 			if (t.isWrapper())
 				type = ((WrapperType)t).getUnwrappedType();
-			else if (t instanceof ArgumentType)
-				type = (BaseType)((ArgumentType)t).super_type;
+			else if (t instanceof ArgType)
+				type = (CompaundType)((ArgType)t).getSuperType();
 			else
-				type = (BaseType)t;
+				type = (CompaundType)t;
 		}
+		if!(type instanceof ConcreteType)
+			Kiev.reportWarning(this,"Instantiation of non-concrete type "+type+" ???");
 		if( type.isAnonymouseClazz() ) {
 			type.getStruct().resolveDecl();
 		}
 		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
-			throw new CompilerException(this,"Abstract class "+type+" instantiation");
+			if (type.isUnerasable())
+				/*throw new CompilerException*/ Kiev.reportWarning(this,"Abstract unerasable class "+type+" instantiation");
+			else
+				Kiev.reportWarning(this,"Abstract erasable class "+type+" instantiation");
 		}
-		if( outer == null &&
-			( (!type.isStaticClazz() && type.isLocalClazz())
-			|| (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
-		)
-		{
+		if (outer == null && type.clazz.ometa_type != null) {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
 			outer = new ThisExpr(pos);
 		}
 		if( outer != null ) {
 			outer.resolve(null);
-			type = (BaseType)type.bind(new TVarSet(type.getOuterArg(), outer.getType()));
+			type = (CompaundType)type.bind(new TVarSet(type.clazz.ometa_type.tdef.getAType(), outer.getType()));
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
@@ -172,7 +182,7 @@ public final class NewExpr extends ENode {
 					Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
 			}
 		} else {
-			if( !type.isRtArgumented())
+			if( !type.isUnerasable())
 				throw new CompilerException(this,"Can't create an instance of erasable argument type "+type);
 		}
 		setResolved(true);
@@ -275,7 +285,7 @@ public final class NewArrayExpr extends ENode {
 			if( args[i] != null )
 				args[i].resolve(Type.tpInt);
 		if( type.isArgument() ) {
-			if( !type.isRtArgumented())
+			if( !type.isUnerasable())
 				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
