@@ -118,6 +118,7 @@ kiev.be.java.JTryStatView kiev/be/java/JTryStatView kiev\be\java\JComplexStat.ja
 kiev.be.java.JType kiev/be/java/JType kiev\be\java\JType.java
 kiev.be.java.JTypeClassExprView kiev/be/java/JTypeClassExprView kiev\be\java\JExpr.java
 kiev.be.java.JTypeDeclView kiev/be/java/JTypeDeclView kiev\be\java\JNode.java
+kiev.be.java.JTypeInfoExprView kiev/be/java/JTypeInfoExprView kiev\be\java\JExpr.java
 kiev.be.java.JTypeRefView kiev/be/java/JTypeRefView kiev\be\java\JNode.java
 kiev.be.java.JUnaryExprView kiev/be/java/JUnaryExprView kiev\be\java\JExpr.java
 kiev.be.java.JVarDeclView kiev/be/java/JVarDeclView kiev\be\java\JNode.java
@@ -356,6 +357,8 @@ kiev.stdlib.Stack.StackEnumerator kiev/stdlib/Stack$StackEnumerator kiev\stdlib\
 kiev.stdlib.TTYAssertionHandler kiev/stdlib/TTYAssertionHandler kiev\stdlib\Debug.java
 kiev.stdlib.TypeInfo kiev/stdlib/TypeInfo kiev\stdlib\TypeInfo.java
 kiev.stdlib.TypeInfoInterface kiev/stdlib/TypeInfoInterface kiev\stdlib\TypeInfo.java
+kiev.stdlib.TypeInfoX kiev/stdlib/TypeInfoX kiev\stdlib\TypeInfoX.java
+kiev.stdlib.TypeInfoXInterface kiev/stdlib/TypeInfoXInterface kiev\stdlib\TypeInfoX.java
 kiev.stdlib.TypeSwitchHash kiev/stdlib/TypeSwitchHash kiev\stdlib\TypeSwitchHash.java
 kiev.stdlib.TypeSwitchHashEntry kiev/stdlib/TypeSwitchHashEntry kiev\stdlib\TypeSwitchHash.java
 kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
@@ -585,6 +588,7 @@ kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java
 kiev.vlang.TypeClassExpr kiev/vlang/TypeClassExpr kiev\vlang\Expr.java
 kiev.vlang.TypeDecl kiev/vlang/TypeDecl kiev\vlang\AST.java
 kiev.vlang.TypeDef kiev/vlang/TypeDef kiev\vlang\TypeDef.java
+kiev.vlang.TypeInfoExpr kiev/vlang/TypeInfoExpr kiev\vlang\Expr.java
 kiev.vlang.TypeOpDef kiev/vlang/TypeOpDef kiev\vlang\Import.java
 kiev.vlang.TypeProvider kiev/vlang/TypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.TypeRef kiev/vlang/TypeRef kiev\vlang\AST.java

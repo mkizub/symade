@@ -182,11 +182,7 @@ public final class NewExpr extends ENode {
 				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
 				if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
 					CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
-					replaceWithNode(n);
-					m.makeArgs(n.args,type);
-					for(int i=0; i < n.args.length; i++)
-						n.args[i].resolve(null);
-					n.setResolved(true);
+					replaceWithNodeResolve(n);
 					return;
 				}
 			}

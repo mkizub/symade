@@ -130,6 +130,13 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					dargs.append(fp.type);
 					break;
 				default:
+					if (fp.kind >= FormPar.PARAM_TYPEINFO_N && fp.kind < FormPar.PARAM_TYPEINFO_N+128) {
+						assert(this.is_type_unerasable);
+						assert(fp.isFinal());
+						assert(fp.type ≈ Type.tpTypeInfo);
+						dargs.append(fp.type);
+						break;
+					}
 					throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
 				}
 			}
@@ -391,9 +398,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		return null;
 	}
 	
-	public FormPar getTypeInfoParam() {
+	public FormPar getTypeInfoParam(int kind) {
 		checkRebuildTypes();
-		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_TYPEINFO)
+		foreach (FormPar fp; params; fp.kind == kind)
 			return fp;
 		return null;
 	}
@@ -642,12 +649,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			if( pbody == null ) setAbstract(true);
 		}
 
-//		if (argtypes.length > 0) {
-//			ftypes = new Type[argtypes.length];
-//			for (int i=0; i < argtypes.length; i++)
-//				ftypes[i] = argtypes[i].getType();
-//		}
-
 		if (clazz.isAnnotation() && params.length != 0) {
 			Kiev.reportError(this, "Annotation methods may not have arguments");
 			params.delAll();
@@ -668,10 +669,14 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
-//		if( isVarArgs() ) {
-//			FormPar va = new FormPar(pos,nameVarArgs, new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
-//			params.append(va);
-//		}
+		if (isTypeUnerasable()) {
+			int i = 0;
+			foreach (TypeDef td; targs) {
+				FormPar v = new FormPar(td.pos,KString.from(nameTypeInfo+"$"+td.name), Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL);
+				params.add(v);
+			}
+		}
+
 		checkRebuildTypes();
 		trace(Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
 		meta.verify();

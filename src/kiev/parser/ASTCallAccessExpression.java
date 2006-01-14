@@ -27,6 +27,7 @@ public class ASTCallAccessExpression extends ENode {
 	public static class ASTCallAccessExpressionImpl extends ENodeImpl {
 		@att public ENode				obj;
 		@ref public NameRef				func;
+		@att public NArr<TypeRef>		targs;
 		@att public NArr<ENode>			args;
 		public ASTCallAccessExpressionImpl() {}
 		public ASTCallAccessExpressionImpl(int pos) { super(pos); }
@@ -35,15 +36,18 @@ public class ASTCallAccessExpression extends ENode {
 	public static view ASTCallAccessExpressionView of ASTCallAccessExpressionImpl extends ENodeView {
 		public				ENode			obj;
 		public				NameRef			func;
+		public access:ro	NArr<TypeRef>	targs;
 		public access:ro	NArr<ENode>		args;
 	}
 	
 	@att public abstract virtual			ENode				obj;
 	@ref public abstract virtual			NameRef				func;
+	@att public abstract virtual access:ro	NArr<TypeRef>		targs;
 	@att public abstract virtual access:ro	NArr<ENode>			args;
 	
 	@getter public ENode			get$obj()				{ return this.getASTCallAccessExpressionView().obj; }
 	@getter public NameRef			get$func()				{ return this.getASTCallAccessExpressionView().func; }
+	@getter public NArr<TypeRef>	get$targs()				{ return this.getASTCallAccessExpressionView().targs; }
 	@getter public NArr<ENode>		get$args()				{ return this.getASTCallAccessExpressionView().args; }
 	
 	@setter public void		set$obj(ENode val)				{ this.getASTCallAccessExpressionView().obj = val; }
@@ -104,10 +108,13 @@ public class ASTCallAccessExpression extends ENode {
 		
 		MethodType mt = null;
 		{
+			Type[] ata = new Type[targs.length];
+			for (int i=0; i < ata.length; i++)
+				ata[i] = targs[i].getType();
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			mt = new MethodType(ta,null);
+			mt = new MethodType(ata,ta,null);
 		}
 		int res_flags = ResInfo.noStatic | ResInfo.noImports;
 		ENode[] res;

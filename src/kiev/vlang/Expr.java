@@ -11,6 +11,7 @@ import kiev.be.java.JLvalueExprView;
 import kiev.be.java.JShadowView;
 import kiev.be.java.JArrayLengthExprView;
 import kiev.be.java.JTypeClassExprView;
+import kiev.be.java.JTypeInfoExprView;
 import kiev.be.java.JAssignExprView;
 import kiev.be.java.JBinaryExprView;
 import kiev.be.java.JStringConcatExprView;
@@ -183,14 +184,14 @@ public class TypeClassExpr extends ENode {
 		public TypeRef		type;
 	}
 
-	@ref public abstract virtual TypeRef type;
+	@att public abstract virtual TypeRef type;
 	
-	public NodeView				getNodeView()			{ return new TypeClassExprView((TypeClassExprImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new TypeClassExprView((TypeClassExprImpl)this.$v_impl); }
-	public TypeClassExprView	getTypeClassExprView()	{ return new TypeClassExprView((TypeClassExprImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JTypeClassExprView((TypeClassExprImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JTypeClassExprView((TypeClassExprImpl)this.$v_impl); }
-	public JTypeClassExprView	getJTypeClassExprView(){ return new JTypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new TypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new TypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public TypeClassExprView	getTypeClassExprView()	alias operator(210,fy,$cast) { return new TypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JTypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JTypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public JTypeClassExprView	getJTypeClassExprView()	alias operator(210,fy,$cast) { return new JTypeClassExprView((TypeClassExprImpl)this.$v_impl); }
 
 	@getter public TypeRef	get$type()				{ return this.getTypeClassExprView().type; }
 	@setter public void		set$type(TypeRef val)	{ this.getTypeClassExprView().type = val; }
@@ -227,6 +228,103 @@ public class TypeClassExpr extends ENode {
 
 	public Dumper toJava(Dumper dmp) {
 		type.toJava(dmp).append(".class").space();
+		return dmp;
+	}
+}
+
+@node
+public class TypeInfoExpr extends ENode {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
+	@node
+	public static final class TypeInfoExprImpl extends ENodeImpl {
+		public TypeInfoExprImpl() {}
+		public TypeInfoExprImpl(int pos) { super(pos); }
+		@att public TypeRef				type;
+		@att public TypeClassExpr		cl_expr;
+		@att public NArr<TypeInfoExpr>	cl_args;
+	}
+	@nodeview
+	public static final view TypeInfoExprView of TypeInfoExprImpl extends ENodeView {
+		public				TypeRef				type;
+		public				TypeClassExpr		cl_expr;
+		public access:ro	NArr<TypeInfoExpr>	cl_args;
+	}
+
+	@ref public abstract virtual TypeRef type;
+	
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new TypeInfoExprView((TypeInfoExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new TypeInfoExprView((TypeInfoExprImpl)this.$v_impl); }
+	public TypeInfoExprView		getTypeInfoExprView()	alias operator(210,fy,$cast) { return new TypeInfoExprView((TypeInfoExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JTypeInfoExprView((TypeInfoExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JTypeInfoExprView((TypeInfoExprImpl)this.$v_impl); }
+	public JTypeInfoExprView	getJTypeInfoExprView()	alias operator(210,fy,$cast) { return new JTypeInfoExprView((TypeInfoExprImpl)this.$v_impl); }
+
+	@getter public TypeRef				get$type()		{ return this.getTypeInfoExprView().type; }
+	@getter public TypeClassExpr		get$cl_expr()	{ return this.getTypeInfoExprView().cl_expr; }
+	@getter public NArr<TypeInfoExpr>	get$cl_args()	{ return this.getTypeInfoExprView().cl_args; }
+	@setter public void		set$type(TypeRef val)			{ this.getTypeInfoExprView().type = val; }
+	@setter public void		set$cl_expr(TypeClassExpr val)	{ this.getTypeInfoExprView().cl_expr = val; }
+	
+	public TypeInfoExpr() {
+		super(new TypeInfoExprImpl());
+	}
+
+	public TypeInfoExpr(int pos, TypeRef type) {
+		super(new TypeInfoExprImpl(pos));
+		this.type = type;
+	}
+
+	public String toString() {
+		return type+".type";
+	}
+
+	public Type getType() {
+		Type t = type.getType().getErasedType();
+		if (t.isUnerasable())
+			return t.getStruct().typeinfo_clazz.concr_type;
+		return Type.tpTypeInfo;
+	}
+
+	public Operator getOp() { return BinaryOperator.Access; }
+
+	public void resolve(Type reqType) {
+		Type type = this.type.getType();
+		ConcreteType ftype = Type.tpTypeInfo;
+		Struct clazz = type.getStruct();
+		if (clazz.isTypeUnerasable()) {
+			if (clazz.typeinfo_clazz == null)
+				clazz.autoGenerateTypeinfoClazz();
+			ftype = clazz.typeinfo_clazz.concr_type;
+		}
+		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.concr_type));
+		cl_expr.resolve(Type.tpClass);
+		TVar[] templ = clazz.imeta_type.templ_type.bindings().tvars;
+		foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias())
+			cl_args.add(new TypeInfoExpr(pos, new TypeRef(type.resolve(tv.var))));
+		foreach (TypeInfoExpr tie; cl_args)
+			tie.resolve(null);
+//		CallExpr ce = new CallExpr(from.pos,null,
+//			ftype.clazz.resolveMethod(KString.from("newTypeInfo"),ftype,Type.tpClass,new ArrayType(Type.tpTypeInfo)),
+//			new ENode[]{new TypeClassExpr(new TypeRef(t.getErasedType()))});
+//		TVar[] templ = ftype.imeta_type.templ_type.bindings().tvars;
+//		foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias())
+//			ce.args.append(accessTypeInfoField(from,tv.var));
+//		return ce;
+//
+//		Type tp = type.getType();
+//		if (!tp.isReference()) {
+//			Type rt = ((CoreType)tp).getRefTypeForPrimitive();
+//			Field f = rt.clazz.resolveField(KString.from("TYPE"));
+//			replaceWithNodeResolve(reqType,new SFldExpr(pos,f));
+//			return;
+//		}
+		setResolved(true);
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		type.toJava(dmp).append(".type").space();
 		return dmp;
 	}
 }
