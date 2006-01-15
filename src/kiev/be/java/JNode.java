@@ -22,8 +22,11 @@ import kiev.vlang.NameRef.NameRefImpl;
 
 @nodeview
 public view JNodeView of NodeImpl implements Constants {
+	@virtual typedef ViewOf  = ASTNode;
+	public final ViewOf getNode() alias operator(210,fy,$cast) {
+		return this.$view._self;
+	}
 	
-	public final ASTNode getNode() { return this.$view._self; }
 	public String toString() { return String.valueOf(this.$view._self); }
 	public Dumper toJava(Dumper dmp) { return getNode().toJava(dmp); }
 	

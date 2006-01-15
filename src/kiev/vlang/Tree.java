@@ -170,12 +170,6 @@ public final class NArr<N extends ASTNode> {
 		return node;
 	}
 
-	public void addAll(NArr<N> arr)
-		alias appendAll
-	{
-		foreach(N n; arr) add(n);
-	}
-
 	public void addAll(N[] arr)
 		alias appendAll
 	{
@@ -186,12 +180,6 @@ public final class NArr<N extends ASTNode> {
 		alias appendUniq
 	{
 		if (indexOf(node) < 0) add(node);
-	}
-
-	public void addUniq(NArr<N> arr)
-		alias appendUniq
-	{
-		foreach(N n; arr) addUniq(n);
 	}
 
 	public void addUniq(N[] arr)
@@ -359,6 +347,11 @@ public final class NArr<N extends ASTNode> {
 		return arr;
 	}
 
+	@unerasable
+	public <J extends JNodeView> JArr<J> toJArr() alias operator(210,fy,$cast) {
+		return new JArr<J>();
+	}
+
 	public Type[] toTypeArray() {
 		int sz = $nodes.length;
 		Type[] arr = new Type[sz];
@@ -383,7 +376,6 @@ public final class NArr<N extends ASTNode> {
 		};
 	}
 
-/*
 	@unerasable
 	public final class JArr<J extends JNodeView> {
 
@@ -420,19 +412,13 @@ public final class NArr<N extends ASTNode> {
 			return node;
 		}
 	
-		public N add(N node)
+		public J add(J node)
 			alias append
 			alias operator(5, lfy, +=)
 			require { node != null; }
 		{
 			NArr.this.add((N)node);
 			return node;
-		}
-	
-		public void addAll(JArr<J> arr)
-			alias appendAll
-		{
-			foreach(J n; arr) add(n);
 		}
 	
 		public void addAll(J[] arr)
@@ -445,12 +431,6 @@ public final class NArr<N extends ASTNode> {
 			alias appendUniq
 		{
 			if (indexOf(node) < 0) add(node);
-		}
-	
-		public void addUniq(JArr<J> arr)
-			alias appendUniq
-		{
-			foreach(J n; arr) addUniq(n);
 		}
 	
 		public void addUniq(J[] arr)
@@ -471,7 +451,7 @@ public final class NArr<N extends ASTNode> {
 			return node;
 		}
 	
-		public void detach(J old) { 	NArr.this.detach((N)old); }
+		public void detach(J old) { NArr.this.detach((N)old); }
 		public void del(int idx) { NArr.this.del(idx); }
 		public void delAll() { NArr.this.delAll(); }
 		public void copyFrom(JArr<J> arr) { NArr.this.copyFrom(arr.getNArr()); }
@@ -479,7 +459,7 @@ public final class NArr<N extends ASTNode> {
 		public boolean contains(J node) { return NArr.this.contains((N)node); }
 		public int indexOf(J node) { return NArr.this.indexOf((N)node); }
 		public J[] toArray() {
-			int sz = Narr.this.$nodes.length;
+			int sz = NArr.this.$nodes.length;
 			J[] arr = new J[sz];
 			for (int i=0; i < sz; i++)
 				arr[i] = this[i];
@@ -487,7 +467,8 @@ public final class NArr<N extends ASTNode> {
 		}
 	
 		public J[] delToArray() {
-			N[] narr = NArr.this.delToArray();
+			N[] narr = getNArr().delToArray();
+			int sz = narr.length;
 			J[] jarr = new J[narr.length];
 			for (int i=0; i < sz; i++)
 				jarr[i] = (J)narr[i];
@@ -510,7 +491,6 @@ public final class NArr<N extends ASTNode> {
 			};
 		}
 	}
-*/
 }
 
 

@@ -489,7 +489,7 @@ public final class RuleBlock extends BlockStat {
 		trace(Kiev.debugRules,"Rule text generated:\n"+sb);
 		BlockStat mbody = Kiev.parseBlock(this,sb);
 		ctx_method.body = mbody;
-		mbody.stats.addAll(stats);
+		mbody.stats.addAll(stats.delToArray());
 		return false;
 	}
 
