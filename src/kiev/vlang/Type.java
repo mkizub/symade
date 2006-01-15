@@ -39,7 +39,9 @@ public abstract class Type implements StdTypes, AccessFlags {
 		return meta_type.applay(this,accessor.bindings());
 	}
 	public final Type applay(TVarSet bindings) {
+		try {
 		return meta_type.applay(this,bindings);
+		} catch (StackOverflowError e) { return this; }
 	}
 	// instantiate new type
 	public final Type bind(TVarSet bindings) {
@@ -449,18 +451,31 @@ public abstract class CompaundType extends Type {
 	CompaundType(CompaundTypeProvider meta_type, TVarSet bindings) {
 		super(meta_type);
 		this.bindings = bindings;
+		checkAbstract();
 	}
 	
 	public final TVarSet bindings() {
 		if (this.version != this.meta_type.version) {
 			this.bindings = makeBindings(true);
 			this.version = this.meta_type.version;
+			checkAbstract();
 		}
 		return this.bindings;
 	}
 	
 	protected abstract TVarSet makeBindings(boolean with_lower);
 
+	private final void checkAbstract() {
+		flags &= ~flAbstract;
+		foreach(TVar v; this.bindings.tvars; !v.isAlias()) {
+			Type r = v.result();
+			if (r.isAbstract() || r == v.var)
+				flags |= flAbstract;
+			if (v.var.isUnerasable())
+				flags |= flUnerasable;
+		}
+	}
+	
 	public final JType getJType() {
 		if (jtype == null)
 			jtype = new JBaseType(clazz);
@@ -626,19 +641,22 @@ public abstract class CompaundType extends Type {
 		}
 		// Check class1 >= class2 && bindings
 		if (t1.clazz.instanceOf(t2.clazz)) {
+			if (t1.clazz != t2.clazz)
+				return true; // if it extends the class, it's always an instance of it
+			// if clazz is the same, check all bindings to be instanceof upper bindings
 			TVarSet b1 = t1.bindings();
 			TVarSet b2 = t2.bindings();
 			for(int i=0; i < b2.length; i++) {
 				TVar v2 = b2[i];
 				if (v2.isAlias())
 					continue;
-				Type x = b1.resolve(v2.var);
-				if (x ≡ x)
+				Type r2 = v2.result();
+				if (v2.var ≡ r2)
 					continue;
-				Type y = v2.result();
-				if (y ≡ y || x ≡ y)
+				Type r1 = b1.resolve(v2.var);
+				if (r1 ≡ r2)
 					continue;
-				if (!x.isInstanceOf(y))
+				if (!r1.isInstanceOf(r2))
 					return false;
 			}
 			return true;

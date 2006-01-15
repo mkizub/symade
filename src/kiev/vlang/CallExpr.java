@@ -110,14 +110,14 @@ public class CallExpr extends ENode {
 			this.obj = new TypeRef(obj.getType());
 		obj.resolve(null);
 		func.makeArgs(args, reqType);
-		if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
+		if( func.name.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			Method mmm = ctx_method;
 			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.concr_type;
 			assert(ctx_method.name.equals(nameInit));
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?
-			if (mmm.getTypeInfoParam() != null)
-				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam());
+			if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
+				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 			else
 				temp_expr = ctx_clazz.accessTypeInfoField(this,tp);
 			temp_expr.resolve(null);
@@ -138,6 +138,15 @@ public class CallExpr extends ENode {
 		} else {
 			for (int i=0; i < args.length; i++)
 				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
+		}
+		if (func.isTypeUnerasable()) {
+			TypeDef[] targs = func.targs.toArray();
+			for (int i=0; i < targs.length; i++) {
+				Type tp = mt.resolve(targs[i].getAType());
+				temp_expr = ctx_clazz.accessTypeInfoField(this,tp);
+				temp_expr.resolve(null);
+			}
+			temp_expr = null;
 		}
 		if !(func.parent instanceof Struct) {
 			ASTNode n = func.parent;

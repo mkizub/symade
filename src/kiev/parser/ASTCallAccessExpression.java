@@ -31,6 +31,7 @@ public class ASTCallAccessExpression extends ENode {
 		@virtual typedef ImplOf = ASTCallAccessExpression;
 		@att public ENode				obj;
 		@ref public NameRef				func;
+		@att public NArr<TypeRef>		targs;
 		@att public NArr<ENode>			args;
 		public ASTCallAccessExpressionImpl() {}
 		public ASTCallAccessExpressionImpl(int pos) { super(pos); }
@@ -39,6 +40,7 @@ public class ASTCallAccessExpression extends ENode {
 	public static view ASTCallAccessExpressionView of ASTCallAccessExpressionImpl extends ENodeView {
 		public				ENode			obj;
 		public				NameRef			func;
+		public access:ro	NArr<TypeRef>	targs;
 		public access:ro	NArr<ENode>		args;
 	}
 	
@@ -95,10 +97,13 @@ public class ASTCallAccessExpression extends ENode {
 		
 		MethodType mt = null;
 		{
+			Type[] ata = new Type[targs.length];
+			for (int i=0; i < ata.length; i++)
+				ata[i] = targs[i].getType();
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			mt = new MethodType(ta,null);
+			mt = new MethodType(ata,ta,null);
 		}
 		int res_flags = ResInfo.noStatic | ResInfo.noImports;
 		ENode[] res;

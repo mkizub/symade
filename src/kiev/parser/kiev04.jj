@@ -2430,6 +2430,12 @@ ENode CallAccessExpression(ENode obj) :
 { ASTCallAccessExpression e = new ASTCallAccessExpression(); e.obj = obj; }
 {
 	e.func = Name()
+	[
+		"<"
+			e.targs += Type()
+			( ","  e.targs += Type() )*
+		">"
+	]
 	"("
 	[	e.args += ExpressionNT(null)
 		(	","  e.args += ExpressionNT(null)	)*
@@ -2483,7 +2489,7 @@ ENode AccessExpression() :
 		e = AnonymouseClosure()
 	)
 	(
-		LOOKAHEAD(3)
+		LOOKAHEAD( "." <IDENTIFIER> ["<" Type() ("," Type())* ">"] "(" )
 		"."
 		e = CallAccessExpression(e)
 	|

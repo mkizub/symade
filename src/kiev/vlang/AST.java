@@ -1189,7 +1189,10 @@ public final class LocalStructDecl extends ENode implements Named {
 
 
 @nodeset
-public final class NopExpr extends ENode {
+public final class NopExpr extends ENode implements NodeData {
+
+	public static final KString ID = KString.from("temp expr");
+	public static final AttrSlot tempAttrSlot = new AttrSlot("temp expr",true,false,ENode.class);	
 
 	@dflow(out="expr") private static class DFI {
 	@dflow(in="this:in")	ENode	expr;
@@ -1224,6 +1227,13 @@ public final class NopExpr extends ENode {
 	public void resolve(Type reqType) {
 		expr.resolve(reqType);
 	}
+	
+	public final KString getNodeDataId() { return ID; }
+	public void nodeAttached(NodeImpl node) {}
+	public void dataAttached(NodeImpl node) { this.callbackAttached(node.getNode(), tempAttrSlot); }
+	public void nodeDetached(NodeImpl node) {}
+	public void dataDetached(NodeImpl node) { this.callbackDetached(); }
+	
 }
 
 @nodeset

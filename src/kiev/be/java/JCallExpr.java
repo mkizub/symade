@@ -7,6 +7,8 @@ import kiev.vlang.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -16,12 +18,14 @@ import kiev.vlang.ClosureCallExpr.ClosureCallExprImpl;
 
 @nodeview
 public final view JCallExprView of CallExprImpl extends JENodeView {
-	public access:ro JENodeView		obj;
-	public access:ro JMethodView	func;
-	public           JENodeView		temp_expr;
+	public access:ro JENodeView				obj;
+	public access:ro JMethodView			func;
+	public access:ro MethodType				mt;
+	public access:ro JArr<JENodeView>		args;
+	public           JENodeView				temp_expr;
 
-	@getter public final JENodeView[]		get$args()	{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
-	
+	@getter public final JArr<JENodeView>	get$args()	{ return this.$view.args.toJArr<JENodeView>(); }
+
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
@@ -57,7 +61,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			else
 				throw new RuntimeException("Non-static method "+func+" is called from static method "+code.method);
 		}
-		JENodeView[] args = this.args;
+		JENodeView[] args = this.args.toArray();
 		int i = 0;
 		if( func.isRuleMethod() ) {
 			// Very special case for rule call from inside of RuleMethod
@@ -103,14 +107,14 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 					code.addInstr(Instr.op_load,fp);
 				}
 			}
-			if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
+			if( func.name.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 				JMethodView mmm = jctx_method;
 				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.super_type : jctx_clazz.concr_type;
 				assert(mmm.name.equals(nameInit));
 				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?
-				if (mmm.getTypeInfoParam() != null)
-					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam().getVar()).getJView();
+				if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
+					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO).getVar()).getJView();
 				else
 					temp_expr = jctx_clazz.accessTypeInfoField(this,tp);
 				temp_expr.generate(code,null);
@@ -138,6 +142,15 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 					code.addInstr(Instr.op_arr_store);
 				}
 			}
+		}
+		if (func.getMethod().isTypeUnerasable()) {
+			TypeDef[] targs = func.getMethod().targs.toArray();
+			for (int i=0; i < targs.length; i++) {
+				Type tp = mt.resolve(targs[i].getAType());
+				temp_expr = jctx_clazz.accessTypeInfoField(this,tp);
+				temp_expr.generate(code,null);
+			}
+			temp_expr = null;
 		}
 		
 		// Special meaning of Object.equals and so on

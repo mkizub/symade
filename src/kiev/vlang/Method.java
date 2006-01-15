@@ -135,6 +135,13 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					dargs.append(fp.type);
 					break;
 				default:
+					if (fp.kind >= FormPar.PARAM_TYPEINFO_N && fp.kind < FormPar.PARAM_TYPEINFO_N+128) {
+						assert(this.is_type_unerasable);
+						assert(fp.isFinal());
+						assert(fp.type ≈ Type.tpTypeInfo);
+						dargs.append(fp.type);
+						break;
+					}
 					throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
 				}
 			}
@@ -306,9 +313,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		return null;
 	}
 	
-	public FormPar getTypeInfoParam() {
+	public FormPar getTypeInfoParam(int kind) {
 		checkRebuildTypes();
-		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_TYPEINFO)
+		foreach (FormPar fp; params; fp.kind == kind)
 			return fp;
 		return null;
 	}
@@ -446,7 +453,28 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
 		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
-		rt = (MethodType)rt.bind(mt.bindings());
+		rt = rt.bind(tp.bindings());
+		
+		if (mt.bindings().length > 0) {
+			TVar[] mtvars = mt.bindings().tvars;
+			if (targs.length != mtvars.length) {
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+					+" not match in number of type params: "+targs.length+" != "+mtvars.length);
+				return false;
+			}
+			TVarSet set = new TVarSet();
+			for(int a = 0; a < mtvars.length; a++) {
+				Type bound = mtvars[a].result();
+				ArgType arg = targs[a].getAType();
+				if!(bound.isInstanceOf(arg)) {
+					trace(Kiev.debugResolve,"Type "+bound+" is not applayable to "+arg	+" for type arg "+a);
+					return false;
+				}
+				set.append(arg, bound);
+			}
+			rt = rt.rebind(set);
+		}
+		
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
 			if( exact && !mt.args[i].equals(rt.args[i]) ) {
 				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
@@ -557,12 +585,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			if( pbody == null ) setAbstract(true);
 		}
 
-//		if (argtypes.length > 0) {
-//			ftypes = new Type[argtypes.length];
-//			for (int i=0; i < argtypes.length; i++)
-//				ftypes[i] = argtypes[i].getType();
-//		}
-
 		if (clazz.isAnnotation() && params.length != 0) {
 			Kiev.reportError(this, "Annotation methods may not have arguments");
 			params.delAll();
@@ -575,6 +597,15 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			pbody = null;
 		}
 
+		if (isTypeUnerasable()) {
+			int i = 0;
+			foreach (TypeDef td; targs) {
+				td.setTypeUnerasable(true);
+				FormPar v = new FormPar(td.pos,KString.from(nameTypeInfo+"$"+td.name), Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL);
+				params.add(v);
+			}
+		}
+
 		// push the method, because formal parameters may refer method's type args
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
@@ -583,10 +614,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
-//		if( isVarArgs() ) {
-//			FormPar va = new FormPar(pos,nameVarArgs, new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
-//			params.append(va);
-//		}
+
 		checkRebuildTypes();
 		trace(Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
 		meta.verify();

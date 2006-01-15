@@ -189,16 +189,12 @@ public final class TVarSet {
 						continue next_my;
 					}
 				}
-				// try pattern bind
-				for (int j=0; j < vs_size; j++) {
-					TVar y = vs_vars[j];
-					if (y.var.definer == null) {
-						modified |= sr.set(sr.tvars[i], y.result());
-						continue next_my;
-					}
-				}
 				// bind to itself
-				modified |= sr.set(sr.tvars[i], sr.tvars[i].result());
+				if (x.var.isAbstract())
+					modified |= sr.set(sr.tvars[i], sr.tvars[i].result());
+				else
+					modified |= sr.set(sr.tvars[i], sr.tvars[i].result().getSuperType());
+				continue next_my;
 			}
 			// bind virtual aliases
 			if (x.var.isVirtual()) {
@@ -304,7 +300,8 @@ public final class TVarSet {
 						continue next_my;
 					}
 				}
-			} else {
+			}
+			else if (bnd.isAbstract()) {
 				// recursive
 				Type t = bnd.applay(vs);
 				if (t ≢ bnd)
@@ -676,7 +673,7 @@ public class CallTypeProvider extends TypeProvider {
 		if (!modified)
 			return t;
 		if (t instanceof MethodType)
-			return new MethodType(tpargs,ret);
+			return new MethodType(t.bindings(),tpargs,ret);
 		else if (t instanceof ClosureType)
 			return new ClosureType(tpargs,ret);
 		assert (false, "Unrecognized type "+t+" ("+t.getClass()+")");

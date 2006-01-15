@@ -66,7 +66,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		foreach (Struct sub; s.sub_clazz)
 			pass3(sub);
 		if (isNodeKind(s)) {
-			// Check fields of the @nodeimpl
+			// Check fields of the @node
 			foreach (ASTNode n; s.members; n instanceof Field)
 				pass3(n);
 			return;

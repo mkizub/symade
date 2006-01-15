@@ -62,7 +62,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	@getter public JMethodView get$child_jctx_method() { return this; }
 
 	public JVarView getOuterThisParam() { return (JVarView)this.getMethod().getOuterThisParam(); }
-	public JVarView getTypeInfoParam() { return (JVarView)this.getMethod().getTypeInfoParam(); }
+	public JVarView getTypeInfoParam(int kind) { return (JVarView)this.getMethod().getTypeInfoParam(kind); }
 	public JVarView getVarArgParam() { return (JVarView)this.getMethod().getVarArgParam(); }
 	
 	public CodeLabel getBreakLabel() {
@@ -98,7 +98,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 			try {
 				if( !isBad() ) {
 					JVarView thisPar = null;
-					if( !isStatic() ) {
+					if (!isStatic()) {
 						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.concr_type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 						code.addVar(thisPar);
 					}

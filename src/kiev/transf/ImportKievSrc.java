@@ -233,11 +233,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				a.setTypeUnerasable(true);
 		}
 		
-		if (me.isTypeUnerasable()) {
-			foreach (TypeDef a; me.args)
-				a.setTypeUnerasable(true);
-		}
-
 		if (me.isSyntax()) {
 			trace(Kiev.debugResolve,"Pass 1 for syntax "+me);
 			for (int i=0; i < me.members.length; i++) {

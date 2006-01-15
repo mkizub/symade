@@ -544,8 +544,8 @@ public class InstanceofExpr extends BoolExpr {
 		}
 		if (tp instanceof WrapperType)
 			tp = tp.getUnwrappedType();
-		if (tp instanceof BaseType) {
-			BaseType bt = (BaseType)tp;
+		if (tp instanceof CompaundType) {
+			CompaundType bt = (CompaundType)tp;
 			if (tp.clazz.isTypeUnerasable()) {
 				replaceWithNodeResolve(reqType, new CallExpr(pos,
 						ctx_clazz.accessTypeInfoField(this,type.getType()),

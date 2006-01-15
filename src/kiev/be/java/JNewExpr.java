@@ -67,7 +67,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 		// Constructor call args (first args 'this' skipped)
 		if( outer != null )
 			outer.generate(code,null);
-		if (func.getTypeInfoParam() != null) {
+		if (func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			// Create static field for this type typeinfo
 			temp_expr = jctx_clazz.accessTypeInfoField(this,type);
 			temp_expr.generate(code,null);

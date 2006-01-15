@@ -14,6 +14,7 @@ import syntax kiev.Syntax;
 import kiev.vlang.Shadow.ShadowImpl;
 import kiev.vlang.ArrayLengthExpr.ArrayLengthExprImpl;
 import kiev.vlang.TypeClassExpr.TypeClassExprImpl;
+import kiev.vlang.TypeInfoExpr.TypeInfoExprImpl;
 import kiev.vlang.AssignExpr.AssignExprImpl;
 import kiev.vlang.BinaryExpr.BinaryExprImpl;
 import kiev.vlang.StringConcatExpr.StringConcatExprImpl;
@@ -60,6 +61,42 @@ public final view JTypeClassExprView of TypeClassExprImpl extends JENodeView {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
 		code.setLinePos(this);
 		code.addConst(type.getErasedType().getJType());
+		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+	}
+
+}
+
+@nodeview
+public final view JTypeInfoExprView of TypeInfoExprImpl extends JENodeView {
+	public access:ro	Type					type;
+	public access:ro	JTypeClassExprView		cl_expr;
+//	public access:ro	JENodeView[]			cl_args;
+
+	@getter public final JENodeView[]	get$cl_args()	{ return (JENodeView[])this.$view.cl_args.toJViewArray(JENodeView.class); }
+	
+	public void generate(Code code, Type reqType ) {
+		trace(Kiev.debugStatGen,"\t\tgenerating TypeInfoExpr: "+this);
+		code.setLinePos(this);
+		cl_expr.generate(code,null);
+		JENodeView[] cl_args = this.cl_args;
+		if (cl_args.length > 0) { 
+			code.addConst(cl_args.length);
+			code.addInstr(Instr.op_newarray,Type.tpTypeInfo);
+			int i=0;
+			foreach (JENodeView arg; cl_args) {
+				code.addInstr(Instr.op_dup);
+				code.addConst(i++);
+				arg.generate(code,null);
+				code.addInstr(Instr.op_arr_store);
+			}
+		} else {
+			code.addNullConst();
+		}
+		Struct ti_clazz = type.getStruct().typeinfo_clazz;
+		if (ti_clazz == null)
+			ti_clazz = Type.tpTypeInfo.clazz;
+		Method func = ti_clazz.resolveMethod(KString.from("newTypeInfo"), ti_clazz.concr_type, Type.tpClass, new ArrayType(Type.tpTypeInfo));
+		code.addInstr(op_call,func.getJView(),false,ti_clazz.concr_type);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 

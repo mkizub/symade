@@ -1,147 +1,148 @@
-kiev.CError kiev/CError kiev\Errors.java bad
-kiev.Compiler kiev/Compiler kiev\Compiler.java bad
-kiev.Kiev kiev/Kiev kiev\Kiev.java bad
+kiev.CError kiev/CError kiev\Errors.java
+kiev.Compiler kiev/Compiler kiev\Compiler.java
+kiev.Kiev kiev/Kiev kiev\Kiev.java
 kiev.Kiev.Backend kiev/Kiev$Backend kiev\Kiev.java
 kiev.Kiev.CompilationAbortError kiev/Kiev$CompilationAbortError kiev\Kiev.java
 kiev.Kiev.Ext kiev/Kiev$Ext kiev\Kiev.java
-kiev.Main kiev/Main kiev\Main.java bad
-kiev.SeverError kiev/SeverError kiev\Errors.java bad
-kiev.Syntax kiev/Syntax kiev\Syntax.java bad
-kiev.be.java.AsciiCP kiev/be/java/AsciiCP kiev\be\java\ConstPool.java bad
-kiev.be.java.Attr kiev/be/java/Attr kiev\be\java\Attr.java bad
-kiev.be.java.Bytecoder kiev/be/java/Bytecoder kiev\be\java\Bytecoder.java bad
-kiev.be.java.CP kiev/be/java/CP kiev\be\java\ConstPool.java bad
-kiev.be.java.ClazzCP kiev/be/java/ClazzCP kiev\be\java\ConstPool.java bad
-kiev.be.java.Code kiev/be/java/Code kiev\be\java\Code.java bad
-kiev.be.java.CodeAttr kiev/be/java/CodeAttr kiev\be\java\Attr.java bad
-kiev.be.java.CodeCatchInfo kiev/be/java/CodeCatchInfo kiev\be\java\CodeSupport.java bad
-kiev.be.java.CodeLabel kiev/be/java/CodeLabel kiev\be\java\CodeSupport.java bad
-kiev.be.java.CodeLookupSwitch kiev/be/java/CodeLookupSwitch kiev\be\java\CodeSupport.java bad
-kiev.be.java.CodeSwitch kiev/be/java/CodeSwitch kiev\be\java\CodeSupport.java bad
-kiev.be.java.CodeTableSwitch kiev/be/java/CodeTableSwitch kiev\be\java\CodeSupport.java bad
-kiev.be.java.CodeVar kiev/be/java/CodeVar kiev\be\java\CodeSupport.java bad
-kiev.be.java.ConstPool kiev/be/java/ConstPool kiev\be\java\ConstPool.java bad
-kiev.be.java.ConstantValueAttr kiev/be/java/ConstantValueAttr kiev\be\java\Attr.java bad
-kiev.be.java.ContractAttr kiev/be/java/ContractAttr kiev\be\java\Attr.java bad
-kiev.be.java.DefaultMetaAttr kiev/be/java/DefaultMetaAttr kiev\be\java\Attr.java bad
-kiev.be.java.ExceptionsAttr kiev/be/java/ExceptionsAttr kiev\be\java\Attr.java bad
-kiev.be.java.FieldCP kiev/be/java/FieldCP kiev\be\java\ConstPool.java bad
-kiev.be.java.IBoolExpr kiev/be/java/IBoolExpr kiev\be\java\JBoolExpr.java bad
-kiev.be.java.InnerClassesAttr kiev/be/java/InnerClassesAttr kiev\be\java\Attr.java bad
-kiev.be.java.Instr kiev/be/java/Instr kiev\be\java\Instr.java bad
-kiev.be.java.InterfaceMethodCP kiev/be/java/InterfaceMethodCP kiev\be\java\ConstPool.java bad
-kiev.be.java.JAccessExprView kiev/be/java/JAccessExprView kiev\be\java\JLvalueExpr.java bad
-kiev.be.java.JArrayLengthExprView kiev/be/java/JArrayLengthExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JArrayType kiev/be/java/JArrayType kiev\be\java\JType.java bad
-kiev.be.java.JAssignExprView kiev/be/java/JAssignExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JBaseType kiev/be/java/JBaseType kiev\be\java\JType.java bad
-kiev.be.java.JBaseTypeProvider kiev/be/java/JBaseTypeProvider kiev\be\java\JType.java bad
-kiev.be.java.JBinaryBoolExprView kiev/be/java/JBinaryBoolExprView kiev\be\java\JBoolExpr.java bad
-kiev.be.java.JBinaryBooleanAndExprView kiev/be/java/JBinaryBooleanAndExprView kiev\be\java\JBoolExpr.java bad
-kiev.be.java.JBinaryBooleanOrExprView kiev/be/java/JBinaryBooleanOrExprView kiev\be\java\JBoolExpr.java bad
-kiev.be.java.JBinaryExprView kiev/be/java/JBinaryExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JBlockExprView kiev/be/java/JBlockExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JBlockStatView kiev/be/java/JBlockStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JBoolExprView kiev/be/java/JBoolExprView kiev\be\java\JBoolExpr.java bad
-kiev.be.java.JBooleanNotExprView kiev/be/java/JBooleanNotExprView kiev\be\java\JBoolExpr.java bad
-kiev.be.java.JBreakStatView kiev/be/java/JBreakStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JCallExprView kiev/be/java/JCallExprView kiev\be\java\JCallExpr.java bad
-kiev.be.java.JCaseLabelView kiev/be/java/JCaseLabelView kiev\be\java\JComplexStat.java bad
-kiev.be.java.JCastExprView kiev/be/java/JCastExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JCatchInfoView kiev/be/java/JCatchInfoView kiev\be\java\JComplexStat.java bad
-kiev.be.java.JClosureCallExprView kiev/be/java/JClosureCallExprView kiev\be\java\JCallExpr.java bad
-kiev.be.java.JCommaExprView kiev/be/java/JCommaExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JCondStatView kiev/be/java/JCondStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JConditionalExprView kiev/be/java/JConditionalExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JConstBoolExprView kiev/be/java/JConstBoolExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstByteExprView kiev/be/java/JConstByteExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstCharExprView kiev/be/java/JConstCharExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstDoubleExprView kiev/be/java/JConstDoubleExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstExprView kiev/be/java/JConstExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstFloatExprView kiev/be/java/JConstFloatExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstIntExprView kiev/be/java/JConstIntExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstLongExprView kiev/be/java/JConstLongExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstNullExprView kiev/be/java/JConstNullExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstShortExprView kiev/be/java/JConstShortExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstStringExprView kiev/be/java/JConstStringExprView kiev\be\java\JConstExpr.java bad
-kiev.be.java.JConstants kiev/be/java/JConstants kiev\be\java\JConstants.java bad
-kiev.be.java.JContainerAccessExprView kiev/be/java/JContainerAccessExprView kiev\be\java\JLvalueExpr.java bad
-kiev.be.java.JContinueStatView kiev/be/java/JContinueStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JDNodeView kiev/be/java/JDNodeView kiev\be\java\JNode.java bad
-kiev.be.java.JDoWhileStatView kiev/be/java/JDoWhileStatView kiev\be\java\JLoopStat.java bad
-kiev.be.java.JENodeView kiev/be/java/JENodeView kiev\be\java\JNode.java bad
-kiev.be.java.JEmptyStatView kiev/be/java/JEmptyStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JExprStatView kiev/be/java/JExprStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JFakeType kiev/be/java/JFakeType kiev\be\java\JType.java bad
-kiev.be.java.JFakeTypeProvider kiev/be/java/JFakeTypeProvider kiev\be\java\JType.java bad
-kiev.be.java.JFieldView kiev/be/java/JFieldView kiev\be\java\JFieldView.java bad
-kiev.be.java.JFileUnitView kiev/be/java/JFileUnitView kiev\be\java\JFileUnit.java bad
-kiev.be.java.JFinallyInfoView kiev/be/java/JFinallyInfoView kiev\be\java\JComplexStat.java bad
-kiev.be.java.JForEachStatView kiev/be/java/JForEachStatView kiev\be\java\JLoopStat.java bad
-kiev.be.java.JForInitView kiev/be/java/JForInitView kiev\be\java\JLoopStat.java bad
-kiev.be.java.JForStatView kiev/be/java/JForStatView kiev\be\java\JLoopStat.java bad
-kiev.be.java.JGotoCaseStatView kiev/be/java/JGotoCaseStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JGotoStatView kiev/be/java/JGotoStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JIFldExprView kiev/be/java/JIFldExprView kiev\be\java\JLvalueExpr.java bad
-kiev.be.java.JIfElseStatView kiev/be/java/JIfElseStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JIncrementExprView kiev/be/java/JIncrementExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JInitializerView kiev/be/java/JInitializerView kiev\be\java\JMethod.java bad
-kiev.be.java.JInlineMethodStatView kiev/be/java/JInlineMethodStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JInstanceofExprView kiev/be/java/JInstanceofExprView kiev\be\java\JBoolExpr.java bad
-kiev.be.java.JLVarExprView kiev/be/java/JLVarExprView kiev\be\java\JLvalueExpr.java bad
-kiev.be.java.JLabelView kiev/be/java/JLabelView kiev\be\java\JLoopStat.java bad
-kiev.be.java.JLabeledStatView kiev/be/java/JLabeledStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JLocalStructDeclView kiev/be/java/JLocalStructDeclView kiev\be\java\JNode.java bad
-kiev.be.java.JLoopStatView kiev/be/java/JLoopStatView kiev\be\java\JLoopStat.java bad
-kiev.be.java.JLvalDNodeView kiev/be/java/JLvalDNodeView kiev\be\java\JNode.java bad
-kiev.be.java.JLvalueExprView kiev/be/java/JLvalueExprView kiev\be\java\JLvalueExpr.java bad
-kiev.be.java.JMethodType kiev/be/java/JMethodType kiev\be\java\JType.java bad
-kiev.be.java.JMethodView kiev/be/java/JMethodView kiev\be\java\JMethod.java bad
-kiev.be.java.JNameRefView kiev/be/java/JNameRefView kiev\be\java\JNode.java bad
-kiev.be.java.JNewArrayExprView kiev/be/java/JNewArrayExprView kiev\be\java\JNewExpr.java bad
-kiev.be.java.JNewClosureView kiev/be/java/JNewClosureView kiev\be\java\JNewExpr.java bad
-kiev.be.java.JNewExprView kiev/be/java/JNewExprView kiev\be\java\JNewExpr.java bad
-kiev.be.java.JNewInitializedArrayExprView kiev/be/java/JNewInitializedArrayExprView kiev\be\java\JNewExpr.java bad
-kiev.be.java.JNodeView kiev/be/java/JNodeView kiev\be\java\JNode.java bad
-kiev.be.java.JOuterThisAccessExprView kiev/be/java/JOuterThisAccessExprView kiev\be\java\JLvalueExpr.java bad
-kiev.be.java.JPrimitiveType kiev/be/java/JPrimitiveType kiev\be\java\JType.java bad
-kiev.be.java.JPrimitiveTypeProvider kiev/be/java/JPrimitiveTypeProvider kiev\be\java\JType.java bad
-kiev.be.java.JReturnStatView kiev/be/java/JReturnStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JSFldExprView kiev/be/java/JSFldExprView kiev\be\java\JLvalueExpr.java bad
-kiev.be.java.JShadowView kiev/be/java/JShadowView kiev\be\java\JExpr.java bad
-kiev.be.java.JStringConcatExprView kiev/be/java/JStringConcatExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JStructView kiev/be/java/JStructView kiev\be\java\JStruct.java bad
-kiev.be.java.JSwitchStatView kiev/be/java/JSwitchStatView kiev\be\java\JComplexStat.java bad
-kiev.be.java.JSynchronizedStatView kiev/be/java/JSynchronizedStatView kiev\be\java\JComplexStat.java bad
-kiev.be.java.JThisExprView kiev/be/java/JThisExprView kiev\be\java\JLvalueExpr.java bad
-kiev.be.java.JThrowStatView kiev/be/java/JThrowStatView kiev\be\java\JStatement.java bad
-kiev.be.java.JTryStatView kiev/be/java/JTryStatView kiev\be\java\JComplexStat.java bad
-kiev.be.java.JType kiev/be/java/JType kiev\be\java\JType.java bad
-kiev.be.java.JTypeClassExprView kiev/be/java/JTypeClassExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JTypeDeclView kiev/be/java/JTypeDeclView kiev\be\java\JNode.java bad
-kiev.be.java.JTypeRefView kiev/be/java/JTypeRefView kiev\be\java\JNode.java bad
-kiev.be.java.JUnaryExprView kiev/be/java/JUnaryExprView kiev\be\java\JExpr.java bad
-kiev.be.java.JVarDeclView kiev/be/java/JVarDeclView kiev\be\java\JNode.java bad
-kiev.be.java.JVarView kiev/be/java/JVarView kiev\be\java\JVar.java bad
-kiev.be.java.JWBCConditionView kiev/be/java/JWBCConditionView kiev\be\java\JMethod.java bad
-kiev.be.java.JWhileStatView kiev/be/java/JWhileStatView kiev\be\java\JLoopStat.java bad
-kiev.be.java.JWithStatView kiev/be/java/JWithStatView kiev\be\java\JComplexStat.java bad
-kiev.be.java.LinenoTableAttr kiev/be/java/LinenoTableAttr kiev\be\java\Attr.java bad
-kiev.be.java.LocalVarTableAttr kiev/be/java/LocalVarTableAttr kiev\be\java\Attr.java bad
-kiev.be.java.MetaAttr kiev/be/java/MetaAttr kiev\be\java\Attr.java bad
-kiev.be.java.MethodCP kiev/be/java/MethodCP kiev\be\java\ConstPool.java bad
-kiev.be.java.NameTypeCP kiev/be/java/NameTypeCP kiev\be\java\ConstPool.java bad
-kiev.be.java.NodeCP kiev/be/java/NodeCP kiev\be\java\ConstPool.java bad
-kiev.be.java.NumberCP kiev/be/java/NumberCP kiev\be\java\ConstPool.java bad
-kiev.be.java.OpCodeRules kiev/be/java/OpCodeRules kiev\be\java\OpCodeRules.java bad
-kiev.be.java.ParMetaAttr kiev/be/java/ParMetaAttr kiev\be\java\Attr.java bad
-kiev.be.java.RIMetaAttr kiev/be/java/RIMetaAttr kiev\be\java\Attr.java bad
-kiev.be.java.RMetaAttr kiev/be/java/RMetaAttr kiev\be\java\Attr.java bad
-kiev.be.java.RVMetaAttr kiev/be/java/RVMetaAttr kiev\be\java\Attr.java bad
-kiev.be.java.RVParMetaAttr kiev/be/java/RVParMetaAttr kiev\be\java\Attr.java bad
-kiev.be.java.SourceFileAttr kiev/be/java/SourceFileAttr kiev\be\java\Attr.java bad
-kiev.be.java.StringCP kiev/be/java/StringCP kiev\be\java\ConstPool.java bad
-kiev.bytecode.Annotation kiev/bytecode/Annotation kiev\bytecode\Attribute.java bad
+kiev.Main kiev/Main kiev\Main.java
+kiev.SeverError kiev/SeverError kiev\Errors.java
+kiev.Syntax kiev/Syntax kiev\Syntax.java
+kiev.be.java.AsciiCP kiev/be/java/AsciiCP kiev\be\java\ConstPool.java
+kiev.be.java.Attr kiev/be/java/Attr kiev\be\java\Attr.java
+kiev.be.java.Bytecoder kiev/be/java/Bytecoder kiev\be\java\Bytecoder.java
+kiev.be.java.CP kiev/be/java/CP kiev\be\java\ConstPool.java
+kiev.be.java.ClazzCP kiev/be/java/ClazzCP kiev\be\java\ConstPool.java
+kiev.be.java.Code kiev/be/java/Code kiev\be\java\Code.java
+kiev.be.java.CodeAttr kiev/be/java/CodeAttr kiev\be\java\Attr.java
+kiev.be.java.CodeCatchInfo kiev/be/java/CodeCatchInfo kiev\be\java\CodeSupport.java
+kiev.be.java.CodeLabel kiev/be/java/CodeLabel kiev\be\java\CodeSupport.java
+kiev.be.java.CodeLookupSwitch kiev/be/java/CodeLookupSwitch kiev\be\java\CodeSupport.java
+kiev.be.java.CodeSwitch kiev/be/java/CodeSwitch kiev\be\java\CodeSupport.java
+kiev.be.java.CodeTableSwitch kiev/be/java/CodeTableSwitch kiev\be\java\CodeSupport.java
+kiev.be.java.CodeVar kiev/be/java/CodeVar kiev\be\java\CodeSupport.java
+kiev.be.java.ConstPool kiev/be/java/ConstPool kiev\be\java\ConstPool.java
+kiev.be.java.ConstantValueAttr kiev/be/java/ConstantValueAttr kiev\be\java\Attr.java
+kiev.be.java.ContractAttr kiev/be/java/ContractAttr kiev\be\java\Attr.java
+kiev.be.java.DefaultMetaAttr kiev/be/java/DefaultMetaAttr kiev\be\java\Attr.java
+kiev.be.java.ExceptionsAttr kiev/be/java/ExceptionsAttr kiev\be\java\Attr.java
+kiev.be.java.FieldCP kiev/be/java/FieldCP kiev\be\java\ConstPool.java
+kiev.be.java.IBoolExpr kiev/be/java/IBoolExpr kiev\be\java\JBoolExpr.java
+kiev.be.java.InnerClassesAttr kiev/be/java/InnerClassesAttr kiev\be\java\Attr.java
+kiev.be.java.Instr kiev/be/java/Instr kiev\be\java\Instr.java
+kiev.be.java.InterfaceMethodCP kiev/be/java/InterfaceMethodCP kiev\be\java\ConstPool.java
+kiev.be.java.JAccessExprView kiev/be/java/JAccessExprView kiev\be\java\JLvalueExpr.java
+kiev.be.java.JArrayLengthExprView kiev/be/java/JArrayLengthExprView kiev\be\java\JExpr.java
+kiev.be.java.JArrayType kiev/be/java/JArrayType kiev\be\java\JType.java
+kiev.be.java.JAssignExprView kiev/be/java/JAssignExprView kiev\be\java\JExpr.java
+kiev.be.java.JBaseType kiev/be/java/JBaseType kiev\be\java\JType.java
+kiev.be.java.JBaseTypeProvider kiev/be/java/JBaseTypeProvider kiev\be\java\JType.java
+kiev.be.java.JBinaryBoolExprView kiev/be/java/JBinaryBoolExprView kiev\be\java\JBoolExpr.java
+kiev.be.java.JBinaryBooleanAndExprView kiev/be/java/JBinaryBooleanAndExprView kiev\be\java\JBoolExpr.java
+kiev.be.java.JBinaryBooleanOrExprView kiev/be/java/JBinaryBooleanOrExprView kiev\be\java\JBoolExpr.java
+kiev.be.java.JBinaryExprView kiev/be/java/JBinaryExprView kiev\be\java\JExpr.java
+kiev.be.java.JBlockExprView kiev/be/java/JBlockExprView kiev\be\java\JExpr.java
+kiev.be.java.JBlockStatView kiev/be/java/JBlockStatView kiev\be\java\JStatement.java
+kiev.be.java.JBoolExprView kiev/be/java/JBoolExprView kiev\be\java\JBoolExpr.java
+kiev.be.java.JBooleanNotExprView kiev/be/java/JBooleanNotExprView kiev\be\java\JBoolExpr.java
+kiev.be.java.JBreakStatView kiev/be/java/JBreakStatView kiev\be\java\JStatement.java
+kiev.be.java.JCallExprView kiev/be/java/JCallExprView kiev\be\java\JCallExpr.java
+kiev.be.java.JCaseLabelView kiev/be/java/JCaseLabelView kiev\be\java\JComplexStat.java
+kiev.be.java.JCastExprView kiev/be/java/JCastExprView kiev\be\java\JExpr.java
+kiev.be.java.JCatchInfoView kiev/be/java/JCatchInfoView kiev\be\java\JComplexStat.java
+kiev.be.java.JClosureCallExprView kiev/be/java/JClosureCallExprView kiev\be\java\JCallExpr.java
+kiev.be.java.JCommaExprView kiev/be/java/JCommaExprView kiev\be\java\JExpr.java
+kiev.be.java.JCondStatView kiev/be/java/JCondStatView kiev\be\java\JStatement.java
+kiev.be.java.JConditionalExprView kiev/be/java/JConditionalExprView kiev\be\java\JExpr.java
+kiev.be.java.JConstBoolExprView kiev/be/java/JConstBoolExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstByteExprView kiev/be/java/JConstByteExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstCharExprView kiev/be/java/JConstCharExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstDoubleExprView kiev/be/java/JConstDoubleExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstExprView kiev/be/java/JConstExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstFloatExprView kiev/be/java/JConstFloatExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstIntExprView kiev/be/java/JConstIntExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstLongExprView kiev/be/java/JConstLongExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstNullExprView kiev/be/java/JConstNullExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstShortExprView kiev/be/java/JConstShortExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstStringExprView kiev/be/java/JConstStringExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstants kiev/be/java/JConstants kiev\be\java\JConstants.java
+kiev.be.java.JContainerAccessExprView kiev/be/java/JContainerAccessExprView kiev\be\java\JLvalueExpr.java
+kiev.be.java.JContinueStatView kiev/be/java/JContinueStatView kiev\be\java\JStatement.java
+kiev.be.java.JDNodeView kiev/be/java/JDNodeView kiev\be\java\JNode.java
+kiev.be.java.JDoWhileStatView kiev/be/java/JDoWhileStatView kiev\be\java\JLoopStat.java
+kiev.be.java.JENodeView kiev/be/java/JENodeView kiev\be\java\JNode.java
+kiev.be.java.JEmptyStatView kiev/be/java/JEmptyStatView kiev\be\java\JStatement.java
+kiev.be.java.JExprStatView kiev/be/java/JExprStatView kiev\be\java\JStatement.java
+kiev.be.java.JFakeType kiev/be/java/JFakeType kiev\be\java\JType.java
+kiev.be.java.JFakeTypeProvider kiev/be/java/JFakeTypeProvider kiev\be\java\JType.java
+kiev.be.java.JFieldView kiev/be/java/JFieldView kiev\be\java\JFieldView.java
+kiev.be.java.JFileUnitView kiev/be/java/JFileUnitView kiev\be\java\JFileUnit.java
+kiev.be.java.JFinallyInfoView kiev/be/java/JFinallyInfoView kiev\be\java\JComplexStat.java
+kiev.be.java.JForEachStatView kiev/be/java/JForEachStatView kiev\be\java\JLoopStat.java
+kiev.be.java.JForInitView kiev/be/java/JForInitView kiev\be\java\JLoopStat.java
+kiev.be.java.JForStatView kiev/be/java/JForStatView kiev\be\java\JLoopStat.java
+kiev.be.java.JGotoCaseStatView kiev/be/java/JGotoCaseStatView kiev\be\java\JStatement.java
+kiev.be.java.JGotoStatView kiev/be/java/JGotoStatView kiev\be\java\JStatement.java
+kiev.be.java.JIFldExprView kiev/be/java/JIFldExprView kiev\be\java\JLvalueExpr.java
+kiev.be.java.JIfElseStatView kiev/be/java/JIfElseStatView kiev\be\java\JStatement.java
+kiev.be.java.JIncrementExprView kiev/be/java/JIncrementExprView kiev\be\java\JExpr.java
+kiev.be.java.JInitializerView kiev/be/java/JInitializerView kiev\be\java\JMethod.java
+kiev.be.java.JInlineMethodStatView kiev/be/java/JInlineMethodStatView kiev\be\java\JStatement.java
+kiev.be.java.JInstanceofExprView kiev/be/java/JInstanceofExprView kiev\be\java\JBoolExpr.java
+kiev.be.java.JLVarExprView kiev/be/java/JLVarExprView kiev\be\java\JLvalueExpr.java
+kiev.be.java.JLabelView kiev/be/java/JLabelView kiev\be\java\JLoopStat.java
+kiev.be.java.JLabeledStatView kiev/be/java/JLabeledStatView kiev\be\java\JStatement.java
+kiev.be.java.JLocalStructDeclView kiev/be/java/JLocalStructDeclView kiev\be\java\JNode.java
+kiev.be.java.JLoopStatView kiev/be/java/JLoopStatView kiev\be\java\JLoopStat.java
+kiev.be.java.JLvalDNodeView kiev/be/java/JLvalDNodeView kiev\be\java\JNode.java
+kiev.be.java.JLvalueExprView kiev/be/java/JLvalueExprView kiev\be\java\JLvalueExpr.java
+kiev.be.java.JMethodType kiev/be/java/JMethodType kiev\be\java\JType.java
+kiev.be.java.JMethodView kiev/be/java/JMethodView kiev\be\java\JMethod.java
+kiev.be.java.JNameRefView kiev/be/java/JNameRefView kiev\be\java\JNode.java
+kiev.be.java.JNewArrayExprView kiev/be/java/JNewArrayExprView kiev\be\java\JNewExpr.java
+kiev.be.java.JNewClosureView kiev/be/java/JNewClosureView kiev\be\java\JNewExpr.java
+kiev.be.java.JNewExprView kiev/be/java/JNewExprView kiev\be\java\JNewExpr.java
+kiev.be.java.JNewInitializedArrayExprView kiev/be/java/JNewInitializedArrayExprView kiev\be\java\JNewExpr.java
+kiev.be.java.JNodeView kiev/be/java/JNodeView kiev\be\java\JNode.java
+kiev.be.java.JOuterThisAccessExprView kiev/be/java/JOuterThisAccessExprView kiev\be\java\JLvalueExpr.java
+kiev.be.java.JPrimitiveType kiev/be/java/JPrimitiveType kiev\be\java\JType.java
+kiev.be.java.JPrimitiveTypeProvider kiev/be/java/JPrimitiveTypeProvider kiev\be\java\JType.java
+kiev.be.java.JReturnStatView kiev/be/java/JReturnStatView kiev\be\java\JStatement.java
+kiev.be.java.JSFldExprView kiev/be/java/JSFldExprView kiev\be\java\JLvalueExpr.java
+kiev.be.java.JShadowView kiev/be/java/JShadowView kiev\be\java\JExpr.java
+kiev.be.java.JStringConcatExprView kiev/be/java/JStringConcatExprView kiev\be\java\JExpr.java
+kiev.be.java.JStructView kiev/be/java/JStructView kiev\be\java\JStruct.java
+kiev.be.java.JSwitchStatView kiev/be/java/JSwitchStatView kiev\be\java\JComplexStat.java
+kiev.be.java.JSynchronizedStatView kiev/be/java/JSynchronizedStatView kiev\be\java\JComplexStat.java
+kiev.be.java.JThisExprView kiev/be/java/JThisExprView kiev\be\java\JLvalueExpr.java
+kiev.be.java.JThrowStatView kiev/be/java/JThrowStatView kiev\be\java\JStatement.java
+kiev.be.java.JTryStatView kiev/be/java/JTryStatView kiev\be\java\JComplexStat.java
+kiev.be.java.JType kiev/be/java/JType kiev\be\java\JType.java
+kiev.be.java.JTypeClassExprView kiev/be/java/JTypeClassExprView kiev\be\java\JExpr.java
+kiev.be.java.JTypeDeclView kiev/be/java/JTypeDeclView kiev\be\java\JNode.java
+kiev.be.java.JTypeInfoExprView kiev/be/java/JTypeInfoExprView kiev\be\java\JExpr.java
+kiev.be.java.JTypeRefView kiev/be/java/JTypeRefView kiev\be\java\JNode.java
+kiev.be.java.JUnaryExprView kiev/be/java/JUnaryExprView kiev\be\java\JExpr.java
+kiev.be.java.JVarDeclView kiev/be/java/JVarDeclView kiev\be\java\JNode.java
+kiev.be.java.JVarView kiev/be/java/JVarView kiev\be\java\JVar.java
+kiev.be.java.JWBCConditionView kiev/be/java/JWBCConditionView kiev\be\java\JMethod.java
+kiev.be.java.JWhileStatView kiev/be/java/JWhileStatView kiev\be\java\JLoopStat.java
+kiev.be.java.JWithStatView kiev/be/java/JWithStatView kiev\be\java\JComplexStat.java
+kiev.be.java.LinenoTableAttr kiev/be/java/LinenoTableAttr kiev\be\java\Attr.java
+kiev.be.java.LocalVarTableAttr kiev/be/java/LocalVarTableAttr kiev\be\java\Attr.java
+kiev.be.java.MetaAttr kiev/be/java/MetaAttr kiev\be\java\Attr.java
+kiev.be.java.MethodCP kiev/be/java/MethodCP kiev\be\java\ConstPool.java
+kiev.be.java.NameTypeCP kiev/be/java/NameTypeCP kiev\be\java\ConstPool.java
+kiev.be.java.NodeCP kiev/be/java/NodeCP kiev\be\java\ConstPool.java
+kiev.be.java.NumberCP kiev/be/java/NumberCP kiev\be\java\ConstPool.java
+kiev.be.java.OpCodeRules kiev/be/java/OpCodeRules kiev\be\java\OpCodeRules.java
+kiev.be.java.ParMetaAttr kiev/be/java/ParMetaAttr kiev\be\java\Attr.java
+kiev.be.java.RIMetaAttr kiev/be/java/RIMetaAttr kiev\be\java\Attr.java
+kiev.be.java.RMetaAttr kiev/be/java/RMetaAttr kiev\be\java\Attr.java
+kiev.be.java.RVMetaAttr kiev/be/java/RVMetaAttr kiev\be\java\Attr.java
+kiev.be.java.RVParMetaAttr kiev/be/java/RVParMetaAttr kiev\be\java\Attr.java
+kiev.be.java.SourceFileAttr kiev/be/java/SourceFileAttr kiev\be\java\Attr.java
+kiev.be.java.StringCP kiev/be/java/StringCP kiev\be\java\ConstPool.java
+kiev.bytecode.Annotation kiev/bytecode/Annotation kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.annotation kiev/bytecode/Annotation$annotation kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.element_value kiev/bytecode/Annotation$element_value kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.element_value_annotation kiev/bytecode/Annotation$element_value_annotation kiev\bytecode\Attribute.java
@@ -149,791 +150,463 @@ kiev.bytecode.Annotation.element_value_array kiev/bytecode/Annotation$element_va
 kiev.bytecode.Annotation.element_value_class_info kiev/bytecode/Annotation$element_value_class_info kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.element_value_const kiev/bytecode/Annotation$element_value_const kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.element_value_enum_const kiev/bytecode/Annotation$element_value_enum_const kiev\bytecode\Attribute.java
-kiev.bytecode.AnnotationDefault kiev/bytecode/AnnotationDefault kiev\bytecode\Attribute.java bad
-kiev.bytecode.Annotations kiev/bytecode/Annotations kiev\bytecode\Attribute.java bad
-kiev.bytecode.Attribute kiev/bytecode/Attribute kiev\bytecode\Attribute.java bad
-kiev.bytecode.BytecodeAttributeNames kiev/bytecode/BytecodeAttributeNames kiev\bytecode\Constants.java bad
-kiev.bytecode.BytecodeElement kiev/bytecode/BytecodeElement kiev\bytecode\Clazz.java bad
-kiev.bytecode.BytecodeFileConstants kiev/bytecode/BytecodeFileConstants kiev\bytecode\Constants.java bad
-kiev.bytecode.Classpath kiev/bytecode/Classpath kiev\bytecode\Classpath.java bad
-kiev.bytecode.ClasspathEntry kiev/bytecode/ClasspathEntry kiev\bytecode\Classpath.java bad
-kiev.bytecode.Clazz kiev/bytecode/Clazz kiev\bytecode\Clazz.java bad
-kiev.bytecode.ClazzNameTypePoolConstant kiev/bytecode/ClazzNameTypePoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.ClazzPoolConstant kiev/bytecode/ClazzPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.ClazzSignatures kiev/bytecode/ClazzSignatures kiev\bytecode\Constants.java bad
-kiev.bytecode.CodeAttribute kiev/bytecode/CodeAttribute kiev\bytecode\Attribute.java bad
+kiev.bytecode.AnnotationDefault kiev/bytecode/AnnotationDefault kiev\bytecode\Attribute.java
+kiev.bytecode.Annotations kiev/bytecode/Annotations kiev\bytecode\Attribute.java
+kiev.bytecode.Attribute kiev/bytecode/Attribute kiev\bytecode\Attribute.java
+kiev.bytecode.BytecodeAttributeNames kiev/bytecode/BytecodeAttributeNames kiev\bytecode\Constants.java
+kiev.bytecode.BytecodeElement kiev/bytecode/BytecodeElement kiev\bytecode\Clazz.java
+kiev.bytecode.BytecodeFileConstants kiev/bytecode/BytecodeFileConstants kiev\bytecode\Constants.java
+kiev.bytecode.Classpath kiev/bytecode/Classpath kiev\bytecode\Classpath.java
+kiev.bytecode.ClasspathEntry kiev/bytecode/ClasspathEntry kiev\bytecode\Classpath.java
+kiev.bytecode.Clazz kiev/bytecode/Clazz kiev\bytecode\Clazz.java
+kiev.bytecode.ClazzNameTypePoolConstant kiev/bytecode/ClazzNameTypePoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.ClazzPoolConstant kiev/bytecode/ClazzPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.ClazzSignatures kiev/bytecode/ClazzSignatures kiev\bytecode\Constants.java
+kiev.bytecode.CodeAttribute kiev/bytecode/CodeAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.CodeAttribute.CatchInfo kiev/bytecode/CodeAttribute$CatchInfo kiev\bytecode\Attribute.java
-kiev.bytecode.ConstantValueAttribute kiev/bytecode/ConstantValueAttribute kiev\bytecode\Attribute.java bad
-kiev.bytecode.DirClasspathEntry kiev/bytecode/DirClasspathEntry kiev\bytecode\Classpath.java bad
-kiev.bytecode.DoublePoolConstant kiev/bytecode/DoublePoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.ExceptionsAttribute kiev/bytecode/ExceptionsAttribute kiev\bytecode\Attribute.java bad
-kiev.bytecode.Field kiev/bytecode/Field kiev\bytecode\Field.java bad
-kiev.bytecode.FieldPoolConstant kiev/bytecode/FieldPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.FloatPoolConstant kiev/bytecode/FloatPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.InnerClassesAttribute kiev/bytecode/InnerClassesAttribute kiev\bytecode\Attribute.java bad
-kiev.bytecode.IntegerPoolConstant kiev/bytecode/IntegerPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.InterfaceMethodPoolConstant kiev/bytecode/InterfaceMethodPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.JavaOpcodes kiev/bytecode/JavaOpcodes kiev\bytecode\Constants.java bad
-kiev.bytecode.KievContractAttribute kiev/bytecode/KievContractAttribute kiev\bytecode\Attribute.java bad
-kiev.bytecode.LineNumberTableAttribute kiev/bytecode/LineNumberTableAttribute kiev\bytecode\Attribute.java bad
-kiev.bytecode.LocalVariableTableAttribute kiev/bytecode/LocalVariableTableAttribute kiev\bytecode\Attribute.java bad
+kiev.bytecode.ConstantValueAttribute kiev/bytecode/ConstantValueAttribute kiev\bytecode\Attribute.java
+kiev.bytecode.DirClasspathEntry kiev/bytecode/DirClasspathEntry kiev\bytecode\Classpath.java
+kiev.bytecode.DoublePoolConstant kiev/bytecode/DoublePoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.ExceptionsAttribute kiev/bytecode/ExceptionsAttribute kiev\bytecode\Attribute.java
+kiev.bytecode.Field kiev/bytecode/Field kiev\bytecode\Field.java
+kiev.bytecode.FieldPoolConstant kiev/bytecode/FieldPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.FloatPoolConstant kiev/bytecode/FloatPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.InnerClassesAttribute kiev/bytecode/InnerClassesAttribute kiev\bytecode\Attribute.java
+kiev.bytecode.IntegerPoolConstant kiev/bytecode/IntegerPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.InterfaceMethodPoolConstant kiev/bytecode/InterfaceMethodPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.JavaOpcodes kiev/bytecode/JavaOpcodes kiev\bytecode\Constants.java
+kiev.bytecode.KievContractAttribute kiev/bytecode/KievContractAttribute kiev\bytecode\Attribute.java
+kiev.bytecode.LineNumberTableAttribute kiev/bytecode/LineNumberTableAttribute kiev\bytecode\Attribute.java
+kiev.bytecode.LocalVariableTableAttribute kiev/bytecode/LocalVariableTableAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.LocalVariableTableAttribute.VarInfo kiev/bytecode/LocalVariableTableAttribute$VarInfo kiev\bytecode\Attribute.java
-kiev.bytecode.LongPoolConstant kiev/bytecode/LongPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.Method kiev/bytecode/Method kiev\bytecode\Method.java bad
-kiev.bytecode.MethodPoolConstant kiev/bytecode/MethodPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.NameAndTypePoolConstant kiev/bytecode/NameAndTypePoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.NewArrayConstants kiev/bytecode/NewArrayConstants kiev\bytecode\Constants.java bad
-kiev.bytecode.NumberPoolConstant kiev/bytecode/NumberPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.ParAnnotations kiev/bytecode/ParAnnotations kiev\bytecode\Attribute.java bad
-kiev.bytecode.PoolConstant kiev/bytecode/PoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.RIAnnotations kiev/bytecode/RIAnnotations kiev\bytecode\Attribute.java bad
-kiev.bytecode.RIParAnnotations kiev/bytecode/RIParAnnotations kiev\bytecode\Attribute.java bad
-kiev.bytecode.RVAnnotations kiev/bytecode/RVAnnotations kiev\bytecode\Attribute.java bad
-kiev.bytecode.RVParAnnotations kiev/bytecode/RVParAnnotations kiev\bytecode\Attribute.java bad
-kiev.bytecode.ReadContext kiev/bytecode/ReadContext kiev\bytecode\Clazz.java bad
-kiev.bytecode.RefPoolConstant kiev/bytecode/RefPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.SourceFileAttribute kiev/bytecode/SourceFileAttribute kiev\bytecode\Attribute.java bad
-kiev.bytecode.StandardClassLoader kiev/bytecode/StandardClassLoader kiev\bytecode\StandardClassLoader.java bad
-kiev.bytecode.StringPoolConstant kiev/bytecode/StringPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.UnicodePoolConstant kiev/bytecode/UnicodePoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java bad
-kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java bad
-kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java bad
-kiev.parser.ASTAnonymouseClosure kiev/parser/ASTAnonymouseClosure kiev\parser\ASTAnonymouseClosure.java bad
+kiev.bytecode.LongPoolConstant kiev/bytecode/LongPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.Method kiev/bytecode/Method kiev\bytecode\Method.java
+kiev.bytecode.MethodPoolConstant kiev/bytecode/MethodPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.NameAndTypePoolConstant kiev/bytecode/NameAndTypePoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.NewArrayConstants kiev/bytecode/NewArrayConstants kiev\bytecode\Constants.java
+kiev.bytecode.NumberPoolConstant kiev/bytecode/NumberPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.ParAnnotations kiev/bytecode/ParAnnotations kiev\bytecode\Attribute.java
+kiev.bytecode.PoolConstant kiev/bytecode/PoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.RIAnnotations kiev/bytecode/RIAnnotations kiev\bytecode\Attribute.java
+kiev.bytecode.RIParAnnotations kiev/bytecode/RIParAnnotations kiev\bytecode\Attribute.java
+kiev.bytecode.RVAnnotations kiev/bytecode/RVAnnotations kiev\bytecode\Attribute.java
+kiev.bytecode.RVParAnnotations kiev/bytecode/RVParAnnotations kiev\bytecode\Attribute.java
+kiev.bytecode.ReadContext kiev/bytecode/ReadContext kiev\bytecode\Clazz.java
+kiev.bytecode.RefPoolConstant kiev/bytecode/RefPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.SourceFileAttribute kiev/bytecode/SourceFileAttribute kiev\bytecode\Attribute.java
+kiev.bytecode.StandardClassLoader kiev/bytecode/StandardClassLoader kiev\bytecode\StandardClassLoader.java
+kiev.bytecode.StringPoolConstant kiev/bytecode/StringPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.UnicodePoolConstant kiev/bytecode/UnicodePoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java
+kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
+kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
+kiev.parser.ASTAnonymouseClosure kiev/parser/ASTAnonymouseClosure kiev\parser\ASTAnonymouseClosure.java
 kiev.parser.ASTAnonymouseClosure.ASTAnonymouseClosureImpl kiev/parser/ASTAnonymouseClosure$ASTAnonymouseClosureImpl kiev\parser\ASTAnonymouseClosure.java
 kiev.parser.ASTAnonymouseClosure.ASTAnonymouseClosureView kiev/parser/ASTAnonymouseClosure$ASTAnonymouseClosureView kiev\parser\ASTAnonymouseClosure.java
 kiev.parser.ASTAnonymouseClosure.DFI kiev/parser/ASTAnonymouseClosure$DFI kiev\parser\ASTAnonymouseClosure.java
-kiev.parser.ASTCallAccessExpression kiev/parser/ASTCallAccessExpression kiev\parser\ASTCallAccessExpression.java bad
+kiev.parser.ASTCallAccessExpression kiev/parser/ASTCallAccessExpression kiev\parser\ASTCallAccessExpression.java
 kiev.parser.ASTCallAccessExpression.ASTCallAccessExpressionImpl kiev/parser/ASTCallAccessExpression$ASTCallAccessExpressionImpl kiev\parser\ASTCallAccessExpression.java
 kiev.parser.ASTCallAccessExpression.ASTCallAccessExpressionView kiev/parser/ASTCallAccessExpression$ASTCallAccessExpressionView kiev\parser\ASTCallAccessExpression.java
 kiev.parser.ASTCallAccessExpression.DFI kiev/parser/ASTCallAccessExpression$DFI kiev\parser\ASTCallAccessExpression.java
-kiev.parser.ASTCallExpression kiev/parser/ASTCallExpression kiev\parser\ASTCallExpression.java bad
+kiev.parser.ASTCallExpression kiev/parser/ASTCallExpression kiev\parser\ASTCallExpression.java
 kiev.parser.ASTCallExpression.ASTCallExpressionImpl kiev/parser/ASTCallExpression$ASTCallExpressionImpl kiev\parser\ASTCallExpression.java
 kiev.parser.ASTCallExpression.ASTCallExpressionView kiev/parser/ASTCallExpression$ASTCallExpressionView kiev\parser\ASTCallExpression.java
 kiev.parser.ASTCallExpression.DFI kiev/parser/ASTCallExpression$DFI kiev\parser\ASTCallExpression.java
-kiev.parser.ASTCastOperator kiev/parser/ASTCastOperator kiev\parser\ASTCastOperator.java bad
+kiev.parser.ASTCastOperator kiev/parser/ASTCastOperator kiev\parser\ASTCastOperator.java
 kiev.parser.ASTCastOperator.DFI kiev/parser/ASTCastOperator$DFI kiev\parser\ASTCastOperator.java
-kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java bad
+kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
 kiev.parser.ASTExpression.ASTExpressionImpl kiev/parser/ASTExpression$ASTExpressionImpl kiev\parser\ASTExpression.java
 kiev.parser.ASTExpression.ASTExpressionView kiev/parser/ASTExpression$ASTExpressionView kiev\parser\ASTExpression.java
 kiev.parser.ASTExpression.DFI kiev/parser/ASTExpression$DFI kiev\parser\ASTExpression.java
-kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.java bad
+kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.java
 kiev.parser.ASTIdentifier.DFI kiev/parser/ASTIdentifier$DFI kiev\parser\ASTIdentifier.java
-kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIdentifierAlias.java bad
-kiev.parser.ASTModifiers kiev/parser/ASTModifiers kiev\parser\ASTModifiers.java bad
+kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIdentifierAlias.java
+kiev.parser.ASTModifiers kiev/parser/ASTModifiers kiev\parser\ASTModifiers.java
 kiev.parser.ASTModifiers.ASTModifiersImpl kiev/parser/ASTModifiers$ASTModifiersImpl kiev\parser\ASTModifiers.java
 kiev.parser.ASTModifiers.ASTModifiersView kiev/parser/ASTModifiers$ASTModifiersView kiev\parser\ASTModifiers.java
-kiev.parser.ASTNewAccessExpression kiev/parser/ASTNewAccessExpression kiev\parser\ASTNewAccessExpression.java bad
+kiev.parser.ASTNewAccessExpression kiev/parser/ASTNewAccessExpression kiev\parser\ASTNewAccessExpression.java
 kiev.parser.ASTNewAccessExpression.ASTNewAccessExpressionImpl kiev/parser/ASTNewAccessExpression$ASTNewAccessExpressionImpl kiev\parser\ASTNewAccessExpression.java
 kiev.parser.ASTNewAccessExpression.ASTNewAccessExpressionView kiev/parser/ASTNewAccessExpression$ASTNewAccessExpressionView kiev\parser\ASTNewAccessExpression.java
 kiev.parser.ASTNewAccessExpression.DFI kiev/parser/ASTNewAccessExpression$DFI kiev\parser\ASTNewAccessExpression.java
-kiev.parser.ASTNewArrayExpression kiev/parser/ASTNewArrayExpression kiev\parser\ASTNewArrayExpression.java bad
+kiev.parser.ASTNewArrayExpression kiev/parser/ASTNewArrayExpression kiev\parser\ASTNewArrayExpression.java
 kiev.parser.ASTNewArrayExpression.ASTNewArrayExpressionImpl kiev/parser/ASTNewArrayExpression$ASTNewArrayExpressionImpl kiev\parser\ASTNewArrayExpression.java
 kiev.parser.ASTNewArrayExpression.ASTNewArrayExpressionView kiev/parser/ASTNewArrayExpression$ASTNewArrayExpressionView kiev\parser\ASTNewArrayExpression.java
 kiev.parser.ASTNewArrayExpression.DFI kiev/parser/ASTNewArrayExpression$DFI kiev\parser\ASTNewArrayExpression.java
-kiev.parser.ASTNewExpression kiev/parser/ASTNewExpression kiev\parser\ASTNewExpression.java bad
+kiev.parser.ASTNewExpression kiev/parser/ASTNewExpression kiev\parser\ASTNewExpression.java
 kiev.parser.ASTNewExpression.ASTNewExpressionImpl kiev/parser/ASTNewExpression$ASTNewExpressionImpl kiev\parser\ASTNewExpression.java
 kiev.parser.ASTNewExpression.ASTNewExpressionView kiev/parser/ASTNewExpression$ASTNewExpressionView kiev\parser\ASTNewExpression.java
 kiev.parser.ASTNewExpression.DFI kiev/parser/ASTNewExpression$DFI kiev\parser\ASTNewExpression.java
-kiev.parser.ASTNewInitializedArrayExpression kiev/parser/ASTNewInitializedArrayExpression kiev\parser\ASTNewInitializedArrayExpression.java bad
+kiev.parser.ASTNewInitializedArrayExpression kiev/parser/ASTNewInitializedArrayExpression kiev\parser\ASTNewInitializedArrayExpression.java
 kiev.parser.ASTNewInitializedArrayExpression.ASTNewInitializedArrayExpressionImpl kiev/parser/ASTNewInitializedArrayExpression$ASTNewInitializedArrayExpressionImpl kiev\parser\ASTNewInitializedArrayExpression.java
 kiev.parser.ASTNewInitializedArrayExpression.ASTNewInitializedArrayExpressionView kiev/parser/ASTNewInitializedArrayExpression$ASTNewInitializedArrayExpressionView kiev\parser\ASTNewInitializedArrayExpression.java
 kiev.parser.ASTNewInitializedArrayExpression.DFI kiev/parser/ASTNewInitializedArrayExpression$DFI kiev\parser\ASTNewInitializedArrayExpression.java
-kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java bad
+kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java
 kiev.parser.ASTOperator.DFI kiev/parser/ASTOperator$DFI kiev\parser\ASTOperator.java
-kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java bad
-kiev.parser.ASTPragma kiev/parser/ASTPragma kiev\parser\ASTPragma.java bad
+kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java
+kiev.parser.ASTPragma kiev/parser/ASTPragma kiev\parser\ASTPragma.java
 kiev.parser.ASTPragma.ASTPragmaImpl kiev/parser/ASTPragma$ASTPragmaImpl kiev\parser\ASTPragma.java
 kiev.parser.ASTPragma.ASTPragmaView kiev/parser/ASTPragma$ASTPragmaView kiev\parser\ASTPragma.java
-kiev.parser.InfixExpr kiev/parser/InfixExpr kiev\parser\TempExpr.java bad
+kiev.parser.InfixExpr kiev/parser/InfixExpr kiev\parser\TempExpr.java
 kiev.parser.InfixExpr.InfixExprImpl kiev/parser/InfixExpr$InfixExprImpl kiev\parser\TempExpr.java
 kiev.parser.InfixExpr.InfixExprView kiev/parser/InfixExpr$InfixExprView kiev\parser\TempExpr.java
-kiev.parser.JavaCharStream kiev/parser/JavaCharStream kiev\parser\JavaCharStream.java bad
-kiev.parser.MultiExpr kiev/parser/MultiExpr kiev\parser\TempExpr.java bad
+kiev.parser.JavaCharStream kiev/parser/JavaCharStream kiev\parser\JavaCharStream.java
+kiev.parser.MultiExpr kiev/parser/MultiExpr kiev\parser\TempExpr.java
 kiev.parser.MultiExpr.MultiExprImpl kiev/parser/MultiExpr$MultiExprImpl kiev\parser\TempExpr.java
 kiev.parser.MultiExpr.MultiExprView kiev/parser/MultiExpr$MultiExprView kiev\parser\TempExpr.java
-kiev.parser.Opdef kiev/parser/Opdef kiev\parser\Opdef.java bad
+kiev.parser.Opdef kiev/parser/Opdef kiev\parser\Opdef.java
 kiev.parser.Opdef.OpdefImpl kiev/parser/Opdef$OpdefImpl kiev\parser\Opdef.java
 kiev.parser.Opdef.OpdefView kiev/parser/Opdef$OpdefView kiev\parser\Opdef.java
-kiev.parser.ParseError kiev/parser/ParseError kiev\parser\ParseError.java bad
-kiev.parser.ParseException kiev/parser/ParseException kiev\parser\ParseException.java bad
-kiev.parser.Parser kiev/parser/Parser kiev\parser\kiev040.java bad
-kiev.parser.ParserConstants kiev/parser/ParserConstants kiev\parser\kiev040.java bad
-kiev.parser.PostfixExpr kiev/parser/PostfixExpr kiev\parser\TempExpr.java bad
+kiev.parser.ParseError kiev/parser/ParseError kiev\parser\ParseError.java
+kiev.parser.ParseException kiev/parser/ParseException kiev\parser\ParseException.java
+kiev.parser.Parser kiev/parser/Parser kiev\parser\kiev040.java
+kiev.parser.ParserConstants kiev/parser/ParserConstants kiev\parser\kiev040.java
+kiev.parser.PostfixExpr kiev/parser/PostfixExpr kiev\parser\TempExpr.java
 kiev.parser.PostfixExpr.PostfixExprImpl kiev/parser/PostfixExpr$PostfixExprImpl kiev\parser\TempExpr.java
 kiev.parser.PostfixExpr.PostfixExprView kiev/parser/PostfixExpr$PostfixExprView kiev\parser\TempExpr.java
-kiev.parser.PreScanneable kiev/parser/PreScanneable kiev\parser\PreScanneable.java bad
-kiev.parser.PrefixExpr kiev/parser/PrefixExpr kiev\parser\TempExpr.java bad
+kiev.parser.PreScanneable kiev/parser/PreScanneable kiev\parser\PreScanneable.java
+kiev.parser.PrefixExpr kiev/parser/PrefixExpr kiev\parser\TempExpr.java
 kiev.parser.PrefixExpr.PrefixExprImpl kiev/parser/PrefixExpr$PrefixExprImpl kiev\parser\TempExpr.java
 kiev.parser.PrefixExpr.PrefixExprView kiev/parser/PrefixExpr$PrefixExprView kiev\parser\TempExpr.java
-kiev.parser.PrescannedBody kiev/parser/PrescannedBody kiev\parser\PrescannedBody.java bad
-kiev.parser.SimpleCharStream kiev/parser/SimpleCharStream kiev\parser\SimpleCharStream.java bad
-kiev.parser.Token kiev/parser/Token kiev\parser\Token.java bad
-kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java bad
-kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java bad
-kiev.parser.TypeCallRef kiev/parser/TypeCallRef kiev\parser\TypeCallRef.java bad
+kiev.parser.PrescannedBody kiev/parser/PrescannedBody kiev\parser\PrescannedBody.java
+kiev.parser.SimpleCharStream kiev/parser/SimpleCharStream kiev\parser\SimpleCharStream.java
+kiev.parser.Token kiev/parser/Token kiev\parser\Token.java
+kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
+kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java
+kiev.parser.TypeCallRef kiev/parser/TypeCallRef kiev\parser\TypeCallRef.java
 kiev.parser.TypeCallRef.DFI kiev/parser/TypeCallRef$DFI kiev\parser\TypeCallRef.java
 kiev.parser.TypeCallRef.TypeCallRefImpl kiev/parser/TypeCallRef$TypeCallRefImpl kiev\parser\TypeCallRef.java
 kiev.parser.TypeCallRef.TypeCallRefView kiev/parser/TypeCallRef$TypeCallRefView kiev\parser\TypeCallRef.java
-kiev.parser.TypeClosureRef kiev/parser/TypeClosureRef kiev\parser\TypeClosure.java bad
+kiev.parser.TypeClosureRef kiev/parser/TypeClosureRef kiev\parser\TypeClosure.java
 kiev.parser.TypeClosureRef.DFI kiev/parser/TypeClosureRef$DFI kiev\parser\TypeClosure.java
 kiev.parser.TypeClosureRef.TypeClosureRefImpl kiev/parser/TypeClosureRef$TypeClosureRefImpl kiev\parser\TypeClosure.java
 kiev.parser.TypeClosureRef.TypeClosureRefView kiev/parser/TypeClosureRef$TypeClosureRefView kiev\parser\TypeClosure.java
-kiev.parser.TypeExpr kiev/parser/TypeExpr kiev\parser\TypeExpr.java bad
+kiev.parser.TypeExpr kiev/parser/TypeExpr kiev\parser\TypeExpr.java
 kiev.parser.TypeExpr.DFI kiev/parser/TypeExpr$DFI kiev\parser\TypeExpr.java
 kiev.parser.TypeExpr.TypeExprImpl kiev/parser/TypeExpr$TypeExprImpl kiev\parser\TypeExpr.java
 kiev.parser.TypeExpr.TypeExprView kiev/parser/TypeExpr$TypeExprView kiev\parser\TypeExpr.java
-kiev.parser.TypeNameRef kiev/parser/TypeNameRef kiev\parser\TypeNameRef.java bad
+kiev.parser.TypeNameRef kiev/parser/TypeNameRef kiev\parser\TypeNameRef.java
 kiev.parser.TypeNameRef.DFI kiev/parser/TypeNameRef$DFI kiev\parser\TypeNameRef.java
 kiev.parser.TypeNameRef.TypeNameRefImpl kiev/parser/TypeNameRef$TypeNameRefImpl kiev\parser\TypeNameRef.java
 kiev.parser.TypeNameRef.TypeNameRefView kiev/parser/TypeNameRef$TypeNameRefView kiev\parser\TypeNameRef.java
-kiev.parser.TypeWithArgsRef kiev/parser/TypeWithArgsRef kiev\parser\TypeWithArgsRef.java bad
+kiev.parser.TypeWithArgsRef kiev/parser/TypeWithArgsRef kiev\parser\TypeWithArgsRef.java
 kiev.parser.TypeWithArgsRef.DFI kiev/parser/TypeWithArgsRef$DFI kiev\parser\TypeWithArgsRef.java
 kiev.parser.TypeWithArgsRef.TypeWithArgsRefImpl kiev/parser/TypeWithArgsRef$TypeWithArgsRefImpl kiev\parser\TypeWithArgsRef.java
 kiev.parser.TypeWithArgsRef.TypeWithArgsRefView kiev/parser/TypeWithArgsRef$TypeWithArgsRefView kiev\parser\TypeWithArgsRef.java
-kiev.parser.UnresCallExpr kiev/parser/UnresCallExpr kiev\parser\TempExpr.java bad
+kiev.parser.UnresCallExpr kiev/parser/UnresCallExpr kiev\parser\TempExpr.java
 kiev.parser.UnresCallExpr.UnresCallExprImpl kiev/parser/UnresCallExpr$UnresCallExprImpl kiev\parser\TempExpr.java
 kiev.parser.UnresCallExpr.UnresCallExprView kiev/parser/UnresCallExpr$UnresCallExprView kiev\parser\TempExpr.java
-kiev.parser.UnresExpr kiev/parser/UnresExpr kiev\parser\TempExpr.java bad
+kiev.parser.UnresExpr kiev/parser/UnresExpr kiev\parser\TempExpr.java
 kiev.parser.UnresExpr.UnresExprImpl kiev/parser/UnresExpr$UnresExprImpl kiev\parser\TempExpr.java
 kiev.parser.UnresExpr.UnresExprView kiev/parser/UnresExpr$UnresExprView kiev\parser\TempExpr.java
-kiev.parser.kiev040 kiev/parser/kiev040 kiev\parser\kiev040.java bad
+kiev.parser.kiev040 kiev/parser/kiev040 kiev\parser\kiev040.java
 kiev.parser.kiev040.LookaheadSuccess kiev/parser/kiev040$LookaheadSuccess kiev\parser\kiev040.java
-kiev.parser.kiev040Constants kiev/parser/kiev040Constants kiev\parser\kiev040Constants.java bad
-kiev.parser.kiev040TokenManager kiev/parser/kiev040TokenManager kiev\parser\kiev040TokenManager.java bad
-kiev.stdlib.Array kiev/stdlib/Array kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.ArrayEnumerator kiev/stdlib/ArrayEnumerator kiev\stdlib\ArrayEnumerator.java bad
-kiev.stdlib.Arrays kiev/stdlib/Arrays kiev\stdlib\Arrays.java bad
-kiev.stdlib.AssertionFailedException kiev/stdlib/AssertionFailedException kiev\stdlib\Debug.java bad
-kiev.stdlib.AssertionHandler kiev/stdlib/AssertionHandler kiev\stdlib\Debug.java bad
-kiev.stdlib.Cell kiev/stdlib/Cell kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_Object kiev/stdlib/Cell_Object kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_boolean kiev/stdlib/Cell_boolean kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_byte kiev/stdlib/Cell_byte kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_char kiev/stdlib/Cell_char kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_double kiev/stdlib/Cell_double kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_float kiev/stdlib/Cell_float kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_int kiev/stdlib/Cell_int kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_integer kiev/stdlib/Cell_integer kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_long kiev/stdlib/Cell_long kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_number kiev/stdlib/Cell_number kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_short kiev/stdlib/Cell_short kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Cell_void kiev/stdlib/Cell_void kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.Convert kiev/stdlib/Convert kiev\stdlib\KString.java bad
-kiev.stdlib.Debug kiev/stdlib/Debug kiev\stdlib\Debug.java bad
-kiev.stdlib.Dictionary kiev/stdlib/Dictionary kiev\stdlib\Dictionary.java bad
-kiev.stdlib.EnsureFailedException kiev/stdlib/EnsureFailedException kiev\stdlib\Debug.java bad
-kiev.stdlib.Enum kiev/stdlib/Enum kiev\stdlib\Enum.java bad
-kiev.stdlib.Enumeration kiev/stdlib/Enumeration kiev\stdlib\Enumeration.java bad
-kiev.stdlib.Hash kiev/stdlib/Hash kiev\stdlib\Hash.java bad
+kiev.parser.kiev040Constants kiev/parser/kiev040Constants kiev\parser\kiev040Constants.java
+kiev.parser.kiev040TokenManager kiev/parser/kiev040TokenManager kiev\parser\kiev040TokenManager.java
+kiev.stdlib.Array kiev/stdlib/Array kiev\stdlib\SupportTypes.java
+kiev.stdlib.ArrayEnumerator kiev/stdlib/ArrayEnumerator kiev\stdlib\ArrayEnumerator.java
+kiev.stdlib.Arrays kiev/stdlib/Arrays kiev\stdlib\Arrays.java
+kiev.stdlib.AssertionFailedException kiev/stdlib/AssertionFailedException kiev\stdlib\Debug.java
+kiev.stdlib.AssertionHandler kiev/stdlib/AssertionHandler kiev\stdlib\Debug.java
+kiev.stdlib.Cell kiev/stdlib/Cell kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_Object kiev/stdlib/Cell_Object kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_boolean kiev/stdlib/Cell_boolean kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_byte kiev/stdlib/Cell_byte kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_char kiev/stdlib/Cell_char kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_double kiev/stdlib/Cell_double kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_float kiev/stdlib/Cell_float kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_int kiev/stdlib/Cell_int kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_integer kiev/stdlib/Cell_integer kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_long kiev/stdlib/Cell_long kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_number kiev/stdlib/Cell_number kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_short kiev/stdlib/Cell_short kiev\stdlib\SupportTypes.java
+kiev.stdlib.Cell_void kiev/stdlib/Cell_void kiev\stdlib\SupportTypes.java
+kiev.stdlib.Convert kiev/stdlib/Convert kiev\stdlib\KString.java
+kiev.stdlib.Debug kiev/stdlib/Debug kiev\stdlib\Debug.java
+kiev.stdlib.Dictionary kiev/stdlib/Dictionary kiev\stdlib\Dictionary.java
+kiev.stdlib.EnsureFailedException kiev/stdlib/EnsureFailedException kiev\stdlib\Debug.java
+kiev.stdlib.Enum kiev/stdlib/Enum kiev\stdlib\Enum.java
+kiev.stdlib.Enumeration kiev/stdlib/Enumeration kiev\stdlib\Enumeration.java
+kiev.stdlib.Hash kiev/stdlib/Hash kiev\stdlib\Hash.java
 kiev.stdlib.Hash.HashEntry kiev/stdlib/Hash$HashEntry kiev\stdlib\Hash.java
 kiev.stdlib.Hash.HashEnumerator kiev/stdlib/Hash$HashEnumerator kiev\stdlib\Hash.java
-kiev.stdlib.Hashtable kiev/stdlib/Hashtable kiev\stdlib\Hashtable.java bad
+kiev.stdlib.Hashtable kiev/stdlib/Hashtable kiev\stdlib\Hashtable.java
 kiev.stdlib.Hashtable.HashtableEntry kiev/stdlib/Hashtable$HashtableEntry kiev\stdlib\Hashtable.java
 kiev.stdlib.Hashtable.KeyEnumerator kiev/stdlib/Hashtable$KeyEnumerator kiev\stdlib\Hashtable.java
 kiev.stdlib.Hashtable.ValueEnumerator kiev/stdlib/Hashtable$ValueEnumerator kiev\stdlib\Hashtable.java
-kiev.stdlib.InvariantFailedException kiev/stdlib/InvariantFailedException kiev\stdlib\Debug.java bad
-kiev.stdlib.KString kiev/stdlib/KString kiev\stdlib\KString.java bad
+kiev.stdlib.InvariantFailedException kiev/stdlib/InvariantFailedException kiev\stdlib\Debug.java
+kiev.stdlib.KString kiev/stdlib/KString kiev\stdlib\KString.java
 kiev.stdlib.KString.KStringScanner kiev/stdlib/KString$KStringScanner kiev\stdlib\KString.java
-kiev.stdlib.KStringBuffer kiev/stdlib/KStringBuffer kiev\stdlib\KStringBuffer.java bad
-kiev.stdlib.KStringTokenizer kiev/stdlib/KStringTokenizer kiev\stdlib\KStringTokenizer.java bad
-kiev.stdlib.List kiev/stdlib/List kiev\stdlib\List.java bad
+kiev.stdlib.KStringBuffer kiev/stdlib/KStringBuffer kiev\stdlib\KStringBuffer.java
+kiev.stdlib.KStringTokenizer kiev/stdlib/KStringTokenizer kiev\stdlib\KStringTokenizer.java
+kiev.stdlib.List kiev/stdlib/List kiev\stdlib\List.java
 kiev.stdlib.List.Cons kiev/stdlib/List$Cons kiev\stdlib\List.java
 kiev.stdlib.List.ListEnumerator kiev/stdlib/List$ListEnumerator kiev\stdlib\List.java
 kiev.stdlib.List.Nil kiev/stdlib/List$Nil kiev\stdlib\List.java
-kiev.stdlib.ListBuffer kiev/stdlib/ListBuffer kiev\stdlib\ListBuffer.java bad
-kiev.stdlib.MatchError kiev/stdlib/MatchError kiev\stdlib\MatchError.java bad
-kiev.stdlib.NoSuchElementException kiev/stdlib/NoSuchElementException kiev\stdlib\NoSuchElementException.java bad
-kiev.stdlib.Null kiev/stdlib/Null kiev\stdlib\SupportTypes.java bad
-kiev.stdlib.PEnv kiev/stdlib/PEnv kiev\stdlib\PEnv.java bad
-kiev.stdlib.PVar kiev/stdlib/PVar kiev\stdlib\PVar.java bad
-kiev.stdlib.Pair kiev/stdlib/Pair kiev\stdlib\Pair.java bad
-kiev.stdlib.Ref kiev/stdlib/Ref kiev\stdlib\Ref.java bad
-kiev.stdlib.RequireFailedException kiev/stdlib/RequireFailedException kiev\stdlib\Debug.java bad
-kiev.stdlib.RuleFrame kiev/stdlib/RuleFrame kiev\stdlib\RuleFrame.java bad
-kiev.stdlib.Stack kiev/stdlib/Stack kiev\stdlib\Stack.java bad
+kiev.stdlib.ListBuffer kiev/stdlib/ListBuffer kiev\stdlib\ListBuffer.java
+kiev.stdlib.MatchError kiev/stdlib/MatchError kiev\stdlib\MatchError.java
+kiev.stdlib.NoSuchElementException kiev/stdlib/NoSuchElementException kiev\stdlib\NoSuchElementException.java
+kiev.stdlib.Null kiev/stdlib/Null kiev\stdlib\SupportTypes.java
+kiev.stdlib.PEnv kiev/stdlib/PEnv kiev\stdlib\PEnv.java
+kiev.stdlib.PVar kiev/stdlib/PVar kiev\stdlib\PVar.java
+kiev.stdlib.Pair kiev/stdlib/Pair kiev\stdlib\Pair.java
+kiev.stdlib.Ref kiev/stdlib/Ref kiev\stdlib\Ref.java
+kiev.stdlib.RequireFailedException kiev/stdlib/RequireFailedException kiev\stdlib\Debug.java
+kiev.stdlib.RuleFrame kiev/stdlib/RuleFrame kiev\stdlib\RuleFrame.java
+kiev.stdlib.Stack kiev/stdlib/Stack kiev\stdlib\Stack.java
 kiev.stdlib.Stack.StackEnumerator kiev/stdlib/Stack$StackEnumerator kiev\stdlib\Stack.java
-kiev.stdlib.TTYAssertionHandler kiev/stdlib/TTYAssertionHandler kiev\stdlib\Debug.java bad
-kiev.stdlib.TypeInfo kiev/stdlib/TypeInfo kiev\stdlib\TypeInfo.java bad
-kiev.stdlib.TypeInfoInterface kiev/stdlib/TypeInfoInterface kiev\stdlib\TypeInfo.java bad
-kiev.stdlib.TypeSwitchHash kiev/stdlib/TypeSwitchHash kiev\stdlib\TypeSwitchHash.java bad
-kiev.stdlib.TypeSwitchHashEntry kiev/stdlib/TypeSwitchHashEntry kiev\stdlib\TypeSwitchHash.java bad
-kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java bad
+kiev.stdlib.TTYAssertionHandler kiev/stdlib/TTYAssertionHandler kiev\stdlib\Debug.java
+kiev.stdlib.TypeInfo kiev/stdlib/TypeInfo kiev\stdlib\TypeInfo.java
+kiev.stdlib.TypeInfoInterface kiev/stdlib/TypeInfoInterface kiev\stdlib\TypeInfo.java
+kiev.stdlib.TypeInfoX kiev/stdlib/TypeInfoX kiev\stdlib\TypeInfoX.java
+kiev.stdlib.TypeInfoXInterface kiev/stdlib/TypeInfoXInterface kiev\stdlib\TypeInfoX.java
+kiev.stdlib.TypeSwitchHash kiev/stdlib/TypeSwitchHash kiev\stdlib\TypeSwitchHash.java
+kiev.stdlib.TypeSwitchHashEntry kiev/stdlib/TypeSwitchHashEntry kiev\stdlib\TypeSwitchHash.java
+kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
 kiev.stdlib.Vector.VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
-kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java bad
+kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
 kiev.stdlib.meta kiev/stdlib/meta kiev\stdlib\meta\forward.java bad
-kiev.stdlib.meta.alias kiev/stdlib/meta/alias kiev\stdlib\meta\alias.java bad
-kiev.stdlib.meta.forward kiev/stdlib/meta/forward kiev\stdlib\meta\forward.java bad
-kiev.stdlib.meta.getter kiev/stdlib/meta/getter kiev\stdlib\meta\virtual.java bad
-kiev.stdlib.meta.packed kiev/stdlib/meta/packed kiev\stdlib\meta\packed.java bad
-kiev.stdlib.meta.packer kiev/stdlib/meta/packer kiev\stdlib\meta\packed.java bad
-kiev.stdlib.meta.pcase kiev/stdlib/meta/pcase kiev\stdlib\meta\pcase.java bad
-kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtual.java bad
-kiev.stdlib.meta.singleton kiev/stdlib/meta/singleton kiev\stdlib\meta\singleton.java bad
-kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java bad
-kiev.stdlib.meta.unerasable kiev/stdlib/meta/unerasable kiev\stdlib\meta\unerasable.java bad
-kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java bad
-kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\BackendProcessor.java bad
-kiev.transf.ImportKievSrc kiev/transf/ImportKievSrc kiev\transf\ImportKievSrc.java bad
-kiev.transf.JavaBackend kiev/transf/JavaBackend kiev\transf\ImportKievSrc.java bad
-kiev.transf.JavaPackedFldBackend kiev/transf/JavaPackedFldBackend kiev\transf\ProcessPackedFld.java bad
-kiev.transf.JavaVirtFldBackend kiev/transf/JavaVirtFldBackend kiev\transf\ProcessVirtFld.java bad
-kiev.transf.PizzaCaseBackend kiev/transf/PizzaCaseBackend kiev\transf\ProcessPizzaCase.java bad
-kiev.transf.ProcessDFlow kiev/transf/ProcessDFlow kiev\transf\ProcessDFlow.java bad
-kiev.transf.ProcessEnum kiev/transf/ProcessEnum kiev\transf\ProcessEnum.java bad
-kiev.transf.ProcessPackedFld kiev/transf/ProcessPackedFld kiev\transf\ProcessPackedFld.java bad
-kiev.transf.ProcessPizzaCase kiev/transf/ProcessPizzaCase kiev\transf\ProcessPizzaCase.java bad
-kiev.transf.ProcessVNode kiev/transf/ProcessVNode kiev\transf\ProcessVNode.java bad
-kiev.transf.ProcessView kiev/transf/ProcessView kiev\transf\ProcessView.java bad
-kiev.transf.ProcessVirtFld kiev/transf/ProcessVirtFld kiev\transf\ProcessVirtFld.java bad
-kiev.transf.TransfProcessor kiev/transf/TransfProcessor kiev\transf\TransfProcessor.java bad
-kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java bad
-kiev.vlang.ASTNode.NodeImpl kiev/vlang/ASTNode$NodeImpl kiev\vlang\AST.java
-kiev.vlang.ASTNode.NodeView kiev/vlang/ASTNode$NodeView kiev\vlang\AST.java
-kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java bad
-kiev.vlang.ASTRuleNode.ASTRuleNodeImpl kiev/vlang/ASTRuleNode$ASTRuleNodeImpl kiev\vlang\Rules.java
-kiev.vlang.ASTRuleNode.ASTRuleNodeView kiev/vlang/ASTRuleNode$ASTRuleNodeView kiev\vlang\Rules.java
-kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java bad
-kiev.vlang.AccessExpr kiev/vlang/AccessExpr kiev\vlang\LvalueExpr.java bad
-kiev.vlang.AccessExpr.AccessExprImpl kiev/vlang/AccessExpr$AccessExprImpl kiev\vlang\LvalueExpr.java
-kiev.vlang.AccessExpr.AccessExprView kiev/vlang/AccessExpr$AccessExprView kiev\vlang\LvalueExpr.java
-kiev.vlang.AccessExpr.DFI kiev/vlang/AccessExpr$DFI kiev\vlang\LvalueExpr.java
-kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java bad
-kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java bad
-kiev.vlang.ArgType kiev/vlang/ArgType kiev\vlang\Type.java bad
-kiev.vlang.ArgTypeProvider kiev/vlang/ArgTypeProvider kiev\vlang\TypeProvider.java bad
-kiev.vlang.ArrayLengthExpr kiev/vlang/ArrayLengthExpr kiev\vlang\Expr.java bad
-kiev.vlang.ArrayLengthExpr.ArrayLengthExprImpl kiev/vlang/ArrayLengthExpr$ArrayLengthExprImpl kiev\vlang\Expr.java
-kiev.vlang.ArrayLengthExpr.ArrayLengthExprView kiev/vlang/ArrayLengthExpr$ArrayLengthExprView kiev\vlang\Expr.java
-kiev.vlang.ArrayLengthExpr.DFI kiev/vlang/ArrayLengthExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.ArrayType kiev/vlang/ArrayType kiev\vlang\Type.java bad
-kiev.vlang.ArrayTypeProvider kiev/vlang/ArrayTypeProvider kiev\vlang\TypeProvider.java bad
-kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java bad
-kiev.vlang.AssignExpr.AssignExprDFFunc kiev/vlang/AssignExpr$AssignExprDFFunc kiev\vlang\Expr.java
-kiev.vlang.AssignExpr.AssignExprImpl kiev/vlang/AssignExpr$AssignExprImpl kiev\vlang\Expr.java
-kiev.vlang.AssignExpr.AssignExprView kiev/vlang/AssignExpr$AssignExprView kiev\vlang\Expr.java
-kiev.vlang.AssignExpr.DFI kiev/vlang/AssignExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java bad
-kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java bad
-kiev.vlang.BaseType kiev/vlang/BaseType kiev\vlang\Type.java bad
-kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java bad
-kiev.vlang.BinaryBoolExpr.BinaryBoolExprImpl kiev/vlang/BinaryBoolExpr$BinaryBoolExprImpl kiev\vlang\BooleanExpr.java
-kiev.vlang.BinaryBoolExpr.BinaryBoolExprView kiev/vlang/BinaryBoolExpr$BinaryBoolExprView kiev\vlang\BooleanExpr.java
-kiev.vlang.BinaryBoolExpr.DFI kiev/vlang/BinaryBoolExpr$DFI kiev\vlang\BooleanExpr.java
-kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\BooleanExpr.java bad
-kiev.vlang.BinaryBooleanAndExpr.BinaryBooleanAndExprImpl kiev/vlang/BinaryBooleanAndExpr$BinaryBooleanAndExprImpl kiev\vlang\BooleanExpr.java
-kiev.vlang.BinaryBooleanAndExpr.BinaryBooleanAndExprView kiev/vlang/BinaryBooleanAndExpr$BinaryBooleanAndExprView kiev\vlang\BooleanExpr.java
-kiev.vlang.BinaryBooleanAndExpr.DFI kiev/vlang/BinaryBooleanAndExpr$DFI kiev\vlang\BooleanExpr.java
-kiev.vlang.BinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev\vlang\BooleanExpr.java bad
-kiev.vlang.BinaryBooleanOrExpr.BinaryBooleanOrExprImpl kiev/vlang/BinaryBooleanOrExpr$BinaryBooleanOrExprImpl kiev\vlang\BooleanExpr.java
-kiev.vlang.BinaryBooleanOrExpr.BinaryBooleanOrExprView kiev/vlang/BinaryBooleanOrExpr$BinaryBooleanOrExprView kiev\vlang\BooleanExpr.java
-kiev.vlang.BinaryBooleanOrExpr.DFI kiev/vlang/BinaryBooleanOrExpr$DFI kiev\vlang\BooleanExpr.java
-kiev.vlang.BinaryExpr kiev/vlang/BinaryExpr kiev\vlang\Expr.java bad
-kiev.vlang.BinaryExpr.BinaryExprImpl kiev/vlang/BinaryExpr$BinaryExprImpl kiev\vlang\Expr.java
-kiev.vlang.BinaryExpr.BinaryExprView kiev/vlang/BinaryExpr$BinaryExprView kiev\vlang\Expr.java
-kiev.vlang.BinaryExpr.DFI kiev/vlang/BinaryExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.BinaryOperator kiev/vlang/BinaryOperator kiev\vlang\Operator.java bad
-kiev.vlang.BlockExpr kiev/vlang/BlockExpr kiev\vlang\Expr.java bad
-kiev.vlang.BlockExpr.BlockExprDFFunc kiev/vlang/BlockExpr$BlockExprDFFunc kiev\vlang\Expr.java
-kiev.vlang.BlockExpr.BlockExprImpl kiev/vlang/BlockExpr$BlockExprImpl kiev\vlang\Expr.java
-kiev.vlang.BlockExpr.BlockExprView kiev/vlang/BlockExpr$BlockExprView kiev\vlang\Expr.java
-kiev.vlang.BlockExpr.DFI kiev/vlang/BlockExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.BlockStat kiev/vlang/BlockStat kiev\vlang\Statement.java bad
-kiev.vlang.BlockStat.BlockStatDFFunc kiev/vlang/BlockStat$BlockStatDFFunc kiev\vlang\Statement.java
-kiev.vlang.BlockStat.BlockStatImpl kiev/vlang/BlockStat$BlockStatImpl kiev\vlang\Statement.java
-kiev.vlang.BlockStat.BlockStatView kiev/vlang/BlockStat$BlockStatView kiev\vlang\Statement.java
-kiev.vlang.BlockStat.DFI kiev/vlang/BlockStat$DFI kiev\vlang\Statement.java
-kiev.vlang.BoolExpr kiev/vlang/BoolExpr kiev\vlang\BooleanExpr.java bad
-kiev.vlang.BoolExpr.BoolExprImpl kiev/vlang/BoolExpr$BoolExprImpl kiev\vlang\BooleanExpr.java
-kiev.vlang.BoolExpr.BoolExprView kiev/vlang/BoolExpr$BoolExprView kiev\vlang\BooleanExpr.java
-kiev.vlang.BooleanNotExpr kiev/vlang/BooleanNotExpr kiev\vlang\BooleanExpr.java bad
-kiev.vlang.BooleanNotExpr.BooleanNotExprImpl kiev/vlang/BooleanNotExpr$BooleanNotExprImpl kiev\vlang\BooleanExpr.java
-kiev.vlang.BooleanNotExpr.BooleanNotExprView kiev/vlang/BooleanNotExpr$BooleanNotExprView kiev\vlang\BooleanExpr.java
-kiev.vlang.BooleanNotExpr.DFI kiev/vlang/BooleanNotExpr$DFI kiev\vlang\BooleanExpr.java
-kiev.vlang.BreakStat kiev/vlang/BreakStat kiev\vlang\Statement.java bad
-kiev.vlang.BreakStat.BreakStatImpl kiev/vlang/BreakStat$BreakStatImpl kiev\vlang\Statement.java
-kiev.vlang.BreakStat.BreakStatView kiev/vlang/BreakStat$BreakStatView kiev\vlang\Statement.java
-kiev.vlang.BreakStat.DFI kiev/vlang/BreakStat$DFI kiev\vlang\Statement.java
-kiev.vlang.BreakTarget kiev/vlang/BreakTarget kiev\vlang\PassInfo.java bad
-kiev.vlang.CallExpr kiev/vlang/CallExpr kiev\vlang\CallExpr.java bad
-kiev.vlang.CallExpr.CallExprImpl kiev/vlang/CallExpr$CallExprImpl kiev\vlang\CallExpr.java
-kiev.vlang.CallExpr.CallExprView kiev/vlang/CallExpr$CallExprView kiev\vlang\CallExpr.java
-kiev.vlang.CallExpr.DFI kiev/vlang/CallExpr$DFI kiev\vlang\CallExpr.java
-kiev.vlang.CallTypeProvider kiev/vlang/CallTypeProvider kiev\vlang\TypeProvider.java bad
-kiev.vlang.CallableType kiev/vlang/CallableType kiev\vlang\Type.java bad
-kiev.vlang.CaseLabel kiev/vlang/CaseLabel kiev\vlang\ComplexStatement.java bad
-kiev.vlang.CaseLabel.CaseLabelDFFuncIn kiev/vlang/CaseLabel$CaseLabelDFFuncIn kiev\vlang\ComplexStatement.java
-kiev.vlang.CaseLabel.CaseLabelImpl kiev/vlang/CaseLabel$CaseLabelImpl kiev\vlang\ComplexStatement.java
-kiev.vlang.CaseLabel.CaseLabelView kiev/vlang/CaseLabel$CaseLabelView kiev\vlang\ComplexStatement.java
-kiev.vlang.CaseLabel.DFI kiev/vlang/CaseLabel$DFI kiev\vlang\ComplexStatement.java
-kiev.vlang.CastExpr kiev/vlang/CastExpr kiev\vlang\Expr.java bad
-kiev.vlang.CastExpr.CastExprImpl kiev/vlang/CastExpr$CastExprImpl kiev\vlang\Expr.java
-kiev.vlang.CastExpr.CastExprView kiev/vlang/CastExpr$CastExprView kiev\vlang\Expr.java
-kiev.vlang.CastExpr.DFI kiev/vlang/CastExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.CastOperator kiev/vlang/CastOperator kiev\vlang\Operator.java bad
-kiev.vlang.CatchInfo kiev/vlang/CatchInfo kiev\vlang\ComplexStatement.java bad
-kiev.vlang.CatchInfo.CatchInfoImpl kiev/vlang/CatchInfo$CatchInfoImpl kiev\vlang\ComplexStatement.java
-kiev.vlang.CatchInfo.CatchInfoView kiev/vlang/CatchInfo$CatchInfoView kiev\vlang\ComplexStatement.java
-kiev.vlang.CatchInfo.DFI kiev/vlang/CatchInfo$DFI kiev\vlang\ComplexStatement.java
-kiev.vlang.ClazzName kiev/vlang/ClazzName kiev\vlang\ClazzName.java bad
-kiev.vlang.ClosureCallExpr kiev/vlang/ClosureCallExpr kiev\vlang\CallExpr.java bad
-kiev.vlang.ClosureCallExpr.ClosureCallExprImpl kiev/vlang/ClosureCallExpr$ClosureCallExprImpl kiev\vlang\CallExpr.java
-kiev.vlang.ClosureCallExpr.ClosureCallExprView kiev/vlang/ClosureCallExpr$ClosureCallExprView kiev\vlang\CallExpr.java
-kiev.vlang.ClosureCallExpr.DFI kiev/vlang/ClosureCallExpr$DFI kiev\vlang\CallExpr.java
-kiev.vlang.ClosureType kiev/vlang/ClosureType kiev\vlang\Type.java bad
-kiev.vlang.CommaExpr kiev/vlang/CommaExpr kiev\vlang\Expr.java bad
-kiev.vlang.CommaExpr.CommaExprImpl kiev/vlang/CommaExpr$CommaExprImpl kiev\vlang\Expr.java
-kiev.vlang.CommaExpr.CommaExprView kiev/vlang/CommaExpr$CommaExprView kiev\vlang\Expr.java
-kiev.vlang.CommaExpr.DFI kiev/vlang/CommaExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.CompaundType kiev/vlang/CompaundType kiev\vlang\Type.java bad
-kiev.vlang.CompaundTypeProvider kiev/vlang/CompaundTypeProvider kiev\vlang\TypeProvider.java bad
-kiev.vlang.CompilerException kiev/vlang/CompilerException kiev\vlang\AST.java bad
-kiev.vlang.ConcreteType kiev/vlang/ConcreteType kiev\vlang\Type.java bad
-kiev.vlang.CondStat kiev/vlang/CondStat kiev\vlang\Statement.java bad
-kiev.vlang.CondStat.CondStatImpl kiev/vlang/CondStat$CondStatImpl kiev\vlang\Statement.java
-kiev.vlang.CondStat.CondStatView kiev/vlang/CondStat$CondStatView kiev\vlang\Statement.java
-kiev.vlang.CondStat.DFI kiev/vlang/CondStat$DFI kiev\vlang\Statement.java
-kiev.vlang.ConditionalExpr kiev/vlang/ConditionalExpr kiev\vlang\Expr.java bad
-kiev.vlang.ConditionalExpr.ConditionalExprImpl kiev/vlang/ConditionalExpr$ConditionalExprImpl kiev\vlang\Expr.java
-kiev.vlang.ConditionalExpr.ConditionalExprView kiev/vlang/ConditionalExpr$ConditionalExprView kiev\vlang\Expr.java
-kiev.vlang.ConditionalExpr.DFI kiev/vlang/ConditionalExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.ConstBoolExpr kiev/vlang/ConstBoolExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstBoolExpr.ConstBoolExprImpl kiev/vlang/ConstBoolExpr$ConstBoolExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstBoolExpr.ConstBoolExprView kiev/vlang/ConstBoolExpr$ConstBoolExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstBoolExpr.DFI kiev/vlang/ConstBoolExpr$DFI kiev\vlang\ConstExpr.java
-kiev.vlang.ConstByteExpr kiev/vlang/ConstByteExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstByteExpr.ConstByteExprImpl kiev/vlang/ConstByteExpr$ConstByteExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstByteExpr.ConstByteExprView kiev/vlang/ConstByteExpr$ConstByteExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstByteExpr.DFI kiev/vlang/ConstByteExpr$DFI kiev\vlang\ConstExpr.java
-kiev.vlang.ConstCharExpr kiev/vlang/ConstCharExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstCharExpr.ConstCharExprImpl kiev/vlang/ConstCharExpr$ConstCharExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstCharExpr.ConstCharExprView kiev/vlang/ConstCharExpr$ConstCharExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstCharExpr.DFI kiev/vlang/ConstCharExpr$DFI kiev\vlang\ConstExpr.java
-kiev.vlang.ConstDoubleExpr kiev/vlang/ConstDoubleExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstDoubleExpr.ConstDoubleExprImpl kiev/vlang/ConstDoubleExpr$ConstDoubleExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstDoubleExpr.ConstDoubleExprView kiev/vlang/ConstDoubleExpr$ConstDoubleExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstDoubleExpr.DFI kiev/vlang/ConstDoubleExpr$DFI kiev\vlang\ConstExpr.java
-kiev.vlang.ConstExpr kiev/vlang/ConstExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstExpr.ConstExprImpl kiev/vlang/ConstExpr$ConstExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstExpr.ConstExprView kiev/vlang/ConstExpr$ConstExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstFloatExpr kiev/vlang/ConstFloatExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstFloatExpr.ConstFloatExprImpl kiev/vlang/ConstFloatExpr$ConstFloatExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstFloatExpr.ConstFloatExprView kiev/vlang/ConstFloatExpr$ConstFloatExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstFloatExpr.DFI kiev/vlang/ConstFloatExpr$DFI kiev\vlang\ConstExpr.java
-kiev.vlang.ConstIntExpr kiev/vlang/ConstIntExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstIntExpr.ConstIntExprImpl kiev/vlang/ConstIntExpr$ConstIntExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstIntExpr.ConstIntExprView kiev/vlang/ConstIntExpr$ConstIntExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstIntExpr.DFI kiev/vlang/ConstIntExpr$DFI kiev\vlang\ConstExpr.java
-kiev.vlang.ConstLongExpr kiev/vlang/ConstLongExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstLongExpr.ConstLongExprImpl kiev/vlang/ConstLongExpr$ConstLongExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstLongExpr.ConstLongExprView kiev/vlang/ConstLongExpr$ConstLongExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstLongExpr.DFI kiev/vlang/ConstLongExpr$DFI kiev\vlang\ConstExpr.java
-kiev.vlang.ConstNullExpr kiev/vlang/ConstNullExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstNullExpr.ConstNullExprImpl kiev/vlang/ConstNullExpr$ConstNullExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstNullExpr.ConstNullExprView kiev/vlang/ConstNullExpr$ConstNullExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstNullExpr.DFI kiev/vlang/ConstNullExpr$DFI kiev\vlang\ConstExpr.java
-kiev.vlang.ConstShortExpr kiev/vlang/ConstShortExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstShortExpr.ConstShortExprImpl kiev/vlang/ConstShortExpr$ConstShortExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstShortExpr.ConstShortExprView kiev/vlang/ConstShortExpr$ConstShortExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstShortExpr.DFI kiev/vlang/ConstShortExpr$DFI kiev\vlang\ConstExpr.java
-kiev.vlang.ConstStringExpr kiev/vlang/ConstStringExpr kiev\vlang\ConstExpr.java bad
-kiev.vlang.ConstStringExpr.ConstStringExprImpl kiev/vlang/ConstStringExpr$ConstStringExprImpl kiev\vlang\ConstExpr.java
-kiev.vlang.ConstStringExpr.ConstStringExprView kiev/vlang/ConstStringExpr$ConstStringExprView kiev\vlang\ConstExpr.java
-kiev.vlang.ConstStringExpr.DFI kiev/vlang/ConstStringExpr$DFI kiev\vlang\ConstExpr.java
-kiev.vlang.Constants kiev/vlang/Constants kiev\vlang\Constants.java bad
-kiev.vlang.Constructor kiev/vlang/Constructor kiev\vlang\Method.java bad
-kiev.vlang.Constructor.ConstructorImpl kiev/vlang/Constructor$ConstructorImpl kiev\vlang\Method.java
-kiev.vlang.Constructor.ConstructorView kiev/vlang/Constructor$ConstructorView kiev\vlang\Method.java
-kiev.vlang.Constructor.DFI kiev/vlang/Constructor$DFI kiev\vlang\Method.java
-kiev.vlang.ContainerAccessExpr kiev/vlang/ContainerAccessExpr kiev\vlang\LvalueExpr.java bad
-kiev.vlang.ContainerAccessExpr.ContainerAccessExprImpl kiev/vlang/ContainerAccessExpr$ContainerAccessExprImpl kiev\vlang\LvalueExpr.java
-kiev.vlang.ContainerAccessExpr.ContainerAccessExprView kiev/vlang/ContainerAccessExpr$ContainerAccessExprView kiev\vlang\LvalueExpr.java
-kiev.vlang.ContainerAccessExpr.DFI kiev/vlang/ContainerAccessExpr$DFI kiev\vlang\LvalueExpr.java
-kiev.vlang.ContinueStat kiev/vlang/ContinueStat kiev\vlang\Statement.java bad
-kiev.vlang.ContinueStat.ContinueStatImpl kiev/vlang/ContinueStat$ContinueStatImpl kiev\vlang\Statement.java
-kiev.vlang.ContinueStat.ContinueStatView kiev/vlang/ContinueStat$ContinueStatView kiev\vlang\Statement.java
-kiev.vlang.ContinueStat.DFI kiev/vlang/ContinueStat$DFI kiev\vlang\Statement.java
-kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java bad
-kiev.vlang.CoreType kiev/vlang/CoreType kiev\vlang\Type.java bad
-kiev.vlang.CoreTypeProvider kiev/vlang/CoreTypeProvider kiev\vlang\TypeProvider.java bad
-kiev.vlang.DFFunc kiev/vlang/DFFunc kiev\vlang\Var.java bad
-kiev.vlang.DFFunc.DFFuncAbrupt kiev/vlang/DFFunc$DFFuncAbrupt kiev\vlang\Var.java
-kiev.vlang.DFFunc.DFFuncChildFls kiev/vlang/DFFunc$DFFuncChildFls kiev\vlang\Var.java
-kiev.vlang.DFFunc.DFFuncChildIn kiev/vlang/DFFunc$DFFuncChildIn kiev\vlang\Var.java
-kiev.vlang.DFFunc.DFFuncChildOut kiev/vlang/DFFunc$DFFuncChildOut kiev\vlang\Var.java
-kiev.vlang.DFFunc.DFFuncChildTru kiev/vlang/DFFunc$DFFuncChildTru kiev\vlang\Var.java
-kiev.vlang.DFFunc.DFFuncJoin kiev/vlang/DFFunc$DFFuncJoin kiev\vlang\Var.java
-kiev.vlang.DFFunc.DFFuncLabel kiev/vlang/DFFunc$DFFuncLabel kiev\vlang\Var.java
-kiev.vlang.DFFunc.DFFuncThisFls kiev/vlang/DFFunc$DFFuncThisFls kiev\vlang\Var.java
-kiev.vlang.DFFunc.DFFuncThisIn kiev/vlang/DFFunc$DFFuncThisIn kiev\vlang\Var.java
-kiev.vlang.DFFunc.DFFuncThisOut kiev/vlang/DFFunc$DFFuncThisOut kiev\vlang\Var.java
-kiev.vlang.DFFunc.DFFuncThisTru kiev/vlang/DFFunc$DFFuncThisTru kiev\vlang\Var.java
-kiev.vlang.DFLoopException kiev/vlang/DFLoopException kiev\vlang\Var.java bad
-kiev.vlang.DFSocket kiev/vlang/DFSocket kiev\vlang\Var.java bad
-kiev.vlang.DFSocketChild kiev/vlang/DFSocketChild kiev\vlang\Var.java bad
-kiev.vlang.DFSocketSpace kiev/vlang/DFSocketSpace kiev\vlang\Var.java bad
-kiev.vlang.DFSocketSpaceSeq kiev/vlang/DFSocketSpaceSeq kiev\vlang\Var.java bad
-kiev.vlang.DFSocketSpaceUnknown kiev/vlang/DFSocketSpaceUnknown kiev\vlang\Var.java bad
-kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java bad
-kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java bad
-kiev.vlang.DNode.DNodeImpl kiev/vlang/DNode$DNodeImpl kiev\vlang\AST.java
-kiev.vlang.DNode.DNodeView kiev/vlang/DNode$DNodeView kiev\vlang\AST.java
-kiev.vlang.DataFlowInfo kiev/vlang/DataFlowInfo kiev\vlang\Var.java bad
-kiev.vlang.DataFlowSlots kiev/vlang/DataFlowSlots kiev\vlang\Var.java bad
-kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java bad
-kiev.vlang.DoWhileStat.DFI kiev/vlang/DoWhileStat$DFI kiev\vlang\LoopStatement.java
-kiev.vlang.DoWhileStat.DoWhileStatImpl kiev/vlang/DoWhileStat$DoWhileStatImpl kiev\vlang\LoopStatement.java
-kiev.vlang.DoWhileStat.DoWhileStatView kiev/vlang/DoWhileStat$DoWhileStatView kiev\vlang\LoopStatement.java
-kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java bad
-kiev.vlang.ENode kiev/vlang/ENode kiev\vlang\AST.java bad
-kiev.vlang.ENode.DFI kiev/vlang/ENode$DFI kiev\vlang\AST.java
-kiev.vlang.ENode.ENodeImpl kiev/vlang/ENode$ENodeImpl kiev\vlang\AST.java
-kiev.vlang.ENode.ENodeView kiev/vlang/ENode$ENodeView kiev\vlang\AST.java
-kiev.vlang.EmptyStat kiev/vlang/EmptyStat kiev\vlang\Statement.java bad
-kiev.vlang.EmptyStat.DFI kiev/vlang/EmptyStat$DFI kiev\vlang\Statement.java
-kiev.vlang.EmptyStat.EmptyStatImpl kiev/vlang/EmptyStat$EmptyStatImpl kiev\vlang\Statement.java
-kiev.vlang.EmptyStat.EmptyStatView kiev/vlang/EmptyStat$EmptyStatView kiev\vlang\Statement.java
-kiev.vlang.Env kiev/vlang/Env kiev\vlang\Env.java bad
-kiev.vlang.ExprStat kiev/vlang/ExprStat kiev\vlang\Statement.java bad
-kiev.vlang.ExprStat.DFI kiev/vlang/ExprStat$DFI kiev\vlang\Statement.java
-kiev.vlang.ExprStat.ExprStatImpl kiev/vlang/ExprStat$ExprStatImpl kiev\vlang\Statement.java
-kiev.vlang.ExprStat.ExprStatView kiev/vlang/ExprStat$ExprStatView kiev\vlang\Statement.java
-kiev.vlang.Field kiev/vlang/Field kiev\vlang\Field.java bad
-kiev.vlang.Field.FieldImpl kiev/vlang/Field$FieldImpl kiev\vlang\Field.java
-kiev.vlang.Field.FieldView kiev/vlang/Field$FieldView kiev\vlang\Field.java
-kiev.vlang.FileUnit kiev/vlang/FileUnit kiev\vlang\FileUnit.java bad
-kiev.vlang.FileUnit.FileUnitImpl kiev/vlang/FileUnit$FileUnitImpl kiev\vlang\FileUnit.java
-kiev.vlang.FileUnit.FileUnitView kiev/vlang/FileUnit$FileUnitView kiev\vlang\FileUnit.java
-kiev.vlang.FinallyInfo kiev/vlang/FinallyInfo kiev\vlang\ComplexStatement.java bad
-kiev.vlang.FinallyInfo.DFI kiev/vlang/FinallyInfo$DFI kiev\vlang\ComplexStatement.java
-kiev.vlang.FinallyInfo.FinallyInfoImpl kiev/vlang/FinallyInfo$FinallyInfoImpl kiev\vlang\ComplexStatement.java
-kiev.vlang.FinallyInfo.FinallyInfoView kiev/vlang/FinallyInfo$FinallyInfoView kiev\vlang\ComplexStatement.java
-kiev.vlang.ForEachStat kiev/vlang/ForEachStat kiev\vlang\LoopStatement.java bad
-kiev.vlang.ForEachStat.DFI kiev/vlang/ForEachStat$DFI kiev\vlang\LoopStatement.java
-kiev.vlang.ForEachStat.ForEachStatImpl kiev/vlang/ForEachStat$ForEachStatImpl kiev\vlang\LoopStatement.java
-kiev.vlang.ForEachStat.ForEachStatView kiev/vlang/ForEachStat$ForEachStatView kiev\vlang\LoopStatement.java
-kiev.vlang.ForInit kiev/vlang/ForInit kiev\vlang\LoopStatement.java bad
-kiev.vlang.ForInit.DFI kiev/vlang/ForInit$DFI kiev\vlang\LoopStatement.java
-kiev.vlang.ForInit.ForInitImpl kiev/vlang/ForInit$ForInitImpl kiev\vlang\LoopStatement.java
-kiev.vlang.ForInit.ForInitView kiev/vlang/ForInit$ForInitView kiev\vlang\LoopStatement.java
-kiev.vlang.ForStat kiev/vlang/ForStat kiev\vlang\LoopStatement.java bad
-kiev.vlang.ForStat.DFI kiev/vlang/ForStat$DFI kiev\vlang\LoopStatement.java
-kiev.vlang.ForStat.ForStatImpl kiev/vlang/ForStat$ForStatImpl kiev\vlang\LoopStatement.java
-kiev.vlang.ForStat.ForStatView kiev/vlang/ForStat$ForStatView kiev\vlang\LoopStatement.java
-kiev.vlang.FormPar kiev/vlang/FormPar kiev\vlang\Var.java bad
-kiev.vlang.FormPar.DFI kiev/vlang/FormPar$DFI kiev\vlang\Var.java
-kiev.vlang.FormPar.FormParImpl kiev/vlang/FormPar$FormParImpl kiev\vlang\Var.java
-kiev.vlang.FormPar.FormParView kiev/vlang/FormPar$FormParView kiev\vlang\Var.java
-kiev.vlang.GotoCaseStat kiev/vlang/GotoCaseStat kiev\vlang\Statement.java bad
-kiev.vlang.GotoCaseStat.DFI kiev/vlang/GotoCaseStat$DFI kiev\vlang\Statement.java
-kiev.vlang.GotoCaseStat.GotoCaseStatImpl kiev/vlang/GotoCaseStat$GotoCaseStatImpl kiev\vlang\Statement.java
-kiev.vlang.GotoCaseStat.GotoCaseStatView kiev/vlang/GotoCaseStat$GotoCaseStatView kiev\vlang\Statement.java
-kiev.vlang.GotoStat kiev/vlang/GotoStat kiev\vlang\Statement.java bad
-kiev.vlang.GotoStat.DFI kiev/vlang/GotoStat$DFI kiev\vlang\Statement.java
-kiev.vlang.GotoStat.GotoStatImpl kiev/vlang/GotoStat$GotoStatImpl kiev\vlang\Statement.java
-kiev.vlang.GotoStat.GotoStatView kiev/vlang/GotoStat$GotoStatView kiev\vlang\Statement.java
-kiev.vlang.IFldExpr kiev/vlang/IFldExpr kiev\vlang\LvalueExpr.java bad
-kiev.vlang.IFldExpr.DFI kiev/vlang/IFldExpr$DFI kiev\vlang\LvalueExpr.java
-kiev.vlang.IFldExpr.IFldExprImpl kiev/vlang/IFldExpr$IFldExprImpl kiev\vlang\LvalueExpr.java
-kiev.vlang.IFldExpr.IFldExprView kiev/vlang/IFldExpr$IFldExprView kiev\vlang\LvalueExpr.java
-kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java bad
-kiev.vlang.IfElseStat.DFI kiev/vlang/IfElseStat$DFI kiev\vlang\Statement.java
-kiev.vlang.IfElseStat.IfElseStatImpl kiev/vlang/IfElseStat$IfElseStatImpl kiev\vlang\Statement.java
-kiev.vlang.IfElseStat.IfElseStatView kiev/vlang/IfElseStat$IfElseStatView kiev\vlang\Statement.java
-kiev.vlang.Import kiev/vlang/Import kiev\vlang\Import.java bad
-kiev.vlang.Import.ImportImpl kiev/vlang/Import$ImportImpl kiev\vlang\Import.java
-kiev.vlang.Import.ImportMode kiev/vlang/Import$ImportMode kiev\vlang\Import.java
-kiev.vlang.Import.ImportView kiev/vlang/Import$ImportView kiev\vlang\Import.java
-kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java bad
-kiev.vlang.IncrementExpr.DFI kiev/vlang/IncrementExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.IncrementExpr.IncrementExprImpl kiev/vlang/IncrementExpr$IncrementExprImpl kiev\vlang\Expr.java
-kiev.vlang.IncrementExpr.IncrementExprView kiev/vlang/IncrementExpr$IncrementExprView kiev\vlang\Expr.java
-kiev.vlang.Initializer kiev/vlang/Initializer kiev\vlang\Method.java bad
-kiev.vlang.Initializer.DFI kiev/vlang/Initializer$DFI kiev\vlang\Method.java
-kiev.vlang.Initializer.InitializerImpl kiev/vlang/Initializer$InitializerImpl kiev\vlang\Method.java
-kiev.vlang.Initializer.InitializerView kiev/vlang/Initializer$InitializerView kiev\vlang\Method.java
-kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java bad
-kiev.vlang.InlineMethodStat.DFI kiev/vlang/InlineMethodStat$DFI kiev\vlang\Statement.java
-kiev.vlang.InlineMethodStat.InlineMethodStatDFFuncIn kiev/vlang/InlineMethodStat$InlineMethodStatDFFuncIn kiev\vlang\Statement.java
-kiev.vlang.InlineMethodStat.InlineMethodStatDFFuncOut kiev/vlang/InlineMethodStat$InlineMethodStatDFFuncOut kiev\vlang\Statement.java
-kiev.vlang.InlineMethodStat.InlineMethodStatImpl kiev/vlang/InlineMethodStat$InlineMethodStatImpl kiev\vlang\Statement.java
-kiev.vlang.InlineMethodStat.InlineMethodStatView kiev/vlang/InlineMethodStat$InlineMethodStatView kiev\vlang\Statement.java
-kiev.vlang.InlineMethodStat.ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java
-kiev.vlang.InstanceofExpr kiev/vlang/InstanceofExpr kiev\vlang\BooleanExpr.java bad
-kiev.vlang.InstanceofExpr.DFI kiev/vlang/InstanceofExpr$DFI kiev\vlang\BooleanExpr.java
-kiev.vlang.InstanceofExpr.InstanceofExprDFFunc kiev/vlang/InstanceofExpr$InstanceofExprDFFunc kiev\vlang\BooleanExpr.java
-kiev.vlang.InstanceofExpr.InstanceofExprImpl kiev/vlang/InstanceofExpr$InstanceofExprImpl kiev\vlang\BooleanExpr.java
-kiev.vlang.InstanceofExpr.InstanceofExprView kiev/vlang/InstanceofExpr$InstanceofExprView kiev\vlang\BooleanExpr.java
-kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java bad
-kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java bad
-kiev.vlang.LVarExpr.DFI kiev/vlang/LVarExpr$DFI kiev\vlang\LvalueExpr.java
-kiev.vlang.LVarExpr.LVarExprImpl kiev/vlang/LVarExpr$LVarExprImpl kiev\vlang\LvalueExpr.java
-kiev.vlang.LVarExpr.LVarExprView kiev/vlang/LVarExpr$LVarExprView kiev\vlang\LvalueExpr.java
-kiev.vlang.Label kiev/vlang/Label kiev\vlang\LoopStatement.java bad
-kiev.vlang.Label.DFI kiev/vlang/Label$DFI kiev\vlang\LoopStatement.java
-kiev.vlang.Label.LabelDFFunc kiev/vlang/Label$LabelDFFunc kiev\vlang\LoopStatement.java
-kiev.vlang.Label.LabelImpl kiev/vlang/Label$LabelImpl kiev\vlang\LoopStatement.java
-kiev.vlang.Label.LabelView kiev/vlang/Label$LabelView kiev\vlang\LoopStatement.java
-kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java bad
-kiev.vlang.LabeledStat.DFI kiev/vlang/LabeledStat$DFI kiev\vlang\Statement.java
-kiev.vlang.LabeledStat.LabeledStatImpl kiev/vlang/LabeledStat$LabeledStatImpl kiev\vlang\Statement.java
-kiev.vlang.LabeledStat.LabeledStatView kiev/vlang/LabeledStat$LabeledStatView kiev\vlang\Statement.java
-kiev.vlang.LocalStructDecl kiev/vlang/LocalStructDecl kiev\vlang\AST.java bad
-kiev.vlang.LocalStructDecl.DFI kiev/vlang/LocalStructDecl$DFI kiev\vlang\AST.java
-kiev.vlang.LocalStructDecl.LocalStructDeclImpl kiev/vlang/LocalStructDecl$LocalStructDeclImpl kiev\vlang\AST.java
-kiev.vlang.LocalStructDecl.LocalStructDeclView kiev/vlang/LocalStructDecl$LocalStructDeclView kiev\vlang\AST.java
-kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java bad
-kiev.vlang.LoopStat.LoopStatImpl kiev/vlang/LoopStat$LoopStatImpl kiev\vlang\LoopStatement.java
-kiev.vlang.LoopStat.LoopStatView kiev/vlang/LoopStat$LoopStatView kiev\vlang\LoopStatement.java
-kiev.vlang.LvalDNode kiev/vlang/LvalDNode kiev\vlang\AST.java bad
-kiev.vlang.LvalDNode.LvalDNodeImpl kiev/vlang/LvalDNode$LvalDNodeImpl kiev\vlang\AST.java
-kiev.vlang.LvalDNode.LvalDNodeView kiev/vlang/LvalDNode$LvalDNodeView kiev\vlang\AST.java
-kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\LvalueExpr.java bad
-kiev.vlang.LvalueExpr.LvalueExprImpl kiev/vlang/LvalueExpr$LvalueExprImpl kiev\vlang\LvalueExpr.java
-kiev.vlang.LvalueExpr.LvalueExprView kiev/vlang/LvalueExpr$LvalueExprView kiev\vlang\LvalueExpr.java
-kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java bad
-kiev.vlang.Meta.MetaImpl kiev/vlang/Meta$MetaImpl kiev\vlang\Meta.java
-kiev.vlang.Meta.MetaView kiev/vlang/Meta$MetaView kiev\vlang\Meta.java
-kiev.vlang.MetaAbstract kiev/vlang/MetaAbstract kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaAlias kiev/vlang/MetaAlias kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaAttrSlot kiev/vlang/MetaAttrSlot kiev\vlang\Tree.java bad
-kiev.vlang.MetaFinal kiev/vlang/MetaFinal kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaFlag kiev/vlang/MetaFlag kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaForward kiev/vlang/MetaForward kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaNative kiev/vlang/MetaNative kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaPizzaCase kiev/vlang/MetaPizzaCase kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaPrivate kiev/vlang/MetaPrivate kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaProtected kiev/vlang/MetaProtected kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaPublic kiev/vlang/MetaPublic kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaSet kiev/vlang/MetaSet kiev\vlang\Meta.java bad
-kiev.vlang.MetaSet.MetaSetImpl kiev/vlang/MetaSet$MetaSetImpl kiev\vlang\Meta.java
-kiev.vlang.MetaSet.MetaSetView kiev/vlang/MetaSet$MetaSetView kiev\vlang\Meta.java
-kiev.vlang.MetaSingleton kiev/vlang/MetaSingleton kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaSpecial kiev/vlang/MetaSpecial kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaStatic kiev/vlang/MetaStatic kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaSynchronized kiev/vlang/MetaSynchronized kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaThrows kiev/vlang/MetaThrows kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaTransient kiev/vlang/MetaTransient kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaUnerasable kiev/vlang/MetaUnerasable kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaValue kiev/vlang/MetaValue kiev\vlang\Meta.java bad
-kiev.vlang.MetaValue.MetaValueImpl kiev/vlang/MetaValue$MetaValueImpl kiev\vlang\Meta.java
-kiev.vlang.MetaValue.MetaValueView kiev/vlang/MetaValue$MetaValueView kiev\vlang\Meta.java
-kiev.vlang.MetaValueArray kiev/vlang/MetaValueArray kiev\vlang\Meta.java bad
-kiev.vlang.MetaValueArray.MetaValueArrayImpl kiev/vlang/MetaValueArray$MetaValueArrayImpl kiev\vlang\Meta.java
-kiev.vlang.MetaValueArray.MetaValueArrayView kiev/vlang/MetaValueArray$MetaValueArrayView kiev\vlang\Meta.java
-kiev.vlang.MetaValueScalar kiev/vlang/MetaValueScalar kiev\vlang\Meta.java bad
-kiev.vlang.MetaValueScalar.MetaValueScalarImpl kiev/vlang/MetaValueScalar$MetaValueScalarImpl kiev\vlang\Meta.java
-kiev.vlang.MetaValueScalar.MetaValueScalarView kiev/vlang/MetaValueScalar$MetaValueScalarView kiev\vlang\Meta.java
-kiev.vlang.MetaValueType kiev/vlang/MetaValueType kiev\vlang\Meta.java bad
-kiev.vlang.MetaVirtual kiev/vlang/MetaVirtual kiev\vlang\MetaSpecial.java bad
-kiev.vlang.MetaVolatile kiev/vlang/MetaVolatile kiev\vlang\MetaSpecial.java bad
-kiev.vlang.Method kiev/vlang/Method kiev\vlang\Method.java bad
-kiev.vlang.Method.DFI kiev/vlang/Method$DFI kiev\vlang\Method.java
-kiev.vlang.Method.MethodDFFunc kiev/vlang/Method$MethodDFFunc kiev\vlang\Method.java
-kiev.vlang.Method.MethodImpl kiev/vlang/Method$MethodImpl kiev\vlang\Method.java
-kiev.vlang.Method.MethodView kiev/vlang/Method$MethodView kiev\vlang\Method.java
-kiev.vlang.MethodType kiev/vlang/MethodType kiev\vlang\Type.java bad
-kiev.vlang.MultiOperator kiev/vlang/MultiOperator kiev\vlang\Operator.java bad
-kiev.vlang.NArr kiev/vlang/NArr kiev\vlang\Tree.java bad
-kiev.vlang.NameRef kiev/vlang/NameRef kiev\vlang\AST.java bad
-kiev.vlang.NameRef.DFI kiev/vlang/NameRef$DFI kiev\vlang\AST.java
-kiev.vlang.Named kiev/vlang/Named kiev\vlang\PassInfo.java bad
-kiev.vlang.NewArrayExpr kiev/vlang/NewArrayExpr kiev\vlang\NewExpr.java bad
-kiev.vlang.NewArrayExpr.DFI kiev/vlang/NewArrayExpr$DFI kiev\vlang\NewExpr.java
-kiev.vlang.NewArrayExpr.NewArrayExprImpl kiev/vlang/NewArrayExpr$NewArrayExprImpl kiev\vlang\NewExpr.java
-kiev.vlang.NewArrayExpr.NewArrayExprView kiev/vlang/NewArrayExpr$NewArrayExprView kiev\vlang\NewExpr.java
-kiev.vlang.NewClosure kiev/vlang/NewClosure kiev\vlang\NewExpr.java bad
-kiev.vlang.NewClosure.DFI kiev/vlang/NewClosure$DFI kiev\vlang\NewExpr.java
-kiev.vlang.NewClosure.NewClosureImpl kiev/vlang/NewClosure$NewClosureImpl kiev\vlang\NewExpr.java
-kiev.vlang.NewClosure.NewClosureView kiev/vlang/NewClosure$NewClosureView kiev\vlang\NewExpr.java
-kiev.vlang.NewExpr kiev/vlang/NewExpr kiev\vlang\NewExpr.java bad
-kiev.vlang.NewExpr.DFI kiev/vlang/NewExpr$DFI kiev\vlang\NewExpr.java
-kiev.vlang.NewExpr.NewExprImpl kiev/vlang/NewExpr$NewExprImpl kiev\vlang\NewExpr.java
-kiev.vlang.NewExpr.NewExprView kiev/vlang/NewExpr$NewExprView kiev\vlang\NewExpr.java
-kiev.vlang.NewInitializedArrayExpr kiev/vlang/NewInitializedArrayExpr kiev\vlang\NewExpr.java bad
-kiev.vlang.NewInitializedArrayExpr.DFI kiev/vlang/NewInitializedArrayExpr$DFI kiev\vlang\NewExpr.java
-kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprImpl kiev/vlang/NewInitializedArrayExpr$NewInitializedArrayExprImpl kiev\vlang\NewExpr.java
-kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprView kiev/vlang/NewInitializedArrayExpr$NewInitializedArrayExprView kiev\vlang\NewExpr.java
-kiev.vlang.NodeData kiev/vlang/NodeData kiev\vlang\AST.java bad
-kiev.vlang.NodeName kiev/vlang/NodeName kiev\vlang\ClazzName.java bad
-kiev.vlang.NopExpr kiev/vlang/NopExpr kiev\vlang\AST.java bad
-kiev.vlang.NopExpr.DFI kiev/vlang/NopExpr$DFI kiev\vlang\AST.java
-kiev.vlang.NopExpr.NopExprImpl kiev/vlang/NopExpr$NopExprImpl kiev\vlang\AST.java
-kiev.vlang.NopExpr.NopExprView kiev/vlang/NopExpr$NopExprView kiev\vlang\AST.java
-kiev.vlang.OpTypes kiev/vlang/OpTypes kiev\vlang\Operator.java bad
-kiev.vlang.OpTypes.TypeRule kiev/vlang/OpTypes$TypeRule kiev\vlang\Operator.java
-kiev.vlang.OpTypes.rtAny kiev/vlang/OpTypes$rtAny kiev\vlang\Operator.java
-kiev.vlang.OpTypes.rtDownCast kiev/vlang/OpTypes$rtDownCast kiev\vlang\Operator.java
-kiev.vlang.OpTypes.rtSame kiev/vlang/OpTypes$rtSame kiev\vlang\Operator.java
-kiev.vlang.OpTypes.rtType kiev/vlang/OpTypes$rtType kiev\vlang\Operator.java
-kiev.vlang.OpTypes.rtUpperCastNumber kiev/vlang/OpTypes$rtUpperCastNumber kiev\vlang\Operator.java
-kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java bad
-kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java bad
-kiev.vlang.OuterThisAccessExpr.DFI kiev/vlang/OuterThisAccessExpr$DFI kiev\vlang\LvalueExpr.java
-kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprImpl kiev/vlang/OuterThisAccessExpr$OuterThisAccessExprImpl kiev\vlang\LvalueExpr.java
-kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprView kiev/vlang/OuterThisAccessExpr$OuterThisAccessExprView kiev\vlang\LvalueExpr.java
-kiev.vlang.OuterType kiev/vlang/OuterType kiev\vlang\Type.java bad
-kiev.vlang.OuterTypeProvider kiev/vlang/OuterTypeProvider kiev\vlang\TypeProvider.java bad
-kiev.vlang.ParentEnumerator kiev/vlang/ParentEnumerator kiev\vlang\PassInfo.java bad
-kiev.vlang.PassInfo kiev/vlang/PassInfo kiev\vlang\PassInfo.java bad
-kiev.vlang.PostfixOperator kiev/vlang/PostfixOperator kiev\vlang\Operator.java bad
-kiev.vlang.PrefixOperator kiev/vlang/PrefixOperator kiev\vlang\Operator.java bad
-kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java bad
-kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java bad
-kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java bad
-kiev.vlang.ReturnStat.DFI kiev/vlang/ReturnStat$DFI kiev\vlang\Statement.java
-kiev.vlang.ReturnStat.ReturnStatImpl kiev/vlang/ReturnStat$ReturnStatImpl kiev\vlang\Statement.java
-kiev.vlang.ReturnStat.ReturnStatView kiev/vlang/ReturnStat$ReturnStatView kiev\vlang\Statement.java
-kiev.vlang.RuleAndExpr kiev/vlang/RuleAndExpr kiev\vlang\Rules.java bad
-kiev.vlang.RuleAndExpr.DFI kiev/vlang/RuleAndExpr$DFI kiev\vlang\Rules.java
-kiev.vlang.RuleAndExpr.RuleAndExprImpl kiev/vlang/RuleAndExpr$RuleAndExprImpl kiev\vlang\Rules.java
-kiev.vlang.RuleAndExpr.RuleAndExprView kiev/vlang/RuleAndExpr$RuleAndExprView kiev\vlang\Rules.java
-kiev.vlang.RuleBlock kiev/vlang/RuleBlock kiev\vlang\Rules.java bad
-kiev.vlang.RuleBlock.DFI kiev/vlang/RuleBlock$DFI kiev\vlang\Rules.java
-kiev.vlang.RuleBlock.RuleBlockImpl kiev/vlang/RuleBlock$RuleBlockImpl kiev\vlang\Rules.java
-kiev.vlang.RuleBlock.RuleBlockView kiev/vlang/RuleBlock$RuleBlockView kiev\vlang\Rules.java
-kiev.vlang.RuleCallExpr kiev/vlang/RuleCallExpr kiev\vlang\Rules.java bad
-kiev.vlang.RuleCallExpr.DFI kiev/vlang/RuleCallExpr$DFI kiev\vlang\Rules.java
-kiev.vlang.RuleCallExpr.RuleCallExprImpl kiev/vlang/RuleCallExpr$RuleCallExprImpl kiev\vlang\Rules.java
-kiev.vlang.RuleCallExpr.RuleCallExprView kiev/vlang/RuleCallExpr$RuleCallExprView kiev\vlang\Rules.java
-kiev.vlang.RuleCutExpr kiev/vlang/RuleCutExpr kiev\vlang\Rules.java bad
-kiev.vlang.RuleCutExpr.DFI kiev/vlang/RuleCutExpr$DFI kiev\vlang\Rules.java
-kiev.vlang.RuleCutExpr.RuleCutExprImpl kiev/vlang/RuleCutExpr$RuleCutExprImpl kiev\vlang\Rules.java
-kiev.vlang.RuleCutExpr.RuleCutExprView kiev/vlang/RuleCutExpr$RuleCutExprView kiev\vlang\Rules.java
-kiev.vlang.RuleExpr kiev/vlang/RuleExpr kiev\vlang\Rules.java bad
-kiev.vlang.RuleExpr.DFI kiev/vlang/RuleExpr$DFI kiev\vlang\Rules.java
-kiev.vlang.RuleExpr.RuleExprImpl kiev/vlang/RuleExpr$RuleExprImpl kiev\vlang\Rules.java
-kiev.vlang.RuleExpr.RuleExprView kiev/vlang/RuleExpr$RuleExprView kiev\vlang\Rules.java
-kiev.vlang.RuleExprBase kiev/vlang/RuleExprBase kiev\vlang\Rules.java bad
-kiev.vlang.RuleExprBase.RuleExprBaseImpl kiev/vlang/RuleExprBase$RuleExprBaseImpl kiev\vlang\Rules.java
-kiev.vlang.RuleExprBase.RuleExprBaseView kiev/vlang/RuleExprBase$RuleExprBaseView kiev\vlang\Rules.java
-kiev.vlang.RuleIsoneofExpr kiev/vlang/RuleIsoneofExpr kiev\vlang\Rules.java bad
-kiev.vlang.RuleIsoneofExpr.DFI kiev/vlang/RuleIsoneofExpr$DFI kiev\vlang\Rules.java
-kiev.vlang.RuleIsoneofExpr.RuleIsoneofExprImpl kiev/vlang/RuleIsoneofExpr$RuleIsoneofExprImpl kiev\vlang\Rules.java
-kiev.vlang.RuleIsoneofExpr.RuleIsoneofExprView kiev/vlang/RuleIsoneofExpr$RuleIsoneofExprView kiev\vlang\Rules.java
-kiev.vlang.RuleIstheExpr kiev/vlang/RuleIstheExpr kiev\vlang\Rules.java bad
-kiev.vlang.RuleIstheExpr.DFI kiev/vlang/RuleIstheExpr$DFI kiev\vlang\Rules.java
-kiev.vlang.RuleIstheExpr.RuleIstheExprImpl kiev/vlang/RuleIstheExpr$RuleIstheExprImpl kiev\vlang\Rules.java
-kiev.vlang.RuleIstheExpr.RuleIstheExprView kiev/vlang/RuleIstheExpr$RuleIstheExprView kiev\vlang\Rules.java
-kiev.vlang.RuleMethod kiev/vlang/RuleMethod kiev\vlang\Rules.java bad
-kiev.vlang.RuleMethod.DFI kiev/vlang/RuleMethod$DFI kiev\vlang\Rules.java
-kiev.vlang.RuleMethod.RuleMethodDFFunc kiev/vlang/RuleMethod$RuleMethodDFFunc kiev\vlang\Rules.java
-kiev.vlang.RuleMethod.RuleMethodImpl kiev/vlang/RuleMethod$RuleMethodImpl kiev\vlang\Rules.java
-kiev.vlang.RuleMethod.RuleMethodView kiev/vlang/RuleMethod$RuleMethodView kiev\vlang\Rules.java
-kiev.vlang.RuleOrExpr kiev/vlang/RuleOrExpr kiev\vlang\Rules.java bad
-kiev.vlang.RuleOrExpr.DFI kiev/vlang/RuleOrExpr$DFI kiev\vlang\Rules.java
-kiev.vlang.RuleOrExpr.RuleOrExprImpl kiev/vlang/RuleOrExpr$RuleOrExprImpl kiev\vlang\Rules.java
-kiev.vlang.RuleOrExpr.RuleOrExprView kiev/vlang/RuleOrExpr$RuleOrExprView kiev\vlang\Rules.java
-kiev.vlang.RuleWhileExpr kiev/vlang/RuleWhileExpr kiev\vlang\Rules.java bad
-kiev.vlang.RuleWhileExpr.DFI kiev/vlang/RuleWhileExpr$DFI kiev\vlang\Rules.java
-kiev.vlang.RuleWhileExpr.RuleWhileExprImpl kiev/vlang/RuleWhileExpr$RuleWhileExprImpl kiev\vlang\Rules.java
-kiev.vlang.RuleWhileExpr.RuleWhileExprView kiev/vlang/RuleWhileExpr$RuleWhileExprView kiev\vlang\Rules.java
-kiev.vlang.SFldExpr kiev/vlang/SFldExpr kiev\vlang\LvalueExpr.java bad
-kiev.vlang.SFldExpr.DFI kiev/vlang/SFldExpr$DFI kiev\vlang\LvalueExpr.java
-kiev.vlang.SFldExpr.SFldExprImpl kiev/vlang/SFldExpr$SFldExprImpl kiev\vlang\LvalueExpr.java
-kiev.vlang.SFldExpr.SFldExprView kiev/vlang/SFldExpr$SFldExprView kiev\vlang\LvalueExpr.java
-kiev.vlang.Scope kiev/vlang/Scope kiev\vlang\Resolving.java bad
-kiev.vlang.ScopeForwardFieldInfo kiev/vlang/ScopeForwardFieldInfo kiev\vlang\Var.java bad
-kiev.vlang.ScopeNodeInfo kiev/vlang/ScopeNodeInfo kiev\vlang\Var.java bad
-kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java bad
-kiev.vlang.ScopeOfNames kiev/vlang/ScopeOfNames kiev\vlang\Resolving.java bad
-kiev.vlang.ScopeOfOperators kiev/vlang/ScopeOfOperators kiev\vlang\Resolving.java bad
-kiev.vlang.ScopeStaticFieldInfo kiev/vlang/ScopeStaticFieldInfo kiev\vlang\Var.java bad
-kiev.vlang.ScopeVarInfo kiev/vlang/ScopeVarInfo kiev\vlang\Var.java bad
-kiev.vlang.SetBody kiev/vlang/SetBody kiev\vlang\AST.java bad
-kiev.vlang.Shadow kiev/vlang/Shadow kiev\vlang\Expr.java bad
-kiev.vlang.Shadow.DFI kiev/vlang/Shadow$DFI kiev\vlang\Expr.java
-kiev.vlang.Shadow.ShadowImpl kiev/vlang/Shadow$ShadowImpl kiev\vlang\Expr.java
-kiev.vlang.Shadow.ShadowView kiev/vlang/Shadow$ShadowView kiev\vlang\Expr.java
-kiev.vlang.Signature kiev/vlang/Signature kiev\vlang\Signature.java bad
-kiev.vlang.StdTypes kiev/vlang/StdTypes kiev\vlang\StdTypes.java bad
-kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java bad
-kiev.vlang.StringConcatExpr.DFI kiev/vlang/StringConcatExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.StringConcatExpr.StringConcatExprImpl kiev/vlang/StringConcatExpr$StringConcatExprImpl kiev\vlang\Expr.java
-kiev.vlang.StringConcatExpr.StringConcatExprView kiev/vlang/StringConcatExpr$StringConcatExprView kiev\vlang\Expr.java
-kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java bad
-kiev.vlang.Struct.DFI kiev/vlang/Struct$DFI kiev\vlang\Struct.java
-kiev.vlang.Struct.MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
-kiev.vlang.Struct.StructDFFunc kiev/vlang/Struct$StructDFFunc kiev\vlang\Struct.java
-kiev.vlang.Struct.StructImpl kiev/vlang/Struct$StructImpl kiev\vlang\Struct.java
-kiev.vlang.Struct.StructView kiev/vlang/Struct$StructView kiev\vlang\Struct.java
-kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java bad
-kiev.vlang.SwitchStat.DFI kiev/vlang/SwitchStat$DFI kiev\vlang\ComplexStatement.java
-kiev.vlang.SwitchStat.SwitchStatImpl kiev/vlang/SwitchStat$SwitchStatImpl kiev\vlang\ComplexStatement.java
-kiev.vlang.SwitchStat.SwitchStatView kiev/vlang/SwitchStat$SwitchStatView kiev\vlang\ComplexStatement.java
-kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java bad
-kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java bad
-kiev.vlang.SynchronizedStat.DFI kiev/vlang/SynchronizedStat$DFI kiev\vlang\ComplexStatement.java
-kiev.vlang.SynchronizedStat.SynchronizedStatImpl kiev/vlang/SynchronizedStat$SynchronizedStatImpl kiev\vlang\ComplexStatement.java
-kiev.vlang.SynchronizedStat.SynchronizedStatView kiev/vlang/SynchronizedStat$SynchronizedStatView kiev\vlang\ComplexStatement.java
-kiev.vlang.TVar kiev/vlang/TVar kiev\vlang\TypeProvider.java bad
-kiev.vlang.TVarAlias kiev/vlang/TVarAlias kiev\vlang\TypeProvider.java bad
-kiev.vlang.TVarBound kiev/vlang/TVarBound kiev\vlang\TypeProvider.java bad
-kiev.vlang.TVarSet kiev/vlang/TVarSet kiev\vlang\TypeProvider.java bad
-kiev.vlang.TemplateType kiev/vlang/TemplateType kiev\vlang\Type.java bad
-kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java bad
-kiev.vlang.ThisExpr.DFI kiev/vlang/ThisExpr$DFI kiev\vlang\LvalueExpr.java
-kiev.vlang.ThisExpr.ThisExprImpl kiev/vlang/ThisExpr$ThisExprImpl kiev\vlang\LvalueExpr.java
-kiev.vlang.ThisExpr.ThisExprView kiev/vlang/ThisExpr$ThisExprView kiev\vlang\LvalueExpr.java
-kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java bad
-kiev.vlang.ThrowStat.DFI kiev/vlang/ThrowStat$DFI kiev\vlang\Statement.java
-kiev.vlang.ThrowStat.ThrowStatImpl kiev/vlang/ThrowStat$ThrowStatImpl kiev\vlang\Statement.java
-kiev.vlang.ThrowStat.ThrowStatView kiev/vlang/ThrowStat$ThrowStatView kiev\vlang\Statement.java
-kiev.vlang.TopLevelPass kiev/vlang/TopLevelPass kiev\vlang\AST.java bad
-kiev.vlang.TreeWalker kiev/vlang/TreeWalker kiev\vlang\AST.java bad
-kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java bad
-kiev.vlang.TryStat.DFI kiev/vlang/TryStat$DFI kiev\vlang\ComplexStatement.java
-kiev.vlang.TryStat.TryStatImpl kiev/vlang/TryStat$TryStatImpl kiev\vlang\ComplexStatement.java
-kiev.vlang.TryStat.TryStatView kiev/vlang/TryStat$TryStatView kiev\vlang\ComplexStatement.java
-kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java bad
-kiev.vlang.TypeClassExpr kiev/vlang/TypeClassExpr kiev\vlang\Expr.java bad
-kiev.vlang.TypeClassExpr.DFI kiev/vlang/TypeClassExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.TypeClassExpr.TypeClassExprImpl kiev/vlang/TypeClassExpr$TypeClassExprImpl kiev\vlang\Expr.java
-kiev.vlang.TypeClassExpr.TypeClassExprView kiev/vlang/TypeClassExpr$TypeClassExprView kiev\vlang\Expr.java
-kiev.vlang.TypeDecl kiev/vlang/TypeDecl kiev\vlang\AST.java bad
-kiev.vlang.TypeDef kiev/vlang/TypeDef kiev\vlang\TypeDef.java bad
-kiev.vlang.TypeOpDef kiev/vlang/TypeOpDef kiev\vlang\Import.java bad
-kiev.vlang.TypeProvider kiev/vlang/TypeProvider kiev\vlang\TypeProvider.java bad
-kiev.vlang.TypeRef kiev/vlang/TypeRef kiev\vlang\AST.java bad
-kiev.vlang.TypeRef.DFI kiev/vlang/TypeRef$DFI kiev\vlang\AST.java
-kiev.vlang.TypeRef.TypeRefImpl kiev/vlang/TypeRef$TypeRefImpl kiev\vlang\AST.java
-kiev.vlang.TypeRef.TypeRefView kiev/vlang/TypeRef$TypeRefView kiev\vlang\AST.java
-kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java bad
-kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java bad
-kiev.vlang.UnaryExpr.DFI kiev/vlang/UnaryExpr$DFI kiev\vlang\Expr.java
-kiev.vlang.UnaryExpr.UnaryExprImpl kiev/vlang/UnaryExpr$UnaryExprImpl kiev\vlang\Expr.java
-kiev.vlang.UnaryExpr.UnaryExprView kiev/vlang/UnaryExpr$UnaryExprView kiev\vlang\Expr.java
-kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java bad
-kiev.vlang.Var.DFI kiev/vlang/Var$DFI kiev\vlang\Var.java
-kiev.vlang.Var.VarDFFunc kiev/vlang/Var$VarDFFunc kiev\vlang\Var.java
-kiev.vlang.Var.VarImpl kiev/vlang/Var$VarImpl kiev\vlang\Var.java
-kiev.vlang.Var.VarView kiev/vlang/Var$VarView kiev\vlang\Var.java
-kiev.vlang.VarDecl kiev/vlang/VarDecl kiev\vlang\AST.java bad
-kiev.vlang.VarDecl.DFI kiev/vlang/VarDecl$DFI kiev\vlang\AST.java
-kiev.vlang.VarDecl.VarDeclImpl kiev/vlang/VarDecl$VarDeclImpl kiev\vlang\AST.java
-kiev.vlang.VarDecl.VarDeclView kiev/vlang/VarDecl$VarDeclView kiev\vlang\AST.java
-kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java bad
-kiev.vlang.WBCCondition.DFI kiev/vlang/WBCCondition$DFI kiev\vlang\Method.java
-kiev.vlang.WBCCondition.WBCConditionImpl kiev/vlang/WBCCondition$WBCConditionImpl kiev\vlang\Method.java
-kiev.vlang.WBCCondition.WBCConditionView kiev/vlang/WBCCondition$WBCConditionView kiev\vlang\Method.java
-kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java bad
-kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java bad
-kiev.vlang.WhileStat.DFI kiev/vlang/WhileStat$DFI kiev\vlang\LoopStatement.java
-kiev.vlang.WhileStat.WhileStatImpl kiev/vlang/WhileStat$WhileStatImpl kiev\vlang\LoopStatement.java
-kiev.vlang.WhileStat.WhileStatView kiev/vlang/WhileStat$WhileStatView kiev\vlang\LoopStatement.java
-kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java bad
-kiev.vlang.WithStat.DFI kiev/vlang/WithStat$DFI kiev\vlang\ComplexStatement.java
-kiev.vlang.WithStat.WithStatImpl kiev/vlang/WithStat$WithStatImpl kiev\vlang\ComplexStatement.java
-kiev.vlang.WithStat.WithStatView kiev/vlang/WithStat$WithStatView kiev\vlang\ComplexStatement.java
-kiev.vlang.WrapperType kiev/vlang/WrapperType kiev\vlang\Type.java bad
-kiev.vlang.WrapperTypeProvider kiev/vlang/WrapperTypeProvider kiev\vlang\TypeProvider.java bad
-kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java bad
-kiev.vlang.dflow kiev/vlang/dflow kiev\vlang\Tree.java bad
-kiev.vlang.node kiev/vlang/node kiev\vlang\Tree.java bad
-kiev.vlang.nodeimpl kiev/vlang/nodeimpl kiev\vlang\Tree.java bad
-kiev.vlang.nodeset kiev/vlang/nodeset kiev\vlang\Tree.java bad
-kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java bad
-kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java bad
+kiev.stdlib.meta.alias kiev/stdlib/meta/alias kiev\stdlib\meta\alias.java
+kiev.stdlib.meta.forward kiev/stdlib/meta/forward kiev\stdlib\meta\forward.java
+kiev.stdlib.meta.getter kiev/stdlib/meta/getter kiev\stdlib\meta\virtual.java
+kiev.stdlib.meta.packed kiev/stdlib/meta/packed kiev\stdlib\meta\packed.java
+kiev.stdlib.meta.packer kiev/stdlib/meta/packer kiev\stdlib\meta\packed.java
+kiev.stdlib.meta.pcase kiev/stdlib/meta/pcase kiev\stdlib\meta\pcase.java
+kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtual.java
+kiev.stdlib.meta.singleton kiev/stdlib/meta/singleton kiev\stdlib\meta\singleton.java
+kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java
+kiev.stdlib.meta.unerasable kiev/stdlib/meta/unerasable kiev\stdlib\meta\unerasable.java
+kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
+kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\BackendProcessor.java
+kiev.transf.ImportKievSrc kiev/transf/ImportKievSrc kiev\transf\ImportKievSrc.java
+kiev.transf.JavaBackend kiev/transf/JavaBackend kiev\transf\ImportKievSrc.java
+kiev.transf.JavaPackedFldBackend kiev/transf/JavaPackedFldBackend kiev\transf\ProcessPackedFld.java
+kiev.transf.JavaVirtFldBackend kiev/transf/JavaVirtFldBackend kiev\transf\ProcessVirtFld.java
+kiev.transf.PizzaCaseBackend kiev/transf/PizzaCaseBackend kiev\transf\ProcessPizzaCase.java
+kiev.transf.ProcessDFlow kiev/transf/ProcessDFlow kiev\transf\ProcessDFlow.java
+kiev.transf.ProcessEnum kiev/transf/ProcessEnum kiev\transf\ProcessEnum.java
+kiev.transf.ProcessPackedFld kiev/transf/ProcessPackedFld kiev\transf\ProcessPackedFld.java
+kiev.transf.ProcessPizzaCase kiev/transf/ProcessPizzaCase kiev\transf\ProcessPizzaCase.java
+kiev.transf.ProcessVNode kiev/transf/ProcessVNode kiev\transf\ProcessVNode.java
+kiev.transf.ProcessView kiev/transf/ProcessView kiev\transf\ProcessView.java
+kiev.transf.ProcessVirtFld kiev/transf/ProcessVirtFld kiev\transf\ProcessVirtFld.java
+kiev.transf.TransfProcessor kiev/transf/TransfProcessor kiev\transf\TransfProcessor.java
+kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java
+kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
+kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
+kiev.vlang.AccessExpr kiev/vlang/AccessExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
+kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
+kiev.vlang.ArgType kiev/vlang/ArgType kiev\vlang\Type.java
+kiev.vlang.ArgTypeProvider kiev/vlang/ArgTypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.ArrayLengthExpr kiev/vlang/ArrayLengthExpr kiev\vlang\Expr.java
+kiev.vlang.ArrayType kiev/vlang/ArrayType kiev\vlang\Type.java
+kiev.vlang.ArrayTypeProvider kiev/vlang/ArrayTypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
+kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
+kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
+kiev.vlang.BaseType kiev/vlang/BaseType kiev\vlang\Type.java
+kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
+kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\BooleanExpr.java
+kiev.vlang.BinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev\vlang\BooleanExpr.java
+kiev.vlang.BinaryExpr kiev/vlang/BinaryExpr kiev\vlang\Expr.java
+kiev.vlang.BinaryOperator kiev/vlang/BinaryOperator kiev\vlang\Operator.java
+kiev.vlang.BlockExpr kiev/vlang/BlockExpr kiev\vlang\Expr.java
+kiev.vlang.BlockStat kiev/vlang/BlockStat kiev\vlang\Statement.java
+kiev.vlang.BoolExpr kiev/vlang/BoolExpr kiev\vlang\BooleanExpr.java
+kiev.vlang.BooleanNotExpr kiev/vlang/BooleanNotExpr kiev\vlang\BooleanExpr.java
+kiev.vlang.BreakStat kiev/vlang/BreakStat kiev\vlang\Statement.java
+kiev.vlang.BreakTarget kiev/vlang/BreakTarget kiev\vlang\PassInfo.java
+kiev.vlang.CallExpr kiev/vlang/CallExpr kiev\vlang\CallExpr.java
+kiev.vlang.CallTypeProvider kiev/vlang/CallTypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.CallableType kiev/vlang/CallableType kiev\vlang\Type.java
+kiev.vlang.CaseLabel kiev/vlang/CaseLabel kiev\vlang\ComplexStatement.java
+kiev.vlang.CastExpr kiev/vlang/CastExpr kiev\vlang\Expr.java
+kiev.vlang.CastOperator kiev/vlang/CastOperator kiev\vlang\Operator.java
+kiev.vlang.CatchInfo kiev/vlang/CatchInfo kiev\vlang\ComplexStatement.java
+kiev.vlang.ClazzName kiev/vlang/ClazzName kiev\vlang\ClazzName.java
+kiev.vlang.ClosureCallExpr kiev/vlang/ClosureCallExpr kiev\vlang\CallExpr.java
+kiev.vlang.ClosureType kiev/vlang/ClosureType kiev\vlang\Type.java
+kiev.vlang.CommaExpr kiev/vlang/CommaExpr kiev\vlang\Expr.java
+kiev.vlang.CompaundType kiev/vlang/CompaundType kiev\vlang\Type.java
+kiev.vlang.CompaundTypeProvider kiev/vlang/CompaundTypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.CompilerException kiev/vlang/CompilerException kiev\vlang\AST.java
+kiev.vlang.ConcreteType kiev/vlang/ConcreteType kiev\vlang\Type.java
+kiev.vlang.CondStat kiev/vlang/CondStat kiev\vlang\Statement.java
+kiev.vlang.ConditionalExpr kiev/vlang/ConditionalExpr kiev\vlang\Expr.java
+kiev.vlang.ConstBoolExpr kiev/vlang/ConstBoolExpr kiev\vlang\ConstExpr.java
+kiev.vlang.ConstByteExpr kiev/vlang/ConstByteExpr kiev\vlang\ConstExpr.java
+kiev.vlang.ConstCharExpr kiev/vlang/ConstCharExpr kiev\vlang\ConstExpr.java
+kiev.vlang.ConstDoubleExpr kiev/vlang/ConstDoubleExpr kiev\vlang\ConstExpr.java
+kiev.vlang.ConstExpr kiev/vlang/ConstExpr kiev\vlang\ConstExpr.java
+kiev.vlang.ConstFloatExpr kiev/vlang/ConstFloatExpr kiev\vlang\ConstExpr.java
+kiev.vlang.ConstIntExpr kiev/vlang/ConstIntExpr kiev\vlang\ConstExpr.java
+kiev.vlang.ConstLongExpr kiev/vlang/ConstLongExpr kiev\vlang\ConstExpr.java
+kiev.vlang.ConstNullExpr kiev/vlang/ConstNullExpr kiev\vlang\ConstExpr.java
+kiev.vlang.ConstShortExpr kiev/vlang/ConstShortExpr kiev\vlang\ConstExpr.java
+kiev.vlang.ConstStringExpr kiev/vlang/ConstStringExpr kiev\vlang\ConstExpr.java
+kiev.vlang.Constants kiev/vlang/Constants kiev\vlang\Constants.java
+kiev.vlang.Constructor kiev/vlang/Constructor kiev\vlang\Method.java
+kiev.vlang.ContainerAccessExpr kiev/vlang/ContainerAccessExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.ContinueStat kiev/vlang/ContinueStat kiev\vlang\Statement.java
+kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java
+kiev.vlang.CoreType kiev/vlang/CoreType kiev\vlang\Type.java
+kiev.vlang.CoreTypeProvider kiev/vlang/CoreTypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.DFFunc kiev/vlang/DFFunc kiev\vlang\Var.java
+kiev.vlang.DFLoopException kiev/vlang/DFLoopException kiev\vlang\Var.java
+kiev.vlang.DFSocket kiev/vlang/DFSocket kiev\vlang\Var.java
+kiev.vlang.DFSocketChild kiev/vlang/DFSocketChild kiev\vlang\Var.java
+kiev.vlang.DFSocketSpace kiev/vlang/DFSocketSpace kiev\vlang\Var.java
+kiev.vlang.DFSocketSpaceSeq kiev/vlang/DFSocketSpaceSeq kiev\vlang\Var.java
+kiev.vlang.DFSocketSpaceUnknown kiev/vlang/DFSocketSpaceUnknown kiev\vlang\Var.java
+kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
+kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java
+kiev.vlang.DataFlowInfo kiev/vlang/DataFlowInfo kiev\vlang\Var.java
+kiev.vlang.DataFlowSlots kiev/vlang/DataFlowSlots kiev\vlang\Var.java
+kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
+kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java
+kiev.vlang.ENode kiev/vlang/ENode kiev\vlang\AST.java
+kiev.vlang.EmptyStat kiev/vlang/EmptyStat kiev\vlang\Statement.java
+kiev.vlang.Env kiev/vlang/Env kiev\vlang\Env.java
+kiev.vlang.ExprStat kiev/vlang/ExprStat kiev\vlang\Statement.java
+kiev.vlang.Field kiev/vlang/Field kiev\vlang\Field.java
+kiev.vlang.FileUnit kiev/vlang/FileUnit kiev\vlang\FileUnit.java
+kiev.vlang.FinallyInfo kiev/vlang/FinallyInfo kiev\vlang\ComplexStatement.java
+kiev.vlang.ForEachStat kiev/vlang/ForEachStat kiev\vlang\LoopStatement.java
+kiev.vlang.ForInit kiev/vlang/ForInit kiev\vlang\LoopStatement.java
+kiev.vlang.ForStat kiev/vlang/ForStat kiev\vlang\LoopStatement.java
+kiev.vlang.FormPar kiev/vlang/FormPar kiev\vlang\Var.java
+kiev.vlang.GotoCaseStat kiev/vlang/GotoCaseStat kiev\vlang\Statement.java
+kiev.vlang.GotoStat kiev/vlang/GotoStat kiev\vlang\Statement.java
+kiev.vlang.IFldExpr kiev/vlang/IFldExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java
+kiev.vlang.Import kiev/vlang/Import kiev\vlang\Import.java
+kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
+kiev.vlang.Initializer kiev/vlang/Initializer kiev\vlang\Method.java
+kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java
+kiev.vlang.InstanceofExpr kiev/vlang/InstanceofExpr kiev\vlang\BooleanExpr.java
+kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
+kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.Label kiev/vlang/Label kiev\vlang\LoopStatement.java
+kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java
+kiev.vlang.LocalStructDecl kiev/vlang/LocalStructDecl kiev\vlang\AST.java
+kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java
+kiev.vlang.LvalDNode kiev/vlang/LvalDNode kiev\vlang\AST.java
+kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java
+kiev.vlang.MetaAbstract kiev/vlang/MetaAbstract kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaAlias kiev/vlang/MetaAlias kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaAttrSlot kiev/vlang/MetaAttrSlot kiev\vlang\Tree.java
+kiev.vlang.MetaFinal kiev/vlang/MetaFinal kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaFlag kiev/vlang/MetaFlag kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaForward kiev/vlang/MetaForward kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaNative kiev/vlang/MetaNative kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaPizzaCase kiev/vlang/MetaPizzaCase kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaPrivate kiev/vlang/MetaPrivate kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaProtected kiev/vlang/MetaProtected kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaPublic kiev/vlang/MetaPublic kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaSet kiev/vlang/MetaSet kiev\vlang\Meta.java
+kiev.vlang.MetaSingleton kiev/vlang/MetaSingleton kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaSpecial kiev/vlang/MetaSpecial kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaStatic kiev/vlang/MetaStatic kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaSynchronized kiev/vlang/MetaSynchronized kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaThrows kiev/vlang/MetaThrows kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaTransient kiev/vlang/MetaTransient kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaUnerasable kiev/vlang/MetaUnerasable kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaValue kiev/vlang/MetaValue kiev\vlang\Meta.java
+kiev.vlang.MetaValueArray kiev/vlang/MetaValueArray kiev\vlang\Meta.java
+kiev.vlang.MetaValueScalar kiev/vlang/MetaValueScalar kiev\vlang\Meta.java
+kiev.vlang.MetaValueType kiev/vlang/MetaValueType kiev\vlang\Meta.java
+kiev.vlang.MetaVirtual kiev/vlang/MetaVirtual kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaVolatile kiev/vlang/MetaVolatile kiev\vlang\MetaSpecial.java
+kiev.vlang.Method kiev/vlang/Method kiev\vlang\Method.java
+kiev.vlang.MethodType kiev/vlang/MethodType kiev\vlang\Type.java
+kiev.vlang.MultiOperator kiev/vlang/MultiOperator kiev\vlang\Operator.java
+kiev.vlang.NArr kiev/vlang/NArr kiev\vlang\Tree.java
+kiev.vlang.NameRef kiev/vlang/NameRef kiev\vlang\AST.java
+kiev.vlang.Named kiev/vlang/Named kiev\vlang\PassInfo.java
+kiev.vlang.NewArrayExpr kiev/vlang/NewArrayExpr kiev\vlang\NewExpr.java
+kiev.vlang.NewClosure kiev/vlang/NewClosure kiev\vlang\NewExpr.java
+kiev.vlang.NewExpr kiev/vlang/NewExpr kiev\vlang\NewExpr.java
+kiev.vlang.NewInitializedArrayExpr kiev/vlang/NewInitializedArrayExpr kiev\vlang\NewExpr.java
+kiev.vlang.NodeData kiev/vlang/NodeData kiev\vlang\AST.java
+kiev.vlang.NodeName kiev/vlang/NodeName kiev\vlang\ClazzName.java
+kiev.vlang.NopExpr kiev/vlang/NopExpr kiev\vlang\AST.java
+kiev.vlang.OpTypes kiev/vlang/OpTypes kiev\vlang\Operator.java
+kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java
+kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.OuterType kiev/vlang/OuterType kiev\vlang\Type.java
+kiev.vlang.OuterTypeProvider kiev/vlang/OuterTypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.ParentEnumerator kiev/vlang/ParentEnumerator kiev\vlang\PassInfo.java
+kiev.vlang.PassInfo kiev/vlang/PassInfo kiev\vlang\PassInfo.java
+kiev.vlang.PostfixOperator kiev/vlang/PostfixOperator kiev\vlang\Operator.java
+kiev.vlang.PrefixOperator kiev/vlang/PrefixOperator kiev\vlang\Operator.java
+kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java
+kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
+kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java
+kiev.vlang.RuleAndExpr kiev/vlang/RuleAndExpr kiev\vlang\Rules.java
+kiev.vlang.RuleBlock kiev/vlang/RuleBlock kiev\vlang\Rules.java
+kiev.vlang.RuleCallExpr kiev/vlang/RuleCallExpr kiev\vlang\Rules.java
+kiev.vlang.RuleCutExpr kiev/vlang/RuleCutExpr kiev\vlang\Rules.java
+kiev.vlang.RuleExpr kiev/vlang/RuleExpr kiev\vlang\Rules.java
+kiev.vlang.RuleExprBase kiev/vlang/RuleExprBase kiev\vlang\Rules.java
+kiev.vlang.RuleIsoneofExpr kiev/vlang/RuleIsoneofExpr kiev\vlang\Rules.java
+kiev.vlang.RuleIstheExpr kiev/vlang/RuleIstheExpr kiev\vlang\Rules.java
+kiev.vlang.RuleMethod kiev/vlang/RuleMethod kiev\vlang\Rules.java
+kiev.vlang.RuleOrExpr kiev/vlang/RuleOrExpr kiev\vlang\Rules.java
+kiev.vlang.RuleWhileExpr kiev/vlang/RuleWhileExpr kiev\vlang\Rules.java
+kiev.vlang.SFldExpr kiev/vlang/SFldExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.Scope kiev/vlang/Scope kiev\vlang\Resolving.java
+kiev.vlang.ScopeForwardFieldInfo kiev/vlang/ScopeForwardFieldInfo kiev\vlang\Var.java
+kiev.vlang.ScopeNodeInfo kiev/vlang/ScopeNodeInfo kiev\vlang\Var.java
+kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java
+kiev.vlang.ScopeOfNames kiev/vlang/ScopeOfNames kiev\vlang\Resolving.java
+kiev.vlang.ScopeOfOperators kiev/vlang/ScopeOfOperators kiev\vlang\Resolving.java
+kiev.vlang.ScopeStaticFieldInfo kiev/vlang/ScopeStaticFieldInfo kiev\vlang\Var.java
+kiev.vlang.ScopeVarInfo kiev/vlang/ScopeVarInfo kiev\vlang\Var.java
+kiev.vlang.SetBody kiev/vlang/SetBody kiev\vlang\AST.java
+kiev.vlang.Shadow kiev/vlang/Shadow kiev\vlang\Expr.java
+kiev.vlang.Signature kiev/vlang/Signature kiev\vlang\Signature.java
+kiev.vlang.StdTypes kiev/vlang/StdTypes kiev\vlang\StdTypes.java
+kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
+kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
+kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
+kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java
+kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
+kiev.vlang.TVar kiev/vlang/TVar kiev\vlang\TypeProvider.java
+kiev.vlang.TVarAlias kiev/vlang/TVarAlias kiev\vlang\TypeProvider.java
+kiev.vlang.TVarBound kiev/vlang/TVarBound kiev\vlang\TypeProvider.java
+kiev.vlang.TVarSet kiev/vlang/TVarSet kiev\vlang\TypeProvider.java
+kiev.vlang.TemplateType kiev/vlang/TemplateType kiev\vlang\Type.java
+kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
+kiev.vlang.TopLevelPass kiev/vlang/TopLevelPass kiev\vlang\AST.java
+kiev.vlang.TreeWalker kiev/vlang/TreeWalker kiev\vlang\AST.java
+kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
+kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java
+kiev.vlang.TypeClassExpr kiev/vlang/TypeClassExpr kiev\vlang\Expr.java
+kiev.vlang.TypeDecl kiev/vlang/TypeDecl kiev\vlang\AST.java
+kiev.vlang.TypeDef kiev/vlang/TypeDef kiev\vlang\TypeDef.java
+kiev.vlang.TypeInfoExpr kiev/vlang/TypeInfoExpr kiev\vlang\Expr.java
+kiev.vlang.TypeOpDef kiev/vlang/TypeOpDef kiev\vlang\Import.java
+kiev.vlang.TypeProvider kiev/vlang/TypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.TypeRef kiev/vlang/TypeRef kiev\vlang\AST.java
+kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
+kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
+kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
+kiev.vlang.VarDecl kiev/vlang/VarDecl kiev\vlang\AST.java
+kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
+kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
+kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
+kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
+kiev.vlang.WrapperType kiev/vlang/WrapperType kiev\vlang\Type.java
+kiev.vlang.WrapperTypeProvider kiev/vlang/WrapperTypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
+kiev.vlang.dflow kiev/vlang/dflow kiev\vlang\Tree.java
+kiev.vlang.node kiev/vlang/node kiev\vlang\Tree.java
+kiev.vlang.nodeimpl kiev/vlang/nodeimpl kiev\vlang\Tree.java
+kiev.vlang.nodeset kiev/vlang/nodeset kiev\vlang\Tree.java
+kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
+kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java

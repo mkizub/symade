@@ -277,6 +277,7 @@ public final class FormPar extends Var {
 	public static final int PARAM_TYPEINFO     = 4;
 	public static final int PARAM_VARARGS      = 6;
 	public static final int PARAM_LVAR_PROXY   = 7;
+	public static final int PARAM_TYPEINFO_N   = 128;
 	
 	public FormPar() {
 		super(new FormParImpl());

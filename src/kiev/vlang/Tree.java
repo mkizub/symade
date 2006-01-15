@@ -379,14 +379,14 @@ public final class NArr<N extends ASTNode> {
 	@unerasable
 	public final class JArr<J extends JNodeView> {
 
-		public NArr<N> getNArr() { return NArr.this; }		
+		public NArr<N> getNArr() { return NArr.this; }
 		
 		public JNodeView getParent() {
 			return (J)NArr.this.$parent_impl._self;
 		}
 		
 		public AttrSlot getPSlot() {
-			return NArr.this.$pslot;
+			return getNArr().$pslot;
 		}
 		
 		public int size()
@@ -394,21 +394,21 @@ public final class NArr<N extends ASTNode> {
 			alias get$size
 			alias get$length
 		{
-			return NArr.this.size();
+			return getNArr().size();
 		}
 	
 		public final J get(int idx)
 			alias at
 			alias operator(210,xfy,[])
 		{
-			return (J)NArr.this.get(idx);
+			return (J)getNArr().get(idx);
 		}
 		
 		public J set(int idx, J node)
 			alias operator(210,lfy,[])
 			require { node != null; }
 		{
-			NArr.this.set(idx, (N)node);
+			getNArr().set(idx, (N)node);
 			return node;
 		}
 	
@@ -417,7 +417,7 @@ public final class NArr<N extends ASTNode> {
 			alias operator(5, lfy, +=)
 			require { node != null; }
 		{
-			NArr.this.add((N)node);
+			getNArr().add((N)node);
 			return node;
 		}
 	
@@ -447,19 +447,19 @@ public final class NArr<N extends ASTNode> {
 		public J insert(int idx, J node)
 			require { node != null; }
 		{
-			NArr.this.insert(idx,(N)node);
+			getNArr().insert(idx,(N)node);
 			return node;
 		}
 	
-		public void detach(J old) { NArr.this.detach((N)old); }
-		public void del(int idx) { NArr.this.del(idx); }
-		public void delAll() { NArr.this.delAll(); }
-		public void copyFrom(JArr<J> arr) { NArr.this.copyFrom(arr.getNArr()); }
-		public void moveFrom(JArr<J> arr) { NArr.this.moveFrom(arr.getNArr()); }
-		public boolean contains(J node) { return NArr.this.contains((N)node); }
-		public int indexOf(J node) { return NArr.this.indexOf((N)node); }
+		public void detach(J old) { getNArr().detach((N)old); }
+		public void del(int idx) { getNArr().del(idx); }
+		public void delAll() { getNArr().delAll(); }
+		public void copyFrom(JArr<J> arr) { getNArr().copyFrom(arr.getNArr()); }
+		public void moveFrom(JArr<J> arr) { getNArr().moveFrom(arr.getNArr()); }
+		public boolean contains(J node) { return getNArr().contains((N)node); }
+		public int indexOf(J node) { return getNArr().indexOf((N)node); }
 		public J[] toArray() {
-			int sz = NArr.this.$nodes.length;
+			int sz = getNArr().$nodes.length;
 			J[] arr = new J[sz];
 			for (int i=0; i < sz; i++)
 				arr[i] = this[i];

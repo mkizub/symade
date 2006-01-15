@@ -11,6 +11,7 @@ import kiev.be.java.JLvalueExprView;
 import kiev.be.java.JShadowView;
 import kiev.be.java.JArrayLengthExprView;
 import kiev.be.java.JTypeClassExprView;
+import kiev.be.java.JTypeInfoExprView;
 import kiev.be.java.JAssignExprView;
 import kiev.be.java.JBinaryExprView;
 import kiev.be.java.JStringConcatExprView;
@@ -220,6 +221,82 @@ public class TypeClassExpr extends ENode {
 
 	public Dumper toJava(Dumper dmp) {
 		type.toJava(dmp).append(".class").space();
+		return dmp;
+	}
+}
+
+@nodeset
+public class TypeInfoExpr extends ENode {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
+	@virtual typedef NImpl = TypeInfoExprImpl;
+	@virtual typedef VView = TypeInfoExprView;
+	@virtual typedef JView = JTypeInfoExprView;
+
+	@nodeimpl
+	public static final class TypeInfoExprImpl extends ENodeImpl {
+		@virtual typedef ImplOf = TypeInfoExpr;
+		public TypeInfoExprImpl() {}
+		public TypeInfoExprImpl(int pos) { super(pos); }
+		@att public TypeRef				type;
+		@att public TypeClassExpr		cl_expr;
+		@att public NArr<ENode>			cl_args;
+	}
+	@nodeview
+	public static final view TypeInfoExprView of TypeInfoExprImpl extends ENodeView {
+		public				TypeRef				type;
+		public				TypeClassExpr		cl_expr;
+		public access:ro	NArr<ENode>			cl_args;
+	}
+
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	
+	public TypeInfoExpr() {
+		super(new TypeInfoExprImpl());
+	}
+
+	public TypeInfoExpr(int pos, TypeRef type) {
+		super(new TypeInfoExprImpl(pos));
+		this.type = type;
+	}
+
+	public String toString() {
+		return type+".type";
+	}
+
+	public Type getType() {
+		Type t = type.getType().getErasedType();
+		if (t.isUnerasable())
+			return t.getStruct().typeinfo_clazz.concr_type;
+		return Type.tpTypeInfo;
+	}
+
+	public Operator getOp() { return BinaryOperator.Access; }
+
+	public void resolve(Type reqType) {
+		if (isResolved())
+			return;
+		Type type = this.type.getType();
+		ConcreteType ftype = Type.tpTypeInfo;
+		Struct clazz = type.getStruct();
+		if (clazz.isTypeUnerasable()) {
+			if (clazz.typeinfo_clazz == null)
+				clazz.autoGenerateTypeinfoClazz();
+			ftype = clazz.typeinfo_clazz.concr_type;
+		}
+		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.concr_type));
+		cl_expr.resolve(Type.tpClass);
+		foreach (ArgType at; clazz.getTypeInfoArgs())
+			cl_args.add(ctx_clazz.accessTypeInfoField(this, type.resolve(at)));
+		foreach (ENode tie; cl_args)
+			tie.resolve(null);
+		setResolved(true);
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		type.toJava(dmp).append(".type").space();
 		return dmp;
 	}
 }
