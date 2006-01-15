@@ -816,6 +816,10 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					}
 				}
 			}
+			if (this.instanceOf(Type.tpTypeInfo.clazz) && ctx_method != null && ctx_method.name.name == nameInit) {
+				if (t instanceof ArgType)
+					return new ASTIdentifier(from.pos,t.name);
+			}
 			if (this.isTypeUnerasable()) {
 				ENode ti_access;
 				if (ctx_method != null && ctx_method.isStatic()) {
@@ -829,8 +833,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					Field ti = resolveField(nameTypeInfo);
 					ti_access = new IFldExpr(from.pos,new ThisExpr(pos),ti);
 				}
-				// Small optimization for the $typeinfo
-				if( this.concr_type.isInstanceOf(t.getStruct().concr_type) )
+				// Check that we need our $typeinfo
+				if (this.concr_type ≈ t)
 					return ti_access;
 	
 				if (t.isArgument()) {
@@ -870,24 +874,30 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		addField(f);
 		f.resolveDecl();
 		f.detach(); // detach to put it last
+		// check we can use a static field
+		ti_expr = (TypeInfoExpr)f.init;
+		foreach (ENode ti_arg; ti_expr.cl_args; !(ti_arg instanceof SFldExpr)) {
+			// oops, cannot make it a static field
+			return (ENode)~ti_expr;
+		}
 		addField(f); // attach to put it last
 		// Add initialization in <clinit>
-//		Constructor class_init = getClazzInitMethod();
-//		if( from.ctx_method != null && from.ctx_method.name.equals(nameClassInit) ) {
-//			class_init.addstats.insert(
-//				new ExprStat(f.init.getPos(),
-//					new AssignExpr(f.init.getPos(),AssignOperator.Assign
-//						,new SFldExpr(f.pos,f),new Shadow(f.init))
-//				),0
-//			);
-//		} else {
-//			class_init.addstats.insert(
-//				new ExprStat(f.init.getPos(),
-//					new AssignExpr(f.init.getPos(),AssignOperator.Assign
-//						,new SFldExpr(f.pos,f),new Shadow(f.init))
-//				),0
-//			);
-//		}
+		Constructor class_init = getClazzInitMethod();
+		if( ctx_method != null && ctx_method.name.equals(nameClassInit) ) {
+			class_init.addstats.append(
+				new ExprStat(f.init.getPos(),
+					new AssignExpr(f.init.getPos(),AssignOperator.Assign
+						,new SFldExpr(f.pos,f),new Shadow(f.init))
+				)
+			);
+		} else {
+			class_init.addstats.append(
+				new ExprStat(f.init.getPos(),
+					new AssignExpr(f.init.getPos(),AssignOperator.Assign
+						,new SFldExpr(f.pos,f),new Shadow(f.init))
+				)
+			);
+		}
 		ENode e = new SFldExpr(from.pos,f);
 		return e;
 //		System.out.println("Field "+f+" of type "+f.init+" added");
@@ -942,6 +952,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		{
 			Constructor init = new Constructor(ACC_PROTECTED);
 			init.body = new BlockStat(pos);
+			init.params.add(new FormPar(pos,KString.from("hash"),Type.tpInt,FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
 			// add in it arguments fields, and prepare for constructor
 			TVar[] templ = this.imeta_type.templ_type.bindings().tvars;
@@ -969,18 +980,20 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			init.setNeedFieldInits(true);
 			ASTCallExpression call_super = new ASTCallExpression(pos, nameSuper, ENode.emptyArray);
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
+			call_super.args.add(new LVarExpr(pos,init.params[1]));
+			init.body.stats.insert(new ExprStat(call_super),0);
 			TVar[] templ = super_type.clazz.imeta_type.templ_type.bindings().tvars;
 			foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias()) {
 				Type t = tv.var.applay(this.concr_type);
 				ENode expr;
-				if (t instanceof ArgType) {
+				if (t instanceof ArgType)
 					expr = new ASTIdentifier(pos,t.name);
-				} else {
+				else if (t.isUnerasable())
 					expr = new TypeInfoExpr(pos,new TypeRef(t));
-				}
+				else
+					expr = accessTypeInfoField(call_super, t);
 				call_super.args.append(expr);
 			}
-			init.body.stats.insert(new ExprStat(call_super),0);
 
 			// create method to get typeinfo field
 			Method tim = addMethod(new Method(nameGetTypeInfo,Type.tpTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC));
@@ -990,10 +1003,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 
 		// create public constructor
-		// public static TypeInfo newTypeInfo(Class clazz, TypeInfo... args) {
-		// 	TypeInfo ti = get(clazz, args);
+		// public static TypeInfo newTypeInfo(Class clazz, TypeInfo[] args) {
+		// 	int hash = hashCode(clazz, args);
+		// 	TypeInfo ti = get(hash, clazz, args);
 		// 	if (ti == null)
-		// 		ti = new TypeInfo(clazz, args[0], args[1], ...);
+		// 		ti = new TypeInfo(hash, clazz, args[0], args[1], ...);
 		// 	return ti;
 		// }
 		{
@@ -1001,14 +1015,26 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			init.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.params.add(new FormPar(pos,KString.from("args"),new ArrayType(Type.tpTypeInfo),FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.body = new BlockStat(pos);
+			Var h = new Var(pos,KString.from("hash"),Type.tpInt,ACC_FINAL);
 			Var v = new Var(pos,KString.from("ti"),typeinfo_clazz.concr_type,0);
-			Method mget = Type.tpTypeInfo.clazz.resolveMethod(KString.from("get"),Type.tpTypeInfo,Type.tpClass,new ArrayType(Type.tpTypeInfo));
-			v.init = new CallExpr(pos,null,mget,new ENode[]{
+			Method mhash = Type.tpTypeInfo.clazz.resolveMethod(KString.from("hashCode"),Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
+			h.init = new CallExpr(pos,null,mhash,new ENode[]{
 				new LVarExpr(pos,init.params[0]),
 				new LVarExpr(pos,init.params[1])
 			});
-			init.body.addStatement(new VarDecl(v));
-			NewExpr ne = new NewExpr(pos,typeinfo_clazz.concr_type,new ENode[]{new LVarExpr(pos,init.params[0])});
+			init.body.addSymbol(h);
+			Method mget = Type.tpTypeInfo.clazz.resolveMethod(KString.from("get"),Type.tpTypeInfo,Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
+			v.init = new CallExpr(pos,null,mget,new ENode[]{
+				new LVarExpr(pos,h),
+				new LVarExpr(pos,init.params[0]),
+				new LVarExpr(pos,init.params[1])
+			});
+			init.body.addSymbol(v);
+			NewExpr ne = new NewExpr(pos,typeinfo_clazz.concr_type,
+				new ENode[]{
+					new LVarExpr(pos,h),
+					new LVarExpr(pos,init.params[0])
+				});
 			TVar[] templ = this.imeta_type.templ_type.bindings().tvars;
 			int i = 0;
 			foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias())
@@ -1033,6 +1059,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Method meq = new Method(KString.from("eq"), Type.tpBoolean, ACC_PUBLIC);
 			meq.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
 			meq.params.add(new FormPar(pos,KString.from("args"),new ArrayType(Type.tpTypeInfo),FormPar.PARAM_VARARGS,ACC_FINAL));
+			typeinfo_clazz.addMethod(meq);
 			meq.body = new BlockStat(pos);
 			meq.body.addStatement(new IfElseStat(pos,
 				new BinaryBoolExpr(pos,BinaryOperator.NotEquals,
@@ -1058,9 +1085,103 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				idx++;
 			}
 			meq.body.addStatement(new ReturnStat(pos,new ConstBoolExpr(true)));
-			typeinfo_clazz.addMethod(meq);
 		}
-
+		
+		// create assignableFrom function
+		// public boolean $assignableFrom(TypeInfo ti) {
+		// 	if!(this.clazz.isAssignableFrom(ti.clazz)) return false;
+		// 	ti = (__ti__)ti;
+		// 	if!(this.$typeinfo$A.$assignableFrom(ti.$typeinfo$A)) return false;
+		// 	...
+		// 	return true;
+		// }
+		{
+			Method misa = new Method(KString.from("$assignableFrom"), Type.tpBoolean, ACC_PUBLIC);
+			misa.params.add(new FormPar(pos,KString.from("ti"),Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL));
+			typeinfo_clazz.addMethod(misa);
+			misa.body = new BlockStat(pos);
+			misa.body.addStatement(new IfElseStat(pos,
+				new BooleanNotExpr(pos,
+					new CallExpr(pos,
+						new IFldExpr(pos,new ThisExpr(), typeinfo_clazz.resolveField(KString.from("clazz"))),
+						Type.tpClass.clazz.resolveMethod(KString.from("isAssignableFrom"),Type.tpBoolean,Type.tpClass),
+						new ENode[]{
+							new IFldExpr(pos,new LVarExpr(pos,misa.params[0]), typeinfo_clazz.resolveField(KString.from("clazz")))
+						}
+					)
+				),
+				new ReturnStat(pos,new ConstBoolExpr(false)),
+				null
+			));
+			misa.body.addStatement(new ExprStat(pos,
+				new AssignExpr(pos,AssignOperator.Assign,
+					new LVarExpr(pos,misa.params[0]),
+					new CastExpr(pos,typeinfo_clazz.concr_type,new LVarExpr(pos,misa.params[0]))
+				)
+			));
+			TVar[] templ = this.imeta_type.templ_type.bindings().tvars;
+			foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias()) {
+				ArgType t = tv.var;
+				Field f = typeinfo_clazz.resolveField(KString.from(nameTypeInfo+"$"+t.name));
+				misa.body.addStatement(new IfElseStat(pos,
+					new BooleanNotExpr(pos,
+						new CallExpr(pos,
+							new IFldExpr(pos,new ThisExpr(), f),
+							Type.tpTypeInfo.clazz.resolveMethod(KString.from("$assignableFrom"),Type.tpBoolean,Type.tpTypeInfo),
+							new ENode[]{
+								new IFldExpr(pos,new LVarExpr(pos,misa.params[0]), f)
+							}
+						)
+					),
+					new ReturnStat(pos,new ConstBoolExpr(false)),
+					null
+				));
+			}
+			misa.body.addStatement(new ReturnStat(pos,new ConstBoolExpr(true)));
+		}
+		// create $instanceof function
+		// public boolean $instanceof(Object obj) {
+		// 	if (obj == null ) return false;
+		// 	if!(this.clazz.isInstance(obj)) return false;
+		// 	return this.$assignableFrom(((Outer)obj).$typeinfo));
+		// }
+		{
+			Method misa = new Method(KString.from("$instanceof"), Type.tpBoolean, ACC_PUBLIC);
+			misa.params.add(new FormPar(pos,KString.from("obj"),Type.tpObject,FormPar.PARAM_NORMAL,ACC_FINAL));
+			typeinfo_clazz.addMethod(misa);
+			misa.body = new BlockStat(pos);
+			misa.body.addStatement(new IfElseStat(pos,
+				new BinaryBoolExpr(pos,BinaryOperator.Equals,
+					new LVarExpr(pos,misa.params[0]),
+					new ConstNullExpr()
+					),
+				new ReturnStat(pos,new ConstBoolExpr(false)),
+				null
+			));
+			misa.body.addStatement(new IfElseStat(pos,
+				new BooleanNotExpr(pos,
+					new CallExpr(pos,
+						new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField(KString.from("clazz"))),
+						Type.tpClass.clazz.resolveMethod(KString.from("isInstance"),Type.tpBoolean,Type.tpObject),
+						new ENode[]{new LVarExpr(pos,misa.params[0])}
+						)
+					),
+				new ReturnStat(pos,new ConstBoolExpr(false)),
+				null
+			));
+			misa.body.addStatement(new ReturnStat(pos,
+				new CallExpr(pos,
+					new ThisExpr(),
+					typeinfo_clazz.resolveMethod(KString.from("$assignableFrom"),Type.tpBoolean,Type.tpTypeInfo),
+					new ENode[]{
+						new IFldExpr(pos,
+							new CastExpr(pos,this.concr_type,new LVarExpr(pos,misa.params[0])),
+							this.resolveField(nameTypeInfo)
+						)
+					}
+				)
+			));
+		}
 	}
 	
 	public void autoGenerateIdefault() {

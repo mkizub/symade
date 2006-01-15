@@ -644,13 +644,13 @@ public abstract class CompaundType extends Type {
 				TVar v2 = b2[i];
 				if (v2.isAlias())
 					continue;
-				Type x = b1.resolve(v2.var);
-				if (x ≡ x)
+				Type r2 = v2.result();
+				if (v2.var ≡ r2)
 					continue;
-				Type y = v2.result();
-				if (y ≡ y || x ≡ y)
+				Type r1 = b1.resolve(v2.var);
+				if (r1 ≡ r2)
 					continue;
-				if (!x.isInstanceOf(y))
+				if (!r1.isInstanceOf(r2))
 					return false;
 			}
 			return true;

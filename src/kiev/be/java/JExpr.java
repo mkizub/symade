@@ -70,22 +70,22 @@ public final view JTypeClassExprView of TypeClassExprImpl extends JENodeView {
 public final view JTypeInfoExprView of TypeInfoExprImpl extends JENodeView {
 	public access:ro	Type					type;
 	public access:ro	JTypeClassExprView		cl_expr;
-//	public access:ro	JTypeInfoExprView[]		cl_args;
+//	public access:ro	JENodeView[]			cl_args;
 
-	@getter public final JTypeInfoExprView[]	get$cl_args()	{ return (JTypeInfoExprView[])this.$view.cl_args.toJViewArray(JTypeInfoExprView.class); }
+	@getter public final JENodeView[]	get$cl_args()	{ return (JENodeView[])this.$view.cl_args.toJViewArray(JENodeView.class); }
 	
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeInfoExpr: "+this);
 		code.setLinePos(this);
 		cl_expr.generate(code,null);
-		JTypeInfoExprView[] cl_args = this.cl_args;
+		JENodeView[] cl_args = this.cl_args;
 		if (cl_args.length > 0) { 
 			code.addConst(cl_args.length);
 			code.addInstr(Instr.op_newarray,Type.tpTypeInfo);
 			int i=0;
-			foreach (JTypeInfoExprView arg; cl_args) {
+			foreach (JENodeView arg; cl_args) {
 				code.addInstr(Instr.op_dup);
-				code.addConst(i);
+				code.addConst(i++);
 				arg.generate(code,null);
 				code.addInstr(Instr.op_arr_store);
 			}

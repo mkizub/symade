@@ -39,20 +39,21 @@ public class TypeInfoX {
 	private static TypeInfoX[] hashTable = new TypeInfoX[1777];
 	private static int        hashTableCount;
 	
-	protected final Class		clazz;
-	protected final int			hash;
-	private         TypeInfoX	next; // for hashTable
+	public final Class			clazz;
+	public final int			hash;
+	private      TypeInfoX		next; // for hashTable
 
-	protected TypeInfoX(Class clazz) {
+	protected TypeInfoX(int hash, Class clazz) {
 		this.clazz = clazz;
-		this.hash = clazz.hashCode();
-		put(this);
+		this.hash = hash;
+		put(hash, this);
 	}
 
 	public static TypeInfoX newTypeInfo(Class clazz, TypeInfoX[] args) {
-		TypeInfoX ti = get(clazz);
+		int hash = hashCode(clazz, args);
+		TypeInfoX ti = get(hash,clazz,null);
 		if (ti == null)
-			ti = new TypeInfoX(clazz);
+			ti = new TypeInfoX(hash, clazz);
 		return ti;
 	}
 
@@ -68,13 +69,15 @@ public class TypeInfoX {
 		return this.clazz == clazz && args == null;
 	}
 
+	// ti instanceof List<A>.type
+	public boolean $assignableFrom(TypeInfoX ti) {
+		return this.clazz.isAssignableFrom(ti.clazz);
+	}
+
+	// obj instanceof List<A>.type
 	public boolean $instanceof(Object obj) {
 		if( obj == null ) return false;
 		return clazz.isInstance(obj);
-	}
-
-	public boolean $ti_instanceof_ti(TypeInfoX oti) {
-		return clazz.isInstance(oti.clazz);
 	}
 
 	public Object newInstance() {
@@ -89,17 +92,16 @@ public class TypeInfoX {
 		return java.lang.reflect.Array.newInstance(clazz,dims);
 	}
 	
-	public static TypeInfoX get(Class clazz) {
+	public static int hashCode(Class clazz, TypeInfoX[] args) {
 		int hash  = clazz.hashCode();
-		int index = (hash & 0x7FFFFFFF) % hashTable.length;
-		for (TypeInfoX ti = hashTable[index]; ti != null; ti = ti.next) {
-			if (ti.eq(clazz, null))
-				return ti;
+		if (args != null) {
+			for (int i=0; i < args.length; i++)
+				hash = hash * 37 + args[i].hash;
 		}
-		return null;
+		return hash;
 	}
-	public static TypeInfoX get(Class clazz, TypeInfoX... args) {
-		int hash  = clazz.hashCode();
+
+	public static TypeInfoX get(int hash, Class clazz, TypeInfoX[] args) {
 		int index = (hash & 0x7FFFFFFF) % hashTable.length;
 		for (TypeInfoX ti = hashTable[index]; ti != null; ti = ti.next) {
 			if (ti.eq(clazz, args))
@@ -107,8 +109,8 @@ public class TypeInfoX {
 		}
 		return null;
 	}
-	public static void put(TypeInfoX ti) {
-		int hash  = ti.hashCode();
+	
+	public static void put(int hash, TypeInfoX ti) {
 		int index = (hash & 0x7FFFFFFF) % hashTable.length;
 		ti.next = hashTable[index];
 		hashTable[index] = ti;

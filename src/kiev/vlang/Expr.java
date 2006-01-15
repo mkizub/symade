@@ -243,16 +243,18 @@ public class TypeInfoExpr extends ENode {
 		public TypeInfoExprImpl(int pos) { super(pos); }
 		@att public TypeRef				type;
 		@att public TypeClassExpr		cl_expr;
-		@att public NArr<TypeInfoExpr>	cl_args;
+		@att public NArr<ENode>			cl_args;
 	}
 	@nodeview
 	public static final view TypeInfoExprView of TypeInfoExprImpl extends ENodeView {
 		public				TypeRef				type;
 		public				TypeClassExpr		cl_expr;
-		public access:ro	NArr<TypeInfoExpr>	cl_args;
+		public access:ro	NArr<ENode>			cl_args;
 	}
 
-	@ref public abstract virtual TypeRef type;
+	@ref public abstract virtual			TypeRef				type;
+	@att public abstract virtual			TypeClassExpr		cl_expr;
+	@att public abstract virtual access:ro	NArr<ENode>			cl_args;
 	
 	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new TypeInfoExprView((TypeInfoExprImpl)this.$v_impl); }
 	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new TypeInfoExprView((TypeInfoExprImpl)this.$v_impl); }
@@ -263,7 +265,7 @@ public class TypeInfoExpr extends ENode {
 
 	@getter public TypeRef				get$type()		{ return this.getTypeInfoExprView().type; }
 	@getter public TypeClassExpr		get$cl_expr()	{ return this.getTypeInfoExprView().cl_expr; }
-	@getter public NArr<TypeInfoExpr>	get$cl_args()	{ return this.getTypeInfoExprView().cl_args; }
+	@getter public NArr<ENode>			get$cl_args()	{ return this.getTypeInfoExprView().cl_args; }
 	@setter public void		set$type(TypeRef val)			{ this.getTypeInfoExprView().type = val; }
 	@setter public void		set$cl_expr(TypeClassExpr val)	{ this.getTypeInfoExprView().cl_expr = val; }
 	
@@ -302,8 +304,8 @@ public class TypeInfoExpr extends ENode {
 		cl_expr.resolve(Type.tpClass);
 		TVar[] templ = clazz.imeta_type.templ_type.bindings().tvars;
 		foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias())
-			cl_args.add(new TypeInfoExpr(pos, new TypeRef(type.resolve(tv.var))));
-		foreach (TypeInfoExpr tie; cl_args)
+			cl_args.add(ctx_clazz.accessTypeInfoField(this, type.resolve(tv.var)));
+		foreach (ENode tie; cl_args)
 			tie.resolve(null);
 //		CallExpr ce = new CallExpr(from.pos,null,
 //			ftype.clazz.resolveMethod(KString.from("newTypeInfo"),ftype,Type.tpClass,new ArrayType(Type.tpTypeInfo)),

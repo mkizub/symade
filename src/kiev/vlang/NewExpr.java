@@ -320,25 +320,19 @@ public final class NewArrayExpr extends ENode {
 				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
-			int i;
-			for(i=0; i < ctx_clazz.args.length; i++)
-				if (type ≈ ctx_clazz.args[i].getAType()) break;
-			if( i >= ctx_clazz.args.length )
-				throw new CompilerException(this,"Can't create an array of argument type "+type);
-			ENode tie = new IFldExpr(pos,new ThisExpr(0),ctx_clazz.resolveField(nameTypeInfo));
+			ENode ti = ctx_clazz.accessTypeInfoField(this,type);
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
-					new CallExpr(pos,tie,
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt,Type.tpInt),
-						new ENode[]{new ConstIntExpr(i),(ENode)~args[0]}
+					new CallExpr(pos,ti,
+						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt),
+						new ENode[]{(ENode)~args[0]}
 					),true));
 				return;
 			} else {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
-					new CallExpr(pos,tie,
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt,new ArrayType(Type.tpInt)),
+					new CallExpr(pos,ti,
+						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,new ArrayType(Type.tpInt)),
 						new ENode[]{
-							new ConstIntExpr(i),
 							new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.delToArray())
 						}
 					),true));
