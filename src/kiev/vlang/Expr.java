@@ -292,6 +292,8 @@ public class TypeInfoExpr extends ENode {
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public void resolve(Type reqType) {
+		if (isResolved())
+			return;
 		Type type = this.type.getType();
 		ConcreteType ftype = Type.tpTypeInfo;
 		Struct clazz = type.getStruct();
@@ -302,9 +304,8 @@ public class TypeInfoExpr extends ENode {
 		}
 		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.concr_type));
 		cl_expr.resolve(Type.tpClass);
-		TVar[] templ = clazz.imeta_type.templ_type.bindings().tvars;
-		foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias())
-			cl_args.add(ctx_clazz.accessTypeInfoField(this, type.resolve(tv.var)));
+		foreach (ArgType at; clazz.getTypeInfoArgs())
+			cl_args.add(ctx_clazz.accessTypeInfoField(this, type.resolve(at)));
 		foreach (ENode tie; cl_args)
 			tie.resolve(null);
 //		CallExpr ce = new CallExpr(from.pos,null,

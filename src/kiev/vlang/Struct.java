@@ -858,29 +858,35 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 		
 		// Lookup and create if need as $typeinfo$N
+		foreach(DNode n; members; n instanceof Field && n.isStatic()) {
+			Field f = (Field)n;
+			if (f.init == null || !f.name.name.startsWith(nameTypeInfo) || f.name.name.equals(nameTypeInfo))
+				continue;
+			if (((TypeInfoExpr)f.init).type.getType() ≈ t)
+				return new SFldExpr(from.pos,f);
+		}
+		TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
+		// check we can use a static field
+		NopExpr nop = new NopExpr(ti_expr);
+		from.addNodeData(nop);
+		nop.resolve(null);
+		ti_expr.detach();
+		from.delNodeData(NopExpr.ID);
+		foreach (ENode ti_arg; ti_expr.cl_args; !(ti_arg instanceof SFldExpr)) {
+			// oops, cannot make it a static field
+			return ti_expr;
+		}
 		int i = 0;
-	next_field:
 		foreach(DNode n; members; n instanceof Field && n.isStatic()) {
 			Field f = (Field)n;
 			if (f.init == null || !f.name.name.startsWith(nameTypeInfo) || f.name.name.equals(nameTypeInfo))
 				continue;
 			i++;
-			if (((TypeInfoExpr)f.init).type.getType() ≈ t)
-				return new SFldExpr(from.pos,f);
 		}
-		TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
 		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ti_expr.getType(),ACC_STATIC|ACC_FINAL); // package-private for inner classes
 		f.init = ti_expr;
 		addField(f);
 		f.resolveDecl();
-		f.detach(); // detach to put it last
-		// check we can use a static field
-		ti_expr = (TypeInfoExpr)f.init;
-		foreach (ENode ti_arg; ti_expr.cl_args; !(ti_arg instanceof SFldExpr)) {
-			// oops, cannot make it a static field
-			return (ENode)~ti_expr;
-		}
-		addField(f); // attach to put it last
 		// Add initialization in <clinit>
 		Constructor class_init = getClazzInitMethod();
 		if( ctx_method != null && ctx_method.name.equals(nameClassInit) ) {
@@ -925,6 +931,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if( Kiev.verbose ) System.out.println("Class "+this+" is a wrapper for field "+wf);
 		return wf;
 	}
+	
+	public List<ArgType> getTypeInfoArgs() {
+		ListBuffer<ArgType> lb = new ListBuffer<ArgType>();
+		TVar[] templ = this.imeta_type.templ_type.bindings().tvars;
+		foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias() && tv.var.isUnerasable())
+			lb.append(tv.var);
+		return lb.toList();
+	}
 
 	void autoGenerateTypeinfoClazz() {
 		if (typeinfo_clazz != null)
@@ -955,13 +969,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			init.params.add(new FormPar(pos,KString.from("hash"),Type.tpInt,FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
 			// add in it arguments fields, and prepare for constructor
-			TVar[] templ = this.imeta_type.templ_type.bindings().tvars;
-			foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias()) {
-				ArgType t = tv.var;
-				KString fname = KString.from(nameTypeInfo+"$"+t.name);
+			foreach (ArgType at; this.getTypeInfoArgs()) {
+				KString fname = KString.from(nameTypeInfo+"$"+at.name);
 				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
-				FormPar v = new FormPar(pos,t.name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
+				FormPar v = new FormPar(pos,at.name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
 				init.params.append(v);
 				init.body.stats.append(new ExprStat(pos,
 					new AssignExpr(pos,AssignOperator.Assign,
@@ -982,9 +994,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
 			init.body.stats.insert(new ExprStat(call_super),0);
-			TVar[] templ = super_type.clazz.imeta_type.templ_type.bindings().tvars;
-			foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias()) {
-				Type t = tv.var.applay(this.concr_type);
+			foreach (ArgType at; super_type.clazz.getTypeInfoArgs()) {
+				Type t = at.applay(this.concr_type);
 				ENode expr;
 				if (t instanceof ArgType)
 					expr = new ASTIdentifier(pos,t.name);
@@ -1035,9 +1046,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					new LVarExpr(pos,h),
 					new LVarExpr(pos,init.params[0])
 				});
-			TVar[] templ = this.imeta_type.templ_type.bindings().tvars;
 			int i = 0;
-			foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias())
+			foreach (ArgType at; this.getTypeInfoArgs())
 				ne.args.add(new ContainerAccessExpr(pos, new LVarExpr(pos,init.params[1]), new ConstIntExpr(i++)));
 			init.body.addStatement(new IfElseStat(pos,
 				new BinaryBoolExpr(pos,BinaryOperator.Equals,new LVarExpr(pos,v),new ConstNullExpr()),
@@ -1069,11 +1079,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				new ReturnStat(pos,new ConstBoolExpr(false)),
 				null
 			));
-			TVar[] templ = this.imeta_type.templ_type.bindings().tvars;
 			int idx = 0;
-			foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias()) {
-				ArgType t = tv.var;
-				Field f = typeinfo_clazz.resolveField(KString.from(nameTypeInfo+"$"+t.name));
+			foreach (ArgType at; this.getTypeInfoArgs()) {
+				Field f = typeinfo_clazz.resolveField(KString.from(nameTypeInfo+"$"+at.name));
 				meq.body.addStatement(new IfElseStat(pos,
 					new BinaryBoolExpr(pos,BinaryOperator.NotEquals,
 						new IFldExpr(pos,new ThisExpr(pos), f),
@@ -1119,10 +1127,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					new CastExpr(pos,typeinfo_clazz.concr_type,new LVarExpr(pos,misa.params[0]))
 				)
 			));
-			TVar[] templ = this.imeta_type.templ_type.bindings().tvars;
-			foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias()) {
-				ArgType t = tv.var;
-				Field f = typeinfo_clazz.resolveField(KString.from(nameTypeInfo+"$"+t.name));
+			foreach (ArgType at; this.getTypeInfoArgs()) {
+				Field f = typeinfo_clazz.resolveField(KString.from(nameTypeInfo+"$"+at.name));
 				misa.body.addStatement(new IfElseStat(pos,
 					new BooleanNotExpr(pos,
 						new CallExpr(pos,

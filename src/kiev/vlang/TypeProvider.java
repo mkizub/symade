@@ -186,14 +186,6 @@ public final class TVarSet {
 						continue next_my;
 					}
 				}
-				// try pattern bind
-				for (int j=0; j < vs_size; j++) {
-					TVar y = vs_vars[j];
-					if (y.var.definer == null) {
-						sr.set(sr.tvars[i], y.result());
-						continue next_my;
-					}
-				}
 				// bind to itself
 				sr.set(sr.tvars[i], sr.tvars[i].result());
 			}
@@ -610,7 +602,7 @@ public class CallTypeProvider extends TypeProvider {
 			tpargs[i] = ct.args[i].applay(bindings);
 		Type ret = ct.ret.applay(bindings);
 		if (t instanceof MethodType)
-			return new MethodType(tpargs,ret);
+			return new MethodType(t.bindings(),tpargs,ret);
 		else if (t instanceof ClosureType)
 			return new ClosureType(tpargs,ret);
 		assert (false, "Unrecognized type "+t+" ("+t.getClass()+")");

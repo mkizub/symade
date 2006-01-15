@@ -538,7 +538,28 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
 		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
-		rt = (MethodType)rt.bind(mt.bindings());
+		rt = rt.bind(tp.bindings());
+		
+		if (mt.bindings().length > 0) {
+			TVar[] mtvars = mt.bindings().tvars;
+			if (targs.length != mtvars.length) {
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+					+" not match in number of type params: "+targs.length+" != "+mtvars.length);
+				return false;
+			}
+			TVarSet set = new TVarSet();
+			for(int a = 0; a < mtvars.length; a++) {
+				Type bound = mtvars[a].result();
+				ArgType arg = targs[a].getAType();
+				if!(bound.isInstanceOf(arg)) {
+					trace(Kiev.debugResolve,"Type "+bound+" is not applayable to "+arg	+" for type arg "+a);
+					return false;
+				}
+				set.append(arg, bound);
+			}
+			rt = rt.rebind(set);
+		}
+		
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
 			if( exact && !mt.args[i].equals(rt.args[i]) ) {
 				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
@@ -661,6 +682,15 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			pbody = null;
 		}
 
+		if (isTypeUnerasable()) {
+			int i = 0;
+			foreach (TypeDef td; targs) {
+				td.setTypeUnerasable(true);
+				FormPar v = new FormPar(td.pos,KString.from(nameTypeInfo+"$"+td.name), Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL);
+				params.add(v);
+			}
+		}
+
 		// push the method, because formal parameters may refer method's type args
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
@@ -668,13 +698,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType());
 			if (fp.meta != null)
 				fp.meta.verify();
-		}
-		if (isTypeUnerasable()) {
-			int i = 0;
-			foreach (TypeDef td; targs) {
-				FormPar v = new FormPar(td.pos,KString.from(nameTypeInfo+"$"+td.name), Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL);
-				params.add(v);
-			}
 		}
 
 		checkRebuildTypes();
