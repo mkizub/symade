@@ -956,9 +956,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		typeinfo_clazz.setPublic();
 		typeinfo_clazz.setResolved(true);
 		if (super_type != null && ((Struct)super_type.clazz).typeinfo_clazz != null)
-			typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.concr_type.toTypeWithLowerBound(typeinfo_clazz.concr_type);
+			typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.concr_type;
 		else
-			typeinfo_clazz.super_type = Type.tpTypeInfo.toTypeWithLowerBound(typeinfo_clazz.concr_type);
+			typeinfo_clazz.super_type = Type.tpTypeInfo;
 		addSubStruct(typeinfo_clazz);
 		typeinfo_clazz.pos = pos;
 
@@ -1759,18 +1759,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				}
 				if (t instanceof WrapperType)
 					t = t.getUnwrappedType();
-				if (t instanceof BaseType && ((BaseType)t).clazz.isTypeUnerasable()) {
+				if (t instanceof CompaundType && ((CompaundType)t).clazz.isTypeUnerasable()) {
 					if (t.getStruct().typeinfo_clazz == null)
 						t.getStruct().autoGenerateTypeinfoClazz();
 					ENode tibe = new CallExpr(pos,
 						accessTypeInfoField(mmt.m,t),
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("$instanceof"),Type.tpBoolean,Type.tpObject,Type.tpTypeInfo),
-						new ENode[]{
-							new LVarExpr(pos,mm.params[j]),
-							new IFldExpr(pos,
-								new CastExpr(pos,t,new LVarExpr(pos,mm.params[j])),
-								t.getStruct().resolveField(nameTypeInfo))
-						});
+						Type.tpTypeInfo.clazz.resolveMethod(KString.from("$instanceof"),Type.tpBoolean,Type.tpObject),
+						new ENode[]{ new LVarExpr(pos,mm.params[j]) }
+						);
 					if( be == null )
 						be = tibe;
 					else

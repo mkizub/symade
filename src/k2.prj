@@ -404,7 +404,6 @@ kiev.vlang.ArrayTypeProvider kiev/vlang/ArrayTypeProvider kiev\vlang\TypeProvide
 kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
-kiev.vlang.BaseType kiev/vlang/BaseType kiev\vlang\Type.java
 kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev\vlang\BooleanExpr.java

@@ -151,12 +151,12 @@ public final class NewExpr extends ENode {
 		if( type.isAnonymouseClazz() ) {
 			type.getStruct().resolveDecl();
 		}
-		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
-			if (type.isUnerasable())
-				/*throw new CompilerException*/ Kiev.reportWarning(this,"Abstract unerasable class "+type+" instantiation");
-			else
-				Kiev.reportWarning(this,"Abstract erasable class "+type+" instantiation");
-		}
+//		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
+//			if (type.isUnerasable())
+//				/*throw new CompilerException*/ Kiev.reportWarning(this,"Abstract unerasable class "+type+" instantiation");
+//			else
+//				Kiev.reportWarning(this,"Abstract erasable class "+type+" instantiation");
+//		}
 		if (outer == null && type.clazz.ometa_type != null) {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");

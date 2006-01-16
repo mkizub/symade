@@ -26,7 +26,6 @@ public abstract class Type implements StdTypes, AccessFlags {
 	
 	public abstract JType getJType();
 	public abstract Type getSuperType();
-	public abstract Type toTypeWithLowerBound(Type tp);
 	public abstract String toString();
 	public abstract boolean checkResolved();
 	public abstract Type[] getAllSuperTypes();
@@ -275,11 +274,6 @@ public final class CoreType extends Type {
 
 	public JType getJType()				{ return this.jtype; }
 
-	public Type toTypeWithLowerBound(Type tp) {
-		if (tp ≡ this) return this;
-		throw new RuntimeException("Setting lower bound on CoreType");
-	}
-
 	public boolean isAutoCastableTo(Type t)
 	{
 		if( t ≡ Type.tpVoid ) return true;
@@ -414,12 +408,6 @@ public final class ArgType extends Type {
 	public Type[] getAllSuperTypes()				{ return getSuperType().getAllSuperTypes(); }
 	public Struct getStruct()						{ return getSuperType().getStruct(); }
 
-	public Type toTypeWithLowerBound(Type tp) {
-		if (tp ≡ this) return this;
-		definer.setLowerBound(tp);
-		return definer.getType();
-	}
-	
 	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { getSuperType().resolveNameAccessR(node, info, name) }
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { getSuperType().resolveCallAccessR(node, info, name, mt) }
 	
@@ -464,14 +452,14 @@ public abstract class CompaundType extends Type {
 	
 	public final TVarSet bindings() {
 		if (this.version != this.meta_type.version) {
-			this.bindings = makeBindings(true);
+			this.bindings = makeBindings();
 			this.version = this.meta_type.version;
 			checkAbstract();
 		}
 		return this.bindings;
 	}
 	
-	protected abstract TVarSet makeBindings(boolean with_lower);
+	protected abstract TVarSet makeBindings();
 
 	public final JType getJType() {
 		if (jtype == null)
@@ -661,21 +649,6 @@ public abstract class CompaundType extends Type {
 		return false;
 	}
 
-	public final Type toTypeWithLowerBound(Type tp) {
-		if (tp ≡ this) return this;
-		if!(tp instanceof CompaundType)
-			throw new RuntimeException("Set non-compaund lower bound type on CompaundType");
-		ConcreteType ctp;
-		if (tp instanceof TemplateType)
-			ctp = ((TemplateType)tp).clazz.concr_type;
-		else if (tp instanceof ConcreteType)
-			ctp = (ConcreteType)tp;
-		else
-			ctp = ((BaseType)tp).lower_bound;
-		CompaundTypeProvider meta_type = (CompaundTypeProvider)this.meta_type;
-		return new BaseType(meta_type, this.bindings(), ctp);
-	}
-	
 	public final Type[] getAllSuperTypes() {
 		return clazz.getAllSuperTypes();
 	}
@@ -690,7 +663,7 @@ public final class TemplateType extends CompaundType {
 		checkAbstract();
 	}
 	
-	protected final TVarSet makeBindings(boolean with_lower) {
+	protected final TVarSet makeBindings() {
 		TVarSet vs = new TVarSet();
 		foreach (TypeDef ad; clazz.args)
 			vs.append(ad.getAType(), null);
@@ -701,10 +674,10 @@ public final class TemplateType extends CompaundType {
 		TypeRef st = clazz.super_bound;
 		if (st.getType() ≢ null) {
 			CompaundType sct = (CompaundType)st.getType();
-			vs.append(sct.makeBindings(false));
+			vs.append(sct.makeBindings());
 			foreach (TypeRef it; clazz.interfaces) {
 				sct = (CompaundType)it.getType();
-				vs.append(sct.makeBindings(false));
+				vs.append(sct.makeBindings());
 			}
 		}
 		return vs;
@@ -718,33 +691,11 @@ public final class ConcreteType extends CompaundType {
 		checkAbstract();
 	}
 	
-	protected TVarSet makeBindings(boolean with_lower) {
+	protected TVarSet makeBindings() {
 		return ((CompaundTypeProvider)meta_type).templ_type.bindings().bind(this.bindings);
 	}
 
 }
-
-public final class BaseType extends CompaundType {
-
-	public final ConcreteType lower_bound;
-	
-	BaseType(CompaundTypeProvider meta_type, TVarSet bindings, ConcreteType lower_bound)
-		require lower_bound ≢ null;
-	{
-		super(meta_type, bindings);
-		this.lower_bound = (ConcreteType)lower_bound;
-		checkAbstract();
-	}
-	
-	protected TVarSet makeBindings(boolean with_lower) {
-		TVarSet vs = ((CompaundTypeProvider)meta_type).templ_type.bindings().bind(this.bindings);
-		if (with_lower)
-			vs = vs.rebind(lower_bound.bindings());
-		return vs;
-	}
-}
-
-
 
 public class ArrayType extends Type {
 
@@ -770,12 +721,6 @@ public class ArrayType extends Type {
 			jtype = new JArrayType(this.arg.getJType());
 		}
 		return jtype;
-	}
-
-	public Type toTypeWithLowerBound(Type tp) {
-		if (!tp.isArray())
-			throw new RuntimeException("Setting non-array lower bound on ArrayType");
-		return new ArrayType(arg.toTypeWithLowerBound(((ArrayType)tp).arg));
 	}
 
 	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
@@ -861,12 +806,6 @@ public class WrapperType extends Type {
 		if (jtype == null)
 			jtype = getUnwrappedType().getJType();
 		return jtype;
-	}
-
-	public Type toTypeWithLowerBound(Type tp) {
-		if (!tp.isWrapper())
-			throw new RuntimeException("Setting non-wrapper lower bound on WrapperType");
-		return new WrapperType((CompaundType)unwrapped_type.toTypeWithLowerBound(((WrapperType)tp).unwrapped_type));
 	}
 
 	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
@@ -980,10 +919,6 @@ public class OuterType extends Type {
 		return jtype;
 	}
 
-	public Type toTypeWithLowerBound(Type tp) {
-		return new OuterType((OuterTypeProvider)meta_type, outer.toTypeWithLowerBound(tp));
-	}
-
 	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
 	protected access:no,rw,no,rw boolean eq(OuterType:Type type) {
 		return this.outer ≈ type.outer;
@@ -1048,11 +983,6 @@ public class ClosureType extends Type implements CallableType {
 	@getter public Type		get$ret()	{ return ret; }
 
 	public TVarSet bindings()			{ return TVarSet.emptySet; }
-
-	public Type toTypeWithLowerBound(Type tp) {
-		if (tp ≡ this) return this;
-		throw new RuntimeException("Setting lower bound on ClosureType");
-	}
 
 	public JType getJType() {
 		if (jtype == null)
@@ -1150,11 +1080,6 @@ public class MethodType extends Type implements CallableType {
 	@getter public Type		get$ret()	{ return ret; }
 
 	public TVarSet bindings()			{ return bindings; }
-
-	public Type toTypeWithLowerBound(Type tp) {
-		if (tp ≡ this) return this;
-		throw new RuntimeException("Setting lower bound on MethodType");
-	}
 
 	public JType getJType() {
 //		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));

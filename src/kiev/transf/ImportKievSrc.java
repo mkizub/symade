@@ -319,12 +319,12 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			clazz.setStatic(true);
 
 		if (clazz.isAnnotation()) {
-			clazz.super_type = Type.tpObject.toTypeWithLowerBound(clazz.concr_type);
+			clazz.super_type = Type.tpObject;
 			clazz.interfaces.add(new TypeRef(Type.tpAnnotation));
 		}
 		else if (clazz.isEnum()) {
 			clazz.setStatic(true);
-			clazz.super_type = Type.tpEnum.toTypeWithLowerBound(clazz.concr_type);
+			clazz.super_type = Type.tpEnum;
 			// assign type of enum fields
 			if (clazz.isEnum()) {
 				foreach (DNode n; clazz.members; n instanceof Field && ((Field)n).isEnumField()) {
@@ -358,7 +358,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			clazz.super_type = null;
 		}
 		else if( clazz.isInterface() ) {
-			clazz.super_type = Type.tpObject.toTypeWithLowerBound(clazz.concr_type);
+			clazz.super_type = Type.tpObject;
 			foreach(TypeRef tr; clazz.interfaces) {
 				Struct s = tr.getType().getStruct();
 				if (s != null)
@@ -370,7 +370,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				clazz.view_of.getType();
 			Type sup = clazz.super_bound == null ? null : clazz.super_bound.getType();
 			if (sup == null && !clazz.name.name.equals(Type.tpObject.clazz.name.name))
-				clazz.super_type = sup = Type.tpObject.toTypeWithLowerBound(clazz.concr_type);
+				clazz.super_type = sup = Type.tpObject;
 			if (sup != null) {
 				Struct s = sup.getStruct();
 				if (s != null)

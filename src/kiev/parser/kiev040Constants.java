@@ -169,7 +169,9 @@ public interface kiev040Constants {
   int OPERATOR_AT = 179;
   int OPERATOR_SHARP = 180;
   int OPERATOR_LRBRACKETS = 181;
-  int OPERATOR = 182;
+  int OPERATOR_UPPER_BOUND = 182;
+  int OPERATOR_LOWER_BOUND = 183;
+  int OPERATOR = 184;
 
   int DEFAULT = 0;
   int IN_PRAGMA = 1;
@@ -361,6 +363,8 @@ public interface kiev040Constants {
     "\"@\"",
     "\"#\"",
     "<OPERATOR_LRBRACKETS>",
+    "\"\\u2264\"",
+    "\"\\u2265\"",
     "<OPERATOR>",
   };
 

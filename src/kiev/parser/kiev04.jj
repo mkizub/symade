@@ -168,6 +168,8 @@ public abstract class kiev040 {
 		case RUNSIGNEDSHIFTASSIGN:
 		case OPERATOR_AT:
 		case OPERATOR_SHARP:
+		case OPERATOR_UPPER_BOUND:
+		case OPERATOR_LOWER_BOUND:
 		case OPERATOR:
 			return notAToken(getToken(tk));
 		case OPERATOR_ID:
@@ -832,8 +834,11 @@ TOKEN : /* OPERATORS */
 | < OPERATOR_AT:    "@" >
 | < OPERATOR_SHARP:	"#" >
 | < OPERATOR_LRBRACKETS: "[" ( " " )* "]" >
-| < OPERATOR:	    ["\u2200"-"\u22F1"] >
 
+| < OPERATOR_UPPER_BOUND:    "\u2264" > // ≤
+| < OPERATOR_LOWER_BOUND:    "\u2265" > // ≥
+
+| < OPERATOR:	    ["\u2200"-"\u22F1"] >
 }
 
 
@@ -976,7 +981,7 @@ TypeDecl Typedef() :
 		n.type = Type()
 	|
 		{ n = new TypeDef(); }
-		n.upper_bound = Type()
+		n.upper_bound = Type() { n.lower_bound = (TypeRef)n.upper_bound.copy(); }
 		n.name = Name()
 	) ";"
 	{ return n; }
@@ -1160,7 +1165,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 	name = Name()
 	{
 		clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
-		clazz.super_type = parent.concr_type.toTypeWithLowerBound(clazz.concr_type);
+		clazz.super_type = parent.concr_type;
 		clazz.setPizzaCase(true);
 		clazz.setSingleton(true);
 	}
@@ -1200,16 +1205,28 @@ TypeDef[] ClazzArguments() :
 }
 
 TypeDef MemberArgDecl(ASTModifiers modifiers) :
-{ NameRef name; TypeDef arg; }
+{ NameRef name; TypeDef arg; TypeRef t; }
 {
 	"typedef"
-	name      = Name()
-	{ arg = mkTypeDef(name,modifiers); }
-	[
-		"="
-		arg.upper_bound = NArrType()
-	]
-	";"
+	
+	(
+		LOOKAHEAD(Type() <OPERATOR_LOWER_BOUND>)
+		t    = Type() <OPERATOR_LOWER_BOUND>
+		name = Name() { arg = mkTypeDef(name,modifiers); arg.lower_bound = t; }
+		[ <OPERATOR_UPPER_BOUND> t = Type() { arg.upper_bound = t; } ]
+		";"
+	|
+		name      = Name()
+		{ arg = mkTypeDef(name,modifiers); }
+		(
+			"=" t = Type() { arg.upper_bound = t; arg.lower_bound = t.copy(); }
+			";"
+		|
+			[ <OPERATOR_UPPER_BOUND> t = Type() { arg.upper_bound = t;} ]
+			[ <OPERATOR_LOWER_BOUND> t = Type() { arg.upper_bound = t;} ]
+			";"
+		)
+	)
 	{ return arg; }
 }
 
@@ -2292,6 +2309,8 @@ Token OperatorChar() :
 	|	t=<RUNSIGNEDSHIFTASSIGN>
 	|	t=<OPERATOR_AT>
 	|	t=<OPERATOR_SHARP>
+	|	t=<OPERATOR_UPPER_BOUND>
+	|	t=<OPERATOR_LOWER_BOUND>
 	|	t=<OPERATOR>
 	)
 	{ return t; }

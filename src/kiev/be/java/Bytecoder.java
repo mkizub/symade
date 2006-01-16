@@ -51,7 +51,7 @@ public class Bytecoder implements JConstants {
 		if( bcclazz.getSuperClazzName() != null ) {
 			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
 			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
-		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name)).toTypeWithLowerBound(cl.concr_type);
+		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
 			if( Env.getStruct(cl.super_type.clazz.name) == null )
 				throw new RuntimeException("Class "+cl.super_type.clazz.name+" not found");
 		}
@@ -60,7 +60,7 @@ public class Bytecoder implements JConstants {
 		KString[] interfs = bcclazz.getInterfaceNames();
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
-			BaseType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i])).toTypeWithLowerBound(cl.concr_type);
+			CompaundType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
 			if( Env.getStruct(interf.clazz.name) == null )
 				throw new RuntimeException("Class "+interf+" not found");
 			if( !interf.isInterface() )
