@@ -5,6 +5,7 @@ import kiev.parser.Parser;
 import kiev.parser.ParseException;
 import kiev.parser.ParseError;
 import kiev.transf.*;
+import kiev.vlang.types.*;
 
 import java.io.*;
 import java.util.Properties;

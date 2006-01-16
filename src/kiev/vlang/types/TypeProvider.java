@@ -1,7 +1,8 @@
-package kiev.vlang;
+package kiev.vlang.types;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.vlang.*;
 
 import kiev.be.java.JBaseTypeProvider;
 import kiev.be.java.JStructView;
@@ -468,7 +469,7 @@ public class CompaundTypeProvider extends TypeProvider {
 	public final Struct			clazz;
 	public final TemplateType	templ_type;
 	
-	CompaundTypeProvider(Struct clazz) {
+	public CompaundTypeProvider(Struct clazz) {
 		this.clazz = clazz;
 		if (this.clazz == Env.root) ((Struct.StructImpl)Env.root.$v_impl).imeta_type = this;
 		this.templ_type = new TemplateType(this, TVarSet.emptySet);

@@ -2,8 +2,8 @@ package kiev.be.java;
 
 import kiev.*;
 
-import kiev.vlang.Type;
-import kiev.vlang.MethodType;
+import kiev.vlang.types.Type;
+import kiev.vlang.types.MethodType;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;

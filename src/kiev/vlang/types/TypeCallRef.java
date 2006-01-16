@@ -1,4 +1,4 @@
-package kiev.parser;
+package kiev.vlang.types;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
@@ -6,8 +6,8 @@ import kiev.vlang.*;
 
 import syntax kiev.Syntax;
 
-import kiev.vlang.TypeRef.TypeRefImpl;
-import kiev.vlang.TypeRef.TypeRefView;
+import kiev.vlang.types.TypeRef.TypeRefImpl;
+import kiev.vlang.types.TypeRef.TypeRefView;
 
 /**
  * @author Maxim Kizub

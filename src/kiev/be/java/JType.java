@@ -3,6 +3,7 @@ package kiev.be.java;
 import kiev.Kiev;
 import kiev.CError;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 
 import static kiev.stdlib.Debug.*;

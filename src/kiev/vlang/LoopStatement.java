@@ -3,6 +3,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 
 import kiev.be.java.JNodeView;

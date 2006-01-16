@@ -2,6 +2,7 @@ package kiev.vlang;
 
 import kiev.Main;
 import kiev.stdlib.*;
+import kiev.vlang.types.*;
 
 /**
  * @author Maxim Kizub

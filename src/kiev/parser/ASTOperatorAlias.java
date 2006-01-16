@@ -5,6 +5,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.OpTypes.*;

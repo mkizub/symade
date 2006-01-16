@@ -1,11 +1,11 @@
-package kiev.parser;
+package kiev.vlang.types;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
-import kiev.vlang.TypeRef.TypeRefImpl;
-import kiev.vlang.TypeRef.TypeRefView;
+import kiev.vlang.types.TypeRef.TypeRefImpl;
+import kiev.vlang.types.TypeRef.TypeRefView;
 
 /**
  * @author Maxim Kizub
@@ -37,11 +37,11 @@ public class TypeClosureRef extends TypeRef {
 
 	@getter public NArr<TypeRef>		get$types()		{ return this.getTypeClosureRefView().types; }
 	
-	TypeClosureRef() {
+	public TypeClosureRef() {
 		super(new TypeClosureRefImpl());
 	}
 	
-	TypeClosureRef(ClosureType tp) {
+	public TypeClosureRef(ClosureType tp) {
 		super(new TypeClosureRefImpl(tp));
 	}
 	

@@ -2,7 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.parser.TypeNameRef;
+import kiev.vlang.types.TypeNameRef;
 import kiev.parser.ASTIdentifier;
 import kiev.vlang.ASTNode.NodeImpl;
 

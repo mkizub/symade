@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.transf.*;
+import kiev.vlang.types.*;
 import java.io.*;
 
 import kiev.be.java.JNodeView;
@@ -37,9 +38,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		
 		     public Access						acc;
 		     public ClazzName					name;
-		     CompaundTypeProvider				imeta_type;
-		     WrapperTypeProvider				wmeta_type;
-		     OuterTypeProvider					ometa_type;
+		     public CompaundTypeProvider		imeta_type;
+		     public WrapperTypeProvider			wmeta_type;
+		     public OuterTypeProvider			ometa_type;
 		     public ConcreteType				concr_type;
 		@att public TypeRef						view_of;
 		@att public TypeRef						super_bound;
@@ -657,7 +658,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		resolveStructMethodR(node, info, name, mt, this.concr_type)
 	}
 
-	protected rule resolveStructMethodR(DNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
+	public rule resolveStructMethodR(DNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
 		ASTNode@ member;
 		Type@ sup;
 	{

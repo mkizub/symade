@@ -4,7 +4,7 @@ import kiev.Kiev;
 import kiev.transf.*;
 import kiev.parser.*;
 import kiev.vlang.*;
-
+import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;

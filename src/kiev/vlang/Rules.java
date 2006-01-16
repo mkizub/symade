@@ -3,6 +3,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.Kiev.Ext;
 import kiev.stdlib.*;
+import kiev.vlang.types.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;

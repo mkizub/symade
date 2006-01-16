@@ -2,6 +2,7 @@ package kiev.vlang;
 
 import kiev.*;
 import kiev.stdlib.*;
+import kiev.vlang.types.*;
 import kiev.parser.*;
 
 import kiev.vlang.ASTNode.NodeImpl;

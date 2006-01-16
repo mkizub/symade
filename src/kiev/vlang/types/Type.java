@@ -1,7 +1,9 @@
-package kiev.vlang;
+package kiev.vlang.types;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.vlang.*;
+import kiev.vlang.types.*;
 
 import kiev.be.java.JType;
 import kiev.be.java.JBaseType;
@@ -658,7 +660,7 @@ public final class TemplateType extends CompaundType {
 	
 	public static final TemplateType[] emptyArray = new TemplateType[0];
 	
-	TemplateType(CompaundTypeProvider meta_type, TVarSet bindings) {
+	public TemplateType(CompaundTypeProvider meta_type, TVarSet bindings) {
 		super(meta_type, bindings);
 		checkAbstract();
 	}
@@ -686,7 +688,7 @@ public final class TemplateType extends CompaundType {
 
 public final class ConcreteType extends CompaundType {
 	
-	ConcreteType(CompaundTypeProvider meta_type, TVarSet bindings) {
+	public ConcreteType(CompaundTypeProvider meta_type, TVarSet bindings) {
 		super(meta_type, bindings);
 		checkAbstract();
 	}

@@ -6,6 +6,7 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
 import kiev.transf.*;
+import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
