@@ -15,19 +15,22 @@ public final class TVarSet {
 
 	private final boolean ASSERT_MORE = true;	
 
-	public access:ro,ro,ro,rw	TVar[] tvars;
+	public access:ro,ro,ro,rw	TVar[]		tvars;
+	public access:ro,ro,ro,rw	ArgType[]	applayable;
 
 	public TVarSet() {
 		tvars = TVar.emptyArray;
+		applayable = null;
 	}
 	
 	public TVarSet(ArgType var, Type bnd) {
 		tvars = new TVar[]{ new TVarBound(this, 0, var, bnd) };
-		if (ASSERT_MORE) checkIntegrity();
+		if (ASSERT_MORE) checkIntegrity(false);
 	}
 	
 	public TVarSet copy() {
 		TVarSet tvs = new TVarSet();
+		tvs.applayable = this.applayable;
 		int n = this.tvars.length;
 		if (n == 0) return tvs;
 		tvs.tvars = new TVar[n];
@@ -101,10 +104,10 @@ public final class TVarSet {
 		for (int i=0; i < n; i++)
 			this.tvars[i].resolve(i);
 		
-		if (ASSERT_MORE) checkIntegrity();
+		if (ASSERT_MORE) checkIntegrity(false);
 		if (var ≢ value && value ≢ null)
 			set(this.tvars[n], value);
-		if (ASSERT_MORE) checkIntegrity();
+		if (ASSERT_MORE) checkIntegrity(false);
 	}
 	
 	public void set(TVar v, Type bnd)
@@ -130,11 +133,16 @@ public final class TVarSet {
 					while (av.isAlias()) av = ((TVarAlias)av).bnd;
 					if (v == av)
 						break; // don't alias a var to itself 
-					tvars[v.idx] = new TVarAlias(this, v.idx, v.var, av);
+					if (tvars[v.idx] instanceof TVarBound) {
+						tvars[v.idx] = new TVarAlias(this, v.idx, v.var, av);
+						buildApplayables();
+					} else {
+						tvars[v.idx] = new TVarAlias(this, v.idx, v.var, av);
+					}
 					assert (i < n);
 					for (i=0; i < n; i++)
 						this.tvars[i].resolve(i);
-					if (ASSERT_MORE) checkIntegrity();
+					if (ASSERT_MORE) checkIntegrity(false);
 					return;
 				}
 			}
@@ -143,8 +151,36 @@ public final class TVarSet {
 		tvars[v.idx] = new TVarBound(this,v.idx,v.var,bnd);
 		for (int i=0; i < n; i++)
 			this.tvars[i].resolve(i);
-		if (ASSERT_MORE) checkIntegrity();
+		if (ASSERT_MORE) checkIntegrity(false);
 		return;
+	}
+	
+	private void buildApplayables() {
+		applayable = ArgType.emptyArray;
+		foreach (TVar tv; tvars; tv instanceof TVarBound)
+			addApplayables(tv.bnd);
+	}
+	
+	private void addApplayables(Type t) {
+		if (t instanceof ArgType) {
+			addApplayable((ArgType)t);
+		} else {
+			ArgType[] tappls = t.bindings().applayable;
+			for (int i=0; i < tappls.length; i++)
+				addApplayable(tappls[i]);
+		}
+	}
+	private void addApplayable(ArgType at) {
+		int sz = applayable.length;
+		for (int i=0; i < sz; i++) {
+			if (applayable[i] ≡ at)
+				return;
+		}
+		ArgType[] tmp = new ArgType[sz+1];
+		for (int i=0; i < sz; i++)
+			tmp[i] = applayable[i];
+		tmp[sz] = at;
+		applayable = tmp;
 	}
 
 	// Bind free (unbound) variables of current type to values
@@ -201,7 +237,8 @@ public final class TVarSet {
 				}
 			}
 		}
-		if (ASSERT_MORE) sr.checkIntegrity();
+		sr.buildApplayables();
+		if (ASSERT_MORE) sr.checkIntegrity(true);
 		return sr;
 	}
 
@@ -239,7 +276,8 @@ public final class TVarSet {
 				continue next_my;
 			}
 		}
-		if (ASSERT_MORE) sr.checkIntegrity();
+		sr.buildApplayables();
+		if (ASSERT_MORE) sr.checkIntegrity(true);
 		return sr;
 	}
 
@@ -272,6 +310,8 @@ public final class TVarSet {
 		final int my_size = my_vars.length;
 		final int vs_size = vs_vars.length;
 		TVarSet sr = this.copy();
+		if (!sr.hasApplayables(vs))
+			return sr;
 	next_my:
 		for(int i=0; i < my_size; i++) {
 			TVar x = my_vars[i];
@@ -287,15 +327,33 @@ public final class TVarSet {
 						continue next_my;
 					}
 				}
-			} else {
+			}
+			else if (bnd.bindings().hasApplayables(vs)) {
 				// recursive
 				Type t = bnd.applay(vs);
 				if (t ≉ bnd)
 					sr.set(sr.tvars[i], t);
 			}
 		}
-		if (ASSERT_MORE) sr.checkIntegrity();
+		sr.buildApplayables();
+		if (ASSERT_MORE) sr.checkIntegrity(true);
 		return sr;
+	}
+	
+	private boolean hasApplayables(TVarSet vs) {
+		final int my_size = applayable.length;
+		if (my_size == 0)
+			return false;
+		final int tp_size = vs.tvars.length;
+		if (tp_size == 0)
+			return false;
+		for (int i=0; i < my_size; i++) {
+			for (int j=0; j < tp_size; j++) {
+				if (applayable[i] ≡ vs.tvars[j].var)
+					return true;
+			}
+		}
+		return false;
 	}
 	
 	// find a bound type of an argument
@@ -309,7 +367,7 @@ public final class TVarSet {
 		return arg;
 	}
 	
-	private void checkIntegrity() {
+	private void checkIntegrity(boolean include_applayable) {
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;
 		for (int i=0; i < n; i++) {
@@ -329,10 +387,38 @@ public final class TVarSet {
 			else if (v.isBound()) {
 				TVarBound bv = (TVarBound)v;
 				assert(bv.bnd ≢ null);
-//				if (bv.bnd instanceof ArgType) {
-//					for (int j=0; j < n; j++)
-//						assert(tvars[j].var ≢ bv.bnd);
-//				}
+				if (include_applayable) {
+					if (bv.bnd instanceof ArgType) {
+						assert(Arrays.contains(applayable, bv.bnd));
+					} else {
+						foreach (ArgType at; bv.bnd.bindings().applayable)
+							assert(Arrays.contains(applayable, at));
+					}
+				}
+			}
+		}
+		if (include_applayable) {
+			final int m = applayable.length;
+			for (int i=0; i < m; i++) {
+				ArgType at = applayable[i];
+				int j = 0;
+			next_tvar:
+				for (; j < n; j++) {
+					if (tvars[j] instanceof TVarBound) {
+						Type bnd = tvars[j].bound();
+						if (bnd instanceof ArgType) {
+							if (bnd ≡ at)
+								break next_tvar;
+						} else {
+							ArgType[] tappls = bnd.bindings().applayable;
+							for (int k=0; k < tappls.length; k++) {
+								if (at ≡ tappls[k])
+									break next_tvar;
+							}
+						}
+					}
+				}
+				assert (j < n);
 			}
 		}
 	}

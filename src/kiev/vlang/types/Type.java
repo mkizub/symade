@@ -364,6 +364,8 @@ public final class CoreType extends Type {
 
 public final class ArgType extends Type {
 
+	public static final ArgType[] emptyArray = new ArgType[0];
+	
 	/** Variouse names of the type */
 	public final KString			name;
 
