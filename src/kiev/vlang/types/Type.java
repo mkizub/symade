@@ -1161,24 +1161,6 @@ public class MethodType extends Type implements CallableType {
 		return gt;
 	}
 
-	public int compare(MethodType tp) {
-		if( args.length != tp.args.length ) return 0;
-		if( !ret.equals(tp.ret) ) return 0;
-		boolean gt = false;
-		boolean lt = false;
-		for(int i=0; i < args.length; i++) {
-			if (args[i] ≉ tp.args[i]) {
-				if( args[i].isInstanceOf(tp.args[i]) ) gt = true;
-				else if( tp.args[i].isInstanceOf(args[i]) ) lt = true;
-				else return 0;
-			}
-		}
-		if( gt && lt ) return 0;
-		if(gt) return 1;
-		if(lt) return -1;
-		return 0;
-	}
-
 	public boolean isMultimethodSuper(MethodType tp) {
 		if( args.length != tp.args.length ) return false;
 		if( !tp.ret.isInstanceOf(ret) ) return false;

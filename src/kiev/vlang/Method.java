@@ -517,13 +517,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 
 	public boolean equalsByCast(KString name, MethodType mt, Type tp, ResInfo info) {
-		if( this.name.equals(name) )
-			return compare(name,mt,tp,info,false);
-		return false;
-	}
-	
-	public boolean compare(KString name, MethodType mt, Type tp, ResInfo info, boolean exact) {
-		if( !this.name.equals(name) ) return false;
+		if (!this.name.equals(name)) return false;
 		int type_len = this.type.args.length;
 		int args_len = mt.args.length;
 		if( type_len != args_len ) {
@@ -562,23 +556,16 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 		
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
-			if( exact && !mt.args[i].equals(rt.args[i]) ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-					+" differ in param # "+i+": "+rt.args[i]+" != "+mt.args[i]);
-				return false;
-			}
-			else if( !exact && !mt.args[i].isAutoCastableTo(rt.args[i]) ) {
+			if (!mt.args[i].isAutoCastableTo(rt.args[i])) {
 				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" differ in param # "+i+": "+mt.args[i]+" not auto-castable to "+rt.args[i]);
 				return false;
 			}
 		}
 		boolean match = false;
-		if( mt.ret ≡ Type.tpAny )
+		if (mt.ret ≡ Type.tpAny)
 			match = true;
-		else if( exact &&  rt.ret.equals(mt.ret) )
-			match = true;
-		else if( !exact && rt.ret.isAutoCastableTo(mt.ret) )
+		else if (rt.ret.isAutoCastableTo(mt.ret))
 			match = true;
 		else
 			match = false;
