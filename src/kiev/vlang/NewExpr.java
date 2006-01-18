@@ -176,7 +176,7 @@ public final class NewExpr extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = (MethodType)Type.getRealType(type,new MethodType(ta,type));
+			CallType mt = (CallType)Type.getRealType(type,new CallType(ta,type));
 			Method@ m;
 			// First try overloaded 'new', than real 'new'
 			if( (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
@@ -187,7 +187,7 @@ public final class NewExpr extends ENode {
 					return;
 				}
 			}
-			mt = (MethodType)Type.getRealType(type,new MethodType(ta,Type.tpVoid));
+			mt = (CallType)Type.getRealType(type,new CallType(ta,Type.tpVoid));
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 			if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 				func = m;
@@ -519,12 +519,6 @@ public final class NewClosure extends ENode {
 		this.clazz = clazz;
 	}
 
-//	public NewClosure(int pos, Method func) {
-//		super(new NewClosureImpl(pos));
-//		this.func = func;
-//		this.type = new TypeClosureRef(new ClosureType(Type.tpClosureClazz,func.type.args,func.type.ret));
-//	}
-
 	public String toString() {
 		return "fun "+type;
 	}
@@ -534,7 +528,7 @@ public final class NewClosure extends ENode {
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) return;
-		ClosureType type = (ClosureType)this.type.getType();
+		CallType type = (CallType)this.type.getType();
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
 		Struct clazz = this.clazz;
@@ -547,7 +541,7 @@ public final class NewClosure extends ENode {
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
-		ClosureType type = (ClosureType)this.type.getType();
+		CallType type = (CallType)this.type.getType();
 		Struct cl = clazz;
 		dmp.append("new ").append(cl.super_type.clazz.name).append('(')
 			.append(String.valueOf(type.args.length)).append(')');

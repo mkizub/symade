@@ -237,7 +237,7 @@ public class RuleMethod extends Method {
 	}
 
 
-//	public boolean compare(KString name, MethodType mt, Type tp, ResInfo info, boolean exact) {
+//	public boolean compare(KString name, CallType mt, Type tp, ResInfo info, boolean exact) {
 //		if( !this.name.equals(name) ) return false;
 //		int type_len = this.type.args.length - 1;
 //		int args_len = mt.args.length;
@@ -253,7 +253,7 @@ public class RuleMethod extends Method {
 //			}
 //		}
 //		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-//		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
+//		CallType rt = (CallType)Type.getRealType(tp,this.type);
 //		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
 //			if( exact && !mt.args[i].equals(rt.args[i+1]) ) {
 //				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
@@ -887,7 +887,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			itype = ctype;
 			mode = JENUM;
 		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameElements,new MethodType(Type.emptyArray,Type.tpAny))
+				nameElements,new CallType(Type.emptyArray,Type.tpAny))
 		) {
 			itype = Type.getRealType(ctype,elems.type.ret);
 			mode = ELEMS;
@@ -1213,7 +1213,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		else if( expr instanceof ClosureCallExpr ) {
 			ClosureCallExpr e = (ClosureCallExpr)expr;
 			Type tp = e.getType();
-			if( tp ≡ Type.tpRule || (tp instanceof ClosureType && ((ClosureType)tp).ret ≡ Type.tpRule && tp.args.length == 0) ) {
+			if( tp ≡ Type.tpRule || (tp instanceof CallType && ((CallType)tp).ret ≡ Type.tpRule && tp.args.length == 0) ) {
 				replaceWithNodeResolve(reqType, new RuleCallExpr((ClosureCallExpr)~e));
 				return;
 			}

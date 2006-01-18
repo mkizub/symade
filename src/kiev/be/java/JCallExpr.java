@@ -19,7 +19,7 @@ import kiev.vlang.ClosureCallExpr.ClosureCallExprImpl;
 public final view JCallExprView of CallExprImpl extends JENodeView {
 	public access:ro JENodeView		obj;
 	public access:ro JMethodView	func;
-	public access:ro MethodType		mt;
+	public access:ro CallType		mt;
 	public           JENodeView		temp_expr;
 
 	@getter public final JENodeView[]		get$args()	{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
@@ -286,7 +286,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 	public access:ro JENodeView			expr;
 	public access:ro boolean			is_a_call;
 	
-	@getter public final ClosureType	get$ctype()				{ return (ClosureType)this.$view.expr.getType(); }
+	@getter public final CallType		get$ctype()				{ return (CallType)this.$view.expr.getType(); }
 	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
 	
 	public void generate(Code code, Type reqType) {
@@ -294,7 +294,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		code.setLinePos(this);
 		// Load ref to closure
 		expr.generate(code,null);
-		ClosureType ctype = this.ctype;
+		CallType ctype = this.ctype;
 		JENodeView[] args = this.args;
 		// Clone it
 		if( args.length > 0 ) {
@@ -325,7 +325,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		}
 	}
 
-	public JMethodView getCallIt(ClosureType tp) {
+	public JMethodView getCallIt(CallType tp) {
 		KString call_it_name;
 		KString call_it_sign;
 		if( tp.ret.isReference() ) {

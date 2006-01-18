@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 import kiev.vlang.types.TypeRef.TypeRefImpl;
@@ -51,7 +52,7 @@ public class TypeCallRef extends TypeRef {
 		super(new TypeCallRefImpl());
 	}
 
-	public TypeCallRef(MethodType mt) {
+	public TypeCallRef(CallType mt) {
 		super(new TypeCallRefImpl());
 		this.ret = new TypeRef(mt.ret);
 		foreach (Type a; mt.args)
@@ -73,23 +74,23 @@ public class TypeCallRef extends TypeRef {
 		}
 	}
 
-	public MethodType getMType() {
+	public CallType getMType() {
 		if (this.lnk != null)
-			return (MethodType)this.lnk;
+			return (CallType)this.lnk;
 		Type rt = ret.getType();
 		Type[] atypes = new Type[args.length];
 		for(int i=0; i < atypes.length; i++) {
 			atypes[i] = args[i].getType();
 		}
 		if (targs.length == 0) {
-			this.lnk = new MethodType(atypes,rt);
+			this.lnk = new CallType(atypes,rt);
 		} else {
 			TVarSet vset = new TVarSet();
 			foreach (TypeDef td; targs)
 				vset.append(td.getAType(), null);
-			this.lnk = new MethodType(vset,atypes,rt);
+			this.lnk = new CallType(vset,atypes,rt,false);
 		}
-		return (MethodType)this.lnk;
+		return (CallType)this.lnk;
 	}
 	public Type getType() {
 		return getMType();

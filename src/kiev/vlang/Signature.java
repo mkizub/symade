@@ -118,7 +118,7 @@ public class Signature {
 			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
 			ret = getType(sc);
-			return new MethodType(args,ret);
+			return new CallType(args,ret);
 		}
 		if (ch == '&') {
 			// Closure signature
@@ -131,7 +131,7 @@ public class Signature {
 			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
 			ret = getType(sc);
-			return new ClosureType(args,ret);
+			return new CallType(args,ret,true);
 		}
 
 		// Normal reference type

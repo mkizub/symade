@@ -153,15 +153,15 @@ public final view JNewInitializedArrayExprView of NewInitializedArrayExprImpl ex
 
 @nodeview
 public final view JNewClosureView of NewClosureImpl extends JENodeView {
-	public access:ro	ClosureType		type;
+	public access:ro	CallType		type;
 	public access:ro	JStructView		clazz;
 	public access:ro	JMethodView		func;
 
-	@getter public final ClosureType		get$type()				{ return (ClosureType)this.$view.type.getType(); }
+	@getter public final CallType		get$type()				{ return (CallType)this.$view.type.getType(); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);
-		ClosureType ctype = this.type;
+		CallType ctype = this.type;
 		JStructView cl = clazz;
 		code.setLinePos(this);
 		code.addInstr(op_new,clazz.concr_type);

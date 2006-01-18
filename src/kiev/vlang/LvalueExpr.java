@@ -515,7 +515,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			else {
 				// Resolve overloaded access method
 				Method@ v;
-				MethodType mt = new MethodType(new Type[]{index.getType()},Type.tpAny);
+				CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
 					return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);

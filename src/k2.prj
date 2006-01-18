@@ -497,15 +497,13 @@ kiev.vlang.types.ArgType kiev/vlang/types/ArgType kiev\vlang\types\Type.java
 kiev.vlang.types.ArgTypeProvider kiev/vlang/types/ArgTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.ArrayType kiev/vlang/types/ArrayType kiev\vlang\types\Type.java
 kiev.vlang.types.ArrayTypeProvider kiev/vlang/types/ArrayTypeProvider kiev\vlang\types\TypeProvider.java
+kiev.vlang.types.CallType kiev/vlang/types/CallType kiev\vlang\types\Type.java
 kiev.vlang.types.CallTypeProvider kiev/vlang/types/CallTypeProvider kiev\vlang\types\TypeProvider.java
-kiev.vlang.types.CallableType kiev/vlang/types/CallableType kiev\vlang\types\Type.java
-kiev.vlang.types.ClosureType kiev/vlang/types/ClosureType kiev\vlang\types\Type.java
 kiev.vlang.types.CompaundType kiev/vlang/types/CompaundType kiev\vlang\types\Type.java
 kiev.vlang.types.CompaundTypeProvider kiev/vlang/types/CompaundTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.ConcreteType kiev/vlang/types/ConcreteType kiev\vlang\types\Type.java
 kiev.vlang.types.CoreType kiev/vlang/types/CoreType kiev\vlang\types\Type.java
 kiev.vlang.types.CoreTypeProvider kiev/vlang/types/CoreTypeProvider kiev\vlang\types\TypeProvider.java
-kiev.vlang.types.MethodType kiev/vlang/types/MethodType kiev\vlang\types\Type.java
 kiev.vlang.types.OuterType kiev/vlang/types/OuterType kiev\vlang\types\Type.java
 kiev.vlang.types.OuterTypeProvider kiev/vlang/types/OuterTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java

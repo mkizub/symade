@@ -31,7 +31,7 @@ public class CallExpr extends ENode {
 	public static class CallExprImpl extends ENodeImpl {
 		@att public ENode				obj;
 		@ref public Method				func;
-		@ref public MethodType			mt;
+		@ref public CallType			mt;
 		@att public NArr<ENode>			args;
 		@att public ENode				temp_expr;
 		public CallExprImpl() {}
@@ -41,26 +41,26 @@ public class CallExpr extends ENode {
 	public static view CallExprView of CallExprImpl extends ENodeView {
 		public				ENode			obj;
 		public				Method			func;
-		public				MethodType		mt;
+		public				CallType		mt;
 		public access:ro	NArr<ENode>		args;
 		public				ENode			temp_expr;
 	}
 	
 	@att public abstract virtual			ENode				obj;
 	@ref public abstract virtual			Method				func;
-	@ref public abstract virtual			MethodType			mt;
+	@ref public abstract virtual			CallType			mt;
 	@att public abstract virtual access:ro	NArr<ENode>			args;
 	@att public abstract virtual			ENode				temp_expr;
 	
 	@getter public ENode			get$obj()				{ return this.getCallExprView().obj; }
 	@getter public Method			get$func()				{ return this.getCallExprView().func; }
-	@getter public MethodType		get$mt()				{ return this.getCallExprView().mt; }
+	@getter public CallType			get$mt()				{ return this.getCallExprView().mt; }
 	@getter public NArr<ENode>		get$args()				{ return this.getCallExprView().args; }
 	@getter public ENode			get$temp_expr()			{ return this.getCallExprView().temp_expr; }
 	
 	@setter public void		set$obj(ENode val)				{ this.getCallExprView().obj = val; }
 	@setter public void		set$func(Method val)			{ this.getCallExprView().func = val; }
-	@setter public void		set$mt(MethodType val)			{ this.getCallExprView().mt = val; }
+	@setter public void		set$mt(CallType val)			{ this.getCallExprView().mt = val; }
 	@setter public void		set$temp_expr(ENode val)		{ this.getCallExprView().temp_expr = val; }
 
 	public NodeView				getNodeView()		{ return new CallExprView((CallExprImpl)this.$v_impl); }
@@ -75,7 +75,7 @@ public class CallExpr extends ENode {
 		super(new CallExprImpl());
 	}
 
-	public CallExpr(int pos, ENode obj, Method func, MethodType mt, ENode[] args, boolean super_flag) {
+	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args, boolean super_flag) {
 		super(new CallExprImpl(pos));
 		if (obj == null) {
 			if !(func.isStatic() || func instanceof Constructor) {
@@ -92,7 +92,7 @@ public class CallExpr extends ENode {
 			this.setSuperExpr(true);
 	}
 
-	public CallExpr(int pos, ENode obj, Method func, MethodType mt, ENode[] args) {
+	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args) {
 		this(pos, obj, func, mt, args, false);
 	}
 
@@ -258,7 +258,7 @@ public class ClosureCallExpr extends ENode {
 		this.expr = expr;
 		foreach(ENode e; args) this.args.append(e);
 		Type tp = expr.getType();
-		if (tp instanceof ClosureType)
+		if (tp instanceof CallType)
 			is_a_call = tp.args.length==args.length;
 		else
 			is_a_call = true;
@@ -276,16 +276,16 @@ public class ClosureCallExpr extends ENode {
 		return sb.toString();
 	}
 	public Type getType() {
-		ClosureType t = (ClosureType)expr.getType();
+		CallType t = (CallType)expr.getType();
 		if( is_a_call )
 			return t.ret;
 		Type[] types = new Type[t.args.length - args.length];
 		for(int i=0; i < types.length; i++) types[i] = t.args[i+args.length];
-		t = new ClosureType(types,t.ret);
+		t = new CallType(types,t.ret,true);
 		return t;
 	}
 
-	public Method getCallIt(ClosureType tp) {
+	public Method getCallIt(CallType tp) {
 		KString call_it_name;
 		Type ret;
 		if( tp.ret.isReference() ) {
@@ -302,12 +302,12 @@ public class ClosureCallExpr extends ENode {
 		if( isResolved() ) return;
 		expr.resolve(null);
 		Type extp = expr.getType();
-		if !(extp instanceof ClosureType)
+		if !(extp instanceof CallType)
 			throw new CompilerException(expr,"Expression "+expr+" is not a closure");
-		ClosureType tp = (ClosureType)extp;
-		if( reqType != null && reqType instanceof CallableType )
+		CallType tp = (CallType)extp;
+		if( reqType != null && reqType instanceof CallType )
 			is_a_call = false;
-		else if( (reqType == null || !(reqType instanceof CallableType)) && tp.args.length==args.length )
+		else if( (reqType == null || !(reqType instanceof CallType)) && tp.args.length==args.length )
 			is_a_call = true;
 		else
 			is_a_call = false;
@@ -333,7 +333,7 @@ public class ClosureCallExpr extends ENode {
 			dmp.append(')');
 		}
 		if( is_a_call ) {
-			Method call_it = getCallIt((ClosureType)expr.getType());
+			Method call_it = getCallIt((CallType)expr.getType());
 			dmp.append('.').append(call_it.name).append('(');
 			if( call_it.type.ret ≡ Type.tpRule ) dmp.append("null");
 			dmp.append(')');

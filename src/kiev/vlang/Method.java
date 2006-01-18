@@ -56,9 +56,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		     public boolean				inlined_by_dispatcher;
 		     public boolean				invalid_types;
 
-		public virtual						MethodType		type;
-		public virtual						MethodType		dtype;
-		public virtual abstract access:ro	MethodType		etype;
+		public virtual						CallType		type;
+		public virtual						CallType		dtype;
+		public virtual abstract access:ro	CallType		etype;
 
 		public void callbackChildChanged(AttrSlot attr) {
 			if (parent != null && pslot != null) {
@@ -74,9 +74,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				invalid_types = true;
 		}
 
-		@getter public final MethodType				get$type()	{ checkRebuildTypes(); return this.type; }
-		@getter public final MethodType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
-		@getter public final MethodType				get$etype()	{ checkRebuildTypes(); return (MethodType)this.dtype.getErasedType(); }
+		@getter public final CallType				get$type()	{ checkRebuildTypes(); return this.type; }
+		@getter public final CallType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
+		@getter public final CallType				get$etype()	{ checkRebuildTypes(); return (CallType)this.dtype.getErasedType(); }
 
 		public final void checkRebuildTypes() {
 			if (invalid_types) rebuildTypes();
@@ -141,8 +141,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
 				}
 			}
-			this.type = new MethodType(vset, args.toArray(), type_ret.getType());
-			this.dtype = new MethodType(vset, dargs.toArray(), dtype_ret.getType());
+			this.type = new CallType(vset, args.toArray(), type_ret.getType(), false);
+			this.dtype = new CallType(vset, dargs.toArray(), dtype_ret.getType(), false);
 			invalid_types = false;
 		}
 		
@@ -160,9 +160,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public access:ro	NArr<TypeDef>		targs;
 		public				TypeRef				type_ret;
 		public				TypeRef				dtype_ret;
-		public access:ro	MethodType			type;
-		public access:ro	MethodType			dtype;
-		public access:ro	MethodType			etype;
+		public access:ro	CallType			type;
+		public access:ro	CallType			dtype;
+		public access:ro	CallType			etype;
 		public access:ro	NArr<FormPar>		params;
 		public access:ro	NArr<ASTAlias>		aliases;
 		public				Var					retvar;
@@ -279,9 +279,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@getter public boolean				get$inlined_by_dispatcher()	{ return this.getMethodView().inlined_by_dispatcher; }
 	@getter        boolean				get$invalid_types()			{ return this.getMethodView().invalid_types; }
 
-	@getter public MethodType			get$type()	{ return this.getMethodView().type; }
-	@getter public MethodType			get$dtype()	{ return this.getMethodView().dtype; }
-	@getter public MethodType			get$etype()	{ return this.getMethodView().etype; }
+	@getter public CallType				get$type()	{ return this.getMethodView().type; }
+	@getter public CallType				get$dtype()	{ return this.getMethodView().dtype; }
+	@getter public CallType				get$etype()	{ return this.getMethodView().etype; }
 
 	@setter public void set$acc(Access val)						{ this.getMethodView().acc = val; }
 	@setter public void set$name(NodeName val)						{ this.getMethodView().name = val; }
@@ -325,9 +325,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	     public abstract virtual			boolean				inlined_by_dispatcher;
 	            abstract virtual			boolean				invalid_types;
 	
-	     public virtual abstract access:ro	MethodType			type; 
-		 public virtual abstract access:ro	MethodType			dtype; 
-	     public virtual abstract access:ro	MethodType			etype; 
+	     public virtual abstract access:ro	CallType			type; 
+		 public virtual abstract access:ro	CallType			dtype; 
+	     public virtual abstract access:ro	CallType			etype; 
 	
 	public Method() {
 		super(new MethodImpl());
@@ -461,7 +461,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		return sb.toString();
 	}
 
-	public static String toString(KString nm, MethodType mt) {
+	public static String toString(KString nm, CallType mt) {
 		Type[] args = mt.args;
 		StringBuffer sb = new StringBuffer(nm+"(");
 		for(int i=0; i < args.length; i++) {
@@ -516,7 +516,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	}
 
-	public boolean equalsByCast(KString name, MethodType mt, Type tp, ResInfo info) {
+	public boolean equalsByCast(KString name, CallType mt, Type tp, ResInfo info) {
 		if (!this.name.equals(name)) return false;
 		int type_len = this.type.args.length;
 		int args_len = mt.args.length;
@@ -532,7 +532,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			}
 		}
 		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
+		CallType rt = (CallType)Type.getRealType(tp,this.type);
 		rt = rt.bind(tp.bindings());
 		
 		if (mt.bindings().length > 0) {
@@ -629,7 +629,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		var.type.resolveNameAccessR(node,path,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
 		Var@ n;
 	{
 		info.isForwardsAllowed(),

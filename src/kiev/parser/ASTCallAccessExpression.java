@@ -89,7 +89,7 @@ public class ASTCallAccessExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = new MethodType(ta,null);
+			CallType mt = new CallType(ta,null);
 			try {
 				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,func.name,mt) )
 					throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,null));
@@ -107,7 +107,7 @@ public class ASTCallAccessExpression extends ENode {
 			throw new CompilerException(obj,"Super-call via forwarding is not allowed");
 		}
 		
-		MethodType mt = null;
+		CallType mt = null;
 		{
 			Type[] ata = new Type[targs.length];
 			for (int i=0; i < ata.length; i++)
@@ -115,7 +115,7 @@ public class ASTCallAccessExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			mt = new MethodType(ata,ta,null);
+			mt = new CallType(ata,ta,null);
 		}
 		int res_flags = ResInfo.noStatic | ResInfo.noImports;
 		ENode[] res;
@@ -216,7 +216,7 @@ public class ASTCallAccessExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = new MethodType(ta,ret);
+			CallType mt = new CallType(ta,ret);
 			try {
 				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,func.name,mt) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
@@ -239,12 +239,12 @@ public class ASTCallAccessExpression extends ENode {
 		
 		obj.resolve(null);
 		
-		MethodType mt = null;
+		CallType mt = null;
 		{
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			mt = new MethodType(ta,null);
+			mt = new CallType(ta,null);
 		}
 		int res_flags = ResInfo.noStatic | ResInfo.noImports;
 		ENode[] res;

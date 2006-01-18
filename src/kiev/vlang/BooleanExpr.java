@@ -56,8 +56,8 @@ public abstract class BoolExpr extends ENode {
 			});
 			return;
 		}
-		if (et instanceof ClosureType) {
-			ClosureType ct = (ClosureType)et;
+		if (et instanceof CallType) {
+			CallType ct = (CallType)et;
 			if (ct.args.length == 0 && ct.ret.isAutoCastableTo(Type.tpBoolean)	) {
 				((ClosureCallExpr)e).is_a_call = true;
 				return;

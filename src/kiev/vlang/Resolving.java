@@ -29,7 +29,7 @@ public class ResInfo {
 	private Struct		from_scope;
 	
 	// a real type of the method in Method.compare() call
-	public MethodType	mt;
+	public CallType	mt;
 	
 	ASTNode				space_prev;
 	
@@ -241,7 +241,7 @@ public class ResInfo {
 		throw new CompilerException(at, "Don't know how to build access to "+node+" from "+from+" via "+this);
 	}
 	
-	public ENode buildCall(ASTNode at, ENode from, ASTNode node, MethodType mt, ENode[] args) {
+	public ENode buildCall(ASTNode at, ENode from, ASTNode node, CallType mt, ENode[] args) {
 		if (node instanceof Method) {
 			Method meth = (Method)node;
 			if (from == null && forwards_p == 0) {
@@ -334,7 +334,7 @@ public interface ScopeOfNames extends Scope {
 }
 
 public interface ScopeOfMethods extends Scope {
-	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, MethodType mt);
+	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, CallType mt);
 }
 
 public interface ScopeOfOperators extends ScopeOfNames {

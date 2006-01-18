@@ -681,33 +681,28 @@ public class CallTypeProvider extends TypeProvider {
 	private CallTypeProvider() {}
 	public Type bind(Type t, TVarSet bindings) {
 		if (!t.isAbstract() || bindings.length == 0 || t.bindings().length == 0) return t;
-		if!(t instanceof MethodType) return t;
-		MethodType mt = (MethodType)t;
-		mt = new MethodType(mt.bindings().bind(bindings),mt.args,mt.ret);
-		mt = (MethodType)this.applay(mt,mt.bindings());
+		if!(t instanceof CallType) return t;
+		CallType mt = (CallType)t;
+		mt = new CallType(mt.bindings().bind(bindings),mt.args,mt.ret,mt.isReference());
+		mt = (CallType)this.applay(mt,mt.bindings());
 		return mt;
 	}
 	public Type rebind(Type t, TVarSet bindings) {
 		if (!t.isAbstract() || bindings.length == 0 || t.bindings().length == 0) return t;
-		if!(t instanceof MethodType) return t;
-		MethodType mt = (MethodType)t;
-		mt = new MethodType(mt.bindings().rebind(bindings),mt.args,mt.ret);
-		mt = (MethodType)this.applay(mt,mt.bindings());
+		if!(t instanceof CallType) return t;
+		CallType mt = (CallType)t;
+		mt = new CallType(mt.bindings().rebind(bindings),mt.args,mt.ret,mt.isReference());
+		mt = (CallType)this.applay(mt,mt.bindings());
 		return mt;
 	}
 	public Type applay(Type t, TVarSet bindings) {
 		if( !t.isAbstract() || bindings.length == 0 ) return t;
-		CallableType ct = (CallableType)t;
+		CallType ct = (CallType)t;
 		Type[] tpargs = new Type[ct.args.length];
 		for(int i=0; i < tpargs.length; i++)
 			tpargs[i] = ct.args[i].applay(bindings);
 		Type ret = ct.ret.applay(bindings);
-		if (t instanceof MethodType)
-			return new MethodType(t.bindings(),tpargs,ret);
-		else if (t instanceof ClosureType)
-			return new ClosureType(tpargs,ret);
-		assert (false, "Unrecognized type "+t+" ("+t.getClass()+")");
-		return t;
+		return new CallType(t.bindings(),tpargs,ret,t.isReference());
 	}
 }
 

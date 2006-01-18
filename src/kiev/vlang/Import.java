@@ -108,7 +108,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		for(int j=0; j < types.length; j++,i++)
 			types[j] = args[i].getType();
 		DNode@ v;
-		MethodType mt = new MethodType(types,Type.tpAny);
+		CallType mt = new CallType(types,Type.tpAny);
 		if( !PassInfo.resolveMethodR(this,v,null,name.name,mt) )
 			throw new CompilerException(this,"Unresolved method "+Method.toString(name.name,mt));
 		DNode n = v;
@@ -172,7 +172,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		}
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, CallType mt)
 	{
 		mode == ImportMode.IMPORT_STATIC && !star && this.resolved instanceof Method,
 		((Method)this.resolved).equalsByCast(name,mt,null,path),

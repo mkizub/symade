@@ -287,7 +287,7 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 		n.getType().resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),

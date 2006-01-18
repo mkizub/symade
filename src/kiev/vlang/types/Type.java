@@ -72,8 +72,8 @@ public abstract class Type implements StdTypes, AccessFlags {
 
 	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
 	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { false }
-	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, CallType mt) { false }
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt) { false }
 
 	public static boolean identity(Type t1, Type t2) alias operator (60, xfx, ≡ ) {
 		return t1 == t2;
@@ -130,8 +130,8 @@ public abstract class Type implements StdTypes, AccessFlags {
 				return true;
 			return false;
 		}
-		if( this instanceof ClosureType && !(t instanceof CallableType) && ((ClosureType)this).args.length == 0 ) {
-			if( ((ClosureType)this).ret.isAutoCastableTo(t) ) return true;
+		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).args.length == 0 ) {
+			if( ((CallType)this).ret.isAutoCastableTo(t) ) return true;
 		}
 		return false;
 	}
@@ -189,8 +189,8 @@ public abstract class Type implements StdTypes, AccessFlags {
 		if( t.isArgument() && !this.isReference() ) {
 			return true;
 		}
-		if( this instanceof ClosureType && !(t instanceof CallableType) && ((ClosureType)this).args.length == 0 ) {
-			if( ((ClosureType)this).ret.isCastableTo(t) ) return true;
+		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).args.length == 0 ) {
+			if( ((CallType)this).ret.isCastableTo(t) ) return true;
 		}
 		if( this.isWrapper())
 			return ((WrapperType)this).getUnwrappedType().isCastableTo(t);
@@ -413,7 +413,7 @@ public final class ArgType extends Type {
 	public Struct getStruct()						{ return getSuperType().getStruct(); }
 
 	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { getSuperType().resolveNameAccessR(node, info, name) }
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { getSuperType().resolveCallAccessR(node, info, name, mt) }
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt) { getSuperType().resolveCallAccessR(node, info, name, mt) }
 	
 	public Type getErasedType() { return getSuperType().getErasedType(); }
 	public boolean checkResolved() { return getSuperType().checkResolved(); }
@@ -547,12 +547,12 @@ public abstract class CompaundType extends Type {
 		((Field)forw).type.applay(this).resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, CallType mt)
 	{
 		clazz.resolveStructMethodR(node, info, name, mt, this)
 	}
 	
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt)
 		DNode@ member;
 		Type@ sup;
 		Field@ forw;
@@ -755,7 +755,7 @@ public final class ArrayType extends Type {
 		};
 	}
 
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt)
 	{
 		tpObject.resolveCallAccessR(node, info, name, mt)
 	}
@@ -859,7 +859,7 @@ public final class WrapperType extends Type {
 		getUnwrappedType().resolveNameAccessR(node, info, name)
 	}
 
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt)
 	{
 		info.isForwardsAllowed(),$cut,
 		trace(Kiev.debugResolve, "Resolving method "+name+" in wrapper type "+this),
@@ -957,8 +957,8 @@ public final class OuterType extends Type {
 
 	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { outer.resolveStaticNameR(node,info,name) }
 	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { outer.resolveNameAccessR(node,info,name) }
-	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { outer.resolveCallStaticR(node,info,name,mt) }
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { outer.resolveCallAccessR(node,info,name,mt) }
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, CallType mt) { outer.resolveCallStaticR(node,info,name,mt) }
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt) { outer.resolveCallAccessR(node,info,name,mt) }
 	
 	public Type getErasedType() { return outer.getErasedType(); }
 	public boolean checkResolved() { return outer.checkResolved(); }
@@ -974,120 +974,53 @@ public final class OuterType extends Type {
 
 }
 
-public interface CallableType {
-	@virtual public virtual access:ro Type[]	args;
-	@virtual public virtual access:ro Type		ret;
-}
-
-public final class ClosureType extends Type implements CallableType {
-	public virtual Type[]	args;
-	public virtual Type		ret;
-	
-	public ClosureType(Type[] args, Type ret) {
-		super(CallTypeProvider.instance);
-		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
-		this.ret  = (ret  == null) ? Type.tpAny : ret;
-		flags |= flReference | flCallable;
-		foreach(Type a; args; a.isAbstract() ) { flags |= flAbstract; break; }
-		if( this.ret.isAbstract() ) flags |= flAbstract;
-	}
-
-	@getter public Type[]	get$args()	{ return args; }
-	@getter public Type		get$ret()	{ return ret; }
-
-	public TVarSet bindings()			{ return TVarSet.emptySet; }
-
-	public JType getJType() {
-		if (jtype == null)
-			jtype = Type.tpClosure.getJType();
-		return jtype;
-	}
-
-	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
-	protected access:no,rw,no,rw boolean eq(ClosureType:Type type) {
-		if (this.ret ≉ type.ret) return false;
-		public Type[] args1 = this.args;
-		public Type[] args2 = type.args;
-		if (args1.length != args2.length) return false;
-		int n = args1.length;
-		for (int i=0; i < n; i++) {
-			if (args1[i] ≉ args2[i])
-				return false;
-		}
-		return true;
-	}
-
-	public String toString() {
-		StringBuffer str = new StringBuffer();
-		str.append('(');
-		if( args != null && args.length > 0 ) {
-			for(int i=0; i < args.length; i++) {
-				str.append(args[i]);
-				if( i < args.length-1)
-					str.append(',');
-			}
-		}
-		str.append(")->").append(ret);
-		return str.toString();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return Type.tpClosureClazz.toJava(dmp);
-	}
-
-	public boolean isInstanceOf(Type t) {
-		if (this ≡ t) return true;
-		if (t instanceof ClosureType) {
-			ClosureType ct = (ClosureType)t;
-			if( this.args.length != ct.args.length ) return false;
-			for(int i=0; i < this.args.length; i++)
-				if( !this.args[i].isInstanceOf(ct.args[i]) ) return false;
-			return true;
-		}
-		return false;
-	}
-
-	public boolean checkResolved() {
-		return true;
-	}
-
-	public Type[] getAllSuperTypes() { return Type.emptyArray; }
-
-	public Type getErasedType() {
-		return Type.tpClosure;
-	}
-
-}
-	
-public final class MethodType extends Type implements CallableType {
+public final class CallType extends Type {
 	private TVarSet			bindings;
 	public virtual Type[]	args;
 	public virtual Type		ret;
 
-	public MethodType(Type[] args, Type ret) {
-		this(TVarSet.emptySet, args, ret);
+	public CallType(Type[] args, Type ret, boolean is_closure) {
+		this(TVarSet.emptySet, args, ret, is_closure);
 	}
-	public MethodType(TVarSet bindings, Type[] args, Type ret) {
+	public CallType(TVarSet bindings, Type[] args, Type ret, boolean is_closure) {
 		super(CallTypeProvider.instance);
 		this.bindings = bindings;
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		this.ret  = (ret  == null) ? Type.tpAny : ret;
-		flags |= flCallable;
+		if (is_closure)
+			flags = flCallable | flReference;
+		else
+			flags = flCallable;
 		foreach(Type a; args; a.isAbstract() ) { flags |= flAbstract; break; }
 		if( this.ret.isAbstract() ) flags |= flAbstract;
 	}
-	public static MethodType createMethodType(Type[] targs, Type[] args, Type ret)
+	
+	public static CallType createCallType(Type[] args, Type ret)
 		alias operator(210,lfy,new)
 	{
-		if (targs == null || targs.length == 0) return new MethodType(args,ret);
+		return createCallType(null,args,ret,false);
+	}
+	public static CallType createCallType(Type[] args, Type ret, boolean is_closure)
+		alias operator(210,lfy,new)
+	{
+		return createCallType(null,args,ret,is_closure);
+	}
+	public static CallType createCallType(Type[] targs, Type[] args, Type ret)
+		alias operator(210,lfy,new)
+	{
+		return createCallType(targs,args,ret,false);
+	}
+	public static CallType createCallType(Type[] targs, Type[] args, Type ret, boolean is_closure)
+		alias operator(210,lfy,new)
+	{
+		if (targs == null || targs.length == 0) return new CallType(args,ret,is_closure);
 		args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		ret  = (ret  == null) ? Type.tpAny : ret;
 		TVarSet vs = new TVarSet();
 		for (int i=0; i < targs.length; i++)
 			vs.append(tpUnattachedArgs[i], targs[i]);
-		return new MethodType(vs,args,ret);
+		return new CallType(vs,args,ret,is_closure);
 	}
-
 
 	@getter public Type[]	get$args()	{ return args; }
 	@getter public Type		get$ret()	{ return ret; }
@@ -1095,22 +1028,28 @@ public final class MethodType extends Type implements CallableType {
 	public TVarSet bindings()			{ return bindings; }
 
 	public JType getJType() {
-//		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null) {
-			JType[] jargs = JType.emptyArray;
-			if (args.length > 0) {
-				jargs = new JType[args.length];
-				for (int i=0; i < jargs.length; i++)
-					jargs[i] = args[i].getJType();
+			if (this.isReference()) {
+				jtype = Type.tpClosure.getJType();
+			} else {
+				JType[] jargs = JType.emptyArray;
+				if (args.length > 0) {
+					jargs = new JType[args.length];
+					for (int i=0; i < jargs.length; i++) {
+						jargs[i] = args[i].getJType();
+						assert (!(jargs[i] instanceof JMethodType));
+					}
+				}
+				JType jret = ret.getJType();
+				assert (!(jret instanceof JMethodType));
+				jtype = new JMethodType(jargs, jret);
 			}
-			JType jret = ret.getJType();
-			jtype = new JMethodType(jargs, jret);
 		}
 		return jtype;
 	}
 
 	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
-	protected access:no,rw,no,rw boolean eq(MethodType:Type type) {
+	protected access:no,rw,no,rw boolean eq(CallType:Type type) {
 		if (this.ret ≉ type.ret) return false;
 		public Type[] args1 = this.args;
 		public Type[] args2 = type.args;
@@ -1121,6 +1060,19 @@ public final class MethodType extends Type implements CallableType {
 				return false;
 		}
 		return true;
+	}
+
+	public boolean isInstanceOf(Type t) {
+		if (this ≡ t) return true;
+		if (t instanceof CallType) {
+			CallType ct = (CallType)t;
+			if( this.args.length != ct.args.length ) return false;
+			for(int i=0; i < this.args.length; i++)
+				if( !ct.args[i].isInstanceOf(this.args[i]) ) return false;
+			if( !this.ret.isInstanceOf(ct.ret) ) return false;
+			return true;
+		}
+		return false;
 	}
 
 	public String toString() {
@@ -1138,19 +1090,22 @@ public final class MethodType extends Type implements CallableType {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append("/* ERROR: "+this+" */");
+		if (this.isReference())
+			return Type.tpClosureClazz.toJava(dmp);
+		else
+			return dmp.append("/* ERROR: "+this+" */");
 	}
 
-	public MethodType getMMType() {
+	public CallType getMMType() {
 		Type[] types = new Type[args.length];
 		for(int i=0; i < types.length; i++) {
 			if( !args[i].isReference() ) types[i] = args[i];
 			else types[i] = Type.tpObject;
 		}
-		return new MethodType(types,ret);
+		return new CallType(types,ret,isReference());
 	}
 
-	public boolean greater(MethodType tp) {
+	public boolean greater(CallType tp) {
 		if( args.length != tp.args.length ) return false;
 		if( !ret.isInstanceOf(tp.ret) ) return false;
 		boolean gt = false;
@@ -1172,7 +1127,7 @@ public final class MethodType extends Type implements CallableType {
 		return gt;
 	}
 
-	public boolean isMultimethodSuper(MethodType tp) {
+	public boolean isMultimethodSuper(CallType tp) {
 		if( args.length != tp.args.length ) return false;
 		if( !tp.ret.isInstanceOf(ret) ) return false;
 		for(int i=0; i < args.length; i++) {
@@ -1191,12 +1146,14 @@ public final class MethodType extends Type implements CallableType {
 	public Type[] getAllSuperTypes() { return Type.emptyArray; }
 
 	public Type getErasedType() {
+		if (this.isReference())
+			return Type.tpClosure;
 		if( args.length == 0 )
-			return new MethodType(Type.emptyArray,((MethodType)this).ret.getErasedType());
+			return new CallType(Type.emptyArray,((CallType)this).ret.getErasedType(),isReference());
 		Type[] targs = new Type[args.length];
 		for(int i=0; i < args.length; i++)
 			targs[i] = args[i].getErasedType();
-		return new MethodType(targs,((MethodType)this).ret.getErasedType());
+		return new CallType(targs,((CallType)this).ret.getErasedType(),isReference());
 	}
 
 }

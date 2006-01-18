@@ -7,6 +7,9 @@ import kiev.vlang.*;
 import kiev.vlang.types.TypeRef.TypeRefImpl;
 import kiev.vlang.types.TypeRef.TypeRefView;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * @author Maxim Kizub
  *
@@ -21,7 +24,7 @@ public class TypeClosureRef extends TypeRef {
 	public static final class TypeClosureRefImpl extends TypeRefImpl {
 		@att public NArr<TypeRef>		types;
 		public TypeClosureRefImpl() {}
-		public TypeClosureRefImpl(ClosureType tp) { super(0, tp); }
+		public TypeClosureRefImpl(CallType tp) { super(0, tp); }
 	}
 	@nodeview
 	public static final view TypeClosureRefView of TypeClosureRefImpl extends TypeRefView {
@@ -41,8 +44,9 @@ public class TypeClosureRef extends TypeRef {
 		super(new TypeClosureRefImpl());
 	}
 	
-	public TypeClosureRef(ClosureType tp) {
+	public TypeClosureRef(CallType tp) {
 		super(new TypeClosureRefImpl(tp));
+		assert (tp.isReference());
 	}
 	
 	public boolean isBound() {
@@ -60,7 +64,7 @@ public class TypeClosureRef extends TypeRef {
 			tps[i] = types[i].getType();
 		}
         Type ret = types[types.length-1].getType();
-        this.lnk = new ClosureType(tps,ret);
+        this.lnk = new CallType(tps,ret,true);
 		return this.lnk;
 	}
 

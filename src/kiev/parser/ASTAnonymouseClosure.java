@@ -27,7 +27,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		@att public BlockStat					body;
 		@att public NewClosure					new_closure;
 		@att public Struct						clazz;
-		@ref public ClosureType					ctype;
+		@ref public CallType					ctype;
 		public ASTAnonymouseClosureImpl() {}
 		public ASTAnonymouseClosureImpl(int pos) { super(pos); }
 	}
@@ -38,7 +38,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		public				BlockStat					body;
 		public				NewClosure					new_closure;
 		public				Struct						clazz;
-		public				ClosureType					ctype;
+		public				CallType					ctype;
 	}
 	
 	@att public abstract virtual access:ro	NArr<FormPar>				params;
@@ -46,20 +46,20 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 	@att public abstract virtual			BlockStat					body;
 	@att public abstract virtual			NewClosure					new_closure;
 	@att public abstract virtual			Struct						clazz;
-	@ref public abstract virtual			ClosureType					ctype;
+	@ref public abstract virtual			CallType					ctype;
 	
 	@getter public NArr<FormPar>	get$params()			{ return this.getASTAnonymouseClosureView().params; }
 	@getter public TypeRef			get$rettype()			{ return this.getASTAnonymouseClosureView().rettype; }
 	@getter public BlockStat		get$body()				{ return this.getASTAnonymouseClosureView().body; }
 	@getter public NewClosure		get$new_closure()		{ return this.getASTAnonymouseClosureView().new_closure; }
 	@getter public Struct			get$clazz()				{ return this.getASTAnonymouseClosureView().clazz; }
-	@getter public ClosureType		get$ctype()				{ return this.getASTAnonymouseClosureView().ctype; }
+	@getter public CallType			get$ctype()				{ return this.getASTAnonymouseClosureView().ctype; }
 	
 	@setter public void		set$rettype(TypeRef val)		{ this.getASTAnonymouseClosureView().rettype = val; }
 	@setter public void		set$body(BlockStat val)			{ this.getASTAnonymouseClosureView().body = val; }
 	@setter public void		set$new_closure(NewClosure val)	{ this.getASTAnonymouseClosureView().new_closure = val; }
 	@setter public void		set$clazz(Struct val)			{ this.getASTAnonymouseClosureView().clazz = val; }
-	@setter public void		set$ctype(ClosureType val)		{ this.getASTAnonymouseClosureView().ctype = val; }
+	@setter public void		set$ctype(CallType val)			{ this.getASTAnonymouseClosureView().ctype = val; }
 
 	public NodeView						getNodeView()					{ return new ASTAnonymouseClosureView((ASTAnonymouseClosureImpl)this.$v_impl); }
 	public ENodeView					getENodeView()					{ return new ASTAnonymouseClosureView((ASTAnonymouseClosureImpl)this.$v_impl); }
@@ -116,7 +116,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		for(int i=0; i < types.length; i++)
 			types[i] = params[i].type;
 		Type ret = rettype.getType();
-		this.ctype = new ClosureType(types,ret);
+		this.ctype = new CallType(types,ret,true);
 
 		return false; // don't pre-resolve me
 	}

@@ -653,12 +653,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return false;
 	}
 
-	final public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	final public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
 	{
 		resolveStructMethodR(node, info, name, mt, this.concr_type)
 	}
 
-	public rule resolveStructMethodR(DNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
+	public rule resolveStructMethodR(DNode@ node, ResInfo info, KString name, CallType mt, Type tp)
 		ASTNode@ member;
 		Type@ sup;
 	{
@@ -695,7 +695,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		Type[] args = new Type[va_args.length];
 		for (int i=0; i < va_args.length; i++)
 			args[i] = (Type)va_args[i];
-		MethodType mt = new MethodType(args,ret);
+		CallType mt = new CallType(args,ret);
 		DNode@ m;
 		if (!this.concr_type.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
 			!this.concr_type.resolveCallStaticR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
@@ -1352,7 +1352,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 //				trace(Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
 				continue;
 			}
-			MethodType mit = (MethodType)Type.getRealType(base,mi.etype);
+			CallType mit = (CallType)Type.getRealType(base,mi.etype);
 			if( m.etype.equals(mit) ) {
 				trace(Kiev.debugMultiMethod,"Method "+m+" overrides "+mi+" of type "+mit+" in class "+this);
 				mm = mi;
@@ -1612,9 +1612,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					mmm.params.add(new FormPar(fp.pos,fp.name.name,fp.stype.getType(),fp.kind,fp.flags));
 				this.members.add(mmm);
 			}
-			MethodType type1 = mmm.type;
-			MethodType dtype1 = mmm.dtype;
-			MethodType etype1 = mmm.etype;
+			CallType type1 = mmm.type;
+			CallType dtype1 = mmm.dtype;
+			CallType etype1 = mmm.etype;
 			this.members.detach(mmm);
 			Method mm = null;
 			trace(Kiev.debugMultiMethod,"Generating dispatch method for "+m+" with dispatch type "+etype1);
@@ -1622,9 +1622,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			ListBuffer<Method> mlistb = new ListBuffer<Method>();
 			foreach (DNode nj; members; nj instanceof Method && nj.isStatic() == m.isStatic()) {
 				Method mj = (Method)nj;
-				MethodType type2 = mj.type;
-				MethodType dtype2 = mj.dtype;
-				MethodType etype2 = mj.etype;
+				CallType type2 = mj.type;
+				CallType dtype2 = mj.dtype;
+				CallType etype2 = mj.etype;
 				if( mj.name.name != m.name.name || etype2.args.length != etype1.args.length )
 					continue;
 				if (etype1.isMultimethodSuper(etype2)) {
@@ -1964,11 +1964,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	
 	static final class VTableEntry {
 		KString      name;
-		MethodType   etype;
+		CallType     etype;
 		access:no,ro,ro,rw
 		List<Method> methods = List.Nil;
 		VTableEntry  overloader;
-		VTableEntry(KString name, MethodType etype) {
+		VTableEntry(KString name, CallType etype) {
 			this.name = name;
 			this.etype = etype;
 		}
@@ -1993,7 +1993,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Method m = (Method)n;
 			if (m.isStatic() && !m.isVirtualStatic())
 				continue;
-			MethodType etype = m.etype;
+			CallType etype = m.etype;
 			KString name = m.name.name;
 			boolean is_new = true;
 			foreach (VTableEntry vte; vtable) {
@@ -2009,21 +2009,21 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		
 		// process overload
 		foreach (VTableEntry vte; vtable) {
-			MethodType et = new MethodType(vte.etype.args,null);
+			CallType et = new CallType(vte.etype.args,null);
 			foreach (DNode n; members; n instanceof Method && !(n instanceof Constructor)) {
 				Method m = (Method)n;
 				if (m.isStatic() && !m.isVirtualStatic())
 					continue;
 				if (m.name.name != vte.name || vte.methods.contains(m))
 					continue;
-				MethodType mt = new MethodType(m.etype.args,null);
+				CallType mt = new CallType(m.etype.args,null);
 				if (mt ≈ et)
 					vte.add(m);
 			}
 			if (!this.isInterface()) {
 				foreach (VTableEntry vte2; vtable; vte2 != vte && vte2.name == vte.name) {
 					foreach (Method m; vte2.methods; !vte.methods.contains(m)) {
-						MethodType mt = new MethodType(m.dtype.args,null).applay(this.concr_type);
+						CallType mt = new CallType(m.dtype.args,null).applay(this.concr_type);
 						if (mt ≈ et)
 							vte.add(m);
 					}
@@ -2034,8 +2034,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		// mark overloaded entries in vtable
 		foreach (VTableEntry vte1; vtable; vte1.overloader == null) {
 			foreach (VTableEntry vte2; vtable; vte1 != vte2 && vte1.name == vte2.name && vte2.overloader == null) {
-				MethodType t1 = new MethodType(vte1.etype.args,null);
-				MethodType t2 = new MethodType(vte2.etype.args,null);
+				CallType t1 = new CallType(vte1.etype.args,null);
+				CallType t2 = new CallType(vte2.etype.args,null);
 				if (t1 ≉ t2)
 					continue;
 				Type r1 = vte1.etype.ret;
@@ -2158,7 +2158,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Method fnd = null;
 			Type[] args = m.type.args;
 			args = (Type[])Arrays.insert(args,m.ctx_clazz.concr_type,0);
-			MethodType mt = new MethodType(args, m.type.ret);
+			CallType mt = new CallType(args, m.type.ret);
 			foreach (Method dm; i.members; dm instanceof Method && dm.name.name == m.name.name && dm.type ≈ mt) {
 				fnd = dm;
 				break;

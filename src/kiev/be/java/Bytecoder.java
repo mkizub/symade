@@ -165,11 +165,11 @@ public class Bytecoder implements JConstants {
 				}
 			}
 		}
-		MethodType mtype = (MethodType)Signature.getType(m_type);
-		MethodType jtype = mtype;
+		CallType mtype = (CallType)Signature.getType(m_type);
+		CallType jtype = mtype;
 		if( m == null ) {
 //			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
-//				mtype = new MethodType(mtype.args,Type.tpRule);
+//				mtype = new CallType(mtype.args,Type.tpRule);
 //				m = new RuleMethod(m_name,m_flags);
 //			}
 //			else

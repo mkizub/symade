@@ -3,7 +3,7 @@ package kiev.be.java;
 import kiev.*;
 
 import kiev.vlang.types.Type;
-import kiev.vlang.types.MethodType;
+import kiev.vlang.types.CallType;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
