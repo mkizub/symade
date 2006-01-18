@@ -114,7 +114,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
 					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO).getVar()).getJENodeView();
 				else
-					temp_expr = jctx_clazz.accessTypeInfoField(this,tp);
+					temp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
 				temp_expr.generate(code,null);
 				temp_expr = null;
 			}
@@ -145,7 +145,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			TypeDef[] targs = func.getMethod().targs.toArray();
 			for (int i=0; i < targs.length; i++) {
 				Type tp = mt.resolve(targs[i].getAType());
-				temp_expr = jctx_clazz.accessTypeInfoField(this,tp);
+				temp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
 				temp_expr.generate(code,null);
 			}
 			temp_expr = null;

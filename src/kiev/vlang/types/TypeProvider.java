@@ -93,7 +93,7 @@ public final class TVarSet {
 			}
 		}
 		if (tmp[n] == null)
-			tmp[n] = new TVar(this, n, var);
+			tmp[n] = new TVarFree(this, n, var);
 		// fix aliases
 		for (int i=0; i < n; i++) {
 			TVar v = tmp[i];
@@ -434,7 +434,7 @@ public final class TVarSet {
 }
 
 
-public class TVar {
+public abstract class TVar {
 	public static final TVar[] emptyArray = new TVar[0];
 
 	public final TVarSet		set;	// the set this TVar belongs to
@@ -447,13 +447,27 @@ public class TVar {
 		this.var = var;
 	}
 
+	public abstract boolean isBound();
+	public abstract boolean isAlias();
+	public abstract Type    value()	;
+	public abstract Type    result();
+	public abstract Type    bound()	;
+	public abstract TVar copy(TVarSet set);
+	public abstract void resolve(int i);
+}
+
+public final class TVarFree extends TVar {
+	TVarFree(TVarSet set, int idx, ArgType var) {
+		super(set,idx,var);
+	}
+
 	public boolean isBound() { return false; }
 	public boolean isAlias() { return false; }
 	public Type    value()	  { return null; }
 	public Type    result()	  { return var; }
 	public Type    bound()	  { return null; }
 	public TVar copy(TVarSet set) {
-		return new TVar(set, idx, var);
+		return new TVarFree(set, idx, var);
 	}
 	void resolve(int i) {
 		assert(i == idx && set.tvars[idx] == this);
@@ -463,7 +477,7 @@ public class TVar {
 	}
 }
 
-public class TVarBound extends TVar {
+public final class TVarBound extends TVar {
 
 	access:no,no,ro,rw Type				bnd;
 
@@ -488,7 +502,7 @@ public class TVarBound extends TVar {
 	}
 }
 
-public class TVarAlias extends TVar {
+public final class TVarAlias extends TVar {
 
 	access:no,no,ro,rw TVar				bnd;
 

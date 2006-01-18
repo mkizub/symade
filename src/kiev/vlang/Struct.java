@@ -805,7 +805,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public Type getType() { return this.concr_type; }
 
-	public ENode accessTypeInfoField(ASTNode from, Type t) {
+	public ENode accessTypeInfoField(ASTNode from, Type t, boolean from_gen) {
+		while (t instanceof WrapperType)
+			t = ((WrapperType)t).getUnwrappedType();
 		Method ctx_method = from.ctx_method;
 		if (t.isUnerasable()) {
 			if (ctx_method != null && ctx_method.isTypeUnerasable() && t instanceof ArgType) {
@@ -877,6 +879,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			// oops, cannot make it a static field
 			return ti_expr;
 		}
+		if (from_gen)
+			throw new RuntimeException("Ungenerated typeinfo for type "+t+" ("+t.getClass()+")");
 		int i = 0;
 		foreach(DNode n; members; n instanceof Field && n.isStatic()) {
 			Field f = (Field)n;
@@ -1003,7 +1007,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				else if (t.isUnerasable())
 					expr = new TypeInfoExpr(pos,new TypeRef(t));
 				else
-					expr = accessTypeInfoField(call_super, t);
+					expr = accessTypeInfoField(call_super, t, false);
 				call_super.args.append(expr);
 			}
 
@@ -1764,7 +1768,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					if (t.getStruct().typeinfo_clazz == null)
 						t.getStruct().autoGenerateTypeinfoClazz();
 					ENode tibe = new CallExpr(pos,
-						accessTypeInfoField(mmt.m,t),
+						accessTypeInfoField(mmt.m,t,false),
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("$instanceof"),Type.tpBoolean,Type.tpObject),
 						new ENode[]{ new LVarExpr(pos,mm.params[j]) }
 						);

@@ -81,8 +81,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		return null;
 	}
 
-	public JENodeView accessTypeInfoField(JNodeView from, Type t) {
-		return getStruct().accessTypeInfoField(from.getNode(), t).getJENodeView();
+	public JENodeView accessTypeInfoField(JNodeView from, Type t, boolean from_gen) {
+		return getStruct().accessTypeInfoField(from.getNode(), t, from_gen).getJENodeView();
 	}
 	
 	public boolean instanceOf(JStructView cl) {

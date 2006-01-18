@@ -170,7 +170,7 @@ public final class NewExpr extends ENode {
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
 		if( type.clazz.isTypeUnerasable() )
-			ctx_clazz.accessTypeInfoField(this,type); // Create static field for this type typeinfo
+			ctx_clazz.accessTypeInfoField(this,type,false); // Create static field for this type typeinfo
 		// Don't try to find constructor of argument type
 		if( !type.isArgument() ) {
 			Type[] ta = new Type[args.length];
@@ -321,7 +321,7 @@ public final class NewArrayExpr extends ENode {
 				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
-			ENode ti = ctx_clazz.accessTypeInfoField(this,type);
+			ENode ti = ctx_clazz.accessTypeInfoField(this,type,false);
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,

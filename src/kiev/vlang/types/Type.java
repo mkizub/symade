@@ -701,9 +701,11 @@ public final class ConcreteType extends CompaundType {
 
 }
 
-public class ArrayType extends Type {
+public final class ArrayType extends Type {
 
-	public final Type			arg;
+	private final TVarSet	bindings;
+	
+	@getter public Type get$arg() { return bindings.tvars[0].result(); }
 	
 	public static ArrayType newArrayType(Type type)
 		alias operator(240,lfy,new)
@@ -713,12 +715,12 @@ public class ArrayType extends Type {
 	
 	private ArrayType(Type arg) {
 		super(ArrayTypeProvider.instance);
-		this.arg = arg;
+		this.bindings = new TVarSet(tpArrayArg, arg);
 		this.flags |= flReference | flArray;
 		if( arg.isAbstract() ) this.flags |= flAbstract;
 	}
 
-	public TVarSet bindings()			{ return new TVarSet(tpArrayArg, arg); }
+	public TVarSet bindings()			{ return bindings; }
 	
 	public JType getJType() {
 		if (jtype == null) {
@@ -784,27 +786,28 @@ public class ArrayType extends Type {
 
 }
 
-public class WrapperType extends Type {
+public final class WrapperType extends Type {
 	
 	public static final Type tpWrappedPrologVar = newWrapperType(tpPrologVar);
 	public static final Type tpWrappedRefProxy  = newWrapperType(tpRefProxy);
 	
-	final CompaundType unwrapped_type;
-
+	private final TVarSet	bindings;
+	
 	public static Type newWrapperType(Type type) {
 		return new WrapperType((CompaundType)type);
 	}
 	
 	public WrapperType(CompaundType unwrapped_type) {
 		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()));
-		this.unwrapped_type = unwrapped_type;
+		this.bindings = new TVarSet(tpWrapperArg, unwrapped_type);
 		this.flags	 = flReference | flWrapper;
 		if (unwrapped_type.isAbstract()) this.flags |= flAbstract;
+		if (unwrapped_type.isUnerasable()) this.flags |= flUnerasable;
 	}
 
 	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
 	
-	public TVarSet bindings()			{ return getUnwrappedType().bindings(); }
+	public TVarSet bindings()			{ return bindings; }
 
 	public JType getJType() {
 		if (jtype == null)
@@ -830,9 +833,9 @@ public class WrapperType extends Type {
 
 	public final boolean isWrapper()					{ return true; }
 	public final ENode makeWrappedAccess(ASTNode from)	{ return new IFldExpr(from.pos,(ENode)~from, wrapped_field); } 
-	public final Type getWrappedType()					{ return Type.getRealType(this, wrapped_field.type); }
+	public final Type getWrappedType()					{ return Type.getRealType(getUnwrappedType(), wrapped_field.type); }
 	
-	public CompaundType getUnwrappedType()				{ return unwrapped_type; }
+	public CompaundType getUnwrappedType()				{ return (CompaundType)this.bindings.tvars[0].result(); }
 	
 	public Struct getStruct()			{ return getUnwrappedType().getStruct(); }
 	public Meta getMeta(KString name)	{ return getUnwrappedType().getMeta(name); }
@@ -843,6 +846,7 @@ public class WrapperType extends Type {
 		info.isForwardsAllowed(),$cut,
 		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in wrapper type "+this),
 		checkResolved(),
+		info.enterDewrap() : info.leaveDewrap(),
 		{
 			info.enterForward(wrapped_field, 0) : info.leaveForward(wrapped_field, 0),
 			getWrappedType().resolveNameAccessR(node, info, name),
@@ -851,14 +855,16 @@ public class WrapperType extends Type {
 			getUnwrappedType().resolveNameAccessR(node, info, name)
 		}
 	;
+		info.enterDewrap() : info.leaveDewrap(),
 		getUnwrappedType().resolveNameAccessR(node, info, name)
 	}
 
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt)
 	{
 		info.isForwardsAllowed(),$cut,
-		checkResolved(),
 		trace(Kiev.debugResolve, "Resolving method "+name+" in wrapper type "+this),
+		checkResolved(),
+		info.enterDewrap() : info.leaveDewrap(),
 		{
 			info.enterForward(wrapped_field, 0) : info.leaveForward(wrapped_field, 0),
 			getWrappedType().resolveCallAccessR(node, info, name, mt),
@@ -867,6 +873,7 @@ public class WrapperType extends Type {
 			getUnwrappedType().resolveCallAccessR(node, info, name, mt)
 		}
 	;
+		info.enterDewrap() : info.leaveDewrap(),
 		getUnwrappedType().resolveCallAccessR(node, info, name, mt)
 	}
 	
@@ -898,9 +905,9 @@ public class WrapperType extends Type {
 
 }
 
-public class OuterType extends Type {
+public final class OuterType extends Type {
 
-	public final Type			outer;
+	private final TVarSet	bindings;
 	
 	public static OuterType newOuterType(Struct of_clazz, Type type)
 		alias operator(240,lfy,new)
@@ -910,12 +917,14 @@ public class OuterType extends Type {
 	
 	private OuterType(OuterTypeProvider meta_type, Type outer) {
 		super(meta_type);
-		this.outer = outer;
+		this.bindings = new TVarSet(meta_type.tdef.getAType(), outer).bind(TVarSet.emptySet);
 		this.flags |= flReference;
 		if( outer.isAbstract() ) this.flags |= flAbstract;
 	}
 
-	public TVarSet bindings()		{ return outer.bindings(); }
+	public Type get$outer()			{ return bindings.tvars[0].result(); }
+	
+	public TVarSet bindings()		{ return bindings; }
 	
 	public JType getJType() {
 		if (jtype == null)
@@ -970,7 +979,7 @@ public interface CallableType {
 	@virtual public virtual access:ro Type		ret;
 }
 
-public class ClosureType extends Type implements CallableType {
+public final class ClosureType extends Type implements CallableType {
 	public virtual Type[]	args;
 	public virtual Type		ret;
 	
@@ -1050,7 +1059,7 @@ public class ClosureType extends Type implements CallableType {
 
 }
 	
-public class MethodType extends Type implements CallableType {
+public final class MethodType extends Type implements CallableType {
 	private TVarSet			bindings;
 	public virtual Type[]	args;
 	public virtual Type		ret;

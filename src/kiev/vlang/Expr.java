@@ -306,7 +306,7 @@ public class TypeInfoExpr extends ENode {
 		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.concr_type));
 		cl_expr.resolve(Type.tpClass);
 		foreach (ArgType at; clazz.getTypeInfoArgs())
-			cl_args.add(ctx_clazz.accessTypeInfoField(this, type.resolve(at)));
+			cl_args.add(ctx_clazz.accessTypeInfoField(this, type.resolve(at),false));
 		foreach (ENode tie; cl_args)
 			tie.resolve(null);
 //		CallExpr ce = new CallExpr(from.pos,null,
@@ -314,7 +314,7 @@ public class TypeInfoExpr extends ENode {
 //			new ENode[]{new TypeClassExpr(new TypeRef(t.getErasedType()))});
 //		TVar[] templ = ftype.imeta_type.templ_type.bindings().tvars;
 //		foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias())
-//			ce.args.append(accessTypeInfoField(from,tv.var));
+//			ce.args.append(accessTypeInfoField(from,tv.var,false));
 //		return ce;
 //
 //		Type tp = type.getType();

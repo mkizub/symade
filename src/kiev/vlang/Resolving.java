@@ -69,6 +69,18 @@ public class ResInfo {
 		trace(Kiev.debugResolve,"Leaving mode, now "+this);
 	}
 	
+	public void enterDewrap() {
+		forwards_stack[forwards_p++] = new UnwrapExpr();
+		flags_stack[flags_p++] = flags;
+		flags |= noStatic | noImports;
+		trace(Kiev.debugResolve,"Entering dewrap, now "+this);
+	}
+	public void leaveDewrap() {
+		forwards_stack[--forwards_p] = null;
+		flags = flags_stack[--flags_p];
+		trace(Kiev.debugResolve,"Leaving dewarp, now "+this);
+	}
+
 	public void enterForward(ASTNode node) {
 		enterForward(node, 1);
 	}
@@ -203,16 +215,27 @@ public class ResInfo {
 			e = buildVarAccess(at, (Var)forwards_stack[n]);
 			n++;
 		}
-		if (e != null && node instanceof Field) {
+		if (e != null && (node instanceof Field || node instanceof UnwrapExpr)) {
 			for (; n < forwards_p; n++) {
-				if !(forwards_stack[n] instanceof Field)
-					throw new CompilerException(at, "Don't know how to build access to field "+node+" through "+e+" via "+this+" because of "+forwards_stack[n]);
-				Field f = (Field)forwards_stack[n];
-				if (f.isStatic())
-					throw new CompilerException(at, "Non-static access to static field "+f+" via "+this);
-				e = new IFldExpr(at.pos, e, f);
+				ASTNode fwn = forwards_stack[n];
+				if (fwn instanceof UnwrapExpr) {
+					fwn.expr = e;
+					e = fwn;
+				}
+				else if (fwn instanceof Field) {
+					if (fwn.isStatic())
+						throw new CompilerException(at, "Non-static access to static field "+fwn+" via "+this);
+					e = new IFldExpr(at.pos, e, (Field)fwn);
+				}
+				else
+					throw new CompilerException(at, "Don't know how to build access to field "+node+" through "+e+" via "+this+" because of "+fwn);
 			}
-			e = new IFldExpr(at.pos, e, (Field)node);
+			if (node instanceof Field) {
+				e = new IFldExpr(at.pos, e, (Field)node);
+			} else {
+				((UnwrapExpr)node).expr = e;
+				e = (UnwrapExpr)node;
+			}
 			return e;
 		}
 		throw new CompilerException(at, "Don't know how to build access to "+node+" from "+from+" via "+this);

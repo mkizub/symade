@@ -585,7 +585,7 @@ public class InstanceofExpr extends BoolExpr {
 			CompaundType bt = (CompaundType)tp;
 			if (tp.clazz.isTypeUnerasable()) {
 				replaceWithNodeResolve(reqType, new CallExpr(pos,
-						ctx_clazz.accessTypeInfoField(this,type.getType()),
+						ctx_clazz.accessTypeInfoField(this,type.getType(), false),
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("$instanceof"),Type.tpBoolean,Type.tpObject),
 						new ENode[]{(ENode)~expr}
 						)

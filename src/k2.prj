@@ -118,6 +118,7 @@ kiev.be.java.JTypeDeclView kiev/be/java/JTypeDeclView kiev\be\java\JNode.java
 kiev.be.java.JTypeInfoExprView kiev/be/java/JTypeInfoExprView kiev\be\java\JExpr.java
 kiev.be.java.JTypeRefView kiev/be/java/JTypeRefView kiev\be\java\JNode.java
 kiev.be.java.JUnaryExprView kiev/be/java/JUnaryExprView kiev\be\java\JExpr.java
+kiev.be.java.JUnwrapExprView kiev/be/java/JUnwrapExprView kiev\be\java\JLvalueExpr.java
 kiev.be.java.JVarDeclView kiev/be/java/JVarDeclView kiev\be\java\JNode.java
 kiev.be.java.JVarView kiev/be/java/JVarView kiev\be\java\JVar.java
 kiev.be.java.JWBCConditionView kiev/be/java/JWBCConditionView kiev\be\java\JMethod.java
@@ -478,6 +479,7 @@ kiev.vlang.TypeInfoExpr kiev/vlang/TypeInfoExpr kiev\vlang\Expr.java
 kiev.vlang.TypeOpDef kiev/vlang/TypeOpDef kiev\vlang\Import.java
 kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
+kiev.vlang.UnwrapExpr kiev/vlang/UnwrapExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.VarDecl kiev/vlang/VarDecl kiev\vlang\AST.java
 kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
@@ -510,6 +512,7 @@ kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.ja
 kiev.vlang.types.TVar kiev/vlang/types/TVar kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVarAlias kiev/vlang/types/TVarAlias kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVarBound kiev/vlang/types/TVarBound kiev\vlang\types\TypeProvider.java
+kiev.vlang.types.TVarFree kiev/vlang/types/TVarFree kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVarSet kiev/vlang/types/TVarSet kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TemplateType kiev/vlang/types/TemplateType kiev\vlang\types\Type.java
 kiev.vlang.types.Type kiev/vlang/types/Type kiev\vlang\types\Type.java

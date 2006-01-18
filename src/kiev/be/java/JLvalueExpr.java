@@ -20,6 +20,7 @@ import kiev.vlang.ThisExpr.ThisExprImpl;
 import kiev.vlang.LVarExpr.LVarExprImpl;
 import kiev.vlang.SFldExpr.SFldExprImpl;
 import kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprImpl;
+import kiev.vlang.UnwrapExpr.UnwrapExprImpl;
 
 @nodeview
 public abstract view JLvalueExprView of LvalueExprImpl extends JENodeView {
@@ -551,9 +552,67 @@ public final view JOuterThisAccessExprView of OuterThisAccessExprImpl extends JA
 	}
 
 	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating SimpleAccessExpr - store & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store & dup: "+this);
 		code.addInstr(op_dup_x);
 		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJFieldView(),code.clazz.concr_type);
+	}
+
+}
+
+@nodeview
+public final view JUnwrapExprView of UnwrapExprImpl extends JLvalueExprView {
+	public access:ro	JENodeView		expr;
+
+	public void generateLoad(Code code) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - load only: "+this);
+		code.setLinePos(this);
+		JENodeView expr = this.expr;
+		if (expr instanceof JLvalueExprView)
+			expr.generateLoad(code);
+		else
+			expr.generate(code, null);
+	}
+
+	public void generateLoadDup(Code code) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - load & dup: "+this);
+		code.setLinePos(this);
+		JENodeView expr = this.expr;
+		if (expr instanceof JLvalueExprView) {
+			expr.generateLoadDup(code);
+		} else {
+			expr.generate(code, null);
+			code.addInstr(op_dup);
+		}
+	}
+
+	public void generateAccess(Code code) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - access only: "+this);
+		code.setLinePos(this);
+		JENodeView expr = this.expr;
+		if (expr instanceof JLvalueExprView)
+			expr.generateAccess(code);
+		else
+			expr.generate(code, null);
+	}
+
+	public void generateStore(Code code) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - store only: "+this);
+		code.setLinePos(this);
+		JENodeView expr = this.expr;
+		if (expr instanceof JLvalueExprView)
+			expr.generateStore(code);
+		else
+			throw new CompilerException(this,"Cannot generate store for non-lvalue "+expr);
+	}
+
+	public void generateStoreDupValue(Code code) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - store & dup: "+this);
+		code.setLinePos(this);
+		JENodeView expr = this.expr;
+		if (expr instanceof JLvalueExprView)
+			expr.generateStoreDupValue(code);
+		else
+			throw new CompilerException(this,"Cannot generate store+dup value for non-lvalue "+expr);
 	}
 
 }

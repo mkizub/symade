@@ -17,6 +17,7 @@ import kiev.be.java.JThisExprView;
 import kiev.be.java.JLVarExprView;
 import kiev.be.java.JSFldExprView;
 import kiev.be.java.JOuterThisAccessExprView;
+import kiev.be.java.JUnwrapExprView;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -122,27 +123,11 @@ public class AccessExpr extends LvalueExpr {
 		}
 		else {
 			ENode e = obj;
-			//tps = new Type[]{e.getType()};
 			tps = e.getAccessTypes();
 			res = new ASTNode[tps.length];
 			for (int si=0; si < tps.length; si++) {
 				Type tp = tps[si];
-				if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
-					if (tp.isWrapper()) {
-						tps[si] = ((WrapperType)tp).getUnwrappedType();
-						res[si] = obj;
-					}
-					// compatibility with previois version
-					else if (tp.isInstanceOf(Type.tpPrologVar)) {
-						tps[si] = tp;
-						res[si] = (ENode)~obj;
-					}
-				}
-				else if (ident.name.byteAt(0) == '$') {
-					while (tp.isWrapper())
-						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
-				}
-				else if( ident.name.equals(nameLength) ) {
+				if( ident.name.equals(nameLength) ) {
 					if( tp.isArray() ) {
 						tps[si] = Type.tpInt;
 						res[si] = new ArrayLengthExpr(pos,(ENode)e.copy(), (NameRef)ident.copy());
@@ -1058,6 +1043,75 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
+}
+
+@node
+public final class UnwrapExpr extends LvalueExpr {
+	
+	@dflow(out="expr") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	}
+
+	@node
+	public static final class UnwrapExprImpl extends LvalueExprImpl {		
+		@att public ENode		expr;
+		public UnwrapExprImpl() {}
+		public UnwrapExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static final view UnwrapExprView of UnwrapExprImpl extends LvalueExprView {
+		public ENode		expr;
+	}
+	
+	@att public abstract virtual		ENode			expr;
+	
+	public NodeView						getNodeView()					{ return new UnwrapExprView((UnwrapExprImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new UnwrapExprView((UnwrapExprImpl)this.$v_impl); }
+	public LvalueExprView				getLvalueExprView()				{ return new UnwrapExprView((UnwrapExprImpl)this.$v_impl); }
+	public UnwrapExprView				getUnwrapExprView()				{ return new UnwrapExprView((UnwrapExprImpl)this.$v_impl); }
+	public JNodeView					getJNodeView()					{ return new JUnwrapExprView((UnwrapExprImpl)this.$v_impl); }
+	public JENodeView					getJENodeView()					{ return new JUnwrapExprView((UnwrapExprImpl)this.$v_impl); }
+	public JLvalueExprView				getJLvalueExprView()			{ return new JUnwrapExprView((UnwrapExprImpl)this.$v_impl); }
+	public JUnwrapExprView				getJUnwrapExprView()			{ return new JUnwrapExprView((UnwrapExprImpl)this.$v_impl); }
+
+	@getter public ENode		get$expr()				{ return this.getUnwrapExprView().expr; }
+	@setter public void 		set$expr(ENode val)		{ this.getUnwrapExprView().expr = val; }
+
+
+	public UnwrapExpr() {
+		super(new UnwrapExprImpl());
+	}
+
+	public UnwrapExpr(ENode expr) {
+		super(new UnwrapExprImpl(expr.pos));
+		this.expr = expr;
+	}
+
+	public String toString() { return "(($unwrap)"+expr+")"; }
+
+	public Type getType() {
+		Type tp = expr.getType();
+		if (tp.isWrapper())
+			return ((WrapperType)tp).getUnwrappedType();
+		return tp;
+	}
+
+	public void resolve(Type reqType) throws RuntimeException {
+		trace(Kiev.debugResolve,"Resolving "+this);
+		expr.resolve(reqType);
+		Type tp = expr.getType();
+		if (!tp.isWrapper()) {
+			replaceWithNode((ENode)~expr);
+			return;
+		}
+		setResolved(true);
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		return dmp.append("(($unwrap)").append(expr).append(")");
+	}
 }
 
 
