@@ -13,31 +13,38 @@ import syntax kiev.Syntax;
 public final class TVarSet {
 	public static final TVarSet emptySet = new TVarSet();
 
-	private final boolean ASSERT_MORE = true;	
+	private final boolean ASSERT_MORE = true;
 
 	public access:ro,ro,ro,rw	TVar[]		tvars;
-	public access:ro,ro,ro,rw	ArgType[]	applayable;
+	public access:ro,ro,ro,rw	TArg[]		appls;
 
 	public TVarSet() {
 		tvars = TVar.emptyArray;
-		applayable = null;
+		appls = TArg.emptyArray;
 	}
 	
 	public TVarSet(ArgType var, Type bnd) {
 		tvars = new TVar[]{ new TVarBound(this, 0, var, bnd) };
+		appls = TArg.emptyArray;
 		if (ASSERT_MORE) checkIntegrity(false);
 	}
 	
 	public TVarSet copy() {
 		TVarSet tvs = new TVarSet();
-		tvs.applayable = this.applayable;
 		int n = this.tvars.length;
-		if (n == 0) return tvs;
-		tvs.tvars = new TVar[n];
-		for (int i=0; i < n; i++)
-			tvs.tvars[i] = this.tvars[i].copy(tvs);
-		for (int i=0; i < n; i++)
-			tvs.tvars[i].resolve(i);
+		if (n > 0) {
+			tvs.tvars = new TVar[n];
+			for (int i=0; i < n; i++)
+				tvs.tvars[i] = this.tvars[i].copy(tvs);
+			for (int i=0; i < n; i++)
+				tvs.tvars[i].resolve(i);
+		}
+		n = this.appls.length;
+		if (n > 0) {
+			tvs.appls = new TArg[n];
+			for (int i=0; i < n; i++)
+				tvs.appls[i] = this.appls[i].copy(tvs);
+		}
 		return tvs;
 	}
 	
@@ -156,7 +163,7 @@ public final class TVarSet {
 	}
 	
 	private void buildApplayables() {
-		applayable = ArgType.emptyArray;
+		appls = TArg.emptyArray;
 		foreach (TVar tv; tvars; tv instanceof TVarBound)
 			addApplayables(tv.bnd);
 	}
@@ -165,22 +172,22 @@ public final class TVarSet {
 		if (t instanceof ArgType) {
 			addApplayable((ArgType)t);
 		} else {
-			ArgType[] tappls = t.bindings().applayable;
+			TArg[] tappls = t.bindings().appls;
 			for (int i=0; i < tappls.length; i++)
-				addApplayable(tappls[i]);
+				addApplayable(tappls[i].var);
 		}
 	}
 	private void addApplayable(ArgType at) {
-		int sz = applayable.length;
+		int sz = this.appls.length;
 		for (int i=0; i < sz; i++) {
-			if (applayable[i] ≡ at)
+			if (this.appls[i].var ≡ at)
 				return;
 		}
-		ArgType[] tmp = new ArgType[sz+1];
+		TArg[] tmp = new TArg[sz+1];
 		for (int i=0; i < sz; i++)
-			tmp[i] = applayable[i];
-		tmp[sz] = at;
-		applayable = tmp;
+			tmp[i] = this.appls[i];
+		tmp[sz] = new TArg(this,sz,at);
+		this.appls = tmp;
 	}
 
 	// Bind free (unbound) variables of current type to values
@@ -341,7 +348,7 @@ public final class TVarSet {
 	}
 	
 	private boolean hasApplayables(TVarSet vs) {
-		final int my_size = applayable.length;
+		final int my_size = this.appls.length;
 		if (my_size == 0)
 			return false;
 		final int tp_size = vs.tvars.length;
@@ -349,7 +356,7 @@ public final class TVarSet {
 			return false;
 		for (int i=0; i < my_size; i++) {
 			for (int j=0; j < tp_size; j++) {
-				if (applayable[i] ≡ vs.tvars[j].var)
+				if (this.appls[i].var ≡ vs.tvars[j].var)
 					return true;
 			}
 		}
@@ -367,7 +374,7 @@ public final class TVarSet {
 		return arg;
 	}
 	
-	private void checkIntegrity(boolean include_applayable) {
+	private void checkIntegrity(boolean check_appls) {
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;
 		for (int i=0; i < n; i++) {
@@ -387,32 +394,43 @@ public final class TVarSet {
 			else if (v.isBound()) {
 				TVarBound bv = (TVarBound)v;
 				assert(bv.bnd ≢ null);
-				if (include_applayable) {
+				if (check_appls) {
 					if (bv.bnd instanceof ArgType) {
-						assert(Arrays.contains(applayable, bv.bnd));
+						int j=0;
+						for (; j < this.appls.length; j++) {
+							if (this.appls[j].var ≡ bv.bnd)
+								break;
+						}
+						assert (j < this.appls.length);
 					} else {
-						foreach (ArgType at; bv.bnd.bindings().applayable)
-							assert(Arrays.contains(applayable, at));
+						foreach (TArg at; bv.bnd.bindings().appls) {
+							int j=0;
+							for (; j < this.appls.length; j++) {
+								if (this.appls[j].var ≡ at.var)
+									break;
+							}
+							assert (j < this.appls.length);
+						}
 					}
 				}
 			}
 		}
-		if (include_applayable) {
-			final int m = applayable.length;
+		if (check_appls) {
+			final int m = this.appls.length;
 			for (int i=0; i < m; i++) {
-				ArgType at = applayable[i];
+				TArg at = this.appls[i];
 				int j = 0;
 			next_tvar:
 				for (; j < n; j++) {
 					if (tvars[j] instanceof TVarBound) {
 						Type bnd = tvars[j].bound();
 						if (bnd instanceof ArgType) {
-							if (bnd ≡ at)
+							if (bnd ≡ at.var)
 								break next_tvar;
 						} else {
-							ArgType[] tappls = bnd.bindings().applayable;
+							TArg[] tappls = bnd.bindings().appls;
 							for (int k=0; k < tappls.length; k++) {
-								if (at ≡ tappls[k])
+								if (at.var ≡ tappls[k].var)
 									break next_tvar;
 							}
 						}
@@ -538,6 +556,24 @@ public final class TVarAlias extends TVar {
 	}
 	public String toString() {
 		return idx+": alias "+var.definer+"."+var.name+" > "+bnd;
+	}
+}
+
+public final class TArg {
+	public static final TArg[] emptyArray = new TArg[0];
+
+	public final TVarSet		set;	// the set this TVar belongs to
+	public final int			idx;	// position in the set (set.appls[idx] == this)
+	public final ArgType		var;	// variable
+
+	TArg(TVarSet set, int idx, ArgType var) {
+		this.set = set;
+		this.idx = idx;
+		this.var = var;
+	}
+
+	public TArg copy(TVarSet set) {
+		return new TArg(set, idx, var);
 	}
 }
 

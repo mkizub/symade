@@ -507,6 +507,7 @@ kiev.vlang.types.CoreTypeProvider kiev/vlang/types/CoreTypeProvider kiev\vlang\t
 kiev.vlang.types.OuterType kiev/vlang/types/OuterType kiev\vlang\types\Type.java
 kiev.vlang.types.OuterTypeProvider kiev/vlang/types/OuterTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
+kiev.vlang.types.TArg kiev/vlang/types/TArg kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVar kiev/vlang/types/TVar kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVarAlias kiev/vlang/types/TVarAlias kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVarBound kiev/vlang/types/TVarBound kiev\vlang\types\TypeProvider.java
