@@ -18,11 +18,81 @@ import syntax kiev.Syntax;
  *
  */
 
-public abstract class Type implements StdTypes, AccessFlags {
+public abstract class AType implements StdTypes {
+	
+	public final					TypeProvider		meta_type;
+	protected access:no,ro,ro,rw	TVarSet				bindings;
+	public							int					flags;
+	private							int					version;
+	
+	protected AType(TypeProvider meta_type, int flags, TVarSet bindings) {
+		this.meta_type = meta_type;
+		this.flags = flags;
+		this.bindings = bindings;
+		checkAbstract();
+	}
+	
+	public final TVarSet bindings() {
+		if (this.version != this.meta_type.version) {
+			this.bindings = meta_type.getTemplBindings().bind(this.bindings);
+			this.version = this.meta_type.version;
+			checkAbstract();
+		}
+		return this.bindings;
+	}
+	
+	private void checkAbstract() {
+		flags &= ~flAbstract;
+		foreach(TVar v; this.bindings().tvars; !v.isAlias()) {
+			Type r = v.result();
+			if (r.isAbstract() || r == v.var)
+				flags |= flAbstract;
+			if (v.var.isUnerasable())
+				flags |= flUnerasable;
+		}
+	}
+
+	public static boolean identity(AType t1, AType t2) alias operator (60, xfx, ≡ ) {
+		return t1 == t2;
+	}
+
+	public static boolean not_identity(AType t1, AType t2) alias operator (60, xfx, ≢ ) {
+		return t1 != t2;
+	}
+
+	public static boolean type_not_equals(AType t1, AType t2) alias operator (60, xfx, ≉ ) {
+		if (t1 == null || t2 == null) return true;
+		return !(t1 ≈ t2);
+	}
+	
+	public static boolean type_equals(AType t1, AType t2) alias operator (60, xfx, ≈ ) {
+		if (t1 == null || t2 == null) return false;
+		if (t1 == t2) return true;
+		if (t1.meta_type != t2.meta_type) return false;
+		TVar[] b1 = t1.bindings().tvars;
+		TVar[] b2 = t2.bindings().tvars;
+		if (b1.length != b2.length) return false;
+		final int n = b1.length;
+		for (int i=0; i < n; i++) {
+			TVar tv1 = b1[i];
+			TVar tv2 = b2[i];
+			if (tv1.var != tv2.var) return false;
+			if (tv1.result() ≉ tv2.result())
+				return false;
+		}
+		return true;
+	}
+
+	public final boolean equals(Object to) alias operator (60, xfx, ≈ ) {
+		if (to instanceof AType) return AType.type_equals(this,(AType)to);
+		return false;
+	}
+
+}
+
+public abstract class Type extends AType {
 	public static Type[]	emptyArray = new Type[0];
 
-	public final	TypeProvider		meta_type;
-	public			int					flags;
 	public			JType				jtype;
 	
 	public abstract JType getJType();
@@ -32,7 +102,6 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public abstract TypeProvider[] getAllSuperTypes();
 	public abstract Type getErasedType();
 	public abstract Dumper toJava(Dumper dmp);
-	public abstract TVarSet bindings();
 	
 	// accessor.field
 	public final Type applay(Type accessor) {
@@ -62,43 +131,16 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public Struct getStruct() { return null; }
 	public Meta getMeta(KString name) { return null; }
 
-	protected Type(TypeProvider meta_type)
+	protected Type(TypeProvider meta_type, int flags, TVarSet bindings)
 		require { meta_type != null; }
 	{
-		this.meta_type = meta_type;
-		this.flags = flReference;
+		super(meta_type, flags, bindings);
 	}
 
 	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
 	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { false }
 	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, CallType mt) { false }
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt) { false }
-
-	public static boolean identity(Type t1, Type t2) alias operator (60, xfx, ≡ ) {
-		return t1 == t2;
-	}
-
-	public static boolean not_identity(Type t1, Type t2) alias operator (60, xfx, ≢ ) {
-		return t1 != t2;
-	}
-
-	public final boolean equals(Object to) alias operator (60, xfx, ≈ ) {
-		if (to instanceof Type) return Type.type_equals(this,(Type)to);
-		return false;
-	}
-
-	public static boolean type_equals(Type t1, Type t2) alias operator (60, xfx, ≈ ) {
-		if (t1 ≡ null || t2 ≡ null) return false;
-		if (t1 ≡ t2) return true;
-		return t1.eq(t2);
-	}
-
-	public static boolean type_not_equals(Type t1, Type t2) alias operator (60, xfx, ≉ ) {
-		if (t1 ≡ null || t2 ≡ null) return true;
-		return !(t1 ≈ t2);
-	}
-	
-	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
 
 	public boolean isInstanceOf(Type t) alias operator (60, xfx, ≥ ) {
 		return this.equals(t);
@@ -260,12 +302,10 @@ public abstract class Type implements StdTypes, AccessFlags {
 public final class CoreType extends Type {
 	public final KString name;
 	CoreType(KString name, int flags) {
-		super(new CoreTypeProvider());
+		super(new CoreTypeProvider(), flags | flResolved, TVarSet.emptySet);
 		((CoreTypeProvider)meta_type).core_type = this;
-		this.flags = flags | flResolved;
 		this.name = name;
 	}
-	protected access:no,rw,no,rw boolean eq(Type t) { return this == t; }
 	public Meta getMeta(KString name)	{ return null; }
 	public Type getErasedType()			{ return this; }
 	public Type getSuperType()			{ return null; }
@@ -276,8 +316,6 @@ public final class CoreType extends Type {
 
 	public JType getJType()				{ return this.jtype; }
 	
-	public TVarSet bindings()			{ return TVarSet.emptySet; }
-
 	public boolean isAutoCastableTo(Type t)
 	{
 		if( t ≡ Type.tpVoid ) return true;
@@ -375,10 +413,9 @@ public final class ArgType extends Type {
 	public final TypeDef			definer;
 
 	public ArgType(KString name, TypeDef definer) {
-		super(ArgTypeProvider.instance);
+		super(ArgTypeProvider.instance, flReference, TVarSet.emptySet);
 		this.name = name;
 		this.definer = definer;
-		this.flags = flReference;
 		if (definer.isTypeAbstract())   this.flags |= flAbstract;
 		if (definer.isTypeUnerasable()) this.flags |= flUnerasable;
 		if (definer.isTypeVirtual())    this.flags |= flVirtual;
@@ -387,16 +424,11 @@ public final class ArgType extends Type {
 		if (definer.isTypeForward())    this.flags |= flForward;
 	}
 	
-	public TVarSet bindings()			{ return TVarSet.emptySet; }
-
 	public JType getJType() {
 		if (jtype == null)
 			jtype = getSuperType().getJType();
 		return jtype;
 	}
-
-	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
-	protected access:no,rw,no,rw boolean eq(ArgType:Type type) { return this ≡ type; }
 
 	public boolean isArgument()						{ return true; }
 	public boolean isAnnotation()					{ return false; }
@@ -435,35 +467,10 @@ public final class ArgType extends Type {
 }
 
 public final class CompaundType extends Type {
-	private							int			version;
-	protected access:no,ro,ro,rw	TVarSet		bindings;
-
 	public final Struct get$clazz() { return ((CompaundTypeProvider)meta_type).clazz; }
 
 	public CompaundType(CompaundTypeProvider meta_type, TVarSet bindings) {
-		super(meta_type);
-		this.bindings = bindings;
-		checkAbstract();
-	}
-	
-	private void checkAbstract() {
-		flags &= ~flAbstract;
-		foreach(TVar v; this.bindings().tvars; !v.isAlias()) {
-			Type r = v.result();
-			if (r.isAbstract() || r == v.var)
-				flags |= flAbstract;
-			if (v.var.isUnerasable())
-				flags |= flUnerasable;
-		}
-	}
-	
-	public final TVarSet bindings() {
-		if (this.version != this.meta_type.version) {
-			this.bindings = ((CompaundTypeProvider)meta_type).getTemplBindings().bind(this.bindings);
-			this.version = this.meta_type.version;
-			checkAbstract();
-		}
-		return this.bindings;
+		super(meta_type, flReference, bindings);
 	}
 	
 	public final JType getJType() {
@@ -472,13 +479,6 @@ public final class CompaundType extends Type {
 		return jtype;
 	}
 
-	protected final access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
-	protected final access:no,rw,no,rw boolean eq(CompaundType:Type type) {
-		if (this.clazz != type.clazz) return false;
-		return this.bindings().eq(type.bindings());
-	}
-	
-	
 	public Type getSuperType()					{ return clazz.super_type; }
 	public Struct getStruct()					{ return clazz; }
 	public Meta getMeta(KString name)			{ return clazz.meta.get(name); }
@@ -663,8 +663,6 @@ public final class CompaundType extends Type {
 
 public final class ArrayType extends Type {
 
-	private final TVarSet	bindings;
-	
 	@getter public Type get$arg() { return bindings.tvars[0].result(); }
 	
 	public static ArrayType newArrayType(Type type)
@@ -674,13 +672,9 @@ public final class ArrayType extends Type {
 	}
 	
 	private ArrayType(Type arg) {
-		super(ArrayTypeProvider.instance);
-		this.bindings = new TVarSet(tpArrayArg, arg);
-		this.flags |= flReference | flArray;
-		if( arg.isAbstract() ) this.flags |= flAbstract;
+		super(ArrayTypeProvider.instance, flReference | flArray, new TVarSet(tpArrayArg, arg));
 	}
 
-	public TVarSet bindings()			{ return bindings; }
 	public Type make(TVarSet bindings) { return meta_type.make(bindings); }
 	
 	public JType getJType() {
@@ -688,11 +682,6 @@ public final class ArrayType extends Type {
 			jtype = new JArrayType(this.arg.getJType());
 		}
 		return jtype;
-	}
-
-	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
-	protected access:no,rw,no,rw boolean eq(ArrayType:Type type) {
-		return this.arg ≈ type.arg;
 	}
 
 	public boolean isArgument()						{ return false; }
@@ -752,34 +741,22 @@ public final class WrapperType extends Type {
 	public static final Type tpWrappedPrologVar = newWrapperType(tpPrologVar);
 	public static final Type tpWrappedRefProxy  = newWrapperType(tpRefProxy);
 	
-	private final TVarSet	bindings;
-	
 	public static Type newWrapperType(Type type) {
 		return new WrapperType((CompaundType)type);
 	}
 	
 	public WrapperType(CompaundType unwrapped_type) {
-		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()));
-		this.bindings = new TVarSet(tpWrapperArg, unwrapped_type);
-		this.flags	 = flReference | flWrapper;
-		if (unwrapped_type.isAbstract()) this.flags |= flAbstract;
-		if (unwrapped_type.isUnerasable()) this.flags |= flUnerasable;
+		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()), flReference | flWrapper, new TVarSet(tpWrapperArg, unwrapped_type));
 	}
 
 	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
 	
-	public TVarSet bindings()			{ return bindings; }
 	public Type make(TVarSet bindings) { return meta_type.make(bindings); }
 
 	public JType getJType() {
 		if (jtype == null)
 			jtype = getUnwrappedType().getJType();
 		return jtype;
-	}
-
-	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
-	protected access:no,rw,no,rw boolean eq(WrapperType:Type type) {
-		return this.getUnwrappedType() ≈ type.getUnwrappedType();
 	}
 
 	public boolean isAnnotation()					{ return false; }
@@ -869,8 +846,6 @@ public final class WrapperType extends Type {
 
 public final class OuterType extends Type {
 
-	private final TVarSet	bindings;
-	
 	public static OuterType newOuterType(Struct of_clazz, Type type)
 		alias operator(240,lfy,new)
 	{
@@ -878,25 +853,15 @@ public final class OuterType extends Type {
 	}
 	
 	private OuterType(OuterTypeProvider meta_type, Type outer) {
-		super(meta_type);
-		this.bindings = new TVarSet(meta_type.tdef.getAType(), outer).bind(TVarSet.emptySet);
-		this.flags |= flReference;
-		if( outer.isAbstract() ) this.flags |= flAbstract;
+		super(meta_type, flReference, new TVarSet(meta_type.tdef.getAType(), outer));
 	}
 
 	public Type get$outer()			{ return bindings.tvars[0].result(); }
-	
-	public TVarSet bindings()		{ return bindings; }
 	
 	public JType getJType() {
 		if (jtype == null)
 			jtype = outer.getJType();
 		return jtype;
-	}
-
-	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
-	protected access:no,rw,no,rw boolean eq(OuterType:Type type) {
-		return this.outer ≈ type.outer;
 	}
 
 	public boolean isArgument()						{ return outer.isArgument(); }
@@ -937,25 +902,13 @@ public final class OuterType extends Type {
 }
 
 public final class CallType extends Type {
-	private final TVarSet	bindings;
 	public  final int		arity;
 
-	public TVarSet bindings() {
-		return bindings;
-	}
-
 	CallType(TVarSet bindings, int arity, boolean is_closure) {
-		super(CallTypeProvider.instance);
-		this.bindings = bindings;
+		super(CallTypeProvider.instance, flCallable, bindings);
 		this.arity = arity;
 		if (is_closure)
-			flags = flCallable | flReference;
-		else
-			flags = flCallable;
-		foreach(TVar tv; bindings.tvars; tv.result().isAbstract() ) {
-			flags |= flAbstract;
-			break;
-		}
+			flags |= flReference;
 	}
 	
 	public static CallType createCallType(Type[] args, Type ret)
@@ -1050,18 +1003,6 @@ public final class CallType extends Type {
 			}
 		}
 		return jtype;
-	}
-
-	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
-	protected access:no,rw,no,rw boolean eq(CallType:Type type) {
-		if (this.ret() ≉ type.ret()) return false;
-		if (this.arity != type.arity) return false;
-		int n = this.arity;
-		for (int i=0; i < n; i++) {
-			if (this.arg(i) ≉ type.arg(i))
-				return false;
-		}
-		return true;
 	}
 
 	public boolean isInstanceOf(Type t) {

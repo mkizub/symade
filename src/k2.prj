@@ -493,6 +493,7 @@ kiev.vlang.nodeimpl kiev/vlang/nodeimpl kiev\vlang\Tree.java
 kiev.vlang.nodeset kiev/vlang/nodeset kiev\vlang\Tree.java
 kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
+kiev.vlang.types.AType kiev/vlang/types/AType kiev\vlang\types\Type.java
 kiev.vlang.types.ArgType kiev/vlang/types/ArgType kiev\vlang\types\Type.java
 kiev.vlang.types.ArgTypeProvider kiev/vlang/types/ArgTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.ArrayType kiev/vlang/types/ArrayType kiev\vlang\types\Type.java
