@@ -233,7 +233,7 @@ public class Meta extends ENode {
 			}
 			if (m == null)
 				throw new CompilerException(v, "Unresolved method "+v.type.name+" in class "+s);
-			Type tp = m.type.ret;
+			Type tp = m.type.ret();
 			v.type.ret = tp;
 			Type t = tp;
 			if (t.isArray()) {
@@ -265,8 +265,8 @@ public class Meta extends ENode {
 			// value not specified - does the method has a default meta-value?
 			if (m.annotation_default != null) {
 				MetaValueType mvt = new MetaValueType(m.name.name);
-				mvt.ret = m.type.ret;
-				if (!m.type.ret.isArray()) {
+				mvt.ret = m.type.ret();
+				if (!m.type.ret().isArray()) {
 					MetaValueScalar mvs = (MetaValueScalar)m.annotation_default;
 					ENode v = (ENode)mvs.value.copy();
 					values.append(new MetaValueScalar(mvt, v));

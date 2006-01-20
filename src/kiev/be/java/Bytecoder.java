@@ -176,18 +176,18 @@ public class Bytecoder implements JConstants {
 			if (m_name == nameInit || m_name == nameClassInit)
 				m = new Constructor(m_flags);
 			else
-				m = new Method(m_name,mtype.ret,m_flags);
+				m = new Method(m_name,mtype.ret(),m_flags);
 			cl.members.append(m);
-			for (int i=0; i < mtype.args.length; i++) {
-				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.args.length-1) {
+			for (int i=0; i < mtype.arity; i++) {
+				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
 					FormPar fp = new FormPar(new NameRef(KString.from("va_arg")),
-						new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),FormPar.PARAM_VARARGS,ACC_FINAL);
+						new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_VARARGS,ACC_FINAL);
 						m.params.add(fp);
 						mtype = m.etype;
 						break;
 				} else {
 					FormPar fp = new FormPar(new NameRef(KString.from("arg"+i)),
-						new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),FormPar.PARAM_NORMAL,0);
+						new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_NORMAL,0);
 						m.params.add(fp);
 				}
 			}
@@ -211,15 +211,15 @@ public class Bytecoder implements JConstants {
 			}
 		}
 		if( op != null ) {
-			Type opret = m.type.ret;
+			Type opret = m.type.ret();
 			Type oparg1, oparg2;
 			Operator.iopt = null;
 			switch(op.mode) {
 			case Operator.LFY:
 				if( m.isStatic() )
 					throw new RuntimeException("Assign operator can't be static");
-				else if( !m.isStatic() && m.type.args.length == 1 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[0]; }
+				else if( !m.isStatic() && m.type.arity == 1 )
+					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.arg(0); }
 				else
 					throw new RuntimeException("Method "+m+" must be virtual and have 1 argument");
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
@@ -230,14 +230,14 @@ public class Bytecoder implements JConstants {
 			case Operator.YFX:
 			case Operator.XFY:
 			case Operator.YFY:
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 2 )
-					{ oparg1 = m.type.args[0]; oparg2 = m.type.args[1]; }
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.args.length == 3 )
-					{ oparg1 = m.type.args[1]; oparg2 = m.type.args[2]; }
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[0]; }
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 2 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[1]; }
+				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 2 )
+					{ oparg1 = m.type.arg(0); oparg2 = m.type.arg(1); }
+				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 3 )
+					{ oparg1 = m.type.arg(1); oparg2 = m.type.arg(2); }
+				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
+					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.arg(0); }
+				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
+					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.arg(1); }
 				else
 					throw new RuntimeException("Method "+m+" must have 2 arguments");
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
@@ -248,15 +248,15 @@ public class Bytecoder implements JConstants {
 			case Operator.FY:
 			case Operator.XF:
 			case Operator.YF:
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					oparg1 = m.type.args[0];
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.args.length == 2 )
-					oparg1 = m.type.args[1];
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 0 )
+				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
+					oparg1 = m.type.arg(0);
+				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
+					oparg1 = m.type.arg(1);
+				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 0 )
 					oparg1 = m.ctx_clazz.concr_type;
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					oparg1 = m.type.args[0];
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 1 )
+				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
+					oparg1 = m.type.arg(0);
+				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 1 )
 					oparg1 = m.ctx_clazz.concr_type;
 				else
 					throw new RuntimeException("Method "+m+" must have 1 argument");

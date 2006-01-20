@@ -54,9 +54,9 @@ public class TypeCallRef extends TypeRef {
 
 	public TypeCallRef(CallType mt) {
 		super(new TypeCallRefImpl());
-		this.ret = new TypeRef(mt.ret);
-		foreach (Type a; mt.args)
-			this.args += new TypeRef(a);
+		this.ret = new TypeRef(mt.ret());
+		for (int i=0; i < mt.arity; i++)
+			this.args += new TypeRef(mt.arg(i));
 		this.lnk = mt;
 	}
 

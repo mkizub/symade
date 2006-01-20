@@ -623,7 +623,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					m.setPublic();
 					m.setAbstract(true);
 					m.pass3();
-					if (m.type.ret ≡ Type.tpVoid || m.type.ret ≡ Type.tpRule)
+					if (m.type.ret() ≡ Type.tpVoid || m.type.ret() ≡ Type.tpRule)
 						Kiev.reportError(m, "Annotation methods must return a value");
 				}
 				else if( n instanceof Field )

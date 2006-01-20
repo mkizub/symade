@@ -33,6 +33,7 @@ public interface StdTypes {
 	public static final int flFinal				= 1 << 14;
 	public static final int flStatic			= 1 << 15;
 	public static final int flForward			= 1 << 16;
+	public static final int flHidden			= 1 << 17;
 
 	public static final ConcreteType tpEnv;
 	public static final CoreType tpAny;
@@ -87,6 +88,8 @@ public interface StdTypes {
 
 	public static final ArgType   tpArrayArg;
 	public static final ArgType   tpWrapperArg;
+	public static final ArgType   tpCallRetArg;
+	public static final ArgType[] tpCallParamArgs;
 	public static final ArgType[] tpUnattachedArgs;
 
 	static {
@@ -145,9 +148,11 @@ public interface StdTypes {
 		
 		TypeDef tdWrapperArg = new TypeDef(KString.from("_boxed_"), tpObject);
 		tpWrapperArg = new ArgType(KString.from("_boxed_"),tdWrapperArg);
+		tpWrapperArg.flags |= flHidden;
 		
 		TypeDef tdArrayArg = new TypeDef(KString.from("_elem_"), tpAny);
 		tpArrayArg = new ArgType(KString.from("_elem_"),tdArrayArg);
+		tpArrayArg.flags |= flHidden;
 		tpArray					= ArrayType.newArrayType(Type.tpAny);
 		tpArray.flags			|= flResolved | flReference | flArray;
 
@@ -236,10 +241,23 @@ public interface StdTypes {
 		tpRefProxyClazz.args.add(new TypeDef(KString.from("A")));
 		tpRefProxy	= tpRefProxyClazz.concr_type;
 
+
+		TypeDef tdCallRetArg = new TypeDef(KString.from("_ret_"), tpAny);
+		tpCallRetArg = new ArgType(tdCallRetArg.name.name,tdCallRetArg);
+		tpCallRetArg.flags |= flHidden;
+		
+		tpCallParamArgs = new ArgType[128];
+		for (int i=0; i < tpCallParamArgs.length; i++) {
+			TypeDef tdCallParamArg = new TypeDef(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
+			tpCallParamArgs[i] = new ArgType(tdCallParamArg.name.name,tdCallParamArg);
+			tpCallParamArgs[i].flags |= flHidden;
+		}
+		
 		tpUnattachedArgs = new ArgType[128] ;
 		for (int i=0; i < tpUnattachedArgs.length; i++) {
 			TypeDef tdUnattachedArg = new TypeDef(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
 			tpUnattachedArgs[i] = new ArgType(tdUnattachedArg.name.name,tdUnattachedArg);
+			tpUnattachedArgs[i].flags |= flHidden;
 		}
 	}
 }

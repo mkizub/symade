@@ -244,37 +244,43 @@ public class PassInfo {
 					continue next_method;
 				}
 				if (m1.isVarArgs()) {
-					if (m1.type.args.length < m2.type.args.length) {
+					if (m1.type.arity < m2.type.arity) {
 						trace(Kiev.debugResolve,"Method "+m1+" is less specific because of arity then "+m2);
 						continue next_method;
 					}
 				}
 				if (m2.isVarArgs()) {
-					if (m2.type.args.length < m1.type.args.length) {
+					if (m2.type.arity < m1.type.arity) {
 						trace(Kiev.debugResolve,"Method "+m1+" is more specific because of arity then "+m2);
 						goto is_more_specific;
 					}
 				}
-				for (int k=0; k < mt.args.length; k++) {
-					if (mt1.args[k] ≉ mt2.args[k]) {
-						b = mt.args[k].betterCast(mt1.args[k],mt2.args[k]);
-						if (b ≡ mt2.args[k]) {
+				Type t1;
+				Type t2;
+				for (int k=0; k < mt.arity; k++) {
+					t1 = mt1.arg(k);
+					t2 = mt2.arg(k);
+					if (t1 ≉ t2) {
+						b = mt.arg(k).betterCast(t1,t2);
+						if (b ≡ t2) {
 							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
 							continue next_method;
 						}
-						if (b ≡ null && mt1.args[k] ≥ mt2.args[k]) {
+						if (b ≡ null && t1 ≥ t2) {
 							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
 							continue next_method;
 						}
 					}
 				}
-				if (mt1.ret ≉ mt2.ret) {
-					b = mt.ret.betterCast(mt1.ret,mt2.ret);
-					if (b ≡ mt2.ret) {
+				t1 = mt1.ret();
+				t2 = mt2.ret();
+				if (t1 ≉ t2) {
+					b = mt.ret().betterCast(t1,t2);
+					if (b ≡ t2) {
 						trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because ret");
 						continue next_method;
 					}
-					if (b ≡ null && mt2.ret ≥ mt1.ret) {
+					if (b ≡ null && t2 ≥ t1) {
 						trace(Kiev.debugResolve,"Method "+m1+" has less specific return value, then "+m2);
 						continue next_method;
 					}

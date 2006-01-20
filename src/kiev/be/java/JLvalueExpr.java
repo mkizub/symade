@@ -163,8 +163,8 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			Method func = (Method)v;
 			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
 			if( Kiev.verify
-			 && func.type.ret.isReference()
-			 && ( !func.type.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
+			 && func.type.ret().isReference()
+			 && ( !func.type.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -237,8 +237,8 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			Method func = (Method)v;
 			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
 			if( Kiev.verify
-			 && func.type.ret.isReference()
-			 && ( !func.type.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
+			 && func.type.ret().isReference()
+			 && ( !func.type.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -361,7 +361,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 			JVarView[] params = m.params;
 			for(int i=0; i < params.length; i++) {
 				if( var == params[i] ) {
-					chtp = m.etype.args[i];
+					chtp = m.etype.arg(i);
 					break;
 				}
 			}

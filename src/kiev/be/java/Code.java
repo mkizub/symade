@@ -604,7 +604,7 @@ public final class Code implements JConstants {
 			else if( t == JType.tpLong )		add_opcode(opc_lreturn);
 			else if( t.isReference() )			add_opcode(opc_areturn);
 			else
-				throw new RuntimeException("Unknown return type "+this.method.type.ret+" of method");
+				throw new RuntimeException("Unknown return type "+this.method.type.ret()+" of method");
 		} catch(Exception e) {
 			throw new RuntimeException("Unresolved type at generation phase: "+e);
 		}

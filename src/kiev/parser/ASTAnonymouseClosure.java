@@ -127,7 +127,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 			return;
 		}
 		BlockStat body = (BlockStat)~this.body;
-		Type ret = ctype.ret;
+		Type ret = ctype.ret();
 		if( ret ≢ Type.tpRule ) {
 			KString call_name;
 			if( ret.isReference() ) {

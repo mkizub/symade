@@ -13,7 +13,6 @@ import kiev.be.java.JStructView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
-
 /**
  * @author Maxim Kizub
  *
@@ -130,8 +129,8 @@ public abstract class Type implements StdTypes, AccessFlags {
 				return true;
 			return false;
 		}
-		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).args.length == 0 ) {
-			if( ((CallType)this).ret.isAutoCastableTo(t) ) return true;
+		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).arity == 0 ) {
+			if( ((CallType)this).ret().isAutoCastableTo(t) ) return true;
 		}
 		return false;
 	}
@@ -189,8 +188,8 @@ public abstract class Type implements StdTypes, AccessFlags {
 		if( t.isArgument() && !this.isReference() ) {
 			return true;
 		}
-		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).args.length == 0 ) {
-			if( ((CallType)this).ret.isCastableTo(t) ) return true;
+		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).arity == 0 ) {
+			if( ((CallType)this).ret().isCastableTo(t) ) return true;
 		}
 		if( this.isWrapper())
 			return ((WrapperType)this).getUnwrappedType().isCastableTo(t);
@@ -218,6 +217,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public final boolean isFinal()			{ return (flags & flFinal)			!= 0 ; }
 	public final boolean isStatic()			{ return (flags & flStatic)			!= 0 ; }
 	public final boolean isForward()		{ return (flags & flForward)		!= 0 ; }
+	public final boolean isHidden()			{ return (flags & flHidden)			!= 0 ; }
 
 	public boolean isAnnotation()			{ return false; }
 	public boolean isEnum()					{ return false; }
@@ -975,24 +975,25 @@ public final class OuterType extends Type {
 }
 
 public final class CallType extends Type {
-	private TVarSet			bindings;
-	public virtual Type[]	args;
-	public virtual Type		ret;
+	private final TVarSet	bindings;
+	public  final int		arity;
 
-	public CallType(Type[] args, Type ret, boolean is_closure) {
-		this(TVarSet.emptySet, args, ret, is_closure);
+	public TVarSet bindings() {
+		return bindings;
 	}
-	public CallType(TVarSet bindings, Type[] args, Type ret, boolean is_closure) {
+
+	CallType(TVarSet bindings, int arity, boolean is_closure) {
 		super(CallTypeProvider.instance);
 		this.bindings = bindings;
-		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
-		this.ret  = (ret  == null) ? Type.tpAny : ret;
+		this.arity = arity;
 		if (is_closure)
 			flags = flCallable | flReference;
 		else
 			flags = flCallable;
-		foreach(Type a; args; a.isAbstract() ) { flags |= flAbstract; break; }
-		if( this.ret.isAbstract() ) flags |= flAbstract;
+		foreach(TVar tv; bindings.tvars; tv.result().isAbstract() ) {
+			flags |= flAbstract;
+			break;
+		}
 	}
 	
 	public static CallType createCallType(Type[] args, Type ret)
@@ -1013,19 +1014,60 @@ public final class CallType extends Type {
 	public static CallType createCallType(Type[] targs, Type[] args, Type ret, boolean is_closure)
 		alias operator(210,lfy,new)
 	{
-		if (targs == null || targs.length == 0) return new CallType(args,ret,is_closure);
-		args = (args != null && args.length > 0) ? args : Type.emptyArray;
-		ret  = (ret  == null) ? Type.tpAny : ret;
+		targs = (targs != null && targs.length > 0) ? targs : Type.emptyArray;
+		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
+		ret   = (ret  == null) ? Type.tpAny : ret;
 		TVarSet vs = new TVarSet();
 		for (int i=0; i < targs.length; i++)
 			vs.append(tpUnattachedArgs[i], targs[i]);
-		return new CallType(vs,args,ret,is_closure);
+		vs.append(tpCallRetArg, ret);
+		for (int i=0; i < args.length; i++)
+			vs.append(tpCallParamArgs[i], args[i]);
+		return new CallType(vs,args.length,is_closure);
+	}
+	public static CallType createCallType(TVarSet vs, Type[] args, Type ret, boolean is_closure)
+		alias operator(210,lfy,new)
+	{
+		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
+		ret   = (ret  == null) ? Type.tpAny : ret;
+		vs.append(tpCallRetArg, ret);
+		for (int i=0; i < args.length; i++)
+			vs.append(tpCallParamArgs[i], args[i]);
+		return new CallType(vs,args.length,is_closure);
 	}
 
-	@getter public Type[]	get$args()	{ return args; }
-	@getter public Type		get$ret()	{ return ret; }
-
-	public TVarSet bindings()			{ return bindings; }
+	public CallType toCallTypeRetAny() {
+		TVarSet vs = bindings().rebind(new TVarSet(tpCallRetArg, tpAny));
+		return new CallType(vs, this.arity, this.isReference());
+	}
+	
+	public Type ret() {
+		TVarSet bindings = this.bindings();
+		foreach (TVar tv; bindings.tvars; tv.var ≡ tpCallRetArg)
+			return tv.result().applay(bindings);
+		return tpAny;
+	}
+	
+	public Type arg(int idx) {
+		ArgType param = tpCallParamArgs[idx];
+		TVarSet bindings = this.bindings();
+		foreach (TVar tv; bindings.tvars; tv.var ≡ param)
+			return tv.result().applay(bindings);
+		throw new NoSuchElementException("Method param "+idx);
+	}
+	
+	public Type[] params() {
+		if (this.arity == 0)
+			return Type.emptyArray;
+		Type[] params = new Type[this.arity];
+		int i=0;
+		foreach (TVar tv; bindings.tvars; tv.var ≡ tpCallParamArgs[i]) {
+			params[i++] = tv.result();
+			if (i >= this.arity)
+				break;
+		}
+		return params;
+	}
 
 	public JType getJType() {
 		if (jtype == null) {
@@ -1033,14 +1075,14 @@ public final class CallType extends Type {
 				jtype = Type.tpClosure.getJType();
 			} else {
 				JType[] jargs = JType.emptyArray;
-				if (args.length > 0) {
-					jargs = new JType[args.length];
-					for (int i=0; i < jargs.length; i++) {
-						jargs[i] = args[i].getJType();
+				if (arity > 0) {
+					jargs = new JType[arity];
+					for (int i=0; i < arity; i++) {
+						jargs[i] = arg(i).getJType();
 						assert (!(jargs[i] instanceof JMethodType));
 					}
 				}
-				JType jret = ret.getJType();
+				JType jret = ret().getJType();
 				assert (!(jret instanceof JMethodType));
 				jtype = new JMethodType(jargs, jret);
 			}
@@ -1050,13 +1092,11 @@ public final class CallType extends Type {
 
 	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
 	protected access:no,rw,no,rw boolean eq(CallType:Type type) {
-		if (this.ret ≉ type.ret) return false;
-		public Type[] args1 = this.args;
-		public Type[] args2 = type.args;
-		if (args1.length != args2.length) return false;
-		int n = args1.length;
+		if (this.ret() ≉ type.ret()) return false;
+		if (this.arity != type.arity) return false;
+		int n = this.arity;
 		for (int i=0; i < n; i++) {
-			if (args1[i] ≉ args2[i])
+			if (this.arg(i) ≉ type.arg(i))
 				return false;
 		}
 		return true;
@@ -1066,10 +1106,10 @@ public final class CallType extends Type {
 		if (this ≡ t) return true;
 		if (t instanceof CallType) {
 			CallType ct = (CallType)t;
-			if( this.args.length != ct.args.length ) return false;
-			for(int i=0; i < this.args.length; i++)
-				if( !ct.args[i].isInstanceOf(this.args[i]) ) return false;
-			if( !this.ret.isInstanceOf(ct.ret) ) return false;
+			if( this.arity != ct.arity ) return false;
+			for(int i=0; i < this.arity; i++)
+				if( !ct.arg(i).isInstanceOf(this.arg(i)) ) return false;
+			if( !this.ret().isInstanceOf(ct.ret()) ) return false;
 			return true;
 		}
 		return false;
@@ -1078,14 +1118,14 @@ public final class CallType extends Type {
 	public String toString() {
 		StringBuffer str = new StringBuffer();
 		str.append('(');
-		if( args != null && args.length > 0 ) {
-			for(int i=0; i < args.length; i++) {
-				str.append(args[i]);
-				if( i < args.length-1)
+		if (arity > 0) {
+			for(int i=0; i < arity; i++) {
+				str.append(arg(i));
+				if( i < arity-1)
 					str.append(',');
 			}
 		}
-		str.append(")->").append(ret);
+		str.append(")->").append(ret());
 		return str.toString();
 	}
 
@@ -1097,41 +1137,41 @@ public final class CallType extends Type {
 	}
 
 	public CallType getMMType() {
-		Type[] types = new Type[args.length];
+		Type[] types = new Type[arity];
 		for(int i=0; i < types.length; i++) {
-			if( !args[i].isReference() ) types[i] = args[i];
+			if( !arg(i).isReference() ) types[i] = arg(i);
 			else types[i] = Type.tpObject;
 		}
-		return new CallType(types,ret,isReference());
+		return new CallType(types,ret(),isReference());
 	}
 
 	public boolean greater(CallType tp) {
-		if( args.length != tp.args.length ) return false;
-		if( !ret.isInstanceOf(tp.ret) ) return false;
+		if( this.arity != tp.arity ) return false;
+		if( !ret().isInstanceOf(tp.ret()) ) return false;
 		boolean gt = false;
-		for(int i=0; i < args.length; i++) {
-			Type t1 = args[i];
-			Type t2 = tp.args[i];
+		for(int i=0; i < arity; i++) {
+			Type t1 = this.arg(i);
+			Type t2 = tp.arg(i);
 			if (t1 ≉ t2) {
 				if( t1.isInstanceOf(t2) ) {
-					trace(Kiev.debugMultiMethod,"Type "+args[i]+" is greater then "+t2);
+					trace(Kiev.debugMultiMethod,"Type "+t1+" is greater then "+t2);
 					gt = true;
 				} else {
-					trace(Kiev.debugMultiMethod,"Types "+args[i]+" and "+tp.args[i]+" are uncomparable");
+					trace(Kiev.debugMultiMethod,"Types "+t1+" and "+t2+" are uncomparable");
 					return false;
 				}
 			} else {
-				trace(Kiev.debugMultiMethod,"Types "+args[i]+" and "+tp.args[i]+" are equals");
+				trace(Kiev.debugMultiMethod,"Types "+t1+" and "+t2+" are equals");
 			}
 		}
 		return gt;
 	}
 
 	public boolean isMultimethodSuper(CallType tp) {
-		if( args.length != tp.args.length ) return false;
-		if( !tp.ret.isInstanceOf(ret) ) return false;
-		for(int i=0; i < args.length; i++) {
-			if( !args[i].equals(tp.args[i]) )
+		if( this.arity != tp.arity ) return false;
+		if( !tp.ret().isInstanceOf(this.ret()) ) return false;
+		for(int i=0; i < arity; i++) {
+			if( !this.arg(i).equals(tp.arg(i)) )
 				return false;
 		}
 		return true;
@@ -1148,12 +1188,12 @@ public final class CallType extends Type {
 	public Type getErasedType() {
 		if (this.isReference())
 			return Type.tpClosure;
-		if( args.length == 0 )
-			return new CallType(Type.emptyArray,((CallType)this).ret.getErasedType(),isReference());
-		Type[] targs = new Type[args.length];
-		for(int i=0; i < args.length; i++)
-			targs[i] = args[i].getErasedType();
-		return new CallType(targs,((CallType)this).ret.getErasedType(),isReference());
+		if( this.arity == 0 )
+			return new CallType(Type.emptyArray,this.ret().getErasedType(),isReference());
+		Type[] targs = new Type[this.arity];
+		for(int i=0; i < this.arity; i++)
+			targs[i] = this.arg(i).getErasedType();
+		return new CallType(targs,this.ret().getErasedType(),isReference());
 	}
 
 }

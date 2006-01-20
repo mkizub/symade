@@ -494,7 +494,7 @@ public final class MetaVolatile extends MetaFlag {
 
 	private MetaVolatile() { super(MetaVolatileAttr); }
 	
-	public void    setZ(ASTNode node, boolean val)		{ ((Field)node).setFieldVolatile(val); }
-	public boolean getZ(ASTNode node)					{ return ((Field)node).isFieldVolatile(); }
+	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setVolatile(val); }
+	public boolean getZ(ASTNode node)					{ return ((DNode)node).isVolatile(); }
 }
 

@@ -674,11 +674,11 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameElements,new CallType(Type.emptyArray,Type.tpAny))
 		) {
-			itype = Type.getRealType(ctype,elems.type.ret);
+			itype = Type.getRealType(ctype,elems.type.ret());
 			mode = ELEMS;
 		} else if( ctype ≡ Type.tpRule &&
 			(
-			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret ≡ Type.tpRule )
+			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret() ≡ Type.tpRule )
 			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() ≡ Type.tpRule )
 			)
 		  ) {
@@ -825,7 +825,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 					nextelem,
 					ENode.emptyArray
 				);
-			if (!nextelem.type.ret.isInstanceOf(var.type))
+			if (!nextelem.type.ret().isInstanceOf(var.type))
 				var_init = new CastExpr(pos,var.type,(ENode)~var_init);
 			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
 				new LVarExpr(var.pos,var),

@@ -117,9 +117,9 @@ public class CallExpr extends ENode {
 	}
 	public Type getType() {
 		if (mt == null)
-			return Type.getRealType(obj.getType(),func.type.ret);
+			return Type.getRealType(obj.getType(),func.type.ret());
 		else
-			return mt.ret;
+			return mt.ret();
 	}
 
 	public void resolve(Type reqType) {
@@ -143,8 +143,8 @@ public class CallExpr extends ENode {
 		}
 		if (func.isVarArgs()) {
 			int i=0;
-			for(; i < func.type.args.length; i++)
-				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
+			for(; i < func.type.arity; i++)
+				args[i].resolve(Type.getRealType(obj.getType(),func.type.arg(i)));
 			if (args.length == i+1 && args[i].getType().isInstanceOf(func.getVarArgParam().type)) {
 				// array as va_arg
 				args[i].resolve(func.getVarArgParam().type);
@@ -155,7 +155,7 @@ public class CallExpr extends ENode {
 			}
 		} else {
 			for (int i=0; i < args.length; i++)
-				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
+				args[i].resolve(Type.getRealType(obj.getType(),func.type.arg(i)));
 		}
 		if (func.isTypeUnerasable()) {
 			TypeDef[] targs = func.targs.toArray();
@@ -259,7 +259,7 @@ public class ClosureCallExpr extends ENode {
 		foreach(ENode e; args) this.args.append(e);
 		Type tp = expr.getType();
 		if (tp instanceof CallType)
-			is_a_call = tp.args.length==args.length;
+			is_a_call = tp.arity==args.length;
 		else
 			is_a_call = true;
 	}
@@ -278,22 +278,22 @@ public class ClosureCallExpr extends ENode {
 	public Type getType() {
 		CallType t = (CallType)expr.getType();
 		if( is_a_call )
-			return t.ret;
-		Type[] types = new Type[t.args.length - args.length];
-		for(int i=0; i < types.length; i++) types[i] = t.args[i+args.length];
-		t = new CallType(types,t.ret,true);
+			return t.ret();
+		Type[] types = new Type[t.arity - args.length];
+		for(int i=0; i < types.length; i++) types[i] = t.arg(i+args.length);
+		t = new CallType(types,t.ret(),true);
 		return t;
 	}
 
 	public Method getCallIt(CallType tp) {
 		KString call_it_name;
 		Type ret;
-		if( tp.ret.isReference() ) {
+		if( tp.ret().isReference() ) {
 			call_it_name = KString.from("call_Object");
 			ret = Type.tpObject;
 		} else {
-			call_it_name = KString.from("call_"+tp.ret);
-			ret = tp.ret;
+			call_it_name = KString.from("call_"+tp.ret());
+			ret = tp.ret();
 		}
 		return Type.tpClosureClazz.resolveMethod(call_it_name, ret);
 	}
@@ -307,12 +307,12 @@ public class ClosureCallExpr extends ENode {
 		CallType tp = (CallType)extp;
 		if( reqType != null && reqType instanceof CallType )
 			is_a_call = false;
-		else if( (reqType == null || !(reqType instanceof CallType)) && tp.args.length==args.length )
+		else if( (reqType == null || !(reqType instanceof CallType)) && tp.arity==args.length )
 			is_a_call = true;
 		else
 			is_a_call = false;
 		for(int i=0; i < args.length; i++)
-			args[i].resolve(tp.args[i]);
+			args[i].resolve(tp.arg(i));
 		//clone_it = tp.clazz.resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 		Method call_it = getCallIt(tp);
 		//if( call_it.type.ret == Type.tpRule ) {
@@ -335,7 +335,7 @@ public class ClosureCallExpr extends ENode {
 		if( is_a_call ) {
 			Method call_it = getCallIt((CallType)expr.getType());
 			dmp.append('.').append(call_it.name).append('(');
-			if( call_it.type.ret ≡ Type.tpRule ) dmp.append("null");
+			if( call_it.type.ret() ≡ Type.tpRule ) dmp.append("null");
 			dmp.append(')');
 		}
 		return dmp;

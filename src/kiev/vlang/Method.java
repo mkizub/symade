@@ -141,8 +141,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
 				}
 			}
-			this.type = new CallType(vset, args.toArray(), type_ret.getType(), false);
-			this.dtype = new CallType(vset, dargs.toArray(), dtype_ret.getType(), false);
+			this.type = new CallType(vset.copy(), args.toArray(), type_ret.getType(), false);
+			this.dtype = new CallType(vset.copy(), dargs.toArray(), dtype_ret.getType(), false);
 			invalid_types = false;
 		}
 		
@@ -462,13 +462,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 
 	public static String toString(KString nm, CallType mt) {
-		Type[] args = mt.args;
 		StringBuffer sb = new StringBuffer(nm+"(");
-		for(int i=0; i < args.length; i++) {
-			sb.append(args[i].toString());
-			if( i < (args.length-1) ) sb.append(",");
+		for(int i=0; i < mt.arity; i++) {
+			sb.append(mt.arg(i).toString());
+			if( i < (mt.arity-1) ) sb.append(",");
 		}
-		sb.append(")->").append(mt.ret);
+		sb.append(")->").append(mt.ret());
 		return sb.toString();
 	}
 
@@ -491,8 +490,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
 			int i=0;
-			for(; i < type.args.length; i++) {
-				Type ptp = Type.getRealType(t,type.args[i]);
+			for(; i < type.arity; i++) {
+				Type ptp = Type.getRealType(t,type.arg(i));
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}
@@ -508,8 +507,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				}
 			}
 		} else {
-			for(int i=0; i < type.args.length; i++) {
-				Type ptp = Type.getRealType(t,type.args[i]);
+			for(int i=0; i < type.arity; i++) {
+				Type ptp = Type.getRealType(t,type.arg(i));
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}
@@ -518,8 +517,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	public boolean equalsByCast(KString name, CallType mt, Type tp, ResInfo info) {
 		if (!this.name.equals(name)) return false;
-		int type_len = this.type.args.length;
-		int args_len = mt.args.length;
+		int type_len = this.type.arity;
+		int args_len = mt.arity;
 		if( type_len != args_len ) {
 			if( !isVarArgs() ) {
 				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
@@ -535,37 +534,35 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		CallType rt = (CallType)Type.getRealType(tp,this.type);
 		rt = rt.bind(tp.bindings());
 		
-		if (mt.bindings().length > 0) {
-			TVar[] mtvars = mt.bindings().tvars;
-			if (targs.length != mtvars.length) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-					+" not match in number of type params: "+targs.length+" != "+mtvars.length);
-				return false;
-			}
+		if ((mt.bindings().length - mt.arity - 1) > 0) {
 			TVarSet set = new TVarSet();
-			for(int a = 0; a < mtvars.length; a++) {
-				Type bound = mtvars[a].result();
+			int a = 0;
+			foreach (TVar tv; mt.bindings().tvars) {
+				if (tv.var.isHidden())
+					continue;
+				Type bound = tv.result();
 				ArgType arg = targs[a].getAType();
 				if!(bound.isInstanceOf(arg)) {
 					trace(Kiev.debugResolve,"Type "+bound+" is not applayable to "+arg	+" for type arg "+a);
 					return false;
 				}
 				set.append(arg, bound);
+				a++;
 			}
 			rt = rt.rebind(set);
 		}
 		
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
-			if (!mt.args[i].isAutoCastableTo(rt.args[i])) {
+			if (!mt.arg(i).isAutoCastableTo(rt.arg(i))) {
 				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-					+" differ in param # "+i+": "+mt.args[i]+" not auto-castable to "+rt.args[i]);
+					+" differ in param # "+i+": "+mt.arg(i)+" not auto-castable to "+rt.arg(i));
 				return false;
 			}
 		}
 		boolean match = false;
-		if (mt.ret ≡ Type.tpAny)
+		if (mt.ret() ≡ Type.tpAny)
 			match = true;
-		else if (rt.ret.isAutoCastableTo(mt.ret))
+		else if (rt.ret().isAutoCastableTo(mt.ret()))
 			match = true;
 		else
 			match = false;
@@ -579,7 +576,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
 		if( !name.equals(nameInit) )
-			dmp.space().append(type.ret).forsed_space().append(name);
+			dmp.space().append(type.ret()).forsed_space().append(name);
 		else
 			dmp.space().append(((Struct)parent).name.short_name);
 		dmp.append('(');
@@ -773,12 +770,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				cond.body.resolve(Type.tpVoid);
 			}
 			if( body != null ) {
-				if (type.ret ≡ Type.tpVoid)
+				if (type.ret() ≡ Type.tpVoid)
 					body.setAutoReturnable(true);
 				body.resolve(Type.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
-				if( type.ret ≡ Type.tpVoid ) {
+				if( type.ret() ≡ Type.tpVoid ) {
 					if( body instanceof BlockStat ) {
 						((BlockStat)body).stats.append(new ReturnStat(pos,null));
 						body.setAbrupted(true);
@@ -790,7 +787,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
-				if( type.ret ≢ Type.tpVoid ) getRetVar();
+				if( type.ret() ≢ Type.tpVoid ) getRetVar();
 				cond.resolve(Type.tpVoid);
 			}
 		} catch(Exception e ) {

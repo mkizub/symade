@@ -79,8 +79,8 @@ public final view JBlockStatView of BlockStatImpl extends JENodeView {
 		code.removeVars(vars.toArray());
 		JNodeView p = this.jparent;
 		if( p instanceof JMethodView && Kiev.debugOutputC
-		 && code.need_to_gen_post_cond && ((JMethodView)p).type.ret ≢ Type.tpVoid) {
-			code.stack_push(((JMethodView)p).etype.ret.getJType());
+		 && code.need_to_gen_post_cond && ((JMethodView)p).type.ret() ≢ Type.tpVoid) {
+			code.stack_push(((JMethodView)p).etype.ret().getJType());
 		}
 		code.addInstr(Instr.set_label,break_label);
 	}
@@ -127,7 +127,7 @@ public final view JReturnStatView of ReturnStatImpl extends JENodeView {
 		code.setLinePos(this);
 		try {
 			if( expr != null )
-				expr.generate(code,code.method.type.ret);
+				expr.generate(code,code.method.type.ret());
 			generateReturn(code,this);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
@@ -146,8 +146,8 @@ public final view JReturnStatView of ReturnStatImpl extends JENodeView {
 			}
 			else if (node instanceof JTryStatView) {
 				if( node.finally_catcher != null ) {
-					if( tmp_var==null && code.method.type.ret ≢ Type.tpVoid ) {
-						tmp_var = new Var(0,KString.Empty,code.method.type.ret,0).getJVarView();
+					if( tmp_var==null && code.method.type.ret() ≢ Type.tpVoid ) {
+						tmp_var = new Var(0,KString.Empty,code.method.type.ret(),0).getJVarView();
 						code.addVar(tmp_var);
 						code.addInstr(Instr.op_store,tmp_var);
 					}
@@ -155,8 +155,8 @@ public final view JReturnStatView of ReturnStatImpl extends JENodeView {
 				}
 			}
 			else if (node instanceof JSynchronizedStatView) {
-				if( tmp_var==null && code.method.type.ret ≢ Type.tpVoid ) {
-					tmp_var = new Var(0,KString.Empty,code.method.type.ret,0).getJVarView();
+				if( tmp_var==null && code.method.type.ret() ≢ Type.tpVoid ) {
+					tmp_var = new Var(0,KString.Empty,code.method.type.ret(),0).getJVarView();
 					code.addVar(tmp_var);
 					code.addInstr(Instr.op_store,tmp_var);
 				}
@@ -170,7 +170,7 @@ public final view JReturnStatView of ReturnStatImpl extends JENodeView {
 		}
 		if( code.need_to_gen_post_cond ) {
 			code.addInstr(Instr.op_goto,code.method.getBreakLabel());
-			if( code.method.type.ret ≢ Type.tpVoid )
+			if( code.method.type.ret() ≢ Type.tpVoid )
 				code.stack_pop();
 		} else
 			code.addInstr(Instr.op_return);

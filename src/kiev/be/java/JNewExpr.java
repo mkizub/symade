@@ -171,7 +171,7 @@ public final view JNewClosureView of NewClosureImpl extends JENodeView {
 		// Constructor call args (first args 'this' skipped)
 		if( code.method!=null && !code.method.isStatic() )
 			code.addInstrLoadThis();
-		code.addConst(ctype.args.length);
+		code.addConst(ctype.arity);
 		// Now, fill proxyed fields (vars)
 		foreach (JDNodeView n; cl.members; n instanceof JFieldView) {
 			JFieldView f = (JFieldView)n;

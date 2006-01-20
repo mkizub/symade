@@ -130,7 +130,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				// array as va_arg
 				args[i].generate(code,null);
 			} else {
-				ArrayType type = (ArrayType)func.etype.args[N];
+				ArrayType type = (ArrayType)func.etype.arg(N);
 				code.addConst(args.length-N);
 				code.addInstr(Instr.op_newarray,type.arg);
 				for(int j=0; i < args.length; i++, j++) {
@@ -266,12 +266,12 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			code.stack_push(JType.tpNull);
 			code.addInstr(Instr.set_label,null_cast_label);
 		}
-		if( func.type.ret ≢ Type.tpVoid ) {
+		if( func.type.ret() ≢ Type.tpVoid ) {
 			if( reqType ≡ Type.tpVoid )
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && getType().isReference()
-			 && (!func.etype.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() || null_cast_label != null) )
+			 && (!func.etype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() || null_cast_label != null) )
 				code.addInstr(op_checkcast,getType());
 		}
 		if( ok_label != null )
@@ -305,22 +305,22 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 			// Add arguments
 			for(int i=0; i < args.length; i++) {
 				args[i].generate(code,null);
-				code.addInstr(op_call,getMethodFor(ctype.args[i].getJType()),false);
+				code.addInstr(op_call,getMethodFor(ctype.arg(i).getJType()),false);
 			}
 		}
 		JMethodView call_it = getCallIt(ctype);
 		// Check if we need to call
 		if( is_a_call ) {
-			if( call_it.type.ret ≡ Type.tpRule /*env_access != null*/ )
+			if( call_it.type.ret() ≡ Type.tpRule )
 				code.addNullConst(); //env_access.generate(code,null);
 			code.addInstr(op_call,call_it,false);
 		}
-		if( call_it.type.ret ≢ Type.tpVoid ) {
+		if( call_it.type.ret() ≢ Type.tpVoid ) {
 			if( reqType ≡ Type.tpVoid )
 				code.addInstr(op_pop);
 			else if( Kiev.verify
-			 && call_it.type.ret.isReference()
-			 && ( !call_it.etype.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
+			 && call_it.type.ret().isReference()
+			 && ( !call_it.etype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -328,12 +328,12 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 	public JMethodView getCallIt(CallType tp) {
 		KString call_it_name;
 		KString call_it_sign;
-		if( tp.ret.isReference() ) {
+		if( tp.ret().isReference() ) {
 			call_it_name = KString.from("call_Object");
 			call_it_sign = KString.from("()Ljava/lang/Object;");
 		} else {
-			call_it_name = KString.from("call_"+tp.ret);
-			call_it_sign = KString.from("()"+tp.ret.getJType().java_signature);
+			call_it_name = KString.from("call_"+tp.ret());
+			call_it_sign = KString.from("()"+tp.ret().getJType().java_signature);
 		}
 		return Type.tpClosureClazz.getJStructView().resolveMethod(call_it_name, call_it_sign);
 	}

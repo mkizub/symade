@@ -519,7 +519,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
 					return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
-				return Type.getRealType(t,((Method)v).type.ret);
+				return Type.getRealType(t,((Method)v).type.ret());
 			}
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
@@ -539,7 +539,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 				if (s instanceof Struct) {
 					Struct ss = (Struct)s;
 					foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
-						return new Type[]{Type.getRealType(t,((Method)n).type.ret)};
+						return new Type[]{Type.getRealType(t,((Method)n).type.ret())};
 				}
 				if( s.super_type != null ) {
 					s = s.super_type.clazz;

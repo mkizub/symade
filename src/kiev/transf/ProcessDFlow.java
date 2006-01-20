@@ -99,7 +99,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			Kiev.reportWarning(s,"Method "+s+"."+nameGetDFlowIn+" already exists, @dflow member is not generated");
 		} else {
 			CallType mt = (CallType)Signature.getType(signGetDFlowIn);
-			Method dfIn = new Method(nameGetDFlowIn,mt.ret,ACC_PUBLIC | ACC_SYNTHETIC);
+			Method dfIn = new Method(nameGetDFlowIn,mt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
 			dfIn.params.add(new FormPar(0, KString.from("child"), tpNode, FormPar.PARAM_NORMAL, 0));
 			dfIn.body = new BlockStat(0);
 			Var var = new Var(0, KString.from("name"),Type.tpString,ACC_FINAL);
@@ -206,11 +206,11 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				Method dfIn;
 				if (seq) {
 					CallType mt = (CallType)Signature.getType(signGetDFlowInSeq);
-					dfIn = new Method(fname,mt.ret,ACC_PRIVATE | ACC_SYNTHETIC);
+					dfIn = new Method(fname,mt.ret(),ACC_PRIVATE | ACC_SYNTHETIC);
 					dfIn.params.add(new FormPar(0, KString.from("$child"), tpNode, FormPar.PARAM_NORMAL, 0));
 				} else {
 					CallType mt = (CallType)Signature.getType(signGetDFlowInFld);
-					dfIn = new Method(fname,mt.ret,ACC_PRIVATE | ACC_SYNTHETIC);
+					dfIn = new Method(fname,mt.ret(),ACC_PRIVATE | ACC_SYNTHETIC);
 				}
 				dfIn.body = new BlockStat(0);
 				if (isArr && seq) {

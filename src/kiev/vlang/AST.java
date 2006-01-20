@@ -645,6 +645,7 @@ public abstract class DNode extends ASTNode {
 		public final boolean isStatic()				{ return this.$view.is_static; }
 		public final boolean isFinal()				{ return this.$view.is_final; }
 		public final boolean isSynchronized()		{ return this.$view.is_mth_synchronized; }
+		public final boolean isVolatile()			{ return this.$view.is_fld_volatile; }
 		public final boolean isFieldVolatile()		{ return this.$view.is_fld_volatile; }
 		public final boolean isMethodBridge()		{ return this.$view.is_mth_bridge; }
 		public final boolean isFieldTransient()	{ return this.$view.is_fld_transient; }
@@ -711,6 +712,12 @@ public abstract class DNode extends ASTNode {
 		public void setSynchronized(boolean on) {
 			if (this.$view.is_mth_synchronized != on) {
 				this.$view.is_mth_synchronized = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		public void setVolatile(boolean on) {
+			if (this.$view.is_fld_volatile != on) {
+				this.$view.is_fld_volatile = on;
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
@@ -822,6 +829,7 @@ public abstract class DNode extends ASTNode {
 	public boolean isStatic()			{ return this.getDNodeView().isStatic(); }
 	public boolean isFinal()			{ return this.getDNodeView().isFinal(); }
 	public boolean isSynchronized()		{ return this.getDNodeView().isSynchronized(); }
+	public boolean isVolatile()			{ return this.getDNodeView().isVolatile(); }
 	public boolean isFieldVolatile()	{ return this.getDNodeView().isFieldVolatile(); }
 	public boolean isMethodBridge()		{ return this.getDNodeView().isMethodBridge(); }
 	public boolean isFieldTransient()	{ return this.getDNodeView().isFieldTransient(); }
@@ -845,6 +853,7 @@ public abstract class DNode extends ASTNode {
 	public void setStatic(boolean on)			{ this.getDNodeView().setStatic(on); }
 	public void setFinal(boolean on)			{ this.getDNodeView().setFinal(on); }
 	public void setSynchronized(boolean on)	{ this.getDNodeView().setSynchronized(on); }
+	public void setVolatile(boolean on)		{ this.getDNodeView().setVolatile(on); }
 	public void setFieldVolatile(boolean on)	{ this.getDNodeView().setFieldVolatile(on); }
 	public void setMethodBridge(boolean on)	{ this.getDNodeView().setMethodBridge(on); }
 	public void setFieldTransient(boolean on)	{ this.getDNodeView().setFieldTransient(on); }

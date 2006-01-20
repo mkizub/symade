@@ -20,12 +20,10 @@ public final class TVarSet {
 
 	public TVarSet() {
 		tvars = TVar.emptyArray;
-		appls = TArg.emptyArray;
 	}
 	
 	public TVarSet(ArgType var, Type bnd) {
 		tvars = new TVar[]{ new TVarBound(this, 0, var, bnd) };
-		appls = TArg.emptyArray;
 		if (ASSERT_MORE) checkIntegrity(false);
 	}
 	
@@ -39,8 +37,8 @@ public final class TVarSet {
 			for (int i=0; i < n; i++)
 				tvs.tvars[i].resolve(i);
 		}
-		n = this.appls.length;
-		if (n > 0) {
+		if (this.appls != null && this.appls.length > 0) {
+			n = this.appls.length;
 			tvs.appls = new TArg[n];
 			for (int i=0; i < n; i++)
 				tvs.appls[i] = this.appls[i].copy(tvs);
@@ -162,6 +160,12 @@ public final class TVarSet {
 		return;
 	}
 	
+	private TArg[] applyables() {
+		if (appls == null)
+			buildApplayables();
+		return appls;
+	}
+	
 	private void buildApplayables() {
 		appls = TArg.emptyArray;
 		foreach (TVar tv; tvars; tv instanceof TVarBound)
@@ -172,7 +176,7 @@ public final class TVarSet {
 		if (t instanceof ArgType) {
 			addApplayable((ArgType)t);
 		} else {
-			TArg[] tappls = t.bindings().appls;
+			TArg[] tappls = t.bindings().applyables();
 			for (int i=0; i < tappls.length; i++)
 				addApplayable(tappls[i].var);
 		}
@@ -348,7 +352,7 @@ public final class TVarSet {
 	}
 	
 	private boolean hasApplayables(TVarSet vs) {
-		final int my_size = this.appls.length;
+		final int my_size = this.applyables().length;
 		if (my_size == 0)
 			return false;
 		final int tp_size = vs.tvars.length;
@@ -397,7 +401,7 @@ public final class TVarSet {
 				if (check_appls) {
 					if (bv.bnd instanceof ArgType) {
 						int j=0;
-						for (; j < this.appls.length; j++) {
+						for (; j < this.applyables().length; j++) {
 							if (this.appls[j].var ≡ bv.bnd)
 								break;
 						}
@@ -405,7 +409,7 @@ public final class TVarSet {
 					} else {
 						foreach (TArg at; bv.bnd.bindings().appls) {
 							int j=0;
-							for (; j < this.appls.length; j++) {
+							for (; j < this.applyables().length; j++) {
 								if (this.appls[j].var ≡ at.var)
 									break;
 							}
@@ -416,7 +420,7 @@ public final class TVarSet {
 			}
 		}
 		if (check_appls) {
-			final int m = this.appls.length;
+			final int m = this.applyables().length;
 			for (int i=0; i < m; i++) {
 				TArg at = this.appls[i];
 				int j = 0;
@@ -719,26 +723,21 @@ public class CallTypeProvider extends TypeProvider {
 		if (!t.isAbstract() || bindings.length == 0 || t.bindings().length == 0) return t;
 		if!(t instanceof CallType) return t;
 		CallType mt = (CallType)t;
-		mt = new CallType(mt.bindings().bind(bindings),mt.args,mt.ret,mt.isReference());
-		mt = (CallType)this.applay(mt,mt.bindings());
+		mt = new CallType(mt.bindings().bind(bindings),mt.arity,mt.isReference());
 		return mt;
 	}
 	public Type rebind(Type t, TVarSet bindings) {
 		if (!t.isAbstract() || bindings.length == 0 || t.bindings().length == 0) return t;
 		if!(t instanceof CallType) return t;
 		CallType mt = (CallType)t;
-		mt = new CallType(mt.bindings().rebind(bindings),mt.args,mt.ret,mt.isReference());
-		mt = (CallType)this.applay(mt,mt.bindings());
+		mt = new CallType(mt.bindings().rebind(bindings),mt.arity,mt.isReference());
 		return mt;
 	}
 	public Type applay(Type t, TVarSet bindings) {
 		if( !t.isAbstract() || bindings.length == 0 ) return t;
-		CallType ct = (CallType)t;
-		Type[] tpargs = new Type[ct.args.length];
-		for(int i=0; i < tpargs.length; i++)
-			tpargs[i] = ct.args[i].applay(bindings);
-		Type ret = ct.ret.applay(bindings);
-		return new CallType(t.bindings(),tpargs,ret,t.isReference());
+		CallType mt = (CallType)t;
+		mt = new CallType(mt.bindings().applay(bindings),mt.arity,mt.isReference());
+		return mt;
 	}
 }
 

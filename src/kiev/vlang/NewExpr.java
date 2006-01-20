@@ -544,7 +544,7 @@ public final class NewClosure extends ENode {
 		CallType type = (CallType)this.type.getType();
 		Struct cl = clazz;
 		dmp.append("new ").append(cl.super_type.clazz.name).append('(')
-			.append(String.valueOf(type.args.length)).append(')');
+			.append(String.valueOf(type.arity)).append(')');
 		dmp.space().append('{').newLine(1);
 		foreach (DNode n; cl.members)
 			n.toJavaDecl(dmp).newLine();

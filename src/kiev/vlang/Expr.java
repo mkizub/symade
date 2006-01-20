@@ -1482,7 +1482,7 @@ public class UnaryExpr extends ENode {
 		}
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
-			if (ctx_clazz != null && opt.method != null && opt.method.type.args.length == 1) {
+			if (ctx_clazz != null && opt.method != null && opt.method.type.arity == 1) {
 				if ( !ctx_clazz.concr_type.isInstanceOf(opt.method.ctx_clazz.concr_type) )
 					continue;
 			}

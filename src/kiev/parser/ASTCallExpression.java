@@ -189,7 +189,7 @@ public class ASTCallExpression extends ENode {
 			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
 		} else {
 			CallType mt;
-			if( reqType instanceof CallType && ((CallType)reqType).args.length > 0 ) {
+			if( reqType instanceof CallType && ((CallType)reqType).arity > 0 ) {
 				mt = (CallType)reqType;
 			} else {
 				Type[] ta = new Type[args.length];
@@ -222,9 +222,9 @@ public class ASTCallExpression extends ENode {
 			if( reqType instanceof CallType ) {
 				ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 				ac.pos = pos;
-				ac.rettype = new TypeRef(pos, ((CallType)reqType).ret);
+				ac.rettype = new TypeRef(pos, ((CallType)reqType).ret());
 				for (int i=0; i < ac.params.length; i++)
-					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
+					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.arg(i),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
 				BlockStat bs = new BlockStat(pos,ENode.emptyArray);
 				ENode[] oldargs = args.toArray();
 				ENode[] cargs = new ENode[ac.params.length];

@@ -318,7 +318,7 @@ public class OpTypes {
 				// Check we've imported the method
 			} else {
 				// Check method is of nodes[1]'s class
-				if( method.type.args.length == (nodes.length-2) && nodes[1] != null
+				if( method.type.arity == (nodes.length-2) && nodes[1] != null
 					&& getExprType(nodes[1],ts[1]).isStructInstanceOf((Struct)method.parent)
 				)
 					;
