@@ -68,7 +68,7 @@ public class ASTCallExpression extends ENode {
 	public void mainResolveOut() {
 		// method of current class or first-order function
 		DNode@ m;
-		Type tp = ctx_clazz.concr_type;
+		Type tp = ctx_clazz.ctype;
 		
 		Type[] ata = new Type[targs.length];
 		for (int i=0; i < ata.length; i++)
@@ -149,7 +149,7 @@ public class ASTCallExpression extends ENode {
         }
 		// method of current class or first-order function
 		Method@ m;
-		Type tp = ctx_clazz.concr_type;
+		Type tp = ctx_clazz.ctype;
 		Type ret = reqType;
 	retry_with_null_ret:;
 		if( func.name.equals(nameThis) ) {

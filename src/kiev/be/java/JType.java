@@ -188,7 +188,7 @@ public class JBaseType extends JType {
 	public static JBaseType newJBaseType(Struct clazz)
 		alias operator(240,lfy,new)
 	{
-		if (clazz.concr_type ≡ Type.tpRule) {
+		if (clazz.ctype ≡ Type.tpRule) {
 			if (JType.tpRule == null)
 				return new JBaseType(JConstants.jsigRule,clazz);
 			return JType.tpRule;

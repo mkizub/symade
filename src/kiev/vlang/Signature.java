@@ -158,7 +158,7 @@ public class Signature {
 //		if( !sc.hasMoreChars() ) {
 //			if (isArgument)
 //				throw new RuntimeException("not implemented"); //return new ArgType(cname,null);
-//			return ConcreteType.createRefType(clazz, TVarSet.emptySet);
+//			return CompaundType.createRefType(clazz, TVarSet.emptySet);
 //		}
 //		if( sc.peekChar() == '<' ) {
 //			args = new Type[0];
@@ -170,18 +170,18 @@ public class Signature {
 //				if( args.length == 0 )
 //					throw new RuntimeException("not implemented"); //return new ArgType(cname,null);
 //				else if( args.length == 1 ) {
-//					if !( args[0] instanceof ConcreteType )
+//					if !( args[0] instanceof CompaundType )
 //						throw new RuntimeException("Bad super-class "+args[0]+" of argument "+cname);
-//					throw new RuntimeException("not implemented"); //return new ArgType(cname,(ConcreteType)args[0]);
+//					throw new RuntimeException("not implemented"); //return new ArgType(cname,(CompaundType)args[0]);
 //				} else
 //					throw new RuntimeException("Signature of class's argument "+cname+" specifies more than one super-class: "+args);
 //			} else {
-//				return ConcreteType.createRefType(clazz,args);
+//				return CompaundType.createRefType(clazz,args);
 //			}
 //		} else {
 			if (isArgument)
 				throw new RuntimeException("not implemented"); //return new ArgType(cname,null);
-			return new ConcreteType(clazz.imeta_type, TVarSet.emptySet);
+			return new CompaundType(clazz.imeta_type, TVarSet.emptySet);
 //		}
 	}
 
@@ -219,7 +219,7 @@ public class Signature {
 //				args = (Type[])Arrays.append(args,getType(sc));
 //			sc.nextChar();
 //		}
-		return new ConcreteType(clazz.imeta_type, TVarSet.emptySet);
+		return new CompaundType(clazz.imeta_type, TVarSet.emptySet);
 	}
 
 	public static KString getJavaSignature(KString sig) {

@@ -41,7 +41,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		     public CompaundTypeProvider		imeta_type;
 		     public WrapperTypeProvider			wmeta_type;
 		     public OuterTypeProvider			ometa_type;
-		     public ConcreteType				concr_type;
+		     public CompaundType				ctype;
 		@att public TypeRef						view_of;
 		@att public TypeRef						super_bound;
 		@att public NArr<TypeRef>				interfaces;
@@ -53,7 +53,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		@ref public NArr<TypeDecl>				direct_extenders;
 		public kiev.be.java.Attr[]				attrs = kiev.be.java.Attr.emptyArray;
 		@att public NArr<DNode>					members;
-		     private TemplateType[]				super_types;
+		     private TypeProvider[]				super_types;
 
 		public void callbackChildChanged(AttrSlot attr) {
 			if (attr.name == "args" ||
@@ -72,29 +72,29 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				td.callbackSuperTypeChanged(chg);
 		}
 		
-		public TemplateType[] getAllSuperTypes() {
+		public TypeProvider[] getAllSuperTypes() {
 			if (super_types != null)
 				return super_types;
-			Vector<TemplateType> types = new Vector<TemplateType>();
+			Vector<TypeProvider> types = new Vector<TypeProvider>();
 			addSuperTypes(super_bound, types);
 			foreach (TypeRef it; interfaces)
 				addSuperTypes(it, types);
 			if (types.length == 0)
-				super_types = TemplateType.emptyArray;
+				super_types = TypeProvider.emptyArray;
 			else
 				super_types = types.toArray();
 			return super_types;
 		}
 		
-		private void addSuperTypes(TypeRef suptr, Vector<TemplateType> types) {
+		private void addSuperTypes(TypeRef suptr, Vector<TypeProvider> types) {
 			Type sup = suptr.getType();
 			if (sup == null)
 				return;
-			TemplateType tt = ((CompaundType)sup).clazz.imeta_type.templ_type;
+			TypeProvider tt = sup.getStruct().imeta_type;
 			if (!types.contains(tt))
 				types.append(tt);
-			TemplateType[] sup_types = ((CompaundType)sup).clazz.getAllSuperTypes();
-			foreach (TemplateType t; sup_types) {
+			TypeProvider[] sup_types = sup.getStruct().getAllSuperTypes();
+			foreach (TypeProvider t; sup_types) {
 				if (!types.contains(t))
 					types.append(t);
 			}
@@ -107,7 +107,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public access:ro	CompaundTypeProvider	imeta_type;
 		public				WrapperTypeProvider		wmeta_type;
 		public				OuterTypeProvider		ometa_type;
-		public access:ro	ConcreteType			concr_type;
+		public access:ro	CompaundType			ctype;
 		public				TypeRef					view_of;
 		public				TypeRef					super_bound;
 		public access:ro	NArr<TypeRef>			interfaces;
@@ -123,7 +123,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		@getter public final CompaundType	get$super_type()	{ return (CompaundType)super_bound.lnk; }
 		@setter public final void set$super_type(CompaundType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
 
-		public TemplateType[] getAllSuperTypes() {
+		public TypeProvider[] getAllSuperTypes() {
 			return this.$view.getAllSuperTypes();
 		}
 		
@@ -288,7 +288,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	     public abstract virtual access:ro	CompaundTypeProvider		imeta_type;
 	     public abstract virtual			WrapperTypeProvider			wmeta_type;
 	     public abstract virtual			OuterTypeProvider			ometa_type;
-	@ref public abstract virtual access:ro	ConcreteType				concr_type;
+	@ref public abstract virtual access:ro	CompaundType				ctype;
 	@att public abstract virtual			TypeRef						view_of;
 
 	/** Bound super-class for class arguments */
@@ -328,7 +328,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@getter public CompaundTypeProvider	get$imeta_type()			{ return this.getStructView().imeta_type; }
 	@getter public WrapperTypeProvider		get$wmeta_type()			{ return this.getStructView().wmeta_type; }
 	@getter public OuterTypeProvider		get$ometa_type()			{ return this.getStructView().ometa_type; }
-	@getter public ConcreteType				get$concr_type()			{ return this.getStructView().concr_type; }
+	@getter public CompaundType				get$ctype()					{ return this.getStructView().ctype; }
 	@getter public TypeRef					get$view_of()				{ return this.getStructView().view_of; }
 	@getter public TypeRef					get$super_bound()			{ return this.getStructView().super_bound; }
 	@getter public NArr<TypeRef>			get$interfaces()			{ return this.getStructView().interfaces; }
@@ -359,7 +359,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		super(new StructImpl(0,acc));
 		this.name = name;
 		((StructImpl)this.$v_impl).imeta_type = new CompaundTypeProvider(this);
-		((StructImpl)this.$v_impl).concr_type = new ConcreteType(this.imeta_type, TVarSet.emptySet);
+		((StructImpl)this.$v_impl).ctype = new CompaundType(this.imeta_type, TVarSet.emptySet);
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
 		package_clazz = outer;
@@ -376,7 +376,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public String toString() { return name.name.toString(); }
 
-	public TemplateType[] getAllSuperTypes() {
+	public TypeProvider[] getAllSuperTypes() {
 		return getStructView().getAllSuperTypes();
 	}
 		
@@ -655,7 +655,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	final public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
 	{
-		resolveStructMethodR(node, info, name, mt, this.concr_type)
+		resolveStructMethodR(node, info, name, mt, this.ctype)
 	}
 
 	public rule resolveStructMethodR(DNode@ node, ResInfo info, KString name, CallType mt, Type tp)
@@ -697,8 +697,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			args[i] = (Type)va_args[i];
 		CallType mt = new CallType(args,ret);
 		DNode@ m;
-		if (!this.concr_type.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
-			!this.concr_type.resolveCallStaticR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
+		if (!this.ctype.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
+			!this.ctype.resolveCallStaticR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
 			throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
 		return (Method)m;
 	}
@@ -803,7 +803,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return cas;
 	}
 
-	public Type getType() { return this.concr_type; }
+	public Type getType() { return this.ctype; }
 
 	public ENode accessTypeInfoField(ASTNode from, Type t, boolean from_gen) {
 		while (t instanceof WrapperType)
@@ -837,7 +837,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					ti_access = new IFldExpr(from.pos,new ThisExpr(pos),ti);
 				}
 				// Check that we need our $typeinfo
-				if (this.concr_type ≈ t)
+				if (this.ctype ≈ t)
 					return ti_access;
 	
 				if (t.isArgument()) {
@@ -939,7 +939,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	
 	public List<ArgType> getTypeInfoArgs() {
 		ListBuffer<ArgType> lb = new ListBuffer<ArgType>();
-		TVar[] templ = this.imeta_type.templ_type.bindings().tvars;
+		TVar[] templ = this.imeta_type.getTemplBindings().tvars;
 		foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias() && tv.var.isUnerasable())
 			lb.append(tv.var);
 		return lb.toList();
@@ -961,7 +961,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		typeinfo_clazz.setPublic();
 		typeinfo_clazz.setResolved(true);
 		if (super_type != null && ((Struct)super_type.clazz).typeinfo_clazz != null)
-			typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.concr_type;
+			typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.ctype;
 		else
 			typeinfo_clazz.super_type = Type.tpTypeInfo;
 		addSubStruct(typeinfo_clazz);
@@ -989,7 +989,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			}
 	
 			// create typeinfo field
-			Field tif = addField(new Field(nameTypeInfo,typeinfo_clazz.concr_type,ACC_PUBLIC|ACC_FINAL));
+			Field tif = addField(new Field(nameTypeInfo,typeinfo_clazz.ctype,ACC_PUBLIC|ACC_FINAL));
 			// add constructor to the class
 			typeinfo_clazz.addMethod(init);
 			
@@ -1000,7 +1000,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
 			init.body.stats.insert(new ExprStat(call_super),0);
 			foreach (ArgType at; super_type.clazz.getTypeInfoArgs()) {
-				Type t = at.applay(this.concr_type);
+				Type t = at.applay(this.ctype);
 				ENode expr;
 				if (t instanceof ArgType)
 					expr = new ASTIdentifier(pos,t.name);
@@ -1027,12 +1027,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		// 	return ti;
 		// }
 		{
-			Method init = new Method(KString.from("newTypeInfo"), typeinfo_clazz.concr_type, ACC_STATIC|ACC_PUBLIC);
+			Method init = new Method(KString.from("newTypeInfo"), typeinfo_clazz.ctype, ACC_STATIC|ACC_PUBLIC);
 			init.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.params.add(new FormPar(pos,KString.from("args"),new ArrayType(Type.tpTypeInfo),FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.body = new BlockStat(pos);
 			Var h = new Var(pos,KString.from("hash"),Type.tpInt,ACC_FINAL);
-			Var v = new Var(pos,KString.from("ti"),typeinfo_clazz.concr_type,0);
+			Var v = new Var(pos,KString.from("ti"),typeinfo_clazz.ctype,0);
 			Method mhash = Type.tpTypeInfo.clazz.resolveMethod(KString.from("hashCode"),Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
 			h.init = new CallExpr(pos,null,mhash,new ENode[]{
 				new LVarExpr(pos,init.params[0]),
@@ -1046,7 +1046,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				new LVarExpr(pos,init.params[1])
 			});
 			init.body.addSymbol(v);
-			NewExpr ne = new NewExpr(pos,typeinfo_clazz.concr_type,
+			NewExpr ne = new NewExpr(pos,typeinfo_clazz.ctype,
 				new ENode[]{
 					new LVarExpr(pos,h),
 					new LVarExpr(pos,init.params[0])
@@ -1129,7 +1129,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			misa.body.addStatement(new ExprStat(pos,
 				new AssignExpr(pos,AssignOperator.Assign,
 					new LVarExpr(pos,misa.params[0]),
-					new CastExpr(pos,typeinfo_clazz.concr_type,new LVarExpr(pos,misa.params[0]))
+					new CastExpr(pos,typeinfo_clazz.ctype,new LVarExpr(pos,misa.params[0]))
 				)
 			));
 			foreach (ArgType at; this.getTypeInfoArgs()) {
@@ -1186,7 +1186,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					typeinfo_clazz.resolveMethod(KString.from("$assignableFrom"),Type.tpBoolean,Type.tpTypeInfo),
 					new ENode[]{
 						new IFldExpr(pos,
-							new CastExpr(pos,this.concr_type,new LVarExpr(pos,misa.params[0])),
+							new CastExpr(pos,this.ctype,new LVarExpr(pos,misa.params[0])),
 							this.resolveField(nameTypeInfo)
 						)
 					}
@@ -1226,7 +1226,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				def.pos = m.pos;
 				def.params.moveFrom(m.params); // move, because the vars are resolved
 				m.params.copyFrom(def.params);
-				def.params.insert(0,new FormPar(pos,Constants.nameThis,this.concr_type,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
+				def.params.insert(0,new FormPar(pos,Constants.nameThis,this.ctype,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
 				defaults.members.add(def);
 				def.body = (BlockStat)~m.body;
 				def.setVirtualStatic(true);
@@ -1283,11 +1283,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					package_clazz.checkResolved();
 					if( package_clazz.isClazz() && !isStatic() ) {
 						// Add formal parameter
-						m.params.insert(new FormPar(m.pos,nameThisDollar,package_clazz.concr_type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL),0);
+						m.params.insert(new FormPar(m.pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL),0);
 						retype = true;
 					}
 					if (!isInterface() && isTypeUnerasable()) {
-						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.concr_type,FormPar.PARAM_TYPEINFO,ACC_FINAL),(retype?1:0));
+						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL),(retype?1:0));
 						retype = true;
 					}
 				}
@@ -1296,17 +1296,17 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					Constructor init = new Constructor(ACC_PUBLIC);
 					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 						if( !isStatic() ) {
-							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.concr_type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
+							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
 							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,0));
 						} else {
 							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,0));
 						}
 					} else {
 						if( package_clazz.isClazz() && !isStatic() ) {
-							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.concr_type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
+							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
 						}
 						if (!isInterface() && isTypeUnerasable()) {
-							init.params.append(new FormPar(pos,nameTypeInfo,typeinfo_clazz.concr_type,FormPar.PARAM_TYPEINFO,ACC_FINAL));
+							init.params.append(new FormPar(pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL));
 						}
 						if( isEnum() ) {
 							init.params.append(new FormPar(pos,KString.from("name"),Type.tpString,FormPar.PARAM_NORMAL,0));
@@ -1639,7 +1639,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Method overwr = null;
 
 			if (super_type != null )
-				overwr = super_type.clazz.getOverwrittenMethod(this.concr_type,m);
+				overwr = super_type.clazz.getOverwrittenMethod(this.ctype,m);
 
 			// nothing to do, if no methods to combine
 			if (mlistb.length() == 1 && mm != null) {
@@ -1723,12 +1723,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 //			if( mi.isStatic() || mi.isPrivate() || mi.name.equals(nameInit) ) continue;
 //			Method m = null;
 //			if( super_type != null )
-//				m = super_type.clazz.getOverwrittenMethod(this.concr_type,mi);
+//				m = super_type.clazz.getOverwrittenMethod(this.ctype,mi);
 //			foreach(TypeRef si; interfaces ) {
 //				if( m == null )
-//					m = si.getStruct().getOverwrittenMethod(this.concr_type,mi);
+//					m = si.getStruct().getOverwrittenMethod(this.ctype,mi);
 //				else
-//					si.getStruct().getOverwrittenMethod(this.concr_type,mi);
+//					si.getStruct().getOverwrittenMethod(this.ctype,mi);
 //			}
 //			if( m != null ) {
 //				for (int i=0; i < m.params.length; i++) {
@@ -1915,8 +1915,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if( isPackage() ) return false;
 		
 		// first, pre-generate super-types
-		foreach (Type sup; this.getAllSuperTypes())
-			sup.getStruct().preGenerate();
+		foreach (TypeProvider sup; this.getAllSuperTypes(); sup instanceof CompaundTypeProvider)
+			sup.clazz.preGenerate();
 
 		// generate typeinfo class, if needed
 		autoGenerateTypeinfoClazz();
@@ -2018,7 +2018,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			if (!this.isInterface()) {
 				foreach (VTableEntry vte2; vtable; vte2 != vte && vte2.name == vte.name) {
 					foreach (Method m; vte2.methods; !vte.methods.contains(m)) {
-						CallType mt = m.dtype.toCallTypeRetAny().applay(this.concr_type);
+						CallType mt = m.dtype.toCallTypeRetAny().applay(this.ctype);
 						if (mt ≈ et)
 							vte.add(m);
 					}
@@ -2091,7 +2091,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		members.append(root);
 		// check if we already have this method in this class
 		foreach (Method m; mmset) {
-			if (m.ctx_clazz == this && m.type.applay(this.concr_type) ≈ root.type.applay(this.concr_type)) {
+			if (m.ctx_clazz == this && m.type.applay(this.ctype) ≈ root.type.applay(this.ctype)) {
 				members.detach(root);
 				root = found = m;
 				break;
@@ -2152,7 +2152,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				continue;
 			Method fnd = null;
 			Type[] params = m.type.params();
-			params = (Type[])Arrays.insert(params,m.ctx_clazz.concr_type,0);
+			params = (Type[])Arrays.insert(params,m.ctx_clazz.ctype,0);
 			CallType mt = new CallType(params, m.type.ret());
 			foreach (Method dm; i.members; dm instanceof Method && dm.name.name == m.name.name && dm.type ≈ mt) {
 				fnd = dm;

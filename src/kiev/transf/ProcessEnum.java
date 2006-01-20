@@ -43,8 +43,8 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		{
 			clazz.super_type = Type.tpEnum;
 			Field vals = clazz.addField(new Field(nameEnumValuesFld,
-				new ArrayType(clazz.concr_type), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
-			vals.init = new NewInitializedArrayExpr(pos, new TypeRef(clazz.concr_type), 1, ENode.emptyArray);
+				new ArrayType(clazz.ctype), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+			vals.init = new NewInitializedArrayExpr(pos, new TypeRef(clazz.ctype), 1, ENode.emptyArray);
 			for(int i=0; i < eflds.length; i++) {
 				ENode e = new SFldExpr(eflds[i].pos,eflds[i]);
 				((NewInitializedArrayExpr)vals.init).args.append(e);
@@ -55,7 +55,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		
 		// values()[]
 		{
-			Method mvals = new Method(nameEnumValues,new ArrayType(clazz.concr_type),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			Method mvals = new Method(nameEnumValues,new ArrayType(clazz.ctype),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			mvals.pos = pos;
 			mvals.body = new BlockStat(pos);
 			((BlockStat)mvals.body).addStatement(
@@ -66,7 +66,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		
 		// Cast from int
 		{
-			Method tome = new Method(nameCastOp,clazz.concr_type,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			Method tome = new Method(nameCastOp,clazz.ctype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt, FormPar.PARAM_NORMAL,0));
 			tome.body = new BlockStat(pos);
@@ -128,7 +128,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 
 		// fromString
 		{
-			Method fromstr = new Method(KString.from("valueOf"),clazz.concr_type,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			Method fromstr = new Method(KString.from("valueOf"),clazz.ctype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			fromstr.name.addAlias(nameCastOp);
 			fromstr.name.addAlias(KString.from("fromString"));
 			fromstr.pos = pos;

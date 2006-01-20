@@ -181,7 +181,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
 		((Struct)this.resolved).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		((Struct)this.resolved).concr_type.resolveCallStaticR(node,path,name,mt),
+		((Struct)this.resolved).ctype.resolveCallStaticR(node,path,name,mt),
 		node instanceof Method && node.isStatic() && node.isPublic()
 	}
 

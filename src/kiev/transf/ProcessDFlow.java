@@ -63,13 +63,13 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 	
 	public void autoGenerateMembers(Struct:ASTNode s) {
 		if (tpNArr == null)
-			tpNArr = Env.getStruct(nameNArr).concr_type;
+			tpNArr = Env.getStruct(nameNArr).ctype;
 		if (tpNArr == null) {
 			Kiev.reportError("Cannot find class "+nameNArr);
 			return;
 		}
 		if (tpNode == null)
-			tpNode = Env.getStruct(nameNode).concr_type;
+			tpNode = Env.getStruct(nameNode).ctype;
 		if (tpNode == null) {
 			Kiev.reportError("Cannot find class "+nameNode);
 			return;

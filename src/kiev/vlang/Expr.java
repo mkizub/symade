@@ -286,7 +286,7 @@ public class TypeInfoExpr extends ENode {
 	public Type getType() {
 		Type t = type.getType().getErasedType();
 		if (t.isUnerasable())
-			return t.getStruct().typeinfo_clazz.concr_type;
+			return t.getStruct().typeinfo_clazz.ctype;
 		return Type.tpTypeInfo;
 	}
 
@@ -296,14 +296,14 @@ public class TypeInfoExpr extends ENode {
 		if (isResolved())
 			return;
 		Type type = this.type.getType();
-		ConcreteType ftype = Type.tpTypeInfo;
+		CompaundType ftype = Type.tpTypeInfo;
 		Struct clazz = type.getStruct();
 		if (clazz.isTypeUnerasable()) {
 			if (clazz.typeinfo_clazz == null)
 				clazz.autoGenerateTypeinfoClazz();
-			ftype = clazz.typeinfo_clazz.concr_type;
+			ftype = clazz.typeinfo_clazz.ctype;
 		}
-		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.concr_type));
+		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.ctype));
 		cl_expr.resolve(Type.tpClass);
 		foreach (ArgType at; clazz.getTypeInfoArgs())
 			cl_args.add(ctx_clazz.accessTypeInfoField(this, type.resolve(at),false));
@@ -1483,7 +1483,7 @@ public class UnaryExpr extends ENode {
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
 			if (ctx_clazz != null && opt.method != null && opt.method.type.arity == 1) {
-				if ( !ctx_clazz.concr_type.isInstanceOf(opt.method.ctx_clazz.concr_type) )
+				if ( !ctx_clazz.ctype.isInstanceOf(opt.method.ctx_clazz.ctype) )
 					continue;
 			}
 			Type[] tps = new Type[]{null,et};
@@ -1976,7 +1976,7 @@ public class CastExpr extends ENode {
 		if( et.isReference() && type.isReference() && et.getStruct() != null
 		 && et.getStruct().package_clazz.isClazz()
 		 && !et.isArgument()
-		 && !et.isStaticClazz() && et.getStruct().package_clazz.concr_type.isAutoCastableTo(type)
+		 && !et.isStaticClazz() && et.getStruct().package_clazz.ctype.isAutoCastableTo(type)
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,

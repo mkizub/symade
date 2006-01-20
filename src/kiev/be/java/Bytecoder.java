@@ -219,7 +219,7 @@ public class Bytecoder implements JConstants {
 				if( m.isStatic() )
 					throw new RuntimeException("Assign operator can't be static");
 				else if( !m.isStatic() && m.type.arity == 1 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.arg(0); }
+					{ oparg1 = m.ctx_clazz.ctype; oparg2 = m.type.arg(0); }
 				else
 					throw new RuntimeException("Method "+m+" must be virtual and have 1 argument");
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
@@ -235,9 +235,9 @@ public class Bytecoder implements JConstants {
 				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 3 )
 					{ oparg1 = m.type.arg(1); oparg2 = m.type.arg(2); }
 				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.arg(0); }
+					{ oparg1 = m.ctx_clazz.ctype; oparg2 = m.type.arg(0); }
 				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.arg(1); }
+					{ oparg1 = m.ctx_clazz.ctype; oparg2 = m.type.arg(1); }
 				else
 					throw new RuntimeException("Method "+m+" must have 2 arguments");
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
@@ -253,11 +253,11 @@ public class Bytecoder implements JConstants {
 				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
 					oparg1 = m.type.arg(1);
 				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 0 )
-					oparg1 = m.ctx_clazz.concr_type;
+					oparg1 = m.ctx_clazz.ctype;
 				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
 					oparg1 = m.type.arg(0);
 				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 1 )
-					oparg1 = m.ctx_clazz.concr_type;
+					oparg1 = m.ctx_clazz.ctype;
 				else
 					throw new RuntimeException("Method "+m+" must have 1 argument");
 				if( Kiev.verbose ) System.out.println("Attached unary "+op+" to method "+m);
@@ -508,7 +508,7 @@ public class Bytecoder implements JConstants {
 	    	bcclazz.flags |= ACC_SUPER;
 
 		// This class name
-		KString cl_sig = cl.concr_type.getJType().java_signature;
+		KString cl_sig = cl.ctype.getJType().java_signature;
 		trace(Kiev.debugBytecodeGen,"note: class "+cl+" class signature = "+cl_sig);
 		bcclazz.cp_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(cl_sig).pos];
 	    // This class's superclass name

@@ -68,8 +68,7 @@ public class TypeWithArgsRef extends TypeRef {
 		Type tp = base_type.getType();
 		if (tp == null || !(tp instanceof CompaundType))
 			throw new CompilerException(this,"Compaund type "+base_type+" is not found");
-		tp = ((CompaundTypeProvider)tp.meta_type).templ_type;
-		TVarSet tpset = tp.bindings();
+		TVarSet tpset = ((CompaundTypeProvider)tp.meta_type).getTemplBindings();
 		TVarSet set = new TVarSet();
 		int a = 0;
 		for(int b=0; a < args.length && b < tpset.length; b++) {
@@ -85,7 +84,7 @@ public class TypeWithArgsRef extends TypeRef {
 		}
 		if (a < args.length)
 			Kiev.reportError(this,"Type "+tp+" has only "+a+" unbound type parameters");
-		tp = tp.bind(set);
+		tp = tp.meta_type.make(set);
 		this.lnk = tp;
 		return this.lnk;
 	}

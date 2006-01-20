@@ -179,7 +179,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 									throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");
 								p.init = new IFldExpr(p.pos,
 										new CastExpr(p.pos,
-											Type.getRealType(sw.tmpvar.getType(),cas.concr_type),
+											Type.getRealType(sw.tmpvar.getType(),cas.ctype),
 											new LVarExpr(p.pos,sw.tmpvar.getVar())
 										),
 										f

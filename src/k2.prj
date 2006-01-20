@@ -501,7 +501,6 @@ kiev.vlang.types.CallType kiev/vlang/types/CallType kiev\vlang\types\Type.java
 kiev.vlang.types.CallTypeProvider kiev/vlang/types/CallTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.CompaundType kiev/vlang/types/CompaundType kiev\vlang\types\Type.java
 kiev.vlang.types.CompaundTypeProvider kiev/vlang/types/CompaundTypeProvider kiev\vlang\types\TypeProvider.java
-kiev.vlang.types.ConcreteType kiev/vlang/types/ConcreteType kiev\vlang\types\Type.java
 kiev.vlang.types.CoreType kiev/vlang/types/CoreType kiev\vlang\types\Type.java
 kiev.vlang.types.CoreTypeProvider kiev/vlang/types/CoreTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.OuterType kiev/vlang/types/OuterType kiev\vlang\types\Type.java
@@ -513,7 +512,6 @@ kiev.vlang.types.TVarAlias kiev/vlang/types/TVarAlias kiev\vlang\types\TypeProvi
 kiev.vlang.types.TVarBound kiev/vlang/types/TVarBound kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVarFree kiev/vlang/types/TVarFree kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVarSet kiev/vlang/types/TVarSet kiev\vlang\types\TypeProvider.java
-kiev.vlang.types.TemplateType kiev/vlang/types/TemplateType kiev\vlang\types\Type.java
 kiev.vlang.types.Type kiev/vlang/types/Type kiev\vlang\types\Type.java
 kiev.vlang.types.TypeCallRef kiev/vlang/types/TypeCallRef kiev\vlang\types\TypeCallRef.java
 kiev.vlang.types.TypeClosureRef kiev/vlang/types/TypeClosureRef kiev\vlang\types\TypeClosure.java

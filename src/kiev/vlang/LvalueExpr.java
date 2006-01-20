@@ -272,7 +272,7 @@ public class AccessExpr extends LvalueExpr {
 			return info.buildAccess(this, o, v);
 		}
 		else if( v instanceof Struct ) {
-			TypeRef tr = new TypeRef(((Struct)v).concr_type);
+			TypeRef tr = new TypeRef(((Struct)v).ctype);
 			return tr;
 		}
 		else {
@@ -636,10 +636,10 @@ public final class ThisExpr extends LvalueExpr {
 			if (ctx_clazz == null)
 				return Type.tpVoid;
 			if (ctx_clazz.name.short_name.equals(nameIdefault))
-				return ctx_clazz.package_clazz.concr_type;
+				return ctx_clazz.package_clazz.ctype;
 			if (isSuperExpr())
 				ctx_clazz.super_type;
-			return ctx_clazz.concr_type;
+			return ctx_clazz.ctype;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
 			return Type.tpVoid;
@@ -863,14 +863,14 @@ public final class SFldExpr extends AccessExpr {
 
 	public SFldExpr(int pos, Field var) {
 		super(new SFldExprImpl(pos));
-		this.obj = new TypeRef(pos,var.ctx_clazz.concr_type);
+		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
 		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
 		super(new SFldExprImpl(pos));
-		this.obj = new TypeRef(pos,var.ctx_clazz.concr_type);
+		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
 		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 		if (direct_access) setAsField(true);
@@ -982,7 +982,7 @@ public final class OuterThisAccessExpr extends AccessExpr {
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
 		super(new OuterThisAccessExprImpl(pos));
-		this.obj = new TypeRef(pos,outer.concr_type);
+		this.obj = new TypeRef(pos,outer.ctype);
 		this.ident = new NameRef(pos,nameThis);
 		this.outer = outer;
 	}
@@ -992,14 +992,14 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	public Type getType() {
 		try {
 			if (ctx_clazz == null)
-				return outer.concr_type;
-			Type tp = ctx_clazz.concr_type;
+				return outer.ctype;
+			Type tp = ctx_clazz.ctype;
 			foreach (Field f; outer_refs)
 				tp = f.type.applay(tp);
 			return tp;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
-			return outer.concr_type;
+			return outer.ctype;
 		}
 	}
 
@@ -1023,10 +1023,10 @@ public final class OuterThisAccessExpr extends AccessExpr {
 		do {
 			trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
 			outer_refs.append(ou_ref);
-			if( ou_ref.type.isInstanceOf(outer.concr_type) ) break;
+			if( ou_ref.type.isInstanceOf(outer.ctype) ) break;
 			ou_ref = outerOf(ou_ref.type.getStruct());
 		} while( ou_ref!=null );
-		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.concr_type) )
+		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.ctype) )
 			throw new RuntimeException("Outer class "+outer+" not found for inner class "+ctx_clazz);
 		if( Kiev.debugResolve ) {
 			StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");

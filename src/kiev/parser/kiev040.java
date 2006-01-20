@@ -378,7 +378,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(SEMICOLON);
                 TypeNameRef tr = new TypeNameRef(qn);
                 Struct pkg = Env.newPackage(qn.name);
-                tr.lnk = pkg.concr_type;
+                tr.lnk = pkg.ctype;
                 {if (true) return tr;}
     throw new Error("Missing return statement in function");
   }
@@ -917,7 +917,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(CASE);
     name = Name();
                 clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
-                clazz.super_type = parent.concr_type;
+                clazz.super_type = parent.ctype;
                 clazz.setPizzaCase(true);
                 clazz.setSingleton(true);
     args = ClazzArguments();

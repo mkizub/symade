@@ -147,7 +147,7 @@ public final class NewExpr extends ENode {
 			else
 				type = (CompaundType)t;
 		}
-		if!(type instanceof ConcreteType)
+		if!(type instanceof CompaundType)
 			Kiev.reportWarning(this,"Instantiation of non-concrete type "+type+" ???");
 		if( type.isAnonymouseClazz() ) {
 			type.getStruct().resolveDecl();

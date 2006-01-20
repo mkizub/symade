@@ -156,7 +156,7 @@ public class ASTNewExpression extends ENode {
 
         // Process inner classes and cases
 		Kiev.runProcessorsOn(clazz);
-		ENode ne = new NewExpr(pos,clazz.concr_type,args.toArray());
+		ENode ne = new NewExpr(pos,clazz.ctype,args.toArray());
 		ne.clazz = (Struct)~clazz;
 		replaceWithNodeResolve(reqType, ne);
 	}

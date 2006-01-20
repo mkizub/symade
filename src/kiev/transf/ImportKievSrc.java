@@ -220,7 +220,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					for(Struct p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz) n++;
 					TypeDef td = new TypeDef(
 						new NameRef(me.pos,KString.from("outer$"+n+"$type")),
-						new TypeRef(pkg.imeta_type.templ_type));
+						new TypeRef(pkg.ctype));
 					me.members.append(td);
 					OuterTypeProvider.instance(me,td);
 					Field f = new Field(KString.from(nameThis+"$"+n),td.getAType(),ACC_FORWARD|ACC_FINAL);
@@ -303,11 +303,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}
 	
-	private ConcreteType getStructType(Struct clazz, Stack<Struct> path) {
+	private CompaundType getStructType(Struct clazz, Stack<Struct> path) {
 		if (clazz.isTypeResolved()) {
 			if (!clazz.isArgsResolved())
 				throw new CompilerException(clazz, "Recursive type declaration for class "+clazz+" via "+path);
-			return clazz.concr_type;
+			return clazz.ctype;
 		}
 		path.push(clazz);
 		
@@ -330,7 +330,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			if (clazz.isEnum()) {
 				foreach (DNode n; clazz.members; n instanceof Field && ((Field)n).isEnumField()) {
 					Field f = (Field)n;
-					f.ftype = new TypeRef(clazz.concr_type);
+					f.ftype = new TypeRef(clazz.ctype);
 				}
 			}
 		}
@@ -339,7 +339,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			Struct p = clazz.ctx_clazz;
 			p.addCase(clazz);
 			getStructType(p, path);
-			TypeWithArgsRef sup_ref = new TypeWithArgsRef(new TypeRef(p.concr_type));
+			TypeWithArgsRef sup_ref = new TypeWithArgsRef(new TypeRef(p.ctype));
 		next_case_arg:
 			for(int i=0; i < p.args.length; i++) {
 				for(int j=0; j < clazz.args.length; j++) {
@@ -385,8 +385,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 		
 		clazz.imeta_type.version++;
-		clazz.concr_type.bindings(); // update the type
-		if (clazz.concr_type.isUnerasable()) {
+		clazz.ctype.bindings(); // update the type
+		if (clazz.ctype.isUnerasable()) {
 			if (!clazz.isTypeUnerasable()) {
 				Kiev.reportWarning(clazz,"Type "+clazz+" must be annotated as @unerasable");
 				clazz.setTypeUnerasable(true);
@@ -399,7 +399,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		clazz.setArgsResolved(true);
 		path.pop();
 		
-		return clazz.concr_type;
+		return clazz.ctype;
 	}
 
 	////////////////////////////////////////////////////
@@ -473,7 +473,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						}
 					}
 				}
-				f.init = new NewExpr(f.pos,me.concr_type,new ENode[]{
+				f.init = new NewExpr(f.pos,me.ctype,new ENode[]{
 							new ConstStringExpr(f.name.name),
 							new ConstIntExpr(next_enum_val)
 							//new ConstStringExpr(text)
@@ -584,9 +584,9 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		if (me.isSingleton()) {
 			me.setFinal(true);
 			if (me.resolveField(nameInstance, false) == null) {
-				Field inst = new Field(nameInstance, me.concr_type, ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
+				Field inst = new Field(nameInstance, me.ctype, ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
 				inst.pos = me.pos;
-				inst.init = new NewExpr(me.pos, me.concr_type, ENode.emptyArray);
+				inst.init = new NewExpr(me.pos, me.ctype, ENode.emptyArray);
 				me.addField(inst);
 			}
 		}

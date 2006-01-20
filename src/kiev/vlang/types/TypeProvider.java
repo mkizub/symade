@@ -584,16 +584,23 @@ public final class TArg {
 
 
 public abstract class TypeProvider {
+	public final static TypeProvider[] emptyArray = new TypeProvider[0];
 	public int version;
 	public TypeProvider() {}
+	public abstract Type make(TVarSet bindings);
 	public abstract Type bind(Type t, TVarSet bindings);
 	public abstract Type rebind(Type t, TVarSet bindings);
 	public abstract Type applay(Type t, TVarSet bindings);
 }
 
 public class CoreTypeProvider extends TypeProvider {
-	public static final CoreTypeProvider instance = new CoreTypeProvider();
-	private CoreTypeProvider() {}
+	CoreType core_type;
+	
+	CoreTypeProvider() {}
+	
+	public Type make(TVarSet bindings) {
+		return core_type;
+	}
 	public Type bind(Type t, TVarSet bindings) {
 		throw new RuntimeException("bind() in CoreType");
 	}
@@ -605,35 +612,69 @@ public class CoreTypeProvider extends TypeProvider {
 	}
 }
 
-public class CompaundTypeProvider extends TypeProvider {
+public final class CompaundTypeProvider extends TypeProvider {
 	public final Struct			clazz;
-	public final TemplateType	templ_type;
+	
+	private TVarSet			templ_bindings;
+	private int				templ_version;
 	
 	public CompaundTypeProvider(Struct clazz) {
 		this.clazz = clazz;
 		if (this.clazz == Env.root) ((Struct.StructImpl)Env.root.$v_impl).imeta_type = this;
-		this.templ_type = new TemplateType(this, TVarSet.emptySet);
+		this.templ_bindings = TVarSet.emptySet;
+		this.templ_version = -1;
 	}
 	
+	public Type make(TVarSet bindings) {
+		return new CompaundType(this, getTemplBindings().bind(bindings));
+	}
+
 	public Type bind(Type t, TVarSet bindings) {
 		if (!t.isAbstract()) return t;
-		return new ConcreteType(this, t.bindings().bind(bindings));
+		return new CompaundType(this, t.bindings().bind(bindings));
 	}
 	
 	public Type rebind(Type t, TVarSet bindings) {
-		return new ConcreteType(this, t.bindings().rebind(bindings));
+		return new CompaundType(this, t.bindings().rebind(bindings));
 	}
 	
 	public Type applay(Type t, TVarSet bindings) {
 		if (!t.isAbstract() || bindings.length == 0) return t;
-		return new ConcreteType(this, t.bindings().applay(bindings));
+		return new CompaundType(this, t.bindings().applay(bindings));
 	}
 	
+	public TVarSet getTemplBindings() {
+		if (this.version != this.templ_version)
+			makeTemplBindings();
+		return templ_bindings;
+	}
+	
+	private void makeTemplBindings() {
+		TVarSet vs = new TVarSet();
+		foreach (TypeDef ad; clazz.args)
+			vs.append(ad.getAType(), null);
+		foreach (DNode d; clazz.members; d instanceof TypeDef) {
+			TypeDef td = (TypeDef)d;
+			vs.append(td.getAType(), null /*td.getAType().getSuperType()*/);
+		}
+		TypeRef st = clazz.super_bound;
+		if (st.getType() ≢ null) {
+			vs.append(st.getType().bindings());
+			foreach (TypeRef it; clazz.interfaces)
+				vs.append(it.getType().bindings());
+		}
+		templ_bindings = vs;
+		templ_version = version;
+	}
 }
 
 public class ArrayTypeProvider extends TypeProvider {
 	public static final ArrayTypeProvider instance = new ArrayTypeProvider();
 	private ArrayTypeProvider() {}
+
+	public Type make(TVarSet bindings) {
+		return ArrayType.newArrayType(bindings.resolve(StdTypes.tpArrayArg));
+	}
 	public Type bind(Type t, TVarSet bindings) {
 		throw new RuntimeException("bind() in ArrayType");
 	}
@@ -649,6 +690,10 @@ public class ArrayTypeProvider extends TypeProvider {
 public class ArgTypeProvider extends TypeProvider {
 	public static final ArgTypeProvider instance = new ArgTypeProvider();
 	private ArgTypeProvider() {}
+
+	public Type make(TVarSet bindings) {
+		throw new RuntimeException("make() in ArgType");
+	}
 	public Type bind(Type t, TVarSet bindings) {
 		return t; //throw new RuntimeException("bind() in ArgType");
 	}
@@ -680,6 +725,9 @@ public class WrapperTypeProvider extends TypeProvider {
 		this.clazz = clazz;
 		this.field = clazz.getWrappedField(true);
 	}
+	public Type make(TVarSet bindings) {
+		return WrapperType.newWrapperType(bindings.resolve(StdTypes.tpWrapperArg));
+	}
 	public Type bind(Type t, TVarSet bindings) {
 		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().bind(bindings));
 	}
@@ -703,6 +751,10 @@ public class OuterTypeProvider extends TypeProvider {
 	private OuterTypeProvider(Struct clazz, TypeDef tdef) {
 		this.clazz = clazz;
 		this.tdef = tdef;
+	}
+
+	public Type make(TVarSet bindings) {
+		return OuterType.newOuterType(clazz,bindings.resolve(tdef.getAType()));
 	}
 	public Type bind(Type t, TVarSet bindings) {
 		return OuterType.newOuterType(clazz,((OuterType)t).outer.bind(bindings));

@@ -35,7 +35,7 @@ public interface StdTypes {
 	public static final int flForward			= 1 << 16;
 	public static final int flHidden			= 1 << 17;
 
-	public static final ConcreteType tpEnv;
+	public static final CompaundType tpEnv;
 	public static final CoreType tpAny;
 	public static final CoreType tpVoid;
 	public static final CoreType tpBoolean;
@@ -47,42 +47,42 @@ public interface StdTypes {
 	public static final CoreType tpFloat;
 	public static final CoreType tpDouble;
 	public static final CoreType tpNull;
-	public static final ConcreteType tpRule;
-	public static final ConcreteType tpBooleanRef;
-	public static final ConcreteType tpByteRef;
-	public static final ConcreteType tpCharRef;
-	public static final ConcreteType tpNumberRef;
-	public static final ConcreteType tpShortRef;
-	public static final ConcreteType tpIntRef;
-	public static final ConcreteType tpLongRef;
-	public static final ConcreteType tpFloatRef;
-	public static final ConcreteType tpDoubleRef;
-	public static final ConcreteType tpVoidRef;
-	public static final ConcreteType tpObject;
-	public static final ConcreteType tpClass;
-	public static final ConcreteType tpDebug;
-	public static final ConcreteType tpTypeInfo;
-	public static final ConcreteType tpTypeInfoInterface;
-	public static final ConcreteType tpCloneable;
-	public static final ConcreteType tpString;
-	public static final ConcreteType tpThrowable;
-	public static final ConcreteType tpError;
-	public static final ConcreteType tpException;
-	public static final ConcreteType tpCastException;
-	public static final ConcreteType tpJavaEnumeration;
-	public static final ConcreteType tpKievEnumeration;
-	public static final ConcreteType tpArrayEnumerator;
-	public static final ConcreteType tpRuntimeException;
-	public static final ConcreteType tpAssertException;
-	public static final ConcreteType tpEnum;
-	public static final ConcreteType tpAnnotation;
-	public static final ConcreteType tpClosure;
+	public static final CompaundType tpRule;
+	public static final CompaundType tpBooleanRef;
+	public static final CompaundType tpByteRef;
+	public static final CompaundType tpCharRef;
+	public static final CompaundType tpNumberRef;
+	public static final CompaundType tpShortRef;
+	public static final CompaundType tpIntRef;
+	public static final CompaundType tpLongRef;
+	public static final CompaundType tpFloatRef;
+	public static final CompaundType tpDoubleRef;
+	public static final CompaundType tpVoidRef;
+	public static final CompaundType tpObject;
+	public static final CompaundType tpClass;
+	public static final CompaundType tpDebug;
+	public static final CompaundType tpTypeInfo;
+	public static final CompaundType tpTypeInfoInterface;
+	public static final CompaundType tpCloneable;
+	public static final CompaundType tpString;
+	public static final CompaundType tpThrowable;
+	public static final CompaundType tpError;
+	public static final CompaundType tpException;
+	public static final CompaundType tpCastException;
+	public static final CompaundType tpJavaEnumeration;
+	public static final CompaundType tpKievEnumeration;
+	public static final CompaundType tpArrayEnumerator;
+	public static final CompaundType tpRuntimeException;
+	public static final CompaundType tpAssertException;
+	public static final CompaundType tpEnum;
+	public static final CompaundType tpAnnotation;
+	public static final CompaundType tpClosure;
 	public static final Struct tpClosureClazz;
 
-	public static final ConcreteType tpPrologVar;
-	public static final ConcreteType tpRefProxy;
+	public static final CompaundType tpPrologVar;
+	public static final CompaundType tpRefProxy;
 
-	public static final ConcreteType tpTypeSwitchHash;
+	public static final CompaundType tpTypeSwitchHash;
 
 	public static final ArrayType tpArray;
 
@@ -95,8 +95,8 @@ public interface StdTypes {
 	static {
 
 		Struct tpEnvClazz = Env.root;
-		tpEnv				= new ConcreteType(tpEnvClazz.imeta_type, TVarSet.emptySet);
-		((Struct.StructImpl)tpEnvClazz.$v_impl).concr_type		= tpEnv;
+		tpEnv				= new CompaundType(tpEnvClazz.imeta_type, TVarSet.emptySet);
+		((Struct.StructImpl)tpEnvClazz.$v_impl).ctype		= tpEnv;
 		tpEnv.flags			= flResolved;
 
 		tpAny		= new CoreType(Constants.nameAny,     0);
@@ -116,7 +116,7 @@ public interface StdTypes {
 							KString.from("rule"),
 							KString.from("rule"),
 							KString.from("R"),false,false),null,ACC_PUBLIC);
-		tpRule					= tpRuleClazz.concr_type;
+		tpRule					= tpRuleClazz.ctype;
 		tpRuleClazz.setResolved(true);
 		tpRule.flags			= flResolved | flReference;
 
@@ -127,22 +127,22 @@ public interface StdTypes {
 		Struct kiev_stdlib_meta = Env.newPackage(KString.from("kiev.stdlib.meta"));
 
 		Struct tpObjectClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Object;")),java_lang,ACC_PUBLIC);
-		tpObject				= tpObjectClazz.concr_type;
+		tpObject				= tpObjectClazz.ctype;
 
 		Struct tpClassClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Class;")),java_lang,ACC_PUBLIC|ACC_FINAL);
-		tpClass					= tpClassClazz.concr_type;
+		tpClass					= tpClassClazz.ctype;
 
 		Struct tpDebugClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Debug;")),kiev_stdlib,ACC_PUBLIC);
-		tpDebug				= tpDebugClazz.concr_type;
+		tpDebug				= tpDebugClazz.ctype;
 
 		Struct tpTypeInfoClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/TypeInfoX;")),kiev_stdlib,ACC_PUBLIC|ACC_FINAL);
-		tpTypeInfo				= tpTypeInfoClazz.concr_type;
+		tpTypeInfo				= tpTypeInfoClazz.ctype;
 
 		Struct tpTypeInfoInterfaceClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/TypeInfoXInterface;")),kiev_stdlib,ACC_PUBLIC|ACC_INTERFACE);
-		tpTypeInfoInterface				= tpTypeInfoInterfaceClazz.concr_type;
+		tpTypeInfoInterface				= tpTypeInfoInterfaceClazz.ctype;
 
 		Struct tpCloneableClazz = Env.newInterface(ClazzName.fromSignature(KString.from("Ljava/lang/Cloneable;")),java_lang,ACC_PUBLIC|ACC_INTERFACE);
-		tpCloneable				= tpCloneableClazz.concr_type;
+		tpCloneable				= tpCloneableClazz.ctype;
 		tpCloneableClazz.setInterface(true);
 
 		
@@ -157,89 +157,89 @@ public interface StdTypes {
 		tpArray.flags			|= flResolved | flReference | flArray;
 
 		Struct tpBooleanRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Boolean;")),java_lang,ACC_PUBLIC);
-		tpBooleanRef			= tpBooleanRefClazz.concr_type;
+		tpBooleanRef			= tpBooleanRefClazz.ctype;
 
 		Struct tpCharRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Character;")),java_lang,ACC_PUBLIC);
-		tpCharRef			= tpCharRefClazz.concr_type;
+		tpCharRef			= tpCharRefClazz.ctype;
 
 		Struct tpNumberRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Number;")),java_lang,ACC_PUBLIC);
-		tpNumberRef			= tpNumberRefClazz.concr_type;
+		tpNumberRef			= tpNumberRefClazz.ctype;
 
 		Struct tpByteRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Byte;")),java_lang,ACC_PUBLIC);
-		tpByteRef			= tpByteRefClazz.concr_type;
+		tpByteRef			= tpByteRefClazz.ctype;
 
 		Struct tpShortRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Short;")),java_lang,ACC_PUBLIC);
-		tpShortRef			= tpShortRefClazz.concr_type;
+		tpShortRef			= tpShortRefClazz.ctype;
 
 		Struct tpIntRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Integer;")),java_lang,ACC_PUBLIC);
-		tpIntRef			= tpIntRefClazz.concr_type;
+		tpIntRef			= tpIntRefClazz.ctype;
 
 		Struct tpLongRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Long;")),java_lang,ACC_PUBLIC);
-		tpLongRef			= tpLongRefClazz.concr_type;
+		tpLongRef			= tpLongRefClazz.ctype;
 
 		Struct tpFloatRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Float;")),java_lang,ACC_PUBLIC);
-		tpFloatRef			= tpFloatRefClazz.concr_type;
+		tpFloatRef			= tpFloatRefClazz.ctype;
 
 		Struct tpDoubleRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Double;")),java_lang,ACC_PUBLIC);
-		tpDoubleRef			= tpDoubleRefClazz.concr_type;
+		tpDoubleRef			= tpDoubleRefClazz.ctype;
 
 		Struct tpVoidRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Void;")),java_lang,ACC_PUBLIC);
-		tpVoidRef			= tpVoidRefClazz.concr_type;
+		tpVoidRef			= tpVoidRefClazz.ctype;
 
 		Struct tpStringClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/String;")),java_lang,ACC_PUBLIC);
-		tpString				= tpStringClazz.concr_type;
+		tpString				= tpStringClazz.ctype;
 
 		Struct tpAnnotationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/annotation/Annotation;")),java_lang_annotation,ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT);
-		tpAnnotation			= tpAnnotationClazz.concr_type;
+		tpAnnotation			= tpAnnotationClazz.ctype;
 		
 		Struct tpThrowableClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Throwable;")),java_lang,ACC_PUBLIC);
-		tpThrowable				= tpThrowableClazz.concr_type;
+		tpThrowable				= tpThrowableClazz.ctype;
 
 		Struct tpErrorClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Error;")),java_lang,ACC_PUBLIC);
-		tpError				= tpErrorClazz.concr_type;
+		tpError				= tpErrorClazz.ctype;
 
 		Struct tpExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Exception;")),java_lang,ACC_PUBLIC);
-		tpException				= tpExceptionClazz.concr_type;
+		tpException				= tpExceptionClazz.ctype;
 
 		Struct tpCastExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/ClassCastException;")),java_lang,ACC_PUBLIC);
-		tpCastException				= tpCastExceptionClazz.concr_type;
+		tpCastException				= tpCastExceptionClazz.ctype;
 
 		Struct tpRuntimeExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/RuntimeException;")),java_lang,ACC_PUBLIC);
-		tpRuntimeException				= tpRuntimeExceptionClazz.concr_type;
+		tpRuntimeException				= tpRuntimeExceptionClazz.ctype;
 
 		Struct tpAssertExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/AssertionFailedException;")),kiev_stdlib,ACC_PUBLIC);
-		tpAssertException				= tpAssertExceptionClazz.concr_type;
+		tpAssertException				= tpAssertExceptionClazz.ctype;
 
 		Struct tpEnumClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Enum;")),java_lang,ACC_PUBLIC | ACC_ABSTRACT);
-		tpEnum					= tpEnumClazz.concr_type;
+		tpEnum					= tpEnumClazz.ctype;
 
 		tpClosureClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/closure;")),kiev_stdlib,ACC_PUBLIC);
-		tpClosure				= tpClosureClazz.concr_type;
+		tpClosure				= tpClosureClazz.ctype;
 
 		Struct tpTypeSwitchHashClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/TypeSwitchHash;")),kiev_stdlib,ACC_PUBLIC);
-		tpTypeSwitchHash			= tpTypeSwitchHashClazz.concr_type;
+		tpTypeSwitchHash			= tpTypeSwitchHashClazz.ctype;
 
 
 		Struct tpJavaEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/util/Enumeration;")),java_util,ACC_PUBLIC);
-		tpJavaEnumeration	= tpJavaEnumerationClazz.concr_type;
+		tpJavaEnumeration	= tpJavaEnumerationClazz.ctype;
 		
 		Struct tpKievEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enumeration;")),kiev_stdlib,ACC_PUBLIC);
 		tpKievEnumerationClazz.args.add(new TypeDef(KString.from("A")));
-		tpKievEnumeration	= tpKievEnumerationClazz.concr_type;
+		tpKievEnumeration	= tpKievEnumerationClazz.ctype;
 		
 		
 		Struct tpArrayEnumeratorClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/ArrayEnumerator;")),kiev_stdlib,ACC_PUBLIC);
 		tpArrayEnumeratorClazz.args.add(new TypeDef(KString.from("A")));
-		tpArrayEnumerator	= tpArrayEnumeratorClazz.concr_type;
+		tpArrayEnumerator	= tpArrayEnumeratorClazz.ctype;
 		
 
 		Struct tpPrologVarClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PVar;")),kiev_stdlib,ACC_PUBLIC);
 		tpPrologVarClazz.args.add(new TypeDef(KString.from("A")));
-		tpPrologVar	= tpPrologVarClazz.concr_type;
+		tpPrologVar	= tpPrologVarClazz.ctype;
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
 		tpRefProxyClazz.args.add(new TypeDef(KString.from("A")));
-		tpRefProxy	= tpRefProxyClazz.concr_type;
+		tpRefProxy	= tpRefProxyClazz.ctype;
 
 
 		TypeDef tdCallRetArg = new TypeDef(KString.from("_ret_"), tpAny);
