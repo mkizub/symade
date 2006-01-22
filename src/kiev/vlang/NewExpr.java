@@ -129,7 +129,7 @@ public final class NewExpr extends ENode {
 		}
 		if (outer == null)
 			return type;
-		TVarSet vset = new TVarSet(
+		TVarBld vset = new TVarBld(
 			type.getStruct().ometa_type.tdef.getAType(),
 			new OuterType(type.getStruct(),outer.getType()) );
 		return type.rebind(vset);
@@ -165,7 +165,7 @@ public final class NewExpr extends ENode {
 		}
 		if( outer != null ) {
 			outer.resolve(null);
-			type = (CompaundType)type.bind(new TVarSet(type.clazz.ometa_type.tdef.getAType(), outer.getType()));
+			type = (CompaundType)type.bind(new TVarBld(type.clazz.ometa_type.tdef.getAType(), outer.getType()));
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);

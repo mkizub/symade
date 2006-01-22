@@ -119,7 +119,7 @@ public class TypeExpr extends TypeRef {
 					throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
 			}
 			t.checkResolved();
-			TVarSet set = new TVarSet();
+			TVarBld set = new TVarBld();
 			if (t.getStruct().args.length != 1)
 				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
 			set.append(t.getStruct().args[0].getAType(), tp);

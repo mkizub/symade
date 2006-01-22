@@ -25,7 +25,8 @@ public abstract class AType implements StdTypes {
 	public							int					flags;
 	private							int					version;
 	
-	protected AType(TypeProvider meta_type, int flags, TVarSet bindings) {
+	protected AType(TypeProvider meta_type, int flags, TVarSet bindings)
+	{
 		this.meta_type = meta_type;
 		this.flags = flags;
 		this.bindings = bindings;
@@ -107,15 +108,15 @@ public abstract class Type extends AType {
 	public final Type applay(Type accessor) {
 		return meta_type.applay(this,accessor.bindings());
 	}
-	public final Type applay(TVarSet bindings) {
+	public final Type applay(TVSet bindings) {
 		return meta_type.applay(this,bindings);
 	}
 	// instantiate new type
-	public final Type bind(TVarSet bindings) {
+	public final Type bind(TVSet bindings) {
 		return meta_type.bind(this,bindings);
 	}
 	// rebind with lower bound or outer type, etc
-	public final Type rebind(TVarSet bindings) {
+	public final Type rebind(TVSet bindings) {
 		return meta_type.rebind(this,bindings);
 	}
 	// find bound value for an abstract type
@@ -292,7 +293,7 @@ public abstract class Type extends AType {
 	}
 
 	public static CompaundType getProxyType(Type tp) {
-		TVarSet set = new TVarSet();
+		TVarBld set = new TVarBld();
 		set.append(tpRefProxy.clazz.args[0].getAType(), tp);
 		return (CompaundType)((CompaundTypeProvider)tpRefProxy.meta_type).make(set);
 	}
@@ -638,8 +639,8 @@ public final class CompaundType extends Type {
 			// if clazz is the same, check all bindings to be instanceof upper bindings
 			TVarSet b1 = t1.bindings();
 			TVarSet b2 = t2.bindings();
-			for(int i=0; i < b2.length; i++) {
-				TVar v2 = b2[i];
+			for(int i=0; i < b2.tvars.length; i++) {
+				TVar v2 = b2.tvars[i];
 				if (v2.isAlias())
 					continue;
 				Type r2 = v2.result();
@@ -672,7 +673,7 @@ public final class ArrayType extends Type {
 	}
 	
 	private ArrayType(Type arg) {
-		super(ArrayTypeProvider.instance, flReference | flArray, new TVarSet(tpArrayArg, arg));
+		super(ArrayTypeProvider.instance, flReference | flArray, new TVarBld(tpArrayArg, arg).close());
 	}
 
 	public Type make(TVarSet bindings) { return meta_type.make(bindings); }
@@ -746,7 +747,7 @@ public final class WrapperType extends Type {
 	}
 	
 	public WrapperType(CompaundType unwrapped_type) {
-		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()), flReference | flWrapper, new TVarSet(tpWrapperArg, unwrapped_type));
+		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()), flReference | flWrapper, new TVarBld(tpWrapperArg, unwrapped_type).close());
 	}
 
 	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
@@ -853,7 +854,7 @@ public final class OuterType extends Type {
 	}
 	
 	private OuterType(OuterTypeProvider meta_type, Type outer) {
-		super(meta_type, flReference, new TVarSet(meta_type.tdef.getAType(), outer));
+		super(meta_type, flReference, new TVarBld(meta_type.tdef.getAType(), outer).close());
 	}
 
 	public Type get$outer()			{ return bindings.tvars[0].result(); }
@@ -904,7 +905,8 @@ public final class OuterType extends Type {
 public final class CallType extends Type {
 	public  final int		arity;
 
-	CallType(TVarSet bindings, int arity, boolean is_closure) {
+	CallType(TVarSet bindings, int arity, boolean is_closure)
+	{
 		super(CallTypeProvider.instance, flCallable, bindings);
 		this.arity = arity;
 		if (is_closure)
@@ -932,15 +934,15 @@ public final class CallType extends Type {
 		targs = (targs != null && targs.length > 0) ? targs : Type.emptyArray;
 		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
 		ret   = (ret  == null) ? Type.tpAny : ret;
-		TVarSet vs = new TVarSet();
+		TVarBld vs = new TVarBld();
 		for (int i=0; i < targs.length; i++)
 			vs.append(tpUnattachedArgs[i], targs[i]);
 		vs.append(tpCallRetArg, ret);
 		for (int i=0; i < args.length; i++)
 			vs.append(tpCallParamArgs[i], args[i]);
-		return new CallType(vs,args.length,is_closure);
+		return new CallType(vs.close(),args.length,is_closure);
 	}
-	public static CallType createCallType(TVarSet vs, Type[] args, Type ret, boolean is_closure)
+	public static CallType createCallType(TVarBld vs, Type[] args, Type ret, boolean is_closure)
 		alias operator(210,lfy,new)
 	{
 		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
@@ -948,11 +950,11 @@ public final class CallType extends Type {
 		vs.append(tpCallRetArg, ret);
 		for (int i=0; i < args.length; i++)
 			vs.append(tpCallParamArgs[i], args[i]);
-		return new CallType(vs,args.length,is_closure);
+		return new CallType(vs.close(),args.length,is_closure);
 	}
 
 	public CallType toCallTypeRetAny() {
-		TVarSet vs = bindings().rebind(new TVarSet(tpCallRetArg, tpAny));
+		TVarSet vs = bindings().rebind(new TVarBld(tpCallRetArg, tpAny));
 		return new CallType(vs, this.arity, this.isReference());
 	}
 	

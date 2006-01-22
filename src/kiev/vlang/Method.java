@@ -83,12 +83,18 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	
 		final void rebuildTypes() {
-			TVarSet vset = new TVarSet();
+			TVarBld type_set = new TVarBld();
+			TVarBld dtype_set = new TVarBld();
 			if (targs.length > 0) {
-				foreach (TypeDef td; targs)
-					vset.append(td.getAType(), null);
+				foreach (TypeDef td; targs) {
+					type_set.append(td.getAType(), null);
+					dtype_set.append(td.getAType(), null);
+				}
 			}
-			vset.append(getMethod().ctx_clazz.ctype.bindings());
+			if (!is_static && !is_mth_virtual_static) {
+				type_set.append(getMethod().ctx_clazz.ctype.bindings());
+				dtype_set.append(getMethod().ctx_clazz.ctype.bindings());
+			}
 			Vector<Type> args = new Vector<Type>();
 			Vector<Type> dargs = new Vector<Type>();
 			foreach (FormPar fp; params) {
@@ -141,8 +147,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
 				}
 			}
-			this.type = new CallType(vset.copy(), args.toArray(), type_ret.getType(), false);
-			this.dtype = new CallType(vset.copy(), dargs.toArray(), dtype_ret.getType(), false);
+			this.type = new CallType(type_set, args.toArray(), type_ret.getType(), false);
+			this.dtype = new CallType(dtype_set, dargs.toArray(), dtype_ret.getType(), false);
 			invalid_types = false;
 		}
 		
@@ -534,8 +540,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		CallType rt = (CallType)Type.getRealType(tp,this.type);
 		rt = rt.bind(tp.bindings());
 		
-		if ((mt.bindings().length - mt.arity - 1) > 0) {
-			TVarSet set = new TVarSet();
+		if ((mt.bindings().tvars.length - mt.arity - 1) > 0) {
+			TVarBld set = new TVarBld();
 			int a = 0;
 			foreach (TVar tv; mt.bindings().tvars) {
 				if (tv.var.isHidden())

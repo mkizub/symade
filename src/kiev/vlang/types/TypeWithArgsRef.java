@@ -69,17 +69,17 @@ public class TypeWithArgsRef extends TypeRef {
 		if (tp == null || !(tp instanceof CompaundType))
 			throw new CompilerException(this,"Compaund type "+base_type+" is not found");
 		TVarSet tpset = ((CompaundTypeProvider)tp.meta_type).getTemplBindings();
-		TVarSet set = new TVarSet();
+		TVarBld set = new TVarBld();
 		int a = 0;
-		for(int b=0; a < args.length && b < tpset.length; b++) {
-			if (tpset[b].isBound())
+		for(int b=0; a < args.length && b < tpset.tvars.length; b++) {
+			if (tpset.tvars[b].isBound())
 				continue;
 			Type bound = args[a].getType();
 			if (bound == null)
 				throw new CompilerException(this,"Type "+args[a]+" is not found");
-			if!(bound.isInstanceOf(tpset[b].var))
-				throw new CompilerException(this,"Type "+bound+" is not applayable to "+tpset[b].var);
-			set.append(tpset[b].var, bound);
+			if!(bound.isInstanceOf(tpset.tvars[b].var))
+				throw new CompilerException(this,"Type "+bound+" is not applayable to "+tpset.tvars[b].var);
+			set.append(tpset.tvars[b].var, bound);
 			a++;
 		}
 		if (a < args.length)

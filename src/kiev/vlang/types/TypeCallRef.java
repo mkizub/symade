@@ -85,7 +85,7 @@ public class TypeCallRef extends TypeRef {
 		if (targs.length == 0) {
 			this.lnk = new CallType(atypes,rt);
 		} else {
-			TVarSet vset = new TVarSet();
+			TVarBld vset = new TVarBld();
 			foreach (TypeDef td; targs)
 				vset.append(td.getAType(), null);
 			this.lnk = new CallType(vset,atypes,rt,false);
