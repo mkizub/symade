@@ -181,7 +181,7 @@ public class Signature {
 //		} else {
 			if (isArgument)
 				throw new RuntimeException("not implemented"); //return new ArgType(cname,null);
-			return new CompaundType(clazz.imeta_type, TVarSet.emptySet);
+			return new CompaundType(clazz.imeta_type, TVarBld.emptySet);
 //		}
 	}
 
@@ -219,7 +219,7 @@ public class Signature {
 //				args = (Type[])Arrays.append(args,getType(sc));
 //			sc.nextChar();
 //		}
-		return new CompaundType(clazz.imeta_type, TVarSet.emptySet);
+		return new CompaundType(clazz.imeta_type, TVarBld.emptySet);
 	}
 
 	public static KString getJavaSignature(KString sig) {

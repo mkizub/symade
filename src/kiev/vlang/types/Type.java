@@ -13,83 +13,11 @@ import kiev.be.java.JStructView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
+
 /**
  * @author Maxim Kizub
  *
  */
-
-public abstract class AType implements StdTypes {
-	
-	public final					TypeProvider		meta_type;
-	protected access:no,ro,ro,rw	TVarSet				bindings;
-	public							int					flags;
-	private							int					version;
-	
-	protected AType(TypeProvider meta_type, int flags, TVarSet bindings)
-	{
-		this.meta_type = meta_type;
-		this.flags = flags;
-		this.bindings = bindings;
-		checkAbstract();
-	}
-	
-	public final TVarSet bindings() {
-		if (this.version != this.meta_type.version) {
-			this.bindings = meta_type.getTemplBindings().bind(this.bindings);
-			this.version = this.meta_type.version;
-			checkAbstract();
-		}
-		return this.bindings;
-	}
-	
-	private void checkAbstract() {
-		flags &= ~flAbstract;
-		foreach(TVar v; this.bindings().tvars; !v.isAlias()) {
-			Type r = v.result();
-			if (r.isAbstract() || r == v.var)
-				flags |= flAbstract;
-			if (v.var.isUnerasable())
-				flags |= flUnerasable;
-		}
-	}
-
-	public static boolean identity(AType t1, AType t2) alias operator (60, xfx, ≡ ) {
-		return t1 == t2;
-	}
-
-	public static boolean not_identity(AType t1, AType t2) alias operator (60, xfx, ≢ ) {
-		return t1 != t2;
-	}
-
-	public static boolean type_not_equals(AType t1, AType t2) alias operator (60, xfx, ≉ ) {
-		if (t1 == null || t2 == null) return true;
-		return !(t1 ≈ t2);
-	}
-	
-	public static boolean type_equals(AType t1, AType t2) alias operator (60, xfx, ≈ ) {
-		if (t1 == null || t2 == null) return false;
-		if (t1 == t2) return true;
-		if (t1.meta_type != t2.meta_type) return false;
-		TVar[] b1 = t1.bindings().tvars;
-		TVar[] b2 = t2.bindings().tvars;
-		if (b1.length != b2.length) return false;
-		final int n = b1.length;
-		for (int i=0; i < n; i++) {
-			TVar tv1 = b1[i];
-			TVar tv2 = b2[i];
-			if (tv1.var != tv2.var) return false;
-			if (tv1.result() ≉ tv2.result())
-				return false;
-		}
-		return true;
-	}
-
-	public final boolean equals(Object to) alias operator (60, xfx, ≈ ) {
-		if (to instanceof AType) return AType.type_equals(this,(AType)to);
-		return false;
-	}
-
-}
 
 public abstract class Type extends AType {
 	public static Type[]	emptyArray = new Type[0];
@@ -105,9 +33,6 @@ public abstract class Type extends AType {
 	public abstract Dumper toJava(Dumper dmp);
 	
 	// accessor.field
-	public final Type applay(Type accessor) {
-		return meta_type.applay(this,accessor.bindings());
-	}
 	public final Type applay(TVSet bindings) {
 		return meta_type.applay(this,bindings);
 	}
@@ -119,10 +44,7 @@ public abstract class Type extends AType {
 	public final Type rebind(TVSet bindings) {
 		return meta_type.rebind(this,bindings);
 	}
-	// find bound value for an abstract type
-	public final Type resolve(ArgType arg) {
-		return this.bindings().resolve(arg);
-	}
+	
 	public final JStructView getJStruct() {
 		Struct s = getStruct();
 		if (s == null)
@@ -132,10 +54,16 @@ public abstract class Type extends AType {
 	public Struct getStruct() { return null; }
 	public Meta getMeta(KString name) { return null; }
 
-	protected Type(TypeProvider meta_type, int flags, TVarSet bindings)
+	protected Type(TypeProvider meta_type, int flags, TVarBld bindings)
 		require { meta_type != null; }
 	{
 		super(meta_type, flags, bindings);
+	}
+
+	protected Type(TypeProvider meta_type, int flags, TVar[] tvars, TArg[] appls)
+		require { meta_type != null; }
+	{
+		super(meta_type, flags, tvars, appls);
 	}
 
 	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
@@ -303,7 +231,7 @@ public abstract class Type extends AType {
 public final class CoreType extends Type {
 	public final KString name;
 	CoreType(KString name, int flags) {
-		super(new CoreTypeProvider(), flags | flResolved, TVarSet.emptySet);
+		super(new CoreTypeProvider(), flags | flResolved, TVar.emptyArray, TArg.emptyArray);
 		((CoreTypeProvider)meta_type).core_type = this;
 		this.name = name;
 	}
@@ -414,7 +342,7 @@ public final class ArgType extends Type {
 	public final TypeDef			definer;
 
 	public ArgType(KString name, TypeDef definer) {
-		super(ArgTypeProvider.instance, flReference, TVarSet.emptySet);
+		super(ArgTypeProvider.instance, flReference, TVar.emptyArray, TArg.emptyArray);
 		this.name = name;
 		this.definer = definer;
 		if (definer.isTypeAbstract())   this.flags |= flAbstract;
@@ -470,7 +398,7 @@ public final class ArgType extends Type {
 public final class CompaundType extends Type {
 	public final Struct get$clazz() { return ((CompaundTypeProvider)meta_type).clazz; }
 
-	public CompaundType(CompaundTypeProvider meta_type, TVarSet bindings) {
+	public CompaundType(CompaundTypeProvider meta_type, TVarBld bindings) {
 		super(meta_type, flReference, bindings);
 	}
 	
@@ -637,8 +565,8 @@ public final class CompaundType extends Type {
 			if (t1.clazz != t2.clazz)
 				return true; // if it extends the class, it's always an instance of it
 			// if clazz is the same, check all bindings to be instanceof upper bindings
-			TVarSet b1 = t1.bindings();
-			TVarSet b2 = t2.bindings();
+			AType b1 = t1.bindings();
+			AType b2 = t2.bindings();
 			for(int i=0; i < b2.tvars.length; i++) {
 				TVar v2 = b2.tvars[i];
 				if (v2.isAlias())
@@ -664,7 +592,7 @@ public final class CompaundType extends Type {
 
 public final class ArrayType extends Type {
 
-	@getter public Type get$arg() { return bindings.tvars[0].result(); }
+	@getter public Type get$arg() { return this.tvars[0].result(); }
 	
 	public static ArrayType newArrayType(Type type)
 		alias operator(240,lfy,new)
@@ -775,7 +703,7 @@ public final class WrapperType extends Type {
 	public final ENode makeWrappedAccess(ASTNode from)	{ return new IFldExpr(from.pos,(ENode)~from, wrapped_field); } 
 	public final Type getWrappedType()					{ return Type.getRealType(getUnwrappedType(), wrapped_field.type); }
 	
-	public CompaundType getUnwrappedType()				{ return (CompaundType)this.bindings.tvars[0].result(); }
+	public CompaundType getUnwrappedType()				{ return (CompaundType)this.tvars[0].result(); }
 	
 	public Struct getStruct()			{ return getUnwrappedType().getStruct(); }
 	public Meta getMeta(KString name)	{ return getUnwrappedType().getMeta(name); }
@@ -857,7 +785,7 @@ public final class OuterType extends Type {
 		super(meta_type, flReference, new TVarBld(meta_type.tdef.getAType(), outer).close());
 	}
 
-	public Type get$outer()			{ return bindings.tvars[0].result(); }
+	public Type get$outer()			{ return this.tvars[0].result(); }
 	
 	public JType getJType() {
 		if (jtype == null)
@@ -905,9 +833,9 @@ public final class OuterType extends Type {
 public final class CallType extends Type {
 	public  final int		arity;
 
-	CallType(TVarSet bindings, int arity, boolean is_closure)
+	CallType(TVarBld bld, int arity, boolean is_closure)
 	{
-		super(CallTypeProvider.instance, flCallable, bindings);
+		super(CallTypeProvider.instance, flCallable, bld);
 		this.arity = arity;
 		if (is_closure)
 			flags |= flReference;
@@ -954,12 +882,12 @@ public final class CallType extends Type {
 	}
 
 	public CallType toCallTypeRetAny() {
-		TVarSet vs = bindings().rebind(new TVarBld(tpCallRetArg, tpAny));
+		TVarBld vs = bindings().rebind_bld(new TVarBld(tpCallRetArg, tpAny));
 		return new CallType(vs, this.arity, this.isReference());
 	}
 	
 	public Type ret() {
-		TVarSet bindings = this.bindings();
+		AType bindings = this.bindings();
 		foreach (TVar tv; bindings.tvars; tv.var ≡ tpCallRetArg)
 			return tv.result().applay(bindings);
 		return tpAny;
@@ -967,7 +895,7 @@ public final class CallType extends Type {
 	
 	public Type arg(int idx) {
 		ArgType param = tpCallParamArgs[idx];
-		TVarSet bindings = this.bindings();
+		AType bindings = this.bindings();
 		foreach (TVar tv; bindings.tvars; tv.var ≡ param)
 			return tv.result().applay(bindings);
 		throw new NoSuchElementException("Method param "+idx);
@@ -978,7 +906,7 @@ public final class CallType extends Type {
 			return Type.emptyArray;
 		Type[] params = new Type[this.arity];
 		int i=0;
-		foreach (TVar tv; bindings.tvars; tv.var ≡ tpCallParamArgs[i]) {
+		foreach (TVar tv; this.tvars; tv.var ≡ tpCallParamArgs[i]) {
 			params[i++] = tv.result();
 			if (i >= this.arity)
 				break;

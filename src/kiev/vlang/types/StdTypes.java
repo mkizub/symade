@@ -95,7 +95,7 @@ public interface StdTypes {
 	static {
 
 		Struct tpEnvClazz = Env.root;
-		tpEnv				= new CompaundType(tpEnvClazz.imeta_type, TVarSet.emptySet);
+		tpEnv				= new CompaundType(tpEnvClazz.imeta_type, TVarBld.emptySet);
 		((Struct.StructImpl)tpEnvClazz.$v_impl).ctype		= tpEnv;
 		tpEnv.flags			= flResolved;
 

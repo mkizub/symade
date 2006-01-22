@@ -10,18 +10,20 @@ import kiev.be.java.JStructView;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-abstract class TVSet {
-	TVSet() {}
-	public abstract TVar[] getTVars();
-	public abstract Type resolve(ArgType arg);
+interface TVSet {
+	public TVar[] getTVars();
+	public Type resolve(ArgType arg);
 }
 
-public final class TVarBld extends TVSet {
+public final class TVarBld implements TVSet {
 
 	private final boolean ASSERT_MORE = true;
 
+	public static final TVarBld emptySet = new TVarBld().close();
+
 	public access:ro,rw,ro,rw	TVar[]		tvars;
 	public access:ro,ro,ro,rw	TArg[]		appls;
+	private						boolean		closed;
 
 	public TVarBld() {
 		tvars = TVar.emptyArray;
@@ -32,7 +34,7 @@ public final class TVarBld extends TVSet {
 		if (ASSERT_MORE) checkIntegrity(false);
 	}
 	
-	public TVarBld(TVarSet vset) {
+	public TVarBld(AType vset) {
 		tvars = TVar.emptyArray;
 		int n = vset.tvars.length;
 		if (n > 0) {
@@ -50,10 +52,13 @@ public final class TVarBld extends TVSet {
 		}
 	}
 	
-	public TVarSet close() {
-		this.buildApplayables();
-		if (ASSERT_MORE) this.checkIntegrity(true);
-		return new TVarSet(this);
+	public TVarBld close() {
+		if (!closed) {
+			this.buildApplayables();
+			if (ASSERT_MORE) this.checkIntegrity(true);
+			closed = true;
+		}
+		return this;
 	}
 	
 	public TVar[] getTVars() {

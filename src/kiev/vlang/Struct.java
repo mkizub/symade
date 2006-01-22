@@ -359,7 +359,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		super(new StructImpl(0,acc));
 		this.name = name;
 		((StructImpl)this.$v_impl).imeta_type = new CompaundTypeProvider(this);
-		((StructImpl)this.$v_impl).ctype = new CompaundType(this.imeta_type, TVarSet.emptySet);
+		((StructImpl)this.$v_impl).ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
 		package_clazz = outer;

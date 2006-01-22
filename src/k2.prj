@@ -493,7 +493,7 @@ kiev.vlang.nodeimpl kiev/vlang/nodeimpl kiev\vlang\Tree.java
 kiev.vlang.nodeset kiev/vlang/nodeset kiev\vlang\Tree.java
 kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
-kiev.vlang.types.AType kiev/vlang/types/AType kiev\vlang\types\Type.java
+kiev.vlang.types.AType kiev/vlang/types/AType kiev\vlang\types\AType.java
 kiev.vlang.types.ArgType kiev/vlang/types/ArgType kiev\vlang\types\Type.java
 kiev.vlang.types.ArgTypeProvider kiev/vlang/types/ArgTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.ArrayType kiev/vlang/types/ArrayType kiev\vlang\types\Type.java
@@ -504,6 +504,7 @@ kiev.vlang.types.CompaundType kiev/vlang/types/CompaundType kiev\vlang\types\Typ
 kiev.vlang.types.CompaundTypeProvider kiev/vlang/types/CompaundTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.CoreType kiev/vlang/types/CoreType kiev\vlang\types\Type.java
 kiev.vlang.types.CoreTypeProvider kiev/vlang/types/CoreTypeProvider kiev\vlang\types\TypeProvider.java
+kiev.vlang.types.DummyTypeProvider kiev/vlang/types/DummyTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.OuterType kiev/vlang/types/OuterType kiev\vlang\types\Type.java
 kiev.vlang.types.OuterTypeProvider kiev/vlang/types/OuterTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
