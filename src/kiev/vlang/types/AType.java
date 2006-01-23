@@ -61,8 +61,8 @@ public abstract class AType implements StdTypes, TVSet {
 		}
 
 		flags &= ~flAbstract;
-		foreach(TVar v; this.tvars; v instanceof TVarBound) {
-			Type r = v.unalias().result();
+		foreach(TVar v; this.tvars; !v.isAlias()) {
+			Type r = v.result();
 			if (r.isAbstract() || r == v.var)
 				flags |= flAbstract;
 			if (v.var.isUnerasable())
@@ -158,9 +158,7 @@ public abstract class AType implements StdTypes, TVSet {
 			TVar x = my_vars[i];
 			
 			// bind TVar
-			if (x instanceof TVarBound) {
-				if (x.val != null)
-					continue; // TVarBound already bound
+			if (x.isFree()) {
 				// try known bind
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
@@ -171,9 +169,10 @@ public abstract class AType implements StdTypes, TVSet {
 				}
 				// bind to itself
 				sr.set(sr.tvars[i], sr.tvars[i].unalias().result());
+				continue next_my;
 			}
 			// bind virtual aliases
-			if (x.var.isVirtual()) {
+			if (x.isAlias() && x.var.isVirtual()) {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
@@ -198,7 +197,7 @@ public abstract class AType implements StdTypes, TVSet {
 		for(int i=0; i < my_size; i++) {
 			TVar x = my_vars[i];
 			// TVarBound already bound
-			if (x instanceof TVarBound) {
+			if (!x.isAlias()) {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {

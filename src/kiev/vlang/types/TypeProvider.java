@@ -25,61 +25,75 @@ public final class TVarSet extends AType {
 }
 
 
-public abstract class TVar {
+public final class TVar {
 	public static final TVar[] emptyArray = new TVar[0];
 
 	public final TVSet			set;	// the set this TVar belongs to
 	public final int			idx;	// position in the set (set.tvars[idx] == this)
 	public final ArgType		var;	// variable
 	public final Type			val;	// value of the TVar (null for free vars, ArgType for aliases) 
+	public final int			ref;	// reference to actual TVar, for aliases
 
+	// copy
+	private TVar(TVSet set, int idx, ArgType var, Type val, int ref) {
+		this.set = set;
+		this.idx = idx;
+		this.var = var;
+		this.val = val;
+		this.ref = ref;
+	}
+	
+	// free vars
+	TVar(TVSet set, int idx, ArgType var) {
+		this.set = set;
+		this.idx = idx;
+		this.var = var;
+		this.ref = -1;
+	}
+
+	// bound vars
 	TVar(TVSet set, int idx, ArgType var, Type val) {
 		this.set = set;
 		this.idx = idx;
 		this.var = var;
 		this.val = val;
+		this.ref = -1;
 	}
 
-	public abstract TVarBound unalias();
-	public abstract TVar copy(TVSet set);
-}
-
-public final class TVarBound extends TVar {
-
-	TVarBound(TVSet set, int idx, ArgType var, Type bnd) {
-		super(set, idx, var, bnd);
-	}
-
-	public TVarBound unalias() { return this; }
-	
-	public boolean isBound()	{ return val != null; }
-	public Type    result()		{ return val == null? var : val; }
-
-	public TVar copy(TVSet set) {
-		return new TVarBound(set, idx, var, val);
-	}
-	public String toString() {
-		return idx+": bound "+var.definer+"."+var.name+" = "+val;
-	}
-}
-
-public final class TVarAlias extends TVar {
-
-	access:no,no,ro,rw int				ref;
-
-	TVarAlias(TVSet set, int idx, ArgType var, ArgType val, int ref) {
-		super(set, idx, var, val);
+	// aliases vars
+	TVar(TVSet set, int idx, ArgType var, ArgType val, int ref) {
+		this.set = set;
+		this.idx = idx;
+		this.var = var;
+		this.val = val;
 		this.ref = ref;
-		assert (set.getTVars()[ref].var == val);
 	}
 
-	public TVarBound unalias() { return set.getTVars()[ref].unalias(); }
-
+	public Type result() {
+		return val == null? var : val;
+	}
+	
 	public TVar copy(TVSet set) {
-		return new TVarAlias(set, idx, var, (ArgType)val, ref);
+		return new TVar(set, idx, var, val, ref);
 	}
+
+	public TVar unalias() {
+		TVar r = this;
+		while (r.ref >= 0) r = set.getTVars()[r.ref];
+		return r;
+	}
+	
+	public boolean isFree() { return val == null; }
+	
+	public boolean isAlias() { return ref >= 0; }
+
 	public String toString() {
-		return idx+": alias "+var.definer+"."+var.name+" > "+set.getTVars()[ref];
+		if (isFree())
+			return idx+": free  "+var.definer.parent+"."+var.definer+"."+var.name;
+		else if (isAlias())
+			return idx+": alias "+var.definer.parent+"."+var.definer+"."+var.name+" > "+set.getTVars()[this.ref];
+		else
+			return idx+": bound "+var.definer.parent+"."+var.definer+"."+var.name+" = "+val;
 	}
 }
 

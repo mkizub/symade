@@ -537,8 +537,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			}
 		}
 		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-		CallType rt = (CallType)Type.getRealType(tp,this.type);
-		rt = rt.bind(tp.bindings());
+		CallType rt = (CallType)this.type.bind(tp.bindings());
 		
 		if ((mt.bindings().tvars.length - mt.arity - 1) > 0) {
 			TVarBld set = new TVarBld();

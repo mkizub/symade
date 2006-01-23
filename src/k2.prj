@@ -511,9 +511,7 @@ kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.ja
 kiev.vlang.types.TArg kiev/vlang/types/TArg kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
 kiev.vlang.types.TVar kiev/vlang/types/TVar kiev\vlang\types\TypeProvider.java
-kiev.vlang.types.TVarAlias kiev/vlang/types/TVarAlias kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVarBld kiev/vlang/types/TVarBld kiev\vlang\types\TVarBld.java
-kiev.vlang.types.TVarBound kiev/vlang/types/TVarBound kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVarSet kiev/vlang/types/TVarSet kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.Type kiev/vlang/types/Type kiev\vlang\types\Type.java
 kiev.vlang.types.TypeCallRef kiev/vlang/types/TypeCallRef kiev\vlang\types\TypeCallRef.java

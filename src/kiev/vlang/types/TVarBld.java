@@ -30,7 +30,7 @@ public final class TVarBld implements TVSet {
 	}
 	
 	public TVarBld(ArgType var, Type bnd) {
-		this.tvars = new TVar[]{ new TVarBound(this, 0, var, bnd) };
+		this.tvars = new TVar[]{ new TVar(this, 0, var, bnd) };
 		if (ASSERT_MORE) checkIntegrity(false);
 	}
 	
@@ -98,19 +98,19 @@ public final class TVarBld implements TVSet {
 		if (var.isVirtual()) {
 			for (int i=0; i < n; i++) {
 				if (tmp[i].var.isVirtual() && tmp[i].var.name == var.name) {
-					tmp[n] = new TVarAlias(this, n, var, tmp[i].var, i);
+					tmp[n] = new TVar(this, n, var, tmp[i].var, i);
 					value = null;
 					break;
 				}
 			}
 		}
 		if (tmp[n] == null)
-			tmp[n] = new TVarBound(this, n, var, null);
+			tmp[n] = new TVar(this, n, var);
 		// fix aliases
 		for (int i=0; i < n; i++) {
 			TVar v = tmp[i];
-			if (v instanceof TVarBound && v.val ≡ var)
-				tmp[i] = new TVarAlias(this, i, v.var, var, n);
+			if (!v.isAlias() && v.val ≡ var)
+				tmp[i] = new TVar(this, i, v.var, var, n);
 		}
 		this.tvars = tmp;
 		
@@ -126,7 +126,7 @@ public final class TVarBld implements TVSet {
 		TVar[] tvars = this.tvars;
 		if (v.val ≡ bnd)
 			return; // ignore duplicated alias
-		while (v instanceof TVarAlias) {
+		while (v.isAlias()) {
 			// alias of another var, must point to 
 			v = tvars[v.ref];
 			if (v.val ≡ bnd)
@@ -142,7 +142,7 @@ public final class TVarBld implements TVSet {
 					av = av.unalias();
 					if (v == av)
 						break; // don't alias a var to itself 
-					tvars[v.idx] = new TVarAlias(this, v.idx, v.var, av.var, av.idx);
+					tvars[v.idx] = new TVar(this, v.idx, v.var, av.var, av.idx);
 					assert (i < n);
 					if (ASSERT_MORE) checkIntegrity(false);
 					return;
@@ -150,14 +150,14 @@ public final class TVarBld implements TVSet {
 			}
 		}
 		// not an alias, just bind
-		tvars[v.idx] = new TVarBound(this,v.idx,v.var,bnd);
+		tvars[v.idx] = new TVar(this,v.idx,v.var,bnd);
 		if (ASSERT_MORE) checkIntegrity(false);
 		return;
 	}
 	
 	private void buildApplayables() {
 		appls = TArg.emptyArray;
-		foreach (TVar tv; tvars; tv instanceof TVarBound)
+		foreach (TVar tv; tvars; !tv.isAlias())
 			addApplayables(tv.result());
 	}
 	
@@ -202,35 +202,33 @@ public final class TVarBld implements TVSet {
 			assert(v.idx == i);
 			for (int j=0; j < n; j++)
 				assert(i==j || tvars[j].var ≢ v.var);
-			if (v instanceof TVarAlias) {
-				TVarAlias av = (TVarAlias)v;
-				assert(av.val != null);
-				assert(av.ref >= 0 && av.ref < n);
-				assert(tvars[av.ref].var == av.val);
-				assert(av.ref != i);
-				for (TVar x=tvars[av.ref]; x instanceof TVarAlias; x=tvars[x.ref])
-					assert(av != x);
+			if (v.isAlias()) {
+				assert(v.val != null);
+				assert(v.ref >= 0 && v.ref < n);
+				assert(tvars[v.ref].var == v.val);
+				assert(v.ref != i);
+				for (TVar x=tvars[v.ref]; x.isAlias(); x=tvars[x.ref])
+					assert(v != x);
 			} else {
-				TVarBound bv = (TVarBound)v;
 				if (check_appls) {
-					if (bv.val == null) {
+					if (v.val == null) {
 						int j=0;
 						for (; j < this.appls.length; j++) {
-							if (this.appls[j].var ≡ bv.var)
+							if (this.appls[j].var ≡ v.var)
 								break;
 						}
 						assert (j < this.appls.length);
 					}
-					else if (bv.val instanceof ArgType) {
+					else if (v.val instanceof ArgType) {
 						int j=0;
 						for (; j < this.appls.length; j++) {
-							if (this.appls[j].var ≡ bv.val)
+							if (this.appls[j].var ≡ v.val)
 								break;
 						}
 						assert (j < this.appls.length);
 					}
 					else {
-						foreach (TArg at; bv.val.bindings().appls) {
+						foreach (TArg at; v.val.bindings().appls) {
 							int j=0;
 							for (; j < this.appls.length; j++) {
 								if (this.appls[j].var ≡ at.var)
@@ -249,7 +247,7 @@ public final class TVarBld implements TVSet {
 				int j = 0;
 			next_tvar:
 				for (; j < n; j++) {
-					if (tvars[j] instanceof TVarBound) {
+					if (!tvars[j].isAlias()) {
 						TVar tv = tvars[j];
 						if (tv.val == null) {
 							if (tv.var ≡ at.var)

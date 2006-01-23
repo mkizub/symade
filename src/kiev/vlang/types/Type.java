@@ -569,16 +569,16 @@ public final class CompaundType extends Type {
 			AType b2 = t2.bindings();
 			for(int i=0; i < b2.tvars.length; i++) {
 				TVar v2 = b2.tvars[i];
-				if (v2 instanceof TVarBound) {
-					Type r2 = v2.unalias().result();
-					if (v2.var ≡ r2)
-						continue;
-					Type r1 = b1.resolve(v2.var);
-					if (r1 ≡ r2)
-						continue;
-					if (!r1.isInstanceOf(r2))
-						return false;
-				}
+				if (v2.isAlias())
+					continue;
+				Type r2 = v2.result();
+				if (v2.var ≡ r2)
+					continue;
+				Type r1 = b1.resolve(v2.var);
+				if (r1 ≡ r2)
+					continue;
+				if (!r1.isInstanceOf(r2))
+					return false;
 			}
 			return true;
 		}
