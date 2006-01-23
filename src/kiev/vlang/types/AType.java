@@ -298,6 +298,17 @@ public abstract class AType implements StdTypes, TVSet {
 		return false;
 	}
 	
+	public boolean hasApplayable(ArgType at) {
+		final int my_size = this.appls.length;
+		if (my_size == 0)
+			return false;
+		for (int i=0; i < my_size; i++) {
+			if (this.appls[i].var ≡ at)
+				return true;
+		}
+		return false;
+	}
+	
 	public String toDump() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(this.getClass());

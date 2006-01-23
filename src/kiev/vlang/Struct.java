@@ -668,7 +668,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		{
 			node @= members,
 			node instanceof Method,
-			((Method)node).name.equals(name),
 			info.check(node),
 			((Method)node).equalsByCast(name,mt,tp,info)
 		;	info.isImportsAllowed() && isPackage(),

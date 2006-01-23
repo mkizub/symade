@@ -554,7 +554,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				set.append(arg, bound);
 				a++;
 			}
-			rt = rt.rebind(set);
+			if (a > 0)
+				rt = rt.rebind(set);
 		}
 		
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
@@ -564,18 +565,68 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				return false;
 			}
 		}
-		boolean match = false;
-		if (mt.ret() ≡ Type.tpAny)
-			match = true;
-		else if (rt.ret().isAutoCastableTo(mt.ret()))
-			match = true;
-		else
-			match = false;
-		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+(match?" match":" do not match"));
-		if (info != null && match)
-			info.mt = rt;
-		return match;
+
+		if (mt.ret() ≢ Type.tpAny && !rt.ret().isAutoCastableTo(mt.ret())) {
+			trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+				+" differ in return type : "+rt.ret()+" not auto-castable to "+mt.ret());
+			return false;
+		}
+		
+		foreach (TypeDef td; this.targs) {
+			ArgType at = td.getAType();
+			Type bnd = rt.resolve(at);
+			if (bnd ≡ at) {
+				Vector<Type> bindings = new Vector<Type>();
+				// bind from mt
+				for (int i=0; i < rt.arity; i++)
+					bindings = addBindingsFor(at, mt.arg(i), rt.arg(i), bindings);
+				if (mt.ret() ≢ Type.tpAny)
+					bindings = addBindingsFor(at, mt.ret(), rt.ret(), bindings);
+				if (bindings.length == 0) {
+					trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+						+" do not allow to infer type: "+at);
+					continue;
+				}
+				Type b = bindings.at(0);
+				for (int i=1; i < bindings.length; i++)
+					b = Type.leastCommonType(b, bindings.at(i));
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+					+" infer argument: "+at+" to "+b);
+				if (b ≡ Type.tpAny)
+					return false;
+				rt.rebind(new TVarBld(at, b));
+			}
+		}
+		
+		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+" match as "+rt);
+		info.mt = rt;
+		return true;
 	}
+
+	// compares pattern type (pt) with query type (qt) to find bindings for argument type (at),
+	// and adds found bindings to the set of bindings
+	private static Vector<Type> addBindingsFor(ArgType at, Type pt, Type qt, Vector<Type> bindings) {
+		if (!qt.hasApplayable(at))
+			return bindings;
+		final int qt_size = qt.tvars.length;
+		for (int i=0; i < qt_size; i++) {
+			TVar qtv = qt.tvars[i];
+			if (!qtv.isAlias()) {
+				if (qtv.val ≡ at) {
+					Type bnd = pt.resolve(qtv.var);
+					if (bnd ≢ qtv.var && !bindings.contains(bnd))
+						bindings.append(bnd);
+				}
+				else if (qtv.val.hasApplayable(at)) {
+					Type bnd = pt.resolve(qtv.var);
+					if (bnd ≢ qtv.var)
+						addBindingsFor(at, bnd, qtv.val, bindings);
+				}
+			}
+		}
+		return bindings;
+	}
+	
 
 	// TODO
 	public Dumper toJavaDecl(Dumper dmp) {

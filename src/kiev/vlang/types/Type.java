@@ -494,7 +494,6 @@ public final class CompaundType extends Type {
 			clazz instanceof Struct,
 			node @= getStruct().members,
 			node instanceof Method,
-			((Method)node).name.equals(name),
 			info.check(node),
 			((Method)node).equalsByCast(name,mt,this,info)
 		;

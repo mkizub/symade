@@ -257,7 +257,7 @@ public interface StdTypes {
 		for (int i=0; i < tpUnattachedArgs.length; i++) {
 			TypeDef tdUnattachedArg = new TypeDef(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
 			tpUnattachedArgs[i] = new ArgType(tdUnattachedArg.name.name,tdUnattachedArg);
-			tpUnattachedArgs[i].flags |= flHidden;
+			//tpUnattachedArgs[i].flags |= flHidden;
 		}
 	}
 }
