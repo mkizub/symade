@@ -41,8 +41,6 @@ public final class TVarBld implements TVSet {
 			this.tvars = new TVar[n];
 			for (int i=0; i < n; i++)
 				this.tvars[i] = vset.tvars[i].copy(this);
-			for (int i=0; i < n; i++)
-				this.tvars[i].resolve(i);
 		}
 		if (vset.appls != null && vset.appls.length > 0) {
 			n = vset.appls.length;
@@ -82,7 +80,7 @@ public final class TVarBld implements TVSet {
 	public void append(TVSet set)
 	{
 		foreach (TVar v; set.getTVars())
-			append(v.var, v.value());
+			append(v.var, v.val);
 	}
 	
 	public void append(ArgType var, Type value)
@@ -100,23 +98,21 @@ public final class TVarBld implements TVSet {
 		if (var.isVirtual()) {
 			for (int i=0; i < n; i++) {
 				if (tmp[i].var.isVirtual() && tmp[i].var.name == var.name) {
-					tmp[n] = new TVarAlias(this, n, var, tmp[i]);
+					tmp[n] = new TVarAlias(this, n, var, tmp[i].var, i);
 					value = null;
 					break;
 				}
 			}
 		}
 		if (tmp[n] == null)
-			tmp[n] = new TVarFree(this, n, var);
+			tmp[n] = new TVarBound(this, n, var, null);
 		// fix aliases
 		for (int i=0; i < n; i++) {
 			TVar v = tmp[i];
-			if (!v.isAlias() && v.isBound() && v.value() ≡ var)
-				tmp[i] = new TVarAlias(this, i, v.var, tmp[n]);
+			if (v instanceof TVarBound && v.val ≡ var)
+				tmp[i] = new TVarAlias(this, i, v.var, var, n);
 		}
 		this.tvars = tmp;
-		for (int i=0; i < n; i++)
-			this.tvars[i].resolve(i);
 		
 		if (ASSERT_MORE) checkIntegrity(false);
 		if (var ≢ value && value ≢ null)
@@ -128,13 +124,12 @@ public final class TVarBld implements TVSet {
 		require { v.set == this && bnd != null; }
 	{
 		TVar[] tvars = this.tvars;
-		if (v.bound() ≡ bnd)
+		if (v.val ≡ bnd)
 			return; // ignore duplicated alias
-		while (v.isAlias()) {
-			TVarAlias va = (TVarAlias)v;
+		while (v instanceof TVarAlias) {
 			// alias of another var, must point to 
-			v = va.bnd;
-			if (v.bound() ≡ bnd)
+			v = tvars[v.ref];
+			if (v.val ≡ bnd)
 				return; // ignore duplicated alias
 		}
 		// non-aliased var, just bind or alias it
@@ -144,13 +139,11 @@ public final class TVarBld implements TVSet {
 				TVar av = tvars[i];
 				if (av.var ≡ bnd) {
 					// set v as alias of av
-					while (av.isAlias()) av = ((TVarAlias)av).bnd;
+					av = av.unalias();
 					if (v == av)
 						break; // don't alias a var to itself 
-					tvars[v.idx] = new TVarAlias(this, v.idx, v.var, av);
+					tvars[v.idx] = new TVarAlias(this, v.idx, v.var, av.var, av.idx);
 					assert (i < n);
-					for (i=0; i < n; i++)
-						this.tvars[i].resolve(i);
 					if (ASSERT_MORE) checkIntegrity(false);
 					return;
 				}
@@ -158,8 +151,6 @@ public final class TVarBld implements TVSet {
 		}
 		// not an alias, just bind
 		tvars[v.idx] = new TVarBound(this,v.idx,v.var,bnd);
-		for (int i=0; i < n; i++)
-			this.tvars[i].resolve(i);
 		if (ASSERT_MORE) checkIntegrity(false);
 		return;
 	}
@@ -167,7 +158,7 @@ public final class TVarBld implements TVSet {
 	private void buildApplayables() {
 		appls = TArg.emptyArray;
 		foreach (TVar tv; tvars; tv instanceof TVarBound)
-			addApplayables(tv.bnd);
+			addApplayables(tv.result());
 	}
 	
 	private void addApplayables(Type t) {
@@ -198,7 +189,7 @@ public final class TVarBld implements TVSet {
 		final int n = tvars.length;
 		for(int i=0; i < n; i++) {
 			if (tvars[i].var ≡ arg)
-				return tvars[i].result();
+				return tvars[i].unalias().result();
 		}
 		return arg;
 	}
@@ -211,28 +202,35 @@ public final class TVarBld implements TVSet {
 			assert(v.idx == i);
 			for (int j=0; j < n; j++)
 				assert(i==j || tvars[j].var ≢ v.var);
-			if (v.isAlias()) {
+			if (v instanceof TVarAlias) {
 				TVarAlias av = (TVarAlias)v;
-				assert(av.bnd != null);
-				assert(av.bnd.idx < n);
-				assert(tvars[av.bnd.idx] == av.bnd);
-				assert(av.bnd.idx != i);
-				for (TVar x=av.bnd; x.isAlias(); x=((TVarAlias)x).bnd)
+				assert(av.val != null);
+				assert(av.ref >= 0 && av.ref < n);
+				assert(tvars[av.ref].var == av.val);
+				assert(av.ref != i);
+				for (TVar x=tvars[av.ref]; x instanceof TVarAlias; x=tvars[x.ref])
 					assert(av != x);
-			}
-			else if (v.isBound()) {
+			} else {
 				TVarBound bv = (TVarBound)v;
-				assert(bv.bnd ≢ null);
 				if (check_appls) {
-					if (bv.bnd instanceof ArgType) {
+					if (bv.val == null) {
 						int j=0;
 						for (; j < this.appls.length; j++) {
-							if (this.appls[j].var ≡ bv.bnd)
+							if (this.appls[j].var ≡ bv.var)
 								break;
 						}
 						assert (j < this.appls.length);
-					} else {
-						foreach (TArg at; bv.bnd.bindings().appls) {
+					}
+					else if (bv.val instanceof ArgType) {
+						int j=0;
+						for (; j < this.appls.length; j++) {
+							if (this.appls[j].var ≡ bv.val)
+								break;
+						}
+						assert (j < this.appls.length);
+					}
+					else {
+						foreach (TArg at; bv.val.bindings().appls) {
 							int j=0;
 							for (; j < this.appls.length; j++) {
 								if (this.appls[j].var ≡ at.var)
@@ -252,12 +250,17 @@ public final class TVarBld implements TVSet {
 			next_tvar:
 				for (; j < n; j++) {
 					if (tvars[j] instanceof TVarBound) {
-						Type bnd = tvars[j].bound();
-						if (bnd instanceof ArgType) {
-							if (bnd ≡ at.var)
+						TVar tv = tvars[j];
+						if (tv.val == null) {
+							if (tv.var ≡ at.var)
 								break next_tvar;
-						} else {
-							TArg[] tappls = bnd.bindings().appls;
+						}
+						else if (tv.val instanceof ArgType) {
+							if (tv.val ≡ at.var)
+								break next_tvar;
+						}
+						else {
+							TArg[] tappls = tv.val.bindings().appls;
 							for (int k=0; k < tappls.length; k++) {
 								if (at.var ≡ tappls[k].var)
 									break next_tvar;

@@ -940,7 +940,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public List<ArgType> getTypeInfoArgs() {
 		ListBuffer<ArgType> lb = new ListBuffer<ArgType>();
 		TVar[] templ = this.imeta_type.getTemplBindings().tvars;
-		foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias() && tv.var.isUnerasable())
+		foreach (TVar tv; templ; tv instanceof TVarBound && tv.val == null && tv.var.isUnerasable())
 			lb.append(tv.var);
 		return lb.toList();
 	}

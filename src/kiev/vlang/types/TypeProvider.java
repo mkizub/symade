@@ -31,104 +31,55 @@ public abstract class TVar {
 	public final TVSet			set;	// the set this TVar belongs to
 	public final int			idx;	// position in the set (set.tvars[idx] == this)
 	public final ArgType		var;	// variable
+	public final Type			val;	// value of the TVar (null for free vars, ArgType for aliases) 
 
-	TVar(TVSet set, int idx, ArgType var) {
+	TVar(TVSet set, int idx, ArgType var, Type val) {
 		this.set = set;
 		this.idx = idx;
 		this.var = var;
+		this.val = val;
 	}
 
-	public abstract boolean isBound();
-	public abstract boolean isAlias();
-	public abstract Type    value()	;
-	public abstract Type    result();
-	public abstract Type    bound()	;
+	public abstract TVarBound unalias();
 	public abstract TVar copy(TVSet set);
-	public abstract void resolve(int i);
-}
-
-public final class TVarFree extends TVar {
-	TVarFree(TVSet set, int idx, ArgType var) {
-		super(set,idx,var);
-	}
-
-	public boolean isBound() { return false; }
-	public boolean isAlias() { return false; }
-	public Type    value()	  { return null; }
-	public Type    result()	  { return var; }
-	public Type    bound()	  { return null; }
-	public TVar copy(TVSet set) {
-		return new TVarFree(set, idx, var);
-	}
-	void resolve(int i) {
-		assert(i == idx && set.getTVars()[idx] == this);
-	}
-	public String toString() {
-		return idx+": free  "+var.definer+"."+var.name;
-	}
 }
 
 public final class TVarBound extends TVar {
 
-	access:no,no,ro,rw Type				bnd;
-
 	TVarBound(TVSet set, int idx, ArgType var, Type bnd) {
-		super(set, idx, var);
-		this.bnd = bnd;
+		super(set, idx, var, bnd);
 	}
 
-	public boolean isBound() { return true; }
-	public boolean isAlias() { return false; }
-	public Type    value()	  { return bnd; }
-	public Type    result()	  { return bnd; }
-	public Type    bound()	  { return bnd; }
+	public TVarBound unalias() { return this; }
+	
+	public boolean isBound()	{ return val != null; }
+	public Type    result()		{ return val == null? var : val; }
+
 	public TVar copy(TVSet set) {
-		return new TVarBound(set, idx, var, bnd);
-	}
-	void resolve(int i) {
-		assert(i == idx && set.getTVars()[idx] == this);
+		return new TVarBound(set, idx, var, val);
 	}
 	public String toString() {
-		return idx+": bound "+var.definer+"."+var.name+" = "+bnd;
+		return idx+": bound "+var.definer+"."+var.name+" = "+val;
 	}
 }
 
 public final class TVarAlias extends TVar {
 
-	access:no,no,ro,rw TVar				bnd;
+	access:no,no,ro,rw int				ref;
 
-	TVarAlias(TVSet set, int idx, ArgType var, TVar bnd) {
-		super(set, idx, var);
-		this.bnd = bnd;
+	TVarAlias(TVSet set, int idx, ArgType var, ArgType val, int ref) {
+		super(set, idx, var, val);
+		this.ref = ref;
+		assert (set.getTVars()[ref].var == val);
 	}
 
-	public boolean isBound() {
-		if (var.isVirtual())
-			return true;
-		return bnd.isBound();
-	}
-	public boolean isAlias() { return true; }
-	public Type    value()	  { return bnd.var; }
-	public Type    result()	  { return bnd.result(); }
-	public Type    bound()	  { return bnd.bound(); }
+	public TVarBound unalias() { return set.getTVars()[ref].unalias(); }
+
 	public TVar copy(TVSet set) {
-		return new TVarAlias(set, idx, var, bnd);
-	}
-	void resolve(int i) {
-		assert(i == idx && set.getTVars()[idx] == this);
-		TVar[] tvars = set.getTVars();
-		if (tvars[bnd.idx] == bnd)
-			return;
-		for (i=0; i < tvars.length; i++) {
-			if (this.bnd.var == tvars[i].var) {
-				this.bnd = tvars[i];
-				return;
-			}
-		}
-		throw new RuntimeException("Cannot resolve TVarAlias");
+		return new TVarAlias(set, idx, var, (ArgType)val, ref);
 	}
 	public String toString() {
-		return idx+": alias "+var.definer+"."+var.name+" > "+bnd;
+		return idx+": alias "+var.definer+"."+var.name+" > "+set.getTVars()[ref];
 	}
 }
 
@@ -290,8 +241,8 @@ public class ArgTypeProvider extends TypeProvider {
 	public Type applay(Type t, TVSet bindings) {
 		ArgType at = (ArgType)t;
 		foreach (TVar v; bindings.getTVars()) {
-			if (v.value() != null && (v.var ≡ at || v.value() ≡ at))
-				return v.result();
+			if (v.var ≡ at || v.val ≡ at)
+				return v.unalias().result();
 		}
 		// Not found, return itself
 		return t;

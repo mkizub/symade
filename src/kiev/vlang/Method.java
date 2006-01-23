@@ -546,7 +546,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			foreach (TVar tv; mt.bindings().tvars) {
 				if (tv.var.isHidden())
 					continue;
-				Type bound = tv.result();
+				Type bound = tv.unalias().result();
 				ArgType arg = targs[a].getAType();
 				if!(bound.isInstanceOf(arg)) {
 					trace(Kiev.debugResolve,"Type "+bound+" is not applayable to "+arg	+" for type arg "+a);

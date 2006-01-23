@@ -569,16 +569,16 @@ public final class CompaundType extends Type {
 			AType b2 = t2.bindings();
 			for(int i=0; i < b2.tvars.length; i++) {
 				TVar v2 = b2.tvars[i];
-				if (v2.isAlias())
-					continue;
-				Type r2 = v2.result();
-				if (v2.var ≡ r2)
-					continue;
-				Type r1 = b1.resolve(v2.var);
-				if (r1 ≡ r2)
-					continue;
-				if (!r1.isInstanceOf(r2))
-					return false;
+				if (v2 instanceof TVarBound) {
+					Type r2 = v2.unalias().result();
+					if (v2.var ≡ r2)
+						continue;
+					Type r1 = b1.resolve(v2.var);
+					if (r1 ≡ r2)
+						continue;
+					if (!r1.isInstanceOf(r2))
+						return false;
+				}
 			}
 			return true;
 		}
@@ -592,7 +592,7 @@ public final class CompaundType extends Type {
 
 public final class ArrayType extends Type {
 
-	@getter public Type get$arg() { return this.tvars[0].result(); }
+	@getter public Type get$arg() { return this.tvars[0].unalias().result(); }
 	
 	public static ArrayType newArrayType(Type type)
 		alias operator(240,lfy,new)
@@ -703,7 +703,7 @@ public final class WrapperType extends Type {
 	public final ENode makeWrappedAccess(ASTNode from)	{ return new IFldExpr(from.pos,(ENode)~from, wrapped_field); } 
 	public final Type getWrappedType()					{ return Type.getRealType(getUnwrappedType(), wrapped_field.type); }
 	
-	public CompaundType getUnwrappedType()				{ return (CompaundType)this.tvars[0].result(); }
+	public CompaundType getUnwrappedType()				{ return (CompaundType)this.tvars[0].unalias().result(); }
 	
 	public Struct getStruct()			{ return getUnwrappedType().getStruct(); }
 	public Meta getMeta(KString name)	{ return getUnwrappedType().getMeta(name); }
@@ -785,7 +785,7 @@ public final class OuterType extends Type {
 		super(meta_type, flReference, new TVarBld(meta_type.tdef.getAType(), outer).close());
 	}
 
-	public Type get$outer()			{ return this.tvars[0].result(); }
+	public Type get$outer()			{ return this.tvars[0].unalias().result(); }
 	
 	public JType getJType() {
 		if (jtype == null)
@@ -889,7 +889,7 @@ public final class CallType extends Type {
 	public Type ret() {
 		AType bindings = this.bindings();
 		foreach (TVar tv; bindings.tvars; tv.var ≡ tpCallRetArg)
-			return tv.result().applay(bindings);
+			return tv.unalias().result().applay(bindings);
 		return tpAny;
 	}
 	
@@ -897,7 +897,7 @@ public final class CallType extends Type {
 		ArgType param = tpCallParamArgs[idx];
 		AType bindings = this.bindings();
 		foreach (TVar tv; bindings.tvars; tv.var ≡ param)
-			return tv.result().applay(bindings);
+			return tv.unalias().result().applay(bindings);
 		throw new NoSuchElementException("Method param "+idx);
 	}
 	
@@ -907,7 +907,7 @@ public final class CallType extends Type {
 		Type[] params = new Type[this.arity];
 		int i=0;
 		foreach (TVar tv; this.tvars; tv.var ≡ tpCallParamArgs[i]) {
-			params[i++] = tv.result();
+			params[i++] = tv.unalias().result();
 			if (i >= this.arity)
 				break;
 		}

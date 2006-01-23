@@ -72,7 +72,7 @@ public class TypeWithArgsRef extends TypeRef {
 		TVarBld set = new TVarBld();
 		int a = 0;
 		for(int b=0; a < args.length && b < tpset.tvars.length; b++) {
-			if (tpset.tvars[b].isBound())
+			if (tpset.tvars[b].unalias().isBound())
 				continue;
 			Type bound = args[a].getType();
 			if (bound == null)
