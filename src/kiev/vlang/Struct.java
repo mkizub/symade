@@ -1963,6 +1963,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		access:no,ro,ro,rw
 		List<Method> methods = List.Nil;
 		VTableEntry  overloader;
+		boolean      bridged;
 		VTableEntry(KString name, CallType etype) {
 			this.name = name;
 			this.etype = etype;
@@ -1988,6 +1989,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Method m = (Method)n;
 			if (m.isStatic() && !m.isVirtualStatic())
 				continue;
+			if (m.isMethodBridge())
+				continue;
 			CallType etype = m.etype;
 			KString name = m.name.name;
 			boolean is_new = true;
@@ -2008,6 +2011,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			foreach (DNode n; members; n instanceof Method && !(n instanceof Constructor)) {
 				Method m = (Method)n;
 				if (m.isStatic() && !m.isVirtualStatic())
+					continue;
+				if (m.isMethodBridge())
 					continue;
 				if (m.name.name != vte.name || vte.methods.contains(m))
 					continue;
@@ -2196,6 +2201,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	public void autoBridgeMethods(VTableEntry vte) {
+		assert (!vte.bridged);
+		vte.bridged = true;
 		// get overloader vtable entry
 		VTableEntry ovr = vte;
 		while (ovr.overloader != null)
@@ -2222,12 +2229,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				bridge.params.append(new FormPar(mo.pos,m.params[i].name.name,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
 			bridge.pos = mo.pos;
 			members.append(bridge);
+			trace(Kiev.debugMultiMethod,"Created a bridge method "+this+"."+bridge+" for vtable entry "+vte.name+vte.etype);
 			bridge.body = new BlockStat();
 			if (bridge.type.ret() ≢ Type.tpVoid)
 				bridge.body.stats.append(new ReturnStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
 			else
 				bridge.body.stats.append(new ExprStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
 			vte.add(bridge);
+			break;
 		}
 	}
 
