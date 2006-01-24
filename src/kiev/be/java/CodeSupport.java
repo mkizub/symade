@@ -12,13 +12,13 @@ import static kiev.stdlib.Debug.*;
 
 public class CodeVar {
 
-	public JVarView		var;
+	public JVar		var;
 	public int			stack_pos = -1;
 	public int			start_pc = -1;
 	public int			end_pc = -1;
 	public int			index = 0;
 
-	public CodeVar(JVarView var) {
+	public CodeVar(JVar var) {
 		this.var = var;
 		stack_pos = var.bcpos;
 	}

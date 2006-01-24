@@ -6,11 +6,11 @@ import kiev.parser.*;
 import kiev.transf.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JDNodeView;
-import kiev.be.java.JMethodView;
-import kiev.be.java.JInitializerView;
-import kiev.be.java.JWBCConditionView;
+import kiev.be.java.JNode;
+import kiev.be.java.JDNode;
+import kiev.be.java.JMethod;
+import kiev.be.java.JInitializer;
+import kiev.be.java.JWBCCondition;
 
 import kiev.be.java.CodeAttr;
 
@@ -32,7 +32,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	@virtual typedef NImpl = MethodImpl;
 	@virtual typedef VView = MethodView;
-	@virtual typedef JView = JMethodView;
+	@virtual typedef JView = JMethod;
 
 	@nodeimpl
 	public static class MethodImpl extends DNodeImpl {
@@ -848,7 +848,7 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 
 	@virtual typedef NImpl = InitializerImpl;
 	@virtual typedef VView = InitializerView;
-	@virtual typedef JView = JInitializerView;
+	@virtual typedef JView = JInitializer;
 
 	@nodeimpl
 	public static final class InitializerImpl extends DNodeImpl {
@@ -919,7 +919,7 @@ public class WBCCondition extends DNode {
 	
 	@virtual typedef NImpl = WBCConditionImpl;
 	@virtual typedef VView = WBCConditionView;
-	@virtual typedef JView = JWBCConditionView;
+	@virtual typedef JView = JWBCCondition;
 
 	@nodeimpl
 	public static final class WBCConditionImpl extends DNodeImpl {

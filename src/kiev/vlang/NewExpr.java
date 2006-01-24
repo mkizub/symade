@@ -7,12 +7,12 @@ import kiev.vlang.Operator.*;
 import kiev.vlang.types.*;
 import kiev.transf.BackendProcessor;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JNewExprView;
-import kiev.be.java.JNewArrayExprView;
-import kiev.be.java.JNewInitializedArrayExprView;
-import kiev.be.java.JNewClosureView;
+import kiev.be.java.JNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JNewExpr;
+import kiev.be.java.JNewArrayExpr;
+import kiev.be.java.JNewInitializedArrayExpr;
+import kiev.be.java.JNewClosure;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -34,7 +34,7 @@ public final class NewExpr extends ENode {
 
 	@virtual typedef NImpl = NewExprImpl;
 	@virtual typedef VView = NewExprView;
-	@virtual typedef JView = JNewExprView;
+	@virtual typedef JView = JNewExpr;
 
 	@nodeimpl
 	public static final class NewExprImpl extends ENodeImpl {
@@ -227,7 +227,7 @@ public final class NewArrayExpr extends ENode {
 
 	@virtual typedef NImpl = NewArrayExprImpl;
 	@virtual typedef VView = NewArrayExprView;
-	@virtual typedef JView = JNewArrayExprView;
+	@virtual typedef JView = JNewArrayExpr;
 
 	@nodeimpl
 	public static final class NewArrayExprImpl extends ENodeImpl {
@@ -332,7 +332,7 @@ public final class NewInitializedArrayExpr extends ENode {
 
 	@virtual typedef NImpl = NewInitializedArrayExprImpl;
 	@virtual typedef VView = NewInitializedArrayExprView;
-	@virtual typedef JView = JNewInitializedArrayExprView;
+	@virtual typedef JView = JNewInitializedArrayExpr;
 
 	@nodeimpl
 	public static final class NewInitializedArrayExprImpl extends ENodeImpl {
@@ -427,7 +427,7 @@ public final class NewClosure extends ENode {
 
 	@virtual typedef NImpl = NewClosureImpl;
 	@virtual typedef VView = NewClosureView;
-	@virtual typedef JView = JNewClosureView;
+	@virtual typedef JView = JNewClosure;
 
 	@nodeimpl
 	public static final class NewClosureImpl extends ENodeImpl {

@@ -18,12 +18,12 @@ import kiev.vlang.CallExpr.CallExprImpl;
 import kiev.vlang.ClosureCallExpr.ClosureCallExprImpl;
 
 @nodeview
-public final view JCallExprView of CallExprImpl extends JENodeView {
-	public access:ro JENodeView				obj;
-	public access:ro JMethodView			func;
+public final view JCallExpr of CallExprImpl extends JENode {
+	public access:ro JENode				obj;
+	public access:ro JMethod			func;
 	public access:ro CallType				mt;
-	public access:ro JArr<JENodeView>		args;
-	public           JENodeView				temp_expr;
+	public access:ro JArr<JENode>		args;
+	public           JENode				temp_expr;
 
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
@@ -45,7 +45,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
 		}
-		if !(obj instanceof JTypeRefView) {
+		if !(obj instanceof JTypeRef) {
 			obj.generate(code,null);
 			if (isCastCall()) {
 				null_cast_label = code.newLabel();
@@ -60,16 +60,16 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			else
 				throw new RuntimeException("Non-static method "+func+" is called from static method "+code.method);
 		}
-		JENodeView[] args = this.args.toArray();
+		JENode[] args = this.args.toArray();
 		int i = 0;
 		if( func.isRuleMethod() ) {
 			// Very special case for rule call from inside of RuleMethod
-			JNodeView p = (JNodeView)this.jparent;
-			if (p instanceof JAssignExprView
-				&& ((JAssignExprView)p).op == AssignOperator.Assign
-				&& ((JAssignExprView)p).lval.getType() ≡ Type.tpRule
+			JNode p = (JNode)this.jparent;
+			if (p instanceof JAssignExpr
+				&& ((JAssignExpr)p).op == AssignOperator.Assign
+				&& ((JAssignExpr)p).lval.getType() ≡ Type.tpRule
 				)
-				((JAssignExprView)p).lval.generate(code,null);
+				((JAssignExpr)p).lval.generate(code,null);
 			else
 				code.addNullConst();
 		}
@@ -80,7 +80,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			else if( fname.indexOf("trace") >= 0 ) mode = 2;
 			if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
 				ok_label = code.newLabel();
-				JENodeView arg0 = args[0];
+				JENode arg0 = args[0];
 				if( arg0 instanceof IBoolExpr ) {
 					if( mode == 1 ) arg0.generate_iftrue(code,ok_label);
 					else arg0.generate_iffalse(code,ok_label);
@@ -98,7 +98,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		}
 		else {
 			if( func.name.equals(nameInit) && func.getOuterThisParam() != null) {
-				JVarView fp = code.method.getOuterThisParam();
+				JVar fp = code.method.getOuterThisParam();
 				if (fp == null) {
 					Kiev.reportError(this, "Cannot find outer this parameter");
 					code.addNullConst();
@@ -107,7 +107,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				}
 			}
 			if( func.name.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
-				JMethodView mmm = jctx_method;
+				JMethod mmm = jctx_method;
 				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.getStruct().super_type : jctx_clazz.getStruct().ctype;
 				assert(mmm.name.equals(nameInit));
 				assert(tp.getStruct().isTypeUnerasable());
@@ -203,7 +203,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 					break;
 				case 'F':
 					{
-					JMethodView m = Type.tpFloatRef.getJStruct().resolveMethod(
+					JMethod m = Type.tpFloatRef.getJStruct().resolveMethod(
 						KString.from("floatToIntBits"),
 						KString.from("(F)I")
 						);
@@ -212,7 +212,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 					break;
 				case 'D':
 					{
-					JMethodView m = Type.tpDoubleRef.getJStruct().resolveMethod(
+					JMethod m = Type.tpDoubleRef.getJStruct().resolveMethod(
 						KString.from("doubleToLongBits"),
 						KString.from("(D)J")
 						);
@@ -253,7 +253,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 					sign = KString.from("(D)Ljava/lang/String;");
 					break;
 				}
-				JMethodView m = Type.tpString.getJStruct().resolveMethod(
+				JMethod m = Type.tpString.getJStruct().resolveMethod(
 					KString.from("valueOf"),sign);
 				code.addInstr(op_call,m,false);
 			}
@@ -283,9 +283,9 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 
 
 @nodeview
-public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView {
-	public access:ro JENodeView			expr;
-	public access:ro JArr<JENodeView>	args;
+public final view JClosureCallExpr of ClosureCallExprImpl extends JENode {
+	public access:ro JENode			expr;
+	public access:ro JArr<JENode>	args;
 	public access:ro boolean			is_a_call;
 	
 	@getter public final CallType		get$ctype()				{ return (CallType)this.$view.expr.getType(); }
@@ -296,10 +296,10 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		// Load ref to closure
 		expr.generate(code,null);
 		CallType ctype = this.ctype;
-		JENodeView[] args = this.args.toArray();
+		JENode[] args = this.args.toArray();
 		// Clone it
 		if( args.length > 0 ) {
-			JMethodView clone_it = Type.tpClosureClazz.getJView().resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
+			JMethod clone_it = Type.tpClosureClazz.getJView().resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 			code.addInstr(op_call,clone_it,false);
 			if( Kiev.verify )
 				code.addInstr(op_checkcast,Type.tpClosureClazz.ctype);
@@ -309,7 +309,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 				code.addInstr(op_call,getMethodFor(ctype.arg(i).getJType()),false);
 			}
 		}
-		JMethodView call_it = getCallIt(ctype);
+		JMethod call_it = getCallIt(ctype);
 		// Check if we need to call
 		if( is_a_call ) {
 			if( call_it.type.ret() ≡ Type.tpRule )
@@ -326,7 +326,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		}
 	}
 
-	public JMethodView getCallIt(CallType tp) {
+	public JMethod getCallIt(CallType tp) {
 		KString call_it_name;
 		KString call_it_sign;
 		if( tp.ret().isReference() ) {
@@ -348,7 +348,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 	static final KString sigF = KString.from("(F)Lkiev/stdlib/closure;");
 	static final KString sigD = KString.from("(D)Lkiev/stdlib/closure;");
 	static final KString sigObj = KString.from("(Ljava/lang/Object;)Lkiev/stdlib/closure;");
-	public JMethodView getMethodFor(JType tp) {
+	public JMethod getMethodFor(JType tp) {
 		KString sig = null;
 		switch(tp.java_signature.byteAt(0)) {
 		case 'B': sig = sigB; break;
@@ -365,7 +365,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		case '&':
 		case 'R': sig = sigObj; break;
 		}
-		JMethodView m = Type.tpClosureClazz.getJView().resolveMethod(KString.from("addArg"),sig);
+		JMethod m = Type.tpClosureClazz.getJView().resolveMethod(KString.from("addArg"),sig);
 		if( m == null )
 			Kiev.reportError(expr,"Unknown method for kiev.vlang.closure");
 		return m;

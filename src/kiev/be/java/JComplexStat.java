@@ -23,11 +23,11 @@ import kiev.vlang.SynchronizedStat.SynchronizedStatImpl;
 import kiev.vlang.WithStat.WithStatImpl;
 
 @nodeview
-public final view JCaseLabelView of CaseLabelImpl extends JENodeView {
-	public access:ro	JENodeView			val;
+public final view JCaseLabel of CaseLabelImpl extends JENode {
+	public access:ro	JENode			val;
 	public access:ro	Type				type;
-	public access:ro	JArr<JVarView>		pattern;
-	public access:ro	JArr<JENodeView>	stats;
+	public access:ro	JArr<JVar>		pattern;
+	public access:ro	JArr<JENode>	stats;
 	public				CodeLabel			case_label;
 
 	public CodeLabel getLabel(Code code) {
@@ -38,7 +38,7 @@ public final view JCaseLabelView of CaseLabelImpl extends JENodeView {
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
 		case_label = getLabel(code);
-		CodeSwitch cosw = ((JSwitchStatView)this.jparent).cosw;
+		CodeSwitch cosw = ((JSwitchStat)this.jparent).cosw;
 		try {
 			code.addInstr(Instr.set_label,case_label);
 			if( val == null ) cosw.addDefault(case_label);
@@ -52,10 +52,10 @@ public final view JCaseLabelView of CaseLabelImpl extends JENodeView {
 					throw new RuntimeException("Case label "+v+" must be of integer type");
 			}
 		} catch(Exception e ) { Kiev.reportError(this,e); }
-		Vector<JVarView> vars = null;
+		Vector<JVar> vars = null;
 		if (pattern.length > 0) {
-			vars = new Vector<JVarView>();
-			foreach (JVarView p; pattern; p.vtype != null && p.name != nameUnderscore) {
+			vars = new Vector<JVar>();
+			foreach (JVar p; pattern; p.vtype != null && p.name != nameUnderscore) {
 				vars.append(p);
 				p.generate(code,Type.tpVoid);
 			}
@@ -73,19 +73,19 @@ public final view JCaseLabelView of CaseLabelImpl extends JENodeView {
 }
 
 @nodeview
-public view JSwitchStatView of SwitchStatImpl extends JENodeView implements BreakTarget {
+public view JSwitchStat of SwitchStatImpl extends JENode implements BreakTarget {
 	public access:ro	int						mode;
-	public access:ro	JENodeView				sel;
-	public access:ro	JArr<JCaseLabelView>	cases;
-	public access:ro	JLVarExprView			tmpvar;
-	public access:ro	JCaseLabelView			defCase;
-	public access:ro	JFieldView				typehash; // needed for re-resolving
-	public				JLabelView				lblcnt;
-	public				JLabelView				lblbrk;
+	public access:ro	JENode				sel;
+	public access:ro	JArr<JCaseLabel>	cases;
+	public access:ro	JLVarExpr			tmpvar;
+	public access:ro	JCaseLabel			defCase;
+	public access:ro	JField				typehash; // needed for re-resolving
+	public				JLabel				lblcnt;
+	public				JLabel				lblbrk;
 	public				CodeSwitch				cosw;
 
-	public JLabelView getCntLabel() { return lblcnt; }
-	public JLabelView getBrkLabel() { return lblbrk; }
+	public JLabel getCntLabel() { return lblcnt; }
+	public JLabel getBrkLabel() { return lblbrk; }
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
@@ -93,7 +93,7 @@ public view JSwitchStatView of SwitchStatImpl extends JENodeView implements Brea
 		int lo = Integer.MAX_VALUE;
 		int hi = Integer.MIN_VALUE;
 
-		JCaseLabelView[] cases = this.cases.toArray();
+		JCaseLabel[] cases = this.cases.toArray();
 		
 		int ntags = defCase==null? cases.length : cases.length-1;
 		int[] tags = new int[ntags];
@@ -144,10 +144,10 @@ public view JSwitchStatView of SwitchStatImpl extends JENodeView implements Brea
 					cases[i].setAutoReturnable(true);
 				cases[i].generate(code,Type.tpVoid);
 			}
-			Vector<JVarView> vars = new Vector<JVarView>();
+			Vector<JVar> vars = new Vector<JVar>();
 			for(int i=0; i < cases.length; i++) {
-				foreach (JENodeView n; cases[i].stats; n instanceof JVarDeclView)
-					vars.append(((JVarDeclView)n).var);
+				foreach (JENode n; cases[i].stats; n instanceof JVarDecl)
+					vars.append(((JVarDecl)n).var);
 			}
 			code.removeVars(vars.toArray());
 
@@ -182,16 +182,16 @@ public view JSwitchStatView of SwitchStatImpl extends JENodeView implements Brea
 
 
 @nodeview
-public view JCatchInfoView of CatchInfoImpl extends JENodeView {
-	public access:ro	JVarView		arg;
-	public access:ro	JENodeView		body;
+public view JCatchInfo of CatchInfoImpl extends JENode {
+	public access:ro	JVar		arg;
+	public access:ro	JENode		body;
 	public				CodeLabel		handler;
 	public				CodeCatchInfo	code_catcher;
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
 		code.addVar(arg);
-		JTryStatView tr = (JTryStatView)this.jparent;
+		JTryStat tr = (JTryStat)this.jparent;
 		try {
 			// This label must be created by TryStat's generate routine;
 			code.addInstr(Instr.enter_catch_handler,code_catcher);
@@ -202,7 +202,7 @@ public view JCatchInfoView of CatchInfoImpl extends JENodeView {
 					code.addInstr(Instr.op_jsr, tr.finally_catcher.subr_label);
 				}
 				if( isAutoReturnable() )
-					JReturnStatView.generateReturn(code,this);
+					JReturnStat.generateReturn(code,this);
 				else
 					code.addInstr(Instr.op_goto, tr.end_label);
 			}
@@ -216,8 +216,8 @@ public view JCatchInfoView of CatchInfoImpl extends JENodeView {
 }
 
 @nodeview
-public view JFinallyInfoView of FinallyInfoImpl extends JCatchInfoView {
-	public access:ro	JVarView	ret_arg;
+public view JFinallyInfo of FinallyInfoImpl extends JCatchInfo {
+	public access:ro	JVar	ret_arg;
 	public				CodeLabel	subr_label;
 
 	public void generate(Code code, Type reqType) {
@@ -246,10 +246,10 @@ public view JFinallyInfoView of FinallyInfoImpl extends JCatchInfoView {
 }
 
 @nodeview
-public final view JTryStatView of TryStatImpl extends JENodeView {
-	public access:ro	JENodeView				body;
-	public access:ro	JArr<JCatchInfoView>	catchers;
-	public access:ro	JFinallyInfoView		finally_catcher;
+public final view JTryStat of TryStatImpl extends JENode {
+	public access:ro	JENode				body;
+	public access:ro	JArr<JCatchInfo>	catchers;
+	public access:ro	JFinallyInfo		finally_catcher;
 	public				CodeLabel				end_label;
 
 	public void generate(Code code, Type reqType) {
@@ -279,7 +279,7 @@ public final view JTryStatView of TryStatImpl extends JENodeView {
 			}
 			if( !body.isMethodAbrupted() ) {
 				if( isAutoReturnable() ) {
-					JReturnStatView.generateReturn(code,this);
+					JReturnStat.generateReturn(code,this);
 				} else {
 					if( finally_catcher != null )
 						code.addInstr(Instr.op_jsr,finally_catcher.subr_label);
@@ -316,10 +316,10 @@ public final view JTryStatView of TryStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JSynchronizedStatView of SynchronizedStatImpl extends JENodeView {
-	public access:ro	JENodeView		expr;
-	public access:ro	JVarView		expr_var;
-	public access:ro	JENodeView		body;
+public final view JSynchronizedStat of SynchronizedStatImpl extends JENode {
+	public access:ro	JENode		expr;
+	public access:ro	JVar		expr_var;
+	public access:ro	JENode		body;
 	public				CodeLabel		handler;
 	public				CodeCatchInfo	code_catcher;
 	public				CodeLabel		end_label;
@@ -345,7 +345,7 @@ public final view JSynchronizedStatView of SynchronizedStatImpl extends JENodeVi
 			code.addInstr(Instr.stop_catcher,code_catcher);
 			if( !body.isMethodAbrupted() ) {
 				if( isAutoReturnable() )
-					JReturnStatView.generateReturn(code,this);
+					JReturnStat.generateReturn(code,this);
 				else {
 					code.addInstr(Instr.op_load,expr_var);
 					code.addInstr(Instr.op_monitorexit);
@@ -367,16 +367,16 @@ public final view JSynchronizedStatView of SynchronizedStatImpl extends JENodeVi
 }
 
 @nodeview
-public final view JWithStatView of WithStatImpl extends JENodeView {
-	public access:ro	JENodeView		expr;
-	public access:ro	JENodeView		body;
-	public access:ro	JLvalDNodeView	var_or_field;
+public final view JWithStat of WithStatImpl extends JENode {
+	public access:ro	JENode		expr;
+	public access:ro	JENode		body;
+	public access:ro	JLvalDNode	var_or_field;
 	public				CodeLabel		end_label;
 
 	public void generate(Code code, Type reqType) {
 		end_label = code.newLabel();
 		try {
-			if (expr instanceof JAssignExprView)
+			if (expr instanceof JAssignExpr)
 				expr.generate(code,Type.tpVoid);
 			if( isAutoReturnable() )
 				body.setAutoReturnable(true);
@@ -386,7 +386,7 @@ public final view JWithStatView of WithStatImpl extends JENodeView {
 		}
 		if( !body.isMethodAbrupted() ) {
 			if( isAutoReturnable() )
-				JReturnStatView.generateReturn(code,this);
+				JReturnStat.generateReturn(code,this);
 		}
 
 		code.addInstr(Instr.set_label,end_label);

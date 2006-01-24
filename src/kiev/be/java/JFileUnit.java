@@ -21,7 +21,7 @@ import kiev.vlang.FileUnit.FileUnitImpl;
  */
 
 @nodeview
-public final view JFileUnitView of FileUnitImpl extends JDNodeView {
+public final view JFileUnit of FileUnitImpl extends JDNode {
 	public				KString					filename;
 	public				TypeNameRef				pkg;
 	public access:ro	NArr<DNode>				syntax;
@@ -30,7 +30,7 @@ public final view JFileUnitView of FileUnitImpl extends JDNodeView {
 	public access:ro	boolean[]				disabled_extensions;
 	public				boolean					scanned_for_interface_only;
 
-	@getter public JFileUnitView get$jctx_file_unit() { return this; }
+	@getter public JFileUnit get$jctx_file_unit() { return this; }
 
 	public final FileUnit getFileUnit() { return (FileUnit)this.getNode(); }
 	

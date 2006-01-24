@@ -25,7 +25,7 @@ import kiev.vlang.ConstStringExpr.ConstStringExprImpl;
 import kiev.vlang.ConstExpr.ConstExprImpl;
 
 @nodeview
-public final view JConstBoolExprView of ConstBoolExprImpl extends JConstExprView implements IBoolExpr {
+public final view JConstBoolExpr of ConstBoolExprImpl extends JConstExpr implements IBoolExpr {
 	public access:ro boolean	value;
 
 	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
@@ -56,60 +56,60 @@ public final view JConstBoolExprView of ConstBoolExprImpl extends JConstExprView
 }
 
 @nodeview
-public final view JConstNullExprView of ConstNullExprImpl extends JConstExprView {
+public final view JConstNullExpr of ConstNullExprImpl extends JConstExpr {
 	public Object	getConstValue()		{ return null; }
 }
 
 @nodeview
-public final view JConstByteExprView of ConstByteExprImpl extends JConstExprView {
+public final view JConstByteExpr of ConstByteExprImpl extends JConstExpr {
 	public access:ro byte		value;
 	public Object	getConstValue()		{ return Byte.valueOf(value); }
 }
 
 @nodeview
-public final view JConstShortExprView of ConstShortExprImpl extends JConstExprView {
+public final view JConstShortExpr of ConstShortExprImpl extends JConstExpr {
 	public access:ro short		value;
 	public Object	getConstValue()		{ return Short.valueOf(value); }
 }
 
 @nodeview
-public final view JConstIntExprView of ConstIntExprImpl extends JConstExprView {
+public final view JConstIntExpr of ConstIntExprImpl extends JConstExpr {
 	public access:ro int		value;
 	public Object	getConstValue()		{ return Integer.valueOf(value); }
 }
 
 @nodeview
-public final view JConstLongExprView of ConstLongExprImpl extends JConstExprView {
+public final view JConstLongExpr of ConstLongExprImpl extends JConstExpr {
 	public access:ro long		value;
 	public Object	getConstValue()		{ return Long.valueOf(value); }
 }
 	
 @nodeview
-public final view JConstCharExprView of ConstCharExprImpl extends JConstExprView {
+public final view JConstCharExpr of ConstCharExprImpl extends JConstExpr {
 	public access:ro char		value;
 	public Object	getConstValue()		{ return Character.valueOf(value); }
 }
 
 @nodeview
-public final view JConstFloatExprView of ConstFloatExprImpl extends JConstExprView {
+public final view JConstFloatExpr of ConstFloatExprImpl extends JConstExpr {
 	public access:ro float		value;
 	public Object	getConstValue()		{ return Float.valueOf(value); }
 }
 
 @nodeview
-public final view JConstDoubleExprView of ConstDoubleExprImpl extends JConstExprView {
+public final view JConstDoubleExpr of ConstDoubleExprImpl extends JConstExpr {
 	public access:ro double		value;
 	public Object	getConstValue()		{ return Double.valueOf(value); }
 }
 
 @nodeview
-public final view JConstStringExprView of ConstStringExprImpl extends JConstExprView {
+public final view JConstStringExpr of ConstStringExprImpl extends JConstExpr {
 	public access:ro KString	value;
 	public Object	getConstValue()		{ return value; }
 }
 
 @nodeview
-public abstract view JConstExprView of ConstExprImpl extends JENodeView {
+public abstract view JConstExpr of ConstExprImpl extends JENode {
 
 	public boolean isConstantExpr() { return true; }
 	public abstract Object getConstValue();

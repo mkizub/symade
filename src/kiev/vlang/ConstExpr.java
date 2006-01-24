@@ -6,19 +6,19 @@ import kiev.parser.*;
 import kiev.transf.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JConstExprView;
-import kiev.be.java.JConstBoolExprView;
-import kiev.be.java.JConstNullExprView;
-import kiev.be.java.JConstByteExprView;
-import kiev.be.java.JConstShortExprView;
-import kiev.be.java.JConstIntExprView;
-import kiev.be.java.JConstLongExprView;
-import kiev.be.java.JConstCharExprView;
-import kiev.be.java.JConstFloatExprView;
-import kiev.be.java.JConstDoubleExprView;
-import kiev.be.java.JConstStringExprView;
+import kiev.be.java.JNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JConstExpr;
+import kiev.be.java.JConstBoolExpr;
+import kiev.be.java.JConstNullExpr;
+import kiev.be.java.JConstByteExpr;
+import kiev.be.java.JConstShortExpr;
+import kiev.be.java.JConstIntExpr;
+import kiev.be.java.JConstLongExpr;
+import kiev.be.java.JConstCharExpr;
+import kiev.be.java.JConstFloatExpr;
+import kiev.be.java.JConstDoubleExpr;
+import kiev.be.java.JConstStringExpr;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -38,7 +38,7 @@ public final class ConstBoolExpr extends ConstExpr {
 	
 	@virtual typedef NImpl = ConstBoolExprImpl;
 	@virtual typedef VView = ConstBoolExprView;
-	@virtual typedef JView = JConstBoolExprView;
+	@virtual typedef JView = JConstBoolExpr;
 
 	@nodeimpl
 	public static class ConstBoolExprImpl extends ConstExprImpl {
@@ -80,7 +80,7 @@ public final class ConstNullExpr extends ConstExpr {
 	
 	@virtual typedef NImpl = ConstNullExprImpl;
 	@virtual typedef VView = ConstNullExprView;
-	@virtual typedef JView = JConstNullExprView;
+	@virtual typedef JView = JConstNullExpr;
 
 	@nodeimpl
 	public static class ConstNullExprImpl extends ConstExprImpl {
@@ -117,7 +117,7 @@ public final class ConstByteExpr extends ConstExpr {
 	
 	@virtual typedef NImpl = ConstByteExprImpl;
 	@virtual typedef VView = ConstByteExprView;
-	@virtual typedef JView = JConstByteExprView;
+	@virtual typedef JView = JConstByteExpr;
 
 	@nodeimpl
 	public static class ConstByteExprImpl extends ConstExprImpl {
@@ -155,7 +155,7 @@ public final class ConstShortExpr extends ConstExpr {
 	
 	@virtual typedef NImpl = ConstShortExprImpl;
 	@virtual typedef VView = ConstShortExprView;
-	@virtual typedef JView = JConstShortExprView;
+	@virtual typedef JView = JConstShortExpr;
 
 	@nodeimpl
 	public static class ConstShortExprImpl extends ConstExprImpl {
@@ -193,7 +193,7 @@ public final class ConstIntExpr extends ConstExpr {
 	
 	@virtual typedef NImpl = ConstIntExprImpl;
 	@virtual typedef VView = ConstIntExprView;
-	@virtual typedef JView = JConstIntExprView;
+	@virtual typedef JView = JConstIntExpr;
 
 	@nodeimpl
 	public static class ConstIntExprImpl extends ConstExprImpl {
@@ -231,7 +231,7 @@ public final class ConstLongExpr extends ConstExpr {
 	
 	@virtual typedef NImpl = ConstLongExprImpl;
 	@virtual typedef VView = ConstLongExprView;
-	@virtual typedef JView = JConstLongExprView;
+	@virtual typedef JView = JConstLongExpr;
 
 	@nodeimpl
 	public static class ConstLongExprImpl extends ConstExprImpl {
@@ -269,7 +269,7 @@ public final class ConstCharExpr extends ConstExpr {
 	
 	@virtual typedef NImpl = ConstCharExprImpl;
 	@virtual typedef VView = ConstCharExprView;
-	@virtual typedef JView = JConstCharExprView;
+	@virtual typedef JView = JConstCharExpr;
 
 	@nodeimpl
 	public static class ConstCharExprImpl extends ConstExprImpl {
@@ -308,7 +308,7 @@ public final class ConstFloatExpr extends ConstExpr {
 	
 	@virtual typedef NImpl = ConstFloatExprImpl;
 	@virtual typedef VView = ConstFloatExprView;
-	@virtual typedef JView = JConstFloatExprView;
+	@virtual typedef JView = JConstFloatExpr;
 
 	@nodeimpl
 	public static class ConstFloatExprImpl extends ConstExprImpl {
@@ -347,7 +347,7 @@ public final class ConstDoubleExpr extends ConstExpr {
 	
 	@virtual typedef NImpl = ConstDoubleExprImpl;
 	@virtual typedef VView = ConstDoubleExprView;
-	@virtual typedef JView = JConstDoubleExprView;
+	@virtual typedef JView = JConstDoubleExpr;
 
 	@nodeimpl
 	public static class ConstDoubleExprImpl extends ConstExprImpl {
@@ -385,7 +385,7 @@ public final class ConstStringExpr extends ConstExpr {
 	
 	@virtual typedef NImpl = ConstStringExprImpl;
 	@virtual typedef VView = ConstStringExprView;
-	@virtual typedef JView = JConstStringExprView;
+	@virtual typedef JView = JConstStringExpr;
 
 	@nodeimpl
 	public static class ConstStringExprImpl extends ConstExprImpl {
@@ -422,7 +422,7 @@ public abstract class ConstExpr extends ENode {
 
 	@virtual typedef NImpl = ConstExprImpl;
 	@virtual typedef VView = ConstExprView;
-	@virtual typedef JView = JConstExprView;
+	@virtual typedef JView = JConstExpr;
 
 	@nodeimpl
 	public abstract static class ConstExprImpl extends ENodeImpl {

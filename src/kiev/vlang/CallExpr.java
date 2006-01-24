@@ -5,10 +5,10 @@ import kiev.stdlib.*;
 import kiev.vlang.Operator.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JCallExprView;
-import kiev.be.java.JClosureCallExprView;
+import kiev.be.java.JNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JCallExpr;
+import kiev.be.java.JClosureCallExpr;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -29,7 +29,7 @@ public class CallExpr extends ENode {
 	
 	@virtual typedef NImpl = CallExprImpl;
 	@virtual typedef VView = CallExprView;
-	@virtual typedef JView = JCallExprView;
+	@virtual typedef JView = JCallExpr;
 
 	@nodeimpl
 	public static class CallExprImpl extends ENodeImpl {
@@ -201,7 +201,7 @@ public class ClosureCallExpr extends ENode {
 	
 	@virtual typedef NImpl = ClosureCallExprImpl;
 	@virtual typedef VView = ClosureCallExprView;
-	@virtual typedef JView = JClosureCallExprView;
+	@virtual typedef JView = JClosureCallExpr;
 
 	@nodeimpl
 	public static class ClosureCallExprImpl extends ENodeImpl {

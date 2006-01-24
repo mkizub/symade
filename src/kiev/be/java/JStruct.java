@@ -24,7 +24,7 @@ import kiev.vlang.Struct.StructImpl;
  */
 
 @nodeview
-public final view JStructView of StructImpl extends JTypeDeclView {
+public final view JStruct of StructImpl extends JTypeDecl {
 
 	public final Struct getStruct() { return this.$view.getStruct(); }
 
@@ -34,9 +34,9 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 	public access:ro	JBaseType			jtype;
 	public access:ro	JBaseType			jsuper_type;
 	public access:ro	JType[]				interfaces;
-	public access:ro	JArr<JStructView>	sub_clazz;
+	public access:ro	JArr<JStruct>	sub_clazz;
 	public				Attr[]				attrs;
-	public access:ro	JArr<JDNodeView>	members;
+	public access:ro	JArr<JDNode>	members;
 
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
 	public final JBaseType		get$jsuper_type()	{ return getStruct().super_type == null ? null : (JBaseType)getStruct().super_type.getJType(); }
@@ -56,7 +56,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 	public final boolean isSyntax()					{ return this.getStruct().isSyntax(); }
 	public final boolean isLoadedFromBytecode()	{ return this.$view.is_struct_bytecode; }
 
-	@getter public JStructView get$child_jctx_clazz() { return this; }
+	@getter public JStruct get$child_jctx_clazz() { return this; }
 
 	public boolean checkResolved() { return getStruct().checkResolved(); }
 	
@@ -81,11 +81,11 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		return null;
 	}
 
-	public JENodeView accessTypeInfoField(JNodeView from, Type t, boolean from_gen) {
+	public JENode accessTypeInfoField(JNode from, Type t, boolean from_gen) {
 		return getStruct().accessTypeInfoField(from.getNode(), t, from_gen).getJView();
 	}
 	
-	public boolean instanceOf(JStructView cl) {
+	public boolean instanceOf(JStruct cl) {
 		if( cl == null ) return false;
 		if( this.equals(cl) ) return true;
 		if( jsuper_type != null && jsuper_type.getJStruct().instanceOf(cl) )
@@ -98,18 +98,18 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		return false;
 	}
 
-	public JFieldView resolveField(KString name) {
+	public JField resolveField(KString name) {
 		return resolveField(name,this,true);
 	}
 
-	public JFieldView resolveField(KString name, boolean fatal) {
+	public JField resolveField(KString name, boolean fatal) {
 		return resolveField(name,this,fatal);
 	}
 
-	private JFieldView resolveField(KString name, JStructView where, boolean fatal) {
+	private JField resolveField(KString name, JStruct where, boolean fatal) {
 		this.checkResolved();
-		foreach(JDNodeView n; members; n instanceof JFieldView) {
-			JFieldView f = (JFieldView)n;
+		foreach(JDNode n; members; n instanceof JField) {
+			JField f = (JField)n;
 			if (f.name == name)
 				return f;
 		}
@@ -120,37 +120,37 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		return null;
 	}
 
-	public JMethodView resolveMethod(KString name, KString sign) {
+	public JMethod resolveMethod(KString name, KString sign) {
 		return resolveMethod(name,sign,this,true);
 	}
 
-	public JMethodView resolveMethod(KString name, KString sign, boolean fatal) {
+	public JMethod resolveMethod(KString name, KString sign, boolean fatal) {
 		return resolveMethod(name,sign,this,fatal);
 	}
 
-	private JMethodView resolveMethod(KString name, KString sign, JStructView where, boolean fatal) {
+	private JMethod resolveMethod(KString name, KString sign, JStruct where, boolean fatal) {
 		this.checkResolved();
-		foreach (JDNodeView n; members; n instanceof JMethodView) {
-			JMethodView m = (JMethodView)n;
+		foreach (JDNode n; members; n instanceof JMethod) {
+			JMethod m = (JMethod)n;
 			if( m.name.equals(name) && m.type.getJType().java_signature.equals(sign))
 				return m;
 		}
 		if( isInterface() ) {
-			JStructView defaults = null;
-			foreach(JDNodeView n; members; n instanceof JStructView && ((JStructView)n).isClazz() && ((JStructView)n).name.short_name.equals(nameIdefault) ) {
-				defaults = (JStructView)n;
+			JStruct defaults = null;
+			foreach(JDNode n; members; n instanceof JStruct && ((JStruct)n).isClazz() && ((JStruct)n).name.short_name.equals(nameIdefault) ) {
+				defaults = (JStruct)n;
 				break;
 			}
 			if( defaults != null ) {
-				foreach (JDNodeView n; defaults.members; n instanceof JMethodView) {
-					JMethodView m = (JMethodView)n;
+				foreach (JDNode n; defaults.members; n instanceof JMethod) {
+					JMethod m = (JMethod)n;
 					if( m.name.equals(name) && m.type.getJType().java_signature.equals(sign))
 						return m;
 				}
 			}
 		}
 		trace(Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+this);
-		JMethodView m = null;
+		JMethod m = null;
 		if( jsuper_type != null )
 			m = jsuper_type.getJStruct().resolveMethod(name,sign,where,fatal);
 		if( m != null ) return m;
@@ -167,11 +167,11 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return;
 		
-		JStructView[] sub_clazz = this.sub_clazz.toArray();
-		JDNodeView[] members = this.members.toArray();
+		JStruct[] sub_clazz = this.sub_clazz.toArray();
+		JDNode[] members = this.members.toArray();
 		
 		if( !isPackage() ) {
-			foreach (JStructView sub; sub_clazz)
+			foreach (JStruct sub; sub_clazz)
 				sub.generate();
 		}
 
@@ -184,7 +184,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 			constPool.addClazzCP(iface.java_signature);
 		}
 		if( !isPackage() ) {
-			foreach (JStructView sub; sub_clazz) {
+			foreach (JStruct sub; sub_clazz) {
 				sub.checkResolved();
 				constPool.addClazzCP(sub.ctype.getJType().java_signature);
 			}
@@ -202,8 +202,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		
 		if( !isPackage() && sub_clazz.length > 0 ) {
 			InnerClassesAttr a = new InnerClassesAttr();
-			JStructView[] inner = new JStructView[sub_clazz.length];
-			JStructView[] outer = new JStructView[sub_clazz.length];
+			JStruct[] inner = new JStruct[sub_clazz.length];
+			JStruct[] outer = new JStruct[sub_clazz.length];
 			short[] inner_access = new short[sub_clazz.length];
 			for(int j=0; j < sub_clazz.length; j++) {
 				inner[j] = sub_clazz[j];
@@ -220,8 +220,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		if (meta.size() > 0) this.addAttr(new RVMetaAttr(meta));
 		
 		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
-		foreach (JDNodeView n; members; n instanceof JFieldView) {
-			JFieldView f = (JFieldView)n;
+		foreach (JDNode n; members; n instanceof JField) {
+			JField f = (JField)n;
 			constPool.addAsciiCP(f.name);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
@@ -237,8 +237,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 			foreach (Attr a; f.attrs)
 				a.generate(constPool);
 		}
-		foreach (JDNodeView n; members; n instanceof JMethodView) {
-			JMethodView m = (JMethodView)n;
+		foreach (JDNode n; members; n instanceof JMethod) {
+			JMethod m = (JMethod)n;
 			constPool.addAsciiCP(m.name);
 			constPool.addAsciiCP(m.type.getJType().java_signature);
 			if( m.etype != null )
@@ -250,7 +250,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 				if( m.isAccessedFromInner())
 					m.getDNode().setPkgPrivate();
 
-				JWBCConditionView[] conditions = m.conditions.toArray();
+				JWBCCondition[] conditions = m.conditions.toArray();
 				for(int j=0; j < conditions.length; j++) {
 					if( conditions[j].definer.equals(m) ) {
 						m.addAttr(conditions[j].code_attr);
@@ -259,8 +259,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 
 				if (m.meta.size() > 0) m.addAttr(new RVMetaAttr(m.meta));
 				boolean has_pmeta = false;
-				JVarView[] params = m.params.toArray();
-				foreach (JVarView p; params; p.meta != null && m.meta.size() > 0)
+				JVar[] params = m.params.toArray();
+				foreach (JVar p; params; p.meta != null && m.meta.size() > 0)
 					has_pmeta = true;
 				if (has_pmeta) {
 					MetaSet[] mss;
@@ -283,8 +283,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 			if( Kiev.safe && isBad() ) return;
 		}
 		constPool.generate();
-		foreach (JDNodeView n; members; n instanceof JMethodView) {
-			JMethodView m = (JMethodView)n;
+		foreach (JDNode n; members; n instanceof JMethod) {
+			JMethod m = (JMethod)n;
 			CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
 			if( ca != null ) {
 				trace(Kiev.debugInstrGen," generating refs for CP for method "+this+"."+m);
@@ -308,7 +308,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 			out_file = this.name.bytecode_name.replace('/',File.separatorChar).toString();
 		try {
 			DataOutputStream out;
-			JFileUnitView.make_output_dir(output_dir,out_file);
+			JFileUnit.make_output_dir(output_dir,out_file);
 			try {
 				out = new DataOutputStream(new FileOutputStream(new File(output_dir,out_file+".class")));
 			} catch( java.io.FileNotFoundException e ) {
@@ -329,15 +329,15 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 
 	public void cleanup() {
 		if( !isPackage() ) {
-			foreach (JStructView sub; this.sub_clazz)
+			foreach (JStruct sub; this.sub_clazz)
 				sub.cleanup();
 		}
 
-		foreach (JDNodeView n; this.members) {
-			if (n instanceof JFieldView)
-				((JFieldView)n).attrs = Attr.emptyArray;
-			else if (n instanceof JMethodView)
-				((JMethodView)n).attrs = Attr.emptyArray;
+		foreach (JDNode n; this.members) {
+			if (n instanceof JField)
+				((JField)n).attrs = Attr.emptyArray;
+			else if (n instanceof JMethod)
+				((JMethod)n).attrs = Attr.emptyArray;
 		}
 		this.attrs = Attr.emptyArray;
 	}

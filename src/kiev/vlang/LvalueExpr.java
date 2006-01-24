@@ -7,17 +7,17 @@ import kiev.parser.*;
 import kiev.vlang.Operator.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JLvalueExprView;
-import kiev.be.java.JAccessExprView;
-import kiev.be.java.JIFldExprView;
-import kiev.be.java.JContainerAccessExprView;
-import kiev.be.java.JThisExprView;
-import kiev.be.java.JLVarExprView;
-import kiev.be.java.JSFldExprView;
-import kiev.be.java.JOuterThisAccessExprView;
-import kiev.be.java.JUnwrapExprView;
+import kiev.be.java.JNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JLvalueExpr;
+import kiev.be.java.JAccessExpr;
+import kiev.be.java.JIFldExpr;
+import kiev.be.java.JContainerAccessExpr;
+import kiev.be.java.JThisExpr;
+import kiev.be.java.JLVarExpr;
+import kiev.be.java.JSFldExpr;
+import kiev.be.java.JOuterThisAccessExpr;
+import kiev.be.java.JUnwrapExpr;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -34,7 +34,7 @@ public abstract class LvalueExpr extends ENode {
 
 	@virtual typedef NImpl = LvalueExprImpl;
 	@virtual typedef VView = LvalueExprView;
-	@virtual typedef JView = JLvalueExprView;
+	@virtual typedef JView = JLvalueExpr;
 
 	@nodeimpl
 	public abstract static class LvalueExprImpl extends ENodeImpl {
@@ -63,7 +63,7 @@ public class AccessExpr extends LvalueExpr {
 
 	@virtual typedef NImpl = AccessExprImpl;
 	@virtual typedef VView = AccessExprView;
-	@virtual typedef JView = JAccessExprView;
+	@virtual typedef JView = JAccessExpr;
 
 	@nodeimpl
 	public static class AccessExprImpl extends LvalueExprImpl {		
@@ -294,7 +294,7 @@ public final class IFldExpr extends AccessExpr {
 
 	@virtual typedef NImpl = IFldExprImpl;
 	@virtual typedef VView = IFldExprView;
-	@virtual typedef JView = JIFldExprView;
+	@virtual typedef JView = JIFldExpr;
 
 	@nodeimpl
 	public static final class IFldExprImpl extends AccessExprImpl {		
@@ -428,7 +428,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 
 	@virtual typedef NImpl = ContainerAccessExprImpl;
 	@virtual typedef VView = ContainerAccessExprView;
-	@virtual typedef JView = JContainerAccessExprView;
+	@virtual typedef JView = JContainerAccessExpr;
 
 	@nodeimpl
 	public static final class ContainerAccessExprImpl extends LvalueExprImpl {		
@@ -559,7 +559,7 @@ public final class ThisExpr extends LvalueExpr {
 	
 	@virtual typedef NImpl = ThisExprImpl;
 	@virtual typedef VView = ThisExprView;
-	@virtual typedef JView = JThisExprView;
+	@virtual typedef JView = JThisExpr;
 
 	@nodeimpl
 	public static final class ThisExprImpl extends LvalueExprImpl {		
@@ -630,7 +630,7 @@ public final class LVarExpr extends LvalueExpr {
 
 	@virtual typedef NImpl = LVarExprImpl;
 	@virtual typedef VView = LVarExprView;
-	@virtual typedef JView = JLVarExprView;
+	@virtual typedef JView = JLVarExpr;
 
 	@nodeimpl
 	public static final class LVarExprImpl extends LvalueExprImpl {		
@@ -778,7 +778,7 @@ public final class SFldExpr extends AccessExpr {
 
 	@virtual typedef NImpl = SFldExprImpl;
 	@virtual typedef VView = SFldExprView;
-	@virtual typedef JView = JSFldExprView;
+	@virtual typedef JView = JSFldExpr;
 
 	@nodeimpl
 	public static final class SFldExprImpl extends AccessExprImpl {		
@@ -884,7 +884,7 @@ public final class OuterThisAccessExpr extends AccessExpr {
 
 	@virtual typedef NImpl = OuterThisAccessExprImpl;
 	@virtual typedef VView = OuterThisAccessExprView;
-	@virtual typedef JView = JOuterThisAccessExprView;
+	@virtual typedef JView = JOuterThisAccessExpr;
 
 	@nodeimpl
 	public static final class OuterThisAccessExprImpl extends AccessExprImpl {		
@@ -984,7 +984,7 @@ public final class UnwrapExpr extends LvalueExpr {
 
 	@virtual typedef NImpl = UnwrapExprImpl;
 	@virtual typedef VView = UnwrapExprView;
-	@virtual typedef JView = JUnwrapExprView;
+	@virtual typedef JView = JUnwrapExpr;
 
 	@nodeimpl
 	public static final class UnwrapExprImpl extends LvalueExprImpl {		

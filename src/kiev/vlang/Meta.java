@@ -120,11 +120,6 @@ public final class MetaSet extends ASTNode {
 				if ( current < MetaSet.this.size() ) return MetaSet.this.metas[current++];
 				throw new NoSuchElementException(Integer.toString(MetaSet.this.size()));
 			}
-			/// BUG BUG BUG ///
-			public Object nextElement() {
-				if ( current < MetaSet.this.size() ) return MetaSet.this.metas[current++];
-				throw new NoSuchElementException(Integer.toString(MetaSet.this.size()));
-			}
 		};
 	}
 	
@@ -410,11 +405,6 @@ public class Meta extends ENode {
 			int current;
 			public boolean hasMoreElements() { return current < Meta.this.size(); }
 			public MetaValue nextElement() {
-				if ( current < Meta.this.size() ) return Meta.this.values[current++];
-				throw new NoSuchElementException(Integer.toString(Meta.this.size()));
-			}
-			/// BUG BUG BUG ///
-			public Object nextElement() {
 				if ( current < Meta.this.size() ) return Meta.this.values[current++];
 				throw new NoSuchElementException(Integer.toString(Meta.this.size()));
 			}

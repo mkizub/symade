@@ -6,22 +6,22 @@ import kiev.parser.*;
 import kiev.vlang.types.*;
 import kiev.transf.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JLvalueExprView;
-import kiev.be.java.JShadowView;
-import kiev.be.java.JArrayLengthExprView;
-import kiev.be.java.JTypeClassExprView;
-import kiev.be.java.JTypeInfoExprView;
-import kiev.be.java.JAssignExprView;
-import kiev.be.java.JBinaryExprView;
-import kiev.be.java.JStringConcatExprView;
-import kiev.be.java.JCommaExprView;
-import kiev.be.java.JBlockExprView;
-import kiev.be.java.JUnaryExprView;
-import kiev.be.java.JIncrementExprView;
-import kiev.be.java.JConditionalExprView;
-import kiev.be.java.JCastExprView;
+import kiev.be.java.JNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JLvalueExpr;
+import kiev.be.java.JShadow;
+import kiev.be.java.JArrayLengthExpr;
+import kiev.be.java.JTypeClassExpr;
+import kiev.be.java.JTypeInfoExpr;
+import kiev.be.java.JAssignExpr;
+import kiev.be.java.JBinaryExpr;
+import kiev.be.java.JStringConcatExpr;
+import kiev.be.java.JCommaExpr;
+import kiev.be.java.JBlockExpr;
+import kiev.be.java.JUnaryExpr;
+import kiev.be.java.JIncrementExpr;
+import kiev.be.java.JConditionalExpr;
+import kiev.be.java.JCastExpr;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -41,7 +41,7 @@ public class Shadow extends ENode {
 	
 	@virtual typedef NImpl = ShadowImpl;
 	@virtual typedef VView = ShadowView;
-	@virtual typedef JView = JShadowView;
+	@virtual typedef JView = JShadow;
 
 	@nodeimpl
 	public static final class ShadowImpl extends ENodeImpl {
@@ -103,7 +103,7 @@ public class ArrayLengthExpr extends AccessExpr {
 	
 	@virtual typedef NImpl = ArrayLengthExprImpl;
 	@virtual typedef VView = ArrayLengthExprView;
-	@virtual typedef JView = JArrayLengthExprView;
+	@virtual typedef JView = JArrayLengthExpr;
 
 	@nodeimpl
 	public static final class ArrayLengthExprImpl extends AccessExprImpl {
@@ -173,7 +173,7 @@ public class TypeClassExpr extends ENode {
 	
 	@virtual typedef NImpl = TypeClassExprImpl;
 	@virtual typedef VView = TypeClassExprView;
-	@virtual typedef JView = JTypeClassExprView;
+	@virtual typedef JView = JTypeClassExpr;
 
 	@nodeimpl
 	public static final class TypeClassExprImpl extends ENodeImpl {
@@ -233,7 +233,7 @@ public class TypeInfoExpr extends ENode {
 	
 	@virtual typedef NImpl = TypeInfoExprImpl;
 	@virtual typedef VView = TypeInfoExprView;
-	@virtual typedef JView = JTypeInfoExprView;
+	@virtual typedef JView = JTypeInfoExpr;
 
 	@nodeimpl
 	public static final class TypeInfoExprImpl extends ENodeImpl {
@@ -312,7 +312,7 @@ public class AssignExpr extends LvalueExpr {
 	
 	@virtual typedef NImpl = AssignExprImpl;
 	@virtual typedef VView = AssignExprView;
-	@virtual typedef JView = JAssignExprView;
+	@virtual typedef JView = JAssignExpr;
 
 	@nodeimpl
 	public static class AssignExprImpl extends LvalueExprImpl {		
@@ -582,7 +582,7 @@ public class BinaryExpr extends ENode {
 	
 	@virtual typedef NImpl = BinaryExprImpl;
 	@virtual typedef VView = BinaryExprView;
-	@virtual typedef JView = JBinaryExprView;
+	@virtual typedef JView = JBinaryExpr;
 
 	@nodeimpl
 	public static class BinaryExprImpl extends ENodeImpl {
@@ -996,7 +996,7 @@ public class StringConcatExpr extends ENode {
 
 	@virtual typedef NImpl = StringConcatExprImpl;
 	@virtual typedef VView = StringConcatExprView;
-	@virtual typedef JView = JStringConcatExprView;
+	@virtual typedef JView = JStringConcatExpr;
 
 	@nodeimpl
 	public static class StringConcatExprImpl extends ENodeImpl {
@@ -1073,7 +1073,7 @@ public class CommaExpr extends ENode {
 
 	@virtual typedef NImpl = CommaExprImpl;
 	@virtual typedef VView = CommaExprView;
-	@virtual typedef JView = JCommaExprView;
+	@virtual typedef JView = JCommaExpr;
 
 	@nodeimpl
 	public static class CommaExprImpl extends ENodeImpl {
@@ -1148,7 +1148,7 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef NImpl = BlockExprImpl;
 	@virtual typedef VView = BlockExprView;
-	@virtual typedef JView = JBlockExprView;
+	@virtual typedef JView = JBlockExpr;
 
 	@nodeimpl
 	public static class BlockExprImpl extends ENodeImpl {
@@ -1320,7 +1320,7 @@ public class UnaryExpr extends ENode {
 
 	@virtual typedef NImpl = UnaryExprImpl;
 	@virtual typedef VView = UnaryExprView;
-	@virtual typedef JView = JUnaryExprView;
+	@virtual typedef JView = JUnaryExpr;
 
 	@nodeimpl
 	public static class UnaryExprImpl extends ENodeImpl {
@@ -1504,7 +1504,7 @@ public class IncrementExpr extends ENode {
 
 	@virtual typedef NImpl = IncrementExprImpl;
 	@virtual typedef VView = IncrementExprView;
-	@virtual typedef JView = JIncrementExprView;
+	@virtual typedef JView = JIncrementExpr;
 
 	@nodeimpl
 	public static class IncrementExprImpl extends ENodeImpl {		
@@ -1585,7 +1585,7 @@ public class ConditionalExpr extends ENode {
 
 	@virtual typedef NImpl = ConditionalExprImpl;
 	@virtual typedef VView = ConditionalExprView;
-	@virtual typedef JView = JConditionalExprView;
+	@virtual typedef JView = JConditionalExpr;
 
 	@nodeimpl
 	public static class ConditionalExprImpl extends ENodeImpl {
@@ -1678,7 +1678,7 @@ public class CastExpr extends ENode {
 
 	@virtual typedef NImpl = CastExprImpl;
 	@virtual typedef VView = CastExprView;
-	@virtual typedef JView = JCastExprView;
+	@virtual typedef JView = JCastExpr;
 
 	@nodeimpl
 	public static class CastExprImpl extends ENodeImpl {

@@ -9,7 +9,7 @@ import kiev.be.java.JType;
 import kiev.be.java.JBaseType;
 import kiev.be.java.JArrayType;
 import kiev.be.java.JMethodType;
-import kiev.be.java.JStructView;
+import kiev.be.java.JStruct;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

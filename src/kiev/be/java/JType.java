@@ -90,7 +90,7 @@ public abstract class JType {
 	
 	public abstract String toClassForNameString();
 	public abstract JType getSuperType();
-	public JStructView getJStruct() { return null; }
+	public JStruct getJStruct() { return null; }
 
 	public final boolean isReference()		{ return (flags & flReference)		!= 0 ; }
 	public final boolean isArray()			{ return (flags & flArray)			!= 0 ; }
@@ -202,7 +202,7 @@ public class JBaseType extends JType {
 	}
 	
 	
-	public JStructView getJStruct() {
+	public JStruct getJStruct() {
 		return clazz.getJView();
 	}
 	

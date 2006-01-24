@@ -7,10 +7,10 @@ import kiev.transf.*;
 import kiev.vlang.types.*;
 import java.io.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JDNodeView;
-import kiev.be.java.JTypeDeclView;
-import kiev.be.java.JStructView;
+import kiev.be.java.JNode;
+import kiev.be.java.JDNode;
+import kiev.be.java.JTypeDecl;
+import kiev.be.java.JStruct;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -30,7 +30,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	@virtual typedef NImpl = StructImpl;
 	@virtual typedef VView = StructView;
-	@virtual typedef JView = JStructView;
+	@virtual typedef JView = JStruct;
 
 	@nodeimpl
 	public static final class StructImpl extends TypeDeclImpl {

@@ -5,15 +5,15 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JCaseLabelView;
-import kiev.be.java.JSwitchStatView;
-import kiev.be.java.JCatchInfoView;
-import kiev.be.java.JFinallyInfoView;
-import kiev.be.java.JTryStatView;
-import kiev.be.java.JSynchronizedStatView;
-import kiev.be.java.JWithStatView;
+import kiev.be.java.JNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JCaseLabel;
+import kiev.be.java.JSwitchStat;
+import kiev.be.java.JCatchInfo;
+import kiev.be.java.JFinallyInfo;
+import kiev.be.java.JTryStat;
+import kiev.be.java.JSynchronizedStat;
+import kiev.be.java.JWithStat;
 
 import kiev.be.java.CodeLabel;
 import kiev.be.java.CodeSwitch;
@@ -40,7 +40,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 
 	@virtual typedef NImpl = CaseLabelImpl;
 	@virtual typedef VView = CaseLabelView;
-	@virtual typedef JView = JCaseLabelView;
+	@virtual typedef JView = JCaseLabel;
 
 	@nodeimpl
 	public static final class CaseLabelImpl extends ENodeImpl {
@@ -248,7 +248,7 @@ public class SwitchStat extends ENode implements BreakTarget {
 
 	@virtual typedef NImpl = SwitchStatImpl;
 	@virtual typedef VView = SwitchStatView;
-	@virtual typedef JView = JSwitchStatView;
+	@virtual typedef JView = JSwitchStat;
 
 	@nodeimpl
 	public static class SwitchStatImpl extends ENodeImpl {
@@ -538,7 +538,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 
 	@virtual typedef NImpl = CatchInfoImpl;
 	@virtual typedef VView = CatchInfoView;
-	@virtual typedef JView = JCatchInfoView;
+	@virtual typedef JView = JCatchInfo;
 
 	@nodeimpl
 	public static class CatchInfoImpl extends ENodeImpl {
@@ -601,7 +601,7 @@ public class FinallyInfo extends CatchInfo {
 	
 	@virtual typedef NImpl = FinallyInfoImpl;
 	@virtual typedef VView = FinallyInfoView;
-	@virtual typedef JView = JFinallyInfoView;
+	@virtual typedef JView = JFinallyInfo;
 
 	@nodeimpl
 	public static class FinallyInfoImpl extends CatchInfoImpl {
@@ -651,7 +651,7 @@ public class TryStat extends ENode {
 	
 	@virtual typedef NImpl = TryStatImpl;
 	@virtual typedef VView = TryStatView;
-	@virtual typedef JView = JTryStatView;
+	@virtual typedef JView = JTryStat;
 
 	@nodeimpl
 	public static final class TryStatImpl extends ENodeImpl {
@@ -739,7 +739,7 @@ public class SynchronizedStat extends ENode {
 	
 	@virtual typedef NImpl = SynchronizedStatImpl;
 	@virtual typedef VView = SynchronizedStatView;
-	@virtual typedef JView = JSynchronizedStatView;
+	@virtual typedef JView = JSynchronizedStat;
 
 	@nodeimpl
 	public static final class SynchronizedStatImpl extends ENodeImpl {
@@ -797,7 +797,7 @@ public class WithStat extends ENode {
 	
 	@virtual typedef NImpl = WithStatImpl;
 	@virtual typedef VView = WithStatView;
-	@virtual typedef JView = JWithStatView;
+	@virtual typedef JView = JWithStat;
 
 	@nodeimpl
 	public static final class WithStatImpl extends ENodeImpl {

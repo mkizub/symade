@@ -23,16 +23,16 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 @nodeview
-public abstract view JLoopStatView of LoopStatImpl extends JENodeView implements BreakTarget, ContinueTarget {
-	public access:ro	JLabelView				lblcnt;
-	public access:ro	JLabelView				lblbrk;
+public abstract view JLoopStat of LoopStatImpl extends JENode implements BreakTarget, ContinueTarget {
+	public access:ro	JLabel				lblcnt;
+	public access:ro	JLabel				lblbrk;
 
-	public final JLabelView getCntLabel() { return lblcnt; }
-	public final JLabelView getBrkLabel() { return lblbrk; }
+	public final JLabel getCntLabel() { return lblcnt; }
+	public final JLabel getBrkLabel() { return lblbrk; }
 }
 
 @nodeview
-public final view JLabelView of LabelImpl extends JDNodeView {
+public final view JLabel of LabelImpl extends JDNode {
 	public access:ro	List<ASTNode>		links;
 	public				CodeLabel			label;
 
@@ -48,9 +48,9 @@ public final view JLabelView of LabelImpl extends JDNodeView {
 }
 
 @nodeview
-public final view JWhileStatView of WhileStatImpl extends JLoopStatView {
-	public access:ro	JENodeView		cond;
-	public access:ro	JENodeView		body;
+public final view JWhileStat of WhileStatImpl extends JLoopStat {
+	public access:ro	JENode		cond;
+	public access:ro	JENode		body;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating WhileStat");
@@ -72,7 +72,7 @@ public final view JWhileStatView of WhileStatImpl extends JLoopStatView {
 					code.addInstr(Instr.op_goto,body_label);
 				}
 			} else {
-				JBoolExprView.gen_iftrue(code, cond, body_label);
+				JBoolExpr.gen_iftrue(code, cond, body_label);
 			}
 			lblbrk.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
@@ -82,9 +82,9 @@ public final view JWhileStatView of WhileStatImpl extends JLoopStatView {
 }
 
 @nodeview
-public final view JDoWhileStatView of DoWhileStatImpl extends JLoopStatView {
-	public access:ro	JENodeView		cond;
-	public access:ro	JENodeView		body;
+public final view JDoWhileStat of DoWhileStatImpl extends JLoopStat {
+	public access:ro	JENode		cond;
+	public access:ro	JENode		body;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating DoWhileStat");
@@ -106,7 +106,7 @@ public final view JDoWhileStatView of DoWhileStatImpl extends JLoopStatView {
 					code.addInstr(Instr.op_goto,body_label);
 				}
 			} else {
-				JBoolExprView.gen_iftrue(code, cond, body_label);
+				JBoolExpr.gen_iftrue(code, cond, body_label);
 			}
 			lblbrk.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
@@ -116,16 +116,16 @@ public final view JDoWhileStatView of DoWhileStatImpl extends JLoopStatView {
 }
 
 @nodeview
-public final view JForInitView of ForInitImpl extends JENodeView {
-	public access:ro	JArr<JVarView>	decls;
+public final view JForInit of ForInitImpl extends JENode {
+	public access:ro	JArr<JVar>	decls;
 }
 
 @nodeview
-public final view JForStatView of ForStatImpl extends JLoopStatView {
-	public access:ro	JENodeView		init;
-	public access:ro	JENodeView		cond;
-	public access:ro	JENodeView		body;
-	public access:ro	JENodeView		iter;
+public final view JForStat of ForStatImpl extends JLoopStat {
+	public access:ro	JENode		init;
+	public access:ro	JENode		cond;
+	public access:ro	JENode		body;
+	public access:ro	JENode		iter;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ForStat");
@@ -137,9 +137,9 @@ public final view JForStatView of ForStatImpl extends JLoopStatView {
 		code.setLinePos(this);
 		try {
 			if( init != null ) {
-				if( init instanceof JForInitView ) {
-					JForInitView fi = (JForInitView)init;
-					foreach (JVarView var; fi.decls) {
+				if( init instanceof JForInit ) {
+					JForInit fi = (JForInit)init;
+					foreach (JVar var; fi.decls) {
 						var.generate(code,Type.tpVoid);
 					}
 				} else {
@@ -165,15 +165,15 @@ public final view JForStatView of ForStatImpl extends JLoopStatView {
 				if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() )
 					code.addInstr(Instr.op_goto,body_label);
 				else if( cond.isConstantExpr() && !((Boolean)cond.getConstValue()).booleanValue() );
-				else JBoolExprView.gen_iftrue(code, cond, body_label);
+				else JBoolExpr.gen_iftrue(code, cond, body_label);
 			} else {
 				code.addInstr(Instr.op_goto,body_label);
 			}
 			lblbrk.generate(code,Type.tpVoid);
 
-			if( init != null && init instanceof JForInitView ) {
-				JForInitView fi = (JForInitView)init;
-				JVarView[] decls = fi.decls.toArray();
+			if( init != null && init instanceof JForInit ) {
+				JForInit fi = (JForInit)init;
+				JVar[] decls = fi.decls.toArray();
 				for(int i=decls.length-1; i >= 0; i--) {
 					code.removeVar(decls[i]);
 				}
@@ -185,18 +185,18 @@ public final view JForStatView of ForStatImpl extends JLoopStatView {
 }
 
 @nodeview
-public final view JForEachStatView of ForEachStatImpl extends JLoopStatView {
+public final view JForEachStat of ForEachStatImpl extends JLoopStat {
 	public access:ro	int				mode;
-	public access:ro	JENodeView		container;
-	public access:ro	JVarView		var;
-	public access:ro	JVarView		iter;
-	public access:ro	JVarView		iter_array;
-	public access:ro	JENodeView		iter_init;
-	public access:ro	JENodeView		iter_cond;
-	public access:ro	JENodeView		var_init;
-	public access:ro	JENodeView		cond;
-	public access:ro	JENodeView		body;
-	public access:ro	JENodeView		iter_incr;
+	public access:ro	JENode		container;
+	public access:ro	JVar		var;
+	public access:ro	JVar		iter;
+	public access:ro	JVar		iter_array;
+	public access:ro	JENode		iter_init;
+	public access:ro	JENode		iter_cond;
+	public access:ro	JENode		var_init;
+	public access:ro	JENode		cond;
+	public access:ro	JENode		body;
+	public access:ro	JENode		iter_incr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ForEachStat");
@@ -226,7 +226,7 @@ public final view JForEachStatView of ForEachStatImpl extends JLoopStatView {
 			if( var_init != null)
 				var_init.generate(code,Type.tpVoid);
 			if( cond != null )
-				JBoolExprView.gen_iffalse(code, cond, lblcnt.label);
+				JBoolExpr.gen_iffalse(code, cond, lblcnt.label);
 
 			body.generate(code,Type.tpVoid);
 
@@ -238,7 +238,7 @@ public final view JForEachStatView of ForEachStatImpl extends JLoopStatView {
 			// Just check iterator condition
 			code.addInstr(Instr.set_label,check_label);
 			if( iter_cond != null )
-				JBoolExprView.gen_iftrue(code, iter_cond, body_label);
+				JBoolExpr.gen_iftrue(code, iter_cond, body_label);
 
 			if( iter_array != null )
 				code.removeVar(iter_array);

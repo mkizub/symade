@@ -9,7 +9,7 @@ import kiev.be.java.JType;
 import kiev.be.java.JBaseType;
 import kiev.be.java.JArrayType;
 import kiev.be.java.JMethodType;
-import kiev.be.java.JStructView;
+import kiev.be.java.JStruct;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -45,7 +45,7 @@ public abstract class Type extends AType {
 		return meta_type.rebind(this,bindings);
 	}
 	
-	public final JStructView getJStruct() {
+	public final JStruct getJStruct() {
 		Struct s = getStruct();
 		if (s == null)
 			return null;
@@ -1001,7 +1001,7 @@ public final class CallType extends Type {
 
 	public boolean isMultimethodSuper(CallType tp) {
 		if( this.arity != tp.arity ) return false;
-		if( !tp.ret().isInstanceOf(this.ret()) ) return false;
+		if( tp.ret() ≉ this.ret() ) return false;
 		for(int i=0; i < arity; i++) {
 			if( !this.arg(i).equals(tp.arg(i)) )
 				return false;

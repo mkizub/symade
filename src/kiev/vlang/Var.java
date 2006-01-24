@@ -7,10 +7,10 @@ import kiev.parser.*;
 
 import kiev.vlang.ASTNode.NodeImpl;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JDNodeView;
-import kiev.be.java.JLvalDNodeView;
-import kiev.be.java.JVarView;
+import kiev.be.java.JNode;
+import kiev.be.java.JDNode;
+import kiev.be.java.JLvalDNode;
+import kiev.be.java.JVar;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -30,7 +30,7 @@ public class Var extends LvalDNode implements Named, Typed {
 
 	@virtual typedef NImpl = VarImpl;
 	@virtual typedef VView = VarView;
-	@virtual typedef JView = JVarView;
+	@virtual typedef JView = JVar;
 
 	@nodeimpl
 	public static class VarImpl extends LvalDNodeImpl {

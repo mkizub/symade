@@ -19,15 +19,15 @@ import kiev.vlang.Field.FieldImpl;
  */
 
 @nodeview
-public final view JFieldView of FieldImpl extends JLvalDNodeView {
+public final view JField of FieldImpl extends JLvalDNode {
 
 	public access:ro	Access				acc;
 	public access:ro	KString				name;
 	public access:ro	Type				ftype;
-	public access:ro	JENodeView			init;
-	public access:ro	JConstExprView		const_value;
+	public access:ro	JENode			init;
+	public access:ro	JConstExpr		const_value;
 	public				Attr[]				attrs;
-	public access:ro	JArr<JMethodView>	invs;
+	public access:ro	JArr<JMethod>	invs;
 	
 	public final Field getField() { return (Field)this.getNode(); }
 	

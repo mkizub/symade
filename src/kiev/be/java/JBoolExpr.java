@@ -23,8 +23,8 @@ interface IBoolExpr {
 }
 
 @nodeview
-public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements IBoolExpr {
-	public JBoolExprView(BoolExprImpl $view) {
+public abstract view JBoolExpr of BoolExprImpl extends JENode implements IBoolExpr {
+	public JBoolExpr(BoolExprImpl $view) {
 		super($view);
 		this.$view = $view;
 	}
@@ -47,7 +47,7 @@ public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements
 	public abstract void generate_iftrue(Code code, CodeLabel label);
 	public abstract void generate_iffalse(Code code, CodeLabel label);
 
-	public static void gen_iftrue(Code code, JENodeView expr, CodeLabel label) {
+	public static void gen_iftrue(Code code, JENode expr, CodeLabel label) {
 		if (expr instanceof IBoolExpr) {
 			expr.generate_iftrue(code,label);
 			return;
@@ -56,8 +56,8 @@ public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements
 		code.setLinePos(expr);
 		if( expr.getType().isBoolean() ) {
 			boolean optimized = false;
-			if( expr instanceof JBinaryExprView ) {
-				JBinaryExprView be = (JBinaryExprView)expr;
+			if( expr instanceof JBinaryExpr ) {
+				JBinaryExpr be = (JBinaryExpr)expr;
 				if( be.expr2.getType().isIntegerInCode() && be.expr2.isConstantExpr() ) {
 					Object ce = be.expr2.getConstValue();
 					if( ((Number)ce).intValue() == 0 ) {
@@ -101,7 +101,7 @@ public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements
 			throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
 	}
 
-	public static void gen_iffalse(Code code, JENodeView expr, CodeLabel label) {
+	public static void gen_iffalse(Code code, JENode expr, CodeLabel label) {
 		if (expr instanceof IBoolExpr) {
 			expr.generate_iffalse(code, label);
 			return;
@@ -119,60 +119,60 @@ public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements
 
 
 @nodeview
-public final view JBinaryBooleanOrExprView of BinaryBooleanOrExprImpl extends JBoolExprView {
-	public access:ro JENodeView		expr1;
-	public access:ro JENodeView		expr2;
+public final view JBinaryBooleanOrExpr of BinaryBooleanOrExprImpl extends JBoolExpr {
+	public access:ro JENode		expr1;
+	public access:ro JENode		expr2;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
 		code.setLinePos(this);
-		JBoolExprView.gen_iftrue(code, expr1, label);
-		JBoolExprView.gen_iftrue(code, expr2, label);
+		JBoolExpr.gen_iftrue(code, expr1, label);
+		JBoolExpr.gen_iftrue(code, expr2, label);
 	}
 
 	public void generate_iffalse(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if false): "+this);
 		code.setLinePos(this);
 		CodeLabel label1 = code.newLabel();
-		JBoolExprView.gen_iftrue(code, expr1, label1);
-		JBoolExprView.gen_iffalse(code, expr2, label);
+		JBoolExpr.gen_iftrue(code, expr1, label1);
+		JBoolExpr.gen_iffalse(code, expr2, label);
 		code.addInstr(Instr.set_label,label1);
 	}
 }
 
 @nodeview
-public final view JBinaryBooleanAndExprView of BinaryBooleanAndExprImpl extends JBoolExprView {
-	public access:ro JENodeView		expr1;
-	public access:ro JENodeView		expr2;
+public final view JBinaryBooleanAndExpr of BinaryBooleanAndExprImpl extends JBoolExpr {
+	public access:ro JENode		expr1;
+	public access:ro JENode		expr2;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
 		code.setLinePos(this);
 		CodeLabel label1 = code.newLabel();
-		JBoolExprView.gen_iffalse(code, expr1, label1);
-		JBoolExprView.gen_iftrue(code, expr2, label);
+		JBoolExpr.gen_iffalse(code, expr1, label1);
+		JBoolExpr.gen_iftrue(code, expr2, label);
 		code.addInstr(Instr.set_label,label1);
 	}
 
 	public void generate_iffalse(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if false): "+this);
 		code.setLinePos(this);
-		JBoolExprView.gen_iffalse(code, expr1, label);
-		JBoolExprView.gen_iffalse(code, expr2, label);
+		JBoolExpr.gen_iffalse(code, expr1, label);
+		JBoolExpr.gen_iffalse(code, expr2, label);
 	}
 }
 
 @nodeview
-public final view JBinaryBoolExprView of BinaryBoolExprImpl extends JBoolExprView {
+public final view JBinaryBoolExpr of BinaryBoolExprImpl extends JBoolExpr {
 	public access:ro BinaryOperator		op;
-	public access:ro JENodeView			expr1;
-	public access:ro JENodeView			expr2;
+	public access:ro JENode			expr1;
+	public access:ro JENode			expr2;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr (if true): "+this);
 		code.setLinePos(this);
-		if( expr2 instanceof JConstExprView ) {
-			JConstExprView ce = (JConstExprView)expr2;
+		if( expr2 instanceof JConstExpr ) {
+			JConstExpr ce = (JConstExpr)expr2;
 			Object cv = ce.getConstValue();
 			if( cv == null ) {
 				expr1.generate(code,Type.tpBoolean);
@@ -222,8 +222,8 @@ public final view JBinaryBoolExprView of BinaryBoolExprImpl extends JBoolExprVie
 	public void generate_iffalse(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr (if false): "+this);
 		code.setLinePos(this);
-		if( expr2 instanceof JConstExprView ) {
-			JConstExprView ce = (JConstExprView)expr2;
+		if( expr2 instanceof JConstExpr ) {
+			JConstExpr ce = (JConstExpr)expr2;
 			Object cv = ce.getConstValue();
 			if( cv == null ) {
 				expr1.generate(code,Type.tpBoolean);
@@ -272,8 +272,8 @@ public final view JBinaryBoolExprView of BinaryBoolExprImpl extends JBoolExprVie
 }
 
 @nodeview
-public final view JInstanceofExprView of InstanceofExprImpl extends JBoolExprView {
-	public access:ro JENodeView		expr;
+public final view JInstanceofExpr of InstanceofExprImpl extends JBoolExpr {
+	public access:ro JENode		expr;
 	public access:ro Type			type;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
@@ -294,19 +294,19 @@ public final view JInstanceofExprView of InstanceofExprImpl extends JBoolExprVie
 }
 
 @nodeview
-public final view JBooleanNotExprView of BooleanNotExprImpl extends JBoolExprView {
-	public access:ro JENodeView		expr;
+public final view JBooleanNotExpr of BooleanNotExprImpl extends JBoolExpr {
+	public access:ro JENode		expr;
 	
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanNotExpr (if true): "+this);
 		code.setLinePos(this);
-		JBoolExprView.gen_iffalse(code, expr, label);
+		JBoolExpr.gen_iffalse(code, expr, label);
 	}
 
 	public void generate_iffalse(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanNotExpr (if false): "+this);
 		code.setLinePos(this);
-		JBoolExprView.gen_iftrue(code, expr, label);
+		JBoolExpr.gen_iftrue(code, expr, label);
 	}
 
 }

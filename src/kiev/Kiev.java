@@ -7,7 +7,7 @@ import kiev.vlang.types.*;
 import kiev.parser.*;
 import kiev.transf.*;
 import kiev.be.java.Code;
-import kiev.be.java.JNodeView;
+import kiev.be.java.JNode;
 
 
 /**
@@ -39,7 +39,7 @@ public final class Kiev {
    	public static void reportError(ASTNode.NodeView from, Throwable e) {
 		reportError(from.getNode(),e);
 	}
-   	public static void reportError(JNodeView from, Throwable e) {
+   	public static void reportError(JNode from, Throwable e) {
 		reportError(from.getNode(),e);
 	}
 	
@@ -142,7 +142,7 @@ public final class Kiev {
    	public static void reportError(ASTNode.NodeView from, String msg) {
 		reportError(from.getNode(),msg);
 	}
-   	public static void reportError(JNodeView from, String msg) {
+   	public static void reportError(JNode from, String msg) {
 		reportError(from.getNode(),msg);
 	}
 	

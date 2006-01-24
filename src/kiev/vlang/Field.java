@@ -4,10 +4,10 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JDNodeView;
-import kiev.be.java.JLvalDNodeView;
-import kiev.be.java.JFieldView;
+import kiev.be.java.JNode;
+import kiev.be.java.JDNode;
+import kiev.be.java.JLvalDNode;
+import kiev.be.java.JField;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -28,7 +28,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 
 	@virtual typedef NImpl = FieldImpl;
 	@virtual typedef VView = FieldView;
-	@virtual typedef JView = JFieldView;
+	@virtual typedef JView = JField;
 
 	@nodeimpl
 	public static class FieldImpl extends LvalDNodeImpl {

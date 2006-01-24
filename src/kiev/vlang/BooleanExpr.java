@@ -4,14 +4,14 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JBoolExprView;
-import kiev.be.java.JBinaryBooleanOrExprView;
-import kiev.be.java.JBinaryBooleanAndExprView;
-import kiev.be.java.JBinaryBoolExprView;
-import kiev.be.java.JInstanceofExprView;
-import kiev.be.java.JBooleanNotExprView;
+import kiev.be.java.JNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JBoolExpr;
+import kiev.be.java.JBinaryBooleanOrExpr;
+import kiev.be.java.JBinaryBooleanAndExpr;
+import kiev.be.java.JBinaryBoolExpr;
+import kiev.be.java.JInstanceofExpr;
+import kiev.be.java.JBooleanNotExpr;
 
 import kiev.be.java.Code;
 import kiev.be.java.CodeLabel;
@@ -30,7 +30,7 @@ public abstract class BoolExpr extends ENode {
 
 	@virtual typedef NImpl = BoolExprImpl;
 	@virtual typedef VView = BoolExprView;
-	@virtual typedef JView = JBoolExprView;
+	@virtual typedef JView = JBoolExpr;
 
 	@nodeimpl
 	public abstract static class BoolExprImpl extends ENodeImpl {
@@ -81,7 +81,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	
 	@virtual typedef NImpl = BinaryBooleanOrExprImpl;
 	@virtual typedef VView = BinaryBooleanOrExprView;
-	@virtual typedef JView = JBinaryBooleanOrExprView;
+	@virtual typedef JView = JBinaryBooleanOrExpr;
 
 	@nodeimpl
 	public static class BinaryBooleanOrExprImpl extends BoolExprImpl {
@@ -166,7 +166,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	
 	@virtual typedef NImpl = BinaryBooleanAndExprImpl;
 	@virtual typedef VView = BinaryBooleanAndExprView;
-	@virtual typedef JView = JBinaryBooleanAndExprView;
+	@virtual typedef JView = JBinaryBooleanAndExpr;
 
 	@nodeimpl
 	public static class BinaryBooleanAndExprImpl extends BoolExprImpl {
@@ -245,7 +245,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	
 	@virtual typedef NImpl = BinaryBoolExprImpl;
 	@virtual typedef VView = BinaryBoolExprView;
-	@virtual typedef JView = JBinaryBoolExprView;
+	@virtual typedef JView = JBinaryBoolExpr;
 
 	@nodeimpl
 	public static class BinaryBoolExprImpl extends BoolExprImpl {
@@ -476,7 +476,7 @@ public class InstanceofExpr extends BoolExpr {
 	
 	@virtual typedef NImpl = InstanceofExprImpl;
 	@virtual typedef VView = InstanceofExprView;
-	@virtual typedef JView = JInstanceofExprView;
+	@virtual typedef JView = JInstanceofExpr;
 
 	@nodeimpl
 	public static class InstanceofExprImpl extends BoolExprImpl {
@@ -619,7 +619,7 @@ public class BooleanNotExpr extends BoolExpr {
 	
 	@virtual typedef NImpl = BooleanNotExprImpl;
 	@virtual typedef VView = BooleanNotExprView;
-	@virtual typedef JView = JBooleanNotExprView;
+	@virtual typedef JView = JBooleanNotExpr;
 
 	@nodeimpl
 	public static class BooleanNotExprImpl extends BoolExprImpl {

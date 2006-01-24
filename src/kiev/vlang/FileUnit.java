@@ -8,9 +8,9 @@ import kiev.transf.*;
 import kiev.vlang.types.*;
 import java.io.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JDNodeView;
-import kiev.be.java.JFileUnitView;
+import kiev.be.java.JNode;
+import kiev.be.java.JDNode;
+import kiev.be.java.JFileUnit;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -26,7 +26,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 
 	@virtual typedef NImpl = FileUnitImpl;
 	@virtual typedef VView = FileUnitView;
-	@virtual typedef JView = JFileUnitView;
+	@virtual typedef JView = JFileUnit;
 
 	@nodeimpl
 	public static class FileUnitImpl extends DNodeImpl {

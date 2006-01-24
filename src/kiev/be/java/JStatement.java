@@ -30,8 +30,8 @@ import kiev.vlang.GotoStat.GotoStatImpl;
 import kiev.vlang.GotoCaseStat.GotoCaseStatImpl;
 
 @nodeview
-public final view JInlineMethodStatView of InlineMethodStatImpl extends JENodeView {
-	public access:ro	JMethodView		method;
+public final view JInlineMethodStat of InlineMethodStatImpl extends JENode {
+	public access:ro	JMethod		method;
 	public access:ro	ParamRedir[]	params_redir;
 
 	public void generate(Code code, Type reqType) {
@@ -57,14 +57,14 @@ public final view JInlineMethodStatView of InlineMethodStatImpl extends JENodeVi
 }
 
 @nodeview
-public final view JBlockStatView of BlockStatImpl extends JENodeView {
-	public access:ro	JArr<JENodeView>	stats;
+public final view JBlockStat of BlockStatImpl extends JENode {
+	public access:ro	JArr<JENode>	stats;
 	public				CodeLabel			break_label;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BlockStat");
 		code.setLinePos(this);
-		JENodeView[] stats = this.stats.toArray();
+		JENode[] stats = this.stats.toArray();
 		break_label = code.newLabel();
 		for(int i=0; i < stats.length; i++) {
 			try {
@@ -73,16 +73,16 @@ public final view JBlockStatView of BlockStatImpl extends JENodeView {
 				Kiev.reportError(stats[i],e);
 			}
 		}
-		Vector<JVarView> vars = new Vector<JVarView>();
-		foreach (JENodeView n; stats) {
-			if (n instanceof JVarDeclView)
+		Vector<JVar> vars = new Vector<JVar>();
+		foreach (JENode n; stats) {
+			if (n instanceof JVarDecl)
 				vars.append(n.var);
 		}
 		code.removeVars(vars.toArray());
-		JNodeView p = this.jparent;
-		if( p instanceof JMethodView && Kiev.debugOutputC
-		 && code.need_to_gen_post_cond && ((JMethodView)p).type.ret() ≢ Type.tpVoid) {
-			code.stack_push(((JMethodView)p).etype.ret().getJType());
+		JNode p = this.jparent;
+		if( p instanceof JMethod && Kiev.debugOutputC
+		 && code.need_to_gen_post_cond && ((JMethod)p).type.ret() ≢ Type.tpVoid) {
+			code.stack_push(((JMethod)p).etype.ret().getJType());
 		}
 		code.addInstr(Instr.set_label,break_label);
 	}
@@ -96,8 +96,8 @@ public final view JBlockStatView of BlockStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JEmptyStatView of EmptyStatImpl extends JENodeView {
-	public JEmptyStatView(EmptyStatImpl $view) { super($view); }
+public final view JEmptyStat of EmptyStatImpl extends JENode {
+	public JEmptyStat(EmptyStatImpl $view) { super($view); }
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating EmptyStat");
@@ -107,8 +107,8 @@ public final view JEmptyStatView of EmptyStatImpl extends JENodeView {
 }
 
 @nodeview
-public final final view JExprStatView of ExprStatImpl extends JENodeView {
-	public access:ro	JENodeView		expr;
+public final final view JExprStat of ExprStatImpl extends JENode {
+	public access:ro	JENode		expr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ExprStat");
@@ -121,8 +121,8 @@ public final final view JExprStatView of ExprStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JReturnStatView of ReturnStatImpl extends JENodeView {
-	public access:ro	JENodeView		expr;
+public final view JReturnStat of ReturnStatImpl extends JENode {
+	public access:ro	JENode		expr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ReturnStat");
@@ -136,17 +136,17 @@ public final view JReturnStatView of ReturnStatImpl extends JENodeView {
 		}
 	}
 
-	public static void generateReturn(Code code, JNodeView from) {
-		JVarView tmp_var = null;
-		for(JNodeView node = from; node != null; node = node.jparent) {
-			if (node instanceof JMethodView)
+	public static void generateReturn(Code code, JNode from) {
+		JVar tmp_var = null;
+		for(JNode node = from; node != null; node = node.jparent) {
+			if (node instanceof JMethod)
 				break;
-			else if (node instanceof JFinallyInfoView) {
-				assert (node.jparent instanceof JTryStatView);
+			else if (node instanceof JFinallyInfo) {
+				assert (node.jparent instanceof JTryStat);
 				node = node.jparent; // skip TryStat that is parent of FinallyInfo
 				continue;
 			}
-			else if (node instanceof JTryStatView) {
+			else if (node instanceof JTryStat) {
 				if( node.finally_catcher != null ) {
 					if( tmp_var==null && code.method.type.ret() ≢ Type.tpVoid ) {
 						tmp_var = new Var(0,KString.Empty,code.method.type.ret(),0).getJView();
@@ -156,7 +156,7 @@ public final view JReturnStatView of ReturnStatImpl extends JENodeView {
 					code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 				}
 			}
-			else if (node instanceof JSynchronizedStatView) {
+			else if (node instanceof JSynchronizedStat) {
 				if( tmp_var==null && code.method.type.ret() ≢ Type.tpVoid ) {
 					tmp_var = new Var(0,KString.Empty,code.method.type.ret(),0).getJView();
 					code.addVar(tmp_var);
@@ -180,8 +180,8 @@ public final view JReturnStatView of ReturnStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JThrowStatView of ThrowStatImpl extends JENodeView {
-	public access:ro	JENodeView		expr;
+public final view JThrowStat of ThrowStatImpl extends JENode {
+	public access:ro	JENode		expr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ThrowStat");
@@ -196,17 +196,17 @@ public final view JThrowStatView of ThrowStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JIfElseStatView of IfElseStatImpl extends JENodeView {
-	public access:ro	JENodeView		cond;
-	public access:ro	JENodeView		thenSt;
-	public access:ro	JENodeView		elseSt;
+public final view JIfElseStat of IfElseStatImpl extends JENode {
+	public access:ro	JENode		cond;
+	public access:ro	JENode		thenSt;
+	public access:ro	JENode		elseSt;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating IfElseStat");
 		code.setLinePos(this);
 		try {
 			if( cond.isConstantExpr() ) {
-				JENodeView cond = this.cond;
+				JENode cond = this.cond;
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					if( isAutoReturnable() )
 						thenSt.setAutoReturnable(true);
@@ -219,13 +219,13 @@ public final view JIfElseStatView of IfElseStatImpl extends JENodeView {
 				}
 			} else {
 				CodeLabel else_label = code.newLabel();
-				JBoolExprView.gen_iffalse(code, cond, else_label);
+				JBoolExpr.gen_iffalse(code, cond, else_label);
 				thenSt.generate(code,Type.tpVoid);
 				if( elseSt != null ) {
 					CodeLabel end_label = code.newLabel();
 					if( !thenSt.isMethodAbrupted() ) {
 						if( isAutoReturnable() )
-							JReturnStatView.generateReturn(code,this);
+							JReturnStat.generateReturn(code,this);
 						else if (!thenSt.isAbrupted())
 							code.addInstr(Instr.op_goto,end_label);
 					}
@@ -243,19 +243,19 @@ public final view JIfElseStatView of IfElseStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JCondStatView of CondStatImpl extends JENodeView {
-	public access:ro	JENodeView		cond;
-	public access:ro	JENodeView		message;
+public final view JCondStat of CondStatImpl extends JENode {
+	public access:ro	JENode		cond;
+	public access:ro	JENode		message;
 
 	private void generateAssertName(Code code) {
-		JWBCConditionView wbc = (JWBCConditionView)jparent.jparent;
+		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
 		if( wbc.name == null ) return;
 		code.addConst((KString)wbc.name);
 	}
 
-	private JMethodView getAssertMethod() {
+	private JMethod getAssertMethod() {
 		KString fname;
-		JWBCConditionView wbc = (JWBCConditionView)jparent.jparent;
+		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
 		switch( wbc.cond ) {
 		case WBCType.CondRequire:	fname = nameAssertRequireMethod;
 		case WBCType.CondEnsure:	fname = nameAssertEnsureMethod;
@@ -275,7 +275,7 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 		code.setLinePos(this);
 		try {
 			if(cond.isConstantExpr() ) {
-				JENodeView cond = this.cond;
+				JENode cond = this.cond;
 				if( ((Boolean)cond.getConstValue()).booleanValue() );
 				else {
 					generateAssertName(code);
@@ -284,7 +284,7 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 				}
 			} else {
 				CodeLabel else_label = code.newLabel();
-				JBoolExprView.gen_iftrue(code, cond, else_label);
+				JBoolExpr.gen_iftrue(code, cond, else_label);
 				generateAssertName(code);
 				message.generate(code,Type.tpString);
 				code.addInstr(Instr.op_call,getAssertMethod(),false);
@@ -297,10 +297,10 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JLabeledStatView of LabeledStatImpl extends JENodeView {
+public final view JLabeledStat of LabeledStatImpl extends JENode {
 	public access:ro	KString			ident;
-	public access:ro	JLabelView		lbl;
-	public access:ro	JENodeView		stat;
+	public access:ro	JLabel		lbl;
+	public access:ro	JENode		stat;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating LabeledStat");
@@ -319,9 +319,9 @@ public final view JLabeledStatView of LabeledStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JBreakStatView of BreakStatImpl extends JENodeView {
+public final view JBreakStat of BreakStatImpl extends JENode {
 	public access:ro	KString			ident;
-	public access:ro	JLabelView		dest;
+	public access:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BreakStat");
@@ -338,7 +338,7 @@ public final view JBreakStatView of BreakStatImpl extends JENodeView {
 					code.addInstr(Instr.op_monitorexit);
 				}
 			if( isAutoReturnable() )
-				JReturnStatView.generateReturn(code,this);
+				JReturnStat.generateReturn(code,this);
 			else
 				code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
@@ -353,43 +353,43 @@ public final view JBreakStatView of BreakStatImpl extends JENodeView {
 		Object[] cl = new Object[0];
 		if( name == null || name.equals(KString.Empty) ) {
 			// Search for loop statements
-			for(JNodeView node = this.jparent; node != null; node = node.jparent) {
-				if( node instanceof JTryStatView ) {
+			for(JNode node = this.jparent; node != null; node = node.jparent) {
+				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
 						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
 				}
-				else if( node instanceof JSynchronizedStatView ) {
+				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
-				if( node instanceof JMethodView ) break;
-				if( node instanceof BreakTarget || node instanceof JBlockStatView );
+				if( node instanceof JMethod ) break;
+				if( node instanceof BreakTarget || node instanceof JBlockStat );
 				else continue;
 				if( node instanceof BreakTarget ) {
 					BreakTarget t = (BreakTarget)node;
 					return (Object[])Arrays.append(cl,t.getBrkLabel().getCodeLabel(code));
 				}
-				else if( node instanceof JBlockStatView && ((JBlockStatView)node).isBreakTarget() ){
-					JBlockStatView t = (JBlockStatView)node;
+				else if( node instanceof JBlockStat && ((JBlockStat)node).isBreakTarget() ){
+					JBlockStat t = (JBlockStat)node;
 					return (Object[])Arrays.append(cl,t.getBreakLabel());
 				}
 			}
 			throw new RuntimeException("Break not within loop statement");
 		} else {
 			// Search for labels with loop/switch statement
-			for(JNodeView node = this.jparent; node != null; node = node.jparent) {
-				if( node instanceof JTryStatView ) {
+			for(JNode node = this.jparent; node != null; node = node.jparent) {
+				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
 						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
 				}
-				else if( node instanceof JSynchronizedStatView ) {
+				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
-				if( node instanceof JMethodView ) break;
-				if( node instanceof JLabeledStatView && ((JLabeledStatView)node).ident == ident ) {
-					JENodeView st = ((JLabeledStatView)node).stat;
+				if( node instanceof JMethod ) break;
+				if( node instanceof JLabeledStat && ((JLabeledStat)node).ident == ident ) {
+					JENode st = ((JLabeledStat)node).stat;
 					if( st instanceof BreakTarget )
 						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
-					else if (st instanceof JBlockStatView)
+					else if (st instanceof JBlockStat)
 						return (Object[])Arrays.append(cl,st.getBreakLabel());
 					else
 						throw new RuntimeException("Label "+name+" does not refer to break target");
@@ -401,9 +401,9 @@ public final view JBreakStatView of BreakStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JContinueStatView of ContinueStatImpl extends JENodeView {
+public final view JContinueStat of ContinueStatImpl extends JENode {
 	public access:ro	KString			ident;
-	public access:ro	JLabelView		dest;
+	public access:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ContinueStat");
@@ -431,32 +431,32 @@ public final view JContinueStatView of ContinueStatImpl extends JENodeView {
 		Object[] cl = new Object[0];
 		if( name == null || name.equals(KString.Empty) ) {
 			// Search for loop statements
-			for(JNodeView node = this.jparent; node != null; node = node.jparent) {
-				if( node instanceof JTryStatView ) {
+			for(JNode node = this.jparent; node != null; node = node.jparent) {
+				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
 						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
 				}
-				else if( node instanceof JSynchronizedStatView ) {
+				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
-				if( node instanceof JMethodView ) break;
+				if( node instanceof JMethod ) break;
 				if( node instanceof ContinueTarget )
 					return (Object[])Arrays.append(cl,node.getCntLabel().getCodeLabel(code));
 			}
 			throw new RuntimeException("Continue not within loop statement");
 		} else {
 			// Search for labels with loop statement
-			for(JNodeView node = this.jparent; node != null; node = node.jparent) {
-				if( node instanceof JTryStatView ) {
+			for(JNode node = this.jparent; node != null; node = node.jparent) {
+				if( node instanceof JTryStat ) {
 					if( node.finally_catcher != null )
 						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
 				}
-				else if( node instanceof JSynchronizedStatView ) {
+				else if( node instanceof JSynchronizedStat ) {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
-				if( node instanceof JMethodView ) break;
-				if( node instanceof JLabeledStatView && ((JLabeledStatView)node).ident == ident ) {
-					JENodeView st = ((JLabeledStatView)node).stat;
+				if( node instanceof JMethod ) break;
+				if( node instanceof JLabeledStat && ((JLabeledStat)node).ident == ident ) {
+					JENode st = ((JLabeledStat)node).stat;
 					if( st instanceof ContinueTarget )
 						return (Object[])Arrays.append(cl,st.getCntLabel().getCodeLabel(code));
 					throw new RuntimeException("Label "+name+" does not refer to continue target");
@@ -468,13 +468,13 @@ public final view JContinueStatView of ContinueStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JGotoStatView of GotoStatImpl extends JENodeView {
+public final view JGotoStat of GotoStatImpl extends JENode {
 	public access:ro	KString			ident;
-	public access:ro	JLabelView		dest;
+	public access:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating GotoStat");
-//		JLabeledStatView[] stats = resolveStat(ident, code.method.body, JLabeledStatView.emptyArray);
+//		JLabeledStat[] stats = resolveStat(ident, code.method.body, JLabeledStat.emptyArray);
 //		if( stats.length == 0 )
 //			throw new CompilerException(this,"Label "+ident+" unresolved");
 //		if( stats.length > 1 )
@@ -484,13 +484,13 @@ public final view JGotoStatView of GotoStatImpl extends JENodeView {
 //			throw new CompilerException(this,"Label "+ident+" unresolved");
 		code.setLinePos(this);
 		try {
-			Object[] lb = resolveLabelStat(code,(JLabeledStatView)dest.jparent);
+			Object[] lb = resolveLabelStat(code,(JLabeledStat)dest.jparent);
 			int i=0;
 			for(; i < lb.length-1; i++)
 				if( lb[i] instanceof CodeLabel )
 					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				else {
-					code.addInstr(Instr.op_load,(JVarView)lb[i]);
+					code.addInstr(Instr.op_load,(JVar)lb[i]);
 					code.addInstr(Instr.op_monitorexit);
 				}
 			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
@@ -502,37 +502,37 @@ public final view JGotoStatView of GotoStatImpl extends JENodeView {
 		}
 	}
 
-	public Object[] resolveLabelStat(Code code, JLabeledStatView stat) {
+	public Object[] resolveLabelStat(Code code, JLabeledStat stat) {
 		Object[] cl1 = new CodeLabel[0];
 		Object[] cl2 = new CodeLabel[0];
-		JNodeView st = stat;
-		while( !(st instanceof JMethodView) ) {
-			if( st instanceof JFinallyInfoView ) {
+		JNode st = stat;
+		while( !(st instanceof JMethod) ) {
+			if( st instanceof JFinallyInfo ) {
 				st = st.jparent.jparent;
 				continue;
 			}
-			else if( st instanceof JTryStatView ) {
-				JTryStatView ts = (JTryStatView)st;
+			else if( st instanceof JTryStat ) {
+				JTryStat ts = (JTryStat)st;
 				if( ts.finally_catcher != null )
 					cl1 = (Object[])Arrays.append(cl1,ts.finally_catcher.subr_label);
 			}
-			else if( st instanceof JSynchronizedStatView ) {
+			else if( st instanceof JSynchronizedStat ) {
 				cl1 = (Object[])Arrays.append(cl1,st.expr_var);
 			}
 			st = st.jparent;
 		}
 		st = this;
-		while( !(st instanceof JMethodView) ) {
-			if( st instanceof JFinallyInfoView ) {
+		while( !(st instanceof JMethod) ) {
+			if( st instanceof JFinallyInfo ) {
 				st = st.jparent.jparent;
 				continue;
 			}
-			if( st instanceof JTryStatView ) {
-				JTryStatView ts = (JTryStatView)st;
+			if( st instanceof JTryStat ) {
+				JTryStat ts = (JTryStat)st;
 				if( ts.finally_catcher != null )
 					cl2 = (Object[])Arrays.append(cl2,ts.finally_catcher.subr_label);
 			}
-			else if( st instanceof JSynchronizedStatView ) {
+			else if( st instanceof JSynchronizedStat ) {
 				cl2 = (Object[])Arrays.append(cl2, st.expr_var);
 			}
 			st = st.jparent;
@@ -548,9 +548,9 @@ public final view JGotoStatView of GotoStatImpl extends JENodeView {
 }
 
 @nodeview
-public final view JGotoCaseStatView of GotoCaseStatImpl extends JENodeView {
-	public access:ro	JENodeView			expr;
-	public access:ro	JSwitchStatView		sw;
+public final view JGotoCaseStat of GotoCaseStatImpl extends JENode {
+	public access:ro	JENode			expr;
+	public access:ro	JSwitchStat		sw;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating GotoCaseStat");
@@ -563,15 +563,15 @@ public final view JGotoCaseStatView of GotoCaseStatImpl extends JENodeView {
 					expr.generate(code,null);
 			}
 
-			JVarView tmp_var = null;
-			for(JNodeView node = this.jparent; node != null; node = node.jparent) {
+			JVar tmp_var = null;
+			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if (node == sw)
 					break;
-				if (node instanceof JFinallyInfoView) {
+				if (node instanceof JFinallyInfo) {
 					node = node.jparent; // skip calling jsr if we are in it
 					continue;
 				}
-				if (node instanceof JTryStatView) {
+				if (node instanceof JTryStat) {
 					if( node.finally_catcher != null ) {
 						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr() ) {
 							tmp_var = new Var(0,KString.Empty,expr.getType(),0).getJView();
@@ -581,7 +581,7 @@ public final view JGotoCaseStatView of GotoCaseStatImpl extends JENodeView {
 						code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 					}
 				}
-				else if (node instanceof JSynchronizedStatView) {
+				else if (node instanceof JSynchronizedStat) {
 					code.addInstr(Instr.op_load,node.expr_var);
 					code.addInstr(Instr.op_monitorexit);
 				}
@@ -591,7 +591,7 @@ public final view JGotoCaseStatView of GotoCaseStatImpl extends JENodeView {
 				code.removeVar(tmp_var);
 			}
 			CodeLabel lb = null;
-			if !( expr instanceof JENodeView ) {
+			if !( expr instanceof JENode ) {
 				if( sw.defCase != null )
 					lb = sw.defCase.getLabel(code);
 				else
@@ -600,9 +600,9 @@ public final view JGotoCaseStatView of GotoCaseStatImpl extends JENodeView {
 			else if( !expr.isConstantExpr() )
 				lb = sw.getCntLabel().getCodeLabel(code);
 			else {
-				int goto_value = ((Number)((JConstExprView)expr).getConstValue()).intValue();
-				foreach(JCaseLabelView cl; sw.cases) {
-					int case_value = ((Number)((JConstExprView)cl.val).getConstValue()).intValue();
+				int goto_value = ((Number)((JConstExpr)expr).getConstValue()).intValue();
+				foreach(JCaseLabel cl; sw.cases) {
+					int case_value = ((Number)((JConstExpr)cl.val).getConstValue()).intValue();
 					if( goto_value == case_value ) {
 						lb = cl.getLabel(code);
 						break;

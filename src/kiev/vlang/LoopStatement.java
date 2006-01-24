@@ -6,16 +6,16 @@ import kiev.parser.*;
 import kiev.vlang.types.*;
 import kiev.transf.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JDNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JLoopStatView;
-import kiev.be.java.JLabelView;
-import kiev.be.java.JWhileStatView;
-import kiev.be.java.JDoWhileStatView;
-import kiev.be.java.JForInitView;
-import kiev.be.java.JForStatView;
-import kiev.be.java.JForEachStatView;
+import kiev.be.java.JNode;
+import kiev.be.java.JDNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JLoopStat;
+import kiev.be.java.JLabel;
+import kiev.be.java.JWhileStat;
+import kiev.be.java.JDoWhileStat;
+import kiev.be.java.JForInit;
+import kiev.be.java.JForStat;
+import kiev.be.java.JForEachStat;
 
 import kiev.be.java.CodeLabel;
 
@@ -32,7 +32,7 @@ import syntax kiev.Syntax;
 public abstract class LoopStat extends ENode implements BreakTarget, ContinueTarget {
 	@virtual typedef NImpl = LoopStatImpl;
 	@virtual typedef VView = LoopStatView;
-	@virtual typedef JView = JLoopStatView;
+	@virtual typedef JView = JLoopStat;
 
 	@nodeimpl
 	public static abstract class LoopStatImpl extends ENodeImpl {
@@ -64,7 +64,7 @@ public final class Label extends DNode {
 
 	@virtual typedef NImpl = LabelImpl;
 	@virtual typedef VView = LabelView;
-	@virtual typedef JView = JLabelView;
+	@virtual typedef JView = JLabel;
 
 	@nodeimpl
 	public final static class LabelImpl extends DNodeImpl {
@@ -146,7 +146,7 @@ public class WhileStat extends LoopStat {
 
 	@virtual typedef NImpl = WhileStatImpl;
 	@virtual typedef VView = WhileStatView;
-	@virtual typedef JView = JWhileStatView;
+	@virtual typedef JView = JWhileStat;
 
 	@nodeimpl
 	public static final class WhileStatImpl extends LoopStatImpl {
@@ -212,7 +212,7 @@ public class DoWhileStat extends LoopStat {
 
 	@virtual typedef NImpl = DoWhileStatImpl;
 	@virtual typedef VView = DoWhileStatView;
-	@virtual typedef JView = JDoWhileStatView;
+	@virtual typedef JView = JDoWhileStat;
 
 	@nodeimpl
 	public static final class DoWhileStatImpl extends LoopStatImpl {
@@ -281,7 +281,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef NImpl = ForInitImpl;
 	@virtual typedef VView = ForInitView;
-	@virtual typedef JView = JForInitView;
+	@virtual typedef JView = JForInit;
 
 	@nodeimpl
 	public static final class ForInitImpl extends ENodeImpl {
@@ -356,7 +356,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@virtual typedef NImpl = ForStatImpl;
 	@virtual typedef VView = ForStatView;
-	@virtual typedef JView = JForStatView;
+	@virtual typedef JView = JForStat;
 
 	@nodeimpl
 	public static final class ForStatImpl extends LoopStatImpl {
@@ -496,7 +496,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 
 	@virtual typedef NImpl = ForEachStatImpl;
 	@virtual typedef VView = ForEachStatView;
-	@virtual typedef JView = JForEachStatView;
+	@virtual typedef JView = JForEachStat;
 
 	@nodeimpl
 	public static final class ForEachStatImpl extends LoopStatImpl {

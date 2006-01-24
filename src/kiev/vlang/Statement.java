@@ -6,21 +6,21 @@ import kiev.transf.*;
 import kiev.parser.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JInlineMethodStatView;
-import kiev.be.java.JBlockStatView;
-import kiev.be.java.JEmptyStatView;
-import kiev.be.java.JExprStatView;
-import kiev.be.java.JReturnStatView;
-import kiev.be.java.JThrowStatView;
-import kiev.be.java.JIfElseStatView;
-import kiev.be.java.JCondStatView;
-import kiev.be.java.JLabeledStatView;
-import kiev.be.java.JBreakStatView;
-import kiev.be.java.JContinueStatView;
-import kiev.be.java.JGotoStatView;
-import kiev.be.java.JGotoCaseStatView;
+import kiev.be.java.JNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JInlineMethodStat;
+import kiev.be.java.JBlockStat;
+import kiev.be.java.JEmptyStat;
+import kiev.be.java.JExprStat;
+import kiev.be.java.JReturnStat;
+import kiev.be.java.JThrowStat;
+import kiev.be.java.JIfElseStat;
+import kiev.be.java.JCondStat;
+import kiev.be.java.JLabeledStat;
+import kiev.be.java.JBreakStat;
+import kiev.be.java.JContinueStat;
+import kiev.be.java.JGotoStat;
+import kiev.be.java.JGotoCaseStat;
 
 import kiev.be.java.CodeLabel;
 
@@ -46,7 +46,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 
 	@virtual typedef NImpl = InlineMethodStatImpl;
 	@virtual typedef VView = InlineMethodStatView;
-	@virtual typedef JView = JInlineMethodStatView;
+	@virtual typedef JView = JInlineMethodStat;
 
 	@nodeimpl
 	public static final class InlineMethodStatImpl extends ENodeImpl {
@@ -173,7 +173,7 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef NImpl = BlockStatImpl;
 	@virtual typedef VView = BlockStatView;
-	@virtual typedef JView = JBlockStatView;
+	@virtual typedef JView = JBlockStat;
 
 	@nodeimpl
 	public static class BlockStatImpl extends ENodeImpl {
@@ -363,7 +363,7 @@ public class EmptyStat extends ENode {
 	
 	@virtual typedef NImpl = EmptyStatImpl;
 	@virtual typedef VView = EmptyStatView;
-	@virtual typedef JView = JEmptyStatView;
+	@virtual typedef JView = JEmptyStat;
 
 	@nodeimpl
 	public static class EmptyStatImpl extends ENodeImpl {
@@ -404,7 +404,7 @@ public class ExprStat extends ENode {
 
 	@virtual typedef NImpl = ExprStatImpl;
 	@virtual typedef VView = ExprStatView;
-	@virtual typedef JView = JExprStatView;
+	@virtual typedef JView = JExprStat;
 
 	@nodeimpl
 	public static final class ExprStatImpl extends ENodeImpl {
@@ -465,7 +465,7 @@ public class ReturnStat extends ENode {
 
 	@virtual typedef NImpl = ReturnStatImpl;
 	@virtual typedef VView = ReturnStatView;
-	@virtual typedef JView = JReturnStatView;
+	@virtual typedef JView = JReturnStat;
 
 	@nodeimpl
 	public static final class ReturnStatImpl extends ENodeImpl {
@@ -529,7 +529,7 @@ public class ThrowStat extends ENode {
 
 	@virtual typedef NImpl = ThrowStatImpl;
 	@virtual typedef VView = ThrowStatView;
-	@virtual typedef JView = JThrowStatView;
+	@virtual typedef JView = JThrowStat;
 
 	@nodeimpl
 	public static final class ThrowStatImpl extends ENodeImpl {
@@ -584,7 +584,7 @@ public class IfElseStat extends ENode {
 
 	@virtual typedef NImpl = IfElseStatImpl;
 	@virtual typedef VView = IfElseStatView;
-	@virtual typedef JView = JIfElseStatView;
+	@virtual typedef JView = JIfElseStat;
 
 	@nodeimpl
 	public static class IfElseStatImpl extends ENodeImpl {
@@ -681,7 +681,7 @@ public class CondStat extends ENode {
 
 	@virtual typedef NImpl = CondStatImpl;
 	@virtual typedef VView = CondStatView;
-	@virtual typedef JView = JCondStatView;
+	@virtual typedef JView = JCondStat;
 
 	@nodeimpl
 	public static class CondStatImpl extends ENodeImpl {
@@ -744,7 +744,7 @@ public class LabeledStat extends ENode implements Named {
 
 	@virtual typedef NImpl = LabeledStatImpl;
 	@virtual typedef VView = LabeledStatView;
-	@virtual typedef JView = JLabeledStatView;
+	@virtual typedef JView = JLabeledStat;
 
 	@nodeimpl
 	public static class LabeledStatImpl extends ENodeImpl {
@@ -793,7 +793,7 @@ public class BreakStat extends ENode {
 
 	@virtual typedef NImpl = BreakStatImpl;
 	@virtual typedef VView = BreakStatView;
-	@virtual typedef JView = JBreakStatView;
+	@virtual typedef JView = JBreakStat;
 
 	@nodeimpl
 	public static class BreakStatImpl extends ENodeImpl {
@@ -949,7 +949,7 @@ public class ContinueStat extends ENode {
 
 	@virtual typedef NImpl = ContinueStatImpl;
 	@virtual typedef VView = ContinueStatView;
-	@virtual typedef JView = JContinueStatView;
+	@virtual typedef JView = JContinueStat;
 
 	@nodeimpl
 	public static class ContinueStatImpl extends ENodeImpl {
@@ -1048,7 +1048,7 @@ public class GotoStat extends ENode {
 
 	@virtual typedef NImpl = GotoStatImpl;
 	@virtual typedef VView = GotoStatView;
-	@virtual typedef JView = JGotoStatView;
+	@virtual typedef JView = JGotoStat;
 
 	@nodeimpl
 	public static class GotoStatImpl extends ENodeImpl {
@@ -1226,7 +1226,7 @@ public class GotoCaseStat extends ENode {
 
 	@virtual typedef NImpl = GotoCaseStatImpl;
 	@virtual typedef VView = GotoCaseStatView;
-	@virtual typedef JView = JGotoCaseStatView;
+	@virtual typedef JView = JGotoCaseStat;
 
 	@nodeimpl
 	public static class GotoCaseStatImpl extends ENodeImpl {

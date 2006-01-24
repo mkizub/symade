@@ -292,7 +292,7 @@ public class Bytecoder implements JConstants {
 		}
 		else if( name.equals(attrExceptions) ) {
 			kiev.bytecode.ExceptionsAttribute ea = (kiev.bytecode.ExceptionsAttribute)bca;
-			JStructView[] exceptions = new JStructView[ea.cp_exceptions.length];
+			JStruct[] exceptions = new JStruct[ea.cp_exceptions.length];
 			for(int i=0; i < exceptions.length; i++) {
 				exceptions[i] = Env.newStruct(ClazzName.fromBytecodeName(ea.getException(i,clazz), false)).getJView();
 			}
@@ -302,8 +302,8 @@ public class Bytecoder implements JConstants {
 		else if( name.equals(attrInnerClasses) ) {
 			kiev.bytecode.InnerClassesAttribute ica = (kiev.bytecode.InnerClassesAttribute)bca;
 			int elen = ica.cp_inners.length;
-			JStructView[] inner = new JStructView[elen];
-			JStructView[] outer = new JStructView[elen];
+			JStruct[] inner = new JStruct[elen];
+			JStruct[] outer = new JStruct[elen];
 			KString[] inner_name = new KString[elen];
 			short[] access = new short[elen];
 			for(int i=0; i < elen; i++) {
@@ -546,7 +546,7 @@ public class Bytecoder implements JConstants {
 		}
 
 	    // Number of class attributes
-		JStructView jcl = cl.getJView();
+		JStruct jcl = cl.getJView();
 		int len = 0;
 		foreach(Attr a; jcl.attrs; !a.isKiev) len++;
 		bcclazz.attrs = new kiev.bytecode.Attribute[len];
@@ -663,7 +663,7 @@ public class Bytecoder implements JConstants {
 		bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-		JFieldView jf = f.getJView();
+		JField jf = f.getJView();
 		bcf.attrs = new kiev.bytecode.Attribute[jf.attrs.length];
 		for(int i=0; i < jf.attrs.length; i++)
 			bcf.attrs[i] = writeAttr(jf.attrs[i]);
@@ -678,7 +678,7 @@ public class Bytecoder implements JConstants {
 		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.etype.getJType().java_signature).pos];
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-		JMethodView jm = m.getJView();
+		JMethod jm = m.getJView();
 		bcm.attrs = new kiev.bytecode.Attribute[jm.attrs.length];
 		for(int i=0; i < jm.attrs.length; i++)
 			bcm.attrs[i] = writeAttr(jm.attrs[i]);

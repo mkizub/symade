@@ -22,7 +22,7 @@ import kiev.vlang.WBCCondition.WBCConditionImpl;
  */
 
 @nodeview
-public final view JMethodView of MethodImpl extends JDNodeView {
+public final view JMethod of MethodImpl extends JDNode {
 
 	public final Method getMethod() { return (Method)this.getNode(); }
 		
@@ -30,7 +30,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 		return (MetaThrows)this.$view.getNodeData(MetaThrows.ID);
 	}
 
-	public JVarView	getRetVar() {
+	public JVar	getRetVar() {
 		if( this.$view.retvar == null )
 			this.$view.retvar = new Var(pos,nameResultVar,type.ret(),ACC_FINAL);
 		return this.$view.retvar.getJView();
@@ -39,11 +39,11 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	public access:ro	Access						acc;
 	public access:ro	KString						name;
-	public access:ro	JArr<JVarView>				params;
-	public access:ro	JBlockStatView				body;
+	public access:ro	JArr<JVar>				params;
+	public access:ro	JBlockStat				body;
 	public				Attr[]						attrs;
-	public access:ro	JArr<JWBCConditionView>		conditions;
-	public access:ro	JArr<JFieldView>			violated_fields;
+	public access:ro	JArr<JWBCCondition>		conditions;
+	public access:ro	JArr<JField>			violated_fields;
 	public access:ro	MetaValue					annotation_default;
 	public access:ro	boolean						inlined_by_dispatcher;
 
@@ -59,11 +59,11 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	public final boolean isInvariantMethod()	{ return this.$view.is_mth_invariant; }
 	public final boolean isLocalMethod()		{ return this.$view.is_mth_local; }
 
-	@getter public JMethodView get$child_jctx_method() { return this; }
+	@getter public JMethod get$child_jctx_method() { return this; }
 
-	public JVarView getOuterThisParam() { return (JVarView)this.getMethod().getOuterThisParam(); }
-	public JVarView getTypeInfoParam(int kind) { return (JVarView)this.getMethod().getTypeInfoParam(kind); }
-	public JVarView getVarArgParam() { return (JVarView)this.getMethod().getVarArgParam(); }
+	public JVar getOuterThisParam() { return (JVar)this.getMethod().getOuterThisParam(); }
+	public JVar getTypeInfoParam(int kind) { return (JVar)this.getMethod().getTypeInfoParam(kind); }
+	public JVar getVarArgParam() { return (JVar)this.getMethod().getVarArgParam(); }
 	
 	public CodeLabel getBreakLabel() {
 		return body.getBreakLabel();
@@ -90,14 +90,14 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	public void generate(ConstPool constPool) {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
-		foreach(JWBCConditionView cond; conditions; cond.cond != WBCType.CondInvariant )
+		foreach(JWBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
 			cond.generate(constPool,Type.tpVoid);
 		if( !isAbstract() && body != null ) {
 			Code code = new Code(jctx_clazz, this, constPool);
 			code.generation = true;
 			try {
 				if( !isBad() ) {
-					JVarView thisPar = null;
+					JVar thisPar = null;
 					if (!isStatic()) {
 						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 						code.addVar(thisPar);
@@ -106,19 +106,19 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 					if( Kiev.verify )
 						generateArgumentCheck(code);
 					if( Kiev.debugOutputC ) {
-						foreach(JWBCConditionView cond; conditions; cond.cond == WBCType.CondRequire )
+						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondRequire )
 							code.importCode(cond.code_attr);
-						foreach(JWBCConditionView cond; conditions; cond.cond == WBCType.CondInvariant ) {
-							assert( cond.jparent instanceof JMethodView && ((JMethodView)cond.jparent).isInvariantMethod() );
+						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
+							assert( cond.jparent instanceof JMethod && ((JMethod)cond.jparent).isInvariantMethod() );
 							if( !name.equals(nameInit) && !name.equals(nameClassInit) ) {
-								if( !((JDNodeView)cond.jparent).isStatic() )
+								if( !((JDNode)cond.jparent).isStatic() )
 									code.addInstrLoadThis();
 								code.addInstr(Instr.op_call,cond.jctx_method,false);
 							}
 							code.need_to_gen_post_cond = true;
 						}
 						if( !code.need_to_gen_post_cond ) {
-							foreach(JWBCConditionView cond; conditions; cond.cond != WBCType.CondRequire ) {
+							foreach(JWBCCondition cond; conditions; cond.cond != WBCType.CondRequire ) {
 								code.need_to_gen_post_cond = true;
 								break;
 							}
@@ -130,13 +130,13 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 							code.addVar(getRetVar());
 							code.addInstr(Instr.op_store,getRetVar());
 						}
-						foreach(JWBCConditionView cond; conditions; cond.cond == WBCType.CondInvariant ) {
-							if( !((JDNodeView)cond.jparent).isStatic() )
+						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
+							if( !((JDNode)cond.jparent).isStatic() )
 								code.addInstrLoadThis();
 							code.addInstr(Instr.op_call,cond.jctx_method,false);
 							code.need_to_gen_post_cond = true;
 						}
-						foreach(JWBCConditionView cond; conditions; cond.cond == WBCType.CondEnsure )
+						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondEnsure )
 							code.importCode(cond.code_attr);
 						if( type.ret() ≢ Type.tpVoid ) {
 							code.addInstr(Instr.op_load,getRetVar());
@@ -154,7 +154,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 					KString msg = KString.from("Compiled with errors");
 					constPool.addStringCP(msg);
 					code.addConst(msg);
-					JMethodView func = Type.tpError.getJStruct().resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
+					JMethod func = Type.tpError.getJStruct().resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
 					code.addInstr(Instr.op_call,func,false);
 					code.addInstr(Instr.op_throw);
 				}
@@ -166,7 +166,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 		MetaThrows throwns = getMetaThrows();
         if( throwns != null ) {
 			ASTNode[] mthrs = throwns.getThrowns();
-        	JStructView[] thrs = new JStructView[mthrs.length];
+        	JStruct[] thrs = new JStruct[mthrs.length];
 			for (int i=0; i < mthrs.length; i++)
 				thrs[i] = mthrs[i].getType().getStruct().getJView();
         	ExceptionsAttr athr = new ExceptionsAttr();
@@ -189,8 +189,8 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 }
 
 @nodeview
-public final view JInitializerView of InitializerImpl extends JDNodeView {
-	public access:ro	JBlockStatView		body;
+public final view JInitializer of InitializerImpl extends JDNode {
+	public access:ro	JBlockStat		body;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Initializer");
@@ -200,11 +200,11 @@ public final view JInitializerView of InitializerImpl extends JDNodeView {
 }
 
 @nodeview
-public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView {
+public final final view JWBCCondition of WBCConditionImpl extends JDNode {
 	public access:ro	WBCType				cond;
 	public access:ro	KString				name;
-	public access:ro	JENodeView			body;
-	public access:ro	JMethodView			definer;
+	public access:ro	JENode			body;
+	public access:ro	JMethod			definer;
 	public				CodeAttr			code_attr;
 
 	public void generate(ConstPool constPool, Type reqType) {
@@ -217,9 +217,9 @@ public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView
 			return;
 		}
 		if( code_attr == null ) {
-			JMethodView m = code.method;
+			JMethod m = code.method;
 			try {
-				JVarView thisPar = null;
+				JVar thisPar = null;
 				if( !isStatic() ) {
 					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 					code.addVar(thisPar);

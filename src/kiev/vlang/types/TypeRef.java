@@ -10,9 +10,9 @@ import kiev.transf.*;
 import kiev.vlang.ENode.ENodeImpl;
 import kiev.vlang.ENode.ENodeView;
 
-import kiev.be.java.JNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JTypeRefView;
+import kiev.be.java.JNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JTypeRef;
 import kiev.be.java.JType;
 
 import static kiev.stdlib.Debug.*;
@@ -30,7 +30,7 @@ public class TypeRef extends ENode {
 
 	@virtual typedef NImpl = TypeRefImpl;
 	@virtual typedef VView = TypeRefView;
-	@virtual typedef JView = JTypeRefView;
+	@virtual typedef JView = JTypeRef;
 
 	@nodeimpl
 	public static class TypeRefImpl extends ENodeImpl {

@@ -5,7 +5,7 @@ import kiev.stdlib.*;
 import kiev.vlang.types.*;
 import java.io.*;
 
-import kiev.be.java.JLabelView;
+import kiev.be.java.JLabel;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -21,11 +21,11 @@ public interface Typed {
 }
 
 public interface BreakTarget {
-	public JLabelView getBrkLabel();
+	public JLabel getBrkLabel();
 }
 
 public interface ContinueTarget {
-	public JLabelView getCntLabel();
+	public JLabel getCntLabel();
 }
 
 public interface Named {
@@ -68,15 +68,6 @@ public class SymbolIterator implements Enumeration<ASTNode> {
 		return last_stat != null;
 	}
 	public ASTNode nextElement() {
-		if ( last_stat != null ) {
-			ASTNode r = last_stat;
-			last_stat = last_stat.pprev;
-			return r;
-		}
-		throw new NoSuchElementException();
-	}
-	/// BUG BUG BUG ///
-	public Object nextElement() {
 		if ( last_stat != null ) {
 			ASTNode r = last_stat;
 			last_stat = last_stat.pprev;

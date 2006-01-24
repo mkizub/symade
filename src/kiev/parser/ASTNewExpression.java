@@ -71,6 +71,45 @@ public class ASTNewExpression extends ENode {
 		return false;
 	}
 	
+	public boolean preGenerate() {
+		if( clazz == null )
+			return true;
+		Type tp = type.getType();
+		tp.checkResolved();
+		// Local anonymouse class
+		CompaundType sup  = (CompaundType)tp;
+		clazz.setResolved(true);
+		clazz.setLocal(true);
+		clazz.setAnonymouse(true);
+		clazz.setStatic(ctx_method==null || ctx_method.isStatic());
+		TypeRef sup_tr = (TypeRef)this.type.copy();
+		if( sup.isInterface() ) {
+			clazz.super_type = Type.tpObject;
+			clazz.interfaces.add(sup_tr);
+		} else {
+			clazz.super_bound = sup_tr;
+		}
+
+		{
+			// Create default initializer, if number of arguments > 0
+			if( args.length > 0 ) {
+				Constructor init = new Constructor(ACC_PUBLIC);
+				for(int i=0; i < args.length; i++) {
+					args[i].resolve(null);
+					init.params.append(new FormPar(pos,KString.from("arg$"+i),args[i].getType(),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
+				}
+				init.pos = pos;
+				init.body = new BlockStat(pos);
+				init.setPublic();
+				clazz.addMethod(init);
+			}
+		}
+
+        // Process inner classes and cases
+		Kiev.runProcessorsOn(clazz);
+		return true;
+	}
+	
 	public void resolve(Type reqType) {
 		// Find out possible constructors
 		Type tp = type.getType();
@@ -115,42 +154,11 @@ public class ASTNewExpression extends ENode {
 		}
 		if( clazz == null ) {
 			replaceWithNodeResolve(reqType, new NewExpr(pos,tp,args.delToArray()));
-			return;
-		}
-		// Local anonymouse class
-		CompaundType sup  = (CompaundType)tp;
-		clazz.setResolved(true);
-		clazz.setLocal(true);
-		clazz.setAnonymouse(true);
-		clazz.setStatic(ctx_method==null || ctx_method.isStatic());
-		TypeRef sup_tr = (TypeRef)this.type.copy();
-		if( sup.isInterface() ) {
-			clazz.super_type = Type.tpObject;
-			clazz.interfaces.add(sup_tr);
 		} else {
-			clazz.super_bound = sup_tr;
+			ENode ne = new NewExpr(pos,clazz.ctype,args.toArray());
+			ne.clazz = (Struct)~clazz;
+			replaceWithNodeResolve(reqType, ne);
 		}
-
-		{
-			// Create default initializer, if number of arguments > 0
-			if( args.length > 0 ) {
-				Constructor init = new Constructor(ACC_PUBLIC);
-				for(int i=0; i < args.length; i++) {
-					args[i].resolve(null);
-					init.params.append(new FormPar(pos,KString.from("arg$"+i),args[i].getType(),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
-				}
-				init.pos = pos;
-				init.body = new BlockStat(pos);
-				init.setPublic();
-				clazz.addMethod(init);
-			}
-		}
-
-        // Process inner classes and cases
-		Kiev.runProcessorsOn(clazz);
-		ENode ne = new NewExpr(pos,clazz.ctype,args.toArray());
-		ne.clazz = (Struct)~clazz;
-		replaceWithNodeResolve(reqType, ne);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

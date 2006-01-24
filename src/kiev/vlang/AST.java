@@ -11,15 +11,15 @@ import kiev.parser.*;
 import kiev.vlang.ASTNode.NodeImpl;
 
 import kiev.be.java.JType;
-import kiev.be.java.JNodeView;
-import kiev.be.java.JDNodeView;
-import kiev.be.java.JLvalDNodeView;
-import kiev.be.java.JENodeView;
-import kiev.be.java.JVarDeclView;
-import kiev.be.java.JLocalStructDeclView;
-import kiev.be.java.JLvalueExprView;
-import kiev.be.java.JTypeDeclView;
-import kiev.be.java.JNameRefView;
+import kiev.be.java.JNode;
+import kiev.be.java.JDNode;
+import kiev.be.java.JLvalDNode;
+import kiev.be.java.JENode;
+import kiev.be.java.JVarDecl;
+import kiev.be.java.JLocalStructDecl;
+import kiev.be.java.JLvalueExpr;
+import kiev.be.java.JTypeDecl;
+import kiev.be.java.JNameRef;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -66,7 +66,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 
 	@virtual typedef NImpl = NodeImpl;
 	@virtual typedef VView = NodeView;
-	@virtual typedef JView = JNodeView;
+	@virtual typedef JView = JNode;
 	
 	public static ASTNode[] emptyArray = new ASTNode[0];
     public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
@@ -583,7 +583,7 @@ public abstract class DNode extends ASTNode {
 
 	@virtual typedef NImpl = DNodeImpl;
 	@virtual typedef VView = DNodeView;
-	@virtual typedef JView = JDNodeView;
+	@virtual typedef JView = JDNode;
 	
 	public static final DNode[] emptyArray = new DNode[0];
 	
@@ -825,7 +825,7 @@ public abstract class LvalDNode extends DNode {
 
 	@virtual typedef NImpl = LvalDNodeImpl;
 	@virtual typedef VView = LvalDNodeView;
-	@virtual typedef JView = JLvalDNodeView;
+	@virtual typedef JView = JLvalDNode;
 
 	@nodeimpl
 	public static class LvalDNodeImpl extends DNodeImpl {
@@ -880,7 +880,7 @@ public /*abstract*/ class ENode extends ASTNode {
 
 	@virtual typedef NImpl = ENodeImpl;
 	@virtual typedef VView = ENodeView;
-	@virtual typedef JView = JENodeView;
+	@virtual typedef JView = JENode;
 
 	@nodeimpl
 	public static class ENodeImpl extends NodeImpl {
@@ -1103,7 +1103,7 @@ public final class VarDecl extends ENode implements Named {
 
 	@virtual typedef NImpl = VarDeclImpl;
 	@virtual typedef VView = VarDeclView;
-	@virtual typedef JView = JVarDeclView;
+	@virtual typedef JView = JVarDecl;
 
 	@nodeimpl
 	public static final class VarDeclImpl extends ENodeImpl {
@@ -1148,7 +1148,7 @@ public final class LocalStructDecl extends ENode implements Named {
 
 	@virtual typedef NImpl = LocalStructDeclImpl;
 	@virtual typedef VView = LocalStructDeclView;
-	@virtual typedef JView = JLocalStructDeclView;
+	@virtual typedef JView = JLocalStructDecl;
 
 	@nodeimpl
 	public static final class LocalStructDeclImpl extends ENodeImpl {
@@ -1248,7 +1248,7 @@ public abstract class TypeDecl extends DNode implements Named {
 
 	@virtual typedef NImpl = TypeDeclImpl;
 	@virtual typedef VView = TypeDeclView;
-	@virtual typedef JView = JTypeDeclView;
+	@virtual typedef JView = JTypeDecl;
 
 	@nodeimpl
 	public static abstract class TypeDeclImpl extends DNodeImpl {		
@@ -1291,7 +1291,7 @@ public class NameRef extends ASTNode {
 
 	@virtual typedef NImpl = NameRefImpl;
 	@virtual typedef VView = NameRefView;
-	@virtual typedef JView = JNameRefView;
+	@virtual typedef JView = JNameRef;
 
 	@nodeimpl
 	public static class NameRefImpl extends NodeImpl {
@@ -1369,11 +1369,11 @@ public class CompilerException extends RuntimeException {
 		this.from = from.getNode();
 		this.err_id = err_id;
 	}
-	public CompilerException(JNodeView from, String msg) {
+	public CompilerException(JNode from, String msg) {
 		super(msg);
 		this.from = from.getNode();
 	}
-	public CompilerException(JNodeView from, CError err_id, String msg) {
+	public CompilerException(JNode from, CError err_id, String msg) {
 		super(msg);
 		this.from = from.getNode();
 		this.err_id = err_id;

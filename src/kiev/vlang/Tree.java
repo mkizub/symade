@@ -6,7 +6,7 @@ import kiev.vlang.types.*;
 import kiev.parser.*;
 
 import kiev.be.java.JType;
-import kiev.be.java.JNodeView;
+import kiev.be.java.JNode;
 
 import static kiev.stdlib.Debug.*;
 import java.lang.annotation.*;
@@ -341,16 +341,16 @@ public final class NArr<N extends ASTNode> {
 		return arr;
 	}
 
-//	public JNodeView[] toJViewArray(Class cls) {
+//	public JNode[] toJViewArray(Class cls) {
 //		int sz = $nodes.length;
-//		JNodeView[] arr = (JNodeView[])java.lang.reflect.Array.newInstance(cls, sz);
+//		JNode[] arr = (JNode[])java.lang.reflect.Array.newInstance(cls, sz);
 //		for (int i=0; i < sz; i++)
 //			arr[i] = $nodes[i].getJView();
 //		return arr;
 //	}
 
 	@unerasable
-	public <J extends JNodeView> JArr<J> toJArr() alias operator(210,fy,$cast) {
+	public <J extends JNode> JArr<J> toJArr() alias operator(210,fy,$cast) {
 		return new JArr<J>();
 	}
 
@@ -378,20 +378,15 @@ public final class NArr<N extends ASTNode> {
 				if ( current < size() ) return NArr.this[current++];
 				throw new NoSuchElementException(Integer.toString(NArr.this.size()));
 			}
-			/// BUG BUG BUG ///
-			public Object nextElement() {
-				if ( current < size() ) return NArr.this[current++];
-				throw new NoSuchElementException(Integer.toString(NArr.this.size()));
-			}
 		};
 	}
 
 	@unerasable
-	public final class JArr<J extends JNodeView> {
+	public final class JArr<J extends JNode> {
 
 		public NArr<N> getNArr() { return NArr.this; }
 		
-		public JNodeView getParent() {
+		public JNode getParent() {
 			return (J)NArr.this.$parent_impl._self;
 		}
 		
@@ -490,11 +485,6 @@ public final class NArr<N extends ASTNode> {
 				int current;
 				public boolean hasMoreElements() { return current < JArr.this.size(); }
 				public J nextElement() {
-					if ( current < size() ) return JArr.this[current++];
-					throw new NoSuchElementException(Integer.toString(JArr.this.size()));
-				}
-				/// BUG BUG BUG ///
-				public Object nextElement() {
 					if ( current < size() ) return JArr.this[current++];
 					throw new NoSuchElementException(Integer.toString(JArr.this.size()));
 				}

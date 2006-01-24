@@ -17,10 +17,10 @@ import static kiev.be.java.Instr.*;
 public final class Code implements JConstants {
 	
 	/** Current class we are generating */
-	public JStructView		clazz;
+	public JStruct		clazz;
 	
 	/** Current method we are generating */
-	public JMethodView		method;
+	public JMethod		method;
 	
 	/** Current ConstPool of the class we are generating */
 	public ConstPool		constPool;
@@ -92,7 +92,7 @@ public final class Code implements JConstants {
 	
 	public boolean			need_to_gen_post_cond;
 
-	public Code(JStructView s, JMethodView m, ConstPool cp) {
+	public Code(JStruct s, JMethod m, ConstPool cp) {
 		clazz = s;
 		method = m;
 		constPool = cp;
@@ -137,7 +137,7 @@ public final class Code implements JConstants {
 
 	public void popStackPos() {};
 
-	public void setLinePos(JNodeView nv) {
+	public void setLinePos(JNode nv) {
 		this.setLinePos(nv.getPosLine());
 	}
 	
@@ -532,7 +532,7 @@ public final class Code implements JConstants {
 
 	/** Call method. Find out args from method, check args's types
 	 */
-	private void generateCall(JMethodView m, boolean super_flag, Type tp) {
+	private void generateCall(JMethod m, boolean super_flag, Type tp) {
 		boolean call_static;
 		if( !m.isStatic() ) {
 			trace(Kiev.debugInstrGen,"\t\tgenerating non-static call to method: "+m);
@@ -556,7 +556,7 @@ public final class Code implements JConstants {
 			}
 		}
 		KString sign;
-		JType ttt = Type.getRealType(tp,((JStructView)m.jparent).ctype).getJType();
+		JType ttt = Type.getRealType(tp,((JStruct)m.jparent).ctype).getJType();
 		sign = m.etype.getJType().java_signature;
 		CP cpm;
 		if( m.jctx_clazz.isInterface() )
@@ -566,7 +566,7 @@ public final class Code implements JConstants {
 		if( call_static ) {
 			add_opcode_and_CP(opc_invokestatic,cpm);
 		}
-		else if( ((JStructView)m.jparent).isInterface() ) {
+		else if( ((JStruct)m.jparent).isInterface() ) {
 			add_opcode_and_CP(opc_invokeinterface,cpm);
 			int argslen = 1;
 			foreach(JType t; mtype.jargs) {
@@ -994,7 +994,7 @@ public final class Code implements JConstants {
 	/** Add local var for this code.
 		For debug version automatically generates debug info
 	 */
-	public CodeVar addVar(JVarView v) {
+	public CodeVar addVar(JVar v) {
 		trace(Kiev.debugInstrGen,"Code add var "+v);
 		int pos = cur_locals;
 		v.bcpos = pos;
@@ -1013,7 +1013,7 @@ public final class Code implements JConstants {
 
 	/** Remove local var for this code.
 	 */
-	public void removeVar(JVarView v) {
+	public void removeVar(JVar v) {
 		trace(Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.bcpos+" "+vars[v.bcpos]);
 		JType t = v.type.getJType();
 		if( !v.name.equals(KString.Empty) ) {
@@ -1038,13 +1038,13 @@ public final class Code implements JConstants {
 	/** Add local vars for this code.
 		For debug version automatically generates debug info
 	 */
-	public void addVars(JVarView[] v) {
+	public void addVars(JVar[] v) {
 		for(int i=0; i < v.length; i++) addVar(v[i]);
 	}
 
 	/** Remove local vars for this code (i.e. on block end)
 	 */
-	public void removeVars(JVarView[] v) {
+	public void removeVars(JVar[] v) {
 		for(int i=v.length-1; i >= 0; i--) removeVar(v[i]);
 	}
 
@@ -1160,7 +1160,7 @@ public final class Code implements JConstants {
 
 	/** Add pseude-instruction for this code.
 	 */
-	public void addInstrIncr(JVarView vv, int val) {
+	public void addInstrIncr(JVar vv, int val) {
 		trace(Kiev.debugInstrGen,pc+": op_incr "+vv+" "+val);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\"op_incr\" ingnored as unreachable");
@@ -1222,7 +1222,7 @@ public final class Code implements JConstants {
 
 	/** Add pseude-instruction with var for this code.
 	 */
-	public void addInstr(Instr i, JVarView v) {
+	public void addInstr(Instr i, JVar v) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+vars[v.bcpos].var);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
@@ -1250,7 +1250,7 @@ public final class Code implements JConstants {
 
 	/** Add pseude-instruction with field for this code.
 	 */
-	public void addInstr(Instr i, JFieldView f, Type tp) {
+	public void addInstr(Instr i, JField f, Type tp) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+f);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
@@ -1341,12 +1341,12 @@ public final class Code implements JConstants {
 
 	/** Add pseude-instruction with method call for this code.
 	 */
-	public void addInstr(Instr i, JMethodView method, boolean super_flag) {
+	public void addInstr(Instr i, JMethod method, boolean super_flag) {
 		addInstr(i,method,super_flag,method.type);
 	}
 	/** Add pseude-instruction with method call for this code.
 	 */
-	public void addInstr(Instr i, JMethodView method, boolean super_flag, Type tp) {
+	public void addInstr(Instr i, JMethod method, boolean super_flag, Type tp) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+(super_flag?"super.":"")+method);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
@@ -1363,7 +1363,7 @@ public final class Code implements JConstants {
 
 	/** Add pseude-instruction with method reference for this code.
 	 */
-	public void addInstr(Instr i, JMethodView method, int nargs, Type tp) {
+	public void addInstr(Instr i, JMethod method, int nargs, Type tp) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+method);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
@@ -1540,7 +1540,7 @@ public final class Code implements JConstants {
 		this.method.addAttr(generateCodeAttr(0));
 	}
 
-	public void generateCode(JWBCConditionView wbc) {
+	public void generateCode(JWBCCondition wbc) {
 		wbc.code_attr = generateCodeAttr(wbc.cond);
 	}
 

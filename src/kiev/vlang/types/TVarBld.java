@@ -5,7 +5,7 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 import kiev.be.java.JBaseTypeProvider;
-import kiev.be.java.JStructView;
+import kiev.be.java.JStruct;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

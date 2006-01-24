@@ -41,7 +41,7 @@ public class Attr implements JConstants {
 
 public class CodeAttr extends Attr {
 
-	public JMethodView	method;
+	public JMethod	method;
 	public int			max_stack;
 	public int			max_locals;
 	CodeCatchInfo[]		catchers;
@@ -50,7 +50,7 @@ public class CodeAttr extends Attr {
 	public CP[]			constants;
 	public int[]		constants_pc;
 
-	public CodeAttr(JMethodView m, int max_st,int max_locs, byte[] bcode,
+	public CodeAttr(JMethod m, int max_st,int max_locs, byte[] bcode,
 			CodeCatchInfo[] catchers, Attr[] code_attrs) {
 		super(attrCode);
 		this.method = m;
@@ -158,7 +158,7 @@ public class LocalVarTableAttr extends Attr {
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < vars.length; i++) {
-			JVarView v = vars[i].var;
+			JVar v = vars[i].var;
 			constPool.addAsciiCP(v.name);
 			constPool.addAsciiCP(v.jtype.java_signature);
 		}
@@ -170,7 +170,7 @@ public class LocalVarTableAttr extends Attr {
 		int len = vars.length;
 		lvta.vars = new kiev.bytecode.LocalVariableTableAttribute.VarInfo[len];
 		for(int i=0; i < len; i++) {
-			JVarView v = vars[i].var;
+			JVar v = vars[i].var;
 			KString sign = v.jtype.java_signature;
 
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();
@@ -212,12 +212,12 @@ public class LinenoTableAttr extends Attr {
 public class ExceptionsAttr extends Attr {
 
 	/** Line number table (see Code class for format description) */
-	public JStructView[]		exceptions;
+	public JStruct[]		exceptions;
 
 	/** Constructor for bytecode reader and raw field creation */
 	public ExceptionsAttr() {
 		super(attrExceptions);
-		exceptions = new JStructView[0];
+		exceptions = new JStruct[0];
 	}
 
 	public void generate(ConstPool constPool) {
@@ -241,15 +241,15 @@ public class ExceptionsAttr extends Attr {
 public class InnerClassesAttr extends Attr {
 
 	/** Line number table (see Code class for format description) */
-	public JStructView[]		inner;
-	public JStructView[]		outer;
+	public JStruct[]		inner;
+	public JStruct[]		outer;
 	public short[]				acc;
 
 	/** Constructor for bytecode reader and raw field creation */
 	public InnerClassesAttr() {
 		super(attrInnerClasses);
-		inner = new JStructView[0];
-		outer = new JStructView[0];
+		inner = new JStruct[0];
+		outer = new JStruct[0];
 		acc = new short[0];
 	}
 

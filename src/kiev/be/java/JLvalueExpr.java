@@ -23,8 +23,8 @@ import kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprImpl;
 import kiev.vlang.UnwrapExpr.UnwrapExprImpl;
 
 @nodeview
-public abstract view JLvalueExprView of LvalueExprImpl extends JENodeView {
-	public JLvalueExprView(LvalueExpr.LvalueExprImpl $view) {
+public abstract view JLvalueExpr of LvalueExprImpl extends JENode {
+	public JLvalueExpr(LvalueExpr.LvalueExprImpl $view) {
 		super($view);
 	}
 
@@ -54,14 +54,14 @@ public abstract view JLvalueExprView of LvalueExprImpl extends JENodeView {
 }
 
 @nodeview
-public abstract view JAccessExprView of AccessExprImpl extends JLvalueExprView {
-	public access:ro	JENodeView	obj;
+public abstract view JAccessExpr of AccessExprImpl extends JLvalueExpr {
+	public access:ro	JENode	obj;
 	public access:ro	KString		ident;
 }
 
 @nodeview
-public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
-	public access:ro	JFieldView		var;
+public final view JIFldExpr of IFldExprImpl extends JAccessExpr {
+	public access:ro	JField		var;
 
 	public boolean	isConstantExpr() { return var.isConstantExpr(); }
 	public Object	getConstValue() { return var.getConstValue(); }
@@ -140,9 +140,9 @@ public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 
 
 @nodeview
-public final view JContainerAccessExprView of ContainerAccessExprImpl extends JLvalueExprView {
-	public access:ro	JENodeView		obj;
-	public access:ro	JENodeView		index;
+public final view JContainerAccessExpr of ContainerAccessExprImpl extends JLvalueExpr {
+	public access:ro	JENode		obj;
+	public access:ro	JENode		index;
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load only: "+this);
@@ -247,9 +247,9 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 
 
 @nodeview
-public final view JThisExprView of ThisExprImpl extends JLvalueExprView {
+public final view JThisExpr of ThisExprImpl extends JLvalueExpr {
 
-	public JThisExprView(ThisExprImpl $view) { super($view); }
+	public JThisExpr(ThisExprImpl $view) { super($view); }
 	
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
@@ -312,34 +312,34 @@ public final view JThisExprView of ThisExprImpl extends JLvalueExprView {
 }
 
 @nodeview
-public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
+public final view JLVarExpr of LVarExprImpl extends JLvalueExpr {
 	public access:ro	KString		ident;
-	public access:ro	JVarView	var;
+	public access:ro	JVar	var;
 
-	public JFieldView resolveProxyVar(Code code) {
-		JFieldView proxy_var = code.clazz.resolveField(this.ident,false);
+	public JField resolveProxyVar(Code code) {
+		JField proxy_var = code.clazz.resolveField(this.ident,false);
 		if( proxy_var == null && code.method.isStatic() && !code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var;
 	}
 
-	public JFieldView resolveVarVal() {
+	public JField resolveVarVal() {
 		CompaundType prt = Type.getProxyType(var.type);
-		JFieldView var_valf = prt.clazz.getJView().resolveField(nameCellVal);
+		JField var_valf = prt.clazz.getJView().resolveField(nameCellVal);
 		return var_valf;
 	}
 
-	public JVarView resolveVarForConditions(Code code) {
+	public JVar resolveVarForConditions(Code code) {
 		assert( code.cond_generation );
-		JVarView var = this.var;
+		JVar var = this.var;
 		// Bind the correct var
 		if( !var.jparent.equals(code.method) ) {
-			assert( var.jparent instanceof JMethodView, "Non-parametrs var in condition" );
+			assert( var.jparent instanceof JMethod, "Non-parametrs var in condition" );
 			if( this.ident==nameResultVar ) {
 				var = code.method.getRetVar();
 			} else {
 				for(int i=0; i < code.method.params.length; i++) {
-					JVarView v = code.method.params[i];
+					JVar v = code.method.params[i];
 					if( v.name != var.name ) continue;
 					assert( var.type.equals(v.type), "Type of vars in overriden methods missmatch" );
 					var = v;
@@ -356,9 +356,9 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		if( !Kiev.verify ) return;
 		if( !var.type.isReference() || var.type.isArray() ) return;
 		Type chtp = null;
-		if( var.jparent instanceof JMethodView ) {
-			JMethodView m = (JMethodView)var.jparent;
-			JVarView[] params = m.params.toArray();
+		if( var.jparent instanceof JMethod ) {
+			JMethod m = (JMethod)var.jparent;
+			JVar[] params = m.params.toArray();
 			for(int i=0; i < params.length; i++) {
 				if( var == params[i] ) {
 					chtp = m.etype.arg(i);
@@ -377,7 +377,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - load only: "+this);
 		code.setLinePos(this);
-		JVarView var = this.var;
+		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( code.vars[var.bcpos] == null )
@@ -397,7 +397,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - load & dup: "+this);
 		code.setLinePos(this);
-		JVarView var = this.var;
+		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( code.vars[var.bcpos] == null )
@@ -419,7 +419,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 	public void generateAccess(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - access only: "+this);
 		code.setLinePos(this);
-		JVarView var = this.var;
+		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() || isUseNoProxy() ) {
 		} else {
@@ -433,7 +433,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - store only: "+this);
 		code.setLinePos(this);
-		JVarView var = this.var;
+		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( code.vars[var.bcpos] == null )
@@ -451,7 +451,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - store & dup: "+this);
 		code.setLinePos(this);
-		JVarView var = this.var;
+		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
 		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( code.vars[var.bcpos] == null )
@@ -473,8 +473,8 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 }
 
 @nodeview
-public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
-	public access:ro	JFieldView		var;
+public final view JSFldExpr of SFldExprImpl extends JAccessExpr {
+	public access:ro	JField		var;
 	
 	public boolean	isConstantExpr() { return var.isConstantExpr(); }
 	public Object	getConstValue() { return var.getConstValue(); }
@@ -515,7 +515,7 @@ public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
 }
 
 @nodeview
-public final view JOuterThisAccessExprView of OuterThisAccessExprImpl extends JAccessExprView {
+public final view JOuterThisAccessExpr of OuterThisAccessExprImpl extends JAccessExpr {
 	public access:ro	Struct			outer;
 	public access:ro	NArr<Field>		outer_refs;
 
@@ -560,14 +560,14 @@ public final view JOuterThisAccessExprView of OuterThisAccessExprImpl extends JA
 }
 
 @nodeview
-public final view JUnwrapExprView of UnwrapExprImpl extends JLvalueExprView {
-	public access:ro	JENodeView		expr;
+public final view JUnwrapExpr of UnwrapExprImpl extends JLvalueExpr {
+	public access:ro	JENode		expr;
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - load only: "+this);
 		code.setLinePos(this);
-		JENodeView expr = this.expr;
-		if (expr instanceof JLvalueExprView)
+		JENode expr = this.expr;
+		if (expr instanceof JLvalueExpr)
 			expr.generateLoad(code);
 		else
 			expr.generate(code, null);
@@ -576,8 +576,8 @@ public final view JUnwrapExprView of UnwrapExprImpl extends JLvalueExprView {
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - load & dup: "+this);
 		code.setLinePos(this);
-		JENodeView expr = this.expr;
-		if (expr instanceof JLvalueExprView) {
+		JENode expr = this.expr;
+		if (expr instanceof JLvalueExpr) {
 			expr.generateLoadDup(code);
 		} else {
 			expr.generate(code, null);
@@ -588,8 +588,8 @@ public final view JUnwrapExprView of UnwrapExprImpl extends JLvalueExprView {
 	public void generateAccess(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - access only: "+this);
 		code.setLinePos(this);
-		JENodeView expr = this.expr;
-		if (expr instanceof JLvalueExprView)
+		JENode expr = this.expr;
+		if (expr instanceof JLvalueExpr)
 			expr.generateAccess(code);
 		else
 			expr.generate(code, null);
@@ -598,8 +598,8 @@ public final view JUnwrapExprView of UnwrapExprImpl extends JLvalueExprView {
 	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - store only: "+this);
 		code.setLinePos(this);
-		JENodeView expr = this.expr;
-		if (expr instanceof JLvalueExprView)
+		JENode expr = this.expr;
+		if (expr instanceof JLvalueExpr)
 			expr.generateStore(code);
 		else
 			throw new CompilerException(this,"Cannot generate store for non-lvalue "+expr);
@@ -608,8 +608,8 @@ public final view JUnwrapExprView of UnwrapExprImpl extends JLvalueExprView {
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - store & dup: "+this);
 		code.setLinePos(this);
-		JENodeView expr = this.expr;
-		if (expr instanceof JLvalueExprView)
+		JENode expr = this.expr;
+		if (expr instanceof JLvalueExpr)
 			expr.generateStoreDupValue(code);
 		else
 			throw new CompilerException(this,"Cannot generate store+dup value for non-lvalue "+expr);

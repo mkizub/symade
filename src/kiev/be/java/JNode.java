@@ -22,7 +22,7 @@ import kiev.vlang.types.TypeRef.TypeRefImpl;
 import kiev.vlang.NameRef.NameRefImpl;
 
 @nodeview
-public view JNodeView of NodeImpl implements Constants {
+public view JNode of NodeImpl implements Constants {
 	@virtual typedef ViewOf  = ASTNode;
 	public final ViewOf getNode() alias operator(210,fy,$cast) {
 		return this.$view._self;
@@ -34,24 +34,24 @@ public view JNodeView of NodeImpl implements Constants {
 	public access:ro	int			pos;
 //	public access:ro	int			compileflags;
 	
-	@getter public final JNodeView get$jparent() { return (JNodeView)this.$view.parent; }
-	@getter public JFileUnitView get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
-	@getter public JStructView get$jctx_clazz() { return this.jparent.child_jctx_clazz; }
-	@getter public JStructView get$child_jctx_clazz() { return this.jparent.get$child_jctx_clazz(); }
-	@getter public JMethodView get$jctx_method() { return this.jparent.child_jctx_method; }
-	@getter public JMethodView get$child_jctx_method() { return this.jparent.get$child_jctx_method(); }
+	@getter public final JNode get$jparent() { return (JNode)this.$view.parent; }
+	@getter public JFileUnit get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
+	@getter public JStruct get$jctx_clazz() { return this.jparent.child_jctx_clazz; }
+	@getter public JStruct get$child_jctx_clazz() { return this.jparent.get$child_jctx_clazz(); }
+	@getter public JMethod get$jctx_method() { return this.jparent.child_jctx_method; }
+	@getter public JMethod get$child_jctx_method() { return this.jparent.get$child_jctx_method(); }
 
 	public boolean equals(Object:Object obj) { return false; }
-	public boolean equals(JNodeView:Object jnv) { return this.$view == jnv.$view; }
+	public boolean equals(JNode:Object jnv) { return this.$view == jnv.$view; }
 	
-	public static boolean eq(JNodeView jnv1, JNodeView jnv2)
+	public static boolean eq(JNode jnv1, JNode jnv2)
 		alias operator(60,xfx,==)
 	{
 		if (jnv1 == null || jnv2 == null) return jnv1 == jnv2;
 		return jnv1.$view == jnv2.$view;
 	}
 
-	public static boolean neq(JNodeView jnv1, JNodeView jnv2)
+	public static boolean neq(JNode jnv1, JNode jnv2)
 		alias operator(60,xfx,!=)
 	{
 		if (jnv1 == null || jnv2 == null) return jnv1 != jnv2;
@@ -67,7 +67,7 @@ public view JNodeView of NodeImpl implements Constants {
 }
 
 @nodeview
-public view JDNodeView of DNodeImpl extends JNodeView {
+public view JDNode of DNodeImpl extends JNode {
 
 	public final DNode getDNode() { return (DNode)this.getNode(); }
 	
@@ -99,16 +99,16 @@ public view JDNodeView of DNodeImpl extends JNodeView {
 }
 
 @nodeview
-public view JLvalDNodeView of LvalDNodeImpl extends JDNodeView {
+public view JLvalDNode of LvalDNodeImpl extends JDNode {
 	public final boolean isForward() { return this.$view.is_forward; }
 	public final boolean isInitWrapper() { return this.$view.is_init_wrapper; }
 	public final boolean isNeedProxy() { return this.$view.is_need_proxy; }
 }
 
 @nodeview
-public view JENodeView of ENodeImpl extends JNodeView {
+public view JENode of ENodeImpl extends JNode {
 	
-	public JENodeView(ENodeImpl $view) {
+	public JENode(ENodeImpl $view) {
 		super($view);
 	}
 
@@ -159,9 +159,9 @@ public view JENodeView of ENodeImpl extends JNodeView {
 }
 
 @nodeview
-public final view JVarDeclView of VarDeclImpl extends JENodeView {
+public final view JVarDecl of VarDeclImpl extends JENode {
 
-	public access:ro	JVarView	var;
+	public access:ro	JVar	var;
 
 	public void generate(Code code, Type reqType) {
 		this.var.generate(code,Type.tpVoid);
@@ -169,7 +169,7 @@ public final view JVarDeclView of VarDeclImpl extends JENodeView {
 }
 
 @nodeview
-public final view JLocalStructDeclView of LocalStructDeclImpl extends JENodeView {
+public final view JLocalStructDecl of LocalStructDeclImpl extends JENode {
 	public access:ro Struct		clazz;
 
 	public void generate(Code code, Type reqType) {
@@ -178,14 +178,14 @@ public final view JLocalStructDeclView of LocalStructDeclImpl extends JENodeView
 }
 
 @nodeview
-public abstract view JTypeDeclView of TypeDeclImpl extends JDNodeView {
-	public JTypeDeclView(TypeDeclImpl $view) {
+public abstract view JTypeDecl of TypeDeclImpl extends JDNode {
+	public JTypeDecl(TypeDeclImpl $view) {
 		super($view);
 	}
 }
 
 @nodeview
-public static final view JTypeRefView of TypeRefImpl extends JENodeView {
+public static final view JTypeRef of TypeRefImpl extends JENode {
 	public access:ro Type	lnk;
 
 	public void generate(Code code, Type reqType) {
@@ -194,7 +194,7 @@ public static final view JTypeRefView of TypeRefImpl extends JENodeView {
 }
 
 @nodeview
-public static final view JNameRefView of NameRefImpl extends JNodeView {
+public static final view JNameRef of NameRefImpl extends JNode {
 	public access:ro KString name;
 
 	public void generate(Code code, Type reqType) {

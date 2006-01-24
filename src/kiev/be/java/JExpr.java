@@ -29,22 +29,22 @@ import kiev.vlang.ConditionalExpr.ConditionalExprImpl;
 import kiev.vlang.CastExpr.CastExprImpl;
 
 @nodeview
-public final view JShadowView of ShadowImpl extends JENodeView {
-	public access:ro	JNodeView		node;
+public final view JShadow of ShadowImpl extends JENode {
+	public access:ro	JNode		node;
 
 	public void generate(Code code, Type reqType) {
-		if (node instanceof JENodeView) {
-			((JENodeView)node).generate(code,reqType);
+		if (node instanceof JENode) {
+			((JENode)node).generate(code,reqType);
 		} else {
-			((JInitializerView)node).generate(code,reqType);
+			((JInitializer)node).generate(code,reqType);
 		}
 	}
 	
 }
 
 @nodeview
-public final view JArrayLengthExprView of ArrayLengthExprImpl extends JAccessExprView {
-	public JArrayLengthExprView(ArrayLengthExprImpl $view) { super($view); }
+public final view JArrayLengthExpr of ArrayLengthExprImpl extends JAccessExpr {
+	public JArrayLengthExpr(ArrayLengthExprImpl $view) { super($view); }
 
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerLengthExpr: "+this);
@@ -57,7 +57,7 @@ public final view JArrayLengthExprView of ArrayLengthExprImpl extends JAccessExp
 }
 
 @nodeview
-public final view JTypeClassExprView of TypeClassExprImpl extends JENodeView {
+public final view JTypeClassExpr of TypeClassExprImpl extends JENode {
 	public access:ro	Type			type;
 
 	public void generate(Code code, Type reqType ) {
@@ -70,21 +70,21 @@ public final view JTypeClassExprView of TypeClassExprImpl extends JENodeView {
 }
 
 @nodeview
-public final view JTypeInfoExprView of TypeInfoExprImpl extends JENodeView {
+public final view JTypeInfoExpr of TypeInfoExprImpl extends JENode {
 	public access:ro	Type					type;
-	public access:ro	JTypeClassExprView		cl_expr;
-	public access:ro	JArr<JENodeView>		cl_args;
+	public access:ro	JTypeClassExpr		cl_expr;
+	public access:ro	JArr<JENode>		cl_args;
 
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeInfoExpr: "+this);
 		code.setLinePos(this);
 		cl_expr.generate(code,null);
-		JENodeView[] cl_args = this.cl_args.toArray();
+		JENode[] cl_args = this.cl_args.toArray();
 		if (cl_args.length > 0) { 
 			code.addConst(cl_args.length);
 			code.addInstr(Instr.op_newarray,Type.tpTypeInfo);
 			int i=0;
-			foreach (JENodeView arg; cl_args) {
+			foreach (JENode arg; cl_args) {
 				code.addInstr(Instr.op_dup);
 				code.addConst(i++);
 				arg.generate(code,null);
@@ -104,15 +104,15 @@ public final view JTypeInfoExprView of TypeInfoExprImpl extends JENodeView {
 }
 
 @nodeview
-public view JAssignExprView of AssignExprImpl extends JLvalueExprView {
+public view JAssignExpr of AssignExprImpl extends JLvalueExpr {
 	public access:ro	AssignOperator		op;
-	public access:ro	JENodeView			lval;
-	public access:ro	JENodeView			value;
+	public access:ro	JENode			lval;
+	public access:ro	JENode			value;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
 		code.setLinePos(this);
-		JLvalueExprView lval = (JLvalueExprView)this.lval;
+		JLvalueExpr lval = (JLvalueExpr)this.lval;
 		if( reqType ≢ Type.tpVoid ) {
 			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
 				lval.generateLoadDup(code);
@@ -141,7 +141,7 @@ public view JAssignExprView of AssignExprImpl extends JLvalueExprView {
 	/** Just load value referenced by lvalue */
 	public void generateLoad(Code code) {
 		code.setLinePos(this);
-		JLvalueExprView lval = (JLvalueExprView)this.lval;
+		JLvalueExpr lval = (JLvalueExpr)this.lval;
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
@@ -163,7 +163,7 @@ public view JAssignExprView of AssignExprImpl extends JLvalueExprView {
 	/** Stores value using previously duped info */
 	public void generateStore(Code code) {
 		code.setLinePos(this);
-		JLvalueExprView lval = (JLvalueExprView)this.lval;
+		JLvalueExpr lval = (JLvalueExpr)this.lval;
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
@@ -174,7 +174,7 @@ public view JAssignExprView of AssignExprImpl extends JLvalueExprView {
 	/** Stores value using previously duped info, and put stored value in stack */
 	public void generateStoreDupValue(Code code) {
 		code.setLinePos(this);
-		JLvalueExprView lval = (JLvalueExprView)this.lval;
+		JLvalueExpr lval = (JLvalueExpr)this.lval;
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
@@ -185,10 +185,10 @@ public view JAssignExprView of AssignExprImpl extends JLvalueExprView {
 }
 
 @nodeview
-public view JBinaryExprView of BinaryExprImpl extends JENodeView {
+public view JBinaryExpr of BinaryExprImpl extends JENode {
 	public access:ro	BinaryOperator	op;
-	public access:ro	JENodeView		expr1;
-	public access:ro	JENodeView		expr2;
+	public access:ro	JENode		expr1;
+	public access:ro	JENode		expr2;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BinaryExpr: "+this);
@@ -202,8 +202,8 @@ public view JBinaryExprView of BinaryExprImpl extends JENodeView {
 }
 
 @nodeview
-public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
-	public access:ro	JArr<JENodeView>		args;
+public view JStringConcatExpr of StringConcatExprImpl extends JENode {
+	public access:ro	JArr<JENode>		args;
 
 	public static Struct clazzStringBuffer;
 	public static Method clazzStringBufferToString;
@@ -221,7 +221,7 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 		}
 	}
 
-	public JMethodView getMethodFor(JENodeView expr) {
+	public JMethod getMethodFor(JENode expr) {
 		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),clazzStringBuffer.ctype,expr.getType());
 		return m.getJView();
 	}
@@ -230,7 +230,7 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating StringConcatExpr: "+this);
 		code.setLinePos(this);
-		JENodeView[] args = this.args.toArray();
+		JENode[] args = this.args.toArray();
 		code.addInstr(op_new,clazzStringBuffer.ctype);
 		code.addInstr(op_dup);
 		code.addInstr(op_call,clazzStringBufferInit.getJView(),false);
@@ -245,12 +245,12 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 }
 
 @nodeview
-public view JCommaExprView of CommaExprImpl extends JENodeView {
-	public access:ro	JArr<JENodeView>		exprs;
+public view JCommaExpr of CommaExprImpl extends JENode {
+	public access:ro	JArr<JENode>		exprs;
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
-		JENodeView[] exprs = this.exprs.toArray();
+		JENode[] exprs = this.exprs.toArray();
 		for(int i=0; i < exprs.length; i++) {
 			if( i < exprs.length-1 )
 				exprs[i].generate(code,Type.tpVoid);
@@ -261,14 +261,14 @@ public view JCommaExprView of CommaExprImpl extends JENodeView {
 }
 
 @nodeview
-public view JBlockExprView of BlockExprImpl extends JENodeView {
-	public access:ro	JArr<JENodeView>	stats;
-	public access:ro	JENodeView			res;
+public view JBlockExpr of BlockExprImpl extends JENode {
+	public access:ro	JArr<JENode>	stats;
+	public access:ro	JENode			res;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BlockExpr");
 		code.setLinePos(this);
-		JENodeView[] stats = this.stats.toArray();
+		JENode[] stats = this.stats.toArray();
 		for(int i=0; i < stats.length; i++) {
 			try {
 				stats[i].generate(code,Type.tpVoid);
@@ -283,9 +283,9 @@ public view JBlockExprView of BlockExprImpl extends JENodeView {
 				Kiev.reportError(res,e);
 			}
 		}
-		Vector<JVarView> vars = new Vector<JVarView>();
-		foreach (JENodeView n; stats) {
-			if (n instanceof JVarDeclView)
+		Vector<JVar> vars = new Vector<JVar>();
+		foreach (JENode n; stats) {
+			if (n instanceof JVarDecl)
 				vars.append(n.var);
 		}
 		code.removeVars(vars.toArray());
@@ -294,9 +294,9 @@ public view JBlockExprView of BlockExprImpl extends JENodeView {
 }
 
 @nodeview
-public view JUnaryExprView of UnaryExprImpl extends JENodeView {
+public view JUnaryExpr of UnaryExprImpl extends JENode {
 	public access:ro	Operator			op;
-	public access:ro	JENodeView			expr;
+	public access:ro	JENode			expr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnaryExpr: "+this);
@@ -317,19 +317,19 @@ public view JUnaryExprView of UnaryExprImpl extends JENodeView {
 }
 
 @nodeview
-public final view JIncrementExprView of IncrementExprImpl extends JENodeView {
+public final view JIncrementExpr of IncrementExprImpl extends JENode {
 	public access:ro	Operator			op;
-	public access:ro	JENodeView			lval;
+	public access:ro	JENode			lval;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: "+this);
 		code.setLinePos(this);
-		JLvalueExprView lval = (JLvalueExprView)this.lval;
+		JLvalueExpr lval = (JLvalueExpr)this.lval;
 		if( reqType ≢ Type.tpVoid ) {
 			generateLoad(code);
 		} else {
-			if( lval instanceof JLVarExprView ) {
-				JLVarExprView va = (JLVarExprView)lval;
+			if( lval instanceof JLVarExpr ) {
+				JLVarExpr va = (JLVarExpr)lval;
 				if( va.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
 					if( op==PrefixOperator.PreIncr || op==PostfixOperator.PostIncr ) {
 						code.addInstrIncr(va.var,1);
@@ -370,9 +370,9 @@ public final view JIncrementExprView of IncrementExprImpl extends JENodeView {
 	private void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: - load "+this);
 		code.setLinePos(this);
-		JLvalueExprView lval = (JLvalueExprView)this.lval;
-		if( lval instanceof JLVarExprView ) {
-			JLVarExprView va = (JLVarExprView)lval;
+		JLvalueExpr lval = (JLvalueExpr)this.lval;
+		if( lval instanceof JLVarExpr ) {
+			JLVarExpr va = (JLVarExpr)lval;
 			if( va.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
 				if( op == PrefixOperator.PreIncr ) {
 					code.addInstrIncr(va.var,1);
@@ -441,10 +441,10 @@ public final view JIncrementExprView of IncrementExprImpl extends JENodeView {
 }
 
 @nodeview
-public view JConditionalExprView of ConditionalExprImpl extends JENodeView {
-	public access:ro	JENodeView		cond;
-	public access:ro	JENodeView		expr1;
-	public access:ro	JENodeView		expr2;
+public view JConditionalExpr of ConditionalExprImpl extends JENode {
+	public access:ro	JENode		cond;
+	public access:ro	JENode		expr1;
+	public access:ro	JENode		expr2;
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
@@ -457,7 +457,7 @@ public view JConditionalExprView of ConditionalExprImpl extends JENodeView {
 		} else {
 			CodeLabel elseLabel = code.newLabel();
 			CodeLabel endLabel = code.newLabel();
-			JBoolExprView.gen_iffalse(code, cond, elseLabel);
+			JBoolExpr.gen_iffalse(code, cond, elseLabel);
 			expr1.generate(code,null);
 			code.addInstr(Instr.op_goto,endLabel);
 			code.addInstr(Instr.set_label,elseLabel);
@@ -469,8 +469,8 @@ public view JConditionalExprView of ConditionalExprImpl extends JENodeView {
 }
 
 @nodeview
-public view JCastExprView of CastExprImpl extends JENodeView {
-	public access:ro	JENodeView		expr;
+public view JCastExpr of CastExprImpl extends JENode {
+	public access:ro	JENode		expr;
 	public access:ro	Type			type;
 	public access:ro	boolean			reinterp;
 
