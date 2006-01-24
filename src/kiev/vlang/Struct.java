@@ -1602,6 +1602,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					mmm = new Method(m.name.name, m.type.ret(), m.flags | ACC_SYNTHETIC);
 				mmm.setStatic(m.isStatic());
 				mmm.name.aliases = m.name.aliases;
+				mmm.targs.copyFrom(m.targs);
 				foreach (FormPar fp; m.params)
 					mmm.params.add(new FormPar(fp.pos,fp.name.name,fp.stype.getType(),fp.kind,fp.flags));
 				this.members.add(mmm);

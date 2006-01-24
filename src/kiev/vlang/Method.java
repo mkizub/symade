@@ -566,12 +566,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			}
 		}
 
-		if (mt.ret() ≢ Type.tpAny && !rt.ret().isAutoCastableTo(mt.ret())) {
-			trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-				+" differ in return type : "+rt.ret()+" not auto-castable to "+mt.ret());
-			return false;
-		}
-		
 		foreach (TypeDef td; this.targs) {
 			ArgType at = td.getAType();
 			Type bnd = rt.resolve(at);
@@ -594,8 +588,14 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					+" infer argument: "+at+" to "+b);
 				if (b ≡ Type.tpAny)
 					return false;
-				rt.rebind(new TVarBld(at, b));
+				rt = rt.rebind(new TVarBld(at, b));
 			}
+		}
+		
+		if (mt.ret() ≢ Type.tpAny && !rt.ret().isAutoCastableTo(mt.ret())) {
+			trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+				+" differ in return type : "+rt.ret()+" not auto-castable to "+mt.ret());
+			return false;
 		}
 		
 		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+" match as "+rt);
