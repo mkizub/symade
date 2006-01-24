@@ -32,14 +32,14 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 	public access:ro	ClazzName			name;
 	public access:ro	CompaundType		ctype;
 	public access:ro	JBaseType			jtype;
+	public access:ro	JBaseType			jsuper_type;
+	public access:ro	JType[]				interfaces;
 	public access:ro	JArr<JStructView>	sub_clazz;
 	public				Attr[]				attrs;
 	public access:ro	JArr<JDNodeView>	members;
 
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
-	public final Type[]			get$interfaces()	{ return this.$view.interfaces.toTypeArray(); }
-	public final Type[]			get$args()			{ return this.$view.args.toTypeArray(); }
-	public final CompaundType	get$super_type()	{ return getStruct().super_type; }
+	public final JBaseType		get$jsuper_type()	{ return getStruct().super_type == null ? null : (JBaseType)getStruct().super_type.getJType(); }
 
 	public final boolean isClazz()					{ return this.getStruct().isClazz(); }
 	public final boolean isPackage()				{ return this.getStruct().isPackage(); }
@@ -88,11 +88,11 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 	public boolean instanceOf(JStructView cl) {
 		if( cl == null ) return false;
 		if( this.equals(cl) ) return true;
-		if( super_type != null && super_type.clazz.getJView().instanceOf(cl) )
+		if( jsuper_type != null && jsuper_type.getJStruct().instanceOf(cl) )
 			return true;
 		if( cl.isInterface() ) {
-			for(int i=0; i < interfaces.length; i++) {
-				if( interfaces[i].getStruct().getJView().instanceOf(cl) ) return true;
+			foreach (JType iface; interfaces) {
+				if( iface.getJStruct().instanceOf(cl) ) return true;
 			}
 		}
 		return false;
@@ -113,8 +113,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 			if (f.name == name)
 				return f;
 		}
-		if( super_type != null )
-			return super_type.getStruct().getJView().resolveField(name,where,fatal);
+		if( jsuper_type != null )
+			return jsuper_type.getJStruct().resolveField(name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
 		return null;
@@ -151,10 +151,10 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		}
 		trace(Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+this);
 		JMethodView m = null;
-		if( super_type != null )
-			m = super_type.getJStruct().resolveMethod(name,sign,where,fatal);
+		if( jsuper_type != null )
+			m = jsuper_type.getJStruct().resolveMethod(name,sign,where,fatal);
 		if( m != null ) return m;
-		foreach(Type interf; interfaces) {
+		foreach(JType interf; interfaces) {
 			m = interf.getJStruct().resolveMethod(name,sign,where,fatal);
 			if( m != null ) return m;
 		}
@@ -177,13 +177,11 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 
 		ConstPool constPool = new ConstPool();
 		constPool.addClazzCP(this.ctype.getJType().java_signature);
-		if( super_type != null ) {
-			super_type.clazz.checkResolved();
-			constPool.addClazzCP(this.super_type.getJType().java_signature);
+		if( jsuper_type != null ) {
+			constPool.addClazzCP(jsuper_type.java_signature);
 		}
-		for(int i=0; i < interfaces.length; i++) {
-			interfaces[i].checkResolved();
-			constPool.addClazzCP(this.interfaces[i].getJType().java_signature);
+		foreach (JType iface; interfaces) {
+			constPool.addClazzCP(iface.java_signature);
 		}
 		if( !isPackage() ) {
 			foreach (JStructView sub; sub_clazz) {

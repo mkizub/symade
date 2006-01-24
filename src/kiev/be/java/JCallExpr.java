@@ -108,7 +108,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			}
 			if( func.name.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 				JMethodView mmm = jctx_method;
-				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.super_type : jctx_clazz.ctype;
+				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.getStruct().super_type : jctx_clazz.getStruct().ctype;
 				assert(mmm.name.equals(nameInit));
 				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?

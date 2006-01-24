@@ -90,6 +90,7 @@ public abstract class JType {
 	
 	public abstract String toClassForNameString();
 	public abstract JType getSuperType();
+	public JStructView getJStruct() { return null; }
 
 	public final boolean isReference()		{ return (flags & flReference)		!= 0 ; }
 	public final boolean isArray()			{ return (flags & flArray)			!= 0 ; }
@@ -200,6 +201,10 @@ public class JBaseType extends JType {
 		return new JBaseType(signature,clazz);
 	}
 	
+	
+	public JStructView getJStruct() {
+		return clazz.getJView();
+	}
 	
 	public String toClassForNameString() {
 		return ((JBaseTypeProvider)this.jmeta_type).clazz.name.bytecode_name.toString().replace('/','.');

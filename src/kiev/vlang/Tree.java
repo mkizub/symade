@@ -5,6 +5,7 @@ import kiev.stdlib.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
+import kiev.be.java.JType;
 import kiev.be.java.JNodeView;
 
 import static kiev.stdlib.Debug.*;
@@ -353,11 +354,19 @@ public final class NArr<N extends ASTNode> {
 		return new JArr<J>();
 	}
 
-	public Type[] toTypeArray() {
+	public Type[] toTypeArray() alias operator(210,fy,$cast) {
 		int sz = $nodes.length;
 		Type[] arr = new Type[sz];
 		for (int i=0; i < sz; i++)
 			arr[i] = $nodes[i].getType();
+		return arr;
+	}
+
+	public JType[] toJTypeArray() alias operator(210,fy,$cast) {
+		int sz = $nodes.length;
+		JType[] arr = new JType[sz];
+		for (int i=0; i < sz; i++)
+			arr[i] = $nodes[i].getType().getJType();
 		return arr;
 	}
 
