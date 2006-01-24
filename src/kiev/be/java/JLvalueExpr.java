@@ -358,7 +358,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		Type chtp = null;
 		if( var.jparent instanceof JMethodView ) {
 			JMethodView m = (JMethodView)var.jparent;
-			JVarView[] params = m.params;
+			JVarView[] params = m.params.toArray();
 			for(int i=0; i < params.length; i++) {
 				if( var == params[i] ) {
 					chtp = m.etype.arg(i);

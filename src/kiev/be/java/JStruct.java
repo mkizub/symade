@@ -9,6 +9,8 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import java.io.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -30,16 +32,14 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 	public access:ro	ClazzName			name;
 	public access:ro	CompaundType		ctype;
 	public access:ro	JBaseType			jtype;
-	public access:ro	JStructView[]		sub_clazz;
+	public access:ro	JArr<JStructView>	sub_clazz;
 	public				Attr[]				attrs;
-	public access:ro	JDNodeView[]		members;
+	public access:ro	JArr<JDNodeView>	members;
 
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
 	public final Type[]			get$interfaces()	{ return this.$view.interfaces.toTypeArray(); }
 	public final Type[]			get$args()			{ return this.$view.args.toTypeArray(); }
 	public final CompaundType	get$super_type()	{ return getStruct().super_type; }
-	public final JStructView[]	get$sub_clazz()		{ return (JStructView[])this.$view.sub_clazz.toJViewArray(JStructView.class); }
-	public final JDNodeView[]	get$members()		{ return (JDNodeView[])this.$view.members.toJViewArray(JDNodeView.class); }
 
 	public final boolean isClazz()					{ return this.getStruct().isClazz(); }
 	public final boolean isPackage()				{ return this.getStruct().isPackage(); }
@@ -167,8 +167,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return;
 		
-		JStructView[] sub_clazz = this.sub_clazz;
-		JDNodeView[] members = this.members;
+		JStructView[] sub_clazz = this.sub_clazz.toArray();
+		JDNodeView[] members = this.members.toArray();
 		
 		if( !isPackage() ) {
 			foreach (JStructView sub; sub_clazz)
@@ -252,7 +252,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 				if( m.isAccessedFromInner())
 					m.getDNode().setPkgPrivate();
 
-				JWBCConditionView[] conditions = m.conditions;
+				JWBCConditionView[] conditions = m.conditions.toArray();
 				for(int j=0; j < conditions.length; j++) {
 					if( conditions[j].definer.equals(m) ) {
 						m.addAttr(conditions[j].code_attr);
@@ -261,7 +261,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 
 				if (m.meta.size() > 0) m.addAttr(new RVMetaAttr(m.meta));
 				boolean has_pmeta = false;
-				JVarView[] params = m.params;
+				JVarView[] params = m.params.toArray();
 				foreach (JVarView p; params; p.meta != null && m.meta.size() > 0)
 					has_pmeta = true;
 				if (has_pmeta) {

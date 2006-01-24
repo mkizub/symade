@@ -7,6 +7,8 @@ import kiev.transf.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -35,22 +37,19 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	}
 
 
-	public access:ro	Access				acc;
-	public access:ro	KString				name;
-	public access:ro	JVarView[]			params;
-	public access:ro	JBlockStatView		body;
-	public				Attr[]				attrs;
-	public access:ro	JWBCConditionView[]	conditions;
-	public access:ro	JFieldView[]		violated_fields;
-	public access:ro	MetaValue			annotation_default;
-	public access:ro	boolean				inlined_by_dispatcher;
+	public access:ro	Access						acc;
+	public access:ro	KString						name;
+	public access:ro	JArr<JVarView>				params;
+	public access:ro	JBlockStatView				body;
+	public				Attr[]						attrs;
+	public access:ro	JArr<JWBCConditionView>		conditions;
+	public access:ro	JArr<JFieldView>			violated_fields;
+	public access:ro	MetaValue					annotation_default;
+	public access:ro	boolean						inlined_by_dispatcher;
 
 	@getter public final CallType				get$type()		{ return this.$view.type; }
 	@getter public final CallType				get$dtype()		{ return this.$view.dtype; }
 	@getter public final CallType				get$etype()		{ return (CallType)dtype.getErasedType(); }
-	@getter public final JVarView[]				get$params()	{ return (JVarView[])this.$view.params.toJViewArray(JVarView.class); }
-	@getter public final JFieldView[]			get$violated_fields()	{ return (JFieldView[])this.$view.violated_fields.toJViewArray(JFieldView.class); }
-	@getter public final JWBCConditionView[]	get$conditions()		{ return (JWBCConditionView[])this.$view.conditions.toJViewArray(JWBCConditionView.class); }
 
 	public final boolean isVirtualStatic()		{ return this.$view.is_mth_virtual_static; }
 	public final boolean isVarArgs()			{ return this.$view.is_mth_varargs; }
@@ -103,7 +102,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 						code.addVar(thisPar);
 					}
-					code.addVars(params);
+					code.addVars(params.toArray());
 					if( Kiev.verify )
 						generateArgumentCheck(code);
 					if( Kiev.debugOutputC ) {
@@ -147,7 +146,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 							code.addInstr(Instr.op_return);
 						}
 					}
-					code.removeVars(params);
+					code.removeVars(params.toArray());
 					if( thisPar != null ) code.removeVar(thisPar);
 				} else {
 					code.addInstr(Instr.op_new,Type.tpError);
@@ -225,11 +224,11 @@ public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView
 					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 					code.addVar(thisPar);
 				}
-				code.addVars(m.params);
+				code.addVars(m.params.toArray());
 				if( cond==WBCType.CondEnsure && m.type.ret() ≢ Type.tpVoid ) code.addVar(m.getRetVar());
 				body.generate(code,Type.tpVoid);
 				if( cond==WBCType.CondEnsure && m.type.ret() ≢ Type.tpVoid ) code.removeVar(m.getRetVar());
-				code.removeVars(m.params);
+				code.removeVars(m.params.toArray());
 				if( thisPar != null ) code.removeVar(thisPar);
 				code.generateCode(this);
 			} catch(Exception e) {

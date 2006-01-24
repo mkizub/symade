@@ -8,6 +8,8 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -56,13 +58,13 @@ public final view JInlineMethodStatView of InlineMethodStatImpl extends JENodeVi
 
 @nodeview
 public final view JBlockStatView of BlockStatImpl extends JENodeView {
-	@getter public final JENodeView[]	get$stats()	{ return (JENodeView[])this.$view.stats.toJViewArray(JENodeView.class); }
-	public				CodeLabel		break_label;
+	public access:ro	JArr<JENodeView>	stats;
+	public				CodeLabel			break_label;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BlockStat");
 		code.setLinePos(this);
-		JENodeView[] stats = this.stats;
+		JENodeView[] stats = this.stats.toArray();
 		break_label = code.newLabel();
 		for(int i=0; i < stats.length; i++) {
 			try {

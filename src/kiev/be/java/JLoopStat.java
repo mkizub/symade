@@ -8,6 +8,8 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.vlang.NArr.JArr;
+
 import kiev.vlang.LoopStat.LoopStatImpl;
 import kiev.vlang.Label.LabelImpl;
 import kiev.vlang.WhileStat.WhileStatImpl;
@@ -115,7 +117,7 @@ public final view JDoWhileStatView of DoWhileStatImpl extends JLoopStatView {
 
 @nodeview
 public final view JForInitView of ForInitImpl extends JENodeView {
-	@getter public final JVarView[]		get$decls()	{ return (JVarView[])this.$view.decls.toJViewArray(JVarView.class); }
+	public access:ro	JArr<JVarView>	decls;
 }
 
 @nodeview
@@ -171,7 +173,7 @@ public final view JForStatView of ForStatImpl extends JLoopStatView {
 
 			if( init != null && init instanceof JForInitView ) {
 				JForInitView fi = (JForInitView)init;
-				JVarView[] decls = fi.decls;
+				JVarView[] decls = fi.decls.toArray();
 				for(int i=decls.length-1; i >= 0; i--) {
 					code.removeVar(decls[i]);
 				}

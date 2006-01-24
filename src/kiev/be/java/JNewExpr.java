@@ -8,6 +8,8 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -19,19 +21,16 @@ import kiev.vlang.NewClosure.NewClosureImpl;
 
 @nodeview
 public final view JNewExprView of NewExprImpl extends JENodeView {
-	public access:ro	Type			type;
-	public access:ro	JENodeView[]	args;
-	public access:ro	JENodeView		outer;
-	public				JENodeView		temp_expr;
-	public access:ro	JMethodView		func;
+	public access:ro	Type				type;
+	public access:ro	JArr<JENodeView>	args;
+	public access:ro	JENodeView			outer;
+	public				JENodeView			temp_expr;
+	public access:ro	JMethodView			func;
 	
-	@getter public final JENodeView		get$outer()				{ return this.$view.outer==null? null : this.$view.outer.getJView(); }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
-
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
 		Type type = this.type;
-		JENodeView[] args = this.args;
+		JENodeView[] args = this.args.toArray();
 		code.setLinePos(this);
 		while( type.isArgument() && !type.isUnerasable())
 			type = type.getErasedType();
@@ -92,17 +91,15 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 
 @nodeview
 public final view JNewArrayExprView of NewArrayExprImpl extends JENodeView {
-	public access:ro	Type			type;
-	public access:ro	JENodeView[]	args;
-	public access:ro	int				dim;
-	public access:ro	Type			arrtype;
-	
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
+	public access:ro	Type				type;
+	public access:ro	JArr<JENodeView>	args;
+	public access:ro	int					dim;
+	public access:ro	Type				arrtype;
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewArrayExpr: "+this);
 		Type type = this.type;
-		JENodeView[] args = this.args;
+		JENodeView[] args = this.args.toArray();
 		code.setLinePos(this);
 		if( dim == 1 ) {
 			args[0].generate(code,null);
@@ -119,19 +116,18 @@ public final view JNewArrayExprView of NewArrayExprImpl extends JENodeView {
 
 @nodeview
 public final view JNewInitializedArrayExprView of NewInitializedArrayExprImpl extends JENodeView {
-	public access:ro	Type			type;
-	public access:ro	JENodeView[]	args;
-	public access:ro	int				dim;
-	public access:ro	int[]			dims;
-	public access:ro	Type			arrtype;
+	public access:ro	Type				type;
+	public access:ro	JArr<JENodeView>	args;
+	public access:ro	int					dim;
+	public access:ro	int[]				dims;
+	public access:ro	Type				arrtype;
 
 	@getter public final int			get$dim()				{ return this.$view.dims.length; }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);
 		Type type = this.type;
-		JENodeView[] args = this.args;
+		JENodeView[] args = this.args.toArray();
 		code.setLinePos(this);
 		if( dim == 1 ) {
 			code.addConst(args.length);

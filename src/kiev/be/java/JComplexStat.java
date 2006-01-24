@@ -8,6 +8,8 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -22,11 +24,11 @@ import kiev.vlang.WithStat.WithStatImpl;
 
 @nodeview
 public final view JCaseLabelView of CaseLabelImpl extends JENodeView {
-	public access:ro	JENodeView		val;
-	public access:ro	Type			type;
-	public				CodeLabel		case_label;
-	@getter public final JVarView[]		get$pattern()	{ return (JVarView[])this.$view.pattern.toJViewArray(JVarView.class); }
-	@getter public final JENodeView[]	get$stats()		{ return (JENodeView[])this.$view.stats.toJViewArray(JENodeView.class); }
+	public access:ro	JENodeView			val;
+	public access:ro	Type				type;
+	public access:ro	JArr<JVarView>		pattern;
+	public access:ro	JArr<JENodeView>	stats;
+	public				CodeLabel			case_label;
 
 	public CodeLabel getLabel(Code code) {
 		if (case_label == null || case_label.code != code) case_label = code.newLabel();
@@ -74,7 +76,7 @@ public final view JCaseLabelView of CaseLabelImpl extends JENodeView {
 public view JSwitchStatView of SwitchStatImpl extends JENodeView implements BreakTarget {
 	public access:ro	int						mode;
 	public access:ro	JENodeView				sel;
-	public access:ro	NArr<CaseLabel>			cases;
+	public access:ro	JArr<JCaseLabelView>	cases;
 	public access:ro	JLVarExprView			tmpvar;
 	public access:ro	JCaseLabelView			defCase;
 	public access:ro	JFieldView				typehash; // needed for re-resolving
@@ -91,11 +93,13 @@ public view JSwitchStatView of SwitchStatImpl extends JENodeView implements Brea
 		int lo = Integer.MAX_VALUE;
 		int hi = Integer.MIN_VALUE;
 
+		JCaseLabelView[] cases = this.cases.toArray();
+		
 		int ntags = defCase==null? cases.length : cases.length-1;
 		int[] tags = new int[ntags];
 
 		for (int i=0, j=0; i < cases.length; i++) {
-			if (((CaseLabel)cases[i]).val != null) {
+			if (cases[i].val != null) {
 				int val;
 				Object v = cases[i].val.getConstValue();
 				if( v instanceof Number )
@@ -138,7 +142,7 @@ public view JSwitchStatView of SwitchStatImpl extends JENodeView implements Brea
 			for(int i=0; i < cases.length; i++) {
 				if( isAutoReturnable() )
 					cases[i].setAutoReturnable(true);
-				((CaseLabel)cases[i]).getJView().generate(code,Type.tpVoid);
+				cases[i].generate(code,Type.tpVoid);
 			}
 			Vector<JVarView> vars = new Vector<JVarView>();
 			for(int i=0; i < cases.length; i++) {
@@ -243,10 +247,10 @@ public view JFinallyInfoView of FinallyInfoImpl extends JCatchInfoView {
 
 @nodeview
 public final view JTryStatView of TryStatImpl extends JENodeView {
-	public access:ro	JENodeView			body;
-	public access:ro	JFinallyInfoView	finally_catcher;
-	public				CodeLabel			end_label;
-	@getter public final JCatchInfoView[]	get$catchers()	{ return (JCatchInfoView[])this.$view.catchers.toJViewArray(JCatchInfoView.class); }
+	public access:ro	JENodeView				body;
+	public access:ro	JArr<JCatchInfoView>	catchers;
+	public access:ro	JFinallyInfoView		finally_catcher;
+	public				CodeLabel				end_label;
 
 	public void generate(Code code, Type reqType) {
 		// Generate labels for handlers

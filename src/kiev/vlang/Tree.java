@@ -340,13 +340,13 @@ public final class NArr<N extends ASTNode> {
 		return arr;
 	}
 
-	public JNodeView[] toJViewArray(Class cls) {
-		int sz = $nodes.length;
-		JNodeView[] arr = (JNodeView[])java.lang.reflect.Array.newInstance(cls, sz);
-		for (int i=0; i < sz; i++)
-			arr[i] = $nodes[i].getJView();
-		return arr;
-	}
+//	public JNodeView[] toJViewArray(Class cls) {
+//		int sz = $nodes.length;
+//		JNodeView[] arr = (JNodeView[])java.lang.reflect.Array.newInstance(cls, sz);
+//		for (int i=0; i < sz; i++)
+//			arr[i] = $nodes[i].getJView();
+//		return arr;
+//	}
 
 	@unerasable
 	public <J extends JNodeView> JArr<J> toJArr() alias operator(210,fy,$cast) {

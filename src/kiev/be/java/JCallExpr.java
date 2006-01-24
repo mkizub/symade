@@ -285,10 +285,10 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 @nodeview
 public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView {
 	public access:ro JENodeView			expr;
+	public access:ro JArr<JENodeView>	args;
 	public access:ro boolean			is_a_call;
 	
 	@getter public final CallType		get$ctype()				{ return (CallType)this.$view.expr.getType(); }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ClosureCallExpr: "+this);
@@ -296,7 +296,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		// Load ref to closure
 		expr.generate(code,null);
 		CallType ctype = this.ctype;
-		JENodeView[] args = this.args;
+		JENodeView[] args = this.args.toArray();
 		// Clone it
 		if( args.length > 0 ) {
 			JMethodView clone_it = Type.tpClosureClazz.getJView().resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));

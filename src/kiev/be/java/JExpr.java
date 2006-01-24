@@ -8,6 +8,8 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -71,15 +73,13 @@ public final view JTypeClassExprView of TypeClassExprImpl extends JENodeView {
 public final view JTypeInfoExprView of TypeInfoExprImpl extends JENodeView {
 	public access:ro	Type					type;
 	public access:ro	JTypeClassExprView		cl_expr;
-//	public access:ro	JENodeView[]			cl_args;
+	public access:ro	JArr<JENodeView>		cl_args;
 
-	@getter public final JENodeView[]	get$cl_args()	{ return (JENodeView[])this.$view.cl_args.toJViewArray(JENodeView.class); }
-	
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeInfoExpr: "+this);
 		code.setLinePos(this);
 		cl_expr.generate(code,null);
-		JENodeView[] cl_args = this.cl_args;
+		JENodeView[] cl_args = this.cl_args.toArray();
 		if (cl_args.length > 0) { 
 			code.addConst(cl_args.length);
 			code.addInstr(Instr.op_newarray,Type.tpTypeInfo);
@@ -203,7 +203,7 @@ public view JBinaryExprView of BinaryExprImpl extends JENodeView {
 
 @nodeview
 public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
-	@getter public final JENodeView[]	get$args()	{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
+	public access:ro	JArr<JENodeView>		args;
 
 	public static Struct clazzStringBuffer;
 	public static Method clazzStringBufferToString;
@@ -230,7 +230,7 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating StringConcatExpr: "+this);
 		code.setLinePos(this);
-		JENodeView[] args = this.args;
+		JENodeView[] args = this.args.toArray();
 		code.addInstr(op_new,clazzStringBuffer.ctype);
 		code.addInstr(op_dup);
 		code.addInstr(op_call,clazzStringBufferInit.getJView(),false);
@@ -246,11 +246,11 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 
 @nodeview
 public view JCommaExprView of CommaExprImpl extends JENodeView {
-	@getter public final JENodeView[]	get$exprs()	{ return (JENodeView[])this.$view.exprs.toJViewArray(JENodeView.class); }
+	public access:ro	JArr<JENodeView>		exprs;
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
-		JENodeView[] exprs = this.exprs;
+		JENodeView[] exprs = this.exprs.toArray();
 		for(int i=0; i < exprs.length; i++) {
 			if( i < exprs.length-1 )
 				exprs[i].generate(code,Type.tpVoid);
@@ -262,13 +262,13 @@ public view JCommaExprView of CommaExprImpl extends JENodeView {
 
 @nodeview
 public view JBlockExprView of BlockExprImpl extends JENodeView {
-	@getter public final JENodeView[]	get$stats()	{ return (JENodeView[])this.$view.stats.toJViewArray(JENodeView.class); }
+	public access:ro	JArr<JENodeView>	stats;
 	public access:ro	JENodeView			res;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BlockExpr");
 		code.setLinePos(this);
-		JENodeView[] stats = this.stats;
+		JENodeView[] stats = this.stats.toArray();
 		for(int i=0; i < stats.length; i++) {
 			try {
 				stats[i].generate(code,Type.tpVoid);
@@ -296,7 +296,7 @@ public view JBlockExprView of BlockExprImpl extends JENodeView {
 @nodeview
 public view JUnaryExprView of UnaryExprImpl extends JENodeView {
 	public access:ro	Operator			op;
-	public access:ro	JENodeView		expr;
+	public access:ro	JENodeView			expr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnaryExpr: "+this);

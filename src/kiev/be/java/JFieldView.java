@@ -6,6 +6,8 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.stdlib.Debug.*;
 
 import kiev.vlang.Field.FieldImpl;
@@ -25,14 +27,12 @@ public final view JFieldView of FieldImpl extends JLvalDNodeView {
 	public access:ro	JENodeView			init;
 	public access:ro	JConstExprView		const_value;
 	public				Attr[]				attrs;
-	public access:ro	JMethodView[]		invs;
+	public access:ro	JArr<JMethodView>	invs;
 	
 	public final Field getField() { return (Field)this.getNode(); }
 	
 	@getter public final Type	get$type()	{ return this.$view.ftype.getType(); }
 	
-	@getter public final JMethodView[] get$invs() { return (JMethodView[])this.$view.invs.toJViewArray(JMethodView.class); }
-
 	public final boolean isVirtual()		{ return this.$view.is_virtual; }
 	public final boolean isEnumField()		{ return this.$view.is_fld_enum; }
 	public final boolean isPackerField()	{ return this.$view.is_fld_packer; }
