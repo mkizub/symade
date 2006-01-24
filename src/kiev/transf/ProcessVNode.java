@@ -3,6 +3,7 @@ package kiev.transf;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
@@ -57,7 +58,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	
 	public void pass3(FileUnit:ASTNode fu) {
 		if (tpNArr == null)
-			tpNArr = Env.getStruct(nameNArr).concr_type;
+			tpNArr = Env.getStruct(nameNArr).ctype;
 		foreach (ASTNode n; fu.members; n instanceof Struct)
 			pass3(n);
 	}
@@ -156,7 +157,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	
 	private void autoGenerateMembers(Struct:ASTNode s) {
 		if (tpNArr == null)
-			tpNArr = Env.getStruct(nameNArr).concr_type;
+			tpNArr = Env.getStruct(nameNArr).ctype;
 		if (tpNArr == null) {
 			Kiev.reportError(s,"Cannot find class "+nameNArr);
 			return;
@@ -189,7 +190,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Field f = aflds[i];
 			boolean isAtt = (f.meta.get(mnAtt) != null);
 			boolean isArr = f.getType().isInstanceOf(tpNArr);
-			Type clz_tp = isArr ? f.getType().bindings()[0].result() : f.getType();
+			Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
 			TypeClassExpr clz_expr = new TypeClassExpr(0, new TypeRef(clz_tp));
 			ENode e = new NewExpr(0, atp, new ENode[]{
 				new ConstStringExpr(f.name.name),
@@ -218,16 +219,16 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		if (hasMethod(s, nameEnumValues)) {
 			Kiev.reportWarning(s,"Method "+s+"."+nameEnumValues+sigValues+" already exists, @node member is not generated");
 		} else {
-			MethodType et = (MethodType)Signature.getType(sigValues);
-			Method elems = new Method(nameEnumValues,et.ret,ACC_PUBLIC | ACC_SYNTHETIC);
+			CallType et = (CallType)Signature.getType(sigValues);
+			Method elems = new Method(nameEnumValues,et.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
 			s.addMethod(elems);
 			elems.body = new BlockStat(0);
 			((BlockStat)elems.body).addStatement(
 				new ReturnStat(0,
 					new SFldExpr(0,vals) ) );
 			// Object getVal(String)
-			MethodType getVt = (MethodType)Signature.getType(sigGetVal);
-			Method getV = new Method(KString.from("getVal"),getVt.ret,ACC_PUBLIC | ACC_SYNTHETIC);
+			CallType getVt = (CallType)Signature.getType(sigGetVal);
+			Method getV = new Method(KString.from("getVal"),getVt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
 			getV.params.add(new FormPar(0, KString.from("name"), Type.tpString, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(getV);
 			getV.body = new BlockStat(0);
@@ -262,35 +263,35 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Kiev.reportWarning(s,"Method "+s+"."+"copy"+sigCopy+" already exists, @node member is not generated");
 		}
 		else {
-			MethodType copyVt = (MethodType)Signature.getType(sigCopy);
-			Method copyV = new Method(KString.from("copy"),copyVt.ret,ACC_PUBLIC | ACC_SYNTHETIC);
+			CallType copyVt = (CallType)Signature.getType(sigCopy);
+			Method copyV = new Method(KString.from("copy"),copyVt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
 			s.addMethod(copyV);
 			copyV.body = new BlockStat(0);
 			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
-			Var v = new Var(0, KString.from("node"),s.concr_type,0);
+			Var v = new Var(0, KString.from("node"),s.ctype,0);
 			stats.append(new ReturnStat(0,new ASTCallExpression(0,
-				KString.from("copyTo"),	new ENode[]{new NewExpr(0,s.concr_type,ENode.emptyArray)})));
+				KString.from("copyTo"),	new ENode[]{new NewExpr(0,s.ctype,ENode.emptyArray)})));
 		}
 		// copyTo(Object)
 		if (hasMethod(s, KString.from("copyTo"))) {
 			Kiev.reportWarning(s,"Method "+s+"."+"copyTo"+sigCopyTo+" already exists, @node member is not generated");
 		} else {
-			MethodType copyVt = (MethodType)Signature.getType(sigCopyTo);
-			Method copyV = new Method(KString.from("copyTo"),copyVt.ret,ACC_PUBLIC | ACC_SYNTHETIC);
+			CallType copyVt = (CallType)Signature.getType(sigCopyTo);
+			Method copyV = new Method(KString.from("copyTo"),copyVt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
 			copyV.params.append(new FormPar(0,KString.from("to$node"), Type.tpObject, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(copyV);
 			copyV.body = new BlockStat();
 			NArr<ENode> stats = ((BlockStat)copyV.body).stats;
-			Var v = new Var(0,KString.from("node"),s.concr_type,0);
+			Var v = new Var(0,KString.from("node"),s.ctype,0);
 			if (s.super_bound.getType() != null && isNodeKind(s.super_type)) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
 				cae.obj = new ASTIdentifier(0,KString.from("super"));
 				cae.func = new NameRef(0,KString.from("copyTo"));
 				cae.args.append(new ASTIdentifier(0,KString.from("to$node")));
-				v.init = new CastExpr(0,s.concr_type,cae);
+				v.init = new CastExpr(0,s.ctype,cae);
 				((BlockStat)copyV.body).addSymbol(v);
 			} else {
-				v.init = new CastExpr(0,s.concr_type,new ASTIdentifier(0,KString.from("to$node")));
+				v.init = new CastExpr(0,s.ctype,new ASTIdentifier(0,KString.from("to$node")));
 				((BlockStat)copyV.body).addSymbol(v);
 			}
 			foreach (ASTNode n; s.members; n instanceof Field) {
@@ -350,8 +351,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		if (hasMethod(s, KString.from("setVal"))) {
 			Kiev.reportWarning(s,"Method "+s+"."+"setVal"+sigSetVal+" already exists, @node member is not generated");
 		} else {
-			MethodType setVt = (MethodType)Signature.getType(sigSetVal);
-			Method setV = new Method(KString.from("setVal"),setVt.ret,ACC_PUBLIC | ACC_SYNTHETIC);
+			CallType setVt = (CallType)Signature.getType(sigSetVal);
+			Method setV = new Method(KString.from("setVal"),setVt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
 			setV.params.append(new FormPar(0, KString.from("name"), Type.tpString, FormPar.PARAM_NORMAL, 0));
 			setV.params.append(new FormPar(0, KString.from("val"), Type.tpObject, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(setV);

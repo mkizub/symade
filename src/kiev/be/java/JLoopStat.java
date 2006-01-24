@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.CError;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 

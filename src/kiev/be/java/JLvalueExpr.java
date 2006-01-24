@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.CError;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
@@ -19,6 +20,7 @@ import kiev.vlang.ThisExpr.ThisExprImpl;
 import kiev.vlang.LVarExpr.LVarExprImpl;
 import kiev.vlang.SFldExpr.SFldExprImpl;
 import kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprImpl;
+import kiev.vlang.UnwrapExpr.UnwrapExprImpl;
 
 @nodeview
 public abstract view JLvalueExprView of LvalueExprImpl extends JENodeView {
@@ -68,7 +70,7 @@ public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
 		if( !ot.isStructInstanceOf(var.jctx_clazz.getStruct()) )
-			code.addInstr(Instr.op_checkcast,var.jctx_clazz.concr_type);
+			code.addInstr(Instr.op_checkcast,var.jctx_clazz.ctype);
 	}
 
 	public void generateLoad(Code code) {
@@ -152,7 +154,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 		} else {
 			// Resolve overloaded access method
 			Method@ v;
-			MethodType mt = new MethodType(new Type[]{index.getType()},Type.tpAny);
+			CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
@@ -161,8 +163,8 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			Method func = (Method)v;
 			code.addInstr(Instr.op_call,func.getJView(),false,obj.getType());
 			if( Kiev.verify
-			 && func.type.ret.isReference()
-			 && ( !func.type.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
+			 && func.type.ret().isReference()
+			 && ( !func.type.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -201,7 +203,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			Type t = Signature.getType(jt.java_signature);
 			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = objType.getStruct();
-			MethodType mt = new MethodType(new Type[]{index.getType(),o.getType()},Type.tpAny);
+			CallType mt = new CallType(new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
@@ -227,7 +229,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
 			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = obj.getType().getStruct();
-			MethodType mt = new MethodType(new Type[]{index.getType(),o.getType()},Type.tpAny);
+			CallType mt = new CallType(new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
@@ -235,8 +237,8 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			Method func = (Method)v;
 			code.addInstr(Instr.op_call,func.getJView(),false,obj.getType());
 			if( Kiev.verify
-			 && func.type.ret.isReference()
-			 && ( !func.type.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
+			 && func.type.ret().isReference()
+			 && ( !func.type.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -359,7 +361,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 			JVarView[] params = m.params;
 			for(int i=0; i < params.length; i++) {
 				if( var == params[i] ) {
-					chtp = m.etype.args[i];
+					chtp = m.etype.arg(i);
 					break;
 				}
 			}
@@ -384,7 +386,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		} else {
 			if( isAsField() ) {
 				code.addInstrLoadThis();
-				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.concr_type);
+				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.ctype);
 			} else {
 				code.addInstr(op_load,var);
 			}
@@ -405,7 +407,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 			if( isAsField() ) {
 				code.addInstrLoadThis();
 				code.addInstr(op_dup);
-				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.concr_type);
+				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.ctype);
 			} else {
 				code.addInstr(op_load,var);
 				code.addInstr(op_dup);
@@ -439,7 +441,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 			code.addInstr(op_store,var);
 		} else {
 			if( isAsField() ) {
-				code.addInstr(op_putfield,resolveProxyVar(code),code.clazz.concr_type);
+				code.addInstr(op_putfield,resolveProxyVar(code),code.clazz.ctype);
 			} else {
 				code.addInstr(op_store,var);
 			}
@@ -459,10 +461,10 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		} else {
 			if( isAsField() ) {
 				code.addInstr(op_dup_x);
-				code.addInstr(op_putfield,resolveVarVal(),code.clazz.concr_type);
+				code.addInstr(op_putfield,resolveVarVal(),code.clazz.ctype);
 			} else {
 				code.addInstr(op_dup_x);
-				code.addInstr(op_putfield,resolveVarVal(),code.clazz.concr_type);
+				code.addInstr(op_putfield,resolveVarVal(),code.clazz.ctype);
 			}
 		}
 		generateVerifyCheckCast(code);
@@ -481,14 +483,14 @@ public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
 		code.setLinePos(this);
 		Access.verifyRead(this,var);
-		code.addInstr(op_getstatic,var,code.clazz.concr_type);
+		code.addInstr(op_getstatic,var,code.clazz.ctype);
 	}
 
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load & dup: "+this);
 		code.setLinePos(this);
 		Access.verifyRead(this,var);
-		code.addInstr(op_getstatic,var,code.clazz.concr_type);
+		code.addInstr(op_getstatic,var,code.clazz.ctype);
 	}
 
 	public void generateAccess(Code code) {
@@ -499,7 +501,7 @@ public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store only: "+this);
 		code.setLinePos(this);
 		Access.verifyWrite(this,var);
-		code.addInstr(op_putstatic,var,code.clazz.concr_type);
+		code.addInstr(op_putstatic,var,code.clazz.ctype);
 	}
 
 	public void generateStoreDupValue(Code code) {
@@ -507,7 +509,7 @@ public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
 		code.setLinePos(this);
 		Access.verifyWrite(this,var);
 		code.addInstr(op_dup);
-		code.addInstr(op_putstatic,var,code.clazz.concr_type);
+		code.addInstr(op_putstatic,var,code.clazz.ctype);
 	}
 
 }
@@ -522,7 +524,7 @@ public final view JOuterThisAccessExprView of OuterThisAccessExprImpl extends JA
 		code.setLinePos(this);
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++)
-			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.concr_type);
+			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.ctype);
 	}
 
 	public void generateLoadDup(Code code) {
@@ -531,7 +533,7 @@ public final view JOuterThisAccessExprView of OuterThisAccessExprImpl extends JA
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++) {
 			if( i == outer_refs.length-1 ) code.addInstr(op_dup);
-			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.concr_type);
+			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.ctype);
 		}
 	}
 
@@ -540,19 +542,77 @@ public final view JOuterThisAccessExprView of OuterThisAccessExprImpl extends JA
 		code.setLinePos(this);
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length-1; i++) {
-			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.concr_type);
+			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.ctype);
 		}
 	}
 
 	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store only: "+this);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJView(),code.clazz.concr_type);
+		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJView(),code.clazz.ctype);
 	}
 
 	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating SimpleAccessExpr - store & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store & dup: "+this);
 		code.addInstr(op_dup_x);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJView(),code.clazz.concr_type);
+		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJView(),code.clazz.ctype);
+	}
+
+}
+
+@nodeview
+public final view JUnwrapExprView of UnwrapExprImpl extends JLvalueExprView {
+	public access:ro	JENodeView		expr;
+
+	public void generateLoad(Code code) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - load only: "+this);
+		code.setLinePos(this);
+		JENodeView expr = this.expr;
+		if (expr instanceof JLvalueExprView)
+			expr.generateLoad(code);
+		else
+			expr.generate(code, null);
+	}
+
+	public void generateLoadDup(Code code) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - load & dup: "+this);
+		code.setLinePos(this);
+		JENodeView expr = this.expr;
+		if (expr instanceof JLvalueExprView) {
+			expr.generateLoadDup(code);
+		} else {
+			expr.generate(code, null);
+			code.addInstr(op_dup);
+		}
+	}
+
+	public void generateAccess(Code code) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - access only: "+this);
+		code.setLinePos(this);
+		JENodeView expr = this.expr;
+		if (expr instanceof JLvalueExprView)
+			expr.generateAccess(code);
+		else
+			expr.generate(code, null);
+	}
+
+	public void generateStore(Code code) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - store only: "+this);
+		code.setLinePos(this);
+		JENodeView expr = this.expr;
+		if (expr instanceof JLvalueExprView)
+			expr.generateStore(code);
+		else
+			throw new CompilerException(this,"Cannot generate store for non-lvalue "+expr);
+	}
+
+	public void generateStoreDupValue(Code code) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - store & dup: "+this);
+		code.setLinePos(this);
+		JENodeView expr = this.expr;
+		if (expr instanceof JLvalueExprView)
+			expr.generateStoreDupValue(code);
+		else
+			throw new CompilerException(this,"Cannot generate store+dup value for non-lvalue "+expr);
 	}
 
 }

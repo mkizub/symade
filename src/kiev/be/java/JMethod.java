@@ -5,6 +5,7 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.transf.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -29,7 +30,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	public JVarView	getRetVar() {
 		if( this.$view.retvar == null )
-			this.$view.retvar = new Var(pos,nameResultVar,type.ret,ACC_FINAL);
+			this.$view.retvar = new Var(pos,nameResultVar,type.ret(),ACC_FINAL);
 		return this.$view.retvar.getJView();
 	}
 
@@ -44,9 +45,9 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	public access:ro	MetaValue			annotation_default;
 	public access:ro	boolean				inlined_by_dispatcher;
 
-	@getter public final MethodType				get$type()		{ return this.$view.type; }
-	@getter public final MethodType				get$dtype()		{ return this.$view.dtype; }
-	@getter public final MethodType				get$etype()		{ return (MethodType)dtype.getErasedType(); }
+	@getter public final CallType				get$type()		{ return this.$view.type; }
+	@getter public final CallType				get$dtype()		{ return this.$view.dtype; }
+	@getter public final CallType				get$etype()		{ return (CallType)dtype.getErasedType(); }
 	@getter public final JVarView[]				get$params()	{ return (JVarView[])this.$view.params.toJViewArray(JVarView.class); }
 	@getter public final JFieldView[]			get$violated_fields()	{ return (JFieldView[])this.$view.violated_fields.toJViewArray(JFieldView.class); }
 	@getter public final JWBCConditionView[]	get$conditions()		{ return (JWBCConditionView[])this.$view.conditions.toJViewArray(JWBCConditionView.class); }
@@ -99,7 +100,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 				if( !isBad() ) {
 					JVarView thisPar = null;
 					if (!isStatic()) {
-						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.concr_type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
+						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 						code.addVar(thisPar);
 					}
 					code.addVars(params);
@@ -126,7 +127,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 					}
 					body.generate(code,Type.tpVoid);
 					if( Kiev.debugOutputC && code.need_to_gen_post_cond ) {
-						if( type.ret ≢ Type.tpVoid ) {
+						if( type.ret() ≢ Type.tpVoid ) {
 							code.addVar(getRetVar());
 							code.addInstr(Instr.op_store,getRetVar());
 						}
@@ -138,7 +139,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 						}
 						foreach(JWBCConditionView cond; conditions; cond.cond == WBCType.CondEnsure )
 							code.importCode(cond.code_attr);
-						if( type.ret ≢ Type.tpVoid ) {
+						if( type.ret() ≢ Type.tpVoid ) {
 							code.addInstr(Instr.op_load,getRetVar());
 							code.addInstr(Instr.op_return);
 							code.removeVar(getRetVar());
@@ -177,7 +178,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	public void generateArgumentCheck(Code code) {
 		for(int i=0; i < params.length; i++) {
-			Type tp1 = etype.args[i];
+			Type tp1 = etype.arg(i);
 			Type tp2 = params[i].type;
 			if !(tp2.getErasedType().isInstanceOf(tp1)) {
 				code.addInstr(Instr.op_load,params[i]);
@@ -221,13 +222,13 @@ public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView
 			try {
 				JVarView thisPar = null;
 				if( !isStatic() ) {
-					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.concr_type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
+					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 					code.addVar(thisPar);
 				}
 				code.addVars(m.params);
-				if( cond==WBCType.CondEnsure && m.type.ret ≢ Type.tpVoid ) code.addVar(m.getRetVar());
+				if( cond==WBCType.CondEnsure && m.type.ret() ≢ Type.tpVoid ) code.addVar(m.getRetVar());
 				body.generate(code,Type.tpVoid);
-				if( cond==WBCType.CondEnsure && m.type.ret ≢ Type.tpVoid ) code.removeVar(m.getRetVar());
+				if( cond==WBCType.CondEnsure && m.type.ret() ≢ Type.tpVoid ) code.removeVar(m.getRetVar());
 				code.removeVars(m.params);
 				if( thisPar != null ) code.removeVar(thisPar);
 				code.generateCode(this);

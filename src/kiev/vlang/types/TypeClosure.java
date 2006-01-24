@@ -1,11 +1,14 @@
-package kiev.parser;
+package kiev.vlang.types;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
-import kiev.vlang.TypeRef.TypeRefImpl;
-import kiev.vlang.TypeRef.TypeRefView;
+import kiev.vlang.types.TypeRef.TypeRefImpl;
+import kiev.vlang.types.TypeRef.TypeRefView;
+
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -25,7 +28,7 @@ public class TypeClosureRef extends TypeRef {
 		@virtual typedef ImplOf = TypeClosureRef;
 		@att public NArr<TypeRef>		types;
 		public TypeClosureRefImpl() {}
-		public TypeClosureRefImpl(ClosureType tp) { super(0, tp); }
+		public TypeClosureRefImpl(CallType tp) { super(0, tp); }
 	}
 	@nodeview
 	public static final view TypeClosureRefView of TypeClosureRefImpl extends TypeRefView {
@@ -34,12 +37,13 @@ public class TypeClosureRef extends TypeRef {
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 
-	TypeClosureRef() {
+	public TypeClosureRef() {
 		super(new TypeClosureRefImpl());
 	}
 	
-	TypeClosureRef(ClosureType tp) {
+	public TypeClosureRef(CallType tp) {
 		super(new TypeClosureRefImpl(tp));
+		assert (tp.isReference());
 	}
 	
 	public boolean isBound() {
@@ -57,7 +61,7 @@ public class TypeClosureRef extends TypeRef {
 			tps[i] = types[i].getType();
 		}
         Type ret = types[types.length-1].getType();
-        this.lnk = new ClosureType(tps,ret);
+        this.lnk = new CallType(tps,ret,true);
 		return this.lnk;
 	}
 

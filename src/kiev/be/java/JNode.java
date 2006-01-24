@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.CError;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
@@ -17,7 +18,7 @@ import kiev.vlang.LvalDNode.LvalDNodeImpl;
 import kiev.vlang.VarDecl.VarDeclImpl;
 import kiev.vlang.LocalStructDecl.LocalStructDeclImpl;
 import kiev.vlang.TypeDecl.TypeDeclImpl;
-import kiev.vlang.TypeRef.TypeRefImpl;
+import kiev.vlang.types.TypeRef.TypeRefImpl;
 import kiev.vlang.NameRef.NameRefImpl;
 
 @nodeview

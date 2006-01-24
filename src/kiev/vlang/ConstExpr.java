@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.transf.*;
+import kiev.vlang.types.*;
 
 import kiev.be.java.JNodeView;
 import kiev.be.java.JENodeView;

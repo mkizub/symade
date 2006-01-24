@@ -4,7 +4,7 @@ import kiev.Kiev;
 import kiev.transf.*;
 import kiev.parser.*;
 import kiev.vlang.*;
-
+import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -51,7 +51,7 @@ public class Bytecoder implements JConstants {
 		if( bcclazz.getSuperClazzName() != null ) {
 			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
 			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
-		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name)).toTypeWithLowerBound(cl.concr_type);
+		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
 			if( Env.getStruct(cl.super_type.clazz.name) == null )
 				throw new RuntimeException("Class "+cl.super_type.clazz.name+" not found");
 		}
@@ -60,7 +60,7 @@ public class Bytecoder implements JConstants {
 		KString[] interfs = bcclazz.getInterfaceNames();
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
-			BaseType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i])).toTypeWithLowerBound(cl.concr_type);
+			CompaundType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
 			if( Env.getStruct(interf.clazz.name) == null )
 				throw new RuntimeException("Class "+interf+" not found");
 			if( !interf.isInterface() )
@@ -165,29 +165,29 @@ public class Bytecoder implements JConstants {
 				}
 			}
 		}
-		MethodType mtype = (MethodType)Signature.getType(m_type);
-		MethodType jtype = mtype;
+		CallType mtype = (CallType)Signature.getType(m_type);
+		CallType jtype = mtype;
 		if( m == null ) {
 //			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
-//				mtype = new MethodType(mtype.args,Type.tpRule);
+//				mtype = new CallType(mtype.args,Type.tpRule);
 //				m = new RuleMethod(m_name,m_flags);
 //			}
 //			else
 			if (m_name == nameInit || m_name == nameClassInit)
 				m = new Constructor(m_flags);
 			else
-				m = new Method(m_name,mtype.ret,m_flags);
+				m = new Method(m_name,mtype.ret(),m_flags);
 			cl.members.append(m);
-			for (int i=0; i < mtype.args.length; i++) {
-				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.args.length-1) {
+			for (int i=0; i < mtype.arity; i++) {
+				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
 					FormPar fp = new FormPar(new NameRef(KString.from("va_arg")),
-						new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),FormPar.PARAM_VARARGS,ACC_FINAL);
+						new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_VARARGS,ACC_FINAL);
 						m.params.add(fp);
 						mtype = m.etype;
 						break;
 				} else {
 					FormPar fp = new FormPar(new NameRef(KString.from("arg"+i)),
-						new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),FormPar.PARAM_NORMAL,0);
+						new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_NORMAL,0);
 						m.params.add(fp);
 				}
 			}
@@ -211,15 +211,15 @@ public class Bytecoder implements JConstants {
 			}
 		}
 		if( op != null ) {
-			Type opret = m.type.ret;
+			Type opret = m.type.ret();
 			Type oparg1, oparg2;
 			Operator.iopt = null;
 			switch(op.mode) {
 			case Operator.LFY:
 				if( m.isStatic() )
 					throw new RuntimeException("Assign operator can't be static");
-				else if( !m.isStatic() && m.type.args.length == 1 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[0]; }
+				else if( !m.isStatic() && m.type.arity == 1 )
+					{ oparg1 = m.ctx_clazz.ctype; oparg2 = m.type.arg(0); }
 				else
 					throw new RuntimeException("Method "+m+" must be virtual and have 1 argument");
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
@@ -230,14 +230,14 @@ public class Bytecoder implements JConstants {
 			case Operator.YFX:
 			case Operator.XFY:
 			case Operator.YFY:
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 2 )
-					{ oparg1 = m.type.args[0]; oparg2 = m.type.args[1]; }
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.args.length == 3 )
-					{ oparg1 = m.type.args[1]; oparg2 = m.type.args[2]; }
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[0]; }
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 2 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[1]; }
+				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 2 )
+					{ oparg1 = m.type.arg(0); oparg2 = m.type.arg(1); }
+				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 3 )
+					{ oparg1 = m.type.arg(1); oparg2 = m.type.arg(2); }
+				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
+					{ oparg1 = m.ctx_clazz.ctype; oparg2 = m.type.arg(0); }
+				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
+					{ oparg1 = m.ctx_clazz.ctype; oparg2 = m.type.arg(1); }
 				else
 					throw new RuntimeException("Method "+m+" must have 2 arguments");
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
@@ -248,16 +248,16 @@ public class Bytecoder implements JConstants {
 			case Operator.FY:
 			case Operator.XF:
 			case Operator.YF:
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					oparg1 = m.type.args[0];
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.args.length == 2 )
-					oparg1 = m.type.args[1];
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 0 )
-					oparg1 = m.ctx_clazz.concr_type;
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					oparg1 = m.type.args[0];
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 1 )
-					oparg1 = m.ctx_clazz.concr_type;
+				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
+					oparg1 = m.type.arg(0);
+				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
+					oparg1 = m.type.arg(1);
+				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 0 )
+					oparg1 = m.ctx_clazz.ctype;
+				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
+					oparg1 = m.type.arg(0);
+				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 1 )
+					oparg1 = m.ctx_clazz.ctype;
 				else
 					throw new RuntimeException("Method "+m+" must have 1 argument");
 				if( Kiev.verbose ) System.out.println("Attached unary "+op+" to method "+m);
@@ -508,7 +508,7 @@ public class Bytecoder implements JConstants {
 	    	bcclazz.flags |= ACC_SUPER;
 
 		// This class name
-		KString cl_sig = cl.concr_type.getJType().java_signature;
+		KString cl_sig = cl.ctype.getJType().java_signature;
 		trace(Kiev.debugBytecodeGen,"note: class "+cl+" class signature = "+cl_sig);
 		bcclazz.cp_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(cl_sig).pos];
 	    // This class's superclass name

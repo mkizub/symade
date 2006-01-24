@@ -3,6 +3,7 @@ package kiev.transf;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
@@ -62,13 +63,13 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 	
 	public void autoGenerateMembers(Struct:ASTNode s) {
 		if (tpNArr == null)
-			tpNArr = Env.getStruct(nameNArr).concr_type;
+			tpNArr = Env.getStruct(nameNArr).ctype;
 		if (tpNArr == null) {
 			Kiev.reportError("Cannot find class "+nameNArr);
 			return;
 		}
 		if (tpNode == null)
-			tpNode = Env.getStruct(nameNode).concr_type;
+			tpNode = Env.getStruct(nameNode).ctype;
 		if (tpNode == null) {
 			Kiev.reportError("Cannot find class "+nameNode);
 			return;
@@ -97,8 +98,8 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 		if (hasMethod(s, nameGetDFlowIn)) {
 			Kiev.reportWarning(s,"Method "+s+"."+nameGetDFlowIn+" already exists, @dflow member is not generated");
 		} else {
-			MethodType mt = (MethodType)Signature.getType(signGetDFlowIn);
-			Method dfIn = new Method(nameGetDFlowIn,mt.ret,ACC_PUBLIC | ACC_SYNTHETIC);
+			CallType mt = (CallType)Signature.getType(signGetDFlowIn);
+			Method dfIn = new Method(nameGetDFlowIn,mt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
 			dfIn.params.add(new FormPar(0, KString.from("child"), tpNode, FormPar.PARAM_NORMAL, 0));
 			dfIn.body = new BlockStat(0);
 			Var var = new Var(0, KString.from("name"),Type.tpString,ACC_FINAL);
@@ -204,12 +205,12 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				}
 				Method dfIn;
 				if (seq) {
-					MethodType mt = (MethodType)Signature.getType(signGetDFlowInSeq);
-					dfIn = new Method(fname,mt.ret,ACC_PRIVATE | ACC_SYNTHETIC);
+					CallType mt = (CallType)Signature.getType(signGetDFlowInSeq);
+					dfIn = new Method(fname,mt.ret(),ACC_PRIVATE | ACC_SYNTHETIC);
 					dfIn.params.add(new FormPar(0, KString.from("$child"), tpNode, FormPar.PARAM_NORMAL, 0));
 				} else {
-					MethodType mt = (MethodType)Signature.getType(signGetDFlowInFld);
-					dfIn = new Method(fname,mt.ret,ACC_PRIVATE | ACC_SYNTHETIC);
+					CallType mt = (CallType)Signature.getType(signGetDFlowInFld);
+					dfIn = new Method(fname,mt.ret(),ACC_PRIVATE | ACC_SYNTHETIC);
 				}
 				dfIn.body = new BlockStat(0);
 				if (isArr && seq) {

@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.vlang.Operator.*;
+import kiev.vlang.types.*;
 import kiev.transf.BackendProcessor;
 
 import kiev.be.java.JNodeView;
@@ -108,7 +109,7 @@ public final class NewExpr extends ENode {
 		}
 		if (outer == null)
 			return type;
-		TVarSet vset = new TVarSet(
+		TVarBld vset = new TVarBld(
 			type.getStruct().ometa_type.tdef.getAType(),
 			new OuterType(type.getStruct(),outer.getType()) );
 		return type.rebind(vset);
@@ -126,17 +127,17 @@ public final class NewExpr extends ENode {
 			else
 				type = (CompaundType)t;
 		}
-		if!(type instanceof ConcreteType)
+		if!(type instanceof CompaundType)
 			Kiev.reportWarning(this,"Instantiation of non-concrete type "+type+" ???");
 		if( type.isAnonymouseClazz() ) {
 			type.getStruct().resolveDecl();
 		}
-		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
-			if (type.isUnerasable())
-				/*throw new CompilerException*/ Kiev.reportWarning(this,"Abstract unerasable class "+type+" instantiation");
-			else
-				Kiev.reportWarning(this,"Abstract erasable class "+type+" instantiation");
-		}
+//		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
+//			if (type.isUnerasable())
+//				/*throw new CompilerException*/ Kiev.reportWarning(this,"Abstract unerasable class "+type+" instantiation");
+//			else
+//				Kiev.reportWarning(this,"Abstract erasable class "+type+" instantiation");
+//		}
 		if (outer == null && type.clazz.ometa_type != null) {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
@@ -144,18 +145,18 @@ public final class NewExpr extends ENode {
 		}
 		if( outer != null ) {
 			outer.resolve(null);
-			type = (CompaundType)type.bind(new TVarSet(type.clazz.ometa_type.tdef.getAType(), outer.getType()));
+			type = (CompaundType)type.bind(new TVarBld(type.clazz.ometa_type.tdef.getAType(), outer.getType()));
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
 		if( type.clazz.isTypeUnerasable() )
-			ctx_clazz.accessTypeInfoField(this,type); // Create static field for this type typeinfo
+			ctx_clazz.accessTypeInfoField(this,type,false); // Create static field for this type typeinfo
 		// Don't try to find constructor of argument type
 		if( !type.isArgument() ) {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = (MethodType)Type.getRealType(type,new MethodType(ta,type));
+			CallType mt = (CallType)Type.getRealType(type,new CallType(ta,type));
 			Method@ m;
 			// First try overloaded 'new', than real 'new'
 			if( (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
@@ -166,7 +167,7 @@ public final class NewExpr extends ENode {
 					return;
 				}
 			}
-			mt = (MethodType)Type.getRealType(type,new MethodType(ta,Type.tpVoid));
+			mt = (CallType)Type.getRealType(type,new CallType(ta,Type.tpVoid));
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 			if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 				func = m;
@@ -287,7 +288,7 @@ public final class NewArrayExpr extends ENode {
 				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
-			ENode ti = ctx_clazz.accessTypeInfoField(this,type);
+			ENode ti = ctx_clazz.accessTypeInfoField(this,type,false);
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
@@ -458,12 +459,6 @@ public final class NewClosure extends ENode {
 		this.clazz = clazz;
 	}
 
-//	public NewClosure(int pos, Method func) {
-//		super(new NewClosureImpl(pos));
-//		this.func = func;
-//		this.type = new TypeClosureRef(new ClosureType(Type.tpClosureClazz,func.type.args,func.type.ret));
-//	}
-
 	public String toString() {
 		return "fun "+type;
 	}
@@ -473,7 +468,7 @@ public final class NewClosure extends ENode {
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) return;
-		ClosureType type = (ClosureType)this.type.getType();
+		CallType type = (CallType)this.type.getType();
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
 		Struct clazz = this.clazz;
@@ -486,10 +481,10 @@ public final class NewClosure extends ENode {
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
-		ClosureType type = (ClosureType)this.type.getType();
+		CallType type = (CallType)this.type.getType();
 		Struct cl = clazz;
 		dmp.append("new ").append(cl.super_type.clazz.name).append('(')
-			.append(String.valueOf(type.args.length)).append(')');
+			.append(String.valueOf(type.arity)).append(')');
 		dmp.space().append('{').newLine(1);
 		foreach (DNode n; cl.members)
 			n.toJavaDecl(dmp).newLine();

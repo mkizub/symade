@@ -2,6 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.vlang.types.*;
 import java.io.*;
 
 import kiev.be.java.JLabelView;
@@ -152,7 +153,7 @@ public class PassInfo {
 
 	private static void addResolvedMethod(
 		Method m, ResInfo info,
-		Vector<Method>  methods, Vector<ResInfo> paths, Vector<MethodType> types)
+		Vector<Method>  methods, Vector<ResInfo> paths, Vector<CallType> types)
 	{
 		trace(Kiev.debugResolve,"Candidate method "+m+" with path "+info+" found...");
 		if !(info.check(m))
@@ -178,12 +179,12 @@ public class PassInfo {
 		DNode@ node,
 		ResInfo info,
 		KString name,
-		MethodType mt)
+		CallType mt)
 	{
 		trace(Kiev.debugResolve,"Resolving best method "+Method.toString(name,mt)+" in "+sc);
 		Vector<Method>  methods  = new Vector<Method>();
 		Vector<ResInfo> paths    = new Vector<ResInfo>();
-		Vector<MethodType> types = new Vector<MethodType>();
+		Vector<CallType> types   = new Vector<CallType>();
 		if (sc instanceof ScopeOfMethods) {
 			ScopeOfMethods scm = (ScopeOfMethods)sc;
 			foreach( scm.resolveMethodR(node,info,name,mt) )
@@ -224,12 +225,12 @@ public class PassInfo {
 		for (int i=0; i < methods.length; i++) {
 			Method m1 = methods[i];
 			ResInfo p1 = paths[i];
-			MethodType mt1 = types[i];
+			CallType mt1 = types[i];
 		next_method:
 			for (int j=0; j < methods.length; j++) {
 				Method m2 = methods[j];
 				ResInfo p2 = paths[j];
-				MethodType mt2 = types[j];
+				CallType mt2 = types[j];
 				
 				if (m1 == m2)
 					continue;
@@ -243,37 +244,43 @@ public class PassInfo {
 					continue next_method;
 				}
 				if (m1.isVarArgs()) {
-					if (m1.type.args.length < m2.type.args.length) {
+					if (m1.type.arity < m2.type.arity) {
 						trace(Kiev.debugResolve,"Method "+m1+" is less specific because of arity then "+m2);
 						continue next_method;
 					}
 				}
 				if (m2.isVarArgs()) {
-					if (m2.type.args.length < m1.type.args.length) {
+					if (m2.type.arity < m1.type.arity) {
 						trace(Kiev.debugResolve,"Method "+m1+" is more specific because of arity then "+m2);
 						goto is_more_specific;
 					}
 				}
-				for (int k=0; k < mt.args.length; k++) {
-					if (mt1.args[k] ≉ mt2.args[k]) {
-						b = mt.args[k].chooseMoreSpecific(mt1.args[k],mt2.args[k]);
-						if (b ≡ mt2.args[k]) {
+				Type t1;
+				Type t2;
+				for (int k=0; k < mt.arity; k++) {
+					t1 = mt1.arg(k);
+					t2 = mt2.arg(k);
+					if (t1 ≉ t2) {
+						b = mt.arg(k).betterCast(t1,t2);
+						if (b ≡ t2) {
 							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
 							continue next_method;
 						}
-						if (b ≡ null && mt1.args[k] ≥ mt2.args[k]) {
+						if (b ≡ null && t1 ≥ t2) {
 							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
 							continue next_method;
 						}
 					}
 				}
-				if (mt1.ret ≉ mt2.ret) {
-					b = mt.ret.chooseMoreSpecific(mt1.ret,mt2.ret);
-					if (b ≡ mt2.ret) {
+				t1 = mt1.ret();
+				t2 = mt2.ret();
+				if (t1 ≉ t2) {
+					b = mt.ret().betterCast(t1,t2);
+					if (b ≡ t2) {
 						trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because ret");
 						continue next_method;
 					}
-					if (b ≡ null && mt2.ret ≥ mt1.ret) {
+					if (b ≡ null && t2 ≥ t1) {
 						trace(Kiev.debugResolve,"Method "+m1+" has less specific return value, then "+m2);
 						continue next_method;
 					}
@@ -303,7 +310,7 @@ public class PassInfo {
 		throw new RuntimeException(msg.toString());
 	}
 
-	public static rule resolveMethodR(ASTNode from, DNode@ node, ResInfo path, KString name, MethodType mt)
+	public static rule resolveMethodR(ASTNode from, DNode@ node, ResInfo path, KString name, CallType mt)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;

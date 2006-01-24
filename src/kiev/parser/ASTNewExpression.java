@@ -4,6 +4,7 @@ package kiev.parser;
 
 import kiev.Kiev;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.stdlib.*;
 
@@ -83,19 +84,19 @@ public class ASTNewExpression extends ENode {
 				Method m = (Method)n;
 				if (!(m.name.equals(nameInit) || m.name.equals(nameNewOp)))
 					continue;
-				Type[] mtargs = m.type.args;
+				CallType mt = m.type;
 				int i = 0;
 				if( !ss.package_clazz.isPackage() && !ss.isStatic() ) i++;
-				if( mtargs.length > i && mtargs[i].isInstanceOf(Type.tpTypeInfo) ) i++;
-				if( mtargs.length-i != args.length )
+				if( mt.arity > i && mt.arg(i).isInstanceOf(Type.tpTypeInfo) ) i++;
+				if( mt.arity-i != args.length )
 					continue;
 				found = true;
-				for(int j=0; i < mtargs.length; i++,j++) {
+				for(int j=0; i < mt.arity; i++,j++) {
 					if( targs[j] == null )
-						targs[j] = Type.getRealType(tp,mtargs[i]);
+						targs[j] = Type.getRealType(tp,mt.arg(i));
 					else if( targs[j] ≡ Type.tpVoid )
 						;
-					else if( targs[j] ≉ Type.getRealType(tp,mtargs[i]) )
+					else if( targs[j] ≉ Type.getRealType(tp,mt.arg(i)) )
 						targs[j] = Type.tpVoid;
 				}
 			}
@@ -147,7 +148,7 @@ public class ASTNewExpression extends ENode {
 
         // Process inner classes and cases
 		Kiev.runProcessorsOn(clazz);
-		ENode ne = new NewExpr(pos,clazz.concr_type,args.toArray());
+		ENode ne = new NewExpr(pos,clazz.ctype,args.toArray());
 		ne.clazz = (Struct)~clazz;
 		replaceWithNodeResolve(reqType, ne);
 	}

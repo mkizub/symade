@@ -41,7 +41,7 @@ public final class PVar<A>
 		alias $get_var
 		alias operator(210,fy,$cast)
 	{
-		if ($pvar.$self != null)
+		if ($pvar != null)
 			return $pvar.$get_var();
 		else
 			return $var;
@@ -51,7 +51,7 @@ public final class PVar<A>
 	public boolean get$$is_bound()
 		alias $get_is_bound
 	{
-		if ($pvar.$self != null)
+		if ($pvar != null)
 			return $pvar.$get_is_bound();
 		return $var != null;
 	}
@@ -76,7 +76,7 @@ public final class PVar<A>
 
 	public void $bind(A var)
 	{
-		this.$pvar.$self = null;
+		this.$pvar = null;
 		this.$var = var;
 	}
 
@@ -88,7 +88,7 @@ public final class PVar<A>
 
 	public boolean $bind_chk(A var)
 	{
-		this.$pvar.$self = null;
+		this.$pvar = null;
 		this.$var = var;
 		return $is_bound;
 	}
@@ -114,7 +114,7 @@ public final class PVar<A>
 
 	public void $unbind() {
 		this.$var = null;
-		if (this.$pvar.$self != null) this.$pvar.$self = null;
+		if (this.$pvar != null) this.$pvar = null;
 	}
 
 	public void $checkIsBinded(String name) {

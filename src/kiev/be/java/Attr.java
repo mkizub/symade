@@ -2,6 +2,7 @@ package kiev.be.java;
 
 import kiev.Kiev;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 
 import java.io.File;
 
@@ -445,7 +446,7 @@ public abstract class MetaAttr extends Attr {
 			SFldExpr ae = (SFldExpr)value;
 			Field f = ae.var;
 			Struct s = (Struct)f.parent;
-			constPool.addAsciiCP(s.concr_type.getJType().java_signature);
+			constPool.addAsciiCP(s.ctype.getJType().java_signature);
 			constPool.addAsciiCP(f.name.name);
 		}
 		else if (value instanceof Meta) {
@@ -534,7 +535,7 @@ public abstract class MetaAttr extends Attr {
 			Struct s = (Struct)f.parent;
 			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
 			ev.tag = (byte)'e';
-			ev.type_name_index = constPool.getAsciiCP(s.concr_type.getJType().java_signature).pos;
+			ev.type_name_index = constPool.getAsciiCP(s.ctype.getJType().java_signature).pos;
 			ev.const_name_index = constPool.getAsciiCP(f.name.name).pos;
 			return ev;
 		}

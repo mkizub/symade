@@ -3,6 +3,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 
 import kiev.be.java.JNodeView;
@@ -318,7 +319,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		var.getType().resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
 		Var@ var;
 	{
 		var @= decls,
@@ -435,7 +436,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		((ForInit)init).resolveNameR(node,path,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
 		ASTNode@ n;
 	{
 		init instanceof ForInit,
@@ -587,13 +588,13 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			itype = ctype;
 			mode = JENUM;
 		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameElements,new MethodType(Type.emptyArray,Type.tpAny))
+				nameElements,new CallType(Type.emptyArray,Type.tpAny))
 		) {
-			itype = Type.getRealType(ctype,elems.type.ret);
+			itype = Type.getRealType(ctype,elems.type.ret());
 			mode = ELEMS;
 		} else if( ctype ≡ Type.tpRule &&
 			(
-			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret ≡ Type.tpRule )
+			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret() ≡ Type.tpRule )
 			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() ≡ Type.tpRule )
 			)
 		  ) {
@@ -694,7 +695,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case ELEMS:
 			/* iter.hasMoreElements() */
 			if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameHasMoreElements,new MethodType(Type.emptyArray,Type.tpAny)) )
+				nameHasMoreElements,new CallType(Type.emptyArray,Type.tpAny)) )
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			iter_cond = new CallExpr(	iter.pos,
 					new LVarExpr(iter.pos,iter),
@@ -733,14 +734,14 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case ELEMS:
 			/* var = iter.nextElement() */
 			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameNextElement,new MethodType(Type.emptyArray,Type.tpAny)) )
+				nameNextElement,new CallType(Type.emptyArray,Type.tpAny)) )
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 				var_init = new CallExpr(iter.pos,
 					new LVarExpr(iter.pos,iter),
 					nextelem,
 					ENode.emptyArray
 				);
-			if (!nextelem.type.ret.isInstanceOf(var.type))
+			if (!nextelem.type.ret().isInstanceOf(var.type))
 				var_init = new CastExpr(pos,var.type,(ENode)~var_init);
 			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
 				new LVarExpr(var.pos,var),
@@ -790,7 +791,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		}, ((Var)node).name.equals(name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
 		Var@ n;
 	{
 		{	n ?= var

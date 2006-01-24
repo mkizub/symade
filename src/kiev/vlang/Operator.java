@@ -2,6 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.vlang.OpTypes.*;
+import kiev.vlang.types.*;
 import kiev.be.java.Instr;
 
 import static kiev.stdlib.Debug.*;
@@ -48,8 +49,8 @@ public class OpTypes {
 			t = (Type)n;
 			break;
 		case Struct:
-			trace( Kiev.debugOperators,"type of "+n+" is "+((Struct)n).concr_type);
-			t = ((Struct)n).concr_type;
+			trace( Kiev.debugOperators,"type of "+n+" is "+((Struct)n).ctype);
+			t = ((Struct)n).ctype;
 			break;
 		}
 		if( t == null )
@@ -317,7 +318,7 @@ public class OpTypes {
 				// Check we've imported the method
 			} else {
 				// Check method is of nodes[1]'s class
-				if( method.type.args.length == (nodes.length-2) && nodes[1] != null
+				if( method.type.arity == (nodes.length-2) && nodes[1] != null
 					&& getExprType(nodes[1],ts[1]).isStructInstanceOf((Struct)method.parent)
 				)
 					;

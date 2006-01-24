@@ -3,6 +3,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.Kiev.Ext;
 import kiev.stdlib.*;
+import kiev.vlang.types.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
@@ -52,7 +53,6 @@ public class RuleMethod extends Method {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleMethod() {
 		super(new RuleMethodImpl());
@@ -112,7 +112,7 @@ public class RuleMethod extends Method {
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_clazz.concr_type.resolveNameAccessR(node,path,name)
+		this.ctx_clazz.ctype.resolveNameAccessR(node,path,name)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
@@ -200,11 +200,11 @@ public class RuleMethod extends Method {
 			Var penv = params[0];
 			assert(penv.name.name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			if( body != null ) {
-				if( type.ret ≡ Type.tpVoid ) body.setAutoReturnable(true);
+				if( type.ret() ≡ Type.tpVoid ) body.setAutoReturnable(true);
 				body.resolve(Type.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
-				if( type.ret ≡ Type.tpVoid ) {
+				if( type.ret() ≡ Type.tpVoid ) {
 					((BlockStat)body).stats.append(new ReturnStat(pos,null));
 					body.setAbrupted(true);
 				} else {
@@ -218,7 +218,7 @@ public class RuleMethod extends Method {
 	}
 
 
-//	public boolean compare(KString name, MethodType mt, Type tp, ResInfo info, boolean exact) {
+//	public boolean compare(KString name, CallType mt, Type tp, ResInfo info, boolean exact) {
 //		if( !this.name.equals(name) ) return false;
 //		int type_len = this.type.args.length - 1;
 //		int args_len = mt.args.length;
@@ -234,7 +234,7 @@ public class RuleMethod extends Method {
 //			}
 //		}
 //		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-//		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
+//		CallType rt = (CallType)Type.getRealType(tp,this.type);
 //		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
 //			if( exact && !mt.args[i].equals(rt.args[i+1]) ) {
 //				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
@@ -422,7 +422,6 @@ public final class RuleBlock extends BlockStat {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleBlock() {
 		super(new RuleBlockImpl());
@@ -525,7 +524,6 @@ public final class RuleOrExpr extends ASTRuleNode {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleOrExpr() {
 		super(new RuleOrExprImpl());
@@ -600,7 +598,6 @@ public final class RuleAndExpr extends ASTRuleNode {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleAndExpr() {
 		super(new RuleAndExprImpl());
@@ -706,7 +703,6 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleIstheExpr() {
 		super(new RuleIstheExprImpl());
@@ -793,7 +789,6 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleIsoneofExpr() {
 		super(new RuleIsoneofExprImpl());
@@ -819,9 +814,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		Type ctype = expr.getType();
 		Method@ elems;
 		if( ctype.isArray() ) {
-			TVarSet set = new TVarSet();
+			TVarBld set = new TVarBld();
 			set.append(Type.tpArrayEnumerator.clazz.args[0].getAType(), ((ArrayType)ctype).arg);
-			itype = ((CompaundTypeProvider)Type.tpArrayEnumerator.meta_type).templ_type.bind(set);
+			itype = ((CompaundTypeProvider)Type.tpArrayEnumerator.meta_type).make(set);
 			mode = ARRAY;
 		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
 			itype = ctype;
@@ -830,9 +825,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			itype = ctype;
 			mode = JENUM;
 		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameElements,new MethodType(Type.emptyArray,Type.tpAny))
+				nameElements,new CallType(Type.emptyArray,Type.tpAny))
 		) {
-			itype = Type.getRealType(ctype,elems.type.ret);
+			itype = Type.getRealType(ctype,elems.type.ret());
 			mode = ELEMS;
 		} else {
 			throw new CompilerException(expr,"Container must be an array or an Enumeration "+
@@ -952,7 +947,6 @@ public final class RuleCutExpr extends ASTRuleNode {
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public RuleCutExpr() {
 		super(new RuleCutExprImpl());
@@ -1010,7 +1004,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public RuleCallExpr() {
 		super(new RuleCallExprImpl());
@@ -1130,7 +1123,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 
 		if( expr instanceof CallExpr ) {
 			CallExpr e = (CallExpr)expr;
-			if( e.func.type.ret ≡ Type.tpRule ) {
+			if( e.func.type.ret() ≡ Type.tpRule ) {
 				replaceWithNodeResolve(reqType, new RuleCallExpr((CallExpr)~e));
 				return;
 			}
@@ -1138,7 +1131,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		else if( expr instanceof ClosureCallExpr ) {
 			ClosureCallExpr e = (ClosureCallExpr)expr;
 			Type tp = e.getType();
-			if( tp ≡ Type.tpRule || (tp instanceof ClosureType && ((ClosureType)tp).ret ≡ Type.tpRule && tp.args.length == 0) ) {
+			if( tp ≡ Type.tpRule || (tp instanceof CallType && ((CallType)tp).ret() ≡ Type.tpRule && tp.arity == 0) ) {
 				replaceWithNodeResolve(reqType, new RuleCallExpr((ClosureCallExpr)~e));
 				return;
 			}
@@ -1169,7 +1162,6 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public RuleWhileExpr() {
 		super(new RuleWhileExprImpl());
@@ -1241,7 +1233,6 @@ public final class RuleExpr extends RuleExprBase {
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public RuleExpr() {
 		super(new RuleExprImpl());

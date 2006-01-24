@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.transf.*;
 import kiev.parser.*;
+import kiev.vlang.types.*;
 
 import kiev.be.java.JNodeView;
 import kiev.be.java.JENodeView;
@@ -276,7 +277,7 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 		n.getType().resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
@@ -495,19 +496,19 @@ public class ReturnStat extends ENode {
 		setMethodAbrupted(true);
 		if( expr != null ) {
 			try {
-				expr.resolve(ctx_method.type.ret);
+				expr.resolve(ctx_method.type.ret());
 			} catch(Exception e ) {
 				Kiev.reportError(expr,e);
 			}
 		}
-		if( ctx_method.type.ret ≡ Type.tpVoid ) {
+		if( ctx_method.type.ret() ≡ Type.tpVoid ) {
 			if( expr != null ) Kiev.reportError(this,"Can't return value in void method");
 			expr = null;
 		} else {
 			if( expr == null )
 				Kiev.reportError(this,"Return must return a value in non-void method");
-			else if (!expr.getType().isInstanceOf(ctx_method.etype.ret) && expr.getType() != Type.tpNull)
-				Kiev.reportError(this,"Return expression is not of type "+ctx_method.type.ret);
+			else if (!expr.getType().isInstanceOf(ctx_method.etype.ret()) && expr.getType() != Type.tpNull)
+				Kiev.reportError(this,"Return expression is not of type "+ctx_method.type.ret());
 		}
 	}
 

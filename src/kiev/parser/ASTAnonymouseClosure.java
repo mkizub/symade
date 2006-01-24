@@ -4,6 +4,7 @@ package kiev.parser;
 
 import kiev.Kiev;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 
 import syntax kiev.Syntax;
@@ -30,7 +31,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		@att public BlockStat					body;
 		@att public NewClosure					new_closure;
 		@att public Struct						clazz;
-		@ref public ClosureType					ctype;
+		@ref public CallType					ctype;
 		public ASTAnonymouseClosureImpl() {}
 		public ASTAnonymouseClosureImpl(int pos) { super(pos); }
 	}
@@ -41,7 +42,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		public				BlockStat					body;
 		public				NewClosure					new_closure;
 		public				Struct						clazz;
-		public				ClosureType					ctype;
+		public				CallType					ctype;
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -92,13 +93,13 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		if( ctx_method==null || ctx_method.isStatic() ) clazz.setStatic(true);
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-		clazz.super_type = Type.tpClosureClazz.concr_type.toTypeWithLowerBound(clazz.concr_type);
+		clazz.super_type = Type.tpClosureClazz.ctype;
 
 		Type[] types = new Type[params.length];
 		for(int i=0; i < types.length; i++)
 			types[i] = params[i].type;
 		Type ret = rettype.getType();
-		this.ctype = new ClosureType(types,ret);
+		this.ctype = new CallType(types,ret,true);
 
 		return false; // don't pre-resolve me
 	}
@@ -109,7 +110,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 			return;
 		}
 		BlockStat body = (BlockStat)~this.body;
-		Type ret = ctype.ret;
+		Type ret = ctype.ret();
 		if( ret ≢ Type.tpRule ) {
 			KString call_name;
 			if( ret.isReference() ) {
@@ -137,7 +138,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
 				new ConstIntExpr(i));
 			if( !v.type.isReference() ) {
-				ConcreteType celltp = ConcreteType.getProxyType(v.type);
+				CompaundType celltp = CompaundType.getProxyType(v.type);
 				val = new IFldExpr(v.getPos(),
 						new CastExpr(v.getPos(),celltp,val,true),
 						celltp.clazz.resolveField(nameCellVal)

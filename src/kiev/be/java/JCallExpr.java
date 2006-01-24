@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.CError;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
@@ -20,18 +21,16 @@ import kiev.vlang.ClosureCallExpr.ClosureCallExprImpl;
 public final view JCallExprView of CallExprImpl extends JENodeView {
 	public access:ro JENodeView				obj;
 	public access:ro JMethodView			func;
-	public access:ro MethodType				mt;
+	public access:ro CallType				mt;
 	public access:ro JArr<JENodeView>		args;
 	public           JENodeView				temp_expr;
-
-	@getter public final JArr<JENodeView>	get$args()	{ return this.$view.args.toJArr<JENodeView>(); }
 
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
 		if( !ot.isStructInstanceOf(func.jctx_clazz.getStruct()) ) {
 			trace( Kiev.debugNodeTypes, "Need checkcast for method "+ot+"."+func);
-			code.addInstr(Instr.op_checkcast,func.jctx_clazz.concr_type);
+			code.addInstr(Instr.op_checkcast,func.jctx_clazz.ctype);
 		}
 	}
 
@@ -41,7 +40,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		Access.verifyRead(this,func);
 		CodeLabel ok_label = null;
 		CodeLabel null_cast_label = null;
-		if( func.jctx_clazz.concr_type.isInstanceOf(Type.tpDebug) ) {
+		if( func.jctx_clazz.ctype.isInstanceOf(Type.tpDebug) ) {
 			String fname = func.name.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
@@ -74,7 +73,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			else
 				code.addNullConst();
 		}
-		else if( func.jctx_clazz.concr_type.isInstanceOf(Type.tpDebug) ) {
+		else if( func.jctx_clazz.ctype.isInstanceOf(Type.tpDebug) ) {
 			int mode = 0;
 			String fname = func.name.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 ) mode = 1;
@@ -109,14 +108,14 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			}
 			if( func.name.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 				JMethodView mmm = jctx_method;
-				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.super_type : jctx_clazz.concr_type;
+				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.super_type : jctx_clazz.ctype;
 				assert(mmm.name.equals(nameInit));
 				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?
 				if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
 					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO).getVar()).getJView();
 				else
-					temp_expr = jctx_clazz.accessTypeInfoField(this,tp);
+					temp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
 				temp_expr.generate(code,null);
 				temp_expr = null;
 			}
@@ -132,7 +131,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				// array as va_arg
 				args[i].generate(code,null);
 			} else {
-				ArrayType type = (ArrayType)func.etype.args[N];
+				ArrayType type = (ArrayType)func.etype.arg(N);
 				code.addConst(args.length-N);
 				code.addInstr(Instr.op_newarray,type.arg);
 				for(int j=0; i < args.length; i++, j++) {
@@ -147,7 +146,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			TypeDef[] targs = func.getMethod().targs.toArray();
 			for (int i=0; i < targs.length; i++) {
 				Type tp = mt.resolve(targs[i].getAType());
-				temp_expr = jctx_clazz.accessTypeInfoField(this,tp);
+				temp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
 				temp_expr.generate(code,null);
 			}
 			temp_expr = null;
@@ -157,7 +156,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		// for parametriezed with primitive types classes
 		Type objt = obj.getType();
 		if( !objt.isReference() ) {
-			if( func.jctx_clazz.concr_type ≉ Type.tpObject )
+			if( func.jctx_clazz.ctype ≉ Type.tpObject )
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 			if( func.name == nameObjEquals ) {
 				CodeLabel label_true = code.newLabel();
@@ -170,7 +169,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				code.addInstr(Instr.set_label,label_false);
 			}
 			else if( func.name == nameObjGetClass ) {
-				ConcreteType reft = ((CoreType)objt).getRefTypeForPrimitive();
+				CompaundType reft = ((CoreType)objt).getRefTypeForPrimitive();
 				Field f = reft.clazz.resolveField(KString.from("TYPE"));
 				code.addInstr(Instr.op_pop);
 				code.addInstr(Instr.op_getstatic,f.getJView(),reft);
@@ -268,12 +267,12 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			code.stack_push(JType.tpNull);
 			code.addInstr(Instr.set_label,null_cast_label);
 		}
-		if( func.type.ret ≢ Type.tpVoid ) {
+		if( func.type.ret() ≢ Type.tpVoid ) {
 			if( reqType ≡ Type.tpVoid )
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && getType().isReference()
-			 && (!func.etype.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() || null_cast_label != null) )
+			 && (!func.etype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() || null_cast_label != null) )
 				code.addInstr(op_checkcast,getType());
 		}
 		if( ok_label != null )
@@ -288,7 +287,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 	public access:ro JENodeView			expr;
 	public access:ro boolean			is_a_call;
 	
-	@getter public final ClosureType	get$ctype()				{ return (ClosureType)this.$view.expr.getType(); }
+	@getter public final CallType		get$ctype()				{ return (CallType)this.$view.expr.getType(); }
 	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
 	
 	public void generate(Code code, Type reqType) {
@@ -296,46 +295,46 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		code.setLinePos(this);
 		// Load ref to closure
 		expr.generate(code,null);
-		ClosureType ctype = this.ctype;
+		CallType ctype = this.ctype;
 		JENodeView[] args = this.args;
 		// Clone it
 		if( args.length > 0 ) {
 			JMethodView clone_it = Type.tpClosureClazz.getJView().resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 			code.addInstr(op_call,clone_it,false);
 			if( Kiev.verify )
-				code.addInstr(op_checkcast,Type.tpClosureClazz.concr_type);
+				code.addInstr(op_checkcast,Type.tpClosureClazz.ctype);
 			// Add arguments
 			for(int i=0; i < args.length; i++) {
 				args[i].generate(code,null);
-				code.addInstr(op_call,getMethodFor(ctype.args[i].getJType()),false);
+				code.addInstr(op_call,getMethodFor(ctype.arg(i).getJType()),false);
 			}
 		}
 		JMethodView call_it = getCallIt(ctype);
 		// Check if we need to call
 		if( is_a_call ) {
-			if( call_it.type.ret ≡ Type.tpRule /*env_access != null*/ )
+			if( call_it.type.ret() ≡ Type.tpRule )
 				code.addNullConst(); //env_access.generate(code,null);
 			code.addInstr(op_call,call_it,false);
 		}
-		if( call_it.type.ret ≢ Type.tpVoid ) {
+		if( call_it.type.ret() ≢ Type.tpVoid ) {
 			if( reqType ≡ Type.tpVoid )
 				code.addInstr(op_pop);
 			else if( Kiev.verify
-			 && call_it.type.ret.isReference()
-			 && ( !call_it.etype.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
+			 && call_it.type.ret().isReference()
+			 && ( !call_it.etype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
 
-	public JMethodView getCallIt(ClosureType tp) {
+	public JMethodView getCallIt(CallType tp) {
 		KString call_it_name;
 		KString call_it_sign;
-		if( tp.ret.isReference() ) {
+		if( tp.ret().isReference() ) {
 			call_it_name = KString.from("call_Object");
 			call_it_sign = KString.from("()Ljava/lang/Object;");
 		} else {
-			call_it_name = KString.from("call_"+tp.ret);
-			call_it_sign = KString.from("()"+tp.ret.getJType().java_signature);
+			call_it_name = KString.from("call_"+tp.ret());
+			call_it_sign = KString.from("()"+tp.ret().getJType().java_signature);
 		}
 		return Type.tpClosureClazz.getJView().resolveMethod(call_it_name, call_it_sign);
 	}

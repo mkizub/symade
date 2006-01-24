@@ -2,6 +2,7 @@ package kiev.vlang;
 
 import kiev.*;
 import kiev.parser.UnresCallExpr;
+import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -28,7 +29,7 @@ public class ResInfo {
 	private Struct		from_scope;
 	
 	// a real type of the method in Method.compare() call
-	public MethodType	mt;
+	public CallType	mt;
 	
 	ASTNode				space_prev;
 	
@@ -68,6 +69,18 @@ public class ResInfo {
 		trace(Kiev.debugResolve,"Leaving mode, now "+this);
 	}
 	
+	public void enterDewrap() {
+		forwards_stack[forwards_p++] = new UnwrapExpr();
+		flags_stack[flags_p++] = flags;
+		flags |= noStatic | noImports;
+		trace(Kiev.debugResolve,"Entering dewrap, now "+this);
+	}
+	public void leaveDewrap() {
+		forwards_stack[--forwards_p] = null;
+		flags = flags_stack[--flags_p];
+		trace(Kiev.debugResolve,"Leaving dewarp, now "+this);
+	}
+
 	public void enterForward(ASTNode node) {
 		enterForward(node, 1);
 	}
@@ -202,29 +215,40 @@ public class ResInfo {
 			e = buildVarAccess(at, (Var)forwards_stack[n]);
 			n++;
 		}
-		if (e != null && node instanceof Field) {
+		if (e != null && (node instanceof Field || node instanceof UnwrapExpr)) {
 			for (; n < forwards_p; n++) {
-				if !(forwards_stack[n] instanceof Field)
-					throw new CompilerException(at, "Don't know how to build access to field "+node+" through "+e+" via "+this+" because of "+forwards_stack[n]);
-				Field f = (Field)forwards_stack[n];
-				if (f.isStatic())
-					throw new CompilerException(at, "Non-static access to static field "+f+" via "+this);
-				e = new IFldExpr(at.pos, e, f);
+				ASTNode fwn = forwards_stack[n];
+				if (fwn instanceof UnwrapExpr) {
+					fwn.expr = e;
+					e = fwn;
+				}
+				else if (fwn instanceof Field) {
+					if (fwn.isStatic())
+						throw new CompilerException(at, "Non-static access to static field "+fwn+" via "+this);
+					e = new IFldExpr(at.pos, e, (Field)fwn);
+				}
+				else
+					throw new CompilerException(at, "Don't know how to build access to field "+node+" through "+e+" via "+this+" because of "+fwn);
 			}
-			e = new IFldExpr(at.pos, e, (Field)node);
+			if (node instanceof Field) {
+				e = new IFldExpr(at.pos, e, (Field)node);
+			} else {
+				((UnwrapExpr)node).expr = e;
+				e = (UnwrapExpr)node;
+			}
 			return e;
 		}
 		throw new CompilerException(at, "Don't know how to build access to "+node+" from "+from+" via "+this);
 	}
 	
-	public ENode buildCall(ASTNode at, ENode from, ASTNode node, MethodType mt, ENode[] args) {
+	public ENode buildCall(ASTNode at, ENode from, ASTNode node, CallType mt, ENode[] args) {
 		if (node instanceof Method) {
 			Method meth = (Method)node;
 			if (from == null && forwards_p == 0) {
 				if !(meth.isStatic())
 					throw new CompilerException(at, "Don't know how to build call of "+meth+" via "+this);
 				//return new CallExpr(pos,meth,args);
-				return new UnresCallExpr(at.pos, new TypeRef(meth.ctx_clazz.concr_type), meth, mt, args, false);
+				return new UnresCallExpr(at.pos, new TypeRef(meth.ctx_clazz.ctype), meth, mt, args, false);
 			}
 			ENode expr = from;
 			if (forwards_p > 0)
@@ -236,7 +260,7 @@ public class ResInfo {
 			if (from == null && forwards_p == 0) {
 				if !(node.isStatic())
 					throw new CompilerException(at, "Don't know how to build closure for "+node+" via "+this);
-				return new UnresCallExpr(at.pos, new TypeRef(f.ctx_clazz.concr_type), f, mt, args, false);
+				return new UnresCallExpr(at.pos, new TypeRef(f.ctx_clazz.ctype), f, mt, args, false);
 			}
 			ENode expr = buildAccess(at, from, f);
 			return new UnresCallExpr(at.pos,expr,f,mt,args,false);
@@ -310,7 +334,7 @@ public interface ScopeOfNames extends Scope {
 }
 
 public interface ScopeOfMethods extends Scope {
-	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, MethodType mt);
+	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, CallType mt);
 }
 
 public interface ScopeOfOperators extends ScopeOfNames {

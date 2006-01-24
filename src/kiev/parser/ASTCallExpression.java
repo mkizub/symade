@@ -4,6 +4,7 @@ package kiev.parser;
 
 import kiev.Kiev;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.stdlib.*;
 import kiev.transf.*;
 
@@ -60,7 +61,7 @@ public class ASTCallExpression extends ENode {
 	public void mainResolveOut() {
 		// method of current class or first-order function
 		DNode@ m;
-		Type tp = ctx_clazz.concr_type;
+		Type tp = ctx_clazz.ctype;
 		
 		Type[] ata = new Type[targs.length];
 		for (int i=0; i < ata.length; i++)
@@ -70,7 +71,7 @@ public class ASTCallExpression extends ENode {
 			ta[i] = args[i].getType();
 		
 		if( func.name.equals(nameThis) ) {
-			MethodType mt = new MethodType(ta,Type.tpVoid);
+			CallType mt = new CallType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			try {
 				if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.name.name,mt) )
@@ -86,7 +87,7 @@ public class ASTCallExpression extends ENode {
 			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
-			MethodType mt = new MethodType(ta,Type.tpVoid);
+			CallType mt = new CallType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			try {
 				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.name.name,mt) )
@@ -101,7 +102,7 @@ public class ASTCallExpression extends ENode {
 			}
 			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
 		} else {
-			MethodType mt = new MethodType(ata,ta,null);
+			CallType mt = new CallType(ata,ta,null);
 			ResInfo info = new ResInfo(this);
 			try {
 				if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
@@ -113,8 +114,8 @@ public class ASTCallExpression extends ENode {
 							throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,null));
 					} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 					try {
-						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
-						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
+						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof CallType
+						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof CallType
 						) {
 							replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(this,closure),args.delToArray()));
 							return;
@@ -141,14 +142,14 @@ public class ASTCallExpression extends ENode {
         }
 		// method of current class or first-order function
 		Method@ m;
-		Type tp = ctx_clazz.concr_type;
+		Type tp = ctx_clazz.ctype;
 		Type ret = reqType;
 	retry_with_null_ret:;
 		if( func.name.equals(nameThis) ) {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = new MethodType(ta,Type.tpVoid);
+			CallType mt = new CallType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.name.name,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
@@ -166,7 +167,7 @@ public class ASTCallExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = new MethodType(ta,Type.tpVoid);
+			CallType mt = new CallType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.name.name,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
@@ -180,14 +181,14 @@ public class ASTCallExpression extends ENode {
 			}
 			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
 		} else {
-			MethodType mt;
-			if( reqType instanceof MethodType && ((MethodType)reqType).args.length > 0 ) {
-				mt = (MethodType)reqType;
+			CallType mt;
+			if( reqType instanceof CallType && ((CallType)reqType).arity > 0 ) {
+				mt = (CallType)reqType;
 			} else {
 				Type[] ta = new Type[args.length];
 				for(int i=0; i < ta.length; i++)
 					ta[i] = args[i].getType();
-				mt = new MethodType(ta,ret);
+				mt = new CallType(ta,ret);
 			}
 			ResInfo info = new ResInfo(this);
 			if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
@@ -199,8 +200,8 @@ public class ASTCallExpression extends ENode {
 					throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,ret));
 				}
 				try {
-					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
-					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
+					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof CallType
+					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof CallType
 					) {
 						replaceWithNodeResolve(ret, new ClosureCallExpr(pos,info.buildAccess(this,closure),args.delToArray()));
 						return;
@@ -211,12 +212,12 @@ public class ASTCallExpression extends ENode {
 				if( ret != null ) { ret = null; goto retry_with_null_ret; }
 				throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args));
 			}
-			if( reqType instanceof CallableType ) {
+			if( reqType instanceof CallType ) {
 				ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 				ac.pos = pos;
-				ac.rettype = new TypeRef(pos, ((CallableType)reqType).ret);
+				ac.rettype = new TypeRef(pos, ((CallType)reqType).ret());
 				for (int i=0; i < ac.params.length; i++)
-					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
+					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.arg(i),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
 				BlockStat bs = new BlockStat(pos,ENode.emptyArray);
 				ENode[] oldargs = args.toArray();
 				ENode[] cargs = new ENode[ac.params.length];

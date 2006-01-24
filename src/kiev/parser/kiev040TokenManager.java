@@ -3,6 +3,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.Kiev.Ext;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import java.io.Reader;
 
 public class kiev040TokenManager implements kiev040Constants
@@ -280,6 +281,10 @@ private final int jjMoveStringLiteralDfa0_0()
          return jjMoveStringLiteralDfa1_0(0x80L, 0x0L, 0x0L);
       case 126:
          return jjStopAtPos(0, 148);
+      case 8804:
+         return jjStopAtPos(0, 182);
+      case 8805:
+         return jjStopAtPos(0, 183);
       default :
          return jjMoveNfa_0(3, 0);
    }
@@ -2016,8 +2021,8 @@ private final int jjMoveNfa_0(int startState, int curPos)
                   }
                   if (jjCanMove_2(hiByte, i1, i2, l1, l2))
                   {
-                     if (kind > 182)
-                        kind = 182;
+                     if (kind > 184)
+                        kind = 184;
                   }
                   break;
                case 1:
@@ -2041,8 +2046,8 @@ private final int jjMoveNfa_0(int startState, int curPos)
                   jjCheckNAdd(33);
                   break;
                case 37:
-                  if (jjCanMove_2(hiByte, i1, i2, l1, l2) && kind > 182)
-                     kind = 182;
+                  if (jjCanMove_2(hiByte, i1, i2, l1, l2) && kind > 184)
+                     kind = 184;
                   break;
                case 95:
                   if (jjCanMove_3(hiByte, i1, i2, l1, l2))
@@ -2622,7 +2627,8 @@ null, null, null, null, null, null, null, null, null, "\50", "\51", "\173", "\17
 "\41", "\176", "\75\75", "\74\75", "\76\75", "\41\75", "\174\174", "\46\46", 
 "\53\53", "\55\55", "\53", "\55", "\52", "\57", "\46", "\174", "\136", "\45", "\74\74", 
 "\53\75", "\55\75", "\52\75", "\57\75", "\46\75", "\174\75", "\136\75", "\45\75", 
-"\74\74\75", "\76\76\75", "\76\76\76\75", "\77\75", "\100\75", "\100", "\43", null, null, };
+"\74\74\75", "\76\76\75", "\76\76\76\75", "\77\75", "\100\75", "\100", "\43", null, 
+"\u2264", "\u2265", null, };
 public static final String[] lexStateNames = {
    "DEFAULT", 
    "IN_PRAGMA", 
@@ -2639,10 +2645,10 @@ public static final int[] jjnewLexState = {
    5, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
-   -1, -1, -1, -1, -1, -1, -1, -1, 
+   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
 };
 static final long[] jjtoToken = {
-   0xffffffffffff8001L, 0xfb1f07ffffffffffL, 0x7ffffffffffff1L, 
+   0xffffffffffff8001L, 0xfb1f07ffffffffffL, 0x1fffffffffffff1L, 
 };
 static final long[] jjtoSkip = {
    0x3ffeL, 0xf80000000000L, 0x0L, 

@@ -3,6 +3,7 @@ package kiev.transf;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
@@ -70,7 +71,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				return;
 			if (f.acc == null) f.acc = new Access(0);
 		} else {
-			s.addField(f=new Field(name,m.type.args[0],m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
+			s.addField(f=new Field(name,m.type.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
 			f.acc = new Access(0);
 			f.acc.flags = 0;
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
@@ -114,7 +115,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				return;
 			if (f.acc == null) f.acc = new Access(0);
 		} else {
-			s.addField(f=new Field(name,m.type.ret,m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
+			s.addField(f=new Field(name,m.type.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
 			f.acc = new Access(0);
 			f.acc.flags = 0;
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);

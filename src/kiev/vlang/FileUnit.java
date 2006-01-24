@@ -5,6 +5,7 @@ import kiev.Kiev.Ext;
 import kiev.parser.*;
 import kiev.stdlib.*;
 import kiev.transf.*;
+import kiev.vlang.types.*;
 import java.io.*;
 
 import kiev.be.java.JNodeView;
@@ -61,7 +62,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		super(new FileUnitImpl());
 		this.filename = name;
 		this.pkg = new TypeNameRef(pkg.name.name);
-		this.pkg.lnk = pkg.concr_type;
+		this.pkg.lnk = pkg.ctype;
 	}
 
 	@getter public FileUnit get$ctx_file_unit() { return this; }
@@ -207,7 +208,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	;
 		pkg != null,
 		trace( Kiev.debugResolve, "In file package: "+pkg),
-		((ConcreteType)pkg.getType()).clazz.resolveNameR(node,path,name)
+		((CompaundType)pkg.getType()).clazz.resolveNameR(node,path,name)
 	;
 		syn @= syntax,
 		syn instanceof Import,
@@ -225,7 +226,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		Env.root.resolveNameR(node,path,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, CallType mt)
 		ASTNode@ syn;
 	{
 		pkg != null,

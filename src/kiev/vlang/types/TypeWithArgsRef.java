@@ -1,4 +1,4 @@
-package kiev.parser;
+package kiev.vlang.types;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
@@ -6,8 +6,8 @@ import kiev.vlang.*;
 
 import syntax kiev.Syntax;
 
-import kiev.vlang.TypeRef.TypeRefImpl;
-import kiev.vlang.TypeRef.TypeRefView;
+import kiev.vlang.types.TypeRef.TypeRefImpl;
+import kiev.vlang.types.TypeRef.TypeRefView;
 
 /**
  * @author Maxim Kizub
@@ -37,7 +37,6 @@ public class TypeWithArgsRef extends TypeRef {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 
 	public TypeWithArgsRef() {
 		super(new TypeWithArgsRefImpl());
@@ -63,24 +62,23 @@ public class TypeWithArgsRef extends TypeRef {
 		Type tp = base_type.getType();
 		if (tp == null || !(tp instanceof CompaundType))
 			throw new CompilerException(this,"Compaund type "+base_type+" is not found");
-		tp = ((CompaundTypeProvider)tp.meta_type).templ_type;
-		TVarSet tpset = tp.bindings();
-		TVarSet set = new TVarSet();
+		TVarSet tpset = ((CompaundTypeProvider)tp.meta_type).getTemplBindings();
+		TVarBld set = new TVarBld();
 		int a = 0;
-		for(int b=0; a < args.length && b < tpset.length; b++) {
-			if (tpset[b].isBound())
+		for(int b=0; a < args.length && b < tpset.tvars.length; b++) {
+			if (tpset.tvars[b].unalias().val != null)
 				continue;
 			Type bound = args[a].getType();
 			if (bound == null)
 				throw new CompilerException(this,"Type "+args[a]+" is not found");
-			if!(bound.isInstanceOf(tpset[b].var))
-				throw new CompilerException(this,"Type "+bound+" is not applayable to "+tpset[b].var);
-			set.append(tpset[b].var, bound);
+			if!(bound.isInstanceOf(tpset.tvars[b].var))
+				throw new CompilerException(this,"Type "+bound+" is not applayable to "+tpset.tvars[b].var);
+			set.append(tpset.tvars[b].var, bound);
 			a++;
 		}
 		if (a < args.length)
 			Kiev.reportError(this,"Type "+tp+" has only "+a+" unbound type parameters");
-		tp = tp.bind(set);
+		tp = tp.meta_type.make(set);
 		this.lnk = tp;
 		return this.lnk;
 	}

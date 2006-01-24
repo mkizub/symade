@@ -2,6 +2,7 @@ package kiev.parser;
 
 import kiev.Kiev;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.stdlib.*;
 
 import static kiev.stdlib.Debug.*;
@@ -312,7 +313,7 @@ public class UnresCallExpr extends UnresExpr {
 		@virtual typedef ImplOf = UnresCallExpr;
 		@ref public ENode				obj;
 		@ref public Named				func;
-		@ref public MethodType			mt;
+		@ref public CallType			mt;
 		@ref public NArr<ENode>			args;
 		public UnresCallExprImpl() {}
 		public UnresCallExprImpl(int pos) { super(pos, null); }
@@ -321,7 +322,7 @@ public class UnresCallExpr extends UnresExpr {
 	public static view UnresCallExprView of UnresCallExprImpl extends UnresExprView {
 		public				ENode			obj;
 		public				Named			func;
-		public				MethodType		mt;
+		public				CallType		mt;
 		public access:ro	NArr<ENode>		args;
 	}
 	
@@ -332,7 +333,7 @@ public class UnresCallExpr extends UnresExpr {
 		super(new UnresCallExprImpl());
 	}
 
-	public UnresCallExpr(int pos, ENode obj, Named func, MethodType mt, ENode[] args, boolean super_flag) {
+	public UnresCallExpr(int pos, ENode obj, Named func, CallType mt, ENode[] args, boolean super_flag) {
 		super(new UnresCallExprImpl(pos));
 		this.obj = obj;
 		this.func = func;

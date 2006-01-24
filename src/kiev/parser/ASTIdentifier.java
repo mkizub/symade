@@ -5,6 +5,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 
 import static kiev.stdlib.Debug.*;
@@ -238,7 +239,7 @@ public class ASTIdentifier extends ENode {
 					}
 				}
 			}
-			replaceWithNode(new TypeNameRef(new NameRef(pos,name),s.concr_type));
+			replaceWithNode(new TypeNameRef(new NameRef(pos,name),s.ctype));
 			return;
 		}
 		else if( v instanceof TypeDecl ) {

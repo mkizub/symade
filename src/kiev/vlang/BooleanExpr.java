@@ -2,6 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.vlang.types.*;
 
 import kiev.be.java.JNodeView;
 import kiev.be.java.JENodeView;
@@ -58,9 +59,9 @@ public abstract class BoolExpr extends ENode {
 			});
 			return;
 		}
-		if (et instanceof ClosureType) {
-			ClosureType ct = (ClosureType)et;
-			if (ct.args.length == 0 && ct.ret.isAutoCastableTo(Type.tpBoolean)	) {
+		if (et instanceof CallType) {
+			CallType ct = (CallType)et;
+			if (ct.arity == 0 && ct.ret().isAutoCastableTo(Type.tpBoolean)	) {
 				((ClosureCallExpr)e).is_a_call = true;
 				return;
 			}
@@ -548,7 +549,7 @@ public class InstanceofExpr extends BoolExpr {
 			CompaundType bt = (CompaundType)tp;
 			if (tp.clazz.isTypeUnerasable()) {
 				replaceWithNodeResolve(reqType, new CallExpr(pos,
-						ctx_clazz.accessTypeInfoField(this,type.getType()),
+						ctx_clazz.accessTypeInfoField(this,type.getType(), false),
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("$instanceof"),Type.tpBoolean,Type.tpObject),
 						new ENode[]{(ENode)~expr}
 						)
@@ -595,9 +596,7 @@ public class InstanceofExpr extends BoolExpr {
 			Type et = expr.getType();
 			Type tp = type.getType();
 			if (et.isWrapper() && !tp.isWrapper()) {
-				TVarSet set = new TVarSet();
-				set.append(et.getStruct().args[0].getAType(), tp);
-				tp = et.applay(set);
+				tp = et.applay(new TVarBld(et.getStruct().args[0].getAType(), tp));
 			}
 			return dfs.addNodeType(path,tp);
 		}

@@ -5,6 +5,7 @@ import kiev.stdlib.*;
 import kiev.transf.*;
 import kiev.parser.*;
 import kiev.vlang.Operator.*;
+import kiev.vlang.types.*;
 
 import kiev.be.java.JNodeView;
 import kiev.be.java.JENodeView;
@@ -16,6 +17,7 @@ import kiev.be.java.JThisExprView;
 import kiev.be.java.JLVarExprView;
 import kiev.be.java.JSFldExprView;
 import kiev.be.java.JOuterThisAccessExprView;
+import kiev.be.java.JUnwrapExprView;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -114,27 +116,11 @@ public class AccessExpr extends LvalueExpr {
 		}
 		else {
 			ENode e = obj;
-			//tps = new Type[]{e.getType()};
 			tps = e.getAccessTypes();
 			res = new ASTNode[tps.length];
 			for (int si=0; si < tps.length; si++) {
 				Type tp = tps[si];
-				if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
-					if (tp.isWrapper()) {
-						tps[si] = ((WrapperType)tp).getUnwrappedType();
-						res[si] = obj;
-					}
-					// compatibility with previois version
-					else if (tp.isInstanceOf(Type.tpPrologVar)) {
-						tps[si] = tp;
-						res[si] = (ENode)~obj;
-					}
-				}
-				else if (ident.name.byteAt(0) == '$') {
-					while (tp.isWrapper())
-						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
-				}
-				else if( ident.name.equals(nameLength) ) {
+				if( ident.name.equals(nameLength) ) {
 					if( tp.isArray() ) {
 						tps[si] = Type.tpInt;
 						res[si] = new ArrayLengthExpr(pos,(ENode)e.copy(), (NameRef)ident.copy());
@@ -279,7 +265,7 @@ public class AccessExpr extends LvalueExpr {
 			return info.buildAccess(this, o, v);
 		}
 		else if( v instanceof Struct ) {
-			TypeRef tr = new TypeRef(((Struct)v).concr_type);
+			TypeRef tr = new TypeRef(((Struct)v).ctype);
 			return tr;
 		}
 		else {
@@ -490,11 +476,11 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			else {
 				// Resolve overloaded access method
 				Method@ v;
-				MethodType mt = new MethodType(new Type[]{index.getType()},Type.tpAny);
+				CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
 					return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
-				return Type.getRealType(t,((Method)v).type.ret);
+				return Type.getRealType(t,((Method)v).type.ret());
 			}
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
@@ -514,7 +500,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 				if (s instanceof Struct) {
 					Struct ss = (Struct)s;
 					foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
-						return new Type[]{Type.getRealType(t,((Method)n).type.ret)};
+						return new Type[]{Type.getRealType(t,((Method)n).type.ret())};
 				}
 				if( s.super_type != null ) {
 					s = s.super_type.clazz;
@@ -610,10 +596,10 @@ public final class ThisExpr extends LvalueExpr {
 			if (ctx_clazz == null)
 				return Type.tpVoid;
 			if (ctx_clazz.name.short_name.equals(nameIdefault))
-				return ctx_clazz.package_clazz.concr_type;
+				return ctx_clazz.package_clazz.ctype;
 			if (isSuperExpr())
 				ctx_clazz.super_type;
-			return ctx_clazz.concr_type;
+			return ctx_clazz.ctype;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
 			return Type.tpVoid;
@@ -818,14 +804,14 @@ public final class SFldExpr extends AccessExpr {
 
 	public SFldExpr(int pos, Field var) {
 		super(new SFldExprImpl(pos));
-		this.obj = new TypeRef(pos,var.ctx_clazz.concr_type);
+		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
 		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
 		super(new SFldExprImpl(pos));
-		this.obj = new TypeRef(pos,var.ctx_clazz.concr_type);
+		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
 		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 		if (direct_access) setAsField(true);
@@ -926,7 +912,7 @@ public final class OuterThisAccessExpr extends AccessExpr {
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
 		super(new OuterThisAccessExprImpl(pos));
-		this.obj = new TypeRef(pos,outer.concr_type);
+		this.obj = new TypeRef(pos,outer.ctype);
 		this.ident = new NameRef(pos,nameThis);
 		this.outer = outer;
 	}
@@ -936,14 +922,14 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	public Type getType() {
 		try {
 			if (ctx_clazz == null)
-				return outer.concr_type;
-			Type tp = ctx_clazz.concr_type;
+				return outer.ctype;
+			Type tp = ctx_clazz.ctype;
 			foreach (Field f; outer_refs)
 				tp = f.type.applay(tp);
 			return tp;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
-			return outer.concr_type;
+			return outer.ctype;
 		}
 	}
 
@@ -967,10 +953,10 @@ public final class OuterThisAccessExpr extends AccessExpr {
 		do {
 			trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
 			outer_refs.append(ou_ref);
-			if( ou_ref.type.isInstanceOf(outer.concr_type) ) break;
+			if( ou_ref.type.isInstanceOf(outer.ctype) ) break;
 			ou_ref = outerOf(ou_ref.type.getStruct());
 		} while( ou_ref!=null );
-		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.concr_type) )
+		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.ctype) )
 			throw new RuntimeException("Outer class "+outer+" not found for inner class "+ctx_clazz);
 		if( Kiev.debugResolve ) {
 			StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");
@@ -987,6 +973,68 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
+}
+
+@nodeset
+public final class UnwrapExpr extends LvalueExpr {
+	
+	@dflow(out="expr") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	}
+
+	@virtual typedef NImpl = UnwrapExprImpl;
+	@virtual typedef VView = UnwrapExprView;
+	@virtual typedef JView = JUnwrapExprView;
+
+	@nodeimpl
+	public static final class UnwrapExprImpl extends LvalueExprImpl {		
+		@virtual typedef ImplOf = UnwrapExpr;
+		@att public ENode		expr;
+		public UnwrapExprImpl() {}
+		public UnwrapExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static final view UnwrapExprView of UnwrapExprImpl extends LvalueExprView {
+		public ENode		expr;
+	}
+	
+	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+
+	public UnwrapExpr() {
+		super(new UnwrapExprImpl());
+	}
+
+	public UnwrapExpr(ENode expr) {
+		super(new UnwrapExprImpl(expr.pos));
+		this.expr = expr;
+	}
+
+	public String toString() { return "(($unwrap)"+expr+")"; }
+
+	public Type getType() {
+		Type tp = expr.getType();
+		if (tp.isWrapper())
+			return ((WrapperType)tp).getUnwrappedType();
+		return tp;
+	}
+
+	public void resolve(Type reqType) throws RuntimeException {
+		trace(Kiev.debugResolve,"Resolving "+this);
+		expr.resolve(reqType);
+		Type tp = expr.getType();
+		if (!tp.isWrapper()) {
+			replaceWithNode((ENode)~expr);
+			return;
+		}
+		setResolved(true);
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		return dmp.append("(($unwrap)").append(expr).append(")");
+	}
 }
 
 

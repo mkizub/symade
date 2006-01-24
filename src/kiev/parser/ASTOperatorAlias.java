@@ -5,6 +5,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.OpTypes.*;
@@ -144,10 +145,10 @@ public final class ASTOperatorAlias extends ASTAlias {
 				if( image.equals(nameArrayOp) ) {
 					if( m.isStatic() )
 						throw new CompilerException(this,"'[]' operator can't be static");
-					if( m.type.args.length != 2 )
+					if( m.type.arity != 2 )
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 2 arguments");
-					if( m.type.ret ≉ m.type.args[1] )
-						throw new CompilerException(this,"Method "+m+" must return "+m.type.args[1]);
+					if( m.type.ret() ≉ m.type.arg(1) )
+						throw new CompilerException(this,"Method "+m+" must return "+m.type.arg(1));
 					m.name.addAlias(nameArrayOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
@@ -155,21 +156,21 @@ public final class ASTOperatorAlias extends ASTAlias {
 				if( image.equals(nameNewOp) ) {
 					if( !m.isStatic() )
 						throw new CompilerException(this,"'new' operator must be static");
-					if( m.type.ret ≉ m.ctx_clazz.concr_type )
-						throw new CompilerException(this,"Method "+m+" must return "+m.ctx_clazz.concr_type);
+					if( m.type.ret() ≉ m.ctx_clazz.ctype )
+						throw new CompilerException(this,"Method "+m+" must return "+m.ctx_clazz.ctype);
 					m.name.addAlias(nameNewOp);
 					if( Kiev.verbose ) System.out.println("Attached operator new to method "+m);
 					return;
 				}
 
-				Type opret = m.type.ret;
+				Type opret = m.type.ret();
 				Type oparg1, oparg2;
 				if( prior != Constants.opAssignPriority )
 					throw new CompilerException(this,"Assign operator must have priority "+Constants.opAssignPriority);
 				if( m.isStatic() )
 					throw new CompilerException(this,"Assign operator can't be static");
-				else if( !m.isStatic() && m.type.args.length == 1 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[0]; }
+				else if( !m.isStatic() && m.type.arity == 1 )
+					{ oparg1 = m.ctx_clazz.ctype; oparg2 = m.type.arg(0); }
 				else
 					throw new CompilerException(this,"Method "+m+" must be virtual and have 1 argument");
 				AssignOperator op = AssignOperator.newAssignOperator(
@@ -189,25 +190,25 @@ public final class ASTOperatorAlias extends ASTAlias {
 				if( image.equals(nameArrayOp) ) {
 					if( m.isStatic() )
 						throw new CompilerException(this,"'[]' operator can't be static");
-					if( m.type.args.length != 1 )
+					if( m.type.arity != 1 )
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 1 argument");
-					if( m.type.ret ≡ Type.tpVoid )
+					if( m.type.ret() ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
 					m.name.addAlias(nameArrayOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
 				}
 
-				Type opret = m.type.ret;
+				Type opret = m.type.ret();
 				Type oparg1, oparg2;
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 2 )
-					{ oparg1 = m.type.args[0]; oparg2 = m.type.args[1]; }
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.args.length == 3 )
-					{ oparg1 = m.type.args[1]; oparg2 = m.type.args[2]; }
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[0]; }
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 2 )
-					{ oparg1 = m.ctx_clazz.concr_type; oparg2 = m.type.args[1]; }
+				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 2 )
+					{ oparg1 = m.type.arg(0); oparg2 = m.type.arg(1); }
+				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 3 )
+					{ oparg1 = m.type.arg(1); oparg2 = m.type.arg(2); }
+				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
+					{ oparg1 = m.ctx_clazz.ctype; oparg2 = m.type.arg(0); }
+				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
+					{ oparg1 = m.ctx_clazz.ctype; oparg2 = m.type.arg(1); }
 				else
 					throw new CompilerException(this,"Method "+m+" must have 2 arguments");
 				BinaryOperator op = BinaryOperator.newBinaryOperator(
@@ -223,28 +224,28 @@ public final class ASTOperatorAlias extends ASTAlias {
 			{
 				// Special case fo "$cast" operator
 				if( image.equals(nameCastOp) ) {
-					if( m.isStatic() && m.type.args.length != 1 )
+					if( m.isStatic() && m.type.arity != 1 )
 						throw new CompilerException(this,"Static cast method "+m+" must have 1 argument");
-					else if( !m.isStatic() && m.type.args.length != 0 )
+					else if( !m.isStatic() && m.type.arity != 0 )
 						throw new CompilerException(this,"Virtual scast method "+m+" must have no arguments");
-					if( m.type.ret ≡ Type.tpVoid )
+					if( m.type.ret() ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
 					m.name.addAlias(nameCastOp);
 					return;
 				}
 
-				Type opret = m.type.ret;
+				Type opret = m.type.ret();
 				Type oparg;
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					oparg = m.type.args[0];
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.args.length == 2 )
-					oparg = m.type.args[1];
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 0 )
-					oparg = m.ctx_clazz.concr_type;
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					oparg = m.type.args[0];
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 1 )
-					oparg = m.ctx_clazz.concr_type;
+				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
+					oparg = m.type.arg(0);
+				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
+					oparg = m.type.arg(1);
+				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 0 )
+					oparg = m.ctx_clazz.ctype;
+				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
+					oparg = m.type.arg(0);
+				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 1 )
+					oparg = m.ctx_clazz.ctype;
 				else {
 					if (m.isStatic())
 						throw new CompilerException(this,"Static method "+m+" must have 1 argument");
@@ -262,16 +263,16 @@ public final class ASTOperatorAlias extends ASTAlias {
 		case Operator.XF:
 		case Operator.YF:
 			{
-				Type opret = m.type.ret;
+				Type opret = m.type.ret();
 				Type oparg;
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 1 )
-					oparg = m.type.args[0];
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.args.length == 2 )
-					oparg = m.type.args[1];
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.args.length == 0 )
-					oparg = m.ctx_clazz.concr_type;
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 1 )
-					oparg = m.ctx_clazz.concr_type;
+				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
+					oparg = m.type.arg(0);
+				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
+					oparg = m.type.arg(1);
+				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 0 )
+					oparg = m.ctx_clazz.ctype;
+				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 1 )
+					oparg = m.ctx_clazz.ctype;
 				else
 					throw new CompilerException(this,"Method "+m+" must have 1 argument");
 				PostfixOperator op = PostfixOperator.newPostfixOperator(

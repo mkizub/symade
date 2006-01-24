@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.CError;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
@@ -95,8 +96,8 @@ public final view JTypeInfoExprView of TypeInfoExprImpl extends JENodeView {
 		Struct ti_clazz = type.getStruct().typeinfo_clazz;
 		if (ti_clazz == null)
 			ti_clazz = Type.tpTypeInfo.clazz;
-		Method func = ti_clazz.resolveMethod(KString.from("newTypeInfo"), ti_clazz.concr_type, Type.tpClass, new ArrayType(Type.tpTypeInfo));
-		code.addInstr(op_call,func.getJView(),false,ti_clazz.concr_type);
+		Method func = ti_clazz.resolveMethod(KString.from("newTypeInfo"), ti_clazz.ctype, Type.tpClass, new ArrayType(Type.tpTypeInfo));
+		code.addInstr(op_call,func.getJView(),false,ti_clazz.ctype);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
@@ -221,7 +222,7 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 	}
 
 	public JMethodView getMethodFor(JENodeView expr) {
-		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),clazzStringBuffer.concr_type,expr.getType());
+		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),clazzStringBuffer.ctype,expr.getType());
 		return m.getJView();
 	}
 
@@ -230,7 +231,7 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 		trace(Kiev.debugStatGen,"\t\tgenerating StringConcatExpr: "+this);
 		code.setLinePos(this);
 		JENodeView[] args = this.args;
-		code.addInstr(op_new,clazzStringBuffer.concr_type);
+		code.addInstr(op_new,clazzStringBuffer.ctype);
 		code.addInstr(op_dup);
 		code.addInstr(op_call,clazzStringBufferInit.getJView(),false);
 		for(int i=0; i < args.length; i++) {

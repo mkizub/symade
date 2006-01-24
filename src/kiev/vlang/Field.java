@@ -2,6 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.vlang.types.*;
 
 import kiev.be.java.JNodeView;
 import kiev.be.java.JDNodeView;

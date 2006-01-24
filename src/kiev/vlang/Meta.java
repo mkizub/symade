@@ -2,7 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.parser.TypeNameRef;
+import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -95,7 +95,7 @@ public final class MetaSet extends ASTNode {
 			throw new NullPointerException();
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (((ConcreteType)metas[i].type.getType()).clazz.name.name == name) {
+			if (((CompaundType)metas[i].type.getType()).clazz.name.name == name) {
 				Meta m = metas[i];
 				metas.del(i);
 				return m;
@@ -201,7 +201,7 @@ public class Meta extends ENode {
 		if (mt == null || !mt.isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
-		KString name = ((ConcreteType)mt).clazz.name.name;
+		KString name = ((CompaundType)mt).clazz.name.name;
 		Meta m = this;
 		if (m != this) {
 			this.replaceWithNode(m);
@@ -229,7 +229,7 @@ public class Meta extends ENode {
 			}
 			if (m == null)
 				throw new CompilerException(v, "Unresolved method "+v.type.name+" in class "+s);
-			Type tp = m.type.ret;
+			Type tp = m.type.ret();
 			v.type.ret = tp;
 			Type t = tp;
 			if (t.isArray()) {
@@ -261,8 +261,8 @@ public class Meta extends ENode {
 			// value not specified - does the method has a default meta-value?
 			if (m.annotation_default != null) {
 				MetaValueType mvt = new MetaValueType(m.name.name);
-				mvt.ret = m.type.ret;
-				if (!m.type.ret.isArray()) {
+				mvt.ret = m.type.ret();
+				if (!m.type.ret().isArray()) {
 					MetaValueScalar mvs = (MetaValueScalar)m.annotation_default;
 					ENode v = (ENode)mvs.value.copy();
 					values.append(new MetaValueScalar(mvt, v));
