@@ -42,6 +42,16 @@ public class TypeRef extends ENode {
 	@nodeview
 	public static view TypeRefView of TypeRefImpl extends ENodeView {
 		public Type	lnk;
+
+		public boolean preResolveIn(TransfProcessor proc) {
+			getNode().getType(); // calls resolving
+			return false;
+		}
+	
+		public boolean mainResolveIn(TransfProcessor proc) {
+			getNode().getType(); // calls resolving
+			return false;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -78,16 +88,6 @@ public class TypeRef extends ENode {
 		alias operator(210,fy,$cast)
 	{
 		return lnk;
-	}
-	
-	public boolean preResolveIn(TransfProcessor proc) {
-		getType(); // calls resolving
-		return false;
-	}
-	
-	public boolean mainResolveIn(TransfProcessor proc) {
-		getType(); // calls resolving
-		return false;
 	}
 	
 	public void resolve(Type reqType) {

@@ -52,6 +52,12 @@ public class Shadow extends ENode {
 	@nodeview
 	public static final view ShadowView of ShadowImpl extends ENodeView {
 		public ASTNode		node;
+	
+		public int getPriority() {
+			if (node instanceof ENode)
+				return ((ENode)node).getPriority();
+			return 255;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -69,12 +75,6 @@ public class Shadow extends ENode {
 		this.node = node;
 	}
 	public Type getType() { return node.getType(); }
-	
-	public int getPriority() {
-		if (node instanceof ENode)
-			return ((ENode)node).getPriority();
-		return 255;
-	}
 	
 	public void resolve(Type reqType) {
 		if (node instanceof ENode)
@@ -114,6 +114,8 @@ public class ArrayLengthExpr extends AccessExpr {
 	@nodeview
 	public static final view ArrayLengthExprView of ArrayLengthExprImpl extends AccessExprView {
 		ArrayLengthExprView(ArrayLengthExprImpl $view) { super($view); }
+
+		public Operator getOp() { return BinaryOperator.Access; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -145,8 +147,6 @@ public class ArrayLengthExpr extends AccessExpr {
 	public Type getType() {
 		return Type.tpInt;
 	}
-
-	public Operator getOp() { return BinaryOperator.Access; }
 
 	public void resolve(Type reqType) {
 		obj.resolve(null);
@@ -185,6 +185,8 @@ public class TypeClassExpr extends ENode {
 	@nodeview
 	public static final view TypeClassExprView of TypeClassExprImpl extends ENodeView {
 		public TypeRef		type;
+
+		public Operator getOp() { return BinaryOperator.Access; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -206,8 +208,6 @@ public class TypeClassExpr extends ENode {
 	public Type getType() {
 		return Type.tpClass;
 	}
-
-	public Operator getOp() { return BinaryOperator.Access; }
 
 	public void resolve(Type reqType) {
 		Type tp = type.getType();
@@ -249,6 +249,8 @@ public class TypeInfoExpr extends ENode {
 		public				TypeRef				type;
 		public				TypeClassExpr		cl_expr;
 		public access:ro	NArr<ENode>			cl_args;
+
+		public Operator getOp() { return BinaryOperator.Access; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -273,8 +275,6 @@ public class TypeInfoExpr extends ENode {
 			return t.getStruct().typeinfo_clazz.ctype;
 		return Type.tpTypeInfo;
 	}
-
-	public Operator getOp() { return BinaryOperator.Access; }
 
 	public void resolve(Type reqType) {
 		if (isResolved())
@@ -331,6 +331,8 @@ public class AssignExpr extends LvalueExpr {
 		public AssignOperator	op;
 		public ENode			lval;
 		public ENode			value;
+
+		public Operator getOp() { return op; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -362,8 +364,6 @@ public class AssignExpr extends LvalueExpr {
 	}
 
 	public Type getType() { return lval.getType(); }
-
-	public Operator getOp() { return op; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() )
@@ -598,6 +598,92 @@ public class BinaryExpr extends ENode {
 		public BinaryOperator	op;
 		public ENode			expr1;
 		public ENode			expr2;
+
+		public Operator getOp() { return op; }
+
+		public void mainResolveOut() {
+			Type et1 = expr1.getType();
+			Type et2 = expr2.getType();
+			if( op == BinaryOperator.Add
+				&& ( et1 ≈ Type.tpString || et2 ≈ Type.tpString ||
+					(et1.isWrapper() && et1.getWrappedType() ≈ Type.tpString) ||
+					(et2.isWrapper() && et2.getWrappedType() ≈ Type.tpString)
+				   )
+			) {
+				if( expr1 instanceof StringConcatExpr ) {
+					StringConcatExpr sce = (StringConcatExpr)expr1;
+					if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
+					sce.appendArg(expr2);
+					trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
+					replaceWithNode((ENode)~sce);
+				} else {
+					StringConcatExpr sce = new StringConcatExpr(pos);
+					if (et1.isWrapper()) expr1 = et1.makeWrappedAccess(expr1);
+					sce.appendArg(expr1);
+					if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
+					sce.appendArg(expr2);
+					trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
+					replaceWithNode(sce);
+				}
+				return;
+			}
+			else if( ( et1.isNumber() && et2.isNumber() ) &&
+				(    op==BinaryOperator.Add
+				||   op==BinaryOperator.Sub
+				||   op==BinaryOperator.Mul
+				||   op==BinaryOperator.Div
+				||   op==BinaryOperator.Mod
+				)
+			) {
+				return;
+			}
+			else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
+				(    op==BinaryOperator.LeftShift
+				||   op==BinaryOperator.RightShift
+				||   op==BinaryOperator.UnsignedRightShift
+				)
+			) {
+				return;
+			}
+			else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
+				(    op==BinaryOperator.BitOr
+				||   op==BinaryOperator.BitXor
+				||   op==BinaryOperator.BitAnd
+				)
+			) {
+				return;
+			}
+			// Not a standard operator, find out overloaded
+			foreach(OpTypes opt; op.types ) {
+				Type[] tps = new Type[]{null,et1,et2};
+				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
+				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
+					ENode e;
+					if( opt.method.isStatic() )
+						replaceWithNode(new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr1,(ENode)~expr2}));
+					else
+						replaceWithNode(new CallExpr(pos,(ENode)~expr1,opt.method,new ENode[]{(ENode)~expr2}));
+					return;
+				}
+			}
+			// Not a standard and not overloaded, try wrapped classes
+			if (et1.isWrapper() && et2.isWrapper()) {
+				expr1 = et1.makeWrappedAccess(expr1);
+				expr2 = et1.makeWrappedAccess(expr2);
+				mainResolveOut();
+				return;
+			}
+			if (et1.isWrapper()) {
+				expr1 = et1.makeWrappedAccess(expr1);
+				mainResolveOut();
+				return;
+			}
+			if (et2.isWrapper()) {
+				expr2 = et1.makeWrappedAccess(expr2);
+				mainResolveOut();
+				return;
+			}
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -628,8 +714,6 @@ public class BinaryExpr extends ENode {
 		return sb.toString();
 	}
 
-	public Operator getOp() { return op; }
-
 	public Type getType() {
 		Type t1 = expr1.getType();
 		Type t2 = expr2.getType();
@@ -659,90 +743,6 @@ public class BinaryExpr extends ENode {
 		}
 		resolve(null);
 		return getType();
-	}
-
-	public void mainResolveOut() {
-		Type et1 = expr1.getType();
-		Type et2 = expr2.getType();
-		if( op == BinaryOperator.Add
-			&& ( et1 ≈ Type.tpString || et2 ≈ Type.tpString ||
-				(et1.isWrapper() && et1.getWrappedType() ≈ Type.tpString) ||
-				(et2.isWrapper() && et2.getWrappedType() ≈ Type.tpString)
-			   )
-		) {
-			if( expr1 instanceof StringConcatExpr ) {
-				StringConcatExpr sce = (StringConcatExpr)expr1;
-				if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
-				sce.appendArg(expr2);
-				trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
-				replaceWithNode((ENode)~sce);
-			} else {
-				StringConcatExpr sce = new StringConcatExpr(pos);
-				if (et1.isWrapper()) expr1 = et1.makeWrappedAccess(expr1);
-				sce.appendArg(expr1);
-				if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
-				sce.appendArg(expr2);
-				trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
-				replaceWithNode(sce);
-			}
-			return;
-		}
-		else if( ( et1.isNumber() && et2.isNumber() ) &&
-			(    op==BinaryOperator.Add
-			||   op==BinaryOperator.Sub
-			||   op==BinaryOperator.Mul
-			||   op==BinaryOperator.Div
-			||   op==BinaryOperator.Mod
-			)
-		) {
-			return;
-		}
-		else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
-			(    op==BinaryOperator.LeftShift
-			||   op==BinaryOperator.RightShift
-			||   op==BinaryOperator.UnsignedRightShift
-			)
-		) {
-			return;
-		}
-		else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
-			(    op==BinaryOperator.BitOr
-			||   op==BinaryOperator.BitXor
-			||   op==BinaryOperator.BitAnd
-			)
-		) {
-			return;
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				ENode e;
-				if( opt.method.isStatic() )
-					replaceWithNode(new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr1,(ENode)~expr2}));
-				else
-					replaceWithNode(new CallExpr(pos,(ENode)~expr1,opt.method,new ENode[]{(ENode)~expr2}));
-				return;
-			}
-		}
-		// Not a standard and not overloaded, try wrapped classes
-		if (et1.isWrapper() && et2.isWrapper()) {
-			expr1 = et1.makeWrappedAccess(expr1);
-			expr2 = et1.makeWrappedAccess(expr2);
-			mainResolveOut();
-			return;
-		}
-		if (et1.isWrapper()) {
-			expr1 = et1.makeWrappedAccess(expr1);
-			mainResolveOut();
-			return;
-		}
-		if (et2.isWrapper()) {
-			expr2 = et1.makeWrappedAccess(expr2);
-			mainResolveOut();
-			return;
-		}
 	}
 
 	public void resolve(Type reqType) {
@@ -1008,6 +1008,8 @@ public class StringConcatExpr extends ENode {
 	@nodeview
 	public static view StringConcatExprView of StringConcatExprImpl extends ENodeView {
 		public access:ro	NArr<ENode>		args;
+
+		public Operator getOp() { return BinaryOperator.Add; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1034,8 +1036,6 @@ public class StringConcatExpr extends ENode {
 	public Type getType() {
 		return Type.tpString;
 	}
-
-	public Operator getOp() { return BinaryOperator.Add; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1085,6 +1085,8 @@ public class CommaExpr extends ENode {
 	@nodeview
 	public static view CommaExprView of CommaExprImpl extends ENodeView {
 		public access:ro	NArr<ENode>		exprs;
+
+		public int getPriority() { return 0; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1112,8 +1114,6 @@ public class CommaExpr extends ENode {
 	public KString getName() { return KString.Empty; };
 
 	public Type getType() { return exprs[exprs.length-1].getType(); }
-
-	public int getPriority() { return 0; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1162,6 +1162,8 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public static view BlockExprView of BlockExprImpl extends ENodeView {
 		public access:ro	NArr<ENode>		stats;
 		public				ENode			res;
+
+		public int		getPriority() { return 255; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1220,8 +1222,6 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 		if (res == null) return Type.tpVoid;
 		return res.getType();
 	}
-
-	public int		getPriority() { return 255; }
 
 	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
 		ASTNode@ n;
@@ -1334,6 +1334,8 @@ public class UnaryExpr extends ENode {
 	public static view UnaryExprView of UnaryExprImpl extends ENodeView {
 		public Operator			op;
 		public ENode			expr;
+
+		public Operator getOp() { return op; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1365,8 +1367,6 @@ public class UnaryExpr extends ENode {
 	public Type getType() {
 		return expr.getType();
 	}
-
-	public Operator getOp() { return op; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1521,6 +1521,8 @@ public class IncrementExpr extends ENode {
 	public static view IncrementExprView of IncrementExprImpl extends ENodeView {
 		public Operator		op;
 		public ENode		lval;
+
+		public Operator getOp() { return op; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1546,8 +1548,6 @@ public class IncrementExpr extends ENode {
 	public Type getType() {
 		return lval.getType();
 	}
-
-	public Operator getOp() { return op; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1601,6 +1601,8 @@ public class ConditionalExpr extends ENode {
 		public ENode		cond;
 		public ENode		expr1;
 		public ENode		expr2;
+
+		public Operator getOp() { return MultiOperator.Conditional; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1640,8 +1642,6 @@ public class ConditionalExpr extends ENode {
 		}
 		return expr1.getType();
 	}
-
-	public Operator getOp() { return MultiOperator.Conditional; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1694,6 +1694,8 @@ public class CastExpr extends ENode {
 		public ENode	expr;
 		public TypeRef	type;
 		public boolean	reinterp;
+
+		public int getPriority() { return opCastPriority; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1736,8 +1738,6 @@ public class CastExpr extends ENode {
 	public Type[] getAccessTypes() {
 		return new Type[]{getType()};
 	}
-
-	public int getPriority() { return opCastPriority; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;

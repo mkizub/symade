@@ -34,6 +34,78 @@ public class ASTIdentifier extends ENode {
 	@nodeview
 	public static view ASTIdentifierView of ASTIdentifierImpl extends ENodeView {
 		public KString name;
+
+		public int		getPriority() { return 256; }
+
+		public boolean preResolveIn(TransfProcessor proc) {
+			// predefined operators
+			if( name == op_instanceof ) {
+				ASTOperator op = new ASTOperator();
+				op.pos = this.pos;
+				op.image = op_instanceof;
+				this.replaceWithNode(op);
+				return false;
+			}
+			// predefined names
+			if( name == Constants.nameFILE ) {
+				ConstExpr ce = new ConstStringExpr(Kiev.curFile);
+				//ce.text_name = this.name;
+				replaceWithNode(ce);
+				return false;
+			}
+			else if( name == Constants.nameLINENO ) {
+				ConstExpr ce = new ConstIntExpr(pos>>>11);
+				//ce.text_name = this.name;
+				replaceWithNode(ce);
+				return false;
+			}
+			else if( name == Constants.nameMETHOD ) {
+				ConstExpr ce;
+				if( ctx_method != null )
+					ce = new ConstStringExpr(ctx_method.name.name);
+				else
+					ce = new ConstStringExpr(nameInit);
+				//ce.text_name = this.name;
+				replaceWithNode(ce);
+				return false;
+			}
+			else if( name == Constants.nameDEBUG ) {
+				ConstExpr ce = new ConstBoolExpr(Kiev.debugOutputA);
+				//ce.text_name = this.name;
+				replaceWithNode(ce);
+				return false;
+			}
+			else if( name == Constants.nameReturnVar ) {
+				Kiev.reportWarning(this,"Keyword '$return' is deprecated. Replace with 'Result', please");
+				name = Constants.nameResultVar;
+			}
+			else if( name == Constants.nameThis ) {
+				ThisExpr te = new ThisExpr(pos);
+				replaceWithNode(te);
+				return false;
+			}
+			else if( name == Constants.nameSuper ) {
+				ThisExpr te = new ThisExpr(pos);
+				te.setSuperExpr(true);
+				replaceWithNode(te);
+				return false;
+			}
+	
+			// resolve in the path of scopes
+			DNode@ v;
+			ResInfo info = new ResInfo(this);
+			if( !PassInfo.resolveNameR(this.getNode(),v,info,name) )
+				throw new CompilerException(this,"Unresolved identifier "+name);
+			if( v instanceof TypeDecl ) {
+				TypeDecl td = (TypeDecl)v;
+				td.checkResolved();
+				replaceWithNode(new TypeRef(td.getType()));
+			}
+			else {
+				replaceWithNode(info.buildAccess(this.getNode(), null, v));
+			}
+			return false;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -64,99 +136,6 @@ public class ASTIdentifier extends ENode {
 	
 	public Type getType() {
 		return Type.tpVoid;
-	}
-
-	public boolean preResolveIn(TransfProcessor proc) {
-		// predefined operators
-		if( name == op_instanceof ) {
-			ASTOperator op = new ASTOperator();
-			op.pos = this.pos;
-			op.image = op_instanceof;
-			this.replaceWithNode(op);
-			return false;
-		}
-		// predefined names
-		if( name == Constants.nameFILE ) {
-			ConstExpr ce = new ConstStringExpr(Kiev.curFile);
-			//ce.text_name = this.name;
-			replaceWithNode(ce);
-			return false;
-		}
-		else if( name == Constants.nameLINENO ) {
-			ConstExpr ce = new ConstIntExpr(pos>>>11);
-			//ce.text_name = this.name;
-			replaceWithNode(ce);
-			return false;
-		}
-		else if( name == Constants.nameMETHOD ) {
-			ConstExpr ce;
-			if( ctx_method != null )
-				ce = new ConstStringExpr(ctx_method.name.name);
-			else
-				ce = new ConstStringExpr(nameInit);
-			//ce.text_name = this.name;
-			replaceWithNode(ce);
-			return false;
-		}
-		else if( name == Constants.nameDEBUG ) {
-			ConstExpr ce = new ConstBoolExpr(Kiev.debugOutputA);
-			//ce.text_name = this.name;
-			replaceWithNode(ce);
-			return false;
-		}
-		else if( name == Constants.nameReturnVar ) {
-			Kiev.reportWarning(this,"Keyword '$return' is deprecated. Replace with 'Result', please");
-			name = Constants.nameResultVar;
-		}
-		else if( name == Constants.nameThis ) {
-			ThisExpr te = new ThisExpr(pos);
-			replaceWithNode(te);
-			return false;
-		}
-		else if( name == Constants.nameSuper ) {
-			ThisExpr te = new ThisExpr(pos);
-			te.setSuperExpr(true);
-			replaceWithNode(te);
-			return false;
-		}
-
-		// resolve in the path of scopes
-		DNode@ v;
-		ResInfo info = new ResInfo(this);
-		if( !PassInfo.resolveNameR(this,v,info,name) ) {
-//			if( name.startsWith(Constants.nameDEF) ) {
-//				String prop = name.toString().substring(2);
-//				String val = Env.getProperty(prop);
-//				if( val == null ) val = Env.getProperty(prop.replace('_','.'));
-//				if( val != null ) {
-//					if( reqType == null || reqType == Type.tpString)
-//						return new ConstStringExpr(KString.from(val));
-//					if( reqType.isBoolean() )
-//						if( val == "" )
-//							return new ConstBoolExpr(true);
-//						else
-//							return new ConstBoolExpr(Boolean.valueOf(val).booleanValue());
-//					if( reqType.isInteger() )
-//						return new ConstIntExpr(Integer.valueOf(val).intValue());
-//					if( reqType.isNumber() )
-//						return new ConstDoubleExpr(Double.valueOf(val).doubleValue());
-//					return new ConstStringExpr(KString.from(val));
-//				}
-//				if( reqType.isBoolean() )
-//					return new ConstBoolExpr(false);
-//				return new ConstNullExpr();
-//			}
-			throw new CompilerException(this,"Unresolved identifier "+name);
-		}
-		if( v instanceof TypeDecl ) {
-			TypeDecl td = (TypeDecl)v;
-			td.checkResolved();
-			replaceWithNode(new TypeRef(td.getType()));
-		}
-		else {
-			replaceWithNode(info.buildAccess(this, null, v));
-		}
-		return false;
 	}
 	
 	public boolean preGenerate() { /*Kiev.reportError(this,"preGenerate of ASTIdentifier");*/ return false; }
@@ -248,8 +227,6 @@ public class ASTIdentifier extends ENode {
 		}
 		replaceWithNodeResolve(reqType, info.buildAccess(this, null, v));
 	}
-
-	public int		getPriority() { return 256; }
 
 	public KString toKString() {
 		return name;

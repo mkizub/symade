@@ -319,6 +319,46 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		// structure was loaded from bytecode
 		public final boolean isLoadedFromBytecode();
 		public final void setLoadedFromBytecode(boolean on);
+	
+		public final boolean mainResolveIn(TransfProcessor proc) {
+			this.resolveFinalFields();
+			return !isLocal();
+		}
+
+		private void resolveFinalFields() {
+			trace(Kiev.debugResolve,"Resolving final fields for class "+name);
+			// Resolve final values of class's fields
+			foreach (ASTNode n; members; n instanceof Field) {
+				Field f = (Field)n;
+				if( f == null || f.init == null ) continue;
+				if( f.init != null ) {
+					try {
+						f.init.resolve(f.type);
+						if (f.init instanceof TypeRef)
+							((TypeRef)f.init).toExpr(f.type);
+						if (f.init.getType() ≉ f.type) {
+							ENode finit = (ENode)~f.init;
+							f.init = new CastExpr(finit.pos, f.type, finit);
+							f.init.resolve(f.type);
+						}
+					} catch( Exception e ) {
+						Kiev.reportError(f.init,e);
+					}
+					trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
+							(f.isStatic()?"Static":"Instance")+" fields: "+name+"::"+f.name+" = "+f.init);
+				}
+			}
+			// Process inner classes and cases
+			if( !isPackage() ) {
+				for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
+					sub_clazz[i].resolveFinalFields();
+				}
+			}
+		}
+
+		public void mainResolveOut() {
+			cleanDFlow();
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -2289,52 +2329,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return new StructDFFunc(dfi);
 	}
 
-	
-
-	/** This routine validates declaration of class, auto-generates
-		<init>()V method if no <init> declared,
-		also, used to generate this$N fields and arguments for
-		inner classes, case$tag field for case classes and so on
-	*/
-	public void checkIntegrity() {
-	}
-
-	public ASTNode resolveFinalFields() {
-		trace(Kiev.debugResolve,"Resolving final fields for class "+name);
-		// Resolve final values of class's fields
-		foreach (ASTNode n; members; n instanceof Field) {
-			Field f = (Field)n;
-			if( f == null || f.init == null ) continue;
-			if( f.init != null ) {
-				try {
-					f.init.resolve(f.type);
-					if (f.init instanceof TypeRef)
-						((TypeRef)f.init).toExpr(f.type);
-					if (f.init.getType() ≉ f.type) {
-						ENode finit = (ENode)~f.init;
-						f.init = new CastExpr(finit.pos, f.type, finit);
-						f.init.resolve(f.type);
-					}
-				} catch( Exception e ) {
-					Kiev.reportError(f.init,e);
-				}
-				trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
-						(f.isStatic()?"Static":"Instance")+" fields: "+name+"::"+f.name+" = "+f.init);
-			}
-		}
-		// Process inner classes and cases
-		if( !isPackage() ) {
-			for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-				sub_clazz[i].resolveFinalFields();
-			}
-		}
-		return this;
-	}
-
-	public ASTNode resolveImports() {
-		return this;
-	}
-	
 	public void resolveMetaDefaults() {
 		if (isAnnotation()) {
 			foreach(ASTNode m; members; m instanceof Method) {
@@ -2377,19 +2371,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				sub_clazz[i].resolveMetaValues();
 			}
 		}
-	}
-
-	public final void preResolve() {
-		this.resolveImports();
-	}
-	
-	public final boolean mainResolveIn(TransfProcessor proc) {
-		this.resolveFinalFields();
-		return !isLocal();
-	}
-	
-	public void mainResolveOut() {
-		cleanDFlow();
 	}
 	
 	public void resolveDecl() {

@@ -251,6 +251,10 @@ public final class Kiev {
 		reportWarning(null, msg);
 	}
 	
+	public static void reportWarning(ASTNode.NodeView from, String msg) {
+		reportWarning(from==null?null:from.getNode(), msg);
+	}
+	
 	public static void reportWarning(ASTNode from, String msg) {
 		if (nowarn)
 			return;

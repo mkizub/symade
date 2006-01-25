@@ -814,6 +814,60 @@ public class BreakStat extends ENode {
 	public static view BreakStatView of BreakStatImpl extends ENodeView {
 		public NameRef			ident;
 		public Label			dest;
+	
+		public boolean mainResolveIn(TransfProcessor proc) {
+			ASTNode p;
+			if (dest != null) {
+				dest.delLink(this.getNode());
+				dest = null;
+			}
+			if( ident == null ) {
+				for(p=parent; !(
+					p instanceof BreakTarget
+				 || p instanceof Method
+				 || (p instanceof BlockStat && ((BlockStat)p).isBreakTarget())
+								); p = p.parent );
+				if( p instanceof Method || p == null ) {
+					Kiev.reportError(this,"Break not within loop/switch statement");
+				} else {
+					if (p instanceof LoopStat) {
+						Label l = ((LoopStat)p).lblbrk;
+						if (l != null) {
+							dest = l;
+							l.addLink(this.getNode());
+						}
+					}
+				}
+			} else {
+		label_found:
+				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
+					if( p instanceof LabeledStat &&
+						((LabeledStat)p).getName().equals(ident.name) )
+						throw new RuntimeException("Label "+ident+" does not refer to break target");
+					if( !(p instanceof BreakTarget || p instanceof BlockStat ) ) continue;
+					ASTNode pp = p;
+					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
+						if( ((LabeledStat)p).getName().equals(ident.name) ) {
+							p = pp;
+							break label_found;
+						}
+					}
+					p = pp;
+				}
+				if( p instanceof Method || p == null) {
+					Kiev.reportError(this,"Break not within loop/switch statement");
+				} else {
+					if (p instanceof LoopStat) {
+						Label l = ((LoopStat)p).lblbrk;
+						if (l != null) {
+							dest = l;
+							l.addLink(this.getNode());
+						}
+					}
+				}
+			}
+			return false; // don't pre-resolve
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -821,60 +875,6 @@ public class BreakStat extends ENode {
 	
 	public BreakStat() {
 		super(new BreakStatImpl());
-	}
-	
-	public boolean mainResolveIn(TransfProcessor proc) {
-		ASTNode p;
-		if (dest != null) {
-			dest.delLink(this);
-			dest = null;
-		}
-		if( ident == null ) {
-			for(p=parent; !(
-				p instanceof BreakTarget
-			 || p instanceof Method
-			 || (p instanceof BlockStat && ((BlockStat)p).isBreakTarget())
-			 				); p = p.parent );
-			if( p instanceof Method || p == null ) {
-				Kiev.reportError(this,"Break not within loop/switch statement");
-			} else {
-				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).lblbrk;
-					if (l != null) {
-						dest = l;
-						l.addLink(this);
-					}
-				}
-			}
-		} else {
-	label_found:
-			for(p=parent; !(p instanceof Method) ; p=p.parent ) {
-				if( p instanceof LabeledStat &&
-					((LabeledStat)p).getName().equals(ident.name) )
-					throw new RuntimeException("Label "+ident+" does not refer to break target");
-				if( !(p instanceof BreakTarget || p instanceof BlockStat ) ) continue;
-				ASTNode pp = p;
-				for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-					if( ((LabeledStat)p).getName().equals(ident.name) ) {
-						p = pp;
-						break label_found;
-					}
-				}
-				p = pp;
-			}
-			if( p instanceof Method || p == null) {
-				Kiev.reportError(this,"Break not within loop/switch statement");
-			} else {
-				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).lblbrk;
-					if (l != null) {
-						dest = l;
-						l.addLink(this);
-					}
-				}
-			}
-		}
-		return false; // don't pre-resolve
 	}
 	
 	public void resolve(Type reqType) {
@@ -970,6 +970,55 @@ public class ContinueStat extends ENode {
 	public static view ContinueStatView of ContinueStatImpl extends ENodeView {
 		public NameRef			ident;
 		public Label			dest;
+	
+		public boolean mainResolveIn(TransfProcessor proc) {
+			ASTNode p;
+			if (dest != null) {
+				dest.delLink(this.getNode());
+				dest = null;
+			}
+			if( ident == null ) {
+				for(p=parent; !(p instanceof LoopStat || p instanceof Method); p = p.parent );
+				if( p instanceof Method || p == null ) {
+					Kiev.reportError(this,"Continue not within loop statement");
+				} else {
+					if (p instanceof LoopStat) {
+						Label l = ((LoopStat)p).lblcnt;
+						if (l != null) {
+							dest = l;
+							l.addLink(this.getNode());
+						}
+					}
+				}
+			} else {
+		label_found:
+				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
+					if( p instanceof LabeledStat && ((LabeledStat)p).getName().equals(ident.name) )
+						throw new RuntimeException("Label "+ident+" does not refer to continue target");
+					if !(p instanceof LoopStat) continue;
+					ASTNode pp = p;
+					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
+						if( ((LabeledStat)p).getName().equals(ident.name) ) {
+							p = pp;
+							break label_found;
+						}
+					}
+					p = pp;
+				}
+				if( p instanceof Method || p == null) {
+					Kiev.reportError(this,"Continue not within loop statement");
+				} else {
+					if (p instanceof LoopStat) {
+						Label l = ((LoopStat)p).lblcnt;
+						if (l != null) {
+							dest = l;
+							l.addLink(this.getNode());
+						}
+					}
+				}
+			}
+			return false; // don't pre-resolve
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -977,55 +1026,6 @@ public class ContinueStat extends ENode {
 	
 	public ContinueStat() {
 		super(new ContinueStatImpl());
-	}
-	
-	public boolean mainResolveIn(TransfProcessor proc) {
-		ASTNode p;
-		if (dest != null) {
-			dest.delLink(this);
-			dest = null;
-		}
-		if( ident == null ) {
-			for(p=parent; !(p instanceof LoopStat || p instanceof Method); p = p.parent );
-			if( p instanceof Method || p == null ) {
-				Kiev.reportError(this,"Continue not within loop statement");
-			} else {
-				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).lblcnt;
-					if (l != null) {
-						dest = l;
-						l.addLink(this);
-					}
-				}
-			}
-		} else {
-	label_found:
-			for(p=parent; !(p instanceof Method) ; p=p.parent ) {
-				if( p instanceof LabeledStat && ((LabeledStat)p).getName().equals(ident.name) )
-					throw new RuntimeException("Label "+ident+" does not refer to continue target");
-				if !(p instanceof LoopStat) continue;
-				ASTNode pp = p;
-				for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-					if( ((LabeledStat)p).getName().equals(ident.name) ) {
-						p = pp;
-						break label_found;
-					}
-				}
-				p = pp;
-			}
-			if( p instanceof Method || p == null) {
-				Kiev.reportError(this,"Continue not within loop statement");
-			} else {
-				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).lblcnt;
-					if (l != null) {
-						dest = l;
-						l.addLink(this);
-					}
-				}
-			}
-		}
-		return false; // don't pre-resolve
 	}
 	
 	public void resolve(Type reqType) {
@@ -1069,6 +1069,29 @@ public class GotoStat extends ENode {
 	public static view GotoStatView of GotoStatImpl extends ENodeView {
 		public NameRef			ident;
 		public Label			dest;
+	
+		public boolean mainResolveIn(TransfProcessor proc) {
+			if (dest != null) {
+				dest.delLink(this.getNode());
+				dest = null;
+			}
+			LabeledStat[] stats = resolveStat(ident.name,ctx_method.body, LabeledStat.emptyArray);
+			if( stats.length == 0 ) {
+				Kiev.reportError(this,"Label "+ident+" unresolved");
+				return false;
+			}
+			if( stats.length > 1 ) {
+				Kiev.reportError(this,"Umbigouse label "+ident+" in goto statement");
+			}
+			LabeledStat stat = stats[0];
+			if( stat == null ) {
+				Kiev.reportError(this,"Label "+ident+" unresolved");
+				return false;
+			}
+			dest = stat.lbl;
+			dest.addLink(this.getNode());
+			return false; // don't pre-resolve
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1076,29 +1099,6 @@ public class GotoStat extends ENode {
 	
 	public GotoStat() {
 		super(new GotoStatImpl());
-	}
-	
-	public boolean mainResolveIn(TransfProcessor proc) {
-		if (dest != null) {
-			dest.delLink(this);
-			dest = null;
-		}
-		LabeledStat[] stats = resolveStat(ident.name,ctx_method.body, LabeledStat.emptyArray);
-		if( stats.length == 0 ) {
-			Kiev.reportError(this,"Label "+ident+" unresolved");
-			return false;
-		}
-		if( stats.length > 1 ) {
-			Kiev.reportError(this,"Umbigouse label "+ident+" in goto statement");
-		}
-		LabeledStat stat = stats[0];
-		if( stat == null ) {
-			Kiev.reportError(this,"Label "+ident+" unresolved");
-			return false;
-		}
-		dest = stat.lbl;
-		dest.addLink(this);
-		return false; // don't pre-resolve
 	}
 	
 	public void resolve(Type reqType) {

@@ -49,6 +49,8 @@ public class CallExpr extends ENode {
 		public				CallType		mt;
 		public access:ro	NArr<ENode>		args;
 		public				ENode			temp_expr;
+
+		public int		getPriority() { return Constants.opCallPriority; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -158,8 +160,6 @@ public class CallExpr extends ENode {
 		setResolved(true);
 	}
 
-	public int		getPriority() { return Constants.opCallPriority; }
-
 	public Dumper toJava(Dumper dmp) {
 		if( func.getName().equals(nameInit) ) {
 			if( isSuperExpr() )
@@ -217,6 +217,8 @@ public class ClosureCallExpr extends ENode {
 		public				ENode			expr;
 		public access:ro	NArr<ENode>		args;
 		public				boolean			is_a_call;
+
+		public int		getPriority() { return Constants.opCallPriority; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -295,8 +297,6 @@ public class ClosureCallExpr extends ENode {
 		//}
 		setResolved(true);
 	}
-
-	public int		getPriority() { return Constants.opCallPriority; }
 
 	public Dumper toJava(Dumper dmp) {
 		expr.toJava(dmp).append(".clone()");

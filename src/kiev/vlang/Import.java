@@ -50,6 +50,8 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		public access:ro	NArr<TypeRef>		args;
 		public				boolean				of_method;
 		public				DNode				resolved;
+		
+		public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -75,7 +77,6 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 	}
 
 	public boolean preGenerate()	{ return false; }
-	public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
 
 	public ASTNode resolveImports() {
 		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
@@ -196,6 +197,8 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		public	ASTOperator		op;
 		public	TypeRef			type;
 		public	TypeDef			arg;
+
+		public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -227,7 +230,6 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 	}
 
 	public boolean preGenerate()	{ return false; }
-	public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
 
 	public String toString() {
 		return "typedef "+arg+op+" "+type+"<"+arg+">;";

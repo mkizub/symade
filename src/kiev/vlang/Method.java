@@ -286,6 +286,16 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		// a dispatcher (for multimethods)	
 		public final boolean isDispatcherMethod();
 		public final void setDispatcherMethod(boolean on);
+
+		public boolean preResolveIn(TransfProcessor proc) {
+			checkRebuildTypes();
+			return true;
+		}
+	
+		public boolean mainResolveIn(TransfProcessor proc) {
+			checkRebuildTypes();
+			return true;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -733,16 +743,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
 		return new MethodDFFunc(dfi);
-	}
-
-	public boolean preResolveIn(TransfProcessor proc) {
-		checkRebuildTypes();
-		return true;
-	}
-	
-	public boolean mainResolveIn(TransfProcessor proc) {
-		checkRebuildTypes();
-		return true;
 	}
 	
 	public boolean preVerify() {

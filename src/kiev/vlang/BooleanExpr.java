@@ -95,6 +95,8 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	public static view BinaryBooleanOrExprView of BinaryBooleanOrExprImpl extends BoolExprView {
 		public ENode		expr1;
 		public ENode		expr2;
+
+		public Operator getOp() { return BinaryOperator.BooleanOr; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -127,8 +129,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 			sb.append(expr2);
 		return sb.toString();
 	}
-
-	public Operator getOp() { return BinaryOperator.BooleanOr; }
 
 	public void resolve(Type reqType) {
 		expr1.resolve(Type.tpBoolean);
@@ -180,6 +180,8 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	public static view BinaryBooleanAndExprView of BinaryBooleanAndExprImpl extends BoolExprView {
 		public ENode		expr1;
 		public ENode		expr2;
+
+		public Operator getOp() { return BinaryOperator.BooleanAnd; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -208,8 +210,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 			sb.append(expr2);
 		return sb.toString();
 	}
-
-	public Operator getOp() { return BinaryOperator.BooleanAnd; }
 
 	public void resolve(Type reqType) {
 		expr1.resolve(Type.tpBoolean);
@@ -261,6 +261,25 @@ public class BinaryBoolExpr extends BoolExpr {
 		public BinaryOperator	op;
 		public ENode			expr1;
 		public ENode			expr2;
+
+		public Operator getOp() { return op; }
+
+		public void mainResolveOut() {
+			Type et1 = expr1.getType();
+			Type et2 = expr2.getType();
+			if( op==BinaryOperator.BooleanOr ) {
+				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
+					replaceWithNode(new BinaryBooleanOrExpr(pos,expr1,expr2));
+					return;
+				}
+			}
+			else if( op==BinaryOperator.BooleanAnd ) {
+				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
+					replaceWithNode(new BinaryBooleanAndExpr(pos,expr1,expr2));
+					return;
+				}
+			}
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -281,25 +300,6 @@ public class BinaryBoolExpr extends BoolExpr {
 		StringBuffer sb = new StringBuffer();
 		sb.append(expr1).append(op.image).append(expr2);
 		return sb.toString();
-	}
-
-	public Operator getOp() { return op; }
-
-	public void mainResolveOut() {
-		Type et1 = expr1.getType();
-		Type et2 = expr2.getType();
-		if( op==BinaryOperator.BooleanOr ) {
-			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-				replaceWithNode(new BinaryBooleanOrExpr(pos,expr1,expr2));
-				return;
-			}
-		}
-		else if( op==BinaryOperator.BooleanAnd ) {
-			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-				replaceWithNode(new BinaryBooleanAndExpr(pos,expr1,expr2));
-				return;
-			}
-		}
 	}
 
 	private boolean resolveExprs() {
@@ -490,6 +490,8 @@ public class InstanceofExpr extends BoolExpr {
 	public static view InstanceofExprView of InstanceofExprImpl extends BoolExprView {
 		public ENode	expr;
 		public TypeRef	type;
+
+		public Operator getOp() { return BinaryOperator.InstanceOf; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -514,8 +516,6 @@ public class InstanceofExpr extends BoolExpr {
 	public String toString() {
 		return expr+" instanceof "+type;
 	}
-
-	public Operator getOp() { return BinaryOperator.InstanceOf; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -631,6 +631,8 @@ public class BooleanNotExpr extends BoolExpr {
 	@nodeview
 	public static view BooleanNotExprView of BooleanNotExprImpl extends BoolExprView {
 		public ENode		expr;
+
+		public Operator getOp() { return PrefixOperator.BooleanNot; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -651,8 +653,6 @@ public class BooleanNotExpr extends BoolExpr {
 		else
 			return "!"+expr;
 	}
-
-	public Operator getOp() { return PrefixOperator.BooleanNot; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;

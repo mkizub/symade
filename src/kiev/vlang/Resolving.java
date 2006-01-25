@@ -40,15 +40,15 @@ public class ResInfo {
 
 	private ResInfo() {}
 	
-	public ResInfo(ASTNode from) {
-		flags_stack = new int[16];
-		forwards_stack = new ASTNode[16];
-		if (from instanceof Struct)
-			from_scope = (Struct)from;
-		else
-			from_scope = from.ctx_clazz;
+	public ResInfo(ASTNode.NodeView from) {
+		this(from.getNode(), 0);
 	}
-	
+	public ResInfo(ASTNode.NodeView from, int fl) {
+		this(from.getNode(), fl);
+	}
+	public ResInfo(ASTNode from) {
+		this(from, 0);
+	}
 	public ResInfo(ASTNode from, int fl) {
 		flags = fl;
 		flags_stack = new int[16];

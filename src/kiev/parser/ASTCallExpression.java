@@ -41,6 +41,86 @@ public class ASTCallExpression extends ENode {
 		public				NameRef			func;
 		public access:ro	NArr<TypeRef>	targs;
 		public access:ro	NArr<ENode>		args;
+
+		public int		getPriority() { return Constants.opCallPriority; }
+
+		public void mainResolveOut() {
+			// method of current class or first-order function
+			DNode@ m;
+			Type tp = ctx_clazz.ctype;
+			
+			Type[] ata = new Type[targs.length];
+			for (int i=0; i < ata.length; i++)
+				ata[i] = targs[i].getType();
+			Type[] ta = new Type[args.length];
+			for (int i=0; i < ta.length; i++)
+				ta[i] = args[i].getType();
+			
+			if( func.name.equals(nameThis) ) {
+				CallType mt = new CallType(ta,Type.tpVoid);
+				ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+				try {
+					if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.name.name,mt) )
+						throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
+				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
+				if( info.isEmpty() ) {
+					Type st = ctx_clazz.super_type;
+					CallExpr ce = new CallExpr(pos,null,(Method)m,info.mt,args.delToArray(),false);
+					replaceWithNode(ce);
+					//((Method)m).makeArgs(ce.args,st);
+					return;
+				}
+				throw new CompilerException(this,"Constructor call via forwarding is not allowed");
+			}
+			else if( func.name.equals(nameSuper) ) {
+				CallType mt = new CallType(ta,Type.tpVoid);
+				ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+				try {
+					if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.name.name,mt) )
+						throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
+				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
+				if( info.isEmpty() ) {
+					Type st = ctx_clazz.super_type;
+					CallExpr ce = new CallExpr(pos,null,(Method)m,info.mt,args.delToArray(),true);
+					replaceWithNode(ce);
+					//((Method)m).makeArgs(ce.args,st);
+					return;
+				}
+				throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
+			} else {
+				CallType mt = new CallType(ata,ta,null);
+				ResInfo info = new ResInfo(this);
+				try {
+					if( !PassInfo.resolveMethodR(this.getNode(),m,info,func.name,mt) ) {
+						// May be a closure
+						DNode@ closure;
+						ResInfo info = new ResInfo(this);
+						try {
+							if( !PassInfo.resolveNameR(this.getNode(),closure,info,func.name) )
+								throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,null));
+						} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
+						try {
+							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof CallType
+							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof CallType
+							) {
+								replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(this.getNode(),closure),args.delToArray()));
+								return;
+							}
+						} catch(Exception eee) {
+							Kiev.reportError(this,eee);
+						}
+						throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args));
+					}
+				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
+	
+				if( m.isStatic() )
+					assert (info.isEmpty());
+				ENode e = info.buildCall(this.getNode(),null,m,info.mt,args.toArray());
+				if (e instanceof UnresExpr)
+					e = ((UnresExpr)e).toResolvedExpr();
+				this.replaceWithNode(e);
+			}
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -55,84 +135,6 @@ public class ASTCallExpression extends ENode {
 		this.func = new NameRef(pos, func);
 		foreach (ENode e; args) {
 			this.args.append(e);
-		}
-	}
-
-	public void mainResolveOut() {
-		// method of current class or first-order function
-		DNode@ m;
-		Type tp = ctx_clazz.ctype;
-		
-		Type[] ata = new Type[targs.length];
-		for (int i=0; i < ata.length; i++)
-			ata[i] = targs[i].getType();
-		Type[] ta = new Type[args.length];
-		for (int i=0; i < ta.length; i++)
-			ta[i] = args[i].getType();
-		
-		if( func.name.equals(nameThis) ) {
-			CallType mt = new CallType(ta,Type.tpVoid);
-			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			try {
-				if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.name.name,mt) )
-					throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
-			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
-			if( info.isEmpty() ) {
-				Type st = ctx_clazz.super_type;
-				CallExpr ce = new CallExpr(pos,null,(Method)m,info.mt,args.delToArray(),false);
-				replaceWithNode(ce);
-				//((Method)m).makeArgs(ce.args,st);
-				return;
-			}
-			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
-		}
-		else if( func.name.equals(nameSuper) ) {
-			CallType mt = new CallType(ta,Type.tpVoid);
-			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			try {
-				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.name.name,mt) )
-					throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
-			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
-			if( info.isEmpty() ) {
-				Type st = ctx_clazz.super_type;
-				CallExpr ce = new CallExpr(pos,null,(Method)m,info.mt,args.delToArray(),true);
-				replaceWithNode(ce);
-				//((Method)m).makeArgs(ce.args,st);
-				return;
-			}
-			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
-		} else {
-			CallType mt = new CallType(ata,ta,null);
-			ResInfo info = new ResInfo(this);
-			try {
-				if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
-					// May be a closure
-					DNode@ closure;
-					ResInfo info = new ResInfo(this);
-					try {
-						if( !PassInfo.resolveNameR(this,closure,info,func.name) )
-							throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,null));
-					} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
-					try {
-						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof CallType
-						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof CallType
-						) {
-							replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(this,closure),args.delToArray()));
-							return;
-						}
-					} catch(Exception eee) {
-						Kiev.reportError(this,eee);
-					}
-					throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args));
-				}
-			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
-
-			if( m.isStatic() )
-				assert (info.isEmpty());
-			ENode e = info.buildCall(this,null,m,info.mt,args.toArray());
-			if (e instanceof UnresExpr)
-				e = ((UnresExpr)e).toResolvedExpr();
-			this.replaceWithNode(e);
 		}
 	}
 	
@@ -248,8 +250,6 @@ public class ASTCallExpression extends ENode {
 			}
 		}
 	}
-
-	public int		getPriority() { return Constants.opCallPriority; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();

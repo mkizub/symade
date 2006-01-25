@@ -38,6 +38,19 @@ public class ASTNewAccessExpression extends ENode {
 		public				ENode			obj;
 		public				TypeRef			type;
 		public access:ro	NArr<ENode>		args;
+
+		public int		getPriority() { return Constants.opAccessPriority; }
+	
+		public void mainResolveOut() {
+			for(int i=0; i < args.length; i++) {
+				try {
+					args[i].resolve(null);
+				} catch(Exception e) {
+					Kiev.reportError(args[i],e);
+				}
+			}
+			replaceWithNode(new NewExpr(pos,type.getType(),args.delToArray(),(ENode)~obj));
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -46,19 +59,6 @@ public class ASTNewAccessExpression extends ENode {
 	public ASTNewAccessExpression() {
 		super(new ASTNewAccessExpressionImpl());
 	}
-	
-	public void mainResolveOut() {
-    	for(int i=0; i < args.length; i++) {
-        	try {
-            	args[i].resolve(null);
-            } catch(Exception e) {
-            	Kiev.reportError(args[i],e);
-            }
-        }
-		replaceWithNode(new NewExpr(pos,type.getType(),args.delToArray(),(ENode)~obj));
-	}
-
-	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
     	dmp.append(obj).append('.').append("new").space().append(type).append('(');

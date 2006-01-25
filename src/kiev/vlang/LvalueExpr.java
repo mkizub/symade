@@ -80,6 +80,90 @@ public class AccessExpr extends LvalueExpr {
 	public static view AccessExprView of AccessExprImpl extends LvalueExprView {
 		public ENode	obj;
 		public NameRef	ident;
+
+		public int		getPriority() { return Constants.opAccessPriority; }
+
+		public void mainResolveOut() {
+			ASTNode[] res;
+			Type[] tps;
+	
+			// pre-resolve result
+			if( obj instanceof TypeRef ) {
+				tps = new Type[]{ ((TypeRef)obj).getType() };
+				res = new ASTNode[1];
+				if( ident.name.equals(nameThis) )
+					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+			}
+			else {
+				ENode e = obj;
+				tps = e.getAccessTypes();
+				res = new ASTNode[tps.length];
+				for (int si=0; si < tps.length; si++) {
+					Type tp = tps[si];
+					if( ident.name.equals(nameLength) ) {
+						if( tp.isArray() ) {
+							tps[si] = Type.tpInt;
+							res[si] = new ArrayLengthExpr(pos,(ENode)e.copy(), (NameRef)ident.copy());
+						}
+					}
+				}
+				// fall down
+			}
+			for (int si=0; si < tps.length; si++) {
+				if (res[si] != null)
+					continue;
+				Type tp = tps[si];
+				DNode@ v;
+				ResInfo info;
+				if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) )
+					res[si] = makeExpr(v,info,(ENode)~obj);
+				else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
+					res[si] = makeExpr(v,info,tp.getStruct());
+			}
+			int cnt = 0;
+			int idx = -1;
+			for (int si=0; si < res.length; si++) {
+				if (res[si] != null) {
+					cnt ++;
+					if (idx < 0) idx = si;
+				}
+			}
+			if (cnt > 1) {
+				StringBuffer msg = new StringBuffer("Umbigous access:\n");
+				for(int si=0; si < res.length; si++) {
+					if (res[si] == null)
+						continue;
+					msg.append("\t").append(res).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				throw new CompilerException(this, msg.toString());
+			}
+			if (cnt == 0) {
+				StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+				for(int si=0; si < res.length; si++) {
+					if (tps[si] == null)
+						continue;
+					msg.append("\t").append(tps[si]).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				this.obj = this.obj;
+				throw new CompilerException(this, msg.toString());
+			}
+			this.replaceWithNode(res[idx]);
+		}
+
+		final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
+			if( v instanceof Field ) {
+				return info.buildAccess(this.getNode(), o, v);
+			}
+			else if( v instanceof Struct ) {
+				TypeRef tr = new TypeRef(((Struct)v).ctype);
+				return tr;
+			}
+			else {
+				throw new CompilerException(this,"Identifier "+ident+" must be a class's field");
+			}
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -101,75 +185,6 @@ public class AccessExpr extends LvalueExpr {
 		this(new AccessExprImpl(pos));
 		this.obj = obj;
 		this.ident = ident;
-	}
-
-	public void mainResolveOut() {
-		ASTNode[] res;
-		Type[] tps;
-
-		// pre-resolve result
-		if( obj instanceof TypeRef ) {
-			tps = new Type[]{ ((TypeRef)obj).getType() };
-			res = new ASTNode[1];
-			if( ident.name.equals(nameThis) )
-				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
-		}
-		else {
-			ENode e = obj;
-			tps = e.getAccessTypes();
-			res = new ASTNode[tps.length];
-			for (int si=0; si < tps.length; si++) {
-				Type tp = tps[si];
-				if( ident.name.equals(nameLength) ) {
-					if( tp.isArray() ) {
-						tps[si] = Type.tpInt;
-						res[si] = new ArrayLengthExpr(pos,(ENode)e.copy(), (NameRef)ident.copy());
-					}
-				}
-			}
-			// fall down
-		}
-		for (int si=0; si < tps.length; si++) {
-			if (res[si] != null)
-				continue;
-			Type tp = tps[si];
-			DNode@ v;
-			ResInfo info;
-			if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) )
-				res[si] = makeExpr(v,info,(ENode)~obj);
-			else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
-				res[si] = makeExpr(v,info,tp.getStruct());
-		}
-		int cnt = 0;
-		int idx = -1;
-		for (int si=0; si < res.length; si++) {
-			if (res[si] != null) {
-				cnt ++;
-				if (idx < 0) idx = si;
-			}
-		}
-		if (cnt > 1) {
-			StringBuffer msg = new StringBuffer("Umbigous access:\n");
-			for(int si=0; si < res.length; si++) {
-				if (res[si] == null)
-					continue;
-				msg.append("\t").append(res).append('\n');
-			}
-			msg.append("while resolving ").append(this);
-			throw new CompilerException(this, msg.toString());
-		}
-		if (cnt == 0) {
-			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
-			for(int si=0; si < res.length; si++) {
-				if (tps[si] == null)
-					continue;
-				msg.append("\t").append(tps[si]).append('\n');
-			}
-			msg.append("while resolving ").append(this);
-			this.obj = this.obj;
-			throw new CompilerException(this, msg.toString());
-		}
-		this.replaceWithNode(res[idx]);
 	}
 	
 	public void resolve(Type reqType) throws CompilerException {
@@ -260,21 +275,6 @@ public class AccessExpr extends LvalueExpr {
 		this.replaceWithNodeResolve(reqType,(ENode)~res[idx]);
 	}
 
-	private ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
-		if( v instanceof Field ) {
-			return info.buildAccess(this, o, v);
-		}
-		else if( v instanceof Struct ) {
-			TypeRef tr = new TypeRef(((Struct)v).ctype);
-			return tr;
-		}
-		else {
-			throw new CompilerException(this,"Identifier "+ident+" must be a class's field");
-		}
-	}
-
-	public int		getPriority() { return Constants.opAccessPriority; }
-
 	public String toString() {
     	return obj+"."+ident;
 	}
@@ -309,6 +309,8 @@ public final class IFldExpr extends AccessExpr {
 	@nodeview
 	public static final view IFldExprView of IFldExprImpl extends AccessExprView {
 		public Field		var;
+
+		public Operator getOp() { return BinaryOperator.Access; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -353,8 +355,6 @@ public final class IFldExpr extends AccessExpr {
 	public Type getType() {
 		return Type.getRealType(obj.getType(),var.type);
 	}
-
-	public Operator getOp() { return BinaryOperator.Access; }
 
 	public LvalDNode[] getAccessPath() {
 		if (obj instanceof LVarExpr) {
@@ -445,6 +445,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	public static final view ContainerAccessExprView of ContainerAccessExprImpl extends LvalueExprView {
 		public ENode		obj;
 		public ENode		index;
+
+		public int getPriority() { return opContainerElementPriority; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -511,8 +513,6 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			}
 		}
 	}
-
-	public int getPriority() { return opContainerElementPriority; }
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
@@ -647,6 +647,27 @@ public final class LVarExpr extends LvalueExpr {
 	public static final view LVarExprView of LVarExprImpl extends LvalueExprView {
 		public NameRef	ident;
 		public Var		var;
+
+		public Var getVar() {
+			if (var != null)
+				return var;
+			Var@ v;
+			ResInfo info = new ResInfo(this);
+			if( !PassInfo.resolveNameR(this.getNode(),v,info,ident.name) )
+				throw new CompilerException(this,"Unresolved var "+ident);
+			var = v;
+			return var;
+		}
+
+		public boolean preResolveIn(TransfProcessor proc) {
+			getVar(); // calls resolving
+			return false;
+		}
+	
+		public boolean mainResolveIn(TransfProcessor proc) {
+			getVar(); // calls resolving
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -697,27 +718,6 @@ public final class LVarExpr extends LvalueExpr {
 		if( sni == null || sni.getTypes().length == 0 )
 			return new Type[]{var.type};
 		return (Type[])sni.getTypes().clone();
-	}
-
-	public Var getVar() {
-		if (var != null)
-			return var;
-		Var@ v;
-		ResInfo info = new ResInfo(this);
-		if( !PassInfo.resolveNameR(this,v,info,ident.name) )
-			throw new CompilerException(this,"Unresolved var "+ident);
-		var = v;
-		return var;
-	}
-
-	public boolean preResolveIn(TransfProcessor proc) {
-		getVar(); // calls resolving
-		return false;
-	}
-	
-	public boolean mainResolveIn(TransfProcessor proc) {
-		getVar(); // calls resolving
-		return false;
 	}
 	
 	public boolean preGenerate() {
@@ -793,6 +793,8 @@ public final class SFldExpr extends AccessExpr {
 	@nodeview
 	public static final view SFldExprView of SFldExprImpl extends AccessExprView {
 		public Field		var;
+
+		public Operator getOp() { return BinaryOperator.Access; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -867,8 +869,6 @@ public final class SFldExpr extends AccessExpr {
 		setResolved(true);
 	}
 
-	public Operator getOp() { return BinaryOperator.Access; }
-
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)var.parent;
 		ClazzName cln = cl.name;
@@ -901,6 +901,8 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	public static final view OuterThisAccessExprView of OuterThisAccessExprImpl extends AccessExprView {
 		public				Struct			outer;
 		public access:ro	NArr<Field>		outer_refs;
+
+		public Operator getOp() { return BinaryOperator.Access; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -969,8 +971,6 @@ public final class OuterThisAccessExpr extends AccessExpr {
 		}
 		setResolved(true);
 	}
-
-	public Operator getOp() { return BinaryOperator.Access; }
 
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
 }

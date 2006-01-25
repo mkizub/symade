@@ -41,6 +41,25 @@ public class ASTNewExpression extends ENode {
 		public				TypeRef			type;
 		public access:ro	NArr<ENode>		args;
 		public				Struct			clazz;
+
+		public int		getPriority() { return Constants.opAccessPriority; }
+
+		public boolean preResolveIn(TransfProcessor proc) {
+			// don't pre-resolve clazz
+			Type tp = type.getType();
+			tp.checkResolved();
+			foreach (ENode a; args) proc.preResolve(a);
+			return false;
+		}
+	
+		public boolean mainResolveIn(TransfProcessor proc) {
+			// don't pre-resolve clazz
+			Type tp = type.getType();
+			tp.checkResolved();
+			proc.mainResolve(type);
+			foreach (ENode a; args) proc.mainResolve(a);
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -52,23 +71,6 @@ public class ASTNewExpression extends ENode {
 
 	public Type getType() {
 		return type.getType();
-	}
-	
-	public boolean preResolveIn(TransfProcessor proc) {
-		// don't pre-resolve clazz
-		Type tp = type.getType();
-		tp.checkResolved();
-		foreach (ENode a; args) proc.preResolve(a);
-		return false;
-	}
-	
-	public boolean mainResolveIn(TransfProcessor proc) {
-		// don't pre-resolve clazz
-		Type tp = type.getType();
-		tp.checkResolved();
-		proc.mainResolve(type);
-		foreach (ENode a; args) proc.mainResolve(a);
-		return false;
 	}
 	
 	public boolean preGenerate() {
@@ -160,8 +162,6 @@ public class ASTNewExpression extends ENode {
 			replaceWithNodeResolve(reqType, ne);
 		}
 	}
-
-	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();

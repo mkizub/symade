@@ -57,6 +57,18 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		@getter public Method get$ctx_method() { return null; }
 		@getter public Method get$child_ctx_method() { return null; }
 
+		public boolean preResolveIn(TransfProcessor proc) {
+			for(int i=0; i < members.length; i++) {
+				try {
+					foreach (DNode dn; syntax; dn instanceof Import) {
+						((Import)dn).resolveImports();
+					}
+				} catch(Exception e ) {
+					Kiev.reportError/*Warning*/(members[i],e);
+				}
+			}
+			return true;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -132,27 +144,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 			Kiev.reportError(this,"Extension '"+s+"' was disabled from command line");
 		disabled_extensions[i] = !enabled;
 	}
-
-	public boolean preResolveIn(TransfProcessor proc) {
-		this.resolveImports();
-		return true;
-	}
 	
-	private void resolveImports() {
-		for(int i=0; i < members.length; i++) {
-			try {
-				foreach (DNode dn; syntax; dn instanceof Import) {
-					((Import)dn).resolveImports();
-				}
-				foreach (DNode dn; members; dn instanceof Struct) {
-					((Struct)dn).resolveImports();
-				}
-			} catch(Exception e ) {
-				Kiev.reportError/*Warning*/(members[i],e);
-			}
-		}
-	}
-
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving file "+filename);
 		KString curr_file = Kiev.curFile;

@@ -36,6 +36,29 @@ public class ASTCastOperator extends ASTOperator {
 		public TypeRef	type;
 		public boolean  reinterp;
 		public boolean  sure;
+
+		public int		getPriority() { return Constants.opCastPriority; }
+
+		public boolean preResolveIn(TransfProcessor proc) {
+			if (sure)
+				return true;
+			try {
+				type.getType();
+				return false;
+			} catch (CompilerException e) {
+				if !(type instanceof TypeNameRef)
+					throw e;
+			}
+			TypeNameRef tnr = (TypeNameRef)type;
+			String[] names = String.valueOf(tnr.name).split("\\.");
+			ENode e = new ASTIdentifier(type.pos, KString.from(names[0]));
+			for (int i=1; i < names.length; i++) {
+				e = new AccessExpr(type.pos, e, new NameRef(type.pos, KString.from(names[i])));
+			}
+			replaceWithNode(e);
+			proc.preResolve(e);
+			return false;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -45,33 +68,10 @@ public class ASTCastOperator extends ASTOperator {
 		image = fakeImage;
 	}
 	
-	public boolean preResolveIn(TransfProcessor proc) {
-		if (sure)
-			return true;
-		try {
-			type.getType();
-			return false;
-		} catch (CompilerException e) {
-			if !(type instanceof TypeNameRef)
-				throw e;
-		}
-		TypeNameRef tnr = (TypeNameRef)type;
-		String[] names = String.valueOf(tnr.name).split("\\.");
-		ENode e = new ASTIdentifier(type.pos, KString.from(names[0]));
-		for (int i=1; i < names.length; i++) {
-			e = new AccessExpr(type.pos, e, new NameRef(type.pos, KString.from(names[i])));
-		}
-		replaceWithNode(e);
-		proc.preResolve(e);
-		return false;
-	}
-	
 	public Operator resolveOperator() {
 		Type tp = type.getType();
 	    return CastOperator.newCastOperator(tp,reinterp);
 	}
-
-	public int		getPriority() { return Constants.opCastPriority; }
 
 	public String toString() { return (reinterp?"($reinterp ":"($cast ")+type+")"; }
 

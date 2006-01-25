@@ -33,6 +33,8 @@ public abstract class UnresExpr extends ENode {
 	@nodeview
 	public static view UnresExprView of UnresExprImpl extends ENodeView {
 		public				Operator			op;
+
+		public Operator getOp() { return op; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -41,8 +43,6 @@ public abstract class UnresExpr extends ENode {
 	public UnresExpr(UnresExprImpl $view) {
 		super($view);
 	}
-
-	public Operator getOp() { return op; }
 	
 	public abstract ENode toResolvedExpr();
 	

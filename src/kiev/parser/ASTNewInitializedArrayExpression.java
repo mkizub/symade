@@ -38,6 +38,18 @@ public class ASTNewInitializedArrayExpression extends ENode {
 		public				int				dim;
 		public				TypeRef			type;
 		public access:ro	NArr<ENode>		args;
+
+		public int		getPriority() { return Constants.opAccessPriority; }
+	
+		public void mainResolveOut() {
+			Type tp = type.getType();
+			while( this.dim > 0 ) { tp = new ArrayType(tp); this.dim--; }
+			if( !tp.isArray() )
+				throw new CompilerException(this,"Type "+type+" is not an array type");
+			int dim = 0;
+			while( tp.isArray() ) { dim++; tp = ((ArrayType)tp).arg; }
+			replaceWithNode(new NewInitializedArrayExpr(pos,new TypeRef(tp),dim,args.delToArray()));
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -45,16 +57,6 @@ public class ASTNewInitializedArrayExpression extends ENode {
 	
 	public ASTNewInitializedArrayExpression() {
 		super(new ASTNewInitializedArrayExpressionImpl());
-	}
-	
-	public void mainResolveOut() {
-		Type tp = type.getType();
-		while( this.dim > 0 ) { tp = new ArrayType(tp); this.dim--; }
-		if( !tp.isArray() )
-			throw new CompilerException(this,"Type "+type+" is not an array type");
-        int dim = 0;
-        while( tp.isArray() ) { dim++; tp = ((ArrayType)tp).arg; }
-		replaceWithNode(new NewInitializedArrayExpr(pos,new TypeRef(tp),dim,args.delToArray()));
 	}
 
 	public void resolve(Type reqType) {
@@ -79,8 +81,6 @@ public class ASTNewInitializedArrayExpression extends ENode {
         while( tp.isArray() ) { dim++; tp = ((ArrayType)tp).arg; }
 		replaceWithNodeResolve(reqType, new NewInitializedArrayExpr(pos,new TypeRef(tp),dim,args.delToArray()));
 	}
-
-	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("new ").append(type);

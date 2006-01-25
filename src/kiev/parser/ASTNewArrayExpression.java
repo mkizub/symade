@@ -37,6 +37,8 @@ public class ASTNewArrayExpression extends ENode {
 		public				int				dim;
 		public				TypeRef			type;
 		public access:ro	NArr<ENode>		args;
+
+		public int		getPriority() { return Constants.opAccessPriority; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -64,8 +66,6 @@ public class ASTNewArrayExpression extends ENode {
 		type.getType(); // resolve the type
 		replaceWithNodeResolve(reqType, new NewArrayExpr(pos,(TypeRef)~type,args.delToArray(),dim));
 	}
-
-	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();

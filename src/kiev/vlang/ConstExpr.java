@@ -435,6 +435,14 @@ public abstract class ConstExpr extends ENode {
 		public ConstExprView(ConstExprImpl $view) {
 			super($view);
 		}
+
+		public int		getPriority() { return 255; }
+
+		public final boolean mainResolveIn(TransfProcessor proc) {
+			// already fully resolved
+			setResolved(true);
+			return false;
+		}
 	}
 
 	public abstract VView getVView() alias operator(210,fy,$cast);
@@ -449,13 +457,6 @@ public abstract class ConstExpr extends ENode {
 	public abstract Object getConstValue();
 
 	public boolean	isConstantExpr() { return true; }
-	public int		getPriority() { return 255; }
-
-	public final boolean mainResolveIn(TransfProcessor proc) {
-		// already fully resolved
-		setResolved(true);
-		return false;
-	}
 	
 	public final void resolve(Type reqType) {
 		setResolved(true);

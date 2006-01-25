@@ -320,6 +320,49 @@ public abstract class ASTNode implements Constants, Cloneable {
 			return df;
 		}
 	
+		public final ASTNode replaceWithNode(ASTNode node) {
+			assert(isAttached());
+			if (pslot.is_space) {
+				assert(node != null);
+				NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
+				int idx = space.indexOf(this.getNode());
+				assert(idx >= 0);
+				if (node.pos == 0) node.pos = this.pos;
+				space[idx] = node;
+			} else {
+				assert(parent.getVal(pslot.name) == this._self);
+				if (node != null && node.pos == 0) node.pos = this.pos;
+				parent.setVal(pslot.name, node);
+			}
+			assert(node == null || node.isAttached());
+			return node;
+		}
+		public final ASTNode replaceWith(()->ASTNode fnode) {
+			assert(isAttached());
+			ASTNode parent = this.parent;
+			AttrSlot pslot = this.pslot;
+			if (pslot.is_space) {
+				NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
+				int idx = space.indexOf(this.getNode());
+				assert(idx >= 0);
+				space[idx] = (ASTNode)pslot.clazz.newInstance();
+				ASTNode n = fnode();
+				assert(n != null);
+				if (n.pos == 0) n.pos = this.pos;
+				space[idx] = n;
+				assert(n.isAttached());
+				return n;
+			} else {
+				assert(parent.getVal(pslot.name) == this._self);
+				parent.setVal(pslot.name, pslot.clazz.newInstance());
+				ASTNode n = fnode();
+				if (n != null && n.pos == 0) n.pos = this.pos;
+				parent.setVal(pslot.name, n);
+				assert(n == null || n.isAttached());
+				return n;
+			}
+		}
+
 		// the (private) field/method/struct is accessed from inner class (and needs proxy access)
 		@getter public final boolean isAccessedFromInner() {
 			return this.is_accessed_from_inner;
@@ -398,6 +441,8 @@ public abstract class ASTNode implements Constants, Cloneable {
 		public final void addNodeData(NodeData d);
 		public final void delNodeData(KString id);
 		public DataFlowInfo getDFlow();
+		public final ASTNode replaceWithNode(ASTNode node);
+		public final ASTNode replaceWith(()->ASTNode fnode);
 		public final boolean isAttached();
 		public final boolean isAccessedFromInner();
 		public final void    setAccessedFromInner(boolean on);
@@ -463,49 +508,6 @@ public abstract class ASTNode implements Constants, Cloneable {
 		return node;
 	};
 
-	public final ASTNode replaceWithNode(ASTNode node) {
-		assert(isAttached());
-		if (pslot.is_space) {
-			assert(node != null);
-			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
-			int idx = space.indexOf(this);
-			assert(idx >= 0);
-			if (node.pos == 0) node.pos = this.pos;
-			space[idx] = node;
-		} else {
-			assert(parent.getVal(pslot.name) == this);
-			if (node != null && node.pos == 0) node.pos = this.pos;
-			parent.setVal(pslot.name, node);
-		}
-		assert(node == null || node.isAttached());
-		return node;
-	}
-	public final ASTNode replaceWith(()->ASTNode fnode) {
-		assert(isAttached());
-		ASTNode parent = this.parent;
-		AttrSlot pslot = this.pslot;
-		if (pslot.is_space) {
-			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
-			int idx = space.indexOf(this);
-			assert(idx >= 0);
-			space[idx] = (ASTNode)pslot.clazz.newInstance();
-			ASTNode n = fnode();
-			assert(n != null);
-			if (n.pos == 0) n.pos = this.pos;
-			space[idx] = n;
-			assert(n.isAttached());
-			return n;
-		} else {
-			assert(parent.getVal(pslot.name) == this);
-			parent.setVal(pslot.name, pslot.clazz.newInstance());
-			ASTNode n = fnode();
-			if (n != null && n.pos == 0) n.pos = this.pos;
-			parent.setVal(pslot.name, n);
-			assert(n == null || n.isAttached());
-			return n;
-		}
-	}
-
 	public Type getType() { return Type.tpVoid; }
 
     public Dumper toJava(Dumper dmp) {
@@ -518,12 +520,6 @@ public abstract class ASTNode implements Constants, Cloneable {
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }
 	public DFFunc newDFFuncFls(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncFls() for "+getClass()); }
 
-	public boolean preResolveIn(TransfProcessor proc) { return theView.preResolveIn(proc); }
-	public void    preResolveOut() { theView.preResolveOut(); }
-	
-	public boolean mainResolveIn(TransfProcessor proc) { return theView.mainResolveIn(proc); }
-	public void    mainResolveOut() { theView.mainResolveOut(); }
-	
 	public boolean preVerify()  { return theView.preVerify(); }
 	public void    postVerify() { theView.postVerify(); }
 	
@@ -1083,6 +1079,17 @@ public /*abstract*/ class ENode extends ASTNode {
 		// break target
 		public final boolean isBreakTarget();
 		public final void setBreakTarget(boolean on);
+
+		public Operator getOp() { return null; }
+
+		public int getPriority() {
+			if (isPrimaryExpr())
+				return 255;
+			Operator op = getOp();
+			if (op == null)
+				return 255;
+			return op.priority;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1102,16 +1109,6 @@ public /*abstract*/ class ENode extends ASTNode {
 		throw new CompilerException(this,"Resolve call for e-node "+getClass());
 	}
 	
-	public Operator getOp() { return null; }
-	public int getPriority() {
-		if (isPrimaryExpr())
-			return 255;
-		Operator op = getOp();
-		if (op == null)
-			return 255;
-		return op.priority;
-	}
-
 	public boolean valueEquals(Object o) { return false; }
 	public boolean isConstantExpr() { return false; }
 	public Object	getConstValue() {
@@ -1217,6 +1214,15 @@ public final class LocalStructDecl extends ENode implements Named {
 	@nodeview
 	public static final view LocalStructDeclView of LocalStructDeclImpl extends ENodeView {
 		public Struct		clazz;
+
+		public boolean preResolveIn(TransfProcessor proc) {
+			if( ctx_method==null || ctx_method.isStatic())
+				clazz.setStatic(true);
+			clazz.setResolved(true);
+			clazz.setLocal(true);
+			Kiev.runProcessorsOn(clazz);
+			return false;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1227,15 +1233,6 @@ public final class LocalStructDecl extends ENode implements Named {
 		super(new LocalStructDeclImpl());
 		this.clazz = clazz;
 		clazz.setResolved(true);
-	}
-
-	public boolean preResolveIn(TransfProcessor proc) {
-		if( ctx_method==null || ctx_method.isStatic())
-			clazz.setStatic(true);
-		clazz.setResolved(true);
-		clazz.setLocal(true);
-		Kiev.runProcessorsOn(clazz);
-		return false;
 	}
 	
 	public void resolve(Type reqType) {

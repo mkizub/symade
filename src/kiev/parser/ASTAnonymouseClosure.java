@@ -43,10 +43,47 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		public				NewClosure					new_closure;
 		public				Struct						clazz;
 		public				CallType					ctype;
+	
+		public int		getPriority() { return Constants.opAccessPriority; }
+
+		public boolean preResolveIn(TransfProcessor proc) {
+			proc.preResolve(rettype);
+			foreach (FormPar fp; params) proc.preResolve(fp);
+			return false; // don't pre-resolve me
+		}
+	
+		public boolean mainResolveIn(TransfProcessor proc) {
+			proc.mainResolve(rettype);
+			foreach (FormPar fp; params) proc.mainResolve(fp);
+		
+			ClazzName clname = ClazzName.fromBytecodeName(
+				new KStringBuffer(ctx_clazz.name.bytecode_name.len+8)
+					.append_fast(ctx_clazz.name.bytecode_name)
+					.append_fast((byte)'$')
+					.append(ctx_clazz.countAnonymouseInnerStructs())
+					.toKString(),
+				false
+			);
+			clazz = Env.newStruct(clname,ctx_clazz,0,true);
+			clazz.setResolved(true);
+			clazz.setLocal(true);
+			clazz.setAnonymouse(true);
+			if( ctx_method==null || ctx_method.isStatic() ) clazz.setStatic(true);
+			if( Env.getStruct(Type.tpClosureClazz.name) == null )
+				throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
+			clazz.super_type = Type.tpClosureClazz.ctype;
+	
+			Type[] types = new Type[params.length];
+			for(int i=0; i < types.length; i++)
+				types[i] = params[i].type;
+			Type ret = rettype.getType();
+			this.ctype = new CallType(types,ret,true);
+	
+			return false; // don't pre-resolve me
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ASTAnonymouseClosure() {
 		super(new ASTAnonymouseClosureImpl());
@@ -66,42 +103,6 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		p @= params,
 		p.name.equals(name),
 		node ?= p
-	}
-	
-	public boolean preResolveIn(TransfProcessor proc) {
-		proc.preResolve(rettype);
-		foreach (FormPar fp; params) proc.preResolve(fp);
-		return false; // don't pre-resolve me
-	}
-	
-	public boolean mainResolveIn(TransfProcessor proc) {
-		proc.mainResolve(rettype);
-		foreach (FormPar fp; params) proc.mainResolve(fp);
-	
-		ClazzName clname = ClazzName.fromBytecodeName(
-			new KStringBuffer(ctx_clazz.name.bytecode_name.len+8)
-				.append_fast(ctx_clazz.name.bytecode_name)
-				.append_fast((byte)'$')
-				.append(ctx_clazz.countAnonymouseInnerStructs())
-				.toKString(),
-			false
-		);
-		clazz = Env.newStruct(clname,ctx_clazz,0,true);
-		clazz.setResolved(true);
-		clazz.setLocal(true);
-		clazz.setAnonymouse(true);
-		if( ctx_method==null || ctx_method.isStatic() ) clazz.setStatic(true);
-		if( Env.getStruct(Type.tpClosureClazz.name) == null )
-			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-		clazz.super_type = Type.tpClosureClazz.ctype;
-
-		Type[] types = new Type[params.length];
-		for(int i=0; i < types.length; i++)
-			types[i] = params[i].type;
-		Type ret = rettype.getType();
-		this.ctype = new CallType(types,ret,true);
-
-		return false; // don't pre-resolve me
 	}
 	
 	public void resolve(Type reqType) {
@@ -155,8 +156,6 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		new_closure = new NewClosure(pos,new TypeClosureRef(ctype), (Struct)~this.clazz);
 		replaceWithNodeResolve(reqType, (ENode)~new_closure);
 	}
-
-	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();

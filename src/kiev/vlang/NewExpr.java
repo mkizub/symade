@@ -57,6 +57,8 @@ public final class NewExpr extends ENode {
 		public				ENode			temp_expr;
 		public				Struct			clazz;
 		public				Method			func;
+
+		public int		getPriority() { return Constants.opAccessPriority; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -186,8 +188,6 @@ public final class NewExpr extends ENode {
 		setResolved(true);
 	}
 
-	public int		getPriority() { return Constants.opAccessPriority; }
-
 	public Dumper toJava(Dumper dmp) {
 		Type tp = type.getType();
 		if( !tp.isReference() ) {
@@ -246,6 +246,8 @@ public final class NewArrayExpr extends ENode {
 		public access:ro	NArr<ENode>		args;
 		public				int				dim;
 		public				Type			arrtype;
+
+		public int		getPriority() { return Constants.opAccessPriority; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -310,8 +312,6 @@ public final class NewArrayExpr extends ENode {
 		setResolved(true);
 	}
 
-	public int		getPriority() { return Constants.opAccessPriority; }
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("new ").append(type);
 		for(int i=0; i < dim; i++) {
@@ -353,6 +353,8 @@ public final class NewInitializedArrayExpr extends ENode {
 		public				ArrayType		arrtype;
 		
 		@getter public final int	get$dim()	{ return this.$view.dims.length; }
+
+		public int		getPriority() { return Constants.opAccessPriority; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -406,8 +408,6 @@ public final class NewInitializedArrayExpr extends ENode {
 		setResolved(true);
 	}
 
-	public int		getPriority() { return Constants.opAccessPriority; }
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("new ").append(arrtype);
 		dmp.append('{');
@@ -444,6 +444,8 @@ public final class NewClosure extends ENode {
 		public TypeClosureRef	type;
 		public Struct			clazz;
 		public Method			func;
+
+		public int		getPriority() { return Constants.opAccessPriority; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -477,8 +479,6 @@ public final class NewClosure extends ENode {
 		func = clazz.resolveMethod(nameInit,Type.tpVoid,Type.tpInt);
 		setResolved(true);
 	}
-
-	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
 		CallType type = (CallType)this.type.getType();
