@@ -51,12 +51,12 @@ public class TypeDef extends TypeDecl {
 	}
 
 	public TypeDef(NameRef nm) {
-		super(new TypeDefImpl(nm.getPos()));
+		super(new TypeDefImpl(nm.pos));
 		this.name = nm;
 	}
 
 	public TypeDef(NameRef nm, TypeRef sup) {
-		super(new TypeDefImpl(nm.getPos()));
+		super(new TypeDefImpl(nm.pos));
 		this.name = nm;
 		this.upper_bound = sup;
 	}

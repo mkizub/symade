@@ -80,7 +80,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 		prior = n.value;
 		if( prior < 0 || prior > 255 )
 			throw new CompilerException(n,"Operator priority must have value from 0 to 255");
-		pos = n.getPos();
+		pos = n.pos;
 		return;
 	}
 

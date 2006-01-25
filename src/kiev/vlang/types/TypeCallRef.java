@@ -30,6 +30,13 @@ public class TypeCallRef extends TypeRef {
 		@att public NArr<TypeRef>			args;
 		@att public TypeRef					ret;
 		public TypeCallRefImpl() {}
+
+		public void callbackChildChanged(AttrSlot attr) {
+			this.lnk = null;
+			if (parent != null && pslot != null) {
+				parent.callbackChildChanged(pslot);
+			}
+		}
 	}
 	@nodeview
 	public static final view TypeCallRefView of TypeCallRefImpl extends TypeRefView {
@@ -57,13 +64,6 @@ public class TypeCallRef extends TypeRef {
 	}
 	public Struct getStruct() {
 		return null;
-	}
-
-	public void callbackChildChanged(AttrSlot attr) {
-		this.lnk = null;
-		if (parent != null && pslot != null) {
-			parent.callbackChildChanged(pslot);
-		}
 	}
 
 	public CallType getMType() {

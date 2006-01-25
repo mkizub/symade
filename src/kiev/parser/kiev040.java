@@ -200,7 +200,7 @@ public abstract class kiev040 implements kiev040Constants {
                 FileUnit fu = new FileUnit();
                 curFileUnit = fu;
                 fu.filename = KString.from(filename);
-                fu.setPos(0);
+                fu.pos = 0;
                 declMode = true;
                 ASTModifiers modifiers;
                 oldClazz = curClazz;
@@ -2756,7 +2756,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public TypeRef ClosureType() throws ParseException {
   Token t; TypeClosureRef n = new TypeClosureRef();
     t= jj_consume_token(LPAREN);
-                n.setPos(t.getPos());
+                n.pos = t.getPos();
     if (jj_2_60(1)) {
       n.types += Type();
       label_47:
@@ -3310,7 +3310,7 @@ public abstract class kiev040 implements kiev040Constants {
         throw new ParseException();
       }
     }
-                op.setPos(t.getPos());
+                op.pos = t.getPos();
                 op.image = KString.from(image);
                 {if (true) return op;}
     throw new Error("Missing return statement in function");
@@ -3396,7 +3396,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ENode CastOperator(boolean sure) throws ParseException {
   Token t; ASTCastOperator op = new ASTCastOperator(); op.sure = sure;
     t= jj_consume_token(LPAREN);
-          op.setPos(t.getPos());
+          op.pos = t.getPos();
     switch (jj_nt.kind) {
     case CAST:
     case REINTERP:
@@ -3630,18 +3630,18 @@ public abstract class kiev040 implements kiev040Constants {
         e = CallAccessExpression(e);
       } else if (jj_2_80(3)) {
         t= jj_consume_token(DOT);
-                  AccessExpr ae = new AccessExpr(); ae.obj = e; ae.setPos(t.getPos());
+                  AccessExpr ae = new AccessExpr(); ae.obj = e; ae.pos = t.getPos();
         ae.ident = Name();
           e = ae;
       } else if (jj_2_81(2)) {
         t= jj_consume_token(LBRACKET);
-                  ContainerAccessExpr ae = new ContainerAccessExpr(); ae.obj = e; ae.setPos(t.getPos());
+                  ContainerAccessExpr ae = new ContainerAccessExpr(); ae.obj = e; ae.pos = t.getPos();
         ae.index = ExpressionNT(null);
         jj_consume_token(RBRACKET);
           e = ae;
       } else if (jj_2_82(2147483647)) {
         t= jj_consume_token(DOT);
-                  ASTNewAccessExpression ae = new ASTNewAccessExpression(); ae.obj = e; ae.setPos(t.getPos());
+                  ASTNewAccessExpression ae = new ASTNewAccessExpression(); ae.obj = e; ae.pos = t.getPos();
         e = NewExpression();
                         ae.type = (TypeRef)~((ASTNewExpression)e).type;
                         ae.args.moveFrom(((ASTNewExpression)e).args);
@@ -3682,7 +3682,7 @@ public abstract class kiev040 implements kiev040Constants {
     }
     jj_consume_token(RPAREN);
     jj_consume_token(ARROW);
-      ac.setPos(t.getPos());
+      ac.pos = t.getPos();
     if (getToken(1).kind == RULE) {
       ac.rettype = Type();
       ac.body = RuleBlock();
@@ -3820,7 +3820,7 @@ public abstract class kiev040 implements kiev040Constants {
         Struct clazz, oldClazz;
         ASTNewExpression ne = new ASTNewExpression();
     t= jj_consume_token(NEW);
-                  ne.setPos(t.getPos());
+                  ne.pos = t.getPos();
     modifiers = Modifiers();
     ne.type = NArrType();
     jj_consume_token(LPAREN);
@@ -3864,7 +3864,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ASTNewArrayExpression NewArrayExpression() throws ParseException {
   Token t; int dim=0; ASTNewArrayExpression ne = new ASTNewArrayExpression();
     t= jj_consume_token(NEW);
-                ne.setPos(t.getPos());
+                ne.pos = t.getPos();
                 t = null;
     ne.type = NArrType();
     label_63:
@@ -3899,7 +3899,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ASTNewInitializedArrayExpression NewInitializedArrayExpression() throws ParseException {
   Token t; int dim=0; ASTNewInitializedArrayExpression ne = new ASTNewInitializedArrayExpression();
     t= jj_consume_token(NEW);
-                ne.setPos(t.getPos());
+                ne.pos = t.getPos();
                 t = null;
     ne.type = NArrType();
     label_65:
@@ -4058,7 +4058,7 @@ public abstract class kiev040 implements kiev040Constants {
   boolean old_declMode;
     jj_consume_token(LBRACE);
                 BlockStat bl = new BlockStat();
-                bl.setPos(getToken(1).getPos());
+                bl.pos = getToken(1).getPos();
                 old_declMode = declMode;
                 declMode = false;
     try {
@@ -4104,7 +4104,7 @@ public abstract class kiev040 implements kiev040Constants {
   boolean old_declMode;
     jj_consume_token(LBRACE);
                 RuleBlock bl = new RuleBlock();
-                bl.setPos(getToken(1).getPos());
+                bl.pos = getToken(1).getPos();
                 old_declMode = declMode;
                 declMode = false;
     try {
@@ -4119,7 +4119,7 @@ public abstract class kiev040 implements kiev040Constants {
 
   final public BlockStat CondBlock() throws ParseException {
                 BlockStat bl = new BlockStat();
-                bl.setPos(getToken(1).getPos());
+                bl.pos = getToken(1).getPos();
     switch (jj_nt.kind) {
     case LBRACE:
       jj_consume_token(LBRACE);
@@ -4220,7 +4220,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ENode EmptyStatement() throws ParseException {
   Token t; EmptyStat st = new EmptyStat();
     t= jj_consume_token(SEMICOLON);
-                st.setPos(t.getPos());
+                st.pos = t.getPos();
                 {if (true) return st;}
     throw new Error("Missing return statement in function");
   }
@@ -4236,7 +4236,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public SwitchStat SwitchStatement() throws ParseException {
   SwitchStat st = new SwitchStat();
     jj_consume_token(SWITCH);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     jj_consume_token(LPAREN);
     st.sel = ExpressionNT(null);
     jj_consume_token(RPAREN);
@@ -4351,7 +4351,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public IfElseStat IfStatement() throws ParseException {
   IfElseStat st = new IfElseStat(); ASTOperator not = null;
     jj_consume_token(IF);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     if (jj_2_100(2147483647)) {
       not = Operator();
     } else {
@@ -4377,7 +4377,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public WhileStat WhileStatement() throws ParseException {
   WhileStat st = new WhileStat(); ASTOperator not = null;
     jj_consume_token(WHILE);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     if (jj_2_101(2147483647)) {
       not = Operator();
     } else {
@@ -4395,7 +4395,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public DoWhileStat DoStatement() throws ParseException {
   DoWhileStat st = new DoWhileStat(); ASTOperator not = null;
     jj_consume_token(DO);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     st.body = Statement();
     jj_consume_token(WHILE);
     if (jj_2_102(2147483647)) {
@@ -4415,7 +4415,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ForStat ForStatement() throws ParseException {
   ForStat st = new ForStat();
     jj_consume_token(FOR);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     jj_consume_token(LPAREN);
     st.init = ForInit();
     if (jj_2_103(1)) {
@@ -4438,7 +4438,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ForEachStat ForEachStatement() throws ParseException {
   ASTModifiers modifiers; ForEachStat st = new ForEachStat();
     jj_consume_token(FOREACH);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     jj_consume_token(LPAREN);
     if (jj_2_105(2147483647)) {
       modifiers = Modifiers();
@@ -4511,18 +4511,18 @@ public abstract class kiev040 implements kiev040Constants {
     case CASE:
       jj_consume_token(CASE);
                         st = new GotoCaseStat();
-                        st.setPos(getToken(0).getPos());
+                        st.pos = getToken(0).getPos();
       expr = ExpressionNT(null);
                   ((GotoCaseStat)st).expr = expr;
       break;
     case _DEFAULT:
       jj_consume_token(_DEFAULT);
                         st = new GotoCaseStat();
-                        st.setPos(getToken(0).getPos());
+                        st.pos = getToken(0).getPos();
       break;
     case IDENTIFIER:
                         st = new GotoStat();
-                        st.setPos(getToken(0).getPos());
+                        st.pos = getToken(0).getPos();
       id = Name();
                   ((GotoStat)st).ident = id;
       break;
@@ -4538,7 +4538,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public BreakStat BreakStatement() throws ParseException {
   BreakStat st = new BreakStat();
     jj_consume_token(BREAK);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     switch (jj_nt.kind) {
     case IDENTIFIER:
       st.ident = Name();
@@ -4554,7 +4554,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ContinueStat ContinueStatement() throws ParseException {
   ContinueStat st = new ContinueStat();
     jj_consume_token(CONTINUE);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     switch (jj_nt.kind) {
     case IDENTIFIER:
       st.ident = Name();
@@ -4570,7 +4570,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ReturnStat ReturnStatement() throws ParseException {
   ReturnStat st = new ReturnStat();
     jj_consume_token(RETURN);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     if (jj_2_109(1)) {
       st.expr = ExpressionNT(null);
     } else {
@@ -4584,7 +4584,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ThrowStat ThrowStatement() throws ParseException {
   ThrowStat st = new ThrowStat();
     jj_consume_token(THROW);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     st.expr = ExpressionNT(null);
     jj_consume_token(SEMICOLON);
           {if (true) return st;}
@@ -4594,7 +4594,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public SynchronizedStat SynchronizedStatement() throws ParseException {
   SynchronizedStat st = new SynchronizedStat();
     jj_consume_token(SYNCHRONIZED);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     jj_consume_token(LPAREN);
     st.expr = ExpressionNT(null);
     jj_consume_token(RPAREN);
@@ -4606,7 +4606,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public WithStat WithStatement() throws ParseException {
   WithStat st = new WithStat();
     jj_consume_token(WITH);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     jj_consume_token(LPAREN);
     st.expr = ExpressionNT(null);
     jj_consume_token(RPAREN);
@@ -4618,7 +4618,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public TryStat TryStatement() throws ParseException {
   ASTModifiers modifiers; TryStat st = new TryStat();
     jj_consume_token(TRY);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     st.body = Block();
     label_75:
     while (true) {
@@ -4645,7 +4645,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public CatchInfo CatchInfo() throws ParseException {
   ASTModifiers modifiers; CatchInfo st = new CatchInfo();
     jj_consume_token(CATCH);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     jj_consume_token(LPAREN);
     modifiers = Modifiers();
     st.arg = PizzaCaseFormalParameter(modifiers);
@@ -4658,7 +4658,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public FinallyInfo FinallyInfo() throws ParseException {
   Token t; FinallyInfo st = new FinallyInfo();
     jj_consume_token(FINALLY);
-          st.setPos(getToken(0).getPos());
+          st.pos = getToken(0).getPos();
     st.body = Block();
           {if (true) return st;}
     throw new Error("Missing return statement in function");

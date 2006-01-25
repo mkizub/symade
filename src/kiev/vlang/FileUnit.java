@@ -50,6 +50,13 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		public access:ro	NArr<PrescannedBody>	bodies;
 		public access:ro	boolean[]				disabled_extensions;
 		public				boolean					scanned_for_interface_only;
+
+		@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this.getNode(); }
+		@getter public Struct get$ctx_clazz() { return null; }
+		@getter public Struct get$child_ctx_clazz() { return null; }
+		@getter public Method get$ctx_method() { return null; }
+		@getter public Method get$child_ctx_method() { return null; }
+
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -64,12 +71,6 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		this.pkg = new TypeNameRef(pkg.name.name);
 		this.pkg.lnk = pkg.ctype;
 	}
-
-	@getter public FileUnit get$ctx_file_unit() { return this; }
-	@getter public Struct get$ctx_clazz() { return null; }
-	@getter public Struct get$child_ctx_clazz() { return null; }
-	@getter public Method get$ctx_method() { return null; }
-	@getter public Method get$child_ctx_method() { return null; }
 
 	public void addPrescannedBody(PrescannedBody b) {
 		bodies.append(b);

@@ -54,6 +54,47 @@ public class Var extends LvalDNode implements Named, Typed {
 					parent.callbackChildChanged(pslot);
 			}
 		}	
+
+		// is a local var in a rule 
+		public final boolean isLocalRuleVar() {
+			return this.is_var_local_rule_var;
+		}
+		public final void setLocalRuleVar(boolean on) {
+			if (this.is_var_local_rule_var != on) {
+				this.is_var_local_rule_var = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// closure proxy
+		public final boolean isClosureProxy() {
+			return this.is_var_closure_proxy;
+		}
+		public final void setClosureProxy(boolean on) {
+			if (this.is_var_closure_proxy != on) {
+				this.is_var_closure_proxy = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// "this" var
+		public final boolean isVarThis() {
+			return this.is_var_this;
+		}
+		public final void setVarThis(boolean on) {
+			if (this.is_var_this != on) {
+				this.is_var_this = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// "super" var
+		public final boolean isVarSuper() {
+			return this.is_var_super;
+		}
+		public final void setVarSuper(boolean on) {
+			if (this.is_var_super != on) {
+				this.is_var_super = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
 	}
 	@nodeview
 	public static view VarView of VarImpl extends LvalDNodeView {
@@ -65,45 +106,17 @@ public class Var extends LvalDNode implements Named, Typed {
 		@getter public final Type get$type() { return this.$view.vtype.getType(); }
 		
 		// is a local var in a rule 
-		public final boolean isLocalRuleVar() {
-			return this.$view.is_var_local_rule_var;
-		}
-		public final void setLocalRuleVar(boolean on) {
-			if (this.$view.is_var_local_rule_var != on) {
-				this.$view.is_var_local_rule_var = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		public final boolean isLocalRuleVar();
+		public final void setLocalRuleVar(boolean on);
 		// closure proxy
-		public final boolean isClosureProxy() {
-			return this.$view.is_var_closure_proxy;
-		}
-		public final void setClosureProxy(boolean on) {
-			if (this.$view.is_var_closure_proxy != on) {
-				this.$view.is_var_closure_proxy = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		public final boolean isClosureProxy();
+		public final void setClosureProxy(boolean on);
 		// "this" var
-		public final boolean isVarThis() {
-			return this.$view.is_var_this;
-		}
-		public final void setVarThis(boolean on) {
-			if (this.$view.is_var_this != on) {
-				this.$view.is_var_this = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		public final boolean isVarThis();
+		public final void setVarThis(boolean on);
 		// "super" var
-		public final boolean isVarSuper() {
-			return this.$view.is_var_super;
-		}
-		public final void setVarSuper(boolean on) {
-			if (this.$view.is_var_super != on) {
-				this.$view.is_var_super = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		public final boolean isVarSuper();
+		public final void setVarSuper(boolean on);
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1058,7 +1071,7 @@ public abstract class DFFunc implements DataFlowSlots {
 		else
 			assert(node.parent.getVal(node.pslot.name) == node);
 		lst.append(node);
-		checkNode(node.parent, lst);
+		checkNode(node.parent.getNode(), lst);
 		return true;
 	}
 

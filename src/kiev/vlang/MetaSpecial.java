@@ -51,6 +51,10 @@ public abstract class MetaSpecial extends ASTNode implements NodeData {
 	
 	public void attach(ASTNode node) { node.addNodeData(this); }
 	public void detach(ASTNode node) { node.addNodeData(this); }
+
+	public final void walkTree(TreeWalker walker) {
+		theView.walkTree(walker);
+	}
 }
 
 @nodeset

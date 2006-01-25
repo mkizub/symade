@@ -801,6 +801,14 @@ public class BreakStat extends ENode {
 		@att public NameRef		ident;
 		@ref public Label		dest;
 		public BreakStatImpl() {}
+
+		public void callbackRootChanged() {
+			if (dest != null && dest.ctx_root != this._self.ctx_root) {
+				dest.delLink(this._self);
+				dest = null;
+			}
+			super.callbackRootChanged();
+		}
 	}
 	@nodeview
 	public static view BreakStatView of BreakStatImpl extends ENodeView {
@@ -813,14 +821,6 @@ public class BreakStat extends ENode {
 	
 	public BreakStat() {
 		super(new BreakStatImpl());
-	}
-	
-	public void callbackRootChanged() {
-		if (dest != null && dest.ctx_root != this.ctx_root) {
-			dest.delLink(this);
-			dest = null;
-		}
-		super.callbackRootChanged();
 	}
 	
 	public boolean mainResolveIn(TransfProcessor proc) {
@@ -957,6 +957,14 @@ public class ContinueStat extends ENode {
 		@att public NameRef		ident;
 		@ref public Label		dest;
 		public ContinueStatImpl() {}
+	
+	public void callbackRootChanged() {
+		if (dest != null && dest.ctx_root != this._self.ctx_root) {
+			dest.delLink(this._self);
+			dest = null;
+		}
+		super.callbackRootChanged();
+	}
 	}
 	@nodeview
 	public static view ContinueStatView of ContinueStatImpl extends ENodeView {
@@ -969,14 +977,6 @@ public class ContinueStat extends ENode {
 	
 	public ContinueStat() {
 		super(new ContinueStatImpl());
-	}
-	
-	public void callbackRootChanged() {
-		if (dest != null && dest.ctx_root != this.ctx_root) {
-			dest.delLink(this);
-			dest = null;
-		}
-		super.callbackRootChanged();
 	}
 	
 	public boolean mainResolveIn(TransfProcessor proc) {
@@ -1056,6 +1056,14 @@ public class GotoStat extends ENode {
 		@att public NameRef		ident;
 		@ref public Label		dest;
 		public GotoStatImpl() {}
+	
+		public void callbackRootChanged() {
+			if (dest != null && dest.ctx_root != this._self.ctx_root) {
+				dest.delLink(this._self);
+				dest = null;
+			}
+			super.callbackRootChanged();
+		}
 	}
 	@nodeview
 	public static view GotoStatView of GotoStatImpl extends ENodeView {
@@ -1068,14 +1076,6 @@ public class GotoStat extends ENode {
 	
 	public GotoStat() {
 		super(new GotoStatImpl());
-	}
-	
-	public void callbackRootChanged() {
-		if (dest != null && dest.ctx_root != this.ctx_root) {
-			dest.delLink(this);
-			dest = null;
-		}
-		super.callbackRootChanged();
 	}
 	
 	public boolean mainResolveIn(TransfProcessor proc) {

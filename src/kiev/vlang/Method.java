@@ -83,6 +83,82 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		@getter public final CallType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
 		@getter public final CallType				get$etype()	{ checkRebuildTypes(); return (CallType)this.dtype.getErasedType(); }
 
+		// virtual static method
+		public final boolean isVirtualStatic() {
+			return this.is_mth_virtual_static;
+		}
+		public final void setVirtualStatic(boolean on) {
+			if (this.is_mth_virtual_static != on) {
+				this.is_mth_virtual_static = on;
+				if (!isStatic()) this.setStatic(true);
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// method with variable number of arguments	
+		public final boolean isVarArgs() {
+			return this.is_mth_varargs;
+		}
+		public final void setVarArgs(boolean on) {
+			if (this.is_mth_varargs != on) {
+				this.is_mth_varargs = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// logic rule method
+		public final boolean isRuleMethod() {
+			return this instanceof RuleMethod.RuleMethodImpl;
+		}
+		// method with attached operator	
+		public final boolean isOperatorMethod() {
+			return this.is_mth_operator;
+		}
+		public final void setOperatorMethod(boolean on) {
+			if (this.is_mth_operator != on) {
+				this.is_mth_operator = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// need fields initialization	
+		public final boolean isNeedFieldInits() {
+			return this.is_mth_need_fields_init;
+		}
+		public final void setNeedFieldInits(boolean on) {
+			if (this.is_mth_need_fields_init != on) {
+				this.is_mth_need_fields_init = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// a method generated as invariant	
+		public final boolean isInvariantMethod() {
+			return this.is_mth_invariant;
+		}
+		public final void setInvariantMethod(boolean on) {
+			if (this.is_mth_invariant != on) {
+				this.is_mth_invariant = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// a local method (closure code or inner method)	
+		public final boolean isLocalMethod() {
+			return this.is_mth_local;
+		}
+		public final void setLocalMethod(boolean on) {
+			if (this.is_mth_local != on) {
+				this.is_mth_local = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// a dispatcher (for multimethods)	
+		public final boolean isDispatcherMethod() {
+			return this.is_mth_dispatcher;
+		}
+		public final void setDispatcherMethod(boolean on) {
+			if (this.is_mth_dispatcher != on) {
+				this.is_mth_dispatcher = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+
 		public final void checkRebuildTypes() {
 			if (invalid_types) rebuildTypes();
 		}
@@ -161,9 +237,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@nodeview
 	public static view MethodView of MethodImpl extends DNodeView {
 
-		public final void checkRebuildTypes() {
-			this.$view.checkRebuildTypes();
-		}
+		public final void checkRebuildTypes();
 	
 		public				Access				acc;
 		public				NodeName			name;
@@ -187,81 +261,31 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 		@setter public final void set$acc(Access val)	{ this.$view.acc = val; Access.verifyDecl((Method)getDNode()); }
 
-		// virtual static method	
-		public final boolean isVirtualStatic() {
-			return this.$view.is_mth_virtual_static;
-		}
-		public final void setVirtualStatic(boolean on) {
-			if (this.$view.is_mth_virtual_static != on) {
-				this.$view.is_mth_virtual_static = on;
-				if (!isStatic()) this.setStatic(true);
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		@getter public Method get$child_ctx_method() { return (Method)this.getNode(); }
+	
+		// virtual static method
+		public final boolean isVirtualStatic();
+		public final void setVirtualStatic(boolean on);
 		// method with variable number of arguments	
-		public final boolean isVarArgs() {
-			return this.$view.is_mth_varargs;
-		}
-		public final void setVarArgs(boolean on) {
-			if (this.$view.is_mth_varargs != on) {
-				this.$view.is_mth_varargs = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		public final boolean isVarArgs();
+		public final void setVarArgs(boolean on);
 		// logic rule method
-		public final boolean isRuleMethod() {
-			return this.$view instanceof RuleMethod.RuleMethodImpl;
-		}
+		public final boolean isRuleMethod();
 		// method with attached operator	
-		public final boolean isOperatorMethod() {
-			return this.$view.is_mth_operator;
-		}
-		public final void setOperatorMethod(boolean on) {
-			if (this.$view.is_mth_operator != on) {
-				this.$view.is_mth_operator = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		public final boolean isOperatorMethod();
+		public final void setOperatorMethod(boolean on);
 		// need fields initialization	
-		public final boolean isNeedFieldInits() {
-			return this.$view.is_mth_need_fields_init;
-		}
-		public final void setNeedFieldInits(boolean on) {
-			if (this.$view.is_mth_need_fields_init != on) {
-				this.$view.is_mth_need_fields_init = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		public final boolean isNeedFieldInits();
+		public final void setNeedFieldInits(boolean on);
 		// a method generated as invariant	
-		public final boolean isInvariantMethod() {
-			return this.$view.is_mth_invariant;
-		}
-		public final void setInvariantMethod(boolean on) {
-			if (this.$view.is_mth_invariant != on) {
-				this.$view.is_mth_invariant = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		public final boolean isInvariantMethod();
+		public final void setInvariantMethod(boolean on);
 		// a local method (closure code or inner method)	
-		public final boolean isLocalMethod() {
-			return this.$view.is_mth_local;
-		}
-		public final void setLocalMethod(boolean on) {
-			if (this.$view.is_mth_local != on) {
-				this.$view.is_mth_local = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		public final boolean isLocalMethod();
+		public final void setLocalMethod(boolean on);
 		// a dispatcher (for multimethods)	
-		public final boolean isDispatcherMethod() {
-			return this.$view.is_mth_dispatcher;
-		}
-		public final void setDispatcherMethod(boolean on) {
-			if (this.$view.is_mth_dispatcher != on) {
-				this.$view.is_mth_dispatcher = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
+		public final boolean isDispatcherMethod();
+		public final void setDispatcherMethod(boolean on);
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -303,8 +327,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		invalid_types = true;
 	}
 
-	@getter public Method get$child_ctx_method() { return this; }
-	
 	public MetaThrows getMetaThrows() {
 		return (MetaThrows)this.getNodeData(MetaThrows.ID);
 	}

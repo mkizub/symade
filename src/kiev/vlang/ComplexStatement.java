@@ -401,8 +401,8 @@ public class SwitchStat extends ENode implements BreakTarget {
 				});
 			Constructor clinit = ctx_clazz.getClazzInitMethod();
 			clinit.body.addStatement(
-				new ExprStat(typehash.init.getPos(),
-					new AssignExpr(typehash.init.getPos(),AssignOperator.Assign
+				new ExprStat(typehash.init.pos,
+					new AssignExpr(typehash.init.pos,AssignOperator.Assign
 						,new SFldExpr(typehash.pos,typehash),new Shadow(typehash.init))
 				)
 			);

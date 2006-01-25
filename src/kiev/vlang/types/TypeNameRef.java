@@ -49,18 +49,18 @@ public class TypeNameRef extends TypeRef {
 	}
 
 	public TypeNameRef(NameRef nm) {
-		super(new TypeNameRefImpl(nm.getPos()));
+		super(new TypeNameRefImpl(nm.pos));
 		this.name = nm.name;
 	}
 
 	public TypeNameRef(NameRef nm, Type tp) {
-		super(new TypeNameRefImpl(nm.getPos()));
+		super(new TypeNameRefImpl(nm.pos));
 		this.name = nm.name;
 		this.lnk = tp;
 	}
 
 	public TypeNameRef(TypeRef outer, NameRef nm) {
-		super(new TypeNameRefImpl(nm.getPos()));
+		super(new TypeNameRefImpl(nm.pos));
 		this.outer = outer;
 		this.name = nm.name;
 	}

@@ -859,7 +859,7 @@ FileUnit FileUnit(String filename) :
 		FileUnit fu = new FileUnit();
 		curFileUnit = fu;
 		fu.filename = KString.from(filename);
-		fu.setPos(0);
+		fu.pos = 0;
 		declMode = true;
 		ASTModifiers modifiers;
 		oldClazz = curClazz;
@@ -914,7 +914,7 @@ TypeNameRef Package() :
 	{
 		TypeNameRef tr = new TypeNameRef(qn);
 		Struct pkg = Env.newPackage(qn.name);
-		tr.lnk = pkg.concr_type;
+		tr.lnk = pkg.ctype;
 		return tr;
 	}
 }
@@ -1166,7 +1166,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 	name = Name()
 	{
 		clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
-		clazz.super_type = parent.concr_type;
+		clazz.super_type = parent.ctype;
 		clazz.setPizzaCase(true);
 		clazz.setSingleton(true);
 	}
@@ -2027,7 +2027,7 @@ TypeRef NArrType() :
 TypeRef ClosureType() :
 { Token t; TypeClosureRef n = new TypeClosureRef(); }
 {
-	t="(" { n.setPos(t.getPos()); }
+	t="(" { n.pos = t.getPos(); }
 	[
 		n.types += Type()
 		( "," n.types += Type() )*
@@ -2337,7 +2337,7 @@ ASTOperator Operator() :
 		{ image = t.image; }
 	)
 	{
-		op.setPos(t.getPos());
+		op.pos = t.getPos();
 		op.image = KString.from(image);
 		return op;
 	}
@@ -2376,7 +2376,7 @@ ENode CastOperator(boolean sure) :
 { Token t; ASTCastOperator op = new ASTCastOperator(); op.sure = sure; }
 {
 	t="("
-	{ op.setPos(t.getPos()); }
+	{ op.pos = t.getPos(); }
 	[ <CAST> | <REINTERP> {op.reinterp=true;} ]
 	op.type = Type()
 	")"
@@ -2515,19 +2515,19 @@ ENode AccessExpression() :
 	|
 		LOOKAHEAD(3)
 		t="."
-		{ AccessExpr ae = new AccessExpr(); ae.obj = e; ae.setPos(t.getPos()); }
+		{ AccessExpr ae = new AccessExpr(); ae.obj = e; ae.pos = t.getPos(); }
 		ae.ident = Name()
         { e = ae; }
 	|	LOOKAHEAD(2)
 		t="["
-		{ ContainerAccessExpr ae = new ContainerAccessExpr(); ae.obj = e; ae.setPos(t.getPos()); }
+		{ ContainerAccessExpr ae = new ContainerAccessExpr(); ae.obj = e; ae.pos = t.getPos(); }
 		ae.index = ExpressionNT(null)
 		"]"
         { e = ae; }
 	|
 		LOOKAHEAD("." "new" NArrType() ( "(" ) )
 		t="."
-		{ ASTNewAccessExpression ae = new ASTNewAccessExpression(); ae.obj = e; ae.setPos(t.getPos()); }
+		{ ASTNewAccessExpression ae = new ASTNewAccessExpression(); ae.obj = e; ae.pos = t.getPos(); }
 		e = NewExpression()
         {
 			ae.type = (TypeRef)~((ASTNewExpression)e).type;
@@ -2554,7 +2554,7 @@ ASTAnonymouseClosure AnonymouseClosure() :
 		)*
 	]
 	")" "->"
-    { ac.setPos(t.getPos()); }
+    { ac.pos = t.getPos(); }
     (
 		LOOKAHEAD( { getToken(1).kind == RULE } )
 		ac.rettype = Type()
@@ -2662,7 +2662,7 @@ ASTNewExpression NewExpression() :
 	ASTNewExpression ne = new ASTNewExpression();
 }
 {
-	t="new" { ne.setPos(t.getPos()); }
+	t="new" { ne.pos = t.getPos(); }
 	modifiers = Modifiers()
     ne.type = NArrType() "("
 	[	ne.args += ExpressionNT(null)
@@ -2693,7 +2693,7 @@ ASTNewArrayExpression NewArrayExpression() :
 {
 	t="new"
 	{
-		ne.setPos(t.getPos());
+		ne.pos = t.getPos();
 		t = null;
 	}
 	ne.type = NArrType()
@@ -2719,7 +2719,7 @@ ASTNewInitializedArrayExpression NewInitializedArrayExpression() :
 {
 	t="new"
 	{
-		ne.setPos(t.getPos());
+		ne.pos = t.getPos();
 		t = null;
 	}
 	ne.type = NArrType()
@@ -2825,7 +2825,7 @@ BlockStat Block() :
 	"{"
 	{
 		BlockStat bl = new BlockStat();
-		bl.setPos(getToken(1).getPos());
+		bl.pos = getToken(1).getPos();
 		old_declMode = declMode;
 		declMode = false;
 	}
@@ -2867,7 +2867,7 @@ RuleBlock RuleBlock() :
 	"{"
 	{
 		RuleBlock bl = new RuleBlock();
-		bl.setPos(getToken(1).getPos());
+		bl.pos = getToken(1).getPos();
 		old_declMode = declMode;
 		declMode = false;
 	}
@@ -2883,7 +2883,7 @@ BlockStat CondBlock() :
 {
 	{
 		BlockStat bl = new BlockStat();
-		bl.setPos(getToken(1).getPos());
+		bl.pos = getToken(1).getPos();
 	}
 	(
 		"{"
@@ -2966,7 +2966,7 @@ ENode EmptyStatement() :
 {
 	t=";"
 	{
-		st.setPos(t.getPos());
+		st.pos = t.getPos();
 		return st;
 	}
 }
@@ -2983,7 +2983,7 @@ SwitchStat SwitchStatement() :
 { SwitchStat st = new SwitchStat(); }
 {
 	"switch"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
 	"(" st.sel = ExpressionNT(null) ")"
 	"{"
 	(	st.cases += CaseStatements()	)+
@@ -3046,7 +3046,7 @@ IfElseStat IfStatement() :
 { IfElseStat st = new IfElseStat(); ASTOperator not = null; }
 {
 	"if"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
 	[
 		LOOKAHEAD("!")
 		not = Operator()
@@ -3067,7 +3067,7 @@ WhileStat WhileStatement() :
 { WhileStat st = new WhileStat(); ASTOperator not = null; }
 {
 	"while"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
 	[
 		LOOKAHEAD("!")
 		not = Operator()
@@ -3084,7 +3084,7 @@ DoWhileStat DoStatement() :
 { DoWhileStat st = new DoWhileStat(); ASTOperator not = null; }
 {
 	"do"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
     st.body = Statement()
     "while"
 	[
@@ -3102,7 +3102,7 @@ ForStat ForStatement() :
 { ForStat st = new ForStat(); }
 {
 	"for"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
 	"("
 		st.init = ForInit()
 	/*";"*/
@@ -3122,7 +3122,7 @@ ForEachStat ForEachStatement() :
 { ASTModifiers modifiers; ForEachStat st = new ForEachStat(); }
 {
 	"foreach"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
 	"("
 	[	LOOKAHEAD( Modifiers() FormalParameter() )
 		modifiers = Modifiers()
@@ -3172,7 +3172,7 @@ ENode GotoStatement() :
 		"case"
 		{
 			st = new GotoCaseStat();
-			st.setPos(getToken(0).getPos());
+			st.pos = getToken(0).getPos();
 		}
 		expr = ExpressionNT(null)
 		{ ((GotoCaseStat)st).expr = expr; }
@@ -3180,12 +3180,12 @@ ENode GotoStatement() :
 		"default"
 		{
 			st = new GotoCaseStat();
-			st.setPos(getToken(0).getPos());
+			st.pos = getToken(0).getPos();
 		}
 	|
 		{
 			st = new GotoStat();
-			st.setPos(getToken(0).getPos());
+			st.pos = getToken(0).getPos();
 		}
     	id = Name()
 		{ ((GotoStat)st).ident = id; }
@@ -3198,7 +3198,7 @@ BreakStat BreakStatement() :
 { BreakStat st = new BreakStat(); }
 {
 	"break"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
     [ st.ident = Name() ] ";"
 	{ return st; }
 }
@@ -3207,7 +3207,7 @@ ContinueStat ContinueStatement() :
 { ContinueStat st = new ContinueStat(); }
 {
 	"continue"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
     [ st.ident = Name() ] ";"
 	{ return st; }
 }
@@ -3216,7 +3216,7 @@ ReturnStat ReturnStatement() :
 { ReturnStat st = new ReturnStat(); }
 {
 	"return"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
     [ st.expr = ExpressionNT(null) ] ";"
 	{ return st; }
 }
@@ -3225,7 +3225,7 @@ ThrowStat ThrowStatement() :
 { ThrowStat st = new ThrowStat(); }
 {
 	"throw"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
     st.expr = ExpressionNT(null) ";"
 	{ return st; }
 }
@@ -3234,7 +3234,7 @@ SynchronizedStat SynchronizedStatement() :
 { SynchronizedStat st = new SynchronizedStat(); }
 {
 	"synchronized"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
 	"(" st.expr = ExpressionNT(null) ")"
 	st.body = Block()
 	{ return st; }
@@ -3244,7 +3244,7 @@ WithStat WithStatement() :
 { WithStat st = new WithStat(); }
 {
 	"with"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
 	"(" st.expr = ExpressionNT(null) ")"
 	st.body = Block()
 	{ return st; }
@@ -3254,7 +3254,7 @@ TryStat TryStatement() :
 { ASTModifiers modifiers; TryStat st = new TryStat(); }
 {
 	"try"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
     st.body = Block()
 	(
 		st.catchers += CatchInfo()
@@ -3269,7 +3269,7 @@ CatchInfo CatchInfo() :
 { ASTModifiers modifiers; CatchInfo st = new CatchInfo(); }
 {
 	"catch"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
 	"("
 		modifiers = Modifiers()
 		st.arg = PizzaCaseFormalParameter(modifiers)
@@ -3282,7 +3282,7 @@ FinallyInfo FinallyInfo() :
 { Token t; FinallyInfo st = new FinallyInfo(); }
 {
 	"finally"
-	{ st.setPos(getToken(0).getPos()); }
+	{ st.pos = getToken(0).getPos(); }
 	st.body = Block()
 	{ return st; }
 }

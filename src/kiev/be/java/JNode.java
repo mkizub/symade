@@ -34,6 +34,13 @@ public view JNode of NodeImpl implements Constants {
 	public access:ro	int			pos;
 //	public access:ro	int			compileflags;
 	
+    public final int getPosLine();
+	public final boolean isAttached();
+	public final boolean isAccessedFromInner();
+	public final boolean isResolved();
+	public final boolean isHidden();
+	public final boolean isBad();
+	
 	@getter public final JNode get$jparent() { return (JNode)this.$view.parent; }
 	@getter public JFileUnit get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
 	@getter public JStruct get$jctx_clazz() { return this.jparent.child_jctx_clazz; }
@@ -57,13 +64,6 @@ public view JNode of NodeImpl implements Constants {
 		if (jnv1 == null || jnv2 == null) return jnv1 != jnv2;
 		return jnv1.$view != jnv2.$view;
 	}
-	
-	@getter public final boolean isAccessedFromInner() { return this.$view.is_accessed_from_inner; }
-	@getter public final boolean isResolved() { return this.$view.is_resolved; }
-	@getter public final boolean isHidden() { return this.$view.is_hidden; }
-	@getter public final boolean isBad() { return this.$view.is_bad; }
-
-    public final int getPosLine() { return pos >>> 11; }
 }
 
 @nodeview

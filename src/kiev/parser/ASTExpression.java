@@ -230,7 +230,7 @@ public class ASTExpression extends ENode {
 		expr.head().getPriority() >= op.getArgPriority(0),
 		{
 			op ?= BinaryOperator.InstanceOf, $cut,	expr.at(2) instanceof TypeRef,
-			result ?= new InstanceofExpr(expr.at(1).getPos(),(ENode)~expr.head(),((TypeRef)expr.at(2)).getType()),
+			result ?= new InstanceofExpr(expr.at(1).pos,(ENode)~expr.head(),((TypeRef)expr.at(2)).getType()),
 			rest1 ?= expr.tail().tail().tail()
 		;	resolveExpr(result1,rest1,expr.tail().tail(),op.getArgPriority(1)),
 			result ?= new InfixExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))

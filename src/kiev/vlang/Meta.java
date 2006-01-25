@@ -24,6 +24,12 @@ public final class MetaSet extends ASTNode {
 		@virtual typedef ImplOf = MetaSet;
 		@att public NArr<Meta>			metas;
 		public MetaSetImpl() {}
+	
+		public void callbackChildChanged(AttrSlot attr) {
+			if (parent != null && pslot != null) {
+				if (attr.name == "metas") parent.callbackChildChanged(pslot);
+			}
+		}
 	}
 	@nodeview
 	public static final view MetaSetView of MetaSetImpl extends NodeView {
@@ -35,12 +41,6 @@ public final class MetaSet extends ASTNode {
 
 	public MetaSet() {
 		super(new MetaSetImpl());
-	}
-	
-	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
-			if (attr.name == "metas") parent.callbackChildChanged(pslot);
-		}
 	}
 	
 	public int size() alias length {
@@ -150,6 +150,15 @@ public class Meta extends ENode {
 		@att public TypeRef					type;
 		@att public NArr<MetaValue>			values;
 		public MetaImpl() {}
+
+		public void callbackChildChanged(AttrSlot attr) {
+			if (parent != null && pslot != null) {
+				if      (attr.name == "type")
+					parent.callbackChildChanged(pslot);
+				else if (attr.name == "values")
+					parent.callbackChildChanged(pslot);
+			}
+		}
 	}
 	@nodeview
 	public static view MetaView of MetaImpl extends ENodeView {
@@ -173,15 +182,6 @@ public class Meta extends ENode {
 		alias operator(210,lfy,new)
 	{
 		return new Meta(new TypeNameRef(name));
-	}
-
-	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
-			if      (attr.name == "type")
-				parent.callbackChildChanged(pslot);
-			else if (attr.name == "values")
-				parent.callbackChildChanged(pslot);
-		}
 	}
 	
 	public int size() alias length {

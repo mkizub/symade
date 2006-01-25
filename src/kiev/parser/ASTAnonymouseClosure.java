@@ -139,12 +139,12 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 				new ConstIntExpr(i));
 			if( !v.type.isReference() ) {
 				CompaundType celltp = CompaundType.getProxyType(v.type);
-				val = new IFldExpr(v.getPos(),
-						new CastExpr(v.getPos(),celltp,val,true),
+				val = new IFldExpr(v.pos,
+						new CastExpr(v.pos,celltp,val,true),
 						celltp.clazz.resolveField(nameCellVal)
 					);
 			} else {
-				val = new CastExpr(v.getPos(),v.type,val,true);
+				val = new CastExpr(v.pos,v.type,val,true);
 			}
 			v.init = val;
 			body.insertSymbol(v,i);
