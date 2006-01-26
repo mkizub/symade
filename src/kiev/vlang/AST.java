@@ -482,7 +482,6 @@ public abstract class ASTNode implements Constants, Cloneable {
 		public void mainResolveOut() {}
 		public boolean preVerify() { return true; }
 		public void postVerify() {}
-		public boolean preGenerate() { return true; }
 	}
 	
 	public NImpl $v_impl;
@@ -531,10 +530,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }
 	public DFFunc newDFFuncFls(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncFls() for "+getClass()); }
 
-	public boolean preVerify()  { return theView.preVerify(); }
-	public void    postVerify() { theView.postVerify(); }
-	
-	public boolean preGenerate() { return theView.preGenerate(); }
+	public boolean preGenerate() { return true; }
 	
 }
 

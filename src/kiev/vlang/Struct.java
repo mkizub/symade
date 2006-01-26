@@ -359,6 +359,21 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public void mainResolveOut() {
 			cleanDFlow();
 		}
+
+		// verify resolved tree
+		public boolean preVerify() {
+			if (isClazz() && super_type != null && super_type.getStruct().isFinal()) {
+				Kiev.reportError(this, "Class "+this+" extends final class "+super_type);
+	
+			}
+			else if (isInterface()) {
+				foreach (TypeRef i; interfaces) {
+					if(i.getStruct().isFinal())
+						Kiev.reportError(this, "Iterface "+this+" extends final interface "+i);
+				}
+			}
+			return true;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1855,21 +1870,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			return sb;
 		}
 
-	}
-
-	// verify resolved tree
-	public boolean preVerify() {
-		if (isClazz() && super_type != null && super_type.getStruct().isFinal()) {
-			Kiev.reportError(this, "Class "+this+" extends final class "+super_type);
-
-		}
-		else if (isInterface()) {
-			foreach (TypeRef i; interfaces) {
-				if(i.getStruct().isFinal())
-					Kiev.reportError(this, "Iterface "+this+" extends final interface "+i);
-			}
-		}
-		return true;
 	}
 	
 	public boolean preGenerate() {

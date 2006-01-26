@@ -296,6 +296,15 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			checkRebuildTypes();
 			return true;
 		}
+	
+		public boolean preVerify() {
+			if (isAbstract() && isStatic()) {
+				setBad(true);
+				ctx_clazz.setBad(true);
+				Kiev.reportError(this,"Static method cannot be declared abstract");
+			}
+			return true;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -743,15 +752,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
 		return new MethodDFFunc(dfi);
-	}
-	
-	public boolean preVerify() {
-		if (isAbstract() && isStatic()) {
-			setBad(true);
-			ctx_clazz.setBad(true);
-			Kiev.reportError(this,"Static method cannot be declared abstract");
-		}
-		return true;
 	}
 
 	public void resolveDecl() {

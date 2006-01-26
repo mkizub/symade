@@ -709,7 +709,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void verify(ASTNode node) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ASTNode n) { return n.preVerify(); }
-			public void post_exec(ASTNode n) { n.postVerify(); }
+			//public void post_exec(ASTNode n) { n.postVerify(); }
 		});
 		return;
 	}
