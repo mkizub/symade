@@ -2527,43 +2527,36 @@ ENode AccessExpression() :
 	|
 		LOOKAHEAD("." "new" NArrType() ( "(" ) )
 		t="."
-		{ ASTNewAccessExpression ae = new ASTNewAccessExpression(); ae.obj = e; ae.pos = t.getPos(); }
+		{ ENode acc = e; }
 		e = NewExpression()
-        {
-			ae.type = (TypeRef)~((ASTNewExpression)e).type;
-			ae.args.moveFrom(((ASTNewExpression)e).args);
-			if (((ASTNewExpression)e).clazz != null)
-				throw new ParseException();
-			e = ae;
-		}
+        { e.outer = acc; }
 	)*
 	{ return e; }
 }
 
-ASTAnonymouseClosure AnonymouseClosure() :
-{ Token t; ASTModifiers modifiers; ASTAnonymouseClosure ac = new ASTAnonymouseClosure(); }
+NewClosure AnonymouseClosure() :
+{ ASTModifiers modifiers; NewClosure nc = new NewClosure(getToken(1).getPos()); }
 {
-	t="fun" "("
+	"fun" "("
 	[
 		modifiers = Modifiers()
-		ac.params += FormalParameter(modifiers)
+		nc.params += FormalParameter(modifiers)
 		(
 			","
 			modifiers = Modifiers()
-			ac.params += FormalParameter(modifiers)
+			nc.params += FormalParameter(modifiers)
 		)*
 	]
 	")" "->"
-    { ac.pos = t.getPos(); }
     (
 		LOOKAHEAD( { getToken(1).kind == RULE } )
-		ac.rettype = Type()
-		ac.body = RuleBlock()
+		nc.type_ret = Type()
+		nc.body = RuleBlock()
 	|
-		ac.rettype = Type()
-		ac.body = Block()
+		nc.type_ret = Type()
+		nc.body = Block()
 	)
-	{ return ac; }
+	{ return nc; }
 }
 
 ConstExpr ConstExpression() :
@@ -2653,16 +2646,16 @@ ConstStringExpr StringConstExpression() :
 	{ return (ConstStringExpr)ConstExpr.fromSource(t); }
 }
 
-ASTNewExpression NewExpression() :
+NewExpr NewExpression() :
 {
-	Token t;
 	boolean old_mode;
 	ASTModifiers modifiers;
 	Struct clazz, oldClazz;
-	ASTNewExpression ne = new ASTNewExpression();
+	NewExpr ne = new NewExpr();
+	ne.pos = getToken(1).getPos();
 }
 {
-	t="new" { ne.pos = t.getPos(); }
+	"new"
 	modifiers = Modifiers()
     ne.type = NArrType() "("
 	[	ne.args += ExpressionNT(null)

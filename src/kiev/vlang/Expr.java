@@ -1917,11 +1917,11 @@ public class CastExpr extends ENode {
 		}
 		if( expr instanceof ClosureCallExpr && et instanceof CallType ) {
 			if( et.isAutoCastableTo(type) ) {
-				((ClosureCallExpr)expr).is_a_call = true;
+				((ClosureCallExpr)expr).is_a_call = Boolean.TRUE;
 				return;
 			}
 			else if( et.isCastableTo(type) ) {
-				((ClosureCallExpr)expr).is_a_call = true;
+				((ClosureCallExpr)expr).is_a_call = Boolean.TRUE;
 			}
 		}
 		setResolved(true);

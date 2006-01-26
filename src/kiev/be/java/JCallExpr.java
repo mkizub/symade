@@ -21,7 +21,7 @@ import kiev.vlang.ClosureCallExpr.ClosureCallExprImpl;
 public final view JCallExpr of CallExprImpl extends JENode {
 	public access:ro JENode				obj;
 	public access:ro JMethod			func;
-	public access:ro CallType				mt;
+	public access:ro CallType			mt;
 	public access:ro JArr<JENode>		args;
 	public           JENode				temp_expr;
 
@@ -286,7 +286,7 @@ public final view JCallExpr of CallExprImpl extends JENode {
 public final view JClosureCallExpr of ClosureCallExprImpl extends JENode {
 	public access:ro JENode			expr;
 	public access:ro JArr<JENode>	args;
-	public access:ro boolean			is_a_call;
+	public access:ro Boolean		is_a_call;
 	
 	@getter public final CallType		get$ctype()				{ return (CallType)this.$view.expr.getType(); }
 	
@@ -311,7 +311,7 @@ public final view JClosureCallExpr of ClosureCallExprImpl extends JENode {
 		}
 		JMethod call_it = getCallIt(ctype);
 		// Check if we need to call
-		if( is_a_call ) {
+		if( is_a_call.booleanValue() ) {
 			if( call_it.type.ret() ≡ Type.tpRule )
 				code.addNullConst(); //env_access.generate(code,null);
 			code.addInstr(op_call,call_it,false);

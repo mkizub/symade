@@ -208,7 +208,7 @@ public class ClosureCallExpr extends ENode {
 		@virtual typedef ImplOf = ClosureCallExpr;
 		@att public ENode				expr;
 		@att public NArr<ENode>			args;
-		@att public boolean				is_a_call;
+		@att public Boolean				is_a_call;
 		public ClosureCallExprImpl() {}
 		public ClosureCallExprImpl(int pos) { super(pos); }
 	}
@@ -216,7 +216,7 @@ public class ClosureCallExpr extends ENode {
 	public static view ClosureCallExprView of ClosureCallExprImpl extends ENodeView {
 		public				ENode			expr;
 		public access:ro	NArr<ENode>		args;
-		public				boolean			is_a_call;
+		public				Boolean			is_a_call;
 
 		public int		getPriority() { return Constants.opCallPriority; }
 	}
@@ -232,11 +232,6 @@ public class ClosureCallExpr extends ENode {
 		super(new ClosureCallExprImpl(pos));
 		this.expr = expr;
 		foreach(ENode e; args) this.args.append(e);
-		Type tp = expr.getType();
-		if (tp instanceof CallType)
-			is_a_call = tp.arity==args.length;
-		else
-			is_a_call = true;
 	}
 
 	public String toString() {
@@ -252,7 +247,9 @@ public class ClosureCallExpr extends ENode {
 	}
 	public Type getType() {
 		CallType t = (CallType)expr.getType();
-		if( is_a_call )
+		if (is_a_call == null)
+			is_a_call = Boolean.valueOf(t.arity==args.length);
+		if (is_a_call.booleanValue())
 			return t.ret();
 		Type[] types = new Type[t.arity - args.length];
 		for(int i=0; i < types.length; i++) types[i] = t.arg(i+args.length);
@@ -281,20 +278,14 @@ public class ClosureCallExpr extends ENode {
 			throw new CompilerException(expr,"Expression "+expr+" is not a closure");
 		CallType tp = (CallType)extp;
 		if( reqType != null && reqType instanceof CallType )
-			is_a_call = false;
+			is_a_call = Boolean.FALSE;
 		else if( (reqType == null || !(reqType instanceof CallType)) && tp.arity==args.length )
-			is_a_call = true;
+			is_a_call = Boolean.TRUE;
 		else
-			is_a_call = false;
+			is_a_call = Boolean.FALSE;
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(tp.arg(i));
-		//clone_it = tp.clazz.resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 		Method call_it = getCallIt(tp);
-		//if( call_it.type.ret == Type.tpRule ) {
-		//	env_access = new ConstNullExpr();
-		//} else {
-		//	trace(Kiev.debugResolve,"ClosureCallExpr "+this+" is not a rule call");
-		//}
 		setResolved(true);
 	}
 
@@ -305,7 +296,9 @@ public class ClosureCallExpr extends ENode {
 			args[i].toJava(dmp);
 			dmp.append(')');
 		}
-		if( is_a_call ) {
+		if (is_a_call == null)
+			is_a_call = Boolean.valueOf(((CallType)expr.getType()).arity==args.length);
+		if (is_a_call.booleanValue()) {
 			Method call_it = getCallIt((CallType)expr.getType());
 			dmp.append('.').append(call_it.name).append('(');
 			if( call_it.type.ret() ≡ Type.tpRule ) dmp.append("null");

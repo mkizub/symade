@@ -5,7 +5,7 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.vlang.Operator.*;
 import kiev.vlang.types.*;
-import kiev.transf.BackendProcessor;
+import kiev.transf.*;
 
 import kiev.be.java.JNode;
 import kiev.be.java.JENode;
@@ -59,6 +59,45 @@ public final class NewExpr extends ENode {
 		public				Method			func;
 
 		public int		getPriority() { return Constants.opAccessPriority; }
+
+		public boolean preResolveIn(TransfProcessor proc) {
+			if( clazz == null )
+				return true;
+			Type tp = type.getType();
+			tp.checkResolved();
+			// Local anonymouse class
+			CompaundType sup  = (CompaundType)tp;
+			clazz.setResolved(true);
+			clazz.setLocal(true);
+			clazz.setAnonymouse(true);
+			clazz.setStatic(ctx_method==null || ctx_method.isStatic());
+			TypeRef sup_tr = (TypeRef)this.type.copy();
+			if( sup.isInterface() ) {
+				clazz.super_type = Type.tpObject;
+				clazz.interfaces.add(sup_tr);
+			} else {
+				clazz.super_bound = sup_tr;
+			}
+	
+			{
+				// Create default initializer, if number of arguments > 0
+				if( args.length > 0 ) {
+					Constructor init = new Constructor(ACC_PUBLIC);
+					for(int i=0; i < args.length; i++) {
+						args[i].resolve(null);
+						init.params.append(new FormPar(pos,KString.from("arg$"+i),args[i].getType(),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
+					}
+					init.pos = pos;
+					init.body = new BlockStat(pos);
+					init.setPublic();
+					clazz.addMethod(init);
+				}
+			}
+	
+			// Process inner classes and cases
+			Kiev.runProcessorsOn(clazz);
+			return true;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -103,6 +142,8 @@ public final class NewExpr extends ENode {
 	}
 
 	public Type getType() {
+		if (this.clazz != null)
+			return this.clazz.ctype;
 		Type type = this.type.getType();
 		Struct clazz = type.getStruct();
 		if (outer == null && type.getStruct() != null && type.getStruct().ometa_type != null) {
@@ -120,7 +161,9 @@ public final class NewExpr extends ENode {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		CompaundType type;
-		{
+		if (this.clazz != null) {
+			type = this.clazz.ctype;
+		} else {
 			Type t = this.type.getType();
 			if (t.isWrapper())
 				type = ((WrapperType)t).getUnwrappedType();
@@ -154,36 +197,37 @@ public final class NewExpr extends ENode {
 		if( type.clazz.isTypeUnerasable() )
 			ctx_clazz.accessTypeInfoField(this,type,false); // Create static field for this type typeinfo
 		// Don't try to find constructor of argument type
-		if( !type.isArgument() ) {
-			Type[] ta = new Type[args.length];
-			for (int i=0; i < ta.length; i++)
-				ta[i] = args[i].getType();
-			CallType mt = (CallType)Type.getRealType(type,new CallType(ta,type));
-			Method@ m;
-			// First try overloaded 'new', than real 'new'
-			if( (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
-				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
-				if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
-					CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
-					replaceWithNodeResolve(n);
-					return;
-				}
-			}
-			mt = (CallType)Type.getRealType(type,new CallType(ta,Type.tpVoid));
-			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
-			if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
-				func = m;
-				m.makeArgs(args,type);
-				for(int i=0; i < args.length; i++)
-					args[i].resolve(null);
-			}
-			else {
-				throw new CompilerException(this,"Can't find apropriative initializer for "+
-					Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
-			}
-		} else {
+		if( type.isArgument() ) {
 			if( !type.isUnerasable())
 				throw new CompilerException(this,"Can't create an instance of erasable argument type "+type);
+			setResolved(true);
+			return;
+		}
+		Type[] ta = new Type[args.length];
+		for (int i=0; i < ta.length; i++)
+			ta[i] = args[i].getType();
+		CallType mt = (CallType)Type.getRealType(type,new CallType(ta,type));
+		Method@ m;
+		// First try overloaded 'new', than real 'new'
+		if( this.clazz == null && (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
+			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+			if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
+				CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
+				replaceWithNodeResolve(n);
+				return;
+			}
+		}
+		mt = (CallType)Type.getRealType(type,new CallType(ta,Type.tpVoid));
+		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+		if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
+			func = m;
+			m.makeArgs(args,type);
+			for(int i=0; i < args.length; i++)
+				args[i].resolve(mt.arg(i));
+		}
+		else {
+			throw new CompilerException(this,"Can't find apropriative initializer for "+
+				Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
 		}
 		setResolved(true);
 	}
@@ -421,9 +465,12 @@ public final class NewInitializedArrayExpr extends ENode {
 }
 
 @nodeset
-public final class NewClosure extends ENode {
+public final class NewClosure extends ENode implements ScopeOfNames {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@dflow(out="this:in") private static class DFI {
+	@dflow(in="this:in")	BlockStat		body;
+	}
+
 
 	@virtual typedef NImpl = NewClosureImpl;
 	@virtual typedef VView = NewClosureView;
@@ -432,18 +479,22 @@ public final class NewClosure extends ENode {
 	@nodeimpl
 	public static final class NewClosureImpl extends ENodeImpl {
 		@virtual typedef ImplOf = NewClosure;
-		@att public TypeClosureRef		type;
+		@att public TypeRef				type_ret;
+		@att public NArr<FormPar>		params;
+		@att public BlockStat			body;
 		@att public Struct				clazz;
-		@ref public Method				func;
+		@ref public CallType			ctype;
 
 		public NewClosureImpl() {}
 		public NewClosureImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view NewClosureView of NewClosureImpl extends ENodeView {
-		public TypeClosureRef	type;
+		public TypeRef			type_ret;
+		public NArr<FormPar>	params;
+		public BlockStat		body;
 		public Struct			clazz;
-		public Method			func;
+		public CallType			ctype;
 
 		public int		getPriority() { return Constants.opAccessPriority; }
 	}
@@ -455,33 +506,118 @@ public final class NewClosure extends ENode {
 		super(new NewClosureImpl());
 	}
 
-	public NewClosure(int pos, TypeClosureRef type, Struct clazz) {
+	public NewClosure(int pos) {
 		super(new NewClosureImpl(pos));
-		this.type = type;
-		this.clazz = clazz;
 	}
 
 	public String toString() {
-		return "fun "+type;
+		return "fun "+getType();
 	}
 
-	public Type getType() { return type.getType(); }
+	public Type getType() {
+		if (ctype != null)
+			return ctype;
+		Vector<Type> args = new Vector<Type>();
+		foreach (FormPar fp; params)
+			args.append(fp.getType());
+		ctype = new CallType(args.toArray(), type_ret.getType(), true);
+		return ctype;
+	}
 
-	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return;
-		if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) return;
-		CallType type = (CallType)this.type.getType();
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+		Var@ p;
+	{
+		p @= params,
+		p.name.equals(name),
+		node ?= p
+	}
+	
+	public boolean preGenerate() {
+		if (clazz != null)
+			return true;
+		ClazzName clname = ClazzName.fromBytecodeName(
+			new KStringBuffer(ctx_clazz.name.bytecode_name.len+8)
+				.append_fast(ctx_clazz.name.bytecode_name)
+				.append_fast((byte)'$')
+				.append(ctx_clazz.countAnonymouseInnerStructs())
+				.toKString(),
+			false
+		);
+		clazz = Env.newStruct(clname,ctx_clazz,0,true);
+		clazz.setResolved(true);
+		clazz.setLocal(true);
+		clazz.setAnonymouse(true);
+		if( ctx_method==null || ctx_method.isStatic() ) clazz.setStatic(true);
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-		Struct clazz = this.clazz;
-		Kiev.runBackends(fun (BackendProcessor bep)->void { bep.preGenerate(clazz); });
-		Kiev.runBackends(fun (BackendProcessor bep)->void { bep.resolve(clazz); });
-		func = clazz.resolveMethod(nameInit,Type.tpVoid,Type.tpInt);
+		clazz.super_type = Type.tpClosureClazz.ctype;
+		Kiev.runProcessorsOn(clazz);
+		this.getType();
+
+		// scan the body, and replace ThisExpr with OuterThisExpr
+		Struct clz = this.ctx_clazz;
+		body.walkTree(new TreeWalker() {
+			public void post_exec(ASTNode n) {
+				if (n instanceof ThisExpr) n.replaceWithNode(new OuterThisAccessExpr(n.pos, clz));
+			}
+		});
+
+		BlockStat body = (BlockStat)~this.body;
+		Type ret = ctype.ret();
+		if( ret ≢ Type.tpRule ) {
+			KString call_name;
+			if( ret.isReference() ) {
+				ret = Type.tpObject;
+				call_name = KString.from("call_Object");
+			} else {
+				call_name = KString.from("call_"+ret);
+			}
+			Method md = new Method(call_name, ret, ACC_PUBLIC);
+			md.pos = pos;
+			md.body = body;
+			clazz.members.add(md);
+		} else {
+			KString call_name = KString.from("call_rule");
+			RuleMethod md = new RuleMethod(call_name,ACC_PUBLIC);
+			md.pos = pos;
+			md.body = body;
+			clazz.members.add(md);
+		}
+
+		FormPar[] params = this.params.delToArray();
+		for(int i=0; i < params.length; i++) {
+			FormPar v = params[i];
+			ENode val = new ContainerAccessExpr(pos,
+				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
+				new ConstIntExpr(i));
+			if( v.type.isReference() )
+				val = new CastExpr(v.pos,v.type,val,true);
+			else
+				val = new CastExpr(v.pos,((CoreType)v.type).getRefTypeForPrimitive(),val,true);
+			v.init = val;
+			body.insertSymbol(v,i);
+			if( !v.type.isReference() )
+				 CastExpr.autoCastToPrimitive(val);
+		}
+
+		return true;
+	}
+	
+	public void resolve(Type reqType) throws RuntimeException {
+		//if( isResolved() ) return;
+		//CallType type = (CallType)this.type.getType();
+		//if( Env.getStruct(Type.tpClosureClazz.name) == null )
+		//	throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
+		//Struct clazz = this.clazz;
+		//Kiev.runBackends(fun (BackendProcessor bep)->void { bep.preGenerate(clazz); });
+		//Kiev.runBackends(fun (BackendProcessor bep)->void { bep.resolve(clazz); });
+		//func = clazz.resolveMethod(nameInit,Type.tpVoid,Type.tpInt);
+		clazz.resolveDecl();
 		setResolved(true);
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		CallType type = (CallType)this.type.getType();
+		CallType type = (CallType)this.getType();
 		Struct cl = clazz;
 		dmp.append("new ").append(cl.super_type.clazz.name).append('(')
 			.append(String.valueOf(type.arity)).append(')');

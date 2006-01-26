@@ -21,7 +21,6 @@ import kiev.vlang.NewClosure.NewClosureImpl;
 
 @nodeview
 public final view JNewExpr of NewExprImpl extends JENode {
-	public access:ro	Type				type;
 	public access:ro	JArr<JENode>	args;
 	public access:ro	JENode			outer;
 	public				JENode			temp_expr;
@@ -29,7 +28,7 @@ public final view JNewExpr of NewExprImpl extends JENode {
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
-		Type type = this.type;
+		Type type = this.getType();
 		JENode[] args = this.args.toArray();
 		code.setLinePos(this);
 		while( type.isArgument() && !type.isUnerasable())
@@ -149,11 +148,9 @@ public final view JNewInitializedArrayExpr of NewInitializedArrayExprImpl extend
 
 @nodeview
 public final view JNewClosure of NewClosureImpl extends JENode {
-	public access:ro	CallType		type;
 	public access:ro	JStruct		clazz;
-	public access:ro	JMethod		func;
 
-	@getter public final CallType		get$type()				{ return (CallType)this.$view.type.getType(); }
+	@getter public final CallType	get$type()	{ return (CallType)this.getNode().getType(); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);
@@ -175,9 +172,8 @@ public final view JNewClosure of NewClosureImpl extends JENode {
 			JVar v = ((JLVarExpr)f.init).var;
 			code.addInstr(Instr.op_load,v);
 		}
+		JMethod func = clazz.resolveMethod(nameInit,KString.from("(I)V"));
 		code.addInstr(op_call,func,false);
-		//code.stack_pop();
-		//code.stack_push(ctype);
 	}
 }
 

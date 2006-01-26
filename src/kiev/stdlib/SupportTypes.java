@@ -22,7 +22,7 @@ package kiev.stdlib;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -273,7 +273,7 @@ public abstract class closure implements Cloneable {
 	
 	public closure addArg(boolean arg) {
 		try {
-			$args[top$arg++] = new Cell_boolean(arg);
+			$args[top$arg++] = Boolean.valueOf(arg);
 		} catch( java.lang.ArrayIndexOutOfBoundsException e ) {
 			throw new RuntimeException("argno = "+(--top$arg)+", but max args = "+max$args);
 		}
@@ -281,7 +281,7 @@ public abstract class closure implements Cloneable {
 	}
 	public closure addArg(byte arg) {
 		try {
-			$args[top$arg++] = new Cell_byte(arg);
+			$args[top$arg++] = Byte.valueOf(arg);
 		} catch( java.lang.ArrayIndexOutOfBoundsException e ) {
 			throw new RuntimeException("argno = "+(--top$arg)+", but max args = "+max$args);
 		}
@@ -289,7 +289,7 @@ public abstract class closure implements Cloneable {
 	}
 	public closure addArg(char arg) {
 		try {
-			$args[top$arg++] = new Cell_char(arg);
+			$args[top$arg++] = Character.valueOf(arg);
 		} catch( java.lang.ArrayIndexOutOfBoundsException e ) {
 			throw new RuntimeException("argno = "+(--top$arg)+", but max args = "+max$args);
 		}
@@ -297,7 +297,7 @@ public abstract class closure implements Cloneable {
 	}
 	public closure addArg(short arg) {
 		try {
-			$args[top$arg++] = new Cell_short(arg);
+			$args[top$arg++] = Short.valueOf(arg);
 		} catch( java.lang.ArrayIndexOutOfBoundsException e ) {
 			throw new RuntimeException("argno = "+(--top$arg)+", but max args = "+max$args);
 		}
@@ -305,7 +305,7 @@ public abstract class closure implements Cloneable {
 	}
 	public closure addArg(int arg) {
 		try {
-			$args[top$arg++] = new Cell_int(arg);
+			$args[top$arg++] = Integer.valueOf(arg);
 		} catch( java.lang.ArrayIndexOutOfBoundsException e ) {
 			throw new RuntimeException("argno = "+(--top$arg)+", but max args = "+max$args);
 		}
@@ -313,7 +313,7 @@ public abstract class closure implements Cloneable {
 	}
 	public closure addArg(long arg) {
 		try {
-			$args[top$arg++] = new Cell_long(arg);
+			$args[top$arg++] = Long.valueOf(arg);
 		} catch( java.lang.ArrayIndexOutOfBoundsException e ) {
 			throw new RuntimeException("argno = "+(--top$arg)+", but max args = "+max$args);
 		}
@@ -321,7 +321,7 @@ public abstract class closure implements Cloneable {
 	}
 	public closure addArg(float arg) {
 		try {
-			$args[top$arg++] = new Cell_float(arg);
+			$args[top$arg++] = Float.valueOf(arg);
 		} catch( java.lang.ArrayIndexOutOfBoundsException e ) {
 			throw new RuntimeException("argno = "+(--top$arg)+", but max args = "+max$args);
 		}
@@ -329,7 +329,7 @@ public abstract class closure implements Cloneable {
 	}
 	public closure addArg(double arg) {
 		try {
-			$args[top$arg++] = new Cell_double(arg);
+			$args[top$arg++] = Double.valueOf(arg);
 		} catch( java.lang.ArrayIndexOutOfBoundsException e ) {
 			throw new RuntimeException("argno = "+(--top$arg)+", but max args = "+max$args);
 		}

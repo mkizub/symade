@@ -190,7 +190,6 @@ kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\Pool
 kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
 kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
-kiev.parser.ASTAnonymouseClosure kiev/parser/ASTAnonymouseClosure kiev\parser\ASTAnonymouseClosure.java
 kiev.parser.ASTCallAccessExpression kiev/parser/ASTCallAccessExpression kiev\parser\ASTCallAccessExpression.java
 kiev.parser.ASTCallExpression kiev/parser/ASTCallExpression kiev\parser\ASTCallExpression.java
 kiev.parser.ASTCastOperator kiev/parser/ASTCastOperator kiev\parser\ASTCastOperator.java
@@ -200,7 +199,6 @@ kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIde
 kiev.parser.ASTModifiers kiev/parser/ASTModifiers kiev\parser\ASTModifiers.java
 kiev.parser.ASTNewAccessExpression kiev/parser/ASTNewAccessExpression kiev\parser\ASTNewAccessExpression.java
 kiev.parser.ASTNewArrayExpression kiev/parser/ASTNewArrayExpression kiev\parser\ASTNewArrayExpression.java
-kiev.parser.ASTNewExpression kiev/parser/ASTNewExpression kiev\parser\ASTNewExpression.java
 kiev.parser.ASTNewInitializedArrayExpression kiev/parser/ASTNewInitializedArrayExpression kiev\parser\ASTNewInitializedArrayExpression.java
 kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java
 kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java

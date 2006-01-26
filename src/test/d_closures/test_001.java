@@ -1,3 +1,5 @@
+package test.d_closures;
+
 public class test_001 {
 
 	public (int,long)->long add;

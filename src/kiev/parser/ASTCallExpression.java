@@ -103,7 +103,7 @@ public class ASTCallExpression extends ENode {
 							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof CallType
 							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof CallType
 							) {
-								replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(this.getNode(),closure),args.delToArray()));
+								replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(this.getNode(),null,closure),args.delToArray()));
 								return;
 							}
 						} catch(Exception eee) {
@@ -215,31 +215,31 @@ public class ASTCallExpression extends ENode {
 				throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args));
 			}
 			if( reqType instanceof CallType ) {
-				ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
-				ac.pos = pos;
-				ac.rettype = new TypeRef(pos, ((CallType)reqType).ret());
-				for (int i=0; i < ac.params.length; i++)
-					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.arg(i),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
+				NewClosure nc = new NewClosure(pos);
+				nc.type_ret = new TypeRef(pos, ((CallType)reqType).ret());
+				for (int i=0; i < nc.params.length; i++)
+					nc.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.arg(i),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
 				BlockStat bs = new BlockStat(pos,ENode.emptyArray);
 				ENode[] oldargs = args.toArray();
-				ENode[] cargs = new ENode[ac.params.length];
+				ENode[] cargs = new ENode[nc.params.length];
 				for(int i=0; i < cargs.length; i++)
-					cargs[i] = new LVarExpr(pos,(Var)ac.params[i]);
+					cargs[i] = new LVarExpr(pos,(Var)nc.params[i]);
 				args.delAll();
 				foreach (ENode e; cargs)
 					args.add(e);
-				if( ac.rettype.getType() ≡ Type.tpVoid ) {
+				if( nc.type_ret.getType() ≡ Type.tpVoid ) {
 					bs.addStatement(new ExprStat(pos,this));
 					bs.addStatement(new ReturnStat(pos,null));
 				} else {
 					bs.addStatement(new ReturnStat(pos,this));
 				}
-				ac.body = bs;
-				if( oldargs.length > 0 ) {
-					replaceWithNodeResolve(reqType, new ClosureCallExpr(pos,ac,oldargs));
-				} else {
-					replaceWithNodeResolve(reqType, ac);
-				}
+				nc.body = bs;
+				ENode e = nc;
+				if( oldargs.length > 0 )
+					e = new ClosureCallExpr(pos,nc,oldargs);
+				replaceWithNode(e);
+				Kiev.runProcessorsOn(e);
+				e.resolve(reqType);
 				return;
 			} else {
 				if( m.isStatic() )
