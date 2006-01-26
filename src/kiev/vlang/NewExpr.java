@@ -279,7 +279,7 @@ public final class NewArrayExpr extends ENode {
 		@att public TypeRef				type;
 		@att public NArr<ENode>			args;
 		@att public int					dim;
-		@ref public Type				arrtype;
+		@ref public ArrayType			arrtype;
 
 		public NewArrayExprImpl() {}
 		public NewArrayExprImpl(int pos) { super(pos); }
@@ -289,7 +289,17 @@ public final class NewArrayExpr extends ENode {
 		public				TypeRef			type;
 		public access:ro	NArr<ENode>		args;
 		public				int				dim;
-		public				Type			arrtype;
+		public				ArrayType		arrtype;
+
+		public Type get$arrtype() {
+			ArrayType art = this.$view.arrtype;
+			if (art != null)
+				return art;
+			art = new ArrayType(type.getType());
+			for(int i=1; i < dim; i++) art = new ArrayType(art);
+			this.$view.arrtype = art;
+			return art;
+		}
 
 		public int		getPriority() { return Constants.opAccessPriority; }
 	}
@@ -306,8 +316,6 @@ public final class NewArrayExpr extends ENode {
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
 		this.dim = dim;
-		arrtype = new ArrayType(type.getType());
-		for(int i=1; i < dim; i++) arrtype = new ArrayType(arrtype);
 	}
 
 	public String toString() {
@@ -321,11 +329,14 @@ public final class NewArrayExpr extends ENode {
 		return sb.toString();
 	}
 
-	public Type getType() { return arrtype; }
+	public Type getType() {
+		return arrtype;
+	}
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		Type type = this.type.getType();
+		ArrayType art = this.arrtype;
 		for(int i=0; i < args.length; i++)
 			if( args[i] != null )
 				args[i].resolve(Type.tpInt);
@@ -398,6 +409,16 @@ public final class NewInitializedArrayExpr extends ENode {
 		
 		@getter public final int	get$dim()	{ return this.$view.dims.length; }
 
+		public Type get$arrtype() {
+			ArrayType art = this.$view.arrtype;
+			if (art != null)
+				return art;
+			art = new ArrayType(type.getType());
+			for(int i=1; i < dim; i++) art = new ArrayType(art);
+			this.$view.arrtype = art;
+			return art;
+		}
+
 		public int		getPriority() { return Constants.opAccessPriority; }
 	}
 	
@@ -413,9 +434,7 @@ public final class NewInitializedArrayExpr extends ENode {
 		this.type = type;
 		dims = new int[dim];
 		dims[0] = args.length;
-		foreach (ENode e; args) this.args.append(e);
-		arrtype = new ArrayType(type.getType());
-		for(int i=1; i < dim; i++) arrtype = new ArrayType(arrtype);
+		this.args.addAll(args);
 	}
 
 	public String toString() {
@@ -436,7 +455,25 @@ public final class NewInitializedArrayExpr extends ENode {
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
-		Type type = this.type.getType();
+		Type type;
+		if( this.type == null ) {
+			if( !reqType.isArray() )
+				throw new CompilerException(this,"Type "+reqType+" is not an array type");
+			type = reqType;
+			this.arrtype = (ArrayType)reqType;
+			Type art = reqType;
+			int dim = 0;
+			while (art instanceof ArrayType) { dim++; art = art.arg; }
+			this.type = new TypeRef(art);
+			this.dims = new int[dim];
+			this.dims[0] = args.length;
+		} else {
+			type = this.type.getType();
+			for (int dim = this.dim; dim > 0; dim--)
+				type = new ArrayType(type);
+		}
+		if( !type.isArray() )
+			throw new CompilerException(this,"Type "+type+" is not an array type");
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(arrtype.arg);
 		for(int i=1; i < dims.length; i++) {

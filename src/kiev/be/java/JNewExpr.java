@@ -91,7 +91,7 @@ public final view JNewExpr of NewExprImpl extends JENode {
 @nodeview
 public final view JNewArrayExpr of NewArrayExprImpl extends JENode {
 	public access:ro	Type				type;
-	public access:ro	JArr<JENode>	args;
+	public access:ro	JArr<JENode>		args;
 	public access:ro	int					dim;
 	public access:ro	Type				arrtype;
 	

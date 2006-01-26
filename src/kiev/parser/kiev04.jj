@@ -1533,9 +1533,9 @@ ENode VariableInitializer() :
 }
 
 ENode ArrayInitializer() :
-{ Token t; ASTNewInitializedArrayExpression e = new ASTNewInitializedArrayExpression(); }
+{ NewInitializedArrayExpr e = new NewInitializedArrayExpr(); e.pos = getToken(1).getPos(); }
 {
-	t="{"
+	"{"
 	[	LOOKAHEAD(2)
 		e.args += VariableInitializer()
 		(	LOOKAHEAD(2)
@@ -2681,14 +2681,10 @@ NewExpr NewExpression() :
 	{ return ne; }
 }
 
-ASTNewArrayExpression NewArrayExpression() :
-{ Token t; int dim=0; ASTNewArrayExpression ne = new ASTNewArrayExpression(); }
+NewArrayExpr NewArrayExpression() :
+{ int dim=0; NewArrayExpr ne = new NewArrayExpr(); ne.pos = getToken(1).getPos(); }
 {
-	t="new"
-	{
-		ne.pos = t.getPos();
-		t = null;
-	}
+	"new"
 	ne.type = NArrType()
 	(
 		LOOKAHEAD(2)
@@ -2707,14 +2703,10 @@ ASTNewArrayExpression NewArrayExpression() :
 	}
 }
 
-ASTNewInitializedArrayExpression NewInitializedArrayExpression() :
-{ Token t; int dim=0; ASTNewInitializedArrayExpression ne = new ASTNewInitializedArrayExpression(); }
+NewInitializedArrayExpr NewInitializedArrayExpression() :
+{ int dim=0; NewInitializedArrayExpr ne = new NewInitializedArrayExpr(); ne.pos = getToken(1).getPos(); }
 {
-	t="new"
-	{
-		ne.pos = t.getPos();
-		t = null;
-	}
+	"new"
 	ne.type = NArrType()
 	(
 		<OPERATOR_LRBRACKETS> 
@@ -2731,7 +2723,8 @@ ASTNewInitializedArrayExpression NewInitializedArrayExpression() :
 	]
 	"}"
 	{
-		ne.dim = dim;
+		ne.dims = new int[dim];
+		ne.dims[0] = ne.args.length;
 		return ne;
 	}
 }
