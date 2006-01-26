@@ -320,7 +320,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public final boolean isLoadedFromBytecode();
 		public final void setLoadedFromBytecode(boolean on);
 	
-		public final boolean mainResolveIn(TransfProcessor proc) {
+		public final boolean mainResolveIn() {
 			this.resolveFinalFields();
 			return !isLocal();
 		}

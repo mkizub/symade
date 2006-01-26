@@ -659,12 +659,12 @@ public final class LVarExpr extends LvalueExpr {
 			return var;
 		}
 
-		public boolean preResolveIn(TransfProcessor proc) {
+		public boolean preResolveIn() {
 			getVar(); // calls resolving
 			return false;
 		}
 	
-		public boolean mainResolveIn(TransfProcessor proc) {
+		public boolean mainResolveIn() {
 			getVar(); // calls resolving
 			return false;
 		}

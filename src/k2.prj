@@ -433,6 +433,7 @@ kiev.vlang.PassInfo kiev/vlang/PassInfo kiev\vlang\PassInfo.java
 kiev.vlang.PostfixOperator kiev/vlang/PostfixOperator kiev\vlang\Operator.java
 kiev.vlang.PrefixOperator kiev/vlang/PrefixOperator kiev\vlang\Operator.java
 kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java
+kiev.vlang.ReWalkNodeException kiev/vlang/ReWalkNodeException kiev\vlang\AST.java
 kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
 kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java
 kiev.vlang.RuleAndExpr kiev/vlang/RuleAndExpr kiev\vlang\Rules.java

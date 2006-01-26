@@ -287,12 +287,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final boolean isDispatcherMethod();
 		public final void setDispatcherMethod(boolean on);
 
-		public boolean preResolveIn(TransfProcessor proc) {
+		public boolean preResolveIn() {
 			checkRebuildTypes();
 			return true;
 		}
 	
-		public boolean mainResolveIn(TransfProcessor proc) {
+		public boolean mainResolveIn() {
 			checkRebuildTypes();
 			return true;
 		}

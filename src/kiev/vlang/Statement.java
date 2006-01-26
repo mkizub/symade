@@ -815,7 +815,7 @@ public class BreakStat extends ENode {
 		public NameRef			ident;
 		public Label			dest;
 	
-		public boolean mainResolveIn(TransfProcessor proc) {
+		public boolean mainResolveIn() {
 			ASTNode p;
 			if (dest != null) {
 				dest.delLink(this.getNode());
@@ -971,7 +971,7 @@ public class ContinueStat extends ENode {
 		public NameRef			ident;
 		public Label			dest;
 	
-		public boolean mainResolveIn(TransfProcessor proc) {
+		public boolean mainResolveIn() {
 			ASTNode p;
 			if (dest != null) {
 				dest.delLink(this.getNode());
@@ -1070,7 +1070,7 @@ public class GotoStat extends ENode {
 		public NameRef			ident;
 		public Label			dest;
 	
-		public boolean mainResolveIn(TransfProcessor proc) {
+		public boolean mainResolveIn() {
 			if (dest != null) {
 				dest.delLink(this.getNode());
 				dest = null;

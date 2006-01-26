@@ -60,7 +60,7 @@ public final class NewExpr extends ENode {
 
 		public int		getPriority() { return Constants.opAccessPriority; }
 
-		public boolean preResolveIn(TransfProcessor proc) {
+		public boolean preResolveIn() {
 			if( clazz == null )
 				return true;
 			Type tp = type.getType();

@@ -43,12 +43,12 @@ public class TypeRef extends ENode {
 	public static view TypeRefView of TypeRefImpl extends ENodeView {
 		public Type	lnk;
 
-		public boolean preResolveIn(TransfProcessor proc) {
+		public boolean preResolveIn() {
 			getNode().getType(); // calls resolving
 			return false;
 		}
 	
-		public boolean mainResolveIn(TransfProcessor proc) {
+		public boolean mainResolveIn() {
 			getNode().getType(); // calls resolving
 			return false;
 		}

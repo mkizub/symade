@@ -297,11 +297,22 @@ public abstract class ASTNode implements Constants, Cloneable {
 				if (val == null)
 					continue;
 				if (attr.is_space) {
-					foreach (ASTNode n; (NArr<ASTNode>)val)
-						n.walkTree(walker);
+					NArr<ASTNode> vals = (NArr<ASTNode>)val;
+					for (int i=0; i < vals.length; i++) {
+						try {
+							vals[i].walkTree(walker);
+						} catch (ReWalkNodeException e) { i--; }
+					}
 				}
 				else if (val instanceof ASTNode) {
-					val.walkTree(walker);
+				re_walk_node:;
+					try {
+						val.walkTree(walker);
+					} catch (ReWalkNodeException e) {
+						val = this.getVal(attr.name);
+						if (val != null)
+							goto re_walk_node;
+					}
 				}
 			}
 			if (ndata != null) {
@@ -465,9 +476,9 @@ public abstract class ASTNode implements Constants, Cloneable {
 			walker.post_exec(getNode());
 		}
 
-		public boolean preResolveIn(TransfProcessor proc) { return true; }
+		public boolean preResolveIn() { return true; }
 		public void preResolveOut() {}
-		public boolean mainResolveIn(TransfProcessor proc) { return true; }
+		public boolean mainResolveIn() { return true; }
 		public void mainResolveOut() {}
 		public boolean preVerify() { return true; }
 		public void postVerify() {}
@@ -1215,7 +1226,7 @@ public final class LocalStructDecl extends ENode implements Named {
 	public static final view LocalStructDeclView of LocalStructDeclImpl extends ENodeView {
 		public Struct		clazz;
 
-		public boolean preResolveIn(TransfProcessor proc) {
+		public boolean preResolveIn() {
 			if( ctx_method==null || ctx_method.isStatic())
 				clazz.setStatic(true);
 			clazz.setResolved(true);
@@ -1430,3 +1441,7 @@ public class CompilerException extends RuntimeException {
 	}
 }
 
+public class ReWalkNodeException extends RuntimeException {
+	public static final ReWalkNodeException instance = new ReWalkNodeException();
+	private ReWalkNodeException() {}
+}

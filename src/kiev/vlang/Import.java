@@ -51,7 +51,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		public				boolean				of_method;
 		public				DNode				resolved;
 		
-		public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
+		public boolean mainResolveIn() { return false; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -198,7 +198,7 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		public	TypeRef			type;
 		public	TypeDef			arg;
 
-		public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
+		public boolean mainResolveIn() { return false; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }

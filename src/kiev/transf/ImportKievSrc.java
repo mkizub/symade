@@ -692,7 +692,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 	public void preResolve(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { return n.preResolveIn(TransfProcessor.this); }
+			public boolean pre_exec(ASTNode n) { return n.preResolveIn(); }
 			public void post_exec(ASTNode n) { n.preResolveOut(); }
 		});
 		return;
@@ -700,7 +700,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 	public void mainResolve(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { return n.mainResolveIn(TransfProcessor.this); }
+			public boolean pre_exec(ASTNode n) { return n.mainResolveIn(); }
 			public void post_exec(ASTNode n) { n.mainResolveOut(); }
 		});
 		return;

@@ -57,7 +57,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		@getter public Method get$ctx_method() { return null; }
 		@getter public Method get$child_ctx_method() { return null; }
 
-		public boolean preResolveIn(TransfProcessor proc) {
+		public boolean preResolveIn() {
 			for(int i=0; i < members.length; i++) {
 				try {
 					foreach (DNode dn; syntax; dn instanceof Import) {

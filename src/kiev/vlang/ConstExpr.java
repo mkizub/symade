@@ -438,7 +438,7 @@ public abstract class ConstExpr extends ENode {
 
 		public int		getPriority() { return 255; }
 
-		public final boolean mainResolveIn(TransfProcessor proc) {
+		public final boolean mainResolveIn() {
 			// already fully resolved
 			setResolved(true);
 			return false;

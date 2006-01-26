@@ -37,7 +37,7 @@ public class ASTIdentifier extends ENode {
 
 		public int		getPriority() { return 256; }
 
-		public boolean preResolveIn(TransfProcessor proc) {
+		public boolean preResolveIn() {
 			// predefined operators
 			if( name == op_instanceof ) {
 				ASTOperator op = new ASTOperator();
