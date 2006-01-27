@@ -565,7 +565,7 @@ public final view JGotoCaseStat of GotoCaseStatImpl extends JENode {
 
 			JVar tmp_var = null;
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
-				if (node == sw)
+				if (node.getNode() == sw.getNode())
 					break;
 				if (node instanceof JFinallyInfo) {
 					node = node.jparent; // skip calling jsr if we are in it

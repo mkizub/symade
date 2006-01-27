@@ -232,7 +232,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 }
 
 @nodeset
-public class SwitchStat extends ENode implements BreakTarget {
+public class SwitchStat extends ENode {
 	
 	@dflow(out="lblbrk") private static class DFI {
 	@dflow(in="this:in")			ENode			sel;
@@ -282,18 +282,19 @@ public class SwitchStat extends ENode implements BreakTarget {
 	
 	public SwitchStat() {
 		super(new SwitchStatImpl());
+		setBreakTarget(true);
 		((SwitchStatImpl)this.$v_impl).lblcnt = new Label();
 		((SwitchStatImpl)this.$v_impl).lblbrk = new Label();
 	}
 
 	public SwitchStat(int pos, ENode sel, CaseLabel[] cases) {
 		super(new SwitchStatImpl(pos));
+		setBreakTarget(true);
 		((SwitchStatImpl)this.$v_impl).lblcnt = new Label();
 		((SwitchStatImpl)this.$v_impl).lblbrk = new Label();
 		this.sel = sel;
 		this.cases.addAll(cases);
 		defCase = null;
-		setBreakTarget(true);
 	}
 
 	public String toString() { return "switch("+sel+")"; }

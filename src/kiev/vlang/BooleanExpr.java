@@ -386,10 +386,6 @@ public class BinaryBoolExpr extends BoolExpr {
 			||  op==BinaryOperator.NotEquals
 			)
 		) {
-//			if ((et1.isReference() && et2.isReference() && et2 ≢ Type.tpNull) && (et1.getStruct()!=null && et2.getStruct()!=null) &&
-//				(et1.getStruct().instanceOf(Env.getStruct(clazzType)) || et2.getStruct().instanceOf(Env.getStruct(clazzType)))
-//			)
-//				Kiev.reportWarning(this, "Unoverriden type comparision");
 			this.resolve2(reqType);
 			return;
 		}
@@ -411,7 +407,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	private ASTNode resolve2(Type reqType) {
 		Type t1 = expr1.getType();
 		Type t2 = expr2.getType();
-		if( !t1.equals(t2) ) {
+		if( t1 ≉ t2 ) {
 			if( t1.isReference() != t2.isReference()) {
 				if (t1.isEnum() && !t1.isIntegerInCode()) {
 					expr1 = new CastExpr(expr1.pos,Type.tpInt,(ENode)~expr1);
@@ -424,26 +420,32 @@ public class BinaryBoolExpr extends BoolExpr {
 					t2 = expr2.getType();
 				}
 				if( t1.isReference() != t2.isReference() && t1.isIntegerInCode() != t2.isIntegerInCode())
-					throw new RuntimeException("Boolean operator on reference and non-reference types");
+					throw new CompilerException(this,"Boolean operator on reference and non-reference types");
 			}
 			if( !t1.isReference() && !t2.isReference()) {
 				Type t;
 				if      (t1 ≡ Type.tpDouble || t2 ≡ Type.tpDouble ) t = Type.tpDouble;
 				else if (t1 ≡ Type.tpFloat  || t2 ≡ Type.tpFloat  ) t = Type.tpFloat;
 				else if (t1 ≡ Type.tpLong   || t2 ≡ Type.tpLong   ) t = Type.tpLong;
-//					else if( t1==tInt || t2==tInt ) t=tInt;
-//					else if( t1==tShort || t2==tShort ) t=tShort;
-//					else if( t1==tByte || t2==tByte ) t=tByte;
-//					else t = tVoid;
 				else t = Type.tpInt;
 
-				if( !t.equals(t1) && t1.isCastableTo(t) ) {
+				if( t ≢ t1 && t1.isCastableTo(t) ) {
 					expr1 = new CastExpr(pos,t,(ENode)~expr1);
 					expr1.resolve(t);
 				}
-				if( !t.equals(t2) && t2.isCastableTo(t) ) {
+				if( t ≢ t2 && t2.isCastableTo(t) ) {
 					expr2 = new CastExpr(pos,t,(ENode)~expr2);
 					expr2.resolve(t);
+				}
+			}
+			if( t1.isReference() && t2.isReference()) {
+				if (t1 ≢ Type.tpNull && t2 ≢ Type.tpNull) {
+					if (!t1.isInstanceOf(t2) && !t2.isInstanceOf(t1))
+						Kiev.reportWarning(this, "Operation "+op+" on uncomparable types "+t1+" and "+t2);
+					if (t1.getStruct() != null && t1.getStruct().isStructView())
+						Kiev.reportWarning(this, "Operation "+op+" on a view type "+t1);
+					if (t2.getStruct() != null && t2.getStruct().isStructView())
+						Kiev.reportWarning(this, "Operation "+op+" on a view type "+t2);
 				}
 			}
 		}

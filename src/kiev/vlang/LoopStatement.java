@@ -29,7 +29,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeset
-public abstract class LoopStat extends ENode implements BreakTarget, ContinueTarget {
+public abstract class LoopStat extends ENode implements ContinueTarget {
 	@virtual typedef NImpl = LoopStatImpl;
 	@virtual typedef VView = LoopStatView;
 	@virtual typedef JView = JLoopStat;

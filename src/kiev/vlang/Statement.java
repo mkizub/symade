@@ -822,11 +822,7 @@ public class BreakStat extends ENode {
 				dest = null;
 			}
 			if( ident == null ) {
-				for(p=parent; !(
-					p instanceof BreakTarget
-				 || p instanceof Method
-				 || (p instanceof BlockStat && ((BlockStat)p).isBreakTarget())
-								); p = p.parent );
+				for(p=parent; !(p instanceof Method || p.isBreakTarget()); p = p.parent );
 				if( p instanceof Method || p == null ) {
 					Kiev.reportError(this,"Break not within loop/switch statement");
 				} else {
@@ -841,13 +837,12 @@ public class BreakStat extends ENode {
 			} else {
 		label_found:
 				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
-					if( p instanceof LabeledStat &&
-						((LabeledStat)p).getName().equals(ident.name) )
+					if (p instanceof LabeledStat && p.getName().equals(ident.name))
 						throw new RuntimeException("Label "+ident+" does not refer to break target");
-					if( !(p instanceof BreakTarget || p instanceof BlockStat ) ) continue;
+					if (!p.isBreakTarget()) continue;
 					ASTNode pp = p;
 					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-						if( ((LabeledStat)p).getName().equals(ident.name) ) {
+						if (p.getName().equals(ident.name)) {
 							p = pp;
 							break label_found;
 						}
@@ -885,11 +880,7 @@ public class BreakStat extends ENode {
 			dest = null;
 		}
 		if( ident == null ) {
-			for(p=parent; !(
-				p instanceof BreakTarget
-			 || p instanceof Method
-			 || (p instanceof BlockStat && ((BlockStat)p).isBreakTarget())
-			 				); p = p.parent );
+			for(p=parent; !(p instanceof Method || p.isBreakTarget()); p = p.parent );
 			if( p instanceof Method || p == null ) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
@@ -904,13 +895,12 @@ public class BreakStat extends ENode {
 		} else {
 	label_found:
 			for(p=parent; !(p instanceof Method) ; p=p.parent ) {
-				if( p instanceof LabeledStat &&
-					((LabeledStat)p).getName().equals(ident.name) )
+				if (p instanceof LabeledStat && p.getName().equals(ident.name))
 					throw new RuntimeException("Label "+ident+" does not refer to break target");
-				if( !(p instanceof BreakTarget || p instanceof BlockStat ) ) continue;
+				if (!p.isBreakTarget()) continue;
 				ASTNode pp = p;
 				for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-					if( ((LabeledStat)p).getName().equals(ident.name) ) {
+					if (p.getName().equals(ident.name)) {
 						p = pp;
 						break label_found;
 					}

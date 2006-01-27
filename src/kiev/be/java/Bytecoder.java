@@ -334,7 +334,7 @@ public class Bytecoder implements JConstants {
 							inner[i] == null;
 						} else {
 							inner[i] = Env.getStruct(cn).getJView();
-							if( inner[i] == cl ) {
+							if( inner[i].getStruct() == cl ) {
 								Kiev.reportWarning("Class "+cl+" is inner for itself");
 							} else {
 								if( inner[i] == null )

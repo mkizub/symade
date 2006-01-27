@@ -213,7 +213,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 		
 		public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
 			assert(!isAttached());
-			assert(parent != null && parent != this);
+			assert(parent != null && parent != this._self);
 			// do attach
 			this.parent = parent;
 			this.pslot = pslot;
@@ -375,6 +375,16 @@ public abstract class ASTNode implements Constants, Cloneable {
 			}
 		}
 
+		// break target (ENodes)
+		public final boolean isBreakTarget() {
+			return this.is_stat_break_target;
+		}
+		public final void setBreakTarget(boolean on) {
+			if (this.is_stat_break_target != on) {
+				this.is_stat_break_target = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
 		// the (private) field/method/struct is accessed from inner class (and needs proxy access)
 		@getter public final boolean isAccessedFromInner() {
 			return this.is_accessed_from_inner;
@@ -456,6 +466,8 @@ public abstract class ASTNode implements Constants, Cloneable {
 		public final ASTNode replaceWithNode(ASTNode node);
 		public final ASTNode replaceWith(()->ASTNode fnode);
 		public final boolean isAttached();
+		public final boolean isBreakTarget();
+		public final void    setBreakTarget(boolean on);
 		public final boolean isAccessedFromInner();
 		public final void    setAccessedFromInner(boolean on);
 		public final boolean isResolved();
@@ -1024,16 +1036,6 @@ public /*abstract*/ class ENode extends ASTNode {
 				this.callbackChildChanged(nodeattr$flags);
 			}
 		}
-		// break target
-		public final boolean isBreakTarget() {
-			return this.is_stat_break_target;
-		}
-		public final void setBreakTarget(boolean on) {
-			if (this.is_stat_break_target != on) {
-				this.is_stat_break_target = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
 	}
 	@nodeview
 	public static view ENodeView of ENodeImpl extends NodeView {
@@ -1085,9 +1087,6 @@ public /*abstract*/ class ENode extends ASTNode {
 		// auto-returnable
 		public final boolean isAutoReturnable();
 		public final void setAutoReturnable(boolean on);
-		// break target
-		public final boolean isBreakTarget();
-		public final void setBreakTarget(boolean on);
 
 		public Operator getOp() { return null; }
 
