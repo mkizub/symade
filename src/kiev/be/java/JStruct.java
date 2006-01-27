@@ -82,7 +82,7 @@ public final view JStruct of StructImpl extends JTypeDecl {
 	}
 
 	public JENode accessTypeInfoField(JNode from, Type t, boolean from_gen) {
-		return getStruct().accessTypeInfoField(from.getNode(), t, from_gen).getJView();
+		return getStruct().getRView().accessTypeInfoField(from.getNode(), t, from_gen).getJView();
 	}
 	
 	public boolean instanceOf(JStruct cl) {

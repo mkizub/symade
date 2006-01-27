@@ -15,6 +15,7 @@ import kiev.be.java.JIFldExpr;
 import kiev.be.java.JContainerAccessExpr;
 import kiev.be.java.JThisExpr;
 import kiev.be.java.JLVarExpr;
+import kiev.ir.java.RLVarExpr;
 import kiev.be.java.JSFldExpr;
 import kiev.be.java.JOuterThisAccessExpr;
 import kiev.be.java.JUnwrapExpr;
@@ -629,8 +630,9 @@ public final class LVarExpr extends LvalueExpr {
 	static final KString namePEnv = KString.from("$env");
 
 	@virtual typedef NImpl = LVarExprImpl;
-	@virtual typedef VView = LVarExprView;
+	@virtual typedef VView = VLVarExpr;
 	@virtual typedef JView = JLVarExpr;
+	@virtual typedef RView = RLVarExpr;
 
 	@nodeimpl
 	public static final class LVarExprImpl extends LvalueExprImpl {		
@@ -644,7 +646,7 @@ public final class LVarExpr extends LvalueExpr {
 		}
 	}
 	@nodeview
-	public static final view LVarExprView of LVarExprImpl extends LvalueExprView {
+	public static abstract view LVarExprView of LVarExprImpl extends LvalueExprView {
 		public NameRef	ident;
 		public Var		var;
 
@@ -658,7 +660,10 @@ public final class LVarExpr extends LvalueExpr {
 			var = v;
 			return var;
 		}
+	}
 
+	@nodeview
+	public static final view VLVarExpr of LVarExprImpl extends LVarExprView {
 		public boolean preResolveIn() {
 			getVar(); // calls resolving
 			return false;
@@ -672,6 +677,7 @@ public final class LVarExpr extends LvalueExpr {
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public RView getRView() alias operator(210,fy,$cast) { return new RView(this.$v_impl); }
 
 	public LVarExpr() {
 		super(new LVarExprImpl());
@@ -721,27 +727,7 @@ public final class LVarExpr extends LvalueExpr {
 	}
 	
 	public boolean preGenerate() {
-		if (getVar().isLocalRuleVar()) {
-			RuleMethod rm = (RuleMethod)ctx_method;
-			assert(rm.params[0].type ≡ Type.tpRule);
-			Var pEnv = null;
-			foreach (ENode n; rm.body.stats; n instanceof VarDecl) {
-				VarDecl vd = (VarDecl)n;
-				if (vd.var.name.equals(namePEnv)) {
-					assert(vd.var.type.isInstanceOf(Type.tpRule));
-					pEnv = vd.var;
-					break;
-				}
-			}
-			if (pEnv == null) {
-				Kiev.reportError(this, "Cannot find "+namePEnv);
-				return false;
-			}
-			Struct s = ((LocalStructDecl)((BlockStat)rm.body).stats[0]).clazz;
-			Field f = s.resolveField(ident.name);
-			replaceWithNode(new IFldExpr(pos, new LVarExpr(pos, pEnv), (NameRef)~ident, f));
-		}
-		return true;
+		return getRView().preGenerate();
 	}
 	
 	public void resolve(Type reqType) throws RuntimeException {

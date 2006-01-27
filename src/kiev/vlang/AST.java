@@ -67,6 +67,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 	@virtual typedef NImpl = NodeImpl;
 	@virtual typedef VView = NodeView;
 	@virtual typedef JView = JNode;
+	@virtual typedef RView = VView;
 	
 	public static ASTNode[] emptyArray = new ASTNode[0];
     public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
@@ -487,6 +488,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 	public NImpl $v_impl;
 	public VView getVView() alias operator(210,fy,$cast) { return new VView($v_impl); }
 	public JView getJView() alias operator(210,fy,$cast) { return new JView($v_impl); }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)getVView(); }
 	
 	public forward abstract virtual access:ro VView theView;
 	@getter public final VView get$theView() { return getVView(); }

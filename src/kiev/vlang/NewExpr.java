@@ -13,6 +13,7 @@ import kiev.be.java.JNewExpr;
 import kiev.be.java.JNewArrayExpr;
 import kiev.be.java.JNewInitializedArrayExpr;
 import kiev.be.java.JNewClosure;
+import kiev.ir.java.RNewClosure;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -195,7 +196,7 @@ public final class NewExpr extends ENode {
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
 		if( type.clazz.isTypeUnerasable() )
-			ctx_clazz.accessTypeInfoField(this,type,false); // Create static field for this type typeinfo
+			ctx_clazz.getRView().accessTypeInfoField(this,type,false); // Create static field for this type typeinfo
 		// Don't try to find constructor of argument type
 		if( type.isArgument() ) {
 			if( !type.isUnerasable())
@@ -345,7 +346,7 @@ public final class NewArrayExpr extends ENode {
 				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
-			ENode ti = ctx_clazz.accessTypeInfoField(this,type,false);
+			ENode ti = ctx_clazz.getRView().accessTypeInfoField(this,type,false);
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
@@ -510,8 +511,9 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 
 
 	@virtual typedef NImpl = NewClosureImpl;
-	@virtual typedef VView = NewClosureView;
+	@virtual typedef VView = VNewClosure;
 	@virtual typedef JView = JNewClosure;
+	@virtual typedef RView = RNewClosure;
 
 	@nodeimpl
 	public static final class NewClosureImpl extends ENodeImpl {
@@ -526,7 +528,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		public NewClosureImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static final view NewClosureView of NewClosureImpl extends ENodeView {
+	public static abstract view NewClosureView of NewClosureImpl extends ENodeView {
 		public TypeRef			type_ret;
 		public NArr<FormPar>	params;
 		public BlockStat		body;
@@ -535,9 +537,13 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 
 		public int		getPriority() { return Constants.opAccessPriority; }
 	}
+	@nodeview
+	public static final view VNewClosure of NewClosureImpl extends NewClosureView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public RView getRView() alias operator(210,fy,$cast) { return new RView(this.$v_impl); }
 
 	public NewClosure() {
 		super(new NewClosureImpl());
@@ -570,85 +576,10 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	}
 	
 	public boolean preGenerate() {
-		if (clazz != null)
-			return true;
-		ClazzName clname = ClazzName.fromBytecodeName(
-			new KStringBuffer(ctx_clazz.name.bytecode_name.len+8)
-				.append_fast(ctx_clazz.name.bytecode_name)
-				.append_fast((byte)'$')
-				.append(ctx_clazz.countAnonymouseInnerStructs())
-				.toKString(),
-			false
-		);
-		clazz = Env.newStruct(clname,ctx_clazz,0,true);
-		clazz.setResolved(true);
-		clazz.setLocal(true);
-		clazz.setAnonymouse(true);
-		if( ctx_method==null || ctx_method.isStatic() ) clazz.setStatic(true);
-		if( Env.getStruct(Type.tpClosureClazz.name) == null )
-			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-		clazz.super_type = Type.tpClosureClazz.ctype;
-		Kiev.runProcessorsOn(clazz);
-		this.getType();
-
-		// scan the body, and replace ThisExpr with OuterThisExpr
-		Struct clz = this.ctx_clazz;
-		body.walkTree(new TreeWalker() {
-			public void post_exec(ASTNode n) {
-				if (n instanceof ThisExpr) n.replaceWithNode(new OuterThisAccessExpr(n.pos, clz));
-			}
-		});
-
-		BlockStat body = (BlockStat)~this.body;
-		Type ret = ctype.ret();
-		if( ret ≢ Type.tpRule ) {
-			KString call_name;
-			if( ret.isReference() ) {
-				ret = Type.tpObject;
-				call_name = KString.from("call_Object");
-			} else {
-				call_name = KString.from("call_"+ret);
-			}
-			Method md = new Method(call_name, ret, ACC_PUBLIC);
-			md.pos = pos;
-			md.body = body;
-			clazz.members.add(md);
-		} else {
-			KString call_name = KString.from("call_rule");
-			RuleMethod md = new RuleMethod(call_name,ACC_PUBLIC);
-			md.pos = pos;
-			md.body = body;
-			clazz.members.add(md);
-		}
-
-		FormPar[] params = this.params.delToArray();
-		for(int i=0; i < params.length; i++) {
-			FormPar v = params[i];
-			ENode val = new ContainerAccessExpr(pos,
-				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
-				new ConstIntExpr(i));
-			if( v.type.isReference() )
-				val = new CastExpr(v.pos,v.type,val,true);
-			else
-				val = new CastExpr(v.pos,((CoreType)v.type).getRefTypeForPrimitive(),val,true);
-			v.init = val;
-			body.insertSymbol(v,i);
-			if( !v.type.isReference() )
-				 CastExpr.autoCastToPrimitive(val);
-		}
-
-		return true;
+		return getRView().preGenerate();
 	}
 	
 	public void resolve(Type reqType) throws RuntimeException {
-		//if( isResolved() ) return;
-		//CallType type = (CallType)this.type.getType();
-		//if( Env.getStruct(Type.tpClosureClazz.name) == null )
-		//	throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-		//Struct clazz = this.clazz;
-		//Kiev.runBackends(fun (BackendProcessor bep)->void { bep.preGenerate(clazz); });
-		//Kiev.runBackends(fun (BackendProcessor bep)->void { bep.resolve(clazz); });
-		//func = clazz.resolveMethod(nameInit,Type.tpVoid,Type.tpInt);
 		clazz.resolveDecl();
 		setResolved(true);
 	}

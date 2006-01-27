@@ -284,13 +284,13 @@ public class TypeInfoExpr extends ENode {
 		Struct clazz = type.getStruct();
 		if (clazz.isTypeUnerasable()) {
 			if (clazz.typeinfo_clazz == null)
-				clazz.autoGenerateTypeinfoClazz();
+				clazz.getRView().autoGenerateTypeinfoClazz();
 			ftype = clazz.typeinfo_clazz.ctype;
 		}
 		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.ctype));
 		cl_expr.resolve(Type.tpClass);
-		foreach (ArgType at; clazz.getTypeInfoArgs())
-			cl_args.add(ctx_clazz.accessTypeInfoField(this, type.resolve(at),false));
+		foreach (ArgType at; clazz.getRView().getTypeInfoArgs())
+			cl_args.add(ctx_clazz.getRView().accessTypeInfoField(this, type.resolve(at),false));
 		foreach (ENode tie; cl_args)
 			tie.resolve(null);
 		setResolved(true);

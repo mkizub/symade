@@ -122,7 +122,7 @@ public class CallExpr extends ENode {
 			if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
 				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 			else
-				temp_expr = ctx_clazz.accessTypeInfoField(this,tp,false);
+				temp_expr = ctx_clazz.getRView().accessTypeInfoField(this,tp,false);
 			temp_expr.resolve(null);
 			temp_expr = null;
 		}
@@ -146,7 +146,7 @@ public class CallExpr extends ENode {
 			TypeDef[] targs = func.targs.toArray();
 			for (int i=0; i < targs.length; i++) {
 				Type tp = mt.resolve(targs[i].getAType());
-				temp_expr = ctx_clazz.accessTypeInfoField(this,tp,false);
+				temp_expr = ctx_clazz.getRView().accessTypeInfoField(this,tp,false);
 				temp_expr.resolve(null);
 			}
 			temp_expr = null;

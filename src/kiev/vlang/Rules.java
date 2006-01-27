@@ -6,11 +6,14 @@ import kiev.stdlib.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
-import static kiev.stdlib.Debug.*;
-import syntax kiev.Syntax;
-
 import kiev.vlang.Method.MethodImpl;
 import kiev.vlang.Method.MethodView;
+
+import kiev.ir.java.RRuleMethod;
+import kiev.ir.java.RRuleBlock;
+
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -28,7 +31,8 @@ public class RuleMethod extends Method {
 	}
 
 	@virtual typedef NImpl = RuleMethodImpl;
-	@virtual typedef VView = RuleMethodView;
+	@virtual typedef VView = VRuleMethod;
+	@virtual typedef RView = RRuleMethod;
 
 	@nodeimpl
 	public static final class RuleMethodImpl extends MethodImpl {
@@ -43,7 +47,7 @@ public class RuleMethod extends Method {
 		public RuleMethodImpl(int pos, int flags) { super(pos, flags); }
 	}
 	@nodeview
-	public static final view RuleMethodView of RuleMethodImpl extends MethodView {
+	public static abstract view RuleMethodView of RuleMethodImpl extends MethodView {
 		public access:ro	NArr<Var>			localvars;
 		public				int					base;
 		public				int					max_depth;
@@ -51,8 +55,12 @@ public class RuleMethod extends Method {
 		public				int					max_vars;
 		public				int					index;		// index counter for RuleNode.idx
 	}
+	@nodeview
+	public static final view VRuleMethod of RuleMethodImpl extends RuleMethodView {
+	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public RView getRView() alias operator(210,fy,$cast) { return new RView(this.$v_impl); }
 
 	public RuleMethod() {
 		super(new RuleMethodImpl());
@@ -184,14 +192,7 @@ public class RuleMethod extends Method {
 	}
 
 	public boolean preGenerate() {
-		Var penv = params[0];
-		assert(penv.name.name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
-		if( body instanceof RuleBlock ) {
-			body.preGenerate();
-			Kiev.runProcessorsOn(body);
-			body.cleanDFlow();
-		}
-		return true;
+		return getRView().preGenerate();
 	}
 	
 	public void resolveDecl() {
@@ -405,7 +406,8 @@ public final class RuleBlock extends BlockStat {
 	}
 
 	@virtual typedef NImpl = RuleBlockImpl;
-	@virtual typedef VView = RuleBlockView;
+	@virtual typedef VView = VRuleBlock;
+	@virtual typedef RView = RRuleBlock;
 
 	@nodeimpl
 	public static final class RuleBlockImpl extends BlockStatImpl {
@@ -416,12 +418,16 @@ public final class RuleBlock extends BlockStat {
 		public RuleBlockImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static final view RuleBlockView of RuleBlockImpl extends BlockStatView {
+	public static abstract view RuleBlockView of RuleBlockImpl extends BlockStatView {
 		public ASTRuleNode		node;
 		public StringBuffer		fields_buf;
 	}
+	@nodeview
+	public static final view VRuleBlock of RuleBlockImpl extends RuleBlockView {
+	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public RView getRView() alias operator(210,fy,$cast) { return new RView(this.$v_impl); }
 
 	public RuleBlock() {
 		super(new RuleBlockImpl());
@@ -432,64 +438,12 @@ public final class RuleBlock extends BlockStat {
 		node = n;
 	}
 
+	public boolean preGenerate() {
+		return getRView().preGenerate();
+	}
+
 	public void resolve(Type tp) {
 		throw new CompilerException(this,"Resolving of RuleBlock");
-	}
-	public boolean preGenerate() {
-		node.resolve(Type.tpVoid);
-		fields_buf = new StringBuffer();
-		node.resolve1(new JumpNodes(false,null,false,null,false));
-		StringBuffer sb = new StringBuffer(256);
-		sb.append("{ ");
-		// Declare private method frame class
-		String tmpClassName = "frame$$";
-		sb.append("static class ").append(tmpClassName).append(" extends rule{\n");
-		sb.append("int bt$;\n");
-		RuleMethod rule_method = (RuleMethod)ctx_method;
-		// Backtrace holders
-		for (int i=0; i < rule_method.max_depth; i++)
-			sb.append("int bt$").append(i).append(";\n");
-		// Local variables
-		foreach(Var v; rule_method.localvars) {
-			String tp = Kiev.reparseType(v.type);
-			if( v.type.isWrapper() )
-				sb.append(tp+' '+v.name.name+" := new "+tp+"();\n");
-			else
-				sb.append(tp+' '+v.name.name+";\n");
-		}
-		// tmp variables inserted here
-		sb.append(fields_buf.toString());
-		fields_buf = null;
-		sb.append("}\n");
-		// Create new method frame or hash values from
-		// existing one
-		sb.append(tmpClassName).append(" $env;\n");
-		sb.append("int bt$;\n");
-		sb.append("if("+namePEnv+"==null) {\n");
-		sb.append(" $env=new ").append(tmpClassName).append("(); bt$=0;\n");
-		sb.append(" goto enter$1;\n");
-		sb.append("}\n");
-		if (rule_method.base != 1) {
-			sb.append("else{\n");
-			sb.append(" $env=($cast ").append(tmpClassName).append(")"+namePEnv+";\n");
-			sb.append(" bt$=$env.bt$;\n");
-			sb.append("}\n");
-			sb.append("switch(bt$) {\ncase 0:\n");
-		} else {
-			// BUG!!!
-			sb.append("else{\n$env=($cast ").append(tmpClassName).append(")"+namePEnv+";}\n");
-		}
-		sb.append("return null;\n");
-		node.createText(sb);
-		// Close method
-		if (rule_method.base != 1)
-			sb.append("}\nreturn null;\n");
-		sb.append("}\n");
-		trace(Kiev.debugRules,"Rule text generated:\n"+sb);
-		BlockStat mbody = Kiev.parseBlock(this,sb);
-		ctx_method.body = mbody;
-		mbody.stats.addAll(stats.delToArray());
-		return false;
 	}
 
 }
