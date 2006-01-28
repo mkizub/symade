@@ -140,9 +140,6 @@ public abstract class ASTNode implements Constants, Cloneable {
 		public packed:1,compileflags,31 boolean is_bad;
 
 		public NodeImpl() {}
-		public NodeImpl(int pos) {
-			this.pos = pos;
-		}
 		
 		public final ASTNode getNode() {
 			return this._self;
@@ -601,15 +598,6 @@ public abstract class DNode extends ASTNode {
 		public packed:1,flags,17 boolean is_virtual;			// var/field, method is 'static virtual', struct is 'view'
 		public packed:1,flags,18 boolean is_type_unerasable;	// typedecl, method/struct as parent of typedef
 		
-		public DNodeImpl() {}
-		public DNodeImpl(int pos) {
-			super(pos);
-		}
-		public DNodeImpl(int pos, int fl) {
-			super(pos);
-			this.flags = fl;
-		}
-
 		public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
 		public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }
 		public final boolean isProtected()			{ return this.is_access == MASK_ACC_PROTECTED; }
@@ -850,9 +838,6 @@ public abstract class LvalDNode extends DNode {
 	@nodeimpl
 	public static class LvalDNodeImpl extends DNodeImpl {
 		@virtual typedef ImplOf = LvalDNode;
-		public LvalDNodeImpl() {}
-		public LvalDNodeImpl(int pos) { super(pos); }
-		public LvalDNodeImpl(int pos, int fl) { super(pos, fl); }
 
 		// init wrapper
 		@getter public final boolean isInitWrapper() {
@@ -877,9 +862,7 @@ public abstract class LvalDNode extends DNode {
 	}
 	@nodeview
 	public static view LvalDNodeView of LvalDNodeImpl extends DNodeView {
-		public LvalDNodeView(LvalDNodeImpl $view) {
-			super($view);
-		}
+		public LvalDNodeView(LvalDNodeImpl $view) { super($view); }
 
 		// init wrapper
 		public final boolean isInitWrapper();
@@ -912,8 +895,6 @@ public /*abstract*/ class ENode extends ASTNode {
 	@nodeimpl
 	public static class ENodeImpl extends NodeImpl {
 		@virtual typedef ImplOf = ENode;
-		public ENodeImpl() {}
-		public ENodeImpl(int pos) { super(pos); }
 
 		//
 		// Expr specific
@@ -1039,9 +1020,7 @@ public /*abstract*/ class ENode extends ASTNode {
 	}
 	@nodeview
 	public static view ENodeView of ENodeImpl extends NodeView {
-		public ENodeView(ENodeImpl $view) {
-			super($view);
-		}
+		public ENodeView(ENodeImpl $view) { super($view); }
 
 		public final ENode getENode() { return (ENode)this.getNode(); }
 		
@@ -1106,7 +1085,6 @@ public /*abstract*/ class ENode extends ASTNode {
 	public static final ENode[] emptyArray = new ENode[0];
 	
 	public ENode() { super(new ENodeImpl()); }
-	public ENode(int pos) { super(new ENodeImpl(pos)); }
 	public ENode(ENodeImpl impl) { super(impl); }
 
 	public Type[] getAccessTypes() {
@@ -1169,10 +1147,7 @@ public final class VarDecl extends ENode implements Named {
 	@nodeimpl
 	public static final class VarDeclImpl extends ENodeImpl {
 		@virtual typedef ImplOf = VarDecl;
-		public VarDeclImpl() {}
-
 		@att public Var var;
-	
 	}
 	@nodeview
 	public static final view VarDeclView of VarDeclImpl extends ENodeView {
@@ -1214,10 +1189,7 @@ public final class LocalStructDecl extends ENode implements Named {
 	@nodeimpl
 	public static final class LocalStructDeclImpl extends ENodeImpl {
 		@virtual typedef ImplOf = LocalStructDecl;
-		public LocalStructDeclImpl() {}
-
 		@att public Struct clazz;
-	
 	}
 	@nodeview
 	public static final view LocalStructDeclView of LocalStructDeclImpl extends ENodeView {
@@ -1272,7 +1244,6 @@ public final class NopExpr extends ENode implements NodeData {
 	@nodeimpl
 	public static final class NopExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = NopExpr;
-		public NopExprImpl() {}
 		@att public ENode	expr;
 	}
 	@nodeview
@@ -1314,10 +1285,6 @@ public abstract class TypeDecl extends DNode implements Named {
 	@nodeimpl
 	public static abstract class TypeDeclImpl extends DNodeImpl {		
 		@virtual typedef ImplOf = TypeDecl;
-		public TypeDeclImpl() {}
-		public TypeDeclImpl(int pos) { super(pos); }
-		public TypeDeclImpl(int pos, int fl) { super(pos, fl); }
-
 		public void callbackSuperTypeChanged(TypeDeclImpl chg) {}
 	}
 	@nodeview

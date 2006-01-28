@@ -34,7 +34,6 @@ public class ASTExpression extends ENode {
 	public static final class ASTExpressionImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ASTExpression;
 		@att public NArr<ENode>			nodes;
-		public ASTExpressionImpl() {}
 	}
 	@nodeview
 	public static final view ASTExpressionView of ASTExpressionImpl extends ENodeView {

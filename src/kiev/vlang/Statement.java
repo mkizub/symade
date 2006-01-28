@@ -53,8 +53,6 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		@virtual typedef ImplOf = InlineMethodStat;
 		@att public Method			method;
 		@ref public ParamRedir[]	params_redir;
-		public InlineMethodStatImpl() {}
-		public InlineMethodStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view InlineMethodStatView of InlineMethodStatImpl extends ENodeView {
@@ -70,7 +68,8 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	}
 
 	public InlineMethodStat(int pos, Method m, Method in) {
-		super(new InlineMethodStatImpl(pos));
+		this();
+		this.pos = pos;
 		method = m;
 		method.inlined_by_dispatcher = true;
 		assert(m.params.length == in.params.length);
@@ -180,8 +179,6 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 		@virtual typedef ImplOf = BlockStat;
 		@att public NArr<ENode>		stats;
 		@ref public CodeLabel		break_label;
-		public BlockStatImpl() {}
-		public BlockStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view BlockStatView of BlockStatImpl extends ENodeView {
@@ -200,18 +197,21 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public BlockStat(int pos) {
-		super(new BlockStatImpl(pos));
+		this();
+		this.pos = pos;
 	}
 
 	public BlockStat(int pos, NArr<ENode> sts) {
-		super(new BlockStatImpl(pos));
+		this();
+		this.pos = pos;
 		foreach (ENode st; sts) {
 			this.stats.append(st);
 		}
 	}
 
 	public BlockStat(int pos, ENode[] sts) {
-		super(new BlockStatImpl(pos));
+		this();
+		this.pos = pos;
 		foreach (ENode st; sts) {
 			this.stats.append(st);
 		}
@@ -368,8 +368,6 @@ public class EmptyStat extends ENode {
 	@nodeimpl
 	public static class EmptyStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = EmptyStat;
-		public EmptyStatImpl() {}
-		public EmptyStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view EmptyStatView of EmptyStatImpl extends ENodeView {
@@ -384,7 +382,8 @@ public class EmptyStat extends ENode {
 	}
 
 	public EmptyStat(int pos) {
-		super(new EmptyStatImpl(pos));
+		this();
+		this.pos = pos;
 	}
 
 	public void resolve(Type reqType) {
@@ -410,8 +409,6 @@ public class ExprStat extends ENode {
 	public static final class ExprStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ExprStat;
 		@att public ENode	expr;
-		public ExprStatImpl() {}
-		public ExprStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view ExprStatView of ExprStatImpl extends ENodeView {
@@ -431,7 +428,8 @@ public class ExprStat extends ENode {
 	}
 
 	public ExprStat(int pos, ENode expr) {
-		super(new ExprStatImpl(pos));
+		this();
+		this.pos = pos;
 		this.expr = expr;
 	}
 
@@ -471,8 +469,6 @@ public class ReturnStat extends ENode {
 	public static final class ReturnStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ReturnStat;
 		@att public ENode	expr;
-		public ReturnStatImpl() {}
-		public ReturnStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view ReturnStatView of ReturnStatImpl extends ENodeView {
@@ -487,7 +483,8 @@ public class ReturnStat extends ENode {
 	}
 
 	public ReturnStat(int pos, ENode expr) {
-		super(new ReturnStatImpl(pos));
+		this();
+		this.pos = pos;
 		this.expr = expr;
 		setMethodAbrupted(true);
 	}
@@ -535,8 +532,6 @@ public class ThrowStat extends ENode {
 	public static final class ThrowStatImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ThrowStat;
 		@att public ENode	expr;
-		public ThrowStatImpl() {}
-		public ThrowStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view ThrowStatView of ThrowStatImpl extends ENodeView {
@@ -551,7 +546,8 @@ public class ThrowStat extends ENode {
 	}
 
 	public ThrowStat(int pos, ENode expr) {
-		super(new ThrowStatImpl(pos));
+		this();
+		this.pos = pos;
 		this.expr = expr;
 		setMethodAbrupted(true);
 	}
@@ -592,8 +588,6 @@ public class IfElseStat extends ENode {
 		@att public ENode			cond;
 		@att public ENode			thenSt;
 		@att public ENode			elseSt;
-		public IfElseStatImpl() {}
-		public IfElseStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view IfElseStatView of IfElseStatImpl extends ENodeView {
@@ -610,7 +604,8 @@ public class IfElseStat extends ENode {
 	}
 	
 	public IfElseStat(int pos, ENode cond, ENode thenSt, ENode elseSt) {
-		super(new IfElseStatImpl(pos));
+		this();
+		this.pos = pos;
 		this.cond = cond;
 		this.thenSt = thenSt;
 		this.elseSt = elseSt;
@@ -688,8 +683,6 @@ public class CondStat extends ENode {
 		@virtual typedef ImplOf = CondStat;
 		@att public ENode			cond;
 		@att public ENode			message;
-		public CondStatImpl() {}
-		public CondStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view CondStatView of CondStatImpl extends ENodeView {
@@ -705,7 +698,8 @@ public class CondStat extends ENode {
 	}
 
 	public CondStat(int pos, ENode cond, ENode message) {
-		super(new CondStatImpl(pos));
+		this();
+		this.pos = pos;
 		this.cond = cond;
 		this.message = message;
 	}
@@ -752,7 +746,6 @@ public class LabeledStat extends ENode implements Named {
 		@att                 public NameRef		ident;
 		@att(copyable=false) public Label			lbl;
 		@att                 public ENode			stat;
-		public LabeledStatImpl() {}
 	}
 	@nodeview
 	public static view LabeledStatView of LabeledStatImpl extends ENodeView {
@@ -800,7 +793,6 @@ public class BreakStat extends ENode {
 		@virtual typedef ImplOf = BreakStat;
 		@att public NameRef		ident;
 		@ref public Label		dest;
-		public BreakStatImpl() {}
 
 		public void callbackRootChanged() {
 			if (dest != null && dest.ctx_root != this._self.ctx_root) {
@@ -946,15 +938,14 @@ public class ContinueStat extends ENode {
 		@virtual typedef ImplOf = ContinueStat;
 		@att public NameRef		ident;
 		@ref public Label		dest;
-		public ContinueStatImpl() {}
 	
-	public void callbackRootChanged() {
-		if (dest != null && dest.ctx_root != this._self.ctx_root) {
-			dest.delLink(this._self);
-			dest = null;
+		public void callbackRootChanged() {
+			if (dest != null && dest.ctx_root != this._self.ctx_root) {
+				dest.delLink(this._self);
+				dest = null;
+			}
+			super.callbackRootChanged();
 		}
-		super.callbackRootChanged();
-	}
 	}
 	@nodeview
 	public static view ContinueStatView of ContinueStatImpl extends ENodeView {
@@ -1045,7 +1036,6 @@ public class GotoStat extends ENode {
 		@virtual typedef ImplOf = GotoStat;
 		@att public NameRef		ident;
 		@ref public Label		dest;
-		public GotoStatImpl() {}
 	
 		public void callbackRootChanged() {
 			if (dest != null && dest.ctx_root != this._self.ctx_root) {
@@ -1223,7 +1213,6 @@ public class GotoCaseStat extends ENode {
 		@virtual typedef ImplOf = GotoCaseStat;
 		@att public ENode		expr;
 		@ref public SwitchStat	sw;
-		public GotoCaseStatImpl() {}
 	}
 	@nodeview
 	public static view GotoCaseStatView of GotoCaseStatImpl extends ENodeView {

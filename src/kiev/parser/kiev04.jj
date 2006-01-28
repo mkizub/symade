@@ -2415,6 +2415,7 @@ ENode Expression() :
 				en.setPrimaryExpr(true);
 			return en;
 		}
+		e.pos = e.nodes[0].pos; 
 		return e;
 	}
 }
@@ -2431,7 +2432,7 @@ ENode ReparseExpression() :
 ENode CallExpression() :
 { ASTCallExpression e = new ASTCallExpression(); }
 {
-	e.func = Name()
+	e.func = Name() { e.pos = e.func.pos; }
 	[
 		"<"
 			e.targs += Type()
@@ -2449,7 +2450,7 @@ ENode CallExpression() :
 ENode CallAccessExpression(ENode obj) :
 { ASTCallAccessExpression e = new ASTCallAccessExpression(); e.obj = obj; }
 {
-	e.func = Name()
+	e.func = Name() { e.pos = e.func.pos; }
 	[
 		"<"
 			e.targs += Type()
@@ -2467,7 +2468,7 @@ ENode CallAccessExpression(ENode obj) :
 ENode TypeClassExpression() :
 { TypeClassExpr e = new TypeClassExpr(); }
 {
-	e.type = Type() "." "class"
+	e.type = Type() "." "class" { e.pos = getToken(0).getPos(); }
 	{
 		e.pos = getToken(0).getPos();
 		return e;

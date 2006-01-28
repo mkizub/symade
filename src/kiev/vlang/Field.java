@@ -33,9 +33,6 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	@nodeimpl
 	public static class FieldImpl extends LvalDNodeImpl {
 		@virtual typedef ImplOf = Field;
-		public FieldImpl() {}
-		public FieldImpl(int pos) { super(pos); }
-		public FieldImpl(int pos, int fl) { super(pos, fl); }
 
 		/** Field' access */
 		     public Access				acc;
@@ -117,8 +114,9 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	    This constructor must not be called directly,
 	    but via factory method newField(...) of Clazz
      */
-	public Field(KString name, TypeRef ftype, int acc) {
-		super(new FieldImpl(0,acc));
+	public Field(KString name, TypeRef ftype, int flags) {
+		this();
+		this.flags = flags;
 		this.name = new NodeName(name);
 		this.ftype = ftype;
 		this.meta = new MetaSet();

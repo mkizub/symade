@@ -40,8 +40,6 @@ public abstract class LvalueExpr extends ENode {
 	@nodeimpl
 	public abstract static class LvalueExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = LvalueExpr;
-		public LvalueExprImpl() {}
-		public LvalueExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public abstract static view LvalueExprView of LvalueExprImpl extends ENodeView {
@@ -71,11 +69,6 @@ public class AccessExpr extends LvalueExpr {
 		@virtual typedef ImplOf = AccessExpr;
 		@att public ENode			obj;
 		@att public NameRef			ident;
-
-		public AccessExprImpl() {}
-		public AccessExprImpl(int pos) {
-			super(pos);
-		}
 	}
 	@nodeview
 	public static view AccessExprView of AccessExprImpl extends LvalueExprView {
@@ -179,11 +172,13 @@ public class AccessExpr extends LvalueExpr {
 	}
 
 	public AccessExpr(int pos) {
-		this(new AccessExprImpl(pos));
+		this();
+		this.pos = pos;
 	}
 	
 	public AccessExpr(int pos, ENode obj, NameRef ident) {
-		this(new AccessExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.obj = obj;
 		this.ident = ident;
 	}
@@ -301,11 +296,6 @@ public final class IFldExpr extends AccessExpr {
 	public static final class IFldExprImpl extends AccessExprImpl {		
 		@virtual typedef ImplOf = IFldExpr;
 		@ref public Field		var;
-
-		public IFldExprImpl() {}
-		public IFldExprImpl(int pos) {
-			super(pos);
-		}
 	}
 	@nodeview
 	public static final view IFldExprView of IFldExprImpl extends AccessExprView {
@@ -322,7 +312,8 @@ public final class IFldExpr extends AccessExpr {
 	}
 
 	public IFldExpr(int pos, ENode obj, NameRef ident, Field var) {
-		super(new IFldExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.obj = obj;
 		this.ident = ident;
 		this.var = var;
@@ -330,7 +321,8 @@ public final class IFldExpr extends AccessExpr {
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var) {
-		super(new IFldExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.obj = obj;
 		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
@@ -338,7 +330,8 @@ public final class IFldExpr extends AccessExpr {
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var, boolean direct_access) {
-		super(new IFldExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.obj = obj;
 		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
@@ -436,11 +429,6 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		@virtual typedef ImplOf = ContainerAccessExpr;
 		@att public ENode		obj;
 		@att public ENode		index;
-
-		public ContainerAccessExprImpl() {}
-		public ContainerAccessExprImpl(int pos) {
-			super(pos);
-		}
 	}
 	@nodeview
 	public static final view ContainerAccessExprView of ContainerAccessExprImpl extends LvalueExprView {
@@ -458,7 +446,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	}
 
 	public ContainerAccessExpr(int pos, ENode obj, ENode index) {
-		super(new ContainerAccessExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.obj = obj;
 		this.index = index;
 	}
@@ -565,10 +554,6 @@ public final class ThisExpr extends LvalueExpr {
 	@nodeimpl
 	public static final class ThisExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = ThisExpr;
-		public ThisExprImpl() {}
-		public ThisExprImpl(int pos) {
-			super(pos);
-		}
 	}
 	@nodeview
 	public static final view ThisExprView of ThisExprImpl extends LvalueExprView {
@@ -582,7 +567,8 @@ public final class ThisExpr extends LvalueExpr {
 		super(new ThisExprImpl());
 	}
 	public ThisExpr(int pos) {
-		super(new ThisExprImpl(pos));
+		this();
+		this.pos = pos;
 	}
 	public ThisExpr(boolean super_flag) {
 		super(new ThisExprImpl());
@@ -639,11 +625,6 @@ public final class LVarExpr extends LvalueExpr {
 		@virtual typedef ImplOf = LVarExpr;
 		@att public NameRef		ident;
 		@ref public Var			var;
-
-		public LVarExprImpl() {}
-		public LVarExprImpl(int pos) {
-			super(pos);
-		}
 	}
 	@nodeview
 	public static abstract view LVarExprView of LVarExprImpl extends LvalueExprView {
@@ -683,12 +664,14 @@ public final class LVarExpr extends LvalueExpr {
 		super(new LVarExprImpl());
 	}
 	public LVarExpr(int pos, Var var) {
-		super(new LVarExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.var = var;
 		this.ident = new NameRef(pos, var.name.name);
 	}
 	public LVarExpr(int pos, KString name) {
-		super(new LVarExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.ident = new NameRef(pos, name);
 	}
 	public LVarExpr(KString name) {
@@ -770,11 +753,6 @@ public final class SFldExpr extends AccessExpr {
 	public static final class SFldExprImpl extends AccessExprImpl {		
 		@virtual typedef ImplOf = SFldExpr;
 		@ref public Field		var;
-
-		public SFldExprImpl() {}
-		public SFldExprImpl(int pos) {
-			super(pos);
-		}
 	}
 	@nodeview
 	public static final view SFldExprView of SFldExprImpl extends AccessExprView {
@@ -791,14 +769,16 @@ public final class SFldExpr extends AccessExpr {
 	}
 
 	public SFldExpr(int pos, Field var) {
-		super(new SFldExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
 		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
-		super(new SFldExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
 		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
@@ -877,11 +857,6 @@ public final class OuterThisAccessExpr extends AccessExpr {
 		@virtual typedef ImplOf = OuterThisAccessExpr;
 		@ref public Struct			outer;
 		@ref public NArr<Field>		outer_refs;
-
-		public OuterThisAccessExprImpl() {}
-		public OuterThisAccessExprImpl(int pos) {
-			super(pos);
-		}
 	}
 	@nodeview
 	public static final view OuterThisAccessExprView of OuterThisAccessExprImpl extends AccessExprView {
@@ -899,7 +874,8 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	}
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
-		super(new OuterThisAccessExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.obj = new TypeRef(pos,outer.ctype);
 		this.ident = new NameRef(pos,nameThis);
 		this.outer = outer;
@@ -976,10 +952,6 @@ public final class UnwrapExpr extends LvalueExpr {
 	public static final class UnwrapExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = UnwrapExpr;
 		@att public ENode		expr;
-		public UnwrapExprImpl() {}
-		public UnwrapExprImpl(int pos) {
-			super(pos);
-		}
 	}
 	@nodeview
 	public static final view UnwrapExprView of UnwrapExprImpl extends LvalueExprView {
@@ -994,7 +966,8 @@ public final class UnwrapExpr extends LvalueExpr {
 	}
 
 	public UnwrapExpr(ENode expr) {
-		super(new UnwrapExprImpl(expr.pos));
+		this();
+		this.pos = pos;
 		this.expr = expr;
 	}
 

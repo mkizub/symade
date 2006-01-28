@@ -27,8 +27,6 @@ public class TypeWithArgsRef extends TypeRef {
 		@virtual typedef ImplOf = TypeWithArgsRef;
 		@att public NArr<TypeRef>			args;
 		@att public TypeRef					base_type;
-		public TypeWithArgsRefImpl() {}
-		public TypeWithArgsRefImpl(int pos) { super(pos, null); }
 	}
 	@nodeview
 	public static final view TypeWithArgsRefView of TypeWithArgsRefImpl extends TypeRefView {
@@ -43,7 +41,8 @@ public class TypeWithArgsRef extends TypeRef {
 	}
 
 	public TypeWithArgsRef(TypeRef base) {
-		super(new TypeWithArgsRefImpl(base.pos));
+		this();
+		this.pos = base.pos;
 		this.base_type = base;
 	}
 

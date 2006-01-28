@@ -30,8 +30,6 @@ public class TypeDef extends TypeDecl {
 		@att public TypeRef					upper_bound;
 		@att public TypeRef					lower_bound;
 		@att public ArgType					lnk;
-		public TypeDefImpl() {}
-		public TypeDefImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view TypeDefView of TypeDefImpl extends TypeDeclView {
@@ -51,12 +49,14 @@ public class TypeDef extends TypeDecl {
 	}
 
 	public TypeDef(NameRef nm) {
-		super(new TypeDefImpl(nm.pos));
+		this();
+		this.pos = nm.pos;
 		this.name = nm;
 	}
 
 	public TypeDef(NameRef nm, TypeRef sup) {
-		super(new TypeDefImpl(nm.pos));
+		this();
+		this.pos = nm.pos;
 		this.name = nm;
 		this.upper_bound = sup;
 	}

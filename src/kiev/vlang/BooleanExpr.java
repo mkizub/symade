@@ -35,8 +35,6 @@ public abstract class BoolExpr extends ENode {
 	@nodeimpl
 	public abstract static class BoolExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = BoolExpr;
-		public BoolExprImpl() {}
-		public BoolExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public abstract static view BoolExprView of BoolExprImpl extends ENodeView {
@@ -88,8 +86,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		@virtual typedef ImplOf = BinaryBooleanOrExpr;
 		@att public ENode			expr1;
 		@att public ENode			expr2;
-		public BinaryBooleanOrExprImpl() {}
-		public BinaryBooleanOrExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view BinaryBooleanOrExprView of BinaryBooleanOrExprImpl extends BoolExprView {
@@ -107,7 +103,8 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	}
 
 	public BinaryBooleanOrExpr(int pos, ENode expr1, ENode expr2) {
-		super(new BinaryBooleanOrExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
@@ -173,8 +170,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		@virtual typedef ImplOf = BinaryBooleanAndExpr;
 		@att public ENode			expr1;
 		@att public ENode			expr2;
-		public BinaryBooleanAndExprImpl() {}
-		public BinaryBooleanAndExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view BinaryBooleanAndExprView of BinaryBooleanAndExprImpl extends BoolExprView {
@@ -192,7 +187,8 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 
 	public BinaryBooleanAndExpr(int pos, ENode expr1, ENode expr2) {
-		super(new BinaryBooleanAndExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
@@ -253,8 +249,6 @@ public class BinaryBoolExpr extends BoolExpr {
 		@ref public BinaryOperator	op;
 		@att public ENode			expr1;
 		@att public ENode			expr2;
-		public BinaryBoolExprImpl() {}
-		public BinaryBoolExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view BinaryBoolExprView of BinaryBoolExprImpl extends BoolExprView {
@@ -290,7 +284,8 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 
 	public BinaryBoolExpr(int pos, BinaryOperator op, ENode expr1, ENode expr2) {
-		super(new BinaryBoolExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.op = op;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -485,8 +480,6 @@ public class InstanceofExpr extends BoolExpr {
 		@virtual typedef ImplOf = InstanceofExpr;
 		@att public ENode		expr;
 		@att public TypeRef		type;
-		public InstanceofExprImpl() {}
-		public InstanceofExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view InstanceofExprView of InstanceofExprImpl extends BoolExprView {
@@ -504,13 +497,15 @@ public class InstanceofExpr extends BoolExpr {
 	}
 
 	public InstanceofExpr(int pos, ENode expr, TypeRef type) {
-		super(new InstanceofExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.expr = expr;
 		this.type = type;
 	}
 
 	public InstanceofExpr(int pos, ENode expr, Type type) {
-		super(new InstanceofExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.expr = expr;
 		this.type = new TypeRef(type);
 	}
@@ -627,8 +622,6 @@ public class BooleanNotExpr extends BoolExpr {
 	public static class BooleanNotExprImpl extends BoolExprImpl {
 		@virtual typedef ImplOf = BooleanNotExpr;
 		@att public ENode		expr;
-		public BooleanNotExprImpl() {}
-		public BooleanNotExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view BooleanNotExprView of BooleanNotExprImpl extends BoolExprView {
@@ -645,7 +638,8 @@ public class BooleanNotExpr extends BoolExpr {
 	}
 
 	public BooleanNotExpr(int pos, ENode expr) {
-		super(new BooleanNotExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.expr = expr;
 	}
 

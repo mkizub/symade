@@ -27,8 +27,6 @@ public class TypeClosureRef extends TypeRef {
 	public static final class TypeClosureRefImpl extends TypeRefImpl {
 		@virtual typedef ImplOf = TypeClosureRef;
 		@att public NArr<TypeRef>		types;
-		public TypeClosureRefImpl() {}
-		public TypeClosureRefImpl(CallType tp) { super(0, tp); }
 	}
 	@nodeview
 	public static final view TypeClosureRefView of TypeClosureRefImpl extends TypeRefView {
@@ -42,7 +40,8 @@ public class TypeClosureRef extends TypeRef {
 	}
 	
 	public TypeClosureRef(CallType tp) {
-		super(new TypeClosureRefImpl(tp));
+		this();
+		this.lnk = tp;
 		assert (tp.isReference());
 	}
 	

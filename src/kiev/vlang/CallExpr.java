@@ -39,8 +39,6 @@ public class CallExpr extends ENode {
 		@ref public CallType			mt;
 		@att public NArr<ENode>			args;
 		@att public ENode				temp_expr;
-		public CallExprImpl() {}
-		public CallExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view CallExprView of CallExprImpl extends ENodeView {
@@ -61,7 +59,8 @@ public class CallExpr extends ENode {
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args, boolean super_flag) {
-		super(new CallExprImpl(pos));
+		this();
+		this.pos = pos;
 		if (obj == null) {
 			if !(func.isStatic() || func instanceof Constructor) {
 				throw new RuntimeException("Call to non-static method "+func+" without accessor");
@@ -209,8 +208,6 @@ public class ClosureCallExpr extends ENode {
 		@att public ENode				expr;
 		@att public NArr<ENode>			args;
 		@att public Boolean				is_a_call;
-		public ClosureCallExprImpl() {}
-		public ClosureCallExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view ClosureCallExprView of ClosureCallExprImpl extends ENodeView {
@@ -229,7 +226,8 @@ public class ClosureCallExpr extends ENode {
 	}
 
 	public ClosureCallExpr(int pos, ENode expr, ENode[] args) {
-		super(new ClosureCallExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.expr = expr;
 		foreach(ENode e; args) this.args.append(e);
 	}

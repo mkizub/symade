@@ -28,8 +28,6 @@ public class TypeNameRef extends TypeRef {
 		@virtual typedef ImplOf = TypeNameRef;
 		@att public TypeRef					outer;
 		@att public KString					name;
-		public TypeNameRefImpl() {}
-		public TypeNameRefImpl(int pos) { super(pos, null); }
 	}
 	@nodeview
 	public static final view TypeNameRefView of TypeNameRefImpl extends TypeRefView {
@@ -49,18 +47,21 @@ public class TypeNameRef extends TypeRef {
 	}
 
 	public TypeNameRef(NameRef nm) {
-		super(new TypeNameRefImpl(nm.pos));
+		this();
+		this.pos = pos;
 		this.name = nm.name;
 	}
 
 	public TypeNameRef(NameRef nm, Type tp) {
-		super(new TypeNameRefImpl(nm.pos));
+		this();
+		this.pos = pos;
 		this.name = nm.name;
 		this.lnk = tp;
 	}
 
 	public TypeNameRef(TypeRef outer, NameRef nm) {
-		super(new TypeNameRefImpl(nm.pos));
+		this();
+		this.pos = pos;
 		this.outer = outer;
 		this.name = nm.name;
 	}

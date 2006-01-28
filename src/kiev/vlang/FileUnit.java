@@ -31,7 +31,6 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	@nodeimpl
 	public static class FileUnitImpl extends DNodeImpl {
 		@virtual typedef ImplOf = FileUnit;
-		FileUnitImpl() {}
 		@att public KString			filename;
 		@att public TypeNameRef		pkg;
 		@att public NArr<DNode>		syntax;

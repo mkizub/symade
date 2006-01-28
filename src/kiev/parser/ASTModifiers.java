@@ -27,7 +27,6 @@ public final class ASTModifiers extends ASTNode {
 		@att public Access 				acc;
 		@att public NArr<Meta>			annotations;
 		     public MetaSpecial[]		specials = MetaSpecial.emptyArray;
-		public ASTModifiersImpl() {}
 	}
 	@nodeview
 	public static final view ASTModifiersView of ASTModifiersImpl extends NodeView {

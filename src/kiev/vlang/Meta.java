@@ -23,7 +23,6 @@ public final class MetaSet extends ASTNode {
 	public static final class MetaSetImpl extends NodeImpl {
 		@virtual typedef ImplOf = MetaSet;
 		@att public NArr<Meta>			metas;
-		public MetaSetImpl() {}
 	
 		public void callbackChildChanged(AttrSlot attr) {
 			if (parent != null && pslot != null) {
@@ -149,7 +148,6 @@ public class Meta extends ENode {
 		@virtual typedef ImplOf = Meta;
 		@att public TypeRef					type;
 		@att public NArr<MetaValue>			values;
-		public MetaImpl() {}
 
 		public void callbackChildChanged(AttrSlot attr) {
 			if (parent != null && pslot != null) {
@@ -456,7 +454,6 @@ public abstract class MetaValue extends ASTNode {
 	public static abstract class MetaValueImpl extends NodeImpl {
 		@virtual typedef ImplOf = MetaValue;
 		@att public MetaValueType			type;
-		public MetaValueImpl() {}
 	}
 	@nodeview
 	public static abstract view MetaValueView of MetaValueImpl extends NodeView {
@@ -532,7 +529,6 @@ public final class MetaValueScalar extends MetaValue {
 	public static final class MetaValueScalarImpl extends MetaValueImpl {
 		@virtual typedef ImplOf = MetaValueScalar;
 		@att public ENode			value;
-		public MetaValueScalarImpl() {}
 	}
 	@nodeview
 	public static final view MetaValueScalarView of MetaValueScalarImpl extends MetaValueView {
@@ -591,7 +587,6 @@ public final class MetaValueArray extends MetaValue {
 	public static final class MetaValueArrayImpl extends MetaValueImpl {
 		@virtual typedef ImplOf = MetaValueArray;
 		@att public NArr<ENode>			values;
-		public MetaValueArrayImpl() {}
 	}
 	@nodeview
 	public static final view MetaValueArrayView of MetaValueArrayImpl extends MetaValueView {

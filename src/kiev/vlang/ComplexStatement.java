@@ -50,8 +50,6 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		@att public NArr<Var>		pattern;
 		@att public NArr<ENode>		stats;
 		@ref public CodeLabel		case_label;
-		public CaseLabelImpl() {}
-		public CaseLabelImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view CaseLabelView of CaseLabelImpl extends ENodeView {
@@ -69,7 +67,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	}
 
 	public CaseLabel(int pos, ENode val, ENode[] stats) {
-		super(new CaseLabelImpl(pos));
+		this();
+		this.pos = pos;
 		this.val = val;
 		this.stats.addAll(stats);
 	}
@@ -262,8 +261,6 @@ public class SwitchStat extends ENode {
 		@att(copyable=false) public Label					lblcnt;
 		@att(copyable=false) public Label					lblbrk;
 		@att                 public CodeSwitch				cosw;
-		public SwitchStatImpl() {}
-		public SwitchStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view SwitchStatView of SwitchStatImpl extends ENodeView {
@@ -288,10 +285,8 @@ public class SwitchStat extends ENode {
 	}
 
 	public SwitchStat(int pos, ENode sel, CaseLabel[] cases) {
-		super(new SwitchStatImpl(pos));
-		setBreakTarget(true);
-		((SwitchStatImpl)this.$v_impl).lblcnt = new Label();
-		((SwitchStatImpl)this.$v_impl).lblbrk = new Label();
+		this();
+		this.pos = pos;
 		this.sel = sel;
 		this.cases.addAll(cases);
 		defCase = null;
@@ -548,8 +543,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		@att public ENode			body;
 		@att public CodeLabel		handler;
 		@att public CodeCatchInfo	code_catcher;
-		public CatchInfoImpl() {}
-		public CatchInfoImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view CatchInfoView of CatchInfoImpl extends ENodeView {
@@ -609,8 +602,6 @@ public class FinallyInfo extends CatchInfo {
 		@virtual typedef ImplOf = FinallyInfo;
 		@att public Var			ret_arg;
 		@att public CodeLabel	subr_label;
-		public FinallyInfoImpl() {}
-		public FinallyInfoImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view FinallyInfoView of FinallyInfoImpl extends CatchInfoView {
@@ -661,8 +652,6 @@ public class TryStat extends ENode {
 		@att public NArr<CatchInfo>		catchers;
 		@att public FinallyInfo			finally_catcher;
 		@att public CodeLabel			end_label;
-		public TryStatImpl() {}
-		public TryStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view TryStatView of TryStatImpl extends ENodeView {
@@ -751,8 +740,6 @@ public class SynchronizedStat extends ENode {
 		@att public CodeLabel		handler;
 		@att public CodeCatchInfo	code_catcher;
 		@att public CodeLabel		end_label;
-		public SynchronizedStatImpl() {}
-		public SynchronizedStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view SynchronizedStatView of SynchronizedStatImpl extends ENodeView {
@@ -807,8 +794,6 @@ public class WithStat extends ENode {
 		@att public ENode		body;
 		@ref public LvalDNode	var_or_field;
 		@att public CodeLabel	end_label;
-		public WithStatImpl() {}
-		public WithStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view WithStatView of WithStatImpl extends ENodeView {

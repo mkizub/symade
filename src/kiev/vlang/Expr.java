@@ -46,7 +46,6 @@ public class Shadow extends ENode {
 	@nodeimpl
 	public static final class ShadowImpl extends ENodeImpl {
 		@virtual typedef ImplOf = Shadow;
-		public ShadowImpl() {}
 		@ref public ASTNode	node;
 	}
 	@nodeview
@@ -108,8 +107,6 @@ public class ArrayLengthExpr extends AccessExpr {
 	@nodeimpl
 	public static final class ArrayLengthExprImpl extends AccessExprImpl {
 		@virtual typedef ImplOf = ArrayLengthExpr;
-		public ArrayLengthExprImpl() {}
-		public ArrayLengthExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view ArrayLengthExprView of ArrayLengthExprImpl extends AccessExprView {
@@ -126,12 +123,14 @@ public class ArrayLengthExpr extends AccessExpr {
 	}
 
 	public ArrayLengthExpr(int pos, ENode obj) {
-		super(new ArrayLengthExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.ident = new NameRef(pos,nameLength);
 		this.obj = obj;
 	}
 	public ArrayLengthExpr(int pos, ENode obj, NameRef length) {
-		super(new ArrayLengthExprImpl(pos));
+		this();
+		this.pos = pos;
 		assert(length.name == nameLength);
 		this.ident = new NameRef(pos,nameLength);
 		this.obj = obj;
@@ -178,8 +177,6 @@ public class TypeClassExpr extends ENode {
 	@nodeimpl
 	public static final class TypeClassExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = TypeClassExpr;
-		public TypeClassExprImpl() {}
-		public TypeClassExprImpl(int pos) { super(pos); }
 		@att public TypeRef		type;
 	}
 	@nodeview
@@ -197,7 +194,8 @@ public class TypeClassExpr extends ENode {
 	}
 
 	public TypeClassExpr(int pos, TypeRef type) {
-		super(new TypeClassExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.type = type;
 	}
 
@@ -238,8 +236,6 @@ public class TypeInfoExpr extends ENode {
 	@nodeimpl
 	public static final class TypeInfoExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = TypeInfoExpr;
-		public TypeInfoExprImpl() {}
-		public TypeInfoExprImpl(int pos) { super(pos); }
 		@att public TypeRef				type;
 		@att public TypeClassExpr		cl_expr;
 		@att public NArr<ENode>			cl_args;
@@ -261,7 +257,8 @@ public class TypeInfoExpr extends ENode {
 	}
 
 	public TypeInfoExpr(int pos, TypeRef type) {
-		super(new TypeInfoExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.type = type;
 	}
 
@@ -320,11 +317,6 @@ public class AssignExpr extends LvalueExpr {
 		@ref public AssignOperator	op;
 		@att public ENode			lval;
 		@att public ENode			value;
-
-		public AssignExprImpl() {}
-		public AssignExprImpl(int pos) {
-			super(pos);
-		}
 	}
 	@nodeview
 	public static view AssignExprView of AssignExprImpl extends LvalueExprView {
@@ -343,7 +335,8 @@ public class AssignExpr extends LvalueExpr {
 	}
 
 	public AssignExpr(int pos, AssignOperator op, ENode lval, ENode value) {
-		super(new AssignExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.op = op;
 		this.lval = lval;
 		this.value = value;
@@ -590,8 +583,6 @@ public class BinaryExpr extends ENode {
 		@ref public BinaryOperator	op;
 		@att public ENode			expr1;
 		@att public ENode			expr2;
-		public BinaryExprImpl() {}
-		public BinaryExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view BinaryExprView of BinaryExprImpl extends ENodeView {
@@ -694,7 +685,8 @@ public class BinaryExpr extends ENode {
 	}
 
 	public BinaryExpr(int pos, BinaryOperator op, ENode expr1, ENode expr2) {
-		super(new BinaryExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.op = op;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -1002,8 +994,6 @@ public class StringConcatExpr extends ENode {
 	public static class StringConcatExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = StringConcatExpr;
 		@att public NArr<ENode>			args;
-		public StringConcatExprImpl() {}
-		public StringConcatExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view StringConcatExprView of StringConcatExprImpl extends ENodeView {
@@ -1020,7 +1010,8 @@ public class StringConcatExpr extends ENode {
 	}
 
 	public StringConcatExpr(int pos) {
-		super(new StringConcatExprImpl(pos));
+		this();
+		this.pos = pos;
 	}
 
 	public String toString() {
@@ -1079,8 +1070,6 @@ public class CommaExpr extends ENode {
 	public static class CommaExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = CommaExpr;
 		@att public NArr<ENode>		exprs;
-		public CommaExprImpl() {}
-		public CommaExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view CommaExprView of CommaExprImpl extends ENodeView {
@@ -1097,7 +1086,8 @@ public class CommaExpr extends ENode {
 	}
 
 	public CommaExpr(ENode expr) {
-		super(new CommaExprImpl(expr.pos));
+		this();
+		this.pos = pos;
 		this.exprs.add(expr);
 	}
 
@@ -1155,8 +1145,6 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 		@virtual typedef ImplOf = BlockExpr;
 		@att public NArr<ENode>			stats;
 		@att public ENode				res;
-		public BlockExprImpl() {}
-		public BlockExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view BlockExprView of BlockExprImpl extends ENodeView {
@@ -1174,7 +1162,8 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public BlockExpr(int pos) {
-		super(new BlockExprImpl(pos));
+		this();
+		this.pos = pos;
 	}
 
 	public void setExpr(ENode res) {
@@ -1327,8 +1316,6 @@ public class UnaryExpr extends ENode {
 		@virtual typedef ImplOf = UnaryExpr;
 		@ref public Operator		op;
 		@att public ENode			expr;
-		public UnaryExprImpl() {}
-		public UnaryExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view UnaryExprView of UnaryExprImpl extends ENodeView {
@@ -1346,7 +1333,8 @@ public class UnaryExpr extends ENode {
 	}
 
 	public UnaryExpr(int pos, Operator op, ENode expr) {
-		super(new UnaryExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.op = op;
 		this.expr = expr;
 	}
@@ -1511,11 +1499,6 @@ public class IncrementExpr extends ENode {
 		@virtual typedef ImplOf = IncrementExpr;
 		@ref public Operator			op;
 		@att public ENode				lval;
-
-		public IncrementExprImpl() {}
-		public IncrementExprImpl(int pos) {
-			super(pos);
-		}
 	}
 	@nodeview
 	public static view IncrementExprView of IncrementExprImpl extends ENodeView {
@@ -1533,7 +1516,8 @@ public class IncrementExpr extends ENode {
 	}
 
 	public IncrementExpr(int pos, Operator op, ENode lval) {
-		super(new IncrementExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.op = op;
 		this.lval = lval;
 	}
@@ -1593,8 +1577,6 @@ public class ConditionalExpr extends ENode {
 		@att public ENode			cond;
 		@att public ENode			expr1;
 		@att public ENode			expr2;
-		public ConditionalExprImpl() {}
-		public ConditionalExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view ConditionalExprView of ConditionalExprImpl extends ENodeView {
@@ -1613,7 +1595,8 @@ public class ConditionalExpr extends ENode {
 	}
 
 	public ConditionalExpr(int pos, ENode cond, ENode expr1, ENode expr2) {
-		super(new ConditionalExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.cond = cond;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -1686,8 +1669,6 @@ public class CastExpr extends ENode {
 		@att public ENode		expr;
 		@att public TypeRef		type;
 		@att public boolean		reinterp;
-		public CastExprImpl() {}
-		public CastExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view CastExprView of CastExprImpl extends ENodeView {
@@ -1706,13 +1687,15 @@ public class CastExpr extends ENode {
 	}
 
 	public CastExpr(int pos, Type type, ENode expr) {
-		super(new CastExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.type = new TypeRef(type);
 		this.expr = expr;
 	}
 
 	public CastExpr(int pos, TypeRef type, ENode expr) {
-		super(new CastExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.type = type;
 		this.expr = expr;
 	}

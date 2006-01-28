@@ -35,8 +35,6 @@ public class TypeRef extends ENode {
 	@nodeimpl
 	public static class TypeRefImpl extends ENodeImpl {
 		@virtual typedef ImplOf = TypeRef;
-		public TypeRefImpl() {}
-		public TypeRefImpl(int pos, Type tp) { super(pos); this.lnk = tp; }
 		@ref public Type	lnk;
 	}
 	@nodeview
@@ -66,13 +64,18 @@ public class TypeRef extends ENode {
 	}
 
 	public TypeRef(Type tp) {
-		super(new TypeRefImpl(0, tp));
+		this();
+		this.lnk = tp;
+		
 	}
 	public TypeRef(int pos) {
-		super(new TypeRefImpl(pos, null));
+		this();
+		this.pos = pos;
 	}
 	public TypeRef(int pos, Type tp) {
-		super(new TypeRefImpl(pos, tp));
+		this();
+		this.pos = pos;
+		this.lnk = tp;
 	}
 	
 	public boolean isBound() {

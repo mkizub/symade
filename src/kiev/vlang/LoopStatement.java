@@ -39,8 +39,6 @@ public abstract class LoopStat extends ENode implements ContinueTarget {
 		@virtual typedef ImplOf = LoopStat;
 		@att(copyable=false)	public Label		lblcnt;
 		@att(copyable=false)	public Label		lblbrk;
-		public LoopStatImpl() {	}
-		public LoopStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static abstract view LoopStatView of LoopStatImpl extends ENodeView {
@@ -69,7 +67,6 @@ public final class Label extends DNode {
 	@nodeimpl
 	public final static class LabelImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Label;
-		LabelImpl() {}
 		@ref(copyable=false)	public List<ASTNode>	links = List.Nil;
 								public CodeLabel		label;
 
@@ -153,8 +150,6 @@ public class WhileStat extends LoopStat {
 		@virtual typedef ImplOf = WhileStat;
 		@att public ENode		cond;
 		@att public ENode		body;
-		public WhileStatImpl() {}
-		public WhileStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view WhileStatView of WhileStatImpl extends LoopStatView {
@@ -170,7 +165,8 @@ public class WhileStat extends LoopStat {
 	}
 
 	public WhileStat(int pos, ENode cond, ENode body) {
-		super(new WhileStatImpl(pos));
+		this();
+		this.pos = pos;
 		this.cond = cond;
 		this.body = body;
 	}
@@ -219,8 +215,6 @@ public class DoWhileStat extends LoopStat {
 		@virtual typedef ImplOf = DoWhileStat;
 		@att public ENode		cond;
 		@att public ENode		body;
-		public DoWhileStatImpl() {}
-		public DoWhileStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view DoWhileStatView of DoWhileStatImpl extends LoopStatView {
@@ -236,7 +230,8 @@ public class DoWhileStat extends LoopStat {
 	}
 
 	public DoWhileStat(int pos, ENode cond, ENode body) {
-		super(new DoWhileStatImpl(pos));
+		this();
+		this.pos = pos;
 		this.cond = cond;
 		this.body = body;
 	}
@@ -287,8 +282,6 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public static final class ForInitImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ForInit;
 		@att public final NArr<Var>		decls;
-		public ForInitImpl() {}
-		public ForInitImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view ForInitView of ForInitImpl extends ENodeView {
@@ -304,7 +297,8 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public ForInit(int pos) {
-		super(new ForInitImpl(pos));
+		this();
+		this.pos = pos;
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
@@ -365,8 +359,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		@att public ENode		cond;
 		@att public ENode		body;
 		@att public ENode		iter;
-		public ForStatImpl() {}
-		public ForStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view ForStatView of ForStatImpl extends LoopStatView {
@@ -384,7 +376,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 	
 	public ForStat(int pos, ENode init, ENode cond, ENode iter, ENode body) {
-		super(new ForStatImpl(pos));
+		this();
+		this.pos = pos;
 		this.init = init;
 		this.cond = cond;
 		this.iter = iter;
@@ -512,8 +505,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		@att public ENode		cond;
 		@att public ENode		body;
 		@att public ENode		iter_incr;
-		public ForEachStatImpl() {}
-		public ForEachStatImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view ForEachStatView of ForEachStatImpl extends LoopStatView {
@@ -538,7 +529,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	}
 	
 	public ForEachStat(int pos, Var var, ENode container, ENode cond, ENode body) {
-		super(new ForEachStatImpl(pos));
+		this();
+		this.pos = pos;
 		this.var = var;
 		this.container = container;
 		this.cond = cond;

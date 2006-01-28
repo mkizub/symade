@@ -37,9 +37,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@nodeimpl
 	public static class MethodImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Method;
-		public MethodImpl() {}
-		public MethodImpl(int pos) { super(pos); }
-		public MethodImpl(int pos, int fl) { super(pos, fl); }
 
 		public final Method getMethod() { return (Method)this._self; }
 		
@@ -334,7 +331,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		invalid_types = true;
 	}
 	public Method(KString name, TypeRef type_ret, int fl) {
-		this(new MethodImpl(0,fl), name, type_ret);
+		this(new MethodImpl(), name, type_ret);
+		this.flags = fl;
 	}
 	public Method(MethodImpl $view, KString name, TypeRef type_ret) {
 		super($view);
@@ -832,8 +830,6 @@ public class Constructor extends Method {
 	public static final class ConstructorImpl extends MethodImpl {
 		@virtual typedef ImplOf = Constructor;
 		@att public NArr<ENode>			addstats;
-		public ConstructorImpl() {}
-		public ConstructorImpl(int pos, int flags) { super(pos, flags); }
 	}
 	@nodeview
 	public static final view ConstructorView of ConstructorImpl extends MethodView {
@@ -848,7 +844,8 @@ public class Constructor extends Method {
 	}
 
 	public Constructor(int fl) {
-		super(new ConstructorImpl(0, fl), (fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid);
+		super(new ConstructorImpl(), (fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid);
+		this.flags = fl;
 	}
 
 	public void resolveDecl() {
@@ -877,8 +874,6 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 		@virtual typedef ImplOf = Initializer;
 		@att public BlockStat				body;
 		@att public PrescannedBody			pbody;
-		public InitializerImpl() {}
-		public InitializerImpl(int pos, int flags) { super(pos, flags); }
 	}
 	@nodeview
 	public static final view InitializerView of InitializerImpl extends DNodeView {
@@ -897,7 +892,9 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	}
 
 	public Initializer(int pos, int flags) {
-		super(new InitializerImpl(pos, flags));
+		this();
+		this.pos = pos;
+		this.flags = flags;
 	}
 
 	public void resolveDecl() {
@@ -951,8 +948,6 @@ public class WBCCondition extends DNode {
 		@att public ENode				body;
 		@ref public Method				definer;
 		@att public CodeAttr			code_attr;
-		public WBCConditionImpl() {}
-		public WBCConditionImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view WBCConditionView of WBCConditionImpl extends DNodeView {
@@ -971,7 +966,8 @@ public class WBCCondition extends DNode {
 	}
 
 	public WBCCondition(int pos, WBCType cond, KString name, ENode body) {
-		super(new WBCConditionImpl(pos));
+		this();
+		this.pos = pos;
 		if (name != null)
 			this.name = new NameRef(pos, name);
 		this.cond = cond;

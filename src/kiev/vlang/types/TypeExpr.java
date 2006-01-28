@@ -32,8 +32,6 @@ public class TypeExpr extends TypeRef {
 		@virtual typedef ImplOf = TypeExpr;
 		@att public TypeRef					arg;
 		@att public KString					op;
-		public TypeExprImpl() {}
-		public TypeExprImpl(int pos) { super(pos, null); }
 	}
 	@nodeview
 	public static final view TypeExprView of TypeExprImpl extends TypeRefView {

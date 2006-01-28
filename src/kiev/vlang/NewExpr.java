@@ -46,9 +46,6 @@ public final class NewExpr extends ENode {
 		@att public ENode				temp_expr;
 		@att public Struct				clazz; // if this new expression defines new class
 		@ref public Method				func;
-
-		public NewExprImpl() {}
-		public NewExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view NewExprView of NewExprImpl extends ENodeView {
@@ -109,13 +106,15 @@ public final class NewExpr extends ENode {
 	}
 
 	public NewExpr(int pos, Type type, ENode[] args) {
-		super(new NewExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.type = new TypeRef(type);
 		foreach (ENode e; args) this.args.append(e);
 	}
 
 	public NewExpr(int pos, TypeRef type, ENode[] args) {
-		super(new NewExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
 	}
@@ -281,9 +280,6 @@ public final class NewArrayExpr extends ENode {
 		@att public NArr<ENode>			args;
 		@att public int					dim;
 		@ref public ArrayType			arrtype;
-
-		public NewArrayExprImpl() {}
-		public NewArrayExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view NewArrayExprView of NewArrayExprImpl extends ENodeView {
@@ -313,7 +309,8 @@ public final class NewArrayExpr extends ENode {
 	}
 
 	public NewArrayExpr(int pos, TypeRef type, ENode[] args, int dim) {
-		super(new NewArrayExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
 		this.dim = dim;
@@ -397,9 +394,6 @@ public final class NewInitializedArrayExpr extends ENode {
 		@att public NArr<ENode>			args;
 		@att public int[]				dims;
 		@ref public Type				arrtype;
-
-		public NewInitializedArrayExprImpl() {}
-		public NewInitializedArrayExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static final view NewInitializedArrayExprView of NewInitializedArrayExprImpl extends ENodeView {
@@ -431,7 +425,8 @@ public final class NewInitializedArrayExpr extends ENode {
 	}
 
 	public NewInitializedArrayExpr(int pos, TypeRef type, int dim, ENode[] args) {
-		super(new NewInitializedArrayExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.type = type;
 		dims = new int[dim];
 		dims[0] = args.length;
@@ -523,9 +518,6 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		@att public BlockStat			body;
 		@att public Struct				clazz;
 		@ref public CallType			ctype;
-
-		public NewClosureImpl() {}
-		public NewClosureImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static abstract view NewClosureView of NewClosureImpl extends ENodeView {
@@ -550,7 +542,8 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	}
 
 	public NewClosure(int pos) {
-		super(new NewClosureImpl(pos));
+		this();
+		this.pos = pos;
 	}
 
 	public String toString() {

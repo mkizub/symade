@@ -34,8 +34,6 @@ public class ASTCallAccessExpression extends ENode {
 		@ref public NameRef				func;
 		@att public NArr<TypeRef>		targs;
 		@att public NArr<ENode>			args;
-		public ASTCallAccessExpressionImpl() {}
-		public ASTCallAccessExpressionImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view ASTCallAccessExpressionView of ASTCallAccessExpressionImpl extends ENodeView {
@@ -176,7 +174,8 @@ public class ASTCallAccessExpression extends ENode {
 	}
 	
 	public ASTCallAccessExpression(int pos, ENode obj, KString func, ENode[] args) {
-		super(new ASTCallAccessExpressionImpl(pos));
+		this();
+		this.pos = pos;
 		this.obj = obj;
 		this.func = new NameRef(pos, func);
 		this.args.addAll(args);

@@ -16,7 +16,6 @@ public final class ASTPragma extends DNode {
 	@nodeimpl
 	static class ASTPragmaImpl extends DNodeImpl {
 		@virtual typedef ImplOf = ASTPragma;
-		ASTPragmaImpl() {}
 		@att boolean				enable;
 		@att NArr<ConstStringExpr>	options;
 	}

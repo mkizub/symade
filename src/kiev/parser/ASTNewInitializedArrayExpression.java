@@ -30,8 +30,6 @@ public class ASTNewInitializedArrayExpression extends ENode {
 		@att public int					dim;
 		@att public TypeRef				type;
 		@att public NArr<ENode>			args;
-		public ASTNewInitializedArrayExpressionImpl() {}
-		public ASTNewInitializedArrayExpressionImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public static view ASTNewInitializedArrayExpressionView of ASTNewInitializedArrayExpressionImpl extends ENodeView {

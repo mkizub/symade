@@ -33,7 +33,6 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 	@nodeimpl
 	static final class ImportImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Import;
-		ImportImpl() {}
 		@att NameRef				name;
 		@att ImportMode				mode = ImportMode.IMPORT_CLASS;
 		@att boolean				star;
@@ -186,8 +185,6 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 	@nodeimpl
 	static final class TypeOpDefImpl extends TypeDeclImpl {
 		@virtual typedef ImplOf = TypeOpDef;
-		TypeOpDefImpl() {}
-		TypeOpDefImpl(int pos) { super(pos); }
 		@att ASTOperator	op;
 		@att TypeRef		type;
 		@att TypeDef		arg;

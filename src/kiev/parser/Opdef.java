@@ -22,7 +22,6 @@ public class Opdef extends DNode {
 	@nodeimpl
 	static class OpdefImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Opdef;
-		OpdefImpl() {}
 		@att int					prior;
 		@att int					opmode;
 		@att KString				image;

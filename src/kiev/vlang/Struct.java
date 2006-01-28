@@ -37,9 +37,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@nodeimpl
 	public static final class StructImpl extends TypeDeclImpl {
 		@virtual typedef ImplOf = Struct;
-		public StructImpl() {}
-		public StructImpl(int pos) { super(pos); }
-		public StructImpl(int pos, int fl) { super(pos, fl); }
 
 		public final Struct getStruct() { return (Struct)this._self; }
 		
@@ -436,12 +433,13 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@setter public void set$acc(Access val)			{ this.getVView().acc = val; }
 
 	Struct() {
-		super(new StructImpl(0,0));
+		super(new StructImpl());
 		this.name = ClazzName.Empty;
 	}
 	
-	public Struct(ClazzName name, Struct outer, int acc) {
-		super(new StructImpl(0,acc));
+	public Struct(ClazzName name, Struct outer, int flags) {
+		super(new StructImpl());
+		this.flags = flags;
 		this.name = name;
 		((StructImpl)this.$v_impl).imeta_type = new CompaundTypeProvider(this);
 		((StructImpl)this.$v_impl).ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);

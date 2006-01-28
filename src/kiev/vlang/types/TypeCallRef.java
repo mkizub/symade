@@ -29,7 +29,6 @@ public class TypeCallRef extends TypeRef {
 		@ref public NArr<TypeDef>			targs;
 		@att public NArr<TypeRef>			args;
 		@att public TypeRef					ret;
-		public TypeCallRefImpl() {}
 
 		public void callbackChildChanged(AttrSlot attr) {
 			this.lnk = null;

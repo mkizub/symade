@@ -27,8 +27,6 @@ public abstract class UnresExpr extends ENode {
 	public static class UnresExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = UnresExpr;
 		@ref public Operator				op;
-		public UnresExprImpl() {}
-		public UnresExprImpl(int pos, Operator op) { super(pos); this.op = op; }
 	}
 	@nodeview
 	public static view UnresExprView of UnresExprImpl extends ENodeView {
@@ -68,8 +66,6 @@ public class PrefixExpr extends UnresExpr {
 	public static class PrefixExprImpl extends UnresExprImpl {
 		@virtual typedef ImplOf = PrefixExpr;
 		@ref public ENode				expr;
-		public PrefixExprImpl() {}
-		public PrefixExprImpl(int pos, Operator op) { super(pos, op); }
 	}
 	@nodeview
 	public static view PrefixExprView of PrefixExprImpl extends UnresExprView {
@@ -84,7 +80,9 @@ public class PrefixExpr extends UnresExpr {
 	}
 
 	public PrefixExpr(int pos, Operator op, ENode expr) {
-		super(new PrefixExprImpl(pos, op));
+		this();
+		this.pos = pos;
+		this.op = op;
 		this.expr = expr;
 	}
 	
@@ -121,8 +119,6 @@ public class PostfixExpr extends UnresExpr {
 	public static class PostfixExprImpl extends UnresExprImpl {
 		@virtual typedef ImplOf = PostfixExpr;
 		@ref public ENode				expr;
-		public PostfixExprImpl() {}
-		public PostfixExprImpl(int pos, Operator op) { super(pos, op); }
 	}
 	@nodeview
 	public static view PostfixExprView of PostfixExprImpl extends UnresExprView {
@@ -137,7 +133,9 @@ public class PostfixExpr extends UnresExpr {
 	}
 
 	public PostfixExpr(int pos, Operator op, ENode expr) {
-		super(new PostfixExprImpl(pos, op));
+		this();
+		this.pos = pos;
+		this.op = op;
 		this.expr = expr;
 	}
 	
@@ -173,8 +171,6 @@ public class InfixExpr extends UnresExpr {
 		@virtual typedef ImplOf = InfixExpr;
 		@ref public ENode				expr1;
 		@ref public ENode				expr2;
-		public InfixExprImpl() {}
-		public InfixExprImpl(int pos, Operator op) { super(pos, op); }
 	}
 	@nodeview
 	public static view InfixExprView of InfixExprImpl extends UnresExprView {
@@ -190,7 +186,9 @@ public class InfixExpr extends UnresExpr {
 	}
 
 	public InfixExpr(int pos, Operator op, ENode expr1, ENode expr2) {
-		super(new InfixExprImpl(pos, op));
+		this();
+		this.pos = pos;
+		this.op = op;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
@@ -241,8 +239,6 @@ public class MultiExpr extends UnresExpr {
 	public static final class MultiExprImpl extends UnresExprImpl {
 		@virtual typedef ImplOf = MultiExpr;
 		@ref public NArr<ENode>			exprs;
-		public MultiExprImpl() {}
-		public MultiExprImpl(int pos, MultiOperator op) { super(pos, op); }
 	}
 	@nodeview
 	public static final view MultiExprView of MultiExprImpl extends UnresExprView {
@@ -257,7 +253,9 @@ public class MultiExpr extends UnresExpr {
 	}
 
 	public MultiExpr(int pos, MultiOperator op, List<ENode> exprs) {
-		super(new MultiExprImpl(pos, op));
+		this();
+		this.pos = pos;
+		this.op = op;
 		foreach (ENode n; exprs)
 			this.exprs.add((ENode)~n);
 	}
@@ -315,8 +313,6 @@ public class UnresCallExpr extends UnresExpr {
 		@ref public Named				func;
 		@ref public CallType			mt;
 		@ref public NArr<ENode>			args;
-		public UnresCallExprImpl() {}
-		public UnresCallExprImpl(int pos) { super(pos, null); }
 	}
 	@nodeview
 	public static view UnresCallExprView of UnresCallExprImpl extends UnresExprView {
@@ -334,7 +330,8 @@ public class UnresCallExpr extends UnresExpr {
 	}
 
 	public UnresCallExpr(int pos, ENode obj, Named func, CallType mt, ENode[] args, boolean super_flag) {
-		super(new UnresCallExprImpl(pos));
+		this();
+		this.pos = pos;
 		this.obj = obj;
 		this.func = func;
 		this.mt = mt;

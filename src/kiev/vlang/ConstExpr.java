@@ -44,8 +44,6 @@ public final class ConstBoolExpr extends ConstExpr {
 	public static class ConstBoolExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstBoolExpr;
 		@att public boolean value;
-		public ConstBoolExprImpl() {}
-		public ConstBoolExprImpl(boolean value) { this.value = value; }
 	}
 	@nodeview
 	public static view ConstBoolExprView of ConstBoolExprImpl extends ConstExprView {
@@ -56,7 +54,7 @@ public final class ConstBoolExpr extends ConstExpr {
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstBoolExpr() { super(new ConstBoolExprImpl()); }
-	public ConstBoolExpr(boolean value) { super(new ConstBoolExprImpl(value)); }
+	public ConstBoolExpr(boolean value) { super(new ConstBoolExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
@@ -85,7 +83,6 @@ public final class ConstNullExpr extends ConstExpr {
 	@nodeimpl
 	public static class ConstNullExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstNullExpr;
-		public ConstNullExprImpl() {}
 	}
 	@nodeview
 	public static view ConstNullExprView of ConstNullExprImpl extends ConstExprView {
@@ -123,8 +120,6 @@ public final class ConstByteExpr extends ConstExpr {
 	public static class ConstByteExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstByteExpr;
 		@att public byte value;
-		public ConstByteExprImpl() {}
-		public ConstByteExprImpl(byte value) { this.value = value; }
 	}
 	@nodeview
 	public static view ConstByteExprView of ConstByteExprImpl extends ConstExprView {
@@ -135,7 +130,7 @@ public final class ConstByteExpr extends ConstExpr {
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstByteExpr() { super(new ConstByteExprImpl()); }
-	public ConstByteExpr(byte value) { super(new ConstByteExprImpl(value)); }
+	public ConstByteExpr(byte value) { super(new ConstByteExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return Byte.valueOf(value); }
@@ -161,8 +156,6 @@ public final class ConstShortExpr extends ConstExpr {
 	public static class ConstShortExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstShortExpr;
 		@att public short value;
-		public ConstShortExprImpl() {}
-		public ConstShortExprImpl(short value) { this.value = value; }
 	}
 	@nodeview
 	public static view ConstShortExprView of ConstShortExprImpl extends ConstExprView {
@@ -173,7 +166,7 @@ public final class ConstShortExpr extends ConstExpr {
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstShortExpr() { super(new ConstShortExprImpl()); }
-	public ConstShortExpr(short value) { super(new ConstShortExprImpl(value)); }
+	public ConstShortExpr(short value) { super(new ConstShortExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return Short.valueOf(value); }
@@ -199,8 +192,6 @@ public final class ConstIntExpr extends ConstExpr {
 	public static class ConstIntExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstIntExpr;
 		@att public int value;
-		public ConstIntExprImpl() {}
-		public ConstIntExprImpl(int value) { this.value = value; }
 	}
 	@nodeview
 	public static view ConstIntExprView of ConstIntExprImpl extends ConstExprView {
@@ -211,7 +202,7 @@ public final class ConstIntExpr extends ConstExpr {
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstIntExpr() { super(new ConstIntExprImpl()); }
-	public ConstIntExpr(int value) { super(new ConstIntExprImpl(value)); }
+	public ConstIntExpr(int value) { super(new ConstIntExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return Integer.valueOf(value); }
@@ -237,8 +228,6 @@ public final class ConstLongExpr extends ConstExpr {
 	public static class ConstLongExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstLongExpr;
 		@att public long value;
-		public ConstLongExprImpl() {}
-		public ConstLongExprImpl(long value) { this.value = value; }
 	}
 	@nodeview
 	public static view ConstLongExprView of ConstLongExprImpl extends ConstExprView {
@@ -249,7 +238,7 @@ public final class ConstLongExpr extends ConstExpr {
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstLongExpr() { super(new ConstLongExprImpl()); }
-	public ConstLongExpr(long value) { super(new ConstLongExprImpl(value)); }
+	public ConstLongExpr(long value) { super(new ConstLongExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value)+"L"; }
 	public Object	getConstValue()		{ return Long.valueOf(value); }
@@ -275,8 +264,6 @@ public final class ConstCharExpr extends ConstExpr {
 	public static class ConstCharExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstCharExpr;
 		@att public char value;
-		public ConstCharExprImpl() {}
-		public ConstCharExprImpl(char value) { this.value = value; }
 	}
 	@nodeview
 	public static view ConstCharExprView of ConstCharExprImpl extends ConstExprView {
@@ -287,7 +274,7 @@ public final class ConstCharExpr extends ConstExpr {
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstCharExpr() { super(new ConstCharExprImpl()); }
-	public ConstCharExpr(char value) { super(new ConstCharExprImpl(value)); }
+	public ConstCharExpr(char value) { super(new ConstCharExprImpl()); this.value = value; }
 
 	public String	toString()			{ return "'"+Convert.escape(value)+"'"; }
 	public Object	getConstValue()		{ return Character.valueOf(value); }
@@ -314,8 +301,6 @@ public final class ConstFloatExpr extends ConstExpr {
 	public static class ConstFloatExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstFloatExpr;
 		@att public float value;
-		public ConstFloatExprImpl() {}
-		public ConstFloatExprImpl(float value) { this.value = value; }
 	}
 	@nodeview
 	public static view ConstFloatExprView of ConstFloatExprImpl extends ConstExprView {
@@ -326,7 +311,7 @@ public final class ConstFloatExpr extends ConstExpr {
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstFloatExpr() { super(new ConstFloatExprImpl()); }
-	public ConstFloatExpr(float value) { super(new ConstFloatExprImpl(value)); }
+	public ConstFloatExpr(float value) { super(new ConstFloatExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value)+"F"; }
 	public Object	getConstValue()		{ return Float.valueOf(value); }
@@ -353,8 +338,6 @@ public final class ConstDoubleExpr extends ConstExpr {
 	public static class ConstDoubleExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstDoubleExpr;
 		@att public double value;
-		public ConstDoubleExprImpl() {}
-		public ConstDoubleExprImpl(double value) { this.value = value; }
 	}
 	@nodeview
 	public static view ConstDoubleExprView of ConstDoubleExprImpl extends ConstExprView {
@@ -365,7 +348,7 @@ public final class ConstDoubleExpr extends ConstExpr {
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstDoubleExpr() { super(new ConstDoubleExprImpl()); }
-	public ConstDoubleExpr(double value) { super(new ConstDoubleExprImpl(value)); }
+	public ConstDoubleExpr(double value) { super(new ConstDoubleExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value)+"D"; }
 	public Object	getConstValue()		{ return Double.valueOf(value); }
@@ -391,8 +374,6 @@ public final class ConstStringExpr extends ConstExpr {
 	public static class ConstStringExprImpl extends ConstExprImpl {
 		@virtual typedef ImplOf = ConstStringExpr;
 		@att public KString value;
-		public ConstStringExprImpl() {}
-		public ConstStringExprImpl(KString value) { this.value = value; }
 	}
 	@nodeview
 	public static view ConstStringExprView of ConstStringExprImpl extends ConstExprView {
@@ -403,7 +384,7 @@ public final class ConstStringExpr extends ConstExpr {
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
 	public ConstStringExpr() { super(new ConstStringExprImpl()); }
-	public ConstStringExpr(KString value) { super(new ConstStringExprImpl(value)); }
+	public ConstStringExpr(KString value) { super(new ConstStringExprImpl()); this.value = value; }
 
 	public String	toString()			{ return '\"'+value.toString()+'\"'; }
 	public Object	getConstValue()		{ return value; }
@@ -427,8 +408,6 @@ public abstract class ConstExpr extends ENode {
 	@nodeimpl
 	public abstract static class ConstExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ConstExpr;
-		public ConstExprImpl() {}
-		public ConstExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
 	public abstract static view ConstExprView of ConstExprImpl extends ENodeView {

@@ -35,9 +35,6 @@ public class Var extends LvalDNode implements Named, Typed {
 	@nodeimpl
 	public static class VarImpl extends LvalDNodeImpl {
 		@virtual typedef ImplOf = Var;
-		public VarImpl() {}
-		public VarImpl(int pos) { super(pos); }
-		public VarImpl(int pos, int fl) { super(pos, fl); }
 
 		public final Var getVar() { return (Var)this._self; }
 		
@@ -130,7 +127,9 @@ public class Var extends LvalDNode implements Named, Typed {
 	public Var(int pos, KString name, Type type, int flags)
 		require type != null;
 	{
-		this(new VarImpl(pos,flags));
+		this(new VarImpl());
+		this.pos = pos;
+		this.flags = flags;
 		this.name = new NodeName(name);
 		this.vtype = new TypeRef(type);
 	}
@@ -138,7 +137,9 @@ public class Var extends LvalDNode implements Named, Typed {
 	public Var(NameRef id, TypeRef vtype, int flags)
 		require vtype != null;
 	{
-		this(new VarImpl(id.pos,flags));
+		this(new VarImpl());
+		this.pos = id.pos;
+		this.flags = flags;
 		this.name = new NodeName(id.name);
 		this.vtype = vtype;
 	}
@@ -252,9 +253,6 @@ public final class FormPar extends Var {
 	@nodeimpl
 	public static final class FormParImpl extends VarImpl {
 		@virtual typedef ImplOf = FormPar;
-		public FormParImpl() {}
-		public FormParImpl(int pos) { super(pos); }
-		public FormParImpl(int pos, int fl) { super(pos, fl); }
 
 		@att TypeRef		stype;
 		     int			kind;
@@ -298,13 +296,17 @@ public final class FormPar extends Var {
 	}
 
 	public FormPar(int pos, KString name, Type type, int kind, int flags) {
-		super(new FormParImpl(pos,flags),name,type);
+		super(new FormParImpl(),name,type);
+		this.pos = pos;
+		this.flags = flags;
 		this.kind = kind;
 		this.stype = new TypeRef(type);
 	}
 
 	public FormPar(NameRef id, TypeRef vtype, TypeRef stype, int kind, int flags) {
-		super(new FormParImpl(id.pos,flags),id,vtype);
+		super(new FormParImpl(),id,vtype);
+		this.pos = id.pos;
+		this.flags = flags;
 		this.kind = kind;
 		this.stype = stype == null ? (TypeRef)vtype.copy() : stype;
 	}
