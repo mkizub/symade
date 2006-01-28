@@ -859,7 +859,6 @@ FileUnit FileUnit(String filename) :
 		FileUnit fu = new FileUnit();
 		curFileUnit = fu;
 		fu.filename = KString.from(filename);
-		fu.setPos(0);
 		declMode = true;
 		ASTModifiers modifiers;
 		oldClazz = curClazz;
@@ -906,21 +905,21 @@ ASTModifiers Modifiers() :
 }
 
 TypeNameRef Package() :
-{ NameRef qn; }
+{ NameRef qn; TypeNameRef tr = new TypeNameRef(); tr.pos = getToken(1).getPos(); }
 {
 	"package"
 	qn = QName()
 	";"
 	{
-		TypeNameRef tr = new TypeNameRef(qn);
+		tr.name = qn.name;
 		Struct pkg = Env.newPackage(qn.name);
-		tr.lnk = pkg.concr_type;
+		tr.lnk = pkg.ctype;
 		return tr;
 	}
 }
 
 void Pragma(FileUnit fu) :
-{ ASTPragma p = new ASTPragma(); }
+{ ASTPragma p = new ASTPragma(); p.pos = getToken(1).getPos(); }
 {
 	"pragma"
 	(
@@ -933,7 +932,7 @@ void Pragma(FileUnit fu) :
 }
 
 Import Import() :
-{ Import imp = new Import(); }
+{ Import imp = new Import(); imp.pos = getToken(1).getPos(); }
 {
 	"import"
 	(	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
@@ -976,12 +975,12 @@ TypeDecl Typedef() :
 	"typedef"
 	(
 		LOOKAHEAD(3, <IDENTIFIER> TypeOperatorChar() <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
-		{ n = new TypeOpDef(); }
+		{ n = new TypeOpDef(); n.pos = getToken(0).getPos(); }
 		id     = Name()		{ n.arg = new TypeDef(id); }
 		n.op   = Operator()
 		n.type = Type()
 	|
-		{ n = new TypeDef(); }
+		{ n = new TypeDef(); n.pos = getToken(0).getPos(); }
 		n.upper_bound = Type() { n.lower_bound = (TypeRef)n.upper_bound.copy(); }
 		n.name = Name()
 	) ";"
@@ -989,7 +988,7 @@ TypeDecl Typedef() :
 }
 
 Opdef Opdef() :
-{ NameRef id; ASTOperator op; ConstIntExpr ce; Opdef opd = new Opdef(); }
+{ NameRef id; ASTOperator op; ConstIntExpr ce; Opdef opd = new Opdef(); opd.pos = getToken(1).getPos(); }
 {
 	"operator"
 	(
@@ -1166,7 +1165,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 	name = Name()
 	{
 		clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
-		clazz.super_type = parent.concr_type;
+		clazz.super_type = parent.ctype;
 		clazz.setPizzaCase(true);
 		clazz.setSingleton(true);
 	}
@@ -1392,7 +1391,7 @@ Meta Annotation() :
 		id = Name()
 	|	id = KeywordAsName()
 	)
-	{	n.pos = id.pos;	n.type = new TypeNameRef(id); }
+	{	n.pos = id.pos; n.type = new TypeNameRef(id); }
 	[
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
@@ -1426,10 +1425,10 @@ MetaValue AnnotationValueAny() :
 	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
 		n = Annotation()
-		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
+		{ v = new MetaValueScalar(); v.pos = n.pos; ((MetaValueScalar)v).value = n; }
 	|	v = AnnotationValueValueArrayInitializer()
 	|	n = ExpressionNT(null)
-		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
+		{ v = new MetaValueScalar(); v.pos = n.pos; ((MetaValueScalar)v).value = n; }
 	)
 	{ return v; }
 }
@@ -1440,9 +1439,9 @@ MetaValueScalar AnnotationValueScalar() :
 	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
 		n = Annotation()
-		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
+		{ v = new MetaValueScalar(); v.pos = n.pos; ((MetaValueScalar)v).value = n; }
 	|	n = ExpressionNT(null)
-		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
+		{ v = new MetaValueScalar(); v.pos = n.pos; ((MetaValueScalar)v).value = n; }
 	)
 	{ return v; }
 }
@@ -1450,7 +1449,7 @@ MetaValueScalar AnnotationValueScalar() :
 MetaValueArray AnnotationValueValueArrayInitializer() :
 { MetaValueScalar n; MetaValueArray v; }
 {
-	{ v = new MetaValueArray(); }
+	{ v = new MetaValueArray(); v.pos = getToken(1).getPos(); }
 	"{"
 	[
 		n = AnnotationValueScalar() { v.values.add((ENode)~n.value); }
@@ -1641,14 +1640,14 @@ ASTAlias Alias() :
 }
 
 ASTIdentifierAlias IdentifierAlias() :
-{ ASTIdentifierAlias a = new ASTIdentifierAlias(); }
+{ ASTIdentifierAlias a = new ASTIdentifierAlias(); a.pos = getToken(1).getPos(); }
 {
 	a.name = Name()
 	{ return a; }
 }
 
 ASTOperatorAlias OperatorAlias() :
-{ Token t = null; NameRef id; ASTOperator op; ConstIntExpr ce; ASTOperatorAlias a = new ASTOperatorAlias(); }
+{ Token t = null; NameRef id; ASTOperator op; ConstIntExpr ce; ASTOperatorAlias a = new ASTOperatorAlias(); a.pos = getToken(1).getPos(); }
 {
 	(	// temporary, for backward compatibility
 		"operator"
@@ -1818,6 +1817,7 @@ WBCCondition RequareDeclaration() :
 {
 	{
 		WBCCondition n = new WBCCondition();
+		n.pos = getToken(1).getPos(); 
 		//n.modifiers = modifiers;
 		n.cond = WBCType.CondRequire;
 	}
@@ -1842,6 +1842,7 @@ WBCCondition EnsureDeclaration() :
 {
 	{
 		WBCCondition n = new WBCCondition();
+		n.pos = getToken(1).getPos(); 
 		//n.modifiers = modifiers;
 		n.cond = WBCType.CondEnsure;
 	}
@@ -1865,6 +1866,7 @@ WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
 {
 	{
 		WBCCondition n = new WBCCondition();
+		n.pos = getToken(1).getPos(); 
 		//n.modifiers = modifiers;
 		n.cond = WBCType.CondInvariant;
 	}
@@ -2145,7 +2147,7 @@ ENode CommaExpression() :
 	e = Expression()
 	(
 		","
-		{ if (ce==null) ce = new CommaExpr(e); }
+		{ if (ce==null) { ce = new CommaExpr(e); ce.pos = e.pos; } }
 		ce.exprs += Expression()
 	)*
 	{ return ce == null ? e : ce; }
@@ -2199,7 +2201,7 @@ ASTRuleNode RuleExpression() :
 	|
 		LOOKAHEAD({getToken(1).kind == WHILE})
 		"while"
-		{ r = new RuleWhileExpr(); }
+		{ r = new RuleWhileExpr(); r.pos = getToken(0).getPos(); }
 		r.expr = Expression() 
 		[
 			":"
@@ -2208,7 +2210,7 @@ ASTRuleNode RuleExpression() :
 	|
 		LOOKAHEAD(0)
 		{ r = new RuleExpr(); }
-		r.expr = ExpressionNT(noColonTokenSet)
+		r.expr = ExpressionNT(noColonTokenSet) { r.pos = r.expr.pos; }
 		[
 			":"
 			r.bt_expr = ExpressionNT(noColonTokenSet)
@@ -2218,19 +2220,19 @@ ASTRuleNode RuleExpression() :
 }
 
 RuleIstheExpr RuleIstheExpression() :
-{ Token t; RuleIstheExpr r = new RuleIstheExpr(); }
+{ RuleIstheExpr r = new RuleIstheExpr(); }
 {
 	r.var = Var()
-	t = "?=" { r.pos = t.getPos(); }
+	"?=" { r.pos = getToken(0).getPos(); }
 	r.expr = AccessExpression()
 	{ return r; }
 }
 
 RuleIsoneofExpr RuleIsoneofExpression() :
-{ Token t; RuleIsoneofExpr r = new RuleIsoneofExpr(); }
+{ RuleIsoneofExpr r = new RuleIsoneofExpr(); }
 {
 	r.var = Var()
-	t = "@=" { r.pos = t.getPos(); }
+	"@=" { r.pos = getToken(0).getPos(); }
 	r.expr = AccessExpression()
 	{ return r; }
 }
@@ -2318,7 +2320,7 @@ Token OperatorChar() :
 }
 
 ASTOperator Operator() :
-{ Token t; String image; ASTOperator op = new ASTOperator(); }
+{ Token t; String image; ASTOperator op = new ASTOperator(); op.pos = getToken(1).getPos(); }
 {
 	(
 		t=OperatorChar()
@@ -2379,6 +2381,7 @@ ENode CastOperator(boolean sure) :
 	{ op.setPos(t.getPos()); }
 	[ <CAST> | <REINTERP> {op.reinterp=true;} ]
 	op.type = Type()
+	{ op.pos = op.type.pos; }
 	")"
 	{ return op; }
 }
@@ -2393,7 +2396,7 @@ ENode ExpressionNT(int[] nt_new) :
 }
 
 ENode Expression() :
-{ ASTExpression e = new ASTExpression(); }
+{ ASTExpression e = new ASTExpression(); e.pos = getToken(1).getPos(); }
 {
 	(
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("instanceof") })
@@ -2431,7 +2434,7 @@ ENode ReparseExpression() :
 ENode CallExpression() :
 { ASTCallExpression e = new ASTCallExpression(); }
 {
-	e.func = Name()
+	e.func = Name() { e.pos = e.func.pos; }
 	[
 		"<"
 			e.targs += Type()
@@ -2449,7 +2452,7 @@ ENode CallExpression() :
 ENode CallAccessExpression(ENode obj) :
 { ASTCallAccessExpression e = new ASTCallAccessExpression(); e.obj = obj; }
 {
-	e.func = Name()
+	e.func = Name() { e.pos = e.func.pos; }
 	[
 		"<"
 			e.targs += Type()
@@ -2541,9 +2544,9 @@ ENode AccessExpression() :
 }
 
 ASTAnonymouseClosure AnonymouseClosure() :
-{ Token t; ASTModifiers modifiers; ASTAnonymouseClosure ac = new ASTAnonymouseClosure(); }
+{ ASTModifiers modifiers; ASTAnonymouseClosure ac = new ASTAnonymouseClosure(); ac.pos = getToken(1).getPos(); }
 {
-	t="fun" "("
+	"fun" "("
 	[
 		modifiers = Modifiers()
 		ac.params += FormalParameter(modifiers)
@@ -2554,7 +2557,6 @@ ASTAnonymouseClosure AnonymouseClosure() :
 		)*
 	]
 	")" "->"
-    { ac.setPos(t.getPos()); }
     (
 		LOOKAHEAD( { getToken(1).kind == RULE } )
 		ac.rettype = Type()
@@ -2976,7 +2978,7 @@ ENode StatementExpression() :
 {
 	st.expr = ExpressionNT(null)
 	";"
-	{ return st; }
+	{ st.pos = st.expr.pos; return st; }
 }
 
 SwitchStat SwitchStatement() :
