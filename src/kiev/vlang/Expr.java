@@ -39,6 +39,7 @@ public class Shadow extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = Shadow;
 	@virtual typedef NImpl = ShadowImpl;
 	@virtual typedef VView = ShadowView;
 	@virtual typedef JView = JShadow;
@@ -100,6 +101,7 @@ public class ArrayLengthExpr extends AccessExpr {
 	@dflow(in="this:in")	ENode			obj;
 	}
 	
+	@virtual typedef This  = ArrayLengthExpr;
 	@virtual typedef NImpl = ArrayLengthExprImpl;
 	@virtual typedef VView = ArrayLengthExprView;
 	@virtual typedef JView = JArrayLengthExpr;
@@ -170,6 +172,7 @@ public class TypeClassExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = TypeClassExpr;
 	@virtual typedef NImpl = TypeClassExprImpl;
 	@virtual typedef VView = TypeClassExprView;
 	@virtual typedef JView = JTypeClassExpr;
@@ -229,6 +232,7 @@ public class TypeInfoExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = TypeInfoExpr;
 	@virtual typedef NImpl = TypeInfoExprImpl;
 	@virtual typedef VView = TypeInfoExprView;
 	@virtual typedef JView = JTypeInfoExpr;
@@ -307,6 +311,7 @@ public class AssignExpr extends LvalueExpr {
 	@dflow(in="lval")		ENode			value;
 	}
 	
+	@virtual typedef This  = AssignExpr;
 	@virtual typedef NImpl = AssignExprImpl;
 	@virtual typedef VView = AssignExprView;
 	@virtual typedef JView = JAssignExpr;
@@ -427,7 +432,7 @@ public class AssignExpr extends LvalueExpr {
 			Type[] tps = new Type[]{null,et1,et2};
 			ASTNode[] argsarr = new ASTNode[]{null,lval,value};
 			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				replaceWithNodeResolve(reqType, new CallExpr(pos,(ENode)~lval,opt.method,new ENode[]{(ENode)~value}));
+				replaceWithNodeResolve(reqType, new CallExpr(pos,~lval,opt.method,new ENode[]{~value}));
 				return;
 			}
 		}
@@ -460,7 +465,7 @@ public class AssignExpr extends LvalueExpr {
 		Type t1 = lval.getType();
 		if( op==AssignOperator.AssignAdd && t1 ≈ Type.tpString ) {
 			op = AssignOperator.Assign;
-			value = new BinaryExpr(pos,BinaryOperator.Add,new Shadow(lval),(ENode)~value);
+			value = new BinaryExpr(pos,BinaryOperator.Add,new Shadow(lval),~value);
 		}
 		if (value instanceof TypeRef)
 			((TypeRef)value).toExpr(t1);
@@ -471,13 +476,13 @@ public class AssignExpr extends LvalueExpr {
 		Type t2 = value.getType();
 		if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
 			if( !t2.isIntegerInCode() ) {
-				value = new CastExpr(pos,Type.tpInt,(ENode)~value);
+				value = new CastExpr(pos,Type.tpInt,~value);
 				value.resolve(Type.tpInt);
 			}
 		}
 		else if( !t2.isInstanceOf(t1) ) {
 			if( t2.isCastableTo(t1) ) {
-				value = new CastExpr(pos,t1,(ENode)~value);
+				value = new CastExpr(pos,t1,~value);
 				value.resolve(t1);
 			} else {
 				throw new RuntimeException("Value of type "+t2+" can't be assigned to "+lval);
@@ -573,6 +578,7 @@ public class BinaryExpr extends ENode {
 	@dflow(in="expr1")		ENode				expr2;
 	}
 	
+	@virtual typedef This  = BinaryExpr;
 	@virtual typedef NImpl = BinaryExprImpl;
 	@virtual typedef VView = BinaryExprView;
 	@virtual typedef JView = JBinaryExpr;
@@ -606,7 +612,7 @@ public class BinaryExpr extends ENode {
 					if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
 					sce.appendArg(expr2);
 					trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
-					replaceWithNode((ENode)~sce);
+					replaceWithNode(~sce);
 				} else {
 					StringConcatExpr sce = new StringConcatExpr(pos);
 					if (et1.isWrapper()) expr1 = et1.makeWrappedAccess(expr1);
@@ -651,9 +657,9 @@ public class BinaryExpr extends ENode {
 				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 					ENode e;
 					if( opt.method.isStatic() )
-						replaceWithNode(new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr1,(ENode)~expr2}));
+						replaceWithNode(new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
 					else
-						replaceWithNode(new CallExpr(pos,(ENode)~expr1,opt.method,new ENode[]{(ENode)~expr2}));
+						replaceWithNode(new CallExpr(pos,~expr1,opt.method,new ENode[]{~expr2}));
 					return;
 				}
 			}
@@ -754,7 +760,7 @@ public class BinaryExpr extends ENode {
 				if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
 				sce.appendArg(expr2);
 				trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
-				replaceWithNodeResolve(Type.tpString, (ENode)~sce);
+				replaceWithNodeResolve(Type.tpString, ~sce);
 			} else {
 				StringConcatExpr sce = new StringConcatExpr(pos);
 				if (et1.isWrapper()) expr1 = et1.makeWrappedAccess(expr1);
@@ -802,9 +808,9 @@ public class BinaryExpr extends ENode {
 			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 				ENode e;
 				if( opt.method.isStatic() )
-					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr1,(ENode)~expr2}));
+					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
 				else
-					replaceWithNodeResolve(reqType, new CallExpr(pos,(ENode)~expr1,opt.method,new ENode[]{(ENode)~expr2}));
+					replaceWithNodeResolve(reqType, new CallExpr(pos,~expr1,opt.method,new ENode[]{~expr2}));
 				return;
 			}
 		}
@@ -860,11 +866,11 @@ public class BinaryExpr extends ENode {
 			}
 		} else {
 			if( !rt.equals(t1) && t1.isCastableTo(rt) ) {
-				expr1 = new CastExpr(pos,rt,(ENode)~expr1);
+				expr1 = new CastExpr(pos,rt,~expr1);
 				expr1.resolve(null);
 			}
 			if( !rt.equals(t2) && t2.isCastableTo(rt) ) {
-				expr2 = new CastExpr(pos,rt,(ENode)~expr2);
+				expr2 = new CastExpr(pos,rt,~expr2);
 				expr2.resolve(null);
 			}
 		}
@@ -986,6 +992,7 @@ public class StringConcatExpr extends ENode {
 	@dflow(in="this:in", seq="true")	ENode[]	args;
 	}
 
+	@virtual typedef This  = StringConcatExpr;
 	@virtual typedef NImpl = StringConcatExprImpl;
 	@virtual typedef VView = StringConcatExprView;
 	@virtual typedef JView = JStringConcatExpr;
@@ -1036,7 +1043,7 @@ public class StringConcatExpr extends ENode {
 	}
 
 	public void appendArg(ENode expr) {
-		args.append((ENode)~expr);
+		args.append(~expr);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1062,6 +1069,7 @@ public class CommaExpr extends ENode {
 	@dflow(in="this:in", seq="true")	ENode[]	exprs;
 	}
 
+	@virtual typedef This  = CommaExpr;
 	@virtual typedef NImpl = CommaExprImpl;
 	@virtual typedef VView = CommaExprView;
 	@virtual typedef JView = JCommaExpr;
@@ -1136,6 +1144,7 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="stats")					ENode		res;
 	}
 
+	@virtual typedef This  = BlockExpr;
 	@virtual typedef NImpl = BlockExprImpl;
 	@virtual typedef VView = BlockExprView;
 	@virtual typedef JView = JBlockExpr;
@@ -1307,6 +1316,7 @@ public class UnaryExpr extends ENode {
 	@dflow(out="this:in")			ENode		expr;
 	}
 
+	@virtual typedef This  = UnaryExpr;
 	@virtual typedef NImpl = UnaryExprImpl;
 	@virtual typedef VView = UnaryExprView;
 	@virtual typedef JView = JUnaryExpr;
@@ -1367,7 +1377,7 @@ public class UnaryExpr extends ENode {
 			|| op==PostfixOperator.PostDecr
 			)
 		) {
-			replaceWithNodeResolve(reqType, new IncrementExpr(pos,op,(ENode)~expr));
+			replaceWithNodeResolve(reqType, new IncrementExpr(pos,op,~expr));
 			return;
 		}
 		if( et.isAutoCastableTo(Type.tpBoolean) &&
@@ -1375,7 +1385,7 @@ public class UnaryExpr extends ENode {
 			|| op==PrefixOperator.BooleanNot
 			)
 		) {
-			replaceWithNodeResolve(Type.tpBoolean, new BooleanNotExpr(pos,(ENode)~expr));
+			replaceWithNodeResolve(Type.tpBoolean, new BooleanNotExpr(pos,~expr));
 			return;
 		}
 		if( et.isNumber() &&
@@ -1401,9 +1411,9 @@ public class UnaryExpr extends ENode {
 			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 				ENode e;
 				if ( opt.method.isStatic() )
-					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr}));
+					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr}));
 				else
-					replaceWithNodeResolve(reqType, new CallExpr(pos,(ENode)~expr,opt.method,ENode.emptyArray));
+					replaceWithNodeResolve(reqType, new CallExpr(pos,~expr,opt.method,ENode.emptyArray));
 				return;
 			}
 		}
@@ -1490,6 +1500,7 @@ public class IncrementExpr extends ENode {
 	@dflow(in="this:in")	ENode			lval;
 	}
 
+	@virtual typedef This  = IncrementExpr;
 	@virtual typedef NImpl = IncrementExprImpl;
 	@virtual typedef VView = IncrementExprView;
 	@virtual typedef JView = JIncrementExpr;
@@ -1567,6 +1578,7 @@ public class ConditionalExpr extends ENode {
 	@dflow(in="cond:false")	ENode		expr2;
 	}
 
+	@virtual typedef This  = ConditionalExpr;
 	@virtual typedef NImpl = ConditionalExprImpl;
 	@virtual typedef VView = ConditionalExprView;
 	@virtual typedef JView = JConditionalExpr;
@@ -1633,11 +1645,11 @@ public class ConditionalExpr extends ENode {
 		expr2.resolve(reqType);
 
 		if( expr1.getType() ≉ getType() ) {
-			expr1 = new CastExpr(expr1.pos,getType(),(ENode)~expr1);
+			expr1 = new CastExpr(expr1.pos,getType(),~expr1);
 			expr1.resolve(getType());
 		}
 		if( expr2.getType() ≉ getType() ) {
-			expr2 = new CastExpr(expr2.pos,getType(),(ENode)~expr2);
+			expr2 = new CastExpr(expr2.pos,getType(),~expr2);
 			expr2.resolve(getType());
 		}
 		setResolved(true);
@@ -1659,6 +1671,7 @@ public class CastExpr extends ENode {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
+	@virtual typedef This  = CastExpr;
 	@virtual typedef NImpl = CastExprImpl;
 	@virtual typedef VView = CastExprView;
 	@virtual typedef JView = JCastExpr;
@@ -1771,7 +1784,7 @@ public class CastExpr extends ENode {
 		v.$unbind();
 		CallType mt = new CallType(Type.emptyArray,this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
-			ENode call = info.buildCall(this,(ENode)~expr,(Method)v,info.mt,ENode.emptyArray);
+			ENode call = info.buildCall(this,~expr,(Method)v,info.mt,ENode.emptyArray);
 			if (this.type.getType().isReference())
 				call.setCastCall(true);
 			replaceWithNodeResolve(type.getType(),call);
@@ -1782,7 +1795,7 @@ public class CastExpr extends ENode {
 		mt = new CallType(new Type[]{expr.getType()},this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
 			assert(v.isStatic());
-			ENode call = new CallExpr(pos,null,(Method)v,new ENode[]{(ENode)~expr});
+			ENode call = new CallExpr(pos,null,(Method)v,new ENode[]{~expr});
 			replaceWithNodeResolve(type.getType(),call);
 			return true;
 		}
@@ -1819,14 +1832,14 @@ public class CastExpr extends ENode {
 			if (type.isIntegerInCode())
 				return;
 			Method cm = ((CompaundType)type).clazz.resolveMethod(nameCastOp,type,Type.tpInt);
-			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{(ENode)~expr}));
+			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{~expr}));
 			return;
 		}
 		if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
 			if (et.isIntegerInCode())
 				return;
 			Method cf = Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, Type.tpInt);
-			replaceWithNodeResolve(reqType, new CallExpr(pos,(ENode)~expr,cf,ENode.emptyArray));
+			replaceWithNodeResolve(reqType, new CallExpr(pos,~expr,cf,ENode.emptyArray));
 			return;
 		}
 		// Try to find $cast method
@@ -1856,7 +1869,7 @@ public class CastExpr extends ENode {
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,
-					new IFldExpr(pos,(ENode)~expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
+					new IFldExpr(pos,~expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
 				));
 			return;
 		}
@@ -1924,7 +1937,7 @@ public class CastExpr extends ENode {
 			else if( at.isReference() && tp.isReference() && at.isInstanceOf(tp) )
 				;
 			else
-				ex.replaceWith(fun ()->ENode {return new CastExpr(ex.pos,tp,(ENode)~ex);});
+				ex.replaceWith(fun ()->ENode {return new CastExpr(ex.pos,tp,~ex);});
 		}
 	}
 
@@ -1943,7 +1956,7 @@ public class CastExpr extends ENode {
 		else if( tp ≡ Type.tpChar    )	ref = Type.tpCharRef;
 		else
 			throw new RuntimeException("Unknown primitive type "+tp);
-		ex.replaceWith(fun ()->ENode {return new NewExpr(ex.pos,ref,new ENode[]{(ENode)~ex});});
+		ex.replaceWith(fun ()->ENode {return new NewExpr(ex.pos,ref,new ENode[]{~ex});});
 	}
 
 	public static void autoCastToPrimitive(ENode ex) {
@@ -1951,35 +1964,35 @@ public class CastExpr extends ENode {
 		Type tp = ex.getType();
 		if( !tp.isReference() ) return;
 		if( tp ≈ Type.tpBooleanRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpBooleanRef.clazz.resolveMethod(KString.from("booleanValue"),Type.tpBoolean),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpByteRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpByteRef.clazz.resolveMethod(KString.from("byteValue"),Type.tpByte),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpShortRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpShortRef.clazz.resolveMethod(KString.from("shortValue"),Type.tpShort),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpIntRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpIntRef.clazz.resolveMethod(KString.from("intValue"),Type.tpInt),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpLongRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpLongRef.clazz.resolveMethod(KString.from("longValue"),Type.tpLong),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpFloatRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpFloatRef.clazz.resolveMethod(KString.from("floatValue"),Type.tpFloat),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpDoubleRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpDoubleRef.clazz.resolveMethod(KString.from("doubleValue"),Type.tpDouble),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpCharRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpCharRef.clazz.resolveMethod(KString.from("charValue"),Type.tpChar),ENode.emptyArray
 			);});
 		else

@@ -27,6 +27,7 @@ public class CallExpr extends ENode {
 	@dflow(in="obj", seq="true")		ENode[]		args;
 	}
 	
+	@virtual typedef This  = CallExpr;
 	@virtual typedef NImpl = CallExprImpl;
 	@virtual typedef VView = CallExprView;
 	@virtual typedef JView = JCallExpr;
@@ -198,6 +199,7 @@ public class ClosureCallExpr extends ENode {
 	@dflow(in="expr", seq="true")		ENode[]		args;
 	}
 	
+	@virtual typedef This  = ClosureCallExpr;
 	@virtual typedef NImpl = ClosureCallExprImpl;
 	@virtual typedef VView = ClosureCallExprView;
 	@virtual typedef JView = JClosureCallExpr;

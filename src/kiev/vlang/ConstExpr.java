@@ -36,6 +36,7 @@ public final class ConstBoolExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = ConstBoolExpr;
 	@virtual typedef NImpl = ConstBoolExprImpl;
 	@virtual typedef VView = ConstBoolExprView;
 	@virtual typedef JView = JConstBoolExpr;
@@ -76,6 +77,7 @@ public final class ConstNullExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = ConstNullExpr;
 	@virtual typedef NImpl = ConstNullExprImpl;
 	@virtual typedef VView = ConstNullExprView;
 	@virtual typedef JView = JConstNullExpr;
@@ -112,6 +114,7 @@ public final class ConstByteExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = ConstByteExpr;
 	@virtual typedef NImpl = ConstByteExprImpl;
 	@virtual typedef VView = ConstByteExprView;
 	@virtual typedef JView = JConstByteExpr;
@@ -148,6 +151,7 @@ public final class ConstShortExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = ConstShortExpr;
 	@virtual typedef NImpl = ConstShortExprImpl;
 	@virtual typedef VView = ConstShortExprView;
 	@virtual typedef JView = JConstShortExpr;
@@ -184,6 +188,7 @@ public final class ConstIntExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = ConstIntExpr;
 	@virtual typedef NImpl = ConstIntExprImpl;
 	@virtual typedef VView = ConstIntExprView;
 	@virtual typedef JView = JConstIntExpr;
@@ -220,6 +225,7 @@ public final class ConstLongExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = ConstLongExpr;
 	@virtual typedef NImpl = ConstLongExprImpl;
 	@virtual typedef VView = ConstLongExprView;
 	@virtual typedef JView = JConstLongExpr;
@@ -256,6 +262,7 @@ public final class ConstCharExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = ConstCharExpr;
 	@virtual typedef NImpl = ConstCharExprImpl;
 	@virtual typedef VView = ConstCharExprView;
 	@virtual typedef JView = JConstCharExpr;
@@ -293,6 +300,7 @@ public final class ConstFloatExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = ConstFloatExpr;
 	@virtual typedef NImpl = ConstFloatExprImpl;
 	@virtual typedef VView = ConstFloatExprView;
 	@virtual typedef JView = JConstFloatExpr;
@@ -330,6 +338,7 @@ public final class ConstDoubleExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = ConstDoubleExpr;
 	@virtual typedef NImpl = ConstDoubleExprImpl;
 	@virtual typedef VView = ConstDoubleExprView;
 	@virtual typedef JView = JConstDoubleExpr;
@@ -366,6 +375,7 @@ public final class ConstStringExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = ConstStringExpr;
 	@virtual typedef NImpl = ConstStringExprImpl;
 	@virtual typedef VView = ConstStringExprView;
 	@virtual typedef JView = JConstStringExpr;
@@ -401,6 +411,7 @@ public final class ConstStringExpr extends ConstExpr {
 @nodeset
 public abstract class ConstExpr extends ENode {
 
+	@virtual typedef This  = ConstExpr;
 	@virtual typedef NImpl = ConstExprImpl;
 	@virtual typedef VView = ConstExprView;
 	@virtual typedef JView = JConstExpr;

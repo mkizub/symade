@@ -193,7 +193,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			return true;
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);
-		IFldExpr ae = (IFldExpr)fa.copy();
+		IFldExpr ae = fa.ncopy();
 		ae.var = mp.packer;
 		ENode expr = ae;
 		if (mp.getOffset() > 0) {
@@ -233,7 +233,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		}
 		else {
 			Var var = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
-			var.init = (ENode)~fa.obj;
+			var.init = ~fa.obj;
 			be.addSymbol(var);
 			acc = var;
 		}
@@ -255,13 +255,13 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			else if( mp.getSize() == 16 && f.type ≡ Type.tpShort )
 				expr = new CastExpr(fa.pos, Type.tpShort, expr);
 			tmp.init = expr;
-			be.addStatement(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), (ENode)~ae.value)));
+			be.addStatement(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), ~ae.value)));
 		}
 		else if (ae.value.getType() ≡ Type.tpBoolean) {
-			tmp.init = new CastExpr(ae.value.pos, Type.tpInt, (ENode)~ae.value, true);
+			tmp.init = new CastExpr(ae.value.pos, Type.tpInt, ~ae.value, true);
 		}
 		else {
-			tmp.init = (ENode)~ae.value;
+			tmp.init = ~ae.value;
 		}
 		
 		{

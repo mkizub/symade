@@ -20,6 +20,7 @@ public class TypeCallRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = TypeCallRef;
 	@virtual typedef NImpl = TypeCallRefImpl;
 	@virtual typedef VView = TypeCallRefView;
 

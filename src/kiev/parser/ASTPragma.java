@@ -10,6 +10,7 @@ import kiev.stdlib.*;
 @nodeset
 public final class ASTPragma extends DNode {
 
+	@virtual typedef This  = ASTPragma;
 	@virtual typedef NImpl = ASTPragmaImpl;
 	@virtual typedef VView = ASTPragmaView;
 

@@ -33,6 +33,7 @@ import syntax kiev.Syntax;
 @nodeset
 public abstract class LvalueExpr extends ENode {
 
+	@virtual typedef This  = LvalueExpr;
 	@virtual typedef NImpl = LvalueExprImpl;
 	@virtual typedef VView = LvalueExprView;
 	@virtual typedef JView = JLvalueExpr;
@@ -60,6 +61,7 @@ public class AccessExpr extends LvalueExpr {
 
 	private static KString nameWrapperSelf = KString.from("$self");
 
+	@virtual typedef This  = AccessExpr;
 	@virtual typedef NImpl = AccessExprImpl;
 	@virtual typedef VView = AccessExprView;
 	@virtual typedef JView = JAccessExpr;
@@ -97,7 +99,7 @@ public class AccessExpr extends LvalueExpr {
 					if( ident.name.equals(nameLength) ) {
 						if( tp.isArray() ) {
 							tps[si] = Type.tpInt;
-							res[si] = new ArrayLengthExpr(pos,(ENode)e.copy(), (NameRef)ident.copy());
+							res[si] = new ArrayLengthExpr(pos, e.ncopy(), ident.ncopy());
 						}
 					}
 				}
@@ -110,7 +112,7 @@ public class AccessExpr extends LvalueExpr {
 				DNode@ v;
 				ResInfo info;
 				if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) )
-					res[si] = makeExpr(v,info,(ENode)~obj);
+					res[si] = makeExpr(v,info,~obj);
 				else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
 					res[si] = makeExpr(v,info,tp.getStruct());
 			}
@@ -220,7 +222,7 @@ public class AccessExpr extends LvalueExpr {
 				else if( ident.name.equals(nameLength) ) {
 					if( tp.isArray() ) {
 						tps[si] = Type.tpInt;
-						res[si] = new ArrayLengthExpr(pos,(ENode)e.copy(), (NameRef)ident.copy());
+						res[si] = new ArrayLengthExpr(pos,e.ncopy(), ident.ncopy());
 					}
 				}
 			}
@@ -234,7 +236,7 @@ public class AccessExpr extends LvalueExpr {
 			ResInfo info;
 			if (!(obj instanceof TypeRef) &&
 				tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),ident.name) )
-				res[si] = makeExpr(v,info,(ENode)~obj);
+				res[si] = makeExpr(v,info,~obj);
 			else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
 				res[si] = makeExpr(v,info,tp.getStruct());
 		}
@@ -268,7 +270,7 @@ public class AccessExpr extends LvalueExpr {
 			throw new CompilerException(this, msg.toString());
 			//return;
 		}
-		this.replaceWithNodeResolve(reqType,(ENode)~res[idx]);
+		this.replaceWithNodeResolve(reqType,~res[idx]);
 	}
 
 	public String toString() {
@@ -288,6 +290,7 @@ public final class IFldExpr extends AccessExpr {
 	@dflow(in="this:in")	ENode			obj;
 	}
 
+	@virtual typedef This  = IFldExpr;
 	@virtual typedef NImpl = IFldExprImpl;
 	@virtual typedef VView = IFldExprView;
 	@virtual typedef JView = JIFldExpr;
@@ -420,6 +423,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	@dflow(in="obj")		ENode		index;
 	}
 
+	@virtual typedef This  = ContainerAccessExpr;
 	@virtual typedef NImpl = ContainerAccessExprImpl;
 	@virtual typedef VView = ContainerAccessExprView;
 	@virtual typedef JView = JContainerAccessExpr;
@@ -547,6 +551,7 @@ public final class ThisExpr extends LvalueExpr {
 
 	static public final FormPar thisPar = new FormPar(0,Constants.nameThis,Type.tpVoid,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
 	
+	@virtual typedef This  = ThisExpr;
 	@virtual typedef NImpl = ThisExprImpl;
 	@virtual typedef VView = ThisExprView;
 	@virtual typedef JView = JThisExpr;
@@ -615,6 +620,7 @@ public final class LVarExpr extends LvalueExpr {
 
 	static final KString namePEnv = KString.from("$env");
 
+	@virtual typedef This  = LVarExpr;
 	@virtual typedef NImpl = LVarExprImpl;
 	@virtual typedef VView = VLVarExpr;
 	@virtual typedef JView = JLVarExpr;
@@ -726,7 +732,7 @@ public final class LVarExpr extends LvalueExpr {
 					// Add field
 					vf = ctx_clazz.addField(new Field(ident.name,var.type,ACC_PUBLIC));
 					vf.setNeedProxy(true);
-					vf.init = (ENode)this.copy();
+					vf.init = this.ncopy();
 				}
 			}
 		}
@@ -745,6 +751,7 @@ public final class SFldExpr extends AccessExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = SFldExpr;
 	@virtual typedef NImpl = SFldExprImpl;
 	@virtual typedef VView = SFldExprView;
 	@virtual typedef JView = JSFldExpr;
@@ -848,6 +855,7 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = OuterThisAccessExpr;
 	@virtual typedef NImpl = OuterThisAccessExprImpl;
 	@virtual typedef VView = OuterThisAccessExprView;
 	@virtual typedef JView = JOuterThisAccessExpr;
@@ -944,6 +952,7 @@ public final class UnwrapExpr extends LvalueExpr {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
+	@virtual typedef This  = UnwrapExpr;
 	@virtual typedef NImpl = UnwrapExprImpl;
 	@virtual typedef VView = UnwrapExprView;
 	@virtual typedef JView = JUnwrapExpr;
@@ -985,7 +994,7 @@ public final class UnwrapExpr extends LvalueExpr {
 		expr.resolve(reqType);
 		Type tp = expr.getType();
 		if (!tp.isWrapper()) {
-			replaceWithNode((ENode)~expr);
+			replaceWithNode(~expr);
 			return;
 		}
 		setResolved(true);

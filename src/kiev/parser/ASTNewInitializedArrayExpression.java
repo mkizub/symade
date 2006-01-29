@@ -21,6 +21,7 @@ public class ASTNewInitializedArrayExpression extends ENode {
 	@dflow(in="this:in", seq="true")		ENode[]		args;
 	}
 	
+	@virtual typedef This  = ASTNewInitializedArrayExpression;
 	@virtual typedef NImpl = ASTNewInitializedArrayExpressionImpl;
 	@virtual typedef VView = ASTNewInitializedArrayExpressionView;
 

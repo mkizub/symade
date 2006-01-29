@@ -20,6 +20,7 @@ import syntax kiev.Syntax;
 @nodeset
 public abstract class UnresExpr extends ENode {
 
+	@virtual typedef This  = UnresExpr;
 	@virtual typedef NImpl = UnresExprImpl;
 	@virtual typedef VView = UnresExprView;
 
@@ -59,6 +60,7 @@ public abstract class UnresExpr extends ENode {
 @nodeset
 public class PrefixExpr extends UnresExpr {
 	
+	@virtual typedef This  = PrefixExpr;
 	@virtual typedef NImpl = PrefixExprImpl;
 	@virtual typedef VView = PrefixExprView;
 
@@ -112,6 +114,7 @@ public class PrefixExpr extends UnresExpr {
 @nodeset
 public class PostfixExpr extends UnresExpr {
 	
+	@virtual typedef This  = PostfixExpr;
 	@virtual typedef NImpl = PostfixExprImpl;
 	@virtual typedef VView = PostfixExprView;
 
@@ -163,6 +166,7 @@ public class PostfixExpr extends UnresExpr {
 @nodeset
 public class InfixExpr extends UnresExpr {
 
+	@virtual typedef This  = InfixExpr;
 	@virtual typedef NImpl = InfixExprImpl;
 	@virtual typedef VView = InfixExprView;
 
@@ -232,6 +236,7 @@ public class InfixExpr extends UnresExpr {
 @nodeset
 public class MultiExpr extends UnresExpr {
 
+	@virtual typedef This  = MultiExpr;
 	@virtual typedef NImpl = MultiExprImpl;
 	@virtual typedef VView = MultiExprView;
 
@@ -257,7 +262,7 @@ public class MultiExpr extends UnresExpr {
 		this.pos = pos;
 		this.op = op;
 		foreach (ENode n; exprs)
-			this.exprs.add((ENode)~n);
+			this.exprs.add(~n);
 	}
 
 	public String toString() {
@@ -303,6 +308,7 @@ public class MultiExpr extends UnresExpr {
 @nodeset
 public class UnresCallExpr extends UnresExpr {
 
+	@virtual typedef This  = UnresCallExpr;
 	@virtual typedef NImpl = UnresCallExprImpl;
 	@virtual typedef VView = UnresCallExprView;
 
@@ -362,7 +368,7 @@ public class UnresCallExpr extends UnresExpr {
 		if (obj instanceof TypeRef) {
 			if (func instanceof Method) {
 				Method m = (Method)func;
-				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, mt, args.toArray());
+				CallExpr ce = new CallExpr(pos, ~obj, m, mt, args.toArray());
 				return ce;
 			} else {
 				Field f = (Field)func;
@@ -371,11 +377,11 @@ public class UnresCallExpr extends UnresExpr {
 		} else {
 			if (func instanceof Method) {
 				Method m = (Method)func;
-				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, mt, args.toArray(), isSuperExpr());
+				CallExpr ce = new CallExpr(pos, ~obj, m, mt, args.toArray(), isSuperExpr());
 				ce.setCastCall(this.isCastCall());
 				return ce;
 			} else {
-				return new ClosureCallExpr(pos, (ENode)~obj, args.toArray());
+				return new ClosureCallExpr(pos, ~obj, args.toArray());
 			}
 		}
 	}

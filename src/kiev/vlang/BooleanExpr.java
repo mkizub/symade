@@ -28,6 +28,7 @@ import syntax kiev.Syntax;
 @nodeset
 public abstract class BoolExpr extends ENode {
 
+	@virtual typedef This  = BoolExpr;
 	@virtual typedef NImpl = BoolExprImpl;
 	@virtual typedef VView = BoolExprView;
 	@virtual typedef JView = JBoolExpr;
@@ -77,6 +78,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	@dflow(in="expr1:false")		ENode			expr2;
 	}
 	
+	@virtual typedef This  = BinaryBooleanOrExpr;
 	@virtual typedef NImpl = BinaryBooleanOrExprImpl;
 	@virtual typedef VView = BinaryBooleanOrExprView;
 	@virtual typedef JView = JBinaryBooleanOrExpr;
@@ -161,6 +163,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	@dflow(in="expr1:true")		ENode			expr2;
 	}
 	
+	@virtual typedef This  = BinaryBooleanAndExpr;
 	@virtual typedef NImpl = BinaryBooleanAndExprImpl;
 	@virtual typedef VView = BinaryBooleanAndExprView;
 	@virtual typedef JView = JBinaryBooleanAndExpr;
@@ -239,6 +242,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	@dflow(in="expr1")			ENode			expr2;
 	}
 	
+	@virtual typedef This  = BinaryBoolExpr;
 	@virtual typedef NImpl = BinaryBoolExprImpl;
 	@virtual typedef VView = BinaryBoolExprView;
 	@virtual typedef JView = JBinaryBoolExpr;
@@ -333,7 +337,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			if( !tp.isPizzaCase() && !tp.isHasCases() )
 				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
 			Method m = tp.getStruct().resolveMethod(nameGetCaseTag,Type.tpInt);
-			expr1 = new CallExpr(expr1.pos,(ENode)~expr1,m,ENode.emptyArray);
+			expr1 = new CallExpr(expr1.pos,~expr1,m,ENode.emptyArray);
 			expr1.resolve(Type.tpInt);
 		} else {
 			throw new CompilerException(this,"Class "+cas+" is not a cased class");
@@ -359,13 +363,13 @@ public class BinaryBoolExpr extends BoolExpr {
 		}
 		else if( op==BinaryOperator.BooleanOr ) {
 			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanOrExpr(pos,(ENode)~expr1,(ENode)~expr2));
+				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanOrExpr(pos,~expr1,~expr2));
 				return;
 			}
 		}
 		else if( op==BinaryOperator.BooleanAnd ) {
 			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanAndExpr(pos,(ENode)~expr1,(ENode)~expr2));
+				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanAndExpr(pos,~expr1,~expr2));
 				return;
 			}
 		}
@@ -390,9 +394,9 @@ public class BinaryBoolExpr extends BoolExpr {
 			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
 			if( opt.match(tps,argsarr) ) {
 				if( opt.method.isStatic() )
-					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr1,(ENode)~expr2}));
+					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
 				else
-					replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{(ENode)~expr2}));
+					replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{~expr2}));
 				return;
 			}
 		}
@@ -405,12 +409,12 @@ public class BinaryBoolExpr extends BoolExpr {
 		if( t1 ≉ t2 ) {
 			if( t1.isReference() != t2.isReference()) {
 				if (t1.isEnum() && !t1.isIntegerInCode()) {
-					expr1 = new CastExpr(expr1.pos,Type.tpInt,(ENode)~expr1);
+					expr1 = new CastExpr(expr1.pos,Type.tpInt,~expr1);
 					expr1.resolve(Type.tpInt);
 					t1 = expr1.getType();
 				}
 				if (t2.isEnum() && !t2.isIntegerInCode()) {
-					expr2 = new CastExpr(expr2.pos,Type.tpInt,(ENode)~expr2);
+					expr2 = new CastExpr(expr2.pos,Type.tpInt,~expr2);
 					expr2.resolve(Type.tpInt);
 					t2 = expr2.getType();
 				}
@@ -425,11 +429,11 @@ public class BinaryBoolExpr extends BoolExpr {
 				else t = Type.tpInt;
 
 				if( t ≢ t1 && t1.isCastableTo(t) ) {
-					expr1 = new CastExpr(pos,t,(ENode)~expr1);
+					expr1 = new CastExpr(pos,t,~expr1);
 					expr1.resolve(t);
 				}
 				if( t ≢ t2 && t2.isCastableTo(t) ) {
-					expr2 = new CastExpr(pos,t,(ENode)~expr2);
+					expr2 = new CastExpr(pos,t,~expr2);
 					expr2.resolve(t);
 				}
 			}
@@ -471,6 +475,7 @@ public class InstanceofExpr extends BoolExpr {
 	@dflow(in="this:in")		ENode			expr;
 	}
 	
+	@virtual typedef This  = InstanceofExpr;
 	@virtual typedef NImpl = InstanceofExprImpl;
 	@virtual typedef VView = InstanceofExprView;
 	@virtual typedef JView = JInstanceofExpr;
@@ -537,7 +542,7 @@ public class InstanceofExpr extends BoolExpr {
 		}
 		if (expr.getType().isInstanceOf(tp)) {
 			replaceWithNodeResolve(reqType,
-				new BinaryBoolExpr(pos, BinaryOperator.NotEquals,(ENode)~expr,new ConstNullExpr()));
+				new BinaryBoolExpr(pos, BinaryOperator.NotEquals,~expr,new ConstNullExpr()));
 			return;
 		}
 		if (tp instanceof WrapperType)
@@ -548,7 +553,7 @@ public class InstanceofExpr extends BoolExpr {
 				replaceWithNodeResolve(reqType, new CallExpr(pos,
 						ctx_clazz.getRView().accessTypeInfoField(this,type.getType(), false),
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("$instanceof"),Type.tpBoolean,Type.tpObject),
-						new ENode[]{(ENode)~expr}
+						new ENode[]{~expr}
 						)
 					);
 				return;
@@ -614,6 +619,7 @@ public class BooleanNotExpr extends BoolExpr {
 	@dflow(in="this:in")		ENode			expr;
 	}
 	
+	@virtual typedef This  = BooleanNotExpr;
 	@virtual typedef NImpl = BooleanNotExprImpl;
 	@virtual typedef VView = BooleanNotExprView;
 	@virtual typedef JView = JBooleanNotExpr;

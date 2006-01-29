@@ -27,6 +27,7 @@ public class ASTExpression extends ENode {
 	@dflow(in="this:in", seq="true")		ENode[]		nodes;
 	}
 	
+	@virtual typedef This  = ASTExpression;
 	@virtual typedef NImpl = ASTExpressionImpl;
 	@virtual typedef VView = ASTExpressionView;
 
@@ -44,7 +45,7 @@ public class ASTExpression extends ENode {
 		public void preResolveOut() {
 			if (nodes.length == 1) {
 				ENode n = nodes[0];
-				this.replaceWithNode((ENode)~n);
+				this.replaceWithNode(~n);
 				return;
 			}
 			List<ENode> lst = List.Nil;
@@ -79,7 +80,7 @@ public class ASTExpression extends ENode {
 				e = ((UnresExpr)e).toResolvedExpr();
 			if (isPrimaryExpr())
 				e.setPrimaryExpr(true);
-			this.replaceWithNode((ENode)~e);
+			this.replaceWithNode(~e);
 		}
 
 		/**
@@ -189,7 +190,7 @@ public class ASTExpression extends ENode {
 			expr.head().getPriority() >= op.getArgPriority(0),
 			{
 				op ?= BinaryOperator.InstanceOf, $cut,	expr.at(2) instanceof TypeRef,
-				result ?= new InstanceofExpr(expr.at(1).pos,(ENode)~expr.head(),((TypeRef)expr.at(2)).getType()),
+				result ?= new InstanceofExpr(expr.at(1).pos,~expr.head(),((TypeRef)expr.at(2)).getType()),
 				rest1 ?= expr.tail().tail().tail()
 			;	resolveExpr(result1,rest1,expr.tail().tail(),op.getArgPriority(1)),
 				result ?= new InfixExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))

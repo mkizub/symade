@@ -33,6 +33,7 @@ public final class NewExpr extends ENode {
 	@dflow(in="this:in", seq="true")	ENode[]		args;
 	}
 
+	@virtual typedef This  = NewExpr;
 	@virtual typedef NImpl = NewExprImpl;
 	@virtual typedef VView = NewExprView;
 	@virtual typedef JView = JNewExpr;
@@ -69,7 +70,7 @@ public final class NewExpr extends ENode {
 			clazz.setLocal(true);
 			clazz.setAnonymouse(true);
 			clazz.setStatic(ctx_method==null || ctx_method.isStatic());
-			TypeRef sup_tr = (TypeRef)this.type.copy();
+			TypeRef sup_tr = this.type.ncopy();
 			if( sup.isInterface() ) {
 				clazz.super_type = Type.tpObject;
 				clazz.interfaces.add(sup_tr);
@@ -269,6 +270,7 @@ public final class NewArrayExpr extends ENode {
 	@dflow(in="this:in", seq="true")	ENode[]		args;
 	}
 
+	@virtual typedef This  = NewArrayExpr;
 	@virtual typedef NImpl = NewArrayExprImpl;
 	@virtual typedef VView = NewArrayExprView;
 	@virtual typedef JView = JNewArrayExpr;
@@ -348,7 +350,7 @@ public final class NewArrayExpr extends ENode {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt),
-						new ENode[]{(ENode)~args[0]}
+						new ENode[]{~args[0]}
 					),true));
 				return;
 			} else {
@@ -383,6 +385,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	@dflow(in="this:in", seq="true")	ENode[]		args;
 	}
 
+	@virtual typedef This  = NewInitializedArrayExpr;
 	@virtual typedef NImpl = NewInitializedArrayExprImpl;
 	@virtual typedef VView = NewInitializedArrayExprView;
 	@virtual typedef JView = JNewInitializedArrayExpr;
@@ -505,6 +508,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	}
 
 
+	@virtual typedef This  = NewClosure;
 	@virtual typedef NImpl = NewClosureImpl;
 	@virtual typedef VView = VNewClosure;
 	@virtual typedef JView = JNewClosure;

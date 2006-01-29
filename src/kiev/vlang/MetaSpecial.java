@@ -20,6 +20,7 @@ public abstract class MetaSpecial extends ASTNode implements NodeData {
 	
 	public final MetaAttrSlot attr;
 	
+	@virtual typedef This  = MetaSpecial;
 	@virtual typedef NImpl = MetaSpecialImpl;
 	@virtual typedef VView = MetaSpecialView;
 
@@ -42,7 +43,7 @@ public abstract class MetaSpecial extends ASTNode implements NodeData {
 	}
 	
 	public NodeData nodeCopiedTo(NodeImpl node) {
-		return (NodeData)this.copy();
+		return this.ncopy();
 	}
 	public void nodeAttached(NodeImpl node) {}
 	public void dataAttached(NodeImpl node) { this.callbackAttached(node.getNode(), attr); }
@@ -62,6 +63,7 @@ public final class MetaVirtual extends MetaSpecial {
 	public static final KString ID = KString.from("kiev.stdlib.meta.virtual");
 	public static final MetaAttrSlot MetaVirtualAttr = new MetaAttrSlot(ID, MetaVirtual.class);
 
+	@virtual typedef This  = MetaVirtual;
 	@virtual typedef NImpl = MetaVirtualImpl;
 	@virtual typedef VView = MetaVirtualView;
 
@@ -100,6 +102,7 @@ public class MetaPacked extends MetaSpecial {
 	public static final KString ID = KString.from("kiev.stdlib.meta.packed");
 	public static final MetaAttrSlot MetaPackedAttr = new MetaAttrSlot(ID, MetaPacked.class);
 
+	@virtual typedef This  = MetaPacked;
 	@virtual typedef NImpl = MetaPackedImpl;
 	@virtual typedef VView = MetaPackedView;
 
@@ -159,6 +162,7 @@ public class MetaPacker extends MetaSpecial {
 	public static final KString ID = KString.from("kiev.stdlib.meta.packer");
 	public static final MetaAttrSlot MetaPackerAttr = new MetaAttrSlot(ID, MetaPacker.class);
 
+	@virtual typedef This  = MetaPacker;
 	@virtual typedef NImpl = MetaPackerImpl;
 	@virtual typedef VView = MetaPackerView;
 
@@ -193,6 +197,7 @@ public class MetaAlias extends MetaSpecial {
 	public static final KString ID = KString.from("kiev.stdlib.meta.alias");
 	public static final MetaAttrSlot MetaAliasAttr = new MetaAttrSlot(ID, MetaAlias.class);
 
+	@virtual typedef This  = MetaAlias;
 	@virtual typedef NImpl = MetaAliasImpl;
 	@virtual typedef VView = MetaAliasView;
 
@@ -227,6 +232,7 @@ public class MetaThrows extends MetaSpecial {
 	public static final KString ID = KString.from("kiev.stdlib.meta.throws");
 	public static final MetaAttrSlot MetaThrowsAttr = new MetaAttrSlot(ID, MetaThrows.class);
 
+	@virtual typedef This  = MetaThrows;
 	@virtual typedef NImpl = MetaThrowsImpl;
 	@virtual typedef VView = MetaThrowsView;
 
@@ -260,6 +266,7 @@ public class MetaPizzaCase extends MetaSpecial {
 	public static final KString ID = KString.from("kiev.stdlib.meta.pcase");
 	public static final MetaAttrSlot MetaPizzaCaseAttr = new MetaAttrSlot(ID, MetaPizzaCase.class);
 
+	@virtual typedef This  = MetaPizzaCase;
 	@virtual typedef NImpl = MetaPizzaCaseImpl;
 	@virtual typedef VView = MetaPizzaCaseView;
 

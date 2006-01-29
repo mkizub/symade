@@ -43,7 +43,7 @@ public final view RLVarExpr of LVarExprImpl extends LVarExprView {
 			}
 			Struct s = ((LocalStructDecl)((BlockStat)rm.body).stats[0]).clazz;
 			Field f = s.resolveField(ident.name);
-			replaceWithNode(new IFldExpr(pos, new LVarExpr(pos, pEnv), (NameRef)~ident, f));
+			replaceWithNode(new IFldExpr(pos, new LVarExpr(pos, pEnv), ~ident, f));
 		}
 		return true;
 	}

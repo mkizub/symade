@@ -26,6 +26,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	@dflow(in="this:in")	ENode			init;
 	}
 
+	@virtual typedef This  = Field;
 	@virtual typedef NImpl = FieldImpl;
 	@virtual typedef VView = FieldView;
 	@virtual typedef JView = JField;

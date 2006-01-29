@@ -311,7 +311,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				body.stats.append(ass_st);
 				body.stats.append(new ReturnStat(f.pos,null));
 				if!(value.getType().isAutoCastableTo(view_fld.getType()))
-					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,view_fld.getType(),(ENode)~val); });
+					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,view_fld.getType(),~val); });
 				set_var.setAbstract(false);
 			}
 			f.getMetaVirtual().set = set_var;
@@ -341,7 +341,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				);
 				body.stats.add(new ReturnStat(f.pos,val));
 				if!(val.getType().isAutoCastableTo(f.getType()))
-					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,f.getType(),(ENode)~val); });
+					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,f.getType(),~val); });
 				get_var.setAbstract(false);
 			}
 			f.getMetaVirtual().get = get_var;
@@ -385,7 +385,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			fa.setAsField(true);
 			return true;
 		}
-		ENode ce = new CallExpr(fa.pos, (ENode)~fa.obj, f.getMetaVirtual().get, ENode.emptyArray);
+		ENode ce = new CallExpr(fa.pos, ~fa.obj, f.getMetaVirtual().get, ENode.emptyArray);
 		//ce = ce.resolveExpr(fa.getType());
 		fa.replaceWithNode(ce);
 		rewriteNode(ce);
@@ -432,29 +432,29 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			else if (ae.op == AssignOperator.AssignBitAnd)               op = BinaryOperator.BitAnd;
 			ENode expr;
 			if (ae.isGenVoidExpr() && (ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2)) {
-				expr = new CallExpr(ae.pos, (ENode)~fa.obj, f.getMetaVirtual().set, new ENode[]{(ENode)~ae.value});
+				expr = new CallExpr(ae.pos, ~fa.obj, f.getMetaVirtual().set, new ENode[]{~ae.value});
 			}
 			else {
 				BlockExpr be = new BlockExpr(ae.pos);
 				Object acc;
 				if (fa.obj instanceof ThisExpr) {
-					acc = (ENode)~fa.obj;
+					acc = ~fa.obj;
 				}
 				else if (fa.obj instanceof LVarExpr) {
 					acc = ((LVarExpr)fa.obj).getVar();
 				}
 				else {
 					Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
-					var.init = (ENode)~fa.obj;
+					var.init = ~fa.obj;
 					be.addSymbol(var);
 					acc = var;
 				}
 				ENode g;
 				if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
 					g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray);
-					g = new BinaryExpr(ae.pos, op, g, (ENode)~ae.value);
+					g = new BinaryExpr(ae.pos, op, g, ~ae.value);
 				} else {
-					g = (ENode)~ae.value;
+					g = ~ae.value;
 				}
 				g = new CallExpr(ae.pos, mkAccess(acc), f.getMetaVirtual().set, new ENode[]{g});
 				be.addStatement(new ExprStat(0, g));
@@ -507,9 +507,9 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
 			if (ie.isGenVoidExpr()) {
 				if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr) {
-					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, (ENode)~ie.lval, new ConstIntExpr(1));
+					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ~ie.lval, new ConstIntExpr(1));
 				} else {
-					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, (ENode)~ie.lval, new ConstIntExpr(-1));
+					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ~ie.lval, new ConstIntExpr(-1));
 				}
 			}
 			else {
@@ -523,7 +523,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				}
 				else {
 					Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
-					var.init = (ENode)~fa.obj;
+					var.init = ~fa.obj;
 					be.addSymbol(var);
 					acc = var;
 				}

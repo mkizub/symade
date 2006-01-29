@@ -734,7 +734,7 @@ public final view RStruct of StructImpl extends StructView {
 				}
 				
 				if (m.isStatic()) {
-					defaults.members.add((Method)~m);
+					defaults.members.add(~m);
 					continue;
 				}
 
@@ -746,7 +746,7 @@ public final view RStruct of StructImpl extends StructView {
 				m.params.copyFrom(def.params);
 				def.params.insert(0,new FormPar(pos,Constants.nameThis,this.ctype,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
 				defaults.members.add(def);
-				def.body = (BlockStat)~m.body;
+				def.body = ~m.body;
 				def.setVirtualStatic(true);
 
 				m.setAbstract(true);
@@ -960,7 +960,7 @@ public final view RStruct of StructImpl extends StructView {
 		assert (dispatched.isAttached());
 		if (dispatched.ctx_clazz == this.getStruct()) {
 			assert (dispatched.parent == this.getStruct());
-			return new InlineMethodStat(pos,(Method)~dispatched,dispatcher);
+			return new InlineMethodStat(pos,~dispatched,dispatcher);
 		} else {
 			return makeDispatchCall(pos,dispatched,dispatcher);
 		}

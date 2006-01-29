@@ -35,7 +35,7 @@ public class OpTypes {
 				we.expr = e;
 				e.resolve(tp);
 				e = we.expr;
-				we.replaceWithNode((ENode)~e);
+				we.replaceWithNode(~e);
 				assert( e.isResolved() );
 				n = e;
 				goto case e;

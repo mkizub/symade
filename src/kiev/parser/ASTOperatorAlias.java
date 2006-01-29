@@ -25,6 +25,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 	public static final int	XFIX_POSTFIX = 2;
 	public static final int	XFIX_INFIX   = 3;
 
+	@virtual typedef This  = ASTOperatorAlias;
 	@virtual typedef NImpl = ASTOperatorAliasImpl;
 	@virtual typedef VView = ASTOperatorAliasView;
 

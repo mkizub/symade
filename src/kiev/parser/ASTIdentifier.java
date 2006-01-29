@@ -24,6 +24,7 @@ public class ASTIdentifier extends ENode {
 
 	private static KString op_instanceof = KString.from("instanceof");
 
+	@virtual typedef This  = ASTIdentifier;
 	@virtual typedef NImpl = ASTIdentifierImpl;
 	@virtual typedef VView = ASTIdentifierView;
 

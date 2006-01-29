@@ -190,7 +190,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 						acc_prev.obj = new ASTIdentifier(KString.from("$child"));
 						acc_prev.ident = new NameRef(KString.from("pprev"));
 						cae_prev = new ASTCallAccessExpression();
-						cae_prev.obj = (AccessExpr)acc_prev.copy();
+						cae_prev.obj = acc_prev.ncopy();
 						cae_prev.func = new NameRef(KString.from("getDFlowOut"));
 					}
 					

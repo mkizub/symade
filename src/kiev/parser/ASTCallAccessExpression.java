@@ -24,6 +24,7 @@ public class ASTCallAccessExpression extends ENode {
 	@dflow(in="obj", seq="true")		ENode[]		args;
 	}
 	
+	@virtual typedef This  = ASTCallAccessExpression;
 	@virtual typedef NImpl = ASTCallAccessExpressionImpl;
 	@virtual typedef VView = ASTCallAccessExpressionView;
 
@@ -72,7 +73,7 @@ public class ASTCallAccessExpression extends ENode {
 				info.leaveForward(obj);
 				if( info.isEmpty() ) {
 					Method meth = (Method)m;
-					CallExpr cae = new CallExpr(pos,(ENode)~obj,meth,args.delToArray());
+					CallExpr cae = new CallExpr(pos,~obj,meth,args.delToArray());
 					cae.setSuperExpr(true);
 					replaceWithNode(cae);
 					//meth.makeArgs(cae.args, tp);
@@ -123,7 +124,7 @@ public class ASTCallAccessExpression extends ENode {
 						else if (res_flags == 0)
 							res[si] = info.buildCall(this.getNode(), new TypeRef(tps[si]), m, info.mt, args.delToArray());
 						else
-							res[si] = info.buildCall(this.getNode(), (ENode)obj.copy(), m, info.mt, args.delToArray());
+							res[si] = info.buildCall(this.getNode(), obj.ncopy(), m, info.mt, args.delToArray());
 					}
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			}
@@ -217,7 +218,7 @@ public class ASTCallAccessExpression extends ENode {
 			info.leaveForward(obj);
 			if( info.isEmpty() ) {
 				Method meth = (Method)m;
-				CallExpr cae = new CallExpr(pos,(ENode)~obj,meth,args.delToArray());
+				CallExpr cae = new CallExpr(pos,~obj,meth,args.delToArray());
 				cae.setSuperExpr(true);
 				replaceWithNode(cae);
 				//meth.makeArgs(cae.args, tp);
@@ -268,7 +269,7 @@ public class ASTCallAccessExpression extends ENode {
 					else if (res_flags == 0)
 						res[si] = info.buildCall(this, new TypeRef(tps[si]), m, info.mt, args.delToArray());
 					else
-						res[si] = info.buildCall(this, (ENode)obj.copy(), m, info.mt, args.delToArray());
+						res[si] = info.buildCall(this, obj.ncopy(), m, info.mt, args.delToArray());
 				}
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 		}

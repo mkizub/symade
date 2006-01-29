@@ -528,7 +528,7 @@ public abstract class kiev040 implements kiev040Constants {
     } else if (jj_2_5(1)) {
                   n = new TypeDef();
       n.upper_bound = Type();
-                                         n.lower_bound = (TypeRef)n.upper_bound.copy();
+                                         n.lower_bound = n.upper_bound.ncopy();
       n.name = Name();
     } else {
       jj_consume_token(-1);
@@ -1011,7 +1011,7 @@ public abstract class kiev040 implements kiev040Constants {
         case ASSIGN:
           jj_consume_token(ASSIGN);
           t = Type();
-                                         arg.upper_bound = t; arg.lower_bound = t.copy();
+                                         arg.upper_bound = t; arg.lower_bound = t.ncopy();
           jj_consume_token(SEMICOLON);
           break;
         case SEMICOLON:
@@ -1607,7 +1607,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(LBRACE);
     if (jj_2_24(1)) {
       n = AnnotationValueScalar();
-                                              v.values.add((ENode)~n.value);
+                                              v.values.add(~n.value);
       label_20:
       while (true) {
         switch (jj_nt.kind) {
@@ -1619,7 +1619,7 @@ public abstract class kiev040 implements kiev040Constants {
         }
         jj_consume_token(COMMA);
         n = AnnotationValueScalar();
-                                                      v.values.add((ENode)~n.value);
+                                                      v.values.add(~n.value);
       }
     } else {
       ;
@@ -1667,7 +1667,7 @@ public abstract class kiev040 implements kiev040Constants {
         break label_22;
       }
       t= jj_consume_token(OPERATOR_LRBRACKETS);
-                                    f.ftype = new TypeExpr((TypeRef)~f.ftype,t);
+                                    f.ftype = new TypeExpr(~f.ftype,t);
     }
     switch (jj_nt.kind) {
     case ASSIGN:
@@ -1726,7 +1726,7 @@ public abstract class kiev040 implements kiev040Constants {
         break label_24;
       }
       t= jj_consume_token(OPERATOR_LRBRACKETS);
-                                    lv.vtype = new TypeExpr((TypeRef)~lv.vtype,t);
+                                    lv.vtype = new TypeExpr(~lv.vtype,t);
     }
     switch (jj_nt.kind) {
     case ASSIGN:
@@ -3459,7 +3459,7 @@ public abstract class kiev040 implements kiev040Constants {
       }
     }
                 if (e.nodes.length == 1 && e.nodes[0] instanceof ENode) {
-                        ENode en = (ENode)~e.nodes[0];
+                        ENode en = ~e.nodes[0];
                         if (e.isPrimaryExpr())
                                 en.setPrimaryExpr(true);
                         {if (true) return en;}
@@ -9999,7 +9999,7 @@ public abstract class kiev040 implements kiev040Constants {
 		else
 			clazz.setLocal(true);
 		foreach (Meta m; modifiers.annotations)
-			clazz.meta.set((Meta)m.copy());
+			clazz.meta.set(m.ncopy());
 		
 		return clazz;
 	}
@@ -10012,7 +10012,7 @@ public abstract class kiev040 implements kiev040Constants {
 			if (modifiers.annotations.length > 0) {
 				arg.meta = new MetaSet();
 				foreach (Meta m; modifiers.annotations)
-					arg.meta.set((Meta)m.copy());
+					arg.meta.set(m.ncopy());
 			}
 		}
 		return arg;
@@ -10025,7 +10025,7 @@ public abstract class kiev040 implements kiev040Constants {
 			sa.attach(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		foreach (Meta m; modifiers.annotations)
-			meth.meta.set((Meta)m.copy());
+			meth.meta.set(m.ncopy());
 		return meth;
 	}
 	
@@ -10036,7 +10036,7 @@ public abstract class kiev040 implements kiev040Constants {
 			sa.attach(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		foreach (Meta m; modifiers.annotations)
-			meth.meta.set((Meta)m.copy());
+			meth.meta.set(m.ncopy());
 		return meth;
 	}
 	
@@ -10047,13 +10047,13 @@ public abstract class kiev040 implements kiev040Constants {
 			sa.attach(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		foreach (Meta m; modifiers.annotations)
-			meth.meta.set((Meta)m.copy());
+			meth.meta.set(m.ncopy());
 		return meth;
 	}
 	
 	private Field mkField(NameRef id, ASTModifiers modifiers, TypeRef ret, boolean first) {
 		if (!first)
-			ret = (TypeRef)ret.copy();
+			ret = ret.ncopy();
 		Field f = new Field(id.name,ret,0);
 		f.pos = id.pos;
 		if (first) {
@@ -10062,14 +10062,14 @@ public abstract class kiev040 implements kiev040Constants {
 			if (modifiers.acc != null)
 				f.acc = modifiers.acc;
 			foreach (Meta m; modifiers.annotations)
-				f.meta.set((Meta)m.copy());
+				f.meta.set(m.ncopy());
 		} else {
 			foreach (MetaSpecial sa; modifiers.specials)
-				((MetaSpecial)sa.copy()).attach(f);
+				(sa.ncopy()).attach(f);
 			if (modifiers.acc != null)
 				f.acc = new Access(modifiers.acc.flags);
 			foreach (Meta m; modifiers.annotations)
-				f.meta.set((Meta)m.copy());
+				f.meta.set(m.ncopy());
 		}
 		return f;
 	}
@@ -10081,7 +10081,7 @@ public abstract class kiev040 implements kiev040Constants {
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attach(f);
 		foreach (Meta m; modifiers.annotations)
-			f.meta.set((Meta)m.copy());
+			f.meta.set(m.ncopy());
 		return f;
 	}
 
@@ -10091,29 +10091,29 @@ public abstract class kiev040 implements kiev040Constants {
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attach(f);
 		foreach (Meta m; modifiers.annotations)
-			f.meta.set((Meta)m.copy());
+			f.meta.set(m.ncopy());
 		return f;
 	}
 	
 	private Var mkVar(NameRef id, ASTModifiers modifiers, TypeRef tp, boolean first) {
 		if (!first)
-			tp = (TypeRef)tp.copy();
+			tp = tp.ncopy();
 		Var v = new Var(id, tp, 0);
 		if (first) {
 			foreach (MetaSpecial sa; modifiers.specials)
 				sa.attach(v);
 		} else {
 			foreach (MetaSpecial sa; modifiers.specials)
-				((MetaSpecial)sa.copy()).attach(v);
+				(sa.ncopy()).attach(v);
 		}
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
 			if (first) {
 				foreach (Meta m; modifiers.annotations)
-					v.meta.set((Meta)m.copy());
+					v.meta.set(m.ncopy());
 			} else {
 				foreach (Meta m; modifiers.annotations)
-					v.meta.set((Meta)m.copy());
+					v.meta.set(m.ncopy());
 			}
 		}
 		return v;
@@ -10126,19 +10126,19 @@ public abstract class kiev040 implements kiev040Constants {
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
-				v.meta.set((Meta)m.copy());
+				v.meta.set(m.ncopy());
 		}
 		return v;
 	}
 	
 	private FormPar mkVarargPar(NameRef id, ASTModifiers modifiers, TypeRef vt) {
-		FormPar v = new FormPar(id, vt, (TypeRef)vt.copy(), FormPar.PARAM_VARARGS, ACC_FINAL);
+		FormPar v = new FormPar(id, vt, vt.ncopy(), FormPar.PARAM_VARARGS, ACC_FINAL);
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attach(v);
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
-				v.meta.set((Meta)m.copy());
+				v.meta.set(m.ncopy());
 		}
 		return v;
 	}
@@ -10150,7 +10150,7 @@ public abstract class kiev040 implements kiev040Constants {
 		if (modifiers.annotations.length > 0) {
 			init.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
-				init.meta.set((Meta)m.copy());
+				init.meta.set(m.ncopy());
 		}
 		return init;
 	}
@@ -10160,7 +10160,7 @@ public abstract class kiev040 implements kiev040Constants {
 		ASTExpression e = new ASTExpression();
 		e.pos = cond.pos;
 		e.nodes.append(not);
-		e.nodes.append((ENode)~cond);
+		e.nodes.append(~cond);
 		return e;
 	}
 

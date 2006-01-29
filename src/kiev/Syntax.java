@@ -27,6 +27,5 @@ operator ≥ , xfx, 60;	// geq >=
 operator ≤ , xfx, 60;	// leq
 operator ≺ , xfx, 60;	// prec
 operator ≼ , xfx, 60;	// preceq
-
 }
 

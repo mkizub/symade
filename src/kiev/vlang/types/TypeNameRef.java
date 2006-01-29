@@ -20,6 +20,7 @@ public class TypeNameRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = TypeNameRef;
 	@virtual typedef NImpl = TypeNameRefImpl;
 	@virtual typedef VView = TypeNameRefView;
 

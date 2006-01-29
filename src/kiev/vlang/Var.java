@@ -28,6 +28,7 @@ public class Var extends LvalDNode implements Named, Typed {
 	@dflow(in="this:in")	ENode			init;
 	}
 
+	@virtual typedef This  = Var;
 	@virtual typedef NImpl = VarImpl;
 	@virtual typedef VView = VarView;
 	@virtual typedef JView = JVar;
@@ -204,12 +205,12 @@ public class Var extends LvalDNode implements Named, Typed {
 			if (init instanceof TypeRef)
 				((TypeRef)init).toExpr(this.getType());
 			if (type.isWrapper() && !this.isInitWrapper())
-				init = new NewExpr(init.pos,type,new ENode[]{(ENode)~init});
+				init = new NewExpr(init.pos,type,new ENode[]{~init});
 			try {
 				init.resolve(this.type);
 				Type it = init.getType();
 				if( !it.isInstanceOf(this.type) ) {
-					init = new CastExpr(init.pos,this.type,(ENode)~init);
+					init = new CastExpr(init.pos,this.type,~init);
 					init.resolve(this.type);
 				}
 			} catch(Exception e ) {
@@ -247,6 +248,7 @@ public final class FormPar extends Var {
 	@dflow(in="this:in")	ENode			init;
 	}
 	
+	@virtual typedef This  = FormPar;
 	@virtual typedef NImpl = FormParImpl;
 	@virtual typedef VView = FormParView;
 
@@ -308,7 +310,7 @@ public final class FormPar extends Var {
 		this.pos = id.pos;
 		this.flags = flags;
 		this.kind = kind;
-		this.stype = stype == null ? (TypeRef)vtype.copy() : stype;
+		this.stype = stype == null ? vtype.ncopy() : stype;
 	}
 	
 }

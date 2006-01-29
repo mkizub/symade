@@ -16,6 +16,7 @@ import static kiev.vlang.Operator.*;
 
 @nodeset
 public class Opdef extends DNode {
+	@virtual typedef This  = Opdef;
 	@virtual typedef NImpl = OpdefImpl;
 	@virtual typedef VView = OpdefView;
 

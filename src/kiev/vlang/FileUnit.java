@@ -24,6 +24,7 @@ import syntax kiev.Syntax;
 @nodeset
 public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
 
+	@virtual typedef This  = FileUnit;
 	@virtual typedef NImpl = FileUnitImpl;
 	@virtual typedef VView = FileUnitView;
 	@virtual typedef JView = JFileUnit;

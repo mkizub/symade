@@ -44,6 +44,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		public ParamRedir(FormPar o, FormPar n) { old_var=o; new_var=n; }
 	};
 
+	@virtual typedef This  = InlineMethodStat;
 	@virtual typedef NImpl = InlineMethodStatImpl;
 	@virtual typedef VView = InlineMethodStatView;
 	@virtual typedef JView = JInlineMethodStat;
@@ -170,6 +171,7 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="this:in", seq="true")	ENode[]		stats;
 	}
 
+	@virtual typedef This  = BlockStat;
 	@virtual typedef NImpl = BlockStatImpl;
 	@virtual typedef VView = BlockStatView;
 	@virtual typedef JView = JBlockStat;
@@ -361,6 +363,7 @@ public class EmptyStat extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef This  = EmptyStat;
 	@virtual typedef NImpl = EmptyStatImpl;
 	@virtual typedef VView = EmptyStatView;
 	@virtual typedef JView = JEmptyStat;
@@ -401,6 +404,7 @@ public class ExprStat extends ENode {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
+	@virtual typedef This  = ExprStat;
 	@virtual typedef NImpl = ExprStatImpl;
 	@virtual typedef VView = ExprStatView;
 	@virtual typedef JView = JExprStat;
@@ -461,6 +465,7 @@ public class ReturnStat extends ENode {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
+	@virtual typedef This  = ReturnStat;
 	@virtual typedef NImpl = ReturnStatImpl;
 	@virtual typedef VView = ReturnStatView;
 	@virtual typedef JView = JReturnStat;
@@ -524,6 +529,7 @@ public class ThrowStat extends ENode {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
+	@virtual typedef This  = ThrowStat;
 	@virtual typedef NImpl = ThrowStatImpl;
 	@virtual typedef VView = ThrowStatView;
 	@virtual typedef JView = JThrowStat;
@@ -578,6 +584,7 @@ public class IfElseStat extends ENode {
 	@dflow(in="cond:false")	ENode		elseSt;
 	}
 
+	@virtual typedef This  = IfElseStat;
 	@virtual typedef NImpl = IfElseStatImpl;
 	@virtual typedef VView = IfElseStatView;
 	@virtual typedef JView = JIfElseStat;
@@ -674,6 +681,7 @@ public class CondStat extends ENode {
 	@dflow(in="cond:false")		ENode		message;
 	}
 
+	@virtual typedef This  = CondStat;
 	@virtual typedef NImpl = CondStatImpl;
 	@virtual typedef VView = CondStatView;
 	@virtual typedef JView = JCondStat;
@@ -736,6 +744,7 @@ public class LabeledStat extends ENode implements Named {
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
+	@virtual typedef This  = LabeledStat;
 	@virtual typedef NImpl = LabeledStatImpl;
 	@virtual typedef VView = LabeledStatView;
 	@virtual typedef JView = JLabeledStat;
@@ -784,6 +793,7 @@ public class BreakStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
 
+	@virtual typedef This  = BreakStat;
 	@virtual typedef NImpl = BreakStatImpl;
 	@virtual typedef VView = BreakStatView;
 	@virtual typedef JView = JBreakStat;
@@ -929,6 +939,7 @@ public class ContinueStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
 
+	@virtual typedef This  = ContinueStat;
 	@virtual typedef NImpl = ContinueStatImpl;
 	@virtual typedef VView = ContinueStatView;
 	@virtual typedef JView = JContinueStat;
@@ -1027,6 +1038,7 @@ public class GotoStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
 
+	@virtual typedef This  = GotoStat;
 	@virtual typedef NImpl = GotoStatImpl;
 	@virtual typedef VView = GotoStatView;
 	@virtual typedef JView = JGotoStat;
@@ -1204,6 +1216,7 @@ public class GotoCaseStat extends ENode {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
+	@virtual typedef This  = GotoCaseStat;
 	@virtual typedef NImpl = GotoCaseStatImpl;
 	@virtual typedef VView = GotoCaseStatView;
 	@virtual typedef JView = JGotoCaseStat;
@@ -1242,7 +1255,7 @@ public class GotoCaseStat extends ENode {
 		if( expr != null ) {
 			if( sw.mode == SwitchStat.TYPE_SWITCH ) {
 				expr = new AssignExpr(pos,AssignOperator.Assign,
-					new LVarExpr(pos,sw.tmpvar.getVar()),(ENode)~expr);
+					new LVarExpr(pos,sw.tmpvar.getVar()),~expr);
 				expr.resolve(Type.tpVoid);
 				expr.setGenVoidExpr(true);
 			} else {

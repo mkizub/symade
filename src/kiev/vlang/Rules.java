@@ -30,6 +30,7 @@ public class RuleMethod extends Method {
 	@dflow(in="this:in")	WBCCondition[] 	conditions;
 	}
 
+	@virtual typedef This  = RuleMethod;
 	@virtual typedef NImpl = RuleMethodImpl;
 	@virtual typedef VView = VRuleMethod;
 	@virtual typedef RView = RRuleMethod;
@@ -327,6 +328,7 @@ object, if fails - returns null.
 public abstract class ASTRuleNode extends ENode {
 	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
+	@virtual typedef This  = ASTRuleNode;
 	@virtual typedef NImpl = ASTRuleNodeImpl;
 	@virtual typedef VView = ASTRuleNodeView;
 
@@ -404,6 +406,7 @@ public final class RuleBlock extends BlockStat {
 	@dflow(in="this:in")	ASTRuleNode		node;
 	}
 
+	@virtual typedef This  = RuleBlock;
 	@virtual typedef NImpl = RuleBlockImpl;
 	@virtual typedef VView = VRuleBlock;
 	@virtual typedef RView = RRuleBlock;
@@ -454,6 +457,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 	@dflow(in="this:in", seq="false")	ASTRuleNode[]	rules;
 	}
 
+	@virtual typedef This  = RuleOrExpr;
 	@virtual typedef NImpl = RuleOrExprImpl;
 	@virtual typedef VView = RuleOrExprView;
 
@@ -527,6 +531,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 	@dflow(in="this:in", seq="true")	ASTRuleNode[]	rules;
 	}
 
+	@virtual typedef This  = RuleAndExpr;
 	@virtual typedef NImpl = RuleAndExprImpl;
 	@virtual typedef VView = RuleAndExprView;
 
@@ -584,13 +589,13 @@ public final class RuleAndExpr extends ASTRuleNode {
     		if (!e2.expr.getType().equals(Type.tpBoolean)) continue;
     		if (e1.bt_expr != null) continue;
     		if (e2.bt_expr != null) continue;
-    		RuleExpr e = new RuleExpr(new BinaryBooleanAndExpr(e1.pos,(ENode)~e1.expr,(ENode)~e2.expr));
+    		RuleExpr e = new RuleExpr(new BinaryBooleanAndExpr(e1.pos,~e1.expr,~e2.expr));
     		rules[i] = e;
 			rules.del(i+1);
     		i--;
     	}
     	if (rules.length == 1)
-    		replaceWithNode((ENode)~rules[0]);
+    		replaceWithNode(~rules[0]);
     }
 
 	public void resolve1(JumpNodes jn) {
@@ -635,6 +640,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	@dflow(in="this:in")	ENode	expr;
 	}
 
+	@virtual typedef This  = RuleIstheExpr;
 	@virtual typedef NImpl = RuleIstheExprImpl;
 	@virtual typedef VView = RuleIstheExprView;
 
@@ -714,6 +720,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	public static final int	JENUM = 2;
 	public static final int	ELEMS = 3;
 
+	@virtual typedef This  = RuleIsoneofExpr;
 	@virtual typedef NImpl = RuleIsoneofExprImpl;
 	@virtual typedef VView = RuleIsoneofExprView;
 
@@ -880,6 +887,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = RuleCutExpr;
 	@virtual typedef NImpl = RuleCutExprImpl;
 	@virtual typedef VView = RuleCutExprView;
 
@@ -929,6 +937,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	@dflow(in="obj", seq="true")		ENode[]		args;
 	}
 	
+	@virtual typedef This  = RuleCallExpr;
 	@virtual typedef NImpl = RuleCallExprImpl;
 	@virtual typedef VView = RuleCallExprView;
 
@@ -957,7 +966,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	public RuleCallExpr(CallExpr expr) {
 		this();
 		this.pos = expr.pos;
-		this.obj = (ENode)~expr.obj;
+		this.obj = ~expr.obj;
 		this.func = expr.func;
 		this.args.addAll(expr.args.delToArray());
 		this.setSuperExpr(expr.isSuperExpr());
@@ -966,14 +975,14 @@ public final class RuleCallExpr extends ASTRuleNode {
 	public RuleCallExpr(ClosureCallExpr expr) {
 		this();
 		this.pos = expr.pos;
-		this.obj = (ENode)~expr.expr;
+		this.obj = ~expr.expr;
 		if( expr.expr instanceof LVarExpr )
 			this.func = ((LVarExpr)expr.expr).getVar();
 		else if( expr.expr instanceof SFldExpr )
 			this.func = ((SFldExpr)expr.expr).var;
 		else if( expr.expr instanceof IFldExpr ) {
 			this.func = ((IFldExpr)expr.expr).var;
-			this.obj = (ENode)~((IFldExpr)expr.expr).obj;
+			this.obj = ~((IFldExpr)expr.expr).obj;
 		}
 		this.args.addAll(expr.args.delToArray());
 		this.args.insert(0,new ConstNullExpr()/*expr.env_access*/);
@@ -1039,6 +1048,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 @nodeset
 public abstract class RuleExprBase extends ASTRuleNode {
 
+	@virtual typedef This  = RuleExprBase;
 	@virtual typedef NImpl = RuleExprBaseImpl;
 	@virtual typedef VView = RuleExprBaseView;
 
@@ -1069,7 +1079,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		if( expr instanceof CallExpr ) {
 			CallExpr e = (CallExpr)expr;
 			if( e.func.type.ret() ≡ Type.tpRule ) {
-				replaceWithNodeResolve(reqType, new RuleCallExpr((CallExpr)~e));
+				replaceWithNodeResolve(reqType, new RuleCallExpr(~e));
 				return;
 			}
 		}
@@ -1077,7 +1087,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 			ClosureCallExpr e = (ClosureCallExpr)expr;
 			Type tp = e.getType();
 			if( tp ≡ Type.tpRule || (tp instanceof CallType && ((CallType)tp).ret() ≡ Type.tpRule && tp.arity == 0) ) {
-				replaceWithNodeResolve(reqType, new RuleCallExpr((ClosureCallExpr)~e));
+				replaceWithNodeResolve(reqType, new RuleCallExpr(~e));
 				return;
 			}
 		}
@@ -1092,6 +1102,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	@dflow(in="this:in")	ENode		bt_expr;
 	}
 	
+	@virtual typedef This  = RuleWhileExpr;
 	@virtual typedef NImpl = RuleWhileExprImpl;
 	@virtual typedef VView = RuleWhileExprView;
 
@@ -1161,6 +1172,7 @@ public final class RuleExpr extends RuleExprBase {
 	@dflow(in="this:in")	ENode		bt_expr;
 	}
 
+	@virtual typedef This  = RuleExpr;
 	@virtual typedef NImpl = RuleExprImpl;
 	@virtual typedef VView = RuleExprView;
 

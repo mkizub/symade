@@ -24,6 +24,7 @@ public class TypeExpr extends TypeRef {
 	private static KString opPVar  = KString.from("@");
 	private static KString opRef   = KString.from("&");
 	
+	@virtual typedef This  = TypeExpr;
 	@virtual typedef NImpl = TypeExprImpl;
 	@virtual typedef VView = TypeExprView;
 

@@ -30,6 +30,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@dflow(in="this:in")	WBCCondition[] 	conditions;
 	}
 
+	@virtual typedef This  = Method;
 	@virtual typedef NImpl = MethodImpl;
 	@virtual typedef VView = MethodView;
 	@virtual typedef JView = JMethod;
@@ -339,7 +340,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		assert ((name != nameInit && name != nameClassInit) || this instanceof Constructor);
 		this.name = new NodeName(name);
 		this.type_ret = type_ret;
-		this.dtype_ret = (TypeRef)type_ret.copy();
+		this.dtype_ret = type_ret.ncopy();
 		this.meta = new MetaSet();
 		invalid_types = true;
 	}
@@ -823,6 +824,7 @@ public class Constructor extends Method {
 	@dflow(in="this:in")				WBCCondition[] 	conditions;
 	}
 
+	@virtual typedef This  = Constructor;
 	@virtual typedef NImpl = ConstructorImpl;
 	@virtual typedef VView = ConstructorView;
 
@@ -865,6 +867,7 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	@dflow(in="this:in")				BlockStat		body;
 	}
 
+	@virtual typedef This  = Initializer;
 	@virtual typedef NImpl = InitializerImpl;
 	@virtual typedef VView = InitializerView;
 	@virtual typedef JView = JInitializer;
@@ -936,6 +939,7 @@ public class WBCCondition extends DNode {
 	@dflow(in="this:in")			ENode		body;
 	}
 	
+	@virtual typedef This  = WBCCondition;
 	@virtual typedef NImpl = WBCConditionImpl;
 	@virtual typedef VView = WBCConditionView;
 	@virtual typedef JView = JWBCCondition;

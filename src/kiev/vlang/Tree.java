@@ -278,7 +278,7 @@ public final class NArr<N extends ASTNode> {
 	public void copyFrom(NArr<N> arr) {
 		if ($pslot != null && $pslot.is_attr) {
 			foreach (N n; arr)
-				append((N)n.copy());
+				append(n.ncopy());
 		} else {
 			foreach (N n; arr)
 				append(n);
@@ -288,7 +288,7 @@ public final class NArr<N extends ASTNode> {
 	public void moveFrom(NArr<N> arr) {
 		if ($pslot != null && $pslot.is_attr) {
 			foreach (N n; arr.$nodes)
-				append((N)~n);
+				append(~n);
 		} else {
 			foreach (N n; arr.$nodes)
 				append(n);

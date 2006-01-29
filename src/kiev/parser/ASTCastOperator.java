@@ -21,6 +21,7 @@ public class ASTCastOperator extends ASTOperator {
 
 	static final KString fakeImage = KString.from("$cast");
 	
+	@virtual typedef This  = ASTCastOperator;
 	@virtual typedef NImpl = ASTCastOperatorImpl;
 	@virtual typedef VView = ASTCastOperatorView;
 

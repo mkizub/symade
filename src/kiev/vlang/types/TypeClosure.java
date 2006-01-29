@@ -20,6 +20,7 @@ public class TypeClosureRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = TypeClosureRef;
 	@virtual typedef NImpl = TypeClosureRefImpl;
 	@virtual typedef VView = TypeClosureRefView;
 

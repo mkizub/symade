@@ -20,6 +20,7 @@ public class TypeDef extends TypeDecl {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = TypeDef;
 	@virtual typedef NImpl = TypeDefImpl;
 	@virtual typedef VView = TypeDefView;
 

@@ -64,6 +64,7 @@ public class TreeWalker {
 @nodeset
 public abstract class ASTNode implements Constants, Cloneable {
 
+	@virtual typedef This  = ASTNode;
 	@virtual typedef NImpl = NodeImpl;
 	@virtual typedef VView = NodeView;
 	@virtual typedef JView = JNode;
@@ -507,7 +508,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 		this.$v_impl._self = this;
 	}
 
-	public ASTNode detach()
+	public final This detach()
 		alias operator (210,fy,~)
 	{
 		if (!isAttached())
@@ -521,6 +522,9 @@ public abstract class ASTNode implements Constants, Cloneable {
 		return this;
 	}
 	
+	public final This ncopy() {
+		return (This)this.copy();
+	}
 	public Object copy() {
 		ASTNode node = (ASTNode)this.clone();
 		node.$v_impl = this.$v_impl.getClass().newInstance();
@@ -551,6 +555,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 @nodeset
 public abstract class DNode extends ASTNode {
 
+	@virtual typedef This  = DNode;
 	@virtual typedef NImpl = DNodeImpl;
 	@virtual typedef VView = DNodeView;
 	@virtual typedef JView = JDNode;
@@ -831,6 +836,7 @@ public abstract class DNode extends ASTNode {
 @nodeset
 public abstract class LvalDNode extends DNode {
 
+	@virtual typedef This  = LvalDNode;
 	@virtual typedef NImpl = LvalDNodeImpl;
 	@virtual typedef VView = LvalDNodeView;
 	@virtual typedef JView = JLvalDNode;
@@ -888,6 +894,7 @@ public /*abstract*/ class ENode extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = ENode;
 	@virtual typedef NImpl = ENodeImpl;
 	@virtual typedef VView = ENodeView;
 	@virtual typedef JView = JENode;
@@ -1140,6 +1147,7 @@ public final class VarDecl extends ENode implements Named {
 	@dflow(in="this:in")	Var		var;
 	}
 
+	@virtual typedef This  = VarDecl;
 	@virtual typedef NImpl = VarDeclImpl;
 	@virtual typedef VView = VarDeclView;
 	@virtual typedef JView = JVarDecl;
@@ -1182,6 +1190,7 @@ public final class LocalStructDecl extends ENode implements Named {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = LocalStructDecl;
 	@virtual typedef NImpl = LocalStructDeclImpl;
 	@virtual typedef VView = LocalStructDeclView;
 	@virtual typedef JView = JLocalStructDecl;
@@ -1238,6 +1247,7 @@ public final class NopExpr extends ENode implements NodeData {
 	@dflow(in="this:in")	ENode	expr;
 	}
 
+	@virtual typedef This  = NopExpr;
 	@virtual typedef NImpl = NopExprImpl;
 	@virtual typedef VView = NopExprView;
 
@@ -1278,6 +1288,7 @@ public final class NopExpr extends ENode implements NodeData {
 @nodeset
 public abstract class TypeDecl extends DNode implements Named {
 
+	@virtual typedef This  = TypeDecl;
 	@virtual typedef NImpl = TypeDeclImpl;
 	@virtual typedef VView = TypeDeclView;
 	@virtual typedef JView = JTypeDecl;
@@ -1314,6 +1325,7 @@ public class NameRef extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = NameRef;
 	@virtual typedef NImpl = NameRefImpl;
 	@virtual typedef VView = NameRefView;
 	@virtual typedef JView = JNameRef;

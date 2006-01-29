@@ -18,6 +18,7 @@ public class ASTOperator extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = ASTOperator;
 	@virtual typedef NImpl = ASTOperatorImpl;
 	@virtual typedef VView = ASTOperatorView;
 

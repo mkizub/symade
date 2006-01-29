@@ -202,7 +202,7 @@ public abstract class Type extends AType {
 	public boolean isStructInstanceOf(Struct s)	{ return false; }
 	
 	public boolean isWrapper()						{ return false; }
-	public ENode makeWrappedAccess(ASTNode from)	{ throw new RuntimeException("Type "+this+" is not a wrapper"); } 
+	public ENode makeWrappedAccess(ENode from)		{ throw new RuntimeException("Type "+this+" is not a wrapper"); } 
 	public Type getWrappedType()					{ throw new RuntimeException("Type "+this+" is not a wrapper"); }
 	
 	public static Type getRealType(Type t1, TypeRef t2) {
@@ -699,7 +699,7 @@ public final class WrapperType extends Type {
 	public boolean isStructInstanceOf(Struct s)	{ return getUnwrappedType().isStructInstanceOf(s); }
 
 	public final boolean isWrapper()					{ return true; }
-	public final ENode makeWrappedAccess(ASTNode from)	{ return new IFldExpr(from.pos,(ENode)~from, wrapped_field); } 
+	public final ENode makeWrappedAccess(ENode from)	{ return new IFldExpr(from.pos, ~from, wrapped_field); } 
 	public final Type getWrappedType()					{ return Type.getRealType(getUnwrappedType(), wrapped_field.type); }
 	
 	public CompaundType getUnwrappedType()				{ return (CompaundType)this.tvars[0].unalias().result(); }

@@ -16,6 +16,7 @@ import syntax kiev.Syntax;
 @nodeset
 public final class MetaSet extends ASTNode {
 	
+	@virtual typedef This  = MetaSet;
 	@virtual typedef NImpl = MetaSetImpl;
 	@virtual typedef VView = MetaSetView;
 
@@ -140,6 +141,7 @@ public final class MetaValueType {
 public class Meta extends ENode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
+	@virtual typedef This  = Meta;
 	@virtual typedef NImpl = MetaImpl;
 	@virtual typedef VView = MetaView;
 
@@ -199,7 +201,7 @@ public class Meta extends ENode {
 		if (m != this) {
 			this.replaceWithNode(m);
 			foreach (MetaValue v; values)
-				m.set((MetaValue)v.copy());
+				m.set(v.ncopy());
 			m.verify();
 		}
 		foreach (MetaValue v; values)
@@ -231,7 +233,7 @@ public class Meta extends ENode {
 					ENode val = ((MetaValueScalar)v).value;
 					MetaValueArray mva = new MetaValueArray(v.type); 
 					values[n] = v = mva;
-					mva.values.add((ENode)~val);
+					mva.values.add(~val);
 				}
 				
 				t = at.arg;
@@ -257,12 +259,12 @@ public class Meta extends ENode {
 				mvt.ret = m.type.ret();
 				if (!m.type.ret().isArray()) {
 					MetaValueScalar mvs = (MetaValueScalar)m.annotation_default;
-					ENode v = (ENode)mvs.value.copy();
+					ENode v = mvs.value.ncopy();
 					values.append(new MetaValueScalar(mvt, v));
 				} else {
 					ENode[] arr = ((MetaValueArray)m.annotation_default).values.toArray();
 					for(int j=0; j < arr.length; j++)
-						arr[j] = (ENode)arr[j].copy();
+						arr[j] = arr[j].ncopy();
 					values.append(new MetaValueArray(mvt, arr));
 				}
 				continue;
@@ -447,6 +449,7 @@ public class Meta extends ENode {
 public abstract class MetaValue extends ASTNode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
+	@virtual typedef This  = MetaValue;
 	@virtual typedef NImpl = MetaValueImpl;
 	@virtual typedef VView = MetaValueView;
 
@@ -522,6 +525,7 @@ public abstract class MetaValue extends ASTNode {
 @nodeset
 public final class MetaValueScalar extends MetaValue {
 
+	@virtual typedef This  = MetaValueScalar;
 	@virtual typedef NImpl = MetaValueScalarImpl;
 	@virtual typedef VView = MetaValueScalarView;
 
@@ -580,6 +584,7 @@ public final class MetaValueScalar extends MetaValue {
 @nodeset
 public final class MetaValueArray extends MetaValue {
 
+	@virtual typedef This  = MetaValueArray;
 	@virtual typedef NImpl = MetaValueArrayImpl;
 	@virtual typedef VView = MetaValueArrayView;
 

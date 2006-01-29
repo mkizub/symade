@@ -27,6 +27,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		IMPORT_SYNTAX;
 	}
 
+	@virtual typedef This  = Import;
 	@virtual typedef NImpl = ImportImpl;
 	@virtual typedef VView = ImportView;
 
@@ -179,6 +180,7 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef This  = TypeOpDef;
 	@virtual typedef NImpl = TypeOpDefImpl;
 	@virtual typedef VView = TypeOpDefView;
 

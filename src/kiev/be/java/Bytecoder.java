@@ -339,7 +339,7 @@ public class Bytecoder implements JConstants {
 							} else {
 								if( inner[i] == null )
 									throw new RuntimeException("Class "+cn+" not found");
-								cl.members.add((Struct)~inner[i].getStruct());
+								cl.members.add(~inner[i].getStruct());
 							}
 						}
 					} else {

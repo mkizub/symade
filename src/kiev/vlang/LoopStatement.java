@@ -30,6 +30,7 @@ import syntax kiev.Syntax;
 
 @nodeset
 public abstract class LoopStat extends ENode implements ContinueTarget {
+	@virtual typedef This  = LoopStat;
 	@virtual typedef NImpl = LoopStatImpl;
 	@virtual typedef VView = LoopStatView;
 	@virtual typedef JView = JLoopStat;
@@ -60,6 +61,7 @@ public final class Label extends DNode {
 	
 	@dflow(out="this:out()") private static class DFI {}
 
+	@virtual typedef This  = Label;
 	@virtual typedef NImpl = LabelImpl;
 	@virtual typedef VView = LabelView;
 	@virtual typedef JView = JLabel;
@@ -141,6 +143,7 @@ public class WhileStat extends LoopStat {
 	@dflow(in="cond:false")					Label		lblbrk;
 	}
 
+	@virtual typedef This  = WhileStat;
 	@virtual typedef NImpl = WhileStatImpl;
 	@virtual typedef VView = WhileStatView;
 	@virtual typedef JView = JWhileStat;
@@ -206,6 +209,7 @@ public class DoWhileStat extends LoopStat {
 	@dflow(in="cond:false")						Label		lblbrk;
 	}
 
+	@virtual typedef This  = DoWhileStat;
 	@virtual typedef NImpl = DoWhileStatImpl;
 	@virtual typedef VView = DoWhileStatView;
 	@virtual typedef JView = JDoWhileStat;
@@ -274,6 +278,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="", seq="true")	Var[]		decls;
 	}
 
+	@virtual typedef This  = ForInit;
 	@virtual typedef NImpl = ForInitImpl;
 	@virtual typedef VView = ForInitView;
 	@virtual typedef JView = JForInit;
@@ -348,6 +353,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="cond:false")				Label		lblbrk;
 	}
 	
+	@virtual typedef This  = ForStat;
 	@virtual typedef NImpl = ForStatImpl;
 	@virtual typedef VView = ForStatView;
 	@virtual typedef JView = JForStat;
@@ -487,6 +493,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	public static final int	ELEMS = 3;
 	public static final int	RULE  = 4;
 
+	@virtual typedef This  = ForEachStat;
 	@virtual typedef NImpl = ForEachStatImpl;
 	@virtual typedef VView = ForEachStatView;
 	@virtual typedef JView = JForEachStat;
@@ -617,7 +624,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			((CommaExpr)iter_init).exprs.add(
 				new AssignExpr(iter.pos,AssignOperator.Assign,
 					new LVarExpr(container.pos,iter_array),
-					(ENode)container.copy()
+					container.ncopy()
 				));
 			((CommaExpr)iter_init).exprs.add(
 				new AssignExpr(iter.pos,AssignOperator.Assign,
@@ -629,14 +636,14 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case KENUM:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new LVarExpr(iter.pos,iter), (ENode)container.copy()
+				new LVarExpr(iter.pos,iter), container.ncopy()
 				);
 			iter_init.resolve(iter.type);
 			break;
 		case JENUM:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new LVarExpr(iter.pos,iter), (ENode)container.copy()
+				new LVarExpr(iter.pos,iter), container.ncopy()
 				);
 			iter_init.resolve(iter.type);
 			break;
@@ -644,7 +651,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			/* iter = container.elements(); */
 			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 				new LVarExpr(iter.pos,iter),
-				new CallExpr(container.pos,(ENode)container.copy(),elems,ENode.emptyArray)
+				new CallExpr(container.pos,container.ncopy(),elems,ENode.emptyArray)
 				);
 			iter_init.resolve(iter.type);
 			break;
@@ -702,7 +709,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				BinaryOperator.NotEquals,
 				new AssignExpr(container.pos,AssignOperator.Assign,
 					new LVarExpr(container.pos,iter),
-					(ENode)container.copy()),
+					container.ncopy()),
 				new ConstNullExpr()
 				);
 			break;
@@ -734,10 +741,10 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 					ENode.emptyArray
 				);
 			if (!nextelem.type.ret().isInstanceOf(var.type))
-				var_init = new CastExpr(pos,var.type,(ENode)~var_init);
+				var_init = new CastExpr(pos,var.type,~var_init);
 			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
 				new LVarExpr(var.pos,var),
-				(ENode)~var_init
+				~var_init
 			);
 			break;
 		case RULE:

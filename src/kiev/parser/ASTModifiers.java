@@ -18,6 +18,7 @@ import kiev.vlang.types.TypeRef.TypeRefView;
 @nodeset
 public final class ASTModifiers extends ASTNode {
 	
+	@virtual typedef This  = ASTModifiers;
 	@virtual typedef NImpl = ASTModifiersImpl;
 	@virtual typedef VView = ASTModifiersView;
 

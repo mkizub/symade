@@ -407,14 +407,14 @@ public final class Kiev {
 
 	public static String reparseExpr(ENode e, boolean copy) {
 		if (copy)
-			return "#expr"+parserAddr(e.copy())+"#".toLowerCase();
+			return "#expr"+parserAddr(e.ncopy())+"#".toLowerCase();
 		else
 			return "#expr"+parserAddr(e)+"#".toLowerCase();
 	}
 
 	public static String reparseStat(ENode s, boolean copy) {
 		if (copy)
-			return "#stat"+parserAddr(s.copy())+"#".toLowerCase();
+			return "#stat"+parserAddr(s.ncopy())+"#".toLowerCase();
 		else
 			return "#stat"+parserAddr(s)+"#".toLowerCase();
 	}

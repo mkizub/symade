@@ -24,6 +24,7 @@ public class ASTCallExpression extends ENode {
 	@dflow(in="this:in", seq="true")		ENode[]		args;
 	}
 
+	@virtual typedef This  = ASTCallExpression;
 	@virtual typedef NImpl = ASTCallExpressionImpl;
 	@virtual typedef VView = ASTCallExpressionView;
 

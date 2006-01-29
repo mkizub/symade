@@ -29,6 +29,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@dflow(in="this:in", seq="false")	DNode[]		members;
 	}
 
+	@virtual typedef This  = Struct;
 	@virtual typedef NImpl = StructImpl;
 	@virtual typedef VView = VStruct;
 	@virtual typedef JView = JStruct;
@@ -385,7 +386,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 						if (f.init instanceof TypeRef)
 							((TypeRef)f.init).toExpr(f.type);
 						if (f.init.getType() ≉ f.type) {
-							ENode finit = (ENode)~f.init;
+							ENode finit = ~f.init;
 							f.init = new CastExpr(finit.pos, f.type, finit);
 							f.init.resolve(f.type);
 						}
@@ -1152,7 +1153,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 						p++);
 				}
 				if( instance_init != null && m.isNeedFieldInits() ) {
-					stats.insert((ENode)instance_init.body.copy(),p++);
+					stats.insert(instance_init.body.ncopy(),p++);
 				}
 			}
 		}

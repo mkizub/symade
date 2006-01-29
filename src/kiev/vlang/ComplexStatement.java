@@ -38,6 +38,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
+	@virtual typedef This  = CaseLabel;
 	@virtual typedef NImpl = CaseLabelImpl;
 	@virtual typedef VView = CaseLabelView;
 	@virtual typedef JView = JCaseLabel;
@@ -196,7 +197,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 						if (et.isEnum())
 							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField(f.var));
 						else
-							val = (ENode)f.var.init.copy();
+							val = f.var.init.ncopy();
 					}
 					else if( sw.mode != SwitchStat.NORMAL_SWITCH )
 						throw new CompilerException(this,"Wrong case in normal switch");
@@ -245,6 +246,7 @@ public class SwitchStat extends ENode {
 	public static final int TYPE_SWITCH = 2;
 	public static final int ENUM_SWITCH = 3;
 
+	@virtual typedef This  = SwitchStat;
 	@virtual typedef NImpl = SwitchStatImpl;
 	@virtual typedef VView = SwitchStatView;
 	@virtual typedef JView = JSwitchStat;
@@ -297,7 +299,7 @@ public class SwitchStat extends ENode {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		if( cases.length == 0 ) {
-			ExprStat st = new ExprStat(pos,(ENode)~sel);
+			ExprStat st = new ExprStat(pos,~sel);
 			this.replaceWithNodeResolve(Type.tpVoid, st);
 		}
 		else if( cases.length == 1 && cases[0].pattern.length == 0) {
@@ -306,12 +308,12 @@ public class SwitchStat extends ENode {
 			BlockStat bl = new BlockStat(cas.pos, cas.stats.delToArray());
 			bl.setBreakTarget(true);
 			if( ((CaseLabel)cas).val == null ) {
-				bl.stats.insert(new ExprStat(sel.pos,(ENode)~sel),0);
+				bl.stats.insert(new ExprStat(sel.pos,~sel),0);
 				this.replaceWithNodeResolve(Type.tpVoid, bl);
 				return;
 			} else {
 				IfElseStat st = new IfElseStat(pos,
-						new BinaryBoolExpr(sel.pos,BinaryOperator.Equals,(ENode)~sel,(ENode)~cas.val),
+						new BinaryBoolExpr(sel.pos,BinaryOperator.Equals,~sel,~cas.val),
 						bl,
 						null
 					);
@@ -332,7 +334,7 @@ public class SwitchStat extends ENode {
 						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0));
 					me = new BlockStat(pos);
 					this.replaceWithNode(me);
-					ENode old_sel = (ENode)~this.sel;
+					ENode old_sel = ~this.sel;
 					tmpvar.getVar().init = old_sel;
 					me.addSymbol(tmpvar.getVar());
 					me.addStatement(this);
@@ -507,7 +509,7 @@ public class SwitchStat extends ENode {
 		}
 		if( mode == ENUM_SWITCH ) {
 			Type tp = sel.getType();
-			sel = new CastExpr(pos,Type.tpInt,(ENode)~sel);
+			sel = new CastExpr(pos,Type.tpInt,~sel);
 			sel.resolve(Type.tpInt);
 		}
 		setResolved(true);
@@ -532,6 +534,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
+	@virtual typedef This  = CatchInfo;
 	@virtual typedef NImpl = CatchInfoImpl;
 	@virtual typedef VView = CatchInfoView;
 	@virtual typedef JView = JCatchInfo;
@@ -593,6 +596,7 @@ public class FinallyInfo extends CatchInfo {
 	@dflow(in="arg")		ENode			body;
 	}
 	
+	@virtual typedef This  = FinallyInfo;
 	@virtual typedef NImpl = FinallyInfoImpl;
 	@virtual typedef VView = FinallyInfoView;
 	@virtual typedef JView = JFinallyInfo;
@@ -641,6 +645,7 @@ public class TryStat extends ENode {
 	@dflow(in="this:in")				FinallyInfo		finally_catcher;
 	}
 	
+	@virtual typedef This  = TryStat;
 	@virtual typedef NImpl = TryStatImpl;
 	@virtual typedef VView = TryStatView;
 	@virtual typedef JView = JTryStat;
@@ -727,6 +732,7 @@ public class SynchronizedStat extends ENode {
 	@dflow(in="expr")		ENode		body;
 	}
 	
+	@virtual typedef This  = SynchronizedStat;
 	@virtual typedef NImpl = SynchronizedStatImpl;
 	@virtual typedef VView = SynchronizedStatView;
 	@virtual typedef JView = JSynchronizedStat;
@@ -783,6 +789,7 @@ public class WithStat extends ENode {
 	@dflow(in="expr")		ENode		body;
 	}
 	
+	@virtual typedef This  = WithStat;
 	@virtual typedef NImpl = WithStatImpl;
 	@virtual typedef VView = WithStatView;
 	@virtual typedef JView = JWithStat;
