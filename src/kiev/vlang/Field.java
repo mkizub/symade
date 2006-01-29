@@ -22,6 +22,8 @@ import syntax kiev.Syntax;
 public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
+	private static final Field dummyNode = new Field();
+	
 	@dflow(out="init") private static class DFI {
 	@dflow(in="this:in")	ENode			init;
 	}
@@ -126,6 +128,10 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 
 	public Field(KString name, Type type, int acc) {
 		this(name,new TypeRef(type),acc);
+	}
+	
+	public ASTNode getDummyNode() {
+		return Field.dummyNode;
 	}
 	
 	public final MetaVirtual getMetaVirtual() {

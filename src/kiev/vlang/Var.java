@@ -24,6 +24,8 @@ import syntax kiev.Syntax;
 @nodeset
 public class Var extends LvalDNode implements Named, Typed {
 	
+	private static final Var dummyNode = new FormPar();
+	
 	@dflow(out="this:out()") private static class DFI {
 	@dflow(in="this:in")	ENode			init;
 	}
@@ -161,6 +163,10 @@ public class Var extends LvalDNode implements Named, Typed {
 		this.vtype = vtype;
 	}
 
+	public ASTNode getDummyNode() {
+		return Var.dummyNode;
+	}
+	
 	public String toString() {
 		return name.toString()/*+":="+type*/;
 	}

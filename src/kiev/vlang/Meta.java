@@ -141,6 +141,8 @@ public final class MetaValueType {
 public class Meta extends ENode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
+	public static final Meta dummyNode = new Meta();
+	
 	@virtual typedef This  = Meta;
 	@virtual typedef NImpl = MetaImpl;
 	@virtual typedef VView = MetaView;
@@ -182,6 +184,10 @@ public class Meta extends ENode {
 		alias operator(210,lfy,new)
 	{
 		return new Meta(new TypeNameRef(name));
+	}
+	
+	public ASTNode getDummyNode() {
+		return Meta.dummyNode;
 	}
 	
 	public int size() alias length {

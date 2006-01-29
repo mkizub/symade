@@ -74,7 +74,7 @@ public abstract class ASTNode implements Constants, Cloneable {
     public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
 
 	@nodeimpl
-	public static class NodeImpl {
+	public static abstract class NodeImpl {
 		@virtual typedef ImplOf  = ASTNode;
 		public		ImplOf			_self;		
 		public		int				pos;
@@ -355,7 +355,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 				NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
 				int idx = space.indexOf(this.getNode());
 				assert(idx >= 0);
-				space[idx] = (ASTNode)pslot.clazz.newInstance();
+				space[idx] = this._self.getDummyNode();
 				ASTNode n = fnode();
 				assert(n != null);
 				if (n.pos == 0) n.pos = this.pos;
@@ -364,7 +364,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 				return n;
 			} else {
 				assert(parent.getVal(pslot.name) == this._self);
-				parent.setVal(pslot.name, pslot.clazz.newInstance());
+				parent.setVal(pslot.name, this._self.getDummyNode());
 				ASTNode n = fnode();
 				if (n != null && n.pos == 0) n.pos = this.pos;
 				parent.setVal(pslot.name, n);
@@ -425,7 +425,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 		}
 	}
 	@nodeview
-	public static view NodeView of NodeImpl implements Constants {
+	public static abstract view NodeView of NodeImpl implements Constants {
 		public final ASTNode getNode() { return $view._self; }
 		public String toString() { return String.valueOf($view._self); }
 		public Dumper toJava(Dumper dmp) { return getNode().toJava(dmp); }
@@ -522,6 +522,8 @@ public abstract class ASTNode implements Constants, Cloneable {
 		return this;
 	}
 	
+	public abstract ASTNode getDummyNode();
+	
 	public final This ncopy() {
 		return (This)this.copy();
 	}
@@ -563,7 +565,7 @@ public abstract class DNode extends ASTNode {
 	public static final DNode[] emptyArray = new DNode[0];
 	
 	@nodeimpl
-	public static class DNodeImpl extends NodeImpl {		
+	public static abstract class DNodeImpl extends NodeImpl {		
 		@virtual typedef ImplOf  = DNode;
 
 		private static final int MASK_ACC_DEFAULT   = 0;
@@ -763,7 +765,7 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 	@nodeview
-	public static view DNodeView of DNodeImpl extends NodeView {
+	public static abstract view DNodeView of DNodeImpl extends NodeView {
 
 		public final DNode getDNode() { return (DNode)getNode(); }
 		public Dumper toJavaDecl(Dumper dmp) { return getDNode().toJavaDecl(dmp); }
@@ -823,12 +825,31 @@ public abstract class DNode extends ASTNode {
 
 	public DNode(NImpl v_impl) { super(v_impl); }
 
+	public ASTNode getDummyNode() {
+		return DummyDNode.dummyNode;
+	}
+	
 	public abstract void resolveDecl();
 	public abstract Dumper toJavaDecl(Dumper dmp);
 
 	public int getFlags() { return flags; }
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 }
+
+@nodeset
+public final class DummyDNode extends DNode {
+	public static final DummyDNode dummyNode = new DummyDNode();
+	@nodeimpl
+	public static final class DummyDNodeImpl extends DNodeImpl {
+		@virtual typedef ImplOf = DummyDNode;
+	}
+	@nodeview
+	public static final view DummyDNodeView of DummyDNodeImpl extends DNodeView {
+	}
+	private DummyDNode() { super(new DummyDNodeImpl()); }
+}
+
+
 
 /**
  * An lvalue dnode (var or field)
@@ -842,7 +863,7 @@ public abstract class LvalDNode extends DNode {
 	@virtual typedef JView = JLvalDNode;
 
 	@nodeimpl
-	public static class LvalDNodeImpl extends DNodeImpl {
+	public static abstract class LvalDNodeImpl extends DNodeImpl {
 		@virtual typedef ImplOf = LvalDNode;
 
 		// init wrapper
@@ -867,7 +888,7 @@ public abstract class LvalDNode extends DNode {
 		}
 	}
 	@nodeview
-	public static view LvalDNodeView of LvalDNodeImpl extends DNodeView {
+	public static abstract view LvalDNodeView of LvalDNodeImpl extends DNodeView {
 		public LvalDNodeView(LvalDNodeImpl $view) { super($view); }
 
 		// init wrapper
@@ -890,9 +911,11 @@ public abstract class LvalDNode extends DNode {
  * type reference, and expressions themselves
  */
 @nodeset
-public /*abstract*/ class ENode extends ASTNode {
+public abstract class ENode extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
+	
+	private static final ENode dummyNode = new NopExpr();
 
 	@virtual typedef This  = ENode;
 	@virtual typedef NImpl = ENodeImpl;
@@ -900,7 +923,7 @@ public /*abstract*/ class ENode extends ASTNode {
 	@virtual typedef JView = JENode;
 
 	@nodeimpl
-	public static class ENodeImpl extends NodeImpl {
+	public static abstract class ENodeImpl extends NodeImpl {
 		@virtual typedef ImplOf = ENode;
 
 		//
@@ -1026,7 +1049,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		}
 	}
 	@nodeview
-	public static view ENodeView of ENodeImpl extends NodeView {
+	public static abstract view ENodeView of ENodeImpl extends NodeView {
 		public ENodeView(ENodeImpl $view) { super($view); }
 
 		public final ENode getENode() { return (ENode)this.getNode(); }
@@ -1091,13 +1114,16 @@ public /*abstract*/ class ENode extends ASTNode {
 
 	public static final ENode[] emptyArray = new ENode[0];
 	
-	public ENode() { super(new ENodeImpl()); }
 	public ENode(ENodeImpl impl) { super(impl); }
 
 	public Type[] getAccessTypes() {
 		return new Type[]{getType()};
 	}
 
+	public ASTNode getDummyNode() {
+		return ENode.dummyNode;
+	}
+	
 	public void resolve(Type reqType) {
 		throw new CompilerException(this,"Resolve call for e-node "+getClass());
 	}

@@ -267,7 +267,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Method copyV = new Method(KString.from("copy"),copyVt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
 			s.addMethod(copyV);
 			copyV.body = new BlockStat(0);
-			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
+			NArr<ENode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0, KString.from("node"),s.ctype,0);
 			stats.append(new ReturnStat(0,new ASTCallExpression(0,
 				KString.from("copyTo"),	new ENode[]{new NewExpr(0,s.ctype,ENode.emptyArray)})));

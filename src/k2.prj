@@ -361,6 +361,7 @@ kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java
 kiev.vlang.DataFlowInfo kiev/vlang/DataFlowInfo kiev\vlang\Var.java
 kiev.vlang.DataFlowSlots kiev/vlang/DataFlowSlots kiev\vlang\Var.java
 kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
+kiev.vlang.DummyDNode kiev/vlang/DummyDNode kiev\vlang\AST.java
 kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java
 kiev.vlang.ENode kiev/vlang/ENode kiev\vlang\AST.java
 kiev.vlang.EmptyStat kiev/vlang/EmptyStat kiev\vlang\Statement.java

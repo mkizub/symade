@@ -26,6 +26,8 @@ import syntax kiev.Syntax;
 @nodeset
 public class TypeRef extends ENode {
 
+	public static final TypeRef dummyNode = new TypeRef();
+	
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeRef;
@@ -77,6 +79,10 @@ public class TypeRef extends ENode {
 		this();
 		this.pos = pos;
 		this.lnk = tp;
+	}
+	
+	public ASTNode getDummyNode() {
+		return TypeRef.dummyNode;
 	}
 	
 	public boolean isBound() {
