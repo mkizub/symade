@@ -572,10 +572,6 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		node ?= p
 	}
 	
-	public boolean preGenerate() {
-		return getRView().preGenerate();
-	}
-	
 	public void resolve(Type reqType) throws RuntimeException {
 		clazz.resolveDecl();
 		setResolved(true);

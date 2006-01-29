@@ -1159,10 +1159,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 	}
 
-	public boolean preGenerate() {
-		return getRView().preGenerate();
-	}
-	
 	static class StructDFFunc extends DFFunc {
 		final int res_idx;
 		StructDFFunc(DataFlowInfo dfi) {

@@ -52,6 +52,8 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		public				DNode				resolved;
 		
 		public boolean mainResolveIn() { return false; }
+
+		public boolean preGenerate()	{ return false; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -75,8 +77,6 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		if (star) str.append(".*");
 		return str.toString();
 	}
-
-	public boolean preGenerate()	{ return false; }
 
 	public ASTNode resolveImports() {
 		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
@@ -198,6 +198,8 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		public	TypeDef			arg;
 
 		public boolean mainResolveIn() { return false; }
+
+		public boolean preGenerate()	{ return false; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -227,8 +229,6 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		this.arg.name.name == name,
 		node ?= this.arg
 	}
-
-	public boolean preGenerate()	{ return false; }
 
 	public String toString() {
 		return "typedef "+arg+op+" "+type+"<"+arg+">;";

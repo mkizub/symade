@@ -715,10 +715,6 @@ public final class LVarExpr extends LvalueExpr {
 		return (Type[])sni.getTypes().clone();
 	}
 	
-	public boolean preGenerate() {
-		return getRView().preGenerate();
-	}
-	
 	public void resolve(Type reqType) throws RuntimeException {
 		// Check if we try to access this var from local inner/anonymouse class
 		if( ctx_clazz.isLocal() ) {

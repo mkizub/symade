@@ -193,10 +193,6 @@ public class RuleMethod extends Method {
 		return new RuleMethodDFFunc(dfi);
 	}
 
-	public boolean preGenerate() {
-		return getRView().preGenerate();
-	}
-	
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
 		try {
@@ -352,14 +348,14 @@ public abstract class ASTRuleNode extends ENode {
 	
 		public int get$idx() {	return this.$view.idx; }
 		public void set$idx(int i) { this.$view.idx = i; }
+
+		public boolean preGenerate() { Kiev.reportError(this,"preGenerate of ASTRuleNode"); return false; }
 	}
 
 	public ASTRuleNode(ASTRuleNodeImpl $view) { super($view); }
 
 	public abstract 		void	createText(StringBuffer sb);
 	public abstract 		void	resolve1(JumpNodes jn);
-
-	public boolean preGenerate() { Kiev.reportError(this,"preGenerate of ASTRuleNode"); return false; }
 	
 	public void resolve(Type tp) { Kiev.reportError(this,"Resolving of ASTRuleNode"); }
 
@@ -437,10 +433,6 @@ public final class RuleBlock extends BlockStat {
 		this();
 		this.pos = pos;
 		node = n;
-	}
-
-	public boolean preGenerate() {
-		return getRView().preGenerate();
 	}
 
 	public void resolve(Type tp) {

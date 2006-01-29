@@ -107,6 +107,8 @@ public class ASTIdentifier extends ENode {
 			}
 			return false;
 		}
+	
+		public boolean preGenerate() { /*Kiev.reportError(this,"preGenerate of ASTIdentifier");*/ return false; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -138,8 +140,6 @@ public class ASTIdentifier extends ENode {
 	public Type getType() {
 		return Type.tpVoid;
 	}
-	
-	public boolean preGenerate() { /*Kiev.reportError(this,"preGenerate of ASTIdentifier");*/ return false; }
 	
 	public void resolve(Type reqType) {
 		if( name == Constants.nameFILE ) {

@@ -190,10 +190,13 @@ kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\Pool
 kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
 kiev.ir.java.RLVarExpr kiev/ir/java/RLVarExpr kiev\ir\java\RLvalueExpr.java
+kiev.ir.java.RLocalStructDecl kiev/ir/java/RLocalStructDecl kiev\ir\java\RNode.java
 kiev.ir.java.RNewClosure kiev/ir/java/RNewClosure kiev\ir\java\RNewExpr.java
+kiev.ir.java.RNopExpr kiev/ir/java/RNopExpr kiev\ir\java\RNode.java
 kiev.ir.java.RRuleBlock kiev/ir/java/RRuleBlock kiev\ir\java\RRules.java
 kiev.ir.java.RRuleMethod kiev/ir/java/RRuleMethod kiev\ir\java\RRules.java
 kiev.ir.java.RStruct kiev/ir/java/RStruct kiev\ir\java\RStruct.java
+kiev.ir.java.RVarDecl kiev/ir/java/RVarDecl kiev\ir\java\RNode.java
 kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
 kiev.parser.ASTCallAccessExpression kiev/parser/ASTCallAccessExpression kiev\parser\ASTCallAccessExpression.java
 kiev.parser.ASTCallExpression kiev/parser/ASTCallExpression kiev\parser\ASTCallExpression.java
