@@ -897,7 +897,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 						}
 					}
 					init.pos = pos;
-					init.body = new BlockStat(pos);
+					init.body = new Block(pos);
 					if (isEnum() || isSingleton())
 						init.setPrivate();
 					else
@@ -948,7 +948,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		Constructor class_init = new Constructor(ACC_STATIC);
 		class_init.pos = pos;
 		addMethod(class_init);
-		class_init.body = new BlockStat(pos);
+		class_init.body = new Block(pos);
 		return class_init;
 	}
 
@@ -975,7 +975,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				if( f.isStatic() ) {
 					if( class_init == null )
 						class_init = getClazzInitMethod();
-					class_init.body.addStatement(
+					class_init.body.stats.add(
 						new ExprStat(f.init.pos,
 							new AssignExpr(f.init.pos,
 								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
@@ -987,7 +987,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					if( instance_init == null ) {
 						instance_init = new Initializer();
 						instance_init.pos = f.init.pos;
-						instance_init.body = new BlockStat();
+						instance_init.body = new Block();
 					}
 					ENode init_stat;
 					init_stat = new ExprStat(f.init.pos,
@@ -997,7 +997,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 								new Shadow(f.init)
 							)
 						);
-					instance_init.body.addStatement(init_stat);
+					instance_init.body.stats.add(init_stat);
 					init_stat.setHidden(true);
 				}
 			} else {
@@ -1007,14 +1007,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				if (init.isStatic()) {
 					if( class_init == null )
 						class_init = getClazzInitMethod();
-					class_init.body.addStatement(init_stat);
+					class_init.body.stats.add(init_stat);
 				} else {
 					if( instance_init == null ) {
 						instance_init = new Initializer();
 						instance_init.pos = init.pos;
-						instance_init.body = new BlockStat();
+						instance_init.body = new Block();
 					}
-					instance_init.body.addStatement(init_stat);
+					instance_init.body.stats.add(init_stat);
 				}
 			}
 		}
@@ -1050,10 +1050,10 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				Constructor m = (Constructor)n;
 				if( m.isStatic() ) continue;
 
-				ASTNode initbody = m.body;
+				Block initbody = m.body;
 
 				boolean gen_def_constr = false;
-				NArr<ASTNode> stats = ((BlockStat)initbody).stats;
+				NArr<ASTNode> stats = initbody.stats;
 				if( stats.length==0 ) {
 					gen_def_constr = true;
 				} else {
@@ -1281,7 +1281,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 							KString nm = new KStringBuffer().append(nameVarProxy)
 								.append(proxy_fields[j].name).toKString();
 							m.params.append(new FormPar(m.pos,nm,proxy_fields[j].type,FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
-							((BlockStat)m.body).stats.insert(
+							m.body.stats.insert(
 								new ExprStat(m.pos,
 									new AssignExpr(m.pos,AssignOperator.Assign,
 										new IFldExpr(m.pos,new ThisExpr(0),proxy_fields[j]),
@@ -1369,7 +1369,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if( !isPizzaCase() ) return false;
 		Method init = (Method)members[0];
 		if (init.body != null)
-			((BlockStat)init.body).addStatement(body);
+			init.body.stats.add(body);
 		else
 			init.setBody(body);
 		return true;

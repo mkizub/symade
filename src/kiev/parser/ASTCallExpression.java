@@ -219,7 +219,7 @@ public class ASTCallExpression extends ENode {
 				nc.type_ret = new TypeRef(pos, ((CallType)reqType).ret());
 				for (int i=0; i < nc.params.length; i++)
 					nc.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.arg(i),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
-				BlockStat bs = new BlockStat(pos,ENode.emptyArray);
+				Block bs = new Block(pos);
 				ENode[] oldargs = args.toArray();
 				ENode[] cargs = new ENode[nc.params.length];
 				for(int i=0; i < cargs.length; i++)
@@ -228,10 +228,10 @@ public class ASTCallExpression extends ENode {
 				foreach (ENode e; cargs)
 					args.add(e);
 				if( nc.type_ret.getType() ≡ Type.tpVoid ) {
-					bs.addStatement(new ExprStat(pos,this));
-					bs.addStatement(new ReturnStat(pos,null));
+					bs.stats.add(new ExprStat(pos,this));
+					bs.stats.add(new ReturnStat(pos,null));
 				} else {
-					bs.addStatement(new ReturnStat(pos,this));
+					bs.stats.add(new ReturnStat(pos,this));
 				}
 				nc.body = bs;
 				ENode e = nc;

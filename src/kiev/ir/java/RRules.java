@@ -87,7 +87,7 @@ public final view RRuleBlock of RuleBlockImpl extends RuleBlockView {
 			sb.append("}\nreturn null;\n");
 		sb.append("}\n");
 		trace(Kiev.debugRules,"Rule text generated:\n"+sb);
-		BlockStat mbody = Kiev.parseBlock(this.getNode(),sb);
+		Block mbody = Kiev.parseBlock(this.getNode(),sb);
 		ctx_method.body = mbody;
 		mbody.stats.addAll(stats.delToArray());
 		return false;

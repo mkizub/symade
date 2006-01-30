@@ -1679,8 +1679,8 @@ ASTOperatorAlias OperatorAlias() :
 	{ return a; }
 }
 
-BlockStat MaybeSkipBlock() :
-{ boolean old_declMode; BlockStat bl = null; }
+Block MaybeSkipBlock() :
+{ boolean old_declMode; Block bl = null; }
 {
 	(
 		LOOKAHEAD({ interface_only })
@@ -1923,7 +1923,7 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 Initializer Initializer(ASTModifiers modifiers) :
 {
 	Initializer n = mkInitializer(getToken(0).getPos(),modifiers);
-	BlockStat bl;
+	Block bl;
 }
 {
 	{
@@ -2783,7 +2783,7 @@ ENode LabeledStatement() :
 }
 
 
-BlockStat PrescannedBlock(PrescannedBody b) :
+Block PrescannedBlock(PrescannedBody b) :
 {
 	Token t;
 	// Skip to the start of prescanned body
@@ -2799,19 +2799,19 @@ BlockStat PrescannedBlock(PrescannedBody b) :
 		}
 		getNextToken();
 	}
-	BlockStat bl;
+	Block bl;
 }
 {
 	bl=Block()
 	{ return bl; }
 }
 
-BlockStat Block() :
+Block Block() :
 { boolean old_declMode; }
 {
 	"{"
 	{
-		BlockStat bl = new BlockStat();
+		Block bl = new Block();
 		bl.pos = getToken(1).getPos();
 		old_declMode = declMode;
 		declMode = false;
@@ -2865,11 +2865,11 @@ RuleBlock RuleBlock() :
 	{ return bl; }
 }
 
-BlockStat CondBlock() :
+Block CondBlock() :
 {}
 {
 	{
-		BlockStat bl = new BlockStat();
+		Block bl = new Block();
 		bl.pos = getToken(1).getPos();
 	}
 	(

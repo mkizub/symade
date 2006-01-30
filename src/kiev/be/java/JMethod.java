@@ -40,7 +40,7 @@ public final view JMethod of MethodImpl extends JDNode {
 	public access:ro	Access						acc;
 	public access:ro	KString						name;
 	public access:ro	JArr<JVar>				params;
-	public access:ro	JBlockStat				body;
+	public access:ro	JBlock				body;
 	public				Attr[]						attrs;
 	public access:ro	JArr<JWBCCondition>		conditions;
 	public access:ro	JArr<JField>			violated_fields;
@@ -190,7 +190,7 @@ public final view JMethod of MethodImpl extends JDNode {
 
 @nodeview
 public final view JInitializer of InitializerImpl extends JDNode {
-	public access:ro	JBlockStat		body;
+	public access:ro	JBlock		body;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Initializer");

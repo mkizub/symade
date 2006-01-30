@@ -9,7 +9,7 @@ import kiev.vlang.types.*;
 import kiev.be.java.JNode;
 import kiev.be.java.JENode;
 import kiev.be.java.JInlineMethodStat;
-import kiev.be.java.JBlockStat;
+import kiev.be.java.JBlock;
 import kiev.be.java.JEmptyStat;
 import kiev.be.java.JExprStat;
 import kiev.be.java.JReturnStat;
@@ -162,200 +162,6 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
-}
-
-@nodeset
-public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
-	
-	@dflow(out="this:out()") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]		stats;
-	}
-
-	@virtual typedef This  = BlockStat;
-	@virtual typedef NImpl = BlockStatImpl;
-	@virtual typedef VView = BlockStatView;
-	@virtual typedef JView = JBlockStat;
-
-	@nodeimpl
-	public static class BlockStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = BlockStat;
-		@att public NArr<ENode>		stats;
-		@ref public CodeLabel		break_label;
-	}
-	@nodeview
-	public static view BlockStatView of BlockStatImpl extends ENodeView {
-		public access:ro	NArr<ENode>		stats;
-	}
-	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
-	
-	public BlockStat() {
-		super(new BlockStatImpl());
-	}
-
-	public BlockStat(BlockStatImpl $view) {
-		super($view);
-	}
-
-	public BlockStat(int pos) {
-		this();
-		this.pos = pos;
-	}
-
-	public BlockStat(int pos, NArr<ENode> sts) {
-		this();
-		this.pos = pos;
-		foreach (ENode st; sts) {
-			this.stats.append(st);
-		}
-	}
-
-	public BlockStat(int pos, ENode[] sts) {
-		this();
-		this.pos = pos;
-		foreach (ENode st; sts) {
-			this.stats.append(st);
-		}
-	}
-
-	public ENode addStatement(ENode st) {
-		stats.append(st);
-		return st;
-	}
-
-	public void addSymbol(Named sym) {
-		ENode decl;
-		if (sym instanceof Var)
-			decl = new VarDecl((Var)sym);
-		else if (sym instanceof Struct)
-			decl = new LocalStructDecl((Struct)sym);
-		else
-			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
-		foreach(ENode n; stats) {
-			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(decl,"Symbol "+sym.getName()+" already declared in this scope");
-			}
-		}
-		stats.append(decl);
-	}
-
-	public void insertSymbol(Named sym, int idx) {
-		ENode decl;
-		if (sym instanceof Var)
-			decl = new VarDecl((Var)sym);
-		else if (sym instanceof Struct)
-			decl = new LocalStructDecl((Struct)sym);
-		else
-			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
-		foreach(ASTNode n; stats) {
-			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(decl,"Symbol "+sym.getName()+" already declared in this scope");
-			}
-		}
-		stats.insert(decl,idx);
-	}
-	
-	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
-		ASTNode@ n;
-	{
-		n @= new SymbolIterator(this.stats, info.space_prev),
-		{
-			n instanceof VarDecl,
-			((VarDecl)n).var.name.equals(name),
-			node ?= ((VarDecl)n).var
-		;	n instanceof LocalStructDecl,
-			name.equals(((LocalStructDecl)n).clazz.name.short_name),
-			node ?= ((LocalStructDecl)n).clazz
-		;	n instanceof TypeDef,
-			name.equals(((TypeDef)n).name),
-			node ?= ((TypeDef)n)
-		}
-	;
-		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this.stats, info.space_prev),
-		n instanceof VarDecl && ((VarDecl)n).var.isForward() && ((VarDecl)n).var.name.equals(name),
-		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
-		n.getType().resolveNameAccessR(node,info,name)
-	}
-
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
-		ASTNode@ n;
-	{
-		info.isForwardsAllowed(),
-		info.space_prev != null && info.space_prev.pslot.name == "stats",
-		n @= new SymbolIterator(this.stats, info.space_prev),
-		n instanceof VarDecl && ((VarDecl)n).var.isForward(),
-		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
-		((VarDecl)n).var.getType().resolveCallAccessR(node,info,name,mt)
-	}
-
-	public void resolve(Type reqType) {
-		assert (!isResolved());
-		setResolved(true);
-		resolveBlockStats(this, stats);
-	}
-
-	static class BlockStatDFFunc extends DFFunc {
-		final DFFunc f;
-		final int res_idx;
-		BlockStatDFFunc(DataFlowInfo dfi) {
-			f = new DFFunc.DFFuncChildOut(dfi.getSocket("stats"));
-			res_idx = dfi.allocResult(); 
-		}
-		DFState calc(DataFlowInfo dfi) {
-			DFState res = dfi.getResult(res_idx);
-			if (res != null) return res;
-			BlockStat node = (BlockStat)dfi.node_impl.getNode();
-			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; node.stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-			if (vars.length > 0)
-				res = DFFunc.calc(f, dfi).cleanInfoForVars(vars.toArray());
-			else
-				res = DFFunc.calc(f, dfi);
-			dfi.setResult(res_idx, res);
-			return res;
-		}
-	}
-	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
-		return new BlockStatDFFunc(dfi);
-	}
-
-	public static void resolveBlockStats(ENode self, NArr<ENode> stats) {
-		for(int i=0; i < stats.length; i++) {
-			try {
-				if( (i == stats.length-1) && self.isAutoReturnable() )
-					stats[i].setAutoReturnable(true);
-				if( self.isAbrupted() && (stats[i] instanceof LabeledStat) ) {
-					self.setAbrupted(false);
-				}
-				if( self.isAbrupted() ) {
-					//Kiev.reportWarning(stats[i].pos,"Possible unreachable statement");
-				}
-				if( stats[i] instanceof ENode ) {
-					ENode st = stats[i];
-					st.resolve(Type.tpVoid);
-					st = stats[i];
-					if( st.isAbrupted() && !self.isBreaked() ) self.setAbrupted(true);
-					if( st.isMethodAbrupted() && !self.isBreaked() ) self.setMethodAbrupted(true);
-				}
-				else {
-					stats[i].resolve(Type.tpVoid);
-				}
-			} catch(Exception e ) {
-				Kiev.reportError(stats[i],e);
-			}
-		}
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.space().append('{').newLine(1);
-		foreach (ENode s; stats)
-			s.toJava(dmp);
-		dmp.newLine(-1).append('}').newLine();
-		return dmp;
-	}
-
 }
 
 @nodeset
@@ -656,17 +462,17 @@ public class IfElseStat extends ENode {
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("if(").space().append(cond).space()
 			.append(')');
-		if( /*thenSt instanceof ExprStat ||*/ thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.forsed_space();
+		if( /*thenSt instanceof ExprStat ||*/ thenSt instanceof Block || thenSt instanceof InlineMethodStat) dmp.forsed_space();
 		else dmp.newLine(1);
 		dmp.append(thenSt);
-		if( /*thenSt instanceof ExprStat ||*/ thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.newLine();
+		if( /*thenSt instanceof ExprStat ||*/ thenSt instanceof Block || thenSt instanceof InlineMethodStat) dmp.newLine();
 		else dmp.newLine(-1);
 		if( elseSt != null ) {
 			dmp.append("else");
-			if( elseSt instanceof IfElseStat || elseSt instanceof BlockStat || elseSt instanceof InlineMethodStat ) dmp.forsed_space();
+			if( elseSt instanceof IfElseStat || elseSt instanceof Block || elseSt instanceof InlineMethodStat ) dmp.forsed_space();
 			else dmp.newLine(1);
 			dmp.append(elseSt).newLine();
-			if( elseSt instanceof IfElseStat || elseSt instanceof BlockStat || elseSt instanceof InlineMethodStat ) dmp.newLine();
+			if( elseSt instanceof IfElseStat || elseSt instanceof Block || elseSt instanceof InlineMethodStat ) dmp.newLine();
 			else dmp.newLine(-1);
 		}
 		return dmp;
@@ -1130,9 +936,9 @@ public class GotoStat extends ENode {
 			}
 		}
 			break;
-		case BlockStat:
+		case Block:
 		{
-			BlockStat bst = (BlockStat)st;
+			Block bst = (Block)st;
 			for(i=0; i < bst.stats.length; i++ ) {
 				stats = resolveStat(name,bst.stats[i],stats);
 			}

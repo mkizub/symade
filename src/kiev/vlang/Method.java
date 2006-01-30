@@ -26,7 +26,7 @@ import syntax kiev.Syntax;
 public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in")	BlockStat		body;
+	@dflow(in="this:in")	Block		body;
 	@dflow(in="this:in")	WBCCondition[] 	conditions;
 	}
 
@@ -50,7 +50,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		@att public NArr<FormPar>		params;
 		@att public NArr<ASTAlias>		aliases;
 		@att public Var					retvar;
-		@att public BlockStat			body;
+		@att public Block			body;
 		@att public PrescannedBody 		pbody;
 		public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
 		@att public NArr<WBCCondition> 	conditions;
@@ -249,7 +249,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public access:ro	NArr<FormPar>		params;
 		public access:ro	NArr<ASTAlias>		aliases;
 		public				Var					retvar;
-		public				BlockStat			body;
+		public				Block			body;
 		public				PrescannedBody		pbody;
 		public access:ro	NArr<WBCCondition>	conditions;
 		public access:ro	NArr<Field>			violated_fields;
@@ -768,8 +768,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret() ≡ Type.tpVoid ) {
-					if( body instanceof BlockStat ) {
-						((BlockStat)body).stats.append(new ReturnStat(pos,null));
+					if( body instanceof Block ) {
+						body.stats.append(new ReturnStat(pos,null));
 						body.setAbrupted(true);
 					}
 					else if !(isInvariantMethod())
@@ -805,7 +805,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of methods "+this);
 		if (this.body == null) {
-			this.body = (BlockStat)body;
+			this.body = (Block)body;
 		} else {
 			throw new RuntimeException("Added body to method "+this+" which already have body");
 		}
@@ -820,7 +820,7 @@ public class Constructor extends Method {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="true")	ENode[]			addstats;
-	@dflow(in="this:in")				BlockStat		body;
+	@dflow(in="this:in")				Block		body;
 	@dflow(in="this:in")				WBCCondition[] 	conditions;
 	}
 
@@ -864,7 +864,7 @@ public class Constructor extends Method {
 public class Initializer extends DNode implements SetBody, PreScanneable {
 	
 	@dflow(out="body") private static class DFI {
-	@dflow(in="this:in")				BlockStat		body;
+	@dflow(in="this:in")				Block		body;
 	}
 
 	@virtual typedef This  = Initializer;
@@ -875,12 +875,12 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	@nodeimpl
 	public static final class InitializerImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Initializer;
-		@att public BlockStat				body;
+		@att public Block				body;
 		@att public PrescannedBody			pbody;
 	}
 	@nodeview
 	public static final view InitializerView of InitializerImpl extends DNodeView {
-		public BlockStat				body;
+		public Block				body;
 		public PrescannedBody			pbody;
 	}
 
@@ -915,7 +915,7 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of initializer "+this);
 		if (this.body == null) {
-			this.body = (BlockStat)body;
+			this.body = (Block)body;
 		}
 		else {
 			throw new RuntimeException("Added body to initializer "+this+" which already has body");

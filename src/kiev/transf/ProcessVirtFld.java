@@ -237,7 +237,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				set_var.params.add(value);
 			}
 			if( !f.isAbstract() ) {
-				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
+				Block body = new Block(f.pos);
 				set_var.body = body;
 				Type astT = Signature.getType(KString.from("Lkiev/vlang/ASTNode;"));
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
@@ -246,7 +246,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 								new IFldExpr(0,new ThisExpr(0),f,true),
 								new ConstNullExpr()
 							),
-							new BlockStat(0,new ENode[]{
+							new Block(0,new ENode[]{
 								new ExprStat(0,
 									new ASTCallAccessExpression(0,
 										new IFldExpr(0,new ThisExpr(0),f,true),
@@ -292,7 +292,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				body.stats.append(new ReturnStat(f.pos,null));
 			}
 			else if (s.isStructView() && !f.isStatic()) {
-				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
+				Block body = new Block(f.pos);
 				set_var.body = body;
 				Field view_fld = s.view_of.getType().getStruct().resolveField(f.name.name);
 				ENode val = new LVarExpr(f.pos,value);
@@ -328,12 +328,12 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				get_var.setFinal(true);
 			s.addMethod(get_var);
 			if( !f.isAbstract() ) {
-				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
+				Block body = new Block(f.pos);
 				get_var.body = body;
 				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 			}
 			else if (s.isStructView() && !f.isStatic()) {
-				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
+				Block body = new Block(f.pos);
 				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,
 					new IFldExpr(f.pos,new ThisExpr(0),s.resolveField(nameView)),
@@ -435,7 +435,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				expr = new CallExpr(ae.pos, ~fa.obj, f.getMetaVirtual().set, new ENode[]{~ae.value});
 			}
 			else {
-				BlockExpr be = new BlockExpr(ae.pos);
+				Block be = new Block(ae.pos);
 				Object acc;
 				if (fa.obj instanceof ThisExpr) {
 					acc = ~fa.obj;
@@ -457,10 +457,10 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 					g = ~ae.value;
 				}
 				g = new CallExpr(ae.pos, mkAccess(acc), f.getMetaVirtual().set, new ENode[]{g});
-				be.addStatement(new ExprStat(0, g));
+				be.stats.add(new ExprStat(0, g));
 				if (!ae.isGenVoidExpr()) {
 					g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray);
-					be.setExpr(g);
+					be.stats.add(g);
 				}
 				expr = be;
 			}
@@ -513,7 +513,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				}
 			}
 			else {
-				BlockExpr be = new BlockExpr(ie.pos);
+				Block be = new Block(ie.pos);
 				Object acc;
 				if (fa.obj instanceof ThisExpr) {
 					acc = fa.obj;
@@ -543,11 +543,11 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 					g = new AssignExpr(ie.pos, AssignOperator.Assign, mkAccess(res), g);
 				g = new BinaryExpr(ie.pos, BinaryOperator.Add, ce, g);
 				g = new CallExpr(ie.pos, mkAccess(acc), f.getMetaVirtual().set, new ENode[]{g});
-				be.addStatement(new ExprStat(0, g));
+				be.stats.add(new ExprStat(0, g));
 				if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
-					be.setExpr(mkAccess(res));
+					be.stats.add(mkAccess(res));
 				else
-					be.setExpr(new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray));
+					be.stats.add(new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray));
 				expr = be;
 			}
 			ie.replaceWithNode(expr);

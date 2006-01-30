@@ -209,7 +209,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			}
 		} catch(Exception e ) { Kiev.reportError(this,e); }
 
-		BlockStat.resolveBlockStats(this, stats);
+		Block.resolveStats(Type.tpVoid, this, stats);
 
 		if( val != null ) {
 			if( !val.isConstantExpr() )
@@ -305,7 +305,7 @@ public class SwitchStat extends ENode {
 		else if( cases.length == 1 && cases[0].pattern.length == 0) {
 			cases[0].resolve(Type.tpVoid);
 			CaseLabel cas = (CaseLabel)cases[0];
-			BlockStat bl = new BlockStat(cas.pos, cas.stats.delToArray());
+			Block bl = new Block(cas.pos, cas.stats.delToArray());
 			bl.setBreakTarget(true);
 			if( ((CaseLabel)cas).val == null ) {
 				bl.stats.insert(new ExprStat(sel.pos,~sel),0);
@@ -322,7 +322,7 @@ public class SwitchStat extends ENode {
 			}
 		}
 		if( tmpvar == null ) {
-			BlockStat me = null;
+			Block me = null;
 			try {
 				sel.resolve(Type.tpInt);
 				Type tp = sel.getType();
@@ -332,12 +332,12 @@ public class SwitchStat extends ENode {
 				else if( tp.isReference() ) {
 					tmpvar = new LVarExpr(sel.pos, new Var(sel.pos,KString.from(
 						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0));
-					me = new BlockStat(pos);
+					me = new Block(pos);
 					this.replaceWithNode(me);
 					ENode old_sel = ~this.sel;
 					tmpvar.getVar().init = old_sel;
 					me.addSymbol(tmpvar.getVar());
-					me.addStatement(this);
+					me.stats.add(this);
 					if( tp.isHasCases() ) {
 						mode = PIZZA_SWITCH;
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
@@ -398,7 +398,7 @@ public class SwitchStat extends ENode {
 					new ConstIntExpr(defindex)
 				});
 			Constructor clinit = ctx_clazz.getClazzInitMethod();
-			clinit.body.addStatement(
+			clinit.body.stats.add(
 				new ExprStat(typehash.init.pos,
 					new AssignExpr(typehash.init.pos,AssignOperator.Assign
 						,new SFldExpr(typehash.pos,typehash),new Shadow(typehash.init))

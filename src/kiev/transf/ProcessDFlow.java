@@ -101,9 +101,9 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			CallType mt = (CallType)Signature.getType(signGetDFlowIn);
 			Method dfIn = new Method(nameGetDFlowIn,mt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
 			dfIn.params.add(new FormPar(0, KString.from("child"), tpNode, FormPar.PARAM_NORMAL, 0));
-			dfIn.body = new BlockStat(0);
+			dfIn.body = new Block(0);
 			Var var = new Var(0, KString.from("name"),Type.tpString,ACC_FINAL);
-			dfIn.body.addStatement(new VarDecl(var));
+			dfIn.body.stats.add(new VarDecl(var));
 			{
 				AccessExpr ae0 = new AccessExpr(0, new LVarExpr(0,dfIn.params[0]), new NameRef(KString.from("pslot")));
 				AccessExpr ae1 = new AccessExpr(0, ae0, new NameRef(KString.from("name")));
@@ -119,7 +119,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				ce.func = new NameRef(fname);
 				if (seq)
 					ce.args.add(new LVarExpr(0, dfIn.params[0]));
-				dfIn.body.addStatement(
+				dfIn.body.stats.add(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new LVarExpr(0, var),
@@ -134,7 +134,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			msg.appendArg(new ConstStringExpr(KString.from("No @dflow value \"")));
 			msg.appendArg(new LVarExpr(0, var));
 			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
-			dfIn.body.addStatement(
+			dfIn.body.stats.add(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
 			s.addMethod(dfIn);
@@ -212,9 +212,9 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 					CallType mt = (CallType)Signature.getType(signGetDFlowInFld);
 					dfIn = new Method(fname,mt.ret(),ACC_PRIVATE | ACC_SYNTHETIC);
 				}
-				dfIn.body = new BlockStat(0);
+				dfIn.body = new Block(0);
 				if (isArr && seq) {
-					dfIn.body.addStatement(
+					dfIn.body.stats.add(
 						new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								acc_prev,
@@ -226,7 +226,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 					);
 				}
 				if (cae_fls != null) {
-					dfIn.body.addStatement(
+					dfIn.body.stats.add(
 						new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								acc_fld,
@@ -237,7 +237,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 						)
 					);
 				} else {
-					dfIn.body.addStatement(
+					dfIn.body.stats.add(
 						new ReturnStat(0,cae_tru)
 					);
 				}

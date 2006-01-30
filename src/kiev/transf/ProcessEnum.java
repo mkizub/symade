@@ -57,8 +57,8 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		{
 			Method mvals = new Method(nameEnumValues,new ArrayType(clazz.ctype),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			mvals.pos = pos;
-			mvals.body = new BlockStat(pos);
-			((BlockStat)mvals.body).addStatement(
+			mvals.body = new Block(pos);
+			mvals.body.stats.add(
 				new ReturnStat(pos,
 					new SFldExpr(pos,clazz.resolveField(nameEnumValuesFld)) ) );
 			clazz.addMethod(mvals);
@@ -69,7 +69,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			Method tome = new Method(nameCastOp,clazz.ctype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt, FormPar.PARAM_NORMAL,0));
-			tome.body = new BlockStat(pos);
+			tome.body = new Block(pos);
 			SwitchStat sw = new SwitchStat(pos,new LVarExpr(pos,tome.params[0]),CaseLabel.emptyArray);
 			//EnumAttr ea = (EnumAttr)clazz.getAttr(attrEnum);
 			//if( ea == null )
@@ -88,7 +88,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					});
 			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
-			((BlockStat)tome.body).addStatement(sw);
+			tome.body.stats.add(sw);
 			clazz.addMethod(tome);
 		}
 
@@ -97,7 +97,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			Method tostr = new Method(KString.from("toString"),Type.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
 			tostr.name.addAlias(nameCastOp);
 			tostr.pos = pos;
-			tostr.body = new BlockStat(pos);
+			tostr.body = new Block(pos);
 			SwitchStat sw = new SwitchStat(pos,
 				new CallExpr(pos,	new ThisExpr(),
 					Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, Type.tpInt),
@@ -122,7 +122,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					});
 			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
-			((BlockStat)tostr.body).addStatement(sw);
+			tostr.body.stats.add(sw);
 			clazz.addMethod(tostr);
 		}
 
@@ -133,7 +133,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			fromstr.name.addAlias(KString.from("fromString"));
 			fromstr.pos = pos;
 			fromstr.params.add(new FormPar(pos,KString.from("val"),Type.tpString, FormPar.PARAM_NORMAL,0));
-			fromstr.body = new BlockStat(pos);
+			fromstr.body = new Block(pos);
 			AssignExpr ae = new AssignExpr(pos,AssignOperator.Assign,
 				new LVarExpr(pos,fromstr.params[0]),
 				new CallExpr(pos,
@@ -141,7 +141,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					Type.tpString.clazz.resolveMethod(KString.from("intern"),Type.tpString),
 					ENode.emptyArray
 				));
-			((BlockStat)fromstr.body).addStatement(new ExprStat(pos,ae));
+			fromstr.body.stats.add(new ExprStat(pos,ae));
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
 				KString str = f.name.name;
@@ -152,7 +152,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					new ReturnStat(pos,new SFldExpr(pos,f)),
 					null
 					);
-				((BlockStat)fromstr.body).addStatement(ifst);
+				fromstr.body.stats.add(ifst);
 				if (f.name.aliases != List.Nil) {
 					str = f.name.aliases.head();
 					if (str.byteAt(0) == (byte)'\"') {
@@ -165,12 +165,12 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 									new ReturnStat(pos,new SFldExpr(pos,f)),
 									null
 									);
-							((BlockStat)fromstr.body).addStatement(ifst);
+							fromstr.body.stats.add(ifst);
 						}
 					}
 				}
 			}
-			((BlockStat)fromstr.body).addStatement(
+			fromstr.body.stats.add(
 				new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,ENode.emptyArray))
 				);
 			clazz.addMethod(fromstr);

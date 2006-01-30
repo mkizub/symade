@@ -52,14 +52,14 @@ public class ProcessView extends TransfProcessor implements Constants {
 				m.setAbstract(true);
 				continue;
 			}
-			m.body = new BlockStat(m.pos);
+			m.body = new Block(m.pos);
 			CallExpr ce = new CallExpr(m.pos, new IFldExpr(m.pos, new ThisExpr(m.pos), fview), vm, ENode.emptyArray);
 			foreach (FormPar fp; m.params)
 				ce.args.append(new LVarExpr(fp.pos, fp));
 			if (ct.ret() ≢ Type.tpVoid)
-				m.body.addStatement(new ReturnStat(m.pos, ce));
+				m.body.stats.add(new ReturnStat(m.pos, ce));
 			else
-				m.body.addStatement(new ExprStat(m.pos, ce));
+				m.body.stats.add(new ExprStat(m.pos, ce));
 		}
 	}
 

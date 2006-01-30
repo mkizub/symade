@@ -50,7 +50,7 @@ public final view RNewClosure of NewClosureImpl extends NewClosureView {
 			}
 		});
 
-		BlockStat body = ~this.body;
+		Block body = ~this.body;
 		Type ret = ctype.ret();
 		if( ret ≢ Type.tpRule ) {
 			KString call_name;

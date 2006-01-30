@@ -17,11 +17,13 @@ import kiev.be.java.JAssignExpr;
 import kiev.be.java.JBinaryExpr;
 import kiev.be.java.JStringConcatExpr;
 import kiev.be.java.JCommaExpr;
-import kiev.be.java.JBlockExpr;
+import kiev.be.java.JBlock;
 import kiev.be.java.JUnaryExpr;
 import kiev.be.java.JIncrementExpr;
 import kiev.be.java.JConditionalExpr;
 import kiev.be.java.JCastExpr;
+
+import kiev.be.java.CodeLabel;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -1137,28 +1139,26 @@ public class CommaExpr extends ENode {
 }
 
 @nodeset
-public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
+public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="this:out()") private static class DFI {
 	@dflow(in="this:in", seq="true")	ENode[]		stats;
-	@dflow(in="stats")					ENode		res;
 	}
 
-	@virtual typedef This  = BlockExpr;
-	@virtual typedef NImpl = BlockExprImpl;
-	@virtual typedef VView = BlockExprView;
-	@virtual typedef JView = JBlockExpr;
+	@virtual typedef This  = Block;
+	@virtual typedef NImpl = BlockImpl;
+	@virtual typedef VView = BlockView;
+	@virtual typedef JView = JBlock;
 
 	@nodeimpl
-	public static class BlockExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = BlockExpr;
+	public static class BlockImpl extends ENodeImpl {
+		@virtual typedef ImplOf = Block;
 		@att public NArr<ENode>			stats;
-		@att public ENode				res;
+		@ref public CodeLabel			break_label;
 	}
 	@nodeview
-	public static view BlockExprView of BlockExprImpl extends ENodeView {
+	public static view BlockView of BlockImpl extends ENodeView {
 		public access:ro	NArr<ENode>		stats;
-		public				ENode			res;
 
 		public int		getPriority() { return 255; }
 	}
@@ -1166,22 +1166,23 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
 	
-	public BlockExpr() {
-		super(new BlockExprImpl());
+	public Block() {
+		super(new BlockImpl());
 	}
 
-	public BlockExpr(int pos) {
+	public Block(BlockImpl impl) {
+		super(impl);
+	}
+
+	public Block(int pos) {
 		this();
 		this.pos = pos;
 	}
 
-	public void setExpr(ENode res) {
-		this.res = res;
-	}
-
-	public ENode addStatement(ENode st) {
-		stats.append(st);
-		return st;
+	public Block(int pos, ENode[] sts) {
+		this();
+		this.pos = pos;
+		this.stats.addAll(sts);
 	}
 
 	public void addSymbol(Named sym) {
@@ -1217,8 +1218,9 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 	
 	public Type getType() {
-		if (res == null) return Type.tpVoid;
-		return res.getType();
+		if (isGenVoidExpr()) return Type.tpVoid;
+		if (stats.length == 0) return Type.tpVoid;
+		return stats[stats.length-1].getType();
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
@@ -1255,23 +1257,45 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public void resolve(Type reqType) {
-		BlockStat.resolveBlockStats(this, stats);
-		if (res != null) {
-			res.resolve(reqType);
+		Block.resolveStats(reqType, this, stats);
+	}
+
+	public static void resolveStats(Type reqType, ENode self, NArr<ENode> stats) {
+		int sz = stats.length - 1;
+		for (int i=0; i <= sz; i++) {
+			ENode st = stats[i];
+			try {
+				if( (i == sz) && self.isAutoReturnable() )
+					st.setAutoReturnable(true);
+				if( self.isAbrupted() && (st instanceof LabeledStat) )
+					self.setAbrupted(false);
+				//if( self.isAbrupted() )
+				//	; //Kiev.reportWarning(stats[i].pos,"Possible unreachable statement");
+				if (i < sz || reqType == Type.tpVoid) {
+					st.setGenVoidExpr(true);
+					st.resolve(Type.tpVoid);
+				} else {
+					st.resolve(reqType);
+				}
+				if( st.isAbrupted() && !self.isBreaked() ) self.setAbrupted(true);
+				if( st.isMethodAbrupted() && !self.isBreaked() ) self.setMethodAbrupted(true);
+			} catch(Exception e ) {
+				Kiev.reportError(stats[i],e);
+			}
 		}
 	}
 
-	static class BlockExprDFFunc extends DFFunc {
+	static class BlockDFFunc extends DFFunc {
 		final DFFunc f;
 		final int res_idx;
-		BlockExprDFFunc(DataFlowInfo dfi) {
-			f = new DFFunc.DFFuncChildOut(dfi.getSocket("res"));
+		BlockDFFunc(DataFlowInfo dfi) {
+			f = new DFFunc.DFFuncChildOut(dfi.getSocket("stats"));
 			res_idx = dfi.allocResult(); 
 		}
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			BlockExpr node = (BlockExpr)dfi.node_impl.getNode();
+			Block node = (Block)dfi.node_impl.getNode();
 			Vector<Var> vars = new Vector<Var>();
 			foreach (ASTNode n; node.stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			if (vars.length > 0)
@@ -1283,27 +1307,23 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 		}
 	}
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
-		return new BlockExprDFFunc(dfi);
+		return new BlockDFFunc(dfi);
 	}
 	
 	public String toString() {
 		Dumper dmp = new Dumper();
-		dmp.append("({").space();
-		for(int i=0; i < stats.length; i++)
-			stats[i].toJava(dmp).space();
-		if (res != null)
-			res.toJava(dmp);
-		dmp.space().append("})");
+		dmp.append("{").space();
+		foreach (ENode s; stats)
+			s.toJava(dmp);
+		dmp.space().append("}");
 		return dmp.toString();
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		dmp.space().append("({").newLine(1);
-		for(int i=0; i < stats.length; i++)
-			stats[i].toJava(dmp).newLine();
-		if (res != null)
-			res.toJava(dmp);
-		dmp.newLine(-1).append("})");
+		dmp.space().append('{').newLine(1);
+		foreach (ENode s; stats)
+			s.toJava(dmp);
+		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
 

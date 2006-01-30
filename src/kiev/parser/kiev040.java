@@ -2049,8 +2049,8 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public BlockStat MaybeSkipBlock() throws ParseException {
-  boolean old_declMode; BlockStat bl = null;
+  final public Block MaybeSkipBlock() throws ParseException {
+  boolean old_declMode; Block bl = null;
     if (interface_only) {
       jj_consume_token(LBRACE);
                         Token tk = getToken(0);
@@ -2496,7 +2496,7 @@ public abstract class kiev040 implements kiev040Constants {
 
   final public Initializer Initializer(ASTModifiers modifiers) throws ParseException {
         Initializer n = mkInitializer(getToken(0).getPos(),modifiers);
-        BlockStat bl;
+        Block bl;
 
           presc = n;
     bl = MaybeSkipBlock();
@@ -4028,7 +4028,7 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public BlockStat PrescannedBlock(PrescannedBody b) throws ParseException {
+  final public Block PrescannedBlock(PrescannedBody b) throws ParseException {
         Token t;
         // Skip to the start of prescanned body
         Token tk;
@@ -4043,16 +4043,16 @@ public abstract class kiev040 implements kiev040Constants {
                 }
                 getNextToken();
         }
-        BlockStat bl;
+        Block bl;
     bl= Block();
           {if (true) return bl;}
     throw new Error("Missing return statement in function");
   }
 
-  final public BlockStat Block() throws ParseException {
+  final public Block Block() throws ParseException {
   boolean old_declMode;
     jj_consume_token(LBRACE);
-                BlockStat bl = new BlockStat();
+                Block bl = new Block();
                 bl.pos = getToken(1).getPos();
                 old_declMode = declMode;
                 declMode = false;
@@ -4112,8 +4112,8 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public BlockStat CondBlock() throws ParseException {
-                BlockStat bl = new BlockStat();
+  final public Block CondBlock() throws ParseException {
+                Block bl = new Block();
                 bl.pos = getToken(1).getPos();
     switch (jj_nt.kind) {
     case LBRACE:

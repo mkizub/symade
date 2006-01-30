@@ -16,7 +16,7 @@ import syntax kiev.Syntax;
 
 import kiev.vlang.InlineMethodStat.InlineMethodStatImpl;
 import kiev.vlang.InlineMethodStat.ParamRedir;
-import kiev.vlang.BlockStat.BlockStatImpl;
+import kiev.vlang.Block.BlockImpl;
 import kiev.vlang.EmptyStat.EmptyStatImpl;
 import kiev.vlang.ExprStat.ExprStatImpl;
 import kiev.vlang.ReturnStat.ReturnStatImpl;
@@ -54,45 +54,6 @@ public final view JInlineMethodStat of InlineMethodStatImpl extends JENode {
 			}
 		}
 	}
-}
-
-@nodeview
-public final view JBlockStat of BlockStatImpl extends JENode {
-	public access:ro	JArr<JENode>	stats;
-	public				CodeLabel			break_label;
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating BlockStat");
-		code.setLinePos(this);
-		JENode[] stats = this.stats.toArray();
-		break_label = code.newLabel();
-		for(int i=0; i < stats.length; i++) {
-			try {
-				stats[i].generate(code,Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(stats[i],e);
-			}
-		}
-		Vector<JVar> vars = new Vector<JVar>();
-		foreach (JENode n; stats) {
-			if (n instanceof JVarDecl)
-				vars.append(n.var);
-		}
-		code.removeVars(vars.toArray());
-		JNode p = this.jparent;
-		if( p instanceof JMethod && Kiev.debugOutputC
-		 && code.need_to_gen_post_cond && ((JMethod)p).type.ret() ≢ Type.tpVoid) {
-			code.stack_push(((JMethod)p).etype.ret().getJType());
-		}
-		code.addInstr(Instr.set_label,break_label);
-	}
-
-	public CodeLabel getBreakLabel() throws RuntimeException {
-		if( break_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'break' label");
-		return break_label;
-	}
-
 }
 
 @nodeview
@@ -362,14 +323,14 @@ public final view JBreakStat of BreakStatImpl extends JENode {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
 				if( node instanceof JMethod ) break;
-				if( node instanceof BreakTarget || node instanceof JBlockStat );
+				if( node instanceof BreakTarget || node instanceof JBlock );
 				else continue;
 				if( node instanceof BreakTarget ) {
 					BreakTarget t = (BreakTarget)node;
 					return (Object[])Arrays.append(cl,t.getBrkLabel().getCodeLabel(code));
 				}
-				else if( node instanceof JBlockStat && ((JBlockStat)node).isBreakTarget() ){
-					JBlockStat t = (JBlockStat)node;
+				else if( node instanceof JBlock && node.isBreakTarget() ){
+					JBlock t = (JBlock)node;
 					return (Object[])Arrays.append(cl,t.getBreakLabel());
 				}
 			}
@@ -389,7 +350,7 @@ public final view JBreakStat of BreakStatImpl extends JENode {
 					JENode st = ((JLabeledStat)node).stat;
 					if( st instanceof BreakTarget )
 						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
-					else if (st instanceof JBlockStat)
+					else if (st instanceof JBlock)
 						return (Object[])Arrays.append(cl,st.getBreakLabel());
 					else
 						throw new RuntimeException("Label "+name+" does not refer to break target");

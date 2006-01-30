@@ -430,7 +430,7 @@ public final class Kiev {
 		return ((int)pass_no) >= ((int)p);
 	}
 
-	public static BlockStat parseBlock(ASTNode from, StringBuffer sb) {
+	public static Block parseBlock(ASTNode from, StringBuffer sb) {
 		StringBufferInputStream is = new StringBufferInputStream(sb.toString());
 		FileUnit oldFileUnit = k.curFileUnit;
 		Struct oldClazz = k.curClazz;
@@ -441,7 +441,7 @@ public final class Kiev {
 		k.curFileUnit = from.ctx_file_unit;
 		k.curClazz = from.ctx_clazz;
 		k.curMethod = from.ctx_method;
-		BlockStat body = null;
+		Block body = null;
 		try {
 			body = k.Block();
 		} finally {
@@ -504,7 +504,7 @@ public final class Kiev {
 					else if (nn instanceof Method)
 						Kiev.k.curMethod = (Method)nn;
 				}
-				BlockStat bl;
+				Block bl;
 				switch(b.mode) {
 				case PrescannedBody.BlockMode:
 					bl = Kiev.k.PrescannedBlock(b);

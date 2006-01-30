@@ -22,7 +22,7 @@ import kiev.vlang.AssignExpr.AssignExprImpl;
 import kiev.vlang.BinaryExpr.BinaryExprImpl;
 import kiev.vlang.StringConcatExpr.StringConcatExprImpl;
 import kiev.vlang.CommaExpr.CommaExprImpl;
-import kiev.vlang.BlockExpr.BlockExprImpl;
+import kiev.vlang.Block.BlockImpl;
 import kiev.vlang.UnaryExpr.UnaryExprImpl;
 import kiev.vlang.IncrementExpr.IncrementExprImpl;
 import kiev.vlang.ConditionalExpr.ConditionalExprImpl;
@@ -261,26 +261,23 @@ public view JCommaExpr of CommaExprImpl extends JENode {
 }
 
 @nodeview
-public view JBlockExpr of BlockExprImpl extends JENode {
+public view JBlock of BlockImpl extends JENode {
 	public access:ro	JArr<JENode>	stats;
-	public access:ro	JENode			res;
+	public				CodeLabel		break_label;
 
 	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating BlockExpr");
+		trace(Kiev.debugStatGen,"\tgenerating Block");
 		code.setLinePos(this);
 		JENode[] stats = this.stats.toArray();
+		break_label = code.newLabel();
 		for(int i=0; i < stats.length; i++) {
 			try {
-				stats[i].generate(code,Type.tpVoid);
+				if (i < stats.length-1 || isGenVoidExpr())
+					stats[i].generate(code,Type.tpVoid);
+				else
+					stats[i].generate(code,reqType);
 			} catch(Exception e ) {
 				Kiev.reportError(stats[i],e);
-			}
-		}
-		if (res != null) {
-			try {
-				res.generate(code,reqType);
-			} catch(Exception e ) {
-				Kiev.reportError(res,e);
 			}
 		}
 		Vector<JVar> vars = new Vector<JVar>();
@@ -289,8 +286,17 @@ public view JBlockExpr of BlockExprImpl extends JENode {
 				vars.append(n.var);
 		}
 		code.removeVars(vars.toArray());
+		JNode p = this.jparent;
+		if( p instanceof JMethod && Kiev.debugOutputC && code.need_to_gen_post_cond && p.type.ret() ≢ Type.tpVoid)
+			code.stack_push(p.etype.ret().getJType());
+		code.addInstr(Instr.set_label,break_label);
 	}
 
+	public CodeLabel getBreakLabel() throws RuntimeException {
+		if( break_label == null )
+			throw new RuntimeException("Wrong generation phase for getting 'break' label");
+		return break_label;
+	}
 }
 
 @nodeview

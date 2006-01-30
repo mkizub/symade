@@ -87,7 +87,7 @@ public final class NewExpr extends ENode {
 						init.params.append(new FormPar(pos,KString.from("arg$"+i),args[i].getType(),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
 					}
 					init.pos = pos;
-					init.body = new BlockStat(pos);
+					init.body = new Block(pos);
 					init.setPublic();
 					clazz.addMethod(init);
 				}
@@ -504,7 +504,7 @@ public final class NewInitializedArrayExpr extends ENode {
 public final class NewClosure extends ENode implements ScopeOfNames {
 	
 	@dflow(out="this:in") private static class DFI {
-	@dflow(in="this:in")	BlockStat		body;
+	@dflow(in="this:in")	Block		body;
 	}
 
 
@@ -519,7 +519,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		@virtual typedef ImplOf = NewClosure;
 		@att public TypeRef				type_ret;
 		@att public NArr<FormPar>		params;
-		@att public BlockStat			body;
+		@att public Block			body;
 		@att public Struct				clazz;
 		@ref public CallType			ctype;
 	}
@@ -527,7 +527,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	public static abstract view NewClosureView of NewClosureImpl extends ENodeView {
 		public TypeRef			type_ret;
 		public NArr<FormPar>	params;
-		public BlockStat		body;
+		public Block		body;
 		public Struct			clazz;
 		public CallType			ctype;
 

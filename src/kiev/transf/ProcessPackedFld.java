@@ -223,7 +223,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		Field f = fa.var;
 		if( !f.isPackedField() )
 			return true;
-		BlockExpr be = new BlockExpr(ae.pos);
+		Block be = new Block(ae.pos);
 		Object acc;
 		if (fa.obj instanceof ThisExpr) {
 			acc = fa.obj;
@@ -255,7 +255,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			else if( mp.getSize() == 16 && f.type ≡ Type.tpShort )
 				expr = new CastExpr(fa.pos, Type.tpShort, expr);
 			tmp.init = expr;
-			be.addStatement(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), ~ae.value)));
+			be.stats.add(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), ~ae.value)));
 		}
 		else if (ae.value.getType() ≡ Type.tpBoolean) {
 			tmp.init = new CastExpr(ae.value.pos, Type.tpInt, ~ae.value, true);
@@ -277,10 +277,10 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			expr = new AssignExpr(fa.pos, AssignOperator.Assign,
 				new IFldExpr(fa.pos, mkAccess(acc), mp.packer),
 				expr);
-			be.addStatement(new ExprStat(fa.pos, expr));
+			be.stats.add(new ExprStat(fa.pos, expr));
 		}
 		if (!ae.isGenVoidExpr()) {
-			be.setExpr(mkAccess(tmp));
+			be.stats.add(mkAccess(tmp));
 		}
 		ae.replaceWithNode(be);
 		be.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
@@ -308,7 +308,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			expr.setGenVoidExpr(true);
 		}
 		else {
-			BlockExpr be = new BlockExpr(ie.pos);
+			Block be = new Block(ie.pos);
 			Object acc;
 			if (fa.obj instanceof ThisExpr) {
 				acc = fa.obj;
@@ -366,10 +366,10 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 				expr = new AssignExpr(fa.pos, AssignOperator.Assign,
 					new IFldExpr(fa.pos, mkAccess(acc), mp.packer),
 					expr);
-				be.addStatement(new ExprStat(fa.pos, expr));
+				be.stats.add(new ExprStat(fa.pos, expr));
 			}
 			if (!ie.isGenVoidExpr()) {
-				be.setExpr(mkAccess(tmp));
+				be.stats.add(mkAccess(tmp));
 			}
 			expr = be;
 			expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());

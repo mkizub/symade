@@ -41,7 +41,7 @@ public final view RLVarExpr of LVarExprImpl extends LVarExprView {
 				Kiev.reportError(this, "Cannot find "+namePEnv);
 				return false;
 			}
-			Struct s = ((LocalStructDecl)((BlockStat)rm.body).stats[0]).clazz;
+			Struct s = ((LocalStructDecl)rm.body.stats[0]).clazz;
 			Field f = s.resolveField(ident.name);
 			replaceWithNode(new IFldExpr(pos, new LVarExpr(pos, pEnv), ~ident, f));
 		}

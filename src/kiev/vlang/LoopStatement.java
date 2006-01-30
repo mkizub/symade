@@ -190,10 +190,10 @@ public class WhileStat extends LoopStat {
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("while").space().append('(').space().append(cond)
 			.space().append(')');
-		if( body instanceof ExprStat || body instanceof BlockStat ) dmp.forsed_space();
+		if( body instanceof ExprStat || body instanceof Block ) dmp.forsed_space();
 		else dmp.newLine(1);
 		dmp.append(body);
-		if( body instanceof ExprStat || body instanceof BlockStat ) dmp.newLine();
+		if( body instanceof ExprStat || body instanceof Block ) dmp.newLine();
 		else dmp.newLine(-1);
 		return dmp;
 	}
@@ -260,10 +260,10 @@ public class DoWhileStat extends LoopStat {
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("do");
 
-		if( body instanceof ExprStat || body instanceof BlockStat ) dmp.forsed_space();
+		if( body instanceof ExprStat || body instanceof Block ) dmp.forsed_space();
 		else dmp.newLine(1);
 		dmp.append(body);
-		if( body instanceof ExprStat || body instanceof BlockStat ) dmp.newLine();
+		if( body instanceof ExprStat || body instanceof Block ) dmp.newLine();
 		else dmp.newLine(-1);
 
 		dmp.append("while").space().append('(').space().append(cond).space().append(");").newLine();
@@ -459,10 +459,10 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 			dmp.append(iter);
 		dmp.space().append(')').space();
 
-		if( body instanceof ExprStat || body instanceof BlockStat ) dmp.forsed_space();
+		if( body instanceof ExprStat || body instanceof Block ) dmp.forsed_space();
 		else dmp.newLine(1);
 		dmp.append(body);
-		if( body instanceof ExprStat || body instanceof BlockStat ) dmp.newLine();
+		if( body instanceof ExprStat || body instanceof Block ) dmp.newLine();
 		else dmp.newLine(-1);
 
 		return dmp;
@@ -811,7 +811,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			dmp.append(iter_incr);
 		dmp.append(')').space();
 
-		if( body instanceof ExprStat || body instanceof BlockStat ) dmp.forsed_space();
+		if( body instanceof ExprStat || body instanceof Block ) dmp.forsed_space();
 		else dmp.newLine(1);
 		if( var_init != null )
 			dmp.append(var_init).newLine();
@@ -819,7 +819,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			dmp.append("if !(").append(cond).append(") continue;").newLine();
 
 		dmp.append(body);
-		if( body instanceof ExprStat || body instanceof BlockStat ) dmp.newLine();
+		if( body instanceof ExprStat || body instanceof Block ) dmp.newLine();
 		else dmp.newLine(-1);
 
 		return dmp;

@@ -37,8 +37,7 @@ kiev.be.java.JBinaryBoolExpr kiev/be/java/JBinaryBoolExpr kiev\be\java\JBoolExpr
 kiev.be.java.JBinaryBooleanAndExpr kiev/be/java/JBinaryBooleanAndExpr kiev\be\java\JBoolExpr.java
 kiev.be.java.JBinaryBooleanOrExpr kiev/be/java/JBinaryBooleanOrExpr kiev\be\java\JBoolExpr.java
 kiev.be.java.JBinaryExpr kiev/be/java/JBinaryExpr kiev\be\java\JExpr.java
-kiev.be.java.JBlockExpr kiev/be/java/JBlockExpr kiev\be\java\JExpr.java
-kiev.be.java.JBlockStat kiev/be/java/JBlockStat kiev\be\java\JStatement.java
+kiev.be.java.JBlock kiev/be/java/JBlock kiev\be\java\JExpr.java
 kiev.be.java.JBoolExpr kiev/be/java/JBoolExpr kiev\be\java\JBoolExpr.java
 kiev.be.java.JBooleanNotExpr kiev/be/java/JBooleanNotExpr kiev\be\java\JBoolExpr.java
 kiev.be.java.JBreakStat kiev/be/java/JBreakStat kiev\be\java\JStatement.java
@@ -319,8 +318,7 @@ kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\Boole
 kiev.vlang.BinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryExpr kiev/vlang/BinaryExpr kiev\vlang\Expr.java
 kiev.vlang.BinaryOperator kiev/vlang/BinaryOperator kiev\vlang\Operator.java
-kiev.vlang.BlockExpr kiev/vlang/BlockExpr kiev\vlang\Expr.java
-kiev.vlang.BlockStat kiev/vlang/BlockStat kiev\vlang\Statement.java
+kiev.vlang.Block kiev/vlang/Block kiev\vlang\Expr.java
 kiev.vlang.BoolExpr kiev/vlang/BoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BooleanNotExpr kiev/vlang/BooleanNotExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BreakStat kiev/vlang/BreakStat kiev\vlang\Statement.java

@@ -162,7 +162,7 @@ public final view RStruct of StructImpl extends StructView {
 		// create constructor method
 		{
 			Constructor init = new Constructor(ACC_PROTECTED);
-			init.body = new BlockStat(pos);
+			init.body = new Block(pos);
 			init.params.add(new FormPar(pos,KString.from("hash"),Type.tpInt,FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
 			// add in it arguments fields, and prepare for constructor
@@ -205,7 +205,7 @@ public final view RStruct of StructImpl extends StructView {
 
 			// create method to get typeinfo field
 			Method tim = getStruct().addMethod(new Method(nameGetTypeInfo,Type.tpTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC));
-			tim.body = new BlockStat(pos,new ENode[]{
+			tim.body = new Block(pos,new ENode[]{
 				new ReturnStat(pos,new IFldExpr(pos,new ThisExpr(pos),tif))
 			});
 		}
@@ -222,7 +222,7 @@ public final view RStruct of StructImpl extends StructView {
 			Method init = new Method(KString.from("newTypeInfo"), typeinfo_clazz.ctype, ACC_STATIC|ACC_PUBLIC);
 			init.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.params.add(new FormPar(pos,KString.from("args"),new ArrayType(Type.tpTypeInfo),FormPar.PARAM_NORMAL,ACC_FINAL));
-			init.body = new BlockStat(pos);
+			init.body = new Block(pos);
 			Var h = new Var(pos,KString.from("hash"),Type.tpInt,ACC_FINAL);
 			Var v = new Var(pos,KString.from("ti"),typeinfo_clazz.ctype,0);
 			Method mhash = Type.tpTypeInfo.clazz.resolveMethod(KString.from("hashCode"),Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
@@ -246,12 +246,12 @@ public final view RStruct of StructImpl extends StructView {
 			int i = 0;
 			foreach (ArgType at; this.getTypeInfoArgs())
 				ne.args.add(new ContainerAccessExpr(pos, new LVarExpr(pos,init.params[1]), new ConstIntExpr(i++)));
-			init.body.addStatement(new IfElseStat(pos,
+			init.body.stats.add(new IfElseStat(pos,
 				new BinaryBoolExpr(pos,BinaryOperator.Equals,new LVarExpr(pos,v),new ConstNullExpr()),
 				new ExprStat(pos,new AssignExpr(pos, AssignOperator.Assign,new LVarExpr(pos,v),ne)),
 				null
 			));
-			init.body.addStatement(new ReturnStat(pos,new LVarExpr(pos,v)));
+			init.body.stats.add(new ReturnStat(pos,new LVarExpr(pos,v)));
 			typeinfo_clazz.addMethod(init);
 		}
 		
@@ -267,8 +267,8 @@ public final view RStruct of StructImpl extends StructView {
 			meq.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
 			meq.params.add(new FormPar(pos,KString.from("args"),new ArrayType(Type.tpTypeInfo),FormPar.PARAM_VARARGS,ACC_FINAL));
 			typeinfo_clazz.addMethod(meq);
-			meq.body = new BlockStat(pos);
-			meq.body.addStatement(new IfElseStat(pos,
+			meq.body = new Block(pos);
+			meq.body.stats.add(new IfElseStat(pos,
 				new BinaryBoolExpr(pos,BinaryOperator.NotEquals,
 					new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField(KString.from("clazz"))),
 					new LVarExpr(pos,meq.params[0])
@@ -279,7 +279,7 @@ public final view RStruct of StructImpl extends StructView {
 			int idx = 0;
 			foreach (ArgType at; this.getTypeInfoArgs()) {
 				Field f = typeinfo_clazz.resolveField(KString.from(nameTypeInfo+"$"+at.name));
-				meq.body.addStatement(new IfElseStat(pos,
+				meq.body.stats.add(new IfElseStat(pos,
 					new BinaryBoolExpr(pos,BinaryOperator.NotEquals,
 						new IFldExpr(pos,new ThisExpr(pos), f),
 						new ContainerAccessExpr(pos, new LVarExpr(pos,meq.params[1]), new ConstIntExpr(idx))
@@ -289,7 +289,7 @@ public final view RStruct of StructImpl extends StructView {
 				));
 				idx++;
 			}
-			meq.body.addStatement(new ReturnStat(pos,new ConstBoolExpr(true)));
+			meq.body.stats.add(new ReturnStat(pos,new ConstBoolExpr(true)));
 		}
 		
 		// create assignableFrom function
@@ -304,8 +304,8 @@ public final view RStruct of StructImpl extends StructView {
 			Method misa = new Method(KString.from("$assignableFrom"), Type.tpBoolean, ACC_PUBLIC);
 			misa.params.add(new FormPar(pos,KString.from("ti"),Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
-			misa.body = new BlockStat(pos);
-			misa.body.addStatement(new IfElseStat(pos,
+			misa.body = new Block(pos);
+			misa.body.stats.add(new IfElseStat(pos,
 				new BooleanNotExpr(pos,
 					new CallExpr(pos,
 						new IFldExpr(pos,new ThisExpr(), typeinfo_clazz.resolveField(KString.from("clazz"))),
@@ -318,7 +318,7 @@ public final view RStruct of StructImpl extends StructView {
 				new ReturnStat(pos,new ConstBoolExpr(false)),
 				null
 			));
-			misa.body.addStatement(new ExprStat(pos,
+			misa.body.stats.add(new ExprStat(pos,
 				new AssignExpr(pos,AssignOperator.Assign,
 					new LVarExpr(pos,misa.params[0]),
 					new CastExpr(pos,typeinfo_clazz.ctype,new LVarExpr(pos,misa.params[0]))
@@ -326,7 +326,7 @@ public final view RStruct of StructImpl extends StructView {
 			));
 			foreach (ArgType at; this.getTypeInfoArgs()) {
 				Field f = typeinfo_clazz.resolveField(KString.from(nameTypeInfo+"$"+at.name));
-				misa.body.addStatement(new IfElseStat(pos,
+				misa.body.stats.add(new IfElseStat(pos,
 					new BooleanNotExpr(pos,
 						new CallExpr(pos,
 							new IFldExpr(pos,new ThisExpr(), f),
@@ -340,7 +340,7 @@ public final view RStruct of StructImpl extends StructView {
 					null
 				));
 			}
-			misa.body.addStatement(new ReturnStat(pos,new ConstBoolExpr(true)));
+			misa.body.stats.add(new ReturnStat(pos,new ConstBoolExpr(true)));
 		}
 		// create $instanceof function
 		// public boolean $instanceof(Object obj) {
@@ -352,8 +352,8 @@ public final view RStruct of StructImpl extends StructView {
 			Method misa = new Method(KString.from("$instanceof"), Type.tpBoolean, ACC_PUBLIC);
 			misa.params.add(new FormPar(pos,KString.from("obj"),Type.tpObject,FormPar.PARAM_NORMAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
-			misa.body = new BlockStat(pos);
-			misa.body.addStatement(new IfElseStat(pos,
+			misa.body = new Block(pos);
+			misa.body.stats.add(new IfElseStat(pos,
 				new BinaryBoolExpr(pos,BinaryOperator.Equals,
 					new LVarExpr(pos,misa.params[0]),
 					new ConstNullExpr()
@@ -361,7 +361,7 @@ public final view RStruct of StructImpl extends StructView {
 				new ReturnStat(pos,new ConstBoolExpr(false)),
 				null
 			));
-			misa.body.addStatement(new IfElseStat(pos,
+			misa.body.stats.add(new IfElseStat(pos,
 				new BooleanNotExpr(pos,
 					new CallExpr(pos,
 						new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField(KString.from("clazz"))),
@@ -372,7 +372,7 @@ public final view RStruct of StructImpl extends StructView {
 				new ReturnStat(pos,new ConstBoolExpr(false)),
 				null
 			));
-			misa.body.addStatement(new ReturnStat(pos,
+			misa.body.stats.add(new ReturnStat(pos,
 				new CallExpr(pos,
 					new ThisExpr(),
 					typeinfo_clazz.resolveMethod(KString.from("$assignableFrom"),Type.tpBoolean,Type.tpTypeInfo),
@@ -605,7 +605,7 @@ public final view RStruct of StructImpl extends StructView {
 		trace(Kiev.debugMultiMethod,"Dispatch tree "+this+"."+vte.name+vte.etype+" is:\n"+mmt);
 
 		if (root.body==null)
-			root.body = new BlockStat(root.pos);
+			root.body = new Block(root.pos);
 		IfElseStat st = makeDispatchStat(root,mmt);
 		if (st != null)
 			root.body.stats.insert(0, st);
@@ -666,11 +666,11 @@ public final view RStruct of StructImpl extends StructView {
 			for (int i=0; i < vte.etype.arity; i++)
 				m.params.append(new FormPar(0,KString.from("arg$"+i),vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
 			members.append(m);
-			m.body = new BlockStat();
+			m.body = new Block();
 			if( m.type.ret() ≡ Type.tpVoid )
-				m.body.addStatement(new ExprStat(0,makeDispatchCall(0, m, def)));
+				m.body.stats.add(new ExprStat(0,makeDispatchCall(0, m, def)));
 			else
-				m.body.addStatement(new ReturnStat(0,makeDispatchCall(0, m, def)));
+				m.body.stats.add(new ReturnStat(0,makeDispatchCall(0, m, def)));
 		}
 		vte.add(m);
 	}
@@ -703,7 +703,7 @@ public final view RStruct of StructImpl extends StructView {
 			bridge.pos = mo.pos;
 			members.append(bridge);
 			trace(Kiev.debugMultiMethod,"Created a bridge method "+this+"."+bridge+" for vtable entry "+vte.name+vte.etype);
-			bridge.body = new BlockStat();
+			bridge.body = new Block();
 			if (bridge.type.ret() ≢ Type.tpVoid)
 				bridge.body.stats.append(new ReturnStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
 			else
@@ -859,7 +859,7 @@ public final view RStruct of StructImpl extends StructView {
 				}
 				if( m.type.ret() ≢ Type.tpVoid ) {
 					if( overwr.type.ret() ≡ Type.tpVoid )
-						br = new BlockStat(0,new ENode[]{
+						br = new Block(0,new ENode[]{
 							new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,null,vae,true)),
 							new ReturnStat(0,new ConstNullExpr())
 						});
@@ -873,7 +873,7 @@ public final view RStruct of StructImpl extends StructView {
 							br = new ReturnStat(0,new CallExpr(0,new ThisExpr(true),overwr,null,vae,true));
 					}
 				} else {
-					br = new BlockStat(0,new ENode[]{
+					br = new Block(0,new ENode[]{
 						new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,null,vae,true)),
 						new ReturnStat(0,null)
 					});
@@ -882,8 +882,8 @@ public final view RStruct of StructImpl extends StructView {
 			}
 			assert (mm.parent == this.getStruct());
 			if (st != null) {
-				BlockStat body = new BlockStat(0);
-				body.addStatement(st);
+				Block body = new Block(0);
+				body.stats.add(st);
 				if (mm.body != null)
 					mm.body.stats.insert(0, body);
 				else

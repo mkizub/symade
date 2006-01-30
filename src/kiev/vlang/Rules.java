@@ -26,7 +26,7 @@ public class RuleMethod extends Method {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in")	Var[]			localvars;
-	@dflow(in="this:in")	BlockStat		body;
+	@dflow(in="this:in")	Block		body;
 	@dflow(in="this:in")	WBCCondition[] 	conditions;
 	}
 
@@ -204,7 +204,7 @@ public class RuleMethod extends Method {
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret() ≡ Type.tpVoid ) {
-					((BlockStat)body).stats.append(new ReturnStat(pos,null));
+					body.stats.append(new ReturnStat(pos,null));
 					body.setAbrupted(true);
 				} else {
 					Kiev.reportError(body,"Return requared");
@@ -396,7 +396,7 @@ public abstract class ASTRuleNode extends ENode {
 
 
 @nodeset
-public final class RuleBlock extends BlockStat {
+public final class RuleBlock extends Block {
 	
 	@dflow(out="node") private static class DFI {
 	@dflow(in="this:in")	ASTRuleNode		node;
@@ -408,13 +408,13 @@ public final class RuleBlock extends BlockStat {
 	@virtual typedef RView = RRuleBlock;
 
 	@nodeimpl
-	public static final class RuleBlockImpl extends BlockStatImpl {
+	public static final class RuleBlockImpl extends BlockImpl {
 		@virtual typedef ImplOf = RuleBlock;
 		@att public ASTRuleNode		node;
 		@att public StringBuffer	fields_buf;
 	}
 	@nodeview
-	public static abstract view RuleBlockView of RuleBlockImpl extends BlockStatView {
+	public static abstract view RuleBlockView of RuleBlockImpl extends BlockView {
 		public ASTRuleNode		node;
 		public StringBuffer		fields_buf;
 	}

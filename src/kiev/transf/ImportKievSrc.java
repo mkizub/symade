@@ -566,7 +566,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				// TODO: check flags for fields
 				Method m = new Method(inv.name.name,Type.tpVoid,inv.flags);
 				m.setInvariantMethod(true);
-				m.body = new BlockStat();
+				m.body = new Block();
 				inv.replaceWithNode(m);
 				m.conditions += inv;
 			}
