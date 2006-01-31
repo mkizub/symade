@@ -1,1 +1,1 @@
-c:\java\jdk1.5.0\bin\java -verify -Xms256M -Xmx256M -Xfuture -Xnoclassgc -classpath classes3 kiev.Main -classpath classes4 -d classes4 -verify -enable vnode -p k2.prj -g %1 %2 %3 %4 %5 %6 %7 %8 %9
+c:\java\jdk1.5.0\bin\java -verify -Xms256M -Xmx256M -Xfuture -Xnoclassgc -classpath classes3 kiev.Main -classpath classes4 -d classes4 -verify -enable vnode -p k2.prj -g %*

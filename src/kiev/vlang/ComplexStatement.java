@@ -128,12 +128,32 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		return st;
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
 		Var@ var;
+		ASTNode@ n;
 	{
 		var @= pattern,
 		var.name.equals(name),
 		node ?= var
+	;
+		n @= new SymbolIterator(this.stats, info.space_prev),
+		{
+			n instanceof VarDecl,
+			((VarDecl)n).var.name.equals(name),
+			node ?= ((VarDecl)n).var
+		;	n instanceof LocalStructDecl,
+			name.equals(((LocalStructDecl)n).clazz.name.short_name),
+			node ?= ((LocalStructDecl)n).clazz
+		;	n instanceof TypeDecl,
+			name.equals(((TypeDecl)n).getName()),
+			node ?= ((TypeDecl)n)
+		}
+	;
+		info.isForwardsAllowed(),
+		n @= new SymbolIterator(this.stats, info.space_prev),
+		n instanceof VarDecl && ((VarDecl)n).var.isForward() && ((VarDecl)n).var.name.equals(name),
+		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
+		n.getType().resolveNameAccessR(node,info,name)
 	}
 	
 	public void resolve(Type tpVoid) {

@@ -1211,8 +1211,6 @@ public final class VarDecl extends ENode implements Named {
 	public void resolve(Type reqType) {
 		var.resolveDecl();
 		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public NodeName getName() { return var.name; }

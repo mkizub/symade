@@ -58,7 +58,7 @@ public class SymbolIterator implements Enumeration<ASTNode> {
 		this.stats = stats;
 		if (element != null && element.pslot == stats.getPSlot()) {
 			assert(stats.indexOf(element) >= 0);
-			last_stat = element;
+			last_stat = element.pprev;
 		} else {
 			if (stats.size() > 0)
 				last_stat = stats[stats.size()-1];
