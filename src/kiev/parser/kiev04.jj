@@ -514,9 +514,6 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < NEW: "new" >
 | < NULL: "null" >
 | < PACKAGE: "package">
-| < PRIVATE: "private" >
-| < PROTECTED: "protected" >
-| < PUBLIC: "public" >
 | < RETURN: "return" >
 | < SHORT: "short" >
 | < STATIC: "static" >
@@ -561,9 +558,6 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < META_UNERASABLE:   "@unerasable"   >
 | < META_VIRTUAL:      "@virtual"      >
 | < META_PACKED:       "@packed"       >
-| < META_PUBLIC:       "@public"       >
-| < META_PROTECTED:    "@protected"    >
-| < META_PRIVATE:      "@private"      >
 | < META_STATIC:       "@static"       >
 | < META_ABSTRACT:     "@abstract"     >
 | < META_FINAL:        "@final"        >
@@ -577,9 +571,14 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 
 TOKEN : /* RESERVED WORDS AND LITERALS */
 {
-  < ACCESS: "access:" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_ACCESS
-| < META_ACCESS1: "@access(" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_ACCESS
-| < META_ACCESS2: "@access:" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_ACCESS
+  < ACCESS:         "access"     > { if(!parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_ACCESS
+| < META_ACCESS1:   "@access"    > : IN_ACCESS
+| < META_PUBLIC:    "@public"    > : IN_ACCESS
+| < PUBLIC:         "public"     > : IN_ACCESS
+| < META_PROTECTED: "@protected" > : IN_ACCESS
+| < PROTECTED:      "protected"  > : IN_ACCESS
+| < META_PRIVATE:   "@private"   > : IN_ACCESS
+| < PRIVATE:        "private"    > : IN_ACCESS
 }
 
 <IN_ACCESS>
@@ -590,6 +589,8 @@ TOKEN :
  | < READ_WRITE: "rw" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
  | < NO_READ_WRITE: "n" | "no" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
  | < COMMA1: "," >
+ | < COLON1: ":" >
+ | < OPEN_ACCESS: "(" >
  | < CLOSE_ACCESS: ")" > : DEFAULT
 }
 <IN_ACCESS>
@@ -898,8 +899,8 @@ ASTModifiers Modifiers() :
 {	{ ASTModifiers n = new ASTModifiers(); }
 	(
 		n.annotations	+= Annotation()
-	|	n				+= SpecialAnnotation()
-	|	n.acc			 = Access()			// TODO: remove, use @access and views
+	|	SpecialAnnotation(n)
+	|	Access(n)			// TODO: remove, use @access and views
 	)*
 	{ return n; }
 }
@@ -1242,43 +1243,36 @@ TypeDef ArgumentDeclaration() :
 	{ return arg; }
 }
 
-int Modifier() :
-{}
-{
-	(
-	  "public"			{ return AccessFlags.ACC_PUBLIC;		}
-	| "protected"		{ return AccessFlags.ACC_PROTECTED;	}
-	| "private"			{ return AccessFlags.ACC_PRIVATE;		}
-	| "static"			{ return AccessFlags.ACC_STATIC;		}
-	| "abstract"		{ return AccessFlags.ACC_ABSTRACT;		}
-	| "final"			{ return AccessFlags.ACC_FINAL;			}
-	| "native"			{ return AccessFlags.ACC_NATIVE;		}
-	| "synchronized"	{ return AccessFlags.ACC_SYNCHRONIZED;	}
-	| "transient"		{ return AccessFlags.ACC_TRANSIENT;	}
-	| "volatile"		{ return AccessFlags.ACC_VOLATILE;		}
-	)
-}
-
-Access Access() :
+void Access(ASTModifiers modifiers) :
 { int acc; 	int accflags = 0; int offset = 6; }
 {
-	LOOKAHEAD({Kiev.enabled(Ext.Access)})
 	(
-		("access:" | "@access:")
+		"access"
+	|	"@access"
+	|	"@public"		{ modifiers += MetaPublic; }
+	|	"public"		{ modifiers += MetaPublic; }
+	|	"@protected"	{ modifiers += MetaProtected; }
+	|	"protected"		{ modifiers += MetaProtected; }
+	|	"@private"		{ modifiers += MetaPrivate; }
+	|	"private"		{ modifiers += MetaPrivate; }
+	)
+	(
+		<COLON1> // ":"
 		acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		]]]
-	|	"@access("
+		{ modifiers.acc = new Access(accflags); }
+	|	<OPEN_ACCESS> // "("
 		acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		]]]
 		<CLOSE_ACCESS> // ")"
-	)
-	{ return new Access(accflags); }
+		{ modifiers.acc = new Access(accflags); }
+	)?
 }
 
 int AccessSpec() :
@@ -1290,48 +1284,39 @@ int AccessSpec() :
 |	<NO_READ_WRITE>	{ return 0; }
 }
 
-MetaSpecial SpecialAnnotation() :
+void SpecialAnnotation(ASTModifiers modifiers) :
 { MetaPacked mp; MetaThrows mt; TypeNameRef thr; }
 {
-	  "@singleton"		{ return MetaSingleton; }
+	  "@singleton"		{ modifiers += MetaSingleton; }
 
-	| "forward"			{ return MetaForward; }
-	| "@forward"		{ return MetaForward; }
+	| "forward"			{ modifiers += MetaForward; }
+	| "@forward"		{ modifiers += MetaForward; }
 
-	| "@unerasable"		{ return MetaUnerasable; }
+	| "@unerasable"		{ modifiers += MetaUnerasable; }
 	
-	| "@virtual"		{ return new MetaVirtual(); }
-	| "virtual"			{ return new MetaVirtual(); }
+	| "@virtual"		{ modifiers += new MetaVirtual(); }
+	| "virtual"			{ modifiers += new MetaVirtual(); }
 	
-	| "public"			{ return MetaPublic; }
-	| "@public"			{ return MetaPublic; }
-
-	| "protected"		{ return MetaProtected; }
-	| "@protected"		{ return MetaProtected; }
-
-	| "private"			{ return MetaPrivate; }
-	| "@private"		{ return MetaPrivate; }
+	| "static"			{ modifiers += MetaStatic; }
+	| "@static"			{ modifiers += MetaStatic; }
 	
-	| "static"			{ return MetaStatic; }
-	| "@static"			{ return MetaStatic; }
-	
-	| "abstract"		{ return MetaAbstract; }
-	| "@abstract"		{ return MetaAbstract; }
+	| "abstract"		{ modifiers += MetaAbstract; }
+	| "@abstract"		{ modifiers += MetaAbstract; }
 
-	| "final"			{ return MetaFinal; }
-	| "@final"			{ return MetaFinal; }
+	| "final"			{ modifiers += MetaFinal; }
+	| "@final"			{ modifiers += MetaFinal; }
 	
-	| "native"			{ return MetaNative; }
-	| "@native"			{ return MetaNative; }
+	| "native"			{ modifiers += MetaNative; }
+	| "@native"			{ modifiers += MetaNative; }
 	
-	| "synchronized"	{ return MetaSynchronized; }
-	| "@synchronized"	{ return MetaSynchronized; }
+	| "synchronized"	{ modifiers += MetaSynchronized; }
+	| "@synchronized"	{ modifiers += MetaSynchronized; }
 
-	| "transient"		{ return MetaTransient; }
-	| "@transient"		{ return MetaTransient; }
+	| "transient"		{ modifiers += MetaTransient; }
+	| "@transient"		{ modifiers += MetaTransient; }
 
-	| "volatile"		{ return MetaVolatile; }
-	| "@volatile"		{ return MetaVolatile; }
+	| "volatile"		{ modifiers += MetaVolatile; }
+	| "@volatile"		{ modifiers += MetaVolatile; }
 	
 	| ( "@packed" | "packed")
 		{ mp = new MetaPacked(); }
@@ -1349,7 +1334,7 @@ MetaSpecial SpecialAnnotation() :
 			","		mp.offset = IntConstExpression()
 			]
 		)?
-		{ return mp; }
+		{ modifiers += mp; }
 
 	| "@throws"
 		{ mt = new MetaThrows(); }
@@ -1362,7 +1347,7 @@ MetaSpecial SpecialAnnotation() :
 			( "," thr = TypeQName() { mt.add(thr); } )*
 			 ["}"] ")"
 		)
-		{ return mt; }
+		{ modifiers += mt; }
 }
 
 NameRef KeywordAsName() :

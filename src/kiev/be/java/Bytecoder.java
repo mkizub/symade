@@ -305,7 +305,7 @@ public class Bytecoder implements JConstants {
 			JStructView[] inner = new JStructView[elen];
 			JStructView[] outer = new JStructView[elen];
 			KString[] inner_name = new KString[elen];
-			short[] access = new short[elen];
+			short[] acc = new short[elen];
 			for(int i=0; i < elen; i++) {
 				try {
 					ClazzName cn;
@@ -345,7 +345,7 @@ public class Bytecoder implements JConstants {
 					} else {
 						inner[i] = null;
 					}
-					access[i] = (short)ica.cp_inner_flags[i];
+					acc[i] = (short)ica.cp_inner_flags[i];
 				} catch(Exception e ) {
 					Kiev.reportError(e);
 				}
@@ -353,7 +353,7 @@ public class Bytecoder implements JConstants {
 			a = new InnerClassesAttr();
 			((InnerClassesAttr)a).inner = inner;
 			((InnerClassesAttr)a).outer = outer;
-			((InnerClassesAttr)a).acc = access;
+			((InnerClassesAttr)a).acc = acc;
 		}
 		else if( name.equals(attrConstantValue) ) {
 			kiev.bytecode.ConstantValueAttribute ca = (kiev.bytecode.ConstantValueAttribute)bca;
