@@ -18,7 +18,7 @@ public class Attr implements JConstants {
 	/** Name of the attribute */
 	public KString		name;
 	@virtual
-	public abstract virtual boolean isKiev;
+	public abstract boolean isKiev;
 
 	@getter public boolean get$isKiev() { return false; }
 	@setter public void set$isKiev(boolean b) { return; }

@@ -247,7 +247,7 @@ public class MultiExpr extends UnresExpr {
 	}
 	@nodeview
 	public static final view MultiExprView of MultiExprImpl extends UnresExprView {
-		public access:ro	NArr<ENode>			exprs;
+		public:ro	NArr<ENode>			exprs;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -325,7 +325,7 @@ public class UnresCallExpr extends UnresExpr {
 		public				ENode			obj;
 		public				Named			func;
 		public				CallType		mt;
-		public access:ro	NArr<ENode>		args;
+		public:ro	NArr<ENode>		args;
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }

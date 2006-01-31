@@ -22,7 +22,7 @@ package kiev.stdlib;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -327,7 +327,7 @@ public class InvariantFailedException extends AssertionFailedException {
  */
 public interface AssertionHandler {
 	@virtual
-	public virtual abstract boolean	enabled;
+	public abstract boolean	enabled;
 	public void failedAssertion(RuntimeException e);
 }
 
@@ -344,8 +344,7 @@ public class TTYAssertionHandler implements AssertionHandler {
 	public static java.io.PrintStream		err = System.err;
 	public static java.io.InputStream		in = System.in;
 
-	@virtual
-	public virtual boolean enabled = true;
+	@virtual public boolean enabled = true;
 	
 	@getter public boolean get$enabled() { return enabled; }
 	@setter public void set$enabled(boolean e) { enabled = e; }
@@ -384,13 +383,11 @@ public class TTYAssertionHandler implements AssertionHandler {
 	
 	public static boolean colored = false;
 	
-	@virtual
-	private virtual abstract String b;
+	@virtual private abstract String b;
 	@setter private void set$b(String s){}
 	@getter private String get$b() { return (colored ? "\033[01;36m" : ""); }
 
-	@virtual
-	private virtual abstract String m;
+	@virtual private abstract String m;
 	@setter private void set$m(String s){}
 	@getter private String get$m() { return (colored ? "\033[0m" : ""); }
 }

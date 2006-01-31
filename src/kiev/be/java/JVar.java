@@ -21,10 +21,10 @@ public final view JVar of VarImpl extends JLvalDNode {
 	
 	public final Var getVar() { return (Var)this.getNode(); }
 		
-	public access:ro	KString				name;
-	public access:ro	Type				vtype;
-	public access:ro	JType				jtype;
-	public access:ro	JENode			init;
+	public:ro	KString				name;
+	public:ro	Type				vtype;
+	public:ro	JType				jtype;
+	public:ro	JENode			init;
 	public				int					bcpos;
 
 	@getter public final Type get$type() {

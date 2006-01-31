@@ -731,9 +731,9 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 	final boolean is_root;
 	
 	// a socket of the parent node this data flow is plugged in
-	access:no,no,ro,rw DFSocket			parent_dfs;
+	@access:no,no,ro,rw DFSocket			parent_dfs;
 	// DataFlowInfo of the parent node this data flow is plugged in
-	access:no,no,ro,rw DataFlowInfo		parent_dfi;
+	@access:no,no,ro,rw DataFlowInfo		parent_dfi;
 
 	final DFFunc func_in;
 	final DFFunc func_out;

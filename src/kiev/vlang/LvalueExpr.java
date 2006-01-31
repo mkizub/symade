@@ -875,7 +875,7 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	@nodeview
 	public static final view OuterThisAccessExprView of OuterThisAccessExprImpl extends AccessExprView {
 		public				Struct			outer;
-		public access:ro	NArr<Field>		outer_refs;
+		public:ro	NArr<Field>		outer_refs;
 
 		public Operator getOp() { return BinaryOperator.Access; }
 	}

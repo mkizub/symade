@@ -438,7 +438,7 @@ public final view RStruct of StructImpl extends StructView {
 	static final class VTableEntry {
 		KString      name;
 		CallType     etype;
-		access:no,ro,ro,rw
+		protected:no,ro,ro,rw
 		List<Method> methods = List.Nil;
 		VTableEntry  overloader;
 		VTableEntry(KString name, CallType etype) {

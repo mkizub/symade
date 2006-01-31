@@ -31,7 +31,7 @@ public class TypeClosureRef extends TypeRef {
 	}
 	@nodeview
 	public static final view TypeClosureRefView of TypeClosureRefImpl extends TypeRefView {
-		public access:ro	NArr<TypeRef>			types;
+		public:ro	NArr<TypeRef>			types;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }

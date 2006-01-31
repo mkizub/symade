@@ -120,8 +120,8 @@ public abstract view JBoolExpr of BoolExprImpl extends JENode implements IBoolEx
 
 @nodeview
 public final view JBinaryBooleanOrExpr of BinaryBooleanOrExprImpl extends JBoolExpr {
-	public access:ro JENode		expr1;
-	public access:ro JENode		expr2;
+	public:ro JENode		expr1;
+	public:ro JENode		expr2;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
@@ -142,8 +142,8 @@ public final view JBinaryBooleanOrExpr of BinaryBooleanOrExprImpl extends JBoolE
 
 @nodeview
 public final view JBinaryBooleanAndExpr of BinaryBooleanAndExprImpl extends JBoolExpr {
-	public access:ro JENode		expr1;
-	public access:ro JENode		expr2;
+	public:ro JENode		expr1;
+	public:ro JENode		expr2;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
@@ -164,9 +164,9 @@ public final view JBinaryBooleanAndExpr of BinaryBooleanAndExprImpl extends JBoo
 
 @nodeview
 public final view JBinaryBoolExpr of BinaryBoolExprImpl extends JBoolExpr {
-	public access:ro BinaryOperator		op;
-	public access:ro JENode			expr1;
-	public access:ro JENode			expr2;
+	public:ro BinaryOperator		op;
+	public:ro JENode			expr1;
+	public:ro JENode			expr2;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr (if true): "+this);
@@ -273,8 +273,8 @@ public final view JBinaryBoolExpr of BinaryBoolExprImpl extends JBoolExpr {
 
 @nodeview
 public final view JInstanceofExpr of InstanceofExprImpl extends JBoolExpr {
-	public access:ro JENode		expr;
-	public access:ro Type			type;
+	public:ro JENode		expr;
+	public:ro Type			type;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating InstanceofExpr: "+this);
@@ -295,7 +295,7 @@ public final view JInstanceofExpr of InstanceofExprImpl extends JBoolExpr {
 
 @nodeview
 public final view JBooleanNotExpr of BooleanNotExprImpl extends JBoolExpr {
-	public access:ro JENode		expr;
+	public:ro JENode		expr;
 	
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanNotExpr (if true): "+this);

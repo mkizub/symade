@@ -21,8 +21,8 @@ public final class TVarBld implements TVSet {
 
 	public static final TVarBld emptySet = new TVarBld().close();
 
-	public access:ro,rw,ro,rw	TVar[]		tvars;
-	public access:ro,ro,ro,rw	TArg[]		appls;
+	public:ro,rw,ro,rw	TVar[]		tvars;
+	public:ro,ro,ro,rw	TArg[]		appls;
 	private						boolean		closed;
 
 	public TVarBld() {

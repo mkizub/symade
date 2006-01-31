@@ -22,8 +22,8 @@ import syntax kiev.Syntax;
 public abstract class AType implements StdTypes, TVSet {
 	
 	public final					TypeProvider		meta_type;
-	public access:ro,ro,ro,rw		TVar[]				tvars;
-	public access:ro,ro,ro,rw		TArg[]				appls;
+	public:ro,ro,ro,rw		TVar[]				tvars;
+	public:ro,ro,ro,rw		TArg[]				appls;
 	public							int					flags;
 	private							int					version;
 	

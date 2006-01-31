@@ -40,8 +40,8 @@ public class TypeCallRef extends TypeRef {
 	}
 	@nodeview
 	public static final view TypeCallRefView of TypeCallRefImpl extends TypeRefView {
-		public access:ro	NArr<TypeDef>			targs;
-		public access:ro	NArr<TypeRef>			args;
+		public:ro	NArr<TypeDef>			targs;
+		public:ro	NArr<TypeRef>			args;
 		public				TypeRef					ret;
 	}
 

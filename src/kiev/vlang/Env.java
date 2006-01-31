@@ -134,18 +134,18 @@ public class Env extends Struct {
 		return newStruct(name,false);
     }
 
-	public static Struct newStruct(ClazzName name,Struct outer,int access) {
-		return newStruct(name,outer,access,false);
+	public static Struct newStruct(ClazzName name,Struct outer,int acces) {
+		return newStruct(name,outer,acces,false);
 	}
 
-	public static Struct newStruct(ClazzName name,Struct outer,int access, boolean cleanup) {
+	public static Struct newStruct(ClazzName name,Struct outer,int acces, boolean cleanup) {
 		Struct bcl = classHash.get(name.name);
 		if( bcl != null ) {
 			if !(bcl instanceof Struct)
 				throw new CompilerException("Cannot create struct "+name);
 			Struct cl = (Struct)bcl;
 			if( cleanup ) {
-				cl.flags = access;
+				cl.flags = acces;
 				cl.package_clazz = outer;
 				cl.typeinfo_clazz = null;
 				cl.view_of = null;
@@ -162,7 +162,7 @@ public class Env extends Struct {
 			return cl;
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated bytecode name "+name.bytecode_name+" of "+name.name);
-		Struct cl = new Struct(name,outer,access);
+		Struct cl = new Struct(name,outer,acces);
 		classHash.put(cl.name.name,cl);
 		classHashDbg.put(cl.name.bytecode_name,cl);
 		if( outer == null ) {
@@ -176,8 +176,8 @@ public class Env extends Struct {
 		return cl;
 	}
 
-	public static Struct newInterface(ClazzName name,Struct outer,int access) {
-		Struct cl = newStruct(name,outer,access);
+	public static Struct newInterface(ClazzName name,Struct outer,int acces) {
+		Struct cl = newStruct(name,outer,acces);
 		cl.setInterface(true);
 		return cl;
 	}
@@ -228,7 +228,6 @@ public class Env extends Struct {
 	public static void InitializeEnv(String path) {
 		if( path == null ) path = System.getProperty("java.class.path");
 		stdClassLoader = new kiev.bytecode.StandardClassLoader(path);
-//		stdClassLoader.addHandler(new kiev.bytecode.KievAttributeHandler());
 
 		if( Kiev.project_file != null && Kiev.project_file.exists() ) {
 			try {

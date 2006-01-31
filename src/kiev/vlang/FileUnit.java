@@ -45,10 +45,10 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public static final view FileUnitView of FileUnitImpl extends DNodeView {
 		public				KString					filename;
 		public				TypeNameRef				pkg;
-		public access:ro	NArr<DNode>				syntax;
-		public access:ro	NArr<DNode>				members;
-		public access:ro	NArr<PrescannedBody>	bodies;
-		public access:ro	boolean[]				disabled_extensions;
+		public:ro	NArr<DNode>				syntax;
+		public:ro	NArr<DNode>				members;
+		public:ro	NArr<PrescannedBody>	bodies;
+		public:ro	boolean[]				disabled_extensions;
 		public				boolean					scanned_for_interface_only;
 
 		@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this.getNode(); }

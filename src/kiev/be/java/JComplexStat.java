@@ -24,10 +24,10 @@ import kiev.vlang.WithStat.WithStatImpl;
 
 @nodeview
 public final view JCaseLabel of CaseLabelImpl extends JENode {
-	public access:ro	JENode			val;
-	public access:ro	Type				type;
-	public access:ro	JArr<JVar>		pattern;
-	public access:ro	JArr<JENode>	stats;
+	public:ro	JENode			val;
+	public:ro	Type				type;
+	public:ro	JArr<JVar>		pattern;
+	public:ro	JArr<JENode>	stats;
 	public				CodeLabel			case_label;
 
 	public CodeLabel getLabel(Code code) {
@@ -74,15 +74,15 @@ public final view JCaseLabel of CaseLabelImpl extends JENode {
 
 @nodeview
 public view JSwitchStat of SwitchStatImpl extends JENode implements BreakTarget {
-	public access:ro	int						mode;
-	public access:ro	JENode				sel;
-	public access:ro	JArr<JCaseLabel>	cases;
-	public access:ro	JLVarExpr			tmpvar;
-	public access:ro	JCaseLabel			defCase;
-	public access:ro	JField				typehash; // needed for re-resolving
+	public:ro	int					mode;
+	public:ro	JENode				sel;
+	public:ro	JArr<JCaseLabel>	cases;
+	public:ro	JLVarExpr			tmpvar;
+	public:ro	JCaseLabel			defCase;
+	public:ro	JField				typehash; // needed for re-resolving
 	public				JLabel				lblcnt;
 	public				JLabel				lblbrk;
-	public				CodeSwitch				cosw;
+	public				CodeSwitch			cosw;
 
 	public JLabel getCntLabel() { return lblcnt; }
 	public JLabel getBrkLabel() { return lblbrk; }
@@ -183,8 +183,8 @@ public view JSwitchStat of SwitchStatImpl extends JENode implements BreakTarget 
 
 @nodeview
 public view JCatchInfo of CatchInfoImpl extends JENode {
-	public access:ro	JVar		arg;
-	public access:ro	JENode		body;
+	public:ro	JVar			arg;
+	public:ro	JENode			body;
 	public				CodeLabel		handler;
 	public				CodeCatchInfo	code_catcher;
 
@@ -217,7 +217,7 @@ public view JCatchInfo of CatchInfoImpl extends JENode {
 
 @nodeview
 public view JFinallyInfo of FinallyInfoImpl extends JCatchInfo {
-	public access:ro	JVar	ret_arg;
+	public:ro	JVar		ret_arg;
 	public				CodeLabel	subr_label;
 
 	public void generate(Code code, Type reqType) {
@@ -247,10 +247,10 @@ public view JFinallyInfo of FinallyInfoImpl extends JCatchInfo {
 
 @nodeview
 public final view JTryStat of TryStatImpl extends JENode {
-	public access:ro	JENode				body;
-	public access:ro	JArr<JCatchInfo>	catchers;
-	public access:ro	JFinallyInfo		finally_catcher;
-	public				CodeLabel				end_label;
+	public:ro	JENode				body;
+	public:ro	JArr<JCatchInfo>	catchers;
+	public:ro	JFinallyInfo		finally_catcher;
+	public				CodeLabel			end_label;
 
 	public void generate(Code code, Type reqType) {
 		// Generate labels for handlers
@@ -317,9 +317,9 @@ public final view JTryStat of TryStatImpl extends JENode {
 
 @nodeview
 public final view JSynchronizedStat of SynchronizedStatImpl extends JENode {
-	public access:ro	JENode		expr;
-	public access:ro	JVar		expr_var;
-	public access:ro	JENode		body;
+	public:ro	JENode			expr;
+	public:ro	JVar			expr_var;
+	public:ro	JENode			body;
 	public				CodeLabel		handler;
 	public				CodeCatchInfo	code_catcher;
 	public				CodeLabel		end_label;
@@ -368,10 +368,10 @@ public final view JSynchronizedStat of SynchronizedStatImpl extends JENode {
 
 @nodeview
 public final view JWithStat of WithStatImpl extends JENode {
-	public access:ro	JENode		expr;
-	public access:ro	JENode		body;
-	public access:ro	JLvalDNode	var_or_field;
-	public				CodeLabel		end_label;
+	public:ro	JENode		expr;
+	public:ro	JENode		body;
+	public:ro	JLvalDNode	var_or_field;
+	public				CodeLabel	end_label;
 
 	public void generate(Code code, Type reqType) {
 		end_label = code.newLabel();

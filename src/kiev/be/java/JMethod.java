@@ -37,15 +37,15 @@ public final view JMethod of MethodImpl extends JDNode {
 	}
 
 
-	public access:ro	Access						acc;
-	public access:ro	KString						name;
-	public access:ro	JArr<JVar>				params;
-	public access:ro	JBlock				body;
+	public:ro	Access						acc;
+	public:ro	KString						name;
+	public:ro	JArr<JVar>				params;
+	public:ro	JBlock				body;
 	public				Attr[]						attrs;
-	public access:ro	JArr<JWBCCondition>		conditions;
-	public access:ro	JArr<JField>			violated_fields;
-	public access:ro	MetaValue					annotation_default;
-	public access:ro	boolean						inlined_by_dispatcher;
+	public:ro	JArr<JWBCCondition>		conditions;
+	public:ro	JArr<JField>			violated_fields;
+	public:ro	MetaValue					annotation_default;
+	public:ro	boolean						inlined_by_dispatcher;
 
 	@getter public final CallType				get$type()		{ return this.$view.type; }
 	@getter public final CallType				get$dtype()		{ return this.$view.dtype; }
@@ -190,7 +190,7 @@ public final view JMethod of MethodImpl extends JDNode {
 
 @nodeview
 public final view JInitializer of InitializerImpl extends JDNode {
-	public access:ro	JBlock		body;
+	public:ro	JBlock		body;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Initializer");
@@ -201,10 +201,10 @@ public final view JInitializer of InitializerImpl extends JDNode {
 
 @nodeview
 public final final view JWBCCondition of WBCConditionImpl extends JDNode {
-	public access:ro	WBCType				cond;
-	public access:ro	KString				name;
-	public access:ro	JENode			body;
-	public access:ro	JMethod			definer;
+	public:ro	WBCType				cond;
+	public:ro	KString				name;
+	public:ro	JENode			body;
+	public:ro	JMethod			definer;
 	public				CodeAttr			code_attr;
 
 	public void generate(ConstPool constPool, Type reqType) {

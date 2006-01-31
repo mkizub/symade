@@ -21,10 +21,10 @@ import kiev.vlang.NewClosure.NewClosureImpl;
 
 @nodeview
 public final view JNewExpr of NewExprImpl extends JENode {
-	public access:ro	JArr<JENode>	args;
-	public access:ro	JENode			outer;
+	public:ro	JArr<JENode>	args;
+	public:ro	JENode			outer;
 	public				JENode			temp_expr;
-	public access:ro	JMethod			func;
+	public:ro	JMethod			func;
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
@@ -90,10 +90,10 @@ public final view JNewExpr of NewExprImpl extends JENode {
 
 @nodeview
 public final view JNewArrayExpr of NewArrayExprImpl extends JENode {
-	public access:ro	Type				type;
-	public access:ro	JArr<JENode>		args;
-	public access:ro	int					dim;
-	public access:ro	Type				arrtype;
+	public:ro	Type				type;
+	public:ro	JArr<JENode>		args;
+	public:ro	int					dim;
+	public:ro	Type				arrtype;
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewArrayExpr: "+this);
@@ -115,11 +115,11 @@ public final view JNewArrayExpr of NewArrayExprImpl extends JENode {
 
 @nodeview
 public final view JNewInitializedArrayExpr of NewInitializedArrayExprImpl extends JENode {
-	public access:ro	Type				type;
-	public access:ro	JArr<JENode>	args;
-	public access:ro	int					dim;
-	public access:ro	int[]				dims;
-	public access:ro	Type				arrtype;
+	public:ro	Type				type;
+	public:ro	JArr<JENode>	args;
+	public:ro	int					dim;
+	public:ro	int[]				dims;
+	public:ro	Type				arrtype;
 
 	@getter public final int			get$dim()				{ return this.$view.dims.length; }
 	
@@ -148,7 +148,7 @@ public final view JNewInitializedArrayExpr of NewInitializedArrayExprImpl extend
 
 @nodeview
 public final view JNewClosure of NewClosureImpl extends JENode {
-	public access:ro	JStruct		clazz;
+	public:ro	JStruct		clazz;
 
 	@getter public final CallType	get$type()	{ return (CallType)this.getNode().getType(); }
 	

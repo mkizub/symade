@@ -38,7 +38,7 @@ public class ASTExpression extends ENode {
 	}
 	@nodeview
 	public static final view ASTExpressionView of ASTExpressionImpl extends ENodeView {
-		public access:ro	NArr<ENode>			nodes;
+		public:ro	NArr<ENode>			nodes;
 	
 		public int		getPriority() { return 256; }
 

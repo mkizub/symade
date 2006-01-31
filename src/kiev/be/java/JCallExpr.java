@@ -19,11 +19,11 @@ import kiev.vlang.ClosureCallExpr.ClosureCallExprImpl;
 
 @nodeview
 public final view JCallExpr of CallExprImpl extends JENode {
-	public access:ro JENode				obj;
-	public access:ro JMethod			func;
-	public access:ro CallType			mt;
-	public access:ro JArr<JENode>		args;
-	public           JENode				temp_expr;
+	public:ro	JENode			obj;
+	public:ro	JMethod			func;
+	public:ro	CallType		mt;
+	public:ro	JArr<JENode>	args;
+	public				JENode			temp_expr;
 
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
@@ -284,9 +284,9 @@ public final view JCallExpr of CallExprImpl extends JENode {
 
 @nodeview
 public final view JClosureCallExpr of ClosureCallExprImpl extends JENode {
-	public access:ro JENode			expr;
-	public access:ro JArr<JENode>	args;
-	public access:ro Boolean		is_a_call;
+	public:ro JENode		expr;
+	public:ro JArr<JENode>	args;
+	public:ro Boolean		is_a_call;
 	
 	@getter public final CallType		get$ctype()				{ return (CallType)this.$view.expr.getType(); }
 	

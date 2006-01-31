@@ -55,13 +55,13 @@ public abstract view JLvalueExpr of LvalueExprImpl extends JENode {
 
 @nodeview
 public abstract view JAccessExpr of AccessExprImpl extends JLvalueExpr {
-	public access:ro	JENode	obj;
-	public access:ro	KString		ident;
+	public:ro	JENode	obj;
+	public:ro	KString		ident;
 }
 
 @nodeview
 public final view JIFldExpr of IFldExprImpl extends JAccessExpr {
-	public access:ro	JField		var;
+	public:ro	JField		var;
 
 	public boolean	isConstantExpr() { return var.isConstantExpr(); }
 	public Object	getConstValue() { return var.getConstValue(); }
@@ -141,8 +141,8 @@ public final view JIFldExpr of IFldExprImpl extends JAccessExpr {
 
 @nodeview
 public final view JContainerAccessExpr of ContainerAccessExprImpl extends JLvalueExpr {
-	public access:ro	JENode		obj;
-	public access:ro	JENode		index;
+	public:ro	JENode		obj;
+	public:ro	JENode		index;
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load only: "+this);
@@ -313,8 +313,8 @@ public final view JThisExpr of ThisExprImpl extends JLvalueExpr {
 
 @nodeview
 public final view JLVarExpr of LVarExprImpl extends JLvalueExpr {
-	public access:ro	KString		ident;
-	public access:ro	JVar	var;
+	public:ro	KString		ident;
+	public:ro	JVar	var;
 
 	public JField resolveProxyVar(Code code) {
 		JField proxy_var = code.clazz.resolveField(this.ident,false);
@@ -474,7 +474,7 @@ public final view JLVarExpr of LVarExprImpl extends JLvalueExpr {
 
 @nodeview
 public final view JSFldExpr of SFldExprImpl extends JAccessExpr {
-	public access:ro	JField		var;
+	public:ro	JField		var;
 	
 	public boolean	isConstantExpr() { return var.isConstantExpr(); }
 	public Object	getConstValue() { return var.getConstValue(); }
@@ -516,8 +516,8 @@ public final view JSFldExpr of SFldExprImpl extends JAccessExpr {
 
 @nodeview
 public final view JOuterThisAccessExpr of OuterThisAccessExprImpl extends JAccessExpr {
-	public access:ro	Struct			outer;
-	public access:ro	NArr<Field>		outer_refs;
+	public:ro	Struct			outer;
+	public:ro	NArr<Field>		outer_refs;
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load only: "+this);
@@ -561,7 +561,7 @@ public final view JOuterThisAccessExpr of OuterThisAccessExprImpl extends JAcces
 
 @nodeview
 public final view JUnwrapExpr of UnwrapExprImpl extends JLvalueExpr {
-	public access:ro	JENode		expr;
+	public:ro	JENode		expr;
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - load only: "+this);

@@ -25,10 +25,15 @@ public final class PVar<A>
 {
 
 	@virtual
-	forward public virtual							A		$var;
-	        private 								PVar<A>	$pvar := null;
+	@forward
+	public  A			$var;
+	
+	private PVar<A>		$pvar;
+	
 	@virtual
-	        public virtual access:ro abstract 	boolean		$is_bound;
+	@abstract
+	@access:ro
+	public  boolean		$is_bound;
 
 	public PVar() {}
 

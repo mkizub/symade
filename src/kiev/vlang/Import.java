@@ -47,7 +47,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		public				NameRef				name;
 		public				ImportMode			mode;
 		public				boolean				star;
-		public access:ro	NArr<TypeRef>		args;
+		public:ro	NArr<TypeRef>		args;
 		public				boolean				of_method;
 		public				DNode				resolved;
 		

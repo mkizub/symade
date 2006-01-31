@@ -411,8 +411,8 @@ public abstract class Operator implements Constants {
     public			int			mode;
     public			boolean		is_standard;
     public			OpTypes[]	types;
-	@virtual
-    public virtual abstract KString	smode;
+	@virtual @abstract
+    public			KString		smode;
 
 	protected Operator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
 		priority = pr;

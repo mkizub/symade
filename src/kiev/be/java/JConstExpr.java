@@ -26,7 +26,7 @@ import kiev.vlang.ConstExpr.ConstExprImpl;
 
 @nodeview
 public final view JConstBoolExpr of ConstBoolExprImpl extends JConstExpr implements IBoolExpr {
-	public access:ro boolean	value;
+	public:ro boolean	value;
 
 	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
 	
@@ -62,49 +62,49 @@ public final view JConstNullExpr of ConstNullExprImpl extends JConstExpr {
 
 @nodeview
 public final view JConstByteExpr of ConstByteExprImpl extends JConstExpr {
-	public access:ro byte		value;
+	public:ro byte		value;
 	public Object	getConstValue()		{ return Byte.valueOf(value); }
 }
 
 @nodeview
 public final view JConstShortExpr of ConstShortExprImpl extends JConstExpr {
-	public access:ro short		value;
+	public:ro short		value;
 	public Object	getConstValue()		{ return Short.valueOf(value); }
 }
 
 @nodeview
 public final view JConstIntExpr of ConstIntExprImpl extends JConstExpr {
-	public access:ro int		value;
+	public:ro int		value;
 	public Object	getConstValue()		{ return Integer.valueOf(value); }
 }
 
 @nodeview
 public final view JConstLongExpr of ConstLongExprImpl extends JConstExpr {
-	public access:ro long		value;
+	public:ro long		value;
 	public Object	getConstValue()		{ return Long.valueOf(value); }
 }
 	
 @nodeview
 public final view JConstCharExpr of ConstCharExprImpl extends JConstExpr {
-	public access:ro char		value;
+	public:ro char		value;
 	public Object	getConstValue()		{ return Character.valueOf(value); }
 }
 
 @nodeview
 public final view JConstFloatExpr of ConstFloatExprImpl extends JConstExpr {
-	public access:ro float		value;
+	public:ro float		value;
 	public Object	getConstValue()		{ return Float.valueOf(value); }
 }
 
 @nodeview
 public final view JConstDoubleExpr of ConstDoubleExprImpl extends JConstExpr {
-	public access:ro double		value;
+	public:ro double		value;
 	public Object	getConstValue()		{ return Double.valueOf(value); }
 }
 
 @nodeview
 public final view JConstStringExpr of ConstStringExprImpl extends JConstExpr {
-	public access:ro KString	value;
+	public:ro KString	value;
 	public Object	getConstValue()		{ return value; }
 }
 

@@ -59,9 +59,10 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		     public boolean				inlined_by_dispatcher;
 		     public boolean				invalid_types;
 
-		public virtual						CallType		type;
-		public virtual						CallType		dtype;
-		public virtual abstract access:ro	CallType		etype;
+		@virtual public					CallType		type;
+		@virtual public					CallType		dtype;
+		@abstract
+		@virtual public:ro				CallType		etype;
 
 		public void callbackChildChanged(AttrSlot attr) {
 			if (parent != null && pslot != null) {
@@ -240,19 +241,19 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public				Access				acc;
 		public				NodeName			name;
 		public				CallTypeProvider	meta_type;
-		public access:ro	NArr<TypeDef>		targs;
+		public:ro	NArr<TypeDef>		targs;
 		public				TypeRef				type_ret;
 		public				TypeRef				dtype_ret;
-		public access:ro	CallType			type;
-		public access:ro	CallType			dtype;
-		public access:ro	CallType			etype;
-		public access:ro	NArr<FormPar>		params;
-		public access:ro	NArr<ASTAlias>		aliases;
+		public:ro	CallType			type;
+		public:ro	CallType			dtype;
+		public:ro	CallType			etype;
+		public:ro	NArr<FormPar>		params;
+		public:ro	NArr<ASTAlias>		aliases;
 		public				Var					retvar;
 		public				Block			body;
 		public				PrescannedBody		pbody;
-		public access:ro	NArr<WBCCondition>	conditions;
-		public access:ro	NArr<Field>			violated_fields;
+		public:ro	NArr<WBCCondition>	conditions;
+		public:ro	NArr<Field>			violated_fields;
 		public				MetaValue			annotation_default;
 		public				boolean				inlined_by_dispatcher;
 		public				boolean				invalid_types;
@@ -830,7 +831,7 @@ public class Constructor extends Method {
 	}
 	@nodeview
 	public static final view ConstructorView of ConstructorImpl extends MethodView {
-		public access:ro	NArr<ENode>			addstats;
+		public:ro	NArr<ENode>			addstats;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }

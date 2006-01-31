@@ -56,8 +56,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	public static final view CaseLabelView of CaseLabelImpl extends ENodeView {
 		public				ENode			val;
 		public				Type			type;
-		public access:ro	NArr<Var>		pattern;
-		public access:ro	NArr<ENode>		stats;
+		public:ro	NArr<Var>		pattern;
+		public:ro	NArr<ENode>		stats;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -268,12 +268,12 @@ public class SwitchStat extends ENode {
 	public static view SwitchStatView of SwitchStatImpl extends ENodeView {
 		public				int						mode;
 		public				ENode					sel;
-		public access:ro	NArr<CaseLabel>			cases;
+		public:ro	NArr<CaseLabel>			cases;
 		public				LVarExpr				tmpvar;
 		public				CaseLabel				defCase;
 		public				Field					typehash; // needed for re-resolving
-		public access:ro	Label					lblcnt;
-		public access:ro	Label					lblbrk;
+		public:ro	Label					lblcnt;
+		public:ro	Label					lblbrk;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -661,7 +661,7 @@ public class TryStat extends ENode {
 	@nodeview
 	public static final view TryStatView of TryStatImpl extends ENodeView {
 		public				ENode				body;
-		public access:ro	NArr<CatchInfo>		catchers;
+		public:ro	NArr<CatchInfo>		catchers;
 		public				FinallyInfo			finally_catcher;
 	}
 

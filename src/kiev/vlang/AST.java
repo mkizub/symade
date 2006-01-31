@@ -87,60 +87,60 @@ public abstract class ASTNode implements Constants, Cloneable {
 		protected	ASTNode			pnext;
 		protected	NodeData[]		ndata;
 		// Structures	
-		public packed:1,compileflags,16 boolean is_struct_local;
-		public packed:1,compileflags,17 boolean is_struct_anomymouse;
-		public packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
-		public packed:1,compileflags,19 boolean is_struct_members_generated;
-		public packed:1,compileflags,20 boolean is_struct_pre_generated;
-		public packed:1,compileflags,21 boolean is_struct_statements_generated;
-		public packed:1,compileflags,22 boolean is_struct_generated;
-		public packed:1,compileflags,23 boolean is_struct_type_resolved;
-		public packed:1,compileflags,24 boolean is_struct_args_resolved;
-		public packed:1,compileflags,25 boolean is_struct_bytecode;	// struct was loaded from bytecode
-		public packed:1,compileflags,26 boolean is_struct_singleton;
-		public packed:1,compileflags,27 boolean is_struct_pizza_case;
+		public @packed:1,compileflags,16 boolean is_struct_local;
+		public @packed:1,compileflags,17 boolean is_struct_anomymouse;
+		public @packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
+		public @packed:1,compileflags,19 boolean is_struct_members_generated;
+		public @packed:1,compileflags,20 boolean is_struct_pre_generated;
+		public @packed:1,compileflags,21 boolean is_struct_statements_generated;
+		public @packed:1,compileflags,22 boolean is_struct_generated;
+		public @packed:1,compileflags,23 boolean is_struct_type_resolved;
+		public @packed:1,compileflags,24 boolean is_struct_args_resolved;
+		public @packed:1,compileflags,25 boolean is_struct_bytecode;	// struct was loaded from bytecode
+		public @packed:1,compileflags,26 boolean is_struct_singleton;
+		public @packed:1,compileflags,27 boolean is_struct_pizza_case;
 		
 		// Expression flags
-		public packed:1,compileflags,16 boolean is_expr_use_no_proxy;
-		public packed:1,compileflags,17 boolean is_expr_as_field;
-		public packed:1,compileflags,18 boolean is_expr_gen_void;
-		public packed:1,compileflags,19 boolean is_expr_for_wrapper;
-		public packed:1,compileflags,20 boolean is_expr_primary;
-		public packed:1,compileflags,21 boolean is_expr_super;
-		public packed:1,compileflags,22 boolean is_expr_cast_call;
+		public @packed:1,compileflags,16 boolean is_expr_use_no_proxy;
+		public @packed:1,compileflags,17 boolean is_expr_as_field;
+		public @packed:1,compileflags,18 boolean is_expr_gen_void;
+		public @packed:1,compileflags,19 boolean is_expr_for_wrapper;
+		public @packed:1,compileflags,20 boolean is_expr_primary;
+		public @packed:1,compileflags,21 boolean is_expr_super;
+		public @packed:1,compileflags,22 boolean is_expr_cast_call;
 		// Statement flags
-		public packed:1,compileflags,23 boolean is_stat_abrupted;
-		public packed:1,compileflags,24 boolean is_stat_breaked;
-		public packed:1,compileflags,25 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
-		public packed:1,compileflags,26 boolean is_stat_auto_returnable;
-		public packed:1,compileflags,27 boolean is_stat_break_target;
+		public @packed:1,compileflags,23 boolean is_stat_abrupted;
+		public @packed:1,compileflags,24 boolean is_stat_breaked;
+		public @packed:1,compileflags,25 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
+		public @packed:1,compileflags,26 boolean is_stat_auto_returnable;
+		public @packed:1,compileflags,27 boolean is_stat_break_target;
 		
 		// Method flags
-		public packed:1,compileflags,17 boolean is_mth_virtual_static;
-		public packed:1,compileflags,18 boolean is_mth_operator;
-		public packed:1,compileflags,19 boolean is_mth_need_fields_init;
-		public packed:1,compileflags,20 boolean is_mth_local;
-		public packed:1,compileflags,21 boolean is_mth_dispatcher;
-		public packed:1,compileflags,22 boolean is_mth_invariant;
+		public @packed:1,compileflags,17 boolean is_mth_virtual_static;
+		public @packed:1,compileflags,18 boolean is_mth_operator;
+		public @packed:1,compileflags,19 boolean is_mth_need_fields_init;
+		public @packed:1,compileflags,20 boolean is_mth_local;
+		public @packed:1,compileflags,21 boolean is_mth_dispatcher;
+		public @packed:1,compileflags,22 boolean is_mth_invariant;
 		
 		// Var/field
-		public packed:1,compileflags,16 boolean is_init_wrapper;
-		public packed:1,compileflags,17 boolean is_need_proxy;
+		public @packed:1,compileflags,16 boolean is_init_wrapper;
+		public @packed:1,compileflags,17 boolean is_need_proxy;
 		// Var specific
-		public packed:1,compileflags,18 boolean is_var_local_rule_var;
-		public packed:1,compileflags,19 boolean is_var_closure_proxy;
-		public packed:1,compileflags,20 boolean is_var_this;
-		public packed:1,compileflags,21 boolean is_var_super;
+		public @packed:1,compileflags,18 boolean is_var_local_rule_var;
+		public @packed:1,compileflags,19 boolean is_var_closure_proxy;
+		public @packed:1,compileflags,20 boolean is_var_this;
+		public @packed:1,compileflags,21 boolean is_var_super;
 	
 		// Field specific
-		public packed:1,compileflags,18 boolean is_fld_packer;
-		public packed:1,compileflags,19 boolean is_fld_packed;
+		public @packed:1,compileflags,18 boolean is_fld_packer;
+		public @packed:1,compileflags,19 boolean is_fld_packed;
 	
 		// General flags
-		public packed:1,compileflags,28 boolean is_accessed_from_inner;
-		public packed:1,compileflags,29 boolean is_resolved;
-		public packed:1,compileflags,30 boolean is_hidden;
-		public packed:1,compileflags,31 boolean is_bad;
+		public @packed:1,compileflags,28 boolean is_accessed_from_inner;
+		public @packed:1,compileflags,29 boolean is_resolved;
+		public @packed:1,compileflags,30 boolean is_hidden;
+		public @packed:1,compileflags,31 boolean is_bad;
 
 		public NodeImpl() {}
 		
@@ -504,7 +504,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 	public JView getJView() alias operator(210,fy,$cast) { return new JView($v_impl); }
 	public RView getRView() alias operator(210,fy,$cast) { return (RView)getVView(); }
 	
-	public forward abstract virtual access:ro VView theView;
+	@virtual @forward public:ro abstract VView theView;
 	@getter public final VView get$theView() { return getVView(); }
 	
 	public ASTNode(NImpl v_impl) {
@@ -582,32 +582,32 @@ public abstract class DNode extends ASTNode {
 		     public		int			flags;
 		@att public		MetaSet		meta;
 
-//		public packed:1,flags, 0 boolean is_acc_public;
-//		public packed:1,flags, 1 boolean is_acc_private;
-//		public packed:1,flags, 2 boolean is_acc_protected;
-		public packed:3,flags, 0 int     is_access;
+//		public @packed:1,flags, 0 boolean is_acc_public;
+//		public @packed:1,flags, 1 boolean is_acc_private;
+//		public @packed:1,flags, 2 boolean is_acc_protected;
+		public @packed:3,flags, 0 int     is_access;
 
-		public packed:1,flags, 3 boolean is_static;
-		public packed:1,flags, 4 boolean is_final;
-		public packed:1,flags, 5 boolean is_mth_synchronized;	// method
-		public packed:1,flags, 5 boolean is_struct_super;		// struct
-		public packed:1,flags, 6 boolean is_fld_volatile;		// field
-		public packed:1,flags, 6 boolean is_mth_bridge;		// method
-		public packed:1,flags, 7 boolean is_fld_transient;		// field
-		public packed:1,flags, 7 boolean is_mth_varargs;		// method
-		public packed:1,flags, 8 boolean is_mth_native;
-		public packed:1,flags, 9 boolean is_struct_interface;
-		public packed:1,flags,10 boolean is_abstract;
-		public packed:1,flags,11 boolean is_math_strict;		// strict math
-		public packed:1,flags,12 boolean is_synthetic;			// any decl that was generated (not in sources)
-		public packed:1,flags,13 boolean is_struct_annotation;
-		public packed:1,flags,14 boolean is_struct_enum;		// struct
-		public packed:1,flags,14 boolean is_fld_enum;			// field
+		public @packed:1,flags, 3 boolean is_static;
+		public @packed:1,flags, 4 boolean is_final;
+		public @packed:1,flags, 5 boolean is_mth_synchronized;	// method
+		public @packed:1,flags, 5 boolean is_struct_super;		// struct
+		public @packed:1,flags, 6 boolean is_fld_volatile;		// field
+		public @packed:1,flags, 6 boolean is_mth_bridge;		// method
+		public @packed:1,flags, 7 boolean is_fld_transient;		// field
+		public @packed:1,flags, 7 boolean is_mth_varargs;		// method
+		public @packed:1,flags, 8 boolean is_mth_native;
+		public @packed:1,flags, 9 boolean is_struct_interface;
+		public @packed:1,flags,10 boolean is_abstract;
+		public @packed:1,flags,11 boolean is_math_strict;		// strict math
+		public @packed:1,flags,12 boolean is_synthetic;			// any decl that was generated (not in sources)
+		public @packed:1,flags,13 boolean is_struct_annotation;
+		public @packed:1,flags,14 boolean is_struct_enum;		// struct
+		public @packed:1,flags,14 boolean is_fld_enum;			// field
 		
 		// Flags temporary used with java flags
-		public packed:1,flags,16 boolean is_forward;			// var/field/method, type is wrapper
-		public packed:1,flags,17 boolean is_virtual;			// var/field, method is 'static virtual', struct is 'view'
-		public packed:1,flags,18 boolean is_type_unerasable;	// typedecl, method/struct as parent of typedef
+		public @packed:1,flags,16 boolean is_forward;			// var/field/method, type is wrapper
+		public @packed:1,flags,17 boolean is_virtual;			// var/field, method is 'static virtual', struct is 'view'
+		public @packed:1,flags,18 boolean is_type_unerasable;	// typedecl, method/struct as parent of typedef
 		
 		public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
 		public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }

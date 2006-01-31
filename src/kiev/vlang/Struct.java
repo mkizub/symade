@@ -254,20 +254,20 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public static abstract view StructView of StructImpl extends TypeDeclView {
 		public				Access					acc;
 		public				ClazzName				name;
-		public access:ro	CompaundTypeProvider	imeta_type;
+		public:ro	CompaundTypeProvider	imeta_type;
 		public				WrapperTypeProvider		wmeta_type;
 		public				OuterTypeProvider		ometa_type;
-		public access:ro	CompaundType			ctype;
+		public:ro	CompaundType			ctype;
 		public				TypeRef					view_of;
 		public				TypeRef					super_bound;
-		public access:ro	NArr<TypeRef>			interfaces;
-		public access:ro	NArr<TypeDef>			args;
+		public:ro	NArr<TypeRef>			interfaces;
+		public:ro	NArr<TypeDef>			args;
 		public				Struct					package_clazz;
 		public				Struct					typeinfo_clazz;
-		public access:ro	NArr<Struct>			sub_clazz;
-		public access:ro	NArr<DNode>				imported;
-		public access:ro	NArr<TypeDecl>			direct_extenders;
-		public access:ro	NArr<DNode>				members;
+		public:ro	NArr<Struct>			sub_clazz;
+		public:ro	NArr<DNode>				imported;
+		public:ro	NArr<TypeDecl>			direct_extenders;
+		public:ro	NArr<DNode>				members;
 
 		@setter public final void set$acc(Access val) { this.$view.acc = val; Access.verifyDecl((Struct)getDNode()); }
 		@getter public final CompaundType	get$super_type()	{ return (CompaundType)super_bound.lnk; }

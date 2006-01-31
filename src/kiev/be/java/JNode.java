@@ -31,8 +31,8 @@ public view JNode of NodeImpl implements Constants {
 	public String toString() { return String.valueOf(this.$view._self); }
 	public Dumper toJava(Dumper dmp) { return getNode().toJava(dmp); }
 	
-	public access:ro	int			pos;
-//	public access:ro	int			compileflags;
+	public:ro	int			pos;
+//	public:ro	int			compileflags;
 	
     public final int getPosLine();
 	public final boolean isAttached();
@@ -72,7 +72,7 @@ public view JDNode of DNodeImpl extends JNode {
 	public final DNode getDNode() { return (DNode)this.getNode(); }
 	
 	public				int			flags;
-	public access:ro	MetaSet		meta;
+	public:ro	MetaSet		meta;
 
 	public final boolean isPublic()				{ return (flags & ACC_PUBLIC) != 0; }
 	public final boolean isPrivate()			{ return (flags & ACC_PRIVATE) != 0; }
@@ -161,7 +161,7 @@ public view JENode of ENodeImpl extends JNode {
 @nodeview
 public final view JVarDecl of VarDeclImpl extends JENode {
 
-	public access:ro	JVar	var;
+	public:ro	JVar	var;
 
 	public void generate(Code code, Type reqType) {
 		this.var.generate(code,Type.tpVoid);
@@ -170,7 +170,7 @@ public final view JVarDecl of VarDeclImpl extends JENode {
 
 @nodeview
 public final view JLocalStructDecl of LocalStructDeclImpl extends JENode {
-	public access:ro Struct		clazz;
+	public:ro Struct		clazz;
 
 	public void generate(Code code, Type reqType) {
 		// don't generate here
@@ -186,7 +186,7 @@ public abstract view JTypeDecl of TypeDeclImpl extends JDNode {
 
 @nodeview
 public static final view JTypeRef of TypeRefImpl extends JENode {
-	public access:ro Type	lnk;
+	public:ro Type	lnk;
 
 	public void generate(Code code, Type reqType) {
 		// don't generate here
@@ -195,7 +195,7 @@ public static final view JTypeRef of TypeRefImpl extends JENode {
 
 @nodeview
 public static final view JNameRef of NameRefImpl extends JNode {
-	public access:ro KString name;
+	public:ro KString name;
 
 	public void generate(Code code, Type reqType) {
 		// don't generate here

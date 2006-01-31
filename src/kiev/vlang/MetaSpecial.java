@@ -208,7 +208,7 @@ public class MetaAlias extends MetaSpecial {
 	}
 	@nodeview
 	public static view MetaAliasView of MetaAliasImpl extends MetaSpecialView {
-		public access:ro NArr<ENode>		 aliases;
+		public:ro NArr<ENode>		 aliases;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -243,7 +243,7 @@ public class MetaThrows extends MetaSpecial {
 	}
 	@nodeview
 	public static view MetaThrowsView of MetaThrowsImpl extends MetaSpecialView {
-		public access:ro NArr<TypeNameRef>		 exceptions;
+		public:ro NArr<TypeNameRef>		 exceptions;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -278,7 +278,7 @@ public class MetaPizzaCase extends MetaSpecial {
 	}
 	@nodeview
 	public static view MetaPizzaCaseView of MetaPizzaCaseImpl extends MetaSpecialView {
-		public access:ro NArr<Field>		 fields;
+		public:ro NArr<Field>		 fields;
 		public int							 tag;
 	}
 

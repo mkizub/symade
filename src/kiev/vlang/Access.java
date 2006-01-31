@@ -16,19 +16,19 @@ import static kiev.stdlib.Debug.*;
 
 public interface Accessable {
 	@virtual
-	public virtual abstract Access	acc;
+	public abstract Access	acc;
 }
 
 public class Access implements Constants {
 	public int flags;
-	public packed:1,flags,7 boolean	r_public;
-	public packed:1,flags,6 boolean	w_public;
-	public packed:1,flags,5 boolean	r_protected;
-	public packed:1,flags,4 boolean	w_protected;
-	public packed:1,flags,3 boolean	r_default;
-	public packed:1,flags,2 boolean	w_default;
-	public packed:1,flags,1 boolean	r_private;
-	public packed:1,flags,0 boolean	w_private;
+	public @packed:1,flags,7 boolean	r_public;
+	public @packed:1,flags,6 boolean	w_public;
+	public @packed:1,flags,5 boolean	r_protected;
+	public @packed:1,flags,4 boolean	w_protected;
+	public @packed:1,flags,3 boolean	r_default;
+	public @packed:1,flags,2 boolean	w_default;
+	public @packed:1,flags,1 boolean	r_private;
+	public @packed:1,flags,0 boolean	w_private;
 
 	public Access(int flags) {
 		this.flags = flags | (flags << 16);

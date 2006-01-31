@@ -38,140 +38,137 @@ public interface kiev040Constants {
   int NEW = 43;
   int NULL = 44;
   int PACKAGE = 45;
-  int PRIVATE = 46;
-  int PROTECTED = 47;
-  int PUBLIC = 48;
-  int RETURN = 49;
-  int SHORT = 50;
-  int STATIC = 51;
-  int SWITCH = 52;
-  int SYNCHRONIZED = 53;
-  int WITH = 54;
-  int THROW = 55;
-  int THROWS = 56;
-  int TRANSIENT = 57;
-  int TRUE = 58;
-  int TRY = 59;
-  int VOID = 60;
-  int VOLATILE = 61;
-  int VIEW = 62;
-  int WHILE = 63;
-  int ARROW = 64;
-  int FUNCTION = 65;
-  int VIRTUAL = 66;
-  int VARARGS = 67;
-  int FORWARD = 68;
-  int RULE = 69;
-  int PCUT = 70;
-  int CAST = 71;
-  int REINTERP = 72;
-  int ALIAS = 73;
-  int OPERATOR_ID = 74;
-  int TYPEDEF = 75;
-  int ENUM = 76;
-  int REQUIRE = 77;
-  int ENSURE = 78;
-  int INVARIANT = 79;
-  int PACKED = 80;
-  int META_INTERFACE = 81;
-  int META_SINGLETON = 82;
-  int META_FORWARD = 83;
-  int META_UNERASABLE = 84;
-  int META_VIRTUAL = 85;
-  int META_PACKED = 86;
-  int META_PUBLIC = 87;
-  int META_PROTECTED = 88;
-  int META_PRIVATE = 89;
-  int META_STATIC = 90;
-  int META_ABSTRACT = 91;
-  int META_FINAL = 92;
-  int META_NATIVE = 93;
-  int META_SYNCHRONIZED = 94;
-  int META_TRANSIENT = 95;
-  int META_VOLATILE = 96;
-  int META_THROWS = 97;
-  int ACCESS = 98;
-  int META_ACCESS1 = 99;
-  int META_ACCESS2 = 100;
-  int READ_ONLY = 101;
-  int WRITE_ONLY = 102;
-  int READ_WRITE = 103;
-  int NO_READ_WRITE = 104;
-  int COMMA1 = 105;
-  int CLOSE_ACCESS = 106;
-  int PRAGMA = 112;
-  int PRAGMA_ENABLE = 113;
-  int PRAGMA_DISABLE = 114;
-  int INTEGER_LITERAL = 115;
-  int LONG_INTEGER_LITERAL = 116;
-  int DECIMAL_LITERAL = 117;
-  int HEX_LITERAL = 118;
-  int OCTAL_LITERAL = 119;
-  int FLOATING_POINT_LITERAL = 120;
-  int DOUBLE_POINT_LITERAL = 121;
-  int EXPONENT = 122;
-  int REPARSE_EXPRESSION = 123;
-  int REPARSE_STATEMENT = 124;
-  int REPARSE_TYPE = 125;
-  int CHARACTER_LITERAL = 126;
-  int STRING_LITERAL = 127;
-  int IDENTIFIER = 128;
-  int LETTER = 129;
-  int DIGIT = 130;
-  int ID_STRING_LITERAL = 131;
-  int LPAREN = 132;
-  int RPAREN = 133;
-  int LBRACE = 134;
-  int RBRACE = 135;
-  int LBRACKET = 136;
-  int RBRACKET = 137;
-  int SEMICOLON = 138;
-  int COMMA = 139;
-  int DOT = 140;
-  int COLON = 141;
-  int QUESTION = 142;
-  int LT = 143;
-  int GT = 144;
-  int ASSIGN = 145;
-  int ASSIGN2 = 146;
-  int BANG = 147;
-  int TILDE = 148;
-  int EQ = 149;
-  int LE = 150;
-  int GE = 151;
-  int NE = 152;
-  int SC_OR = 153;
-  int SC_AND = 154;
-  int INCR = 155;
-  int DECR = 156;
-  int PLUS = 157;
-  int MINUS = 158;
-  int STAR = 159;
-  int SLASH = 160;
-  int BIT_AND = 161;
-  int BIT_OR = 162;
-  int XOR = 163;
-  int REM = 164;
-  int LSHIFT = 165;
-  int PLUSASSIGN = 166;
-  int MINUSASSIGN = 167;
-  int STARASSIGN = 168;
-  int SLASHASSIGN = 169;
-  int ANDASSIGN = 170;
-  int ORASSIGN = 171;
-  int XORASSIGN = 172;
-  int REMASSIGN = 173;
-  int LSHIFTASSIGN = 174;
-  int RSIGNEDSHIFTASSIGN = 175;
-  int RUNSIGNEDSHIFTASSIGN = 176;
-  int IS_THE = 177;
-  int IS_ONE_OF = 178;
-  int OPERATOR_AT = 179;
-  int OPERATOR_SHARP = 180;
-  int OPERATOR_LRBRACKETS = 181;
-  int OPERATOR_UPPER_BOUND = 182;
-  int OPERATOR_LOWER_BOUND = 183;
-  int OPERATOR = 184;
+  int RETURN = 46;
+  int SHORT = 47;
+  int STATIC = 48;
+  int SWITCH = 49;
+  int SYNCHRONIZED = 50;
+  int WITH = 51;
+  int THROW = 52;
+  int THROWS = 53;
+  int TRANSIENT = 54;
+  int TRUE = 55;
+  int TRY = 56;
+  int VOID = 57;
+  int VOLATILE = 58;
+  int VIEW = 59;
+  int WHILE = 60;
+  int ARROW = 61;
+  int FUNCTION = 62;
+  int VARARGS = 63;
+  int RULE = 64;
+  int PCUT = 65;
+  int CAST = 66;
+  int REINTERP = 67;
+  int ALIAS = 68;
+  int OPERATOR_ID = 69;
+  int TYPEDEF = 70;
+  int ENUM = 71;
+  int REQUIRE = 72;
+  int ENSURE = 73;
+  int INVARIANT = 74;
+  int META_INTERFACE = 75;
+  int META_SINGLETON = 76;
+  int META_FORWARD = 77;
+  int META_UNERASABLE = 78;
+  int META_VIRTUAL = 79;
+  int META_PACKED = 80;
+  int META_STATIC = 81;
+  int META_ABSTRACT = 82;
+  int META_FINAL = 83;
+  int META_NATIVE = 84;
+  int META_SYNCHRONIZED = 85;
+  int META_TRANSIENT = 86;
+  int META_VOLATILE = 87;
+  int META_THROWS = 88;
+  int META_ACCESS1 = 89;
+  int META_PUBLIC = 90;
+  int PUBLIC = 91;
+  int META_PROTECTED = 92;
+  int PROTECTED = 93;
+  int META_PRIVATE = 94;
+  int PRIVATE = 95;
+  int READ_ONLY = 96;
+  int WRITE_ONLY = 97;
+  int READ_WRITE = 98;
+  int NO_READ_WRITE = 99;
+  int COMMA1 = 100;
+  int COLON1 = 101;
+  int OPEN_ACCESS = 102;
+  int CLOSE_ACCESS = 103;
+  int PRAGMA = 109;
+  int PRAGMA_ENABLE = 110;
+  int PRAGMA_DISABLE = 111;
+  int INTEGER_LITERAL = 112;
+  int LONG_INTEGER_LITERAL = 113;
+  int DECIMAL_LITERAL = 114;
+  int HEX_LITERAL = 115;
+  int OCTAL_LITERAL = 116;
+  int FLOATING_POINT_LITERAL = 117;
+  int DOUBLE_POINT_LITERAL = 118;
+  int EXPONENT = 119;
+  int REPARSE_EXPRESSION = 120;
+  int REPARSE_STATEMENT = 121;
+  int REPARSE_TYPE = 122;
+  int CHARACTER_LITERAL = 123;
+  int STRING_LITERAL = 124;
+  int IDENTIFIER = 125;
+  int LETTER = 126;
+  int DIGIT = 127;
+  int ID_STRING_LITERAL = 128;
+  int LPAREN = 129;
+  int RPAREN = 130;
+  int LBRACE = 131;
+  int RBRACE = 132;
+  int LBRACKET = 133;
+  int RBRACKET = 134;
+  int SEMICOLON = 135;
+  int COMMA = 136;
+  int DOT = 137;
+  int COLON = 138;
+  int QUESTION = 139;
+  int LT = 140;
+  int GT = 141;
+  int ASSIGN = 142;
+  int ASSIGN2 = 143;
+  int BANG = 144;
+  int TILDE = 145;
+  int EQ = 146;
+  int LE = 147;
+  int GE = 148;
+  int NE = 149;
+  int SC_OR = 150;
+  int SC_AND = 151;
+  int INCR = 152;
+  int DECR = 153;
+  int PLUS = 154;
+  int MINUS = 155;
+  int STAR = 156;
+  int SLASH = 157;
+  int BIT_AND = 158;
+  int BIT_OR = 159;
+  int XOR = 160;
+  int REM = 161;
+  int LSHIFT = 162;
+  int PLUSASSIGN = 163;
+  int MINUSASSIGN = 164;
+  int STARASSIGN = 165;
+  int SLASHASSIGN = 166;
+  int ANDASSIGN = 167;
+  int ORASSIGN = 168;
+  int XORASSIGN = 169;
+  int REMASSIGN = 170;
+  int LSHIFTASSIGN = 171;
+  int RSIGNEDSHIFTASSIGN = 172;
+  int RUNSIGNEDSHIFTASSIGN = 173;
+  int IS_THE = 174;
+  int IS_ONE_OF = 175;
+  int OPERATOR_AT = 176;
+  int OPERATOR_SHARP = 177;
+  int OPERATOR_LRBRACKETS = 178;
+  int OPERATOR_UPPER_BOUND = 179;
+  int OPERATOR_LOWER_BOUND = 180;
+  int OPERATOR = 181;
 
   int DEFAULT = 0;
   int IN_PRAGMA = 1;
@@ -227,9 +224,6 @@ public interface kiev040Constants {
     "\"new\"",
     "\"null\"",
     "\"package\"",
-    "\"private\"",
-    "\"protected\"",
-    "\"public\"",
     "\"return\"",
     "\"short\"",
     "\"static\"",
@@ -247,9 +241,7 @@ public interface kiev040Constants {
     "\"while\"",
     "\"->\"",
     "\"fun\"",
-    "\"virtual\"",
     "\"...\"",
-    "\"forward\"",
     "\"rule\"",
     "\"$cut\"",
     "\"$cast\"",
@@ -261,16 +253,12 @@ public interface kiev040Constants {
     "\"require\"",
     "\"ensure\"",
     "\"invariant\"",
-    "\"packed\"",
     "\"@interface\"",
     "\"@singleton\"",
     "\"@forward\"",
     "\"@unerasable\"",
     "\"@virtual\"",
     "\"@packed\"",
-    "\"@public\"",
-    "\"@protected\"",
-    "\"@private\"",
     "\"@static\"",
     "\"@abstract\"",
     "\"@final\"",
@@ -279,14 +267,20 @@ public interface kiev040Constants {
     "\"@transient\"",
     "\"@volatile\"",
     "\"@throws\"",
-    "\"access:\"",
-    "\"@access(\"",
-    "\"@access:\"",
+    "\"@access\"",
+    "\"@public\"",
+    "\"public\"",
+    "\"@protected\"",
+    "\"protected\"",
+    "\"@private\"",
+    "\"private\"",
     "<READ_ONLY>",
     "<WRITE_ONLY>",
     "\"rw\"",
     "<NO_READ_WRITE>",
     "\",\"",
+    "\":\"",
+    "\"(\"",
     "\")\"",
     "\" \"",
     "\"\\t\"",

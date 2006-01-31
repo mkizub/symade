@@ -31,7 +31,7 @@ public class TypeWithArgsRef extends TypeRef {
 	}
 	@nodeview
 	public static final view TypeWithArgsRefView of TypeWithArgsRefImpl extends TypeRefView {
-		public access:ro	NArr<TypeRef>			args;
+		public:ro	NArr<TypeRef>			args;
 		public				TypeRef					base_type;
 	}
 

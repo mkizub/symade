@@ -254,7 +254,7 @@ public class TypeInfoExpr extends ENode {
 	public static final view TypeInfoExprView of TypeInfoExprImpl extends ENodeView {
 		public				TypeRef				type;
 		public				TypeClassExpr		cl_expr;
-		public access:ro	NArr<ENode>			cl_args;
+		public:ro	NArr<ENode>			cl_args;
 
 		public Operator getOp() { return BinaryOperator.Access; }
 	}
@@ -1018,7 +1018,7 @@ public class StringConcatExpr extends ENode {
 	}
 	@nodeview
 	public static view StringConcatExprView of StringConcatExprImpl extends ENodeView {
-		public access:ro	NArr<ENode>		args;
+		public:ro	NArr<ENode>		args;
 
 		public Operator getOp() { return BinaryOperator.Add; }
 	}
@@ -1097,7 +1097,7 @@ public class CommaExpr extends ENode {
 	}
 	@nodeview
 	public static view CommaExprView of CommaExprImpl extends ENodeView {
-		public access:ro	NArr<ENode>		exprs;
+		public:ro	NArr<ENode>		exprs;
 
 		public int getPriority() { return 0; }
 	}
@@ -1174,7 +1174,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 	@nodeview
 	public static view BlockView of BlockImpl extends ENodeView {
-		public access:ro	NArr<ENode>		stats;
+		public:ro	NArr<ENode>		stats;
 
 		public int		getPriority() { return 255; }
 	}

@@ -36,7 +36,7 @@ public class ASTNewInitializedArrayExpression extends ENode {
 	public static view ASTNewInitializedArrayExpressionView of ASTNewInitializedArrayExpressionImpl extends ENodeView {
 		public				int				dim;
 		public				TypeRef			type;
-		public access:ro	NArr<ENode>		args;
+		public:ro	NArr<ENode>		args;
 
 		public int		getPriority() { return Constants.opAccessPriority; }
 	

@@ -28,15 +28,15 @@ public final view JStruct of StructImpl extends JTypeDecl {
 
 	public final Struct getStruct() { return this.$view.getStruct(); }
 
-	public access:ro	Access				acc;
-	public access:ro	ClazzName			name;
-	public access:ro	CompaundType		ctype;
-	public access:ro	JBaseType			jtype;
-	public access:ro	JBaseType			jsuper_type;
-	public access:ro	JType[]				interfaces;
-	public access:ro	JArr<JStruct>	sub_clazz;
+	public:ro	Access				acc;
+	public:ro	ClazzName			name;
+	public:ro	CompaundType		ctype;
+	public:ro	JBaseType			jtype;
+	public:ro	JBaseType			jsuper_type;
+	public:ro	JType[]				interfaces;
+	public:ro	JArr<JStruct>	sub_clazz;
 	public				Attr[]				attrs;
-	public access:ro	JArr<JDNode>	members;
+	public:ro	JArr<JDNode>	members;
 
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
 	public final JBaseType		get$jsuper_type()	{ return getStruct().super_type == null ? null : (JBaseType)getStruct().super_type.getJType(); }

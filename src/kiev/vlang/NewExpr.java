@@ -51,7 +51,7 @@ public final class NewExpr extends ENode {
 	@nodeview
 	public static final view NewExprView of NewExprImpl extends ENodeView {
 		public				TypeRef			type;
-		public access:ro	NArr<ENode>		args;
+		public:ro	NArr<ENode>		args;
 		public				ENode			outer;
 		public				ENode			temp_expr;
 		public				Struct			clazz;
@@ -292,7 +292,7 @@ public final class NewArrayExpr extends ENode {
 	@nodeview
 	public static final view NewArrayExprView of NewArrayExprImpl extends ENodeView {
 		public				TypeRef			type;
-		public access:ro	NArr<ENode>		args;
+		public:ro	NArr<ENode>		args;
 		public				int				dim;
 		public				ArrayType		arrtype;
 
@@ -413,7 +413,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	@nodeview
 	public static final view NewInitializedArrayExprView of NewInitializedArrayExprImpl extends ENodeView {
 		public				TypeRef			type;
-		public access:ro	NArr<ENode>		args;
+		public:ro	NArr<ENode>		args;
 		public				int[]			dims;
 		public				ArrayType		arrtype;
 		

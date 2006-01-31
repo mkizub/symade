@@ -26,14 +26,13 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
 public class StandardClassLoader extends ClassLoader {
 	protected Hashtable<String,Class>	cache = new Hashtable<String,Class>();
 	protected Classpath					classpath;
-//	public Vector<BytecodeHandler>		handlers = new Vector<BytecodeHandler>();
 
 	public StandardClassLoader() {
 		classpath = new Classpath();
@@ -42,31 +41,6 @@ public class StandardClassLoader extends ClassLoader {
 	public StandardClassLoader(String path) {
 		classpath = new Classpath(path);
 	}
-
-//	public void addHandler(BytecodeHandler bh) {
-//		handlers.append(bh);
-//	}
-
-//	public void handleClazz(Clazz clazz) {
-//		if( handlers.length <= 0 ) return;
-//		Vector<BytecodeHandler> handls = new Vector<BytecodeHandler>();
-//		int stage = 0;
-//		int nextstage = 1000;
-//		for(;;) {
-//			handls.cleanup();
-//			foreach(BytecodeHandler bh; handlers) {
-//				int bhstage = bh.getPriority();
-//				if( bhstage == stage ) handls.append(bh);
-//				else if( bhstage > stage && bhstage < nextstage ) nextstage = bhstage;
-//			}
-//			foreach(BytecodeHandler bh; handls) {
-//				bh.processClazz(clazz);
-//			}
-//			if( nextstage <= stage ) break;
-//			stage = nextstage;
-//			nextstage = 1000;
-//		}
-//	}
 
 	public synchronized boolean existsClazz(String name) {
 		return classpath.exists(name);
@@ -137,7 +111,6 @@ public class StandardClassLoader extends ClassLoader {
 //		Clazz.traceWrite = true;
 //		Clazz.traceRules = true;
 		StandardClassLoader cl = new StandardClassLoader();
-//		cl.addHandler(new KievAttributeHandler());
 		Class c = cl.loadClass(args[0],true);
 //		System.out.println("Class "+c+" loaded");
 		String[] args1 = new String[args.length-1];

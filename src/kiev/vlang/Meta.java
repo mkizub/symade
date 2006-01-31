@@ -33,7 +33,7 @@ public final class MetaSet extends ASTNode {
 	}
 	@nodeview
 	public static final view MetaSetView of MetaSetImpl extends NodeView {
-		public access:ro	NArr<Meta>			metas;
+		public:ro	NArr<Meta>			metas;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -165,7 +165,7 @@ public class Meta extends ENode {
 	@nodeview
 	public static view MetaView of MetaImpl extends ENodeView {
 		public				TypeRef					type;
-		public access:ro	NArr<MetaValue>			values;
+		public:ro	NArr<MetaValue>			values;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -601,7 +601,7 @@ public final class MetaValueArray extends MetaValue {
 	}
 	@nodeview
 	public static final view MetaValueArrayView of MetaValueArrayImpl extends MetaValueView {
-		public access:ro	NArr<ENode>			values;
+		public:ro	NArr<ENode>			values;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }

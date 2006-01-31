@@ -47,7 +47,7 @@ public class RuleMethod extends Method {
 	}
 	@nodeview
 	public static abstract view RuleMethodView of RuleMethodImpl extends MethodView {
-		public access:ro	NArr<Var>			localvars;
+		public:ro	NArr<Var>			localvars;
 		public				int					base;
 		public				int					max_depth;
 		public				int					state_depth;
@@ -460,7 +460,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 	}
 	@nodeview
 	public static final view RuleOrExprView of RuleOrExprImpl extends ASTRuleNodeView {
-		public access:ro	NArr<ASTRuleNode>			rules;
+		public:ro	NArr<ASTRuleNode>			rules;
 
 		public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base(); }
 		public void set$base(int b) {}
@@ -534,7 +534,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 	}
 	@nodeview
 	public static final view RuleAndExprView of RuleAndExprImpl extends ASTRuleNodeView {
-		public access:ro	NArr<ASTRuleNode>			rules;
+		public:ro	NArr<ASTRuleNode>			rules;
 
 		public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base();	}
 		public void set$base(int b) {}
@@ -945,7 +945,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	public static final view RuleCallExprView of RuleCallExprImpl extends ASTRuleNodeView {
 		public				ENode			obj;
 		public				Named			func;
-		public access:ro	NArr<ENode>		args;
+		public:ro	NArr<ENode>		args;
 		public				int				env_var;
 	}
 	

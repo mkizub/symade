@@ -29,7 +29,7 @@ package kiev.stdlib;
 public final class Ref<A>
 {
 
-	forward public A			$val;
+	@forward public A			$val;
 
 	public Ref() {}
 

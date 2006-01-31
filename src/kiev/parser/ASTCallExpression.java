@@ -38,8 +38,8 @@ public class ASTCallExpression extends ENode {
 	@nodeview
 	public static view ASTCallExpressionView of ASTCallExpressionImpl extends ENodeView {
 		public				NameRef			func;
-		public access:ro	NArr<TypeRef>	targs;
-		public access:ro	NArr<ENode>		args;
+		public:ro	NArr<TypeRef>	targs;
+		public:ro	NArr<ENode>		args;
 
 		public int		getPriority() { return Constants.opCallPriority; }
 

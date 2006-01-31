@@ -30,8 +30,8 @@ import kiev.vlang.GotoCaseStat.GotoCaseStatImpl;
 
 @nodeview
 public final view JInlineMethodStat of InlineMethodStatImpl extends JENode {
-	public access:ro	JMethod		method;
-	public access:ro	ParamRedir[]	params_redir;
+	public:ro	JMethod		method;
+	public:ro	ParamRedir[]	params_redir;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating InlineMethodStat");
@@ -57,7 +57,7 @@ public final view JInlineMethodStat of InlineMethodStatImpl extends JENode {
 
 @nodeview
 public final final view JExprStat of ExprStatImpl extends JENode {
-	public access:ro	JENode		expr;
+	public:ro	JENode		expr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ExprStat");
@@ -72,7 +72,7 @@ public final final view JExprStat of ExprStatImpl extends JENode {
 
 @nodeview
 public final view JReturnStat of ReturnStatImpl extends JENode {
-	public access:ro	JENode		expr;
+	public:ro	JENode		expr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ReturnStat");
@@ -131,7 +131,7 @@ public final view JReturnStat of ReturnStatImpl extends JENode {
 
 @nodeview
 public final view JThrowStat of ThrowStatImpl extends JENode {
-	public access:ro	JENode		expr;
+	public:ro	JENode		expr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ThrowStat");
@@ -147,9 +147,9 @@ public final view JThrowStat of ThrowStatImpl extends JENode {
 
 @nodeview
 public final view JIfElseStat of IfElseStatImpl extends JENode {
-	public access:ro	JENode		cond;
-	public access:ro	JENode		thenSt;
-	public access:ro	JENode		elseSt;
+	public:ro	JENode		cond;
+	public:ro	JENode		thenSt;
+	public:ro	JENode		elseSt;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating IfElseStat");
@@ -194,8 +194,8 @@ public final view JIfElseStat of IfElseStatImpl extends JENode {
 
 @nodeview
 public final view JCondStat of CondStatImpl extends JENode {
-	public access:ro	JENode		cond;
-	public access:ro	JENode		message;
+	public:ro	JENode		cond;
+	public:ro	JENode		message;
 
 	private void generateAssertName(Code code) {
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
@@ -248,9 +248,9 @@ public final view JCondStat of CondStatImpl extends JENode {
 
 @nodeview
 public final view JLabeledStat of LabeledStatImpl extends JENode {
-	public access:ro	KString			ident;
-	public access:ro	JLabel		lbl;
-	public access:ro	JENode		stat;
+	public:ro	KString			ident;
+	public:ro	JLabel		lbl;
+	public:ro	JENode		stat;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating LabeledStat");
@@ -270,8 +270,8 @@ public final view JLabeledStat of LabeledStatImpl extends JENode {
 
 @nodeview
 public final view JBreakStat of BreakStatImpl extends JENode {
-	public access:ro	KString			ident;
-	public access:ro	JLabel		dest;
+	public:ro	KString			ident;
+	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BreakStat");
@@ -352,8 +352,8 @@ public final view JBreakStat of BreakStatImpl extends JENode {
 
 @nodeview
 public final view JContinueStat of ContinueStatImpl extends JENode {
-	public access:ro	KString			ident;
-	public access:ro	JLabel		dest;
+	public:ro	KString			ident;
+	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ContinueStat");
@@ -419,8 +419,8 @@ public final view JContinueStat of ContinueStatImpl extends JENode {
 
 @nodeview
 public final view JGotoStat of GotoStatImpl extends JENode {
-	public access:ro	KString			ident;
-	public access:ro	JLabel		dest;
+	public:ro	KString			ident;
+	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating GotoStat");
@@ -499,8 +499,8 @@ public final view JGotoStat of GotoStatImpl extends JENode {
 
 @nodeview
 public final view JGotoCaseStat of GotoCaseStatImpl extends JENode {
-	public access:ro	JENode			expr;
-	public access:ro	JSwitchStat		sw;
+	public:ro	JENode			expr;
+	public:ro	JSwitchStat		sw;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating GotoCaseStat");

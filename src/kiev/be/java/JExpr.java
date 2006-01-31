@@ -30,7 +30,7 @@ import kiev.vlang.CastExpr.CastExprImpl;
 
 @nodeview
 public final view JShadow of ShadowImpl extends JENode {
-	public access:ro	JNode		node;
+	public:ro	JNode		node;
 
 	public void generate(Code code, Type reqType) {
 		if (node instanceof JENode) {
@@ -58,7 +58,7 @@ public final view JArrayLengthExpr of ArrayLengthExprImpl extends JAccessExpr {
 
 @nodeview
 public final view JTypeClassExpr of TypeClassExprImpl extends JENode {
-	public access:ro	Type			type;
+	public:ro	Type			type;
 
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
@@ -71,9 +71,9 @@ public final view JTypeClassExpr of TypeClassExprImpl extends JENode {
 
 @nodeview
 public final view JTypeInfoExpr of TypeInfoExprImpl extends JENode {
-	public access:ro	Type					type;
-	public access:ro	JTypeClassExpr		cl_expr;
-	public access:ro	JArr<JENode>		cl_args;
+	public:ro	Type					type;
+	public:ro	JTypeClassExpr		cl_expr;
+	public:ro	JArr<JENode>		cl_args;
 
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeInfoExpr: "+this);
@@ -105,9 +105,9 @@ public final view JTypeInfoExpr of TypeInfoExprImpl extends JENode {
 
 @nodeview
 public view JAssignExpr of AssignExprImpl extends JLvalueExpr {
-	public access:ro	AssignOperator		op;
-	public access:ro	JENode			lval;
-	public access:ro	JENode			value;
+	public:ro	AssignOperator		op;
+	public:ro	JENode			lval;
+	public:ro	JENode			value;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
@@ -186,9 +186,9 @@ public view JAssignExpr of AssignExprImpl extends JLvalueExpr {
 
 @nodeview
 public view JBinaryExpr of BinaryExprImpl extends JENode {
-	public access:ro	BinaryOperator	op;
-	public access:ro	JENode		expr1;
-	public access:ro	JENode		expr2;
+	public:ro	BinaryOperator	op;
+	public:ro	JENode		expr1;
+	public:ro	JENode		expr2;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BinaryExpr: "+this);
@@ -203,7 +203,7 @@ public view JBinaryExpr of BinaryExprImpl extends JENode {
 
 @nodeview
 public view JStringConcatExpr of StringConcatExprImpl extends JENode {
-	public access:ro	JArr<JENode>		args;
+	public:ro	JArr<JENode>		args;
 
 	public static Struct clazzStringBuffer;
 	public static Method clazzStringBufferToString;
@@ -246,7 +246,7 @@ public view JStringConcatExpr of StringConcatExprImpl extends JENode {
 
 @nodeview
 public view JCommaExpr of CommaExprImpl extends JENode {
-	public access:ro	JArr<JENode>		exprs;
+	public:ro	JArr<JENode>		exprs;
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
@@ -262,7 +262,7 @@ public view JCommaExpr of CommaExprImpl extends JENode {
 
 @nodeview
 public view JBlock of BlockImpl extends JENode {
-	public access:ro	JArr<JENode>	stats;
+	public:ro	JArr<JENode>	stats;
 	public				CodeLabel		break_label;
 
 	public void generate(Code code, Type reqType) {
@@ -301,8 +301,8 @@ public view JBlock of BlockImpl extends JENode {
 
 @nodeview
 public view JUnaryExpr of UnaryExprImpl extends JENode {
-	public access:ro	Operator			op;
-	public access:ro	JENode			expr;
+	public:ro	Operator			op;
+	public:ro	JENode			expr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnaryExpr: "+this);
@@ -324,8 +324,8 @@ public view JUnaryExpr of UnaryExprImpl extends JENode {
 
 @nodeview
 public final view JIncrementExpr of IncrementExprImpl extends JENode {
-	public access:ro	Operator			op;
-	public access:ro	JENode			lval;
+	public:ro	Operator			op;
+	public:ro	JENode			lval;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: "+this);
@@ -448,9 +448,9 @@ public final view JIncrementExpr of IncrementExprImpl extends JENode {
 
 @nodeview
 public view JConditionalExpr of ConditionalExprImpl extends JENode {
-	public access:ro	JENode		cond;
-	public access:ro	JENode		expr1;
-	public access:ro	JENode		expr2;
+	public:ro	JENode		cond;
+	public:ro	JENode		expr1;
+	public:ro	JENode		expr2;
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
@@ -476,9 +476,9 @@ public view JConditionalExpr of ConditionalExprImpl extends JENode {
 
 @nodeview
 public view JCastExpr of CastExprImpl extends JENode {
-	public access:ro	JENode		expr;
-	public access:ro	Type			type;
-	public access:ro	boolean			reinterp;
+	public:ro	JENode		expr;
+	public:ro	Type			type;
+	public:ro	boolean			reinterp;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating CastExpr: "+this);

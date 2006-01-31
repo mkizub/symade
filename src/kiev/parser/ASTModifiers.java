@@ -32,7 +32,7 @@ public final class ASTModifiers extends ASTNode {
 	@nodeview
 	public static final view ASTModifiersView of ASTModifiersImpl extends NodeView {
 		public				Access 				acc;
-		public access:ro	NArr<Meta>			annotations;
+		public:ro	NArr<Meta>			annotations;
 		public				MetaSpecial[]		specials;		
 	}
 

@@ -46,7 +46,7 @@ public class CallExpr extends ENode {
 		public				ENode			obj;
 		public				Method			func;
 		public				CallType		mt;
-		public access:ro	NArr<ENode>		args;
+		public:ro	NArr<ENode>		args;
 		public				ENode			temp_expr;
 
 		public int		getPriority() { return Constants.opCallPriority; }
@@ -216,7 +216,7 @@ public class ClosureCallExpr extends ENode {
 	@nodeview
 	public static view ClosureCallExprView of ClosureCallExprImpl extends ENodeView {
 		public				ENode			expr;
-		public access:ro	NArr<ENode>		args;
+		public:ro	NArr<ENode>		args;
 		public				Boolean			is_a_call;
 
 		public int		getPriority() { return Constants.opCallPriority; }

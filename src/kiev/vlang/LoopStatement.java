@@ -43,8 +43,8 @@ public abstract class LoopStat extends ENode implements ContinueTarget {
 	}
 	@nodeview
 	public static abstract view LoopStatView of LoopStatImpl extends ENodeView {
-		public access:ro	Label					lblcnt;
-		public access:ro	Label					lblbrk;
+		public:ro	Label					lblcnt;
+		public:ro	Label					lblbrk;
 	}
 
 	protected LoopStat(LoopStatImpl $view) {
@@ -290,7 +290,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 	@nodeview
 	public static final view ForInitView of ForInitImpl extends ENodeView {
-		public access:ro	NArr<Var>		decls;
+		public:ro	NArr<Var>		decls;
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }

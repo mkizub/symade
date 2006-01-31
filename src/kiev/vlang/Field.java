@@ -68,7 +68,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		public				TypeRef			ftype;
 		public				ENode			init;
 		public				ConstExpr		const_value;
-		public access:ro	NArr<Method>	invs;
+		public:ro	NArr<Method>	invs;
 		
 		@setter public final void set$acc(Access val)	{ this.$view.acc = val; Access.verifyDecl((Field)getDNode()); }
 		@getter public final Type	get$type()			{ return this.$view.ftype.getType(); }
