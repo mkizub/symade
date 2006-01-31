@@ -10,7 +10,6 @@ import kiev.be.java.JNode;
 import kiev.be.java.JENode;
 import kiev.be.java.JInlineMethodStat;
 import kiev.be.java.JBlock;
-import kiev.be.java.JEmptyStat;
 import kiev.be.java.JExprStat;
 import kiev.be.java.JReturnStat;
 import kiev.be.java.JThrowStat;
@@ -165,45 +164,6 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 }
 
 @nodeset
-public class EmptyStat extends ENode {
-	
-	@dflow(out="this:in") private static class DFI {}
-	
-	@virtual typedef This  = EmptyStat;
-	@virtual typedef NImpl = EmptyStatImpl;
-	@virtual typedef VView = EmptyStatView;
-	@virtual typedef JView = JEmptyStat;
-
-	@nodeimpl
-	public static class EmptyStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = EmptyStat;
-	}
-	@nodeview
-	public static view EmptyStatView of EmptyStatImpl extends ENodeView {
-		public EmptyStatView(EmptyStatImpl $view) { super($view); }
-	}
-	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
-	
-	public EmptyStat() {
-		super(new EmptyStatImpl());
-	}
-
-	public EmptyStat(int pos) {
-		this();
-		this.pos = pos;
-	}
-
-	public void resolve(Type reqType) {
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append(';').newLine();
-	}
-}
-
-@nodeset
 public class ExprStat extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -235,6 +195,8 @@ public class ExprStat extends ENode {
 	public ExprStat(ENode expr) {
 		super(new ExprStatImpl());
 		this.expr = expr;
+		if (expr != null)
+			this.pos = expr.pos;
 	}
 
 	public ExprStat(int pos, ENode expr) {
@@ -244,13 +206,18 @@ public class ExprStat extends ENode {
 	}
 
 	public String toString() {
-		return "stat "+expr;
+		if (expr != null)
+			return expr+";";
+		else
+			return ";";
 	}
 
 	public void resolve(Type reqType) {
 		try {
-			expr.resolve(Type.tpVoid);
-			expr.setGenVoidExpr(true);
+			if (expr != null) {
+				expr.resolve(Type.tpVoid);
+				expr.setGenVoidExpr(true);
+			}
 		} catch(Exception e ) {
 			Kiev.reportError(expr,e);
 		}
@@ -258,7 +225,9 @@ public class ExprStat extends ENode {
 
 	public Dumper toJava(Dumper dmp) {
 		if( isHidden() ) dmp.append("/* ");
-		expr.toJava(dmp).append(';');
+		if (expr != null)
+			expr.toJava(dmp);
+		dmp.append(';');
 		if( isHidden() ) dmp.append(" */");
 		return dmp.newLine();
 	}
@@ -315,9 +284,16 @@ public class ReturnStat extends ENode {
 		} else {
 			if( expr == null )
 				Kiev.reportError(this,"Return must return a value in non-void method");
-			else if (!expr.getType().isInstanceOf(ctx_method.etype.ret()) && expr.getType() != Type.tpNull)
+			else if (!expr.getType().isInstanceOf(ctx_method.type.ret()) && expr.getType() != Type.tpNull)
 				Kiev.reportError(this,"Return expression is not of type "+ctx_method.type.ret());
 		}
+	}
+	
+	public static void autoReturn(Type reqType, ENode expr) {
+		if (expr.parent instanceof ReturnStat)
+			return;
+		expr.setAutoReturnable(false);
+		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr); });
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -994,7 +970,6 @@ public class GotoStat extends ENode {
 			stats = resolveStat(name,lst.stat,stats);
 		}
 			break;
-		case EmptyStat: 		break;
 		case LocalStructDecl:	break;
 		case VarDecl:			break;
 		case GotoStat:			break;

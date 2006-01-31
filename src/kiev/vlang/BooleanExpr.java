@@ -136,6 +136,8 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		BoolExpr.checkBool(expr2);
 		getDFlow().out();
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -216,6 +218,8 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		expr2.resolve(Type.tpBoolean);
 		BoolExpr.checkBool(expr2);
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -403,7 +407,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		throw new CompilerException(this,"Unresolved expression "+this);
 	}
 	
-	private ASTNode resolve2(Type reqType) {
+	private void resolve2(Type reqType) {
 		Type t1 = expr1.getType();
 		Type t2 = expr2.getType();
 		if( t1 ≉ t2 ) {
@@ -449,7 +453,8 @@ public class BinaryBoolExpr extends BoolExpr {
 			}
 		}
 		setResolved(true);
-		return this;
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -560,6 +565,8 @@ public class InstanceofExpr extends BoolExpr {
 			}
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	static class InstanceofExprDFFunc extends DFFunc {
@@ -665,7 +672,8 @@ public class BooleanNotExpr extends BoolExpr {
 			return;
 		}
 		setResolved(true);
-		return;
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {

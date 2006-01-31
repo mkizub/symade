@@ -156,6 +156,8 @@ public class ArrayLengthExpr extends AccessExpr {
 		if !(obj.getType().isArray())
 			throw new CompilerException(this, "Access to array length for non-array type "+obj.getType());
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -221,6 +223,8 @@ public class TypeClassExpr extends ENode {
 			return;
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -297,6 +301,8 @@ public class TypeInfoExpr extends ENode {
 		foreach (ENode tie; cl_args)
 			tie.resolve(null);
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -366,8 +372,11 @@ public class AssignExpr extends LvalueExpr {
 	public Type getType() { return lval.getType(); }
 
 	public void resolve(Type reqType) {
-		if( isResolved() )
+		if( isResolved() ) {
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
 			return;
+		}
 		lval.resolve(reqType);
 		Type et1 = lval.getType();
 		if (op == AssignOperator.Assign && et1.isWrapper())
@@ -460,7 +469,7 @@ public class AssignExpr extends LvalueExpr {
 		this.resolve2(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
 	}
 
-	private ENode resolve2(Type reqType) {
+	private void resolve2(Type reqType) {
 		lval.resolve(null);
 		if( !(lval instanceof LvalueExpr) )
 			throw new RuntimeException("Can't assign to "+lval+": lvalue requared");
@@ -510,7 +519,8 @@ public class AssignExpr extends LvalueExpr {
 			}
 		}
 		setResolved(true);
-		return this;
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	static class AssignExprDFFunc extends DFFunc {
@@ -969,6 +979,8 @@ public class BinaryExpr extends ENode {
 			}
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1042,6 +1054,8 @@ public class StringConcatExpr extends ENode {
 		foreach (ENode e; args)
 			e.resolve(null);
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public void appendArg(ENode expr) {
@@ -1126,6 +1140,8 @@ public class CommaExpr extends ENode {
 			}
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1277,6 +1293,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 				} else {
 					st.resolve(reqType);
 				}
+				st = stats[i];
 				if( st.isAbrupted() && !self.isBreaked() ) self.setAbrupted(true);
 				if( st.isMethodAbrupted() && !self.isBreaked() ) self.setMethodAbrupted(true);
 			} catch(Exception e ) {
@@ -1491,6 +1508,8 @@ public class UnaryExpr extends ENode {
 			}
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1567,6 +1586,8 @@ public class IncrementExpr extends ENode {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1927,11 +1948,7 @@ public class CastExpr extends ENode {
 				else if( t ≡ Type.tpChar )   { replaceWithNodeResolve(new ConstCharExpr   ((char)  num)); return; }
 			}
 		}
-		if( et.equals(type) ) {
-			setResolved(true);
-			return;
-		}
-		if( expr instanceof ClosureCallExpr && et instanceof CallType ) {
+		if( !et.equals(type) && expr instanceof ClosureCallExpr && et instanceof CallType ) {
 			if( et.isAutoCastableTo(type) ) {
 				((ClosureCallExpr)expr).is_a_call = Boolean.TRUE;
 				return;
@@ -1941,6 +1958,8 @@ public class CastExpr extends ENode {
 			}
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public static void autoCast(ENode ex, TypeRef tp) {

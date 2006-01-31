@@ -382,6 +382,8 @@ public final class IFldExpr extends AccessExpr {
 			ctx_method.addViolatedField(var);
 
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public boolean	isConstantExpr() {
@@ -531,6 +533,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		}
 		index.resolve(null);
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -606,6 +610,8 @@ public final class ThisExpr extends LvalueExpr {
 		)
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -733,6 +739,8 @@ public final class LVarExpr extends LvalueExpr {
 			}
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -836,6 +844,8 @@ public final class SFldExpr extends AccessExpr {
 		if( ctx_method != null )
 			ctx_method.addViolatedField(var);
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -936,6 +946,8 @@ public final class OuterThisAccessExpr extends AccessExpr {
 			throw new RuntimeException("Access to 'this' in static method "+ctx_method);
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
@@ -994,6 +1006,8 @@ public final class UnwrapExpr extends LvalueExpr {
 			return;
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {

@@ -160,7 +160,11 @@ public final class NewExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
+		if( isResolved() ) {
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
+			return;
+		}
 		CompaundType type;
 		if (this.clazz != null) {
 			type = this.clazz.ctype;
@@ -231,6 +235,8 @@ public final class NewExpr extends ENode {
 				Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -334,7 +340,11 @@ public final class NewArrayExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return;
+		if( isResolved() ) {
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
+			return;
+		}
 		Type type = this.type.getType();
 		ArrayType art = this.arrtype;
 		for(int i=0; i < args.length; i++)
@@ -365,6 +375,8 @@ public final class NewArrayExpr extends ENode {
 			}
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -453,7 +465,11 @@ public final class NewInitializedArrayExpr extends ENode {
 	public int getElementsNumber(int i) { return dims[i]; }
 
 	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return;
+		if( isResolved() ) {
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
+			return;
+		}
 		Type type;
 		if( this.type == null ) {
 			if( !reqType.isArray() )
@@ -486,6 +502,8 @@ public final class NewInitializedArrayExpr extends ENode {
 			}
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -575,6 +593,8 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	public void resolve(Type reqType) throws RuntimeException {
 		clazz.resolveDecl();
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {

@@ -66,7 +66,6 @@ kiev.be.java.JContinueStat kiev/be/java/JContinueStat kiev\be\java\JStatement.ja
 kiev.be.java.JDNode kiev/be/java/JDNode kiev\be\java\JNode.java
 kiev.be.java.JDoWhileStat kiev/be/java/JDoWhileStat kiev\be\java\JLoopStat.java
 kiev.be.java.JENode kiev/be/java/JENode kiev\be\java\JNode.java
-kiev.be.java.JEmptyStat kiev/be/java/JEmptyStat kiev\be\java\JStatement.java
 kiev.be.java.JExprStat kiev/be/java/JExprStat kiev\be\java\JStatement.java
 kiev.be.java.JFakeType kiev/be/java/JFakeType kiev\be\java\JType.java
 kiev.be.java.JFakeTypeProvider kiev/be/java/JFakeTypeProvider kiev\be\java\JType.java
@@ -365,7 +364,6 @@ kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.DummyDNode kiev/vlang/DummyDNode kiev\vlang\AST.java
 kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java
 kiev.vlang.ENode kiev/vlang/ENode kiev\vlang\AST.java
-kiev.vlang.EmptyStat kiev/vlang/EmptyStat kiev\vlang\Statement.java
 kiev.vlang.Env kiev/vlang/Env kiev\vlang\Env.java
 kiev.vlang.ExprStat kiev/vlang/ExprStat kiev\vlang\Statement.java
 kiev.vlang.Field kiev/vlang/Field kiev\vlang\Field.java

@@ -450,6 +450,8 @@ public abstract class ConstExpr extends ENode {
 	
 	public final void resolve(Type reqType) {
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper	toJava(Dumper dmp) {

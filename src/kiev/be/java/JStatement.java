@@ -17,7 +17,6 @@ import syntax kiev.Syntax;
 import kiev.vlang.InlineMethodStat.InlineMethodStatImpl;
 import kiev.vlang.InlineMethodStat.ParamRedir;
 import kiev.vlang.Block.BlockImpl;
-import kiev.vlang.EmptyStat.EmptyStatImpl;
 import kiev.vlang.ExprStat.ExprStatImpl;
 import kiev.vlang.ReturnStat.ReturnStatImpl;
 import kiev.vlang.ThrowStat.ThrowStatImpl;
@@ -57,26 +56,16 @@ public final view JInlineMethodStat of InlineMethodStatImpl extends JENode {
 }
 
 @nodeview
-public final view JEmptyStat of EmptyStatImpl extends JENode {
-	public JEmptyStat(EmptyStatImpl $view) { super($view); }
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating EmptyStat");
-//		code.setLinePos(this);
-//		code.addInstr(Instr.op_nop);
-	}
-}
-
-@nodeview
 public final final view JExprStat of ExprStatImpl extends JENode {
 	public access:ro	JENode		expr;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ExprStat");
 		try {
-			expr.generate(code,Type.tpVoid);
+			if (expr != null)
+				expr.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(expr,e);
+			Kiev.reportError(this,e);
 		}
 	}
 }

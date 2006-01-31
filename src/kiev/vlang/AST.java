@@ -1210,6 +1210,9 @@ public final class VarDecl extends ENode implements Named {
 
 	public void resolve(Type reqType) {
 		var.resolveDecl();
+		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public NodeName getName() { return var.name; }
@@ -1265,6 +1268,7 @@ public final class LocalStructDecl extends ENode implements Named {
 	
 	public void resolve(Type reqType) {
 		clazz.resolveDecl();
+		setResolved(true);
 	}
 
 	public NodeName getName() { return clazz.name; }
@@ -1318,6 +1322,9 @@ public final class NopExpr extends ENode implements NodeData {
 	}
 	public void resolve(Type reqType) {
 		expr.resolve(reqType);
+		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 	
 	public final KString getNodeDataId() { return ID; }

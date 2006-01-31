@@ -158,6 +158,8 @@ public class CallExpr extends ENode {
 			func = (Method)n;
 		}
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -287,6 +289,8 @@ public class ClosureCallExpr extends ENode {
 			args[i].resolve(tp.arg(i));
 		Method call_it = getCallIt(tp);
 		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {

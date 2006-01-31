@@ -762,18 +762,13 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				cond.body.resolve(Type.tpVoid);
 			}
 			if( body != null ) {
-				if (type.ret() ≡ Type.tpVoid)
-					body.setAutoReturnable(true);
-				body.resolve(Type.tpVoid);
+				body.setAutoReturnable(true);
+				body.resolve(type.ret());
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret() ≡ Type.tpVoid ) {
-					if( body instanceof Block ) {
-						body.stats.append(new ReturnStat(pos,null));
-						body.setAbrupted(true);
-					}
-					else if !(isInvariantMethod())
-						Kiev.reportError(this,"Return requared");
+					body.stats.append(new ReturnStat(pos,null));
+					body.setMethodAbrupted(true);
 				} else {
 					Kiev.reportError(this,"Return requared");
 				}
