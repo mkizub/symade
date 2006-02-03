@@ -23,7 +23,7 @@ public abstract class MetaSpecial extends ASTNode implements NodeData {
 	@node
 	public static class MetaSpecialImpl extends NodeImpl {}
 	@nodeview
-	public static view MetaSpecialView of NodeImpl extends NodeView {}
+	public static view MetaSpecialView of MetaSpecialImpl extends NodeView {}
 
 	public NodeView			getNodeView()			alias operator(210,fy,$cast) { return new MetaSpecialView((MetaSpecialImpl)this.$v_impl); }
 	public MetaSpecialView	getMetaSpecialView()	alias operator(210,fy,$cast) { return new MetaSpecialView((MetaSpecialImpl)this.$v_impl); }

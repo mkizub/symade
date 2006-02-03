@@ -1977,6 +1977,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	private void buildVTable(Vector<VTableEntry> vtable, List<Struct> processed) {
 		if (processed.contains(this))
 			return;
+		processed = new List.Cons<Struct>(this, processed);
 		// take vtable from super-types
 		if (super_bound.getType() != null) {
 			super_bound.getType().getStruct().buildVTable(vtable, processed);
@@ -2044,11 +2045,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					vte2.overloader = vte1;
 				else if (r2 ≥ r1)
 					vte1.overloader = vte2;
-				else
-					Kiev.reportWarning(this,"Bad method overloading for:\n"+
-						"    "+vte1.name+vte1.etype+"\n"+
-						"    "+vte2.name+vte2.etype
-					);
+				//else
+				//	Kiev.reportWarning(this,"Bad method overloading for:\n"+
+				//		"    "+vte1.name+vte1.etype+"\n"+
+				//		"    "+vte2.name+vte2.etype
+				//	);
 			}
 		}
 		// find highest overloader
@@ -2218,10 +2219,10 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if (mo == null)
 			return; // not overloaded in this class
 	next_m:
-		foreach (Method m; vte.methods; m != mo) {
+		foreach (Method m; vte.methods; m.ctx_clazz != this) {
 			// check this class have no such a method
 			foreach (DNode x; this.members; x instanceof Method && x.name.name == m.name.name) {
-				if (x.etype ≈ m.etype)
+				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
 			Method bridge = new Method(m.name.name, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.flags);
@@ -2236,7 +2237,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			else
 				bridge.body.stats.append(new ExprStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
 			vte.add(bridge);
-			break;
 		}
 	}
 
