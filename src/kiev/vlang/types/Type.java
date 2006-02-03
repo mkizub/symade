@@ -542,6 +542,20 @@ public final class CompaundType extends Type {
 		return clazz.checkResolved();
 	}
 
+	public boolean isAutoCastableTo(Type t)
+	{
+		if( t ≡ Type.tpVoid ) return true;
+		if( this.isReference() && t.isReference() && (this ≡ tpNull || t ≡ tpNull) ) return true;
+		if( isInstanceOf(t) ) return true;
+		if( this.clazz.isStructView() && this.clazz.view_of.getType().isAutoCastableTo(t) ) return true;
+		if( this.isReference() && !t.isReference() ) {
+			if( ((CoreType)t).getRefTypeForPrimitive() ≈ this ) return true;
+			else if( !Kiev.javaMode && t ≡ Type.tpInt && this ≥ Type.tpEnum )
+				return true;
+		}
+		return super.isAutoCastableTo(t);
+	}
+
 	public boolean isInstanceOf(Type _t2) {
 		if( this ≡ _t2 ) return true;
 		if( this.isReference() && _t2 ≈ Type.tpObject ) return true;

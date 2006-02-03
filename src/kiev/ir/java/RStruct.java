@@ -467,6 +467,8 @@ public final view RStruct of StructImpl extends StructView {
 			Method m = (Method)n;
 			if (m.isStatic() && !m.isVirtualStatic())
 				continue;
+			if (m.isMethodBridge())
+				continue;
 			CallType etype = m.etype;
 			KString name = m.name.name;
 			boolean is_new = true;
@@ -487,6 +489,8 @@ public final view RStruct of StructImpl extends StructView {
 			foreach (DNode n; members; n instanceof Method && !(n instanceof Constructor)) {
 				Method m = (Method)n;
 				if (m.isStatic() && !m.isVirtualStatic())
+					continue;
+				if (m.isMethodBridge())
 					continue;
 				if (m.name.name != vte.name || vte.methods.contains(m))
 					continue;
@@ -518,11 +522,11 @@ public final view RStruct of StructImpl extends StructView {
 					vte2.overloader = vte1;
 				else if (r2 ≥ r1)
 					vte1.overloader = vte2;
-				else
-					Kiev.reportWarning(this,"Bad method overloading for:\n"+
-						"    "+vte1.name+vte1.etype+"\n"+
-						"    "+vte2.name+vte2.etype
-					);
+				//else
+				//	Kiev.reportWarning(this,"Bad method overloading for:\n"+
+				//		"    "+vte1.name+vte1.etype+"\n"+
+				//		"    "+vte2.name+vte2.etype
+				//	);
 			}
 		}
 		// find highest overloader
@@ -691,10 +695,10 @@ public final view RStruct of StructImpl extends StructView {
 		if (mo == null)
 			return; // not overloaded in this class
 	next_m:
-		foreach (Method m; vte.methods; m != mo) {
+		foreach (Method m; vte.methods; m.ctx_clazz != this.getStruct()) {
 			// check this class have no such a method
 			foreach (DNode x; this.members; x instanceof Method && x.name.name == m.name.name) {
-				if (x.etype ≈ m.etype)
+				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
 			Method bridge = new Method(m.name.name, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.flags);
@@ -709,7 +713,6 @@ public final view RStruct of StructImpl extends StructView {
 			else
 				bridge.body.stats.append(new ExprStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
 			vte.add(bridge);
-			break;
 		}
 	}
 

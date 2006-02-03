@@ -1804,6 +1804,12 @@ public class CastExpr extends ENode {
 			resolve(reqType);
 			return;
 		}
+		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView() && extp.getStruct().view_of.getType().isAutoCastableTo(type)) {
+			if( tryOverloadedCast(extp) )
+				return;
+			this.resolve2(type);
+			return;
+		}
 		else {
 			this.resolve2(type);
 			return;

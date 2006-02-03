@@ -34,9 +34,9 @@ public final view JStruct of StructImpl extends JTypeDecl {
 	public:ro	JBaseType			jtype;
 	public:ro	JBaseType			jsuper_type;
 	public:ro	JType[]				interfaces;
-	public:ro	JArr<JStruct>	sub_clazz;
-	public				Attr[]				attrs;
-	public:ro	JArr<JDNode>	members;
+	public:ro	JArr<JStruct>		sub_clazz;
+	public		Attr[]				attrs;
+	public:ro	JArr<JDNode>		members;
 
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
 	public final JBaseType		get$jsuper_type()	{ return getStruct().super_type == null ? null : (JBaseType)getStruct().super_type.getJType(); }
@@ -335,9 +335,9 @@ public final view JStruct of StructImpl extends JTypeDecl {
 
 		foreach (JDNode n; this.members) {
 			if (n instanceof JField)
-				((JField)n).attrs = Attr.emptyArray;
+				n.attrs = Attr.emptyArray;
 			else if (n instanceof JMethod)
-				((JMethod)n).attrs = Attr.emptyArray;
+				n.attrs = Attr.emptyArray;
 		}
 		this.attrs = Attr.emptyArray;
 	}

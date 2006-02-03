@@ -61,6 +61,35 @@ public class ProcessView extends TransfProcessor implements Constants {
 			else
 				m.body.stats.add(new ExprStat(m.pos, ce));
 		}
+		
+		// add a cast from clazz.view_of to this view
+		boolean cast_found = false;
+		foreach (DNode dn; clazz.view_of.getStruct().members; dn instanceof Method) {
+			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
+				cast_found = true;
+				break;
+			}
+		}
+		if (!cast_found) {
+			Method cast = new Method(nameCastOp, clazz.ctype, ACC_PUBLIC|ACC_SYNTHETIC);
+			cast.body = new Block();
+			cast.body.stats.add(new ReturnStat(0, new NewExpr(0, clazz.ctype, new ENode[]{new ThisExpr()})));
+			clazz.view_of.getStruct().addMethod(cast);
+		}
+		// add a cast from this view to the clazz
+		cast_found = false;
+		foreach (DNode dn; clazz.members; dn instanceof Method) {
+			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of) {
+				cast_found = true;
+				break;
+			}
+		}
+		if (!cast_found) {
+			Method cast = new Method(nameCastOp, clazz.view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC);
+			cast.body = new Block();
+			cast.body.stats.add(new ReturnStat(0, new IFldExpr(0, new ThisExpr(), fview)));
+			clazz.addMethod(cast);
+		}
 	}
 
 }
