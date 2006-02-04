@@ -44,9 +44,6 @@ public abstract class LvalueExpr extends ENode {
 	}
 	@nodeview
 	public abstract static view LvalueExprView of LvalueExprImpl extends ENodeView {
-		public LvalueExprView(LvalueExprImpl $view) {
-			super($view);
-		}
 	}
 
 	public LvalueExpr(LvalueExprImpl impl) { super(impl); }
@@ -566,7 +563,6 @@ public final class ThisExpr extends LvalueExpr {
 	}
 	@nodeview
 	public static final view ThisExprView of ThisExprImpl extends LvalueExprView {
-		public ThisExprView(ThisExprImpl $view) { super($view); }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }

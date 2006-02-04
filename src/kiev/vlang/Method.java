@@ -82,6 +82,16 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		@getter public final CallType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
 		@getter public final CallType				get$etype()	{ checkRebuildTypes(); return (CallType)this.dtype.getErasedType(); }
 
+		public Var getRetVar() {
+			if( retvar == null )
+				retvar = new Var(pos,nameResultVar,type_ret.getType(),ACC_FINAL);
+			return retvar;
+		}
+
+		public MetaThrows getMetaThrows() {
+			return (MetaThrows)this.getNodeData(MetaThrows.ID);
+		}
+
 		// virtual static method
 		public final boolean isVirtualStatic() {
 			return this.is_mth_virtual_static;
@@ -241,27 +251,30 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public				Access				acc;
 		public				NodeName			name;
 		public				CallTypeProvider	meta_type;
-		public:ro	NArr<TypeDef>		targs;
+		public:ro			NArr<TypeDef>		targs;
 		public				TypeRef				type_ret;
 		public				TypeRef				dtype_ret;
-		public:ro	CallType			type;
-		public:ro	CallType			dtype;
-		public:ro	CallType			etype;
-		public:ro	NArr<FormPar>		params;
-		public:ro	NArr<ASTAlias>		aliases;
+		public:ro			CallType			type;
+		public:ro			CallType			dtype;
+		public:ro			CallType			etype;
+		public:ro			NArr<FormPar>		params;
+		public:ro			NArr<ASTAlias>		aliases;
 		public				Var					retvar;
-		public				Block			body;
+		public				Block				body;
 		public				PrescannedBody		pbody;
-		public:ro	NArr<WBCCondition>	conditions;
-		public:ro	NArr<Field>			violated_fields;
+		public:ro			NArr<WBCCondition>	conditions;
+		public:ro			NArr<Field>			violated_fields;
 		public				MetaValue			annotation_default;
 		public				boolean				inlined_by_dispatcher;
 		public				boolean				invalid_types;
 
-		@setter public final void set$acc(Access val)	{ this.$view.acc = val; Access.verifyDecl((Method)getDNode()); }
+		@setter public final void set$acc(Access val)	{ ((MethodImpl)this).acc = val; Access.verifyDecl((Method)getDNode()); }
 
 		@getter public Method get$child_ctx_method() { return (Method)this.getNode(); }
 	
+		public Var getRetVar();
+		public MetaThrows getMetaThrows();
+		
 		// virtual static method
 		public final boolean isVirtualStatic();
 		public final void setVirtualStatic(boolean on);
@@ -320,12 +333,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		super(new MethodImpl());
 	}
 
-	public Method(MethodImpl $view) {
-		super($view);
+	public Method(MethodImpl impl) {
+		super(impl);
 	}
 
-	public Method(MethodImpl $view, KString name, Type ret) {
-		this($view,name,new TypeRef(ret));
+	public Method(MethodImpl impl, KString name, Type ret) {
+		this(impl,name,new TypeRef(ret));
 	}
 
 	public Method(KString name, Type ret, int fl) {
@@ -336,18 +349,14 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		this(new MethodImpl(), name, type_ret);
 		this.flags = fl;
 	}
-	public Method(MethodImpl $view, KString name, TypeRef type_ret) {
-		super($view);
+	public Method(MethodImpl impl, KString name, TypeRef type_ret) {
+		super(impl);
 		assert ((name != nameInit && name != nameClassInit) || this instanceof Constructor);
 		this.name = new NodeName(name);
 		this.type_ret = type_ret;
 		this.dtype_ret = type_ret.ncopy();
 		this.meta = new MetaSet();
 		invalid_types = true;
-	}
-
-	public MetaThrows getMetaThrows() {
-		return (MetaThrows)this.getNodeData(MetaThrows.ID);
 	}
 
 	public void checkRebuildTypes() {
@@ -436,12 +445,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public NodeName getName() { return name; }
 
 	public Type	getType() { return type; }
-
-	public Var	getRetVar() {
-		if( retvar == null )
-			retvar = new Var(pos,nameResultVar,type_ret.getType(),ACC_FINAL);
-		return retvar;
-	}
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(name);

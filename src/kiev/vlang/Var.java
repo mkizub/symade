@@ -103,7 +103,7 @@ public class Var extends LvalDNode implements Named, Typed {
 		public	ENode		init;
 		public	int			bcpos;
 
-		@getter public final Type get$type() { return this.$view.vtype.getType(); }
+		@getter public final Type get$type() { return ((VarImpl)this).vtype.getType(); }
 		
 		// is a local var in a rule 
 		public final boolean isLocalRuleVar();
@@ -280,9 +280,9 @@ public final class FormPar extends Var {
 		public int			kind;
 
 		@getter public final Type get$dtype() {
-			if (this.$view.stype == null)
+			if (((FormParImpl)this).stype == null)
 				return get$type();
-			return this.$view.stype.getType();
+			return ((FormParImpl)this).stype.getType();
 		}
 		
 	}

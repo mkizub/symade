@@ -114,8 +114,6 @@ public class ArrayLengthExpr extends AccessExpr {
 	}
 	@nodeview
 	public static final view ArrayLengthExprView of ArrayLengthExprImpl extends AccessExprView {
-		ArrayLengthExprView(ArrayLengthExprImpl $view) { super($view); }
-
 		public Operator getOp() { return BinaryOperator.Access; }
 	}
 

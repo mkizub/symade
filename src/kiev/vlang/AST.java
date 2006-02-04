@@ -211,11 +211,11 @@ public abstract class ASTNode implements Constants, Cloneable {
 			parent.callbackChildChanged(pslot);
 		}
 		
-		public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
+		public final void callbackAttached(NodeImpl parent, AttrSlot pslot) {
 			assert(!isAttached());
-			assert(parent != null && parent != this._self);
+			assert(parent != null && parent != this);
 			// do attach
-			this.parent = parent;
+			this.parent = parent._self;
 			this.pslot = pslot;
 			// notify nodes about new root
 			_self.walkTree(new TreeWalker() {
@@ -428,8 +428,8 @@ public abstract class ASTNode implements Constants, Cloneable {
 	}
 	@nodeview
 	public static abstract view NodeView of NodeImpl implements Constants {
-		public final ASTNode getNode() { return $view._self; }
-		public String toString() { return String.valueOf($view._self); }
+		public final ASTNode getNode() { return ((NodeImpl)this)._self; }
+		public String toString() { return String.valueOf(getNode()); }
 		public Dumper toJava(Dumper dmp) { return getNode().toJava(dmp); }
 		
 		public int			pos;
@@ -455,8 +455,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 		public Object getVal(String name);
 		public void setVal(String name, Object val);
 		public final void callbackDetached();
-		public final void callbackAttached(NodeImpl parent, AttrSlot pslot) { this.$view.callbackAttached(parent._self, pslot); }
-		public final void callbackAttached(ASTNode parent, AttrSlot pslot);
+		public final void callbackAttached(NodeImpl parent, AttrSlot pslot) { ((NodeImpl)this).callbackAttached(parent, pslot); }
 		public final void callbackChildChanged(AttrSlot attr);
 		public final void callbackRootChanged();
 		public final NodeData getNodeData(KString id);
@@ -485,7 +484,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 	
 		public final void walkTree(TreeWalker walker) {
 			if (walker.pre_exec(getNode()))
-				this.$view.walkTree(walker);
+				((NodeImpl)this).walkTree(walker);
 			walker.post_exec(getNode());
 		}
 
@@ -893,8 +892,6 @@ public abstract class LvalDNode extends DNode {
 	}
 	@nodeview
 	public static abstract view LvalDNodeView of LvalDNodeImpl extends DNodeView {
-		public LvalDNodeView(LvalDNodeImpl $view) { super($view); }
-
 		// init wrapper
 		public final boolean isInitWrapper();
 		public final void setInitWrapper(boolean on);
@@ -1054,7 +1051,6 @@ public abstract class ENode extends ASTNode {
 	}
 	@nodeview
 	public static abstract view ENodeView of ENodeImpl extends NodeView {
-		public ENodeView(ENodeImpl $view) { super($view); }
 
 		public final ENode getENode() { return (ENode)this.getNode(); }
 		
@@ -1327,7 +1323,7 @@ public final class NopExpr extends ENode implements NodeData {
 	
 	public final KString getNodeDataId() { return ID; }
 	public void nodeAttached(NodeImpl node) {}
-	public void dataAttached(NodeImpl node) { this.callbackAttached(node.getNode(), tempAttrSlot); }
+	public void dataAttached(NodeImpl node) { this.callbackAttached(node, tempAttrSlot); }
 	public void nodeDetached(NodeImpl node) {}
 	public void dataDetached(NodeImpl node) { this.callbackDetached(); }
 	
@@ -1348,9 +1344,6 @@ public abstract class TypeDecl extends DNode implements Named {
 	}
 	@nodeview
 	public static view TypeDeclView of TypeDeclImpl extends DNodeView {
-		public TypeDeclView(TypeDeclImpl $view) {
-			super($view);
-		}
 	}
 
 	public TypeDecl(TypeDeclImpl impl) { super(impl); }

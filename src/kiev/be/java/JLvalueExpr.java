@@ -24,9 +24,6 @@ import kiev.vlang.UnwrapExpr.UnwrapExprImpl;
 
 @nodeview
 public abstract view JLvalueExpr of LvalueExprImpl extends JENode {
-	public JLvalueExpr(LvalueExpr.LvalueExprImpl $view) {
-		super($view);
-	}
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
@@ -249,8 +246,6 @@ public final view JContainerAccessExpr of ContainerAccessExprImpl extends JLvalu
 @nodeview
 public final view JThisExpr of ThisExprImpl extends JLvalueExpr {
 
-	public JThisExpr(ThisExprImpl $view) { super($view); }
-	
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
 		code.setLinePos(this);

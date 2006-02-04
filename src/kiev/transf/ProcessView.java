@@ -37,7 +37,9 @@ public class ProcessView extends TransfProcessor implements Constants {
 			return;
 		}
 		
-		Field fview = clazz.addField(new Field(nameView,clazz.view_of.getType(), ACC_PRIVATE|ACC_FINAL));
+		Field fview = clazz.resolveField(nameImpl, false);
+		if (fview == null)
+			fview = clazz.addField(new Field(nameImpl,clazz.view_of.getType(), ACC_PUBLIC|ACC_FINAL));
 
 		foreach (DNode dn; clazz.members; dn instanceof Method) {
 			Method m = (Method)dn;
@@ -53,7 +55,11 @@ public class ProcessView extends TransfProcessor implements Constants {
 				continue;
 			}
 			m.body = new Block(m.pos);
-			CallExpr ce = new CallExpr(m.pos, new IFldExpr(m.pos, new ThisExpr(m.pos), fview), vm, ENode.emptyArray);
+			CallExpr ce = new CallExpr(m.pos,
+				new CastExpr(m.pos, clazz.view_of.getType(),
+					new IFldExpr(m.pos, new ThisExpr(m.pos), fview)
+					),
+				vm, ENode.emptyArray);
 			foreach (FormPar fp; m.params)
 				ce.args.append(new LVarExpr(fp.pos, fp));
 			if (ct.ret() ≢ Type.tpVoid)
@@ -87,7 +93,7 @@ public class ProcessView extends TransfProcessor implements Constants {
 		if (!cast_found) {
 			Method cast = new Method(nameCastOp, clazz.view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC);
 			cast.body = new Block();
-			cast.body.stats.add(new ReturnStat(0, new IFldExpr(0, new ThisExpr(), fview)));
+			cast.body.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
 			clazz.addMethod(cast);
 		}
 	}

@@ -25,10 +25,10 @@ import kiev.vlang.NameRef.NameRefImpl;
 public view JNode of NodeImpl implements Constants {
 	@virtual typedef ViewOf  = ASTNode;
 	public final ViewOf getNode() alias operator(210,fy,$cast) {
-		return this.$view._self;
+		return ((NodeImpl)this)._self;
 	}
 	
-	public String toString() { return String.valueOf(this.$view._self); }
+	public String toString() { return String.valueOf(getNode()); }
 	public Dumper toJava(Dumper dmp) { return getNode().toJava(dmp); }
 	
 	public:ro	int			pos;
@@ -41,7 +41,7 @@ public view JNode of NodeImpl implements Constants {
 	public final boolean isHidden();
 	public final boolean isBad();
 	
-	@getter public final JNode get$jparent() { return (JNode)this.$view.parent; }
+	@getter public final JNode get$jparent() { return (JNode)((NodeImpl)this).parent; }
 	@getter public JFileUnit get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
 	@getter public JStruct get$jctx_clazz() { return this.jparent.child_jctx_clazz; }
 	@getter public JStruct get$child_jctx_clazz() { return this.jparent.get$child_jctx_clazz(); }
@@ -49,20 +49,20 @@ public view JNode of NodeImpl implements Constants {
 	@getter public JMethod get$child_jctx_method() { return this.jparent.get$child_jctx_method(); }
 
 	public boolean equals(Object:Object obj) { return false; }
-	public boolean equals(JNode:Object jnv) { return this.$view == jnv.$view; }
+	public boolean equals(JNode:Object jnv) { return (NodeImpl)this == (NodeImpl)jnv; }
 	
 	public static boolean eq(JNode jnv1, JNode jnv2)
 		alias operator(60,xfx,==)
 	{
 		if (jnv1 == null || jnv2 == null) return jnv1 == jnv2;
-		return jnv1.$view == jnv2.$view;
+		return (NodeImpl)jnv1 == (NodeImpl)jnv2;
 	}
 
 	public static boolean neq(JNode jnv1, JNode jnv2)
 		alias operator(60,xfx,!=)
 	{
 		if (jnv1 == null || jnv2 == null) return jnv1 != jnv2;
-		return jnv1.$view != jnv2.$view;
+		return (NodeImpl)jnv1 != (NodeImpl)jnv2;
 	}
 }
 
@@ -90,58 +90,43 @@ public view JDNode of DNodeImpl extends JNode {
 
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 
-	public void setPrivate(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRIVATE set to "+on+" from "+((flags & ACC_PRIVATE)!=0)+", now 0x"+Integer.toHexString(flags));
-		flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
-		if( on ) flags |= ACC_PRIVATE;
-		this.$view.callbackChildChanged(ASTNode.nodeattr$flags);
-	}
+	public void setPrivate();
 }
 
 @nodeview
 public view JLvalDNode of LvalDNodeImpl extends JDNode {
-	public final boolean isForward() { return this.$view.is_forward; }
-	public final boolean isInitWrapper() { return this.$view.is_init_wrapper; }
-	public final boolean isNeedProxy() { return this.$view.is_need_proxy; }
+	public final boolean isForward();
+	public final boolean isInitWrapper();
+	public final boolean isNeedProxy();
 }
 
 @nodeview
 public view JENode of ENodeImpl extends JNode {
 	
-	public JENode(ENodeImpl $view) {
-		super($view);
-	}
-
 	public final ENode getENode() alias operator(210,fy,$cast) { return (ENode)this.getNode(); }
 	
 	//
 	// Expr specific
 	//
 
-	public final boolean isUseNoProxy() { return this.$view.is_expr_use_no_proxy; }
-	public final boolean isAsField() { return this.$view.is_expr_as_field; }
-	public final boolean isGenVoidExpr() { return this.$view.is_expr_gen_void; }
-	public final boolean isForWrapper() { return this.$view.is_expr_for_wrapper; }
-	public final boolean isPrimaryExpr() { return this.$view.is_expr_primary; }
-	public final boolean isSuperExpr() { return this.$view.is_expr_super; }
-	public final boolean isCastCall() { return this.$view.is_expr_cast_call; }
+	public final boolean isUseNoProxy();
+	public final boolean isAsField();
+	public final boolean isGenVoidExpr();
+	public final boolean isForWrapper();
+	public final boolean isPrimaryExpr();
+	public final boolean isSuperExpr();
+	public final boolean isCastCall();
 
 	//
 	// Statement specific flags
 	//
 	
-	public final boolean isAbrupted() { return this.$view.is_stat_abrupted; }
-	public final boolean isBreaked() { return this.$view.is_stat_breaked; }
-	public final boolean isMethodAbrupted() { return this.$view.is_stat_method_abrupted; }
-	public final boolean isAutoReturnable() { return this.$view.is_stat_auto_returnable; }
-	public final boolean isBreakTarget() { return this.$view.is_stat_break_target; }
-
-	public final void setAutoReturnable(boolean on) {
-		if (this.$view.is_stat_auto_returnable != on) {
-			this.$view.is_stat_auto_returnable = on;
-			this.$view.callbackChildChanged(ASTNode.nodeattr$flags);
-		}
-	}
+	public final boolean isAbrupted();
+	public final boolean isBreaked();
+	public final boolean isMethodAbrupted();
+	public final boolean isAutoReturnable();
+	public final boolean isBreakTarget();
+	public final void setAutoReturnable(boolean on);
 	
 	public Type getType() { return this.getNode().getType(); }
 	
@@ -179,9 +164,6 @@ public final view JLocalStructDecl of LocalStructDeclImpl extends JENode {
 
 @nodeview
 public abstract view JTypeDecl of TypeDeclImpl extends JDNode {
-	public JTypeDecl(TypeDeclImpl $view) {
-		super($view);
-	}
 }
 
 @nodeview

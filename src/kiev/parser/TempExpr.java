@@ -39,8 +39,8 @@ public abstract class UnresExpr extends ENode {
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }	
 
-	public UnresExpr(UnresExprImpl $view) {
-		super($view);
+	public UnresExpr(UnresExprImpl impl) {
+		super(impl);
 	}
 	
 	public abstract ENode toResolvedExpr();

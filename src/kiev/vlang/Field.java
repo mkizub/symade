@@ -60,49 +60,59 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 					parent.callbackChildChanged(pslot);
 			}
 		}
-	}
-	@nodeview
-	public static view FieldView of FieldImpl extends LvalDNodeView {
-		public				Access			acc;
-		public				NodeName		name;
-		public				TypeRef			ftype;
-		public				ENode			init;
-		public				ConstExpr		const_value;
-		public:ro	NArr<Method>	invs;
-		
-		@setter public final void set$acc(Access val)	{ this.$view.acc = val; Access.verifyDecl((Field)getDNode()); }
-		@getter public final Type	get$type()			{ return this.$view.ftype.getType(); }
-		
+
 		// is a field of enum
 		public final boolean isEnumField() {
-			return this.$view.is_fld_enum;
+			return this.is_fld_enum;
 		}
 		public final void setEnumField(boolean on) {
-			if (this.$view.is_fld_enum != on) {
-				this.$view.is_fld_enum = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (this.is_fld_enum != on) {
+				this.is_fld_enum = on;
+				this.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// packer field (auto-generated for packed fields)
 		public final boolean isPackerField() {
-			return this.$view.is_fld_packer;
+			return this.is_fld_packer;
 		}
 		public final void setPackerField(boolean on) {
-			if (this.$view.is_fld_packer != on) {
-				this.$view.is_fld_packer = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (this.is_fld_packer != on) {
+				this.is_fld_packer = on;
+				this.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// packed field
 		public final boolean isPackedField() {
-			return this.$view.is_fld_packed;
+			return this.is_fld_packed;
 		}
 		public final void setPackedField(boolean on) {
-			if (this.$view.is_fld_packed != on) {
-				this.$view.is_fld_packed = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (this.is_fld_packed != on) {
+				this.is_fld_packed = on;
+				this.callbackChildChanged(nodeattr$flags);
 			}
 		}
+	}
+	@nodeview
+	public static view FieldView of FieldImpl extends LvalDNodeView {
+		public		Access			acc;
+		public		NodeName		name;
+		public		TypeRef			ftype;
+		public		ENode			init;
+		public		ConstExpr		const_value;
+		public:ro	NArr<Method>	invs;
+		
+		@setter public final void set$acc(Access val)	{ ((FieldImpl)this).acc = val; Access.verifyDecl((Field)getDNode()); }
+		@getter public final Type	get$type()			{ return ((FieldImpl)this).ftype.getType(); }
+		
+		// is a field of enum
+		public final boolean isEnumField();
+		public final void setEnumField(boolean on);
+		// packer field (auto-generated for packed fields)
+		public final boolean isPackerField();
+		public final void setPackerField(boolean on);
+		// packed field
+		public final boolean isPackedField();
+		public final void setPackedField(boolean on);
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }

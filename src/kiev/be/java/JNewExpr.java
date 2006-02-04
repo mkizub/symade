@@ -116,12 +116,12 @@ public final view JNewArrayExpr of NewArrayExprImpl extends JENode {
 @nodeview
 public final view JNewInitializedArrayExpr of NewInitializedArrayExprImpl extends JENode {
 	public:ro	Type				type;
-	public:ro	JArr<JENode>	args;
+	public:ro	JArr<JENode>		args;
 	public:ro	int					dim;
 	public:ro	int[]				dims;
 	public:ro	Type				arrtype;
 
-	@getter public final int			get$dim()				{ return this.$view.dims.length; }
+	@getter public final int	get$dim()	{ return this.dims.length; }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);

@@ -39,9 +39,6 @@ public abstract class BoolExpr extends ENode {
 	}
 	@nodeview
 	public abstract static view BoolExprView of BoolExprImpl extends ENodeView {
-		public BoolExprView(BoolExprImpl $view) {
-			super($view);
-		}
 	}
 
 	public BoolExpr(BoolExprImpl impl) { super(impl); }

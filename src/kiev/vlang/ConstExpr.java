@@ -88,9 +88,6 @@ public final class ConstNullExpr extends ConstExpr {
 	}
 	@nodeview
 	public static view ConstNullExprView of ConstNullExprImpl extends ConstExprView {
-		public ConstNullExprView(ConstNullExprImpl $view) {
-			super($view);
-		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -422,9 +419,6 @@ public abstract class ConstExpr extends ENode {
 	}
 	@nodeview
 	public abstract static view ConstExprView of ConstExprImpl extends ENodeView {
-		public ConstExprView(ConstExprImpl $view) {
-			super($view);
-		}
 
 		public int		getPriority() { return 255; }
 

@@ -27,7 +27,6 @@ public abstract class ASTAlias extends ASTNode {
 	}
 	@nodeview
 	public static view ASTAliasView of ASTAliasImpl extends NodeView {
-		public ASTAliasView(ASTAliasImpl $view) { super($view); }
 	}
 
 	public ASTAlias(ASTAliasImpl v_impl) { super(v_impl); }

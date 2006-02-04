@@ -26,38 +26,31 @@ public final view JMethod of MethodImpl extends JDNode {
 
 	public final Method getMethod() { return (Method)this.getNode(); }
 		
-	public MetaThrows getMetaThrows() {
-		return (MetaThrows)this.$view.getNodeData(MetaThrows.ID);
-	}
-
-	public JVar	getRetVar() {
-		if( this.$view.retvar == null )
-			this.$view.retvar = new Var(pos,nameResultVar,type.ret(),ACC_FINAL);
-		return this.$view.retvar.getJView();
-	}
-
-
-	public:ro	Access						acc;
-	public:ro	KString						name;
+	public:ro	Access					acc;
+	public:ro	KString					name;
 	public:ro	JArr<JVar>				params;
-	public:ro	JBlock				body;
-	public				Attr[]						attrs;
+	public:ro	JBlock					body;
+	public		Attr[]					attrs;
 	public:ro	JArr<JWBCCondition>		conditions;
 	public:ro	JArr<JField>			violated_fields;
-	public:ro	MetaValue					annotation_default;
-	public:ro	boolean						inlined_by_dispatcher;
+	public:ro	MetaValue				annotation_default;
+	public:ro	boolean					inlined_by_dispatcher;
 
-	@getter public final CallType				get$type()		{ return this.$view.type; }
-	@getter public final CallType				get$dtype()		{ return this.$view.dtype; }
-	@getter public final CallType				get$etype()		{ return (CallType)dtype.getErasedType(); }
+	public:ro	CallType				type;
+	public:ro	CallType				dtype;
+	public:ro	CallType				etype;
 
-	public final boolean isVirtualStatic()		{ return this.$view.is_mth_virtual_static; }
-	public final boolean isVarArgs()			{ return this.$view.is_mth_varargs; }
-	public final boolean isRuleMethod()		{ return this.$view instanceof RuleMethod.RuleMethodImpl; }
-	public final boolean isOperatorMethod()	{ return this.$view.is_mth_operator; }
-	public final boolean isNeedFieldInits()	{ return this.$view.is_mth_need_fields_init; }
-	public final boolean isInvariantMethod()	{ return this.$view.is_mth_invariant; }
-	public final boolean isLocalMethod()		{ return this.$view.is_mth_local; }
+	public MetaThrows getMetaThrows();
+	
+	public JVar	getRetVar() { return (JVar)((MethodImpl)this).getRetVar(); }
+	
+	public final boolean isVirtualStatic();
+	public final boolean isVarArgs();
+	public final boolean isRuleMethod();
+	public final boolean isOperatorMethod();
+	public final boolean isNeedFieldInits();
+	public final boolean isInvariantMethod();
+	public final boolean isLocalMethod();
 
 	@getter public JMethod get$child_jctx_method() { return this; }
 

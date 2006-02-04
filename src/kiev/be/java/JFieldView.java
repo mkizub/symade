@@ -31,12 +31,12 @@ public final view JField of FieldImpl extends JLvalDNode {
 	
 	public final Field getField() { return (Field)this.getNode(); }
 	
-	@getter public final Type	get$type()	{ return this.$view.ftype.getType(); }
+	@getter public final Type	get$type()	{ return ((FieldImpl)this).ftype.getType(); }
 	
-	public final boolean isVirtual()		{ return this.$view.is_virtual; }
-	public final boolean isEnumField()		{ return this.$view.is_fld_enum; }
-	public final boolean isPackerField()	{ return this.$view.is_fld_packer; }
-	public final boolean isPackedField()	{ return this.$view.is_fld_packed; }
+	public final boolean isVirtual();
+	public final boolean isEnumField();
+	public final boolean isPackerField();
+	public final boolean isPackedField();
 
 	public Attr addAttr(Attr a) {
 		// Check we already have this attribute

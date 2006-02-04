@@ -343,16 +343,16 @@ public abstract class ASTRuleNode extends ENode {
 		public int			idx;
 		public int			depth;
 
-		public int get$base() {	return this.$view.base; }
-		public void set$base(int b) { this.$view.base = b; }
+		public int get$base() {	return ((ASTRuleNodeImpl)this).base; }
+		public void set$base(int b) { ((ASTRuleNodeImpl)this).base = b; }
 	
-		public int get$idx() {	return this.$view.idx; }
-		public void set$idx(int i) { this.$view.idx = i; }
+		public int get$idx() {	return ((ASTRuleNodeImpl)this).idx; }
+		public void set$idx(int i) { ((ASTRuleNodeImpl)this).idx = i; }
 
 		public boolean preGenerate() { Kiev.reportError(this,"preGenerate of ASTRuleNode"); return false; }
 	}
 
-	public ASTRuleNode(ASTRuleNodeImpl $view) { super($view); }
+	public ASTRuleNode(ASTRuleNodeImpl impl) { super(impl); }
 
 	public abstract 		void	createText(StringBuffer sb);
 	public abstract 		void	resolve1(JumpNodes jn);
@@ -889,7 +889,6 @@ public final class RuleCutExpr extends ASTRuleNode {
 	}
 	@nodeview
 	public static final view RuleCutExprView of RuleCutExprImpl extends ASTRuleNodeView {
-		public RuleCutExprView(RuleCutExprImpl $view) { super($view); }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1056,11 +1055,11 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		public				ENode			bt_expr;
 	}
 	
-	public RuleExprBase(RuleExprBaseImpl $view) {
-		super($view);
+	public RuleExprBase(RuleExprBaseImpl impl) {
+		super(impl);
 	}
-	public RuleExprBase(RuleExprBaseImpl $view, ENode expr, ENode bt_expr) {
-		super($view);
+	public RuleExprBase(RuleExprBaseImpl impl, ENode expr, ENode bt_expr) {
+		super(impl);
 		this.expr = expr;
 		this.bt_expr = bt_expr;
 	}
@@ -1104,7 +1103,6 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 	@nodeview
 	public static final view RuleWhileExprView of RuleWhileExprImpl extends RuleExprBaseView {
-		public RuleWhileExprView(RuleWhileExprImpl $view) { super($view); }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
@@ -1174,7 +1172,6 @@ public final class RuleExpr extends RuleExprBase {
 	}
 	@nodeview
 	public static final view RuleExprView of RuleExprImpl extends RuleExprBaseView {
-		public RuleExprView(RuleExprImpl $view) { super($view); }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }

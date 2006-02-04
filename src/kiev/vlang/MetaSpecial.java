@@ -46,7 +46,7 @@ public abstract class MetaSpecial extends ASTNode implements NodeData {
 		return this.ncopy();
 	}
 	public void nodeAttached(NodeImpl node) {}
-	public void dataAttached(NodeImpl node) { this.callbackAttached(node.getNode(), attr); }
+	public void dataAttached(NodeImpl node) { this.callbackAttached(node, attr); }
 	public void nodeDetached(NodeImpl node) {}
 	public void dataDetached(NodeImpl node) { this.callbackDetached(); }
 	

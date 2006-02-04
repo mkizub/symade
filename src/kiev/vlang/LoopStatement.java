@@ -47,10 +47,10 @@ public abstract class LoopStat extends ENode implements ContinueTarget {
 		public:ro	Label					lblbrk;
 	}
 
-	protected LoopStat(LoopStatImpl $view) {
-		super($view);
-		$view.lblcnt = new Label();
-		$view.lblbrk = new Label();
+	protected LoopStat(LoopStatImpl impl) {
+		super(impl);
+		impl.lblcnt = new Label();
+		impl.lblbrk = new Label();
 		setBreakTarget(true);
 	}
 }

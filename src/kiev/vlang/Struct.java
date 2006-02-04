@@ -254,22 +254,22 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public static abstract view StructView of StructImpl extends TypeDeclView {
 		public				Access					acc;
 		public				ClazzName				name;
-		public:ro	CompaundTypeProvider	imeta_type;
+		public:ro			CompaundTypeProvider	imeta_type;
 		public				WrapperTypeProvider		wmeta_type;
 		public				OuterTypeProvider		ometa_type;
-		public:ro	CompaundType			ctype;
+		public:ro			CompaundType			ctype;
 		public				TypeRef					view_of;
 		public				TypeRef					super_bound;
-		public:ro	NArr<TypeRef>			interfaces;
-		public:ro	NArr<TypeDef>			args;
+		public:ro			NArr<TypeRef>			interfaces;
+		public:ro			NArr<TypeDef>			args;
 		public				Struct					package_clazz;
 		public				Struct					typeinfo_clazz;
-		public:ro	NArr<Struct>			sub_clazz;
-		public:ro	NArr<DNode>				imported;
-		public:ro	NArr<TypeDecl>			direct_extenders;
-		public:ro	NArr<DNode>				members;
+		public:ro			NArr<Struct>			sub_clazz;
+		public:ro			NArr<DNode>				imported;
+		public:ro			NArr<TypeDecl>			direct_extenders;
+		public:ro			NArr<DNode>				members;
 
-		@setter public final void set$acc(Access val) { this.$view.acc = val; Access.verifyDecl((Struct)getDNode()); }
+		@setter public final void set$acc(Access val) { ((StructImpl)this).acc = val; Access.verifyDecl((Struct)getDNode()); }
 		@getter public final CompaundType	get$super_type()	{ return (CompaundType)super_bound.lnk; }
 		@setter public final void set$super_type(CompaundType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
 
@@ -893,7 +893,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 							//init.params.append(new FormPar(pos,KString.from("text"),Type.tpString,FormPar.PARAM_NORMAL,0));
 						}
 						if (isStructView()) {
-							init.params.append(new FormPar(pos,nameView,view_of.getType(),FormPar.PARAM_NORMAL,ACC_FINAL));
+							init.params.append(new FormPar(pos,nameImpl,view_of.getType(),FormPar.PARAM_NORMAL,ACC_FINAL));
 						}
 					}
 					init.pos = pos;
@@ -1112,7 +1112,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 						//call_super.args.add(new ASTIdentifier(pos, KString.from("text")));
 					}
 					else if( isStructView() && super_type.getStruct().isStructView() ) {
-						call_super.args.add(new ASTIdentifier(pos, nameView));
+						call_super.args.add(new ASTIdentifier(pos, nameImpl));
 					}
 					stats.insert(new ExprStat(call_super),0);
 				}
@@ -1128,16 +1128,19 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					);
 				}
 				if (isStructView()) {
-					foreach (FormPar fp; m.params; fp.name.equals(nameView)) {
-						stats.insert(
-							new ExprStat(pos,
-								new AssignExpr(pos,AssignOperator.Assign,
-									new IFldExpr(pos,new ThisExpr(pos),resolveField(nameView)),
-									new LVarExpr(pos,fp)
-								)
-							),p++
-						);
-						break;
+					Field fview = this.resolveField(nameImpl);
+					if (fview.parent == this) {
+						foreach (FormPar fp; m.params; fp.name.equals(nameImpl)) {
+							stats.insert(
+								new ExprStat(pos,
+									new AssignExpr(pos,AssignOperator.Assign,
+										new IFldExpr(pos,new ThisExpr(pos),resolveField(nameImpl)),
+										new LVarExpr(pos,fp)
+									)
+								),p++
+							);
+							break;
+						}
 					}
 				}
 				if (isTypeUnerasable() && m.isNeedFieldInits()) {

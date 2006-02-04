@@ -22,12 +22,8 @@ public final class ASTPragma extends DNode {
 	}
 	@nodeview
 	public static view ASTPragmaView of ASTPragmaImpl extends DNodeView {
-		ASTPragmaView(ASTPragmaImpl $view) {
-			super($view);
-			this.$view = $view;
-		}
-		public           boolean				enable;
-		public:ro NArr<ConstStringExpr>	options;
+		public		boolean					enable;
+		public:ro	NArr<ConstStringExpr>	options;
 	}
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }

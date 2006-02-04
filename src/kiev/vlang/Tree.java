@@ -141,7 +141,7 @@ public final class NArr<N extends ASTNode> {
 				$nodes[idx+1].pprev = node;
 				node.pnext = $nodes[idx+1];
 			}
-			node.callbackAttached(getParent(), $pslot);
+			node.callbackAttached($parent_impl, $pslot);
 		}
 		return node;
 	}
@@ -167,7 +167,7 @@ public final class NArr<N extends ASTNode> {
 				$nodes[sz-1].pnext = node;
 				node.pprev = $nodes[sz-1];
 			}
-			node.callbackAttached(getParent(), $pslot);
+			node.callbackAttached($parent_impl, $pslot);
 		}
 		return node;
 	}
@@ -220,7 +220,7 @@ public final class NArr<N extends ASTNode> {
 				$nodes[idx+1].pprev = node;
 				node.pnext = $nodes[idx+1];
 			}
-			node.callbackAttached(getParent(), $pslot);
+			node.callbackAttached($parent_impl, $pslot);
 		}
 		return node;
 	}

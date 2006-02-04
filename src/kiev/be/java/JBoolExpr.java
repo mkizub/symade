@@ -24,10 +24,6 @@ interface IBoolExpr {
 
 @nodeview
 public abstract view JBoolExpr of BoolExprImpl extends JENode implements IBoolExpr {
-	public JBoolExpr(BoolExprImpl $view) {
-		super($view);
-		this.$view = $view;
-	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr: "+this);

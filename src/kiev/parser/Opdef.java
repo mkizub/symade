@@ -29,21 +29,11 @@ public class Opdef extends DNode {
 		@ref Operator				resolved;
 	}
 	@nodeview
-	public static class OpdefView extends DNodeView {
-		final OpdefImpl impl;
-		OpdefView(OpdefImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final int				get$prior()		{ return this.impl.prior; }
-		@getter public final int				get$opmode()	{ return this.impl.opmode; }
-		@getter public final KString			get$image()		{ return this.impl.image; }
-		@getter public final Operator			get$resolved()	{ return this.impl.resolved; }
-		
-		@setter public final void set$prior(int val)			{ this.impl.prior = val; }
-		@setter public final void set$opmode(int val)			{ this.impl.opmode = val; }
-		@setter public final void set$image(KString val)		{ this.impl.image = val; }
-		@setter public final void set$resolved(Operator val)	{ this.impl.resolved = val; }
+	public static view OpdefView of OpdefImpl extends DNodeView {
+		public int					prior;
+		public int					opmode;
+		public KString				image;
+		public Operator				resolved;
 	}
 	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
 	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }

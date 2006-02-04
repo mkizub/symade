@@ -62,8 +62,8 @@ public class TypeRef extends ENode {
 		super(new TypeRefImpl());
 	}
 	
-	public TypeRef(TypeRefImpl $view) {
-		super($view);
+	public TypeRef(TypeRefImpl impl) {
+		super(impl);
 	}
 
 	public TypeRef(Type tp) {

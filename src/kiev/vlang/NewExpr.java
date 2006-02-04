@@ -297,12 +297,12 @@ public final class NewArrayExpr extends ENode {
 		public				ArrayType		arrtype;
 
 		public Type get$arrtype() {
-			ArrayType art = this.$view.arrtype;
+			ArrayType art = ((NewArrayExprImpl)this).arrtype;
 			if (art != null)
 				return art;
 			art = new ArrayType(type.getType());
 			for(int i=1; i < dim; i++) art = new ArrayType(art);
-			this.$view.arrtype = art;
+			((NewArrayExprImpl)this).arrtype = art;
 			return art;
 		}
 
@@ -413,19 +413,19 @@ public final class NewInitializedArrayExpr extends ENode {
 	@nodeview
 	public static final view NewInitializedArrayExprView of NewInitializedArrayExprImpl extends ENodeView {
 		public				TypeRef			type;
-		public:ro	NArr<ENode>		args;
+		public:ro			NArr<ENode>		args;
 		public				int[]			dims;
 		public				ArrayType		arrtype;
 		
-		@getter public final int	get$dim()	{ return this.$view.dims.length; }
+		@getter public final int	get$dim()	{ return this.dims.length; }
 
 		public Type get$arrtype() {
-			ArrayType art = this.$view.arrtype;
+			ArrayType art = ((NewInitializedArrayExprImpl)this).arrtype;
 			if (art != null)
 				return art;
 			art = new ArrayType(type.getType());
 			for(int i=1; i < dim; i++) art = new ArrayType(art);
-			this.$view.arrtype = art;
+			((NewInitializedArrayExprImpl)this).arrtype = art;
 			return art;
 		}
 

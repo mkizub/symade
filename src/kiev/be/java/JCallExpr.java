@@ -288,7 +288,7 @@ public final view JClosureCallExpr of ClosureCallExprImpl extends JENode {
 	public:ro JArr<JENode>	args;
 	public:ro Boolean		is_a_call;
 	
-	@getter public final CallType		get$ctype()				{ return (CallType)this.$view.expr.getType(); }
+	@getter public final CallType		get$ctype()				{ return (CallType)((ClosureCallExprImpl)this).expr.getType(); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ClosureCallExpr: "+this);
