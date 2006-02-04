@@ -24,7 +24,7 @@ import kiev.vlang.Struct.StructImpl;
 @nodeview
 public final view JStructView of StructImpl extends JTypeDeclView {
 
-	public final Struct getStruct() { return this.$view.getStruct(); }
+	public final Struct getStruct() { return ((StructImpl)this.$view).getStruct(); }
 
 	public access:ro	Access				acc;
 	public access:ro	ClazzName			name;
@@ -35,26 +35,26 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 	public access:ro	JDNodeView[]		members;
 
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
-	public final Type[]			get$interfaces()	{ return this.$view.interfaces.toTypeArray(); }
-	public final Type[]			get$args()			{ return this.$view.args.toTypeArray(); }
+	public final Type[]			get$interfaces()	{ return ((StructImpl)this.$view).interfaces.toTypeArray(); }
+	public final Type[]			get$args()			{ return ((StructImpl)this.$view).args.toTypeArray(); }
 	public final CompaundType	get$super_type()	{ return getStruct().super_type; }
-	public final JStructView[]	get$sub_clazz()		{ return (JStructView[])this.$view.sub_clazz.toJViewArray(JStructView.class); }
-	public final JDNodeView[]	get$members()		{ return (JDNodeView[])this.$view.members.toJViewArray(JDNodeView.class); }
+	public final JStructView[]	get$sub_clazz()		{ return (JStructView[])((StructImpl)this.$view).sub_clazz.toJViewArray(JStructView.class); }
+	public final JDNodeView[]	get$members()		{ return (JDNodeView[])((StructImpl)this.$view).members.toJViewArray(JDNodeView.class); }
 
 	public final boolean isClazz()					{ return this.getStruct().isClazz(); }
 	public final boolean isPackage()				{ return this.getStruct().isPackage(); }
-	public final boolean isPizzaCase()				{ return this.$view.is_struct_pizza_case; }
-	public final boolean isLocal()					{ return this.$view.is_struct_local; }
-	public final boolean isAnonymouse()			{ return this.$view.is_struct_anomymouse; }
-	public final boolean isHasCases()				{ return this.$view.is_struct_has_pizza_cases; }
-	public final boolean isMembersGenerated()		{ return this.$view.is_struct_members_generated; }
-	public final boolean isMembersPreGenerated()	{ return this.$view.is_struct_pre_generated; }
-	public final boolean isStatementsGenerated()	{ return this.$view.is_struct_statements_generated; }
-	public final boolean isGenerated()				{ return this.$view.is_struct_generated; }
-	public final boolean isAnnotation()			{ return this.$view.is_struct_annotation; }
-	public final boolean isEnum()					{ return this.$view.is_struct_enum; }
+	public final boolean isPizzaCase()				{ return ((StructImpl)this.$view).is_struct_pizza_case; }
+	public final boolean isLocal()					{ return ((StructImpl)this.$view).is_struct_local; }
+	public final boolean isAnonymouse()			{ return ((StructImpl)this.$view).is_struct_anomymouse; }
+	public final boolean isHasCases()				{ return ((StructImpl)this.$view).is_struct_has_pizza_cases; }
+	public final boolean isMembersGenerated()		{ return ((StructImpl)this.$view).is_struct_members_generated; }
+	public final boolean isMembersPreGenerated()	{ return ((StructImpl)this.$view).is_struct_pre_generated; }
+	public final boolean isStatementsGenerated()	{ return ((StructImpl)this.$view).is_struct_statements_generated; }
+	public final boolean isGenerated()				{ return ((StructImpl)this.$view).is_struct_generated; }
+	public final boolean isAnnotation()			{ return ((StructImpl)this.$view).is_struct_annotation; }
+	public final boolean isEnum()					{ return ((StructImpl)this.$view).is_struct_enum; }
 	public final boolean isSyntax()					{ return this.getStruct().isSyntax(); }
-	public final boolean isLoadedFromBytecode()	{ return this.$view.is_struct_bytecode; }
+	public final boolean isLoadedFromBytecode()	{ return ((StructImpl)this.$view).is_struct_bytecode; }
 
 	@getter public JStructView get$child_jctx_clazz() { return this; }
 

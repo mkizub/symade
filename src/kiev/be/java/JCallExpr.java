@@ -22,7 +22,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 	public access:ro CallType		mt;
 	public           JENodeView		temp_expr;
 
-	@getter public final JENodeView[]		get$args()	{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
+	@getter public final JENodeView[]		get$args()	{ return (JENodeView[])((CallExprImpl)this.$view).args.toJViewArray(JENodeView.class); }
 	
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
@@ -286,8 +286,8 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 	public access:ro JENodeView			expr;
 	public access:ro boolean			is_a_call;
 	
-	@getter public final CallType		get$ctype()				{ return (CallType)this.$view.expr.getType(); }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
+	@getter public final CallType		get$ctype()				{ return (CallType)((ClosureCallExprImpl)this.$view).expr.getType(); }
+	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])((ClosureCallExprImpl)this.$view).args.toJViewArray(JENodeView.class); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ClosureCallExpr: "+this);

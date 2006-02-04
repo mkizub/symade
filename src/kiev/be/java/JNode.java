@@ -96,9 +96,9 @@ public view JDNodeView of DNodeImpl extends JNodeView {
 
 @nodeview
 public view JLvalDNodeView of LvalDNodeImpl extends JDNodeView {
-	public final boolean isForward() { return this.$view.is_forward; }
-	public final boolean isInitWrapper() { return this.$view.is_init_wrapper; }
-	public final boolean isNeedProxy() { return this.$view.is_need_proxy; }
+	public final boolean isForward() { return ((DNodeImpl)this.$view).is_forward; }
+	public final boolean isInitWrapper() { return ((DNodeImpl)this.$view).is_init_wrapper; }
+	public final boolean isNeedProxy() { return ((DNodeImpl)this.$view).is_need_proxy; }
 }
 
 @nodeview

@@ -25,8 +25,8 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 	public				JENodeView		temp_expr;
 	public access:ro	JMethodView		func;
 	
-	@getter public final JENodeView		get$outer()				{ return this.$view.outer==null? null : this.$view.outer.getJENodeView(); }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
+	@getter public final JENodeView		get$outer()				{ return ((NewExprImpl)this.$view).outer==null? null : ((NewExprImpl)this.$view).outer.getJENodeView(); }
+	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])((NewExprImpl)this.$view).args.toJViewArray(JENodeView.class); }
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
@@ -97,7 +97,7 @@ public final view JNewArrayExprView of NewArrayExprImpl extends JENodeView {
 	public access:ro	int				dim;
 	public access:ro	Type			arrtype;
 	
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
+	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])((NewArrayExprImpl)this.$view).args.toJViewArray(JENodeView.class); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewArrayExpr: "+this);
@@ -125,8 +125,8 @@ public final view JNewInitializedArrayExprView of NewInitializedArrayExprImpl ex
 	public access:ro	int[]			dims;
 	public access:ro	Type			arrtype;
 
-	@getter public final int			get$dim()				{ return this.$view.dims.length; }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
+	@getter public final int			get$dim()				{ return ((NewInitializedArrayExprImpl)this.$view).dims.length; }
+	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])((NewInitializedArrayExprImpl)this.$view).args.toJViewArray(JENodeView.class); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);
@@ -157,7 +157,7 @@ public final view JNewClosureView of NewClosureImpl extends JENodeView {
 	public access:ro	JStructView		clazz;
 	public access:ro	JMethodView		func;
 
-	@getter public final CallType		get$type()				{ return (CallType)this.$view.type.getType(); }
+	@getter public final CallType		get$type()				{ return (CallType)((NewClosureImpl)this.$view).type.getType(); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);

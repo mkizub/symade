@@ -638,162 +638,162 @@ public abstract class DNode extends ASTNode {
 		public int		flags;
 		public MetaSet	meta;
 
-		public final boolean isPublic()				{ return this.$view.is_access == MASK_ACC_PUBLIC; }
-		public final boolean isPrivate()			{ return this.$view.is_access == MASK_ACC_PRIVATE; }
-		public final boolean isProtected()			{ return this.$view.is_access == MASK_ACC_PROTECTED; }
-		public final boolean isPkgPrivate()		{ return this.$view.is_access == MASK_ACC_DEFAULT; }
-		public final boolean isStatic()				{ return this.$view.is_static; }
-		public final boolean isFinal()				{ return this.$view.is_final; }
-		public final boolean isSynchronized()		{ return this.$view.is_mth_synchronized; }
-		public final boolean isVolatile()			{ return this.$view.is_fld_volatile; }
-		public final boolean isFieldVolatile()		{ return this.$view.is_fld_volatile; }
-		public final boolean isMethodBridge()		{ return this.$view.is_mth_bridge; }
-		public final boolean isFieldTransient()	{ return this.$view.is_fld_transient; }
-		public final boolean isMethodVarargs()		{ return this.$view.is_mth_varargs; }
-		public final boolean isStructBcLoaded()	{ return this.$view.is_struct_bytecode; }
-		public final boolean isMethodNative()		{ return this.$view.is_mth_native; }
-		public final boolean isInterface()			{ return this.$view.is_struct_interface; }
-		public final boolean isAbstract()			{ return this.$view.is_abstract; }
+		public final boolean isPublic()				{ return ((DNodeImpl)this.$view).is_access == MASK_ACC_PUBLIC; }
+		public final boolean isPrivate()			{ return ((DNodeImpl)this.$view).is_access == MASK_ACC_PRIVATE; }
+		public final boolean isProtected()			{ return ((DNodeImpl)this.$view).is_access == MASK_ACC_PROTECTED; }
+		public final boolean isPkgPrivate()		{ return ((DNodeImpl)this.$view).is_access == MASK_ACC_DEFAULT; }
+		public final boolean isStatic()				{ return ((DNodeImpl)this.$view).is_static; }
+		public final boolean isFinal()				{ return ((DNodeImpl)this.$view).is_final; }
+		public final boolean isSynchronized()		{ return ((DNodeImpl)this.$view).is_mth_synchronized; }
+		public final boolean isVolatile()			{ return ((DNodeImpl)this.$view).is_fld_volatile; }
+		public final boolean isFieldVolatile()		{ return ((DNodeImpl)this.$view).is_fld_volatile; }
+		public final boolean isMethodBridge()		{ return ((DNodeImpl)this.$view).is_mth_bridge; }
+		public final boolean isFieldTransient()	{ return ((DNodeImpl)this.$view).is_fld_transient; }
+		public final boolean isMethodVarargs()		{ return ((DNodeImpl)this.$view).is_mth_varargs; }
+		public final boolean isStructBcLoaded()	{ return ((DNodeImpl)this.$view).is_struct_bytecode; }
+		public final boolean isMethodNative()		{ return ((DNodeImpl)this.$view).is_mth_native; }
+		public final boolean isInterface()			{ return ((DNodeImpl)this.$view).is_struct_interface; }
+		public final boolean isAbstract()			{ return ((DNodeImpl)this.$view).is_abstract; }
 		
-		public final boolean isStructView()		{ return this.$view.is_virtual; }
-		public final boolean isTypeUnerasable()	{ return this.$view.is_type_unerasable; }
-		public final boolean isPackage()			{ return this.$view.is_access == MASK_ACC_NAMESPACE; }
-		public final boolean isSyntax()				{ return this.$view.is_access == MASK_ACC_SYNTAX; }
+		public final boolean isStructView()		{ return ((DNodeImpl)this.$view).is_virtual; }
+		public final boolean isTypeUnerasable()	{ return ((DNodeImpl)this.$view).is_type_unerasable; }
+		public final boolean isPackage()			{ return ((DNodeImpl)this.$view).is_access == MASK_ACC_NAMESPACE; }
+		public final boolean isSyntax()				{ return ((DNodeImpl)this.$view).is_access == MASK_ACC_SYNTAX; }
 
 		public void setPublic() {
-			if (this.$view.is_access != MASK_ACC_PUBLIC) {
-				this.$view.is_access = MASK_ACC_PUBLIC;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_access != MASK_ACC_PUBLIC) {
+				((DNodeImpl)this.$view).is_access = MASK_ACC_PUBLIC;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setPrivate() {
-			if (this.$view.is_access != MASK_ACC_PRIVATE) {
-				this.$view.is_access = MASK_ACC_PRIVATE;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_access != MASK_ACC_PRIVATE) {
+				((DNodeImpl)this.$view).is_access = MASK_ACC_PRIVATE;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setProtected() {
-			if (this.$view.is_access != MASK_ACC_PROTECTED) {
-				this.$view.is_access = MASK_ACC_PROTECTED;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_access != MASK_ACC_PROTECTED) {
+				((DNodeImpl)this.$view).is_access = MASK_ACC_PROTECTED;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setPkgPrivate() {
-			if (this.$view.is_access != MASK_ACC_DEFAULT) {
-				this.$view.is_access = MASK_ACC_DEFAULT;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_access != MASK_ACC_DEFAULT) {
+				((DNodeImpl)this.$view).is_access = MASK_ACC_DEFAULT;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public final void setPackage() {
-			if (this.$view.is_access != MASK_ACC_NAMESPACE) {
-				this.$view.is_access = MASK_ACC_NAMESPACE;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_access != MASK_ACC_NAMESPACE) {
+				((DNodeImpl)this.$view).is_access = MASK_ACC_NAMESPACE;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public final void setSyntax() {
-			if (this.$view.is_access != MASK_ACC_SYNTAX) {
-				this.$view.is_access = MASK_ACC_SYNTAX;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_access != MASK_ACC_SYNTAX) {
+				((DNodeImpl)this.$view).is_access = MASK_ACC_SYNTAX;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 
 		public void setStatic(boolean on) {
-			if (this.$view.is_static != on) {
-				this.$view.is_static = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_static != on) {
+				((DNodeImpl)this.$view).is_static = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setFinal(boolean on) {
-			if (this.$view.is_final != on) {
-				this.$view.is_final = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_final != on) {
+				((DNodeImpl)this.$view).is_final = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setSynchronized(boolean on) {
-			if (this.$view.is_mth_synchronized != on) {
-				this.$view.is_mth_synchronized = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_mth_synchronized != on) {
+				((DNodeImpl)this.$view).is_mth_synchronized = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setVolatile(boolean on) {
-			if (this.$view.is_fld_volatile != on) {
-				this.$view.is_fld_volatile = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_fld_volatile != on) {
+				((DNodeImpl)this.$view).is_fld_volatile = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setFieldVolatile(boolean on) {
-			if (this.$view.is_fld_volatile != on) {
-				this.$view.is_fld_volatile = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_fld_volatile != on) {
+				((DNodeImpl)this.$view).is_fld_volatile = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setMethodBridge(boolean on) {
-			if (this.$view.is_mth_bridge != on) {
-				this.$view.is_mth_bridge = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_mth_bridge != on) {
+				((DNodeImpl)this.$view).is_mth_bridge = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setFieldTransient(boolean on) {
-			if (this.$view.is_fld_transient != on) {
-				this.$view.is_fld_transient = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_fld_transient != on) {
+				((DNodeImpl)this.$view).is_fld_transient = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setMethodVarargs(boolean on) {
-			if (this.$view.is_mth_varargs != on) {
-				this.$view.is_mth_varargs = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_mth_varargs != on) {
+				((DNodeImpl)this.$view).is_mth_varargs = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setMethodNative(boolean on) {
-			if (this.$view.is_mth_native != on) {
-				this.$view.is_mth_native = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_mth_native != on) {
+				((DNodeImpl)this.$view).is_mth_native = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setInterface(boolean on) {
-			if (this.$view.is_struct_interface != on) {
-				this.$view.is_struct_interface = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_struct_interface != on) {
+				((DNodeImpl)this.$view).is_struct_interface = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setAbstract(boolean on) {
-			if (this.$view.is_abstract != on) {
-				this.$view.is_abstract = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_abstract != on) {
+				((DNodeImpl)this.$view).is_abstract = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 
 		public void setStructView() {
-			if (!this.$view.is_virtual) {
-				this.$view.is_virtual = true;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (!((DNodeImpl)this.$view).is_virtual) {
+				((DNodeImpl)this.$view).is_virtual = true;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		public void setTypeUnerasable(boolean on) {
-			if (this.$view.is_type_unerasable != on) {
-				this.$view.is_type_unerasable = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_type_unerasable != on) {
+				((DNodeImpl)this.$view).is_type_unerasable = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 
 		public final boolean isVirtual() {
-			return this.$view.is_virtual;
+			return ((DNodeImpl)this.$view).is_virtual;
 		}
 		public final void setVirtual(boolean on) {
-			if (this.$view.is_virtual != on) {
-				this.$view.is_virtual = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_virtual != on) {
+				((DNodeImpl)this.$view).is_virtual = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 
 		@getter public final boolean isForward() {
-			return this.$view.is_forward;
+			return ((DNodeImpl)this.$view).is_forward;
 		}
 		@setter public final void setForward(boolean on) {
-			if (this.$view.is_forward != on) {
-				this.$view.is_forward = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_forward != on) {
+				((DNodeImpl)this.$view).is_forward = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
@@ -890,22 +890,22 @@ public abstract class LvalDNode extends DNode {
 
 		// init wrapper
 		@getter public final boolean isInitWrapper() {
-			return this.$view.is_init_wrapper;
+			return ((DNodeImpl)this.$view).is_init_wrapper;
 		}
 		@setter public final void setInitWrapper(boolean on) {
-			if (this.$view.is_init_wrapper != on) {
-				this.$view.is_init_wrapper = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_init_wrapper != on) {
+				((DNodeImpl)this.$view).is_init_wrapper = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// need a proxy access 
 		@getter public final boolean isNeedProxy() {
-			return this.$view.is_need_proxy;
+			return ((DNodeImpl)this.$view).is_need_proxy;
 		}
 		@setter public final void setNeedProxy(boolean on) {
-			if (this.$view.is_need_proxy != on) {
-				this.$view.is_need_proxy = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((DNodeImpl)this.$view).is_need_proxy != on) {
+				((DNodeImpl)this.$view).is_need_proxy = on;
+				((DNodeImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
@@ -1406,7 +1406,7 @@ public abstract class TypeDecl extends DNode implements Named {
 			super($view);
 		}
 		public void callbackSuperTypeChanged(TypeDeclImpl chg) {
-			this.$view.callbackSuperTypeChanged(chg);
+			((TypeDeclImpl)this.$view).callbackSuperTypeChanged(chg);
 		}
 	}
 	public abstract TypeDeclView	getTypeDeclView();

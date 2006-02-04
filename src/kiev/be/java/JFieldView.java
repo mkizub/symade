@@ -29,14 +29,14 @@ public final view JFieldView of FieldImpl extends JLvalDNodeView {
 	
 	public final Field getField() { return (Field)this.getNode(); }
 	
-	@getter public final Type	get$type()	{ return this.$view.ftype.getType(); }
+	@getter public final Type	get$type()	{ return ((FieldImpl)this.$view).ftype.getType(); }
 	
-	@getter public final JMethodView[] get$invs() { return (JMethodView[])this.$view.invs.toJViewArray(JMethodView.class); }
+	@getter public final JMethodView[] get$invs() { return (JMethodView[])((FieldImpl)this.$view).invs.toJViewArray(JMethodView.class); }
 
-	public final boolean isVirtual()		{ return this.$view.is_virtual; }
-	public final boolean isEnumField()		{ return this.$view.is_fld_enum; }
-	public final boolean isPackerField()	{ return this.$view.is_fld_packer; }
-	public final boolean isPackedField()	{ return this.$view.is_fld_packed; }
+	public final boolean isVirtual()		{ return ((FieldImpl)this.$view).is_virtual; }
+	public final boolean isEnumField()		{ return ((FieldImpl)this.$view).is_fld_enum; }
+	public final boolean isPackerField()	{ return ((FieldImpl)this.$view).is_fld_packer; }
+	public final boolean isPackedField()	{ return ((FieldImpl)this.$view).is_fld_packed; }
 
 	public Attr addAttr(Attr a) {
 		// Check we already have this attribute

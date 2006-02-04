@@ -28,23 +28,23 @@ public final view JVarView of VarImpl extends JLvalDNodeView {
 	public				int					bcpos;
 
 	@getter public final Type get$type() {
-		if (this.$view.vtype == null)
+		if (((VarImpl)this.$view).vtype == null)
 			return Type.tpVoid;
-		return this.$view.vtype.getType();
+		return ((VarImpl)this.$view).vtype.getType();
 	}
 	@getter public final JType get$jtype() {
 		return this.get$type().getJType();
 	}
 	
-	public final boolean isLocalRuleVar()		{ return this.$view.is_var_local_rule_var; }
-	public final boolean isClosureProxy()		{ return this.$view.is_var_closure_proxy; }
-	public final boolean isVarThis()			{ return this.$view.is_var_this; }
-	public final boolean isVarSuper()			{ return this.$view.is_var_super; }
+	public final boolean isLocalRuleVar()		{ return ((VarImpl)this.$view).is_var_local_rule_var; }
+	public final boolean isClosureProxy()		{ return ((VarImpl)this.$view).is_var_closure_proxy; }
+	public final boolean isVarThis()			{ return ((VarImpl)this.$view).is_var_this; }
+	public final boolean isVarSuper()			{ return ((VarImpl)this.$view).is_var_super; }
 
 	public void set$bcpos(int pos) {
 		if( pos < 0 || pos > 255)
 			throw new RuntimeException("Bad bytecode position specified: "+pos);
-		this.$view.bcpos = pos;
+		((VarImpl)this.$view).bcpos = pos;
 	}
 
 	public void generate(Code code, Type reqType) {

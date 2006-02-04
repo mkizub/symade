@@ -65,37 +65,37 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		public				ConstExpr		const_value;
 		public access:ro	NArr<Method>	invs;
 		
-		@setter public final void set$acc(Access val)	{ this.$view.acc = val; Access.verifyDecl((Field)getDNode()); }
-		@getter public final Type	get$type()			{ return this.$view.ftype.getType(); }
+		@setter public final void set$acc(Access val)	{ ((FieldImpl)this.$view).acc = val; Access.verifyDecl((Field)getDNode()); }
+		@getter public final Type	get$type()			{ return ((FieldImpl)this.$view).ftype.getType(); }
 		
 		// is a field of enum
 		public final boolean isEnumField() {
-			return this.$view.is_fld_enum;
+			return ((FieldImpl)this.$view).is_fld_enum;
 		}
 		public final void setEnumField(boolean on) {
-			if (this.$view.is_fld_enum != on) {
-				this.$view.is_fld_enum = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((FieldImpl)this.$view).is_fld_enum != on) {
+				((FieldImpl)this.$view).is_fld_enum = on;
+				((FieldImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// packer field (auto-generated for packed fields)
 		public final boolean isPackerField() {
-			return this.$view.is_fld_packer;
+			return ((FieldImpl)this.$view).is_fld_packer;
 		}
 		public final void setPackerField(boolean on) {
-			if (this.$view.is_fld_packer != on) {
-				this.$view.is_fld_packer = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((FieldImpl)this.$view).is_fld_packer != on) {
+				((FieldImpl)this.$view).is_fld_packer = on;
+				((FieldImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// packed field
 		public final boolean isPackedField() {
-			return this.$view.is_fld_packed;
+			return ((FieldImpl)this.$view).is_fld_packed;
 		}
 		public final void setPackedField(boolean on) {
-			if (this.$view.is_fld_packed != on) {
-				this.$view.is_fld_packed = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((FieldImpl)this.$view).is_fld_packed != on) {
+				((FieldImpl)this.$view).is_fld_packed = on;
+				((FieldImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}

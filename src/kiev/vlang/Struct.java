@@ -119,12 +119,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public access:ro	NArr<TypeDecl>			direct_extenders;
 		public access:ro	NArr<DNode>				members;
 
-		@setter public final void set$acc(Access val) { this.$view.acc = val; Access.verifyDecl((Struct)getDNode()); }
+		@setter public final void set$acc(Access val) { ((StructImpl)this.$view).acc = val; Access.verifyDecl((Struct)getDNode()); }
 		@getter public final CompaundType	get$super_type()	{ return (CompaundType)super_bound.lnk; }
 		@setter public final void set$super_type(CompaundType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
 
 		public TypeProvider[] getAllSuperTypes() {
-			return this.$view.getAllSuperTypes();
+			return ((StructImpl)this.$view).getAllSuperTypes();
 		}
 		
 		public boolean isClazz() {
@@ -133,143 +133,143 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		
 		// a pizza case	
 		public final boolean isPizzaCase() {
-			return this.$view.is_struct_pizza_case;
+			return ((StructImpl)this.$view).is_struct_pizza_case;
 		}
 		public final void setPizzaCase(boolean on) {
-			if (this.$view.is_struct_pizza_case != on) {
-				this.$view.is_struct_pizza_case = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_pizza_case != on) {
+				((StructImpl)this.$view).is_struct_pizza_case = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// a structure with the only one instance (singleton)	
 		public final boolean isSingleton() {
-			return this.$view.is_struct_singleton;
+			return ((StructImpl)this.$view).is_struct_singleton;
 		}
 		public final void setSingleton(boolean on) {
-			if (this.$view.is_struct_singleton != on) {
-				this.$view.is_struct_singleton = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_singleton != on) {
+				((StructImpl)this.$view).is_struct_singleton = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// a local (in method) class	
 		public final boolean isLocal() {
-			return this.$view.is_struct_local;
+			return ((StructImpl)this.$view).is_struct_local;
 		}
 		public final void setLocal(boolean on) {
-			if (this.$view.is_struct_local != on) {
-				this.$view.is_struct_local = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_local != on) {
+				((StructImpl)this.$view).is_struct_local = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// an anonymouse (unnamed) class	
 		public final boolean isAnonymouse() {
-			return this.$view.is_struct_anomymouse;
+			return ((StructImpl)this.$view).is_struct_anomymouse;
 		}
 		public final void setAnonymouse(boolean on) {
-			if (this.$view.is_struct_anomymouse != on) {
-				this.$view.is_struct_anomymouse = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_anomymouse != on) {
+				((StructImpl)this.$view).is_struct_anomymouse = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// has pizza cases
 		public final boolean isHasCases() {
-			return this.$view.is_struct_has_pizza_cases;
+			return ((StructImpl)this.$view).is_struct_has_pizza_cases;
 		}
 		public final void setHasCases(boolean on) {
-			if (this.$view.is_struct_has_pizza_cases != on) {
-				this.$view.is_struct_has_pizza_cases = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_has_pizza_cases != on) {
+				((StructImpl)this.$view).is_struct_has_pizza_cases = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// indicates that structure members were generated
 		public final boolean isMembersGenerated() {
-			return this.$view.is_struct_members_generated;
+			return ((StructImpl)this.$view).is_struct_members_generated;
 		}
 		public final void setMembersGenerated(boolean on) {
-			if (this.$view.is_struct_members_generated != on) {
-				this.$view.is_struct_members_generated = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_members_generated != on) {
+				((StructImpl)this.$view).is_struct_members_generated = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// indicates that structure members were pre-generated
 		public final boolean isMembersPreGenerated() {
-			return this.$view.is_struct_pre_generated;
+			return ((StructImpl)this.$view).is_struct_pre_generated;
 		}
 		public final void setMembersPreGenerated(boolean on) {
-			if (this.$view.is_struct_pre_generated != on) {
-				this.$view.is_struct_pre_generated = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_pre_generated != on) {
+				((StructImpl)this.$view).is_struct_pre_generated = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		
 		// indicates that statements in code were generated
 		public final boolean isStatementsGenerated() {
-			return this.$view.is_struct_statements_generated;
+			return ((StructImpl)this.$view).is_struct_statements_generated;
 		}
 		public final void setStatementsGenerated(boolean on) {
-			if (this.$view.is_struct_statements_generated != on) {
-				this.$view.is_struct_statements_generated = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_statements_generated != on) {
+				((StructImpl)this.$view).is_struct_statements_generated = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// indicates that the structrue was generared (from template)
 		public final boolean isGenerated() {
-			return this.$view.is_struct_generated;
+			return ((StructImpl)this.$view).is_struct_generated;
 		}
 		public final void setGenerated(boolean on) {
-			if (this.$view.is_struct_generated != on) {
-				this.$view.is_struct_generated = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_generated != on) {
+				((StructImpl)this.$view).is_struct_generated = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// indicates that type of the structure was attached
 		public final boolean isTypeResolved() {
-			return this.$view.is_struct_type_resolved;
+			return ((StructImpl)this.$view).is_struct_type_resolved;
 		}
 		public final void setTypeResolved(boolean on) {
-			if (this.$view.is_struct_type_resolved != on) {
-				this.$view.is_struct_type_resolved = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_type_resolved != on) {
+				((StructImpl)this.$view).is_struct_type_resolved = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// indicates that type arguments of the structure were resolved
 		public final boolean isArgsResolved() {
-			return this.$view.is_struct_args_resolved;
+			return ((StructImpl)this.$view).is_struct_args_resolved;
 		}
 		public final void setArgsResolved(boolean on) {
-			if (this.$view.is_struct_args_resolved != on) {
-				this.$view.is_struct_args_resolved = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_args_resolved != on) {
+				((StructImpl)this.$view).is_struct_args_resolved = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// kiev annotation
 		public final boolean isAnnotation() {
-			return this.$view.is_struct_annotation;
+			return ((StructImpl)this.$view).is_struct_annotation;
 		}
 		public final void setAnnotation(boolean on) {
 			assert(!on || (!isPackage() && !isSyntax()));
-			if (this.$view.is_struct_annotation != on) {
-				this.$view.is_struct_annotation = on;
+			if (((StructImpl)this.$view).is_struct_annotation != on) {
+				((StructImpl)this.$view).is_struct_annotation = on;
 				if (on) this.setInterface(true);
-				this.$view.callbackChildChanged(nodeattr$flags);
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// java enum
 		public final boolean isEnum() {
-			return this.$view.is_struct_enum;
+			return ((StructImpl)this.$view).is_struct_enum;
 		}
 		public final void setEnum(boolean on) {
-			if (this.$view.is_struct_enum != on) {
-				this.$view.is_struct_enum = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
+			if (((StructImpl)this.$view).is_struct_enum != on) {
+				((StructImpl)this.$view).is_struct_enum = on;
+				((StructImpl)this.$view).callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// structure was loaded from bytecode
 		public final boolean isLoadedFromBytecode() {
-			return this.$view.is_struct_bytecode;
+			return ((StructImpl)this.$view).is_struct_bytecode;
 		}
 		public final void setLoadedFromBytecode(boolean on) {
-			this.$view.is_struct_bytecode = on;
+			((StructImpl)this.$view).is_struct_bytecode = on;
 		}
 	}
 	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
@@ -1548,16 +1548,19 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					);
 				}
 				if (isStructView()) {
-					foreach (FormPar fp; m.params; fp.name.equals(nameView)) {
-						stats.insert(
-							new ExprStat(pos,
-								new AssignExpr(pos,AssignOperator.Assign,
-									new IFldExpr(pos,new ThisExpr(pos),resolveField(nameView)),
-									new LVarExpr(pos,fp)
-								)
-							),p++
-						);
-						break;
+					Field fview = this.resolveField(nameView);
+					if (fview.parent == this) {
+						foreach (FormPar fp; m.params; fp.name.equals(nameView)) {
+							stats.insert(
+								new ExprStat(pos,
+									new AssignExpr(pos,AssignOperator.Assign,
+										new IFldExpr(pos,new ThisExpr(pos),resolveField(nameView)),
+										new LVarExpr(pos,fp)
+									)
+								),p++
+							);
+							break;
+						}
 					}
 				}
 				if (isTypeUnerasable() && m.isNeedFieldInits()) {

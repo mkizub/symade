@@ -295,9 +295,9 @@ public final class FormPar extends Var {
 		public int			kind;
 
 		@getter public final Type get$dtype() {
-			if (this.$view.stype == null)
+			if (((FormParImpl)this.$view).stype == null)
 				return get$type();
-			return this.$view.stype.getType();
+			return ((FormParImpl)this.$view).stype.getType();
 		}
 		
 	}

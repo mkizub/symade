@@ -25,13 +25,13 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	public final Method getMethod() { return (Method)this.getNode(); }
 		
 	public MetaThrows getMetaThrows() {
-		return (MetaThrows)this.$view.getNodeData(MetaThrows.ID);
+		return (MetaThrows)((MethodImpl)this.$view).getNodeData(MetaThrows.ID);
 	}
 
 	public JVarView	getRetVar() {
-		if( this.$view.retvar == null )
-			this.$view.retvar = new Var(pos,nameResultVar,type.ret(),ACC_FINAL);
-		return this.$view.retvar.getJVarView();
+		if( ((MethodImpl)this.$view).retvar == null )
+			((MethodImpl)this.$view).retvar = new Var(pos,nameResultVar,type.ret(),ACC_FINAL);
+		return ((MethodImpl)this.$view).retvar.getJVarView();
 	}
 
 
@@ -45,20 +45,20 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	public access:ro	MetaValue			annotation_default;
 	public access:ro	boolean				inlined_by_dispatcher;
 
-	@getter public final CallType				get$type()		{ return this.$view.type; }
-	@getter public final CallType				get$dtype()		{ return this.$view.dtype; }
+	@getter public final CallType				get$type()		{ return ((MethodImpl)this.$view).type; }
+	@getter public final CallType				get$dtype()		{ return ((MethodImpl)this.$view).dtype; }
 	@getter public final CallType				get$etype()		{ return (CallType)dtype.getErasedType(); }
-	@getter public final JVarView[]				get$params()	{ return (JVarView[])this.$view.params.toJViewArray(JVarView.class); }
-	@getter public final JFieldView[]			get$violated_fields()	{ return (JFieldView[])this.$view.violated_fields.toJViewArray(JFieldView.class); }
-	@getter public final JWBCConditionView[]	get$conditions()		{ return (JWBCConditionView[])this.$view.conditions.toJViewArray(JWBCConditionView.class); }
+	@getter public final JVarView[]				get$params()	{ return (JVarView[])((MethodImpl)this.$view).params.toJViewArray(JVarView.class); }
+	@getter public final JFieldView[]			get$violated_fields()	{ return (JFieldView[])((MethodImpl)this.$view).violated_fields.toJViewArray(JFieldView.class); }
+	@getter public final JWBCConditionView[]	get$conditions()		{ return (JWBCConditionView[])((MethodImpl)this.$view).conditions.toJViewArray(JWBCConditionView.class); }
 
-	public final boolean isVirtualStatic()		{ return this.$view.is_mth_virtual_static; }
-	public final boolean isVarArgs()			{ return this.$view.is_mth_varargs; }
-	public final boolean isRuleMethod()		{ return this.$view instanceof RuleMethod.RuleMethodImpl; }
-	public final boolean isOperatorMethod()	{ return this.$view.is_mth_operator; }
-	public final boolean isNeedFieldInits()	{ return this.$view.is_mth_need_fields_init; }
-	public final boolean isInvariantMethod()	{ return this.$view.is_mth_invariant; }
-	public final boolean isLocalMethod()		{ return this.$view.is_mth_local; }
+	public final boolean isVirtualStatic()		{ return ((MethodImpl)this.$view).is_mth_virtual_static; }
+	public final boolean isVarArgs()			{ return ((MethodImpl)this.$view).is_mth_varargs; }
+	public final boolean isRuleMethod()		{ return ((MethodImpl)this.$view) instanceof RuleMethod.RuleMethodImpl; }
+	public final boolean isOperatorMethod()	{ return ((MethodImpl)this.$view).is_mth_operator; }
+	public final boolean isNeedFieldInits()	{ return ((MethodImpl)this.$view).is_mth_need_fields_init; }
+	public final boolean isInvariantMethod()	{ return ((MethodImpl)this.$view).is_mth_invariant; }
+	public final boolean isLocalMethod()		{ return ((MethodImpl)this.$view).is_mth_local; }
 
 	@getter public JMethodView get$child_jctx_method() { return this; }
 

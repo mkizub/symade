@@ -299,9 +299,12 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				ENode ass_st = new ExprStat(f.pos,
 					new AssignExpr(f.pos,AssignOperator.Assign,
 						new IFldExpr(f.pos,
-							new IFldExpr(f.pos,
-								new ThisExpr(0),
-								s.resolveField(nameView)
+							new CastExpr(f.pos,
+								s.view_of.getType(),
+								new IFldExpr(f.pos,
+									new ThisExpr(f.pos),
+									s.resolveField(nameView)
+								)
 							),
 							view_fld
 						),
@@ -336,7 +339,10 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
 				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,
-					new IFldExpr(f.pos,new ThisExpr(0),s.resolveField(nameView)),
+					new CastExpr(f.pos,
+						s.view_of.getType(),
+						new IFldExpr(f.pos,new ThisExpr(f.pos),s.resolveField(nameView))
+					),
 					s.view_of.getType().getStruct().resolveField(f.name.name)
 				);
 				body.stats.add(new ReturnStat(f.pos,val));
