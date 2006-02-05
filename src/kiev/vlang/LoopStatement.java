@@ -83,8 +83,8 @@ public final class Label extends DNode {
 		public List<ASTNode>		links;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public Label() {
 		super(new LabelImpl());
@@ -160,8 +160,8 @@ public class WhileStat extends LoopStat {
 		public ENode		body;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public WhileStat() {
 		super(new WhileStatImpl());
@@ -226,8 +226,8 @@ public class DoWhileStat extends LoopStat {
 		public ENode		body;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public DoWhileStat() {
 		super(new DoWhileStatImpl());
@@ -293,8 +293,8 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		public:ro	NArr<Var>		decls;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 
 	public ForInit() {
@@ -374,8 +374,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		public ENode		iter;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public ForStat() {
 		super(new ForStatImpl());
@@ -528,8 +528,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		public ENode		iter_incr;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public ForEachStat() {
 		super(new ForEachStatImpl());

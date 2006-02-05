@@ -119,8 +119,8 @@ public class Var extends LvalDNode implements Named, Typed {
 		public final void setVarSuper(boolean on);
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public static Var[]	emptyArray = new Var[0];
 
@@ -287,8 +287,8 @@ public final class FormPar extends Var {
 		
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public static final int PARAM_NORMAL       = 0;
 	public static final int PARAM_THIS         = 1;

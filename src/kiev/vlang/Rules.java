@@ -58,8 +58,8 @@ public class RuleMethod extends Method {
 	public static final view VRuleMethod of RuleMethodImpl extends RuleMethodView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public RView getRView() alias operator(210,fy,$cast) { return new RView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public RuleMethod() {
 		super(new RuleMethodImpl());
@@ -422,8 +422,8 @@ public final class RuleBlock extends Block {
 	public static final view VRuleBlock of RuleBlockImpl extends RuleBlockView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public RView getRView() alias operator(210,fy,$cast) { return new RView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public RuleBlock() {
 		super(new RuleBlockImpl());
@@ -469,7 +469,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 		public void set$idx(int i) {}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 
 	public RuleOrExpr() {
 		super(new RuleOrExprImpl());
@@ -543,7 +543,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 		public void set$idx(int i) {}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 
 	public RuleAndExpr() {
 		super(new RuleAndExprImpl());
@@ -648,7 +648,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 		public ENode		expr;		// expression to check/unify
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 
 	public RuleIstheExpr() {
 		super(new RuleIstheExprImpl());
@@ -734,7 +734,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		public int			mode;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 
 	public RuleIsoneofExpr() {
 		super(new RuleIsoneofExprImpl());
@@ -891,7 +891,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	public static final view RuleCutExprView of RuleCutExprImpl extends ASTRuleNodeView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	
 	public RuleCutExpr() {
 		super(new RuleCutExprImpl());
@@ -948,7 +948,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		public				int				env_var;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 
 	public RuleCallExpr() {
 		super(new RuleCallExprImpl());
@@ -1105,7 +1105,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	public static final view RuleWhileExprView of RuleWhileExprImpl extends RuleExprBaseView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	
 	public RuleWhileExpr() {
 		super(new RuleWhileExprImpl());
@@ -1174,7 +1174,7 @@ public final class RuleExpr extends RuleExprBase {
 	public static final view RuleExprView of RuleExprImpl extends RuleExprBaseView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	
 	public RuleExpr() {
 		super(new RuleExprImpl());

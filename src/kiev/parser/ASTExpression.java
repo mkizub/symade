@@ -285,7 +285,7 @@ public class ASTExpression extends ENode {
 		}	
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 
 	public ASTExpression() {
 		super(new ASTExpressionImpl());

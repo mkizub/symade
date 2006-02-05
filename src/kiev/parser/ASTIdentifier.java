@@ -111,8 +111,8 @@ public class ASTIdentifier extends ENode {
 		public boolean preGenerate() { /*Kiev.reportError(this,"preGenerate of ASTIdentifier");*/ return false; }
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public ASTIdentifier() {
 		super(new ASTIdentifierImpl());

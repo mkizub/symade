@@ -45,7 +45,7 @@ public final class ProjectFile extends ASTNode {
 		public boolean		bad;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 
 	public ProjectFile(ClazzName clname, File f) {
 		super(new ProjectFileImpl());

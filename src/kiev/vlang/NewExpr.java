@@ -99,8 +99,8 @@ public final class NewExpr extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public NewExpr() {
 		super(new NewExprImpl());
@@ -309,8 +309,8 @@ public final class NewArrayExpr extends ENode {
 		public int		getPriority() { return Constants.opAccessPriority; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public NewArrayExpr() {
 		super(new NewArrayExprImpl());
@@ -432,8 +432,8 @@ public final class NewInitializedArrayExpr extends ENode {
 		public int		getPriority() { return Constants.opAccessPriority; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public NewInitializedArrayExpr() {
 		super(new NewInitializedArrayExprImpl());
@@ -555,9 +555,9 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	public static final view VNewClosure of NewClosureImpl extends NewClosureView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
-	public RView getRView() alias operator(210,fy,$cast) { return new RView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public NewClosure() {
 		super(new NewClosureImpl());

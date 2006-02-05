@@ -78,8 +78,12 @@ public class ProcessView extends TransfProcessor implements Constants {
 		}
 		if (!cast_found) {
 			Method cast = new Method(nameCastOp, clazz.ctype, ACC_PUBLIC|ACC_SYNTHETIC);
-			cast.body = new Block();
-			cast.body.stats.add(new ReturnStat(0, new NewExpr(0, clazz.ctype, new ENode[]{new ThisExpr()})));
+			if (clazz.isAbstract()) {
+				cast.setAbstract(true);
+			} else {
+				cast.body = new Block();
+				cast.body.stats.add(new ReturnStat(0, new NewExpr(0, clazz.ctype, new ENode[]{new ThisExpr()})));
+			}
 			clazz.view_of.getStruct().addMethod(cast);
 		}
 		// add a cast from this view to the clazz

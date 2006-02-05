@@ -36,7 +36,7 @@ public class TypeNameRef extends TypeRef {
 		public KString				name;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 
 	public TypeNameRef() {
 		super(new TypeNameRefImpl());

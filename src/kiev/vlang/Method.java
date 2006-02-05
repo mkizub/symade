@@ -319,8 +319,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public static Method[]	emptyArray = new Method[0];
 
@@ -837,8 +837,8 @@ public class Constructor extends Method {
 		public:ro	NArr<ENode>			addstats;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public Constructor() {
 		super(new ConstructorImpl());
@@ -883,8 +883,8 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 		public PrescannedBody			pbody;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	@getter public PrescannedBody	get$pbody()			{ return this.getVView().pbody; }
 	@setter public void set$pbody(PrescannedBody val)	{ this.getVView().pbody = val; }
@@ -961,8 +961,8 @@ public class WBCCondition extends DNode {
 		public CodeAttr				code_attr;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public WBCCondition() {
 		super(new WBCConditionImpl());

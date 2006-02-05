@@ -60,8 +60,8 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		public ParamRedir[]		params_redir;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public InlineMethodStat() {
 		super(new InlineMethodStatImpl());
@@ -185,8 +185,8 @@ public class ExprStat extends ENode {
 		public ENode		expr;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public ExprStat() {
 		super(new ExprStatImpl());
@@ -255,8 +255,8 @@ public class ReturnStat extends ENode {
 		public ENode		expr;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public ReturnStat() {
 		super(new ReturnStatImpl());
@@ -328,8 +328,8 @@ public class ThrowStat extends ENode {
 		public ENode		expr;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public ThrowStat() {
 		super(new ThrowStatImpl());
@@ -387,8 +387,8 @@ public class IfElseStat extends ENode {
 		public ENode		elseSt;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public IfElseStat() {
 		super(new IfElseStatImpl());
@@ -482,8 +482,8 @@ public class CondStat extends ENode {
 		public ENode		message;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public CondStat() {
 		super(new CondStatImpl());
@@ -547,8 +547,8 @@ public class LabeledStat extends ENode implements Named {
 		public ENode			stat;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public LabeledStat() {
 		super(new LabeledStatImpl());
@@ -651,8 +651,8 @@ public class BreakStat extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public BreakStat() {
 		super(new BreakStatImpl());
@@ -797,8 +797,8 @@ public class ContinueStat extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public ContinueStat() {
 		super(new ContinueStatImpl());
@@ -870,8 +870,8 @@ public class GotoStat extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public GotoStat() {
 		super(new GotoStatImpl());
@@ -1016,8 +1016,8 @@ public class GotoCaseStat extends ENode {
 		public SwitchStat	sw;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public GotoCaseStat() {
 		super(new GotoCaseStatImpl());

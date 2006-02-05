@@ -45,8 +45,8 @@ public final class ASTOperatorAlias extends ASTAlias {
 		public int					xfix;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public ASTOperatorAlias() { super(new ASTOperatorAliasImpl()); }
 	

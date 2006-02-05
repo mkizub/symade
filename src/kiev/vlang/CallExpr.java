@@ -52,8 +52,8 @@ public class CallExpr extends ENode {
 		public int		getPriority() { return Constants.opCallPriority; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public CallExpr() {
 		super(new CallExprImpl());
@@ -222,8 +222,8 @@ public class ClosureCallExpr extends ENode {
 		public int		getPriority() { return Constants.opCallPriority; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public ClosureCallExpr() {
 		super(new ClosureCallExprImpl());

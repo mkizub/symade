@@ -159,8 +159,8 @@ public class AccessExpr extends LvalueExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public AccessExpr() {
 		super(new AccessExprImpl());
@@ -304,8 +304,8 @@ public final class IFldExpr extends AccessExpr {
 		public Operator getOp() { return BinaryOperator.Access; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public IFldExpr() {
 		super(new IFldExprImpl());
@@ -441,8 +441,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		public int getPriority() { return opContainerElementPriority; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public ContainerAccessExpr() {
 		super(new ContainerAccessExprImpl());
@@ -565,8 +565,8 @@ public final class ThisExpr extends LvalueExpr {
 	public static final view ThisExprView of ThisExprImpl extends LvalueExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public ThisExpr() {
 		super(new ThisExprImpl());
@@ -664,9 +664,9 @@ public final class LVarExpr extends LvalueExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
-	public RView getRView() alias operator(210,fy,$cast) { return new RView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public LVarExpr() {
 		super(new LVarExprImpl());
@@ -768,8 +768,8 @@ public final class SFldExpr extends AccessExpr {
 		public Operator getOp() { return BinaryOperator.Access; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public SFldExpr() {
 		super(new SFldExprImpl());
@@ -876,8 +876,8 @@ public final class OuterThisAccessExpr extends AccessExpr {
 		public Operator getOp() { return BinaryOperator.Access; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public OuterThisAccessExpr() {
 		super(new OuterThisAccessExprImpl());
@@ -971,8 +971,8 @@ public final class UnwrapExpr extends LvalueExpr {
 		public ENode		expr;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public UnwrapExpr() {
 		super(new UnwrapExprImpl());

@@ -163,7 +163,7 @@ public final view JLocalStructDecl of LocalStructDeclImpl extends JENode {
 }
 
 @nodeview
-public abstract view JTypeDecl of TypeDeclImpl extends JDNode {
+public view JTypeDecl of TypeDeclImpl extends JDNode {
 }
 
 @nodeview

@@ -62,8 +62,8 @@ public class Shadow extends ENode {
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public Shadow() {
 		super(new ShadowImpl());
@@ -117,8 +117,8 @@ public class ArrayLengthExpr extends AccessExpr {
 		public Operator getOp() { return BinaryOperator.Access; }
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public ArrayLengthExpr() {
 		super(new ArrayLengthExprImpl());
@@ -191,8 +191,8 @@ public class TypeClassExpr extends ENode {
 		public Operator getOp() { return BinaryOperator.Access; }
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public TypeClassExpr() {
 		super(new TypeClassExprImpl());
@@ -257,8 +257,8 @@ public class TypeInfoExpr extends ENode {
 		public Operator getOp() { return BinaryOperator.Access; }
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public TypeInfoExpr() {
 		super(new TypeInfoExprImpl());
@@ -338,8 +338,8 @@ public class AssignExpr extends LvalueExpr {
 		public Operator getOp() { return op; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public AssignExpr() {
 		super(new AssignExprImpl());
@@ -693,8 +693,8 @@ public class BinaryExpr extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public BinaryExpr() {
 		super(new BinaryExprImpl());
@@ -1021,8 +1021,8 @@ public class StringConcatExpr extends ENode {
 		public Operator getOp() { return BinaryOperator.Add; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public StringConcatExpr() {
 		super(new StringConcatExprImpl());
@@ -1100,8 +1100,8 @@ public class CommaExpr extends ENode {
 		public int getPriority() { return 0; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public CommaExpr() {
 		super(new CommaExprImpl());
@@ -1177,8 +1177,8 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		public int		getPriority() { return 255; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public Block() {
 		super(new BlockImpl());
@@ -1370,8 +1370,8 @@ public class UnaryExpr extends ENode {
 		public Operator getOp() { return op; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public UnaryExpr() {
 		super(new UnaryExprImpl());
@@ -1556,8 +1556,8 @@ public class IncrementExpr extends ENode {
 		public Operator getOp() { return op; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public IncrementExpr() {
 		super(new IncrementExprImpl());
@@ -1638,8 +1638,8 @@ public class ConditionalExpr extends ENode {
 		public Operator getOp() { return MultiOperator.Conditional; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public ConditionalExpr() {
 		super(new ConditionalExprImpl());
@@ -1731,8 +1731,8 @@ public class CastExpr extends ENode {
 		public int getPriority() { return opCastPriority; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public CastExpr() {
 		super(new CastExprImpl());

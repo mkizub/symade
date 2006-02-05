@@ -36,8 +36,8 @@ public abstract class UnresExpr extends ENode {
 		public Operator getOp() { return op; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }	
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }	
 
 	public UnresExpr(UnresExprImpl impl) {
 		super(impl);
@@ -74,8 +74,8 @@ public class PrefixExpr extends UnresExpr {
 		public				ENode			expr;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public PrefixExpr() {
 		super(new PrefixExprImpl());
@@ -128,8 +128,8 @@ public class PostfixExpr extends UnresExpr {
 		public				ENode			expr;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public PostfixExpr() {
 		super(new PostfixExprImpl());
@@ -182,8 +182,8 @@ public class InfixExpr extends UnresExpr {
 		public				ENode			expr2;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public InfixExpr() {
 		super(new InfixExprImpl());
@@ -250,8 +250,8 @@ public class MultiExpr extends UnresExpr {
 		public:ro	NArr<ENode>			exprs;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public MultiExpr() {
 		super(new MultiExprImpl());
@@ -328,8 +328,8 @@ public class UnresCallExpr extends UnresExpr {
 		public:ro	NArr<ENode>		args;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	public UnresCallExpr() {
 		super(new UnresCallExprImpl());

@@ -115,8 +115,8 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		public final void setPackedField(boolean on);
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
 	@getter public Access			get$acc()			{ return this.getVView().acc; }
 	@setter public void set$acc(Access val)			{ this.getVView().acc = val; }

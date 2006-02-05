@@ -94,8 +94,8 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		public Operator getOp() { return BinaryOperator.BooleanOr; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public BinaryBooleanOrExpr() {
 		super(new BinaryBooleanOrExprImpl());
@@ -181,8 +181,8 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		public Operator getOp() { return BinaryOperator.BooleanAnd; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public BinaryBooleanAndExpr() {
 		super(new BinaryBooleanAndExprImpl());
@@ -281,8 +281,8 @@ public class BinaryBoolExpr extends BoolExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public BinaryBoolExpr() {
 		super(new BinaryBoolExprImpl());
@@ -496,8 +496,8 @@ public class InstanceofExpr extends BoolExpr {
 		public Operator getOp() { return BinaryOperator.InstanceOf; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public InstanceofExpr() {
 		super(new InstanceofExprImpl());
@@ -640,8 +640,8 @@ public class BooleanNotExpr extends BoolExpr {
 		public Operator getOp() { return PrefixOperator.BooleanNot; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
-	public JView getJView() alias operator(210,fy,$cast) { return new JView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public BooleanNotExpr() {
 		super(new BooleanNotExprImpl());

@@ -37,7 +37,7 @@ public final class PrescannedBody extends ASTNode {
 		public int			mode;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return new VView(this.$v_impl); }
+	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	
 	public PrescannedBody() { super(new PrescannedBodyImpl()); }
 	
