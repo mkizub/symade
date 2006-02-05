@@ -205,19 +205,24 @@ public class Var extends LvalDNode implements Named, Typed {
 
 	public void resolveDecl() {
 		if( isResolved() ) return;
-		if( init == null && !type.isArray() && type.isWrapper() && !this.isInitWrapper())
-			init = new NewExpr(pos,type,ENode.emptyArray);
-		if( init != null ) {
-			if (init instanceof TypeRef)
-				((TypeRef)init).toExpr(this.getType());
-			if (type.isWrapper() && !this.isInitWrapper())
-				init = new NewExpr(init.pos,type,new ENode[]{~init});
+		Type tp = this.type;
+		if (init instanceof TypeRef)
+			((TypeRef)init).toExpr(tp);
+		if (tp instanceof CTimeType) {
+			init = tp.makeInitExpr(this,init);
 			try {
-				init.resolve(this.type);
+				init.resolve(tp.getUnwrappedType());
+			} catch(Exception e ) {
+				Kiev.reportError(this,e);
+			}
+		}
+		else if (init != null) {
+			try {
+				init.resolve(tp);
 				Type it = init.getType();
-				if( !it.isInstanceOf(this.type) ) {
-					init = new CastExpr(init.pos,this.type,~init);
-					init.resolve(this.type);
+				if( !it.isInstanceOf(tp) ) {
+					init = new CastExpr(init.pos,tp,~init);
+					init.resolve(tp);
 				}
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);

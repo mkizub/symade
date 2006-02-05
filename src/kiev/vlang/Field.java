@@ -91,6 +91,15 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 				this.callbackChildChanged(nodeattr$flags);
 			}
 		}
+		// field's initializer was already added to class initializer
+		public final boolean isAddedToInit() {
+			return this.is_fld_added_to_init;
+		}
+		public final void setAddedToInit(boolean on) {
+			if (this.is_fld_added_to_init != on) {
+				this.is_fld_added_to_init = on;
+			}
+		}
 	}
 	@nodeview
 	public static view FieldView of FieldImpl extends LvalDNodeView {
@@ -113,6 +122,9 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		// packed field
 		public final boolean isPackedField();
 		public final void setPackedField(boolean on);
+		// field's initializer was already added to class initializer
+		public final boolean isAddedToInit();
+		public final void setAddedToInit(boolean on);
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -187,16 +199,30 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
     	throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 
-	public void resolveDecl() throws RuntimeException {
+	public void resolveDecl() {
 		foreach (Meta m; meta)
 			m.resolve();
-		if( init != null ) {
-			if (init instanceof TypeRef)
-				((TypeRef)init).toExpr(type);
-			init.resolve(type);
-			if (init.getType() ≉ type) {
-				init = new CastExpr(init.pos, type, init);
-				init.resolve(type);
+		Type tp = this.type;
+		if (init instanceof TypeRef)
+			((TypeRef)init).toExpr(type);
+		if (tp instanceof CTimeType) {
+			init = tp.makeInitExpr(this,init);
+			try {
+				init.resolve(tp.getUnwrappedType());
+			} catch(Exception e ) {
+				Kiev.reportError(this,e);
+			}
+		}
+		else if( init != null ) {
+			try {
+				init.resolve(tp);
+				Type it = init.getType();
+				if( !it.isInstanceOf(tp) ) {
+					init = new CastExpr(init.pos,tp,~init);
+					init.resolve(tp);
+				}
+			} catch(Exception e ) {
+				Kiev.reportError(this,e);
 			}
 		}
 		setResolved(true);

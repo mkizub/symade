@@ -56,8 +56,6 @@ public class AccessExpr extends LvalueExpr {
 	@dflow(in="this:in")	ENode			obj;
 	}
 
-	private static KString nameWrapperSelf = KString.from("$self");
-
 	@virtual typedef This  = AccessExpr;
 	@virtual typedef NImpl = AccessExprImpl;
 	@virtual typedef VView = AccessExprView;
@@ -202,21 +200,7 @@ public class AccessExpr extends LvalueExpr {
 			res = new ENode[tps.length];
 			for (int si=0; si < tps.length; si++) {
 				Type tp = tps[si];
-				if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
-					if (tp.isWrapper()) {
-						tps[si] = ((WrapperType)tp).getUnwrappedType();
-						res[si] = obj;
-					}
-					else if (tp.isInstanceOf(Type.tpPrologVar)) {
-						tps[si] = tp;
-						res[si] = obj;
-					}
-				}
-				else if (ident.name.byteAt(0) == '$') {
-					while (tp.isWrapper())
-						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
-				}
-				else if( ident.name.equals(nameLength) ) {
+				if( ident.name.equals(nameLength) ) {
 					if( tp.isArray() ) {
 						tps[si] = Type.tpInt;
 						res[si] = new ArrayLengthExpr(pos,e.ncopy(), ident.ncopy());
@@ -988,7 +972,7 @@ public final class UnwrapExpr extends LvalueExpr {
 
 	public Type getType() {
 		Type tp = expr.getType();
-		if (tp.isWrapper())
+		if (tp instanceof CTimeType)
 			return ((WrapperType)tp).getUnwrappedType();
 		return tp;
 	}
@@ -997,7 +981,7 @@ public final class UnwrapExpr extends LvalueExpr {
 		trace(Kiev.debugResolve,"Resolving "+this);
 		expr.resolve(reqType);
 		Type tp = expr.getType();
-		if (!tp.isWrapper()) {
+		if!(tp instanceof CTimeType) {
 			replaceWithNode(~expr);
 			return;
 		}

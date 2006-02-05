@@ -379,23 +379,13 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			// Resolve final values of class's fields
 			foreach (ASTNode n; members; n instanceof Field) {
 				Field f = (Field)n;
-				if( f == null || f.init == null ) continue;
-				if( f.init != null ) {
-					try {
-						f.init.resolve(f.type);
-						if (f.init instanceof TypeRef)
-							((TypeRef)f.init).toExpr(f.type);
-						if (f.init.getType() ≉ f.type) {
-							ENode finit = ~f.init;
-							f.init = new CastExpr(finit.pos, f.type, finit);
-							f.init.resolve(f.type);
-						}
-					} catch( Exception e ) {
-						Kiev.reportError(f.init,e);
-					}
-					trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
-							(f.isStatic()?"Static":"Instance")+" fields: "+name+"::"+f.name+" = "+f.init);
+				try {
+					f.resolveDecl();
+				} catch( Exception e ) {
+					Kiev.reportError(f.init,e);
 				}
+				trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
+						(f.isStatic()?"Static":"Instance")+" fields: "+name+"::"+f.name+" = "+f.init);
 			}
 			// Process inner classes and cases
 			if( !isPackage() ) {
@@ -972,6 +962,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					f.const_value = ConstExpr.fromConst(f.getConstValue());
 				if (f.init.isConstantExpr() && f.isStatic())
 					continue;
+				if (f.isAddedToInit())
+					continue;
 				if( f.isStatic() ) {
 					if( class_init == null )
 						class_init = getClazzInitMethod();
@@ -1000,6 +992,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					instance_init.body.stats.add(init_stat);
 					init_stat.setHidden(true);
 				}
+				f.setAddedToInit(true);
 			} else {
 				Initializer init = (Initializer)n;
 				ENode init_stat = new Shadow(init);

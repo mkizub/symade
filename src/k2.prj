@@ -499,6 +499,7 @@ kiev.vlang.types.ArgType kiev/vlang/types/ArgType kiev\vlang\types\Type.java
 kiev.vlang.types.ArgTypeProvider kiev/vlang/types/ArgTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.ArrayType kiev/vlang/types/ArrayType kiev\vlang\types\Type.java
 kiev.vlang.types.ArrayTypeProvider kiev/vlang/types/ArrayTypeProvider kiev\vlang\types\TypeProvider.java
+kiev.vlang.types.CTimeType kiev/vlang/types/CTimeType kiev\vlang\types\Type.java
 kiev.vlang.types.CallType kiev/vlang/types/CallType kiev\vlang\types\Type.java
 kiev.vlang.types.CallTypeProvider kiev/vlang/types/CallTypeProvider kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.CompaundType kiev/vlang/types/CompaundType kiev\vlang\types\Type.java

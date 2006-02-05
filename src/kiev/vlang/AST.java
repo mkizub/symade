@@ -135,6 +135,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 		// Field specific
 		public @packed:1,compileflags,18 boolean is_fld_packer;
 		public @packed:1,compileflags,19 boolean is_fld_packed;
+		public @packed:1,compileflags,20 boolean is_fld_added_to_init;
 	
 		// General flags
 		public @packed:1,compileflags,28 boolean is_accessed_from_inner;

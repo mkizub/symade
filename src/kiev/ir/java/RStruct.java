@@ -124,6 +124,7 @@ public final view RStruct of StructImpl extends StructView {
 				)
 			);
 		}
+		f.setAddedToInit(true);
 		ENode e = new SFldExpr(from.pos,f);
 		return e;
 //		System.out.println("Field "+f+" of type "+f.init+" added");

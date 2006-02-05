@@ -304,7 +304,7 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	private boolean resolveExprs() {
 		expr1.resolve(null);
-		if (!expr1.isForWrapper() && expr1.getType().isWrapper()) {
+		if (!expr1.isForWrapper() && expr1.getType() instanceof CTimeType) {
 			expr1 = expr1.getType().makeWrappedAccess(expr1);
 			expr1.resolve(null);
 		}
@@ -313,7 +313,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		if( expr2 instanceof TypeRef )
 			getExprByStruct(((TypeRef)expr2).getType().getStruct());
 		expr2.resolve(null);
-		if (!expr2.isForWrapper() && expr2.getType().isWrapper()) {
+		if (!expr2.isForWrapper() && expr2.getType() instanceof CTimeType) {
 			expr2 = expr2.getType().makeWrappedAccess(expr2);
 			expr2.resolve(null);
 		}
@@ -330,8 +330,8 @@ public class BinaryBoolExpr extends BoolExpr {
 			expr2 = new ConstIntExpr(meta.getTag());
 			expr2.resolve(Type.tpInt);
 			Type tp = expr1.getType();
-			if (tp.isWrapper()) {
-				expr1.getType().makeWrappedAccess(expr1);
+			if (tp instanceof CTimeType) {
+				tp.makeWrappedAccess(expr1);
 				expr1.resolve(null);
 				tp = expr1.getType();
 			}
@@ -532,7 +532,7 @@ public class InstanceofExpr extends BoolExpr {
 			return;
 		} else {
 			Type et = expr.getType();
-			if (!expr.isForWrapper() && et.isWrapper()) {
+			if (!expr.isForWrapper() && et instanceof CTimeType) {
 				expr = et.makeWrappedAccess(expr);
 				expr.setForWrapper(true);
 				expr.resolve(null);
@@ -601,8 +601,8 @@ public class InstanceofExpr extends BoolExpr {
 		if (path != null) {
 			Type et = expr.getType();
 			Type tp = type.getType();
-			if (et.isWrapper() && !tp.isWrapper()) {
-				tp = et.applay(new TVarBld(et.getStruct().args[0].getAType(), tp));
+			if (et instanceof CTimeType && !(tp instanceof CTimeType)) {
+				tp = et.applay(new TVarBld(et.bindings().tvars[0].var, tp));
 			}
 			return dfs.addNodeType(path,tp);
 		}

@@ -572,7 +572,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		Method@ elems;
 		Method@ nextelem;
 		Method@ moreelem;
-		if (ctype.isWrapper()) {
+		if (ctype instanceof CTimeType) {
 			container = ctype.makeWrappedAccess(container);
 			container.resolve(null);
 			ctype = container.getType();

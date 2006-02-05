@@ -377,20 +377,20 @@ public class AssignExpr extends LvalueExpr {
 		}
 		lval.resolve(reqType);
 		Type et1 = lval.getType();
-		if (op == AssignOperator.Assign && et1.isWrapper())
+		if (op == AssignOperator.Assign && et1 instanceof CTimeType)
 			value.resolve(et1.getWrappedType());
-		else if (op == AssignOperator.Assign2 && et1.isWrapper())
-			value.resolve(((WrapperType)et1).getUnwrappedType());
+		else if (op == AssignOperator.Assign2 && et1 instanceof CTimeType)
+			value.resolve(et1.getUnwrappedType());
 		else
 			value.resolve(et1);
 		if (value instanceof TypeRef)
 			((TypeRef)value).toExpr(et1);
 		Type et2 = value.getType();
-		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
+		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !(et1 instanceof CTimeType) && !(et2 instanceof CTimeType)) {
 			this.resolve2(reqType);
 			return;
 		}
-		else if( op == AssignOperator.Assign2 && et1.isWrapper() && et2.isInstanceOf(et1)) {
+		else if( op == AssignOperator.Assign2 && et1 instanceof CTimeType && et2.isInstanceOf(et1)) {
 			this.resolve2(reqType);
 			return;
 		}
@@ -447,18 +447,18 @@ public class AssignExpr extends LvalueExpr {
 		}
 		// Not a standard and not overloaded, try wrapped classes
 		if (op != AssignOperator.Assign2) {
-			if (et1.isWrapper() && et2.isWrapper()) {
+			if (et1 instanceof CTimeType && et2 instanceof CTimeType) {
 				lval = et1.makeWrappedAccess(lval);
 				value = et2.makeWrappedAccess(value);
 				resolve(reqType);
 				return;
 			}
-			else if (et1.isWrapper()) {
+			else if (et1 instanceof CTimeType) {
 				lval = et1.makeWrappedAccess(lval);
 				resolve(reqType);
 				return;
 			}
-			else if (et2.isWrapper()) {
+			else if (et2 instanceof CTimeType) {
 				value = et2.makeWrappedAccess(value);
 				resolve(reqType);
 				return;
@@ -472,6 +472,8 @@ public class AssignExpr extends LvalueExpr {
 		if( !(lval instanceof LvalueExpr) )
 			throw new RuntimeException("Can't assign to "+lval+": lvalue requared");
 		Type t1 = lval.getType();
+		if (t1 instanceof CTimeType && (value.isForWrapper() || op == AssignOperator.Assign2))
+			t1 = t1.getUnwrappedType();
 		if( op==AssignOperator.AssignAdd && t1 ≈ Type.tpString ) {
 			op = AssignOperator.Assign;
 			value = new BinaryExpr(pos,BinaryOperator.Add,new Shadow(lval),~value);
@@ -483,6 +485,8 @@ public class AssignExpr extends LvalueExpr {
 		else
 			throw new CompilerException(value, "Can't opeerate on "+value);
 		Type t2 = value.getType();
+		if (t2 instanceof CTimeType && (value.isForWrapper() || op == AssignOperator.Assign2))
+			t2 = t2.getUnwrappedType();
 		if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
 			if( !t2.isIntegerInCode() ) {
 				value = new CastExpr(pos,Type.tpInt,~value);
@@ -613,21 +617,21 @@ public class BinaryExpr extends ENode {
 			Type et2 = expr2.getType();
 			if( op == BinaryOperator.Add
 				&& ( et1 ≈ Type.tpString || et2 ≈ Type.tpString ||
-					(et1.isWrapper() && et1.getWrappedType() ≈ Type.tpString) ||
-					(et2.isWrapper() && et2.getWrappedType() ≈ Type.tpString)
+					(et1 instanceof CTimeType && et1.getWrappedType() ≈ Type.tpString) ||
+					(et2 instanceof CTimeType && et2.getWrappedType() ≈ Type.tpString)
 				   )
 			) {
 				if( expr1 instanceof StringConcatExpr ) {
 					StringConcatExpr sce = (StringConcatExpr)expr1;
-					if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
+					if (et2 instanceof CTimeType) expr2 = et2.makeWrappedAccess(expr2);
 					sce.appendArg(expr2);
 					trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
 					replaceWithNode(~sce);
 				} else {
 					StringConcatExpr sce = new StringConcatExpr(pos);
-					if (et1.isWrapper()) expr1 = et1.makeWrappedAccess(expr1);
+					if (et1 instanceof CTimeType) expr1 = et1.makeWrappedAccess(expr1);
 					sce.appendArg(expr1);
-					if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
+					if (et2 instanceof CTimeType) expr2 = et2.makeWrappedAccess(expr2);
 					sce.appendArg(expr2);
 					trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
 					replaceWithNode(sce);
@@ -674,18 +678,18 @@ public class BinaryExpr extends ENode {
 				}
 			}
 			// Not a standard and not overloaded, try wrapped classes
-			if (et1.isWrapper() && et2.isWrapper()) {
+			if (et1 instanceof CTimeType && et2 instanceof CTimeType) {
 				expr1 = et1.makeWrappedAccess(expr1);
 				expr2 = et1.makeWrappedAccess(expr2);
 				mainResolveOut();
 				return;
 			}
-			if (et1.isWrapper()) {
+			if (et1 instanceof CTimeType) {
 				expr1 = et1.makeWrappedAccess(expr1);
 				mainResolveOut();
 				return;
 			}
-			if (et2.isWrapper()) {
+			if (et2 instanceof CTimeType) {
 				expr2 = et1.makeWrappedAccess(expr2);
 				mainResolveOut();
 				return;
@@ -761,21 +765,21 @@ public class BinaryExpr extends ENode {
 		Type et2 = expr2.getType();
 		if( op == BinaryOperator.Add
 			&& ( et1 ≈ Type.tpString || et2 ≈ Type.tpString ||
-				(et1.isWrapper() && et1.getWrappedType() ≈ Type.tpString) ||
-				(et2.isWrapper() && et2.getWrappedType() ≈ Type.tpString)
+				(et1 instanceof CTimeType && et1.getWrappedType() ≈ Type.tpString) ||
+				(et2 instanceof CTimeType && et2.getWrappedType() ≈ Type.tpString)
 			   )
 		) {
 			if( expr1 instanceof StringConcatExpr ) {
 				StringConcatExpr sce = (StringConcatExpr)expr1;
-				if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
+				if (et2 instanceof CTimeType) expr2 = et2.makeWrappedAccess(expr2);
 				sce.appendArg(expr2);
 				trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
 				replaceWithNodeResolve(Type.tpString, ~sce);
 			} else {
 				StringConcatExpr sce = new StringConcatExpr(pos);
-				if (et1.isWrapper()) expr1 = et1.makeWrappedAccess(expr1);
+				if (et1 instanceof CTimeType) expr1 = et1.makeWrappedAccess(expr1);
 				sce.appendArg(expr1);
-				if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
+				if (et2 instanceof CTimeType) expr2 = et2.makeWrappedAccess(expr2);
 				sce.appendArg(expr2);
 				trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
 				replaceWithNodeResolve(Type.tpString, sce);
@@ -825,18 +829,18 @@ public class BinaryExpr extends ENode {
 			}
 		}
 		// Not a standard and not overloaded, try wrapped classes
-		if (et1.isWrapper() && et2.isWrapper()) {
+		if (et1 instanceof CTimeType && et2 instanceof CTimeType) {
 			expr1 = et1.makeWrappedAccess(expr1);
 			expr2 = et1.makeWrappedAccess(expr2);
 			resolve(reqType);
 			return;
 		}
-		if (et1.isWrapper()) {
+		if (et1 instanceof CTimeType) {
 			expr1 = et1.makeWrappedAccess(expr1);
 			resolve(reqType);
 			return;
 		}
-		if (et2.isWrapper()) {
+		if (et2 instanceof CTimeType) {
 			expr2 = et1.makeWrappedAccess(expr2);
 			resolve(reqType);
 			return;
@@ -1453,7 +1457,7 @@ public class UnaryExpr extends ENode {
 			}
 		}
 		// Not a standard and not overloaded, try wrapped classes
-		if (et.isWrapper()) {
+		if (et instanceof CTimeType) {
 			replaceWithNodeResolve(reqType, new UnaryExpr(pos,op,et.makeWrappedAccess(expr)));
 			return;
 		}
@@ -1789,13 +1793,13 @@ public class CastExpr extends ENode {
 		if( !extp.isAutoCastableTo(type) ) {
 			if( tryOverloadedCast(extp) )
 				return;
-			if (extp.isWrapper()) {
+			if (extp instanceof CTimeType) {
 				expr = extp.makeWrappedAccess(expr);
 				resolve(reqType);
 				return;
 			}
 		}
-		else if (extp.isWrapper() && extp.getWrappedType().isAutoCastableTo(type)) {
+		else if (extp instanceof CTimeType && extp.getWrappedType().isAutoCastableTo(type)) {
 			if( tryOverloadedCast(extp) )
 				return;
 			expr = extp.makeWrappedAccess(expr);
@@ -1859,7 +1863,7 @@ public class CastExpr extends ENode {
 		}
 		Type et = Type.getRealType(type,expr.getType());
 		// Try wrapped field
-		if (et.isWrapper() && et.getWrappedType().equals(type)) {
+		if (et instanceof CTimeType && et.getWrappedType().equals(type)) {
 			expr = et.makeWrappedAccess(expr);
 			resolve(reqType);
 			return;

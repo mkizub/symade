@@ -91,12 +91,12 @@ public abstract class Type extends AType {
 			if( ((CoreType)t).getRefTypeForPrimitive() ≈ this ) return true;
 			else if( !Kiev.javaMode && this ≡ Type.tpInt && t ≥ Type.tpEnum ) return true;
 		}
-		if( this.isWrapper() || t.isWrapper() ) {
-			if( this.isWrapper() && t.isWrapper() )
+		if( this instanceof CTimeType || t instanceof CTimeType ) {
+			if( this instanceof CTimeType && t instanceof CTimeType )
 				return this.getWrappedType().isAutoCastableTo(t.getWrappedType());
-			else if( this.isWrapper() && this.getWrappedType().isAutoCastableTo(t) )
+			else if( this instanceof CTimeType && this.getWrappedType().isAutoCastableTo(t) )
 				return true;
-			else if( t.isWrapper() && t.isAutoCastableTo(t.getWrappedType()) )
+			else if( t instanceof CTimeType && this.isAutoCastableTo(t.getWrappedType()) )
 				return true;
 			return false;
 		}
@@ -122,7 +122,7 @@ public abstract class Type extends AType {
 				else return t1;
 			}
 			else if( isInstanceOf(t2) ) return t2;
-			if( t1.isWrapper() && t2.isWrapper() ) {
+			if( t1 instanceof CTimeType && t2 instanceof CTimeType ) {
 				Type tp1 = t1.getWrappedType();
 				Type tp2 = t2.getWrappedType();
 				Type tp_better = betterCast(tp1,tp2);
@@ -162,10 +162,10 @@ public abstract class Type extends AType {
 		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).arity == 0 ) {
 			if( ((CallType)this).ret().isCastableTo(t) ) return true;
 		}
-		if( this.isWrapper())
-			return ((WrapperType)this).getUnwrappedType().isCastableTo(t);
-		if( t.isWrapper())
-			return this.isCastableTo(((WrapperType)t).getUnwrappedType());
+		if( this instanceof CTimeType)
+			return this.getUnwrappedType().isCastableTo(t);
+		if( t instanceof CTimeType)
+			return this.isCastableTo(t.getUnwrappedType());
 		return false;
 	}
 
@@ -201,9 +201,9 @@ public abstract class Type extends AType {
 	public boolean isLocalClazz()			{ return false; }
 	public boolean isStructInstanceOf(Struct s)	{ return false; }
 	
-	public boolean isWrapper()						{ return false; }
-	public ENode makeWrappedAccess(ENode from)		{ throw new RuntimeException("Type "+this+" is not a wrapper"); } 
-	public Type getWrappedType()					{ throw new RuntimeException("Type "+this+" is not a wrapper"); }
+	public Type getWrappedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
+	public Type getUnwrappedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
+	public ENode makeWrappedAccess(ENode from)		{ throw new RuntimeException("Type "+this+" is not a box type"); } 
 	
 	public static Type getRealType(Type t1, TypeRef t2) {
 		return Type.getRealType(t1, t2.lnk);
@@ -678,7 +678,17 @@ public final class ArrayType extends Type {
 
 }
 
-public final class WrapperType extends Type {
+public abstract class CTimeType extends Type {
+
+	protected CTimeType(TypeProvider meta_type, int flags, ArgType arg, Type enclosed_type) {
+		super(meta_type, flags, new TVarBld(arg, enclosed_type).close());
+	}
+
+	public abstract ENode makeWrappedAccess(ENode from);
+	public abstract ENode makeInitExpr(LvalDNode dn, ENode init); 
+}
+
+public final class WrapperType extends CTimeType {
 	
 	public static final Type tpWrappedPrologVar = newWrapperType(tpPrologVar);
 	public static final Type tpWrappedRefProxy  = newWrapperType(tpRefProxy);
@@ -688,7 +698,7 @@ public final class WrapperType extends Type {
 	}
 	
 	public WrapperType(CompaundType unwrapped_type) {
-		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()), flReference | flWrapper, new TVarBld(tpWrapperArg, unwrapped_type).close());
+		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()), flReference | flWrapper, tpWrapperArg, unwrapped_type);
 	}
 
 	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
@@ -712,10 +722,25 @@ public final class WrapperType extends Type {
 	public boolean isLocalClazz()					{ return false; }
 	public boolean isStructInstanceOf(Struct s)	{ return getUnwrappedType().isStructInstanceOf(s); }
 
-	public final boolean isWrapper()					{ return true; }
-	public final ENode makeWrappedAccess(ENode from)	{ return new IFldExpr(from.pos, ~from, wrapped_field); } 
-	public final Type getWrappedType()					{ return Type.getRealType(getUnwrappedType(), wrapped_field.type); }
+	public final ENode makeWrappedAccess(ENode from) {
+		return new IFldExpr(from.pos, ~from, wrapped_field);
+	} 
+	public final ENode makeInitExpr(LvalDNode dn, ENode init) {
+		if (dn.isInitWrapper())
+			return init;
+		dn.setInitWrapper(true);
+		ENode e;
+		if (init != null && init.isForWrapper())
+			e = init;
+		else if (init == null)
+			e = new NewExpr(dn.pos,getUnwrappedType(),ENode.emptyArray);
+		else
+			e = new NewExpr(init.pos,getUnwrappedType(),new ENode[]{~init});
+		e.setForWrapper(true);
+		return e;
+	}
 	
+	public final Type getWrappedType()					{ return Type.getRealType(getUnwrappedType(), wrapped_field.type); }
 	public CompaundType getUnwrappedType()				{ return (CompaundType)this.tvars[0].unalias().result(); }
 	
 	public Struct getStruct()			{ return getUnwrappedType().getStruct(); }

@@ -104,13 +104,6 @@ public class ASTCallAccessExpression extends ENode {
 			} else {
 				tps = obj.getAccessTypes();
 				res = new ENode[tps.length];
-				for (int si=0; si < tps.length; si++) {
-					Type tp = tps[si];
-					if (func.name.byteAt(0) == '$') {
-						while (tp.isWrapper())
-							tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
-					}
-				}
 				// fall down
 			}
 			for (int si=0; si < tps.length; si++) {
@@ -249,13 +242,6 @@ public class ASTCallAccessExpression extends ENode {
 		} else {
 			tps = obj.getAccessTypes();
 			res = new ENode[tps.length];
-			for (int si=0; si < tps.length; si++) {
-				Type tp = tps[si];
-				if (func.name.byteAt(0) == '$') {
-					while (tp.isWrapper())
-						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
-				}
-			}
 			// fall down
 		}
 		for (int si=0; si < tps.length; si++) {

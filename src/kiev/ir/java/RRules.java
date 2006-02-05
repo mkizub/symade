@@ -53,7 +53,7 @@ public final view RRuleBlock of RuleBlockImpl extends RuleBlockView {
 		// Local variables
 		foreach(Var v; rule_method.localvars) {
 			String tp = Kiev.reparseType(v.type);
-			if( v.type.isWrapper() )
+			if (v.type instanceof CTimeType)
 				sb.append(tp+' '+v.name.name+" := new "+tp+"();\n");
 			else
 				sb.append(tp+' '+v.name.name+";\n");
