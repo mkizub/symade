@@ -50,20 +50,7 @@ public view JNode of NodeImpl implements Constants {
 
 	public boolean equals(Object:Object obj) { return false; }
 	public boolean equals(JNode:Object jnv) { return (NodeImpl)this == (NodeImpl)jnv; }
-	
-	public static boolean eq(JNode jnv1, JNode jnv2)
-		alias operator(60,xfx,==)
-	{
-		if (jnv1 == null || jnv2 == null) return jnv1 == jnv2;
-		return (NodeImpl)jnv1 == (NodeImpl)jnv2;
-	}
 
-	public static boolean neq(JNode jnv1, JNode jnv2)
-		alias operator(60,xfx,!=)
-	{
-		if (jnv1 == null || jnv2 == null) return jnv1 != jnv2;
-		return (NodeImpl)jnv1 != (NodeImpl)jnv2;
-	}
 }
 
 @nodeview
