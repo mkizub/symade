@@ -457,7 +457,7 @@ public class Compiler {
 			}
 
 			if( !Kiev.initialized ) {
-				Class force_init = StdTypes.class;
+				Class force_init = Class.forName(StdTypes.class.getName());
 				Kiev.initialized = (force_init != null);
 			}
 
