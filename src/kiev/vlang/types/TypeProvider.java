@@ -279,14 +279,14 @@ public class WrapperTypeProvider extends TypeProvider {
 		return WrapperType.newWrapperType(bindings.resolve(StdTypes.tpWrapperArg));
 	}
 	public Type bind(Type t, TVSet bindings) {
-		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().bind(bindings));
+		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().bind(bindings));
 	}
 	public Type rebind(Type t, TVSet bindings) {
-		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().rebind(bindings));
+		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().rebind(bindings));
 	}
 	public Type applay(Type t, TVSet bindings) {
 		if (!t.isAbstract() || bindings.getTVars().length == 0) return t;
-		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().applay(bindings));
+		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().applay(bindings));
 	}
 }
 

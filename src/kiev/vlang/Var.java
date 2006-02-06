@@ -211,7 +211,7 @@ public class Var extends LvalDNode implements Named, Typed {
 		if (tp instanceof CTimeType) {
 			init = tp.makeInitExpr(this,init);
 			try {
-				init.resolve(tp.getUnwrappedType());
+				init.resolve(tp.getEnclosedType());
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);
 			}

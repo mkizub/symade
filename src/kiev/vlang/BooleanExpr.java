@@ -305,7 +305,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	private boolean resolveExprs() {
 		expr1.resolve(null);
 		if (!expr1.isForWrapper() && expr1.getType() instanceof CTimeType) {
-			expr1 = expr1.getType().makeWrappedAccess(expr1);
+			expr1 = expr1.getType().makeUnboxedExpr(expr1);
 			expr1.resolve(null);
 		}
 
@@ -314,7 +314,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			getExprByStruct(((TypeRef)expr2).getType().getStruct());
 		expr2.resolve(null);
 		if (!expr2.isForWrapper() && expr2.getType() instanceof CTimeType) {
-			expr2 = expr2.getType().makeWrappedAccess(expr2);
+			expr2 = expr2.getType().makeUnboxedExpr(expr2);
 			expr2.resolve(null);
 		}
 		return true;
@@ -331,7 +331,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			expr2.resolve(Type.tpInt);
 			Type tp = expr1.getType();
 			if (tp instanceof CTimeType) {
-				tp.makeWrappedAccess(expr1);
+				tp.makeUnboxedExpr(expr1);
 				expr1.resolve(null);
 				tp = expr1.getType();
 			}
@@ -533,7 +533,7 @@ public class InstanceofExpr extends BoolExpr {
 		} else {
 			Type et = expr.getType();
 			if (!expr.isForWrapper() && et instanceof CTimeType) {
-				expr = et.makeWrappedAccess(expr);
+				expr = et.makeUnboxedExpr(expr);
 				expr.setForWrapper(true);
 				expr.resolve(null);
 			}
@@ -548,7 +548,7 @@ public class InstanceofExpr extends BoolExpr {
 			return;
 		}
 		if (tp instanceof WrapperType)
-			tp = tp.getUnwrappedType();
+			tp = tp.getEnclosedType();
 		if (tp instanceof CompaundType) {
 			CompaundType bt = (CompaundType)tp;
 			if (tp.clazz.isTypeUnerasable()) {

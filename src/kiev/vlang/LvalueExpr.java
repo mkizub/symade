@@ -973,7 +973,7 @@ public final class UnwrapExpr extends LvalueExpr {
 	public Type getType() {
 		Type tp = expr.getType();
 		if (tp instanceof CTimeType)
-			return ((WrapperType)tp).getUnwrappedType();
+			return ((WrapperType)tp).getEnclosedType();
 		return tp;
 	}
 

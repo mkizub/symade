@@ -663,7 +663,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
     public void resolve(Type reqType) {
 		var.resolve(null);
-		expr.resolve(((WrapperType)var.var.type).getWrappedType());
+		expr.resolve(((WrapperType)var.var.type).getUnboxedType());
     }
 
 	public void resolve1(JumpNodes jn) {

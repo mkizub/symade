@@ -171,7 +171,7 @@ public final class NewExpr extends ENode {
 		} else {
 			Type t = this.type.getType();
 			if (t instanceof CTimeType)
-				type = t.getUnwrappedType();
+				type = t.getEnclosedType();
 			else if (t instanceof ArgType)
 				type = (CompaundType)t.getSuperType();
 			else

@@ -208,7 +208,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		if (tp instanceof CTimeType) {
 			init = tp.makeInitExpr(this,init);
 			try {
-				init.resolve(tp.getUnwrappedType());
+				init.resolve(tp.getEnclosedType());
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);
 			}

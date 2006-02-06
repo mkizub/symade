@@ -22,7 +22,7 @@ public final view RStruct of StructImpl extends StructView {
 	
 	public ENode accessTypeInfoField(ASTNode from, Type t, boolean from_gen) {
 		while (t instanceof WrapperType)
-			t = ((WrapperType)t).getUnwrappedType();
+			t = ((WrapperType)t).getEnclosedType();
 		Method ctx_method = from.ctx_method;
 		if (t.isUnerasable()) {
 			if (ctx_method != null && ctx_method.isTypeUnerasable() && t instanceof ArgType) {
@@ -914,7 +914,7 @@ public final view RStruct of StructImpl extends StructView {
 						be = new InstanceofExpr(pos, new LVarExpr(pos,mm.params[j]), t);
 				}
 				if (t instanceof WrapperType)
-					t = t.getUnwrappedType();
+					t = t.getEnclosedType();
 				if (t instanceof CompaundType && ((CompaundType)t).clazz.isTypeUnerasable()) {
 					if (t.getStruct().typeinfo_clazz == null)
 						t.getStruct().getRView().autoGenerateTypeinfoClazz();
