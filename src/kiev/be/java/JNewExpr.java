@@ -52,8 +52,9 @@ public final view JNewExpr of NewExprImpl extends JENode {
 				ENode e = new CastExpr(pos,type,
 					new CallExpr(pos,tie,
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newInstance"),Type.tpObject,Type.tpInt),
-						new ENode[]{new ConstIntExpr(i)}),
-					true);
+						new ENode[]{new ConstIntExpr(i)}
+					)
+				);
 				e.resolve(reqType);
 				e.getJView().generate(code,reqType);
 				return;

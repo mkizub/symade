@@ -18,7 +18,7 @@ import kiev.be.java.JLVarExpr;
 import kiev.ir.java.RLVarExpr;
 import kiev.be.java.JSFldExpr;
 import kiev.be.java.JOuterThisAccessExpr;
-import kiev.be.java.JUnwrapExpr;
+import kiev.be.java.JReinterpExpr;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -934,64 +934,87 @@ public final class OuterThisAccessExpr extends AccessExpr {
 }
 
 @nodeset
-public final class UnwrapExpr extends LvalueExpr {
+public final class ReinterpExpr extends LvalueExpr {
 	
 	@dflow(out="expr") private static class DFI {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
-	@virtual typedef This  = UnwrapExpr;
-	@virtual typedef NImpl = UnwrapExprImpl;
-	@virtual typedef VView = UnwrapExprView;
-	@virtual typedef JView = JUnwrapExpr;
+	@virtual typedef This  = ReinterpExpr;
+	@virtual typedef NImpl = ReinterpExprImpl;
+	@virtual typedef VView = ReinterpExprView;
+	@virtual typedef JView = JReinterpExpr;
 
 	@nodeimpl
-	public static final class UnwrapExprImpl extends LvalueExprImpl {		
-		@virtual typedef ImplOf = UnwrapExpr;
+	public static final class ReinterpExprImpl extends LvalueExprImpl {		
+		@virtual typedef ImplOf = ReinterpExpr;
+		@att public TypeRef		type;
 		@att public ENode		expr;
 	}
 	@nodeview
-	public static final view UnwrapExprView of UnwrapExprImpl extends LvalueExprView {
+	public static final view ReinterpExprView of ReinterpExprImpl extends LvalueExprView {
+		public TypeRef		type;
 		public ENode		expr;
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
-	public UnwrapExpr() {
-		super(new UnwrapExprImpl());
+	public ReinterpExpr() {
+		super(new ReinterpExprImpl());
 	}
 
-	public UnwrapExpr(ENode expr) {
+	public ReinterpExpr(Type type) {
+		this();
+		this.type = new TypeRef(type);
+	}
+
+	public ReinterpExpr(int pos, Type type, ENode expr) {
 		this();
 		this.pos = pos;
+		this.type = new TypeRef(type);
 		this.expr = expr;
 	}
 
-	public String toString() { return "(($unwrap)"+expr+")"; }
+	public ReinterpExpr(int pos, TypeRef type, ENode expr) {
+		this();
+		this.pos = pos;
+		this.type = type;
+		this.expr = expr;
+	}
+
+	public String toString() { return "(($reinterp "+type+")"+expr+")"; }
 
 	public Type getType() {
-		Type tp = expr.getType();
-		if (tp instanceof CTimeType)
-			return ((WrapperType)tp).getEnclosedType();
-		return tp;
+		return this.type.getType();
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {
 		trace(Kiev.debugResolve,"Resolving "+this);
-		expr.resolve(reqType);
-		Type tp = expr.getType();
-		if!(tp instanceof CTimeType) {
+		expr.resolve(null);
+		Type type = this.getType();
+		Type extp = expr.getType();
+		if (type ≈ extp) {
 			replaceWithNode(~expr);
 			return;
 		}
+		if (type.isIntegerInCode() && extp.isIntegerInCode())
+			;
+		else if (extp.isInstanceOf(type))
+			;
+		else if (type instanceof CTimeType && type.getEnclosedType() ≈ extp)
+			;
+		else if (extp instanceof CTimeType && extp.getEnclosedType() ≈ type)
+			;
+		else
+			Kiev.reportError(this, "Cannot reinterpret "+extp+" as "+type);
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append("(($unwrap)").append(expr).append(")");
+		return dmp.append(expr);
 	}
 }
 

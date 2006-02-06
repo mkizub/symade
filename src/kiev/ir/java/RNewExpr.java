@@ -79,9 +79,9 @@ public final view RNewClosure of NewClosureImpl extends NewClosureView {
 				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
 				new ConstIntExpr(i));
 			if( v.type.isReference() )
-				val = new CastExpr(v.pos,v.type,val,true);
+				val = new CastExpr(v.pos,v.type,val);
 			else
-				val = new CastExpr(v.pos,((CoreType)v.type).getRefTypeForPrimitive(),val,true);
+				val = new CastExpr(v.pos,((CoreType)v.type).getRefTypeForPrimitive(),val);
 			v.init = val;
 			body.insertSymbol(v,i);
 			if( !v.type.isReference() )

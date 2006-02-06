@@ -361,7 +361,7 @@ public final class NewArrayExpr extends ENode {
 					new CallExpr(pos,ti,
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt),
 						new ENode[]{~args[0]}
-					),true));
+					)));
 				return;
 			} else {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
@@ -370,7 +370,7 @@ public final class NewArrayExpr extends ENode {
 						new ENode[]{
 							new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.delToArray())
 						}
-					),true));
+					)));
 				return;
 			}
 		}

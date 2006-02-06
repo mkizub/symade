@@ -858,8 +858,7 @@ public final view RStruct of StructImpl extends StructView {
 					last_st = (IfElseStat)last_st.elseSt;
 				ENode[] vae = new ENode[mm.params.length];
 				for(int k=0; k < vae.length; k++) {
-					vae[k] = new CastExpr(0,mm.type.arg(k),
-						new LVarExpr(0,mm.params[k]), Kiev.verify);
+					vae[k] = new CastExpr(0,mm.type.arg(k), new LVarExpr(0,mm.params[k]));
 				}
 				if( m.type.ret() ≢ Type.tpVoid ) {
 					if( overwr.type.ret() ≡ Type.tpVoid )

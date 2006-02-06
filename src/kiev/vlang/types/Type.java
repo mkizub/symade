@@ -754,7 +754,7 @@ public final class WrapperType extends CTimeType {
 		info.isForwardsAllowed(),$cut,
 		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in wrapper type "+this),
 		checkResolved(),
-		info.enterDewrap() : info.leaveDewrap(),
+		info.enterReinterp(getEnclosedType()) : info.leaveReinterp(),
 		{
 			info.enterForward(wrapped_field, 0) : info.leaveForward(wrapped_field, 0),
 			getUnboxedType().resolveNameAccessR(node, info, name),
@@ -763,7 +763,7 @@ public final class WrapperType extends CTimeType {
 			getEnclosedType().resolveNameAccessR(node, info, name)
 		}
 	;
-		info.enterDewrap() : info.leaveDewrap(),
+		info.enterReinterp(getEnclosedType()) : info.leaveReinterp(),
 		getEnclosedType().resolveNameAccessR(node, info, name)
 	}
 
@@ -772,7 +772,7 @@ public final class WrapperType extends CTimeType {
 		info.isForwardsAllowed(),$cut,
 		trace(Kiev.debugResolve, "Resolving method "+name+" in wrapper type "+this),
 		checkResolved(),
-		info.enterDewrap() : info.leaveDewrap(),
+		info.enterReinterp(getEnclosedType()) : info.leaveReinterp(),
 		{
 			info.enterForward(wrapped_field, 0) : info.leaveForward(wrapped_field, 0),
 			getUnboxedType().resolveCallAccessR(node, info, name, mt),
@@ -781,7 +781,7 @@ public final class WrapperType extends CTimeType {
 			getEnclosedType().resolveCallAccessR(node, info, name, mt)
 		}
 	;
-		info.enterDewrap() : info.leaveDewrap(),
+		info.enterReinterp(getEnclosedType()) : info.leaveReinterp(),
 		getEnclosedType().resolveCallAccessR(node, info, name, mt)
 	}
 	

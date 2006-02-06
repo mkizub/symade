@@ -69,13 +69,13 @@ public class ResInfo {
 		trace(Kiev.debugResolve,"Leaving mode, now "+this);
 	}
 	
-	public void enterDewrap() {
-		forwards_stack[forwards_p++] = new UnwrapExpr();
+	public void enterReinterp(Type tp) {
+		forwards_stack[forwards_p++] = new ReinterpExpr(tp);
 		flags_stack[flags_p++] = flags;
 		flags |= noStatic | noImports;
 		trace(Kiev.debugResolve,"Entering dewrap, now "+this);
 	}
-	public void leaveDewrap() {
+	public void leaveReinterp() {
 		forwards_stack[--forwards_p] = null;
 		flags = flags_stack[--flags_p];
 		trace(Kiev.debugResolve,"Leaving dewarp, now "+this);
@@ -215,10 +215,10 @@ public class ResInfo {
 			e = buildVarAccess(at, (Var)forwards_stack[n]);
 			n++;
 		}
-		if (e != null && (node instanceof Field || node instanceof UnwrapExpr)) {
+		if (e != null && (node instanceof Field || node instanceof ReinterpExpr)) {
 			for (; n < forwards_p; n++) {
 				ASTNode fwn = forwards_stack[n];
-				if (fwn instanceof UnwrapExpr) {
+				if (fwn instanceof ReinterpExpr) {
 					fwn.expr = e;
 					e = fwn;
 				}
@@ -233,8 +233,8 @@ public class ResInfo {
 			if (node instanceof Field) {
 				e = new IFldExpr(at.pos, e, (Field)node);
 			} else {
-				((UnwrapExpr)node).expr = e;
-				e = (UnwrapExpr)node;
+				((ReinterpExpr)node).expr = e;
+				e = (ReinterpExpr)node;
 			}
 			return e;
 		}

@@ -475,9 +475,8 @@ public view JConditionalExpr of ConditionalExprImpl extends JENode {
 
 @nodeview
 public view JCastExpr of CastExprImpl extends JENode {
-	public:ro	JENode		expr;
+	public:ro	JENode			expr;
 	public:ro	Type			type;
-	public:ro	boolean			reinterp;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating CastExpr: "+this);
@@ -490,14 +489,7 @@ public view JCastExpr of CastExprImpl extends JENode {
 			if( type.isReference() )
 				code.addInstr(Instr.op_checkcast,type);
 		} else {
-			if (reinterp) {
-				if (t.isIntegerInCode() && type.isIntegerInCode())
-					; //generate nothing, both values are int-s
-				else
-					throw new CompilerException(this,"Expression "+expr+" of type "+t+" cannot be reinterpreted to type "+type);
-			} else {
-				code.addInstr(Instr.op_x2y,type);
-			}
+			code.addInstr(Instr.op_x2y,type);
 		}
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}

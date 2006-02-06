@@ -101,6 +101,7 @@ kiev.be.java.JNode kiev/be/java/JNode kiev\be\java\JNode.java
 kiev.be.java.JOuterThisAccessExpr kiev/be/java/JOuterThisAccessExpr kiev\be\java\JLvalueExpr.java
 kiev.be.java.JPrimitiveType kiev/be/java/JPrimitiveType kiev\be\java\JType.java
 kiev.be.java.JPrimitiveTypeProvider kiev/be/java/JPrimitiveTypeProvider kiev\be\java\JType.java
+kiev.be.java.JReinterpExpr kiev/be/java/JReinterpExpr kiev\be\java\JLvalueExpr.java
 kiev.be.java.JReturnStat kiev/be/java/JReturnStat kiev\be\java\JStatement.java
 kiev.be.java.JSFldExpr kiev/be/java/JSFldExpr kiev\be\java\JLvalueExpr.java
 kiev.be.java.JShadow kiev/be/java/JShadow kiev\be\java\JExpr.java
@@ -117,7 +118,6 @@ kiev.be.java.JTypeDecl kiev/be/java/JTypeDecl kiev\be\java\JNode.java
 kiev.be.java.JTypeInfoExpr kiev/be/java/JTypeInfoExpr kiev\be\java\JExpr.java
 kiev.be.java.JTypeRef kiev/be/java/JTypeRef kiev\be\java\JNode.java
 kiev.be.java.JUnaryExpr kiev/be/java/JUnaryExpr kiev\be\java\JExpr.java
-kiev.be.java.JUnwrapExpr kiev/be/java/JUnwrapExpr kiev\be\java\JLvalueExpr.java
 kiev.be.java.JVar kiev/be/java/JVar kiev\be\java\JVar.java
 kiev.be.java.JVarDecl kiev/be/java/JVarDecl kiev\be\java\JNode.java
 kiev.be.java.JWBCCondition kiev/be/java/JWBCCondition kiev\be\java\JMethod.java
@@ -439,6 +439,7 @@ kiev.vlang.PostfixOperator kiev/vlang/PostfixOperator kiev\vlang\Operator.java
 kiev.vlang.PrefixOperator kiev/vlang/PrefixOperator kiev\vlang\Operator.java
 kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java
 kiev.vlang.ReWalkNodeException kiev/vlang/ReWalkNodeException kiev\vlang\AST.java
+kiev.vlang.ReinterpExpr kiev/vlang/ReinterpExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
 kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java
 kiev.vlang.RuleAndExpr kiev/vlang/RuleAndExpr kiev\vlang\Rules.java
@@ -480,7 +481,6 @@ kiev.vlang.TypeInfoExpr kiev/vlang/TypeInfoExpr kiev\vlang\Expr.java
 kiev.vlang.TypeOpDef kiev/vlang/TypeOpDef kiev\vlang\Import.java
 kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
-kiev.vlang.UnwrapExpr kiev/vlang/UnwrapExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.VarDecl kiev/vlang/VarDecl kiev\vlang\AST.java
 kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java

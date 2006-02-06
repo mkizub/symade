@@ -20,7 +20,7 @@ import kiev.vlang.ThisExpr.ThisExprImpl;
 import kiev.vlang.LVarExpr.LVarExprImpl;
 import kiev.vlang.SFldExpr.SFldExprImpl;
 import kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprImpl;
-import kiev.vlang.UnwrapExpr.UnwrapExprImpl;
+import kiev.vlang.ReinterpExpr.ReinterpExprImpl;
 
 @nodeview
 public abstract view JLvalueExpr of LvalueExprImpl extends JENode {
@@ -555,11 +555,11 @@ public final view JOuterThisAccessExpr of OuterThisAccessExprImpl extends JAcces
 }
 
 @nodeview
-public final view JUnwrapExpr of UnwrapExprImpl extends JLvalueExpr {
+public final view JReinterpExpr of ReinterpExprImpl extends JLvalueExpr {
 	public:ro	JENode		expr;
 
 	public void generateLoad(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - load only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - load only: "+this);
 		code.setLinePos(this);
 		JENode expr = this.expr;
 		if (expr instanceof JLvalueExpr)
@@ -569,7 +569,7 @@ public final view JUnwrapExpr of UnwrapExprImpl extends JLvalueExpr {
 	}
 
 	public void generateLoadDup(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - load & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - load & dup: "+this);
 		code.setLinePos(this);
 		JENode expr = this.expr;
 		if (expr instanceof JLvalueExpr) {
@@ -581,7 +581,7 @@ public final view JUnwrapExpr of UnwrapExprImpl extends JLvalueExpr {
 	}
 
 	public void generateAccess(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - access only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - access only: "+this);
 		code.setLinePos(this);
 		JENode expr = this.expr;
 		if (expr instanceof JLvalueExpr)
@@ -591,7 +591,7 @@ public final view JUnwrapExpr of UnwrapExprImpl extends JLvalueExpr {
 	}
 
 	public void generateStore(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - store only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - store only: "+this);
 		code.setLinePos(this);
 		JENode expr = this.expr;
 		if (expr instanceof JLvalueExpr)
@@ -601,7 +601,7 @@ public final view JUnwrapExpr of UnwrapExprImpl extends JLvalueExpr {
 	}
 
 	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating UnwrapExpr - store & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating ReinterpExpr - store & dup: "+this);
 		code.setLinePos(this);
 		JENode expr = this.expr;
 		if (expr instanceof JLvalueExpr)

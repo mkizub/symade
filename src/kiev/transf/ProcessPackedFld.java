@@ -206,9 +206,9 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		else if( mp.getSize() == 16 && f.type ≡ Type.tpShort )
 			expr = new CastExpr(fa.pos, Type.tpShort, expr);
 		else if( mp.getSize() == 16 && f.type ≡ Type.tpChar )
-			expr = new CastExpr(fa.pos, Type.tpChar, expr, true);
+			expr = new ReinterpExpr(fa.pos, Type.tpChar, expr);
 		else if( mp.getSize() == 1 && f.type ≡ Type.tpBoolean )
-			expr = new CastExpr(fa.pos, Type.tpBoolean, expr, true);
+			expr = new ReinterpExpr(fa.pos, Type.tpBoolean, expr);
 
 		fa.replaceWithNode(expr);
 		rewriteNode(expr);
@@ -258,7 +258,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			be.stats.add(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), ~ae.value)));
 		}
 		else if (ae.value.getType() ≡ Type.tpBoolean) {
-			tmp.init = new CastExpr(ae.value.pos, Type.tpInt, ~ae.value, true);
+			tmp.init = new ReinterpExpr(ae.value.pos, Type.tpInt, ~ae.value);
 		}
 		else {
 			tmp.init = ~ae.value;

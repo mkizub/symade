@@ -1709,7 +1709,7 @@ public class ConditionalExpr extends ENode {
 
 @nodeset
 public class CastExpr extends ENode {
-	
+
 	@dflow(out="expr") private static class DFI {
 	@dflow(in="this:in")	ENode		expr;
 	}
@@ -1724,13 +1724,11 @@ public class CastExpr extends ENode {
 		@virtual typedef ImplOf = CastExpr;
 		@att public ENode		expr;
 		@att public TypeRef		type;
-		@att public boolean		reinterp;
 	}
 	@nodeview
 	public static view CastExprView of CastExprImpl extends ENodeView {
 		public ENode	expr;
 		public TypeRef	type;
-		public boolean	reinterp;
 
 		public int getPriority() { return opCastPriority; }
 	}
@@ -1754,16 +1752,6 @@ public class CastExpr extends ENode {
 		this.pos = pos;
 		this.type = type;
 		this.expr = expr;
-	}
-
-	public CastExpr(int pos, Type type, ENode expr, boolean reint) {
-		this(pos, type, expr);
-		reinterp = reint;
-	}
-
-	public CastExpr(int pos, TypeRef type, ENode expr, boolean reint) {
-		this(pos, type, expr);
-		reinterp = reint;
 	}
 
 	public String toString() {
@@ -1817,10 +1805,6 @@ public class CastExpr extends ENode {
 			return;
 		}
 		if( extp.isCastableTo(type) ) {
-			this.resolve2(type);
-			return;
-		}
-		if( type ≡ Type.tpInt && extp ≡ Type.tpBoolean && reinterp ) {	
 			this.resolve2(type);
 			return;
 		}
@@ -1900,7 +1884,7 @@ public class CastExpr extends ENode {
 				Kiev.reportWarning(this,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
 			else if (!et.isEnum())
 				throw new CompilerException(this,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
-		if( !et.isCastableTo((Type)type) && !(reinterp && et.isIntegerInCode() && type.isIntegerInCode() )) {
+		if( !et.isCastableTo((Type)type) ) {
 			throw new RuntimeException("Expression "+expr+" cannot be casted to type "+type);
 		}
 		if( Kiev.verify && expr.getType() ≉ et ) {

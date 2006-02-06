@@ -98,8 +98,13 @@ public class PrefixExpr extends UnresExpr {
 			e = ((UnresExpr)e).toResolvedExpr();
 		else
 			e.detach();
-		if (op instanceof CastOperator)
-			return new CastExpr(pos,((CastOperator)op).type,e,((CastOperator)op).reinterp);
+		Operator op = this.op;
+		if (op instanceof CastOperator) {
+			if (op.reinterp)
+				return new ReinterpExpr(pos,op.type,e);
+			else
+				return new CastExpr(pos,op.type,e);
+		}
 		return new UnaryExpr(0,op,e);
 	}
 	
