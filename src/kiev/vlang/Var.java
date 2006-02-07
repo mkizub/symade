@@ -441,11 +441,11 @@ changed:;
 					continue next_type;
 				}
 			}
-			if( t1.isInterface() ) {
+			if( t1.getStruct() != null && t1.getStruct().isInterface() ) {
 				newtypes = (Type[])Arrays.append(newtypes,t1);
 			} else {
 				for (int i=0; i < newtypes.length; i++) {
-					if (!newtypes[i].isInterface())
+					if (newtypes[i].getStruct() != null && !newtypes[i].getStruct().isInterface())
 						continue;
 					newtypes = (Type[])Arrays.insert(newtypes,t1,i);
 					break;

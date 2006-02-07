@@ -199,7 +199,7 @@ public class Meta extends ENode {
 	
 	public void verify() {
 		Type mt = type.getType();
-		if (mt == null || !mt.isAnnotation()) {
+		if (mt == null || mt.getStruct() == null || !mt.getStruct().isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
 		KString name = ((CompaundType)mt).clazz.name.name;
@@ -246,7 +246,7 @@ public class Meta extends ENode {
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if (!(t ≈ Type.tpString || t ≈ Type.tpClass || t.isAnnotation() || t.isEnum()))
+				if (t.getStruct() == null || !(t ≈ Type.tpString || t ≈ Type.tpClass || t.getStruct().isAnnotation() || t.getStruct().isEnum()))
 					throw new CompilerException(m, "Bad annotation value type "+tp);
 			}
 			v.resolve(t);

@@ -151,12 +151,16 @@ public abstract class Type extends AType {
 		if( this.isReference() && t.isReference() && (this ≡ tpNull || t ≡ tpNull) ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
-		if( this.isReference() && t.isReference() && (this.isInterface() || t.isInterface()) ) return true;
-		if( t.isEnum())
-			return this.isCastableTo(Type.tpInt);
-		if( t.isArgument() && isCastableTo(t.getSuperType()) )
+		if( this.isReference() && t.isReference() &&
+			this.getStruct() != null && t.getStruct() != null &&
+			(this.getStruct().isInterface() || t.getStruct().isInterface())
+			)
 			return true;
-		if( t.isArgument() && !this.isReference() ) {
+		if( t.getStruct() != null && t.getStruct().isEnum())
+			return this.isCastableTo(Type.tpInt);
+		if( t instanceof ArgType && isCastableTo(t.getSuperType()) )
+			return true;
+		if( t instanceof ArgType && !this.isReference() ) {
 			return true;
 		}
 		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).arity == 0 ) {
@@ -169,8 +173,6 @@ public abstract class Type extends AType {
 		return false;
 	}
 
-	public boolean isArgument()				{ return false; }
-	
 	public final boolean isReference()		{ return (flags & flReference)		!= 0 ; }
 	public final boolean isArray()			{ return (flags & flArray)			!= 0 ; }
 	public final boolean isIntegerInCode()	{ return (flags & flIntegerInCode)	!= 0 ; }
@@ -190,15 +192,6 @@ public abstract class Type extends AType {
 	public final boolean isForward()		{ return (flags & flForward)		!= 0 ; }
 	public final boolean isHidden()			{ return (flags & flHidden)			!= 0 ; }
 
-	public boolean isAnnotation()			{ return false; }
-	public boolean isEnum()					{ return false; }
-	public boolean isInterface()			{ return false; }
-	public boolean isClazz()				{ return false; }
-	public boolean isHasCases()				{ return false; }
-	public boolean isPizzaCase()			{ return false; }
-	public boolean isStaticClazz()			{ return false; }
-	public boolean isAnonymouseClazz()		{ return false; }
-	public boolean isLocalClazz()			{ return false; }
 	public boolean isStructInstanceOf(Struct s)	{ return false; }
 	
 	public Type getUnboxedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
@@ -359,16 +352,6 @@ public final class ArgType extends Type {
 		return jtype;
 	}
 
-	public boolean isArgument()						{ return true; }
-	public boolean isAnnotation()					{ return false; }
-	public boolean isEnum()							{ return false; }
-	public boolean isInterface()					{ return false; }
-	public boolean isClazz()						{ return false; }
-	public boolean isHasCases()						{ return getSuperType().isHasCases(); }
-	public boolean isPizzaCase()					{ return getSuperType().isPizzaCase(); }
-	public boolean isStaticClazz()					{ return getSuperType().isStaticClazz(); }
-	public boolean isAnonymouseClazz()				{ return false; }
-	public boolean isLocalClazz()					{ return false; }
 	public boolean isStructInstanceOf(Struct s)	{ return getSuperType().isStructInstanceOf(s); }
 	public Type getSuperType()						{ return definer.getSuperType(); }
 	public Meta getMeta(KString name)				{ return getSuperType().getMeta(name); }
@@ -413,15 +396,6 @@ public final class CompaundType extends Type {
 	public Meta getMeta(KString name)			{ return clazz.meta.get(name); }
 	public Type getErasedType()					{ return clazz.ctype; }
 
-	public boolean isAnnotation()			{ return clazz.isAnnotation(); }
-	public boolean isEnum()					{ return clazz.isEnum(); }
-	public boolean isInterface()			{ return clazz.isInterface(); }
-	public boolean isClazz()				{ return clazz.isClazz(); }
-	public boolean isHasCases()				{ return clazz.isHasCases(); }
-	public boolean isPizzaCase()			{ return clazz.isPizzaCase(); }
-	public boolean isStaticClazz()			{ return clazz.isStatic(); }
-	public boolean isAnonymouseClazz()		{ return clazz.isAnonymouse(); }
-	public boolean isLocalClazz()			{ return clazz.isLocal(); }
 	public boolean isStructInstanceOf(Struct s)	{ return clazz.instanceOf(s); }
 	
 	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name)
@@ -626,16 +600,6 @@ public final class ArrayType extends Type {
 		return jtype;
 	}
 
-	public boolean isArgument()						{ return false; }
-	public boolean isAnnotation()					{ return false; }
-	public boolean isEnum()							{ return false; }
-	public boolean isInterface()					{ return false; }
-	public boolean isClazz()						{ return false; }
-	public boolean isHasCases()						{ return false; }
-	public boolean isPizzaCase()					{ return false; }
-	public boolean isStaticClazz()					{ return false; }
-	public boolean isAnonymouseClazz()				{ return false; }
-	public boolean isLocalClazz()					{ return false; }
 	public boolean isStructInstanceOf(Struct s)	{ return s == tpObject.clazz; }
 	public Type getSuperType()						{ return tpObject; }
 	public Meta getMeta(KString name)				{ return null; }
@@ -714,15 +678,6 @@ public final class WrapperType extends CTimeType {
 		return jtype;
 	}
 
-	public boolean isAnnotation()					{ return false; }
-	public boolean isEnum()							{ return false; }
-	public boolean isInterface()					{ return false; }
-	public boolean isClazz()						{ return true; }
-	public boolean isHasCases()						{ return false; }
-	public boolean isPizzaCase()					{ return false; }
-	public boolean isStaticClazz()					{ return true; }
-	public boolean isAnonymouseClazz()				{ return false; }
-	public boolean isLocalClazz()					{ return false; }
 	public boolean isStructInstanceOf(Struct s)	{ return getEnclosedType().isStructInstanceOf(s); }
 
 	public final ENode makeUnboxedExpr(ENode from) {
@@ -833,16 +788,6 @@ public final class OuterType extends Type {
 		return jtype;
 	}
 
-	public boolean isArgument()						{ return outer.isArgument(); }
-	public boolean isAnnotation()					{ return outer.isAnnotation(); }
-	public boolean isEnum()							{ return outer.isEnum(); }
-	public boolean isInterface()					{ return outer.isInterface(); }
-	public boolean isClazz()						{ return outer.isClazz(); }
-	public boolean isHasCases()						{ return outer.isHasCases(); }
-	public boolean isPizzaCase()					{ return outer.isPizzaCase(); }
-	public boolean isStaticClazz()					{ return outer.isStaticClazz(); }
-	public boolean isAnonymouseClazz()				{ return outer.isAnonymouseClazz(); }
-	public boolean isLocalClazz()					{ return outer.isLocalClazz(); }
 	public boolean isStructInstanceOf(Struct s)	{ return outer.isStructInstanceOf(s); }
 	public Type getSuperType()						{ return outer.getSuperType(); }
 	public Meta getMeta(KString name)				{ return outer.getMeta(name); }

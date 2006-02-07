@@ -214,7 +214,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 						Type et = sw.sel.getType();
 						if( f.var.type ≢ et )
 							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
-						if (et.isEnum())
+						if (et.getStruct() != null && et.getStruct().isEnum())
 							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField(f.var));
 						else
 							val = f.var.init.ncopy();
@@ -346,7 +346,7 @@ public class SwitchStat extends ENode {
 			try {
 				sel.resolve(Type.tpInt);
 				Type tp = sel.getType();
-				if( tp.isEnum() ) {
+				if( tp.getStruct() != null && tp.getStruct().isEnum() ) {
 					mode = ENUM_SWITCH;
 				}
 				else if( tp.isReference() ) {
@@ -358,7 +358,7 @@ public class SwitchStat extends ENode {
 					tmpvar.getVar().init = old_sel;
 					me.addSymbol(tmpvar.getVar());
 					me.stats.add(this);
-					if( tp.isHasCases() ) {
+					if( tp.getStruct() != null && tp.getStruct().isHasCases() ) {
 						mode = PIZZA_SWITCH;
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						sel = cae;

@@ -31,9 +31,9 @@ public final view JNewExpr of NewExprImpl extends JENode {
 		Type type = this.getType();
 		JENode[] args = this.args.toArray();
 		code.setLinePos(this);
-		while( type.isArgument() && !type.isUnerasable())
+		while( type instanceof ArgType && !type.isUnerasable())
 			type = type.getErasedType();
-		if( type.isArgument() ) {
+		if( type instanceof ArgType ) {
 			if( outer != null || args.length > 0 ) {
 				Kiev.reportError(this,"Constructor with arguments for type argument is not supported");
 				return;
@@ -75,7 +75,7 @@ public final view JNewExpr of NewExprImpl extends JENode {
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);
-		if( type.isLocalClazz() ) {
+		if( type.getStruct() != null && type.getStruct().isLocal() ) {
 			JStruct cl = ((CompaundType)type).clazz.getJView();
 			foreach (JDNode n; cl.members; n instanceof JField) {
 				JField f = (JField)n;

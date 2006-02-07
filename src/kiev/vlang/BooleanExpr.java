@@ -335,8 +335,8 @@ public class BinaryBoolExpr extends BoolExpr {
 				expr1.resolve(null);
 				tp = expr1.getType();
 			}
-			if( !tp.isPizzaCase() && !tp.isHasCases() )
-				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
+			if (tp.getStruct() == null || (!tp.getStruct().isPizzaCase() && !tp.getStruct().isHasCases()))
+				throw new CompilerException(this,"Compare non-cased class "+tp+" with class's case "+cas);
 			Method m = tp.getStruct().resolveMethod(nameGetCaseTag,Type.tpInt);
 			expr1 = new CallExpr(expr1.pos,~expr1,m,ENode.emptyArray);
 			expr1.resolve(Type.tpInt);
@@ -378,9 +378,8 @@ public class BinaryBoolExpr extends BoolExpr {
 			(	(et1.isNumber() && et2.isNumber())
 			 || (et1.isReference() && et2.isReference())
 			 || (et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean))
-			 || (et1.isEnum() && et2.isIntegerInCode())
-			 || (et1.isIntegerInCode() && et2.isEnum())
-			 || (et1.isEnum() && et2.isEnum() && et1 ≡ et2)
+			 || (et1.getStruct() != null && et1.getStruct().isEnum() && et2.isIntegerInCode())
+			 || (et1.isIntegerInCode() && et2.getStruct() != null && et2.getStruct().isEnum())
 			) &&
 			(   op==BinaryOperator.Equals
 			||  op==BinaryOperator.NotEquals
@@ -409,12 +408,12 @@ public class BinaryBoolExpr extends BoolExpr {
 		Type t2 = expr2.getType();
 		if( t1 ≉ t2 ) {
 			if( t1.isReference() != t2.isReference()) {
-				if (t1.isEnum() && !t1.isIntegerInCode()) {
+				if (t1.getStruct() != null && t1.getStruct().isEnum() && !t1.isIntegerInCode()) {
 					expr1 = new CastExpr(expr1.pos,Type.tpInt,~expr1);
 					expr1.resolve(Type.tpInt);
 					t1 = expr1.getType();
 				}
-				if (t2.isEnum() && !t2.isIntegerInCode()) {
+				if (t2.getStruct() != null && t2.getStruct().isEnum() && !t2.isIntegerInCode()) {
 					expr2 = new CastExpr(expr2.pos,Type.tpInt,~expr2);
 					expr2.resolve(Type.tpInt);
 					t2 = expr2.getType();

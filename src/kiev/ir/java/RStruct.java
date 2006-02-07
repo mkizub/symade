@@ -55,7 +55,7 @@ public final view RStruct of StructImpl extends StructView {
 				if (this.ctype ≈ t)
 					return ti_access;
 	
-				if (t.isArgument()) {
+				if (t instanceof ArgType) {
 					// Get corresponded type argument
 					ArgType at = (ArgType)t;
 					KString fnm = new KStringBuffer(nameTypeInfo.len+1+at.name.len)

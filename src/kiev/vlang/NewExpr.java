@@ -51,7 +51,7 @@ public final class NewExpr extends ENode {
 	@nodeview
 	public static final view NewExprView of NewExprImpl extends ENodeView {
 		public				TypeRef			type;
-		public:ro	NArr<ENode>		args;
+		public:ro			NArr<ENode>		args;
 		public				ENode			outer;
 		public				ENode			temp_expr;
 		public				Struct			clazz;
@@ -71,7 +71,7 @@ public final class NewExpr extends ENode {
 			clazz.setAnonymouse(true);
 			clazz.setStatic(ctx_method==null || ctx_method.isStatic());
 			TypeRef sup_tr = this.type.ncopy();
-			if( sup.isInterface() ) {
+			if( sup.clazz.isInterface() ) {
 				clazz.super_type = Type.tpObject;
 				clazz.interfaces.add(sup_tr);
 			} else {
@@ -179,7 +179,7 @@ public final class NewExpr extends ENode {
 		}
 		if!(type instanceof CompaundType)
 			Kiev.reportWarning(this,"Instantiation of non-concrete type "+type+" ???");
-		if( type.isAnonymouseClazz() ) {
+		if( type.getStruct().isAnonymouse() ) {
 			type.getStruct().resolveDecl();
 		}
 //		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
@@ -201,13 +201,6 @@ public final class NewExpr extends ENode {
 			args[i].resolve(null);
 		if( type.clazz.isTypeUnerasable() )
 			ctx_clazz.getRView().accessTypeInfoField(this,type,false); // Create static field for this type typeinfo
-		// Don't try to find constructor of argument type
-		if( type.isArgument() ) {
-			if( !type.isUnerasable())
-				throw new CompilerException(this,"Can't create an instance of erasable argument type "+type);
-			setResolved(true);
-			return;
-		}
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
@@ -244,7 +237,7 @@ public final class NewExpr extends ENode {
 		if( !tp.isReference() ) {
 			return dmp.append('0');
 		}
-		if( !tp.isAnonymouseClazz() ) {
+		if( !tp.getStruct().isAnonymouse() ) {
 			dmp.append("new ").append(tp).append('(');
 		} else {
 			if( tp.getStruct().interfaces.length > 0 )
@@ -258,7 +251,7 @@ public final class NewExpr extends ENode {
 				dmp.append(',');
 		}
 		dmp.append(')');
-		if( tp.isAnonymouseClazz() ) {
+		if( tp.getStruct().isAnonymouse() ) {
 			Struct cl = tp.getStruct();
 			dmp.space().append('{').newLine(1);
 			foreach (DNode n; cl.members)
@@ -350,7 +343,7 @@ public final class NewArrayExpr extends ENode {
 		for(int i=0; i < args.length; i++)
 			if( args[i] != null )
 				args[i].resolve(Type.tpInt);
-		if( type.isArgument() ) {
+		if( type instanceof ArgType ) {
 			if( !type.isUnerasable())
 				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
 			if( ctx_method==null || ctx_method.isStatic() )

@@ -63,7 +63,7 @@ public class Bytecoder implements JConstants {
 			CompaundType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
 			if( Env.getStruct(interf.clazz.name) == null )
 				throw new RuntimeException("Class "+interf+" not found");
-			if( !interf.isInterface() )
+			if( !interf.clazz.isInterface() )
 				throw new RuntimeException("Class "+interf+" is not an interface");
 			cl.interfaces.append(new TypeRef(interf));
 		}

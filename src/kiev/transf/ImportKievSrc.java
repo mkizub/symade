@@ -510,7 +510,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						f.delNodeData(MetaPacked.ID);
 					}
 					else if( !ftype.isIntegerInCode() ) {
-						if( ftype.isEnum() ) {
+						if( ftype.getStruct() != null && ftype.getStruct().isEnum() ) {
 							Kiev.reportError(fdecl,"Packing of enum is not implemented yet");
 						} else {
 							Kiev.reportError(fdecl,"Packing of reference type is not allowed");

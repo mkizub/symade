@@ -81,7 +81,7 @@ public final view JIFldExpr of IFldExprImpl extends JAccessExpr {
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
 		code.addInstr(op_getfield,var,obj.getType());
-		if( Kiev.verify && var.type.isArgument() && getType().isReference() )
+		if( Kiev.verify && var.type instanceof ArgType && getType().isReference() )
 			code.addInstr(op_checkcast,getType());
 	}
 
@@ -97,7 +97,7 @@ public final view JIFldExpr of IFldExprImpl extends JAccessExpr {
 		generateCheckCastIfNeeded(code);
 		code.addInstr(op_dup);
 		code.addInstr(op_getfield,var,obj.getType());
-		if( Kiev.verify && var.type.isArgument() && getType().isReference() )
+		if( Kiev.verify && var.type instanceof ArgType && getType().isReference() )
 			code.addInstr(op_checkcast,getType());
 	}
 

@@ -1880,9 +1880,9 @@ public class CastExpr extends ENode {
 			return;
 
 		if( et.isReference() != type.isReference() && !(expr instanceof ClosureCallExpr) )
-			if( !et.isReference() && type.isArgument() )
+			if( !et.isReference() && type instanceof ArgType )
 				Kiev.reportWarning(this,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
-			else if (!et.isEnum())
+			else if (et.getStruct() == null || !et.getStruct().isEnum())
 				throw new CompilerException(this,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
 		if( !et.isCastableTo((Type)type) ) {
 			throw new RuntimeException("Expression "+expr+" cannot be casted to type "+type);
@@ -1897,8 +1897,8 @@ public class CastExpr extends ENode {
 		}
 		if( et.isReference() && type.isReference() && et.getStruct() != null
 		 && et.getStruct().package_clazz.isClazz()
-		 && !et.isArgument()
-		 && !et.isStaticClazz() && et.getStruct().package_clazz.ctype.isAutoCastableTo(type)
+		 && !(et instanceof ArgType)
+		 && !et.getStruct().isStatic() && et.getStruct().package_clazz.ctype.isAutoCastableTo(type)
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,
