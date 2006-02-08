@@ -1330,12 +1330,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 	
 	public String toString() {
-		Dumper dmp = new Dumper();
-		dmp.append("{").space();
-		foreach (ENode s; stats)
-			s.toJava(dmp);
-		dmp.space().append("}");
-		return dmp.toString();
+		return "{...}";
 	}
 
 	public Dumper toJava(Dumper dmp) {

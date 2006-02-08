@@ -170,15 +170,12 @@ public final class NewExpr extends ENode {
 			type = this.clazz.ctype;
 		} else {
 			Type t = this.type.getType();
-			if (t instanceof CTimeType)
-				type = t.getEnclosedType();
-			else if (t instanceof ArgType)
-				type = (CompaundType)t.getSuperType();
-			else
-				type = (CompaundType)t;
+			while (t != null && !(t instanceof CompaundType))
+				t = t.getMetaSuper();
+			type = (CompaundType)t;
 		}
 		if!(type instanceof CompaundType)
-			Kiev.reportWarning(this,"Instantiation of non-concrete type "+type+" ???");
+			Kiev.reportWarning(this,"Instantiation of non-concrete type "+this.type+" ???");
 		if( type.getStruct().isAnonymouse() ) {
 			type.getStruct().resolveDecl();
 		}
@@ -530,7 +527,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		@virtual typedef ImplOf = NewClosure;
 		@att public TypeRef				type_ret;
 		@att public NArr<FormPar>		params;
-		@att public Block			body;
+		@att public Block				body;
 		@att public Struct				clazz;
 		@ref public CallType			ctype;
 	}
@@ -538,7 +535,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	public static abstract view NewClosureView of NewClosureImpl extends ENodeView {
 		public TypeRef			type_ret;
 		public NArr<FormPar>	params;
-		public Block		body;
+		public Block			body;
 		public Struct			clazz;
 		public CallType			ctype;
 
@@ -562,7 +559,14 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	}
 
 	public String toString() {
-		return "fun "+getType();
+		StringBuffer sb = new StringBuffer();
+		sb.append("fun (");
+		for (int i=0; i < params.length; i++) {
+			if (i > 0) sb.append(",");
+			sb.append(params[i].vtype).append(' ').append(params[i].name);
+		}
+		sb.append(")->").append(type_ret).append(" {...}");
+		return sb.toString();
 	}
 
 	public Type getType() {

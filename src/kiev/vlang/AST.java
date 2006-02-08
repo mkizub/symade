@@ -1342,9 +1342,11 @@ public abstract class TypeDecl extends DNode implements Named {
 	public static class TypeDeclImpl extends DNodeImpl {		
 		@virtual typedef ImplOf = TypeDecl;
 		public void callbackSuperTypeChanged(TypeDeclImpl chg) {}
+		public TypeProvider[] getAllSuperTypes() { return TypeProvider.emptyArray; }
 	}
 	@nodeview
 	public static view TypeDeclView of TypeDeclImpl extends DNodeView {
+		public TypeProvider[] getAllSuperTypes();
 	}
 
 	public TypeDecl(TypeDeclImpl impl) { super(impl); }

@@ -25,7 +25,7 @@ public abstract class Type extends AType {
 	public			JType				jtype;
 	
 	public abstract JType getJType();
-	public abstract Type getSuperType();
+	public abstract Type getMetaSuper();
 	public abstract String toString();
 	public abstract boolean checkResolved();
 	public abstract TypeProvider[] getAllSuperTypes();
@@ -141,35 +141,23 @@ public abstract class Type extends AType {
 		while( tp != null ) {
 			if( tp1.isInstanceOf(tp) && tp2.isInstanceOf(tp) )
 				return tp;
-			tp = tp.getSuperType();
+			tp = tp.getMetaSuper();
 		}
 		return tp;
 	}
 
 	public boolean isCastableTo(Type t) {
-		if( isNumber() && t.isNumber() ) return true;
-		if( this.isReference() && t.isReference() && (this ≡ tpNull || t ≡ tpNull) ) return true;
-		if( isInstanceOf(t) ) return true;
-		if( t.isInstanceOf(this) ) return true;
-		if( this.isReference() && t.isReference() &&
-			this.getStruct() != null && t.getStruct() != null &&
-			(this.getStruct().isInterface() || t.getStruct().isInterface())
-			)
+		if( this.isReference() && t ≡ tpNull ) return true;
+		if( t instanceof ArgType && this.isCastableTo(t.getMetaSuper()) )
 			return true;
-		if( t.getStruct() != null && t.getStruct().isEnum())
-			return this.isCastableTo(Type.tpInt);
-		if( t instanceof ArgType && isCastableTo(t.getSuperType()) )
-			return true;
-		if( t instanceof ArgType && !this.isReference() ) {
-			return true;
+		if( t instanceof OuterType )
+			return this.isCastableTo(t.outer);
+		if( t instanceof CTimeType ) {
+			if (this.isCastableTo(t.getEnclosedType()))
+				return true;
+			if (this.isCastableTo(t.getUnboxedType()))
+				return true;
 		}
-		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).arity == 0 ) {
-			if( ((CallType)this).ret().isCastableTo(t) ) return true;
-		}
-		if( this instanceof CTimeType)
-			return this.getEnclosedType().isCastableTo(t);
-		if( t instanceof CTimeType)
-			return this.isCastableTo(t.getEnclosedType());
 		return false;
 	}
 
@@ -230,7 +218,7 @@ public final class CoreType extends Type {
 	}
 	public Meta getMeta(KString name)	{ return null; }
 	public Type getErasedType()			{ return this; }
-	public Type getSuperType()			{ return null; }
+	public Type getMetaSuper()			{ return null; }
 	public boolean checkResolved()		{ return true; }
 	public TypeProvider[] getAllSuperTypes()	{ return TypeProvider.emptyArray; }
 	public String toString()			{ return name.toString(); }
@@ -248,6 +236,15 @@ public final class CoreType extends Type {
 		if( this ≡ tpLong && ( t ≡ tpFloat || t ≡ tpDouble) ) return true;
 		if( this ≡ tpFloat && t ≡ tpDouble ) return true;
 		return super.isAutoCastableTo(t);
+	}
+
+	public boolean isCastableTo(Type t) {
+		if( this ≡ t) return true;
+		if( this.isNumber() && t.isNumber() ) return true;
+		if( t.isReference() && this ≡ tpNull ) return true;
+		if( t.getStruct() != null && t.getStruct().isEnum())
+			return this.isCastableTo(Type.tpInt);
+		return super.isCastableTo(t);
 	}
 
 	public Type betterCast(Type t1, Type t2) {
@@ -348,21 +345,21 @@ public final class ArgType extends Type {
 	
 	public JType getJType() {
 		if (jtype == null)
-			jtype = getSuperType().getJType();
+			jtype = getMetaSuper().getJType();
 		return jtype;
 	}
 
-	public boolean isStructInstanceOf(Struct s)	{ return getSuperType().isStructInstanceOf(s); }
-	public Type getSuperType()						{ return definer.getSuperType(); }
-	public Meta getMeta(KString name)				{ return getSuperType().getMeta(name); }
-	public TypeProvider[] getAllSuperTypes()		{ return getSuperType().getAllSuperTypes(); }
-	public Struct getStruct()						{ return getSuperType().getStruct(); }
+	public boolean isStructInstanceOf(Struct s)	{ return getMetaSuper().isStructInstanceOf(s); }
+	public Type getMetaSuper()						{ return definer.getSuperType(); }
+	public Meta getMeta(KString name)				{ return getMetaSuper().getMeta(name); }
+	public TypeProvider[] getAllSuperTypes()		{ return definer.getAllSuperTypes(); }
+	public Struct getStruct()						{ return definer.getStruct(); }
 
-	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { getSuperType().resolveNameAccessR(node, info, name) }
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt) { getSuperType().resolveCallAccessR(node, info, name, mt) }
+	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { getMetaSuper().resolveNameAccessR(node, info, name) }
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt) { getMetaSuper().resolveCallAccessR(node, info, name, mt) }
 	
-	public Type getErasedType() { return getSuperType().getErasedType(); }
-	public boolean checkResolved() { return getSuperType().checkResolved(); }
+	public Type getErasedType() { return getMetaSuper().getErasedType(); }
+	public boolean checkResolved() { return getMetaSuper().checkResolved(); }
 
 	public String toString() {
 		return name.toString();
@@ -372,9 +369,14 @@ public final class ArgType extends Type {
 		return dmp.append(name);
 	}
 
+	public boolean isCastableTo(Type t) {
+		if( this ≡ t) return true;
+		return getMetaSuper().isCastableTo(t);
+	}
+
 	public boolean isInstanceOf(Type t) {
 		if (this ≡ t) return true;
-		return getSuperType().isInstanceOf(t);
+		return getMetaSuper().isInstanceOf(t);
 	}
 }
 
@@ -391,7 +393,7 @@ public final class CompaundType extends Type {
 		return jtype;
 	}
 
-	public Type getSuperType()					{ return clazz.super_type; }
+	public Type getMetaSuper()					{ return clazz.super_type; }
 	public Struct getStruct()					{ return clazz; }
 	public Meta getMeta(KString name)			{ return clazz.meta.get(name); }
 	public Type getErasedType()					{ return clazz.ctype; }
@@ -519,23 +521,35 @@ public final class CompaundType extends Type {
 	public boolean isAutoCastableTo(Type t)
 	{
 		if( t ≡ Type.tpVoid ) return true;
-		if( this.isReference() && t.isReference() && (this ≡ tpNull || t ≡ tpNull) ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( this.clazz.isStructView() && this.clazz.view_of.getType().isAutoCastableTo(t) ) return true;
-		if( this.isReference() && !t.isReference() ) {
-			if( ((CoreType)t).getRefTypeForPrimitive() ≈ this ) return true;
-			else if( !Kiev.javaMode && t ≡ Type.tpInt && this ≥ Type.tpEnum )
+		if( t instanceof CoreType && !t.isReference() ) {
+			if( t.getRefTypeForPrimitive() ≈ this )
+				return true;
+			else if( t ≡ Type.tpInt && this ≥ Type.tpEnum )
 				return true;
 		}
 		return super.isAutoCastableTo(t);
+	}
+
+	public boolean isCastableTo(Type t) {
+		if( this ≈ t ) return true;
+		if( t ≡ tpNull ) return true;
+		if( this.isInstanceOf(t) ) return true;
+		if( t.isInstanceOf(this) ) return true;
+		if( t.isReference() && t.getStruct() != null &&
+			(this.getStruct().isInterface() || t.getStruct().isInterface())
+			)
+			return true;
+		return super.isCastableTo(t);
 	}
 
 	public boolean isInstanceOf(Type _t2) {
 		if( this ≡ _t2 ) return true;
 		if( this.isReference() && _t2 ≈ Type.tpObject ) return true;
 		if!(_t2 instanceof CompaundType) {
-			if (_t2 instanceof ArgType)
-				return this.isInstanceOf(_t2.getSuperType());
+			if (_t2 instanceof CTimeType || _t2 instanceof ArgType)
+				return this.isInstanceOf(_t2.getMetaSuper());
 			return false;
 		}
 		CompaundType t2 = (CompaundType)_t2;
@@ -601,7 +615,7 @@ public final class ArrayType extends Type {
 	}
 
 	public boolean isStructInstanceOf(Struct s)	{ return s == tpObject.clazz; }
-	public Type getSuperType()						{ return tpObject; }
+	public Type getMetaSuper()						{ return tpObject; }
 	public Meta getMeta(KString name)				{ return null; }
 	
 	public TypeProvider[] getAllSuperTypes() {
@@ -630,6 +644,13 @@ public final class ArrayType extends Type {
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(arg).append("[]");
+	}
+
+	public boolean isCastableTo(Type t) {
+		if( t ≡ tpNull ) return true;
+		if( isInstanceOf(t) ) return true;
+		if( t.isInstanceOf(this) ) return true;
+		return super.isCastableTo(t);
 	}
 
 	public boolean isInstanceOf(Type t) {
@@ -702,7 +723,7 @@ public final class WrapperType extends CTimeType {
 	
 	public Struct getStruct()			{ return getEnclosedType().getStruct(); }
 	public Meta getMeta(KString name)	{ return getEnclosedType().getMeta(name); }
-	public Type getSuperType()			{ return getEnclosedType().getSuperType(); }
+	public Type getMetaSuper()			{ return getEnclosedType(); }
 
 	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name)
 	{
@@ -751,6 +772,18 @@ public final class WrapperType extends CTimeType {
 		return getEnclosedType().toJava(dmp);
 	}
 
+	public boolean isCastableTo(Type t) {
+		if( this ≈ t ) return true;
+		if( t ≡ tpNull ) return true;
+		if( isInstanceOf(t) ) return true;
+		if( t.isInstanceOf(this) ) return true;
+		if( this.getEnclosedType().isCastableTo(t) )
+			return true;
+		if( this.getUnboxedType().isCastableTo(t) )
+			return true;
+		return super.isCastableTo(t);
+	}
+
 	public boolean isInstanceOf(Type t) {
 		if (this ≡ t) return true;
 		if (t instanceof WrapperType)
@@ -768,7 +801,7 @@ public final class WrapperType extends CTimeType {
 
 }
 
-public final class OuterType extends Type {
+public final class OuterType extends CTimeType {
 
 	public static OuterType newOuterType(Struct of_clazz, Type type)
 		alias operator(240,lfy,new)
@@ -777,11 +810,21 @@ public final class OuterType extends Type {
 	}
 	
 	private OuterType(OuterTypeProvider meta_type, Type outer) {
-		super(meta_type, flReference, new TVarBld(meta_type.tdef.getAType(), outer).close());
+		super(meta_type, flReference, meta_type.tdef.getAType(), outer);
 	}
 
 	public Type get$outer()			{ return this.tvars[0].unalias().result(); }
 	
+	public Type getUnboxedType()	{ return outer; }
+
+	public final ENode makeUnboxedExpr(ENode from) {
+		return new ReinterpExpr(from.pos, outer, ~from);
+	} 
+	public final ENode makeInitExpr(LvalDNode dn, ENode init) {
+		assert( init == null);
+		return null;
+	}
+
 	public JType getJType() {
 		if (jtype == null)
 			jtype = outer.getJType();
@@ -789,7 +832,7 @@ public final class OuterType extends Type {
 	}
 
 	public boolean isStructInstanceOf(Struct s)	{ return outer.isStructInstanceOf(s); }
-	public Type getSuperType()						{ return outer.getSuperType(); }
+	public Type getMetaSuper()						{ return outer; }
 	public Meta getMeta(KString name)				{ return outer.getMeta(name); }
 	
 	public TypeProvider[] getAllSuperTypes() {
@@ -805,6 +848,11 @@ public final class OuterType extends Type {
 	public boolean checkResolved() { return outer.checkResolved(); }
 	public String toString() { return outer.toString(); }
 	public Dumper toJava(Dumper dmp) { return outer.toJava(dmp); }
+
+	public boolean isCastableTo(Type t) {
+		if( this ≈ t ) return true;
+		return outer.isCastableTo(t);
+	}
 
 	public boolean isInstanceOf(Type t) {
 		if (this ≡ t) return true;
@@ -920,6 +968,15 @@ public final class CallType extends Type {
 		return jtype;
 	}
 
+	public boolean isCastableTo(Type t) {
+		if( this ≈ t ) return true;
+		if( this.isReference() && t ≡ tpNull ) return true;
+		if( t.isInstanceOf(this) ) return true;
+		if( this.arity == 0 && !(t instanceof CallType) && this.ret().isCastableTo(t) )
+			return true;
+		return super.isCastableTo(t);
+	}
+
 	public boolean isInstanceOf(Type t) {
 		if (this ≡ t) return true;
 		if (t instanceof CallType) {
@@ -999,7 +1056,7 @@ public final class CallType extends Type {
 		return true;
 	}
 	
-	public Type getSuperType()			{ return null; }
+	public Type getMetaSuper()	{ if (isReference()) return tpObject; return null; }
 
 	public TypeProvider[] getAllSuperTypes() { return TypeProvider.emptyArray; }
 
