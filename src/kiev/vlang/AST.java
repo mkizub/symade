@@ -1353,7 +1353,6 @@ public abstract class TypeDecl extends DNode implements Named {
 
 	public abstract NodeName	getName();
 	public abstract boolean		checkResolved();
-	public abstract Type		getSuperType();
 	public abstract Struct		getStruct();
 
 	public final boolean isTypeAbstract()		{ return this.isAbstract(); }

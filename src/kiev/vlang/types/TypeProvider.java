@@ -207,7 +207,7 @@ public final class CompaundTypeProvider extends TypeProvider {
 			vs.append(ad.getAType(), null);
 		foreach (DNode d; clazz.members; d instanceof TypeDef) {
 			TypeDef td = (TypeDef)d;
-			vs.append(td.getAType(), null /*td.getAType().getSuperType()*/);
+			vs.append(td.getAType(), null);
 		}
 		TypeRef st = clazz.super_bound;
 		if (st.getType() ≢ null) {

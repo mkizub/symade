@@ -32,8 +32,8 @@ public class TypeDef extends TypeDecl {
 		@att public TypeRef					lower_bound;
 		@att public ArgType					lnk;
 		public TypeProvider[] getAllSuperTypes() {
-			if (lower_bound == null) return TypeProvider.emptyArray;
-			Struct s = lower_bound.getStruct();
+			if (upper_bound == null) return new TypeProvider[]{Type.tpObject.meta_type};
+			Struct s = upper_bound.getStruct();
 			if (s == null) return TypeProvider.emptyArray;
 			return s.getAllSuperTypes();
 		}
