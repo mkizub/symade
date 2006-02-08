@@ -942,7 +942,7 @@ Import Import() :
 }
 
 TypeDecl Typedef() :
-{ NameRef id; TypeDecl n; }
+{ NameRef id; TypeDecl n; TypeRef tr; }
 {
 	"typedef"
 	(
@@ -953,8 +953,8 @@ TypeDecl Typedef() :
 		n.type = Type()
 	|
 		{ n = new TypeDef(); }
-		n.upper_bound = Type() { n.lower_bound = n.upper_bound.ncopy(); }
-		n.name = Name()
+		tr = Type() { n.upper_bound.add(tr); n.lower_bound.add(tr.ncopy()); }
+		n.name = Name() { n.pos = n.name.pos; }
 	) ";"
 	{ return n; }
 }
@@ -1182,20 +1182,16 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 	"typedef"
 	
 	(
-		LOOKAHEAD(Type() <OPERATOR_LOWER_BOUND>)
-		t    = Type() <OPERATOR_LOWER_BOUND>
-		name = Name() { arg = mkTypeDef(name,modifiers); arg.lower_bound = t; }
-		[ <OPERATOR_UPPER_BOUND> t = Type() { arg.upper_bound = t; } ]
-		";"
-	|
 		name      = Name()
 		{ arg = mkTypeDef(name,modifiers); }
 		(
-			"=" t = Type() { arg.upper_bound = t; arg.lower_bound = t.ncopy(); }
+			"=" t = Type() { arg.upper_bound.add(t); arg.lower_bound.add(t.ncopy()); }
 			";"
 		|
-			[ <OPERATOR_UPPER_BOUND> t = Type() { arg.upper_bound = t;} ]
-			[ <OPERATOR_LOWER_BOUND> t = Type() { arg.upper_bound = t;} ]
+			(
+				<OPERATOR_UPPER_BOUND> t = Type() { arg.upper_bound.add(t);}
+			|	<OPERATOR_LOWER_BOUND> t = Type() { arg.lower_bound.add(t);}
+			)*
 			";"
 		)
 	)
@@ -1203,13 +1199,14 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 }
 
 TypeDef ArgumentDeclaration() :
-{ NameRef name; TypeDef arg; }
+{ NameRef name; TypeDef arg; TypeRef tr; }
 {
 	name      = Name()
 	{ arg = mkTypeDef(name,null); arg.setAbstract(true); }
 	[
 		"extends"
-		arg.upper_bound = NArrType()
+		tr = NArrType() { arg.upper_bound.add(tr); }
+		( "," tr = NArrType() { arg.upper_bound.add(tr); } )*
 	]
 	{ return arg; }
 }

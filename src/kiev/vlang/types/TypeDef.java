@@ -28,22 +28,44 @@ public class TypeDef extends TypeDecl {
 	public static final class TypeDefImpl extends TypeDeclImpl {
 		@virtual typedef ImplOf = TypeDef;
 		@att public NameRef					name;
-		@att public TypeRef					upper_bound;
-		@att public TypeRef					lower_bound;
-		@att public ArgType					lnk;
+		@att public NArr<TypeRef>			upper_bound;
+		@att public NArr<TypeRef>			lower_bound;
+		@ref public ArgType					lnk;
+		@ref private TypeProvider[]			super_types;
+
+		public void callbackSuperTypeChanged(TypeDeclImpl chg) {
+			super_types = null;
+		}
+		
 		public TypeProvider[] getAllSuperTypes() {
-			if (upper_bound == null) return new TypeProvider[]{Type.tpObject.meta_type};
-			Struct s = upper_bound.getStruct();
-			if (s == null) return TypeProvider.emptyArray;
-			return s.getAllSuperTypes();
+			if (super_types != null)
+				return super_types;
+			Vector<TypeProvider> types = new Vector<TypeProvider>();
+			foreach (TypeRef up; upper_bound)
+				addSuperTypes(up, types);
+			if (types.length == 0)
+				super_types = TypeProvider.emptyArray;
+			else
+				super_types = types.toArray();
+			return super_types;
 		}
 	}
 	@nodeview
 	public static final view TypeDefView of TypeDefImpl extends TypeDeclView {
-		public NameRef				name;
-		public TypeRef				upper_bound;
-		public TypeRef				lower_bound;
-		public ArgType				lnk;
+		public		NameRef				name;
+		public:ro	NArr<TypeRef>		upper_bound;
+		public:ro	NArr<TypeRef>		lower_bound;
+		public		ArgType				lnk;
+
+		public Struct getStruct() {
+			foreach (TypeRef tr; upper_bound) {
+				Struct s = tr.getStruct();
+				if (s != null)
+					return s;
+			}
+			return null;
+		}
+	
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -65,13 +87,13 @@ public class TypeDef extends TypeDecl {
 		this();
 		this.pos = nm.pos;
 		this.name = nm;
-		this.upper_bound = sup;
+		this.upper_bound.add(sup);
 	}
 
 	public TypeDef(KString nm, Type sup) {
 		super(new TypeDefImpl());
 		this.name = new NameRef(nm);
-		this.upper_bound = new TypeRef(sup);
+		this.upper_bound.add(new TypeRef(sup));
 	}
 
 	public NodeName getName() {
@@ -79,25 +101,17 @@ public class TypeDef extends TypeDecl {
 	}
 
 	public boolean checkResolved() {
-		Type t = this.getType();
-		if (t != null && t.getStruct() != null)
-			return t.getStruct().checkResolved();
+		foreach (TypeRef tr; upper_bound)
+			tr.checkResolved();
 		return true;
 	}
 	
-	public Type getSuperType() {
-		Type sup = Type.tpObject;
-		if (upper_bound != null)
-			sup = upper_bound.getType();
-		return sup;
-	}
-
 	public Struct getStruct() {
-		return getSuperType().getStruct();
+		return getVView().getStruct();
 	}
 	
 	public void setLowerBound(Type tp) {
-		this.lower_bound = new TypeRef(tp);
+		this.lower_bound.add(new TypeRef(tp));
 		this.lnk = null;
 	}
 	

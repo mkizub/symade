@@ -349,17 +349,34 @@ public final class ArgType extends Type {
 		return jtype;
 	}
 
+	public Type getMetaSuper() {
+		if (definer.upper_bound.length == 0)
+			return tpObject;
+		return definer.upper_bound[0].getType();
+	}
+
 	public boolean isStructInstanceOf(Struct s)	{ return getMetaSuper().isStructInstanceOf(s); }
-	public Type getMetaSuper()						{ return definer.getSuperType(); }
 	public Meta getMeta(KString name)				{ return getMetaSuper().getMeta(name); }
 	public TypeProvider[] getAllSuperTypes()		{ return definer.getAllSuperTypes(); }
 	public Struct getStruct()						{ return definer.getStruct(); }
 
-	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { getMetaSuper().resolveNameAccessR(node, info, name) }
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt) { getMetaSuper().resolveCallAccessR(node, info, name, mt) }
+	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name)
+		TypeRef@ sup;
+	{
+		sup @= definer.upper_bound,
+		sup.getType().resolveNameAccessR(node, info, name)
+	}
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt)
+		TypeRef@ sup;
+	{
+		definer.upper_bound.length == 0, $cut,
+		tpObject.resolveCallAccessR(node, info, name, mt)
+	;	sup @= definer.upper_bound,
+		sup.getType().resolveCallAccessR(node, info, name, mt)
+	}
 	
 	public Type getErasedType() { return getMetaSuper().getErasedType(); }
-	public boolean checkResolved() { return getMetaSuper().checkResolved(); }
+	public boolean checkResolved() { return definer.checkResolved(); }
 
 	public String toString() {
 		return name.toString();
@@ -371,12 +388,24 @@ public final class ArgType extends Type {
 
 	public boolean isCastableTo(Type t) {
 		if( this ≡ t) return true;
-		return getMetaSuper().isCastableTo(t);
+		if (definer.upper_bound.length == 0)
+			return tpObject.isCastableTo(t);
+		foreach (TypeRef tr; definer.upper_bound) {
+			if (tr.getType().isCastableTo(t))
+				return true;
+		}
+		return false;
 	}
 
 	public boolean isInstanceOf(Type t) {
 		if (this ≡ t) return true;
-		return getMetaSuper().isInstanceOf(t);
+		if (definer.upper_bound.length == 0)
+			return tpObject.isInstanceOf(t);
+		foreach (TypeRef tr; definer.upper_bound) {
+			if (tr.getType().isInstanceOf(t))
+				return true;
+		}
+		return false;
 	}
 }
 

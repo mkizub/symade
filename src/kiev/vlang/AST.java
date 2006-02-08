@@ -1343,6 +1343,20 @@ public abstract class TypeDecl extends DNode implements Named {
 		@virtual typedef ImplOf = TypeDecl;
 		public void callbackSuperTypeChanged(TypeDeclImpl chg) {}
 		public TypeProvider[] getAllSuperTypes() { return TypeProvider.emptyArray; }
+		protected final void addSuperTypes(TypeRef suptr, Vector<TypeProvider> types) {
+			Type sup = suptr.getType();
+			if (sup == null)
+				return;
+			TypeProvider tt = sup.getStruct().imeta_type;
+			if (!types.contains(tt))
+				types.append(tt);
+			TypeProvider[] sup_types = sup.getStruct().getAllSuperTypes();
+			foreach (TypeProvider t; sup_types) {
+				if (!types.contains(t))
+					types.append(t);
+			}
+		}
+
 	}
 	@nodeview
 	public static view TypeDeclView of TypeDeclImpl extends DNodeView {
