@@ -51,6 +51,8 @@ public view JNode of NodeImpl implements Constants {
 	public boolean equals(Object:Object obj) { return false; }
 	public boolean equals(JNode:Object jnv) { return (NodeImpl)this == (NodeImpl)jnv; }
 
+	public final Type getType() { return ((NodeImpl)this)._self.getType(); }
+	
 }
 
 @nodeview
@@ -114,8 +116,6 @@ public view JENode of ENodeImpl extends JNode {
 	public final boolean isAutoReturnable();
 	public final boolean isBreakTarget();
 	public final void setAutoReturnable(boolean on);
-	
-	public Type getType() { return this.getNode().getType(); }
 	
 	public boolean isConstantExpr() { return false; }
 	public Object	getConstValue() {

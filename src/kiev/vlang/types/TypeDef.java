@@ -66,6 +66,18 @@ public class TypeDef extends TypeDecl {
 			return null;
 		}
 	
+		public Type getType() {
+			return getAType();
+		}
+		public ArgType getAType() {
+			if (this.lnk != null)
+				return this.lnk;
+			if (this.meta != null)
+				this.meta.verify();
+			this.lnk = new ArgType(name.name,((TypeDefImpl)this)._self);
+			return this.lnk;
+		}
+	
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -113,18 +125,6 @@ public class TypeDef extends TypeDecl {
 	public void setLowerBound(Type tp) {
 		this.lower_bound.add(new TypeRef(tp));
 		this.lnk = null;
-	}
-	
-	public Type getType() {
-		return getAType();
-	}
-	public ArgType getAType() {
-		if (this.lnk != null)
-			return this.lnk;
-		if (this.meta != null)
-			this.meta.verify();
-		this.lnk = new ArgType(name.name,this);
-		return this.lnk;
 	}
 
 	public String toString() {

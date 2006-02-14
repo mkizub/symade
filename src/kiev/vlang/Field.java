@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeset
-public final class Field extends LvalDNode implements Named, Typed, Accessable {
+public final class Field extends LvalDNode implements Named, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
 	private static final Field dummyNode = new Field();
@@ -125,6 +125,8 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		// field's initializer was already added to class initializer
 		public final boolean isAddedToInit();
 		public final void setAddedToInit(boolean on);
+
+		public Type	getType() { return type; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -175,8 +177,6 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	public String toString() { return name.toString()/*+":="+type*/; }
 
 	public NodeName getName() { return name; }
-
-	public Type	getType() { return type; }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(name).space();

@@ -286,6 +286,10 @@ public final class IFldExpr extends AccessExpr {
 		public Field		var;
 
 		public Operator getOp() { return BinaryOperator.Access; }
+
+		public Type getType() {
+			return Type.getRealType(obj.getType(),var.type);
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -328,10 +332,6 @@ public final class IFldExpr extends AccessExpr {
 			return "("+obj.toString()+")."+var.toString();
 		else
 			return obj.toString()+"."+var.toString();
-	}
-
-	public Type getType() {
-		return Type.getRealType(obj.getType(),var.type);
 	}
 
 	public LvalDNode[] getAccessPath() {
@@ -423,6 +423,27 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		public ENode		index;
 
 		public int getPriority() { return opContainerElementPriority; }
+
+		public Type getType() {
+			try {
+				Type t = obj.getType();
+				if( t.isArray() ) {
+					return Type.getRealType(t,((ArrayType)t).arg);
+				}
+				else {
+					// Resolve overloaded access method
+					Method@ v;
+					CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
+					ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+					if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
+						return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
+					return Type.getRealType(t,((Method)v).type.ret());
+				}
+			} catch(Exception e) {
+				Kiev.reportError(this,e);
+				return Type.tpVoid;
+			}
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -444,27 +465,6 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			return "("+obj.toString()+")["+index.toString()+"]";
 		else
 			return obj.toString()+"["+index.toString()+"]";
-	}
-
-	public Type getType() {
-		try {
-			Type t = obj.getType();
-			if( t.isArray() ) {
-				return Type.getRealType(t,((ArrayType)t).arg);
-			}
-			else {
-				// Resolve overloaded access method
-				Method@ v;
-				CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
-				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
-					return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
-				return Type.getRealType(t,((Method)v).type.ret());
-			}
-		} catch(Exception e) {
-			Kiev.reportError(this,e);
-			return Type.tpVoid;
-		}
 	}
 
 	public Type[] getAccessTypes() {
@@ -547,6 +547,21 @@ public final class ThisExpr extends LvalueExpr {
 	}
 	@nodeview
 	public static final view ThisExprView of ThisExprImpl extends LvalueExprView {
+
+		public Type getType() {
+			try {
+				if (ctx_clazz == null)
+					return Type.tpVoid;
+				if (ctx_clazz.name.short_name.equals(nameIdefault))
+					return ctx_clazz.package_clazz.ctype;
+				if (isSuperExpr())
+					ctx_clazz.super_type;
+				return ctx_clazz.ctype;
+			} catch(Exception e) {
+				Kiev.reportError(this,e);
+				return Type.tpVoid;
+			}
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -566,21 +581,6 @@ public final class ThisExpr extends LvalueExpr {
 	}
 
 	public String toString() { return isSuperExpr() ? "super" : "this"; }
-
-	public Type getType() {
-		try {
-			if (ctx_clazz == null)
-				return Type.tpVoid;
-			if (ctx_clazz.name.short_name.equals(nameIdefault))
-				return ctx_clazz.package_clazz.ctype;
-			if (isSuperExpr())
-				ctx_clazz.super_type;
-			return ctx_clazz.ctype;
-		} catch(Exception e) {
-			Kiev.reportError(this,e);
-			return Type.tpVoid;
-		}
-	}
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
@@ -622,6 +622,15 @@ public final class LVarExpr extends LvalueExpr {
 	public static abstract view LVarExprView of LVarExprImpl extends LvalueExprView {
 		public NameRef	ident;
 		public Var		var;
+
+		public Type getType() {
+			try {
+				return var.type;
+			} catch(Exception e) {
+				Kiev.reportError(this,e);
+				return Type.tpVoid;
+			}
+		}
 
 		public Var getVar() {
 			if (var != null)
@@ -685,15 +694,6 @@ public final class LVarExpr extends LvalueExpr {
 		return var.toString();
 	}
 
-	public Type getType() {
-		try {
-			return var.type;
-		} catch(Exception e) {
-			Kiev.reportError(this,e);
-			return Type.tpVoid;
-		}
-	}
-
 	public Type[] getAccessTypes() {
 		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new LvalDNode[]{getVar()});
 		if( sni == null || sni.getTypes().length == 0 )
@@ -750,6 +750,15 @@ public final class SFldExpr extends AccessExpr {
 		public Field		var;
 
 		public Operator getOp() { return BinaryOperator.Access; }
+
+		public Type getType() {
+			try {
+				return var.type;
+			} catch(Exception e) {
+				Kiev.reportError(this,e);
+				return Type.tpVoid;
+			}
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -797,15 +806,6 @@ public final class SFldExpr extends AccessExpr {
 			}
 		}
     	throw new RuntimeException("Request for constant value of non-constant expression");
-	}
-
-	public Type getType() {
-		try {
-			return var.type;
-		} catch(Exception e) {
-			Kiev.reportError(this,e);
-			return Type.tpVoid;
-		}
 	}
 
 	public Type[] getAccessTypes() {
@@ -858,6 +858,20 @@ public final class OuterThisAccessExpr extends AccessExpr {
 		public:ro	NArr<Field>		outer_refs;
 
 		public Operator getOp() { return BinaryOperator.Access; }
+
+		public Type getType() {
+			try {
+				if (ctx_clazz == null)
+					return outer.ctype;
+				Type tp = ctx_clazz.ctype;
+				foreach (Field f; outer_refs)
+					tp = f.type.applay(tp);
+				return tp;
+			} catch(Exception e) {
+				Kiev.reportError(this,e);
+				return outer.ctype;
+			}
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -876,20 +890,6 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	}
 
 	public String toString() { return outer.name.toString()+".this"; }
-
-	public Type getType() {
-		try {
-			if (ctx_clazz == null)
-				return outer.ctype;
-			Type tp = ctx_clazz.ctype;
-			foreach (Field f; outer_refs)
-				tp = f.type.applay(tp);
-			return tp;
-		} catch(Exception e) {
-			Kiev.reportError(this,e);
-			return outer.ctype;
-		}
-	}
 
 	public static Field outerOf(Struct clazz) {
 		foreach (ASTNode n; clazz.members; n instanceof Field) {
@@ -955,6 +955,10 @@ public final class ReinterpExpr extends LvalueExpr {
 	public static final view ReinterpExprView of ReinterpExprImpl extends LvalueExprView {
 		public TypeRef		type;
 		public ENode		expr;
+
+		public Type getType() {
+			return this.type.getType();
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -984,10 +988,6 @@ public final class ReinterpExpr extends LvalueExpr {
 	}
 
 	public String toString() { return "(($reinterp "+type+")"+expr+")"; }
-
-	public Type getType() {
-		return this.type.getType();
-	}
 
 	public void resolve(Type reqType) throws RuntimeException {
 		trace(Kiev.debugResolve,"Resolving "+this);

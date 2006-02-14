@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeset
-public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
+public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in")	Block		body;
@@ -299,6 +299,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final boolean isDispatcherMethod();
 		public final void setDispatcherMethod(boolean on);
 
+		public Type	getType() { return type; }
+
 		public boolean preResolveIn() {
 			checkRebuildTypes();
 			return true;
@@ -443,8 +445,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 
 	public NodeName getName() { return name; }
-
-	public Type	getType() { return type; }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(name);

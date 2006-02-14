@@ -479,7 +479,6 @@ kiev.vlang.TypeClassExpr kiev/vlang/TypeClassExpr kiev\vlang\Expr.java
 kiev.vlang.TypeDecl kiev/vlang/TypeDecl kiev\vlang\AST.java
 kiev.vlang.TypeInfoExpr kiev/vlang/TypeInfoExpr kiev\vlang\Expr.java
 kiev.vlang.TypeOpDef kiev/vlang/TypeOpDef kiev\vlang\Import.java
-kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.VarDecl kiev/vlang/VarDecl kiev\vlang\AST.java

@@ -32,7 +32,34 @@ public class TypeWithArgsRef extends TypeRef {
 	@nodeview
 	public static final view TypeWithArgsRefView of TypeWithArgsRefImpl extends TypeRefView {
 		public:ro	NArr<TypeRef>			args;
-		public				TypeRef					base_type;
+		public		TypeRef					base_type;
+
+		public Type getType() {
+			if (this.lnk != null)
+				return this.lnk;
+			Type tp = base_type.getType();
+			if (tp == null || !(tp instanceof CompaundType))
+				throw new CompilerException(this,"Compaund type "+base_type+" is not found");
+			TVarSet tpset = ((CompaundTypeProvider)tp.meta_type).getTemplBindings();
+			TVarBld set = new TVarBld();
+			int a = 0;
+			for(int b=0; a < args.length && b < tpset.tvars.length; b++) {
+				if (tpset.tvars[b].unalias().val != null)
+					continue;
+				Type bound = args[a].getType();
+				if (bound == null)
+					throw new CompilerException(this,"Type "+args[a]+" is not found");
+				if!(bound.isInstanceOf(tpset.tvars[b].var))
+					throw new CompilerException(this,"Type "+bound+" is not applayable to "+tpset.tvars[b].var);
+				set.append(tpset.tvars[b].var, bound);
+				a++;
+			}
+			if (a < args.length)
+				Kiev.reportError(this,"Type "+tp+" has only "+a+" unbound type parameters");
+			tp = tp.meta_type.make(set);
+			this.lnk = tp;
+			return this.lnk;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -54,33 +81,6 @@ public class TypeWithArgsRef extends TypeRef {
 	public Struct getStruct() {
 		if (this.lnk != null) return this.lnk.getStruct();
 		return base_type.getStruct();
-	}
-
-	public Type getType() {
-		if (this.lnk != null)
-			return this.lnk;
-		Type tp = base_type.getType();
-		if (tp == null || !(tp instanceof CompaundType))
-			throw new CompilerException(this,"Compaund type "+base_type+" is not found");
-		TVarSet tpset = ((CompaundTypeProvider)tp.meta_type).getTemplBindings();
-		TVarBld set = new TVarBld();
-		int a = 0;
-		for(int b=0; a < args.length && b < tpset.tvars.length; b++) {
-			if (tpset.tvars[b].unalias().val != null)
-				continue;
-			Type bound = args[a].getType();
-			if (bound == null)
-				throw new CompilerException(this,"Type "+args[a]+" is not found");
-			if!(bound.isInstanceOf(tpset.tvars[b].var))
-				throw new CompilerException(this,"Type "+bound+" is not applayable to "+tpset.tvars[b].var);
-			set.append(tpset.tvars[b].var, bound);
-			a++;
-		}
-		if (a < args.length)
-			Kiev.reportError(this,"Type "+tp+" has only "+a+" unbound type parameters");
-		tp = tp.meta_type.make(set);
-		this.lnk = tp;
-		return this.lnk;
 	}
 
 	public String toString() {

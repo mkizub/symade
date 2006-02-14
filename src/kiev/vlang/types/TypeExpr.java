@@ -38,6 +38,42 @@ public class TypeExpr extends TypeRef {
 	public static final view TypeExprView of TypeExprImpl extends TypeRefView {
 		public TypeRef				arg;
 		public KString				op;
+
+		public Type getType() {
+			if (this.lnk != null)
+				return this.lnk;
+			Type tp = arg.getType();
+			DNode@ v;
+			if (op == Constants.nameArrayOp) {
+				tp = new ArrayType(tp);
+			} else {
+				Type t;
+				if (!PassInfo.resolveNameR(((TypeExprImpl)this)._self,v,new ResInfo(this),op)) {
+					if (op == opPVar) {
+						t = WrapperType.tpWrappedPrologVar;
+					}
+					else if (op == opRef) {
+						Kiev.reportWarning(this, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpRefProxy);
+						t = WrapperType.tpWrappedRefProxy;
+					}
+					else
+						throw new CompilerException(this,"Typedef for type operator "+op+" not found");
+				} else {
+					if (v instanceof TypeDecl)
+						t = ((TypeDecl)v).getType();
+					else
+						throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
+				}
+				t.checkResolved();
+				TVarBld set = new TVarBld();
+				if (t.getStruct().args.length != 1)
+					throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
+				set.append(t.getStruct().args[0].getAType(), tp);
+				tp = t.applay(set);
+			}
+			this.lnk = tp;
+			return tp;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -83,42 +119,6 @@ public class TypeExpr extends TypeRef {
 		if (v instanceof TypeDecl)
 			return ((TypeDecl)v).getStruct();
 		throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
-	}
-
-	public Type getType() {
-		if (this.lnk != null)
-			return this.lnk;
-		Type tp = arg.getType();
-		DNode@ v;
-		if (op == Constants.nameArrayOp) {
-			tp = new ArrayType(tp);
-		} else {
-			Type t;
-			if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {
-				if (op == opPVar) {
-					t = WrapperType.tpWrappedPrologVar;
-				}
-				else if (op == opRef) {
-					Kiev.reportWarning(this, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpRefProxy);
-					t = WrapperType.tpWrappedRefProxy;
-				}
-				else
-					throw new CompilerException(this,"Typedef for type operator "+op+" not found");
-			} else {
-				if (v instanceof TypeDecl)
-					t = ((TypeDecl)v).getType();
-				else
-					throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
-			}
-			t.checkResolved();
-			TVarBld set = new TVarBld();
-			if (t.getStruct().args.length != 1)
-				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
-			set.append(t.getStruct().args[0].getAType(), tp);
-			tp = t.applay(set);
-		}
-		this.lnk = tp;
-		return tp;
 	}
 
 	public String toString() {

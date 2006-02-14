@@ -579,17 +579,17 @@ public final class CompaundType extends Type {
 		if!(_t2 instanceof CompaundType) {
 			if (_t2 instanceof ArgType) {
 				ArgType at = (ArgType)_t2;
-				if (at.definer.upper_bound.length == 0)
-					return this ≈ tpObject;
-				foreach (TypeRef tr; at.definer.upper_bound) {
-					if (!this.isInstanceOf(tr.getType()))
-						return false;
+				if (at.definer.upper_bound.length > 0) {
+					foreach (TypeRef tr; at.definer.upper_bound) {
+						if (!this.isInstanceOf(tr.getType()))
+							return false;
+					}
 				}
-				if (at.definer.lower_bound.length == 0)
-					return true;
-				foreach (TypeRef tr; at.definer.lower_bound) {
-					if (!tr.getType().isInstanceOf(this))
-						return false;
+				if (at.definer.lower_bound.length > 0) {
+					foreach (TypeRef tr; at.definer.lower_bound) {
+						if (!tr.getType().isInstanceOf(this))
+							return false;
+					}
 				}
 				return true;
 			}

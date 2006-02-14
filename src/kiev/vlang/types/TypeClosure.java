@@ -32,6 +32,18 @@ public class TypeClosureRef extends TypeRef {
 	@nodeview
 	public static final view TypeClosureRefView of TypeClosureRefImpl extends TypeRefView {
 		public:ro	NArr<TypeRef>			types;
+
+		public Type getType() {
+			if (this.lnk != null)
+				return this.lnk;
+			Type[] tps = new Type[types.length-1];
+			for(int i=0; i < tps.length; i++) {
+				tps[i] = types[i].getType();
+			}
+			Type ret = types[types.length-1].getType();
+			this.lnk = new CallType(tps,ret,true);
+			return this.lnk;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -51,18 +63,6 @@ public class TypeClosureRef extends TypeRef {
 	}
 	public Struct getStruct() {
 		return null;
-	}
-
-	public Type getType() {
-		if (this.lnk != null)
-			return this.lnk;
-		Type[] tps = new Type[types.length-1];
-        for(int i=0; i < tps.length; i++) {
-			tps[i] = types[i].getType();
-		}
-        Type ret = types[types.length-1].getType();
-        this.lnk = new CallType(tps,ret,true);
-		return this.lnk;
 	}
 
 	public Dumper toJava(Dumper dmp) {

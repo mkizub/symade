@@ -34,6 +34,29 @@ public class TypeNameRef extends TypeRef {
 	public static final view TypeNameRefView of TypeNameRefImpl extends TypeRefView {
 		public TypeRef				outer;
 		public KString				name;
+
+		public Type getType() {
+			if (this.lnk != null)
+				return this.lnk;
+			Type tp;
+			if (this.outer != null) {
+				Type outer = this.outer.getType();
+				ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
+				TypeDecl@ td;
+				if!(outer.resolveStaticNameR(td,info,name))
+					throw new CompilerException(this,"Unresolved type "+name+" in "+outer);
+				td.checkResolved();
+				tp = td.getType().bind(outer.bindings());
+			} else {
+				TypeDecl@ td;
+				if( !PassInfo.resolveQualifiedNameR(((TypeNameRefImpl)this)._self,td,new ResInfo(this,ResInfo.noForwards),name) )
+					throw new CompilerException(this,"Unresolved type "+name);
+				td.checkResolved();
+				tp = td.getType();
+			}
+			this.lnk = tp;
+			return this.lnk;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -70,29 +93,6 @@ public class TypeNameRef extends TypeRef {
 
 	public boolean isBound() {
 		return true;
-	}
-
-	public Type getType() {
-		if (this.lnk != null)
-			return this.lnk;
-		Type tp;
-		if (this.outer != null) {
-			Type outer = this.outer.getType();
-			ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
-			TypeDecl@ td;
-			if!(outer.resolveStaticNameR(td,info,name))
-				throw new CompilerException(this,"Unresolved type "+name+" in "+outer);
-			td.checkResolved();
-			tp = td.getType().bind(outer.bindings());
-		} else {
-			TypeDecl@ td;
-			if( !PassInfo.resolveQualifiedNameR(this,td,new ResInfo(this,ResInfo.noForwards),name) )
-				throw new CompilerException(this,"Unresolved type "+name);
-			td.checkResolved();
-			tp = td.getType();
-		}
-		this.lnk = tp;
-		return this.lnk;
 	}
 
 	public Struct getStruct() {

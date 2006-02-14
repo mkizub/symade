@@ -50,6 +50,13 @@ public class CallExpr extends ENode {
 		public				ENode			temp_expr;
 
 		public int		getPriority() { return Constants.opCallPriority; }
+
+		public Type getType() {
+			if (mt == null)
+				return Type.getRealType(obj.getType(),func.type.ret());
+			else
+				return mt.ret();
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -99,12 +106,6 @@ public class CallExpr extends ENode {
 		}
 		sb.append(')');
 		return sb.toString();
-	}
-	public Type getType() {
-		if (mt == null)
-			return Type.getRealType(obj.getType(),func.type.ret());
-		else
-			return mt.ret();
 	}
 
 	public void resolve(Type reqType) {
@@ -220,6 +221,18 @@ public class ClosureCallExpr extends ENode {
 		public				Boolean			is_a_call;
 
 		public int		getPriority() { return Constants.opCallPriority; }
+
+		public Type getType() {
+			CallType t = (CallType)expr.getType();
+			if (is_a_call == null)
+				is_a_call = Boolean.valueOf(t.arity==args.length);
+			if (is_a_call.booleanValue())
+				return t.ret();
+			Type[] types = new Type[t.arity - args.length];
+			for(int i=0; i < types.length; i++) types[i] = t.arg(i+args.length);
+			t = new CallType(types,t.ret(),true);
+			return t;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -246,17 +259,6 @@ public class ClosureCallExpr extends ENode {
 		}
 		sb.append(')');
 		return sb.toString();
-	}
-	public Type getType() {
-		CallType t = (CallType)expr.getType();
-		if (is_a_call == null)
-			is_a_call = Boolean.valueOf(t.arity==args.length);
-		if (is_a_call.booleanValue())
-			return t.ret();
-		Type[] types = new Type[t.arity - args.length];
-		for(int i=0; i < types.length; i++) types[i] = t.arg(i+args.length);
-		t = new CallType(types,t.ret(),true);
-		return t;
 	}
 
 	public Method getCallIt(CallType tp) {

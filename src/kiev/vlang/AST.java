@@ -489,6 +489,8 @@ public abstract class ASTNode implements Constants, Cloneable {
 			walker.post_exec(getNode());
 		}
 
+		public Type getType() { return Type.tpVoid; }
+
 		public boolean preResolveIn() { return true; }
 		public void preResolveOut() {}
 		public boolean mainResolveIn() { return true; }
@@ -538,8 +540,6 @@ public abstract class ASTNode implements Constants, Cloneable {
 		this.$v_impl.copyTo(node.$v_impl);
 		return node;
 	};
-
-	public Type getType() { return Type.tpVoid; }
 
     public Dumper toJava(Dumper dmp) {
     	dmp.append("/* INTERNAL ERROR - ").append(this.getClass().toString()).append(" */");
@@ -1298,6 +1298,10 @@ public final class NopExpr extends ENode implements NodeData {
 	@nodeview
 	public static abstract view NopExprView of NopExprImpl extends ENodeView {
 		public ENode		expr;
+
+		public Type getType() {
+			return expr.getType();
+		}
 	}
 	@nodeview
 	public static final view VNopExpr of NopExprImpl extends NopExprView {
@@ -1311,9 +1315,6 @@ public final class NopExpr extends ENode implements NodeData {
 		this();
 		this.pos = expr.pos;
 		this.expr = expr;
-	}
-	public Type getType() {
-		return expr.getType();
 	}
 	public void resolve(Type reqType) {
 		expr.resolve(reqType);
@@ -1424,8 +1425,6 @@ public class NameRef extends ASTNode {
 			this.name = KString.from(t.image);
 	}
 	
-	public Type getType() { return Type.tpVoid; }
-
 	public KString toKString() alias operator(210,fy,$cast) { return name; }
     
 	public String toString() { return name.toString(); }

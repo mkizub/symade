@@ -1185,7 +1185,7 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 		name      = Name()
 		{ arg = mkTypeDef(name,modifiers); }
 		(
-			"=" t = Type() { arg.upper_bound.add(t); arg.lower_bound.add(t.ncopy()); }
+			"=" t = Type() { arg.upper_bound.add(t); /* arg.lower_bound.add(t.ncopy());*/ }
 			";"
 		|
 			(

@@ -59,6 +59,23 @@ public final class NewExpr extends ENode {
 
 		public int		getPriority() { return Constants.opAccessPriority; }
 
+		public Type getType() {
+			if (this.clazz != null)
+				return this.clazz.ctype;
+			Type type = this.type.getType();
+			Struct clazz = type.getStruct();
+			if (outer == null && type.getStruct() != null && type.getStruct().ometa_type != null) {
+				if (ctx_method != null || !ctx_method.isStatic())
+					outer = new ThisExpr(pos);
+			}
+			if (outer == null)
+				return type;
+			TVarBld vset = new TVarBld(
+				type.getStruct().ometa_type.tdef.getAType(),
+				new OuterType(type.getStruct(),outer.getType()) );
+			return type.rebind(vset);
+		}
+
 		public boolean preResolveIn() {
 			if( clazz == null )
 				return true;
@@ -140,23 +157,6 @@ public final class NewExpr extends ENode {
 		}
 		sb.append(')');
 		return sb.toString();
-	}
-
-	public Type getType() {
-		if (this.clazz != null)
-			return this.clazz.ctype;
-		Type type = this.type.getType();
-		Struct clazz = type.getStruct();
-		if (outer == null && type.getStruct() != null && type.getStruct().ometa_type != null) {
-			if (ctx_method != null || !ctx_method.isStatic())
-				outer = new ThisExpr(pos);
-		}
-		if (outer == null)
-			return type;
-		TVarBld vset = new TVarBld(
-			type.getStruct().ometa_type.tdef.getAType(),
-			new OuterType(type.getStruct(),outer.getType()) );
-		return type.rebind(vset);
 	}
 
 	public void resolve(Type reqType) {
@@ -297,6 +297,8 @@ public final class NewArrayExpr extends ENode {
 		}
 
 		public int		getPriority() { return Constants.opAccessPriority; }
+
+		public Type getType() { return arrtype; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -323,10 +325,6 @@ public final class NewArrayExpr extends ENode {
 			sb.append(']');
 		}
 		return sb.toString();
-	}
-
-	public Type getType() {
-		return arrtype;
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {
@@ -420,6 +418,8 @@ public final class NewInitializedArrayExpr extends ENode {
 		}
 
 		public int		getPriority() { return Constants.opAccessPriority; }
+
+		public Type getType() { return arrtype; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -449,8 +449,6 @@ public final class NewInitializedArrayExpr extends ENode {
 		sb.append('}');
 		return sb.toString();
 	}
-
-	public Type getType() { return arrtype; }
 
 	public int getElementsNumber(int i) { return dims[i]; }
 
@@ -540,6 +538,16 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		public CallType			ctype;
 
 		public int		getPriority() { return Constants.opAccessPriority; }
+
+		public Type getType() {
+			if (ctype != null)
+				return ctype;
+			Vector<Type> args = new Vector<Type>();
+			foreach (FormPar fp; params)
+				args.append(fp.getType());
+			ctype = new CallType(args.toArray(), type_ret.getType(), true);
+			return ctype;
+		}
 	}
 	@nodeview
 	public static final view VNewClosure of NewClosureImpl extends NewClosureView {
@@ -567,16 +575,6 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		}
 		sb.append(")->").append(type_ret).append(" {...}");
 		return sb.toString();
-	}
-
-	public Type getType() {
-		if (ctype != null)
-			return ctype;
-		Vector<Type> args = new Vector<Type>();
-		foreach (FormPar fp; params)
-			args.append(fp.getType());
-		ctype = new CallType(args.toArray(), type_ret.getType(), true);
-		return ctype;
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)

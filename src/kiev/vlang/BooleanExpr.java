@@ -39,11 +39,10 @@ public abstract class BoolExpr extends ENode {
 	}
 	@nodeview
 	public abstract static view BoolExprView of BoolExprImpl extends ENodeView {
+		public Type getType() { return Type.tpBoolean; }
 	}
 
 	public BoolExpr(BoolExprImpl impl) { super(impl); }
-
-	public Type getType() { return Type.tpBoolean; }
 
 	public static void checkBool(ENode e) {
 		Type et = e.getType();

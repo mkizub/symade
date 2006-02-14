@@ -44,6 +44,12 @@ public class TypeRef extends ENode {
 	public static view TypeRefView of TypeRefImpl extends ENodeView {
 		public Type	lnk;
 
+		public Type getType()
+			alias operator(210,fy,$cast)
+		{
+			return lnk;
+		}
+	
 		public boolean preResolveIn() {
 			getNode().getType(); // calls resolving
 			return false;
@@ -94,10 +100,10 @@ public class TypeRef extends ENode {
 	public Struct getStruct() { if (lnk == null) return null; return lnk.getStruct(); }
 	public JType getJType() { return getType().getJType(); }
 
-	public Type getType()
+	public final Type getType()
 		alias operator(210,fy,$cast)
 	{
-		return lnk;
+		return getVView().getType();
 	}
 	
 	public void resolve(Type reqType) {

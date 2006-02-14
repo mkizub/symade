@@ -308,6 +308,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public final boolean isLoadedFromBytecode();
 		public final void setLoadedFromBytecode(boolean on);
 
+		public Type getType() { return this.ctype; }
+
 		public boolean instanceOf(Struct cl) {
 			if( cl == null ) return false;
 			if( this.getStruct().equals(cl) ) return true;
@@ -765,8 +767,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
 		return cas;
 	}
-
-	public Type getType() { return this.ctype; }
 
 	public Field getWrappedField(boolean required) {
 		if (super_type != null && super_type.clazz instanceof Struct) {

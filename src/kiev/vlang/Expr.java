@@ -60,6 +60,8 @@ public class Shadow extends ENode {
 				return ((ENode)node).getPriority();
 			return 255;
 		}
+
+		public Type getType() { return node.getType(); }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -76,7 +78,6 @@ public class Shadow extends ENode {
 		super(new ShadowImpl());
 		this.node = node;
 	}
-	public Type getType() { return node.getType(); }
 	
 	public void resolve(Type reqType) {
 		if (node instanceof ENode)
@@ -115,6 +116,8 @@ public class ArrayLengthExpr extends AccessExpr {
 	@nodeview
 	public static final view ArrayLengthExprView of ArrayLengthExprImpl extends AccessExprView {
 		public Operator getOp() { return BinaryOperator.Access; }
+
+		public Type getType() { return Type.tpInt; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -143,10 +146,6 @@ public class ArrayLengthExpr extends AccessExpr {
 			return "("+obj.toString()+").length";
 		else
 			return obj.toString()+".length";
-	}
-
-	public Type getType() {
-		return Type.tpInt;
 	}
 
 	public void resolve(Type reqType) {
@@ -189,6 +188,8 @@ public class TypeClassExpr extends ENode {
 		public TypeRef		type;
 
 		public Operator getOp() { return BinaryOperator.Access; }
+
+		public Type getType() { return Type.tpClass; }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -206,10 +207,6 @@ public class TypeClassExpr extends ENode {
 
 	public String toString() {
 		return type.toString()+".class";
-	}
-
-	public Type getType() {
-		return Type.tpClass;
 	}
 
 	public void resolve(Type reqType) {
@@ -255,6 +252,14 @@ public class TypeInfoExpr extends ENode {
 		public:ro	NArr<ENode>			cl_args;
 
 		public Operator getOp() { return BinaryOperator.Access; }
+
+		public Type getType() {
+			Type t = type.getType().getErasedType();
+			if (t.isUnerasable())
+				return t.getStruct().typeinfo_clazz.ctype;
+			return Type.tpTypeInfo;
+		}
+
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -272,13 +277,6 @@ public class TypeInfoExpr extends ENode {
 
 	public String toString() {
 		return type+".type";
-	}
-
-	public Type getType() {
-		Type t = type.getType().getErasedType();
-		if (t.isUnerasable())
-			return t.getStruct().typeinfo_clazz.ctype;
-		return Type.tpTypeInfo;
 	}
 
 	public void resolve(Type reqType) {
@@ -336,6 +334,8 @@ public class AssignExpr extends LvalueExpr {
 		public ENode			value;
 
 		public Operator getOp() { return op; }
+
+		public Type getType() { return lval.getType(); }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -366,8 +366,6 @@ public class AssignExpr extends LvalueExpr {
 			sb.append(value);
 		return sb.toString();
 	}
-
-	public Type getType() { return lval.getType(); }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
@@ -612,6 +610,37 @@ public class BinaryExpr extends ENode {
 
 		public Operator getOp() { return op; }
 
+		public Type getType() {
+			Type t1 = expr1.getType();
+			Type t2 = expr2.getType();
+			if( op==BinaryOperator.BitOr || op==BinaryOperator.BitXor || op==BinaryOperator.BitAnd ) {
+				if( (t1.isInteger() && t2.isInteger()) || (t1.isBoolean() && t2.isBoolean()) ) {
+					if( t1 ≡ Type.tpLong || t2 ≡ Type.tpLong ) return Type.tpLong;
+					if( t1.isAutoCastableTo(Type.tpBoolean) && t2.isAutoCastableTo(Type.tpBoolean) ) return Type.tpBoolean;
+					return Type.tpInt;
+				}
+			}
+			else if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
+				if( t2.isInteger() ) {
+					if( t1 ≡ Type.tpLong ) return Type.tpLong;
+					if( t1.isInteger() )	return Type.tpInt;
+				}
+			}
+			else if( op==BinaryOperator.Add || op==BinaryOperator.Sub || op==BinaryOperator.Mul || op==BinaryOperator.Div || op==BinaryOperator.Mod ) {
+				// Special case for '+' operator if one arg is a String
+				if( op==BinaryOperator.Add && t1.equals(Type.tpString) || t2.equals(Type.tpString) ) return Type.tpString;
+	
+				if( t1.isNumber() && t2.isNumber() ) {
+					if( t1 ≡ Type.tpDouble || t2 ≡ Type.tpDouble ) return Type.tpDouble;
+					if( t1 ≡ Type.tpFloat  || t2 ≡ Type.tpFloat )  return Type.tpFloat;
+					if( t1 ≡ Type.tpLong   || t2 ≡ Type.tpLong )   return Type.tpLong;
+					return Type.tpInt;
+				}
+			}
+			((BinaryExprImpl)this)._self.resolve(null);
+			return getType();
+		}
+
 		public void mainResolveOut() {
 			Type et1 = expr1.getType();
 			Type et2 = expr2.getType();
@@ -724,37 +753,6 @@ public class BinaryExpr extends ENode {
 		else
 			sb.append(expr2);
 		return sb.toString();
-	}
-
-	public Type getType() {
-		Type t1 = expr1.getType();
-		Type t2 = expr2.getType();
-		if( op==BinaryOperator.BitOr || op==BinaryOperator.BitXor || op==BinaryOperator.BitAnd ) {
-			if( (t1.isInteger() && t2.isInteger()) || (t1.isBoolean() && t2.isBoolean()) ) {
-				if( t1 ≡ Type.tpLong || t2 ≡ Type.tpLong ) return Type.tpLong;
-				if( t1.isAutoCastableTo(Type.tpBoolean) && t2.isAutoCastableTo(Type.tpBoolean) ) return Type.tpBoolean;
-				return Type.tpInt;
-			}
-		}
-		else if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
-			if( t2.isInteger() ) {
-				if( t1 ≡ Type.tpLong ) return Type.tpLong;
-				if( t1.isInteger() )	return Type.tpInt;
-			}
-		}
-		else if( op==BinaryOperator.Add || op==BinaryOperator.Sub || op==BinaryOperator.Mul || op==BinaryOperator.Div || op==BinaryOperator.Mod ) {
-			// Special case for '+' operator if one arg is a String
-			if( op==BinaryOperator.Add && t1.equals(Type.tpString) || t2.equals(Type.tpString) ) return Type.tpString;
-
-			if( t1.isNumber() && t2.isNumber() ) {
-				if( t1 ≡ Type.tpDouble || t2 ≡ Type.tpDouble ) return Type.tpDouble;
-				if( t1 ≡ Type.tpFloat  || t2 ≡ Type.tpFloat )  return Type.tpFloat;
-				if( t1 ≡ Type.tpLong   || t2 ≡ Type.tpLong )   return Type.tpLong;
-				return Type.tpInt;
-			}
-		}
-		resolve(null);
-		return getType();
 	}
 
 	public void resolve(Type reqType) {
@@ -1023,6 +1021,8 @@ public class StringConcatExpr extends ENode {
 		public:ro	NArr<ENode>		args;
 
 		public Operator getOp() { return BinaryOperator.Add; }
+
+		public Type getType() { return Type.tpString; }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -1045,10 +1045,6 @@ public class StringConcatExpr extends ENode {
 				sb.append('+');
 		}
 		return sb.toString();
-	}
-
-	public Type getType() {
-		return Type.tpString;
 	}
 
 	public void resolve(Type reqType) {
@@ -1102,6 +1098,8 @@ public class CommaExpr extends ENode {
 		public:ro	NArr<ENode>		exprs;
 
 		public int getPriority() { return 0; }
+
+		public Type getType() { return exprs[exprs.length-1].getType(); }
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -1128,8 +1126,6 @@ public class CommaExpr extends ENode {
 	}
 
 	public KString getName() { return KString.Empty; };
-
-	public Type getType() { return exprs[exprs.length-1].getType(); }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1179,6 +1175,12 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		public:ro	NArr<ENode>		stats;
 
 		public int		getPriority() { return 255; }
+	
+		public Type getType() {
+			if (isGenVoidExpr()) return Type.tpVoid;
+			if (stats.length == 0) return Type.tpVoid;
+			return stats[stats.length-1].getType();
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -1233,12 +1235,6 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 			}
 		}
 		stats.insert(decl,idx);
-	}
-	
-	public Type getType() {
-		if (isGenVoidExpr()) return Type.tpVoid;
-		if (stats.length == 0) return Type.tpVoid;
-		return stats[stats.length-1].getType();
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
@@ -1367,6 +1363,10 @@ public class UnaryExpr extends ENode {
 		public ENode			expr;
 
 		public Operator getOp() { return op; }
+
+		public Type getType() {
+			return expr.getType();
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -1394,10 +1394,6 @@ public class UnaryExpr extends ENode {
 				return op.image+"("+expr.toString()+")";
 			else
 				return op.image+expr.toString();
-	}
-
-	public Type getType() {
-		return expr.getType();
 	}
 
 	public void resolve(Type reqType) {
@@ -1553,6 +1549,10 @@ public class IncrementExpr extends ENode {
 		public ENode		lval;
 
 		public Operator getOp() { return op; }
+
+		public Type getType() {
+			return lval.getType();
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -1574,10 +1574,6 @@ public class IncrementExpr extends ENode {
 			return lval.toString()+op.image;
 		else
 			return op.image+lval.toString();
-	}
-
-	public Type getType() {
-		return lval.getType();
 	}
 
 	public void resolve(Type reqType) {
@@ -1635,6 +1631,22 @@ public class ConditionalExpr extends ENode {
 		public ENode		expr2;
 
 		public Operator getOp() { return MultiOperator.Conditional; }
+
+		public Type getType() {
+			Type t1 = expr1.getType();
+			Type t2 = expr2.getType();
+			if( t1.isReference() && t2.isReference() ) {
+				if( t1 ≡ t2 ) return t1;
+				if( t1 ≡ Type.tpNull ) return t2;
+				if( t2 ≡ Type.tpNull ) return t1;
+				return Type.leastCommonType(t1,t2);
+			}
+			if( t1.isNumber() && t2.isNumber() ) {
+				if( t1 ≡ t2 ) return t1;
+				return CoreType.upperCastNumbers(t1,t2);
+			}
+			return expr1.getType();
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -1658,22 +1670,6 @@ public class ConditionalExpr extends ENode {
 		sb.append('(').append(expr1).append(") : ");
 		sb.append('(').append(expr2).append(") ");
 		return sb.toString();
-	}
-
-	public Type getType() {
-		Type t1 = expr1.getType();
-		Type t2 = expr2.getType();
-		if( t1.isReference() && t2.isReference() ) {
-			if( t1 ≡ t2 ) return t1;
-			if( t1 ≡ Type.tpNull ) return t2;
-			if( t2 ≡ Type.tpNull ) return t1;
-			return Type.leastCommonType(t1,t2);
-		}
-		if( t1.isNumber() && t2.isNumber() ) {
-			if( t1 ≡ t2 ) return t1;
-			return CoreType.upperCastNumbers(t1,t2);
-		}
-		return expr1.getType();
 	}
 
 	public void resolve(Type reqType) {
@@ -1726,6 +1722,10 @@ public class CastExpr extends ENode {
 		public TypeRef	type;
 
 		public int getPriority() { return opCastPriority; }
+
+		public Type getType() {
+			return type.getType();
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -1751,10 +1751,6 @@ public class CastExpr extends ENode {
 
 	public String toString() {
 		return "(("+type+")"+expr+")";
-	}
-
-	public Type getType() {
-		return type.getType();
 	}
 
 	public Type[] getAccessTypes() {

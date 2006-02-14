@@ -196,6 +196,8 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		public	ASTOperator		op;
 		public	TypeRef			type;
 		public	TypeDef			arg;
+	
+		public Type getType() { return type.getType(); }
 
 		public boolean mainResolveIn() { return false; }
 
@@ -218,10 +220,6 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 	
 	public Struct getStruct() {
 		return getType().getStruct();
-	}
-	
-	public Type getType() {
-		return type.getType();
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name) {

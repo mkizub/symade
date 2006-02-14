@@ -137,10 +137,6 @@ public class ASTIdentifier extends ENode {
 			this.name = KString.from(t.image);
 	}
 	
-	public Type getType() {
-		return Type.tpVoid;
-	}
-	
 	public void resolve(Type reqType) {
 		if( name == Constants.nameFILE ) {
 			replaceWithNode(new ConstStringExpr(Kiev.curFile));

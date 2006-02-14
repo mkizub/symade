@@ -16,10 +16,6 @@ import syntax kiev.Syntax;
  *
  */
 
-public interface Typed {
-	public Type		getType();
-}
-
 public interface BreakTarget {
 	public JLabel getBrkLabel();
 }

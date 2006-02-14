@@ -979,7 +979,7 @@ public abstract class kiev040 implements kiev040Constants {
     case ASSIGN:
       jj_consume_token(ASSIGN);
       t = Type();
-                                         arg.upper_bound.add(t); arg.lower_bound.add(t.ncopy());
+                                         arg.upper_bound.add(t); /* arg.lower_bound.add(t.ncopy());*/
       jj_consume_token(SEMICOLON);
       break;
     case SEMICOLON:

@@ -22,7 +22,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeset
-public class Var extends LvalDNode implements Named, Typed {
+public class Var extends LvalDNode implements Named {
 	
 	private static final Var dummyNode = new FormPar();
 	
