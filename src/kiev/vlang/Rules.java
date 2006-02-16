@@ -132,9 +132,9 @@ public class RuleMethod extends Method {
 	}
 
     public ASTNode pass3() {
-		if !( parent instanceof Struct )
+		if !( parent_node instanceof Struct )
 			throw new CompilerException(this,"Method must be declared on class level only");
-		Struct clazz = (Struct)parent;
+		Struct clazz = this.ctx_clazz;
 		// TODO: check flags for fields
 		if( clazz.isPackage() ) setStatic(true);
 		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);
@@ -781,10 +781,10 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 		}
 		iter_var = ((RuleMethod)ctx_method).add_iterator_var();
-		ASTNode rb = this.parent;
+		ASTNode rb = this.parent_node;
 		while( rb!=null && !(rb instanceof RuleBlock)) {
 			Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
-			rb = rb.parent;
+			rb = rb.parent_node;
 		}
 		Debug.assert(rb != null);
 		Debug.assert(rb instanceof RuleBlock);
@@ -988,10 +988,10 @@ public final class RuleCallExpr extends ASTRuleNode {
 		base = ((RuleMethod)ctx_method).allocNewBase(1);
 		depth = ((RuleMethod)ctx_method).push();
 		env_var = ((RuleMethod)ctx_method).add_iterator_var();
-		ASTNode rb = this.parent;
+		ASTNode rb = this.parent_node;
 		while( rb!=null && !(rb instanceof RuleBlock)) {
 			Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
-			rb = rb.parent;
+			rb = rb.parent_node;
 		}
 		Debug.assert(rb != null);
 		Debug.assert(rb instanceof RuleBlock);

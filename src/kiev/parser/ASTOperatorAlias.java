@@ -98,7 +98,7 @@ public final class ASTOperatorAlias extends ASTAlias {
     private void checkPublicAccess(Method m) {
     	if( !m.isStatic() ) return;
     	if( m.isPrivate() || m.isProtected() ) return;
-    	Struct pkg = (Struct)m.parent;
+    	Struct pkg = m.ctx_clazz;
     	while( pkg != null && !pkg.isPackage() ) pkg = pkg.package_clazz;
     	if( pkg == null || pkg == Env.root ) return;
     	foreach(ASTNode n; pkg.imported; n == m ) return;

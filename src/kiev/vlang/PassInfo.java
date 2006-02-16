@@ -38,10 +38,10 @@ public final class ParentEnumerator implements Enumeration<ASTNode> {
 	}
 	public ASTNode nextElement() {
 		if (r == null) {
-			r = n.parent;
+			r = n.parent_node;
 		} else {
 			n = r;
-			r = n.parent;
+			r = n.parent_node;
 		}
 		return r;
 	}
@@ -54,7 +54,7 @@ public class SymbolIterator implements Enumeration<ASTNode> {
 		this.stats = stats;
 		if (element != null && element.pslot == stats.getPSlot()) {
 			assert(stats.indexOf(element) >= 0);
-			last_stat = element.pprev;
+			last_stat = element.$v_impl.pprev;
 		} else {
 			if (stats.size() > 0)
 				last_stat = stats[stats.size()-1];
@@ -66,7 +66,7 @@ public class SymbolIterator implements Enumeration<ASTNode> {
 	public ASTNode nextElement() {
 		if ( last_stat != null ) {
 			ASTNode r = last_stat;
-			last_stat = last_stat.pprev;
+			last_stat = last_stat.$v_impl.pprev;
 			return r;
 		}
 		throw new NoSuchElementException();
@@ -316,7 +316,7 @@ public class PassInfo {
 		if( !exc.isInstanceOf(Type.tpThrowable) )
 			throw new CompilerException(from,"A class of object for throw statement must be a subclass of "+Type.tpThrowable+" but type "+exc+" found");
 		if( exc.isInstanceOf(Type.tpError) || exc.isInstanceOf(Type.tpRuntimeException) ) return true;
-		for (; from != null; from = from.parent) {
+		for (; from != null; from = from.parent_node) {
 			if( from instanceof TryStat ) {
 				TryStat trySt = (TryStat)from;
 				for(int j=0; j < trySt.catchers.length; j++)

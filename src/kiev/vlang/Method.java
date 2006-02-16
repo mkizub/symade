@@ -389,7 +389,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	public void addViolatedField(Field f) {
 		if( isInvariantMethod() ) {
 			f.invs.addUniq(this);
-			if( ((Struct)parent).instanceOf((Struct)f.parent) )
+			if( this.ctx_clazz.instanceOf(f.ctx_clazz) )
 				violated_fields.addUniq(f);
 		} else {
 			violated_fields.addUniq(f);
@@ -593,7 +593,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		if( !name.equals(nameInit) )
 			dmp.space().append(type.ret()).forsed_space().append(name);
 		else
-			dmp.space().append(((Struct)parent).name.short_name);
+			dmp.space().append(this.ctx_clazz.name.short_name);
 		dmp.append('(');
 		for(int i=0; i < params.length; i++) {
 			params[i].toJavaDecl(dmp,params[i].dtype);
@@ -658,9 +658,9 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 
     public ASTNode pass3() {
-		if !( parent instanceof Struct )
+		if !( this.parent_node instanceof Struct )
 			throw new CompilerException(this,"Method must be declared on class level only");
-		Struct clazz = (Struct)parent;
+		Struct clazz = this.ctx_clazz;
 		// TODO: check flags for methods
 		if( clazz.isPackage() ) setStatic(true);
 		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);
@@ -760,7 +760,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
-		assert( ctx_clazz == parent || inlined_by_dispatcher );
+		assert( ctx_clazz == parent_node || inlined_by_dispatcher );
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
@@ -788,8 +788,8 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
-			foreach(Field f; violated_fields; ctx_clazz.instanceOf((Struct)f.parent) ) {
-				foreach(Method inv; f.invs; ctx_clazz.instanceOf((Struct)inv.parent) ) {
+			foreach(Field f; violated_fields; ctx_clazz.instanceOf(f.ctx_clazz) ) {
+				foreach(Method inv; f.invs; ctx_clazz.instanceOf(inv.ctx_clazz) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )

@@ -83,8 +83,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
 			CaseLabel cl = (CaseLabel)dfi.node_impl.getNode();
-			if (cl.parent instanceof SwitchStat) {
-				ENode sel = ((SwitchStat)cl.parent).sel;
+			if (cl.parent_node instanceof SwitchStat) {
+				ENode sel = ((SwitchStat)cl.parent_node).sel;
 				if (sel != null)
 					res = sel.getDFlow().out();
 			}
@@ -158,7 +158,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	
 	public void resolve(Type tpVoid) {
 		boolean pizza_case = false;
-		SwitchStat sw = (SwitchStat)parent;
+		SwitchStat sw = (SwitchStat)parent_node;
 		try {
 			if( val != null ) {
 				val.resolve(null);
@@ -286,12 +286,12 @@ public class SwitchStat extends ENode {
 	}
 	@nodeview
 	public static view SwitchStatView of SwitchStatImpl extends ENodeView {
-		public				int						mode;
-		public				ENode					sel;
+		public		int						mode;
+		public		ENode					sel;
 		public:ro	NArr<CaseLabel>			cases;
-		public				LVarExpr				tmpvar;
-		public				CaseLabel				defCase;
-		public				Field					typehash; // needed for re-resolving
+		public		LVarExpr				tmpvar;
+		public		CaseLabel				defCase;
+		public		Field					typehash; // needed for re-resolving
 		public:ro	Label					lblcnt;
 		public:ro	Label					lblbrk;
 	}

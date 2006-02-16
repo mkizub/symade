@@ -6,6 +6,11 @@ import kiev.transf.*;
 import kiev.parser.*;
 import kiev.vlang.types.*;
 
+import kiev.vlang.Method.MethodView;
+import kiev.vlang.LoopStat.LoopStatView;
+import kiev.vlang.LabeledStat.LabeledStatView;
+import kiev.vlang.SwitchStat.SwitchStatView;
+
 import kiev.be.java.JNode;
 import kiev.be.java.JENode;
 import kiev.be.java.JInlineMethodStat;
@@ -292,7 +297,7 @@ public class ReturnStat extends ENode {
 	}
 	
 	public static void autoReturn(Type reqType, ENode expr) {
-		if (expr.parent instanceof ReturnStat)
+		if (expr.parent_node instanceof ReturnStat)
 			return;
 		expr.setAutoReturnable(false);
 		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr); });
@@ -602,18 +607,18 @@ public class BreakStat extends ENode {
 		public Label			dest;
 	
 		public boolean mainResolveIn() {
-			ASTNode p;
+			NodeView p;
 			if (dest != null) {
 				dest.delLink(this.getNode());
 				dest = null;
 			}
 			if( ident == null ) {
-				for(p=parent; !(p instanceof Method || p.isBreakTarget()); p = p.parent );
-				if( p instanceof Method || p == null ) {
+				for(p=parent; !(p instanceof MethodView || p.isBreakTarget()); p = p.parent );
+				if( p instanceof MethodView || p == null ) {
 					Kiev.reportError(this,"Break not within loop/switch statement");
 				} else {
-					if (p instanceof LoopStat) {
-						Label l = ((LoopStat)p).lblbrk;
+					if (p instanceof LoopStatView) {
+						Label l = p.lblbrk;
 						if (l != null) {
 							dest = l;
 							l.addLink(this.getNode());
@@ -622,24 +627,24 @@ public class BreakStat extends ENode {
 				}
 			} else {
 		label_found:
-				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
-					if (p instanceof LabeledStat && p.getName().equals(ident.name))
+				for(p=parent; !(p instanceof MethodView) ; p=p.parent ) {
+					if (p instanceof LabeledStatView && p.ident.name.equals(ident.name))
 						throw new RuntimeException("Label "+ident+" does not refer to break target");
 					if (!p.isBreakTarget()) continue;
-					ASTNode pp = p;
-					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-						if (p.getName().equals(ident.name)) {
+					ASTNode.NodeView pp = p;
+					for(p=p.parent; p instanceof LabeledStatView; p = p.parent) {
+						if (p.ident.name.equals(ident.name)) {
 							p = pp;
 							break label_found;
 						}
 					}
 					p = pp;
 				}
-				if( p instanceof Method || p == null) {
+				if( p instanceof MethodView || p == null) {
 					Kiev.reportError(this,"Break not within loop/switch statement");
 				} else {
-					if (p instanceof LoopStat) {
-						Label l = ((LoopStat)p).lblbrk;
+					if (p instanceof LoopStatView) {
+						Label l = p.lblbrk;
 						if (l != null) {
 							dest = l;
 							l.addLink(this.getNode());
@@ -660,18 +665,18 @@ public class BreakStat extends ENode {
 	
 	public void resolve(Type reqType) {
 		setAbrupted(true);
-		ASTNode p;
+		NodeView p;
 		if (dest != null) {
 			dest.delLink(this);
 			dest = null;
 		}
 		if( ident == null ) {
-			for(p=parent; !(p instanceof Method || p.isBreakTarget()); p = p.parent );
-			if( p instanceof Method || p == null ) {
+			for(p=parent; !(p instanceof MethodView || p.isBreakTarget()); p = p.parent );
+			if( p instanceof MethodView || p == null ) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
-				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).lblbrk;
+				if (p instanceof LoopStatView) {
+					Label l = p.lblbrk;
 					if (l != null) {
 						dest = l;
 						l.addLink(this);
@@ -680,24 +685,24 @@ public class BreakStat extends ENode {
 			}
 		} else {
 	label_found:
-			for(p=parent; !(p instanceof Method) ; p=p.parent ) {
-				if (p instanceof LabeledStat && p.getName().equals(ident.name))
+			for(p=parent; !(p instanceof MethodView) ; p=p.parent ) {
+				if (p instanceof LabeledStatView && p.ident.name.equals(ident.name))
 					throw new RuntimeException("Label "+ident+" does not refer to break target");
 				if (!p.isBreakTarget()) continue;
-				ASTNode pp = p;
-				for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-					if (p.getName().equals(ident.name)) {
+				NodeView pp = p;
+				for(p=p.parent; p instanceof LabeledStatView; p = p.parent) {
+					if (p.ident.name.equals(ident.name)) {
 						p = pp;
 						break label_found;
 					}
 				}
 				p = pp;
 			}
-			if( p instanceof Method || p == null) {
+			if( p instanceof MethodView || p == null) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
-				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).lblbrk;
+				if (p instanceof LoopStatView) {
+					Label l = p.lblbrk;
 					if (l != null) {
 						dest = l;
 						l.addLink(this);
@@ -705,9 +710,9 @@ public class BreakStat extends ENode {
 				}
 			}
 		}
-		if( p instanceof Method )
+		if( p instanceof MethodView )
 			Kiev.reportError(this,"Break not within loop/switch statement");
-		((ENode)p).setBreaked(true);
+		((ENodeView)p).setBreaked(true);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -748,18 +753,18 @@ public class ContinueStat extends ENode {
 		public Label			dest;
 	
 		public boolean mainResolveIn() {
-			ASTNode p;
+			NodeView p;
 			if (dest != null) {
 				dest.delLink(this.getNode());
 				dest = null;
 			}
 			if( ident == null ) {
-				for(p=parent; !(p instanceof LoopStat || p instanceof Method); p = p.parent );
-				if( p instanceof Method || p == null ) {
+				for(p=parent; !(p instanceof LoopStatView || p instanceof MethodView); p = p.parent );
+				if( p instanceof MethodView || p == null ) {
 					Kiev.reportError(this,"Continue not within loop statement");
 				} else {
-					if (p instanceof LoopStat) {
-						Label l = ((LoopStat)p).lblcnt;
+					if (p instanceof LoopStatView) {
+						Label l = p.lblcnt;
 						if (l != null) {
 							dest = l;
 							l.addLink(this.getNode());
@@ -768,24 +773,24 @@ public class ContinueStat extends ENode {
 				}
 			} else {
 		label_found:
-				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
-					if( p instanceof LabeledStat && ((LabeledStat)p).getName().equals(ident.name) )
+				for(p=parent; !(p instanceof MethodView) ; p=p.parent ) {
+					if( p instanceof LabeledStatView && p.ident.name.equals(ident.name) )
 						throw new RuntimeException("Label "+ident+" does not refer to continue target");
-					if !(p instanceof LoopStat) continue;
-					ASTNode pp = p;
-					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-						if( ((LabeledStat)p).getName().equals(ident.name) ) {
+					if !(p instanceof LoopStatView) continue;
+					NodeView pp = p;
+					for(p=p.parent; p instanceof LabeledStatView; p = p.parent) {
+						if( p.ident.name.equals(ident.name) ) {
 							p = pp;
 							break label_found;
 						}
 					}
 					p = pp;
 				}
-				if( p instanceof Method || p == null) {
+				if( p instanceof MethodView || p == null) {
 					Kiev.reportError(this,"Continue not within loop statement");
 				} else {
-					if (p instanceof LoopStat) {
-						Label l = ((LoopStat)p).lblcnt;
+					if (p instanceof LoopStatView) {
+						Label l = p.lblcnt;
 						if (l != null) {
 							dest = l;
 							l.addLink(this.getNode());
@@ -1025,12 +1030,12 @@ public class GotoCaseStat extends ENode {
 	
 	public void resolve(Type reqType) {
 		setAbrupted(true);
-		for(ASTNode node = this.parent; node != null; node = node.parent) {
-			if (node instanceof SwitchStat) {
-				this.sw = (SwitchStat)node;
+		for(NodeView node = this.parent; node != null; node = node.parent) {
+			if (node instanceof SwitchStatView) {
+				this.sw = (SwitchStat)node.getNode();
 				break;
 			}
-			if (node instanceof Method)
+			if (node instanceof MethodView)
 				break;
 		}
 		if( this.sw == null )

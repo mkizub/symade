@@ -809,9 +809,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		KString oldfn = Kiev.curFile;
 		boolean[] old_exts = Kiev.getExtSet();
 		{
-			ASTNode fu = parent;
+			ASTNode fu = parent_node;
 			while( fu != null && !(fu instanceof FileUnit))
-				fu = fu.parent;
+				fu = fu.parent_node;
 			if( fu != null ) {
 				Kiev.curFile = ((FileUnit)fu).filename;
 				Kiev.setExtSet(((FileUnit)fu).disabled_extensions);
@@ -1108,7 +1108,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				}
 				if (isStructView()) {
 					Field fview = this.resolveField(nameImpl);
-					if (fview.parent == this) {
+					if (fview.parent_node == this) {
 						foreach (FormPar fp; m.params; fp.name.equals(nameImpl)) {
 							stats.insert(
 								new ExprStat(pos,

@@ -64,7 +64,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		Field f = s.resolveField( name, false );
 		if( f != null ) {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
-			if (f.parent != m.parent)
+			if (f.parent_node != m.parent_node)
 				return;
 			MetaVirtual mv = f.getMetaVirtual();
 			if (mv != null && mv.set != null && mv.set != m)
@@ -108,7 +108,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		Field f = s.resolveField( name, false );
 		if( f != null ) {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
-			if (f.parent != m.parent)
+			if (f.parent_node != m.parent_node)
 				return;
 			MetaVirtual mv = f.getMetaVirtual();
 			if (mv != null && mv.get != null && mv.get != m)
@@ -269,7 +269,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				body.stats.append(ass_st);
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
 					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
-					Field fatt = ((Struct)f.parent).resolveField(fname);
+					Field fatt = f.ctx_clazz.resolveField(fname);
 					ENode p_st = new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								new LVarExpr(0, value),
@@ -320,7 +320,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			f.getMetaVirtual().set = set_var;
 		}
 		else if( set_found && !Access.writeable(f) ) {
-			Kiev.reportError(f,"Virtual set$ method for non-writeable field");
+			Kiev.reportError(f,"Virtual set$ method for non-writeable field "+f);
 		}
 
 		if (!f.isVirtual())
@@ -353,7 +353,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			f.getMetaVirtual().get = get_var;
 		}
 		else if( get_found && !Access.readable(f) ) {
-			Kiev.reportError(f,"Virtual get$ method for non-readable field");
+			Kiev.reportError(f,"Virtual get$ method for non-readable field "+f);
 		}
 	}
 
@@ -381,7 +381,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
 			append_fast(nameGet).append_fast(f.name.name).toKString();
 
-		if (fa.ctx_method != null && fa.ctx_method.name.equals(get_name) && fa.ctx_clazz.instanceOf((Struct)f.parent)) {
+		if (fa.ctx_method != null && fa.ctx_method.name.equals(get_name) && fa.ctx_clazz.instanceOf(f.ctx_clazz)) {
 			fa.setAsField(true);
 			return true;
 		}
@@ -408,7 +408,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
 				append_fast(nameSet).append_fast(f.name.name).toKString();
 	
-			if (ae.ctx_method != null && ae.ctx_method.name.equals(set_name) && ae.ctx_clazz.instanceOf((Struct)f.parent)) {
+			if (ae.ctx_method != null && ae.ctx_method.name.equals(set_name) && ae.ctx_clazz.instanceOf(f.ctx_clazz)) {
 				fa.setAsField(true);
 				return true;
 			}
@@ -493,7 +493,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 	
 			if (ie.ctx_method != null
 			&& (ie.ctx_method.name.equals(set_name) || ie.ctx_method.name.equals(get_name))
-			&& ie.ctx_clazz.instanceOf((Struct)f.parent) )
+			&& ie.ctx_clazz.instanceOf(f.ctx_clazz) )
 			{
 				fa.setAsField(true);
 				return true;

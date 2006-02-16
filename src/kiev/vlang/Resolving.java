@@ -143,9 +143,9 @@ public class ResInfo {
 			if (d.isPrivate()) {
 				// check visibility of this or inner classes
 				Struct s = from_scope;
-				while (s != null && s != n.parent && s.package_clazz.isClazz())
+				while (s != null && s != n.parent_node && s.package_clazz.isClazz())
 					s = s.package_clazz;
-				if (s == null || s != n.parent)
+				if (s == null || s != n.parent_node)
 					return false;
 			}
 			return true;

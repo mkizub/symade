@@ -73,7 +73,7 @@ public class CallExpr extends ENode {
 			if !(func.isStatic() || func instanceof Constructor) {
 				throw new RuntimeException("Call to non-static method "+func+" without accessor");
 			}
-			this.obj = new TypeRef(((Struct)func.parent).ctype);
+			this.obj = new TypeRef(func.ctx_clazz.ctype);
 		} else {
 			this.obj = obj;
 		}
@@ -152,10 +152,10 @@ public class CallExpr extends ENode {
 			}
 			temp_expr = null;
 		}
-		if !(func.parent instanceof Struct) {
-			ASTNode n = func.parent;
-			while !(n instanceof Method) n = n.parent;
-			assert (n.parent instanceof Struct);
+		if !(func.parent_node instanceof Struct) {
+			ASTNode n = func.parent_node;
+			while !(n instanceof Method) n = n.parent_node;
+			assert (n.parent_node instanceof Struct);
 			func = (Method)n;
 		}
 		setResolved(true);
@@ -179,8 +179,8 @@ public class CallExpr extends ENode {
 			}
 			else if( isSuperExpr() )
 				dmp.append("super.");
-			else if( func instanceof Method && ((Method)func).isStatic() )
-				dmp.append(((Struct)((Method)func).parent).name).append('.');
+			else if( func instanceof Method && func.isStatic() )
+				dmp.append(func.ctx_clazz.name).append('.');
 			dmp.append(func.getName());
 		}
 		dmp.append('(');

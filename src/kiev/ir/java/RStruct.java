@@ -883,7 +883,7 @@ public final view RStruct of StructImpl extends StructView {
 				}
 				last_st.elseSt = br;
 			}
-			assert (mm.parent == this.getStruct());
+			assert (mm.parent_node == this.getStruct());
 			if (st != null) {
 				Block body = new Block(0);
 				body.stats.add(st);
@@ -962,7 +962,7 @@ public final view RStruct of StructImpl extends StructView {
 		assert (dispatched != dispatcher);
 		assert (dispatched.isAttached());
 		if (dispatched.ctx_clazz == this.getStruct()) {
-			assert (dispatched.parent == this.getStruct());
+			assert (dispatched.parent_node == this.getStruct());
 			return new InlineMethodStat(pos,~dispatched,dispatcher);
 		} else {
 			return makeDispatchCall(pos,dispatched,dispatcher);
