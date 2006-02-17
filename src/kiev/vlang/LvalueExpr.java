@@ -290,6 +290,27 @@ public final class IFldExpr extends AccessExpr {
 		public Type getType() {
 			return Type.getRealType(obj.getType(),var.type);
 		}
+
+		public boolean	isConstantExpr() {
+			if( var.isFinal() ) {
+				if (var.init != null && var.init.isConstantExpr())
+					return true;
+				else if (var.const_value != null)
+					return true;
+			}
+			return false;
+		}
+		public Object	getConstValue() {
+			Access.verifyRead(this,var.getVView());
+			if( var.isFinal() ) {
+				if (var.init != null && var.init.isConstantExpr())
+					return var.init.getConstValue();
+				else if (var.const_value != null) {
+					return var.const_value.getConstValue();
+				}
+			}
+			throw new RuntimeException("Request for constant value of non-constant expression");
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -365,27 +386,6 @@ public final class IFldExpr extends AccessExpr {
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);
-	}
-
-	public boolean	isConstantExpr() {
-		if( var.isFinal() ) {
-			if (var.init != null && var.init.isConstantExpr())
-				return true;
-			else if (var.const_value != null)
-				return true;
-		}
-		return false;
-	}
-	public Object	getConstValue() {
-		Access.verifyRead(this,var);
-		if( var.isFinal() ) {
-			if (var.init != null && var.init.isConstantExpr())
-				return var.init.getConstValue();
-			else if (var.const_value != null) {
-				return var.const_value.getConstValue();
-			}
-		}
-    	throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -759,6 +759,27 @@ public final class SFldExpr extends AccessExpr {
 				return Type.tpVoid;
 			}
 		}
+
+		public boolean	isConstantExpr() {
+			if( var.isFinal() ) {
+				if (var.init != null && var.init.isConstantExpr())
+					return true;
+				else if (var.const_value != null)
+					return true;
+			}
+			return false;
+		}
+		public Object	getConstValue() {
+			Access.verifyRead(this,var.getVView());
+			if( var.isFinal() ) {
+				if (var.init != null && var.init.isConstantExpr())
+					return var.init.getConstValue();
+				else if (var.const_value != null) {
+					return var.const_value.getConstValue();
+				}
+			}
+			throw new RuntimeException("Request for constant value of non-constant expression");
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -786,27 +807,6 @@ public final class SFldExpr extends AccessExpr {
 	}
 
 	public String toString() { return var.toString(); }
-
-	public boolean	isConstantExpr() {
-		if( var.isFinal() ) {
-			if (var.init != null && var.init.isConstantExpr())
-				return true;
-			else if (var.const_value != null)
-				return true;
-		}
-		return false;
-	}
-	public Object	getConstValue() {
-		Access.verifyRead(this,var);
-		if( var.isFinal() ) {
-			if (var.init != null && var.init.isConstantExpr())
-				return var.init.getConstValue();
-			else if (var.const_value != null) {
-				return var.const_value.getConstValue();
-			}
-		}
-    	throw new RuntimeException("Request for constant value of non-constant expression");
-	}
 
 	public Type[] getAccessTypes() {
 		Type[] types;

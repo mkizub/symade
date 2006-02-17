@@ -127,6 +127,23 @@ public final class Field extends LvalDNode implements Named, Accessable {
 		public final void setAddedToInit(boolean on);
 
 		public Type	getType() { return type; }
+
+		public boolean	isConstantExpr() {
+			if( this.isFinal() ) {
+				if (this.init != null && this.init.isConstantExpr())
+					return true;
+				else if (this.const_value != null)
+					return true;
+			}
+			return false;
+		}
+		public Object	getConstValue() {
+			if (this.init != null && this.init.isConstantExpr())
+				return this.init.getConstValue();
+			else if (this.const_value != null)
+				return this.const_value.getConstValue();
+			throw new RuntimeException("Request for constant value of non-constant expression");
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -180,23 +197,6 @@ public final class Field extends LvalDNode implements Named, Accessable {
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(name).space();
-	}
-
-	public boolean	isConstantExpr() {
-		if( this.isFinal() ) {
-			if (this.init != null && this.init.isConstantExpr())
-				return true;
-			else if (this.const_value != null)
-				return true;
-		}
-		return false;
-	}
-	public Object	getConstValue() {
-		if (this.init != null && this.init.isConstantExpr())
-			return this.init.getConstValue();
-		else if (this.const_value != null)
-			return this.const_value.getConstValue();
-    	throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 
 	public void resolveDecl() {

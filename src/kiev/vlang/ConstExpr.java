@@ -50,6 +50,14 @@ public final class ConstBoolExpr extends ConstExpr {
 	public static view ConstBoolExprView of ConstBoolExprImpl extends ConstExprView {
 		public boolean	value;
 		public Type		getType()			{ return Type.tpBoolean; }
+
+		public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
+		
+		public boolean valueEquals(Object o) {
+			if (o instanceof ConstBoolExpr)
+				return o.value == this.value;
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -59,13 +67,6 @@ public final class ConstBoolExpr extends ConstExpr {
 	public ConstBoolExpr(boolean value) { super(new ConstBoolExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
-	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
-	
-	public boolean valueEquals(Object o) {
-		if (o instanceof ConstBoolExpr)
-			return o.value == this.value;
-		return false;
-	}
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(String.valueOf(value)).space();
@@ -89,6 +90,14 @@ public final class ConstNullExpr extends ConstExpr {
 	@nodeview
 	public static view ConstNullExprView of ConstNullExprImpl extends ConstExprView {
 		public Type		getType()			{ return Type.tpNull; }
+
+		public Object	getConstValue()		{ return null; }
+
+		public boolean valueEquals(Object o) {
+			if (o instanceof ConstNullExpr)
+				return true;
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -97,13 +106,6 @@ public final class ConstNullExpr extends ConstExpr {
 	public ConstNullExpr() { super(new ConstNullExprImpl()); }
 
 	public String	toString()			{ return "null"; }
-	public Object	getConstValue()		{ return null; }
-
-	public boolean valueEquals(Object o) {
-		if (o instanceof ConstNullExpr)
-			return true;
-		return false;
-	}
 }
 
 @nodeset
@@ -125,6 +127,14 @@ public final class ConstByteExpr extends ConstExpr {
 	public static view ConstByteExprView of ConstByteExprImpl extends ConstExprView {
 		public byte		value;
 		public Type		getType()			{ return Type.tpByte; }
+
+		public Object	getConstValue()		{ return Byte.valueOf(value); }
+
+		public boolean valueEquals(Object o) {
+			if (o instanceof ConstByteExpr)
+				return o.value == this.value;
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -134,13 +144,6 @@ public final class ConstByteExpr extends ConstExpr {
 	public ConstByteExpr(byte value) { super(new ConstByteExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
-	public Object	getConstValue()		{ return Byte.valueOf(value); }
-
-	public boolean valueEquals(Object o) {
-		if (o instanceof ConstByteExpr)
-			return o.value == this.value;
-		return false;
-	}
 }
 
 @nodeset
@@ -162,6 +165,14 @@ public final class ConstShortExpr extends ConstExpr {
 	public static view ConstShortExprView of ConstShortExprImpl extends ConstExprView {
 		public short		value;
 		public Type		getType()			{ return Type.tpShort; }
+
+		public Object	getConstValue()		{ return Short.valueOf(value); }
+
+		public boolean valueEquals(Object o) {
+			if (o instanceof ConstShortExpr)
+				return o.value == this.value;
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -171,13 +182,6 @@ public final class ConstShortExpr extends ConstExpr {
 	public ConstShortExpr(short value) { super(new ConstShortExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
-	public Object	getConstValue()		{ return Short.valueOf(value); }
-
-	public boolean valueEquals(Object o) {
-		if (o instanceof ConstShortExpr)
-			return o.value == this.value;
-		return false;
-	}
 }
 
 @nodeset
@@ -199,6 +203,14 @@ public final class ConstIntExpr extends ConstExpr {
 	public static view ConstIntExprView of ConstIntExprImpl extends ConstExprView {
 		public int		value;
 		public Type		getType()			{ return Type.tpInt; }
+
+		public Object	getConstValue()		{ return Integer.valueOf(value); }
+
+		public boolean valueEquals(Object o) {
+			if (o instanceof ConstIntExpr)
+				return o.value == this.value;
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -208,13 +220,6 @@ public final class ConstIntExpr extends ConstExpr {
 	public ConstIntExpr(int value) { super(new ConstIntExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
-	public Object	getConstValue()		{ return Integer.valueOf(value); }
-
-	public boolean valueEquals(Object o) {
-		if (o instanceof ConstIntExpr)
-			return o.value == this.value;
-		return false;
-	}
 }
 
 @nodeset
@@ -236,6 +241,14 @@ public final class ConstLongExpr extends ConstExpr {
 	public static view ConstLongExprView of ConstLongExprImpl extends ConstExprView {
 		public long		value;
 		public Type		getType()			{ return Type.tpLong; }
+
+		public Object	getConstValue()		{ return Long.valueOf(value); }
+
+		public boolean valueEquals(Object o) {
+			if (o instanceof ConstLongExpr)
+				return o.value == this.value;
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -245,13 +258,6 @@ public final class ConstLongExpr extends ConstExpr {
 	public ConstLongExpr(long value) { super(new ConstLongExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value)+"L"; }
-	public Object	getConstValue()		{ return Long.valueOf(value); }
-
-	public boolean valueEquals(Object o) {
-		if (o instanceof ConstLongExpr)
-			return o.value == this.value;
-		return false;
-	}
 }
 
 @nodeset
@@ -273,6 +279,14 @@ public final class ConstCharExpr extends ConstExpr {
 	public static view ConstCharExprView of ConstCharExprImpl extends ConstExprView {
 		public char		value;
 		public Type		getType()			{ return Type.tpChar; }
+
+		public Object	getConstValue()		{ return Character.valueOf(value); }
+
+		public boolean valueEquals(Object o) {
+			if (o instanceof ConstCharExpr)
+				return o.value == this.value;
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -282,13 +296,6 @@ public final class ConstCharExpr extends ConstExpr {
 	public ConstCharExpr(char value) { super(new ConstCharExprImpl()); this.value = value; }
 
 	public String	toString()			{ return "'"+Convert.escape(value)+"'"; }
-	public Object	getConstValue()		{ return Character.valueOf(value); }
-
-	public boolean valueEquals(Object o) {
-		if (o instanceof ConstCharExpr)
-			return o.value == this.value;
-		return false;
-	}
 }
 
 
@@ -311,6 +318,14 @@ public final class ConstFloatExpr extends ConstExpr {
 	public static view ConstFloatExprView of ConstFloatExprImpl extends ConstExprView {
 		public float		value;
 		public Type		getType()			{ return Type.tpFloat; }
+
+		public Object	getConstValue()		{ return Float.valueOf(value); }
+
+		public boolean valueEquals(Object o) {
+			if (o instanceof ConstFloatExpr)
+				return o.value == this.value;
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -320,13 +335,6 @@ public final class ConstFloatExpr extends ConstExpr {
 	public ConstFloatExpr(float value) { super(new ConstFloatExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value)+"F"; }
-	public Object	getConstValue()		{ return Float.valueOf(value); }
-
-	public boolean valueEquals(Object o) {
-		if (o instanceof ConstFloatExpr)
-			return o.value == this.value;
-		return false;
-	}
 }
 
 
@@ -349,6 +357,14 @@ public final class ConstDoubleExpr extends ConstExpr {
 	public static view ConstDoubleExprView of ConstDoubleExprImpl extends ConstExprView {
 		public double		value;
 		public Type		getType()			{ return Type.tpDouble; }
+
+		public Object	getConstValue()		{ return Double.valueOf(value); }
+
+		public boolean valueEquals(Object o) {
+			if (o instanceof ConstDoubleExpr)
+				return o.value == this.value;
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -358,13 +374,6 @@ public final class ConstDoubleExpr extends ConstExpr {
 	public ConstDoubleExpr(double value) { super(new ConstDoubleExprImpl()); this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value)+"D"; }
-	public Object	getConstValue()		{ return Double.valueOf(value); }
-
-	public boolean valueEquals(Object o) {
-		if (o instanceof ConstDoubleExpr)
-			return o.value == this.value;
-		return false;
-	}
 }
 
 @nodeset
@@ -386,6 +395,14 @@ public final class ConstStringExpr extends ConstExpr {
 	public static view ConstStringExprView of ConstStringExprImpl extends ConstExprView {
 		public KString		value;
 		public Type		getType()			{ return Type.tpString; }
+
+		public Object	getConstValue()		{ return value; }
+
+		public boolean valueEquals(Object o) {
+			if (o instanceof ConstStringExpr)
+				return o.value == this.value;
+			return false;
+		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -395,13 +412,6 @@ public final class ConstStringExpr extends ConstExpr {
 	public ConstStringExpr(KString value) { super(new ConstStringExprImpl()); this.value = value; }
 
 	public String	toString()			{ return '\"'+value.toString()+'\"'; }
-	public Object	getConstValue()		{ return value; }
-
-	public boolean valueEquals(Object o) {
-		if (o instanceof ConstStringExpr)
-			return o.value == this.value;
-		return false;
-	}
 }
 
 
@@ -422,6 +432,10 @@ public abstract class ConstExpr extends ENode {
 
 		public int		getPriority() { return 255; }
 
+		public abstract Object getConstValue();
+
+		public boolean	isConstantExpr() { return true; }
+
 		public final boolean mainResolveIn() {
 			// already fully resolved
 			setResolved(true);
@@ -436,10 +450,6 @@ public abstract class ConstExpr extends ENode {
 		super(impl);
 		setResolved(true);
 	}
-
-	public abstract Object getConstValue();
-
-	public boolean	isConstantExpr() { return true; }
 	
 	public final void resolve(Type reqType) {
 		setResolved(true);

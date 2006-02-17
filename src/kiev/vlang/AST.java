@@ -1051,7 +1051,38 @@ public abstract class ENode extends ASTNode {
 				this.callbackChildChanged(nodeattr$flags);
 			}
 		}
+
+		public final void replaceWithNodeResolve(Type reqType, ENode node) {
+			assert(isAttached());
+			ASTNode n = this.replaceWithNode(node);
+			assert(n == node);
+			assert(n.isAttached());
+			((ENode)n).resolve(reqType);
+		}
+	
+		public final void replaceWithResolve(Type reqType, ()->ENode fnode) {
+			assert(isAttached());
+			ASTNode n = this.replaceWith(fnode);
+			assert(n.isAttached());
+			((ENode)n).resolve(reqType);
+		}
+	
+		public final void replaceWithNodeResolve(ENode node) {
+			assert(isAttached());
+			ASTNode n = this.replaceWithNode(node);
+			assert(n == node);
+			assert(n.isAttached());
+			((ENode)n).resolve(null);
+		}
+	
+		public final void replaceWithResolve(()->ENode fnode) {
+			assert(isAttached());
+			ASTNode n = this.replaceWith(fnode);
+			assert(n.isAttached());
+			((ENode)n).resolve(null);
+		}
 	}
+	
 	@nodeview
 	public static abstract view ENodeView of ENodeImpl extends NodeView {
 
@@ -1100,6 +1131,11 @@ public abstract class ENode extends ASTNode {
 		public final boolean isAutoReturnable();
 		public final void setAutoReturnable(boolean on);
 
+		public final void replaceWithNodeResolve(Type reqType, ENode node);
+		public final void replaceWithResolve(Type reqType, ()->ENode fnode);
+		public final void replaceWithNodeResolve(ENode node);
+		public final void replaceWithResolve(()->ENode fnode);
+
 		public Operator getOp() { return null; }
 
 		public int getPriority() {
@@ -1109,6 +1145,12 @@ public abstract class ENode extends ASTNode {
 			if (op == null)
 				return 255;
 			return op.priority;
+		}
+
+		public boolean valueEquals(Object o) { return false; }
+		public boolean isConstantExpr() { return false; }
+		public Object	getConstValue() {
+			throw new RuntimeException("Request for constant value of non-constant expression");
 		}
 	}
 
@@ -1130,43 +1172,6 @@ public abstract class ENode extends ASTNode {
 	public void resolve(Type reqType) {
 		throw new CompilerException(this,"Resolve call for e-node "+getClass());
 	}
-	
-	public boolean valueEquals(Object o) { return false; }
-	public boolean isConstantExpr() { return false; }
-	public Object	getConstValue() {
-		throw new RuntimeException("Request for constant value of non-constant expression");
-    }
-
-	public final void replaceWithNodeResolve(Type reqType, ENode node) {
-		assert(isAttached());
-		ASTNode n = this.replaceWithNode(node);
-		assert(n == node);
-		assert(n.isAttached());
-		((ENode)n).resolve(reqType);
-	}
-
-	public final void replaceWithResolve(Type reqType, ()->ENode fnode) {
-		assert(isAttached());
-		ASTNode n = this.replaceWith(fnode);
-		assert(n.isAttached());
-		((ENode)n).resolve(reqType);
-	}
-
-	public final void replaceWithNodeResolve(ENode node) {
-		assert(isAttached());
-		ASTNode n = this.replaceWithNode(node);
-		assert(n == node);
-		assert(n.isAttached());
-		((ENode)n).resolve(null);
-	}
-
-	public final void replaceWithResolve(()->ENode fnode) {
-		assert(isAttached());
-		ASTNode n = this.replaceWith(fnode);
-		assert(n.isAttached());
-		((ENode)n).resolve(null);
-	}
-
 }
 
 @nodeset

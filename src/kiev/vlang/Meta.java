@@ -467,6 +467,7 @@ public abstract class MetaValue extends ASTNode {
 	@nodeview
 	public static abstract view MetaValueView of MetaValueImpl extends NodeView {
 		public MetaValueType			type;
+		public abstract boolean valueEquals(MetaValue mv);
 	}
 
 	public MetaValue(MetaValueImpl v_impl) {
@@ -525,7 +526,6 @@ public abstract class MetaValue extends ASTNode {
 
 	public abstract Dumper toJavaDecl(Dumper dmp);
 	public abstract Dumper toJava(Dumper dmp);
-	public abstract boolean valueEquals(MetaValue mv);
 }
 
 @nodeset
@@ -543,6 +543,13 @@ public final class MetaValueScalar extends MetaValue {
 	@nodeview
 	public static final view MetaValueScalarView of MetaValueScalarImpl extends MetaValueView {
 		public ENode			value;
+
+		public boolean valueEquals(MetaValue mv) {
+			if (mv instanceof MetaValueScalar) {
+				return this.value.valueEquals(mv.value);
+			}
+			return false;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -579,12 +586,6 @@ public final class MetaValueScalar extends MetaValue {
 	public Dumper toJava(Dumper dmp) {
 		return value.toJava(dmp);
 	}
-	public boolean valueEquals(MetaValue mv) {
-		if (mv instanceof MetaValueScalar) {
-			return this.value.valueEquals(mv.value);
-		}
-		return false;
-	}
 }
 
 @nodeset
@@ -602,6 +603,20 @@ public final class MetaValueArray extends MetaValue {
 	@nodeview
 	public static final view MetaValueArrayView of MetaValueArrayImpl extends MetaValueView {
 		public:ro	NArr<ENode>			values;
+
+		public boolean valueEquals(MetaValue mv) {
+			if (mv instanceof MetaValueArray) {
+				MetaValueArray mva = (MetaValueArray)mv;
+				if (values.length != mva.values.length)
+					return false;
+				for (int i=0; i < values.length; i++) {
+					if (!values[i].valueEquals(mva.values[i]))
+						return false;
+				}
+				return true;
+			}
+			return false;
+		}
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -649,19 +664,6 @@ public final class MetaValueArray extends MetaValue {
 		}
 		dmp.append('}');
 		return dmp;
-	}
-	public boolean valueEquals(MetaValue mv) {
-		if (mv instanceof MetaValueArray) {
-			MetaValueArray mva = (MetaValueArray)mv;
-			if (values.length != mva.values.length)
-				return false;
-			for (int i=0; i < values.length; i++) {
-				if (!values[i].valueEquals(mva.values[i]))
-					return false;
-			}
-			return true;
-		}
-		return false;
 	}
 }
 
