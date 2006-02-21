@@ -185,8 +185,8 @@ public view JSwitchStat of SwitchStatImpl extends JENode implements BreakTarget 
 public view JCatchInfo of CatchInfoImpl extends JENode {
 	public:ro	JVar			arg;
 	public:ro	JENode			body;
-	public				CodeLabel		handler;
-	public				CodeCatchInfo	code_catcher;
+	public		CodeLabel		handler;
+	public		CodeCatchInfo	code_catcher;
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
@@ -216,11 +216,15 @@ public view JCatchInfo of CatchInfoImpl extends JENode {
 }
 
 @nodeview
-public view JFinallyInfo of FinallyInfoImpl extends JCatchInfo {
-	public:ro	JVar		ret_arg;
-	public				CodeLabel	subr_label;
+public view JFinallyInfo of FinallyInfoImpl extends JENode {
+	public:ro	JVar			ret_arg;
+	public:ro	JENode			body;
+	public		CodeLabel		subr_label;
+	public		CodeLabel		handler;
+	public		CodeCatchInfo	code_catcher;
 
 	public void generate(Code code, Type reqType) {
+		JVar arg = (JVar)new Var(pos,KString.Empty,Type.tpThrowable,0);
 		try {
 			CodeCatchInfo null_ci = null;
 			// This label must be created by TryStat's generate routine;
@@ -250,7 +254,7 @@ public final view JTryStat of TryStatImpl extends JENode {
 	public:ro	JENode				body;
 	public:ro	JArr<JCatchInfo>	catchers;
 	public:ro	JFinallyInfo		finally_catcher;
-	public				CodeLabel			end_label;
+	public		CodeLabel			end_label;
 
 	public void generate(Code code, Type reqType) {
 		// Generate labels for handlers

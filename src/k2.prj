@@ -193,7 +193,10 @@ kiev.ir.java.RBinaryBooleanOrExpr kiev/ir/java/RBinaryBooleanOrExpr kiev\ir\java
 kiev.ir.java.RBoolExpr kiev/ir/java/RBoolExpr kiev\ir\java\RBoolExpr.java
 kiev.ir.java.RBooleanNotExpr kiev/ir/java/RBooleanNotExpr kiev\ir\java\RBoolExpr.java
 kiev.ir.java.RCallExpr kiev/ir/java/RCallExpr kiev\ir\java\RCallExpr.java
+kiev.ir.java.RCaseLabel kiev/ir/java/RCaseLabel kiev\ir\java\RSwitchStat.java
+kiev.ir.java.RCatchInfo kiev/ir/java/RCatchInfo kiev\ir\java\RTryStat.java
 kiev.ir.java.RClosureCallExpr kiev/ir/java/RClosureCallExpr kiev\ir\java\RCallExpr.java
+kiev.ir.java.RFinallyInfo kiev/ir/java/RFinallyInfo kiev\ir\java\RTryStat.java
 kiev.ir.java.RInstanceofExpr kiev/ir/java/RInstanceofExpr kiev\ir\java\RBoolExpr.java
 kiev.ir.java.RLVarExpr kiev/ir/java/RLVarExpr kiev\ir\java\RLvalueExpr.java
 kiev.ir.java.RLocalStructDecl kiev/ir/java/RLocalStructDecl kiev\ir\java\RNode.java
@@ -202,7 +205,11 @@ kiev.ir.java.RNopExpr kiev/ir/java/RNopExpr kiev\ir\java\RNode.java
 kiev.ir.java.RRuleBlock kiev/ir/java/RRuleBlock kiev\ir\java\RRules.java
 kiev.ir.java.RRuleMethod kiev/ir/java/RRuleMethod kiev\ir\java\RRules.java
 kiev.ir.java.RStruct kiev/ir/java/RStruct kiev\ir\java\RStruct.java
+kiev.ir.java.RSwitchStat kiev/ir/java/RSwitchStat kiev\ir\java\RSwitchStat.java
+kiev.ir.java.RSynchronizedStat kiev/ir/java/RSynchronizedStat kiev\ir\java\RBlockStat.java
+kiev.ir.java.RTryStat kiev/ir/java/RTryStat kiev\ir\java\RTryStat.java
 kiev.ir.java.RVarDecl kiev/ir/java/RVarDecl kiev\ir\java\RNode.java
+kiev.ir.java.RWithStat kiev/ir/java/RWithStat kiev\ir\java\RBlockStat.java
 kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
 kiev.parser.ASTCallAccessExpression kiev/parser/ASTCallAccessExpression kiev\parser\ASTCallAccessExpression.java
 kiev.parser.ASTCallExpression kiev/parser/ASTCallExpression kiev\parser\ASTCallExpression.java
