@@ -7,7 +7,9 @@ import kiev.vlang.types.*;
 
 import kiev.be.java.JNode;
 import kiev.be.java.JENode;
+import kiev.ir.java.RCallExpr;
 import kiev.be.java.JCallExpr;
+import kiev.ir.java.RClosureCallExpr;
 import kiev.be.java.JClosureCallExpr;
 
 import static kiev.stdlib.Debug.*;
@@ -29,8 +31,9 @@ public class CallExpr extends ENode {
 	
 	@virtual typedef This  = CallExpr;
 	@virtual typedef NImpl = CallExprImpl;
-	@virtual typedef VView = CallExprView;
+	@virtual typedef VView = VCallExpr;
 	@virtual typedef JView = JCallExpr;
+	@virtual typedef RView = RCallExpr;
 
 	@nodeimpl
 	public static class CallExprImpl extends ENodeImpl {
@@ -42,12 +45,12 @@ public class CallExpr extends ENode {
 		@att public ENode				temp_expr;
 	}
 	@nodeview
-	public static view CallExprView of CallExprImpl extends ENodeView {
-		public				ENode			obj;
-		public				Method			func;
-		public				CallType		mt;
+	public static abstract view CallExprView of CallExprImpl extends ENodeView {
+		public		ENode			obj;
+		public		Method			func;
+		public		CallType		mt;
 		public:ro	NArr<ENode>		args;
-		public				ENode			temp_expr;
+		public		ENode			temp_expr;
 
 		public int		getPriority() { return Constants.opCallPriority; }
 
@@ -58,9 +61,13 @@ public class CallExpr extends ENode {
 				return mt.ret();
 		}
 	}
+	@nodeview
+	public static final view VCallExpr of CallExprImpl extends CallExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public CallExpr() {
 		super(new CallExprImpl());
@@ -109,58 +116,7 @@ public class CallExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
-		if (func.isStatic() && !(obj instanceof TypeRef))
-			this.obj = new TypeRef(obj.getType());
-		obj.resolve(null);
-		func.makeArgs(args, reqType);
-		if( func.name.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
-			Method mmm = ctx_method;
-			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.ctype;
-			assert(ctx_method.name.equals(nameInit));
-			assert(tp.getStruct().isTypeUnerasable());
-			// Insert our-generated typeinfo, or from childs class?
-			if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
-				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
-			else
-				temp_expr = ctx_clazz.getRView().accessTypeInfoField(this,tp,false);
-			temp_expr.resolve(null);
-			temp_expr = null;
-		}
-		if (func.isVarArgs()) {
-			int i=0;
-			for(; i < func.type.arity; i++)
-				args[i].resolve(Type.getRealType(obj.getType(),func.type.arg(i)));
-			if (args.length == i+1 && args[i].getType().isInstanceOf(func.getVarArgParam().type)) {
-				// array as va_arg
-				args[i].resolve(func.getVarArgParam().type);
-			} else {
-				ArrayType varg_tp = (ArrayType)Type.getRealType(obj.getType(),func.getVarArgParam().type);
-				for(; i < args.length; i++)
-					args[i].resolve(varg_tp.arg);
-			}
-		} else {
-			for (int i=0; i < args.length; i++)
-				args[i].resolve(Type.getRealType(obj.getType(),func.type.arg(i)));
-		}
-		if (func.isTypeUnerasable()) {
-			TypeDef[] targs = func.targs.toArray();
-			for (int i=0; i < targs.length; i++) {
-				Type tp = mt.resolve(targs[i].getAType());
-				temp_expr = ctx_clazz.getRView().accessTypeInfoField(this,tp,false);
-				temp_expr.resolve(null);
-			}
-			temp_expr = null;
-		}
-		if !(func.parent_node instanceof Struct) {
-			ASTNode n = func.parent_node;
-			while !(n instanceof Method) n = n.parent_node;
-			assert (n.parent_node instanceof Struct);
-			func = (Method)n;
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -204,8 +160,9 @@ public class ClosureCallExpr extends ENode {
 	
 	@virtual typedef This  = ClosureCallExpr;
 	@virtual typedef NImpl = ClosureCallExprImpl;
-	@virtual typedef VView = ClosureCallExprView;
+	@virtual typedef VView = VClosureCallExpr;
 	@virtual typedef JView = JClosureCallExpr;
+	@virtual typedef RView = RClosureCallExpr;
 
 	@nodeimpl
 	public static class ClosureCallExprImpl extends ENodeImpl {
@@ -215,7 +172,7 @@ public class ClosureCallExpr extends ENode {
 		@att public Boolean				is_a_call;
 	}
 	@nodeview
-	public static view ClosureCallExprView of ClosureCallExprImpl extends ENodeView {
+	public static abstract view ClosureCallExprView of ClosureCallExprImpl extends ENodeView {
 		public				ENode			expr;
 		public:ro	NArr<ENode>		args;
 		public				Boolean			is_a_call;
@@ -233,10 +190,27 @@ public class ClosureCallExpr extends ENode {
 			t = new CallType(types,t.ret(),true);
 			return t;
 		}
+
+		public Method getCallIt(CallType tp) {
+			KString call_it_name;
+			Type ret;
+			if( tp.ret().isReference() ) {
+				call_it_name = KString.from("call_Object");
+				ret = Type.tpObject;
+			} else {
+				call_it_name = KString.from("call_"+tp.ret());
+				ret = tp.ret();
+			}
+			return Type.tpClosureClazz.resolveMethod(call_it_name, ret);
+		}
+	}
+	@nodeview
+	public static final view VClosureCallExpr of ClosureCallExprImpl extends ClosureCallExprView {
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 	
 	public ClosureCallExpr() {
 		super(new ClosureCallExprImpl());
@@ -260,39 +234,9 @@ public class ClosureCallExpr extends ENode {
 		sb.append(')');
 		return sb.toString();
 	}
-
-	public Method getCallIt(CallType tp) {
-		KString call_it_name;
-		Type ret;
-		if( tp.ret().isReference() ) {
-			call_it_name = KString.from("call_Object");
-			ret = Type.tpObject;
-		} else {
-			call_it_name = KString.from("call_"+tp.ret());
-			ret = tp.ret();
-		}
-		return Type.tpClosureClazz.resolveMethod(call_it_name, ret);
-	}
 	
 	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return;
-		expr.resolve(null);
-		Type extp = expr.getType();
-		if !(extp instanceof CallType)
-			throw new CompilerException(expr,"Expression "+expr+" is not a closure");
-		CallType tp = (CallType)extp;
-		if( reqType != null && reqType instanceof CallType )
-			is_a_call = Boolean.FALSE;
-		else if( (reqType == null || !(reqType instanceof CallType)) && tp.arity==args.length )
-			is_a_call = Boolean.TRUE;
-		else
-			is_a_call = Boolean.FALSE;
-		for(int i=0; i < args.length; i++)
-			args[i].resolve(tp.arg(i));
-		Method call_it = getCallIt(tp);
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

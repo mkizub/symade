@@ -187,6 +187,14 @@ kiev.bytecode.UnicodePoolConstant kiev/bytecode/UnicodePoolConstant kiev\bytecod
 kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
+kiev.ir.java.RBinaryBoolExpr kiev/ir/java/RBinaryBoolExpr kiev\ir\java\RBoolExpr.java
+kiev.ir.java.RBinaryBooleanAndExpr kiev/ir/java/RBinaryBooleanAndExpr kiev\ir\java\RBoolExpr.java
+kiev.ir.java.RBinaryBooleanOrExpr kiev/ir/java/RBinaryBooleanOrExpr kiev\ir\java\RBoolExpr.java
+kiev.ir.java.RBoolExpr kiev/ir/java/RBoolExpr kiev\ir\java\RBoolExpr.java
+kiev.ir.java.RBooleanNotExpr kiev/ir/java/RBooleanNotExpr kiev\ir\java\RBoolExpr.java
+kiev.ir.java.RCallExpr kiev/ir/java/RCallExpr kiev\ir\java\RCallExpr.java
+kiev.ir.java.RClosureCallExpr kiev/ir/java/RClosureCallExpr kiev\ir\java\RCallExpr.java
+kiev.ir.java.RInstanceofExpr kiev/ir/java/RInstanceofExpr kiev\ir\java\RBoolExpr.java
 kiev.ir.java.RLVarExpr kiev/ir/java/RLVarExpr kiev\ir\java\RLvalueExpr.java
 kiev.ir.java.RLocalStructDecl kiev/ir/java/RLocalStructDecl kiev\ir\java\RNode.java
 kiev.ir.java.RNewClosure kiev/ir/java/RNewClosure kiev\ir\java\RNewExpr.java

@@ -296,6 +296,13 @@ public class ReturnStat extends ENode {
 		}
 	}
 	
+	public static void autoReturn(Type reqType, ENodeView expr) {
+		if (expr.parent instanceof ReturnStatView)
+			return;
+		expr.setAutoReturnable(false);
+		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr.getENode()); });
+	}
+
 	public static void autoReturn(Type reqType, ENode expr) {
 		if (expr.parent_node instanceof ReturnStat)
 			return;
