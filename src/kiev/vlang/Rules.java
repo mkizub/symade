@@ -190,26 +190,7 @@ public class RuleMethod extends Method {
 	}
 
 	public void resolveDecl() {
-		trace(Kiev.debugResolve,"Resolving rule "+this);
-		try {
-			Var penv = params[0];
-			assert(penv.name.name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
-			if( body != null ) {
-				if( type.ret() ≡ Type.tpVoid ) body.setAutoReturnable(true);
-				body.resolve(Type.tpVoid);
-			}
-			if( body != null && !body.isMethodAbrupted() ) {
-				if( type.ret() ≡ Type.tpVoid ) {
-					body.stats.append(new ReturnStat(pos,null));
-					body.setAbrupted(true);
-				} else {
-					Kiev.reportError(body,"Return requared");
-				}
-			}
-		} catch(Exception e ) {
-			Kiev.reportError(body,e);
-		}
-		this.cleanDFlow();
+		getRView().resolveDecl();
 	}
 }
 

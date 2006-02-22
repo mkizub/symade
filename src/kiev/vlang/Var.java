@@ -10,6 +10,7 @@ import kiev.vlang.ASTNode.NodeImpl;
 import kiev.be.java.JNode;
 import kiev.be.java.JDNode;
 import kiev.be.java.JLvalDNode;
+import kiev.ir.java.RVar;
 import kiev.be.java.JVar;
 
 import static kiev.stdlib.Debug.*;
@@ -34,6 +35,7 @@ public class Var extends LvalDNode implements Named {
 	@virtual typedef NImpl = VarImpl;
 	@virtual typedef VView = VarView;
 	@virtual typedef JView = JVar;
+	@virtual typedef RView = RVar;
 
 	@nodeimpl
 	public static class VarImpl extends LvalDNodeImpl {
@@ -121,6 +123,7 @@ public class Var extends LvalDNode implements Named {
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public static Var[]	emptyArray = new Var[0];
 
@@ -204,32 +207,7 @@ public class Var extends LvalDNode implements Named {
 	}
 
 	public void resolveDecl() {
-		if( isResolved() ) return;
-		Type tp = this.type;
-		if (init instanceof TypeRef)
-			((TypeRef)init).toExpr(tp);
-		if (tp instanceof CTimeType) {
-			init = tp.makeInitExpr(this,init);
-			try {
-				init.resolve(tp.getEnclosedType());
-			} catch(Exception e ) {
-				Kiev.reportError(this,e);
-			}
-		}
-		else if (init != null) {
-			try {
-				init.resolve(tp);
-				Type it = init.getType();
-				if( !it.isInstanceOf(tp) ) {
-					init = new CastExpr(init.pos,tp,~init);
-					init.resolve(tp);
-				}
-			} catch(Exception e ) {
-				Kiev.reportError(this,e);
-			}
-		}
-		getDFlow().out();
-		setResolved(true);
+		getRView().resolveDecl();
 	}
 
 	public Dumper toJava(Dumper dmp) {

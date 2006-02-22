@@ -10,6 +10,7 @@ import java.io.*;
 
 import kiev.be.java.JNode;
 import kiev.be.java.JDNode;
+import kiev.ir.java.RFileUnit;
 import kiev.be.java.JFileUnit;
 
 import static kiev.stdlib.Debug.*;
@@ -26,8 +27,9 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 
 	@virtual typedef This  = FileUnit;
 	@virtual typedef NImpl = FileUnitImpl;
-	@virtual typedef VView = FileUnitView;
+	@virtual typedef VView = VFileUnit;
 	@virtual typedef JView = JFileUnit;
+	@virtual typedef RView = RFileUnit;
 
 	@nodeimpl
 	public static class FileUnitImpl extends DNodeImpl {
@@ -42,21 +44,24 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		     public boolean				scanned_for_interface_only;
 	}
 	@nodeview
-	public static final view FileUnitView of FileUnitImpl extends DNodeView {
-		public				KString					filename;
-		public				TypeNameRef				pkg;
+	public static abstract view FileUnitView of FileUnitImpl extends DNodeView {
+		public		KString					filename;
+		public		TypeNameRef				pkg;
 		public:ro	NArr<DNode>				syntax;
 		public:ro	NArr<DNode>				members;
 		public:ro	NArr<PrescannedBody>	bodies;
 		public:ro	boolean[]				disabled_extensions;
-		public				boolean					scanned_for_interface_only;
+		public		boolean					scanned_for_interface_only;
 
 		@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this.getNode(); }
 		@getter public Struct get$ctx_clazz() { return null; }
 		@getter public Struct get$child_ctx_clazz() { return null; }
 		@getter public Method get$ctx_method() { return null; }
 		@getter public Method get$child_ctx_method() { return null; }
-
+	}
+	
+	@nodeview
+	public static final view VFileUnit of FileUnitImpl extends FileUnitView {
 		public boolean preResolveIn() {
 			for(int i=0; i < members.length; i++) {
 				try {
@@ -73,6 +78,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public FileUnit() {
 		this(KString.Empty, Env.root);
@@ -146,20 +152,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	}
 	
 	public void resolveDecl() {
-		trace(Kiev.debugResolve,"Resolving file "+filename);
-		KString curr_file = Kiev.curFile;
-		Kiev.curFile = filename;
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			for(int i=0; i < members.length; i++) {
-				try {
-					members[i].resolveDecl();
-				} catch(Exception e) {
-					Kiev.reportError(members[i],e);
-				}
-			}
-		} finally { Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
+		getRView().resolveDecl();
 	}
 
 	private boolean debugTryResolveIn(KString name, String msg) {

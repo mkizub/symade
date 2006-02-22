@@ -7,6 +7,7 @@ import kiev.vlang.types.*;
 import kiev.be.java.JNode;
 import kiev.be.java.JDNode;
 import kiev.be.java.JLvalDNode;
+import kiev.ir.java.RField;
 import kiev.be.java.JField;
 
 import static kiev.stdlib.Debug.*;
@@ -30,11 +31,12 @@ public final class Field extends LvalDNode implements Named, Accessable {
 
 	@virtual typedef This  = Field;
 	@virtual typedef NImpl = FieldImpl;
-	@virtual typedef VView = FieldView;
+	@virtual typedef VView = VField;
 	@virtual typedef JView = JField;
+	@virtual typedef RView = RField;
 
 	@nodeimpl
-	public static class FieldImpl extends LvalDNodeImpl {
+	public static final class FieldImpl extends LvalDNodeImpl {
 		@virtual typedef ImplOf = Field;
 
 		/** Field' access */
@@ -145,9 +147,13 @@ public final class Field extends LvalDNode implements Named, Accessable {
 			throw new RuntimeException("Request for constant value of non-constant expression");
 		}
 	}
+	@nodeview
+	public static final view VField of FieldImpl extends FieldView {
+	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	@getter public Access			get$acc()			{ return this.getVView().acc; }
 	@setter public void set$acc(Access val)			{ this.getVView().acc = val; }
@@ -191,7 +197,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 		return (MetaAlias)this.getNodeData(MetaAlias.ID);
 	}
 
-	public String toString() { return name.toString()/*+":="+type*/; }
+	public String toString() { return name.toString(); }
 
 	public NodeName getName() { return name; }
 
@@ -200,32 +206,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	}
 
 	public void resolveDecl() {
-		foreach (Meta m; meta)
-			m.resolve();
-		Type tp = this.type;
-		if (init instanceof TypeRef)
-			((TypeRef)init).toExpr(type);
-		if (tp instanceof CTimeType) {
-			init = tp.makeInitExpr(this,init);
-			try {
-				init.resolve(tp.getEnclosedType());
-			} catch(Exception e ) {
-				Kiev.reportError(this,e);
-			}
-		}
-		else if( init != null ) {
-			try {
-				init.resolve(tp);
-				Type it = init.getType();
-				if( !it.isInstanceOf(tp) ) {
-					init = new CastExpr(init.pos,tp,~init);
-					init.resolve(tp);
-				}
-			} catch(Exception e ) {
-				Kiev.reportError(this,e);
-			}
-		}
-		setResolved(true);
+		getRView().resolveDecl();
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {

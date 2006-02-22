@@ -1049,5 +1049,300 @@ public final view RStruct of StructImpl extends StructView {
 
 	}
 	
+
+	public void autoGenerateStatements() {
+
+		if( Kiev.debug ) System.out.println("AutoGenerating statements for "+this);
+		// <clinit> & common$init, if need
+		Constructor class_init = null;
+		Initializer instance_init = null;
+
+		foreach (DNode n; members; n instanceof Field || n instanceof Initializer) {
+			if( isInterface() && !n.isAbstract() ) {
+				n.setStatic(true);
+				n.setFinal(true);
+			}
+			if( n instanceof Field ) {
+				Field f = (Field)n;
+				if (f.init == null)
+					continue;
+				if (f.isConstantExpr())
+					f.const_value = ConstExpr.fromConst(f.getConstValue());
+				if (f.init.isConstantExpr() && f.isStatic())
+					continue;
+				if (f.isAddedToInit())
+					continue;
+				if( f.isStatic() ) {
+					if( class_init == null )
+						class_init = getClazzInitMethod();
+					class_init.body.stats.add(
+						new ExprStat(f.init.pos,
+							new AssignExpr(f.init.pos,
+								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
+								new SFldExpr(f.pos,f),new Shadow(f.init)
+							)
+						)
+					);
+				} else {
+					if( instance_init == null ) {
+						instance_init = new Initializer();
+						instance_init.pos = f.init.pos;
+						instance_init.body = new Block();
+					}
+					ENode init_stat;
+					init_stat = new ExprStat(f.init.pos,
+							new AssignExpr(f.init.pos,
+								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
+								new IFldExpr(f.pos,new ThisExpr(0),f),
+								new Shadow(f.init)
+							)
+						);
+					instance_init.body.stats.add(init_stat);
+					init_stat.setHidden(true);
+				}
+				f.setAddedToInit(true);
+			} else {
+				Initializer init = (Initializer)n;
+				ENode init_stat = new Shadow(init);
+				init_stat.setHidden(true);
+				if (init.isStatic()) {
+					if( class_init == null )
+						class_init = getClazzInitMethod();
+					class_init.body.stats.add(init_stat);
+				} else {
+					if( instance_init == null ) {
+						instance_init = new Initializer();
+						instance_init.pos = init.pos;
+						instance_init.body = new Block();
+					}
+					instance_init.body.stats.add(init_stat);
+				}
+			}
+		}
+
+		// template methods of interfaces
+		if( isInterface() ) {
+			foreach (ASTNode n; members; n instanceof Method) {
+				Method m = (Method)n;
+				if( !m.isAbstract() ) {
+					if( m.isStatic() ) continue;
+					// Now, non-static methods (templates)
+					// Make it static and add abstract method
+					Method abstr = new Method(m.name.name,m.type.ret(),m.getFlags() | ACC_PUBLIC );
+					abstr.pos = m.pos;
+					abstr.setStatic(false);
+					abstr.setAbstract(true);
+					abstr.params.copyFrom(m.params);
+
+					m.setStatic(true);
+					m.setVirtualStatic(true);
+					this.addMethod(abstr);
+				}
+				if( !m.isStatic() ) {
+					m.setAbstract(true);
+				}
+			}
+		}
+		
+		// Generate super(...) constructor calls, if they are not
+		// specified as first statements of a constructor
+		if( !name.name.equals(Type.tpObject.clazz.name.name) ) {
+			foreach (ASTNode n; members; n instanceof Constructor) {
+				Constructor m = (Constructor)n;
+				if( m.isStatic() ) continue;
+
+				Block initbody = m.body;
+
+				boolean gen_def_constr = false;
+				NArr<ASTNode> stats = initbody.stats;
+				if( stats.length==0 ) {
+					gen_def_constr = true;
+				} else {
+					if( stats[0] instanceof ExprStat ) {
+						ExprStat es = (ExprStat)stats[0];
+						ENode ce = es.expr;
+						if( es.expr instanceof ASTExpression )
+							ce = ((ASTExpression)es.expr).nodes[0];
+						else
+							ce = es.expr;
+						if( ce instanceof ASTCallExpression ) {
+							NameRef nm = ((ASTCallExpression)ce).func;
+							if( !(nm.name.equals(nameThis) || nm.name.equals(nameSuper) ) )
+								gen_def_constr = true;
+							else if( nm.name.equals(nameSuper) )
+								m.setNeedFieldInits(true);
+						}
+						else if( ce instanceof CallExpr ) {
+							KString nm = ((CallExpr)ce).func.name.name;
+							if( !(nm.equals(nameThis) || nm.equals(nameSuper) || nm.equals(nameInit)) )
+								gen_def_constr = true;
+							else {
+								if( nm.equals(nameSuper) || (nm.equals(nameInit) && es.expr.isSuperExpr()) )
+									m.setNeedFieldInits(true);
+							}
+						}
+						else
+							gen_def_constr = true;
+					}
+					else
+						gen_def_constr = true;
+				}
+				if( gen_def_constr ) {
+					m.setNeedFieldInits(true);
+					ASTCallExpression call_super = new ASTCallExpression();
+					call_super.pos = pos;
+					call_super.func = new NameRef(pos, nameSuper);
+					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
+						ASTIdentifier max_args = new ASTIdentifier();
+						max_args.name = nameClosureMaxArgs;
+						call_super.args.add(max_args);
+					}
+					else if( package_clazz.isClazz() && isAnonymouse() ) {
+						int skip_args = 0;
+						if( !isStatic() ) skip_args++;
+						if( this.isTypeUnerasable() && super_type.clazz.isTypeUnerasable() ) skip_args++;
+						if( m.params.length > skip_args+1 ) {
+							for(int i=skip_args+1; i < m.params.length; i++) {
+								call_super.args.append( new LVarExpr(m.pos,m.params[i]));
+							}
+						}
+					}
+					else if( isEnum() ) {
+						call_super.args.add(new ASTIdentifier(pos, KString.from("name")));
+						call_super.args.add(new ASTIdentifier(pos, nameEnumOrdinal));
+						//call_super.args.add(new ASTIdentifier(pos, KString.from("text")));
+					}
+					else if( isStructView() && super_type.getStruct().isStructView() ) {
+						call_super.args.add(new ASTIdentifier(pos, nameImpl));
+					}
+					stats.insert(new ExprStat(call_super),0);
+				}
+				int p = 1;
+				if( package_clazz.isClazz() && !isStatic() ) {
+					stats.insert(
+						new ExprStat(pos,
+							new AssignExpr(pos,AssignOperator.Assign,
+								new IFldExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf(((StructImpl)this)._self)),
+								new LVarExpr(pos,m.params[0])
+							)
+						),p++
+					);
+				}
+				if (isStructView()) {
+					Field fview = this.resolveField(nameImpl);
+					if (fview.parent_node == ((StructImpl)this)._self) {
+						foreach (FormPar fp; m.params; fp.name.equals(nameImpl)) {
+							stats.insert(
+								new ExprStat(pos,
+									new AssignExpr(pos,AssignOperator.Assign,
+										new IFldExpr(pos,new ThisExpr(pos),resolveField(nameImpl)),
+										new LVarExpr(pos,fp)
+									)
+								),p++
+							);
+							break;
+						}
+					}
+				}
+				if (isTypeUnerasable() && m.isNeedFieldInits()) {
+					Field tif = resolveField(nameTypeInfo);
+					Var v = m.getTypeInfoParam(FormPar.PARAM_TYPEINFO);
+					assert(v != null);
+					stats.insert(
+						new ExprStat(pos,
+							new AssignExpr(m.pos,AssignOperator.Assign,
+								new IFldExpr(m.pos,new ThisExpr(0),tif),
+								new LVarExpr(m.pos,v)
+							)),
+						p++);
+				}
+				if( instance_init != null && m.isNeedFieldInits() ) {
+					stats.insert(instance_init.body.ncopy(),p++);
+				}
+			}
+		}
+	}
+
+	public void resolveDecl() {
+		if( isGenerated() ) return;
+		long curr_time;
+		autoGenerateStatements();
+		if( !isPackage() ) {
+			foreach (ASTNode n; members; n instanceof Struct) {
+				try {
+					Struct ss = (Struct)n;
+					ss.resolveDecl();
+				} catch(Exception e ) {
+					Kiev.reportError(n,e);
+				}
+			}
+		}
+
+		long diff_time = curr_time = System.currentTimeMillis();
+		try {
+			// Verify access
+			foreach(ASTNode n; members; n instanceof Field) {
+				Field f = (Field)n;
+				try {
+					f.type.checkResolved();
+					if (f.type.getStruct()!=null)
+						Access.verifyReadWrite(this.getDNode(),f.type.getStruct());
+				} catch(Exception e ) { Kiev.reportError(n,e); }
+			}
+			foreach(ASTNode n; members; n instanceof Method) {
+				Method m = (Method)n;
+				try {
+					m.type.ret().checkResolved();
+					if (m.type.ret().getStruct()!=null)
+						Access.verifyReadWrite(this.getDNode(),m.type.ret().getStruct());
+					foreach(Type t; m.type.params()) {
+						t.checkResolved();
+						if (t.getStruct()!=null)
+							Access.verifyReadWrite(this.getDNode(),t.getStruct());
+					}
+				} catch(Exception e ) { Kiev.reportError(m,e); }
+			}
+
+			foreach(DNode n; members; n instanceof Method || n instanceof Initializer) {
+				n.resolveDecl();
+			}
+			
+			// Autogenerate hidden args for initializers of local class
+			if( isLocal() ) {
+				Field[] proxy_fields = Field.emptyArray;
+				foreach(ASTNode n; members; n instanceof Field) {
+					Field f = (Field)n;
+					if( f.isNeedProxy() )
+						proxy_fields = (Field[])Arrays.append(proxy_fields,f);
+				}
+				if( proxy_fields.length > 0 ) {
+					foreach(ASTNode n; members; n instanceof Method) {
+						Method m = (Method)n;
+						if( !m.name.equals(nameInit) ) continue;
+						for(int j=0; j < proxy_fields.length; j++) {
+							int par = m.params.length;
+							KString nm = new KStringBuffer().append(nameVarProxy)
+								.append(proxy_fields[j].name).toKString();
+							m.params.append(new FormPar(m.pos,nm,proxy_fields[j].type,FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
+							m.body.stats.insert(
+								new ExprStat(m.pos,
+									new AssignExpr(m.pos,AssignOperator.Assign,
+										new IFldExpr(m.pos,new ThisExpr(0),proxy_fields[j]),
+										new LVarExpr(m.pos,m.params[par])
+									)
+								),1
+							);
+						}
+					}
+				}
+			}
+		} catch(Exception e ) {
+			Kiev.reportError(this,e);
+		}
+		setGenerated(true);
+		diff_time = System.currentTimeMillis() - curr_time;
+		if( Kiev.verbose ) Kiev.reportInfo("Resolved class "+this,diff_time);
+	}
+	
 }
 

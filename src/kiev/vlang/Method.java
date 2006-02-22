@@ -8,8 +8,12 @@ import kiev.vlang.types.*;
 
 import kiev.be.java.JNode;
 import kiev.be.java.JDNode;
+import kiev.ir.java.RMethod;
 import kiev.be.java.JMethod;
+import kiev.ir.java.RConstructor;
+import kiev.ir.java.RInitializer;
 import kiev.be.java.JInitializer;
+import kiev.ir.java.RWBCCondition;
 import kiev.be.java.JWBCCondition;
 
 import kiev.be.java.CodeAttr;
@@ -34,6 +38,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	@virtual typedef NImpl = MethodImpl;
 	@virtual typedef VView = MethodView;
 	@virtual typedef JView = JMethod;
+	@virtual typedef RView = RMethod;
 
 	@nodeimpl
 	public static class MethodImpl extends DNodeImpl {
@@ -50,7 +55,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		@att public NArr<FormPar>		params;
 		@att public NArr<ASTAlias>		aliases;
 		@att public Var					retvar;
-		@att public Block			body;
+		@att public Block				body;
 		@att public PrescannedBody 		pbody;
 		public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
 		@att public NArr<WBCCondition> 	conditions;
@@ -323,6 +328,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public static Method[]	emptyArray = new Method[0];
 
@@ -758,47 +764,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 
 	public void resolveDecl() {
-		if( isResolved() ) return;
-		trace(Kiev.debugResolve,"Resolving method "+this);
-		assert( ctx_clazz == parent_node || inlined_by_dispatcher );
-		try {
-			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
-				cond.body.resolve(Type.tpVoid);
-			}
-			if( body != null ) {
-				body.setAutoReturnable(true);
-				body.resolve(type.ret());
-			}
-			if( body != null && !body.isMethodAbrupted() ) {
-				if( type.ret() ≡ Type.tpVoid ) {
-					body.stats.append(new ReturnStat(pos,null));
-					body.setMethodAbrupted(true);
-				} else {
-					Kiev.reportError(this,"Return requared");
-				}
-			}
-			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
-				if( type.ret() ≢ Type.tpVoid ) getRetVar();
-				cond.resolve(Type.tpVoid);
-			}
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		}
-		this.cleanDFlow();
-
-		// Append invariants by list of violated/used fields
-		if( !isInvariantMethod() ) {
-			foreach(Field f; violated_fields; ctx_clazz.instanceOf(f.ctx_clazz) ) {
-				foreach(Method inv; f.invs; ctx_clazz.instanceOf(inv.ctx_clazz) ) {
-					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
-					// check, that this is not set$/get$ method
-					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
-						conditions.addUniq(inv.conditions[0]);
-				}
-			}
-		}
-		
-		setResolved(true);
+		getRView().resolveDecl();
 	}
 
 	public boolean setBody(ENode body) {
@@ -819,13 +785,14 @@ public class Constructor extends Method {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="true")	ENode[]			addstats;
-	@dflow(in="this:in")				Block		body;
+	@dflow(in="this:in")				Block			body;
 	@dflow(in="this:in")				WBCCondition[] 	conditions;
 	}
 
 	@virtual typedef This  = Constructor;
 	@virtual typedef NImpl = ConstructorImpl;
 	@virtual typedef VView = ConstructorView;
+	@virtual typedef RView = RConstructor;
 
 	@nodeimpl
 	public static final class ConstructorImpl extends MethodImpl {
@@ -839,6 +806,7 @@ public class Constructor extends Method {
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public Constructor() {
 		super(new ConstructorImpl());
@@ -850,12 +818,7 @@ public class Constructor extends Method {
 	}
 
 	public void resolveDecl() {
-		super.resolveDecl();
-		ENode[] addstats = this.addstats.delToArray();
-		for(int i=0; i < addstats.length; i++) {
-			body.stats.insert(addstats[i],i);
-			trace(Kiev.debugResolve,"ENode added to constructor: "+addstats[i]);
-		}
+		getRView().resolveDecl();
 	}
 }
 
@@ -868,23 +831,28 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 
 	@virtual typedef This  = Initializer;
 	@virtual typedef NImpl = InitializerImpl;
-	@virtual typedef VView = InitializerView;
+	@virtual typedef VView = VInitializer;
 	@virtual typedef JView = JInitializer;
+	@virtual typedef RView = RInitializer;
 
 	@nodeimpl
 	public static final class InitializerImpl extends DNodeImpl {
 		@virtual typedef ImplOf = Initializer;
 		@att public Block				body;
-		@att public PrescannedBody			pbody;
+		@att public PrescannedBody		pbody;
 	}
 	@nodeview
-	public static final view InitializerView of InitializerImpl extends DNodeView {
+	public static abstract view InitializerView of InitializerImpl extends DNodeView {
 		public Block				body;
-		public PrescannedBody			pbody;
+		public PrescannedBody		pbody;
+	}
+	@nodeview
+	public static final view VInitializer of InitializerImpl extends InitializerView {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	@getter public PrescannedBody	get$pbody()			{ return this.getVView().pbody; }
 	@setter public void set$pbody(PrescannedBody val)	{ this.getVView().pbody = val; }
@@ -900,15 +868,7 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	}
 
 	public void resolveDecl() {
-		if( isResolved() ) return;
-		
-		try {
-			body.resolve(Type.tpVoid);
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		}
-
-		setResolved(true);
+		getRView().resolveDecl();
 	}
 
 	public boolean setBody(ENode body) {
@@ -940,8 +900,9 @@ public class WBCCondition extends DNode {
 	
 	@virtual typedef This  = WBCCondition;
 	@virtual typedef NImpl = WBCConditionImpl;
-	@virtual typedef VView = WBCConditionView;
+	@virtual typedef VView = VWBCCondition;
 	@virtual typedef JView = JWBCCondition;
+	@virtual typedef RView = RWBCCondition;
 
 	@nodeimpl
 	public static final class WBCConditionImpl extends DNodeImpl {
@@ -953,16 +914,20 @@ public class WBCCondition extends DNode {
 		@att public CodeAttr			code_attr;
 	}
 	@nodeview
-	public static final view WBCConditionView of WBCConditionImpl extends DNodeView {
+	public static abstract view WBCConditionView of WBCConditionImpl extends DNodeView {
 		public WBCType				cond;
 		public NameRef				name;
 		public ENode				body;
 		public Method				definer;
 		public CodeAttr				code_attr;
 	}
+	@nodeview
+	public static final view VWBCCondition of WBCConditionImpl extends WBCConditionView {
+	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public WBCCondition() {
 		super(new WBCConditionImpl());
@@ -977,9 +942,8 @@ public class WBCCondition extends DNode {
 		this.body = body;
 	}
 
-	public void resolve(Type reqType) {
-		if( code_attr != null ) return;
-		body.resolve(Type.tpVoid);
+	public void resolveDecl() {
+		getRView().resolveDecl();
 	}
 
 	public boolean setBody(ENode body) {
