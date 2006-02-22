@@ -8,6 +8,7 @@ import kiev.vlang.types.*;
 
 import kiev.be.java.JNode;
 import kiev.be.java.JENode;
+import kiev.ir.java.RConstExpr;
 import kiev.be.java.JConstExpr;
 import kiev.be.java.JConstBoolExpr;
 import kiev.be.java.JConstNullExpr;
@@ -422,6 +423,7 @@ public abstract class ConstExpr extends ENode {
 	@virtual typedef NImpl = ConstExprImpl;
 	@virtual typedef VView = ConstExprView;
 	@virtual typedef JView = JConstExpr;
+	@virtual typedef RView = RConstExpr;
 
 	@nodeimpl
 	public abstract static class ConstExprImpl extends ENodeImpl {
@@ -445,6 +447,7 @@ public abstract class ConstExpr extends ENode {
 
 	public abstract VView getVView() alias operator(210,fy,$cast);
 	public abstract JView getJView() alias operator(210,fy,$cast);
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public ConstExpr(ConstExprImpl impl) {
 		super(impl);
@@ -452,9 +455,7 @@ public abstract class ConstExpr extends ENode {
 	}
 	
 	public final void resolve(Type reqType) {
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper	toJava(Dumper dmp) {

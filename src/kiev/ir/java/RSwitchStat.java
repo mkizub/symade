@@ -95,7 +95,7 @@ public static final view RCaseLabel of CaseLabelImpl extends CaseLabelView {
 			}
 		} catch(Exception e ) { Kiev.reportError(this,e); }
 
-		Block.resolveStats(Type.tpVoid, this.getENode(), stats);
+		RBlock.resolveStats(Type.tpVoid, this, stats);
 
 		if( val != null ) {
 			if( !val.isConstantExpr() )

@@ -9,18 +9,31 @@ import kiev.transf.*;
 import kiev.be.java.JNode;
 import kiev.be.java.JENode;
 import kiev.be.java.JLvalueExpr;
+import kiev.ir.java.RShadow;
 import kiev.be.java.JShadow;
+import kiev.ir.java.RArrayLengthExpr;
 import kiev.be.java.JArrayLengthExpr;
+import kiev.ir.java.RTypeClassExpr;
 import kiev.be.java.JTypeClassExpr;
+import kiev.ir.java.RTypeInfoExpr;
 import kiev.be.java.JTypeInfoExpr;
+import kiev.ir.java.RAssignExpr;
 import kiev.be.java.JAssignExpr;
+import kiev.ir.java.RBinaryExpr;
 import kiev.be.java.JBinaryExpr;
+import kiev.ir.java.RStringConcatExpr;
 import kiev.be.java.JStringConcatExpr;
+import kiev.ir.java.RCommaExpr;
 import kiev.be.java.JCommaExpr;
+import kiev.ir.java.RBlock;
 import kiev.be.java.JBlock;
+import kiev.ir.java.RUnaryExpr;
 import kiev.be.java.JUnaryExpr;
+import kiev.ir.java.RIncrementExpr;
 import kiev.be.java.JIncrementExpr;
+import kiev.ir.java.RConditionalExpr;
 import kiev.be.java.JConditionalExpr;
+import kiev.ir.java.RCastExpr;
 import kiev.be.java.JCastExpr;
 
 import kiev.be.java.CodeLabel;
@@ -43,8 +56,9 @@ public class Shadow extends ENode {
 	
 	@virtual typedef This  = Shadow;
 	@virtual typedef NImpl = ShadowImpl;
-	@virtual typedef VView = ShadowView;
+	@virtual typedef VView = VShadow;
 	@virtual typedef JView = JShadow;
+	@virtual typedef RView = RShadow;
 
 	@nodeimpl
 	public static final class ShadowImpl extends ENodeImpl {
@@ -52,7 +66,7 @@ public class Shadow extends ENode {
 		@ref public ASTNode	node;
 	}
 	@nodeview
-	public static final view ShadowView of ShadowImpl extends ENodeView {
+	public static abstract view ShadowView of ShadowImpl extends ENodeView {
 		public ASTNode		node;
 	
 		public int getPriority() {
@@ -63,9 +77,13 @@ public class Shadow extends ENode {
 
 		public Type getType() { return node.getType(); }
 	}
+	@nodeview
+	public static final view VShadow of ShadowImpl extends ShadowView {
+	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public Shadow() {
 		super(new ShadowImpl());
@@ -80,11 +98,7 @@ public class Shadow extends ENode {
 	}
 	
 	public void resolve(Type reqType) {
-		if (node instanceof ENode)
-			((ENode)node).resolve(reqType);
-		else
-			((Initializer)node).resolveDecl();
-		setResolved(true);
+		getRView().resolve(reqType);
 	}
 
 	public String toString() {
@@ -106,22 +120,27 @@ public class ArrayLengthExpr extends AccessExpr {
 	
 	@virtual typedef This  = ArrayLengthExpr;
 	@virtual typedef NImpl = ArrayLengthExprImpl;
-	@virtual typedef VView = ArrayLengthExprView;
+	@virtual typedef VView = VArrayLengthExpr;
 	@virtual typedef JView = JArrayLengthExpr;
+	@virtual typedef RView = RArrayLengthExpr;
 
 	@nodeimpl
 	public static final class ArrayLengthExprImpl extends AccessExprImpl {
 		@virtual typedef ImplOf = ArrayLengthExpr;
 	}
 	@nodeview
-	public static final view ArrayLengthExprView of ArrayLengthExprImpl extends AccessExprView {
+	public static abstract view ArrayLengthExprView of ArrayLengthExprImpl extends AccessExprView {
 		public Operator getOp() { return BinaryOperator.Access; }
 
 		public Type getType() { return Type.tpInt; }
 	}
+	@nodeview
+	public static final view VArrayLengthExpr of ArrayLengthExprImpl extends ArrayLengthExprView {
+	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public ArrayLengthExpr() {
 		super(new ArrayLengthExprImpl());
@@ -149,12 +168,7 @@ public class ArrayLengthExpr extends AccessExpr {
 	}
 
 	public void resolve(Type reqType) {
-		obj.resolve(null);
-		if !(obj.getType().isArray())
-			throw new CompilerException(this, "Access to array length for non-array type "+obj.getType());
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -175,8 +189,9 @@ public class TypeClassExpr extends ENode {
 	
 	@virtual typedef This  = TypeClassExpr;
 	@virtual typedef NImpl = TypeClassExprImpl;
-	@virtual typedef VView = TypeClassExprView;
+	@virtual typedef VView = VTypeClassExpr;
 	@virtual typedef JView = JTypeClassExpr;
+	@virtual typedef RView = RTypeClassExpr;
 
 	@nodeimpl
 	public static final class TypeClassExprImpl extends ENodeImpl {
@@ -184,16 +199,20 @@ public class TypeClassExpr extends ENode {
 		@att public TypeRef		type;
 	}
 	@nodeview
-	public static final view TypeClassExprView of TypeClassExprImpl extends ENodeView {
+	public static abstract view TypeClassExprView of TypeClassExprImpl extends ENodeView {
 		public TypeRef		type;
 
 		public Operator getOp() { return BinaryOperator.Access; }
 
 		public Type getType() { return Type.tpClass; }
 	}
+	@nodeview
+	public static final view VTypeClassExpr of TypeClassExprImpl extends TypeClassExprView {
+	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public TypeClassExpr() {
 		super(new TypeClassExprImpl());
@@ -210,16 +229,7 @@ public class TypeClassExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		Type tp = type.getType();
-		if (!tp.isReference()) {
-			Type rt = ((CoreType)tp).getRefTypeForPrimitive();
-			Field f = rt.clazz.resolveField(KString.from("TYPE"));
-			replaceWithNodeResolve(reqType,new SFldExpr(pos,f));
-			return;
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -235,8 +245,9 @@ public class TypeInfoExpr extends ENode {
 	
 	@virtual typedef This  = TypeInfoExpr;
 	@virtual typedef NImpl = TypeInfoExprImpl;
-	@virtual typedef VView = TypeInfoExprView;
+	@virtual typedef VView = VTypeInfoExpr;
 	@virtual typedef JView = JTypeInfoExpr;
+	@virtual typedef RView = RTypeInfoExpr;
 
 	@nodeimpl
 	public static final class TypeInfoExprImpl extends ENodeImpl {
@@ -246,7 +257,7 @@ public class TypeInfoExpr extends ENode {
 		@att public NArr<ENode>			cl_args;
 	}
 	@nodeview
-	public static final view TypeInfoExprView of TypeInfoExprImpl extends ENodeView {
+	public static abstract view TypeInfoExprView of TypeInfoExprImpl extends ENodeView {
 		public				TypeRef				type;
 		public				TypeClassExpr		cl_expr;
 		public:ro	NArr<ENode>			cl_args;
@@ -261,9 +272,13 @@ public class TypeInfoExpr extends ENode {
 		}
 
 	}
+	@nodeview
+	public static final view VTypeInfoExpr of TypeInfoExprImpl extends TypeInfoExprView {
+	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 	
 	public TypeInfoExpr() {
 		super(new TypeInfoExprImpl());
@@ -280,25 +295,7 @@ public class TypeInfoExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		if (isResolved())
-			return;
-		Type type = this.type.getType();
-		CompaundType ftype = Type.tpTypeInfo;
-		Struct clazz = type.getStruct();
-		if (clazz.isTypeUnerasable()) {
-			if (clazz.typeinfo_clazz == null)
-				clazz.getRView().autoGenerateTypeinfoClazz();
-			ftype = clazz.typeinfo_clazz.ctype;
-		}
-		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.ctype));
-		cl_expr.resolve(Type.tpClass);
-		foreach (ArgType at; clazz.getRView().getTypeInfoArgs())
-			cl_args.add(ctx_clazz.getRView().accessTypeInfoField(this, type.resolve(at),false));
-		foreach (ENode tie; cl_args)
-			tie.resolve(null);
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -317,8 +314,9 @@ public class AssignExpr extends LvalueExpr {
 	
 	@virtual typedef This  = AssignExpr;
 	@virtual typedef NImpl = AssignExprImpl;
-	@virtual typedef VView = AssignExprView;
+	@virtual typedef VView = VAssignExpr;
 	@virtual typedef JView = JAssignExpr;
+	@virtual typedef RView = RAssignExpr;
 
 	@nodeimpl
 	public static class AssignExprImpl extends LvalueExprImpl {		
@@ -328,7 +326,7 @@ public class AssignExpr extends LvalueExpr {
 		@att public ENode			value;
 	}
 	@nodeview
-	public static view AssignExprView of AssignExprImpl extends LvalueExprView {
+	public static abstract view AssignExprView of AssignExprImpl extends LvalueExprView {
 		public AssignOperator	op;
 		public ENode			lval;
 		public ENode			value;
@@ -337,9 +335,13 @@ public class AssignExpr extends LvalueExpr {
 
 		public Type getType() { return lval.getType(); }
 	}
+	@nodeview
+	public static final view VAssignExpr of AssignExprImpl extends AssignExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public AssignExpr() {
 		super(new AssignExprImpl());
@@ -368,159 +370,7 @@ public class AssignExpr extends LvalueExpr {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) {
-			if (isAutoReturnable())
-				ReturnStat.autoReturn(reqType, this);
-			return;
-		}
-		lval.resolve(reqType);
-		Type et1 = lval.getType();
-		if (op == AssignOperator.Assign && et1 instanceof CTimeType)
-			value.resolve(et1.getUnboxedType());
-		else if (op == AssignOperator.Assign2 && et1 instanceof CTimeType)
-			value.resolve(et1.getEnclosedType());
-		else
-			value.resolve(et1);
-		if (value instanceof TypeRef)
-			((TypeRef)value).toExpr(et1);
-		Type et2 = value.getType();
-		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !(et1 instanceof CTimeType) && !(et2 instanceof CTimeType)) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( op == AssignOperator.Assign2 && et1 instanceof CTimeType && et2.isInstanceOf(et1)) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( op == AssignOperator.AssignAdd && et1 ≈ Type.tpString ) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( ( et1.isNumber() && et2.isNumber() ) &&
-			(    op==AssignOperator.AssignAdd
-			||   op==AssignOperator.AssignSub
-			||   op==AssignOperator.AssignMul
-			||   op==AssignOperator.AssignDiv
-			||   op==AssignOperator.AssignMod
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
-			(    op==AssignOperator.AssignLeftShift
-			||   op==AssignOperator.AssignRightShift
-			||   op==AssignOperator.AssignUnsignedRightShift
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( ( et1.isInteger() && et2.isInteger() ) &&
-			(    op==AssignOperator.AssignBitOr
-			||   op==AssignOperator.AssignBitXor
-			||   op==AssignOperator.AssignBitAnd
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( ( et1.isBoolean() && et2.isBoolean() ) &&
-			(    op==AssignOperator.AssignBitOr
-			||   op==AssignOperator.AssignBitXor
-			||   op==AssignOperator.AssignBitAnd
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,lval,value};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				replaceWithNodeResolve(reqType, new CallExpr(pos,~lval,opt.method,new ENode[]{~value}));
-				return;
-			}
-		}
-		// Not a standard and not overloaded, try wrapped classes
-		if (op != AssignOperator.Assign2) {
-			if (et1 instanceof CTimeType && et2 instanceof CTimeType) {
-				lval = et1.makeUnboxedExpr(lval);
-				value = et2.makeUnboxedExpr(value);
-				resolve(reqType);
-				return;
-			}
-			else if (et1 instanceof CTimeType) {
-				lval = et1.makeUnboxedExpr(lval);
-				resolve(reqType);
-				return;
-			}
-			else if (et2 instanceof CTimeType) {
-				value = et2.makeUnboxedExpr(value);
-				resolve(reqType);
-				return;
-			}
-		}
-		this.resolve2(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
-	}
-
-	private void resolve2(Type reqType) {
-		lval.resolve(null);
-		if( !(lval instanceof LvalueExpr) )
-			throw new RuntimeException("Can't assign to "+lval+": lvalue requared");
-		Type t1 = lval.getType();
-		if (t1 instanceof CTimeType && (value.isForWrapper() || op == AssignOperator.Assign2))
-			t1 = t1.getEnclosedType();
-		if( op==AssignOperator.AssignAdd && t1 ≈ Type.tpString ) {
-			op = AssignOperator.Assign;
-			value = new BinaryExpr(pos,BinaryOperator.Add,new Shadow(lval),~value);
-		}
-		if (value instanceof TypeRef)
-			((TypeRef)value).toExpr(t1);
-		else if (value instanceof ENode)
-			value.resolve(t1);
-		else
-			throw new CompilerException(value, "Can't opeerate on "+value);
-		Type t2 = value.getType();
-		if (t2 instanceof CTimeType && (value.isForWrapper() || op == AssignOperator.Assign2))
-			t2 = t2.getEnclosedType();
-		if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
-			if( !t2.isIntegerInCode() ) {
-				value = new CastExpr(pos,Type.tpInt,~value);
-				value.resolve(Type.tpInt);
-			}
-		}
-		else if( !t2.isInstanceOf(t1) ) {
-			if( t2.isCastableTo(t1) ) {
-				value = new CastExpr(pos,t1,~value);
-				value.resolve(t1);
-			} else {
-				throw new RuntimeException("Value of type "+t2+" can't be assigned to "+lval);
-			}
-		}
-		getDFlow().out();
-
-		// Set violation of the field
-		if( lval instanceof SFldExpr
-		 || (
-				lval instanceof IFldExpr
-			 && ((IFldExpr)lval).obj instanceof LVarExpr
-			 &&	((LVarExpr)((IFldExpr)lval).obj).ident.equals(nameThis)
-			)
-		) {
-			if( ctx_method != null && ctx_method.isInvariantMethod() )
-				Kiev.reportError(this,"Side-effect in invariant condition");
-			if( ctx_method != null && !ctx_method.isInvariantMethod() ) {
-				if( lval instanceof SFldExpr )
-					ctx_method.addViolatedField( ((SFldExpr)lval).var );
-				else
-					ctx_method.addViolatedField( ((IFldExpr)lval).var );
-			}
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	static class AssignExprDFFunc extends DFFunc {
@@ -592,8 +442,9 @@ public class BinaryExpr extends ENode {
 	
 	@virtual typedef This  = BinaryExpr;
 	@virtual typedef NImpl = BinaryExprImpl;
-	@virtual typedef VView = BinaryExprView;
+	@virtual typedef VView = VBinaryExpr;
 	@virtual typedef JView = JBinaryExpr;
+	@virtual typedef RView = RBinaryExpr;
 
 	@nodeimpl
 	public static class BinaryExprImpl extends ENodeImpl {
@@ -603,7 +454,7 @@ public class BinaryExpr extends ENode {
 		@att public ENode			expr2;
 	}
 	@nodeview
-	public static view BinaryExprView of BinaryExprImpl extends ENodeView {
+	public static abstract view BinaryExprView of BinaryExprImpl extends ENodeView {
 		public BinaryOperator	op;
 		public ENode			expr1;
 		public ENode			expr2;
@@ -640,7 +491,10 @@ public class BinaryExpr extends ENode {
 			((BinaryExprImpl)this)._self.resolve(null);
 			return getType();
 		}
+	}
 
+	@nodeview
+	public static final view VBinaryExpr of BinaryExprImpl extends BinaryExprView {
 		public void mainResolveOut() {
 			Type et1 = expr1.getType();
 			Type et2 = expr2.getType();
@@ -728,6 +582,7 @@ public class BinaryExpr extends ENode {
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 	
 	public BinaryExpr() {
 		super(new BinaryExprImpl());
@@ -756,231 +611,7 @@ public class BinaryExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
-		expr1.resolve(null);
-		expr2.resolve(null);
-		Type et1 = expr1.getType();
-		Type et2 = expr2.getType();
-		if( op == BinaryOperator.Add
-			&& ( et1 ≈ Type.tpString || et2 ≈ Type.tpString ||
-				(et1 instanceof CTimeType && et1.getUnboxedType() ≈ Type.tpString) ||
-				(et2 instanceof CTimeType && et2.getUnboxedType() ≈ Type.tpString)
-			   )
-		) {
-			if( expr1 instanceof StringConcatExpr ) {
-				StringConcatExpr sce = (StringConcatExpr)expr1;
-				if (et2 instanceof CTimeType) expr2 = et2.makeUnboxedExpr(expr2);
-				sce.appendArg(expr2);
-				trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
-				replaceWithNodeResolve(Type.tpString, ~sce);
-			} else {
-				StringConcatExpr sce = new StringConcatExpr(pos);
-				if (et1 instanceof CTimeType) expr1 = et1.makeUnboxedExpr(expr1);
-				sce.appendArg(expr1);
-				if (et2 instanceof CTimeType) expr2 = et2.makeUnboxedExpr(expr2);
-				sce.appendArg(expr2);
-				trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
-				replaceWithNodeResolve(Type.tpString, sce);
-			}
-			return;
-		}
-		else if( ( et1.isNumber() && et2.isNumber() ) &&
-			(    op==BinaryOperator.Add
-			||   op==BinaryOperator.Sub
-			||   op==BinaryOperator.Mul
-			||   op==BinaryOperator.Div
-			||   op==BinaryOperator.Mod
-			)
-		) {
-			this.resolve2(null);
-			return;
-		}
-		else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
-			(    op==BinaryOperator.LeftShift
-			||   op==BinaryOperator.RightShift
-			||   op==BinaryOperator.UnsignedRightShift
-			)
-		) {
-			this.resolve2(null);
-			return;
-		}
-		else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
-			(    op==BinaryOperator.BitOr
-			||   op==BinaryOperator.BitXor
-			||   op==BinaryOperator.BitAnd
-			)
-		) {
-			this.resolve2(null);
-			return;
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				ENode e;
-				if( opt.method.isStatic() )
-					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
-				else
-					replaceWithNodeResolve(reqType, new CallExpr(pos,~expr1,opt.method,new ENode[]{~expr2}));
-				return;
-			}
-		}
-		// Not a standard and not overloaded, try wrapped classes
-		if (et1 instanceof CTimeType && et2 instanceof CTimeType) {
-			expr1 = et1.makeUnboxedExpr(expr1);
-			expr2 = et1.makeUnboxedExpr(expr2);
-			resolve(reqType);
-			return;
-		}
-		if (et1 instanceof CTimeType) {
-			expr1 = et1.makeUnboxedExpr(expr1);
-			resolve(reqType);
-			return;
-		}
-		if (et2 instanceof CTimeType) {
-			expr2 = et1.makeUnboxedExpr(expr2);
-			resolve(reqType);
-			return;
-		}
-		resolve2(reqType);
-	}
-
-	private void resolve2(Type reqType) {
-		expr1.resolve(null);
-		expr2.resolve(null);
-
-		Type rt = getType();
-		Type t1 = expr1.getType();
-		Type t2 = expr2.getType();
-
-		// Special case for '+' operator if one arg is a String
-		if( op==BinaryOperator.Add && expr1.getType().equals(Type.tpString) || expr2.getType().equals(Type.tpString) ) {
-			if( expr1 instanceof StringConcatExpr ) {
-				StringConcatExpr sce = (StringConcatExpr)expr1;
-				sce.appendArg(expr2);
-				trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
-				replaceWithNodeResolve(Type.tpString, sce);
-			} else {
-				StringConcatExpr sce = new StringConcatExpr(pos);
-				sce.appendArg(expr1);
-				sce.appendArg(expr2);
-				trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
-				replaceWithNodeResolve(Type.tpString, sce);
-			}
-			return;
-		}
-
-		if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
-			if( !t2.isIntegerInCode() ) {
-				expr2 = new CastExpr(pos,Type.tpInt,expr2);
-				expr2.resolve(Type.tpInt);
-			}
-		} else {
-			if( !rt.equals(t1) && t1.isCastableTo(rt) ) {
-				expr1 = new CastExpr(pos,rt,~expr1);
-				expr1.resolve(null);
-			}
-			if( !rt.equals(t2) && t2.isCastableTo(rt) ) {
-				expr2 = new CastExpr(pos,rt,~expr2);
-				expr2.resolve(null);
-			}
-		}
-
-		// Check if both expressions are constant
-		if( expr1.isConstantExpr() && expr2.isConstantExpr() ) {
-			Number val1 = (Number)expr1.getConstValue();
-			Number val2 = (Number)expr2.getConstValue();
-			if( op == BinaryOperator.BitOr ) {
-				if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() | val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() | val2.intValue()));
-			}
-			else if( op == BinaryOperator.BitXor ) {
-				if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() ^ val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() ^ val2.intValue()));
-			}
-			else if( op == BinaryOperator.BitAnd ) {
-				if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() & val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() & val2.intValue()));
-			}
-			else if( op == BinaryOperator.LeftShift ) {
-				if( val1 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() << val2.intValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() << val2.intValue()));
-			}
-			else if( op == BinaryOperator.RightShift ) {
-				if( val1 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() >> val2.intValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() >> val2.intValue()));
-			}
-			else if( op == BinaryOperator.UnsignedRightShift ) {
-				if( val1 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() >>> val2.intValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() >>> val2.intValue()));
-			}
-			else if( op == BinaryOperator.Add ) {
-				if( val1 instanceof Double || val2 instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val1.doubleValue() + val2.doubleValue()));
-				else if( val1 instanceof Float || val2 instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val1.floatValue() + val2.floatValue()));
-				else if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() + val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() + val2.intValue()));
-			}
-			else if( op == BinaryOperator.Sub ) {
-				if( val1 instanceof Double || val2 instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val1.doubleValue() - val2.doubleValue()));
-				else if( val1 instanceof Float || val2 instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val1.floatValue() - val2.floatValue()));
-				else if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() - val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() - val2.intValue()));
-			}
-			else if( op == BinaryOperator.Mul ) {
-				if( val1 instanceof Double || val2 instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val1.doubleValue() * val2.doubleValue()));
-				else if( val1 instanceof Float || val2 instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val1.floatValue() * val2.floatValue()));
-				else if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() * val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() * val2.intValue()));
-			}
-			else if( op == BinaryOperator.Div ) {
-				if( val1 instanceof Double || val2 instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val1.doubleValue() / val2.doubleValue()));
-				else if( val1 instanceof Float || val2 instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val1.floatValue() / val2.floatValue()));
-				else if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() / val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() / val2.intValue()));
-			}
-			else if( op == BinaryOperator.Mod ) {
-				if( val1 instanceof Double || val2 instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val1.doubleValue() % val2.doubleValue()));
-				else if( val1 instanceof Float || val2 instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val1.floatValue() % val2.floatValue()));
-				else if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() % val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() % val2.intValue()));
-			}
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1008,8 +639,9 @@ public class StringConcatExpr extends ENode {
 
 	@virtual typedef This  = StringConcatExpr;
 	@virtual typedef NImpl = StringConcatExprImpl;
-	@virtual typedef VView = StringConcatExprView;
+	@virtual typedef VView = VStringConcatExpr;
 	@virtual typedef JView = JStringConcatExpr;
+	@virtual typedef RView = RStringConcatExpr;
 
 	@nodeimpl
 	public static class StringConcatExprImpl extends ENodeImpl {
@@ -1024,9 +656,13 @@ public class StringConcatExpr extends ENode {
 
 		public Type getType() { return Type.tpString; }
 	}
+	@nodeview
+	public static final view VStringConcatExpr of StringConcatExprImpl extends StringConcatExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public StringConcatExpr() {
 		super(new StringConcatExprImpl());
@@ -1048,12 +684,7 @@ public class StringConcatExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
-		foreach (ENode e; args)
-			e.resolve(null);
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public void appendArg(ENode expr) {
@@ -1061,13 +692,6 @@ public class StringConcatExpr extends ENode {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-//		dmp.append("((new java.lang.StringBuffer())");
-//		for(int i=0; i < args.length; i++) {
-//			dmp.append(".append(");
-//			args[i].toJava(dmp);
-//			dmp.append(')');
-//		}
-//		dmp.append(".toString())");
 		for(int i=0; i < args.length; i++) {
 			args[i].toJava(dmp);
 			if( i < args.length-1 ) dmp.append('+');
@@ -1085,8 +709,9 @@ public class CommaExpr extends ENode {
 
 	@virtual typedef This  = CommaExpr;
 	@virtual typedef NImpl = CommaExprImpl;
-	@virtual typedef VView = CommaExprView;
+	@virtual typedef VView = VCommaExpr;
 	@virtual typedef JView = JCommaExpr;
+	@virtual typedef RView = RCommaExpr;
 
 	@nodeimpl
 	public static class CommaExprImpl extends ENodeImpl {
@@ -1094,16 +719,20 @@ public class CommaExpr extends ENode {
 		@att public NArr<ENode>		exprs;
 	}
 	@nodeview
-	public static view CommaExprView of CommaExprImpl extends ENodeView {
+	public static abstract view CommaExprView of CommaExprImpl extends ENodeView {
 		public:ro	NArr<ENode>		exprs;
 
 		public int getPriority() { return 0; }
 
 		public Type getType() { return exprs[exprs.length-1].getType(); }
 	}
+	@nodeview
+	public static final view VCommaExpr of CommaExprImpl extends CommaExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 	
 	public CommaExpr() {
 		super(new CommaExprImpl());
@@ -1128,18 +757,7 @@ public class CommaExpr extends ENode {
 	public KString getName() { return KString.Empty; };
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
-		for(int i=0; i < exprs.length; i++) {
-			if( i < exprs.length-1) {
-				exprs[i].resolve(Type.tpVoid);
-				exprs[i].setGenVoidExpr(true);
-			} else {
-				exprs[i].resolve(reqType);
-			}
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1163,6 +781,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef NImpl = BlockImpl;
 	@virtual typedef VView = BlockView;
 	@virtual typedef JView = JBlock;
+	@virtual typedef RView = RBlock;
 
 	@nodeimpl
 	public static class BlockImpl extends ENodeImpl {
@@ -1185,6 +804,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 	
 	public Block() {
 		super(new BlockImpl());
@@ -1271,33 +891,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public void resolve(Type reqType) {
-		Block.resolveStats(reqType, this, stats);
-	}
-
-	public static void resolveStats(Type reqType, ENode self, NArr<ENode> stats) {
-		int sz = stats.length - 1;
-		for (int i=0; i <= sz; i++) {
-			ENode st = stats[i];
-			try {
-				if( (i == sz) && self.isAutoReturnable() )
-					st.setAutoReturnable(true);
-				if( self.isAbrupted() && (st instanceof LabeledStat) )
-					self.setAbrupted(false);
-				//if( self.isAbrupted() )
-				//	; //Kiev.reportWarning(stats[i].pos,"Possible unreachable statement");
-				if (i < sz || reqType == Type.tpVoid) {
-					st.setGenVoidExpr(true);
-					st.resolve(Type.tpVoid);
-				} else {
-					st.resolve(reqType);
-				}
-				st = stats[i];
-				if( st.isAbrupted() && !self.isBreaked() ) self.setAbrupted(true);
-				if( st.isMethodAbrupted() && !self.isBreaked() ) self.setMethodAbrupted(true);
-			} catch(Exception e ) {
-				Kiev.reportError(stats[i],e);
-			}
-		}
+		getRView().resolve(reqType);
 	}
 
 	static class BlockDFFunc extends DFFunc {
@@ -1348,8 +942,9 @@ public class UnaryExpr extends ENode {
 
 	@virtual typedef This  = UnaryExpr;
 	@virtual typedef NImpl = UnaryExprImpl;
-	@virtual typedef VView = UnaryExprView;
+	@virtual typedef VView = VUnaryExpr;
 	@virtual typedef JView = JUnaryExpr;
+	@virtual typedef RView = RUnaryExpr;
 
 	@nodeimpl
 	public static class UnaryExprImpl extends ENodeImpl {
@@ -1358,7 +953,7 @@ public class UnaryExpr extends ENode {
 		@att public ENode			expr;
 	}
 	@nodeview
-	public static view UnaryExprView of UnaryExprImpl extends ENodeView {
+	public static abstract view UnaryExprView of UnaryExprImpl extends ENodeView {
 		public Operator			op;
 		public ENode			expr;
 
@@ -1368,9 +963,13 @@ public class UnaryExpr extends ENode {
 			return expr.getType();
 		}
 	}
+	@nodeview
+	public static view VUnaryExpr of UnaryExprImpl extends UnaryExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 	
 	public UnaryExpr() {
 		super(new UnaryExprImpl());
@@ -1397,112 +996,7 @@ public class UnaryExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
-		expr.resolve(reqType);
-		Type et = expr.getType();
-		if( et.isNumber() &&
-			(  op==PrefixOperator.PreIncr
-			|| op==PrefixOperator.PreDecr
-			|| op==PostfixOperator.PostIncr
-			|| op==PostfixOperator.PostDecr
-			)
-		) {
-			replaceWithNodeResolve(reqType, new IncrementExpr(pos,op,~expr));
-			return;
-		}
-		if( et.isAutoCastableTo(Type.tpBoolean) &&
-			(  op==PrefixOperator.PreIncr
-			|| op==PrefixOperator.BooleanNot
-			)
-		) {
-			replaceWithNodeResolve(Type.tpBoolean, new BooleanNotExpr(pos,~expr));
-			return;
-		}
-		if( et.isNumber() &&
-			(  op==PrefixOperator.Pos
-			|| op==PrefixOperator.Neg
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		if( et.isInteger() && op==PrefixOperator.BitNot ) {
-			this.resolve2(reqType);
-			return;
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			if (ctx_clazz != null && opt.method != null && opt.method.type.arity == 1) {
-				if ( !ctx_clazz.ctype.isInstanceOf(opt.method.ctx_clazz.ctype) )
-					continue;
-			}
-			Type[] tps = new Type[]{null,et};
-			ASTNode[] argsarr = new ASTNode[]{null,expr};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				ENode e;
-				if ( opt.method.isStatic() )
-					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr}));
-				else
-					replaceWithNodeResolve(reqType, new CallExpr(pos,~expr,opt.method,ENode.emptyArray));
-				return;
-			}
-		}
-		// Not a standard and not overloaded, try wrapped classes
-		if (et instanceof CTimeType) {
-			replaceWithNodeResolve(reqType, new UnaryExpr(pos,op,et.makeUnboxedExpr(expr)));
-			return;
-		}
-		resolve2(reqType);
-	}
-
-	private void resolve2(Type reqType) {
-		expr.resolve(null);
-		if( op==PrefixOperator.PreIncr
-		||  op==PrefixOperator.PreDecr
-		||  op==PostfixOperator.PostIncr
-		||  op==PostfixOperator.PostDecr
-		) {
-			replaceWithNodeResolve(reqType, new IncrementExpr(pos,op,expr));
-			return;
-		} else if( op==PrefixOperator.BooleanNot ) {
-			replaceWithNodeResolve(reqType, new BooleanNotExpr(pos,expr));
-			return;
-		}
-		// Check if expression is constant
-		if( expr.isConstantExpr() ) {
-			Number val = (Number)expr.getConstValue();
-			if( op == PrefixOperator.Pos ) {
-				if( val instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val.doubleValue()));
-				else if( val instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val.floatValue()));
-				else if( val instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val.longValue()));
-				else if( val instanceof Integer )
-					replaceWithNodeResolve(new ConstIntExpr(val.intValue()));
-				else if( val instanceof Short )
-					replaceWithNodeResolve(new ConstShortExpr(val.shortValue()));
-				else if( val instanceof Byte )
-					replaceWithNodeResolve(new ConstByteExpr(val.byteValue()));
-			}
-			else if( op == PrefixOperator.Neg ) {
-				if( val instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(-val.doubleValue()));
-				else if( val instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(-val.floatValue()));
-				else if( val instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(-val.longValue()));
-				else if( val instanceof Integer )
-					replaceWithNodeResolve(new ConstIntExpr(-val.intValue()));
-				else if( val instanceof Short )
-					replaceWithNodeResolve(new ConstShortExpr(-val.shortValue()));
-				else if( val instanceof Byte )
-					replaceWithNodeResolve(new ConstByteExpr(-val.byteValue()));
-			}
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1534,8 +1028,9 @@ public class IncrementExpr extends ENode {
 
 	@virtual typedef This  = IncrementExpr;
 	@virtual typedef NImpl = IncrementExprImpl;
-	@virtual typedef VView = IncrementExprView;
+	@virtual typedef VView = VIncrementExpr;
 	@virtual typedef JView = JIncrementExpr;
+	@virtual typedef RView = RIncrementExpr;
 
 	@nodeimpl
 	public static class IncrementExprImpl extends ENodeImpl {		
@@ -1544,7 +1039,7 @@ public class IncrementExpr extends ENode {
 		@att public ENode				lval;
 	}
 	@nodeview
-	public static view IncrementExprView of IncrementExprImpl extends ENodeView {
+	public static abstract view IncrementExprView of IncrementExprImpl extends ENodeView {
 		public Operator		op;
 		public ENode		lval;
 
@@ -1554,9 +1049,13 @@ public class IncrementExpr extends ENode {
 			return lval.getType();
 		}
 	}
+	@nodeview
+	public static final view VIncrementExpr of IncrementExprImpl extends IncrementExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public IncrementExpr() {
 		super(new IncrementExprImpl());
@@ -1577,10 +1076,7 @@ public class IncrementExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1614,8 +1110,9 @@ public class ConditionalExpr extends ENode {
 
 	@virtual typedef This  = ConditionalExpr;
 	@virtual typedef NImpl = ConditionalExprImpl;
-	@virtual typedef VView = ConditionalExprView;
+	@virtual typedef VView = VConditionalExpr;
 	@virtual typedef JView = JConditionalExpr;
+	@virtual typedef RView = RConditionalExpr;
 
 	@nodeimpl
 	public static class ConditionalExprImpl extends ENodeImpl {
@@ -1625,7 +1122,7 @@ public class ConditionalExpr extends ENode {
 		@att public ENode			expr2;
 	}
 	@nodeview
-	public static view ConditionalExprView of ConditionalExprImpl extends ENodeView {
+	public static abstract view ConditionalExprView of ConditionalExprImpl extends ENodeView {
 		public ENode		cond;
 		public ENode		expr1;
 		public ENode		expr2;
@@ -1648,9 +1145,13 @@ public class ConditionalExpr extends ENode {
 			return expr1.getType();
 		}
 	}
+	@nodeview
+	public static final view VConditionalExpr of ConditionalExprImpl extends ConditionalExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 	
 	public ConditionalExpr() {
 		super(new ConditionalExprImpl());
@@ -1673,20 +1174,7 @@ public class ConditionalExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
-		cond.resolve(Type.tpBoolean);
-		expr1.resolve(reqType);
-		expr2.resolve(reqType);
-
-		if( expr1.getType() ≉ getType() ) {
-			expr1 = new CastExpr(expr1.pos,getType(),~expr1);
-			expr1.resolve(getType());
-		}
-		if( expr2.getType() ≉ getType() ) {
-			expr2 = new CastExpr(expr2.pos,getType(),~expr2);
-			expr2.resolve(getType());
-		}
-		setResolved(true);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1707,8 +1195,9 @@ public class CastExpr extends ENode {
 
 	@virtual typedef This  = CastExpr;
 	@virtual typedef NImpl = CastExprImpl;
-	@virtual typedef VView = CastExprView;
+	@virtual typedef VView = VCastExpr;
 	@virtual typedef JView = JCastExpr;
+	@virtual typedef RView = RCastExpr;
 
 	@nodeimpl
 	public static class CastExprImpl extends ENodeImpl {
@@ -1717,7 +1206,7 @@ public class CastExpr extends ENode {
 		@att public TypeRef		type;
 	}
 	@nodeview
-	public static view CastExprView of CastExprImpl extends ENodeView {
+	public static abstract view CastExprView of CastExprImpl extends ENodeView {
 		public ENode	expr;
 		public TypeRef	type;
 
@@ -1727,9 +1216,13 @@ public class CastExpr extends ENode {
 			return type.getType();
 		}
 	}
+	@nodeview
+	public static final view VCastExpr of CastExprImpl extends CastExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 	
 	public CastExpr() {
 		super(new CastExprImpl());
@@ -1758,191 +1251,7 @@ public class CastExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
-		Type type = this.type.getType();
-		expr.resolve(type);
-		if (expr instanceof TypeRef)
-			((TypeRef)expr).toExpr(type);
-		Type extp = Type.getRealType(type,expr.getType());
-		if( type ≡ Type.tpBoolean && extp ≡ Type.tpRule ) {
-			replaceWithNode(expr);
-			return;
-		}
-		// Try to find $cast method
-		if( !extp.isAutoCastableTo(type) ) {
-			if( tryOverloadedCast(extp) )
-				return;
-			if (extp instanceof CTimeType) {
-				expr = extp.makeUnboxedExpr(expr);
-				resolve(reqType);
-				return;
-			}
-		}
-		else if (extp instanceof CTimeType && extp.getUnboxedType().isAutoCastableTo(type)) {
-			if( tryOverloadedCast(extp) )
-				return;
-			expr = extp.makeUnboxedExpr(expr);
-			resolve(reqType);
-			return;
-		}
-		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView() && extp.getStruct().view_of.getType().isAutoCastableTo(type)) {
-			if( tryOverloadedCast(extp) )
-				return;
-			this.resolve2(type);
-			return;
-		}
-		else {
-			this.resolve2(type);
-			return;
-		}
-		if( extp.isCastableTo(type) ) {
-			this.resolve2(type);
-			return;
-		}
-		throw new CompilerException(this,"Expression "+expr+" of type "+extp+" is not castable to "+type);
-	}
-
-	public boolean tryOverloadedCast(Type et) {
-		Method@ v;
-		ResInfo info = new ResInfo(this,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-		v.$unbind();
-		CallType mt = new CallType(Type.emptyArray,this.type.getType());
-		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
-			ENode call = info.buildCall(this,~expr,(Method)v,info.mt,ENode.emptyArray);
-			if (this.type.getType().isReference())
-				call.setCastCall(true);
-			replaceWithNodeResolve(type.getType(),call);
-			return true;
-		}
-		v.$unbind();
-		info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports);
-		mt = new CallType(new Type[]{expr.getType()},this.type.getType());
-		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
-			assert(v.isStatic());
-			ENode call = new CallExpr(pos,null,(Method)v,new ENode[]{~expr});
-			replaceWithNodeResolve(type.getType(),call);
-			return true;
-		}
-		return false;
-	}
-
-	private void resolve2(Type reqType) {
-		Type type = this.type.getType();
-		expr.resolve(type);
-//		if( e instanceof Struct )
-//			expr = Expr.toExpr((Struct)e,reqType,pos,parent);
-//		else
-//			expr = (Expr)e;
-		if (reqType ≡ Type.tpVoid) {
-			setResolved(true);
-		}
-		Type et = Type.getRealType(type,expr.getType());
-		// Try wrapped field
-		if (et instanceof CTimeType && et.getUnboxedType().equals(type)) {
-			expr = et.makeUnboxedExpr(expr);
-			resolve(reqType);
-			return;
-		}
-		// try null to something...
-		if (et ≡ Type.tpNull && reqType.isReference())
-			return;
-		if( type ≡ Type.tpBoolean && et ≡ Type.tpRule ) {
-			replaceWithNodeResolve(type, new BinaryBoolExpr(pos,BinaryOperator.NotEquals,expr,new ConstNullExpr()));
-			return;
-		}
-		if( type.isBoolean() && et.isBoolean() )
-			return;
-		if( !Kiev.javaMode && type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
-			if (type.isIntegerInCode())
-				return;
-			Method cm = ((CompaundType)type).clazz.resolveMethod(nameCastOp,type,Type.tpInt);
-			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{~expr}));
-			return;
-		}
-		if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
-			if (et.isIntegerInCode())
-				return;
-			Method cf = Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, Type.tpInt);
-			replaceWithNodeResolve(reqType, new CallExpr(pos,~expr,cf,ENode.emptyArray));
-			return;
-		}
-		// Try to find $cast method
-		if( !et.isAutoCastableTo(type) && tryOverloadedCast(et))
-			return;
-
-		if( et.isReference() != type.isReference() && !(expr instanceof ClosureCallExpr) )
-			if( !et.isReference() && type instanceof ArgType )
-				Kiev.reportWarning(this,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
-			else if (et.getStruct() == null || !et.getStruct().isEnum())
-				throw new CompilerException(this,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
-		if( !et.isCastableTo((Type)type) ) {
-			throw new RuntimeException("Expression "+expr+" cannot be casted to type "+type);
-		}
-		if( Kiev.verify && expr.getType() ≉ et ) {
-			setResolved(true);
-			return;
-		}
-		if( et.isReference() && et.isInstanceOf((Type)type) ) {
-			setResolved(true);
-			return;
-		}
-		if( et.isReference() && type.isReference() && et.getStruct() != null
-		 && et.getStruct().package_clazz.isClazz()
-		 && !(et instanceof ArgType)
-		 && !et.getStruct().isStatic() && et.getStruct().package_clazz.ctype.isAutoCastableTo(type)
-		) {
-			replaceWithNodeResolve(reqType,
-				new CastExpr(pos,type,
-					new IFldExpr(pos,~expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
-				));
-			return;
-		}
-		if( expr.isConstantExpr() ) {
-			Object val = expr.getConstValue();
-			Type t = type;
-			if( val instanceof Number ) {
-				Number num = (Number)val;
-				if     ( t ≡ Type.tpDouble ) { replaceWithNodeResolve(new ConstDoubleExpr ((double)num.doubleValue())); return; }
-				else if( t ≡ Type.tpFloat )  { replaceWithNodeResolve(new ConstFloatExpr  ((float) num.floatValue())); return; }
-				else if( t ≡ Type.tpLong )   { replaceWithNodeResolve(new ConstLongExpr   ((long)  num.longValue())); return; }
-				else if( t ≡ Type.tpInt )    { replaceWithNodeResolve(new ConstIntExpr    ((int)   num.intValue())); return; }
-				else if( t ≡ Type.tpShort )  { replaceWithNodeResolve(new ConstShortExpr  ((short) num.intValue())); return; }
-				else if( t ≡ Type.tpByte )   { replaceWithNodeResolve(new ConstByteExpr   ((byte)  num.intValue())); return; }
-				else if( t ≡ Type.tpChar )   { replaceWithNodeResolve(new ConstCharExpr   ((char)  num.intValue())); return; }
-			}
-			else if( val instanceof Character ) {
-				char num = ((Character)val).charValue();
-				if     ( t ≡ Type.tpDouble ) { replaceWithNodeResolve(new ConstDoubleExpr ((double)(int)num)); return; }
-				else if( t ≡ Type.tpFloat )  { replaceWithNodeResolve(new ConstFloatExpr  ((float) (int)num)); return; }
-				else if( t ≡ Type.tpLong )   { replaceWithNodeResolve(new ConstLongExpr   ((long)  (int)num)); return; }
-				else if( t ≡ Type.tpInt )    { replaceWithNodeResolve(new ConstIntExpr    ((int)   (int)num)); return; }
-				else if( t ≡ Type.tpShort )  { replaceWithNodeResolve(new ConstShortExpr  ((short) (int)num)); return; }
-				else if( t ≡ Type.tpByte )   { replaceWithNodeResolve(new ConstByteExpr   ((byte)  (int)num)); return; }
-				else if( t ≡ Type.tpChar )   { replaceWithNodeResolve(new ConstCharExpr   ((char)  num)); return; }
-			}
-			else if( val instanceof Boolean ) {
-				int num = ((Boolean)val).booleanValue() ? 1 : 0;
-				if     ( t ≡ Type.tpDouble ) { replaceWithNodeResolve(new ConstDoubleExpr ((double)num)); return; }
-				else if( t ≡ Type.tpFloat )  { replaceWithNodeResolve(new ConstFloatExpr  ((float) num)); return; }
-				else if( t ≡ Type.tpLong )   { replaceWithNodeResolve(new ConstLongExpr   ((long)  num)); return; }
-				else if( t ≡ Type.tpInt )    { replaceWithNodeResolve(new ConstIntExpr    ((int)   num)); return; }
-				else if( t ≡ Type.tpShort )  { replaceWithNodeResolve(new ConstShortExpr  ((short) num)); return; }
-				else if( t ≡ Type.tpByte )   { replaceWithNodeResolve(new ConstByteExpr   ((byte)  num)); return; }
-				else if( t ≡ Type.tpChar )   { replaceWithNodeResolve(new ConstCharExpr   ((char)  num)); return; }
-			}
-		}
-		if( !et.equals(type) && expr instanceof ClosureCallExpr && et instanceof CallType ) {
-			if( et.isAutoCastableTo(type) ) {
-				((ClosureCallExpr)expr).is_a_call = Boolean.TRUE;
-				return;
-			}
-			else if( et.isCastableTo(type) ) {
-				((ClosureCallExpr)expr).is_a_call = Boolean.TRUE;
-			}
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public static void autoCast(ENode ex, TypeRef tp) {

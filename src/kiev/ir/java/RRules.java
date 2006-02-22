@@ -10,7 +10,6 @@ import kiev.parser.*;
 import kiev.vlang.RuleMethod.RuleMethodImpl;
 import kiev.vlang.RuleMethod.RuleMethodView;
 import kiev.vlang.RuleBlock.RuleBlockImpl;
-import kiev.vlang.RuleBlock.RuleBlockView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -35,7 +34,10 @@ public final view RRuleMethod of RuleMethodImpl extends RuleMethodView {
 }
 
 @nodeview
-public final view RRuleBlock of RuleBlockImpl extends RuleBlockView {
+public final view RRuleBlock of RuleBlockImpl extends RBlock {
+	public ASTRuleNode		node;
+	public StringBuffer		fields_buf;
+
 	public boolean preGenerate() {
 		node.resolve(Type.tpVoid);
 		fields_buf = new StringBuffer();

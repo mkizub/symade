@@ -48,11 +48,11 @@ public class RuleMethod extends Method {
 	@nodeview
 	public static abstract view RuleMethodView of RuleMethodImpl extends MethodView {
 		public:ro	NArr<Var>			localvars;
-		public				int					base;
-		public				int					max_depth;
-		public				int					state_depth;
-		public				int					max_vars;
-		public				int					index;		// index counter for RuleNode.idx
+		public		int					base;
+		public		int					max_depth;
+		public		int					state_depth;
+		public		int					max_vars;
+		public		int					index;		// index counter for RuleNode.idx
 	}
 	@nodeview
 	public static final view VRuleMethod of RuleMethodImpl extends RuleMethodView {
@@ -152,10 +152,6 @@ public class RuleMethod extends Method {
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
-//		if( isVarArgs() ) {
-//			FormPar va = new FormPar(pos,nameVarArgs, new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
-//			params.append(va);
-//		}
 		foreach (Var lv; localvars)
 			lv.setLocalRuleVar(true);
 		trace(Kiev.debugMultiMethod,"Rule "+this+" has erased type "+this.etype);
@@ -215,52 +211,6 @@ public class RuleMethod extends Method {
 		}
 		this.cleanDFlow();
 	}
-
-
-//	public boolean compare(KString name, CallType mt, Type tp, ResInfo info, boolean exact) {
-//		if( !this.name.equals(name) ) return false;
-//		int type_len = this.type.args.length - 1;
-//		int args_len = mt.args.length;
-//		if( type_len != args_len ) {
-//			if( !isVarArgs() ) {
-//				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-//					+" differ in number of params: "+type_len+" != "+args_len);
-//				return false;
-//			} else if( type_len-1 > args_len ) {
-//				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-//					+" not match in number of params: "+type_len+" != "+args_len);
-//				return false;
-//			}
-//		}
-//		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-//		CallType rt = (CallType)Type.getRealType(tp,this.type);
-//		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
-//			if( exact && !mt.args[i].equals(rt.args[i+1]) ) {
-//				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-//					+" differ in param # "+i+": "+rt.args[i+1]+" != "+mt.args[i]);
-//				return false;
-//			}
-//			else if( !exact && !mt.args[i].isAutoCastableTo(rt.args[i+1]) ) {
-//				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-//					+" differ in param # "+i+": "+mt.args[i]+" not auto-castable to "+rt.args[i+1]);
-//				return false;
-//			}
-//		}
-//		boolean match = false;
-//		if( mt.ret == Type.tpAny )
-//			match = true;
-//		else if( exact &&  rt.ret.equals(mt.ret) )
-//			match = true;
-//		else if( !exact && rt.ret.isAutoCastableTo(mt.ret) )
-//			match = true;
-//		else
-//			match = false;
-//		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+(match?" match":" do not match"));
-//		if (info != null && match)
-//			info.mt = rt;
-//		return match;
-//	}
-
 }
 
 /*
@@ -404,7 +354,7 @@ public final class RuleBlock extends Block {
 
 	@virtual typedef This  = RuleBlock;
 	@virtual typedef NImpl = RuleBlockImpl;
-	@virtual typedef VView = VRuleBlock;
+	@virtual typedef VView = RuleBlockView;
 	@virtual typedef RView = RRuleBlock;
 
 	@nodeimpl
@@ -414,12 +364,9 @@ public final class RuleBlock extends Block {
 		@att public StringBuffer	fields_buf;
 	}
 	@nodeview
-	public static abstract view RuleBlockView of RuleBlockImpl extends BlockView {
+	public static view RuleBlockView of RuleBlockImpl extends BlockView {
 		public ASTRuleNode		node;
 		public StringBuffer		fields_buf;
-	}
-	@nodeview
-	public static final view VRuleBlock of RuleBlockImpl extends RuleBlockView {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
