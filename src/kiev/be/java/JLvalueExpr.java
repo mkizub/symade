@@ -57,8 +57,9 @@ public abstract view JAccessExpr of AccessExprImpl extends JLvalueExpr {
 }
 
 @nodeview
-public final view JIFldExpr of IFldExprImpl extends JAccessExpr {
-	public:ro	JField		var;
+public final view JIFldExpr of IFldExprImpl extends JLvalueExpr {
+	public:ro JENode		obj;
+	public:ro JField		var;
 
 	public boolean	isConstantExpr() { return var.isConstantExpr(); }
 	public Object	getConstValue() { return var.getConstValue(); }
@@ -468,8 +469,9 @@ public final view JLVarExpr of LVarExprImpl extends JLvalueExpr {
 }
 
 @nodeview
-public final view JSFldExpr of SFldExprImpl extends JAccessExpr {
-	public:ro	JField		var;
+public final view JSFldExpr of SFldExprImpl extends JLvalueExpr {
+	public:ro JENode		obj;
+	public:ro JField		var;
 	
 	public boolean	isConstantExpr() { return var.isConstantExpr(); }
 	public Object	getConstValue() { return var.getConstValue(); }
@@ -510,7 +512,7 @@ public final view JSFldExpr of SFldExprImpl extends JAccessExpr {
 }
 
 @nodeview
-public final view JOuterThisAccessExpr of OuterThisAccessExprImpl extends JAccessExpr {
+public final view JOuterThisAccessExpr of OuterThisAccessExprImpl extends JLvalueExpr {
 	public:ro	Struct			outer;
 	public:ro	NArr<Field>		outer_refs;
 

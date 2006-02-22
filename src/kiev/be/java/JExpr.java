@@ -43,7 +43,8 @@ public final view JShadow of ShadowImpl extends JENode {
 }
 
 @nodeview
-public final view JArrayLengthExpr of ArrayLengthExprImpl extends JAccessExpr {
+public final view JArrayLengthExpr of ArrayLengthExprImpl extends JENode {
+	public:ro JENode		obj;
 
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerLengthExpr: "+this);

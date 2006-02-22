@@ -187,6 +187,7 @@ kiev.bytecode.UnicodePoolConstant kiev/bytecode/UnicodePoolConstant kiev\bytecod
 kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
+kiev.ir.java.RAccessExpr kiev/ir/java/RAccessExpr kiev\ir\java\RLvalueExpr.java
 kiev.ir.java.RArrayLengthExpr kiev/ir/java/RArrayLengthExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RAssignExpr kiev/ir/java/RAssignExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RBinaryBoolExpr kiev/ir/java/RBinaryBoolExpr kiev\ir\java\RBoolExpr.java
@@ -205,6 +206,7 @@ kiev.ir.java.RCommaExpr kiev/ir/java/RCommaExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RConditionalExpr kiev/ir/java/RConditionalExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RConstExpr kiev/ir/java/RConstExpr kiev\ir\java\RConstExpr.java
 kiev.ir.java.RConstructor kiev/ir/java/RConstructor kiev\ir\java\RMethod.java
+kiev.ir.java.RContainerAccessExpr kiev/ir/java/RContainerAccessExpr kiev\ir\java\RLvalueExpr.java
 kiev.ir.java.RDoWhileStat kiev/ir/java/RDoWhileStat kiev\ir\java\RLoopStat.java
 kiev.ir.java.RField kiev/ir/java/RField kiev\ir\java\RField.java
 kiev.ir.java.RFileUnit kiev/ir/java/RFileUnit kiev\ir\java\RFileUnit.java
@@ -212,6 +214,7 @@ kiev.ir.java.RFinallyInfo kiev/ir/java/RFinallyInfo kiev\ir\java\RTryStat.java
 kiev.ir.java.RForEachStat kiev/ir/java/RForEachStat kiev\ir\java\RLoopStat.java
 kiev.ir.java.RForInit kiev/ir/java/RForInit kiev\ir\java\RLoopStat.java
 kiev.ir.java.RForStat kiev/ir/java/RForStat kiev\ir\java\RLoopStat.java
+kiev.ir.java.RIFldExpr kiev/ir/java/RIFldExpr kiev\ir\java\RLvalueExpr.java
 kiev.ir.java.RIncrementExpr kiev/ir/java/RIncrementExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RInitializer kiev/ir/java/RInitializer kiev\ir\java\RMethod.java
 kiev.ir.java.RInstanceofExpr kiev/ir/java/RInstanceofExpr kiev\ir\java\RBoolExpr.java
@@ -220,13 +223,17 @@ kiev.ir.java.RLocalStructDecl kiev/ir/java/RLocalStructDecl kiev\ir\java\RNode.j
 kiev.ir.java.RMethod kiev/ir/java/RMethod kiev\ir\java\RMethod.java
 kiev.ir.java.RNewClosure kiev/ir/java/RNewClosure kiev\ir\java\RNewExpr.java
 kiev.ir.java.RNopExpr kiev/ir/java/RNopExpr kiev\ir\java\RNode.java
+kiev.ir.java.ROuterThisAccessExpr kiev/ir/java/ROuterThisAccessExpr kiev\ir\java\RLvalueExpr.java
+kiev.ir.java.RReinterpExpr kiev/ir/java/RReinterpExpr kiev\ir\java\RLvalueExpr.java
 kiev.ir.java.RRuleBlock kiev/ir/java/RRuleBlock kiev\ir\java\RRules.java
 kiev.ir.java.RRuleMethod kiev/ir/java/RRuleMethod kiev\ir\java\RRules.java
+kiev.ir.java.RSFldExpr kiev/ir/java/RSFldExpr kiev\ir\java\RLvalueExpr.java
 kiev.ir.java.RShadow kiev/ir/java/RShadow kiev\ir\java\RExpr.java
 kiev.ir.java.RStringConcatExpr kiev/ir/java/RStringConcatExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RStruct kiev/ir/java/RStruct kiev\ir\java\RStruct.java
 kiev.ir.java.RSwitchStat kiev/ir/java/RSwitchStat kiev\ir\java\RSwitchStat.java
 kiev.ir.java.RSynchronizedStat kiev/ir/java/RSynchronizedStat kiev\ir\java\RBlockStat.java
+kiev.ir.java.RThisExpr kiev/ir/java/RThisExpr kiev\ir\java\RLvalueExpr.java
 kiev.ir.java.RTryStat kiev/ir/java/RTryStat kiev\ir\java\RTryStat.java
 kiev.ir.java.RTypeClassExpr kiev/ir/java/RTypeClassExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RTypeInfoExpr kiev/ir/java/RTypeInfoExpr kiev\ir\java\RExpr.java

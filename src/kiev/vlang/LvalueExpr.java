@@ -10,14 +10,21 @@ import kiev.vlang.types.*;
 import kiev.be.java.JNode;
 import kiev.be.java.JENode;
 import kiev.be.java.JLvalueExpr;
+import kiev.ir.java.RAccessExpr;
 import kiev.be.java.JAccessExpr;
+import kiev.ir.java.RIFldExpr;
 import kiev.be.java.JIFldExpr;
+import kiev.ir.java.RContainerAccessExpr;
 import kiev.be.java.JContainerAccessExpr;
+import kiev.ir.java.RThisExpr;
 import kiev.be.java.JThisExpr;
-import kiev.be.java.JLVarExpr;
 import kiev.ir.java.RLVarExpr;
+import kiev.be.java.JLVarExpr;
+import kiev.ir.java.RSFldExpr;
 import kiev.be.java.JSFldExpr;
+import kiev.ir.java.ROuterThisAccessExpr;
 import kiev.be.java.JOuterThisAccessExpr;
+import kiev.ir.java.RReinterpExpr;
 import kiev.be.java.JReinterpExpr;
 
 import static kiev.stdlib.Debug.*;
@@ -50,7 +57,7 @@ public abstract class LvalueExpr extends ENode {
 }
 
 @nodeset
-public class AccessExpr extends LvalueExpr {
+public final class AccessExpr extends LvalueExpr {
 	
 	@dflow(out="obj") private static class DFI {
 	@dflow(in="this:in")	ENode			obj;
@@ -58,11 +65,12 @@ public class AccessExpr extends LvalueExpr {
 
 	@virtual typedef This  = AccessExpr;
 	@virtual typedef NImpl = AccessExprImpl;
-	@virtual typedef VView = AccessExprView;
+	@virtual typedef VView = VAccessExpr;
 	@virtual typedef JView = JAccessExpr;
+	@virtual typedef RView = RAccessExpr;
 
 	@nodeimpl
-	public static class AccessExprImpl extends LvalueExprImpl {		
+	public static final class AccessExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = AccessExpr;
 		@att public ENode			obj;
 		@att public NameRef			ident;
@@ -74,6 +82,22 @@ public class AccessExpr extends LvalueExpr {
 
 		public int		getPriority() { return Constants.opAccessPriority; }
 
+		protected final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
+			if( v instanceof Field ) {
+				return info.buildAccess(this.getNode(), o, v);
+			}
+			else if( v instanceof Struct ) {
+				TypeRef tr = new TypeRef(((Struct)v).ctype);
+				return tr;
+			}
+			else {
+				throw new CompilerException(this,"Identifier "+ident+" must be a class's field");
+			}
+		}
+	}
+
+	@nodeview
+	public static final view VAccessExpr of AccessExprImpl extends AccessExprView {
 		public void mainResolveOut() {
 			ASTNode[] res;
 			Type[] tps;
@@ -142,23 +166,11 @@ public class AccessExpr extends LvalueExpr {
 			}
 			this.replaceWithNode(res[idx]);
 		}
-
-		final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
-			if( v instanceof Field ) {
-				return info.buildAccess(this.getNode(), o, v);
-			}
-			else if( v instanceof Struct ) {
-				TypeRef tr = new TypeRef(((Struct)v).ctype);
-				return tr;
-			}
-			else {
-				throw new CompilerException(this,"Identifier "+ident+" must be a class's field");
-			}
-		}
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public AccessExpr() {
 		super(new AccessExprImpl());
@@ -180,78 +192,8 @@ public class AccessExpr extends LvalueExpr {
 		this.ident = ident;
 	}
 	
-	public void resolve(Type reqType) throws CompilerException {
-		ENode[] res;
-		Type[] tps;
-
-		// resolve access
-		obj.resolve(null);
-
-	try_static:
-		if( obj instanceof TypeRef ) {
-			tps = new Type[]{ ((TypeRef)obj).getType() };
-			res = new ENode[1];
-			if( ident.name.equals(nameThis) )
-				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
-		}
-		else {
-			ENode e = obj;
-			tps = e.getAccessTypes();
-			res = new ENode[tps.length];
-			for (int si=0; si < tps.length; si++) {
-				Type tp = tps[si];
-				if( ident.name.equals(nameLength) ) {
-					if( tp.isArray() ) {
-						tps[si] = Type.tpInt;
-						res[si] = new ArrayLengthExpr(pos,e.ncopy(), ident.ncopy());
-					}
-				}
-			}
-			// fall down
-		}
-		for (int si=0; si < tps.length; si++) {
-			if (res[si] != null)
-				continue;
-			Type tp = tps[si];
-			DNode@ v;
-			ResInfo info;
-			if (!(obj instanceof TypeRef) &&
-				tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),ident.name) )
-				res[si] = makeExpr(v,info,~obj);
-			else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
-				res[si] = makeExpr(v,info,tp.getStruct());
-		}
-		int cnt = 0;
-		int idx = -1;
-		for (int si=0; si < res.length; si++) {
-			if (res[si] != null) {
-				cnt ++;
-				if (idx < 0) idx = si;
-			}
-		}
-		if (cnt > 1) {
-			StringBuffer msg = new StringBuffer("Umbigous access:\n");
-			for(int si=0; si < res.length; si++) {
-				if (res[si] == null)
-					continue;
-				msg.append("\t").append(res).append('\n');
-			}
-			msg.append("while resolving ").append(this);
-			throw new CompilerException(this, msg.toString());
-		}
-		if (cnt == 0) {
-			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
-			for(int si=0; si < res.length; si++) {
-				if (tps[si] == null)
-					continue;
-				msg.append("\t").append(tps[si]).append('\n');
-			}
-			msg.append("while resolving ").append(this);
-			this.obj = this.obj;
-			throw new CompilerException(this, msg.toString());
-			//return;
-		}
-		this.replaceWithNodeResolve(reqType,~res[idx]);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public String toString() {
@@ -265,7 +207,7 @@ public class AccessExpr extends LvalueExpr {
 }
 
 @nodeset
-public final class IFldExpr extends AccessExpr {
+public final class IFldExpr extends LvalueExpr {
 	
 	@dflow(out="obj") private static class DFI {
 	@dflow(in="this:in")	ENode			obj;
@@ -273,16 +215,21 @@ public final class IFldExpr extends AccessExpr {
 
 	@virtual typedef This  = IFldExpr;
 	@virtual typedef NImpl = IFldExprImpl;
-	@virtual typedef VView = IFldExprView;
+	@virtual typedef VView = VIFldExpr;
 	@virtual typedef JView = JIFldExpr;
+	@virtual typedef RView = RIFldExpr;
 
 	@nodeimpl
-	public static final class IFldExprImpl extends AccessExprImpl {		
+	public static final class IFldExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = IFldExpr;
-		@ref public Field		var;
+		@att public ENode			obj;
+		@att public NameRef			ident;
+		@ref public Field			var;
 	}
 	@nodeview
-	public static final view IFldExprView of IFldExprImpl extends AccessExprView {
+	public static view IFldExprView of IFldExprImpl extends LvalueExprView {
+		public ENode		obj;
+		public NameRef		ident;
 		public Field		var;
 
 		public Operator getOp() { return BinaryOperator.Access; }
@@ -312,9 +259,13 @@ public final class IFldExpr extends AccessExpr {
 			throw new RuntimeException("Request for constant value of non-constant expression");
 		}
 	}
+	@nodeview
+	public static final view VIFldExpr of IFldExprImpl extends IFldExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public IFldExpr() {
 		super(new IFldExprImpl());
@@ -374,18 +325,8 @@ public final class IFldExpr extends AccessExpr {
 		return null;
 	}
 	
-	public void resolve(Type reqType) throws RuntimeException {
-		obj.resolve(null);
-
-		// Set violation of the field
-		if( ctx_method != null
-		 && obj instanceof LVarExpr && ((LVarExpr)obj).ident.equals(nameThis)
-		)
-			ctx_method.addViolatedField(var);
-
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -408,8 +349,9 @@ public final class ContainerAccessExpr extends LvalueExpr {
 
 	@virtual typedef This  = ContainerAccessExpr;
 	@virtual typedef NImpl = ContainerAccessExprImpl;
-	@virtual typedef VView = ContainerAccessExprView;
+	@virtual typedef VView = VContainerAccessExpr;
 	@virtual typedef JView = JContainerAccessExpr;
+	@virtual typedef RView = RContainerAccessExpr;
 
 	@nodeimpl
 	public static final class ContainerAccessExprImpl extends LvalueExprImpl {		
@@ -418,7 +360,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		@att public ENode		index;
 	}
 	@nodeview
-	public static final view ContainerAccessExprView of ContainerAccessExprImpl extends LvalueExprView {
+	public static view ContainerAccessExprView of ContainerAccessExprImpl extends LvalueExprView {
 		public ENode		obj;
 		public ENode		index;
 
@@ -445,9 +387,13 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			}
 		}
 	}
+	@nodeview
+	public static final view VContainerAccessExpr of ContainerAccessExprImpl extends ContainerAccessExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public ContainerAccessExpr() {
 		super(new ContainerAccessExprImpl());
@@ -491,31 +437,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		}
 	}
 
-	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return;
-		obj.resolve(null);
-		if( obj.getType().getStruct() != null ) {
-			// May be an overloaded '[]' operator, ensure overriding
-			Struct s = obj.getType().getStruct();
-		lookup_op:
-			for(;;) {
-				s.checkResolved();
-				if (s instanceof Struct) {
-					Struct ss = (Struct)s;
-					foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
-						break lookup_op;
-				}
-				if( s.super_type != null ) {
-					s = s.super_type.clazz;
-					continue;
-				}
-				throw new RuntimeException("Resolved object "+obj+" of type "+obj.getType()+" is not an array and does not overrides '[]' operator");
-			}
-		}
-		index.resolve(null);
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -538,15 +461,16 @@ public final class ThisExpr extends LvalueExpr {
 	
 	@virtual typedef This  = ThisExpr;
 	@virtual typedef NImpl = ThisExprImpl;
-	@virtual typedef VView = ThisExprView;
+	@virtual typedef VView = VThisExpr;
 	@virtual typedef JView = JThisExpr;
+	@virtual typedef RView = RThisExpr;
 
 	@nodeimpl
 	public static final class ThisExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = ThisExpr;
 	}
 	@nodeview
-	public static final view ThisExprView of ThisExprImpl extends LvalueExprView {
+	public static view ThisExprView of ThisExprImpl extends LvalueExprView {
 
 		public Type getType() {
 			try {
@@ -563,9 +487,13 @@ public final class ThisExpr extends LvalueExpr {
 			}
 		}
 	}
+	@nodeview
+	public static final view VThisExpr of ThisExprImpl extends ThisExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public ThisExpr() {
 		super(new ThisExprImpl());
@@ -582,16 +510,8 @@ public final class ThisExpr extends LvalueExpr {
 
 	public String toString() { return isSuperExpr() ? "super" : "this"; }
 
-	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return;
-		if (ctx_method != null &&
-			ctx_method.isStatic() &&
-			!ctx_clazz.name.short_name.equals(nameIdefault)
-		)
-			Kiev.reportError(this,"Access '"+toString()+"' in static context");
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -701,26 +621,8 @@ public final class LVarExpr extends LvalueExpr {
 		return (Type[])sni.getTypes().clone();
 	}
 	
-	public void resolve(Type reqType) throws RuntimeException {
-		// Check if we try to access this var from local inner/anonymouse class
-		if( ctx_clazz.isLocal() ) {
-			if( getVar().ctx_clazz != this.ctx_clazz ) {
-				var.setNeedProxy(true);
-				setAsField(true);
-				// Now we need to add this var as a fields to
-				// local class and to initializer of this class
-				Field vf;
-				if( (vf = ctx_clazz.resolveField(ident.name,false)) == null ) {
-					// Add field
-					vf = ctx_clazz.addField(new Field(ident.name,var.type,ACC_PUBLIC));
-					vf.setNeedProxy(true);
-					vf.init = this.ncopy();
-				}
-			}
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -731,22 +633,27 @@ public final class LVarExpr extends LvalueExpr {
 }
 
 @nodeset
-public final class SFldExpr extends AccessExpr {
+public final class SFldExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = SFldExpr;
 	@virtual typedef NImpl = SFldExprImpl;
-	@virtual typedef VView = SFldExprView;
+	@virtual typedef VView = VSFldExpr;
 	@virtual typedef JView = JSFldExpr;
+	@virtual typedef RView = RSFldExpr;
 
 	@nodeimpl
-	public static final class SFldExprImpl extends AccessExprImpl {		
+	public static final class SFldExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = SFldExpr;
-		@ref public Field		var;
+		@att public ENode			obj;
+		@att public NameRef			ident;
+		@ref public Field			var;
 	}
 	@nodeview
-	public static final view SFldExprView of SFldExprImpl extends AccessExprView {
+	public static view SFldExprView of SFldExprImpl extends LvalueExprView {
+		public ENode		obj;
+		public NameRef		ident;
 		public Field		var;
 
 		public Operator getOp() { return BinaryOperator.Access; }
@@ -781,9 +688,13 @@ public final class SFldExpr extends AccessExpr {
 			throw new RuntimeException("Request for constant value of non-constant expression");
 		}
 	}
+	@nodeview
+	public static final view VSFldExpr of SFldExprImpl extends SFldExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public SFldExpr() {
 		super(new SFldExprImpl());
@@ -818,14 +729,8 @@ public final class SFldExpr extends AccessExpr {
 		return types;
 	}
 
-	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return;
-		// Set violation of the field
-		if( ctx_method != null )
-			ctx_method.addViolatedField(var);
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -837,24 +742,29 @@ public final class SFldExpr extends AccessExpr {
 }
 
 @nodeset
-public final class OuterThisAccessExpr extends AccessExpr {
+public final class OuterThisAccessExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = OuterThisAccessExpr;
 	@virtual typedef NImpl = OuterThisAccessExprImpl;
-	@virtual typedef VView = OuterThisAccessExprView;
+	@virtual typedef VView = VOuterThisAccessExpr;
 	@virtual typedef JView = JOuterThisAccessExpr;
+	@virtual typedef RView = ROuterThisAccessExpr;
 
 	@nodeimpl
-	public static final class OuterThisAccessExprImpl extends AccessExprImpl {		
+	public static final class OuterThisAccessExprImpl extends LvalueExprImpl {		
 		@virtual typedef ImplOf = OuterThisAccessExpr;
+		@att public ENode			obj;
+		@att public NameRef			ident;
 		@ref public Struct			outer;
 		@ref public NArr<Field>		outer_refs;
 	}
 	@nodeview
-	public static final view OuterThisAccessExprView of OuterThisAccessExprImpl extends AccessExprView {
-		public				Struct			outer;
+	public static view OuterThisAccessExprView of OuterThisAccessExprImpl extends LvalueExprView {
+		public		ENode			obj;
+		public		NameRef			ident;
+		public		Struct			outer;
 		public:ro	NArr<Field>		outer_refs;
 
 		public Operator getOp() { return BinaryOperator.Access; }
@@ -873,9 +783,13 @@ public final class OuterThisAccessExpr extends AccessExpr {
 			}
 		}
 	}
+	@nodeview
+	public static final view VOuterThisAccessExpr of OuterThisAccessExprImpl extends OuterThisAccessExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public OuterThisAccessExpr() {
 		super(new OuterThisAccessExprImpl());
@@ -902,32 +816,8 @@ public final class OuterThisAccessExpr extends AccessExpr {
 		return null;
 	}
 
-	public void resolve(Type reqType) throws RuntimeException {
-		outer_refs.delAll();
-		trace(Kiev.debugResolve,"Resolving "+this);
-		Field ou_ref = outerOf(ctx_clazz);
-		if( ou_ref == null )
-			throw new RuntimeException("Outer 'this' reference in non-inner or static inner class "+ctx_clazz);
-		do {
-			trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
-			outer_refs.append(ou_ref);
-			if( ou_ref.type.isInstanceOf(outer.ctype) ) break;
-			ou_ref = outerOf(ou_ref.type.getStruct());
-		} while( ou_ref!=null );
-		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.ctype) )
-			throw new RuntimeException("Outer class "+outer+" not found for inner class "+ctx_clazz);
-		if( Kiev.debugResolve ) {
-			StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");
-			for(int i=0; i < outer_refs.length; i++)
-				sb.append("->").append(outer_refs[i].name);
-			System.out.println(sb.toString());
-		}
-		if( ctx_method.isStatic() && !ctx_method.isVirtualStatic() ) {
-			throw new RuntimeException("Access to 'this' in static method "+ctx_method);
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
@@ -942,8 +832,9 @@ public final class ReinterpExpr extends LvalueExpr {
 
 	@virtual typedef This  = ReinterpExpr;
 	@virtual typedef NImpl = ReinterpExprImpl;
-	@virtual typedef VView = ReinterpExprView;
+	@virtual typedef VView = VReinterpExpr;
 	@virtual typedef JView = JReinterpExpr;
+	@virtual typedef RView = RReinterpExpr;
 
 	@nodeimpl
 	public static final class ReinterpExprImpl extends LvalueExprImpl {		
@@ -952,7 +843,7 @@ public final class ReinterpExpr extends LvalueExpr {
 		@att public ENode		expr;
 	}
 	@nodeview
-	public static final view ReinterpExprView of ReinterpExprImpl extends LvalueExprView {
+	public static view ReinterpExprView of ReinterpExprImpl extends LvalueExprView {
 		public TypeRef		type;
 		public ENode		expr;
 
@@ -960,9 +851,13 @@ public final class ReinterpExpr extends LvalueExpr {
 			return this.type.getType();
 		}
 	}
+	@nodeview
+	public static final view VReinterpExpr of ReinterpExprImpl extends ReinterpExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public ReinterpExpr() {
 		super(new ReinterpExprImpl());
@@ -989,28 +884,8 @@ public final class ReinterpExpr extends LvalueExpr {
 
 	public String toString() { return "(($reinterp "+type+")"+expr+")"; }
 
-	public void resolve(Type reqType) throws RuntimeException {
-		trace(Kiev.debugResolve,"Resolving "+this);
-		expr.resolve(null);
-		Type type = this.getType();
-		Type extp = expr.getType();
-		if (type ≈ extp) {
-			replaceWithNode(~expr);
-			return;
-		}
-		if (type.isIntegerInCode() && extp.isIntegerInCode())
-			;
-		else if (extp.isInstanceOf(type))
-			;
-		else if (type instanceof CTimeType && type.getEnclosedType() ≈ extp)
-			;
-		else if (extp instanceof CTimeType && extp.getEnclosedType() ≈ type)
-			;
-		else
-			Kiev.reportError(this, "Cannot reinterpret "+extp+" as "+type);
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

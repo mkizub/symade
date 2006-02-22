@@ -112,7 +112,7 @@ public class Shadow extends ENode {
 }
 
 @nodeset
-public class ArrayLengthExpr extends AccessExpr {
+public class ArrayLengthExpr extends ENode {
 	
 	@dflow(out="obj") private static class DFI {
 	@dflow(in="this:in")	ENode			obj;
@@ -125,11 +125,16 @@ public class ArrayLengthExpr extends AccessExpr {
 	@virtual typedef RView = RArrayLengthExpr;
 
 	@nodeimpl
-	public static final class ArrayLengthExprImpl extends AccessExprImpl {
+	public static final class ArrayLengthExprImpl extends ENodeImpl {
 		@virtual typedef ImplOf = ArrayLengthExpr;
+		@att public ENode			obj;
+		@att public NameRef			ident;
 	}
 	@nodeview
-	public static abstract view ArrayLengthExprView of ArrayLengthExprImpl extends AccessExprView {
+	public static abstract view ArrayLengthExprView of ArrayLengthExprImpl extends ENodeView {
+		public ENode			obj;
+		public NameRef			ident;
+
 		public Operator getOp() { return BinaryOperator.Access; }
 
 		public Type getType() { return Type.tpInt; }
