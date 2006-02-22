@@ -205,9 +205,13 @@ kiev.ir.java.RCommaExpr kiev/ir/java/RCommaExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RConditionalExpr kiev/ir/java/RConditionalExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RConstExpr kiev/ir/java/RConstExpr kiev\ir\java\RConstExpr.java
 kiev.ir.java.RConstructor kiev/ir/java/RConstructor kiev\ir\java\RMethod.java
+kiev.ir.java.RDoWhileStat kiev/ir/java/RDoWhileStat kiev\ir\java\RLoopStat.java
 kiev.ir.java.RField kiev/ir/java/RField kiev\ir\java\RField.java
 kiev.ir.java.RFileUnit kiev/ir/java/RFileUnit kiev\ir\java\RFileUnit.java
 kiev.ir.java.RFinallyInfo kiev/ir/java/RFinallyInfo kiev\ir\java\RTryStat.java
+kiev.ir.java.RForEachStat kiev/ir/java/RForEachStat kiev\ir\java\RLoopStat.java
+kiev.ir.java.RForInit kiev/ir/java/RForInit kiev\ir\java\RLoopStat.java
+kiev.ir.java.RForStat kiev/ir/java/RForStat kiev\ir\java\RLoopStat.java
 kiev.ir.java.RIncrementExpr kiev/ir/java/RIncrementExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RInitializer kiev/ir/java/RInitializer kiev\ir\java\RMethod.java
 kiev.ir.java.RInstanceofExpr kiev/ir/java/RInstanceofExpr kiev\ir\java\RBoolExpr.java
@@ -230,6 +234,7 @@ kiev.ir.java.RUnaryExpr kiev/ir/java/RUnaryExpr kiev\ir\java\RExpr.java
 kiev.ir.java.RVar kiev/ir/java/RVar kiev\ir\java\RVar.java
 kiev.ir.java.RVarDecl kiev/ir/java/RVarDecl kiev\ir\java\RNode.java
 kiev.ir.java.RWBCCondition kiev/ir/java/RWBCCondition kiev\ir\java\RMethod.java
+kiev.ir.java.RWhileStat kiev/ir/java/RWhileStat kiev\ir\java\RLoopStat.java
 kiev.ir.java.RWithStat kiev/ir/java/RWithStat kiev\ir\java\RBlockStat.java
 kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
 kiev.parser.ASTCallAccessExpression kiev/parser/ASTCallAccessExpression kiev\parser\ASTCallAccessExpression.java

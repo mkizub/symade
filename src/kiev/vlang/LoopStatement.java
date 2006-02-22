@@ -11,10 +11,15 @@ import kiev.be.java.JDNode;
 import kiev.be.java.JENode;
 import kiev.be.java.JLoopStat;
 import kiev.be.java.JLabel;
+import kiev.ir.java.RWhileStat;
 import kiev.be.java.JWhileStat;
+import kiev.ir.java.RDoWhileStat;
 import kiev.be.java.JDoWhileStat;
+import kiev.ir.java.RForInit;
 import kiev.be.java.JForInit;
+import kiev.ir.java.RForStat;
 import kiev.be.java.JForStat;
+import kiev.ir.java.RForEachStat;
 import kiev.be.java.JForEachStat;
 
 import kiev.be.java.CodeLabel;
@@ -145,8 +150,9 @@ public class WhileStat extends LoopStat {
 
 	@virtual typedef This  = WhileStat;
 	@virtual typedef NImpl = WhileStatImpl;
-	@virtual typedef VView = WhileStatView;
+	@virtual typedef VView = VWhileStat;
 	@virtual typedef JView = JWhileStat;
+	@virtual typedef RView = RWhileStat;
 
 	@nodeimpl
 	public static final class WhileStatImpl extends LoopStatImpl {
@@ -155,13 +161,17 @@ public class WhileStat extends LoopStat {
 		@att public ENode		body;
 	}
 	@nodeview
-	public static final view WhileStatView of WhileStatImpl extends LoopStatView {
+	public static view WhileStatView of WhileStatImpl extends LoopStatView {
 		public ENode		cond;
 		public ENode		body;
+	}
+	@nodeview
+	public static final view VWhileStat of WhileStatImpl extends WhileStatView {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public WhileStat() {
 		super(new WhileStatImpl());
@@ -175,16 +185,7 @@ public class WhileStat extends LoopStat {
 	}
 
 	public void resolve(Type reqType) {
-		try {
-			cond.resolve(Type.tpBoolean);
-			BoolExpr.checkBool(cond);
-		} catch(Exception e ) { Kiev.reportError(cond,e); }
-		try {
-			body.resolve(Type.tpVoid);
-		} catch(Exception e ) { Kiev.reportError(body,e); }
-		if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
-			setMethodAbrupted(true);
-		}
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -211,8 +212,9 @@ public class DoWhileStat extends LoopStat {
 
 	@virtual typedef This  = DoWhileStat;
 	@virtual typedef NImpl = DoWhileStatImpl;
-	@virtual typedef VView = DoWhileStatView;
+	@virtual typedef VView = VDoWhileStat;
 	@virtual typedef JView = JDoWhileStat;
+	@virtual typedef RView = RDoWhileStat;
 
 	@nodeimpl
 	public static final class DoWhileStatImpl extends LoopStatImpl {
@@ -221,13 +223,17 @@ public class DoWhileStat extends LoopStat {
 		@att public ENode		body;
 	}
 	@nodeview
-	public static final view DoWhileStatView of DoWhileStatImpl extends LoopStatView {
+	public static view DoWhileStatView of DoWhileStatImpl extends LoopStatView {
 		public ENode		cond;
 		public ENode		body;
+	}
+	@nodeview
+	public static view VDoWhileStat of DoWhileStatImpl extends DoWhileStatView {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public DoWhileStat() {
 		super(new DoWhileStatImpl());
@@ -241,20 +247,7 @@ public class DoWhileStat extends LoopStat {
 	}
 
 	public void resolve(Type reqType) {
-		try {
-			body.resolve(Type.tpVoid);
-		} catch(Exception e ) {
-			Kiev.reportError(body,e);
-		}
-		try {
-			cond.resolve(Type.tpBoolean);
-			BoolExpr.checkBool(cond);
-		} catch(Exception e ) {
-			Kiev.reportError(cond,e);
-		}
-		if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
-			setMethodAbrupted(true);
-		}
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -280,8 +273,9 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef This  = ForInit;
 	@virtual typedef NImpl = ForInitImpl;
-	@virtual typedef VView = ForInitView;
+	@virtual typedef VView = VForInit;
 	@virtual typedef JView = JForInit;
+	@virtual typedef RView = RForInit;
 
 	@nodeimpl
 	public static final class ForInitImpl extends ENodeImpl {
@@ -289,12 +283,16 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		@att public final NArr<Var>		decls;
 	}
 	@nodeview
-	public static final view ForInitView of ForInitImpl extends ENodeView {
+	public static view ForInitView of ForInitImpl extends ENodeView {
 		public:ro	NArr<Var>		decls;
+	}
+	@nodeview
+	public static final view VForInit of ForInitImpl extends ForInitView {
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 
 	public ForInit() {
@@ -328,8 +326,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public void resolve(Type reqType) {
-		foreach (Var v; decls)
-			v.resolveDecl();
+		getRView().resolve(reqType);
 	}
 	
 	public Dumper toJava(Dumper dmp) {
@@ -355,8 +352,9 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@virtual typedef This  = ForStat;
 	@virtual typedef NImpl = ForStatImpl;
-	@virtual typedef VView = ForStatView;
+	@virtual typedef VView = VForStat;
 	@virtual typedef JView = JForStat;
+	@virtual typedef RView = RForStat;
 
 	@nodeimpl
 	public static final class ForStatImpl extends LoopStatImpl {
@@ -367,15 +365,19 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		@att public ENode		iter;
 	}
 	@nodeview
-	public static final view ForStatView of ForStatImpl extends LoopStatView {
+	public static view ForStatView of ForStatImpl extends LoopStatView {
 		public ENode		init;
 		public ENode		cond;
 		public ENode		body;
 		public ENode		iter;
 	}
+	@nodeview
+	public static final view VForStat of ForStatImpl extends ForStatView {
+	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public ForStat() {
 		super(new ForStatImpl());
@@ -391,42 +393,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public void resolve(Type reqType) {
-		if( init != null ) {
-			try {
-				init.resolve(Type.tpVoid);
-				init.setGenVoidExpr(true);
-			} catch(Exception e ) {
-				Kiev.reportError(init,e);
-			}
-		}
-		if( cond != null ) {
-			try {
-				cond.resolve(Type.tpBoolean);
-				BoolExpr.checkBool(cond);
-			} catch(Exception e ) {
-				Kiev.reportError(cond,e);
-			}
-		}
-		try {
-			body.resolve(Type.tpVoid);
-		} catch(Exception e ) {
-			Kiev.reportError(body,e);
-		}
-		if( iter != null ) {
-			try {
-				iter.resolve(Type.tpVoid);
-				iter.setGenVoidExpr(true);
-			} catch(Exception e ) {
-				Kiev.reportError(iter,e);
-			}
-		}
-		if( ( cond==null
-			|| (cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue())
-			)
-			&& !isBreaked()
-		) {
-			setMethodAbrupted(true);
-		}
+		getRView().resolve(reqType);
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
@@ -495,8 +462,9 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 
 	@virtual typedef This  = ForEachStat;
 	@virtual typedef NImpl = ForEachStatImpl;
-	@virtual typedef VView = ForEachStatView;
+	@virtual typedef VView = VForEachStat;
 	@virtual typedef JView = JForEachStat;
+	@virtual typedef RView = RForEachStat;
 
 	@nodeimpl
 	public static final class ForEachStatImpl extends LoopStatImpl {
@@ -514,7 +482,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		@att public ENode		iter_incr;
 	}
 	@nodeview
-	public static final view ForEachStatView of ForEachStatImpl extends LoopStatView {
+	public static view ForEachStatView of ForEachStatImpl extends LoopStatView {
 		public int			mode;
 		public ENode		container;
 		public Var			var;
@@ -527,9 +495,13 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		public ENode		body;
 		public ENode		iter_incr;
 	}
+	@nodeview
+	public static final view VForEachStat of ForEachStatImpl extends ForEachStatView {
+	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public ForEachStat() {
 		super(new ForEachStatImpl());
@@ -545,242 +517,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	}
 
 	public void resolve(Type reqType) {
-		// foreach( type x; container; cond) statement
-		// is equivalent to
-		// for(iter-type x$iter = container.elements(); x$iter.hasMoreElements(); ) {
-		//		type x = container.nextElement();
-		//		if( !cond ) continue;
-		//		...
-		//	}
-		//	or if container is an array:
-		//	for(int x$iter=0, x$arr=container; x$iter < x$arr.length; x$iter++) {
-		//		type x = x$arr[ x$iter ];
-		//		if( !cond ) continue;
-		//		...
-		//	}
-		//	or if container is a rule:
-		//	for(rule $env=null; ($env=rule($env,...)) != null; ) {
-		//		if( !cond ) continue;
-		//		...
-		//	}
-		//
-
-		container.resolve(null);
-
-		Type itype;
-		Type ctype = container.getType();
-		Method@ elems;
-		Method@ nextelem;
-		Method@ moreelem;
-		if (ctype instanceof CTimeType) {
-			container = ctype.makeUnboxedExpr(container);
-			container.resolve(null);
-			ctype = container.getType();
-		}
-		if( ctype.isArray() ) {
-			itype = Type.tpInt;
-			mode = ARRAY;
-		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
-			itype = ctype;
-			mode = KENUM;
-		} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
-			itype = ctype;
-			mode = JENUM;
-		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameElements,new CallType(Type.emptyArray,Type.tpAny))
-		) {
-			itype = Type.getRealType(ctype,elems.type.ret());
-			mode = ELEMS;
-		} else if( ctype ≡ Type.tpRule &&
-			(
-			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret() ≡ Type.tpRule )
-			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() ≡ Type.tpRule )
-			)
-		  ) {
-			itype = Type.tpRule;
-			mode = RULE;
-		} else {
-			throw new CompilerException(container,"Container must be an array or an Enumeration "+
-				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
-		}
-		if( itype ≡ Type.tpRule ) {
-			iter = new Var(pos,KString.from("$env"),itype,0);
-		}
-		else if( var != null ) {
-			iter = new Var(var.pos,KString.from(var.name.name+"$iter"),itype,0);
-			if (mode == ARRAY) {
-				iter_array = new Var(container.pos,KString.from(var.name.name+"$arr"),container.getType(),0);
-			}
-		}
-		else {
-			iter = null;
-		}
-
-		// Initialize iterator
-		switch( mode ) {
-		case ARRAY:
-			/* iter = 0; arr = container;*/
-			iter_init = new CommaExpr();
-			((CommaExpr)iter_init).exprs.add(
-				new AssignExpr(iter.pos,AssignOperator.Assign,
-					new LVarExpr(container.pos,iter_array),
-					container.ncopy()
-				));
-			((CommaExpr)iter_init).exprs.add(
-				new AssignExpr(iter.pos,AssignOperator.Assign,
-					new LVarExpr(iter.pos,iter),
-					new ConstIntExpr(0)
-				));
-			iter_init.resolve(Type.tpInt);
-			break;
-		case KENUM:
-			/* iter = container; */
-			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new LVarExpr(iter.pos,iter), container.ncopy()
-				);
-			iter_init.resolve(iter.type);
-			break;
-		case JENUM:
-			/* iter = container; */
-			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new LVarExpr(iter.pos,iter), container.ncopy()
-				);
-			iter_init.resolve(iter.type);
-			break;
-		case ELEMS:
-			/* iter = container.elements(); */
-			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new LVarExpr(iter.pos,iter),
-				new CallExpr(container.pos,container.ncopy(),elems,ENode.emptyArray)
-				);
-			iter_init.resolve(iter.type);
-			break;
-		case RULE:
-			/* iter = rule(iter/hidden,...); */
-			{
-			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new LVarExpr(iter.pos,iter), new ConstNullExpr()
-				);
-			iter_init.resolve(Type.tpVoid);
-//			// now is hidden // Also, patch the rule argument
-//			NArr<ENode> args = null;
-//			if( container instanceof CallExpr ) {
-//				args = ((CallExpr)container).args;
-//			}
-//			else if( container instanceof ClosureCallExpr ) {
-//				args = ((ClosureCallExpr)container).args;
-//			}
-//			else
-//				Debug.assert("Unknown type of rule - "+container.getClass());
-//			args[0] = new LVarExpr(container.pos,iter);
-//			args[0].resolve(Type.tpRule);
-			}
-			break;
-		}
-		iter_init.setGenVoidExpr(true);
-
-		// Check iterator condition
-
-		switch( mode ) {
-		case ARRAY:
-			/* iter < container.length */
-			iter_cond = new BinaryBoolExpr(iter.pos,BinaryOperator.LessThen,
-				new LVarExpr(iter.pos,iter),
-				new ArrayLengthExpr(iter.pos,new LVarExpr(0,iter_array))
-				);
-			break;
-		case KENUM:
-		case JENUM:
-		case ELEMS:
-			/* iter.hasMoreElements() */
-			if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameHasMoreElements,new CallType(Type.emptyArray,Type.tpAny)) )
-				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
-			iter_cond = new CallExpr(	iter.pos,
-					new LVarExpr(iter.pos,iter),
-					moreelem,
-					ENode.emptyArray
-				);
-			break;
-		case RULE:
-			/* (iter = rule(iter, ...)) != null */
-			iter_cond = new BinaryBoolExpr(
-				container.pos,
-				BinaryOperator.NotEquals,
-				new AssignExpr(container.pos,AssignOperator.Assign,
-					new LVarExpr(container.pos,iter),
-					container.ncopy()),
-				new ConstNullExpr()
-				);
-			break;
-		}
-		if( iter_cond != null ) {
-			iter_cond.resolve(Type.tpBoolean);
-			BoolExpr.checkBool(iter_cond);
-		}
-
-		// Initialize value
-		switch( mode ) {
-		case ARRAY:
-			/* var = container[iter] */
-			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
-				new LVarExpr(var.pos,var),
-				new ContainerAccessExpr(container.pos,new LVarExpr(0,iter_array),new LVarExpr(iter.pos,iter))
-				);
-			break;
-		case KENUM:
-		case JENUM:
-		case ELEMS:
-			/* var = iter.nextElement() */
-			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameNextElement,new CallType(Type.emptyArray,Type.tpAny)) )
-				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
-				var_init = new CallExpr(iter.pos,
-					new LVarExpr(iter.pos,iter),
-					nextelem,
-					ENode.emptyArray
-				);
-			if (!nextelem.type.ret().isInstanceOf(var.type))
-				var_init = new CastExpr(pos,var.type,~var_init);
-			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
-				new LVarExpr(var.pos,var),
-				~var_init
-			);
-			break;
-		case RULE:
-			/* iter = rule(...); */
-			var_init = null;
-			break;
-		}
-		if( var_init != null ) {
-			var_init.resolve(var.getType());
-			var_init.setGenVoidExpr(true);
-		}
-
-		// Check condition, if any
-		if( cond != null ) {
-			cond.resolve(Type.tpBoolean);
-			BoolExpr.checkBool(cond);
-		}
-
-		// Process body
-		try {
-			body.resolve(Type.tpVoid);
-		} catch(Exception e ) {
-			Kiev.reportError(body,e);
-		}
-
-		// Increment iterator
-		if( mode == ARRAY ) {
-			/* iter++ */
-			iter_incr = new IncrementExpr(iter.pos,PostfixOperator.PostIncr,
-				new LVarExpr(iter.pos,iter)
-				);
-			iter_incr.resolve(Type.tpVoid);
-			iter_incr.setGenVoidExpr(true);
-		} else {
-			iter_incr = null;
-		}
+		getRView().resolve(reqType);
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
