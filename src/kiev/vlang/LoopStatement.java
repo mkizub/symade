@@ -82,10 +82,22 @@ public final class Label extends DNode {
 			links = links.filter(fun (ASTNode n)->boolean { return n.ctx_root == root; });
 			super.callbackRootChanged();
 		}	
+
+		public void addLink(ASTNode lnk) {
+			if (links.contains(lnk))
+				return;
+			links = new List.Cons<ASTNode>(lnk, links);
+		}
+	
+		public void delLink(ASTNode lnk) {
+			links = links.diff(lnk);
+		}
 	}
 	@nodeview
 	public final static view LabelView of LabelImpl extends DNodeView {
 		public List<ASTNode>		links;
+		public void addLink(ASTNode lnk);
+		public void delLink(ASTNode lnk);
 	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
@@ -93,16 +105,6 @@ public final class Label extends DNode {
 
 	public Label() {
 		super(new LabelImpl());
-	}
-	
-	public void addLink(ASTNode lnk) {
-		if (links.contains(lnk))
-			return;
-		links = new List.Cons<ASTNode>(lnk, links);
-	}
-
-	public void delLink(ASTNode lnk) {
-		links = links.diff(lnk);
 	}
 
 	static class LabelDFFunc extends DFFunc {

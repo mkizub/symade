@@ -9,8 +9,11 @@ import kiev.transf.*;
 
 import kiev.be.java.JNode;
 import kiev.be.java.JENode;
+import kiev.ir.java.RNewExpr;
 import kiev.be.java.JNewExpr;
+import kiev.ir.java.RNewArrayExpr;
 import kiev.be.java.JNewArrayExpr;
+import kiev.ir.java.RNewInitializedArrayExpr;
 import kiev.be.java.JNewInitializedArrayExpr;
 import kiev.be.java.JNewClosure;
 import kiev.ir.java.RNewClosure;
@@ -35,8 +38,9 @@ public final class NewExpr extends ENode {
 
 	@virtual typedef This  = NewExpr;
 	@virtual typedef NImpl = NewExprImpl;
-	@virtual typedef VView = NewExprView;
+	@virtual typedef VView = VNewExpr;
 	@virtual typedef JView = JNewExpr;
+	@virtual typedef RView = RNewExpr;
 
 	@nodeimpl
 	public static final class NewExprImpl extends ENodeImpl {
@@ -49,13 +53,13 @@ public final class NewExpr extends ENode {
 		@ref public Method				func;
 	}
 	@nodeview
-	public static final view NewExprView of NewExprImpl extends ENodeView {
-		public				TypeRef			type;
-		public:ro			NArr<ENode>		args;
-		public				ENode			outer;
-		public				ENode			temp_expr;
-		public				Struct			clazz;
-		public				Method			func;
+	public static view NewExprView of NewExprImpl extends ENodeView {
+		public		TypeRef				type;
+		public:ro	NArr<ENode>			args;
+		public		ENode				outer;
+		public		ENode				temp_expr;
+		public		Struct				clazz;
+		public		Method				func;
 
 		public int		getPriority() { return Constants.opAccessPriority; }
 
@@ -75,7 +79,10 @@ public final class NewExpr extends ENode {
 				new OuterType(type.getStruct(),outer.getType()) );
 			return type.rebind(vset);
 		}
+	}
 
+	@nodeview
+	public static final view VNewExpr of NewExprImpl extends NewExprView {
 		public boolean preResolveIn() {
 			if( clazz == null )
 				return true;
@@ -118,6 +125,7 @@ public final class NewExpr extends ENode {
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public NewExpr() {
 		super(new NewExprImpl());
@@ -160,73 +168,7 @@ public final class NewExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) {
-			if (isAutoReturnable())
-				ReturnStat.autoReturn(reqType, this);
-			return;
-		}
-		CompaundType type;
-		if (this.clazz != null) {
-			type = this.clazz.ctype;
-		} else {
-			Type t = this.type.getType();
-			while (t != null && !(t instanceof CompaundType))
-				t = t.getMetaSuper();
-			type = (CompaundType)t;
-		}
-		if!(type instanceof CompaundType)
-			Kiev.reportWarning(this,"Instantiation of non-concrete type "+this.type+" ???");
-		if( type.getStruct().isAnonymouse() ) {
-			type.getStruct().resolveDecl();
-		}
-//		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
-//			if (type.isUnerasable())
-//				/*throw new CompilerException*/ Kiev.reportWarning(this,"Abstract unerasable class "+type+" instantiation");
-//			else
-//				Kiev.reportWarning(this,"Abstract erasable class "+type+" instantiation");
-//		}
-		if (outer == null && type.clazz.ometa_type != null) {
-			if( ctx_method==null || ctx_method.isStatic() )
-				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
-			outer = new ThisExpr(pos);
-		}
-		if( outer != null ) {
-			outer.resolve(null);
-			type = (CompaundType)type.bind(new TVarBld(type.clazz.ometa_type.tdef.getAType(), outer.getType()));
-		}
-		for(int i=0; i < args.length; i++)
-			args[i].resolve(null);
-		if( type.clazz.isTypeUnerasable() )
-			ctx_clazz.getRView().accessTypeInfoField(this,type,false); // Create static field for this type typeinfo
-		Type[] ta = new Type[args.length];
-		for (int i=0; i < ta.length; i++)
-			ta[i] = args[i].getType();
-		CallType mt = (CallType)Type.getRealType(type,new CallType(ta,type));
-		Method@ m;
-		// First try overloaded 'new', than real 'new'
-		if( this.clazz == null && (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
-			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
-			if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
-				CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
-				replaceWithNodeResolve(n);
-				return;
-			}
-		}
-		mt = (CallType)Type.getRealType(type,new CallType(ta,Type.tpVoid));
-		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
-		if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
-			func = m;
-			m.makeArgs(args,type);
-			for(int i=0; i < args.length; i++)
-				args[i].resolve(mt.arg(i));
-		}
-		else {
-			throw new CompilerException(this,"Can't find apropriative initializer for "+
-				Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -268,8 +210,9 @@ public final class NewArrayExpr extends ENode {
 
 	@virtual typedef This  = NewArrayExpr;
 	@virtual typedef NImpl = NewArrayExprImpl;
-	@virtual typedef VView = NewArrayExprView;
+	@virtual typedef VView = VNewArrayExpr;
 	@virtual typedef JView = JNewArrayExpr;
+	@virtual typedef RView = RNewArrayExpr;
 
 	@nodeimpl
 	public static final class NewArrayExprImpl extends ENodeImpl {
@@ -280,11 +223,11 @@ public final class NewArrayExpr extends ENode {
 		@ref public ArrayType			arrtype;
 	}
 	@nodeview
-	public static final view NewArrayExprView of NewArrayExprImpl extends ENodeView {
-		public				TypeRef			type;
-		public:ro	NArr<ENode>		args;
-		public				int				dim;
-		public				ArrayType		arrtype;
+	public static  view NewArrayExprView of NewArrayExprImpl extends ENodeView {
+		public		TypeRef				type;
+		public:ro	NArr<ENode>			args;
+		public		int					dim;
+		public		ArrayType			arrtype;
 
 		public Type get$arrtype() {
 			ArrayType art = ((NewArrayExprImpl)this).arrtype;
@@ -300,9 +243,13 @@ public final class NewArrayExpr extends ENode {
 
 		public Type getType() { return arrtype; }
 	}
+	@nodeview
+	public static final view VNewArrayExpr of NewArrayExprImpl extends NewArrayExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public NewArrayExpr() {
 		super(new NewArrayExprImpl());
@@ -327,44 +274,8 @@ public final class NewArrayExpr extends ENode {
 		return sb.toString();
 	}
 
-	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) {
-			if (isAutoReturnable())
-				ReturnStat.autoReturn(reqType, this);
-			return;
-		}
-		Type type = this.type.getType();
-		ArrayType art = this.arrtype;
-		for(int i=0; i < args.length; i++)
-			if( args[i] != null )
-				args[i].resolve(Type.tpInt);
-		if( type instanceof ArgType ) {
-			if( !type.isUnerasable())
-				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
-			if( ctx_method==null || ctx_method.isStatic() )
-				throw new CompilerException(this,"Access to argument "+type+" from static method");
-			ENode ti = ctx_clazz.getRView().accessTypeInfoField(this,type,false);
-			if( dim == 1 ) {
-				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
-					new CallExpr(pos,ti,
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt),
-						new ENode[]{~args[0]}
-					)));
-				return;
-			} else {
-				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
-					new CallExpr(pos,ti,
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,new ArrayType(Type.tpInt)),
-						new ENode[]{
-							new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.delToArray())
-						}
-					)));
-				return;
-			}
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -387,8 +298,9 @@ public final class NewInitializedArrayExpr extends ENode {
 
 	@virtual typedef This  = NewInitializedArrayExpr;
 	@virtual typedef NImpl = NewInitializedArrayExprImpl;
-	@virtual typedef VView = NewInitializedArrayExprView;
+	@virtual typedef VView = VNewInitializedArrayExpr;
 	@virtual typedef JView = JNewInitializedArrayExpr;
+	@virtual typedef RView = RNewInitializedArrayExpr;
 
 	@nodeimpl
 	public static final class NewInitializedArrayExprImpl extends ENodeImpl {
@@ -399,11 +311,11 @@ public final class NewInitializedArrayExpr extends ENode {
 		@ref public Type				arrtype;
 	}
 	@nodeview
-	public static final view NewInitializedArrayExprView of NewInitializedArrayExprImpl extends ENodeView {
-		public				TypeRef			type;
-		public:ro			NArr<ENode>		args;
-		public				int[]			dims;
-		public				ArrayType		arrtype;
+	public static view NewInitializedArrayExprView of NewInitializedArrayExprImpl extends ENodeView {
+		public		TypeRef				type;
+		public:ro	NArr<ENode>			args;
+		public		int[]				dims;
+		public		ArrayType			arrtype;
 		
 		@getter public final int	get$dim()	{ return this.dims.length; }
 
@@ -421,9 +333,13 @@ public final class NewInitializedArrayExpr extends ENode {
 
 		public Type getType() { return arrtype; }
 	}
+	@nodeview
+	public static final view VNewInitializedArrayExpr of NewInitializedArrayExprImpl extends NewInitializedArrayExprView {
+	}
 	
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
+	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
 	public NewInitializedArrayExpr() {
 		super(new NewInitializedArrayExprImpl());
@@ -452,46 +368,8 @@ public final class NewInitializedArrayExpr extends ENode {
 
 	public int getElementsNumber(int i) { return dims[i]; }
 
-	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) {
-			if (isAutoReturnable())
-				ReturnStat.autoReturn(reqType, this);
-			return;
-		}
-		Type type;
-		if( this.type == null ) {
-			if( !reqType.isArray() )
-				throw new CompilerException(this,"Type "+reqType+" is not an array type");
-			type = reqType;
-			this.arrtype = (ArrayType)reqType;
-			Type art = reqType;
-			int dim = 0;
-			while (art instanceof ArrayType) { dim++; art = art.arg; }
-			this.type = new TypeRef(art);
-			this.dims = new int[dim];
-			this.dims[0] = args.length;
-		} else {
-			type = this.type.getType();
-			for (int dim = this.dim; dim > 0; dim--)
-				type = new ArrayType(type);
-		}
-		if( !type.isArray() )
-			throw new CompilerException(this,"Type "+type+" is not an array type");
-		for(int i=0; i < args.length; i++)
-			args[i].resolve(arrtype.arg);
-		for(int i=1; i < dims.length; i++) {
-			int n;
-			for(int j=0; j < args.length; j++) {
-				if( args[j] instanceof NewInitializedArrayExpr )
-					n = ((NewInitializedArrayExpr)args[j]).getElementsNumber(i-1);
-				else
-					n = 1;
-				if( dims[i] < n ) dims[i] = n;
-			}
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -585,11 +463,8 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		node ?= p
 	}
 	
-	public void resolve(Type reqType) throws RuntimeException {
-		clazz.resolveDecl();
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	public void resolve(Type reqType) {
+		getRView().resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

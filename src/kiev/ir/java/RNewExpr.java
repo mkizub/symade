@@ -6,6 +6,12 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
+import kiev.vlang.NewExpr.NewExprImpl;
+import kiev.vlang.NewExpr.NewExprView;
+import kiev.vlang.NewArrayExpr.NewArrayExprImpl;
+import kiev.vlang.NewArrayExpr.NewArrayExprView;
+import kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprImpl;
+import kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprView;
 import kiev.vlang.NewClosure.NewClosureImpl;
 import kiev.vlang.NewClosure.NewClosureView;
 
@@ -16,6 +22,161 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
+
+@nodeview
+public static final view RNewExpr of NewExprImpl extends NewExprView {
+	public void resolve(Type reqType) {
+		if( isResolved() ) {
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
+			return;
+		}
+		CompaundType type;
+		if (this.clazz != null) {
+			type = this.clazz.ctype;
+		} else {
+			Type t = this.type.getType();
+			while (t != null && !(t instanceof CompaundType))
+				t = t.getMetaSuper();
+			type = (CompaundType)t;
+		}
+		if!(type instanceof CompaundType)
+			Kiev.reportWarning(this,"Instantiation of non-concrete type "+this.type+" ???");
+		if( type.getStruct().isAnonymouse() ) {
+			type.getStruct().resolveDecl();
+		}
+		if (outer == null && type.clazz.ometa_type != null) {
+			if( ctx_method==null || ctx_method.isStatic() )
+				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
+			outer = new ThisExpr(pos);
+		}
+		if( outer != null ) {
+			outer.resolve(null);
+			type = (CompaundType)type.bind(new TVarBld(type.clazz.ometa_type.tdef.getAType(), outer.getType()));
+		}
+		for(int i=0; i < args.length; i++)
+			args[i].resolve(null);
+		if( type.clazz.isTypeUnerasable() )
+			ctx_clazz.getRView().accessTypeInfoField(this.getNode(),type,false); // Create static field for this type typeinfo
+		Type[] ta = new Type[args.length];
+		for (int i=0; i < ta.length; i++)
+			ta[i] = args[i].getType();
+		CallType mt = (CallType)Type.getRealType(type,new CallType(ta,type));
+		Method@ m;
+		// First try overloaded 'new', than real 'new'
+		if( this.clazz == null && (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
+			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+			if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
+				CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
+				replaceWithNodeResolve(n);
+				return;
+			}
+		}
+		mt = (CallType)Type.getRealType(type,new CallType(ta,Type.tpVoid));
+		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+		if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
+			func = m;
+			m.makeArgs(args,type);
+			for(int i=0; i < args.length; i++)
+				args[i].resolve(mt.arg(i));
+		}
+		else {
+			throw new CompilerException(this,"Can't find apropriative initializer for "+
+				Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
+		}
+		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
+	}
+}
+
+@nodeview
+public static final view RNewArrayExpr of NewArrayExprImpl extends NewArrayExprView {
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) {
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
+			return;
+		}
+		Type type = this.type.getType();
+		ArrayType art = this.arrtype;
+		for(int i=0; i < args.length; i++)
+			if( args[i] != null )
+				args[i].resolve(Type.tpInt);
+		if( type instanceof ArgType ) {
+			if( !type.isUnerasable())
+				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
+			if( ctx_method==null || ctx_method.isStatic() )
+				throw new CompilerException(this,"Access to argument "+type+" from static method");
+			ENode ti = ctx_clazz.getRView().accessTypeInfoField(this.getNode(),type,false);
+			if( dim == 1 ) {
+				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
+					new CallExpr(pos,ti,
+						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt),
+						new ENode[]{~args[0]}
+					)));
+				return;
+			} else {
+				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
+					new CallExpr(pos,ti,
+						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,new ArrayType(Type.tpInt)),
+						new ENode[]{
+							new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.delToArray())
+						}
+					)));
+				return;
+			}
+		}
+		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
+	}
+}
+
+@nodeview
+public static final view RNewInitializedArrayExpr of NewInitializedArrayExprImpl extends NewInitializedArrayExprView {
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) {
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
+			return;
+		}
+		Type type;
+		if( this.type == null ) {
+			if( !reqType.isArray() )
+				throw new CompilerException(this,"Type "+reqType+" is not an array type");
+			type = reqType;
+			this.arrtype = (ArrayType)reqType;
+			Type art = reqType;
+			int dim = 0;
+			while (art instanceof ArrayType) { dim++; art = art.arg; }
+			this.type = new TypeRef(art);
+			this.dims = new int[dim];
+			this.dims[0] = args.length;
+		} else {
+			type = this.type.getType();
+			for (int dim = this.dim; dim > 0; dim--)
+				type = new ArrayType(type);
+		}
+		if( !type.isArray() )
+			throw new CompilerException(this,"Type "+type+" is not an array type");
+		for(int i=0; i < args.length; i++)
+			args[i].resolve(arrtype.arg);
+		for(int i=1; i < dims.length; i++) {
+			int n;
+			for(int j=0; j < args.length; j++) {
+				if( args[j] instanceof NewInitializedArrayExpr )
+					n = ((NewInitializedArrayExpr)args[j]).getElementsNumber(i-1);
+				else
+					n = 1;
+				if( dims[i] < n ) dims[i] = n;
+			}
+		}
+		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
+	}
+}
 
 @nodeview
 public final view RNewClosure of NewClosureImpl extends NewClosureView {
@@ -91,5 +252,11 @@ public final view RNewClosure of NewClosureImpl extends NewClosureView {
 		return true;
 	}
 	
+	public void resolve(Type reqType) throws RuntimeException {
+		clazz.resolveDecl();
+		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
+	}
 }
 
