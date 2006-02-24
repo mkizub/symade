@@ -225,7 +225,9 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		}
 		if( !set_found && Access.writeable(f) ) {
 			Method set_var = new Method(set_name,Type.tpVoid,f.getJavaFlags() | ACC_SYNTHETIC);
-			if (f.meta.get(ProcessVNode.mnAtt) != null)
+			if (s.isInterface())
+				set_var.setFinal(false);
+			else if (f.meta.get(ProcessVNode.mnAtt) != null)
 				set_var.setFinal(true);
 			s.addMethod(set_var);
 			FormPar value;
@@ -327,6 +329,8 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			return;		// no need to generate getter
 		if( !get_found && Access.readable(f)) {
 			Method get_var = new Method(get_name,f.type,f.getJavaFlags() | ACC_SYNTHETIC);
+			if (s.isInterface())
+				get_var.setFinal(false);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				get_var.setFinal(true);
 			s.addMethod(get_var);

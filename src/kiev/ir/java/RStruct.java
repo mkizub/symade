@@ -892,6 +892,8 @@ public final view RStruct of StructImpl extends StructView {
 				else
 					mm.body = body;
 			}
+			if (this.isInterface())
+				mm.body = null;
 			multimethods = new List.Cons<Method>(mm, multimethods);
 		}
 	}

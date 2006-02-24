@@ -322,6 +322,12 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 				ctx_clazz.setBad(true);
 				Kiev.reportError(this,"Static method cannot be declared abstract");
 			}
+			if (ctx_clazz.isInterface()) {
+				if (isFinal()) {
+					Kiev.reportWarning(this,"Interface methods cannot be final");
+					setFinal(false);
+				}
+			}
 			return true;
 		}
 	}

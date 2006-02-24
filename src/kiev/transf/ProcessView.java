@@ -37,10 +37,49 @@ public class ProcessView extends TransfProcessor implements Constants {
 			return;
 		}
 		
+		// generate interface
+		Struct iface = Env.newInterface(
+			ClazzName.fromOuterAndName(clazz,KString.from("_IFace_"), false, true),
+			clazz,
+			ACC_PUBLIC /*| ACC_SYNTHETIC*/
+			);
+		iface.pos = clazz.pos;
+		iface.setResolved(true);
+		clazz.members.append(iface);
+		foreach (DNode dn; clazz.members; !dn.isStatic() && dn.isPublic() && !dn.isSynthetic()) {
+			if (dn instanceof Method) {
+				if (dn instanceof Constructor)
+					continue;
+				Method cm = dn;
+				Block b = cm.body;
+				if (b != null)
+					~b;
+				Method m = cm.ncopy();
+				m.setFinal(false);
+				iface.addMethod(m);
+				if (b != null)
+					cm.body = b;
+			}
+			else if (dn instanceof Field) {
+				Field cf = dn;
+				ENode b = cf.init;
+				if (b != null)
+					~b;
+				Field f = cf.ncopy();
+				iface.addField(f);
+				if (b != null)
+					cf.init = b;
+			}
+		}
+		Kiev.runProcessorsOn(iface);
+		clazz.interfaces.append(new TypeRef(iface.ctype));
+		
+		// generate a field for the object this view represents
 		Field fview = clazz.resolveField(nameImpl, false);
 		if (fview == null)
-			fview = clazz.addField(new Field(nameImpl,clazz.view_of.getType(), ACC_PUBLIC|ACC_FINAL));
+			fview = clazz.addField(new Field(nameImpl,clazz.view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 
+		// generate bridge methods 
 		foreach (DNode dn; clazz.members; dn instanceof Method) {
 			Method m = (Method)dn;
 			if (m.isStatic() || m.isAbstract() || m.body != null)

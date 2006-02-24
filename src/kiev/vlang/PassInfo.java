@@ -225,51 +225,61 @@ public class PassInfo {
 				trace(Kiev.debugResolve,"Compare "+m1+" and "+m2+" to be more specific for "+Method.toString(name,mt));
 
 				Type b;
+				boolean m1_is_va = m1.isVarArgs();
+				boolean m2_is_va = m2.isVarArgs();
 				
 				if (p1.getTransforms() > p2.getTransforms()) {
 					trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because of path");
 					continue next_method;
 				}
-				if (m1.isVarArgs()) {
+				if (m1_is_va) {
 					if (m1.type.arity < m2.type.arity) {
 						trace(Kiev.debugResolve,"Method "+m1+" is less specific because of arity then "+m2);
 						continue next_method;
 					}
 				}
-				if (m2.isVarArgs()) {
+				if (m2_is_va) {
 					if (m2.type.arity < m1.type.arity) {
 						trace(Kiev.debugResolve,"Method "+m1+" is more specific because of arity then "+m2);
 						goto is_more_specific;
 					}
 				}
-				Type t1;
-				Type t2;
-				for (int k=0; k < mt.arity; k++) {
-					t1 = mt1.arg(k);
-					t2 = mt2.arg(k);
+				if (mt1 ≉ mt2) {
+					Type t1;
+					Type t2;
+					for (int k=0; k < mt.arity; k++) {
+						if (m1_is_va && k >= mt1.arity && !(mt1.arity == mt.arity && k == mt.arity && mt1.arg(k) instanceof ArrayType))
+							t1 = ((ArrayType)m1.getVarArgParam().getType()).arg;
+						else
+							t1 = mt1.arg(k);
+						if (m2_is_va && k >= mt2.arity && !(mt2.arity == mt.arity && k == mt.arity && mt2.arg(k) instanceof ArrayType))
+							t2 = ((ArrayType)m2.getVarArgParam().getType()).arg;
+						else
+							t2 = mt2.arg(k);
+						if (t1 ≉ t2) {
+							b = mt.arg(k).betterCast(t1,t2);
+							if (b ≡ t2) {
+								trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
+								continue next_method;
+							}
+							if (b ≡ null && t1 ≥ t2) {
+								trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
+								continue next_method;
+							}
+						}
+					}
+					t1 = mt1.ret();
+					t2 = mt2.ret();
 					if (t1 ≉ t2) {
-						b = mt.arg(k).betterCast(t1,t2);
+						b = mt.ret().betterCast(t1,t2);
 						if (b ≡ t2) {
-							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
+							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because ret");
 							continue next_method;
 						}
-						if (b ≡ null && t1 ≥ t2) {
-							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
+						if (b ≡ null && t2 ≥ t1) {
+							trace(Kiev.debugResolve,"Method "+m1+" has less specific return value, then "+m2);
 							continue next_method;
 						}
-					}
-				}
-				t1 = mt1.ret();
-				t2 = mt2.ret();
-				if (t1 ≉ t2) {
-					b = mt.ret().betterCast(t1,t2);
-					if (b ≡ t2) {
-						trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because ret");
-						continue next_method;
-					}
-					if (b ≡ null && t2 ≥ t1) {
-						trace(Kiev.debugResolve,"Method "+m1+" has less specific return value, then "+m2);
-						continue next_method;
 					}
 				}
 			is_more_specific:;

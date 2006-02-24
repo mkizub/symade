@@ -178,6 +178,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 						tmp[sz] = nd;
 						node.ndata = tmp;
 					}
+					nd.dataAttached(node);
 				}
 			}
 			return node;
@@ -627,6 +628,8 @@ public abstract class DNode extends ASTNode {
 		public final boolean isMethodNative()		{ return this.is_mth_native; }
 		public final boolean isInterface()			{ return this.is_struct_interface; }
 		public final boolean isAbstract()			{ return this.is_abstract; }
+		public final boolean isMathStrict()		{ return this.is_math_strict; }
+		public final boolean isSynthetic()			{ return this.is_synthetic; }
 		
 		public final boolean isStructView()		{ return this.is_virtual; }
 		public final boolean isTypeUnerasable()	{ return this.is_type_unerasable; }
@@ -795,6 +798,8 @@ public abstract class DNode extends ASTNode {
 		public final boolean isMethodNative();
 		public final boolean isInterface();
 		public final boolean isAbstract();
+		public final boolean isMathStrict();
+		public final boolean isSynthetic();
 		
 		public final boolean isStructView();
 		public final boolean isTypeUnerasable();

@@ -446,11 +446,17 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			else if( members[i] instanceof Method ) {
 				Method m = (Method)members[i];
 				m.pass3();
-				if( me.isPackage() ) m.setStatic(true);
-				if( m.isPrivate() ) m.setFinal(false);
-				else if( me.isClazz() && me.isFinal() ) m.setFinal(true);
+				if( me.isPackage() )
+					m.setStatic(true);
+				if( m.isPrivate() )
+					m.setFinal(false);
+				if( me.isClazz() && me.isFinal() ) {
+					m.setFinal(true);
+				}
 				else if( me.isInterface() ) {
 					m.setPublic();
+					m.setFinal(false);
+					m.setAbstract(true);
 				}
 				if( m.name.equals(nameInit) ) {
 					m.setAbstract(false);
