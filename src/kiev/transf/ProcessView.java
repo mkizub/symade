@@ -16,8 +16,27 @@ import syntax kiev.Syntax;
 @singleton
 public class ProcessView extends TransfProcessor implements Constants {
 
+	public static final KString nameIFace = KString.from("_IFace_");
+
 	private ProcessView() {
 		super(Kiev.Ext.View);
+	}
+	
+	private Struct getViewIFace(TypeRef tr) {
+		if (tr == null) return null;
+		Struct clazz = tr.getStruct();
+		if (clazz == null) return null;
+		return getViewIFace(clazz);
+	}
+	private Struct getViewIFace(Struct clazz) {
+		if !(clazz.isStructView())
+			return null;
+		foreach (DNode dn; clazz.members; dn instanceof Struct) {
+			Struct s = (Struct)dn;
+			if (s.isInterface() && s.name.short_name == nameIFace)
+				return s;
+		}
+		return null;
 	}
 
 	public void autoGenerateMembers(ASTNode:ASTNode node) {
@@ -37,14 +56,25 @@ public class ProcessView extends TransfProcessor implements Constants {
 			return;
 		}
 		
+		if (getViewIFace(clazz) != null)
+			return;
+		
 		// generate interface
 		Struct iface = Env.newInterface(
-			ClazzName.fromOuterAndName(clazz,KString.from("_IFace_"), false, true),
+			ClazzName.fromOuterAndName(clazz,nameIFace, false, true),
 			clazz,
 			ACC_PUBLIC /*| ACC_SYNTHETIC*/
 			);
 		iface.pos = clazz.pos;
 		iface.setResolved(true);
+		{
+			autoGenerateMembers(clazz.super_bound.getStruct());
+			Struct s = getViewIFace(clazz.super_bound);
+			if (s != null)
+				iface.interfaces.add(new TypeRef(s.ctype));
+			foreach (TypeRef i; clazz.interfaces)
+				iface.interfaces.add(new TypeRef(i.getType()));
+		}
 		clazz.members.append(iface);
 		foreach (DNode dn; clazz.members; !dn.isStatic() && dn.isPublic() && !dn.isSynthetic()) {
 			if (dn instanceof Method) {
