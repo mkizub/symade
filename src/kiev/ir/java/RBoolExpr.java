@@ -63,7 +63,7 @@ public final view RBinaryBooleanAndExpr of BinaryBooleanAndExprImpl extends Bina
 @nodeview
 public view RBinaryBoolExpr of BinaryBoolExprImpl extends BinaryBoolExprView {
 
-	private boolean resolveExprs() {
+	public:no,no,no,rw final boolean resolveExprs() {
 		expr1.resolve(null);
 		if (!expr1.isForWrapper() && expr1.getType() instanceof CTimeType) {
 			expr1 = expr1.getType().makeUnboxedExpr(expr1);
@@ -81,7 +81,7 @@ public view RBinaryBoolExpr of BinaryBoolExprImpl extends BinaryBoolExprView {
 		return true;
 	}
 
-	private void getExprByStruct(Struct cas) {
+	public:no,no,no,rw final void getExprByStruct(Struct cas) {
 		if( cas.isPizzaCase() ) {
 			if( !(op==BinaryOperator.Equals || op==BinaryOperator.NotEquals) )
 				throw new CompilerException(this,"Undefined operation "+op.image+" on cased class");
@@ -162,7 +162,7 @@ public view RBinaryBoolExpr of BinaryBoolExprImpl extends BinaryBoolExprView {
 		throw new CompilerException(this,"Unresolved expression "+this);
 	}
 	
-	private void resolve2(Type reqType) {
+	public:no,no,no,rw final void resolve2(Type reqType) {
 		Type t1 = expr1.getType();
 		Type t2 = expr2.getType();
 		if( t1 ≉ t2 ) {

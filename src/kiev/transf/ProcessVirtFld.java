@@ -293,7 +293,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				}
 				body.stats.append(new ReturnStat(f.pos,null));
 			}
-			else if (s.isStructView() && !f.isStatic()) {
+/*			else if (s.isStructView() && !f.isStatic()) {
 				Block body = new Block(f.pos);
 				set_var.body = body;
 				Field view_fld = s.view_of.getType().getStruct().resolveField(f.name.name);
@@ -319,7 +319,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,view_fld.getType(),~val); });
 				set_var.setAbstract(false);
 			}
-			f.getMetaVirtual().set = set_var;
+*/			f.getMetaVirtual().set = set_var;
 		}
 		else if( set_found && !Access.writeable(f) ) {
 			Kiev.reportError(f,"Virtual set$ method for non-writeable field "+f);
@@ -339,7 +339,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				get_var.body = body;
 				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 			}
-			else if (s.isStructView() && !f.isStatic()) {
+/*			else if (s.isStructView() && !f.isStatic()) {
 				Block body = new Block(f.pos);
 				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,
@@ -354,7 +354,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,f.getType(),~val); });
 				get_var.setAbstract(false);
 			}
-			f.getMetaVirtual().get = get_var;
+*/			f.getMetaVirtual().get = get_var;
 		}
 		else if( get_found && !Access.readable(f) ) {
 			Kiev.reportError(f,"Virtual get$ method for non-readable field "+f);

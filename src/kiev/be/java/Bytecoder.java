@@ -276,7 +276,7 @@ public class Bytecoder implements JConstants {
 		if( m.isStatic()
 		 && !m.name.equals(nameClassInit)
 		 && cl.package_clazz.isInterface()
-		 && cl.name.short_name.equals(nameIdefault)
+		 && cl.name.short_name == nameIFaceImpl
 		)
 			m.setVirtualStatic(true);
 //		jclazz.addMember(new JMethod(m));

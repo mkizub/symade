@@ -210,7 +210,7 @@ public static final view RAssignExpr of AssignExprImpl extends AssignExprView {
 		this.resolve2(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
 	}
 
-	private void resolve2(Type reqType) {
+	public:no,no,no,rw final void resolve2(Type reqType) {
 		lval.resolve(null);
 		if( !(lval instanceof LvalueExpr) )
 			throw new RuntimeException("Can't assign to "+lval+": lvalue requared");
@@ -363,7 +363,7 @@ public static final view RBinaryExpr of BinaryExprImpl extends BinaryExprView {
 		resolve2(reqType);
 	}
 
-	private void resolve2(Type reqType) {
+	public:no,no,no,rw final void resolve2(Type reqType) {
 		expr1.resolve(null);
 		expr2.resolve(null);
 
@@ -628,7 +628,7 @@ public static view RUnaryExpr of UnaryExprImpl extends UnaryExprView {
 		resolve2(reqType);
 	}
 
-	private void resolve2(Type reqType) {
+	public:no,no,no,rw final void resolve2(Type reqType) {
 		expr.resolve(null);
 		if( op==PrefixOperator.PreIncr
 		||  op==PrefixOperator.PreDecr
@@ -759,7 +759,7 @@ public static final view RCastExpr of CastExprImpl extends CastExprView {
 		throw new CompilerException(this,"Expression "+expr+" of type "+extp+" is not castable to "+type);
 	}
 
-	private boolean tryOverloadedCast(Type et) {
+	public:no,no,no,rw final boolean tryOverloadedCast(Type et) {
 		Method@ v;
 		ResInfo info = new ResInfo(this,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 		v.$unbind();
@@ -783,7 +783,7 @@ public static final view RCastExpr of CastExprImpl extends CastExprView {
 		return false;
 	}
 
-	private void resolve2(Type reqType) {
+	public:no,no,no,rw final void resolve2(Type reqType) {
 		Type type = this.type.getType();
 		expr.resolve(type);
 //		if( e instanceof Struct )

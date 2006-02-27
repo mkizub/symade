@@ -101,7 +101,8 @@ public final class AccessExpr extends LvalueExpr {
 		public void mainResolveOut() {
 			ASTNode[] res;
 			Type[] tps;
-	
+
+			ENode obj = this.obj;
 			// pre-resolve result
 			if( obj instanceof TypeRef ) {
 				tps = new Type[]{ ((TypeRef)obj).getType() };
@@ -130,8 +131,12 @@ public final class AccessExpr extends LvalueExpr {
 				Type tp = tps[si];
 				DNode@ v;
 				ResInfo info;
-				if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) )
-					res[si] = makeExpr(v,info,~obj);
+				if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) ) {
+					if (this.obj != null)
+						res[si] = makeExpr(v,info,~this.obj);
+					else
+						res[si] = makeExpr(v,info,obj.ncopy());
+				}
 				else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
 					res[si] = makeExpr(v,info,tp.getStruct());
 			}
@@ -148,7 +153,7 @@ public final class AccessExpr extends LvalueExpr {
 				for(int si=0; si < res.length; si++) {
 					if (res[si] == null)
 						continue;
-					msg.append("\t").append(res).append('\n');
+					msg.append("\t").append(res[si]).append('\n');
 				}
 				msg.append("while resolving ").append(this);
 				throw new CompilerException(this, msg.toString());
@@ -161,7 +166,7 @@ public final class AccessExpr extends LvalueExpr {
 					msg.append("\t").append(tps[si]).append('\n');
 				}
 				msg.append("while resolving ").append(this);
-				this.obj = this.obj;
+				this.obj = obj;
 				throw new CompilerException(this, msg.toString());
 			}
 			this.replaceWithNode(res[idx]);
@@ -476,7 +481,7 @@ public final class ThisExpr extends LvalueExpr {
 			try {
 				if (ctx_clazz == null)
 					return Type.tpVoid;
-				if (ctx_clazz.name.short_name.equals(nameIdefault))
+				if (ctx_clazz.name.short_name == nameIFaceImpl)
 					return ctx_clazz.package_clazz.ctype;
 				if (isSuperExpr())
 					ctx_clazz.super_type;

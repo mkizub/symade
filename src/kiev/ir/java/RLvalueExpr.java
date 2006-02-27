@@ -166,7 +166,7 @@ public static final view RThisExpr of ThisExprImpl extends ThisExprView {
 		if( isResolved() ) return;
 		if (ctx_method != null &&
 			ctx_method.isStatic() &&
-			!ctx_clazz.name.short_name.equals(nameIdefault)
+			ctx_clazz.name.short_name != nameIFaceImpl
 		)
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 		setResolved(true);

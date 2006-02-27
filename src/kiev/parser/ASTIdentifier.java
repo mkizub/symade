@@ -22,7 +22,7 @@ public class ASTIdentifier extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	private static KString op_instanceof = KString.from("instanceof");
+	static KString op_instanceof = KString.from("instanceof");
 
 	@virtual typedef This  = ASTIdentifier;
 	@virtual typedef NImpl = ASTIdentifierImpl;

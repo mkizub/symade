@@ -119,7 +119,7 @@ public class ASTExpression extends ENode {
 			trace( Kiev.debugOperators, "return expr "+result+" and rest "+rest)
 		}
 	
-		rule resolvePrefixExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
+		public rule resolvePrefixExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 			Operator@		op;
 			ENode@			result1;
 			List<ENode>@	rest1;
@@ -146,7 +146,7 @@ public class ASTExpression extends ENode {
 			rest ?= rest1.$var
 		}
 	
-		rule resolvePostfixExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
+		public rule resolvePostfixExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 			Operator@		op;
 			ENode@			result1;
 			List<ENode>@	rest1;
@@ -169,7 +169,7 @@ public class ASTExpression extends ENode {
 			rest ?= expr.tail().tail()
 		}
 	
-		rule resolveBinaryExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
+		public rule resolveBinaryExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 			Operator@		op;
 			ENode@			result1;
 			List<ENode>@	rest1;
@@ -199,7 +199,7 @@ public class ASTExpression extends ENode {
 			rest ?= rest1
 		}
 	
-		rule resolveAssignExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
+		public rule resolveAssignExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 			Operator@		op;
 			ENode@			result1;
 			List<ENode>@	rest1;
@@ -224,7 +224,7 @@ public class ASTExpression extends ENode {
 			rest ?= rest1
 		}
 	
-		rule resolveMultiExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
+		public rule resolveMultiExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 			Operator@		op;
 			List<ENode>@	result1;
 			List<ENode>@	rest1;
@@ -246,7 +246,7 @@ public class ASTExpression extends ENode {
 			rest ?= rest1
 		}
 	
-		rule resolveMultiExpr(MultiOperator op, int n, List<ENode>@ result, List<ENode> expr, List<ENode>@ rest)
+		public rule resolveMultiExpr(MultiOperator op, int n, List<ENode>@ result, List<ENode> expr, List<ENode>@ rest)
 			ENode@			result1;
 			List<ENode>@	result2;
 			List<ENode>@	rest1;

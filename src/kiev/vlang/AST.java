@@ -1203,7 +1203,6 @@ public final class VarDecl extends ENode implements Named {
 	}
 	@nodeview
 	public static final view VVarDecl of VarDeclImpl extends VarDeclView {
-		public VVarDecl(VarDeclImpl impl) { super(impl); }
 	}
 
 	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }

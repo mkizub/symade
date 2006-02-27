@@ -25,7 +25,7 @@ public interface Constants extends AccessFlags {
 	public final static KString nameLength		= KString.from("length");
 	public final static KString nameFinalize	= KString.from("finalize");
 	public final static KString nameFinalizeSig	= KString.from("()V");
-	public final static KString nameIdefault	= KString.from("default");
+	public final static KString nameIFaceImpl	= KString.from("_Impl_");
 	public final static KString nameElements	= KString.from("elements");
 	public final static KString nameHasMoreElements	= KString.from("hasMoreElements");
 	public final static KString nameNextElement	= KString.from("nextElement");

@@ -34,6 +34,7 @@ public final view JStruct of StructImpl extends JTypeDecl {
 	public:ro	JBaseType			jtype;
 	public:ro	JBaseType			jsuper_type;
 	public:ro	JType[]				interfaces;
+	public:ro	JStruct				iface_impl;
 	public:ro	JArr<JStruct>		sub_clazz;
 	public		Attr[]				attrs;
 	public:ro	JArr<JDNode>		members;
@@ -99,48 +100,44 @@ public final view JStruct of StructImpl extends JTypeDecl {
 	}
 
 	public JField resolveField(KString name) {
-		return resolveField(name,this,true);
+		return resolveField(this,name,this,true);
 	}
 
 	public JField resolveField(KString name, boolean fatal) {
-		return resolveField(name,this,fatal);
+		return resolveField(this,name,this,fatal);
 	}
 
-	private JField resolveField(KString name, JStruct where, boolean fatal) {
-		this.checkResolved();
+	private static JField resolveField(@forward JStruct self, KString name, JStruct where, boolean fatal) {
+		self.checkResolved();
 		foreach(JDNode n; members; n instanceof JField) {
 			JField f = (JField)n;
 			if (f.name == name)
 				return f;
 		}
 		if( jsuper_type != null )
-			return jsuper_type.getJStruct().resolveField(name,where,fatal);
+			return resolveField(jsuper_type.getJStruct(),name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
 		return null;
 	}
 
 	public JMethod resolveMethod(KString name, KString sign) {
-		return resolveMethod(name,sign,this,true);
+		return resolveMethod(this,name,sign,this,true);
 	}
 
 	public JMethod resolveMethod(KString name, KString sign, boolean fatal) {
-		return resolveMethod(name,sign,this,fatal);
+		return resolveMethod(this,name,sign,this,fatal);
 	}
 
-	private JMethod resolveMethod(KString name, KString sign, JStruct where, boolean fatal) {
-		this.checkResolved();
+	private static JMethod resolveMethod(@forward JStruct self, KString name, KString sign, JStruct where, boolean fatal) {
+		self.checkResolved();
 		foreach (JDNode n; members; n instanceof JMethod) {
 			JMethod m = (JMethod)n;
 			if( m.name.equals(name) && m.type.getJType().java_signature.equals(sign))
 				return m;
 		}
 		if( isInterface() ) {
-			JStruct defaults = null;
-			foreach(JDNode n; members; n instanceof JStruct && ((JStruct)n).isClazz() && ((JStruct)n).name.short_name.equals(nameIdefault) ) {
-				defaults = (JStruct)n;
-				break;
-			}
+			JStruct defaults = self.iface_impl;
 			if( defaults != null ) {
 				foreach (JDNode n; defaults.members; n instanceof JMethod) {
 					JMethod m = (JMethod)n;
@@ -149,13 +146,13 @@ public final view JStruct of StructImpl extends JTypeDecl {
 				}
 			}
 		}
-		trace(Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+this);
+		trace(Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+self);
 		JMethod m = null;
 		if( jsuper_type != null )
-			m = jsuper_type.getJStruct().resolveMethod(name,sign,where,fatal);
+			m = resolveMethod(jsuper_type.getJStruct(),name,sign,where,fatal);
 		if( m != null ) return m;
 		foreach(JType interf; interfaces) {
-			m = interf.getJStruct().resolveMethod(name,sign,where,fatal);
+			m = resolveMethod(interf.getJStruct(),name,sign,where,fatal);
 			if( m != null ) return m;
 		}
 		if (fatal)
@@ -163,7 +160,7 @@ public final view JStruct of StructImpl extends JTypeDecl {
 		return null;
 	}
 
-	void generate() {
+	public void generate() {
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return;
 		
@@ -296,7 +293,7 @@ public final view JStruct of StructImpl extends JTypeDecl {
 		Env.setProjectInfo(name, true);
 	}
 
-	void toBytecode(ConstPool constPool) {
+	public void toBytecode(ConstPool constPool) {
 		String output_dir = Kiev.output_dir;
 		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
 		String out_file;

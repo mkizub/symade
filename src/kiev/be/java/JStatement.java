@@ -452,10 +452,12 @@ public final view JGotoStat of GotoStatImpl extends JENode {
 		}
 	}
 
+	private JNode getAsJNode(JNode jn) { return jn; }
+	
 	public Object[] resolveLabelStat(Code code, JLabeledStat stat) {
 		Object[] cl1 = new CodeLabel[0];
 		Object[] cl2 = new CodeLabel[0];
-		JNode st = stat;
+		JNode st = getAsJNode(stat);
 		while( !(st instanceof JMethod) ) {
 			if( st instanceof JFinallyInfo ) {
 				st = st.jparent.jparent;
@@ -471,7 +473,7 @@ public final view JGotoStat of GotoStatImpl extends JENode {
 			}
 			st = st.jparent;
 		}
-		st = this;
+		st = getAsJNode(this);
 		while( !(st instanceof JMethod) ) {
 			if( st instanceof JFinallyInfo ) {
 				st = st.jparent.jparent;

@@ -21,8 +21,8 @@ public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	private static KString opPVar  = KString.from("@");
-	private static KString opRef   = KString.from("&");
+	static KString opPVar  = KString.from("@");
+	static KString opRef   = KString.from("&");
 	
 	@virtual typedef This  = TypeExpr;
 	@virtual typedef NImpl = TypeExprImpl;

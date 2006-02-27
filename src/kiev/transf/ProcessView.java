@@ -16,27 +16,20 @@ import syntax kiev.Syntax;
 @singleton
 public class ProcessView extends TransfProcessor implements Constants {
 
-	public static final KString nameIFace = KString.from("_IFace_");
-
 	private ProcessView() {
 		super(Kiev.Ext.View);
 	}
 	
-	private Struct getViewIFace(TypeRef tr) {
+	private Struct getViewImpl(TypeRef tr) {
 		if (tr == null) return null;
 		Struct clazz = tr.getStruct();
 		if (clazz == null) return null;
-		return getViewIFace(clazz);
+		return getViewImpl(clazz);
 	}
-	private Struct getViewIFace(Struct clazz) {
+	private Struct getViewImpl(Struct clazz) {
 		if !(clazz.isStructView())
 			return null;
-		foreach (DNode dn; clazz.members; dn instanceof Struct) {
-			Struct s = (Struct)dn;
-			if (s.isInterface() && s.name.short_name == nameIFace)
-				return s;
-		}
-		return null;
+		return clazz.iface_impl;
 	}
 
 	public void autoGenerateMembers(ASTNode:ASTNode node) {
@@ -56,61 +49,71 @@ public class ProcessView extends TransfProcessor implements Constants {
 			return;
 		}
 		
-		if (getViewIFace(clazz) != null)
+		if (clazz.isForward() || getViewImpl(clazz) != null)
 			return;
 		
-		// generate interface
-		Struct iface = Env.newInterface(
-			ClazzName.fromOuterAndName(clazz,nameIFace, false, true),
+		clazz.setInterface(true);
+		
+		// generate implementation
+		Struct impl = Env.newStruct(
+			ClazzName.fromOuterAndName(clazz,nameIFaceImpl, false, true),
 			clazz,
-			ACC_PUBLIC /*| ACC_SYNTHETIC*/
+			ACC_PUBLIC | ACC_SYNTHETIC | ACC_FORWARD
 			);
-		iface.pos = clazz.pos;
-		iface.setResolved(true);
+		impl.pos = clazz.pos;
+		impl.setResolved(true);
+		clazz.iface_impl = impl;
 		{
 			autoGenerateMembers(clazz.super_bound.getStruct());
-			Struct s = getViewIFace(clazz.super_bound);
+			Struct s = getViewImpl(clazz.super_bound);
 			if (s != null)
-				iface.interfaces.add(new TypeRef(s.ctype));
-			foreach (TypeRef i; clazz.interfaces)
-				iface.interfaces.add(new TypeRef(i.getType()));
+				impl.super_bound = new TypeRef(s.ctype);
+			impl.interfaces.add(new TypeRef(clazz.ctype));
 		}
-		clazz.members.append(iface);
-		foreach (DNode dn; clazz.members; !dn.isStatic() && dn.isPublic() && !dn.isSynthetic()) {
-			if (dn instanceof Method) {
-				if (dn instanceof Constructor)
-					continue;
+		clazz.members.append(impl);
+		foreach (DNode dn; clazz.members.toArray()) {
+			if (dn instanceof Method && !(dn instanceof Constructor) && dn.isPublic() && !dn.isStatic()) {
 				Method cm = dn;
 				Block b = cm.body;
 				if (b != null)
 					~b;
 				Method m = cm.ncopy();
 				m.setFinal(false);
-				iface.addMethod(m);
+				m.setPublic();
+				m.setAbstract(true);
+				impl.members.add(~cm);
+				clazz.addMethod(m);
 				if (b != null)
 					cm.body = b;
+				continue;
 			}
-			else if (dn instanceof Field) {
+			else if (dn instanceof Field && !(dn.isStatic() && dn.isFinal())) {
 				Field cf = dn;
 				ENode b = cf.init;
 				if (b != null)
 					~b;
 				Field f = cf.ncopy();
-				iface.addField(f);
+				f.setPublic();
+				f.setAbstract(true);
+				impl.members.add(~cf);
+				clazz.addField(f);
 				if (b != null)
 					cf.init = b;
+				continue;
 			}
+			if (dn instanceof Struct)
+				continue;
+			impl.members.add(~dn);
 		}
-		Kiev.runProcessorsOn(iface);
-		clazz.interfaces.append(new TypeRef(iface.ctype));
+		Kiev.runProcessorsOn(impl);
 		
 		// generate a field for the object this view represents
-		Field fview = clazz.resolveField(nameImpl, false);
+		Field fview = impl.resolveField(nameImpl, false);
 		if (fview == null)
-			fview = clazz.addField(new Field(nameImpl,clazz.view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
+			fview = impl.addField(new Field(nameImpl,clazz.view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 
 		// generate bridge methods 
-		foreach (DNode dn; clazz.members; dn instanceof Method) {
+		foreach (DNode dn; impl.members; dn instanceof Method) {
 			Method m = (Method)dn;
 			if (m.isStatic() || m.isAbstract() || m.body != null)
 				continue;
@@ -151,7 +154,7 @@ public class ProcessView extends TransfProcessor implements Constants {
 				cast.setAbstract(true);
 			} else {
 				cast.body = new Block();
-				cast.body.stats.add(new ReturnStat(0, new NewExpr(0, clazz.ctype, new ENode[]{new ThisExpr()})));
+				cast.body.stats.add(new ReturnStat(0, new NewExpr(0, impl.ctype, new ENode[]{new ThisExpr()})));
 			}
 			clazz.view_of.getStruct().addMethod(cast);
 		}
@@ -167,7 +170,7 @@ public class ProcessView extends TransfProcessor implements Constants {
 			Method cast = new Method(nameCastOp, clazz.view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC);
 			cast.body = new Block();
 			cast.body.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
-			clazz.addMethod(cast);
+			impl.addMethod(cast);
 		}
 	}
 

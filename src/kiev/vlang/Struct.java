@@ -53,6 +53,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		@att public NArr<TypeDef>				args;
 		@ref public Struct						package_clazz;
 		@ref public Struct						typeinfo_clazz;
+		@ref public Struct						iface_impl;
 		@ref public NArr<Struct>				sub_clazz;
 		@ref public NArr<DNode>					imported;
 		@ref public NArr<TypeDecl>				direct_extenders;
@@ -350,6 +351,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public:ro			NArr<TypeDef>			args;
 		public				Struct					package_clazz;
 		public				Struct					typeinfo_clazz;
+		public				Struct					iface_impl;
 		public:ro			NArr<Struct>			sub_clazz;
 		public:ro			NArr<DNode>				imported;
 		public:ro			NArr<TypeDecl>			direct_extenders;
@@ -431,17 +433,17 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 	
 		public Field resolveField(KString name) {
-			return resolveField(name,this,true);
+			return resolveField(this,name,this,true);
 		}
 	
 		public Field resolveField(KString name, boolean fatal) {
-			return resolveField(name,this,fatal);
+			return resolveField(this,name,this,fatal);
 		}
 	
-		private Field resolveField(KString name, StructView where, boolean fatal) {
-			getStruct().checkResolved();
-			foreach(DNode f; members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
-			if( super_type != null ) return super_type.getStruct().resolveField(name,where,fatal);
+		private static Field resolveField(StructView self, KString name, StructView where, boolean fatal) {
+			self.getStruct().checkResolved();
+			foreach(DNode f; self.members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
+			if( self.super_type != null ) return resolveField(self.super_type.getStruct().getVView(),name,where,fatal);
 			if (fatal)
 				throw new RuntimeException("Unresolved field "+name+" in class "+where);
 			return null;
@@ -474,11 +476,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public static final view VStruct of StructImpl extends StructView {
 
 		public final boolean mainResolveIn() {
-			this.resolveFinalFields();
+			resolveFinalFields(this);
 			return !isLocal();
 		}
 
-		private void resolveFinalFields() {
+		private static void resolveFinalFields(@forward VStruct self) {
 			trace(Kiev.debugResolve,"Resolving final fields for class "+name);
 			// Resolve final values of class's fields
 			foreach (ASTNode n; members; n instanceof Field) {
@@ -494,7 +496,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			// Process inner classes and cases
 			if( !isPackage() ) {
 				for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-					sub_clazz[i].resolveFinalFields();
+					resolveFinalFields(sub_clazz[i].getVView());
 				}
 			}
 		}
@@ -666,10 +668,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			trace(Kiev.debugResolve,"Struct: resolving in imports of "+this),
 			resolveNameR_2(node,info,name), // resolve in imports
 			$cut
-		;	this.name.short_name.equals(nameIdefault),
-			trace(Kiev.debugResolve,"Struct: resolving in default interface implementation of "+this),
-			package_clazz.resolveNameR(node,info,name),
-			$cut
 		;	info.isSuperAllowed(),
 			info.space_prev == null || (info.space_prev.pslot.name != "super_bound" && info.space_prev.pslot.name != "interfaces"),
 			trace(Kiev.debugResolve,"Struct: resolving in super-class of "+this),
@@ -772,10 +770,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			info.enterSuper() : info.leaveSuper(),
 			sup.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		;	isInterface(),
-			member @= members,
-			member instanceof Struct && ((Struct)member).isClazz() && ((Struct)member).name.short_name.equals(nameIdefault),
+			member ?= iface_impl,
 			info.enterMode(ResInfo.noSuper) : info.leaveMode(),
-			((Struct)member).resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
+			((Struct)member).resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,((Struct)member).ctype))
 		;	info.isSuperAllowed(),
 			isInterface(),
 			sup @= TypeRef.linked_elements(interfaces),

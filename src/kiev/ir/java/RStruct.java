@@ -452,7 +452,7 @@ public final view RStruct of StructImpl extends StructView {
 		}
 	}
 	
-	private void buildVTable(Vector<VTableEntry> vtable, List<Struct> processed) {
+	public:no,no,no,rw final void buildVTable(Vector<VTableEntry> vtable, List<Struct> processed) {
 		if (processed.contains(this.getStruct()))
 			return;
 		processed = new List.Cons<Struct>(this.getStruct(), processed);
@@ -628,18 +628,13 @@ public final view RStruct of StructImpl extends StructView {
 		Method def = null;
 		foreach (Method m; vte.methods) {
 			// find default implementation class
-			Struct i = null;
-			foreach (DNode n; m.ctx_clazz.members; n instanceof Struct && n.name.short_name == nameIdefault) {
-				i = n;
-				break;
-			}
-			if (i == null)
+			if (iface_impl == null)
 				continue;
 			Method fnd = null;
 			Type[] params = m.type.params();
 			params = (Type[])Arrays.insert(params,m.ctx_clazz.ctype,0);
 			CallType mt = new CallType(params, m.type.ret());
-			foreach (Method dm; i.members; dm instanceof Method && dm.name.name == m.name.name && dm.type ≈ mt) {
+			foreach (Method dm; iface_impl.members; dm instanceof Method && dm.name.name == m.name.name && dm.type ≈ mt) {
 				fnd = dm;
 				break;
 			}
@@ -720,7 +715,9 @@ public final view RStruct of StructImpl extends StructView {
 	private void autoGenerateIdefault() {
 		if (!isInterface())
 			return;
-		Struct defaults = null;
+		Struct defaults = iface_impl;
+		if (defaults != null)
+			return;
 		foreach (DNode n; members; n instanceof Method) {
 			Method m = (Method)n;
 			if (!m.isAbstract()) {
@@ -729,11 +726,12 @@ public final view RStruct of StructImpl extends StructView {
 				// Make inner class name$default
 				if( defaults == null ) {
 					defaults = Env.newStruct(
-						ClazzName.fromOuterAndName(this.getStruct(),nameIdefault,false,true),
-						this.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT, true
+						ClazzName.fromOuterAndName(this.getStruct(),nameIFaceImpl,false,true),
+						this.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT | ACC_FORWARD, true
 					);
 					members.add(defaults);
 					defaults.setResolved(true);
+					iface_impl = defaults;
 					Kiev.runProcessorsOn(defaults);
 				}
 				
@@ -1214,7 +1212,7 @@ public final view RStruct of StructImpl extends StructView {
 						call_super.args.add(new ASTIdentifier(pos, nameEnumOrdinal));
 						//call_super.args.add(new ASTIdentifier(pos, KString.from("text")));
 					}
-					else if( isStructView() && super_type.getStruct().isStructView() ) {
+					else if( isForward() && package_clazz.isStructView() && super_type.getStruct().package_clazz.isStructView() ) {
 						call_super.args.add(new ASTIdentifier(pos, nameImpl));
 					}
 					stats.insert(new ExprStat(call_super),0);
@@ -1230,7 +1228,7 @@ public final view RStruct of StructImpl extends StructView {
 						),p++
 					);
 				}
-				if (isStructView()) {
+				if (isForward() && package_clazz.isStructView()) {
 					Field fview = this.resolveField(nameImpl);
 					if (fview.parent_node == ((StructImpl)this)._self) {
 						foreach (FormPar fp; m.params; fp.name.equals(nameImpl)) {

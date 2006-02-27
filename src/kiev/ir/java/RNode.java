@@ -25,7 +25,6 @@ import syntax kiev.Syntax;
 
 @nodeview
 public static final view RVarDecl of VarDeclImpl extends VarDeclView {
-	public RVarDecl(VarDeclImpl impl) { super(impl); }
 }
 
 @nodeview
