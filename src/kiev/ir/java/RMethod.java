@@ -25,8 +25,11 @@ import syntax kiev.Syntax;
 @nodeview
 public view RMethod of MethodImpl extends MethodView {
 	public void resolveDecl() {
+		RMethod.resolveMethod(this);
+	}
+	static void resolveMethod(@forward RMethod self) {
 		if( isResolved() ) return;
-		trace(Kiev.debugResolve,"Resolving method "+this);
+		trace(Kiev.debugResolve,"Resolving method "+self);
 		assert( ctx_clazz == parent_node || inlined_by_dispatcher );
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
@@ -41,7 +44,7 @@ public view RMethod of MethodImpl extends MethodView {
 					body.stats.append(new ReturnStat(pos,null));
 					body.setMethodAbrupted(true);
 				} else {
-					Kiev.reportError(this,"Return requared");
+					Kiev.reportError(self,"Return requared");
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
@@ -49,9 +52,9 @@ public view RMethod of MethodImpl extends MethodView {
 				cond.resolveDecl();
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(this,e);
+			Kiev.reportError(self,e);
 		}
-		this.cleanDFlow();
+		self.cleanDFlow();
 
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
@@ -74,7 +77,7 @@ public final view RConstructor of ConstructorImpl extends RMethod {
 	public:ro	NArr<ENode>			addstats;
 
 	public void resolveDecl() {
-		super.resolveDecl();
+		RMethod.resolveMethod(this); // super.resolveDecl()
 		ENode[] addstats = this.addstats.delToArray();
 		for(int i=0; i < addstats.length; i++) {
 			body.stats.insert(addstats[i],i);

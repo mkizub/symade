@@ -197,13 +197,13 @@ public final view JCondStat of CondStatImpl extends JENode {
 	public:ro	JENode		cond;
 	public:ro	JENode		message;
 
-	private void generateAssertName(Code code) {
+	public:n,n,n,rw void generateAssertName(Code code) {
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
 		if( wbc.name == null ) return;
 		code.addConst((KString)wbc.name);
 	}
 
-	private JMethod getAssertMethod() {
+	public:n,n,n,rw JMethod getAssertMethod() {
 		KString fname;
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
 		switch( wbc.cond ) {
@@ -298,7 +298,7 @@ public final view JBreakStat of BreakStatImpl extends JENode {
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
-	private Object[] resolveBreakLabel(Code code) {
+	public:n,n,n,rw Object[] resolveBreakLabel(Code code) {
 		KString name = ident==null?null:ident;
 		Object[] cl = new Object[0];
 		if( name == null || name.equals(KString.Empty) ) {
@@ -376,7 +376,7 @@ public final view JContinueStat of ContinueStatImpl extends JENode {
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
-	private Object[] resolveContinueLabel(Code code) {
+	public:n,n,n,rw Object[] resolveContinueLabel(Code code) {
 		KString name = ident==null?null:ident;
 		Object[] cl = new Object[0];
 		if( name == null || name.equals(KString.Empty) ) {
@@ -452,7 +452,7 @@ public final view JGotoStat of GotoStatImpl extends JENode {
 		}
 	}
 
-	private JNode getAsJNode(JNode jn) { return jn; }
+	public:n,n,n,rw JNode getAsJNode(JNode jn) { return jn; }
 	
 	public Object[] resolveLabelStat(Code code, JLabeledStat stat) {
 		Object[] cl1 = new CodeLabel[0];

@@ -373,7 +373,7 @@ public final view JIncrementExpr of IncrementExprImpl extends JENode {
 	}
 
 	/** Just load value referenced by lvalue */
-	private void generateLoad(Code code) {
+	public:n,n,n,rw void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: - load "+this);
 		code.setLinePos(this);
 		JLvalueExpr lval = (JLvalueExpr)this.lval;
@@ -429,7 +429,7 @@ public final view JIncrementExpr of IncrementExprImpl extends JENode {
 		}
 	}
 
-	private void pushProperConstant(Code code, int i) {
+	public:n,n,n,rw void pushProperConstant(Code code, int i) {
 		Type lt = lval.getType();
 		if( i > 0 ) { // 1
 			if     ( lt ≡ Type.tpDouble ) code.addConst(1.D);

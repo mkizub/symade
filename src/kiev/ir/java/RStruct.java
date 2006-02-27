@@ -400,7 +400,7 @@ public final view RStruct of StructImpl extends StructView {
 		// generate typeinfo class, if needed
 		autoGenerateTypeinfoClazz();
 		// generate a class for interface non-abstract members
-		autoGenerateIdefault();
+		autoGenerateIdefault(this);
 		// build vtable
 		List<Struct> processed = List.Nil;
 		Vector<VTableEntry> vtable = new Vector<VTableEntry>();
@@ -419,10 +419,10 @@ public final view RStruct of StructImpl extends StructView {
 		if (isClazz()) {
 			// forward default implementation to interfaces
 			foreach (VTableEntry vte; vtable; vte.overloader == null)
-				autoProxyMixinMethods(vte);
+				autoProxyMixinMethods(this,vte);
 			// generate bridge methods
 			foreach (VTableEntry vte; vtable)
-				autoBridgeMethods(vte);
+				autoBridgeMethods(this,vte);
 //			// generate method dispatchers for multimethods
 //			foreach (VTableEntry vte; vtable; vte.overloader == null)
 //				createMethodDispatchers(vte);
@@ -431,7 +431,7 @@ public final view RStruct of StructImpl extends StructView {
 		
 		setMembersPreGenerated(true);
 
-		combineMethods();
+		combineMethods(this);
 
 		return true;
 	}
@@ -616,7 +616,7 @@ public final view RStruct of StructImpl extends StructView {
 			root.body.stats.insert(0, st);
 	}
 */
-	private void autoProxyMixinMethods(VTableEntry vte) {
+	private static void autoProxyMixinMethods(@forward RStruct self, VTableEntry vte) {
 		// check we have a virtual method for this entry
 		foreach (Method m; vte.methods) {
 			if (m.ctx_clazz.isInterface())
@@ -645,7 +645,7 @@ public final view RStruct of StructImpl extends StructView {
 			else if (def.ctx_clazz.instanceOf(fnd.ctx_clazz))
 				; // just ignore
 			else
-				Kiev.reportWarning(this,"Umbigous default implementation for methods:\n"+
+				Kiev.reportWarning(self,"Umbigous default implementation for methods:\n"+
 					"    "+def.ctx_clazz+"."+def+"\n"+
 					"    "+fnd.ctx_clazz+"."+fnd
 				);
@@ -654,8 +654,8 @@ public final view RStruct of StructImpl extends StructView {
 		if (def == null) {
 			// create an abstract method
 			Method def = vte.methods.head();
-			if (!this.isAbstract())
-				Kiev.reportWarning(this,"Method "+vte.name+vte.etype+" is not implemented in "+this);
+			if (!self.isAbstract())
+				Kiev.reportWarning(self,"Method "+vte.name+vte.etype+" is not implemented in "+self);
 			m = new Method(vte.name, vte.etype.ret(), ACC_ABSTRACT | ACC_PUBLIC | ACC_SYNTHETIC);
 			for (int i=0; i < vte.etype.arity; i++)
 				m.params.append(new FormPar(0,def.params[i].name.name,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
@@ -668,14 +668,14 @@ public final view RStruct of StructImpl extends StructView {
 			members.append(m);
 			m.body = new Block();
 			if( m.type.ret() ≡ Type.tpVoid )
-				m.body.stats.add(new ExprStat(0,makeDispatchCall(0, m, def)));
+				m.body.stats.add(new ExprStat(0,makeDispatchCall(self,0, m, def)));
 			else
-				m.body.stats.add(new ReturnStat(0,makeDispatchCall(0, m, def)));
+				m.body.stats.add(new ReturnStat(0,makeDispatchCall(self,0, m, def)));
 		}
 		vte.add(m);
 	}
 
-	private void autoBridgeMethods(VTableEntry vte) {
+	private static void autoBridgeMethods(@forward RStruct self, VTableEntry vte) {
 		// get overloader vtable entry
 		VTableEntry ovr = vte;
 		while (ovr.overloader != null)
@@ -683,7 +683,7 @@ public final view RStruct of StructImpl extends StructView {
 		// find overloader method
 		Method mo = null;
 		foreach (Method m; vte.methods) {
-			if (m.ctx_clazz == this.getStruct() && m.etype ≈ ovr.etype) {
+			if (m.ctx_clazz == self.getStruct() && m.etype ≈ ovr.etype) {
 				mo = m;
 				break;
 			}
@@ -691,9 +691,9 @@ public final view RStruct of StructImpl extends StructView {
 		if (mo == null)
 			return; // not overloaded in this class
 	next_m:
-		foreach (Method m; vte.methods; m.ctx_clazz != this.getStruct()) {
+		foreach (Method m; vte.methods; m.ctx_clazz != self.getStruct()) {
 			// check this class have no such a method
-			foreach (DNode x; this.members; x instanceof Method && x.name.name == m.name.name) {
+			foreach (DNode x; self.members; x instanceof Method && x.name.name == m.name.name) {
 				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
@@ -702,17 +702,17 @@ public final view RStruct of StructImpl extends StructView {
 				bridge.params.append(new FormPar(mo.pos,m.params[i].name.name,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
 			bridge.pos = mo.pos;
 			members.append(bridge);
-			trace(Kiev.debugMultiMethod,"Created a bridge method "+this+"."+bridge+" for vtable entry "+vte.name+vte.etype);
+			trace(Kiev.debugMultiMethod,"Created a bridge method "+self+"."+bridge+" for vtable entry "+vte.name+vte.etype);
 			bridge.body = new Block();
 			if (bridge.type.ret() ≢ Type.tpVoid)
-				bridge.body.stats.append(new ReturnStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
+				bridge.body.stats.append(new ReturnStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
 			else
-				bridge.body.stats.append(new ExprStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
+				bridge.body.stats.append(new ExprStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
 			vte.add(bridge);
 		}
 	}
 
-	private void autoGenerateIdefault() {
+	private static void autoGenerateIdefault(@forward RStruct self) {
 		if (!isInterface() || isStructView())
 			return;
 		Struct defaults = iface_impl;
@@ -726,8 +726,8 @@ public final view RStruct of StructImpl extends StructView {
 				// Make inner class name$default
 				if( defaults == null ) {
 					defaults = Env.newStruct(
-						ClazzName.fromOuterAndName(this.getStruct(),nameIFaceImpl,false,true),
-						this.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT | ACC_FORWARD, true
+						ClazzName.fromOuterAndName(self.getStruct(),nameIFaceImpl,false,true),
+						self.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT | ACC_FORWARD, true
 					);
 					members.add(defaults);
 					defaults.setResolved(true);
@@ -746,7 +746,7 @@ public final view RStruct of StructImpl extends StructView {
 				def.pos = m.pos;
 				def.params.moveFrom(m.params); // move, because the vars are resolved
 				m.params.copyFrom(def.params);
-				def.params.insert(0,new FormPar(pos,Constants.nameThis,this.ctype,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
+				def.params.insert(0,new FormPar(pos,Constants.nameThis,self.ctype,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
 				defaults.members.add(def);
 				def.body = ~m.body;
 				def.setVirtualStatic(true);
@@ -756,7 +756,7 @@ public final view RStruct of StructImpl extends StructView {
 		}
 	}
 
-	private void combineMethods() {
+	private static void combineMethods(@forward RStruct self) {
 		List<Method> multimethods = List.Nil;
 		for (int cur_m=0; cur_m < members.length; cur_m++) {
 			if !(members[cur_m] instanceof Method)
@@ -782,12 +782,12 @@ public final view RStruct of StructImpl extends StructView {
 				mmm.targs.copyFrom(m.targs);
 				foreach (FormPar fp; m.params)
 					mmm.params.add(new FormPar(fp.pos,fp.name.name,fp.stype.getType(),fp.kind,fp.flags));
-				this.members.add(mmm);
+				self.members.add(mmm);
 			}
 			CallType type1 = mmm.type;
 			CallType dtype1 = mmm.dtype;
 			CallType etype1 = mmm.etype;
-			this.members.detach(mmm);
+			self.members.detach(mmm);
 			Method mm = null;
 			trace(Kiev.debugMultiMethod,"Generating dispatch method for "+m+" with dispatch type "+etype1);
 			// find all methods with the same java type
@@ -816,7 +816,7 @@ public final view RStruct of StructImpl extends StructView {
 			Method overwr = null;
 
 			if (super_type != null )
-				overwr = super_type.clazz.getOverwrittenMethod(this.ctype,m);
+				overwr = super_type.clazz.getOverwrittenMethod(self.ctype,m);
 
 			// nothing to do, if no methods to combine
 			if (mlistb.length() == 1 && mm != null) {
@@ -830,7 +830,7 @@ public final view RStruct of StructImpl extends StructView {
 			if (mm == null) {
 				// create a new dispatcher method...
 				mm = mmm;
-				this.getStruct().addMethod(mm);
+				self.getStruct().addMethod(mm);
 				trace(Kiev.debugMultiMethod,"will add new dispatching method "+mm);
 			} else {
 				// if multimethod already assigned, thus, no super. call will be done - forget it
@@ -847,7 +847,7 @@ public final view RStruct of StructImpl extends StructView {
 			trace(Kiev.debugMultiMethod,"Dispatch tree "+mm+" is:\n"+mmt);
 
 			IfElseStat st = null;
-			st = makeDispatchStat(mm,mmt);
+			st = makeDispatchStat(self,mm,mmt);
 
 			if (overwr != null) {
 				IfElseStat last_st = st;
@@ -881,7 +881,7 @@ public final view RStruct of StructImpl extends StructView {
 				}
 				last_st.elseSt = br;
 			}
-			assert (mm.parent_node == this.getStruct());
+			assert (mm.parent_node == self.getStruct());
 			if (st != null) {
 				Block body = new Block(0);
 				body.stats.add(st);
@@ -894,7 +894,7 @@ public final view RStruct of StructImpl extends StructView {
 		}
 	}
 
-	private IfElseStat makeDispatchStat(Method mm, MMTree mmt) {
+	private static IfElseStat makeDispatchStat(@forward RStruct self, Method mm, MMTree mmt) {
 		IfElseStat dsp = null;
 		ENode cond = null;
 		for(int i=0; i < mmt.uppers.length; i++) {
@@ -933,10 +933,10 @@ public final view RStruct of StructImpl extends StructView {
 				cond = new ConstBoolExpr(true);
 			IfElseStat br;
 			if( mmt.uppers[i].uppers.length==0 ) {
-				ENode st = makeMMDispatchCall(mmt.uppers[i].m.pos,mm,mmt.uppers[i].m);
+				ENode st = makeMMDispatchCall(self,mmt.uppers[i].m.pos,mm,mmt.uppers[i].m);
 				br = new IfElseStat(0,cond,st,null);
 			} else {
-				br = new IfElseStat(0,cond,makeDispatchStat(mm,mmt.uppers[i]),null);
+				br = new IfElseStat(0,cond,makeDispatchStat(self,mm,mmt.uppers[i]),null);
 			}
 			cond = null;
 			if( dsp == null ) dsp = br;
@@ -948,7 +948,7 @@ public final view RStruct of StructImpl extends StructView {
 		}
 		if( mmt.m != mm && mmt.m != null) {
 			ENode br;
-			br = makeMMDispatchCall(mmt.m.pos,mm,mmt.m);
+			br = makeMMDispatchCall(self,mmt.m.pos,mm,mmt.m);
 			IfElseStat st = dsp;
 			while( st.elseSt != null ) st = (IfElseStat)st.elseSt;
 			st.elseSt = br;
@@ -956,23 +956,23 @@ public final view RStruct of StructImpl extends StructView {
 		return dsp;
 	}
 	
-	private ENode makeMMDispatchCall(int pos, Method dispatcher, Method dispatched) {
+	private static ENode makeMMDispatchCall(@forward RStruct self, int pos, Method dispatcher, Method dispatched) {
 		assert (dispatched != dispatcher);
 		assert (dispatched.isAttached());
-		if (dispatched.ctx_clazz == this.getStruct()) {
-			assert (dispatched.parent_node == this.getStruct());
+		if (dispatched.ctx_clazz == self.getStruct()) {
+			assert (dispatched.parent_node == self.getStruct());
 			return new InlineMethodStat(pos,~dispatched,dispatcher);
 		} else {
-			return makeDispatchCall(pos,dispatched,dispatcher);
+			return makeDispatchCall(self,pos,dispatched,dispatcher);
 		}
 	}
 
-	private ENode makeDispatchCall(int pos, Method dispatcher, Method dispatched) {
+	private static ENode makeDispatchCall(@forward RStruct self, int pos, Method dispatcher, Method dispatched) {
 		//return new InlineMethodStat(pos,dispatched,dispatcher)
 		ENode obj = null;
 		if (!dispatched.isStatic() && !dispatcher.isStatic())
 			obj = new ThisExpr(pos);
-		CallExpr ce = new CallExpr(pos, obj, dispatched, null, ENode.emptyArray, this.getStruct() != dispatched.ctx_clazz);
+		CallExpr ce = new CallExpr(pos, obj, dispatched, null, ENode.emptyArray, self.getStruct() != dispatched.ctx_clazz);
 		if (dispatched.isVirtualStatic() && !dispatcher.isStatic())
 			ce.args.append(new ThisExpr(pos));
 		foreach (FormPar fp; dispatcher.params)

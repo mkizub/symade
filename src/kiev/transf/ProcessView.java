@@ -144,6 +144,14 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 			);
 		impl.pos = clazz.pos;
 		impl.setResolved(true);
+		if (clazz.isAbstract()) {
+			clazz.setAbstract(false);
+			impl.setAbstract(true);
+		}
+		if (clazz.isFinal()) {
+			clazz.setFinal(false);
+			impl.setFinal(true);
+		}
 		clazz.iface_impl = impl;
 		{
 			preGenerate(clazz.super_bound.getStruct());
@@ -151,6 +159,9 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 			if (s != null)
 				impl.super_bound = new TypeRef(s.ctype);
 			impl.interfaces.add(new TypeRef(clazz.ctype));
+			if (clazz.super_bound.getStruct().isInterface())
+				clazz.interfaces.insert(0,~clazz.super_bound); 
+			clazz.super_bound = new TypeRef(Type.tpObject);
 		}
 		clazz.members.append(impl);
 		foreach (DNode dn; clazz.members.toArray()) {
@@ -171,6 +182,10 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 			}
 			else if (dn instanceof Field && !(dn.isStatic() && dn.isFinal())) {
 				Field cf = dn;
+				if (!cf.isPublic()) {
+					Kiev.reportWarning(cf, "Field "+clazz+'.'+cf+" must be public");
+					cf.setPublic();
+				}
 				ENode b = cf.init;
 				if (b != null)
 					~b;
@@ -185,6 +200,10 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 			}
 			if (dn instanceof Struct)
 				continue;
+			if (dn instanceof Method && !(dn instanceof Constructor) && !dn.isPublic() && !dn.isStatic()) {
+				Kiev.reportWarning(dn, "Method "+clazz+'.'+dn+" must be public");
+				dn.setPublic();
+			}
 			impl.members.add(~dn);
 		}
 		

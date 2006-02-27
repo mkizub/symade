@@ -82,7 +82,7 @@ public final class AccessExpr extends LvalueExpr {
 
 		public int		getPriority() { return Constants.opAccessPriority; }
 
-		protected final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
+		public final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
 			if( v instanceof Field ) {
 				return info.buildAccess(this.getNode(), o, v);
 			}
