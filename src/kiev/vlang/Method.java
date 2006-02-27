@@ -317,12 +317,13 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		}
 	
 		public boolean preVerify() {
+			Struct ctx_clazz = this.ctx_clazz;
 			if (isAbstract() && isStatic()) {
 				setBad(true);
 				ctx_clazz.setBad(true);
 				Kiev.reportError(this,"Static method cannot be declared abstract");
 			}
-			if (ctx_clazz.isInterface()) {
+			if (ctx_clazz.isInterface() && !ctx_clazz.isStructView()) {
 				if (isFinal()) {
 					Kiev.reportWarning(this,"Interface methods cannot be final");
 					setFinal(false);

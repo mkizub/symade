@@ -143,7 +143,8 @@ public class RuleMethod extends Method {
 			setPublic();
 			if( pbody == null ) setAbstract(true);
 		}
-		params.insert(0, new FormPar(pos,namePEnv,Type.tpRule,FormPar.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL));
+		if (params.length == 0 || params[0].kind != FormPar.PARAM_RULE_ENV)
+			params.insert(0, new FormPar(pos,namePEnv,Type.tpRule,FormPar.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL));
 		// push the method, because formal parameters may refer method's type args
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve

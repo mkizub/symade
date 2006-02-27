@@ -713,7 +713,7 @@ public final view RStruct of StructImpl extends StructView {
 	}
 
 	private void autoGenerateIdefault() {
-		if (!isInterface())
+		if (!isInterface() || isStructView())
 			return;
 		Struct defaults = iface_impl;
 		if (defaults != null)
@@ -890,8 +890,6 @@ public final view RStruct of StructImpl extends StructView {
 				else
 					mm.body = body;
 			}
-			if (this.isInterface())
-				mm.body = null;
 			multimethods = new List.Cons<Method>(mm, multimethods);
 		}
 	}

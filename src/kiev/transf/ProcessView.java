@@ -54,6 +54,88 @@ public class ProcessView extends TransfProcessor implements Constants {
 		
 		clazz.setInterface(true);
 		
+		// add a cast from clazz.view_of to this view
+		boolean cast_found = false;
+		foreach (DNode dn; clazz.view_of.getStruct().members; dn instanceof Method) {
+			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
+				cast_found = true;
+				break;
+			}
+		}
+		if (!cast_found) {
+			Method cast = new Method(nameCastOp, clazz.ctype, ACC_PUBLIC|ACC_SYNTHETIC);
+			if (clazz.isAbstract()) {
+				cast.setAbstract(true);
+			} else {
+				cast.body = new Block();
+				cast.body.stats.add(new ReturnStat(0, new ConstBoolExpr()));
+			}
+			clazz.view_of.getStruct().addMethod(cast);
+		}
+		// add a cast from this view to the clazz
+		cast_found = false;
+		foreach (DNode dn; clazz.members; dn instanceof Method) {
+			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
+				cast_found = true;
+				break;
+			}
+		}
+		if (!cast_found) {
+			Method cast = new Method(nameCastOp, clazz.view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
+			clazz.addMethod(cast);
+		}
+	}
+	
+	public BackendProcessor getBackend(Kiev.Backend backend) {
+		if (backend == Kiev.Backend.Java15)
+			return JavaViewBackend;
+		return null;
+	}
+	
+}
+
+@singleton
+class JavaViewBackend extends BackendProcessor implements Constants {
+
+	private JavaViewBackend() {
+		super(Kiev.Backend.Java15);
+	}
+	
+	private Struct getViewImpl(TypeRef tr) {
+		if (tr == null) return null;
+		Struct clazz = tr.getStruct();
+		if (clazz == null) return null;
+		return getViewImpl(clazz);
+	}
+	private Struct getViewImpl(Struct clazz) {
+		if !(clazz.isStructView())
+			return null;
+		return clazz.iface_impl;
+	}
+
+	////////////////////////////////////////////////////
+	//	   PASS - preGenerate                         //
+	////////////////////////////////////////////////////
+
+	public void preGenerate(ASTNode:ASTNode node) {
+		return;
+	}
+	
+	public void preGenerate(FileUnit:ASTNode fu) {
+		foreach (DNode dn; fu.members; dn instanceof Struct)
+			this.preGenerate(dn);
+	}
+	
+	public void preGenerate(Struct:ASTNode clazz) {
+		if !( clazz.isStructView() ) {
+			foreach (DNode dn; clazz.members; dn instanceof Struct)
+				this.preGenerate(dn);
+			return;
+		}
+		
+		if (clazz.isForward() || getViewImpl(clazz) != null)
+			return;
+		
 		// generate implementation
 		Struct impl = Env.newStruct(
 			ClazzName.fromOuterAndName(clazz,nameIFaceImpl, false, true),
@@ -64,7 +146,7 @@ public class ProcessView extends TransfProcessor implements Constants {
 		impl.setResolved(true);
 		clazz.iface_impl = impl;
 		{
-			autoGenerateMembers(clazz.super_bound.getStruct());
+			preGenerate(clazz.super_bound.getStruct());
 			Struct s = getViewImpl(clazz.super_bound);
 			if (s != null)
 				impl.super_bound = new TypeRef(s.ctype);
@@ -105,14 +187,13 @@ public class ProcessView extends TransfProcessor implements Constants {
 				continue;
 			impl.members.add(~dn);
 		}
-		Kiev.runProcessorsOn(impl);
 		
 		// generate a field for the object this view represents
 		Field fview = impl.resolveField(nameImpl, false);
 		if (fview == null)
 			fview = impl.addField(new Field(nameImpl,clazz.view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 
-		// generate bridge methods 
+		// generate bridge methods
 		foreach (DNode dn; impl.members; dn instanceof Method) {
 			Method m = (Method)dn;
 			if (m.isStatic() || m.isAbstract() || m.body != null)
@@ -140,39 +221,81 @@ public class ProcessView extends TransfProcessor implements Constants {
 				m.body.stats.add(new ExprStat(m.pos, ce));
 		}
 		
+		// generate getter/setter methods
+		foreach (DNode dn; impl.members; dn instanceof Field) {
+			Field f = (Field)dn;
+			MetaVirtual mv = f.getMetaVirtual();
+			if (mv == null) continue;
+			if (mv.set != null && mv.set.isSynthetic()) {
+				Method set_var = mv.set;
+				Block body = new Block(f.pos);
+				set_var.body = body;
+				Field view_fld = clazz.view_of.getType().getStruct().resolveField(f.name.name);
+				ENode val = new LVarExpr(f.pos,set_var.params[0]);
+				ENode ass_st = new ExprStat(f.pos,
+					new AssignExpr(f.pos,AssignOperator.Assign,
+						new IFldExpr(f.pos,
+							new CastExpr(f.pos,
+								clazz.view_of.getType(),
+								new IFldExpr(f.pos,
+									new ThisExpr(f.pos),
+									fview
+								)
+							),
+							view_fld
+						),
+						val
+					)
+				);
+				body.stats.append(ass_st);
+				body.stats.append(new ReturnStat(f.pos,null));
+				if!(f.getType().isAutoCastableTo(view_fld.getType()))
+					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,view_fld.getType(),~val); });
+				set_var.setAbstract(false);
+			}
+			if (mv.get != null && mv.get.isSynthetic()) {
+				Method get_var = mv.get;
+				Block body = new Block(f.pos);
+				get_var.body = body;
+				ENode val = new IFldExpr(f.pos,
+					new CastExpr(f.pos,
+						clazz.view_of.getType(),
+						new IFldExpr(f.pos,new ThisExpr(f.pos),fview)
+					),
+					clazz.view_of.getType().getStruct().resolveField(f.name.name)
+				);
+				body.stats.add(new ReturnStat(f.pos,val));
+				if!(val.getType().isAutoCastableTo(f.getType()))
+					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,f.getType(),~val); });
+				get_var.setAbstract(false);
+			}
+		}
+		
 		// add a cast from clazz.view_of to this view
-		boolean cast_found = false;
 		foreach (DNode dn; clazz.view_of.getStruct().members; dn instanceof Method) {
 			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
-				cast_found = true;
+				if (!dn.isAbstract() && dn.isSynthetic()) {
+					Method cast = (Method)dn;
+					cast.body.stats[0] = new ReturnStat(0, new NewExpr(0, impl.ctype, new ENode[]{new ThisExpr()}));
+				}
 				break;
 			}
-		}
-		if (!cast_found) {
-			Method cast = new Method(nameCastOp, clazz.ctype, ACC_PUBLIC|ACC_SYNTHETIC);
-			if (clazz.isAbstract()) {
-				cast.setAbstract(true);
-			} else {
-				cast.body = new Block();
-				cast.body.stats.add(new ReturnStat(0, new NewExpr(0, impl.ctype, new ENode[]{new ThisExpr()})));
-			}
-			clazz.view_of.getStruct().addMethod(cast);
 		}
 		// add a cast from this view to the clazz
-		cast_found = false;
-		foreach (DNode dn; clazz.members; dn instanceof Method) {
-			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of) {
-				cast_found = true;
+		boolean cast_found = false;
+		foreach (DNode dn; impl.members; dn instanceof Method) {
+			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
+				if (dn.isSynthetic()) {
+					Method cast = (Method)dn;
+					cast.setAbstract(false);
+					cast.body = new Block();
+					cast.body.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
+				}
 				break;
 			}
 		}
-		if (!cast_found) {
-			Method cast = new Method(nameCastOp, clazz.view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC);
-			cast.body = new Block();
-			cast.body.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
-			impl.addMethod(cast);
-		}
+
+		Kiev.runProcessorsOn(impl);
 	}
-
+	
 }
-
