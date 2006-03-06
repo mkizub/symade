@@ -6,9 +6,7 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.CallExpr.CallExprImpl;
 import kiev.vlang.CallExpr.CallExprView;
-import kiev.vlang.ClosureCallExpr.ClosureCallExprImpl;
 import kiev.vlang.ClosureCallExpr.ClosureCallExprView;
 
 import static kiev.stdlib.Debug.*;
@@ -20,7 +18,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RCallExpr of CallExprImpl extends CallExprView {
+public final view RCallExpr of CallExpr extends CallExprView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -37,7 +35,7 @@ public final view RCallExpr of CallExprImpl extends CallExprView {
 			if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
 				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 			else
-				temp_expr = ctx_clazz.getRView().accessTypeInfoField(this.getNode(),tp,false);
+				temp_expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
 			temp_expr.resolve(null);
 			temp_expr = null;
 		}
@@ -61,7 +59,7 @@ public final view RCallExpr of CallExprImpl extends CallExprView {
 			TypeDef[] targs = func.targs.toArray();
 			for (int i=0; i < targs.length; i++) {
 				Type tp = mt.resolve(targs[i].getAType());
-				temp_expr = ctx_clazz.getRView().accessTypeInfoField(this.getNode(),tp,false);
+				temp_expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
 				temp_expr.resolve(null);
 			}
 			temp_expr = null;
@@ -79,7 +77,7 @@ public final view RCallExpr of CallExprImpl extends CallExprView {
 }
 
 @nodeview
-public final view RClosureCallExpr of ClosureCallExprImpl extends ClosureCallExprView {
+public final view RClosureCallExpr of ClosureCallExpr extends ClosureCallExprView {
 
 	public Method getCallIt(CallType tp) {
 		KString call_it_name;

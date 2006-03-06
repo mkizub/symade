@@ -7,7 +7,6 @@ import kiev.vlang.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.types.TypeRef.TypeRefImpl;
 import kiev.vlang.types.TypeRef.TypeRefView;
 
 /**
@@ -21,25 +20,21 @@ public class TypeCallRef extends TypeRef {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeCallRef;
-	@virtual typedef NImpl = TypeCallRefImpl;
 	@virtual typedef VView = TypeCallRefView;
 
-	@nodeimpl
-	public static final class TypeCallRefImpl extends TypeRefImpl {
-		@virtual typedef ImplOf = TypeCallRef;
-		@ref public NArr<TypeDef>			targs;
-		@att public NArr<TypeRef>			args;
-		@att public TypeRef					ret;
+	@ref public NArr<TypeDef>			targs;
+	@att public NArr<TypeRef>			args;
+	@att public TypeRef					ret;
 
-		public void callbackChildChanged(AttrSlot attr) {
-			this.lnk = null;
-			if (parent != null && pslot != null) {
-				parent.callbackChildChanged(pslot);
-			}
+	public void callbackChildChanged(AttrSlot attr) {
+		this.lnk = null;
+		if (parent != null && pslot != null) {
+			parent.callbackChildChanged(pslot);
 		}
 	}
+
 	@nodeview
-	public static final view TypeCallRefView of TypeCallRefImpl extends TypeRefView {
+	public static final view TypeCallRefView of TypeCallRef extends TypeRefView {
 		public:ro	NArr<TypeDef>			targs;
 		public:ro	NArr<TypeRef>			args;
 		public		TypeRef					ret;
@@ -67,15 +62,10 @@ public class TypeCallRef extends TypeRef {
 			return getMType();
 		}
 	}
-
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
 	
-	public TypeCallRef() {
-		super(new TypeCallRefImpl());
-	}
+	public TypeCallRef() {}
 
 	public TypeCallRef(CallType mt) {
-		super(new TypeCallRefImpl());
 		this.ret = new TypeRef(mt.ret());
 		for (int i=0; i < mt.arity; i++)
 			this.args += new TypeRef(mt.arg(i));

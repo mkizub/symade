@@ -10,20 +10,12 @@ import kiev.parser.*;
 
 import kiev.vlang.NArr.JArr;
 
-import kiev.vlang.LoopStat.LoopStatImpl;
-import kiev.vlang.Label.LabelImpl;
-import kiev.vlang.WhileStat.WhileStatImpl;
-import kiev.vlang.DoWhileStat.DoWhileStatImpl;
-import kiev.vlang.ForInit.ForInitImpl;
-import kiev.vlang.ForStat.ForStatImpl;
-import kiev.vlang.ForEachStat.ForEachStatImpl;
-
 import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 @nodeview
-public abstract view JLoopStat of LoopStatImpl extends JENode implements BreakTarget, ContinueTarget {
+public abstract view JLoopStat of LoopStat extends JENode implements BreakTarget, ContinueTarget {
 	public:ro	JLabel				lblcnt;
 	public:ro	JLabel				lblbrk;
 
@@ -32,12 +24,10 @@ public abstract view JLoopStat of LoopStatImpl extends JENode implements BreakTa
 }
 
 @nodeview
-public final view JLabel of LabelImpl extends JDNode {
+public final view JLabel of Label extends JDNode {
 	public:ro	List<ASTNode>		links;
-	public				CodeLabel			label;
+	public		CodeLabel			label;
 
-	public Label	getLabel()		alias operator(210,fy,$cast) { return (Label)this.getNode(); }
-	
 	public CodeLabel getCodeLabel(Code code) {
 		if( label == null  || label.code != code) label = code.newLabel();
 		return label;
@@ -48,7 +38,7 @@ public final view JLabel of LabelImpl extends JDNode {
 }
 
 @nodeview
-public final view JWhileStat of WhileStatImpl extends JLoopStat {
+public final view JWhileStat of WhileStat extends JLoopStat {
 	public:ro	JENode		cond;
 	public:ro	JENode		body;
 
@@ -82,7 +72,7 @@ public final view JWhileStat of WhileStatImpl extends JLoopStat {
 }
 
 @nodeview
-public final view JDoWhileStat of DoWhileStatImpl extends JLoopStat {
+public final view JDoWhileStat of DoWhileStat extends JLoopStat {
 	public:ro	JENode		cond;
 	public:ro	JENode		body;
 
@@ -116,12 +106,12 @@ public final view JDoWhileStat of DoWhileStatImpl extends JLoopStat {
 }
 
 @nodeview
-public final view JForInit of ForInitImpl extends JENode {
+public final view JForInit of ForInit extends JENode {
 	public:ro	JArr<JVar>	decls;
 }
 
 @nodeview
-public final view JForStat of ForStatImpl extends JLoopStat {
+public final view JForStat of ForStat extends JLoopStat {
 	public:ro	JENode		init;
 	public:ro	JENode		cond;
 	public:ro	JENode		body;
@@ -185,7 +175,7 @@ public final view JForStat of ForStatImpl extends JLoopStat {
 }
 
 @nodeview
-public final view JForEachStat of ForEachStatImpl extends JLoopStat {
+public final view JForEachStat of ForEachStat extends JLoopStat {
 	public:ro	int				mode;
 	public:ro	JENode		container;
 	public:ro	JVar		var;

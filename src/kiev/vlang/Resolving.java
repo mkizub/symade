@@ -41,10 +41,10 @@ public class ResInfo {
 	private ResInfo() {}
 	
 	public ResInfo(ASTNode.NodeView from) {
-		this(from.getNode(), 0);
+		this((ASTNode)from, 0);
 	}
 	public ResInfo(ASTNode.NodeView from, int fl) {
-		this(from.getNode(), fl);
+		this((ASTNode)from, fl);
 	}
 	public ResInfo(ASTNode from) {
 		this(from, 0);

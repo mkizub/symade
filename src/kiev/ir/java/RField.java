@@ -6,7 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Field.FieldImpl;
 import kiev.vlang.Field.FieldView;
 
 import static kiev.stdlib.Debug.*;
@@ -18,7 +17,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RField of FieldImpl extends FieldView {
+public static final view RField of Field extends FieldView {
 	public void resolveDecl() {
 		foreach (Meta m; meta)
 			m.resolve();
@@ -26,7 +25,7 @@ public static final view RField of FieldImpl extends FieldView {
 		if (init instanceof TypeRef)
 			((TypeRef)init).toExpr(type);
 		if (tp instanceof CTimeType) {
-			init = tp.makeInitExpr(((FieldImpl)this)._self,init);
+			init = tp.makeInitExpr(this,init);
 			try {
 				init.resolve(tp.getEnclosedType());
 			} catch(Exception e ) {

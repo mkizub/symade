@@ -174,12 +174,12 @@ public class Access implements Constants {
 	public static void verifyRead(ASTNode from, DNode n) { verifyAccess(from,n,2); }
 	public static void verifyWrite(ASTNode from, DNode n) { verifyAccess(from,n,1); }
 	public static void verifyReadWrite(ASTNode from, DNode n) { verifyAccess(from,n,3); }
-	public static void verifyRead(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),2); }
-	public static void verifyWrite(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),1); }
-	public static void verifyReadWrite(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),3); }
-	public static void verifyRead(JNode from, JNode n) { verifyAccess(from.getNode(),n.getNode(),2); }
-	public static void verifyWrite(JNode from, JNode n) { verifyAccess(from.getNode(),n.getNode(),1); }
-	public static void verifyReadWrite(JNode from, JNode n) { verifyAccess(from.getNode(),n.getNode(),3); }
+	public static void verifyRead(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess((ASTNode)from,(ASTNode)n,2); }
+	public static void verifyWrite(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess((ASTNode)from,(ASTNode)n,1); }
+	public static void verifyReadWrite(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess((ASTNode)from,(ASTNode)n,3); }
+	public static void verifyRead(JNode from, JNode n) { verifyAccess((ASTNode)from,(ASTNode)n,2); }
+	public static void verifyWrite(JNode from, JNode n) { verifyAccess((ASTNode)from,(ASTNode)n,1); }
+	public static void verifyReadWrite(JNode from, JNode n) { verifyAccess((ASTNode)from,(ASTNode)n,3); }
 
 	private static Struct getStructOf(ASTNode n) {
 		if( n instanceof Struct ) return (Struct)n;

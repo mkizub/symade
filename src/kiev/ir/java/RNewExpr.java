@@ -6,13 +6,9 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.NewExpr.NewExprImpl;
 import kiev.vlang.NewExpr.NewExprView;
-import kiev.vlang.NewArrayExpr.NewArrayExprImpl;
 import kiev.vlang.NewArrayExpr.NewArrayExprView;
-import kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprImpl;
 import kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprView;
-import kiev.vlang.NewClosure.NewClosureImpl;
 import kiev.vlang.NewClosure.NewClosureView;
 
 import static kiev.stdlib.Debug.*;
@@ -24,7 +20,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RNewExpr of NewExprImpl extends NewExprView {
+public static final view RNewExpr of NewExpr extends NewExprView {
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
 			if (isAutoReturnable())
@@ -57,7 +53,7 @@ public static final view RNewExpr of NewExprImpl extends NewExprView {
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
 		if( type.clazz.isTypeUnerasable() )
-			ctx_clazz.getRView().accessTypeInfoField(this.getNode(),type,false); // Create static field for this type typeinfo
+			((RStruct)ctx_clazz).accessTypeInfoField((NewExpr)this,type,false); // Create static field for this type typeinfo
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
@@ -91,7 +87,7 @@ public static final view RNewExpr of NewExprImpl extends NewExprView {
 }
 
 @nodeview
-public static final view RNewArrayExpr of NewArrayExprImpl extends NewArrayExprView {
+public static final view RNewArrayExpr of NewArrayExpr extends NewArrayExprView {
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) {
 			if (isAutoReturnable())
@@ -108,7 +104,7 @@ public static final view RNewArrayExpr of NewArrayExprImpl extends NewArrayExprV
 				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
-			ENode ti = ctx_clazz.getRView().accessTypeInfoField(this.getNode(),type,false);
+			ENode ti = ((RStruct)ctx_clazz).accessTypeInfoField((NewArrayExpr)this,type,false);
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
@@ -134,7 +130,7 @@ public static final view RNewArrayExpr of NewArrayExprImpl extends NewArrayExprV
 }
 
 @nodeview
-public static final view RNewInitializedArrayExpr of NewInitializedArrayExprImpl extends NewInitializedArrayExprView {
+public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr extends NewInitializedArrayExprView {
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) {
 			if (isAutoReturnable())
@@ -179,7 +175,7 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExprImpl
 }
 
 @nodeview
-public final view RNewClosure of NewClosureImpl extends NewClosureView {
+public final view RNewClosure of NewClosure extends NewClosureView {
 
 	public boolean preGenerate() {
 		if (clazz != null)
@@ -201,7 +197,7 @@ public final view RNewClosure of NewClosureImpl extends NewClosureView {
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
 		clazz.super_type = Type.tpClosureClazz.ctype;
 		Kiev.runProcessorsOn(clazz);
-		this.getNode().getType();
+		((NewClosure)this).getType();
 
 		// scan the body, and replace ThisExpr with OuterThisExpr
 		Struct clz = this.ctx_clazz;

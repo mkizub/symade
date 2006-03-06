@@ -10,12 +10,10 @@ import kiev.vlang.types.*;
 import java.io.*;
 
 import kiev.vlang.NArr.JArr;
+import kiev.ir.java.RStruct;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
-
-import kiev.vlang.Struct.StructImpl;
-
 
 /**
  * @author Maxim Kizub
@@ -24,9 +22,7 @@ import kiev.vlang.Struct.StructImpl;
  */
 
 @nodeview
-public final view JStruct of StructImpl extends JTypeDecl {
-
-	public final Struct getStruct() { return ((StructImpl)this)._self; }
+public final view JStruct of Struct extends JTypeDecl {
 
 	public:ro	Access				acc;
 	public:ro	ClazzName			name;
@@ -40,7 +36,7 @@ public final view JStruct of StructImpl extends JTypeDecl {
 	public:ro	JArr<JDNode>		members;
 
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
-	public final JBaseType		get$jsuper_type()	{ return getStruct().super_type == null ? null : (JBaseType)getStruct().super_type.getJType(); }
+	public final JBaseType		get$jsuper_type()	{ return ((Struct)this).super_type == null ? null : (JBaseType)((Struct)this).super_type.getJType(); }
 
 	public final boolean isClazz();
 	public final boolean isPackage();
@@ -59,7 +55,7 @@ public final view JStruct of StructImpl extends JTypeDecl {
 
 	@getter public JStruct get$child_jctx_clazz() { return this; }
 
-	public boolean checkResolved() { return getStruct().checkResolved(); }
+	public boolean checkResolved();
 	
 	/** Add information about new attribute that belongs to this class */
 	public Attr addAttr(Attr a) {
@@ -83,7 +79,7 @@ public final view JStruct of StructImpl extends JTypeDecl {
 	}
 
 	public JENode accessTypeInfoField(JNode from, Type t, boolean from_gen) {
-		return getStruct().getRView().accessTypeInfoField(from.getNode(), t, from_gen).getJView();
+		return (JENode)((RStruct)((Struct)this)).accessTypeInfoField((ASTNode)from, t, from_gen);
 	}
 	
 	public boolean instanceOf(JStruct cl) {
@@ -223,7 +219,7 @@ public final view JStruct of StructImpl extends JTypeDecl {
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
 			if( f.isAccessedFromInner())
-				f.getDNode().setPkgPrivate();
+				((Field)f).setPkgPrivate();
 			if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
 			if (f.isStatic() && f.init != null && f.init.isConstantExpr()) {
 				Object co = f.init.getConstValue();
@@ -245,7 +241,7 @@ public final view JStruct of StructImpl extends JTypeDecl {
 				m.generate(constPool);
 
 				if( m.isAccessedFromInner())
-					m.getDNode().setPkgPrivate();
+					((Method)m).setPkgPrivate();
 
 				JWBCCondition[] conditions = m.conditions.toArray();
 				for(int j=0; j < conditions.length; j++) {
@@ -315,7 +311,7 @@ public final view JStruct of StructImpl extends JTypeDecl {
 				System.runFinalization();
 				out = new DataOutputStream(new FileOutputStream(new File(output_dir,out_file+".class")));
 			}
-			byte[] dump = new Bytecoder(this.getStruct(),null,constPool).writeClazz();
+			byte[] dump = new Bytecoder((Struct)this,null,constPool).writeClazz();
 			out.write(dump);
 			out.close();
 //			if( Kiev.verbose ) System.out.println("[Wrote bytecode for class "+this.name+"]");

@@ -21,27 +21,18 @@ import syntax kiev.Syntax;
 public abstract class UnresExpr extends ENode {
 
 	@virtual typedef This  = UnresExpr;
-	@virtual typedef NImpl = UnresExprImpl;
 	@virtual typedef VView = UnresExprView;
 
-	@nodeimpl
-	public static class UnresExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = UnresExpr;
-		@ref public Operator				op;
-	}
+	@ref public Operator				op;
+
 	@nodeview
-	public static view UnresExprView of UnresExprImpl extends ENodeView {
+	public static view UnresExprView of UnresExpr extends ENodeView {
 		public				Operator			op;
 
 		public Operator getOp() { return op; }
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }	
-
-	public UnresExpr(UnresExprImpl impl) {
-		super(impl);
-	}
+	public UnresExpr() {}
 	
 	public abstract ENode toResolvedExpr();
 	
@@ -61,28 +52,18 @@ public abstract class UnresExpr extends ENode {
 public class PrefixExpr extends UnresExpr {
 	
 	@virtual typedef This  = PrefixExpr;
-	@virtual typedef NImpl = PrefixExprImpl;
 	@virtual typedef VView = PrefixExprView;
 
-	@nodeimpl
-	public static class PrefixExprImpl extends UnresExprImpl {
-		@virtual typedef ImplOf = PrefixExpr;
-		@ref public ENode				expr;
-	}
+	@ref public ENode				expr;
+
 	@nodeview
-	public static view PrefixExprView of PrefixExprImpl extends UnresExprView {
+	public static view PrefixExprView of PrefixExpr extends UnresExprView {
 		public				ENode			expr;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public PrefixExpr() {
-		super(new PrefixExprImpl());
-	}
+	public PrefixExpr() {}
 
 	public PrefixExpr(int pos, Operator op, ENode expr) {
-		this();
 		this.pos = pos;
 		this.op = op;
 		this.expr = expr;
@@ -120,28 +101,18 @@ public class PrefixExpr extends UnresExpr {
 public class PostfixExpr extends UnresExpr {
 	
 	@virtual typedef This  = PostfixExpr;
-	@virtual typedef NImpl = PostfixExprImpl;
 	@virtual typedef VView = PostfixExprView;
 
-	@nodeimpl
-	public static class PostfixExprImpl extends UnresExprImpl {
-		@virtual typedef ImplOf = PostfixExpr;
-		@ref public ENode				expr;
-	}
+	@ref public ENode				expr;
+
 	@nodeview
-	public static view PostfixExprView of PostfixExprImpl extends UnresExprView {
+	public static view PostfixExprView of PostfixExpr extends UnresExprView {
 		public				ENode			expr;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public PostfixExpr() {
-		super(new PostfixExprImpl());
-	}
+	public PostfixExpr() {}
 
 	public PostfixExpr(int pos, Operator op, ENode expr) {
-		this();
 		this.pos = pos;
 		this.op = op;
 		this.expr = expr;
@@ -172,30 +143,20 @@ public class PostfixExpr extends UnresExpr {
 public class InfixExpr extends UnresExpr {
 
 	@virtual typedef This  = InfixExpr;
-	@virtual typedef NImpl = InfixExprImpl;
 	@virtual typedef VView = InfixExprView;
 
-	@nodeimpl
-	public static class InfixExprImpl extends UnresExprImpl {
-		@virtual typedef ImplOf = InfixExpr;
-		@ref public ENode				expr1;
-		@ref public ENode				expr2;
-	}
+	@ref public ENode				expr1;
+	@ref public ENode				expr2;
+
 	@nodeview
-	public static view InfixExprView of InfixExprImpl extends UnresExprView {
+	public static view InfixExprView of InfixExpr extends UnresExprView {
 		public				ENode			expr1;
 		public				ENode			expr2;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public InfixExpr() {
-		super(new InfixExprImpl());
-	}
+	public InfixExpr() {}
 
 	public InfixExpr(int pos, Operator op, ENode expr1, ENode expr2) {
-		this();
 		this.pos = pos;
 		this.op = op;
 		this.expr1 = expr1;
@@ -242,28 +203,18 @@ public class InfixExpr extends UnresExpr {
 public class MultiExpr extends UnresExpr {
 
 	@virtual typedef This  = MultiExpr;
-	@virtual typedef NImpl = MultiExprImpl;
 	@virtual typedef VView = MultiExprView;
 
-	@nodeimpl
-	public static final class MultiExprImpl extends UnresExprImpl {
-		@virtual typedef ImplOf = MultiExpr;
-		@ref public NArr<ENode>			exprs;
-	}
+	@ref public NArr<ENode>			exprs;
+
 	@nodeview
-	public static final view MultiExprView of MultiExprImpl extends UnresExprView {
+	public static final view MultiExprView of MultiExpr extends UnresExprView {
 		public:ro	NArr<ENode>			exprs;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-
-	public MultiExpr() {
-		super(new MultiExprImpl());
-	}
+	public MultiExpr() {}
 
 	public MultiExpr(int pos, MultiOperator op, List<ENode> exprs) {
-		this();
 		this.pos = pos;
 		this.op = op;
 		foreach (ENode n; exprs)
@@ -314,34 +265,24 @@ public class MultiExpr extends UnresExpr {
 public class UnresCallExpr extends UnresExpr {
 
 	@virtual typedef This  = UnresCallExpr;
-	@virtual typedef NImpl = UnresCallExprImpl;
 	@virtual typedef VView = UnresCallExprView;
 
-	@nodeimpl
-	public static class UnresCallExprImpl extends UnresExprImpl {
-		@virtual typedef ImplOf = UnresCallExpr;
-		@ref public ENode				obj;
-		@ref public Named				func;
-		@ref public CallType			mt;
-		@ref public NArr<ENode>			args;
-	}
+	@ref public ENode				obj;
+	@ref public Named				func;
+	@ref public CallType			mt;
+	@ref public NArr<ENode>			args;
+
 	@nodeview
-	public static view UnresCallExprView of UnresCallExprImpl extends UnresExprView {
-		public				ENode			obj;
-		public				Named			func;
-		public				CallType		mt;
+	public static view UnresCallExprView of UnresCallExpr extends UnresExprView {
+		public		ENode			obj;
+		public		Named			func;
+		public		CallType		mt;
 		public:ro	NArr<ENode>		args;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-
-	public UnresCallExpr() {
-		super(new UnresCallExprImpl());
-	}
+	public UnresCallExpr() {}
 
 	public UnresCallExpr(int pos, ENode obj, Named func, CallType mt, ENode[] args, boolean super_flag) {
-		this();
 		this.pos = pos;
 		this.obj = obj;
 		this.func = func;

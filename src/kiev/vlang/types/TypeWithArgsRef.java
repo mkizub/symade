@@ -6,7 +6,6 @@ import kiev.vlang.*;
 
 import syntax kiev.Syntax;
 
-import kiev.vlang.types.TypeRef.TypeRefImpl;
 import kiev.vlang.types.TypeRef.TypeRefView;
 
 /**
@@ -20,17 +19,13 @@ public class TypeWithArgsRef extends TypeRef {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeWithArgsRef;
-	@virtual typedef NImpl = TypeWithArgsRefImpl;
 	@virtual typedef VView = TypeWithArgsRefView;
 
-	@nodeimpl
-	public static final class TypeWithArgsRefImpl extends TypeRefImpl {
-		@virtual typedef ImplOf = TypeWithArgsRef;
-		@att public NArr<TypeRef>			args;
-		@att public TypeRef					base_type;
-	}
+	@att public NArr<TypeRef>			args;
+	@att public TypeRef					base_type;
+
 	@nodeview
-	public static final view TypeWithArgsRefView of TypeWithArgsRefImpl extends TypeRefView {
+	public static final view TypeWithArgsRefView of TypeWithArgsRef extends TypeRefView {
 		public:ro	NArr<TypeRef>			args;
 		public		TypeRef					base_type;
 
@@ -62,14 +57,9 @@ public class TypeWithArgsRef extends TypeRef {
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public TypeWithArgsRef() {
-		super(new TypeWithArgsRefImpl());
-	}
+	public TypeWithArgsRef() {}
 
 	public TypeWithArgsRef(TypeRef base) {
-		this();
 		this.pos = base.pos;
 		this.base_type = base;
 	}

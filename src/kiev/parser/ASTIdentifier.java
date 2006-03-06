@@ -25,15 +25,12 @@ public class ASTIdentifier extends ENode {
 	static KString op_instanceof = KString.from("instanceof");
 
 	@virtual typedef This  = ASTIdentifier;
-	@virtual typedef NImpl = ASTIdentifierImpl;
 	@virtual typedef VView = ASTIdentifierView;
 
-	@nodeimpl
-	public static class ASTIdentifierImpl extends ENodeImpl {
-		@att public KString name;
-	}
+	@att public KString name;
+
 	@nodeview
-	public static view ASTIdentifierView of ASTIdentifierImpl extends ENodeView {
+	public static view ASTIdentifierView of ASTIdentifier extends ENodeView {
 		public KString name;
 
 		public int		getPriority() { return 256; }
@@ -95,7 +92,7 @@ public class ASTIdentifier extends ENode {
 			// resolve in the path of scopes
 			DNode@ v;
 			ResInfo info = new ResInfo(this);
-			if( !PassInfo.resolveNameR(this.getNode(),v,info,name) )
+			if( !PassInfo.resolveNameR((ASTNode)this,v,info,name) )
 				throw new CompilerException(this,"Unresolved identifier "+name);
 			if( v instanceof TypeDecl ) {
 				TypeDecl td = (TypeDecl)v;
@@ -103,7 +100,7 @@ public class ASTIdentifier extends ENode {
 				replaceWithNode(new TypeRef(td.getType()));
 			}
 			else {
-				replaceWithNode(info.buildAccess(this.getNode(), null, v));
+				replaceWithNode(info.buildAccess((ASTNode)this, null, v));
 			}
 			return false;
 		}
@@ -111,20 +108,13 @@ public class ASTIdentifier extends ENode {
 		public boolean preGenerate() { /*Kiev.reportError(this,"preGenerate of ASTIdentifier");*/ return false; }
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ASTIdentifier() {
-		super(new ASTIdentifierImpl());
-	}
+	public ASTIdentifier() {}
 
 	public ASTIdentifier(KString name) {
-		super(new ASTIdentifierImpl());
 		this.name = name;
 	}
 
 	public ASTIdentifier(int pos, KString name) {
-		super(new ASTIdentifierImpl());
 		this.pos = pos;
 		this.name = name;
 	}

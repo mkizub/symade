@@ -6,7 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.ConstExpr.ConstExprImpl;
 import kiev.vlang.ConstExpr.ConstExprView;
 
 import static kiev.stdlib.Debug.*;
@@ -18,7 +17,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RConstExpr of ConstExprImpl extends ConstExprView {
+public final view RConstExpr of ConstExpr extends ConstExprView {
 	
 	public final void resolve(Type reqType) {
 		setResolved(true);

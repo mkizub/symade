@@ -84,7 +84,7 @@ public class Bytecoder implements JConstants {
 		for(int i=0; i < attrs.length; i++) {
 			Attr at = readAttr(bcclazz.attrs[i],bcclazz);
 			if( at != null ) {
-				cl.getJView().addAttr(at);
+				((JStruct)cl).addAttr(at);
 			}
 		}
 		ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
@@ -143,7 +143,7 @@ public class Bytecoder implements JConstants {
 			if( at == null ) continue;
 			if( at.name.equals(attrExceptions) ) {
 				if( m != null )
-					m.getJView().addAttr(at);
+					((JMethod)m).addAttr(at);
 				else
 					attrs = (Attr[])Arrays.append(attrs,at);
 			}
@@ -197,7 +197,7 @@ public class Bytecoder implements JConstants {
 				for(int i=0; i < conditions.length; i++)
 					m.conditions[i].definer = m;
 			}
-			m.getJView().attrs = attrs;
+			((JMethod)m).attrs = attrs;
 		} else {
 			trace(Kiev.debugBytecodeRead,"read2 method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 		}
@@ -294,7 +294,7 @@ public class Bytecoder implements JConstants {
 			kiev.bytecode.ExceptionsAttribute ea = (kiev.bytecode.ExceptionsAttribute)bca;
 			JStruct[] exceptions = new JStruct[ea.cp_exceptions.length];
 			for(int i=0; i < exceptions.length; i++) {
-				exceptions[i] = Env.newStruct(ClazzName.fromBytecodeName(ea.getException(i,clazz), false)).getJView();
+				exceptions[i] = (JStruct)Env.newStruct(ClazzName.fromBytecodeName(ea.getException(i,clazz), false));
 			}
 			a = new ExceptionsAttr();
 			((ExceptionsAttr)a).exceptions = exceptions;
@@ -311,7 +311,7 @@ public class Bytecoder implements JConstants {
 					ClazzName cn;
 					if( ica.cp_outers[i] != null ) {
 						cn = ClazzName.fromBytecodeName(ica.getOuterName(i,clazz),false);
-						outer[i] = Env.getStruct(cn).getJView();
+						outer[i] = (JStruct)Env.getStruct(cn);
 						if( outer[i] == null )
 							throw new RuntimeException("Class "+cn+" not found");
 					} else {
@@ -333,13 +333,14 @@ public class Bytecoder implements JConstants {
 						if (anon || cn.package_name() != cl.name.name) {
 							inner[i] == null;
 						} else {
-							inner[i] = Env.getStruct(cn).getJView();
-							if( inner[i].getStruct() == cl ) {
+							Struct inn = Env.getStruct(cn);
+							inner[i] = (JStruct)inn;
+							if( inn == cl ) {
 								Kiev.reportWarning("Class "+cl+" is inner for itself");
 							} else {
-								if( inner[i] == null )
+								if( inn == null )
 									throw new RuntimeException("Class "+cn+" not found");
-								cl.members.add(~inner[i].getStruct());
+								cl.members.add(~inn);
 							}
 						}
 					} else {
@@ -546,7 +547,7 @@ public class Bytecoder implements JConstants {
 		}
 
 	    // Number of class attributes
-		JStruct jcl = cl.getJView();
+		JStruct jcl = (JStruct)cl;
 		int len = 0;
 		foreach(Attr a; jcl.attrs; !a.isKiev) len++;
 		bcclazz.attrs = new kiev.bytecode.Attribute[len];
@@ -663,7 +664,7 @@ public class Bytecoder implements JConstants {
 		bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-		JField jf = f.getJView();
+		JField jf = (JField)f;
 		bcf.attrs = new kiev.bytecode.Attribute[jf.attrs.length];
 		for(int i=0; i < jf.attrs.length; i++)
 			bcf.attrs[i] = writeAttr(jf.attrs[i]);
@@ -678,7 +679,7 @@ public class Bytecoder implements JConstants {
 		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.etype.getJType().java_signature).pos];
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-		JMethod jm = m.getJView();
+		JMethod jm = (JMethod)m;
 		bcm.attrs = new kiev.bytecode.Attribute[jm.attrs.length];
 		for(int i=0; i < jm.attrs.length; i++)
 			bcm.attrs[i] = writeAttr(jm.attrs[i]);

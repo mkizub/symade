@@ -38,17 +38,13 @@ public final class ConstBoolExpr extends ConstExpr {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstBoolExpr;
-	@virtual typedef NImpl = ConstBoolExprImpl;
 	@virtual typedef VView = ConstBoolExprView;
 	@virtual typedef JView = JConstBoolExpr;
 
-	@nodeimpl
-	public static class ConstBoolExprImpl extends ConstExprImpl {
-		@virtual typedef ImplOf = ConstBoolExpr;
-		@att public boolean value;
-	}
+	@att public boolean value;
+
 	@nodeview
-	public static view ConstBoolExprView of ConstBoolExprImpl extends ConstExprView {
+	public static view ConstBoolExprView of ConstBoolExpr extends ConstExprView {
 		public boolean	value;
 		public Type		getType()			{ return Type.tpBoolean; }
 
@@ -61,11 +57,8 @@ public final class ConstBoolExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ConstBoolExpr() { super(new ConstBoolExprImpl()); }
-	public ConstBoolExpr(boolean value) { super(new ConstBoolExprImpl()); this.value = value; }
+	public ConstBoolExpr() {}
+	public ConstBoolExpr(boolean value) { this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
 
@@ -80,16 +73,11 @@ public final class ConstNullExpr extends ConstExpr {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstNullExpr;
-	@virtual typedef NImpl = ConstNullExprImpl;
 	@virtual typedef VView = ConstNullExprView;
 	@virtual typedef JView = JConstNullExpr;
 
-	@nodeimpl
-	public static class ConstNullExprImpl extends ConstExprImpl {
-		@virtual typedef ImplOf = ConstNullExpr;
-	}
 	@nodeview
-	public static view ConstNullExprView of ConstNullExprImpl extends ConstExprView {
+	public static view ConstNullExprView of ConstNullExpr extends ConstExprView {
 		public Type		getType()			{ return Type.tpNull; }
 
 		public Object	getConstValue()		{ return null; }
@@ -101,10 +89,7 @@ public final class ConstNullExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ConstNullExpr() { super(new ConstNullExprImpl()); }
+	public ConstNullExpr() {}
 
 	public String	toString()			{ return "null"; }
 }
@@ -115,17 +100,13 @@ public final class ConstByteExpr extends ConstExpr {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstByteExpr;
-	@virtual typedef NImpl = ConstByteExprImpl;
 	@virtual typedef VView = ConstByteExprView;
 	@virtual typedef JView = JConstByteExpr;
 
-	@nodeimpl
-	public static class ConstByteExprImpl extends ConstExprImpl {
-		@virtual typedef ImplOf = ConstByteExpr;
-		@att public byte value;
-	}
+	@att public byte value;
+
 	@nodeview
-	public static view ConstByteExprView of ConstByteExprImpl extends ConstExprView {
+	public static view ConstByteExprView of ConstByteExpr extends ConstExprView {
 		public byte		value;
 		public Type		getType()			{ return Type.tpByte; }
 
@@ -138,11 +119,8 @@ public final class ConstByteExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ConstByteExpr() { super(new ConstByteExprImpl()); }
-	public ConstByteExpr(byte value) { super(new ConstByteExprImpl()); this.value = value; }
+	public ConstByteExpr() {}
+	public ConstByteExpr(byte value) { this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
 }
@@ -153,17 +131,13 @@ public final class ConstShortExpr extends ConstExpr {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstShortExpr;
-	@virtual typedef NImpl = ConstShortExprImpl;
 	@virtual typedef VView = ConstShortExprView;
 	@virtual typedef JView = JConstShortExpr;
 
-	@nodeimpl
-	public static class ConstShortExprImpl extends ConstExprImpl {
-		@virtual typedef ImplOf = ConstShortExpr;
-		@att public short value;
-	}
+	@att public short value;
+
 	@nodeview
-	public static view ConstShortExprView of ConstShortExprImpl extends ConstExprView {
+	public static view ConstShortExprView of ConstShortExpr extends ConstExprView {
 		public short		value;
 		public Type		getType()			{ return Type.tpShort; }
 
@@ -176,11 +150,8 @@ public final class ConstShortExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ConstShortExpr() { super(new ConstShortExprImpl()); }
-	public ConstShortExpr(short value) { super(new ConstShortExprImpl()); this.value = value; }
+	public ConstShortExpr() {}
+	public ConstShortExpr(short value) { this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
 }
@@ -191,17 +162,13 @@ public final class ConstIntExpr extends ConstExpr {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstIntExpr;
-	@virtual typedef NImpl = ConstIntExprImpl;
 	@virtual typedef VView = ConstIntExprView;
 	@virtual typedef JView = JConstIntExpr;
 
-	@nodeimpl
-	public static class ConstIntExprImpl extends ConstExprImpl {
-		@virtual typedef ImplOf = ConstIntExpr;
-		@att public int value;
-	}
+	@att public int value;
+
 	@nodeview
-	public static view ConstIntExprView of ConstIntExprImpl extends ConstExprView {
+	public static view ConstIntExprView of ConstIntExpr extends ConstExprView {
 		public int		value;
 		public Type		getType()			{ return Type.tpInt; }
 
@@ -214,11 +181,8 @@ public final class ConstIntExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ConstIntExpr() { super(new ConstIntExprImpl()); }
-	public ConstIntExpr(int value) { super(new ConstIntExprImpl()); this.value = value; }
+	public ConstIntExpr() {}
+	public ConstIntExpr(int value) { this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value); }
 }
@@ -229,17 +193,13 @@ public final class ConstLongExpr extends ConstExpr {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstLongExpr;
-	@virtual typedef NImpl = ConstLongExprImpl;
 	@virtual typedef VView = ConstLongExprView;
 	@virtual typedef JView = JConstLongExpr;
 
-	@nodeimpl
-	public static class ConstLongExprImpl extends ConstExprImpl {
-		@virtual typedef ImplOf = ConstLongExpr;
-		@att public long value;
-	}
+	@att public long value;
+
 	@nodeview
-	public static view ConstLongExprView of ConstLongExprImpl extends ConstExprView {
+	public static view ConstLongExprView of ConstLongExpr extends ConstExprView {
 		public long		value;
 		public Type		getType()			{ return Type.tpLong; }
 
@@ -252,11 +212,8 @@ public final class ConstLongExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ConstLongExpr() { super(new ConstLongExprImpl()); }
-	public ConstLongExpr(long value) { super(new ConstLongExprImpl()); this.value = value; }
+	public ConstLongExpr() {}
+	public ConstLongExpr(long value) { this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value)+"L"; }
 }
@@ -267,17 +224,13 @@ public final class ConstCharExpr extends ConstExpr {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstCharExpr;
-	@virtual typedef NImpl = ConstCharExprImpl;
 	@virtual typedef VView = ConstCharExprView;
 	@virtual typedef JView = JConstCharExpr;
 
-	@nodeimpl
-	public static class ConstCharExprImpl extends ConstExprImpl {
-		@virtual typedef ImplOf = ConstCharExpr;
-		@att public char value;
-	}
+	@att public char value;
+
 	@nodeview
-	public static view ConstCharExprView of ConstCharExprImpl extends ConstExprView {
+	public static view ConstCharExprView of ConstCharExpr extends ConstExprView {
 		public char		value;
 		public Type		getType()			{ return Type.tpChar; }
 
@@ -290,11 +243,8 @@ public final class ConstCharExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ConstCharExpr() { super(new ConstCharExprImpl()); }
-	public ConstCharExpr(char value) { super(new ConstCharExprImpl()); this.value = value; }
+	public ConstCharExpr() {}
+	public ConstCharExpr(char value) { this.value = value; }
 
 	public String	toString()			{ return "'"+Convert.escape(value)+"'"; }
 }
@@ -306,17 +256,13 @@ public final class ConstFloatExpr extends ConstExpr {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstFloatExpr;
-	@virtual typedef NImpl = ConstFloatExprImpl;
 	@virtual typedef VView = ConstFloatExprView;
 	@virtual typedef JView = JConstFloatExpr;
 
-	@nodeimpl
-	public static class ConstFloatExprImpl extends ConstExprImpl {
-		@virtual typedef ImplOf = ConstFloatExpr;
-		@att public float value;
-	}
+	@att public float value;
+
 	@nodeview
-	public static view ConstFloatExprView of ConstFloatExprImpl extends ConstExprView {
+	public static view ConstFloatExprView of ConstFloatExpr extends ConstExprView {
 		public float		value;
 		public Type		getType()			{ return Type.tpFloat; }
 
@@ -329,11 +275,8 @@ public final class ConstFloatExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ConstFloatExpr() { super(new ConstFloatExprImpl()); }
-	public ConstFloatExpr(float value) { super(new ConstFloatExprImpl()); this.value = value; }
+	public ConstFloatExpr() {}
+	public ConstFloatExpr(float value) { this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value)+"F"; }
 }
@@ -345,17 +288,13 @@ public final class ConstDoubleExpr extends ConstExpr {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstDoubleExpr;
-	@virtual typedef NImpl = ConstDoubleExprImpl;
 	@virtual typedef VView = ConstDoubleExprView;
 	@virtual typedef JView = JConstDoubleExpr;
 
-	@nodeimpl
-	public static class ConstDoubleExprImpl extends ConstExprImpl {
-		@virtual typedef ImplOf = ConstDoubleExpr;
-		@att public double value;
-	}
+	@att public double value;
+
 	@nodeview
-	public static view ConstDoubleExprView of ConstDoubleExprImpl extends ConstExprView {
+	public static view ConstDoubleExprView of ConstDoubleExpr extends ConstExprView {
 		public double		value;
 		public Type		getType()			{ return Type.tpDouble; }
 
@@ -368,11 +307,8 @@ public final class ConstDoubleExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ConstDoubleExpr() { super(new ConstDoubleExprImpl()); }
-	public ConstDoubleExpr(double value) { super(new ConstDoubleExprImpl()); this.value = value; }
+	public ConstDoubleExpr() {}
+	public ConstDoubleExpr(double value) { this.value = value; }
 
 	public String	toString()			{ return String.valueOf(value)+"D"; }
 }
@@ -383,17 +319,13 @@ public final class ConstStringExpr extends ConstExpr {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstStringExpr;
-	@virtual typedef NImpl = ConstStringExprImpl;
 	@virtual typedef VView = ConstStringExprView;
 	@virtual typedef JView = JConstStringExpr;
 
-	@nodeimpl
-	public static class ConstStringExprImpl extends ConstExprImpl {
-		@virtual typedef ImplOf = ConstStringExpr;
-		@att public KString value;
-	}
+	@att public KString value;
+
 	@nodeview
-	public static view ConstStringExprView of ConstStringExprImpl extends ConstExprView {
+	public static view ConstStringExprView of ConstStringExpr extends ConstExprView {
 		public KString		value;
 		public Type		getType()			{ return Type.tpString; }
 
@@ -406,11 +338,8 @@ public final class ConstStringExpr extends ConstExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ConstStringExpr() { super(new ConstStringExprImpl()); }
-	public ConstStringExpr(KString value) { super(new ConstStringExprImpl()); this.value = value; }
+	public ConstStringExpr() {}
+	public ConstStringExpr(KString value) { this.value = value; }
 
 	public String	toString()			{ return '\"'+value.toString()+'\"'; }
 }
@@ -420,17 +349,12 @@ public final class ConstStringExpr extends ConstExpr {
 public abstract class ConstExpr extends ENode {
 
 	@virtual typedef This  = ConstExpr;
-	@virtual typedef NImpl = ConstExprImpl;
 	@virtual typedef VView = ConstExprView;
 	@virtual typedef JView = JConstExpr;
 	@virtual typedef RView = RConstExpr;
 
-	@nodeimpl
-	public abstract static class ConstExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ConstExpr;
-	}
 	@nodeview
-	public abstract static view ConstExprView of ConstExprImpl extends ENodeView {
+	public abstract static view ConstExprView of ConstExpr extends ENodeView {
 
 		public int		getPriority() { return 255; }
 
@@ -445,17 +369,12 @@ public abstract class ConstExpr extends ENode {
 		}
 	}
 
-	public abstract VView getVView() alias operator(210,fy,$cast);
-	public abstract JView getJView() alias operator(210,fy,$cast);
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public ConstExpr(ConstExprImpl impl) {
-		super(impl);
+	public ConstExpr() {
 		setResolved(true);
 	}
 	
 	public final void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper	toJava(Dumper dmp) {

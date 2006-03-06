@@ -18,18 +18,13 @@ public abstract class ASTAlias extends ASTNode {
 	public static ASTAlias[]	emptyArray = new ASTAlias[0];
 	
 	@virtual typedef This  = ASTAlias;
-	@virtual typedef NImpl = ASTAliasImpl;
 	@virtual typedef VView = ASTAliasView;
 
-	@nodeimpl
-	public static class ASTAliasImpl extends NodeImpl {
-		@virtual typedef ImplOf = ASTAlias;
-	}
 	@nodeview
-	public static view ASTAliasView of ASTAliasImpl extends NodeView {
+	public static view ASTAliasView of ASTAlias extends NodeView {
 	}
 
-	public ASTAlias(ASTAliasImpl v_impl) { super(v_impl); }
+	public ASTAlias() {}
 	
 	public abstract void attach(ASTNode n);
 
@@ -39,23 +34,16 @@ public abstract class ASTAlias extends ASTNode {
 public final class ASTIdentifierAlias extends ASTAlias {
 
 	@virtual typedef This  = ASTIdentifierAlias;
-	@virtual typedef NImpl = ASTIdentifierAliasImpl;
 	@virtual typedef VView = ASTIdentifierAliasView;
 
-	@nodeimpl
-	public static class ASTIdentifierAliasImpl extends ASTAliasImpl {
-		@virtual typedef ImplOf = ASTIdentifierAlias;
-		@att public NameRef		name;
-	}
+	@att public NameRef		name;
+
 	@nodeview
-	public static view ASTIdentifierAliasView of ASTIdentifierAliasImpl extends ASTAliasView {
+	public static view ASTIdentifierAliasView of ASTIdentifierAlias extends ASTAliasView {
 		public NameRef		name;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ASTIdentifierAlias() { super(new ASTIdentifierAliasImpl()); }
+	public ASTIdentifierAlias() {}
 	
 	public void attach(ASTNode n) {
 		switch(n) {

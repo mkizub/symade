@@ -17,33 +17,24 @@ import static kiev.vlang.Operator.*;
 @nodeset
 public class Opdef extends DNode {
 	@virtual typedef This  = Opdef;
-	@virtual typedef NImpl = OpdefImpl;
 	@virtual typedef VView = OpdefView;
 
-	@nodeimpl
-	static class OpdefImpl extends DNodeImpl {
-		@virtual typedef ImplOf = Opdef;
-		@att int					prior;
-		@att int					opmode;
-		@att KString				image;
-		@ref Operator				resolved;
-	}
+	@att int					prior;
+	@att int					opmode;
+	@att KString				image;
+	@ref Operator				resolved;
+
 	@nodeview
-	public static view OpdefView of OpdefImpl extends DNodeView {
+	public static view OpdefView of Opdef extends DNodeView {
 		public int					prior;
 		public int					opmode;
 		public KString				image;
 		public Operator				resolved;
 	}
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
-	public Opdef() {
-		super(new OpdefImpl());
-	}
+	public Opdef() {}
 	
 	public Opdef(Operator op) {
-		super(new OpdefImpl());
 		this.prior = op.priority;
 		this.opmode = op.mode;
 		this.image = op.image;

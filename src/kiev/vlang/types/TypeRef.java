@@ -7,7 +7,6 @@ import kiev.vlang.types.*;
 import kiev.parser.*;
 import kiev.transf.*;
 
-import kiev.vlang.ENode.ENodeImpl;
 import kiev.vlang.ENode.ENodeView;
 
 import kiev.be.java.JNode;
@@ -31,17 +30,13 @@ public class TypeRef extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeRef;
-	@virtual typedef NImpl = TypeRefImpl;
 	@virtual typedef VView = TypeRefView;
 	@virtual typedef JView = JTypeRef;
 
-	@nodeimpl
-	public static class TypeRefImpl extends ENodeImpl {
-		@virtual typedef ImplOf = TypeRef;
-		@ref public Type	lnk;
-	}
+	@ref public Type	lnk;
+
 	@nodeview
-	public static view TypeRefView of TypeRefImpl extends ENodeView {
+	public static view TypeRefView of TypeRef extends ENodeView {
 		public Type	lnk;
 
 		public Type getType()
@@ -51,38 +46,26 @@ public class TypeRef extends ENode {
 		}
 	
 		public boolean preResolveIn() {
-			getNode().getType(); // calls resolving
+			((TypeRef)this).getType(); // calls resolving
 			return false;
 		}
 	
 		public boolean mainResolveIn() {
-			getNode().getType(); // calls resolving
+			((TypeRef)this).getType(); // calls resolving
 			return false;
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-
-	public TypeRef() {
-		super(new TypeRefImpl());
-	}
+	public TypeRef() {}
 	
-	public TypeRef(TypeRefImpl impl) {
-		super(impl);
-	}
-
 	public TypeRef(Type tp) {
-		this();
 		this.lnk = tp;
 		
 	}
 	public TypeRef(int pos) {
-		this();
 		this.pos = pos;
 	}
 	public TypeRef(int pos, Type tp) {
-		this();
 		this.pos = pos;
 		this.lnk = tp;
 	}
@@ -103,7 +86,7 @@ public class TypeRef extends ENode {
 	public final Type getType()
 		alias operator(210,fy,$cast)
 	{
-		return getVView().getType();
+		return ((TypeRefView)this).getType();
 	}
 	
 	public void resolve(Type reqType) {

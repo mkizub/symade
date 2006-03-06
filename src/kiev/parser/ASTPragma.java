@@ -11,24 +11,18 @@ import kiev.stdlib.*;
 public final class ASTPragma extends DNode {
 
 	@virtual typedef This  = ASTPragma;
-	@virtual typedef NImpl = ASTPragmaImpl;
 	@virtual typedef VView = ASTPragmaView;
 
-	@nodeimpl
-	static class ASTPragmaImpl extends DNodeImpl {
-		@virtual typedef ImplOf = ASTPragma;
-		@att boolean				enable;
-		@att NArr<ConstStringExpr>	options;
-	}
+	@att boolean				enable;
+	@att NArr<ConstStringExpr>	options;
+
 	@nodeview
-	public static view ASTPragmaView of ASTPragmaImpl extends DNodeView {
+	public static view ASTPragmaView of ASTPragma extends DNodeView {
 		public		boolean					enable;
 		public:ro	NArr<ConstStringExpr>	options;
 	}
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
-	public ASTPragma() { super(new ASTPragmaImpl()); }
+	public ASTPragma() {}
 	
 	public void resolve(Type reqType) {}
 	

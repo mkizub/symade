@@ -5,8 +5,6 @@ import kiev.stdlib.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
-import kiev.vlang.ASTNode.NodeImpl;
-
 import kiev.be.java.JNode;
 import kiev.be.java.JDNode;
 import kiev.be.java.JLvalDNode;
@@ -32,80 +30,73 @@ public class Var extends LvalDNode implements Named {
 	}
 
 	@virtual typedef This  = Var;
-	@virtual typedef NImpl = VarImpl;
 	@virtual typedef VView = VarView;
 	@virtual typedef JView = JVar;
 	@virtual typedef RView = RVar;
 
-	@nodeimpl
-	public static class VarImpl extends LvalDNodeImpl {
-		@virtual typedef ImplOf = Var;
+		 public NodeName	name;
+	@att public TypeRef		vtype;
+	@att public ENode		init;
+		 public int			bcpos = -1;
 
-		public final Var getVar() { return (Var)this._self; }
-		
-		     public NodeName	name;
-		@att public TypeRef		vtype;
-		@att public ENode		init;
-		     public int			bcpos = -1;
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if      (attr.name == "vtype")
+				parent.callbackChildChanged(pslot);
+			else if (attr.name == "meta")
+				parent.callbackChildChanged(pslot);
+		}
+	}	
 
-		public void callbackChildChanged(AttrSlot attr) {
-			if (parent != null && pslot != null) {
-				if      (attr.name == "vtype")
-					parent.callbackChildChanged(pslot);
-				else if (attr.name == "meta")
-					parent.callbackChildChanged(pslot);
-			}
-		}	
-
-		// is a local var in a rule 
-		public final boolean isLocalRuleVar() {
-			return this.is_var_local_rule_var;
-		}
-		public final void setLocalRuleVar(boolean on) {
-			if (this.is_var_local_rule_var != on) {
-				this.is_var_local_rule_var = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// closure proxy
-		public final boolean isClosureProxy() {
-			return this.is_var_closure_proxy;
-		}
-		public final void setClosureProxy(boolean on) {
-			if (this.is_var_closure_proxy != on) {
-				this.is_var_closure_proxy = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// "this" var
-		public final boolean isVarThis() {
-			return this.is_var_this;
-		}
-		public final void setVarThis(boolean on) {
-			if (this.is_var_this != on) {
-				this.is_var_this = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// "super" var
-		public final boolean isVarSuper() {
-			return this.is_var_super;
-		}
-		public final void setVarSuper(boolean on) {
-			if (this.is_var_super != on) {
-				this.is_var_super = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
+	// is a local var in a rule 
+	public final boolean isLocalRuleVar() {
+		return this.is_var_local_rule_var;
+	}
+	public final void setLocalRuleVar(boolean on) {
+		if (this.is_var_local_rule_var != on) {
+			this.is_var_local_rule_var = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
+	// closure proxy
+	public final boolean isClosureProxy() {
+		return this.is_var_closure_proxy;
+	}
+	public final void setClosureProxy(boolean on) {
+		if (this.is_var_closure_proxy != on) {
+			this.is_var_closure_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// "this" var
+	public final boolean isVarThis() {
+		return this.is_var_this;
+	}
+	public final void setVarThis(boolean on) {
+		if (this.is_var_this != on) {
+			this.is_var_this = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// "super" var
+	public final boolean isVarSuper() {
+		return this.is_var_super;
+	}
+	public final void setVarSuper(boolean on) {
+		if (this.is_var_super != on) {
+			this.is_var_super = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
 	@nodeview
-	public static view VarView of VarImpl extends LvalDNodeView {
+	public static view VarView of Var extends LvalDNodeView {
 		public	NodeName	name;
 		public	TypeRef		vtype;
 		public	ENode		init;
 		public	int			bcpos;
 
-		@getter public final Type get$type() { return ((VarImpl)this).vtype.getType(); }
+		@getter public final Type get$type() { return ((Var)this).vtype.getType(); }
 		
 		// is a local var in a rule 
 		public final boolean isLocalRuleVar();
@@ -121,19 +112,13 @@ public class Var extends LvalDNode implements Named {
 		public final void setVarSuper(boolean on);
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
 	public static Var[]	emptyArray = new Var[0];
 
-	public Var() { super(new VarImpl()); }
-	public Var(VarImpl impl) { super(impl); }
+	public Var() {}
 
 	public Var(int pos, KString name, Type type, int flags)
 		require type != null;
 	{
-		this(new VarImpl());
 		this.pos = pos;
 		this.flags = flags;
 		this.name = new NodeName(name);
@@ -143,25 +128,22 @@ public class Var extends LvalDNode implements Named {
 	public Var(NameRef id, TypeRef vtype, int flags)
 		require vtype != null;
 	{
-		this(new VarImpl());
 		this.pos = id.pos;
 		this.flags = flags;
 		this.name = new NodeName(id.name);
 		this.vtype = vtype;
 	}
 
-	public Var(VarImpl impl, KString name, Type type)
+	public Var(KString name, Type type)
 		require type != null;
 	{
-		this(impl);
 		this.name = new NodeName(name);
 		this.vtype = new TypeRef(type);
 	}
 
-	public Var(VarImpl impl, NameRef id, TypeRef vtype)
+	public Var(NameRef id, TypeRef vtype)
 		require vtype != null;
 	{
-		this(impl);
 		this.name = new NodeName(id.name);
 		this.vtype = vtype;
 	}
@@ -192,7 +174,7 @@ public class Var extends LvalDNode implements Named {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			Var node = (Var)dfi.node_impl.getNode();
+			Var node = (Var)dfi.node_impl;
 			DFState out = DFFunc.calc(f, dfi);
 			out = out.declNode(node);
 			if( node.init != null && node.init.getType() ≢ Type.tpVoid )
@@ -207,7 +189,7 @@ public class Var extends LvalDNode implements Named {
 	}
 
 	public void resolveDecl() {
-		getRView().resolveDecl();
+		((RVar)this).resolveDecl();
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -238,40 +220,32 @@ public final class FormPar extends Var {
 	}
 	
 	@virtual typedef This  = FormPar;
-	@virtual typedef NImpl = FormParImpl;
 	@virtual typedef VView = FormParView;
 
-	@nodeimpl
-	public static final class FormParImpl extends VarImpl {
-		@virtual typedef ImplOf = FormPar;
+	@att TypeRef		stype;
+		 int			kind;
 
-		@att TypeRef		stype;
-		     int			kind;
-
-		public void callbackChildChanged(AttrSlot attr) {
-			if (parent != null && pslot != null) {
-				if (attr.name == "stype")
-					parent.callbackChildChanged(pslot);
-				else
-					super.callbackChildChanged(attr);
-			}
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if (attr.name == "stype")
+				parent.callbackChildChanged(pslot);
+			else
+				super.callbackChildChanged(attr);
 		}
 	}
+
 	@nodeview
-	public static final view FormParView of FormParImpl extends VarView {
+	public static final view FormParView of FormPar extends VarView {
 		public TypeRef		stype;
 		public int			kind;
 
 		@getter public final Type get$dtype() {
-			if (((FormParImpl)this).stype == null)
+			if (((FormPar)this).stype == null)
 				return get$type();
-			return ((FormParImpl)this).stype.getType();
+			return ((FormPar)this).stype.getType();
 		}
 		
 	}
-
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 	
 	public static final int PARAM_NORMAL       = 0;
 	public static final int PARAM_THIS         = 1;
@@ -282,12 +256,10 @@ public final class FormPar extends Var {
 	public static final int PARAM_LVAR_PROXY   = 7;
 	public static final int PARAM_TYPEINFO_N   = 128;
 	
-	public FormPar() {
-		super(new FormParImpl());
-	}
+	public FormPar() {}
 
 	public FormPar(int pos, KString name, Type type, int kind, int flags) {
-		super(new FormParImpl(),name,type);
+		super(name,type);
 		this.pos = pos;
 		this.flags = flags;
 		this.kind = kind;
@@ -295,7 +267,7 @@ public final class FormPar extends Var {
 	}
 
 	public FormPar(NameRef id, TypeRef vtype, TypeRef stype, int kind, int flags) {
-		super(new FormParImpl(),id,vtype);
+		super(id,vtype);
 		this.pos = id.pos;
 		this.flags = flags;
 		this.kind = kind;
@@ -696,7 +668,7 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 	
 	private static final Hashtable<Class, DataFlowInfo> data_flows = new Hashtable<Class, DataFlowInfo>(128);
 
-	final NodeImpl node_impl;
+	final ASTNode node_impl;
 	
 	// will be a set of fields (DataFlow nodes for children) in code-generation 
 	final DFSocket[] children;
@@ -727,15 +699,15 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 	public KString getNodeDataId() { return ID; }
 	public void walkTree(TreeWalker walker) {}
 	
-	public static DataFlowInfo newDataFlowInfo(NodeImpl node_impl) {
-		DataFlowInfo template = data_flows.get(node_impl.getNode().getClass());
+	public static DataFlowInfo newDataFlowInfo(ASTNode node_impl) {
+		DataFlowInfo template = data_flows.get(node_impl.getClass());
 		if (template == null) {
-			template = new DataFlowInfo(((ASTNode)node_impl.getNode().getClass().newInstance()).$v_impl);
-			data_flows.put(node_impl.getNode().getClass(), template);
+			template = new DataFlowInfo(((ASTNode)node_impl.getClass().newInstance()));
+			data_flows.put(node_impl.getClass(), template);
 		}
 		return new DataFlowInfo(node_impl, template);
 	}
-	private DataFlowInfo(NodeImpl node_impl, DataFlowInfo template) {
+	private DataFlowInfo(ASTNode node_impl, DataFlowInfo template) {
 		this.node_impl = node_impl;
 		this.children = template.children;
 		if (template.results != null)
@@ -749,7 +721,7 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 		this.func_fls = template.func_fls;
 		this.func_jmp = template.func_jmp;
 	}
-	private DataFlowInfo(NodeImpl node_impl) {
+	private DataFlowInfo(ASTNode node_impl) {
 		this.node_impl = node_impl;
 		Vector<DFSocket> chl_dfs = new Vector<DFSocket>();
 		Hashtable<String,kiev.vlang.dflow> dflows = new Hashtable<String,kiev.vlang.dflow>();
@@ -796,7 +768,7 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 			String ffls = dfd.fls().intern();
 			if (fin != "") {
 				assert (fin == "this:in()" || fin == "root()");
-				this.func_in = node_impl.getNode().newDFFuncIn(this);
+				this.func_in = node_impl.newDFFuncIn(this);
 				if (fin == "root()")
 					is_root = true;
 			}
@@ -857,27 +829,27 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 
 	private kiev.vlang.dflow getClassAnnotation() {
 		try {
-			java.lang.Class cls = Class.forName(node_impl.getNode().getClass().getName()+"$DFI");
+			java.lang.Class cls = Class.forName(node_impl.getClass().getName()+"$DFI");
 			kiev.vlang.dflow dfd = (kiev.vlang.dflow)cls.getAnnotation(kiev.vlang.dflow.class);
 			if (dfd == null)
-				throw new Error("Internal error: no @dflow in "+node_impl.getNode().getClass()+"$DFI");
+				throw new Error("Internal error: no @dflow in "+node_impl.getClass()+"$DFI");
 			return dfd;
 		} catch (ClassNotFoundException e) {
-			throw new Error("Internal error: no class "+node_impl.getNode().getClass()+"$DFI");
+			throw new Error("Internal error: no class "+node_impl.getClass()+"$DFI");
 		}
 		
 	}
 
 	private kiev.vlang.dflow getFieldAnnotation(String name) {
 		try {
-			java.lang.Class cls = Class.forName(node_impl.getNode().getClass().getName()+"$DFI");
+			java.lang.Class cls = Class.forName(node_impl.getClass().getName()+"$DFI");
 			java.lang.reflect.Field jf = cls.getDeclaredField(name);
 			return (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
 		} catch (NoSuchFieldException e) {
 			return null;
 			//throw new Error("Internal error: no field "+name+" in "+getClass()+"$DFI");
 		} catch (ClassNotFoundException e) {
-			throw new Error("Internal error: no class "+node_impl.getNode().getClass()+"$DFI");
+			throw new Error("Internal error: no class "+node_impl.getClass()+"$DFI");
 		}
 		
 	}
@@ -888,7 +860,7 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 			if (children[i].pslot_name == name)
 				return children[i];
 		}
-		throw new RuntimeException("Internal error: no dflow socket "+name+" in "+node_impl.getNode().getClass());
+		throw new RuntimeException("Internal error: no dflow socket "+name+" in "+node_impl.getClass());
 	}
 	
 	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9\\(\\)]+) ([\\:a-zA-Z_0-9\\(\\)]+)");
@@ -922,11 +894,11 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 			else if (port == "out")
 				return new DFFunc.DFFuncThisOut();
 			else if (port == "true()" || port == "tru()")
-				return node_impl.getNode().newDFFuncTru(this);
+				return node_impl.newDFFuncTru(this);
 			else if (port == "false()" || port == "fls()")
-				return node_impl.getNode().newDFFuncFls(this);
+				return node_impl.newDFFuncFls(this);
 			else if (port == "out()")
-				return node_impl.getNode().newDFFuncOut(this);
+				return node_impl.newDFFuncOut(this);
 			throw new RuntimeException("Internal error: DFFunc.make("+func+":"+port+")");
 		}
 		else {
@@ -940,11 +912,11 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 		}
 	}
 	
-	public NodeData nodeCopiedTo(NodeImpl node) {
+	public NodeData nodeCopiedTo(ASTNode node) {
 		return null; // do not copy on node copy
 	}
 	
-	public void nodeAttached(NodeImpl node) {
+	public void nodeAttached(ASTNode node) {
 		if (!is_root) {
 			if (ASSERT_MORE) assert(this.parent_dfi == null);
 			if (ASSERT_MORE) assert(this.parent_dfs == null);
@@ -959,12 +931,12 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 			}
 		}
 	}
-	public void dataAttached(NodeImpl node) {
+	public void dataAttached(ASTNode node) {
 		if (node.parent != null)
 			nodeAttached(node);
 	}
 	
-	public void nodeDetached(NodeImpl node) {
+	public void nodeDetached(ASTNode node) {
 		if (parent_dfs != null) {
 			assert(parent_dfi != null);
 			if (parent_dfs instanceof DFSocketChild) {
@@ -980,7 +952,7 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 			assert(parent_dfi == null);
 		}
 	}
-	public void dataDetached(NodeImpl node) {
+	public void dataDetached(ASTNode node) {
 		nodeDetached(node);
 	}
 	
@@ -1064,7 +1036,7 @@ public abstract class DFFunc implements DataFlowSlots {
 		else
 			assert(node.parent.getVal(node.pslot.name) == node);
 		lst.append(node);
-		checkNode(node.parent.getNode(), lst);
+		checkNode(node.parent, lst);
 		return true;
 	}
 
@@ -1076,7 +1048,7 @@ public abstract class DFFunc implements DataFlowSlots {
 		for(;;) {
 		switch(f) {
 		case DFFuncThisIn():
-			if (ASSERT_MORE) assert(checkNode(dfi.node_impl.getNode(),null));
+			if (ASSERT_MORE) assert(checkNode(dfi.node_impl,null));
 			if (dfi.func_in != null) {
 				f = dfi.func_in;
 			}
@@ -1091,15 +1063,15 @@ public abstract class DFFunc implements DataFlowSlots {
 			}
 			break;
 		case DFFuncThisOut():
-			if (ASSERT_MORE) assert(checkNode(dfi.node_impl.getNode(),null));
+			if (ASSERT_MORE) assert(checkNode(dfi.node_impl,null));
 			f = dfi.func_out;
 			break;
 		case DFFuncThisTru():
-			if (ASSERT_MORE) assert(checkNode(dfi.node_impl.getNode(),null));
+			if (ASSERT_MORE) assert(checkNode(dfi.node_impl,null));
 			f = dfi.func_tru;
 			break;
 		case DFFuncThisFls():
-			if (ASSERT_MORE) assert(checkNode(dfi.node_impl.getNode(),null));
+			if (ASSERT_MORE) assert(checkNode(dfi.node_impl,null));
 			f = dfi.func_fls;
 			break;
 		case DFFuncChildIn(DFSocket dfs):
@@ -1169,7 +1141,7 @@ public abstract class DFFunc implements DataFlowSlots {
 			if (res == null) {
 				DFState tmp = calc(func_in, dfi);
 				if ((dfi.locks & lock_mask) != 0)
-					throw new DFLoopException(dfi.node_impl.getNode());
+					throw new DFLoopException(dfi.node_impl);
 				dfi.locks |= lock_mask;
 				try {
 					foreach (DFFunc lnk; link_in) {
@@ -1177,7 +1149,7 @@ public abstract class DFFunc implements DataFlowSlots {
 							DFState s = calc(lnk, dfi);
 							tmp = DFState.join(s,tmp);
 						} catch (DFLoopException e) {
-							if (e.label != dfi.node_impl.getNode()) throw e;
+							if (e.label != dfi.node_impl) throw e;
 						}
 					}
 				} finally { dfi.locks &= ~lock_mask; }

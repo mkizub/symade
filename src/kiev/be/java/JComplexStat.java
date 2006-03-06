@@ -14,16 +14,8 @@ import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.CaseLabel.CaseLabelImpl;
-import kiev.vlang.SwitchStat.SwitchStatImpl;
-import kiev.vlang.CatchInfo.CatchInfoImpl;
-import kiev.vlang.FinallyInfo.FinallyInfoImpl;
-import kiev.vlang.TryStat.TryStatImpl;
-import kiev.vlang.SynchronizedStat.SynchronizedStatImpl;
-import kiev.vlang.WithStat.WithStatImpl;
-
 @nodeview
-public final view JCaseLabel of CaseLabelImpl extends JENode {
+public final view JCaseLabel of CaseLabel extends JENode {
 	public:ro	JENode			val;
 	public:ro	Type				type;
 	public:ro	JArr<JVar>		pattern;
@@ -73,7 +65,7 @@ public final view JCaseLabel of CaseLabelImpl extends JENode {
 }
 
 @nodeview
-public view JSwitchStat of SwitchStatImpl extends JENode implements BreakTarget {
+public view JSwitchStat of SwitchStat extends JENode implements BreakTarget {
 	public:ro	int					mode;
 	public:ro	JENode				sel;
 	public:ro	JArr<JCaseLabel>	cases;
@@ -182,7 +174,7 @@ public view JSwitchStat of SwitchStatImpl extends JENode implements BreakTarget 
 
 
 @nodeview
-public view JCatchInfo of CatchInfoImpl extends JENode {
+public view JCatchInfo of CatchInfo extends JENode {
 	public:ro	JVar			arg;
 	public:ro	JENode			body;
 	public		CodeLabel		handler;
@@ -216,7 +208,7 @@ public view JCatchInfo of CatchInfoImpl extends JENode {
 }
 
 @nodeview
-public view JFinallyInfo of FinallyInfoImpl extends JENode {
+public view JFinallyInfo of FinallyInfo extends JENode {
 	public:ro	JVar			ret_arg;
 	public:ro	JENode			body;
 	public		CodeLabel		subr_label;
@@ -250,7 +242,7 @@ public view JFinallyInfo of FinallyInfoImpl extends JENode {
 }
 
 @nodeview
-public final view JTryStat of TryStatImpl extends JENode {
+public final view JTryStat of TryStat extends JENode {
 	public:ro	JENode				body;
 	public:ro	JArr<JCatchInfo>	catchers;
 	public:ro	JFinallyInfo		finally_catcher;
@@ -320,7 +312,7 @@ public final view JTryStat of TryStatImpl extends JENode {
 }
 
 @nodeview
-public final view JSynchronizedStat of SynchronizedStatImpl extends JENode {
+public final view JSynchronizedStat of SynchronizedStat extends JENode {
 	public:ro	JENode			expr;
 	public:ro	JVar			expr_var;
 	public:ro	JENode			body;
@@ -371,7 +363,7 @@ public final view JSynchronizedStat of SynchronizedStatImpl extends JENode {
 }
 
 @nodeview
-public final view JWithStat of WithStatImpl extends JENode {
+public final view JWithStat of WithStat extends JENode {
 	public:ro	JENode		expr;
 	public:ro	JENode		body;
 	public:ro	JLvalDNode	var_or_field;

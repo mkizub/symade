@@ -6,7 +6,6 @@ import kiev.stdlib.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
-import kiev.vlang.Method.MethodImpl;
 import kiev.vlang.Method.MethodView;
 
 import kiev.ir.java.RRuleMethod;
@@ -31,22 +30,18 @@ public class RuleMethod extends Method {
 	}
 
 	@virtual typedef This  = RuleMethod;
-	@virtual typedef NImpl = RuleMethodImpl;
 	@virtual typedef VView = VRuleMethod;
 	@virtual typedef RView = RRuleMethod;
 
-	@nodeimpl
-	public static final class RuleMethodImpl extends MethodImpl {
-		@virtual typedef ImplOf = RuleMethod;
-		@att public NArr<Var>			localvars;
-		@att public int					base = 1;
-		@att public int					max_depth;
-		@att public int					state_depth;
-		@att public int					max_vars;
-		@att public int					index;		// index counter for RuleNode.idx
-	}
+	@att public NArr<Var>			localvars;
+	@att public int					base = 1;
+	@att public int					max_depth;
+	@att public int					state_depth;
+	@att public int					max_vars;
+	@att public int					index;		// index counter for RuleNode.idx
+
 	@nodeview
-	public static abstract view RuleMethodView of RuleMethodImpl extends MethodView {
+	public static abstract view RuleMethodView of RuleMethod extends MethodView {
 		public:ro	NArr<Var>			localvars;
 		public		int					base;
 		public		int					max_depth;
@@ -55,23 +50,18 @@ public class RuleMethod extends Method {
 		public		int					index;		// index counter for RuleNode.idx
 	}
 	@nodeview
-	public static final view VRuleMethod of RuleMethodImpl extends RuleMethodView {
+	public static final view VRuleMethod of RuleMethod extends RuleMethodView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public RuleMethod() {
-		super(new RuleMethodImpl());
-	}
+	public RuleMethod() {}
 
 	public RuleMethod(NameRef id, int fl) {
-		super(new RuleMethodImpl(), id.name, new TypeRef(Type.tpRule));
+		super(id.name, new TypeRef(Type.tpRule));
 		this.pos = id.pos;
 		this.flags = fl;
 	}
 	public RuleMethod(KString name, int fl) {
-		super(new RuleMethodImpl(), name, Type.tpRule);
+		super(name, Type.tpRule);
 		this.flags = fl;
 	}
 
@@ -172,7 +162,7 @@ public class RuleMethod extends Method {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			RuleMethod m = (RuleMethod)dfi.node_impl.getNode();
+			RuleMethod m = (RuleMethod)dfi.node_impl;
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < m.params.length; i++) {
 				Var p = m.params[i];
@@ -191,7 +181,7 @@ public class RuleMethod extends Method {
 	}
 
 	public void resolveDecl() {
-		getRView().resolveDecl();
+		((RView)this).resolveDecl();
 	}
 }
 
@@ -257,34 +247,30 @@ public abstract class ASTRuleNode extends ENode {
 	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
 	@virtual typedef This  = ASTRuleNode;
-	@virtual typedef NImpl = ASTRuleNodeImpl;
 	@virtual typedef VView = ASTRuleNodeView;
 
-	@nodeimpl
-	public static abstract class ASTRuleNodeImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ASTRuleNode;
-		@att public JumpNodes			jn;
-		@att public int					base;
-		@att public int					idx;
-		@att public int					depth = -1;
-	}
+	@att public JumpNodes			jn;
+	@att public int					base;
+	@att public int					idx;
+	@att public int					depth = -1;
+
 	@nodeview
-	public static abstract view ASTRuleNodeView of ASTRuleNodeImpl extends ENodeView {
+	public static abstract view ASTRuleNodeView of ASTRuleNode extends ENodeView {
 		public JumpNodes	jn;
 		public int			base;
 		public int			idx;
 		public int			depth;
 
-		public int get$base() {	return ((ASTRuleNodeImpl)this).base; }
-		public void set$base(int b) { ((ASTRuleNodeImpl)this).base = b; }
+		public int get$base() {	return ((ASTRuleNode)this).base; }
+		public void set$base(int b) { ((ASTRuleNode)this).base = b; }
 	
-		public int get$idx() {	return ((ASTRuleNodeImpl)this).idx; }
-		public void set$idx(int i) { ((ASTRuleNodeImpl)this).idx = i; }
+		public int get$idx() {	return ((ASTRuleNode)this).idx; }
+		public void set$idx(int i) { ((ASTRuleNode)this).idx = i; }
 
 		public boolean preGenerate() { Kiev.reportError(this,"preGenerate of ASTRuleNode"); return false; }
 	}
 
-	public ASTRuleNode(ASTRuleNodeImpl impl) { super(impl); }
+	public ASTRuleNode() {}
 
 	public abstract 		void	createText(StringBuffer sb);
 	public abstract 		void	resolve1(JumpNodes jn);
@@ -335,31 +321,21 @@ public final class RuleBlock extends Block {
 	}
 
 	@virtual typedef This  = RuleBlock;
-	@virtual typedef NImpl = RuleBlockImpl;
 	@virtual typedef VView = RuleBlockView;
 	@virtual typedef RView = RRuleBlock;
 
-	@nodeimpl
-	public static final class RuleBlockImpl extends BlockImpl {
-		@virtual typedef ImplOf = RuleBlock;
-		@att public ASTRuleNode		node;
-		@att public StringBuffer	fields_buf;
-	}
+	@att public ASTRuleNode		node;
+	@att public StringBuffer	fields_buf;
+
 	@nodeview
-	public static view RuleBlockView of RuleBlockImpl extends BlockView {
+	public static view RuleBlockView of RuleBlock extends BlockView {
 		public ASTRuleNode		node;
 		public StringBuffer		fields_buf;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public RuleBlock() {
-		super(new RuleBlockImpl());
-	}
+	public RuleBlock() {}
 
 	public RuleBlock(int pos, ASTRuleNode n) {
-		this();
 		this.pos = pos;
 		node = n;
 	}
@@ -379,16 +355,12 @@ public final class RuleOrExpr extends ASTRuleNode {
 	}
 
 	@virtual typedef This  = RuleOrExpr;
-	@virtual typedef NImpl = RuleOrExprImpl;
 	@virtual typedef VView = RuleOrExprView;
 
-	@nodeimpl
-	public static final class RuleOrExprImpl extends ASTRuleNodeImpl {
-		@virtual typedef ImplOf = RuleOrExpr;
-		@att public NArr<ASTRuleNode>			rules;
-	}
+	@att public NArr<ASTRuleNode>			rules;
+
 	@nodeview
-	public static final view RuleOrExprView of RuleOrExprImpl extends ASTRuleNodeView {
+	public static final view RuleOrExprView of RuleOrExpr extends ASTRuleNodeView {
 		public:ro	NArr<ASTRuleNode>			rules;
 
 		public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base(); }
@@ -398,19 +370,13 @@ public final class RuleOrExpr extends ASTRuleNode {
 		public void set$idx(int i) {}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public RuleOrExpr() {
-		super(new RuleOrExprImpl());
-	}
+	public RuleOrExpr() {}
 
 	public RuleOrExpr(ASTRuleNode first) {
-		super(new RuleOrExprImpl());
 		this.rules.add(first);
 	}
 
 	public RuleOrExpr(int pos, ASTRuleNode[] rules) {
-		this();
 		this.pos = pos;
 		this.rules.addAll(rules);
 	}
@@ -453,16 +419,12 @@ public final class RuleAndExpr extends ASTRuleNode {
 	}
 
 	@virtual typedef This  = RuleAndExpr;
-	@virtual typedef NImpl = RuleAndExprImpl;
 	@virtual typedef VView = RuleAndExprView;
 
-	@nodeimpl
-	public static final class RuleAndExprImpl extends ASTRuleNodeImpl {
-		@virtual typedef ImplOf = RuleAndExpr;
-		@att public NArr<ASTRuleNode>			rules;
-	}
+	@att public NArr<ASTRuleNode>			rules;
+
 	@nodeview
-	public static final view RuleAndExprView of RuleAndExprImpl extends ASTRuleNodeView {
+	public static final view RuleAndExprView of RuleAndExpr extends ASTRuleNodeView {
 		public:ro	NArr<ASTRuleNode>			rules;
 
 		public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base();	}
@@ -472,19 +434,13 @@ public final class RuleAndExpr extends ASTRuleNode {
 		public void set$idx(int i) {}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public RuleAndExpr() {
-		super(new RuleAndExprImpl());
-	}
+	public RuleAndExpr() {}
 
 	public RuleAndExpr(ASTRuleNode first) {
-		super(new RuleAndExprImpl());
 		this.rules.add(first);
 	}
 
 	public RuleAndExpr(int pos, ASTRuleNode[] rules) {
-		this();
 		this.pos = pos;
 		this.rules.addAll(rules);
 	}
@@ -562,29 +518,20 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 
 	@virtual typedef This  = RuleIstheExpr;
-	@virtual typedef NImpl = RuleIstheExprImpl;
 	@virtual typedef VView = RuleIstheExprView;
 
-	@nodeimpl
-	public static final class RuleIstheExprImpl extends ASTRuleNodeImpl {
-		@virtual typedef ImplOf = RuleIstheExpr;
-		@att public LVarExpr	var;		// variable of type PVar<...>
-		@att public ENode		expr;		// expression to check/unify
-	}
+	@att public LVarExpr	var;		// variable of type PVar<...>
+	@att public ENode		expr;		// expression to check/unify
+
 	@nodeview
-	public static final view RuleIstheExprView of RuleIstheExprImpl extends ASTRuleNodeView {
+	public static final view RuleIstheExprView of RuleIstheExpr extends ASTRuleNodeView {
 		public LVarExpr		var;		// variable of type PVar<...>
 		public ENode		expr;		// expression to check/unify
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public RuleIstheExpr() {
-		super(new RuleIstheExprImpl());
-	}
+	public RuleIstheExpr() {}
 
 	public RuleIstheExpr(int pos, LVarExpr var, ENode expr) {
-		this();
 		this.pos = pos;
 		this.var = var;
 		this.expr = expr;
@@ -642,20 +589,16 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	public static final int	ELEMS = 3;
 
 	@virtual typedef This  = RuleIsoneofExpr;
-	@virtual typedef NImpl = RuleIsoneofExprImpl;
 	@virtual typedef VView = RuleIsoneofExprView;
 
-	@nodeimpl
-	public static final class RuleIsoneofExprImpl extends ASTRuleNodeImpl {
-		@virtual typedef ImplOf = RuleIsoneofExpr;
-		@att public LVarExpr	var;		// variable of type PVar<...>
-		@att public ENode		expr;		// expression to check/unify
-		@att public int			iter_var;	// iterator var
-		@att public Type		itype;
-		@att public int			mode;
-	}
+	@att public LVarExpr	var;		// variable of type PVar<...>
+	@att public ENode		expr;		// expression to check/unify
+	@att public int			iter_var;	// iterator var
+	@att public Type		itype;
+	@att public int			mode;
+
 	@nodeview
-	public static final view RuleIsoneofExprView of RuleIsoneofExprImpl extends ASTRuleNodeView {
+	public static final view RuleIsoneofExprView of RuleIsoneofExpr extends ASTRuleNodeView {
 		public LVarExpr		var;		// variable of type PVar<...>
 		public ENode		expr;		// expression to check/unify
 		public int			iter_var;	// iterator var
@@ -663,14 +606,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		public int			mode;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public RuleIsoneofExpr() {
-		super(new RuleIsoneofExprImpl());
-	}
+	public RuleIsoneofExpr() {}
 
 	public RuleIsoneofExpr(int pos, LVarExpr var, ENode expr) {
-		this();
 		this.pos = pos;
 		this.var = var;
 		this.expr = expr;
@@ -809,25 +747,15 @@ public final class RuleCutExpr extends ASTRuleNode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = RuleCutExpr;
-	@virtual typedef NImpl = RuleCutExprImpl;
 	@virtual typedef VView = RuleCutExprView;
 
-	@nodeimpl
-	public static final class RuleCutExprImpl extends ASTRuleNodeImpl {
-		@virtual typedef ImplOf = RuleCutExpr;
-	}
 	@nodeview
-	public static final view RuleCutExprView of RuleCutExprImpl extends ASTRuleNodeView {
+	public static final view RuleCutExprView of RuleCutExpr extends ASTRuleNodeView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	
-	public RuleCutExpr() {
-		super(new RuleCutExprImpl());
-	}
+	public RuleCutExpr() {}
 
 	public RuleCutExpr(int pos) {
-		this();
 		this.pos = pos;
 	}
 
@@ -858,33 +786,24 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 	
 	@virtual typedef This  = RuleCallExpr;
-	@virtual typedef NImpl = RuleCallExprImpl;
 	@virtual typedef VView = RuleCallExprView;
 
-	@nodeimpl
-	public static final class RuleCallExprImpl extends ASTRuleNodeImpl {
-		@virtual typedef ImplOf = RuleCallExpr;
-		@att public ENode				obj;
-		@ref public Named				func;
-		@att public NArr<ENode>			args;
-		@att public int					env_var;
-	}
+	@att public ENode				obj;
+	@ref public Named				func;
+	@att public NArr<ENode>			args;
+	@att public int					env_var;
+
 	@nodeview
-	public static final view RuleCallExprView of RuleCallExprImpl extends ASTRuleNodeView {
-		public				ENode			obj;
-		public				Named			func;
+	public static final view RuleCallExprView of RuleCallExpr extends ASTRuleNodeView {
+		public		ENode			obj;
+		public		Named			func;
 		public:ro	NArr<ENode>		args;
-		public				int				env_var;
+		public		int				env_var;
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public RuleCallExpr() {
-		super(new RuleCallExprImpl());
-	}
+	public RuleCallExpr() {}
 
 	public RuleCallExpr(CallExpr expr) {
-		this();
 		this.pos = expr.pos;
 		this.obj = ~expr.obj;
 		this.func = expr.func;
@@ -893,7 +812,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 
 	public RuleCallExpr(ClosureCallExpr expr) {
-		this();
 		this.pos = expr.pos;
 		this.obj = ~expr.expr;
 		if( expr.expr instanceof LVarExpr )
@@ -969,26 +887,19 @@ public final class RuleCallExpr extends ASTRuleNode {
 public abstract class RuleExprBase extends ASTRuleNode {
 
 	@virtual typedef This  = RuleExprBase;
-	@virtual typedef NImpl = RuleExprBaseImpl;
 	@virtual typedef VView = RuleExprBaseView;
 
-	@nodeimpl
-	public static abstract class RuleExprBaseImpl extends ASTRuleNodeImpl {
-		@virtual typedef ImplOf = RuleExprBase;
-		@att public ENode				expr;
-		@att public ENode				bt_expr;
-	}
+	@att public ENode				expr;
+	@att public ENode				bt_expr;
+
 	@nodeview
-	public static abstract view RuleExprBaseView of RuleExprBaseImpl extends ASTRuleNodeView {
+	public static abstract view RuleExprBaseView of RuleExprBase extends ASTRuleNodeView {
 		public				ENode			expr;
 		public				ENode			bt_expr;
 	}
 	
-	public RuleExprBase(RuleExprBaseImpl impl) {
-		super(impl);
-	}
-	public RuleExprBase(RuleExprBaseImpl impl, ENode expr, ENode bt_expr) {
-		super(impl);
+	public RuleExprBase() {}
+	public RuleExprBase(ENode expr, ENode bt_expr) {
 		this.expr = expr;
 		this.bt_expr = bt_expr;
 	}
@@ -1023,29 +934,20 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 	
 	@virtual typedef This  = RuleWhileExpr;
-	@virtual typedef NImpl = RuleWhileExprImpl;
 	@virtual typedef VView = RuleWhileExprView;
 
-	@nodeimpl
-	public static final class RuleWhileExprImpl extends RuleExprBaseImpl {
-		@virtual typedef ImplOf = RuleWhileExpr;
-	}
 	@nodeview
-	public static final view RuleWhileExprView of RuleWhileExprImpl extends RuleExprBaseView {
+	public static final view RuleWhileExprView of RuleWhileExpr extends RuleExprBaseView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	
-	public RuleWhileExpr() {
-		super(new RuleWhileExprImpl());
-	}
+	public RuleWhileExpr() {}
 
 	public RuleWhileExpr(ENode expr) {
-		super(new RuleWhileExprImpl(), expr, null);
+		super(expr, null);
 	}
 
 	public RuleWhileExpr(ENode expr, ENode bt_expr) {
-		super(new RuleWhileExprImpl(), expr, bt_expr);
+		super(expr, bt_expr);
 	}
 
 	public void resolve(Type reqType) {
@@ -1092,29 +994,20 @@ public final class RuleExpr extends RuleExprBase {
 	}
 
 	@virtual typedef This  = RuleExpr;
-	@virtual typedef NImpl = RuleExprImpl;
 	@virtual typedef VView = RuleExprView;
 
-	@nodeimpl
-	public static final class RuleExprImpl extends RuleExprBaseImpl {
-		@virtual typedef ImplOf = RuleExpr;
-	}
 	@nodeview
-	public static final view RuleExprView of RuleExprImpl extends RuleExprBaseView {
+	public static final view RuleExprView of RuleExpr extends RuleExprBaseView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	
-	public RuleExpr() {
-		super(new RuleExprImpl());
-	}
+	public RuleExpr() {}
 
 	public RuleExpr(ENode expr) {
-		super(new RuleExprImpl(), expr, null);
+		super(expr, null);
 	}
 
 	public RuleExpr(ENode expr, ENode bt_expr) {
-		super(new RuleExprImpl(), expr, bt_expr);
+		super(expr, bt_expr);
 	}
 
 	public void resolve(Type reqType) {

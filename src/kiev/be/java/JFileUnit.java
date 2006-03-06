@@ -12,8 +12,6 @@ import java.io.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.FileUnit.FileUnitImpl;
-
 /**
  * @author Maxim Kizub
  * @version $Revision$
@@ -21,19 +19,17 @@ import kiev.vlang.FileUnit.FileUnitImpl;
  */
 
 @nodeview
-public final view JFileUnit of FileUnitImpl extends JDNode {
-	public				KString					filename;
-	public				TypeNameRef				pkg;
+public final view JFileUnit of FileUnit extends JDNode {
+	public		KString					filename;
+	public		TypeNameRef				pkg;
 	public:ro	NArr<DNode>				syntax;
 	public:ro	NArr<DNode>				members;
 	public:ro	NArr<PrescannedBody>	bodies;
 	public:ro	boolean[]				disabled_extensions;
-	public				boolean					scanned_for_interface_only;
+	public		boolean					scanned_for_interface_only;
 
 	@getter public JFileUnit get$jctx_file_unit() { return this; }
 
-	public final FileUnit getFileUnit() { return (FileUnit)this.getNode(); }
-	
 	public void generate() {
 		long curr_time = 0L, diff_time = 0L;
 		KString cur_file = Kiev.curFile;
@@ -43,7 +39,7 @@ public final view JFileUnit of FileUnitImpl extends JDNode {
         	Kiev.setExtSet(disabled_extensions);
 			foreach (DNode dn; members; dn instanceof Struct) {
 				diff_time = curr_time = System.currentTimeMillis();
-				((Struct)dn).getJView().generate();
+				((JStruct)dn).generate();
 				diff_time = System.currentTimeMillis() - curr_time;
 				if( Kiev.verbose )
 					Kiev.reportInfo("Generated clas "+dn,diff_time);

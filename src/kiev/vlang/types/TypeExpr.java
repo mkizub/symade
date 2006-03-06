@@ -8,7 +8,6 @@ import kiev.vlang.types.*;
 
 import syntax kiev.Syntax;
 
-import kiev.vlang.types.TypeRef.TypeRefImpl;
 import kiev.vlang.types.TypeRef.TypeRefView;
 
 /**
@@ -25,17 +24,13 @@ public class TypeExpr extends TypeRef {
 	static KString opRef   = KString.from("&");
 	
 	@virtual typedef This  = TypeExpr;
-	@virtual typedef NImpl = TypeExprImpl;
 	@virtual typedef VView = TypeExprView;
 
-	@nodeimpl
-	public static final class TypeExprImpl extends TypeRefImpl {
-		@virtual typedef ImplOf = TypeExpr;
-		@att public TypeRef					arg;
-		@att public KString					op;
-	}
+	@att public TypeRef					arg;
+	@att public KString					op;
+
 	@nodeview
-	public static final view TypeExprView of TypeExprImpl extends TypeRefView {
+	public static final view TypeExprView of TypeExpr extends TypeRefView {
 		public TypeRef				arg;
 		public KString				op;
 
@@ -48,7 +43,7 @@ public class TypeExpr extends TypeRef {
 				tp = new ArrayType(tp);
 			} else {
 				Type t;
-				if (!PassInfo.resolveNameR(((TypeExprImpl)this)._self,v,new ResInfo(this),op)) {
+				if (!PassInfo.resolveNameR(((TypeExpr)this),v,new ResInfo(this),op)) {
 					if (op == opPVar) {
 						t = WrapperType.tpWrappedPrologVar;
 					}
@@ -76,21 +71,15 @@ public class TypeExpr extends TypeRef {
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public TypeExpr() {
-		super(new TypeExprImpl());
-	}
+	public TypeExpr() {}
 
 	public TypeExpr(TypeRef arg, KString op) {
-		super(new TypeExprImpl());
 		this.pos = arg.pos;
 		this.arg = arg;
 		this.op = op;
 	}
 
 	public TypeExpr(TypeRef arg, Token op) {
-		super(new TypeExprImpl());
 		this.arg = arg;
 		if (op.kind == ParserConstants.OPERATOR_LRBRACKETS)
 			this.op = Constants.nameArrayOp;

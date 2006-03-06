@@ -30,22 +30,18 @@ public class CallExpr extends ENode {
 	}
 	
 	@virtual typedef This  = CallExpr;
-	@virtual typedef NImpl = CallExprImpl;
 	@virtual typedef VView = VCallExpr;
 	@virtual typedef JView = JCallExpr;
 	@virtual typedef RView = RCallExpr;
 
-	@nodeimpl
-	public static class CallExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = CallExpr;
-		@att public ENode				obj;
-		@ref public Method				func;
-		@ref public CallType			mt;
-		@att public NArr<ENode>			args;
-		@att public ENode				temp_expr;
-	}
+	@att public ENode				obj;
+	@ref public Method				func;
+	@ref public CallType			mt;
+	@att public NArr<ENode>			args;
+	@att public ENode				temp_expr;
+
 	@nodeview
-	public static abstract view CallExprView of CallExprImpl extends ENodeView {
+	public static abstract view CallExprView of CallExpr extends ENodeView {
 		public		ENode			obj;
 		public		Method			func;
 		public		CallType		mt;
@@ -62,19 +58,12 @@ public class CallExpr extends ENode {
 		}
 	}
 	@nodeview
-	public static final view VCallExpr of CallExprImpl extends CallExprView {
+	public static final view VCallExpr of CallExpr extends CallExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public CallExpr() {
-		super(new CallExprImpl());
-	}
+	public CallExpr() {}
 
 	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args, boolean super_flag) {
-		this();
 		this.pos = pos;
 		if (obj == null) {
 			if !(func.isStatic() || func instanceof Constructor) {
@@ -116,7 +105,7 @@ public class CallExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -159,23 +148,19 @@ public class ClosureCallExpr extends ENode {
 	}
 	
 	@virtual typedef This  = ClosureCallExpr;
-	@virtual typedef NImpl = ClosureCallExprImpl;
 	@virtual typedef VView = VClosureCallExpr;
 	@virtual typedef JView = JClosureCallExpr;
 	@virtual typedef RView = RClosureCallExpr;
 
-	@nodeimpl
-	public static class ClosureCallExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ClosureCallExpr;
-		@att public ENode				expr;
-		@att public NArr<ENode>			args;
-		@att public Boolean				is_a_call;
-	}
+	@att public ENode				expr;
+	@att public NArr<ENode>			args;
+	@att public Boolean				is_a_call;
+
 	@nodeview
-	public static abstract view ClosureCallExprView of ClosureCallExprImpl extends ENodeView {
-		public				ENode			expr;
+	public static abstract view ClosureCallExprView of ClosureCallExpr extends ENodeView {
+		public		ENode			expr;
 		public:ro	NArr<ENode>		args;
-		public				Boolean			is_a_call;
+		public		Boolean			is_a_call;
 
 		public int		getPriority() { return Constants.opCallPriority; }
 
@@ -205,19 +190,12 @@ public class ClosureCallExpr extends ENode {
 		}
 	}
 	@nodeview
-	public static final view VClosureCallExpr of ClosureCallExprImpl extends ClosureCallExprView {
+	public static final view VClosureCallExpr of ClosureCallExpr extends ClosureCallExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public ClosureCallExpr() {
-		super(new ClosureCallExprImpl());
-	}
+	public ClosureCallExpr() {}
 
 	public ClosureCallExpr(int pos, ENode expr, ENode[] args) {
-		this();
 		this.pos = pos;
 		this.expr = expr;
 		foreach(ENode e; args) this.args.append(e);
@@ -236,7 +214,7 @@ public class ClosureCallExpr extends ENode {
 	}
 	
 	public void resolve(Type reqType) throws RuntimeException {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

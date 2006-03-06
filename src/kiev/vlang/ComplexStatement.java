@@ -46,41 +46,30 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
 	@virtual typedef This  = CaseLabel;
-	@virtual typedef NImpl = CaseLabelImpl;
 	@virtual typedef VView = VCaseLabel;
 	@virtual typedef JView = JCaseLabel;
 	@virtual typedef RView = RCaseLabel;
 
-	@nodeimpl
-	public static final class CaseLabelImpl extends ENodeImpl {
-		@virtual typedef ImplOf = CaseLabel;
-		@att public ENode			val;
-		@ref public Type			type;
-		@att public NArr<Var>		pattern;
-		@att public NArr<ENode>		stats;
-		@ref public CodeLabel		case_label;
-	}
+	@att public ENode			val;
+	@ref public Type			type;
+	@att public NArr<Var>		pattern;
+	@att public NArr<ENode>		stats;
+	@ref public CodeLabel		case_label;
+
 	@nodeview
-	public static abstract view CaseLabelView of CaseLabelImpl extends ENodeView {
+	public static abstract view CaseLabelView of CaseLabel extends ENodeView {
 		public		ENode			val;
 		public		Type			type;
 		public:ro	NArr<Var>		pattern;
 		public:ro	NArr<ENode>		stats;
 	}
 	@nodeview
-	public static final view VCaseLabel of CaseLabelImpl extends CaseLabelView {
+	public static final view VCaseLabel of CaseLabel extends CaseLabelView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public CaseLabel() {
-		super(new CaseLabelImpl());
-	}
+	public CaseLabel() {}
 
 	public CaseLabel(int pos, ENode val, ENode[] stats) {
-		this();
 		this.pos = pos;
 		this.val = val;
 		this.stats.addAll(stats);
@@ -94,7 +83,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			CaseLabel cl = (CaseLabel)dfi.node_impl.getNode();
+			CaseLabel cl = (CaseLabel)dfi.node_impl;
 			if (cl.parent_node instanceof SwitchStat) {
 				ENode sel = ((SwitchStat)cl.parent_node).sel;
 				if (sel != null)
@@ -169,7 +158,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	}
 	
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -200,26 +189,22 @@ public class SwitchStat extends ENode {
 	public static final int ENUM_SWITCH = 3;
 
 	@virtual typedef This  = SwitchStat;
-	@virtual typedef NImpl = SwitchStatImpl;
 	@virtual typedef VView = VSwitchStat;
 	@virtual typedef JView = JSwitchStat;
 	@virtual typedef RView = RSwitchStat;
 
-	@nodeimpl
-	public static class SwitchStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = SwitchStat;
-		@att                 public int mode; /* = NORMAL_SWITCH; */
-		@att                 public ENode					sel;
-		@att                 public NArr<CaseLabel>		cases;
-		@att                 public LVarExpr				tmpvar;
-		@ref                 public CaseLabel				defCase;
-		@ref                 public Field					typehash; // needed for re-resolving
-		@att(copyable=false) public Label					lblcnt;
-		@att(copyable=false) public Label					lblbrk;
-		@att                 public CodeSwitch				cosw;
-	}
+	@att                 public int mode; /* = NORMAL_SWITCH; */
+	@att                 public ENode					sel;
+	@att                 public NArr<CaseLabel>		cases;
+	@att                 public LVarExpr				tmpvar;
+	@ref                 public CaseLabel				defCase;
+	@ref                 public Field					typehash; // needed for re-resolving
+	@att(copyable=false) public Label					lblcnt;
+	@att(copyable=false) public Label					lblbrk;
+	@att                 public CodeSwitch				cosw;
+
 	@nodeview
-	public static abstract view SwitchStatView of SwitchStatImpl extends ENodeView {
+	public static abstract view SwitchStatView of SwitchStat extends ENodeView {
 		public		int						mode;
 		public		ENode					sel;
 		public:ro	NArr<CaseLabel>			cases;
@@ -230,18 +215,13 @@ public class SwitchStat extends ENode {
 		public:ro	Label					lblbrk;
 	}
 	@nodeview
-	public static final view VSwitchStat of SwitchStatImpl extends SwitchStatView {
+	public static final view VSwitchStat of SwitchStat extends SwitchStatView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
 	public SwitchStat() {
-		super(new SwitchStatImpl());
 		setBreakTarget(true);
-		((SwitchStatImpl)this.$v_impl).lblcnt = new Label();
-		((SwitchStatImpl)this.$v_impl).lblbrk = new Label();
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 	}
 
 	public SwitchStat(int pos, ENode sel, CaseLabel[] cases) {
@@ -255,7 +235,7 @@ public class SwitchStat extends ENode {
 	public String toString() { return "switch("+sel+")"; }
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -278,38 +258,25 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
 	@virtual typedef This  = CatchInfo;
-	@virtual typedef NImpl = CatchInfoImpl;
 	@virtual typedef VView = VCatchInfo;
 	@virtual typedef JView = JCatchInfo;
 	@virtual typedef RView = RCatchInfo;
 
-	@nodeimpl
-	public static class CatchInfoImpl extends ENodeImpl {
-		@virtual typedef ImplOf = CatchInfo;
-		@att public Var				arg;
-		@att public ENode			body;
-		@att public CodeLabel		handler;
-		@att public CodeCatchInfo	code_catcher;
-	}
+	@att public Var				arg;
+	@att public ENode			body;
+	@att public CodeLabel		handler;
+	@att public CodeCatchInfo	code_catcher;
+
 	@nodeview
-	public static abstract view CatchInfoView of CatchInfoImpl extends ENodeView {
+	public static abstract view CatchInfoView of CatchInfo extends ENodeView {
 		public Var				arg;
 		public ENode			body;
 	}
 	@nodeview
-	public static final view VCatchInfo of CatchInfoImpl extends CatchInfoView {
+	public static final view VCatchInfo of CatchInfo extends CatchInfoView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public CatchInfo() {
-		super(new CatchInfoImpl());
-	}
-	public CatchInfo(CatchInfoImpl impl) {
-		super(impl);
-	}
+	public CatchInfo() {}
 
 	public String toString() {
 		return "catch( "+arg+" )";
@@ -321,7 +288,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -339,41 +306,31 @@ public class FinallyInfo extends ENode {
 	}
 	
 	@virtual typedef This  = FinallyInfo;
-	@virtual typedef NImpl = FinallyInfoImpl;
 	@virtual typedef VView = VFinallyInfo;
 	@virtual typedef JView = JFinallyInfo;
 	@virtual typedef RView = RFinallyInfo;
 
-	@nodeimpl
-	public static class FinallyInfoImpl extends ENodeImpl {
-		@virtual typedef ImplOf = FinallyInfo;
-		@att public ENode			body;
-		@att public Var				ret_arg;
-		@att public CodeLabel		subr_label;
-		@att public CodeLabel		handler;
-		@att public CodeCatchInfo	code_catcher;
-	}
+	@att public ENode			body;
+	@att public Var				ret_arg;
+	@att public CodeLabel		subr_label;
+	@att public CodeLabel		handler;
+	@att public CodeCatchInfo	code_catcher;
+
 	@nodeview
-	public static abstract view FinallyInfoView of FinallyInfoImpl extends ENodeView {
+	public static abstract view FinallyInfoView of FinallyInfo extends ENodeView {
 		public ENode		body;
 		public Var			ret_arg;
 	}
 	@nodeview
-	public static final view VFinallyInfo of FinallyInfoImpl extends FinallyInfoView {
+	public static final view VFinallyInfo of FinallyInfo extends FinallyInfoView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public FinallyInfo() {
-		super(new FinallyInfoImpl());
-	}
+	public FinallyInfo() {}
 
 	public String toString() { return "finally"; }
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 	
 	public Dumper toJava(Dumper dmp) {
@@ -393,39 +350,29 @@ public class TryStat extends ENode {
 	}
 	
 	@virtual typedef This  = TryStat;
-	@virtual typedef NImpl = TryStatImpl;
 	@virtual typedef VView = VTryStat;
 	@virtual typedef JView = JTryStat;
 	@virtual typedef RView = RTryStat;
 
-	@nodeimpl
-	public static final class TryStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = TryStat;
-		@att public ENode				body;
-		@att public NArr<CatchInfo>		catchers;
-		@att public FinallyInfo			finally_catcher;
-		@att public CodeLabel			end_label;
-	}
+	@att public ENode				body;
+	@att public NArr<CatchInfo>		catchers;
+	@att public FinallyInfo			finally_catcher;
+	@att public CodeLabel			end_label;
+
 	@nodeview
-	public static abstract view TryStatView of TryStatImpl extends ENodeView {
+	public static abstract view TryStatView of TryStat extends ENodeView {
 		public		ENode				body;
 		public:ro	NArr<CatchInfo>		catchers;
 		public		FinallyInfo			finally_catcher;
 	}
 	@nodeview
-	public static final view VTryStat of TryStatImpl extends TryStatView {
+	public static final view VTryStat of TryStat extends TryStatView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public TryStat() {
-		super(new TryStatImpl());
-	}
+	public TryStat() {}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -448,41 +395,31 @@ public class SynchronizedStat extends ENode {
 	}
 	
 	@virtual typedef This  = SynchronizedStat;
-	@virtual typedef NImpl = SynchronizedStatImpl;
 	@virtual typedef VView = VSynchronizedStat;
 	@virtual typedef JView = JSynchronizedStat;
 	@virtual typedef RView = RSynchronizedStat;
 
-	@nodeimpl
-	public static final class SynchronizedStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = SynchronizedStat;
-		@att public ENode			expr;
-		@att public Var				expr_var;
-		@att public ENode			body;
-		@att public CodeLabel		handler;
-		@att public CodeCatchInfo	code_catcher;
-		@att public CodeLabel		end_label;
-	}
+	@att public ENode			expr;
+	@att public Var				expr_var;
+	@att public ENode			body;
+	@att public CodeLabel		handler;
+	@att public CodeCatchInfo	code_catcher;
+	@att public CodeLabel		end_label;
+
 	@nodeview
-	public static abstract view SynchronizedStatView of SynchronizedStatImpl extends ENodeView {
+	public static abstract view SynchronizedStatView of SynchronizedStat extends ENodeView {
 		public ENode			expr;
 		public Var				expr_var;
 		public ENode			body;
 	}
 	@nodeview
-	public static final view VSynchronizedStat of SynchronizedStatImpl extends SynchronizedStatView {
+	public static final view VSynchronizedStat of SynchronizedStat extends SynchronizedStatView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public SynchronizedStat() {
-		super(new SynchronizedStatImpl());
-	}
+	public SynchronizedStat() {}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -502,39 +439,29 @@ public class WithStat extends ENode {
 	}
 	
 	@virtual typedef This  = WithStat;
-	@virtual typedef NImpl = WithStatImpl;
 	@virtual typedef VView = VWithStat;
 	@virtual typedef JView = JWithStat;
 	@virtual typedef RView = RWithStat;
 
-	@nodeimpl
-	public static final class WithStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = WithStat;
-		@att public ENode		expr;
-		@att public ENode		body;
-		@ref public LvalDNode	var_or_field;
-		@att public CodeLabel	end_label;
-	}
+	@att public ENode		expr;
+	@att public ENode		body;
+	@ref public LvalDNode	var_or_field;
+	@att public CodeLabel	end_label;
+
 	@nodeview
-	public static abstract view WithStatView of WithStatImpl extends ENodeView {
+	public static abstract view WithStatView of WithStat extends ENodeView {
 		public ENode		expr;
 		public ENode		body;
 		public LvalDNode	var_or_field;
 	}
 	@nodeview
-	public static final view VWithStat of WithStatImpl extends WithStatView {
+	public static final view VWithStat of WithStat extends WithStatView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public WithStat() {
-		super(new WithStatImpl());
-	}
+	public WithStat() {}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

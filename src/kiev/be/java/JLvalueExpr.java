@@ -8,22 +8,14 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.LvalueExpr.LvalueExprImpl;
-import kiev.vlang.AccessExpr.AccessExprImpl;
-import kiev.vlang.IFldExpr.IFldExprImpl;
-import kiev.vlang.ContainerAccessExpr.ContainerAccessExprImpl;
-import kiev.vlang.ThisExpr.ThisExprImpl;
-import kiev.vlang.LVarExpr.LVarExprImpl;
-import kiev.vlang.SFldExpr.SFldExprImpl;
-import kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprImpl;
-import kiev.vlang.ReinterpExpr.ReinterpExprImpl;
-
 @nodeview
-public abstract view JLvalueExpr of LvalueExprImpl extends JENode {
+public abstract view JLvalueExpr of LvalueExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
@@ -51,13 +43,13 @@ public abstract view JLvalueExpr of LvalueExprImpl extends JENode {
 }
 
 @nodeview
-public abstract view JAccessExpr of AccessExprImpl extends JLvalueExpr {
+public abstract view JAccessExpr of AccessExpr extends JLvalueExpr {
 	public:ro	JENode	obj;
 	public:ro	KString		ident;
 }
 
 @nodeview
-public final view JIFldExpr of IFldExprImpl extends JLvalueExpr {
+public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public:ro JENode		obj;
 	public:ro JField		var;
 
@@ -67,7 +59,7 @@ public final view JIFldExpr of IFldExprImpl extends JLvalueExpr {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.isStructInstanceOf(var.jctx_clazz.getStruct()) )
+		if( !ot.isStructInstanceOf((Struct)var.jctx_clazz) )
 			code.addInstr(Instr.op_checkcast,var.jctx_clazz.ctype);
 	}
 
@@ -138,7 +130,7 @@ public final view JIFldExpr of IFldExprImpl extends JLvalueExpr {
 
 
 @nodeview
-public final view JContainerAccessExpr of ContainerAccessExprImpl extends JLvalueExpr {
+public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExpr {
 	public:ro	JENode		obj;
 	public:ro	JENode		index;
 
@@ -153,13 +145,13 @@ public final view JContainerAccessExpr of ContainerAccessExprImpl extends JLvalu
 			// Resolve overloaded access method
 			Method@ v;
 			CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
-			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
 			obj.generate(code,null);
 			index.generate(code,null);
 			Method func = (Method)v;
-			code.addInstr(Instr.op_call,func.getJView(),false,obj.getType());
+			code.addInstr(Instr.op_call,(JMethod)func,false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret().isReference()
 			 && ( !func.type.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
@@ -202,10 +194,10 @@ public final view JContainerAccessExpr of ContainerAccessExprImpl extends JLvalu
 			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = objType.getStruct();
 			CallType mt = new CallType(new Type[]{index.getType(),o.getType()},Type.tpAny);
-			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
-			code.addInstr(Instr.op_call,v.getJView(),false,objType);
+			code.addInstr(Instr.op_call,(JMethod)v,false,objType);
 			// Pop return value
 			code.addInstr(Instr.op_pop);
 		}
@@ -228,12 +220,12 @@ public final view JContainerAccessExpr of ContainerAccessExprImpl extends JLvalu
 			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = obj.getType().getStruct();
 			CallType mt = new CallType(new Type[]{index.getType(),o.getType()},Type.tpAny);
-			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
 			// The method must return the value to duplicate
 			Method func = (Method)v;
-			code.addInstr(Instr.op_call,func.getJView(),false,obj.getType());
+			code.addInstr(Instr.op_call,(JMethod)func,false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret().isReference()
 			 && ( !func.type.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
@@ -245,7 +237,7 @@ public final view JContainerAccessExpr of ContainerAccessExprImpl extends JLvalu
 
 
 @nodeview
-public final view JThisExpr of ThisExprImpl extends JLvalueExpr {
+public final view JThisExpr of ThisExpr extends JLvalueExpr {
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
@@ -308,7 +300,7 @@ public final view JThisExpr of ThisExprImpl extends JLvalueExpr {
 }
 
 @nodeview
-public final view JLVarExpr of LVarExprImpl extends JLvalueExpr {
+public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 	public:ro	KString		ident;
 	public:ro	JVar	var;
 
@@ -321,7 +313,7 @@ public final view JLVarExpr of LVarExprImpl extends JLvalueExpr {
 
 	public JField resolveVarVal() {
 		CompaundType prt = Type.getProxyType(var.type);
-		JField var_valf = prt.clazz.getJView().resolveField(nameCellVal);
+		JField var_valf = ((JStruct)prt.clazz).resolveField(nameCellVal);
 		return var_valf;
 	}
 
@@ -469,7 +461,7 @@ public final view JLVarExpr of LVarExprImpl extends JLvalueExpr {
 }
 
 @nodeview
-public final view JSFldExpr of SFldExprImpl extends JLvalueExpr {
+public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 	public:ro JENode		obj;
 	public:ro JField		var;
 	
@@ -512,16 +504,16 @@ public final view JSFldExpr of SFldExprImpl extends JLvalueExpr {
 }
 
 @nodeview
-public final view JOuterThisAccessExpr of OuterThisAccessExprImpl extends JLvalueExpr {
+public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JLvalueExpr {
 	public:ro	Struct			outer;
-	public:ro	NArr<Field>		outer_refs;
+	public:ro	JArr<JField>	outer_refs;
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load only: "+this);
 		code.setLinePos(this);
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++)
-			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.ctype);
+			code.addInstr(op_getfield,outer_refs[i],code.clazz.ctype);
 	}
 
 	public void generateLoadDup(Code code) {
@@ -530,7 +522,7 @@ public final view JOuterThisAccessExpr of OuterThisAccessExprImpl extends JLvalu
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++) {
 			if( i == outer_refs.length-1 ) code.addInstr(op_dup);
-			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.ctype);
+			code.addInstr(op_getfield,outer_refs[i],code.clazz.ctype);
 		}
 	}
 
@@ -539,25 +531,25 @@ public final view JOuterThisAccessExpr of OuterThisAccessExprImpl extends JLvalu
 		code.setLinePos(this);
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length-1; i++) {
-			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.ctype);
+			code.addInstr(op_getfield,outer_refs[i],code.clazz.ctype);
 		}
 	}
 
 	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store only: "+this);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJView(),code.clazz.ctype);
+		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.ctype);
 	}
 
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store & dup: "+this);
 		code.addInstr(op_dup_x);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJView(),code.clazz.ctype);
+		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.ctype);
 	}
 
 }
 
 @nodeview
-public final view JReinterpExpr of ReinterpExprImpl extends JLvalueExpr {
+public final view JReinterpExpr of ReinterpExpr extends JLvalueExpr {
 	public:ro	JENode		expr;
 
 	public void generateLoad(Code code) {

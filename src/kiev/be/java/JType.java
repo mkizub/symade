@@ -203,7 +203,7 @@ public class JBaseType extends JType {
 	
 	
 	public JStruct getJStruct() {
-		return clazz.getJView();
+		return (JStruct)clazz;
 	}
 	
 	public String toClassForNameString() {

@@ -7,7 +7,6 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.types.TypeRef.TypeRefImpl;
 import kiev.vlang.types.TypeRef.TypeRefView;
 
 /**
@@ -19,27 +18,20 @@ import kiev.vlang.types.TypeRef.TypeRefView;
 public final class ASTModifiers extends ASTNode {
 	
 	@virtual typedef This  = ASTModifiers;
-	@virtual typedef NImpl = ASTModifiersImpl;
 	@virtual typedef VView = ASTModifiersView;
 
-	@nodeimpl
-	public static final class ASTModifiersImpl extends NodeImpl {
-		@virtual typedef ImplOf = ASTModifiers;
-		@att public Access 				acc;
-		@att public NArr<Meta>			annotations;
-		     public MetaSpecial[]		specials = MetaSpecial.emptyArray;
-	}
+	@att public Access 				acc;
+	@att public NArr<Meta>			annotations;
+		 public MetaSpecial[]		specials = MetaSpecial.emptyArray;
+
 	@nodeview
-	public static final view ASTModifiersView of ASTModifiersImpl extends NodeView {
-		public				Access 				acc;
+	public static final view ASTModifiersView of ASTModifiers extends NodeView {
+		public		Access 				acc;
 		public:ro	NArr<Meta>			annotations;
-		public				MetaSpecial[]		specials;		
+		public		MetaSpecial[]		specials;		
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-
-	public ASTModifiers() { super(new ASTModifiersImpl()); }
+	public ASTModifiers() {}
 	
 	public MetaSpecial add(MetaSpecial sa)
 		alias operator(5, lfy, +=)

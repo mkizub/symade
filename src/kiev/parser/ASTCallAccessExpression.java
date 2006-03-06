@@ -25,21 +25,17 @@ public class ASTCallAccessExpression extends ENode {
 	}
 	
 	@virtual typedef This  = ASTCallAccessExpression;
-	@virtual typedef NImpl = ASTCallAccessExpressionImpl;
 	@virtual typedef VView = ASTCallAccessExpressionView;
 
-	@nodeimpl
-	public static class ASTCallAccessExpressionImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ASTCallAccessExpression;
-		@att public ENode				obj;
-		@ref public NameRef				func;
-		@att public NArr<TypeRef>		targs;
-		@att public NArr<ENode>			args;
-	}
+	@att public ENode				obj;
+	@ref public NameRef				func;
+	@att public NArr<TypeRef>		targs;
+	@att public NArr<ENode>			args;
+
 	@nodeview
-	public static view ASTCallAccessExpressionView of ASTCallAccessExpressionImpl extends ENodeView {
-		public				ENode			obj;
-		public				NameRef			func;
+	public static view ASTCallAccessExpressionView of ASTCallAccessExpression extends ENodeView {
+		public		ENode			obj;
+		public		NameRef			func;
 		public:ro	NArr<TypeRef>	targs;
 		public:ro	NArr<ENode>		args;
 
@@ -113,11 +109,11 @@ public class ASTCallAccessExpression extends ENode {
 				try {
 					if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
 						if (tps.length == 1 && res_flags == 0)
-							res[si] = info.buildCall(this.getNode(), obj, m, info.mt, args.delToArray());
+							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args.delToArray());
 						else if (res_flags == 0)
-							res[si] = info.buildCall(this.getNode(), new TypeRef(tps[si]), m, info.mt, args.delToArray());
+							res[si] = info.buildCall((ASTNode)this, new TypeRef(tps[si]), m, info.mt, args.delToArray());
 						else
-							res[si] = info.buildCall(this.getNode(), obj.ncopy(), m, info.mt, args.delToArray());
+							res[si] = info.buildCall((ASTNode)this, obj.ncopy(), m, info.mt, args.delToArray());
 					}
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			}
@@ -160,15 +156,9 @@ public class ASTCallAccessExpression extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-
-	public ASTCallAccessExpression() {
-		super(new ASTCallAccessExpressionImpl());
-	}
+	public ASTCallAccessExpression() {}
 	
 	public ASTCallAccessExpression(int pos, ENode obj, KString func, ENode[] args) {
-		this();
 		this.pos = pos;
 		this.obj = obj;
 		this.func = new NameRef(pos, func);

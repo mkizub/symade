@@ -47,7 +47,7 @@ public class Dumper {
 	}
 
 	public Dumper append(ASTNode.NodeView o) {
-		return append(o.getNode());
+		return append((ASTNode)o);
 	}
 	
 	public Dumper append(ASTNode o) {

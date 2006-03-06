@@ -10,8 +10,6 @@ import kiev.vlang.NArr.JArr;
 
 import static kiev.stdlib.Debug.*;
 
-import kiev.vlang.Field.FieldImpl;
-
 /**
  * @author Maxim Kizub
  * @version $Revision: 242 $
@@ -19,19 +17,17 @@ import kiev.vlang.Field.FieldImpl;
  */
 
 @nodeview
-public final view JField of FieldImpl extends JLvalDNode {
+public final view JField of Field extends JLvalDNode {
 
 	public:ro	Access				acc;
 	public:ro	KString				name;
 	public:ro	Type				ftype;
-	public:ro	JENode			init;
-	public:ro	JConstExpr		const_value;
-	public				Attr[]				attrs;
-	public:ro	JArr<JMethod>	invs;
+	public:ro	JENode				init;
+	public:ro	JConstExpr			const_value;
+	public		Attr[]				attrs;
+	public:ro	JArr<JMethod>		invs;
 	
-	public final Field getField() { return (Field)this.getNode(); }
-	
-	@getter public final Type	get$type()	{ return ((FieldImpl)this).ftype.getType(); }
+	@getter public final Type	get$type()	{ return ((Field)this).ftype.getType(); }
 	
 	public final boolean isVirtual();
 	public final boolean isEnumField();

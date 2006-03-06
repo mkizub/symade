@@ -49,7 +49,7 @@ public abstract class Type extends AType {
 		Struct s = getStruct();
 		if (s == null)
 			return null;
-		return s.getJView();
+		return (JStruct)s;
 	}
 	public Struct getStruct() { return null; }
 	public Meta getMeta(KString name) { return null; }

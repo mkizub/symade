@@ -6,7 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Var.VarImpl;
 import kiev.vlang.Var.VarView;
 
 import static kiev.stdlib.Debug.*;
@@ -18,14 +17,14 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RVar of VarImpl extends VarView {
+public static final view RVar of Var extends VarView {
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		Type tp = this.type;
 		if (init instanceof TypeRef)
 			((TypeRef)init).toExpr(tp);
 		if (tp instanceof CTimeType) {
-			init = tp.makeInitExpr(((VarImpl)this)._self,init);
+			init = tp.makeInitExpr((Var)this,init);
 			try {
 				init.resolve(tp.getEnclosedType());
 			} catch(Exception e ) {

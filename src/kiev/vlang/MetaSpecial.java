@@ -4,7 +4,6 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.types.TypeNameRef;
 import kiev.parser.ASTIdentifier;
-import kiev.vlang.ASTNode.NodeImpl;
 
 import static kiev.stdlib.Debug.*;
 
@@ -21,20 +20,12 @@ public abstract class MetaSpecial extends ASTNode implements NodeData {
 	public final MetaAttrSlot attr;
 	
 	@virtual typedef This  = MetaSpecial;
-	@virtual typedef NImpl = MetaSpecialImpl;
 	@virtual typedef VView = MetaSpecialView;
 
-	@nodeimpl
-	public static class MetaSpecialImpl extends NodeImpl {
-		@virtual typedef ImplOf = MetaSpecial;
-	}
 	@nodeview
-	public static view MetaSpecialView of MetaSpecialImpl extends NodeView {}
+	public static view MetaSpecialView of MetaSpecial extends NodeView {}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public MetaSpecial(MetaSpecialImpl impl, MetaAttrSlot attr) {
-		super(impl);
+	public MetaSpecial(MetaAttrSlot attr) {
 		this.attr = attr;
 	}
 	
@@ -42,13 +33,13 @@ public abstract class MetaSpecial extends ASTNode implements NodeData {
 		return attr.id;
 	}
 	
-	public NodeData nodeCopiedTo(NodeImpl node) {
+	public NodeData nodeCopiedTo(ASTNode node) {
 		return this.ncopy();
 	}
-	public void nodeAttached(NodeImpl node) {}
-	public void dataAttached(NodeImpl node) { this.callbackAttached(node, attr); }
-	public void nodeDetached(NodeImpl node) {}
-	public void dataDetached(NodeImpl node) { this.callbackDetached(); }
+	public void nodeAttached(ASTNode node) {}
+	public void dataAttached(ASTNode node) { this.callbackAttached(node, attr); }
+	public void nodeDetached(ASTNode node) {}
+	public void dataDetached(ASTNode node) { this.callbackDetached(); }
 	
 	public void attach(ASTNode node) { node.addNodeData(this); }
 	public void detach(ASTNode node) { node.addNodeData(this); }
@@ -64,36 +55,30 @@ public final class MetaVirtual extends MetaSpecial {
 	public static final MetaAttrSlot MetaVirtualAttr = new MetaAttrSlot(ID, MetaVirtual.class);
 
 	@virtual typedef This  = MetaVirtual;
-	@virtual typedef NImpl = MetaVirtualImpl;
 	@virtual typedef VView = MetaVirtualView;
 
-	@nodeimpl
-	public static final class MetaVirtualImpl extends MetaSpecialImpl {
-		@virtual typedef ImplOf = MetaVirtual;
-		/** Getter/setter methods for this field */
-		@ref public Method		get;
-		@ref public Method		set;
-	}
+	/** Getter/setter methods for this field */
+	@ref public Method		get;
+	@ref public Method		set;
+
 	@nodeview
-	public static view MetaVirtualView of MetaVirtualImpl extends MetaSpecialView {
+	public static view MetaVirtualView of MetaVirtual extends MetaSpecialView {
 		public Method		get;
 		public Method		set;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	public MetaVirtual() { super(MetaVirtualAttr); }
 
-	public MetaVirtual() { super(new MetaVirtualImpl(), MetaVirtualAttr); }
-
-	public void dataAttached(NodeImpl node) {
+	public void dataAttached(ASTNode node) {
 		super.dataAttached(node);
-		if (node instanceof DNode.DNodeImpl) {
-			((DNode)node.getNode()).setVirtual(true);
+		if (node instanceof DNode) {
+			node.setVirtual(true);
 		}
 	}
-	public void dataDetached(NodeImpl node) {
+	public void dataDetached(ASTNode node) {
 		super.dataDetached(node);
-		if (node instanceof DNode.DNodeImpl)
-			((DNode)node.getNode()).setVirtual(false);
+		if (node instanceof DNode)
+			node.setVirtual(false);
 	}
 }
 
@@ -103,28 +88,22 @@ public class MetaPacked extends MetaSpecial {
 	public static final MetaAttrSlot MetaPackedAttr = new MetaAttrSlot(ID, MetaPacked.class);
 
 	@virtual typedef This  = MetaPacked;
-	@virtual typedef NImpl = MetaPackedImpl;
 	@virtual typedef VView = MetaPackedView;
 
-	@nodeimpl
-	public static final class MetaPackedImpl extends MetaSpecialImpl {
-		@virtual typedef ImplOf = MetaPacked;
-		@att public ENode			 size;
-		@att public ENode			 offset;
-		@att public NameRef			 fld;
-		@ref public Field			 packer;
-	}
+	@att public ENode			 size;
+	@att public ENode			 offset;
+	@att public NameRef			 fld;
+	@ref public Field			 packer;
+
 	@nodeview
-	public static view MetaPackedView of MetaPackedImpl extends MetaSpecialView {
+	public static view MetaPackedView of MetaPacked extends MetaSpecialView {
 		public ENode			 size;
 		public ENode			 offset;
 		public NameRef			 fld;
 		public Field			 packer;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public MetaPacked() { super(new MetaPackedImpl(), MetaPackedAttr); }
+	public MetaPacked() { super(MetaPackedAttr); }
 
 	public int getSize() {
 		ENode size = this.size;
@@ -163,22 +142,16 @@ public class MetaPacker extends MetaSpecial {
 	public static final MetaAttrSlot MetaPackerAttr = new MetaAttrSlot(ID, MetaPacker.class);
 
 	@virtual typedef This  = MetaPacker;
-	@virtual typedef NImpl = MetaPackerImpl;
 	@virtual typedef VView = MetaPackerView;
 
-	@nodeimpl
-	public static final class MetaPackerImpl extends MetaSpecialImpl {
-		@virtual typedef ImplOf = MetaPacker;
-		@att public ENode			 size;
-	}
+	@att public ENode			 size;
+
 	@nodeview
-	public static view MetaPackerView of MetaPackerImpl extends MetaSpecialView {
+	public static view MetaPackerView of MetaPacker extends MetaSpecialView {
 		public ENode			 size;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public MetaPacker() { super(new MetaPackerImpl(), MetaPackerAttr); }
+	public MetaPacker() { super(MetaPackerAttr); }
 
 	public int getSize() {
 		ENode size = this.size;
@@ -198,27 +171,21 @@ public class MetaAlias extends MetaSpecial {
 	public static final MetaAttrSlot MetaAliasAttr = new MetaAttrSlot(ID, MetaAlias.class);
 
 	@virtual typedef This  = MetaAlias;
-	@virtual typedef NImpl = MetaAliasImpl;
 	@virtual typedef VView = MetaAliasView;
 
-	@nodeimpl
-	public static final class MetaAliasImpl extends MetaSpecialImpl {
-		@virtual typedef ImplOf = MetaAlias;
-		@att public NArr<ENode>		 aliases;
-	}
+	@att public NArr<ENode>		 aliases;
+
 	@nodeview
-	public static view MetaAliasView of MetaAliasImpl extends MetaSpecialView {
+	public static view MetaAliasView of MetaAlias extends MetaSpecialView {
 		public:ro NArr<ENode>		 aliases;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
 	public MetaAlias() {
-		super(new MetaAliasImpl(), MetaAliasAttr);
+		super(MetaAliasAttr);
 	}
 
 	public MetaAlias(ConstStringExpr name) {
-		super(new MetaAliasImpl(), MetaAliasAttr);
+		super(MetaAliasAttr);
 		this.aliases.append(name);
 	}
 
@@ -233,23 +200,17 @@ public class MetaThrows extends MetaSpecial {
 	public static final MetaAttrSlot MetaThrowsAttr = new MetaAttrSlot(ID, MetaThrows.class);
 
 	@virtual typedef This  = MetaThrows;
-	@virtual typedef NImpl = MetaThrowsImpl;
 	@virtual typedef VView = MetaThrowsView;
 
-	@nodeimpl
-	public static final class MetaThrowsImpl extends MetaSpecialImpl {
-		@virtual typedef ImplOf = MetaThrows;
-		@att public NArr<TypeNameRef>		 exceptions;
-	}
+	@att public NArr<TypeNameRef>		 exceptions;
+
 	@nodeview
-	public static view MetaThrowsView of MetaThrowsImpl extends MetaSpecialView {
+	public static view MetaThrowsView of MetaThrows extends MetaSpecialView {
 		public:ro NArr<TypeNameRef>		 exceptions;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
 	public MetaThrows() {
-		super(new MetaThrowsImpl(), MetaThrowsAttr);
+		super(MetaThrowsAttr);
 	}
 
 	public void add(TypeNameRef thr) {
@@ -267,25 +228,19 @@ public class MetaPizzaCase extends MetaSpecial {
 	public static final MetaAttrSlot MetaPizzaCaseAttr = new MetaAttrSlot(ID, MetaPizzaCase.class);
 
 	@virtual typedef This  = MetaPizzaCase;
-	@virtual typedef NImpl = MetaPizzaCaseImpl;
 	@virtual typedef VView = MetaPizzaCaseView;
 
-	@nodeimpl
-	public static final class MetaPizzaCaseImpl extends MetaSpecialImpl {
-		@virtual typedef ImplOf = MetaPizzaCase;
-		@ref public NArr<Field>		 fields;
-		@att public int				 tag;
-	}
-	@nodeview
-	public static view MetaPizzaCaseView of MetaPizzaCaseImpl extends MetaSpecialView {
-		public:ro NArr<Field>		 fields;
-		public int							 tag;
-	}
+	@ref public NArr<Field>		 fields;
+	@att public int				 tag;
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
+	@nodeview
+	public static view MetaPizzaCaseView of MetaPizzaCase extends MetaSpecialView {
+		public:ro NArr<Field>	fields;
+		public int				tag;
+	}
 
 	public MetaPizzaCase() {
-		super(new MetaPizzaCaseImpl(), MetaPizzaCaseAttr);
+		super(MetaPizzaCaseAttr);
 	}
 
 	public void add(Field f) {
@@ -308,10 +263,10 @@ public abstract class MetaFlag extends MetaSpecial {
 	public abstract void setZ(ASTNode node, boolean val);
 	public abstract boolean getZ(ASTNode node);
 	
-	public MetaFlag(MetaAttrSlot attr) { super(new MetaSpecialImpl(), attr); }
+	public MetaFlag(MetaAttrSlot attr) { super(attr); }
 	public Object copy() { return this; }
 	
-	public NodeData nodeCopiedTo(NodeImpl node) {
+	public NodeData nodeCopiedTo(ASTNode node) {
 		return this; // attach the same instance to the copied node
 	}
 	public final void set(ASTNode node, Object value) {

@@ -28,16 +28,12 @@ public class ASTExpression extends ENode {
 	}
 	
 	@virtual typedef This  = ASTExpression;
-	@virtual typedef NImpl = ASTExpressionImpl;
 	@virtual typedef VView = ASTExpressionView;
 
-	@nodeimpl
-	public static final class ASTExpressionImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ASTExpression;
-		@att public NArr<ENode>			nodes;
-	}
+	@att public NArr<ENode>			nodes;
+
 	@nodeview
-	public static final view ASTExpressionView of ASTExpressionImpl extends ENodeView {
+	public static final view ASTExpressionView of ASTExpression extends ENodeView {
 		public:ro	NArr<ENode>			nodes;
 	
 		public int		getPriority() { return 256; }
@@ -132,10 +128,10 @@ public class ASTExpression extends ENode {
 				trace( Kiev.debugOperators, "trying cast "+op)
 			;	expr.head() instanceof ASTOperator,
 				op ?= PrefixOperator.getOperator(((ASTOperator)expr.head()).image),
-				op.isStandard() || PassInfo.resolveOperatorR(this.getNode(),op)
+				op.isStandard() || PassInfo.resolveOperatorR((ASTNode)this,op)
 			;	expr.head() instanceof ASTIdentifier,
 				op ?= PrefixOperator.getOperator(((ASTIdentifier)expr.head()).name),
-				op.isStandard() || PassInfo.resolveOperatorR(this.getNode(),op),
+				op.isStandard() || PassInfo.resolveOperatorR((ASTNode)this,op),
 				trace( Kiev.debugOperators,"identifier as operator: "+op)
 			},
 			op.priority >= priority,
@@ -155,10 +151,10 @@ public class ASTExpression extends ENode {
 			{
 				expr.tail().head() instanceof ASTOperator,
 				op ?= PostfixOperator.getOperator(((ASTOperator)expr.tail().head()).image),
-				op.isStandard() || PassInfo.resolveOperatorR(this.getNode(),op)
+				op.isStandard() || PassInfo.resolveOperatorR((ASTNode)this,op)
 			;	expr.tail().head() instanceof ASTIdentifier,
 				op ?= PostfixOperator.getOperator(((ASTIdentifier)expr.tail().head()).name),
-				op.isStandard() || PassInfo.resolveOperatorR(this.getNode(),op),
+				op.isStandard() || PassInfo.resolveOperatorR((ASTNode)this,op),
 				trace( Kiev.debugOperators,"identifier as operator: "+op)
 			},
 			op.priority >= priority,
@@ -179,10 +175,10 @@ public class ASTExpression extends ENode {
 			{
 				expr.tail().head() instanceof ASTOperator,
 				op ?= BinaryOperator.getOperator(((ASTOperator)expr.tail().head()).image),
-				op.isStandard() || PassInfo.resolveOperatorR(this.getNode(),op)
+				op.isStandard() || PassInfo.resolveOperatorR((ASTNode)this,op)
 			;	expr.tail().head() instanceof ASTIdentifier,
 				op ?= BinaryOperator.getOperator(((ASTIdentifier)expr.tail().head()).name),
-				op.isStandard() || PassInfo.resolveOperatorR(this.getNode(),op),
+				op.isStandard() || PassInfo.resolveOperatorR((ASTNode)this,op),
 				trace( Kiev.debugOperators,"identifier as operator: "+op)
 			},
 			op.priority >= priority,
@@ -209,10 +205,10 @@ public class ASTExpression extends ENode {
 			{
 				expr.tail().head() instanceof ASTOperator,
 				op ?= AssignOperator.getOperator(((ASTOperator)expr.tail().head()).image),
-				op.isStandard() || PassInfo.resolveOperatorR(this.getNode(),op)
+				op.isStandard() || PassInfo.resolveOperatorR((ASTNode)this,op)
 			;	expr.tail().head() instanceof ASTIdentifier,
 				op ?= AssignOperator.getOperator(((ASTIdentifier)expr.tail().head()).name),
-				op.isStandard() || PassInfo.resolveOperatorR(this.getNode(),op),
+				op.isStandard() || PassInfo.resolveOperatorR((ASTNode)this,op),
 				trace( Kiev.debugOperators,"identifier as operator: "+op)
 			},
 			op.priority >= priority,
@@ -233,10 +229,10 @@ public class ASTExpression extends ENode {
 			{
 				expr.tail().head() instanceof ASTOperator,
 				op ?= MultiOperator.getOperator(((ASTOperator)expr.tail().head()).image),
-				op.isStandard() || PassInfo.resolveOperatorR(this.getNode(),op)
+				op.isStandard() || PassInfo.resolveOperatorR((ASTNode)this,op)
 			;	expr.tail().head() instanceof ASTIdentifier,
 				op ?= MultiOperator.getOperator(((ASTIdentifier)expr.tail().head()).name),
-				op.isStandard() || PassInfo.resolveOperatorR(this.getNode(),op),
+				op.isStandard() || PassInfo.resolveOperatorR((ASTNode)this,op),
 				trace( Kiev.debugOperators,"identifier as operator: "+op)
 			},
 			op.priority >= priority,
@@ -285,11 +281,7 @@ public class ASTExpression extends ENode {
 		}	
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public ASTExpression() {
-		super(new ASTExpressionImpl());
-	}
+	public ASTExpression() {}
 
     public String toString() {
     	StringBuffer sb = new StringBuffer();

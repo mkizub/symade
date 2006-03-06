@@ -25,19 +25,15 @@ public class ASTCallExpression extends ENode {
 	}
 
 	@virtual typedef This  = ASTCallExpression;
-	@virtual typedef NImpl = ASTCallExpressionImpl;
 	@virtual typedef VView = ASTCallExpressionView;
 
-	@nodeimpl
-	public static class ASTCallExpressionImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ASTCallExpression;
-		@ref public NameRef				func;
-		@att public NArr<TypeRef>		targs;
-		@att public NArr<ENode>			args;
-	}
+	@ref public NameRef				func;
+	@att public NArr<TypeRef>		targs;
+	@att public NArr<ENode>			args;
+
 	@nodeview
-	public static view ASTCallExpressionView of ASTCallExpressionImpl extends ENodeView {
-		public				NameRef			func;
+	public static view ASTCallExpressionView of ASTCallExpression extends ENodeView {
+		public		NameRef			func;
 		public:ro	NArr<TypeRef>	targs;
 		public:ro	NArr<ENode>		args;
 
@@ -90,19 +86,19 @@ public class ASTCallExpression extends ENode {
 				CallType mt = new CallType(ata,ta,null);
 				ResInfo info = new ResInfo(this);
 				try {
-					if( !PassInfo.resolveMethodR(this.getNode(),m,info,func.name,mt) ) {
+					if( !PassInfo.resolveMethodR((ASTNode)this,m,info,func.name,mt) ) {
 						// May be a closure
 						DNode@ closure;
 						ResInfo info = new ResInfo(this);
 						try {
-							if( !PassInfo.resolveNameR(this.getNode(),closure,info,func.name) )
+							if( !PassInfo.resolveNameR((ASTNode)this,closure,info,func.name) )
 								throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,null));
 						} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 						try {
 							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof CallType
 							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof CallType
 							) {
-								replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(this.getNode(),null,closure),args.delToArray()));
+								replaceWithNode(new ClosureCallExpr(pos,info.buildAccess((ASTNode)this,null,closure),args.delToArray()));
 								return;
 							}
 						} catch(Exception eee) {
@@ -114,7 +110,7 @@ public class ASTCallExpression extends ENode {
 	
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				ENode e = info.buildCall(this.getNode(),null,m,info.mt,args.toArray());
+				ENode e = info.buildCall((ASTNode)this,null,m,info.mt,args.toArray());
 				if (e instanceof UnresExpr)
 					e = ((UnresExpr)e).toResolvedExpr();
 				this.replaceWithNode(e);
@@ -122,15 +118,9 @@ public class ASTCallExpression extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ASTCallExpression() {
-		super(new ASTCallExpressionImpl());
-	}
+	public ASTCallExpression() {}
 
 	public ASTCallExpression(int pos, KString func, ENode[] args) {
-		this();
 		this.pos = pos;
 		this.func = new NameRef(pos, func);
 		foreach (ENode e; args) {

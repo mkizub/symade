@@ -41,19 +41,14 @@ import syntax kiev.Syntax;
 public abstract class LvalueExpr extends ENode {
 
 	@virtual typedef This  = LvalueExpr;
-	@virtual typedef NImpl = LvalueExprImpl;
 	@virtual typedef VView = LvalueExprView;
 	@virtual typedef JView = JLvalueExpr;
 
-	@nodeimpl
-	public abstract static class LvalueExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = LvalueExpr;
-	}
 	@nodeview
-	public abstract static view LvalueExprView of LvalueExprImpl extends ENodeView {
+	public abstract static view LvalueExprView of LvalueExpr extends ENodeView {
 	}
 
-	public LvalueExpr(LvalueExprImpl impl) { super(impl); }
+	public LvalueExpr() {}
 }
 
 @nodeset
@@ -64,19 +59,15 @@ public final class AccessExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = AccessExpr;
-	@virtual typedef NImpl = AccessExprImpl;
 	@virtual typedef VView = VAccessExpr;
 	@virtual typedef JView = JAccessExpr;
 	@virtual typedef RView = RAccessExpr;
 
-	@nodeimpl
-	public static final class AccessExprImpl extends LvalueExprImpl {		
-		@virtual typedef ImplOf = AccessExpr;
-		@att public ENode			obj;
-		@att public NameRef			ident;
-	}
+	@att public ENode			obj;
+	@att public NameRef			ident;
+
 	@nodeview
-	public static view AccessExprView of AccessExprImpl extends LvalueExprView {
+	public static view AccessExprView of AccessExpr extends LvalueExprView {
 		public ENode	obj;
 		public NameRef	ident;
 
@@ -84,7 +75,7 @@ public final class AccessExpr extends LvalueExpr {
 
 		public final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
 			if( v instanceof Field ) {
-				return info.buildAccess(this.getNode(), o, v);
+				return info.buildAccess((AccessExpr)this, o, v);
 			}
 			else if( v instanceof Struct ) {
 				TypeRef tr = new TypeRef(((Struct)v).ctype);
@@ -97,7 +88,7 @@ public final class AccessExpr extends LvalueExpr {
 	}
 
 	@nodeview
-	public static final view VAccessExpr of AccessExprImpl extends AccessExprView {
+	public static final view VAccessExpr of AccessExpr extends AccessExprView {
 		public void mainResolveOut() {
 			ASTNode[] res;
 			Type[] tps;
@@ -173,32 +164,20 @@ public final class AccessExpr extends LvalueExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public AccessExpr() {
-		super(new AccessExprImpl());
-	}
-
-	public AccessExpr(AccessExprImpl impl) {
-		super(impl);
-	}
+	public AccessExpr() {}
 
 	public AccessExpr(int pos) {
-		this();
 		this.pos = pos;
 	}
 	
 	public AccessExpr(int pos, ENode obj, NameRef ident) {
-		this();
 		this.pos = pos;
 		this.obj = obj;
 		this.ident = ident;
 	}
 	
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public String toString() {
@@ -219,20 +198,16 @@ public final class IFldExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = IFldExpr;
-	@virtual typedef NImpl = IFldExprImpl;
 	@virtual typedef VView = VIFldExpr;
 	@virtual typedef JView = JIFldExpr;
 	@virtual typedef RView = RIFldExpr;
 
-	@nodeimpl
-	public static final class IFldExprImpl extends LvalueExprImpl {		
-		@virtual typedef ImplOf = IFldExpr;
-		@att public ENode			obj;
-		@att public NameRef			ident;
-		@ref public Field			var;
-	}
+	@att public ENode			obj;
+	@att public NameRef			ident;
+	@ref public Field			var;
+
 	@nodeview
-	public static view IFldExprView of IFldExprImpl extends LvalueExprView {
+	public static view IFldExprView of IFldExpr extends LvalueExprView {
 		public ENode		obj;
 		public NameRef		ident;
 		public Field		var;
@@ -253,7 +228,7 @@ public final class IFldExpr extends LvalueExpr {
 			return false;
 		}
 		public Object	getConstValue() {
-			Access.verifyRead(this,var.getVView());
+			Access.verifyRead(this,var);
 			if( var.isFinal() ) {
 				if (var.init != null && var.init.isConstantExpr())
 					return var.init.getConstValue();
@@ -265,19 +240,12 @@ public final class IFldExpr extends LvalueExpr {
 		}
 	}
 	@nodeview
-	public static final view VIFldExpr of IFldExprImpl extends IFldExprView {
+	public static final view VIFldExpr of IFldExpr extends IFldExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public IFldExpr() {
-		super(new IFldExprImpl());
-	}
+	public IFldExpr() {}
 
 	public IFldExpr(int pos, ENode obj, NameRef ident, Field var) {
-		this();
 		this.pos = pos;
 		this.obj = obj;
 		this.ident = ident;
@@ -286,7 +254,6 @@ public final class IFldExpr extends LvalueExpr {
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var) {
-		this();
 		this.pos = pos;
 		this.obj = obj;
 		this.ident = new NameRef(pos,var.name.name);
@@ -295,7 +262,6 @@ public final class IFldExpr extends LvalueExpr {
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var, boolean direct_access) {
-		this();
 		this.pos = pos;
 		this.obj = obj;
 		this.ident = new NameRef(pos,var.name.name);
@@ -331,7 +297,7 @@ public final class IFldExpr extends LvalueExpr {
 	}
 	
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -353,19 +319,15 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = ContainerAccessExpr;
-	@virtual typedef NImpl = ContainerAccessExprImpl;
 	@virtual typedef VView = VContainerAccessExpr;
 	@virtual typedef JView = JContainerAccessExpr;
 	@virtual typedef RView = RContainerAccessExpr;
 
-	@nodeimpl
-	public static final class ContainerAccessExprImpl extends LvalueExprImpl {		
-		@virtual typedef ImplOf = ContainerAccessExpr;
-		@att public ENode		obj;
-		@att public ENode		index;
-	}
+	@att public ENode		obj;
+	@att public ENode		index;
+
 	@nodeview
-	public static view ContainerAccessExprView of ContainerAccessExprImpl extends LvalueExprView {
+	public static view ContainerAccessExprView of ContainerAccessExpr extends LvalueExprView {
 		public ENode		obj;
 		public ENode		index;
 
@@ -393,19 +355,12 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		}
 	}
 	@nodeview
-	public static final view VContainerAccessExpr of ContainerAccessExprImpl extends ContainerAccessExprView {
+	public static final view VContainerAccessExpr of ContainerAccessExpr extends ContainerAccessExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public ContainerAccessExpr() {
-		super(new ContainerAccessExprImpl());
-	}
+	public ContainerAccessExpr() {}
 
 	public ContainerAccessExpr(int pos, ENode obj, ENode index) {
-		this();
 		this.pos = pos;
 		this.obj = obj;
 		this.index = index;
@@ -443,7 +398,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -465,17 +420,12 @@ public final class ThisExpr extends LvalueExpr {
 	static public final FormPar thisPar = new FormPar(0,Constants.nameThis,Type.tpVoid,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
 	
 	@virtual typedef This  = ThisExpr;
-	@virtual typedef NImpl = ThisExprImpl;
 	@virtual typedef VView = VThisExpr;
 	@virtual typedef JView = JThisExpr;
 	@virtual typedef RView = RThisExpr;
 
-	@nodeimpl
-	public static final class ThisExprImpl extends LvalueExprImpl {		
-		@virtual typedef ImplOf = ThisExpr;
-	}
 	@nodeview
-	public static view ThisExprView of ThisExprImpl extends LvalueExprView {
+	public static view ThisExprView of ThisExpr extends LvalueExprView {
 
 		public Type getType() {
 			try {
@@ -493,22 +443,14 @@ public final class ThisExpr extends LvalueExpr {
 		}
 	}
 	@nodeview
-	public static final view VThisExpr of ThisExprImpl extends ThisExprView {
+	public static final view VThisExpr of ThisExpr extends ThisExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public ThisExpr() {
-		super(new ThisExprImpl());
-	}
+	public ThisExpr() {}
 	public ThisExpr(int pos) {
-		this();
 		this.pos = pos;
 	}
 	public ThisExpr(boolean super_flag) {
-		super(new ThisExprImpl());
 		if (super_flag)
 			this.setSuperExpr(true);
 	}
@@ -516,7 +458,7 @@ public final class ThisExpr extends LvalueExpr {
 	public String toString() { return isSuperExpr() ? "super" : "this"; }
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -532,19 +474,15 @@ public final class LVarExpr extends LvalueExpr {
 	static final KString namePEnv = KString.from("$env");
 
 	@virtual typedef This  = LVarExpr;
-	@virtual typedef NImpl = LVarExprImpl;
 	@virtual typedef VView = VLVarExpr;
 	@virtual typedef JView = JLVarExpr;
 	@virtual typedef RView = RLVarExpr;
 
-	@nodeimpl
-	public static final class LVarExprImpl extends LvalueExprImpl {		
-		@virtual typedef ImplOf = LVarExpr;
-		@att public NameRef		ident;
-		@ref public Var			var;
-	}
+	@att public NameRef		ident;
+	@ref public Var			var;
+
 	@nodeview
-	public static abstract view LVarExprView of LVarExprImpl extends LvalueExprView {
+	public static abstract view LVarExprView of LVarExpr extends LvalueExprView {
 		public NameRef	ident;
 		public Var		var;
 
@@ -562,7 +500,7 @@ public final class LVarExpr extends LvalueExpr {
 				return var;
 			Var@ v;
 			ResInfo info = new ResInfo(this);
-			if( !PassInfo.resolveNameR(this.getNode(),v,info,ident.name) )
+			if( !PassInfo.resolveNameR((ASTNode)this,v,info,ident.name) )
 				throw new CompilerException(this,"Unresolved var "+ident);
 			var = v;
 			return var;
@@ -570,7 +508,7 @@ public final class LVarExpr extends LvalueExpr {
 	}
 
 	@nodeview
-	public static final view VLVarExpr of LVarExprImpl extends LVarExprView {
+	public static final view VLVarExpr of LVarExpr extends LVarExprView {
 		public boolean preResolveIn() {
 			getVar(); // calls resolving
 			return false;
@@ -582,26 +520,17 @@ public final class LVarExpr extends LvalueExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public LVarExpr() {
-		super(new LVarExprImpl());
-	}
+	public LVarExpr() {}
 	public LVarExpr(int pos, Var var) {
-		this();
 		this.pos = pos;
 		this.var = var;
 		this.ident = new NameRef(pos, var.name.name);
 	}
 	public LVarExpr(int pos, KString name) {
-		this();
 		this.pos = pos;
 		this.ident = new NameRef(pos, name);
 	}
 	public LVarExpr(KString name) {
-		super(new LVarExprImpl());
 		this.ident = new NameRef(name);
 	}
 
@@ -627,7 +556,7 @@ public final class LVarExpr extends LvalueExpr {
 	}
 	
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -643,20 +572,16 @@ public final class SFldExpr extends LvalueExpr {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = SFldExpr;
-	@virtual typedef NImpl = SFldExprImpl;
 	@virtual typedef VView = VSFldExpr;
 	@virtual typedef JView = JSFldExpr;
 	@virtual typedef RView = RSFldExpr;
 
-	@nodeimpl
-	public static final class SFldExprImpl extends LvalueExprImpl {		
-		@virtual typedef ImplOf = SFldExpr;
-		@att public ENode			obj;
-		@att public NameRef			ident;
-		@ref public Field			var;
-	}
+	@att public ENode			obj;
+	@att public NameRef			ident;
+	@ref public Field			var;
+
 	@nodeview
-	public static view SFldExprView of SFldExprImpl extends LvalueExprView {
+	public static view SFldExprView of SFldExpr extends LvalueExprView {
 		public ENode		obj;
 		public NameRef		ident;
 		public Field		var;
@@ -682,7 +607,7 @@ public final class SFldExpr extends LvalueExpr {
 			return false;
 		}
 		public Object	getConstValue() {
-			Access.verifyRead(this,var.getVView());
+			Access.verifyRead((ASTNode)this,var);
 			if( var.isFinal() ) {
 				if (var.init != null && var.init.isConstantExpr())
 					return var.init.getConstValue();
@@ -694,19 +619,12 @@ public final class SFldExpr extends LvalueExpr {
 		}
 	}
 	@nodeview
-	public static final view VSFldExpr of SFldExprImpl extends SFldExprView {
+	public static final view VSFldExpr of SFldExpr extends SFldExprView {
 	}
-	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
-	public SFldExpr() {
-		super(new SFldExprImpl());
-	}
+	public SFldExpr() {}
 
 	public SFldExpr(int pos, Field var) {
-		this();
 		this.pos = pos;
 		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
 		this.ident = new NameRef(pos,var.name.name);
@@ -714,7 +632,6 @@ public final class SFldExpr extends LvalueExpr {
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
-		this();
 		this.pos = pos;
 		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
 		this.ident = new NameRef(pos,var.name.name);
@@ -735,7 +652,7 @@ public final class SFldExpr extends LvalueExpr {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -752,21 +669,17 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = OuterThisAccessExpr;
-	@virtual typedef NImpl = OuterThisAccessExprImpl;
 	@virtual typedef VView = VOuterThisAccessExpr;
 	@virtual typedef JView = JOuterThisAccessExpr;
 	@virtual typedef RView = ROuterThisAccessExpr;
 
-	@nodeimpl
-	public static final class OuterThisAccessExprImpl extends LvalueExprImpl {		
-		@virtual typedef ImplOf = OuterThisAccessExpr;
-		@att public ENode			obj;
-		@att public NameRef			ident;
-		@ref public Struct			outer;
-		@ref public NArr<Field>		outer_refs;
-	}
+	@att public ENode			obj;
+	@att public NameRef			ident;
+	@ref public Struct			outer;
+	@ref public NArr<Field>		outer_refs;
+
 	@nodeview
-	public static view OuterThisAccessExprView of OuterThisAccessExprImpl extends LvalueExprView {
+	public static view OuterThisAccessExprView of OuterThisAccessExpr extends LvalueExprView {
 		public		ENode			obj;
 		public		NameRef			ident;
 		public		Struct			outer;
@@ -789,19 +702,12 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 		}
 	}
 	@nodeview
-	public static final view VOuterThisAccessExpr of OuterThisAccessExprImpl extends OuterThisAccessExprView {
+	public static final view VOuterThisAccessExpr of OuterThisAccessExpr extends OuterThisAccessExprView {
 	}
-	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
-	public OuterThisAccessExpr() {
-		super(new OuterThisAccessExprImpl());
-	}
+	public OuterThisAccessExpr() {}
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
-		this();
 		this.pos = pos;
 		this.obj = new TypeRef(pos,outer.ctype);
 		this.ident = new NameRef(pos,nameThis);
@@ -822,7 +728,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
@@ -836,19 +742,15 @@ public final class ReinterpExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = ReinterpExpr;
-	@virtual typedef NImpl = ReinterpExprImpl;
 	@virtual typedef VView = VReinterpExpr;
 	@virtual typedef JView = JReinterpExpr;
 	@virtual typedef RView = RReinterpExpr;
 
-	@nodeimpl
-	public static final class ReinterpExprImpl extends LvalueExprImpl {		
-		@virtual typedef ImplOf = ReinterpExpr;
-		@att public TypeRef		type;
-		@att public ENode		expr;
-	}
+	@att public TypeRef		type;
+	@att public ENode		expr;
+
 	@nodeview
-	public static view ReinterpExprView of ReinterpExprImpl extends LvalueExprView {
+	public static view ReinterpExprView of ReinterpExpr extends LvalueExprView {
 		public TypeRef		type;
 		public ENode		expr;
 
@@ -857,31 +759,22 @@ public final class ReinterpExpr extends LvalueExpr {
 		}
 	}
 	@nodeview
-	public static final view VReinterpExpr of ReinterpExprImpl extends ReinterpExprView {
+	public static final view VReinterpExpr of ReinterpExpr extends ReinterpExprView {
 	}
-	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
-	public ReinterpExpr() {
-		super(new ReinterpExprImpl());
-	}
+	public ReinterpExpr() {}
 
 	public ReinterpExpr(Type type) {
-		this();
 		this.type = new TypeRef(type);
 	}
 
 	public ReinterpExpr(int pos, Type type, ENode expr) {
-		this();
 		this.pos = pos;
 		this.type = new TypeRef(type);
 		this.expr = expr;
 	}
 
 	public ReinterpExpr(int pos, TypeRef type, ENode expr) {
-		this();
 		this.pos = pos;
 		this.type = type;
 		this.expr = expr;
@@ -890,7 +783,7 @@ public final class ReinterpExpr extends LvalueExpr {
 	public String toString() { return "(($reinterp "+type+")"+expr+")"; }
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

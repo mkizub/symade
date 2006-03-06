@@ -22,20 +22,16 @@ public class ASTNewInitializedArrayExpression extends ENode {
 	}
 	
 	@virtual typedef This  = ASTNewInitializedArrayExpression;
-	@virtual typedef NImpl = ASTNewInitializedArrayExpressionImpl;
 	@virtual typedef VView = ASTNewInitializedArrayExpressionView;
 
-	@nodeimpl
-	public static class ASTNewInitializedArrayExpressionImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ASTNewInitializedArrayExpression;
-		@att public int					dim;
-		@att public TypeRef				type;
-		@att public NArr<ENode>			args;
-	}
+	@att public int					dim;
+	@att public TypeRef				type;
+	@att public NArr<ENode>			args;
+
 	@nodeview
-	public static view ASTNewInitializedArrayExpressionView of ASTNewInitializedArrayExpressionImpl extends ENodeView {
-		public				int				dim;
-		public				TypeRef			type;
+	public static view ASTNewInitializedArrayExpressionView of ASTNewInitializedArrayExpression extends ENodeView {
+		public		int				dim;
+		public		TypeRef			type;
 		public:ro	NArr<ENode>		args;
 
 		public int		getPriority() { return Constants.opAccessPriority; }
@@ -51,12 +47,7 @@ public class ASTNewInitializedArrayExpression extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ASTNewInitializedArrayExpression() {
-		super(new ASTNewInitializedArrayExpressionImpl());
-	}
+	public ASTNewInitializedArrayExpression() {}
 
 	public void resolve(Type reqType) {
 		Type tp;

@@ -6,9 +6,7 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.CaseLabel.CaseLabelImpl;
 import kiev.vlang.CaseLabel.CaseLabelView;
-import kiev.vlang.SwitchStat.SwitchStatImpl;
 import kiev.vlang.SwitchStat.SwitchStatView;
 
 import static kiev.stdlib.Debug.*;
@@ -20,7 +18,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RCaseLabel of CaseLabelImpl extends CaseLabelView {
+public static final view RCaseLabel of CaseLabel extends CaseLabelView {
 	
 	public void resolve(Type reqType) {
 		boolean pizza_case = false;
@@ -67,7 +65,7 @@ public static final view RCaseLabel of CaseLabelImpl extends CaseLabelView {
 							throw new CompilerException(this,"Type case in non-type switch");
 						if( val.getType() ≈ Type.tpObject ) {
 							val = null;
-							sw.defCase = ((CaseLabelImpl)this)._self;
+							sw.defCase = (CaseLabel)this;
 						} else {
 							val = new ConstIntExpr(0);
 						}
@@ -89,7 +87,7 @@ public static final view RCaseLabel of CaseLabelImpl extends CaseLabelView {
 						throw new CompilerException(this,"Wrong case in normal switch");
 				}
 			} else {
-				sw.defCase = ((CaseLabelImpl)this)._self;
+				sw.defCase = (CaseLabel)this;
 				if( sw.mode == SwitchStat.TYPE_SWITCH )
 					this.type = Type.tpObject;
 			}
@@ -107,7 +105,7 @@ public static final view RCaseLabel of CaseLabelImpl extends CaseLabelView {
 }
 
 @nodeview
-public static final view RSwitchStat of SwitchStatImpl extends SwitchStatView {
+public static final view RSwitchStat of SwitchStat extends SwitchStatView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;

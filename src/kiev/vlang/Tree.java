@@ -86,11 +86,11 @@ public class MetaAttrSlot extends AttrSlot {
 @unerasable
 public final class NArr<N extends ASTNode> {
 
-    private final ASTNode.NodeImpl 	$parent_impl;
-	private final AttrSlot				$pslot;
-	private N[]							$nodes;
+    private final ASTNode	 	$parent_impl;
+	private final AttrSlot		$pslot;
+	private N[]					$nodes;
 	
-	public NArr(ASTNode.NodeImpl parent_impl, AttrSlot pslot) {
+	public NArr(ASTNode parent_impl, AttrSlot pslot) {
 		this.$parent_impl = parent_impl;
 		this.$pslot = pslot;
 		this.$nodes = new N[0];
@@ -99,7 +99,7 @@ public final class NArr<N extends ASTNode> {
 	}
 	
 	public ASTNode getParent() {
-		return $parent_impl._self;
+		return $parent_impl;
 	}
 	
 	public AttrSlot getPSlot() {
@@ -134,12 +134,12 @@ public final class NArr<N extends ASTNode> {
 		$nodes[idx] = node;
 		if (is_attr) {
 			if (idx > 0) {
-				$nodes[idx-1].$v_impl.pnext = node;
-				node.$v_impl.pprev = $nodes[idx-1];
+				$nodes[idx-1].pnext = node;
+				node.pprev = $nodes[idx-1];
 			}
 			if (idx+1 < size()) {
-				$nodes[idx+1].$v_impl.pprev = node;
-				node.$v_impl.pnext = $nodes[idx+1];
+				$nodes[idx+1].pprev = node;
+				node.pnext = $nodes[idx+1];
 			}
 			node.callbackAttached($parent_impl, $pslot);
 		}
@@ -164,8 +164,8 @@ public final class NArr<N extends ASTNode> {
 		$nodes[sz] = node;
 		if (is_attr) {
 			if (sz > 0) {
-				$nodes[sz-1].$v_impl.pnext = node;
-				node.$v_impl.pprev = $nodes[sz-1];
+				$nodes[sz-1].pnext = node;
+				node.pprev = $nodes[sz-1];
 			}
 			node.callbackAttached($parent_impl, $pslot);
 		}
@@ -213,12 +213,12 @@ public final class NArr<N extends ASTNode> {
 		$nodes = tmp;
 		if (is_attr) {
 			if (idx > 0) {
-				$nodes[idx-1].$v_impl.pnext = node;
-				node.$v_impl.pprev = $nodes[idx-1];
+				$nodes[idx-1].pnext = node;
+				node.pprev = $nodes[idx-1];
 			}
 			if (idx+1 < size()) {
-				$nodes[idx+1].$v_impl.pprev = node;
-				node.$v_impl.pnext = $nodes[idx+1];
+				$nodes[idx+1].pprev = node;
+				node.pnext = $nodes[idx+1];
 			}
 			node.callbackAttached($parent_impl, $pslot);
 		}
@@ -242,16 +242,16 @@ public final class NArr<N extends ASTNode> {
 		ASTNode old = $nodes[idx];
 		final boolean is_attr = ($pslot != null && $pslot.is_attr);
 		if (is_attr) {
-			ASTNode old_pprev = old.$v_impl.pprev;
-			ASTNode old_pnext = old.$v_impl.pnext;
+			ASTNode old_pprev = old.pprev;
+			ASTNode old_pnext = old.pnext;
 			old.callbackDetached();
 			if (old_pprev != null) {
 				assert (idx > 0 && $nodes[idx-1] == old_pprev);
-				old_pprev.$v_impl.pnext = old_pnext;
+				old_pprev.pnext = old_pnext;
 			}
 			if (old_pnext != null) {
 				assert (idx+1 < size() && $nodes[idx+1] == old_pnext);
-				old_pnext.$v_impl.pprev = old_pprev;
+				old_pnext.pprev = old_pprev;
 			}
 		}
 		int sz = $nodes.length-1;
@@ -327,27 +327,11 @@ public final class NArr<N extends ASTNode> {
 		for (int i=0; i < sz; i++) {
 			N node = arr[i];
 			node.callbackDetached();
-			node.$v_impl.pnext = null;
-			node.$v_impl.pprev = null;
+			node.pnext = null;
+			node.pprev = null;
 		}
 		return arr;
 	}
-
-	public ASTNode.NodeView[] toViewArray(Class cls) {
-		int sz = $nodes.length;
-		ASTNode.NodeView[] arr = (ASTNode.NodeView[])java.lang.reflect.Array.newInstance(cls, sz);
-		for (int i=0; i < sz; i++)
-			arr[i] = $nodes[i].getVView();
-		return arr;
-	}
-
-//	public JNode[] toJViewArray(Class cls) {
-//		int sz = $nodes.length;
-//		JNode[] arr = (JNode[])java.lang.reflect.Array.newInstance(cls, sz);
-//		for (int i=0; i < sz; i++)
-//			arr[i] = $nodes[i].getJView();
-//		return arr;
-//	}
 
 	@unerasable
 	public <J extends JNode> JArr<J> toJArr() alias operator(210,fy,$cast) {
@@ -387,7 +371,7 @@ public final class NArr<N extends ASTNode> {
 		public NArr<N> getNArr() { return NArr.this; }
 		
 		public JNode getParent() {
-			return (J)NArr.this.$parent_impl._self;
+			return (J)NArr.this.$parent_impl;
 		}
 		
 		public AttrSlot getPSlot() {

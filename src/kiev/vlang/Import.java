@@ -28,40 +28,33 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 	}
 
 	@virtual typedef This  = Import;
-	@virtual typedef NImpl = ImportImpl;
 	@virtual typedef VView = ImportView;
 
-	@nodeimpl
-	static final class ImportImpl extends DNodeImpl {
-		@virtual typedef ImplOf = Import;
-		@att NameRef				name;
-		@att ImportMode				mode = ImportMode.IMPORT_CLASS;
-		@att boolean				star;
-		@att NArr<TypeRef>			args;
-		
-		@ref boolean				of_method;
-		@ref DNode					resolved;
-	}
+	@att NameRef				name;
+	@att ImportMode				mode = ImportMode.IMPORT_CLASS;
+	@att boolean				star;
+	@att NArr<TypeRef>			args;
+	
+	@ref boolean				of_method;
+	@ref DNode					resolved;
+
 	@nodeview
-	public static final view ImportView of ImportImpl extends DNodeView {
-		public				NameRef				name;
-		public				ImportMode			mode;
-		public				boolean				star;
+	public static final view ImportView of Import extends DNodeView {
+		public		NameRef				name;
+		public		ImportMode			mode;
+		public		boolean				star;
 		public:ro	NArr<TypeRef>		args;
-		public				boolean				of_method;
-		public				DNode				resolved;
+		public		boolean				of_method;
+		public		DNode				resolved;
 		
 		public boolean mainResolveIn() { return false; }
 
 		public boolean preGenerate()	{ return false; }
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public Import() { super(new ImportImpl()); }
+	public Import() {}
 
 	public Import(DNode node, ImportMode mode, boolean star) {
-		super(new ImportImpl());
 		this.resolved = node;
 		this.mode = mode;
 		this.star = star;
@@ -181,18 +174,14 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeOpDef;
-	@virtual typedef NImpl = TypeOpDefImpl;
 	@virtual typedef VView = TypeOpDefView;
 
-	@nodeimpl
-	static final class TypeOpDefImpl extends TypeDeclImpl {
-		@virtual typedef ImplOf = TypeOpDef;
-		@att ASTOperator	op;
-		@att TypeRef		type;
-		@att TypeDef		arg;
-	}
+	@att ASTOperator	op;
+	@att TypeRef		type;
+	@att TypeDef		arg;
+
 	@nodeview
-	public static final view TypeOpDefView of TypeOpDefImpl extends TypeDeclView {
+	public static final view TypeOpDefView of TypeOpDef extends TypeDeclView {
 		public	ASTOperator		op;
 		public	TypeRef			type;
 		public	TypeDef			arg;
@@ -204,11 +193,7 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		public boolean preGenerate()	{ return false; }
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public TypeOpDef() {
-		super(new TypeOpDefImpl());
-	}
+	public TypeOpDef() {}
 	
 	public boolean checkResolved() {
 		return type.getType().checkResolved();

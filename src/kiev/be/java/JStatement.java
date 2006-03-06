@@ -9,28 +9,15 @@ import kiev.transf.*;
 import kiev.parser.*;
 
 import kiev.vlang.NArr.JArr;
+import kiev.vlang.InlineMethodStat.ParamRedir;
 
 import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.InlineMethodStat.InlineMethodStatImpl;
-import kiev.vlang.InlineMethodStat.ParamRedir;
-import kiev.vlang.Block.BlockImpl;
-import kiev.vlang.ExprStat.ExprStatImpl;
-import kiev.vlang.ReturnStat.ReturnStatImpl;
-import kiev.vlang.ThrowStat.ThrowStatImpl;
-import kiev.vlang.IfElseStat.IfElseStatImpl;
-import kiev.vlang.CondStat.CondStatImpl;
-import kiev.vlang.LabeledStat.LabeledStatImpl;
-import kiev.vlang.BreakStat.BreakStatImpl;
-import kiev.vlang.ContinueStat.ContinueStatImpl;
-import kiev.vlang.GotoStat.GotoStatImpl;
-import kiev.vlang.GotoCaseStat.GotoCaseStatImpl;
-
 @nodeview
-public final view JInlineMethodStat of InlineMethodStatImpl extends JENode {
-	public:ro	JMethod		method;
+public final view JInlineMethodStat of InlineMethodStat extends JENode {
+	public:ro	JMethod			method;
 	public:ro	ParamRedir[]	params_redir;
 
 	public void generate(Code code, Type reqType) {
@@ -39,7 +26,7 @@ public final view JInlineMethodStat of InlineMethodStatImpl extends JENode {
 		if( Kiev.verify )
 			generateArgumentCheck(code);
 		foreach (ParamRedir redir; params_redir)
-			redir.old_var.getJView().bcpos = redir.new_var.getJView().bcpos;
+			((JVar)redir.old_var).bcpos = ((JVar)redir.new_var).bcpos;
 		method.body.generate(code,reqType);
 	}
 
@@ -47,16 +34,16 @@ public final view JInlineMethodStat of InlineMethodStatImpl extends JENode {
 		for(int i=0; i < params_redir.length; i++) {
 			ParamRedir redir = params_redir[i];
 			if( !redir.new_var.type.equals(method.params[i].type) ) {
-				code.addInstr(Instr.op_load,redir.new_var.getJView());
+				code.addInstr(Instr.op_load,(JVar)redir.new_var);
 				code.addInstr(Instr.op_checkcast,method.params[i].type);
-				code.addInstr(Instr.op_store,redir.new_var.getJView());
+				code.addInstr(Instr.op_store,(JVar)redir.new_var);
 			}
 		}
 	}
 }
 
 @nodeview
-public final final view JExprStat of ExprStatImpl extends JENode {
+public final final view JExprStat of ExprStat extends JENode {
 	public:ro	JENode		expr;
 
 	public void generate(Code code, Type reqType) {
@@ -71,7 +58,7 @@ public final final view JExprStat of ExprStatImpl extends JENode {
 }
 
 @nodeview
-public final view JReturnStat of ReturnStatImpl extends JENode {
+public final view JReturnStat of ReturnStat extends JENode {
 	public:ro	JENode		expr;
 
 	public void generate(Code code, Type reqType) {
@@ -99,7 +86,7 @@ public final view JReturnStat of ReturnStatImpl extends JENode {
 			else if (node instanceof JTryStat) {
 				if( node.finally_catcher != null ) {
 					if( tmp_var==null && code.method.type.ret() ≢ Type.tpVoid ) {
-						tmp_var = new Var(0,KString.Empty,code.method.type.ret(),0).getJView();
+						tmp_var = (JVar)new Var(0,KString.Empty,code.method.type.ret(),0);
 						code.addVar(tmp_var);
 						code.addInstr(Instr.op_store,tmp_var);
 					}
@@ -108,7 +95,7 @@ public final view JReturnStat of ReturnStatImpl extends JENode {
 			}
 			else if (node instanceof JSynchronizedStat) {
 				if( tmp_var==null && code.method.type.ret() ≢ Type.tpVoid ) {
-					tmp_var = new Var(0,KString.Empty,code.method.type.ret(),0).getJView();
+					tmp_var = (JVar)new Var(0,KString.Empty,code.method.type.ret(),0);
 					code.addVar(tmp_var);
 					code.addInstr(Instr.op_store,tmp_var);
 				}
@@ -130,7 +117,7 @@ public final view JReturnStat of ReturnStatImpl extends JENode {
 }
 
 @nodeview
-public final view JThrowStat of ThrowStatImpl extends JENode {
+public final view JThrowStat of ThrowStat extends JENode {
 	public:ro	JENode		expr;
 
 	public void generate(Code code, Type reqType) {
@@ -146,7 +133,7 @@ public final view JThrowStat of ThrowStatImpl extends JENode {
 }
 
 @nodeview
-public final view JIfElseStat of IfElseStatImpl extends JENode {
+public final view JIfElseStat of IfElseStat extends JENode {
 	public:ro	JENode		cond;
 	public:ro	JENode		thenSt;
 	public:ro	JENode		elseSt;
@@ -193,7 +180,7 @@ public final view JIfElseStat of IfElseStatImpl extends JENode {
 }
 
 @nodeview
-public final view JCondStat of CondStatImpl extends JENode {
+public final view JCondStat of CondStat extends JENode {
 	public:ro	JENode		cond;
 	public:ro	JENode		message;
 
@@ -217,7 +204,7 @@ public final view JCondStat of CondStatImpl extends JENode {
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString);
 		else
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);
-		return func.getJView();
+		return (JMethod)func;
 	}
 	
 	public void generate(Code code, Type reqType) {
@@ -247,7 +234,7 @@ public final view JCondStat of CondStatImpl extends JENode {
 }
 
 @nodeview
-public final view JLabeledStat of LabeledStatImpl extends JENode {
+public final view JLabeledStat of LabeledStat extends JENode {
 	public:ro	KString			ident;
 	public:ro	JLabel		lbl;
 	public:ro	JENode		stat;
@@ -269,8 +256,8 @@ public final view JLabeledStat of LabeledStatImpl extends JENode {
 }
 
 @nodeview
-public final view JBreakStat of BreakStatImpl extends JENode {
-	public:ro	KString			ident;
+public final view JBreakStat of BreakStat extends JENode {
+	public:ro	KString		ident;
 	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
@@ -284,7 +271,7 @@ public final view JBreakStat of BreakStatImpl extends JENode {
 					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				}
 				else {
-					code.addInstr(Instr.op_load,((Var)lb[i]).getJView());
+					code.addInstr(Instr.op_load,(JVar)(Var)lb[i]);
 					code.addInstr(Instr.op_monitorexit);
 				}
 			if( isAutoReturnable() )
@@ -351,7 +338,7 @@ public final view JBreakStat of BreakStatImpl extends JENode {
 }
 
 @nodeview
-public final view JContinueStat of ContinueStatImpl extends JENode {
+public final view JContinueStat of ContinueStat extends JENode {
 	public:ro	KString			ident;
 	public:ro	JLabel		dest;
 
@@ -365,7 +352,7 @@ public final view JContinueStat of ContinueStatImpl extends JENode {
 				if( lb[i] instanceof CodeLabel )
 					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				else {
-					code.addInstr(Instr.op_load,((Var)lb[i]).getJView());
+					code.addInstr(Instr.op_load,(JVar)(Var)lb[i]);
 					code.addInstr(Instr.op_monitorexit);
 				}
 			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
@@ -418,8 +405,8 @@ public final view JContinueStat of ContinueStatImpl extends JENode {
 }
 
 @nodeview
-public final view JGotoStat of GotoStatImpl extends JENode {
-	public:ro	KString			ident;
+public final view JGotoStat of GotoStat extends JENode {
+	public:ro	KString		ident;
 	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
@@ -440,7 +427,7 @@ public final view JGotoStat of GotoStatImpl extends JENode {
 				if( lb[i] instanceof CodeLabel )
 					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				else {
-					code.addInstr(Instr.op_load,(JVar)lb[i]);
+					code.addInstr(Instr.op_load,(JVar)(Var)lb[i]);
 					code.addInstr(Instr.op_monitorexit);
 				}
 			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
@@ -500,7 +487,7 @@ public final view JGotoStat of GotoStatImpl extends JENode {
 }
 
 @nodeview
-public final view JGotoCaseStat of GotoCaseStatImpl extends JENode {
+public final view JGotoCaseStat of GotoCaseStat extends JENode {
 	public:ro	JENode			expr;
 	public:ro	JSwitchStat		sw;
 
@@ -517,7 +504,7 @@ public final view JGotoCaseStat of GotoCaseStatImpl extends JENode {
 
 			JVar tmp_var = null;
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
-				if (node.getNode() == sw.getNode())
+				if ((ASTNode)node == (ASTNode)sw)
 					break;
 				if (node instanceof JFinallyInfo) {
 					node = node.jparent; // skip calling jsr if we are in it
@@ -526,7 +513,7 @@ public final view JGotoCaseStat of GotoCaseStatImpl extends JENode {
 				if (node instanceof JTryStat) {
 					if( node.finally_catcher != null ) {
 						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr() ) {
-							tmp_var = new Var(0,KString.Empty,expr.getType(),0).getJView();
+							tmp_var = (JVar)new Var(0,KString.Empty,expr.getType(),0);
 							code.addVar(tmp_var);
 							code.addInstr(Instr.op_store,tmp_var);
 						}

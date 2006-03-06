@@ -10,20 +10,13 @@ import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.BoolExpr.BoolExprImpl;
-import kiev.vlang.BinaryBooleanOrExpr.BinaryBooleanOrExprImpl;
-import kiev.vlang.BinaryBooleanAndExpr.BinaryBooleanAndExprImpl;
-import kiev.vlang.BinaryBoolExpr.BinaryBoolExprImpl;
-import kiev.vlang.InstanceofExpr.InstanceofExprImpl;
-import kiev.vlang.BooleanNotExpr.BooleanNotExprImpl;
-
 interface IBoolExpr {
 	public abstract void generate_iftrue(Code code, CodeLabel label);
 	public abstract void generate_iffalse(Code code, CodeLabel label);
 }
 
 @nodeview
-public abstract view JBoolExpr of BoolExprImpl extends JENode implements IBoolExpr {
+public abstract view JBoolExpr of BoolExpr extends JENode implements IBoolExpr {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr: "+this);
@@ -115,7 +108,7 @@ public abstract view JBoolExpr of BoolExprImpl extends JENode implements IBoolEx
 
 
 @nodeview
-public final view JBinaryBooleanOrExpr of BinaryBooleanOrExprImpl extends JBoolExpr {
+public final view JBinaryBooleanOrExpr of BinaryBooleanOrExpr extends JBoolExpr {
 	public:ro JENode		expr1;
 	public:ro JENode		expr2;
 
@@ -137,7 +130,7 @@ public final view JBinaryBooleanOrExpr of BinaryBooleanOrExprImpl extends JBoolE
 }
 
 @nodeview
-public final view JBinaryBooleanAndExpr of BinaryBooleanAndExprImpl extends JBoolExpr {
+public final view JBinaryBooleanAndExpr of BinaryBooleanAndExpr extends JBoolExpr {
 	public:ro JENode		expr1;
 	public:ro JENode		expr2;
 
@@ -159,7 +152,7 @@ public final view JBinaryBooleanAndExpr of BinaryBooleanAndExprImpl extends JBoo
 }
 
 @nodeview
-public final view JBinaryBoolExpr of BinaryBoolExprImpl extends JBoolExpr {
+public final view JBinaryBoolExpr of BinaryBoolExpr extends JBoolExpr {
 	public:ro BinaryOperator		op;
 	public:ro JENode			expr1;
 	public:ro JENode			expr2;
@@ -268,7 +261,7 @@ public final view JBinaryBoolExpr of BinaryBoolExprImpl extends JBoolExpr {
 }
 
 @nodeview
-public final view JInstanceofExpr of InstanceofExprImpl extends JBoolExpr {
+public final view JInstanceofExpr of InstanceofExpr extends JBoolExpr {
 	public:ro JENode		expr;
 	public:ro Type			type;
 
@@ -290,7 +283,7 @@ public final view JInstanceofExpr of InstanceofExprImpl extends JBoolExpr {
 }
 
 @nodeview
-public final view JBooleanNotExpr of BooleanNotExprImpl extends JBoolExpr {
+public final view JBooleanNotExpr of BooleanNotExpr extends JBoolExpr {
 	public:ro JENode		expr;
 	
 	public void generate_iftrue(Code code, CodeLabel label) {

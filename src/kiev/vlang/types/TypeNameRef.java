@@ -7,7 +7,6 @@ import kiev.vlang.*;
 import syntax kiev.Syntax;
 import static kiev.stdlib.Debug.*;
 
-import kiev.vlang.types.TypeRef.TypeRefImpl;
 import kiev.vlang.types.TypeRef.TypeRefView;
 
 /**
@@ -21,17 +20,13 @@ public class TypeNameRef extends TypeRef {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeNameRef;
-	@virtual typedef NImpl = TypeNameRefImpl;
 	@virtual typedef VView = TypeNameRefView;
 
-	@nodeimpl
-	public static final class TypeNameRefImpl extends TypeRefImpl {
-		@virtual typedef ImplOf = TypeNameRef;
-		@att public TypeRef					outer;
-		@att public KString					name;
-	}
+	@att public TypeRef					outer;
+	@att public KString					name;
+
 	@nodeview
-	public static final view TypeNameRefView of TypeNameRefImpl extends TypeRefView {
+	public static final view TypeNameRefView of TypeNameRef extends TypeRefView {
 		public TypeRef				outer;
 		public KString				name;
 
@@ -49,7 +44,7 @@ public class TypeNameRef extends TypeRef {
 				tp = td.getType().bind(outer.bindings());
 			} else {
 				TypeDecl@ td;
-				if( !PassInfo.resolveQualifiedNameR(((TypeNameRefImpl)this)._self,td,new ResInfo(this,ResInfo.noForwards),name) )
+				if( !PassInfo.resolveQualifiedNameR(((TypeNameRef)this),td,new ResInfo(this,ResInfo.noForwards),name) )
 					throw new CompilerException(this,"Unresolved type "+name);
 				td.checkResolved();
 				tp = td.getType();
@@ -59,32 +54,24 @@ public class TypeNameRef extends TypeRef {
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public TypeNameRef() {
-		super(new TypeNameRefImpl());
-	}
+	public TypeNameRef() {}
 
 	public TypeNameRef(KString nm) {
-		super(new TypeNameRefImpl());
 		name = nm;
 	}
 
 	public TypeNameRef(NameRef nm) {
-		this();
 		this.pos = pos;
 		this.name = nm.name;
 	}
 
 	public TypeNameRef(NameRef nm, Type tp) {
-		this();
 		this.pos = pos;
 		this.name = nm.name;
 		this.lnk = tp;
 	}
 
 	public TypeNameRef(TypeRef outer, NameRef nm) {
-		this();
 		this.pos = pos;
 		this.outer = outer;
 		this.name = nm.name;

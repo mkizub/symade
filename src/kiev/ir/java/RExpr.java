@@ -6,31 +6,18 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Shadow.ShadowImpl;
 import kiev.vlang.Shadow.ShadowView;
-import kiev.vlang.ArrayLengthExpr.ArrayLengthExprImpl;
 import kiev.vlang.ArrayLengthExpr.ArrayLengthExprView;
-import kiev.vlang.TypeClassExpr.TypeClassExprImpl;
 import kiev.vlang.TypeClassExpr.TypeClassExprView;
-import kiev.vlang.TypeInfoExpr.TypeInfoExprImpl;
 import kiev.vlang.TypeInfoExpr.TypeInfoExprView;
-import kiev.vlang.AssignExpr.AssignExprImpl;
 import kiev.vlang.AssignExpr.AssignExprView;
-import kiev.vlang.BinaryExpr.BinaryExprImpl;
 import kiev.vlang.BinaryExpr.BinaryExprView;
-import kiev.vlang.StringConcatExpr.StringConcatExprImpl;
 import kiev.vlang.StringConcatExpr.StringConcatExprView;
-import kiev.vlang.CommaExpr.CommaExprImpl;
 import kiev.vlang.CommaExpr.CommaExprView;
-import kiev.vlang.Block.BlockImpl;
 import kiev.vlang.Block.BlockView;
-import kiev.vlang.UnaryExpr.UnaryExprImpl;
 import kiev.vlang.UnaryExpr.UnaryExprView;
-import kiev.vlang.IncrementExpr.IncrementExprImpl;
 import kiev.vlang.IncrementExpr.IncrementExprView;
-import kiev.vlang.ConditionalExpr.ConditionalExprImpl;
 import kiev.vlang.ConditionalExpr.ConditionalExprView;
-import kiev.vlang.CastExpr.CastExprImpl;
 import kiev.vlang.CastExpr.CastExprView;
 
 import static kiev.stdlib.Debug.*;
@@ -42,7 +29,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RShadow of ShadowImpl extends ShadowView {
+public final view RShadow of Shadow extends ShadowView {
 	
 	public void resolve(Type reqType) {
 		if (node instanceof ENode)
@@ -54,7 +41,7 @@ public final view RShadow of ShadowImpl extends ShadowView {
 }
 
 @nodeview
-public final view RArrayLengthExpr of ArrayLengthExprImpl extends ArrayLengthExprView {
+public final view RArrayLengthExpr of ArrayLengthExpr extends ArrayLengthExprView {
 
 	public void resolve(Type reqType) {
 		obj.resolve(null);
@@ -67,7 +54,7 @@ public final view RArrayLengthExpr of ArrayLengthExprImpl extends ArrayLengthExp
 }
 
 @nodeview
-public final view RTypeClassExpr of TypeClassExprImpl extends TypeClassExprView {
+public final view RTypeClassExpr of TypeClassExpr extends TypeClassExprView {
 
 	public void resolve(Type reqType) {
 		Type tp = type.getType();
@@ -84,7 +71,7 @@ public final view RTypeClassExpr of TypeClassExprImpl extends TypeClassExprView 
 }
 
 @nodeview
-public final view RTypeInfoExpr of TypeInfoExprImpl extends TypeInfoExprView {
+public final view RTypeInfoExpr of TypeInfoExpr extends TypeInfoExprView {
 
 	public void resolve(Type reqType) {
 		if (isResolved())
@@ -94,13 +81,13 @@ public final view RTypeInfoExpr of TypeInfoExprImpl extends TypeInfoExprView {
 		Struct clazz = type.getStruct();
 		if (clazz.isTypeUnerasable()) {
 			if (clazz.typeinfo_clazz == null)
-				clazz.getRView().autoGenerateTypeinfoClazz();
+				((RStruct)clazz).autoGenerateTypeinfoClazz();
 			ftype = clazz.typeinfo_clazz.ctype;
 		}
 		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.ctype));
 		cl_expr.resolve(Type.tpClass);
-		foreach (ArgType at; clazz.getRView().getTypeInfoArgs())
-			cl_args.add(ctx_clazz.getRView().accessTypeInfoField(this.getNode(), type.resolve(at),false));
+		foreach (ArgType at; ((RStruct)clazz).getTypeInfoArgs())
+			cl_args.add(((RStruct)ctx_clazz).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false));
 		foreach (ENode tie; cl_args)
 			tie.resolve(null);
 		setResolved(true);
@@ -110,7 +97,7 @@ public final view RTypeInfoExpr of TypeInfoExprImpl extends TypeInfoExprView {
 }
 
 @nodeview
-public static final view RAssignExpr of AssignExprImpl extends AssignExprView {
+public static final view RAssignExpr of AssignExpr extends AssignExprView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
@@ -270,7 +257,7 @@ public static final view RAssignExpr of AssignExprImpl extends AssignExprView {
 }
 
 @nodeview
-public static final view RBinaryExpr of BinaryExprImpl extends BinaryExprView {
+public static final view RBinaryExpr of BinaryExpr extends BinaryExprView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -502,7 +489,7 @@ public static final view RBinaryExpr of BinaryExprImpl extends BinaryExprView {
 }
 
 @nodeview
-public static final view RStringConcatExpr of StringConcatExprImpl extends StringConcatExprView {
+public static final view RStringConcatExpr of StringConcatExpr extends StringConcatExprView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -515,7 +502,7 @@ public static final view RStringConcatExpr of StringConcatExprImpl extends Strin
 }
 
 @nodeview
-public static final view RCommaExpr of CommaExprImpl extends CommaExprView {
+public static final view RCommaExpr of CommaExpr extends CommaExprView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -534,7 +521,7 @@ public static final view RCommaExpr of CommaExprImpl extends CommaExprView {
 }
 
 @nodeview
-public static view RBlock of BlockImpl extends BlockView {
+public static view RBlock of Block extends BlockView {
 	public void resolve(Type reqType) {
 		RBlock.resolveStats(reqType, this, stats);
 	}
@@ -567,7 +554,7 @@ public static view RBlock of BlockImpl extends BlockView {
 }
 
 @nodeview
-public static view RUnaryExpr of UnaryExprImpl extends UnaryExprView {
+public static view RUnaryExpr of UnaryExpr extends UnaryExprView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -681,7 +668,7 @@ public static view RUnaryExpr of UnaryExprImpl extends UnaryExprView {
 
 
 @nodeview
-public static final view RIncrementExpr of IncrementExprImpl extends IncrementExprView {
+public static final view RIncrementExpr of IncrementExpr extends IncrementExprView {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		setResolved(true);
@@ -691,7 +678,7 @@ public static final view RIncrementExpr of IncrementExprImpl extends IncrementEx
 }
 
 @nodeview
-public static final view RConditionalExpr of ConditionalExprImpl extends ConditionalExprView {
+public static final view RConditionalExpr of ConditionalExpr extends ConditionalExprView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -712,7 +699,7 @@ public static final view RConditionalExpr of ConditionalExprImpl extends Conditi
 }
 
 @nodeview
-public static final view RCastExpr of CastExprImpl extends CastExprView {
+public static final view RCastExpr of CastExpr extends CastExprView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -765,7 +752,7 @@ public static final view RCastExpr of CastExprImpl extends CastExprView {
 		v.$unbind();
 		CallType mt = new CallType(Type.emptyArray,this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
-			ENode call = info.buildCall(this.getNode(),~expr,(Method)v,info.mt,ENode.emptyArray);
+			ENode call = info.buildCall((ASTNode)this,~expr,(Method)v,info.mt,ENode.emptyArray);
 			if (this.type.getType().isReference())
 				call.setCastCall(true);
 			replaceWithNodeResolve(type.getType(),call);

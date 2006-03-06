@@ -6,17 +6,11 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.BoolExpr.BoolExprImpl;
 import kiev.vlang.BoolExpr.BoolExprView;
-import kiev.vlang.BinaryBooleanOrExpr.BinaryBooleanOrExprImpl;
 import kiev.vlang.BinaryBooleanOrExpr.BinaryBooleanOrExprView;
-import kiev.vlang.BinaryBooleanAndExpr.BinaryBooleanAndExprImpl;
 import kiev.vlang.BinaryBooleanAndExpr.BinaryBooleanAndExprView;
-import kiev.vlang.BinaryBoolExpr.BinaryBoolExprImpl;
 import kiev.vlang.BinaryBoolExpr.BinaryBoolExprView;
-import kiev.vlang.InstanceofExpr.InstanceofExprImpl;
 import kiev.vlang.InstanceofExpr.InstanceofExprView;
-import kiev.vlang.BooleanNotExpr.BooleanNotExprImpl;
 import kiev.vlang.BooleanNotExpr.BooleanNotExprView;
 
 import static kiev.stdlib.Debug.*;
@@ -28,11 +22,11 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RBoolExpr of BoolExprImpl extends BoolExprView {
+public final view RBoolExpr of BoolExpr extends BoolExprView {
 }
 
 @nodeview
-public final view RBinaryBooleanOrExpr of BinaryBooleanOrExprImpl extends BinaryBooleanOrExprView {
+public final view RBinaryBooleanOrExpr of BinaryBooleanOrExpr extends BinaryBooleanOrExprView {
 
 	public void resolve(Type reqType) {
 		expr1.resolve(Type.tpBoolean);
@@ -47,7 +41,7 @@ public final view RBinaryBooleanOrExpr of BinaryBooleanOrExprImpl extends Binary
 }
 
 @nodeview
-public final view RBinaryBooleanAndExpr of BinaryBooleanAndExprImpl extends BinaryBooleanAndExprView {
+public final view RBinaryBooleanAndExpr of BinaryBooleanAndExpr extends BinaryBooleanAndExprView {
 
 	public void resolve(Type reqType) {
 		expr1.resolve(Type.tpBoolean);
@@ -61,7 +55,7 @@ public final view RBinaryBooleanAndExpr of BinaryBooleanAndExprImpl extends Bina
 }
 
 @nodeview
-public view RBinaryBoolExpr of BinaryBoolExprImpl extends BinaryBoolExprView {
+public view RBinaryBoolExpr of BinaryBoolExpr extends BinaryBoolExprView {
 
 	public:no,no,no,rw final boolean resolveExprs() {
 		expr1.resolve(null);
@@ -214,7 +208,7 @@ public view RBinaryBoolExpr of BinaryBoolExprImpl extends BinaryBoolExprView {
 }
 
 @nodeview
-public view RInstanceofExpr of InstanceofExprImpl extends InstanceofExprView {
+public view RInstanceofExpr of InstanceofExpr extends InstanceofExprView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -248,7 +242,7 @@ public view RInstanceofExpr of InstanceofExprImpl extends InstanceofExprView {
 			CompaundType bt = (CompaundType)tp;
 			if (tp.clazz.isTypeUnerasable()) {
 				replaceWithNodeResolve(reqType, new CallExpr(pos,
-						ctx_clazz.getRView().accessTypeInfoField(this.getNode(),type.getType(), false),
+						((RStruct)ctx_clazz).accessTypeInfoField((InstanceofExpr)this,type.getType(), false),
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("$instanceof"),Type.tpBoolean,Type.tpObject),
 						new ENode[]{~expr}
 						)
@@ -263,7 +257,7 @@ public view RInstanceofExpr of InstanceofExprImpl extends InstanceofExprView {
 }
 
 @nodeview
-public view RBooleanNotExpr of BooleanNotExprImpl extends BooleanNotExprView {
+public view RBooleanNotExpr of BooleanNotExpr extends BooleanNotExprView {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;

@@ -6,7 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Struct.StructImpl;
 import kiev.vlang.Struct.StructView;
 
 import static kiev.stdlib.Debug.*;
@@ -18,7 +17,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RStruct of StructImpl extends StructView {
+public final view RStruct of Struct extends StructView {
 	
 	public ENode accessTypeInfoField(ASTNode from, Type t, boolean from_gen) {
 		while (t instanceof WrapperType)
@@ -192,7 +191,7 @@ public final view RStruct of StructImpl extends StructView {
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
 			init.body.stats.insert(new ExprStat(call_super),0);
-			foreach (ArgType at; super_type.clazz.getRView().getTypeInfoArgs()) {
+			foreach (ArgType at; ((RStruct)super_type.clazz).getTypeInfoArgs()) {
 				Type t = at.applay(this.ctype);
 				ENode expr;
 				if (t instanceof ArgType)
@@ -458,9 +457,9 @@ public final view RStruct of StructImpl extends StructView {
 		processed = new List.Cons<Struct>(this.getStruct(), processed);
 		// take vtable from super-types
 		if (super_bound.getType() != null) {
-			super_bound.getType().getStruct().getRView().buildVTable(vtable, processed);
+			((RStruct)super_bound.getType().getStruct()).buildVTable(vtable, processed);
 			foreach (TypeRef sup; interfaces)
-				sup.getType().getStruct().getRView().buildVTable(vtable, processed);
+				((RStruct)sup.getType().getStruct()).buildVTable(vtable, processed);
 		}
 		
 		// process override
@@ -914,7 +913,7 @@ public final view RStruct of StructImpl extends StructView {
 					t = t.getEnclosedType();
 				if (t instanceof CompaundType && ((CompaundType)t).clazz.isTypeUnerasable()) {
 					if (t.getStruct().typeinfo_clazz == null)
-						t.getStruct().getRView().autoGenerateTypeinfoClazz();
+						((RStruct)t.getStruct()).autoGenerateTypeinfoClazz();
 					ENode tibe = new CallExpr(pos,
 						accessTypeInfoField(mmt.m,t,false),
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("$instanceof"),Type.tpBoolean,Type.tpObject),
@@ -1220,7 +1219,7 @@ public final view RStruct of StructImpl extends StructView {
 					stats.insert(
 						new ExprStat(pos,
 							new AssignExpr(pos,AssignOperator.Assign,
-								new IFldExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf(((StructImpl)this)._self)),
+								new IFldExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf((Struct)this)),
 								new LVarExpr(pos,m.params[0])
 							)
 						),p++
@@ -1228,7 +1227,7 @@ public final view RStruct of StructImpl extends StructView {
 				}
 				if (isForward() && package_clazz.isStructView()) {
 					Field fview = this.resolveField(nameImpl);
-					if (fview.parent_node == ((StructImpl)this)._self) {
+					if (fview.parent_node == (Struct)this) {
 						foreach (FormPar fp; m.params; fp.name.equals(nameImpl)) {
 							stats.insert(
 								new ExprStat(pos,

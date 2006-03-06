@@ -8,8 +8,6 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
-import kiev.vlang.ASTNode.NodeImpl;
-
 import kiev.be.java.JType;
 import kiev.be.java.JNode;
 import kiev.be.java.JDNode;
@@ -50,11 +48,11 @@ public enum TopLevelPass {
 
 public interface NodeData {
 	public KString	getNodeDataId();
-	public NodeData nodeCopiedTo(NodeImpl node);
-	public void nodeAttached(NodeImpl node);
-	public void dataAttached(NodeImpl node);
-	public void nodeDetached(NodeImpl node);
-	public void dataDetached(NodeImpl node);
+	public NodeData nodeCopiedTo(ASTNode node);
+	public void nodeAttached(ASTNode node);
+	public void dataAttached(ASTNode node);
+	public void nodeDetached(ASTNode node);
+	public void dataDetached(ASTNode node);
 	public void walkTree(TreeWalker walker);
 };
 
@@ -67,7 +65,6 @@ public class TreeWalker {
 public abstract class ASTNode implements Constants, Cloneable {
 
 	@virtual typedef This  = ASTNode;
-	@virtual typedef NImpl = NodeImpl;
 	@virtual typedef VView = NodeView;
 	@virtual typedef JView = JNode;
 	@virtual typedef RView = VView;
@@ -75,226 +72,217 @@ public abstract class ASTNode implements Constants, Cloneable {
 	public static ASTNode[] emptyArray = new ASTNode[0];
     public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
 
-	@nodeimpl
-	public static abstract class NodeImpl {
-		@virtual typedef ImplOf  = ASTNode;
-		public		ImplOf			_self;		
-		public		int				pos;
-		public		int				compileflags;
-		public		ASTNode			parent;
-		protected	AttrSlot		pslot;
-		protected	ASTNode			pprev;
-		protected	ASTNode			pnext;
-		protected	NodeData[]		ndata;
-		// Structures	
-		public @packed:1,compileflags,16 boolean is_struct_local;
-		public @packed:1,compileflags,17 boolean is_struct_anomymouse;
-		public @packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
-		public @packed:1,compileflags,19 boolean is_struct_members_generated;
-		public @packed:1,compileflags,20 boolean is_struct_pre_generated;
-		public @packed:1,compileflags,21 boolean is_struct_statements_generated;
-		public @packed:1,compileflags,22 boolean is_struct_generated;
-		public @packed:1,compileflags,23 boolean is_struct_type_resolved;
-		public @packed:1,compileflags,24 boolean is_struct_args_resolved;
-		public @packed:1,compileflags,25 boolean is_struct_bytecode;	// struct was loaded from bytecode
-		public @packed:1,compileflags,26 boolean is_struct_singleton;
-		public @packed:1,compileflags,27 boolean is_struct_pizza_case;
-		
-		// Expression flags
-		public @packed:1,compileflags,16 boolean is_expr_use_no_proxy;
-		public @packed:1,compileflags,17 boolean is_expr_as_field;
-		public @packed:1,compileflags,18 boolean is_expr_gen_void;
-		public @packed:1,compileflags,19 boolean is_expr_for_wrapper;
-		public @packed:1,compileflags,20 boolean is_expr_primary;
-		public @packed:1,compileflags,21 boolean is_expr_super;
-		public @packed:1,compileflags,22 boolean is_expr_cast_call;
-		// Statement flags
-		public @packed:1,compileflags,23 boolean is_stat_abrupted;
-		public @packed:1,compileflags,24 boolean is_stat_breaked;
-		public @packed:1,compileflags,25 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
-		public @packed:1,compileflags,26 boolean is_stat_auto_returnable;
-		public @packed:1,compileflags,27 boolean is_stat_break_target;
-		
-		// Method flags
-		public @packed:1,compileflags,17 boolean is_mth_virtual_static;
-		public @packed:1,compileflags,18 boolean is_mth_operator;
-		public @packed:1,compileflags,19 boolean is_mth_need_fields_init;
-		public @packed:1,compileflags,20 boolean is_mth_local;
-		public @packed:1,compileflags,21 boolean is_mth_dispatcher;
-		public @packed:1,compileflags,22 boolean is_mth_invariant;
-		
-		// Var/field
-		public @packed:1,compileflags,16 boolean is_init_wrapper;
-		public @packed:1,compileflags,17 boolean is_need_proxy;
-		// Var specific
-		public @packed:1,compileflags,18 boolean is_var_local_rule_var;
-		public @packed:1,compileflags,19 boolean is_var_closure_proxy;
-		public @packed:1,compileflags,20 boolean is_var_this;
-		public @packed:1,compileflags,21 boolean is_var_super;
+	public		int				pos;
+	public		int				compileflags;
+	public		ASTNode			parent;
+	protected	AttrSlot		pslot;
+	protected	ASTNode			pprev;
+	protected	ASTNode			pnext;
+	protected	NodeData[]		ndata;
+	// Structures	
+	public @packed:1,compileflags,16 boolean is_struct_local;
+	public @packed:1,compileflags,17 boolean is_struct_anomymouse;
+	public @packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
+	public @packed:1,compileflags,19 boolean is_struct_members_generated;
+	public @packed:1,compileflags,20 boolean is_struct_pre_generated;
+	public @packed:1,compileflags,21 boolean is_struct_statements_generated;
+	public @packed:1,compileflags,22 boolean is_struct_generated;
+	public @packed:1,compileflags,23 boolean is_struct_type_resolved;
+	public @packed:1,compileflags,24 boolean is_struct_args_resolved;
+	public @packed:1,compileflags,25 boolean is_struct_bytecode;	// struct was loaded from bytecode
+	public @packed:1,compileflags,26 boolean is_struct_singleton;
+	public @packed:1,compileflags,27 boolean is_struct_pizza_case;
 	
-		// Field specific
-		public @packed:1,compileflags,18 boolean is_fld_packer;
-		public @packed:1,compileflags,19 boolean is_fld_packed;
-		public @packed:1,compileflags,20 boolean is_fld_added_to_init;
+	// Expression flags
+	public @packed:1,compileflags,16 boolean is_expr_use_no_proxy;
+	public @packed:1,compileflags,17 boolean is_expr_as_field;
+	public @packed:1,compileflags,18 boolean is_expr_gen_void;
+	public @packed:1,compileflags,19 boolean is_expr_for_wrapper;
+	public @packed:1,compileflags,20 boolean is_expr_primary;
+	public @packed:1,compileflags,21 boolean is_expr_super;
+	public @packed:1,compileflags,22 boolean is_expr_cast_call;
+	// Statement flags
+	public @packed:1,compileflags,23 boolean is_stat_abrupted;
+	public @packed:1,compileflags,24 boolean is_stat_breaked;
+	public @packed:1,compileflags,25 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
+	public @packed:1,compileflags,26 boolean is_stat_auto_returnable;
+	public @packed:1,compileflags,27 boolean is_stat_break_target;
 	
-		// General flags
-		public @packed:1,compileflags,28 boolean is_accessed_from_inner;
-		public @packed:1,compileflags,29 boolean is_resolved;
-		public @packed:1,compileflags,30 boolean is_hidden;
-		public @packed:1,compileflags,31 boolean is_bad;
+	// Method flags
+	public @packed:1,compileflags,17 boolean is_mth_virtual_static;
+	public @packed:1,compileflags,18 boolean is_mth_operator;
+	public @packed:1,compileflags,19 boolean is_mth_need_fields_init;
+	public @packed:1,compileflags,20 boolean is_mth_local;
+	public @packed:1,compileflags,21 boolean is_mth_dispatcher;
+	public @packed:1,compileflags,22 boolean is_mth_invariant;
+	
+	// Var/field
+	public @packed:1,compileflags,16 boolean is_init_wrapper;
+	public @packed:1,compileflags,17 boolean is_need_proxy;
+	// Var specific
+	public @packed:1,compileflags,18 boolean is_var_local_rule_var;
+	public @packed:1,compileflags,19 boolean is_var_closure_proxy;
+	public @packed:1,compileflags,20 boolean is_var_this;
+	public @packed:1,compileflags,21 boolean is_var_super;
 
-		public NodeImpl() {}
+	// Field specific
+	public @packed:1,compileflags,18 boolean is_fld_packer;
+	public @packed:1,compileflags,19 boolean is_fld_packed;
+	public @packed:1,compileflags,20 boolean is_fld_added_to_init;
+
+	// General flags
+	public @packed:1,compileflags,28 boolean is_accessed_from_inner;
+	public @packed:1,compileflags,29 boolean is_resolved;
+	public @packed:1,compileflags,30 boolean is_hidden;
+	public @packed:1,compileflags,31 boolean is_bad;
+
+	public AttrSlot[] values() {
+		return AttrSlot.emptyArray;
+	}
+	public Object getVal(String name) {
+		throw new RuntimeException("No @att value \"" + name + "\" in NodeImpl");
+	}
+	public void setVal(String name, Object val) {
+		throw new RuntimeException("No @att value \"" + name + "\" in NodeImpl");
+	}
 		
-		public final ASTNode getNode() {
-			return this._self;
-		}
-		
-		public AttrSlot[] values() {
-			return AttrSlot.emptyArray;
-		}
-		public Object getVal(String name) {
-			throw new RuntimeException("No @att value \"" + name + "\" in NodeImpl");
-		}
-		public void setVal(String name, Object val) {
-			throw new RuntimeException("No @att value \"" + name + "\" in NodeImpl");
-		}
-		
-		public Object copyTo(Object to$node) {
-			NodeImpl node = (NodeImpl)to$node;
-			node.pos			= this.pos;
-			node.compileflags	= this.compileflags;
-			if (this.ndata != null) {
-				for (int i=0; i < this.ndata.length; i++) {
-					NodeData nd = this.ndata[i].nodeCopiedTo(node);
-					if (nd == null)
-						continue;
-					if (node.ndata == null) {
-						node.ndata = new NodeData[]{nd};
-					} else {
-						int sz = node.ndata.length;
-						NodeData[] tmp = new NodeData[sz+1];
-						for (int j=0; j < sz; j++)
-							tmp[j] = node.ndata[j];
-						tmp[sz] = nd;
-						node.ndata = tmp;
-					}
-					nd.dataAttached(node);
+	public Object copyTo(Object to$node) {
+		ASTNode node = (ASTNode)to$node;
+		node.pos			= this.pos;
+		node.compileflags	= this.compileflags;
+		if (this.ndata != null) {
+			for (int i=0; i < this.ndata.length; i++) {
+				NodeData nd = this.ndata[i].nodeCopiedTo(node);
+				if (nd == null)
+					continue;
+				if (node.ndata == null) {
+					node.ndata = new NodeData[]{nd};
+				} else {
+					int sz = node.ndata.length;
+					NodeData[] tmp = new NodeData[sz+1];
+					for (int j=0; j < sz; j++)
+						tmp[j] = node.ndata[j];
+					tmp[sz] = nd;
+					node.ndata = tmp;
 				}
+				nd.dataAttached(node);
 			}
-			return node;
 		}
+		return node;
+	}
 
-		public final int getPosLine() { return pos >>> 11; }
-		
-		// the node is attached
-		public final boolean isAttached()  {
-			return parent != null;
+	public final int getPosLine() { return pos >>> 11; }
+	
+	// the node is attached
+	public final boolean isAttached()  {
+		return parent != null;
+	}
+	public final void callbackDetached() {
+		assert(isAttached());
+		// notify node data that we are detached
+		NodeData[] ndata = this.ndata;
+		if (ndata != null) {
+			foreach (NodeData nd; ndata)
+				nd.nodeDetached(this);
 		}
-		public final void callbackDetached() {
-			assert(isAttached());
-			// notify node data that we are detached
-			NodeData[] ndata = this.ndata;
-			if (ndata != null) {
-				foreach (NodeData nd; ndata)
-					nd.nodeDetached(this);
-			}
-			// do detcah
-			ASTNode parent = this.parent;
-			AttrSlot pslot = this.pslot;
-			this.parent = null;
-			this.pslot = null;
-			this.pprev = null;
-			this.pnext = null;
-			// notify nodes about new root
-			_self.walkTree(new TreeWalker() {
-				public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
-			});
-			// notify parent about the changed slot
-			parent.callbackChildChanged(pslot);
+		// do detcah
+		ASTNode parent = this.parent;
+		AttrSlot pslot = this.pslot;
+		this.parent = null;
+		this.pslot = null;
+		this.pprev = null;
+		this.pnext = null;
+		// notify nodes about new root
+		this.walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
+		});
+		// notify parent about the changed slot
+		parent.callbackChildChanged(pslot);
+	}
+	
+	public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
+		assert(!isAttached());
+		assert(parent != null && parent != this);
+		// do attach
+		this.parent = parent;
+		this.pslot = pslot;
+		// notify nodes about new root
+		this.walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
+		});
+		// notify node data that we are attached
+		NodeData[] ndata = this.ndata;
+		if (ndata != null) {
+			foreach (NodeData nd; ndata)
+				nd.nodeAttached(this);
 		}
-		
-		public final void callbackAttached(NodeImpl parent, AttrSlot pslot) {
-			assert(!isAttached());
-			assert(parent != null && parent != this);
-			// do attach
-			this.parent = parent._self;
-			this.pslot = pslot;
-			// notify nodes about new root
-			_self.walkTree(new TreeWalker() {
-				public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
-			});
-			// notify node data that we are attached
-			NodeData[] ndata = this.ndata;
-			if (ndata != null) {
-				foreach (NodeData nd; ndata)
-					nd.nodeAttached(this);
-			}
-			// notify parent about the changed slot
-			parent.callbackChildChanged(pslot);
-		}
-		public void callbackChildChanged(AttrSlot attr) {
-			// do nothing
-		}
-		public void callbackRootChanged() {
-			// do nothing
-		}	
+		// notify parent about the changed slot
+		parent.callbackChildChanged(pslot);
+	}
+	public void callbackChildChanged(AttrSlot attr) {
+		// do nothing
+	}
+	public void callbackRootChanged() {
+		// do nothing
+	}	
 
-		public NodeData getNodeData(KString id) {
-			if (ndata != null) {
-				foreach (NodeData nd; ndata) {
-					if (nd.getNodeDataId() == id)
-						return nd;
-				}
+	public NodeData getNodeData(KString id) {
+		if (ndata != null) {
+			foreach (NodeData nd; ndata) {
+				if (nd.getNodeDataId() == id)
+					return nd;
 			}
-			return null;
 		}
-		
-		public void addNodeData(NodeData d) {
-			if (ndata != null) {
-				KString id = d.getNodeDataId();
-				NodeData[] ndata = this.ndata;
-				int sz = ndata.length;
-				for (int i=0; i < sz; i++) {
-					NodeData nd = ndata[i];
-					if (nd.getNodeDataId() == id) {
-						if (nd == d)
-							return;
-						nd.dataDetached(this);
-						d.dataAttached(this);
+		return null;
+	}
+	
+	public void addNodeData(NodeData d) {
+		if (ndata != null) {
+			KString id = d.getNodeDataId();
+			NodeData[] ndata = this.ndata;
+			int sz = ndata.length;
+			for (int i=0; i < sz; i++) {
+				NodeData nd = ndata[i];
+				if (nd.getNodeDataId() == id) {
+					if (nd == d)
 						return;
-					}
-				}
-				NodeData[] tmp = new NodeData[sz+1];
-				for (int i=0; i < sz; i++)
-					tmp[i] = ndata[i];
-				tmp[sz] = d;
-				this.ndata = tmp;
-			} else {
-				this.ndata = new NodeData[]{d};
-			}
-			d.dataAttached(this);
-		}
-		
-		public void delNodeData(KString id) {
-			NodeData[] ndata = this.ndata;
-			if (ndata != null) {
-				int sz = ndata.length-1;
-				for (int idx=0; idx <= sz; idx++) {
-					NodeData nd = ndata[idx];
-					if (nd.getNodeDataId() == id) {
-						NodeData[] tmp   = new NodeData[sz];
-						nd.dataDetached(this);
-						int i;
-						for (i=0; i < idx; i++) tmp[i] = ndata[i];
-						for (   ; i <  sz; i++) tmp[i] = ndata[i+1];
-						this.ndata = tmp;
-						return;
-					}
+					nd.dataDetached(this);
+					d.dataAttached(this);
+					return;
 				}
 			}
+			NodeData[] tmp = new NodeData[sz+1];
+			for (int i=0; i < sz; i++)
+				tmp[i] = ndata[i];
+			tmp[sz] = d;
+			this.ndata = tmp;
+		} else {
+			this.ndata = new NodeData[]{d};
 		}
+		d.dataAttached(this);
+	}
+	
+	public void delNodeData(KString id) {
+		NodeData[] ndata = this.ndata;
+		if (ndata != null) {
+			int sz = ndata.length-1;
+			for (int idx=0; idx <= sz; idx++) {
+				NodeData nd = ndata[idx];
+				if (nd.getNodeDataId() == id) {
+					NodeData[] tmp   = new NodeData[sz];
+					nd.dataDetached(this);
+					int i;
+					for (i=0; i < idx; i++) tmp[i] = ndata[i];
+					for (   ; i <  sz; i++) tmp[i] = ndata[i+1];
+					this.ndata = tmp;
+					return;
+				}
+			}
+		}
+	}
 
-		public final void walkTree(TreeWalker walker) {
+	public final void walkTree(TreeWalker walker) {
+		if (walker.pre_exec(this)) {
 			foreach (AttrSlot attr; this.values(); attr.is_attr) {
 				Object val = this.getVal(attr.name);
 				if (val == null)
@@ -323,116 +311,117 @@ public abstract class ASTNode implements Constants, Cloneable {
 					nd.walkTree(walker);
 			}
 		}
+		walker.post_exec(this);
+	}
 
-		// build data flow for this node
-		final DataFlowInfo getDFlow() {
-			DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
-			if (df == null) {
-				df = DataFlowInfo.newDataFlowInfo(this);
-				this.addNodeData(df);
-			}
-			return df;
+	// build data flow for this node
+	final DataFlowInfo getDFlow() {
+		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
+		if (df == null) {
+			df = DataFlowInfo.newDataFlowInfo(this);
+			this.addNodeData(df);
 		}
-	
-		public final ASTNode replaceWithNode(ASTNode node) {
-			assert(isAttached());
-			if (pslot.is_space) {
-				assert(node != null);
-				NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
-				int idx = space.indexOf(this.getNode());
-				assert(idx >= 0);
-				if (node.pos == 0) node.pos = this.pos;
-				space[idx] = node;
-			} else {
-				assert(parent.getVal(pslot.name) == this._self);
-				if (node != null && node.pos == 0) node.pos = this.pos;
-				parent.setVal(pslot.name, node);
-			}
-			assert(node == null || node.isAttached());
-			return node;
-		}
-		public final ASTNode replaceWith(()->ASTNode fnode) {
-			assert(isAttached());
-			ASTNode parent = this.parent;
-			AttrSlot pslot = this.pslot;
-			if (pslot.is_space) {
-				NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
-				int idx = space.indexOf(this.getNode());
-				assert(idx >= 0);
-				space[idx] = this._self.getDummyNode();
-				ASTNode n = fnode();
-				assert(n != null);
-				if (n.pos == 0) n.pos = this.pos;
-				space[idx] = n;
-				assert(n.isAttached());
-				return n;
-			} else {
-				assert(parent.getVal(pslot.name) == this._self);
-				parent.setVal(pslot.name, this._self.getDummyNode());
-				ASTNode n = fnode();
-				if (n != null && n.pos == 0) n.pos = this.pos;
-				parent.setVal(pslot.name, n);
-				assert(n == null || n.isAttached());
-				return n;
-			}
-		}
+		return df;
+	}
 
-		// break target (ENodes)
-		public final boolean isBreakTarget() {
-			return this.is_stat_break_target;
+	public final ASTNode replaceWithNode(ASTNode node) {
+		assert(isAttached());
+		if (pslot.is_space) {
+			assert(node != null);
+			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
+			int idx = space.indexOf(this);
+			assert(idx >= 0);
+			if (node.pos == 0) node.pos = this.pos;
+			space[idx] = node;
+		} else {
+			assert(parent.getVal(pslot.name) == this);
+			if (node != null && node.pos == 0) node.pos = this.pos;
+			parent.setVal(pslot.name, node);
 		}
-		public final void setBreakTarget(boolean on) {
-			if (this.is_stat_break_target != on) {
-				this.is_stat_break_target = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// the (private) field/method/struct is accessed from inner class (and needs proxy access)
-		@getter public final boolean isAccessedFromInner() {
-			return this.is_accessed_from_inner;
-		}
-		@setter public final void setAccessedFromInner(boolean on) {
-			if (this.is_accessed_from_inner != on) {
-				this.is_accessed_from_inner = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// resolved
-		@getter public final boolean isResolved() {
-			return this.is_resolved;
-		}
-		@setter public final void setResolved(boolean on) {
-			if (this.is_resolved != on) {
-				this.is_resolved = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// hidden
-		@getter public final boolean isHidden() {
-			return this.is_hidden;
-		}
-		@setter public final void setHidden(boolean on) {
-			if (this.is_hidden != on) {
-				this.is_hidden = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// bad
-		@getter public final boolean isBad() {
-			return this.is_bad;
-		}
-		@setter public final void setBad(boolean on) {
-			if (this.is_bad != on) {
-				this.is_bad = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
+		assert(node == null || node.isAttached());
+		return node;
+	}
+	public final ASTNode replaceWith(()->ASTNode fnode) {
+		assert(isAttached());
+		ASTNode parent = this.parent;
+		AttrSlot pslot = this.pslot;
+		if (pslot.is_space) {
+			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
+			int idx = space.indexOf(this);
+			assert(idx >= 0);
+			space[idx] = this.getDummyNode();
+			ASTNode n = fnode();
+			assert(n != null);
+			if (n.pos == 0) n.pos = this.pos;
+			space[idx] = n;
+			assert(n.isAttached());
+			return n;
+		} else {
+			assert(parent.getVal(pslot.name) == this);
+			parent.setVal(pslot.name, this.getDummyNode());
+			ASTNode n = fnode();
+			if (n != null && n.pos == 0) n.pos = this.pos;
+			parent.setVal(pslot.name, n);
+			assert(n == null || n.isAttached());
+			return n;
 		}
 	}
+
+	// break target (ENodes)
+	public final boolean isBreakTarget() {
+		return this.is_stat_break_target;
+	}
+	public final void setBreakTarget(boolean on) {
+		if (this.is_stat_break_target != on) {
+			this.is_stat_break_target = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// the (private) field/method/struct is accessed from inner class (and needs proxy access)
+	@getter public final boolean isAccessedFromInner() {
+		return this.is_accessed_from_inner;
+	}
+	@setter public final void setAccessedFromInner(boolean on) {
+		if (this.is_accessed_from_inner != on) {
+			this.is_accessed_from_inner = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// resolved
+	@getter public final boolean isResolved() {
+		return this.is_resolved;
+	}
+	@setter public final void setResolved(boolean on) {
+		if (this.is_resolved != on) {
+			this.is_resolved = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// hidden
+	@getter public final boolean isHidden() {
+		return this.is_hidden;
+	}
+	@setter public final void setHidden(boolean on) {
+		if (this.is_hidden != on) {
+			this.is_hidden = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// bad
+	@getter public final boolean isBad() {
+		return this.is_bad;
+	}
+	@setter public final void setBad(boolean on) {
+		if (this.is_bad != on) {
+			this.is_bad = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
 	@nodeview
-	public static abstract view NodeView of NodeImpl implements Constants {
-		public final ASTNode getNode() { return ((NodeImpl)this)._self; }
-		public String toString() { return String.valueOf(getNode()); }
-		public Dumper toJava(Dumper dmp) { return getNode().toJava(dmp); }
+	public static abstract view NodeView of ASTNode implements Constants {
+		public String toString();
+		public Dumper toJava(Dumper dmp);
 		
 		public int			pos;
 		public int			compileflags;
@@ -444,7 +433,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 		@getter public final ASTNode get$ctx_root() {
 			NodeView parent = this.parent;
 			if (parent == null)
-				return this.getNode();
+				return (ASTNode)this;
 			return parent.get$ctx_root();
 		}
 		@getter public FileUnit get$ctx_file_unit() { return this.parent.get$ctx_file_unit(); }
@@ -453,13 +442,13 @@ public abstract class ASTNode implements Constants, Cloneable {
 		@getter public Method get$ctx_method() { return this.parent.child_ctx_method; }
 		@getter public Method get$child_ctx_method() { return this.parent.get$child_ctx_method(); }
 		
-		@getter public ASTNode get$parent_node() { NodeImpl pimpl = (NodeImpl)this.parent; if (pimpl == null) return null; return pimpl._self; }
+		@getter public ASTNode get$parent_node() { ASTNode pimpl = (ASTNode)this.parent; if (pimpl == null) return null; return pimpl; }
 
 		public AttrSlot[] values();
 		public Object getVal(String name);
 		public void setVal(String name, Object val);
 		public final void callbackDetached();
-		public final void callbackAttached(NodeImpl parent, AttrSlot pslot) { ((NodeImpl)this).callbackAttached(parent, pslot); }
+		public final void callbackAttached(ASTNode parent, AttrSlot pslot) { ((ASTNode)this).callbackAttached(parent, pslot); }
 		public final void callbackChildChanged(AttrSlot attr);
 		public final void callbackRootChanged();
 		public final NodeData getNodeData(KString id);
@@ -486,11 +475,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 			});
 		}
 	
-		public final void walkTree(TreeWalker walker) {
-			if (walker.pre_exec(getNode()))
-				((NodeImpl)this).walkTree(walker);
-			walker.post_exec(getNode());
-		}
+		public final void walkTree(TreeWalker walker);
 
 		public Type getType() { return Type.tpVoid; }
 
@@ -504,18 +489,10 @@ public abstract class ASTNode implements Constants, Cloneable {
 		public boolean preGenerate() { return true; }
 	}
 	
-	public NImpl $v_impl;
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
 	@virtual @forward public:ro abstract VView theView;
-	@getter public final VView get$theView() { return getVView(); }
+	@getter public final VView get$theView() { return (VView)this; }
 	
-	public ASTNode(NImpl v_impl) {
-		this.$v_impl = v_impl;
-		this.$v_impl._self = this;
-	}
+	public ASTNode() {}
 
 	public final This detach()
 		alias operator (210,fy,~)
@@ -536,13 +513,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 	public final This ncopy() {
 		return (This)this.copy();
 	}
-	public Object copy() {
-		ASTNode node = (ASTNode)this.clone();
-		node.$v_impl = this.$v_impl.getClass().newInstance();
-		node.$v_impl._self = node;
-		this.$v_impl.copyTo(node.$v_impl);
-		return node;
-	};
+	public abstract Object copy();
 
     public Dumper toJava(Dumper dmp) {
     	dmp.append("/* INTERNAL ERROR - ").append(this.getClass().toString()).append(" */");
@@ -565,216 +536,211 @@ public abstract class ASTNode implements Constants, Cloneable {
 public abstract class DNode extends ASTNode {
 
 	@virtual typedef This  = DNode;
-	@virtual typedef NImpl = DNodeImpl;
 	@virtual typedef VView = DNodeView;
 	@virtual typedef JView = JDNode;
 	
 	public static final DNode[] emptyArray = new DNode[0];
 	
-	@nodeimpl
-	public static abstract class DNodeImpl extends NodeImpl {		
-		@virtual typedef ImplOf  = DNode;
+	private static final int MASK_ACC_DEFAULT   = 0;
+	private static final int MASK_ACC_PUBLIC    = ACC_PUBLIC;
+	private static final int MASK_ACC_PRIVATE   = ACC_PRIVATE;
+	private static final int MASK_ACC_PROTECTED = ACC_PROTECTED;
+	private static final int MASK_ACC_NAMESPACE = ACC_PACKAGE;
+	private static final int MASK_ACC_SYNTAX    = ACC_SYNTAX;
+	
+		 public		int			flags;
+	@att public		MetaSet		meta;
 
-		private static final int MASK_ACC_DEFAULT   = 0;
-		private static final int MASK_ACC_PUBLIC    = ACC_PUBLIC;
-		private static final int MASK_ACC_PRIVATE   = ACC_PRIVATE;
-		private static final int MASK_ACC_PROTECTED = ACC_PROTECTED;
-		private static final int MASK_ACC_NAMESPACE = ACC_PACKAGE;
-		private static final int MASK_ACC_SYNTAX    = ACC_SYNTAX;
+//	public @packed:1,flags, 0 boolean is_acc_public;
+//	public @packed:1,flags, 1 boolean is_acc_private;
+//	public @packed:1,flags, 2 boolean is_acc_protected;
+	public @packed:3,flags, 0 int     is_access;
+
+	public @packed:1,flags, 3 boolean is_static;
+	public @packed:1,flags, 4 boolean is_final;
+	public @packed:1,flags, 5 boolean is_mth_synchronized;	// method
+	public @packed:1,flags, 5 boolean is_struct_super;		// struct
+	public @packed:1,flags, 6 boolean is_fld_volatile;		// field
+	public @packed:1,flags, 6 boolean is_mth_bridge;		// method
+	public @packed:1,flags, 7 boolean is_fld_transient;		// field
+	public @packed:1,flags, 7 boolean is_mth_varargs;		// method
+	public @packed:1,flags, 8 boolean is_mth_native;
+	public @packed:1,flags, 9 boolean is_struct_interface;
+	public @packed:1,flags,10 boolean is_abstract;
+	public @packed:1,flags,11 boolean is_math_strict;		// strict math
+	public @packed:1,flags,12 boolean is_synthetic;			// any decl that was generated (not in sources)
+	public @packed:1,flags,13 boolean is_struct_annotation;
+	public @packed:1,flags,14 boolean is_struct_enum;		// struct
+	public @packed:1,flags,14 boolean is_fld_enum;			// field
 		
-		     public		int			flags;
-		@att public		MetaSet		meta;
+	// Flags temporary used with java flags
+	public @packed:1,flags,16 boolean is_forward;			// var/field/method, type is wrapper
+	public @packed:1,flags,17 boolean is_virtual;			// var/field, method is 'static virtual', struct is 'view'
+	public @packed:1,flags,18 boolean is_type_unerasable;	// typedecl, method/struct as parent of typedef
+	
+	public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
+	public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }
+	public final boolean isProtected()			{ return this.is_access == MASK_ACC_PROTECTED; }
+	public final boolean isPkgPrivate()		{ return this.is_access == MASK_ACC_DEFAULT; }
+	public final boolean isStatic()				{ return this.is_static; }
+	public final boolean isFinal()				{ return this.is_final; }
+	public final boolean isSynchronized()		{ return this.is_mth_synchronized; }
+	public final boolean isVolatile()			{ return this.is_fld_volatile; }
+	public final boolean isFieldVolatile()		{ return this.is_fld_volatile; }
+	public final boolean isMethodBridge()		{ return this.is_mth_bridge; }
+	public final boolean isFieldTransient()	{ return this.is_fld_transient; }
+	public final boolean isMethodVarargs()		{ return this.is_mth_varargs; }
+	public final boolean isStructBcLoaded()	{ return this.is_struct_bytecode; }
+	public final boolean isMethodNative()		{ return this.is_mth_native; }
+	public final boolean isInterface()			{ return this.is_struct_interface; }
+	public final boolean isAbstract()			{ return this.is_abstract; }
+	public final boolean isMathStrict()		{ return this.is_math_strict; }
+	public final boolean isSynthetic()			{ return this.is_synthetic; }
+	
+	public final boolean isStructView()		{ return this.is_virtual; }
+	public final boolean isTypeUnerasable()	{ return this.is_type_unerasable; }
+	public final boolean isPackage()			{ return this.is_access == MASK_ACC_NAMESPACE; }
+	public final boolean isSyntax()				{ return this.is_access == MASK_ACC_SYNTAX; }
 
-//		public @packed:1,flags, 0 boolean is_acc_public;
-//		public @packed:1,flags, 1 boolean is_acc_private;
-//		public @packed:1,flags, 2 boolean is_acc_protected;
-		public @packed:3,flags, 0 int     is_access;
-
-		public @packed:1,flags, 3 boolean is_static;
-		public @packed:1,flags, 4 boolean is_final;
-		public @packed:1,flags, 5 boolean is_mth_synchronized;	// method
-		public @packed:1,flags, 5 boolean is_struct_super;		// struct
-		public @packed:1,flags, 6 boolean is_fld_volatile;		// field
-		public @packed:1,flags, 6 boolean is_mth_bridge;		// method
-		public @packed:1,flags, 7 boolean is_fld_transient;		// field
-		public @packed:1,flags, 7 boolean is_mth_varargs;		// method
-		public @packed:1,flags, 8 boolean is_mth_native;
-		public @packed:1,flags, 9 boolean is_struct_interface;
-		public @packed:1,flags,10 boolean is_abstract;
-		public @packed:1,flags,11 boolean is_math_strict;		// strict math
-		public @packed:1,flags,12 boolean is_synthetic;			// any decl that was generated (not in sources)
-		public @packed:1,flags,13 boolean is_struct_annotation;
-		public @packed:1,flags,14 boolean is_struct_enum;		// struct
-		public @packed:1,flags,14 boolean is_fld_enum;			// field
-		
-		// Flags temporary used with java flags
-		public @packed:1,flags,16 boolean is_forward;			// var/field/method, type is wrapper
-		public @packed:1,flags,17 boolean is_virtual;			// var/field, method is 'static virtual', struct is 'view'
-		public @packed:1,flags,18 boolean is_type_unerasable;	// typedecl, method/struct as parent of typedef
-		
-		public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
-		public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }
-		public final boolean isProtected()			{ return this.is_access == MASK_ACC_PROTECTED; }
-		public final boolean isPkgPrivate()		{ return this.is_access == MASK_ACC_DEFAULT; }
-		public final boolean isStatic()				{ return this.is_static; }
-		public final boolean isFinal()				{ return this.is_final; }
-		public final boolean isSynchronized()		{ return this.is_mth_synchronized; }
-		public final boolean isVolatile()			{ return this.is_fld_volatile; }
-		public final boolean isFieldVolatile()		{ return this.is_fld_volatile; }
-		public final boolean isMethodBridge()		{ return this.is_mth_bridge; }
-		public final boolean isFieldTransient()	{ return this.is_fld_transient; }
-		public final boolean isMethodVarargs()		{ return this.is_mth_varargs; }
-		public final boolean isStructBcLoaded()	{ return this.is_struct_bytecode; }
-		public final boolean isMethodNative()		{ return this.is_mth_native; }
-		public final boolean isInterface()			{ return this.is_struct_interface; }
-		public final boolean isAbstract()			{ return this.is_abstract; }
-		public final boolean isMathStrict()		{ return this.is_math_strict; }
-		public final boolean isSynthetic()			{ return this.is_synthetic; }
-		
-		public final boolean isStructView()		{ return this.is_virtual; }
-		public final boolean isTypeUnerasable()	{ return this.is_type_unerasable; }
-		public final boolean isPackage()			{ return this.is_access == MASK_ACC_NAMESPACE; }
-		public final boolean isSyntax()				{ return this.is_access == MASK_ACC_SYNTAX; }
-
-		public void setPublic() {
-			if (this.is_access != MASK_ACC_PUBLIC) {
-				this.is_access = MASK_ACC_PUBLIC;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setPrivate() {
-			if (this.is_access != MASK_ACC_PRIVATE) {
-				this.is_access = MASK_ACC_PRIVATE;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setProtected() {
-			if (this.is_access != MASK_ACC_PROTECTED) {
-				this.is_access = MASK_ACC_PROTECTED;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setPkgPrivate() {
-			if (this.is_access != MASK_ACC_DEFAULT) {
-				this.is_access = MASK_ACC_DEFAULT;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public final void setPackage() {
-			if (this.is_access != MASK_ACC_NAMESPACE) {
-				this.is_access = MASK_ACC_NAMESPACE;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public final void setSyntax() {
-			if (this.is_access != MASK_ACC_SYNTAX) {
-				this.is_access = MASK_ACC_SYNTAX;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-
-		public void setStatic(boolean on) {
-			if (this.is_static != on) {
-				this.is_static = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setFinal(boolean on) {
-			if (this.is_final != on) {
-				this.is_final = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setSynchronized(boolean on) {
-			if (this.is_mth_synchronized != on) {
-				this.is_mth_synchronized = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setVolatile(boolean on) {
-			if (this.is_fld_volatile != on) {
-				this.is_fld_volatile = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setFieldVolatile(boolean on) {
-			if (this.is_fld_volatile != on) {
-				this.is_fld_volatile = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setMethodBridge(boolean on) {
-			if (this.is_mth_bridge != on) {
-				this.is_mth_bridge = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setFieldTransient(boolean on) {
-			if (this.is_fld_transient != on) {
-				this.is_fld_transient = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setMethodVarargs(boolean on) {
-			if (this.is_mth_varargs != on) {
-				this.is_mth_varargs = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setMethodNative(boolean on) {
-			if (this.is_mth_native != on) {
-				this.is_mth_native = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setInterface(boolean on) {
-			if (this.is_struct_interface != on) {
-				this.is_struct_interface = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setAbstract(boolean on) {
-			if (this.is_abstract != on) {
-				this.is_abstract = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-
-		public void setStructView() {
-			if (!this.is_virtual) {
-				this.is_virtual = true;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		public void setTypeUnerasable(boolean on) {
-			if (this.is_type_unerasable != on) {
-				this.is_type_unerasable = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-
-		public final boolean isVirtual() {
-			return this.is_virtual;
-		}
-		public final void setVirtual(boolean on) {
-			if (this.is_virtual != on) {
-				this.is_virtual = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-
-		@getter public final boolean isForward() {
-			return this.is_forward;
-		}
-		@setter public final void setForward(boolean on) {
-			if (this.is_forward != on) {
-				this.is_forward = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
+	public void setPublic() {
+		if (this.is_access != MASK_ACC_PUBLIC) {
+			this.is_access = MASK_ACC_PUBLIC;
+			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
+	public void setPrivate() {
+		if (this.is_access != MASK_ACC_PRIVATE) {
+			this.is_access = MASK_ACC_PRIVATE;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setProtected() {
+		if (this.is_access != MASK_ACC_PROTECTED) {
+			this.is_access = MASK_ACC_PROTECTED;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setPkgPrivate() {
+		if (this.is_access != MASK_ACC_DEFAULT) {
+			this.is_access = MASK_ACC_DEFAULT;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public final void setPackage() {
+		if (this.is_access != MASK_ACC_NAMESPACE) {
+			this.is_access = MASK_ACC_NAMESPACE;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public final void setSyntax() {
+		if (this.is_access != MASK_ACC_SYNTAX) {
+			this.is_access = MASK_ACC_SYNTAX;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
+	public void setStatic(boolean on) {
+		if (this.is_static != on) {
+			this.is_static = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setFinal(boolean on) {
+		if (this.is_final != on) {
+			this.is_final = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setSynchronized(boolean on) {
+		if (this.is_mth_synchronized != on) {
+			this.is_mth_synchronized = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setVolatile(boolean on) {
+		if (this.is_fld_volatile != on) {
+			this.is_fld_volatile = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setFieldVolatile(boolean on) {
+		if (this.is_fld_volatile != on) {
+			this.is_fld_volatile = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setMethodBridge(boolean on) {
+		if (this.is_mth_bridge != on) {
+			this.is_mth_bridge = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setFieldTransient(boolean on) {
+		if (this.is_fld_transient != on) {
+			this.is_fld_transient = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setMethodVarargs(boolean on) {
+		if (this.is_mth_varargs != on) {
+			this.is_mth_varargs = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setMethodNative(boolean on) {
+		if (this.is_mth_native != on) {
+			this.is_mth_native = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setInterface(boolean on) {
+		if (this.is_struct_interface != on) {
+			this.is_struct_interface = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setAbstract(boolean on) {
+		if (this.is_abstract != on) {
+			this.is_abstract = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
+	public void setStructView() {
+		if (!this.is_virtual) {
+			this.is_virtual = true;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	public void setTypeUnerasable(boolean on) {
+		if (this.is_type_unerasable != on) {
+			this.is_type_unerasable = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
+	public final boolean isVirtual() {
+		return this.is_virtual;
+	}
+	public final void setVirtual(boolean on) {
+		if (this.is_virtual != on) {
+			this.is_virtual = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
+	@getter public final boolean isForward() {
+		return this.is_forward;
+	}
+	@setter public final void setForward(boolean on) {
+		if (this.is_forward != on) {
+			this.is_forward = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
 	@nodeview
-	public static abstract view DNodeView of DNodeImpl extends NodeView {
+	public static abstract view DNodeView of DNode extends NodeView {
 
 		public final DNode getDNode() { return (DNode)getNode(); }
 		public Dumper toJavaDecl(Dumper dmp) { return getDNode().toJavaDecl(dmp); }
@@ -831,10 +797,7 @@ public abstract class DNode extends ASTNode {
 		public final void setForward(boolean on);
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-
-	public DNode(NImpl v_impl) { super(v_impl); }
+	public DNode() {}
 
 	public ASTNode getDummyNode() {
 		return DummyDNode.dummyNode;
@@ -850,14 +813,11 @@ public abstract class DNode extends ASTNode {
 @nodeset
 public final class DummyDNode extends DNode {
 	public static final DummyDNode dummyNode = new DummyDNode();
-	@nodeimpl
-	public static final class DummyDNodeImpl extends DNodeImpl {
-		@virtual typedef ImplOf = DummyDNode;
-	}
+
 	@nodeview
-	public static final view DummyDNodeView of DummyDNodeImpl extends DNodeView {
+	public static final view DummyDNodeView of DummyDNode extends DNodeView {
 	}
-	private DummyDNode() { super(new DummyDNodeImpl()); }
+	private DummyDNode() {}
 }
 
 
@@ -869,37 +829,32 @@ public final class DummyDNode extends DNode {
 public abstract class LvalDNode extends DNode {
 
 	@virtual typedef This  = LvalDNode;
-	@virtual typedef NImpl = LvalDNodeImpl;
 	@virtual typedef VView = LvalDNodeView;
 	@virtual typedef JView = JLvalDNode;
 
-	@nodeimpl
-	public static abstract class LvalDNodeImpl extends DNodeImpl {
-		@virtual typedef ImplOf = LvalDNode;
-
-		// init wrapper
-		@getter public final boolean isInitWrapper() {
-			return this.is_init_wrapper;
-		}
-		@setter public final void setInitWrapper(boolean on) {
-			if (this.is_init_wrapper != on) {
-				this.is_init_wrapper = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// need a proxy access 
-		@getter public final boolean isNeedProxy() {
-			return this.is_need_proxy;
-		}
-		@setter public final void setNeedProxy(boolean on) {
-			if (this.is_need_proxy != on) {
-				this.is_need_proxy = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
+	// init wrapper
+	@getter public final boolean isInitWrapper() {
+		return this.is_init_wrapper;
+	}
+	@setter public final void setInitWrapper(boolean on) {
+		if (this.is_init_wrapper != on) {
+			this.is_init_wrapper = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
+	// need a proxy access 
+	@getter public final boolean isNeedProxy() {
+		return this.is_need_proxy;
+	}
+	@setter public final void setNeedProxy(boolean on) {
+		if (this.is_need_proxy != on) {
+			this.is_need_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
 	@nodeview
-	public static abstract view LvalDNodeView of LvalDNodeImpl extends DNodeView {
+	public static abstract view LvalDNodeView of LvalDNode extends DNodeView {
 		// init wrapper
 		public final boolean isInitWrapper();
 		public final void setInitWrapper(boolean on);
@@ -907,10 +862,8 @@ public abstract class LvalDNode extends DNode {
 		public final boolean isNeedProxy();
 		public final void setNeedProxy(boolean on);
 	}
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
 
-	public LvalDNode(LvalDNodeImpl v_impl) { super(v_impl); }
+	public LvalDNode() {}
 
 }
 
@@ -927,169 +880,163 @@ public abstract class ENode extends ASTNode {
 	private static final ENode dummyNode = new NopExpr();
 
 	@virtual typedef This  = ENode;
-	@virtual typedef NImpl = ENodeImpl;
 	@virtual typedef VView = ENodeView;
 	@virtual typedef JView = JENode;
 
-	@nodeimpl
-	public static abstract class ENodeImpl extends NodeImpl {
-		@virtual typedef ImplOf = ENode;
+	//
+	// Expr specific
+	//
 
-		//
-		// Expr specific
-		//
-	
-		// use no proxy	
-		public final boolean isUseNoProxy() {
-			return this.is_expr_use_no_proxy;
+	// use no proxy	
+	public final boolean isUseNoProxy() {
+		return this.is_expr_use_no_proxy;
+	}
+	public final void setUseNoProxy(boolean on) {
+		if (this.is_expr_use_no_proxy != on) {
+			this.is_expr_use_no_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
-		public final void setUseNoProxy(boolean on) {
-			if (this.is_expr_use_no_proxy != on) {
-				this.is_expr_use_no_proxy = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
+	}
+	// use as field (disable setter/getter calls for virtual fields)
+	public final boolean isAsField() {
+		return this.is_expr_as_field;
+	}
+	public final void setAsField(boolean on) {
+		if (this.is_expr_as_field != on) {
+			this.is_expr_as_field = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
-		// use as field (disable setter/getter calls for virtual fields)
-		public final boolean isAsField() {
-			return this.is_expr_as_field;
+	}
+	// expression will generate void value
+	public final boolean isGenVoidExpr() {
+		return this.is_expr_gen_void;
+	}
+	public final void setGenVoidExpr(boolean on) {
+		if (this.is_expr_gen_void != on) {
+			this.is_expr_gen_void = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
-		public final void setAsField(boolean on) {
-			if (this.is_expr_as_field != on) {
-				this.is_expr_as_field = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
+	}
+	// used bt for()
+	public final boolean isForWrapper() {
+		return this.is_expr_for_wrapper;
+	}
+	public final void setForWrapper(boolean on) {
+		if (this.is_expr_for_wrapper != on) {
+			this.is_expr_for_wrapper = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
-		// expression will generate void value
-		public final boolean isGenVoidExpr() {
-			return this.is_expr_gen_void;
+	}
+	// used for primary expressions, i.e. (a+b)
+	public final boolean isPrimaryExpr() {
+		return this.is_expr_primary;
+	}
+	public final void setPrimaryExpr(boolean on) {
+		if (this.is_expr_primary != on) {
+			this.is_expr_primary = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
-		public final void setGenVoidExpr(boolean on) {
-			if (this.is_expr_gen_void != on) {
-				this.is_expr_gen_void = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
+	}
+	// used for super-expressions, i.e. (super.foo or super.foo())
+	public final boolean isSuperExpr() {
+		return this.is_expr_super;
+	}
+	public final void setSuperExpr(boolean on) {
+		if (this.is_expr_super != on) {
+			this.is_expr_super = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
-		// used bt for()
-		public final boolean isForWrapper() {
-			return this.is_expr_for_wrapper;
+	}
+	// used for cast calls (to check for null)
+	public final boolean isCastCall() {
+		return this.is_expr_cast_call;
+	}
+	public final void setCastCall(boolean on) {
+		if (this.is_expr_cast_call != on) {
+			this.is_expr_cast_call = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
-		public final void setForWrapper(boolean on) {
-			if (this.is_expr_for_wrapper != on) {
-				this.is_expr_for_wrapper = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// used for primary expressions, i.e. (a+b)
-		public final boolean isPrimaryExpr() {
-			return this.is_expr_primary;
-		}
-		public final void setPrimaryExpr(boolean on) {
-			if (this.is_expr_primary != on) {
-				this.is_expr_primary = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// used for super-expressions, i.e. (super.foo or super.foo())
-		public final boolean isSuperExpr() {
-			return this.is_expr_super;
-		}
-		public final void setSuperExpr(boolean on) {
-			if (this.is_expr_super != on) {
-				this.is_expr_super = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// used for cast calls (to check for null)
-		public final boolean isCastCall() {
-			return this.is_expr_cast_call;
-		}
-		public final void setCastCall(boolean on) {
-			if (this.is_expr_cast_call != on) {
-				this.is_expr_cast_call = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
+	}
 
-	
-		//
-		// Statement specific flags
-		//
-		
-		// abrupted
-		public final boolean isAbrupted() {
-			return this.is_stat_abrupted;
-		}
-		public final void setAbrupted(boolean on) {
-			if (this.is_stat_abrupted != on) {
-				this.is_stat_abrupted = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// breaked
-		public final boolean isBreaked() {
-			return this.is_stat_breaked;
-		}
-		public final void setBreaked(boolean on) {
-			if (this.is_stat_breaked != on) {
-				this.is_stat_breaked = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// method-abrupted
-		public final boolean isMethodAbrupted() {
-			return this.is_stat_method_abrupted;
-		}
-		public final void setMethodAbrupted(boolean on) {
-			if (this.is_stat_method_abrupted != on) {
-				this.is_stat_method_abrupted = on;
-				if (on) this.is_stat_abrupted = true;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// auto-returnable
-		public final boolean isAutoReturnable() {
-			return this.is_stat_auto_returnable;
-		}
-		public final void setAutoReturnable(boolean on) {
-			if (this.is_stat_auto_returnable != on) {
-				this.is_stat_auto_returnable = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
 
-		public final void replaceWithNodeResolve(Type reqType, ENode node) {
-			assert(isAttached());
-			ASTNode n = this.replaceWithNode(node);
-			assert(n == node);
-			assert(n.isAttached());
-			((ENode)n).resolve(reqType);
-		}
+	//
+	// Statement specific flags
+	//
 	
-		public final void replaceWithResolve(Type reqType, ()->ENode fnode) {
-			assert(isAttached());
-			ASTNode n = this.replaceWith(fnode);
-			assert(n.isAttached());
-			((ENode)n).resolve(reqType);
+	// abrupted
+	public final boolean isAbrupted() {
+		return this.is_stat_abrupted;
+	}
+	public final void setAbrupted(boolean on) {
+		if (this.is_stat_abrupted != on) {
+			this.is_stat_abrupted = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
-	
-		public final void replaceWithNodeResolve(ENode node) {
-			assert(isAttached());
-			ASTNode n = this.replaceWithNode(node);
-			assert(n == node);
-			assert(n.isAttached());
-			((ENode)n).resolve(null);
+	}
+	// breaked
+	public final boolean isBreaked() {
+		return this.is_stat_breaked;
+	}
+	public final void setBreaked(boolean on) {
+		if (this.is_stat_breaked != on) {
+			this.is_stat_breaked = on;
+			this.callbackChildChanged(nodeattr$flags);
 		}
-	
-		public final void replaceWithResolve(()->ENode fnode) {
-			assert(isAttached());
-			ASTNode n = this.replaceWith(fnode);
-			assert(n.isAttached());
-			((ENode)n).resolve(null);
+	}
+	// method-abrupted
+	public final boolean isMethodAbrupted() {
+		return this.is_stat_method_abrupted;
+	}
+	public final void setMethodAbrupted(boolean on) {
+		if (this.is_stat_method_abrupted != on) {
+			this.is_stat_method_abrupted = on;
+			if (on) this.is_stat_abrupted = true;
+			this.callbackChildChanged(nodeattr$flags);
 		}
+	}
+	// auto-returnable
+	public final boolean isAutoReturnable() {
+		return this.is_stat_auto_returnable;
+	}
+	public final void setAutoReturnable(boolean on) {
+		if (this.is_stat_auto_returnable != on) {
+			this.is_stat_auto_returnable = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
+	public final void replaceWithNodeResolve(Type reqType, ENode node) {
+		assert(isAttached());
+		ASTNode n = this.replaceWithNode(node);
+		assert(n == node);
+		assert(n.isAttached());
+		((ENode)n).resolve(reqType);
+	}
+
+	public final void replaceWithResolve(Type reqType, ()->ENode fnode) {
+		assert(isAttached());
+		ASTNode n = this.replaceWith(fnode);
+		assert(n.isAttached());
+		((ENode)n).resolve(reqType);
+	}
+
+	public final void replaceWithNodeResolve(ENode node) {
+		assert(isAttached());
+		ASTNode n = this.replaceWithNode(node);
+		assert(n == node);
+		assert(n.isAttached());
+		((ENode)n).resolve(null);
+	}
+
+	public final void replaceWithResolve(()->ENode fnode) {
+		assert(isAttached());
+		ASTNode n = this.replaceWith(fnode);
+		assert(n.isAttached());
+		((ENode)n).resolve(null);
 	}
 	
 	@nodeview
-	public static abstract view ENodeView of ENodeImpl extends NodeView {
+	public static abstract view ENodeView of ENode extends NodeView {
 
 		public final ENode getENode() { return (ENode)this.getNode(); }
 		
@@ -1159,12 +1106,9 @@ public abstract class ENode extends ASTNode {
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-
 	public static final ENode[] emptyArray = new ENode[0];
 	
-	public ENode(ENodeImpl impl) { super(impl); }
+	public ENode() {}
 
 	public Type[] getAccessTypes() {
 		return new Type[]{getType()};
@@ -1187,32 +1131,23 @@ public final class VarDecl extends ENode implements Named {
 	}
 
 	@virtual typedef This  = VarDecl;
-	@virtual typedef NImpl = VarDeclImpl;
 	@virtual typedef VView = VVarDecl;
 	@virtual typedef JView = JVarDecl;
 	@virtual typedef RView = RVarDecl;
 
-	@nodeimpl
-	public static final class VarDeclImpl extends ENodeImpl {
-		@virtual typedef ImplOf = VarDecl;
-		@att public Var var;
-	}
+	@att public Var var;
+
 	@nodeview
-	public static abstract view VarDeclView of VarDeclImpl extends ENodeView {
+	public static abstract view VarDeclView of VarDecl extends ENodeView {
 		public Var		var;
 	}
 	@nodeview
-	public static final view VVarDecl of VarDeclImpl extends VarDeclView {
+	public static final view VVarDecl of VarDecl extends VarDeclView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public VarDecl() { super(new VarDeclImpl()); }
+	public VarDecl() {}
 	
 	public VarDecl(Var var) {
-		super(new VarDeclImpl());
 		this.var = var;
 	}
 
@@ -1236,22 +1171,18 @@ public final class LocalStructDecl extends ENode implements Named {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = LocalStructDecl;
-	@virtual typedef NImpl = LocalStructDeclImpl;
 	@virtual typedef VView = VLocalStructDecl;
 	@virtual typedef JView = JLocalStructDecl;
 	@virtual typedef RView = RLocalStructDecl;
 
-	@nodeimpl
-	public static final class LocalStructDeclImpl extends ENodeImpl {
-		@virtual typedef ImplOf = LocalStructDecl;
-		@att public Struct clazz;
-	}
+	@att public Struct clazz;
+
 	@nodeview
-	public static abstract view LocalStructDeclView of LocalStructDeclImpl extends ENodeView {
+	public static abstract view LocalStructDeclView of LocalStructDecl extends ENodeView {
 		public Struct		clazz;
 	}
 	@nodeview
-	public static final view VLocalStructDecl of LocalStructDeclImpl extends LocalStructDeclView {
+	public static final view VLocalStructDecl of LocalStructDecl extends LocalStructDeclView {
 		public boolean preResolveIn() {
 			if( ctx_method==null || ctx_method.isStatic())
 				clazz.setStatic(true);
@@ -1262,12 +1193,8 @@ public final class LocalStructDecl extends ENode implements Named {
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-
-	public LocalStructDecl() { super(new LocalStructDeclImpl()); }
+	public LocalStructDecl() {}
 	public LocalStructDecl(Struct clazz) {
-		super(new LocalStructDeclImpl());
 		this.clazz = clazz;
 		clazz.setResolved(true);
 	}
@@ -1297,17 +1224,13 @@ public final class NopExpr extends ENode implements NodeData {
 	}
 
 	@virtual typedef This  = NopExpr;
-	@virtual typedef NImpl = NopExprImpl;
 	@virtual typedef VView = VNopExpr;
 	@virtual typedef RView = RNopExpr;
 
-	@nodeimpl
-	public static final class NopExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = NopExpr;
-		@att public ENode	expr;
-	}
+	@att public ENode	expr;
+
 	@nodeview
-	public static abstract view NopExprView of NopExprImpl extends ENodeView {
+	public static abstract view NopExprView of NopExpr extends ENodeView {
 		public ENode		expr;
 
 		public Type getType() {
@@ -1315,15 +1238,11 @@ public final class NopExpr extends ENode implements NodeData {
 		}
 	}
 	@nodeview
-	public static final view VNopExpr of NopExprImpl extends NopExprView {
+	public static final view VNopExpr of NopExpr extends NopExprView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public NopExpr() { super(new NopExprImpl()); }
+	public NopExpr() {}
 	public NopExpr(ENode expr) {
-		this();
 		this.pos = expr.pos;
 		this.expr = expr;
 	}
@@ -1335,10 +1254,10 @@ public final class NopExpr extends ENode implements NodeData {
 	}
 	
 	public final KString getNodeDataId() { return ID; }
-	public void nodeAttached(NodeImpl node) {}
-	public void dataAttached(NodeImpl node) { this.callbackAttached(node, tempAttrSlot); }
-	public void nodeDetached(NodeImpl node) {}
-	public void dataDetached(NodeImpl node) { this.callbackDetached(); }
+	public void nodeAttached(ASTNode node) {}
+	public void dataAttached(ASTNode node) { this.callbackAttached(node, tempAttrSlot); }
+	public void nodeDetached(ASTNode node) {}
+	public void dataDetached(ASTNode node) { this.callbackDetached(); }
 	
 }
 
@@ -1346,36 +1265,31 @@ public final class NopExpr extends ENode implements NodeData {
 public abstract class TypeDecl extends DNode implements Named {
 
 	@virtual typedef This  = TypeDecl;
-	@virtual typedef NImpl = TypeDeclImpl;
 	@virtual typedef VView = TypeDeclView;
 	@virtual typedef JView = JTypeDecl;
 
-	@nodeimpl
-	public static class TypeDeclImpl extends DNodeImpl {		
-		@virtual typedef ImplOf = TypeDecl;
-		public void callbackSuperTypeChanged(TypeDeclImpl chg) {}
-		public TypeProvider[] getAllSuperTypes() { return TypeProvider.emptyArray; }
-		protected final void addSuperTypes(TypeRef suptr, Vector<TypeProvider> types) {
-			Type sup = suptr.getType();
-			if (sup == null)
-				return;
-			TypeProvider tt = sup.getStruct().imeta_type;
-			if (!types.contains(tt))
-				types.append(tt);
-			TypeProvider[] sup_types = sup.getStruct().getAllSuperTypes();
-			foreach (TypeProvider t; sup_types) {
-				if (!types.contains(t))
-					types.append(t);
-			}
+	public void callbackSuperTypeChanged(TypeDecl chg) {}
+	public TypeProvider[] getAllSuperTypes() { return TypeProvider.emptyArray; }
+	protected final void addSuperTypes(TypeRef suptr, Vector<TypeProvider> types) {
+		Type sup = suptr.getType();
+		if (sup == null)
+			return;
+		TypeProvider tt = sup.getStruct().imeta_type;
+		if (!types.contains(tt))
+			types.append(tt);
+		TypeProvider[] sup_types = sup.getStruct().getAllSuperTypes();
+		foreach (TypeProvider t; sup_types) {
+			if (!types.contains(t))
+				types.append(t);
 		}
-
 	}
+
 	@nodeview
-	public static view TypeDeclView of TypeDeclImpl extends DNodeView {
+	public static view TypeDeclView of TypeDecl extends DNodeView {
 		public TypeProvider[] getAllSuperTypes();
 	}
 
-	public TypeDecl(TypeDeclImpl impl) { super(impl); }
+	public TypeDecl() {}
 
 	public abstract NodeName	getName();
 	public abstract boolean		checkResolved();
@@ -1395,35 +1309,23 @@ public class NameRef extends ASTNode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = NameRef;
-	@virtual typedef NImpl = NameRefImpl;
 	@virtual typedef VView = NameRefView;
 	@virtual typedef JView = JNameRef;
 
-	@nodeimpl
-	public static class NameRefImpl extends NodeImpl {
-		@virtual typedef ImplOf = NameRef;
-		@att public KString name;
-	}
+	@att public KString name;
+
 	@nodeview
-	public static view NameRefView of NameRefImpl extends NodeView {
+	public static view NameRefView of NameRef extends NodeView {
 		public KString name;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-
-
-	public NameRef() {
-		super(new NameRefImpl());
-	}
+	public NameRef() {}
 
 	public NameRef(KString name) {
-		super(new NameRefImpl());
 		this.name = name;
 	}
 
 	public NameRef(int pos, KString name) {
-		super(new NameRefImpl());
 		this.pos = pos;
 		this.name = name;
 	}

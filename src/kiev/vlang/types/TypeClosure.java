@@ -4,7 +4,6 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
-import kiev.vlang.types.TypeRef.TypeRefImpl;
 import kiev.vlang.types.TypeRef.TypeRefView;
 
 import static kiev.stdlib.Debug.*;
@@ -21,16 +20,12 @@ public class TypeClosureRef extends TypeRef {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeClosureRef;
-	@virtual typedef NImpl = TypeClosureRefImpl;
 	@virtual typedef VView = TypeClosureRefView;
 
-	@nodeimpl
-	public static final class TypeClosureRefImpl extends TypeRefImpl {
-		@virtual typedef ImplOf = TypeClosureRef;
-		@att public NArr<TypeRef>		types;
-	}
+	@att public NArr<TypeRef>		types;
+
 	@nodeview
-	public static final view TypeClosureRefView of TypeClosureRefImpl extends TypeRefView {
+	public static final view TypeClosureRefView of TypeClosureRef extends TypeRefView {
 		public:ro	NArr<TypeRef>			types;
 
 		public Type getType() {
@@ -46,14 +41,9 @@ public class TypeClosureRef extends TypeRef {
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
-	public TypeClosureRef() {
-		super(new TypeClosureRefImpl());
-	}
+	public TypeClosureRef() {}
 	
 	public TypeClosureRef(CallType tp) {
-		this();
 		this.lnk = tp;
 		assert (tp.isReference());
 	}

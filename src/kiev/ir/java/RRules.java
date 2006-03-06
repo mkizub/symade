@@ -7,9 +7,7 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
-import kiev.vlang.RuleMethod.RuleMethodImpl;
 import kiev.vlang.RuleMethod.RuleMethodView;
-import kiev.vlang.RuleBlock.RuleBlockImpl;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -20,7 +18,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RRuleMethod of RuleMethodImpl extends RMethod {
+public final view RRuleMethod of RuleMethod extends RMethod {
 	public boolean preGenerate() {
 		Var penv = params[0];
 		assert(penv.name.name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
@@ -57,7 +55,7 @@ public final view RRuleMethod of RuleMethodImpl extends RMethod {
 }
 
 @nodeview
-public final view RRuleBlock of RuleBlockImpl extends RBlock {
+public final view RRuleBlock of RuleBlock extends RBlock {
 	public ASTRuleNode		node;
 	public StringBuffer		fields_buf;
 
@@ -112,7 +110,7 @@ public final view RRuleBlock of RuleBlockImpl extends RBlock {
 			sb.append("}\nreturn null;\n");
 		sb.append("}\n");
 		trace(Kiev.debugRules,"Rule text generated:\n"+sb);
-		Block mbody = Kiev.parseBlock(this.getNode(),sb);
+		Block mbody = Kiev.parseBlock((RuleBlock)this,sb);
 		ctx_method.body = mbody;
 		mbody.stats.addAll(stats.delToArray());
 		return false;

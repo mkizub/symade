@@ -6,7 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.FileUnit.FileUnitImpl;
 import kiev.vlang.FileUnit.FileUnitView;
 
 import static kiev.stdlib.Debug.*;
@@ -18,7 +17,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RFileUnit of FileUnitImpl extends FileUnitView {
+public static final view RFileUnit of FileUnit extends FileUnitView {
 	
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving file "+filename);

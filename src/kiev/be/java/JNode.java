@@ -11,25 +11,11 @@ import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.ASTNode.NodeImpl;
-import kiev.vlang.DNode.DNodeImpl;
-import kiev.vlang.ENode.ENodeImpl;
-import kiev.vlang.LvalDNode.LvalDNodeImpl;
-import kiev.vlang.VarDecl.VarDeclImpl;
-import kiev.vlang.LocalStructDecl.LocalStructDeclImpl;
-import kiev.vlang.TypeDecl.TypeDeclImpl;
-import kiev.vlang.types.TypeRef.TypeRefImpl;
-import kiev.vlang.NameRef.NameRefImpl;
-
 @nodeview
-public view JNode of NodeImpl implements Constants {
-	@virtual typedef ViewOf  = ASTNode;
-	public final ViewOf getNode() alias operator(210,fy,$cast) {
-		return ((NodeImpl)this)._self;
-	}
-	
-	public String toString() { return String.valueOf(getNode()); }
-	public Dumper toJava(Dumper dmp) { return getNode().toJava(dmp); }
+public view JNode of ASTNode implements Constants {
+
+	public String toString();
+	public Dumper toJava(Dumper dmp);
 	
 	public:ro	int			pos;
 //	public:ro	int			compileflags;
@@ -41,7 +27,7 @@ public view JNode of NodeImpl implements Constants {
 	public final boolean isHidden();
 	public final boolean isBad();
 	
-	@getter public final JNode get$jparent() { return (JNode)((NodeImpl)this).parent; }
+	@getter public final JNode get$jparent() { return (JNode)((ASTNode)this).parent; }
 	@getter public JFileUnit get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
 	@getter public JStruct get$jctx_clazz() { return this.jparent.child_jctx_clazz; }
 	@getter public JStruct get$child_jctx_clazz() { return this.jparent.get$child_jctx_clazz(); }
@@ -49,18 +35,16 @@ public view JNode of NodeImpl implements Constants {
 	@getter public JMethod get$child_jctx_method() { return this.jparent.get$child_jctx_method(); }
 
 	public boolean equals(Object:Object obj) { return false; }
-	public boolean equals(JNode:Object jnv) { return (NodeImpl)this == (NodeImpl)jnv; }
+	public boolean equals(JNode:Object jnv) { return (ASTNode)this == (ASTNode)jnv; }
 
-	public final Type getType() { return ((NodeImpl)this)._self.getType(); }
+	public final Type getType() { return ((ASTNode)this).getType(); }
 	
 }
 
 @nodeview
-public view JDNode of DNodeImpl extends JNode {
+public view JDNode of DNode extends JNode {
 
-	public final DNode getDNode() { return (DNode)this.getNode(); }
-	
-	public				int			flags;
+	public		int			flags;
 	public:ro	MetaSet		meta;
 
 	public final boolean isPublic()				{ return (flags & ACC_PUBLIC) != 0; }
@@ -80,19 +64,19 @@ public view JDNode of DNodeImpl extends JNode {
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 
 	public void setPrivate();
+
+	public boolean isTypeUnerasable();
 }
 
 @nodeview
-public view JLvalDNode of LvalDNodeImpl extends JDNode {
+public view JLvalDNode of LvalDNode extends JDNode {
 	public final boolean isForward();
 	public final boolean isInitWrapper();
 	public final boolean isNeedProxy();
 }
 
 @nodeview
-public view JENode of ENodeImpl extends JNode {
-	
-	public final ENode getENode() alias operator(210,fy,$cast) { return (ENode)this.getNode(); }
+public view JENode of ENode extends JNode {
 	
 	//
 	// Expr specific
@@ -125,13 +109,13 @@ public view JENode of ENodeImpl extends JNode {
 	public void generate(Code code, Type reqType) {
 		Dumper dmp = new Dumper();
 		dmp.append(this);
-		throw new CompilerException(this,"Unresolved node ("+this.getNode().getClass()+") generation, expr: "+dmp);
+		throw new CompilerException(this,"Unresolved node ("+((ENode)this).getClass()+") generation, expr: "+dmp);
 	}
 
 }
 
 @nodeview
-public final view JVarDecl of VarDeclImpl extends JENode {
+public final view JVarDecl of VarDecl extends JENode {
 
 	public:ro	JVar	var;
 
@@ -141,7 +125,7 @@ public final view JVarDecl of VarDeclImpl extends JENode {
 }
 
 @nodeview
-public final view JLocalStructDecl of LocalStructDeclImpl extends JENode {
+public final view JLocalStructDecl of LocalStructDecl extends JENode {
 	public:ro Struct		clazz;
 
 	public void generate(Code code, Type reqType) {
@@ -150,11 +134,11 @@ public final view JLocalStructDecl of LocalStructDeclImpl extends JENode {
 }
 
 @nodeview
-public view JTypeDecl of TypeDeclImpl extends JDNode {
+public view JTypeDecl of TypeDecl extends JDNode {
 }
 
 @nodeview
-public static final view JTypeRef of TypeRefImpl extends JENode {
+public static final view JTypeRef of TypeRef extends JENode {
 	public:ro Type	lnk;
 
 	public void generate(Code code, Type reqType) {
@@ -163,7 +147,7 @@ public static final view JTypeRef of TypeRefImpl extends JENode {
 }
 
 @nodeview
-public static final view JNameRef of NameRefImpl extends JNode {
+public static final view JNameRef of NameRef extends JNode {
 	public:ro KString name;
 
 	public void generate(Code code, Type reqType) {

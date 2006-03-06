@@ -8,8 +8,6 @@ import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
 
-import kiev.vlang.Var.VarImpl;
-
 /**
  * @author Maxim Kizub
  * @version $Revision: 242 $
@@ -17,20 +15,18 @@ import kiev.vlang.Var.VarImpl;
  */
 
 @nodeview
-public final view JVar of VarImpl extends JLvalDNode {
+public final view JVar of Var extends JLvalDNode {
 	
-	public final Var getVar() { return (Var)this.getNode(); }
-		
-	public:ro	KString				name;
-	public:ro	Type				vtype;
-	public:ro	JType				jtype;
+	public:ro	KString			name;
+	public:ro	Type			vtype;
+	public:ro	JType			jtype;
 	public:ro	JENode			init;
-	public				int					bcpos;
+	public		int				bcpos;
 
 	@getter public final Type get$type() {
-		if (((VarImpl)this).vtype == null)
+		if (((Var)this).vtype == null)
 			return Type.tpVoid;
-		return ((VarImpl)this).vtype.getType();
+		return ((Var)this).vtype.getType();
 	}
 	@getter public final JType get$jtype() {
 		return this.get$type().getJType();
@@ -44,7 +40,7 @@ public final view JVar of VarImpl extends JLvalDNode {
 	public void set$bcpos(int pos) {
 		if( pos < 0 || pos > 255)
 			throw new RuntimeException("Bad bytecode position specified: "+pos);
-		((VarImpl)this).bcpos = pos;
+		this.bcpos = pos;
 	}
 
 	public void generate(Code code, Type reqType) {

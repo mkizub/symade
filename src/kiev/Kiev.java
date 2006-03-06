@@ -37,10 +37,10 @@ public final class Kiev {
 	}
 	
    	public static void reportError(ASTNode.NodeView from, Throwable e) {
-		reportError(from.getNode(),e);
+		reportError((ASTNode)from,e);
 	}
    	public static void reportError(JNode from, Throwable e) {
-		reportError(from.getNode(),e);
+		reportError((ASTNode)from,e);
 	}
 	
    	public static void reportError(ASTNode from, Throwable e) {
@@ -140,10 +140,10 @@ public final class Kiev {
 	}
 	
    	public static void reportError(ASTNode.NodeView from, String msg) {
-		reportError(from.getNode(),msg);
+		reportError((ASTNode)from,msg);
 	}
    	public static void reportError(JNode from, String msg) {
-		reportError(from.getNode(),msg);
+		reportError((ASTNode)from,msg);
 	}
 	
 	public static void reportError(ASTNode from, String msg) {
@@ -244,7 +244,7 @@ public final class Kiev {
 		if (nowarn)
 			return;
 		if( debug && verbose) new Exception().printStackTrace(System.out);
-		report(code.last_lineno<<11, code.clazz.jctx_file_unit.getFileUnit(), code.clazz.getStruct(), code.method.getMethod(), SeverError.Warning, msg);
+		report(code.last_lineno<<11, (FileUnit)code.clazz.jctx_file_unit, (Struct)code.clazz, (Method)code.method, SeverError.Warning, msg);
 	}
 	
 	public static void reportWarning(String msg) {
@@ -252,7 +252,7 @@ public final class Kiev {
 	}
 	
 	public static void reportWarning(ASTNode.NodeView from, String msg) {
-		reportWarning(from==null?null:from.getNode(), msg);
+		reportWarning((ASTNode)from, msg);
 	}
 	
 	public static void reportWarning(ASTNode from, String msg) {

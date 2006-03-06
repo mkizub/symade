@@ -6,12 +6,8 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Method.MethodImpl;
 import kiev.vlang.Method.MethodView;
-import kiev.vlang.Constructor.ConstructorImpl;
-import kiev.vlang.Initializer.InitializerImpl;
 import kiev.vlang.Initializer.InitializerView;
-import kiev.vlang.WBCCondition.WBCConditionImpl;
 import kiev.vlang.WBCCondition.WBCConditionView;
 
 import static kiev.stdlib.Debug.*;
@@ -23,7 +19,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public view RMethod of MethodImpl extends MethodView {
+public view RMethod of Method extends MethodView {
 	public void resolveDecl() {
 		RMethod.resolveMethod(this);
 	}
@@ -73,7 +69,7 @@ public view RMethod of MethodImpl extends MethodView {
 }
 
 @nodeview
-public final view RConstructor of ConstructorImpl extends RMethod {
+public final view RConstructor of Constructor extends RMethod {
 	public:ro	NArr<ENode>			addstats;
 
 	public void resolveDecl() {
@@ -87,7 +83,7 @@ public final view RConstructor of ConstructorImpl extends RMethod {
 }
 
 @nodeview
-public final view RInitializer of InitializerImpl extends InitializerView {
+public final view RInitializer of Initializer extends InitializerView {
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		
@@ -102,7 +98,7 @@ public final view RInitializer of InitializerImpl extends InitializerView {
 }
 
 @nodeview
-public final view RWBCCondition of WBCConditionImpl extends WBCConditionView {
+public final view RWBCCondition of WBCCondition extends WBCConditionView {
 	public void resolveDecl() {
 		if( code_attr != null ) return;
 		body.resolve(Type.tpVoid);

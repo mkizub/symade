@@ -6,6 +6,8 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
+import kiev.be.java.JFileUnit;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -770,7 +772,7 @@ class JavaBackend extends BackendProcessor {
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			} else {
 				try {
-					node.getJView().generate();
+					((JFileUnit)node).generate();
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			}
 		}

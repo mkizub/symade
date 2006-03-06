@@ -30,81 +30,76 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	}
 
 	@virtual typedef This  = Field;
-	@virtual typedef NImpl = FieldImpl;
 	@virtual typedef VView = VField;
 	@virtual typedef JView = JField;
 	@virtual typedef RView = RField;
 
-	@nodeimpl
-	public static final class FieldImpl extends LvalDNodeImpl {
-		@virtual typedef ImplOf = Field;
+	/** Field' access */
+		 public Access				acc;
+	/** Name of the field */
+		 public NodeName			name;
+	/** Type of the field */
+	@att public TypeRef				ftype;
+	/** Initial value of this field */
+	@att public ENode				init;
+	/** Constant value of this field */
+	@ref public ConstExpr			const_value;
+	/** Array of attributes of this field */
+	public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
+	/** Array of invariant methods, that check this field */
+	@ref public NArr<Method>		invs;
 
-		/** Field' access */
-		     public Access				acc;
-		/** Name of the field */
-		     public NodeName			name;
-		/** Type of the field */
-		@att public TypeRef				ftype;
-		/** Initial value of this field */
-		@att public ENode				init;
-		/** Constant value of this field */
-		@ref public ConstExpr			const_value;
-		/** Array of attributes of this field */
-		public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
-		/** Array of invariant methods, that check this field */
-		@ref public NArr<Method>		invs;
-
-		public void callbackChildChanged(AttrSlot attr) {
-			if (parent != null && pslot != null) {
-				if      (attr.name == "ftype")
-					parent.callbackChildChanged(pslot);
-				else if (attr.name == "meta")
-					parent.callbackChildChanged(pslot);
-			}
-		}
-
-		// is a field of enum
-		public final boolean isEnumField() {
-			return this.is_fld_enum;
-		}
-		public final void setEnumField(boolean on) {
-			if (this.is_fld_enum != on) {
-				this.is_fld_enum = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// packer field (auto-generated for packed fields)
-		public final boolean isPackerField() {
-			return this.is_fld_packer;
-		}
-		public final void setPackerField(boolean on) {
-			if (this.is_fld_packer != on) {
-				this.is_fld_packer = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// packed field
-		public final boolean isPackedField() {
-			return this.is_fld_packed;
-		}
-		public final void setPackedField(boolean on) {
-			if (this.is_fld_packed != on) {
-				this.is_fld_packed = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// field's initializer was already added to class initializer
-		public final boolean isAddedToInit() {
-			return this.is_fld_added_to_init;
-		}
-		public final void setAddedToInit(boolean on) {
-			if (this.is_fld_added_to_init != on) {
-				this.is_fld_added_to_init = on;
-			}
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if      (attr.name == "ftype")
+				parent.callbackChildChanged(pslot);
+			else if (attr.name == "meta")
+				parent.callbackChildChanged(pslot);
 		}
 	}
+
+	// is a field of enum
+	public final boolean isEnumField() {
+		return this.is_fld_enum;
+	}
+	public final void setEnumField(boolean on) {
+		if (this.is_fld_enum != on) {
+			this.is_fld_enum = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// packer field (auto-generated for packed fields)
+	public final boolean isPackerField() {
+		return this.is_fld_packer;
+	}
+	public final void setPackerField(boolean on) {
+		if (this.is_fld_packer != on) {
+			this.is_fld_packer = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// packed field
+	public final boolean isPackedField() {
+		return this.is_fld_packed;
+	}
+	public final void setPackedField(boolean on) {
+		if (this.is_fld_packed != on) {
+			this.is_fld_packed = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// field's initializer was already added to class initializer
+	public final boolean isAddedToInit() {
+		return this.is_fld_added_to_init;
+	}
+	public final void setAddedToInit(boolean on) {
+		if (this.is_fld_added_to_init != on) {
+			this.is_fld_added_to_init = on;
+		}
+	}
+
 	@nodeview
-	public static view FieldView of FieldImpl extends LvalDNodeView {
+	public static view FieldView of Field extends LvalDNodeView {
 		public		Access			acc;
 		public		NodeName		name;
 		public		TypeRef			ftype;
@@ -112,8 +107,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 		public		ConstExpr		const_value;
 		public:ro	NArr<Method>	invs;
 		
-		@setter public final void set$acc(Access val)	{ ((FieldImpl)this).acc = val; Access.verifyDecl((Field)getDNode()); }
-		@getter public final Type	get$type()			{ return ((FieldImpl)this).ftype.getType(); }
+		@getter public final Type	get$type()			{ return ((Field)this).ftype.getType(); }
 		
 		// is a field of enum
 		public final boolean isEnumField();
@@ -148,24 +142,19 @@ public final class Field extends LvalDNode implements Named, Accessable {
 		}
 	}
 	@nodeview
-	public static final view VField of FieldImpl extends FieldView {
+	public static final view VField of Field extends FieldView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
+	@setter public final void		set$acc(Access val)	{ this.acc = val; Access.verifyDecl(this); }
+	@getter public final Access		get$acc()			{ return this.acc; }
 
-	@getter public Access			get$acc()			{ return this.getVView().acc; }
-	@setter public void set$acc(Access val)			{ this.getVView().acc = val; }
-
-	public Field() { super(new FieldImpl()); }
+	public Field() {}
 	
     /** Constructor for new field
 	    This constructor must not be called directly,
 	    but via factory method newField(...) of Clazz
      */
 	public Field(KString name, TypeRef ftype, int flags) {
-		this();
 		this.flags = flags;
 		this.name = new NodeName(name);
 		this.ftype = ftype;
@@ -206,7 +195,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	}
 
 	public void resolveDecl() {
-		getRView().resolveDecl();
+		((RView)this).resolveDecl();
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {

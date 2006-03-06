@@ -28,27 +28,20 @@ import syntax kiev.Syntax;
 public final class ProjectFile extends ASTNode {
 
 	@virtual typedef This  = ProjectFile;
-	@virtual typedef NImpl = ProjectFileImpl;
 	@virtual typedef VView = ProjectFileView;
 
-	@nodeimpl
-	public static final class ProjectFileImpl extends NodeImpl {
-		@virtual typedef ImplOf = ProjectFile;
-		public ClazzName	name;
-		public File			file;
-		public boolean		bad = true;
-	}
+	public ClazzName	name;
+	public File			file;
+	public boolean		bad = true;
+
 	@nodeview
-	public static final view ProjectFileView of ProjectFileImpl extends NodeView {
+	public static final view ProjectFileView of ProjectFile extends NodeView {
 		public ClazzName	name;
 		public File			file;
 		public boolean		bad;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
 	public ProjectFile(ClazzName clname, File f) {
-		super(new ProjectFileImpl());
 		name = clname;
 		file = f;
 	}

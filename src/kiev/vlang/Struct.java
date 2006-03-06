@@ -30,315 +30,308 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	@virtual typedef This  = Struct;
-	@virtual typedef NImpl = StructImpl;
 	@virtual typedef VView = VStruct;
 	@virtual typedef JView = JStruct;
 	@virtual typedef RView = RStruct;
 
-	@nodeimpl
-	public static final class StructImpl extends TypeDeclImpl {
-		@virtual typedef ImplOf = Struct;
+		 public Access						acc;
+		 public ClazzName					name;
+		 public CompaundTypeProvider		imeta_type;
+		 public WrapperTypeProvider			wmeta_type;
+		 public OuterTypeProvider			ometa_type;
+		 public CompaundType				ctype;
+	@att public TypeRef						view_of;
+	@att public TypeRef						super_bound;
+	@att public NArr<TypeRef>				interfaces;
+	@att public NArr<TypeDef>				args;
+	@ref public Struct						package_clazz;
+	@ref public Struct						typeinfo_clazz;
+	@ref public Struct						iface_impl;
+	@ref public NArr<Struct>				sub_clazz;
+	@ref public NArr<DNode>					imported;
+	@ref public NArr<TypeDecl>				direct_extenders;
+	public kiev.be.java.Attr[]				attrs = kiev.be.java.Attr.emptyArray;
+	@att public NArr<DNode>					members;
+		 private TypeProvider[]				super_types;
 
-		public final Struct getStruct() { return (Struct)this._self; }
-		
-		     public Access						acc;
-		     public ClazzName					name;
-		     public CompaundTypeProvider		imeta_type;
-		     public WrapperTypeProvider			wmeta_type;
-		     public OuterTypeProvider			ometa_type;
-		     public CompaundType				ctype;
-		@att public TypeRef						view_of;
-		@att public TypeRef						super_bound;
-		@att public NArr<TypeRef>				interfaces;
-		@att public NArr<TypeDef>				args;
-		@ref public Struct						package_clazz;
-		@ref public Struct						typeinfo_clazz;
-		@ref public Struct						iface_impl;
-		@ref public NArr<Struct>				sub_clazz;
-		@ref public NArr<DNode>					imported;
-		@ref public NArr<TypeDecl>				direct_extenders;
-		public kiev.be.java.Attr[]				attrs = kiev.be.java.Attr.emptyArray;
-		@att public NArr<DNode>					members;
-		     private TypeProvider[]				super_types;
-
-		public void callbackChildChanged(AttrSlot attr) {
-			if (attr.name == "args" ||
-				attr.name == "super_bound" ||
-				attr.name == "interfaces" ||
-				attr.name == "package_clazz"
-			) {
-				this.callbackSuperTypeChanged(this);
-			}
-		}
-		
-		public void callbackSuperTypeChanged(TypeDeclImpl chg) {
-			super_types = null;
-			imeta_type.version++;
-			foreach (TypeDecl td; direct_extenders)
-				td.$v_impl.callbackSuperTypeChanged(chg);
-		}
-		
-		public TypeProvider[] getAllSuperTypes() {
-			if (super_types != null)
-				return super_types;
-			Vector<TypeProvider> types = new Vector<TypeProvider>();
-			addSuperTypes(super_bound, types);
-			foreach (TypeRef it; interfaces)
-				addSuperTypes(it, types);
-			if (types.length == 0)
-				super_types = TypeProvider.emptyArray;
-			else
-				super_types = types.toArray();
-			return super_types;
-		}
-		
-		public boolean isClazz() {
-			return !isPackage() && !isInterface();
-		}
-		
-		// a pizza case	
-		public final boolean isPizzaCase() {
-			return this.is_struct_pizza_case;
-		}
-		public final void setPizzaCase(boolean on) {
-			if (this.is_struct_pizza_case != on) {
-				this.is_struct_pizza_case = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// a structure with the only one instance (singleton)	
-		public final boolean isSingleton() {
-			return this.is_struct_singleton;
-		}
-		public final void setSingleton(boolean on) {
-			if (this.is_struct_singleton != on) {
-				this.is_struct_singleton = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// a local (in method) class	
-		public final boolean isLocal() {
-			return this.is_struct_local;
-		}
-		public final void setLocal(boolean on) {
-			if (this.is_struct_local != on) {
-				this.is_struct_local = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// an anonymouse (unnamed) class	
-		public final boolean isAnonymouse() {
-			return this.is_struct_anomymouse;
-		}
-		public final void setAnonymouse(boolean on) {
-			if (this.is_struct_anomymouse != on) {
-				this.is_struct_anomymouse = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// has pizza cases
-		public final boolean isHasCases() {
-			return this.is_struct_has_pizza_cases;
-		}
-		public final void setHasCases(boolean on) {
-			if (this.is_struct_has_pizza_cases != on) {
-				this.is_struct_has_pizza_cases = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// indicates that structure members were generated
-		public final boolean isMembersGenerated() {
-			return this.is_struct_members_generated;
-		}
-		public final void setMembersGenerated(boolean on) {
-			if (this.is_struct_members_generated != on) {
-				this.is_struct_members_generated = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// indicates that structure members were pre-generated
-		public final boolean isMembersPreGenerated() {
-			return this.is_struct_pre_generated;
-		}
-		public final void setMembersPreGenerated(boolean on) {
-			if (this.is_struct_pre_generated != on) {
-				this.is_struct_pre_generated = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		
-		// indicates that statements in code were generated
-		public final boolean isStatementsGenerated() {
-			return this.is_struct_statements_generated;
-		}
-		public final void setStatementsGenerated(boolean on) {
-			if (this.is_struct_statements_generated != on) {
-				this.is_struct_statements_generated = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// indicates that the structrue was generared (from template)
-		public final boolean isGenerated() {
-			return this.is_struct_generated;
-		}
-		public final void setGenerated(boolean on) {
-			if (this.is_struct_generated != on) {
-				this.is_struct_generated = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// indicates that type of the structure was attached
-		public final boolean isTypeResolved() {
-			return this.is_struct_type_resolved;
-		}
-		public final void setTypeResolved(boolean on) {
-			if (this.is_struct_type_resolved != on) {
-				this.is_struct_type_resolved = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// indicates that type arguments of the structure were resolved
-		public final boolean isArgsResolved() {
-			return this.is_struct_args_resolved;
-		}
-		public final void setArgsResolved(boolean on) {
-			if (this.is_struct_args_resolved != on) {
-				this.is_struct_args_resolved = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// kiev annotation
-		public final boolean isAnnotation() {
-			return this.is_struct_annotation;
-		}
-		public final void setAnnotation(boolean on) {
-			assert(!on || (!isPackage() && !isSyntax()));
-			if (this.is_struct_annotation != on) {
-				this.is_struct_annotation = on;
-				if (on) this.setInterface(true);
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// java enum
-		public final boolean isEnum() {
-			return this.is_struct_enum;
-		}
-		public final void setEnum(boolean on) {
-			if (this.is_struct_enum != on) {
-				this.is_struct_enum = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// structure was loaded from bytecode
-		public final boolean isLoadedFromBytecode() {
-			return this.is_struct_bytecode;
-		}
-		public final void setLoadedFromBytecode(boolean on) {
-			this.is_struct_bytecode = on;
-		}
-
-		/** Add information about new sub structure, this class (package) containes */
-		public Struct addSubStruct(Struct sub) {
-			// Check we already have this sub-class
-			for(int i=0; i < sub_clazz.length; i++) {
-				if( sub_clazz[i].equals(sub) ) {
-					// just ok
-					return sub;
-				}
-			}
-			// Check package class is null or equals to this
-			if( sub.package_clazz == null ) sub.package_clazz = ((StructImpl)this)._self;
-			else if( sub.package_clazz != ((StructImpl)this)._self ) {
-				throw new RuntimeException("Sub-structure "+sub+" already has package class "
-					+sub.package_clazz+" that differs from "+this);
-			}
-	
-			sub_clazz.append(sub);
-	
-			trace(Kiev.debugMembers,"Sub-class "+sub+" added to class "+this);
-			if (sub.name.short_name == nameClTypeInfo) {
-				typeinfo_clazz = sub;
-				trace(Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+this);
-			}
-			return sub;
-		}
-	
-		/** Add information about new method that belongs to this class */
-		public Method addMethod(Method m) {
-			// Check we already have this method
-			members.append(m);
-			trace(Kiev.debugMembers,"Method "+m+" added to class "+this);
-			foreach (ASTNode n; members; n instanceof Method && n != m) {
-				Method mm = (Method)n;
-				if( mm.equals(m) )
-					Kiev.reportError(m,"Method "+m+" already exists in class "+this);
-				if (mm.name.equals(m.name) && mm.type.equals(m.type))
-					Kiev.reportError(m,"Method "+m+" already exists in class "+this);
-			}
-			return m;
-		}
-	
-		/** Remove information about new method that belongs to this class */
-		public void removeMethod(Method m) {
-			// Check we already have this method
-			int i = 0;
-			for(i=0; i < members.length; i++) {
-				if( members[i].equals(m) ) {
-					members.del(i);
-					trace(Kiev.debugMembers,"Method "+m+" removed from class "+this);
-					return;
-				}
-			}
-			throw new RuntimeException("Method "+m+" do not exists in class "+this);
-		}
-	
-		/** Add information about new field that belongs to this class */
-		public Field addField(Field f) {
-			// Check we already have this field
-			foreach (ASTNode n; members; n instanceof Field) {
-				Field ff = (Field)n;
-				if( ff.equals(f) ) {
-					throw new RuntimeException("Field "+f+" already exists in class "+this);
-				}
-			}
-			members.append(f);
-			trace(Kiev.debugMembers,"Field "+f+" added to class "+this);
-			return f;
-		}
-	
-		/** Remove information about a field that belongs to this class */
-		public void removeField(Field f) {
-			// Check we already have this method
-			for(int i=0; i < members.length; i++) {
-				if( members[i].equals(f) ) {
-					members.del(i);
-					trace(Kiev.debugMembers,"Field "+f+" removed from class "+this);
-					return;
-				}
-			}
-			throw new RuntimeException("Field "+f+" do not exists in class "+this);
-		}
-	
-		/** Add information about new pizza case of this class */
-		public Struct addCase(Struct cas) {
-			setHasCases(true);
-			int caseno = 0;
-			foreach (DNode n; members; n instanceof Struct && ((Struct)n).isPizzaCase()) {
-				Struct s = (Struct)n;
-				MetaPizzaCase meta = s.getMetaPizzaCase();
-				if (meta != null && meta.getTag() > caseno)
-					caseno = meta.getTag();
-			}
-			MetaPizzaCase meta = cas.getMetaPizzaCase();
-			if (meta == null)
-				cas.addNodeData(meta = new MetaPizzaCase());
-			meta.setTag(caseno + 1);
-			trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
-			return cas;
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "args" ||
+			attr.name == "super_bound" ||
+			attr.name == "interfaces" ||
+			attr.name == "package_clazz"
+		) {
+			this.callbackSuperTypeChanged(this);
 		}
 	}
+	
+	public void callbackSuperTypeChanged(TypeDecl chg) {
+		super_types = null;
+		imeta_type.version++;
+		foreach (TypeDecl td; direct_extenders)
+			td.callbackSuperTypeChanged(chg);
+	}
+	
+	public TypeProvider[] getAllSuperTypes() {
+		if (super_types != null)
+			return super_types;
+		Vector<TypeProvider> types = new Vector<TypeProvider>();
+		addSuperTypes(super_bound, types);
+		foreach (TypeRef it; interfaces)
+			addSuperTypes(it, types);
+		if (types.length == 0)
+			super_types = TypeProvider.emptyArray;
+		else
+			super_types = types.toArray();
+		return super_types;
+	}
+	
+	public boolean isClazz() {
+		return !isPackage() && !isInterface();
+	}
+	
+	// a pizza case	
+	public final boolean isPizzaCase() {
+		return this.is_struct_pizza_case;
+	}
+	public final void setPizzaCase(boolean on) {
+		if (this.is_struct_pizza_case != on) {
+			this.is_struct_pizza_case = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a structure with the only one instance (singleton)	
+	public final boolean isSingleton() {
+		return this.is_struct_singleton;
+	}
+	public final void setSingleton(boolean on) {
+		if (this.is_struct_singleton != on) {
+			this.is_struct_singleton = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a local (in method) class	
+	public final boolean isLocal() {
+		return this.is_struct_local;
+	}
+	public final void setLocal(boolean on) {
+		if (this.is_struct_local != on) {
+			this.is_struct_local = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// an anonymouse (unnamed) class	
+	public final boolean isAnonymouse() {
+		return this.is_struct_anomymouse;
+	}
+	public final void setAnonymouse(boolean on) {
+		if (this.is_struct_anomymouse != on) {
+			this.is_struct_anomymouse = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// has pizza cases
+	public final boolean isHasCases() {
+		return this.is_struct_has_pizza_cases;
+	}
+	public final void setHasCases(boolean on) {
+		if (this.is_struct_has_pizza_cases != on) {
+			this.is_struct_has_pizza_cases = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// indicates that structure members were generated
+	public final boolean isMembersGenerated() {
+		return this.is_struct_members_generated;
+	}
+	public final void setMembersGenerated(boolean on) {
+		if (this.is_struct_members_generated != on) {
+			this.is_struct_members_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// indicates that structure members were pre-generated
+	public final boolean isMembersPreGenerated() {
+		return this.is_struct_pre_generated;
+	}
+	public final void setMembersPreGenerated(boolean on) {
+		if (this.is_struct_pre_generated != on) {
+			this.is_struct_pre_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	
+	// indicates that statements in code were generated
+	public final boolean isStatementsGenerated() {
+		return this.is_struct_statements_generated;
+	}
+	public final void setStatementsGenerated(boolean on) {
+		if (this.is_struct_statements_generated != on) {
+			this.is_struct_statements_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// indicates that the structrue was generared (from template)
+	public final boolean isGenerated() {
+		return this.is_struct_generated;
+	}
+	public final void setGenerated(boolean on) {
+		if (this.is_struct_generated != on) {
+			this.is_struct_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// indicates that type of the structure was attached
+	public final boolean isTypeResolved() {
+		return this.is_struct_type_resolved;
+	}
+	public final void setTypeResolved(boolean on) {
+		if (this.is_struct_type_resolved != on) {
+			this.is_struct_type_resolved = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// indicates that type arguments of the structure were resolved
+	public final boolean isArgsResolved() {
+		return this.is_struct_args_resolved;
+	}
+	public final void setArgsResolved(boolean on) {
+		if (this.is_struct_args_resolved != on) {
+			this.is_struct_args_resolved = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// kiev annotation
+	public final boolean isAnnotation() {
+		return this.is_struct_annotation;
+	}
+	public final void setAnnotation(boolean on) {
+		assert(!on || (!isPackage() && !isSyntax()));
+		if (this.is_struct_annotation != on) {
+			this.is_struct_annotation = on;
+			if (on) this.setInterface(true);
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// java enum
+	public final boolean isEnum() {
+		return this.is_struct_enum;
+	}
+	public final void setEnum(boolean on) {
+		if (this.is_struct_enum != on) {
+			this.is_struct_enum = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// structure was loaded from bytecode
+	public final boolean isLoadedFromBytecode() {
+		return this.is_struct_bytecode;
+	}
+	public final void setLoadedFromBytecode(boolean on) {
+		this.is_struct_bytecode = on;
+	}
+
+	/** Add information about new sub structure, this class (package) containes */
+	public Struct addSubStruct(Struct sub) {
+		// Check we already have this sub-class
+		for(int i=0; i < sub_clazz.length; i++) {
+			if( sub_clazz[i].equals(sub) ) {
+				// just ok
+				return sub;
+			}
+		}
+		// Check package class is null or equals to this
+		if( sub.package_clazz == null ) sub.package_clazz = this;
+		else if( sub.package_clazz != this ) {
+			throw new RuntimeException("Sub-structure "+sub+" already has package class "
+				+sub.package_clazz+" that differs from "+this);
+		}
+
+		sub_clazz.append(sub);
+
+		trace(Kiev.debugMembers,"Sub-class "+sub+" added to class "+this);
+		if (sub.name.short_name == nameClTypeInfo) {
+			typeinfo_clazz = sub;
+			trace(Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+this);
+		}
+		return sub;
+	}
+
+	/** Add information about new method that belongs to this class */
+	public Method addMethod(Method m) {
+		// Check we already have this method
+		members.append(m);
+		trace(Kiev.debugMembers,"Method "+m+" added to class "+this);
+		foreach (ASTNode n; members; n instanceof Method && n != m) {
+			Method mm = (Method)n;
+			if( mm.equals(m) )
+				Kiev.reportError(m,"Method "+m+" already exists in class "+this);
+			if (mm.name.equals(m.name) && mm.type.equals(m.type))
+				Kiev.reportError(m,"Method "+m+" already exists in class "+this);
+		}
+		return m;
+	}
+
+	/** Remove information about new method that belongs to this class */
+	public void removeMethod(Method m) {
+		// Check we already have this method
+		int i = 0;
+		for(i=0; i < members.length; i++) {
+			if( members[i].equals(m) ) {
+				members.del(i);
+				trace(Kiev.debugMembers,"Method "+m+" removed from class "+this);
+				return;
+			}
+		}
+		throw new RuntimeException("Method "+m+" do not exists in class "+this);
+	}
+
+	/** Add information about new field that belongs to this class */
+	public Field addField(Field f) {
+		// Check we already have this field
+		foreach (ASTNode n; members; n instanceof Field) {
+			Field ff = (Field)n;
+			if( ff.equals(f) ) {
+				throw new RuntimeException("Field "+f+" already exists in class "+this);
+			}
+		}
+		members.append(f);
+		trace(Kiev.debugMembers,"Field "+f+" added to class "+this);
+		return f;
+	}
+
+	/** Remove information about a field that belongs to this class */
+	public void removeField(Field f) {
+		// Check we already have this method
+		for(int i=0; i < members.length; i++) {
+			if( members[i].equals(f) ) {
+				members.del(i);
+				trace(Kiev.debugMembers,"Field "+f+" removed from class "+this);
+				return;
+			}
+		}
+		throw new RuntimeException("Field "+f+" do not exists in class "+this);
+	}
+
+	/** Add information about new pizza case of this class */
+	public Struct addCase(Struct cas) {
+		setHasCases(true);
+		int caseno = 0;
+		foreach (DNode n; members; n instanceof Struct && ((Struct)n).isPizzaCase()) {
+			Struct s = (Struct)n;
+			MetaPizzaCase meta = s.getMetaPizzaCase();
+			if (meta != null && meta.getTag() > caseno)
+				caseno = meta.getTag();
+		}
+		MetaPizzaCase meta = cas.getMetaPizzaCase();
+		if (meta == null)
+			cas.addNodeData(meta = new MetaPizzaCase());
+		meta.setTag(caseno + 1);
+		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
+		return cas;
+	}
+
 	@nodeview
-	public static abstract view StructView of StructImpl extends TypeDeclView {
+	public static abstract view StructView of Struct extends TypeDeclView {
 		public				Access					acc;
 		public				ClazzName				name;
 		public:ro			CompaundTypeProvider	imeta_type;
@@ -357,15 +350,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public:ro			NArr<TypeDecl>			direct_extenders;
 		public:ro			NArr<DNode>				members;
 
-		@setter public final void set$acc(Access val) { ((StructImpl)this).acc = val; Access.verifyDecl((Struct)getDNode()); }
 		@getter public final CompaundType	get$super_type()	{ return (CompaundType)super_bound.lnk; }
 		@setter public final void set$super_type(CompaundType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
 
 		public TypeProvider[] getAllSuperTypes();
 		
-		@getter public Struct get$child_ctx_clazz()	{ return (Struct)this.getNode(); }
+		@getter public Struct get$child_ctx_clazz()	{ return (Struct)this; }
 
-		public final Struct getStruct() { return (Struct)this.getNode(); }
+		public final Struct getStruct() { return (Struct)this; }
 
 		public boolean isClazz();
 		// a pizza case	
@@ -443,7 +435,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		private static Field resolveField(StructView self, KString name, StructView where, boolean fatal) {
 			self.getStruct().checkResolved();
 			foreach(DNode f; self.members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
-			if( self.super_type != null ) return resolveField(self.super_type.getStruct().getVView(),name,where,fatal);
+			if( self.super_type != null ) return resolveField((StructView)self.super_type.getStruct(),name,where,fatal);
 			if (fatal)
 				throw new RuntimeException("Unresolved field "+name+" in class "+where);
 			return null;
@@ -473,7 +465,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 	
 	@nodeview
-	public static final view VStruct of StructImpl extends StructView {
+	public static final view VStruct of Struct extends StructView {
 
 		public final boolean mainResolveIn() {
 			resolveFinalFields(this);
@@ -496,7 +488,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			// Process inner classes and cases
 			if( !isPackage() ) {
 				for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-					resolveFinalFields(sub_clazz[i].getVView());
+					resolveFinalFields((VStruct)sub_clazz[i]);
 				}
 			}
 		}
@@ -522,24 +514,18 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	@getter public Access			get$acc()			{ return this.getVView().acc; }
-	@setter public void set$acc(Access val)			{ this.getVView().acc = val; }
+	@getter public Access			get$acc()			{ return this.acc; }
+	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
 
 	Struct() {
-		super(new StructImpl());
 		this.name = ClazzName.Empty;
 	}
 	
 	public Struct(ClazzName name, Struct outer, int flags) {
-		super(new StructImpl());
 		this.flags = flags;
 		this.name = name;
-		((StructImpl)this.$v_impl).imeta_type = new CompaundTypeProvider(this);
-		((StructImpl)this.$v_impl).ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);
+		this.imeta_type = new CompaundTypeProvider(this);
+		this.ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
 		package_clazz = outer;
@@ -832,7 +818,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 
 		try {
-			getRView().autoGenerateTypeinfoClazz();
+			((RStruct)this).autoGenerateTypeinfoClazz();
 	
 			if( !isInterface() && !isPackage() ) {
 				// Default <init> method, if no one is declared
@@ -993,7 +979,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 	
 	public void resolveDecl() {
-		getRView().resolveDecl();
+		((RView)this).resolveDecl();
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {

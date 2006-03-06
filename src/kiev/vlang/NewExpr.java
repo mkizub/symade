@@ -37,23 +37,19 @@ public final class NewExpr extends ENode {
 	}
 
 	@virtual typedef This  = NewExpr;
-	@virtual typedef NImpl = NewExprImpl;
 	@virtual typedef VView = VNewExpr;
 	@virtual typedef JView = JNewExpr;
 	@virtual typedef RView = RNewExpr;
 
-	@nodeimpl
-	public static final class NewExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = NewExpr;
-		@att public TypeRef				type;
-		@att public NArr<ENode>			args;
-		@att public ENode				outer;
-		@att public ENode				temp_expr;
-		@att public Struct				clazz; // if this new expression defines new class
-		@ref public Method				func;
-	}
+	@att public TypeRef				type;
+	@att public NArr<ENode>			args;
+	@att public ENode				outer;
+	@att public ENode				temp_expr;
+	@att public Struct				clazz; // if this new expression defines new class
+	@ref public Method				func;
+
 	@nodeview
-	public static view NewExprView of NewExprImpl extends ENodeView {
+	public static view NewExprView of NewExpr extends ENodeView {
 		public		TypeRef				type;
 		public:ro	NArr<ENode>			args;
 		public		ENode				outer;
@@ -82,7 +78,7 @@ public final class NewExpr extends ENode {
 	}
 
 	@nodeview
-	public static final view VNewExpr of NewExprImpl extends NewExprView {
+	public static final view VNewExpr of NewExpr extends NewExprView {
 		public boolean preResolveIn() {
 			if( clazz == null )
 				return true;
@@ -123,23 +119,15 @@ public final class NewExpr extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public NewExpr() {
-		super(new NewExprImpl());
-	}
+	public NewExpr() {}
 
 	public NewExpr(int pos, Type type, ENode[] args) {
-		this();
 		this.pos = pos;
 		this.type = new TypeRef(type);
 		foreach (ENode e; args) this.args.append(e);
 	}
 
 	public NewExpr(int pos, TypeRef type, ENode[] args) {
-		this();
 		this.pos = pos;
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
@@ -168,7 +156,7 @@ public final class NewExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -209,33 +197,29 @@ public final class NewArrayExpr extends ENode {
 	}
 
 	@virtual typedef This  = NewArrayExpr;
-	@virtual typedef NImpl = NewArrayExprImpl;
 	@virtual typedef VView = VNewArrayExpr;
 	@virtual typedef JView = JNewArrayExpr;
 	@virtual typedef RView = RNewArrayExpr;
 
-	@nodeimpl
-	public static final class NewArrayExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = NewArrayExpr;
-		@att public TypeRef				type;
-		@att public NArr<ENode>			args;
-		@att public int					dim;
-		@ref public ArrayType			arrtype;
-	}
+	@att public TypeRef				type;
+	@att public NArr<ENode>			args;
+	@att public int					dim;
+	@ref public ArrayType			arrtype;
+
 	@nodeview
-	public static  view NewArrayExprView of NewArrayExprImpl extends ENodeView {
+	public static  view NewArrayExprView of NewArrayExpr extends ENodeView {
 		public		TypeRef				type;
 		public:ro	NArr<ENode>			args;
 		public		int					dim;
 		public		ArrayType			arrtype;
 
 		public Type get$arrtype() {
-			ArrayType art = ((NewArrayExprImpl)this).arrtype;
+			ArrayType art = ((NewArrayExpr)this).arrtype;
 			if (art != null)
 				return art;
 			art = new ArrayType(type.getType());
 			for(int i=1; i < dim; i++) art = new ArrayType(art);
-			((NewArrayExprImpl)this).arrtype = art;
+			((NewArrayExpr)this).arrtype = art;
 			return art;
 		}
 
@@ -244,19 +228,12 @@ public final class NewArrayExpr extends ENode {
 		public Type getType() { return arrtype; }
 	}
 	@nodeview
-	public static final view VNewArrayExpr of NewArrayExprImpl extends NewArrayExprView {
+	public static final view VNewArrayExpr of NewArrayExpr extends NewArrayExprView {
 	}
-	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
-	public NewArrayExpr() {
-		super(new NewArrayExprImpl());
-	}
+	public NewArrayExpr() {}
 
 	public NewArrayExpr(int pos, TypeRef type, ENode[] args, int dim) {
-		this();
 		this.pos = pos;
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
@@ -275,7 +252,7 @@ public final class NewArrayExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -297,21 +274,17 @@ public final class NewInitializedArrayExpr extends ENode {
 	}
 
 	@virtual typedef This  = NewInitializedArrayExpr;
-	@virtual typedef NImpl = NewInitializedArrayExprImpl;
 	@virtual typedef VView = VNewInitializedArrayExpr;
 	@virtual typedef JView = JNewInitializedArrayExpr;
 	@virtual typedef RView = RNewInitializedArrayExpr;
 
-	@nodeimpl
-	public static final class NewInitializedArrayExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = NewInitializedArrayExpr;
-		@att public TypeRef				type;
-		@att public NArr<ENode>			args;
-		@att public int[]				dims;
-		@ref public Type				arrtype;
-	}
+	@att public TypeRef				type;
+	@att public NArr<ENode>			args;
+	@att public int[]				dims;
+	@ref public Type				arrtype;
+
 	@nodeview
-	public static view NewInitializedArrayExprView of NewInitializedArrayExprImpl extends ENodeView {
+	public static view NewInitializedArrayExprView of NewInitializedArrayExpr extends ENodeView {
 		public		TypeRef				type;
 		public:ro	NArr<ENode>			args;
 		public		int[]				dims;
@@ -320,12 +293,12 @@ public final class NewInitializedArrayExpr extends ENode {
 		@getter public final int	get$dim()	{ return this.dims.length; }
 
 		public Type get$arrtype() {
-			ArrayType art = ((NewInitializedArrayExprImpl)this).arrtype;
+			ArrayType art = ((NewInitializedArrayExpr)this).arrtype;
 			if (art != null)
 				return art;
 			art = new ArrayType(type.getType());
 			for(int i=1; i < dim; i++) art = new ArrayType(art);
-			((NewInitializedArrayExprImpl)this).arrtype = art;
+			((NewInitializedArrayExpr)this).arrtype = art;
 			return art;
 		}
 
@@ -334,19 +307,12 @@ public final class NewInitializedArrayExpr extends ENode {
 		public Type getType() { return arrtype; }
 	}
 	@nodeview
-	public static final view VNewInitializedArrayExpr of NewInitializedArrayExprImpl extends NewInitializedArrayExprView {
+	public static final view VNewInitializedArrayExpr of NewInitializedArrayExpr extends NewInitializedArrayExprView {
 	}
-	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
-	public NewInitializedArrayExpr() {
-		super(new NewInitializedArrayExprImpl());
-	}
+	public NewInitializedArrayExpr() {}
 
 	public NewInitializedArrayExpr(int pos, TypeRef type, int dim, ENode[] args) {
-		this();
 		this.pos = pos;
 		this.type = type;
 		dims = new int[dim];
@@ -369,7 +335,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	public int getElementsNumber(int i) { return dims[i]; }
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -393,22 +359,18 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 
 
 	@virtual typedef This  = NewClosure;
-	@virtual typedef NImpl = NewClosureImpl;
 	@virtual typedef VView = VNewClosure;
 	@virtual typedef JView = JNewClosure;
 	@virtual typedef RView = RNewClosure;
 
-	@nodeimpl
-	public static final class NewClosureImpl extends ENodeImpl {
-		@virtual typedef ImplOf = NewClosure;
-		@att public TypeRef				type_ret;
-		@att public NArr<FormPar>		params;
-		@att public Block				body;
-		@att public Struct				clazz;
-		@ref public CallType			ctype;
-	}
+	@att public TypeRef				type_ret;
+	@att public NArr<FormPar>		params;
+	@att public Block				body;
+	@att public Struct				clazz;
+	@ref public CallType			ctype;
+
 	@nodeview
-	public static abstract view NewClosureView of NewClosureImpl extends ENodeView {
+	public static abstract view NewClosureView of NewClosure extends ENodeView {
 		public TypeRef			type_ret;
 		public NArr<FormPar>	params;
 		public Block			body;
@@ -428,19 +390,12 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		}
 	}
 	@nodeview
-	public static final view VNewClosure of NewClosureImpl extends NewClosureView {
+	public static final view VNewClosure of NewClosure extends NewClosureView {
 	}
-	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
 
-	public NewClosure() {
-		super(new NewClosureImpl());
-	}
+	public NewClosure() {}
 
 	public NewClosure(int pos) {
-		this();
 		this.pos = pos;
 	}
 
@@ -464,7 +419,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	}
 	
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

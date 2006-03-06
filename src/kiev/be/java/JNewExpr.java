@@ -14,13 +14,8 @@ import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.NewExpr.NewExprImpl;
-import kiev.vlang.NewArrayExpr.NewArrayExprImpl;
-import kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprImpl;
-import kiev.vlang.NewClosure.NewClosureImpl;
-
 @nodeview
-public final view JNewExpr of NewExprImpl extends JENode {
+public final view JNewExpr of NewExpr extends JENode {
 	public:ro	JArr<JENode>	args;
 	public:ro	JENode			outer;
 	public				JENode			temp_expr;
@@ -40,15 +35,15 @@ public final view JNewExpr of NewExprImpl extends JENode {
 			} else {
 				// If we have primitive type
 				if( !type.isReference() ) {
-					new ConstNullExpr().getJView().generate(code,type);
+					((JENode)new ConstNullExpr()).generate(code,type);
 					return;
 				}
 				int i;
-				for(i=0; i < code.clazz.getStruct().args.length; i++)
-					if (type ≈ code.clazz.getStruct().args[i]) break;
-				if( i >= code.clazz.getStruct().args.length )
+				for(i=0; i < ((Struct)code.clazz).args.length; i++)
+					if (type ≈ ((Struct)code.clazz).args[i]) break;
+				if( i >= ((Struct)code.clazz).args.length )
 					throw new CompilerException(this,"Can't create an instance of argument type "+type);
-				ENode tie = new IFldExpr(pos,new ThisExpr(pos),code.clazz.getStruct().resolveField(nameTypeInfo));
+				ENode tie = new IFldExpr(pos,new ThisExpr(pos),((Struct)code.clazz).resolveField(nameTypeInfo));
 				ENode e = new CastExpr(pos,type,
 					new CallExpr(pos,tie,
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newInstance"),Type.tpObject,Type.tpInt),
@@ -56,7 +51,7 @@ public final view JNewExpr of NewExprImpl extends JENode {
 					)
 				);
 				e.resolve(reqType);
-				e.getJView().generate(code,reqType);
+				((JENode)e).generate(code,reqType);
 				return;
 			}
 		}
@@ -76,7 +71,7 @@ public final view JNewExpr of NewExprImpl extends JENode {
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);
 		if( type.getStruct() != null && type.getStruct().isLocal() ) {
-			JStruct cl = ((CompaundType)type).clazz.getJView();
+			JStruct cl = (JStruct)((CompaundType)type).clazz;
 			foreach (JDNode n; cl.members; n instanceof JField) {
 				JField f = (JField)n;
 				if( !f.isNeedProxy() ) continue;
@@ -90,7 +85,7 @@ public final view JNewExpr of NewExprImpl extends JENode {
 
 
 @nodeview
-public final view JNewArrayExpr of NewArrayExprImpl extends JENode {
+public final view JNewArrayExpr of NewArrayExpr extends JENode {
 	public:ro	Type				type;
 	public:ro	JArr<JENode>		args;
 	public:ro	int					dim;
@@ -115,7 +110,7 @@ public final view JNewArrayExpr of NewArrayExprImpl extends JENode {
 }
 
 @nodeview
-public final view JNewInitializedArrayExpr of NewInitializedArrayExprImpl extends JENode {
+public final view JNewInitializedArrayExpr of NewInitializedArrayExpr extends JENode {
 	public:ro	Type				type;
 	public:ro	JArr<JENode>		args;
 	public:ro	int					dim;
@@ -148,10 +143,10 @@ public final view JNewInitializedArrayExpr of NewInitializedArrayExprImpl extend
 }
 
 @nodeview
-public final view JNewClosure of NewClosureImpl extends JENode {
+public final view JNewClosure of NewClosure extends JENode {
 	public:ro	JStruct		clazz;
 
-	@getter public final CallType	get$type()	{ return (CallType)this.getNode().getType(); }
+	@getter public final CallType	get$type()	{ return (CallType) ((NewClosure)this).getType(); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);

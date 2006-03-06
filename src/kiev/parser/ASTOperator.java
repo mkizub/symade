@@ -19,24 +19,17 @@ public class ASTOperator extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = ASTOperator;
-	@virtual typedef NImpl = ASTOperatorImpl;
 	@virtual typedef VView = ASTOperatorView;
 
-	@nodeimpl
-	static class ASTOperatorImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ASTOperator;
-		@att public KString		image;
-	}
+	@att public KString		image;
+
 	@nodeview
-	public static view ASTOperatorView of ASTOperatorImpl extends ENodeView {
+	public static view ASTOperatorView of ASTOperator extends ENodeView {
 		public KString		image;
 	}
 	
-	ASTOperator() { super(new ASTOperatorImpl()); }
-	ASTOperator(ASTOperatorImpl impl) { super(impl); }
+	ASTOperator() {}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-
 	public void resolve(Type reqType) {
 		throw new RuntimeException();
 	}

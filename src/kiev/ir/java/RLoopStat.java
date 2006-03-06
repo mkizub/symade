@@ -7,15 +7,10 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
-import kiev.vlang.WhileStat.WhileStatImpl;
 import kiev.vlang.WhileStat.WhileStatView;
-import kiev.vlang.DoWhileStat.DoWhileStatImpl;
 import kiev.vlang.DoWhileStat.DoWhileStatView;
-import kiev.vlang.ForInit.ForInitImpl;
 import kiev.vlang.ForInit.ForInitView;
-import kiev.vlang.ForStat.ForStatImpl;
 import kiev.vlang.ForStat.ForStatView;
-import kiev.vlang.ForEachStat.ForEachStatImpl;
 import kiev.vlang.ForEachStat.ForEachStatView;
 
 import static kiev.stdlib.Debug.*;
@@ -27,7 +22,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RWhileStat of WhileStatImpl extends WhileStatView {
+public static final view RWhileStat of WhileStat extends WhileStatView {
 
 	public void resolve(Type reqType) {
 		try {
@@ -44,7 +39,7 @@ public static final view RWhileStat of WhileStatImpl extends WhileStatView {
 }
 
 @nodeview
-public static view RDoWhileStat of DoWhileStatImpl extends DoWhileStatView {
+public static view RDoWhileStat of DoWhileStat extends DoWhileStatView {
 
 	public void resolve(Type reqType) {
 		try {
@@ -65,7 +60,7 @@ public static view RDoWhileStat of DoWhileStatImpl extends DoWhileStatView {
 }
 
 @nodeview
-public static final view RForInit of ForInitImpl extends ForInitView {
+public static final view RForInit of ForInit extends ForInitView {
 
 	public void resolve(Type reqType) {
 		foreach (Var v; decls)
@@ -74,7 +69,7 @@ public static final view RForInit of ForInitImpl extends ForInitView {
 }
 
 @nodeview
-public static final view RForStat of ForStatImpl extends ForStatView {
+public static final view RForStat of ForStat extends ForStatView {
 	public void resolve(Type reqType) {
 		if( init != null ) {
 			try {
@@ -116,7 +111,7 @@ public static final view RForStat of ForStatImpl extends ForStatView {
 }
 
 @nodeview
-public static final view RForEachStat of ForEachStatImpl extends ForEachStatView {
+public static final view RForEachStat of ForEachStat extends ForEachStatView {
 
 	public void resolve(Type reqType) {
 		// foreach( type x; container; cond) statement

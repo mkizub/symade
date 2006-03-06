@@ -10,27 +10,16 @@ import kiev.vlang.Method.MethodView;
 import kiev.vlang.LoopStat.LoopStatView;
 import kiev.vlang.SwitchStat.SwitchStatView;
 
-import kiev.vlang.InlineMethodStat.InlineMethodStatImpl;
 import kiev.vlang.InlineMethodStat.InlineMethodStatView;
-import kiev.vlang.ExprStat.ExprStatImpl;
 import kiev.vlang.ExprStat.ExprStatView;
-import kiev.vlang.ReturnStat.ReturnStatImpl;
 import kiev.vlang.ReturnStat.ReturnStatView;
-import kiev.vlang.ThrowStat.ThrowStatImpl;
 import kiev.vlang.ThrowStat.ThrowStatView;
-import kiev.vlang.IfElseStat.IfElseStatImpl;
 import kiev.vlang.IfElseStat.IfElseStatView;
-import kiev.vlang.CondStat.CondStatImpl;
 import kiev.vlang.CondStat.CondStatView;
-import kiev.vlang.LabeledStat.LabeledStatImpl;
 import kiev.vlang.LabeledStat.LabeledStatView;
-import kiev.vlang.BreakStat.BreakStatImpl;
 import kiev.vlang.BreakStat.BreakStatView;
-import kiev.vlang.ContinueStat.ContinueStatImpl;
 import kiev.vlang.ContinueStat.ContinueStatView;
-import kiev.vlang.GotoStat.GotoStatImpl;
 import kiev.vlang.GotoStat.GotoStatView;
-import kiev.vlang.GotoCaseStat.GotoCaseStatImpl;
 import kiev.vlang.GotoCaseStat.GotoCaseStatView;
 
 import static kiev.stdlib.Debug.*;
@@ -42,7 +31,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RInlineMethodStat of InlineMethodStatImpl extends InlineMethodStatView {
+public final view RInlineMethodStat of InlineMethodStat extends InlineMethodStatView {
 	public void resolve(Type reqType) {
 		Type[] types = new Type[params_redir.length];
 		for (int i=0; i < params_redir.length; i++) {
@@ -61,7 +50,7 @@ public final view RInlineMethodStat of InlineMethodStatImpl extends InlineMethod
 }
 
 @nodeview
-public final view RExprStat of ExprStatImpl extends ExprStatView {
+public final view RExprStat of ExprStat extends ExprStatView {
 	public void resolve(Type reqType) {
 		try {
 			if (expr != null) {
@@ -75,7 +64,7 @@ public final view RExprStat of ExprStatImpl extends ExprStatView {
 }
 
 @nodeview
-public final view RReturnStat of ReturnStatImpl extends ReturnStatView {
+public final view RReturnStat of ReturnStat extends ReturnStatView {
 	public void resolve(Type reqType) {
 		setMethodAbrupted(true);
 		if( expr != null ) {
@@ -100,7 +89,7 @@ public final view RReturnStat of ReturnStatImpl extends ReturnStatView {
 }
 
 @nodeview
-public final view RThrowStat of ThrowStatImpl extends ThrowStatView {
+public final view RThrowStat of ThrowStat extends ThrowStatView {
 	public void resolve(Type reqType) {
 		setMethodAbrupted(true);
 		try {
@@ -109,13 +98,13 @@ public final view RThrowStat of ThrowStatImpl extends ThrowStatView {
 			Kiev.reportError(expr,e);
 		}
 		Type exc = expr.getType();
-		if( !PassInfo.checkException(this.getNode(),exc) )
+		if( !PassInfo.checkException((ThrowStat)this,exc) )
 			Kiev.reportWarning(this,"Exception "+exc+" must be caught or declared to be thrown");
 	}
 }
 
 @nodeview
-public final view RIfElseStat of IfElseStatImpl extends IfElseStatView {
+public final view RIfElseStat of IfElseStat extends IfElseStatView {
 	public void resolve(Type reqType) {
 		try {
 			cond.resolve(Type.tpBoolean);
@@ -153,7 +142,7 @@ public final view RIfElseStat of IfElseStatImpl extends IfElseStatView {
 }
 
 @nodeview
-public final view RCondStat of CondStatImpl extends CondStatView {
+public final view RCondStat of CondStat extends CondStatView {
 	public void resolve(Type reqType) {
 		try {
 			cond.resolve(Type.tpBoolean);
@@ -170,7 +159,7 @@ public final view RCondStat of CondStatImpl extends CondStatView {
 }
 
 @nodeview
-public final view RLabeledStat of LabeledStatImpl extends LabeledStatView {
+public final view RLabeledStat of LabeledStat extends LabeledStatView {
 	public void resolve(Type reqType) {
 		try {
 			stat.resolve(Type.tpVoid);
@@ -183,12 +172,12 @@ public final view RLabeledStat of LabeledStatImpl extends LabeledStatView {
 }
 
 @nodeview
-public final view RBreakStat of BreakStatImpl extends BreakStatView {
+public final view RBreakStat of BreakStat extends BreakStatView {
 	public void resolve(Type reqType) {
 		setAbrupted(true);
 		NodeView p;
 		if (dest != null) {
-			dest.delLink(this.getNode());
+			dest.delLink((BreakStat)this);
 			dest = null;
 		}
 		if( ident == null ) {
@@ -200,7 +189,7 @@ public final view RBreakStat of BreakStatImpl extends BreakStatView {
 					Label l = p.lblbrk;
 					if (l != null) {
 						dest = l;
-						l.addLink(this.getNode());
+						l.addLink((BreakStat)this);
 					}
 				}
 			}
@@ -226,7 +215,7 @@ public final view RBreakStat of BreakStatImpl extends BreakStatView {
 					Label l = p.lblbrk;
 					if (l != null) {
 						dest = l;
-						l.addLink(this.getNode());
+						l.addLink((BreakStat)this);
 					}
 				}
 			}
@@ -238,7 +227,7 @@ public final view RBreakStat of BreakStatImpl extends BreakStatView {
 }
 
 @nodeview
-public final view RContinueStat of ContinueStatImpl extends ContinueStatView {
+public final view RContinueStat of ContinueStat extends ContinueStatView {
 	public void resolve(Type reqType) {
 		setAbrupted(true);
 		// TODO: check label or loop statement available
@@ -246,11 +235,11 @@ public final view RContinueStat of ContinueStatImpl extends ContinueStatView {
 }
 
 @nodeview
-public final view RGotoStat of GotoStatImpl extends GotoStatView {
+public final view RGotoStat of GotoStat extends GotoStatView {
 	public void resolve(Type reqType) {
 		setAbrupted(true);
 		if (dest != null) {
-			dest.delLink(this.getNode());
+			dest.delLink((GotoStat)this);
 			dest = null;
 		}
 		LabeledStat[] stats = GotoStat.resolveStat(ident.name, ctx_method.body, LabeledStat.emptyArray);
@@ -267,17 +256,17 @@ public final view RGotoStat of GotoStatImpl extends GotoStatView {
 			return;
 		}
 		dest = stat.lbl;
-		dest.addLink(this.getNode());
+		dest.addLink((GotoStat)this);
 	}
 }
 
 @nodeview
-public final view RGotoCaseStat of GotoCaseStatImpl extends GotoCaseStatView {
+public final view RGotoCaseStat of GotoCaseStat extends GotoCaseStatView {
 	public void resolve(Type reqType) {
 		setAbrupted(true);
 		for(NodeView node = this.parent; node != null; node = node.parent) {
 			if (node instanceof SwitchStatView) {
-				this.sw = (SwitchStat)node.getNode();
+				this.sw = (SwitchStat)node;
 				break;
 			}
 			if (node instanceof MethodView)

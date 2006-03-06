@@ -6,9 +6,7 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.SynchronizedStat.SynchronizedStatImpl;
 import kiev.vlang.SynchronizedStat.SynchronizedStatView;
-import kiev.vlang.WithStat.WithStatImpl;
 import kiev.vlang.WithStat.WithStatView;
 
 import static kiev.stdlib.Debug.*;
@@ -20,7 +18,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RSynchronizedStat of SynchronizedStatImpl extends SynchronizedStatView {
+public final view RSynchronizedStat of SynchronizedStat extends SynchronizedStatView {
 
 	public void resolve(Type reqType) {
 		try {
@@ -36,7 +34,7 @@ public final view RSynchronizedStat of SynchronizedStatImpl extends Synchronized
 }
 
 @nodeview
-public final view RWithStat of WithStatImpl extends WithStatView {
+public final view RWithStat of WithStat extends WithStatView {
 
 	public void resolve(Type reqType) {
 		try {

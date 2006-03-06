@@ -172,7 +172,7 @@ public final class CompaundTypeProvider extends TypeProvider {
 	
 	public CompaundTypeProvider(Struct clazz) {
 		this.clazz = clazz;
-		if (this.clazz == Env.root) ((Struct.StructImpl)Env.root.$v_impl).imeta_type = this;
+		if (this.clazz == Env.root) Env.root.imeta_type = this;
 		this.templ_bindings = TVarSet.emptySet;
 		this.templ_version = -1;
 	}

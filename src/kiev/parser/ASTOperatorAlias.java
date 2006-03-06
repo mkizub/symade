@@ -26,29 +26,22 @@ public final class ASTOperatorAlias extends ASTAlias {
 	public static final int	XFIX_INFIX   = 3;
 
 	@virtual typedef This  = ASTOperatorAlias;
-	@virtual typedef NImpl = ASTOperatorAliasImpl;
 	@virtual typedef VView = ASTOperatorAliasView;
 
-	@nodeimpl
-	public static class ASTOperatorAliasImpl extends ASTAliasImpl {
-		@virtual typedef ImplOf = ASTOperatorAlias;
-		@att public int					prior;
-		@att public int					opmode;
-		@att public KString				image;
-		@att public int					xfix;
-	}
+	@att public int					prior;
+	@att public int					opmode;
+	@att public KString				image;
+	@att public int					xfix;
+
 	@nodeview
-	public static view ASTOperatorAliasView of ASTOperatorAliasImpl extends ASTAliasView {
+	public static view ASTOperatorAliasView of ASTOperatorAlias extends ASTAliasView {
 		public int					prior;
 		public int					opmode;
 		public KString				image;
 		public int					xfix;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	
-	public ASTOperatorAlias() { super(new ASTOperatorAliasImpl()); }
+	public ASTOperatorAlias() {}
 	
 	public void setImage(ASTNode n) {
 		this.pos = n.pos;

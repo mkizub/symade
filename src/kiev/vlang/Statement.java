@@ -59,36 +59,25 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	};
 
 	@virtual typedef This  = InlineMethodStat;
-	@virtual typedef NImpl = InlineMethodStatImpl;
 	@virtual typedef VView = VInlineMethodStat;
 	@virtual typedef JView = JInlineMethodStat;
 	@virtual typedef RView = RInlineMethodStat;
 
-	@nodeimpl
-	public static final class InlineMethodStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = InlineMethodStat;
-		@att public Method			method;
-		@ref public ParamRedir[]	params_redir;
-	}
+	@att public Method			method;
+	@ref public ParamRedir[]	params_redir;
+
 	@nodeview
-	public static view InlineMethodStatView of InlineMethodStatImpl extends ENodeView {
+	public static view InlineMethodStatView of InlineMethodStat extends ENodeView {
 		public Method			method;
 		public ParamRedir[]		params_redir;
 	}
 	@nodeview
-	public static final view VInlineMethodStat of InlineMethodStatImpl extends InlineMethodStatView {
+	public static final view VInlineMethodStat of InlineMethodStat extends InlineMethodStatView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public InlineMethodStat() {
-		super(new InlineMethodStatImpl());
-	}
+	public InlineMethodStat() {}
 
 	public InlineMethodStat(int pos, Method m, Method in) {
-		this();
 		this.pos = pos;
 		method = m;
 		method.inlined_by_dispatcher = true;
@@ -116,7 +105,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			InlineMethodStat node = (InlineMethodStat)dfi.node_impl.getNode();
+			InlineMethodStat node = (InlineMethodStat)dfi.node_impl;
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < node.params_redir.length; i++) {
 				in = in.declNode(node.params_redir[i].new_var);
@@ -139,7 +128,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			InlineMethodStat node = (InlineMethodStat)dfi.node_impl.getNode();
+			InlineMethodStat node = (InlineMethodStat)dfi.node_impl;
 			DataFlowInfo pdfi = node.parent.getDFlow();
 			res = DFFunc.calc(pdfi.getSocket(node.pslot.name).func_in, pdfi);
 			dfi.setResult(res_idx, res);
@@ -151,7 +140,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -179,41 +168,29 @@ public class ExprStat extends ENode {
 	}
 
 	@virtual typedef This  = ExprStat;
-	@virtual typedef NImpl = ExprStatImpl;
 	@virtual typedef VView = VExprStat;
 	@virtual typedef JView = JExprStat;
 	@virtual typedef RView = RExprStat;
 
-	@nodeimpl
-	public static final class ExprStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ExprStat;
-		@att public ENode	expr;
-	}
+	@att public ENode	expr;
+
 	@nodeview
-	public static view ExprStatView of ExprStatImpl extends ENodeView {
+	public static view ExprStatView of ExprStat extends ENodeView {
 		public ENode		expr;
 	}
 	@nodeview
-	public static final view VExprStat of ExprStatImpl extends ExprStatView {
+	public static final view VExprStat of ExprStat extends ExprStatView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public ExprStat() {
-		super(new ExprStatImpl());
-	}
+	public ExprStat() {}
 
 	public ExprStat(ENode expr) {
-		super(new ExprStatImpl());
 		this.expr = expr;
 		if (expr != null)
 			this.pos = expr.pos;
 	}
 
 	public ExprStat(int pos, ENode expr) {
-		this();
 		this.pos = pos;
 		this.expr = expr;
 	}
@@ -226,7 +203,7 @@ public class ExprStat extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -247,41 +224,30 @@ public class ReturnStat extends ENode {
 	}
 
 	@virtual typedef This  = ReturnStat;
-	@virtual typedef NImpl = ReturnStatImpl;
 	@virtual typedef VView = VReturnStat;
 	@virtual typedef JView = JReturnStat;
 	@virtual typedef RView = RReturnStat;
 
-	@nodeimpl
-	public static final class ReturnStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ReturnStat;
-		@att public ENode	expr;
-	}
+	@att public ENode	expr;
+
 	@nodeview
-	public static view ReturnStatView of ReturnStatImpl extends ENodeView {
+	public static view ReturnStatView of ReturnStat extends ENodeView {
 		public ENode		expr;
 	}
 	@nodeview
-	public static final view VReturnStat of ReturnStatImpl extends ReturnStatView {
+	public static final view VReturnStat of ReturnStat extends ReturnStatView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public ReturnStat() {
-		super(new ReturnStatImpl());
-	}
+	public ReturnStat() {}
 
 	public ReturnStat(int pos, ENode expr) {
-		this();
 		this.pos = pos;
 		this.expr = expr;
 		setMethodAbrupted(true);
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 	
 	public static void autoReturn(Type reqType, ENodeView expr) {
@@ -314,41 +280,30 @@ public class ThrowStat extends ENode {
 	}
 
 	@virtual typedef This  = ThrowStat;
-	@virtual typedef NImpl = ThrowStatImpl;
 	@virtual typedef VView = VThrowStat;
 	@virtual typedef JView = JThrowStat;
 	@virtual typedef RView = RThrowStat;
 
-	@nodeimpl
-	public static final class ThrowStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ThrowStat;
-		@att public ENode	expr;
-	}
+	@att public ENode	expr;
+
 	@nodeview
-	public static view ThrowStatView of ThrowStatImpl extends ENodeView {
+	public static view ThrowStatView of ThrowStat extends ENodeView {
 		public ENode		expr;
 	}
 	@nodeview
-	public static final view VThrowStat of ThrowStatImpl extends ThrowStatView {
+	public static final view VThrowStat of ThrowStat extends ThrowStatView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public ThrowStat() {
-		super(new ThrowStatImpl());
-	}
+	public ThrowStat() {}
 
 	public ThrowStat(int pos, ENode expr) {
-		this();
 		this.pos = pos;
 		this.expr = expr;
 		setMethodAbrupted(true);
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -366,38 +321,27 @@ public class IfElseStat extends ENode {
 	}
 
 	@virtual typedef This  = IfElseStat;
-	@virtual typedef NImpl = IfElseStatImpl;
 	@virtual typedef VView = VIfElseStat;
 	@virtual typedef JView = JIfElseStat;
 	@virtual typedef RView = RIfElseStat;
 
-	@nodeimpl
-	public static class IfElseStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = IfElseStat;
-		@att public ENode			cond;
-		@att public ENode			thenSt;
-		@att public ENode			elseSt;
-	}
+	@att public ENode			cond;
+	@att public ENode			thenSt;
+	@att public ENode			elseSt;
+
 	@nodeview
-	public static view IfElseStatView of IfElseStatImpl extends ENodeView {
+	public static view IfElseStatView of IfElseStat extends ENodeView {
 		public ENode		cond;
 		public ENode		thenSt;
 		public ENode		elseSt;
 	}
 	@nodeview
-	public static final view VIfElseStat of IfElseStatImpl extends IfElseStatView {
+	public static final view VIfElseStat of IfElseStat extends IfElseStatView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public IfElseStat() {
-		super(new IfElseStatImpl());
-	}
+	public IfElseStat() {}
 	
 	public IfElseStat(int pos, ENode cond, ENode thenSt, ENode elseSt) {
-		this();
 		this.pos = pos;
 		this.cond = cond;
 		this.thenSt = thenSt;
@@ -405,7 +349,7 @@ public class IfElseStat extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -437,43 +381,32 @@ public class CondStat extends ENode {
 	}
 
 	@virtual typedef This  = CondStat;
-	@virtual typedef NImpl = CondStatImpl;
 	@virtual typedef VView = VCondStat;
 	@virtual typedef JView = JCondStat;
 	@virtual typedef RView = RCondStat;
 
-	@nodeimpl
-	public static class CondStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = CondStat;
-		@att public ENode			cond;
-		@att public ENode			message;
-	}
+	@att public ENode			cond;
+	@att public ENode			message;
+
 	@nodeview
-	public static view CondStatView of CondStatImpl extends ENodeView {
+	public static view CondStatView of CondStat extends ENodeView {
 		public ENode		cond;
 		public ENode		message;
 	}
 	@nodeview
-	public static final view VCondStat of CondStatImpl extends CondStatView {
+	public static final view VCondStat of CondStat extends CondStatView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public CondStat() {
-		super(new CondStatImpl());
-	}
+	public CondStat() {}
 
 	public CondStat(int pos, ENode cond, ENode message) {
-		this();
 		this.pos = pos;
 		this.cond = cond;
 		this.message = message;
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -495,41 +428,32 @@ public class LabeledStat extends ENode implements Named {
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
 	@virtual typedef This  = LabeledStat;
-	@virtual typedef NImpl = LabeledStatImpl;
 	@virtual typedef VView = VLabeledStat;
 	@virtual typedef JView = JLabeledStat;
 	@virtual typedef RView = RLabeledStat;
 
-	@nodeimpl
-	public static class LabeledStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = LabeledStat;
-		@att                 public NameRef		ident;
-		@att(copyable=false) public Label			lbl;
-		@att                 public ENode			stat;
-	}
+	@att                 public NameRef		ident;
+	@att(copyable=false) public Label			lbl;
+	@att                 public ENode			stat;
+
 	@nodeview
-	public static view LabeledStatView of LabeledStatImpl extends ENodeView {
+	public static view LabeledStatView of LabeledStat extends ENodeView {
 		public NameRef			ident;
 		public Label			lbl;
 		public ENode			stat;
 	}
 	@nodeview
-	public static final view VLabeledStat of LabeledStatImpl extends LabeledStatView {
+	public static final view VLabeledStat of LabeledStat extends LabeledStatView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
 	public LabeledStat() {
-		super(new LabeledStatImpl());
 		this.lbl = new Label();
 	}
 	
 	public NodeName getName() { return new NodeName(ident.name); }
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -543,37 +467,33 @@ public class BreakStat extends ENode {
 	@dflow(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = BreakStat;
-	@virtual typedef NImpl = BreakStatImpl;
 	@virtual typedef VView = VBreakStat;
 	@virtual typedef JView = JBreakStat;
 	@virtual typedef RView = RBreakStat;
 
-	@nodeimpl
-	public static class BreakStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = BreakStat;
-		@att public NameRef		ident;
-		@ref public Label		dest;
+	@att public NameRef		ident;
+	@ref public Label		dest;
 
-		public void callbackRootChanged() {
-			if (dest != null && dest.ctx_root != this._self.ctx_root) {
-				dest.delLink(this._self);
-				dest = null;
-			}
-			super.callbackRootChanged();
+	public void callbackRootChanged() {
+		if (dest != null && dest.ctx_root != this.ctx_root) {
+			dest.delLink(this);
+			dest = null;
 		}
+		super.callbackRootChanged();
 	}
+
 	@nodeview
-	public static view BreakStatView of BreakStatImpl extends ENodeView {
+	public static view BreakStatView of BreakStat extends ENodeView {
 		public NameRef			ident;
 		public Label			dest;
 	}
 
 	@nodeview
-	public static final view VBreakStat of BreakStatImpl extends BreakStatView {
+	public static final view VBreakStat of BreakStat extends BreakStatView {
 		public boolean mainResolveIn() {
 			NodeView p;
 			if (dest != null) {
-				dest.delLink(this.getNode());
+				dest.delLink((BreakStat)this);
 				dest = null;
 			}
 			if( ident == null ) {
@@ -585,7 +505,7 @@ public class BreakStat extends ENode {
 						Label l = p.lblbrk;
 						if (l != null) {
 							dest = l;
-							l.addLink(this.getNode());
+							l.addLink((BreakStat)this);
 						}
 					}
 				}
@@ -611,7 +531,7 @@ public class BreakStat extends ENode {
 						Label l = p.lblbrk;
 						if (l != null) {
 							dest = l;
-							l.addLink(this.getNode());
+							l.addLink((BreakStat)this);
 						}
 					}
 				}
@@ -620,16 +540,10 @@ public class BreakStat extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public BreakStat() {
-		super(new BreakStatImpl());
-	}
+	public BreakStat() {}
 	
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -646,37 +560,33 @@ public class ContinueStat extends ENode {
 	@dflow(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = ContinueStat;
-	@virtual typedef NImpl = ContinueStatImpl;
 	@virtual typedef VView = VContinueStat;
 	@virtual typedef JView = JContinueStat;
 	@virtual typedef RView = RContinueStat;
 
-	@nodeimpl
-	public static class ContinueStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ContinueStat;
-		@att public NameRef		ident;
-		@ref public Label		dest;
-	
-		public void callbackRootChanged() {
-			if (dest != null && dest.ctx_root != this._self.ctx_root) {
-				dest.delLink(this._self);
-				dest = null;
-			}
-			super.callbackRootChanged();
+	@att public NameRef		ident;
+	@ref public Label		dest;
+
+	public void callbackRootChanged() {
+		if (dest != null && dest.ctx_root != this.ctx_root) {
+			dest.delLink(this);
+			dest = null;
 		}
+		super.callbackRootChanged();
 	}
+
 	@nodeview
-	public static view ContinueStatView of ContinueStatImpl extends ENodeView {
+	public static view ContinueStatView of ContinueStat extends ENodeView {
 		public NameRef			ident;
 		public Label			dest;
 	}
 
 	@nodeview
-	public static final view VContinueStat of ContinueStatImpl extends ContinueStatView {
+	public static final view VContinueStat of ContinueStat extends ContinueStatView {
 		public boolean mainResolveIn() {
 			NodeView p;
 			if (dest != null) {
-				dest.delLink(this.getNode());
+				dest.delLink((ContinueStat)this);
 				dest = null;
 			}
 			if( ident == null ) {
@@ -688,7 +598,7 @@ public class ContinueStat extends ENode {
 						Label l = p.lblcnt;
 						if (l != null) {
 							dest = l;
-							l.addLink(this.getNode());
+							l.addLink((ContinueStat)this);
 						}
 					}
 				}
@@ -714,7 +624,7 @@ public class ContinueStat extends ENode {
 						Label l = p.lblcnt;
 						if (l != null) {
 							dest = l;
-							l.addLink(this.getNode());
+							l.addLink((ContinueStat)this);
 						}
 					}
 				}
@@ -723,16 +633,10 @@ public class ContinueStat extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public ContinueStat() {
-		super(new ContinueStatImpl());
-	}
+	public ContinueStat() {}
 	
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -749,36 +653,32 @@ public class GotoStat extends ENode {
 	@dflow(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = GotoStat;
-	@virtual typedef NImpl = GotoStatImpl;
 	@virtual typedef VView = VGotoStat;
 	@virtual typedef JView = JGotoStat;
 	@virtual typedef RView = RGotoStat;
 
-	@nodeimpl
-	public static class GotoStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = GotoStat;
-		@att public NameRef		ident;
-		@ref public Label		dest;
-	
-		public void callbackRootChanged() {
-			if (dest != null && dest.ctx_root != this._self.ctx_root) {
-				dest.delLink(this._self);
-				dest = null;
-			}
-			super.callbackRootChanged();
+	@att public NameRef		ident;
+	@ref public Label		dest;
+
+	public void callbackRootChanged() {
+		if (dest != null && dest.ctx_root != this.ctx_root) {
+			dest.delLink(this);
+			dest = null;
 		}
+		super.callbackRootChanged();
 	}
+
 	@nodeview
-	public static view GotoStatView of GotoStatImpl extends ENodeView {
+	public static view GotoStatView of GotoStat extends ENodeView {
 		public NameRef			ident;
 		public Label			dest;
 	}
 
 	@nodeview
-	public static final view VGotoStat of GotoStatImpl extends GotoStatView {
+	public static final view VGotoStat of GotoStat extends GotoStatView {
 		public boolean mainResolveIn() {
 			if (dest != null) {
-				dest.delLink(this.getNode());
+				dest.delLink((GotoStat)this);
 				dest = null;
 			}
 			LabeledStat[] stats = resolveStat(ident.name,ctx_method.body, LabeledStat.emptyArray);
@@ -795,21 +695,15 @@ public class GotoStat extends ENode {
 				return false;
 			}
 			dest = stat.lbl;
-			dest.addLink(this.getNode());
+			dest.addLink((GotoStat)this);
 			return false; // don't pre-resolve
 		}
 	}
-	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public GotoStat() {
-		super(new GotoStatImpl());
-	}
+
+	public GotoStat() {}
 	
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public static LabeledStat[] resolveStat(KString name, ASTNode st, LabeledStat[] stats) {
@@ -912,36 +806,26 @@ public class GotoCaseStat extends ENode {
 	}
 
 	@virtual typedef This  = GotoCaseStat;
-	@virtual typedef NImpl = GotoCaseStatImpl;
 	@virtual typedef VView = VGotoCaseStat;
 	@virtual typedef JView = JGotoCaseStat;
 	@virtual typedef RView = RGotoCaseStat;
 
-	@nodeimpl
-	public static class GotoCaseStatImpl extends ENodeImpl {
-		@virtual typedef ImplOf = GotoCaseStat;
-		@att public ENode		expr;
-		@ref public SwitchStat	sw;
-	}
+	@att public ENode		expr;
+	@ref public SwitchStat	sw;
+
 	@nodeview
-	public static view GotoCaseStatView of GotoCaseStatImpl extends ENodeView {
+	public static view GotoCaseStatView of GotoCaseStat extends ENodeView {
 		public ENode		expr;
 		public SwitchStat	sw;
 	}
 	@nodeview
-	public static final view VGotoCaseStat of GotoCaseStatImpl extends GotoCaseStatView {
+	public static final view VGotoCaseStat of GotoCaseStat extends GotoCaseStatView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public GotoCaseStat() {
-		super(new GotoCaseStatImpl());
-	}
+	public GotoCaseStat() {}
 	
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

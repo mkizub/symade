@@ -12,20 +12,14 @@ import kiev.vlang.NArr.JArr;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.Method.MethodImpl;
-import kiev.vlang.Initializer.InitializerImpl;
-import kiev.vlang.WBCCondition.WBCConditionImpl;
-
 /**
  * @author Maxim Kizub
  *
  */
 
 @nodeview
-public final view JMethod of MethodImpl extends JDNode {
+public final view JMethod of Method extends JDNode {
 
-	public final Method getMethod() { return (Method)this.getNode(); }
-		
 	public:ro	Access					acc;
 	public:ro	KString					name;
 	public:ro	JArr<JVar>				params;
@@ -42,7 +36,7 @@ public final view JMethod of MethodImpl extends JDNode {
 
 	public MetaThrows getMetaThrows();
 	
-	public JVar	getRetVar() { return (JVar)((MethodImpl)this).getRetVar(); }
+	public JVar	getRetVar() { return (JVar)((Method)this).getRetVar(); }
 	
 	public final boolean isVirtualStatic();
 	public final boolean isVarArgs();
@@ -54,9 +48,9 @@ public final view JMethod of MethodImpl extends JDNode {
 
 	@getter public JMethod get$child_jctx_method() { return this; }
 
-	public JVar getOuterThisParam() { return (JVar)this.getMethod().getOuterThisParam(); }
-	public JVar getTypeInfoParam(int kind) { return (JVar)this.getMethod().getTypeInfoParam(kind); }
-	public JVar getVarArgParam() { return (JVar)this.getMethod().getVarArgParam(); }
+	public JVar getOuterThisParam() { return (JVar) ((Method)this).getOuterThisParam(); }
+	public JVar getTypeInfoParam(int kind) { return (JVar) ((Method)this).getTypeInfoParam(kind); }
+	public JVar getVarArgParam() { return (JVar) ((Method)this).getVarArgParam(); }
 	
 	public CodeLabel getBreakLabel() {
 		return body.getBreakLabel();
@@ -92,7 +86,7 @@ public final view JMethod of MethodImpl extends JDNode {
 				if( !isBad() ) {
 					JVar thisPar = null;
 					if (!isStatic()) {
-						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
+						thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
 						code.addVar(thisPar);
 					}
 					code.addVars(params.toArray());
@@ -161,7 +155,7 @@ public final view JMethod of MethodImpl extends JDNode {
 			ASTNode[] mthrs = throwns.getThrowns();
         	JStruct[] thrs = new JStruct[mthrs.length];
 			for (int i=0; i < mthrs.length; i++)
-				thrs[i] = mthrs[i].getType().getStruct().getJView();
+				thrs[i] = (JStruct)mthrs[i].getType().getStruct();
         	ExceptionsAttr athr = new ExceptionsAttr();
         	athr.exceptions = thrs;
 			this.addAttr(athr);
@@ -182,7 +176,7 @@ public final view JMethod of MethodImpl extends JDNode {
 }
 
 @nodeview
-public final view JInitializer of InitializerImpl extends JDNode {
+public final view JInitializer of Initializer extends JDNode {
 	public:ro	JBlock		body;
 
 	public void generate(Code code, Type reqType) {
@@ -193,7 +187,7 @@ public final view JInitializer of InitializerImpl extends JDNode {
 }
 
 @nodeview
-public final final view JWBCCondition of WBCConditionImpl extends JDNode {
+public final final view JWBCCondition of WBCCondition extends JDNode {
 	public:ro	WBCType				cond;
 	public:ro	KString				name;
 	public:ro	JENode			body;
@@ -214,7 +208,7 @@ public final final view JWBCCondition of WBCConditionImpl extends JDNode {
 			try {
 				JVar thisPar = null;
 				if( !isStatic() ) {
-					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
+					thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
 					code.addVar(thisPar);
 				}
 				code.addVars(m.params.toArray());

@@ -35,24 +35,19 @@ import syntax kiev.Syntax;
 public abstract class BoolExpr extends ENode {
 
 	@virtual typedef This  = BoolExpr;
-	@virtual typedef NImpl = BoolExprImpl;
 	@virtual typedef VView = VBoolExpr;
 	@virtual typedef JView = JBoolExpr;
 	@virtual typedef VView = RBoolExpr;
 
-	@nodeimpl
-	public abstract static class BoolExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = BoolExpr;
-	}
 	@nodeview
-	public abstract static view BoolExprView of BoolExprImpl extends ENodeView {
+	public abstract static view BoolExprView of BoolExpr extends ENodeView {
 		public Type getType() { return Type.tpBoolean; }
 	}
 	@nodeview
-	public final static view VBoolExpr of BoolExprImpl extends BoolExprView {
+	public final static view VBoolExpr of BoolExpr extends BoolExprView {
 	}
 
-	public BoolExpr(BoolExprImpl impl) { super(impl); }
+	public BoolExpr() {}
 
 	public static void checkBool(ENode e) {
 		Type et = e.getType();
@@ -85,38 +80,27 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BinaryBooleanOrExpr;
-	@virtual typedef NImpl = BinaryBooleanOrExprImpl;
 	@virtual typedef VView = VBinaryBooleanOrExpr;
 	@virtual typedef JView = JBinaryBooleanOrExpr;
 	@virtual typedef RView = RBinaryBooleanOrExpr;
 
-	@nodeimpl
-	public static class BinaryBooleanOrExprImpl extends BoolExprImpl {
-		@virtual typedef ImplOf = BinaryBooleanOrExpr;
-		@att public ENode			expr1;
-		@att public ENode			expr2;
-	}
+	@att public ENode			expr1;
+	@att public ENode			expr2;
+
 	@nodeview
-	public static abstract view BinaryBooleanOrExprView of BinaryBooleanOrExprImpl extends BoolExprView {
+	public static abstract view BinaryBooleanOrExprView of BinaryBooleanOrExpr extends BoolExprView {
 		public ENode		expr1;
 		public ENode		expr2;
 
 		public Operator getOp() { return BinaryOperator.BooleanOr; }
 	}
 	@nodeview
-	public static final view VBinaryBooleanOrExpr of BinaryBooleanOrExprImpl extends BinaryBooleanOrExprView {
+	public static final view VBinaryBooleanOrExpr of BinaryBooleanOrExpr extends BinaryBooleanOrExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public BinaryBooleanOrExpr() {
-		super(new BinaryBooleanOrExprImpl());
-	}
+	public BinaryBooleanOrExpr() {}
 
 	public BinaryBooleanOrExpr(int pos, ENode expr1, ENode expr2) {
-		this();
 		this.pos = pos;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -141,7 +125,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -170,38 +154,27 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BinaryBooleanAndExpr;
-	@virtual typedef NImpl = BinaryBooleanAndExprImpl;
 	@virtual typedef VView = VBinaryBooleanAndExpr;
 	@virtual typedef JView = JBinaryBooleanAndExpr;
 	@virtual typedef RView = RBinaryBooleanAndExpr;
 
-	@nodeimpl
-	public static class BinaryBooleanAndExprImpl extends BoolExprImpl {
-		@virtual typedef ImplOf = BinaryBooleanAndExpr;
-		@att public ENode			expr1;
-		@att public ENode			expr2;
-	}
+	@att public ENode			expr1;
+	@att public ENode			expr2;
+
 	@nodeview
-	public static abstract view BinaryBooleanAndExprView of BinaryBooleanAndExprImpl extends BoolExprView {
+	public static abstract view BinaryBooleanAndExprView of BinaryBooleanAndExpr extends BoolExprView {
 		public ENode		expr1;
 		public ENode		expr2;
 
 		public Operator getOp() { return BinaryOperator.BooleanAnd; }
 	}
 	@nodeview
-	public static view VBinaryBooleanAndExpr of BinaryBooleanAndExprImpl extends BinaryBooleanAndExprView {
+	public static view VBinaryBooleanAndExpr of BinaryBooleanAndExpr extends BinaryBooleanAndExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public BinaryBooleanAndExpr() {
-		super(new BinaryBooleanAndExprImpl());
-	}
+	public BinaryBooleanAndExpr() {}
 
 	public BinaryBooleanAndExpr(int pos, ENode expr1, ENode expr2) {
-		this();
 		this.pos = pos;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -222,7 +195,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -250,20 +223,16 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BinaryBoolExpr;
-	@virtual typedef NImpl = BinaryBoolExprImpl;
 	@virtual typedef VView = VBinaryBoolExpr;
 	@virtual typedef JView = JBinaryBoolExpr;
 	@virtual typedef RView = RBinaryBoolExpr;
 
-	@nodeimpl
-	public static class BinaryBoolExprImpl extends BoolExprImpl {
-		@virtual typedef ImplOf = BinaryBoolExpr;
-		@ref public BinaryOperator	op;
-		@att public ENode			expr1;
-		@att public ENode			expr2;
-	}
+	@ref public BinaryOperator	op;
+	@att public ENode			expr1;
+	@att public ENode			expr2;
+
 	@nodeview
-	public static view BinaryBoolExprView of BinaryBoolExprImpl extends BoolExprView {
+	public static view BinaryBoolExprView of BinaryBoolExpr extends BoolExprView {
 		public BinaryOperator	op;
 		public ENode			expr1;
 		public ENode			expr2;
@@ -271,7 +240,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		public Operator getOp() { return op; }
 	}
 	@nodeview
-	public static view VBinaryBoolExpr of BinaryBoolExprImpl extends BinaryBoolExprView {
+	public static view VBinaryBoolExpr of BinaryBoolExpr extends BinaryBoolExprView {
 
 		public void mainResolveOut() {
 			Type et1 = expr1.getType();
@@ -291,16 +260,9 @@ public class BinaryBoolExpr extends BoolExpr {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public BinaryBoolExpr() {
-		super(new BinaryBoolExprImpl());
-	}
+	public BinaryBoolExpr() {}
 
 	public BinaryBoolExpr(int pos, BinaryOperator op, ENode expr1, ENode expr2) {
-		this();
 		this.pos = pos;
 		this.op = op;
 		this.expr1 = expr1;
@@ -314,7 +276,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -341,45 +303,33 @@ public class InstanceofExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = InstanceofExpr;
-	@virtual typedef NImpl = InstanceofExprImpl;
 	@virtual typedef VView = VInstanceofExpr;
 	@virtual typedef JView = JInstanceofExpr;
 	@virtual typedef RView = RInstanceofExpr;
 
-	@nodeimpl
-	public static class InstanceofExprImpl extends BoolExprImpl {
-		@virtual typedef ImplOf = InstanceofExpr;
-		@att public ENode		expr;
-		@att public TypeRef		type;
-	}
+	@att public ENode		expr;
+	@att public TypeRef		type;
+
 	@nodeview
-	public static abstract view InstanceofExprView of InstanceofExprImpl extends BoolExprView {
+	public static abstract view InstanceofExprView of InstanceofExpr extends BoolExprView {
 		public ENode	expr;
 		public TypeRef	type;
 
 		public Operator getOp() { return BinaryOperator.InstanceOf; }
 	}
 	@nodeview
-	public static view VInstanceofExpr of InstanceofExprImpl extends InstanceofExprView {
+	public static view VInstanceofExpr of InstanceofExpr extends InstanceofExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public InstanceofExpr() {
-		super(new InstanceofExprImpl());
-	}
+	public InstanceofExpr() {}
 
 	public InstanceofExpr(int pos, ENode expr, TypeRef type) {
-		this();
 		this.pos = pos;
 		this.expr = expr;
 		this.type = type;
 	}
 
 	public InstanceofExpr(int pos, ENode expr, Type type) {
-		this();
 		this.pos = pos;
 		this.expr = expr;
 		this.type = new TypeRef(type);
@@ -390,7 +340,7 @@ public class InstanceofExpr extends BoolExpr {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	static class InstanceofExprDFFunc extends DFFunc {
@@ -403,7 +353,7 @@ public class InstanceofExpr extends BoolExpr {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			res = ((InstanceofExpr)dfi.node_impl.getNode()).addNodeTypeInfo(DFFunc.calc(f, dfi));
+			res = ((InstanceofExpr)dfi.node_impl).addNodeTypeInfo(DFFunc.calc(f, dfi));
 			dfi.setResult(res_idx, res);
 			return res;
 		}
@@ -451,36 +401,25 @@ public class BooleanNotExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BooleanNotExpr;
-	@virtual typedef NImpl = BooleanNotExprImpl;
 	@virtual typedef VView = VBooleanNotExpr;
 	@virtual typedef JView = JBooleanNotExpr;
 	@virtual typedef RView = RBooleanNotExpr;
 
-	@nodeimpl
-	public static class BooleanNotExprImpl extends BoolExprImpl {
-		@virtual typedef ImplOf = BooleanNotExpr;
-		@att public ENode		expr;
-	}
+	@att public ENode		expr;
+
 	@nodeview
-	public static abstract view BooleanNotExprView of BooleanNotExprImpl extends BoolExprView {
+	public static abstract view BooleanNotExprView of BooleanNotExpr extends BoolExprView {
 		public ENode		expr;
 
 		public Operator getOp() { return PrefixOperator.BooleanNot; }
 	}
 	@nodeview
-	public static view VBooleanNotExpr of BooleanNotExprImpl extends BooleanNotExprView {
+	public static view VBooleanNotExpr of BooleanNotExpr extends BooleanNotExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public BooleanNotExpr() {
-		super(new BooleanNotExprImpl());
-	}
+	public BooleanNotExpr() {}
 
 	public BooleanNotExpr(int pos, ENode expr) {
-		this();
 		this.pos = pos;
 		this.expr = expr;
 	}
@@ -493,7 +432,7 @@ public class BooleanNotExpr extends BoolExpr {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

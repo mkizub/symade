@@ -55,18 +55,14 @@ public class Shadow extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = Shadow;
-	@virtual typedef NImpl = ShadowImpl;
 	@virtual typedef VView = VShadow;
 	@virtual typedef JView = JShadow;
 	@virtual typedef RView = RShadow;
 
-	@nodeimpl
-	public static final class ShadowImpl extends ENodeImpl {
-		@virtual typedef ImplOf = Shadow;
-		@ref public ASTNode	node;
-	}
+	@ref public ASTNode	node;
+
 	@nodeview
-	public static abstract view ShadowView of ShadowImpl extends ENodeView {
+	public static abstract view ShadowView of Shadow extends ENodeView {
 		public ASTNode		node;
 	
 		public int getPriority() {
@@ -78,27 +74,19 @@ public class Shadow extends ENode {
 		public Type getType() { return node.getType(); }
 	}
 	@nodeview
-	public static final view VShadow of ShadowImpl extends ShadowView {
+	public static final view VShadow of Shadow extends ShadowView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public Shadow() {
-		super(new ShadowImpl());
-	}
+	public Shadow() {}
 	public Shadow(ENode node) {
-		super(new ShadowImpl());
 		this.node = node;
 	}
 	public Shadow(Initializer node) {
-		super(new ShadowImpl());
 		this.node = node;
 	}
 	
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public String toString() {
@@ -119,19 +107,15 @@ public class ArrayLengthExpr extends ENode {
 	}
 	
 	@virtual typedef This  = ArrayLengthExpr;
-	@virtual typedef NImpl = ArrayLengthExprImpl;
 	@virtual typedef VView = VArrayLengthExpr;
 	@virtual typedef JView = JArrayLengthExpr;
 	@virtual typedef RView = RArrayLengthExpr;
 
-	@nodeimpl
-	public static final class ArrayLengthExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ArrayLengthExpr;
-		@att public ENode			obj;
-		@att public NameRef			ident;
-	}
+	@att public ENode			obj;
+	@att public NameRef			ident;
+
 	@nodeview
-	public static abstract view ArrayLengthExprView of ArrayLengthExprImpl extends ENodeView {
+	public static abstract view ArrayLengthExprView of ArrayLengthExpr extends ENodeView {
 		public ENode			obj;
 		public NameRef			ident;
 
@@ -140,25 +124,17 @@ public class ArrayLengthExpr extends ENode {
 		public Type getType() { return Type.tpInt; }
 	}
 	@nodeview
-	public static final view VArrayLengthExpr of ArrayLengthExprImpl extends ArrayLengthExprView {
+	public static final view VArrayLengthExpr of ArrayLengthExpr extends ArrayLengthExprView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public ArrayLengthExpr() {
-		super(new ArrayLengthExprImpl());
-	}
+	public ArrayLengthExpr() {}
 
 	public ArrayLengthExpr(int pos, ENode obj) {
-		this();
 		this.pos = pos;
 		this.ident = new NameRef(pos,nameLength);
 		this.obj = obj;
 	}
 	public ArrayLengthExpr(int pos, ENode obj, NameRef length) {
-		this();
 		this.pos = pos;
 		assert(length.name == nameLength);
 		this.ident = new NameRef(pos,nameLength);
@@ -173,7 +149,7 @@ public class ArrayLengthExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -193,18 +169,14 @@ public class TypeClassExpr extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = TypeClassExpr;
-	@virtual typedef NImpl = TypeClassExprImpl;
 	@virtual typedef VView = VTypeClassExpr;
 	@virtual typedef JView = JTypeClassExpr;
 	@virtual typedef RView = RTypeClassExpr;
 
-	@nodeimpl
-	public static final class TypeClassExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = TypeClassExpr;
-		@att public TypeRef		type;
-	}
+	@att public TypeRef		type;
+
 	@nodeview
-	public static abstract view TypeClassExprView of TypeClassExprImpl extends ENodeView {
+	public static abstract view TypeClassExprView of TypeClassExpr extends ENodeView {
 		public TypeRef		type;
 
 		public Operator getOp() { return BinaryOperator.Access; }
@@ -212,19 +184,12 @@ public class TypeClassExpr extends ENode {
 		public Type getType() { return Type.tpClass; }
 	}
 	@nodeview
-	public static final view VTypeClassExpr of TypeClassExprImpl extends TypeClassExprView {
+	public static final view VTypeClassExpr of TypeClassExpr extends TypeClassExprView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public TypeClassExpr() {
-		super(new TypeClassExprImpl());
-	}
+	public TypeClassExpr() {}
 
 	public TypeClassExpr(int pos, TypeRef type) {
-		this();
 		this.pos = pos;
 		this.type = type;
 	}
@@ -234,7 +199,7 @@ public class TypeClassExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -249,22 +214,18 @@ public class TypeInfoExpr extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = TypeInfoExpr;
-	@virtual typedef NImpl = TypeInfoExprImpl;
 	@virtual typedef VView = VTypeInfoExpr;
 	@virtual typedef JView = JTypeInfoExpr;
 	@virtual typedef RView = RTypeInfoExpr;
 
-	@nodeimpl
-	public static final class TypeInfoExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = TypeInfoExpr;
-		@att public TypeRef				type;
-		@att public TypeClassExpr		cl_expr;
-		@att public NArr<ENode>			cl_args;
-	}
+	@att public TypeRef				type;
+	@att public TypeClassExpr		cl_expr;
+	@att public NArr<ENode>			cl_args;
+
 	@nodeview
-	public static abstract view TypeInfoExprView of TypeInfoExprImpl extends ENodeView {
-		public				TypeRef				type;
-		public				TypeClassExpr		cl_expr;
+	public static abstract view TypeInfoExprView of TypeInfoExpr extends ENodeView {
+		public		TypeRef				type;
+		public		TypeClassExpr		cl_expr;
 		public:ro	NArr<ENode>			cl_args;
 
 		public Operator getOp() { return BinaryOperator.Access; }
@@ -278,19 +239,12 @@ public class TypeInfoExpr extends ENode {
 
 	}
 	@nodeview
-	public static final view VTypeInfoExpr of TypeInfoExprImpl extends TypeInfoExprView {
+	public static final view VTypeInfoExpr of TypeInfoExpr extends TypeInfoExprView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public TypeInfoExpr() {
-		super(new TypeInfoExprImpl());
-	}
+	public TypeInfoExpr() {}
 
 	public TypeInfoExpr(int pos, TypeRef type) {
-		this();
 		this.pos = pos;
 		this.type = type;
 	}
@@ -300,7 +254,7 @@ public class TypeInfoExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -318,20 +272,16 @@ public class AssignExpr extends LvalueExpr {
 	}
 	
 	@virtual typedef This  = AssignExpr;
-	@virtual typedef NImpl = AssignExprImpl;
 	@virtual typedef VView = VAssignExpr;
 	@virtual typedef JView = JAssignExpr;
 	@virtual typedef RView = RAssignExpr;
 
-	@nodeimpl
-	public static class AssignExprImpl extends LvalueExprImpl {		
-		@virtual typedef ImplOf = AssignExpr;
-		@ref public AssignOperator	op;
-		@att public ENode			lval;
-		@att public ENode			value;
-	}
+	@ref public AssignOperator	op;
+	@att public ENode			lval;
+	@att public ENode			value;
+
 	@nodeview
-	public static abstract view AssignExprView of AssignExprImpl extends LvalueExprView {
+	public static abstract view AssignExprView of AssignExpr extends LvalueExprView {
 		public AssignOperator	op;
 		public ENode			lval;
 		public ENode			value;
@@ -341,19 +291,12 @@ public class AssignExpr extends LvalueExpr {
 		public Type getType() { return lval.getType(); }
 	}
 	@nodeview
-	public static final view VAssignExpr of AssignExprImpl extends AssignExprView {
+	public static final view VAssignExpr of AssignExpr extends AssignExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public AssignExpr() {
-		super(new AssignExprImpl());
-	}
+	public AssignExpr() {}
 
 	public AssignExpr(int pos, AssignOperator op, ENode lval, ENode value) {
-		this();
 		this.pos = pos;
 		this.op = op;
 		this.lval = lval;
@@ -375,7 +318,7 @@ public class AssignExpr extends LvalueExpr {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	static class AssignExprDFFunc extends DFFunc {
@@ -388,7 +331,7 @@ public class AssignExpr extends LvalueExpr {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			res = ((AssignExpr)dfi.node_impl.getNode()).addNodeTypeInfo(f.calc(dfi));
+			res = ((AssignExpr)dfi.node_impl).addNodeTypeInfo(f.calc(dfi));
 			dfi.setResult(res_idx, res);
 			return res;
 		}
@@ -446,20 +389,16 @@ public class BinaryExpr extends ENode {
 	}
 	
 	@virtual typedef This  = BinaryExpr;
-	@virtual typedef NImpl = BinaryExprImpl;
 	@virtual typedef VView = VBinaryExpr;
 	@virtual typedef JView = JBinaryExpr;
 	@virtual typedef RView = RBinaryExpr;
 
-	@nodeimpl
-	public static class BinaryExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = BinaryExpr;
-		@ref public BinaryOperator	op;
-		@att public ENode			expr1;
-		@att public ENode			expr2;
-	}
+	@ref public BinaryOperator	op;
+	@att public ENode			expr1;
+	@att public ENode			expr2;
+
 	@nodeview
-	public static abstract view BinaryExprView of BinaryExprImpl extends ENodeView {
+	public static abstract view BinaryExprView of BinaryExpr extends ENodeView {
 		public BinaryOperator	op;
 		public ENode			expr1;
 		public ENode			expr2;
@@ -493,13 +432,13 @@ public class BinaryExpr extends ENode {
 					return Type.tpInt;
 				}
 			}
-			((BinaryExprImpl)this)._self.resolve(null);
+			((BinaryExpr)this).resolve(null);
 			return getType();
 		}
 	}
 
 	@nodeview
-	public static final view VBinaryExpr of BinaryExprImpl extends BinaryExprView {
+	public static final view VBinaryExpr of BinaryExpr extends BinaryExprView {
 		public void mainResolveOut() {
 			Type et1 = expr1.getType();
 			Type et2 = expr2.getType();
@@ -585,16 +524,9 @@ public class BinaryExpr extends ENode {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public BinaryExpr() {
-		super(new BinaryExprImpl());
-	}
+	public BinaryExpr() {}
 
 	public BinaryExpr(int pos, BinaryOperator op, ENode expr1, ENode expr2) {
-		this();
 		this.pos = pos;
 		this.op = op;
 		this.expr1 = expr1;
@@ -616,7 +548,7 @@ public class BinaryExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -643,18 +575,14 @@ public class StringConcatExpr extends ENode {
 	}
 
 	@virtual typedef This  = StringConcatExpr;
-	@virtual typedef NImpl = StringConcatExprImpl;
 	@virtual typedef VView = VStringConcatExpr;
 	@virtual typedef JView = JStringConcatExpr;
 	@virtual typedef RView = RStringConcatExpr;
 
-	@nodeimpl
-	public static class StringConcatExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = StringConcatExpr;
-		@att public NArr<ENode>			args;
-	}
+	@att public NArr<ENode>			args;
+
 	@nodeview
-	public static view StringConcatExprView of StringConcatExprImpl extends ENodeView {
+	public static view StringConcatExprView of StringConcatExpr extends ENodeView {
 		public:ro	NArr<ENode>		args;
 
 		public Operator getOp() { return BinaryOperator.Add; }
@@ -662,19 +590,12 @@ public class StringConcatExpr extends ENode {
 		public Type getType() { return Type.tpString; }
 	}
 	@nodeview
-	public static final view VStringConcatExpr of StringConcatExprImpl extends StringConcatExprView {
+	public static final view VStringConcatExpr of StringConcatExpr extends StringConcatExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public StringConcatExpr() {
-		super(new StringConcatExprImpl());
-	}
+	public StringConcatExpr() {}
 
 	public StringConcatExpr(int pos) {
-		this();
 		this.pos = pos;
 	}
 
@@ -689,7 +610,7 @@ public class StringConcatExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public void appendArg(ENode expr) {
@@ -713,18 +634,14 @@ public class CommaExpr extends ENode {
 	}
 
 	@virtual typedef This  = CommaExpr;
-	@virtual typedef NImpl = CommaExprImpl;
 	@virtual typedef VView = VCommaExpr;
 	@virtual typedef JView = JCommaExpr;
 	@virtual typedef RView = RCommaExpr;
 
-	@nodeimpl
-	public static class CommaExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = CommaExpr;
-		@att public NArr<ENode>		exprs;
-	}
+	@att public NArr<ENode>		exprs;
+
 	@nodeview
-	public static abstract view CommaExprView of CommaExprImpl extends ENodeView {
+	public static abstract view CommaExprView of CommaExpr extends ENodeView {
 		public:ro	NArr<ENode>		exprs;
 
 		public int getPriority() { return 0; }
@@ -732,19 +649,12 @@ public class CommaExpr extends ENode {
 		public Type getType() { return exprs[exprs.length-1].getType(); }
 	}
 	@nodeview
-	public static final view VCommaExpr of CommaExprImpl extends CommaExprView {
+	public static final view VCommaExpr of CommaExpr extends CommaExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public CommaExpr() {
-		super(new CommaExprImpl());
-	}
+	public CommaExpr() {}
 
 	public CommaExpr(ENode expr) {
-		this();
 		this.pos = pos;
 		this.exprs.add(expr);
 	}
@@ -762,7 +672,7 @@ public class CommaExpr extends ENode {
 	public KString getName() { return KString.Empty; };
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -783,19 +693,15 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	@virtual typedef This  = Block;
-	@virtual typedef NImpl = BlockImpl;
 	@virtual typedef VView = BlockView;
 	@virtual typedef JView = JBlock;
 	@virtual typedef RView = RBlock;
 
-	@nodeimpl
-	public static class BlockImpl extends ENodeImpl {
-		@virtual typedef ImplOf = Block;
-		@att public NArr<ENode>			stats;
-		@ref public CodeLabel			break_label;
-	}
+	@att public NArr<ENode>			stats;
+	@ref public CodeLabel			break_label;
+
 	@nodeview
-	public static view BlockView of BlockImpl extends ENodeView {
+	public static view BlockView of Block extends ENodeView {
 		public:ro	NArr<ENode>		stats;
 
 		public int		getPriority() { return 255; }
@@ -807,25 +713,13 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		}
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public Block() {
-		super(new BlockImpl());
-	}
-
-	public Block(BlockImpl impl) {
-		super(impl);
-	}
+	public Block() {}
 
 	public Block(int pos) {
-		this();
 		this.pos = pos;
 	}
 
 	public Block(int pos, ENode[] sts) {
-		this();
 		this.pos = pos;
 		this.stats.addAll(sts);
 	}
@@ -896,7 +790,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	static class BlockDFFunc extends DFFunc {
@@ -909,7 +803,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			Block node = (Block)dfi.node_impl.getNode();
+			Block node = (Block)dfi.node_impl;
 			Vector<Var> vars = new Vector<Var>();
 			foreach (ASTNode n; node.stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			if (vars.length > 0)
@@ -946,19 +840,15 @@ public class UnaryExpr extends ENode {
 	}
 
 	@virtual typedef This  = UnaryExpr;
-	@virtual typedef NImpl = UnaryExprImpl;
 	@virtual typedef VView = VUnaryExpr;
 	@virtual typedef JView = JUnaryExpr;
 	@virtual typedef RView = RUnaryExpr;
 
-	@nodeimpl
-	public static class UnaryExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = UnaryExpr;
-		@ref public Operator		op;
-		@att public ENode			expr;
-	}
+	@ref public Operator		op;
+	@att public ENode			expr;
+
 	@nodeview
-	public static abstract view UnaryExprView of UnaryExprImpl extends ENodeView {
+	public static abstract view UnaryExprView of UnaryExpr extends ENodeView {
 		public Operator			op;
 		public ENode			expr;
 
@@ -969,19 +859,12 @@ public class UnaryExpr extends ENode {
 		}
 	}
 	@nodeview
-	public static view VUnaryExpr of UnaryExprImpl extends UnaryExprView {
+	public static view VUnaryExpr of UnaryExpr extends UnaryExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public UnaryExpr() {
-		super(new UnaryExprImpl());
-	}
+	public UnaryExpr() {}
 
 	public UnaryExpr(int pos, Operator op, ENode expr) {
-		this();
 		this.pos = pos;
 		this.op = op;
 		this.expr = expr;
@@ -1001,7 +884,7 @@ public class UnaryExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1032,19 +915,15 @@ public class IncrementExpr extends ENode {
 	}
 
 	@virtual typedef This  = IncrementExpr;
-	@virtual typedef NImpl = IncrementExprImpl;
 	@virtual typedef VView = VIncrementExpr;
 	@virtual typedef JView = JIncrementExpr;
 	@virtual typedef RView = RIncrementExpr;
 
-	@nodeimpl
-	public static class IncrementExprImpl extends ENodeImpl {		
-		@virtual typedef ImplOf = IncrementExpr;
-		@ref public Operator			op;
-		@att public ENode				lval;
-	}
+	@ref public Operator			op;
+	@att public ENode				lval;
+
 	@nodeview
-	public static abstract view IncrementExprView of IncrementExprImpl extends ENodeView {
+	public static abstract view IncrementExprView of IncrementExpr extends ENodeView {
 		public Operator		op;
 		public ENode		lval;
 
@@ -1055,19 +934,12 @@ public class IncrementExpr extends ENode {
 		}
 	}
 	@nodeview
-	public static final view VIncrementExpr of IncrementExprImpl extends IncrementExprView {
+	public static final view VIncrementExpr of IncrementExpr extends IncrementExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public IncrementExpr() {
-		super(new IncrementExprImpl());
-	}
+	public IncrementExpr() {}
 
 	public IncrementExpr(int pos, Operator op, ENode lval) {
-		this();
 		this.pos = pos;
 		this.op = op;
 		this.lval = lval;
@@ -1081,7 +953,7 @@ public class IncrementExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1114,20 +986,16 @@ public class ConditionalExpr extends ENode {
 	}
 
 	@virtual typedef This  = ConditionalExpr;
-	@virtual typedef NImpl = ConditionalExprImpl;
 	@virtual typedef VView = VConditionalExpr;
 	@virtual typedef JView = JConditionalExpr;
 	@virtual typedef RView = RConditionalExpr;
 
-	@nodeimpl
-	public static class ConditionalExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = ConditionalExpr;
-		@att public ENode			cond;
-		@att public ENode			expr1;
-		@att public ENode			expr2;
-	}
+	@att public ENode			cond;
+	@att public ENode			expr1;
+	@att public ENode			expr2;
+
 	@nodeview
-	public static abstract view ConditionalExprView of ConditionalExprImpl extends ENodeView {
+	public static abstract view ConditionalExprView of ConditionalExpr extends ENodeView {
 		public ENode		cond;
 		public ENode		expr1;
 		public ENode		expr2;
@@ -1151,19 +1019,12 @@ public class ConditionalExpr extends ENode {
 		}
 	}
 	@nodeview
-	public static final view VConditionalExpr of ConditionalExprImpl extends ConditionalExprView {
+	public static final view VConditionalExpr of ConditionalExpr extends ConditionalExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public ConditionalExpr() {
-		super(new ConditionalExprImpl());
-	}
+	public ConditionalExpr() {}
 
 	public ConditionalExpr(int pos, ENode cond, ENode expr1, ENode expr2) {
-		this();
 		this.pos = pos;
 		this.cond = cond;
 		this.expr1 = expr1;
@@ -1179,7 +1040,7 @@ public class ConditionalExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1199,19 +1060,15 @@ public class CastExpr extends ENode {
 	}
 
 	@virtual typedef This  = CastExpr;
-	@virtual typedef NImpl = CastExprImpl;
 	@virtual typedef VView = VCastExpr;
 	@virtual typedef JView = JCastExpr;
 	@virtual typedef RView = RCastExpr;
 
-	@nodeimpl
-	public static class CastExprImpl extends ENodeImpl {
-		@virtual typedef ImplOf = CastExpr;
-		@att public ENode		expr;
-		@att public TypeRef		type;
-	}
+	@att public ENode		expr;
+	@att public TypeRef		type;
+
 	@nodeview
-	public static abstract view CastExprView of CastExprImpl extends ENodeView {
+	public static abstract view CastExprView of CastExpr extends ENodeView {
 		public ENode	expr;
 		public TypeRef	type;
 
@@ -1222,26 +1079,18 @@ public class CastExpr extends ENode {
 		}
 	}
 	@nodeview
-	public static final view VCastExpr of CastExprImpl extends CastExprView {
+	public static final view VCastExpr of CastExpr extends CastExprView {
 	}
 	
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-	
-	public CastExpr() {
-		super(new CastExprImpl());
-	}
+	public CastExpr() {}
 
 	public CastExpr(int pos, Type type, ENode expr) {
-		this();
 		this.pos = pos;
 		this.type = new TypeRef(type);
 		this.expr = expr;
 	}
 
 	public CastExpr(int pos, TypeRef type, ENode expr) {
-		this();
 		this.pos = pos;
 		this.type = type;
 		this.expr = expr;
@@ -1256,7 +1105,7 @@ public class CastExpr extends ENode {
 	}
 
 	public void resolve(Type reqType) {
-		getRView().resolve(reqType);
+		((RView)this).resolve(reqType);
 	}
 
 	public static void autoCast(ENode ex, TypeRef tp) {

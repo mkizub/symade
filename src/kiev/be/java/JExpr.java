@@ -14,22 +14,8 @@ import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.Shadow.ShadowImpl;
-import kiev.vlang.ArrayLengthExpr.ArrayLengthExprImpl;
-import kiev.vlang.TypeClassExpr.TypeClassExprImpl;
-import kiev.vlang.TypeInfoExpr.TypeInfoExprImpl;
-import kiev.vlang.AssignExpr.AssignExprImpl;
-import kiev.vlang.BinaryExpr.BinaryExprImpl;
-import kiev.vlang.StringConcatExpr.StringConcatExprImpl;
-import kiev.vlang.CommaExpr.CommaExprImpl;
-import kiev.vlang.Block.BlockImpl;
-import kiev.vlang.UnaryExpr.UnaryExprImpl;
-import kiev.vlang.IncrementExpr.IncrementExprImpl;
-import kiev.vlang.ConditionalExpr.ConditionalExprImpl;
-import kiev.vlang.CastExpr.CastExprImpl;
-
 @nodeview
-public final view JShadow of ShadowImpl extends JENode {
+public final view JShadow of Shadow extends JENode {
 	public:ro	JNode		node;
 
 	public void generate(Code code, Type reqType) {
@@ -43,7 +29,7 @@ public final view JShadow of ShadowImpl extends JENode {
 }
 
 @nodeview
-public final view JArrayLengthExpr of ArrayLengthExprImpl extends JENode {
+public final view JArrayLengthExpr of ArrayLengthExpr extends JENode {
 	public:ro JENode		obj;
 
 	public void generate(Code code, Type reqType ) {
@@ -57,7 +43,7 @@ public final view JArrayLengthExpr of ArrayLengthExprImpl extends JENode {
 }
 
 @nodeview
-public final view JTypeClassExpr of TypeClassExprImpl extends JENode {
+public final view JTypeClassExpr of TypeClassExpr extends JENode {
 	public:ro	Type			type;
 
 	public void generate(Code code, Type reqType ) {
@@ -70,7 +56,7 @@ public final view JTypeClassExpr of TypeClassExprImpl extends JENode {
 }
 
 @nodeview
-public final view JTypeInfoExpr of TypeInfoExprImpl extends JENode {
+public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 	public:ro	Type					type;
 	public:ro	JTypeClassExpr		cl_expr;
 	public:ro	JArr<JENode>		cl_args;
@@ -97,14 +83,14 @@ public final view JTypeInfoExpr of TypeInfoExprImpl extends JENode {
 		if (ti_clazz == null)
 			ti_clazz = Type.tpTypeInfo.clazz;
 		Method func = ti_clazz.resolveMethod(KString.from("newTypeInfo"), ti_clazz.ctype, Type.tpClass, new ArrayType(Type.tpTypeInfo));
-		code.addInstr(op_call,func.getJView(),false,ti_clazz.ctype);
+		code.addInstr(op_call,(JMethod)func,false,ti_clazz.ctype);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 }
 
 @nodeview
-public view JAssignExpr of AssignExprImpl extends JLvalueExpr {
+public view JAssignExpr of AssignExpr extends JLvalueExpr {
 	public:ro	AssignOperator		op;
 	public:ro	JENode			lval;
 	public:ro	JENode			value;
@@ -185,7 +171,7 @@ public view JAssignExpr of AssignExprImpl extends JLvalueExpr {
 }
 
 @nodeview
-public view JBinaryExpr of BinaryExprImpl extends JENode {
+public view JBinaryExpr of BinaryExpr extends JENode {
 	public:ro	BinaryOperator	op;
 	public:ro	JENode		expr1;
 	public:ro	JENode		expr2;
@@ -202,7 +188,7 @@ public view JBinaryExpr of BinaryExprImpl extends JENode {
 }
 
 @nodeview
-public view JStringConcatExpr of StringConcatExprImpl extends JENode {
+public view JStringConcatExpr of StringConcatExpr extends JENode {
 	public:ro	JArr<JENode>		args;
 
 	public static Struct clazzStringBuffer;
@@ -223,7 +209,7 @@ public view JStringConcatExpr of StringConcatExprImpl extends JENode {
 
 	public JMethod getMethodFor(JENode expr) {
 		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),clazzStringBuffer.ctype,expr.getType());
-		return m.getJView();
+		return (JMethod)m;
 	}
 
 
@@ -233,19 +219,19 @@ public view JStringConcatExpr of StringConcatExprImpl extends JENode {
 		JENode[] args = this.args.toArray();
 		code.addInstr(op_new,clazzStringBuffer.ctype);
 		code.addInstr(op_dup);
-		code.addInstr(op_call,clazzStringBufferInit.getJView(),false);
+		code.addInstr(op_call,(JMethod)clazzStringBufferInit,false);
 		for(int i=0; i < args.length; i++) {
 			args[i].generate(code,null);
 			code.addInstr(op_call,getMethodFor(args[i]),false);
 		}
-		code.addInstr(op_call,clazzStringBufferToString.getJView(),false);
+		code.addInstr(op_call,(JMethod)clazzStringBufferToString,false);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 }
 
 @nodeview
-public view JCommaExpr of CommaExprImpl extends JENode {
+public view JCommaExpr of CommaExpr extends JENode {
 	public:ro	JArr<JENode>		exprs;
 
 	public void generate(Code code, Type reqType) {
@@ -261,7 +247,7 @@ public view JCommaExpr of CommaExprImpl extends JENode {
 }
 
 @nodeview
-public view JBlock of BlockImpl extends JENode {
+public view JBlock of Block extends JENode {
 	public:ro	JArr<JENode>	stats;
 	public				CodeLabel		break_label;
 
@@ -300,7 +286,7 @@ public view JBlock of BlockImpl extends JENode {
 }
 
 @nodeview
-public view JUnaryExpr of UnaryExprImpl extends JENode {
+public view JUnaryExpr of UnaryExpr extends JENode {
 	public:ro	Operator			op;
 	public:ro	JENode			expr;
 
@@ -323,7 +309,7 @@ public view JUnaryExpr of UnaryExprImpl extends JENode {
 }
 
 @nodeview
-public final view JIncrementExpr of IncrementExprImpl extends JENode {
+public final view JIncrementExpr of IncrementExpr extends JENode {
 	public:ro	Operator			op;
 	public:ro	JENode			lval;
 
@@ -447,7 +433,7 @@ public final view JIncrementExpr of IncrementExprImpl extends JENode {
 }
 
 @nodeview
-public view JConditionalExpr of ConditionalExprImpl extends JENode {
+public view JConditionalExpr of ConditionalExpr extends JENode {
 	public:ro	JENode		cond;
 	public:ro	JENode		expr1;
 	public:ro	JENode		expr2;
@@ -475,7 +461,7 @@ public view JConditionalExpr of ConditionalExprImpl extends JENode {
 }
 
 @nodeview
-public view JCastExpr of CastExprImpl extends JENode {
+public view JCastExpr of CastExpr extends JENode {
 	public:ro	JENode			expr;
 	public:ro	Type			type;
 

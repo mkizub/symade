@@ -35,221 +35,214 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 
 	@virtual typedef This  = Method;
-	@virtual typedef NImpl = MethodImpl;
 	@virtual typedef VView = MethodView;
 	@virtual typedef JView = JMethod;
 	@virtual typedef RView = RMethod;
 
-	@nodeimpl
-	public static class MethodImpl extends DNodeImpl {
-		@virtual typedef ImplOf = Method;
+		 public Access				acc;
+		 public NodeName			name;
+		 CallTypeProvider			meta_type;
+	@att public NArr<TypeDef>		targs;
+	@att public TypeRef				type_ret;
+	@att public TypeRef				dtype_ret;
+	@att public NArr<FormPar>		params;
+	@att public NArr<ASTAlias>		aliases;
+	@att public Var					retvar;
+	@att public Block				body;
+	@att public PrescannedBody 		pbody;
+	public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
+	@att public NArr<WBCCondition> 	conditions;
+	@ref public NArr<Field>			violated_fields;
+	@att public MetaValue			annotation_default;
+		 public boolean				inlined_by_dispatcher;
+		 public boolean				invalid_types;
 
-		public final Method getMethod() { return (Method)this._self; }
-		
-		     public Access				acc;
-		     public NodeName			name;
-		     CallTypeProvider			meta_type;
-		@att public NArr<TypeDef>		targs;
-		@att public TypeRef				type_ret;
-		@att public TypeRef				dtype_ret;
-		@att public NArr<FormPar>		params;
-		@att public NArr<ASTAlias>		aliases;
-		@att public Var					retvar;
-		@att public Block				body;
-		@att public PrescannedBody 		pbody;
-		public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
-		@att public NArr<WBCCondition> 	conditions;
-		@ref public NArr<Field>			violated_fields;
-		@att public MetaValue			annotation_default;
-		     public boolean				inlined_by_dispatcher;
-		     public boolean				invalid_types;
+	@virtual public					CallType		type;
+	@virtual public					CallType		dtype;
+	@abstract
+	@virtual public:ro				CallType		etype;
 
-		@virtual public					CallType		type;
-		@virtual public					CallType		dtype;
-		@abstract
-		@virtual public:ro				CallType		etype;
-
-		public void callbackChildChanged(AttrSlot attr) {
-			if (parent != null && pslot != null) {
-				if      (attr.name == "params") {
-					parent.callbackChildChanged(pslot);
-				}
-				else if (attr.name == "conditions")
-					parent.callbackChildChanged(pslot);
-				else if (attr.name == "annotation_default")
-					parent.callbackChildChanged(pslot);
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if      (attr.name == "params") {
+				parent.callbackChildChanged(pslot);
 			}
-			if (attr.name == "params" || attr.name == "flags")
-				invalid_types = true;
+			else if (attr.name == "conditions")
+				parent.callbackChildChanged(pslot);
+			else if (attr.name == "annotation_default")
+				parent.callbackChildChanged(pslot);
 		}
-
-		@getter public final CallType				get$type()	{ checkRebuildTypes(); return this.type; }
-		@getter public final CallType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
-		@getter public final CallType				get$etype()	{ checkRebuildTypes(); return (CallType)this.dtype.getErasedType(); }
-
-		public Var getRetVar() {
-			if( retvar == null )
-				retvar = new Var(pos,nameResultVar,type_ret.getType(),ACC_FINAL);
-			return retvar;
-		}
-
-		public MetaThrows getMetaThrows() {
-			return (MetaThrows)this.getNodeData(MetaThrows.ID);
-		}
-
-		// virtual static method
-		public final boolean isVirtualStatic() {
-			return this.is_mth_virtual_static;
-		}
-		public final void setVirtualStatic(boolean on) {
-			if (this.is_mth_virtual_static != on) {
-				this.is_mth_virtual_static = on;
-				if (!isStatic()) this.setStatic(true);
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// method with variable number of arguments	
-		public final boolean isVarArgs() {
-			return this.is_mth_varargs;
-		}
-		public final void setVarArgs(boolean on) {
-			if (this.is_mth_varargs != on) {
-				this.is_mth_varargs = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// logic rule method
-		public final boolean isRuleMethod() {
-			return this instanceof RuleMethod.RuleMethodImpl;
-		}
-		// method with attached operator	
-		public final boolean isOperatorMethod() {
-			return this.is_mth_operator;
-		}
-		public final void setOperatorMethod(boolean on) {
-			if (this.is_mth_operator != on) {
-				this.is_mth_operator = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// need fields initialization	
-		public final boolean isNeedFieldInits() {
-			return this.is_mth_need_fields_init;
-		}
-		public final void setNeedFieldInits(boolean on) {
-			if (this.is_mth_need_fields_init != on) {
-				this.is_mth_need_fields_init = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// a method generated as invariant	
-		public final boolean isInvariantMethod() {
-			return this.is_mth_invariant;
-		}
-		public final void setInvariantMethod(boolean on) {
-			if (this.is_mth_invariant != on) {
-				this.is_mth_invariant = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// a local method (closure code or inner method)	
-		public final boolean isLocalMethod() {
-			return this.is_mth_local;
-		}
-		public final void setLocalMethod(boolean on) {
-			if (this.is_mth_local != on) {
-				this.is_mth_local = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// a dispatcher (for multimethods)	
-		public final boolean isDispatcherMethod() {
-			return this.is_mth_dispatcher;
-		}
-		public final void setDispatcherMethod(boolean on) {
-			if (this.is_mth_dispatcher != on) {
-				this.is_mth_dispatcher = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-
-		public final void checkRebuildTypes() {
-			if (invalid_types) rebuildTypes();
-		}
-	
-		final void rebuildTypes() {
-			TVarBld type_set = new TVarBld();
-			TVarBld dtype_set = new TVarBld();
-			if (targs.length > 0) {
-				foreach (TypeDef td; targs) {
-					type_set.append(td.getAType(), null);
-					dtype_set.append(td.getAType(), null);
-				}
-			}
-			if (!is_static && !is_mth_virtual_static) {
-				type_set.append(getMethod().ctx_clazz.ctype.bindings());
-				dtype_set.append(getMethod().ctx_clazz.ctype.bindings());
-			}
-			Vector<Type> args = new Vector<Type>();
-			Vector<Type> dargs = new Vector<Type>();
-			foreach (FormPar fp; params) {
-				switch (fp.kind) {
-				case FormPar.PARAM_NORMAL:
-					args.append(fp.type);
-					dargs.append(fp.dtype);
-					break;
-				case FormPar.PARAM_OUTER_THIS:
-					assert(this instanceof Constructor.ConstructorImpl);
-					assert(!this.getMethod().isStatic());
-					assert(fp.isForward());
-					assert(fp.isFinal());
-					assert(fp.name.name == nameThisDollar);
-					assert(fp.type ≈ this.getMethod().ctx_clazz.package_clazz.ctype);
-					dargs.append(this.getMethod().ctx_clazz.package_clazz.ctype);
-					break;
-				case FormPar.PARAM_RULE_ENV:
-					assert(this instanceof RuleMethod.RuleMethodImpl);
-					assert(fp.isForward());
-					assert(fp.isFinal());
-					assert(fp.type ≡ Type.tpRule);
-					assert(fp.name.name == namePEnv);
-					dargs.append(Type.tpRule);
-					break;
-				case FormPar.PARAM_TYPEINFO:
-					assert(this instanceof Constructor.ConstructorImpl || (this.getMethod().isStatic() && this.name.equals(nameNewOp)));
-					assert(fp.isFinal());
-					assert(fp.stype == null || fp.stype.getType() ≈ fp.vtype.getType());
-					dargs.append(fp.type);
-					break;
-				case FormPar.PARAM_VARARGS:
-					//assert(fp.isFinal());
-					assert(fp.type.isArray());
-					dargs.append(fp.type);
-					break;
-				case FormPar.PARAM_LVAR_PROXY:
-					assert(this instanceof Constructor.ConstructorImpl);
-					assert(fp.isFinal());
-					dargs.append(fp.type);
-					break;
-				default:
-					if (fp.kind >= FormPar.PARAM_TYPEINFO_N && fp.kind < FormPar.PARAM_TYPEINFO_N+128) {
-						assert(this.is_type_unerasable);
-						assert(fp.isFinal());
-						assert(fp.type ≈ Type.tpTypeInfo);
-						dargs.append(fp.type);
-						break;
-					}
-					throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
-				}
-			}
-			this.type = new CallType(type_set, args.toArray(), type_ret.getType(), false);
-			this.dtype = new CallType(dtype_set, dargs.toArray(), dtype_ret.getType(), false);
-			invalid_types = false;
-		}
-		
+		if (attr.name == "params" || attr.name == "flags")
+			invalid_types = true;
 	}
+
+	@getter public final CallType				get$type()	{ checkRebuildTypes(); return this.type; }
+	@getter public final CallType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
+	@getter public final CallType				get$etype()	{ checkRebuildTypes(); return (CallType)this.dtype.getErasedType(); }
+
+	public Var getRetVar() {
+		if( retvar == null )
+			retvar = new Var(pos,nameResultVar,type_ret.getType(),ACC_FINAL);
+		return retvar;
+	}
+
+	public MetaThrows getMetaThrows() {
+		return (MetaThrows)this.getNodeData(MetaThrows.ID);
+	}
+
+	// virtual static method
+	public final boolean isVirtualStatic() {
+		return this.is_mth_virtual_static;
+	}
+	public final void setVirtualStatic(boolean on) {
+		if (this.is_mth_virtual_static != on) {
+			this.is_mth_virtual_static = on;
+			if (!isStatic()) this.setStatic(true);
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// method with variable number of arguments	
+	public final boolean isVarArgs() {
+		return this.is_mth_varargs;
+	}
+	public final void setVarArgs(boolean on) {
+		if (this.is_mth_varargs != on) {
+			this.is_mth_varargs = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// logic rule method
+	public final boolean isRuleMethod() {
+		return this instanceof RuleMethod;
+	}
+	// method with attached operator	
+	public final boolean isOperatorMethod() {
+		return this.is_mth_operator;
+	}
+	public final void setOperatorMethod(boolean on) {
+		if (this.is_mth_operator != on) {
+			this.is_mth_operator = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// need fields initialization	
+	public final boolean isNeedFieldInits() {
+		return this.is_mth_need_fields_init;
+	}
+	public final void setNeedFieldInits(boolean on) {
+		if (this.is_mth_need_fields_init != on) {
+			this.is_mth_need_fields_init = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a method generated as invariant	
+	public final boolean isInvariantMethod() {
+		return this.is_mth_invariant;
+	}
+	public final void setInvariantMethod(boolean on) {
+		if (this.is_mth_invariant != on) {
+			this.is_mth_invariant = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a local method (closure code or inner method)	
+	public final boolean isLocalMethod() {
+		return this.is_mth_local;
+	}
+	public final void setLocalMethod(boolean on) {
+		if (this.is_mth_local != on) {
+			this.is_mth_local = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a dispatcher (for multimethods)	
+	public final boolean isDispatcherMethod() {
+		return this.is_mth_dispatcher;
+	}
+	public final void setDispatcherMethod(boolean on) {
+		if (this.is_mth_dispatcher != on) {
+			this.is_mth_dispatcher = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
+	public final void checkRebuildTypes() {
+		if (invalid_types) rebuildTypes();
+	}
+
+	final void rebuildTypes() {
+		TVarBld type_set = new TVarBld();
+		TVarBld dtype_set = new TVarBld();
+		if (targs.length > 0) {
+			foreach (TypeDef td; targs) {
+				type_set.append(td.getAType(), null);
+				dtype_set.append(td.getAType(), null);
+			}
+		}
+		if (!is_static && !is_mth_virtual_static) {
+			type_set.append(ctx_clazz.ctype.bindings());
+			dtype_set.append(ctx_clazz.ctype.bindings());
+		}
+		Vector<Type> args = new Vector<Type>();
+		Vector<Type> dargs = new Vector<Type>();
+		foreach (FormPar fp; params) {
+			switch (fp.kind) {
+			case FormPar.PARAM_NORMAL:
+				args.append(fp.type);
+				dargs.append(fp.dtype);
+				break;
+			case FormPar.PARAM_OUTER_THIS:
+				assert(this instanceof Constructor);
+				assert(!this.isStatic());
+				assert(fp.isForward());
+				assert(fp.isFinal());
+				assert(fp.name.name == nameThisDollar);
+				assert(fp.type ≈ this.ctx_clazz.package_clazz.ctype);
+				dargs.append(this.ctx_clazz.package_clazz.ctype);
+				break;
+			case FormPar.PARAM_RULE_ENV:
+				assert(this instanceof RuleMethod);
+				assert(fp.isForward());
+				assert(fp.isFinal());
+				assert(fp.type ≡ Type.tpRule);
+				assert(fp.name.name == namePEnv);
+				dargs.append(Type.tpRule);
+				break;
+			case FormPar.PARAM_TYPEINFO:
+				assert(this instanceof Constructor || (this.isStatic() && this.name.equals(nameNewOp)));
+				assert(fp.isFinal());
+				assert(fp.stype == null || fp.stype.getType() ≈ fp.vtype.getType());
+				dargs.append(fp.type);
+				break;
+			case FormPar.PARAM_VARARGS:
+				//assert(fp.isFinal());
+				assert(fp.type.isArray());
+				dargs.append(fp.type);
+				break;
+			case FormPar.PARAM_LVAR_PROXY:
+				assert(this instanceof Constructor);
+				assert(fp.isFinal());
+				dargs.append(fp.type);
+				break;
+			default:
+				if (fp.kind >= FormPar.PARAM_TYPEINFO_N && fp.kind < FormPar.PARAM_TYPEINFO_N+128) {
+					assert(this.is_type_unerasable);
+					assert(fp.isFinal());
+					assert(fp.type ≈ Type.tpTypeInfo);
+					dargs.append(fp.type);
+					break;
+				}
+				throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
+			}
+		}
+		this.type = new CallType(type_set, args.toArray(), type_ret.getType(), false);
+		this.dtype = new CallType(dtype_set, dargs.toArray(), dtype_ret.getType(), false);
+		invalid_types = false;
+	}
+		
+
 	@nodeview
-	public static view MethodView of MethodImpl extends DNodeView {
+	public static view MethodView of Method extends DNodeView {
 
 		public final void checkRebuildTypes();
 	
@@ -273,9 +266,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		public				boolean				inlined_by_dispatcher;
 		public				boolean				invalid_types;
 
-		@setter public final void set$acc(Access val)	{ ((MethodImpl)this).acc = val; Access.verifyDecl((Method)getDNode()); }
-
-		@getter public Method get$child_ctx_method() { return (Method)this.getNode(); }
+		@getter public Method get$child_ctx_method() { return (Method)this; }
 	
 		public Var getRetVar();
 		public MetaThrows getMetaThrows();
@@ -333,27 +324,17 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
 	public static Method[]	emptyArray = new Method[0];
 
-	@getter public PrescannedBody	get$pbody()			{ return this.getVView().pbody; }
-	@getter public Access			get$acc()			{ return this.getVView().acc; }
-	@setter public void set$pbody(PrescannedBody val)	{ this.getVView().pbody = val; }
-	@setter public void set$acc(Access val)			{ this.getVView().acc = val; }
+	@getter public PrescannedBody	get$pbody()			{ return this.pbody; }
+	@getter public Access			get$acc()			{ return this.acc; }
+	@setter public void set$pbody(PrescannedBody val)	{ this.pbody = val; }
+	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
 	
-	public Method() {
-		super(new MethodImpl());
-	}
+	public Method() {}
 
-	public Method(MethodImpl impl) {
-		super(impl);
-	}
-
-	public Method(MethodImpl impl, KString name, Type ret) {
-		this(impl,name,new TypeRef(ret));
+	public Method(KString name, Type ret) {
+		this(name,new TypeRef(ret));
 	}
 
 	public Method(KString name, Type ret, int fl) {
@@ -361,11 +342,10 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		invalid_types = true;
 	}
 	public Method(KString name, TypeRef type_ret, int fl) {
-		this(new MethodImpl(), name, type_ret);
+		this(name, type_ret);
 		this.flags = fl;
 	}
-	public Method(MethodImpl impl, KString name, TypeRef type_ret) {
-		super(impl);
+	public Method(KString name, TypeRef type_ret) {
 		assert ((name != nameInit && name != nameClassInit) || this instanceof Constructor);
 		this.name = new NodeName(name);
 		this.type_ret = type_ret;
@@ -374,10 +354,6 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		invalid_types = true;
 	}
 
-	public void checkRebuildTypes() {
-		this.getVView().checkRebuildTypes();
-	}
-	
 	public FormPar getOuterThisParam() {
 		checkRebuildTypes();
 		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_OUTER_THIS)
@@ -755,7 +731,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			Method m = (Method)dfi.node_impl.getNode();
+			Method m = (Method)dfi.node_impl;
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < m.params.length; i++) {
 				Var p = m.params[i];
@@ -771,7 +747,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 
 	public void resolveDecl() {
-		getRView().resolveDecl();
+		((RView)this).resolveDecl();
 	}
 
 	public boolean setBody(ENode body) {
@@ -797,35 +773,25 @@ public class Constructor extends Method {
 	}
 
 	@virtual typedef This  = Constructor;
-	@virtual typedef NImpl = ConstructorImpl;
 	@virtual typedef VView = ConstructorView;
 	@virtual typedef RView = RConstructor;
 
-	@nodeimpl
-	public static final class ConstructorImpl extends MethodImpl {
-		@virtual typedef ImplOf = Constructor;
-		@att public NArr<ENode>			addstats;
-	}
+	@att public NArr<ENode>			addstats;
+
 	@nodeview
-	public static final view ConstructorView of ConstructorImpl extends MethodView {
+	public static final view ConstructorView of Constructor extends MethodView {
 		public:ro	NArr<ENode>			addstats;
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public Constructor() {
-		super(new ConstructorImpl());
-	}
+	public Constructor() {}
 
 	public Constructor(int fl) {
-		super(new ConstructorImpl(), (fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid);
+		super((fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid);
 		this.flags = fl;
 	}
 
 	public void resolveDecl() {
-		getRView().resolveDecl();
+		((RView)this).resolveDecl();
 	}
 }
 
@@ -837,36 +803,26 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	}
 
 	@virtual typedef This  = Initializer;
-	@virtual typedef NImpl = InitializerImpl;
 	@virtual typedef VView = VInitializer;
 	@virtual typedef JView = JInitializer;
 	@virtual typedef RView = RInitializer;
 
-	@nodeimpl
-	public static final class InitializerImpl extends DNodeImpl {
-		@virtual typedef ImplOf = Initializer;
-		@att public Block				body;
-		@att public PrescannedBody		pbody;
-	}
+	@att public Block				body;
+	@att public PrescannedBody		pbody;
+
 	@nodeview
-	public static abstract view InitializerView of InitializerImpl extends DNodeView {
+	public static abstract view InitializerView of Initializer extends DNodeView {
 		public Block				body;
 		public PrescannedBody		pbody;
 	}
 	@nodeview
-	public static final view VInitializer of InitializerImpl extends InitializerView {
+	public static final view VInitializer of Initializer extends InitializerView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	@getter public PrescannedBody	get$pbody()			{ return this.getVView().pbody; }
-	@setter public void set$pbody(PrescannedBody val)	{ this.getVView().pbody = val; }
+	@getter public PrescannedBody	get$pbody()			{ return this.pbody; }
+	@setter public void set$pbody(PrescannedBody val)	{ this.pbody = val; }
 	
-	public Initializer() {
-		super(new InitializerImpl());
-	}
+	public Initializer() {}
 
 	public Initializer(int pos, int flags) {
 		this();
@@ -875,7 +831,7 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	}
 
 	public void resolveDecl() {
-		getRView().resolveDecl();
+		((RView)this).resolveDecl();
 	}
 
 	public boolean setBody(ENode body) {
@@ -906,22 +862,18 @@ public class WBCCondition extends DNode {
 	}
 	
 	@virtual typedef This  = WBCCondition;
-	@virtual typedef NImpl = WBCConditionImpl;
 	@virtual typedef VView = VWBCCondition;
 	@virtual typedef JView = JWBCCondition;
 	@virtual typedef RView = RWBCCondition;
 
-	@nodeimpl
-	public static final class WBCConditionImpl extends DNodeImpl {
-		@virtual typedef ImplOf = WBCCondition;
-		@att public WBCType				cond;
-		@att public NameRef				name;
-		@att public ENode				body;
-		@ref public Method				definer;
-		@att public CodeAttr			code_attr;
-	}
+	@att public WBCType				cond;
+	@att public NameRef				name;
+	@att public ENode				body;
+	@ref public Method				definer;
+	@att public CodeAttr			code_attr;
+
 	@nodeview
-	public static abstract view WBCConditionView of WBCConditionImpl extends DNodeView {
+	public static abstract view WBCConditionView of WBCCondition extends DNodeView {
 		public WBCType				cond;
 		public NameRef				name;
 		public ENode				body;
@@ -929,19 +881,12 @@ public class WBCCondition extends DNode {
 		public CodeAttr				code_attr;
 	}
 	@nodeview
-	public static final view VWBCCondition of WBCConditionImpl extends WBCConditionView {
+	public static final view VWBCCondition of WBCCondition extends WBCConditionView {
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	public JView getJView() alias operator(210,fy,$cast) { return (JView)this.$v_impl; }
-	public RView getRView() alias operator(210,fy,$cast) { return (RView)this.$v_impl; }
-
-	public WBCCondition() {
-		super(new WBCConditionImpl());
-	}
+	public WBCCondition() {}
 
 	public WBCCondition(int pos, WBCType cond, KString name, ENode body) {
-		this();
 		this.pos = pos;
 		if (name != null)
 			this.name = new NameRef(pos, name);
@@ -950,7 +895,7 @@ public class WBCCondition extends DNode {
 	}
 
 	public void resolveDecl() {
-		getRView().resolveDecl();
+		((RView)this).resolveDecl();
 	}
 
 	public boolean setBody(ENode body) {

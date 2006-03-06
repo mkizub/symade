@@ -54,7 +54,7 @@ public class SymbolIterator implements Enumeration<ASTNode> {
 		this.stats = stats;
 		if (element != null && element.pslot == stats.getPSlot()) {
 			assert(stats.indexOf(element) >= 0);
-			last_stat = element.$v_impl.pprev;
+			last_stat = element.pprev;
 		} else {
 			if (stats.size() > 0)
 				last_stat = stats[stats.size()-1];
@@ -66,7 +66,7 @@ public class SymbolIterator implements Enumeration<ASTNode> {
 	public ASTNode nextElement() {
 		if ( last_stat != null ) {
 			ASTNode r = last_stat;
-			last_stat = last_stat.$v_impl.pprev;
+			last_stat = last_stat.pprev;
 			return r;
 		}
 		throw new NoSuchElementException();

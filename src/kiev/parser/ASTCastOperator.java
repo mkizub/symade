@@ -22,18 +22,14 @@ public class ASTCastOperator extends ASTOperator {
 	static final KString fakeImage = KString.from("$cast");
 	
 	@virtual typedef This  = ASTCastOperator;
-	@virtual typedef NImpl = ASTCastOperatorImpl;
 	@virtual typedef VView = ASTCastOperatorView;
 
-	@nodeimpl
-	public static class ASTCastOperatorImpl extends ASTOperatorImpl {
-		@virtual typedef ImplOf = ASTCastOperator;
-		@att public TypeRef	type;
-		@att public boolean  reinterp;
-		@att public boolean  sure;
-	}
+	@att public TypeRef	type;
+	@att public boolean  reinterp;
+	@att public boolean  sure;
+
 	@nodeview
-	public static view ASTCastOperatorView of ASTCastOperatorImpl extends ASTOperatorView {
+	public static view ASTCastOperatorView of ASTCastOperator extends ASTOperatorView {
 		public TypeRef	type;
 		public boolean  reinterp;
 		public boolean  sure;
@@ -60,10 +56,7 @@ public class ASTCastOperator extends ASTOperator {
 		}
 	}
 
-	public VView getVView() alias operator(210,fy,$cast) { return (VView)this.$v_impl; }
-	
 	public ASTCastOperator() {
-		super(new ASTCastOperatorImpl());
 		image = fakeImage;
 	}
 	
