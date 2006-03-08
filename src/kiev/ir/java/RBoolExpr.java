@@ -6,13 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.BoolExpr.BoolExprView;
-import kiev.vlang.BinaryBooleanOrExpr.BinaryBooleanOrExprView;
-import kiev.vlang.BinaryBooleanAndExpr.BinaryBooleanAndExprView;
-import kiev.vlang.BinaryBoolExpr.BinaryBoolExprView;
-import kiev.vlang.InstanceofExpr.InstanceofExprView;
-import kiev.vlang.BooleanNotExpr.BooleanNotExprView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -22,11 +15,13 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RBoolExpr of BoolExpr extends BoolExprView {
+public abstract view RBoolExpr of BoolExpr extends RENode {
 }
 
 @nodeview
-public final view RBinaryBooleanOrExpr of BinaryBooleanOrExpr extends BinaryBooleanOrExprView {
+public final view RBinaryBooleanOrExpr of BinaryBooleanOrExpr extends RBoolExpr {
+	public ENode		expr1;
+	public ENode		expr2;
 
 	public void resolve(Type reqType) {
 		expr1.resolve(Type.tpBoolean);
@@ -41,7 +36,9 @@ public final view RBinaryBooleanOrExpr of BinaryBooleanOrExpr extends BinaryBool
 }
 
 @nodeview
-public final view RBinaryBooleanAndExpr of BinaryBooleanAndExpr extends BinaryBooleanAndExprView {
+public final view RBinaryBooleanAndExpr of BinaryBooleanAndExpr extends RBoolExpr {
+	public ENode		expr1;
+	public ENode		expr2;
 
 	public void resolve(Type reqType) {
 		expr1.resolve(Type.tpBoolean);
@@ -55,7 +52,10 @@ public final view RBinaryBooleanAndExpr of BinaryBooleanAndExpr extends BinaryBo
 }
 
 @nodeview
-public view RBinaryBoolExpr of BinaryBoolExpr extends BinaryBoolExprView {
+public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
+	public BinaryOperator	op;
+	public ENode			expr1;
+	public ENode			expr2;
 
 	public:no,no,no,rw final boolean resolveExprs() {
 		expr1.resolve(null);
@@ -208,7 +208,9 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends BinaryBoolExprView {
 }
 
 @nodeview
-public view RInstanceofExpr of InstanceofExpr extends InstanceofExprView {
+public view RInstanceofExpr of InstanceofExpr extends RBoolExpr {
+	public ENode	expr;
+	public TypeRef	type;
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -257,7 +259,8 @@ public view RInstanceofExpr of InstanceofExpr extends InstanceofExprView {
 }
 
 @nodeview
-public view RBooleanNotExpr of BooleanNotExpr extends BooleanNotExprView {
+public view RBooleanNotExpr of BooleanNotExpr extends RBoolExpr {
+	public ENode		expr;
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;

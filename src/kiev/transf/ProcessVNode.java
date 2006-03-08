@@ -202,7 +202,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Field af = s.addField(new Field(fname, atp, ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
 			af.init = e;
 			vals_init[i] = new SFldExpr(af.pos, af);
-			if (f.parent_node != s)
+			if (f.parent != s)
 				continue;
 			if (isArr && !f.isAbstract()) {
 				f.init = new NewExpr(f.pos, f.getType(), new ENode[]{

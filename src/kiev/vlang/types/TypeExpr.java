@@ -8,14 +8,12 @@ import kiev.vlang.types.*;
 
 import syntax kiev.Syntax;
 
-import kiev.vlang.types.TypeRef.TypeRefView;
-
 /**
  * @author Maxim Kizub
  *
  */
 
-@nodeset
+@node
 public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -24,51 +22,15 @@ public class TypeExpr extends TypeRef {
 	static KString opRef   = KString.from("&");
 	
 	@virtual typedef This  = TypeExpr;
-	@virtual typedef VView = TypeExprView;
+	@virtual typedef VView = VTypeExpr;
 
 	@att public TypeRef					arg;
 	@att public KString					op;
 
 	@nodeview
-	public static final view TypeExprView of TypeExpr extends TypeRefView {
+	public static final view VTypeExpr of TypeExpr extends VTypeRef {
 		public TypeRef				arg;
 		public KString				op;
-
-		public Type getType() {
-			if (this.lnk != null)
-				return this.lnk;
-			Type tp = arg.getType();
-			DNode@ v;
-			if (op == Constants.nameArrayOp) {
-				tp = new ArrayType(tp);
-			} else {
-				Type t;
-				if (!PassInfo.resolveNameR(((TypeExpr)this),v,new ResInfo(this),op)) {
-					if (op == opPVar) {
-						t = WrapperType.tpWrappedPrologVar;
-					}
-					else if (op == opRef) {
-						Kiev.reportWarning(this, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpRefProxy);
-						t = WrapperType.tpWrappedRefProxy;
-					}
-					else
-						throw new CompilerException(this,"Typedef for type operator "+op+" not found");
-				} else {
-					if (v instanceof TypeDecl)
-						t = ((TypeDecl)v).getType();
-					else
-						throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
-				}
-				t.checkResolved();
-				TVarBld set = new TVarBld();
-				if (t.getStruct().args.length != 1)
-					throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
-				set.append(t.getStruct().args[0].getAType(), tp);
-				tp = t.applay(set);
-			}
-			this.lnk = tp;
-			return tp;
-		}
 	}
 
 	public TypeExpr() {}
@@ -86,6 +48,42 @@ public class TypeExpr extends TypeRef {
 		else
 			this.op = KString.from(op.image);
 		this.pos = op.getPos();
+	}
+
+	public Type getType() {
+		if (this.lnk != null)
+			return this.lnk;
+		Type tp = arg.getType();
+		DNode@ v;
+		if (op == Constants.nameArrayOp) {
+			tp = new ArrayType(tp);
+		} else {
+			Type t;
+			if (!PassInfo.resolveNameR(((TypeExpr)this),v,new ResInfo(this),op)) {
+				if (op == opPVar) {
+					t = WrapperType.tpWrappedPrologVar;
+				}
+				else if (op == opRef) {
+					Kiev.reportWarning(this, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpRefProxy);
+					t = WrapperType.tpWrappedRefProxy;
+				}
+				else
+					throw new CompilerException(this,"Typedef for type operator "+op+" not found");
+			} else {
+				if (v instanceof TypeDecl)
+					t = ((TypeDecl)v).getType();
+				else
+					throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
+			}
+			t.checkResolved();
+			TVarBld set = new TVarBld();
+			if (t.getStruct().args.length != 1)
+				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
+			set.append(t.getStruct().args[0].getAType(), tp);
+			tp = t.applay(set);
+		}
+		this.lnk = tp;
+		return tp;
 	}
 
 	public boolean isBound() {

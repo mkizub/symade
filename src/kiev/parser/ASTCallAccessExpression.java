@@ -16,7 +16,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public class ASTCallAccessExpression extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -25,7 +25,7 @@ public class ASTCallAccessExpression extends ENode {
 	}
 	
 	@virtual typedef This  = ASTCallAccessExpression;
-	@virtual typedef VView = ASTCallAccessExpressionView;
+	@virtual typedef VView = VASTCallAccessExpression;
 
 	@att public ENode				obj;
 	@ref public NameRef				func;
@@ -33,13 +33,11 @@ public class ASTCallAccessExpression extends ENode {
 	@att public NArr<ENode>			args;
 
 	@nodeview
-	public static view ASTCallAccessExpressionView of ASTCallAccessExpression extends ENodeView {
+	public static view VASTCallAccessExpression of ASTCallAccessExpression extends VENode {
 		public		ENode			obj;
 		public		NameRef			func;
 		public:ro	NArr<TypeRef>	targs;
 		public:ro	NArr<ENode>		args;
-
-		public int		getPriority() { return Constants.opCallPriority; }
 
 		public void mainResolveOut() {
 			if( obj instanceof ASTIdentifier
@@ -164,7 +162,9 @@ public class ASTCallAccessExpression extends ENode {
 		this.func = new NameRef(pos, func);
 		this.args.addAll(args);
 	}
-	
+
+	public int		getPriority() { return Constants.opCallPriority; }
+
 	public void resolve(Type reqType) {
 		for(int i=0; i < args.length; i++) {
 			args[i].resolve(null);

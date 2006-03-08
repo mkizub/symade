@@ -72,9 +72,9 @@ public view JSwitchStat of SwitchStat extends JENode implements BreakTarget {
 	public:ro	JLVarExpr			tmpvar;
 	public:ro	JCaseLabel			defCase;
 	public:ro	JField				typehash; // needed for re-resolving
-	public				JLabel				lblcnt;
-	public				JLabel				lblbrk;
-	public				CodeSwitch			cosw;
+	public:ro	JLabel				lblcnt;
+	public:ro	JLabel				lblbrk;
+	public		CodeSwitch			cosw;
 
 	public JLabel getCntLabel() { return lblcnt; }
 	public JLabel getBrkLabel() { return lblbrk; }

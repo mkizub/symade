@@ -24,7 +24,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public final class ProjectFile extends ASTNode {
 
 	@virtual typedef This  = ProjectFile;
@@ -41,6 +41,8 @@ public final class ProjectFile extends ASTNode {
 		public boolean		bad;
 	}
 
+	public ProjectFile() {}
+	
 	public ProjectFile(ClazzName clname, File f) {
 		name = clname;
 		file = f;
@@ -63,7 +65,7 @@ public final class ProjectFile extends ASTNode {
 	static methods and data for kiev compiler
  */
 
-@nodeset
+@node
 public class Env extends Struct {
 
 	/** Hashtable of all defined and loaded classes */

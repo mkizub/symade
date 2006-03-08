@@ -49,7 +49,7 @@ import syntax kiev.Syntax;
  */
 
 
-@nodeset
+@node
 public class Shadow extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -62,19 +62,8 @@ public class Shadow extends ENode {
 	@ref public ASTNode	node;
 
 	@nodeview
-	public static abstract view ShadowView of Shadow extends ENodeView {
+	public static final view VShadow of Shadow extends VENode {
 		public ASTNode		node;
-	
-		public int getPriority() {
-			if (node instanceof ENode)
-				return ((ENode)node).getPriority();
-			return 255;
-		}
-
-		public Type getType() { return node.getType(); }
-	}
-	@nodeview
-	public static final view VShadow of Shadow extends ShadowView {
 	}
 
 	public Shadow() {}
@@ -85,10 +74,14 @@ public class Shadow extends ENode {
 		this.node = node;
 	}
 	
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
+	public int getPriority() {
+		if (node instanceof ENode)
+			return ((ENode)node).getPriority();
+		return 255;
 	}
 
+	public Type getType() { return node.getType(); }
+	
 	public String toString() {
 		return "(shadow of) "+node;
 	}
@@ -99,7 +92,7 @@ public class Shadow extends ENode {
 
 }
 
-@nodeset
+@node
 public class ArrayLengthExpr extends ENode {
 	
 	@dflow(out="obj") private static class DFI {
@@ -115,16 +108,9 @@ public class ArrayLengthExpr extends ENode {
 	@att public NameRef			ident;
 
 	@nodeview
-	public static abstract view ArrayLengthExprView of ArrayLengthExpr extends ENodeView {
+	public static final view VArrayLengthExpr of ArrayLengthExpr extends VENode {
 		public ENode			obj;
 		public NameRef			ident;
-
-		public Operator getOp() { return BinaryOperator.Access; }
-
-		public Type getType() { return Type.tpInt; }
-	}
-	@nodeview
-	public static final view VArrayLengthExpr of ArrayLengthExpr extends ArrayLengthExprView {
 	}
 
 	public ArrayLengthExpr() {}
@@ -141,15 +127,15 @@ public class ArrayLengthExpr extends ENode {
 		this.obj = obj;
 	}
 
+	public Operator getOp() { return BinaryOperator.Access; }
+
+	public Type getType() { return Type.tpInt; }
+
 	public String toString() {
 		if( obj.getPriority() < opAccessPriority )
 			return "("+obj.toString()+").length";
 		else
 			return obj.toString()+".length";
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -163,7 +149,7 @@ public class ArrayLengthExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class TypeClassExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -176,15 +162,8 @@ public class TypeClassExpr extends ENode {
 	@att public TypeRef		type;
 
 	@nodeview
-	public static abstract view TypeClassExprView of TypeClassExpr extends ENodeView {
+	public static final view VTypeClassExpr of TypeClassExpr extends VENode {
 		public TypeRef		type;
-
-		public Operator getOp() { return BinaryOperator.Access; }
-
-		public Type getType() { return Type.tpClass; }
-	}
-	@nodeview
-	public static final view VTypeClassExpr of TypeClassExpr extends TypeClassExprView {
 	}
 
 	public TypeClassExpr() {}
@@ -194,12 +173,12 @@ public class TypeClassExpr extends ENode {
 		this.type = type;
 	}
 
+	public Operator getOp() { return BinaryOperator.Access; }
+
+	public Type getType() { return Type.tpClass; }
+
 	public String toString() {
 		return type.toString()+".class";
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -208,7 +187,7 @@ public class TypeClassExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class TypeInfoExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -223,23 +202,10 @@ public class TypeInfoExpr extends ENode {
 	@att public NArr<ENode>			cl_args;
 
 	@nodeview
-	public static abstract view TypeInfoExprView of TypeInfoExpr extends ENodeView {
+	public static final view VTypeInfoExpr of TypeInfoExpr extends VENode {
 		public		TypeRef				type;
 		public		TypeClassExpr		cl_expr;
 		public:ro	NArr<ENode>			cl_args;
-
-		public Operator getOp() { return BinaryOperator.Access; }
-
-		public Type getType() {
-			Type t = type.getType().getErasedType();
-			if (t.isUnerasable())
-				return t.getStruct().typeinfo_clazz.ctype;
-			return Type.tpTypeInfo;
-		}
-
-	}
-	@nodeview
-	public static final view VTypeInfoExpr of TypeInfoExpr extends TypeInfoExprView {
 	}
 
 	public TypeInfoExpr() {}
@@ -249,12 +215,17 @@ public class TypeInfoExpr extends ENode {
 		this.type = type;
 	}
 
-	public String toString() {
-		return type+".type";
+	public Operator getOp() { return BinaryOperator.Access; }
+
+	public Type getType() {
+		Type t = type.getType().getErasedType();
+		if (t.isUnerasable())
+			return t.getStruct().typeinfo_clazz.ctype;
+		return Type.tpTypeInfo;
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
+	public String toString() {
+		return type+".type";
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -263,7 +234,7 @@ public class TypeInfoExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class AssignExpr extends LvalueExpr {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -281,17 +252,10 @@ public class AssignExpr extends LvalueExpr {
 	@att public ENode			value;
 
 	@nodeview
-	public static abstract view AssignExprView of AssignExpr extends LvalueExprView {
+	public static final view VAssignExpr of AssignExpr extends VLvalueExpr {
 		public AssignOperator	op;
 		public ENode			lval;
 		public ENode			value;
-
-		public Operator getOp() { return op; }
-
-		public Type getType() { return lval.getType(); }
-	}
-	@nodeview
-	public static final view VAssignExpr of AssignExpr extends AssignExprView {
 	}
 	
 	public AssignExpr() {}
@@ -302,6 +266,10 @@ public class AssignExpr extends LvalueExpr {
 		this.lval = lval;
 		this.value = value;
 	}
+
+	public Operator getOp() { return op; }
+
+	public Type getType() { return lval.getType(); }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -315,10 +283,6 @@ public class AssignExpr extends LvalueExpr {
 		else
 			sb.append(value);
 		return sb.toString();
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	static class AssignExprDFFunc extends DFFunc {
@@ -380,7 +344,7 @@ public class AssignExpr extends LvalueExpr {
 }
 
 
-@nodeset
+@node
 public class BinaryExpr extends ENode {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -398,47 +362,11 @@ public class BinaryExpr extends ENode {
 	@att public ENode			expr2;
 
 	@nodeview
-	public static abstract view BinaryExprView of BinaryExpr extends ENodeView {
+	public static final view VBinaryExpr of BinaryExpr extends VENode {
 		public BinaryOperator	op;
 		public ENode			expr1;
 		public ENode			expr2;
 
-		public Operator getOp() { return op; }
-
-		public Type getType() {
-			Type t1 = expr1.getType();
-			Type t2 = expr2.getType();
-			if( op==BinaryOperator.BitOr || op==BinaryOperator.BitXor || op==BinaryOperator.BitAnd ) {
-				if( (t1.isInteger() && t2.isInteger()) || (t1.isBoolean() && t2.isBoolean()) ) {
-					if( t1 ≡ Type.tpLong || t2 ≡ Type.tpLong ) return Type.tpLong;
-					if( t1.isAutoCastableTo(Type.tpBoolean) && t2.isAutoCastableTo(Type.tpBoolean) ) return Type.tpBoolean;
-					return Type.tpInt;
-				}
-			}
-			else if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
-				if( t2.isInteger() ) {
-					if( t1 ≡ Type.tpLong ) return Type.tpLong;
-					if( t1.isInteger() )	return Type.tpInt;
-				}
-			}
-			else if( op==BinaryOperator.Add || op==BinaryOperator.Sub || op==BinaryOperator.Mul || op==BinaryOperator.Div || op==BinaryOperator.Mod ) {
-				// Special case for '+' operator if one arg is a String
-				if( op==BinaryOperator.Add && t1.equals(Type.tpString) || t2.equals(Type.tpString) ) return Type.tpString;
-	
-				if( t1.isNumber() && t2.isNumber() ) {
-					if( t1 ≡ Type.tpDouble || t2 ≡ Type.tpDouble ) return Type.tpDouble;
-					if( t1 ≡ Type.tpFloat  || t2 ≡ Type.tpFloat )  return Type.tpFloat;
-					if( t1 ≡ Type.tpLong   || t2 ≡ Type.tpLong )   return Type.tpLong;
-					return Type.tpInt;
-				}
-			}
-			((BinaryExpr)this).resolve(null);
-			return getType();
-		}
-	}
-
-	@nodeview
-	public static final view VBinaryExpr of BinaryExpr extends BinaryExprView {
 		public void mainResolveOut() {
 			Type et1 = expr1.getType();
 			Type et2 = expr2.getType();
@@ -533,6 +461,39 @@ public class BinaryExpr extends ENode {
 		this.expr2 = expr2;
 	}
 
+	public Operator getOp() { return op; }
+
+	public Type getType() {
+		Type t1 = expr1.getType();
+		Type t2 = expr2.getType();
+		if( op==BinaryOperator.BitOr || op==BinaryOperator.BitXor || op==BinaryOperator.BitAnd ) {
+			if( (t1.isInteger() && t2.isInteger()) || (t1.isBoolean() && t2.isBoolean()) ) {
+				if( t1 ≡ Type.tpLong || t2 ≡ Type.tpLong ) return Type.tpLong;
+				if( t1.isAutoCastableTo(Type.tpBoolean) && t2.isAutoCastableTo(Type.tpBoolean) ) return Type.tpBoolean;
+				return Type.tpInt;
+			}
+		}
+		else if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
+			if( t2.isInteger() ) {
+				if( t1 ≡ Type.tpLong ) return Type.tpLong;
+				if( t1.isInteger() )	return Type.tpInt;
+			}
+		}
+		else if( op==BinaryOperator.Add || op==BinaryOperator.Sub || op==BinaryOperator.Mul || op==BinaryOperator.Div || op==BinaryOperator.Mod ) {
+			// Special case for '+' operator if one arg is a String
+			if( op==BinaryOperator.Add && t1.equals(Type.tpString) || t2.equals(Type.tpString) ) return Type.tpString;
+
+			if( t1.isNumber() && t2.isNumber() ) {
+				if( t1 ≡ Type.tpDouble || t2 ≡ Type.tpDouble ) return Type.tpDouble;
+				if( t1 ≡ Type.tpFloat  || t2 ≡ Type.tpFloat )  return Type.tpFloat;
+				if( t1 ≡ Type.tpLong   || t2 ≡ Type.tpLong )   return Type.tpLong;
+				return Type.tpInt;
+			}
+		}
+		((BinaryExpr)this).resolve(null);
+		return getType();
+	}
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		if( expr1.getPriority() < op.priority )
@@ -545,10 +506,6 @@ public class BinaryExpr extends ENode {
 		else
 			sb.append(expr2);
 		return sb.toString();
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -567,7 +524,7 @@ public class BinaryExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class StringConcatExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -582,15 +539,8 @@ public class StringConcatExpr extends ENode {
 	@att public NArr<ENode>			args;
 
 	@nodeview
-	public static view StringConcatExprView of StringConcatExpr extends ENodeView {
+	public static final view VStringConcatExpr of StringConcatExpr extends VENode {
 		public:ro	NArr<ENode>		args;
-
-		public Operator getOp() { return BinaryOperator.Add; }
-
-		public Type getType() { return Type.tpString; }
-	}
-	@nodeview
-	public static final view VStringConcatExpr of StringConcatExpr extends StringConcatExprView {
 	}
 	
 	public StringConcatExpr() {}
@@ -598,6 +548,10 @@ public class StringConcatExpr extends ENode {
 	public StringConcatExpr(int pos) {
 		this.pos = pos;
 	}
+
+	public Operator getOp() { return BinaryOperator.Add; }
+
+	public Type getType() { return Type.tpString; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -607,10 +561,6 @@ public class StringConcatExpr extends ENode {
 				sb.append('+');
 		}
 		return sb.toString();
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public void appendArg(ENode expr) {
@@ -626,7 +576,7 @@ public class StringConcatExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class CommaExpr extends ENode {
 	
 	@dflow(out="exprs") private static class DFI {
@@ -641,15 +591,8 @@ public class CommaExpr extends ENode {
 	@att public NArr<ENode>		exprs;
 
 	@nodeview
-	public static abstract view CommaExprView of CommaExpr extends ENodeView {
+	public static final view VCommaExpr of CommaExpr extends VENode {
 		public:ro	NArr<ENode>		exprs;
-
-		public int getPriority() { return 0; }
-
-		public Type getType() { return exprs[exprs.length-1].getType(); }
-	}
-	@nodeview
-	public static final view VCommaExpr of CommaExpr extends CommaExprView {
 	}
 	
 	public CommaExpr() {}
@@ -658,6 +601,10 @@ public class CommaExpr extends ENode {
 		this.pos = pos;
 		this.exprs.add(expr);
 	}
+
+	public int getPriority() { return 0; }
+
+	public Type getType() { return exprs[exprs.length-1].getType(); }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -671,10 +618,6 @@ public class CommaExpr extends ENode {
 
 	public KString getName() { return KString.Empty; };
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		for(int i=0; i < exprs.length; i++) {
 			exprs[i].toJava(dmp);
@@ -685,7 +628,7 @@ public class CommaExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -693,7 +636,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	@virtual typedef This  = Block;
-	@virtual typedef VView = BlockView;
+	@virtual typedef VView = VBlock;
 	@virtual typedef JView = JBlock;
 	@virtual typedef RView = RBlock;
 
@@ -701,16 +644,8 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@ref public CodeLabel			break_label;
 
 	@nodeview
-	public static view BlockView of Block extends ENodeView {
+	public static view VBlock of Block extends VENode {
 		public:ro	NArr<ENode>		stats;
-
-		public int		getPriority() { return 255; }
-	
-		public Type getType() {
-			if (isGenVoidExpr()) return Type.tpVoid;
-			if (stats.length == 0) return Type.tpVoid;
-			return stats[stats.length-1].getType();
-		}
 	}
 	
 	public Block() {}
@@ -789,8 +724,12 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		((VarDecl)n).var.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
+	public int		getPriority() { return 255; }
+
+	public Type getType() {
+		if (isGenVoidExpr()) return Type.tpVoid;
+		if (stats.length == 0) return Type.tpVoid;
+		return stats[stats.length-1].getType();
 	}
 
 	static class BlockDFFunc extends DFFunc {
@@ -832,7 +771,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 }
 
-@nodeset
+@node
 public class UnaryExpr extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -848,18 +787,9 @@ public class UnaryExpr extends ENode {
 	@att public ENode			expr;
 
 	@nodeview
-	public static abstract view UnaryExprView of UnaryExpr extends ENodeView {
+	public static view VUnaryExpr of UnaryExpr extends VENode {
 		public Operator			op;
 		public ENode			expr;
-
-		public Operator getOp() { return op; }
-
-		public Type getType() {
-			return expr.getType();
-		}
-	}
-	@nodeview
-	public static view VUnaryExpr of UnaryExpr extends UnaryExprView {
 	}
 	
 	public UnaryExpr() {}
@@ -868,6 +798,12 @@ public class UnaryExpr extends ENode {
 		this.pos = pos;
 		this.op = op;
 		this.expr = expr;
+	}
+
+	public Operator getOp() { return op; }
+
+	public Type getType() {
+		return expr.getType();
 	}
 
 	public String toString() {
@@ -883,10 +819,6 @@ public class UnaryExpr extends ENode {
 				return op.image+expr.toString();
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( op == PostfixOperator.PostIncr || op == PostfixOperator.PostDecr ) {
 			if( expr.getPriority() < op.priority ) {
@@ -907,7 +839,7 @@ public class UnaryExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class IncrementExpr extends ENode {
 	
 	@dflow(out="lval") private static class DFI {
@@ -923,18 +855,9 @@ public class IncrementExpr extends ENode {
 	@att public ENode				lval;
 
 	@nodeview
-	public static abstract view IncrementExprView of IncrementExpr extends ENodeView {
+	public static final view VIncrementExpr of IncrementExpr extends VENode {
 		public Operator		op;
 		public ENode		lval;
-
-		public Operator getOp() { return op; }
-
-		public Type getType() {
-			return lval.getType();
-		}
-	}
-	@nodeview
-	public static final view VIncrementExpr of IncrementExpr extends IncrementExprView {
 	}
 	
 	public IncrementExpr() {}
@@ -945,15 +868,17 @@ public class IncrementExpr extends ENode {
 		this.lval = lval;
 	}
 
+	public Operator getOp() { return op; }
+
+	public Type getType() {
+		return lval.getType();
+	}
+
 	public String toString() {
 		if( op == PostfixOperator.PostIncr || op == PostfixOperator.PostDecr )
 			return lval.toString()+op.image;
 		else
 			return op.image+lval.toString();
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -976,7 +901,7 @@ public class IncrementExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class ConditionalExpr extends ENode {
 	
 	@dflow(out="join expr1 expr2") private static class DFI {
@@ -995,31 +920,10 @@ public class ConditionalExpr extends ENode {
 	@att public ENode			expr2;
 
 	@nodeview
-	public static abstract view ConditionalExprView of ConditionalExpr extends ENodeView {
+	public static final view VConditionalExpr of ConditionalExpr extends VENode {
 		public ENode		cond;
 		public ENode		expr1;
 		public ENode		expr2;
-
-		public Operator getOp() { return MultiOperator.Conditional; }
-
-		public Type getType() {
-			Type t1 = expr1.getType();
-			Type t2 = expr2.getType();
-			if( t1.isReference() && t2.isReference() ) {
-				if( t1 ≡ t2 ) return t1;
-				if( t1 ≡ Type.tpNull ) return t2;
-				if( t2 ≡ Type.tpNull ) return t1;
-				return Type.leastCommonType(t1,t2);
-			}
-			if( t1.isNumber() && t2.isNumber() ) {
-				if( t1 ≡ t2 ) return t1;
-				return CoreType.upperCastNumbers(t1,t2);
-			}
-			return expr1.getType();
-		}
-	}
-	@nodeview
-	public static final view VConditionalExpr of ConditionalExpr extends ConditionalExprView {
 	}
 	
 	public ConditionalExpr() {}
@@ -1031,16 +935,30 @@ public class ConditionalExpr extends ENode {
 		this.expr2 = expr2;
 	}
 
+	public Operator getOp() { return MultiOperator.Conditional; }
+
+	public Type getType() {
+		Type t1 = expr1.getType();
+		Type t2 = expr2.getType();
+		if( t1.isReference() && t2.isReference() ) {
+			if( t1 ≡ t2 ) return t1;
+			if( t1 ≡ Type.tpNull ) return t2;
+			if( t2 ≡ Type.tpNull ) return t1;
+			return Type.leastCommonType(t1,t2);
+		}
+		if( t1.isNumber() && t2.isNumber() ) {
+			if( t1 ≡ t2 ) return t1;
+			return CoreType.upperCastNumbers(t1,t2);
+		}
+		return expr1.getType();
+	}
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append('(').append(cond).append(") ? ");
 		sb.append('(').append(expr1).append(") : ");
 		sb.append('(').append(expr2).append(") ");
 		return sb.toString();
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1052,7 +970,7 @@ public class ConditionalExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class CastExpr extends ENode {
 
 	@dflow(out="expr") private static class DFI {
@@ -1068,18 +986,9 @@ public class CastExpr extends ENode {
 	@att public TypeRef		type;
 
 	@nodeview
-	public static abstract view CastExprView of CastExpr extends ENodeView {
+	public static final view VCastExpr of CastExpr extends VENode {
 		public ENode	expr;
 		public TypeRef	type;
-
-		public int getPriority() { return opCastPriority; }
-
-		public Type getType() {
-			return type.getType();
-		}
-	}
-	@nodeview
-	public static final view VCastExpr of CastExpr extends CastExprView {
 	}
 	
 	public CastExpr() {}
@@ -1096,16 +1005,18 @@ public class CastExpr extends ENode {
 		this.expr = expr;
 	}
 
+	public int getPriority() { return opCastPriority; }
+
+	public Type getType() {
+		return type.getType();
+	}
+
 	public String toString() {
 		return "(("+type+")"+expr+")";
 	}
 
 	public Type[] getAccessTypes() {
 		return new Type[]{getType()};
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public static void autoCast(ENode ex, TypeRef tp) {

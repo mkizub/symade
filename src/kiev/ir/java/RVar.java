@@ -6,8 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Var.VarView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -17,7 +15,27 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RVar of Var extends VarView {
+public static view RVar of Var extends RLvalDNode {
+	public	NodeName	name;
+	public	TypeRef		vtype;
+	public	ENode		init;
+	public	int			bcpos;
+
+	@getter public final Type get$type();
+	
+	// is a local var in a rule 
+	public final boolean isLocalRuleVar();
+	public final void setLocalRuleVar(boolean on);
+	// closure proxy
+	public final boolean isClosureProxy();
+	public final void setClosureProxy(boolean on);
+	// "this" var
+	public final boolean isVarThis();
+	public final void setVarThis(boolean on);
+	// "super" var
+	public final boolean isVarSuper();
+	public final void setVarSuper(boolean on);
+
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		Type tp = this.type;
@@ -47,4 +65,18 @@ public static final view RVar of Var extends VarView {
 		setResolved(true);
 	}
 }
+
+@nodeview
+public static final view RFormPar of FormPar extends RVar {
+	public TypeRef		stype;
+	public int			kind;
+
+	@getter public final Type get$dtype();
+
+	public void resolveDecl() {
+		Type tp = this.type;
+		setResolved(true);
+	}
+}
+
 

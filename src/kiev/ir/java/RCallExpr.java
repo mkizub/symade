@@ -6,9 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.CallExpr.CallExprView;
-import kiev.vlang.ClosureCallExpr.ClosureCallExprView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -18,7 +15,11 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RCallExpr of CallExpr extends CallExprView {
+public final view RCallExpr of CallExpr extends RENode {
+	public		ENode			obj;
+	public		Method			func;
+	public		CallType		mt;
+	public:ro	NArr<ENode>		args;
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -31,13 +32,15 @@ public final view RCallExpr of CallExpr extends CallExprView {
 			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.ctype;
 			assert(ctx_method.name.equals(nameInit));
 			assert(tp.getStruct().isTypeUnerasable());
+			NopExpr nop = new NopExpr();
 			// Insert our-generated typeinfo, or from childs class?
 			if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
-				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
+				nop.expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 			else
-				temp_expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
-			temp_expr.resolve(null);
-			temp_expr = null;
+				nop.expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
+			this.addNodeData(nop);
+			nop.resolve(null);
+			this.delNodeData(NopExpr.ID);
 		}
 		if (func.isVarArgs()) {
 			int i=0;
@@ -59,15 +62,17 @@ public final view RCallExpr of CallExpr extends CallExprView {
 			TypeDef[] targs = func.targs.toArray();
 			for (int i=0; i < targs.length; i++) {
 				Type tp = mt.resolve(targs[i].getAType());
-				temp_expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
-				temp_expr.resolve(null);
+				NopExpr nop = new NopExpr();
+				nop.expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
+				this.addNodeData(nop);
+				nop.resolve(null);
+				this.delNodeData(NopExpr.ID);
 			}
-			temp_expr = null;
 		}
-		if !(func.parent_node instanceof Struct) {
-			ASTNode n = func.parent_node;
-			while !(n instanceof Method) n = n.parent_node;
-			assert (n.parent_node instanceof Struct);
+		if !(func.parent instanceof Struct) {
+			ASTNode n = func.parent;
+			while !(n instanceof Method) n = n.parent;
+			assert (n.parent instanceof Struct);
 			func = (Method)n;
 		}
 		setResolved(true);
@@ -77,20 +82,12 @@ public final view RCallExpr of CallExpr extends CallExprView {
 }
 
 @nodeview
-public final view RClosureCallExpr of ClosureCallExpr extends ClosureCallExprView {
+public final view RClosureCallExpr of ClosureCallExpr extends RENode {
+	public		ENode			expr;
+	public:ro	NArr<ENode>		args;
+	public		Boolean			is_a_call;
 
-	public Method getCallIt(CallType tp) {
-		KString call_it_name;
-		Type ret;
-		if( tp.ret().isReference() ) {
-			call_it_name = KString.from("call_Object");
-			ret = Type.tpObject;
-		} else {
-			call_it_name = KString.from("call_"+tp.ret());
-			ret = tp.ret();
-		}
-		return Type.tpClosureClazz.resolveMethod(call_it_name, ret);
-	}
+	public Method getCallIt(CallType tp);
 	
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;

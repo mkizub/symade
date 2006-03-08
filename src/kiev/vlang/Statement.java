@@ -6,12 +6,9 @@ import kiev.transf.*;
 import kiev.parser.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Method.MethodView;
-import kiev.vlang.LoopStat.LoopStatView;
-import kiev.vlang.LabeledStat.LabeledStatView;
-import kiev.vlang.SwitchStat.SwitchStatView;
-
+import kiev.ir.java.RNode;
 import kiev.be.java.JNode;
+import kiev.ir.java.RENode;
 import kiev.be.java.JENode;
 import kiev.ir.java.RInlineMethodStat;
 import kiev.be.java.JInlineMethodStat;
@@ -38,6 +35,10 @@ import kiev.be.java.JGotoStat;
 import kiev.ir.java.RGotoCaseStat;
 import kiev.be.java.JGotoCaseStat;
 
+import kiev.vlang.Method.VMethod;
+import kiev.vlang.LoopStat.VLoopStat;
+import kiev.vlang.LabeledStat.VLabeledStat;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -47,7 +48,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public class InlineMethodStat extends ENode implements ScopeOfNames {
 	
 	@dflow(in="root()", out="this:out()") private static class DFI {}
@@ -67,12 +68,9 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	@ref public ParamRedir[]	params_redir;
 
 	@nodeview
-	public static view InlineMethodStatView of InlineMethodStat extends ENodeView {
+	public static final view VInlineMethodStat of InlineMethodStat extends VENode {
 		public Method			method;
 		public ParamRedir[]		params_redir;
-	}
-	@nodeview
-	public static final view VInlineMethodStat of InlineMethodStat extends InlineMethodStatView {
 	}
 
 	public InlineMethodStat() {}
@@ -139,10 +137,6 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		return new InlineMethodStatDFFuncOut(dfi);
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.space().append('{').newLine(1);
 		foreach (ParamRedir redir; params_redir)
@@ -160,7 +154,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	}
 }
 
-@nodeset
+@node
 public class ExprStat extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -175,11 +169,8 @@ public class ExprStat extends ENode {
 	@att public ENode	expr;
 
 	@nodeview
-	public static view ExprStatView of ExprStat extends ENodeView {
+	public static final view VExprStat of ExprStat extends VENode {
 		public ENode		expr;
-	}
-	@nodeview
-	public static final view VExprStat of ExprStat extends ExprStatView {
 	}
 
 	public ExprStat() {}
@@ -202,10 +193,6 @@ public class ExprStat extends ENode {
 			return ";";
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( isHidden() ) dmp.append("/* ");
 		if (expr != null)
@@ -216,7 +203,7 @@ public class ExprStat extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class ReturnStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
@@ -231,11 +218,8 @@ public class ReturnStat extends ENode {
 	@att public ENode	expr;
 
 	@nodeview
-	public static view ReturnStatView of ReturnStat extends ENodeView {
+	public static final view VReturnStat of ReturnStat extends VENode {
 		public ENode		expr;
-	}
-	@nodeview
-	public static final view VReturnStat of ReturnStat extends ReturnStatView {
 	}
 
 	public ReturnStat() {}
@@ -246,19 +230,15 @@ public class ReturnStat extends ENode {
 		setMethodAbrupted(true);
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-	
-	public static void autoReturn(Type reqType, ENodeView expr) {
-		if (expr.parent instanceof ReturnStatView)
+	public static void autoReturn(Type reqType, RENode expr) {
+		if (expr.parent instanceof RReturnStat)
 			return;
 		expr.setAutoReturnable(false);
 		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr.getENode()); });
 	}
 
 	public static void autoReturn(Type reqType, ENode expr) {
-		if (expr.parent_node instanceof ReturnStat)
+		if (expr.parent instanceof ReturnStat)
 			return;
 		expr.setAutoReturnable(false);
 		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr); });
@@ -272,7 +252,7 @@ public class ReturnStat extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class ThrowStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
@@ -287,11 +267,8 @@ public class ThrowStat extends ENode {
 	@att public ENode	expr;
 
 	@nodeview
-	public static view ThrowStatView of ThrowStat extends ENodeView {
+	public static final view VThrowStat of ThrowStat extends VENode {
 		public ENode		expr;
-	}
-	@nodeview
-	public static final view VThrowStat of ThrowStat extends ThrowStatView {
 	}
 
 	public ThrowStat() {}
@@ -302,16 +279,12 @@ public class ThrowStat extends ENode {
 		setMethodAbrupted(true);
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append("throw").space().append(expr).append(';').newLine();
 	}
 }
 
-@nodeset
+@node
 public class IfElseStat extends ENode {
 	
 	@dflow(out="join thenSt elseSt") private static class DFI {
@@ -330,13 +303,10 @@ public class IfElseStat extends ENode {
 	@att public ENode			elseSt;
 
 	@nodeview
-	public static view IfElseStatView of IfElseStat extends ENodeView {
+	public static final view VIfElseStat of IfElseStat extends VENode {
 		public ENode		cond;
 		public ENode		thenSt;
 		public ENode		elseSt;
-	}
-	@nodeview
-	public static final view VIfElseStat of IfElseStat extends IfElseStatView {
 	}
 	
 	public IfElseStat() {}
@@ -346,10 +316,6 @@ public class IfElseStat extends ENode {
 		this.cond = cond;
 		this.thenSt = thenSt;
 		this.elseSt = elseSt;
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -372,7 +338,7 @@ public class IfElseStat extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class CondStat extends ENode {
 	
 	@dflow(out="cond:true") private static class DFI {
@@ -389,12 +355,9 @@ public class CondStat extends ENode {
 	@att public ENode			message;
 
 	@nodeview
-	public static view CondStatView of CondStat extends ENodeView {
+	public static final view VCondStat of CondStat extends VENode {
 		public ENode		cond;
 		public ENode		message;
-	}
-	@nodeview
-	public static final view VCondStat of CondStat extends CondStatView {
 	}
 	
 	public CondStat() {}
@@ -405,10 +368,6 @@ public class CondStat extends ENode {
 		this.message = message;
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("if( !(").append(cond)
 			.append(") ) throw new kiev.stdlib.AssertionFailedException(")
@@ -417,7 +376,7 @@ public class CondStat extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class LabeledStat extends ENode implements Named {
 	
 	@dflow(out="stat") private static class DFI {
@@ -437,13 +396,10 @@ public class LabeledStat extends ENode implements Named {
 	@att                 public ENode			stat;
 
 	@nodeview
-	public static view LabeledStatView of LabeledStat extends ENodeView {
+	public static final view VLabeledStat of LabeledStat extends VENode {
 		public NameRef			ident;
 		public Label			lbl;
 		public ENode			stat;
-	}
-	@nodeview
-	public static final view VLabeledStat of LabeledStat extends LabeledStatView {
 	}
 	
 	public LabeledStat() {
@@ -452,16 +408,12 @@ public class LabeledStat extends ENode implements Named {
 	
 	public NodeName getName() { return new NodeName(ident.name); }
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.newLine(-1).append(ident).append(':').newLine(1).append(stat);
 	}
 }
 
-@nodeset
+@node
 public class BreakStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -483,13 +435,10 @@ public class BreakStat extends ENode {
 	}
 
 	@nodeview
-	public static view BreakStatView of BreakStat extends ENodeView {
+	public static final view VBreakStat of BreakStat extends VENode {
 		public NameRef			ident;
 		public Label			dest;
-	}
 
-	@nodeview
-	public static final view VBreakStat of BreakStat extends BreakStatView {
 		public boolean mainResolveIn() {
 			NodeView p;
 			if (dest != null) {
@@ -497,11 +446,11 @@ public class BreakStat extends ENode {
 				dest = null;
 			}
 			if( ident == null ) {
-				for(p=parent; !(p instanceof MethodView || p.isBreakTarget()); p = p.parent );
-				if( p instanceof MethodView || p == null ) {
+				for(p=parent; !(p instanceof VMethod || p.isBreakTarget()); p = p.parent );
+				if( p instanceof VMethod || p == null ) {
 					Kiev.reportError(this,"Break not within loop/switch statement");
 				} else {
-					if (p instanceof LoopStatView) {
+					if (p instanceof VLoopStat) {
 						Label l = p.lblbrk;
 						if (l != null) {
 							dest = l;
@@ -511,12 +460,12 @@ public class BreakStat extends ENode {
 				}
 			} else {
 		label_found:
-				for(p=parent; !(p instanceof MethodView) ; p=p.parent ) {
-					if (p instanceof LabeledStatView && p.ident.name.equals(ident.name))
+				for(p=parent; !(p instanceof VMethod) ; p=p.parent ) {
+					if (p instanceof VLabeledStat && p.ident.name.equals(ident.name))
 						throw new RuntimeException("Label "+ident+" does not refer to break target");
 					if (!p.isBreakTarget()) continue;
 					ASTNode.NodeView pp = p;
-					for(p=p.parent; p instanceof LabeledStatView; p = p.parent) {
+					for(p=p.parent; p instanceof VLabeledStat; p = p.parent) {
 						if (p.ident.name.equals(ident.name)) {
 							p = pp;
 							break label_found;
@@ -524,10 +473,10 @@ public class BreakStat extends ENode {
 					}
 					p = pp;
 				}
-				if( p instanceof MethodView || p == null) {
+				if( p instanceof VMethod || p == null) {
 					Kiev.reportError(this,"Break not within loop/switch statement");
 				} else {
-					if (p instanceof LoopStatView) {
+					if (p instanceof VLoopStat) {
 						Label l = p.lblbrk;
 						if (l != null) {
 							dest = l;
@@ -542,10 +491,6 @@ public class BreakStat extends ENode {
 	
 	public BreakStat() {}
 	
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("break");
 		if( ident != null && !ident.name.equals(KString.Empty) )
@@ -554,7 +499,7 @@ public class BreakStat extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class ContinueStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -576,13 +521,10 @@ public class ContinueStat extends ENode {
 	}
 
 	@nodeview
-	public static view ContinueStatView of ContinueStat extends ENodeView {
+	public static final view VContinueStat of ContinueStat extends VENode {
 		public NameRef			ident;
 		public Label			dest;
-	}
 
-	@nodeview
-	public static final view VContinueStat of ContinueStat extends ContinueStatView {
 		public boolean mainResolveIn() {
 			NodeView p;
 			if (dest != null) {
@@ -590,11 +532,11 @@ public class ContinueStat extends ENode {
 				dest = null;
 			}
 			if( ident == null ) {
-				for(p=parent; !(p instanceof LoopStatView || p instanceof MethodView); p = p.parent );
-				if( p instanceof MethodView || p == null ) {
+				for(p=parent; !(p instanceof VLoopStat || p instanceof VMethod); p = p.parent );
+				if( p instanceof VMethod || p == null ) {
 					Kiev.reportError(this,"Continue not within loop statement");
 				} else {
-					if (p instanceof LoopStatView) {
+					if (p instanceof VLoopStat) {
 						Label l = p.lblcnt;
 						if (l != null) {
 							dest = l;
@@ -604,12 +546,12 @@ public class ContinueStat extends ENode {
 				}
 			} else {
 		label_found:
-				for(p=parent; !(p instanceof MethodView) ; p=p.parent ) {
-					if( p instanceof LabeledStatView && p.ident.name.equals(ident.name) )
+				for(p=parent; !(p instanceof VMethod) ; p=p.parent ) {
+					if( p instanceof VLabeledStat && p.ident.name.equals(ident.name) )
 						throw new RuntimeException("Label "+ident+" does not refer to continue target");
-					if !(p instanceof LoopStatView) continue;
+					if !(p instanceof VLoopStat) continue;
 					NodeView pp = p;
-					for(p=p.parent; p instanceof LabeledStatView; p = p.parent) {
+					for(p=p.parent; p instanceof VLabeledStat; p = p.parent) {
 						if( p.ident.name.equals(ident.name) ) {
 							p = pp;
 							break label_found;
@@ -617,10 +559,10 @@ public class ContinueStat extends ENode {
 					}
 					p = pp;
 				}
-				if( p instanceof MethodView || p == null) {
+				if( p instanceof VMethod || p == null) {
 					Kiev.reportError(this,"Continue not within loop statement");
 				} else {
-					if (p instanceof LoopStatView) {
+					if (p instanceof VLoopStat) {
 						Label l = p.lblcnt;
 						if (l != null) {
 							dest = l;
@@ -635,10 +577,6 @@ public class ContinueStat extends ENode {
 	
 	public ContinueStat() {}
 	
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("continue");
 		if( ident != null && !ident.name.equals(KString.Empty) )
@@ -647,7 +585,7 @@ public class ContinueStat extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class GotoStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -669,13 +607,10 @@ public class GotoStat extends ENode {
 	}
 
 	@nodeview
-	public static view GotoStatView of GotoStat extends ENodeView {
+	public static final view VGotoStat of GotoStat extends VENode {
 		public NameRef			ident;
 		public Label			dest;
-	}
 
-	@nodeview
-	public static final view VGotoStat of GotoStat extends GotoStatView {
 		public boolean mainResolveIn() {
 			if (dest != null) {
 				dest.delLink((GotoStat)this);
@@ -702,10 +637,6 @@ public class GotoStat extends ENode {
 
 	public GotoStat() {}
 	
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public static LabeledStat[] resolveStat(KString name, ASTNode st, LabeledStat[] stats) {
 		int i;
 		switch( st ) {
@@ -798,7 +729,7 @@ public class GotoStat extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class GotoCaseStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
@@ -814,20 +745,13 @@ public class GotoCaseStat extends ENode {
 	@ref public SwitchStat	sw;
 
 	@nodeview
-	public static view GotoCaseStatView of GotoCaseStat extends ENodeView {
+	public static final view VGotoCaseStat of GotoCaseStat extends VENode {
 		public ENode		expr;
 		public SwitchStat	sw;
-	}
-	@nodeview
-	public static final view VGotoCaseStat of GotoCaseStat extends GotoCaseStatView {
 	}
 	
 	public GotoCaseStat() {}
 	
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("goto");
 		if( expr != null )

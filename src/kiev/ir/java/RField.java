@@ -6,8 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Field.FieldView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -17,7 +15,29 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RField of Field extends FieldView {
+public static final view RField of Field extends RLvalDNode {
+	public		Access			acc;
+	public		NodeName		name;
+	public		TypeRef			ftype;
+	public		ENode			init;
+	public		ConstExpr		const_value;
+	public:ro	NArr<Method>	invs;
+	
+	@getter public final Type	get$type();
+	
+	// is a field of enum
+	public final boolean isEnumField();
+	public final void setEnumField(boolean on);
+	// packer field (auto-generated for packed fields)
+	public final boolean isPackerField();
+	public final void setPackerField(boolean on);
+	// packed field
+	public final boolean isPackedField();
+	public final void setPackedField(boolean on);
+	// field's initializer was already added to class initializer
+	public final boolean isAddedToInit();
+	public final void setAddedToInit(boolean on);
+
 	public void resolveDecl() {
 		foreach (Meta m; meta)
 			m.resolve();

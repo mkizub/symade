@@ -16,7 +16,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public final class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
@@ -28,18 +28,18 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 	}
 
 	@virtual typedef This  = Import;
-	@virtual typedef VView = ImportView;
+	@virtual typedef VView = VImport;
 
-	@att NameRef				name;
-	@att ImportMode				mode = ImportMode.IMPORT_CLASS;
-	@att boolean				star;
-	@att NArr<TypeRef>			args;
+	@att public NameRef				name;
+	@att public ImportMode			mode = ImportMode.IMPORT_CLASS;
+	@att public boolean				star;
+	@att public NArr<TypeRef>		args;
 	
-	@ref boolean				of_method;
-	@ref DNode					resolved;
+	@ref public boolean				of_method;
+	@ref public DNode				resolved;
 
 	@nodeview
-	public static final view ImportView of Import extends DNodeView {
+	public static final view VImport of Import extends VDNode {
 		public		NameRef				name;
 		public		ImportMode			mode;
 		public		boolean				star;
@@ -48,8 +48,6 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		public		DNode				resolved;
 		
 		public boolean mainResolveIn() { return false; }
-
-		public boolean preGenerate()	{ return false; }
 	}
 
 	public Import() {}
@@ -93,8 +91,6 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		resolved = n;
 		return this;
 	}
-
-	public void resolveDecl() {}
 
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 		Struct@ s;
@@ -168,32 +164,30 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 
 }
 
-@nodeset
+@node
 public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeOpDef;
-	@virtual typedef VView = TypeOpDefView;
+	@virtual typedef VView = VTypeOpDef;
 
-	@att ASTOperator	op;
-	@att TypeRef		type;
-	@att TypeDef		arg;
+	@att public ASTOperator		op;
+	@att public TypeRef			type;
+	@att public TypeDef			arg;
 
 	@nodeview
-	public static final view TypeOpDefView of TypeOpDef extends TypeDeclView {
+	public static final view VTypeOpDef of TypeOpDef extends VTypeDecl {
 		public	ASTOperator		op;
 		public	TypeRef			type;
 		public	TypeDef			arg;
-	
-		public Type getType() { return type.getType(); }
 
 		public boolean mainResolveIn() { return false; }
-
-		public boolean preGenerate()	{ return false; }
 	}
 
 	public TypeOpDef() {}
+	
+	public Type getType() { return type.getType(); }
 	
 	public boolean checkResolved() {
 		return type.getType().checkResolved();

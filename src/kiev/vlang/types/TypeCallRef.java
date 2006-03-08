@@ -7,20 +7,18 @@ import kiev.vlang.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-import kiev.vlang.types.TypeRef.TypeRefView;
-
 /**
  * @author Maxim Kizub
  *
  */
 
-@nodeset
+@node
 public class TypeCallRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeCallRef;
-	@virtual typedef VView = TypeCallRefView;
+	@virtual typedef VView = VTypeCallRef;
 
 	@ref public NArr<TypeDef>			targs;
 	@att public NArr<TypeRef>			args;
@@ -34,35 +32,14 @@ public class TypeCallRef extends TypeRef {
 	}
 
 	@nodeview
-	public static final view TypeCallRefView of TypeCallRef extends TypeRefView {
+	public static final view VTypeCallRef of TypeCallRef extends VTypeRef {
 		public:ro	NArr<TypeDef>			targs;
 		public:ro	NArr<TypeRef>			args;
 		public		TypeRef					ret;
 
-		public CallType getMType() {
-			if (this.lnk != null)
-				return (CallType)this.lnk;
-			Type rt = ret.getType();
-			Type[] atypes = new Type[args.length];
-			for(int i=0; i < atypes.length; i++) {
-				atypes[i] = args[i].getType();
-			}
-			if (targs.length == 0) {
-				this.lnk = new CallType(atypes,rt);
-			} else {
-				TVarBld vset = new TVarBld();
-				foreach (TypeDef td; targs)
-					vset.append(td.getAType(), null);
-				this.lnk = new CallType(vset,atypes,rt,false);
-			}
-			return (CallType)this.lnk;
-		}
-
-		public Type getType() {
-			return getMType();
-		}
+		public CallType getMType();
 	}
-	
+
 	public TypeCallRef() {}
 
 	public TypeCallRef(CallType mt) {
@@ -70,6 +47,29 @@ public class TypeCallRef extends TypeRef {
 		for (int i=0; i < mt.arity; i++)
 			this.args += new TypeRef(mt.arg(i));
 		this.lnk = mt;
+	}
+
+	public CallType getMType() {
+		if (this.lnk != null)
+			return (CallType)this.lnk;
+		Type rt = ret.getType();
+		Type[] atypes = new Type[args.length];
+		for(int i=0; i < atypes.length; i++) {
+			atypes[i] = args[i].getType();
+		}
+		if (targs.length == 0) {
+			this.lnk = new CallType(atypes,rt);
+		} else {
+			TVarBld vset = new TVarBld();
+			foreach (TypeDef td; targs)
+				vset.append(td.getAType(), null);
+			this.lnk = new CallType(vset,atypes,rt,false);
+		}
+		return (CallType)this.lnk;
+	}
+
+	public Type getType() {
+		return getMType();
 	}
 
 	public boolean isBound() {

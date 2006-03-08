@@ -4,8 +4,6 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
-import kiev.vlang.types.TypeRef.TypeRefView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -14,31 +12,19 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public class TypeClosureRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeClosureRef;
-	@virtual typedef VView = TypeClosureRefView;
+	@virtual typedef VView = VTypeClosureRef;
 
 	@att public NArr<TypeRef>		types;
 
 	@nodeview
-	public static final view TypeClosureRefView of TypeClosureRef extends TypeRefView {
+	public static final view VTypeClosureRef of TypeClosureRef extends VTypeRef {
 		public:ro	NArr<TypeRef>			types;
-
-		public Type getType() {
-			if (this.lnk != null)
-				return this.lnk;
-			Type[] tps = new Type[types.length-1];
-			for(int i=0; i < tps.length; i++) {
-				tps[i] = types[i].getType();
-			}
-			Type ret = types[types.length-1].getType();
-			this.lnk = new CallType(tps,ret,true);
-			return this.lnk;
-		}
 	}
 
 	public TypeClosureRef() {}
@@ -46,6 +32,18 @@ public class TypeClosureRef extends TypeRef {
 	public TypeClosureRef(CallType tp) {
 		this.lnk = tp;
 		assert (tp.isReference());
+	}
+
+	public Type getType() {
+		if (this.lnk != null)
+			return this.lnk;
+		Type[] tps = new Type[types.length-1];
+		for(int i=0; i < tps.length; i++) {
+			tps[i] = types[i].getType();
+		}
+		Type ret = types[types.length-1].getType();
+		this.lnk = new CallType(tps,ret,true);
+		return this.lnk;
 	}
 	
 	public boolean isBound() {

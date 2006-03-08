@@ -14,7 +14,7 @@ import kiev.transf.*;
  *
  */
 
-@nodeset
+@node
 public class ASTCastOperator extends ASTOperator {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -22,19 +22,17 @@ public class ASTCastOperator extends ASTOperator {
 	static final KString fakeImage = KString.from("$cast");
 	
 	@virtual typedef This  = ASTCastOperator;
-	@virtual typedef VView = ASTCastOperatorView;
+	@virtual typedef VView = VASTCastOperator;
 
 	@att public TypeRef	type;
 	@att public boolean  reinterp;
 	@att public boolean  sure;
 
 	@nodeview
-	public static view ASTCastOperatorView of ASTCastOperator extends ASTOperatorView {
+	public static view VASTCastOperator of ASTCastOperator extends VASTOperator {
 		public TypeRef	type;
 		public boolean  reinterp;
 		public boolean  sure;
-
-		public int		getPriority() { return Constants.opCastPriority; }
 
 		public boolean preResolveIn() {
 			if (sure)
@@ -59,7 +57,9 @@ public class ASTCastOperator extends ASTOperator {
 	public ASTCastOperator() {
 		image = fakeImage;
 	}
-	
+
+	public int getPriority() { return Constants.opCastPriority; }
+
 	public Operator resolveOperator() {
 		Type tp = type.getType();
 	    return CastOperator.newCastOperator(tp,reinterp);

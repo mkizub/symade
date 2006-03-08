@@ -26,7 +26,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
@@ -35,7 +35,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 
 	@virtual typedef This  = Method;
-	@virtual typedef VView = MethodView;
+	@virtual typedef VView = VMethod;
 	@virtual typedef JView = JMethod;
 	@virtual typedef RView = RMethod;
 
@@ -239,10 +239,12 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		this.dtype = new CallType(dtype_set, dargs.toArray(), dtype_ret.getType(), false);
 		invalid_types = false;
 	}
+
+	@getter public Method get$child_ctx_method() { return (Method)this; }
 		
 
 	@nodeview
-	public static view MethodView of Method extends DNodeView {
+	public static view VMethod of Method extends VDNode {
 
 		public final void checkRebuildTypes();
 	
@@ -259,14 +261,11 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		public:ro			NArr<ASTAlias>		aliases;
 		public				Var					retvar;
 		public				Block				body;
-		public				PrescannedBody		pbody;
 		public:ro			NArr<WBCCondition>	conditions;
 		public:ro			NArr<Field>			violated_fields;
 		public				MetaValue			annotation_default;
 		public				boolean				inlined_by_dispatcher;
 		public				boolean				invalid_types;
-
-		@getter public Method get$child_ctx_method() { return (Method)this; }
 	
 		public Var getRetVar();
 		public MetaThrows getMetaThrows();
@@ -294,8 +293,6 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		// a dispatcher (for multimethods)	
 		public final boolean isDispatcherMethod();
 		public final void setDispatcherMethod(boolean on);
-
-		public Type	getType() { return type; }
 
 		public boolean preResolveIn() {
 			checkRebuildTypes();
@@ -326,9 +323,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 
 	public static Method[]	emptyArray = new Method[0];
 
-	@getter public PrescannedBody	get$pbody()			{ return this.pbody; }
 	@getter public Access			get$acc()			{ return this.acc; }
-	@setter public void set$pbody(PrescannedBody val)	{ this.pbody = val; }
 	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
 	
 	public Method() {}
@@ -353,6 +348,8 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		this.meta = new MetaSet();
 		invalid_types = true;
 	}
+
+	public Type	getType() { return type; }
 
 	public FormPar getOuterThisParam() {
 		checkRebuildTypes();
@@ -647,7 +644,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 
     public ASTNode pass3() {
-		if !( this.parent_node instanceof Struct )
+		if !( this.parent instanceof Struct )
 			throw new CompilerException(this,"Method must be declared on class level only");
 		Struct clazz = this.ctx_clazz;
 		// TODO: check flags for methods
@@ -746,10 +743,6 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		return new MethodDFFunc(dfi);
 	}
 
-	public void resolveDecl() {
-		((RView)this).resolveDecl();
-	}
-
 	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of methods "+this);
 		if (this.body == null) {
@@ -763,7 +756,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 
 }
 
-@nodeset
+@node
 public class Constructor extends Method {
 	
 	@dflow(in="root()") private static class DFI {
@@ -773,13 +766,13 @@ public class Constructor extends Method {
 	}
 
 	@virtual typedef This  = Constructor;
-	@virtual typedef VView = ConstructorView;
+	@virtual typedef VView = VConstructor;
 	@virtual typedef RView = RConstructor;
 
 	@att public NArr<ENode>			addstats;
 
 	@nodeview
-	public static final view ConstructorView of Constructor extends MethodView {
+	public static final view VConstructor of Constructor extends VMethod {
 		public:ro	NArr<ENode>			addstats;
 	}
 
@@ -789,13 +782,9 @@ public class Constructor extends Method {
 		super((fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid);
 		this.flags = fl;
 	}
-
-	public void resolveDecl() {
-		((RView)this).resolveDecl();
-	}
 }
 
-@nodeset
+@node
 public class Initializer extends DNode implements SetBody, PreScanneable {
 	
 	@dflow(out="body") private static class DFI {
@@ -811,27 +800,16 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	@att public PrescannedBody		pbody;
 
 	@nodeview
-	public static abstract view InitializerView of Initializer extends DNodeView {
+	public static final view VInitializer of Initializer extends VDNode {
 		public Block				body;
-		public PrescannedBody		pbody;
-	}
-	@nodeview
-	public static final view VInitializer of Initializer extends InitializerView {
 	}
 
-	@getter public PrescannedBody	get$pbody()			{ return this.pbody; }
-	@setter public void set$pbody(PrescannedBody val)	{ this.pbody = val; }
-	
 	public Initializer() {}
 
 	public Initializer(int pos, int flags) {
 		this();
 		this.pos = pos;
 		this.flags = flags;
-	}
-
-	public void resolveDecl() {
-		((RView)this).resolveDecl();
 	}
 
 	public boolean setBody(ENode body) {
@@ -854,7 +832,7 @@ public enum WBCType {
 	CondInvariant;
 }
 
-@nodeset
+@node
 public class WBCCondition extends DNode {
 	
 	@dflow(out="body") private static class DFI {
@@ -873,15 +851,12 @@ public class WBCCondition extends DNode {
 	@att public CodeAttr			code_attr;
 
 	@nodeview
-	public static abstract view WBCConditionView of WBCCondition extends DNodeView {
+	public static final view VWBCCondition of WBCCondition extends VDNode {
 		public WBCType				cond;
 		public NameRef				name;
 		public ENode				body;
 		public Method				definer;
 		public CodeAttr				code_attr;
-	}
-	@nodeview
-	public static final view VWBCCondition of WBCCondition extends WBCConditionView {
 	}
 
 	public WBCCondition() {}
@@ -892,10 +867,6 @@ public class WBCCondition extends DNode {
 			this.name = new NameRef(pos, name);
 		this.cond = cond;
 		this.body = body;
-	}
-
-	public void resolveDecl() {
-		((RView)this).resolveDecl();
 	}
 
 	public boolean setBody(ENode body) {

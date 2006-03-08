@@ -10,7 +10,7 @@ import kiev.stdlib.*;
  *
  */
 
-@nodeset
+@node
 public final class PrescannedBody extends ASTNode {
 	
 	public static final int BlockMode		= 0;

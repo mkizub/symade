@@ -7,17 +7,17 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.stdlib.*;
 
-@nodeset
+@node
 public final class ASTPragma extends DNode {
 
 	@virtual typedef This  = ASTPragma;
-	@virtual typedef VView = ASTPragmaView;
+	@virtual typedef VView = VASTPragma;
 
-	@att boolean				enable;
-	@att NArr<ConstStringExpr>	options;
+	@att public boolean				enable;
+	@att public NArr<ConstStringExpr>	options;
 
 	@nodeview
-	public static view ASTPragmaView of ASTPragma extends DNodeView {
+	public static view VASTPragma of ASTPragma extends VDNode {
 		public		boolean					enable;
 		public:ro	NArr<ConstStringExpr>	options;
 	}

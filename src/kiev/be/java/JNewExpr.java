@@ -18,7 +18,6 @@ import syntax kiev.Syntax;
 public final view JNewExpr of NewExpr extends JENode {
 	public:ro	JArr<JENode>	args;
 	public:ro	JENode			outer;
-	public				JENode			temp_expr;
 	public:ro	JMethod			func;
 	
 	public void generate(Code code, Type reqType) {
@@ -64,9 +63,11 @@ public final view JNewExpr of NewExpr extends JENode {
 			outer.generate(code,null);
 		if (func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			// Create static field for this type typeinfo
-			temp_expr = jctx_clazz.accessTypeInfoField(this,type,true);
-			temp_expr.generate(code,null);
-			temp_expr = null;
+			NopExpr nop = new NopExpr();
+			nop.expr = (ENode)jctx_clazz.accessTypeInfoField(this,type,true);
+			this.addNodeData(nop);
+			((JENode)nop.expr).generate(code,null);
+			this.delNodeData(NopExpr.ID);
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);

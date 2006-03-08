@@ -38,10 +38,10 @@ public final class ParentEnumerator implements Enumeration<ASTNode> {
 	}
 	public ASTNode nextElement() {
 		if (r == null) {
-			r = n.parent_node;
+			r = n.parent;
 		} else {
 			n = r;
-			r = n.parent_node;
+			r = n.parent;
 		}
 		return r;
 	}
@@ -270,7 +270,7 @@ public class PassInfo {
 					}
 					t1 = mt1.ret();
 					t2 = mt2.ret();
-					if (t1 ≉ t2) {
+					if (t1 ≉ t2 && !(t1 ≥ t2)) {
 						b = mt.ret().betterCast(t1,t2);
 						if (b ≡ t2) {
 							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because ret");
@@ -326,7 +326,7 @@ public class PassInfo {
 		if( !exc.isInstanceOf(Type.tpThrowable) )
 			throw new CompilerException(from,"A class of object for throw statement must be a subclass of "+Type.tpThrowable+" but type "+exc+" found");
 		if( exc.isInstanceOf(Type.tpError) || exc.isInstanceOf(Type.tpRuntimeException) ) return true;
-		for (; from != null; from = from.parent_node) {
+		for (; from != null; from = from.parent) {
 			if( from instanceof TryStat ) {
 				TryStat trySt = (TryStat)from;
 				for(int j=0; j < trySt.catchers.length; j++)

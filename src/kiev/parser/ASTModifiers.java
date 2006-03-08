@@ -7,14 +7,12 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.types.TypeRef.TypeRefView;
-
 /**
  * @author Maxim Kizub
  *
  */
 
-@nodeset
+@node
 public final class ASTModifiers extends ASTNode {
 	
 	@virtual typedef This  = ASTModifiers;

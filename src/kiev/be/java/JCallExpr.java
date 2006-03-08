@@ -20,7 +20,6 @@ public final view JCallExpr of CallExpr extends JENode {
 	public:ro	JMethod			func;
 	public:ro	CallType		mt;
 	public:ro	JArr<JENode>	args;
-	public		JENode			temp_expr;
 
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
@@ -109,12 +108,14 @@ public final view JCallExpr of CallExpr extends JENode {
 				assert(mmm.name.equals(nameInit));
 				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?
+				NopExpr nop = new NopExpr();
 				if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
-					temp_expr = (JLVarExpr)new LVarExpr(pos,(Var)mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
+					nop.expr = new LVarExpr(pos,(Var)mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 				else
-					temp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
-				temp_expr.generate(code,null);
-				temp_expr = null;
+					nop.expr = (ENode)jctx_clazz.accessTypeInfoField(this,tp,true);
+				this.addNodeData(nop);
+				((JENode)nop.expr).generate(code,null);
+				this.delNodeData(NopExpr.ID);
 			}
 		}
 		if !(func.isVarArgs()) {
@@ -143,10 +144,12 @@ public final view JCallExpr of CallExpr extends JENode {
 			TypeDef[] targs = ((Method)func).targs.toArray();
 			for (int i=0; i < targs.length; i++) {
 				Type tp = mt.resolve(targs[i].getAType());
-				temp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
-				temp_expr.generate(code,null);
+				NopExpr nop = new NopExpr();
+				nop.expr = (ENode)jctx_clazz.accessTypeInfoField(this,tp,true);
+				this.addNodeData(nop);
+				((JENode)nop.expr).generate(code,null);
+				this.delNodeData(NopExpr.ID);
 			}
-			temp_expr = null;
 		}
 		
 		// Special meaning of Object.equals and so on

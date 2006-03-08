@@ -64,7 +64,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		Field f = s.resolveField( name, false );
 		if( f != null ) {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
-			if (f.parent_node != m.parent_node)
+			if (f.parent != m.parent)
 				return;
 			MetaVirtual mv = f.getMetaVirtual();
 			if (mv != null && mv.set != null && mv.set != m)
@@ -108,7 +108,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		Field f = s.resolveField( name, false );
 		if( f != null ) {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
-			if (f.parent_node != m.parent_node)
+			if (f.parent != m.parent)
 				return;
 			MetaVirtual mv = f.getMetaVirtual();
 			if (mv != null && mv.get != null && mv.get != m)

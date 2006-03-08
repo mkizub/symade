@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public class ASTCallExpression extends ENode {
 
 	@dflow(out="args") private static class DFI {
@@ -25,19 +25,17 @@ public class ASTCallExpression extends ENode {
 	}
 
 	@virtual typedef This  = ASTCallExpression;
-	@virtual typedef VView = ASTCallExpressionView;
+	@virtual typedef VView = VASTCallExpression;
 
 	@ref public NameRef				func;
 	@att public NArr<TypeRef>		targs;
 	@att public NArr<ENode>			args;
 
 	@nodeview
-	public static view ASTCallExpressionView of ASTCallExpression extends ENodeView {
+	public static view VASTCallExpression of ASTCallExpression extends VENode {
 		public		NameRef			func;
 		public:ro	NArr<TypeRef>	targs;
 		public:ro	NArr<ENode>		args;
-
-		public int		getPriority() { return Constants.opCallPriority; }
 
 		public void mainResolveOut() {
 			// method of current class or first-order function
@@ -127,7 +125,9 @@ public class ASTCallExpression extends ENode {
 			this.args.append(e);
 		}
 	}
-	
+
+	public int getPriority() { return Constants.opCallPriority; }
+
 	public void resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
 			args[i].resolve(null);

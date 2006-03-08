@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public final class ASTOperatorAlias extends ASTAlias {
 	public static final int	XFIX_UNKNOWN = 0;
 	public static final int	XFIX_PREFIX  = 1;

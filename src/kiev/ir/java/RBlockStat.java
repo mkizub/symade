@@ -6,9 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.SynchronizedStat.SynchronizedStatView;
-import kiev.vlang.WithStat.WithStatView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -18,7 +15,10 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RSynchronizedStat of SynchronizedStat extends SynchronizedStatView {
+public final view RSynchronizedStat of SynchronizedStat extends RENode {
+	public ENode			expr;
+	public Var				expr_var;
+	public ENode			body;
 
 	public void resolve(Type reqType) {
 		try {
@@ -34,7 +34,10 @@ public final view RSynchronizedStat of SynchronizedStat extends SynchronizedStat
 }
 
 @nodeview
-public final view RWithStat of WithStat extends WithStatView {
+public final view RWithStat of WithStat extends RENode {
+	public ENode		expr;
+	public ENode		body;
+	public LvalDNode	var_or_field;
 
 	public void resolve(Type reqType) {
 		try {

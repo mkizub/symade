@@ -6,9 +6,7 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Method.MethodView;
-import kiev.vlang.Initializer.InitializerView;
-import kiev.vlang.WBCCondition.WBCConditionView;
+import kiev.be.java.CodeAttr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -19,7 +17,55 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public view RMethod of Method extends MethodView {
+public view RMethod of Method extends RDNode {
+
+	public final void checkRebuildTypes();
+
+	public				Access				acc;
+	public				NodeName			name;
+	public:ro			NArr<TypeDef>		targs;
+	public				TypeRef				type_ret;
+	public				TypeRef				dtype_ret;
+	public:ro			CallType			type;
+	public:ro			CallType			dtype;
+	public:ro			CallType			etype;
+	public:ro			NArr<FormPar>		params;
+	public:ro			NArr<ASTAlias>		aliases;
+	public				Var					retvar;
+	public				Block				body;
+	public:ro			NArr<WBCCondition>	conditions;
+	public:ro			NArr<Field>			violated_fields;
+	public				MetaValue			annotation_default;
+	public				boolean				inlined_by_dispatcher;
+	public				boolean				invalid_types;
+
+	public Var getRetVar();
+	public MetaThrows getMetaThrows();
+	
+	// virtual static method
+	public final boolean isVirtualStatic();
+	public final void setVirtualStatic(boolean on);
+	// method with variable number of arguments	
+	public final boolean isVarArgs();
+	public final void setVarArgs(boolean on);
+	// logic rule method
+	public final boolean isRuleMethod();
+	// method with attached operator	
+	public final boolean isOperatorMethod();
+	public final void setOperatorMethod(boolean on);
+	// need fields initialization	
+	public final boolean isNeedFieldInits();
+	public final void setNeedFieldInits(boolean on);
+	// a method generated as invariant	
+	public final boolean isInvariantMethod();
+	public final void setInvariantMethod(boolean on);
+	// a local method (closure code or inner method)	
+	public final boolean isLocalMethod();
+	public final void setLocalMethod(boolean on);
+	// a dispatcher (for multimethods)	
+	public final boolean isDispatcherMethod();
+	public final void setDispatcherMethod(boolean on);
+
 	public void resolveDecl() {
 		RMethod.resolveMethod(this);
 	}
@@ -50,7 +96,7 @@ public view RMethod of Method extends MethodView {
 		} catch(Exception e ) {
 			Kiev.reportError(self,e);
 		}
-		self.cleanDFlow();
+		((Method)self).cleanDFlow();
 
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
@@ -83,7 +129,9 @@ public final view RConstructor of Constructor extends RMethod {
 }
 
 @nodeview
-public final view RInitializer of Initializer extends InitializerView {
+public final view RInitializer of Initializer extends RDNode {
+	public Block				body;
+
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		
@@ -98,7 +146,13 @@ public final view RInitializer of Initializer extends InitializerView {
 }
 
 @nodeview
-public final view RWBCCondition of WBCCondition extends WBCConditionView {
+public final view RWBCCondition of WBCCondition extends RDNode {
+	public WBCType				cond;
+	public NameRef				name;
+	public ENode				body;
+	public Method				definer;
+	public CodeAttr				code_attr;
+
 	public void resolveDecl() {
 		if( code_attr != null ) return;
 		body.resolve(Type.tpVoid);

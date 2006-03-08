@@ -32,33 +32,34 @@ import syntax kiev.Syntax;
  */
 
 
-@nodeset
+@node
 public final class ConstBoolExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstBoolExpr;
-	@virtual typedef VView = ConstBoolExprView;
+	@virtual typedef VView = VConstBoolExpr;
 	@virtual typedef JView = JConstBoolExpr;
 
 	@att public boolean value;
 
 	@nodeview
-	public static view ConstBoolExprView of ConstBoolExpr extends ConstExprView {
+	public static view VConstBoolExpr of ConstBoolExpr extends VConstExpr {
 		public boolean	value;
-		public Type		getType()			{ return Type.tpBoolean; }
-
-		public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
-		
-		public boolean valueEquals(Object o) {
-			if (o instanceof ConstBoolExpr)
-				return o.value == this.value;
-			return false;
-		}
 	}
 	
 	public ConstBoolExpr() {}
 	public ConstBoolExpr(boolean value) { this.value = value; }
+	
+	public Type		getType()			{ return Type.tpBoolean; }
+
+	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
+	
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstBoolExpr)
+			return o.value == this.value;
+		return false;
+	}
 
 	public String	toString()			{ return String.valueOf(value); }
 
@@ -67,301 +68,303 @@ public final class ConstBoolExpr extends ConstExpr {
 	}
 }
 
-@nodeset
+@node
 public final class ConstNullExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstNullExpr;
-	@virtual typedef VView = ConstNullExprView;
+	@virtual typedef VView = VConstNullExpr;
 	@virtual typedef JView = JConstNullExpr;
 
 	@nodeview
-	public static view ConstNullExprView of ConstNullExpr extends ConstExprView {
-		public Type		getType()			{ return Type.tpNull; }
-
-		public Object	getConstValue()		{ return null; }
-
-		public boolean valueEquals(Object o) {
-			if (o instanceof ConstNullExpr)
-				return true;
-			return false;
-		}
+	public static view VConstNullExpr of ConstNullExpr extends VConstExpr {
 	}
 	
 	public ConstNullExpr() {}
 
+	public Type		getType()			{ return Type.tpNull; }
+
+	public Object	getConstValue()		{ return null; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstNullExpr)
+			return true;
+		return false;
+	}
+
 	public String	toString()			{ return "null"; }
 }
 
-@nodeset
+@node
 public final class ConstByteExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstByteExpr;
-	@virtual typedef VView = ConstByteExprView;
+	@virtual typedef VView = VConstByteExpr;
 	@virtual typedef JView = JConstByteExpr;
 
 	@att public byte value;
 
 	@nodeview
-	public static view ConstByteExprView of ConstByteExpr extends ConstExprView {
+	public static view VConstByteExpr of ConstByteExpr extends VConstExpr {
 		public byte		value;
-		public Type		getType()			{ return Type.tpByte; }
-
-		public Object	getConstValue()		{ return Byte.valueOf(value); }
-
-		public boolean valueEquals(Object o) {
-			if (o instanceof ConstByteExpr)
-				return o.value == this.value;
-			return false;
-		}
 	}
 	
 	public ConstByteExpr() {}
 	public ConstByteExpr(byte value) { this.value = value; }
 
+	public Type		getType()			{ return Type.tpByte; }
+
+	public Object	getConstValue()		{ return Byte.valueOf(value); }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstByteExpr)
+			return o.value == this.value;
+		return false;
+	}
+
 	public String	toString()			{ return String.valueOf(value); }
 }
 
-@nodeset
+@node
 public final class ConstShortExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstShortExpr;
-	@virtual typedef VView = ConstShortExprView;
+	@virtual typedef VView = VConstShortExpr;
 	@virtual typedef JView = JConstShortExpr;
 
 	@att public short value;
 
 	@nodeview
-	public static view ConstShortExprView of ConstShortExpr extends ConstExprView {
+	public static view VConstShortExpr of ConstShortExpr extends VConstExpr {
 		public short		value;
-		public Type		getType()			{ return Type.tpShort; }
-
-		public Object	getConstValue()		{ return Short.valueOf(value); }
-
-		public boolean valueEquals(Object o) {
-			if (o instanceof ConstShortExpr)
-				return o.value == this.value;
-			return false;
-		}
 	}
 	
 	public ConstShortExpr() {}
 	public ConstShortExpr(short value) { this.value = value; }
 
+	public Type		getType()			{ return Type.tpShort; }
+
+	public Object	getConstValue()		{ return Short.valueOf(value); }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstShortExpr)
+			return o.value == this.value;
+		return false;
+	}
+
 	public String	toString()			{ return String.valueOf(value); }
 }
 
-@nodeset
+@node
 public final class ConstIntExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstIntExpr;
-	@virtual typedef VView = ConstIntExprView;
+	@virtual typedef VView = VConstIntExpr;
 	@virtual typedef JView = JConstIntExpr;
 
 	@att public int value;
 
 	@nodeview
-	public static view ConstIntExprView of ConstIntExpr extends ConstExprView {
+	public static view VConstIntExpr of ConstIntExpr extends VConstExpr {
 		public int		value;
-		public Type		getType()			{ return Type.tpInt; }
-
-		public Object	getConstValue()		{ return Integer.valueOf(value); }
-
-		public boolean valueEquals(Object o) {
-			if (o instanceof ConstIntExpr)
-				return o.value == this.value;
-			return false;
-		}
 	}
 	
 	public ConstIntExpr() {}
 	public ConstIntExpr(int value) { this.value = value; }
 
+	public Type		getType()			{ return Type.tpInt; }
+
+	public Object	getConstValue()		{ return Integer.valueOf(value); }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstIntExpr)
+			return o.value == this.value;
+		return false;
+	}
+
 	public String	toString()			{ return String.valueOf(value); }
 }
 
-@nodeset
+@node
 public final class ConstLongExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstLongExpr;
-	@virtual typedef VView = ConstLongExprView;
+	@virtual typedef VView = VConstLongExpr;
 	@virtual typedef JView = JConstLongExpr;
 
 	@att public long value;
 
 	@nodeview
-	public static view ConstLongExprView of ConstLongExpr extends ConstExprView {
+	public static view VConstLongExpr of ConstLongExpr extends VConstExpr {
 		public long		value;
-		public Type		getType()			{ return Type.tpLong; }
-
-		public Object	getConstValue()		{ return Long.valueOf(value); }
-
-		public boolean valueEquals(Object o) {
-			if (o instanceof ConstLongExpr)
-				return o.value == this.value;
-			return false;
-		}
 	}
 	
 	public ConstLongExpr() {}
 	public ConstLongExpr(long value) { this.value = value; }
 
+	public Type		getType()			{ return Type.tpLong; }
+
+	public Object	getConstValue()		{ return Long.valueOf(value); }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstLongExpr)
+			return o.value == this.value;
+		return false;
+	}
+
 	public String	toString()			{ return String.valueOf(value)+"L"; }
 }
 
-@nodeset
+@node
 public final class ConstCharExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstCharExpr;
-	@virtual typedef VView = ConstCharExprView;
+	@virtual typedef VView = VConstCharExpr;
 	@virtual typedef JView = JConstCharExpr;
 
 	@att public char value;
 
 	@nodeview
-	public static view ConstCharExprView of ConstCharExpr extends ConstExprView {
+	public static view VConstCharExpr of ConstCharExpr extends VConstExpr {
 		public char		value;
-		public Type		getType()			{ return Type.tpChar; }
-
-		public Object	getConstValue()		{ return Character.valueOf(value); }
-
-		public boolean valueEquals(Object o) {
-			if (o instanceof ConstCharExpr)
-				return o.value == this.value;
-			return false;
-		}
 	}
 	
 	public ConstCharExpr() {}
 	public ConstCharExpr(char value) { this.value = value; }
 
+	public Type		getType()			{ return Type.tpChar; }
+
+	public Object	getConstValue()		{ return Character.valueOf(value); }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstCharExpr)
+			return o.value == this.value;
+		return false;
+	}
+
 	public String	toString()			{ return "'"+Convert.escape(value)+"'"; }
 }
 
 
-@nodeset
+@node
 public final class ConstFloatExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstFloatExpr;
-	@virtual typedef VView = ConstFloatExprView;
+	@virtual typedef VView = VConstFloatExpr;
 	@virtual typedef JView = JConstFloatExpr;
 
 	@att public float value;
 
 	@nodeview
-	public static view ConstFloatExprView of ConstFloatExpr extends ConstExprView {
+	public static view VConstFloatExpr of ConstFloatExpr extends VConstExpr {
 		public float		value;
-		public Type		getType()			{ return Type.tpFloat; }
-
-		public Object	getConstValue()		{ return Float.valueOf(value); }
-
-		public boolean valueEquals(Object o) {
-			if (o instanceof ConstFloatExpr)
-				return o.value == this.value;
-			return false;
-		}
 	}
 	
 	public ConstFloatExpr() {}
 	public ConstFloatExpr(float value) { this.value = value; }
 
+	public Type		getType()			{ return Type.tpFloat; }
+
+	public Object	getConstValue()		{ return Float.valueOf(value); }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstFloatExpr)
+			return o.value == this.value;
+		return false;
+	}
+
 	public String	toString()			{ return String.valueOf(value)+"F"; }
 }
 
 
-@nodeset
+@node
 public final class ConstDoubleExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstDoubleExpr;
-	@virtual typedef VView = ConstDoubleExprView;
+	@virtual typedef VView = VConstDoubleExpr;
 	@virtual typedef JView = JConstDoubleExpr;
 
 	@att public double value;
 
 	@nodeview
-	public static view ConstDoubleExprView of ConstDoubleExpr extends ConstExprView {
+	public static view VConstDoubleExpr of ConstDoubleExpr extends VConstExpr {
 		public double		value;
-		public Type		getType()			{ return Type.tpDouble; }
-
-		public Object	getConstValue()		{ return Double.valueOf(value); }
-
-		public boolean valueEquals(Object o) {
-			if (o instanceof ConstDoubleExpr)
-				return o.value == this.value;
-			return false;
-		}
 	}
 	
 	public ConstDoubleExpr() {}
 	public ConstDoubleExpr(double value) { this.value = value; }
 
+	public Type		getType()			{ return Type.tpDouble; }
+
+	public Object	getConstValue()		{ return Double.valueOf(value); }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstDoubleExpr)
+			return o.value == this.value;
+		return false;
+	}
+
 	public String	toString()			{ return String.valueOf(value)+"D"; }
 }
 
-@nodeset
+@node
 public final class ConstStringExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ConstStringExpr;
-	@virtual typedef VView = ConstStringExprView;
+	@virtual typedef VView = VConstStringExpr;
 	@virtual typedef JView = JConstStringExpr;
 
 	@att public KString value;
 
 	@nodeview
-	public static view ConstStringExprView of ConstStringExpr extends ConstExprView {
+	public static view VConstStringExpr of ConstStringExpr extends VConstExpr {
 		public KString		value;
-		public Type		getType()			{ return Type.tpString; }
-
-		public Object	getConstValue()		{ return value; }
-
-		public boolean valueEquals(Object o) {
-			if (o instanceof ConstStringExpr)
-				return o.value == this.value;
-			return false;
-		}
 	}
 	
 	public ConstStringExpr() {}
 	public ConstStringExpr(KString value) { this.value = value; }
 
+	public Type		getType()			{ return Type.tpString; }
+
+	public Object	getConstValue()		{ return value; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstStringExpr)
+			return o.value == this.value;
+		return false;
+	}
+
 	public String	toString()			{ return '\"'+value.toString()+'\"'; }
 }
 
 
-@nodeset
+@node
 public abstract class ConstExpr extends ENode {
 
 	@virtual typedef This  = ConstExpr;
-	@virtual typedef VView = ConstExprView;
+	@virtual typedef VView = VConstExpr;
 	@virtual typedef JView = JConstExpr;
 	@virtual typedef RView = RConstExpr;
 
 	@nodeview
-	public abstract static view ConstExprView of ConstExpr extends ENodeView {
-
-		public int		getPriority() { return 255; }
-
-		public abstract Object getConstValue();
-
-		public boolean	isConstantExpr() { return true; }
-
+	public abstract static view VConstExpr of ConstExpr extends VENode {
 		public final boolean mainResolveIn() {
 			// already fully resolved
 			setResolved(true);
@@ -372,11 +375,14 @@ public abstract class ConstExpr extends ENode {
 	public ConstExpr() {
 		setResolved(true);
 	}
-	
-	public final void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
 
+	public int		getPriority() { return 255; }
+
+	public abstract Object getConstValue();
+
+	public boolean	isConstantExpr() { return true; }
+
+	
 	public Dumper	toJava(Dumper dmp) {
 		Object value = getConstValue();
 		if( value == null ) dmp.space().append("null").space();

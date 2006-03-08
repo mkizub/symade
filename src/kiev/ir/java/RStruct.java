@@ -6,8 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Struct.StructView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -17,8 +15,88 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RStruct of Struct extends StructView {
-	
+public final view RStruct of Struct extends RTypeDecl {
+	public				Access					acc;
+	public				ClazzName				name;
+	public:ro			CompaundTypeProvider	imeta_type;
+	public				WrapperTypeProvider		wmeta_type;
+	public				OuterTypeProvider		ometa_type;
+	public:ro			CompaundType			ctype;
+	public				TypeRef					view_of;
+	public				TypeRef					super_bound;
+	public:ro			NArr<TypeRef>			interfaces;
+	public:ro			NArr<TypeDef>			args;
+	public				Struct					package_clazz;
+	public				Struct					typeinfo_clazz;
+	public				Struct					iface_impl;
+	public:ro			NArr<Struct>			sub_clazz;
+	public:ro			NArr<DNode>				imported;
+	public:ro			NArr<TypeDecl>			direct_extenders;
+	public:ro			NArr<DNode>				members;
+
+	@getter public final CompaundType	get$super_type();
+	@setter public final void set$super_type(CompaundType tp);
+
+	public TypeProvider[] getAllSuperTypes();
+
+	public final Struct getStruct() { return (Struct)this; }
+
+	public boolean isClazz();
+	// a pizza case	
+	public final boolean isPizzaCase();
+	public final void setPizzaCase(boolean on);
+	// a structure with the only one instance (singleton)	
+	public final boolean isSingleton();
+	public final void setSingleton(boolean on);
+	// a local (in method) class	
+	public final boolean isLocal();
+	public final void setLocal(boolean on);
+	// an anonymouse (unnamed) class	
+	public final boolean isAnonymouse();
+	public final void setAnonymouse(boolean on);
+	// has pizza cases
+	public final boolean isHasCases();
+	public final void setHasCases(boolean on);
+	// indicates that structure members were generated
+	public final boolean isMembersGenerated();
+	public final void setMembersGenerated(boolean on);
+	// indicates that structure members were pre-generated
+	public final boolean isMembersPreGenerated();
+	public final void setMembersPreGenerated(boolean on);
+	// indicates that statements in code were generated
+	public final boolean isStatementsGenerated();
+	public final void setStatementsGenerated(boolean on);
+	// indicates that the structrue was generared (from template)
+	public final boolean isGenerated();
+	public final void setGenerated(boolean on);
+	// indicates that type of the structure was attached
+	public final boolean isTypeResolved();
+	public final void setTypeResolved(boolean on);
+	// indicates that type arguments of the structure were resolved
+	public final boolean isArgsResolved();
+	public final void setArgsResolved(boolean on);
+	// kiev annotation
+	public final boolean isAnnotation();
+	public final void setAnnotation(boolean on);
+	// java enum
+	public final boolean isEnum();
+	// structure was loaded from bytecode
+	public final boolean isLoadedFromBytecode();
+	public final void setLoadedFromBytecode(boolean on);
+
+	public Struct addSubStruct(Struct sub);
+	public Method addMethod(Method m);
+	public void removeMethod(Method m);
+	public Field addField(Field f);
+	public void removeField(Field f);
+	public Struct addCase(Struct cas);
+
+	public boolean instanceOf(Struct cl);
+	public Field resolveField(KString name);
+	public Field resolveField(KString name, boolean fatal);
+	public Method resolveMethod(KString name, Type ret, ...);
+	public Constructor getClazzInitMethod();
+
 	public ENode accessTypeInfoField(ASTNode from, Type t, boolean from_gen) {
 		while (t instanceof WrapperType)
 			t = ((WrapperType)t).getEnclosedType();
@@ -880,7 +958,7 @@ public final view RStruct of Struct extends StructView {
 				}
 				last_st.elseSt = br;
 			}
-			assert (mm.parent_node == self.getStruct());
+			assert (mm.parent == self.getStruct());
 			if (st != null) {
 				Block body = new Block(0);
 				body.stats.add(st);
@@ -959,7 +1037,7 @@ public final view RStruct of Struct extends StructView {
 		assert (dispatched != dispatcher);
 		assert (dispatched.isAttached());
 		if (dispatched.ctx_clazz == self.getStruct()) {
-			assert (dispatched.parent_node == self.getStruct());
+			assert (dispatched.parent == self.getStruct());
 			return new InlineMethodStat(pos,~dispatched,dispatcher);
 		} else {
 			return makeDispatchCall(self,pos,dispatched,dispatcher);
@@ -1227,7 +1305,7 @@ public final view RStruct of Struct extends StructView {
 				}
 				if (isForward() && package_clazz.isStructView()) {
 					Field fview = this.resolveField(nameImpl);
-					if (fview.parent_node == (Struct)this) {
+					if (fview.parent == (Struct)this) {
 						foreach (FormPar fp; m.params; fp.name.equals(nameImpl)) {
 							stats.insert(
 								new ExprStat(pos,
@@ -1283,7 +1361,7 @@ public final view RStruct of Struct extends StructView {
 				try {
 					f.type.checkResolved();
 					if (f.type.getStruct()!=null)
-						Access.verifyReadWrite(this.getDNode(),f.type.getStruct());
+						Access.verifyReadWrite((Struct)this,f.type.getStruct());
 				} catch(Exception e ) { Kiev.reportError(n,e); }
 			}
 			foreach(ASTNode n; members; n instanceof Method) {
@@ -1291,11 +1369,11 @@ public final view RStruct of Struct extends StructView {
 				try {
 					m.type.ret().checkResolved();
 					if (m.type.ret().getStruct()!=null)
-						Access.verifyReadWrite(this.getDNode(),m.type.ret().getStruct());
+						Access.verifyReadWrite((Struct)this,m.type.ret().getStruct());
 					foreach(Type t; m.type.params()) {
 						t.checkResolved();
 						if (t.getStruct()!=null)
-							Access.verifyReadWrite(this.getDNode(),t.getStruct());
+							Access.verifyReadWrite((Struct)this,t.getStruct());
 					}
 				} catch(Exception e ) { Kiev.reportError(m,e); }
 			}

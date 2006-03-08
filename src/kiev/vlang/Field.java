@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public final class Field extends LvalDNode implements Named, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
@@ -48,6 +48,8 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
 	/** Array of invariant methods, that check this field */
 	@ref public NArr<Method>		invs;
+
+	@getter public final Type	get$type() { return this.ftype.getType(); }
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (parent != null && pslot != null) {
@@ -99,7 +101,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	}
 
 	@nodeview
-	public static view FieldView of Field extends LvalDNodeView {
+	public static final view VField of Field extends VLvalDNode {
 		public		Access			acc;
 		public		NodeName		name;
 		public		TypeRef			ftype;
@@ -107,7 +109,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 		public		ConstExpr		const_value;
 		public:ro	NArr<Method>	invs;
 		
-		@getter public final Type	get$type()			{ return ((Field)this).ftype.getType(); }
+		@getter public final Type	get$type();
 		
 		// is a field of enum
 		public final boolean isEnumField();
@@ -121,28 +123,6 @@ public final class Field extends LvalDNode implements Named, Accessable {
 		// field's initializer was already added to class initializer
 		public final boolean isAddedToInit();
 		public final void setAddedToInit(boolean on);
-
-		public Type	getType() { return type; }
-
-		public boolean	isConstantExpr() {
-			if( this.isFinal() ) {
-				if (this.init != null && this.init.isConstantExpr())
-					return true;
-				else if (this.const_value != null)
-					return true;
-			}
-			return false;
-		}
-		public Object	getConstValue() {
-			if (this.init != null && this.init.isConstantExpr())
-				return this.init.getConstValue();
-			else if (this.const_value != null)
-				return this.const_value.getConstValue();
-			throw new RuntimeException("Request for constant value of non-constant expression");
-		}
-	}
-	@nodeview
-	public static final view VField of Field extends FieldView {
 	}
 
 	@setter public final void		set$acc(Access val)	{ this.acc = val; Access.verifyDecl(this); }
@@ -169,7 +149,26 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	public ASTNode getDummyNode() {
 		return Field.dummyNode;
 	}
-	
+
+	public Type	getType() { return type; }
+
+	public boolean	isConstantExpr() {
+		if( this.isFinal() ) {
+			if (this.init != null && this.init.isConstantExpr())
+				return true;
+			else if (this.const_value != null)
+				return true;
+		}
+		return false;
+	}
+	public Object	getConstValue() {
+		if (this.init != null && this.init.isConstantExpr())
+			return this.init.getConstValue();
+		else if (this.const_value != null)
+			return this.const_value.getConstValue();
+		throw new RuntimeException("Request for constant value of non-constant expression");
+	}
+
 	public final MetaVirtual getMetaVirtual() {
 		return (MetaVirtual)this.getNodeData(MetaVirtual.ID);
 	}
@@ -192,10 +191,6 @@ public final class Field extends LvalDNode implements Named, Accessable {
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(name).space();
-	}
-
-	public void resolveDecl() {
-		((RView)this).resolveDecl();
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {

@@ -7,15 +7,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.AccessExpr.AccessExprView;
-import kiev.vlang.IFldExpr.IFldExprView;
-import kiev.vlang.ContainerAccessExpr.ContainerAccessExprView;
-import kiev.vlang.ThisExpr.ThisExprView;
-import kiev.vlang.LVarExpr.LVarExprView;
-import kiev.vlang.SFldExpr.SFldExprView;
-import kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprView;
-import kiev.vlang.ReinterpExpr.ReinterpExprView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -26,8 +17,16 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RAccessExpr of AccessExpr extends AccessExprView {
-	
+public abstract static view RLvalueExpr of LvalueExpr extends RENode {
+}
+
+@nodeview
+public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
+	public ENode	obj;
+	public NameRef	ident;
+
+	public final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o);
+
 	public void resolve(Type reqType) throws CompilerException {
 		ENode[] res;
 		Type[] tps;
@@ -104,7 +103,11 @@ public static final view RAccessExpr of AccessExpr extends AccessExprView {
 }
 
 @nodeview
-public static final view RIFldExpr of IFldExpr extends IFldExprView {
+public static final view RIFldExpr of IFldExpr extends RLvalueExpr {
+	public ENode		obj;
+	public NameRef		ident;
+	public Field		var;
+
 	public void resolve(Type reqType) throws RuntimeException {
 		obj.resolve(null);
 
@@ -121,7 +124,9 @@ public static final view RIFldExpr of IFldExpr extends IFldExprView {
 }
 
 @nodeview
-public static final view RContainerAccessExpr of ContainerAccessExpr extends ContainerAccessExprView {
+public static final view RContainerAccessExpr of ContainerAccessExpr extends RLvalueExpr {
+	public ENode		obj;
+	public ENode		index;
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
@@ -152,7 +157,7 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends Con
 }
 
 @nodeview
-public static final view RThisExpr of ThisExpr extends ThisExprView {
+public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
@@ -168,9 +173,14 @@ public static final view RThisExpr of ThisExpr extends ThisExprView {
 }
 
 @nodeview
-public final view RLVarExpr of LVarExpr extends LVarExprView {
+public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 
 	static final KString namePEnv = KString.from("$env");
+
+	public NameRef	ident;
+	public Var		var;
+
+	public Var getVar();
 
 	public boolean preGenerate() {
 		if (getVar().isLocalRuleVar()) {
@@ -220,7 +230,10 @@ public final view RLVarExpr of LVarExpr extends LVarExprView {
 }
 
 @nodeview
-public static final view RSFldExpr of SFldExpr extends SFldExprView {
+public static final view RSFldExpr of SFldExpr extends RLvalueExpr {
+	public ENode		obj;
+	public NameRef		ident;
+	public Field		var;
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
@@ -234,7 +247,11 @@ public static final view RSFldExpr of SFldExpr extends SFldExprView {
 }
 
 @nodeview
-public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends OuterThisAccessExprView {
+public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends RLvalueExpr {
+	public		ENode			obj;
+	public		NameRef			ident;
+	public		Struct			outer;
+	public:ro	NArr<Field>		outer_refs;
 
 	public void resolve(Type reqType) throws RuntimeException {
 		outer_refs.delAll();
@@ -266,7 +283,9 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends Out
 }
 
 @nodeview
-public static final view RReinterpExpr of ReinterpExpr extends ReinterpExprView {
+public static final view RReinterpExpr of ReinterpExpr extends RLvalueExpr {
+	public TypeRef		type;
+	public ENode		expr;
 
 	public void resolve(Type reqType) {
 		trace(Kiev.debugResolve,"Resolving "+this);

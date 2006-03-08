@@ -14,7 +14,7 @@ import kiev.transf.*;
  *
  */
 
-@nodeset
+@node
 public class ASTNewInitializedArrayExpression extends ENode {
 
 	@dflow(out="args") private static class DFI {
@@ -22,19 +22,17 @@ public class ASTNewInitializedArrayExpression extends ENode {
 	}
 	
 	@virtual typedef This  = ASTNewInitializedArrayExpression;
-	@virtual typedef VView = ASTNewInitializedArrayExpressionView;
+	@virtual typedef VView = VASTNewInitializedArrayExpression;
 
 	@att public int					dim;
 	@att public TypeRef				type;
 	@att public NArr<ENode>			args;
 
 	@nodeview
-	public static view ASTNewInitializedArrayExpressionView of ASTNewInitializedArrayExpression extends ENodeView {
+	public static view VASTNewInitializedArrayExpression of ASTNewInitializedArrayExpression extends VENode {
 		public		int				dim;
 		public		TypeRef			type;
 		public:ro	NArr<ENode>		args;
-
-		public int		getPriority() { return Constants.opAccessPriority; }
 	
 		public void mainResolveOut() {
 			Type tp = type.getType();
@@ -48,6 +46,8 @@ public class ASTNewInitializedArrayExpression extends ENode {
 	}
 	
 	public ASTNewInitializedArrayExpression() {}
+
+	public int getPriority() { return Constants.opAccessPriority; }
 
 	public void resolve(Type reqType) {
 		Type tp;

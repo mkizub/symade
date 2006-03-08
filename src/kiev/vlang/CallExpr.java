@@ -21,7 +21,7 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-@nodeset
+@node
 public class CallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -38,27 +38,13 @@ public class CallExpr extends ENode {
 	@ref public Method				func;
 	@ref public CallType			mt;
 	@att public NArr<ENode>			args;
-	@att public ENode				temp_expr;
 
 	@nodeview
-	public static abstract view CallExprView of CallExpr extends ENodeView {
+	public static final view VCallExpr of CallExpr extends VENode {
 		public		ENode			obj;
 		public		Method			func;
 		public		CallType		mt;
 		public:ro	NArr<ENode>		args;
-		public		ENode			temp_expr;
-
-		public int		getPriority() { return Constants.opCallPriority; }
-
-		public Type getType() {
-			if (mt == null)
-				return Type.getRealType(obj.getType(),func.type.ret());
-			else
-				return mt.ret();
-		}
-	}
-	@nodeview
-	public static final view VCallExpr of CallExpr extends CallExprView {
 	}
 	
 	public CallExpr() {}
@@ -88,6 +74,15 @@ public class CallExpr extends ENode {
 		this(pos, obj, func, null, args, false);
 	}
 
+	public int getPriority() { return Constants.opCallPriority; }
+
+	public Type getType() {
+		if (mt == null)
+			return Type.getRealType(obj.getType(),func.type.ret());
+		else
+			return mt.ret();
+	}
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		if( obj.getPriority() > opAccessPriority )
@@ -102,10 +97,6 @@ public class CallExpr extends ENode {
 		}
 		sb.append(')');
 		return sb.toString();
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -139,7 +130,7 @@ public class CallExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class ClosureCallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -157,40 +148,12 @@ public class ClosureCallExpr extends ENode {
 	@att public Boolean				is_a_call;
 
 	@nodeview
-	public static abstract view ClosureCallExprView of ClosureCallExpr extends ENodeView {
+	public static final view VClosureCallExpr of ClosureCallExpr extends VENode {
 		public		ENode			expr;
 		public:ro	NArr<ENode>		args;
 		public		Boolean			is_a_call;
 
-		public int		getPriority() { return Constants.opCallPriority; }
-
-		public Type getType() {
-			CallType t = (CallType)expr.getType();
-			if (is_a_call == null)
-				is_a_call = Boolean.valueOf(t.arity==args.length);
-			if (is_a_call.booleanValue())
-				return t.ret();
-			Type[] types = new Type[t.arity - args.length];
-			for(int i=0; i < types.length; i++) types[i] = t.arg(i+args.length);
-			t = new CallType(types,t.ret(),true);
-			return t;
-		}
-
-		public Method getCallIt(CallType tp) {
-			KString call_it_name;
-			Type ret;
-			if( tp.ret().isReference() ) {
-				call_it_name = KString.from("call_Object");
-				ret = Type.tpObject;
-			} else {
-				call_it_name = KString.from("call_"+tp.ret());
-				ret = tp.ret();
-			}
-			return Type.tpClosureClazz.resolveMethod(call_it_name, ret);
-		}
-	}
-	@nodeview
-	public static final view VClosureCallExpr of ClosureCallExpr extends ClosureCallExprView {
+		public Method getCallIt(CallType tp);
 	}
 	
 	public ClosureCallExpr() {}
@@ -199,6 +162,20 @@ public class ClosureCallExpr extends ENode {
 		this.pos = pos;
 		this.expr = expr;
 		foreach(ENode e; args) this.args.append(e);
+	}
+
+	public int getPriority() { return Constants.opCallPriority; }
+
+	public Type getType() {
+		CallType t = (CallType)expr.getType();
+		if (is_a_call == null)
+			is_a_call = Boolean.valueOf(t.arity==args.length);
+		if (is_a_call.booleanValue())
+			return t.ret();
+		Type[] types = new Type[t.arity - args.length];
+		for(int i=0; i < types.length; i++) types[i] = t.arg(i+args.length);
+		t = new CallType(types,t.ret(),true);
+		return t;
 	}
 
 	public String toString() {
@@ -212,11 +189,20 @@ public class ClosureCallExpr extends ENode {
 		sb.append(')');
 		return sb.toString();
 	}
-	
-	public void resolve(Type reqType) throws RuntimeException {
-		((RView)this).resolve(reqType);
-	}
 
+	public Method getCallIt(CallType tp) {
+		KString call_it_name;
+		Type ret;
+		if( tp.ret().isReference() ) {
+			call_it_name = KString.from("call_Object");
+			ret = Type.tpObject;
+		} else {
+			call_it_name = KString.from("call_"+tp.ret());
+			ret = tp.ret();
+		}
+		return Type.tpClosureClazz.resolveMethod(call_it_name, ret);
+	}
+	
 	public Dumper toJava(Dumper dmp) {
 		expr.toJava(dmp).append(".clone()");
 		for(int i=0; i < args.length; i++) {

@@ -31,7 +31,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public abstract class BoolExpr extends ENode {
 
 	@virtual typedef This  = BoolExpr;
@@ -40,14 +40,12 @@ public abstract class BoolExpr extends ENode {
 	@virtual typedef VView = RBoolExpr;
 
 	@nodeview
-	public abstract static view BoolExprView of BoolExpr extends ENodeView {
-		public Type getType() { return Type.tpBoolean; }
-	}
-	@nodeview
-	public final static view VBoolExpr of BoolExpr extends BoolExprView {
+	public abstract static view VBoolExpr of BoolExpr extends VENode {
 	}
 
 	public BoolExpr() {}
+
+	public Type getType() { return Type.tpBoolean; }
 
 	public static void checkBool(ENode e) {
 		Type et = e.getType();
@@ -71,7 +69,7 @@ public abstract class BoolExpr extends ENode {
 	
 }
 
-@nodeset
+@node
 public class BinaryBooleanOrExpr extends BoolExpr {
 
 	@dflow(tru="join expr1:true expr2:true", fls="expr2:false") private static class DFI {
@@ -88,14 +86,9 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	@att public ENode			expr2;
 
 	@nodeview
-	public static abstract view BinaryBooleanOrExprView of BinaryBooleanOrExpr extends BoolExprView {
+	public static final view VBinaryBooleanOrExpr of BinaryBooleanOrExpr extends VBoolExpr {
 		public ENode		expr1;
 		public ENode		expr2;
-
-		public Operator getOp() { return BinaryOperator.BooleanOr; }
-	}
-	@nodeview
-	public static final view VBinaryBooleanOrExpr of BinaryBooleanOrExpr extends BinaryBooleanOrExprView {
 	}
 	
 	public BinaryBooleanOrExpr() {}
@@ -105,6 +98,8 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
+
+	public Operator getOp() { return BinaryOperator.BooleanOr; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -124,10 +119,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		return sb.toString();
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( expr1.getPriority() < opBooleanOrPriority ) {
 			dmp.append('(').append(expr1).append(')');
@@ -145,7 +136,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 }
 
 
-@nodeset
+@node
 public class BinaryBooleanAndExpr extends BoolExpr {
 
 	@dflow(fls="join expr1:false expr2:false", tru="expr2:true") private static class DFI {
@@ -162,14 +153,9 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	@att public ENode			expr2;
 
 	@nodeview
-	public static abstract view BinaryBooleanAndExprView of BinaryBooleanAndExpr extends BoolExprView {
+	public static final view VBinaryBooleanAndExpr of BinaryBooleanAndExpr extends VBoolExpr {
 		public ENode		expr1;
 		public ENode		expr2;
-
-		public Operator getOp() { return BinaryOperator.BooleanAnd; }
-	}
-	@nodeview
-	public static view VBinaryBooleanAndExpr of BinaryBooleanAndExpr extends BinaryBooleanAndExprView {
 	}
 	
 	public BinaryBooleanAndExpr() {}
@@ -179,6 +165,8 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
+
+	public Operator getOp() { return BinaryOperator.BooleanAnd; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -192,10 +180,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		else
 			sb.append(expr2);
 		return sb.toString();
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -214,7 +198,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 }
 
-@nodeset
+@node
 public class BinaryBoolExpr extends BoolExpr {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -232,15 +216,10 @@ public class BinaryBoolExpr extends BoolExpr {
 	@att public ENode			expr2;
 
 	@nodeview
-	public static view BinaryBoolExprView of BinaryBoolExpr extends BoolExprView {
+	public static final view VBinaryBoolExpr of BinaryBoolExpr extends VBoolExpr {
 		public BinaryOperator	op;
 		public ENode			expr1;
 		public ENode			expr2;
-
-		public Operator getOp() { return op; }
-	}
-	@nodeview
-	public static view VBinaryBoolExpr of BinaryBoolExpr extends BinaryBoolExprView {
 
 		public void mainResolveOut() {
 			Type et1 = expr1.getType();
@@ -269,14 +248,12 @@ public class BinaryBoolExpr extends BoolExpr {
 		this.expr2 = expr2;
 	}
 
+	public Operator getOp() { return op; }
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(expr1).append(op.image).append(expr2);
 		return sb.toString();
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -295,7 +272,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 }
 
-@nodeset
+@node
 public class InstanceofExpr extends BoolExpr {
 
 	@dflow(tru="this:tru()", fls="expr") private static class DFI {
@@ -311,14 +288,9 @@ public class InstanceofExpr extends BoolExpr {
 	@att public TypeRef		type;
 
 	@nodeview
-	public static abstract view InstanceofExprView of InstanceofExpr extends BoolExprView {
+	public static view VInstanceofExpr of InstanceofExpr extends VBoolExpr {
 		public ENode	expr;
 		public TypeRef	type;
-
-		public Operator getOp() { return BinaryOperator.InstanceOf; }
-	}
-	@nodeview
-	public static view VInstanceofExpr of InstanceofExpr extends InstanceofExprView {
 	}
 	
 	public InstanceofExpr() {}
@@ -335,12 +307,10 @@ public class InstanceofExpr extends BoolExpr {
 		this.type = new TypeRef(type);
 	}
 
+	public Operator getOp() { return BinaryOperator.InstanceOf; }
+
 	public String toString() {
 		return expr+" instanceof "+type;
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	static class InstanceofExprDFFunc extends DFFunc {
@@ -393,7 +363,7 @@ public class InstanceofExpr extends BoolExpr {
 	}
 }
 
-@nodeset
+@node
 public class BooleanNotExpr extends BoolExpr {
 	
 	@dflow(fls="expr:true", tru="expr:false") private static class DFI {
@@ -408,13 +378,8 @@ public class BooleanNotExpr extends BoolExpr {
 	@att public ENode		expr;
 
 	@nodeview
-	public static abstract view BooleanNotExprView of BooleanNotExpr extends BoolExprView {
+	public static view VBooleanNotExpr of BooleanNotExpr extends VBoolExpr {
 		public ENode		expr;
-
-		public Operator getOp() { return PrefixOperator.BooleanNot; }
-	}
-	@nodeview
-	public static view VBooleanNotExpr of BooleanNotExpr extends BooleanNotExprView {
 	}
 	
 	public BooleanNotExpr() {}
@@ -424,15 +389,13 @@ public class BooleanNotExpr extends BoolExpr {
 		this.expr = expr;
 	}
 
+	public Operator getOp() { return PrefixOperator.BooleanNot; }
+
 	public String toString() {
 		if( expr.getPriority() < opBooleanNotPriority )
 			return "!("+expr+")";
 		else
 			return "!"+expr;
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

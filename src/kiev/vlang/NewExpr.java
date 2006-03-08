@@ -29,7 +29,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public final class NewExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -44,41 +44,17 @@ public final class NewExpr extends ENode {
 	@att public TypeRef				type;
 	@att public NArr<ENode>			args;
 	@att public ENode				outer;
-	@att public ENode				temp_expr;
 	@att public Struct				clazz; // if this new expression defines new class
 	@ref public Method				func;
 
 	@nodeview
-	public static view NewExprView of NewExpr extends ENodeView {
+	public static final view VNewExpr of NewExpr extends VENode {
 		public		TypeRef				type;
 		public:ro	NArr<ENode>			args;
 		public		ENode				outer;
-		public		ENode				temp_expr;
 		public		Struct				clazz;
 		public		Method				func;
 
-		public int		getPriority() { return Constants.opAccessPriority; }
-
-		public Type getType() {
-			if (this.clazz != null)
-				return this.clazz.ctype;
-			Type type = this.type.getType();
-			Struct clazz = type.getStruct();
-			if (outer == null && type.getStruct() != null && type.getStruct().ometa_type != null) {
-				if (ctx_method != null || !ctx_method.isStatic())
-					outer = new ThisExpr(pos);
-			}
-			if (outer == null)
-				return type;
-			TVarBld vset = new TVarBld(
-				type.getStruct().ometa_type.tdef.getAType(),
-				new OuterType(type.getStruct(),outer.getType()) );
-			return type.rebind(vset);
-		}
-	}
-
-	@nodeview
-	public static final view VNewExpr of NewExpr extends NewExprView {
 		public boolean preResolveIn() {
 			if( clazz == null )
 				return true;
@@ -143,6 +119,25 @@ public final class NewExpr extends ENode {
 		this.outer = outer;
 	}
 
+	public int		getPriority() { return Constants.opAccessPriority; }
+
+	public Type getType() {
+		if (this.clazz != null)
+			return this.clazz.ctype;
+		Type type = this.type.getType();
+		Struct clazz = type.getStruct();
+		if (outer == null && type.getStruct() != null && type.getStruct().ometa_type != null) {
+			if (ctx_method != null || !ctx_method.isStatic())
+				outer = new ThisExpr(pos);
+		}
+		if (outer == null)
+			return type;
+		TVarBld vset = new TVarBld(
+			type.getStruct().ometa_type.tdef.getAType(),
+			new OuterType(type.getStruct(),outer.getType()) );
+		return type.rebind(vset);
+	}
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("new ").append(type).append('(');
@@ -153,10 +148,6 @@ public final class NewExpr extends ENode {
 		}
 		sb.append(')');
 		return sb.toString();
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -189,7 +180,7 @@ public final class NewExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public final class NewArrayExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -204,31 +195,14 @@ public final class NewArrayExpr extends ENode {
 	@att public TypeRef				type;
 	@att public NArr<ENode>			args;
 	@att public int					dim;
-	@ref public ArrayType			arrtype;
+	     public ArrayType			arrtype;
 
 	@nodeview
-	public static  view NewArrayExprView of NewArrayExpr extends ENodeView {
+	public static final view VNewArrayExpr of NewArrayExpr extends VENode {
 		public		TypeRef				type;
 		public:ro	NArr<ENode>			args;
 		public		int					dim;
 		public		ArrayType			arrtype;
-
-		public Type get$arrtype() {
-			ArrayType art = ((NewArrayExpr)this).arrtype;
-			if (art != null)
-				return art;
-			art = new ArrayType(type.getType());
-			for(int i=1; i < dim; i++) art = new ArrayType(art);
-			((NewArrayExpr)this).arrtype = art;
-			return art;
-		}
-
-		public int		getPriority() { return Constants.opAccessPriority; }
-
-		public Type getType() { return arrtype; }
-	}
-	@nodeview
-	public static final view VNewArrayExpr of NewArrayExpr extends NewArrayExprView {
 	}
 
 	public NewArrayExpr() {}
@@ -240,6 +214,20 @@ public final class NewArrayExpr extends ENode {
 		this.dim = dim;
 	}
 
+	public ArrayType get$arrtype() {
+		ArrayType art = this.arrtype;
+		if (art != null)
+			return art;
+		art = new ArrayType(type.getType());
+		for(int i=1; i < dim; i++) art = new ArrayType(art);
+		this.arrtype = art;
+		return art;
+	}
+
+	public int getPriority() { return Constants.opAccessPriority; }
+
+	public Type getType() { return arrtype; }
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("new ").append(type.toString());
@@ -249,10 +237,6 @@ public final class NewArrayExpr extends ENode {
 			sb.append(']');
 		}
 		return sb.toString();
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -266,7 +250,7 @@ public final class NewArrayExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public final class NewInitializedArrayExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -281,33 +265,18 @@ public final class NewInitializedArrayExpr extends ENode {
 	@att public TypeRef				type;
 	@att public NArr<ENode>			args;
 	@att public int[]				dims;
-	@ref public Type				arrtype;
+	@ref public ArrayType			arrtype;
 
 	@nodeview
-	public static view NewInitializedArrayExprView of NewInitializedArrayExpr extends ENodeView {
+	public static final view VNewInitializedArrayExpr of NewInitializedArrayExpr extends VENode {
 		public		TypeRef				type;
 		public:ro	NArr<ENode>			args;
 		public		int[]				dims;
 		public		ArrayType			arrtype;
 		
-		@getter public final int	get$dim()	{ return this.dims.length; }
+		@getter public final int	get$dim();
 
-		public Type get$arrtype() {
-			ArrayType art = ((NewInitializedArrayExpr)this).arrtype;
-			if (art != null)
-				return art;
-			art = new ArrayType(type.getType());
-			for(int i=1; i < dim; i++) art = new ArrayType(art);
-			((NewInitializedArrayExpr)this).arrtype = art;
-			return art;
-		}
-
-		public int		getPriority() { return Constants.opAccessPriority; }
-
-		public Type getType() { return arrtype; }
-	}
-	@nodeview
-	public static final view VNewInitializedArrayExpr of NewInitializedArrayExpr extends NewInitializedArrayExprView {
+		@getter public final Type	get$arrtype();
 	}
 
 	public NewInitializedArrayExpr() {}
@@ -319,6 +288,22 @@ public final class NewInitializedArrayExpr extends ENode {
 		dims[0] = args.length;
 		this.args.addAll(args);
 	}
+		
+	@getter public final int	get$dim()	{ return this.dims.length; }
+
+	public ArrayType get$arrtype() {
+		ArrayType art = ((NewInitializedArrayExpr)this).arrtype;
+		if (art != null)
+			return art;
+		art = new ArrayType(type.getType());
+		for(int i=1; i < dim; i++) art = new ArrayType(art);
+		((NewInitializedArrayExpr)this).arrtype = art;
+		return art;
+	}
+
+	public int		getPriority() { return Constants.opAccessPriority; }
+
+	public Type getType() { return arrtype; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -334,10 +319,6 @@ public final class NewInitializedArrayExpr extends ENode {
 
 	public int getElementsNumber(int i) { return dims[i]; }
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("new ").append(arrtype);
 		dmp.append('{');
@@ -350,7 +331,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	}
 }
 
-@nodeset
+@node
 public final class NewClosure extends ENode implements ScopeOfNames {
 	
 	@dflow(out="this:in") private static class DFI {
@@ -370,33 +351,30 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	@ref public CallType			ctype;
 
 	@nodeview
-	public static abstract view NewClosureView of NewClosure extends ENodeView {
+	public static final view VNewClosure of NewClosure extends VENode {
 		public TypeRef			type_ret;
 		public NArr<FormPar>	params;
 		public Block			body;
 		public Struct			clazz;
 		public CallType			ctype;
-
-		public int		getPriority() { return Constants.opAccessPriority; }
-
-		public Type getType() {
-			if (ctype != null)
-				return ctype;
-			Vector<Type> args = new Vector<Type>();
-			foreach (FormPar fp; params)
-				args.append(fp.getType());
-			ctype = new CallType(args.toArray(), type_ret.getType(), true);
-			return ctype;
-		}
-	}
-	@nodeview
-	public static final view VNewClosure of NewClosure extends NewClosureView {
 	}
 
 	public NewClosure() {}
 
 	public NewClosure(int pos) {
 		this.pos = pos;
+	}
+
+	public int		getPriority() { return Constants.opAccessPriority; }
+
+	public Type getType() {
+		if (ctype != null)
+			return ctype;
+		Vector<Type> args = new Vector<Type>();
+		foreach (FormPar fp; params)
+			args.append(fp.getType());
+		ctype = new CallType(args.toArray(), type_ret.getType(), true);
+		return ctype;
 	}
 
 	public String toString() {
@@ -418,10 +396,6 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		node ?= p
 	}
 	
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		CallType type = (CallType)this.getType();
 		Struct cl = clazz;

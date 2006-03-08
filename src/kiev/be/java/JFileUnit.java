@@ -24,7 +24,6 @@ public final view JFileUnit of FileUnit extends JDNode {
 	public		TypeNameRef				pkg;
 	public:ro	NArr<DNode>				syntax;
 	public:ro	NArr<DNode>				members;
-	public:ro	NArr<PrescannedBody>	bodies;
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 
@@ -39,7 +38,7 @@ public final view JFileUnit of FileUnit extends JDNode {
         	Kiev.setExtSet(disabled_extensions);
 			foreach (DNode dn; members; dn instanceof Struct) {
 				diff_time = curr_time = System.currentTimeMillis();
-				((JStruct)dn).generate();
+				((JStruct)(Struct)dn).generate();
 				diff_time = System.currentTimeMillis() - curr_time;
 				if( Kiev.verbose )
 					Kiev.reportInfo("Generated clas "+dn,diff_time);

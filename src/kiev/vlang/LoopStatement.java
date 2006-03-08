@@ -9,7 +9,9 @@ import kiev.transf.*;
 import kiev.be.java.JNode;
 import kiev.be.java.JDNode;
 import kiev.be.java.JENode;
+import kiev.ir.java.RLoopStat;
 import kiev.be.java.JLoopStat;
+import kiev.ir.java.RLabel;
 import kiev.be.java.JLabel;
 import kiev.ir.java.RWhileStat;
 import kiev.be.java.JWhileStat;
@@ -33,17 +35,18 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public abstract class LoopStat extends ENode implements ContinueTarget {
 	@virtual typedef This  = LoopStat;
-	@virtual typedef VView = LoopStatView;
+	@virtual typedef VView = VLoopStat;
 	@virtual typedef JView = JLoopStat;
+	@virtual typedef RView = RLoopStat;
 
 	@att(copyable=false)	public Label		lblcnt;
 	@att(copyable=false)	public Label		lblbrk;
 
 	@nodeview
-	public static abstract view LoopStatView of LoopStat extends ENodeView {
+	public static abstract view VLoopStat of LoopStat extends VENode {
 		public:ro	Label					lblcnt;
 		public:ro	Label					lblbrk;
 	}
@@ -56,14 +59,15 @@ public abstract class LoopStat extends ENode implements ContinueTarget {
 }
 
 
-@nodeset
+@node
 public final class Label extends DNode {
 	
 	@dflow(out="this:out()") private static class DFI {}
 
 	@virtual typedef This  = Label;
-	@virtual typedef VView = LabelView;
+	@virtual typedef VView = VLabel;
 	@virtual typedef JView = JLabel;
+	@virtual typedef RView = RLabel;
 
 	@ref(copyable=false)	public List<ASTNode>	links = List.Nil;
 							public CodeLabel		label;
@@ -85,7 +89,7 @@ public final class Label extends DNode {
 	}
 
 	@nodeview
-	public final static view LabelView of Label extends DNodeView {
+	public final static view VLabel of Label extends VDNode {
 		public List<ASTNode>		links;
 		public void addLink(ASTNode lnk);
 		public void delLink(ASTNode lnk);
@@ -126,7 +130,7 @@ public final class Label extends DNode {
 	}
 }
 
-@nodeset
+@node
 public class WhileStat extends LoopStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -145,12 +149,9 @@ public class WhileStat extends LoopStat {
 	@att public ENode		body;
 
 	@nodeview
-	public static view WhileStatView of WhileStat extends LoopStatView {
+	public static final view VWhileStat of WhileStat extends VLoopStat {
 		public ENode		cond;
 		public ENode		body;
-	}
-	@nodeview
-	public static final view VWhileStat of WhileStat extends WhileStatView {
 	}
 
 	public WhileStat() {}
@@ -159,10 +160,6 @@ public class WhileStat extends LoopStat {
 		this.pos = pos;
 		this.cond = cond;
 		this.body = body;
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -177,9 +174,9 @@ public class WhileStat extends LoopStat {
 	}
 }
 
-@nodeset
+@node
 public class DoWhileStat extends LoopStat {
-	
+
 	@dflow(out="lblbrk") private static class DFI {
 	@dflow(in="this:in", links="cond:true")	ENode		body;
 	@dflow(in="body")							Label		lblcnt;
@@ -196,12 +193,9 @@ public class DoWhileStat extends LoopStat {
 	@att public ENode		body;
 
 	@nodeview
-	public static view DoWhileStatView of DoWhileStat extends LoopStatView {
+	public static view VDoWhileStat of DoWhileStat extends VLoopStat {
 		public ENode		cond;
 		public ENode		body;
-	}
-	@nodeview
-	public static view VDoWhileStat of DoWhileStat extends DoWhileStatView {
 	}
 
 	public DoWhileStat() {}
@@ -210,10 +204,6 @@ public class DoWhileStat extends LoopStat {
 		this.pos = pos;
 		this.cond = cond;
 		this.body = body;
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -230,7 +220,7 @@ public class DoWhileStat extends LoopStat {
 	}
 }
 
-@nodeset
+@node
 public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="decls") private static class DFI {
@@ -245,11 +235,8 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@att public final NArr<Var>		decls;
 
 	@nodeview
-	public static view ForInitView of ForInit extends ENodeView {
+	public static final view VForInit of ForInit extends VENode {
 		public:ro	NArr<Var>		decls;
-	}
-	@nodeview
-	public static final view VForInit of ForInit extends ForInitView {
 	}
 
 	public ForInit() {}
@@ -279,10 +266,6 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		var.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-	
 	public Dumper toJava(Dumper dmp) {
 		for(int i=0; i < decls.length; i++) {
 			decls[i].toJava(dmp);
@@ -292,7 +275,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
-@nodeset
+@node
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -315,14 +298,11 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	@att public ENode		iter;
 
 	@nodeview
-	public static view ForStatView of ForStat extends LoopStatView {
+	public static final view VForStat of ForStat extends VLoopStat {
 		public ENode		init;
 		public ENode		cond;
 		public ENode		body;
 		public ENode		iter;
-	}
-	@nodeview
-	public static final view VForStat of ForStat extends ForStatView {
 	}
 
 	public ForStat() {}
@@ -333,10 +313,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		this.cond = cond;
 		this.iter = iter;
 		this.body = body;
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
@@ -379,7 +355,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
-@nodeset
+@node
 public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -421,7 +397,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	@att public ENode		iter_incr;
 
 	@nodeview
-	public static view ForEachStatView of ForEachStat extends LoopStatView {
+	public static final view VForEachStat of ForEachStat extends VLoopStat {
 		public int			mode;
 		public ENode		container;
 		public Var			var;
@@ -434,9 +410,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		public ENode		body;
 		public ENode		iter_incr;
 	}
-	@nodeview
-	public static final view VForEachStat of ForEachStat extends ForEachStatView {
-	}
 
 	public ForEachStat() {}
 	
@@ -446,10 +419,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		this.container = container;
 		this.cond = cond;
 		this.body = body;
-	}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)

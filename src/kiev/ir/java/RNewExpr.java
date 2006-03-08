@@ -6,11 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.NewExpr.NewExprView;
-import kiev.vlang.NewArrayExpr.NewArrayExprView;
-import kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprView;
-import kiev.vlang.NewClosure.NewClosureView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -20,7 +15,13 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RNewExpr of NewExpr extends NewExprView {
+public static final view RNewExpr of NewExpr extends RENode {
+	public		TypeRef				type;
+	public:ro	NArr<ENode>			args;
+	public		ENode				outer;
+	public		Struct				clazz;
+	public		Method				func;
+
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
 			if (isAutoReturnable())
@@ -87,7 +88,14 @@ public static final view RNewExpr of NewExpr extends NewExprView {
 }
 
 @nodeview
-public static final view RNewArrayExpr of NewArrayExpr extends NewArrayExprView {
+public static final view RNewArrayExpr of NewArrayExpr extends RENode {
+	public		TypeRef				type;
+	public:ro	NArr<ENode>			args;
+	public		int					dim;
+	public		ArrayType			arrtype;
+
+	@getter public final Type	get$arrtype();
+
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) {
 			if (isAutoReturnable())
@@ -130,7 +138,16 @@ public static final view RNewArrayExpr of NewArrayExpr extends NewArrayExprView 
 }
 
 @nodeview
-public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr extends NewInitializedArrayExprView {
+public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr extends RENode {
+	public		TypeRef				type;
+	public:ro	NArr<ENode>			args;
+	public		int[]				dims;
+	public		ArrayType			arrtype;
+	
+	@getter public final int	get$dim();
+
+	@getter public final Type	get$arrtype();
+
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) {
 			if (isAutoReturnable())
@@ -175,7 +192,12 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr ext
 }
 
 @nodeview
-public final view RNewClosure of NewClosure extends NewClosureView {
+public final view RNewClosure of NewClosure extends RENode {
+	public TypeRef			type_ret;
+	public NArr<FormPar>	params;
+	public Block			body;
+	public Struct			clazz;
+	public CallType			ctype;
 
 	public boolean preGenerate() {
 		if (clazz != null)

@@ -6,10 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.CatchInfo.CatchInfoView;
-import kiev.vlang.FinallyInfo.FinallyInfoView;
-import kiev.vlang.TryStat.TryStatView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -19,7 +15,10 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RCatchInfo of CatchInfo extends CatchInfoView {
+public final view RCatchInfo of CatchInfo extends RENode {
+	public Var				arg;
+	public ENode			body;
+
 	public void resolve(Type reqType) {
 		try {
 			body.resolve(Type.tpVoid);
@@ -31,7 +30,10 @@ public final view RCatchInfo of CatchInfo extends CatchInfoView {
 }
 
 @nodeview
-public final view RFinallyInfo of FinallyInfo extends FinallyInfoView {
+public final view RFinallyInfo of FinallyInfo extends RENode {
+	public ENode		body;
+	public Var			ret_arg;
+
 	public void resolve(Type reqType) {
 		if (ret_arg == null)
 			ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
@@ -45,7 +47,10 @@ public final view RFinallyInfo of FinallyInfo extends FinallyInfoView {
 }
 
 @nodeview
-public final view RTryStat of TryStat extends TryStatView {
+public final view RTryStat of TryStat extends RENode {
+	public		ENode				body;
+	public:ro	NArr<CatchInfo>		catchers;
+	public		FinallyInfo			finally_catcher;
 
 	public void resolve(Type reqType) {
 		for(int i=0; i < catchers.length; i++) {

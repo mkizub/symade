@@ -20,6 +20,9 @@ public view JNode of ASTNode implements Constants {
 	public:ro	int			pos;
 //	public:ro	int			compileflags;
 	
+	public final void addNodeData(NodeData d);
+	public final void delNodeData(KString id);
+
     public final int getPosLine();
 	public final boolean isAttached();
 	public final boolean isAccessedFromInner();

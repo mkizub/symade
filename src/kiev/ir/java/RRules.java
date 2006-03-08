@@ -7,8 +7,6 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
-import kiev.vlang.RuleMethod.RuleMethodView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -19,6 +17,13 @@ import syntax kiev.Syntax;
 
 @nodeview
 public final view RRuleMethod of RuleMethod extends RMethod {
+	public:ro	NArr<Var>			localvars;
+	public		int					base;
+	public		int					max_depth;
+	public		int					state_depth;
+	public		int					max_vars;
+	public		int					index;		// index counter for RuleNode.idx
+
 	public boolean preGenerate() {
 		Var penv = params[0];
 		assert(penv.name.name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
@@ -50,7 +55,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 		} catch(Exception e ) {
 			Kiev.reportError(body,e);
 		}
-		this.cleanDFlow();
+		((RuleMethod)this).cleanDFlow();
 	}
 }
 

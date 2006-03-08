@@ -13,18 +13,18 @@ import kiev.stdlib.*;
  *
  */
 
-@nodeset
+@node
 public class ASTOperator extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = ASTOperator;
-	@virtual typedef VView = ASTOperatorView;
+	@virtual typedef VView = VASTOperator;
 
 	@att public KString		image;
 
 	@nodeview
-	public static view ASTOperatorView of ASTOperator extends ENodeView {
+	public static view VASTOperator of ASTOperator extends VENode {
 		public KString		image;
 	}
 	

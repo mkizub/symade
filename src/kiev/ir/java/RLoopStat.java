@@ -7,12 +7,6 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
-import kiev.vlang.WhileStat.WhileStatView;
-import kiev.vlang.DoWhileStat.DoWhileStatView;
-import kiev.vlang.ForInit.ForInitView;
-import kiev.vlang.ForStat.ForStatView;
-import kiev.vlang.ForEachStat.ForEachStatView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -20,9 +14,23 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
+@nodeview
+public static abstract view RLoopStat of LoopStat extends RENode {
+	public:ro	Label					lblcnt;
+	public:ro	Label					lblbrk;
+}
 
 @nodeview
-public static final view RWhileStat of WhileStat extends WhileStatView {
+public final static view RLabel of Label extends RDNode {
+	public List<ASTNode>		links;
+	public void addLink(ASTNode lnk);
+	public void delLink(ASTNode lnk);
+}
+
+@nodeview
+public static final view RWhileStat of WhileStat extends RLoopStat {
+	public ENode		cond;
+	public ENode		body;
 
 	public void resolve(Type reqType) {
 		try {
@@ -39,7 +47,9 @@ public static final view RWhileStat of WhileStat extends WhileStatView {
 }
 
 @nodeview
-public static view RDoWhileStat of DoWhileStat extends DoWhileStatView {
+public static view RDoWhileStat of DoWhileStat extends RLoopStat {
+	public ENode		cond;
+	public ENode		body;
 
 	public void resolve(Type reqType) {
 		try {
@@ -60,7 +70,8 @@ public static view RDoWhileStat of DoWhileStat extends DoWhileStatView {
 }
 
 @nodeview
-public static final view RForInit of ForInit extends ForInitView {
+public static final view RForInit of ForInit extends RENode {
+	public:ro	NArr<Var>		decls;
 
 	public void resolve(Type reqType) {
 		foreach (Var v; decls)
@@ -69,7 +80,12 @@ public static final view RForInit of ForInit extends ForInitView {
 }
 
 @nodeview
-public static final view RForStat of ForStat extends ForStatView {
+public static final view RForStat of ForStat extends RLoopStat {
+	public ENode		init;
+	public ENode		cond;
+	public ENode		body;
+	public ENode		iter;
+
 	public void resolve(Type reqType) {
 		if( init != null ) {
 			try {
@@ -111,7 +127,18 @@ public static final view RForStat of ForStat extends ForStatView {
 }
 
 @nodeview
-public static final view RForEachStat of ForEachStat extends ForEachStatView {
+public static final view RForEachStat of ForEachStat extends RLoopStat {
+	public int			mode;
+	public ENode		container;
+	public Var			var;
+	public Var			iter;
+	public Var			iter_array;
+	public ENode		iter_init;
+	public ENode		iter_cond;
+	public ENode		var_init;
+	public ENode		cond;
+	public ENode		body;
+	public ENode		iter_incr;
 
 	public void resolve(Type reqType) {
 		// foreach( type x; container; cond) statement

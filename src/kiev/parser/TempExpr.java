@@ -17,24 +17,24 @@ import syntax kiev.Syntax;
 /**
  * Base class to represent unresolved, temporary created expressions.
  */
-@nodeset
+@node
 public abstract class UnresExpr extends ENode {
 
 	@virtual typedef This  = UnresExpr;
-	@virtual typedef VView = UnresExprView;
+	@virtual typedef VView = VUnresExpr;
 
 	@ref public Operator				op;
 
 	@nodeview
-	public static view UnresExprView of UnresExpr extends ENodeView {
+	public static view VUnresExpr of UnresExpr extends VENode {
 		public				Operator			op;
-
-		public Operator getOp() { return op; }
 	}
 	
 	public UnresExpr() {}
 	
 	public abstract ENode toResolvedExpr();
+
+	public Operator getOp() { return op; }
 	
 	public void resolve(Type reqType) {
 		replaceWithResolve(reqType, fun ()->ENode {return toResolvedExpr();});
@@ -48,16 +48,16 @@ public abstract class UnresExpr extends ENode {
  * 'expr' field is @ref to not change the owner of the expression.
  * The owner will be changed when concrete, resolved unary expression is created.
  */
-@nodeset
+@node
 public class PrefixExpr extends UnresExpr {
 	
 	@virtual typedef This  = PrefixExpr;
-	@virtual typedef VView = PrefixExprView;
+	@virtual typedef VView = VPrefixExpr;
 
 	@ref public ENode				expr;
 
 	@nodeview
-	public static view PrefixExprView of PrefixExpr extends UnresExprView {
+	public static view VPrefixExpr of PrefixExpr extends VUnresExpr {
 		public				ENode			expr;
 	}
 	
@@ -97,16 +97,16 @@ public class PrefixExpr extends UnresExpr {
  * 'expr' field is @ref to not change the owner of the expression.
  * The owner will be changed when concrete, resolved unary expression is created.
  */
-@nodeset
+@node
 public class PostfixExpr extends UnresExpr {
 	
 	@virtual typedef This  = PostfixExpr;
-	@virtual typedef VView = PostfixExprView;
+	@virtual typedef VView = VPostfixExpr;
 
 	@ref public ENode				expr;
 
 	@nodeview
-	public static view PostfixExprView of PostfixExpr extends UnresExprView {
+	public static view VPostfixExpr of PostfixExpr extends VUnresExpr {
 		public				ENode			expr;
 	}
 	
@@ -139,17 +139,17 @@ public class PostfixExpr extends UnresExpr {
  * 'expr1' and 'expr2' fields are @ref to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved binary expression is created.
  */
-@nodeset
+@node
 public class InfixExpr extends UnresExpr {
 
 	@virtual typedef This  = InfixExpr;
-	@virtual typedef VView = InfixExprView;
+	@virtual typedef VView = VInfixExpr;
 
 	@ref public ENode				expr1;
 	@ref public ENode				expr2;
 
 	@nodeview
-	public static view InfixExprView of InfixExpr extends UnresExprView {
+	public static view VInfixExpr of InfixExpr extends VUnresExpr {
 		public				ENode			expr1;
 		public				ENode			expr2;
 	}
@@ -199,16 +199,16 @@ public class InfixExpr extends UnresExpr {
  * 'exprs' field is @ref to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
-@nodeset
+@node
 public class MultiExpr extends UnresExpr {
 
 	@virtual typedef This  = MultiExpr;
-	@virtual typedef VView = MultiExprView;
+	@virtual typedef VView = VMultiExpr;
 
 	@ref public NArr<ENode>			exprs;
 
 	@nodeview
-	public static final view MultiExprView of MultiExpr extends UnresExprView {
+	public static final view VMultiExpr of MultiExpr extends VUnresExpr {
 		public:ro	NArr<ENode>			exprs;
 	}
 
@@ -261,11 +261,11 @@ public class MultiExpr extends UnresExpr {
  * 'exprs' field is @ref to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
-@nodeset
+@node
 public class UnresCallExpr extends UnresExpr {
 
 	@virtual typedef This  = UnresCallExpr;
-	@virtual typedef VView = UnresCallExprView;
+	@virtual typedef VView = VUnresCallExpr;
 
 	@ref public ENode				obj;
 	@ref public Named				func;
@@ -273,7 +273,7 @@ public class UnresCallExpr extends UnresExpr {
 	@ref public NArr<ENode>			args;
 
 	@nodeview
-	public static view UnresCallExprView of UnresCallExpr extends UnresExprView {
+	public static view VUnresCallExpr of UnresCallExpr extends VUnresExpr {
 		public		ENode			obj;
 		public		Named			func;
 		public		CallType		mt;

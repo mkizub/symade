@@ -7,20 +7,18 @@ import kiev.parser.*;
 
 import syntax kiev.Syntax;
 
-import kiev.vlang.TypeDecl.TypeDeclView;
-
 /**
  * @author Maxim Kizub
  *
  */
 
-@nodeset
+@node
 public class TypeDef extends TypeDecl {
 
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeDef;
-	@virtual typedef VView = TypeDefView;
+	@virtual typedef VView = VTypeDef;
 
 	@att public NameRef					name;
 	@att public NArr<TypeRef>			upper_bound;
@@ -46,25 +44,14 @@ public class TypeDef extends TypeDecl {
 	}
 
 	@nodeview
-	public static final view TypeDefView of TypeDef extends TypeDeclView {
+	public static final view VTypeDef of TypeDef extends VTypeDecl {
 		public		NameRef				name;
 		public:ro	NArr<TypeRef>		upper_bound;
 		public:ro	NArr<TypeRef>		lower_bound;
 		public		ArgType				lnk;
 
 		public Struct getStruct();
-	
-		public Type getType() {
-			return getAType();
-		}
-		public ArgType getAType() {
-			if (this.lnk != null)
-				return this.lnk;
-			if (this.meta != null)
-				this.meta.verify();
-			this.lnk = new ArgType(name.name,(TypeDef)this);
-			return this.lnk;
-		}
+		public ArgType getAType();
 	}
 
 	public TypeDef() {}
@@ -87,6 +74,18 @@ public class TypeDef extends TypeDecl {
 	public TypeDef(KString nm, Type sup) {
 		this.name = new NameRef(nm);
 		this.upper_bound.add(new TypeRef(sup));
+	}
+	
+	public Type getType() {
+		return getAType();
+	}
+	public ArgType getAType() {
+		if (this.lnk != null)
+			return this.lnk;
+		if (this.meta != null)
+			this.meta.verify();
+		this.lnk = new ArgType(name.name,(TypeDef)this);
+		return this.lnk;
 	}
 
 	public NodeName getName() {

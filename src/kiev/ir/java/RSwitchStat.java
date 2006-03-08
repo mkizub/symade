@@ -6,9 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.CaseLabel.CaseLabelView;
-import kiev.vlang.SwitchStat.SwitchStatView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -18,8 +15,12 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RCaseLabel of CaseLabel extends CaseLabelView {
-	
+public static final view RCaseLabel of CaseLabel extends RENode {
+	public		ENode			val;
+	public		Type			type;
+	public:ro	NArr<Var>		pattern;
+	public:ro	NArr<ENode>		stats;
+
 	public void resolve(Type reqType) {
 		boolean pizza_case = false;
 		SwitchStat sw = (SwitchStat)parent_node;
@@ -105,7 +106,15 @@ public static final view RCaseLabel of CaseLabel extends CaseLabelView {
 }
 
 @nodeview
-public static final view RSwitchStat of SwitchStat extends SwitchStatView {
+public static final view RSwitchStat of SwitchStat extends RENode {
+	public		int						mode;
+	public		ENode					sel;
+	public:ro	NArr<CaseLabel>			cases;
+	public		LVarExpr				tmpvar;
+	public		CaseLabel				defCase;
+	public		Field					typehash; // needed for re-resolving
+	public:ro	Label					lblcnt;
+	public:ro	Label					lblbrk;
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;

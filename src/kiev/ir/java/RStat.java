@@ -6,21 +6,7 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.Method.MethodView;
-import kiev.vlang.LoopStat.LoopStatView;
-import kiev.vlang.SwitchStat.SwitchStatView;
-
-import kiev.vlang.InlineMethodStat.InlineMethodStatView;
-import kiev.vlang.ExprStat.ExprStatView;
-import kiev.vlang.ReturnStat.ReturnStatView;
-import kiev.vlang.ThrowStat.ThrowStatView;
-import kiev.vlang.IfElseStat.IfElseStatView;
-import kiev.vlang.CondStat.CondStatView;
-import kiev.vlang.LabeledStat.LabeledStatView;
-import kiev.vlang.BreakStat.BreakStatView;
-import kiev.vlang.ContinueStat.ContinueStatView;
-import kiev.vlang.GotoStat.GotoStatView;
-import kiev.vlang.GotoCaseStat.GotoCaseStatView;
+import kiev.vlang.InlineMethodStat.ParamRedir;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -31,7 +17,10 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public final view RInlineMethodStat of InlineMethodStat extends InlineMethodStatView {
+public final view RInlineMethodStat of InlineMethodStat extends RENode {
+	public Method			method;
+	public ParamRedir[]		params_redir;
+
 	public void resolve(Type reqType) {
 		Type[] types = new Type[params_redir.length];
 		for (int i=0; i < params_redir.length; i++) {
@@ -50,7 +39,9 @@ public final view RInlineMethodStat of InlineMethodStat extends InlineMethodStat
 }
 
 @nodeview
-public final view RExprStat of ExprStat extends ExprStatView {
+public final view RExprStat of ExprStat extends RENode {
+	public ENode		expr;
+
 	public void resolve(Type reqType) {
 		try {
 			if (expr != null) {
@@ -64,7 +55,9 @@ public final view RExprStat of ExprStat extends ExprStatView {
 }
 
 @nodeview
-public final view RReturnStat of ReturnStat extends ReturnStatView {
+public final view RReturnStat of ReturnStat extends RENode {
+	public ENode		expr;
+
 	public void resolve(Type reqType) {
 		setMethodAbrupted(true);
 		if( expr != null ) {
@@ -89,7 +82,9 @@ public final view RReturnStat of ReturnStat extends ReturnStatView {
 }
 
 @nodeview
-public final view RThrowStat of ThrowStat extends ThrowStatView {
+public final view RThrowStat of ThrowStat extends RENode {
+	public ENode		expr;
+
 	public void resolve(Type reqType) {
 		setMethodAbrupted(true);
 		try {
@@ -104,7 +99,11 @@ public final view RThrowStat of ThrowStat extends ThrowStatView {
 }
 
 @nodeview
-public final view RIfElseStat of IfElseStat extends IfElseStatView {
+public final view RIfElseStat of IfElseStat extends RENode {
+	public ENode		cond;
+	public ENode		thenSt;
+	public ENode		elseSt;
+
 	public void resolve(Type reqType) {
 		try {
 			cond.resolve(Type.tpBoolean);
@@ -142,7 +141,10 @@ public final view RIfElseStat of IfElseStat extends IfElseStatView {
 }
 
 @nodeview
-public final view RCondStat of CondStat extends CondStatView {
+public final view RCondStat of CondStat extends RENode {
+	public ENode		cond;
+	public ENode		message;
+
 	public void resolve(Type reqType) {
 		try {
 			cond.resolve(Type.tpBoolean);
@@ -159,7 +161,11 @@ public final view RCondStat of CondStat extends CondStatView {
 }
 
 @nodeview
-public final view RLabeledStat of LabeledStat extends LabeledStatView {
+public final view RLabeledStat of LabeledStat extends RENode {
+	public NameRef			ident;
+	public Label			lbl;
+	public ENode			stat;
+
 	public void resolve(Type reqType) {
 		try {
 			stat.resolve(Type.tpVoid);
@@ -172,20 +178,23 @@ public final view RLabeledStat of LabeledStat extends LabeledStatView {
 }
 
 @nodeview
-public final view RBreakStat of BreakStat extends BreakStatView {
+public final view RBreakStat of BreakStat extends RENode {
+	public NameRef			ident;
+	public Label			dest;
+
 	public void resolve(Type reqType) {
 		setAbrupted(true);
-		NodeView p;
+		RNode p;
 		if (dest != null) {
 			dest.delLink((BreakStat)this);
 			dest = null;
 		}
 		if( ident == null ) {
-			for(p=parent; !(p instanceof MethodView || p.isBreakTarget()); p = p.parent );
-			if( p instanceof MethodView || p == null ) {
+			for(p=parent; !(p instanceof RMethod || p.isBreakTarget()); p = p.parent );
+			if( p instanceof RMethod || p == null ) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
-				if (p instanceof LoopStatView) {
+				if (p instanceof RLoopStat) {
 					Label l = p.lblbrk;
 					if (l != null) {
 						dest = l;
@@ -195,12 +204,12 @@ public final view RBreakStat of BreakStat extends BreakStatView {
 			}
 		} else {
 	label_found:
-			for(p=parent; !(p instanceof MethodView) ; p=p.parent ) {
-				if (p instanceof LabeledStatView && p.ident.name.equals(ident.name))
+			for(p=parent; !(p instanceof RMethod) ; p=p.parent ) {
+				if (p instanceof RLabeledStat && p.ident.name.equals(ident.name))
 					throw new RuntimeException("Label "+ident+" does not refer to break target");
 				if (!p.isBreakTarget()) continue;
-				NodeView pp = p;
-				for(p=p.parent; p instanceof LabeledStatView; p = p.parent) {
+				RNode pp = p;
+				for(p=p.parent; p instanceof RLabeledStat; p = p.parent) {
 					if (p.ident.name.equals(ident.name)) {
 						p = pp;
 						break label_found;
@@ -208,10 +217,10 @@ public final view RBreakStat of BreakStat extends BreakStatView {
 				}
 				p = pp;
 			}
-			if( p instanceof MethodView || p == null) {
+			if( p instanceof RMethod || p == null) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
-				if (p instanceof LoopStatView) {
+				if (p instanceof RLoopStat) {
 					Label l = p.lblbrk;
 					if (l != null) {
 						dest = l;
@@ -220,14 +229,17 @@ public final view RBreakStat of BreakStat extends BreakStatView {
 				}
 			}
 		}
-		if( p instanceof MethodView )
+		if( p instanceof RMethod )
 			Kiev.reportError(this,"Break not within loop/switch statement");
-		((ENodeView)p).setBreaked(true);
+		((RENode)p).setBreaked(true);
 	}
 }
 
 @nodeview
-public final view RContinueStat of ContinueStat extends ContinueStatView {
+public final view RContinueStat of ContinueStat extends RENode {
+	public NameRef			ident;
+	public Label			dest;
+
 	public void resolve(Type reqType) {
 		setAbrupted(true);
 		// TODO: check label or loop statement available
@@ -235,7 +247,10 @@ public final view RContinueStat of ContinueStat extends ContinueStatView {
 }
 
 @nodeview
-public final view RGotoStat of GotoStat extends GotoStatView {
+public final view RGotoStat of GotoStat extends RENode {
+	public NameRef			ident;
+	public Label			dest;
+
 	public void resolve(Type reqType) {
 		setAbrupted(true);
 		if (dest != null) {
@@ -261,15 +276,18 @@ public final view RGotoStat of GotoStat extends GotoStatView {
 }
 
 @nodeview
-public final view RGotoCaseStat of GotoCaseStat extends GotoCaseStatView {
+public final view RGotoCaseStat of GotoCaseStat extends RENode {
+	public ENode		expr;
+	public SwitchStat	sw;
+
 	public void resolve(Type reqType) {
 		setAbrupted(true);
-		for(NodeView node = this.parent; node != null; node = node.parent) {
-			if (node instanceof SwitchStatView) {
-				this.sw = (SwitchStat)node;
+		for(RNode node = this.parent; node != null; node = node.parent) {
+			if (node instanceof RSwitchStat) {
+				this.sw = (SwitchStat)(RSwitchStat)node;
 				break;
 			}
-			if (node instanceof MethodView)
+			if (node instanceof RMethod)
 				break;
 		}
 		if( this.sw == null )

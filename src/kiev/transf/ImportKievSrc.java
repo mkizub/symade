@@ -214,7 +214,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			}
 			me.setTypeUnerasable(false);
 		}
-		else if!(me.parent_node instanceof FileUnit) {
+		else if!(me.parent instanceof FileUnit) {
 			if (!me.isStatic()) {
 				Struct pkg = me.package_clazz;
 				if (me.isClazz() && pkg.isClazz()) {
@@ -318,7 +318,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		for (Struct p = clazz.package_clazz; p != null; p = p.package_clazz)
 			getStructType(p, path);
 
-		if (clazz.parent_node instanceof FileUnit)
+		if (clazz.parent instanceof FileUnit)
 			clazz.setStatic(true);
 
 		if (clazz.isAnnotation()) {
@@ -772,7 +772,7 @@ class JavaBackend extends BackendProcessor {
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			} else {
 				try {
-					((JFileUnit)node).generate();
+					((JFileUnit)(FileUnit)node).generate();
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			}
 		}

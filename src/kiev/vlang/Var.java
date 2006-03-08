@@ -10,6 +10,7 @@ import kiev.be.java.JDNode;
 import kiev.be.java.JLvalDNode;
 import kiev.ir.java.RVar;
 import kiev.be.java.JVar;
+import kiev.ir.java.RFormPar;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -20,7 +21,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public class Var extends LvalDNode implements Named {
 	
 	private static final Var dummyNode = new FormPar();
@@ -30,7 +31,7 @@ public class Var extends LvalDNode implements Named {
 	}
 
 	@virtual typedef This  = Var;
-	@virtual typedef VView = VarView;
+	@virtual typedef VView = VVar;
 	@virtual typedef JView = JVar;
 	@virtual typedef RView = RVar;
 
@@ -39,6 +40,8 @@ public class Var extends LvalDNode implements Named {
 	@att public ENode		init;
 		 public int			bcpos = -1;
 
+	@getter public final Type get$type() { return this.vtype.getType(); }
+	
 	public void callbackChildChanged(AttrSlot attr) {
 		if (parent != null && pslot != null) {
 			if      (attr.name == "vtype")
@@ -89,14 +92,16 @@ public class Var extends LvalDNode implements Named {
 		}
 	}
 
+	@getter public final Type get$type() { return this.vtype.getType(); }
+		
 	@nodeview
-	public static view VarView of Var extends LvalDNodeView {
+	public static view VVar of Var extends VLvalDNode {
 		public	NodeName	name;
 		public	TypeRef		vtype;
 		public	ENode		init;
 		public	int			bcpos;
 
-		@getter public final Type get$type() { return ((Var)this).vtype.getType(); }
+		@getter public final Type get$type();
 		
 		// is a local var in a rule 
 		public final boolean isLocalRuleVar();
@@ -188,10 +193,6 @@ public class Var extends LvalDNode implements Named {
 		return new VarDFFunc(dfi);
 	}
 
-	public void resolveDecl() {
-		((RVar)this).resolveDecl();
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(name);
 	}
@@ -212,7 +213,7 @@ public class Var extends LvalDNode implements Named {
 
 }
 
-@nodeset
+@node
 public final class FormPar extends Var {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -220,10 +221,11 @@ public final class FormPar extends Var {
 	}
 	
 	@virtual typedef This  = FormPar;
-	@virtual typedef VView = FormParView;
+	@virtual typedef VView = VFormPar;
+	@virtual typedef RView = RFormPar;
 
-	@att TypeRef		stype;
-		 int			kind;
+	@att public TypeRef		stype;
+		 public int			kind;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (parent != null && pslot != null) {
@@ -234,17 +236,18 @@ public final class FormPar extends Var {
 		}
 	}
 
+	@getter public final Type get$dtype() {
+		if (((FormPar)this).stype == null)
+			return get$type();
+		return ((FormPar)this).stype.getType();
+	}
+		
 	@nodeview
-	public static final view FormParView of FormPar extends VarView {
+	public static view VFormPar of FormPar extends VVar {
 		public TypeRef		stype;
 		public int			kind;
 
-		@getter public final Type get$dtype() {
-			if (((FormPar)this).stype == null)
-				return get$type();
-			return ((FormPar)this).stype.getType();
-		}
-		
+		@getter public final Type get$dtype();
 	}
 	
 	public static final int PARAM_NORMAL       = 0;

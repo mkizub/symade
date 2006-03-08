@@ -9848,7 +9848,7 @@ public abstract class kiev040 implements kiev040Constants {
 			clazz.pos  = parent.pos;
 		clazz.setResolved(true);
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attach(clazz);
+			sa.attachTo(clazz);
 		if (modifiers.acc != null)
 			clazz.acc  = modifiers.acc;
 		if (parent instanceof FileUnit) {
@@ -9870,7 +9870,7 @@ public abstract class kiev040 implements kiev040Constants {
 		TypeDef arg = new TypeDef(name);
 		if (modifiers != null) {
 			foreach (MetaSpecial sa; modifiers.specials)
-				sa.attach(arg);
+				sa.attachTo(arg);
 			if (modifiers.annotations.length > 0) {
 				arg.meta = new MetaSet();
 				foreach (Meta m; modifiers.annotations)
@@ -9884,7 +9884,7 @@ public abstract class kiev040 implements kiev040Constants {
 		Constructor meth = new Constructor(0);
 		meth.pos = id.pos;
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attach(meth);
+			sa.attachTo(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set(m.ncopy());
@@ -9895,7 +9895,7 @@ public abstract class kiev040 implements kiev040Constants {
 		Method meth = new Method(id.name, ret, 0);
 		meth.pos = id.pos;
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attach(meth);
+			sa.attachTo(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set(m.ncopy());
@@ -9906,7 +9906,7 @@ public abstract class kiev040 implements kiev040Constants {
 		RuleMethod meth = new RuleMethod(id, 0);
 		meth.pos = id.pos;
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attach(meth);
+			sa.attachTo(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set(m.ncopy());
@@ -9920,14 +9920,14 @@ public abstract class kiev040 implements kiev040Constants {
 		f.pos = id.pos;
 		if (first) {
 			foreach (MetaSpecial sa; modifiers.specials)
-				sa.attach(f);
+				sa.attachTo(f);
 			if (modifiers.acc != null)
 				f.acc = modifiers.acc;
 			foreach (Meta m; modifiers.annotations)
 				f.meta.set(m.ncopy());
 		} else {
 			foreach (MetaSpecial sa; modifiers.specials)
-				(sa.ncopy()).attach(f);
+				(sa.ncopy()).attachTo(f);
 			if (modifiers.acc != null)
 				f.acc = new Access(modifiers.acc.flags);
 			foreach (Meta m; modifiers.annotations)
@@ -9941,7 +9941,7 @@ public abstract class kiev040 implements kiev040Constants {
 		f.pos = id.pos;
 		f.setEnumField(true);
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attach(f);
+			sa.attachTo(f);
 		foreach (Meta m; modifiers.annotations)
 			f.meta.set(m.ncopy());
 		return f;
@@ -9951,7 +9951,7 @@ public abstract class kiev040 implements kiev040Constants {
 		Field f = new Field(id.name,tp,0|ACC_PUBLIC);
 		f.pos = id.pos;
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attach(f);
+			sa.attachTo(f);
 		foreach (Meta m; modifiers.annotations)
 			f.meta.set(m.ncopy());
 		return f;
@@ -9963,10 +9963,10 @@ public abstract class kiev040 implements kiev040Constants {
 		Var v = new Var(id, tp, 0);
 		if (first) {
 			foreach (MetaSpecial sa; modifiers.specials)
-				sa.attach(v);
+				sa.attachTo(v);
 		} else {
 			foreach (MetaSpecial sa; modifiers.specials)
-				(sa.ncopy()).attach(v);
+				(sa.ncopy()).attachTo(v);
 		}
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
@@ -9984,7 +9984,7 @@ public abstract class kiev040 implements kiev040Constants {
 	private FormPar mkFormPar(NameRef id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
 		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, 0);
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attach(v);
+			sa.attachTo(v);
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
@@ -9996,7 +9996,7 @@ public abstract class kiev040 implements kiev040Constants {
 	private FormPar mkVarargPar(NameRef id, ASTModifiers modifiers, TypeRef vt) {
 		FormPar v = new FormPar(id, vt, vt.ncopy(), FormPar.PARAM_VARARGS, ACC_FINAL);
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attach(v);
+			sa.attachTo(v);
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
@@ -10008,7 +10008,7 @@ public abstract class kiev040 implements kiev040Constants {
 	private	Initializer mkInitializer(int pos, ASTModifiers modifiers) {
 		Initializer init = new Initializer(pos,0);
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attach(init);
+			sa.attachTo(init);
 		if (modifiers.annotations.length > 0) {
 			init.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)

@@ -6,8 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.FileUnit.FileUnitView;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -17,8 +15,14 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static final view RFileUnit of FileUnit extends FileUnitView {
-	
+public static final view RFileUnit of FileUnit extends RDNode {
+	public		KString					filename;
+	public		TypeNameRef				pkg;
+	public:ro	NArr<DNode>				syntax;
+	public:ro	NArr<DNode>				members;
+	public:ro	boolean[]				disabled_extensions;
+	public		boolean					scanned_for_interface_only;
+
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving file "+filename);
 		KString curr_file = Kiev.curFile;

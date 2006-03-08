@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
 
 	@virtual typedef This  = FileUnit;
@@ -40,8 +40,14 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		 public final boolean[]		disabled_extensions = Kiev.getCmdLineExtSet();
 		 public boolean				scanned_for_interface_only;
 
+	@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this; }
+	@getter public Struct get$ctx_clazz() { return null; }
+	@getter public Struct get$child_ctx_clazz() { return null; }
+	@getter public Method get$ctx_method() { return null; }
+	@getter public Method get$child_ctx_method() { return null; }
+
 	@nodeview
-	public static abstract view FileUnitView of FileUnit extends DNodeView {
+	public static final view VFileUnit of FileUnit extends VDNode {
 		public		KString					filename;
 		public		TypeNameRef				pkg;
 		public:ro	NArr<DNode>				syntax;
@@ -50,15 +56,6 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		public:ro	boolean[]				disabled_extensions;
 		public		boolean					scanned_for_interface_only;
 
-		@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this; }
-		@getter public Struct get$ctx_clazz() { return null; }
-		@getter public Struct get$child_ctx_clazz() { return null; }
-		@getter public Method get$ctx_method() { return null; }
-		@getter public Method get$child_ctx_method() { return null; }
-	}
-	
-	@nodeview
-	public static final view VFileUnit of FileUnit extends FileUnitView {
 		public boolean preResolveIn() {
 			for(int i=0; i < members.length; i++) {
 				try {
@@ -143,10 +140,6 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		disabled_extensions[i] = !enabled;
 	}
 	
-	public void resolveDecl() {
-		((RView)this).resolveDecl();
-	}
-
 	private boolean debugTryResolveIn(KString name, String msg) {
 		trace(Kiev.debugResolve,"Resolving "+name+" in "+msg);
 		return true;
@@ -224,7 +217,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public void cleanup() {
         Kiev.parserAddresses.clear();
 		Kiev.k.presc = null;
-		foreach(DNode n; members; n instanceof Struct) ((JStruct)n).cleanup();
+		foreach(DNode n; members; n instanceof Struct) ((JStruct)(Struct)n).cleanup();
 		bodies.delAll();
 	}
 

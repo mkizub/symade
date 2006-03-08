@@ -9,9 +9,13 @@ import kiev.transf.*;
 import kiev.parser.*;
 
 import kiev.be.java.JType;
+import kiev.ir.java.RNode;
 import kiev.be.java.JNode;
+import kiev.ir.java.RDNode;
 import kiev.be.java.JDNode;
+import kiev.ir.java.RLvalDNode;
 import kiev.be.java.JLvalDNode;
+import kiev.ir.java.RENode;
 import kiev.be.java.JENode;
 import kiev.ir.java.RNopExpr;
 import kiev.be.java.JVarDecl;
@@ -19,7 +23,9 @@ import kiev.ir.java.RVarDecl;
 import kiev.be.java.JLocalStructDecl;
 import kiev.ir.java.RLocalStructDecl;
 import kiev.be.java.JTypeDecl;
+import kiev.ir.java.RTypeDecl;
 import kiev.be.java.JNameRef;
+import kiev.ir.java.RNameRef;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -61,13 +67,13 @@ public class TreeWalker {
 	public void post_exec(ASTNode n) {}
 }
 
-@nodeset
+@node
 public abstract class ASTNode implements Constants, Cloneable {
 
 	@virtual typedef This  = ASTNode;
 	@virtual typedef VView = NodeView;
 	@virtual typedef JView = JNode;
-	@virtual typedef RView = VView;
+	@virtual typedef RView = RNode;
 	
 	public static ASTNode[] emptyArray = new ASTNode[0];
     public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
@@ -315,7 +321,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 	}
 
 	// build data flow for this node
-	final DataFlowInfo getDFlow() {
+	public final DataFlowInfo getDFlow() {
 		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
 		if (df == null) {
 			df = DataFlowInfo.newDataFlowInfo(this);
@@ -418,6 +424,27 @@ public abstract class ASTNode implements Constants, Cloneable {
 		}
 	}
 
+	public final void cleanDFlow() {
+		walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { n.delNodeData(DataFlowInfo.ID); return true; }
+		});
+	}
+	
+	public Type getType() { return Type.tpVoid; }
+
+		
+	@getter public final ASTNode get$ctx_root() {
+		ASTNode parent = this.parent;
+		if (parent == null)
+			return this;
+		return parent.get$ctx_root();
+	}
+	@getter public FileUnit get$ctx_file_unit() { return this.parent.get$ctx_file_unit(); }
+	@getter public Struct get$ctx_clazz() { return this.parent.child_ctx_clazz; }
+	@getter public Struct get$child_ctx_clazz() { return this.parent.get$child_ctx_clazz(); }
+	@getter public Method get$ctx_method() { return this.parent.child_ctx_method; }
+	@getter public Method get$child_ctx_method() { return this.parent.get$child_ctx_method(); }
+
 	@nodeview
 	public static abstract view NodeView of ASTNode implements Constants {
 		public String toString();
@@ -430,25 +457,19 @@ public abstract class ASTNode implements Constants, Cloneable {
 		public:ro NodeView	pprev;
 		public:ro NodeView	pnext;
 		
-		@getter public final ASTNode get$ctx_root() {
-			NodeView parent = this.parent;
-			if (parent == null)
-				return (ASTNode)this;
-			return parent.get$ctx_root();
-		}
-		@getter public FileUnit get$ctx_file_unit() { return this.parent.get$ctx_file_unit(); }
-		@getter public Struct get$ctx_clazz() { return this.parent.child_ctx_clazz; }
-		@getter public Struct get$child_ctx_clazz() { return this.parent.get$child_ctx_clazz(); }
-		@getter public Method get$ctx_method() { return this.parent.child_ctx_method; }
-		@getter public Method get$child_ctx_method() { return this.parent.get$child_ctx_method(); }
-		
-		@getter public ASTNode get$parent_node() { ASTNode pimpl = (ASTNode)this.parent; if (pimpl == null) return null; return pimpl; }
+		@getter public final ASTNode get$ctx_root();
+		@getter public final FileUnit get$ctx_file_unit();
+		@getter public final Struct get$ctx_clazz();
+		@getter public final Struct get$child_ctx_clazz();
+		@getter public final Method get$ctx_method();
+		@getter public final Method get$child_ctx_method();
+		@getter public final ASTNode get$parent_node() { ASTNode pimpl = (ASTNode)this.parent; if (pimpl == null) return null; return pimpl; }
 
 		public AttrSlot[] values();
 		public Object getVal(String name);
 		public void setVal(String name, Object val);
 		public final void callbackDetached();
-		public final void callbackAttached(ASTNode parent, AttrSlot pslot) { ((ASTNode)this).callbackAttached(parent, pslot); }
+		public final void callbackAttached(ASTNode parent, AttrSlot pslot);
 		public final void callbackChildChanged(AttrSlot attr);
 		public final void callbackRootChanged();
 		public final NodeData getNodeData(KString id);
@@ -469,15 +490,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 		public final boolean isBad();
 		public final void    setBad(boolean on);
 
-		public final void cleanDFlow() {
-			walkTree(new TreeWalker() {
-				public boolean pre_exec(ASTNode n) { n.delNodeData(DataFlowInfo.ID); return true; }
-			});
-		}
-	
-		public final void walkTree(TreeWalker walker);
-
-		public Type getType() { return Type.tpVoid; }
+		public final Type getType();
 
 		public boolean preResolveIn() { return true; }
 		public void preResolveOut() {}
@@ -485,12 +498,7 @@ public abstract class ASTNode implements Constants, Cloneable {
 		public void mainResolveOut() {}
 		public boolean preVerify() { return true; }
 		public void postVerify() {}
-
-		public boolean preGenerate() { return true; }
 	}
-	
-	@virtual @forward public:ro abstract VView theView;
-	@getter public final VView get$theView() { return (VView)this; }
 	
 	public ASTNode() {}
 
@@ -525,19 +533,27 @@ public abstract class ASTNode implements Constants, Cloneable {
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }
 	public DFFunc newDFFuncFls(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncFls() for "+getClass()); }
 
-	public final boolean preGenerate() { return getRView().preGenerate(); }
+	public final boolean preResolveIn() { return ((VView)this).preResolveIn(); }
+	public final void preResolveOut() { ((VView)this).preResolveOut(); }
+	public final boolean mainResolveIn() { return ((VView)this).mainResolveIn(); }
+	public final void mainResolveOut() { ((VView)this).mainResolveOut(); }
+	public final boolean preVerify() { return ((VView)this).preVerify(); }
+	public final void postVerify() { ((VView)this).postVerify(); }
+
+	public final boolean preGenerate() { return ((RView)this).preGenerate(); }
 	
 }
 
 /**
  * A node that is a declaration: class, formal parameters and vars, methods, fields, etc.
  */
-@nodeset
+@node
 public abstract class DNode extends ASTNode {
 
 	@virtual typedef This  = DNode;
-	@virtual typedef VView = DNodeView;
+	@virtual typedef VView = VDNode;
 	@virtual typedef JView = JDNode;
+	@virtual typedef RView = RDNode;
 	
 	public static final DNode[] emptyArray = new DNode[0];
 	
@@ -740,10 +756,9 @@ public abstract class DNode extends ASTNode {
 	}
 
 	@nodeview
-	public static abstract view DNodeView of DNode extends NodeView {
+	public static abstract view VDNode of DNode extends NodeView {
 
-		public final DNode getDNode() { return (DNode)getNode(); }
-		public Dumper toJavaDecl(Dumper dmp) { return getDNode().toJavaDecl(dmp); }
+		public Dumper toJavaDecl(Dumper dmp);
 		
 		public int		flags;
 		public MetaSet	meta;
@@ -803,19 +818,22 @@ public abstract class DNode extends ASTNode {
 		return DummyDNode.dummyNode;
 	}
 	
-	public abstract void resolveDecl();
+	public final void resolveDecl() { ((RView)this).resolveDecl(); }
 	public abstract Dumper toJavaDecl(Dumper dmp);
 
 	public int getFlags() { return flags; }
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 }
 
-@nodeset
+@node
 public final class DummyDNode extends DNode {
 	public static final DummyDNode dummyNode = new DummyDNode();
 
+	@virtual typedef This  = DummyDNode;
+	@virtual typedef VView = VDummyDNode;
+
 	@nodeview
-	public static final view DummyDNodeView of DummyDNode extends DNodeView {
+	public static final view VDummyDNode of DummyDNode extends VDNode {
 	}
 	private DummyDNode() {}
 }
@@ -825,12 +843,13 @@ public final class DummyDNode extends DNode {
 /**
  * An lvalue dnode (var or field)
  */
-@nodeset
+@node
 public abstract class LvalDNode extends DNode {
 
 	@virtual typedef This  = LvalDNode;
-	@virtual typedef VView = LvalDNodeView;
+	@virtual typedef VView = VLvalDNode;
 	@virtual typedef JView = JLvalDNode;
+	@virtual typedef RView = RLvalDNode;
 
 	// init wrapper
 	@getter public final boolean isInitWrapper() {
@@ -854,7 +873,7 @@ public abstract class LvalDNode extends DNode {
 	}
 
 	@nodeview
-	public static abstract view LvalDNodeView of LvalDNode extends DNodeView {
+	public static abstract view VLvalDNode of LvalDNode extends VDNode {
 		// init wrapper
 		public final boolean isInitWrapper();
 		public final void setInitWrapper(boolean on);
@@ -872,7 +891,7 @@ public abstract class LvalDNode extends DNode {
  * A node that may be part of expression: statements, declarations, operators,
  * type reference, and expressions themselves
  */
-@nodeset
+@node
 public abstract class ENode extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -880,8 +899,9 @@ public abstract class ENode extends ASTNode {
 	private static final ENode dummyNode = new NopExpr();
 
 	@virtual typedef This  = ENode;
-	@virtual typedef VView = ENodeView;
+	@virtual typedef VView = VENode;
 	@virtual typedef JView = JENode;
+	@virtual typedef RView = RENode;
 
 	//
 	// Expr specific
@@ -1036,9 +1056,9 @@ public abstract class ENode extends ASTNode {
 	}
 	
 	@nodeview
-	public static abstract view ENodeView of ENode extends NodeView {
+	public static abstract view VENode of ENode extends NodeView {
 
-		public final ENode getENode() { return (ENode)this.getNode(); }
+		public final ENode getENode() { return (ENode)this; }
 		
 		//
 		// Expr specific
@@ -1088,22 +1108,11 @@ public abstract class ENode extends ASTNode {
 		public final void replaceWithNodeResolve(ENode node);
 		public final void replaceWithResolve(()->ENode fnode);
 
-		public Operator getOp() { return null; }
-
-		public int getPriority() {
-			if (isPrimaryExpr())
-				return 255;
-			Operator op = getOp();
-			if (op == null)
-				return 255;
-			return op.priority;
-		}
-
-		public boolean valueEquals(Object o) { return false; }
-		public boolean isConstantExpr() { return false; }
-		public Object	getConstValue() {
-			throw new RuntimeException("Request for constant value of non-constant expression");
-		}
+		public final Operator getOp();
+		public final int getPriority();
+		public final boolean valueEquals(Object o);
+		public final boolean isConstantExpr();
+		public final Object	getConstValue();
 	}
 
 	public static final ENode[] emptyArray = new ENode[0];
@@ -1117,13 +1126,31 @@ public abstract class ENode extends ASTNode {
 	public ASTNode getDummyNode() {
 		return ENode.dummyNode;
 	}
+
+	public Operator getOp() { return null; }
+
+	public int getPriority() {
+		if (isPrimaryExpr())
+			return 255;
+		Operator op = getOp();
+		if (op == null)
+			return 255;
+		return op.priority;
+	}
+
+	public boolean valueEquals(Object o) { return false; }
+	public boolean isConstantExpr() { return false; }
+	public Object	getConstValue() {
+		throw new RuntimeException("Request for constant value of non-constant expression");
+	}
 	
 	public void resolve(Type reqType) {
-		throw new CompilerException(this,"Resolve call for e-node "+getClass());
+		((RView)this).resolve(reqType);
 	}
+
 }
 
-@nodeset
+@node
 public final class VarDecl extends ENode implements Named {
 
 	@dflow(out="var") private static class DFI {
@@ -1138,22 +1165,14 @@ public final class VarDecl extends ENode implements Named {
 	@att public Var var;
 
 	@nodeview
-	public static abstract view VarDeclView of VarDecl extends ENodeView {
+	public static final view VVarDecl of VarDecl extends VENode {
 		public Var		var;
-	}
-	@nodeview
-	public static final view VVarDecl of VarDecl extends VarDeclView {
 	}
 
 	public VarDecl() {}
 	
 	public VarDecl(Var var) {
 		this.var = var;
-	}
-
-	public void resolve(Type reqType) {
-		var.resolveDecl();
-		setResolved(true);
 	}
 
 	public NodeName getName() { return var.name; }
@@ -1165,7 +1184,7 @@ public final class VarDecl extends ENode implements Named {
 	
 }
 
-@nodeset
+@node
 public final class LocalStructDecl extends ENode implements Named {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -1178,11 +1197,9 @@ public final class LocalStructDecl extends ENode implements Named {
 	@att public Struct clazz;
 
 	@nodeview
-	public static abstract view LocalStructDeclView of LocalStructDecl extends ENodeView {
+	public static final view VLocalStructDecl of LocalStructDecl extends VENode {
 		public Struct		clazz;
-	}
-	@nodeview
-	public static final view VLocalStructDecl of LocalStructDecl extends LocalStructDeclView {
+
 		public boolean preResolveIn() {
 			if( ctx_method==null || ctx_method.isStatic())
 				clazz.setStatic(true);
@@ -1198,11 +1215,6 @@ public final class LocalStructDecl extends ENode implements Named {
 		this.clazz = clazz;
 		clazz.setResolved(true);
 	}
-	
-	public void resolve(Type reqType) {
-		clazz.resolveDecl();
-		setResolved(true);
-	}
 
 	public NodeName getName() { return clazz.name; }
 
@@ -1213,7 +1225,7 @@ public final class LocalStructDecl extends ENode implements Named {
 }
 
 
-@nodeset
+@node
 public final class NopExpr extends ENode implements NodeData {
 
 	public static final KString ID = KString.from("temp expr");
@@ -1230,43 +1242,36 @@ public final class NopExpr extends ENode implements NodeData {
 	@att public ENode	expr;
 
 	@nodeview
-	public static abstract view NopExprView of NopExpr extends ENodeView {
+	public static final view VNopExpr of NopExpr extends VENode {
 		public ENode		expr;
-
-		public Type getType() {
-			return expr.getType();
-		}
-	}
-	@nodeview
-	public static final view VNopExpr of NopExpr extends NopExprView {
 	}
 
 	public NopExpr() {}
+	
 	public NopExpr(ENode expr) {
 		this.pos = expr.pos;
 		this.expr = expr;
 	}
-	public void resolve(Type reqType) {
-		expr.resolve(reqType);
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
+	
+	public Type getType() {
+		return expr.getType();
 	}
 	
 	public final KString getNodeDataId() { return ID; }
 	public void nodeAttached(ASTNode node) {}
 	public void dataAttached(ASTNode node) { this.callbackAttached(node, tempAttrSlot); }
 	public void nodeDetached(ASTNode node) {}
-	public void dataDetached(ASTNode node) { this.callbackDetached(); }
+	public void dataDetached(ASTNode node) { if(isAttached()) this.callbackDetached(); }
 	
 }
 
-@nodeset
+@node
 public abstract class TypeDecl extends DNode implements Named {
 
 	@virtual typedef This  = TypeDecl;
-	@virtual typedef VView = TypeDeclView;
+	@virtual typedef VView = VTypeDecl;
 	@virtual typedef JView = JTypeDecl;
+	@virtual typedef RView = RTypeDecl;
 
 	public void callbackSuperTypeChanged(TypeDecl chg) {}
 	public TypeProvider[] getAllSuperTypes() { return TypeProvider.emptyArray; }
@@ -1285,7 +1290,7 @@ public abstract class TypeDecl extends DNode implements Named {
 	}
 
 	@nodeview
-	public static view TypeDeclView of TypeDecl extends DNodeView {
+	public static view VTypeDecl of TypeDecl extends VDNode {
 		public TypeProvider[] getAllSuperTypes();
 	}
 
@@ -1303,19 +1308,20 @@ public abstract class TypeDecl extends DNode implements Named {
 }
 
 
-@nodeset
+@node
 public class NameRef extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = NameRef;
-	@virtual typedef VView = NameRefView;
+	@virtual typedef VView = VNameRef;
 	@virtual typedef JView = JNameRef;
+	@virtual typedef RView = RNameRef;
 
 	@att public KString name;
 
 	@nodeview
-	public static view NameRefView of NameRef extends NodeView {
+	public static view VNameRef of NameRef extends NodeView {
 		public KString name;
 	}
 
@@ -1368,20 +1374,20 @@ public class CompilerException extends RuntimeException {
 	}
 	public CompilerException(ASTNode.NodeView from, String msg) {
 		super(msg);
-		this.from = from.getNode();
+		this.from = (ASTNode)from;
 	}
 	public CompilerException(ASTNode.NodeView from, CError err_id, String msg) {
 		super(msg);
-		this.from = from.getNode();
+		this.from = (ASTNode)from;
 		this.err_id = err_id;
 	}
 	public CompilerException(JNode from, String msg) {
 		super(msg);
-		this.from = from.getNode();
+		this.from = (ASTNode)from;
 	}
 	public CompilerException(JNode from, CError err_id, String msg) {
 		super(msg);
-		this.from = from.getNode();
+		this.from = (ASTNode)from;
 		this.err_id = err_id;
 	}
 }

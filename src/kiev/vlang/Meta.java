@@ -13,11 +13,11 @@ import syntax kiev.Syntax;
  */
 
 // Meta information about a node
-@nodeset
+@node
 public final class MetaSet extends ASTNode {
 	
 	@virtual typedef This  = MetaSet;
-	@virtual typedef VView = MetaSetView;
+	@virtual typedef VView = VMetaSet;
 
 	@att public NArr<Meta>			metas;
 
@@ -28,7 +28,7 @@ public final class MetaSet extends ASTNode {
 	}
 
 	@nodeview
-	public static final view MetaSetView of MetaSet extends NodeView {
+	public static final view VMetaSet of MetaSet extends NodeView {
 		public:ro	NArr<Meta>			metas;
 	}
 
@@ -128,14 +128,14 @@ public final class MetaValueType {
 	}
 }
 
-@nodeset
+@node
 public class Meta extends ENode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
 	public static final Meta dummyNode = new Meta();
 	
 	@virtual typedef This  = Meta;
-	@virtual typedef VView = MetaView;
+	@virtual typedef VView = VMeta;
 
 	@att public TypeRef					type;
 	@att public NArr<MetaValue>			values;
@@ -150,7 +150,7 @@ public class Meta extends ENode {
 	}
 
 	@nodeview
-	public static view MetaView of Meta extends ENodeView {
+	public static view VMeta of Meta extends VENode {
 		public		TypeRef					type;
 		public:ro	NArr<MetaValue>			values;
 	}
@@ -432,19 +432,18 @@ public class Meta extends ENode {
 	}
 }
 
-@nodeset
+@node
 public abstract class MetaValue extends ASTNode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
 	@virtual typedef This  = MetaValue;
-	@virtual typedef VView = MetaValueView;
+	@virtual typedef VView = VMetaValue;
 
 	@att public MetaValueType			type;
 
 	@nodeview
-	public static abstract view MetaValueView of MetaValue extends NodeView {
+	public static abstract view VMetaValue of MetaValue extends NodeView {
 		public MetaValueType			type;
-		public abstract boolean valueEquals(MetaValue mv);
 	}
 
 	public MetaValue() {}
@@ -452,6 +451,8 @@ public abstract class MetaValue extends ASTNode {
 	public MetaValue(MetaValueType type) {
 		this.type  = type;
 	}
+
+	public abstract boolean valueEquals(MetaValue mv);
 
 	public abstract void resolve(Type reqType);
 	
@@ -502,24 +503,17 @@ public abstract class MetaValue extends ASTNode {
 	public abstract Dumper toJava(Dumper dmp);
 }
 
-@nodeset
+@node
 public final class MetaValueScalar extends MetaValue {
 
 	@virtual typedef This  = MetaValueScalar;
-	@virtual typedef VView = MetaValueScalarView;
+	@virtual typedef VView = VMetaValueScalar;
 
 	@att public ENode			value;
 
 	@nodeview
-	public static final view MetaValueScalarView of MetaValueScalar extends MetaValueView {
+	public static final view VMetaValueScalar of MetaValueScalar extends VMetaValue {
 		public ENode			value;
-
-		public boolean valueEquals(MetaValue mv) {
-			if (mv instanceof MetaValueScalar) {
-				return this.value.valueEquals(mv.value);
-			}
-			return false;
-		}
 	}
 
 	public MetaValueScalar() {}
@@ -531,6 +525,13 @@ public final class MetaValueScalar extends MetaValue {
 	public MetaValueScalar(MetaValueType type, ENode value) {
 		super(type);
 		this.value = value;
+	}
+
+	public boolean valueEquals(MetaValue mv) {
+		if (mv instanceof MetaValueScalar) {
+			return this.value.valueEquals(mv.value);
+		}
+		return false;
 	}
 
 	public void verify() {
@@ -553,31 +554,17 @@ public final class MetaValueScalar extends MetaValue {
 	}
 }
 
-@nodeset
+@node
 public final class MetaValueArray extends MetaValue {
 
 	@virtual typedef This  = MetaValueArray;
-	@virtual typedef VView = MetaValueArrayView;
+	@virtual typedef VView = VMetaValueArray;
 
 	@att public NArr<ENode>			values;
 
 	@nodeview
-	public static final view MetaValueArrayView of MetaValueArray extends MetaValueView {
+	public static final view VMetaValueArray of MetaValueArray extends VMetaValue {
 		public:ro	NArr<ENode>			values;
-
-		public boolean valueEquals(MetaValue mv) {
-			if (mv instanceof MetaValueArray) {
-				MetaValueArray mva = (MetaValueArray)mv;
-				if (values.length != mva.values.length)
-					return false;
-				for (int i=0; i < values.length; i++) {
-					if (!values[i].valueEquals(mva.values[i]))
-						return false;
-				}
-				return true;
-			}
-			return false;
-		}
 	}
 
 	public MetaValueArray() {}
@@ -589,6 +576,20 @@ public final class MetaValueArray extends MetaValue {
 	public MetaValueArray(MetaValueType type, ENode[] values) {
 		super(type);
 		this.values.addAll(values);
+	}
+
+	public boolean valueEquals(MetaValue mv) {
+		if (mv instanceof MetaValueArray) {
+			MetaValueArray mva = (MetaValueArray)mv;
+			if (values.length != mva.values.length)
+				return false;
+			for (int i=0; i < values.length; i++) {
+				if (!values[i].valueEquals(mva.values[i]))
+					return false;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	public void verify() {

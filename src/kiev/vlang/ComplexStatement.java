@@ -35,7 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public class CaseLabel extends ENode implements ScopeOfNames {
 	
 	@dflow(in="this:in()", out="stats") private static class DFI {
@@ -57,14 +57,11 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	@ref public CodeLabel		case_label;
 
 	@nodeview
-	public static abstract view CaseLabelView of CaseLabel extends ENodeView {
+	public static final view VCaseLabel of CaseLabel extends VENode {
 		public		ENode			val;
 		public		Type			type;
 		public:ro	NArr<Var>		pattern;
 		public:ro	NArr<ENode>		stats;
-	}
-	@nodeview
-	public static final view VCaseLabel of CaseLabel extends CaseLabelView {
 	}
 
 	public CaseLabel() {}
@@ -84,8 +81,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
 			CaseLabel cl = (CaseLabel)dfi.node_impl;
-			if (cl.parent_node instanceof SwitchStat) {
-				ENode sel = ((SwitchStat)cl.parent_node).sel;
+			if (cl.parent instanceof SwitchStat) {
+				ENode sel = ((SwitchStat)cl.parent).sel;
 				if (sel != null)
 					res = sel.getDFlow().out();
 			}
@@ -157,10 +154,6 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		n.getType().resolveNameAccessR(node,info,name)
 	}
 	
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( val == null )
 			dmp.newLine(-1).append("default:");
@@ -173,7 +166,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	}
 }
 
-@nodeset
+@node
 public class SwitchStat extends ENode {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -204,7 +197,7 @@ public class SwitchStat extends ENode {
 	@att                 public CodeSwitch				cosw;
 
 	@nodeview
-	public static abstract view SwitchStatView of SwitchStat extends ENodeView {
+	public static final view VSwitchStat of SwitchStat extends VENode {
 		public		int						mode;
 		public		ENode					sel;
 		public:ro	NArr<CaseLabel>			cases;
@@ -213,9 +206,6 @@ public class SwitchStat extends ENode {
 		public		Field					typehash; // needed for re-resolving
 		public:ro	Label					lblcnt;
 		public:ro	Label					lblbrk;
-	}
-	@nodeview
-	public static final view VSwitchStat of SwitchStat extends SwitchStatView {
 	}
 
 	public SwitchStat() {
@@ -234,10 +224,6 @@ public class SwitchStat extends ENode {
 
 	public String toString() { return "switch("+sel+")"; }
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.newLine().append("switch").space().append('(')
 			.append(sel).space().append(')').space().append('{').newLine(1);
@@ -247,7 +233,7 @@ public class SwitchStat extends ENode {
 	}
 }
 
-@nodeset
+@node
 public class CatchInfo extends ENode implements ScopeOfNames {
 	
 	@dflow(out="body") private static class DFI {
@@ -268,12 +254,9 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	@att public CodeCatchInfo	code_catcher;
 
 	@nodeview
-	public static abstract view CatchInfoView of CatchInfo extends ENodeView {
+	public static final view VCatchInfo of CatchInfo extends VENode {
 		public Var				arg;
 		public ENode			body;
-	}
-	@nodeview
-	public static final view VCatchInfo of CatchInfo extends CatchInfoView {
 	}
 	
 	public CatchInfo() {}
@@ -287,10 +270,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		node ?= arg, ((Var)node).name.equals(name)
 	}
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.newLine().append("catch").space().append('(').space();
 		arg.toJavaDecl(dmp).space().append(')').space().append(body);
@@ -298,7 +277,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	}
 }
 
-@nodeset
+@node
 public class FinallyInfo extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -317,22 +296,15 @@ public class FinallyInfo extends ENode {
 	@att public CodeCatchInfo	code_catcher;
 
 	@nodeview
-	public static abstract view FinallyInfoView of FinallyInfo extends ENodeView {
+	public static final view VFinallyInfo of FinallyInfo extends VENode {
 		public ENode		body;
 		public Var			ret_arg;
-	}
-	@nodeview
-	public static final view VFinallyInfo of FinallyInfo extends FinallyInfoView {
 	}
 	
 	public FinallyInfo() {}
 
 	public String toString() { return "finally"; }
 
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
-	
 	public Dumper toJava(Dumper dmp) {
 		dmp.newLine().append("finally").space().append(body).newLine();
 		return dmp;
@@ -340,7 +312,7 @@ public class FinallyInfo extends ENode {
 
 }
 
-@nodeset
+@node
 public class TryStat extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -360,20 +332,13 @@ public class TryStat extends ENode {
 	@att public CodeLabel			end_label;
 
 	@nodeview
-	public static abstract view TryStatView of TryStat extends ENodeView {
+	public static final view VTryStat of TryStat extends VENode {
 		public		ENode				body;
 		public:ro	NArr<CatchInfo>		catchers;
 		public		FinallyInfo			finally_catcher;
 	}
-	@nodeview
-	public static final view VTryStat of TryStat extends TryStatView {
-	}
 
 	public TryStat() {}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("try").space().append(body).newLine();
@@ -386,7 +351,7 @@ public class TryStat extends ENode {
 
 }
 
-@nodeset
+@node
 public class SynchronizedStat extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -407,20 +372,13 @@ public class SynchronizedStat extends ENode {
 	@att public CodeLabel		end_label;
 
 	@nodeview
-	public static abstract view SynchronizedStatView of SynchronizedStat extends ENodeView {
+	public static final view VSynchronizedStat of SynchronizedStat extends VENode {
 		public ENode			expr;
 		public Var				expr_var;
 		public ENode			body;
 	}
-	@nodeview
-	public static final view VSynchronizedStat of SynchronizedStat extends SynchronizedStatView {
-	}
 
 	public SynchronizedStat() {}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("synchronized").space().append('(').space().append(expr)
@@ -430,7 +388,7 @@ public class SynchronizedStat extends ENode {
 
 }
 
-@nodeset
+@node
 public class WithStat extends ENode {
 
 	@dflow(out="body") private static class DFI {
@@ -449,20 +407,13 @@ public class WithStat extends ENode {
 	@att public CodeLabel	end_label;
 
 	@nodeview
-	public static abstract view WithStatView of WithStat extends ENodeView {
+	public static final view VWithStat of WithStat extends VENode {
 		public ENode		expr;
 		public ENode		body;
 		public LvalDNode	var_or_field;
 	}
-	@nodeview
-	public static final view VWithStat of WithStat extends WithStatView {
-	}
 
 	public WithStat() {}
-
-	public void resolve(Type reqType) {
-		((RView)this).resolve(reqType);
-	}
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("/*with ").space().append('(').space().append(expr)

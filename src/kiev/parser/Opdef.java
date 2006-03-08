@@ -14,18 +14,18 @@ import static kiev.vlang.Operator.*;
  *
  */
 
-@nodeset
+@node
 public class Opdef extends DNode {
 	@virtual typedef This  = Opdef;
-	@virtual typedef VView = OpdefView;
+	@virtual typedef VView = VOpdef;
 
-	@att int					prior;
-	@att int					opmode;
-	@att KString				image;
-	@ref Operator				resolved;
+	@att public int					prior;
+	@att public int					opmode;
+	@att public KString				image;
+	@ref public Operator			resolved;
 
 	@nodeview
-	public static view OpdefView of Opdef extends DNodeView {
+	public static view VOpdef of Opdef extends VDNode {
 		public int					prior;
 		public int					opmode;
 		public KString				image;
@@ -80,9 +80,6 @@ public class Opdef extends DNode {
 		return image.toString();
 	}
 
-	public void resolveDecl() {
-	}
-	
 	public Dumper toJavaDecl(Dumper dmp) {
 		return toJava(dmp);
 	}

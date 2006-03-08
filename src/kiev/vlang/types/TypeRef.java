@@ -7,8 +7,6 @@ import kiev.vlang.types.*;
 import kiev.parser.*;
 import kiev.transf.*;
 
-import kiev.vlang.ENode.ENodeView;
-
 import kiev.be.java.JNode;
 import kiev.be.java.JENode;
 import kiev.be.java.JTypeRef;
@@ -22,7 +20,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public class TypeRef extends ENode {
 
 	public static final TypeRef dummyNode = new TypeRef();
@@ -30,20 +28,14 @@ public class TypeRef extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeRef;
-	@virtual typedef VView = TypeRefView;
+	@virtual typedef VView = VTypeRef;
 	@virtual typedef JView = JTypeRef;
 
 	@ref public Type	lnk;
 
 	@nodeview
-	public static view TypeRefView of TypeRef extends ENodeView {
+	public static view VTypeRef of TypeRef extends VENode {
 		public Type	lnk;
-
-		public Type getType()
-			alias operator(210,fy,$cast)
-		{
-			return lnk;
-		}
 	
 		public boolean preResolveIn() {
 			((TypeRef)this).getType(); // calls resolving
@@ -73,6 +65,12 @@ public class TypeRef extends ENode {
 	public ASTNode getDummyNode() {
 		return TypeRef.dummyNode;
 	}
+
+	public Type getType()
+		alias operator(210,fy,$cast)
+	{
+		return lnk;
+	}
 	
 	public boolean isBound() {
 		return lnk != null;
@@ -83,12 +81,6 @@ public class TypeRef extends ENode {
 	public Struct getStruct() { if (lnk == null) return null; return lnk.getStruct(); }
 	public JType getJType() { return getType().getJType(); }
 
-	public final Type getType()
-		alias operator(210,fy,$cast)
-	{
-		return ((TypeRefView)this).getType();
-	}
-	
 	public void resolve(Type reqType) {
 		if (reqType ≢ null && reqType ≉ Type.tpClass)
 			toExpr(reqType);

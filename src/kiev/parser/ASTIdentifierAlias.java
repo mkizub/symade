@@ -13,7 +13,7 @@ import kiev.transf.*;
  *
  */
 
-@nodeset
+@node
 public abstract class ASTAlias extends ASTNode {
 	public static ASTAlias[]	emptyArray = new ASTAlias[0];
 	
@@ -30,7 +30,7 @@ public abstract class ASTAlias extends ASTNode {
 
 }
 
-@nodeset
+@node
 public final class ASTIdentifierAlias extends ASTAlias {
 
 	@virtual typedef This  = ASTIdentifierAlias;

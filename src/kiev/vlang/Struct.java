@@ -22,7 +22,7 @@ import syntax kiev.Syntax;
  */
 
 
-@nodeset
+@node
 public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 	
 	@dflow(in="root()") private static class DFI {
@@ -53,6 +53,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public kiev.be.java.Attr[]				attrs = kiev.be.java.Attr.emptyArray;
 	@att public NArr<DNode>					members;
 		 private TypeProvider[]				super_types;
+
+	@getter public final CompaundType	get$super_type()	{ return (CompaundType)super_bound.lnk; }
+	@setter public final void set$super_type(CompaundType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (attr.name == "args" ||
@@ -329,9 +332,63 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
 		return cas;
 	}
+		
+	@getter public Struct get$child_ctx_clazz()	{ return (Struct)this; }
+
+	public boolean instanceOf(Struct cl) {
+		if( cl == null ) return false;
+		if( this.getStruct().equals(cl) ) return true;
+		if( super_bound.getStruct() != null && super_bound.getStruct().instanceOf(cl) )
+			return true;
+		if( cl.isInterface() ) {
+			for(int i=0; i < interfaces.length; i++) {
+				if( interfaces[i].getStruct().instanceOf(cl) ) return true;
+			}
+		}
+		return false;
+	}
+
+	public Field resolveField(KString name) {
+		return resolveField(this,name,this,true);
+	}
+
+	public Field resolveField(KString name, boolean fatal) {
+		return resolveField(this,name,this,fatal);
+	}
+
+	private static Field resolveField(Struct self, KString name, Struct where, boolean fatal) {
+		self.getStruct().checkResolved();
+		foreach(DNode f; self.members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
+		if( self.super_type != null ) return resolveField(self.super_type.getStruct(),name,where,fatal);
+		if (fatal)
+			throw new RuntimeException("Unresolved field "+name+" in class "+where);
+		return null;
+	}
+
+	public Method resolveMethod(KString name, Type ret, ...) {
+		Type[] args = new Type[va_args.length];
+		for (int i=0; i < va_args.length; i++)
+			args[i] = (Type)va_args[i];
+		CallType mt = new CallType(args,ret);
+		DNode@ m;
+		if (!this.ctype.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
+			!this.ctype.resolveCallStaticR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
+			throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
+		return (Method)m;
+	}
+
+	public Constructor getClazzInitMethod() {
+		foreach(ASTNode n; members; n instanceof Method && ((Method)n).name.equals(nameClassInit) )
+			return (Constructor)n;
+		Constructor class_init = new Constructor(ACC_STATIC);
+		class_init.pos = pos;
+		addMethod(class_init);
+		class_init.body = new Block(pos);
+		return class_init;
+	}
 
 	@nodeview
-	public static abstract view StructView of Struct extends TypeDeclView {
+	public static final view VStruct of Struct extends VTypeDecl {
 		public				Access					acc;
 		public				ClazzName				name;
 		public:ro			CompaundTypeProvider	imeta_type;
@@ -350,12 +407,10 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public:ro			NArr<TypeDecl>			direct_extenders;
 		public:ro			NArr<DNode>				members;
 
-		@getter public final CompaundType	get$super_type()	{ return (CompaundType)super_bound.lnk; }
-		@setter public final void set$super_type(CompaundType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
+		@getter public final CompaundType	get$super_type();
+		@setter public final void set$super_type(CompaundType tp);
 
 		public TypeProvider[] getAllSuperTypes();
-		
-		@getter public Struct get$child_ctx_clazz()	{ return (Struct)this; }
 
 		public final Struct getStruct() { return (Struct)this; }
 
@@ -409,63 +464,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public void removeField(Field f);
 		public Struct addCase(Struct cas);
 
-		public Type getType() { return this.ctype; }
-
-		public boolean instanceOf(Struct cl) {
-			if( cl == null ) return false;
-			if( this.getStruct().equals(cl) ) return true;
-			if( super_bound.getStruct() != null && super_bound.getStruct().instanceOf(cl) )
-				return true;
-			if( cl.isInterface() ) {
-				for(int i=0; i < interfaces.length; i++) {
-					if( interfaces[i].getStruct().instanceOf(cl) ) return true;
-				}
-			}
-			return false;
-		}
-	
-		public Field resolveField(KString name) {
-			return resolveField(this,name,this,true);
-		}
-	
-		public Field resolveField(KString name, boolean fatal) {
-			return resolveField(this,name,this,fatal);
-		}
-	
-		private static Field resolveField(StructView self, KString name, StructView where, boolean fatal) {
-			self.getStruct().checkResolved();
-			foreach(DNode f; self.members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
-			if( self.super_type != null ) return resolveField((StructView)self.super_type.getStruct(),name,where,fatal);
-			if (fatal)
-				throw new RuntimeException("Unresolved field "+name+" in class "+where);
-			return null;
-		}
-	
-		public Method resolveMethod(KString name, Type ret, ...) {
-			Type[] args = new Type[va_args.length];
-			for (int i=0; i < va_args.length; i++)
-				args[i] = (Type)va_args[i];
-			CallType mt = new CallType(args,ret);
-			DNode@ m;
-			if (!this.ctype.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
-				!this.ctype.resolveCallStaticR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
-				throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
-			return (Method)m;
-		}
-
-		public Constructor getClazzInitMethod() {
-			foreach(ASTNode n; members; n instanceof Method && ((Method)n).name.equals(nameClassInit) )
-				return (Constructor)n;
-			Constructor class_init = new Constructor(ACC_STATIC);
-			class_init.pos = pos;
-			addMethod(class_init);
-			class_init.body = new Block(pos);
-			return class_init;
-		}
-	}
-	
-	@nodeview
-	public static final view VStruct of Struct extends StructView {
+		public boolean instanceOf(Struct cl);
+		public Field resolveField(KString name);
+		public Field resolveField(KString name, boolean fatal);
+		public Method resolveMethod(KString name, Type ret, ...);
+		public Constructor getClazzInitMethod();
 
 		public final boolean mainResolveIn() {
 			resolveFinalFields(this);
@@ -494,7 +497,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 
 		public void mainResolveOut() {
-			cleanDFlow();
+			((Struct)this).cleanDFlow();
 		}
 
 		// verify resolved tree
@@ -537,6 +540,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public Object copy() {
 		throw new CompilerException(this,"Struct node cannot be copied");
 	};
+
+	public Type getType() { return this.ctype; }
 
 	public String toString() { return name.name.toString(); }
 
@@ -808,9 +813,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		KString oldfn = Kiev.curFile;
 		boolean[] old_exts = Kiev.getExtSet();
 		{
-			ASTNode fu = parent_node;
+			ASTNode fu = parent;
 			while( fu != null && !(fu instanceof FileUnit))
-				fu = fu.parent_node;
+				fu = fu.parent;
 			if( fu != null ) {
 				Kiev.curFile = ((FileUnit)fu).filename;
 				Kiev.setExtSet(((FileUnit)fu).disabled_extensions);
@@ -978,10 +983,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 	}
 	
-	public void resolveDecl() {
-		((RView)this).resolveDecl();
-	}
-
 	public Dumper toJavaDecl(Dumper dmp) {
 		Struct jthis = this;
 		if( Kiev.verbose ) System.out.println("[ Dumping class "+jthis+"]");

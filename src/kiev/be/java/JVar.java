@@ -37,12 +37,6 @@ public final view JVar of Var extends JLvalDNode {
 	public final boolean isVarThis();
 	public final boolean isVarSuper();
 
-	public void set$bcpos(int pos) {
-		if( pos < 0 || pos > 255)
-			throw new RuntimeException("Bad bytecode position specified: "+pos);
-		this.bcpos = pos;
-	}
-
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Var declaration");
 		//assert (parent instanceof Block || parent instanceof ExprStat || parent instanceof ForInit);

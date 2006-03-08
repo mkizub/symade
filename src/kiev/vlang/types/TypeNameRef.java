@@ -7,51 +7,26 @@ import kiev.vlang.*;
 import syntax kiev.Syntax;
 import static kiev.stdlib.Debug.*;
 
-import kiev.vlang.types.TypeRef.TypeRefView;
-
 /**
  * @author Maxim Kizub
  *
  */
 
-@nodeset
+@node
 public class TypeNameRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeNameRef;
-	@virtual typedef VView = TypeNameRefView;
+	@virtual typedef VView = VTypeNameRef;
 
 	@att public TypeRef					outer;
 	@att public KString					name;
 
 	@nodeview
-	public static final view TypeNameRefView of TypeNameRef extends TypeRefView {
+	public static final view VTypeNameRef of TypeNameRef extends VTypeRef {
 		public TypeRef				outer;
 		public KString				name;
-
-		public Type getType() {
-			if (this.lnk != null)
-				return this.lnk;
-			Type tp;
-			if (this.outer != null) {
-				Type outer = this.outer.getType();
-				ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
-				TypeDecl@ td;
-				if!(outer.resolveStaticNameR(td,info,name))
-					throw new CompilerException(this,"Unresolved type "+name+" in "+outer);
-				td.checkResolved();
-				tp = td.getType().bind(outer.bindings());
-			} else {
-				TypeDecl@ td;
-				if( !PassInfo.resolveQualifiedNameR(((TypeNameRef)this),td,new ResInfo(this,ResInfo.noForwards),name) )
-					throw new CompilerException(this,"Unresolved type "+name);
-				td.checkResolved();
-				tp = td.getType();
-			}
-			this.lnk = tp;
-			return this.lnk;
-		}
 	}
 
 	public TypeNameRef() {}
@@ -77,6 +52,28 @@ public class TypeNameRef extends TypeRef {
 		this.name = nm.name;
 	}
 
+	public Type getType() {
+		if (this.lnk != null)
+			return this.lnk;
+		Type tp;
+		if (this.outer != null) {
+			Type outer = this.outer.getType();
+			ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
+			TypeDecl@ td;
+			if!(outer.resolveStaticNameR(td,info,name))
+				throw new CompilerException(this,"Unresolved type "+name+" in "+outer);
+			td.checkResolved();
+			tp = td.getType().bind(outer.bindings());
+		} else {
+			TypeDecl@ td;
+			if( !PassInfo.resolveQualifiedNameR(((TypeNameRef)this),td,new ResInfo(this,ResInfo.noForwards),name) )
+				throw new CompilerException(this,"Unresolved type "+name);
+			td.checkResolved();
+			tp = td.getType();
+		}
+		this.lnk = tp;
+		return this.lnk;
+	}
 
 	public boolean isBound() {
 		return true;

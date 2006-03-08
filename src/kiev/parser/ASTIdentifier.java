@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@nodeset
+@node
 public class ASTIdentifier extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -25,15 +25,13 @@ public class ASTIdentifier extends ENode {
 	static KString op_instanceof = KString.from("instanceof");
 
 	@virtual typedef This  = ASTIdentifier;
-	@virtual typedef VView = ASTIdentifierView;
+	@virtual typedef VView = VASTIdentifier;
 
 	@att public KString name;
 
 	@nodeview
-	public static view ASTIdentifierView of ASTIdentifier extends ENodeView {
+	public static view VASTIdentifier of ASTIdentifier extends VENode {
 		public KString name;
-
-		public int		getPriority() { return 256; }
 
 		public boolean preResolveIn() {
 			// predefined operators
@@ -104,8 +102,6 @@ public class ASTIdentifier extends ENode {
 			}
 			return false;
 		}
-	
-		public boolean preGenerate() { /*Kiev.reportError(this,"preGenerate of ASTIdentifier");*/ return false; }
 	}
 
 	public ASTIdentifier() {}
@@ -118,6 +114,8 @@ public class ASTIdentifier extends ENode {
 		this.pos = pos;
 		this.name = name;
 	}
+
+	public int getPriority() { return 256; }
 
 	public void set(Token t) {
         pos = t.getPos();
