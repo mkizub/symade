@@ -231,7 +231,7 @@ public class ReturnStat extends ENode {
 	}
 
 	public static void autoReturn(Type reqType, RENode expr) {
-		if (expr.parent instanceof RReturnStat)
+		if (expr.parent instanceof ReturnStat)
 			return;
 		expr.setAutoReturnable(false);
 		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr.getENode()); });
@@ -440,17 +440,17 @@ public class BreakStat extends ENode {
 		public Label			dest;
 
 		public boolean mainResolveIn() {
-			NodeView p;
+			ASTNode p;
 			if (dest != null) {
 				dest.delLink((BreakStat)this);
 				dest = null;
 			}
 			if( ident == null ) {
-				for(p=parent; !(p instanceof VMethod || p.isBreakTarget()); p = p.parent );
-				if( p instanceof VMethod || p == null ) {
+				for(p=parent; !(p instanceof Method || p.isBreakTarget()); p = p.parent );
+				if( p instanceof Method || p == null ) {
 					Kiev.reportError(this,"Break not within loop/switch statement");
 				} else {
-					if (p instanceof VLoopStat) {
+					if (p instanceof LoopStat) {
 						Label l = p.lblbrk;
 						if (l != null) {
 							dest = l;
@@ -460,12 +460,12 @@ public class BreakStat extends ENode {
 				}
 			} else {
 		label_found:
-				for(p=parent; !(p instanceof VMethod) ; p=p.parent ) {
-					if (p instanceof VLabeledStat && p.ident.name.equals(ident.name))
+				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
+					if (p instanceof LabeledStat && p.ident.name.equals(ident.name))
 						throw new RuntimeException("Label "+ident+" does not refer to break target");
 					if (!p.isBreakTarget()) continue;
-					ASTNode.NodeView pp = p;
-					for(p=p.parent; p instanceof VLabeledStat; p = p.parent) {
+					ASTNode pp = p;
+					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
 						if (p.ident.name.equals(ident.name)) {
 							p = pp;
 							break label_found;
@@ -473,10 +473,10 @@ public class BreakStat extends ENode {
 					}
 					p = pp;
 				}
-				if( p instanceof VMethod || p == null) {
+				if( p instanceof Method || p == null) {
 					Kiev.reportError(this,"Break not within loop/switch statement");
 				} else {
-					if (p instanceof VLoopStat) {
+					if (p instanceof LoopStat) {
 						Label l = p.lblbrk;
 						if (l != null) {
 							dest = l;
@@ -526,17 +526,17 @@ public class ContinueStat extends ENode {
 		public Label			dest;
 
 		public boolean mainResolveIn() {
-			NodeView p;
+			ASTNode p;
 			if (dest != null) {
 				dest.delLink((ContinueStat)this);
 				dest = null;
 			}
 			if( ident == null ) {
-				for(p=parent; !(p instanceof VLoopStat || p instanceof VMethod); p = p.parent );
-				if( p instanceof VMethod || p == null ) {
+				for(p=parent; !(p instanceof LoopStat || p instanceof Method); p = p.parent );
+				if( p instanceof Method || p == null ) {
 					Kiev.reportError(this,"Continue not within loop statement");
 				} else {
-					if (p instanceof VLoopStat) {
+					if (p instanceof LoopStat) {
 						Label l = p.lblcnt;
 						if (l != null) {
 							dest = l;
@@ -546,12 +546,12 @@ public class ContinueStat extends ENode {
 				}
 			} else {
 		label_found:
-				for(p=parent; !(p instanceof VMethod) ; p=p.parent ) {
-					if( p instanceof VLabeledStat && p.ident.name.equals(ident.name) )
+				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
+					if( p instanceof LabeledStat && p.ident.name.equals(ident.name) )
 						throw new RuntimeException("Label "+ident+" does not refer to continue target");
-					if !(p instanceof VLoopStat) continue;
-					NodeView pp = p;
-					for(p=p.parent; p instanceof VLabeledStat; p = p.parent) {
+					if !(p instanceof LoopStat) continue;
+					ASTNode pp = p;
+					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
 						if( p.ident.name.equals(ident.name) ) {
 							p = pp;
 							break label_found;
@@ -559,10 +559,10 @@ public class ContinueStat extends ENode {
 					}
 					p = pp;
 				}
-				if( p instanceof VMethod || p == null) {
+				if( p instanceof Method || p == null) {
 					Kiev.reportError(this,"Continue not within loop statement");
 				} else {
-					if (p instanceof VLoopStat) {
+					if (p instanceof LoopStat) {
 						Label l = p.lblcnt;
 						if (l != null) {
 							dest = l;

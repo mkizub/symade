@@ -184,17 +184,17 @@ public final view RBreakStat of BreakStat extends RENode {
 
 	public void resolve(Type reqType) {
 		setAbrupted(true);
-		RNode p;
+		ASTNode p;
 		if (dest != null) {
 			dest.delLink((BreakStat)this);
 			dest = null;
 		}
 		if( ident == null ) {
-			for(p=parent; !(p instanceof RMethod || p.isBreakTarget()); p = p.parent );
-			if( p instanceof RMethod || p == null ) {
+			for(p=parent; !(p instanceof Method || p.isBreakTarget()); p = p.parent );
+			if( p instanceof Method || p == null ) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
-				if (p instanceof RLoopStat) {
+				if (p instanceof LoopStat) {
 					Label l = p.lblbrk;
 					if (l != null) {
 						dest = l;
@@ -204,12 +204,12 @@ public final view RBreakStat of BreakStat extends RENode {
 			}
 		} else {
 	label_found:
-			for(p=parent; !(p instanceof RMethod) ; p=p.parent ) {
-				if (p instanceof RLabeledStat && p.ident.name.equals(ident.name))
+			for(p=parent; !(p instanceof Method) ; p=p.parent ) {
+				if (p instanceof LabeledStat && p.ident.name.equals(ident.name))
 					throw new RuntimeException("Label "+ident+" does not refer to break target");
 				if (!p.isBreakTarget()) continue;
-				RNode pp = p;
-				for(p=p.parent; p instanceof RLabeledStat; p = p.parent) {
+				ASTNode pp = p;
+				for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
 					if (p.ident.name.equals(ident.name)) {
 						p = pp;
 						break label_found;
@@ -217,10 +217,10 @@ public final view RBreakStat of BreakStat extends RENode {
 				}
 				p = pp;
 			}
-			if( p instanceof RMethod || p == null) {
+			if( p instanceof Method || p == null) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
-				if (p instanceof RLoopStat) {
+				if (p instanceof LoopStat) {
 					Label l = p.lblbrk;
 					if (l != null) {
 						dest = l;
@@ -229,9 +229,9 @@ public final view RBreakStat of BreakStat extends RENode {
 				}
 			}
 		}
-		if( p instanceof RMethod )
+		if( p instanceof Method )
 			Kiev.reportError(this,"Break not within loop/switch statement");
-		((RENode)p).setBreaked(true);
+		((ENode)p).setBreaked(true);
 	}
 }
 
@@ -282,12 +282,12 @@ public final view RGotoCaseStat of GotoCaseStat extends RENode {
 
 	public void resolve(Type reqType) {
 		setAbrupted(true);
-		for(RNode node = this.parent; node != null; node = node.parent) {
-			if (node instanceof RSwitchStat) {
-				this.sw = (SwitchStat)(RSwitchStat)node;
+		for(ASTNode node = this.parent; node != null; node = node.parent) {
+			if (node instanceof SwitchStat) {
+				this.sw = (SwitchStat)node;
 				break;
 			}
-			if (node instanceof RMethod)
+			if (node instanceof Method)
 				break;
 		}
 		if( this.sw == null )

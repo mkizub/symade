@@ -452,10 +452,10 @@ public abstract class ASTNode implements Constants, Cloneable {
 		
 		public int			pos;
 		public int			compileflags;
-		public:ro NodeView	parent;
+		public:ro ASTNode	parent;
 		public:ro AttrSlot	pslot;
-		public:ro NodeView	pprev;
-		public:ro NodeView	pnext;
+		public:ro ASTNode	pprev;
+		public:ro ASTNode	pnext;
 		
 		@getter public final ASTNode get$ctx_root();
 		@getter public final FileUnit get$ctx_file_unit();
@@ -463,7 +463,6 @@ public abstract class ASTNode implements Constants, Cloneable {
 		@getter public final Struct get$child_ctx_clazz();
 		@getter public final Method get$ctx_method();
 		@getter public final Method get$child_ctx_method();
-		@getter public final ASTNode get$parent_node() { ASTNode pimpl = (ASTNode)this.parent; if (pimpl == null) return null; return pimpl; }
 
 		public AttrSlot[] values();
 		public Object getVal(String name);

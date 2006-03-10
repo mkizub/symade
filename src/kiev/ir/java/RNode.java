@@ -23,7 +23,7 @@ public view RNode of ASTNode implements Constants {
 	
 	public int			pos;
 	public int			compileflags;
-	public:ro RNode		parent;
+	public:ro ASTNode	parent;
 	
 	@getter public final ASTNode get$ctx_root();
 	@getter public final FileUnit get$ctx_file_unit();
@@ -31,7 +31,6 @@ public view RNode of ASTNode implements Constants {
 	@getter public final Struct get$child_ctx_clazz();
 	@getter public final Method get$ctx_method();
 	@getter public final Method get$child_ctx_method();
-	@getter public final ASTNode get$parent_node() { ASTNode pimpl = (ASTNode)this.parent; if (pimpl == null) return null; return pimpl; }
 
 	public AttrSlot[] values();
 	public Object getVal(String name);

@@ -72,7 +72,7 @@ public view RMethod of Method extends RDNode {
 	static void resolveMethod(@forward RMethod self) {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+self);
-		assert( ctx_clazz == parent_node || inlined_by_dispatcher );
+		assert( ctx_clazz == parent || inlined_by_dispatcher );
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);

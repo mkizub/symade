@@ -23,7 +23,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 
 	public void resolve(Type reqType) {
 		boolean pizza_case = false;
-		SwitchStat sw = (SwitchStat)parent_node;
+		SwitchStat sw = (SwitchStat)parent;
 		try {
 			if( val != null ) {
 				val.resolve(null);
