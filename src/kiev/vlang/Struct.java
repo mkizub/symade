@@ -327,7 +327,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 		MetaPizzaCase meta = cas.getMetaPizzaCase();
 		if (meta == null)
-			cas.addNodeData(meta = new MetaPizzaCase());
+			cas.addNodeData(meta = new MetaPizzaCase(), MetaPizzaCase.ATTR);
 		meta.setTag(caseno + 1);
 		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
 		return cas;
@@ -562,7 +562,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	public MetaPizzaCase getMetaPizzaCase() {
-		return (MetaPizzaCase)this.getNodeData(MetaPizzaCase.ID);
+		return (MetaPizzaCase)this.getNodeData(MetaPizzaCase.ATTR);
 	}
 
 	public Field[] getEnumFields() {

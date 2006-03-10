@@ -113,13 +113,13 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 					Field p = s.resolveField(mp_in,false);
 					if( p == null ) {
 						Kiev.reportError(f,"Packer field "+mp_in+" not found");
-						f.delNodeData(MetaPacked.ID);
+						f.delNodeData(MetaPacked.ATTR);
 						f.setPackedField(false);
 						continue;
 					}
 					if( p.type ≢ Type.tpInt ) {
 						Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
-						f.delNodeData(MetaPacked.ID);
+						f.delNodeData(MetaPacked.ATTR);
 						f.setPackedField(false);
 						continue;
 					}
@@ -138,7 +138,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 					Field p = new Field(KString.from("$pack$"+countPackerFields(s)),Type.tpInt,ACC_PUBLIC);
 					p.pos = s.pos;
 					MetaPacker mpr = new MetaPacker();
-					p.addNodeData(mpr);
+					p.addNodeData(mpr, MetaPacker.ATTR);
 					p.setPackerField(true);
 					s.addField(p);
 					mp.packer = p;
@@ -173,7 +173,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 
 	public void rewriteNode(ASTNode fu) {
 		fu.walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { return JavaPackedFldBackend.this.rewrite(n); }
+			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return JavaPackedFldBackend.this.rewrite((ASTNode)n); return false; }
 		});
 	}
 	

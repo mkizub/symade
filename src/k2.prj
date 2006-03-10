@@ -431,6 +431,7 @@ kiev.vlang.DFSocketSpaceSeq kiev/vlang/DFSocketSpaceSeq kiev\vlang\Var.java
 kiev.vlang.DFSocketSpaceUnknown kiev/vlang/DFSocketSpaceUnknown kiev\vlang\Var.java
 kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java
+kiev.vlang.DataAttrSlot kiev/vlang/DataAttrSlot kiev\vlang\Tree.java
 kiev.vlang.DataFlowInfo kiev/vlang/DataFlowInfo kiev\vlang\Var.java
 kiev.vlang.DataFlowSlots kiev/vlang/DataFlowSlots kiev\vlang\Var.java
 kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java

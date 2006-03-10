@@ -17,7 +17,7 @@ interface TVSet {
 
 public final class TVarBld implements TVSet {
 
-	private static final boolean ASSERT_MORE = true;
+	private static final boolean ASSERT_MORE = false;
 
 	public static final TVarBld emptySet = new TVarBld().close();
 

@@ -113,9 +113,9 @@ public final view JCallExpr of CallExpr extends JENode {
 					nop.expr = new LVarExpr(pos,(Var)mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 				else
 					nop.expr = (ENode)jctx_clazz.accessTypeInfoField(this,tp,true);
-				this.addNodeData(nop);
+				this.addNodeData(nop, NopExpr.ATTR);
 				((JENode)nop.expr).generate(code,null);
-				this.delNodeData(NopExpr.ID);
+				this.delNodeData(nop.pslot);
 			}
 		}
 		if !(func.isVarArgs()) {
@@ -146,9 +146,9 @@ public final view JCallExpr of CallExpr extends JENode {
 				Type tp = mt.resolve(targs[i].getAType());
 				NopExpr nop = new NopExpr();
 				nop.expr = (ENode)jctx_clazz.accessTypeInfoField(this,tp,true);
-				this.addNodeData(nop);
+				this.addNodeData(nop, NopExpr.ATTR);
 				((JENode)nop.expr).generate(code,null);
-				this.delNodeData(NopExpr.ID);
+				this.delNodeData(nop.pslot);
 			}
 		}
 		

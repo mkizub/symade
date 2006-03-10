@@ -38,9 +38,9 @@ public final view RCallExpr of CallExpr extends RENode {
 				nop.expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 			else
 				nop.expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
-			this.addNodeData(nop);
+			this.addNodeData(nop, NopExpr.ATTR);
 			nop.resolve(null);
-			this.delNodeData(NopExpr.ID);
+			this.delNodeData(nop.pslot);
 		}
 		if (func.isVarArgs()) {
 			int i=0;
@@ -64,9 +64,9 @@ public final view RCallExpr of CallExpr extends RENode {
 				Type tp = mt.resolve(targs[i].getAType());
 				NopExpr nop = new NopExpr();
 				nop.expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
-				this.addNodeData(nop);
+				this.addNodeData(nop, NopExpr.ATTR);
 				nop.resolve(null);
-				this.delNodeData(NopExpr.ID);
+				this.delNodeData(nop.pslot);
 			}
 		}
 		if !(func.parent instanceof Struct) {

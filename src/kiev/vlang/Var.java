@@ -663,11 +663,11 @@ public interface DataFlowSlots {
 	public final int FLS = 3;
 	public final int JMP = 4;
 	
-	public final boolean ASSERT_MORE = true;
+	public final boolean ASSERT_MORE = false;
 }
 
 public final class DataFlowInfo implements NodeData, DataFlowSlots {
-	public static final KString ID = KString.from("data flow info");
+	public static final AttrSlot ATTR = new DataAttrSlot("data flow info",false,DataFlowInfo.class);	
 	
 	private static final Hashtable<Class, DataFlowInfo> data_flows = new Hashtable<Class, DataFlowInfo>(128);
 
@@ -699,8 +699,12 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 	final DFFunc func_fls;
 	final DFFunc func_jmp;
 
-	public KString getNodeDataId() { return ID; }
-	public void walkTree(TreeWalker walker) {}
+	public final AttrSlot getNodeDataId() { return ATTR; }
+
+	public void walkTree(TreeWalker walker) {
+		if (walker.pre_exec(this))
+			walker.post_exec(this);
+	}
 	
 	public static DataFlowInfo newDataFlowInfo(ASTNode node_impl) {
 		DataFlowInfo template = data_flows.get(node_impl.getClass());
@@ -919,7 +923,15 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 		return null; // do not copy on node copy
 	}
 	
-	public void nodeAttached(ASTNode node) {
+	public void callbackRootChanged() {
+		if (node_impl.ctx_root == node_impl)
+			nodeDetached();
+		else if (!is_root && this.parent_dfi == null)
+			nodeAttached(node_impl, ATTR);
+	}
+	
+	private void nodeAttached(ASTNode node, AttrSlot pslot) {
+		assert (pslot == ATTR);
 		if (!is_root) {
 			if (ASSERT_MORE) assert(this.parent_dfi == null);
 			if (ASSERT_MORE) assert(this.parent_dfs == null);
@@ -934,12 +946,12 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 			}
 		}
 	}
-	public void dataAttached(ASTNode node) {
+	public void callbackAttached(ASTNode node, AttrSlot pslot) {
 		if (node.parent != null)
-			nodeAttached(node);
+			nodeAttached(node, pslot);
 	}
 	
-	public void nodeDetached(ASTNode node) {
+	private void nodeDetached() {
 		if (parent_dfs != null) {
 			assert(parent_dfi != null);
 			if (parent_dfs instanceof DFSocketChild) {
@@ -955,8 +967,8 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 			assert(parent_dfi == null);
 		}
 	}
-	public void dataDetached(ASTNode node) {
-		nodeDetached(node);
+	public void callbackDetached() {
+		nodeDetached();
 	}
 	
 }

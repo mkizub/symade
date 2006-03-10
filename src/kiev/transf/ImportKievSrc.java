@@ -515,7 +515,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				if( pack != null ) {
 					if( f.isStatic() ) {
 						Kiev.reportWarning(fdecl,"Packing of static field(s) ignored");
-						f.delNodeData(MetaPacked.ID);
+						f.delNodeData(MetaPacked.ATTR);
 					}
 					else if( !ftype.isIntegerInCode() ) {
 						if( ftype.getStruct() != null && ftype.getStruct().isEnum() ) {
@@ -523,7 +523,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						} else {
 							Kiev.reportError(fdecl,"Packing of reference type is not allowed");
 						}
-						f.delNodeData(MetaPacked.ID);
+						f.delNodeData(MetaPacked.ATTR);
 					} else {
 						int max_pack_size = 32;
 						if( ftype ≡ Type.tpShort || ftype ≡ Type.tpChar ) {
@@ -540,11 +540,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						}
 						if( pack.getSize() < 0 || pack.getSize() > max_pack_size ) {
 							Kiev.reportError(fdecl,"Bad size "+pack.getSize()+" of packed field");
-							f.delNodeData(MetaPacked.ID);
+							f.delNodeData(MetaPacked.ATTR);
 						}
 						else if( pack.getOffset() >= 0 && pack.getSize()+pack.getOffset() > 32) {
 							Kiev.reportError(fdecl,"Size+offset "+(pack.getSize()+pack.getOffset())+" do not fit in 32 bit boundary");
-							f.delNodeData(MetaPacked.ID);
+							f.delNodeData(MetaPacked.ATTR);
 						}
 					}
 				}
@@ -694,24 +694,24 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 	public void preResolve(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { return n.preResolveIn(); }
-			public void post_exec(ASTNode n) { n.preResolveOut(); }
+			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return n.preResolveIn(); return false; }
+			public void post_exec(NodeData n) { if (n instanceof ASTNode) n.preResolveOut(); }
 		});
 		return;
 	}
 
 	public void mainResolve(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { return n.mainResolveIn(); }
-			public void post_exec(ASTNode n) { n.mainResolveOut(); }
+			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return n.mainResolveIn(); return false; }
+			public void post_exec(NodeData n) { if (n instanceof ASTNode) n.mainResolveOut(); }
 		});
 		return;
 	}
 
 	public void verify(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { return n.preVerify(); }
-			//public void post_exec(ASTNode n) { n.postVerify(); }
+			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return n.preVerify(); return false; }
+			//public void post_exec(NodeData n) { if (n instanceof ASTNode) n.postVerify(); }
 		});
 		return;
 	}
@@ -740,14 +740,14 @@ class JavaBackend extends BackendProcessor {
 	public void preGenerate() {
 		foreach (FileUnit fu; Kiev.files) {
 			fu.walkTree(new TreeWalker() {
-				public boolean pre_exec(ASTNode n) { return n.preGenerate(); }
+				public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return n.preGenerate(); return false; }
 			});
 		}
 	}
 
 	public void preGenerate(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { return n.preGenerate(); }
+			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return n.preGenerate(); return false; }
 		});
 	}
 

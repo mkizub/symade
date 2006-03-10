@@ -170,19 +170,19 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	}
 
 	public final MetaVirtual getMetaVirtual() {
-		return (MetaVirtual)this.getNodeData(MetaVirtual.ID);
+		return (MetaVirtual)this.getNodeData(MetaVirtual.ATTR);
 	}
 
 	public final MetaPacked getMetaPacked() {
-		return (MetaPacked)this.getNodeData(MetaPacked.ID);
+		return (MetaPacked)this.getNodeData(MetaPacked.ATTR);
 	}
 
 	public final MetaPacker getMetaPacker() {
-		return (MetaPacker)this.getNodeData(MetaPacker.ID);
+		return (MetaPacker)this.getNodeData(MetaPacker.ATTR);
 	}
 
 	public final MetaAlias getMetaAlias() {
-		return (MetaAlias)this.getNodeData(MetaAlias.ID);
+		return (MetaAlias)this.getNodeData(MetaAlias.ATTR);
 	}
 
 	public String toString() { return name.toString(); }

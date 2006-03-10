@@ -55,6 +55,7 @@ public class AttrSlot {
 	public final Class   clazz; // type of the fields
 	
 	public AttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
+		assert (name.intern() == name);
 		this.name = name;
 		this.is_attr = is_attr;
 		this.is_space = is_space;
@@ -62,6 +63,7 @@ public class AttrSlot {
 	}
 	
 	public boolean isMeta() { return false; }
+	public boolean isData() { return false; }
 
 	public void set(ASTNode node, Object value) {
 		node.setVal(name, value);
@@ -71,13 +73,20 @@ public class AttrSlot {
 	}
 }
 
+public class DataAttrSlot extends AttrSlot {
+	public DataAttrSlot(String name, boolean is_attr, Class clazz) {
+		super(name,is_attr,false,clazz);
+	}
+	public boolean isMeta() { return false; }
+	public boolean isData() { return true; }
+}
+
 public class MetaAttrSlot extends AttrSlot {
-	public final KString id;
-	public MetaAttrSlot(KString name, Class clazz) {
-		super(name.toString().intern(),true,false,clazz);
-		this.id = name;
+	public MetaAttrSlot(String name, Class clazz) {
+		super(name,true,false,clazz);
 	}
 	public boolean isMeta() { return true; }
+	public boolean isData() { return true; }
 
 	public abstract void set(ASTNode node, Object value);
 	public abstract Object get(ASTNode node);

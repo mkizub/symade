@@ -163,10 +163,10 @@ public final view RStruct of Struct extends RTypeDecl {
 		TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
 		// check we can use a static field
 		NopExpr nop = new NopExpr(ti_expr);
-		from.addNodeData(nop);
+		from.addNodeData(nop, NopExpr.ATTR);
 		nop.resolve(null);
 		ti_expr.detach();
-		from.delNodeData(NopExpr.ID);
+		from.delNodeData(nop.pslot);
 		foreach (ENode ti_arg; ti_expr.cl_args; !(ti_arg instanceof SFldExpr)) {
 			// oops, cannot make it a static field
 			return ti_expr;

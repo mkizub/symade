@@ -1124,7 +1124,7 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 		text = StringConstExpression()
 		{
 			text.value = KString.from("\""+text.value+"\"");
-			f.addNodeData(new MetaAlias(text));
+			f.addNodeData(new MetaAlias(text), MetaAlias.ATTR);
 		}
 	]
 	{ return f; }
@@ -1690,7 +1690,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 	(
 		m.aliases += Alias()
 	)*
-	[	thr = Throws()	{m.addNodeData(thr);} ]
+	[	thr = Throws()	{m.addNodeData(thr, MetaThrows.ATTR);} ]
 	(
 		m.conditions += RequareDeclaration()
 	|	m.conditions += EnsureDeclaration()
@@ -1744,7 +1744,7 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 	(
 		m.aliases += Alias()
 	)*
-	[	thr = Throws()	{m.addNodeData(thr);} ]
+	[	thr = Throws()	{m.addNodeData(thr, MetaThrows.ATTR);} ]
 	(
 		m.conditions += RequareDeclaration()
 	|	m.conditions += EnsureDeclaration()

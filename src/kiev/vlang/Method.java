@@ -87,7 +87,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 
 	public MetaThrows getMetaThrows() {
-		return (MetaThrows)this.getNodeData(MetaThrows.ID);
+		return (MetaThrows)this.getNodeData(MetaThrows.ATTR);
 	}
 
 	// virtual static method

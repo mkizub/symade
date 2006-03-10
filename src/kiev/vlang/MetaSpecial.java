@@ -29,26 +29,21 @@ public abstract class MetaSpecial extends ASTNode implements NodeData {
 		this.attr = attr;
 	}
 	
-	public final KString getNodeDataId() {
-		return attr.id;
+	public final AttrSlot getNodeDataId() {
+		return attr;
 	}
 	
 	public NodeData nodeCopiedTo(ASTNode node) {
 		return this.ncopy();
 	}
-	public void nodeAttached(ASTNode node) {}
-	public void dataAttached(ASTNode node) { this.callbackAttached(node, attr); }
-	public void nodeDetached(ASTNode node) {}
-	public void dataDetached(ASTNode node) { this.callbackDetached(); }
 	
-	public void attachTo(ASTNode node) { node.addNodeData(this); }
-	public void detachFrom(ASTNode node) { node.delNodeData(attr.id); }
+	public void attachTo(ASTNode node) { node.addNodeData(this, attr); }
+	public void detachFrom(ASTNode node) { node.delNodeData(attr); }
 }
 
 @node
 public final class MetaVirtual extends MetaSpecial {
-	public static final KString ID = KString.from("kiev.stdlib.meta.virtual");
-	public static final MetaAttrSlot MetaVirtualAttr = new MetaAttrSlot(ID, MetaVirtual.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.virtual", MetaVirtual.class);
 
 	@virtual typedef This  = MetaVirtual;
 	@virtual typedef VView = VMetaVirtual;
@@ -63,25 +58,26 @@ public final class MetaVirtual extends MetaSpecial {
 		public Method		set;
 	}
 
-	public MetaVirtual() { super(MetaVirtualAttr); }
+	public MetaVirtual() { super(ATTR); }
 
-	public void dataAttached(ASTNode node) {
-		super.dataAttached(node);
+	public void callbackAttached(ASTNode node, AttrSlot pslot) {
+		ASTNode parent = this.parent;
+		super.callbackAttached(node, pslot);
 		if (node instanceof DNode) {
 			node.setVirtual(true);
 		}
 	}
-	public void dataDetached(ASTNode node) {
-		super.dataDetached(node);
-		if (node instanceof DNode)
-			node.setVirtual(false);
+	public void callbackDetached() {
+		ASTNode parent = this.parent;
+		super.callbackDetached();
+		if (parent instanceof DNode)
+			parent.setVirtual(false);
 	}
 }
 
 @node
 public class MetaPacked extends MetaSpecial {
-	public static final KString ID = KString.from("kiev.stdlib.meta.packed");
-	public static final MetaAttrSlot MetaPackedAttr = new MetaAttrSlot(ID, MetaPacked.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.packed", MetaPacked.class);
 
 	@virtual typedef This  = MetaPacked;
 	@virtual typedef VView = VMetaPacked;
@@ -99,7 +95,7 @@ public class MetaPacked extends MetaSpecial {
 		public Field			 packer;
 	}
 
-	public MetaPacked() { super(MetaPackedAttr); }
+	public MetaPacked() { super(ATTR); }
 
 	public int getSize() {
 		ENode size = this.size;
@@ -134,8 +130,7 @@ public class MetaPacked extends MetaSpecial {
 
 @node
 public class MetaPacker extends MetaSpecial {
-	public static final KString ID = KString.from("kiev.stdlib.meta.packer");
-	public static final MetaAttrSlot MetaPackerAttr = new MetaAttrSlot(ID, MetaPacker.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.packer", MetaPacker.class);
 
 	@virtual typedef This  = MetaPacker;
 	@virtual typedef VView = VMetaPacker;
@@ -147,7 +142,7 @@ public class MetaPacker extends MetaSpecial {
 		public ENode			 size;
 	}
 
-	public MetaPacker() { super(MetaPackerAttr); }
+	public MetaPacker() { super(ATTR); }
 
 	public int getSize() {
 		ENode size = this.size;
@@ -163,8 +158,7 @@ public class MetaPacker extends MetaSpecial {
 
 @node
 public class MetaAlias extends MetaSpecial {
-	public static final KString ID = KString.from("kiev.stdlib.meta.alias");
-	public static final MetaAttrSlot MetaAliasAttr = new MetaAttrSlot(ID, MetaAlias.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.alias", MetaAlias.class);
 
 	@virtual typedef This  = MetaAlias;
 	@virtual typedef VView = VMetaAlias;
@@ -177,11 +171,11 @@ public class MetaAlias extends MetaSpecial {
 	}
 
 	public MetaAlias() {
-		super(MetaAliasAttr);
+		super(ATTR);
 	}
 
 	public MetaAlias(ConstStringExpr name) {
-		super(MetaAliasAttr);
+		super(ATTR);
 		this.aliases.append(name);
 	}
 
@@ -192,8 +186,7 @@ public class MetaAlias extends MetaSpecial {
 
 @node
 public class MetaThrows extends MetaSpecial {
-	public static final KString ID = KString.from("kiev.stdlib.meta.throws");
-	public static final MetaAttrSlot MetaThrowsAttr = new MetaAttrSlot(ID, MetaThrows.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.throws", MetaThrows.class);
 
 	@virtual typedef This  = MetaThrows;
 	@virtual typedef VView = VMetaThrows;
@@ -206,7 +199,7 @@ public class MetaThrows extends MetaSpecial {
 	}
 
 	public MetaThrows() {
-		super(MetaThrowsAttr);
+		super(ATTR);
 	}
 
 	public void add(TypeNameRef thr) {
@@ -220,8 +213,7 @@ public class MetaThrows extends MetaSpecial {
 
 @node
 public class MetaPizzaCase extends MetaSpecial {
-	public static final KString ID = KString.from("kiev.stdlib.meta.pcase");
-	public static final MetaAttrSlot MetaPizzaCaseAttr = new MetaAttrSlot(ID, MetaPizzaCase.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.pcase", MetaPizzaCase.class);
 
 	@virtual typedef This  = MetaPizzaCase;
 	@virtual typedef VView = VMetaPizzaCase;
@@ -236,7 +228,7 @@ public class MetaPizzaCase extends MetaSpecial {
 	}
 
 	public MetaPizzaCase() {
-		super(MetaPizzaCaseAttr);
+		super(ATTR);
 	}
 
 	public void add(Field f) {
@@ -270,16 +262,16 @@ public abstract class MetaFlag extends MetaSpecial {
 			this.setZ(node, ((Boolean)value).booleanValue());
 		} catch (ClassCastException e) {
 			if (((Boolean)value).booleanValue())
-				node.addNodeData(this);
+				node.addNodeData(this, this.attr);
 			else
-				node.delNodeData(this.getNodeDataId());
+				node.delNodeData(this.attr);
 		}
 	}
 	public final Object get(ASTNode node) {
 		try {
 			return Boolean.valueOf(this.getZ(node));
 		} catch (ClassCastException e) {
-			return Boolean.valueOf(node.getNodeData(this.getNodeDataId()) != null);
+			return Boolean.valueOf(node.getNodeData(this.attr) != null);
 		}
 	}
 }
@@ -287,10 +279,9 @@ public abstract class MetaFlag extends MetaSpecial {
 @singleton
 @node
 public class MetaUnerasable extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.unerasable");
-	public static final MetaAttrSlot MetaUnerasableAttr = new MetaAttrSlot(ID, MetaUnerasable.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.unerasable", MetaUnerasable.class);
 
-	private MetaUnerasable() { super(MetaUnerasableAttr); }
+	private MetaUnerasable() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setTypeUnerasable(val); }
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isTypeUnerasable(); }
@@ -299,10 +290,9 @@ public class MetaUnerasable extends MetaFlag {
 @singleton
 @node
 public final class MetaSingleton extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.singleton");
-	public static final MetaAttrSlot MetaSingletonAttr = new MetaAttrSlot(ID, MetaSingleton.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.singleton", MetaSingleton.class);
 
-	private MetaSingleton() { super(MetaSingletonAttr); }
+	private MetaSingleton() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ ((Struct)node).setSingleton(val); }
 	public boolean getZ(ASTNode node)					{ return ((Struct)node).isSingleton(); }
@@ -311,10 +301,9 @@ public final class MetaSingleton extends MetaFlag {
 @singleton
 @node
 public final class MetaForward extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.forward");
-	public static final MetaAttrSlot MetaForwardAttr = new MetaAttrSlot(ID, MetaForward.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.forward", MetaForward.class);
 
-	private MetaForward() { super(MetaForwardAttr); }
+	private MetaForward() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setForward(val); }
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isForward(); }
@@ -323,10 +312,9 @@ public final class MetaForward extends MetaFlag {
 @singleton
 @node
 public final class MetaPublic extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.public");
-	public static final MetaAttrSlot MetaPublicAttr = new MetaAttrSlot(ID, MetaPublic.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.public", MetaPublic.class);
 
-	private MetaPublic() { super(MetaPublicAttr); }
+	private MetaPublic() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ if (val) ((DNode)node).setPublic(); }
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isPublic(); }
@@ -335,10 +323,9 @@ public final class MetaPublic extends MetaFlag {
 @singleton
 @node
 public final class MetaProtected extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.protected");
-	public static final MetaAttrSlot MetaProtectedAttr = new MetaAttrSlot(ID, MetaProtected.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.protected", MetaProtected.class);
 
-	private MetaProtected() { super(MetaProtectedAttr); }
+	private MetaProtected() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ if (val) ((DNode)node).setProtected(); }
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isProtected(); }
@@ -347,10 +334,9 @@ public final class MetaProtected extends MetaFlag {
 @singleton
 @node
 public final class MetaPrivate extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.private");
-	public static final MetaAttrSlot MetaPrivateAttr = new MetaAttrSlot(ID, MetaPrivate.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.private", MetaPrivate.class);
 
-	private MetaPrivate() { super(MetaPrivateAttr); }
+	private MetaPrivate() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ if (val) ((DNode)node).setPrivate(); }
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isPrivate(); }
@@ -359,10 +345,9 @@ public final class MetaPrivate extends MetaFlag {
 @singleton
 @node
 public final class MetaStatic extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.static");
-	public static final MetaAttrSlot MetaStaticAttr = new MetaAttrSlot(ID, MetaStatic.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.static", MetaStatic.class);
 
-	private MetaStatic() { super(MetaStaticAttr); }
+	private MetaStatic() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setStatic(val); }
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isStatic(); }
@@ -371,10 +356,9 @@ public final class MetaStatic extends MetaFlag {
 @singleton
 @node
 public final class MetaAbstract extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.abstract");
-	public static final MetaAttrSlot MetaAbstractAttr = new MetaAttrSlot(ID, MetaAbstract.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.abstract", MetaAbstract.class);
 
-	private MetaAbstract() { super(MetaAbstractAttr); }
+	private MetaAbstract() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setAbstract(val); }
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isAbstract(); }
@@ -383,10 +367,9 @@ public final class MetaAbstract extends MetaFlag {
 @singleton
 @node
 public final class MetaFinal extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.final");
-	public static final MetaAttrSlot MetaFinalAttr = new MetaAttrSlot(ID, MetaFinal.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.final", MetaFinal.class);
 
-	private MetaFinal() { super(MetaFinalAttr); }
+	private MetaFinal() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setFinal(val); }
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isFinal(); }
@@ -395,10 +378,9 @@ public final class MetaFinal extends MetaFlag {
 @singleton
 @node
 public final class MetaNative extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.native");
-	public static final MetaAttrSlot MetaNativeAttr = new MetaAttrSlot(ID, MetaNative.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.native", MetaNative.class);
 
-	private MetaNative() { super(MetaNativeAttr); }
+	private MetaNative() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ ((Method)node).setMethodNative(val); }
 	public boolean getZ(ASTNode node)					{ return ((Method)node).isMethodNative(); }
@@ -407,10 +389,9 @@ public final class MetaNative extends MetaFlag {
 @singleton
 @node
 public final class MetaSynchronized extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.synchronized");
-	public static final MetaAttrSlot MetaSynchronizedAttr = new MetaAttrSlot(ID, MetaSynchronized.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.synchronized", MetaSynchronized.class);
 
-	private MetaSynchronized() { super(MetaSynchronizedAttr); }
+	private MetaSynchronized() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ ((Method)node).setSynchronized(val); }
 	public boolean getZ(ASTNode node)					{ return ((Method)node).isSynchronized(); }
@@ -419,10 +400,9 @@ public final class MetaSynchronized extends MetaFlag {
 @singleton
 @node
 public final class MetaTransient extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.transient");
-	public static final MetaAttrSlot MetaTransientAttr = new MetaAttrSlot(ID, MetaTransient.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.transient", MetaTransient.class);
 
-	private MetaTransient() { super(MetaTransientAttr); }
+	private MetaTransient() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ ((Field)node).setFieldTransient(val); }
 	public boolean getZ(ASTNode node)					{ return ((Field)node).isFieldTransient(); }
@@ -431,10 +411,9 @@ public final class MetaTransient extends MetaFlag {
 @singleton
 @node
 public final class MetaVolatile extends MetaFlag {
-	public static final KString ID = KString.from("kiev.stdlib.meta.volatile");
-	public static final MetaAttrSlot MetaVolatileAttr = new MetaAttrSlot(ID, MetaVolatile.class);
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.volatile", MetaVolatile.class);
 
-	private MetaVolatile() { super(MetaVolatileAttr); }
+	private MetaVolatile() { super(ATTR); }
 	
 	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setVolatile(val); }
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isVolatile(); }

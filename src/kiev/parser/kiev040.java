@@ -889,7 +889,7 @@ public abstract class kiev040 implements kiev040Constants {
       jj_consume_token(COLON);
       text = StringConstExpression();
                         text.value = KString.from("\""+text.value+"\"");
-                        f.addNodeData(new MetaAlias(text));
+                        f.addNodeData(new MetaAlias(text), MetaAlias.ATTR);
       break;
     default:
       ;
@@ -2055,7 +2055,7 @@ public abstract class kiev040 implements kiev040Constants {
       switch (jj_nt.kind) {
       case THROWS:
         thr = Throws();
-                                 m.addNodeData(thr);
+                                 m.addNodeData(thr, MetaThrows.ATTR);
         break;
       default:
         ;
@@ -2179,7 +2179,7 @@ public abstract class kiev040 implements kiev040Constants {
       switch (jj_nt.kind) {
       case THROWS:
         thr = Throws();
-                                 m.addNodeData(thr);
+                                 m.addNodeData(thr, MetaThrows.ATTR);
         break;
       default:
         ;

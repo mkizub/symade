@@ -39,9 +39,9 @@ public view RNode of ASTNode implements Constants {
 	public final void callbackAttached(ASTNode parent, AttrSlot pslot);
 	public final void callbackChildChanged(AttrSlot attr);
 	public final void callbackRootChanged();
-	public final NodeData getNodeData(KString id);
-	public final void addNodeData(NodeData d);
-	public final void delNodeData(KString id);
+	public final NodeData getNodeData(AttrSlot attr);
+	public final void addNodeData(NodeData d, AttrSlot attr);
+	public final void delNodeData(AttrSlot attr);
 	public final DataFlowInfo getDFlow();
 	public final ASTNode replaceWithNode(ASTNode node);
 	public final ASTNode replaceWith(()->ASTNode fnode);

@@ -77,7 +77,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
 		if (f.getMetaVirtual() == null)
-			f.addNodeData(new MetaVirtual());
+			f.addNodeData(new MetaVirtual(), MetaVirtual.ATTR);
 		f.getMetaVirtual().set = m;
 		if( m.isPublic() ) {
 			f.acc.w_public = true;
@@ -121,7 +121,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
 		if (f.getMetaVirtual() == null)
-			f.addNodeData(new MetaVirtual());
+			f.addNodeData(new MetaVirtual(), MetaVirtual.ATTR);
 		f.getMetaVirtual().get = m;
 		if( m.isPublic() ) {
 			f.acc.r_public = true;
@@ -201,7 +201,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		if( !f.isVirtual() ) return;
 
 		if (f.getMetaVirtual() == null)
-			f.addNodeData(new MetaVirtual());
+			f.addNodeData(new MetaVirtual(), MetaVirtual.ATTR);
 
 		// Check set$/get$ methods
 		boolean set_found = false;
@@ -327,7 +327,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 
 	public void rewriteNode(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { return JavaVirtFldBackend.this.rewrite(n); }
+			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return JavaVirtFldBackend.this.rewrite((ASTNode)n); return false; }
 		});
 	}
 	

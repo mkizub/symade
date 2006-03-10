@@ -224,7 +224,7 @@ public final view RNewClosure of NewClosure extends RENode {
 		// scan the body, and replace ThisExpr with OuterThisExpr
 		Struct clz = this.ctx_clazz;
 		body.walkTree(new TreeWalker() {
-			public void post_exec(ASTNode n) {
+			public void post_exec(NodeData n) {
 				if (n instanceof ThisExpr) n.replaceWithNode(new OuterThisAccessExpr(n.pos, clz));
 			}
 		});

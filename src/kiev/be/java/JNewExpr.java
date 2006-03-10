@@ -65,9 +65,9 @@ public final view JNewExpr of NewExpr extends JENode {
 			// Create static field for this type typeinfo
 			NopExpr nop = new NopExpr();
 			nop.expr = (ENode)jctx_clazz.accessTypeInfoField(this,type,true);
-			this.addNodeData(nop);
+			this.addNodeData(nop, NopExpr.ATTR);
 			((JENode)nop.expr).generate(code,null);
-			this.delNodeData(NopExpr.ID);
+			this.delNodeData(nop.pslot);
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);
