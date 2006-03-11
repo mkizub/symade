@@ -16,10 +16,25 @@ import syntax kiev.Syntax;
 
 @nodeview
 public final view JNewExpr of NewExpr extends JENode {
+
+	static final AttrSlot ATTR = new DataAttrSlot("jnew temp expr",true,ENode.class);	
+
 	public:ro	JArr<JENode>	args;
 	public:ro	JENode			outer;
 	public:ro	JMethod			func;
+	abstract
+	public 		JENode			tmp_expr;
 	
+	@getter public final JENode get$tmp_expr() {
+		return (JENode)(ENode)this.getNodeData(ATTR);
+	}
+	@setter public final void set$tmp_expr(JENode e) {
+		if (e != null)
+			this.addNodeData((ENode)e, ATTR);
+		else
+			this.delNodeData(ATTR);
+	}
+
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
 		Type type = this.getType();
@@ -63,11 +78,9 @@ public final view JNewExpr of NewExpr extends JENode {
 			outer.generate(code,null);
 		if (func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			// Create static field for this type typeinfo
-			NopExpr nop = new NopExpr();
-			nop.expr = (ENode)jctx_clazz.accessTypeInfoField(this,type,true);
-			this.addNodeData(nop, NopExpr.ATTR);
-			((JENode)nop.expr).generate(code,null);
-			this.delNodeData(nop.pslot);
+			tmp_expr = jctx_clazz.accessTypeInfoField(this,type,true);
+			tmp_expr.generate(code,null);
+			tmp_expr = null;
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);

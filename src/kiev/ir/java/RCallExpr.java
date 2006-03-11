@@ -16,10 +16,25 @@ import syntax kiev.Syntax;
 
 @nodeview
 public final view RCallExpr of CallExpr extends RENode {
+
+	static final AttrSlot ATTR = new DataAttrSlot("rcall temp expr",true,ENode.class);	
+
 	public		ENode			obj;
 	public		Method			func;
 	public		CallType		mt;
 	public:ro	NArr<ENode>		args;
+	abstract
+	public 		ENode			tmp_expr;
+	
+	@getter public final ENode get$tmp_expr() {
+		return (ENode)this.getNodeData(ATTR);
+	}
+	@setter public final void set$tmp_expr(ENode e) {
+		if (e != null)
+			this.addNodeData(e, ATTR);
+		else
+			this.delNodeData(ATTR);
+	}
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -32,15 +47,13 @@ public final view RCallExpr of CallExpr extends RENode {
 			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.ctype;
 			assert(ctx_method.name.equals(nameInit));
 			assert(tp.getStruct().isTypeUnerasable());
-			NopExpr nop = new NopExpr();
 			// Insert our-generated typeinfo, or from childs class?
 			if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
-				nop.expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
+				tmp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 			else
-				nop.expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
-			this.addNodeData(nop, NopExpr.ATTR);
-			nop.resolve(null);
-			this.delNodeData(nop.pslot);
+				tmp_expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
+			tmp_expr.resolve(null);
+			tmp_expr =  null;
 		}
 		if (func.isVarArgs()) {
 			int i=0;
@@ -62,11 +75,9 @@ public final view RCallExpr of CallExpr extends RENode {
 			TypeDef[] targs = func.targs.toArray();
 			for (int i=0; i < targs.length; i++) {
 				Type tp = mt.resolve(targs[i].getAType());
-				NopExpr nop = new NopExpr();
-				nop.expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
-				this.addNodeData(nop, NopExpr.ATTR);
-				nop.resolve(null);
-				this.delNodeData(nop.pslot);
+				tmp_expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
+				tmp_expr.resolve(null);
+				tmp_expr = null;
 			}
 		}
 		if !(func.parent instanceof Struct) {

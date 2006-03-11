@@ -22,6 +22,7 @@ public view JNode of ASTNode implements Constants {
 	
 	public final void addNodeData(NodeData d, AttrSlot attr);
 	public final void delNodeData(AttrSlot attr);
+	public final NodeData getNodeData(AttrSlot attr);
 
     public final int getPosLine();
 	public final boolean isAttached();

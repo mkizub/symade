@@ -530,7 +530,11 @@ public abstract class ASTNode implements NodeData, Constants, Cloneable {
 			return this;
 		if (pslot.is_space) {
 			((NArr<ASTNode>)parent.getVal(pslot.name)).detach(this);
-		} else {
+		}
+		else if (pslot.isData()) {
+			parent.delNodeData(pslot);
+		}
+		else {
 			parent.setVal(pslot.name,null);
 		}
 		assert(!isAttached());
@@ -1249,7 +1253,6 @@ public final class LocalStructDecl extends ENode implements Named {
 @node
 public final class NopExpr extends ENode {
 
-	public static final KString ID = KString.from("temp expr");
 	public static final AttrSlot ATTR = new DataAttrSlot("temp expr",true,ENode.class);	
 
 	@dflow(out="expr") private static class DFI {

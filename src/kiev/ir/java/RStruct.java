@@ -16,6 +16,9 @@ import syntax kiev.Syntax;
 
 @nodeview
 public final view RStruct of Struct extends RTypeDecl {
+
+	static final AttrSlot TI_ATTR = new DataAttrSlot("rstruct ti field temp expr",true,TypeInfoExpr.class);	
+
 	public				Access					acc;
 	public				ClazzName				name;
 	public:ro			CompaundTypeProvider	imeta_type;
@@ -162,11 +165,9 @@ public final view RStruct of Struct extends RTypeDecl {
 		}
 		TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
 		// check we can use a static field
-		NopExpr nop = new NopExpr(ti_expr);
-		from.addNodeData(nop, NopExpr.ATTR);
-		nop.resolve(null);
-		ti_expr.detach();
-		from.delNodeData(nop.pslot);
+		from.addNodeData(ti_expr, TI_ATTR);
+		ti_expr.resolve(null);
+		~ti_expr;
 		foreach (ENode ti_arg; ti_expr.cl_args; !(ti_arg instanceof SFldExpr)) {
 			// oops, cannot make it a static field
 			return ti_expr;

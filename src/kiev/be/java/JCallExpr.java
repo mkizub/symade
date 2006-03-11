@@ -16,10 +16,25 @@ import syntax kiev.Syntax;
 
 @nodeview
 public final view JCallExpr of CallExpr extends JENode {
+
+	static final AttrSlot ATTR = new DataAttrSlot("jcall temp expr",true,ENode.class);	
+
 	public:ro	JENode			obj;
 	public:ro	JMethod			func;
 	public:ro	CallType		mt;
 	public:ro	JArr<JENode>	args;
+	abstract
+	public 		JENode			tmp_expr;
+	
+	@getter public final JENode get$tmp_expr() {
+		return (JENode)(ENode)this.getNodeData(ATTR);
+	}
+	@setter public final void set$tmp_expr(JENode e) {
+		if (e != null)
+			this.addNodeData((ENode)e, ATTR);
+		else
+			this.delNodeData(ATTR);
+	}
 
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
@@ -108,14 +123,12 @@ public final view JCallExpr of CallExpr extends JENode {
 				assert(mmm.name.equals(nameInit));
 				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?
-				NopExpr nop = new NopExpr();
 				if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
-					nop.expr = new LVarExpr(pos,(Var)mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
+					tmp_expr = (JENode)new LVarExpr(pos,(Var)mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 				else
-					nop.expr = (ENode)jctx_clazz.accessTypeInfoField(this,tp,true);
-				this.addNodeData(nop, NopExpr.ATTR);
-				((JENode)nop.expr).generate(code,null);
-				this.delNodeData(nop.pslot);
+					tmp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
+				tmp_expr.generate(code,null);
+				tmp_expr = null;
 			}
 		}
 		if !(func.isVarArgs()) {
@@ -144,11 +157,9 @@ public final view JCallExpr of CallExpr extends JENode {
 			TypeDef[] targs = ((Method)func).targs.toArray();
 			for (int i=0; i < targs.length; i++) {
 				Type tp = mt.resolve(targs[i].getAType());
-				NopExpr nop = new NopExpr();
-				nop.expr = (ENode)jctx_clazz.accessTypeInfoField(this,tp,true);
-				this.addNodeData(nop, NopExpr.ATTR);
-				((JENode)nop.expr).generate(code,null);
-				this.delNodeData(nop.pslot);
+				tmp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
+				tmp_expr.generate(code,null);
+				tmp_expr = null;
 			}
 		}
 		
