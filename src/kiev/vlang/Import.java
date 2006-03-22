@@ -52,7 +52,8 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 
 	public Import() {}
 
-	public Import(DNode node, ImportMode mode, boolean star) {
+	public Import(Struct node, boolean star) {
+		this.name = new NameRef(node.name.name);
 		this.resolved = node;
 		this.mode = mode;
 		this.star = star;

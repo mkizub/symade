@@ -35,6 +35,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@virtual typedef RView = RStruct;
 
 		 public Access						acc;
+	@att public NameRef						short_name;
 		 public ClazzName					name;
 		 public CompaundTypeProvider		imeta_type;
 		 public WrapperTypeProvider			wmeta_type;
@@ -521,11 +522,13 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
 
 	Struct() {
+		this.short_name = new NameRef(null);
 		this.name = ClazzName.Empty;
 	}
 	
 	public Struct(ClazzName name, Struct outer, int flags) {
 		this.flags = flags;
+		this.short_name = new NameRef(name.short_name);
 		this.name = name;
 		this.imeta_type = new CompaundTypeProvider(this);
 		this.ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);

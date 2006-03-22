@@ -35,7 +35,7 @@ public class Var extends LvalDNode implements Named {
 	@virtual typedef JView = JVar;
 	@virtual typedef RView = RVar;
 
-		 public NodeName	name;
+	@att public NodeName	name;
 	@att public TypeRef		vtype;
 	@att public ENode		init;
 		 public int			bcpos = -1;

@@ -7,6 +7,10 @@ import kiev.vlang.types.*;
 import kiev.parser.*;
 
 import kiev.be.java.JFileUnit;
+import kiev.fmt.JavaSyntax;
+import kiev.fmt.TextFormatter;
+import kiev.fmt.TextPrinter;
+import kiev.fmt.Drawable;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -75,11 +79,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 		// Add standard imports, if they were not defined
 		if( !Kiev.javaMode && !kiev_stdlib_found )
-			fu.syntax.add(new Import(Env.newPackage(kiev_stdlib_name),Import.ImportMode.IMPORT_CLASS,true));
+			fu.syntax.add(new Import(Env.newPackage(kiev_stdlib_name),true));
 		if( !Kiev.javaMode && !kiev_stdlib_meta_found )
-			fu.syntax.add(new Import(Env.newPackage(kiev_stdlib_meta_name),Import.ImportMode.IMPORT_CLASS,true));
+			fu.syntax.add(new Import(Env.newPackage(kiev_stdlib_meta_name),true));
 		if( !java_lang_found )
-			fu.syntax.add(new Import(Env.newPackage(java_lang_name),Import.ImportMode.IMPORT_CLASS,true));
+			fu.syntax.add(new Import(Env.newPackage(java_lang_name),true));
 	}
 	
 	public void processSyntax(ASTNode:ASTNode node) {
@@ -725,6 +729,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public BackendProcessor getBackend(Kiev.Backend backend) {
 		if (backend == Kiev.Backend.Java15)
 			return JavaBackend;
+		if (backend == Kiev.Backend.VSrc)
+			return VSrcBackend;
 		return null;
 	}
 	
@@ -776,6 +782,24 @@ class JavaBackend extends BackendProcessor {
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			}
 		}
+	}
+}
+
+@singleton
+class VSrcBackend extends BackendProcessor {
+
+	private VSrcBackend() {
+		super(Kiev.Backend.VSrc);
+	}
+	
+	// generate back-end
+	public void generate(ASTNode node) {
+		TextFormatter f = new TextFormatter(new JavaSyntax());
+		Drawable dr = f.format(node);
+		StringBuffer sb = new StringBuffer(1024);
+		TextPrinter pr = new TextPrinter(sb);
+		pr.draw(dr);
+		System.out.println(sb.toString());
 	}
 }
 

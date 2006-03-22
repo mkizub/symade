@@ -40,7 +40,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	@virtual typedef RView = RMethod;
 
 		 public Access				acc;
-		 public NodeName			name;
+	@att public NodeName			name;
 		 CallTypeProvider			meta_type;
 	@att public NArr<TypeDef>		targs;
 	@att public TypeRef				type_ret;
