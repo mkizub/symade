@@ -192,6 +192,7 @@ kiev.fmt.DrawCtrlTerm kiev/fmt/DrawCtrlTerm kiev\fmt\DrawCtrl.java
 kiev.fmt.DrawDevice kiev/fmt/DrawDevice kiev\fmt\DrawDevice.java
 kiev.fmt.DrawGeometry kiev/fmt/DrawGeometry kiev\fmt\DrawGeometry.java
 kiev.fmt.DrawKeyword kiev/fmt/DrawKeyword kiev\fmt\DrawTerm.java
+kiev.fmt.DrawLayout kiev/fmt/DrawLayout kiev\fmt\SyntaxLayout.java
 kiev.fmt.DrawNodeTerm kiev/fmt/DrawNodeTerm kiev\fmt\DrawTerm.java
 kiev.fmt.DrawNonTerm kiev/fmt/DrawNonTerm kiev\fmt\DrawNonTerm.java
 kiev.fmt.DrawNonTermList kiev/fmt/DrawNonTermList kiev\fmt\DrawNonTerm.java
@@ -203,7 +204,12 @@ kiev.fmt.DrawSpace kiev/fmt/DrawSpace kiev\fmt\DrawTerm.java
 kiev.fmt.DrawTerm kiev/fmt/DrawTerm kiev\fmt\DrawTerm.java
 kiev.fmt.Drawable kiev/fmt/Drawable kiev\fmt\Drawable.java
 kiev.fmt.Formatter kiev/fmt/Formatter kiev\fmt\Formatter.java
+kiev.fmt.IndentKind kiev/fmt/IndentKind kiev\fmt\SyntaxLayout.java
 kiev.fmt.JavaSyntax kiev/fmt/JavaSyntax kiev\fmt\SyntaxLayout.java
+kiev.fmt.NewLineAction kiev/fmt/NewLineAction kiev\fmt\SyntaxLayout.java
+kiev.fmt.NewLineInfo kiev/fmt/NewLineInfo kiev\fmt\SyntaxLayout.java
+kiev.fmt.SpaceAction kiev/fmt/SpaceAction kiev\fmt\SyntaxLayout.java
+kiev.fmt.SpaceInfo kiev/fmt/SpaceInfo kiev\fmt\SyntaxLayout.java
 kiev.fmt.Syntax kiev/fmt/Syntax kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxAttr kiev/fmt/SyntaxAttr kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxElem kiev/fmt/SyntaxElem kiev\fmt\SyntaxLayout.java

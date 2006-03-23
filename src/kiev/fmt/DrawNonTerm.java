@@ -17,19 +17,10 @@ public abstract class DrawNonTerm extends Drawable {
 	@att NArr<Drawable> args;
 	
 	public DrawNonTerm() {}
-	public DrawNonTerm(ASTNode node, SyntaxElem layout) {
-		super(node, layout);
+	public DrawNonTerm(ASTNode node, SyntaxElem syntax) {
+		super(node, syntax);
 	}
 
-	public Drawable getFirst() {
-		if (args.length == 0) return null;
-		return args[0];
-	}
-
-	public Drawable getLast() {
-		if (args.length == 0) return null;
-		return args[args.length-1];
-	}
 	public DrawTerm getFirstLeaf() {
 		if (this.isUnvisible())
 			return null;
@@ -61,7 +52,7 @@ public abstract class DrawNonTerm extends Drawable {
 		context = context.pushState(); 
 		// for each possible layout. assign it to all sub-components
 		// and try to layout them;
-		final int layouts_size = layout.getLayoutsCount();
+		final int layouts_size = syntax.layout.count;
 	next_layout:
 		for (int i=0; i < layouts_size; i++) {
 			boolean last = (i == layouts_size-1);
@@ -74,13 +65,10 @@ public abstract class DrawNonTerm extends Drawable {
 					continue;
 				fits &= dr.postFormat(context, last && parent_last_layout);
 				if (!fits && !last) {
-					//SyntaxElem[] le_next = layouts[i+1];
-					//if (le_next.strength < context.strength) {
-						if (parent_last_layout)
-							continue next_layout;
-						context.popNonTerm(this);
-						return false;
-					//}
+					if (parent_last_layout)
+						continue next_layout;
+					context.popNonTerm(this);
+					return false;
 				}
 			}
 			if (fits) {
@@ -105,11 +93,11 @@ public abstract class DrawNonTerm extends Drawable {
 @node
 public class DrawNonTermList extends DrawNonTerm {
 	public DrawNonTermList() {}
-	public DrawNonTermList(ASTNode node, SyntaxElem layout) {
-		super(node, layout);
+	public DrawNonTermList(ASTNode node, SyntaxElem syntax) {
+		super(node, syntax);
 	}
 	public void init(Formatter fmt) {
-		SyntaxList slst = (SyntaxList)this.layout;
+		SyntaxList slst = (SyntaxList)this.syntax;
 		if (slst.prefix != null)
 			args.append(slst.prefix.makeDrawable(fmt, null));
 		NArr<ASTNode> narr = (NArr<ASTNode>)node.getVal(slst.element.name);
@@ -132,11 +120,11 @@ public class DrawNonTermList extends DrawNonTerm {
 @node
 public class DrawNonTermSet extends DrawNonTerm {
 	public DrawNonTermSet() {}
-	public DrawNonTermSet(ASTNode node, SyntaxElem layout) {
-		super(node, layout);
+	public DrawNonTermSet(ASTNode node, SyntaxElem syntax) {
+		super(node, syntax);
 	}
 	public void init(Formatter fmt) {
-		SyntaxSet sset = (SyntaxSet)this.layout;
+		SyntaxSet sset = (SyntaxSet)this.syntax;
 		foreach (SyntaxElem se; sset.elements)
 			args.append(se.makeDrawable(fmt, node));
 	}

@@ -37,7 +37,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	/** Field' access */
 		 public Access				acc;
 	/** Name of the field */
-		 public NodeName			name;
+	@att public NodeName			name;
 	/** Type of the field */
 	@att public TypeRef				ftype;
 	/** Initial value of this field */

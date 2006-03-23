@@ -23,17 +23,17 @@ public abstract class Drawable extends ASTNode {
 	// filled/modified during preFormat/postFormat
 	DrawGeometry	geometry;
 	// syntax kind & draw layout
-	SyntaxElem		layout;
+	SyntaxElem		syntax;
 	// current (selected) layout
 	int				curr_layout;
 	
 	public Drawable() {
 		this.geometry = new DrawGeometry();
 	}
-	public Drawable(ASTNode node, SyntaxElem layout) {
+	public Drawable(ASTNode node, SyntaxElem syntax) {
 		this.node = node;
 		this.geometry = new DrawGeometry();
-		this.layout = layout;
+		this.syntax = syntax;
 	}
 	public void callbackAttached(ASTNode parent, AttrSlot pslot) {
 		super.callbackAttached(parent, pslot);
@@ -43,24 +43,16 @@ public abstract class Drawable extends ASTNode {
 
 	public void init(Formatter fmt) {}
 
-	public final int getNewlineKind() { return layout.getNewlineKind(curr_layout); }
-	public final int getExtraSpaceRight() { return layout.getExtraSpaceRight(curr_layout); }
-	public final int getExtraSpaceLeft() { return layout.getExtraSpaceLeft(curr_layout); }
-	public final boolean isRightAssociated() { return layout.isRightAssociated(curr_layout); }
-	public final int getIndentKind() { return layout.getIndentKind(curr_layout); }
-
 	public abstract void preFormat(DrawContext cont);
 	public abstract boolean postFormat(DrawContext cont, boolean last_layout);
-	public abstract Drawable getFirst();
-	public abstract Drawable getLast();
 	public abstract DrawTerm getFirstLeaf();
 	public abstract DrawTerm getLastLeaf();
 
 	public final boolean isUnvisible() {
 		if (geometry != null)
 			return geometry.is_hidden;
-		if (layout != null)
-			return layout.isHidden(curr_layout);
+		if (syntax != null)
+			return syntax.is_hidden;
 		return false;
 	}  
 

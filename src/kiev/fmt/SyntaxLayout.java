@@ -8,6 +8,10 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import static kiev.fmt.IndentKind.*;
+import static kiev.fmt.NewLineAction.*;
+import static kiev.fmt.SpaceAction.*;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -39,9 +43,9 @@ public class Syntax {
 		return kw("?"+node.getClass().getName()+"?");
 	}
 	
-	protected final SyntaxSet set(String id, int layout, SyntaxElem... elems) {
-		SyntaxSet set = new SyntaxSet(this,id, new int[]{layout});
-		set.elements = elems;
+	protected final SyntaxSet set(String id, DrawLayout layout, SyntaxElem... elems) {
+		SyntaxSet set = new SyntaxSet(this,id,layout);
+		set.elements.addAll(elems);
 		return set;
 	}
 
@@ -51,10 +55,11 @@ public class Syntax {
 			SyntaxAttr element,
 			SyntaxElem elem_suffix,
 			SyntaxElem separator,
-			SyntaxElem suffix
+			SyntaxElem suffix,
+			DrawLayout layout
 	)
 	{
-		SyntaxList lst = new SyntaxList(this,element.ID, new int[]{0x0000});
+		SyntaxList lst = new SyntaxList(this,element.ID,layout);
 		lst.prefix = prefix;
 		lst.elem_prefix = elem_prefix;
 		lst.element = element;
@@ -65,137 +70,190 @@ public class Syntax {
 	}
 
 	protected final SyntaxList lst(
-			SyntaxAttr element
-	)
-	{
-		SyntaxList lst = new SyntaxList(this,element.ID, new int[]{0x0000});
-		lst.element = element;
-		return lst;
-	}
-
-	protected final SyntaxList lst_sf(
 			SyntaxAttr element,
-			SyntaxElem elem_suffix
+			DrawLayout layout
 	)
 	{
-		SyntaxList lst = new SyntaxList(this,element.ID, new int[]{0x0000});
+		SyntaxList lst = new SyntaxList(this,element.ID,layout);
 		lst.element = element;
-		lst.elem_suffix = elem_suffix;
 		return lst;
 	}
 
 	protected final SyntaxAttr attr(String slot)
 	{
-		return new SyntaxAttr(this,slot, new int[]{0x1100});
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		return new SyntaxAttr(this,slot, lout);
 	}
 
 	protected final SyntaxIdentAttr ident(String slot)
 	{
-		return new SyntaxIdentAttr(this,slot, new int[]{0x1100});
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{
+				new SpaceInfo("word", SP_ADD_BEFORE, 1, 10),
+				new SpaceInfo("word", SP_ADD_AFTER, 1, 10),
+			}
+		);
+		return new SyntaxIdentAttr(this,slot,lout);
 	}
 
 	protected final SyntaxKeyword kw(String kw)
 	{
-		return new SyntaxKeyword(this,kw, new int[]{0x1100});
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{
+				new SpaceInfo("word", SP_ADD_BEFORE, 1, 10),
+				new SpaceInfo("word", SP_ADD_AFTER, 1, 10),
+			}
+		);
+		return new SyntaxKeyword(this,kw,lout);
 	}
 
 	protected final SyntaxSeparator sep(String sep)
 	{
-		return new SyntaxSeparator(this,sep, new int[]{0xF100});
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{
+				new SpaceInfo("word", SP_EAT_BEFORE, 1, 10),
+				new SpaceInfo("sep", SP_EAT_BEFORE, 1, 10),
+				new SpaceInfo("sep", SP_ADD_AFTER, 1, 10),
+			}
+		);
+		return new SyntaxSeparator(this,sep,lout);
 	}
 
-	protected final SyntaxSeparator sep(String sep, int layout)
+	protected final SyntaxSeparator sep(String sep, DrawLayout layout)
 	{
-		return new SyntaxSeparator(this,sep,new int[]{layout});
+		return new SyntaxSeparator(this,sep,layout);
 	}
 	
-	protected final SyntaxElem opt(SyntaxAttr opt, SyntaxElem element)
+	protected final SyntaxElem opt(String prop, SyntaxElem element)
 	{
-		return new SyntaxOptional(this, opt, element, new int[]{0x1100});
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		return new SyntaxOptional(this, prop, element, null,lout);
 	}
 
-	protected final int lout(int nl, int el, int er, int ind) {
-		int lout = nl & 0xFF;
-		lout |= (er & 0xF) << 8;
-		lout |= (el & 0xF) << 12;
-		lout |= (ind & 3) << 18;
-		return lout;
+	protected final SyntaxElem alt(String prop, SyntaxElem element, SyntaxElem altern)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		return new SyntaxOptional(this, prop, element, altern, lout);
 	}
-
 }
 
-public abstract class SyntaxElem {
+public enum IndentKind {
+	INDENT_KIND_NONE,
+	INDENT_KIND_TOKEN_SIZE,
+	INDENT_KIND_FIXED_SIZE,
+	INDENT_KIND_UNINDENT
+}
 
-	public static final int INDENT_KIND_NONE			= 0;
-	public static final int INDENT_KIND_TOKEN_SIZE		= 1;
-	public static final int INDENT_KIND_FIXED_SIZE		= 2;
-	public static final int INDENT_KIND_UNINDENT		= 3;
+public enum NewLineAction {
+	NL_ADD_AFTER,
+	NL_ADD_GROUP_AFTER,
+	NL_ADD_BEFORE,
+	NL_ADD_GROUP_BEFORE,
+	NL_DEL_BEFORE,
+	NL_DEL_GROUP_BEFORE,
+	NL_TRANSFER
+}
 
-	// newline types mask
-	public static final int NL_MASK_TRANSFERABLE		=  1;
-	public static final int NL_MASK_DISCARDABLE		=  2;
-	public static final int NL_MASK_DOUBLE				=  4;
-	public static final int NL_MASK_BEFORE_TOKEN		=  8;
-	public static final int NL_MASK_FORSED				= 16;
-	public static final int NL_MASK_DO_TRANSFER		=  2 <<  16;
-	public static final int NL_MASK_DO_DISCARD			=  4 <<  26;
-	public static final int NL_MASK_DO_DISCARD_DBL		=  8 <<  46;
-	// newline consts
-	public static final int NL_NONE         = 0;
-	public static final int NL_TRANS        =           NL_MASK_TRANSFERABLE;
-	public static final int NL_DICS         = NL_TRANS |NL_MASK_DISCARDABLE;
+public enum SpaceAction {
+	SP_ADD_BEFORE,
+	SP_ADD_AFTER,
+	SP_EAT_BEFORE,
+	SP_EAT_AFTER
+}
 
-	private int[] layouts;
+@node
+public class NewLineInfo extends ASTNode {
+	@virtual typedef This  = NewLineInfo;
 
-	public final String ID;
-	public final Syntax stx;
+	@att String			name;
+	@att NewLineAction	action;
+	@att int			from_attempt;
+	
+	public NewLineInfo() {}
+	public NewLineInfo(String name, NewLineAction action, int from_attempt) {
+		this.name = name;
+		this.action = action;
+		this.from_attempt = from_attempt;
+	}
+}
 
-	public SyntaxElem(Syntax stx, String ID, int[] layouts) {
+@node
+public class SpaceInfo extends ASTNode {
+	@virtual typedef This  = SpaceInfo;
+
+	@att String			name;
+	@att SpaceAction	action;
+	@att int			text_size;
+	@att int			pixel_size;
+	
+	public SpaceInfo() {}
+	public SpaceInfo(String name, SpaceAction action, int text_size, int pixel_size) {
+		this.name = name;
+		this.action = action;
+		this.text_size = text_size;
+		this.pixel_size = pixel_size;
+	}
+}
+
+
+@node
+public final class DrawLayout extends ASTNode {
+	@virtual typedef This  = DrawLayout;
+
+	@att int				count;
+	@att IndentKind			indent;
+	@att NArr<NewLineInfo>	new_lines;
+	@att NArr<SpaceInfo>	spaces;
+	
+	public DrawLayout() {}
+	public DrawLayout(int count, IndentKind indent, NewLineInfo[] new_lines, SpaceInfo[] spaces) {
+		this.count = count;
+		this.indent = indent;
+		this.new_lines.addAll(new_lines);
+		this.spaces.addAll(spaces);
+	}
+}
+
+@node
+public abstract class SyntaxElem extends ASTNode {
+	@virtual typedef This  = SyntaxElem;
+
+	@att public DrawLayout			layout;
+	@att public final String		ID;
+	@att public boolean				is_hidden;
+	
+	@ref public final Syntax		stx;
+
+	public SyntaxElem() {}
+	public SyntaxElem(Syntax stx, String ID, DrawLayout layout) {
 		this.ID = ID.intern();
 		this.stx = stx;
-		this.layouts = layouts;
+		this.layout = layout;
 	}
 
 	public abstract Drawable makeDrawable(Formatter fmt, ASTNode node);
 
-	public final int getLayoutsCount() {
-		return layouts.length;
-	}
-	
-	public final int getNewlineKind(int idx) {
-		if (idx >= layouts.length) idx = layouts.length - 1;
-		return layouts[idx] & 0xFF;
-	}
-
-	public final int getExtraSpaceRight(int idx) {
-		if (idx >= layouts.length) idx = layouts.length - 1;
-		return (layouts[idx] << 20) >> 28;
-	}
-
-	public final int getExtraSpaceLeft(int idx) {
-		if (idx >= layouts.length) idx = layouts.length - 1;
-		return (layouts[idx] << 16) >> 28;
-	}
-
-	public final boolean isHidden(int idx) {
-		if (idx >= layouts.length) idx = layouts.length - 1;
-		return ((layouts[idx] >> 16) & 1) != 0;
-	}
-
-	public final boolean isRightAssociated(int idx) {
-		if (idx >= layouts.length) idx = layouts.length - 1;
-		return ((layouts[idx] >> 17) & 1) != 0;
-	}
-
-	public final int getIndentKind(int idx) {
-		if (idx >= layouts.length) idx = layouts.length - 1;
-		return (layouts[idx] >> 18) & 3;
-	}
 }
 
+@node
 public class SyntaxSpace extends SyntaxElem {
-	public SyntaxSpace(Syntax stx, String ID, int[] layouts) {
-		super(stx,ID,layouts);
+	@virtual typedef This  = SyntaxSpace;
+
+	public SyntaxSpace() {}
+	public SyntaxSpace(Syntax stx, String ID, DrawLayout layout) {
+		super(stx,ID,layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -205,17 +263,26 @@ public class SyntaxSpace extends SyntaxElem {
 	}
 }
 
+@node
 public abstract class SyntaxToken extends SyntaxElem {
-	public final String text;
-	public SyntaxToken(Syntax stx, String ID, String text, int[] layouts) {
-		super(stx,ID,layouts);
+	@virtual typedef This  = SyntaxToken;
+
+	@att public String text;
+
+	public SyntaxToken() {}
+	public SyntaxToken(Syntax stx, String ID, String text, DrawLayout layout) {
+		super(stx,ID,layout);
 		this.text = text.intern();
 	}
 }
 
+@node
 public class SyntaxKeyword extends SyntaxToken {
-	public SyntaxKeyword(Syntax stx, String text, int[] layouts) {
-		super(stx, text, text, layouts);
+	@virtual typedef This  = SyntaxKeyword;
+
+	public SyntaxKeyword() {}
+	public SyntaxKeyword(Syntax stx, String text, DrawLayout layout) {
+		super(stx, text, text, layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -225,9 +292,13 @@ public class SyntaxKeyword extends SyntaxToken {
 	}
 }
 
+@node
 public class SyntaxOperator extends SyntaxToken {
-	public SyntaxOperator(Syntax stx, String text, int[] layouts) {
-		super(stx, text, text, layouts);
+	@virtual typedef This  = SyntaxOperator;
+
+	public SyntaxOperator() {}
+	public SyntaxOperator(Syntax stx, String text, DrawLayout layout) {
+		super(stx, text, text, layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -237,9 +308,13 @@ public class SyntaxOperator extends SyntaxToken {
 	}
 }
 
+@node
 public class SyntaxSeparator extends SyntaxToken {
-	public SyntaxSeparator(Syntax stx, String text, int[] layouts) {
-		super(stx, text, text, layouts);
+	@virtual typedef This  = SyntaxSeparator;
+
+	public SyntaxSeparator() {}
+	public SyntaxSeparator(Syntax stx, String text, DrawLayout layout) {
+		super(stx, text, text, layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -249,14 +324,20 @@ public class SyntaxSeparator extends SyntaxToken {
 	}
 }
 
+@node
 public class SyntaxOptional extends SyntaxElem {
-	public SyntaxAttr opt;
-	public SyntaxElem element;
+	@virtual typedef This  = SyntaxOptional;
 
-	public SyntaxOptional(Syntax stx, SyntaxAttr opt, SyntaxElem element, int[] layouts) {
-		super(stx, opt.name, layouts);
-		this.opt = opt;
+	@att public String prop;
+	@att public SyntaxElem element;
+	@att public SyntaxElem altern;
+
+	public SyntaxOptional() {}
+	public SyntaxOptional(Syntax stx, String prop, SyntaxElem element, SyntaxElem altern, DrawLayout layout) {
+		super(stx, prop, layout);
+		this.prop = prop;
 		this.element = element;
+		this.altern = altern;
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -266,15 +347,20 @@ public class SyntaxOptional extends SyntaxElem {
 	}
 }
 
+@node
 public class SyntaxList extends SyntaxElem {
-	public SyntaxElem prefix;
-	public SyntaxElem elem_prefix;
-	public SyntaxAttr element;
-	public SyntaxElem elem_suffix;
-	public SyntaxElem separator;
-	public SyntaxElem suffix;
-	public SyntaxList(Syntax stx, String id, int[] layouts) {
-		super(stx,id,layouts);
+	@virtual typedef This  = SyntaxList;
+
+	@att public SyntaxElem prefix;
+	@att public SyntaxElem elem_prefix;
+	@att public SyntaxAttr element;
+	@att public SyntaxElem elem_suffix;
+	@att public SyntaxElem separator;
+	@att public SyntaxElem suffix;
+
+	public SyntaxList() {}
+	public SyntaxList(Syntax stx, String id, DrawLayout layout) {
+		super(stx,id,layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -284,10 +370,15 @@ public class SyntaxList extends SyntaxElem {
 	}
 }
 
+@node
 public class SyntaxSet extends SyntaxElem {
-	public SyntaxElem[] elements;
-	public SyntaxSet(Syntax stx, String id, int[] layouts) {
-		super(stx,id,layouts);
+	@virtual typedef This  = SyntaxSet;
+
+	@att public NArr<SyntaxElem> elements;
+
+	public SyntaxSet() {}
+	public SyntaxSet(Syntax stx, String id, DrawLayout layout) {
+		super(stx,id,layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -297,25 +388,32 @@ public class SyntaxSet extends SyntaxElem {
 	}
 }
 
+@node
 public class SyntaxAttr extends SyntaxElem {
-	public final String name;
-	public SyntaxAttr(Syntax stx, String name, int[] layouts) {
-		super(stx,name,layouts);
+	@virtual typedef This  = SyntaxAttr;
+
+	@att public String name;
+
+	public SyntaxAttr() {}
+	public SyntaxAttr(Syntax stx, String name, DrawLayout layout) {
+		super(stx,name,layout);
 		this.name = name.intern();
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
 		Drawable dr = fmt.getDrawable((ASTNode)node.getVal(name));
-		dr.init(fmt);
+		//dr.init(fmt);
 		return dr;
 	}
 }
 
+@node
 public class SyntaxIdentAttr extends SyntaxAttr {
-	public final String name;
-	public SyntaxIdentAttr(Syntax stx, String name, int[] layouts) {
-		super(stx,name,layouts);
-		this.name = name.intern();
+	@virtual typedef This  = SyntaxIdentAttr;
+
+	public SyntaxIdentAttr() {}
+	public SyntaxIdentAttr(Syntax stx, String name, DrawLayout layout) {
+		super(stx,name,layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -329,55 +427,233 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seFileUnit;
 	final SyntaxElem seStruct;
 	final SyntaxElem seImport;
+	final SyntaxElem seField;
 	final SyntaxElem seFormPar;
 	final SyntaxElem seConstructor;
+	final SyntaxElem seMethod;
+	final SyntaxElem seBlock;
 	
 	public JavaSyntax() {
-		// file unit
-		seFileUnit = set("file", 0,
-				opt(attr("pkg"),
-					set("package", lout(SyntaxElem.NL_MASK_FORSED|SyntaxElem.NL_MASK_DOUBLE,-1,0,0),
-						kw("package"), ident("pkg"), sep(";")
-						)
+		{
+			DrawLayout lout_file = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("after_file", NL_ADD_AFTER, 0)
+				},
+				new SpaceInfo[]{}
+			);
+			DrawLayout lout_pkg = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("after_package", NL_ADD_GROUP_AFTER, 0)
+				},
+				new SpaceInfo[]{}
+			);
+			DrawLayout lout_syntax = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("file_syntax_group", NL_ADD_GROUP_AFTER, 0)
+				},
+				new SpaceInfo[]{}
+			);
+			DrawLayout lout_members = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("file_members_group", NL_ADD_GROUP_AFTER, 0)
+				},
+				new SpaceInfo[]{}
+			);
+			// file unit
+			seFileUnit = set("file", lout_file,
+					opt("pkg.name",
+						set("package", lout_pkg, kw("package"), ident("pkg"), sep(";")	)
+						),
+					lst(attr("syntax"), lout_syntax),
+					lst(attr("members"), lout_members)
+				);
+		}
+		{
+			DrawLayout lout_syntax = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("file_syntax", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{}
+			);
+			// import
+			seImport = set("import", lout_syntax,
+				kw("import"), ident("name"), opt("star", sep(".*")), sep(";")
+				);
+		}
+		{
+			DrawLayout lout_struct = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("struct", NL_ADD_GROUP_AFTER, 0),
+				},
+				new SpaceInfo[]{}
+			);
+			DrawLayout lout_struct_hdr = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("struct_hdr", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{}
+			);
+			DrawLayout lout_struct_block_start = new DrawLayout(1, INDENT_KIND_FIXED_SIZE,
+				new NewLineInfo[]{
+					new NewLineInfo("struct_hdr", NL_TRANSFER, 0),
+					new NewLineInfo("block_start", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{
+					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
+					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
+				}
+			);
+			DrawLayout lout_struct_block_end = new DrawLayout(1, INDENT_KIND_UNINDENT,
+				new NewLineInfo[]{
+					new NewLineInfo("block_end", NL_ADD_BEFORE, 0),
+					new NewLineInfo("block_end", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{
+					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
+					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
+				}
+			);
+			DrawLayout lout_struct_end = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("struct", NL_ADD_GROUP_AFTER, 0),
+				},
+				new SpaceInfo[]{}
+			);
+			// struct
+			seStruct = set("struct", lout_struct,
+				set("struct_hdr", lout_struct_hdr, kw("class"), ident("short_name")),
+				lst(
+					sep("{", lout_struct_block_start),
+					null,
+					attr("members"),
+					null,
+					null,
+					sep("}", lout_struct_block_end),
+					lout_struct_end
+					)
+				);
+		}
+		{
+			DrawLayout lout_field = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("field_decl_group", NL_TRANSFER, 0),
+					new NewLineInfo("field_decl_group", NL_ADD_GROUP_AFTER, 0),
+					new NewLineInfo("field_decl", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{}
+			);
+			// field
+			seField = set("field", lout_field,
+				ident("ftype"), ident("name"), sep(";")
+				);
+		}
+		{
+			DrawLayout lout_form_par = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{},
+				new SpaceInfo[]{}
+			);
+			// formal parameter
+			seFormPar = set("form-par", lout_form_par,
+				ident("vtype"), ident("name")
+				);
+		}
+		{
+			DrawLayout lout_method = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("method_decl", NL_ADD_GROUP_AFTER, 0),
+				},
+				new SpaceInfo[]{}
+			);
+			DrawLayout lout_method_hdr = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("method_params", NL_DEL_BEFORE, 0),
+					new NewLineInfo("method_hdr", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{}
+			);
+			DrawLayout lout_params = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("method_params", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{}
+			);
+			// constructor
+			seConstructor = set("ctor", lout_method.ncopy(),
+				set("method_hdr", lout_method_hdr.ncopy(),
+					ident("parent.short_name"),
+					lst(sep("("),
+						null,
+						attr("params"),
+						null,
+						sep(","),
+						sep(")"),
+						lout_params.ncopy())
 					),
-				lst(attr("syntax")),
-				lst(attr("members"))
+				attr("body")
+				);
+			// method
+			seMethod = set("method", lout_method.ncopy(),
+				set("method_hdr", lout_method_hdr.ncopy(),
+					ident("type_ret"), ident("name"),
+					lst(sep("("),
+						null,
+						attr("params"),
+						null,
+						sep(","),
+						sep(")"),
+						lout_params.ncopy())
+					),
+				alt("body", attr("body"), sep(";"))
+				);
+		}
+		{
+			DrawLayout lout_code_block = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{},
+				new SpaceInfo[]{}
 			);
-		// import
-		seImport = set("import", lout(SyntaxElem.NL_MASK_FORSED,-1,0,0),
-			kw("import"), ident("name"), opt(attr("star"), sep(".*")), sep(";")
+			DrawLayout lout_code_block_start = new DrawLayout(1, INDENT_KIND_FIXED_SIZE,
+				new NewLineInfo[]{
+					new NewLineInfo("method_hdr", NL_DEL_BEFORE, 0),
+					new NewLineInfo("method_params", NL_DEL_BEFORE, 0),
+					new NewLineInfo("block_start", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{
+					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
+					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
+				}
 			);
-		// struct
-		seStruct = set("struct", lout(SyntaxElem.NL_MASK_FORSED|SyntaxElem.NL_MASK_DOUBLE,-1,0,0),
-			kw("class"), ident("short_name"),
-			lst(
-				sep("{", lout(SyntaxElem.NL_TRANS,1,1,SyntaxElem.INDENT_KIND_FIXED_SIZE)),
-				null,
-				attr("members"),
-				null,
-				null,
-				sep("}", lout(SyntaxElem.NL_TRANS,1,1,SyntaxElem.INDENT_KIND_UNINDENT))
-				)
+			DrawLayout lout_code_block_end = new DrawLayout(1, INDENT_KIND_UNINDENT,
+				new NewLineInfo[]{
+					new NewLineInfo("block_start", NL_DEL_BEFORE, 0),
+					new NewLineInfo("block_end", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{
+					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
+					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
+				}
 			);
-		// frmal parameter
-		seFormPar = set("form-par", 0,
-			ident("vtype"), ident("name")
-			);
-		// constructor
-		seConstructor = set("ctor", lout(SyntaxElem.NL_MASK_FORSED|SyntaxElem.NL_MASK_DOUBLE,-1,0,0),
-			ident("parent.short_name"),
-			lst(sep("(", lout(0,-1,-1,0)),
-				null,attr("params"),null,sep(","),
-				sep(")"))
-			);
+			// block expression
+			seBlock = lst(
+					sep("{", lout_code_block_start),
+					null,
+					attr("stats"),
+					null,
+					null,
+					sep("}", lout_code_block_end),
+					lout_code_block
+					);
+		}
 	}
 	public SyntaxElem getSyntaxElem(ASTNode node) {
 		switch (node) {
 		case FileUnit: return seFileUnit;
 		case Import: return seImport;
 		case Struct: return seStruct;
+		case Field: return seField;
 		case FormPar: return seFormPar;
 		case Constructor: return seConstructor;
+		case Method: return seMethod;
+		case Block: return seBlock;
 		}
 		return super.getSyntaxElem(node);
 	}

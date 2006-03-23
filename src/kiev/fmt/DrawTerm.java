@@ -15,12 +15,10 @@ import syntax kiev.Syntax;
 @node
 public abstract class DrawTerm extends Drawable {
 	public DrawTerm() {}
-	public DrawTerm(ASTNode node, SyntaxElem layout) {
-		super(node, layout);
+	public DrawTerm(ASTNode node, SyntaxElem syntax) {
+		super(node, syntax);
 	}
 	
-	public Drawable getFirst() { return this; }
-	public Drawable getLast()  { return this; }
 	public DrawTerm getFirstLeaf() { return isUnvisible() ? null : this; }
 	public DrawTerm getLastLeaf()  { return isUnvisible() ? null : this; }
 
@@ -43,8 +41,8 @@ public abstract class DrawTerm extends Drawable {
 @node
 public class DrawSpace extends DrawTerm {
 	public DrawSpace() {}
-	public DrawSpace(ASTNode node, SyntaxElem layout) {
-		super(node, layout);
+	public DrawSpace(ASTNode node, SyntaxElem syntax) {
+		super(node, syntax);
 	}
 
 	public String getText() { return " "; }
@@ -54,31 +52,31 @@ public class DrawSpace extends DrawTerm {
 public class DrawKeyword extends DrawTerm {
 
 	public DrawKeyword() {}
-	public DrawKeyword(ASTNode node, SyntaxKeyword layout) {
-		super(node, layout);
+	public DrawKeyword(ASTNode node, SyntaxKeyword syntax) {
+		super(node, syntax);
 	}
 
-	public String getText() { return ((SyntaxKeyword)this.layout).text; }
+	public String getText() { return ((SyntaxKeyword)this.syntax).text; }
 }
 
 @node
 public class DrawOperator extends DrawTerm {
 	public DrawOperator() {}
-	public DrawOperator(ASTNode node, SyntaxOperator layout) {
-		super(node, layout);
+	public DrawOperator(ASTNode node, SyntaxOperator syntax) {
+		super(node, syntax);
 	}
 
-	public String getText() { return ((SyntaxOperator)this.layout).text; }
+	public String getText() { return ((SyntaxOperator)this.syntax).text; }
 }
 
 @node
 public class DrawSeparator extends DrawTerm {
 	public DrawSeparator() {}
-	public DrawSeparator(ASTNode node, SyntaxSeparator layout) {
-		super(node, layout);
+	public DrawSeparator(ASTNode node, SyntaxSeparator syntax) {
+		super(node, syntax);
 	}
 
-	public String getText() { return ((SyntaxSeparator)this.layout).text; }
+	public String getText() { return ((SyntaxSeparator)this.syntax).text; }
 }
 
 @node
@@ -87,8 +85,8 @@ public class DrawNodeTerm extends DrawTerm {
 	String[] attrs;
 
 	public DrawNodeTerm() {}
-	public DrawNodeTerm(ASTNode node, SyntaxElem layout, String attr) {
-		super(node, layout);
+	public DrawNodeTerm(ASTNode node, SyntaxElem syntax, String attr) {
+		super(node, syntax);
 		this.attrs = attr.split("\\.");
 		for (int i=0; i < this.attrs.length; i++)
 			this.attrs[i] = this.attrs[i].intern();
