@@ -51,6 +51,7 @@ public class DrawContext implements Cloneable {
 	public Stack<CtxNewLineTransf>	newline_transfers;
 	public Stack<Integer>			indents;
 	public Stack<DrawNonTerm>		non_terms;
+	public int						expr_priority;
 	private DrawTerm				last_term;
 	private DrawContext				prev_ctx;
 	

@@ -8,6 +8,8 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.vlang.Operator;
+
 import static kiev.fmt.IndentKind.*;
 import static kiev.fmt.NewLineAction.*;
 import static kiev.fmt.SpaceAction.*;
@@ -85,7 +87,7 @@ public class Syntax {
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		return new SyntaxAttr(this,slot, lout);
+		return new SyntaxAttr(this, slot, lout);
 	}
 
 	protected final SyntaxIdentAttr ident(String slot)
@@ -125,6 +127,22 @@ public class Syntax {
 		return new SyntaxSeparator(this,sep,lout);
 	}
 
+	protected final SyntaxOperator oper(Operator op)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{
+				new SpaceInfo("word", SP_ADD_BEFORE, 1, 10),
+				new SpaceInfo("word", SP_ADD_AFTER, 1, 10),
+				new SpaceInfo("sep", SP_ADD_BEFORE, 1, 10),
+				new SpaceInfo("sep", SP_ADD_AFTER, 1, 10),
+				new SpaceInfo("oper", SP_ADD_BEFORE, 1, 10),
+				new SpaceInfo("oper", SP_ADD_AFTER, 1, 10),
+			}
+		);
+		return new SyntaxOperator(this,op.toString().intern(),lout);
+	}
+
 	protected final SyntaxSeparator sep(String sep, DrawLayout layout)
 	{
 		return new SyntaxSeparator(this,sep,layout);
@@ -147,6 +165,51 @@ public class Syntax {
 		);
 		return new SyntaxOptional(this, prop, element, altern, lout);
 	}
+
+	protected final SyntaxExpr expr(String expr, int priority)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		SyntaxExpr se = new SyntaxExpr(this, expr, lout.ncopy());
+		se.priority = priority;
+		se.l_paren = sep("(");
+		se.element = attr(expr);
+		se.r_paren = sep(")");
+		return se;
+	}
+
+	protected final SyntaxSet expr(String expr1, Operator op, String expr2)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		String id = op.toString().intern();
+		return set(id, lout, expr(expr1, op.getArgPriority(0)), oper(op), expr(expr2, op.getArgPriority(1)));
+	}
+
+	protected final SyntaxSet expr(Operator op, String expr2)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		String id = op.toString().intern();
+		return set(id, lout, oper(op), expr(expr2, op.getArgPriority()));
+	}
+
+	protected final SyntaxSet expr(String expr1, Operator op)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		String id = op.toString().intern();
+		return set(id, lout, expr(expr1, op.getArgPriority()), oper(op));
+	}
+
 }
 
 public enum IndentKind {
@@ -389,6 +452,27 @@ public class SyntaxSet extends SyntaxElem {
 }
 
 @node
+public class SyntaxExpr extends SyntaxElem {
+	@virtual typedef This  = SyntaxExpr;
+
+	@att public int					priority;
+	@att public SyntaxSeparator		l_paren;
+	@att public SyntaxElem			element;
+	@att public SyntaxSeparator		r_paren;
+
+	public SyntaxExpr() {}
+	public SyntaxExpr(Syntax stx, String id, DrawLayout layout) {
+		super(stx,id,layout);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawExprSet(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
 public class SyntaxAttr extends SyntaxElem {
 	@virtual typedef This  = SyntaxAttr;
 
@@ -401,8 +485,11 @@ public class SyntaxAttr extends SyntaxElem {
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
-		Drawable dr = fmt.getDrawable((ASTNode)node.getVal(name));
-		//dr.init(fmt);
+		Object obj = node.getVal(name);
+		if (obj instanceof ASTNode)
+			return fmt.getDrawable((ASTNode)node.getVal(name));
+		Drawable dr = new DrawNodeTerm(node, this, name);
+		dr.init(fmt);
 		return dr;
 	}
 }
@@ -432,6 +519,14 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seConstructor;
 	final SyntaxElem seMethod;
 	final SyntaxElem seBlock;
+	final SyntaxElem seExprStat;
+	final SyntaxElem seConstExpr;
+	final SyntaxElem seBinaryBooleanOrExpr;
+	final SyntaxElem seBinaryBooleanAndExpr;
+	final SyntaxElem seInstanceofExpr;
+	final SyntaxElem seBooleanNotExpr;
+	
+	final Hashtable<Operator, SyntaxElem> exprs;
 	
 	public JavaSyntax() {
 		{
@@ -643,6 +738,19 @@ public class JavaSyntax extends Syntax {
 					lout_code_block
 					);
 		}
+		{
+			DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{},
+				new SpaceInfo[]{}
+			);
+			seExprStat = set("import", lout, attr("expr"), sep(";"));
+		}
+		exprs = new Hashtable<Operator, SyntaxElem>();
+		seConstExpr = attr("value");
+		seBinaryBooleanOrExpr = expr("expr1", BinaryOperator.BooleanOr, "expr2");
+		seBinaryBooleanAndExpr = expr("expr1", BinaryOperator.BooleanAnd, "expr2");
+		seInstanceofExpr = expr("expr", BinaryOperator.InstanceOf, "type");
+		seBooleanNotExpr = expr(PrefixOperator.BooleanNot, "expr");
 	}
 	public SyntaxElem getSyntaxElem(ASTNode node) {
 		switch (node) {
@@ -653,7 +761,43 @@ public class JavaSyntax extends Syntax {
 		case FormPar: return seFormPar;
 		case Constructor: return seConstructor;
 		case Method: return seMethod;
+		case ExprStat: return seExprStat;
 		case Block: return seBlock;
+		case ConstExpr: return seConstExpr;
+		case BinaryBooleanOrExpr: return seBinaryBooleanOrExpr;
+		case BinaryBooleanAndExpr: return seBinaryBooleanAndExpr;
+		case InstanceofExpr: return seInstanceofExpr;
+		case BooleanNotExpr: return seBooleanNotExpr;
+		case UnaryExpr: {
+			Operator op = ((UnaryExpr)node).op;
+			SyntaxElem se = exprs.get(op);
+			if (se == null) {
+				if (op instanceof PrefixOperator)
+					se = expr(op, "expr");
+				else
+					se = expr("expr", op);
+				exprs.put(op, se);
+			}
+			return se;
+		}
+		case BinaryExpr: {
+			Operator op = ((BinaryExpr)node).op;
+			SyntaxElem se = exprs.get(op);
+			if (se == null) {
+				se = expr("expr1", op, "expr2");
+				exprs.put(op, se);
+			}
+			return se;
+		}
+		case BinaryBoolExpr: {
+			Operator op = ((BinaryExpr)node).op;
+			SyntaxElem se = exprs.get(op);
+			if (se == null) {
+				se = expr("expr1", op, "expr2");
+				exprs.put(op, se);
+			}
+			return se;
+		}
 		}
 		return super.getSyntaxElem(node);
 	}

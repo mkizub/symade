@@ -190,6 +190,7 @@ kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Cl
 kiev.fmt.DrawContext kiev/fmt/DrawContext kiev\fmt\DrawContext.java
 kiev.fmt.DrawCtrlTerm kiev/fmt/DrawCtrlTerm kiev\fmt\DrawCtrl.java
 kiev.fmt.DrawDevice kiev/fmt/DrawDevice kiev\fmt\DrawDevice.java
+kiev.fmt.DrawExprSet kiev/fmt/DrawExprSet kiev\fmt\DrawNonTerm.java
 kiev.fmt.DrawGeometry kiev/fmt/DrawGeometry kiev\fmt\DrawGeometry.java
 kiev.fmt.DrawKeyword kiev/fmt/DrawKeyword kiev\fmt\DrawTerm.java
 kiev.fmt.DrawLayout kiev/fmt/DrawLayout kiev\fmt\SyntaxLayout.java
@@ -213,6 +214,7 @@ kiev.fmt.SpaceInfo kiev/fmt/SpaceInfo kiev\fmt\SyntaxLayout.java
 kiev.fmt.Syntax kiev/fmt/Syntax kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxAttr kiev/fmt/SyntaxAttr kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxElem kiev/fmt/SyntaxElem kiev\fmt\SyntaxLayout.java
+kiev.fmt.SyntaxExpr kiev/fmt/SyntaxExpr kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxIdentAttr kiev/fmt/SyntaxIdentAttr kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxKeyword kiev/fmt/SyntaxKeyword kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxList kiev/fmt/SyntaxList kiev\fmt\SyntaxLayout.java
