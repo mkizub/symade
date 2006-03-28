@@ -30,7 +30,7 @@ public class TextPrinter implements DrawDevice {
 			int x = leaf.geometry.x;
 			int y = leaf.geometry.y;
 
-			if (leaf instanceof Space)
+			if (leaf instanceof DrawSpace)
 				continue;
 			
 			while (pos_y < y) {

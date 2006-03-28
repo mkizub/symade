@@ -148,68 +148,6 @@ public class Syntax {
 		return new SyntaxSeparator(this,sep,layout);
 	}
 	
-	protected final SyntaxElem opt(String prop, SyntaxElem element)
-	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
-		return new SyntaxOptional(this, prop, element, null,lout);
-	}
-
-	protected final SyntaxElem alt(String prop, SyntaxElem element, SyntaxElem altern)
-	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
-		return new SyntaxOptional(this, prop, element, altern, lout);
-	}
-
-	protected final SyntaxExpr expr(String expr, int priority)
-	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
-		SyntaxExpr se = new SyntaxExpr(this, expr, lout.ncopy());
-		se.priority = priority;
-		se.l_paren = sep("(");
-		se.element = attr(expr);
-		se.r_paren = sep(")");
-		return se;
-	}
-
-	protected final SyntaxSet expr(String expr1, Operator op, String expr2)
-	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
-		String id = op.toString().intern();
-		return set(id, lout, expr(expr1, op.getArgPriority(0)), oper(op), expr(expr2, op.getArgPriority(1)));
-	}
-
-	protected final SyntaxSet expr(Operator op, String expr2)
-	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
-		String id = op.toString().intern();
-		return set(id, lout, oper(op), expr(expr2, op.getArgPriority()));
-	}
-
-	protected final SyntaxSet expr(String expr1, Operator op)
-	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
-		String id = op.toString().intern();
-		return set(id, lout, expr(expr1, op.getArgPriority()), oper(op));
-	}
-
 }
 
 public enum IndentKind {
@@ -388,29 +326,6 @@ public class SyntaxSeparator extends SyntaxToken {
 }
 
 @node
-public class SyntaxOptional extends SyntaxElem {
-	@virtual typedef This  = SyntaxOptional;
-
-	@att public String prop;
-	@att public SyntaxElem element;
-	@att public SyntaxElem altern;
-
-	public SyntaxOptional() {}
-	public SyntaxOptional(Syntax stx, String prop, SyntaxElem element, SyntaxElem altern, DrawLayout layout) {
-		super(stx, prop, layout);
-		this.prop = prop;
-		this.element = element;
-		this.altern = altern;
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
-		Drawable dr = new DrawOptional(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
 public class SyntaxList extends SyntaxElem {
 	@virtual typedef This  = SyntaxList;
 
@@ -452,24 +367,17 @@ public class SyntaxSet extends SyntaxElem {
 }
 
 @node
-public class SyntaxExpr extends SyntaxElem {
-	@virtual typedef This  = SyntaxExpr;
+public abstract class SyntaxChoice extends SyntaxElem {
+	@virtual typedef This  = SyntaxChoice;
 
-	@att public int					priority;
-	@att public SyntaxSeparator		l_paren;
-	@att public SyntaxElem			element;
-	@att public SyntaxSeparator		r_paren;
+	@att public NArr<SyntaxElem> elements;
 
-	public SyntaxExpr() {}
-	public SyntaxExpr(Syntax stx, String id, DrawLayout layout) {
+	public SyntaxChoice() {}
+	public SyntaxChoice(Syntax stx, String id, DrawLayout layout) {
 		super(stx,id,layout);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
-		Drawable dr = new DrawExprSet(node, this);
-		dr.init(fmt);
-		return dr;
-	}
+	public abstract Drawable makeDrawable(Formatter fmt, ASTNode node);
 }
 
 @node
@@ -487,7 +395,7 @@ public class SyntaxAttr extends SyntaxElem {
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
 		Object obj = node.getVal(name);
 		if (obj instanceof ASTNode)
-			return fmt.getDrawable((ASTNode)node.getVal(name));
+			return fmt.getDrawable((ASTNode)obj);
 		Drawable dr = new DrawNodeTerm(node, this, name);
 		dr.init(fmt);
 		return dr;
@@ -510,296 +418,4 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 	}
 }
 
-public class JavaSyntax extends Syntax {
-	final SyntaxElem seFileUnit;
-	final SyntaxElem seStruct;
-	final SyntaxElem seImport;
-	final SyntaxElem seField;
-	final SyntaxElem seFormPar;
-	final SyntaxElem seConstructor;
-	final SyntaxElem seMethod;
-	final SyntaxElem seBlock;
-	final SyntaxElem seExprStat;
-	final SyntaxElem seConstExpr;
-	final SyntaxElem seBinaryBooleanOrExpr;
-	final SyntaxElem seBinaryBooleanAndExpr;
-	final SyntaxElem seInstanceofExpr;
-	final SyntaxElem seBooleanNotExpr;
-	
-	final Hashtable<Operator, SyntaxElem> exprs;
-	
-	public JavaSyntax() {
-		{
-			DrawLayout lout_file = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("after_file", NL_ADD_AFTER, 0)
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_pkg = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("after_package", NL_ADD_GROUP_AFTER, 0)
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_syntax = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("file_syntax_group", NL_ADD_GROUP_AFTER, 0)
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_members = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("file_members_group", NL_ADD_GROUP_AFTER, 0)
-				},
-				new SpaceInfo[]{}
-			);
-			// file unit
-			seFileUnit = set("file", lout_file,
-					opt("pkg.name",
-						set("package", lout_pkg, kw("package"), ident("pkg"), sep(";")	)
-						),
-					lst(attr("syntax"), lout_syntax),
-					lst(attr("members"), lout_members)
-				);
-		}
-		{
-			DrawLayout lout_syntax = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("file_syntax", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			// import
-			seImport = set("import", lout_syntax,
-				kw("import"), ident("name"), opt("star", sep(".*")), sep(";")
-				);
-		}
-		{
-			DrawLayout lout_struct = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("struct", NL_ADD_GROUP_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_struct_hdr = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("struct_hdr", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_struct_block_start = new DrawLayout(1, INDENT_KIND_FIXED_SIZE,
-				new NewLineInfo[]{
-					new NewLineInfo("struct_hdr", NL_TRANSFER, 0),
-					new NewLineInfo("block_start", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{
-					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
-					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
-				}
-			);
-			DrawLayout lout_struct_block_end = new DrawLayout(1, INDENT_KIND_UNINDENT,
-				new NewLineInfo[]{
-					new NewLineInfo("block_end", NL_ADD_BEFORE, 0),
-					new NewLineInfo("block_end", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{
-					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
-					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
-				}
-			);
-			DrawLayout lout_struct_end = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("struct", NL_ADD_GROUP_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			// struct
-			seStruct = set("struct", lout_struct,
-				set("struct_hdr", lout_struct_hdr, kw("class"), ident("short_name")),
-				lst(
-					sep("{", lout_struct_block_start),
-					null,
-					attr("members"),
-					null,
-					null,
-					sep("}", lout_struct_block_end),
-					lout_struct_end
-					)
-				);
-		}
-		{
-			DrawLayout lout_field = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("field_decl_group", NL_TRANSFER, 0),
-					new NewLineInfo("field_decl_group", NL_ADD_GROUP_AFTER, 0),
-					new NewLineInfo("field_decl", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			// field
-			seField = set("field", lout_field,
-				ident("ftype"), ident("name"), sep(";")
-				);
-		}
-		{
-			DrawLayout lout_form_par = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{},
-				new SpaceInfo[]{}
-			);
-			// formal parameter
-			seFormPar = set("form-par", lout_form_par,
-				ident("vtype"), ident("name")
-				);
-		}
-		{
-			DrawLayout lout_method = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("method_decl", NL_ADD_GROUP_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_method_hdr = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("method_params", NL_DEL_BEFORE, 0),
-					new NewLineInfo("method_hdr", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_params = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("method_params", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			// constructor
-			seConstructor = set("ctor", lout_method.ncopy(),
-				set("method_hdr", lout_method_hdr.ncopy(),
-					ident("parent.short_name"),
-					lst(sep("("),
-						null,
-						attr("params"),
-						null,
-						sep(","),
-						sep(")"),
-						lout_params.ncopy())
-					),
-				attr("body")
-				);
-			// method
-			seMethod = set("method", lout_method.ncopy(),
-				set("method_hdr", lout_method_hdr.ncopy(),
-					ident("type_ret"), ident("name"),
-					lst(sep("("),
-						null,
-						attr("params"),
-						null,
-						sep(","),
-						sep(")"),
-						lout_params.ncopy())
-					),
-				alt("body", attr("body"), sep(";"))
-				);
-		}
-		{
-			DrawLayout lout_code_block = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_code_block_start = new DrawLayout(1, INDENT_KIND_FIXED_SIZE,
-				new NewLineInfo[]{
-					new NewLineInfo("method_hdr", NL_DEL_BEFORE, 0),
-					new NewLineInfo("method_params", NL_DEL_BEFORE, 0),
-					new NewLineInfo("block_start", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{
-					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
-					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
-				}
-			);
-			DrawLayout lout_code_block_end = new DrawLayout(1, INDENT_KIND_UNINDENT,
-				new NewLineInfo[]{
-					new NewLineInfo("block_start", NL_DEL_BEFORE, 0),
-					new NewLineInfo("block_end", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{
-					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
-					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
-				}
-			);
-			// block expression
-			seBlock = lst(
-					sep("{", lout_code_block_start),
-					null,
-					attr("stats"),
-					null,
-					null,
-					sep("}", lout_code_block_end),
-					lout_code_block
-					);
-		}
-		{
-			DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{},
-				new SpaceInfo[]{}
-			);
-			seExprStat = set("import", lout, attr("expr"), sep(";"));
-		}
-		exprs = new Hashtable<Operator, SyntaxElem>();
-		seConstExpr = attr("value");
-		seBinaryBooleanOrExpr = expr("expr1", BinaryOperator.BooleanOr, "expr2");
-		seBinaryBooleanAndExpr = expr("expr1", BinaryOperator.BooleanAnd, "expr2");
-		seInstanceofExpr = expr("expr", BinaryOperator.InstanceOf, "type");
-		seBooleanNotExpr = expr(PrefixOperator.BooleanNot, "expr");
-	}
-	public SyntaxElem getSyntaxElem(ASTNode node) {
-		switch (node) {
-		case FileUnit: return seFileUnit;
-		case Import: return seImport;
-		case Struct: return seStruct;
-		case Field: return seField;
-		case FormPar: return seFormPar;
-		case Constructor: return seConstructor;
-		case Method: return seMethod;
-		case ExprStat: return seExprStat;
-		case Block: return seBlock;
-		case ConstExpr: return seConstExpr;
-		case BinaryBooleanOrExpr: return seBinaryBooleanOrExpr;
-		case BinaryBooleanAndExpr: return seBinaryBooleanAndExpr;
-		case InstanceofExpr: return seInstanceofExpr;
-		case BooleanNotExpr: return seBooleanNotExpr;
-		case UnaryExpr: {
-			Operator op = ((UnaryExpr)node).op;
-			SyntaxElem se = exprs.get(op);
-			if (se == null) {
-				if (op instanceof PrefixOperator)
-					se = expr(op, "expr");
-				else
-					se = expr("expr", op);
-				exprs.put(op, se);
-			}
-			return se;
-		}
-		case BinaryExpr: {
-			Operator op = ((BinaryExpr)node).op;
-			SyntaxElem se = exprs.get(op);
-			if (se == null) {
-				se = expr("expr1", op, "expr2");
-				exprs.put(op, se);
-			}
-			return se;
-		}
-		case BinaryBoolExpr: {
-			Operator op = ((BinaryExpr)node).op;
-			SyntaxElem se = exprs.get(op);
-			if (se == null) {
-				se = expr("expr1", op, "expr2");
-				exprs.put(op, se);
-			}
-			return se;
-		}
-		}
-		return super.getSyntaxElem(node);
-	}
-}
 
