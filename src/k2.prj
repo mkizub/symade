@@ -202,6 +202,7 @@ kiev.fmt.DrawNonTerm kiev/fmt/DrawNonTerm kiev\fmt\DrawNonTerm.java
 kiev.fmt.DrawNonTermList kiev/fmt/DrawNonTermList kiev\fmt\DrawNonTerm.java
 kiev.fmt.DrawNonTermSet kiev/fmt/DrawNonTermSet kiev\fmt\DrawNonTerm.java
 kiev.fmt.DrawOperator kiev/fmt/DrawOperator kiev\fmt\DrawTerm.java
+kiev.fmt.DrawOptional kiev/fmt/DrawOptional kiev\fmt\DrawCtrl.java
 kiev.fmt.DrawSeparator kiev/fmt/DrawSeparator kiev\fmt\DrawTerm.java
 kiev.fmt.DrawSpace kiev/fmt/DrawSpace kiev\fmt\DrawTerm.java
 kiev.fmt.DrawTerm kiev/fmt/DrawTerm kiev\fmt\DrawTerm.java
@@ -225,6 +226,7 @@ kiev.fmt.SyntaxJavaPackage kiev/fmt/SyntaxJavaPackage kiev\fmt\JavaSyntax.java
 kiev.fmt.SyntaxKeyword kiev/fmt/SyntaxKeyword kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxList kiev/fmt/SyntaxList kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxOperator kiev/fmt/SyntaxOperator kiev\fmt\SyntaxLayout.java
+kiev.fmt.SyntaxOptional kiev/fmt/SyntaxOptional kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxSeparator kiev/fmt/SyntaxSeparator kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxSet kiev/fmt/SyntaxSet kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxSpace kiev/fmt/SyntaxSpace kiev\fmt\SyntaxLayout.java

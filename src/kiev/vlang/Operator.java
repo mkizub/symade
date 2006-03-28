@@ -661,6 +661,7 @@ public class BinaryOperator extends Operator {
 	public static final BinaryOperator Mod;
 
 	public static final BinaryOperator Access;
+	public static final BinaryOperator Comma;
 	
 	static {
 		BooleanOr = newBinaryOperator(opBooleanOrPriority, KString.from("||"), KString.from("opBooleanOr"),null,orderAndArityNames[YFX],true);
@@ -744,6 +745,7 @@ public class BinaryOperator extends Operator {
 //			Mod.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
 
 		Access = newBinaryOperator(opAccessPriority, KString.from("."), KString.from("opAccess"),null,orderAndArityNames[YFX],true);
+		Comma = newBinaryOperator(1, KString.from(","), KString.from("opComma"),null,orderAndArityNames[YFX],true);
 	}
 
 	public boolean is_boolean_op;

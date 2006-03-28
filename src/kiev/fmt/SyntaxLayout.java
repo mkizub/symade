@@ -129,6 +129,11 @@ public class Syntax {
 
 	protected final SyntaxOperator oper(Operator op)
 	{
+		return oper(op.toString());
+	}
+
+	protected final SyntaxOperator oper(String op)
+	{
 		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
 			new NewLineInfo[]{},
 			new SpaceInfo[]{
@@ -140,7 +145,7 @@ public class Syntax {
 				new SpaceInfo("oper", SP_ADD_AFTER, 1, 10),
 			}
 		);
-		return new SyntaxOperator(this,op.toString().intern(),lout);
+		return new SyntaxOperator(this,op.intern(),lout);
 	}
 
 	protected final SyntaxSeparator sep(String sep, DrawLayout layout)
@@ -148,6 +153,24 @@ public class Syntax {
 		return new SyntaxSeparator(this,sep,layout);
 	}
 	
+	protected final SyntaxOptional opt(String name)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		return new SyntaxOptional(this,name,attr(name),lout);
+	}
+	
+	protected final SyntaxOptional opt(String name, SyntaxElem opt)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		return new SyntaxOptional(this,name,opt,lout);
+	}
+
 }
 
 public enum IndentKind {
@@ -393,6 +416,8 @@ public class SyntaxAttr extends SyntaxElem {
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		if (name.equals("this"))
+			return new DrawNodeTerm(node, this, "");
 		Object obj = node.getVal(name);
 		if (obj instanceof ASTNode)
 			return fmt.getDrawable((ASTNode)obj);
@@ -413,6 +438,27 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
 		Drawable dr = new DrawNodeTerm(node, this, name);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
+public class SyntaxOptional extends SyntaxElem {
+	@virtual typedef This  = SyntaxOptional;
+
+	@att public SyntaxElem opt;
+	@att public String name;
+
+	public SyntaxOptional() {}
+	public SyntaxOptional(Syntax stx, String name, SyntaxElem opt, DrawLayout layout) {
+		super(stx,name,layout);
+		this.opt = opt;
+		this.name = name.intern();
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawOptional(node, this);
 		dr.init(fmt);
 		return dr;
 	}

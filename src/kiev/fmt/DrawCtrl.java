@@ -49,4 +49,38 @@ public abstract class DrawChoice extends DrawNonTerm {
 	}
 }
 
+@node
+public class DrawOptional extends DrawNonTerm {
+
+	@att Drawable			arg;
+
+	public DrawOptional() {}
+	public DrawOptional(ASTNode node, SyntaxOptional syntax) {
+		super(node, syntax);
+	}
+
+	public void init(Formatter fmt) {
+		SyntaxOptional sc = (SyntaxOptional)syntax;
+		arg = sc.opt.makeDrawable(fmt, node);
+	}
+
+	public DrawTerm getFirstLeaf() { return isUnvisible() || arg == null ? null : arg.getFirstLeaf(); }
+	public DrawTerm getLastLeaf()  { return isUnvisible() || arg == null ? null : arg.getLastLeaf();  }
+
+	public void preFormat(DrawContext cont) {
+		if (node.getVal(((SyntaxOptional)syntax).name) == null)
+			this.geometry.is_hidden = true;
+		if (this.isUnvisible())
+			return;
+		this.geometry.x = 0;
+		this.geometry.y = 0;
+		arg.preFormat(cont);
+	}
+
+	public final boolean postFormat(DrawContext context, boolean parent_last_layout) {
+		this.geometry.do_newline = 0;
+		return arg.postFormat(context, parent_last_layout);
+	}
+}
+
 

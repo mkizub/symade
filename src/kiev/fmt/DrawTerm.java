@@ -96,6 +96,8 @@ public class DrawNodeTerm extends DrawTerm {
 		Object o = node;
 		for (int i=0; i < attrs.length; i++) {
 			if (o instanceof ASTNode) {
+				if (attrs[i] == "")
+					break;
 				if (attrs[i] == "parent")
 					o = o.parent;
 				else
