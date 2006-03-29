@@ -103,12 +103,15 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seFileUnit;
 	final SyntaxElem seStruct;
 	final SyntaxElem seImport;
+	final SyntaxElem seOpdef;
+	final SyntaxElem seTypeDef;
 	final SyntaxElem seFieldDecl;
 	final SyntaxElem seVarDecl;
 	final SyntaxElem seVar;
 	final SyntaxElem seFormPar;
 	final SyntaxElem seConstructor;
 	final SyntaxElem seMethod;
+	final SyntaxElem seInitializer;
 	
 	final SyntaxElem seExprStat;
 	final SyntaxElem seReturnStat;
@@ -255,7 +258,32 @@ public class JavaSyntax extends Syntax {
 				new SpaceInfo[]{}
 			);
 			// import
-			seImport = new SyntaxJavaImport(this, "import", lout_syntax);
+			seImport = new SyntaxJavaImport(this, "import", lout_syntax.ncopy());
+			seOpdef = set("opdef", lout_syntax.ncopy(),
+				kw("operator"),
+				ident("image"),
+				sep(","),
+				alt_int("opmode",
+					kw("lfy"),
+					kw("xfx"),
+					kw("xfy"),
+					kw("yfx"),
+					kw("yfy"),
+					kw("xf"),
+					kw("yf"),
+					kw("fx"),
+					kw("fy"),
+					kw("xfxfy")
+					),
+				sep(","),
+				ident("prior"),
+				sep(";")
+				);
+			seTypeDef = set("type-def", lout_syntax.ncopy(), kw("typedef"), ident("name"), 
+				lst(null, oper("\u2264"), attr("upper_bound"), null, null, null, lout_empty.ncopy()),
+				lst(null, oper("\u2265"), attr("lower_bound"), null, null, null, lout_empty.ncopy()),
+				sep(";")
+				);
 		}
 		{
 			DrawLayout lout_struct = new DrawLayout(1, INDENT_KIND_NONE,
@@ -391,6 +419,9 @@ public class JavaSyntax extends Syntax {
 						lout_params.ncopy())
 					),
 				new SyntaxJavaMethodBody(this, "body", lout_body, sep(";"), attr("body"))
+				);
+			seInitializer = set("initializer", lout_method.ncopy(),
+					attr("body")
 				);
 		}
 		{
@@ -580,6 +611,8 @@ public class JavaSyntax extends Syntax {
 		switch (node) {
 		case FileUnit: return seFileUnit;
 		case Import: return seImport;
+		case Opdef: return seOpdef;
+		case TypeDef: return seTypeDef;
 		case Struct: return seStruct;
 		case Field: return seFieldDecl;
 		case VarDecl: return seVarDecl;
@@ -587,6 +620,7 @@ public class JavaSyntax extends Syntax {
 		case Var: return seVar;
 		case Constructor: return seConstructor;
 		case Method: return seMethod;
+		case Initializer: return seInitializer;
 		case Block: return seBlock;
 		case ConstExpr: return seConstExpr;
 		case TypeRef: return seTypeRef;

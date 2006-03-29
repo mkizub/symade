@@ -171,6 +171,17 @@ public class Syntax {
 		return new SyntaxOptional(this,name,opt,lout);
 	}
 
+	protected final SyntaxIntChoice alt_int(String name, SyntaxElem... options)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		SyntaxIntChoice sc = new SyntaxIntChoice(this,name,lout);
+		sc.elements.addAll(options);
+		return sc;
+	}
+
 }
 
 public enum IndentKind {
@@ -459,6 +470,22 @@ public class SyntaxOptional extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
 		Drawable dr = new DrawOptional(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
+public class SyntaxIntChoice extends SyntaxChoice {
+	@virtual typedef This  = SyntaxOptional;
+
+	public SyntaxIntChoice() {}
+	public SyntaxIntChoice(Syntax stx, String name, DrawLayout layout) {
+		super(stx,name,layout);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawIntChoice(node, this);
 		dr.init(fmt);
 		return dr;
 	}

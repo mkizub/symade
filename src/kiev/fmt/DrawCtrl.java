@@ -32,10 +32,13 @@ public abstract class DrawChoice extends DrawNonTerm {
 	public DrawTerm getLastLeaf()  { return isUnvisible() || arg == null ? null : arg.getLastLeaf();  }
 
 	public void preFormat(DrawContext cont) {
+		foreach (Drawable dr; options; dr != arg)
+			dr.geometry.is_hidden = true;
 		if (arg == null)
 			this.geometry.is_hidden = true;
 		if (this.isUnvisible())
 			return;
+		arg.geometry.is_hidden = false;
 		this.geometry.x = 0;
 		this.geometry.y = 0;
 		arg.preFormat(cont);
@@ -80,6 +83,24 @@ public class DrawOptional extends DrawNonTerm {
 	public final boolean postFormat(DrawContext context, boolean parent_last_layout) {
 		this.geometry.do_newline = 0;
 		return arg.postFormat(context, parent_last_layout);
+	}
+}
+
+@node
+public class DrawIntChoice extends DrawChoice {
+
+	public DrawIntChoice() {}
+	public DrawIntChoice(ASTNode node, SyntaxChoice syntax) {
+		super(node, syntax);
+	}
+
+	public void preFormat(DrawContext cont) {
+		int idx = ((Integer)node.getVal(syntax.ID)).intValue();
+		if (idx < 0 || idx >= options.size())
+			arg = null;
+		else
+			arg = options[idx];
+		super.preFormat(cont);
 	}
 }
 
