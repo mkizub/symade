@@ -127,6 +127,14 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seForStat;
 	final SyntaxElem seForEachStat;
 	
+	final SyntaxElem seCaseLabel;
+	final SyntaxElem seSwitchStat;
+	final SyntaxElem seCatchInfo;
+	final SyntaxElem seFinallyInfo;
+	final SyntaxElem seTryStat;
+	final SyntaxElem seSynchronizedStat;
+	final SyntaxElem seWithStat;
+	
 	final SyntaxElem seBlock;
 	final SyntaxElem seTypeRef;
 	final SyntaxElem seConstExpr;
@@ -445,6 +453,14 @@ public class JavaSyntax extends Syntax {
 		seForStat = set("stat", lout_empty.ncopy(), kw("for"), sep("("), attr("init"), sep(";"), attr("cond"), sep(";"), attr("iter"), sep(")"), attr("body"));
 		seForEachStat = set("stat", lout_empty.ncopy(), kw("foreach"), sep("("), attr("var"), sep(";"), attr("container"), opt("filter", set("", lout_empty.ncopy(), sep(";"), attr("cond"))), sep(")"), attr("body"));
 		
+		seCaseLabel = set("stat", lout_empty.ncopy(), kw("case"), attr("val"), sep(":"), lst(attr("stats"),lout_empty.ncopy()));
+		seSwitchStat = set("stat", lout_empty.ncopy(), kw("switch"), sep("("), attr("sel"), sep(")"), lst(sep("{"),null,attr("cases"),null,null,sep("}"),lout_empty.ncopy()));
+		seCatchInfo = set("stat", lout_empty.ncopy(), kw("catch"), sep("("), attr("arg"), sep(")"), attr("body"));
+		seFinallyInfo = set("stat", lout_empty.ncopy(), kw("finally"), attr("body"));
+		seTryStat = set("stat", lout_empty.ncopy(), kw("try"), attr("body"), lst(attr("catchers"),lout_empty.ncopy()), opt("finally_catcher", attr("finally_catcher")));
+		seSynchronizedStat = set("stat", lout_empty.ncopy(), kw("synchronized"), sep("("), attr("expr"), sep(")"), attr("body"));
+		seWithStat = set("stat", lout_empty.ncopy(), kw("with"), sep("("), attr("expr"), sep(")"), attr("body"));
+	
 		exprs = new Hashtable<Operator, SyntaxElem>();
 		seConstExpr = attr("this");
 		seTypeRef = ident("lnk");
@@ -592,6 +608,14 @@ public class JavaSyntax extends Syntax {
 		case ForInit: return seForInit;
 		case ForStat: return seForStat;
 		case ForEachStat: return seForEachStat;
+
+		case CaseLabel: return seCaseLabel;
+		case SwitchStat: return seSwitchStat;
+		case CatchInfo: return seCatchInfo;
+		case FinallyInfo: return seFinallyInfo;
+		case TryStat: return seTryStat;
+		case SynchronizedStat: return seSynchronizedStat;
+		case WithStat: return seWithStat;
 
 		case AccessExpr: return seAccessExpr;
 		case IFldExpr: return seIFldExpr;
