@@ -451,7 +451,7 @@ public class JavaSyntax extends Syntax {
 		seDoWhileStat = set("stat", lout_empty.ncopy(), kw("do"), attr("body"), kw("while"), sep("("), attr("cond"), sep(")"), sep(";"));
 		seForInit = lst(null,null,attr("decls"),null,null,null,lout_empty.ncopy());
 		seForStat = set("stat", lout_empty.ncopy(), kw("for"), sep("("), attr("init"), sep(";"), attr("cond"), sep(";"), attr("iter"), sep(")"), attr("body"));
-		seForEachStat = set("stat", lout_empty.ncopy(), kw("foreach"), sep("("), attr("var"), sep(";"), attr("container"), opt("filter", set("", lout_empty.ncopy(), sep(";"), attr("cond"))), sep(")"), attr("body"));
+		seForEachStat = set("stat", lout_empty.ncopy(), kw("foreach"), sep("("), attr("var"), sep(";"), attr("container"), opt("cond", set("cond", lout_empty.ncopy(), sep(";"), attr("cond"))), sep(")"), attr("body"));
 		
 		seCaseLabel = set("stat", lout_empty.ncopy(), kw("case"), attr("val"), sep(":"), lst(attr("stats"),lout_empty.ncopy()));
 		seSwitchStat = set("stat", lout_empty.ncopy(), kw("switch"), sep("("), attr("sel"), sep(")"), lst(sep("{"),null,attr("cases"),null,null,sep("}"),lout_empty.ncopy()));

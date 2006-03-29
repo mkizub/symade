@@ -22,7 +22,7 @@ public interface Formatter {
 }
 
 public class TextFormatter implements Formatter {
-	public static final AttrSlot ATTR = new DataAttrSlot("text fmt info",false,Drawable.class);	
+	public static final AttrSlot ATTR = new DataAttrSlot("text fmt info",true,Shadow.class);	
 	private Syntax syntax;
 	
 	public TextFormatter(Syntax syntax) {
@@ -88,12 +88,12 @@ public class TextFormatter implements Formatter {
 			SyntaxSpace ssp = new SyntaxSpace(syntax,"",lout);
 			return new DrawSpace(null, ssp);
 		}
-		Drawable dr = node.getNodeData(ATTR);
-		if (dr != null)
-			return dr;
+		Shadow sdr = node.getNodeData(ATTR);
+		if (sdr != null)
+			return (Drawable)sdr.node;
 		SyntaxElem stx_elem = syntax.getSyntaxElem(node);
 		Drawable dr = stx_elem.makeDrawable(this,node);
-		node.addNodeData(dr, ATTR);
+		node.addNodeData(new Shadow(dr), ATTR);
 		return dr;
 	}
 }

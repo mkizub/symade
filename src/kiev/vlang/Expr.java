@@ -67,10 +67,7 @@ public class Shadow extends ENode {
 	}
 
 	public Shadow() {}
-	public Shadow(ENode node) {
-		this.node = node;
-	}
-	public Shadow(Initializer node) {
+	public Shadow(ASTNode node) {
 		this.node = node;
 	}
 	

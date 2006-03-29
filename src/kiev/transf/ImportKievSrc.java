@@ -5,6 +5,7 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
+import java.io.*;
 
 import kiev.be.java.JFileUnit;
 import kiev.fmt.JavaSyntax;
@@ -799,7 +800,60 @@ class VSrcBackend extends BackendProcessor {
 		StringBuffer sb = new StringBuffer(1024);
 		TextPrinter pr = new TextPrinter(sb);
 		pr.draw(dr);
-		System.out.println(sb.toString());
+		cleanFormatting(node, f.getAttr());
+		if (node instanceof FileUnit) {
+			try {
+				dumpSrc((FileUnit)node, sb.toString());
+			} catch (Exception rte) { Kiev.reportError(rte); }
+		} else {
+			System.out.println(sb.toString());
+		}
+	}
+
+	private void cleanFormatting(ASTNode node, AttrSlot attr) {
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(NodeData n) {
+				if (n instanceof ASTNode)
+					n.delNodeData(attr);
+				return true;
+			}
+		});
+	}
+	
+	public void dumpSrc(FileUnit fu, String text) {
+		String output_dir = Kiev.output_dir;
+		if( output_dir==null ) output_dir = "classes";
+		if( Kiev.verbose ) System.out.println("Dumping to source file "+fu+" into '"+output_dir+"' dir");
+
+		try {
+			File f;
+			String out_file = fu.filename.toString();
+			make_output_dir(output_dir,out_file);
+			f = new File(output_dir,out_file);
+			FileOutputStream out;
+			try {
+				out = new FileOutputStream(f);
+			} catch( java.io.FileNotFoundException e ) {
+				System.gc();
+				System.runFinalization();
+				System.gc();
+				System.runFinalization();
+				out = new FileOutputStream(f);
+			}
+			out.write("\uFEFF".getBytes("UTF-8"));
+			out.write(text.getBytes("UTF-8"));
+			out.close();
+		} catch( IOException e ) {
+			System.out.println("Create/write error while Kiev-to-Src exporting: "+e);
+		}
+	}
+
+	private static void make_output_dir(String top_dir, String filename) throws IOException {
+		File dir;
+		dir = new File(top_dir,filename);
+		dir = new File(dir.getParent());
+		dir.mkdirs();
+		if( !dir.exists() || !dir.isDirectory() ) throw new RuntimeException("Can't create output dir "+dir);
 	}
 }
 
