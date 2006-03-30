@@ -15,10 +15,20 @@ import static kiev.fmt.SpaceAction.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+
 public interface Formatter {
 	public Drawable format(ASTNode node);
-	public Drawable getDrawable(ASTNode node);
+	public Drawable getDrawable(ASTNode node, FormatInfoHint hint);
 	public AttrSlot getAttr();
+}
+
+@node
+public class FormatInfoHint extends ASTNode {
+	@virtual typedef This  = FormatInfoHint;
+
+	@att public String text;
+	public FormatInfoHint() {}
+	public FormatInfoHint(String text) { this.text = text; }
 }
 
 public class TextFormatter implements Formatter {
@@ -36,7 +46,7 @@ public class TextFormatter implements Formatter {
 	public Drawable format(ASTNode node) {
 		DrawContext ctx = new DrawContext();
 		ctx.width = 100;
-		Drawable root = getDrawable(node);
+		Drawable root = getDrawable(node, null);
 		root.preFormat(ctx);
 		ctx = new DrawContext();
 		ctx.width = 100;
@@ -78,7 +88,7 @@ public class TextFormatter implements Formatter {
 		return root;
 	}
 	
-	public Drawable getDrawable(ASTNode node) {
+	public Drawable getDrawable(ASTNode node, FormatInfoHint hint) {
 		if (node == null) {
 			DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
 				new NewLineInfo[]{},
@@ -91,7 +101,7 @@ public class TextFormatter implements Formatter {
 		Shadow sdr = node.getNodeData(ATTR);
 		if (sdr != null)
 			return (Drawable)sdr.node;
-		SyntaxElem stx_elem = syntax.getSyntaxElem(node);
+		SyntaxElem stx_elem = syntax.getSyntaxElem(node, hint);
 		Drawable dr = stx_elem.makeDrawable(this,node);
 		node.addNodeData(new Shadow(dr), ATTR);
 		return dr;

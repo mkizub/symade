@@ -52,23 +52,6 @@ public class DrawJavaImport extends DrawNonTermSet {
 }
 
 @node
-public class DrawJavaMethodBody extends DrawChoice {
-	
-	public DrawJavaMethodBody() {}
-	public DrawJavaMethodBody(ASTNode node, SyntaxJavaMethodBody syntax) {
-		super(node, syntax);
-	}
-	public void preFormat(DrawContext cont) {
-		Method m = (Method)node;
-		if (m.body == null)
-			this.arg = options[0];
-		else
-			this.arg = options[1];
-		super.preFormat(cont);
-	}
-}
-
-@node
 public class DrawJavaExpr extends DrawNonTermSet {
 	public DrawJavaExpr() {}
 	public DrawJavaExpr(ASTNode node, SyntaxJavaExpr syntax) {
@@ -78,7 +61,7 @@ public class DrawJavaExpr extends DrawNonTermSet {
 	public void init(Formatter fmt) {
 		SyntaxJavaExpr se = (SyntaxJavaExpr)this.syntax;
 		args.append(se.l_paren.makeDrawable(fmt, node));
-		args.append(fmt.getDrawable(node));
+		args.append(fmt.getDrawable(node, null));
 		args.append(se.r_paren.makeDrawable(fmt, node));
 	}
 

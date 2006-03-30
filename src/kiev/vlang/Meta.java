@@ -126,6 +126,7 @@ public final class MetaValueType {
 		this.name = name;
 		this.ret = ret;
 	}
+	public String toString() { return String.valueOf(name); }
 }
 
 @node

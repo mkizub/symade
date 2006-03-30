@@ -17,7 +17,6 @@ import static kiev.fmt.SpaceAction.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-
 public class Syntax {
 	public static final int SYNTAX_KIND_SPACE   = 1;
 	public static final int SYNTAX_KIND_TOKEN   = 2;
@@ -41,7 +40,7 @@ public class Syntax {
 	
 	public Syntax parent_syntax;
 	
-	public SyntaxElem getSyntaxElem(ASTNode node) {
+	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
 		return kw("?"+node.getClass().getName()+"?");
 	}
 	
@@ -88,6 +87,15 @@ public class Syntax {
 			new SpaceInfo[]{}
 		);
 		return new SyntaxAttr(this, slot, lout);
+	}
+
+	protected final SyntaxAttr attr(String slot, FormatInfoHint hint)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		return new SyntaxAttr(this, slot, hint, lout);
 	}
 
 	protected final SyntaxIdentAttr ident(String slot)
@@ -159,16 +167,21 @@ public class Syntax {
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		return new SyntaxOptional(this,name,attr(name),lout);
+		return opt(name,new CalcOptionNotNull(name),attr(name),null,lout);
 	}
 	
-	protected final SyntaxOptional opt(String name, SyntaxElem opt)
+	protected final SyntaxOptional opt(String name, SyntaxElem opt_true)
 	{
 		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		return new SyntaxOptional(this,name,opt,lout);
+		return opt(name,new CalcOptionNotNull(name),opt_true,null,lout);
+	}
+
+	protected final SyntaxOptional opt(String name, CalcOption calc, SyntaxElem opt_true, SyntaxElem opt_false, DrawLayout lout)
+	{
+		return new SyntaxOptional(this,name,calc,opt_true,opt_false,lout);
 	}
 
 	protected final SyntaxIntChoice alt_int(String name, SyntaxElem... options)
@@ -401,29 +414,21 @@ public class SyntaxSet extends SyntaxElem {
 }
 
 @node
-public abstract class SyntaxChoice extends SyntaxElem {
-	@virtual typedef This  = SyntaxChoice;
-
-	@att public NArr<SyntaxElem> elements;
-
-	public SyntaxChoice() {}
-	public SyntaxChoice(Syntax stx, String id, DrawLayout layout) {
-		super(stx,id,layout);
-	}
-
-	public abstract Drawable makeDrawable(Formatter fmt, ASTNode node);
-}
-
-@node
 public class SyntaxAttr extends SyntaxElem {
 	@virtual typedef This  = SyntaxAttr;
 
-	@att public String name;
+	@att public String			name;
+	@att public FormatInfoHint	hint;
 
 	public SyntaxAttr() {}
 	public SyntaxAttr(Syntax stx, String name, DrawLayout layout) {
 		super(stx,name,layout);
 		this.name = name.intern();
+	}
+	public SyntaxAttr(Syntax stx, String name, FormatInfoHint hint, DrawLayout layout) {
+		super(stx,name,layout);
+		this.name = name.intern();
+		this.hint = hint;
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -431,7 +436,7 @@ public class SyntaxAttr extends SyntaxElem {
 			return new DrawNodeTerm(node, this, "");
 		Object obj = node.getVal(name);
 		if (obj instanceof ASTNode)
-			return fmt.getDrawable((ASTNode)obj);
+			return fmt.getDrawable((ASTNode)obj, hint);
 		Drawable dr = new DrawNodeTerm(node, this, name);
 		dr.init(fmt);
 		return dr;
@@ -454,17 +459,45 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 	}
 }
 
+public interface CalcOption {
+	public boolean calc(ASTNode node);
+}
+
+public class CalcOptionNotNull implements CalcOption {
+	private final String name;
+	public CalcOptionNotNull(String name) { this.name = name.intern(); } 
+	public boolean calc(ASTNode node) {
+		return node != null && node.getVal(name) != null;
+	}
+}
+
+public class CalcOptionTrue implements CalcOption {
+	private final String name;
+	public CalcOptionTrue(String name) { this.name = name.intern(); } 
+	public boolean calc(ASTNode node) {
+		if (node == null) return false;
+		Object val = node.getVal(name);
+		if (val == null || !(val instanceof Boolean)) return false;
+		return ((Boolean)val).booleanValue();
+	}
+}
+
+
 @node
 public class SyntaxOptional extends SyntaxElem {
 	@virtual typedef This  = SyntaxOptional;
 
-	@att public SyntaxElem opt;
+	@ref public CalcOption calculator;
+	@att public SyntaxElem opt_true;
+	@att public SyntaxElem opt_false;
 	@att public String name;
 
 	public SyntaxOptional() {}
-	public SyntaxOptional(Syntax stx, String name, SyntaxElem opt, DrawLayout layout) {
+	public SyntaxOptional(Syntax stx, String name, CalcOption calculator, SyntaxElem opt_true, SyntaxElem opt_false, DrawLayout layout) {
 		super(stx,name,layout);
-		this.opt = opt;
+		this.calculator = calculator;
+		this.opt_true = opt_true;
+		this.opt_false = opt_false;
 		this.name = name.intern();
 	}
 
@@ -476,7 +509,7 @@ public class SyntaxOptional extends SyntaxElem {
 }
 
 @node
-public class SyntaxIntChoice extends SyntaxChoice {
+public class SyntaxIntChoice extends SyntaxSet {
 	@virtual typedef This  = SyntaxOptional;
 
 	public SyntaxIntChoice() {}
@@ -486,6 +519,25 @@ public class SyntaxIntChoice extends SyntaxChoice {
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
 		Drawable dr = new DrawIntChoice(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
+public class SyntaxMultipleChoice extends SyntaxSet {
+	@virtual typedef This  = SyntaxMultipleChoice;
+
+	@att public String name;
+
+	public SyntaxMultipleChoice() {}
+	public SyntaxMultipleChoice(Syntax stx, String name, DrawLayout layout) {
+		super(stx,name,layout);
+		this.name = name.intern();
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawMultipleChoice(node, this);
 		dr.init(fmt);
 		return dr;
 	}

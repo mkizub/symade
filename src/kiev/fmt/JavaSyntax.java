@@ -58,24 +58,6 @@ public class SyntaxJavaImport extends SyntaxSet {
 }
 
 @node
-public class SyntaxJavaMethodBody extends SyntaxChoice {
-	@virtual typedef This  = SyntaxJavaMethodBody;
-
-	public SyntaxJavaMethodBody() {}
-	public SyntaxJavaMethodBody(Syntax stx, String id, DrawLayout layout, SyntaxElem empty, SyntaxElem present) {
-		super(stx,id,layout);
-		this.elements.add(empty);
-		this.elements.add(present);
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
-		Drawable dr = new DrawJavaMethodBody(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
 public class SyntaxJavaExpr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxJavaExpr;
 
@@ -99,11 +81,34 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 	}
 }
 
+public class CalcOptionJavaFlag implements CalcOption {
+	private final int mask;
+	private final int offs;
+	private final int val;
+	public CalcOptionJavaFlag(int size, int offs, int val) {
+		this.mask = (-1 << (32-size)) >>> (32-size);
+		this.offs = offs;
+		this.val = val;
+	} 
+	public boolean calc(ASTNode node) {
+		if (node == null || !(node instanceof DNode)) return false;
+		int f = ((DNode)node).flags >>> offs;
+		f &= mask;
+		return f == val;
+	}
+}
+
+
 public class JavaSyntax extends Syntax {
 	final SyntaxElem seFileUnit;
 	final SyntaxElem seStruct;
+	final SyntaxElem seStructAnon;
 	final SyntaxElem seImport;
 	final SyntaxElem seOpdef;
+	final SyntaxElem seMetaSet;
+	final SyntaxElem seMeta;
+	final SyntaxElem seMetaValueScalar;
+	final SyntaxElem seMetaValueArray;
 	final SyntaxElem seTypeDef;
 	final SyntaxElem seFieldDecl;
 	final SyntaxElem seVarDecl;
@@ -156,6 +161,7 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seInstanceofExpr;
 	final SyntaxElem seBooleanNotExpr;
 	final SyntaxElem seCallExpr;
+	final SyntaxElem seClosureCallExpr;
 	// new expr
 	final SyntaxElem seNewExpr;
 	final SyntaxElem seNewArrayExpr;
@@ -173,6 +179,16 @@ public class JavaSyntax extends Syntax {
 	
 	final Hashtable<Operator, SyntaxElem> exprs;
 	
+	
+	protected final SyntaxElem jflag(int size, int offs, int val, String name)
+	{
+		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		return new SyntaxOptional(this, name, new CalcOptionJavaFlag(size, offs, val), kw(name), null, lout);
+	}
+
 	protected final SyntaxJavaExpr expr(String expr, int priority)
 	{
 		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
@@ -324,10 +340,8 @@ public class JavaSyntax extends Syntax {
 				},
 				new SpaceInfo[]{}
 			);
-			// struct
-			seStruct = set("struct", lout_struct,
-				set("struct_hdr", lout_struct_hdr, kw("class"), ident("short_name")),
-				lst(
+			// anonymouse struct
+			seStructAnon = lst(
 					sep("{", lout_struct_block_start),
 					null,
 					attr("members"),
@@ -335,8 +349,47 @@ public class JavaSyntax extends Syntax {
 					null,
 					sep("}", lout_struct_block_end),
 					lout_struct_end
-					)
+					);
+			// struct
+			seStruct = set("struct", lout_struct,
+					set("struct_hdr", lout_struct_hdr,
+						attr("meta"),
+						jflag(1,3,1,  "static"),
+						jflag(1,4,1,  "final"),
+						jflag(1,10,1, "abstract"),
+						jflag(1,11,1, "strict"),
+						kw("class"),
+						ident("short_name")),
+					seStructAnon.ncopy()
 				);
+		}
+		{
+			DrawLayout lout_meta = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("meta", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{}
+			);
+			seMetaSet = lst(attr("metas"), lout_empty.ncopy());
+			seMeta = set("meta", lout_meta, oper("@"), ident("type"), lst(sep("("),
+						null,
+						attr("values"),
+						null,
+						sep(","),
+						sep(")"),
+						lout_empty.ncopy()
+					));
+			seMetaValueScalar = set("meta-value-scalar", lout_empty.ncopy(), ident("type"), oper("="), attr("value"));
+			seMetaValueArray = set("meta-value-scalar", lout_empty.ncopy(), ident("type"), oper("="),
+					lst(sep("{"),
+						null,
+						attr("values"),
+						null,
+						sep(","),
+						sep("}"),
+						lout_empty.ncopy()
+						)
+					);
 		}
 		{
 			DrawLayout lout_field = new DrawLayout(1, INDENT_KIND_NONE,
@@ -348,20 +401,20 @@ public class JavaSyntax extends Syntax {
 				new SpaceInfo[]{}
 			);
 			// field
-			seFieldDecl = set("field-decl", lout_field.ncopy(),
+			seFieldDecl = set("field-decl", lout_field.ncopy(), attr("meta"),
 				ident("ftype"), ident("name"), opt("init", set("=", lout_empty.ncopy(), oper("="), expr("init", Constants.opAssignPriority))), sep(";")
 				);
 			// vars
 			seVarDecl = set("var_decl", lout_field.ncopy(),
 				attr("var"), sep(";")
 				);
-			seVar = set("var_decl", lout_field.ncopy(),
+			seVar = set("var_decl", lout_field.ncopy(), attr("meta"),
 				ident("vtype"), ident("name"), opt("init", set("=", lout_empty.ncopy(), oper("="), expr("init", Constants.opAssignPriority)))
 				);
 		}
 		{
 			// formal parameter
-			seFormPar = set("form-par", lout_empty.ncopy(),
+			seFormPar = set("form-par", lout_empty.ncopy(), attr("meta"),
 				ident("vtype"), ident("name")
 				);
 		}
@@ -394,7 +447,7 @@ public class JavaSyntax extends Syntax {
 			);
 			// constructor
 			seConstructor = set("ctor", lout_method.ncopy(),
-				set("method_hdr", lout_method_hdr.ncopy(),
+				set("method_hdr", lout_method_hdr.ncopy(), attr("meta"),
 					ident("parent.short_name"),
 					lst(sep("("),
 						null,
@@ -408,7 +461,7 @@ public class JavaSyntax extends Syntax {
 				);
 			// method
 			seMethod = set("method", lout_method.ncopy(),
-				set("method_hdr", lout_method_hdr.ncopy(),
+				set("method_hdr", lout_method_hdr.ncopy(), attr("meta"),
 					ident("type_ret"), ident("name"),
 					lst(sep("("),
 						null,
@@ -418,9 +471,9 @@ public class JavaSyntax extends Syntax {
 						sep(")"),
 						lout_params.ncopy())
 					),
-				new SyntaxJavaMethodBody(this, "body", lout_body, sep(";"), attr("body"))
+				opt("body", new CalcOptionNotNull("body"),attr("body"), sep(";"), lout_body)
 				);
-			seInitializer = set("initializer", lout_method.ncopy(),
+			seInitializer = set("initializer", lout_method.ncopy(), attr("meta"),
 					attr("body")
 				);
 		}
@@ -522,6 +575,17 @@ public class JavaSyntax extends Syntax {
 						lout_empty.ncopy()
 					)
 				);
+		seClosureCallExpr = set("call_expr", lout_empty.ncopy(),
+				expr("expr", Constants.opCallPriority),
+				lst(sep("("),
+						null,
+						attr("args"),
+						null,
+						sep(","),
+						sep(")"),
+						lout_empty.ncopy()
+					)
+				);
 		seStringConcatExpr = lst(
 				null,
 				null,
@@ -553,7 +617,7 @@ public class JavaSyntax extends Syntax {
 						sep(")"),
 						lout_empty.ncopy()
 					),
-				opt("clazz", kw("{...}"))
+				opt("clazz", attr("clazz", new FormatInfoHint("anonymouse")))
 				);
 		seNewArrayExpr = set("new_arr", lout_empty.ncopy(),
 				kw("new"),
@@ -607,13 +671,20 @@ public class JavaSyntax extends Syntax {
 			);
 		seCastExpr = set("expr", lout_empty.ncopy(), sep("("), kw("$cast"), attr("type"), sep(")"), attr("expr"));
 	}
-	public SyntaxElem getSyntaxElem(ASTNode node) {
+	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
 		switch (node) {
 		case FileUnit: return seFileUnit;
 		case Import: return seImport;
 		case Opdef: return seOpdef;
 		case TypeDef: return seTypeDef;
-		case Struct: return seStruct;
+		case MetaSet: return seMetaSet;
+		case Meta: return seMeta;
+		case MetaValueScalar: return seMetaValueScalar;
+		case MetaValueArray: return seMetaValueArray;
+		case Struct:
+			if (hint != null && "anonymouse".equals(hint.text))
+				return seStructAnon;
+			return seStruct;
 		case Field: return seFieldDecl;
 		case VarDecl: return seVarDecl;
 		case FormPar: return seFormPar;
@@ -665,6 +736,7 @@ public class JavaSyntax extends Syntax {
 		case InstanceofExpr: return seInstanceofExpr;
 		case BooleanNotExpr: return seBooleanNotExpr;
 		case CallExpr: return seCallExpr;
+		case ClosureCallExpr: return seClosureCallExpr;
 		case StringConcatExpr: return seStringConcatExpr;
 		case CommaExpr: return seCommaExpr;
 		case ArrayLengthExpr: return seArrayLengthExpr;
@@ -730,7 +802,7 @@ public class JavaSyntax extends Syntax {
 			return se;
 		}
 		}
-		return super.getSyntaxElem(node);
+		return super.getSyntaxElem(node, hint);
 	}
 }
 

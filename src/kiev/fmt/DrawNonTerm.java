@@ -14,17 +14,85 @@ import syntax kiev.Syntax;
 
 @node
 public abstract class DrawNonTerm extends Drawable {
+	@att NArr<Drawable> args;
 	
 	public DrawNonTerm() {}
 	public DrawNonTerm(ASTNode node, SyntaxElem syntax) {
 		super(node, syntax);
 	}
 
+	public DrawTerm getFirstLeaf() {
+		if (this.isUnvisible())
+			return null;
+		for (int i=0; i < args.length; i++) {
+			DrawTerm d = args[i].getFirstLeaf();
+			if (d != null && !d.isUnvisible())
+				return d;
+		}
+		return null;
+	}
+	public DrawTerm getLastLeaf()  {
+		if (this.isUnvisible())
+			return null;
+		for (int i=args.length-1; i >= 0 ; i--) {
+			DrawTerm d = args[i].getLastLeaf();
+			if (d != null && !d.isUnvisible())
+				return d;
+		}
+		return null;
+	}
+
+	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible())
+			return;
+		for (int i=0; i < args.length; i++) {
+			Drawable dr = args[i];
+			dr.preFormat(cont);
+		}
+	}
+
+	public void fillLayout(int i) {
+		foreach (Drawable dr; args)
+			dr.curr_layout = i;
+	}
+
+	public final boolean postFormat(DrawContext context, boolean parent_last_layout) {
+		context.pushNonTerm(this);
+		context = context.pushState(); 
+		// for each possible layout. assign it to all sub-components
+		// and try to layout them;
+		final int layouts_size = syntax.layout.count;
+	next_layout:
+		for (int i=0; i < layouts_size; i++) {
+			boolean last = (i == layouts_size-1);
+			fillLayout(i);
+			context = context.popState(); 
+			boolean fits = (context.x < context.width);
+			for (int j=0; j < args.length; j++) {
+				Drawable dr = args[j];
+				if (dr.isUnvisible())
+					continue;
+				fits &= dr.postFormat(context, last && parent_last_layout);
+				if (!fits && !last) {
+					if (parent_last_layout)
+						continue next_layout;
+					context.popNonTerm(this);
+					return false;
+				}
+			}
+			if (fits) {
+				context.popNonTerm(this);
+				return true;
+			}
+		}
+		context.popNonTerm(this);
+		return false;
+	}
+
 }
 
 @node
 public class DrawNonTermList extends DrawNonTerm {
-	@att NArr<Drawable> args;
 
 	public DrawNonTermList() {}
 	public DrawNonTermList(ASTNode node, SyntaxElem syntax) {
@@ -40,7 +108,7 @@ public class DrawNonTermList extends DrawNonTerm {
 			ASTNode n = narr[i];
 			if (slst.elem_prefix != null)
 				args.append(slst.elem_prefix.makeDrawable(fmt, null));
-			args.append(fmt.getDrawable(n));
+			args.append(fmt.getDrawable(n, null));
 			if (slst.elem_suffix != null)
 				args.append(slst.elem_suffix.makeDrawable(fmt, null));
 			if (i < (sz-1) && slst.separator != null)
@@ -50,78 +118,10 @@ public class DrawNonTermList extends DrawNonTerm {
 			args.append(slst.suffix.makeDrawable(fmt, null));
 	}
 
-	public DrawTerm getFirstLeaf() {
-		if (this.isUnvisible())
-			return null;
-		for (int i=0; i < args.length; i++) {
-			DrawTerm d = args[i].getFirstLeaf();
-			if (d != null && !d.isUnvisible())
-				return d;
-		}
-		return null;
-	}
-	public DrawTerm getLastLeaf()  {
-		if (this.isUnvisible())
-			return null;
-		for (int i=args.length-1; i >= 0 ; i--) {
-			DrawTerm d = args[i].getLastLeaf();
-			if (d != null && !d.isUnvisible())
-				return d;
-		}
-		return null;
-	}
-
-	public void fillLayout(int i) {
-		foreach (Drawable dr; args)
-			dr.curr_layout = i;
-	}
-
-	public final boolean postFormat(DrawContext context, boolean parent_last_layout) {
-		context.pushNonTerm(this);
-		context = context.pushState(); 
-		// for each possible layout. assign it to all sub-components
-		// and try to layout them;
-		final int layouts_size = syntax.layout.count;
-	next_layout:
-		for (int i=0; i < layouts_size; i++) {
-			boolean last = (i == layouts_size-1);
-			fillLayout(i);
-			context = context.popState(); 
-			boolean fits = (context.x < context.width);
-			for (int j=0; j < args.length; j++) {
-				Drawable dr = args[j];
-				if (dr.isUnvisible())
-					continue;
-				fits &= dr.postFormat(context, last && parent_last_layout);
-				if (!fits && !last) {
-					if (parent_last_layout)
-						continue next_layout;
-					context.popNonTerm(this);
-					return false;
-				}
-			}
-			if (fits) {
-				context.popNonTerm(this);
-				return true;
-			}
-		}
-		context.popNonTerm(this);
-		return false;
-	}
-
-	public void preFormat(DrawContext cont) {
-		if (this.isUnvisible())
-			return;
-		for (int i=0; i < args.length; i++) {
-			Drawable dr = args[i];
-			dr.preFormat(cont);
-		}
-	}
 }
 
 @node
 public class DrawNonTermSet extends DrawNonTerm {
-	@att NArr<Drawable> args;
 
 	public DrawNonTermSet() {}
 	public DrawNonTermSet(ASTNode node, SyntaxElem syntax) {
@@ -131,65 +131,6 @@ public class DrawNonTermSet extends DrawNonTerm {
 		SyntaxSet sset = (SyntaxSet)this.syntax;
 		foreach (SyntaxElem se; sset.elements)
 			args.append(se.makeDrawable(fmt, node));
-	}
-
-	public DrawTerm getFirstLeaf() {
-		if (this.isUnvisible())
-			return null;
-		for (int i=0; i < args.length; i++) {
-			DrawTerm d = args[i].getFirstLeaf();
-			if (d != null && !d.isUnvisible())
-				return d;
-		}
-		return null;
-	}
-	public DrawTerm getLastLeaf()  {
-		if (this.isUnvisible())
-			return null;
-		for (int i=args.length-1; i >= 0 ; i--) {
-			DrawTerm d = args[i].getLastLeaf();
-			if (d != null && !d.isUnvisible())
-				return d;
-		}
-		return null;
-	}
-
-	public void fillLayout(int i) {
-		foreach (Drawable dr; args)
-			dr.curr_layout = i;
-	}
-
-	public final boolean postFormat(DrawContext context, boolean parent_last_layout) {
-		context.pushNonTerm(this);
-		context = context.pushState(); 
-		// for each possible layout. assign it to all sub-components
-		// and try to layout them;
-		final int layouts_size = syntax.layout.count;
-	next_layout:
-		for (int i=0; i < layouts_size; i++) {
-			boolean last = (i == layouts_size-1);
-			fillLayout(i);
-			context = context.popState(); 
-			boolean fits = (context.x < context.width);
-			for (int j=0; j < args.length; j++) {
-				Drawable dr = args[j];
-				if (dr.isUnvisible())
-					continue;
-				fits &= dr.postFormat(context, last && parent_last_layout);
-				if (!fits && !last) {
-					if (parent_last_layout)
-						continue next_layout;
-					context.popNonTerm(this);
-					return false;
-				}
-			}
-			if (fits) {
-				context.popNonTerm(this);
-				return true;
-			}
-		}
-		context.popNonTerm(this);
-		return false;
 	}
 
 	public void preFormat(DrawContext cont) {
