@@ -795,12 +795,15 @@ class VSrcBackend extends BackendProcessor {
 	
 	// generate back-end
 	public void generate(ASTNode node) {
-		TextFormatter f = new TextFormatter(new JavaSyntax());
-		Drawable dr = f.format(node);
 		StringBuffer sb = new StringBuffer(1024);
-		TextPrinter pr = new TextPrinter(sb);
-		pr.draw(dr);
-		cleanFormatting(node, f.getAttr());
+		TextFormatter f = new TextFormatter(new JavaSyntax());
+		try {
+			Drawable dr = f.format(node);
+			TextPrinter pr = new TextPrinter(sb);
+			pr.draw(dr);
+		} finally {
+			cleanFormatting(node, f.getAttr());
+		}
 		if (node instanceof FileUnit) {
 			try {
 				dumpSrc((FileUnit)node, sb.toString());

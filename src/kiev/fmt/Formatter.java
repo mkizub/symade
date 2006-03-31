@@ -95,7 +95,7 @@ public class TextFormatter implements Formatter {
 				new SpaceInfo[]{}
 			);
 			lout.is_hidden = true;
-			SyntaxSpace ssp = new SyntaxSpace(syntax,"",lout);
+			SyntaxSpace ssp = new SyntaxSpace(lout);
 			return new DrawSpace(null, ssp);
 		}
 		Shadow sdr = node.getNodeData(ATTR);

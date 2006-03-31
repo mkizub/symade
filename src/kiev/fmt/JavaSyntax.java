@@ -19,45 +19,6 @@ import syntax kiev.Syntax;
 
 
 @node
-public class SyntaxJavaPackage extends SyntaxSet {
-	@virtual typedef This  = SyntaxJavaPackage;
-
-	public SyntaxJavaPackage() {}
-	public SyntaxJavaPackage(Syntax stx, String id, DrawLayout layout) {
-		super(stx,id,layout);
-		this.elements.add(stx.kw("package"));
-		this.elements.add(stx.ident("pkg"));
-		this.elements.add(stx.sep(";"));
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
-		Drawable dr = new DrawJavaPackage(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
-public class SyntaxJavaImport extends SyntaxSet {
-	@virtual typedef This  = SyntaxJavaImport;
-
-	public SyntaxJavaImport() {}
-	public SyntaxJavaImport(Syntax stx, String id, DrawLayout layout) {
-		super(stx,id,layout);
-		this.elements.add(stx.kw("import"));
-		this.elements.add(stx.ident("name"));
-		this.elements.add(stx.sep(".*"));
-		this.elements.add(stx.sep(";"));
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
-		Drawable dr = new DrawJavaImport(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
 public class SyntaxJavaExpr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxJavaExpr;
 
@@ -66,11 +27,11 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 	@att public SyntaxSeparator		r_paren;
 
 	public SyntaxJavaExpr() {}
-	public SyntaxJavaExpr(Syntax stx, String name, DrawLayout layout, int priority) {
-		super(stx,name,layout);
+	public SyntaxJavaExpr(String name, DrawLayout layout, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
+		super(name,layout);
 		this.priority = priority;
-		this.l_paren = stx.sep("(");
-		this.r_paren = stx.sep(")");
+		this.l_paren = l_paren;
+		this.r_paren = r_paren;
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -101,8 +62,12 @@ public class CalcOptionJavaFlag implements CalcOption {
 
 public class JavaSyntax extends Syntax {
 	final SyntaxElem seFileUnit;
-	final SyntaxElem seStruct;
-	final SyntaxElem seStructAnon;
+	final SyntaxElem seStructClass;
+	final SyntaxElem seStructInterface;
+	final SyntaxElem seStructAnnotation;
+	final SyntaxElem seStructEnum;
+	final SyntaxElem seStructSyntax;
+	final SyntaxElem seStructBody;
 	final SyntaxElem seImport;
 	final SyntaxElem seOpdef;
 	final SyntaxElem seMetaSet;
@@ -186,7 +151,7 @@ public class JavaSyntax extends Syntax {
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		return new SyntaxOptional(this, name, new CalcOptionJavaFlag(size, offs, val), kw(name), null, lout);
+		return new SyntaxOptional(name, new CalcOptionJavaFlag(size, offs, val), kw(name), null, lout);
 	}
 
 	protected final SyntaxJavaExpr expr(String expr, int priority)
@@ -195,7 +160,7 @@ public class JavaSyntax extends Syntax {
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		SyntaxJavaExpr se = new SyntaxJavaExpr(this, expr, lout, priority);
+		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, lout, priority, sep("("), sep(")"));
 		return se;
 	}
 
@@ -205,8 +170,7 @@ public class JavaSyntax extends Syntax {
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		String id = op.toString().intern();
-		return set(id, lout, expr(expr1, op.getArgPriority(0)), oper(op), expr(expr2, op.getArgPriority(1)));
+		return setl(lout, expr(expr1, op.getArgPriority(0)), oper(op), expr(expr2, op.getArgPriority(1)));
 	}
 
 	protected final SyntaxSet expr(Operator op, String expr2)
@@ -215,8 +179,7 @@ public class JavaSyntax extends Syntax {
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		String id = op.toString().intern();
-		return set(id, lout, oper(op), expr(expr2, op.getArgPriority()));
+		return setl(lout, oper(op), expr(expr2, op.getArgPriority()));
 	}
 
 	protected final SyntaxSet expr(String expr1, Operator op)
@@ -225,8 +188,7 @@ public class JavaSyntax extends Syntax {
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		String id = op.toString().intern();
-		return set(id, lout, expr(expr1, op.getArgPriority()), oper(op));
+		return setl(lout, expr(expr1, op.getArgPriority()), oper(op));
 	}
 
 	public JavaSyntax() {
@@ -260,8 +222,8 @@ public class JavaSyntax extends Syntax {
 				new SpaceInfo[]{}
 			);
 			// file unit
-			seFileUnit = set("file", lout_file,
-					new SyntaxJavaPackage(this, "package", lout_pkg),
+			seFileUnit = setl(lout_file,
+					opt("pkg", setl(lout_pkg, kw("package"), ident("pkg"), sep(";"))),
 					lst(attr("syntax"), lout_syntax),
 					lst(attr("members"), lout_members)
 				);
@@ -274,8 +236,12 @@ public class JavaSyntax extends Syntax {
 				new SpaceInfo[]{}
 			);
 			// import
-			seImport = new SyntaxJavaImport(this, "import", lout_syntax.ncopy());
-			seOpdef = set("opdef", lout_syntax.ncopy(),
+			seImport = setl(lout_syntax.ncopy(),
+				kw("import"),
+				ident("name"),
+				opt("star",new CalcOptionTrue("star"), sep(".*"), null, lout_empty.ncopy()),
+				sep(";"));
+			seOpdef = setl(lout_syntax.ncopy(),
 				kw("operator"),
 				ident("image"),
 				sep(","),
@@ -295,7 +261,7 @@ public class JavaSyntax extends Syntax {
 				ident("prior"),
 				sep(";")
 				);
-			seTypeDef = set("type-def", lout_syntax.ncopy(), kw("typedef"), ident("name"), 
+			seTypeDef = setl(lout_syntax.ncopy(), kw("typedef"), ident("name"), 
 				lst(null, oper("\u2264"), attr("upper_bound"), null, null, null, lout_empty.ncopy()),
 				lst(null, oper("\u2265"), attr("lower_bound"), null, null, null, lout_empty.ncopy()),
 				sep(";")
@@ -340,8 +306,15 @@ public class JavaSyntax extends Syntax {
 				},
 				new SpaceInfo[]{}
 			);
+			SyntaxElem struct_prefix = setl(lout_struct_hdr.ncopy(),
+					attr("meta"),
+					jflag(1,3,1,  "static"),
+					jflag(1,4,1,  "final"),
+					jflag(1,10,1, "abstract"),
+					jflag(1,11,1, "strict")
+					);
 			// anonymouse struct
-			seStructAnon = lst(
+			seStructBody = lst(
 					sep("{", lout_struct_block_start),
 					null,
 					attr("members"),
@@ -350,17 +323,45 @@ public class JavaSyntax extends Syntax {
 					sep("}", lout_struct_block_end),
 					lout_struct_end
 					);
-			// struct
-			seStruct = set("struct", lout_struct,
-					set("struct_hdr", lout_struct_hdr,
-						attr("meta"),
-						jflag(1,3,1,  "static"),
-						jflag(1,4,1,  "final"),
-						jflag(1,10,1, "abstract"),
-						jflag(1,11,1, "strict"),
+			// class
+			seStructClass = setl(lout_struct.ncopy(),
+					setl(lout_struct_hdr.ncopy(),
+						struct_prefix.ncopy(),
 						kw("class"),
 						ident("short_name")),
-					seStructAnon.ncopy()
+					seStructBody.ncopy()
+				);
+			// interface
+			seStructInterface = setl(lout_struct.ncopy(),
+					setl(lout_struct_hdr.ncopy(),
+						struct_prefix.ncopy(),
+						kw("interface"),
+						ident("short_name")),
+					seStructBody.ncopy()
+				);
+			// interface
+			seStructAnnotation = setl(lout_struct.ncopy(),
+					setl(lout_struct_hdr.ncopy(),
+						struct_prefix.ncopy(),
+						kw("@interface"),
+						ident("short_name")),
+					seStructBody.ncopy()
+				);
+			// enum
+			seStructEnum = setl(lout_struct.ncopy(),
+					setl(lout_struct_hdr.ncopy(),
+						struct_prefix.ncopy(),
+						kw("enum"),
+						ident("short_name")),
+					seStructBody.ncopy()
+				);
+			// syntax
+			seStructSyntax = setl(lout_struct.ncopy(),
+					setl(lout_struct_hdr.ncopy(),
+						struct_prefix.ncopy(),
+						kw("syntax"),
+						ident("short_name")),
+					seStructBody.ncopy()
 				);
 		}
 		{
@@ -371,7 +372,7 @@ public class JavaSyntax extends Syntax {
 				new SpaceInfo[]{}
 			);
 			seMetaSet = lst(attr("metas"), lout_empty.ncopy());
-			seMeta = set("meta", lout_meta, oper("@"), ident("type"), lst(sep("("),
+			seMeta = setl(lout_meta, oper("@"), ident("type"), lst(sep("("),
 						null,
 						attr("values"),
 						null,
@@ -379,8 +380,8 @@ public class JavaSyntax extends Syntax {
 						sep(")"),
 						lout_empty.ncopy()
 					));
-			seMetaValueScalar = set("meta-value-scalar", lout_empty.ncopy(), ident("type"), oper("="), attr("value"));
-			seMetaValueArray = set("meta-value-scalar", lout_empty.ncopy(), ident("type"), oper("="),
+			seMetaValueScalar = set(ident("type"), oper("="), attr("value"));
+			seMetaValueArray = set(ident("type"), oper("="),
 					lst(sep("{"),
 						null,
 						attr("values"),
@@ -401,22 +402,16 @@ public class JavaSyntax extends Syntax {
 				new SpaceInfo[]{}
 			);
 			// field
-			seFieldDecl = set("field-decl", lout_field.ncopy(), attr("meta"),
-				ident("ftype"), ident("name"), opt("init", set("=", lout_empty.ncopy(), oper("="), expr("init", Constants.opAssignPriority))), sep(";")
+			seFieldDecl = setl(lout_field.ncopy(), attr("meta"),
+				ident("ftype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
 				);
 			// vars
-			seVarDecl = set("var_decl", lout_field.ncopy(),
-				attr("var"), sep(";")
+			seVarDecl = set(attr("var"), sep(";"));
+			seVar = set(opt("meta"),
+				ident("vtype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority)))
 				);
-			seVar = set("var_decl", lout_field.ncopy(), attr("meta"),
-				ident("vtype"), ident("name"), opt("init", set("=", lout_empty.ncopy(), oper("="), expr("init", Constants.opAssignPriority)))
-				);
-		}
-		{
 			// formal parameter
-			seFormPar = set("form-par", lout_empty.ncopy(), attr("meta"),
-				ident("vtype"), ident("name")
-				);
+			seFormPar = set(opt("meta"), ident("vtype"), ident("name")	);
 		}
 		{
 			DrawLayout lout_method = new DrawLayout(1, INDENT_KIND_NONE,
@@ -446,8 +441,8 @@ public class JavaSyntax extends Syntax {
 				new SpaceInfo[]{}
 			);
 			// constructor
-			seConstructor = set("ctor", lout_method.ncopy(),
-				set("method_hdr", lout_method_hdr.ncopy(), attr("meta"),
+			seConstructor = setl(lout_method.ncopy(),
+				setl(lout_method_hdr.ncopy(), attr("meta"),
 					ident("parent.short_name"),
 					lst(sep("("),
 						null,
@@ -460,8 +455,8 @@ public class JavaSyntax extends Syntax {
 				attr("body")
 				);
 			// method
-			seMethod = set("method", lout_method.ncopy(),
-				set("method_hdr", lout_method_hdr.ncopy(), attr("meta"),
+			seMethod = setl(lout_method.ncopy(),
+				setl(lout_method_hdr.ncopy(), attr("meta"),
 					ident("type_ret"), ident("name"),
 					lst(sep("("),
 						null,
@@ -473,7 +468,7 @@ public class JavaSyntax extends Syntax {
 					),
 				opt("body", new CalcOptionNotNull("body"),attr("body"), sep(";"), lout_body)
 				);
-			seInitializer = set("initializer", lout_method.ncopy(), attr("meta"),
+			seInitializer = setl(lout_method.ncopy(), attr("meta"),
 					attr("body")
 				);
 		}
@@ -514,55 +509,66 @@ public class JavaSyntax extends Syntax {
 					sep("{", lout_code_block_start),
 					null,
 					attr("stats"),
-					new SyntaxSpace(this, " ", lout_code_block_stat),
+					new SyntaxSpace(lout_code_block_stat),
 					null,
 					sep("}", lout_code_block_end),
 					lout_code_block
 					);
 		}
-		seExprStat = set("stat", lout_empty.ncopy(), attr("expr"), sep(";"));
-		seReturnStat = set("stat", lout_empty.ncopy(), kw("return"), attr("expr"), sep(";"));
-		seThrowStat = set("stat", lout_empty.ncopy(), kw("throw"), attr("expr"), sep(";"));
-		seIfElseStat = set("stat", lout_empty.ncopy(), kw("if"), sep("("), attr("cond"), sep(")"), attr("thenSt"), opt("elseSt", set("else", lout_empty.ncopy(), kw("else"), attr("elseSt"))));
-		seCondStat = set("stat", lout_empty.ncopy(), attr("cond"), opt("message", set("message", lout_empty.ncopy(), sep(":"), attr("message"))), sep(";"));
-		seLabeledStat = set("stat", lout_empty.ncopy(), ident("ident"), sep(":"), attr("stat"));
-		seBreakStat = set("stat", lout_empty.ncopy(), kw("break"), opt("ident", ident("ident")), sep(";"));
-		seContinueStat = set("stat", lout_empty.ncopy(), kw("continue"), opt("ident", ident("ident")), sep(";"));
-		seGotoStat = set("stat", lout_empty.ncopy(), kw("goto"), opt("ident", ident("ident")), sep(";"));
-		seGotoCaseStat = set("stat", lout_empty.ncopy(), kw("goto"), kw("case"), attr("expr"), sep(";"));
+		seExprStat = set(attr("expr"), sep(";"));
+		seReturnStat = set(kw("return"), attr("expr"), sep(";"));
+		seThrowStat = set(kw("throw"), attr("expr"), sep(";"));
+		seCondStat = set(attr("cond"), opt("message", set(sep(":"), attr("message"))), sep(";"));
+		seLabeledStat = set(ident("ident"), sep(":"), attr("stat"));
+		seBreakStat = set(kw("break"), opt("ident", ident("ident")), sep(";"));
+		seContinueStat = set(kw("continue"), opt("ident", ident("ident")), sep(";"));
+		seGotoStat = set(kw("goto"), opt("ident", ident("ident")), sep(";"));
+		seGotoCaseStat = set(kw("goto"), kw("case"), attr("expr"), sep(";"));
 
-		seWhileStat = set("stat", lout_empty.ncopy(), kw("while"), sep("("), attr("cond"), sep(")"), attr("body"));
-		seDoWhileStat = set("stat", lout_empty.ncopy(), kw("do"), attr("body"), kw("while"), sep("("), attr("cond"), sep(")"), sep(";"));
-		seForInit = lst(null,null,attr("decls"),null,null,null,lout_empty.ncopy());
-		seForStat = set("stat", lout_empty.ncopy(), kw("for"), sep("("), attr("init"), sep(";"), attr("cond"), sep(";"), attr("iter"), sep(")"), attr("body"));
-		seForEachStat = set("stat", lout_empty.ncopy(), kw("foreach"), sep("("), attr("var"), sep(";"), attr("container"), opt("cond", set("cond", lout_empty.ncopy(), sep(";"), attr("cond"))), sep(")"), attr("body"));
+		{
+			DrawLayout lout_cond = new DrawLayout(1, INDENT_KIND_NONE,
+				new NewLineInfo[]{
+					new NewLineInfo("cond_end", NL_ADD_AFTER, 0),
+				},
+				new SpaceInfo[]{
+					new SpaceInfo("kw_start", SP_ADD_BEFORE, 1, 10),
+					new SpaceInfo("cond_end", SP_ADD_AFTER, 1, 10),
+				}
+			);
+			seIfElseStat = set(kw("if"), setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")), attr("thenSt"), opt("elseSt", set(kw("else"), attr("elseSt"))));
+			seWhileStat = set(kw("while"), setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")), attr("body"));
+			seDoWhileStat = set(kw("do"), attr("body"), kw("while"), setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")), sep(";"));
+			seForInit = lst(null,null,attr("decls"),null,null,null,lout_empty.ncopy());
+			seForStat = set(kw("for"), setl(lout_cond.ncopy(), sep("("), attr("init"), sep(";"), attr("cond"), sep(";"), attr("iter"), sep(")")), attr("body"));
+			seForEachStat = set(kw("foreach"), setl(lout_cond.ncopy(), sep("("), attr("var"), sep(";"), attr("container"), opt("cond", set(sep(";"), attr("cond"))), sep(")")), attr("body"));
 		
-		seCaseLabel = set("stat", lout_empty.ncopy(), kw("case"), attr("val"), sep(":"), lst(attr("stats"),lout_empty.ncopy()));
-		seSwitchStat = set("stat", lout_empty.ncopy(), kw("switch"), sep("("), attr("sel"), sep(")"), lst(sep("{"),null,attr("cases"),null,null,sep("}"),lout_empty.ncopy()));
-		seCatchInfo = set("stat", lout_empty.ncopy(), kw("catch"), sep("("), attr("arg"), sep(")"), attr("body"));
-		seFinallyInfo = set("stat", lout_empty.ncopy(), kw("finally"), attr("body"));
-		seTryStat = set("stat", lout_empty.ncopy(), kw("try"), attr("body"), lst(attr("catchers"),lout_empty.ncopy()), opt("finally_catcher", attr("finally_catcher")));
-		seSynchronizedStat = set("stat", lout_empty.ncopy(), kw("synchronized"), sep("("), attr("expr"), sep(")"), attr("body"));
-		seWithStat = set("stat", lout_empty.ncopy(), kw("with"), sep("("), attr("expr"), sep(")"), attr("body"));
+			seCaseLabel = set(kw("case"), attr("val"), sep(":"), lst(attr("stats"),lout_empty.ncopy()));
+			seSwitchStat = set(kw("switch"), setl(lout_cond.ncopy(), sep("("), attr("sel"), sep(")")), lst(sep("{"),null,attr("cases"),null,null,sep("}"),lout_empty.ncopy()));
+			seCatchInfo = set(kw("catch"), setl(lout_cond.ncopy(), sep("("), attr("arg"), sep(")")), attr("body"));
+			seFinallyInfo = set(kw("finally"), attr("body"));
+			seTryStat = set(kw("try"), attr("body"), lst(attr("catchers"),lout_empty.ncopy()), opt("finally_catcher", attr("finally_catcher")));
+			seSynchronizedStat = set(kw("synchronized"), sep("("), attr("expr"), sep(")"), attr("body"));
+			seWithStat = set(kw("with"), sep("("), attr("expr"), sep(")"), attr("body"));
+		}
 	
 		exprs = new Hashtable<Operator, SyntaxElem>();
 		seConstExpr = attr("this");
 		seTypeRef = ident("lnk");
 		
-		seAccessExpr = set("expr", lout_empty.ncopy(), attr("obj"), oper(BinaryOperator.Access), ident("ident"));
-		seIFldExpr = set("expr", lout_empty.ncopy(), attr("obj"), oper(BinaryOperator.Access), ident("ident"));
-		seContainerAccessExpr = set("expr", lout_empty.ncopy(), attr("obj"), sep("["), attr("index"), sep("]"));
+		seAccessExpr = set(attr("obj"), sep("."), ident("ident"));
+		seIFldExpr = set(attr("obj"), sep("."), ident("ident"));
+		seContainerAccessExpr = set(attr("obj"), sep("["), attr("index"), sep("]"));
 		seThisExpr = kw("this");
 		seLVarExpr = ident("ident");
-		seSFldExpr = set("expr", lout_empty.ncopy(), attr("obj"), oper(BinaryOperator.Access), ident("ident"));
-		seOuterThisAccessExpr = set("expr", lout_empty.ncopy(), attr("obj"), oper(BinaryOperator.Access), kw("this"));
-		seReinterpExpr = set("expr", lout_empty.ncopy(), sep("("), kw("$reinterp"), attr("type"), sep(")"), attr("expr"));
+		seSFldExpr = set(attr("obj"), sep("."), ident("ident"));
+		seOuterThisAccessExpr = set(attr("obj"), sep("."), kw("this"));
+		seReinterpExpr = set(sep("("), kw("$reinterp"), attr("type"), sep(")"), attr("expr"));
 		
 		seBinaryBooleanOrExpr = expr("expr1", BinaryOperator.BooleanOr, "expr2");
 		seBinaryBooleanAndExpr = expr("expr1", BinaryOperator.BooleanAnd, "expr2");
 		seInstanceofExpr = expr("expr", BinaryOperator.InstanceOf, "type");
 		seBooleanNotExpr = expr(PrefixOperator.BooleanNot, "expr");
-		seCallExpr = set("call_expr", lout_empty.ncopy(),
+		seCallExpr = set(
 				attr("obj"),
 				sep("."),
 				ident("func.name"),
@@ -575,7 +581,7 @@ public class JavaSyntax extends Syntax {
 						lout_empty.ncopy()
 					)
 				);
-		seClosureCallExpr = set("call_expr", lout_empty.ncopy(),
+		seClosureCallExpr = set(
 				expr("expr", Constants.opCallPriority),
 				lst(sep("("),
 						null,
@@ -605,9 +611,9 @@ public class JavaSyntax extends Syntax {
 				lout_empty.ncopy()
 			);
 
-		seNewExpr = set("new_expr", lout_empty.ncopy(),
+		seNewExpr = set(
 				kw("new"),
-				opt("outer", set("outer", lout_empty.ncopy(), attr("outer"), oper("."))),
+				opt("outer", set(attr("outer"), oper("."))),
 				ident("type"),
 				lst(sep("("),
 						null,
@@ -619,7 +625,7 @@ public class JavaSyntax extends Syntax {
 					),
 				opt("clazz", attr("clazz", new FormatInfoHint("anonymouse")))
 				);
-		seNewArrayExpr = set("new_arr", lout_empty.ncopy(),
+		seNewArrayExpr = set(
 				kw("new"),
 				ident("type"),
 				lst(null,
@@ -631,7 +637,7 @@ public class JavaSyntax extends Syntax {
 					lout_empty.ncopy()
 					)
 				);
-		seNewInitializedArrayExpr = set("new_init_arr", lout_empty.ncopy(),
+		seNewInitializedArrayExpr = set(
 				kw("new"),
 				ident("arrtype"),
 				lst(sep("{"),
@@ -643,7 +649,7 @@ public class JavaSyntax extends Syntax {
 					lout_empty.ncopy()
 					)
 				);
-		seNewClosure = set("new_closure", lout_empty.ncopy(),
+		seNewClosure = set(
 				kw("fun"),
 				lst(sep("("),
 						null,
@@ -659,17 +665,17 @@ public class JavaSyntax extends Syntax {
 				);
 
 		seShadow = attr("node");
-		seArrayLengthExpr = set("expr", lout_empty.ncopy(), attr("obj"), oper(BinaryOperator.Access), kw("length"));
-		seTypeClassExpr = set("expr", lout_empty.ncopy(), ident("type"), oper(BinaryOperator.Access), kw("class"));
-		seTypeInfoExpr = set("expr", lout_empty.ncopy(), ident("type"), oper(BinaryOperator.Access), kw("type"));
-		seConditionalExpr = set("expr", lout_empty.ncopy(),
+		seArrayLengthExpr = set(attr("obj"), sep("."), kw("length"));
+		seTypeClassExpr = set(ident("type"), sep("."), kw("class"));
+		seTypeInfoExpr = set(ident("type"), sep("."), kw("type"));
+		seConditionalExpr = set(
 			expr("cond", MultiOperator.opConditionalPriority+1),
 			oper("?"),
 			expr("expr1", MultiOperator.opConditionalPriority+1),
 			oper(":"),
 			expr("expr2", MultiOperator.opConditionalPriority)
 			);
-		seCastExpr = set("expr", lout_empty.ncopy(), sep("("), kw("$cast"), attr("type"), sep(")"), attr("expr"));
+		seCastExpr = set(sep("("), kw("$cast"), attr("type"), sep(")"), attr("expr"));
 	}
 	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
 		switch (node) {
@@ -681,10 +687,20 @@ public class JavaSyntax extends Syntax {
 		case Meta: return seMeta;
 		case MetaValueScalar: return seMetaValueScalar;
 		case MetaValueArray: return seMetaValueArray;
-		case Struct:
+		case Struct: {
+			Struct s = (Struct)node;
+			if (s.isEnum())
+				return seStructEnum;
+			if (s.isSyntax())
+				return seStructSyntax;
+			if (s.isAnnotation())
+				return seStructAnnotation;
+			if (s.isInterface())
+				return seStructInterface;
 			if (hint != null && "anonymouse".equals(hint.text))
-				return seStructAnon;
-			return seStruct;
+				return seStructBody;
+			return seStructClass;
+		}
 		case Field: return seFieldDecl;
 		case VarDecl: return seVarDecl;
 		case FormPar: return seFormPar;

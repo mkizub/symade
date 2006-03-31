@@ -44,8 +44,18 @@ public class Syntax {
 		return kw("?"+node.getClass().getName()+"?");
 	}
 	
-	protected final SyntaxSet set(String id, DrawLayout layout, SyntaxElem... elems) {
-		SyntaxSet set = new SyntaxSet(this,id,layout);
+	protected final SyntaxSet set(SyntaxElem... elems) {
+		DrawLayout lout_empty = new DrawLayout(1, INDENT_KIND_NONE,
+			new NewLineInfo[]{},
+			new SpaceInfo[]{}
+		);
+		SyntaxSet set = new SyntaxSet(lout_empty);
+		set.elements.addAll(elems);
+		return set;
+	}
+	
+	protected final SyntaxSet setl(DrawLayout layout, SyntaxElem... elems) {
+		SyntaxSet set = new SyntaxSet(layout);
 		set.elements.addAll(elems);
 		return set;
 	}
@@ -60,7 +70,7 @@ public class Syntax {
 			DrawLayout layout
 	)
 	{
-		SyntaxList lst = new SyntaxList(this,element.ID,layout);
+		SyntaxList lst = new SyntaxList(layout);
 		lst.prefix = prefix;
 		lst.elem_prefix = elem_prefix;
 		lst.element = element;
@@ -75,7 +85,7 @@ public class Syntax {
 			DrawLayout layout
 	)
 	{
-		SyntaxList lst = new SyntaxList(this,element.ID,layout);
+		SyntaxList lst = new SyntaxList(layout);
 		lst.element = element;
 		return lst;
 	}
@@ -86,7 +96,7 @@ public class Syntax {
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		return new SyntaxAttr(this, slot, lout);
+		return new SyntaxAttr(slot, lout);
 	}
 
 	protected final SyntaxAttr attr(String slot, FormatInfoHint hint)
@@ -95,7 +105,7 @@ public class Syntax {
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		return new SyntaxAttr(this, slot, hint, lout);
+		return new SyntaxAttr(slot, hint, lout);
 	}
 
 	protected final SyntaxIdentAttr ident(String slot)
@@ -103,11 +113,11 @@ public class Syntax {
 		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
 			new NewLineInfo[]{},
 			new SpaceInfo[]{
-				new SpaceInfo("word", SP_ADD_BEFORE, 1, 10),
+				new SpaceInfo("sep", SP_EAT_BEFORE, 1, 10),
 				new SpaceInfo("word", SP_ADD_AFTER, 1, 10),
 			}
 		);
-		return new SyntaxIdentAttr(this,slot,lout);
+		return new SyntaxIdentAttr(slot,lout);
 	}
 
 	protected final SyntaxKeyword kw(String kw)
@@ -115,11 +125,10 @@ public class Syntax {
 		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
 			new NewLineInfo[]{},
 			new SpaceInfo[]{
-				new SpaceInfo("word", SP_ADD_BEFORE, 1, 10),
 				new SpaceInfo("word", SP_ADD_AFTER, 1, 10),
 			}
 		);
-		return new SyntaxKeyword(this,kw,lout);
+		return new SyntaxKeyword(kw,lout);
 	}
 
 	protected final SyntaxSeparator sep(String sep)
@@ -132,7 +141,7 @@ public class Syntax {
 				new SpaceInfo("sep", SP_ADD_AFTER, 1, 10),
 			}
 		);
-		return new SyntaxSeparator(this,sep,lout);
+		return new SyntaxSeparator(sep,lout);
 	}
 
 	protected final SyntaxOperator oper(Operator op)
@@ -145,20 +154,17 @@ public class Syntax {
 		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
 			new NewLineInfo[]{},
 			new SpaceInfo[]{
-				new SpaceInfo("word", SP_ADD_BEFORE, 1, 10),
 				new SpaceInfo("word", SP_ADD_AFTER, 1, 10),
-				new SpaceInfo("sep", SP_ADD_BEFORE, 1, 10),
 				new SpaceInfo("sep", SP_ADD_AFTER, 1, 10),
-				new SpaceInfo("oper", SP_ADD_BEFORE, 1, 10),
 				new SpaceInfo("oper", SP_ADD_AFTER, 1, 10),
 			}
 		);
-		return new SyntaxOperator(this,op.intern(),lout);
+		return new SyntaxOperator(op.intern(),lout);
 	}
 
 	protected final SyntaxSeparator sep(String sep, DrawLayout layout)
 	{
-		return new SyntaxSeparator(this,sep,layout);
+		return new SyntaxSeparator(sep,layout);
 	}
 	
 	protected final SyntaxOptional opt(String name)
@@ -181,7 +187,7 @@ public class Syntax {
 
 	protected final SyntaxOptional opt(String name, CalcOption calc, SyntaxElem opt_true, SyntaxElem opt_false, DrawLayout lout)
 	{
-		return new SyntaxOptional(this,name,calc,opt_true,opt_false,lout);
+		return new SyntaxOptional(name,calc,opt_true,opt_false,lout);
 	}
 
 	protected final SyntaxIntChoice alt_int(String name, SyntaxElem... options)
@@ -190,7 +196,7 @@ public class Syntax {
 			new NewLineInfo[]{},
 			new SpaceInfo[]{}
 		);
-		SyntaxIntChoice sc = new SyntaxIntChoice(this,name,lout);
+		SyntaxIntChoice sc = new SyntaxIntChoice(name,lout);
 		sc.elements.addAll(options);
 		return sc;
 	}
@@ -279,15 +285,10 @@ public abstract class SyntaxElem extends ASTNode {
 	@virtual typedef This  = SyntaxElem;
 
 	@att public DrawLayout			layout;
-	@att public final String		ID;
 	@att public boolean				is_hidden;
 	
-	@ref public final Syntax		stx;
-
 	public SyntaxElem() {}
-	public SyntaxElem(Syntax stx, String ID, DrawLayout layout) {
-		this.ID = ID.intern();
-		this.stx = stx;
+	public SyntaxElem(DrawLayout layout) {
 		this.layout = layout;
 	}
 
@@ -300,8 +301,8 @@ public class SyntaxSpace extends SyntaxElem {
 	@virtual typedef This  = SyntaxSpace;
 
 	public SyntaxSpace() {}
-	public SyntaxSpace(Syntax stx, String ID, DrawLayout layout) {
-		super(stx,ID,layout);
+	public SyntaxSpace(DrawLayout layout) {
+		super(layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -318,8 +319,8 @@ public abstract class SyntaxToken extends SyntaxElem {
 	@att public String text;
 
 	public SyntaxToken() {}
-	public SyntaxToken(Syntax stx, String ID, String text, DrawLayout layout) {
-		super(stx,ID,layout);
+	public SyntaxToken(String text, DrawLayout layout) {
+		super(layout);
 		this.text = text.intern();
 	}
 }
@@ -329,8 +330,8 @@ public class SyntaxKeyword extends SyntaxToken {
 	@virtual typedef This  = SyntaxKeyword;
 
 	public SyntaxKeyword() {}
-	public SyntaxKeyword(Syntax stx, String text, DrawLayout layout) {
-		super(stx, text, text, layout);
+	public SyntaxKeyword(String text, DrawLayout layout) {
+		super(text, layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -345,8 +346,8 @@ public class SyntaxOperator extends SyntaxToken {
 	@virtual typedef This  = SyntaxOperator;
 
 	public SyntaxOperator() {}
-	public SyntaxOperator(Syntax stx, String text, DrawLayout layout) {
-		super(stx, text, text, layout);
+	public SyntaxOperator(String text, DrawLayout layout) {
+		super(text, layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -361,8 +362,8 @@ public class SyntaxSeparator extends SyntaxToken {
 	@virtual typedef This  = SyntaxSeparator;
 
 	public SyntaxSeparator() {}
-	public SyntaxSeparator(Syntax stx, String text, DrawLayout layout) {
-		super(stx, text, text, layout);
+	public SyntaxSeparator(String text, DrawLayout layout) {
+		super(text, layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -384,8 +385,8 @@ public class SyntaxList extends SyntaxElem {
 	@att public SyntaxElem suffix;
 
 	public SyntaxList() {}
-	public SyntaxList(Syntax stx, String id, DrawLayout layout) {
-		super(stx,id,layout);
+	public SyntaxList(DrawLayout layout) {
+		super(layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -402,8 +403,8 @@ public class SyntaxSet extends SyntaxElem {
 	@att public NArr<SyntaxElem> elements;
 
 	public SyntaxSet() {}
-	public SyntaxSet(Syntax stx, String id, DrawLayout layout) {
-		super(stx,id,layout);
+	public SyntaxSet(DrawLayout layout) {
+		super(layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -421,12 +422,12 @@ public class SyntaxAttr extends SyntaxElem {
 	@att public FormatInfoHint	hint;
 
 	public SyntaxAttr() {}
-	public SyntaxAttr(Syntax stx, String name, DrawLayout layout) {
-		super(stx,name,layout);
+	public SyntaxAttr(String name, DrawLayout layout) {
+		super(layout);
 		this.name = name.intern();
 	}
-	public SyntaxAttr(Syntax stx, String name, FormatInfoHint hint, DrawLayout layout) {
-		super(stx,name,layout);
+	public SyntaxAttr(String name, FormatInfoHint hint, DrawLayout layout) {
+		super(layout);
 		this.name = name.intern();
 		this.hint = hint;
 	}
@@ -448,8 +449,8 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxIdentAttr;
 
 	public SyntaxIdentAttr() {}
-	public SyntaxIdentAttr(Syntax stx, String name, DrawLayout layout) {
-		super(stx,name,layout);
+	public SyntaxIdentAttr(String name, DrawLayout layout) {
+		super(name,layout);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -493,8 +494,8 @@ public class SyntaxOptional extends SyntaxElem {
 	@att public String name;
 
 	public SyntaxOptional() {}
-	public SyntaxOptional(Syntax stx, String name, CalcOption calculator, SyntaxElem opt_true, SyntaxElem opt_false, DrawLayout layout) {
-		super(stx,name,layout);
+	public SyntaxOptional(String name, CalcOption calculator, SyntaxElem opt_true, SyntaxElem opt_false, DrawLayout layout) {
+		super(layout);
 		this.calculator = calculator;
 		this.opt_true = opt_true;
 		this.opt_false = opt_false;
@@ -512,9 +513,12 @@ public class SyntaxOptional extends SyntaxElem {
 public class SyntaxIntChoice extends SyntaxSet {
 	@virtual typedef This  = SyntaxOptional;
 
+	@att public String name;
+
 	public SyntaxIntChoice() {}
-	public SyntaxIntChoice(Syntax stx, String name, DrawLayout layout) {
-		super(stx,name,layout);
+	public SyntaxIntChoice(String name, DrawLayout layout) {
+		super(layout);
+		this.name = name.intern();
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -531,8 +535,8 @@ public class SyntaxMultipleChoice extends SyntaxSet {
 	@att public String name;
 
 	public SyntaxMultipleChoice() {}
-	public SyntaxMultipleChoice(Syntax stx, String name, DrawLayout layout) {
-		super(stx,name,layout);
+	public SyntaxMultipleChoice(String name, DrawLayout layout) {
+		super(layout);
 		this.name = name.intern();
 	}
 

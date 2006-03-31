@@ -196,8 +196,6 @@ kiev.fmt.DrawDevice kiev/fmt/DrawDevice kiev\fmt\DrawDevice.java
 kiev.fmt.DrawGeometry kiev/fmt/DrawGeometry kiev\fmt\DrawGeometry.java
 kiev.fmt.DrawIntChoice kiev/fmt/DrawIntChoice kiev\fmt\DrawCtrl.java
 kiev.fmt.DrawJavaExpr kiev/fmt/DrawJavaExpr kiev\fmt\DrawJava.java
-kiev.fmt.DrawJavaImport kiev/fmt/DrawJavaImport kiev\fmt\DrawJava.java
-kiev.fmt.DrawJavaPackage kiev/fmt/DrawJavaPackage kiev\fmt\DrawJava.java
 kiev.fmt.DrawKeyword kiev/fmt/DrawKeyword kiev\fmt\DrawTerm.java
 kiev.fmt.DrawLayout kiev/fmt/DrawLayout kiev\fmt\SyntaxLayout.java
 kiev.fmt.DrawMultipleChoice kiev/fmt/DrawMultipleChoice kiev\fmt\DrawCtrl.java
@@ -225,8 +223,6 @@ kiev.fmt.SyntaxElem kiev/fmt/SyntaxElem kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxIdentAttr kiev/fmt/SyntaxIdentAttr kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxIntChoice kiev/fmt/SyntaxIntChoice kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxJavaExpr kiev/fmt/SyntaxJavaExpr kiev\fmt\JavaSyntax.java
-kiev.fmt.SyntaxJavaImport kiev/fmt/SyntaxJavaImport kiev\fmt\JavaSyntax.java
-kiev.fmt.SyntaxJavaPackage kiev/fmt/SyntaxJavaPackage kiev\fmt\JavaSyntax.java
 kiev.fmt.SyntaxKeyword kiev/fmt/SyntaxKeyword kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxList kiev/fmt/SyntaxList kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxMultipleChoice kiev/fmt/SyntaxMultipleChoice kiev\fmt\SyntaxLayout.java

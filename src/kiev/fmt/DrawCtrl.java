@@ -71,9 +71,10 @@ public class DrawIntChoice extends DrawNonTermSet {
 	public void preFormat(DrawContext cont) {
 		foreach (Drawable dr; args)
 			dr.geometry.is_hidden = true;
-		int idx = ((Integer)node.getVal(syntax.ID)).intValue();
-		if (idx < 0 || idx >= args.size())
-			args[idx].is_hidden = false;
+		SyntaxIntChoice sc = (SyntaxIntChoice)syntax;
+		int idx = ((Integer)node.getVal(sc.name)).intValue();
+		if (idx >= 0 && idx < args.size())
+			args[idx].geometry.is_hidden = false;
 		super.preFormat(cont);
 	}
 }

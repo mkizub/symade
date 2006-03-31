@@ -13,45 +13,6 @@ import syntax kiev.Syntax;
 
 
 @node
-public class DrawJavaPackage extends DrawNonTermSet {
-	public DrawJavaPackage() {}
-	public DrawJavaPackage(ASTNode node, SyntaxElem syntax) {
-		super(node, syntax);
-	}
-	public void preFormat(DrawContext cont) {
-		FileUnit fu = (FileUnit)node;
-		if (fu.pkg == null || fu.pkg.name == null || fu.pkg.getType() ≈ Env.root.ctype)
-			this.geometry.is_hidden = true;
-		else
-			this.geometry.is_hidden = false;
-		super.preFormat(cont);
-	}
-}
-
-@node
-public class DrawJavaImport extends DrawNonTermSet {
-	@ref Drawable star;
-	
-	public DrawJavaImport() {}
-	public DrawJavaImport(ASTNode node, SyntaxElem syntax) {
-		super(node, syntax);
-	}
-	public void init(Formatter fmt) {
-		super.init(fmt);
-		foreach (Drawable dr; args; dr.syntax.ID == ".*") {
-			star = dr;
-			break;
-		}
-	}
-
-	public void preFormat(DrawContext cont) {
-		Import imp = (Import)node;
-		this.star.geometry.is_hidden = !imp.star;
-		super.preFormat(cont);
-	}
-}
-
-@node
 public class DrawJavaExpr extends DrawNonTermSet {
 	public DrawJavaExpr() {}
 	public DrawJavaExpr(ASTNode node, SyntaxJavaExpr syntax) {
