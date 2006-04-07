@@ -68,7 +68,7 @@ public class Stack<A> extends Vector<A> implements Cloneable
 		int current;
 
 		public StackEnumerator() {
-			current = Stack.this.count;
+			current = size();
 		}
 
 		public boolean hasMoreElements() {

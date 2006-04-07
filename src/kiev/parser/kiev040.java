@@ -4395,7 +4395,7 @@ public abstract class kiev040 implements kiev040Constants {
       switch (jj_nt.kind) {
       case SEMICOLON:
         jj_consume_token(SEMICOLON);
-                      n = new ExprStat(getToken(0).getPos(), null);
+                      n = null;
         break;
       default:
         jj_consume_token(-1);

@@ -10,9 +10,8 @@ import kiev.parser.*;
 
 import kiev.vlang.Operator;
 
-import static kiev.fmt.IndentKind.*;
-import static kiev.fmt.NewLineAction.*;
 import static kiev.fmt.SpaceAction.*;
+import static kiev.fmt.SpaceKind.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -40,47 +39,54 @@ public class Syntax {
 	
 	public Syntax parent_syntax;
 	
+	public SpaceInfo siSp     = new SpaceInfo("sp",       SP_SPACE,    1, 10);
+	public SpaceInfo siSpSEPR = new SpaceInfo("sp-sepr",  SP_SPACE,    1, 10);
+	public SpaceInfo siSpWORD = new SpaceInfo("sp-word",  SP_SPACE,    1, 10);
+	public SpaceInfo siSpOPER = new SpaceInfo("sp-oper",  SP_SPACE,    1, 10);
+	public SpaceInfo siNl     = new SpaceInfo("nl",       SP_NEW_LINE, 1, 10);
+	public SpaceInfo siNlGrp  = new SpaceInfo("nl-group", SP_NEW_LINE, 2, 20);
+	
+	public ParagraphLayout plIndented = new ParagraphLayout("par-indented", 4, 20);
+	
 	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
 		return kw("?"+node.getClass().getName()+"?");
 	}
 	
-	protected final SyntaxSet set(SyntaxElem... elems) {
-		DrawLayout lout_empty = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+	protected SyntaxParagraphLayout par(ParagraphLayout par, SyntaxElem elem) {
+		SyntaxParagraphLayout spl = new SyntaxParagraphLayout(elem, par, new DrawLayout());
+		return spl;
+	}
+	
+	protected SyntaxSet set(SyntaxElem... elems) {
+		DrawLayout lout_empty = new DrawLayout();
 		SyntaxSet set = new SyntaxSet(lout_empty);
 		set.elements.addAll(elems);
 		return set;
 	}
 	
-	protected final SyntaxSet setl(DrawLayout layout, SyntaxElem... elems) {
+	protected SyntaxSet setl(DrawLayout layout, SyntaxElem... elems) {
 		SyntaxSet set = new SyntaxSet(layout);
 		set.elements.addAll(elems);
 		return set;
 	}
 
-	protected final SyntaxList lst(
-			SyntaxElem prefix,
+	protected SyntaxList lst(
 			SyntaxElem elem_prefix,
 			SyntaxAttr element,
 			SyntaxElem elem_suffix,
 			SyntaxElem separator,
-			SyntaxElem suffix,
 			DrawLayout layout
 	)
 	{
 		SyntaxList lst = new SyntaxList(layout);
-		lst.prefix = prefix;
 		lst.elem_prefix = elem_prefix;
 		lst.element = element;
 		lst.elem_suffix = elem_suffix;
 		lst.separator = separator;
-		lst.suffix = suffix;
 		return lst;
 	}
 
-	protected final SyntaxList lst(
+	protected SyntaxList lst(
 			SyntaxAttr element,
 			DrawLayout layout
 	)
@@ -90,112 +96,85 @@ public class Syntax {
 		return lst;
 	}
 
-	protected final SyntaxAttr attr(String slot)
+	protected SyntaxAttr attr(String slot)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout = new DrawLayout();
 		return new SyntaxAttr(slot, lout);
 	}
 
-	protected final SyntaxAttr attr(String slot, FormatInfoHint hint)
+	protected SyntaxAttr attr(String slot, FormatInfoHint hint)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout = new DrawLayout();
 		return new SyntaxAttr(slot, hint, lout);
 	}
 
-	protected final SyntaxIdentAttr ident(String slot)
+	protected SyntaxIdentAttr ident(String slot)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{
-				new SpaceInfo("sep", SP_EAT_BEFORE, 1, 10),
-				new SpaceInfo("word", SP_ADD_AFTER, 1, 10),
-			}
-		);
+		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
+				new SpaceCmd(siSpWORD, SP_ADD_AFTER, 0),
+			});
 		return new SyntaxIdentAttr(slot,lout);
 	}
 
-	protected final SyntaxKeyword kw(String kw)
+	protected SyntaxKeyword kw(String kw)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{
-				new SpaceInfo("word", SP_ADD_AFTER, 1, 10),
-			}
-		);
+		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
+				new SpaceCmd(siSpWORD, SP_ADD_AFTER, 0),
+			});
 		return new SyntaxKeyword(kw,lout);
 	}
 
-	protected final SyntaxSeparator sep(String sep)
+	protected SyntaxSeparator sep(String sep)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{
-				new SpaceInfo("word", SP_EAT_BEFORE, 1, 10),
-				new SpaceInfo("sep", SP_EAT_BEFORE, 1, 10),
-				new SpaceInfo("sep", SP_ADD_AFTER, 1, 10),
-			}
-		);
+		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+				new SpaceCmd(siSpWORD, SP_EAT_BEFORE, 0),
+				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
+				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
+			});
 		return new SyntaxSeparator(sep,lout);
 	}
 
-	protected final SyntaxOperator oper(Operator op)
+	protected SyntaxOperator oper(Operator op)
 	{
 		return oper(op.toString());
 	}
 
-	protected final SyntaxOperator oper(String op)
+	protected SyntaxOperator oper(String op)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{
-				new SpaceInfo("word", SP_ADD_AFTER, 1, 10),
-				new SpaceInfo("sep", SP_ADD_AFTER, 1, 10),
-				new SpaceInfo("oper", SP_ADD_AFTER, 1, 10),
-			}
-		);
+		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+				new SpaceCmd(siSpOPER, SP_ADD_BEFORE, 0),
+				new SpaceCmd(siSpOPER, SP_ADD_AFTER, 0),
+			});
 		return new SyntaxOperator(op.intern(),lout);
 	}
 
-	protected final SyntaxSeparator sep(String sep, DrawLayout layout)
+	protected SyntaxSeparator sep(String sep, DrawLayout layout)
 	{
 		return new SyntaxSeparator(sep,layout);
 	}
 	
-	protected final SyntaxOptional opt(String name)
+	protected SyntaxOptional opt(String name)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout = new DrawLayout();
 		return opt(name,new CalcOptionNotNull(name),attr(name),null,lout);
 	}
 	
-	protected final SyntaxOptional opt(String name, SyntaxElem opt_true)
+	protected SyntaxOptional opt(String name, SyntaxElem opt_true)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout = new DrawLayout();
 		return opt(name,new CalcOptionNotNull(name),opt_true,null,lout);
 	}
 
-	protected final SyntaxOptional opt(String name, CalcOption calc, SyntaxElem opt_true, SyntaxElem opt_false, DrawLayout lout)
+	protected SyntaxOptional opt(String name, CalcOption calc, SyntaxElem opt_true, SyntaxElem opt_false, DrawLayout lout)
 	{
 		return new SyntaxOptional(name,calc,opt_true,opt_false,lout);
 	}
 
-	protected final SyntaxIntChoice alt_int(String name, SyntaxElem... options)
+	protected SyntaxIntChoice alt_int(String name, SyntaxElem... options)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout = new DrawLayout();
 		SyntaxIntChoice sc = new SyntaxIntChoice(name,lout);
 		sc.elements.addAll(options);
 		return sc;
@@ -203,80 +182,122 @@ public class Syntax {
 
 }
 
-public enum IndentKind {
-	INDENT_KIND_NONE,
-	INDENT_KIND_TOKEN_SIZE,
-	INDENT_KIND_FIXED_SIZE,
-	INDENT_KIND_UNINDENT
-}
-
-public enum NewLineAction {
-	NL_ADD_AFTER,
-	NL_ADD_GROUP_AFTER,
-	NL_ADD_BEFORE,
-	NL_ADD_GROUP_BEFORE,
-	NL_DEL_BEFORE,
-	NL_DEL_GROUP_BEFORE,
-	NL_TRANSFER
+public enum SpaceKind {
+	SP_SPACE,
+	SP_NEW_LINE
 }
 
 public enum SpaceAction {
 	SP_ADD_BEFORE,
-	SP_ADD_AFTER,
 	SP_EAT_BEFORE,
+	SP_ADD_AFTER,
 	SP_EAT_AFTER
-}
-
-@node
-public class NewLineInfo extends ASTNode {
-	@virtual typedef This  = NewLineInfo;
-
-	@att String			name;
-	@att NewLineAction	action;
-	@att int			from_attempt;
-	
-	public NewLineInfo() {}
-	public NewLineInfo(String name, NewLineAction action, int from_attempt) {
-		this.name = name;
-		this.action = action;
-		this.from_attempt = from_attempt;
-	}
 }
 
 @node
 public class SpaceInfo extends ASTNode {
 	@virtual typedef This  = SpaceInfo;
 
-	@att String			name;
-	@att SpaceAction	action;
+	@att KString		name;
+	@att SpaceKind		kind;
 	@att int			text_size;
 	@att int			pixel_size;
+	@att int			from_attempt;
 	
 	public SpaceInfo() {}
-	public SpaceInfo(String name, SpaceAction action, int text_size, int pixel_size) {
-		this.name = name;
-		this.action = action;
+	public SpaceInfo(String name, SpaceKind kind, int text_size, int pixel_size) {
+		this.name = KString.from(name);
+		this.kind = kind;
 		this.text_size = text_size;
 		this.pixel_size = pixel_size;
 	}
 }
 
+@node
+public final class SpaceCmd extends ASTNode {
+	@virtual typedef This  = SpaceCmd;
+
+	private final int	idx;
+	@ref SpaceInfo			si;
+	@att final boolean		before;
+	@att final boolean		eat;
+	@att final int			from_attempt;
+	
+	public SpaceCmd() {}
+	public SpaceCmd(SpaceInfo si, SpaceAction action) {
+		this(si, action==SP_ADD_BEFORE||action==SP_EAT_BEFORE, action==SP_EAT_BEFORE||action==SP_EAT_AFTER, 0);
+	}
+	public SpaceCmd(SpaceInfo si, SpaceAction action, int from_attempt) {
+		this(si, action==SP_ADD_BEFORE||action==SP_EAT_BEFORE, action==SP_EAT_BEFORE||action==SP_EAT_AFTER, from_attempt);
+	}
+	public SpaceCmd(SpaceInfo si, boolean before, boolean eat) {
+		this(si, before, eat, 0);
+	}
+	public SpaceCmd(SpaceInfo si, boolean before, boolean eat, int from_attempt) {
+		this.si = si;
+		this.before = before;
+		this.eat = eat;
+		this.from_attempt = from_attempt;
+	}
+	public int getIdx() { return idx; }
+}
+
+@node
+public class ParagraphLayout extends ASTNode {
+	@virtual typedef This  = ParagraphLayout;
+
+	@att KString name;
+	@att int indent_text_size;
+	@att int indent_pixel_size;
+	@att int indent_first_line_text_size;
+	@att int indent_first_line_pixel_size;
+	@att boolean indent_from_current_position;
+	@att boolean align_right;
+	@att boolean align_rest_of_lines_right;
+	
+	public ParagraphLayout() {}
+	public ParagraphLayout(String name, int ind_txt, int ind_pix) {
+		this.name = KString.from("name");
+		this.indent_text_size = ind_txt;
+		this.indent_pixel_size = ind_pix;
+	}
+	
+	public boolean enabled(DrawParagraph dr) { return true; }
+}
+
+@node
+public class ParagraphLayoutBlock extends ParagraphLayout {
+	@virtual typedef This  = ParagraphLayoutBlock;
+
+	public ParagraphLayoutBlock() {}
+	public ParagraphLayoutBlock(String name, int ind_txt, int ind_pix) {
+		super(name, ind_txt, ind_pix);
+	}
+	
+	public boolean enabled(DrawParagraph dr) {
+		if (dr == null)
+			return true;
+		DrawTerm t = dr.getFirstLeaf();
+		if (t instanceof DrawSeparator && ((SyntaxSeparator)t.syntax).text == "{")
+			return false;
+		return true;
+	}
+}
 
 @node
 public final class DrawLayout extends ASTNode {
 	@virtual typedef This  = DrawLayout;
 
 	@att int				count;
-	@att IndentKind			indent;
-	@att NArr<NewLineInfo>	new_lines;
-	@att NArr<SpaceInfo>	spaces;
+	@att NArr<SpaceCmd>		spaces;
 	
-	public DrawLayout() {}
-	public DrawLayout(int count, IndentKind indent, NewLineInfo[] new_lines, SpaceInfo[] spaces) {
-		this.count = count;
-		this.indent = indent;
-		this.new_lines.addAll(new_lines);
+	public DrawLayout() { this.count = 1; }
+	public DrawLayout(SpaceCmd[] spaces) {
 		this.spaces.addAll(spaces);
+		int count = 1;
+		for (int i=0; i < spaces.length; i++)
+			count = Math.max(count, spaces[i].from_attempt+1);
+		this.count = count;
 	}
 }
 
@@ -377,12 +398,10 @@ public class SyntaxSeparator extends SyntaxToken {
 public class SyntaxList extends SyntaxElem {
 	@virtual typedef This  = SyntaxList;
 
-	@att public SyntaxElem prefix;
 	@att public SyntaxElem elem_prefix;
 	@att public SyntaxAttr element;
 	@att public SyntaxElem elem_suffix;
 	@att public SyntaxElem separator;
-	@att public SyntaxElem suffix;
 
 	public SyntaxList() {}
 	public SyntaxList(DrawLayout layout) {
@@ -529,19 +548,21 @@ public class SyntaxIntChoice extends SyntaxSet {
 }
 
 @node
-public class SyntaxMultipleChoice extends SyntaxSet {
-	@virtual typedef This  = SyntaxMultipleChoice;
+public class SyntaxParagraphLayout extends SyntaxElem {
+	@virtual typedef This  = SyntaxParagraphLayout;
 
-	@att public String name;
+	@att public SyntaxElem			elem;
+	@ref public ParagraphLayout		par;
 
-	public SyntaxMultipleChoice() {}
-	public SyntaxMultipleChoice(String name, DrawLayout layout) {
+	public SyntaxParagraphLayout() {}
+	public SyntaxParagraphLayout(SyntaxElem elem, ParagraphLayout par, DrawLayout layout) {
 		super(layout);
-		this.name = name.intern();
+		this.elem = elem;
+		this.par = par;
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
-		Drawable dr = new DrawMultipleChoice(node, this);
+		Drawable dr = new DrawParagraph(node, this);
 		dr.init(fmt);
 		return dr;
 	}

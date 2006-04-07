@@ -10,9 +10,8 @@ import kiev.parser.*;
 
 import kiev.vlang.Operator;
 
-import static kiev.fmt.IndentKind.*;
-import static kiev.fmt.NewLineAction.*;
 import static kiev.fmt.SpaceAction.*;
+import static kiev.fmt.SpaceKind.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -111,6 +110,9 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seBlock;
 	final SyntaxElem seTypeRef;
 	final SyntaxElem seConstExpr;
+	final SyntaxElem seConstExprTrue;
+	final SyntaxElem seConstExprFalse;
+	final SyntaxElem seConstExprNull;
 	// lvalues
 	final SyntaxElem seAccessExpr;
 	final SyntaxElem seIFldExpr;
@@ -144,104 +146,88 @@ public class JavaSyntax extends Syntax {
 	
 	final Hashtable<Operator, SyntaxElem> exprs;
 	
+	public SpaceInfo siNlOrBlock = new SpaceInfo("nl-block",       SP_NEW_LINE, 1, 10);
+
+	public SpaceInfo siFldGrpNl  = new SpaceInfo("indent-block",   SP_NEW_LINE, 2, 20);
 	
-	protected final SyntaxElem jflag(int size, int offs, int val, String name)
+	public ParagraphLayout plStatIndented = new ParagraphLayoutBlock("stat-indented", 4, 20);
+
+	protected SyntaxElem jflag(int size, int offs, int val, String name)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout = new DrawLayout();
 		return new SyntaxOptional(name, new CalcOptionJavaFlag(size, offs, val), kw(name), null, lout);
 	}
 
-	protected final SyntaxJavaExpr expr(String expr, int priority)
+	protected SyntaxJavaExpr expr(String expr, int priority)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout = new DrawLayout();
 		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, lout, priority, sep("("), sep(")"));
 		return se;
 	}
 
-	protected final SyntaxSet expr(String expr1, Operator op, String expr2)
+	protected SyntaxSet expr(String expr1, Operator op, String expr2)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout = new DrawLayout();
 		return setl(lout, expr(expr1, op.getArgPriority(0)), oper(op), expr(expr2, op.getArgPriority(1)));
 	}
 
-	protected final SyntaxSet expr(Operator op, String expr2)
+	protected SyntaxSet expr(Operator op, String expr2)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout = new DrawLayout();
 		return setl(lout, oper(op), expr(expr2, op.getArgPriority()));
 	}
 
-	protected final SyntaxSet expr(String expr1, Operator op)
+	protected SyntaxSet expr(String expr1, Operator op)
 	{
-		DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout = new DrawLayout();
 		return setl(lout, expr(expr1, op.getArgPriority()), oper(op));
+	}
+	
+	protected SyntaxSeparator sep(String sep)
+	{
+		if (sep == ";") {
+			DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siSpWORD, SP_EAT_BEFORE, 0),
+					new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
+					new SpaceCmd(siSp,     SP_ADD_AFTER, 0),
+				});
+				return new SyntaxSeparator(sep,lout);
+		}
+		if (sep == "{" || sep == "}") {
+			DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siSp, SP_ADD_AFTER, 0),
+					new SpaceCmd(siSp, SP_ADD_AFTER, 0),
+				});
+			return new SyntaxSeparator(sep,lout);
+		}
+		return super.sep(sep);
 	}
 
 	public JavaSyntax() {
-		DrawLayout lout_empty = new DrawLayout(1, INDENT_KIND_NONE,
-			new NewLineInfo[]{},
-			new SpaceInfo[]{}
-		);
+		DrawLayout lout_empty = new DrawLayout();
+		DrawLayout lout_nl = new DrawLayout(new SpaceCmd[]{new SpaceCmd(siNl,SP_ADD_AFTER,0)});
 		{
-			DrawLayout lout_file = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("after_file", NL_ADD_AFTER, 0)
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_pkg = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("after_package", NL_ADD_GROUP_AFTER, 0)
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_syntax = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("file_syntax_group", NL_ADD_GROUP_AFTER, 0)
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_members = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("file_members_group", NL_ADD_GROUP_AFTER, 0)
-				},
-				new SpaceInfo[]{}
-			);
+			DrawLayout lout_pkg = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
+				});
+			DrawLayout lout_syntax = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
+				});
 			// file unit
-			seFileUnit = setl(lout_file,
+			seFileUnit = setl(lout_nl.ncopy(),
 					opt("pkg", setl(lout_pkg, kw("package"), ident("pkg"), sep(";"))),
 					lst(attr("syntax"), lout_syntax),
-					lst(attr("members"), lout_members)
+					lst(attr("members"), lout_empty.ncopy())
 				);
 		}
 		{
-			DrawLayout lout_syntax = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("file_syntax", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
 			// import
-			seImport = setl(lout_syntax.ncopy(),
+			seImport = setl(lout_nl.ncopy(),
 				kw("import"),
 				ident("name"),
 				opt("star",new CalcOptionTrue("star"), sep(".*"), null, lout_empty.ncopy()),
 				sep(";"));
-			seOpdef = setl(lout_syntax.ncopy(),
+			seOpdef = setl(lout_nl.ncopy(),
 				kw("operator"),
 				ident("image"),
 				sep(","),
@@ -261,51 +247,29 @@ public class JavaSyntax extends Syntax {
 				ident("prior"),
 				sep(";")
 				);
-			seTypeDef = setl(lout_syntax.ncopy(), kw("typedef"), ident("name"), 
-				lst(null, oper("\u2264"), attr("upper_bound"), null, null, null, lout_empty.ncopy()),
-				lst(null, oper("\u2265"), attr("lower_bound"), null, null, null, lout_empty.ncopy()),
+			seTypeDef = setl(lout_nl.ncopy(), kw("typedef"), ident("name"), 
+				lst(oper("\u2264"), attr("upper_bound"), null, null, lout_empty.ncopy()),
+				lst(oper("\u2265"), attr("lower_bound"), null, null, lout_empty.ncopy()),
 				sep(";")
 				);
 		}
 		{
-			DrawLayout lout_struct = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("struct", NL_ADD_GROUP_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_struct_hdr = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("struct_hdr", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_struct_block_start = new DrawLayout(1, INDENT_KIND_FIXED_SIZE,
-				new NewLineInfo[]{
-					new NewLineInfo("struct_hdr", NL_TRANSFER, 0),
-					new NewLineInfo("block_start", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{
-					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
-					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
-				}
-			);
-			DrawLayout lout_struct_block_end = new DrawLayout(1, INDENT_KIND_UNINDENT,
-				new NewLineInfo[]{
-					new NewLineInfo("block_end", NL_ADD_BEFORE, 0),
-					new NewLineInfo("block_end", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{
-					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
-					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
-				}
-			);
-			DrawLayout lout_struct_end = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("struct", NL_ADD_GROUP_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
+			DrawLayout lout_struct = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
+				});
+			DrawLayout lout_struct_hdr = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNlOrBlock, SP_ADD_AFTER, 0)
+				});
+			DrawLayout lout_struct_block_start = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNlOrBlock, SP_EAT_BEFORE, 0),
+					new SpaceCmd(siNl,        SP_ADD_AFTER,  0),
+					new SpaceCmd(siSp,        SP_ADD_BEFORE, 0),
+				});
+			DrawLayout lout_struct_block_end = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNl,        SP_ADD_BEFORE, 0),
+					new SpaceCmd(siNl,        SP_ADD_AFTER,  0),
+					new SpaceCmd(siSp,        SP_ADD_BEFORE, 0),
+				});
 			SyntaxElem struct_prefix = setl(lout_struct_hdr.ncopy(),
 					attr("meta"),
 					jflag(1,3,1,  "static"),
@@ -314,17 +278,15 @@ public class JavaSyntax extends Syntax {
 					jflag(1,11,1, "strict")
 					);
 			// anonymouse struct
-			seStructBody = lst(
+			seStructBody = set(
 					sep("{", lout_struct_block_start),
-					null,
-					attr("members"),
-					null,
-					null,
-					sep("}", lout_struct_block_end),
-					lout_struct_end
+					par(plIndented,
+						lst(attr("members"),lout_empty.ncopy())
+						),
+					sep("}", lout_struct_block_end)
 					);
 			// class
-			seStructClass = setl(lout_struct.ncopy(),
+			seStructClass = setl(lout_empty.ncopy(),
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						kw("class"),
@@ -332,7 +294,7 @@ public class JavaSyntax extends Syntax {
 					seStructBody.ncopy()
 				);
 			// interface
-			seStructInterface = setl(lout_struct.ncopy(),
+			seStructInterface = setl(lout_empty.ncopy(),
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						kw("interface"),
@@ -340,7 +302,7 @@ public class JavaSyntax extends Syntax {
 					seStructBody.ncopy()
 				);
 			// interface
-			seStructAnnotation = setl(lout_struct.ncopy(),
+			seStructAnnotation = setl(lout_empty.ncopy(),
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						kw("@interface"),
@@ -348,7 +310,7 @@ public class JavaSyntax extends Syntax {
 					seStructBody.ncopy()
 				);
 			// enum
-			seStructEnum = setl(lout_struct.ncopy(),
+			seStructEnum = setl(lout_empty.ncopy(),
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						kw("enum"),
@@ -356,7 +318,7 @@ public class JavaSyntax extends Syntax {
 					seStructBody.ncopy()
 				);
 			// syntax
-			seStructSyntax = setl(lout_struct.ncopy(),
+			seStructSyntax = setl(lout_empty.ncopy(),
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						kw("syntax"),
@@ -365,42 +327,28 @@ public class JavaSyntax extends Syntax {
 				);
 		}
 		{
-			DrawLayout lout_meta = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("meta", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
 			seMetaSet = lst(attr("metas"), lout_empty.ncopy());
-			seMeta = setl(lout_meta, oper("@"), ident("type"), lst(sep("("),
-						null,
-						attr("values"),
-						null,
-						sep(","),
-						sep(")"),
-						lout_empty.ncopy()
-					));
+			seMeta = setl(lout_nl.ncopy(), oper("@"), ident("type"),
+						set(
+							sep("("),
+							lst(null,attr("values"),null,sep(","),lout_empty.ncopy()),
+							sep(")")
+							)
+						);
 			seMetaValueScalar = set(ident("type"), oper("="), attr("value"));
 			seMetaValueArray = set(ident("type"), oper("="),
-					lst(sep("{"),
-						null,
-						attr("values"),
-						null,
-						sep(","),
-						sep("}"),
-						lout_empty.ncopy()
-						)
-					);
+						set(sep("{"),
+							lst(null,attr("values"),null,sep(","),lout_empty.ncopy()),
+							sep("}")
+							)
+						);
 		}
 		{
-			DrawLayout lout_field = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("field_decl_group", NL_TRANSFER, 0),
-					new NewLineInfo("field_decl_group", NL_ADD_GROUP_AFTER, 0),
-					new NewLineInfo("field_decl", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
+			DrawLayout lout_field = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siFldGrpNl, SP_EAT_BEFORE,0),
+					new SpaceCmd(siFldGrpNl, SP_ADD_AFTER, 0),
+					new SpaceCmd(siNl,       SP_ADD_AFTER, 0),
+				});
 			// field
 			seFieldDecl = setl(lout_field.ncopy(), attr("meta"),
 				ident("ftype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
@@ -414,145 +362,151 @@ public class JavaSyntax extends Syntax {
 			seFormPar = set(opt("meta"), ident("vtype"), ident("name")	);
 		}
 		{
-			DrawLayout lout_method = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("method_decl", NL_ADD_GROUP_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_method_hdr = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("method_params", NL_DEL_BEFORE, 0),
-					new NewLineInfo("method_hdr", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_params = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("method_params", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_body = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("method_params", NL_DEL_BEFORE, 0),
-					new NewLineInfo("method_hdr", NL_DEL_BEFORE, 0),
-				},
-				new SpaceInfo[]{}
-			);
+			DrawLayout lout_method = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
+				});
 			// constructor
 			seConstructor = setl(lout_method.ncopy(),
-				setl(lout_method_hdr.ncopy(), attr("meta"),
+				setl(lout_empty.ncopy(), attr("meta"),
 					ident("parent.short_name"),
-					lst(sep("("),
-						null,
-						attr("params"),
-						null,
-						sep(","),
-						sep(")"),
-						lout_params.ncopy())
+					set(sep("("),
+						lst(null,attr("params"),null,sep(","),lout_empty.ncopy()),
+						sep(")")
+						)
 					),
 				attr("body")
 				);
 			// method
 			seMethod = setl(lout_method.ncopy(),
-				setl(lout_method_hdr.ncopy(), attr("meta"),
+				setl(lout_empty.ncopy(), attr("meta"),
 					ident("type_ret"), ident("name"),
-					lst(sep("("),
-						null,
-						attr("params"),
-						null,
-						sep(","),
-						sep(")"),
-						lout_params.ncopy())
+					set(sep("("),
+						lst(null,attr("params"),null,sep(","),lout_empty.ncopy()),
+						sep(")")
+						)
 					),
-				opt("body", new CalcOptionNotNull("body"),attr("body"), sep(";"), lout_body)
+				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty.ncopy())
 				);
-			seInitializer = setl(lout_method.ncopy(), attr("meta"),
-					attr("body")
-				);
+			seInitializer = setl(lout_method.ncopy(), attr("meta"), attr("body"));
 		}
 		{
-			DrawLayout lout_code_block = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{},
-				new SpaceInfo[]{}
-			);
-			DrawLayout lout_code_block_start = new DrawLayout(1, INDENT_KIND_FIXED_SIZE,
-				new NewLineInfo[]{
-					new NewLineInfo("method_hdr", NL_DEL_BEFORE, 0),
-					new NewLineInfo("method_params", NL_DEL_BEFORE, 0),
-					new NewLineInfo("block_start", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{
-					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
-					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
-				}
-			);
-			DrawLayout lout_code_block_end = new DrawLayout(1, INDENT_KIND_UNINDENT,
-				new NewLineInfo[]{
-					new NewLineInfo("block_start", NL_DEL_BEFORE, 0),
-					new NewLineInfo("block_end", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{
-					new SpaceInfo("block_start", SP_ADD_BEFORE, 1, 10),
-					new SpaceInfo("block_start", SP_ADD_AFTER, 1, 10),
-				}
-			);
-			DrawLayout lout_code_block_stat = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("stat_end", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{}
-			);
+			DrawLayout lout_code_block_start = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNlOrBlock,     SP_EAT_BEFORE, 0),
+					new SpaceCmd(siNl,            SP_ADD_AFTER,  0),
+					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
+					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
+				});
+			DrawLayout lout_code_block_end = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
+					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
+				});
+			DrawLayout lout_code_block_stat = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNl,            SP_ADD_AFTER,  0),
+				});
 			// block expression
-			seBlock = lst(
-					sep("{", lout_code_block_start),
-					null,
-					attr("stats"),
-					new SyntaxSpace(lout_code_block_stat),
-					null,
-					sep("}", lout_code_block_end),
-					lout_code_block
+			seBlock = set(
+					sep("{", lout_code_block_start.ncopy()),
+					par(plIndented, lst(null,attr("stats"),new SyntaxSpace(lout_code_block_stat.ncopy()),	null,lout_empty.ncopy())),
+					sep("}", lout_code_block_end.ncopy())
 					);
 		}
-		seExprStat = set(attr("expr"), sep(";"));
-		seReturnStat = set(kw("return"), attr("expr"), sep(";"));
+		seExprStat = set(opt("expr"), sep(";"));
+		seReturnStat = set(kw("return"), opt("expr"), sep(";"));
 		seThrowStat = set(kw("throw"), attr("expr"), sep(";"));
 		seCondStat = set(attr("cond"), opt("message", set(sep(":"), attr("message"))), sep(";"));
 		seLabeledStat = set(ident("ident"), sep(":"), attr("stat"));
 		seBreakStat = set(kw("break"), opt("ident", ident("ident")), sep(";"));
 		seContinueStat = set(kw("continue"), opt("ident", ident("ident")), sep(";"));
 		seGotoStat = set(kw("goto"), opt("ident", ident("ident")), sep(";"));
-		seGotoCaseStat = set(kw("goto"), kw("case"), attr("expr"), sep(";"));
+		seGotoCaseStat = set(kw("goto"), opt("expr", new CalcOptionNotNull("expr"), set(kw("case"), attr("expr")), kw("default"), lout_empty.ncopy()), sep(";"));
 
 		{
-			DrawLayout lout_cond = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{
-					new NewLineInfo("cond_end", NL_ADD_AFTER, 0),
-				},
-				new SpaceInfo[]{
-					new SpaceInfo("kw_start", SP_ADD_BEFORE, 1, 10),
-					new SpaceInfo("cond_end", SP_ADD_AFTER, 1, 10),
-				}
-			);
-			seIfElseStat = set(kw("if"), setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")), attr("thenSt"), opt("elseSt", set(kw("else"), attr("elseSt"))));
-			seWhileStat = set(kw("while"), setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")), attr("body"));
-			seDoWhileStat = set(kw("do"), attr("body"), kw("while"), setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")), sep(";"));
-			seForInit = lst(null,null,attr("decls"),null,null,null,lout_empty.ncopy());
-			seForStat = set(kw("for"), setl(lout_cond.ncopy(), sep("("), attr("init"), sep(";"), attr("cond"), sep(";"), attr("iter"), sep(")")), attr("body"));
-			seForEachStat = set(kw("foreach"), setl(lout_cond.ncopy(), sep("("), attr("var"), sep(";"), attr("container"), opt("cond", set(sep(";"), attr("cond"))), sep(")")), attr("body"));
-		
-			seCaseLabel = set(kw("case"), attr("val"), sep(":"), lst(attr("stats"),lout_empty.ncopy()));
-			seSwitchStat = set(kw("switch"), setl(lout_cond.ncopy(), sep("("), attr("sel"), sep(")")), lst(sep("{"),null,attr("cases"),null,null,sep("}"),lout_empty.ncopy()));
-			seCatchInfo = set(kw("catch"), setl(lout_cond.ncopy(), sep("("), attr("arg"), sep(")")), attr("body"));
-			seFinallyInfo = set(kw("finally"), attr("body"));
-			seTryStat = set(kw("try"), attr("body"), lst(attr("catchers"),lout_empty.ncopy()), opt("finally_catcher", attr("finally_catcher")));
-			seSynchronizedStat = set(kw("synchronized"), sep("("), attr("expr"), sep(")"), attr("body"));
-			seWithStat = set(kw("with"), sep("("), attr("expr"), sep(")"), attr("body"));
+			DrawLayout lout_cond = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNlOrBlock,   SP_ADD_AFTER,  0),
+					new SpaceCmd(siSp,          SP_ADD_BEFORE, 0),
+					new SpaceCmd(siSp,          SP_ADD_AFTER,  0),
+				});
+			seIfElseStat = set(
+				kw("if"),
+				setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")),
+				par(plStatIndented, attr("thenSt")),
+				opt("elseSt",
+					set(
+						setl(lout_cond.ncopy(), new SyntaxSpace(lout_nl.ncopy()), kw("else")),
+						par(plStatIndented, attr("elseSt"))
+						)
+					)
+				);
+			seWhileStat = set(
+				kw("while"),
+				setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")),
+				par(plStatIndented, attr("body"))
+				);
+			seDoWhileStat = set(
+				kw("do"),
+				par(plStatIndented, attr("body")),
+				kw("while"),
+				setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")),
+				sep(";")
+				);
+			seForInit = lst(null,attr("decls"),null,sep(","),lout_empty.ncopy());
+			seForStat = set(
+				kw("for"),
+				setl(lout_cond.ncopy(), sep("("), opt("init"), sep(";"), opt("cond"), sep(";"), opt("iter"), sep(")")),
+				par(plStatIndented, attr("body"))
+				);
+			seForEachStat = set(
+				kw("foreach"),
+				setl(lout_cond.ncopy(), sep("("), attr("var"), sep(";"), attr("container"), opt("cond", set(sep(";"), attr("cond"))), sep(")")),
+				par(plStatIndented, attr("body"))
+				);
+			
+			seCaseLabel = set(
+				opt("val", new CalcOptionNotNull("val"), set(kw("case"), attr("val")), kw("default"),lout_empty.ncopy()),
+				sep(":", lout_nl.ncopy()),
+				par(plIndented, lst(null,attr("stats"),null,new SyntaxSpace(lout_nl.ncopy()),lout_nl.ncopy()))
+				);
+			seSwitchStat = set(
+				kw("switch"),
+				setl(lout_cond.ncopy(), sep("("), attr("sel"), sep(")")),
+				set(
+					sep("{", lout_nl.ncopy()),
+					lst(null,attr("cases"),null,new SyntaxSpace(lout_nl.ncopy()),lout_nl.ncopy()),
+					sep("}")
+					)
+				);
+			seCatchInfo = set(
+				kw("catch"),
+				setl(lout_cond.ncopy(), sep("("), attr("arg"), sep(")")),
+				par(plStatIndented, attr("body"))
+				);
+			seFinallyInfo = set(
+				kw("finally"),
+				par(plStatIndented, attr("body"))
+				);
+			seTryStat = set(
+				kw("try"),
+				par(plStatIndented, attr("body")),
+				lst(attr("catchers"),lout_empty.ncopy()),
+				opt("finally_catcher", attr("finally_catcher"))
+				);
+			seSynchronizedStat = set(
+				kw("synchronized"),
+				setl(lout_cond.ncopy(), sep("("), attr("expr"), sep(")")),
+				par(plStatIndented, attr("body"))
+				);
+			seWithStat = set(
+				kw("with"),
+				setl(lout_cond.ncopy(), sep("("), attr("expr"), sep(")")),
+				par(plStatIndented, attr("body"))
+				);
 		}
 	
 		exprs = new Hashtable<Operator, SyntaxElem>();
 		seConstExpr = attr("this");
+		seConstExprTrue = kw("true");
+		seConstExprFalse = kw("false");
+		seConstExprNull = kw("null");
 		seTypeRef = ident("lnk");
 		
 		seAccessExpr = set(attr("obj"), sep("."), ident("ident"));
@@ -572,42 +526,28 @@ public class JavaSyntax extends Syntax {
 				attr("obj"),
 				sep("."),
 				ident("func.name"),
-				lst(sep("("),
-						null,
-						attr("args"),
-						null,
-						sep(","),
-						sep(")"),
-						lout_empty.ncopy()
-					)
+				sep("("),
+				lst(null,attr("args"),null,sep(","),lout_empty.ncopy()),
+				sep(")")
 				);
 		seClosureCallExpr = set(
 				expr("expr", Constants.opCallPriority),
-				lst(sep("("),
-						null,
-						attr("args"),
-						null,
-						sep(","),
-						sep(")"),
-						lout_empty.ncopy()
-					)
+				sep("("),
+				lst(null,attr("args"),null,sep(","),lout_empty.ncopy()),
+				sep(")")
 				);
 		seStringConcatExpr = lst(
-				null,
 				null,
 				expr("args", BinaryOperator.Add.priority),
 				null,
 				oper(BinaryOperator.Add),
-				null,
 				lout_empty.ncopy()
 			);
 		seCommaExpr = lst(
 				null,
-				null,
 				expr("exprs", BinaryOperator.Comma.priority),
 				null,
 				oper(BinaryOperator.Comma),
-				null,
 				lout_empty.ncopy()
 			);
 
@@ -615,24 +555,17 @@ public class JavaSyntax extends Syntax {
 				kw("new"),
 				opt("outer", set(attr("outer"), oper("."))),
 				ident("type"),
-				lst(sep("("),
-						null,
-						attr("args"),
-						null,
-						sep(","),
-						sep(")"),
-						lout_empty.ncopy()
-					),
+				sep("("),
+				lst(null,attr("args"),null,sep(","),lout_empty.ncopy()),
+				sep(")"),
 				opt("clazz", attr("clazz", new FormatInfoHint("anonymouse")))
 				);
 		seNewArrayExpr = set(
 				kw("new"),
 				ident("type"),
-				lst(null,
-					sep("["),
+				lst(sep("["),
 					attr("args"),
 					sep("]"),
-					null,
 					null,
 					lout_empty.ncopy()
 					)
@@ -640,25 +573,15 @@ public class JavaSyntax extends Syntax {
 		seNewInitializedArrayExpr = set(
 				kw("new"),
 				ident("arrtype"),
-				lst(sep("{"),
-					null,
-					attr("args"),
-					null,
-					sep(","),
-					sep("}"),
-					lout_empty.ncopy()
-					)
+				sep("{"),
+				lst(null,attr("args"),null,sep(","),lout_empty.ncopy()),
+				sep("}")
 				);
 		seNewClosure = set(
 				kw("fun"),
-				lst(sep("("),
-						null,
-						attr("params"),
-						null,
-						sep(","),
-						sep(")"),
-						lout_empty.ncopy()
-					),
+				sep("("),
+				lst(null,attr("params"),null,sep(","),lout_empty.ncopy()),
+				sep(")"),
 				sep("->"),
 				ident("type_ret"),
 				attr("body")
@@ -709,7 +632,12 @@ public class JavaSyntax extends Syntax {
 		case Method: return seMethod;
 		case Initializer: return seInitializer;
 		case Block: return seBlock;
-		case ConstExpr: return seConstExpr;
+		case ConstBoolExpr:
+			return ((ConstBoolExpr)node).value ? seConstExprTrue : seConstExprFalse;
+		case ConstNullExpr:
+			return seConstExprNull;
+		case ConstExpr:
+			return seConstExpr;
 		case TypeRef: return seTypeRef;
 		case Shadow: return seShadow;
 		

@@ -8,9 +8,8 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
-import static kiev.fmt.IndentKind.*;
-import static kiev.fmt.NewLineAction.*;
 import static kiev.fmt.SpaceAction.*;
+import static kiev.fmt.SpaceKind.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -18,59 +17,25 @@ import syntax kiev.Syntax;
 
 public class DrawContext implements Cloneable {
 	
-	static class CtxSpaceInfo {
-		String	name;
-		int		size;
-		CtxSpaceInfo(String name, int size) {
-			this.name = name;
-			this.size = size;
-		}
-	}
-	static class CtxNewLineInfo {
-		String	name;
-		boolean	group;
-		CtxNewLineInfo(String name, boolean group) {
-			this.name = name;
-			this.group = group;
-		}
-	}
-	static class CtxNewLineTransf {
-		CtxNewLineInfo	nli;
-		Drawable		dr;
-		CtxNewLineTransf(CtxNewLineInfo nli, Drawable dr) {
-			this.nli = nli;
-			this.dr = dr;
-		}
-	}
-	
 	public int						width;
 	public int						x, y;
 	public boolean					line_started;
-	public Vector<CtxSpaceInfo>		space_infos;
-	public Vector<CtxNewLineInfo>	newline_infos;
-	public Stack<CtxNewLineTransf>	newline_transfers;
-	public Stack<Integer>			indents;
-	public Stack<DrawNonTerm>		non_terms;
+	public Vector<SpaceCmd>			space_infos;
+	public Stack<DrawParagraph>		paragraphs;
 	public int						expr_priority;
 	private DrawTerm				last_term;
 	private DrawContext				prev_ctx;
 	
 	public DrawContext() {
 		line_started = true;
-		space_infos = new Vector<CtxSpaceInfo>();
-		newline_infos = new Vector<CtxNewLineInfo>();
-		newline_transfers = new Stack<CtxNewLineTransf>();
-		indents = new Stack<Integer>();
-		non_terms = new Stack<DrawNonTerm>();
+		space_infos = new Vector<SpaceCmd>();
+		paragraphs = new Stack<DrawParagraph>();
 	}
 	
 	public Object clone() {
 		DrawContext dc = (DrawContext)super.clone();
-		dc.space_infos = (Vector<CtxSpaceInfo>)this.space_infos.clone();
-		dc.newline_infos = (Vector<CtxNewLineInfo>)this.newline_infos.clone();
-		dc.newline_transfers = (Stack<CtxNewLineTransf>)this.newline_transfers.clone();
-		dc.indents = (Stack<Integer>)this.indents.clone();
-		dc.non_terms = (Stack<DrawNonTerm>)this.non_terms.clone();
+		dc.space_infos = (Vector<SpaceCmd>)this.space_infos.clone();
+		dc.paragraphs = (Stack<DrawParagraph>)this.paragraphs.clone();
 		return dc;
 	}
 
@@ -84,20 +49,6 @@ public class DrawContext implements Cloneable {
 		return prev_ctx;
 	}
 
-	public void pushNonTerm(DrawNonTerm nt) {
-		processNewLineBeforeRequest(nt);
-		processSpaceBeforeRequest(nt);
-		processUnindentRequest(nt);
-		non_terms.push(nt);
-	}
-	public void popNonTerm(DrawNonTerm nt) {
-		DrawNonTerm pop = non_terms.pop();
-		assert (nt == pop);
-		processSpaceAfterRequest(nt);
-		processIndentRequest(nt);
-		processNewLineAfterRequest(nt);
-	}
-	
 	public void formatAsText(DrawTerm dr) {
 		DrawGeometry dg = dr.geometry;
 		dg.x = 0;
@@ -110,189 +61,95 @@ public class DrawContext implements Cloneable {
 		this.x += dg.w;
 	}
 
+	public void pushDrawable(Drawable dr) {
+		if (dr instanceof DrawParagraph) {
+			DrawParagraph dp = (DrawParagraph)dr;
+			dp.is_multiline = false;
+			paragraphs.push(dp);
+		}
+		processSpaceBeforeRequest(dr);
+	}
+	public void popDrawable(Drawable dr) {
+		if (dr instanceof DrawParagraph)
+			paragraphs.pop();
+		processSpaceAfterRequest(dr);
+	}
+	
 	public boolean addLeaf(DrawTerm leaf) {
-		processNewLineBeforeRequest(leaf);
 		processSpaceBeforeRequest(leaf);
-		processUnindentRequest(leaf);
 		flushSpaceRequests();
 		leaf.geometry.x = x;
 		x += leaf.geometry.w;
 		line_started = false;
 		last_term = leaf;
 		processSpaceAfterRequest(leaf);
-		processIndentRequest(leaf);
-		processNewLineAfterRequest(leaf);
 		return (x < width);
 	}
 	
 	private void flushSpaceRequests() {
 		int max_space = 0;
-		foreach (CtxSpaceInfo csi; space_infos) {
-			if (csi.size >= 0)
-				max_space = Math.max(csi.size, max_space);
+		foreach (SpaceCmd csi; space_infos; csi.si.kind == SP_SPACE) {
+			if (!csi.eat)
+				max_space = Math.max(csi.si.text_size, max_space);
 		}
-		space_infos.removeAllElements();
 		if (line_started)
 			this.x = getIndent();
 		else
 			this.x += max_space;
 
-		int nl = 0;
-		foreach (CtxNewLineInfo cnl; newline_infos) {
-			if (cnl.group) {
-				nl = 2;
-				break;
-			} else {
-				nl = 1;
+		int max_nl = 0;
+		foreach (SpaceCmd csi; space_infos; csi.si.kind == SP_NEW_LINE) {
+			if (!csi.eat)
+				max_nl = Math.max(csi.si.text_size, max_nl);
+		}
+
+		if (max_nl > 0) {
+			if (last_term != null)
+				last_term.geometry.do_newline = max_nl;
+			this.line_started = true;
+			this.x = getIndent();
+		}
+		space_infos.removeAllElements();
+	}
+	
+	private void addSpaceInfo(SpaceCmd sc) {
+		KString name = sc.si.name;
+		SpaceKind kind = sc.si.kind;
+		for (int i=0; i < space_infos.size(); i++) {
+			SpaceCmd csi = space_infos[i];
+			if (csi.si.name == name && csi.si.kind == kind) {
+				if (csi.eat)
+					return;
+				if (sc.eat) {
+					space_infos.removeElementAt(i);
+					i--;
+				}
 			}
 		}
-		newline_infos.removeAllElements();
-		if (nl > 0) {
-			if (last_term != null)
-				last_term.geometry.do_newline = nl;
-			this.x = getIndent();
-			this.line_started = true;
-		}
+		space_infos.append(sc);
 	}
 	
 	private void processSpaceBeforeRequest(Drawable dr) {
-	next_si:
-		foreach (SpaceInfo drsi; dr.syntax.layout.spaces) {
-			String name = drsi.name;
-			switch (drsi.action) {
-			case SP_ADD_BEFORE:
-				foreach (CtxSpaceInfo csi; space_infos; csi.name.equals(name)) {
-					if (csi.size >= 0)
-						csi.size = Math.max(csi.size, drsi.text_size);
-					continue next_si;
-				}
-				space_infos.append(new CtxSpaceInfo(name, drsi.text_size));
-				continue next_si;
-			case SP_EAT_BEFORE:
-				foreach (CtxSpaceInfo csi; space_infos; csi.name.equals(name)) {
-					csi.size = -1;
-					continue next_si;
-				}
-				space_infos.append(new CtxSpaceInfo(name, -1));
-				continue next_si;
-			}
-			
-		}
+		foreach (SpaceCmd si; dr.syntax.layout.spaces; si.before)
+			addSpaceInfo(si);
 	}
 	
 	private void processSpaceAfterRequest(Drawable dr) {
-	next_si:
-		foreach (SpaceInfo drsi; dr.syntax.layout.spaces) {
-			String name = drsi.name;
-			switch (drsi.action) {
-			case SP_ADD_AFTER:
-				foreach (CtxSpaceInfo csi; space_infos; csi.name.equals(name)) {
-					if (csi.size >= 0)
-						csi.size = Math.max(csi.size, drsi.text_size);
-					continue next_si;
-				}
-				space_infos.append(new CtxSpaceInfo(name, drsi.text_size));
-				continue next_si;
-			case SP_EAT_AFTER:
-				foreach (CtxSpaceInfo csi; space_infos; csi.name.equals(name)) {
-					csi.size = -1;
-					continue next_si;
-				}
-				space_infos.append(new CtxSpaceInfo(name, -1));
-				continue next_si;
-			}
-			
-		}
-	}
-	
-	private void processNewLineBeforeRequest(Drawable dr) {
-	next_nl:
-		foreach (NewLineInfo nli; dr.syntax.layout.new_lines) {
-			String name = nli.name;
-			switch (nli.action) {
-			case NL_ADD_BEFORE:
-				foreach (CtxNewLineInfo cnl; newline_infos; cnl.name.equals(name)) {
-					continue next_nl;
-				}
-				newline_infos.append(new CtxNewLineInfo(name, false));
-				continue next_nl;
-			case NL_ADD_GROUP_BEFORE:
-				foreach (CtxNewLineInfo cnl; newline_infos; cnl.name.equals(name)) {
-					cnl.group = true;
-					continue next_nl;
-				}
-				newline_infos.append(new CtxNewLineInfo(name, true));
-				continue next_nl;
-			case NL_DEL_BEFORE:
-				foreach (CtxNewLineInfo cnl; newline_infos; cnl.name.equals(name)) {
-					newline_infos.removeElement(cnl);
-					continue next_nl;
-				}
-				continue next_nl;
-			case NL_DEL_GROUP_BEFORE:
-				foreach (CtxNewLineInfo cnl; newline_infos; cnl.name.equals(name)) {
-					cnl.group = false;
-					continue next_nl;
-				}
-				continue next_nl;
-			case NL_TRANSFER:
-				foreach (CtxNewLineInfo cnl; newline_infos; cnl.name.equals(name)) {
-					newline_infos.removeElement(cnl);
-					newline_transfers.push(new CtxNewLineTransf(cnl, dr));
-					continue next_nl;
-				}
-				continue next_nl;
-			}
-		}
-	}
-	
-	private void processNewLineAfterRequest(Drawable dr) {
-	next_nl:
-		foreach (NewLineInfo nli; dr.syntax.layout.new_lines) {
-			String name = nli.name;
-			switch (nli.action) {
-			case NL_ADD_AFTER:
-				foreach (CtxNewLineInfo cnl; newline_infos; cnl.name.equals(name)) {
-					continue next_nl;
-				}
-				newline_infos.append(new CtxNewLineInfo(name, false));
-				continue next_nl;
-			case NL_ADD_GROUP_AFTER:
-				foreach (CtxNewLineInfo cnl; newline_infos; cnl.name.equals(name)) {
-					cnl.group = true;
-					continue next_nl;
-				}
-				newline_infos.append(new CtxNewLineInfo(name, true));
-				continue next_nl;
-			}
-		}
-	next_tr:
-		while (!newline_transfers.isEmpty() && newline_transfers.peek().dr == dr) {
-			CtxNewLineTransf tr = newline_transfers.pop();
-			foreach (CtxNewLineInfo cnl; newline_infos; cnl.name.equals(tr.nli.name)) {
-				cnl.group = tr.nli.group;
-				continue next_tr;
-			}
-			newline_infos.append(tr.nli);
-		}
-	}
-	
-	private void processUnindentRequest(Drawable dr) {
-		if (dr.syntax.layout.indent == INDENT_KIND_UNINDENT) {
-			if (!indents.isEmpty())
-				indents.pop();
-		}
-	}
-	
-	private void processIndentRequest(Drawable dr) {
-		if (dr.syntax.layout.indent == INDENT_KIND_FIXED_SIZE) {
-			indents.push(new Integer(this.getIndent() + 8));
-		}
+		foreach (SpaceCmd si; dr.syntax.layout.spaces; !si.before)
+			addSpaceInfo(si);
 	}
 	
 	private int getIndent() {
-		if (indents.isEmpty()) return 0;
-		return indents.peek().intValue();
+		int indent = 0;
+		foreach (DrawParagraph dp; paragraphs; dp.getParLayout().enabled(dp)) {
+			ParagraphLayout pl = dp.getParLayout();
+			if (!pl.enabled(dp))
+				continue;
+			indent += pl.indent_text_size;
+			if (dp.is_multiline)
+				indent += pl.indent_first_line_text_size;
+		}
+		return indent;
 	}
 }
 

@@ -3085,7 +3085,7 @@ ENode ForInit() :
 	|
 		n = CommaExpression() ";"
 	|
-		";" { n = new ExprStat(getToken(0).getPos(), null); }
+		";" { n = null; }
  	)
 	{ return n; }
 }

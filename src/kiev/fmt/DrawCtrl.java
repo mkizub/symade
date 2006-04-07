@@ -12,7 +12,54 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 @node
-public class DrawOptional extends DrawNonTerm {
+public class DrawCtrl extends Drawable {
+	@att Drawable arg;
+	
+	public DrawCtrl() {}
+	public DrawCtrl(ASTNode node, SyntaxElem syntax) {
+		super(node, syntax);
+	}
+
+	public DrawTerm getFirstLeaf() {
+		if (arg == null || this.isUnvisible())
+			return null;
+		return arg.getFirstLeaf();
+	}
+	public DrawTerm getLastLeaf()  {
+		if (arg == null || this.isUnvisible())
+			return null;
+		return arg.getLastLeaf();
+	}
+
+	public void preFormat(DrawContext cont) {
+		if (arg == null || this.isUnvisible())
+			return;
+		arg.preFormat(cont);
+	}
+
+	public boolean postFormat(DrawContext context, boolean parent_last_layout) {
+		context.pushDrawable(this);
+		try {
+			if (arg != null)
+				return arg.postFormat(context, parent_last_layout);
+			return true;
+		} finally {
+			context.popDrawable(this);
+		}
+	}
+
+}
+
+@node
+public class DrawSpace extends DrawCtrl {
+	public DrawSpace() {}
+	public DrawSpace(ASTNode node, SyntaxElem syntax) {
+		super(node, syntax);
+	}
+}
+
+@node
+public class DrawOptional extends DrawCtrl {
 
 	@ref Drawable dr_true;
 	@ref Drawable dr_false;
@@ -24,74 +71,66 @@ public class DrawOptional extends DrawNonTerm {
 
 	public void init(Formatter fmt) {
 		SyntaxOptional sc = (SyntaxOptional)syntax;
-		if (sc.opt_true != null) {
+		if (sc.opt_true != null)
 			dr_true = sc.opt_true.makeDrawable(fmt, node);
-			args.add(dr_true);
-		}
-		if (sc.opt_false != null) {
+		if (sc.opt_false != null)
 			dr_false = sc.opt_false.makeDrawable(fmt, node);
-			args.add(dr_false);
-		}
 	}
 
 	public void preFormat(DrawContext cont) {
-		this.geometry.is_hidden = true;
 		SyntaxOptional sc = (SyntaxOptional)syntax;
-		if (sc.calculator.calc(node)) {
-			if (dr_true != null) {
-				this.geometry.is_hidden = false;
-				dr_true.geometry.is_hidden = false;
-			} else {
-				this.geometry.is_hidden = true;
-			}
-			if (dr_false != null)
-				dr_false.geometry.is_hidden = true;
-		} else {
-			if (dr_false != null) {
-				this.geometry.is_hidden = false;
-				dr_false.geometry.is_hidden = false;
-			} else {
-				this.geometry.is_hidden = true;
-			}
-			if (dr_true != null)
-				dr_true.geometry.is_hidden = true;
-		}
+		if (sc.calculator.calc(node))
+			arg = dr_true;
+		else
+			arg = dr_false;
 		super.preFormat(cont);
 	}
 }
 
 @node
-public class DrawIntChoice extends DrawNonTermSet {
+public class DrawIntChoice extends DrawCtrl {
+
+	@ref NArr<Drawable> args;
 
 	public DrawIntChoice() {}
 	public DrawIntChoice(ASTNode node, SyntaxIntChoice syntax) {
 		super(node, syntax);
 	}
 
+	public void init(Formatter fmt) {
+		SyntaxIntChoice sset = (SyntaxIntChoice)this.syntax;
+		foreach (SyntaxElem se; sset.elements)
+			args.append(se.makeDrawable(fmt, node));
+	}
+
 	public void preFormat(DrawContext cont) {
-		foreach (Drawable dr; args)
-			dr.geometry.is_hidden = true;
 		SyntaxIntChoice sc = (SyntaxIntChoice)syntax;
 		int idx = ((Integer)node.getVal(sc.name)).intValue();
 		if (idx >= 0 && idx < args.size())
-			args[idx].geometry.is_hidden = false;
+			arg = args[idx];
+		else
+			arg = null;
 		super.preFormat(cont);
 	}
 }
 
 @node
-public class DrawMultipleChoice extends DrawNonTermSet {
+public class DrawParagraph extends DrawCtrl {
 
-	public DrawMultipleChoice() {}
-	public DrawMultipleChoice(ASTNode node, SyntaxMultipleChoice syntax) {
+	boolean is_multiline;
+	
+	public DrawParagraph() {}
+	public DrawParagraph(ASTNode node, SyntaxParagraphLayout syntax) {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
-		int mask = ((Integer)node.getVal(((SyntaxMultipleChoice)syntax).name)).intValue();
-		for (int i=0; i < args.size(); i++)
-			args[i].geometry.is_hidden = ((mask & (1<<i)) == 0);
-		super.preFormat(cont);
+	public void init(Formatter fmt) {
+		SyntaxParagraphLayout sc = (SyntaxParagraphLayout)syntax;
+		arg = sc.elem.makeDrawable(fmt, node);
+	}
+
+	public ParagraphLayout getParLayout() {
+		return ((SyntaxParagraphLayout)syntax).par;
 	}
 }
 

@@ -8,9 +8,8 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
-import static kiev.fmt.IndentKind.*;
-import static kiev.fmt.NewLineAction.*;
 import static kiev.fmt.SpaceAction.*;
+import static kiev.fmt.SpaceKind.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -90,10 +89,7 @@ public class TextFormatter implements Formatter {
 	
 	public Drawable getDrawable(ASTNode node, FormatInfoHint hint) {
 		if (node == null) {
-			DrawLayout lout = new DrawLayout(1, INDENT_KIND_NONE,
-				new NewLineInfo[]{},
-				new SpaceInfo[]{}
-			);
+			DrawLayout lout = new DrawLayout();
 			lout.is_hidden = true;
 			SyntaxSpace ssp = new SyntaxSpace(lout);
 			return new DrawSpace(null, ssp);

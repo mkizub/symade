@@ -39,16 +39,6 @@ public abstract class DrawTerm extends Drawable {
 }
 
 @node
-public class DrawSpace extends DrawTerm {
-	public DrawSpace() {}
-	public DrawSpace(ASTNode node, SyntaxElem syntax) {
-		super(node, syntax);
-	}
-
-	public String getText() { return " "; }
-}
-
-@node
 public class DrawKeyword extends DrawTerm {
 
 	public DrawKeyword() {}

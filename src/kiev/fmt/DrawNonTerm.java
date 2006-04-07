@@ -57,35 +57,35 @@ public abstract class DrawNonTerm extends Drawable {
 	}
 
 	public final boolean postFormat(DrawContext context, boolean parent_last_layout) {
-		context.pushNonTerm(this);
-		context = context.pushState(); 
-		// for each possible layout. assign it to all sub-components
-		// and try to layout them;
-		final int layouts_size = syntax.layout.count;
-	next_layout:
-		for (int i=0; i < layouts_size; i++) {
-			boolean last = (i == layouts_size-1);
-			fillLayout(i);
-			context = context.popState(); 
-			boolean fits = (context.x < context.width);
-			for (int j=0; j < args.length; j++) {
-				Drawable dr = args[j];
-				if (dr.isUnvisible())
-					continue;
-				fits &= dr.postFormat(context, last && parent_last_layout);
-				if (!fits && !last) {
-					if (parent_last_layout)
-						continue next_layout;
-					context.popNonTerm(this);
-					return false;
+		context.pushDrawable(this);
+		try {
+			context = context.pushState(); 
+			// for each possible layout. assign it to all sub-components
+			// and try to layout them;
+			final int layouts_size = syntax.layout.count;
+		next_layout:
+			for (int i=0; i < layouts_size; i++) {
+				boolean last = (i == layouts_size-1);
+				fillLayout(i);
+				context = context.popState(); 
+				boolean fits = (context.x < context.width);
+				for (int j=0; j < args.length; j++) {
+					Drawable dr = args[j];
+					if (dr.isUnvisible())
+						continue;
+					fits &= dr.postFormat(context, last && parent_last_layout);
+					if (!fits && !last) {
+						if (parent_last_layout)
+							continue next_layout;
+						return false;
+					}
 				}
+				if (fits)
+					return true;
 			}
-			if (fits) {
-				context.popNonTerm(this);
-				return true;
-			}
+		} finally {
+			context.popDrawable(this);
 		}
-		context.popNonTerm(this);
 		return false;
 	}
 
@@ -100,8 +100,6 @@ public class DrawNonTermList extends DrawNonTerm {
 	}
 	public void init(Formatter fmt) {
 		SyntaxList slst = (SyntaxList)this.syntax;
-		if (slst.prefix != null)
-			args.append(slst.prefix.makeDrawable(fmt, null));
 		NArr<ASTNode> narr = (NArr<ASTNode>)node.getVal(slst.element.name);
 		int sz = narr.size();
 		for (int i=0; i < sz; i++) {
@@ -114,8 +112,6 @@ public class DrawNonTermList extends DrawNonTerm {
 			if (i < (sz-1) && slst.separator != null)
 				args.append(slst.separator.makeDrawable(fmt, null));
 		}
-		if (slst.suffix != null)
-			args.append(slst.suffix.makeDrawable(fmt, null));
 	}
 
 }
