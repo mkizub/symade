@@ -98,10 +98,12 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seFieldDecl;
 	final SyntaxElem seVarDecl;
 	final SyntaxElem seVar;
+	final SyntaxElem seVarNoType;
 	final SyntaxElem seFormPar;
 	final SyntaxElem seConstructor;
 	final SyntaxElem seMethod;
 	final SyntaxElem seInitializer;
+	final SyntaxElem seRuleMethod;
 	
 	final SyntaxElem seExprStat;
 	final SyntaxElem seReturnStat;
@@ -129,6 +131,9 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seWithStat;
 	
 	final SyntaxElem seBlock;
+	final SyntaxElem seRuleBlock;
+	final SyntaxElem seRuleOrExpr;
+	final SyntaxElem seRuleAndExpr;
 	final SyntaxElem seTypeRef;
 	final SyntaxElem seConstExpr;
 	final SyntaxElem seConstExprTrue;
@@ -136,6 +141,13 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seConstExprNull;
 	final SyntaxElem seConstExprChar;
 	final SyntaxElem seConstExprStr;
+	// rule nodes
+	final SyntaxElem seRuleIstheExpr;
+	final SyntaxElem seRuleIsoneofExpr;
+	final SyntaxElem seRuleCutExpr;
+	final SyntaxElem seRuleCallExpr;
+	final SyntaxElem seRuleWhileExpr;
+	final SyntaxElem seRuleExpr;
 	// lvalues
 	final SyntaxElem seAccessExpr;
 	final SyntaxElem seIFldExpr;
@@ -151,6 +163,7 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seInstanceofExpr;
 	final SyntaxElem seBooleanNotExpr;
 	final SyntaxElem seCallExpr;
+	final SyntaxElem seCallConstr;
 	final SyntaxElem seClosureCallExpr;
 	// new expr
 	final SyntaxElem seNewExpr;
@@ -524,6 +537,7 @@ public class JavaSyntax extends Syntax {
 			seVar = set(opt("meta"), var_prefix.ncopy(),
 				ident("vtype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority)))
 				);
+			seVarNoType = set(ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))));
 			// formal parameter
 			seFormPar = set(opt("meta"), var_prefix.ncopy(), ident("vtype"), ident("name")	);
 		}
@@ -580,13 +594,26 @@ public class JavaSyntax extends Syntax {
 			// method
 			seMethod = setl(lout_method.ncopy(),
 				setl(lout_empty.ncopy(), attr("meta"), method_prefix.ncopy(), accs(),
-					method_type_args,
+					method_type_args.ncopy(),
 					ident("type_ret"), ident("name"),
 					set(sep("("),
 						method_params.ncopy(),
 						sep(")")
 						)
 					),
+				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty.ncopy())
+				);
+			// logical rule method
+			seRuleMethod = setl(lout_method.ncopy(),
+				setl(lout_nl.ncopy(), attr("meta"), method_prefix.ncopy(), accs(),
+					method_type_args.ncopy(),
+					kw("rule"), ident("name"),
+					set(sep("("),
+						method_params.ncopy(),
+						sep(")")
+						)
+					),
+				lst("localvars", lout_nl.ncopy()),
 				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty.ncopy())
 				);
 			seInitializer = setl(lout_method.ncopy(), opt("meta"), init_prefix, attr("body"));
@@ -608,6 +635,20 @@ public class JavaSyntax extends Syntax {
 					par(plIndented, lst("stats", setl(lout_nl.ncopy(),node()),null,lout_empty.ncopy())),
 					sep("}", lout_code_block_end.ncopy())
 					);
+			// rule block
+			seRuleBlock = set(
+					sep("{", lout_code_block_start.ncopy()),
+					par(plIndented, attr("node")),
+					sep("}", lout_code_block_end.ncopy())
+					);
+			// rule OR block
+			seRuleOrExpr = set(
+					sep("{", lout_code_block_start.ncopy()),
+					par(plIndented, lst("rules", setl(lout_nl.ncopy(),node()),sep(";"),lout_empty.ncopy())),
+					sep("}", lout_code_block_end.ncopy())
+					);
+			// rule AND block
+			seRuleAndExpr = lst("rules", setl(lout_nl.ncopy(),node()),sep(","),lout_empty.ncopy());
 		}
 		seExprStat = set(opt("expr"), sep(";"));
 		seReturnStat = set(kw("return"), opt("expr"), sep(";"));
@@ -648,7 +689,10 @@ public class JavaSyntax extends Syntax {
 				setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")),
 				sep(";")
 				);
-			seForInit = lst("decls",node(),sep(","),lout_empty.ncopy());
+			seForInit = set(
+				ident("type_ref"),
+				lst("decls",node(new FormatInfoHint("no-type")),sep(","),lout_empty.ncopy())
+				);
 			seForStat = set(
 				kw("for"),
 				setl(lout_cond.ncopy(), sep("("), opt("init"), sep(";"), opt("cond"), sep(";"), opt("iter"), sep(")")),
@@ -709,7 +753,21 @@ public class JavaSyntax extends Syntax {
 		seConstExprChar = charcter("value");
 		seConstExprStr = string("value");
 		seTypeRef = ident("lnk");
-		
+
+		seRuleIstheExpr = set(ident("var"), oper("?="), expr("expr", Constants.opAssignPriority));
+		seRuleIsoneofExpr = set(ident("var"), oper("@="), expr("expr", Constants.opAssignPriority));
+		seRuleCutExpr = kw("$cut");
+		seRuleCallExpr = set(
+				attr("obj"),
+				sep("."),
+				ident("func.name"),
+				sep("("),
+				lst("args",node(),sep(","),lout_empty.ncopy()),
+				sep(")")
+				);
+		seRuleWhileExpr = set(kw("while"), expr("expr", 1), opt("bt_expr", set(oper(":"), expr("bt_expr", 1))));
+		seRuleExpr = set(expr("expr", 1), opt("bt_expr", set(oper(":"), expr("bt_expr", 1))));
+
 		seAccessExpr = set(attr("obj"), sep("."), ident("ident"));
 		seIFldExpr = set(attr("obj"), sep("."), ident("ident"));
 		seContainerAccessExpr = set(attr("obj"), sep("["), attr("index"), sep("]"));
@@ -727,6 +785,19 @@ public class JavaSyntax extends Syntax {
 				attr("obj"),
 				sep("."),
 				ident("func.name"),
+				sep("("),
+				lst("args",node(),sep(","),lout_empty.ncopy()),
+				sep(")")
+				);
+		seCallConstr = set(
+				opt("this",
+					new CalcOption() {
+						public boolean calc(ASTNode node) { return ((ENode)node).isSuperExpr(); }
+					},
+					kw("super"),
+					kw("this"),
+					lout_empty.ncopy()
+					),
 				sep("("),
 				lst("args",node(),sep(","),lout_empty.ncopy()),
 				sep(")")
@@ -833,11 +904,19 @@ public class JavaSyntax extends Syntax {
 		case Field: return seFieldDecl;
 		case VarDecl: return seVarDecl;
 		case FormPar: return seFormPar;
-		case Var: return seVar;
+		case Var:
+			if (hint != null && "no-type".equals(hint.text))
+				return seVarNoType;
+			return seVar;
+		case RuleMethod: return seRuleMethod;
 		case Constructor: return seConstructor;
 		case Method: return seMethod;
 		case Initializer: return seInitializer;
 		case Block: return seBlock;
+		case RuleBlock: return seRuleBlock;
+		case RuleOrExpr: return seRuleOrExpr;
+		case RuleAndExpr: return seRuleAndExpr;
+
 		case ConstBoolExpr:
 			return ((ConstBoolExpr)node).value ? seConstExprTrue : seConstExprFalse;
 		case ConstNullExpr:
@@ -850,6 +929,13 @@ public class JavaSyntax extends Syntax {
 			return seConstExpr;
 		case TypeRef: return seTypeRef;
 		case Shadow: return seShadow;
+
+		case RuleIstheExpr: return seRuleIstheExpr;
+		case RuleIsoneofExpr: return seRuleIsoneofExpr;
+		case RuleCutExpr: return seRuleCutExpr;
+		case RuleCallExpr: return seRuleCallExpr;
+		case RuleWhileExpr: return seRuleWhileExpr;
+		case RuleExpr: return seRuleExpr;
 		
 		case ExprStat: return seExprStat;
 		case ReturnStat: return seReturnStat;
@@ -889,7 +975,10 @@ public class JavaSyntax extends Syntax {
 		case BinaryBooleanAndExpr: return seBinaryBooleanAndExpr;
 		case InstanceofExpr: return seInstanceofExpr;
 		case BooleanNotExpr: return seBooleanNotExpr;
-		case CallExpr: return seCallExpr;
+		case CallExpr:
+			if (((CallExpr)node).func instanceof Constructor)
+				return seCallConstr;
+			return seCallExpr;
 		case ClosureCallExpr: return seClosureCallExpr;
 		case StringConcatExpr: return seStringConcatExpr;
 		case CommaExpr: return seCommaExpr;

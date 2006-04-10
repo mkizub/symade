@@ -3102,9 +3102,9 @@ ENode ForInit() :
 	(
 		LOOKAHEAD( Modifiers() Type() QName() (<OPERATOR_LRBRACKETS>)* ("=" | ":=" | "," | ";") )
 		modifiers = Modifiers()
-		{ fi = new ForInit(); }
 		tp = Type()
-		fi.decls += VarDecl(modifiers, tp, true)
+		{ fi = new ForInit(tp); }
+		fi.decls += VarDecl(modifiers, tp, false)
 		(
 			","
 			fi.decls += VarDecl(modifiers, tp, false)

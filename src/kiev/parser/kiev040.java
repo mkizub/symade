@@ -4407,9 +4407,9 @@ public abstract class kiev040 implements kiev040Constants {
   ASTModifiers modifiers; ENode n; ASTModifiers modifiers; TypeRef tp; ForInit fi;
     if (jj_2_106(2147483647)) {
       modifiers = Modifiers();
-                  fi = new ForInit();
       tp = Type();
-      fi.decls += VarDecl(modifiers, tp, true);
+                  fi = new ForInit(tp);
+      fi.decls += VarDecl(modifiers, tp, false);
       label_75:
       while (true) {
         switch (jj_nt.kind) {
