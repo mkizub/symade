@@ -79,12 +79,21 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			}
 		}
 		// Add standard imports, if they were not defined
-		if( !Kiev.javaMode && !kiev_stdlib_found )
-			fu.syntax.add(new Import(Env.newPackage(kiev_stdlib_name),true));
-		if( !Kiev.javaMode && !kiev_stdlib_meta_found )
-			fu.syntax.add(new Import(Env.newPackage(kiev_stdlib_meta_name),true));
-		if( !java_lang_found )
-			fu.syntax.add(new Import(Env.newPackage(java_lang_name),true));
+		if( !Kiev.javaMode && !kiev_stdlib_found ) {
+			Import imp = new Import(Env.newPackage(kiev_stdlib_name),true);
+			imp.setHidden(true);
+			fu.syntax.add(imp);
+		}
+		if( !Kiev.javaMode && !kiev_stdlib_meta_found ) {
+			Import imp = new Import(Env.newPackage(kiev_stdlib_meta_name),true);
+			imp.setHidden(true);
+			fu.syntax.add(imp);
+		}
+		if( !java_lang_found ) {
+			Import imp = new Import(Env.newPackage(java_lang_name),true);
+			imp.setHidden(true);
+			fu.syntax.add(imp);
+		}
 	}
 	
 	public void processSyntax(ASTNode:ASTNode node) {
@@ -843,7 +852,7 @@ class VSrcBackend extends BackendProcessor {
 				System.runFinalization();
 				out = new FileOutputStream(f);
 			}
-			out.write("\uFEFF".getBytes("UTF-8"));
+			//out.write("\uFEFF".getBytes("UTF-8"));
 			out.write(text.getBytes("UTF-8"));
 			out.close();
 		} catch( IOException e ) {

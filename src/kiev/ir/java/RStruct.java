@@ -181,7 +181,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				continue;
 			i++;
 		}
-		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ti_expr.getType(),ACC_STATIC|ACC_FINAL); // package-private for inner classes
+		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ti_expr.getType(),ACC_SYNTHETIC|ACC_STATIC|ACC_FINAL); // package-private for inner classes
 		f.init = ti_expr;
 		getStruct().addField(f);
 		f.resolveDecl();

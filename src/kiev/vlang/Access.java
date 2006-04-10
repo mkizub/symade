@@ -60,7 +60,7 @@ public class Access implements Constants {
 		return sb.toString();
 	}
 	
-	private static final int getFlags(DNode n) {
+	public static final int getFlags(DNode n) {
 		int flags;
 		Access acc = ((Accessable)n).acc;
 		if (acc != null)

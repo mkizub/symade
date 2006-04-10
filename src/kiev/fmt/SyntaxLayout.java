@@ -71,29 +71,28 @@ public class Syntax {
 	}
 
 	protected SyntaxList lst(
-			SyntaxElem elem_prefix,
-			SyntaxAttr element,
-			SyntaxElem elem_suffix,
+			String name,
+			SyntaxElem element,
 			SyntaxElem separator,
 			DrawLayout layout
 	)
 	{
-		SyntaxList lst = new SyntaxList(layout);
-		lst.elem_prefix = elem_prefix;
-		lst.element = element;
-		lst.elem_suffix = elem_suffix;
-		lst.separator = separator;
+		SyntaxList lst = new SyntaxList(name.intern(), element, separator, layout);
 		return lst;
 	}
 
 	protected SyntaxList lst(
-			SyntaxAttr element,
+			String name,
 			DrawLayout layout
 	)
 	{
-		SyntaxList lst = new SyntaxList(layout);
-		lst.element = element;
+		SyntaxList lst = new SyntaxList(name.intern(), node(), null, layout);
 		return lst;
+	}
+
+	protected SyntaxNode node()
+	{
+		return new SyntaxNode();
 	}
 
 	protected SyntaxAttr attr(String slot)
@@ -115,6 +114,24 @@ public class Syntax {
 				new SpaceCmd(siSpWORD, SP_ADD_AFTER, 0),
 			});
 		return new SyntaxIdentAttr(slot,lout);
+	}
+
+	protected SyntaxCharAttr charcter(String slot)
+	{
+		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
+				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
+			});
+		return new SyntaxCharAttr(slot,lout);
+	}
+
+	protected SyntaxStrAttr string(String slot)
+	{
+		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
+				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
+			});
+		return new SyntaxStrAttr(slot,lout);
 	}
 
 	protected SyntaxKeyword kw(String kw)
@@ -398,14 +415,17 @@ public class SyntaxSeparator extends SyntaxToken {
 public class SyntaxList extends SyntaxElem {
 	@virtual typedef This  = SyntaxList;
 
-	@att public SyntaxElem elem_prefix;
-	@att public SyntaxAttr element;
-	@att public SyntaxElem elem_suffix;
+	@att public String		name;
+	@att public SyntaxElem element;
 	@att public SyntaxElem separator;
+	     public CalcOption filter;
 
 	public SyntaxList() {}
-	public SyntaxList(DrawLayout layout) {
+	public SyntaxList(String name, SyntaxElem element, SyntaxElem separator, DrawLayout layout) {
 		super(layout);
+		this.name = name.intern();
+		this.element = element;
+		this.separator = separator;
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -464,6 +484,23 @@ public class SyntaxAttr extends SyntaxElem {
 }
 
 @node
+public class SyntaxNode extends SyntaxElem {
+	@virtual typedef This  = SyntaxNode;
+
+	@att public FormatInfoHint	hint;
+
+	public SyntaxNode() {}
+	public SyntaxNode(FormatInfoHint hint) {
+		super(new DrawLayout());
+		this.hint = hint;
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		return fmt.getDrawable(node, hint);
+	}
+}
+
+@node
 public class SyntaxIdentAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxIdentAttr;
 
@@ -474,6 +511,38 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
 		Drawable dr = new DrawNodeTerm(node, this, name);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
+public class SyntaxCharAttr extends SyntaxAttr {
+	@virtual typedef This  = SyntaxCharAttr;
+
+	public SyntaxCharAttr() {}
+	public SyntaxCharAttr(String name, DrawLayout layout) {
+		super(name,layout);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawCharTerm(node, this, name);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
+public class SyntaxStrAttr extends SyntaxAttr {
+	@virtual typedef This  = SyntaxStrAttr;
+
+	public SyntaxStrAttr() {}
+	public SyntaxStrAttr(String name, DrawLayout layout) {
+		super(name,layout);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawStrTerm(node, this, name);
 		dr.init(fmt);
 		return dr;
 	}

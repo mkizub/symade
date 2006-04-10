@@ -607,13 +607,13 @@ public abstract class DNode extends ASTNode {
 	public @packed:1,flags, 5 boolean is_struct_super;		// struct
 	public @packed:1,flags, 6 boolean is_fld_volatile;		// field
 	public @packed:1,flags, 6 boolean is_mth_bridge;		// method
-	public @packed:1,flags, 7 boolean is_fld_transient;		// field
+	public @packed:1,flags, 7 boolean is_fld_transient;	// field
 	public @packed:1,flags, 7 boolean is_mth_varargs;		// method
 	public @packed:1,flags, 8 boolean is_mth_native;
 	public @packed:1,flags, 9 boolean is_struct_interface;
 	public @packed:1,flags,10 boolean is_abstract;
 	public @packed:1,flags,11 boolean is_math_strict;		// strict math
-	public @packed:1,flags,12 boolean is_synthetic;			// any decl that was generated (not in sources)
+	public @packed:1,flags,12 boolean is_synthetic;		// any decl that was generated (not in sources)
 	public @packed:1,flags,13 boolean is_struct_annotation;
 	public @packed:1,flags,14 boolean is_struct_enum;		// struct
 	public @packed:1,flags,14 boolean is_fld_enum;			// field

@@ -43,7 +43,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		{
 			clazz.super_type = Type.tpEnum;
 			Field vals = clazz.addField(new Field(nameEnumValuesFld,
-				new ArrayType(clazz.ctype), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+				new ArrayType(clazz.ctype), ACC_SYNTHETIC|ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
 			vals.init = new NewInitializedArrayExpr(pos, new TypeRef(clazz.ctype), 1, ENode.emptyArray);
 			for(int i=0; i < eflds.length; i++) {
 				ENode e = new SFldExpr(eflds[i].pos,eflds[i]);

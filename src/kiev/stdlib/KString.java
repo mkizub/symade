@@ -316,6 +316,7 @@ public final class KString {
 	}
 
 	/** KString class test/debug */
+	/*
 	public static void main(String[] args) {
 		KString aaa = KString.from("aaa");
 		System.out.println("Create name "+aaa);
@@ -374,7 +375,7 @@ public final class KString {
 	private void dumpKString() {
 		System.out.println("KString '"+toString()+"' has index "+index+", length "+len+", offset "+offset);
 	}
-//	*/
+	*/
 
 
 	public static class KStringScanner {

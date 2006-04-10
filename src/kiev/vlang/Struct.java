@@ -383,6 +383,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			return (Constructor)n;
 		Constructor class_init = new Constructor(ACC_STATIC);
 		class_init.pos = pos;
+		class_init.setHidden(true);
 		addMethod(class_init);
 		class_init.body = new Block(pos);
 		return class_init;
@@ -856,6 +857,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				if( !init_found ) {
 					trace(Kiev.debugResolve,nameInit+" not found in class "+this);
 					Constructor init = new Constructor(ACC_PUBLIC);
+					init.setHidden(true);
 					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 						if( !isStatic() ) {
 							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));

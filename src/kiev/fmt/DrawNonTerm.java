@@ -100,17 +100,19 @@ public class DrawNonTermList extends DrawNonTerm {
 	}
 	public void init(Formatter fmt) {
 		SyntaxList slst = (SyntaxList)this.syntax;
-		NArr<ASTNode> narr = (NArr<ASTNode>)node.getVal(slst.element.name);
+		NArr<ASTNode> narr = (NArr<ASTNode>)node.getVal(slst.name);
 		int sz = narr.size();
+		boolean need_sep = false;
 		for (int i=0; i < sz; i++) {
 			ASTNode n = narr[i];
-			if (slst.elem_prefix != null)
-				args.append(slst.elem_prefix.makeDrawable(fmt, null));
-			args.append(fmt.getDrawable(n, null));
-			if (slst.elem_suffix != null)
-				args.append(slst.elem_suffix.makeDrawable(fmt, null));
-			if (i < (sz-1) && slst.separator != null)
+			if (n.isHidden())
+				continue;
+			if (slst.filter != null && !slst.filter.calc(n))
+				continue;
+			if (need_sep && slst.separator != null)
 				args.append(slst.separator.makeDrawable(fmt, null));
+			args.append(slst.element.makeDrawable(fmt, n));
+			need_sep = true;
 		}
 	}
 

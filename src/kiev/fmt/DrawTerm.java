@@ -83,6 +83,10 @@ public class DrawNodeTerm extends DrawTerm {
 	}
 
 	public String getText() {
+		return String.valueOf(getTextObject());
+	}
+	
+	public final Object getTextObject() {
 		Object o = node;
 		for (int i=0; i < attrs.length; i++) {
 			if (o instanceof ASTNode) {
@@ -96,7 +100,33 @@ public class DrawNodeTerm extends DrawTerm {
 			else
 				return null;
 		}
-		return String.valueOf(o);
+		return o;
+	}
+}
+
+@node
+public class DrawCharTerm extends DrawNodeTerm {
+	public DrawCharTerm() {}
+	public DrawCharTerm(ASTNode node, SyntaxElem syntax, String attr) {
+		super(node, syntax, attr);
+	}
+
+	public String getText() {
+		Character ch = (Character)getTextObject();
+		return "'"+Convert.escape(ch.charValue())+"'";
+	}
+}
+
+@node
+public class DrawStrTerm extends DrawNodeTerm {
+	public DrawStrTerm() {}
+	public DrawStrTerm(ASTNode node, SyntaxElem syntax, String attr) {
+		super(node, syntax, attr);
+	}
+
+	public String getText() {
+		String str = String.valueOf(getTextObject());
+		return '\"'+new String(Convert.string2source(str), 0)+'\"';
 	}
 }
 
