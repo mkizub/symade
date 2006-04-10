@@ -350,9 +350,10 @@ public final class ArgType extends Type {
 	}
 
 	public Type getMetaSuper() {
-		if (definer.upper_bound.length == 0)
+		TypeRef[] up = definer.getUpperBounds();
+		if (up.length == 0)
 			return tpObject;
-		return definer.upper_bound[0].getType();
+		return up[0].getType();
 	}
 
 	public boolean isStructInstanceOf(Struct s)	{ return getMetaSuper().isStructInstanceOf(s); }
@@ -363,15 +364,15 @@ public final class ArgType extends Type {
 	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name)
 		TypeRef@ sup;
 	{
-		sup @= definer.upper_bound,
+		sup @= definer.getUpperBounds(),
 		sup.getType().resolveNameAccessR(node, info, name)
 	}
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, CallType mt)
 		TypeRef@ sup;
 	{
-		definer.upper_bound.length == 0, $cut,
+		definer.getUpperBounds().length == 0, $cut,
 		tpObject.resolveCallAccessR(node, info, name, mt)
-	;	sup @= definer.upper_bound,
+	;	sup @= definer.getUpperBounds(),
 		sup.getType().resolveCallAccessR(node, info, name, mt)
 	}
 	
@@ -388,9 +389,10 @@ public final class ArgType extends Type {
 
 	public boolean isCastableTo(Type t) {
 		if( this ≡ t) return true;
-		if (definer.upper_bound.length == 0)
+		TypeRef[] up = definer.getUpperBounds();
+		if (up.length == 0)
 			return tpObject.isCastableTo(t);
-		foreach (TypeRef tr; definer.upper_bound) {
+		foreach (TypeRef tr; up) {
 			if (tr.getType().isCastableTo(t))
 				return true;
 		}
@@ -399,9 +401,10 @@ public final class ArgType extends Type {
 
 	public boolean isInstanceOf(Type t) {
 		if (this ≡ t) return true;
-		if (definer.upper_bound.length == 0)
+		TypeRef[] up = definer.getUpperBounds();
+		if (up.length == 0)
 			return tpObject.isInstanceOf(t);
-		foreach (TypeRef tr; definer.upper_bound) {
+		foreach (TypeRef tr; up) {
 			if (tr.getType().isInstanceOf(t))
 				return true;
 		}
@@ -579,14 +582,14 @@ public final class CompaundType extends Type {
 		if!(_t2 instanceof CompaundType) {
 			if (_t2 instanceof ArgType) {
 				ArgType at = (ArgType)_t2;
-				if (at.definer.upper_bound.length > 0) {
-					foreach (TypeRef tr; at.definer.upper_bound) {
+				if (at.definer.getUpperBounds().length > 0) {
+					foreach (TypeRef tr; at.definer.getUpperBounds()) {
 						if (!this.isInstanceOf(tr.getType()))
 							return false;
 					}
 				}
-				if (at.definer.lower_bound.length > 0) {
-					foreach (TypeRef tr; at.definer.lower_bound) {
+				if (at.definer.getLowerBounds().length > 0) {
+					foreach (TypeRef tr; at.definer.getLowerBounds()) {
 						if (!tr.getType().isInstanceOf(this))
 							return false;
 					}

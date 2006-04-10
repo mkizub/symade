@@ -224,8 +224,22 @@ public abstract class kiev040 {
 		return clazz;
 	}
 
-	private TypeDef mkTypeDef(NameRef name, ASTModifiers modifiers) {
-		TypeDef arg = new TypeDef(name);
+	private TypeAssign mkTypeAssign(NameRef name, ASTModifiers modifiers) {
+		TypeAssign arg = new TypeAssign(name);
+		if (modifiers != null) {
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attachTo(arg);
+			if (modifiers.annotations.length > 0) {
+				arg.meta = new MetaSet();
+				foreach (Meta m; modifiers.annotations)
+					arg.meta.set(m.ncopy());
+			}
+		}
+		return arg;
+	}
+
+	private TypeConstr mkTypeConstr(NameRef name, ASTModifiers modifiers) {
+		TypeConstr arg = new TypeConstr(name);
 		if (modifiers != null) {
 			foreach (MetaSpecial sa; modifiers.specials)
 				sa.attachTo(arg);
@@ -841,14 +855,12 @@ FileUnit FileUnit(String filename) :
 			{ curClazz = fu.pkg.getStruct(); }
 		]
 		(
-			fu.syntax += Import()
-		|	fu.syntax += Typedef()
-		|	fu.syntax += Opdef()
-		)*
-		(
 			modifiers = Modifiers()
 			(
-				fu.members += TypeDeclaration(modifiers, fu) [ ";" ]
+				fu.syntax += Import(modifiers)
+			|	fu.syntax += Typedef(modifiers)
+			|	fu.syntax += Opdef(modifiers)
+			|	fu.members += TypeDeclaration(modifiers, fu) [ ";" ]
 			|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 				fu.members += SyntaxDeclaration(modifiers, fu) [ ";" ]
 			)
@@ -903,7 +915,7 @@ void Pragma(FileUnit fu) :
 	{ fu.setPragma(p); }
 }
 
-Import Import() :
+Import Import(ASTModifiers modifiers) :
 { Import imp = new Import(); }
 {
 	"import"
@@ -941,25 +953,32 @@ Import Import() :
 	{ return imp; }
 }
 
-TypeDecl Typedef() :
+TypeDecl Typedef(ASTModifiers modifiers) :
 { NameRef id; TypeDecl n; TypeRef tr; }
 {
 	"typedef"
 	(
+		LOOKAHEAD(3, <IDENTIFIER> "=" <IDENTIFIER>)
+		{ n = new TypeOpDef(); }
+		id = Name()
+		"="
+		tr = Type()
+		{ n = mkTypeAssign(id, modifiers); n.type_ref = tr; }
+	|
 		LOOKAHEAD(3, <IDENTIFIER> TypeOperatorChar() <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
 		{ n = new TypeOpDef(); }
 		id     = Name()		{ n.arg = new TypeDef(id); }
 		n.op   = Operator()
 		n.type = Type()
 	|
-		{ n = new TypeDef(); }
-		tr = Type() { n.upper_bound.add(tr); n.lower_bound.add(tr.ncopy()); }
-		n.name = Name() { n.pos = n.name.pos; }
+		tr = Type()
+		id = Name()
+		{ n = mkTypeAssign(id, modifiers); n.type_ref = tr; }
 	) ";"
 	{ return n; }
 }
 
-Opdef Opdef() :
+Opdef Opdef(ASTModifiers modifiers) :
 { NameRef id; ASTOperator op; ConstIntExpr ce; Opdef opd = new Opdef(); }
 {
 	"operator"
@@ -989,8 +1008,11 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	try {
 		"{"
 		(
-			clazz.members += Typedef()
-		|	clazz.members += Opdef()
+			modifiers = Modifiers()
+			(
+				clazz.members += Typedef(modifiers)
+			|	clazz.members += Opdef(modifiers)
+			)
 		)*
 		"}"
 	} finally { curClazz = oldClazz; }
@@ -998,7 +1020,7 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; NameRef name; Struct oldClazz; TypeDef[] args; }
+{ Struct clazz; NameRef name; Struct oldClazz; TypeConstr[] args; }
 {
 	(
 		"class"
@@ -1131,7 +1153,7 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 }
 
 Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
-{ NameRef name; Struct clazz; TypeDef[] args; }
+{ NameRef name; Struct clazz; TypeConstr[] args; }
 {
 	"case"
 	name = Name()
@@ -1160,8 +1182,8 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 }
 
 
-TypeDef[] ClazzArguments() :
-{ TypeDef[] args = new TypeDef[0]; TypeDef arg; }
+TypeConstr[] ClazzArguments() :
+{ TypeConstr[] args = new TypeConstr[0]; TypeConstr arg; }
 {
 	[
 		"<"
@@ -1183,30 +1205,37 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 	
 	(
 		name      = Name()
-		{ arg = mkTypeDef(name,modifiers); }
 		(
-			"=" t = Type() { arg.upper_bound.add(t); /* arg.lower_bound.add(t.ncopy());*/ }
+			"="
+			{ arg = mkTypeAssign(name,modifiers); }
+			t = Type() { arg.type_ref = t; }
 			";"
 		|
+			{ arg = mkTypeConstr(name,modifiers); }
 			(
 				<OPERATOR_UPPER_BOUND> t = Type() { arg.upper_bound.add(t);}
 			|	<OPERATOR_LOWER_BOUND> t = Type() { arg.lower_bound.add(t);}
-			)*
+			)+
 			";"
 		)
 	)
 	{ return arg; }
 }
 
-TypeDef ArgumentDeclaration() :
-{ NameRef name; TypeDef arg; TypeRef tr; }
+TypeConstr ArgumentDeclaration() :
+{ NameRef name; TypeConstr arg; TypeRef tr; }
 {
 	name      = Name()
-	{ arg = mkTypeDef(name,null); arg.setAbstract(true); }
+	{ arg = mkTypeConstr(name,null); arg.setAbstract(true); }
 	[
 		"extends"
 		tr = NArrType() { arg.upper_bound.add(tr); }
-		( "," tr = NArrType() { arg.upper_bound.add(tr); } )*
+		( "&" tr = NArrType() { arg.upper_bound.add(tr); } )*
+	]
+	[
+		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("super") }) //"super"
+		tr = NArrType() { arg.lower_bound.add(tr); }
+		( "&" tr = NArrType() { arg.lower_bound.add(tr); } )*
 	]
 	{ return arg; }
 }
@@ -1657,7 +1686,7 @@ Block MaybeSkipBlock() :
 }
 
 Method MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; Method m, oldMethod; TypeRef ret; NameRef id; MetaThrows thr; TypeDef[] args; }
+{ Token t; Method m, oldMethod; TypeRef ret; NameRef id; MetaThrows thr; TypeConstr[] args; }
 {
 	args = ClazzArguments()
 	ret = Type()

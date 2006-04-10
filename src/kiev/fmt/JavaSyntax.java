@@ -84,6 +84,7 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seStructAnnotation;
 	final SyntaxElem seStructEnum;
 	final SyntaxElem seStructSyntax;
+	final SyntaxElem seStructView;
 	final SyntaxElem seStructBody;
 	final SyntaxElem seImport;
 	final SyntaxElem seOpdef;
@@ -91,7 +92,9 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seMeta;
 	final SyntaxElem seMetaValueScalar;
 	final SyntaxElem seMetaValueArray;
-	final SyntaxElem seTypeDef;
+	final SyntaxElem seTypeAssign;
+	final SyntaxElem seTypeConstr;
+	final SyntaxElem seTypeConstrClassArg;
 	final SyntaxElem seFieldDecl;
 	final SyntaxElem seVarDecl;
 	final SyntaxElem seVar;
@@ -276,7 +279,34 @@ public class JavaSyntax extends Syntax {
 				ident("prior"),
 				sep(";")
 				);
-			seTypeDef = setl(lout_nl.ncopy(), kw("typedef"), ident("name"), 
+			seTypeAssign = setl(lout_nl.ncopy(), kw("typedef"), ident("name"), oper("="), attr("type_ref"), sep(";"));
+			
+			seTypeConstrClassArg = setl(lout_empty.ncopy(), ident("name"),
+				opt("upper_bound",
+					new CalcOption() {
+						public boolean calc(ASTNode node) {
+							if !(node instanceof TypeConstr) return false;
+							TypeConstr tc = (TypeConstr)node;
+							if (tc.upper_bound.size() == 0) return false;
+							if (tc.upper_bound.size() == 1 && tc.upper_bound[0].getType() ≈ Type.tpObject) return false;
+							return true;
+						}
+					},
+					set(
+						kw("extends"),
+						lst("upper_bound", node(), oper("&"), lout_empty.ncopy())
+						),
+					null, lout_empty.ncopy()
+					),
+				opt("lower_bound", new CalcOptionNotEmpty("lower_bound"),
+					set(
+						kw("super"),
+						lst("lower_bound", node(), sep("&"), lout_empty.ncopy())
+						),
+					null, lout_empty.ncopy()
+					)
+				);
+			seTypeConstr = setl(lout_nl.ncopy(), kw("typedef"), ident("name"), 
 				lst("upper_bound", set(oper("\u2264"), node()), null, lout_empty.ncopy()),
 				lst("lower_bound", set(oper("\u2265"), node()), null, lout_empty.ncopy()),
 				sep(";")
@@ -301,13 +331,47 @@ public class JavaSyntax extends Syntax {
 				});
 			SyntaxElem struct_prefix = setl(lout_struct_hdr.ncopy(),
 					attr("meta"),
-					jflag(1,12,1, "@synthetic"),
+//					jflag(1,12,1, "@synthetic"),
 					jflag(1,18,1, "@unerasable"),
 					jflag(1,3,1,  "static"),
 					jflag(1,4,1,  "final"),
 					jflag(1,10,1, "abstract"),
 					jflag(1,11,1, "strict")
 					);
+			SyntaxElem struct_args = opt("args", new CalcOptionNotEmpty("args"),
+				set(
+					sep("<"),
+					lst("args", node(new FormatInfoHint("class-arg")), sep(","), lout_empty.ncopy()),
+					sep(">")
+				), null, lout_empty.ncopy());
+			DrawLayout lout_ext = new DrawLayout(new SpaceCmd[]{new SpaceCmd(siSp, SP_ADD_BEFORE, 0)});
+			SyntaxElem class_ext = opt("extends",
+				new CalcOption(){
+					public boolean calc(ASTNode node) {
+						if (node instanceof Struct && node.super_bound != null && node.super_bound.getType() != Type.tpObject)
+							return true;
+						return false;
+					}
+				},
+				set(
+					kw("extends"), ident("super_bound")
+					),
+				null, lout_ext.ncopy()
+				);
+			SyntaxElem class_impl = opt("implements", new CalcOptionNotEmpty("interfaces"),
+				set(
+					kw("implements"),
+					lst("interfaces", node(), sep(","), lout_empty.ncopy())
+					),
+				null, lout_ext.ncopy()
+				);
+			SyntaxElem iface_ext = opt("extends", new CalcOptionNotEmpty("interfaces"),
+				set(
+					kw("extends"),
+					lst("interfaces", node(), sep(","), lout_empty.ncopy())
+					),
+				null, lout_ext.ncopy()
+				);
 			SyntaxList struct_members = lst("members",lout_empty.ncopy());
 			struct_members.filter = new CalcOption() {
 				public boolean calc(ASTNode node) {
@@ -328,7 +392,10 @@ public class JavaSyntax extends Syntax {
 						struct_prefix.ncopy(),
 						accs(),
 						kw("class"),
-						ident("short_name")),
+						ident("short_name"),
+						struct_args.ncopy(),
+						class_ext.ncopy(),
+						class_impl.ncopy()),
 					seStructBody.ncopy()
 				);
 			// interface
@@ -337,10 +404,26 @@ public class JavaSyntax extends Syntax {
 						struct_prefix.ncopy(),
 						accs(),
 						kw("interface"),
-						ident("short_name")),
+						ident("short_name"),
+						struct_args.ncopy(),
+						iface_ext),
 					seStructBody.ncopy()
 				);
-			// interface
+			// view
+			seStructView = setl(lout_empty.ncopy(),
+					setl(lout_struct_hdr.ncopy(),
+						struct_prefix.ncopy(),
+						accs(),
+						kw("view"),
+						ident("short_name"),
+						struct_args.ncopy(),
+						kw("of"),
+						ident("view_of"),
+						class_ext.ncopy(),
+						class_impl.ncopy()),
+					seStructBody.ncopy()
+				);
+			// annotation
 			seStructAnnotation = setl(lout_empty.ncopy(),
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
@@ -417,7 +500,7 @@ public class JavaSyntax extends Syntax {
 				});
 			SyntaxElem field_prefix = setl(lout_empty.ncopy(),
 					attr("meta"),
-					jflag(1,12,1, "@synthetic"),
+//					jflag(1,12,1, "@synthetic"),
 					jflag(1,16,1, "@forward"),
 					jflag(1,17,1, "@virtual"),
 					jflag(1,3,1,  "static"),
@@ -428,7 +511,7 @@ public class JavaSyntax extends Syntax {
 					jflag(1,11,1, "strict")
 					);
 			SyntaxElem var_prefix = setl(lout_empty.ncopy(),
-					jflag(1,12,1, "@synthetic"),
+//					jflag(1,12,1, "@synthetic"),
 					jflag(1,16,1, "@forward"),
 					jflag(1,4,1,  "final")
 					);
@@ -445,13 +528,16 @@ public class JavaSyntax extends Syntax {
 			seFormPar = set(opt("meta"), var_prefix.ncopy(), ident("vtype"), ident("name")	);
 		}
 		{
+			DrawLayout lout_method_type_args = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siSp, SP_ADD_AFTER, 0)
+				});
 			DrawLayout lout_method = new DrawLayout(new SpaceCmd[]{
 					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
 				});
 			SyntaxElem method_prefix = setl(lout_empty.ncopy(),
-					jflag(1,6,1,  "@bridge"),
-					jflag(1,7,1,  "@varargs"),
-					jflag(1,12,1, "@synthetic"),
+//					jflag(1,6,1,  "@bridge"),
+//					jflag(1,7,1,  "@varargs"),
+//					jflag(1,12,1, "@synthetic"),
 					jflag(1,16,1, "@forward"),
 					jflag(1,17,1, "@virtual"),
 					jflag(1,18,1, "@unerasable"),
@@ -463,15 +549,29 @@ public class JavaSyntax extends Syntax {
 					jflag(1,11,1, "strict")
 					);
 			SyntaxElem init_prefix = setl(lout_empty.ncopy(),
-					jflag(1,12,1, "@synthetic"),
+//					jflag(1,12,1, "@synthetic"),
 					jflag(1,3,1,  "static")
 					);
+			SyntaxList method_params = lst("params",node(),sep(","),lout_empty.ncopy());
+			method_params.filter = new CalcOption() {
+				public boolean calc(ASTNode node) {
+					if (node instanceof DNode && node.isSynthetic())
+						return false;
+					return true;
+				}
+			};
+			SyntaxElem method_type_args = opt("targs", new CalcOptionNotEmpty("targs"),
+				set(
+					sep("<"),
+					lst("targs", node(new FormatInfoHint("class-arg")), sep(","), lout_empty.ncopy()),
+					sep(">")
+				), null, lout_method_type_args.ncopy());
 			// constructor
 			seConstructor = setl(lout_method.ncopy(),
 				setl(lout_empty.ncopy(), attr("meta"), method_prefix.ncopy(), accs(),
 					ident("parent.short_name"),
 					set(sep("("),
-						lst("params",node(),sep(","),lout_empty.ncopy()),
+						method_params.ncopy(),
 						sep(")")
 						)
 					),
@@ -480,9 +580,10 @@ public class JavaSyntax extends Syntax {
 			// method
 			seMethod = setl(lout_method.ncopy(),
 				setl(lout_empty.ncopy(), attr("meta"), method_prefix.ncopy(), accs(),
+					method_type_args,
 					ident("type_ret"), ident("name"),
 					set(sep("("),
-						lst("params",node(),sep(","),lout_empty.ncopy()),
+						method_params.ncopy(),
 						sep(")")
 						)
 					),
@@ -704,7 +805,11 @@ public class JavaSyntax extends Syntax {
 		case FileUnit: return seFileUnit;
 		case Import: return seImport;
 		case Opdef: return seOpdef;
-		case TypeDef: return seTypeDef;
+		case TypeAssign: return seTypeAssign;
+		case TypeConstr:
+			if (hint != null && "class-arg".equals(hint.text))
+				return seTypeConstrClassArg;
+			return seTypeConstr;
 		case MetaSet: return seMetaSet;
 		case Meta: return seMeta;
 		case MetaValueScalar: return seMetaValueScalar;
@@ -715,6 +820,8 @@ public class JavaSyntax extends Syntax {
 				return seStructEnum;
 			if (s.isSyntax())
 				return seStructSyntax;
+			if (s.isStructView())
+				return seStructView;
 			if (s.isAnnotation())
 				return seStructAnnotation;
 			if (s.isInterface())

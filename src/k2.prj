@@ -189,6 +189,7 @@ kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\Pool
 kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
 kiev.fmt.CalcOption kiev/fmt/CalcOption kiev\fmt\SyntaxLayout.java
 kiev.fmt.CalcOptionJavaFlag kiev/fmt/CalcOptionJavaFlag kiev\fmt\JavaSyntax.java
+kiev.fmt.CalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev\fmt\SyntaxLayout.java
 kiev.fmt.CalcOptionNotNull kiev/fmt/CalcOptionNotNull kiev\fmt\SyntaxLayout.java
 kiev.fmt.CalcOptionTrue kiev/fmt/CalcOptionTrue kiev\fmt\SyntaxLayout.java
 kiev.fmt.DrawCharTerm kiev/fmt/DrawCharTerm kiev\fmt\DrawTerm.java
@@ -646,8 +647,10 @@ kiev.vlang.types.TVar kiev/vlang/types/TVar kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.TVarBld kiev/vlang/types/TVarBld kiev\vlang\types\TVarBld.java
 kiev.vlang.types.TVarSet kiev/vlang/types/TVarSet kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.Type kiev/vlang/types/Type kiev\vlang\types\Type.java
+kiev.vlang.types.TypeAssign kiev/vlang/types/TypeAssign kiev\vlang\types\TypeDef.java
 kiev.vlang.types.TypeCallRef kiev/vlang/types/TypeCallRef kiev\vlang\types\TypeCallRef.java
 kiev.vlang.types.TypeClosureRef kiev/vlang/types/TypeClosureRef kiev\vlang\types\TypeClosure.java
+kiev.vlang.types.TypeConstr kiev/vlang/types/TypeConstr kiev\vlang\types\TypeDef.java
 kiev.vlang.types.TypeDef kiev/vlang/types/TypeDef kiev\vlang\types\TypeDef.java
 kiev.vlang.types.TypeExpr kiev/vlang/types/TypeExpr kiev\vlang\types\TypeExpr.java
 kiev.vlang.types.TypeNameRef kiev/vlang/types/TypeNameRef kiev\vlang\types\TypeNameRef.java

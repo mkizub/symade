@@ -146,11 +146,11 @@ public interface StdTypes {
 		tpCloneableClazz.setInterface(true);
 
 		
-		TypeDef tdWrapperArg = new TypeDef(KString.from("_boxed_"), tpObject);
+		TypeDef tdWrapperArg = new TypeConstr(KString.from("_boxed_"), tpObject);
 		tpWrapperArg = new ArgType(KString.from("_boxed_"),tdWrapperArg);
 		tpWrapperArg.flags |= flHidden;
 		
-		TypeDef tdArrayArg = new TypeDef(KString.from("_elem_"), tpAny);
+		TypeDef tdArrayArg = new TypeConstr(KString.from("_elem_"), tpAny);
 		tpArrayArg = new ArgType(KString.from("_elem_"),tdArrayArg);
 		tpArrayArg.flags |= flHidden;
 		tpArray					= ArrayType.newArrayType(Type.tpAny);
@@ -224,38 +224,38 @@ public interface StdTypes {
 		tpJavaEnumeration	= tpJavaEnumerationClazz.ctype;
 		
 		Struct tpKievEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enumeration;")),kiev_stdlib,ACC_PUBLIC);
-		tpKievEnumerationClazz.args.add(new TypeDef(KString.from("A")));
+		tpKievEnumerationClazz.args.add(new TypeConstr(KString.from("A")));
 		tpKievEnumeration	= tpKievEnumerationClazz.ctype;
 		
 		
 		Struct tpArrayEnumeratorClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/ArrayEnumerator;")),kiev_stdlib,ACC_PUBLIC);
-		tpArrayEnumeratorClazz.args.add(new TypeDef(KString.from("A")));
+		tpArrayEnumeratorClazz.args.add(new TypeConstr(KString.from("A")));
 		tpArrayEnumerator	= tpArrayEnumeratorClazz.ctype;
 		
 
 		Struct tpPrologVarClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PVar;")),kiev_stdlib,ACC_PUBLIC);
-		tpPrologVarClazz.args.add(new TypeDef(KString.from("A")));
+		tpPrologVarClazz.args.add(new TypeConstr(KString.from("A")));
 		tpPrologVar	= tpPrologVarClazz.ctype;
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
-		tpRefProxyClazz.args.add(new TypeDef(KString.from("A")));
+		tpRefProxyClazz.args.add(new TypeConstr(KString.from("A")));
 		tpRefProxy	= tpRefProxyClazz.ctype;
 
 
-		TypeDef tdCallRetArg = new TypeDef(KString.from("_ret_"), tpAny);
+		TypeDef tdCallRetArg = new TypeConstr(KString.from("_ret_"), tpAny);
 		tpCallRetArg = new ArgType(tdCallRetArg.name.name,tdCallRetArg);
 		tpCallRetArg.flags |= flHidden;
 		
 		tpCallParamArgs = new ArgType[128];
 		for (int i=0; i < tpCallParamArgs.length; i++) {
-			TypeDef tdCallParamArg = new TypeDef(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
+			TypeDef tdCallParamArg = new TypeConstr(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
 			tpCallParamArgs[i] = new ArgType(tdCallParamArg.name.name,tdCallParamArg);
 			tpCallParamArgs[i].flags |= flHidden;
 		}
 		
 		tpUnattachedArgs = new ArgType[128] ;
 		for (int i=0; i < tpUnattachedArgs.length; i++) {
-			TypeDef tdUnattachedArg = new TypeDef(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
+			TypeDef tdUnattachedArg = new TypeConstr(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
 			tpUnattachedArgs[i] = new ArgType(tdUnattachedArg.name.name,tdUnattachedArg);
 			//tpUnattachedArgs[i].flags |= flHidden;
 		}

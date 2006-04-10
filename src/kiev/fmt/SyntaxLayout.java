@@ -95,6 +95,11 @@ public class Syntax {
 		return new SyntaxNode();
 	}
 
+	protected SyntaxNode node(FormatInfoHint hint)
+	{
+		return new SyntaxNode(hint);
+	}
+
 	protected SyntaxAttr attr(String slot)
 	{
 		DrawLayout lout = new DrawLayout();
@@ -557,6 +562,19 @@ public class CalcOptionNotNull implements CalcOption {
 	public CalcOptionNotNull(String name) { this.name = name.intern(); } 
 	public boolean calc(ASTNode node) {
 		return node != null && node.getVal(name) != null;
+	}
+}
+
+public class CalcOptionNotEmpty implements CalcOption {
+	private final String name;
+	public CalcOptionNotEmpty(String name) { this.name = name.intern(); } 
+	public boolean calc(ASTNode node) {
+		if (node == null)
+			return false;
+		Object obj = node.getVal(name);
+		if !(obj instanceof NArr)
+			return false;
+		return ((NArr<ASTNode>)obj).size() > 0;
 	}
 }
 

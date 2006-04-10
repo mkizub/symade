@@ -400,7 +400,7 @@ public final class ThisExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 
-	static public final FormPar thisPar = new FormPar(0,Constants.nameThis,Type.tpVoid,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
+	static public final FormPar thisPar = new FormPar(0,Constants.nameThis,Type.tpVoid,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 	
 	@virtual typedef This  = ThisExpr;
 	@virtual typedef VView = VThisExpr;

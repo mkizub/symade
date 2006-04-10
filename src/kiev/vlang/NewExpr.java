@@ -80,7 +80,7 @@ public final class NewExpr extends ENode {
 					Constructor init = new Constructor(ACC_PUBLIC);
 					for(int i=0; i < args.length; i++) {
 						args[i].resolve(null);
-						init.params.append(new FormPar(pos,KString.from("arg$"+i),args[i].getType(),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
+						init.params.append(new FormPar(pos,KString.from("arg$"+i),args[i].getType(),FormPar.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
 					}
 					init.pos = pos;
 					init.body = new Block(pos);

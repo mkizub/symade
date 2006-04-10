@@ -672,7 +672,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 			int i = 0;
 			foreach (TypeDef td; targs) {
 				td.setTypeUnerasable(true);
-				FormPar v = new FormPar(td.pos,KString.from(nameTypeInfo+"$"+td.name), Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL);
+				FormPar v = new FormPar(td.pos,KString.from(nameTypeInfo+"$"+td.name), Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
 				params.add(v);
 			}
 		}

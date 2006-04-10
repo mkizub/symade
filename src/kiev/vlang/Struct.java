@@ -44,7 +44,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@att public TypeRef						view_of;
 	@att public TypeRef						super_bound;
 	@att public NArr<TypeRef>				interfaces;
-	@att public NArr<TypeDef>				args;
+	@att public NArr<TypeConstr>			args;
 	@ref public Struct						package_clazz;
 	@ref public Struct						typeinfo_clazz;
 	@ref public Struct						iface_impl;
@@ -400,7 +400,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public				TypeRef					view_of;
 		public				TypeRef					super_bound;
 		public:ro			NArr<TypeRef>			interfaces;
-		public:ro			NArr<TypeDef>			args;
+		public:ro			NArr<TypeConstr>		args;
 		public				Struct					package_clazz;
 		public				Struct					typeinfo_clazz;
 		public				Struct					iface_impl;
@@ -846,11 +846,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					package_clazz.checkResolved();
 					if( package_clazz.isClazz() && !isStatic() ) {
 						// Add formal parameter
-						m.params.insert(new FormPar(m.pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL),0);
+						m.params.insert(new FormPar(m.pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC),0);
 						retype = true;
 					}
 					if (!isInterface() && isTypeUnerasable()) {
-						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL),(retype?1:0));
+						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC),(retype?1:0));
 						retype = true;
 					}
 				}
@@ -860,25 +860,25 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					init.setHidden(true);
 					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 						if( !isStatic() ) {
-							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
-							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,0));
+							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
 						} else {
-							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,0));
+							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
 						}
 					} else {
 						if( package_clazz.isClazz() && !isStatic() ) {
-							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
+							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 						}
 						if (!isInterface() && isTypeUnerasable()) {
-							init.params.append(new FormPar(pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL));
+							init.params.append(new FormPar(pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 						}
 						if( isEnum() ) {
-							init.params.append(new FormPar(pos,KString.from("name"),Type.tpString,FormPar.PARAM_NORMAL,0));
-							init.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt,FormPar.PARAM_NORMAL,0));
-							//init.params.append(new FormPar(pos,KString.from("text"),Type.tpString,FormPar.PARAM_NORMAL,0));
+							init.params.append(new FormPar(pos,KString.from("name"),Type.tpString,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
+							init.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
+							//init.params.append(new FormPar(pos,KString.from("text"),Type.tpString,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
 						}
 						if (isStructView()) {
-							init.params.append(new FormPar(pos,nameImpl,view_of.getType(),FormPar.PARAM_NORMAL,ACC_FINAL));
+							init.params.append(new FormPar(pos,nameImpl,view_of.getType(),FormPar.PARAM_NORMAL,ACC_FINAL|ACC_SYNTHETIC));
 						}
 					}
 					init.pos = pos;

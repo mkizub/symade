@@ -224,7 +224,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		// create typeinfo class
 		int flags = this.flags & JAVA_ACC_MASK;
 		flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
-		flags |= ACC_PUBLIC | ACC_STATIC;
+		flags |= ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC;
 		typeinfo_clazz = Env.newStruct(
 			ClazzName.fromOuterAndName(this.getStruct(),nameClTypeInfo,false,true),this.getStruct(),flags,true
 			);
@@ -260,7 +260,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			}
 	
 			// create typeinfo field
-			Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.ctype,ACC_PUBLIC|ACC_FINAL));
+			Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.ctype,ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 			// add constructor to the class
 			typeinfo_clazz.addMethod(init);
 			
@@ -1399,7 +1399,7 @@ public final view RStruct of Struct extends RTypeDecl {
 							int par = m.params.length;
 							KString nm = new KStringBuffer().append(nameVarProxy)
 								.append(proxy_fields[j].name).toKString();
-							m.params.append(new FormPar(m.pos,nm,proxy_fields[j].type,FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
+							m.params.append(new FormPar(m.pos,nm,proxy_fields[j].type,FormPar.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
 							m.body.stats.insert(
 								new ExprStat(m.pos,
 									new AssignExpr(m.pos,AssignOperator.Assign,

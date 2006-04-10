@@ -234,7 +234,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				if (me.isClazz() && pkg.isClazz()) {
 					int n = 0;
 					for(Struct p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz) n++;
-					TypeDef td = new TypeDef(
+					TypeDef td = new TypeAssign(
 						new NameRef(me.pos,KString.from("outer$"+n+"$type")),
 						new TypeRef(pkg.ctype));
 					me.members.append(td);
