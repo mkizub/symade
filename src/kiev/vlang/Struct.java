@@ -474,7 +474,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 		public final boolean mainResolveIn() {
 			resolveFinalFields(this);
-			return !isLocal();
+			return true; //!isLocal();
 		}
 
 		private static void resolveFinalFields(@forward VStruct self) {

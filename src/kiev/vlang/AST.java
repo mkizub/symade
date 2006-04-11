@@ -750,6 +750,12 @@ public abstract class DNode extends ASTNode {
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
+	public void setSynthetic(boolean on) {
+		if (this.is_synthetic != on) {
+			this.is_synthetic = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
 
 	public void setStructView() {
 		if (!this.is_virtual) {

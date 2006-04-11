@@ -663,7 +663,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 
 	public Type getType() {
 		try {
-			if (ctx_clazz == null)
+			if (ctx_clazz == null || outer_refs.size() == 0)
 				return outer.ctype;
 			Type tp = ctx_clazz.ctype;
 			foreach (Field f; outer_refs)
