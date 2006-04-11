@@ -29,19 +29,19 @@ public class OpTypes {
 		{
 			ENode e = (ENode)n;
 			trace( Kiev.debugOperators,"type of "+n+" is "+e.getType());
-			if( !e.isResolved() ) {
-				NopExpr we = new NopExpr();
-				e.replaceWithNode(we);
-				we.expr = e;
-				e.resolve(tp);
-				e = we.expr;
-				we.replaceWithNode(~e);
-				assert( e.isResolved() );
-				n = e;
-				goto case e;
-			} else {
+//			if( !e.isResolved() ) {
+//				NopExpr we = new NopExpr();
+//				e.replaceWithNode(we);
+//				we.expr = e;
+//				e.resolve(tp);
+//				e = we.expr;
+//				we.replaceWithNode(~e);
+//				assert( e.isResolved() );
+//				n = e;
+//				goto case e;
+//			} else {
 				t = e.getType();
-			}
+//			}
 			break;
 		}
 		case Type:

@@ -357,12 +357,14 @@ public class BinaryExpr extends ENode {
 	@ref public BinaryOperator	op;
 	@att public ENode			expr1;
 	@att public ENode			expr2;
+	@ref public Method			func;
 
 	@nodeview
 	public static final view VBinaryExpr of BinaryExpr extends VENode {
 		public BinaryOperator	op;
 		public ENode			expr1;
 		public ENode			expr2;
+		public Method			func;
 
 		public void mainResolveOut() {
 			Type et1 = expr1.getType();
@@ -421,11 +423,12 @@ public class BinaryExpr extends ENode {
 				Type[] tps = new Type[]{null,et1,et2};
 				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
 				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-					ENode e;
-					if( opt.method.isStatic() )
-						replaceWithNode(new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
-					else
-						replaceWithNode(new CallExpr(pos,~expr1,opt.method,new ENode[]{~expr2}));
+					func = opt.method;
+//					ENode e;
+//					if( opt.method.isStatic() )
+//						replaceWithNode(new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
+//					else
+//						replaceWithNode(new CallExpr(pos,~expr1,opt.method,new ENode[]{~expr2}));
 					return;
 				}
 			}
@@ -487,8 +490,14 @@ public class BinaryExpr extends ENode {
 				return Type.tpInt;
 			}
 		}
-		((BinaryExpr)this).resolve(null);
-		return getType();
+		// Not a standard operator, find out overloaded
+		foreach(OpTypes opt; op.types ) {
+			Type[] tps = new Type[]{null,t1,t2};
+			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
+			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null )
+				return opt.method.type.ret();
+		}
+		return Type.tpVoid;
 	}
 
 	public String toString() {
