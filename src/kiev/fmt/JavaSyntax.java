@@ -613,7 +613,7 @@ public class JavaSyntax extends Syntax {
 						sep(")")
 						)
 					),
-				lst("localvars", lout_nl.ncopy()),
+				par(plIndented, lst("localvars", setl(lout_nl.ncopy(), node(), sep(";")), null, lout_nl.ncopy())),
 				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty.ncopy())
 				);
 			seInitializer = setl(lout_method.ncopy(), opt("meta"), init_prefix, attr("body"));
@@ -636,19 +636,37 @@ public class JavaSyntax extends Syntax {
 					sep("}", lout_code_block_end.ncopy())
 					);
 			// rule block
+			DrawLayout lout_rule_block_end = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
+					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
+					new SpaceCmd(siNl,            SP_ADD_BEFORE,  0),
+				});
 			seRuleBlock = set(
 					sep("{", lout_code_block_start.ncopy()),
 					par(plIndented, attr("node")),
-					sep("}", lout_code_block_end.ncopy())
+					sep("}", lout_rule_block_end.ncopy())
 					);
 			// rule OR block
+			DrawLayout lout_rule_or = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNl,            SP_ADD_BEFORE,  0),
+					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
+					new SpaceCmd(siNl,            SP_ADD_AFTER,  0),
+					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
+				});
+			SyntaxElem rule_or = new SyntaxSeparator(";",lout_rule_or);
 			seRuleOrExpr = set(
 					sep("{", lout_code_block_start.ncopy()),
-					par(plIndented, lst("rules", setl(lout_nl.ncopy(),node()),sep(";"),lout_empty.ncopy())),
+					lst("rules", par(plIndented, node()), rule_or, lout_nl.ncopy()),
 					sep("}", lout_code_block_end.ncopy())
 					);
 			// rule AND block
-			seRuleAndExpr = lst("rules", setl(lout_nl.ncopy(),node()),sep(","),lout_empty.ncopy());
+			DrawLayout lout_rule_and = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
+					new SpaceCmd(siNl,            SP_ADD_AFTER,  0),
+					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
+				});
+			SyntaxElem rule_and = new SyntaxSeparator(",",lout_rule_and);
+			seRuleAndExpr = lst("rules", node(), rule_and, lout_nl.ncopy());
 		}
 		seExprStat = set(opt("expr"), sep(";"));
 		seReturnStat = set(kw("return"), opt("expr"), sep(";"));
@@ -774,7 +792,7 @@ public class JavaSyntax extends Syntax {
 		seThisExpr = kw("this");
 		seLVarExpr = ident("ident");
 		seSFldExpr = set(attr("obj"), sep("."), ident("ident"));
-		seOuterThisAccessExpr = set(attr("obj"), sep("."), kw("this"));
+		seOuterThisAccessExpr = set(ident("outer.short_name"), sep("."), kw("this"));
 		seReinterpExpr = set(sep("("), kw("$reinterp"), attr("type"), sep(")"), attr("expr"));
 		
 		seBinaryBooleanOrExpr = expr("expr1", BinaryOperator.BooleanOr, "expr2");

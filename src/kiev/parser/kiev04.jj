@@ -90,6 +90,7 @@ public abstract class kiev040 {
 	}
 
 	private static final int[] noColonTokenSet = new int[]{COLON};
+	private static final int[] noCommaTokenSet = new int[]{COMMA};
 
 	private int[] no_tokens;
 
@@ -2197,7 +2198,7 @@ RuleIstheExpr RuleIstheExpression() :
 {
 	r.var = Var()
 	t = "?=" { r.pos = t.getPos(); }
-	r.expr = AccessExpression()
+	r.expr = ExpressionNT(noCommaTokenSet) //AccessExpression()
 	{ return r; }
 }
 
@@ -2206,7 +2207,7 @@ RuleIsoneofExpr RuleIsoneofExpression() :
 {
 	r.var = Var()
 	t = "@=" { r.pos = t.getPos(); }
-	r.expr = AccessExpression()
+	r.expr = ExpressionNT(noCommaTokenSet) //AccessExpression()
 	{ return r; }
 }
 

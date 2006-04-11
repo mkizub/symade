@@ -76,6 +76,7 @@ public abstract class kiev040 implements kiev040Constants {
         }
 
         private static final int[] noColonTokenSet = new int[]{COLON};
+        private static final int[] noCommaTokenSet = new int[]{COMMA};
 
         private int[] no_tokens;
 
@@ -2960,7 +2961,7 @@ public abstract class kiev040 implements kiev040Constants {
     r.var = Var();
     t = jj_consume_token(IS_THE);
                    r.pos = t.getPos();
-    r.expr = AccessExpression();
+    r.expr = ExpressionNT(noCommaTokenSet);
           {if (true) return r;}
     throw new Error("Missing return statement in function");
   }
@@ -2970,7 +2971,7 @@ public abstract class kiev040 implements kiev040Constants {
     r.var = Var();
     t = jj_consume_token(IS_ONE_OF);
                    r.pos = t.getPos();
-    r.expr = AccessExpression();
+    r.expr = ExpressionNT(noCommaTokenSet);
           {if (true) return r;}
     throw new Error("Missing return statement in function");
   }
@@ -8223,7 +8224,7 @@ public abstract class kiev040 implements kiev040Constants {
   final private boolean jj_3R_433() {
     if (jj_3R_457()) return true;
     if (jj_scan_token(IS_ONE_OF)) return true;
-    if (jj_3R_124()) return true;
+    if (jj_3R_99()) return true;
     return false;
   }
 
@@ -8236,7 +8237,7 @@ public abstract class kiev040 implements kiev040Constants {
   final private boolean jj_3R_432() {
     if (jj_3R_457()) return true;
     if (jj_scan_token(IS_THE)) return true;
-    if (jj_3R_124()) return true;
+    if (jj_3R_99()) return true;
     return false;
   }
 
