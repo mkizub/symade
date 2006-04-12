@@ -111,6 +111,8 @@ public class ASTCallExpression extends ENode {
 				ENode e = info.buildCall((ASTNode)this,null,m,info.mt,args.toArray());
 				if (e instanceof UnresExpr)
 					e = ((UnresExpr)e).toResolvedExpr();
+				if (isPrimaryExpr())
+					e.setPrimaryExpr(true);
 				this.replaceWithNode(e);
 			}
 		}
@@ -236,6 +238,10 @@ public class ASTCallExpression extends ENode {
 					assert (info.isEmpty());
 				//((Method)m).makeArgs(args,tp);
 				ENode e = info.buildCall(this,null,m,info.mt,args.toArray());
+				if (e instanceof UnresExpr)
+					e = ((UnresExpr)e).toResolvedExpr();
+				if (isPrimaryExpr())
+					e.setPrimaryExpr(true);
 				this.replaceWithNodeResolve( reqType, e );
 			}
 		}

@@ -24,10 +24,12 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 	@att public int					priority;
 	@att public SyntaxSeparator		l_paren;
 	@att public SyntaxSeparator		r_paren;
+	public FormatInfoHint			hint;
 
 	public SyntaxJavaExpr() {}
-	public SyntaxJavaExpr(String name, DrawLayout layout, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
+	public SyntaxJavaExpr(String name, FormatInfoHint hint, DrawLayout layout, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
 		super(name,layout);
+		this.hint = hint;
 		this.priority = priority;
 		this.l_paren = l_paren;
 		this.r_paren = r_paren;
@@ -53,6 +55,26 @@ public class SyntaxJavaAccess extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
 		Drawable dr = new DrawJavaAccess(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+
+@node
+public class SyntaxJavaType extends SyntaxElem {
+	@virtual typedef This  = SyntaxJavaAccess;
+
+	public FormatInfoHint hint;
+	
+	public SyntaxJavaType() {}
+	public SyntaxJavaType(FormatInfoHint hint, DrawLayout layout) {
+		super(layout);
+		this.hint = hint;
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawJavaType(node, this);
 		dr.init(fmt);
 		return dr;
 	}
@@ -135,6 +157,7 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seRuleOrExpr;
 	final SyntaxElem seRuleAndExpr;
 	final SyntaxElem seTypeRef;
+	final SyntaxElem seStructRef;
 	final SyntaxElem seConstExpr;
 	final SyntaxElem seConstExprTrue;
 	final SyntaxElem seConstExprFalse;
@@ -197,7 +220,14 @@ public class JavaSyntax extends Syntax {
 	protected SyntaxJavaExpr expr(String expr, int priority)
 	{
 		DrawLayout lout = new DrawLayout();
-		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, lout, priority, sep("("), sep(")"));
+		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, null, lout, priority, sep("("), sep(")"));
+		return se;
+	}
+
+	protected SyntaxJavaExpr expr(String expr, FormatInfoHint hint, int priority)
+	{
+		DrawLayout lout = new DrawLayout();
+		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, hint, lout, priority, sep("("), sep(")"));
 		return se;
 	}
 
@@ -246,6 +276,15 @@ public class JavaSyntax extends Syntax {
 		}
 		return super.sep(sep);
 	}
+	
+	protected SyntaxJavaType type(FormatInfoHint hint) {
+		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+				new SpaceCmd(siSpWORD, SP_ADD_BEFORE, 0),
+				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
+				new SpaceCmd(siSpWORD, SP_ADD_AFTER, 0),
+			});
+		return new SyntaxJavaType(hint,lout);
+	}
 
 	public JavaSyntax() {
 		DrawLayout lout_empty = new DrawLayout();
@@ -266,9 +305,17 @@ public class JavaSyntax extends Syntax {
 				);
 		}
 		{
+			SyntaxElem sp_hid = new SyntaxSpace(new DrawLayout());
+			sp_hid.is_hidden = true;
 			// import
 			seImport = setl(lout_nl.ncopy(),
 				kw("import"),
+				alt_enum("mode",
+					sp_hid.ncopy(),
+					kw("static"),
+					kw("package"),
+					kw("syntax")
+					),
 				ident("name"),
 				opt("star",new CalcOptionTrue("star"), sep(".*"), null, lout_empty.ncopy()),
 				sep(";"));
@@ -723,7 +770,23 @@ public class JavaSyntax extends Syntax {
 				);
 			
 			seCaseLabel = set(
-				opt("val", new CalcOptionNotNull("val"), set(kw("case"), attr("val")), kw("default"),lout_empty.ncopy()),
+				opt("val", new CalcOptionNotNull("val"),
+					set(
+						kw("case"),
+						attr("val"),
+						opt("pattern", new CalcOptionNotEmpty("pattern"),
+							set(
+								sep("("),
+								lst("pattern",node(),sep(","),lout_empty.ncopy()),
+								sep(")")
+								),
+							null,
+							lout_empty.ncopy()
+							)
+						),
+					kw("default"),
+					lout_empty.ncopy()
+					),
 				sep(":", lout_nl.ncopy()),
 				par(plIndented, lst("stats",setl(lout_nl.ncopy(),node()),null,lout_nl.ncopy()))
 				);
@@ -770,13 +833,14 @@ public class JavaSyntax extends Syntax {
 		seConstExprNull = kw("null");
 		seConstExprChar = charcter("value");
 		seConstExprStr = string("value");
-		seTypeRef = ident("lnk");
+		seTypeRef = type(null);
+		seStructRef = type(new FormatInfoHint("no-args"));
 
 		seRuleIstheExpr = set(ident("var"), oper("?="), expr("expr", Constants.opAssignPriority));
 		seRuleIsoneofExpr = set(ident("var"), oper("@="), expr("expr", Constants.opAssignPriority));
 		seRuleCutExpr = kw("$cut");
 		seRuleCallExpr = set(
-				attr("obj"),
+				expr("obj", Constants.opAccessPriority),
 				sep("."),
 				ident("func.name"),
 				sep("("),
@@ -786,21 +850,26 @@ public class JavaSyntax extends Syntax {
 		seRuleWhileExpr = set(kw("while"), expr("expr", 1), opt("bt_expr", set(oper(":"), expr("bt_expr", 1))));
 		seRuleExpr = set(expr("expr", 1), opt("bt_expr", set(oper(":"), expr("bt_expr", 1))));
 
-		seAccessExpr = set(attr("obj"), sep("."), ident("ident"));
-		seIFldExpr = set(attr("obj"), sep("."), ident("ident"));
-		seContainerAccessExpr = set(attr("obj"), sep("["), attr("index"), sep("]"));
+		seAccessExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
+		seIFldExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
+		seContainerAccessExpr = set(expr("obj", Constants.opContainerElementPriority), sep("["), attr("index"), sep("]"));
 		seThisExpr = kw("this");
 		seLVarExpr = ident("ident");
-		seSFldExpr = set(attr("obj"), sep("."), ident("ident"));
-		seOuterThisAccessExpr = set(ident("outer.short_name"), sep("."), kw("this"));
+		seSFldExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
+		seOuterThisAccessExpr = set(ident("outer"), sep("."), kw("this"));
 		seReinterpExpr = set(sep("("), kw("$reinterp"), attr("type"), sep(")"), attr("expr"));
 		
 		seBinaryBooleanOrExpr = expr("expr1", BinaryOperator.BooleanOr, "expr2");
 		seBinaryBooleanAndExpr = expr("expr1", BinaryOperator.BooleanAnd, "expr2");
 		seInstanceofExpr = expr("expr", BinaryOperator.InstanceOf, "type");
+//			set(
+//			expr("expr", Constants.opInstanceOfPriority),
+//			kw("instanceof"),
+//			attr("type", new FormatInfoHint("no-args"))
+//			);
 		seBooleanNotExpr = expr(PrefixOperator.BooleanNot, "expr");
 		seCallExpr = set(
-				attr("obj"),
+				expr("obj", new FormatInfoHint("call-accessor"), Constants.opAccessPriority),
 				sep("."),
 				ident("func.name"),
 				sep("("),
@@ -838,8 +907,8 @@ public class JavaSyntax extends Syntax {
 			);
 
 		seNewExpr = set(
+				opt("outer", set(expr("outer", Constants.opAccessPriority), oper("."))),
 				kw("new"),
-				opt("outer", set(attr("outer"), oper("."))),
 				ident("type"),
 				sep("("),
 				lst("args",node(),sep(","),lout_empty.ncopy()),
@@ -877,7 +946,7 @@ public class JavaSyntax extends Syntax {
 				);
 
 		seShadow = attr("node");
-		seArrayLengthExpr = set(attr("obj"), sep("."), kw("length"));
+		seArrayLengthExpr = set(expr("obj", Constants.opAccessPriority), sep("."), kw("length"));
 		seTypeClassExpr = set(ident("type"), sep("."), kw("class"));
 		seTypeInfoExpr = set(ident("type"), sep("."), kw("type"));
 		seConditionalExpr = set(
@@ -945,7 +1014,10 @@ public class JavaSyntax extends Syntax {
 			return seConstExprStr;
 		case ConstExpr:
 			return seConstExpr;
-		case TypeRef: return seTypeRef;
+		case TypeRef:
+			if (hint != null && "call-accessor".equals(hint.text))
+				return seStructRef;
+			return seTypeRef;
 		case Shadow: return seShadow;
 
 		case RuleIstheExpr: return seRuleIstheExpr;

@@ -1,1 +1,1 @@
-c:\java\jdk1.5.0\bin\java -classpath classes -verify kiev.Main %*
+c:\java\jdk1.5.0\bin\java -Xmx256M -classpath classes -verify kiev.Main %*

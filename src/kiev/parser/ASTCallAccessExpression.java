@@ -150,6 +150,8 @@ public class ASTCallAccessExpression extends ENode {
 			ENode e = res[idx];
 			if (e instanceof UnresExpr)
 				e = ((UnresExpr)e).toResolvedExpr();
+			if (isPrimaryExpr())
+				e.setPrimaryExpr(true);
 			this.replaceWithNode( e );
 		}
 	}
@@ -281,7 +283,12 @@ public class ASTCallAccessExpression extends ENode {
 			msg.append("while resolving ").append(this);
 			throw new CompilerException(this, msg.toString());
 		}
-		this.replaceWithNodeResolve( reqType, res[idx] );
+		ENode e = res[idx];
+		if (e instanceof UnresExpr)
+			e = ((UnresExpr)e).toResolvedExpr();
+		if (isPrimaryExpr())
+			e.setPrimaryExpr(true);
+		this.replaceWithNodeResolve( reqType, e );
 	}
 
 	public String toString() {

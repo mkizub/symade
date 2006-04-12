@@ -115,6 +115,33 @@ public class DrawIntChoice extends DrawCtrl {
 }
 
 @node
+public class DrawEnumChoice extends DrawCtrl {
+
+	@ref NArr<Drawable> args;
+
+	public DrawEnumChoice() {}
+	public DrawEnumChoice(ASTNode node, SyntaxEnumChoice syntax) {
+		super(node, syntax);
+	}
+
+	public void init(Formatter fmt) {
+		SyntaxEnumChoice sset = (SyntaxEnumChoice)this.syntax;
+		foreach (SyntaxElem se; sset.elements)
+			args.append(se.makeDrawable(fmt, node));
+	}
+
+	public void preFormat(DrawContext cont) {
+		SyntaxEnumChoice sc = (SyntaxEnumChoice)syntax;
+		java.lang.Enum en = (java.lang.Enum)node.getVal(sc.name);
+		if (en == null || en.ordinal() >= args.size())
+			arg = null;
+		else
+			arg = args[en.ordinal()];
+		super.preFormat(cont);
+	}
+}
+
+@node
 public class DrawParagraph extends DrawCtrl {
 
 	boolean is_multiline;

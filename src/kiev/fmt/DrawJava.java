@@ -22,7 +22,7 @@ public class DrawJavaExpr extends DrawNonTermSet {
 	public void init(Formatter fmt) {
 		SyntaxJavaExpr se = (SyntaxJavaExpr)this.syntax;
 		args.append(se.l_paren.makeDrawable(fmt, node));
-		args.append(fmt.getDrawable(node, null));
+		args.append(fmt.getDrawable(node, se.hint));
 		args.append(se.r_paren.makeDrawable(fmt, node));
 	}
 
@@ -112,6 +112,38 @@ public class DrawJavaAccess extends DrawTerm {
 		return sb.toString();
 	}
 
+	public String getText() { return this.text; }
+}
+
+@node
+public class DrawJavaType extends DrawTerm {
+	
+	private String text;
+	
+	public DrawJavaType() {}
+	public DrawJavaType(ASTNode node, SyntaxJavaType syntax) {
+		super(node, syntax);
+	}
+
+	public void preFormat(DrawContext cont) {
+		SyntaxJavaType stx = (SyntaxJavaType)syntax;
+		TypeRef tr = (TypeRef)node;
+		if (stx.hint == null || stx.hint.text == null) {
+			text = String.valueOf(tr);
+		}
+		else if ("no-args".equals(stx.hint.text) || "call-accessor".equals(stx.hint.text)) {
+			Struct s = tr.getStruct();
+			if (s != null)
+				text = s.name.toString();
+			else
+				text = String.valueOf(tr);
+		}
+		else {
+			text = String.valueOf(tr);
+		}
+		super.preFormat(cont);
+	}	
+	
 	public String getText() { return this.text; }
 }
 

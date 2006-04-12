@@ -30,7 +30,7 @@ public class ClazzName extends NodeName implements Constants {
 	public static ClazzName		Empty = new ClazzName(KString.Empty,KString.Empty,KString.Empty,false,false);
 
 	public String toString() {
-		if (isArgument || isInner)
+		if (isArgument /*|| isInner*/)
 			return short_name.toString();
 		else
 			return name.toString();

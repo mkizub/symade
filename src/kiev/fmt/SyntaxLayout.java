@@ -202,6 +202,14 @@ public class Syntax {
 		return sc;
 	}
 
+	protected SyntaxEnumChoice alt_enum(String name, SyntaxElem... options)
+	{
+		DrawLayout lout = new DrawLayout();
+		SyntaxEnumChoice sc = new SyntaxEnumChoice(name,lout);
+		sc.elements.addAll(options);
+		return sc;
+	}
+
 }
 
 public enum SpaceKind {
@@ -572,7 +580,7 @@ public class CalcOptionNotEmpty implements CalcOption {
 		if (node == null)
 			return false;
 		Object obj = node.getVal(name);
-		if !(obj instanceof NArr)
+		if !(obj instanceof NArr<ASTNode>)
 			return false;
 		return ((NArr<ASTNode>)obj).size() > 0;
 	}
@@ -617,7 +625,7 @@ public class SyntaxOptional extends SyntaxElem {
 
 @node
 public class SyntaxIntChoice extends SyntaxSet {
-	@virtual typedef This  = SyntaxOptional;
+	@virtual typedef This  = SyntaxIntChoice;
 
 	@att public String name;
 
@@ -629,6 +637,25 @@ public class SyntaxIntChoice extends SyntaxSet {
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
 		Drawable dr = new DrawIntChoice(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
+public class SyntaxEnumChoice extends SyntaxSet {
+	@virtual typedef This  = SyntaxEnumChoice;
+
+	@att public String name;
+
+	public SyntaxEnumChoice() {}
+	public SyntaxEnumChoice(String name, DrawLayout layout) {
+		super(layout);
+		this.name = name.intern();
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawEnumChoice(node, this);
 		dr.init(fmt);
 		return dr;
 	}

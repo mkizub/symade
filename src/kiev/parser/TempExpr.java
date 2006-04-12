@@ -36,6 +36,10 @@ public abstract class UnresExpr extends ENode {
 
 	public Operator getOp() { return op; }
 	
+	public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
+		throw new Error("Internal error: "+this.getClass()+" attached to "+parent.getClass()+" to slot "+pslot.name);
+	}
+	
 	public void resolve(Type reqType) {
 		replaceWithResolve(reqType, fun ()->ENode {return toResolvedExpr();});
 	}
@@ -181,6 +185,8 @@ public class InfixExpr extends UnresExpr {
 		if (op instanceof AssignOperator)
 			return new AssignExpr(pos,(AssignOperator)op,e1,e2);
 		if (((BinaryOperator)op).is_boolean_op) {
+			if (op==BinaryOperator.InstanceOf)
+				return new InstanceofExpr(pos,e1,((TypeRef)e2).getType());
 			if (op==BinaryOperator.BooleanOr)
 				return new BinaryBooleanOrExpr(pos,e1,e2);
 			if (op==BinaryOperator.BooleanAnd)

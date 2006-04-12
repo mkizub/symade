@@ -730,6 +730,8 @@ public final class ReinterpExpr extends LvalueExpr {
 		this.expr = expr;
 	}
 
+	public int getPriority() { return opCastPriority; }
+
 	public Type getType() {
 		return this.type.getType();
 	}
