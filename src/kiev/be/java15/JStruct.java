@@ -1,4 +1,4 @@
-package kiev.be.java;
+package kiev.be.java15;
 
 import kiev.Kiev;
 import kiev.Kiev.Ext;
@@ -10,7 +10,7 @@ import kiev.vlang.types.*;
 import java.io.*;
 
 import kiev.vlang.NArr.JArr;
-import kiev.ir.java.RStruct;
+import kiev.ir.java15.RStruct;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

@@ -1,4 +1,4 @@
-package kiev.be.java;
+package kiev.be.java15;
 
 import kiev.Kiev;
 import kiev.CError;
@@ -10,7 +10,7 @@ import kiev.parser.*;
 
 import kiev.vlang.NArr.JArr;
 
-import static kiev.be.java.Instr.*;
+import static kiev.be.java15.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 

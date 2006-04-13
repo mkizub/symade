@@ -1,4 +1,4 @@
-package kiev.be.java;
+package kiev.be.java15;
 
 /**
  * @author Maxim Kizub

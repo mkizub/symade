@@ -1,4 +1,4 @@
-package kiev.be.java;
+package kiev.be.java15;
 
 import kiev.Kiev;
 

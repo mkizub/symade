@@ -1,4 +1,4 @@
-package kiev.be.java;
+package kiev.be.java15;
 
 import kiev.Kiev;
 import kiev.transf.*;
@@ -7,7 +7,7 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.be.java.Instr.*;
+import static kiev.be.java15.Instr.*;
 import static kiev.vlang.Operator.*;
 
 /**
