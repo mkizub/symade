@@ -6,17 +6,17 @@ import kiev.parser.*;
 import kiev.transf.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNode;
-import kiev.be.java.JDNode;
-import kiev.ir.java.RMethod;
-import kiev.be.java.JMethod;
-import kiev.ir.java.RConstructor;
-import kiev.ir.java.RInitializer;
-import kiev.be.java.JInitializer;
-import kiev.ir.java.RWBCCondition;
-import kiev.be.java.JWBCCondition;
+import kiev.be.java15.JNode;
+import kiev.be.java15.JDNode;
+import kiev.ir.java15.RMethod;
+import kiev.be.java15.JMethod;
+import kiev.ir.java15.RConstructor;
+import kiev.ir.java15.RInitializer;
+import kiev.be.java15.JInitializer;
+import kiev.ir.java15.RWBCCondition;
+import kiev.be.java15.JWBCCondition;
 
-import kiev.be.java.CodeAttr;
+import kiev.be.java15.CodeAttr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -50,7 +50,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	@att public Var					retvar;
 	@att public Block				body;
 	@att public PrescannedBody 		pbody;
-	public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
+	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 	@att public NArr<WBCCondition> 	conditions;
 	@ref public NArr<Field>			violated_fields;
 	@att public MetaValue			annotation_default;

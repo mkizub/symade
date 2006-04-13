@@ -5,12 +5,12 @@ import kiev.stdlib.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
-import kiev.be.java.JNode;
-import kiev.be.java.JDNode;
-import kiev.be.java.JLvalDNode;
-import kiev.ir.java.RVar;
-import kiev.be.java.JVar;
-import kiev.ir.java.RFormPar;
+import kiev.be.java15.JNode;
+import kiev.be.java15.JDNode;
+import kiev.be.java15.JLvalDNode;
+import kiev.ir.java15.RVar;
+import kiev.be.java15.JVar;
+import kiev.ir.java15.RFormPar;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

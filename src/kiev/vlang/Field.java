@@ -4,11 +4,11 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNode;
-import kiev.be.java.JDNode;
-import kiev.be.java.JLvalDNode;
-import kiev.ir.java.RField;
-import kiev.be.java.JField;
+import kiev.be.java15.JNode;
+import kiev.be.java15.JDNode;
+import kiev.be.java15.JLvalDNode;
+import kiev.ir.java15.RField;
+import kiev.be.java15.JField;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -45,7 +45,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	/** Constant value of this field */
 	@ref public ConstExpr			const_value;
 	/** Array of attributes of this field */
-	public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
+	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 	/** Array of invariant methods, that check this field */
 	@ref public NArr<Method>		invs;
 

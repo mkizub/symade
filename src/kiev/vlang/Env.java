@@ -12,8 +12,8 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.zip.*;
 
-import kiev.be.java.Bytecoder;
-import kiev.be.java.Attr;
+import kiev.be.java15.Bytecoder;
+import kiev.be.java15.Attr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

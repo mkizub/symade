@@ -24,7 +24,7 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -305,7 +305,7 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 		int l;
 		while(pc < code.length) {
 			int instr = 0xFF & code[pc];
-			System.out.print(pc+":\t"+kiev.be.java.JConstants.opcNames[instr]);
+			System.out.print(pc+":\t"+kiev.be.java15.JConstants.opcNames[instr]);
 			switch(instr) {
 			default:
 				break;
@@ -424,7 +424,7 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 				continue;
 			}
 			System.out.println("");
-			pc += kiev.be.java.JConstants.opcLengths[instr];
+			pc += kiev.be.java15.JConstants.opcLengths[instr];
 		}
 	}
 	private Object utf8(ReadContext cont, int pos) {

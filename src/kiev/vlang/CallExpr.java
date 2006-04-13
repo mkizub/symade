@@ -5,15 +5,15 @@ import kiev.stdlib.*;
 import kiev.vlang.Operator.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNode;
-import kiev.be.java.JENode;
-import kiev.ir.java.RCallExpr;
-import kiev.be.java.JCallExpr;
-import kiev.ir.java.RClosureCallExpr;
-import kiev.be.java.JClosureCallExpr;
+import kiev.be.java15.JNode;
+import kiev.be.java15.JENode;
+import kiev.ir.java15.RCallExpr;
+import kiev.be.java15.JCallExpr;
+import kiev.ir.java15.RClosureCallExpr;
+import kiev.be.java15.JClosureCallExpr;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.be.java.Instr.*;
+import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 

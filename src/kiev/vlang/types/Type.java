@@ -5,11 +5,11 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JType;
-import kiev.be.java.JBaseType;
-import kiev.be.java.JArrayType;
-import kiev.be.java.JMethodType;
-import kiev.be.java.JStruct;
+import kiev.be.java15.JType;
+import kiev.be.java15.JBaseType;
+import kiev.be.java15.JArrayType;
+import kiev.be.java15.JMethodType;
+import kiev.be.java15.JStruct;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

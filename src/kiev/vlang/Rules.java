@@ -6,8 +6,8 @@ import kiev.stdlib.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
-import kiev.ir.java.RRuleMethod;
-import kiev.ir.java.RRuleBlock;
+import kiev.ir.java15.RRuleMethod;
+import kiev.ir.java15.RRuleBlock;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

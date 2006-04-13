@@ -3,7 +3,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
-import kiev.be.java.JNode;
+import kiev.be.java15.JNode;
 
 import static kiev.stdlib.Debug.*;
 

@@ -6,23 +6,23 @@ import kiev.parser.*;
 import kiev.transf.*;
 import kiev.vlang.types.*;
 
-import kiev.be.java.JNode;
-import kiev.be.java.JENode;
-import kiev.ir.java.RConstExpr;
-import kiev.be.java.JConstExpr;
-import kiev.be.java.JConstBoolExpr;
-import kiev.be.java.JConstNullExpr;
-import kiev.be.java.JConstByteExpr;
-import kiev.be.java.JConstShortExpr;
-import kiev.be.java.JConstIntExpr;
-import kiev.be.java.JConstLongExpr;
-import kiev.be.java.JConstCharExpr;
-import kiev.be.java.JConstFloatExpr;
-import kiev.be.java.JConstDoubleExpr;
-import kiev.be.java.JConstStringExpr;
+import kiev.be.java15.JNode;
+import kiev.be.java15.JENode;
+import kiev.ir.java15.RConstExpr;
+import kiev.be.java15.JConstExpr;
+import kiev.be.java15.JConstBoolExpr;
+import kiev.be.java15.JConstNullExpr;
+import kiev.be.java15.JConstByteExpr;
+import kiev.be.java15.JConstShortExpr;
+import kiev.be.java15.JConstIntExpr;
+import kiev.be.java15.JConstLongExpr;
+import kiev.be.java15.JConstCharExpr;
+import kiev.be.java15.JConstFloatExpr;
+import kiev.be.java15.JConstDoubleExpr;
+import kiev.be.java15.JConstStringExpr;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.be.java.Instr.*;
+import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 

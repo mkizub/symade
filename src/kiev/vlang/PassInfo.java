@@ -5,7 +5,7 @@ import kiev.stdlib.*;
 import kiev.vlang.types.*;
 import java.io.*;
 
-import kiev.be.java.JLabel;
+import kiev.be.java15.JLabel;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

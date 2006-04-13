@@ -7,11 +7,11 @@ import kiev.transf.*;
 import kiev.vlang.types.*;
 import java.io.*;
 
-import kiev.be.java.JNode;
-import kiev.be.java.JDNode;
-import kiev.be.java.JTypeDecl;
-import kiev.be.java.JStruct;
-import kiev.ir.java.RStruct;
+import kiev.be.java15.JNode;
+import kiev.be.java15.JDNode;
+import kiev.be.java15.JTypeDecl;
+import kiev.be.java15.JStruct;
+import kiev.ir.java15.RStruct;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -51,7 +51,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@ref public NArr<Struct>				sub_clazz;
 	@ref public NArr<DNode>					imported;
 	@ref public NArr<TypeDecl>				direct_extenders;
-	public kiev.be.java.Attr[]				attrs = kiev.be.java.Attr.emptyArray;
+	public kiev.be.java15.Attr[]				attrs = kiev.be.java15.Attr.emptyArray;
 	@att public NArr<DNode>					members;
 		 private TypeProvider[]				super_types;
 

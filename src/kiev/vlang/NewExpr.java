@@ -7,19 +7,19 @@ import kiev.vlang.Operator.*;
 import kiev.vlang.types.*;
 import kiev.transf.*;
 
-import kiev.be.java.JNode;
-import kiev.be.java.JENode;
-import kiev.ir.java.RNewExpr;
-import kiev.be.java.JNewExpr;
-import kiev.ir.java.RNewArrayExpr;
-import kiev.be.java.JNewArrayExpr;
-import kiev.ir.java.RNewInitializedArrayExpr;
-import kiev.be.java.JNewInitializedArrayExpr;
-import kiev.be.java.JNewClosure;
-import kiev.ir.java.RNewClosure;
+import kiev.be.java15.JNode;
+import kiev.be.java15.JENode;
+import kiev.ir.java15.RNewExpr;
+import kiev.be.java15.JNewExpr;
+import kiev.ir.java15.RNewArrayExpr;
+import kiev.be.java15.JNewArrayExpr;
+import kiev.ir.java15.RNewInitializedArrayExpr;
+import kiev.be.java15.JNewInitializedArrayExpr;
+import kiev.be.java15.JNewClosure;
+import kiev.ir.java15.RNewClosure;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.be.java.Instr.*;
+import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 
