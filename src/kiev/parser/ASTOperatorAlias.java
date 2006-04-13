@@ -159,6 +159,8 @@ public final class ASTOperatorAlias extends ASTAlias {
 
 				Type opret = m.type.ret();
 				Type oparg1, oparg2;
+				if( prior == 0 )
+					prior = Constants.opAssignPriority;
 				if( prior != Constants.opAssignPriority )
 					throw new CompilerException(this,"Assign operator must have priority "+Constants.opAssignPriority);
 				if( m.isStatic() )

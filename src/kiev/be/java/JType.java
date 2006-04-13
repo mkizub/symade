@@ -1,5 +1,6 @@
 package kiev.be.java;
 
+import java.*;
 import kiev.Kiev;
 import kiev.CError;
 import kiev.vlang.*;

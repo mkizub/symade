@@ -126,7 +126,10 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seMethod;
 	final SyntaxElem seInitializer;
 	final SyntaxElem seRuleMethod;
-	
+	final SyntaxElem seMethodAlias;
+	final SyntaxElem seOperatorAlias;
+	final SyntaxElem seWBCCondition;
+
 	final SyntaxElem seExprStat;
 	final SyntaxElem seReturnStat;
 	final SyntaxElem seThrowStat;
@@ -289,6 +292,7 @@ public class JavaSyntax extends Syntax {
 	public JavaSyntax() {
 		DrawLayout lout_empty = new DrawLayout();
 		DrawLayout lout_nl = new DrawLayout(new SpaceCmd[]{new SpaceCmd(siNl,SP_ADD_AFTER,0)});
+		DrawLayout lout_nl_nl = new DrawLayout(new SpaceCmd[]{new SpaceCmd(siNl,SP_ADD_BEFORE,0),new SpaceCmd(siNl,SP_ADD_AFTER,0)});
 		DrawLayout lout_nl_grp = new DrawLayout(new SpaceCmd[]{new SpaceCmd(siNlGrp,SP_ADD_AFTER,0)});
 		{
 			DrawLayout lout_pkg = new DrawLayout(new SpaceCmd[]{
@@ -636,6 +640,7 @@ public class JavaSyntax extends Syntax {
 						sep(")")
 						)
 					),
+				par(plIndented, lst("conditions", lout_empty.ncopy())),
 				attr("body")
 				);
 			// method
@@ -648,6 +653,8 @@ public class JavaSyntax extends Syntax {
 						sep(")")
 						)
 					),
+				par(plIndented, lst("aliases", lout_empty.ncopy())),
+				par(plIndented, lst("conditions", lout_empty.ncopy())),
 				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty.ncopy())
 				);
 			// logical rule method
@@ -660,10 +667,37 @@ public class JavaSyntax extends Syntax {
 						sep(")")
 						)
 					),
+				par(plIndented, lst("aliases", lout_empty.ncopy())),
 				par(plIndented, lst("localvars", setl(lout_nl.ncopy(), node(), sep(";")), null, lout_nl.ncopy())),
 				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty.ncopy())
 				);
 			seInitializer = setl(lout_method.ncopy(), opt("meta"), init_prefix, attr("body"));
+			
+			seMethodAlias = setl(lout_nl_nl.ncopy(), kw("alias"), ident("name"));
+			seOperatorAlias = setl(lout_nl_nl.ncopy(),
+				kw("alias"),
+				alt_int("opmode",
+					kw("lfy"),
+					kw("xfx"),
+					kw("xfy"),
+					kw("yfx"),
+					kw("yfy"),
+					kw("xf"),
+					kw("yf"),
+					kw("fx"),
+					kw("fy"),
+					kw("xfxfy")
+					),
+				kw("operator"),
+				ident("image")
+				);
+			
+			seWBCCondition = opt("body",
+				setl(lout_nl_nl.ncopy(),
+					alt_enum("cond", kw("error"), kw("require"), kw("ensure"), kw("invariant")),
+					opt("name", set(sep("["), ident("name"), sep("]"))),
+					attr("body")
+				));
 		}
 		{
 			DrawLayout lout_code_block_start = new DrawLayout(new SpaceCmd[]{
@@ -999,6 +1033,9 @@ public class JavaSyntax extends Syntax {
 		case Constructor: return seConstructor;
 		case Method: return seMethod;
 		case Initializer: return seInitializer;
+		case ASTIdentifierAlias: return seMethodAlias;
+		case ASTOperatorAlias: return seOperatorAlias;
+		case WBCCondition: return seWBCCondition;
 		case Block: return seBlock;
 		case RuleBlock: return seRuleBlock;
 		case RuleOrExpr: return seRuleOrExpr;

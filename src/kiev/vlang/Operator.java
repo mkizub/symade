@@ -758,6 +758,8 @@ public class BinaryOperator extends Operator {
 	public static BinaryOperator newBinaryOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
 		BinaryOperator op = hash.get(img);
 		if( op != null ) {
+			if (pr == 0)
+				pr = op.priority;
 			// Verify priority, and instruction
 			if( op.priority != pr || op.smode != oa ) {
 				throw new RuntimeException("Wrong redeclaration of operator "+op+
@@ -798,6 +800,8 @@ public class MultiOperator extends Operator {
 	public static MultiOperator newMultiOperator(int pr, KString[] img, KString nm, boolean std) {
 		MultiOperator op = hash.get(img[0]);
 		if( op != null ) {
+			if (pr == 0)
+				pr = op.priority;
 			// Verify priority, and instruction
 			if( op.priority != pr || img.length != op.images.length ) {
 				throw new RuntimeException("Wrong redeclaration of operator "+op+
@@ -861,6 +865,8 @@ public class PrefixOperator extends Operator {
 	public static PrefixOperator newPrefixOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
 		PrefixOperator op = hash.get(img);
 		if( op != null ) {
+			if (pr == 0)
+				pr = op.priority;
 			// Verify priority, and instruction
 			if( op.priority != pr || op.smode != oa ) {
 				throw new RuntimeException("Wrong redeclaration of operator "+op+
@@ -903,6 +909,8 @@ public class PostfixOperator extends Operator {
 	public static PostfixOperator newPostfixOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
 		PostfixOperator op = hash.get(img);
 		if( op != null ) {
+			if (pr == 0)
+				pr = op.priority;
 			// Verify priority, and instruction
 			if( op.priority != pr || op.smode != oa ) {
 				throw new RuntimeException("Wrong redeclaration of operator "+op+

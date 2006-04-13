@@ -335,18 +335,15 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	public Type getType() {
 		try {
 			Type t = obj.getType();
-			if( t.isArray() ) {
+			if( t.isArray() )
 				return Type.getRealType(t,((ArrayType)t).arg);
-			}
-			else {
-				// Resolve overloaded access method
-				Method@ v;
-				CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
-				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
-					return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
-				return Type.getRealType(t,((Method)v).type.ret());
-			}
+			// Resolve overloaded access method
+			Method@ v;
+			CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
+			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+			if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
+				return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
+			return Type.getRealType(t,((Method)v).type.ret());
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
 			return Type.tpVoid;
@@ -362,26 +359,14 @@ public final class ContainerAccessExpr extends LvalueExpr {
 
 	public Type[] getAccessTypes() {
 		Type t = obj.getType();
-		if( t.isArray() ) {
+		if( t.isArray() )
 			return new Type[]{Type.getRealType(t,((ArrayType)t).arg)};
-		} else {
-			Struct s = t.getStruct();
-		lookup_op:
-			for(;;) {
-				s.checkResolved();
-				if (s instanceof Struct) {
-					Struct ss = (Struct)s;
-					foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
-						return new Type[]{Type.getRealType(t,((Method)n).type.ret())};
-				}
-				if( s.super_type != null ) {
-					s = s.super_type.clazz;
-					continue;
-				}
-				//throw new RuntimeException("Resolved object "+obj+" of type "+t+" is not an array and does not overrides '[]' operator");
-				return Type.emptyArray;
-			}
-		}
+		Method@ v;
+		CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
+		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+		if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
+			return Type.emptyArray; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
+		return new Type[]{Type.getRealType(t,((Method)v).type.ret())};
 	}
 
 	public Dumper toJava(Dumper dmp) {
