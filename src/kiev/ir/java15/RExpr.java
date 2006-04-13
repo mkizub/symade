@@ -1,4 +1,4 @@
-package kiev.ir.java;
+package kiev.ir.java15;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
@@ -766,6 +766,8 @@ public static final view RCastExpr of CastExpr extends RENode {
 		CallType mt = new CallType(Type.emptyArray,this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
 			ENode call = info.buildCall((ASTNode)this,~expr,(Method)v,info.mt,ENode.emptyArray);
+			if (call instanceof UnresExpr)
+				call = ((UnresExpr)call).toResolvedExpr();
 			if (this.type.getType().isReference())
 				call.setCastCall(true);
 			replaceWithNodeResolve(type.getType(),call);

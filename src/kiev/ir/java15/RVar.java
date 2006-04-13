@@ -1,4 +1,4 @@
-package kiev.ir.java;
+package kiev.ir.java15;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
