@@ -590,7 +590,7 @@ public class JavaSyntax extends Syntax {
 				);
 			seVarNoType = set(ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))));
 			// formal parameter
-			seFormPar = set(opt("meta"), var_prefix.ncopy(), ident("vtype"), ident("name")	);
+			seFormPar = set(opt("meta"), var_prefix.ncopy(), attr("vtype"), ident("name"));
 		}
 		{
 			DrawLayout lout_method_type_args = new DrawLayout(new SpaceCmd[]{
@@ -1052,8 +1052,10 @@ public class JavaSyntax extends Syntax {
 		case ConstExpr:
 			return seConstExpr;
 		case TypeRef:
-			if (hint != null && "call-accessor".equals(hint.text))
+			if (hint != null) {
+				if ("call-accessor".equals(hint.text))
 				return seStructRef;
+			}
 			return seTypeRef;
 		case Shadow: return seShadow;
 
