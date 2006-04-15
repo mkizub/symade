@@ -18,8 +18,9 @@ public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	static KString opPVar  = KString.from("@");
-	static KString opRef   = KString.from("&");
+	static KString opPVar   = KString.from("@");
+	static KString opRef    = KString.from("&");
+	static KString opWraper = KString.from("\u229b"); // ⊛
 	
 	@virtual typedef This  = TypeExpr;
 	@virtual typedef VView = VTypeExpr;
@@ -57,7 +58,11 @@ public class TypeExpr extends TypeRef {
 		DNode@ v;
 		if (op == Constants.nameArrayOp) {
 			tp = new ArrayType(tp);
-		} else {
+		}
+		else if (op == opWraper) {
+			tp = new WrapperType((CompaundType)tp);
+		}
+		else {
 			Type t;
 			if (!PassInfo.resolveNameR(((TypeExpr)this),v,new ResInfo(this),op)) {
 				if (op == opPVar) {

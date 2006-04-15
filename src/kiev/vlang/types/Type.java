@@ -815,7 +815,7 @@ public final class WrapperType extends CTimeType {
 	}
 
 	public String toString() {
-		return getEnclosedType().toString();
+		return getEnclosedType().toString()+'\u229b'; // PVar<String>⊛ - wrapper type for PVar<String>
 	}
 	public Dumper toJava(Dumper dmp) {
 		return getEnclosedType().toJava(dmp);

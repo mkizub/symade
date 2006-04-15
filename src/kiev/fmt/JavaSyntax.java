@@ -343,7 +343,17 @@ public class JavaSyntax extends Syntax {
 				ident("prior"),
 				sep(";")
 				);
-			seTypeAssign = setl(lout_nl.ncopy(), kw("typedef"), ident("name"), oper("="), attr("type_ref"), sep(";"));
+			SyntaxElem typedef_prefix = setl(lout_empty.ncopy(),
+					opt("meta"),
+//					jflag(1,12,1, "@synthetic"),
+					jflag(1,16,1, "@forward"),
+					jflag(1,17,1, "@virtual"),
+//					jflag(1,18,1, "@unerasable"),
+					jflag(1,3,1,  "static"),
+					jflag(1,4,1,  "final"),
+					jflag(1,10,1, "abstract")
+					);
+			seTypeAssign = setl(lout_nl.ncopy(), typedef_prefix.ncopy(), kw("typedef"), ident("name"), oper("="), attr("type_ref"), sep(";"));
 			
 			seTypeConstrClassArg = setl(lout_empty.ncopy(), ident("name"),
 				opt("upper_bound",
@@ -370,7 +380,7 @@ public class JavaSyntax extends Syntax {
 					null, lout_empty.ncopy()
 					)
 				);
-			seTypeConstr = setl(lout_nl.ncopy(), kw("typedef"), ident("name"), 
+			seTypeConstr = setl(lout_nl.ncopy(), typedef_prefix.ncopy(), kw("typedef"), ident("name"), 
 				lst("upper_bound", set(oper("\u2264"), node()), null, lout_empty.ncopy()),
 				lst("lower_bound", set(oper("\u2265"), node()), null, lout_empty.ncopy()),
 				sep(";")
@@ -799,7 +809,7 @@ public class JavaSyntax extends Syntax {
 				);
 			seForEachStat = set(
 				kw("foreach"),
-				setl(lout_cond.ncopy(), sep("("), attr("var"), sep(";"), attr("container"), opt("cond", set(sep(";"), attr("cond"))), sep(")")),
+				setl(lout_cond.ncopy(), sep("("), opt("var", set(attr("var"), sep(";"))), attr("container"), opt("cond", set(sep(";"), attr("cond"))), sep(")")),
 				par(plStatIndented, attr("body"))
 				);
 			
