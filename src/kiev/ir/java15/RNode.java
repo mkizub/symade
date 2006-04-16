@@ -218,10 +218,8 @@ public final view RLocalStructDecl of LocalStructDecl extends RENode {
 
 @nodeview
 public final view RNopExpr of NopExpr extends RENode {
-	public ENode		expr;
 
 	public void resolve(Type reqType) {
-		expr.resolve(reqType);
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);

@@ -1265,30 +1265,24 @@ public final class NopExpr extends ENode {
 
 	public static final AttrSlot ATTR = new DataAttrSlot("temp expr",true,ENode.class);	
 
-	@dflow(out="expr") private static class DFI {
-	@dflow(in="this:in")	ENode	expr;
-	}
+	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = NopExpr;
 	@virtual typedef VView = VNopExpr;
 	@virtual typedef RView = RNopExpr;
 
-	@att public ENode	expr;
-
 	@nodeview
 	public static final view VNopExpr of NopExpr extends VENode {
-		public ENode		expr;
 	}
 
 	public NopExpr() {}
 	
-	public NopExpr(ENode expr) {
-		this.pos = expr.pos;
-		this.expr = expr;
-	}
-	
+	public String toString() { return ""; }
+
+	public Dumper toJava(Dumper dmp) { return dmp; }
+
 	public Type getType() {
-		return expr.getType();
+		return Type.tpVoid;
 	}
 }
 

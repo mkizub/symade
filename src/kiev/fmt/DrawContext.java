@@ -22,7 +22,6 @@ public class DrawContext implements Cloneable {
 	public boolean					line_started;
 	public Vector<SpaceCmd>			space_infos;
 	public Stack<DrawParagraph>		paragraphs;
-	public int						expr_priority;
 	private DrawTerm				last_term;
 	private DrawContext				prev_ctx;
 	

@@ -105,6 +105,7 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seStructInterface;
 	final SyntaxElem seStructAnnotation;
 	final SyntaxElem seStructEnum;
+	final SyntaxElem seStructCase;
 	final SyntaxElem seStructSyntax;
 	final SyntaxElem seStructView;
 	final SyntaxElem seStructBody;
@@ -205,6 +206,7 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seCommaExpr;
 	final SyntaxElem seConditionalExpr;
 	final SyntaxElem seCastExpr;
+	final SyntaxElem seNopExpr;
 	
 	final Hashtable<Operator, SyntaxElem> exprs;
 	
@@ -405,6 +407,7 @@ public class JavaSyntax extends Syntax {
 				});
 			SyntaxElem struct_prefix = setl(lout_struct_hdr.ncopy(),
 					attr("meta"),
+					opt("singleton", new CalcOption() {public boolean calc(ASTNode node) {return ((Struct)node).isSingleton();}}, kw("@singleton"), null, lout_empty.ncopy()),
 //					jflag(1,12,1, "@synthetic"),
 					jflag(1,18,1, "@unerasable"),
 					jflag(1,3,1,  "static"),
@@ -461,7 +464,7 @@ public class JavaSyntax extends Syntax {
 					sep("}", lout_struct_block_end)
 					);
 			// class
-			seStructClass = setl(lout_empty.ncopy(),
+			seStructClass = set(
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						accs(),
@@ -473,7 +476,7 @@ public class JavaSyntax extends Syntax {
 					seStructBody.ncopy()
 				);
 			// interface
-			seStructInterface = setl(lout_empty.ncopy(),
+			seStructInterface = set(
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						accs(),
@@ -484,7 +487,7 @@ public class JavaSyntax extends Syntax {
 					seStructBody.ncopy()
 				);
 			// view
-			seStructView = setl(lout_empty.ncopy(),
+			seStructView = set(
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						accs(),
@@ -498,7 +501,7 @@ public class JavaSyntax extends Syntax {
 					seStructBody.ncopy()
 				);
 			// annotation
-			seStructAnnotation = setl(lout_empty.ncopy(),
+			seStructAnnotation = set(
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						accs(),
@@ -507,7 +510,7 @@ public class JavaSyntax extends Syntax {
 					seStructBody.ncopy()
 				);
 			// syntax
-			seStructSyntax = setl(lout_empty.ncopy(),
+			seStructSyntax = set(
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						accs(),
@@ -516,6 +519,40 @@ public class JavaSyntax extends Syntax {
 					seStructBody.ncopy()
 				);
 
+			// case
+			SyntaxElem case_prefix = setl(lout_struct_hdr.ncopy(),
+					attr("meta"),
+					jflag(1,18,1, "@unerasable")
+					);
+			SyntaxList case_fields = lst("members",
+				set(attr("meta"), ident("ftype"), ident("name")),
+				sep(","),
+				lout_empty.ncopy()
+				);
+			case_fields.filter = new CalcOption() {
+				public boolean calc(ASTNode node) { return node instanceof Field && !node.isSynthetic(); }
+			};
+			seStructCase = setl(lout_nl_grp.ncopy(),
+					case_prefix,
+					accs(),
+					kw("case"),
+					ident("short_name"),
+					struct_args.ncopy(),
+					opt("singleton",
+						new CalcOption() {
+							public boolean calc(ASTNode node) { return !((Struct)node).isSingleton(); }
+						},
+						set(
+							sep("("),
+							case_fields,
+							sep(")")
+							),
+						null,
+						lout_empty.ncopy()
+						),
+					sep(";")
+				);
+			// enum
 			SyntaxList enum_fields = lst("members",attr("name"),sep(","),lout_empty.ncopy());
 			enum_fields.filter = new CalcOption() {
 				public boolean calc(ASTNode node) {
@@ -532,8 +569,7 @@ public class JavaSyntax extends Syntax {
 					return true;
 				}
 			};
-			// enum
-			seStructEnum = setl(lout_empty.ncopy(),
+			seStructEnum = set(
 					setl(lout_struct_hdr.ncopy(),
 						struct_prefix.ncopy(),
 						accs(),
@@ -901,7 +937,7 @@ public class JavaSyntax extends Syntax {
 		seLVarExpr = ident("ident");
 		seSFldExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
 		seOuterThisAccessExpr = set(ident("outer"), sep("."), kw("this"));
-		seReinterpExpr = set(sep("("), kw("$reinterp"), attr("type"), sep(")"), attr("expr"));
+		seReinterpExpr = set(sep("("), kw("$reinterp"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
 		
 		seBinaryBooleanOrExpr = expr("expr1", BinaryOperator.BooleanOr, "expr2");
 		seBinaryBooleanAndExpr = expr("expr1", BinaryOperator.BooleanAnd, "expr2");
@@ -1000,7 +1036,9 @@ public class JavaSyntax extends Syntax {
 			oper(":"),
 			expr("expr2", MultiOperator.opConditionalPriority)
 			);
-		seCastExpr = set(sep("("), kw("$cast"), attr("type"), sep(")"), attr("expr"));
+		seCastExpr = set(sep("("), kw("$cast"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
+		seNopExpr = new SyntaxSpace(new DrawLayout());
+		seNopExpr.is_hidden = true;
 	}
 	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
 		switch (node) {
@@ -1020,6 +1058,8 @@ public class JavaSyntax extends Syntax {
 			Struct s = (Struct)node;
 			if (s.isEnum())
 				return seStructEnum;
+			if (s.isPizzaCase())
+				return seStructCase;
 			if (s.isSyntax())
 				return seStructSyntax;
 			if (s.isStructView())
@@ -1126,6 +1166,7 @@ public class JavaSyntax extends Syntax {
 		case TypeInfoExpr: return seTypeInfoExpr;
 		case ConditionalExpr: return seConditionalExpr;
 		case CastExpr: return seCastExpr;
+		case NopExpr: return seNopExpr;
 
 		case NewExpr: return seNewExpr;
 		case NewArrayExpr: return seNewArrayExpr;

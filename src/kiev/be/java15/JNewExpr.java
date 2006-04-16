@@ -102,7 +102,6 @@ public final view JNewExpr of NewExpr extends JENode {
 public final view JNewArrayExpr of NewArrayExpr extends JENode {
 	public:ro	Type				type;
 	public:ro	JArr<JENode>		args;
-	public:ro	int					dim;
 	public:ro	Type				arrtype;
 	
 	public void generate(Code code, Type reqType) {
@@ -110,13 +109,19 @@ public final view JNewArrayExpr of NewArrayExpr extends JENode {
 		Type type = this.type;
 		JENode[] args = this.args.toArray();
 		code.setLinePos(this);
-		if( dim == 1 ) {
+		if( args.length == 1 ) {
 			args[0].generate(code,null);
 			code.addInstr(Instr.op_newarray,type);
 		} else {
-			for(int i=0; i < args.length; i++)
-				args[i].generate(code,null);
-			code.addInstr(Instr.op_multianewarray,arrtype,args.length);
+			int n = 0;
+			for(int i=0; i < args.length; i++) {
+				JENode arg = args[i];
+				if !(((ENode)arg) instanceof NopExpr) {
+					arg.generate(code,null);
+					n++;
+				}
+			}
+			code.addInstr(Instr.op_multianewarray,arrtype,n);
 		}
 		if( reqType ≡ Type.tpVoid ) code.addInstr(Instr.op_pop);
 	}

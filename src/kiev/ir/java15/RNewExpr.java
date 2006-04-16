@@ -91,7 +91,6 @@ public static final view RNewExpr of NewExpr extends RENode {
 public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 	public		TypeRef				type;
 	public:ro	NArr<ENode>			args;
-	public		int					dim;
 	public		ArrayType			arrtype;
 
 	@getter public final Type	get$arrtype();
@@ -113,7 +112,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
 			ENode ti = ((RStruct)ctx_clazz).accessTypeInfoField((NewArrayExpr)this,type,false);
-			if( dim == 1 ) {
+			if( args.size() == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
 						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt),

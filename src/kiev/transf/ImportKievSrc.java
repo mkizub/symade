@@ -410,7 +410,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				foreach (TypeDef a; clazz.args)
 					a.setTypeUnerasable(true);
 			}
-			clazz.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
+			if (!clazz.instanceOf(Type.tpTypeInfoInterface.clazz))
+				clazz.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
 		}
 
 		clazz.setArgsResolved(true);
@@ -601,7 +602,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		if (me.isSingleton()) {
 			me.setFinal(true);
 			if (me.resolveField(nameInstance, false) == null) {
-				Field inst = new Field(nameInstance, me.ctype, ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
+				Field inst = new Field(nameInstance, me.ctype, ACC_STATIC|ACC_FINAL|ACC_PUBLIC|ACC_SYNTHETIC);
 				inst.pos = me.pos;
 				inst.init = new NewExpr(me.pos, me.ctype, ENode.emptyArray);
 				me.addField(inst);

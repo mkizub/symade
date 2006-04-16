@@ -2659,7 +2659,7 @@ NewExpr NewExpression() :
 }
 
 NewArrayExpr NewArrayExpression() :
-{ int dim=0; NewArrayExpr ne = new NewArrayExpr(); ne.pos = getToken(1).getPos(); }
+{ NewArrayExpr ne = new NewArrayExpr(); ne.pos = getToken(1).getPos(); }
 {
 	"new"
 	ne.type = NArrType()
@@ -2668,14 +2668,12 @@ NewArrayExpr NewArrayExpression() :
 		"["
 		ne.args += ExpressionNT(null)
 		"]"
-		{ dim += 1; }
 	)+
 	(
 		<OPERATOR_LRBRACKETS>
-		{ dim += 1; }
+		{ ne.args += new NopExpr(); }
 	)*
 	{
-		ne.dim = dim;
 		return ne;
 	}
 }

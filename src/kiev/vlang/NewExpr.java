@@ -194,24 +194,21 @@ public final class NewArrayExpr extends ENode {
 
 	@att public TypeRef				type;
 	@att public NArr<ENode>			args;
-	@att public int					dim;
 	     public ArrayType			arrtype;
 
 	@nodeview
 	public static final view VNewArrayExpr of NewArrayExpr extends VENode {
 		public		TypeRef				type;
 		public:ro	NArr<ENode>			args;
-		public		int					dim;
 		public		ArrayType			arrtype;
 	}
 
 	public NewArrayExpr() {}
 
-	public NewArrayExpr(int pos, TypeRef type, ENode[] args, int dim) {
+	public NewArrayExpr(int pos, TypeRef type, ENode[] args) {
 		this.pos = pos;
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
-		this.dim = dim;
 	}
 
 	public ArrayType get$arrtype() {
@@ -219,7 +216,7 @@ public final class NewArrayExpr extends ENode {
 		if (art != null)
 			return art;
 		art = new ArrayType(type.getType());
-		for(int i=1; i < dim; i++) art = new ArrayType(art);
+		for(int i=1; i < args.size(); i++) art = new ArrayType(art);
 		this.arrtype = art;
 		return art;
 	}
@@ -231,9 +228,10 @@ public final class NewArrayExpr extends ENode {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("new ").append(type.toString());
-		for(int i=0; i < dim; i++) {
+		for(int i=0; i < args.size(); i++) {
 			sb.append('[');
-			if( i < args.length && args[i] != null ) sb.append(args[i].toString());
+			ENode arg = args[i];
+			sb.append(arg.toString());
 			sb.append(']');
 		}
 		return sb.toString();
@@ -241,9 +239,10 @@ public final class NewArrayExpr extends ENode {
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("new ").append(type);
-		for(int i=0; i < dim; i++) {
+		for(int i=0; i < args.size(); i++) {
 			dmp.append('[');
-			if( i < args.length && args[i] != null ) args[i].toJava(dmp);
+			ENode arg = args[i];
+			arg.toJava(dmp);
 			dmp.append(']');
 		}
 		return dmp;

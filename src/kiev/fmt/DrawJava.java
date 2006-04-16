@@ -30,23 +30,17 @@ public class DrawJavaExpr extends DrawNonTermSet {
 	public void preFormat(DrawContext cont) {
 		if (this.isUnvisible())
 			return;
-		int old_priority = cont.expr_priority;
 		SyntaxJavaExpr se = (SyntaxJavaExpr)this.syntax;
-		int priority = se.priority;
 		args[0].geometry.is_hidden = true;
 		args[2].geometry.is_hidden = true;
-		if ((node instanceof ENode) && (((ENode)node).isPrimaryExpr() || ((ENode)node).getPriority() < cont.expr_priority)) {
+		if ((node instanceof ENode) && (((ENode)node).isPrimaryExpr() || ((ENode)node).getPriority() < se.priority)) {
 			args[0].geometry.is_hidden = false;
 			args[2].geometry.is_hidden = false;
-			priority = 0;
 		}
-		cont.expr_priority = priority;
-		try {
-			for (int i=0; i < args.length; i++) {
-				Drawable dr = args[i];
-				dr.preFormat(cont);
-			}
-		} finally { cont.expr_priority = old_priority; }
+		for (int i=0; i < args.length; i++) {
+			Drawable dr = args[i];
+			dr.preFormat(cont);
+		}
 	}
 }
 
