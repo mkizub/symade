@@ -135,7 +135,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 					mpr.setSize(mpr.getSize() + mp.getSize());
 				} else {
 					// Create
-					Field p = new Field(KString.from("$pack$"+countPackerFields(s)),Type.tpInt,ACC_PUBLIC);
+					Field p = new Field(KString.from("$pack$"+countPackerFields(s)),Type.tpInt,ACC_PUBLIC|ACC_SYNTHETIC);
 					p.pos = s.pos;
 					MetaPacker mpr = new MetaPacker();
 					p.addNodeData(mpr, MetaPacker.ATTR);

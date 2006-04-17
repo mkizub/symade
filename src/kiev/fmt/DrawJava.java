@@ -173,4 +173,26 @@ public class DrawJavaEnumAlias extends DrawTerm {
 	public String getText() { return this.text; }
 }
 
+@node
+public class DrawJavaPackedField extends DrawTerm {
+
+	private String text;
+	
+	public DrawJavaPackedField() {}
+	public DrawJavaPackedField(ASTNode node, SyntaxJavaPackedField syntax) {
+		super(node, syntax);
+	}
+
+	public void preFormat(DrawContext cont) {
+		MetaPacked mp = ((Field)node).getMetaPacked();
+		text = "@packed("+mp.size;
+		if (mp.fld != null)
+			text += ","+mp.fld+","+mp.offset;
+		text += ")";
+		super.preFormat(cont);
+	}
+
+	public String getText() { return this.text; }
+}
+
 

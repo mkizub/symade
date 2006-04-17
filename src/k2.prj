@@ -202,6 +202,7 @@ kiev.fmt.DrawIntChoice kiev/fmt/DrawIntChoice kiev\fmt\DrawCtrl.java
 kiev.fmt.DrawJavaAccess kiev/fmt/DrawJavaAccess kiev\fmt\DrawJava.java
 kiev.fmt.DrawJavaEnumAlias kiev/fmt/DrawJavaEnumAlias kiev\fmt\DrawJava.java
 kiev.fmt.DrawJavaExpr kiev/fmt/DrawJavaExpr kiev\fmt\DrawJava.java
+kiev.fmt.DrawJavaPackedField kiev/fmt/DrawJavaPackedField kiev\fmt\DrawJava.java
 kiev.fmt.DrawJavaType kiev/fmt/DrawJavaType kiev\fmt\DrawJava.java
 kiev.fmt.DrawKeyword kiev/fmt/DrawKeyword kiev\fmt\DrawTerm.java
 kiev.fmt.DrawLayout kiev/fmt/DrawLayout kiev\fmt\SyntaxLayout.java
@@ -236,6 +237,7 @@ kiev.fmt.SyntaxIntChoice kiev/fmt/SyntaxIntChoice kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxJavaAccess kiev/fmt/SyntaxJavaAccess kiev\fmt\JavaSyntax.java
 kiev.fmt.SyntaxJavaEnumAlias kiev/fmt/SyntaxJavaEnumAlias kiev\fmt\JavaSyntax.java
 kiev.fmt.SyntaxJavaExpr kiev/fmt/SyntaxJavaExpr kiev\fmt\JavaSyntax.java
+kiev.fmt.SyntaxJavaPackedField kiev/fmt/SyntaxJavaPackedField kiev\fmt\JavaSyntax.java
 kiev.fmt.SyntaxJavaType kiev/fmt/SyntaxJavaType kiev\fmt\JavaSyntax.java
 kiev.fmt.SyntaxKeyword kiev/fmt/SyntaxKeyword kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxList kiev/fmt/SyntaxList kiev\fmt\SyntaxLayout.java
@@ -519,6 +521,7 @@ kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
 kiev.vlang.Initializer kiev/vlang/Initializer kiev\vlang\Method.java
 kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java
 kiev.vlang.InstanceofExpr kiev/vlang/InstanceofExpr kiev\vlang\BooleanExpr.java
+kiev.vlang.IntRadix kiev/vlang/IntRadix kiev\vlang\ConstExpr.java
 kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
 kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.Label kiev/vlang/Label kiev\vlang\LoopStatement.java

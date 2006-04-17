@@ -97,6 +97,23 @@ public class SyntaxJavaEnumAlias extends SyntaxElem {
 }
 
 
+@node
+public class SyntaxJavaPackedField extends SyntaxElem {
+	@virtual typedef This  = SyntaxJavaPackedField;
+
+	public SyntaxJavaPackedField() {}
+	public SyntaxJavaPackedField(DrawLayout layout) {
+		super(layout);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawJavaPackedField(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+
 public class CalcOptionJavaFlag implements CalcOption {
 	private final int mask;
 	private final int offs;
@@ -583,7 +600,7 @@ public class JavaSyntax extends Syntax {
 						lout_empty.ncopy()
 						)
 					),
-				sep(","),
+				sep_nl(","),
 				lout_empty.ncopy());
 			enum_fields.filter = new CalcOption() {
 				public boolean calc(ASTNode node) {
@@ -644,6 +661,14 @@ public class JavaSyntax extends Syntax {
 //					jflag(1,12,1, "@synthetic"),
 					jflag(1,16,1, "@forward"),
 					jflag(1,17,1, "@virtual"),
+					opt("packed",
+						new CalcOption() {
+							public boolean calc(ASTNode node) {return ((Field)node).isPackedField();}
+						},
+						new SyntaxJavaPackedField(lout_empty.ncopy()),
+						null,
+						lout_empty.ncopy()
+						),
 					jflag(1,3,1,  "static"),
 					jflag(1,4,1,  "final"),
 					jflag(1,6,1,  "volatile"),
@@ -667,7 +692,22 @@ public class JavaSyntax extends Syntax {
 				);
 			seVarNoType = set(ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))));
 			// formal parameter
-			seFormPar = set(opt("meta"), var_prefix.ncopy(), attr("vtype"), ident("name"));
+			seFormPar = set(opt("meta"),
+				var_prefix.ncopy(),
+				attr("vtype"),
+				opt("stype",
+					new CalcOption() {
+						public boolean calc(ASTNode node) {
+							FormPar fp = (FormPar)node;
+							return fp.stype != null && fp.vtype.getType() ≉ fp.stype.getType();
+						}
+					},
+					set(sep0(":"), attr("stype")),
+					null,
+					lout_empty.ncopy()
+					),
+				ident("name")
+				);
 		}
 		{
 			DrawLayout lout_method_type_args = new DrawLayout(new SpaceCmd[]{
@@ -964,7 +1004,14 @@ public class JavaSyntax extends Syntax {
 		seAccessExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
 		seIFldExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
 		seContainerAccessExpr = set(expr("obj", Constants.opContainerElementPriority), sep("["), attr("index"), sep("]"));
-		seThisExpr = kw("this");
+		seThisExpr = opt("super",
+						new CalcOption() {
+							public boolean calc(ASTNode node) { return !((ThisExpr)node).isSuperExpr(); }
+						},
+						kw("this"),
+						kw("super"),
+						lout_empty.ncopy()
+						);
 		seLVarExpr = ident("ident");
 		seSFldExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
 		seOuterThisAccessExpr = set(ident("outer"), sep("."), kw("this"));

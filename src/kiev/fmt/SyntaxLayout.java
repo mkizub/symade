@@ -158,6 +158,23 @@ public class Syntax {
 		return new SyntaxSeparator(sep,lout);
 	}
 
+	protected SyntaxSeparator sep0(String sep)
+	{
+		DrawLayout lout = new DrawLayout();
+		return new SyntaxSeparator(sep,lout);
+	}
+
+	protected SyntaxSeparator sep_nl(String sep)
+	{
+		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+				new SpaceCmd(siSpWORD, SP_EAT_BEFORE, 0),
+				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
+				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
+				new SpaceCmd(siNl,     SP_ADD_AFTER, 0),
+			});
+		return new SyntaxSeparator(sep,lout);
+	}
+
 	protected SyntaxOperator oper(Operator op)
 	{
 		return oper(op.toString());

@@ -31,6 +31,11 @@ import syntax kiev.Syntax;
  *
  */
 
+enum IntRadix {
+	RADIX_DEC,
+	RADIX_HEX,
+	RADIX_OCT
+}
 
 @node
 public final class ConstBoolExpr extends ConstExpr {
@@ -61,7 +66,7 @@ public final class ConstBoolExpr extends ConstExpr {
 		return false;
 	}
 
-	public String	toString()			{ return String.valueOf(value); }
+	public String	toString() { return String.valueOf(value); }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(String.valueOf(value)).space();
@@ -105,7 +110,8 @@ public final class ConstByteExpr extends ConstExpr {
 	@virtual typedef VView = VConstByteExpr;
 	@virtual typedef JView = JConstByteExpr;
 
-	@att public byte value;
+	@att public byte		value;
+	@att public IntRadix	radix;
 
 	@nodeview
 	public static view VConstByteExpr of ConstByteExpr extends VConstExpr {
@@ -125,7 +131,13 @@ public final class ConstByteExpr extends ConstExpr {
 		return false;
 	}
 
-	public String	toString()			{ return String.valueOf(value); }
+	public String	toString() {
+		if (radix == IntRadix.RADIX_OCT)
+			return "0"+Integer.toOctalString(value);
+		if (radix == IntRadix.RADIX_HEX)
+			return "0x"+Integer.toHexString(value);
+		return Integer.toString(value);
+	}
 }
 
 @node
@@ -137,7 +149,8 @@ public final class ConstShortExpr extends ConstExpr {
 	@virtual typedef VView = VConstShortExpr;
 	@virtual typedef JView = JConstShortExpr;
 
-	@att public short value;
+	@att public short		value;
+	@att public IntRadix	radix;
 
 	@nodeview
 	public static view VConstShortExpr of ConstShortExpr extends VConstExpr {
@@ -157,7 +170,13 @@ public final class ConstShortExpr extends ConstExpr {
 		return false;
 	}
 
-	public String	toString()			{ return String.valueOf(value); }
+	public String	toString() {
+		if (radix == IntRadix.RADIX_OCT)
+			return "0"+Integer.toOctalString(value);
+		if (radix == IntRadix.RADIX_HEX)
+			return "0x"+Integer.toHexString(value);
+		return Integer.toString(value);
+	}
 }
 
 @node
@@ -169,7 +188,8 @@ public final class ConstIntExpr extends ConstExpr {
 	@virtual typedef VView = VConstIntExpr;
 	@virtual typedef JView = JConstIntExpr;
 
-	@att public int value;
+	@att public int			value;
+	@att public IntRadix	radix;
 
 	@nodeview
 	public static view VConstIntExpr of ConstIntExpr extends VConstExpr {
@@ -189,7 +209,13 @@ public final class ConstIntExpr extends ConstExpr {
 		return false;
 	}
 
-	public String	toString()			{ return String.valueOf(value); }
+	public String	toString() {
+		if (radix == IntRadix.RADIX_HEX || value == Integer.MIN_VALUE)
+			return "0x"+Integer.toHexString(value);
+		if (radix == IntRadix.RADIX_OCT)
+			return "0"+Integer.toOctalString(value);
+		return Integer.toString(value);
+	}
 }
 
 @node
@@ -201,7 +227,8 @@ public final class ConstLongExpr extends ConstExpr {
 	@virtual typedef VView = VConstLongExpr;
 	@virtual typedef JView = JConstLongExpr;
 
-	@att public long value;
+	@att public long		value;
+	@att public IntRadix	radix;
 
 	@nodeview
 	public static view VConstLongExpr of ConstLongExpr extends VConstExpr {
@@ -221,7 +248,13 @@ public final class ConstLongExpr extends ConstExpr {
 		return false;
 	}
 
-	public String	toString()			{ return String.valueOf(value)+"L"; }
+	public String	toString() {
+		if (radix == IntRadix.RADIX_HEX || value == Long.MIN_VALUE)
+			return "0x"+Long.toHexString(value)+"L";
+		if (radix == IntRadix.RADIX_OCT)
+			return "0"+Long.toOctalString(value)+"L";
+		return Long.toString(value)+"L";
+	}
 }
 
 @node
@@ -439,6 +472,11 @@ public abstract class ConstExpr extends ENode {
 				else { image = t.image; radix = 10; }
 				long i = ConstExpr.parseLong(image,radix);
 				ce = new ConstIntExpr((int)i);
+				switch (radix) {
+				case 16: ce.radix = IntRadix.RADIX_HEX; break;
+				case  8: ce.radix = IntRadix.RADIX_OCT; break;
+				default: ce.radix = IntRadix.RADIX_DEC; break;
+				}
 				break;
 			}
 			case ParserConstants.LONG_INTEGER_LITERAL:
@@ -450,6 +488,11 @@ public abstract class ConstExpr extends ENode {
 				else { image = t.image.substring(0,t.image.length()-1); radix = 10; }
 				long l = ConstExpr.parseLong(image,radix);
 				ce = new ConstLongExpr(l);
+				switch (radix) {
+				case 16: ce.radix = IntRadix.RADIX_HEX; break;
+				case  8: ce.radix = IntRadix.RADIX_OCT; break;
+				default: ce.radix = IntRadix.RADIX_DEC; break;
+				}
 				break;
 			}
 			case ParserConstants.FLOATING_POINT_LITERAL:
