@@ -63,7 +63,7 @@ public class SyntaxJavaAccess extends SyntaxElem {
 
 @node
 public class SyntaxJavaType extends SyntaxElem {
-	@virtual typedef This  = SyntaxJavaAccess;
+	@virtual typedef This  = SyntaxJavaType;
 
 	public FormatInfoHint hint;
 	
@@ -75,6 +75,22 @@ public class SyntaxJavaType extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
 		Drawable dr = new DrawJavaType(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
+public class SyntaxJavaEnumAlias extends SyntaxElem {
+	@virtual typedef This  = SyntaxJavaEnumAlias;
+
+	public SyntaxJavaEnumAlias() {}
+	public SyntaxJavaEnumAlias(DrawLayout layout) {
+		super(layout);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawJavaEnumAlias(node, this);
 		dr.init(fmt);
 		return dr;
 	}
@@ -553,7 +569,22 @@ public class JavaSyntax extends Syntax {
 					sep(";")
 				);
 			// enum
-			SyntaxList enum_fields = lst("members",attr("name"),sep(","),lout_empty.ncopy());
+			SyntaxList enum_fields = lst("members",
+				set(
+					attr("name"),
+					opt("alias",
+						new CalcOption() {
+							public boolean calc(ASTNode node) {
+								return ((Field)node).getMetaAlias() != null;
+							}
+						},
+						set(sep(":"), new SyntaxJavaEnumAlias(lout_empty.ncopy())),
+						null,
+						lout_empty.ncopy()
+						)
+					),
+				sep(","),
+				lout_empty.ncopy());
 			enum_fields.filter = new CalcOption() {
 				public boolean calc(ASTNode node) {
 					if (node instanceof Field && node.isEnumField())

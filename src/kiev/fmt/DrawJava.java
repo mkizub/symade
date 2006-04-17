@@ -149,4 +149,28 @@ public class DrawJavaType extends DrawTerm {
 	public String getText() { return this.text; }
 }
 
+@node
+public class DrawJavaEnumAlias extends DrawTerm {
+	
+	private String text;
+	
+	public DrawJavaEnumAlias() {}
+	public DrawJavaEnumAlias(ASTNode node, SyntaxJavaEnumAlias syntax) {
+		super(node, syntax);
+	}
+
+	public void preFormat(DrawContext cont) {
+		Field f = (Field)node;
+		KString str = f.name.name;
+		if (f.name.aliases != List.Nil) {
+			str = f.name.aliases.head();
+			str = str.substr(1,str.length()-1);
+		}
+		text = "\""+str+"\"";
+		super.preFormat(cont);
+	}	
+	
+	public String getText() { return this.text; }
+}
+
 

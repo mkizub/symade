@@ -199,7 +199,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				clz_expr
 			});
 			KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
-			Field af = s.addField(new Field(fname, atp, ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+			Field af = s.addField(new Field(fname, atp, ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 			af.init = e;
 			vals_init[i] = new SFldExpr(af.pos, af);
 			if (f.parent != s)
@@ -209,11 +209,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					new ThisExpr(),
 					new SFldExpr(f.pos, af)
 				});
+				f.init.setHidden(true);
 			}
 			if (isAtt && !isArr)
 				f.setVirtual(true);
 		}
-		Field vals = s.addField(new Field(nameEnumValuesFld, new ArrayType(atp), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+		Field vals = s.addField(new Field(nameEnumValuesFld, new ArrayType(atp), ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 		vals.init = new NewInitializedArrayExpr(0, new TypeRef(atp), 1, vals_init);
 		// AttrSlot[] values() { return $values; }
 		if (hasMethod(s, nameEnumValues)) {

@@ -569,7 +569,14 @@ public class CalcOptionNotNull implements CalcOption {
 	private final String name;
 	public CalcOptionNotNull(String name) { this.name = name.intern(); } 
 	public boolean calc(ASTNode node) {
-		return node != null && node.getVal(name) != null;
+		if (node == null)
+			return false;
+		Object obj = node.getVal(name);
+		if (obj == null)
+			return false;
+		if (obj instanceof ASTNode && obj.isHidden())
+			return false;
+		return true;
 	}
 }
 
