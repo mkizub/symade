@@ -187,6 +187,7 @@ kiev.bytecode.UnicodePoolConstant kiev/bytecode/UnicodePoolConstant kiev\bytecod
 kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
+kiev.fmt.AbstractFormatter kiev/fmt/AbstractFormatter kiev\fmt\Formatter.java
 kiev.fmt.CalcOption kiev/fmt/CalcOption kiev\fmt\SyntaxLayout.java
 kiev.fmt.CalcOptionJavaFlag kiev/fmt/CalcOptionJavaFlag kiev\fmt\JavaSyntax.java
 kiev.fmt.CalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev\fmt\SyntaxLayout.java
@@ -434,6 +435,7 @@ kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java
 kiev.stdlib.meta.unerasable kiev/stdlib/meta/unerasable kiev\stdlib\meta\unerasable.java
 kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\BackendProcessor.java
+kiev.transf.GuiBackend kiev/transf/GuiBackend kiev\transf\ImportKievSrc.java
 kiev.transf.ImportKievSrc kiev/transf/ImportKievSrc kiev\transf\ImportKievSrc.java
 kiev.transf.JavaBackend kiev/transf/JavaBackend kiev\transf\ImportKievSrc.java
 kiev.transf.JavaPackedFldBackend kiev/transf/JavaPackedFldBackend kiev\transf\ProcessPackedFld.java

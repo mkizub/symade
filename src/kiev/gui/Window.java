@@ -38,7 +38,7 @@ public class Window extends JFrame {
 	Canvas edit_canvas;
 	Canvas info_canvas;
 	Canvas clip_canvas;
-	Canvas export_canvas;
+//	Canvas export_canvas;
 
 	public Window() {
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -46,7 +46,7 @@ public class Window extends JFrame {
 		edit_canvas = new Canvas();
 		info_canvas = new Canvas();
 		clip_canvas = new Canvas();
-		export_canvas = new Canvas();
+//		export_canvas = new Canvas();
 		explorers = new JTabbedPane();
 		editors   = new JTabbedPane();
 		infos     = new JTabbedPane();
@@ -60,7 +60,7 @@ public class Window extends JFrame {
 		split_left.setOneTouchExpandable(true);
 		explorers.addTab("Explorer", expl_canvas);
 		editors.addTab("Meta", edit_canvas);
-		editors.addTab("Export", export_canvas);
+//		editors.addTab("Export", export_canvas);
 		infos.addTab("Info", info_canvas);
 		infos.addTab("Clipboard", clip_canvas);
 		this.getContentPane().add(split_left, BorderLayout.CENTER);
@@ -71,11 +71,18 @@ public class Window extends JFrame {
 		info_view   = new InfoView(this, new JavaSyntax(), info_canvas);
 		clip_view   = new InfoView(this, new JavaSyntax(), clip_canvas);
 		expl_view   = new InfoView(this, new JavaSyntax(), expl_canvas);
-		export_view = new InfoView(this, new JavaSyntax(), export_canvas);
+//		export_view = new InfoView(this, new JavaSyntax(), export_canvas);
 		editor_view.setRoot(null);
 		editor_view.formatAndPaint();
 		expl_view.the_root = null;
 		expl_view.formatAndPaint();
+	}
+	
+	public void setRoot(ASTNode root) {
+		editor_view.setRoot(root);
+		editor_view.formatAndPaint();
+//		expl_view.the_root = null;
+//		expl_view.formatAndPaint();
 	}
 
 }

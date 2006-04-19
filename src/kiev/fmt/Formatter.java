@@ -14,6 +14,8 @@ import static kiev.fmt.SpaceKind.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import java.awt.Graphics2D;
+
 public interface Formatter {
 	public Drawable format(ASTNode node);
 	public Drawable getDrawable(ASTNode node, FormatInfoHint hint);
@@ -29,28 +31,62 @@ public class FormatInfoHint extends ASTNode {
 	public FormatInfoHint(String text) { this.text = text; }
 }
 
-public class TextFormatter implements Formatter {
+protected abstract class AbstractFormatter implements Formatter {
+
+	private static final int counter;
+
+	public final Syntax syntax;
+	private AttrSlot ATTR;	
+	
+	protected AbstractFormatter(Syntax syntax) {
+		this.syntax = syntax;
+		String name = "fmt info "+Integer.toHexString(++counter);
+		name = name.intern();
+		this.ATTR = new DataAttrSlot(name,true,Shadow.class);
+	}
+
+	public abstract Drawable format(ASTNode node);
+	
+	public Drawable getDrawable(ASTNode node, FormatInfoHint hint) {
+		if (node == null) {
+			DrawLayout lout = new DrawLayout();
+			lout.is_hidden = true;
+			SyntaxSpace ssp = new SyntaxSpace(lout);
+			return new DrawSpace(null, ssp);
+		}
+		Shadow sdr = node.getNodeData(ATTR);
+		if (sdr != null)
+			return (Drawable)sdr.node;
+		SyntaxElem stx_elem = syntax.getSyntaxElem(node, hint);
+		Drawable dr = stx_elem.makeDrawable(this,node);
+		node.addNodeData(new Shadow(dr), ATTR);
+		return dr;
+	}
+
+	public final AttrSlot getAttr() {
+		return ATTR;
+	}
+
+}
+
+public class TextFormatter extends AbstractFormatter {
 	public static final AttrSlot ATTR = new DataAttrSlot("text fmt info",true,Shadow.class);	
 	private Syntax syntax;
 	
 	public TextFormatter(Syntax syntax) {
-		this.syntax = syntax;
-	}
-
-	public AttrSlot getAttr() {
-		return ATTR;
+		super(syntax);
 	}
 
 	public Drawable format(ASTNode node) {
-		DrawContext ctx = new DrawContext();
+		DrawContext ctx = new DrawContext(null);
 		ctx.width = 100;
 		Drawable root = getDrawable(node, null);
 		root.preFormat(ctx);
-		ctx = new DrawContext();
+		ctx = new DrawContext(null);
 		ctx.width = 100;
 		root.postFormat(ctx, true);
 		
-		int lineno = 0;
+		int lineno = 1;
 		int line_indent = 0;
 		int next_indent = line_indent;
 		int y = 0;
@@ -85,46 +121,27 @@ public class TextFormatter implements Formatter {
 		
 		return root;
 	}
-	
-	public Drawable getDrawable(ASTNode node, FormatInfoHint hint) {
-		if (node == null) {
-			DrawLayout lout = new DrawLayout();
-			lout.is_hidden = true;
-			SyntaxSpace ssp = new SyntaxSpace(lout);
-			return new DrawSpace(null, ssp);
-		}
-		Shadow sdr = node.getNodeData(ATTR);
-		if (sdr != null)
-			return (Drawable)sdr.node;
-		SyntaxElem stx_elem = syntax.getSyntaxElem(node, hint);
-		Drawable dr = stx_elem.makeDrawable(this,node);
-		node.addNodeData(new Shadow(dr), ATTR);
-		return dr;
-	}
 }
 
-public class GfxFormatter implements Formatter {
-	public static final AttrSlot ATTR = new DataAttrSlot("gfx fmt info",true,Shadow.class);	
-	private Syntax syntax;
-	
-	public GfxFormatter(Syntax syntax) {
-		this.syntax = syntax;
-	}
+public class GfxFormatter extends AbstractFormatter {
 
-	public AttrSlot getAttr() {
-		return ATTR;
+	private Graphics2D gfx;
+	
+	public GfxFormatter(Syntax syntax, Graphics2D gfx) {
+		super(syntax);
+		this.gfx = gfx;
 	}
 
 	public Drawable format(ASTNode node) {
-		DrawContext ctx = new DrawContext();
+		DrawContext ctx = new DrawContext(gfx);
 		ctx.width = 100;
 		Drawable root = getDrawable(node, null);
 		root.preFormat(ctx);
-		ctx = new DrawContext();
+		ctx = new DrawContext(gfx);
 		ctx.width = 100;
 		root.postFormat(ctx, true);
 		
-		int lineno = 0;
+		int lineno = 1;
 		int max_h = 10;
 		int max_b = 0;
 		int line_indent = 0;
@@ -166,22 +183,6 @@ public class GfxFormatter implements Formatter {
 		}
 		
 		return root;
-	}
-	
-	public Drawable getDrawable(ASTNode node, FormatInfoHint hint) {
-		if (node == null) {
-			DrawLayout lout = new DrawLayout();
-			lout.is_hidden = true;
-			SyntaxSpace ssp = new SyntaxSpace(lout);
-			return new DrawSpace(null, ssp);
-		}
-		Shadow sdr = node.getNodeData(ATTR);
-		if (sdr != null)
-			return (Drawable)sdr.node;
-		SyntaxElem stx_elem = syntax.getSyntaxElem(node, hint);
-		Drawable dr = stx_elem.makeDrawable(this,node);
-		node.addNodeData(new Shadow(dr), ATTR);
-		return dr;
 	}
 }
 

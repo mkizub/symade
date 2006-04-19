@@ -57,7 +57,7 @@ public class Editor extends UIView implements KeyListener {
 		view_canvas.current = cur_elem;
 		formatter.format(the_root);
 		view_canvas.repaint();
-		ASTNode src = cur_elem.node;
+		ASTNode src = cur_elem!=null ? cur_elem.node : null;
 		parent_window.info_view.the_root = src;
 		parent_window.info_view.formatAndPaint();
 	}

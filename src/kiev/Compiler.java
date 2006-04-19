@@ -346,6 +346,11 @@ public class Compiler {
 					args[a] = null;
 					continue;
 				}
+				else if( args[a].equals("-gui")) {
+					Kiev.useBackend = Kiev.Backend.GUI;
+					args[a] = null;
+					continue;
+				}
 				else if( args[a].equals("-i") || args[a].equals("-incremental")) {
 					Kiev.interactive = onoff;
 					if( onoff )

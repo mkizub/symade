@@ -14,9 +14,14 @@ import static kiev.fmt.SpaceKind.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import java.awt.Graphics2D;
+import java.awt.Font;
+import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 
 public class DrawContext implements Cloneable {
 	
+	public Graphics2D				gfx;
 	public int						width;
 	public int						x, y;
 	public boolean					line_started;
@@ -25,7 +30,8 @@ public class DrawContext implements Cloneable {
 	private DrawTerm				last_term;
 	private DrawContext				prev_ctx;
 	
-	public DrawContext() {
+	public DrawContext(Graphics2D gfx) {
+		this.gfx = gfx;
 		line_started = true;
 		space_infos = new Vector<SpaceCmd>();
 		paragraphs = new Stack<DrawParagraph>();
@@ -53,9 +59,21 @@ public class DrawContext implements Cloneable {
 		dg.x = 0;
 		dg.y = 0;
 		String text = dr.getText();
-		dg.w = text.length();
-		dg.h = 1;
-		dg.b = 0;
+		if (text == null || text.length() == 0) text = " ";
+		if (gfx != null) {
+			DrawFormat fmt = dr.syntax.fmt;
+			Font  font  = fmt.font.native_font;
+			if (font == null) font = new Font("Dialog", Font.PLAIN, 12);
+			TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
+			Rectangle2D rect = tl.getBounds();
+			dg.w = (int)Math.ceil(tl.getAdvance());
+			dg.h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
+			dg.b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
+		} else {
+			dg.w = text.length();
+			dg.h = 1;
+			dg.b = 0;
+		}
 
 		this.x += dg.w;
 	}
@@ -89,7 +107,7 @@ public class DrawContext implements Cloneable {
 		int max_space = 0;
 		foreach (SpaceCmd csi; space_infos; csi.si.kind == SP_SPACE) {
 			if (!csi.eat)
-				max_space = Math.max(csi.si.text_size, max_space);
+				max_space = Math.max(gfx==null ? csi.si.text_size : csi.si.pixel_size, max_space);
 		}
 		if (line_started)
 			this.x = getIndent();
@@ -99,7 +117,7 @@ public class DrawContext implements Cloneable {
 		int max_nl = 0;
 		foreach (SpaceCmd csi; space_infos; csi.si.kind == SP_NEW_LINE) {
 			if (!csi.eat)
-				max_nl = Math.max(csi.si.text_size, max_nl);
+				max_nl = Math.max(gfx==null ? csi.si.text_size : csi.si.pixel_size, max_nl);
 		}
 
 		if (max_nl > 0) {
@@ -144,9 +162,9 @@ public class DrawContext implements Cloneable {
 			ParagraphLayout pl = dp.getParLayout();
 			if (!pl.enabled(dp))
 				continue;
-			indent += pl.indent_text_size;
+			indent += gfx==null ? pl.indent_text_size : pl.indent_pixel_size;
 			if (dp.is_multiline)
-				indent += pl.indent_first_line_text_size;
+				indent += gfx==null ? pl.indent_first_line_text_size : pl.indent_first_line_pixel_size;
 		}
 		return indent;
 	}

@@ -532,7 +532,8 @@ public final class Kiev {
 	// Backends
 	static public enum Backend {
 		Java15					: "java15",
-		VSrc					: "vsrc"
+		VSrc					: "vsrc",
+		GUI						: "gui"
 	};
 	public static Backend useBackend = Backend.Java15;
 

@@ -46,7 +46,7 @@ public class Syntax {
 	public SpaceInfo siSpSEPR = new SpaceInfo("sp-sepr",  SP_SPACE,    1, 10);
 	public SpaceInfo siSpWORD = new SpaceInfo("sp-word",  SP_SPACE,    1, 10);
 	public SpaceInfo siSpOPER = new SpaceInfo("sp-oper",  SP_SPACE,    1, 10);
-	public SpaceInfo siNl     = new SpaceInfo("nl",       SP_NEW_LINE, 1, 10);
+	public SpaceInfo siNl     = new SpaceInfo("nl",       SP_NEW_LINE, 1,  1);
 	public SpaceInfo siNlGrp  = new SpaceInfo("nl-group", SP_NEW_LINE, 2, 20);
 	
 	public ParagraphLayout plIndented = new ParagraphLayout("par-indented", 4, 20);
@@ -337,17 +337,27 @@ public class ParagraphLayoutBlock extends ParagraphLayout {
 @node
 public final class DrawColor extends ASTNode {
 	public Color native_color;
+	
+	public DrawColor() {}
 }
 
 @node
 public final class DrawFont extends ASTNode {
 	public Font native_font;
+	
+	public DrawFont() {}
 }
 
 @node
 public final class DrawFormat extends ASTNode {
 	@ref public DrawColor	color;
 	@ref public DrawFont	font;
+	
+	public DrawFormat() {}
+	public DrawFormat(DrawColor color, DrawFont font) {
+		this.color = color;
+		this.font = font;
+	}
 }
 
 @node
@@ -378,6 +388,7 @@ public abstract class SyntaxElem extends ASTNode {
 	public SyntaxElem() {}
 	public SyntaxElem(DrawLayout layout) {
 		this.layout = layout;
+		this.fmt = new DrawFormat(new DrawColor(), new DrawFont());
 	}
 
 	public abstract Drawable makeDrawable(Formatter fmt, ASTNode node);

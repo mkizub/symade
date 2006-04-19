@@ -243,7 +243,7 @@ public class JavaSyntax extends Syntax {
 	
 	final Hashtable<Operator, SyntaxElem> exprs;
 	
-	public SpaceInfo siNlOrBlock = new SpaceInfo("nl-block",       SP_NEW_LINE, 1, 10);
+	public SpaceInfo siNlOrBlock = new SpaceInfo("nl-block",       SP_NEW_LINE, 1,  1);
 
 	public SpaceInfo siFldGrpNl  = new SpaceInfo("indent-block",   SP_NEW_LINE, 2, 20);
 	
