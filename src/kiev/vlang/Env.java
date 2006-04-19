@@ -70,7 +70,7 @@ public class Env extends Struct {
 
 	/** Hashtable of all defined and loaded classes */
 	public static Hashtable<KString,Struct>	classHash			= new Hashtable<KString,Struct>();
-	public static Hash<KString>						classHashOfFails	= new Hash<KString>();
+	public static Hash<KString>					classHashOfFails	= new Hash<KString>();
 	public static Hashtable<KString,Struct>	classHashDbg 		= new Hashtable<KString,Struct>();
 
 	/** Hashtable for project file (class name + file name) */

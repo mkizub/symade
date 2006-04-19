@@ -16,6 +16,9 @@ import static kiev.fmt.SpaceKind.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import java.awt.Color;
+import java.awt.Font;
+
 public class Syntax {
 	public static final int SYNTAX_KIND_SPACE   = 1;
 	public static final int SYNTAX_KIND_TOKEN   = 2;
@@ -332,6 +335,22 @@ public class ParagraphLayoutBlock extends ParagraphLayout {
 }
 
 @node
+public final class DrawColor extends ASTNode {
+	public Color native_color;
+}
+
+@node
+public final class DrawFont extends ASTNode {
+	public Font native_font;
+}
+
+@node
+public final class DrawFormat extends ASTNode {
+	@ref public DrawColor	color;
+	@ref public DrawFont	font;
+}
+
+@node
 public final class DrawLayout extends ASTNode {
 	@virtual typedef This  = DrawLayout;
 
@@ -353,6 +372,7 @@ public abstract class SyntaxElem extends ASTNode {
 	@virtual typedef This  = SyntaxElem;
 
 	@att public DrawLayout			layout;
+	@att public DrawFormat			fmt;
 	@att public boolean				is_hidden;
 	
 	public SyntaxElem() {}

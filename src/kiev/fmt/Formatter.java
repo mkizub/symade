@@ -14,7 +14,6 @@ import static kiev.fmt.SpaceKind.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-
 public interface Formatter {
 	public Drawable format(ASTNode node);
 	public Drawable getDrawable(ASTNode node, FormatInfoHint hint);
@@ -82,6 +81,88 @@ public class TextFormatter implements Formatter {
 			l.geometry.lineno = lineno;
 			l.geometry.y = y;
 			l.geometry.h = 1;
+		}
+		
+		return root;
+	}
+	
+	public Drawable getDrawable(ASTNode node, FormatInfoHint hint) {
+		if (node == null) {
+			DrawLayout lout = new DrawLayout();
+			lout.is_hidden = true;
+			SyntaxSpace ssp = new SyntaxSpace(lout);
+			return new DrawSpace(null, ssp);
+		}
+		Shadow sdr = node.getNodeData(ATTR);
+		if (sdr != null)
+			return (Drawable)sdr.node;
+		SyntaxElem stx_elem = syntax.getSyntaxElem(node, hint);
+		Drawable dr = stx_elem.makeDrawable(this,node);
+		node.addNodeData(new Shadow(dr), ATTR);
+		return dr;
+	}
+}
+
+public class GfxFormatter implements Formatter {
+	public static final AttrSlot ATTR = new DataAttrSlot("gfx fmt info",true,Shadow.class);	
+	private Syntax syntax;
+	
+	public GfxFormatter(Syntax syntax) {
+		this.syntax = syntax;
+	}
+
+	public AttrSlot getAttr() {
+		return ATTR;
+	}
+
+	public Drawable format(ASTNode node) {
+		DrawContext ctx = new DrawContext();
+		ctx.width = 100;
+		Drawable root = getDrawable(node, null);
+		root.preFormat(ctx);
+		ctx = new DrawContext();
+		ctx.width = 100;
+		root.postFormat(ctx, true);
+		
+		int lineno = 0;
+		int max_h = 10;
+		int max_b = 0;
+		int line_indent = 0;
+		int next_indent = line_indent;
+		int y = 0;
+		DrawTerm first = root.getFirstLeaf();
+		DrawTerm line_start = first;
+		for (DrawTerm dr=first; dr != null; dr = dr.getNextLeaf()) {
+			dr.geometry.y = y;
+			if (dr.isHidden()) {
+				dr.geometry.w = 0;
+				dr.geometry.h = max_h;
+				continue;
+			}
+			max_h = Math.max(max_h, dr.geometry.h);
+			max_b = Math.max(max_b, dr.geometry.b);
+			if (dr.geometry.do_newline > 0) {
+				for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
+					l.geometry.lineno = lineno;
+					l.geometry.y = y;
+					l.geometry.h = max_h;
+					l.geometry.b = max_b;
+					if (l == dr)
+						break;
+				}
+				y += max_h + dr.geometry.do_newline;
+				max_h = 10;
+				max_b = 0;
+				line_start = dr.getNextLeaf();
+				lineno++;
+			}
+		}
+		// fill the rest
+		for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
+			l.geometry.lineno = lineno;
+			l.geometry.y = y;
+			l.geometry.h = max_h;
+			l.geometry.b = max_b;
 		}
 		
 		return root;

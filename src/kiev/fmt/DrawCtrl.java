@@ -13,7 +13,8 @@ import syntax kiev.Syntax;
 
 @node
 public class DrawCtrl extends Drawable {
-	@att Drawable arg;
+	@att
+	public Drawable arg;
 	
 	public DrawCtrl() {}
 	public DrawCtrl(ASTNode node, SyntaxElem syntax) {

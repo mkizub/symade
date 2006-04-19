@@ -193,10 +193,13 @@ kiev.fmt.CalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev\fmt\SyntaxLayout.ja
 kiev.fmt.CalcOptionNotNull kiev/fmt/CalcOptionNotNull kiev\fmt\SyntaxLayout.java
 kiev.fmt.CalcOptionTrue kiev/fmt/CalcOptionTrue kiev\fmt\SyntaxLayout.java
 kiev.fmt.DrawCharTerm kiev/fmt/DrawCharTerm kiev\fmt\DrawTerm.java
+kiev.fmt.DrawColor kiev/fmt/DrawColor kiev\fmt\SyntaxLayout.java
 kiev.fmt.DrawContext kiev/fmt/DrawContext kiev\fmt\DrawContext.java
 kiev.fmt.DrawCtrl kiev/fmt/DrawCtrl kiev\fmt\DrawCtrl.java
 kiev.fmt.DrawDevice kiev/fmt/DrawDevice kiev\fmt\DrawDevice.java
 kiev.fmt.DrawEnumChoice kiev/fmt/DrawEnumChoice kiev\fmt\DrawCtrl.java
+kiev.fmt.DrawFont kiev/fmt/DrawFont kiev\fmt\SyntaxLayout.java
+kiev.fmt.DrawFormat kiev/fmt/DrawFormat kiev\fmt\SyntaxLayout.java
 kiev.fmt.DrawGeometry kiev/fmt/DrawGeometry kiev\fmt\DrawGeometry.java
 kiev.fmt.DrawIntChoice kiev/fmt/DrawIntChoice kiev\fmt\DrawCtrl.java
 kiev.fmt.DrawJavaAccess kiev/fmt/DrawJavaAccess kiev\fmt\DrawJava.java
@@ -220,6 +223,7 @@ kiev.fmt.DrawTerm kiev/fmt/DrawTerm kiev\fmt\DrawTerm.java
 kiev.fmt.Drawable kiev/fmt/Drawable kiev\fmt\Drawable.java
 kiev.fmt.FormatInfoHint kiev/fmt/FormatInfoHint kiev\fmt\Formatter.java
 kiev.fmt.Formatter kiev/fmt/Formatter kiev\fmt\Formatter.java
+kiev.fmt.GfxFormatter kiev/fmt/GfxFormatter kiev\fmt\Formatter.java
 kiev.fmt.JavaSyntax kiev/fmt/JavaSyntax kiev\fmt\JavaSyntax.java
 kiev.fmt.ParagraphLayout kiev/fmt/ParagraphLayout kiev\fmt\SyntaxLayout.java
 kiev.fmt.ParagraphLayoutBlock kiev/fmt/ParagraphLayoutBlock kiev\fmt\SyntaxLayout.java
@@ -252,6 +256,11 @@ kiev.fmt.SyntaxStrAttr kiev/fmt/SyntaxStrAttr kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxToken kiev/fmt/SyntaxToken kiev\fmt\SyntaxLayout.java
 kiev.fmt.TextFormatter kiev/fmt/TextFormatter kiev\fmt\Formatter.java
 kiev.fmt.TextPrinter kiev/fmt/TextPrinter kiev\fmt\DrawDevice.java
+kiev.gui.Canvas kiev/gui/Canvas kiev\gui\Canvas.java
+kiev.gui.Editor kiev/gui/Editor kiev\gui\Editor.java
+kiev.gui.InfoView kiev/gui/InfoView kiev\gui\InfoView.java
+kiev.gui.UIView kiev/gui/UIView kiev\gui\UIView.java
+kiev.gui.Window kiev/gui/Window kiev\gui\Window.java
 kiev.ir.java15.RAccessExpr kiev/ir/java15/RAccessExpr kiev\ir\java15\RLvalueExpr.java
 kiev.ir.java15.RArrayLengthExpr kiev/ir/java15/RArrayLengthExpr kiev\ir\java15\RExpr.java
 kiev.ir.java15.RAssignExpr kiev/ir/java15/RAssignExpr kiev\ir\java15\RExpr.java

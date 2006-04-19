@@ -14,7 +14,8 @@ import syntax kiev.Syntax;
 
 @node
 public abstract class DrawNonTerm extends Drawable {
-	@att NArr<Drawable> args;
+	@att
+	public NArr<Drawable> args;
 	
 	public DrawNonTerm() {}
 	public DrawNonTerm(ASTNode node, SyntaxElem syntax) {

@@ -1,0 +1,212 @@
+package kiev.gui;
+
+import kiev.Kiev;
+import kiev.CError;
+import kiev.stdlib.*;
+import kiev.vlang.*;
+import kiev.vlang.types.*;
+import kiev.transf.*;
+import kiev.parser.*;
+import kiev.fmt.*;
+
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.font.TextLayout;
+import java.awt.image.VolatileImage;
+
+import javax.swing.JPanel;
+
+/**
+ * @author mkizub
+ */
+public class Canvas extends JPanel implements DrawDevice {
+
+	Drawable	root;
+	Drawable	current;
+	int			first_line;
+	int			num_lines;
+	int			cursor_offset = -1;
+
+	transient VolatileImage vImg;
+	
+	int			lineno;
+	boolean		translated;
+	DrawTerm	first_visible;
+	DrawTerm	last_visible;
+	int			translated_y;
+	int			drawed_x;
+	int			drawed_y;
+	boolean		selected;
+	boolean		is_editable;
+
+	Canvas() {
+		setFocusable(true);
+	}
+	
+	public void draw(Drawable root) {
+		this.root = root;
+	}
+	
+	public VolatileImage createVolatileImage(int w, int h) {
+		System.out.println("create volatile image "+w+" : "+h);
+		return super.createVolatileImage(w, h);
+	}
+	
+	public void update(Graphics gScreen) {
+		paint(gScreen);
+	}
+	
+	public void paint(Graphics gScreen) {
+		// copying from the image (here, gScreen is the Graphics
+		// object for the onscreen window)
+		do {
+			if (vImg == null || vImg.getWidth() != getWidth() || vImg.getHeight() != getHeight())
+				vImg = createVolatileImage(getWidth(), getHeight());
+			int returnCode = vImg.validate(getGraphicsConfiguration());
+			if (returnCode == VolatileImage.IMAGE_INCOMPATIBLE) {
+				// old vImg doesn't work with new GraphicsConfig; re-create it
+				vImg = createVolatileImage(getWidth(), getHeight());
+			}
+			renderOffscreen();
+			gScreen.drawImage(vImg, 0, 0, this);
+		} while (vImg.contentsLost());		
+	}
+	
+	void renderOffscreen() {
+		do {
+		    if (vImg.validate(getGraphicsConfiguration()) ==
+		    	VolatileImage.IMAGE_INCOMPATIBLE)
+		    {
+		    	vImg = createVolatileImage(getWidth(), getHeight());
+		    }
+		    Graphics2D g = vImg.createGraphics();
+			g.setClip(0, 0, getWidth(), getHeight());
+			g.setColor(Color.WHITE);
+			g.fillRect(0, 0, getWidth(), getHeight());
+			//g.clearRect(0, 0, getWidth(), getHeight());
+			if (root != null) {
+				lineno = 0;
+				translated = false;
+				first_visible = null;
+				last_visible = null;
+				translated_y = 0;
+				selected = false;
+				is_editable = true;
+				paint(g, root);
+				num_lines = lineno;
+			}
+		    g.dispose();
+		} while (vImg.contentsLost());
+	}	
+	
+	public boolean isDoubleBuffered() {
+		return true;
+	}
+	
+	private void paint(Graphics2D g, Drawable n) {
+		if (n.isHidden())
+			return;
+		if (n instanceof DrawNonTerm) {
+			foreach(Drawable dr; n.args; !dr.isHidden()) {
+				if (dr instanceof DrawNonTerm) {
+					if (dr == current) {
+						selected = true;
+						paint(g, dr);
+						selected = false;
+					} else {
+						paint(g, dr);
+					}
+					continue;
+				}
+				paintLeaf(g, (DrawTerm)n);
+			}
+		}
+		else if (n instanceof DrawCtrl)
+			paint(g, n.arg);
+		else
+			paintLeaf(g, (DrawTerm)n);
+	}
+
+	private void paintLeaf(Graphics2D g, DrawTerm leaf) {
+		if (leaf == null || leaf.isHidden())
+			return;
+		if (lineno < first_line) {
+			if (leaf.geometry.do_newline > 0)
+				lineno++;
+			return;
+		}
+		if (leaf.geometry.do_newline > 0)
+			lineno++;
+		if (first_visible == null)
+			first_visible = leaf;
+		
+		int x = leaf.geometry.x;
+		int y = leaf.geometry.y;
+		int w = leaf.geometry.w;
+		int h = leaf.geometry.h;
+		int b = leaf.geometry.b;
+
+		if (!translated) {
+			translated_y = y;
+			g.translate(0, -y);
+			translated = true;
+		}
+		if (y + h - translated_y >= getHeight())
+			return;
+		
+		last_visible = leaf;
+		
+		if (is_editable && drawed_x < x && drawed_y == y) {
+			g.setColor(Color.LIGHT_GRAY);
+			g.fillRect(drawed_x, y, x, h);
+		}
+
+		boolean set_white = false;
+		if ((selected || leaf == current) && cursor_offset < 0) {
+			g.setColor(Color.BLACK);
+			g.fillRect(x, y, w, h);
+			set_white = true;
+		}
+		else if (is_editable) {
+			g.setColor(Color.LIGHT_GRAY);
+			g.fillRect(x, y, w, h);
+		}
+		drawed_x = x + w;
+		drawed_y = y;
+		
+//		if (leaf instanceof DrawSpace)
+//			return;
+		
+		DrawFormat fmt = leaf.syntax.fmt;
+		DrawColor color = fmt.color;
+		DrawFont  font  = fmt.font;
+		if (set_white)
+			g.setColor(Color.WHITE);
+		else
+			g.setColor(color.native_color);
+		g.setFont(font.native_font);
+		String s = leaf.getText();
+		if (s.length() == 0) s = " ";
+		TextLayout tl = new TextLayout(s, font.native_font, g.getFontRenderContext());
+		tl.draw(g, x, y+b);
+		if (leaf == current && cursor_offset >= 0) {
+			g.translate(x, y+b);
+			Shape[] carets = tl.getCaretShapes(cursor_offset);
+			g.setColor(Color.RED);
+			g.draw(carets[0]);                
+			if (carets[1] != null) {
+				g.setColor(Color.BLACK);
+				g.draw(carets[1]);
+			}
+			g.translate(-x, -(y+b));
+		}
+	}
+	
+}
+

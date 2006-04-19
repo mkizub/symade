@@ -17,15 +17,16 @@ public abstract class Drawable extends ASTNode {
 	//static final AttrSlot ATTR = new DataAttrSlot("draw info",false,Drawable.class);
 
 	// the node we draw
-	ASTNode			node;
-	AttrSlot		dslot;
+	@ref
+	public ASTNode			node;
+	public AttrSlot			dslot;
 	// can be text (line/pos) or graphics (pixel x,y,w,h,baseline info) and so on,
 	// filled/modified during preFormat/postFormat
-	DrawGeometry	geometry;
+	public DrawGeometry		geometry;
 	// syntax kind & draw layout
-	SyntaxElem		syntax;
+	public SyntaxElem		syntax;
 	// current (selected) layout
-	int				curr_layout;
+	int						curr_layout;
 	
 	public Drawable() {
 		this.geometry = new DrawGeometry();
