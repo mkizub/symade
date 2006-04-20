@@ -18,8 +18,7 @@ import syntax kiev.Syntax;
 public static final view RFileUnit of FileUnit extends RDNode {
 	public		KString					filename;
 	public		TypeNameRef				pkg;
-	public:ro	NArr<DNode>				syntax;
-	public:ro	NArr<DNode>				members;
+	public:ro	NArr<ASTNode>			members;
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 
@@ -30,11 +29,11 @@ public static final view RFileUnit of FileUnit extends RDNode {
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			for(int i=0; i < members.length; i++) {
+			foreach (ASTNode n; members; n instanceof DNode) {
 				try {
-					members[i].resolveDecl();
+					n.resolveDecl();
 				} catch(Exception e) {
-					Kiev.reportError(members[i],e);
+					Kiev.reportError(n,e);
 				}
 			}
 		} finally { Kiev.curFile = curr_file; Kiev.setExtSet(exts); }

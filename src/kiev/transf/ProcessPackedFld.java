@@ -24,7 +24,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	}
 	
 	public void verify(FileUnit:ASTNode fu) {
-		foreach (DNode n; fu.members; n instanceof Struct)
+		foreach (ASTNode n; fu.members; n instanceof Struct)
 			verify(n);
 	}
 	
@@ -96,7 +96,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 	}
 	
 	public void preGenerate(FileUnit:ASTNode fu) {
-		foreach (DNode dn; fu.members; dn instanceof Struct)
+		foreach (ASTNode dn; fu.members; dn instanceof Struct)
 			this.preGenerate(dn);
 	}
 	

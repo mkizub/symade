@@ -209,13 +209,13 @@ public abstract class kiev040 implements kiev040Constants {
         modifiers = Modifiers();
         switch (jj_nt.kind) {
         case IMPORT:
-          fu.syntax += Import(modifiers);
+          fu.members += Import(modifiers);
           break;
         case TYPEDEF:
-          fu.syntax += Typedef(modifiers);
+          fu.members += Typedef(modifiers);
           break;
         case OPERATOR_ID:
-          fu.syntax += Opdef(modifiers);
+          fu.members += Opdef(modifiers);
           break;
         case CLASS:
         case INTERFACE:

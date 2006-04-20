@@ -858,9 +858,9 @@ FileUnit FileUnit(String filename) :
 		(
 			modifiers = Modifiers()
 			(
-				fu.syntax += Import(modifiers)
-			|	fu.syntax += Typedef(modifiers)
-			|	fu.syntax += Opdef(modifiers)
+				fu.members += Import(modifiers)
+			|	fu.members += Typedef(modifiers)
+			|	fu.members += Opdef(modifiers)
 			|	fu.members += TypeDeclaration(modifiers, fu) [ ";" ]
 			|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 				fu.members += SyntaxDeclaration(modifiers, fu) [ ";" ]

@@ -33,7 +33,6 @@ public final view RStruct of Struct extends RTypeDecl {
 	public				Struct					typeinfo_clazz;
 	public				Struct					iface_impl;
 	public:ro			NArr<Struct>			sub_clazz;
-	public:ro			NArr<DNode>				imported;
 	public:ro			NArr<TypeDecl>			direct_extenders;
 	public:ro			NArr<DNode>				members;
 

@@ -151,7 +151,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		foreach (DNode dn; fu.members; dn instanceof Struct)
+		foreach (ASTNode dn; fu.members; dn instanceof Struct)
 			this.autoGenerateMembers(dn);
 	}
 	

@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public final class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
+public final class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
 	public enum ImportMode {
@@ -39,7 +39,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 	@ref public DNode				resolved;
 
 	@nodeview
-	public static final view VImport of Import extends VDNode {
+	public static final view VImport of Import extends NodeView {
 		public		NameRef				name;
 		public		ImportMode			mode;
 		public		boolean				star;
@@ -131,7 +131,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 	;
 		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
 		((Struct)this.resolved).checkResolved(),
-		tmp @= ((Struct)this.resolved).imported,
+		tmp @= ((Struct)this.resolved).members,
 		{
 			tmp instanceof Field,
 			trace(Kiev.debugResolve,"Syntax check field "+tmp+" == "+name),

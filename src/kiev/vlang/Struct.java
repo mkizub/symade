@@ -49,9 +49,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@ref public Struct						typeinfo_clazz;
 	@ref public Struct						iface_impl;
 	@ref public NArr<Struct>				sub_clazz;
-	@ref public NArr<DNode>					imported;
 	@ref public NArr<TypeDecl>				direct_extenders;
-	public kiev.be.java15.Attr[]				attrs = kiev.be.java15.Attr.emptyArray;
+	public kiev.be.java15.Attr[]			attrs = kiev.be.java15.Attr.emptyArray;
 	@att public NArr<DNode>					members;
 		 private TypeProvider[]				super_types;
 
@@ -405,7 +404,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public				Struct					typeinfo_clazz;
 		public				Struct					iface_impl;
 		public:ro			NArr<Struct>			sub_clazz;
-		public:ro			NArr<DNode>				imported;
 		public:ro			NArr<TypeDecl>			direct_extenders;
 		public:ro			NArr<DNode>				members;
 
@@ -640,11 +638,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	{
 		trace( Kiev.debugResolve, "Resolving operator: "+op+" in syntax "+this),
 		{
-			imp @= imported,
+			imp @= members,
 			imp instanceof Opdef && ((Opdef)imp).resolved != null,
 			op ?= ((Opdef)imp).resolved,
 			trace( Kiev.debugResolve, "Resolved operator: "+op+" in syntax "+this)
-		;	imp @= imported,
+		;	imp @= members,
 			imp instanceof Import && ((Import)imp).mode == Import.ImportMode.IMPORT_SYNTAX,
 			((Struct)((Import)imp).resolved).resolveOperatorR(op)
 		}
@@ -693,24 +691,24 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 	protected rule resolveNameR_2(DNode@ node, ResInfo info, KString name)
 	{
-			node @= imported,
-			{	node instanceof Field && ((Field)node).isStatic() && ((Field)node).name.equals(name)
-			;	node instanceof TypeDef && ((TypeDef)node).name.name.equals(name)
-			}
+		node @= members,
+		{	node instanceof Field && ((Field)node).isStatic() && ((Field)node).name.equals(name)
+		;	node instanceof TypeDef && ((TypeDef)node).name.name.equals(name)
+		}
 	}
 	protected rule resolveNameR_3(DNode@ node, ResInfo info, KString name)
 		TypeRef@ sup_ref;
 		Struct@ sup;
 	{
-			{	sup_ref ?= super_bound,
-				sup ?= sup_ref.getStruct(),
-				info.enterSuper() : info.leaveSuper(),
-				sup.resolveNameR(node,info,name)
-			;	sup_ref @= interfaces,
-				sup ?= sup_ref.getStruct(),
-				info.enterSuper() : info.leaveSuper(),
-				sup.resolveNameR(node,info,name)
-			}
+		{	sup_ref ?= super_bound,
+			sup ?= sup_ref.getStruct(),
+			info.enterSuper() : info.leaveSuper(),
+			sup.resolveNameR(node,info,name)
+		;	sup_ref @= interfaces,
+			sup ?= sup_ref.getStruct(),
+			info.enterSuper() : info.leaveSuper(),
+			sup.resolveNameR(node,info,name)
+		}
 	}
 
 	public boolean tryLoad(ASTNode@ node, KString name) {
@@ -758,7 +756,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			info.check(node),
 			((Method)node).equalsByCast(name,mt,tp,info)
 		;	info.isImportsAllowed() && isPackage(),
-			node @= imported, node instanceof Method,
+			node @= members, node instanceof Method,
 			((Method)node).equalsByCast(name,mt,tp,info)
 		;	info.isSuperAllowed(),
 			sup ?= super_type,

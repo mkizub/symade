@@ -94,7 +94,7 @@ public final class ASTOperatorAlias extends ASTAlias {
     	Struct pkg = m.ctx_clazz;
     	while( pkg != null && !pkg.isPackage() ) pkg = pkg.package_clazz;
     	if( pkg == null || pkg == Env.root ) return;
-    	foreach(ASTNode n; pkg.imported; n == m ) return;
+    	foreach(ASTNode n; pkg.members; n == m ) return;
     }
 
 	public void attach(ASTNode n) {

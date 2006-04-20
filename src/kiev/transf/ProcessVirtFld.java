@@ -28,7 +28,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		foreach (DNode dn; fu.members; dn instanceof Struct)
+		foreach (ASTNode dn; fu.members; dn instanceof Struct)
 			this.autoGenerateMembers(dn);
 	}
 	
@@ -173,7 +173,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 	}
 	
 	public void preGenerate(FileUnit:ASTNode fu) {
-		foreach (DNode dn; fu.members; dn instanceof Struct)
+		foreach (ASTNode dn; fu.members; dn instanceof Struct)
 			this.preGenerate(dn);
 	}
 	

@@ -42,7 +42,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void pass1(FileUnit:ASTNode astn) {
 		FileUnit fu = astn;
 		processFileHeader(fu);
-		foreach (ASTNode n; astn.members) {
+		foreach (ASTNode n; astn.members; n instanceof Struct) {
 			try {
 				processSyntax((Struct)n);
 			} catch(Exception e ) { Kiev.reportError(n,e); }
@@ -62,7 +62,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		boolean kiev_stdlib_meta_found = false;
 		KString kiev_stdlib_meta_name = KString.from("kiev.stdlib.meta");
 
-		foreach (DNode n; fu.syntax) {
+		foreach (ASTNode n; fu.members; n instanceof SNode) {
 			try {
 				processSyntax(n);
 				if (n instanceof Import) {
@@ -82,17 +82,17 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		if( !Kiev.javaMode && !kiev_stdlib_found ) {
 			Import imp = new Import(Env.newPackage(kiev_stdlib_name),true);
 			imp.setHidden(true);
-			fu.syntax.add(imp);
+			fu.members.add(imp);
 		}
 		if( !Kiev.javaMode && !kiev_stdlib_meta_found ) {
 			Import imp = new Import(Env.newPackage(kiev_stdlib_meta_name),true);
 			imp.setHidden(true);
-			fu.syntax.add(imp);
+			fu.members.add(imp);
 		}
 		if( !java_lang_found ) {
 			Import imp = new Import(Env.newPackage(java_lang_name),true);
 			imp.setHidden(true);
-			fu.syntax.add(imp);
+			fu.members.add(imp);
 		}
 	}
 	
@@ -258,12 +258,10 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				try {
 					if (n instanceof TypeOpDef) {
 						processSyntax(n);
-						me.imported.add(me.members[i]);
 						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
 					}
 					else if (n instanceof Opdef) {
 						processSyntax(n);
-						me.imported.add(me.members[i]);
 						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
 					}
 				} catch(Exception e ) {
@@ -290,7 +288,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void pass2(FileUnit:ASTNode astn) {
 		FileUnit fu = astn;
 
-		foreach (DNode n; astn.syntax) {
+		foreach (ASTNode n; astn.members) {
 			try {
 				if (n instanceof TypeDef)
 					n.getType();
@@ -301,7 +299,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			}
 		}
 
-		foreach (DNode n; astn.members)
+		foreach (ASTNode n; astn.members)
 			pass2(n);
 	}
 
@@ -589,14 +587,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				m.conditions += inv;
 			}
 			// Inner classes and cases after all methods and fields, skip now
-			else if( members[i] instanceof TypeDef );
-			else if( members[i] instanceof Struct );
-			else if( members[i] instanceof Import ) {
-				me.imported.add((Import)members[i]);
-			}
-			else {
-				throw new CompilerException(members[i],"Unknown type of structure member: "+members[i]);
-			}
 		}
 		
 		if (me.isSingleton()) {
@@ -693,7 +683,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void autoGenerateMembers(ASTNode:ASTNode node) {
 	}
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		foreach(DNode n; fu.members; n instanceof Struct)
+		foreach(ASTNode n; fu.members; n instanceof Struct)
 			autoGenerateMembers(n);
 	}
 	public void autoGenerateMembers(Struct:ASTNode clazz) {

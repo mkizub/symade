@@ -33,8 +33,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 
 	@att public KString			filename;
 	@att public TypeNameRef		pkg;
-	@att public NArr<DNode>		syntax;
-	@att public NArr<DNode>		members;
+	@att public NArr<ASTNode>	members;
 	
 	@ref public NArr<PrescannedBody>	bodies;
 		 public final boolean[]		disabled_extensions = Kiev.getCmdLineExtSet();
@@ -50,8 +49,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public static final view VFileUnit of FileUnit extends VDNode {
 		public		KString					filename;
 		public		TypeNameRef				pkg;
-		public:ro	NArr<DNode>				syntax;
-		public:ro	NArr<DNode>				members;
+		public:ro	NArr<ASTNode>			members;
 		public:ro	NArr<PrescannedBody>	bodies;
 		public:ro	boolean[]				disabled_extensions;
 		public		boolean					scanned_for_interface_only;
@@ -59,7 +57,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		public boolean preResolveIn() {
 			for(int i=0; i < members.length; i++) {
 				try {
-					foreach (DNode dn; syntax; dn instanceof Import) {
+					foreach (ASTNode dn; members; dn instanceof Import) {
 						((Import)dn).resolveImports();
 					}
 				} catch(Exception e ) {
@@ -150,30 +148,30 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	{
 		trace( Kiev.debugResolve, "Resolving operator: "+op+" in file "+this),
 		{
-			syn @= syntax,
+			syn @= members,
 			syn instanceof Opdef && ((Opdef)syn).resolved != null,
 			op ?= ((Opdef)syn).resolved,
 			trace( Kiev.debugResolve, "Resolved operator: "+op+" in file "+this)
-		;	syn @= syntax,
+		;	syn @= members,
 			syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_SYNTAX,
 			((Struct)((Import)syn).resolved).resolveOperatorR(op)
 		}
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
-		DNode@ syn;
+		ASTNode@ syn;
 	{
-		syn @= syntax,
+		syn @= members,
 		{
 			syn instanceof TypeDef,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
 			name.equals(((TypeDef)syn).name.name),
-			node ?= syn
+			node ?= ((TypeDef)syn)
 		;	syn instanceof Import && !((Import)syn).star,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
 			((Import)syn).resolveNameR(node,path,name)
-		;	node ?= syn,
-			syn instanceof Opdef && ((Opdef)syn).resolved != null,
+		;	syn instanceof Opdef && ((Opdef)syn).resolved != null,
+			node ?= ((Opdef)syn),
 			trace( Kiev.debugResolve, "Resolved operator: "+syn+" in file "+this)
 		}
 	;
@@ -181,7 +179,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		trace( Kiev.debugResolve, "In file package: "+pkg),
 		((CompaundType)pkg.getType()).clazz.resolveNameR(node,path,name)
 	;
-		syn @= syntax,
+		syn @= members,
 		syn instanceof Import,
 		{
 			((Import)syn).star,
@@ -202,7 +200,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	{
 		pkg != null,
 		pkg.getType().resolveCallStaticR(node,path,name,mt)
-	;	syn @= syntax,
+	;	syn @= members,
 		syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_STATIC,
 		trace( Kiev.debugResolve, "In file syntax: "+syn),
 		((Import)syn).resolveMethodR(node,path,name,mt)
@@ -217,7 +215,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public void cleanup() {
         Kiev.parserAddresses.clear();
 		Kiev.k.presc = null;
-		foreach(DNode n; members; n instanceof Struct) ((JStruct)(Struct)n).cleanup();
+		foreach(ASTNode n; members; n instanceof Struct) ((JStruct)(Struct)n).cleanup();
 		bodies.delAll();
 	}
 
@@ -225,11 +223,11 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		KString curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		try {
-			for(int i=0; i < members.length; i++) {
+			foreach (ASTNode n; members; n instanceof Struct) {
 				try {
-					toJava(output_dir, (Struct)members[i]);
+					toJava(output_dir, (Struct)n);
 				} catch(Exception e) {
-					Kiev.reportError(members[i],e);
+					Kiev.reportError(n,e);
 				}
 			}
 		} finally { Kiev.curFile = curr_file; }
@@ -241,9 +239,8 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		if( cl.package_clazz != null && cl.package_clazz != Env.root ) {
 			dmp.append("package ").append(cl.package_clazz.name).append(';').newLine();
 		}
-		for(int j=0; j < syntax.length; j++) {
-			if (syntax[j] != null) dmp.append(syntax[j]);
-		}
+		foreach (ASTNode syn; members; syn instanceof SNode)
+			dmp.append(syn);
 
 		cl.toJavaDecl(dmp);
 

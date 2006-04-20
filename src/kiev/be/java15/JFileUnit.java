@@ -9,6 +9,8 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import java.io.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -22,8 +24,7 @@ import syntax kiev.Syntax;
 public final view JFileUnit of FileUnit extends JDNode {
 	public		KString					filename;
 	public		TypeNameRef				pkg;
-	public:ro	NArr<DNode>				syntax;
-	public:ro	NArr<DNode>				members;
+	public:ro	JArr<JNode>				members;
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 
@@ -36,9 +37,9 @@ public final view JFileUnit of FileUnit extends JDNode {
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			foreach (DNode dn; members; dn instanceof Struct) {
+			foreach (JNode dn; members; dn instanceof JStruct) {
 				diff_time = curr_time = System.currentTimeMillis();
-				((JStruct)(Struct)dn).generate();
+				((JStruct)dn).generate();
 				diff_time = System.currentTimeMillis() - curr_time;
 				if( Kiev.verbose )
 					Kiev.reportInfo("Generated clas "+dn,diff_time);
