@@ -389,30 +389,58 @@ public abstract class kiev040 implements kiev040Constants {
 
 	}*/
 
-        void comments(NArrNodes arr) {
-                Comment prev = null;
-                Token t = getToken(1);
-                Token st = t.specialToken;
-                t.specialToken = null;
+        void comments_alone(NArrNodes arr) {
+                Comment[] comments = get_comments();
+                if (comments == null || comments.length == 0)
+                        return;
+                for (int i=0; i < comments.length; i++)
+                        arr.append(comments[i]);
+        }
+        void comments_before(ASTNode node) {
+                Comment[] comments = get_comments();
+                if (comments == null || comments.length == 0)
+                        return;
+                for (int i=0; i < comments.length; i++)
+                        node.addNodeData(comments[i], Comment.ATTR_BEFORE);
+        }
+
+        Comment[] get_comments() {
+                Token t0 = getToken(0);
+                Token t1 = getToken(1);
+                Token st = t1.specialToken;
+                if (st == null)
+                        return null;
+                Comment[] comments = new Comment[0];
+                t1.specialToken = null;
                 while (st.specialToken != null)
                         st = st.specialToken;
                 for (; st != null; st = st.next) {
-                        if (st.image.startsWith("//")) {
+                        if (st.kind == SINGLE_LINE_COMMENT) {
                                 String text = st.image.substring(2);
                                 text = text.trim();
-                                if (prev != null && prev.eol_form) {
-                                        prev.text = new StringBuffer(prev.text.length()+1+text.length()).append(prev.text).append('\n').append(text).toString();
-                                        prev.multiline = true;
+                                if (comments.length > 0 && comments[comments.length-1].eol_form) {
+                                        Comment c = comments[comments.length-1];
+                                        c.text = new StringBuffer(c.text.length()+1+text.length()).append(c.text).append('\n').append(text).toString();
+                                        c.multiline = true;
                                 } else {
                                         Comment c = new Comment();
                                         c.text = text;
                                         c.eol_form = true;
-                                        prev = c;
-                                        arr.append(c);
+                                        c.nl_after = true;
+                                        if (st.specialToken != null) {
+                                                if (st.beginLine > st.specialToken.endLine)
+                                                        c.nl_before = true;
+                                        } else {
+                                                if (st.beginLine < t0.endLine)
+                                                        c.nl_before = true;
+                                        }
+                                        comments = (Comment[])Arrays.append(comments, c);
                                 }
                         }
-                        else if (st.image.startsWith("/**")) {
-                                String text = st.image.substring(3, st.image.length()-5);
+                        else if (st.kind == FORMAL_COMMENT || st.kind == MULTI_LINE_COMMENT) {
+                                String text = (st.kind == FORMAL_COMMENT) ?
+                                                st.image.substring(3, st.image.length()-5)
+                                        :       st.image.substring(2, st.image.length()-4);
                                 String[] lines = text.split("\n");
                                 for (int i=0; i < lines.length; i++) {
                                         String l = lines[i].trim();
@@ -422,7 +450,7 @@ public abstract class kiev040 implements kiev040Constants {
                                         }
                                 }
                                 Comment c = new Comment();
-                                c.doc_form = true;
+                                c.doc_form = (st.kind == FORMAL_COMMENT);
                                 if (lines.length > 1) {
                                         c.multiline = true;
                                         for (int i=0; i < lines.length; i++) {
@@ -432,33 +460,26 @@ public abstract class kiev040 implements kiev040Constants {
                                 } else {
                                         c.text = lines[0];
                                 }
-                                prev = c;
-                                arr.append(c);
-                        }
-                        else if (st.image.startsWith("/*")) {
-                                String text = st.image.substring(2, st.image.length()-4);
-                                String[] lines = text.split("\n");
-                                for (int i=0; i < lines.length; i++) {
-                                        String l = lines[i].trim();
-                                        if (l.length() >= 1 && l.charAt(0) == '*') {
-                                                l = l.substring(1);
-                                                l = l.trim();
-                                        }
-                                }
-                                Comment c = new Comment();
-                                if (lines.length > 1) {
-                                        c.multiline = true;
-                                        for (int i=0; i < lines.length; i++) {
-                                                String txt = lines[i].trim();
-                                                c.text = new StringBuffer(c.text.length()+1+txt.length()).append(c.text).append('\n').append(txt).toString();
-                                        }
+
+                                if (st.specialToken != null) {
+                                        if (st.beginLine > st.specialToken.endLine)
+                                                c.nl_before = true;
                                 } else {
-                                        c.text = lines[0];
+                                        if (st.beginLine < t0.endLine)
+                                                c.nl_before = true;
                                 }
-                                prev = c;
-                                arr.append(c);
+
+                                if (st.next != null) {
+                                        if (st.endLine < st.next.beginLine)
+                                                c.nl_after = true;
+                                } else {
+                                        if (st.endLine < t1.beginLine)
+                                                c.nl_after = true;
+                                }
+                                comments = (Comment[])Arrays.append(comments, c);
                         }
                 }
+                return comments;
         }
 
 /*****************************************
@@ -489,12 +510,10 @@ public abstract class kiev040 implements kiev040Constants {
         default:
           break label_1;
         }
-                          comments(fu.members);
         Pragma(fu);
       }
       switch (jj_nt.kind) {
       case PACKAGE:
-                          comments(fu.members);
         fu.pkg = Package();
                           curClazz = fu.pkg.getStruct();
         break;
@@ -508,7 +527,7 @@ public abstract class kiev040 implements kiev040Constants {
         } else {
           break label_2;
         }
-                          comments(fu.members);
+                          comments_alone(fu.members);
         modifiers = Modifiers();
         switch (jj_nt.kind) {
         case IMPORT:
@@ -550,6 +569,7 @@ public abstract class kiev040 implements kiev040Constants {
           }
         }
       }
+                  comments_alone(fu.members);
       jj_consume_token(0);
     } catch (ParseError e) {
                               rpe("Bad modifiers",e);
@@ -647,11 +667,13 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final public TypeNameRef Package() throws ParseException {
-  NameRef qn;
+  NameRef qn; TypeNameRef tr = new TypeNameRef();
+          comments_before(tr);
     jj_consume_token(PACKAGE);
     qn = QName();
     jj_consume_token(SEMICOLON);
-                TypeNameRef tr = new TypeNameRef(qn);
+                tr.name = qn.name;
+                tr.pos = qn.pos;
                 Struct pkg = Env.newPackage(qn.name);
                 tr.lnk = pkg.ctype;
                 {if (true) return tr;}
@@ -660,6 +682,7 @@ public abstract class kiev040 implements kiev040Constants {
 
   final public void Pragma(FileUnit fu) throws ParseException {
   ASTPragma p = new ASTPragma();
+          comments_before(p);
     jj_consume_token(PRAGMA);
     switch (jj_nt.kind) {
     case PRAGMA_ENABLE:
@@ -5552,118 +5575,6 @@ public abstract class kiev040 implements kiev040Constants {
     catch(LookaheadSuccess ls) { return true; }
   }
 
-  final private boolean jj_3R_504() {
-    if (jj_scan_token(CASE)) return true;
-    if (jj_3R_237()) return true;
-    if (jj_scan_token(LPAREN)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_97()) jj_scanpos = xsp;
-    if (jj_scan_token(RPAREN)) return true;
-    if (jj_scan_token(COLON)) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_98()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_154() {
-    if (jj_3R_84()) return true;
-    if (jj_3R_401()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_402()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_96() {
-    if (jj_3R_133()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_508() {
-    if (jj_scan_token(_DEFAULT)) return true;
-    if (jj_scan_token(COLON)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_22() {
-    if (jj_3R_100()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_360()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_507() {
-    if (jj_scan_token(CASE)) return true;
-    if (jj_3R_99()) return true;
-    if (jj_scan_token(COLON)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_20() {
-    if (jj_scan_token(OPERATOR_AT)) return true;
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_95() {
-    if (jj_scan_token(CASE)) return true;
-    if (jj_3R_135()) return true;
-    if (jj_scan_token(LPAREN)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_216() {
-    if (jj_scan_token(LBRACE)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_22()) jj_scanpos = xsp;
-    if (jj_scan_token(RBRACE)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_505() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_507()) {
-    jj_scanpos = xsp;
-    if (jj_3R_508()) return true;
-    }
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_96()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_501() {
-    if (jj_3R_505()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_21() {
-    if (jj_3R_99()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_500() {
-    if (jj_3R_504()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_160() {
-    if (jj_3R_215()) return true;
-    return false;
-  }
-
   final private boolean jj_3_18() {
     if (jj_scan_token(OPERATOR_AT)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
@@ -7732,16 +7643,6 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_201() {
-    if (jj_3R_240()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_200() {
-    if (jj_3R_239()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_365() {
     if (jj_3R_118()) return true;
     Token xsp;
@@ -7751,6 +7652,26 @@ public abstract class kiev040 implements kiev040Constants {
     xsp = jj_scanpos;
     if (jj_3_68()) jj_scanpos = xsp;
     if (jj_scan_token(RPAREN)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_201() {
+    if (jj_3R_240()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_67() {
+    if (jj_3R_99()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_367()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_200() {
+    if (jj_3R_239()) return true;
     return false;
   }
 
@@ -7772,13 +7693,15 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3_67() {
-    if (jj_3R_99()) return true;
+  final private boolean jj_3R_259() {
+    if (jj_scan_token(LT)) return true;
+    if (jj_3R_84()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_367()) { jj_scanpos = xsp; break; }
+      if (jj_3R_366()) { jj_scanpos = xsp; break; }
     }
+    if (jj_scan_token(GT)) return true;
     return false;
   }
 
@@ -7799,18 +7722,6 @@ public abstract class kiev040 implements kiev040Constants {
 
   final private boolean jj_3R_79() {
     if (jj_3R_140()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_259() {
-    if (jj_scan_token(LT)) return true;
-    if (jj_3R_84()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_366()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(GT)) return true;
     return false;
   }
 
@@ -10116,6 +10027,118 @@ public abstract class kiev040 implements kiev040Constants {
   final private boolean jj_3R_360() {
     if (jj_scan_token(COMMA)) return true;
     if (jj_3R_100()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_504() {
+    if (jj_scan_token(CASE)) return true;
+    if (jj_3R_237()) return true;
+    if (jj_scan_token(LPAREN)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_97()) jj_scanpos = xsp;
+    if (jj_scan_token(RPAREN)) return true;
+    if (jj_scan_token(COLON)) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_98()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_154() {
+    if (jj_3R_84()) return true;
+    if (jj_3R_401()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_402()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_96() {
+    if (jj_3R_133()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_508() {
+    if (jj_scan_token(_DEFAULT)) return true;
+    if (jj_scan_token(COLON)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_22() {
+    if (jj_3R_100()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_360()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_507() {
+    if (jj_scan_token(CASE)) return true;
+    if (jj_3R_99()) return true;
+    if (jj_scan_token(COLON)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_20() {
+    if (jj_scan_token(OPERATOR_AT)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_95() {
+    if (jj_scan_token(CASE)) return true;
+    if (jj_3R_135()) return true;
+    if (jj_scan_token(LPAREN)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_216() {
+    if (jj_scan_token(LBRACE)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_22()) jj_scanpos = xsp;
+    if (jj_scan_token(RBRACE)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_505() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_507()) {
+    jj_scanpos = xsp;
+    if (jj_3R_508()) return true;
+    }
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_96()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_501() {
+    if (jj_3R_505()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_21() {
+    if (jj_3R_99()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_500() {
+    if (jj_3R_504()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_160() {
+    if (jj_3R_215()) return true;
     return false;
   }
 

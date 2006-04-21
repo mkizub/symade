@@ -403,30 +403,58 @@ public abstract class kiev040 {
 
 	}*/
 
-	void comments(NArrNodes arr) {
-		Comment prev = null;
-		Token t = getToken(1);
-		Token st = t.specialToken;
-		t.specialToken = null;
+	void comments_alone(NArrNodes arr) {
+		Comment[] comments = get_comments();
+		if (comments == null || comments.length == 0)
+			return;
+		for (int i=0; i < comments.length; i++)
+			arr.append(comments[i]);
+	}
+	void comments_before(ASTNode node) {
+		Comment[] comments = get_comments();
+		if (comments == null || comments.length == 0)
+			return;
+		for (int i=0; i < comments.length; i++)
+			node.addNodeData(comments[i], Comment.ATTR_BEFORE);
+	}
+
+	Comment[] get_comments() {
+		Token t0 = getToken(0);
+		Token t1 = getToken(1);
+		Token st = t1.specialToken;
+		if (st == null)
+			return null;
+		Comment[] comments = new Comment[0];
+		t1.specialToken = null;
 		while (st.specialToken != null)
 			st = st.specialToken;
 		for (; st != null; st = st.next) {
-			if (st.image.startsWith("//")) {
+			if (st.kind == SINGLE_LINE_COMMENT) {
 				String text = st.image.substring(2);
 				text = text.trim();
-				if (prev != null && prev.eol_form) {
-					prev.text = new StringBuffer(prev.text.length()+1+text.length()).append(prev.text).append('\n').append(text).toString();
-					prev.multiline = true;
+				if (comments.length > 0 && comments[comments.length-1].eol_form) {
+					Comment c = comments[comments.length-1];
+					c.text = new StringBuffer(c.text.length()+1+text.length()).append(c.text).append('\n').append(text).toString();
+					c.multiline = true;
 				} else {
 					Comment c = new Comment();
 					c.text = text;
 					c.eol_form = true;
-					prev = c;
-					arr.append(c);
+					c.nl_after = true;
+					if (st.specialToken != null) {
+						if (st.beginLine > st.specialToken.endLine)
+							c.nl_before = true;
+					} else {
+						if (st.beginLine < t0.endLine)
+							c.nl_before = true;
+					}
+					comments = (Comment[])Arrays.append(comments, c);
 				}
 			}
-			else if (st.image.startsWith("/**")) {
-				String text = st.image.substring(3, st.image.length()-5);
+			else if (st.kind == FORMAL_COMMENT || st.kind == MULTI_LINE_COMMENT) {
+				String text = (st.kind == FORMAL_COMMENT) ?
+						st.image.substring(3, st.image.length()-5)
+					:	st.image.substring(2, st.image.length()-4);
 				String[] lines = text.split("\n");
 				for (int i=0; i < lines.length; i++) {
 					String l = lines[i].trim();
@@ -436,7 +464,7 @@ public abstract class kiev040 {
 					}
 				}
 				Comment c = new Comment();
-				c.doc_form = true;
+				c.doc_form = (st.kind == FORMAL_COMMENT);
 				if (lines.length > 1) {
 					c.multiline = true;
 					for (int i=0; i < lines.length; i++) {
@@ -446,33 +474,26 @@ public abstract class kiev040 {
 				} else {
 					c.text = lines[0];
 				}
-				prev = c;
-				arr.append(c);
-			}
-			else if (st.image.startsWith("/*")) {
-				String text = st.image.substring(2, st.image.length()-4);
-				String[] lines = text.split("\n");
-				for (int i=0; i < lines.length; i++) {
-					String l = lines[i].trim();
-					if (l.length() >= 1 && l.charAt(0) == '*') {
-						l = l.substring(1);
-						l = l.trim();
-					}
-				}
-				Comment c = new Comment();
-				if (lines.length > 1) {
-					c.multiline = true;
-					for (int i=0; i < lines.length; i++) {
-						String txt = lines[i].trim();
-						c.text = new StringBuffer(c.text.length()+1+txt.length()).append(c.text).append('\n').append(txt).toString();
-					}
+				
+				if (st.specialToken != null) {
+					if (st.beginLine > st.specialToken.endLine)
+						c.nl_before = true;
 				} else {
-					c.text = lines[0];
+					if (st.beginLine < t0.endLine)
+						c.nl_before = true;
 				}
-				prev = c;
-				arr.append(c);
+				
+				if (st.next != null) {
+					if (st.endLine < st.next.beginLine)
+						c.nl_after = true;
+				} else {
+					if (st.endLine < t1.beginLine)
+						c.nl_after = true;
+				}
+				comments = (Comment[])Arrays.append(comments, c);
 			}
 		}
+		return comments;
 	}
 
 }
@@ -924,16 +945,14 @@ FileUnit FileUnit(String filename) :
 	}
 	try {
 		(
-			{ comments(fu.members); }
 			Pragma(fu)
 		)*
 		[
-			{ comments(fu.members); }
 			fu.pkg = Package()
 			{ curClazz = fu.pkg.getStruct(); }
 		]
 		(
-			{ comments(fu.members); }
+			{ comments_alone(fu.members); }
 			modifiers = Modifiers()
 			(
 				fu.members += Import(modifiers)
@@ -944,6 +963,7 @@ FileUnit FileUnit(String filename) :
 				fu.members += SyntaxDeclaration(modifiers, fu) [ ";" ]
 			)
 		)*
+		{ comments_alone(fu.members); }
 		<EOF>
 	}
 	catch(ParseError e) { rpe("Bad modifiers",e); }
@@ -968,13 +988,15 @@ ASTModifiers Modifiers() :
 }
 
 TypeNameRef Package() :
-{ NameRef qn; }
+{ NameRef qn; TypeNameRef tr = new TypeNameRef(); }
 {
+	{ comments_before(tr); }
 	"package"
 	qn = QName()
 	";"
 	{
-		TypeNameRef tr = new TypeNameRef(qn);
+		tr.name = qn.name;
+		tr.pos = qn.pos;
 		Struct pkg = Env.newPackage(qn.name);
 		tr.lnk = pkg.ctype;
 		return tr;
@@ -984,6 +1006,7 @@ TypeNameRef Package() :
 void Pragma(FileUnit fu) :
 { ASTPragma p = new ASTPragma(); }
 {
+	{ comments_before(p); }
 	"pragma"
 	(
 		<PRAGMA_ENABLE>		{ p.enable = true; }

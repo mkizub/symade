@@ -1300,7 +1300,9 @@ public class JavaSyntax extends Syntax {
 		case Comment: {
 			Comment c = (Comment)node;
 			if (c.doc_form || c.multiline) return seCommentNl;
-			if (c.eol_form) return seCommentNlAfter;
+			if (c.nl_before && c.nl_after) return seCommentNl;
+			if (c.eol_form || c.nl_after) return seCommentNlAfter;
+			if (c.nl_before) return seCommentNlBefore;
 			return seComment;
 		}
 

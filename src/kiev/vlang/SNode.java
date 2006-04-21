@@ -44,11 +44,16 @@ public class Comment extends SNode {
 
 	@virtual typedef This  = Comment;
 
+    public static final AttrSlot ATTR_BEFORE = new AttrSlot("comment before", true, false, Comment.class);
+    public static final AttrSlot ATTR_AFTER  = new AttrSlot("comment after",  true, false, Comment.class);
+
 	@dflow(out="this:in") private static class DFI {}
 
 	@att public boolean eol_form;
 	@att public boolean multiline;
 	@att public boolean doc_form;
+	@att public boolean nl_before;
+	@att public boolean nl_after;
 	@att public String  text;
 	
 	public Comment() {}
