@@ -195,4 +195,59 @@ public class DrawJavaPackedField extends DrawTerm {
 	public String getText() { return this.text; }
 }
 
+@node
+public class DrawJavaComment extends DrawTerm {
+
+	public String[] lines;
+	
+	public DrawJavaComment() {}
+	public DrawJavaComment(ASTNode node, SyntaxJavaComment syntax) {
+		super(node, syntax);
+	}
+
+	public void preFormat(DrawContext cont) {
+		Comment c = (Comment)node;
+		String text = c.text;
+		int nl = 0;
+		if (text == null) text = "";
+		if (c.eol_form) {
+			if (c.multiline) {
+				this.lines = text.split("\n");
+				for (int i=0; i < lines.length; i++)
+					lines[i] = "// "+lines[i];
+			} else {
+				this.lines = new String[]{ "// "+text };
+			}
+		}
+		else if (c.doc_form) {
+			if (c.multiline) {
+				this.lines = text.split("\n");
+				for (int i=0; i < lines.length; i++)
+					lines[i] = " * "+lines[i];
+				this.lines = (String[])Arrays.insert(this.lines, "/**", 0);
+				this.lines = (String[])Arrays.append(this.lines, "*/");
+			} else {
+				this.lines = new String[]{ "/** "+text + " */" };
+			}
+		}
+		else {
+			if (c.multiline) {
+				this.lines = text.split("\n");
+				for (int i=0; i < lines.length; i++) {
+					if (i == 0)
+						lines[i] = "/* "+lines[i];
+					else
+						lines[i] = " * "+lines[i];
+				}
+				lines[lines.length-1] = lines[lines.length-1] + " */";
+			} else {
+				this.lines = new String[]{ "/* "+text + " */" };
+			}
+		}
+		super.preFormat(cont);
+	}
+
+	public String getText() { return ""; }
+}
+
 

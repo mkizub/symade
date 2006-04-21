@@ -204,6 +204,7 @@ kiev.fmt.DrawFormat kiev/fmt/DrawFormat kiev\fmt\SyntaxLayout.java
 kiev.fmt.DrawGeometry kiev/fmt/DrawGeometry kiev\fmt\DrawGeometry.java
 kiev.fmt.DrawIntChoice kiev/fmt/DrawIntChoice kiev\fmt\DrawCtrl.java
 kiev.fmt.DrawJavaAccess kiev/fmt/DrawJavaAccess kiev\fmt\DrawJava.java
+kiev.fmt.DrawJavaComment kiev/fmt/DrawJavaComment kiev\fmt\DrawJava.java
 kiev.fmt.DrawJavaEnumAlias kiev/fmt/DrawJavaEnumAlias kiev\fmt\DrawJava.java
 kiev.fmt.DrawJavaExpr kiev/fmt/DrawJavaExpr kiev\fmt\DrawJava.java
 kiev.fmt.DrawJavaPackedField kiev/fmt/DrawJavaPackedField kiev\fmt\DrawJava.java
@@ -240,6 +241,7 @@ kiev.fmt.SyntaxEnumChoice kiev/fmt/SyntaxEnumChoice kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxIdentAttr kiev/fmt/SyntaxIdentAttr kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxIntChoice kiev/fmt/SyntaxIntChoice kiev\fmt\SyntaxLayout.java
 kiev.fmt.SyntaxJavaAccess kiev/fmt/SyntaxJavaAccess kiev\fmt\JavaSyntax.java
+kiev.fmt.SyntaxJavaComment kiev/fmt/SyntaxJavaComment kiev\fmt\JavaSyntax.java
 kiev.fmt.SyntaxJavaEnumAlias kiev/fmt/SyntaxJavaEnumAlias kiev\fmt\JavaSyntax.java
 kiev.fmt.SyntaxJavaExpr kiev/fmt/SyntaxJavaExpr kiev\fmt\JavaSyntax.java
 kiev.fmt.SyntaxJavaPackedField kiev/fmt/SyntaxJavaPackedField kiev\fmt\JavaSyntax.java
@@ -479,6 +481,7 @@ kiev.vlang.CatchInfo kiev/vlang/CatchInfo kiev\vlang\ComplexStatement.java
 kiev.vlang.ClazzName kiev/vlang/ClazzName kiev\vlang\ClazzName.java
 kiev.vlang.ClosureCallExpr kiev/vlang/ClosureCallExpr kiev\vlang\CallExpr.java
 kiev.vlang.CommaExpr kiev/vlang/CommaExpr kiev\vlang\Expr.java
+kiev.vlang.Comment kiev/vlang/Comment kiev\vlang\SNode.java
 kiev.vlang.CompilerException kiev/vlang/CompilerException kiev\vlang\AST.java
 kiev.vlang.CondStat kiev/vlang/CondStat kiev\vlang\Statement.java
 kiev.vlang.ConditionalExpr kiev/vlang/ConditionalExpr kiev\vlang\Expr.java

@@ -39,7 +39,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	@ref public DNode				resolved;
 
 	@nodeview
-	public static final view VImport of Import extends NodeView {
+	public static final view VImport of Import extends VSNode {
 		public		NameRef				name;
 		public		ImportMode			mode;
 		public		boolean				star;

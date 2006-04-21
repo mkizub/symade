@@ -114,6 +114,23 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 }
 
 
+@node
+public class SyntaxJavaComment extends SyntaxElem {
+	@virtual typedef This  = SyntaxJavaComment;
+
+	public SyntaxJavaComment() {}
+	public SyntaxJavaComment(DrawLayout layout) {
+		super(layout);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawJavaComment(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+
 public class CalcOptionJavaFlag implements CalcOption {
 	private final int mask;
 	private final int offs;
@@ -240,6 +257,11 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seConditionalExpr;
 	final SyntaxElem seCastExpr;
 	final SyntaxElem seNopExpr;
+
+	final SyntaxElem seComment;
+	final SyntaxElem seCommentNl;
+	final SyntaxElem seCommentNlBefore;
+	final SyntaxElem seCommentNlAfter;
 	
 	final Hashtable<Operator, SyntaxElem> exprs;
 	
@@ -333,14 +355,10 @@ public class JavaSyntax extends Syntax {
 			DrawLayout lout_pkg = new DrawLayout(new SpaceCmd[]{
 					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
 				});
-			DrawLayout lout_syntax = new DrawLayout(new SpaceCmd[]{
-					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
-				});
 			// file unit
 			seFileUnit = setl(lout_nl.ncopy(),
 					opt("pkg", setl(lout_pkg, kw("package"), ident("pkg"), sep(";"))),
-					lst("syntax", lout_syntax),
-					lst("members", lout_empty.ncopy())
+					lst("members", lout_nl.ncopy())
 				);
 		}
 		{
@@ -1117,6 +1135,34 @@ public class JavaSyntax extends Syntax {
 		seCastExpr = set(sep("("), kw("$cast"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
 		seNopExpr = new SyntaxSpace(new DrawLayout());
 		seNopExpr.is_hidden = true;
+		
+		DrawLayout lout_comment = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
+					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
+				});
+		seComment = new SyntaxJavaComment(lout_comment);
+
+		DrawLayout lout_comment_nl = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNl, SP_ADD_BEFORE, 0),
+					new SpaceCmd(siNl, SP_ADD_AFTER,  0),
+					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
+					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
+				});
+		seCommentNl = new SyntaxJavaComment(lout_comment_nl);
+
+		DrawLayout lout_comment_nl_before = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNl, SP_ADD_BEFORE, 0),
+					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
+					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
+				});
+		seCommentNlBefore = new SyntaxJavaComment(lout_comment_nl_before);
+
+		DrawLayout lout_comment_nl_after = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siNl, SP_ADD_AFTER,  0),
+					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
+					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
+				});
+		seCommentNlAfter = new SyntaxJavaComment(lout_comment_nl_after);
 	}
 	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
 		switch (node) {
@@ -1250,6 +1296,13 @@ public class JavaSyntax extends Syntax {
 		case NewArrayExpr: return seNewArrayExpr;
 		case NewInitializedArrayExpr: return seNewInitializedArrayExpr;
 		case NewClosure: return seNewClosure;
+
+		case Comment: {
+			Comment c = (Comment)node;
+			if (c.doc_form || c.multiline) return seCommentNl;
+			if (c.eol_form) return seCommentNlAfter;
+			return seComment;
+		}
 
 		case UnaryExpr: {
 			Operator op = ((UnaryExpr)node).op;

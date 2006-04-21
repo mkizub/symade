@@ -13,6 +13,7 @@ import static kiev.vlang.AccessFlags.*;
 
 typedef NArr<TypeWithArgsRef> NArrTypeWithArgsRefs;
 typedef NArr<ENode> NArrENodes;
+typedef NArr<ASTNode> NArrNodes;
 
 }*/
 
@@ -161,6 +162,305 @@ public abstract class kiev040 implements kiev040Constants {
                 return false;
         }
 
+        /*{
+	private Struct mkStruct(NameRef name, int flags, ASTModifiers modifiers, ASTNode parent) {
+		ClazzName clname;
+		if (parent instanceof FileUnit) {
+			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.getStruct(),name.name,false,false);
+		}
+		else if (parent instanceof Struct) {
+			clname = ClazzName.fromOuterAndName(curClazz,name.name,false,true);
+		}
+		else if (name != null) {
+			// Construct name of local class
+			KString bytecode_name =
+				KString.from(curClazz.name.bytecode_name
+					+"$"+curClazz.countAnonymouseInnerStructs()
+					+"$"+name.name);
+			KString fixname = bytecode_name.replace('/','.');
+			clname = new ClazzName(fixname,name.name,bytecode_name,false,false);
+		}
+		else {
+			// Local anonymouse class
+			KString bytecode_name =
+				KString.from(curClazz.name.bytecode_name
+					+"$"+curClazz.countAnonymouseInnerStructs());
+			clname = ClazzName.fromBytecodeName(bytecode_name, false);
+		}
+		Struct clazz = Env.newStruct(clname,curClazz,flags,true);
+		if (name != null)
+			clazz.pos  = name.pos;
+		else
+			clazz.pos  = parent.pos;
+		clazz.setResolved(true);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(clazz);
+		if (modifiers.acc != null)
+			clazz.acc  = modifiers.acc;
+		if (parent instanceof FileUnit) {
+			clazz.setLocal(false);
+			clazz.setStatic(true);
+			Env.setProjectInfo(clazz.name, Kiev.curFile);
+		}
+		else if (parent instanceof Struct)
+			clazz.setLocal(parent.isLocal());
+		else
+			clazz.setLocal(true);
+		foreach (Meta m; modifiers.annotations)
+			clazz.meta.set(m.ncopy());
+		
+		return clazz;
+	}
+
+	private TypeAssign mkTypeAssign(NameRef name, ASTModifiers modifiers) {
+		TypeAssign arg = new TypeAssign(name);
+		if (modifiers != null) {
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attachTo(arg);
+			if (modifiers.annotations.length > 0) {
+				arg.meta = new MetaSet();
+				foreach (Meta m; modifiers.annotations)
+					arg.meta.set(m.ncopy());
+			}
+		}
+		return arg;
+	}
+
+	private TypeConstr mkTypeConstr(NameRef name, ASTModifiers modifiers) {
+		TypeConstr arg = new TypeConstr(name);
+		if (modifiers != null) {
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attachTo(arg);
+			if (modifiers.annotations.length > 0) {
+				arg.meta = new MetaSet();
+				foreach (Meta m; modifiers.annotations)
+					arg.meta.set(m.ncopy());
+			}
+		}
+		return arg;
+	}
+
+	private Constructor mkConstructor(NameRef id, ASTModifiers modifiers) {
+		Constructor meth = new Constructor(0);
+		meth.pos = id.pos;
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(meth);
+		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		foreach (Meta m; modifiers.annotations)
+			meth.meta.set(m.ncopy());
+		return meth;
+	}
+	
+	private Method mkMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
+		Method meth = new Method(id.name, ret, 0);
+		meth.pos = id.pos;
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(meth);
+		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		foreach (Meta m; modifiers.annotations)
+			meth.meta.set(m.ncopy());
+		return meth;
+	}
+	
+	private RuleMethod mkRuleMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
+		RuleMethod meth = new RuleMethod(id, 0);
+		meth.pos = id.pos;
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(meth);
+		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		foreach (Meta m; modifiers.annotations)
+			meth.meta.set(m.ncopy());
+		return meth;
+	}
+	
+	private Field mkField(NameRef id, ASTModifiers modifiers, TypeRef ret, boolean first) {
+		if (!first)
+			ret = ret.ncopy();
+		Field f = new Field(id.name,ret,0);
+		f.pos = id.pos;
+		if (first) {
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attachTo(f);
+			if (modifiers.acc != null)
+				f.acc = modifiers.acc;
+			foreach (Meta m; modifiers.annotations)
+				f.meta.set(m.ncopy());
+		} else {
+			foreach (MetaSpecial sa; modifiers.specials)
+				(sa.ncopy()).attachTo(f);
+			if (modifiers.acc != null)
+				f.acc = new Access(modifiers.acc.flags);
+			foreach (Meta m; modifiers.annotations)
+				f.meta.set(m.ncopy());
+		}
+		return f;
+	}
+
+	private Field mkEnumField(NameRef id, ASTModifiers modifiers) {
+		Field f = new Field(id.name,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
+		f.pos = id.pos;
+		f.setEnumField(true);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(f);
+		foreach (Meta m; modifiers.annotations)
+			f.meta.set(m.ncopy());
+		return f;
+	}
+
+	private Field mkCaseField(NameRef id, ASTModifiers modifiers, TypeRef tp) {
+		Field f = new Field(id.name,tp,0|ACC_PUBLIC);
+		f.pos = id.pos;
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(f);
+		foreach (Meta m; modifiers.annotations)
+			f.meta.set(m.ncopy());
+		return f;
+	}
+	
+	private Var mkVar(NameRef id, ASTModifiers modifiers, TypeRef tp, boolean first) {
+		if (!first)
+			tp = tp.ncopy();
+		Var v = new Var(id, tp, 0);
+		if (first) {
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attachTo(v);
+		} else {
+			foreach (MetaSpecial sa; modifiers.specials)
+				(sa.ncopy()).attachTo(v);
+		}
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet();
+			if (first) {
+				foreach (Meta m; modifiers.annotations)
+					v.meta.set(m.ncopy());
+			} else {
+				foreach (Meta m; modifiers.annotations)
+					v.meta.set(m.ncopy());
+			}
+		}
+		return v;
+	}
+	
+	private FormPar mkFormPar(NameRef id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
+		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, 0);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(v);
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet();
+			foreach (Meta m; modifiers.annotations)
+				v.meta.set(m.ncopy());
+		}
+		return v;
+	}
+	
+	private FormPar mkVarargPar(NameRef id, ASTModifiers modifiers, TypeRef vt) {
+		FormPar v = new FormPar(id, vt, vt.ncopy(), FormPar.PARAM_VARARGS, ACC_FINAL);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(v);
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet();
+			foreach (Meta m; modifiers.annotations)
+				v.meta.set(m.ncopy());
+		}
+		return v;
+	}
+	
+	private	Initializer mkInitializer(int pos, ASTModifiers modifiers) {
+		Initializer init = new Initializer(pos,0);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(init);
+		if (modifiers.annotations.length > 0) {
+			init.meta = new MetaSet();
+			foreach (Meta m; modifiers.annotations)
+				init.meta.set(m.ncopy());
+		}
+		return init;
+	}
+
+	
+	private ENode mkNotExpr(ASTOperator not, ENode cond) {
+		ASTExpression e = new ASTExpression();
+		e.pos = cond.pos;
+		e.nodes.append(not);
+		e.nodes.append(~cond);
+		return e;
+	}
+
+
+	}*/
+
+        void comments(NArrNodes arr) {
+                Comment prev = null;
+                Token t = getToken(1);
+                Token st = t.specialToken;
+                t.specialToken = null;
+                while (st.specialToken != null)
+                        st = st.specialToken;
+                for (; st != null; st = st.next) {
+                        if (st.image.startsWith("//")) {
+                                String text = st.image.substring(2);
+                                text = text.trim();
+                                if (prev != null && prev.eol_form) {
+                                        prev.text = new StringBuffer(prev.text.length()+1+text.length()).append(prev.text).append('\n').append(text).toString();
+                                        prev.multiline = true;
+                                } else {
+                                        Comment c = new Comment();
+                                        c.text = text;
+                                        c.eol_form = true;
+                                        prev = c;
+                                        arr.append(c);
+                                }
+                        }
+                        else if (st.image.startsWith("/**")) {
+                                String text = st.image.substring(3, st.image.length()-5);
+                                String[] lines = text.split("\n");
+                                for (int i=0; i < lines.length; i++) {
+                                        String l = lines[i].trim();
+                                        if (l.length() >= 1 && l.charAt(0) == '*') {
+                                                l = l.substring(1);
+                                                l = l.trim();
+                                        }
+                                }
+                                Comment c = new Comment();
+                                c.doc_form = true;
+                                if (lines.length > 1) {
+                                        c.multiline = true;
+                                        for (int i=0; i < lines.length; i++) {
+                                                String txt = lines[i].trim();
+                                                c.text = new StringBuffer(c.text.length()+1+txt.length()).append(c.text).append('\n').append(txt).toString();
+                                        }
+                                } else {
+                                        c.text = lines[0];
+                                }
+                                prev = c;
+                                arr.append(c);
+                        }
+                        else if (st.image.startsWith("/*")) {
+                                String text = st.image.substring(2, st.image.length()-4);
+                                String[] lines = text.split("\n");
+                                for (int i=0; i < lines.length; i++) {
+                                        String l = lines[i].trim();
+                                        if (l.length() >= 1 && l.charAt(0) == '*') {
+                                                l = l.substring(1);
+                                                l = l.trim();
+                                        }
+                                }
+                                Comment c = new Comment();
+                                if (lines.length > 1) {
+                                        c.multiline = true;
+                                        for (int i=0; i < lines.length; i++) {
+                                                String txt = lines[i].trim();
+                                                c.text = new StringBuffer(c.text.length()+1+txt.length()).append(c.text).append('\n').append(txt).toString();
+                                        }
+                                } else {
+                                        c.text = lines[0];
+                                }
+                                prev = c;
+                                arr.append(c);
+                        }
+                }
+        }
+
 /*****************************************
  * THE JAVA LANGUAGE GRAMMAR STARTS HERE *
  *****************************************/
@@ -189,10 +489,12 @@ public abstract class kiev040 implements kiev040Constants {
         default:
           break label_1;
         }
+                          comments(fu.members);
         Pragma(fu);
       }
       switch (jj_nt.kind) {
       case PACKAGE:
+                          comments(fu.members);
         fu.pkg = Package();
                           curClazz = fu.pkg.getStruct();
         break;
@@ -206,6 +508,7 @@ public abstract class kiev040 implements kiev040Constants {
         } else {
           break label_2;
         }
+                          comments(fu.members);
         modifiers = Modifiers();
         switch (jj_nt.kind) {
         case IMPORT:
@@ -5249,252 +5552,6 @@ public abstract class kiev040 implements kiev040Constants {
     catch(LookaheadSuccess ls) { return true; }
   }
 
-  final private boolean jj_3_25() {
-    if (jj_3R_102()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_24()) { jj_scanpos = xsp; break; }
-    }
-    xsp = jj_scanpos;
-    if (jj_scan_token(136)) jj_scanpos = xsp;
-    return false;
-  }
-
-  final private boolean jj_3R_318() {
-    if (jj_scan_token(FOR)) return true;
-    if (jj_scan_token(LPAREN)) return true;
-    if (jj_3R_475()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_102()) jj_scanpos = xsp;
-    if (jj_scan_token(SEMICOLON)) return true;
-    xsp = jj_scanpos;
-    if (jj_3_103()) jj_scanpos = xsp;
-    if (jj_scan_token(RPAREN)) return true;
-    if (jj_3R_238()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_474() {
-    if (jj_3R_85()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_217() {
-    if (jj_scan_token(LBRACE)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_25()) jj_scanpos = xsp;
-    if (jj_scan_token(RBRACE)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_23() {
-    if (jj_3R_101()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_161() {
-    if (jj_3R_217()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_458() {
-    if (jj_scan_token(ASSIGN2)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_100() {
-    if (jj_scan_token(BANG)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_317() {
-    if (jj_scan_token(DO)) return true;
-    if (jj_3R_238()) return true;
-    if (jj_scan_token(WHILE)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_474()) jj_scanpos = xsp;
-    if (jj_scan_token(LPAREN)) return true;
-    if (jj_3R_99()) return true;
-    if (jj_scan_token(RPAREN)) return true;
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_102() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_161()) {
-    jj_scanpos = xsp;
-    if (jj_3_23()) return true;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_473() {
-    if (jj_3R_85()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_438() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(142)) {
-    jj_scanpos = xsp;
-    if (jj_3R_458()) return true;
-    }
-    if (jj_3R_102()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_437() {
-    if (jj_scan_token(OPERATOR_LRBRACKETS)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_99() {
-    if (jj_scan_token(BANG)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_316() {
-    if (jj_scan_token(WHILE)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_473()) jj_scanpos = xsp;
-    if (jj_scan_token(LPAREN)) return true;
-    if (jj_3R_99()) return true;
-    if (jj_scan_token(RPAREN)) return true;
-    if (jj_3R_238()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_409() {
-    if (jj_3R_118()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_437()) { jj_scanpos = xsp; break; }
-    }
-    xsp = jj_scanpos;
-    if (jj_3R_438()) jj_scanpos = xsp;
-    return false;
-  }
-
-  final private boolean jj_3R_472() {
-    if (jj_scan_token(ELSE)) return true;
-    if (jj_3R_238()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_450() {
-    if (jj_scan_token(COMMA)) return true;
-    if (jj_3R_409()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_456() {
-    if (jj_scan_token(ASSIGN2)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_471() {
-    if (jj_3R_85()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_113() {
-    if (jj_3R_84()) return true;
-    if (jj_3R_409()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_450()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_431() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(142)) {
-    jj_scanpos = xsp;
-    if (jj_3R_456()) return true;
-    }
-    if (jj_3R_102()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_509() {
-    if (jj_scan_token(COMMA)) return true;
-    if (jj_3R_77()) return true;
-    if (jj_3R_136()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_98() {
-    if (jj_3R_133()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_315() {
-    if (jj_scan_token(IF)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_471()) jj_scanpos = xsp;
-    if (jj_scan_token(LPAREN)) return true;
-    if (jj_3R_99()) return true;
-    if (jj_scan_token(RPAREN)) return true;
-    if (jj_3R_238()) return true;
-    xsp = jj_scanpos;
-    if (jj_3R_472()) jj_scanpos = xsp;
-    return false;
-  }
-
-  final private boolean jj_3R_402() {
-    if (jj_scan_token(COMMA)) return true;
-    if (jj_3R_401()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_430() {
-    if (jj_scan_token(OPERATOR_LRBRACKETS)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_401() {
-    if (jj_3R_118()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_430()) { jj_scanpos = xsp; break; }
-    }
-    xsp = jj_scanpos;
-    if (jj_3R_431()) jj_scanpos = xsp;
-    return false;
-  }
-
-  final private boolean jj_3_97() {
-    if (jj_3R_77()) return true;
-    if (jj_3R_136()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_509()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_360() {
-    if (jj_scan_token(COMMA)) return true;
-    if (jj_3R_100()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_504() {
     if (jj_scan_token(CASE)) return true;
     if (jj_3R_237()) return true;
@@ -9816,6 +9873,252 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3_25() {
+    if (jj_3R_102()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_24()) { jj_scanpos = xsp; break; }
+    }
+    xsp = jj_scanpos;
+    if (jj_scan_token(136)) jj_scanpos = xsp;
+    return false;
+  }
+
+  final private boolean jj_3R_318() {
+    if (jj_scan_token(FOR)) return true;
+    if (jj_scan_token(LPAREN)) return true;
+    if (jj_3R_475()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_102()) jj_scanpos = xsp;
+    if (jj_scan_token(SEMICOLON)) return true;
+    xsp = jj_scanpos;
+    if (jj_3_103()) jj_scanpos = xsp;
+    if (jj_scan_token(RPAREN)) return true;
+    if (jj_3R_238()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_474() {
+    if (jj_3R_85()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_217() {
+    if (jj_scan_token(LBRACE)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_25()) jj_scanpos = xsp;
+    if (jj_scan_token(RBRACE)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_23() {
+    if (jj_3R_101()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_161() {
+    if (jj_3R_217()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_458() {
+    if (jj_scan_token(ASSIGN2)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_100() {
+    if (jj_scan_token(BANG)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_317() {
+    if (jj_scan_token(DO)) return true;
+    if (jj_3R_238()) return true;
+    if (jj_scan_token(WHILE)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_474()) jj_scanpos = xsp;
+    if (jj_scan_token(LPAREN)) return true;
+    if (jj_3R_99()) return true;
+    if (jj_scan_token(RPAREN)) return true;
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_102() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_161()) {
+    jj_scanpos = xsp;
+    if (jj_3_23()) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_473() {
+    if (jj_3R_85()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_438() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(142)) {
+    jj_scanpos = xsp;
+    if (jj_3R_458()) return true;
+    }
+    if (jj_3R_102()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_437() {
+    if (jj_scan_token(OPERATOR_LRBRACKETS)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_99() {
+    if (jj_scan_token(BANG)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_316() {
+    if (jj_scan_token(WHILE)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_473()) jj_scanpos = xsp;
+    if (jj_scan_token(LPAREN)) return true;
+    if (jj_3R_99()) return true;
+    if (jj_scan_token(RPAREN)) return true;
+    if (jj_3R_238()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_409() {
+    if (jj_3R_118()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_437()) { jj_scanpos = xsp; break; }
+    }
+    xsp = jj_scanpos;
+    if (jj_3R_438()) jj_scanpos = xsp;
+    return false;
+  }
+
+  final private boolean jj_3R_472() {
+    if (jj_scan_token(ELSE)) return true;
+    if (jj_3R_238()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_450() {
+    if (jj_scan_token(COMMA)) return true;
+    if (jj_3R_409()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_456() {
+    if (jj_scan_token(ASSIGN2)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_471() {
+    if (jj_3R_85()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_113() {
+    if (jj_3R_84()) return true;
+    if (jj_3R_409()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_450()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_431() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(142)) {
+    jj_scanpos = xsp;
+    if (jj_3R_456()) return true;
+    }
+    if (jj_3R_102()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_509() {
+    if (jj_scan_token(COMMA)) return true;
+    if (jj_3R_77()) return true;
+    if (jj_3R_136()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_98() {
+    if (jj_3R_133()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_315() {
+    if (jj_scan_token(IF)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_471()) jj_scanpos = xsp;
+    if (jj_scan_token(LPAREN)) return true;
+    if (jj_3R_99()) return true;
+    if (jj_scan_token(RPAREN)) return true;
+    if (jj_3R_238()) return true;
+    xsp = jj_scanpos;
+    if (jj_3R_472()) jj_scanpos = xsp;
+    return false;
+  }
+
+  final private boolean jj_3R_402() {
+    if (jj_scan_token(COMMA)) return true;
+    if (jj_3R_401()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_430() {
+    if (jj_scan_token(OPERATOR_LRBRACKETS)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_401() {
+    if (jj_3R_118()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_430()) { jj_scanpos = xsp; break; }
+    }
+    xsp = jj_scanpos;
+    if (jj_3R_431()) jj_scanpos = xsp;
+    return false;
+  }
+
+  final private boolean jj_3_97() {
+    if (jj_3R_77()) return true;
+    if (jj_3R_136()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_509()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_360() {
+    if (jj_scan_token(COMMA)) return true;
+    if (jj_3R_100()) return true;
+    return false;
+  }
+
   public kiev040TokenManager token_source;
   SimpleCharStream jj_input_stream;
   public Token token, jj_nt;
@@ -9921,232 +10224,5 @@ public abstract class kiev040 implements kiev040Constants {
 
   final public void disable_tracing() {
   }
-
-        /*{
-	private Struct mkStruct(NameRef name, int flags, ASTModifiers modifiers, ASTNode parent) {
-		ClazzName clname;
-		if (parent instanceof FileUnit) {
-			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.getStruct(),name.name,false,false);
-		}
-		else if (parent instanceof Struct) {
-			clname = ClazzName.fromOuterAndName(curClazz,name.name,false,true);
-		}
-		else if (name != null) {
-			// Construct name of local class
-			KString bytecode_name =
-				KString.from(curClazz.name.bytecode_name
-					+"$"+curClazz.countAnonymouseInnerStructs()
-					+"$"+name.name);
-			KString fixname = bytecode_name.replace('/','.');
-			clname = new ClazzName(fixname,name.name,bytecode_name,false,false);
-		}
-		else {
-			// Local anonymouse class
-			KString bytecode_name =
-				KString.from(curClazz.name.bytecode_name
-					+"$"+curClazz.countAnonymouseInnerStructs());
-			clname = ClazzName.fromBytecodeName(bytecode_name, false);
-		}
-		Struct clazz = Env.newStruct(clname,curClazz,flags,true);
-		if (name != null)
-			clazz.pos  = name.pos;
-		else
-			clazz.pos  = parent.pos;
-		clazz.setResolved(true);
-		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(clazz);
-		if (modifiers.acc != null)
-			clazz.acc  = modifiers.acc;
-		if (parent instanceof FileUnit) {
-			clazz.setLocal(false);
-			clazz.setStatic(true);
-			Env.setProjectInfo(clazz.name, Kiev.curFile);
-		}
-		else if (parent instanceof Struct)
-			clazz.setLocal(parent.isLocal());
-		else
-			clazz.setLocal(true);
-		foreach (Meta m; modifiers.annotations)
-			clazz.meta.set(m.ncopy());
-		
-		return clazz;
-	}
-
-	private TypeAssign mkTypeAssign(NameRef name, ASTModifiers modifiers) {
-		TypeAssign arg = new TypeAssign(name);
-		if (modifiers != null) {
-			foreach (MetaSpecial sa; modifiers.specials)
-				sa.attachTo(arg);
-			if (modifiers.annotations.length > 0) {
-				arg.meta = new MetaSet();
-				foreach (Meta m; modifiers.annotations)
-					arg.meta.set(m.ncopy());
-			}
-		}
-		return arg;
-	}
-
-	private TypeConstr mkTypeConstr(NameRef name, ASTModifiers modifiers) {
-		TypeConstr arg = new TypeConstr(name);
-		if (modifiers != null) {
-			foreach (MetaSpecial sa; modifiers.specials)
-				sa.attachTo(arg);
-			if (modifiers.annotations.length > 0) {
-				arg.meta = new MetaSet();
-				foreach (Meta m; modifiers.annotations)
-					arg.meta.set(m.ncopy());
-			}
-		}
-		return arg;
-	}
-
-	private Constructor mkConstructor(NameRef id, ASTModifiers modifiers) {
-		Constructor meth = new Constructor(0);
-		meth.pos = id.pos;
-		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(meth);
-		if( modifiers.acc != null ) meth.acc = modifiers.acc;
-		foreach (Meta m; modifiers.annotations)
-			meth.meta.set(m.ncopy());
-		return meth;
-	}
-	
-	private Method mkMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
-		Method meth = new Method(id.name, ret, 0);
-		meth.pos = id.pos;
-		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(meth);
-		if( modifiers.acc != null ) meth.acc = modifiers.acc;
-		foreach (Meta m; modifiers.annotations)
-			meth.meta.set(m.ncopy());
-		return meth;
-	}
-	
-	private RuleMethod mkRuleMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
-		RuleMethod meth = new RuleMethod(id, 0);
-		meth.pos = id.pos;
-		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(meth);
-		if( modifiers.acc != null ) meth.acc = modifiers.acc;
-		foreach (Meta m; modifiers.annotations)
-			meth.meta.set(m.ncopy());
-		return meth;
-	}
-	
-	private Field mkField(NameRef id, ASTModifiers modifiers, TypeRef ret, boolean first) {
-		if (!first)
-			ret = ret.ncopy();
-		Field f = new Field(id.name,ret,0);
-		f.pos = id.pos;
-		if (first) {
-			foreach (MetaSpecial sa; modifiers.specials)
-				sa.attachTo(f);
-			if (modifiers.acc != null)
-				f.acc = modifiers.acc;
-			foreach (Meta m; modifiers.annotations)
-				f.meta.set(m.ncopy());
-		} else {
-			foreach (MetaSpecial sa; modifiers.specials)
-				(sa.ncopy()).attachTo(f);
-			if (modifiers.acc != null)
-				f.acc = new Access(modifiers.acc.flags);
-			foreach (Meta m; modifiers.annotations)
-				f.meta.set(m.ncopy());
-		}
-		return f;
-	}
-
-	private Field mkEnumField(NameRef id, ASTModifiers modifiers) {
-		Field f = new Field(id.name,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
-		f.pos = id.pos;
-		f.setEnumField(true);
-		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(f);
-		foreach (Meta m; modifiers.annotations)
-			f.meta.set(m.ncopy());
-		return f;
-	}
-
-	private Field mkCaseField(NameRef id, ASTModifiers modifiers, TypeRef tp) {
-		Field f = new Field(id.name,tp,0|ACC_PUBLIC);
-		f.pos = id.pos;
-		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(f);
-		foreach (Meta m; modifiers.annotations)
-			f.meta.set(m.ncopy());
-		return f;
-	}
-	
-	private Var mkVar(NameRef id, ASTModifiers modifiers, TypeRef tp, boolean first) {
-		if (!first)
-			tp = tp.ncopy();
-		Var v = new Var(id, tp, 0);
-		if (first) {
-			foreach (MetaSpecial sa; modifiers.specials)
-				sa.attachTo(v);
-		} else {
-			foreach (MetaSpecial sa; modifiers.specials)
-				(sa.ncopy()).attachTo(v);
-		}
-		if (modifiers.annotations.length > 0) {
-			v.meta = new MetaSet();
-			if (first) {
-				foreach (Meta m; modifiers.annotations)
-					v.meta.set(m.ncopy());
-			} else {
-				foreach (Meta m; modifiers.annotations)
-					v.meta.set(m.ncopy());
-			}
-		}
-		return v;
-	}
-	
-	private FormPar mkFormPar(NameRef id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
-		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, 0);
-		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(v);
-		if (modifiers.annotations.length > 0) {
-			v.meta = new MetaSet();
-			foreach (Meta m; modifiers.annotations)
-				v.meta.set(m.ncopy());
-		}
-		return v;
-	}
-	
-	private FormPar mkVarargPar(NameRef id, ASTModifiers modifiers, TypeRef vt) {
-		FormPar v = new FormPar(id, vt, vt.ncopy(), FormPar.PARAM_VARARGS, ACC_FINAL);
-		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(v);
-		if (modifiers.annotations.length > 0) {
-			v.meta = new MetaSet();
-			foreach (Meta m; modifiers.annotations)
-				v.meta.set(m.ncopy());
-		}
-		return v;
-	}
-	
-	private	Initializer mkInitializer(int pos, ASTModifiers modifiers) {
-		Initializer init = new Initializer(pos,0);
-		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(init);
-		if (modifiers.annotations.length > 0) {
-			init.meta = new MetaSet();
-			foreach (Meta m; modifiers.annotations)
-				init.meta.set(m.ncopy());
-		}
-		return init;
-	}
-
-	
-	private ENode mkNotExpr(ASTOperator not, ENode cond) {
-		ASTExpression e = new ASTExpression();
-		e.pos = cond.pos;
-		e.nodes.append(not);
-		e.nodes.append(~cond);
-		return e;
-	}
-
-
-	}*/
 
 }
