@@ -62,15 +62,19 @@ public class DrawContext implements Cloneable {
 		if (dr instanceof DrawJavaComment) {
 			String[] lines = ((DrawJavaComment)dr).lines;
 			foreach(String text; lines) {
-				if (text == null || text.length() == 0) text = " ";
 				if (gfx != null) {
-					DrawFormat fmt = dr.syntax.fmt;
-					Font  font  = fmt.font.native_font;
-					if (font == null) font = new Font("Dialog", Font.PLAIN, 12);
-					TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
-					Rectangle2D rect = tl.getBounds();
-					dg.w = (int)Math.max(dg.w, Math.ceil(tl.getAdvance()));
-					dg.h+= (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
+					if (text.length() != 0) {
+						DrawFormat fmt = dr.syntax.fmt;
+						Font  font  = fmt.font.native_font;
+						if (font == null) font = new Font("Dialog", Font.PLAIN, 12);
+						TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
+						Rectangle2D rect = tl.getBounds();
+						dg.w = (int)Math.max(dg.w, Math.ceil(tl.getAdvance()));
+						dg.h+= (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
+					} else {
+						dg.w = 0;
+						dg.h+= 10;
+					}
 					dg.b = 0;
 				} else {
 					dg.w = text.length();
@@ -80,22 +84,26 @@ public class DrawContext implements Cloneable {
 			}
 		} else {
 			String text = dr.getText();
-			if (text == null || text.length() == 0) text = " ";
 			if (gfx != null) {
-				DrawFormat fmt = dr.syntax.fmt;
-				Font  font  = fmt.font.native_font;
-				if (font == null) font = new Font("Dialog", Font.PLAIN, 12);
-				TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
-				Rectangle2D rect = tl.getBounds();
-				dg.w = (int)Math.ceil(tl.getAdvance());
-				dg.h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
-				dg.b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
+				if (text.length() != 0) {
+					DrawFormat fmt = dr.syntax.fmt;
+					Font  font  = fmt.font.native_font;
+					if (font == null) font = new Font("Dialog", Font.PLAIN, 12);
+					TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
+					Rectangle2D rect = tl.getBounds();
+					dg.w = (int)Math.ceil(tl.getAdvance());
+					dg.h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
+					dg.b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
+				} else {
+					dg.w = 0;
+					dg.h = 10;
+					dg.b = 0;
+				}
 			} else {
 				dg.w = text.length();
 				dg.h = 1;
 				dg.b = 0;
 			}
-	
 			this.x += dg.w;
 		}
 	}

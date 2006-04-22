@@ -169,7 +169,7 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seTypeConstr;
 	final SyntaxElem seTypeConstrClassArg;
 	final SyntaxElem seFieldDecl;
-//	final SyntaxElem seVarDecl;
+	final SyntaxElem seVarDecl;
 	final SyntaxElem seVar;
 	final SyntaxElem seVarNoType;
 	final SyntaxElem seFormPar;
@@ -704,7 +704,9 @@ public class JavaSyntax extends Syntax {
 				ident("ftype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
 				);
 			// vars
-//			seVarDecl = set(attr("var"), sep(";"));
+			seVarDecl = set(opt("meta"), var_prefix.ncopy(),
+				ident("vtype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))),
+				sep(";"));
 			seVar = set(opt("meta"), var_prefix.ncopy(),
 				ident("vtype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority)))
 				);
@@ -848,7 +850,7 @@ public class JavaSyntax extends Syntax {
 			// block expression
 			seBlock = set(
 					sep("{", lout_code_block_start.ncopy()),
-					par(plIndented, lst("stats", setl(lout_nl.ncopy(),node()),null,lout_empty.ncopy())),
+					par(plIndented, lst("stats", setl(lout_nl.ncopy(),node(new FormatInfoHint("stat"))),null,lout_empty.ncopy())),
 					sep("}", lout_code_block_end.ncopy())
 					);
 			// rule block
@@ -957,7 +959,7 @@ public class JavaSyntax extends Syntax {
 					lout_empty.ncopy()
 					),
 				sep(":", lout_nl.ncopy()),
-				par(plIndented, lst("stats",setl(lout_nl.ncopy(),node()),null,lout_nl.ncopy()))
+				par(plIndented, lst("stats",setl(lout_nl.ncopy(),node(new FormatInfoHint("stat"))),null,lout_nl.ncopy()))
 				);
 			seSwitchStat = set(
 				kw("switch"),
@@ -1197,11 +1199,14 @@ public class JavaSyntax extends Syntax {
 			return seStructClass;
 		}
 		case Field: return seFieldDecl;
-//		case VarDecl: return seVarDecl;
 		case FormPar: return seFormPar;
 		case Var:
-			if (hint != null && "no-type".equals(hint.text))
-				return seVarNoType;
+			if (hint != null) {
+				if ("no-type".equals(hint.text))
+					return seVarNoType;
+				if ("stat".equals(hint.text))
+					return seVarDecl;
+			}
 			return seVar;
 		case RuleMethod: return seRuleMethod;
 		case Constructor: return seConstructor;

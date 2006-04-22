@@ -70,7 +70,7 @@ public class Editor extends UIView implements KeyListener {
 	}
 	
 	private boolean isSpaceOrHidden(Drawable dr) {
-		return dr.isHidden() || isSpace(dr);
+		return dr.isUnvisible() || isSpace(dr);
 	}
 	
 	private boolean isSpace(Drawable dr) {

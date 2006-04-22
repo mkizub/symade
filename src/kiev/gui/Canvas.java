@@ -47,7 +47,7 @@ public class Canvas extends JPanel implements DrawDevice {
 	int			drawed_x;
 	int			drawed_y;
 	boolean		selected;
-	boolean		is_editable;
+//	boolean		is_editable;
 	
 	Canvas() {
 		setFocusable(true);
@@ -101,7 +101,7 @@ public class Canvas extends JPanel implements DrawDevice {
 				last_visible = null;
 				translated_y = 0;
 				selected = false;
-				is_editable = true;
+				//is_editable = true;
 				paint(g, root);
 				num_lines = lineno-1;
 			}
@@ -114,10 +114,10 @@ public class Canvas extends JPanel implements DrawDevice {
 	}
 	
 	private void paint(Graphics2D g, Drawable n) {
-		if (n == null || n.isHidden())
+		if (n == null || n.isUnvisible())
 			return;
 		if (n instanceof DrawNonTerm) {
-			foreach(Drawable dr; n.args; !dr.isHidden()) {
+			foreach(Drawable dr; n.args; !dr.isUnvisible()) {
 				if (dr instanceof DrawNonTerm) {
 					if (dr == current) {
 						selected = true;
@@ -138,7 +138,7 @@ public class Canvas extends JPanel implements DrawDevice {
 	}
 
 	private void paintLeaf(Graphics2D g, DrawTerm leaf) {
-		if (leaf == null || leaf.isHidden())
+		if (leaf == null || leaf.isUnvisible())
 			return;
 		if (lineno < first_line) {
 			if (leaf.geometry.do_newline > 0)
@@ -166,10 +166,10 @@ public class Canvas extends JPanel implements DrawDevice {
 		
 		last_visible = leaf;
 		
-		if (is_editable && drawed_x < x && drawed_y == y) {
-			g.setColor(Color.LIGHT_GRAY);
-			g.fillRect(drawed_x, y, x-drawed_x, h);
-		}
+//		if (is_editable && drawed_x < x && drawed_y == y) {
+//			g.setColor(Color.LIGHT_GRAY);
+//			g.fillRect(drawed_x, y, x-drawed_x, h);
+//		}
 
 		boolean set_white = false;
 		if ((selected || leaf == current) && cursor_offset < 0) {
@@ -177,10 +177,10 @@ public class Canvas extends JPanel implements DrawDevice {
 			g.fillRect(x, y, w, h);
 			set_white = true;
 		}
-		else if (is_editable) {
-			g.setColor(Color.LIGHT_GRAY);
-			g.fillRect(x, y, w, h);
-		}
+//		else if (is_editable) {
+//			g.setColor(Color.LIGHT_GRAY);
+//			g.fillRect(x, y, w, h);
+//		}
 		drawed_x = x + w;
 		drawed_y = y;
 		
@@ -201,28 +201,30 @@ public class Canvas extends JPanel implements DrawDevice {
 			String[] lines = ((DrawJavaComment)leaf).lines;
 			int cy = y;
 			foreach (String s; lines) {
-				if (s == null || s.length() == 0) s = " ";
-				TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
-				int h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
-				int b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
-				tl.draw(g, x, cy+b);
+				if (s.length() != 0) {
+					TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
+					int h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
+					int b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
+					tl.draw(g, x, cy+b);
+				}
 				cy += h;
 			}
 		} else {
 			String s = leaf.getText();
-			if (s == null || s.length() == 0) s = " ";
-			TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
-			tl.draw(g, x, y+b);
-			if (leaf == current && cursor_offset >= 0) {
-				g.translate(x, y+b);
-				Shape[] carets = tl.getCaretShapes(cursor_offset);
-				g.setColor(Color.RED);
-				g.draw(carets[0]);
-				if (carets[1] != null) {
-					g.setColor(Color.BLACK);
-					g.draw(carets[1]);
+			if (s.length() != 0) {
+				TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
+				tl.draw(g, x, y+b);
+				if (leaf == current && cursor_offset >= 0) {
+					g.translate(x, y+b);
+					Shape[] carets = tl.getCaretShapes(cursor_offset);
+					g.setColor(Color.RED);
+					g.draw(carets[0]);
+					if (carets[1] != null) {
+						g.setColor(Color.BLACK);
+						g.draw(carets[1]);
+					}
+					g.translate(-x, -(y+b));
 				}
-				g.translate(-x, -(y+b));
 			}
 		}
 	}

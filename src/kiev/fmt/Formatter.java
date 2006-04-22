@@ -94,7 +94,7 @@ public class TextFormatter extends AbstractFormatter {
 		DrawTerm line_start = first;
 		for (DrawTerm dr=first; dr != null; dr = dr.getNextLeaf()) {
 			dr.geometry.y = y;
-			if (dr.isHidden()) {
+			if (dr.isUnvisible()) {
 				dr.geometry.w = 0;
 				dr.geometry.h = 1;
 				continue;
@@ -151,7 +151,7 @@ public class GfxFormatter extends AbstractFormatter {
 		DrawTerm line_start = first;
 		for (DrawTerm dr=first; dr != null; dr = dr.getNextLeaf()) {
 			dr.geometry.y = y;
-			if (dr.isHidden()) {
+			if (dr.isUnvisible()) {
 				dr.geometry.w = 0;
 				dr.geometry.h = max_h;
 				continue;

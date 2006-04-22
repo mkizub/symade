@@ -2966,6 +2966,7 @@ Block CondBlock() :
 void BlockStatement(NArrNodes stats) :
 { boolean old_declMode; ASTModifiers modifiers; TypeRef tp; Struct clazz; Var var; }
 {
+	{ comments_alone(stats); }
 	(
 		/* class declaration */
 		LOOKAHEAD( Modifiers() ("class" | "interface" | "@interface") )

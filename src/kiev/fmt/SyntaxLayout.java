@@ -42,10 +42,10 @@ public class Syntax {
 	
 	public Syntax parent_syntax;
 	
-	public SpaceInfo siSp     = new SpaceInfo("sp",       SP_SPACE,    1, 10);
-	public SpaceInfo siSpSEPR = new SpaceInfo("sp-sepr",  SP_SPACE,    1, 10);
-	public SpaceInfo siSpWORD = new SpaceInfo("sp-word",  SP_SPACE,    1, 10);
-	public SpaceInfo siSpOPER = new SpaceInfo("sp-oper",  SP_SPACE,    1, 10);
+	public SpaceInfo siSp     = new SpaceInfo("sp",       SP_SPACE,    1, 4);
+	public SpaceInfo siSpSEPR = new SpaceInfo("sp-sepr",  SP_SPACE,    1, 4);
+	public SpaceInfo siSpWORD = new SpaceInfo("sp-word",  SP_SPACE,    1, 4);
+	public SpaceInfo siSpOPER = new SpaceInfo("sp-oper",  SP_SPACE,    1, 4);
 	public SpaceInfo siNl     = new SpaceInfo("nl",       SP_NEW_LINE, 1,  1);
 	public SpaceInfo siNlGrp  = new SpaceInfo("nl-group", SP_NEW_LINE, 2, 20);
 	
