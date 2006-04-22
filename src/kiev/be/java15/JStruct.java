@@ -33,7 +33,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	public:ro	JStruct				iface_impl;
 	public:ro	JArr<JStruct>		sub_clazz;
 	public		Attr[]				attrs;
-	public:ro	JArr<JDNode>		members;
+	public:ro	JArr<JNode>			members;
 
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
 	public final JBaseType		get$jsuper_type()	{ return ((Struct)this).super_type == null ? null : (JBaseType)((Struct)this).super_type.getJType(); }
@@ -158,7 +158,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		if( Kiev.safe && isBad() ) return;
 		
 		JStruct[] sub_clazz = this.sub_clazz.toArray();
-		JDNode[] members = this.members.toArray();
+		JNode[] members = this.members.toArray();
 		
 		if( !isPackage() ) {
 			foreach (JStruct sub; sub_clazz)

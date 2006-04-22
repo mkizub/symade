@@ -15,7 +15,7 @@ import static kiev.vlang.Operator.*;
  */
 
 @node
-public class Opdef extends DNode {
+public class Opdef extends SNode {
 	@virtual typedef This  = Opdef;
 	@virtual typedef VView = VOpdef;
 
@@ -25,7 +25,7 @@ public class Opdef extends DNode {
 	@ref public Operator			resolved;
 
 	@nodeview
-	public static view VOpdef of Opdef extends VDNode {
+	public static view VOpdef of Opdef extends VSNode {
 		public int					prior;
 		public int					opmode;
 		public KString				image;

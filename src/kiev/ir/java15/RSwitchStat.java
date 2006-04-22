@@ -19,7 +19,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 	public		ENode			val;
 	public		Type			type;
 	public:ro	NArr<Var>		pattern;
-	public:ro	NArr<ENode>		stats;
+	public:ro	NArr<ASTNode>	stats;
 
 	public void resolve(Type reqType) {
 		boolean pizza_case = false;

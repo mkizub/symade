@@ -247,7 +247,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		this.pos = type_ref.pos;
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		Var@ var;
 	{
 		var @= decls,
@@ -259,7 +259,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		var.getType().resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, KString name, CallType mt)
 		Var@ var;
 	{
 		var @= decls,
@@ -317,13 +317,13 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		this.body = body;
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 	{
 		init instanceof ForInit,
 		((ForInit)init).resolveNameR(node,path,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, KString name, CallType mt)
 		ASTNode@ n;
 	{
 		init instanceof ForInit,
@@ -423,14 +423,14 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		this.body = body;
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 	{
 		{	node ?= var
 		;	node ?= iter
 		}, ((Var)node).name.equals(name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, KString name, CallType mt)
 		Var@ n;
 	{
 		{	n ?= var

@@ -53,7 +53,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	@att public ENode			val;
 	@ref public Type			type;
 	@att public NArr<Var>		pattern;
-	@att public NArr<ENode>		stats;
+	@att public NArr<ASTNode>	stats;
 	@ref public CodeLabel		case_label;
 
 	@nodeview
@@ -61,12 +61,12 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		public		ENode			val;
 		public		Type			type;
 		public:ro	NArr<Var>		pattern;
-		public:ro	NArr<ENode>		stats;
+		public:ro	NArr<ASTNode>	stats;
 	}
 
 	public CaseLabel() {}
 
-	public CaseLabel(int pos, ENode val, ENode[] stats) {
+	public CaseLabel(int pos, ENode val, ASTNode[] stats) {
 		this.pos = pos;
 		this.val = val;
 		this.stats.addAll(stats);
@@ -120,13 +120,13 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		return "case "+val+':';
 	}
 
-	public ENode addStatement(int i, ENode st) {
+	public ASTNode addStatement(int i, ASTNode st) {
 		if( st == null ) return null;
 		stats.insert(st,i);
 		return st;
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		Var@ var;
 		ASTNode@ n;
 	{
@@ -136,12 +136,12 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	;
 		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
-			n instanceof VarDecl,
-			((VarDecl)n).var.name.equals(name),
-			node ?= ((VarDecl)n).var
-		;	n instanceof LocalStructDecl,
-			name.equals(((LocalStructDecl)n).clazz.name.short_name),
-			node ?= ((LocalStructDecl)n).clazz
+			n instanceof Var,
+			((Var)n).name.equals(name),
+			node ?= ((Var)n)
+		;	n instanceof Struct,
+			name.equals(((Struct)n).name.short_name),
+			node ?= ((Struct)n)
 		;	n instanceof TypeDecl,
 			name.equals(((TypeDecl)n).getName()),
 			node ?= ((TypeDecl)n)
@@ -149,8 +149,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	;
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		n instanceof VarDecl && ((VarDecl)n).var.isForward() && ((VarDecl)n).var.name.equals(name),
-		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
+		n instanceof Var && ((Var)n).isForward() && ((Var)n).name.equals(name),
+		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		n.getType().resolveNameAccessR(node,info,name)
 	}
 	
@@ -160,7 +160,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		else
 			dmp.newLine(-1).append("case ").append(val).append(':');
 		dmp.newLine(1);
-		foreach (ENode s; stats)
+		foreach (ASTNode s; stats)
 			s.toJava(dmp);
 		return dmp;
 	}
@@ -265,7 +265,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		return "catch( "+arg+" )";
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 	{
 		node ?= arg, ((Var)node).name.equals(name)
 	}

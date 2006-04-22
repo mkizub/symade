@@ -86,7 +86,6 @@ kiev.be.java15.JInstanceofExpr kiev/be/java15/JInstanceofExpr kiev\be\java15\JBo
 kiev.be.java15.JLVarExpr kiev/be/java15/JLVarExpr kiev\be\java15\JLvalueExpr.java
 kiev.be.java15.JLabel kiev/be/java15/JLabel kiev\be\java15\JLoopStat.java
 kiev.be.java15.JLabeledStat kiev/be/java15/JLabeledStat kiev\be\java15\JStatement.java
-kiev.be.java15.JLocalStructDecl kiev/be/java15/JLocalStructDecl kiev\be\java15\JNode.java
 kiev.be.java15.JLoopStat kiev/be/java15/JLoopStat kiev\be\java15\JLoopStat.java
 kiev.be.java15.JLvalDNode kiev/be/java15/JLvalDNode kiev\be\java15\JNode.java
 kiev.be.java15.JLvalueExpr kiev/be/java15/JLvalueExpr kiev\be\java15\JLvalueExpr.java
@@ -119,7 +118,6 @@ kiev.be.java15.JTypeInfoExpr kiev/be/java15/JTypeInfoExpr kiev\be\java15\JExpr.j
 kiev.be.java15.JTypeRef kiev/be/java15/JTypeRef kiev\be\java15\JNode.java
 kiev.be.java15.JUnaryExpr kiev/be/java15/JUnaryExpr kiev\be\java15\JExpr.java
 kiev.be.java15.JVar kiev/be/java15/JVar kiev\be\java15\JVar.java
-kiev.be.java15.JVarDecl kiev/be/java15/JVarDecl kiev\be\java15\JNode.java
 kiev.be.java15.JWBCCondition kiev/be/java15/JWBCCondition kiev\be\java15\JMethod.java
 kiev.be.java15.JWhileStat kiev/be/java15/JWhileStat kiev\be\java15\JLoopStat.java
 kiev.be.java15.JWithStat kiev/be/java15/JWithStat kiev\be\java15\JComplexStat.java
@@ -309,7 +307,6 @@ kiev.ir.java15.RInstanceofExpr kiev/ir/java15/RInstanceofExpr kiev\ir\java15\RBo
 kiev.ir.java15.RLVarExpr kiev/ir/java15/RLVarExpr kiev\ir\java15\RLvalueExpr.java
 kiev.ir.java15.RLabel kiev/ir/java15/RLabel kiev\ir\java15\RLoopStat.java
 kiev.ir.java15.RLabeledStat kiev/ir/java15/RLabeledStat kiev\ir\java15\RStat.java
-kiev.ir.java15.RLocalStructDecl kiev/ir/java15/RLocalStructDecl kiev\ir\java15\RNode.java
 kiev.ir.java15.RLoopStat kiev/ir/java15/RLoopStat kiev\ir\java15\RLoopStat.java
 kiev.ir.java15.RLvalDNode kiev/ir/java15/RLvalDNode kiev\ir\java15\RNode.java
 kiev.ir.java15.RLvalueExpr kiev/ir/java15/RLvalueExpr kiev\ir\java15\RLvalueExpr.java
@@ -340,7 +337,6 @@ kiev.ir.java15.RTypeDecl kiev/ir/java15/RTypeDecl kiev\ir\java15\RNode.java
 kiev.ir.java15.RTypeInfoExpr kiev/ir/java15/RTypeInfoExpr kiev\ir\java15\RExpr.java
 kiev.ir.java15.RUnaryExpr kiev/ir/java15/RUnaryExpr kiev\ir\java15\RExpr.java
 kiev.ir.java15.RVar kiev/ir/java15/RVar kiev\ir\java15\RVar.java
-kiev.ir.java15.RVarDecl kiev/ir/java15/RVarDecl kiev\ir\java15\RNode.java
 kiev.ir.java15.RWBCCondition kiev/ir/java15/RWBCCondition kiev\ir\java15\RMethod.java
 kiev.ir.java15.RWhileStat kiev/ir/java15/RWhileStat kiev\ir\java15\RLoopStat.java
 kiev.ir.java15.RWithStat kiev/ir/java15/RWithStat kiev\ir\java15\RBlockStat.java
@@ -540,7 +536,6 @@ kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
 kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.Label kiev/vlang/Label kiev\vlang\LoopStatement.java
 kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java
-kiev.vlang.LocalStructDecl kiev/vlang/LocalStructDecl kiev\vlang\ENode.java
 kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java
 kiev.vlang.LvalDNode kiev/vlang/LvalDNode kiev\vlang\DNode.java
 kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\LvalueExpr.java
@@ -636,7 +631,6 @@ kiev.vlang.TypeInfoExpr kiev/vlang/TypeInfoExpr kiev\vlang\Expr.java
 kiev.vlang.TypeOpDef kiev/vlang/TypeOpDef kiev\vlang\Import.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
-kiev.vlang.VarDecl kiev/vlang/VarDecl kiev\vlang\ENode.java
 kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
 kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
 kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java

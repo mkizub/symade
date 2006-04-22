@@ -156,7 +156,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		}
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		ASTNode@ syn;
 	{
 		syn @= members,
@@ -193,7 +193,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		Env.root.resolveNameR(node,path,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo path, KString name, CallType mt)
 		ASTNode@ syn;
 	{
 		pkg != null,

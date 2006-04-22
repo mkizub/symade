@@ -82,7 +82,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		}
 		for(int j=0; j < types.length; j++,i++)
 			types[j] = args[i].getType();
-		DNode@ v;
+		Method@ v;
 		CallType mt = new CallType(types,Type.tpAny);
 		if( !PassInfo.resolveMethodR(this,v,null,name.name,mt) )
 			throw new CompilerException(this,"Unresolved method "+Method.toString(name.name,mt));
@@ -93,10 +93,10 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		return this;
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		Struct@ s;
 		Struct@ sub;
-		DNode@ tmp;
+		ASTNode@ tmp;
 	{
 		this.resolved instanceof Method, $cut, false
 	;
@@ -127,7 +127,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		((Struct)this.resolved).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
 		((Struct)this.resolved).resolveNameR(node,path,name),
-		node instanceof Field && node.isStatic() && node.isPublic()
+		node instanceof Field && ((Field)node).isStatic() && ((Field)node).isPublic()
 	;
 		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
 		((Struct)this.resolved).checkResolved(),
@@ -145,7 +145,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		}
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo path, KString name, CallType mt)
 	{
 		mode == ImportMode.IMPORT_STATIC && !star && this.resolved instanceof Method,
 		((Method)this.resolved).equalsByCast(name,mt,null,path),
@@ -202,7 +202,7 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		return getType().getStruct();
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo path, KString name) {
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name) {
 		path.space_prev == this.type,
 		this.arg.name.name == name,
 		node ?= this.arg

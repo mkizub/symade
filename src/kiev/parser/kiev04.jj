@@ -455,13 +455,14 @@ public abstract class kiev040 {
 				String text = (st.kind == FORMAL_COMMENT) ?
 						st.image.substring(3, st.image.length()-5)
 					:	st.image.substring(2, st.image.length()-4);
-				String[] lines = text.split("\n");
+				String[] lines = text.trim().split("\n");
 				for (int i=0; i < lines.length; i++) {
 					String l = lines[i].trim();
 					if (l.length() >= 1 && l.charAt(0) == '*') {
 						l = l.substring(1);
 						l = l.trim();
 					}
+					lines[i] = l;
 				}
 				Comment c = new Comment();
 				c.doc_form = (st.kind == FORMAL_COMMENT);
@@ -1213,6 +1214,7 @@ void TypeBodyDeclaration(Struct clazz) :
 		[ ";" ]
 	)?
 	(
+		{ comments_alone(clazz.members); }
 		modifiers = Modifiers()
 		(
 			clazz.members += Initializer(modifiers)
@@ -1234,6 +1236,7 @@ void TypeBodyDeclaration(Struct clazz) :
 			FieldDecls(modifiers, clazz)
 		)
 	)*
+	{ comments_alone(clazz.members); }
 	"}"
 }
 
@@ -2960,7 +2963,7 @@ Block CondBlock() :
 	{ return bl; }
 }
 
-void BlockStatement(NArrENodes stats) :
+void BlockStatement(NArrNodes stats) :
 { boolean old_declMode; ASTModifiers modifiers; TypeRef tp; Struct clazz; Var var; }
 {
 	(
@@ -2973,7 +2976,7 @@ void BlockStatement(NArrENodes stats) :
 		try {
 			modifiers = Modifiers()
 			clazz = TypeDeclaration(modifiers, stats.getParent())
-			{ stats += new LocalStructDecl(clazz); }
+			{ stats += clazz; }
 			[ ";" ]
 		} finally {
 			declMode = old_declMode;
@@ -2984,11 +2987,11 @@ void BlockStatement(NArrENodes stats) :
 		modifiers = Modifiers()
 		tp = Type()
 		var = VarDecl(modifiers, tp, true)
-		{ stats += new VarDecl(var); }
+		{ stats += var; }
 		(
 			","
 			var = VarDecl(modifiers, tp, false)
-			{ stats += new VarDecl(var); }
+			{ stats += var; }
 		)*
 		";"
 	|

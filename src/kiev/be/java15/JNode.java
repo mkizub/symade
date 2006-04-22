@@ -117,7 +117,7 @@ public view JENode of ENode extends JNode {
 	}
 
 }
-
+/*
 @nodeview
 public final view JVarDecl of VarDecl extends JENode {
 
@@ -136,7 +136,7 @@ public final view JLocalStructDecl of LocalStructDecl extends JENode {
 		// don't generate here
 	}
 }
-
+*/
 @nodeview
 public view JTypeDecl of TypeDecl extends JDNode {
 }

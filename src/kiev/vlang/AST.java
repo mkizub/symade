@@ -32,8 +32,8 @@ public enum TopLevelPass {
 	passResolveMetaValues	   ,	// resolve values in meta-data
 	passCreateMembers		   ,	// create declared members of structures
 	passAutoGenerateMembers	   ,	// generation of members
-	passResolveImports		   ,	// recolve import static for import of fields and methods
-	passResolveFinalFields	   ,	// resolve final fields, to find out if they are constants
+	passPreResolve			   ,	// pre-resolve nodes
+	passMainResolve			   ,	// main resolve for vlang
 	passVerify				   ,	// verify the tree before generation
 	passPreGenerate			   ,	// prepare tree for generation phase
 	passGenerate			   		// resolve, generate and so on - each file separatly

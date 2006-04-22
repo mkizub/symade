@@ -86,7 +86,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		}
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
@@ -709,8 +709,8 @@ public class GotoStat extends ENode {
 			stats = resolveStat(name,lst.stat,stats);
 		}
 			break;
-		case LocalStructDecl:	break;
-		case VarDecl:			break;
+//		case LocalStructDecl:	break;
+//		case VarDecl:			break;
 		case GotoStat:			break;
 		case GotoCaseStat:		break;
 		case ReturnStat:		break;

@@ -39,7 +39,7 @@ public class ASTCallExpression extends ENode {
 
 		public void mainResolveOut() {
 			// method of current class or first-order function
-			DNode@ m;
+			Method@ m;
 			Type tp = ctx_clazz.ctype;
 			
 			Type[] ata = new Type[targs.length];
@@ -58,7 +58,7 @@ public class ASTCallExpression extends ENode {
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
 					Type st = ctx_clazz.super_type;
-					CallExpr ce = new CallExpr(pos,null,(Method)m,info.mt,args.delToArray(),false);
+					CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),false);
 					replaceWithNode(ce);
 					//((Method)m).makeArgs(ce.args,st);
 					return;
@@ -74,7 +74,7 @@ public class ASTCallExpression extends ENode {
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
 					Type st = ctx_clazz.super_type;
-					CallExpr ce = new CallExpr(pos,null,(Method)m,info.mt,args.delToArray(),true);
+					CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),true);
 					replaceWithNode(ce);
 					//((Method)m).makeArgs(ce.args,st);
 					return;

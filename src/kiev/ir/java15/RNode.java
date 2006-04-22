@@ -195,7 +195,7 @@ public static view RENode of ENode extends RNode {
 		throw new CompilerException(this,"Resolve call for e-node "+getClass());
 	}
 }
-
+/*
 @nodeview
 public final view RVarDecl of VarDecl extends RENode {
 	public Var		var;
@@ -215,7 +215,7 @@ public final view RLocalStructDecl of LocalStructDecl extends RENode {
 		setResolved(true);
 	}
 }
-
+*/
 @nodeview
 public final view RNopExpr of NopExpr extends RENode {
 

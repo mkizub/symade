@@ -596,7 +596,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		return dmp;
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		FormPar@ var;
 	{
 		inlined_by_dispatcher || path.space_prev.pslot.name == "targs",$cut,false
@@ -627,7 +627,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		var.type.resolveNameAccessR(node,path,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, KString name, CallType mt)
 		Var@ n;
 	{
 		info.isForwardsAllowed(),

@@ -95,7 +95,7 @@ public class PassInfo {
 		((ScopeOfOperators)p).resolveOperatorR(op)
 	}
 
-	public static rule resolveQualifiedNameR(ASTNode from, DNode@ node, ResInfo path, KString name)
+	public static rule resolveQualifiedNameR(ASTNode from, ASTNode@ node, ResInfo path, KString name)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
@@ -121,7 +121,7 @@ public class PassInfo {
 		((ScopeOfNames)p).resolveNameR(node,path,name)
 	}
 
-	public static rule resolveNameR(ASTNode from, DNode@ node, ResInfo path, KString name)
+	public static rule resolveNameR(ASTNode from, ASTNode@ node, ResInfo path, KString name)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
@@ -163,7 +163,7 @@ public class PassInfo {
 	
 	public static boolean resolveBestMethodR(
 		Object sc,
-		DNode@ node,
+		Method@ node,
 		ResInfo info,
 		KString name,
 		CallType mt)
@@ -307,7 +307,7 @@ public class PassInfo {
 		throw new RuntimeException(msg.toString());
 	}
 
-	public static rule resolveMethodR(ASTNode from, DNode@ node, ResInfo path, KString name, CallType mt)
+	public static rule resolveMethodR(ASTNode from, Method@ node, ResInfo path, KString name, CallType mt)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;

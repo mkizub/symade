@@ -84,7 +84,7 @@ public class RuleMethod extends Method {
 		return max_vars++;
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		Var@ var;
 	{
 		inlined_by_dispatcher || path.space_prev.pslot.name == "targs",$cut,false

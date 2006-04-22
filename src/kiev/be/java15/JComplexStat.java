@@ -17,10 +17,10 @@ import syntax kiev.Syntax;
 @nodeview
 public final view JCaseLabel of CaseLabel extends JENode {
 	public:ro	JENode			val;
-	public:ro	Type				type;
+	public:ro	Type			type;
 	public:ro	JArr<JVar>		pattern;
-	public:ro	JArr<JENode>	stats;
-	public				CodeLabel			case_label;
+	public:ro	JArr<JNode>		stats;
+	public		CodeLabel		case_label;
 
 	public CodeLabel getLabel(Code code) {
 		if (case_label == null || case_label.code != code) case_label = code.newLabel();
@@ -54,7 +54,11 @@ public final view JCaseLabel of CaseLabel extends JENode {
 		}
 		for(int i=0; i < stats.length; i++) {
 			try {
-				stats[i].generate(code,Type.tpVoid);
+				JNode st = stats[i];
+				if (st instanceof JENode)
+					st.generate(code,Type.tpVoid);
+				else if (st instanceof JVar)
+					st.generate(code,Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(stats[i],e);
 			}
@@ -138,8 +142,8 @@ public view JSwitchStat of SwitchStat extends JENode implements BreakTarget {
 			}
 			Vector<JVar> vars = new Vector<JVar>();
 			for(int i=0; i < cases.length; i++) {
-				foreach (JVarDecl n; cases[i].stats)
-					vars.append(n.var);
+				foreach (JVar n; cases[i].stats)
+					vars.append(n);
 			}
 			code.removeVars(vars.toArray());
 

@@ -646,12 +646,12 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef JView = JBlock;
 	@virtual typedef RView = RBlock;
 
-	@att public NArr<ENode>			stats;
+	@att public NArr<ASTNode>		stats;
 	@ref public CodeLabel			break_label;
 
 	@nodeview
 	public static view VBlock of Block extends VENode {
-		public:ro	NArr<ENode>		stats;
+		public:ro	NArr<ASTNode>		stats;
 	}
 	
 	public Block() {}
@@ -660,54 +660,40 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		this.pos = pos;
 	}
 
-	public Block(int pos, ENode[] sts) {
+	public Block(int pos, ASTNode[] sts) {
 		this.pos = pos;
 		this.stats.addAll(sts);
 	}
 
 	public void addSymbol(Named sym) {
-		ENode decl;
-		if (sym instanceof Var)
-			decl = new VarDecl((Var)sym);
-		else if (sym instanceof Struct)
-			decl = new LocalStructDecl((Struct)sym);
-		else
-			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
-		foreach(ENode n; stats) {
-			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(decl,"Symbol "+sym.getName()+" already declared in this scope");
+		foreach(ASTNode n; stats; n instanceof Named) {
+			if (((Named)n).getName().equals(sym.getName()) ) {
+				Kiev.reportError((ASTNode)sym,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}
-		stats.append(decl);
+		stats.append((ASTNode)sym);
 	}
 
 	public void insertSymbol(Named sym, int idx) {
-		ENode decl;
-		if (sym instanceof Var)
-			decl = new VarDecl((Var)sym);
-		else if (sym instanceof Struct)
-			decl = new LocalStructDecl((Struct)sym);
-		else
-			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
-		foreach(ASTNode n; stats) {
-			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(decl,"Symbol "+sym.getName()+" already declared in this scope");
+		foreach(ASTNode n; stats; n instanceof Named) {
+			if (((Named)n).getName().equals(sym.getName()) ) {
+				Kiev.reportError((ASTNode)sym,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}
-		stats.insert(decl,idx);
+		stats.insert((ASTNode)sym,idx);
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		ASTNode@ n;
 	{
 		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
-			n instanceof VarDecl,
-			((VarDecl)n).var.name.equals(name),
-			node ?= ((VarDecl)n).var
-		;	n instanceof LocalStructDecl,
-			name.equals(((LocalStructDecl)n).clazz.name.short_name),
-			node ?= ((LocalStructDecl)n).clazz
+			n instanceof Var,
+			((Var)n).name.equals(name),
+			node ?= ((Var)n)
+		;	n instanceof Struct,
+			name.equals(((Struct)n).name.short_name),
+			node ?= ((Struct)n)
 		;	n instanceof TypeDecl,
 			name.equals(((TypeDecl)n).getName()),
 			node ?= ((TypeDecl)n)
@@ -715,19 +701,19 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	;
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		n instanceof VarDecl && ((VarDecl)n).var.isForward() && ((VarDecl)n).var.name.equals(name),
-		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
+		n instanceof Var && ((Var)n).isForward() && ((Var)n).name.equals(name),
+		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		n.getType().resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, KString name, CallType mt)
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		n instanceof VarDecl && ((VarDecl)n).var.isForward(),
-		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
-		((VarDecl)n).var.getType().resolveCallAccessR(node,info,name,mt)
+		n instanceof Var && ((Var)n).isForward(),
+		info.enterForward((Var)n) : info.leaveForward((Var)n),
+		((Var)n).getType().resolveCallAccessR(node,info,name,mt)
 	}
 
 	public int		getPriority() { return 255; }
@@ -750,7 +736,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 			if (res != null) return res;
 			Block node = (Block)dfi.node_impl;
 			Vector<Var> vars = new Vector<Var>();
-			foreach (VarDecl n; node.stats) vars.append(n.var);
+			foreach (Var n; node.stats) vars.append(n);
 			if (vars.length > 0)
 				res = DFFunc.calc(f, dfi).cleanInfoForVars(vars.toArray());
 			else

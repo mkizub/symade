@@ -706,11 +706,11 @@ public final class Kiev {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.autoGenerateMembers(node);
 		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) ) {
+		if ( Kiev.passGreaterEquals(TopLevelPass.passPreResolve) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.preResolve(node);
 		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) ) {
+		if ( Kiev.passGreaterEquals(TopLevelPass.passMainResolve) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.mainResolve(node);
 		}

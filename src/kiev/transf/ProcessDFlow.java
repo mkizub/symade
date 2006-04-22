@@ -102,7 +102,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			dfIn.params.add(new FormPar(0, KString.from("child"), tpNode, FormPar.PARAM_NORMAL, 0));
 			dfIn.body = new Block(0);
 			Var var = new Var(0, KString.from("name"),Type.tpString,ACC_FINAL);
-			dfIn.body.stats.add(new VarDecl(var));
+			dfIn.body.stats.add(var);
 			{
 				AccessExpr ae0 = new AccessExpr(0, new LVarExpr(0,dfIn.params[0]), new NameRef(KString.from("pslot")));
 				AccessExpr ae1 = new AccessExpr(0, ae0, new NameRef(KString.from("name")));

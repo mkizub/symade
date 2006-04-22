@@ -51,7 +51,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@ref public NArr<Struct>				sub_clazz;
 	@ref public NArr<TypeDecl>				direct_extenders;
 	public kiev.be.java15.Attr[]			attrs = kiev.be.java15.Attr.emptyArray;
-	@att public NArr<DNode>					members;
+	@att public NArr<ASTNode>				members;
 		 private TypeProvider[]				super_types;
 
 	@getter public final CompaundType	get$super_type()	{ return (CompaundType)super_bound.lnk; }
@@ -367,7 +367,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		for (int i=0; i < va_args.length; i++)
 			args[i] = (Type)va_args[i];
 		CallType mt = new CallType(args,ret);
-		DNode@ m;
+		Method@ m;
 		if (!this.ctype.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
 			!this.ctype.resolveCallStaticR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
 			throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
@@ -402,7 +402,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public				Struct					iface_impl;
 		public:ro			NArr<Struct>			sub_clazz;
 		public:ro			NArr<TypeDecl>			direct_extenders;
-		public:ro			NArr<DNode>				members;
+		public:ro			NArr<ASTNode>			members;
 
 		@getter public final CompaundType	get$super_type();
 		@setter public final void set$super_type(CompaundType tp);
@@ -466,6 +466,22 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public Field resolveField(KString name, boolean fatal);
 		public Method resolveMethod(KString name, Type ret, ...);
 		public Constructor getClazzInitMethod();
+
+		public boolean preResolveIn() {
+			if (this.isLoadedFromBytecode())
+				return false;
+			if (parent instanceof Struct || parent instanceof FileUnit)
+				return true;
+			if (ctx_method==null || ctx_method.isStatic())
+				this.setStatic(true);
+			this.setResolved(true);
+			this.setLocal(true);
+			this.setLoadedFromBytecode(true);
+			try {
+				Kiev.runProcessorsOn(this);
+			} finally { this.setLoadedFromBytecode(false); }
+			return true;
+		}
 
 		public final boolean mainResolveIn() {
 			resolveFinalFields(this);
@@ -644,7 +660,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 	}
 
-	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 	{
 		info.isStaticAllowed(),
 		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this),
@@ -668,7 +684,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			$cut
 		}
 	}
-	protected rule resolveNameR_1(DNode@ node, ResInfo info, KString name)
+	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
 		TypeDef@ arg;
 	{
 			this.name.short_name.equals(name), node ?= this
@@ -685,14 +701,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			node @= sub_clazz,
 			((Struct)node).name.short_name.equals(name)
 	}
-	protected rule resolveNameR_2(DNode@ node, ResInfo info, KString name)
+	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name)
 	{
 		node @= members,
 		{	node instanceof Field && ((Field)node).isStatic() && ((Field)node).name.equals(name)
 		;	node instanceof TypeDef && ((TypeDef)node).name.name.equals(name)
 		}
 	}
-	protected rule resolveNameR_3(DNode@ node, ResInfo info, KString name)
+	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
 		TypeRef@ sup_ref;
 		Struct@ sup;
 	{
@@ -734,12 +750,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return false;
 	}
 
-	final public rule resolveMethodR(DNode@ node, ResInfo info, KString name, CallType mt)
+	final public rule resolveMethodR(Method@ node, ResInfo info, KString name, CallType mt)
 	{
 		resolveStructMethodR(node, info, name, mt, this.ctype)
 	}
 
-	public rule resolveStructMethodR(DNode@ node, ResInfo info, KString name, CallType mt, Type tp)
+	public rule resolveStructMethodR(Method@ node, ResInfo info, KString name, CallType mt, Type tp)
 		ASTNode@ member;
 		Type@ sup;
 	{
@@ -747,12 +763,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		checkResolved(),
 		trace(Kiev.debugResolve, "Resolving "+name+" in "+this),
 		{
-			node @= members,
-			node instanceof Method,
-			info.check(node),
+			member @= members,
+			member instanceof Method,
+			info.check(member),
+			node ?= ((Method)member),
 			((Method)node).equalsByCast(name,mt,tp,info)
 		;	info.isImportsAllowed() && isPackage(),
-			node @= members, node instanceof Method,
+			member @= members, member instanceof Method,
+			node ?= ((Method)member),
 			((Method)node).equalsByCast(name,mt,tp,info)
 		;	info.isSuperAllowed(),
 			sup ?= super_type,

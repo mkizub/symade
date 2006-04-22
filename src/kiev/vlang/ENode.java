@@ -8,10 +8,10 @@ import kiev.transf.*;
 
 import kiev.ir.java15.RENode;
 import kiev.be.java15.JENode;
-import kiev.be.java15.JVarDecl;
-import kiev.ir.java15.RVarDecl;
-import kiev.be.java15.JLocalStructDecl;
-import kiev.ir.java15.RLocalStructDecl;
+//import kiev.be.java15.JVarDecl;
+//import kiev.ir.java15.RVarDecl;
+//import kiev.be.java15.JLocalStructDecl;
+//import kiev.ir.java15.RLocalStructDecl;
 import kiev.ir.java15.RNopExpr;
 
 import static kiev.stdlib.Debug.*;
@@ -280,7 +280,7 @@ public abstract class ENode extends ASTNode {
 	}
 
 }
-
+/*
 @node
 public final class VarDecl extends ENode implements Named {
 
@@ -354,7 +354,7 @@ public final class LocalStructDecl extends ENode implements Named {
 		return dmp;
 	}
 }
-
+*/
 
 @node
 public final class NopExpr extends ENode {

@@ -248,29 +248,33 @@ public view JCommaExpr of CommaExpr extends JENode {
 
 @nodeview
 public view JBlock of Block extends JENode {
-	public:ro	JArr<JENode>	stats;
-	public				CodeLabel		break_label;
+	public:ro	JArr<JNode>		stats;
+	public		CodeLabel		break_label;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Block");
 		code.setLinePos(this);
-		JENode[] stats = this.stats.toArray();
+		JNode[] stats = this.stats.toArray();
 		break_label = code.newLabel();
 		for(int i=0; i < stats.length; i++) {
 			try {
-				if (i < stats.length-1 || isGenVoidExpr())
-					stats[i].generate(code,Type.tpVoid);
-				else
-					stats[i].generate(code,reqType);
+				JNode st = stats[i];
+				if (st instanceof JENode) {
+					if (i < stats.length-1 || isGenVoidExpr())
+						st.generate(code,Type.tpVoid);
+					else
+						st.generate(code,reqType);
+				}
+				else if (st instanceof JVar) {
+					st.generate(code,Type.tpVoid);
+				}
 			} catch(Exception e ) {
 				Kiev.reportError(stats[i],e);
 			}
 		}
 		Vector<JVar> vars = new Vector<JVar>();
-		foreach (JENode n; stats) {
-			if (n instanceof JVarDecl)
-				vars.append(n.var);
-		}
+		foreach (JVar n; stats)
+			vars.append(n);
 		code.removeVars(vars.toArray());
 		JNode p = this.jparent;
 		if( p instanceof JMethod && Kiev.debugOutputC && code.need_to_gen_post_cond && p.type.ret() ≢ Type.tpVoid)

@@ -169,7 +169,7 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seTypeConstr;
 	final SyntaxElem seTypeConstrClassArg;
 	final SyntaxElem seFieldDecl;
-	final SyntaxElem seVarDecl;
+//	final SyntaxElem seVarDecl;
 	final SyntaxElem seVar;
 	final SyntaxElem seVarNoType;
 	final SyntaxElem seFormPar;
@@ -704,7 +704,7 @@ public class JavaSyntax extends Syntax {
 				ident("ftype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
 				);
 			// vars
-			seVarDecl = set(attr("var"), sep(";"));
+//			seVarDecl = set(attr("var"), sep(";"));
 			seVar = set(opt("meta"), var_prefix.ncopy(),
 				ident("vtype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority)))
 				);
@@ -1197,7 +1197,7 @@ public class JavaSyntax extends Syntax {
 			return seStructClass;
 		}
 		case Field: return seFieldDecl;
-		case VarDecl: return seVarDecl;
+//		case VarDecl: return seVarDecl;
 		case FormPar: return seFormPar;
 		case Var:
 			if (hint != null && "no-type".equals(hint.text))

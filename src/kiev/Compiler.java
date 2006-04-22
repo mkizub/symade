@@ -621,9 +621,10 @@ public class Compiler {
 			if( Kiev.errCount > 0 ) goto stop;
 			runGC();
 
-			Kiev.pass_no = TopLevelPass.passResolveImports;
+			Kiev.pass_no = TopLevelPass.passPreResolve;
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.preResolve(fu); });
+			Kiev.pass_no = TopLevelPass.passMainResolve;
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.mainResolve(fu); });
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose ) Kiev.reportInfo("Class's members resolved",diff_time);

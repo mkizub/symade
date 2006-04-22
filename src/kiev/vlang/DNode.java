@@ -10,8 +10,6 @@ import kiev.ir.java15.RDNode;
 import kiev.be.java15.JDNode;
 import kiev.ir.java15.RLvalDNode;
 import kiev.be.java15.JLvalDNode;
-import kiev.be.java15.JLocalStructDecl;
-import kiev.ir.java15.RLocalStructDecl;
 import kiev.be.java15.JTypeDecl;
 import kiev.ir.java15.RTypeDecl;
 

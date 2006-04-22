@@ -523,32 +523,37 @@ public static final view RCommaExpr of CommaExpr extends RENode {
 
 @nodeview
 public static view RBlock of Block extends RENode {
-	public:ro	NArr<ENode>		stats;
+	public:ro	NArr<ASTNode>		stats;
 
 	public void resolve(Type reqType) {
 		RBlock.resolveStats(reqType, this, stats);
 	}
 
-	public static void resolveStats(Type reqType, RENode self, NArr<ENode> stats) {
+	public static void resolveStats(Type reqType, RENode self, NArr<ASTNode> stats) {
 		int sz = stats.length - 1;
 		for (int i=0; i <= sz; i++) {
-			ENode st = stats[i];
+			ASTNode st = stats[i];
 			try {
-				if( (i == sz) && self.isAutoReturnable() )
+				if( (i == sz) && self.isAutoReturnable() && st instanceof ENode)
 					st.setAutoReturnable(true);
 				if( self.isAbrupted() && (st instanceof LabeledStat) )
 					self.setAbrupted(false);
 				//if( self.isAbrupted() )
 				//	; //Kiev.reportWarning(stats[i].pos,"Possible unreachable statement");
-				if (i < sz || reqType == Type.tpVoid) {
-					st.setGenVoidExpr(true);
-					st.resolve(Type.tpVoid);
-				} else {
-					st.resolve(reqType);
+				if (st instanceof ENode) {
+					if (i < sz || reqType == Type.tpVoid) {
+						st.setGenVoidExpr(true);
+						st.resolve(Type.tpVoid);
+					} else {
+						st.resolve(reqType);
+					}
+				}
+				else if (st instanceof DNode) {
+					st.resolveDecl();
 				}
 				st = stats[i];
-				if( st.isAbrupted() && !self.isBreaked() ) self.setAbrupted(true);
-				if( st.isMethodAbrupted() && !self.isBreaked() ) self.setMethodAbrupted(true);
+				if( st instanceof ENode && st.isAbrupted() && !self.isBreaked() ) self.setAbrupted(true);
+				if( st instanceof ENode && st.isMethodAbrupted() && !self.isBreaked() ) self.setMethodAbrupted(true);
 			} catch(Exception e ) {
 				Kiev.reportError(stats[i],e);
 			}

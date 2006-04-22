@@ -34,7 +34,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	public				Struct					iface_impl;
 	public:ro			NArr<Struct>			sub_clazz;
 	public:ro			NArr<TypeDecl>			direct_extenders;
-	public:ro			NArr<DNode>				members;
+	public:ro			NArr<ASTNode>			members;
 
 	@getter public final CompaundType	get$super_type();
 	@setter public final void set$super_type(CompaundType tp);
