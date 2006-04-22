@@ -453,6 +453,7 @@ public abstract class kiev040 implements kiev040Constants {
                                 c.doc_form = (st.kind == FORMAL_COMMENT);
                                 if (lines.length > 1) {
                                         c.multiline = true;
+                                        c.text = "";
                                         for (int i=0; i < lines.length; i++) {
                                                 String txt = lines[i].trim();
                                                 c.text = new StringBuffer(c.text.length()+1+txt.length()).append(c.text).append('\n').append(txt).toString();

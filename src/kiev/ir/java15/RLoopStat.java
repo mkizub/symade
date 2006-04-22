@@ -316,39 +316,48 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		}
 
 		// Initialize value
+		ENode ce = null;
+		var_init = null;
 		switch( mode ) {
 		case ForEachStat.ARRAY:
 			/* var = container[iter] */
-			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
-				new LVarExpr(var.pos,var),
-				new ContainerAccessExpr(container.pos,new LVarExpr(0,iter_array),new LVarExpr(iter.pos,iter))
-				);
+			ce = new ContainerAccessExpr(container.pos,new LVarExpr(0,iter_array),new LVarExpr(iter.pos,iter));
 			break;
 		case ForEachStat.KENUM:
 		case ForEachStat.JENUM:
 		case ForEachStat.ELEMS:
 			/* var = iter.nextElement() */
 			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameNextElement,new CallType(Type.emptyArray,Type.tpAny)) )
+					nameNextElement,new CallType(Type.emptyArray,Type.tpAny)) )
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
-				var_init = new CallExpr(iter.pos,
+			ce = new CallExpr(iter.pos,
 					new LVarExpr(iter.pos,iter),
 					nextelem,
 					ENode.emptyArray
 				);
-			if (!nextelem.type.ret().isInstanceOf(var.type))
-				var_init = new CastExpr(pos,var.type,~var_init);
-			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
-				new LVarExpr(var.pos,var),
-				~var_init
-			);
 			break;
 		case ForEachStat.RULE:
 			/* iter = rule(...); */
-			var_init = null;
 			break;
 		}
-		if( var_init != null ) {
+		if (ce != null) {
+			if (ce.getType().isInstanceOf(var.getType())) {
+				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,new LVarExpr(var.pos,var),ce);
+			} else {
+				Var tmp = new Var(var.pos, KString.from("tmp"), ce.getType(), ACC_FINAL);
+				tmp.init = ce;
+				Block b = new Block();
+				b.addSymbol(tmp);
+				b.stats.add(new IfElseStat(tmp.pos,
+					new BooleanNotExpr(tmp.pos, new InstanceofExpr(tmp.pos, new LVarExpr(tmp.pos,tmp),var.getType())),
+					new ContinueStat(),
+					null
+				));
+				b.stats.add(
+					new AssignExpr(var.pos,AssignOperator.Assign2,new LVarExpr(var.pos,var),new LVarExpr(tmp.pos,tmp))
+				);
+				var_init = b;
+			}
 			var_init.resolve(var.getType());
 			var_init.setGenVoidExpr(true);
 		}
