@@ -142,8 +142,8 @@ public view JSwitchStatView of SwitchStatImpl extends JENodeView implements Brea
 			}
 			Vector<JVarView> vars = new Vector<JVarView>();
 			for(int i=0; i < cases.length; i++) {
-				foreach (JENodeView n; cases[i].stats; n instanceof JVarDeclView)
-					vars.append(((JVarDeclView)n).var);
+				foreach (ENode n; cases[i].stats; n instanceof VarDecl)
+					vars.append((JVarView)((VarDecl)n).var);
 			}
 			code.removeVars(vars.toArray());
 

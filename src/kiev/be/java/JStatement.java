@@ -599,10 +599,10 @@ public final view JGotoCaseStatView of GotoCaseStatImpl extends JENodeView {
 				lb = sw.getCntLabel().getCodeLabel(code);
 			else {
 				int goto_value = ((Number)((JConstExprView)expr).getConstValue()).intValue();
-				foreach(JCaseLabelView cl; sw.cases) {
-					int case_value = ((Number)((JConstExprView)cl.val).getConstValue()).intValue();
+				foreach(CaseLabel cl; sw.cases) {
+					int case_value = ((Number)((ConstExpr)cl.val).getConstValue()).intValue();
 					if( goto_value == case_value ) {
-						lb = cl.getLabel(code);
+						lb = ((JCaseLabelView)cl).getLabel(code);
 						break;
 					}
 				}
