@@ -148,8 +148,8 @@ public class Env extends Struct {
 				cl.interfaces.delAll();
 				cl.args.delAll();
 				cl.sub_clazz.delAll();
-				foreach(ASTNode n; cl.members; n instanceof Method && ((Method)n).isOperatorMethod() )
-					Operator.cleanupMethod((Method)n);
+				foreach(Method m; cl.members; m.isOperatorMethod() )
+					Operator.cleanupMethod(m);
 				cl.members.delAll();
 			}
 			outer.addSubStruct((Struct)cl);

@@ -37,9 +37,9 @@ public final view JFileUnit of FileUnit extends JDNode {
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			foreach (JNode dn; members; dn instanceof JStruct) {
+			foreach (JStruct dn; members) {
 				diff_time = curr_time = System.currentTimeMillis();
-				((JStruct)dn).generate();
+				dn.generate();
 				diff_time = System.currentTimeMillis() - curr_time;
 				if( Kiev.verbose )
 					Kiev.reportInfo("Generated clas "+dn,diff_time);

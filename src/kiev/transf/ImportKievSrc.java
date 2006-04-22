@@ -42,9 +42,9 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void pass1(FileUnit:ASTNode astn) {
 		FileUnit fu = astn;
 		processFileHeader(fu);
-		foreach (ASTNode n; astn.members; n instanceof Struct) {
+		foreach (Struct n; astn.members) {
 			try {
-				processSyntax((Struct)n);
+				processSyntax(n);
 			} catch(Exception e ) { Kiev.reportError(n,e); }
 		}
 	}
@@ -62,7 +62,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		boolean kiev_stdlib_meta_found = false;
 		KString kiev_stdlib_meta_name = KString.from("kiev.stdlib.meta");
 
-		foreach (ASTNode n; fu.members; n instanceof SNode) {
+		foreach (SNode n; fu.members) {
 			try {
 				processSyntax(n);
 				if (n instanceof Import) {
@@ -270,7 +270,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			}
 		}
 
-		foreach (DNode dn; me.members; dn instanceof Struct)
+		foreach (Struct dn; me.members)
 			processSyntax(dn);
 	}
 	
@@ -312,7 +312,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				dn.meta.verify();
 			getStructType(clazz, new Stack<Struct>());
 			if( !clazz.isPackage() ) {
-				foreach (DNode s; clazz.members; s instanceof Struct)
+				foreach (Struct s; clazz.members)
 					pass2(s);
 			}
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
@@ -343,10 +343,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			clazz.super_type = Type.tpEnum;
 			// assign type of enum fields
 			if (clazz.isEnum()) {
-				foreach (DNode n; clazz.members; n instanceof Field && ((Field)n).isEnumField()) {
-					Field f = (Field)n;
+				foreach (Field f; clazz.members; f.isEnumField())
 					f.ftype = new TypeRef(clazz.ctype);
-				}
 			}
 		}
 		else if (clazz.isPizzaCase()) {
@@ -486,8 +484,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				KString text = f.name.name;
 				MetaAlias al = f.getMetaAlias();
 				if (al != null) {
-					foreach (ASTNode n; al.getAliases(); n instanceof ConstStringExpr) {
-						KString nm = ((ConstStringExpr)n).value;
+					foreach (ConstStringExpr n; al.getAliases()) {
+						KString nm = n.value;
 						if (nm.len > 2 && nm.byteAt(0) == '\"') {
 							f.name.addAlias(nm);
 							text = nm.substr(1,nm.len-2);
@@ -601,7 +599,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 		// Process inner classes and cases
 		if( !me.isPackage() ) {
-			foreach (ASTNode n; me.members; n instanceof Struct)
+			foreach (Struct n; me.members)
 				pass3(n);
 		}
 	}
@@ -614,7 +612,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void resolveMetaDecl(ASTNode:ASTNode node) {
 	}
 	public void resolveMetaDecl(FileUnit:ASTNode fu) {
-		foreach(ASTNode n; fu.members; n instanceof Struct)
+		foreach(Struct n; fu.members)
 			resolveMetaDecl(n);
 	}
 	public void resolveMetaDecl(Struct:ASTNode clazz) {
@@ -653,7 +651,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void resolveMetaDefaults(ASTNode:ASTNode node) {
 	}
 	public void resolveMetaDefaults(FileUnit:ASTNode fu) {
-		foreach(ASTNode n; fu.members; n instanceof Struct)
+		foreach(Struct n; fu.members)
 			resolveMetaDefaults(n);
 	}
 	public void resolveMetaDefaults(Struct:ASTNode clazz) {
@@ -667,7 +665,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void resolveMetaValues(ASTNode:ASTNode node) {
 	}
 	public void resolveMetaValues(FileUnit:ASTNode fu) {
-		foreach(ASTNode n; fu.members; n instanceof Struct)
+		foreach(Struct n; fu.members)
 			resolveMetaValues(n);
 	}
 	public void resolveMetaValues(Struct:ASTNode clazz) {
@@ -683,7 +681,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void autoGenerateMembers(ASTNode:ASTNode node) {
 	}
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		foreach(ASTNode n; fu.members; n instanceof Struct)
+		foreach(Struct n; fu.members)
 			autoGenerateMembers(n);
 	}
 	public void autoGenerateMembers(Struct:ASTNode clazz) {

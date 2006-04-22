@@ -205,8 +205,7 @@ public final class CompaundTypeProvider extends TypeProvider {
 		TVarBld vs = new TVarBld();
 		foreach (TypeDef ad; clazz.args)
 			vs.append(ad.getAType(), null);
-		foreach (DNode d; clazz.members; d instanceof TypeDef) {
-			TypeDef td = (TypeDef)d;
+		foreach (TypeDef td; clazz.members) {
 			vs.append(td.getAType(), null);
 		}
 		TypeRef st = clazz.super_bound;

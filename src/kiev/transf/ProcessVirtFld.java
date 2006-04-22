@@ -28,7 +28,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members; dn instanceof Struct)
+		foreach (Struct dn; fu.members)
 			this.autoGenerateMembers(dn);
 	}
 	
@@ -39,8 +39,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	}
 	
 	public void addAbstractFields(Struct s) {
-		foreach(ASTNode n; s.members; n instanceof Method) {
-			Method m = (Method)n;
+		foreach(Method m; s.members) {
 			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a setter");
 			if (m.name.name.startsWith(nameSet))
 				addSetterForAbstractField(s, m.name.name.substr(nameSet.length()), m);
@@ -173,18 +172,17 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 	}
 	
 	public void preGenerate(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members; dn instanceof Struct)
+		foreach (Struct dn; fu.members)
 			this.preGenerate(dn);
 	}
 	
 	public void preGenerate(Struct:ASTNode s) {
-		foreach(ASTNode n; s.members; n instanceof Field)
-			addMethodsForVirtualField(s, (Field)n);
-		foreach(ASTNode n; s.members; n instanceof Field) {
-			Field f = (Field)n;
+		foreach(Field f; s.members)
+			addMethodsForVirtualField(s, f);
+		foreach(Field f; s.members) {
 			if (!f.isVirtual())
 				continue;
-			if (s.isInterface() && !n.isAbstract())
+			if (s.isInterface() && !f.isAbstract())
 				f.setAbstract(true);
 		}
 		foreach(Struct sub; s.sub_clazz)
@@ -212,8 +210,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
 			append_fast(nameGet).append_fast(f.name.name).toKString();
 
-		foreach(ASTNode n; s.members; n instanceof Method) {
-			Method m = (Method)n;
+		foreach(Method m; s.members) {
 			if( m.name.equals(set_name) ) {
 				set_found = true;
 				if( get_found ) break;

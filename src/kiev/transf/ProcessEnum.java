@@ -25,15 +25,14 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members; dn instanceof Struct)
+		foreach (Struct dn; fu.members)
 			this.autoGenerateMembers(dn);
 	}
 	
 	public void autoGenerateMembers(Struct:ASTNode clazz) {
 		if !( clazz.isEnum() ) {
-			foreach (ASTNode dn; clazz.members; dn instanceof Struct) {
+			foreach (Struct dn; clazz.members)
 				this.autoGenerateMembers(dn);
-			}
 			return;
 		}
 		

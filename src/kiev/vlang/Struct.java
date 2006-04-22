@@ -264,8 +264,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		// Check we already have this method
 		members.append(m);
 		trace(Kiev.debugMembers,"Method "+m+" added to class "+this);
-		foreach (ASTNode n; members; n instanceof Method && n != m) {
-			Method mm = (Method)n;
+		foreach (Method mm; members; mm != m) {
 			if( mm.equals(m) )
 				Kiev.reportError(m,"Method "+m+" already exists in class "+this);
 			if (mm.name.equals(m.name) && mm.type.equals(m.type))
@@ -291,8 +290,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	/** Add information about new field that belongs to this class */
 	public Field addField(Field f) {
 		// Check we already have this field
-		foreach (ASTNode n; members; n instanceof Field) {
-			Field ff = (Field)n;
+		foreach (Field ff; members) {
 			if( ff.equals(f) ) {
 				throw new RuntimeException("Field "+f+" already exists in class "+this);
 			}
@@ -319,8 +317,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public Struct addCase(Struct cas) {
 		setHasCases(true);
 		int caseno = 0;
-		foreach (DNode n; members; n instanceof Struct && ((Struct)n).isPizzaCase()) {
-			Struct s = (Struct)n;
+		foreach (Struct s; members; s.isPizzaCase()) {
 			MetaPizzaCase meta = s.getMetaPizzaCase();
 			if (meta != null && meta.getTag() > caseno)
 				caseno = meta.getTag();
@@ -358,7 +355,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	private static Field resolveField(Struct self, KString name, Struct where, boolean fatal) {
 		self.getStruct().checkResolved();
-		foreach(DNode f; self.members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
+		foreach(Field f; self.members; f.name.equals(name) ) return f;
 		if( self.super_type != null ) return resolveField(self.super_type.getStruct(),name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
@@ -378,8 +375,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	public Constructor getClazzInitMethod() {
-		foreach(ASTNode n; members; n instanceof Method && ((Method)n).name.equals(nameClassInit) )
-			return (Constructor)n;
+		foreach(Constructor n; members; n.name.equals(nameClassInit) )
+			return n;
 		Constructor class_init = new Constructor(ACC_STATIC);
 		class_init.pos = pos;
 		class_init.setHidden(true);
@@ -478,8 +475,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		private static void resolveFinalFields(@forward VStruct self) {
 			trace(Kiev.debugResolve,"Resolving final fields for class "+name);
 			// Resolve final values of class's fields
-			foreach (ASTNode n; members; n instanceof Field) {
-				Field f = (Field)n;
+			foreach (Field f; members) {
 				try {
 					f.resolveDecl();
 				} catch( Exception e ) {
@@ -571,12 +567,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if( !isEnum() )
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
 		int idx = 0;
-		foreach (ASTNode n; this.members; n instanceof Field && ((Field)n).isEnumField())
+		foreach (Field n; this.members; n.isEnumField())
 			idx++;
 		Field[] eflds = new Field[idx];
 		idx = 0;
-		foreach (ASTNode n; this.members; n instanceof Field && ((Field)n).isEnumField()) {
-			eflds[idx] = (Field)n;
+		foreach (Field n; this.members; n.isEnumField()) {
+			eflds[idx] = n;
 			idx ++;
 		}
 		return eflds;
@@ -586,7 +582,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if( !isEnum() )
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
 		int idx = 0;
-		foreach (ASTNode n; this.members; n instanceof Field && ((Field)n).isEnumField()) {
+		foreach (Field n; this.members; n.isEnumField()) {
 			if (f == n)
 				return idx;
 			idx++;
@@ -609,13 +605,13 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public int countPackedFields() {
 		int i = 0;
-		foreach (DNode n; members; n instanceof Field && ((Field)n).isPackedField()) i++;
+		foreach (Field n; members; n.isPackedField()) i++;
 		return i;
 	}
 
 	public int countAbstractFields() {
 		int i = 0;
-		foreach (DNode n; members; n instanceof Field && n.isAbstract()) i++;
+		foreach (Field n; members; n.isAbstract()) i++;
 		return i;
 	}
 
@@ -782,7 +778,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				return wf;
 		}
 		Field wf = null;
-		foreach(ASTNode n; members; n instanceof Field && ((Field)n).isForward()) {
+		foreach(Field n; members; n.isForward()) {
 			if (wf == null)
 				wf = (Field)n;
 			else
@@ -891,9 +887,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		} finally { Kiev.setExtSet(old_exts); Kiev.curFile = oldfn; }
 
 		setMembersGenerated(true);
-		foreach(DNode s; members; s instanceof Struct)
-			((Struct)s).autoGenerateMembers();
-
+		foreach(Struct s; members)
+			s.autoGenerateMembers();
 	}
 
 	public Method getOverwrittenMethod(Type base, Method m) {
@@ -902,8 +897,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			mm = super_type.clazz.getOverwrittenMethod(base,m);
 		if( mmret == null && mm != null ) mmret = mm;
 		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+"."+m+" in "+this);
-		foreach (ASTNode n; members; n instanceof Method) {
-			Method mi = (Method)n;
+		foreach (Method mi; members) {
 			if( mi.isStatic() || mi.isPrivate() || mi.name.equals(nameInit) ) continue;
 			if( mi.name.name != m.name.name || mi.type.arity != m.type.arity ) {
 //				trace(Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
@@ -944,9 +938,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public void resolveMetaDefaults() {
 		if (isAnnotation()) {
-			foreach(ASTNode m; members; m instanceof Method) {
+			foreach(Method m; members) {
 				try {
-					((Method)m).resolveMetaDefaults();
+					m.resolveMetaDefaults();
 				} catch(Exception e) {
 					Kiev.reportError(m,e);
 				}
@@ -1032,17 +1026,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 		dmp.forsed_space().append('{').newLine(1);
 		if( !isPackage() ) {
-			foreach (ASTNode n; members; n instanceof Struct) {
-				Struct s = (Struct)n;
+			foreach (Struct s; members) {
 				s.toJavaDecl(dmp).newLine();
 			}
 		}
-		foreach (ASTNode n; members; n instanceof Field) {
-			Field f = (Field)n;
+		foreach (Field f; members) {
 			f.toJavaDecl(dmp).newLine();
 		}
-		foreach (ASTNode n; members; n instanceof Method) {
-			Method m = (Method)n;
+		foreach (Method m; members) {
 			if( m.name.equals(nameClassInit) ) continue;
 			m.toJavaDecl(dmp).newLine();
 		}

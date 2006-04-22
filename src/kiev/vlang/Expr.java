@@ -750,7 +750,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 			if (res != null) return res;
 			Block node = (Block)dfi.node_impl;
 			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; node.stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
+			foreach (VarDecl n; node.stats) vars.append(n.var);
 			if (vars.length > 0)
 				res = DFFunc.calc(f, dfi).cleanInfoForVars(vars.toArray());
 			else

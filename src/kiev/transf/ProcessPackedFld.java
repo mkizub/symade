@@ -24,12 +24,12 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	}
 	
 	public void verify(FileUnit:ASTNode fu) {
-		foreach (ASTNode n; fu.members; n instanceof Struct)
+		foreach (Struct n; fu.members)
 			verify(n);
 	}
 	
 	public void verify(Struct:ASTNode s) {
-		foreach (DNode n; s.members; n instanceof Field)
+		foreach (Field n; s.members)
 			verify(n);
 		foreach (Struct sub; s.sub_clazz)
 			verify(sub);
@@ -96,14 +96,13 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 	}
 	
 	public void preGenerate(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members; dn instanceof Struct)
+		foreach (Struct dn; fu.members)
 			this.preGenerate(dn);
 	}
 	
 	public void preGenerate(Struct:ASTNode s) {
 		// Setup packed/packer fields
-		foreach(DNode n; s.members; n instanceof Field && ((Field)n).isPackedField() ) {
-			Field f = (Field)n;
+		foreach(Field f; s.members; f.isPackedField() ) {
 			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
 			MetaPacked mp = f.getMetaPacked();
@@ -147,14 +146,14 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 					mpr.setSize(mpr.getSize() + mp.getSize());
 				}
 			}
-			foreach(ASTNode n; s.members; n instanceof Struct)
+			foreach(Struct n; s.members)
 				this.preGenerate(n);
 		}
 	}
 
 	private int countPackerFields(Struct s) {
 		int i = 0;
-		foreach (DNode n; s.members; n instanceof Field && ((Field)n).isPackerField()) i++;
+		foreach (Field f; s.members; f.isPackerField()) i++;
 		return i;
 	}
 

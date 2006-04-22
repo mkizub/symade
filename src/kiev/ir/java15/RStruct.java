@@ -155,8 +155,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		}
 		
 		// Lookup and create if need as $typeinfo$N
-		foreach(DNode n; members; n instanceof Field && n.isStatic()) {
-			Field f = (Field)n;
+		foreach(Field f; members; f.isStatic()) {
 			if (f.init == null || !f.name.name.startsWith(nameTypeInfo) || f.name.name.equals(nameTypeInfo))
 				continue;
 			if (((TypeInfoExpr)f.init).type.getType() ≈ t)
@@ -174,8 +173,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		if (from_gen)
 			throw new RuntimeException("Ungenerated typeinfo for type "+t+" ("+t.getClass()+")");
 		int i = 0;
-		foreach(DNode n; members; n instanceof Field && n.isStatic()) {
-			Field f = (Field)n;
+		foreach(Field f; members; f.isStatic()) {
 			if (f.init == null || !f.name.name.startsWith(nameTypeInfo) || f.name.name.equals(nameTypeInfo))
 				continue;
 			i++;
@@ -471,7 +469,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		if( isPackage() ) return false;
 		
 		// first, pre-generate super-types
-		foreach (TypeProvider sup; this.getAllSuperTypes(); sup instanceof CompaundTypeProvider)
+		foreach (CompaundTypeProvider sup; this.getAllSuperTypes())
 			sup.clazz.preGenerate();
 
 		// generate typeinfo class, if needed
@@ -541,8 +539,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		}
 		
 		// process override
-		foreach (DNode n; members; n instanceof Method && !(n instanceof Constructor)) {
-			Method m = (Method)n;
+		foreach (Method m; members; !(m instanceof Constructor)) {
 			if (m.isStatic() && !m.isVirtualStatic())
 				continue;
 			if (m.isMethodBridge())
@@ -564,8 +561,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		// process overload
 		foreach (VTableEntry vte; vtable) {
 			CallType et = vte.etype.toCallTypeRetAny();
-			foreach (DNode n; members; n instanceof Method && !(n instanceof Constructor)) {
-				Method m = (Method)n;
+			foreach (Method m; members; !(m instanceof Constructor)) {
 				if (m.isStatic() && !m.isVirtualStatic())
 					continue;
 				if (m.isMethodBridge())
@@ -711,7 +707,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			Type[] params = m.type.params();
 			params = (Type[])Arrays.insert(params,m.ctx_clazz.ctype,0);
 			CallType mt = new CallType(params, m.type.ret());
-			foreach (Method dm; iface_impl.members; dm instanceof Method && dm.name.name == m.name.name && dm.type ≈ mt) {
+			foreach (Method dm; iface_impl.members; dm.name.name == m.name.name && dm.type ≈ mt) {
 				fnd = dm;
 				break;
 			}
@@ -770,7 +766,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	next_m:
 		foreach (Method m; vte.methods; m.ctx_clazz != self.getStruct()) {
 			// check this class have no such a method
-			foreach (DNode x; self.members; x instanceof Method && x.name.name == m.name.name) {
+			foreach (Method x; self.members; x.name.name == m.name.name) {
 				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
@@ -795,8 +791,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		Struct defaults = iface_impl;
 		if (defaults != null)
 			return;
-		foreach (DNode n; members; n instanceof Method) {
-			Method m = (Method)n;
+		foreach (Method m; members) {
 			if (!m.isAbstract()) {
 				if (m instanceof Constructor) continue; // ignore <clinit>
 
@@ -869,8 +864,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			trace(Kiev.debugMultiMethod,"Generating dispatch method for "+m+" with dispatch type "+etype1);
 			// find all methods with the same java type
 			ListBuffer<Method> mlistb = new ListBuffer<Method>();
-			foreach (DNode nj; members; nj instanceof Method && !nj.isMethodBridge() && nj.isStatic() == m.isStatic()) {
-				Method mj = (Method)nj;
+			foreach (Method mj; members; !mj.isMethodBridge() && mj.isStatic() == m.isStatic()) {
 				CallType type2 = mj.type;
 				CallType dtype2 = mj.dtype;
 				CallType etype2 = mj.etype;
@@ -1197,8 +1191,7 @@ public final view RStruct of Struct extends RTypeDecl {
 
 		// template methods of interfaces
 		if( isInterface() ) {
-			foreach (ASTNode n; members; n instanceof Method) {
-				Method m = (Method)n;
+			foreach (Method m; members) {
 				if( !m.isAbstract() ) {
 					if( m.isStatic() ) continue;
 					// Now, non-static methods (templates)
@@ -1222,8 +1215,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		// Generate super(...) constructor calls, if they are not
 		// specified as first statements of a constructor
 		if( !name.name.equals(Type.tpObject.clazz.name.name) ) {
-			foreach (ASTNode n; members; n instanceof Constructor) {
-				Constructor m = (Constructor)n;
+			foreach (Constructor m; members) {
 				if( m.isStatic() ) continue;
 
 				Block initbody = m.body;
@@ -1343,12 +1335,11 @@ public final view RStruct of Struct extends RTypeDecl {
 		long curr_time;
 		autoGenerateStatements();
 		if( !isPackage() ) {
-			foreach (ASTNode n; members; n instanceof Struct) {
+			foreach (Struct ss; members) {
 				try {
-					Struct ss = (Struct)n;
 					ss.resolveDecl();
 				} catch(Exception e ) {
-					Kiev.reportError(n,e);
+					Kiev.reportError(ss,e);
 				}
 			}
 		}
@@ -1356,16 +1347,14 @@ public final view RStruct of Struct extends RTypeDecl {
 		long diff_time = curr_time = System.currentTimeMillis();
 		try {
 			// Verify access
-			foreach(ASTNode n; members; n instanceof Field) {
-				Field f = (Field)n;
+			foreach(Field f; members) {
 				try {
 					f.type.checkResolved();
 					if (f.type.getStruct()!=null)
 						Access.verifyReadWrite((Struct)this,f.type.getStruct());
-				} catch(Exception e ) { Kiev.reportError(n,e); }
+				} catch(Exception e ) { Kiev.reportError(f,e); }
 			}
-			foreach(ASTNode n; members; n instanceof Method) {
-				Method m = (Method)n;
+			foreach(Method m; members) {
 				try {
 					m.type.ret().checkResolved();
 					if (m.type.ret().getStruct()!=null)
@@ -1385,14 +1374,12 @@ public final view RStruct of Struct extends RTypeDecl {
 			// Autogenerate hidden args for initializers of local class
 			if( isLocal() ) {
 				Field[] proxy_fields = Field.emptyArray;
-				foreach(ASTNode n; members; n instanceof Field) {
-					Field f = (Field)n;
+				foreach(Field f; members) {
 					if( f.isNeedProxy() )
 						proxy_fields = (Field[])Arrays.append(proxy_fields,f);
 				}
 				if( proxy_fields.length > 0 ) {
-					foreach(ASTNode n; members; n instanceof Method) {
-						Method m = (Method)n;
+					foreach(Method m; members) {
 						if( !m.name.equals(nameInit) ) continue;
 						for(int j=0; j < proxy_fields.length; j++) {
 							int par = m.params.length;

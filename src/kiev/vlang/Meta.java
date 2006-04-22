@@ -203,8 +203,7 @@ public class Meta extends ENode {
 		for (int n=0; n < values.length; n++) {
 			MetaValue v = values[n];
 			Method m = null;
-			foreach (ASTNode sn; s.members; sn instanceof Method) {
-				Method sm = (Method)sn;
+			foreach (Method sm; s.members) {
 				if( sm.name.equals(v.type.name)) {
 					m = sm;
 					break;
@@ -235,8 +234,7 @@ public class Meta extends ENode {
 		}
 		// check that all non-default values are specified, and add default values
 	next_method:
-		foreach (ASTNode n; s.members; n instanceof Method) {
-			Method m = (Method)n;
+		foreach (Method m; s.members) {
 			for(int j=0; j < values.length; j++) {
 				if (values[j].type.name == m.name.name)
 					continue next_method;
@@ -410,8 +408,7 @@ public class Meta extends ENode {
 		if (values.length != 0) {
 			Struct s = type.getType().getStruct();
 			s.checkResolved();
-			foreach (ASTNode n; s.members; n instanceof Method) {
-				Method m = (Method)n;
+			foreach (Method m; s.members) {
 				MetaValue v = get(m.name.name);
 				if (v.valueEquals(m.annotation_default))
 					continue;

@@ -30,7 +30,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 
 	public void pass3(Struct:ASTNode clazz) {
 		if !(clazz.isPizzaCase()) {
-			foreach (DNode dn; clazz.members; dn instanceof Struct)
+			foreach (Struct dn; clazz.members)
 				this.pass3(dn);
 			return;
 		}
@@ -38,8 +38,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 			return;
 		MetaPizzaCase meta = clazz.getMetaPizzaCase();
 		Field[] flds = Field.emptyArray;
-		foreach (DNode dn; clazz.members; dn instanceof Field) {
-			Field f = (Field)dn;
+		foreach (Field f; clazz.members) {
 			flds = (Field[])Arrays.append(flds,f);
 			meta.add(f);
 		}
@@ -87,14 +86,13 @@ class PizzaCaseBackend extends BackendProcessor implements Constants {
 	}
 	
 	public void preGenerate(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members; dn instanceof Struct)
+		foreach (Struct dn; fu.members)
 			this.preGenerate(dn);
 	}
 	
 	public void preGenerate(Struct:ASTNode clazz) {
-		foreach (ASTNode dn; clazz.members; dn instanceof Struct) {
+		foreach (Struct dn; clazz.members)
 			this.preGenerate(dn);
-		}
 		if( clazz.isPizzaCase() ) {
 			MetaPizzaCase meta = clazz.getMetaPizzaCase();
 			//PizzaCaseAttr case_attr = (PizzaCaseAttr)clazz.getAttr(attrPizzaCase);

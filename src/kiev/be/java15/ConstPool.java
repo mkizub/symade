@@ -118,41 +118,38 @@ public class ConstPool {
 
 	public void generate() {
 
-		foreach(CP cp; poolHash; cp.pos < 1 && cp instanceof NumberCP ) {
+		foreach(NumberCP cp; poolHash; cp.pos < 1) {
 			if( hwm >= pool.length-2 ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
 			pool[hwm] = cp;
 			cp.pos = hwm++;
-			if( ((NumberCP)cp).value instanceof Long || ((NumberCP)cp).value instanceof Double ) {
+			if( cp.value instanceof Long || cp.value instanceof Double ) {
 				pool[hwm++] = null;
 			}
 		}
-		foreach(CP cp; poolHash; cp.pos < 1 && cp instanceof StringCP ) {
+		foreach(StringCP cp; poolHash; cp.pos < 1) {
 			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
 			pool[hwm] = cp;
 			cp.pos = hwm++;
 		}
-		foreach(CP cp; poolHash; cp instanceof NodeCP ) {
+		foreach(NodeCP cp; poolHash) {
 			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
-			NodeCP ncp = (NodeCP)cp;
-			if( !ncp.clazz_cp.sig.equals(Signature.getJavaSignature(ncp.clazz_cp.sig)) )
+			if( !cp.clazz_cp.sig.equals(Signature.getJavaSignature(cp.clazz_cp.sig)) )
 				continue;
-			if( !ncp.nt_cp.type_cp.value.equals(Signature.getJavaSignature(ncp.nt_cp.type_cp.value)) )
-				continue;
-			pool[hwm] = cp;
-			cp.pos = hwm++;
-		}
-		foreach(CP cp; poolHash; cp instanceof ClazzCP) {
-			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
-			ClazzCP cl_cp = (ClazzCP)cp;
-			if( !cl_cp.sig.equals(Signature.getJavaSignature(cl_cp.sig)) )
+			if( !cp.nt_cp.type_cp.value.equals(Signature.getJavaSignature(cp.nt_cp.type_cp.value)) )
 				continue;
 			pool[hwm] = cp;
 			cp.pos = hwm++;
 		}
-		foreach(CP cp; poolHash; cp instanceof NameTypeCP ) {
+		foreach(ClazzCP cp; poolHash) {
 			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
-			NameTypeCP nt_cp = (NameTypeCP)cp;
-			if( !nt_cp.type_cp.value.equals(Signature.getJavaSignature(nt_cp.type_cp.value)) )
+			if( !cp.sig.equals(Signature.getJavaSignature(cp.sig)) )
+				continue;
+			pool[hwm] = cp;
+			cp.pos = hwm++;
+		}
+		foreach(NameTypeCP cp; poolHash) {
+			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
+			if( !cp.type_cp.value.equals(Signature.getJavaSignature(cp.type_cp.value)) )
 				continue;
 			pool[hwm] = cp;
 			cp.pos = hwm++;

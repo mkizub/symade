@@ -138,8 +138,8 @@ public view JSwitchStat of SwitchStat extends JENode implements BreakTarget {
 			}
 			Vector<JVar> vars = new Vector<JVar>();
 			for(int i=0; i < cases.length; i++) {
-				foreach (JENode n; cases[i].stats; n instanceof JVarDecl)
-					vars.append(((JVarDecl)n).var);
+				foreach (JVarDecl n; cases[i].stats)
+					vars.append(n.var);
 			}
 			code.removeVars(vars.toArray());
 

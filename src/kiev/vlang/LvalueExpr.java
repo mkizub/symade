@@ -663,8 +663,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 	public String toString() { return outer.name.toString()+".this"; }
 
 	public static Field outerOf(Struct clazz) {
-		foreach (ASTNode n; clazz.members; n instanceof Field) {
-			Field f = (Field)n;
+		foreach (Field f; clazz.members) {
 			if( f.name.name.startsWith(nameThisDollar) ) {
 				trace(Kiev.debugResolve,"Name of field "+f+" starts with this$");
 				return f;

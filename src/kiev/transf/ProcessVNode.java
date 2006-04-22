@@ -59,7 +59,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	public void pass3(FileUnit:ASTNode fu) {
 		if (tpNArr == null)
 			tpNArr = Env.getStruct(nameNArr).ctype;
-		foreach (ASTNode n; fu.members; n instanceof Struct)
+		foreach (Struct n; fu.members)
 			pass3(n);
 	}
 	
@@ -68,7 +68,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			pass3(sub);
 		if (isNodeKind(s)) {
 			// Check fields of the @node
-			foreach (ASTNode n; s.members; n instanceof Field)
+			foreach (Field n; s.members)
 				pass3(n);
 			return;
 		}
@@ -79,8 +79,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			return;
 		}
 		// Check fields to not have @att and @ref
-		foreach (DNode n; s.members; n instanceof Field) {
-			Field f = (Field)n;
+		foreach (Field f; s.members) {
 			Meta fmatt = f.meta.get(mnAtt);
 			Meta fmref = f.meta.get(mnRef);
 			if (fmatt != null || fmref != null) {
@@ -135,13 +134,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 
 	private boolean hasField(Struct s, KString name) {
 		s.checkResolved();
-		foreach (ASTNode n; s.members; n instanceof Field && ((Field)n).name.equals(name)) return true;
+		foreach (Field f; s.members; f.name.equals(name)) return true;
 		return false;
 	}
 	
 	private boolean hasMethod(Struct s, KString name) {
 		s.checkResolved();
-		foreach (ASTNode n; s.members; n instanceof Method && ((Method)n).name.equals(name)) return true;
+		foreach (Method m; s.members; m.name.equals(name)) return true;
 		return false;
 	}
 
@@ -151,7 +150,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members; dn instanceof Struct)
+		foreach (Struct dn; fu.members)
 			this.autoGenerateMembers(dn);
 	}
 	
@@ -162,7 +161,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Kiev.reportError(s,"Cannot find class "+nameNArr);
 			return;
 		}
-		foreach (DNode dn; s.members; dn instanceof Struct)
+		foreach (Struct dn; s.members)
 			this.autoGenerateMembers(dn);
 		if (!s.isClazz())
 			return;
@@ -173,8 +172,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		if (isNodeImpl(s)) {
 			Struct ss = s;
 			while (ss != null && isNodeImpl(ss)) {
-				foreach (DNode n; ss.members; n instanceof Field && !n.isStatic() && (n.meta.get(mnAtt) != null || n.meta.get(mnRef) != null)) {
-					Field f = (Field)n;
+				foreach (Field f; ss.members; !f.isStatic() && (f.meta.get(mnAtt) != null || f.meta.get(mnRef) != null)) {
 					aflds.append(f);
 				}
 				ss = ss.super_bound.getStruct();
@@ -295,8 +293,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				v.init = new CastExpr(0,s.ctype,new ASTIdentifier(0,KString.from("to$node")));
 				copyV.body.addSymbol(v);
 			}
-			foreach (ASTNode n; s.members; n instanceof Field) {
-				Field f = (Field)n;
+			foreach (Field f; s.members) {
 				if (f.isPackedField() || f.isAbstract() || f.isStatic())
 					continue;
 				{	// check if we may not copy the field

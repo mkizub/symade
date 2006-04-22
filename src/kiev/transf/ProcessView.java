@@ -37,13 +37,13 @@ public class ProcessView extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members; dn instanceof Struct)
+		foreach (Struct dn; fu.members)
 			this.autoGenerateMembers(dn);
 	}
 	
 	public void autoGenerateMembers(Struct:ASTNode clazz) {
 		if !( clazz.isStructView() ) {
-			foreach (ASTNode dn; clazz.members; dn instanceof Struct) {
+			foreach (Struct dn; clazz.members) {
 				this.autoGenerateMembers(dn);
 			}
 			return;
@@ -56,7 +56,7 @@ public class ProcessView extends TransfProcessor implements Constants {
 		
 		// add a cast from clazz.view_of to this view
 		boolean cast_found = false;
-		foreach (DNode dn; clazz.view_of.getStruct().members; dn instanceof Method) {
+		foreach (Method dn; clazz.view_of.getStruct().members) {
 			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
 				cast_found = true;
 				break;
@@ -74,7 +74,7 @@ public class ProcessView extends TransfProcessor implements Constants {
 		}
 		// add a cast from this view to the clazz
 		cast_found = false;
-		foreach (DNode dn; clazz.members; dn instanceof Method) {
+		foreach (Method dn; clazz.members) {
 			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
 				cast_found = true;
 				break;
@@ -122,13 +122,13 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 	}
 	
 	public void preGenerate(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members; dn instanceof Struct)
+		foreach (Struct dn; fu.members)
 			this.preGenerate(dn);
 	}
 	
 	public void preGenerate(Struct:ASTNode clazz) {
 		if !( clazz.isStructView() ) {
-			foreach (DNode dn; clazz.members; dn instanceof Struct)
+			foreach (Struct dn; clazz.members)
 				this.preGenerate(dn);
 			return;
 		}
@@ -213,8 +213,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 			fview = impl.addField(new Field(nameImpl,clazz.view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 
 		// generate bridge methods
-		foreach (DNode dn; impl.members; dn instanceof Method) {
-			Method m = (Method)dn;
+		foreach (Method m; impl.members) {
 			if (m.isStatic() || m.isAbstract() || m.body != null)
 				continue;
 			CallType ct = m.type;
@@ -241,8 +240,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 		}
 		
 		// generate getter/setter methods
-		foreach (DNode dn; impl.members; dn instanceof Field) {
-			Field f = (Field)dn;
+		foreach (Field f; impl.members) {
 			MetaVirtual mv = f.getMetaVirtual();
 			if (mv == null) continue;
 			if (mv.set != null && mv.set.isSynthetic()) {
@@ -291,24 +289,22 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 		}
 		
 		// add a cast from clazz.view_of to this view
-		foreach (DNode dn; clazz.view_of.getStruct().members; dn instanceof Method) {
+		foreach (Method dn; clazz.view_of.getStruct().members) {
 			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
 				if (!dn.isAbstract() && dn.isSynthetic()) {
-					Method cast = (Method)dn;
-					cast.body.stats[0] = new ReturnStat(0, new NewExpr(0, impl.ctype, new ENode[]{new ThisExpr()}));
+					dn.body.stats[0] = new ReturnStat(0, new NewExpr(0, impl.ctype, new ENode[]{new ThisExpr()}));
 				}
 				break;
 			}
 		}
 		// add a cast from this view to the clazz
 		boolean cast_found = false;
-		foreach (DNode dn; impl.members; dn instanceof Method) {
+		foreach (Method dn; impl.members) {
 			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
 				if (dn.isSynthetic()) {
-					Method cast = (Method)dn;
-					cast.setAbstract(false);
-					cast.body = new Block();
-					cast.body.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
+					dn.setAbstract(false);
+					dn.body = new Block();
+					dn.body.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
 				}
 				break;
 			}

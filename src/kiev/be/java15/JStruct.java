@@ -105,8 +105,7 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	private static JField resolveField(@forward JStruct self, KString name, JStruct where, boolean fatal) {
 		self.checkResolved();
-		foreach(JDNode n; members; n instanceof JField) {
-			JField f = (JField)n;
+		foreach(JField f; members) {
 			if (f.name == name)
 				return f;
 		}
@@ -127,16 +126,14 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	private static JMethod resolveMethod(@forward JStruct self, KString name, KString sign, JStruct where, boolean fatal) {
 		self.checkResolved();
-		foreach (JDNode n; members; n instanceof JMethod) {
-			JMethod m = (JMethod)n;
+		foreach (JMethod m; members) {
 			if( m.name.equals(name) && m.type.getJType().java_signature.equals(sign))
 				return m;
 		}
 		if( isInterface() ) {
 			JStruct defaults = self.iface_impl;
 			if( defaults != null ) {
-				foreach (JDNode n; defaults.members; n instanceof JMethod) {
-					JMethod m = (JMethod)n;
+				foreach (JMethod m; defaults.members) {
 					if( m.name.equals(name) && m.type.getJType().java_signature.equals(sign))
 						return m;
 				}
@@ -213,8 +210,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		if (meta.size() > 0) this.addAttr(new RVMetaAttr(meta));
 		
 		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
-		foreach (JDNode n; members; n instanceof JField) {
-			JField f = (JField)n;
+		foreach (JField f; members) {
 			constPool.addAsciiCP(f.name);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
@@ -230,8 +226,7 @@ public final view JStruct of Struct extends JTypeDecl {
 			foreach (Attr a; f.attrs)
 				a.generate(constPool);
 		}
-		foreach (JDNode n; members; n instanceof JMethod) {
-			JMethod m = (JMethod)n;
+		foreach (JMethod m; members) {
 			constPool.addAsciiCP(m.name);
 			constPool.addAsciiCP(m.type.getJType().java_signature);
 			if( m.etype != null )
@@ -276,8 +271,7 @@ public final view JStruct of Struct extends JTypeDecl {
 			if( Kiev.safe && isBad() ) return;
 		}
 		constPool.generate();
-		foreach (JDNode n; members; n instanceof JMethod) {
-			JMethod m = (JMethod)n;
+		foreach (JMethod m; members) {
 			CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
 			if( ca != null ) {
 				trace(Kiev.debugInstrGen," generating refs for CP for method "+this+"."+m);

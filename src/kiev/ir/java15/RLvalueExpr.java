@@ -139,7 +139,7 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 				s.checkResolved();
 				if (s instanceof Struct) {
 					Struct ss = (Struct)s;
-					foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
+					foreach(Method m; ss.members; m.name.equals(nameArrayOp))
 						break lookup_op;
 				}
 				if( s.super_type != null ) {
@@ -187,8 +187,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 			RuleMethod rm = (RuleMethod)ctx_method;
 			assert(rm.params[0].type ≡ Type.tpRule);
 			Var pEnv = null;
-			foreach (ENode n; rm.body.stats; n instanceof VarDecl) {
-				VarDecl vd = (VarDecl)n;
+			foreach (VarDecl vd; rm.body.stats) {
 				if (vd.var.name.equals(namePEnv)) {
 					assert(vd.var.type.isInstanceOf(Type.tpRule));
 					pEnv = vd.var;

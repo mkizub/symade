@@ -41,13 +41,13 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 
 	private boolean hasField(Struct s, KString name) {
 		s.checkResolved();
-		foreach (ASTNode n; s.members; n instanceof Field && ((Field)n).name.equals(name)) return true;
+		foreach (Field f; s.members; f.name.equals(name)) return true;
 		return false;
 	}
 	
 	private boolean hasMethod(Struct s, KString name) {
 		s.checkResolved();
-		foreach (ASTNode n; s.members; n instanceof Method && ((Method)n).name.equals(name)) return true;
+		foreach (Method m; s.members; m.name.equals(name)) return true;
 		return false;
 	}
 
@@ -57,7 +57,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		foreach (ASTNode dn; fu.members; dn instanceof Struct)
+		foreach (Struct dn; fu.members)
 			this.autoGenerateMembers(dn);
 	}
 	
@@ -86,8 +86,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			Struct ss = s;
 			while (ss != null && ss.meta.get(mnNode) != null) {
 				int p = 0;
-				foreach (DNode n; ss.members; n instanceof Field && !n.isStatic() && n.meta.get(mnNode) != null) {
-					Field f = (Field)n;
+				foreach (Field f; ss.members; !f.isStatic() && f.meta.get(mnNode) != null) {
 					aflds.insert(p, f);
 					p++;
 				}

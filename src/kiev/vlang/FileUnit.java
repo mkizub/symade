@@ -55,13 +55,11 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		public		boolean					scanned_for_interface_only;
 
 		public boolean preResolveIn() {
-			for(int i=0; i < members.length; i++) {
+			foreach (Import imp; members) {
 				try {
-					foreach (ASTNode dn; members; dn instanceof Import) {
-						((Import)dn).resolveImports();
-					}
+					imp.resolveImports();
 				} catch(Exception e ) {
-					Kiev.reportError/*Warning*/(members[i],e);
+					Kiev.reportError(imp,e);
 				}
 			}
 			return true;
@@ -92,9 +90,9 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			foreach(ASTNode n; members; n instanceof Struct) {
+			foreach(Struct n; members) {
 				try {
-					((Struct)n).resolveMetaDefaults();
+					n.resolveMetaDefaults();
 				} catch(Exception e) {
 					Kiev.reportError(n,e);
 				}
@@ -109,9 +107,9 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			foreach(ASTNode n; members; n instanceof Struct) {
+			foreach(Struct n; members) {
 				try {
-					((Struct)n).resolveMetaValues();
+					n.resolveMetaValues();
 				} catch(Exception e) {
 					Kiev.reportError(n,e);
 				}
@@ -215,7 +213,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public void cleanup() {
         Kiev.parserAddresses.clear();
 		Kiev.k.presc = null;
-		foreach(ASTNode n; members; n instanceof Struct) ((JStruct)(Struct)n).cleanup();
+		foreach(Struct n; members) ((JStruct)n).cleanup();
 		bodies.delAll();
 	}
 
@@ -223,9 +221,9 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		KString curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		try {
-			foreach (ASTNode n; members; n instanceof Struct) {
+			foreach (Struct n; members) {
 				try {
-					toJava(output_dir, (Struct)n);
+					toJava(output_dir, n);
 				} catch(Exception e) {
 					Kiev.reportError(n,e);
 				}
@@ -239,7 +237,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		if( cl.package_clazz != null && cl.package_clazz != Env.root ) {
 			dmp.append("package ").append(cl.package_clazz.name).append(';').newLine();
 		}
-		foreach (ASTNode syn; members; syn instanceof SNode)
+		foreach (SNode syn; members)
 			dmp.append(syn);
 
 		cl.toJavaDecl(dmp);

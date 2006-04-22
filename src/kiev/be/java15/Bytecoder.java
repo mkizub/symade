@@ -528,8 +528,7 @@ public class Bytecoder implements JConstants {
 
 		{
 			Vector<kiev.bytecode.Field> flds = new Vector<kiev.bytecode.Field>(); 
-			foreach (ASTNode n; cl.members; n instanceof Field) {
-				Field f = (Field)n;
+			foreach (Field f; cl.members) {
 				if( f.isPackedField() ) continue;
 				if (/*!kievmode &&*/ f.isAbstract()) continue;
 				flds.append(writeField(f));
@@ -539,8 +538,7 @@ public class Bytecoder implements JConstants {
 
 		{
 			Vector<kiev.bytecode.Method> mthds = new Vector<kiev.bytecode.Method>();
-			foreach (ASTNode n; cl.members; n instanceof Method) {
-				Method m = (Method)n;
+			foreach (Method m; cl.members) {
 				mthds.append(writeMethod(m));
 			}
 			bcclazz.methods = mthds.copyIntoArray();

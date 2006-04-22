@@ -29,7 +29,7 @@ public static final view RFileUnit of FileUnit extends RDNode {
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			foreach (ASTNode n; members; n instanceof DNode) {
+			foreach (DNode n; members) {
 				try {
 					n.resolveDecl();
 				} catch(Exception e) {
