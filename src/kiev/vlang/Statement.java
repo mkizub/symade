@@ -709,8 +709,6 @@ public class GotoStat extends ENode {
 			stats = resolveStat(name,lst.stat,stats);
 		}
 			break;
-//		case LocalStructDecl:	break;
-//		case VarDecl:			break;
 		case GotoStat:			break;
 		case GotoCaseStat:		break;
 		case ReturnStat:		break;
@@ -718,6 +716,8 @@ public class GotoStat extends ENode {
 		case ExprStat:			break;
 		case BreakStat:			break;
 		case ContinueStat:		break;
+		case DNode:				break;
+		case SNode:				break;
 		default:
 			Kiev.reportWarning(st,"Unknown statement in label lookup: "+st.getClass());
 		}
