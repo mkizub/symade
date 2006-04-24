@@ -166,10 +166,10 @@ public abstract class kiev040 implements kiev040Constants {
 	private Struct mkStruct(NameRef name, int flags, ASTModifiers modifiers, ASTNode parent) {
 		ClazzName clname;
 		if (parent instanceof FileUnit) {
-			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.getStruct(),name.name,false,false);
+			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.getStruct(),name.name,false);
 		}
 		else if (parent instanceof Struct) {
-			clname = ClazzName.fromOuterAndName(curClazz,name.name,false,true);
+			clname = ClazzName.fromOuterAndName(curClazz,name.name,true);
 		}
 		else if (name != null) {
 			// Construct name of local class
@@ -178,14 +178,14 @@ public abstract class kiev040 implements kiev040Constants {
 					+"$"+curClazz.countAnonymouseInnerStructs()
 					+"$"+name.name);
 			KString fixname = bytecode_name.replace('/','.');
-			clname = new ClazzName(fixname,name.name,bytecode_name,false,false);
+			clname = new ClazzName(fixname,name.name,bytecode_name,false);
 		}
 		else {
 			// Local anonymouse class
 			KString bytecode_name =
 				KString.from(curClazz.name.bytecode_name
 					+"$"+curClazz.countAnonymouseInnerStructs());
-			clname = ClazzName.fromBytecodeName(bytecode_name, false);
+			clname = ClazzName.fromBytecodeName(bytecode_name);
 		}
 		Struct clazz = Env.newStruct(clname,curClazz,flags,true);
 		if (name != null)

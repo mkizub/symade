@@ -206,8 +206,7 @@ public final view RNewClosure of NewClosure extends RENode {
 				.append_fast(ctx_clazz.name.bytecode_name)
 				.append_fast((byte)'$')
 				.append(ctx_clazz.countAnonymouseInnerStructs())
-				.toKString(),
-			false
+				.toKString()
 		);
 		clazz = Env.newStruct(clname,ctx_clazz,0,true);
 		clazz.setResolved(true);

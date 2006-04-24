@@ -115,7 +115,7 @@ public interface StdTypes {
 		Struct tpRuleClazz = Env.newStruct(new ClazzName(
 							KString.from("rule"),
 							KString.from("rule"),
-							KString.from("R"),false,false),null,ACC_PUBLIC);
+							KString.from("R"),false),null,ACC_PUBLIC);
 		tpRule					= tpRuleClazz.ctype;
 		tpRuleClazz.setResolved(true);
 		tpRule.flags			= flResolved | flReference;

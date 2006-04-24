@@ -223,7 +223,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
 		flags |= ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC;
 		typeinfo_clazz = Env.newStruct(
-			ClazzName.fromOuterAndName(this.getStruct(),nameClTypeInfo,false,true),this.getStruct(),flags,true
+			ClazzName.fromOuterAndName(this.getStruct(),nameClTypeInfo,true),this.getStruct(),flags,true
 			);
 		members.add(typeinfo_clazz);
 		typeinfo_clazz.setPublic();
@@ -798,7 +798,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				// Make inner class name$default
 				if( defaults == null ) {
 					defaults = Env.newStruct(
-						ClazzName.fromOuterAndName(self.getStruct(),nameIFaceImpl,false,true),
+						ClazzName.fromOuterAndName(self.getStruct(),nameIFaceImpl,true),
 						self.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT | ACC_FORWARD, true
 					);
 					members.add(defaults);

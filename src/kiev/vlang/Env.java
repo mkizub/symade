@@ -122,7 +122,7 @@ public class Env extends Struct {
     	if( package_name.equals(KString.Empty) )
 	    	return newStruct(name,Env.root,0,cleanup);
 		else
-			return newStruct(name,newStruct(ClazzName.fromBytecodeName(package_name,false)),0,cleanup);
+			return newStruct(name,newStruct(ClazzName.fromBytecodeName(package_name)),0,cleanup);
 	}
 
 	public static Struct newStruct(ClazzName name) {
@@ -163,7 +163,7 @@ public class Env extends Struct {
 			if( name.name.equals(name.short_name) )
 				outer = root;
 			else
-				outer = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
+				outer = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 		}
 		if( outer != null )
 			outer.addSubStruct((Struct)cl);
@@ -187,7 +187,7 @@ public class Env extends Struct {
 			bcl.setResolved(true);
 			return (Struct)bcl;
 		}
-		return newPackage(ClazzName.fromToplevelName(name,false));
+		return newPackage(ClazzName.fromToplevelName(name));
 	}
 
 	public static Struct newPackage(ClazzName name) {
@@ -201,7 +201,7 @@ public class Env extends Struct {
 			return (Struct)bcl;
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated package name "+name.bytecode_name+" of "+name.name);
-		return newPackage(name,newPackage(ClazzName.fromToplevelName(name.package_name(),false)));
+		return newPackage(name,newPackage(ClazzName.fromToplevelName(name.package_name())));
 	}
 
 	public static Struct newPackage(ClazzName name,Struct outer) {
@@ -245,7 +245,6 @@ public class Env extends Struct {
 						KString.from(class_name),
 						KString.from(class_short_name),
 						KString.from(class_bytecode_name),
-						false,
 						idx>0 && class_bytecode_name.charAt(idx)=='$'
 						);
 					ProjectFile value = new ProjectFile(cn,class_source_name);
@@ -356,7 +355,7 @@ public class Env extends Struct {
 		if (cl != null)
 			return true;
 		// Check if not loaded
-		ClazzName clname = ClazzName.fromToplevelName(name,false);
+		ClazzName clname = ClazzName.fromToplevelName(name);
 		return existsClazz(clname);
 	}
 
@@ -367,7 +366,7 @@ public class Env extends Struct {
 		Struct cl = classHash.get(name);
 		// Load if not loaded or not resolved
 		if( cl == null ) {
-			ClazzName clname = ClazzName.fromToplevelName(name,false);
+			ClazzName clname = ClazzName.fromToplevelName(name);
 			cl = loadClazz(clname);
 		}
 		else if( !cl.isResolved() && !cl.isAnonymouse() ) {
@@ -420,11 +419,11 @@ public class Env extends Struct {
 			Struct cl = (Struct)classHash.get(name.name);
 			if( cl == null || !cl.isResolved() || cl.package_clazz==null ) {
 				// Ensure the parent package/outer class is loaded
-				Struct pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
+				Struct pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 				if( pkg == null ) {
-					pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
+					pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 					if( pkg == null )
-						pkg = newPackage(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
+						pkg = newPackage(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 				}
 				if( !pkg.isResolved() ) {
 					pkg = getStruct(pkg.name);

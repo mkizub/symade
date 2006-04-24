@@ -24,23 +24,18 @@ public class ClazzName extends NodeName implements Constants {
 	public KString			bytecode_name;
 
 	/** Class is an argument */
-	public boolean			isArgument = false;
 	public boolean			isInner = false;
 
-	public static ClazzName		Empty = new ClazzName(KString.Empty,KString.Empty,KString.Empty,false,false);
+	public static ClazzName		Empty = new ClazzName(KString.Empty,KString.Empty,KString.Empty,false);
 
 	public String toString() {
-		if (isArgument /*|| isInner*/)
-			return short_name.toString();
-		else
-			return name.toString();
+		return name.toString();
 	}
 
-	public ClazzName(KString name, KString short_name, KString bytecode_name, boolean isArg, boolean isInn) {
+	public ClazzName(KString name, KString short_name, KString bytecode_name, boolean isInn) {
 		super(name);
 		this.short_name = short_name;
 		this.bytecode_name = bytecode_name;
-		this.isArgument = isArg;
 		this.isInner = isInn;
 	}
 
@@ -60,29 +55,19 @@ public class ClazzName extends NodeName implements Constants {
 			return KString.Empty;
 	}
 
-	public KString signature() {
-		KStringBuffer ksb = new KStringBuffer(bytecode_name.len+2);
-		if( isArgument )
-			ksb.append_fast((byte)'A');
-		else
-			ksb.append_fast((byte)'L');
-		return ksb.append_fast(bytecode_name).append_fast((byte)';').toKString();
-	}
-
 	public static ClazzName fromSignature(KString signature) {
 		if(signature.equals(KString.Empty)) return Empty;
 		KString bytecode_name = signature.substr(1,signature.length()-1);
-		boolean isArg = (signature.byteAt(0) == (byte)'A');
-		return fromBytecodeName(bytecode_name,isArg);
+		return fromBytecodeName(bytecode_name);
 	}
 
-	public static ClazzName fromToplevelName(KString name, boolean isArg) {
+	public static ClazzName fromToplevelName(KString name) {
 		if(name.equals(KString.Empty)) return Empty;
 		KString bytecode_name = name.replace('.','/');
-		return fromBytecodeName(bytecode_name,isArg);
+		return fromBytecodeName(bytecode_name);
 	}
 
-	public static ClazzName fromBytecodeName(KString bytecode_name, boolean isArg) {
+	public static ClazzName fromBytecodeName(KString bytecode_name) {
 		if(bytecode_name.equals(KString.Empty)) return Empty;
 		KString name = bytecode_name.replace('/','.');
 		name = fixName(name);
@@ -96,26 +81,26 @@ public class ClazzName extends NodeName implements Constants {
 			isInn = false;
 			short_name = name;
 		}
-		return new ClazzName(name,short_name,bytecode_name,isArg,isInn);
+		return new ClazzName(name,short_name,bytecode_name,isInn);
 	}
 
-	public static ClazzName fromOuterAndName(Struct outer, KString short_name, boolean isArg, boolean isInn) {
+	public static ClazzName fromOuterAndName(Struct outer, KString short_name, boolean isInn) {
 		if(short_name.equals(KString.Empty)) return Empty;
 		String delim = isInn ? "$" : "/" ;
 		KString bytecode_name;
 		if( outer.isPackage() ) {
-			assert(!isArg && !isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
+			assert(!isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
 			if( !outer.name.name.equals(KString.Empty) )
 				bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
 			else
 				bytecode_name = short_name;
 		} else {
-			assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
+			assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
 			bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
 		}
 		delim = "."; //isInn ? "$" : "." ;
 		KString name = KString.from(outer.name.name+delim+short_name);
-		return new ClazzName(name,short_name,bytecode_name,isArg,isInn);
+		return new ClazzName(name,short_name,bytecode_name,isInn);
 	}
 
 	public int hashCode() { return name.hashCode(); }

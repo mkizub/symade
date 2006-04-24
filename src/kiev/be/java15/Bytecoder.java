@@ -294,7 +294,7 @@ public class Bytecoder implements JConstants {
 			kiev.bytecode.ExceptionsAttribute ea = (kiev.bytecode.ExceptionsAttribute)bca;
 			JStruct[] exceptions = new JStruct[ea.cp_exceptions.length];
 			for(int i=0; i < exceptions.length; i++) {
-				exceptions[i] = (JStruct)Env.newStruct(ClazzName.fromBytecodeName(ea.getException(i,clazz), false));
+				exceptions[i] = (JStruct)Env.newStruct(ClazzName.fromBytecodeName(ea.getException(i,clazz)));
 			}
 			a = new ExceptionsAttr();
 			((ExceptionsAttr)a).exceptions = exceptions;
@@ -310,7 +310,7 @@ public class Bytecoder implements JConstants {
 				try {
 					ClazzName cn;
 					if( ica.cp_outers[i] != null ) {
-						cn = ClazzName.fromBytecodeName(ica.getOuterName(i,clazz),false);
+						cn = ClazzName.fromBytecodeName(ica.getOuterName(i,clazz));
 						outer[i] = (JStruct)Env.getStruct(cn);
 						if( outer[i] == null )
 							throw new RuntimeException("Class "+cn+" not found");
@@ -318,7 +318,7 @@ public class Bytecoder implements JConstants {
 						outer[i] = null;
 					}
 					if( ica.cp_inners[i] != null ) {
-						cn = ClazzName.fromBytecodeName(ica.getInnerName(i,clazz),false);
+						cn = ClazzName.fromBytecodeName(ica.getInnerName(i,clazz));
 						// load only non-anonymouse classes
 						boolean anon = false;
 						for (int i=0; i < cn.bytecode_name.len; i++) {

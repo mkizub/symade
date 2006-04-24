@@ -93,10 +93,10 @@ public class Signature {
 		ClazzName cname = null;
 		if( isArgument ) {
 			KString bcn = sc.str.substr(pos,sc.pos-1);
-			cname = ClazzName.fromBytecodeName(bcn,isArgument);
+			cname = ClazzName.fromBytecodeName(bcn);
 			clazz = null;
 		} else {
-			cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1),isArgument);
+			cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
 			clazz = Env.newStruct(cname);
 		}
 
@@ -128,7 +128,7 @@ public class Signature {
 		while( sc.hasMoreChars() && (ch=sc.peekChar()) != '<' ) sc.nextChar();
 		if( sc.hasMoreChars() && ch != '<' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '<' expected");
-		ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos),false);
+		ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos));
 		clazz = Env.newStruct(name);
 
 		return new CompaundType(clazz.imeta_type, TVarBld.emptySet);
@@ -165,7 +165,7 @@ public class Signature {
 			getJavaSignature(sc);
 			if( sign != null )
 				return sign;
-			return Type.tpClosureClazz.name.signature();
+			return KString.from("L"+Type.tpClosureClazz.name.bytecode_name+";");
 		}
 		if( sc.peekChar() == '(' ) {
 			ksb.append(sc.nextChar());

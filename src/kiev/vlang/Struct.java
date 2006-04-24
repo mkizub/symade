@@ -728,12 +728,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Struct cl;
 			ClazzName clname = ClazzName.Empty;
 			if( this.equals(Env.root) ) {
-				clname = ClazzName.fromToplevelName(name,false);
+				clname = ClazzName.fromToplevelName(name);
 				cl = Env.getStruct(clname);
 			} else {
 				KStringBuffer ksb = new KStringBuffer(this.name.name.len+name.len+1);
 				ksb.append(this.name.name).append('.').append(name);
-				clname = ClazzName.fromToplevelName(ksb.toKString(),false);
+				clname = ClazzName.fromToplevelName(ksb.toKString());
 				cl = Env.getStruct(clname);
 			}
 			if( cl != null ) {

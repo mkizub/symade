@@ -195,7 +195,7 @@ public class JBaseType extends JType {
 				return new JBaseType(JConstants.jsigRule,clazz);
 			return JType.tpRule;
 		}
-		KString signature = clazz.name.signature();
+		KString signature = KString.from("L"+clazz.name.bytecode_name+";");
 		JBaseType jbt = (JBaseType)jtypeHash.get(signature);
 		if (jbt != null)
 			return jbt;
