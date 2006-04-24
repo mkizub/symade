@@ -31,30 +31,33 @@ public final class ProjectFile extends ASTNode {
 	@virtual typedef This  = ProjectFile;
 	@virtual typedef VView = ProjectFileView;
 
-	public ClazzName	name;
+	public KString		qname;
+	public KString		bname;
 	public File			file;
 	public boolean		bad = true;
 
 	@nodeview
 	public static final view ProjectFileView of ProjectFile extends NodeView {
-		public ClazzName	name;
+		public KString		qname;
+		public KString		bname;
 		public File			file;
 		public boolean		bad;
 	}
 
 	public ProjectFile() {}
 	
-	public ProjectFile(ClazzName clname, File f) {
-		name = clname;
-		file = f;
+	public ProjectFile(KString qname, KString bname, File f) {
+		this.qname = qname;
+		this.bname = bname;
+		this.file = f;
 	}
 
-	public ProjectFile(ClazzName clname, String f) {
-		this(clname,new File(f));
+	public ProjectFile(KString qname, KString bname, String f) {
+		this(qname, bname, new File(f));
 	}
 
-	public ProjectFile(ClazzName clname, KString f) {
-		this(clname, new File( f.toString() ));
+	public ProjectFile(KString qname, KString bname, KString f) {
+		this(qname, bname, new File( f.toString() ));
 	}
 
     public Dumper toJava(Dumper dmp) { return dmp; }
@@ -248,17 +251,7 @@ public class Env extends Struct {
 					String bad = null;
 					if( st.hasMoreTokens() )
 						bad = st.nextToken();
-					String class_short_name;
-					int idx = class_name.lastIndexOf('.');
-					if (idx < 0) class_short_name = class_name;
-					else class_short_name = class_name.substring(idx+1);
-					ClazzName cn = new ClazzName(
-						KString.from(class_name),
-						KString.from(class_short_name),
-						KString.from(class_bytecode_name),
-						idx>0 && class_bytecode_name.charAt(idx)=='$'
-						);
-					ProjectFile value = new ProjectFile(cn,class_source_name);
+					ProjectFile value = new ProjectFile(KString.from(class_name),KString.from(class_bytecode_name),class_source_name);
 					if( bad != null && bad.equals("bad") )
 						value.bad = true;
 					else
@@ -284,11 +277,11 @@ public class Env extends Struct {
 			for(Enumeration<KString> e=projectHash.keys(); e.hasMoreElements();) {
 				KString key = e.nextElement();
 				ProjectFile value = projectHash.get(key);
-				Struct cl = resolveStruct(value.name.name);
+				Struct cl = resolveStruct(value.qname);
 				if( cl != null && cl.isBad() ) value.bad = true;
 				if !(cl instanceof Struct)
 					continue;
-				strs.append(value.name.name+" "+value.name.bytecode_name+" "+value.file+(value.bad?" bad":""));
+				strs.append(value.qname+" "+value.bname+" "+value.file+(value.bad?" bad":""));
 			}
 			String[] sarr = (String[])strs;
 			sortStrings(sarr);
@@ -304,7 +297,7 @@ public class Env extends Struct {
 	public static void setProjectInfo(ClazzName name, String f) {
 		ProjectFile pf = projectHash.get(name.name);
 		if( pf == null )
-			projectHash.put(name.name,new ProjectFile(name,f));
+			projectHash.put(name.name,new ProjectFile(name.name,name.bytecode_name,f));
 		else {
 			pf.bad = true;
 			if( !pf.file.getName().equals(f) )

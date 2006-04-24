@@ -852,17 +852,17 @@ stop:;
 			try {
 				KString key = (KString)e.nextElement();
 				ProjectFile value = Env.projectHash.get(key);
-				File fclass = new File(Kiev.output_dir,value.name.bytecode_name.toString());
+				File fclass = new File(Kiev.output_dir,value.bname.toString());
 				if( fclass.exists() && fclass.isDirectory() ) {
-					fclass = new File(Kiev.output_dir,value.name.bytecode_name+"/package.class");
+					fclass = new File(Kiev.output_dir,value.bname+"/package.class");
 				} else {
-					fclass = new File(Kiev.output_dir,value.name.bytecode_name+".class");
+					fclass = new File(Kiev.output_dir,value.bname+".class");
 				}
 				File fjava = value.file;
 				if( !fjava.exists() ) continue;
 				if( value.bad || !fclass.exists() ) {
 					String nm = fjava.toString();
-					if( Kiev.verbose ) System.out.println("File "+nm+" - "+value.name.bytecode_name+" "+(value.bad?"is bad":"does not exists"));
+					if( Kiev.verbose ) System.out.println("File "+nm+" - "+value.bname+" "+(value.bad?"is bad":"does not exists"));
 					args = (String[])Arrays.appendUniq(args,nm);
 					continue;
 				}
