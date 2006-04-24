@@ -294,7 +294,7 @@ public class Bytecoder implements JConstants {
 			kiev.bytecode.ExceptionsAttribute ea = (kiev.bytecode.ExceptionsAttribute)bca;
 			JStruct[] exceptions = new JStruct[ea.cp_exceptions.length];
 			for(int i=0; i < exceptions.length; i++) {
-				exceptions[i] = (JStruct)Env.jenv.newStruct(ea.getException(i,clazz),false);
+				exceptions[i] = (JStruct)Env.jenv.makeStruct(ea.getException(i,clazz),false);
 			}
 			a = new ExceptionsAttr();
 			((ExceptionsAttr)a).exceptions = exceptions;

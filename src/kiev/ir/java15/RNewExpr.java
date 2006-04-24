@@ -208,7 +208,7 @@ public final view RNewClosure of NewClosure extends RENode {
 				.append(ctx_clazz.countAnonymouseInnerStructs())
 				.toKString()
 		);
-		clazz = Env.newStruct(clname,ctx_clazz,0,true);
+		clazz = Env.newStruct(null,false,ctx_clazz,0,true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);

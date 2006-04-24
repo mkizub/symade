@@ -65,12 +65,13 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		foreach (SNode n; fu.members) {
 			try {
 				processSyntax(n);
-				if (n instanceof Import) {
-					if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(java_lang_name))
+				if (n instanceof Import && n.resolved instanceof Struct) {
+					KString name = ((Struct)n.resolved).name.name;
+					if( n.mode == Import.ImportMode.IMPORT_CLASS && name == java_lang_name)
 						java_lang_found = true;
-					else if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(kiev_stdlib_name))
+					else if( n.mode == Import.ImportMode.IMPORT_CLASS && name == kiev_stdlib_name)
 						kiev_stdlib_found = true;
-					else if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(kiev_stdlib_meta_name))
+					else if( n.mode == Import.ImportMode.IMPORT_CLASS && name == kiev_stdlib_meta_name)
 						kiev_stdlib_meta_found = true;
 				}
 				trace(Kiev.debugResolve,"Add "+n);

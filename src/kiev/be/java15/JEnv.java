@@ -30,7 +30,7 @@ public final class JEnv {
 		stdClassLoader = new kiev.bytecode.StandardClassLoader(path);
 	}
 
-	public Struct newStruct(KString bc_name, boolean cleanup) {
+	public Struct makeStruct(KString bc_name, boolean cleanup) {
 		Struct pkg = Env.root;
 		int start = 0;
 		int end = bc_name.indexOf('/', start);
@@ -42,7 +42,7 @@ public final class JEnv {
 				break;
 			}
 			if (ss == null)
-				ss = Env.newPackage(ClazzName.fromToplevelName(bc_name.substr(0, end)), pkg);
+				ss = Env.newPackage(nm, pkg);
 			pkg = ss;
 			start = end+1;
 			end = bc_name.indexOf('/', start);
@@ -57,15 +57,16 @@ public final class JEnv {
 				break;
 			}
 			if (ss == null)
-				ss = Env.newStruct(ClazzName.fromBytecodeName(bc_name.substr(0, end)), pkg, 0, false);
+				ss = Env.newStruct(nm, true, pkg, 0, false);
 			pkg = ss;
 			start = end+1;
 			end = bc_name.indexOf('$', start);
 		}
 		KString nm = bc_name.substr(start);
+		//assert (!Character.isDigit((char)nm.byteAt(0)));
 		foreach (Struct s; pkg.sub_clazz; s.short_name.name == nm)
 			return s;
-		return Env.newStruct(ClazzName.fromBytecodeName(bc_name), pkg, 0, cleanup);
+		return Env.newStruct(nm, true, pkg, 0, cleanup);
 	}
 
 	public boolean existsClazz(ClazzName name) {
@@ -90,14 +91,14 @@ public final class JEnv {
 				if( pkg == null ) {
 					pkg = Env.getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 					if( pkg == null )
-						pkg = Env.newPackage(ClazzName.fromBytecodeName(name.package_bytecode_name()));
+						pkg = Env.newPackage(name.package_name());
 				}
 				if( !pkg.isResolved() ) {
 					pkg = Env.getStruct(pkg.name);
 					//pkg = loadClazz(pkg.name);
 				}
 				if( cl == null ) {
-					cl = newStruct(name.bytecode_name,false);
+					cl = makeStruct(name.bytecode_name,false);
 					new FileUnit(KString.from(name.short_name+".class"), pkg).members.add(cl);
 				}
 			}

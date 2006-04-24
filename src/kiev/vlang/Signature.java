@@ -99,7 +99,7 @@ public class Signature {
 			clazz = null;
 		} else {
 			//cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
-			clazz = Env.jenv.newStruct(sc.str.substr(pos,sc.pos-1),false);
+			clazz = Env.jenv.makeStruct(sc.str.substr(pos,sc.pos-1),false);
 		}
 
 		if (isArgument)
@@ -130,7 +130,7 @@ public class Signature {
 		while( sc.hasMoreChars() && (ch=sc.peekChar()) != '<' ) sc.nextChar();
 		if( sc.hasMoreChars() && ch != '<' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '<' expected");
-		clazz = Env.jenv.newStruct(sc.str.substr(pos,sc.pos), false);
+		clazz = Env.jenv.makeStruct(sc.str.substr(pos,sc.pos), false);
 
 		return new CompaundType(clazz.imeta_type, TVarBld.emptySet);
 	}

@@ -139,15 +139,19 @@ public class Env extends Struct {
 		return null;
 	}
 	
-	public static Struct newStruct(ClazzName name,Struct outer,int acces) {
-		return newStruct(name,outer,acces,false);
+	public static Struct newStruct(KString sname, Struct outer, int acces) {
+		return newStruct(sname,true,outer,acces,false);
 	}
 
-	public static Struct newStruct(ClazzName name,Struct outer,int acces, boolean cleanup) {
-		Struct bcl = resolveStruct(name.name);
+	public static Struct newStruct(KString sname, boolean direct, Struct outer, int acces, boolean cleanup) {
+		Struct bcl = null;
+		if (direct && sname != null) {
+			foreach (Struct s; outer.sub_clazz; s.short_name.name == sname) {
+				bcl = s;
+				break;
+			}
+		}
 		if( bcl != null ) {
-			if !(bcl instanceof Struct)
-				throw new CompilerException("Cannot create struct "+name);
 			Struct cl = (Struct)bcl;
 			if( cleanup ) {
 				cl.flags = acces;
@@ -165,6 +169,26 @@ public class Env extends Struct {
 			outer.addSubStruct((Struct)cl);
 			return cl;
 		}
+		ClazzName name;
+		if (direct) {
+			name = ClazzName.fromOuterAndName(outer,sname,!outer.isPackage());
+		}
+		else if (sname != null) {
+			// Construct name of local class
+			KString bytecode_name =
+				KString.from(outer.name.bytecode_name
+					+"$"+outer.countAnonymouseInnerStructs()
+					+"$"+sname);
+			KString fixname = bytecode_name.replace('/','.');
+			name = new ClazzName(fixname,sname,bytecode_name,false);
+		}
+		else {
+			// Local anonymouse class
+			KString bytecode_name =
+				KString.from(outer.name.bytecode_name
+					+"$"+outer.countAnonymouseInnerStructs());
+			name = ClazzName.fromBytecodeName(bytecode_name);
+		}
 		Struct cl = new Struct(name,outer,acces);
 		if( outer == null ) {
 			if( name.name.equals(name.short_name) )
@@ -177,41 +201,24 @@ public class Env extends Struct {
 		return cl;
 	}
 
-	public static Struct newInterface(ClazzName name,Struct outer,int acces) {
-		Struct cl = newStruct(name,outer,acces);
-		cl.setInterface(true);
-		return cl;
-	}
-
-	public static Struct newPackage(KString name) {
-		if( name.equals(KString.Empty) )
+	public static Struct newPackage(KString qname) {
+		if (qname == KString.Empty)
 			return Env.root;
-		Struct bcl = resolveStruct(name);
-		if( bcl != null ) {
-			if !(bcl instanceof Struct)
-				throw new CompilerException("Cannot create struct "+name);
-			bcl.setPackage();
-			bcl.setResolved(true);
-			return (Struct)bcl;
-		}
-		return newPackage(ClazzName.fromToplevelName(name));
+		int end = qname.lastIndexOf('.');
+		if (end < 0)
+			return newPackage(qname,Env.root);
+		else
+			return newPackage(qname.substr(end+1),newPackage(qname.substr(0,end)));
 	}
 
-	public static Struct newPackage(ClazzName name) {
-		if( name.equals(ClazzName.Empty)) return Env.root;
-		Struct bcl = resolveStruct(name.name);
-		if( bcl != null ) {
-			if !(bcl instanceof Struct)
-				throw new CompilerException("Cannot create struct "+name);
-			bcl.setPackage();
-			bcl.setResolved(true);
-			return (Struct)bcl;
+	public static Struct newPackage(KString sname, Struct outer) {
+		Struct cl = null;
+		foreach (Struct s; outer.sub_clazz; s.short_name.name == sname) {
+			cl = s;
+			break;
 		}
-		return newPackage(name,newPackage(ClazzName.fromToplevelName(name.package_name())));
-	}
-
-	public static Struct newPackage(ClazzName name,Struct outer) {
-		Struct cl = newStruct(name,outer,0);
+		if (cl == null)
+			cl = newStruct(sname,outer,0);
 		cl.setPackage();
 		cl.setResolved(true);
 		return cl;

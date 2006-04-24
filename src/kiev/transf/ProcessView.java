@@ -137,11 +137,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 			return;
 		
 		// generate implementation
-		Struct impl = Env.newStruct(
-			ClazzName.fromOuterAndName(clazz,nameIFaceImpl, true),
-			clazz,
-			ACC_PUBLIC | ACC_SYNTHETIC | ACC_FORWARD
-			);
+		Struct impl = Env.newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_SYNTHETIC|ACC_FORWARD,true);
 		impl.pos = clazz.pos;
 		impl.setResolved(true);
 		if (clazz.isAbstract()) {

@@ -88,18 +88,21 @@ public class ClazzName extends NodeName implements Constants {
 		if(short_name.equals(KString.Empty)) return Empty;
 		String delim = isInn ? "$" : "/" ;
 		KString bytecode_name;
+		KString name;
 		if( outer.isPackage() ) {
 			assert(!isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
-			if( !outer.name.name.equals(KString.Empty) )
+			if( !outer.name.name.equals(KString.Empty) ) {
 				bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
-			else
+				name = KString.from(outer.name.name+"."+short_name);
+			} else {
 				bytecode_name = short_name;
+				name = short_name;
+			}
 		} else {
 			assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
 			bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
+			name = KString.from(outer.name.name+"."+short_name);
 		}
-		delim = "."; //isInn ? "$" : "." ;
-		KString name = KString.from(outer.name.name+delim+short_name);
 		return new ClazzName(name,short_name,bytecode_name,isInn);
 	}
 

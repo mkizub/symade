@@ -178,30 +178,32 @@ public abstract class kiev040 {
 
 	/*{
 	private Struct mkStruct(NameRef name, int flags, ASTModifiers modifiers, ASTNode parent) {
-		ClazzName clname;
+		KString nm;
+		Struct outer;
+		boolean direct;
 		if (parent instanceof FileUnit) {
-			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.getStruct(),name.name,false);
+			nm = name.name;
+			outer = ((FileUnit)parent).pkg.getStruct();
+			direct = true;
 		}
 		else if (parent instanceof Struct) {
-			clname = ClazzName.fromOuterAndName(curClazz,name.name,true);
+			nm = name.name;
+			outer = curClazz;
+			direct = true;
 		}
 		else if (name != null) {
 			// Construct name of local class
-			KString bytecode_name =
-				KString.from(curClazz.name.bytecode_name
-					+"$"+curClazz.countAnonymouseInnerStructs()
-					+"$"+name.name);
-			KString fixname = bytecode_name.replace('/','.');
-			clname = new ClazzName(fixname,name.name,bytecode_name,false);
+			nm = name.name;
+			outer = curClazz;
+			direct = false;
 		}
 		else {
 			// Local anonymouse class
-			KString bytecode_name =
-				KString.from(curClazz.name.bytecode_name
-					+"$"+curClazz.countAnonymouseInnerStructs());
-			clname = ClazzName.fromBytecodeName(bytecode_name);
+			nm = null;
+			outer = curClazz;
+			direct = false;
 		}
-		Struct clazz = Env.newStruct(clname,curClazz,flags,true);
+		Struct clazz = Env.newStruct(nm,direct,curClazz,flags,true);
 		if (name != null)
 			clazz.pos  = name.pos;
 		else
