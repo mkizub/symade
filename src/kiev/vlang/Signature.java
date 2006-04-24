@@ -4,6 +4,8 @@ import kiev.Main;
 import kiev.stdlib.*;
 import kiev.vlang.types.*;
 
+import kiev.be.java15.JEnv;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$
@@ -96,8 +98,8 @@ public class Signature {
 			cname = ClazzName.fromBytecodeName(bcn);
 			clazz = null;
 		} else {
-			cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
-			clazz = Env.newStruct(cname);
+			//cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
+			clazz = Env.jenv.newStruct(sc.str.substr(pos,sc.pos-1),false);
 		}
 
 		if (isArgument)
@@ -128,8 +130,7 @@ public class Signature {
 		while( sc.hasMoreChars() && (ch=sc.peekChar()) != '<' ) sc.nextChar();
 		if( sc.hasMoreChars() && ch != '<' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '<' expected");
-		ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos));
-		clazz = Env.newStruct(name);
+		clazz = Env.jenv.newStruct(sc.str.substr(pos,sc.pos), false);
 
 		return new CompaundType(clazz.imeta_type, TVarBld.emptySet);
 	}
@@ -188,7 +189,6 @@ public class Signature {
 		int pos = sc.pos;
 		while( sc.nextChar() != ';' );
 		KString kstr = sc.str.substr(pos,sc.pos);
-		Struct struct = Env.classHash.get(ClazzName.fromSignature(kstr).name);
 		if( sc.peekChar() == '<' ) {
 			int depth = 0;
 			while( sc.hasMoreChars() ) {

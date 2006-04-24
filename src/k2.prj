@@ -66,6 +66,7 @@ kiev.be.java15.JContinueStat kiev/be/java15/JContinueStat kiev\be\java15\JStatem
 kiev.be.java15.JDNode kiev/be/java15/JDNode kiev\be\java15\JNode.java
 kiev.be.java15.JDoWhileStat kiev/be/java15/JDoWhileStat kiev\be\java15\JLoopStat.java
 kiev.be.java15.JENode kiev/be/java15/JENode kiev\be\java15\JNode.java
+kiev.be.java15.JEnv kiev/be/java15/JEnv kiev\be\java15\JEnv.java
 kiev.be.java15.JExprStat kiev/be/java15/JExprStat kiev\be\java15\JStatement.java
 kiev.be.java15.JFakeType kiev/be/java15/JFakeType kiev\be\java15\JType.java
 kiev.be.java15.JFakeTypeProvider kiev/be/java15/JFakeTypeProvider kiev\be\java15\JType.java

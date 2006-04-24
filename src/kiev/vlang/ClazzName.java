@@ -106,50 +106,7 @@ public class ClazzName extends NodeName implements Constants {
 	public int hashCode() { return name.hashCode(); }
 
 	public boolean equals(ClazzName nm) { return name == nm.name; }
-/*
-	public static KString fixLocalName(KString name) {
-		int i=0;
-		boolean fix_it = false;
-		while( (i=name.indexOf((byte)'.',i)) >= 0
-				&& Character.isDigit((char)name.byteAt(i+1)) ) {
-			fix_it = true;
-			break;
-		}
-		if( !fix_it)
-			return name;
-		KString.KStringScanner sc = new KString.KStringScanner(name);
-		KStringBuffer sb = new KStringBuffer(name.len);
-		fix_it = false;
-		while(sc.hasMoreChars()) {
-			char ch = sc.nextChar();
-			if( ch == '.' ) {
-				char pc = sc.peekChar();
-				if( pc == '.' ) {
-					// Case aaa..bbb -> aaa$$bbb
-					sc.nextChar();
-					sb.append_fast((byte)'$').append_fast((byte)'$');
-				}
-				else if( fix_it ) {
-					// Case aaa.0.bbb -> aaa$0$bbb
-					sb.append_fast((byte)'$');
-					fix_it = false;
-				}
-				else if( Character.isDigit(pc) ) {
-					// Case aaa.0 -> aaa$0, also flag previous case
-					sb.append_fast((byte)'$');
-					fix_it = true;
-				}
-				else
-					sb.append_fast((byte)'.');
-				continue;
-			}
-			if( ch == '$' )
-				fix_it = false;
-			sb.append(ch);
-		}
-		return sb.toKString();
-	}
-*/
+
 	public static KString fixName(KString str) {
 		KString.KStringScanner sc = new KString.KStringScanner(str);
 		KStringBuffer sb = new KStringBuffer(str.len);
