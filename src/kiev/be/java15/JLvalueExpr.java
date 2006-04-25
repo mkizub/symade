@@ -303,10 +303,10 @@ public final view JThisExpr of ThisExpr extends JLvalueExpr {
 @nodeview
 public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 	public:ro	KString		ident;
-	public:ro	JVar	var;
+	public:ro	JVar		var;
 
 	public JField resolveProxyVar(Code code) {
-		JField proxy_var = code.clazz.resolveField(this.ident,false);
+		JField proxy_var = code.clazz.resolveField(this.ident,true);
 		if( proxy_var == null && code.method.isStatic() && !code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var;

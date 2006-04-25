@@ -21,7 +21,7 @@ import syntax kiev.Syntax;
 public final view JMethod of Method extends JDNode {
 
 	public:ro	Access					acc;
-	public:ro	KString					name;
+	public:ro	Symbol					name;
 	public:ro	JArr<JVar>				params;
 	public:ro	JBlock					body;
 	public		Attr[]					attrs;
@@ -189,10 +189,10 @@ public final view JInitializer of Initializer extends JDNode {
 @nodeview
 public final final view JWBCCondition of WBCCondition extends JDNode {
 	public:ro	WBCType				cond;
-	public:ro	KString				name;
-	public:ro	JENode			body;
-	public:ro	JMethod			definer;
-	public				CodeAttr			code_attr;
+	public:ro	Symbol				name;
+	public:ro	JENode				body;
+	public:ro	JMethod				definer;
+	public		CodeAttr			code_attr;
 
 	public void generate(ConstPool constPool, Type reqType) {
 		Code code = new Code(jctx_clazz, jctx_method, constPool);

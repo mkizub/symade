@@ -35,18 +35,18 @@ public class TypeNameRef extends TypeRef {
 		name = nm;
 	}
 
-	public TypeNameRef(NameRef nm) {
+	public TypeNameRef(SymbolRef nm) {
 		this.pos = pos;
 		this.name = nm.name;
 	}
 
-	public TypeNameRef(NameRef nm, Type tp) {
+	public TypeNameRef(SymbolRef nm, Type tp) {
 		this.pos = pos;
 		this.name = nm.name;
 		this.lnk = tp;
 	}
 
-	public TypeNameRef(TypeRef outer, NameRef nm) {
+	public TypeNameRef(TypeRef outer, SymbolRef nm) {
 		this.pos = pos;
 		this.outer = outer;
 		this.name = nm.name;

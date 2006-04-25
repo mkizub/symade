@@ -25,7 +25,7 @@ public interface ContinueTarget {
 }
 
 public interface Named {
-	public NodeName	getName();
+	public Symbol getName();
 }
 
 public final class ParentEnumerator implements Enumeration<ASTNode> {

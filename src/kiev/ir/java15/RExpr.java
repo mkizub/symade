@@ -30,7 +30,7 @@ public final view RShadow of Shadow extends RENode {
 @nodeview
 public final view RArrayLengthExpr of ArrayLengthExpr extends RENode {
 	public ENode			obj;
-	public NameRef			ident;
+	public SymbolRef		ident;
 
 	public void resolve(Type reqType) {
 		obj.resolve(null);

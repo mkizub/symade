@@ -162,7 +162,7 @@ public final view RCondStat of CondStat extends RENode {
 
 @nodeview
 public final view RLabeledStat of LabeledStat extends RENode {
-	public NameRef			ident;
+	public Symbol			ident;
 	public Label			lbl;
 	public ENode			stat;
 
@@ -179,7 +179,7 @@ public final view RLabeledStat of LabeledStat extends RENode {
 
 @nodeview
 public final view RBreakStat of BreakStat extends RENode {
-	public NameRef			ident;
+	public SymbolRef		ident;
 	public Label			dest;
 
 	public void resolve(Type reqType) {
@@ -237,7 +237,7 @@ public final view RBreakStat of BreakStat extends RENode {
 
 @nodeview
 public final view RContinueStat of ContinueStat extends RENode {
-	public NameRef			ident;
+	public SymbolRef		ident;
 	public Label			dest;
 
 	public void resolve(Type reqType) {
@@ -248,7 +248,7 @@ public final view RContinueStat of ContinueStat extends RENode {
 
 @nodeview
 public final view RGotoStat of GotoStat extends RENode {
-	public NameRef			ident;
+	public SymbolRef		ident;
 	public Label			dest;
 
 	public void resolve(Type reqType) {

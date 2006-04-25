@@ -35,7 +35,7 @@ public class Var extends LvalDNode implements Named {
 	@virtual typedef JView = JVar;
 	@virtual typedef RView = RVar;
 
-	@att public NodeName	name;
+	@att public Symbol		name;
 	@att public TypeRef		vtype;
 	@att public ENode		init;
 		 public int			bcpos = -1;
@@ -96,7 +96,7 @@ public class Var extends LvalDNode implements Named {
 		
 	@nodeview
 	public static view VVar of Var extends VLvalDNode {
-		public	NodeName	name;
+		public	Symbol		name;
 		public	TypeRef		vtype;
 		public	ENode		init;
 		public	int			bcpos;
@@ -126,30 +126,30 @@ public class Var extends LvalDNode implements Named {
 	{
 		this.pos = pos;
 		this.flags = flags;
-		this.name = new NodeName(name);
+		this.name = new Symbol(name);
 		this.vtype = new TypeRef(type);
 	}
 
-	public Var(NameRef id, TypeRef vtype, int flags)
+	public Var(Symbol id, TypeRef vtype, int flags)
 		require vtype != null;
 	{
 		this.pos = id.pos;
 		this.flags = flags;
-		this.name = new NodeName(id.name);
+		this.name = id;
 		this.vtype = vtype;
 	}
 
 	public Var(KString name, Type type)
 		require type != null;
 	{
-		this.name = new NodeName(name);
+		this.name = new Symbol(name);
 		this.vtype = new TypeRef(type);
 	}
 
-	public Var(NameRef id, TypeRef vtype)
+	public Var(Symbol id, TypeRef vtype)
 		require vtype != null;
 	{
-		this.name = new NodeName(id.name);
+		this.name = id;
 		this.vtype = vtype;
 	}
 
@@ -165,7 +165,7 @@ public class Var extends LvalDNode implements Named {
 		return name.hashCode();
 	}
 
-	public NodeName getName() { return name; }
+	public Symbol getName() { return name; }
 
 	public Type	getType() { return type; }
 
@@ -269,7 +269,7 @@ public final class FormPar extends Var {
 		this.stype = new TypeRef(type);
 	}
 
-	public FormPar(NameRef id, TypeRef vtype, TypeRef stype, int kind, int flags) {
+	public FormPar(Symbol id, TypeRef vtype, TypeRef stype, int kind, int flags) {
 		super(id,vtype);
 		this.pos = id.pos;
 		this.flags = flags;

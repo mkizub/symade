@@ -35,7 +35,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@virtual typedef RView = RStruct;
 
 		 public Access						acc;
-	@att public NameRef						short_name; // short name
+	@att public Symbol						short_name; // short name
 		 public KString						qname;	// qualified name
 		 public KString						bname;	// bytecode name
 		 public CompaundTypeProvider		imeta_type;
@@ -389,7 +389,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@nodeview
 	public static final view VStruct of Struct extends VTypeDecl {
 		public				Access					acc;
-		public:ro			NameRef					short_name;
+		public:ro			Symbol					short_name;
 		public:ro			KString					qname;
 		public:ro			KString					bname;
 		public:ro			CompaundTypeProvider	imeta_type;
@@ -536,14 +536,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
 
 	Struct() {
-		this.short_name = new NameRef(null);
+		this.short_name = new Symbol(null,KString.Empty);
 		this.qname = KString.Empty;
 		this.bname = KString.Empty;
 	}
 	
 	public Struct(ClazzName name, Struct outer, int flags) {
 		this.flags = flags;
-		this.short_name = new NameRef(name.short_name);
+		this.short_name = new Symbol(name.short_name);
 		this.qname = name.name;
 		this.bname = name.bytecode_name;
 		this.imeta_type = new CompaundTypeProvider(this);
@@ -564,7 +564,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public String toString() { return qname.toString(); }
 
-	public NodeName getName() { return new NodeName(short_name.name); }
+	public Symbol getName() { return new Symbol(short_name.name); }
 	
 	public MetaPizzaCase getMetaPizzaCase() {
 		return (MetaPizzaCase)this.getNodeData(MetaPizzaCase.ATTR);

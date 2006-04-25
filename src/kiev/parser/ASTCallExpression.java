@@ -27,13 +27,13 @@ public class ASTCallExpression extends ENode {
 	@virtual typedef This  = ASTCallExpression;
 	@virtual typedef VView = VASTCallExpression;
 
-	@ref public NameRef				func;
+	@ref public SymbolRef			func;
 	@att public NArr<TypeRef>		targs;
 	@att public NArr<ENode>			args;
 
 	@nodeview
 	public static view VASTCallExpression of ASTCallExpression extends VENode {
-		public		NameRef			func;
+		public		SymbolRef		func;
 		public:ro	NArr<TypeRef>	targs;
 		public:ro	NArr<ENode>		args;
 
@@ -122,7 +122,7 @@ public class ASTCallExpression extends ENode {
 
 	public ASTCallExpression(int pos, KString func, ENode[] args) {
 		this.pos = pos;
-		this.func = new NameRef(pos, func);
+		this.func = new SymbolRef(pos, func);
 		foreach (ENode e; args) {
 			this.args.append(e);
 		}

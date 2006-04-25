@@ -40,7 +40,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	@virtual typedef RView = RMethod;
 
 		 public Access				acc;
-	@att public NodeName			name;
+	@att public Symbol				name;
 		 CallTypeProvider			meta_type;
 	@att public NArr<TypeDef>		targs;
 	@att public TypeRef				type_ret;
@@ -249,7 +249,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		public final void checkRebuildTypes();
 	
 		public				Access				acc;
-		public				NodeName			name;
+		public				Symbol				name;
 		public				CallTypeProvider	meta_type;
 		public:ro			NArr<TypeDef>		targs;
 		public				TypeRef				type_ret;
@@ -342,7 +342,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 	public Method(KString name, TypeRef type_ret) {
 		assert ((name != nameInit && name != nameClassInit) || this instanceof Constructor);
-		this.name = new NodeName(name);
+		this.name = new Symbol(name);
 		this.type_ret = type_ret;
 		this.dtype_ret = type_ret.ncopy();
 		this.meta = new MetaSet();
@@ -430,7 +430,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		return sb.toString();
 	}
 
-	public NodeName getName() { return name; }
+	public Symbol getName() { return name; }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(name);
@@ -845,7 +845,7 @@ public class WBCCondition extends DNode {
 	@virtual typedef RView = RWBCCondition;
 
 	@att public WBCType				cond;
-	@att public NameRef				name;
+	@att public Symbol				name;
 	@att public ENode				body;
 	@ref public Method				definer;
 	@att public CodeAttr			code_attr;
@@ -853,7 +853,7 @@ public class WBCCondition extends DNode {
 	@nodeview
 	public static final view VWBCCondition of WBCCondition extends VDNode {
 		public WBCType				cond;
-		public NameRef				name;
+		public Symbol				name;
 		public ENode				body;
 		public Method				definer;
 		public CodeAttr				code_attr;
@@ -864,7 +864,7 @@ public class WBCCondition extends DNode {
 	public WBCCondition(int pos, WBCType cond, KString name, ENode body) {
 		this.pos = pos;
 		if (name != null)
-			this.name = new NameRef(pos, name);
+			this.name = new Symbol(name);
 		this.cond = cond;
 		this.body = body;
 	}

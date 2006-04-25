@@ -28,14 +28,14 @@ public class ASTCallAccessExpression extends ENode {
 	@virtual typedef VView = VASTCallAccessExpression;
 
 	@att public ENode				obj;
-	@ref public NameRef				func;
+	@ref public SymbolRef			func;
 	@att public NArr<TypeRef>		targs;
 	@att public NArr<ENode>			args;
 
 	@nodeview
 	public static view VASTCallAccessExpression of ASTCallAccessExpression extends VENode {
 		public		ENode			obj;
-		public		NameRef			func;
+		public		SymbolRef		func;
 		public:ro	NArr<TypeRef>	targs;
 		public:ro	NArr<ENode>		args;
 
@@ -161,7 +161,7 @@ public class ASTCallAccessExpression extends ENode {
 	public ASTCallAccessExpression(int pos, ENode obj, KString func, ENode[] args) {
 		this.pos = pos;
 		this.obj = obj;
-		this.func = new NameRef(pos, func);
+		this.func = new SymbolRef(pos, func);
 		this.args.addAll(args);
 	}
 

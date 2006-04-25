@@ -102,25 +102,25 @@ public class ArrayLengthExpr extends ENode {
 	@virtual typedef RView = RArrayLengthExpr;
 
 	@att public ENode			obj;
-	@att public NameRef			ident;
+	@att public SymbolRef		ident;
 
 	@nodeview
 	public static final view VArrayLengthExpr of ArrayLengthExpr extends VENode {
 		public ENode			obj;
-		public NameRef			ident;
+		public SymbolRef		ident;
 	}
 
 	public ArrayLengthExpr() {}
 
 	public ArrayLengthExpr(int pos, ENode obj) {
 		this.pos = pos;
-		this.ident = new NameRef(pos,nameLength);
+		this.ident = new SymbolRef(pos,nameLength);
 		this.obj = obj;
 	}
-	public ArrayLengthExpr(int pos, ENode obj, NameRef length) {
+	public ArrayLengthExpr(int pos, ENode obj, SymbolRef length) {
 		this.pos = pos;
 		assert(length.name == nameLength);
-		this.ident = new NameRef(pos,nameLength);
+		this.ident = new SymbolRef(pos,nameLength);
 		this.obj = obj;
 	}
 

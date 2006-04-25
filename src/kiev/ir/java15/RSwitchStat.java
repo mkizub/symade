@@ -44,7 +44,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+fields.length+" fields");
 							for(int i=0, j=0; i < pattern.length; i++) {
 								Var p = pattern[i];
-								if( p.type == Type.tpVoid || p.name.name.len == 1 && p.name.name.byteAt(0) == '_')
+								if( p.type == Type.tpVoid || p.name.name == nameUnderscore)
 									continue;
 								Field f = fields[i];
 								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
@@ -165,7 +165,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 						cae.pos = pos;
 						cae.obj = new LVarExpr(tmpvar.pos,tmpvar.getVar());
 						cae.obj.resolve(null);
-						cae.func = new NameRef(pos, nameGetCaseTag);
+						cae.func = new SymbolRef(pos, nameGetCaseTag);
 					} else {
 						mode = SwitchStat.TYPE_SWITCH;
 						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(old_sel.hashCode())),

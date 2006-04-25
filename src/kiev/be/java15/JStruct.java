@@ -25,7 +25,7 @@ import syntax kiev.Syntax;
 public final view JStruct of Struct extends JTypeDecl {
 
 	public:ro	Access				acc;
-	public:ro	NameRef				short_name;
+	public:ro	Symbol				short_name;
 	public:ro	KString				qname;
 	public:ro	KString				bname;
 	public:ro	CompaundType		ctype;
@@ -108,7 +108,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	private static JField resolveField(@forward JStruct self, KString name, JStruct where, boolean fatal) {
 		self.checkResolved();
 		foreach(JField f; members) {
-			if (f.name == name)
+			if (f.name.equals(name))
 				return f;
 		}
 		if( jsuper_type != null )
@@ -213,7 +213,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		
 		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
 		foreach (JField f; members) {
-			constPool.addAsciiCP(f.name);
+			constPool.addAsciiCP(f.name.name);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
 			if( f.isAccessedFromInner())
@@ -229,7 +229,7 @@ public final view JStruct of Struct extends JTypeDecl {
 				a.generate(constPool);
 		}
 		foreach (JMethod m; members) {
-			constPool.addAsciiCP(m.name);
+			constPool.addAsciiCP(m.name.name);
 			constPool.addAsciiCP(m.type.getJType().java_signature);
 			if( m.etype != null )
 				constPool.addAsciiCP(m.etype.getJType().java_signature);

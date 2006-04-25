@@ -2,6 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.parser.Token;
 
 import static kiev.stdlib.Debug.*;
 
@@ -11,7 +12,8 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class ClazzName extends NodeName implements Constants {
+@node
+public class ClazzName extends Symbol implements Constants {
 
 	/** Unqualified name of class/package/interface
 		for java bytecode example - Object or tMethod
@@ -29,6 +31,7 @@ public class ClazzName extends NodeName implements Constants {
 		return name.toString();
 	}
 
+	public ClazzName() {}
 	public ClazzName(KString name, KString short_name, KString bytecode_name) {
 		super(name);
 		this.short_name = short_name;
@@ -120,91 +123,88 @@ public class ClazzName extends NodeName implements Constants {
 }
 
 
-public class NodeName {
+@node
+public class Symbol extends ASTNode {
 
-	public KString			name;
-	public List<KString>	aliases = List.Nil;
+	@dflow(out="this:in") private static class DFI {}
 
-	public NodeName(KString name) {
+	@virtual typedef This  = Symbol;
+	@virtual typedef VView = VSymbol;
+
+	public KString		name; // source code name, may be null for anonymouse symbols
+	public KString		unq_name; // unique name in scope, never null, usually equals to name
+	public KString[]	aliases;
+
+	@nodeview
+	public static view VSymbol of Symbol extends NodeView {
+		public:ro KString	name;
+		public:ro KString	unq_name;
+		public:ro KString[]	aliases;
+	}
+
+	public Symbol() {}
+	public Symbol(int pos, KString name) {
+		this.pos = pos;
 		this.name = name;
+		this.unq_name = name;
 	}
 	
-	public KString	toKString()	alias operator(210,fy,$cast) { return name; }
-
-	public List<KString> getAllNames() {
-		return new List<KString>.Cons(name, aliases);
+	public Symbol(KString name) {
+		this.name = name;
+		this.unq_name = name;
+	}
+	
+	public Symbol(KString name, KString unq_name) {
+		this.name = name;
+		this.unq_name = unq_name;
 	}
 	
 	public void addAlias(KString al) {
+		if (al == null || al == name || al == unq_name)
+			return;
 		// Check we do not have this alias already
-		foreach(KString n; aliases)
-			if( n.equals(al) )
+		if (aliases == null) {
+			aliases = new KString[]{ al };
+		} else {
+			foreach(KString n; aliases; n == al)
 				return;
-		aliases = aliases.concat(al);
-	}
-
-	public boolean equals(Object nm) {
-		if( nm instanceof NodeName ) return equals((NodeName)nm);
-		if( nm instanceof NameRef ) return equals((KString)nm.name);
-		if( nm instanceof KString ) return equals((KString)nm);
-		return false;
-	}
-
-/* This are rules, but they cause a greate overhead,
-   since this operation is one of most used.
-   These methods are rewritten in pure java.
-
-	public rule equals(NodeName nm)
-		KString@ n;
-	{
-		{
-			n ?= name;
-			n @= aliases
-		},
-		nm.equals(n)
-	}
-
-	public rule equals(KString nm)
-		KString@ n;
-	{
-		{
-			n ?= name;
-			n @= aliases
-		},
-		nm.equals(n)
-	}
-*/
-
-	public boolean equals(NodeName nm) {
-		if( nm.name.equals(name) ) return true;
-		if( nm.aliases != List.Nil ) {
-			if( nm.equals(name) ) return true;
-			foreach(KString al; aliases; nm.equals(al) )
-				return true;
+			aliases = (KString[])Arrays.append(aliases, al);
 		}
-		else if( aliases != List.Nil ) {
-			foreach(KString al; aliases; al.equals(nm.name) )
-				return true;
-		}
+	}
+
+	public void set(Token t) {
+        pos = t.getPos();
+		if (t.image.startsWith("#id\""))
+			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
 		else
-			return name.equals(nm.name);
+			this.name = KString.from(t.image);
+	}
+	
+	public boolean equals(Object:Object nm) {
 		return false;
 	}
 
-	public boolean equals(KString nm) {
-		if( name.equals(nm) ) return true;
-		if( aliases != List.Nil ) {
-			foreach(KString al; aliases; al.equals(nm) )
+	public boolean equals(Symbol:Object nm) {
+		if (this.equals(nm.name)) return true;
+		if (this.equals(nm.unq_name)) return true;
+		if (nm.aliases != null) {
+			foreach(KString n; nm.aliases; this.equals(n))
+				return true;
+		}
+		return false;
+	}
+
+	public boolean equals(KString:Object nm) {
+		if (name == nm) return true;
+		if (unq_name == nm) return true;
+		if (aliases != null) {
+			foreach(KString n; aliases; n == nm)
 				return true;
 		}
 		return false;
 	}
 
 	public String toString() {
-		return name.toString();
-	}
-
-	public int hashCode() {
-		return name.hashCode();
+		return (name != null) ? name.toString() : unq_name.toString();
 	}
 }

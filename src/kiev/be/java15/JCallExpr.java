@@ -169,7 +169,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		if( !objt.isReference() ) {
 			if( func.jctx_clazz.ctype ≉ Type.tpObject )
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
-			if( func.name == nameObjEquals ) {
+			if( func.name.name == nameObjEquals ) {
 				CodeLabel label_true = code.newLabel();
 				CodeLabel label_false = code.newLabel();
 				code.addInstr(Instr.op_ifcmpeq,label_true);
@@ -179,13 +179,13 @@ public final view JCallExpr of CallExpr extends JENode {
 				code.addConst(1);
 				code.addInstr(Instr.set_label,label_false);
 			}
-			else if( func.name == nameObjGetClass ) {
+			else if( func.name.name == nameObjGetClass ) {
 				CompaundType reft = ((CoreType)objt).getRefTypeForPrimitive();
 				Field f = reft.clazz.resolveField(KString.from("TYPE"));
 				code.addInstr(Instr.op_pop);
 				code.addInstr(Instr.op_getstatic,(JField)f,reft);
 			}
-			else if( func.name == nameObjHashCode ) {
+			else if( func.name.name == nameObjHashCode ) {
 				switch(objt.getJType().java_signature.byteAt(0)) {
 				case 'Z':
 					{
@@ -237,10 +237,10 @@ public final view JCallExpr of CallExpr extends JENode {
 					break;
 				}
 			}
-			else if( func.name == nameObjClone ) {
+			else if( func.name.name == nameObjClone ) {
 				// Do nothing ;-)
 			}
-			else if( func.name == nameObjToString ) {
+			else if( func.name.name == nameObjToString ) {
 				KString sign = null;
 				switch(objt.getJType().java_signature.byteAt(0)) {
 				case 'Z':

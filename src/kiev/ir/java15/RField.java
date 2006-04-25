@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 @nodeview
 public static final view RField of Field extends RLvalDNode {
 	public		Access			acc;
-	public		NodeName		name;
+	public		Symbol			name;
 	public		TypeRef			ftype;
 	public		ENode			init;
 	public		ConstExpr		const_value;

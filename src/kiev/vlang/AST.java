@@ -11,8 +11,8 @@ import kiev.parser.*;
 import kiev.be.java15.JType;
 import kiev.ir.java15.RNode;
 import kiev.be.java15.JNode;
-import kiev.be.java15.JNameRef;
-import kiev.ir.java15.RNameRef;
+import kiev.be.java15.JSymbolRef;
+import kiev.ir.java15.RSymbolRef;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -566,37 +566,39 @@ public abstract class ASTNode implements NodeData, Constants, Cloneable {
 
 
 @node
-public class NameRef extends ASTNode {
+public class SymbolRef extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = NameRef;
-	@virtual typedef VView = VNameRef;
-	@virtual typedef JView = JNameRef;
-	@virtual typedef RView = RNameRef;
+	@virtual typedef This  = SymbolRef;
+	@virtual typedef VView = VSymbolRef;
+	@virtual typedef JView = JSymbolRef;
+	@virtual typedef RView = RSymbolRef;
 
-	@att public KString name;
+	@att public KString		name; // unresolved name
+	@ref public Symbol		symbol; // resolved symbol
 
 	@nodeview
-	public static view VNameRef of NameRef extends NodeView {
-		public KString name;
+	public static view VSymbolRef of SymbolRef extends NodeView {
+		public KString	name;
+		public Symbol	symbol;
 	}
 
-	public NameRef() {}
+	public SymbolRef() {}
 
-	public NameRef(KString name) {
+	public SymbolRef(KString name) {
 		this.name = name;
 	}
 
-	public NameRef(int pos, KString name) {
+	public SymbolRef(int pos, KString name) {
 		this.pos = pos;
 		this.name = name;
 	}
 
 	public boolean equals(Object nm) {
-		if( nm instanceof NodeName ) return nm.equals(this.name);
-		if( nm instanceof NameRef ) return nm.name == this.name;
-		if( nm instanceof KString ) return nm.equals(this.name);
+		if (nm instanceof Symbol) return nm == this.name;
+		if (nm instanceof SymbolRef) return nm.name == this.name;
+		if (nm instanceof KString) return nm == this.name;
 		return false;
 	}
 

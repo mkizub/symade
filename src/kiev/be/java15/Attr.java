@@ -159,7 +159,7 @@ public class LocalVarTableAttr extends Attr {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < vars.length; i++) {
 			JVar v = vars[i].var;
-			constPool.addAsciiCP(v.name);
+			constPool.addAsciiCP(v.name.name);
 			constPool.addAsciiCP(v.jtype.java_signature);
 		}
 	}
@@ -176,7 +176,7 @@ public class LocalVarTableAttr extends Attr {
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();
 			lvta.vars[i].start_pc = vars[i].start_pc;
 			lvta.vars[i].length_pc = vars[i].end_pc-vars[i].start_pc;
-			lvta.vars[i].cp_varname = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(v.name).pos];
+			lvta.vars[i].cp_varname = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(v.name.name).pos];
 			lvta.vars[i].cp_signature = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(sign).pos];
 			lvta.vars[i].slot = vars[i].stack_pos;
 		}

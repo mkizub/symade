@@ -20,7 +20,7 @@ public abstract class TypeDef extends TypeDecl {
 	@virtual typedef This  = TypeDef;
 	@virtual typedef VView = VTypeDef;
 
-	@att public NameRef					name;
+	@att public Symbol					name;
 	@ref public ArgType					lnk;
 	
 	public abstract TypeProvider[] getAllSuperTypes();
@@ -29,7 +29,7 @@ public abstract class TypeDef extends TypeDecl {
 
 	@nodeview
 	public static abstract view VTypeDef of TypeDef extends VTypeDecl {
-		public		NameRef				name;
+		public		Symbol				name;
 		public		ArgType				lnk;
 
 		public Struct getStruct();
@@ -39,10 +39,10 @@ public abstract class TypeDef extends TypeDecl {
 	public TypeDef() {}
 
 	public TypeDef(KString nm) {
-		name = new NameRef(nm);
+		name = new Symbol(nm);
 	}
 
-	public TypeDef(NameRef nm) {
+	public TypeDef(Symbol nm) {
 		this.pos = nm.pos;
 		this.name = nm;
 	}
@@ -59,8 +59,8 @@ public abstract class TypeDef extends TypeDecl {
 		return this.lnk;
 	}
 
-	public NodeName getName() {
-		return new NodeName(name.name);
+	public Symbol getName() {
+		return new Symbol(name.name);
 	}
 
 	public abstract boolean checkResolved();
@@ -116,11 +116,11 @@ public final class TypeAssign extends TypeDef {
 		super(nm);
 	}
 
-	public TypeAssign(NameRef nm) {
+	public TypeAssign(Symbol nm) {
 		super(nm);
 	}
 
-	public TypeAssign(NameRef nm, TypeRef sup) {
+	public TypeAssign(Symbol nm, TypeRef sup) {
 		super(nm);
 		this.type_ref = sup;
 	}
@@ -190,11 +190,11 @@ public final class TypeConstr extends TypeDef {
 		super(nm);
 	}
 
-	public TypeConstr(NameRef nm) {
+	public TypeConstr(Symbol nm) {
 		super(nm);
 	}
 
-	public TypeConstr(NameRef nm, TypeRef sup) {
+	public TypeConstr(Symbol nm, TypeRef sup) {
 		super(nm);
 		this.upper_bound.add(sup);
 	}

@@ -391,13 +391,13 @@ public class LabeledStat extends ENode implements Named {
 	@virtual typedef JView = JLabeledStat;
 	@virtual typedef RView = RLabeledStat;
 
-	@att                 public NameRef		ident;
+	@att                 public Symbol			ident;
 	@att(copyable=false) public Label			lbl;
 	@att                 public ENode			stat;
 
 	@nodeview
 	public static final view VLabeledStat of LabeledStat extends VENode {
-		public NameRef			ident;
+		public Symbol			ident;
 		public Label			lbl;
 		public ENode			stat;
 	}
@@ -406,7 +406,7 @@ public class LabeledStat extends ENode implements Named {
 		this.lbl = new Label();
 	}
 	
-	public NodeName getName() { return new NodeName(ident.name); }
+	public Symbol getName() { return new Symbol(ident.name); }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.newLine(-1).append(ident).append(':').newLine(1).append(stat);
@@ -423,7 +423,7 @@ public class BreakStat extends ENode {
 	@virtual typedef JView = JBreakStat;
 	@virtual typedef RView = RBreakStat;
 
-	@att public NameRef		ident;
+	@att public SymbolRef	ident;
 	@ref public Label		dest;
 
 	public void callbackRootChanged() {
@@ -436,7 +436,7 @@ public class BreakStat extends ENode {
 
 	@nodeview
 	public static final view VBreakStat of BreakStat extends VENode {
-		public NameRef			ident;
+		public SymbolRef		ident;
 		public Label			dest;
 
 		public boolean mainResolveIn() {
@@ -509,7 +509,7 @@ public class ContinueStat extends ENode {
 	@virtual typedef JView = JContinueStat;
 	@virtual typedef RView = RContinueStat;
 
-	@att public NameRef		ident;
+	@att public SymbolRef	ident;
 	@ref public Label		dest;
 
 	public void callbackRootChanged() {
@@ -522,7 +522,7 @@ public class ContinueStat extends ENode {
 
 	@nodeview
 	public static final view VContinueStat of ContinueStat extends VENode {
-		public NameRef			ident;
+		public SymbolRef		ident;
 		public Label			dest;
 
 		public boolean mainResolveIn() {
@@ -595,7 +595,7 @@ public class GotoStat extends ENode {
 	@virtual typedef JView = JGotoStat;
 	@virtual typedef RView = RGotoStat;
 
-	@att public NameRef		ident;
+	@att public SymbolRef	ident;
 	@ref public Label		dest;
 
 	public void callbackRootChanged() {
@@ -608,7 +608,7 @@ public class GotoStat extends ENode {
 
 	@nodeview
 	public static final view VGotoStat of GotoStat extends VENode {
-		public NameRef			ident;
+		public SymbolRef		ident;
 		public Label			dest;
 
 		public boolean mainResolveIn() {

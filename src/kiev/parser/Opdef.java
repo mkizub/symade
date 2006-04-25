@@ -47,16 +47,16 @@ public class Opdef extends SNode {
 			image = ((ASTOperator)n).image;
 			return;
 		}
-		else if( n instanceof NameRef ) {
-			image = ((NameRef)n).name;
+		else if( n instanceof SymbolRef ) {
+			image = ((SymbolRef)n).name;
 			return;
 		}
 		throw new CompilerException(n,"Bad operator definition");
 	}
 	
-	public void setMode(NameRef n) {
+	public void setMode(SymbolRef n) {
 		opmode = -1;
-		KString optype = ((NameRef)n).name;
+		KString optype = ((SymbolRef)n).name;
 		for(int i=0; i < Operator.orderAndArityNames.length; i++) {
 			if( Operator.orderAndArityNames[i].equals(optype) ) {
 				opmode = i;

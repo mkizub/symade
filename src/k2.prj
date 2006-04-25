@@ -92,7 +92,6 @@ kiev.be.java15.JLvalDNode kiev/be/java15/JLvalDNode kiev\be\java15\JNode.java
 kiev.be.java15.JLvalueExpr kiev/be/java15/JLvalueExpr kiev\be\java15\JLvalueExpr.java
 kiev.be.java15.JMethod kiev/be/java15/JMethod kiev\be\java15\JMethod.java
 kiev.be.java15.JMethodType kiev/be/java15/JMethodType kiev\be\java15\JType.java
-kiev.be.java15.JNameRef kiev/be/java15/JNameRef kiev\be\java15\JNode.java
 kiev.be.java15.JNewArrayExpr kiev/be/java15/JNewArrayExpr kiev\be\java15\JNewExpr.java
 kiev.be.java15.JNewClosure kiev/be/java15/JNewClosure kiev\be\java15\JNewExpr.java
 kiev.be.java15.JNewExpr kiev/be/java15/JNewExpr kiev\be\java15\JNewExpr.java
@@ -108,6 +107,7 @@ kiev.be.java15.JShadow kiev/be/java15/JShadow kiev\be\java15\JExpr.java
 kiev.be.java15.JStringConcatExpr kiev/be/java15/JStringConcatExpr kiev\be\java15\JExpr.java
 kiev.be.java15.JStruct kiev/be/java15/JStruct kiev\be\java15\JStruct.java
 kiev.be.java15.JSwitchStat kiev/be/java15/JSwitchStat kiev\be\java15\JComplexStat.java
+kiev.be.java15.JSymbolRef kiev/be/java15/JSymbolRef kiev\be\java15\JNode.java
 kiev.be.java15.JSynchronizedStat kiev/be/java15/JSynchronizedStat kiev\be\java15\JComplexStat.java
 kiev.be.java15.JThisExpr kiev/be/java15/JThisExpr kiev\be\java15\JLvalueExpr.java
 kiev.be.java15.JThrowStat kiev/be/java15/JThrowStat kiev\be\java15\JStatement.java
@@ -312,7 +312,6 @@ kiev.ir.java15.RLoopStat kiev/ir/java15/RLoopStat kiev\ir\java15\RLoopStat.java
 kiev.ir.java15.RLvalDNode kiev/ir/java15/RLvalDNode kiev\ir\java15\RNode.java
 kiev.ir.java15.RLvalueExpr kiev/ir/java15/RLvalueExpr kiev\ir\java15\RLvalueExpr.java
 kiev.ir.java15.RMethod kiev/ir/java15/RMethod kiev\ir\java15\RMethod.java
-kiev.ir.java15.RNameRef kiev/ir/java15/RNameRef kiev\ir\java15\RNode.java
 kiev.ir.java15.RNewArrayExpr kiev/ir/java15/RNewArrayExpr kiev\ir\java15\RNewExpr.java
 kiev.ir.java15.RNewClosure kiev/ir/java15/RNewClosure kiev\ir\java15\RNewExpr.java
 kiev.ir.java15.RNewExpr kiev/ir/java15/RNewExpr kiev\ir\java15\RNewExpr.java
@@ -329,6 +328,7 @@ kiev.ir.java15.RShadow kiev/ir/java15/RShadow kiev\ir\java15\RExpr.java
 kiev.ir.java15.RStringConcatExpr kiev/ir/java15/RStringConcatExpr kiev\ir\java15\RExpr.java
 kiev.ir.java15.RStruct kiev/ir/java15/RStruct kiev\ir\java15\RStruct.java
 kiev.ir.java15.RSwitchStat kiev/ir/java15/RSwitchStat kiev\ir\java15\RSwitchStat.java
+kiev.ir.java15.RSymbolRef kiev/ir/java15/RSymbolRef kiev\ir\java15\RNode.java
 kiev.ir.java15.RSynchronizedStat kiev/ir/java15/RSynchronizedStat kiev\ir\java15\RBlockStat.java
 kiev.ir.java15.RThisExpr kiev/ir/java15/RThisExpr kiev\ir\java15\RLvalueExpr.java
 kiev.ir.java15.RThrowStat kiev/ir/java15/RThrowStat kiev\ir\java15\RStat.java
@@ -571,14 +571,12 @@ kiev.vlang.MetaVolatile kiev/vlang/MetaVolatile kiev\vlang\MetaSpecial.java
 kiev.vlang.Method kiev/vlang/Method kiev\vlang\Method.java
 kiev.vlang.MultiOperator kiev/vlang/MultiOperator kiev\vlang\Operator.java
 kiev.vlang.NArr kiev/vlang/NArr kiev\vlang\Tree.java
-kiev.vlang.NameRef kiev/vlang/NameRef kiev\vlang\AST.java
 kiev.vlang.Named kiev/vlang/Named kiev\vlang\PassInfo.java
 kiev.vlang.NewArrayExpr kiev/vlang/NewArrayExpr kiev\vlang\NewExpr.java
 kiev.vlang.NewClosure kiev/vlang/NewClosure kiev\vlang\NewExpr.java
 kiev.vlang.NewExpr kiev/vlang/NewExpr kiev\vlang\NewExpr.java
 kiev.vlang.NewInitializedArrayExpr kiev/vlang/NewInitializedArrayExpr kiev\vlang\NewExpr.java
 kiev.vlang.NodeData kiev/vlang/NodeData kiev\vlang\AST.java
-kiev.vlang.NodeName kiev/vlang/NodeName kiev\vlang\ClazzName.java
 kiev.vlang.NopExpr kiev/vlang/NopExpr kiev\vlang\ENode.java
 kiev.vlang.OpTypes kiev/vlang/OpTypes kiev\vlang\Operator.java
 kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java
@@ -619,7 +617,9 @@ kiev.vlang.Signature kiev/vlang/Signature kiev\vlang\Signature.java
 kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
 kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
+kiev.vlang.Symbol kiev/vlang/Symbol kiev\vlang\ClazzName.java
 kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java
+kiev.vlang.SymbolRef kiev/vlang/SymbolRef kiev\vlang\AST.java
 kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
 kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java

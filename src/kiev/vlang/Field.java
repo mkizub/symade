@@ -37,7 +37,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	/** Field' access */
 		 public Access				acc;
 	/** Name of the field */
-	@att public NodeName			name;
+	@att public Symbol				name;
 	/** Type of the field */
 	@att public TypeRef				ftype;
 	/** Initial value of this field */
@@ -103,7 +103,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	@nodeview
 	public static final view VField of Field extends VLvalDNode {
 		public		Access			acc;
-		public		NodeName		name;
+		public		Symbol			name;
 		public		TypeRef			ftype;
 		public		ENode			init;
 		public		ConstExpr		const_value;
@@ -136,7 +136,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
      */
 	public Field(KString name, TypeRef ftype, int flags) {
 		this.flags = flags;
-		this.name = new NodeName(name);
+		this.name = new Symbol(name);
 		this.ftype = ftype;
 		this.meta = new MetaSet();
 		trace(Kiev.debugCreation,"New field created: "+name+" with type "+ftype);
@@ -187,7 +187,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 
 	public String toString() { return name.toString(); }
 
-	public NodeName getName() { return name; }
+	public Symbol getName() { return name; }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(name).space();

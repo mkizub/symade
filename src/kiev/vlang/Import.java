@@ -30,7 +30,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	@virtual typedef This  = Import;
 	@virtual typedef VView = VImport;
 
-	@att public NameRef				name;
+	@att public SymbolRef			name;
 	@att public ImportMode			mode = ImportMode.IMPORT_CLASS;
 	@att public boolean				star;
 	@att public NArr<TypeRef>		args;
@@ -40,7 +40,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 
 	@nodeview
 	public static final view VImport of Import extends VSNode {
-		public		NameRef				name;
+		public		SymbolRef			name;
 		public		ImportMode			mode;
 		public		boolean				star;
 		public:ro	NArr<TypeRef>		args;
@@ -53,7 +53,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	public Import() {}
 
 	public Import(Struct node, boolean star) {
-		this.name = new NameRef(node.qname);
+		this.name = new SymbolRef(node.qname);
 		this.resolved = node;
 		this.mode = mode;
 		this.star = star;
@@ -194,8 +194,8 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		return type.getType().checkResolved();
 	}
 	
-	public NodeName	getName() {
-		return new NodeName(op.image);
+	public Symbol getName() {
+		return new Symbol(op.image);
 	}
 	
 	public Struct getStruct() {

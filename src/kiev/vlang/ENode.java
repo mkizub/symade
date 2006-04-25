@@ -306,7 +306,7 @@ public final class VarDecl extends ENode implements Named {
 		this.var = var;
 	}
 
-	public NodeName getName() { return var.name; }
+	public Symbol getName() { return var.name; }
 
 	public Dumper toJava(Dumper dmp) {
 		var.toJavaDecl(dmp);
@@ -347,7 +347,7 @@ public final class LocalStructDecl extends ENode implements Named {
 		clazz.setResolved(true);
 	}
 
-	public NodeName getName() { return clazz.name; }
+	public Symbol getName() { return clazz.name; }
 
 	public Dumper toJava(Dumper dmp) {
 		clazz.toJavaDecl(dmp);

@@ -186,8 +186,8 @@ public final view JCondStat of CondStat extends JENode {
 
 	public:n,n,n,rw void generateAssertName(Code code) {
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
-		if( wbc.name == null ) return;
-		code.addConst((KString)wbc.name);
+		if (wbc.name == null || wbc.name.name == null) return;
+		code.addConst(wbc.name.name);
 	}
 
 	public:n,n,n,rw JMethod getAssertMethod() {
@@ -200,7 +200,7 @@ public final view JCondStat of CondStat extends JENode {
 		default: fname = nameAssertMethod;
 		}
 		Method func;
-		if( wbc.name == null )
+		if (wbc.name == null || wbc.name.name == null)
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString);
 		else
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);
@@ -235,7 +235,7 @@ public final view JCondStat of CondStat extends JENode {
 
 @nodeview
 public final view JLabeledStat of LabeledStat extends JENode {
-	public:ro	KString			ident;
+	public:ro	Symbol		ident;
 	public:ro	JLabel		lbl;
 	public:ro	JENode		stat;
 
@@ -322,7 +322,7 @@ public final view JBreakStat of BreakStat extends JENode {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
 				if( node instanceof JMethod ) break;
-				if( node instanceof JLabeledStat && ((JLabeledStat)node).ident == ident ) {
+				if( node instanceof JLabeledStat && ((JLabeledStat)node).ident.equals(ident) ) {
 					JENode st = ((JLabeledStat)node).stat;
 					if( st instanceof BreakTarget )
 						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
@@ -339,7 +339,7 @@ public final view JBreakStat of BreakStat extends JENode {
 
 @nodeview
 public final view JContinueStat of ContinueStat extends JENode {
-	public:ro	KString			ident;
+	public:ro	KString		ident;
 	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
@@ -392,7 +392,7 @@ public final view JContinueStat of ContinueStat extends JENode {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
 				if( node instanceof JMethod ) break;
-				if( node instanceof JLabeledStat && ((JLabeledStat)node).ident == ident ) {
+				if( node instanceof JLabeledStat && ((JLabeledStat)node).ident.equals(name) ) {
 					JENode st = ((JLabeledStat)node).stat;
 					if( st instanceof ContinueTarget )
 						return (Object[])Arrays.append(cl,st.getCntLabel().getCodeLabel(code));

@@ -50,7 +50,7 @@ public class RuleMethod extends Method {
 
 	public RuleMethod() {}
 
-	public RuleMethod(NameRef id, int fl) {
+	public RuleMethod(Symbol id, int fl) {
 		super(id.name, new TypeRef(Type.tpRule));
 		this.pos = id.pos;
 		this.flags = fl;

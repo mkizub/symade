@@ -43,18 +43,22 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a setter");
 			if (m.name.name.startsWith(nameSet))
 				addSetterForAbstractField(s, m.name.name.substr(nameSet.length()), m);
-			foreach (KString name; m.name.aliases) {
-				//trace(Kiev.debugCreation,"check "+name+" to be a setter");
-				if (name.startsWith(nameSet))
-					addSetterForAbstractField(s, name.substr(nameSet.length()), m);
+			if (m.name.aliases != null) {
+				foreach (KString name; m.name.aliases) {
+					//trace(Kiev.debugCreation,"check "+name+" to be a setter");
+					if (name.startsWith(nameSet))
+						addSetterForAbstractField(s, name.substr(nameSet.length()), m);
+				}
 			}
 			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a getter");
 			if (m.name.name.startsWith(nameGet))
 				addGetterForAbstractField(s, m.name.name.substr(nameGet.length()), m);
-			foreach (KString name; m.name.aliases) {
-				//trace(Kiev.debugCreation,"check "+name+" to be a getter");
-				if (name.startsWith(nameGet))
-					addGetterForAbstractField(s, name.substr(nameGet.length()), m);
+			if (m.name.aliases != null) {
+				foreach (KString name; m.name.aliases) {
+					//trace(Kiev.debugCreation,"check "+name+" to be a getter");
+					if (name.startsWith(nameGet))
+						addGetterForAbstractField(s, name.substr(nameGet.length()), m);
+				}
 			}
 		}
 	}

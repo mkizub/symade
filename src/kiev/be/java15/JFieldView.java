@@ -20,7 +20,7 @@ import static kiev.stdlib.Debug.*;
 public final view JField of Field extends JLvalDNode {
 
 	public:ro	Access				acc;
-	public:ro	KString				name;
+	public:ro	Symbol				name;
 	public:ro	Type				ftype;
 	public:ro	JENode				init;
 	public:ro	JConstExpr			const_value;

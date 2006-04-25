@@ -100,7 +100,7 @@ public class Bytecoder implements JConstants {
 		KString f_type = bcf.getSignature(bcclazz);
 		Attr[] attrs = Attr.emptyArray;
 		ENode f_init = null;
-		NodeName nm = null;
+		Symbol nm = null;
 		int packer_size = -1;
 		Access acc = null;
 		for(int i=0; i < bcf.attrs.length; i++) {
@@ -135,7 +135,7 @@ public class Bytecoder implements JConstants {
 		KString m_type_java = bcm.getSignature(bcclazz);
 		KString m_type = m_type_java;
 		Attr[] attrs = Attr.emptyArray;
-		NodeName nm = null;
+		Symbol nm = null;
 		Operator op = null;
 		WBCCondition[] conditions = null;
 		for(int i=0; i < bcm.attrs.length; i++) {
@@ -180,13 +180,13 @@ public class Bytecoder implements JConstants {
 			cl.members.append(m);
 			for (int i=0; i < mtype.arity; i++) {
 				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
-					FormPar fp = new FormPar(new NameRef(KString.from("va_arg")),
+					FormPar fp = new FormPar(new Symbol(KString.from("va_arg")),
 						new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_VARARGS,ACC_FINAL);
 						m.params.add(fp);
 						mtype = m.etype;
 						break;
 				} else {
-					FormPar fp = new FormPar(new NameRef(KString.from("arg"+i)),
+					FormPar fp = new FormPar(new Symbol(KString.from("arg"+i)),
 						new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_NORMAL,0);
 						m.params.add(fp);
 				}

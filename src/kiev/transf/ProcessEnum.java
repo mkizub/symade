@@ -106,8 +106,8 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
 				KString str = f.name.name;
-				if (f.name.aliases != List.Nil) {
-					str = f.name.aliases.head();
+				if (f.name.aliases != null) {
+					str = f.name.aliases[0];
 					str = str.substr(1,str.length()-1);
 				}
 				cases[i] = new CaseLabel(pos,new ConstIntExpr(i)	,
@@ -152,8 +152,8 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					null
 					);
 				fromstr.body.stats.add(ifst);
-				if (f.name.aliases != List.Nil) {
-					str = f.name.aliases.head();
+				if (f.name.aliases != null) {
+					str = f.name.aliases[0];
 					if (str.byteAt(0) == (byte)'\"') {
 						str = str.substr(1,str.length()-1);
 						if (str != f.name.name) {

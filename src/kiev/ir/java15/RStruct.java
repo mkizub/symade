@@ -20,7 +20,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	static final AttrSlot TI_ATTR = new DataAttrSlot("rstruct ti field temp expr",true,TypeInfoExpr.class);	
 
 	public				Access					acc;
-	public:ro			NameRef					short_name;
+	public:ro			Symbol					short_name;
 	public:ro			KString					qname;
 	public:ro			KString					bname;
 	public:ro			CompaundTypeProvider	imeta_type;
@@ -1232,7 +1232,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						else
 							ce = es.expr;
 						if( ce instanceof ASTCallExpression ) {
-							NameRef nm = ((ASTCallExpression)ce).func;
+							SymbolRef nm = ((ASTCallExpression)ce).func;
 							if( !(nm.name.equals(nameThis) || nm.name.equals(nameSuper) ) )
 								gen_def_constr = true;
 							else if( nm.name.equals(nameSuper) )
@@ -1257,7 +1257,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					m.setNeedFieldInits(true);
 					ASTCallExpression call_super = new ASTCallExpression();
 					call_super.pos = pos;
-					call_super.func = new NameRef(pos, nameSuper);
+					call_super.func = new SymbolRef(pos, nameSuper);
 					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;

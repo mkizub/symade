@@ -560,9 +560,9 @@ public final class Code implements JConstants {
 		sign = m.etype.getJType().java_signature;
 		CP cpm;
 		if( m.jctx_clazz.isInterface() )
-			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,m.name,sign);
+			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,m.name.name,sign);
 		else
-			cpm = constPool.addMethodCP(ttt.java_signature,m.name,sign);
+			cpm = constPool.addMethodCP(ttt.java_signature,m.name.name,sign);
 		if( call_static ) {
 			add_opcode_and_CP(opc_invokestatic,cpm);
 		}
@@ -1259,7 +1259,7 @@ public final class Code implements JConstants {
 		JType ttt = Type.getRealType(tp.getErasedType(),f.jctx_clazz.ctype).getJType();
 		KString struct_sig = ttt.java_signature;
 		KString field_sig = Type.getRealType(f.jctx_clazz.ctype,f.type).getJType().java_signature;
-		FieldCP cpf = constPool.addFieldCP(struct_sig,f.name,field_sig);
+		FieldCP cpf = constPool.addFieldCP(struct_sig,f.name.name,field_sig);
 	    switch(i) {
         case op_getstatic:
 			add_opcode_and_CP(opc_getstatic,cpf);

@@ -232,7 +232,7 @@ public view RTypeDecl of TypeDecl extends RDNode {
 }
 
 @nodeview
-public final view RNameRef of NameRef extends RNode {
+public final view RSymbolRef of SymbolRef extends RNode {
 	public KString name;
 }
 

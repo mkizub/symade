@@ -241,7 +241,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						found = true;
 					if (!found) {
 						TypeDef td = new TypeAssign(
-							new NameRef(me.pos,KString.from("outer$"+n+"$type")),
+							new Symbol(me.pos,KString.from("outer$"+n+"$type")),
 							new TypeRef(pkg.ctype));
 						td.setSynthetic(true);
 						me.members.append(td);

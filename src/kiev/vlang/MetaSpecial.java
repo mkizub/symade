@@ -84,14 +84,14 @@ public class MetaPacked extends MetaSpecial {
 
 	@att public ENode			 size;
 	@att public ENode			 offset;
-	@att public NameRef			 fld;
+	@att public SymbolRef		 fld;
 	@ref public Field			 packer;
 
 	@nodeview
 	public static view VMetaPacked of MetaPacked extends VMetaSpecial {
 		public ENode			 size;
 		public ENode			 offset;
-		public NameRef			 fld;
+		public SymbolRef		 fld;
 		public Field			 packer;
 	}
 
@@ -118,13 +118,13 @@ public class MetaPacked extends MetaSpecial {
 	}
 	
 	public KString getFld() {
-		NameRef fld = this.fld;
+		SymbolRef fld = this.fld;
 		if (fld != null)
 			return fld.name;
 		return KString.Empty;
 	}
 	public void setFld(KString val) {
-		fld = new NameRef(val);
+		fld = new SymbolRef(val);
 	}
 }
 
