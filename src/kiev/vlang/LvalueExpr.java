@@ -409,7 +409,7 @@ public final class ThisExpr extends LvalueExpr {
 		try {
 			if (ctx_clazz == null)
 				return Type.tpVoid;
-			if (ctx_clazz.name.short_name == nameIFaceImpl)
+			if (ctx_clazz.short_name.name == nameIFaceImpl)
 				return ctx_clazz.package_clazz.ctype;
 			if (isSuperExpr())
 				ctx_clazz.super_type;
@@ -606,8 +606,7 @@ public final class SFldExpr extends LvalueExpr {
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = var.ctx_clazz;
-		ClazzName cln = cl.name;
-		return dmp.space().append(cln).append('.').append(var.name).space();
+		return dmp.space().append(cl.qname).append('.').append(var.name).space();
 	}
 
 }
@@ -660,7 +659,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 		}
 	}
 
-	public String toString() { return outer.name.toString()+".this"; }
+	public String toString() { return outer.qname.toString()+".this"; }
 
 	public static Field outerOf(Struct clazz) {
 		foreach (Field f; clazz.members) {
@@ -672,7 +671,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 		return null;
 	}
 
-	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
+	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.qname).append(".this").space(); }
 }
 
 @node

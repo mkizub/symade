@@ -216,7 +216,7 @@ public abstract class kiev040 {
 		if (parent instanceof FileUnit) {
 			clazz.setLocal(false);
 			clazz.setStatic(true);
-			Env.setProjectInfo(clazz.name, Kiev.curFile);
+			Env.setProjectInfo(clazz.qname, clazz.bname, Kiev.curFile);
 		}
 		else if (parent instanceof Struct)
 			clazz.setLocal(parent.isLocal());
@@ -1847,7 +1847,7 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 {
 	id = Name()
 	{
-		if( !id.name.equals(curClazz.name.short_name) )
+		if( !id.name.equals(curClazz.short_name.name) )
 			Kiev.reportError(id,"Return type missed or bad constructor name "+id);
 		else
 			id.name = Constants.nameInit;

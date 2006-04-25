@@ -593,6 +593,13 @@ public class NameRef extends ASTNode {
 		this.name = name;
 	}
 
+	public boolean equals(Object nm) {
+		if( nm instanceof NodeName ) return nm.equals(this.name);
+		if( nm instanceof NameRef ) return nm.name == this.name;
+		if( nm instanceof KString ) return nm.equals(this.name);
+		return false;
+	}
+
 	public void set(Token t) {
         pos = t.getPos();
 		if (t.image.startsWith("#id\""))

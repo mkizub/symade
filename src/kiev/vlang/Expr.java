@@ -692,7 +692,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 			((Var)n).name.equals(name),
 			node ?= ((Var)n)
 		;	n instanceof Struct,
-			name.equals(((Struct)n).name.short_name),
+			name.equals(((Struct)n).short_name.name),
 			node ?= ((Struct)n)
 		;	n instanceof TypeDecl,
 			name.equals(((TypeDecl)n).getName()),

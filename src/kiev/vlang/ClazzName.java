@@ -23,20 +23,16 @@ public class ClazzName extends NodeName implements Constants {
 	 */
 	public KString			bytecode_name;
 
-	/** Class is an argument */
-	public boolean			isInner = false;
-
-	public static ClazzName		Empty = new ClazzName(KString.Empty,KString.Empty,KString.Empty,false);
+	public static ClazzName		Empty = new ClazzName(KString.Empty,KString.Empty,KString.Empty);
 
 	public String toString() {
 		return name.toString();
 	}
 
-	public ClazzName(KString name, KString short_name, KString bytecode_name, boolean isInn) {
+	public ClazzName(KString name, KString short_name, KString bytecode_name) {
 		super(name);
 		this.short_name = short_name;
 		this.bytecode_name = bytecode_name;
-		this.isInner = isInn;
 	}
 
 	public KString package_name() {
@@ -73,15 +69,11 @@ public class ClazzName extends NodeName implements Constants {
 		name = fixName(name);
 		int i;
 		KString short_name;
-		boolean isInn;
-		if( (i=name.lastIndexOf('.')) >= 0 ) {
-			isInn = (bytecode_name.byteAt(i) == (byte)'$');
+		if( (i=name.lastIndexOf('.')) >= 0 )
 			short_name = name.substr(i+1);
-		} else {
-			isInn = false;
+		else
 			short_name = name;
-		}
-		return new ClazzName(name,short_name,bytecode_name,isInn);
+		return new ClazzName(name,short_name,bytecode_name);
 	}
 
 	public static ClazzName fromOuterAndName(Struct outer, KString short_name, boolean isInn) {
@@ -91,19 +83,19 @@ public class ClazzName extends NodeName implements Constants {
 		KString name;
 		if( outer.isPackage() ) {
 			assert(!isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
-			if( !outer.name.name.equals(KString.Empty) ) {
-				bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
-				name = KString.from(outer.name.name+"."+short_name);
+			if (outer.qname != KString.Empty) {
+				bytecode_name = KString.from(outer.bname+delim+short_name);
+				name = KString.from(outer.qname+"."+short_name);
 			} else {
 				bytecode_name = short_name;
 				name = short_name;
 			}
 		} else {
 			assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
-			bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
-			name = KString.from(outer.name.name+"."+short_name);
+			bytecode_name = KString.from(outer.bname+delim+short_name);
+			name = KString.from(outer.qname+"."+short_name);
 		}
-		return new ClazzName(name,short_name,bytecode_name,isInn);
+		return new ClazzName(name,short_name,bytecode_name);
 	}
 
 	public int hashCode() { return name.hashCode(); }
@@ -153,6 +145,7 @@ public class NodeName {
 
 	public boolean equals(Object nm) {
 		if( nm instanceof NodeName ) return equals((NodeName)nm);
+		if( nm instanceof NameRef ) return equals((KString)nm.name);
 		if( nm instanceof KString ) return equals((KString)nm);
 		return false;
 	}

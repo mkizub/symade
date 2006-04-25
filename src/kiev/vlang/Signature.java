@@ -92,10 +92,9 @@ public class Signature {
 		while( sc.hasMoreChars() && (ch=sc.nextChar()) != ';' );
 		if( ch != ';' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ';' expected");
-		ClazzName cname = null;
 		if( isArgument ) {
 			KString bcn = sc.str.substr(pos,sc.pos-1);
-			cname = ClazzName.fromBytecodeName(bcn);
+			//cname = ClazzName.fromBytecodeName(bcn);
 			clazz = null;
 		} else {
 			//cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
@@ -166,7 +165,7 @@ public class Signature {
 			getJavaSignature(sc);
 			if( sign != null )
 				return sign;
-			return KString.from("L"+Type.tpClosureClazz.name.bytecode_name+";");
+			return KString.from("L"+Type.tpClosureClazz.bname+";");
 		}
 		if( sc.peekChar() == '(' ) {
 			ksb.append(sc.nextChar());

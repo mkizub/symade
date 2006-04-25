@@ -32,8 +32,8 @@ public class Bytecoder implements JConstants {
 	public Struct readClazz() {
 		trace(Kiev.debugBytecodeRead,"Loading class "+cl);
 
-		if( !bcclazz.getClazzName().startsWith(cl.name.bytecode_name) ) {
-			throw new RuntimeException("Expected to load class "+cl.name.bytecode_name
+		if( !bcclazz.getClazzName().startsWith(cl.bname) ) {
+			throw new RuntimeException("Expected to load class "+cl.bname
 				+" but class "+bcclazz.getClazzName()+" found");
 		}
 
@@ -52,8 +52,8 @@ public class Bytecoder implements JConstants {
 			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
 			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
 		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
-			if( Env.getStruct(cl.super_type.clazz.name) == null )
-				throw new RuntimeException("Class "+cl.super_type.clazz.name+" not found");
+			if( Env.getStruct(ClazzName.fromBytecodeName(cl.super_type.clazz.bname)) == null )
+				throw new RuntimeException("Class "+cl.super_type.clazz.qname+" not found");
 		}
 
 		// Read interfaces
@@ -61,7 +61,7 @@ public class Bytecoder implements JConstants {
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
 			CompaundType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
-			if( Env.getStruct(interf.clazz.name) == null )
+			if( Env.getStruct(ClazzName.fromBytecodeName(interf.clazz.bname)) == null )
 				throw new RuntimeException("Class "+interf+" not found");
 			if( !interf.clazz.isInterface() )
 				throw new RuntimeException("Class "+interf+" is not an interface");
@@ -276,7 +276,7 @@ public class Bytecoder implements JConstants {
 		if( m.isStatic()
 		 && !m.name.equals(nameClassInit)
 		 && cl.package_clazz.isInterface()
-		 && cl.name.short_name == nameIFaceImpl
+		 && cl.short_name.name == nameIFaceImpl
 		)
 			m.setVirtualStatic(true);
 //		jclazz.addMember(new JMethod(m));
@@ -330,7 +330,7 @@ public class Bytecoder implements JConstants {
 								break;
 							}
 						}
-						if (anon || cn.package_name() != cl.name.name) {
+						if (anon || cn.package_name() != cl.qname) {
 							inner[i] == null;
 						} else {
 							Struct inn = Env.getStruct(cn);

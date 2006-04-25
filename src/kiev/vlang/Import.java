@@ -53,7 +53,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	public Import() {}
 
 	public Import(Struct node, boolean star) {
-		this.name = new NameRef(node.name.name);
+		this.name = new NameRef(node.qname);
 		this.resolved = node;
 		this.mode = mode;
 		this.star = star;
@@ -105,8 +105,8 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		s ?= ((Struct)this.resolved),
 		!s.isPackage(),
 		{
-			s.name.name.equals(name), node ?= s.$var
-		;	s.name.short_name.equals(name), node ?= s.$var
+			s.qname == name, node ?= s.$var
+		;	s.short_name.name == name, node ?= s.$var
 		}
 	;
 		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && star,
@@ -116,8 +116,8 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			!s.isPackage(),
 			sub @= s.sub_clazz,
 			{
-				sub.name.name.equals(name), node ?= sub.$var
-			;	sub.name.short_name.equals(name), node ?= sub.$var
+				sub.qname == name, node ?= sub.$var
+			;	sub.short_name.name == name, node ?= sub.$var
 			}
 		;	s.isPackage(), s.resolveNameR(node,path,name)
 		}

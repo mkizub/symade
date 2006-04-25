@@ -195,7 +195,7 @@ public class JBaseType extends JType {
 				return new JBaseType(JConstants.jsigRule,clazz);
 			return JType.tpRule;
 		}
-		KString signature = KString.from("L"+clazz.name.bytecode_name+";");
+		KString signature = KString.from("L"+clazz.bname+";");
 		JBaseType jbt = (JBaseType)jtypeHash.get(signature);
 		if (jbt != null)
 			return jbt;
@@ -208,11 +208,11 @@ public class JBaseType extends JType {
 	}
 	
 	public String toClassForNameString() {
-		return ((JBaseTypeProvider)this.jmeta_type).clazz.name.bytecode_name.toString().replace('/','.');
+		return ((JBaseTypeProvider)this.jmeta_type).clazz.bname.toString().replace('/','.');
 	}
 
 	public String toString() {
-		return clazz.name.short_name.toString();
+		return clazz.short_name.name.toString();
 	}
 	
 	public JType getSuperType() {

@@ -66,7 +66,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			try {
 				processSyntax(n);
 				if (n instanceof Import && n.resolved instanceof Struct) {
-					KString name = ((Struct)n.resolved).name.name;
+					KString name = ((Struct)n.resolved).qname;
 					if( n.mode == Import.ImportMode.IMPORT_CLASS && name == java_lang_name)
 						java_lang_found = true;
 					else if( n.mode == Import.ImportMode.IMPORT_CLASS && name == kiev_stdlib_name)
@@ -390,7 +390,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			if (clazz.view_of != null)
 				clazz.view_of.getType();
 			Type sup = clazz.super_bound == null ? null : clazz.super_bound.getType();
-			if (sup == null && !clazz.name.name.equals(Type.tpObject.clazz.name.name))
+			if (sup == null && clazz != Type.tpObject.clazz)
 				clazz.super_type = sup = Type.tpObject;
 			if (sup != null) {
 				Struct s = sup.getStruct();

@@ -25,7 +25,9 @@ import syntax kiev.Syntax;
 public final view JStruct of Struct extends JTypeDecl {
 
 	public:ro	Access				acc;
-	public:ro	ClazzName			name;
+	public:ro	NameRef				short_name;
+	public:ro	KString				qname;
+	public:ro	KString				bname;
 	public:ro	CompaundType		ctype;
 	public:ro	JBaseType			jtype;
 	public:ro	JBaseType			jsuper_type;
@@ -280,7 +282,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 		if( Kiev.safe && isBad() ) return;
 		this.toBytecode(constPool);
-		Env.setProjectInfo(name, true);
+		Env.setProjectInfo(qname, true);
 	}
 
 	public void toBytecode(ConstPool constPool) {
@@ -288,11 +290,11 @@ public final view JStruct of Struct extends JTypeDecl {
 		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
 		String out_file;
 		if( Kiev.javaMode && output_dir == null )
-			out_file = this.name.short_name.toString();
+			out_file = this.short_name.toString();
 		else if( this.isPackage() )
-			out_file = (this.name.bytecode_name+"/package").replace('/',File.separatorChar);
+			out_file = (this.bname+"/package").replace('/',File.separatorChar);
 		else
-			out_file = this.name.bytecode_name.replace('/',File.separatorChar).toString();
+			out_file = this.bname.replace('/',File.separatorChar).toString();
 		try {
 			DataOutputStream out;
 			JFileUnit.make_output_dir(output_dir,out_file);

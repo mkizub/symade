@@ -94,7 +94,7 @@ public final class JEnv {
 						pkg = Env.newPackage(name.package_name());
 				}
 				if( !pkg.isResolved() ) {
-					pkg = Env.getStruct(pkg.name);
+					pkg = Env.getStruct(ClazzName.fromBytecodeName(pkg.bname));
 					//pkg = loadClazz(pkg.name);
 				}
 				if( cl == null ) {

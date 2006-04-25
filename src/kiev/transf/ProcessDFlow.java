@@ -132,7 +132,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			StringConcatExpr msg = new StringConcatExpr();
 			msg.appendArg(new ConstStringExpr(KString.from("No @dflow value \"")));
 			msg.appendArg(new LVarExpr(0, var));
-			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
+			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.short_name)));
 			dfIn.body.stats.add(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);

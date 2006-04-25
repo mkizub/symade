@@ -579,7 +579,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		if( !name.equals(nameInit) )
 			dmp.space().append(type.ret()).forsed_space().append(name);
 		else
-			dmp.space().append(this.ctx_clazz.name.short_name);
+			dmp.space().append(this.ctx_clazz.short_name);
 		dmp.append('(');
 		for(int i=0; i < params.length; i++) {
 			params[i].toJavaDecl(dmp,params[i].dtype);

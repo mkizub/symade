@@ -20,7 +20,9 @@ public final view RStruct of Struct extends RTypeDecl {
 	static final AttrSlot TI_ATTR = new DataAttrSlot("rstruct ti field temp expr",true,TypeInfoExpr.class);	
 
 	public				Access					acc;
-	public				ClazzName				name;
+	public:ro			NameRef					short_name;
+	public:ro			KString					qname;
+	public:ro			KString					bname;
 	public:ro			CompaundTypeProvider	imeta_type;
 	public				WrapperTypeProvider		wmeta_type;
 	public				OuterTypeProvider		ometa_type;
@@ -1211,7 +1213,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		
 		// Generate super(...) constructor calls, if they are not
 		// specified as first statements of a constructor
-		if( !name.name.equals(Type.tpObject.clazz.name.name) ) {
+		if (qname != Type.tpObject.clazz.qname) {
 			foreach (Constructor m; members) {
 				if( m.isStatic() ) continue;
 

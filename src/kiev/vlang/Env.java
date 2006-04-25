@@ -52,12 +52,8 @@ public final class ProjectFile extends ASTNode {
 		this.file = f;
 	}
 
-	public ProjectFile(KString qname, KString bname, String f) {
-		this(qname, bname, new File(f));
-	}
-
 	public ProjectFile(KString qname, KString bname, KString f) {
-		this(qname, bname, new File( f.toString() ));
+		this(qname, bname, new File(f.toString()));
 	}
 
     public Dumper toJava(Dumper dmp) { return dmp; }
@@ -179,16 +175,16 @@ public class Env extends Struct {
 		else if (sname != null) {
 			// Construct name of local class
 			KString bytecode_name =
-				KString.from(outer.name.bytecode_name
+				KString.from(outer.bname
 					+"$"+outer.countAnonymouseInnerStructs()
 					+"$"+sname);
 			KString fixname = bytecode_name.replace('/','.');
-			name = new ClazzName(fixname,sname,bytecode_name,false);
+			name = new ClazzName(fixname,sname,bytecode_name);
 		}
 		else {
 			// Local anonymouse class
 			KString bytecode_name =
-				KString.from(outer.name.bytecode_name
+				KString.from(outer.bname
 					+"$"+outer.countAnonymouseInnerStructs());
 			name = ClazzName.fromBytecodeName(bytecode_name);
 		}
@@ -251,7 +247,7 @@ public class Env extends Struct {
 					String bad = null;
 					if( st.hasMoreTokens() )
 						bad = st.nextToken();
-					ProjectFile value = new ProjectFile(KString.from(class_name),KString.from(class_bytecode_name),class_source_name);
+					ProjectFile value = new ProjectFile(KString.from(class_name),KString.from(class_bytecode_name),KString.from(class_source_name));
 					if( bad != null && bad.equals("bad") )
 						value.bad = true;
 					else
@@ -291,22 +287,19 @@ public class Env extends Struct {
 		}
 	}
 
-	public static void setProjectInfo(ClazzName name, KString f) {
-		setProjectInfo(name,f.toString());
-	}
-	public static void setProjectInfo(ClazzName name, String f) {
-		ProjectFile pf = projectHash.get(name.name);
+	public static void setProjectInfo(KString qname, KString bname, KString f) {
+		ProjectFile pf = projectHash.get(qname);
 		if( pf == null )
-			projectHash.put(name.name,new ProjectFile(name.name,name.bytecode_name,f));
+			projectHash.put(qname,new ProjectFile(qname,bname,f));
 		else {
 			pf.bad = true;
-			if( !pf.file.getName().equals(f) )
-				pf.file = new File(f);
+			if( !pf.file.getName().equals(f.toString()) )
+				pf.file = new File(f.toString());
 		}
 	}
 
-	public static void setProjectInfo(ClazzName name, boolean good) {
-		ProjectFile pf = projectHash.get(name.name);
+	public static void setProjectInfo(KString qname, boolean good) {
+		ProjectFile pf = projectHash.get(qname);
 		if( pf != null ) pf.bad = !good;
 	}
 
@@ -374,7 +367,8 @@ public class Env extends Struct {
 			cl = jenv.loadClazz(clname);
 		}
 		else if( !cl.isResolved() && !cl.isAnonymouse() ) {
-			cl = jenv.loadClazz(cl.name);
+			ClazzName clname = ClazzName.fromBytecodeName(cl.bname);
+			cl = jenv.loadClazz(clname);
 		}
 		if( cl == null ) {
 			classHashOfFails.put(name);

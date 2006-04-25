@@ -249,7 +249,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			StringConcatExpr msg = new StringConcatExpr();
 			msg.appendArg(new ConstStringExpr(KString.from("No @att value \"")));
 			msg.appendArg(new LVarExpr(0, getV.params[0]));
-			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
+			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.short_name)));
 			getV.body.stats.add(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
@@ -396,7 +396,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			StringConcatExpr msg = new StringConcatExpr();
 			msg.appendArg(new ConstStringExpr(KString.from("No @att value \"")));
 			msg.appendArg(new LVarExpr(0, setV.params[0]));
-			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
+			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.short_name)));
 			setV.body.stats.add(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);

@@ -201,20 +201,13 @@ public final view RNewClosure of NewClosure extends RENode {
 	public boolean preGenerate() {
 		if (clazz != null)
 			return true;
-		ClazzName clname = ClazzName.fromBytecodeName(
-			new KStringBuffer(ctx_clazz.name.bytecode_name.len+8)
-				.append_fast(ctx_clazz.name.bytecode_name)
-				.append_fast((byte)'$')
-				.append(ctx_clazz.countAnonymouseInnerStructs())
-				.toKString()
-		);
 		clazz = Env.newStruct(null,false,ctx_clazz,0,true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
 		if( ctx_method==null || ctx_method.isStatic() ) clazz.setStatic(true);
-		if( Env.getStruct(Type.tpClosureClazz.name) == null )
-			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
+		if( Env.getStruct(ClazzName.fromBytecodeName(Type.tpClosureClazz.bname)) == null )
+			throw new RuntimeException("Core class "+Type.tpClosureClazz+" not found");
 		clazz.super_type = Type.tpClosureClazz.ctype;
 		Kiev.runProcessorsOn(clazz);
 		((NewClosure)this).getType();

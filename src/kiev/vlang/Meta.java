@@ -55,7 +55,7 @@ public final class MetaSet extends ASTNode {
 	public Meta get(KString name) {
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].type.getType().getStruct().name.name == name)
+			if (metas[i].type.getType().getStruct().qname == name)
 				return metas[i];
 		}
 		return null;
@@ -78,7 +78,7 @@ public final class MetaSet extends ASTNode {
 
 	public Meta unset(Meta meta) alias del alias operator (5,lfy,-=)
 	{
-		return unset(meta.type.getType().getStruct().name.name);
+		return unset(meta.type.getType().getStruct().qname);
 	}
 	public Meta unset(KString name) alias del alias operator (5,lfy,-=)
 	{
@@ -86,7 +86,7 @@ public final class MetaSet extends ASTNode {
 			throw new NullPointerException();
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (((CompaundType)metas[i].type.getType()).clazz.name.name == name) {
+			if (((CompaundType)metas[i].type.getType()).clazz.qname == name) {
 				Meta m = metas[i];
 				metas.del(i);
 				return m;
@@ -184,7 +184,7 @@ public class Meta extends ENode {
 		if (mt == null || mt.getStruct() == null || !mt.getStruct().isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
-		KString name = ((CompaundType)mt).clazz.name.name;
+		KString name = ((CompaundType)mt).clazz.qname;
 		Meta m = this;
 		if (m != this) {
 			this.replaceWithNode(m);
@@ -402,7 +402,7 @@ public class Meta extends ENode {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		dmp.append('@').append(type.getType().getStruct().name.short_name);
+		dmp.append('@').append(type.getType().getStruct().short_name.name);
 		boolean need_lp = true;
 		boolean need_comma = false;
 		if (values.length != 0) {

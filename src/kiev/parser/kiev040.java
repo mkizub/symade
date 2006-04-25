@@ -202,7 +202,7 @@ public abstract class kiev040 implements kiev040Constants {
 		if (parent instanceof FileUnit) {
 			clazz.setLocal(false);
 			clazz.setStatic(true);
-			Env.setProjectInfo(clazz.name, Kiev.curFile);
+			Env.setProjectInfo(clazz.qname, clazz.bname, Kiev.curFile);
 		}
 		else if (parent instanceof Struct)
 			clazz.setLocal(parent.isLocal());
@@ -2490,7 +2490,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public Constructor ConstructorDeclaration(ASTModifiers modifiers) throws ParseException {
   Token t; Constructor m; NameRef id; MetaThrows thr; Method oldMethod;
     id = Name();
-                if( !id.name.equals(curClazz.name.short_name) )
+                if( !id.name.equals(curClazz.short_name.name) )
                         Kiev.reportError(id,"Return type missed or bad constructor name "+id);
                 else
                         id.name = Constants.nameInit;

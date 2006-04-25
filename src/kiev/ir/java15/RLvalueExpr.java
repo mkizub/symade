@@ -163,7 +163,7 @@ public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 		if( isResolved() ) return;
 		if (ctx_method != null &&
 			ctx_method.isStatic() &&
-			ctx_clazz.name.short_name != nameIFaceImpl
+			ctx_clazz.short_name.name != nameIFaceImpl
 		)
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 		setResolved(true);

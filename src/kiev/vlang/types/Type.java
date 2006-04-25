@@ -529,7 +529,7 @@ public final class CompaundType extends Type {
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
-		str.append(clazz.name.toString());
+		str.append(clazz.qname);
 		int n = clazz.args.length;
 		if (n > 0) {
 			str.append('<');
