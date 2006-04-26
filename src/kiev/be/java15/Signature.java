@@ -1,10 +1,9 @@
-package kiev.vlang;
+package kiev.be.java15;
 
 import kiev.Main;
 import kiev.stdlib.*;
+import kiev.vlang.*;
 import kiev.vlang.types.*;
-
-import kiev.be.java15.JEnv;
 
 /**
  * @author Maxim Kizub

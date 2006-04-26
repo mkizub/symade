@@ -22,6 +22,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	public static final KString mnAtt				= KString.from("kiev.vlang.att"); 
 	public static final KString mnRef				= KString.from("kiev.vlang.ref"); 
 	public static final KString nameNArr			= KString.from("kiev.vlang.NArr"); 
+	public static final KString nameAttrSlot		= KString.from("kiev.vlang.AttrSlot"); 
 	private static final KString nameParent		= KString.from("parent"); 
 	private static final KString nameCopyable		= KString.from("copyable"); 
 	
@@ -32,7 +33,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	private static final KString sigCopyTo			= KString.from("(Ljava/lang/Object;)Ljava/lang/Object;");
 	
 	private static Type tpNArr;
-	
+	private static Type tpAttrSlot;
+
 	private ProcessVNode() {
 		super(Kiev.Ext.VNode);
 	}
@@ -161,6 +163,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Kiev.reportError(s,"Cannot find class "+nameNArr);
 			return;
 		}
+		if (tpAttrSlot == null)
+			tpAttrSlot = Env.getStruct(nameAttrSlot).ctype;
+		if (tpAttrSlot == null) {
+			Kiev.reportError(s,"Cannot find class "+nameAttrSlot);
+			return;
+		}
 		foreach (Struct dn; s.members)
 			this.autoGenerateMembers(dn);
 		if (!s.isClazz())
@@ -182,7 +190,6 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Kiev.reportWarning(s,"Field "+s+"."+nameEnumValuesFld+" already exists, @node members are not generated");
 			return;
 		}
-		Type atp = Signature.getType(KString.from("Lkiev/vlang/AttrSlot;"));
 		ENode[] vals_init = new ENode[aflds.size()];
 		for(int i=0; i < vals_init.length; i++) {
 			Field f = aflds[i];
@@ -190,14 +197,14 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			boolean isArr = f.getType().isInstanceOf(tpNArr);
 			Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
 			TypeClassExpr clz_expr = new TypeClassExpr(0, new TypeRef(clz_tp));
-			ENode e = new NewExpr(0, atp, new ENode[]{
+			ENode e = new NewExpr(0, tpAttrSlot, new ENode[]{
 				new ConstStringExpr(f.id.sname),
 				new ConstBoolExpr(isAtt),
 				new ConstBoolExpr(isArr),
 				clz_expr
 			});
 			KString fname = new KStringBuffer().append("nodeattr$").append(f.id.sname).toKString();
-			Field af = s.addField(new Field(fname, atp, ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
+			Field af = s.addField(new Field(fname, tpAttrSlot, ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 			af.init = e;
 			vals_init[i] = new SFldExpr(af.pos, af);
 			if (f.parent != s)
@@ -212,22 +219,20 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			if (isAtt && !isArr)
 				f.setVirtual(true);
 		}
-		Field vals = s.addField(new Field(nameEnumValuesFld, new ArrayType(atp), ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
-		vals.init = new NewInitializedArrayExpr(0, new TypeRef(atp), 1, vals_init);
+		Field vals = s.addField(new Field(nameEnumValuesFld, new ArrayType(tpAttrSlot), ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
+		vals.init = new NewInitializedArrayExpr(0, new TypeRef(tpAttrSlot), 1, vals_init);
 		// AttrSlot[] values() { return $values; }
 		if (hasMethod(s, nameEnumValues)) {
 			Kiev.reportWarning(s,"Method "+s+"."+nameEnumValues+sigValues+" already exists, @node member is not generated");
 		} else {
-			CallType et = (CallType)Signature.getType(sigValues);
-			Method elems = new Method(nameEnumValues,et.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
+			Method elems = new Method(nameEnumValues,new ArrayType(tpAttrSlot),ACC_PUBLIC | ACC_SYNTHETIC);
 			s.addMethod(elems);
 			elems.body = new Block(0);
 			elems.body.stats.add(
 				new ReturnStat(0,
 					new SFldExpr(0,vals) ) );
 			// Object getVal(String)
-			CallType getVt = (CallType)Signature.getType(sigGetVal);
-			Method getV = new Method(KString.from("getVal"),getVt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
+			Method getV = new Method(KString.from("getVal"),Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
 			getV.params.add(new FormPar(0, KString.from("name"), Type.tpString, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(getV);
 			getV.body = new Block(0);
@@ -262,8 +267,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Kiev.reportWarning(s,"Method "+s+"."+"copy"+sigCopy+" already exists, @node member is not generated");
 		}
 		else {
-			CallType copyVt = (CallType)Signature.getType(sigCopy);
-			Method copyV = new Method(KString.from("copy"),copyVt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
+			Method copyV = new Method(KString.from("copy"),Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
 			s.addMethod(copyV);
 			copyV.body = new Block(0);
 			NArr<ENode> stats = copyV.body.stats;
@@ -275,8 +279,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		if (hasMethod(s, KString.from("copyTo"))) {
 			Kiev.reportWarning(s,"Method "+s+"."+"copyTo"+sigCopyTo+" already exists, @node member is not generated");
 		} else {
-			CallType copyVt = (CallType)Signature.getType(sigCopyTo);
-			Method copyV = new Method(KString.from("copyTo"),copyVt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
+			Method copyV = new Method(KString.from("copyTo"),Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
 			copyV.params.append(new FormPar(0,KString.from("to$node"), Type.tpObject, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(copyV);
 			copyV.body = new Block();
@@ -349,8 +352,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		if (hasMethod(s, KString.from("setVal"))) {
 			Kiev.reportWarning(s,"Method "+s+"."+"setVal"+sigSetVal+" already exists, @node member is not generated");
 		} else {
-			CallType setVt = (CallType)Signature.getType(sigSetVal);
-			Method setV = new Method(KString.from("setVal"),setVt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
+			Method setV = new Method(KString.from("setVal"),Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
 			setV.params.append(new FormPar(0, KString.from("name"), Type.tpString, FormPar.PARAM_NORMAL, 0));
 			setV.params.append(new FormPar(0, KString.from("val"), Type.tpObject, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(setV);

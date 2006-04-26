@@ -162,6 +162,10 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 @singleton
 class JavaVirtFldBackend extends BackendProcessor implements Constants {
 
+	public static final KString nameNode			= KString.from("kiev.vlang.ASTNode"); 
+
+	private static Type tpNode;
+
 	private JavaVirtFldBackend() {
 		super(Kiev.Backend.Java15);
 	}
@@ -194,6 +198,13 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 	}
 	
 	private static void addMethodsForVirtualField(Struct s, Field f) {
+		if (tpNode == null)
+			tpNode = Env.getStruct(nameNode).ctype;
+		if (tpNode == null) {
+			Kiev.reportError("Cannot find class "+nameNode);
+			return;
+		}
+
 		if( f.isStatic() && f.isVirtual() ) {
 			Kiev.reportError(f,"Static fields can't be virtual");
 			f.setVirtual(false);
@@ -242,8 +253,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
 				set_var.body = body;
-				Type astT = Signature.getType(KString.from("Lkiev/vlang/ASTNode;"));
-				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
+				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(tpNode)) {
 					ENode p_st = new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								new IFldExpr(0,new ThisExpr(0),f,true),
@@ -270,7 +280,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 					)
 				);
 				body.stats.append(ass_st);
-				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
+				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(tpNode)) {
 					KString fname = new KStringBuffer().append("nodeattr$").append(f.id.sname).toKString();
 					Field fatt = f.ctx_clazz.resolveField(fname);
 					ENode p_st = new IfElseStat(0,

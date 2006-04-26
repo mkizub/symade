@@ -18,6 +18,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 	public static final KString mnNode				= KString.from("kiev.vlang.dflow"); 
 	public static final KString nameNArr			= KString.from("kiev.vlang.NArr"); 
 	public static final KString nameNode			= KString.from("kiev.vlang.ASTNode"); 
+	public static final KString nameDFState		= KString.from("kiev.vlang.DFState"); 
 
 	public static final KString nameGetDFlowIn		= KString.from("getDFlowIn"); 
 	public static final KString signGetDFlowIn		= KString.from("(Lkiev/vlang/ASTNode;)Lkiev/vlang/DFState;"); 
@@ -26,6 +27,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 	
 	private static Type tpNArr;
 	private static Type tpNode;
+	private static Type tpDFState;
 	
 	private ProcessDFlow() {
 		super(Kiev.Ext.DFlow);
@@ -74,6 +76,12 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			Kiev.reportError("Cannot find class "+nameNode);
 			return;
 		}
+		if (tpDFState == null)
+			tpDFState = Env.getStruct(nameDFState).ctype;
+		if (tpDFState == null) {
+			Kiev.reportError("Cannot find class "+nameDFState);
+			return;
+		}
 		if (!s.isClazz())
 			return;
 		Meta mnMeta = s.meta.get(mnNode);
@@ -97,8 +105,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 		if (hasMethod(s, nameGetDFlowIn)) {
 			Kiev.reportWarning(s,"Method "+s+"."+nameGetDFlowIn+" already exists, @dflow member is not generated");
 		} else {
-			CallType mt = (CallType)Signature.getType(signGetDFlowIn);
-			Method dfIn = new Method(nameGetDFlowIn,mt.ret(),ACC_PUBLIC | ACC_SYNTHETIC);
+			Method dfIn = new Method(nameGetDFlowIn,tpDFState,ACC_PUBLIC | ACC_SYNTHETIC);
 			dfIn.params.add(new FormPar(0, KString.from("child"), tpNode, FormPar.PARAM_NORMAL, 0));
 			dfIn.body = new Block(0);
 			Var var = new Var(0, KString.from("name"),Type.tpString,ACC_FINAL);
@@ -204,12 +211,10 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				}
 				Method dfIn;
 				if (seq) {
-					CallType mt = (CallType)Signature.getType(signGetDFlowInSeq);
-					dfIn = new Method(fname,mt.ret(),ACC_PRIVATE | ACC_SYNTHETIC);
+					dfIn = new Method(fname,tpDFState,ACC_PRIVATE | ACC_SYNTHETIC);
 					dfIn.params.add(new FormPar(0, KString.from("$child"), tpNode, FormPar.PARAM_NORMAL, 0));
 				} else {
-					CallType mt = (CallType)Signature.getType(signGetDFlowInFld);
-					dfIn = new Method(fname,mt.ret(),ACC_PRIVATE | ACC_SYNTHETIC);
+					dfIn = new Method(fname,tpDFState,ACC_PRIVATE | ACC_SYNTHETIC);
 				}
 				dfIn.body = new Block(0);
 				if (isArr && seq) {
