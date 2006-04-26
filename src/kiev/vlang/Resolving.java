@@ -159,7 +159,7 @@ public class ResInfo {
 	}
 	
 	public ENode buildVarAccess(ASTNode at, Var var) {
-		if (var.name.name == Constants.nameThis)
+		if (var.id.uname == Constants.nameThis)
 			return new ThisExpr(at.pos);
 		return new LVarExpr(at.pos, var);
 	}

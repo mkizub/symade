@@ -168,18 +168,18 @@ public abstract class kiev040 implements kiev040Constants {
 		Struct outer;
 		boolean direct;
 		if (parent instanceof FileUnit) {
-			nm = name.name;
+			nm = name.sname;
 			outer = ((FileUnit)parent).pkg.getStruct();
 			direct = true;
 		}
 		else if (parent instanceof Struct) {
-			nm = name.name;
+			nm = name.sname;
 			outer = curClazz;
 			direct = true;
 		}
 		else if (name != null) {
 			// Construct name of local class
-			nm = name.name;
+			nm = name.sname;
 			outer = curClazz;
 			direct = false;
 		}
@@ -254,7 +254,7 @@ public abstract class kiev040 implements kiev040Constants {
 	}
 	
 	private Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
-		Method meth = new Method(id.name, ret, 0);
+		Method meth = new Method(id, ret, 0);
 		meth.pos = id.pos;
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attachTo(meth);
@@ -278,7 +278,7 @@ public abstract class kiev040 implements kiev040Constants {
 	private Field mkField(Symbol id, ASTModifiers modifiers, TypeRef ret, boolean first) {
 		if (!first)
 			ret = ret.ncopy();
-		Field f = new Field(id.name,ret,0);
+		Field f = new Field(id,ret,0);
 		f.pos = id.pos;
 		if (first) {
 			foreach (MetaSpecial sa; modifiers.specials)
@@ -299,7 +299,7 @@ public abstract class kiev040 implements kiev040Constants {
 	}
 
 	private Field mkEnumField(Symbol id, ASTModifiers modifiers) {
-		Field f = new Field(id.name,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
+		Field f = new Field(id,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
 		f.pos = id.pos;
 		f.setEnumField(true);
 		foreach (MetaSpecial sa; modifiers.specials)
@@ -310,7 +310,7 @@ public abstract class kiev040 implements kiev040Constants {
 	}
 
 	private Field mkCaseField(Symbol id, ASTModifiers modifiers, TypeRef tp) {
-		Field f = new Field(id.name,tp,0|ACC_PUBLIC);
+		Field f = new Field(id,tp,0|ACC_PUBLIC);
 		f.pos = id.pos;
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attachTo(f);
@@ -2257,7 +2257,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ASTIdentifierAlias IdentifierAlias() throws ParseException {
   ASTIdentifierAlias a = new ASTIdentifierAlias(); Symbol s;
     s = Name();
-                    a.name = s.name; a.pos = s.pos;
+                    a.name = s.sname; a.pos = s.pos;
           {if (true) return a;}
     throw new Error("Missing return statement in function");
   }
@@ -2510,10 +2510,10 @@ public abstract class kiev040 implements kiev040Constants {
   final public Constructor ConstructorDeclaration(ASTModifiers modifiers) throws ParseException {
   Token t; Constructor m; Symbol id; MetaThrows thr; Method oldMethod;
     id = Name();
-                if( !id.name.equals(curClazz.short_name.name) )
+                if( !id.sname.equals(curClazz.id.sname) )
                         Kiev.reportError(id,"Return type missed or bad constructor name "+id);
                 else
-                        id.name = Constants.nameInit;
+                        id.uname = Constants.nameInit;
                 m = mkConstructor(id,modifiers);
                 oldMethod = curMethod;
                 curMethod = m;
@@ -2629,11 +2629,11 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(REQUIRE);
     if (jj_2_45(2147483647)) {
       jj_consume_token(LBRACKET);
-      n.name = Name();
+      n.id = Name();
       jj_consume_token(RBRACKET);
       n.body = CondBlock();
     } else if (jj_2_46(2147483647)) {
-      n.name = Name();
+      n.id   = Name();
       n.body = CondBlock();
     } else if (jj_2_47(1)) {
       n.body = CondBlock();
@@ -2652,11 +2652,11 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(ENSURE);
     if (jj_2_48(2147483647)) {
       jj_consume_token(LBRACKET);
-      n.name = Name();
+      n.id = Name();
       jj_consume_token(RBRACKET);
       n.body = CondBlock();
     } else if (jj_2_49(2147483647)) {
-      n.name = Name();
+      n.id   = Name();
       n.body = CondBlock();
     } else if (jj_2_50(1)) {
       n.body = CondBlock();
@@ -2675,11 +2675,11 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(INVARIANT);
     if (jj_2_51(2147483647)) {
       jj_consume_token(LBRACKET);
-      n.name = Name();
+      n.id = Name();
       jj_consume_token(RBRACKET);
       n.body = CondBlock();
     } else if (jj_2_52(2147483647)) {
-      n.name = Name();
+      n.id   = Name();
       n.body = CondBlock();
     } else {
       jj_consume_token(-1);
@@ -4311,7 +4311,7 @@ public abstract class kiev040 implements kiev040Constants {
 
   final public ENode LabeledStatement() throws ParseException {
   LabeledStat st = new LabeledStat();
-    st.ident = Name();
+    st.id = Name();
     jj_consume_token(COLON);
           st.pos = getToken(0).getPos();
     st.stat = Statement();

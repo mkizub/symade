@@ -89,7 +89,7 @@ public class CallExpr extends ENode {
 			sb.append('(').append(obj).append(").");
 		else
 			sb.append(obj).append('.');
-		sb.append(func.name).append('(');
+		sb.append(func.id).append('(');
 		for(int i=0; i < args.length; i++) {
 			sb.append(args[i]);
 			if( i < args.length-1 )
@@ -214,7 +214,7 @@ public class ClosureCallExpr extends ENode {
 			is_a_call = Boolean.valueOf(((CallType)expr.getType()).arity==args.length);
 		if (is_a_call.booleanValue()) {
 			Method call_it = getCallIt((CallType)expr.getType());
-			dmp.append('.').append(call_it.name).append('(');
+			dmp.append('.').append(call_it.id).append('(');
 			if( call_it.type.ret() ≡ Type.tpRule ) dmp.append("null");
 			dmp.append(')');
 		}

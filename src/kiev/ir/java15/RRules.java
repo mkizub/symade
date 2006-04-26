@@ -26,7 +26,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 
 	public boolean preGenerate() {
 		Var penv = params[0];
-		assert(penv.name.name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
+		assert(penv.id.uname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 		if( body instanceof RuleBlock ) {
 			body.preGenerate();
 			Kiev.runProcessorsOn(body);
@@ -39,7 +39,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
 		try {
 			Var penv = params[0];
-			assert(penv.name.name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
+			assert(penv.id.uname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			if( body != null ) {
 				if( type.ret() ≡ Type.tpVoid ) body.setAutoReturnable(true);
 				body.resolve(Type.tpVoid);
@@ -82,9 +82,9 @@ public final view RRuleBlock of RuleBlock extends RBlock {
 		foreach(Var v; rule_method.localvars) {
 			String tp = Kiev.reparseType(v.type);
 			if (v.type instanceof CTimeType)
-				sb.append(tp+' '+v.name.name+" := new "+tp+"();\n");
+				sb.append(tp+' '+v.id.uname+" := new "+tp+"();\n");
 			else
-				sb.append(tp+' '+v.name.name+";\n");
+				sb.append(tp+' '+v.id.uname+";\n");
 		}
 		// tmp variables inserted here
 		sb.append(fields_buf.toString());

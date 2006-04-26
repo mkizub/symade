@@ -90,7 +90,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
-		redir.old_var.name.equals(name),
+		redir.old_var.id.equals(name),
 		$cut,
 		node ?= redir.new_var
 	}
@@ -391,13 +391,13 @@ public class LabeledStat extends ENode implements Named {
 	@virtual typedef JView = JLabeledStat;
 	@virtual typedef RView = RLabeledStat;
 
-	@att                 public Symbol			ident;
+	@att                 public Symbol			id;
 	@att(copyable=false) public Label			lbl;
 	@att                 public ENode			stat;
 
 	@nodeview
 	public static final view VLabeledStat of LabeledStat extends VENode {
-		public Symbol			ident;
+		public Symbol			id;
 		public Label			lbl;
 		public ENode			stat;
 	}
@@ -406,10 +406,10 @@ public class LabeledStat extends ENode implements Named {
 		this.lbl = new Label();
 	}
 	
-	public Symbol getName() { return new Symbol(ident.name); }
+	public Symbol getName() { return id; }
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.newLine(-1).append(ident).append(':').newLine(1).append(stat);
+		return dmp.newLine(-1).append(id).append(':').newLine(1).append(stat);
 	}
 }
 
@@ -461,12 +461,12 @@ public class BreakStat extends ENode {
 			} else {
 		label_found:
 				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
-					if (p instanceof LabeledStat && p.ident.name.equals(ident.name))
+					if (p instanceof LabeledStat && p.id.equals(ident.name))
 						throw new RuntimeException("Label "+ident+" does not refer to break target");
 					if (!p.isBreakTarget()) continue;
 					ASTNode pp = p;
 					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-						if (p.ident.name.equals(ident.name)) {
+						if (p.id.equals(ident.name)) {
 							p = pp;
 							break label_found;
 						}
@@ -547,12 +547,12 @@ public class ContinueStat extends ENode {
 			} else {
 		label_found:
 				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
-					if( p instanceof LabeledStat && p.ident.name.equals(ident.name) )
+					if( p instanceof LabeledStat && p.id.equals(ident.name) )
 						throw new RuntimeException("Label "+ident+" does not refer to continue target");
 					if !(p instanceof LoopStat) continue;
 					ASTNode pp = p;
 					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-						if( p.ident.name.equals(ident.name) ) {
+						if( p.id.equals(ident.name) ) {
 							p = pp;
 							break label_found;
 						}
@@ -703,7 +703,7 @@ public class GotoStat extends ENode {
 		case LabeledStat:
 		{
 			LabeledStat lst = (LabeledStat)st;
-			if( lst.ident.name.equals(name) ) {
+			if( lst.id.equals(name) ) {
 				stats = (LabeledStat[])Arrays.appendUniq(stats,lst);
 			}
 			stats = resolveStat(name,lst.stat,stats);

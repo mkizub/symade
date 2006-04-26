@@ -111,7 +111,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			StringBuffer sb = new StringBuffer();
 			sb.append("case ").append(val).append('(');
 			for(int i=0; i < pattern.length; i++) {
-				sb.append(pattern[i].vtype).append(' ').append(pattern[i].name);
+				sb.append(pattern[i].vtype).append(' ').append(pattern[i].id);
 				if( i < pattern.length-1 ) sb.append(',');
 			}
 			sb.append("):");
@@ -131,25 +131,25 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		ASTNode@ n;
 	{
 		var @= pattern,
-		var.name.equals(name),
+		var.id.equals(name),
 		node ?= var
 	;
 		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
 			n instanceof Var,
-			((Var)n).name.equals(name),
+			((Var)n).id.equals(name),
 			node ?= ((Var)n)
 		;	n instanceof Struct,
-			name.equals(((Struct)n).short_name.name),
+			((Struct)n).id.equals(name),
 			node ?= ((Struct)n)
 		;	n instanceof TypeDecl,
-			name.equals(((TypeDecl)n).getName()),
+			((TypeDecl)n).getName().equals(name),
 			node ?= ((TypeDecl)n)
 		}
 	;
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		n instanceof Var && ((Var)n).isForward() && ((Var)n).name.equals(name),
+		n instanceof Var && ((Var)n).isForward() && ((Var)n).id.equals(name),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		n.getType().resolveNameAccessR(node,info,name)
 	}
@@ -267,7 +267,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 	{
-		node ?= arg, ((Var)node).name.equals(name)
+		node ?= arg, ((Var)node).id.equals(name)
 	}
 
 	public Dumper toJava(Dumper dmp) {

@@ -41,13 +41,13 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 
 	private boolean hasField(Struct s, KString name) {
 		s.checkResolved();
-		foreach (Field f; s.members; f.name.equals(name)) return true;
+		foreach (Field f; s.members; f.id.equals(name)) return true;
 		return false;
 	}
 	
 	private boolean hasMethod(Struct s, KString name) {
 		s.checkResolved();
-		foreach (Method m; s.members; m.name.equals(name)) return true;
+		foreach (Method m; s.members; m.id.equals(name)) return true;
 		return false;
 	}
 
@@ -112,7 +112,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				Field fld = aflds[i];
 				boolean isArr = fld.getType().isInstanceOf(tpNArr);
 				boolean seq = isArr && fld.meta.get(mnNode).getZ(KString.from("seq"));
-				KString fldnm = fld.name.name;
+				KString fldnm = fld.id.sname;
 				KString fname = KString.from(nameGetDFlowIn+"$"+fldnm);
 				ASTCallExpression ce = new ASTCallExpression();
 				ce.func = new SymbolRef(fname);
@@ -132,7 +132,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			StringConcatExpr msg = new StringConcatExpr();
 			msg.appendArg(new ConstStringExpr(KString.from("No @dflow value \"")));
 			msg.appendArg(new LVarExpr(0, var));
-			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.short_name)));
+			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.id)));
 			dfIn.body.stats.add(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
@@ -142,7 +142,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 		for(int i=0; i < aflds.length; i++) {
 			Field fld = aflds[i];
 			boolean isArr = fld.getType().isInstanceOf(tpNArr);
-			KString fldnm = fld.name.name;
+			KString fldnm = fld.id.sname;
 			KString fname = KString.from(nameGetDFlowIn+"$"+fldnm);
 			Meta meta = fld.meta.get(mnNode);
 			KString src = meta.getS(KString.from("in"));

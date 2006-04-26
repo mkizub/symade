@@ -35,7 +35,7 @@ public class Var extends LvalDNode implements Named {
 	@virtual typedef JView = JVar;
 	@virtual typedef RView = RVar;
 
-	@att public Symbol		name;
+	@att public Symbol		id;
 	@att public TypeRef		vtype;
 	@att public ENode		init;
 		 public int			bcpos = -1;
@@ -96,7 +96,7 @@ public class Var extends LvalDNode implements Named {
 		
 	@nodeview
 	public static view VVar of Var extends VLvalDNode {
-		public	Symbol		name;
+		public	Symbol		id;
 		public	TypeRef		vtype;
 		public	ENode		init;
 		public	int			bcpos;
@@ -126,7 +126,7 @@ public class Var extends LvalDNode implements Named {
 	{
 		this.pos = pos;
 		this.flags = flags;
-		this.name = new Symbol(name);
+		this.id = new Symbol(name);
 		this.vtype = new TypeRef(type);
 	}
 
@@ -135,21 +135,21 @@ public class Var extends LvalDNode implements Named {
 	{
 		this.pos = id.pos;
 		this.flags = flags;
-		this.name = id;
+		this.id = id;
 		this.vtype = vtype;
 	}
 
 	public Var(KString name, Type type)
 		require type != null;
 	{
-		this.name = new Symbol(name);
+		this.id = new Symbol(name);
 		this.vtype = new TypeRef(type);
 	}
 
 	public Var(Symbol id, TypeRef vtype)
 		require vtype != null;
 	{
-		this.name = id;
+		this.id = id;
 		this.vtype = vtype;
 	}
 
@@ -158,14 +158,14 @@ public class Var extends LvalDNode implements Named {
 	}
 	
 	public String toString() {
-		return name.toString()/*+":="+type*/;
+		return id.toString()/*+":="+type*/;
 	}
 
 	public int hashCode() {
-		return name.hashCode();
+		return id.hashCode();
 	}
 
-	public Symbol getName() { return name; }
+	public Symbol getName() { return id; }
 
 	public Type	getType() { return type; }
 
@@ -194,12 +194,12 @@ public class Var extends LvalDNode implements Named {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append(name);
+		return dmp.append(id);
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
-		dmp.append(type).forsed_space().append(name);
+		dmp.append(type).forsed_space().append(id);
 		if (init != null)
 			dmp.space().append('=').append(init);
 		dmp.append(';').newLine();
@@ -208,7 +208,7 @@ public class Var extends LvalDNode implements Named {
 
 	public Dumper toJavaDecl(Dumper dmp, Type etype) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
-		return dmp.append(etype).forsed_space().append(name);
+		return dmp.append(etype).forsed_space().append(id);
 	}
 
 }

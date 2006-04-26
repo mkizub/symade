@@ -52,7 +52,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		CodeLabel ok_label = null;
 		CodeLabel null_cast_label = null;
 		if( func.jctx_clazz.ctype.isInstanceOf(Type.tpDebug) ) {
-			String fname = func.name.toString().toLowerCase();
+			String fname = func.id.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
 		}
@@ -86,7 +86,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		}
 		else if( func.jctx_clazz.ctype.isInstanceOf(Type.tpDebug) ) {
 			int mode = 0;
-			String fname = func.name.toString().toLowerCase();
+			String fname = func.id.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 ) mode = 1;
 			else if( fname.indexOf("trace") >= 0 ) mode = 2;
 			if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
@@ -108,7 +108,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			}
 		}
 		else {
-			if( func.name.equals(nameInit) && func.getOuterThisParam() != null) {
+			if( func.id.equals(nameInit) && func.getOuterThisParam() != null) {
 				JVar fp = code.method.getOuterThisParam();
 				if (fp == null) {
 					Kiev.reportError(this, "Cannot find outer this parameter");
@@ -117,10 +117,10 @@ public final view JCallExpr of CallExpr extends JENode {
 					code.addInstr(Instr.op_load,fp);
 				}
 			}
-			if( func.name.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
+			if( func.id.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 				JMethod mmm = jctx_method;
 				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? ((Struct)jctx_clazz).super_type : ((Struct)jctx_clazz).ctype;
-				assert(mmm.name.equals(nameInit));
+				assert(mmm.id.equals(nameInit));
 				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?
 				if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
@@ -169,7 +169,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		if( !objt.isReference() ) {
 			if( func.jctx_clazz.ctype ≉ Type.tpObject )
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
-			if( func.name.name == nameObjEquals ) {
+			if( func.id.uname == nameObjEquals ) {
 				CodeLabel label_true = code.newLabel();
 				CodeLabel label_false = code.newLabel();
 				code.addInstr(Instr.op_ifcmpeq,label_true);
@@ -179,13 +179,13 @@ public final view JCallExpr of CallExpr extends JENode {
 				code.addConst(1);
 				code.addInstr(Instr.set_label,label_false);
 			}
-			else if( func.name.name == nameObjGetClass ) {
+			else if( func.id.uname == nameObjGetClass ) {
 				CompaundType reft = ((CoreType)objt).getRefTypeForPrimitive();
 				Field f = reft.clazz.resolveField(KString.from("TYPE"));
 				code.addInstr(Instr.op_pop);
 				code.addInstr(Instr.op_getstatic,(JField)f,reft);
 			}
-			else if( func.name.name == nameObjHashCode ) {
+			else if( func.id.uname == nameObjHashCode ) {
 				switch(objt.getJType().java_signature.byteAt(0)) {
 				case 'Z':
 					{
@@ -237,10 +237,10 @@ public final view JCallExpr of CallExpr extends JENode {
 					break;
 				}
 			}
-			else if( func.name.name == nameObjClone ) {
+			else if( func.id.uname == nameObjClone ) {
 				// Do nothing ;-)
 			}
-			else if( func.name.name == nameObjToString ) {
+			else if( func.id.uname == nameObjToString ) {
 				KString sign = null;
 				switch(objt.getJType().java_signature.byteAt(0)) {
 				case 'Z':

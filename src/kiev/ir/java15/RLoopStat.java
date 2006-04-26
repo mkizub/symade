@@ -203,9 +203,9 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			iter = new Var(pos,KString.from("$env"),itype,0);
 		}
 		else if( var != null ) {
-			iter = new Var(var.pos,KString.from(var.name.name+"$iter"),itype,0);
+			iter = new Var(var.pos,KString.from(var.id.uname+"$iter"),itype,0);
 			if (mode == ForEachStat.ARRAY) {
-				iter_array = new Var(container.pos,KString.from(var.name.name+"$arr"),container.getType(),0);
+				iter_array = new Var(container.pos,KString.from(var.id.uname+"$arr"),container.getType(),0);
 			}
 		}
 		else {

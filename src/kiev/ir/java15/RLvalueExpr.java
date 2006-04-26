@@ -139,7 +139,7 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 				s.checkResolved();
 				if (s instanceof Struct) {
 					Struct ss = (Struct)s;
-					foreach(Method m; ss.members; m.name.equals(nameArrayOp))
+					foreach(Method m; ss.members; m.id.equals(nameArrayOp))
 						break lookup_op;
 				}
 				if( s.super_type != null ) {
@@ -163,7 +163,7 @@ public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 		if( isResolved() ) return;
 		if (ctx_method != null &&
 			ctx_method.isStatic() &&
-			ctx_clazz.short_name.name != nameIFaceImpl
+			ctx_clazz.id.uname != nameIFaceImpl
 		)
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 		setResolved(true);
@@ -188,7 +188,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 			assert(rm.params[0].type ≡ Type.tpRule);
 			Var pEnv = null;
 			foreach (Var vd; rm.body.stats) {
-				if (vd.name.equals(namePEnv)) {
+				if (vd.id.equals(namePEnv)) {
 					assert(vd.type.isInstanceOf(Type.tpRule));
 					pEnv = vd;
 					break;
@@ -269,7 +269,7 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends RLv
 		if( Kiev.debugResolve ) {
 			StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");
 			for(int i=0; i < outer_refs.length; i++)
-				sb.append("->").append(outer_refs[i].name);
+				sb.append("->").append(outer_refs[i].id);
 			System.out.println(sb.toString());
 		}
 		if( ctx_method.isStatic() && !ctx_method.isVirtualStatic() ) {

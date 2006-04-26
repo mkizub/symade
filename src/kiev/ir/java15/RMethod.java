@@ -22,7 +22,7 @@ public view RMethod of Method extends RDNode {
 	public final void checkRebuildTypes();
 
 	public				Access				acc;
-	public				Symbol				name;
+	public				Symbol				id;
 	public:ro			NArr<TypeDef>		targs;
 	public				TypeRef				type_ret;
 	public				TypeRef				dtype_ret;
@@ -104,7 +104,7 @@ public view RMethod of Method extends RDNode {
 				foreach(Method inv; f.invs; ctx_clazz.instanceOf(inv.ctx_clazz) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
-					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
+					if( !(id.sname.startsWith(nameSet) || id.sname.startsWith(nameGet)) )
 						conditions.addUniq(inv.conditions[0]);
 				}
 			}
@@ -148,7 +148,7 @@ public final view RInitializer of Initializer extends RDNode {
 @nodeview
 public final view RWBCCondition of WBCCondition extends RDNode {
 	public WBCType				cond;
-	public Symbol				name;
+	public Symbol				id;
 	public ENode				body;
 	public Method				definer;
 	public CodeAttr				code_attr;

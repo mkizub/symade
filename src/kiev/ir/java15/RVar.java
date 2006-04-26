@@ -16,7 +16,7 @@ import syntax kiev.Syntax;
 
 @nodeview
 public static view RVar of Var extends RLvalDNode {
-	public	Symbol		name;
+	public	Symbol		id;
 	public	TypeRef		vtype;
 	public	ENode		init;
 	public	int			bcpos;

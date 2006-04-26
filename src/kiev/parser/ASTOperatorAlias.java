@@ -143,7 +143,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 2 arguments");
 					if( m.type.ret() ≉ m.type.arg(1) )
 						throw new CompilerException(this,"Method "+m+" must return "+m.type.arg(1));
-					m.name.addAlias(nameArrayOp);
+					m.id.addAlias(nameArrayOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
 				}
@@ -152,7 +152,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"'new' operator must be static");
 					if( m.type.ret() ≉ m.ctx_clazz.ctype )
 						throw new CompilerException(this,"Method "+m+" must return "+m.ctx_clazz.ctype);
-					m.name.addAlias(nameNewOp);
+					m.id.addAlias(nameNewOp);
 					if( Kiev.verbose ) System.out.println("Attached operator new to method "+m);
 					return;
 				}
@@ -170,7 +170,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(this,"Method "+m+" must be virtual and have 1 argument");
 				AssignOperator op = AssignOperator.newAssignOperator(
-					image,m.name.name,null,false
+					image,m.id.uname,null,false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otTheType(opret),otTheType(oparg1),otType(oparg2));
@@ -190,7 +190,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 1 argument");
 					if( m.type.ret() ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
-					m.name.addAlias(nameArrayOp);
+					m.id.addAlias(nameArrayOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
 				}
@@ -208,7 +208,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(this,"Method "+m+" must have 2 arguments");
 				BinaryOperator op = BinaryOperator.newBinaryOperator(
-					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
+					prior,image,m.id.uname,null,Operator.orderAndArityNames[opmode],false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg1),otType(oparg2));
@@ -226,7 +226,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Virtual scast method "+m+" must have no arguments");
 					if( m.type.ret() ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
-					m.name.addAlias(nameCastOp);
+					m.id.addAlias(nameCastOp);
 					return;
 				}
 
@@ -249,7 +249,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Non-static method "+m+" must have 0 or 1 argument");
 				}
 				PrefixOperator op = PrefixOperator.newPrefixOperator(
-					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
+					prior,image,m.id.uname,null,Operator.orderAndArityNames[opmode],false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg));
@@ -272,7 +272,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(this,"Method "+m+" must have 1 argument");
 				PostfixOperator op = PostfixOperator.newPostfixOperator(
-					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
+					prior,image,m.id.uname,null,Operator.orderAndArityNames[opmode],false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg));

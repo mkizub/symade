@@ -159,7 +159,7 @@ public class LocalVarTableAttr extends Attr {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < vars.length; i++) {
 			JVar v = vars[i].var;
-			constPool.addAsciiCP(v.name.name);
+			constPool.addAsciiCP(v.id.uname);
 			constPool.addAsciiCP(v.jtype.java_signature);
 		}
 	}
@@ -176,7 +176,7 @@ public class LocalVarTableAttr extends Attr {
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();
 			lvta.vars[i].start_pc = vars[i].start_pc;
 			lvta.vars[i].length_pc = vars[i].end_pc-vars[i].start_pc;
-			lvta.vars[i].cp_varname = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(v.name.name).pos];
+			lvta.vars[i].cp_varname = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(v.id.uname).pos];
 			lvta.vars[i].cp_signature = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(sign).pos];
 			lvta.vars[i].slot = vars[i].stack_pos;
 		}
@@ -447,7 +447,7 @@ public abstract class MetaAttr extends Attr {
 			Field f = ae.var;
 			Struct s = f.ctx_clazz;
 			constPool.addAsciiCP(s.ctype.getJType().java_signature);
-			constPool.addAsciiCP(f.name.name);
+			constPool.addAsciiCP(f.id.uname);
 		}
 		else if (value instanceof Meta) {
 			Meta m = (Meta)value;
@@ -536,7 +536,7 @@ public abstract class MetaAttr extends Attr {
 			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
 			ev.tag = (byte)'e';
 			ev.type_name_index = constPool.getAsciiCP(s.ctype.getJType().java_signature).pos;
-			ev.const_name_index = constPool.getAsciiCP(f.name.name).pos;
+			ev.const_name_index = constPool.getAsciiCP(f.id.uname).pos;
 			return ev;
 		}
 		else if (value instanceof Meta) {

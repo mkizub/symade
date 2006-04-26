@@ -35,7 +35,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@virtual typedef RView = RStruct;
 
 		 public Access						acc;
-	@att public Symbol						short_name; // short name
+	@att public Symbol						id; // short and unique names
 		 public KString						qname;	// qualified name
 		 public KString						bname;	// bytecode name
 		 public CompaundTypeProvider		imeta_type;
@@ -253,7 +253,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		sub_clazz.append(sub);
 
 		trace(Kiev.debugMembers,"Sub-class "+sub+" added to class "+this);
-		if (sub.short_name.name == nameClTypeInfo) {
+		if (sub.id.sname == nameClTypeInfo) {
 			typeinfo_clazz = sub;
 			trace(Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+this);
 		}
@@ -268,7 +268,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		foreach (Method mm; members; mm != m) {
 			if( mm.equals(m) )
 				Kiev.reportError(m,"Method "+m+" already exists in class "+this);
-			if (mm.name.equals(m.name) && mm.type.equals(m.type))
+			if (mm.id.equals(m.id) && mm.type.equals(m.type))
 				Kiev.reportError(m,"Method "+m+" already exists in class "+this);
 		}
 		return m;
@@ -356,7 +356,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	private static Field resolveField(Struct self, KString name, Struct where, boolean fatal) {
 		self.getStruct().checkResolved();
-		foreach(Field f; self.members; f.name.equals(name) ) return f;
+		foreach(Field f; self.members; f.id.equals(name) ) return f;
 		if( self.super_type != null ) return resolveField(self.super_type.getStruct(),name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
@@ -376,7 +376,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	public Constructor getClazzInitMethod() {
-		foreach(Constructor n; members; n.name.equals(nameClassInit) )
+		foreach(Constructor n; members; n.id.equals(nameClassInit) )
 			return n;
 		Constructor class_init = new Constructor(ACC_STATIC);
 		class_init.pos = pos;
@@ -389,7 +389,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@nodeview
 	public static final view VStruct of Struct extends VTypeDecl {
 		public				Access					acc;
-		public:ro			Symbol					short_name;
+		public:ro			Symbol					id;
 		public:ro			KString					qname;
 		public:ro			KString					bname;
 		public:ro			CompaundTypeProvider	imeta_type;
@@ -501,7 +501,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					Kiev.reportError(f.init,e);
 				}
 				trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
-						(f.isStatic()?"Static":"Instance")+" fields: "+qname+"::"+f.name+" = "+f.init);
+						(f.isStatic()?"Static":"Instance")+" fields: "+qname+"::"+f.id+" = "+f.init);
 			}
 			// Process inner classes and cases
 			if( !isPackage() ) {
@@ -536,22 +536,32 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
 
 	Struct() {
-		this.short_name = new Symbol(null,KString.Empty);
+		this.id = new Symbol(null,KString.Empty);
 		this.qname = KString.Empty;
 		this.bname = KString.Empty;
 	}
 	
-	public Struct(ClazzName name, Struct outer, int flags) {
+	public Struct(Symbol name, Struct outer, int flags) {
 		this.flags = flags;
-		this.short_name = new Symbol(name.short_name);
-		this.qname = name.name;
-		this.bname = name.bytecode_name;
+		this.id = name;
+		if (outer == null || outer == Env.root) {
+			this.qname = name.uname;
+			this.bname = name.uname;
+		}
+		else if (outer.isPackage()) {
+			this.qname = KString.from(outer.qname+"."+name.uname);
+			this.bname = KString.from(outer.bname+"/"+name.uname);
+		}
+		else {
+			this.qname = KString.from(outer.qname+"."+name.uname);
+			this.bname = KString.from(outer.bname+"$"+name.uname);
+		}
 		this.imeta_type = new CompaundTypeProvider(this);
 		this.ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
 		package_clazz = outer;
-		trace(Kiev.debugCreation,"New clazz created: "+name.short_name	+" as "+name.name+", member of "+outer);
+		trace(Kiev.debugCreation,"New clazz created: "+qname +" as "+id.uname+", member of "+outer);
 	}
 
 	public Struct getStruct() { return this; }
@@ -564,7 +574,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public String toString() { return qname.toString(); }
 
-	public Symbol getName() { return new Symbol(short_name.name); }
+	public Symbol getName() { return id; }
 	
 	public MetaPizzaCase getMetaPizzaCase() {
 		return (MetaPizzaCase)this.getNodeData(MetaPizzaCase.ATTR);
@@ -599,7 +609,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public Dumper toJava(Dumper dmp) {
 		if (isLocal())
-			return dmp.append(short_name.name);
+			return dmp.append(id.uname);
 		else
 			return dmp.append(qname);
 	}
@@ -678,25 +688,25 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
 		TypeDef@ arg;
 	{
-			this.short_name.equals(name), node ?= this
+			this.id.equals(name), node ?= this
 		;	arg @= args,
-			arg.name.name == name,
+			arg.id.equals(name),
 			node ?= arg
 		;	node @= members,
-			node instanceof TypeDef && ((TypeDef)node).name.equals(name)
+			node instanceof TypeDef && ((TypeDef)node).id.equals(name)
 		;	node @= members,
-			node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
+			node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
 		;	node @= members,
-			node instanceof Struct && ((Struct)node).short_name.equals(name)
+			node instanceof Struct && ((Struct)node).id.equals(name)
 		;	isPackage(),
 			node @= sub_clazz,
-			((Struct)node).short_name.equals(name)
+			((Struct)node).id.equals(name)
 	}
 	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name)
 	{
 		node @= members,
-		{	node instanceof Field && ((Field)node).isStatic() && ((Field)node).name.equals(name)
-		;	node instanceof TypeDef && ((TypeDef)node).name.name.equals(name)
+		{	node instanceof Field && ((Field)node).isStatic() && ((Field)node).id.equals(name)
+		;	node instanceof TypeDef && ((TypeDef)node).id.equals(name)
 		}
 	}
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
@@ -842,8 +852,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					if !(n instanceof Method)
 						continue;
 					Method m = (Method)n;
-					if( !(m.name.equals(nameInit) || m.name.equals(nameNewOp)) ) continue;
-					if( m.name.equals(nameInit) )
+					if( !(m.id.equals(nameInit) || m.id.equals(nameNewOp)) ) continue;
+					if( m.id.equals(nameInit) )
 						init_found = true;
 					boolean retype = false;
 					package_clazz.checkResolved();
@@ -907,8 +917,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if( mmret == null && mm != null ) mmret = mm;
 		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+"."+m+" in "+this);
 		foreach (Method mi; members) {
-			if( mi.isStatic() || mi.isPrivate() || mi.name.equals(nameInit) ) continue;
-			if( mi.name.name != m.name.name || mi.type.arity != m.type.arity ) {
+			if( mi.isStatic() || mi.isPrivate() || mi.id.equals(nameInit) ) continue;
+			if( mi.id.uname != m.id.uname || mi.type.arity != m.type.arity ) {
 //				trace(Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
 				continue;
 			}
@@ -995,7 +1005,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		Env.toJavaModifiers(dmp,getJavaFlags());
 		if( isInterface() ) {
 			dmp.append("interface").forsed_space();
-			dmp.append(jthis.short_name.toString()).space();
+			dmp.append(jthis.id.toString()).space();
 			if( this.args.length > 0 ) {
 				dmp.append("/* <");
 				for(int i=0; i < this.args.length; i++) {
@@ -1013,7 +1023,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			}
 		} else {
 			dmp.append("class").forsed_space();
-			dmp.append(jthis.short_name.toString());
+			dmp.append(jthis.id.toString());
 			if( this.args.length > 0 ) {
 				dmp.append("/* <");
 				for(int i=0; i < this.args.length; i++) {
@@ -1043,7 +1053,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			f.toJavaDecl(dmp).newLine();
 		}
 		foreach (Method m; members) {
-			if( m.name.equals(nameClassInit) ) continue;
+			if( m.id.equals(nameClassInit) ) continue;
 			m.toJavaDecl(dmp).newLine();
 		}
 		dmp.newLine(-1).append('}').newLine();

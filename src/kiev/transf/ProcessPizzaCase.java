@@ -45,12 +45,12 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 		// Create constructor for pizza case
 		Constructor init = new Constructor(ACC_PUBLIC);
 		foreach (Field f; flds)
-			init.params.add(new FormPar(f.pos,f.name.name,f.type,FormPar.PARAM_NORMAL,0));
+			init.params.add(new FormPar(f.pos,f.id.sname,f.type,FormPar.PARAM_NORMAL,0));
 		init.body = new Block(clazz.pos);
 		int p = 0;
 		foreach (Field f; flds) {
 			Var v = null;
-			foreach (FormPar fp; init.params; fp.name.name == f.name.name) {
+			foreach (FormPar fp; init.params; fp.id.uname == f.id.uname) {
 				init.body.stats.insert(
 					new ExprStat(
 						new AssignExpr(f.pos,AssignOperator.Assign,

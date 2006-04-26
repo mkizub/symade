@@ -61,7 +61,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		CallType mt = (CallType)Type.getRealType(type,new CallType(ta,type));
 		Method@ m;
 		// First try overloaded 'new', than real 'new'
-		if( this.clazz == null && (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
+		if( this.clazz == null && (ctx_method==null || !ctx_method.id.equals(nameNewOp)) ) {
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
 			if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
 				CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());

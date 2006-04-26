@@ -204,7 +204,7 @@ public class Meta extends ENode {
 			MetaValue v = values[n];
 			Method m = null;
 			foreach (Method sm; s.members) {
-				if( sm.name.equals(v.type.name)) {
+				if( sm.id.equals(v.type.name)) {
 					m = sm;
 					break;
 				}
@@ -236,12 +236,12 @@ public class Meta extends ENode {
 	next_method:
 		foreach (Method m; s.members) {
 			for(int j=0; j < values.length; j++) {
-				if (values[j].type.name == m.name.name)
+				if (values[j].type.name == m.id.uname)
 					continue next_method;
 			}
 			// value not specified - does the method has a default meta-value?
 			if (m.annotation_default != null) {
-				MetaValueType mvt = new MetaValueType(m.name.name);
+				MetaValueType mvt = new MetaValueType(m.id.uname);
 				mvt.ret = m.type.ret();
 				if (!m.type.ret().isArray()) {
 					MetaValueScalar mvs = (MetaValueScalar)m.annotation_default;
@@ -255,7 +255,7 @@ public class Meta extends ENode {
 				}
 				continue;
 			}
-			throw new CompilerException(m, "Annotation value "+m.name.name+" is not specified");
+			throw new CompilerException(m, "Annotation value "+m.id+" is not specified");
 		}
 		return this;
 	}
@@ -402,14 +402,14 @@ public class Meta extends ENode {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		dmp.append('@').append(type.getType().getStruct().short_name.name);
+		dmp.append('@').append(type.getType().getStruct().id.sname);
 		boolean need_lp = true;
 		boolean need_comma = false;
 		if (values.length != 0) {
 			Struct s = type.getType().getStruct();
 			s.checkResolved();
 			foreach (Method m; s.members) {
-				MetaValue v = get(m.name.name);
+				MetaValue v = get(m.id.sname);
 				if (v.valueEquals(m.annotation_default))
 					continue;
 				if (need_lp) {

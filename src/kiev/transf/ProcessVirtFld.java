@@ -41,20 +41,20 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	public void addAbstractFields(Struct s) {
 		foreach(Method m; s.members) {
 			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a setter");
-			if (m.name.name.startsWith(nameSet))
-				addSetterForAbstractField(s, m.name.name.substr(nameSet.length()), m);
-			if (m.name.aliases != null) {
-				foreach (KString name; m.name.aliases) {
+			if (m.id.sname.startsWith(nameSet))
+				addSetterForAbstractField(s, m.id.sname.substr(nameSet.length()), m);
+			if (m.id.aliases != null) {
+				foreach (KString name; m.id.aliases) {
 					//trace(Kiev.debugCreation,"check "+name+" to be a setter");
 					if (name.startsWith(nameSet))
 						addSetterForAbstractField(s, name.substr(nameSet.length()), m);
 				}
 			}
 			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a getter");
-			if (m.name.name.startsWith(nameGet))
-				addGetterForAbstractField(s, m.name.name.substr(nameGet.length()), m);
-			if (m.name.aliases != null) {
-				foreach (KString name; m.name.aliases) {
+			if (m.id.sname.startsWith(nameGet))
+				addGetterForAbstractField(s, m.id.sname.substr(nameGet.length()), m);
+			if (m.id.aliases != null) {
+				foreach (KString name; m.id.aliases) {
 					//trace(Kiev.debugCreation,"check "+name+" to be a getter");
 					if (name.startsWith(nameGet))
 						addGetterForAbstractField(s, name.substr(nameGet.length()), m);
@@ -209,17 +209,17 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		boolean set_found = false;
 		boolean get_found = false;
 
-		KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
-			append_fast(nameSet).append_fast(f.name.name).toKString();
-		KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
-			append_fast(nameGet).append_fast(f.name.name).toKString();
+		KString set_name = new KStringBuffer(nameSet.length()+f.id.sname.length()).
+			append_fast(nameSet).append_fast(f.id.sname).toKString();
+		KString get_name = new KStringBuffer(nameGet.length()+f.id.sname.length()).
+			append_fast(nameGet).append_fast(f.id.sname).toKString();
 
 		foreach(Method m; s.members) {
-			if( m.name.equals(set_name) ) {
+			if( m.id.equals(set_name) ) {
 				set_found = true;
 				if( get_found ) break;
 			}
-			else if( m.name.equals(get_name) ) {
+			else if( m.id.equals(get_name) ) {
 				get_found = true;
 				if( set_found ) break;
 			}
@@ -271,7 +271,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				);
 				body.stats.append(ass_st);
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
-					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
+					KString fname = new KStringBuffer().append("nodeattr$").append(f.id.sname).toKString();
 					Field fatt = f.ctx_clazz.resolveField(fname);
 					ENode p_st = new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
@@ -342,10 +342,10 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		Field f = fa.var;
 		if( !f.isVirtual() || fa.isAsField() )
 			return true;
-		KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
-			append_fast(nameGet).append_fast(f.name.name).toKString();
+		KString get_name = new KStringBuffer(nameGet.length()+f.id.sname.length()).
+			append_fast(nameGet).append_fast(f.id.sname).toKString();
 
-		if (fa.ctx_method != null && fa.ctx_method.name.equals(get_name) && fa.ctx_clazz.instanceOf(f.ctx_clazz)) {
+		if (fa.ctx_method != null && fa.ctx_method.id.equals(get_name) && fa.ctx_clazz.instanceOf(f.ctx_clazz)) {
 			fa.setAsField(true);
 			return true;
 		}
@@ -369,10 +369,10 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			Field f = fa.var;
 			if( !f.isVirtual() || fa.isAsField() )
 				return true;
-			KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
-				append_fast(nameSet).append_fast(f.name.name).toKString();
+			KString set_name = new KStringBuffer(nameSet.length()+f.id.sname.length()).
+				append_fast(nameSet).append_fast(f.id.sname).toKString();
 	
-			if (ae.ctx_method != null && ae.ctx_method.name.equals(set_name) && ae.ctx_clazz.instanceOf(f.ctx_clazz)) {
+			if (ae.ctx_method != null && ae.ctx_method.id.equals(set_name) && ae.ctx_clazz.instanceOf(f.ctx_clazz)) {
 				fa.setAsField(true);
 				return true;
 			}
@@ -450,13 +450,13 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			Field f = fa.var;
 			if( !f.isVirtual() || fa.isAsField() )
 				return true;
-			KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
-				append_fast(nameSet).append_fast(f.name.name).toKString();
-			KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
-				append_fast(nameGet).append_fast(f.name.name).toKString();
+			KString set_name = new KStringBuffer(nameSet.length()+f.id.sname.length()).
+				append_fast(nameSet).append_fast(f.id.sname).toKString();
+			KString get_name = new KStringBuffer(nameGet.length()+f.id.sname.length()).
+				append_fast(nameGet).append_fast(f.id.sname).toKString();
 	
 			if (ie.ctx_method != null
-			&& (ie.ctx_method.name.equals(set_name) || ie.ctx_method.name.equals(get_name))
+			&& (ie.ctx_method.id.equals(set_name) || ie.ctx_method.id.equals(get_name))
 			&& ie.ctx_clazz.instanceOf(f.ctx_clazz) )
 			{
 				fa.setAsField(true);

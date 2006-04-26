@@ -20,7 +20,7 @@ public abstract class TypeDef extends TypeDecl {
 	@virtual typedef This  = TypeDef;
 	@virtual typedef VView = VTypeDef;
 
-	@att public Symbol					name;
+	@att public Symbol					id;
 	@ref public ArgType					lnk;
 	
 	public abstract TypeProvider[] getAllSuperTypes();
@@ -29,7 +29,7 @@ public abstract class TypeDef extends TypeDecl {
 
 	@nodeview
 	public static abstract view VTypeDef of TypeDef extends VTypeDecl {
-		public		Symbol				name;
+		public		Symbol				id;
 		public		ArgType				lnk;
 
 		public Struct getStruct();
@@ -38,13 +38,13 @@ public abstract class TypeDef extends TypeDecl {
 
 	public TypeDef() {}
 
-	public TypeDef(KString nm) {
-		name = new Symbol(nm);
+	public TypeDef(KString name) {
+		id = new Symbol(name);
 	}
 
-	public TypeDef(Symbol nm) {
-		this.pos = nm.pos;
-		this.name = nm;
+	public TypeDef(Symbol id) {
+		this.pos = id.pos;
+		this.id = id;
 	}
 
 	public Type getType() {
@@ -55,20 +55,18 @@ public abstract class TypeDef extends TypeDecl {
 			return this.lnk;
 		if (this.meta != null)
 			this.meta.verify();
-		this.lnk = new ArgType(name.name,(TypeDef)this);
+		this.lnk = new ArgType(id.uname,(TypeDef)this);
 		return this.lnk;
 	}
 
-	public Symbol getName() {
-		return new Symbol(name.name);
-	}
+	public Symbol getName() { return id; }
 
 	public abstract boolean checkResolved();
 	
 	public abstract Struct getStruct();
 	
 	public String toString() {
-		return String.valueOf(name.name);
+		return String.valueOf(id);
 	}
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(this.toString());

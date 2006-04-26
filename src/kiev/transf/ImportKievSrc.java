@@ -237,7 +237,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					for(Struct p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz) n++;
 					KString fldName = KString.from(nameThis+"$"+n);
 					boolean found = false;
-					foreach (Field f; me.members; f.name.equals(fldName))
+					foreach (Field f; me.members; f.id.equals(fldName))
 						found = true;
 					if (!found) {
 						TypeDef td = new TypeAssign(
@@ -363,7 +363,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		next_case_arg:
 			for(int i=0; i < p.args.length; i++) {
 				for(int j=0; j < clazz.args.length; j++) {
-					if (p.args[i].name.name == clazz.args[j].name.name) {
+					if (p.args[i].id.uname == clazz.args[j].id.uname) {
 						sup_ref.args.add(new TypeRef(clazz.args[j].getAType()));
 						continue next_case_arg;
 					}
@@ -479,7 +479,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					m.setFinal(false);
 					m.setAbstract(true);
 				}
-				if( m.name.equals(nameInit) ) {
+				if( m.id.equals(nameInit) ) {
 					m.setAbstract(false);
 					m.setSynchronized(false);
 					m.setFinal(false);
@@ -488,20 +488,20 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			}
 			else if (members[i] instanceof Field && ((Field)members[i]).isEnumField()) {
 				Field f = (Field)members[i];
-				KString text = f.name.name;
+				KString text = f.id.sname;
 				MetaAlias al = f.getMetaAlias();
 				if (al != null) {
 					foreach (ConstStringExpr n; al.getAliases()) {
 						KString nm = n.value;
 						if (nm.len > 2 && nm.byteAt(0) == '\"') {
-							f.name.addAlias(nm);
+							f.id.addAlias(nm);
 							text = nm.substr(1,nm.len-2);
 							break;
 						}
 					}
 				}
 				f.init = new NewExpr(f.pos,me.ctype,new ENode[]{
-							new ConstStringExpr(f.name.name),
+							new ConstStringExpr(f.id.sname),
 							new ConstIntExpr(next_enum_val)
 							//new ConstStringExpr(text)
 				});
@@ -585,7 +585,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				WBCCondition inv = (WBCCondition)members[i];
 				assert(inv.cond == WBCType.CondInvariant);
 				// TODO: check flags for fields
-				Method m = new Method(inv.name.name,Type.tpVoid,inv.flags);
+				Method m = new Method(inv.id.uname,Type.tpVoid,inv.flags);
 				m.setInvariantMethod(true);
 				m.body = new Block();
 				inv.replaceWithNode(m);

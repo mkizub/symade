@@ -134,13 +134,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 
 	private boolean hasField(Struct s, KString name) {
 		s.checkResolved();
-		foreach (Field f; s.members; f.name.equals(name)) return true;
+		foreach (Field f; s.members; f.id.equals(name)) return true;
 		return false;
 	}
 	
 	private boolean hasMethod(Struct s, KString name) {
 		s.checkResolved();
-		foreach (Method m; s.members; m.name.equals(name)) return true;
+		foreach (Method m; s.members; m.id.equals(name)) return true;
 		return false;
 	}
 
@@ -191,12 +191,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
 			TypeClassExpr clz_expr = new TypeClassExpr(0, new TypeRef(clz_tp));
 			ENode e = new NewExpr(0, atp, new ENode[]{
-				new ConstStringExpr(f.name.name),
+				new ConstStringExpr(f.id.sname),
 				new ConstBoolExpr(isAtt),
 				new ConstBoolExpr(isArr),
 				clz_expr
 			});
-			KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
+			KString fname = new KStringBuffer().append("nodeattr$").append(f.id.sname).toKString();
 			Field af = s.addField(new Field(fname, atp, ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 			af.init = e;
 			vals_init[i] = new SFldExpr(af.pos, af);
@@ -237,7 +237,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new LVarExpr(0, getV.params[0]),
-							new ConstStringExpr(aflds[i].name.name)
+							new ConstStringExpr(aflds[i].id.sname)
 						),
 						new ReturnStat(0, ee),
 						null
@@ -249,7 +249,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			StringConcatExpr msg = new StringConcatExpr();
 			msg.appendArg(new ConstStringExpr(KString.from("No @att value \"")));
 			msg.appendArg(new LVarExpr(0, getV.params[0]));
-			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.short_name)));
+			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.id)));
 			getV.body.stats.add(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
@@ -376,7 +376,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new LVarExpr(0, setV.params[0]),
-							new ConstStringExpr(aflds[i].name.name)
+							new ConstStringExpr(aflds[i].id.sname)
 							),
 						new Block(0, new ENode[]{
 							new ExprStat(0,
@@ -396,7 +396,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			StringConcatExpr msg = new StringConcatExpr();
 			msg.appendArg(new ConstStringExpr(KString.from("No @att value \"")));
 			msg.appendArg(new LVarExpr(0, setV.params[0]));
-			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.short_name)));
+			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.id)));
 			setV.body.stats.add(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);

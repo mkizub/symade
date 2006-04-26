@@ -51,13 +51,11 @@ public class RuleMethod extends Method {
 	public RuleMethod() {}
 
 	public RuleMethod(Symbol id, int fl) {
-		super(id.name, new TypeRef(Type.tpRule));
+		super(id, new TypeRef(Type.tpRule), fl);
 		this.pos = id.pos;
-		this.flags = fl;
 	}
 	public RuleMethod(KString name, int fl) {
-		super(name, Type.tpRule);
-		this.flags = fl;
+		super(new Symbol(name), new TypeRef(Type.tpRule), fl);
 	}
 
 	public int allocNewBase(int n) {
@@ -93,16 +91,16 @@ public class RuleMethod extends Method {
 		path.space_prev.pslot.name == "type_ref" ||
 		path.space_prev.pslot.name == "dtype_ref",$cut,
 		node @= targs,
-		((TypeDef)node).name.name == name
+		((TypeDef)node).id.equals(name)
 	;
 		var @= localvars,
-		var.name.equals(name),
+		var.id.equals(name),
 		node ?= var
 	;
 		inlined_by_dispatcher,$cut,false
 	;
 		var @= params,
-		var.name.equals(name),
+		var.id.equals(name),
 		node ?= var
 	;
 		!this.isStatic() && path.isForwardsAllowed(),

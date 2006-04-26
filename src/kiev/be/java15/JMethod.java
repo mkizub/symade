@@ -21,7 +21,7 @@ import syntax kiev.Syntax;
 public final view JMethod of Method extends JDNode {
 
 	public:ro	Access					acc;
-	public:ro	Symbol					name;
+	public:ro	Symbol					id;
 	public:ro	JArr<JVar>				params;
 	public:ro	JBlock					body;
 	public		Attr[]					attrs;
@@ -97,7 +97,7 @@ public final view JMethod of Method extends JDNode {
 							code.importCode(cond.code_attr);
 						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							assert( cond.jparent instanceof JMethod && ((JMethod)cond.jparent).isInvariantMethod() );
-							if( !name.equals(nameInit) && !name.equals(nameClassInit) ) {
+							if( !id.equals(nameInit) && !id.equals(nameClassInit) ) {
 								if( !((JDNode)cond.jparent).isStatic() )
 									code.addInstrLoadThis();
 								code.addInstr(Instr.op_call,cond.jctx_method,false);
@@ -189,7 +189,7 @@ public final view JInitializer of Initializer extends JDNode {
 @nodeview
 public final final view JWBCCondition of WBCCondition extends JDNode {
 	public:ro	WBCType				cond;
-	public:ro	Symbol				name;
+	public:ro	Symbol				id;
 	public:ro	JENode				body;
 	public:ro	JMethod				definer;
 	public		CodeAttr			code_attr;

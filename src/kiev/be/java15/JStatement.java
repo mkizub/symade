@@ -186,8 +186,8 @@ public final view JCondStat of CondStat extends JENode {
 
 	public:n,n,n,rw void generateAssertName(Code code) {
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
-		if (wbc.name == null || wbc.name.name == null) return;
-		code.addConst(wbc.name.name);
+		if (wbc.id == null || wbc.id.uname == null) return;
+		code.addConst(wbc.id.uname);
 	}
 
 	public:n,n,n,rw JMethod getAssertMethod() {
@@ -200,7 +200,7 @@ public final view JCondStat of CondStat extends JENode {
 		default: fname = nameAssertMethod;
 		}
 		Method func;
-		if (wbc.name == null || wbc.name.name == null)
+		if (wbc.id == null || wbc.id.uname == null)
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString);
 		else
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);
@@ -235,7 +235,7 @@ public final view JCondStat of CondStat extends JENode {
 
 @nodeview
 public final view JLabeledStat of LabeledStat extends JENode {
-	public:ro	Symbol		ident;
+	public:ro	Symbol		id;
 	public:ro	JLabel		lbl;
 	public:ro	JENode		stat;
 
@@ -322,7 +322,7 @@ public final view JBreakStat of BreakStat extends JENode {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
 				if( node instanceof JMethod ) break;
-				if( node instanceof JLabeledStat && ((JLabeledStat)node).ident.equals(ident) ) {
+				if( node instanceof JLabeledStat && ((JLabeledStat)node).id.equals(ident) ) {
 					JENode st = ((JLabeledStat)node).stat;
 					if( st instanceof BreakTarget )
 						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
@@ -392,7 +392,7 @@ public final view JContinueStat of ContinueStat extends JENode {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
 				if( node instanceof JMethod ) break;
-				if( node instanceof JLabeledStat && ((JLabeledStat)node).ident.equals(name) ) {
+				if( node instanceof JLabeledStat && ((JLabeledStat)node).id.equals(name) ) {
 					JENode st = ((JLabeledStat)node).stat;
 					if( st instanceof ContinueTarget )
 						return (Object[])Arrays.append(cl,st.getCntLabel().getCodeLabel(code));

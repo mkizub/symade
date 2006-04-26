@@ -106,7 +106,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		!s.isPackage(),
 		{
 			s.qname == name, node ?= s.$var
-		;	s.short_name.name == name, node ?= s.$var
+		;	s.id.equals(name), node ?= s.$var
 		}
 	;
 		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && star,
@@ -117,7 +117,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			sub @= s.sub_clazz,
 			{
 				sub.qname == name, node ?= sub.$var
-			;	sub.short_name.name == name, node ?= sub.$var
+			;	sub.id.equals(name), node ?= sub.$var
 			}
 		;	s.isPackage(), s.resolveNameR(node,path,name)
 		}
@@ -135,11 +135,11 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		{
 			tmp instanceof Field,
 			trace(Kiev.debugResolve,"Syntax check field "+tmp+" == "+name),
-			((Field)tmp).name.equals(name),
+			((Field)tmp).id.equals(name),
 			node ?= tmp
 		;	tmp instanceof TypeDef,
 			trace(Kiev.debugResolve,"Syntax check typedef "+tmp+" == "+name),
-			((TypeDef)tmp).name.equals(name),
+			((TypeDef)tmp).id.equals(name),
 			node ?= ((TypeDef)tmp)
 		//;	trace(Kiev.debugResolve,"Syntax check "+tmp.getClass()+" "+tmp+" == "+name), false
 		}
@@ -204,7 +204,7 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name) {
 		path.space_prev == this.type,
-		this.arg.name.name == name,
+		this.arg.id.equals(name),
 		node ?= this.arg
 	}
 

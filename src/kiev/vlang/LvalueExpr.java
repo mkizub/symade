@@ -223,7 +223,7 @@ public final class IFldExpr extends LvalueExpr {
 	public IFldExpr(int pos, ENode obj, Field var) {
 		this.pos = pos;
 		this.obj = obj;
-		this.ident = new SymbolRef(pos,var.name.name);
+		this.ident = new SymbolRef(pos,var.id.sname);
 		this.var = var;
 		assert(obj != null && var != null);
 	}
@@ -231,7 +231,7 @@ public final class IFldExpr extends LvalueExpr {
 	public IFldExpr(int pos, ENode obj, Field var, boolean direct_access) {
 		this.pos = pos;
 		this.obj = obj;
-		this.ident = new SymbolRef(pos,var.name.name);
+		this.ident = new SymbolRef(pos,var.id.sname);
 		this.var = var;
 		assert(obj != null && var != null);
 		if (direct_access) setAsField(true);
@@ -296,7 +296,7 @@ public final class IFldExpr extends LvalueExpr {
 		} else {
 			dmp.append(obj).append('.');
 		}
-		return dmp.append(var.name).space();
+		return dmp.append(var.id).space();
 	}
 }
 
@@ -409,7 +409,7 @@ public final class ThisExpr extends LvalueExpr {
 		try {
 			if (ctx_clazz == null)
 				return Type.tpVoid;
-			if (ctx_clazz.short_name.name == nameIFaceImpl)
+			if (ctx_clazz.id.uname == nameIFaceImpl)
 				return ctx_clazz.package_clazz.ctype;
 			if (isSuperExpr())
 				ctx_clazz.super_type;
@@ -464,7 +464,7 @@ public final class LVarExpr extends LvalueExpr {
 	public LVarExpr(int pos, Var var) {
 		this.pos = pos;
 		this.var = var;
-		this.ident = new SymbolRef(pos, var.name.name);
+		this.ident = new SymbolRef(pos, var.id.sname);
 	}
 	public LVarExpr(int pos, KString name) {
 		this.pos = pos;
@@ -548,14 +548,14 @@ public final class SFldExpr extends LvalueExpr {
 	public SFldExpr(int pos, Field var) {
 		this.pos = pos;
 		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
-		this.ident = new SymbolRef(pos,var.name.name);
+		this.ident = new SymbolRef(pos,var.id.uname);
 		this.var = var;
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
 		this.pos = pos;
 		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
-		this.ident = new SymbolRef(pos,var.name.name);
+		this.ident = new SymbolRef(pos,var.id.uname);
 		this.var = var;
 		if (direct_access) setAsField(true);
 	}
@@ -606,7 +606,7 @@ public final class SFldExpr extends LvalueExpr {
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = var.ctx_clazz;
-		return dmp.space().append(cl.qname).append('.').append(var.name).space();
+		return dmp.space().append(cl.qname).append('.').append(var.id).space();
 	}
 
 }
@@ -663,7 +663,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 
 	public static Field outerOf(Struct clazz) {
 		foreach (Field f; clazz.members) {
-			if( f.name.name.startsWith(nameThisDollar) ) {
+			if( f.id.uname.startsWith(nameThisDollar) ) {
 				trace(Kiev.debugResolve,"Name of field "+f+" starts with this$");
 				return f;
 			}

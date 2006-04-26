@@ -37,7 +37,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	/** Field' access */
 		 public Access				acc;
 	/** Name of the field */
-	@att public Symbol				name;
+	@att public Symbol				id;
 	/** Type of the field */
 	@att public TypeRef				ftype;
 	/** Initial value of this field */
@@ -103,7 +103,7 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	@nodeview
 	public static final view VField of Field extends VLvalDNode {
 		public		Access			acc;
-		public		Symbol			name;
+		public		Symbol			id;
 		public		TypeRef			ftype;
 		public		ENode			init;
 		public		ConstExpr		const_value;
@@ -134,16 +134,20 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	    This constructor must not be called directly,
 	    but via factory method newField(...) of Clazz
      */
-	public Field(KString name, TypeRef ftype, int flags) {
+	public Field(Symbol name, TypeRef ftype, int flags) {
 		this.flags = flags;
-		this.name = new Symbol(name);
+		this.id = name;
 		this.ftype = ftype;
 		this.meta = new MetaSet();
 		trace(Kiev.debugCreation,"New field created: "+name+" with type "+ftype);
 	}
 
-	public Field(KString name, Type type, int acc) {
-		this(name,new TypeRef(type),acc);
+	public Field(KString name, TypeRef ftype, int flags) {
+		this(new Symbol(name),ftype,flags);
+	}
+	
+	public Field(KString name, Type type, int flags) {
+		this(new Symbol(name),new TypeRef(type),flags);
 	}
 	
 	public ASTNode getDummyNode() {
@@ -185,20 +189,20 @@ public final class Field extends LvalDNode implements Named, Accessable {
 		return (MetaAlias)this.getNodeData(MetaAlias.ATTR);
 	}
 
-	public String toString() { return name.toString(); }
+	public String toString() { return id.toString(); }
 
-	public Symbol getName() { return name; }
+	public Symbol getName() { return id; }
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append(name).space();
+		return dmp.space().append(id).space();
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
-		if( !name.equals(KString.Empty) )
-			type.toJava(dmp).forsed_space().append(name);
+		if( !id.equals(KString.Empty) )
+			type.toJava(dmp).forsed_space().append(id);
 		if( init != null ) {
-			if( !name.equals(KString.Empty) )
+			if( !id.equals(KString.Empty) )
 				dmp.append(" = ");
 			init.toJava(dmp);
 		}

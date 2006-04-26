@@ -48,10 +48,10 @@ public final class ASTIdentifierAlias extends ASTAlias {
 	public void attach(ASTNode n) {
 		switch(n) {
 		case Method:
-			((Method)n).name.addAlias(name);
+			((Method)n).id.addAlias(name);
 			break;
 		case Field:
-			((Field)n).name.addAlias(name);
+			((Field)n).id.addAlias(name);
 			break;
 		default:
 			throw new CompilerException(this,"Node of type "+n.getClass()+" cannot have aliases");

@@ -20,7 +20,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	static final AttrSlot TI_ATTR = new DataAttrSlot("rstruct ti field temp expr",true,TypeInfoExpr.class);	
 
 	public				Access					acc;
-	public:ro			Symbol					short_name;
+	public:ro			Symbol					id;
 	public:ro			KString					qname;
 	public:ro			KString					bname;
 	public:ro			CompaundTypeProvider	imeta_type;
@@ -115,7 +115,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					}
 				}
 			}
-			if (this.instanceOf(Type.tpTypeInfo.clazz) && ctx_method != null && ctx_method.name.name == nameInit) {
+			if (this.instanceOf(Type.tpTypeInfo.clazz) && ctx_method != null && ctx_method.id.uname == nameInit) {
 				if (t instanceof ArgType)
 					return new ASTIdentifier(from.pos,t.name);
 			}
@@ -152,13 +152,13 @@ public final view RStruct of Struct extends RTypeDecl {
 
 		// Special case for interfaces, that cannot have private fields,
 		// but need typeinfo in <clinit>
-		if ((from.ctx_method == null || from.ctx_method.name.name == nameClassInit) && from.ctx_clazz.isInterface()) {
+		if ((from.ctx_method == null || from.ctx_method.id.uname == nameClassInit) && from.ctx_clazz.isInterface()) {
 			return new TypeInfoExpr(from.pos, new TypeRef(t));
 		}
 		
 		// Lookup and create if need as $typeinfo$N
 		foreach(Field f; members; f.isStatic()) {
-			if (f.init == null || !f.name.name.startsWith(nameTypeInfo) || f.name.name.equals(nameTypeInfo))
+			if (f.init == null || !f.id.uname.startsWith(nameTypeInfo) || f.id.uname.equals(nameTypeInfo))
 				continue;
 			if (((TypeInfoExpr)f.init).type.getType() ≈ t)
 				return new SFldExpr(from.pos,f);
@@ -176,7 +176,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			throw new RuntimeException("Ungenerated typeinfo for type "+t+" ("+t.getClass()+")");
 		int i = 0;
 		foreach(Field f; members; f.isStatic()) {
-			if (f.init == null || !f.name.name.startsWith(nameTypeInfo) || f.name.name.equals(nameTypeInfo))
+			if (f.init == null || !f.id.uname.startsWith(nameTypeInfo) || f.id.uname.equals(nameTypeInfo))
 				continue;
 			i++;
 		}
@@ -186,7 +186,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		f.resolveDecl();
 		// Add initialization in <clinit>
 		Constructor class_init = getStruct().getClazzInitMethod();
-		if( ctx_method != null && ctx_method.name.equals(nameClassInit) ) {
+		if( ctx_method != null && ctx_method.id.equals(nameClassInit) ) {
 			class_init.addstats.append(
 				new ExprStat(f.init.pos,
 					new AssignExpr(f.init.pos,AssignOperator.Assign
@@ -487,7 +487,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				if (vte.overloader != null)
 				trace("            overloaded by "+vte.overloader.name+vte.overloader.etype);
 				foreach (Method m; vte.methods)
-					trace("        "+m.ctx_clazz+"."+m.name.name+m.type);
+					trace("        "+m.ctx_clazz+"."+m.id.uname+m.type);
 			}
 		}
 		
@@ -545,7 +545,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			if (m.isMethodBridge())
 				continue;
 			CallType etype = m.etype;
-			KString name = m.name.name;
+			KString name = m.id.uname;
 			boolean is_new = true;
 			foreach (VTableEntry vte; vtable) {
 				if (name == vte.name && etype ≈ vte.etype) {
@@ -566,7 +566,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					continue;
 				if (m.isMethodBridge())
 					continue;
-				if (m.name.name != vte.name || vte.methods.contains(m))
+				if (m.id.uname != vte.name || vte.methods.contains(m))
 					continue;
 				CallType mt = m.etype.toCallTypeRetAny();
 				if (mt ≈ et)
@@ -707,7 +707,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			Type[] params = m.type.params();
 			params = (Type[])Arrays.insert(params,m.ctx_clazz.ctype,0);
 			CallType mt = new CallType(params, m.type.ret());
-			foreach (Method dm; iface_impl.members; dm.name.name == m.name.name && dm.type ≈ mt) {
+			foreach (Method dm; iface_impl.members; dm.id.uname == m.id.uname && dm.type ≈ mt) {
 				fnd = dm;
 				break;
 			}
@@ -731,7 +731,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				Kiev.reportWarning(self,"Method "+vte.name+vte.etype+" is not implemented in "+self);
 			m = new Method(vte.name, vte.etype.ret(), ACC_ABSTRACT | ACC_PUBLIC | ACC_SYNTHETIC);
 			for (int i=0; i < vte.etype.arity; i++)
-				m.params.append(new FormPar(0,def.params[i].name.name,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
+				m.params.append(new FormPar(0,def.params[i].id.uname,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
 			members.append(m);
 		} else {
 			// create a proxy call
@@ -766,13 +766,13 @@ public final view RStruct of Struct extends RTypeDecl {
 	next_m:
 		foreach (Method m; vte.methods; m.ctx_clazz != self.getStruct()) {
 			// check this class have no such a method
-			foreach (Method x; self.members; x.name.name == m.name.name) {
+			foreach (Method x; self.members; x.id.uname == m.id.uname) {
 				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
-			Method bridge = new Method(m.name.name, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.flags);
+			Method bridge = new Method(m.id.uname, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.flags);
 			for (int i=0; i < vte.etype.arity; i++)
-				bridge.params.append(new FormPar(mo.pos,m.params[i].name.name,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
+				bridge.params.append(new FormPar(mo.pos,m.params[i].id.uname,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
 			bridge.pos = mo.pos;
 			members.append(bridge);
 			trace(Kiev.debugMultiMethod,"Created a bridge method "+self+"."+bridge+" for vtable entry "+vte.name+vte.etype);
@@ -813,7 +813,7 @@ public final view RStruct of Struct extends RTypeDecl {
 
 				// Now, non-static methods (templates)
 				// Make it static and add abstract method
-				Method def = new Method(m.name.name,m.type.ret(),m.getFlags()|ACC_STATIC);
+				Method def = new Method(m.id.uname,m.type.ret(),m.getFlags()|ACC_STATIC);
 				def.pos = m.pos;
 				def.params.moveFrom(m.params); // move, because the vars are resolved
 				m.params.copyFrom(def.params);
@@ -833,7 +833,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			if !(members[cur_m] instanceof Method)
 				continue;
 			Method m = (Method)members[cur_m];
-			if (m.name.equals(nameClassInit) || m.name.equals(nameInit))
+			if (m.id.equals(nameClassInit) || m.id.equals(nameInit))
 				continue;
 			if (m.isMethodBridge())
 				continue;
@@ -845,14 +845,14 @@ public final view RStruct of Struct extends RTypeDecl {
 			{
 				// create dispatch method
 				if (m.isRuleMethod())
-					mmm = new RuleMethod(m.name.name, m.flags | ACC_SYNTHETIC);
+					mmm = new RuleMethod(m.id.uname, m.flags | ACC_SYNTHETIC);
 				else
-					mmm = new Method(m.name.name, m.type.ret(), m.flags | ACC_SYNTHETIC);
+					mmm = new Method(m.id.uname, m.type.ret(), m.flags | ACC_SYNTHETIC);
 				mmm.setStatic(m.isStatic());
-				mmm.name.aliases = m.name.aliases;
+				mmm.id.aliases = m.id.aliases;
 				mmm.targs.copyFrom(m.targs);
 				foreach (FormPar fp; m.params)
-					mmm.params.add(new FormPar(fp.pos,fp.name.name,fp.stype.getType(),fp.kind,fp.flags));
+					mmm.params.add(new FormPar(fp.pos,fp.id.uname,fp.stype.getType(),fp.kind,fp.flags));
 				self.members.add(mmm);
 			}
 			CallType type1 = mmm.type;
@@ -867,7 +867,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				CallType type2 = mj.type;
 				CallType dtype2 = mj.dtype;
 				CallType etype2 = mj.etype;
-				if( mj.name.name != m.name.name || etype2.arity != etype1.arity )
+				if( mj.id.uname != m.id.uname || etype2.arity != etype1.arity )
 					continue;
 				if (etype1.isMultimethodSuper(etype2)) {
 					trace(Kiev.debugMultiMethod,"added dispatchable method "+mj);
@@ -1195,7 +1195,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					if( m.isStatic() ) continue;
 					// Now, non-static methods (templates)
 					// Make it static and add abstract method
-					Method abstr = new Method(m.name.name,m.type.ret(),m.getFlags() | ACC_PUBLIC );
+					Method abstr = new Method(m.id.uname,m.type.ret(),m.getFlags() | ACC_PUBLIC );
 					abstr.pos = m.pos;
 					abstr.setStatic(false);
 					abstr.setAbstract(true);
@@ -1239,7 +1239,7 @@ public final view RStruct of Struct extends RTypeDecl {
 								m.setNeedFieldInits(true);
 						}
 						else if( ce instanceof CallExpr ) {
-							KString nm = ((CallExpr)ce).func.name.name;
+							KString nm = ((CallExpr)ce).func.id.uname;
 							if( !(nm.equals(nameThis) || nm.equals(nameSuper) || nm.equals(nameInit)) )
 								gen_def_constr = true;
 							else {
@@ -1297,7 +1297,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				if (isForward() && package_clazz.isStructView()) {
 					Field fview = this.resolveField(nameImpl);
 					if (fview.parent == (Struct)this) {
-						foreach (FormPar fp; m.params; fp.name.equals(nameImpl)) {
+						foreach (FormPar fp; m.params; fp.id.equals(nameImpl)) {
 							stats.insert(
 								new ExprStat(pos,
 									new AssignExpr(pos,AssignOperator.Assign,
@@ -1379,11 +1379,11 @@ public final view RStruct of Struct extends RTypeDecl {
 				}
 				if( proxy_fields.length > 0 ) {
 					foreach(Method m; members) {
-						if( !m.name.equals(nameInit) ) continue;
+						if( !m.id.equals(nameInit) ) continue;
 						for(int j=0; j < proxy_fields.length; j++) {
 							int par = m.params.length;
 							KString nm = new KStringBuffer().append(nameVarProxy)
-								.append(proxy_fields[j].name).toKString();
+								.append(proxy_fields[j].id).toKString();
 							m.params.append(new FormPar(m.pos,nm,proxy_fields[j].type,FormPar.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
 							m.body.stats.insert(
 								new ExprStat(m.pos,

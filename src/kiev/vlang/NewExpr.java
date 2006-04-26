@@ -381,7 +381,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		sb.append("fun (");
 		for (int i=0; i < params.length; i++) {
 			if (i > 0) sb.append(",");
-			sb.append(params[i].vtype).append(' ').append(params[i].name);
+			sb.append(params[i].vtype).append(' ').append(params[i].id);
 		}
 		sb.append(")->").append(type_ret).append(" {...}");
 		return sb.toString();
@@ -391,7 +391,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		Var@ p;
 	{
 		p @= params,
-		p.name.equals(name),
+		p.id.equals(name),
 		node ?= p
 	}
 	

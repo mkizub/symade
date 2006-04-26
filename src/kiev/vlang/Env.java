@@ -122,7 +122,7 @@ public class Env extends Struct {
 		while (end > 0) {
 			KString nm = qname.substr(start, end);
 			Struct ss = null;
-			foreach (Struct s; pkg.sub_clazz; s.short_name.name == nm) {
+			foreach (Struct s; pkg.sub_clazz; s.id.equals(nm)) {
 				ss = s;
 				break;
 			}
@@ -133,7 +133,7 @@ public class Env extends Struct {
 			end = qname.indexOf('.', start);
 		}
 		KString nm = qname.substr(start);
-		foreach (Struct s; pkg.sub_clazz; s.short_name.name == nm)
+		foreach (Struct s; pkg.sub_clazz; s.id.equals(nm))
 			return s;
 		return null;
 	}
@@ -142,10 +142,12 @@ public class Env extends Struct {
 		return newStruct(sname,true,outer,acces,false);
 	}
 
-	public static Struct newStruct(KString sname, boolean direct, Struct outer, int acces, boolean cleanup) {
+	public static Struct newStruct(KString sname, boolean direct, Struct outer, int acces, boolean cleanup)
+	{
+		assert(outer != null);
 		Struct bcl = null;
 		if (direct && sname != null) {
-			foreach (Struct s; outer.sub_clazz; s.short_name.name == sname) {
+			foreach (Struct s; outer.sub_clazz; s.id.equals(sname)) {
 				bcl = s;
 				break;
 			}
@@ -168,35 +170,29 @@ public class Env extends Struct {
 			outer.addSubStruct((Struct)cl);
 			return cl;
 		}
-		ClazzName name;
+		Symbol name;
 		if (direct) {
-			name = ClazzName.fromOuterAndName(outer,sname,!outer.isPackage());
+			//name = ClazzName.fromOuterAndName(outer,sname,!outer.isPackage());
+			name = new Symbol(sname);
 		}
 		else if (sname != null) {
 			// Construct name of local class
-			KString bytecode_name =
-				KString.from(outer.bname
-					+"$"+outer.countAnonymouseInnerStructs()
-					+"$"+sname);
+			KString uniq_name = KString.from(outer.countAnonymouseInnerStructs()+"$"+sname);
+			KString bytecode_name = KString.from(outer.bname+"$"+uniq_name);
 			KString fixname = bytecode_name.replace('/','.');
-			name = new ClazzName(fixname,sname,bytecode_name);
+			//name = new ClazzName(fixname,sname,bytecode_name,uniq_name);
+			name = new Symbol(sname, uniq_name);
 		}
 		else {
 			// Local anonymouse class
-			KString bytecode_name =
-				KString.from(outer.bname
-					+"$"+outer.countAnonymouseInnerStructs());
-			name = ClazzName.fromBytecodeName(bytecode_name);
+			KString uniq_name = KString.from(String.valueOf(outer.countAnonymouseInnerStructs()));
+			KString bytecode_name =	KString.from(outer.bname+"$"+uniq_name);
+			KString fixname = bytecode_name.replace('/','.');
+			//name = new ClazzName(fixname,uniq_name,bytecode_name,uniq_name);
+			name = new Symbol(uniq_name, uniq_name);
 		}
 		Struct cl = new Struct(name,outer,acces);
-		if( outer == null ) {
-			if( name.name.equals(name.short_name) )
-				outer = root;
-			else
-				outer = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
-		}
-		if( outer != null )
-			outer.addSubStruct((Struct)cl);
+		outer.addSubStruct(cl);
 		return cl;
 	}
 
@@ -212,7 +208,7 @@ public class Env extends Struct {
 
 	public static Struct newPackage(KString sname, Struct outer) {
 		Struct cl = null;
-		foreach (Struct s; outer.sub_clazz; s.short_name.name == sname) {
+		foreach (Struct s; outer.sub_clazz; s.id.equals(sname)) {
 			cl = s;
 			break;
 		}

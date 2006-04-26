@@ -162,7 +162,7 @@ public final view RCondStat of CondStat extends RENode {
 
 @nodeview
 public final view RLabeledStat of LabeledStat extends RENode {
-	public Symbol			ident;
+	public Symbol			id;
 	public Label			lbl;
 	public ENode			stat;
 
@@ -205,12 +205,12 @@ public final view RBreakStat of BreakStat extends RENode {
 		} else {
 	label_found:
 			for(p=parent; !(p instanceof Method) ; p=p.parent ) {
-				if (p instanceof LabeledStat && p.ident.name.equals(ident.name))
+				if (p instanceof LabeledStat && p.id.uname.equals(ident.name))
 					throw new RuntimeException("Label "+ident+" does not refer to break target");
 				if (!p.isBreakTarget()) continue;
 				ASTNode pp = p;
 				for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-					if (p.ident.name.equals(ident.name)) {
+					if (p.id.equals(ident.name)) {
 						p = pp;
 						break label_found;
 					}

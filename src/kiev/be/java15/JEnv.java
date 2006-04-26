@@ -37,7 +37,7 @@ public final class JEnv {
 		while (end > 0) {
 			KString nm = bc_name.substr(start, end);
 			Struct ss = null;
-			foreach (Struct s; pkg.sub_clazz; s.short_name.name == nm) {
+			foreach (Struct s; pkg.sub_clazz; s.id.equals(nm)) {
 				ss = s;
 				break;
 			}
@@ -52,7 +52,7 @@ public final class JEnv {
 			KString nm = bc_name.substr(start, end);
 			assert (!Character.isDigit((char)nm.byteAt(0)));
 			Struct ss = null;
-			foreach (Struct s; pkg.sub_clazz; s.short_name.name == nm) {
+			foreach (Struct s; pkg.sub_clazz; s.id.equals(nm)) {
 				ss = s;
 				break;
 			}
@@ -64,7 +64,7 @@ public final class JEnv {
 		}
 		KString nm = bc_name.substr(start);
 		//assert (!Character.isDigit((char)nm.byteAt(0)));
-		foreach (Struct s; pkg.sub_clazz; s.short_name.name == nm)
+		foreach (Struct s; pkg.sub_clazz; s.id.equals(nm))
 			return s;
 		return Env.newStruct(nm, true, pkg, 0, cleanup);
 	}
@@ -99,7 +99,7 @@ public final class JEnv {
 				}
 				if( cl == null ) {
 					cl = makeStruct(name.bytecode_name,false);
-					new FileUnit(KString.from(name.short_name+".class"), pkg).members.add(cl);
+					new FileUnit(KString.from(name.src_name+".class"), pkg).members.add(cl);
 				}
 			}
 			cl = new Bytecoder(cl,clazz,null).readClazz();

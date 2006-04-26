@@ -115,7 +115,7 @@ public class Bytecoder implements JConstants {
 		f = new Field(f_name,ftype,f_flags);
 		if( acc != null ) f.acc = acc;
 		if( nm != null )
-			f.name.aliases = nm.aliases;
+			f.id.aliases = nm.aliases;
 		if( packer_size >= 0 ) {
 			MetaPacker mpr = new MetaPacker();
 			mpr.setSize(packer_size);
@@ -202,11 +202,11 @@ public class Bytecoder implements JConstants {
 			trace(Kiev.debugBytecodeRead,"read2 method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 		}
 		if( nm != null ) {
-			m.name.aliases = nm.aliases;
-			if( Kiev.verbose && m.name.equals(nameArrayOp)) {
+			m.id.aliases = nm.aliases;
+			if( Kiev.verbose && m.id.equals(nameArrayOp)) {
 				System.out.println("Attached operator [] to method "+m);
 			}
-			else if( Kiev.verbose && m.name.equals(nameNewOp)) {
+			else if( Kiev.verbose && m.id.equals(nameNewOp)) {
 				System.out.println("Attached operator new to method "+m);
 			}
 		}
@@ -274,9 +274,9 @@ public class Bytecoder implements JConstants {
 			m.setOperatorMethod(true);
 		}
 		if( m.isStatic()
-		 && !m.name.equals(nameClassInit)
+		 && !m.id.equals(nameClassInit)
 		 && cl.package_clazz.isInterface()
-		 && cl.short_name.name == nameIFaceImpl
+		 && cl.id.uname == nameIFaceImpl
 		)
 			m.setVirtualStatic(true);
 //		jclazz.addMember(new JMethod(m));
@@ -657,7 +657,7 @@ public class Bytecoder implements JConstants {
 	public kiev.bytecode.Field writeField(Field f) {
 		kiev.bytecode.Field bcf = new kiev.bytecode.Field();
 		bcf.flags = f.getJavaFlags();
-		bcf.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(f.name.name).pos];
+		bcf.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(f.id.uname).pos];
 		JType tp = f.type.getJType();
 		bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
@@ -673,7 +673,7 @@ public class Bytecoder implements JConstants {
 		Struct jcl = cl;
 		kiev.bytecode.Method bcm = new kiev.bytecode.Method();
 		bcm.flags = m.getJavaFlags();
-		bcm.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.name.name).pos];
+		bcm.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.id.uname).pos];
 		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.etype.getJType().java_signature).pos];
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes

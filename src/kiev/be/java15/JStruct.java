@@ -25,7 +25,7 @@ import syntax kiev.Syntax;
 public final view JStruct of Struct extends JTypeDecl {
 
 	public:ro	Access				acc;
-	public:ro	Symbol				short_name;
+	public:ro	Symbol				id;
 	public:ro	KString				qname;
 	public:ro	KString				bname;
 	public:ro	CompaundType		ctype;
@@ -108,7 +108,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	private static JField resolveField(@forward JStruct self, KString name, JStruct where, boolean fatal) {
 		self.checkResolved();
 		foreach(JField f; members) {
-			if (f.name.equals(name))
+			if (f.id.equals(name))
 				return f;
 		}
 		if( jsuper_type != null )
@@ -129,14 +129,14 @@ public final view JStruct of Struct extends JTypeDecl {
 	private static JMethod resolveMethod(@forward JStruct self, KString name, KString sign, JStruct where, boolean fatal) {
 		self.checkResolved();
 		foreach (JMethod m; members) {
-			if( m.name.equals(name) && m.type.getJType().java_signature.equals(sign))
+			if( m.id.equals(name) && m.type.getJType().java_signature.equals(sign))
 				return m;
 		}
 		if( isInterface() ) {
 			JStruct defaults = self.iface_impl;
 			if( defaults != null ) {
 				foreach (JMethod m; defaults.members) {
-					if( m.name.equals(name) && m.type.getJType().java_signature.equals(sign))
+					if( m.id.equals(name) && m.type.getJType().java_signature.equals(sign))
 						return m;
 				}
 			}
@@ -213,7 +213,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		
 		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
 		foreach (JField f; members) {
-			constPool.addAsciiCP(f.name.name);
+			constPool.addAsciiCP(f.id.uname);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
 			if( f.isAccessedFromInner())
@@ -229,7 +229,7 @@ public final view JStruct of Struct extends JTypeDecl {
 				a.generate(constPool);
 		}
 		foreach (JMethod m; members) {
-			constPool.addAsciiCP(m.name.name);
+			constPool.addAsciiCP(m.id.uname);
 			constPool.addAsciiCP(m.type.getJType().java_signature);
 			if( m.etype != null )
 				constPool.addAsciiCP(m.etype.getJType().java_signature);
@@ -290,7 +290,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
 		String out_file;
 		if( Kiev.javaMode && output_dir == null )
-			out_file = this.short_name.toString();
+			out_file = this.id.toString();
 		else if( this.isPackage() )
 			out_file = (this.bname+"/package").replace('/',File.separatorChar);
 		else

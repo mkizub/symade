@@ -251,7 +251,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		Var@ var;
 	{
 		var @= decls,
-		var.name.equals(name),
+		var.id.equals(name),
 		node ?= var
 	;	var @= decls,
 		var.isForward(),
@@ -427,7 +427,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	{
 		{	node ?= var
 		;	node ?= iter
-		}, ((Var)node).name.equals(name)
+		}, ((Var)node).id.equals(name)
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo info, KString name, CallType mt)

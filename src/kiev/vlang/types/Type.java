@@ -459,7 +459,7 @@ public final class CompaundType extends Type {
 	{
 		clazz instanceof Struct,
 		node @= getStruct().members,
-		node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
+		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
 	}
 	private rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
 		TypeProvider@ sup;

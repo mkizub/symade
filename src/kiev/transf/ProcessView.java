@@ -57,7 +57,7 @@ public class ProcessView extends TransfProcessor implements Constants {
 		// add a cast from clazz.view_of to this view
 		boolean cast_found = false;
 		foreach (Method dn; clazz.view_of.getStruct().members) {
-			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
+			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
 				cast_found = true;
 				break;
 			}
@@ -75,7 +75,7 @@ public class ProcessView extends TransfProcessor implements Constants {
 		// add a cast from this view to the clazz
 		cast_found = false;
 		foreach (Method dn; clazz.members) {
-			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
+			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
 				cast_found = true;
 				break;
 			}
@@ -215,7 +215,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 			CallType ct = m.type;
 			Method vm;
 			try {
-				vm = clazz.view_of.getStruct().resolveMethod(m.name.name, ct.ret(), ct.params());
+				vm = clazz.view_of.getStruct().resolveMethod(m.id.uname, ct.ret(), ct.params());
 			} catch (CompilerException e) {
 				Kiev.reportError(m, e.getMessage());
 				m.setAbstract(true);
@@ -243,7 +243,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 				Method set_var = mv.set;
 				Block body = new Block(f.pos);
 				set_var.body = body;
-				Field view_fld = clazz.view_of.getType().getStruct().resolveField(f.name.name);
+				Field view_fld = clazz.view_of.getType().getStruct().resolveField(f.id.sname);
 				ENode val = new LVarExpr(f.pos,set_var.params[0]);
 				ENode ass_st = new ExprStat(f.pos,
 					new AssignExpr(f.pos,AssignOperator.Assign,
@@ -275,7 +275,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 						clazz.view_of.getType(),
 						new IFldExpr(f.pos,new ThisExpr(f.pos),fview)
 					),
-					clazz.view_of.getType().getStruct().resolveField(f.name.name)
+					clazz.view_of.getType().getStruct().resolveField(f.id.sname)
 				);
 				body.stats.add(new ReturnStat(f.pos,val));
 				if!(val.getType().isAutoCastableTo(f.getType()))
@@ -286,7 +286,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 		
 		// add a cast from clazz.view_of to this view
 		foreach (Method dn; clazz.view_of.getStruct().members) {
-			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
+			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
 				if (!dn.isAbstract() && dn.isSynthetic()) {
 					dn.body.stats[0] = new ReturnStat(0, new NewExpr(0, impl.ctype, new ENode[]{new ThisExpr()}));
 				}
@@ -296,7 +296,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 		// add a cast from this view to the clazz
 		boolean cast_found = false;
 		foreach (Method dn; impl.members) {
-			if (dn.name.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
+			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
 				if (dn.isSynthetic()) {
 					dn.setAbstract(false);
 					dn.body = new Block();

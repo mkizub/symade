@@ -128,7 +128,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 				else if( locatePackerField(packer,mp.getSize(),s) ) {
 					// Found
 					mp.packer = packer;
-					mp.setFld(packer.name.name);
+					mp.setFld(packer.id.uname);
 					MetaPacker mpr = packer.getMetaPacker();
 					mp.setOffset(mpr.getSize());
 					mpr.setSize(mpr.getSize() + mp.getSize());
@@ -141,7 +141,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 					p.setPackerField(true);
 					s.addField(p);
 					mp.packer = p;
-					mp.setFld(p.name.name);
+					mp.setFld(p.id.uname);
 					mp.setOffset(0);
 					mpr.setSize(mpr.getSize() + mp.getSize());
 				}

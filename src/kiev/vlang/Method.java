@@ -40,7 +40,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	@virtual typedef RView = RMethod;
 
 		 public Access				acc;
-	@att public Symbol				name;
+	@att public Symbol				id;
 		 CallTypeProvider			meta_type;
 	@att public NArr<TypeDef>		targs;
 	@att public TypeRef				type_ret;
@@ -196,7 +196,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 				assert(!this.isStatic());
 				assert(fp.isForward());
 				assert(fp.isFinal());
-				assert(fp.name.name == nameThisDollar);
+				assert(fp.id.uname == nameThisDollar);
 				assert(fp.type ≈ this.ctx_clazz.package_clazz.ctype);
 				dargs.append(this.ctx_clazz.package_clazz.ctype);
 				break;
@@ -205,11 +205,11 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 				assert(fp.isForward());
 				assert(fp.isFinal());
 				assert(fp.type ≡ Type.tpRule);
-				assert(fp.name.name == namePEnv);
+				assert(fp.id.uname == namePEnv);
 				dargs.append(Type.tpRule);
 				break;
 			case FormPar.PARAM_TYPEINFO:
-				assert(this instanceof Constructor || (this.isStatic() && this.name.equals(nameNewOp)));
+				assert(this instanceof Constructor || (this.isStatic() && this.id.equals(nameNewOp)));
 				assert(fp.isFinal());
 				assert(fp.stype == null || fp.stype.getType() ≈ fp.vtype.getType());
 				dargs.append(fp.type);
@@ -249,7 +249,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		public final void checkRebuildTypes();
 	
 		public				Access				acc;
-		public				Symbol				name;
+		public				Symbol				id;
 		public				CallTypeProvider	meta_type;
 		public:ro			NArr<TypeDef>		targs;
 		public				TypeRef				type_ret;
@@ -329,20 +329,19 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	public Method() {}
 
 	public Method(KString name, Type ret) {
-		this(name,new TypeRef(ret));
+		this(new Symbol(name),new TypeRef(ret),0);
 	}
 
 	public Method(KString name, Type ret, int fl) {
 		this(name,new TypeRef(ret),fl);
-		invalid_types = true;
 	}
 	public Method(KString name, TypeRef type_ret, int fl) {
-		this(name, type_ret);
-		this.flags = fl;
+		this(new Symbol(name), type_ret, fl);
 	}
-	public Method(KString name, TypeRef type_ret) {
-		assert ((name != nameInit && name != nameClassInit) || this instanceof Constructor);
-		this.name = new Symbol(name);
+	public Method(Symbol id, TypeRef type_ret, int fl) {
+		assert (!(id.equals(nameInit) || id.equals(nameClassInit)) || this instanceof Constructor);
+		this.flags = fl;
+		this.id = id;
 		this.type_ret = type_ret;
 		this.dtype_ret = type_ret.ncopy();
 		this.meta = new MetaSet();
@@ -383,7 +382,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 
 	public String toString() {
-		StringBuffer sb = new StringBuffer(name+"(");
+		StringBuffer sb = new StringBuffer(id+"(");
 		int n = params.length;
 		boolean comma = false;
 		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_NORMAL) {
@@ -430,10 +429,10 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		return sb.toString();
 	}
 
-	public Symbol getName() { return name; }
+	public Symbol getName() { return id; }
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append(name);
+		return dmp.append(id);
 	}
 
 	public void makeArgs(NArr<ENode> args, Type t) {
@@ -467,7 +466,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 
 	public boolean equalsByCast(KString name, CallType mt, Type tp, ResInfo info) {
-		if (!this.name.equals(name)) return false;
+		if (!this.id.equals(name)) return false;
 		int type_len = this.type.arity;
 		int args_len = mt.arity;
 		if( type_len != args_len ) {
@@ -576,10 +575,10 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	// TODO
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
-		if( !name.equals(nameInit) )
-			dmp.space().append(type.ret()).forsed_space().append(name);
+		if( !id.equals(nameInit) )
+			dmp.space().append(type.ret()).forsed_space().append(id);
 		else
-			dmp.space().append(this.ctx_clazz.short_name);
+			dmp.space().append(this.ctx_clazz.id);
 		dmp.append('(');
 		for(int i=0; i < params.length; i++) {
 			params[i].toJavaDecl(dmp,params[i].dtype);
@@ -605,16 +604,16 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		path.space_prev.pslot.name == "type_ref" ||
 		path.space_prev.pslot.name == "dtype_ref",$cut,
 		node @= targs,
-		((TypeDef)node).name.name == name
+		((TypeDef)node).id.equals(name)
 	;
 		var @= params,
-		var.name.equals(name),
+		var.id.equals(name),
 		node ?= var
 	;
-		node ?= retvar, ((Var)node).name.equals(name)
+		node ?= retvar, ((Var)node).id.equals(name)
 	;
 		node @= targs,
-		((TypeDef)node).name.name == name
+		((TypeDef)node).id.equals(name)
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
@@ -672,7 +671,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 			int i = 0;
 			foreach (TypeDef td; targs) {
 				td.setTypeUnerasable(true);
-				FormPar v = new FormPar(td.pos,KString.from(nameTypeInfo+"$"+td.name), Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
+				FormPar v = new FormPar(td.pos,KString.from(nameTypeInfo+"$"+td.id.uname), Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
 				params.add(v);
 			}
 		}
@@ -845,7 +844,7 @@ public class WBCCondition extends DNode {
 	@virtual typedef RView = RWBCCondition;
 
 	@att public WBCType				cond;
-	@att public Symbol				name;
+	@att public Symbol				id;
 	@att public ENode				body;
 	@ref public Method				definer;
 	@att public CodeAttr			code_attr;
@@ -853,7 +852,7 @@ public class WBCCondition extends DNode {
 	@nodeview
 	public static final view VWBCCondition of WBCCondition extends VDNode {
 		public WBCType				cond;
-		public Symbol				name;
+		public Symbol				id;
 		public ENode				body;
 		public Method				definer;
 		public CodeAttr				code_attr;
@@ -864,7 +863,7 @@ public class WBCCondition extends DNode {
 	public WBCCondition(int pos, WBCType cond, KString name, ENode body) {
 		this.pos = pos;
 		if (name != null)
-			this.name = new Symbol(name);
+			this.id = new Symbol(name);
 		this.cond = cond;
 		this.body = body;
 	}

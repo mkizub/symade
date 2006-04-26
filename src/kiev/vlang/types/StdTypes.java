@@ -112,13 +112,10 @@ public interface StdTypes {
 		tpNull		= new CoreType(Constants.nameNull,    flReference);
 //		tpRule		= new CoreType(Constants.nameRule,    flReference);
 
-		Struct tpRuleClazz = new Struct(new ClazzName(
-							KString.from("rule"),
-							KString.from("rule"),
-							KString.from("R")),Env.root,ACC_PUBLIC);
-		tpRule					= tpRuleClazz.ctype;
+		Struct tpRuleClazz = new Struct(new Symbol(KString.from("rule")),Env.root,ACC_PUBLIC);
+		tpRule				= tpRuleClazz.ctype;
 		tpRuleClazz.setResolved(true);
-		tpRule.flags			= flResolved | flReference;
+		tpRule.flags		= flResolved | flReference;
 
 		Struct java_lang = Env.newPackage(KString.from("java.lang"));
 		Struct java_lang_annotation = Env.newPackage(KString.from("java.lang.annotation"));
@@ -242,20 +239,20 @@ public interface StdTypes {
 
 
 		TypeDef tdCallRetArg = new TypeConstr(KString.from("_ret_"), tpAny);
-		tpCallRetArg = new ArgType(tdCallRetArg.name.name,tdCallRetArg);
+		tpCallRetArg = new ArgType(tdCallRetArg.id.uname,tdCallRetArg);
 		tpCallRetArg.flags |= flHidden;
 		
 		tpCallParamArgs = new ArgType[128];
 		for (int i=0; i < tpCallParamArgs.length; i++) {
 			TypeDef tdCallParamArg = new TypeConstr(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
-			tpCallParamArgs[i] = new ArgType(tdCallParamArg.name.name,tdCallParamArg);
+			tpCallParamArgs[i] = new ArgType(tdCallParamArg.id.uname,tdCallParamArg);
 			tpCallParamArgs[i].flags |= flHidden;
 		}
 		
 		tpUnattachedArgs = new ArgType[128] ;
 		for (int i=0; i < tpUnattachedArgs.length; i++) {
 			TypeDef tdUnattachedArg = new TypeConstr(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
-			tpUnattachedArgs[i] = new ArgType(tdUnattachedArg.name.name,tdUnattachedArg);
+			tpUnattachedArgs[i] = new ArgType(tdUnattachedArg.id.uname,tdUnattachedArg);
 			//tpUnattachedArgs[i].flags |= flHidden;
 		}
 	}

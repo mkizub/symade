@@ -53,7 +53,7 @@ public class ASTCallExpression extends ENode {
 				CallType mt = new CallType(ta,Type.tpVoid);
 				ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 				try {
-					if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.name.name,mt) )
+					if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.id.uname,mt) )
 						throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
@@ -69,7 +69,7 @@ public class ASTCallExpression extends ENode {
 				CallType mt = new CallType(ta,Type.tpVoid);
 				ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 				try {
-					if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.name.name,mt) )
+					if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.id.uname,mt) )
 						throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
@@ -145,7 +145,7 @@ public class ASTCallExpression extends ENode {
 				ta[i] = args[i].getType();
 			CallType mt = new CallType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.name.name,mt) )
+			if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.id.uname,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				Type st = ctx_clazz.super_type;
@@ -163,7 +163,7 @@ public class ASTCallExpression extends ENode {
 				ta[i] = args[i].getType();
 			CallType mt = new CallType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.name.name,mt) )
+			if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.id.uname,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				Type st = ctx_clazz.super_type;

@@ -12,30 +12,33 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-@node
-public class ClazzName extends Symbol implements Constants {
+public class ClazzName implements Constants {
 
 	/** Unqualified name of class/package/interface
 		for java bytecode example - Object or tMethod
 	 */
-	public KString			short_name;
+	public KString			src_name;
 
 	/** Full-qualified name of class/package/interface
 		for java bytecode example - java/lang/Object or kiev/Type$tMethod
 	 */
 	public KString			bytecode_name;
 
-	public static ClazzName		Empty = new ClazzName(KString.Empty,KString.Empty,KString.Empty);
+	public KString			name; // source code name, may be null for anonymouse symbols
+	public KString			unq_name; // unique name in scope, never null, usually equals to name
+
+	public static ClazzName		Empty = new ClazzName(KString.Empty,KString.Empty,KString.Empty,KString.Empty);
 
 	public String toString() {
 		return name.toString();
 	}
 
 	public ClazzName() {}
-	public ClazzName(KString name, KString short_name, KString bytecode_name) {
-		super(name);
-		this.short_name = short_name;
+	public ClazzName(KString qualified_name, KString src_name, KString bytecode_name, KString uniq_name) {
+		this.name = qualified_name;
+		this.src_name = src_name;
 		this.bytecode_name = bytecode_name;
+		this.unq_name = uniq_name;
 	}
 
 	public KString package_name() {
@@ -76,7 +79,7 @@ public class ClazzName extends Symbol implements Constants {
 			short_name = name.substr(i+1);
 		else
 			short_name = name;
-		return new ClazzName(name,short_name,bytecode_name);
+		return new ClazzName(name,short_name,bytecode_name,short_name);
 	}
 
 	public static ClazzName fromOuterAndName(Struct outer, KString short_name, boolean isInn) {
@@ -98,7 +101,7 @@ public class ClazzName extends Symbol implements Constants {
 			bytecode_name = KString.from(outer.bname+delim+short_name);
 			name = KString.from(outer.qname+"."+short_name);
 		}
-		return new ClazzName(name,short_name,bytecode_name);
+		return new ClazzName(name,short_name,bytecode_name,short_name);
 	}
 
 	public int hashCode() { return name.hashCode(); }
@@ -131,36 +134,36 @@ public class Symbol extends ASTNode {
 	@virtual typedef This  = Symbol;
 	@virtual typedef VView = VSymbol;
 
-	public KString		name; // source code name, may be null for anonymouse symbols
-	public KString		unq_name; // unique name in scope, never null, usually equals to name
+	public KString		sname; // source code name, may be null for anonymouse symbols
+	public KString		uname; // unique name in scope, never null, usually equals to name
 	public KString[]	aliases;
 
 	@nodeview
 	public static view VSymbol of Symbol extends NodeView {
-		public:ro KString	name;
-		public:ro KString	unq_name;
+		public:ro KString	sname;
+		public:ro KString	uname;
 		public:ro KString[]	aliases;
 	}
 
 	public Symbol() {}
-	public Symbol(int pos, KString name) {
+	public Symbol(int pos, KString sname) {
 		this.pos = pos;
-		this.name = name;
-		this.unq_name = name;
+		this.sname = sname;
+		this.uname = sname;
 	}
 	
-	public Symbol(KString name) {
-		this.name = name;
-		this.unq_name = name;
+	public Symbol(KString sname) {
+		this.sname = sname;
+		this.uname = sname;
 	}
 	
-	public Symbol(KString name, KString unq_name) {
-		this.name = name;
-		this.unq_name = unq_name;
+	public Symbol(KString sname, KString uname) {
+		this.sname = sname;
+		this.uname = uname;
 	}
 	
 	public void addAlias(KString al) {
-		if (al == null || al == name || al == unq_name)
+		if (al == null || al == sname || al == uname)
 			return;
 		// Check we do not have this alias already
 		if (aliases == null) {
@@ -175,9 +178,10 @@ public class Symbol extends ASTNode {
 	public void set(Token t) {
         pos = t.getPos();
 		if (t.image.startsWith("#id\""))
-			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+			this.sname = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
 		else
-			this.name = KString.from(t.image);
+			this.sname = KString.from(t.image);
+		this.uname = this.sname;
 	}
 	
 	public boolean equals(Object:Object nm) {
@@ -185,8 +189,8 @@ public class Symbol extends ASTNode {
 	}
 
 	public boolean equals(Symbol:Object nm) {
-		if (this.equals(nm.name)) return true;
-		if (this.equals(nm.unq_name)) return true;
+		if (this.equals(nm.sname)) return true;
+		if (this.equals(nm.uname)) return true;
 		if (nm.aliases != null) {
 			foreach(KString n; nm.aliases; this.equals(n))
 				return true;
@@ -195,8 +199,8 @@ public class Symbol extends ASTNode {
 	}
 
 	public boolean equals(KString:Object nm) {
-		if (name == nm) return true;
-		if (unq_name == nm) return true;
+		if (sname == nm) return true;
+		if (uname == nm) return true;
 		if (aliases != null) {
 			foreach(KString n; aliases; n == nm)
 				return true;
@@ -205,6 +209,6 @@ public class Symbol extends ASTNode {
 	}
 
 	public String toString() {
-		return (name != null) ? name.toString() : unq_name.toString();
+		return (sname != null) ? sname.toString() : uname.toString();
 	}
 }
