@@ -37,7 +37,7 @@ public final view RCallExpr of CallExpr extends RENode {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
+		//if( isResolved() ) return;
 		if (func.isStatic() && !(obj instanceof TypeRef))
 			this.obj = new TypeRef(obj.getType());
 		obj.resolve(null);
