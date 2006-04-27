@@ -69,7 +69,7 @@ public final class ProjectFile extends ASTNode {
 public class Env extends Struct {
 
 	/** Hashtable of all defined and loaded classes */
-	private static Hash<KString>				classHashOfFails	= new Hash<KString>();
+	public static Hash<KString>				classHashOfFails	= new Hash<KString>();
 
 	/** Hashtable for project file (class name + file name) */
 	public static Hashtable<KString,ProjectFile>	projectHash = new Hashtable<KString,ProjectFile>();
@@ -172,7 +172,6 @@ public class Env extends Struct {
 		}
 		Symbol name;
 		if (direct) {
-			//name = ClazzName.fromOuterAndName(outer,sname,!outer.isPackage());
 			name = new Symbol(sname);
 		}
 		else if (sname != null) {
@@ -180,7 +179,6 @@ public class Env extends Struct {
 			KString uniq_name = KString.from(outer.countAnonymouseInnerStructs()+"$"+sname);
 			KString bytecode_name = KString.from(outer.bname+"$"+uniq_name);
 			KString fixname = bytecode_name.replace('/','.');
-			//name = new ClazzName(fixname,sname,bytecode_name,uniq_name);
 			name = new Symbol(sname, uniq_name);
 		}
 		else {
@@ -188,7 +186,6 @@ public class Env extends Struct {
 			KString uniq_name = KString.from(String.valueOf(outer.countAnonymouseInnerStructs()));
 			KString bytecode_name =	KString.from(outer.bname+"$"+uniq_name);
 			KString fixname = bytecode_name.replace('/','.');
-			//name = new ClazzName(fixname,uniq_name,bytecode_name,uniq_name);
 			name = new Symbol(uniq_name, uniq_name);
 		}
 		Struct cl = new Struct(name,outer,acces);
@@ -340,56 +337,37 @@ public class Env extends Struct {
 		}
 	}
 
-	public static boolean existsStruct(KString name) throws RuntimeException {
-		if( name.equals(KString.Empty) ) return true;
+	public static boolean existsStruct(KString qname) throws RuntimeException {
+		if (qname == KString.Empty) return true;
 		// Check class is already loaded
-		if( classHashOfFails.get(name) != null ) return false;
-		Struct cl = resolveStruct(name);
+		if (classHashOfFails.get(qname) != null) return false;
+		Struct cl = resolveStruct(qname);
 		if (cl != null)
 			return true;
 		// Check if not loaded
-		ClazzName clname = ClazzName.fromToplevelName(name);
-		return jenv.existsClazz(clname);
+		return jenv.existsClazz(qname);
 	}
 
-	public static Struct getStruct(KString name) throws RuntimeException {
-		if( name.equals(KString.Empty) ) return Env.root;
+	public static Struct loadStruct(KString qname) throws RuntimeException {
+		if (qname == KString.Empty) return Env.root;
 		// Check class is already loaded
-		if( classHashOfFails.get(name) != null ) return null;
-		Struct cl = resolveStruct(name);
+		if (classHashOfFails.get(qname) != null) return null;
+		Struct cl = resolveStruct(qname);
 		// Load if not loaded or not resolved
-		if( cl == null ) {
-			ClazzName clname = ClazzName.fromToplevelName(name);
-			cl = jenv.loadClazz(clname);
-		}
-		else if( !cl.isResolved() && !cl.isAnonymouse() ) {
-			ClazzName clname = ClazzName.fromBytecodeName(cl.bname);
-			cl = jenv.loadClazz(clname);
-		}
-		if( cl == null ) {
-			classHashOfFails.put(name);
-//			throw new RuntimeException("Class "+name+" not found");
-		}
+		if (cl == null)
+			cl = jenv.loadClazz(qname);
+		else if (!cl.isResolved() && !cl.isAnonymouse())
+			cl = jenv.loadClazz(cl);
+		if (cl == null)
+			classHashOfFails.put(qname);
 		return (Struct)cl;
 	}
 
-	public static Struct getStruct(ClazzName name) throws RuntimeException {
-		if( name.name.equals(KString.Empty) ) return Env.root;
-		// Check class is already loaded
-		if( classHashOfFails.get(name.name) != null ) return null;
-		Struct cl = resolveStruct(name.name);
+	public static Struct loadStruct(Struct cl) throws RuntimeException {
+		if (cl == Env.root) return Env.root;
 		// Load if not loaded or not resolved
-		if( cl == null ) {
-			cl = jenv.loadClazz(name);
-		}
-		else if( !cl.isResolved() && !cl.isAnonymouse() ) {
-			cl = jenv.loadClazz(name);
-		}
-		if( cl == null ) {
-//			cl = loadClazz(name);
-			classHashOfFails.put(name.name);
-//			throw new RuntimeException("Class "+name+" not found");
-		}
+		if (!cl.isResolved() && !cl.isAnonymouse())
+			jenv.loadClazz(cl);
 		return cl;
 	}
 

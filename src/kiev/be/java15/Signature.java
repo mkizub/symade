@@ -11,7 +11,7 @@ import kiev.vlang.types.*;
  *
  */
 
-public class Signature {
+final class Signature {
 
 	KString		sig;
 

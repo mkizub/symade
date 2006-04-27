@@ -30,6 +30,21 @@ public final class JEnv {
 		stdClassLoader = new kiev.bytecode.StandardClassLoader(path);
 	}
 
+	Struct loadStruct(ClazzName name) throws RuntimeException {
+		if (name.name == KString.Empty) return Env.root;
+		// Check class is already loaded
+		if (Env.classHashOfFails.get(name.name) != null ) return null;
+		Struct cl = Env.resolveStruct(name.name);
+		// Load if not loaded or not resolved
+		if( cl == null )
+			cl = loadClazz(name);
+		else if( !cl.isResolved() && !cl.isAnonymouse() )
+			cl = loadClazz(name);
+		if( cl == null )
+			Env.classHashOfFails.put(name.name);
+		return cl;
+	}
+
 	public Struct makeStruct(KString bc_name, boolean cleanup) {
 		Struct pkg = Env.root;
 		int start = 0;
@@ -69,8 +84,18 @@ public final class JEnv {
 		return Env.newStruct(nm, true, pkg, 0, cleanup);
 	}
 
-	public boolean existsClazz(ClazzName name) {
-		return stdClassLoader.existsClazz(name.bytecode_name.toString());
+	public boolean existsClazz(KString qname) {
+		return stdClassLoader.existsClazz(ClazzName.fromToplevelName(qname).bytecode_name.toString());
+	}
+
+	/** Actually load class from specified file and dir */
+	public Struct loadClazz(KString qname) throws RuntimeException {
+		return loadClazz(ClazzName.fromToplevelName(qname),false);
+	}
+
+	/** Actually load class from specified file and dir */
+	public Struct loadClazz(Struct cl) throws RuntimeException {
+		return loadClazz(ClazzName.fromBytecodeName(cl.bname),false);
 	}
 
 	/** Actually load class from specified file and dir */
@@ -87,14 +112,14 @@ public final class JEnv {
 			Struct cl = Env.resolveStruct(name.name);
 			if( cl == null || !cl.isResolved() || cl.package_clazz==null ) {
 				// Ensure the parent package/outer class is loaded
-				Struct pkg = Env.getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
+				Struct pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 				if( pkg == null ) {
-					pkg = Env.getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
+					pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 					if( pkg == null )
 						pkg = Env.newPackage(name.package_name());
 				}
 				if( !pkg.isResolved() ) {
-					pkg = Env.getStruct(ClazzName.fromBytecodeName(pkg.bname));
+					pkg = loadStruct(ClazzName.fromBytecodeName(pkg.bname));
 					//pkg = loadClazz(pkg.name);
 				}
 				if( cl == null ) {

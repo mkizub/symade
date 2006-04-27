@@ -60,7 +60,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	
 	public void pass3(FileUnit:ASTNode fu) {
 		if (tpNArr == null)
-			tpNArr = Env.getStruct(nameNArr).ctype;
+			tpNArr = Env.loadStruct(nameNArr).ctype;
 		foreach (Struct n; fu.members)
 			pass3(n);
 	}
@@ -158,13 +158,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	
 	private void autoGenerateMembers(Struct:ASTNode s) {
 		if (tpNArr == null)
-			tpNArr = Env.getStruct(nameNArr).ctype;
+			tpNArr = Env.loadStruct(nameNArr).ctype;
 		if (tpNArr == null) {
 			Kiev.reportError(s,"Cannot find class "+nameNArr);
 			return;
 		}
 		if (tpAttrSlot == null)
-			tpAttrSlot = Env.getStruct(nameAttrSlot).ctype;
+			tpAttrSlot = Env.loadStruct(nameAttrSlot).ctype;
 		if (tpAttrSlot == null) {
 			Kiev.reportError(s,"Cannot find class "+nameAttrSlot);
 			return;

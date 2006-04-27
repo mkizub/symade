@@ -199,7 +199,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 	
 	private static void addMethodsForVirtualField(Struct s, Field f) {
 		if (tpNode == null)
-			tpNode = Env.getStruct(nameNode).ctype;
+			tpNode = Env.loadStruct(nameNode).ctype;
 		if (tpNode == null) {
 			Kiev.reportError("Cannot find class "+nameNode);
 			return;

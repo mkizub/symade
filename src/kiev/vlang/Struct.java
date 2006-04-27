@@ -634,13 +634,13 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public final boolean checkResolved() {
 		if( !isResolved() ) {
-			if( Env.getStruct(ClazzName.fromBytecodeName(this.bname)) == null ) {
+			if (!Env.loadStruct(this).isResolved()) {
 				if (isPackage())
 					setResolved(true);
 				else
 					throw new RuntimeException("Class "+this+" not found");
 			}
-			if( !isResolved() )
+			if (!isResolved())
 				throw new RuntimeException("Class "+this+" unresolved");
 		}
 		return true;
@@ -727,24 +727,17 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public boolean tryLoad(ASTNode@ node, KString name) {
 		if( isPackage() ) {
 			Struct cl;
-			ClazzName clname = ClazzName.Empty;
-			if( this.equals(Env.root) ) {
-				clname = ClazzName.fromToplevelName(name);
-				cl = Env.getStruct(clname);
-			} else {
-				KStringBuffer ksb = new KStringBuffer(this.qname.len+name.len+1);
-				ksb.append(this.qname).append('.').append(name);
-				clname = ClazzName.fromToplevelName(ksb.toKString());
-				cl = Env.getStruct(clname);
-			}
+			KString qn = name;
+			if (this.equals(Env.root))
+				cl = Env.loadStruct(qn);
+			else
+				cl = Env.loadStruct(qn=KString.from(this.qname+"."+name));
 			if( cl != null ) {
 				trace(Kiev.debugResolve,"Struct "+cl+" found in "+this);
 				node = cl;
 				return true;
 			} else {
-				trace(Kiev.debugResolve,"Class "+clname.name
-					+" with bytecode name "+clname.bytecode_name+" not found in "
-					+this);
+				trace(Kiev.debugResolve,"Class "+qn+" not found in "+this);
 			}
 		}
 		node = null;

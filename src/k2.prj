@@ -9,6 +9,7 @@ kiev.be.java15.Attr kiev/be/java15/Attr kiev\be\java15\Attr.java
 kiev.be.java15.Bytecoder kiev/be/java15/Bytecoder kiev\be\java15\Bytecoder.java
 kiev.be.java15.CP kiev/be/java15/CP kiev\be\java15\ConstPool.java
 kiev.be.java15.ClazzCP kiev/be/java15/ClazzCP kiev\be\java15\ConstPool.java
+kiev.be.java15.ClazzName kiev/be/java15/ClazzName kiev\be\java15\ClazzName.java
 kiev.be.java15.Code kiev/be/java15/Code kiev\be\java15\Code.java
 kiev.be.java15.CodeAttr kiev/be/java15/CodeAttr kiev\be\java15\Attr.java
 kiev.be.java15.CodeCatchInfo kiev/be/java15/CodeCatchInfo kiev\be\java15\CodeSupport.java
@@ -476,7 +477,6 @@ kiev.vlang.CaseLabel kiev/vlang/CaseLabel kiev\vlang\ComplexStatement.java
 kiev.vlang.CastExpr kiev/vlang/CastExpr kiev\vlang\Expr.java
 kiev.vlang.CastOperator kiev/vlang/CastOperator kiev\vlang\Operator.java
 kiev.vlang.CatchInfo kiev/vlang/CatchInfo kiev\vlang\ComplexStatement.java
-kiev.vlang.ClazzName kiev/vlang/ClazzName kiev\vlang\ClazzName.java
 kiev.vlang.ClosureCallExpr kiev/vlang/ClosureCallExpr kiev\vlang\CallExpr.java
 kiev.vlang.CommaExpr kiev/vlang/CommaExpr kiev\vlang\Expr.java
 kiev.vlang.Comment kiev/vlang/Comment kiev\vlang\SNode.java
@@ -617,7 +617,7 @@ kiev.vlang.Shadow kiev/vlang/Shadow kiev\vlang\Expr.java
 kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
 kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
-kiev.vlang.Symbol kiev/vlang/Symbol kiev\vlang\ClazzName.java
+kiev.vlang.Symbol kiev/vlang/Symbol kiev\vlang\Symbol.java
 kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java
 kiev.vlang.SymbolRef kiev/vlang/SymbolRef kiev\vlang\AST.java
 kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java

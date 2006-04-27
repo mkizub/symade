@@ -48,11 +48,11 @@ public class Bytecoder implements JConstants {
 		trace(Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
 
 		// This class's superclass name (load if not loaded)
-		if( bcclazz.getSuperClazzName() != null ) {
+		if (bcclazz.getSuperClazzName() != null) {
 			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
 			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
 		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
-			if( Env.getStruct(ClazzName.fromBytecodeName(cl.super_type.clazz.bname)) == null )
+			if (!Env.loadStruct(cl.super_type.clazz).isResolved())
 				throw new RuntimeException("Class "+cl.super_type.clazz.qname+" not found");
 		}
 
@@ -61,9 +61,9 @@ public class Bytecoder implements JConstants {
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
 			CompaundType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
-			if( Env.getStruct(ClazzName.fromBytecodeName(interf.clazz.bname)) == null )
+			if (!Env.loadStruct(interf.clazz).isResolved())
 				throw new RuntimeException("Class "+interf+" not found");
-			if( !interf.clazz.isInterface() )
+			if (!interf.clazz.isInterface())
 				throw new RuntimeException("Class "+interf+" is not an interface");
 			cl.interfaces.append(new TypeRef(interf));
 		}
@@ -311,7 +311,7 @@ public class Bytecoder implements JConstants {
 					ClazzName cn;
 					if( ica.cp_outers[i] != null ) {
 						cn = ClazzName.fromBytecodeName(ica.getOuterName(i,clazz));
-						outer[i] = (JStruct)Env.getStruct(cn);
+						outer[i] = (JStruct)Env.jenv.loadStruct(cn);
 						if( outer[i] == null )
 							throw new RuntimeException("Class "+cn+" not found");
 					} else {
@@ -333,7 +333,7 @@ public class Bytecoder implements JConstants {
 						if (anon || cn.package_name() != cl.qname) {
 							inner[i] == null;
 						} else {
-							Struct inn = Env.getStruct(cn);
+							Struct inn = Env.jenv.loadStruct(cn);
 							inner[i] = (JStruct)inn;
 							if( inn == cl ) {
 								Kiev.reportWarning("Class "+cl+" is inner for itself");
