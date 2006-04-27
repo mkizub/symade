@@ -164,7 +164,7 @@ final class Signature {
 			getJavaSignature(sc);
 			if( sign != null )
 				return sign;
-			return KString.from("L"+Type.tpClosureClazz.bname+";");
+			return KString.from("L"+((JStruct)Type.tpClosureClazz).bname()+";");
 		}
 		if( sc.peekChar() == '(' ) {
 			ksb.append(sc.nextChar());

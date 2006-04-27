@@ -55,7 +55,7 @@ public final class MetaSet extends ASTNode {
 	public Meta get(KString name) {
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].type.getType().getStruct().qname == name)
+			if (metas[i].type.getType().getStruct().qname() == name)
 				return metas[i];
 		}
 		return null;
@@ -78,7 +78,7 @@ public final class MetaSet extends ASTNode {
 
 	public Meta unset(Meta meta) alias del alias operator (5,lfy,-=)
 	{
-		return unset(meta.type.getType().getStruct().qname);
+		return unset(meta.type.getType().getStruct().qname());
 	}
 	public Meta unset(KString name) alias del alias operator (5,lfy,-=)
 	{
@@ -86,7 +86,7 @@ public final class MetaSet extends ASTNode {
 			throw new NullPointerException();
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (((CompaundType)metas[i].type.getType()).clazz.qname == name) {
+			if (((CompaundType)metas[i].type.getType()).clazz.qname() == name) {
 				Meta m = metas[i];
 				metas.del(i);
 				return m;
@@ -184,7 +184,7 @@ public class Meta extends ENode {
 		if (mt == null || mt.getStruct() == null || !mt.getStruct().isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
-		KString name = ((CompaundType)mt).clazz.qname;
+		KString name = ((CompaundType)mt).clazz.qname();
 		Meta m = this;
 		if (m != this) {
 			this.replaceWithNode(m);

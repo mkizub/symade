@@ -36,8 +36,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 		 public Access						acc;
 	@att public Symbol						id; // short and unique names
-		 public KString						qname;	// qualified name
-		 public KString						bname;	// bytecode name
+		 public KString						q_name;	// qualified name
+		 public KString						b_name;	// bytecode name
 		 public CompaundTypeProvider		imeta_type;
 		 public WrapperTypeProvider			wmeta_type;
 		 public OuterTypeProvider			ometa_type;
@@ -66,6 +66,16 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		) {
 			this.callbackSuperTypeChanged(this);
 		}
+		if (attr.name == "id") {
+			resetNames();
+		}
+	}
+	
+	private void resetNames() {
+		q_name = null;
+		b_name = null;
+		foreach (Struct s; sub_clazz)
+			s.resetNames(); 
 	}
 	
 	public void callbackSuperTypeChanged(TypeDecl chg) {
@@ -390,8 +400,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public static final view VStruct of Struct extends VTypeDecl {
 		public				Access					acc;
 		public:ro			Symbol					id;
-		public:ro			KString					qname;
-		public:ro			KString					bname;
 		public:ro			CompaundTypeProvider	imeta_type;
 		public				WrapperTypeProvider		wmeta_type;
 		public				OuterTypeProvider		ometa_type;
@@ -414,6 +422,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 		public final Struct getStruct() { return (Struct)this; }
 
+		public final KString qname();
 		public boolean isClazz();
 		// a pizza case	
 		public final boolean isPizzaCase();
@@ -492,7 +501,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 
 		private static void resolveFinalFields(@forward VStruct self) {
-			trace(Kiev.debugResolve,"Resolving final fields for class "+qname);
+			trace(Kiev.debugResolve,"Resolving final fields for class "+qname());
 			// Resolve final values of class's fields
 			foreach (Field f; members) {
 				try {
@@ -501,7 +510,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					Kiev.reportError(f.init,e);
 				}
 				trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
-						(f.isStatic()?"Static":"Instance")+" fields: "+qname+"::"+f.id+" = "+f.init);
+						(f.isStatic()?"Static":"Instance")+" fields: "+qname()+"::"+f.id+" = "+f.init);
 			}
 			// Process inner classes and cases
 			if( !isPackage() ) {
@@ -535,33 +544,32 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@getter public Access			get$acc()			{ return this.acc; }
 	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
 
+	public final KString qname() {
+		if (q_name != null)
+			return q_name;
+		Struct pkg = package_clazz;
+		if (pkg == null || pkg == Env.root)
+			q_name = id.uname;
+		else
+			q_name = KString.from(pkg.qname()+"."+id.uname);
+		return q_name;
+	}
+
 	Struct() {
 		this.id = new Symbol(null,KString.Empty);
-		this.qname = KString.Empty;
-		this.bname = KString.Empty;
+		this.q_name = KString.Empty;
+		this.b_name = KString.Empty;
 	}
 	
-	public Struct(Symbol name, Struct outer, int flags) {
+	public Struct(Symbol id, Struct outer, int flags) {
 		this.flags = flags;
-		this.id = name;
-		if (outer == null || outer == Env.root) {
-			this.qname = name.uname;
-			this.bname = name.uname;
-		}
-		else if (outer.isPackage()) {
-			this.qname = KString.from(outer.qname+"."+name.uname);
-			this.bname = KString.from(outer.bname+"/"+name.uname);
-		}
-		else {
-			this.qname = KString.from(outer.qname+"."+name.uname);
-			this.bname = KString.from(outer.bname+"$"+name.uname);
-		}
+		this.id = id;
 		this.imeta_type = new CompaundTypeProvider(this);
 		this.ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
 		package_clazz = outer;
-		trace(Kiev.debugCreation,"New clazz created: "+qname +" as "+id.uname+", member of "+outer);
+		trace(Kiev.debugCreation,"New clazz created: "+qname() +" as "+id.uname+", member of "+outer);
 	}
 
 	public Struct getStruct() { return this; }
@@ -572,7 +580,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public Type getType() { return this.ctype; }
 
-	public String toString() { return qname.toString(); }
+	public String toString() { return qname().toString(); }
 
 	public Symbol getName() { return id; }
 	
@@ -611,7 +619,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if (isLocal())
 			return dmp.append(id.uname);
 		else
-			return dmp.append(qname);
+			return dmp.append(qname());
 	}
 	
 	public int countAnonymouseInnerStructs() {
@@ -731,7 +739,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			if (this.equals(Env.root))
 				cl = Env.loadStruct(qn);
 			else
-				cl = Env.loadStruct(qn=KString.from(this.qname+"."+name));
+				cl = Env.loadStruct(qn=KString.from(this.qname()+"."+name));
 			if( cl != null ) {
 				trace(Kiev.debugResolve,"Struct "+cl+" found in "+this);
 				node = cl;

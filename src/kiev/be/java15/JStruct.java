@@ -26,12 +26,12 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	public:ro	Access				acc;
 	public:ro	Symbol				id;
-	public:ro	KString				qname;
-	public:ro	KString				bname;
+	public		KString				b_name;
 	public:ro	CompaundType		ctype;
 	public:ro	JBaseType			jtype;
 	public:ro	JBaseType			jsuper_type;
 	public:ro	JType[]				interfaces;
+	public:ro	JStruct				package_clazz;
 	public:ro	JStruct				iface_impl;
 	public:ro	JArr<JStruct>		sub_clazz;
 	public		Attr[]				attrs;
@@ -39,6 +39,21 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
 	public final JBaseType		get$jsuper_type()	{ return ((Struct)this).super_type == null ? null : (JBaseType)((Struct)this).super_type.getJType(); }
+
+	public final KString qname();
+
+	public final KString bname() {
+		if (b_name != null)
+			return b_name;
+		JStruct pkg = package_clazz;
+		if (pkg == null || ((Struct)pkg) == Env.root)
+			b_name = id.uname;
+		else if (pkg.isPackage())
+			b_name = KString.from(pkg.bname()+"/"+id.uname);
+		else
+			b_name = KString.from(pkg.bname()+"$"+id.uname);
+		return b_name;
+	}
 
 	public final boolean isClazz();
 	public final boolean isPackage();
@@ -282,7 +297,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 		if( Kiev.safe && isBad() ) return;
 		this.toBytecode(constPool);
-		Env.setProjectInfo(qname, true);
+		Env.setProjectInfo(qname(), bname(), true);
 	}
 
 	public void toBytecode(ConstPool constPool) {
@@ -292,9 +307,9 @@ public final view JStruct of Struct extends JTypeDecl {
 		if( Kiev.javaMode && output_dir == null )
 			out_file = this.id.toString();
 		else if( this.isPackage() )
-			out_file = (this.bname+"/package").replace('/',File.separatorChar);
+			out_file = (this.bname()+"/package").replace('/',File.separatorChar);
 		else
-			out_file = this.bname.replace('/',File.separatorChar).toString();
+			out_file = this.bname().replace('/',File.separatorChar).toString();
 		try {
 			DataOutputStream out;
 			JFileUnit.make_output_dir(output_dir,out_file);

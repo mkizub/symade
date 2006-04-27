@@ -606,7 +606,7 @@ public final class SFldExpr extends LvalueExpr {
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = var.ctx_clazz;
-		return dmp.space().append(cl.qname).append('.').append(var.id).space();
+		return dmp.space().append(cl.qname()).append('.').append(var.id).space();
 	}
 
 }
@@ -659,7 +659,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 		}
 	}
 
-	public String toString() { return outer.qname.toString()+".this"; }
+	public String toString() { return outer.qname().toString()+".this"; }
 
 	public static Field outerOf(Struct clazz) {
 		foreach (Field f; clazz.members) {
@@ -671,7 +671,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 		return null;
 	}
 
-	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.qname).append(".this").space(); }
+	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.qname()).append(".this").space(); }
 }
 
 @node

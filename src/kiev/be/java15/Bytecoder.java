@@ -32,8 +32,8 @@ public class Bytecoder implements JConstants {
 	public Struct readClazz() {
 		trace(Kiev.debugBytecodeRead,"Loading class "+cl);
 
-		if( !bcclazz.getClazzName().startsWith(cl.bname) ) {
-			throw new RuntimeException("Expected to load class "+cl.bname
+		if( !bcclazz.getClazzName().startsWith(((JStruct)cl).bname()) ) {
+			throw new RuntimeException("Expected to load class "+((JStruct)cl).bname()
 				+" but class "+bcclazz.getClazzName()+" found");
 		}
 
@@ -53,7 +53,7 @@ public class Bytecoder implements JConstants {
 			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
 		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
 			if (!Env.loadStruct(cl.super_type.clazz).isResolved())
-				throw new RuntimeException("Class "+cl.super_type.clazz.qname+" not found");
+				throw new RuntimeException("Class "+cl.super_type.clazz.qname()+" not found");
 		}
 
 		// Read interfaces
@@ -330,7 +330,7 @@ public class Bytecoder implements JConstants {
 								break;
 							}
 						}
-						if (anon || cn.package_name() != cl.qname) {
+						if (anon || cn.package_name() != cl.qname()) {
 							inner[i] == null;
 						} else {
 							Struct inn = Env.jenv.loadStruct(cn);

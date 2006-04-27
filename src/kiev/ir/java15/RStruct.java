@@ -21,8 +21,6 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	public				Access					acc;
 	public:ro			Symbol					id;
-	public:ro			KString					qname;
-	public:ro			KString					bname;
 	public:ro			CompaundTypeProvider	imeta_type;
 	public				WrapperTypeProvider		wmeta_type;
 	public				OuterTypeProvider		ometa_type;
@@ -44,6 +42,8 @@ public final view RStruct of Struct extends RTypeDecl {
 	public TypeProvider[] getAllSuperTypes();
 
 	public final Struct getStruct() { return (Struct)this; }
+
+	public final KString qname();
 
 	public boolean isClazz();
 	// a pizza case	
@@ -1213,7 +1213,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		
 		// Generate super(...) constructor calls, if they are not
 		// specified as first statements of a constructor
-		if (qname != Type.tpObject.clazz.qname) {
+		if (qname() != Type.tpObject.clazz.qname()) {
 			foreach (Constructor m; members) {
 				if( m.isStatic() ) continue;
 

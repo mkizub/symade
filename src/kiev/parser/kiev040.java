@@ -202,7 +202,7 @@ public abstract class kiev040 implements kiev040Constants {
 		if (parent instanceof FileUnit) {
 			clazz.setLocal(false);
 			clazz.setStatic(true);
-			Env.setProjectInfo(clazz.qname, clazz.bname, Kiev.curFile);
+			Env.createProjectInfo(clazz.qname(), Kiev.curFile);
 		}
 		else if (parent instanceof Struct)
 			clazz.setLocal(parent.isLocal());

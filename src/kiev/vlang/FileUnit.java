@@ -71,7 +71,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	}
 	public FileUnit(KString name, Struct pkg) {
 		this.filename = name;
-		this.pkg = new TypeNameRef(pkg.qname);
+		this.pkg = new TypeNameRef(pkg.qname());
 		this.pkg.lnk = pkg.ctype;
 	}
 
@@ -235,7 +235,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		if( output_dir ==null ) output_dir = "classes";
 		Dumper dmp = new Dumper();
 		if( cl.package_clazz != null && cl.package_clazz != Env.root ) {
-			dmp.append("package ").append(cl.package_clazz.qname).append(';').newLine();
+			dmp.append("package ").append(cl.package_clazz.qname()).append(';').newLine();
 		}
 		foreach (SNode syn; members)
 			dmp.append(syn);
@@ -245,7 +245,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		try {
 			File f;
 			Struct jcl = cl;
-			String out_file = jcl.bname.replace('/',File.separatorChar).toString();
+			String out_file = jcl.qname().replace('.',File.separatorChar).toString();
 			make_output_dir(output_dir,out_file);
 			f = new File(output_dir,out_file+".java");
 			FileOutputStream out;

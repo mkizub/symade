@@ -116,7 +116,7 @@ public class CallExpr extends ENode {
 			else if( isSuperExpr() )
 				dmp.append("super.");
 			else if( func instanceof Method && func.isStatic() )
-				dmp.append(func.ctx_clazz.qname).append('.');
+				dmp.append(func.ctx_clazz.qname()).append('.');
 			dmp.append(func.getName());
 		}
 		dmp.append('(');

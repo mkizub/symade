@@ -128,7 +128,7 @@ public class DrawJavaType extends DrawTerm {
 		else if ("no-args".equals(stx.hint.text) || "call-accessor".equals(stx.hint.text)) {
 			Struct s = tr.getStruct();
 			if (s != null)
-				text = s.qname.toString();
+				text = s.qname().toString();
 			else
 				text = String.valueOf(tr);
 		}

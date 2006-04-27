@@ -95,7 +95,7 @@ public final class JEnv {
 
 	/** Actually load class from specified file and dir */
 	public Struct loadClazz(Struct cl) throws RuntimeException {
-		return loadClazz(ClazzName.fromBytecodeName(cl.bname),false);
+		return loadClazz(ClazzName.fromBytecodeName(((JStruct)cl).bname()),false);
 	}
 
 	/** Actually load class from specified file and dir */
@@ -119,7 +119,7 @@ public final class JEnv {
 						pkg = Env.newPackage(name.package_name());
 				}
 				if( !pkg.isResolved() ) {
-					pkg = loadStruct(ClazzName.fromBytecodeName(pkg.bname));
+					pkg = loadStruct(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
 					//pkg = loadClazz(pkg.name);
 				}
 				if( cl == null ) {

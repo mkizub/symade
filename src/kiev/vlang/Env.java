@@ -177,15 +177,11 @@ public class Env extends Struct {
 		else if (sname != null) {
 			// Construct name of local class
 			KString uniq_name = KString.from(outer.countAnonymouseInnerStructs()+"$"+sname);
-			KString bytecode_name = KString.from(outer.bname+"$"+uniq_name);
-			KString fixname = bytecode_name.replace('/','.');
 			name = new Symbol(sname, uniq_name);
 		}
 		else {
 			// Local anonymouse class
 			KString uniq_name = KString.from(String.valueOf(outer.countAnonymouseInnerStructs()));
-			KString bytecode_name =	KString.from(outer.bname+"$"+uniq_name);
-			KString fixname = bytecode_name.replace('/','.');
 			name = new Symbol(uniq_name, uniq_name);
 		}
 		Struct cl = new Struct(name,outer,acces);
@@ -280,10 +276,10 @@ public class Env extends Struct {
 		}
 	}
 
-	public static void setProjectInfo(KString qname, KString bname, KString f) {
+	public static void createProjectInfo(KString qname, KString f) {
 		ProjectFile pf = projectHash.get(qname);
 		if( pf == null )
-			projectHash.put(qname,new ProjectFile(qname,bname,f));
+			projectHash.put(qname,new ProjectFile(qname,null,f));
 		else {
 			pf.bad = true;
 			if( !pf.file.getName().equals(f.toString()) )
@@ -291,9 +287,13 @@ public class Env extends Struct {
 		}
 	}
 
-	public static void setProjectInfo(KString qname, boolean good) {
+	public static void setProjectInfo(KString qname, KString bname, boolean good) {
 		ProjectFile pf = projectHash.get(qname);
-		if( pf != null ) pf.bad = !good;
+		if (pf != null) {
+			if (bname != null)
+				pf.bname = bname;
+			pf.bad = !good;
+		}
 	}
 
 	public static void sortStrings(String[] a) {

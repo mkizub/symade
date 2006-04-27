@@ -90,17 +90,17 @@ class ClazzName implements Constants {
 		KString name;
 		if( outer.isPackage() ) {
 			assert(!isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
-			if (outer.qname != KString.Empty) {
-				bytecode_name = KString.from(outer.bname+delim+short_name);
-				name = KString.from(outer.qname+"."+short_name);
+			if (outer.qname() != KString.Empty) {
+				bytecode_name = KString.from(((JStruct)outer).bname()+delim+short_name);
+				name = KString.from(outer.qname()+"."+short_name);
 			} else {
 				bytecode_name = short_name;
 				name = short_name;
 			}
 		} else {
 			assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
-			bytecode_name = KString.from(outer.bname+delim+short_name);
-			name = KString.from(outer.qname+"."+short_name);
+			bytecode_name = KString.from(((JStruct)outer).bname()+delim+short_name);
+			name = KString.from(outer.qname()+"."+short_name);
 		}
 		return new ClazzName(name,short_name,bytecode_name,short_name);
 	}
