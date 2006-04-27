@@ -336,7 +336,7 @@ public class Compiler {
 						Kiev.gc_mem = (long)(1024*1024.D);
 					continue;
 				}
-				else if( args[a].equals("-s")) {
+				else if( args[a].equals("-src") ) {
 					Kiev.source_only = onoff;
 					args[a] = null;
 					continue;
@@ -347,7 +347,7 @@ public class Compiler {
 					continue;
 				}
 				else if( args[a].equals("-gui")) {
-					Kiev.useBackend = Kiev.Backend.GUI;
+					Kiev.run_gui = true;
 					args[a] = null;
 					continue;
 				}
@@ -642,29 +642,14 @@ public class Compiler {
 			///////////////////////////////////////////////////////////////////////
 			///////////////////////    Back-end    ////////////////////////////////
 			///////////////////////////////////////////////////////////////////////
-
-			Kiev.pass_no = TopLevelPass.passPreGenerate;
-			diff_time = curr_time = System.currentTimeMillis();
-			Kiev.runBackends(fun (BackendProcessor bep)->void { bep.preGenerate(); });
-			diff_time = System.currentTimeMillis() - curr_time;
-			if( Kiev.verbose ) Kiev.reportInfo("Class's members pre-generated",diff_time);
-			if( Kiev.errCount > 0 ) goto stop;
-			runGC();
-
-			Kiev.pass_no = TopLevelPass.passGenerate;
-			for(int i=0; i < Kiev.files.length; i++) {
-				final int errCount = Kiev.errCount;
-				final FileUnit fu = Kiev.files[i];
-				if (Kiev.errCount == errCount || Kiev.source_only)
-					Kiev.runBackends(fun (BackendProcessor bep)->void { bep.resolve(fu); });
-				if (Kiev.errCount == errCount || Kiev.source_only)
-					Kiev.runBackends(fun (BackendProcessor bep)->void { bep.rewriteNode(fu); });
-				if (Kiev.errCount == errCount || Kiev.source_only)
-					Kiev.runBackends(fun (BackendProcessor bep)->void { bep.generate(fu); });
-				fu.cleanup();
-				Kiev.files[i] = null;
-				runGC();
+			if (Kiev.run_gui && Kiev.files.length > 0) {
+				kiev.gui.Window wnd = new kiev.gui.Window();
+				wnd.setRoot(Kiev.files[0]);
+				for(;;) Thread.sleep(10*1000);
+			} else {
+				runBackEnd(Kiev.useBackend);
 			}
+
 		} catch( Throwable e) {
 			if( e.getMessage() != null && e.getMessage().equals("Compilation terminated") ) {
 				Env.dumpProjectFile();
@@ -683,6 +668,50 @@ stop:;
 		}
 		Kiev.errCount = 0;
 		Kiev.warnCount = 0;
+	}
+	
+	public static boolean runBackEnd(Kiev.Backend be) {
+		if (be != null)
+			Kiev.useBackend = be;
+		else
+			be = Kiev.useBackend;
+		if( Kiev.verbose ) Kiev.reportInfo("Running back-end "+be,0);
+		long curr_time = 0L, diff_time = 0L;
+		try {
+			Kiev.pass_no = TopLevelPass.passPreGenerate;
+			diff_time = curr_time = System.currentTimeMillis();
+			Kiev.runBackends(be, fun (BackendProcessor bep)->void { bep.preGenerate(); });
+			diff_time = System.currentTimeMillis() - curr_time;
+			if( Kiev.verbose ) Kiev.reportInfo("Class's members pre-generated",diff_time);
+			if( Kiev.errCount > 0 ) return false;
+			runGC();
+			diff_time = curr_time = System.currentTimeMillis();
+
+			Kiev.pass_no = TopLevelPass.passGenerate;
+			for(int i=0; i < Kiev.files.length; i++) {
+				final int errCount = Kiev.errCount;
+				final FileUnit fu = Kiev.files[i];
+				if (Kiev.errCount == errCount || Kiev.source_only)
+					Kiev.runBackends(be, fun (BackendProcessor bep)->void { bep.resolve(fu); });
+				if (Kiev.errCount == errCount || Kiev.source_only)
+					Kiev.runBackends(be, fun (BackendProcessor bep)->void { bep.rewriteNode(fu); });
+				if (Kiev.errCount == errCount || Kiev.source_only)
+					Kiev.runBackends(be, fun (BackendProcessor bep)->void { bep.generate(fu); });
+				fu.cleanup();
+				Kiev.files[i] = null;
+				runGC();
+			}
+		} catch( Throwable e) {
+			if( e.getMessage() != null && e.getMessage().equals("Compilation terminated") ) {
+				Env.dumpProjectFile();
+			}
+			Kiev.reportError(e);
+			return false;
+		}
+		boolean ret = (Kiev.errCount == 0);
+		diff_time = System.currentTimeMillis() - curr_time;
+		if( Kiev.verbose ) Kiev.reportInfo("Back-end "+be+" completed: "+(ret?"OK":"FAIL"),diff_time);
+		return ret;
 	}
 
 	public static void runGC() {
@@ -726,7 +755,7 @@ stop:;
  "Usage:  java kiev.Main [-g] [-debug x,y,z,..] [-prompt] [-i]\n"
 +"           [-pipe] [-server]\n"
 +"           [-gc N] [-d output_dir] [-verbose] [-classpath search_path]\n"
-+"           [-D=var] [-s] [-verify] file.java ...\n"
++"           [-D=var] [-src] [-verify] file.java ...\n"
 +"\n"
 +"  Each switch may be prepended by '-no' to change the default value.\n"
 +"      For example, -no-project defeats the project feature.\n"
@@ -773,7 +802,7 @@ stop:;
 +"\n"
 +" -java            Java source code input; Kiev-specific keywords\n"
 +"                  are treated as identifiers.\n"
-+" -s or -src       Generate Java source code instead of bytecode.\n"
++" -src             Dump Java source code instead of bytecode (debug only).\n"
 +" -verify          Generate verifiable code.\n"
 +" -safe            Do not generate class files with compiler errors.\n"
 +"\n"

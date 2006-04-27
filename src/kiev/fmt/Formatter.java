@@ -31,7 +31,7 @@ public class FormatInfoHint extends ASTNode {
 	public FormatInfoHint(String text) { this.text = text; }
 }
 
-protected abstract class AbstractFormatter implements Formatter {
+public abstract class AbstractFormatter implements Formatter {
 
 	private static final int counter;
 

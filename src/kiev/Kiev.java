@@ -366,6 +366,7 @@ public final class Kiev {
 
 	public static boolean errorPrompt		= false;
 
+	public static boolean run_gui			= false;
 	public static boolean source_only		= false;
 	public static boolean make_project		= false;
 	public static boolean makeall_project	= false;
@@ -532,8 +533,7 @@ public final class Kiev {
 	// Backends
 	static public enum Backend {
 		Java15					: "java15",
-		VSrc					: "vsrc",
-		GUI						: "gui"
+		VSrc					: "vsrc"
 	};
 	public static Backend useBackend = Backend.Java15;
 
@@ -641,11 +641,11 @@ public final class Kiev {
 		}
 	}
 	
-	public static boolean runBackends((BackendProcessor)->void step) {
+	public static boolean runBackends(Kiev.Backend be, (BackendProcessor)->void step) {
 		foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
 			if (!tp.isEnabled() )
 				continue;
-			BackendProcessor bep = tp.getBackend(Kiev.useBackend);
+			BackendProcessor bep = tp.getBackend(be);
 			if (bep != null)
 				try { step(bep); } catch (Exception e) { Kiev.reportError(e); }
 		}

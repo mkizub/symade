@@ -436,7 +436,6 @@ kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java
 kiev.stdlib.meta.unerasable kiev/stdlib/meta/unerasable kiev\stdlib\meta\unerasable.java
 kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\BackendProcessor.java
-kiev.transf.GuiBackend kiev/transf/GuiBackend kiev\transf\ImportKievSrc.java
 kiev.transf.ImportKievSrc kiev/transf/ImportKievSrc kiev\transf\ImportKievSrc.java
 kiev.transf.JavaBackend kiev/transf/JavaBackend kiev\transf\ImportKievSrc.java
 kiev.transf.JavaPackedFldBackend kiev/transf/JavaPackedFldBackend kiev\transf\ProcessPackedFld.java

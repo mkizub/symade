@@ -738,8 +738,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			return JavaBackend;
 		if (backend == Kiev.Backend.VSrc)
 			return VSrcBackend;
-		if (backend == Kiev.Backend.GUI)
-			return GuiBackend;
 		return null;
 	}
 	
@@ -867,20 +865,4 @@ class VSrcBackend extends BackendProcessor {
 		if( !dir.exists() || !dir.isDirectory() ) throw new RuntimeException("Can't create output dir "+dir);
 	}
 }
-
-@singleton
-class GuiBackend extends BackendProcessor {
-
-	private GuiBackend() {
-		super(Kiev.Backend.GUI);
-	}
-	
-	// generate back-end
-	public void generate(ASTNode node) {
-		kiev.gui.Window wnd = new kiev.gui.Window();
-		wnd.setRoot(node);
-		for(;;) Thread.sleep(10*1000);
-	}
-}
-
 

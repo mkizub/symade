@@ -406,9 +406,9 @@ public class JavaSyntax extends Syntax {
 					jflag(1,4,1,  "final"),
 					jflag(1,10,1, "abstract")
 					);
-			seTypeAssign = setl(lout_nl.ncopy(), typedef_prefix.ncopy(), kw("typedef"), ident("name"), oper("="), attr("type_ref"), sep(";"));
+			seTypeAssign = setl(lout_nl.ncopy(), typedef_prefix.ncopy(), kw("typedef"), ident("id"), oper("="), attr("type_ref"), sep(";"));
 			
-			seTypeConstrClassArg = setl(lout_empty.ncopy(), ident("name"),
+			seTypeConstrClassArg = setl(lout_empty.ncopy(), ident("id"),
 				opt("upper_bound",
 					new CalcOption() {
 						public boolean calc(ASTNode node) {
@@ -433,7 +433,7 @@ public class JavaSyntax extends Syntax {
 					null, lout_empty.ncopy()
 					)
 				);
-			seTypeConstr = setl(lout_nl.ncopy(), typedef_prefix.ncopy(), kw("typedef"), ident("name"), 
+			seTypeConstr = setl(lout_nl.ncopy(), typedef_prefix.ncopy(), kw("typedef"), ident("id"), 
 				lst("upper_bound", set(oper("\u2264"), node()), null, lout_empty.ncopy()),
 				lst("lower_bound", set(oper("\u2265"), node()), null, lout_empty.ncopy()),
 				sep(";")
@@ -520,7 +520,7 @@ public class JavaSyntax extends Syntax {
 						struct_prefix.ncopy(),
 						accs(),
 						kw("class"),
-						ident("short_name"),
+						ident("id"),
 						struct_args.ncopy(),
 						class_ext.ncopy(),
 						class_impl.ncopy()),
@@ -532,7 +532,7 @@ public class JavaSyntax extends Syntax {
 						struct_prefix.ncopy(),
 						accs(),
 						kw("interface"),
-						ident("short_name"),
+						ident("id"),
 						struct_args.ncopy(),
 						iface_ext),
 					seStructBody.ncopy()
@@ -543,7 +543,7 @@ public class JavaSyntax extends Syntax {
 						struct_prefix.ncopy(),
 						accs(),
 						kw("view"),
-						ident("short_name"),
+						ident("id"),
 						struct_args.ncopy(),
 						kw("of"),
 						ident("view_of"),
@@ -557,7 +557,7 @@ public class JavaSyntax extends Syntax {
 						struct_prefix.ncopy(),
 						accs(),
 						kw("@interface"),
-						ident("short_name")),
+						ident("id")),
 					seStructBody.ncopy()
 				);
 			// syntax
@@ -566,7 +566,7 @@ public class JavaSyntax extends Syntax {
 						struct_prefix.ncopy(),
 						accs(),
 						kw("syntax"),
-						ident("short_name")),
+						ident("id")),
 					seStructBody.ncopy()
 				);
 
@@ -576,7 +576,7 @@ public class JavaSyntax extends Syntax {
 					jflag(1,18,1, "@unerasable")
 					);
 			SyntaxList case_fields = lst("members",
-				set(attr("meta"), ident("ftype"), ident("name")),
+				set(attr("meta"), ident("ftype"), ident("id")),
 				sep(","),
 				lout_empty.ncopy()
 				);
@@ -587,7 +587,7 @@ public class JavaSyntax extends Syntax {
 					case_prefix,
 					accs(),
 					kw("case"),
-					ident("short_name"),
+					ident("id"),
 					struct_args.ncopy(),
 					opt("singleton",
 						new CalcOption() {
@@ -606,7 +606,7 @@ public class JavaSyntax extends Syntax {
 			// enum
 			SyntaxList enum_fields = lst("members",
 				set(
-					attr("name"),
+					attr("id"),
 					opt("alias",
 						new CalcOption() {
 							public boolean calc(ASTNode node) {
@@ -640,7 +640,7 @@ public class JavaSyntax extends Syntax {
 						struct_prefix.ncopy(),
 						accs(),
 						kw("enum"),
-						ident("short_name")),
+						ident("id")),
 					set(
 						sep("{", lout_struct_block_start.ncopy()),
 						par(plIndented, enum_fields),
@@ -701,16 +701,16 @@ public class JavaSyntax extends Syntax {
 					);
 			// field
 			seFieldDecl = setl(lout_field.ncopy(), field_prefix, accs(),
-				ident("ftype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
+				ident("ftype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
 				);
 			// vars
 			seVarDecl = set(opt("meta"), var_prefix.ncopy(),
-				ident("vtype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))),
+				ident("vtype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))),
 				sep(";"));
 			seVar = set(opt("meta"), var_prefix.ncopy(),
-				ident("vtype"), ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority)))
+				ident("vtype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority)))
 				);
-			seVarNoType = set(ident("name"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))));
+			seVarNoType = set(ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))));
 			// formal parameter
 			seFormPar = set(opt("meta"),
 				var_prefix.ncopy(),
@@ -726,7 +726,7 @@ public class JavaSyntax extends Syntax {
 					null,
 					lout_empty.ncopy()
 					),
-				ident("name")
+				ident("id")
 				);
 		}
 		{
@@ -771,7 +771,7 @@ public class JavaSyntax extends Syntax {
 			// constructor
 			seConstructor = setl(lout_method.ncopy(),
 				setl(lout_empty.ncopy(), attr("meta"), method_prefix.ncopy(), accs(),
-					ident("parent.short_name"),
+					ident("parent.id"),
 					set(sep("("),
 						method_params.ncopy(),
 						sep(")")
@@ -784,7 +784,7 @@ public class JavaSyntax extends Syntax {
 			seMethod = setl(lout_method.ncopy(),
 				setl(lout_empty.ncopy(), attr("meta"), method_prefix.ncopy(), accs(),
 					method_type_args.ncopy(),
-					ident("type_ret"), ident("name"),
+					ident("type_ret"), ident("id"),
 					set(sep("("),
 						method_params.ncopy(),
 						sep(")")
@@ -798,7 +798,7 @@ public class JavaSyntax extends Syntax {
 			seRuleMethod = setl(lout_method.ncopy(),
 				setl(lout_nl.ncopy(), attr("meta"), method_prefix.ncopy(), accs(),
 					method_type_args.ncopy(),
-					kw("rule"), ident("name"),
+					kw("rule"), ident("id"),
 					set(sep("("),
 						method_params.ncopy(),
 						sep(")")
@@ -832,7 +832,7 @@ public class JavaSyntax extends Syntax {
 			seWBCCondition = opt("body",
 				setl(lout_nl_nl.ncopy(),
 					alt_enum("cond", kw("error"), kw("require"), kw("ensure"), kw("invariant")),
-					opt("name", set(sep("["), ident("name"), sep("]"))),
+					opt("id", set(sep("["), ident("id"), sep("]"))),
 					attr("body")
 				));
 		}
@@ -890,7 +890,7 @@ public class JavaSyntax extends Syntax {
 		seReturnStat = set(kw("return"), opt("expr"), sep(";"));
 		seThrowStat = set(kw("throw"), attr("expr"), sep(";"));
 		seCondStat = set(attr("cond"), opt("message", set(sep(":"), attr("message"))), sep(";"));
-		seLabeledStat = set(ident("ident"), sep(":"), attr("stat"));
+		seLabeledStat = set(ident("id"), sep(":"), attr("stat"));
 		seBreakStat = set(kw("break"), opt("ident", ident("ident")), sep(";"));
 		seContinueStat = set(kw("continue"), opt("ident", ident("ident")), sep(";"));
 		seGotoStat = set(kw("goto"), opt("ident", ident("ident")), sep(";"));
@@ -1013,7 +1013,7 @@ public class JavaSyntax extends Syntax {
 		seRuleCallExpr = set(
 				expr("obj", Constants.opAccessPriority),
 				sep("."),
-				ident("func.name"),
+				ident("func.id"),
 				sep("("),
 				lst("args",node(),sep(","),lout_empty.ncopy()),
 				sep(")")
@@ -1049,7 +1049,7 @@ public class JavaSyntax extends Syntax {
 		seCallExpr = set(
 				expr("obj", new FormatInfoHint("call-accessor"), Constants.opAccessPriority),
 				sep("."),
-				ident("func.name"),
+				ident("func.id"),
 				sep("("),
 				lst("args",node(),sep(","),lout_empty.ncopy()),
 				sep(")")
