@@ -103,14 +103,10 @@ public class Editor extends UIView implements KeyListener {
 					navigateDown(i==0);
 				evt.consume();
 				break;
-/*			case KeyEvent.VK_E:
-				if (Type.isA(cur_elem, World.theTypeOfTerminals)) {
-					if (cur_elem.pslot_in_src == -World._attr_self.hashed_attr.native_slot_id
-						&& cur_elem.getn(World._attr_term_src) instanceof MSymbol)
-					{
-						MSymbol symbol = (MSymbol)cur_elem.getn(World._attr_term_src);
-						if (symbol.get_value() == null)
-							symbol.set_value("");
+			case KeyEvent.VK_E:
+				if (cur_elem instanceof DrawNodeTerm) {
+					Object obj = ((DrawNodeTerm)cur_elem).getTextObject();
+					if (obj instanceof Symbol) {
 						edit_offset = 0;
 						mode_edit = true;
 						view_canvas.cursor_offset = edit_offset;
@@ -119,7 +115,7 @@ public class Editor extends UIView implements KeyListener {
 				}
 				evt.consume(); 
 				break;
-			case KeyEvent.VK_I:{
+/*			case KeyEvent.VK_I:{
 				MDrawable nt = cur_elem.getDrwParent();
 				if (Type.isA(nt, World.theTypeOfNonTermStructs)) {
 					MNode src = (MNode)nt.getn(World._attr_nt_struct_src);
@@ -197,6 +193,11 @@ public class Editor extends UIView implements KeyListener {
 					view_canvas.repaint();
 				}
 				evt.consume(); 
+				break;
+			case KeyEvent.VK_C:
+				evt.consume();
+				kiev.Compiler.runBackEnd(null);
+				formatAndPaint();
 				break;
 			}
 		}
@@ -323,9 +324,9 @@ public class Editor extends UIView implements KeyListener {
 				break;
 			}
 		}
-		else if (mode_edit) {
-			MSymbol symbol = (MSymbol)cur_elem.getn(World._attr_term_src);
-			String text = symbol.get_value();
+*/		else if (mode_edit) {
+			Symbol symbol = (Symbol)((DrawNodeTerm)cur_elem).getTextObject();
+			String text = symbol.sname.toString();
 			evt.consume();
 			switch (code) {
 			case KeyEvent.VK_LEFT:
@@ -344,7 +345,9 @@ public class Editor extends UIView implements KeyListener {
 				if (edit_offset < text.length()) {
 					text = text.substring(0, edit_offset)+
 					       text.substring(edit_offset+1);
-					symbol.set_value(text);
+					symbol.sname = KString.from(text);
+					symbol.uname = symbol.sname;
+					symbol.parent.callbackChildChanged(symbol.pslot);
 				}
 				break;
 			case KeyEvent.VK_BACK_SPACE:
@@ -352,7 +355,9 @@ public class Editor extends UIView implements KeyListener {
 					edit_offset--;
 					text = text.substring(0, edit_offset)+
 					       text.substring(edit_offset+1);
-					symbol.set_value(text);
+					symbol.sname = KString.from(text);
+					symbol.uname = symbol.sname;
+					symbol.parent.callbackChildChanged(symbol.pslot);
 				}
 				break;
 			default:
@@ -360,14 +365,16 @@ public class Editor extends UIView implements KeyListener {
 					text = text.substring(0, edit_offset)+
 					       evt.getKeyChar()+
 						   text.substring(edit_offset);
-					symbol.set_value(text);
 					edit_offset++;
+					symbol.sname = KString.from(text);
+					symbol.uname = symbol.sname;
+					symbol.parent.callbackChildChanged(symbol.pslot);
 				}
 			}
 			view_canvas.cursor_offset = edit_offset;
 			formatAndPaint();
 		}
-*/	}
+	}
 	
 /*	private JPopupMenu buildTypeSelectPopupMenu(Type tp, List lst, int idx) {
 		// build a menu of types to instantiate

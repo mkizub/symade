@@ -150,6 +150,7 @@ public class CalcOptionJavaFlag implements CalcOption {
 
 
 public class JavaSyntax extends Syntax {
+
 	final SyntaxElem seFileUnit;
 	final SyntaxElem seStructClass;
 	final SyntaxElem seStructInterface;
