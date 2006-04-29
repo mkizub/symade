@@ -245,10 +245,14 @@ public abstract class ASTRuleNode extends ENode {
 	@att public int					idx;
 	@att public int					depth = -1;
 
+	@getter
 	public int get$base() {	return ((ASTRuleNode)this).base; }
+	@setter
 	public void set$base(int b) { ((ASTRuleNode)this).base = b; }
 
+	@getter
 	public int get$idx() {	return ((ASTRuleNode)this).idx; }
+	@setter
 	public void set$idx(int i) { ((ASTRuleNode)this).idx = i; }
 
 	@nodeview

@@ -437,6 +437,7 @@ kiev.transf.GuiBackend kiev/transf/GuiBackend kiev\transf\ImportKievSrc.java
 kiev.transf.ImportKievSrc kiev/transf/ImportKievSrc kiev\transf\ImportKievSrc.java
 kiev.transf.JavaBackend kiev/transf/JavaBackend kiev\transf\ImportKievSrc.java
 kiev.transf.JavaPackedFldBackend kiev/transf/JavaPackedFldBackend kiev\transf\ProcessPackedFld.java
+kiev.transf.JavaVNodeBackend kiev/transf/JavaVNodeBackend kiev\transf\ProcessVNode.java
 kiev.transf.JavaViewBackend kiev/transf/JavaViewBackend kiev\transf\ProcessView.java
 kiev.transf.JavaVirtFldBackend kiev/transf/JavaVirtFldBackend kiev\transf\ProcessVirtFld.java
 kiev.transf.PizzaCaseBackend kiev/transf/PizzaCaseBackend kiev\transf\ProcessPizzaCase.java

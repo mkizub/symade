@@ -14,6 +14,9 @@ import static kiev.stdlib.Debug.*;
  */
 @singleton
 public final class ProcessVirtFld extends TransfProcessor implements Constants {
+
+	public static final KString nameMetaGetter = KString.from("kiev.stdlib.meta.getter"); 
+	public static final KString nameMetaSetter = KString.from("kiev.stdlib.meta.setter"); 
 	
 	private ProcessVirtFld() {
 		super(Kiev.Ext.VirtualFields);
@@ -78,6 +81,9 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		if (f.getMetaVirtual() == null)
 			f.addNodeData(new MetaVirtual(), MetaVirtual.ATTR);
 		f.getMetaVirtual().set = m;
+		if (m.meta.get(nameMetaSetter) == null) {
+			Kiev.reportWarning(m,"Method looks to be a setter, but @setter is not specified");
+		}
 		if( m.isPublic() ) {
 			f.acc.w_public = true;
 			f.acc.w_protected = true;
@@ -122,6 +128,9 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		if (f.getMetaVirtual() == null)
 			f.addNodeData(new MetaVirtual(), MetaVirtual.ATTR);
 		f.getMetaVirtual().get = m;
+		if (m.meta.get(nameMetaGetter) == null) {
+			Kiev.reportWarning(m,"Method looks to be a getter, but @getter is not specified");
+		}
 		if( m.isPublic() ) {
 			f.acc.r_public = true;
 			f.acc.r_protected = true;
@@ -158,6 +167,9 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 @singleton
 class JavaVirtFldBackend extends BackendProcessor implements Constants {
 
+	public static final KString nameMetaGetter = ProcessVirtFld.nameMetaGetter; 
+	public static final KString nameMetaSetter = ProcessVirtFld.nameMetaSetter; 
+	
 	private JavaVirtFldBackend() {
 		super(Kiev.Backend.Java15);
 	}
@@ -227,6 +239,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			else if (f.meta.get(ProcessVNode.mnAtt) != null)
 				set_var.setFinal(true);
 			s.addMethod(set_var);
+			set_var.meta.set(new Meta(nameMetaSetter)).resolve();
 			FormPar value;
 			if (f.isStatic()) {
 				value = new FormPar(f.pos,KString.from("value"),f.type,FormPar.PARAM_NORMAL,0);
@@ -238,26 +251,6 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
 				set_var.body = body;
-				Type astT = Signature.getType(KString.from("Lkiev/vlang/ASTNode;"));
-				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
-					ENode p_st = new IfElseStat(0,
-							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
-								new IFldExpr(0,new ThisExpr(0),f,true),
-								new ConstNullExpr()
-							),
-							new Block(0,new ENode[]{
-								new ExprStat(0,
-									new ASTCallAccessExpression(0,
-										new IFldExpr(0,new ThisExpr(0),f,true),
-										KString.from("callbackDetached"),
-										ENode.emptyArray
-									)
-								)
-							}),
-							null
-						);
-					body.stats.append(p_st);
-				}
 				ENode ass_st = new ExprStat(f.pos,
 					new AssignExpr(f.pos,AssignOperator.Assign,
 						f.isStatic()? new SFldExpr(f.pos,f,true)
@@ -266,29 +259,6 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 					)
 				);
 				body.stats.append(ass_st);
-				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
-					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
-					Field fatt = f.ctx_clazz.resolveField(fname);
-					ENode p_st = new IfElseStat(0,
-							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
-								new LVarExpr(0, value),
-								new ConstNullExpr()
-							),
-							new ExprStat(0,
-								new ASTCallAccessExpression(0,
-									new LVarExpr(0, value),
-									KString.from("callbackAttached"),
-									new ENode[] {
-										new ThisExpr(),
-										new SFldExpr(f.pos, fatt)
-									}
-								)
-							),
-							null
-						);
-					body.stats.append(p_st);
-				}
-				body.stats.append(new ReturnStat(f.pos,null));
 			}
 			f.getMetaVirtual().set = set_var;
 		}
@@ -305,6 +275,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				get_var.setFinal(true);
 			s.addMethod(get_var);
+			get_var.meta.set(new Meta(nameMetaGetter)).resolve();
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
 				get_var.body = body;

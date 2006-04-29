@@ -402,5 +402,141 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			);
 		}
 	}
-
+	
+	public BackendProcessor getBackend(Kiev.Backend backend) {
+		if (backend == Kiev.Backend.Java15)
+			return JavaVNodeBackend;
+		return null;
+	}
+	
 }
+
+@singleton
+class JavaVNodeBackend extends BackendProcessor implements Constants {
+	public static final KString nameMetaGetter = ProcessVirtFld.nameMetaGetter; 
+	public static final KString nameMetaSetter = ProcessVirtFld.nameMetaSetter; 
+	
+	public static final KString nameNode			= KString.from("kiev.vlang.ASTNode"); 
+
+	private static Type tpNode;
+
+	private JavaVNodeBackend() {
+		super(Kiev.Backend.Java15);
+	}
+	
+
+	////////////////////////////////////////////////////
+	//	   PASS - preGenerate                         //
+	////////////////////////////////////////////////////
+
+	public void preGenerate(ASTNode:ASTNode node) {
+		return;
+	}
+	
+	public void preGenerate(FileUnit:ASTNode fu) {
+		foreach (Struct dn; fu.members)
+			this.preGenerate(dn);
+	}
+	
+	public void preGenerate(Struct:ASTNode s) {
+		foreach(Field f; s.members; !f.isStatic() && f.isVirtual() && f.meta.get(ProcessVNode.mnAtt) != null)
+			fixSetterMethod(s, f);
+		foreach(Struct sub; s.sub_clazz)
+			preGenerate(sub);
+	}
+	
+	private static void fixSetterMethod(Struct s, Field f) {
+		if (tpNode == null)
+			tpNode = Env.getStruct(nameNode).ctype;
+		if (tpNode == null) {
+			Kiev.reportError("Cannot find class "+nameNode);
+			return;
+		}
+
+		assert(f.meta.get(ProcessVNode.mnAtt) != null);
+
+		MetaVirtual mv = f.getMetaVirtual();
+		if (mv == null)
+			return;
+
+		Method set_var = mv.set;
+		if (set_var == null || set_var.isAbstract() || set_var.isStatic())
+			return;
+		if (set_var.meta.get(ProcessVNode.mnAtt) != null)
+			return; // already generated
+
+		FormPar value = null;
+		foreach (FormPar fp; set_var.params; fp.kind == FormPar.PARAM_NORMAL) {
+			value = fp;
+			break;
+		}
+		if (value == null) {
+			Kiev.reportError(set_var,"Cannot fine a value to assign parameter");
+			return;
+		}
+
+		Block body = set_var.body;
+		KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
+		Field fatt = f.ctx_clazz.resolveField(fname);
+		if (f.type.isInstanceOf(tpNode)) {
+			ENode p_st = new IfElseStat(0,
+					new BinaryBoolExpr(0, BinaryOperator.NotEquals,
+						new IFldExpr(0,new ThisExpr(0),f,true),
+						new ConstNullExpr()
+					),
+					new Block(0,new ENode[]{
+						new ExprStat(0,
+							new ASTCallAccessExpression(0,
+								new IFldExpr(0,new ThisExpr(0),f,true),
+								KString.from("callbackDetached"),
+								ENode.emptyArray
+							)
+						)
+					}),
+					null
+				);
+			body.stats.insert(0,p_st);
+			ENode p_st = new IfElseStat(0,
+					new BinaryBoolExpr(0, BinaryOperator.NotEquals,
+						new LVarExpr(0, value),
+						new ConstNullExpr()
+					),
+					new ExprStat(0,
+						new ASTCallAccessExpression(0,
+							new LVarExpr(0, value),
+							KString.from("callbackAttached"),
+							new ENode[] {
+								new ThisExpr(),
+								new SFldExpr(f.pos, fatt)
+							}
+						)
+					),
+					null
+				);
+			body.stats.append(p_st);
+		} else {
+			Var old = new Var(body.pos,KString.from("$old"),f.type,ACC_FINAL);
+			old.init = new IFldExpr(0,new ThisExpr(0),f,true);
+			body.stats.insert(0,old);
+			ENode p_st = new IfElseStat(0,
+					new BinaryBoolExpr(0, BinaryOperator.NotEquals,
+						new LVarExpr(0, value),
+						new LVarExpr(0, old)
+					),
+					new ExprStat(0,
+						new ASTCallAccessExpression(0,
+							new ThisExpr(),
+							KString.from("callbackChildChanged"),
+							new ENode[] {
+								new SFldExpr(f.pos, fatt)
+							}
+						)
+					),
+					null
+				);
+			body.stats.append(p_st);
+		}
+		set_var.meta.set(new Meta(ProcessVNode.mnAtt)).resolve();
+	}
+}
+
