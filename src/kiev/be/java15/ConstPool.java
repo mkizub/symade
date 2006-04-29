@@ -57,8 +57,14 @@ public class ConstPool {
 			throw new RuntimeException("Can't find AsciiCP "+asc);
 		return cp;
 	}
+	public AsciiCP getAsciiCP(String asc) {
+		return getAsciiCP(KString.from(asc));
+	}
 	public AsciiCP addAsciiCP(KString asc) {
 		return AsciiCP.newAsciiCP(this,asc);
+	}
+	public AsciiCP addAsciiCP(String asc) {
+		return AsciiCP.newAsciiCP(this,KString.from(asc));
 	}
 
 	public ClazzCP getClazzCP(KString sig) {

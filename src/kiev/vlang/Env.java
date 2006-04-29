@@ -31,14 +31,14 @@ public final class ProjectFile extends ASTNode {
 	@virtual typedef This  = ProjectFile;
 	@virtual typedef VView = ProjectFileView;
 
-	public KString		qname;
+	public String		qname;
 	public KString		bname;
 	public File			file;
 	public boolean		bad = true;
 
 	@nodeview
 	public static final view ProjectFileView of ProjectFile extends NodeView {
-		public KString		qname;
+		public String		qname;
 		public KString		bname;
 		public File			file;
 		public boolean		bad;
@@ -46,14 +46,14 @@ public final class ProjectFile extends ASTNode {
 
 	public ProjectFile() {}
 	
-	public ProjectFile(KString qname, KString bname, File f) {
+	public ProjectFile(String qname, KString bname, File f) {
 		this.qname = qname;
 		this.bname = bname;
 		this.file = f;
 	}
 
-	public ProjectFile(KString qname, KString bname, KString f) {
-		this(qname, bname, new File(f.toString()));
+	public ProjectFile(String qname, KString bname, String f) {
+		this(qname, bname, new File(f));
 	}
 
     public Dumper toJava(Dumper dmp) { return dmp; }
@@ -69,10 +69,10 @@ public final class ProjectFile extends ASTNode {
 public class Env extends Struct {
 
 	/** Hashtable of all defined and loaded classes */
-	public static Hash<KString>				classHashOfFails	= new Hash<KString>();
+	public static Hash<String>				classHashOfFails	= new Hash<String>();
 
 	/** Hashtable for project file (class name + file name) */
-	public static Hashtable<KString,ProjectFile>	projectHash = new Hashtable<KString,ProjectFile>();
+	public static Hashtable<String,ProjectFile>	projectHash = new Hashtable<String,ProjectFile>();
 
 	/** Root of package hierarchy */
 	public static Env			root = new Env();
@@ -115,12 +115,12 @@ public class Env extends Struct {
 		return "<root>";
 	}
 
-	public static Struct resolveStruct(KString qname) {
+	public static Struct resolveStruct(String qname) {
 		Struct pkg = Env.root;
 		int start = 0;
 		int end = qname.indexOf('.', start);
 		while (end > 0) {
-			KString nm = qname.substr(start, end);
+			String nm = qname.substring(start, end).intern();
 			Struct ss = null;
 			foreach (Struct s; pkg.sub_clazz; s.id.equals(nm)) {
 				ss = s;
@@ -132,17 +132,17 @@ public class Env extends Struct {
 			start = end+1;
 			end = qname.indexOf('.', start);
 		}
-		KString nm = qname.substr(start);
+		String nm = qname.substring(start).intern();
 		foreach (Struct s; pkg.sub_clazz; s.id.equals(nm))
 			return s;
 		return null;
 	}
 	
-	public static Struct newStruct(KString sname, Struct outer, int acces) {
+	public static Struct newStruct(String sname, Struct outer, int acces) {
 		return newStruct(sname,true,outer,acces,false);
 	}
 
-	public static Struct newStruct(KString sname, boolean direct, Struct outer, int acces, boolean cleanup)
+	public static Struct newStruct(String sname, boolean direct, Struct outer, int acces, boolean cleanup)
 	{
 		assert(outer != null);
 		Struct bcl = null;
@@ -176,12 +176,12 @@ public class Env extends Struct {
 		}
 		else if (sname != null) {
 			// Construct name of local class
-			KString uniq_name = KString.from(outer.countAnonymouseInnerStructs()+"$"+sname);
+			String uniq_name = outer.countAnonymouseInnerStructs()+"$"+sname;
 			name = new Symbol(sname, uniq_name);
 		}
 		else {
 			// Local anonymouse class
-			KString uniq_name = KString.from(String.valueOf(outer.countAnonymouseInnerStructs()));
+			String uniq_name = String.valueOf(outer.countAnonymouseInnerStructs());
 			name = new Symbol(uniq_name, uniq_name);
 		}
 		Struct cl = new Struct(name,outer,acces);
@@ -189,17 +189,17 @@ public class Env extends Struct {
 		return cl;
 	}
 
-	public static Struct newPackage(KString qname) {
-		if (qname == KString.Empty)
+	public static Struct newPackage(String qname) {
+		if (qname == "")
 			return Env.root;
 		int end = qname.lastIndexOf('.');
 		if (end < 0)
 			return newPackage(qname,Env.root);
 		else
-			return newPackage(qname.substr(end+1),newPackage(qname.substr(0,end)));
+			return newPackage(qname.substring(end+1).intern(),newPackage(qname.substring(0,end).intern()));
 	}
 
-	public static Struct newPackage(KString sname, Struct outer) {
+	public static Struct newPackage(String sname, Struct outer) {
 		Struct cl = null;
 		foreach (Struct s; outer.sub_clazz; s.id.equals(sname)) {
 			cl = s;
@@ -236,12 +236,12 @@ public class Env extends Struct {
 					String bad = null;
 					if( st.hasMoreTokens() )
 						bad = st.nextToken();
-					ProjectFile value = new ProjectFile(KString.from(class_name),KString.from(class_bytecode_name),KString.from(class_source_name));
+					ProjectFile value = new ProjectFile(class_name.intern(),KString.from(class_bytecode_name),class_source_name);
 					if( bad != null && bad.equals("bad") )
 						value.bad = true;
 					else
 						value.bad = false;
-					projectHash.put(KString.from(class_name), value);
+					projectHash.put(class_name, value);
 				}
 				in.close();
 			} catch (EOFException e) {
@@ -259,8 +259,8 @@ public class Env extends Struct {
 		try {
 			PrintStream out = new PrintStream(new FileOutputStream(Kiev.project_file));
 			Vector<String> strs = new Vector<String>();
-			for(Enumeration<KString> e=projectHash.keys(); e.hasMoreElements();) {
-				KString key = e.nextElement();
+			for(Enumeration<String> e=projectHash.keys(); e.hasMoreElements();) {
+				String key = e.nextElement();
 				ProjectFile value = projectHash.get(key);
 				Struct cl = resolveStruct(value.qname);
 				if( cl != null && cl.isBad() ) value.bad = true;
@@ -276,18 +276,18 @@ public class Env extends Struct {
 		}
 	}
 
-	public static void createProjectInfo(KString qname, KString f) {
+	public static void createProjectInfo(String qname, String f) {
 		ProjectFile pf = projectHash.get(qname);
 		if( pf == null )
 			projectHash.put(qname,new ProjectFile(qname,null,f));
 		else {
 			pf.bad = true;
-			if( !pf.file.getName().equals(f.toString()) )
-				pf.file = new File(f.toString());
+			if( !pf.file.getName().equals(f) )
+				pf.file = new File(f);
 		}
 	}
 
-	public static void setProjectInfo(KString qname, KString bname, boolean good) {
+	public static void setProjectInfo(String qname, KString bname, boolean good) {
 		ProjectFile pf = projectHash.get(qname);
 		if (pf != null) {
 			if (bname != null)
@@ -337,8 +337,8 @@ public class Env extends Struct {
 		}
 	}
 
-	public static boolean existsStruct(KString qname) throws RuntimeException {
-		if (qname == KString.Empty) return true;
+	public static boolean existsStruct(String qname) throws RuntimeException {
+		if (qname == "") return true;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return false;
 		Struct cl = resolveStruct(qname);
@@ -348,8 +348,8 @@ public class Env extends Struct {
 		return jenv.existsClazz(qname);
 	}
 
-	public static Struct loadStruct(KString qname) throws RuntimeException {
-		if (qname == KString.Empty) return Env.root;
+	public static Struct loadStruct(String qname) throws RuntimeException {
+		if (qname == "") return Env.root;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
 		Struct cl = resolveStruct(qname);
@@ -360,7 +360,7 @@ public class Env extends Struct {
 			cl = jenv.loadClazz(cl);
 		if (cl == null)
 			classHashOfFails.put(qname);
-		return (Struct)cl;
+		return cl;
 	}
 
 	public static Struct loadStruct(Struct cl) throws RuntimeException {

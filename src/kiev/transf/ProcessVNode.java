@@ -15,22 +15,22 @@ import static kiev.stdlib.Debug.*;
 @singleton
 public final class ProcessVNode extends TransfProcessor implements Constants {
 
-	public static final KString mnNode				= KString.from("kiev.vlang.node"); 
-	public static final KString mnNodeView			= KString.from("kiev.vlang.nodeview"); 
-	public static final KString mnNodeImpl			= KString.from("kiev.vlang.nodeimpl"); 
-	public static final KString mnNodeSet			= KString.from("kiev.vlang.nodeset"); 
-	public static final KString mnAtt				= KString.from("kiev.vlang.att"); 
-	public static final KString mnRef				= KString.from("kiev.vlang.ref"); 
-	public static final KString nameNArr			= KString.from("kiev.vlang.NArr"); 
-	public static final KString nameAttrSlot		= KString.from("kiev.vlang.AttrSlot"); 
-	private static final KString nameParent		= KString.from("parent"); 
-	private static final KString nameCopyable		= KString.from("copyable"); 
+	public static final String mnNode				= "kiev.vlang.node"; 
+	public static final String mnNodeView			= "kiev.vlang.nodeview"; 
+	public static final String mnNodeImpl			= "kiev.vlang.nodeimpl"; 
+	public static final String mnNodeSet			= "kiev.vlang.nodeset"; 
+	public static final String mnAtt				= "kiev.vlang.att"; 
+	public static final String mnRef				= "kiev.vlang.ref"; 
+	public static final String nameNArr			= "kiev.vlang.NArr"; 
+	public static final String nameAttrSlot		= "kiev.vlang.AttrSlot"; 
+	private static final String nameParent			= "parent"; 
+	private static final String nameCopyable		= "copyable"; 
 	
-	private static final KString sigValues			= KString.from("()[Lkiev/vlang/AttrSlot;");
-	private static final KString sigGetVal			= KString.from("(Ljava/lang/String;)Ljava/lang/Object;");
-	private static final KString sigSetVal			= KString.from("(Ljava/lang/String;Ljava/lang/Object;)V");
-	private static final KString sigCopy			= KString.from("()Ljava/lang/Object;");
-	private static final KString sigCopyTo			= KString.from("(Ljava/lang/Object;)Ljava/lang/Object;");
+	private static final String sigValues			= "()[Lkiev/vlang/AttrSlot;";
+	private static final String sigGetVal			= "(Ljava/lang/String;)Ljava/lang/Object;";
+	private static final String sigSetVal			= "(Ljava/lang/String;Ljava/lang/Object;)V";
+	private static final String sigCopy			= "()Ljava/lang/Object;";
+	private static final String sigCopyTo			= "(Ljava/lang/Object;)Ljava/lang/Object;";
 	
 	private static Type tpNArr;
 	private static Type tpAttrSlot;
@@ -134,13 +134,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	//   Generate class members (enumerate sub-nodes)   //
     //////////////////////////////////////////////////////
 
-	private boolean hasField(Struct s, KString name) {
+	private boolean hasField(Struct s, String name) {
 		s.checkResolved();
 		foreach (Field f; s.members; f.id.equals(name)) return true;
 		return false;
 	}
 	
-	private boolean hasMethod(Struct s, KString name) {
+	private boolean hasMethod(Struct s, String name) {
 		s.checkResolved();
 		foreach (Method m; s.members; m.id.equals(name)) return true;
 		return false;
@@ -203,7 +203,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				new ConstBoolExpr(isArr),
 				clz_expr
 			});
-			KString fname = new KStringBuffer().append("nodeattr$").append(f.id.sname).toKString();
+			String fname = "nodeattr$"+f.id.sname;
 			Field af = s.addField(new Field(fname, tpAttrSlot, ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 			af.init = e;
 			vals_init[i] = new SFldExpr(af.pos, af);
@@ -232,8 +232,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				new ReturnStat(0,
 					new SFldExpr(0,vals) ) );
 			// Object getVal(String)
-			Method getV = new Method(KString.from("getVal"),Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
-			getV.params.add(new FormPar(0, KString.from("name"), Type.tpString, FormPar.PARAM_NORMAL, 0));
+			Method getV = new Method("getVal",Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
+			getV.params.add(new FormPar(0, "name", Type.tpString, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(getV);
 			getV.body = new Block(0);
 			for(int i=0; i < aflds.length; i++) {
@@ -252,9 +252,9 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					CastExpr.autoCastToReference(ee);
 			}
 			StringConcatExpr msg = new StringConcatExpr();
-			msg.appendArg(new ConstStringExpr(KString.from("No @att value \"")));
+			msg.appendArg(new ConstStringExpr("No @att value \""));
 			msg.appendArg(new LVarExpr(0, getV.params[0]));
-			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.id)));
+			msg.appendArg(new ConstStringExpr("\" in "+s.id));
 			getV.body.stats.add(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
@@ -263,37 +263,37 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		if (s.meta.get(mnNode) != null && !s.meta.get(mnNode).getZ(nameCopyable) || s.isAbstract()) {
 			// node is not copyable
 		}
-		else if (hasMethod(s, KString.from("copy"))) {
+		else if (hasMethod(s, "copy")) {
 			Kiev.reportWarning(s,"Method "+s+"."+"copy"+sigCopy+" already exists, @node member is not generated");
 		}
 		else {
-			Method copyV = new Method(KString.from("copy"),Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
+			Method copyV = new Method("copy",Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
 			s.addMethod(copyV);
 			copyV.body = new Block(0);
 			NArr<ENode> stats = copyV.body.stats;
-			Var v = new Var(0, KString.from("node"),s.ctype,0);
+			Var v = new Var(0, "node",s.ctype,0);
 			stats.append(new ReturnStat(0,new ASTCallExpression(0,
-				KString.from("copyTo"),	new ENode[]{new NewExpr(0,s.ctype,ENode.emptyArray)})));
+				"copyTo",	new ENode[]{new NewExpr(0,s.ctype,ENode.emptyArray)})));
 		}
 		// copyTo(Object)
-		if (hasMethod(s, KString.from("copyTo"))) {
+		if (hasMethod(s, "copyTo")) {
 			Kiev.reportWarning(s,"Method "+s+"."+"copyTo"+sigCopyTo+" already exists, @node member is not generated");
 		} else {
-			Method copyV = new Method(KString.from("copyTo"),Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
-			copyV.params.append(new FormPar(0,KString.from("to$node"), Type.tpObject, FormPar.PARAM_NORMAL, 0));
+			Method copyV = new Method("copyTo",Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
+			copyV.params.append(new FormPar(0,"to$node", Type.tpObject, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(copyV);
 			copyV.body = new Block();
 			NArr<ENode> stats = copyV.body.stats;
-			Var v = new Var(0,KString.from("node"),s.ctype,0);
+			Var v = new Var(0,"node",s.ctype,0);
 			if (s.super_bound.getType() != null && isNodeKind(s.super_type)) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
-				cae.obj = new ASTIdentifier(0,KString.from("super"));
-				cae.func = new SymbolRef(0,KString.from("copyTo"));
-				cae.args.append(new ASTIdentifier(0,KString.from("to$node")));
+				cae.obj = new ASTIdentifier(0,"super");
+				cae.ident = new SymbolRef(0,"copyTo");
+				cae.args.append(new ASTIdentifier(0,"to$node"));
 				v.init = new CastExpr(0,s.ctype,cae);
 				copyV.body.addSymbol(v);
 			} else {
-				v.init = new CastExpr(0,s.ctype,new ASTIdentifier(0,KString.from("to$node")));
+				v.init = new CastExpr(0,s.ctype,new ASTIdentifier(0,"to$node"));
 				copyV.body.addSymbol(v);
 			}
 			foreach (Field f; s.members) {
@@ -312,13 +312,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					if (isArr) {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						cae.obj = new IFldExpr(0,new LVarExpr(0,v),f);
-						cae.func = new SymbolRef(0, KString.from("copyFrom"));
+						cae.ident = new SymbolRef(0, "copyFrom");
 						cae.args.append(new IFldExpr(0,new ThisExpr(),f));
 						stats.append(new ExprStat(0,cae));
 					} else {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						cae.obj = new IFldExpr(0, new ThisExpr(),f);
-						cae.func = new SymbolRef(0, KString.from("copy"));
+						cae.ident = new SymbolRef(0, "copy");
 						stats.append( 
 							new IfElseStat(0,
 								new BinaryBoolExpr(0, BinaryOperator.NotEquals,
@@ -349,12 +349,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			stats.append(new ReturnStat(0,new LVarExpr(0,v)));
 		}
 		// setVal(String, Object)
-		if (hasMethod(s, KString.from("setVal"))) {
+		if (hasMethod(s, "setVal")) {
 			Kiev.reportWarning(s,"Method "+s+"."+"setVal"+sigSetVal+" already exists, @node member is not generated");
 		} else {
-			Method setV = new Method(KString.from("setVal"),Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
-			setV.params.append(new FormPar(0, KString.from("name"), Type.tpString, FormPar.PARAM_NORMAL, 0));
-			setV.params.append(new FormPar(0, KString.from("val"), Type.tpObject, FormPar.PARAM_NORMAL, 0));
+			Method setV = new Method("setVal",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+			setV.params.append(new FormPar(0, "name", Type.tpString, FormPar.PARAM_NORMAL, 0));
+			setV.params.append(new FormPar(0, "val", Type.tpObject, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(setV);
 			setV.body = new Block(0);
 			for(int i=0; i < aflds.length; i++) {
@@ -396,9 +396,9 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					CastExpr.autoCastToPrimitive(ee);
 			}
 			StringConcatExpr msg = new StringConcatExpr();
-			msg.appendArg(new ConstStringExpr(KString.from("No @att value \"")));
+			msg.appendArg(new ConstStringExpr("No @att value \""));
 			msg.appendArg(new LVarExpr(0, setV.params[0]));
-			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.id)));
+			msg.appendArg(new ConstStringExpr("\" in "+s.id));
 			setV.body.stats.add(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
@@ -415,10 +415,10 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 
 @singleton
 class JavaVNodeBackend extends BackendProcessor implements Constants {
-	public static final KString nameMetaGetter = ProcessVirtFld.nameMetaGetter; 
-	public static final KString nameMetaSetter = ProcessVirtFld.nameMetaSetter; 
+	public static final String nameMetaGetter = ProcessVirtFld.nameMetaGetter; 
+	public static final String nameMetaSetter = ProcessVirtFld.nameMetaSetter; 
 	
-	public static final KString nameNode			= KString.from("kiev.vlang.ASTNode"); 
+	public static final String nameNode			= "kiev.vlang.ASTNode"; 
 
 	private static Type tpNode;
 
@@ -478,7 +478,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 		}
 
 		Block body = set_var.body;
-		KString fname = new KStringBuffer().append("nodeattr$").append(f.id.sname).toKString();
+		String fname = ("nodeattr$"+f.id.sname).intern();
 		Field fatt = f.ctx_clazz.resolveField(fname);
 		if (f.type.isInstanceOf(tpNode)) {
 			ENode p_st = new IfElseStat(0,
@@ -490,7 +490,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 						new ExprStat(0,
 							new ASTCallAccessExpression(0,
 								new IFldExpr(0,new ThisExpr(0),f,true),
-								KString.from("callbackDetached"),
+								"callbackDetached",
 								ENode.emptyArray
 							)
 						)
@@ -506,7 +506,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 					new ExprStat(0,
 						new ASTCallAccessExpression(0,
 							new LVarExpr(0, value),
-							KString.from("callbackAttached"),
+							"callbackAttached",
 							new ENode[] {
 								new ThisExpr(),
 								new SFldExpr(f.pos, fatt)
@@ -517,7 +517,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 				);
 			body.stats.append(p_st);
 		} else {
-			Var old = new Var(body.pos,KString.from("$old"),f.type,ACC_FINAL);
+			Var old = new Var(body.pos,"$old",f.type,ACC_FINAL);
 			old.init = new IFldExpr(0,new ThisExpr(0),f,true);
 			body.stats.insert(0,old);
 			ENode p_st = new IfElseStat(0,
@@ -528,7 +528,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 					new ExprStat(0,
 						new ASTCallAccessExpression(0,
 							new ThisExpr(),
-							KString.from("callbackChildChanged"),
+							"callbackChildChanged",
 							new ENode[] {
 								new SFldExpr(f.pos, fatt)
 							}

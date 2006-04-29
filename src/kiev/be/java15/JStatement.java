@@ -86,7 +86,7 @@ public final view JReturnStat of ReturnStat extends JENode {
 			else if (node instanceof JTryStat) {
 				if( node.finally_catcher != null ) {
 					if( tmp_var==null && code.method.type.ret() ≢ Type.tpVoid ) {
-						tmp_var = (JVar)new Var(0,KString.Empty,code.method.type.ret(),0);
+						tmp_var = (JVar)new Var(0,"",code.method.type.ret(),0);
 						code.addVar(tmp_var);
 						code.addInstr(Instr.op_store,tmp_var);
 					}
@@ -95,7 +95,7 @@ public final view JReturnStat of ReturnStat extends JENode {
 			}
 			else if (node instanceof JSynchronizedStat) {
 				if( tmp_var==null && code.method.type.ret() ≢ Type.tpVoid ) {
-					tmp_var = (JVar)new Var(0,KString.Empty,code.method.type.ret(),0);
+					tmp_var = (JVar)new Var(0,"",code.method.type.ret(),0);
 					code.addVar(tmp_var);
 					code.addInstr(Instr.op_store,tmp_var);
 				}
@@ -187,11 +187,11 @@ public final view JCondStat of CondStat extends JENode {
 	public:n,n,n,rw void generateAssertName(Code code) {
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
 		if (wbc.id == null || wbc.id.uname == null) return;
-		code.addConst(wbc.id.uname);
+		code.addConst(KString.from(wbc.id.uname));
 	}
 
 	public:n,n,n,rw JMethod getAssertMethod() {
-		KString fname;
+		String fname;
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
 		switch( wbc.cond ) {
 		case WBCType.CondRequire:	fname = nameAssertRequireMethod;
@@ -257,7 +257,7 @@ public final view JLabeledStat of LabeledStat extends JENode {
 
 @nodeview
 public final view JBreakStat of BreakStat extends JENode {
-	public:ro	KString		ident;
+	public:ro	SymbolRef	ident;
 	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
@@ -286,9 +286,9 @@ public final view JBreakStat of BreakStat extends JENode {
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
 	public:n,n,n,rw Object[] resolveBreakLabel(Code code) {
-		KString name = ident==null?null:ident;
+		String name = ident==null ? null : ident.name;
 		Object[] cl = new Object[0];
-		if( name == null || name.equals(KString.Empty) ) {
+		if( name == null || name == "" ) {
 			// Search for loop statements
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStat ) {
@@ -322,7 +322,7 @@ public final view JBreakStat of BreakStat extends JENode {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
 				if( node instanceof JMethod ) break;
-				if( node instanceof JLabeledStat && ((JLabeledStat)node).id.equals(ident) ) {
+				if( node instanceof JLabeledStat && ((JLabeledStat)node).id.equals(name) ) {
 					JENode st = ((JLabeledStat)node).stat;
 					if( st instanceof BreakTarget )
 						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
@@ -339,7 +339,7 @@ public final view JBreakStat of BreakStat extends JENode {
 
 @nodeview
 public final view JContinueStat of ContinueStat extends JENode {
-	public:ro	KString		ident;
+	public:ro	SymbolRef	ident;
 	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
@@ -364,9 +364,9 @@ public final view JContinueStat of ContinueStat extends JENode {
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
 	public:n,n,n,rw Object[] resolveContinueLabel(Code code) {
-		KString name = ident==null?null:ident;
+		String name = ident==null ? null : ident.name;
 		Object[] cl = new Object[0];
-		if( name == null || name.equals(KString.Empty) ) {
+		if( name == null || name == "" ) {
 			// Search for loop statements
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStat ) {
@@ -406,7 +406,7 @@ public final view JContinueStat of ContinueStat extends JENode {
 
 @nodeview
 public final view JGotoStat of GotoStat extends JENode {
-	public:ro	KString		ident;
+	public:ro	SymbolRef	ident;
 	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
@@ -513,7 +513,7 @@ public final view JGotoCaseStat of GotoCaseStat extends JENode {
 				if (node instanceof JTryStat) {
 					if( node.finally_catcher != null ) {
 						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr() ) {
-							tmp_var = (JVar)new Var(0,KString.Empty,expr.getType(),0);
+							tmp_var = (JVar)new Var(0,"",expr.getType(),0);
 							code.addVar(tmp_var);
 							code.addInstr(Instr.op_store,tmp_var);
 						}

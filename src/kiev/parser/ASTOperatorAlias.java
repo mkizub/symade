@@ -30,14 +30,14 @@ public final class ASTOperatorAlias extends ASTAlias {
 
 	@att public int					prior;
 	@att public int					opmode;
-	@att public KString				image;
+	@att public String				image;
 	@att public int					xfix;
 
 	@nodeview
 	public static view ASTOperatorAliasView of ASTOperatorAlias extends ASTAliasView {
 		public int					prior;
 		public int					opmode;
-		public KString				image;
+		public String				image;
 		public int					xfix;
 	}
 
@@ -58,7 +58,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 	
 	public void setMode(SymbolRef n) {
 		opmode = -1;
-		KString optype = n.name;
+		String optype = n.name;
 		for(int i=0; i < Operator.orderAndArityNames.length; i++) {
 			if( Operator.orderAndArityNames[i].equals(optype) ) {
 				opmode = i;
@@ -79,11 +79,11 @@ public final class ASTOperatorAlias extends ASTAlias {
 	}
 
   	public void set(Token t) {
-  		if (t.image.equals("prefix"))		xfix = XFIX_PREFIX;
-  		else if (t.image.equals("suffix"))	xfix = XFIX_POSTFIX;
+  		if (t.image.equals("prefix"))			xfix = XFIX_PREFIX;
+  		else if (t.image.equals("suffix"))		xfix = XFIX_POSTFIX;
   		else if (t.image.equals("postfix"))	xfix = XFIX_POSTFIX;
-  		else if (t.image.equals("infix"))	xfix = XFIX_INFIX;
-  		else if (t.image.equals("binary"))	xfix = XFIX_INFIX;
+  		else if (t.image.equals("infix"))		xfix = XFIX_INFIX;
+  		else if (t.image.equals("binary"))		xfix = XFIX_INFIX;
     	else
     		throw new RuntimeException("Bad xfix mode of operator declaration "+t);
 	}

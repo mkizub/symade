@@ -82,7 +82,7 @@ public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 		Struct ti_clazz = type.getStruct().typeinfo_clazz;
 		if (ti_clazz == null)
 			ti_clazz = Type.tpTypeInfo.clazz;
-		Method func = ti_clazz.resolveMethod(KString.from("newTypeInfo"), ti_clazz.ctype, Type.tpClass, new ArrayType(Type.tpTypeInfo));
+		Method func = ti_clazz.resolveMethod("newTypeInfo", ti_clazz.ctype, Type.tpClass, new ArrayType(Type.tpTypeInfo));
 		code.addInstr(op_call,(JMethod)func,false,ti_clazz.ctype);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
@@ -197,18 +197,18 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 
 	static {
 		try {
-		clazzStringBuffer = Env.loadStruct(KString.from("java.lang.StringBuffer"));
+		clazzStringBuffer = Env.loadStruct("java.lang.StringBuffer");
 		if( clazzStringBuffer == null )
 			throw new RuntimeException("Core class java.lang.StringBuffer not found");
-		clazzStringBufferToString = clazzStringBuffer.resolveMethod(KString.from("toString"),Type.tpString);
-		clazzStringBufferInit = clazzStringBuffer.resolveMethod(KString.from("<init>"),Type.tpVoid);
+		clazzStringBufferToString = clazzStringBuffer.resolveMethod("toString",Type.tpString);
+		clazzStringBufferInit = clazzStringBuffer.resolveMethod("<init>",Type.tpVoid);
 		} catch(Exception e ) {
 			throw new RuntimeException("Can't initialize: "+e.getMessage());
 		}
 	}
 
 	public JMethod getMethodFor(JENode expr) {
-		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),clazzStringBuffer.ctype,expr.getType());
+		Method m = clazzStringBuffer.resolveMethod("append",clazzStringBuffer.ctype,expr.getType());
 		return (JMethod)m;
 	}
 

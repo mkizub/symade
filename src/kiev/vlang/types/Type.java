@@ -52,7 +52,7 @@ public abstract class Type extends AType {
 		return (JStruct)s;
 	}
 	public Struct getStruct() { return null; }
-	public Meta getMeta(KString name) { return null; }
+	public Meta getMeta(String name) { return null; }
 
 	protected Type(TypeProvider meta_type, int flags, TVarBld bindings)
 		require { meta_type != null; }
@@ -66,10 +66,10 @@ public abstract class Type extends AType {
 		super(meta_type, flags, tvars, appls);
 	}
 
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name) { false }
-	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name) { false }
-	public rule resolveCallStaticR(Method@ node, ResInfo info, KString name, CallType mt) { false }
-	public rule resolveCallAccessR(Method@ node, ResInfo info, KString name, CallType mt) { false }
+	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, String name) { false }
+	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, String name) { false }
+	public rule resolveCallStaticR(Method@ node, ResInfo info, String name, CallType mt) { false }
+	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt) { false }
 
 	public boolean isInstanceOf(Type t) alias operator (60, xfx, ≥ ) {
 		return this.equals(t);
@@ -216,7 +216,7 @@ public final class CoreType extends Type {
 		((CoreTypeProvider)meta_type).core_type = this;
 		this.name = name;
 	}
-	public Meta getMeta(KString name)	{ return null; }
+	public Meta getMeta(String name)	{ return null; }
 	public Type getErasedType()			{ return this; }
 	public Type getMetaSuper()			{ return null; }
 	public boolean checkResolved()		{ return true; }
@@ -331,6 +331,9 @@ public final class ArgType extends Type {
 	/** The class this argument belongs to */
 	public final TypeDef			definer;
 
+	public ArgType(String name, TypeDef definer) {
+		this(KString.from(name), definer);
+	}
 	public ArgType(KString name, TypeDef definer) {
 		super(ArgTypeProvider.instance, flReference, TVar.emptyArray, TArg.emptyArray);
 		this.name = name;
@@ -357,17 +360,17 @@ public final class ArgType extends Type {
 	}
 
 	public boolean isStructInstanceOf(Struct s)	{ return getMetaSuper().isStructInstanceOf(s); }
-	public Meta getMeta(KString name)				{ return getMetaSuper().getMeta(name); }
+	public Meta getMeta(String name)				{ return getMetaSuper().getMeta(name); }
 	public TypeProvider[] getAllSuperTypes()		{ return definer.getAllSuperTypes(); }
 	public Struct getStruct()						{ return definer.getStruct(); }
 
-	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, String name)
 		TypeRef@ sup;
 	{
 		sup @= definer.getUpperBounds(),
 		sup.getType().resolveNameAccessR(node, info, name)
 	}
-	public rule resolveCallAccessR(Method@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
 		TypeRef@ sup;
 	{
 		definer.getUpperBounds().length == 0, $cut,
@@ -428,17 +431,17 @@ public final class CompaundType extends Type {
 
 	public Type getMetaSuper()					{ return clazz.super_type; }
 	public Struct getStruct()					{ return clazz; }
-	public Meta getMeta(KString name)			{ return clazz.meta.get(name); }
+	public Meta getMeta(String name)			{ return clazz.meta.get(name); }
 	public Type getErasedType()					{ return clazz.ctype; }
 
 	public boolean isStructInstanceOf(Struct s)	{ return clazz.instanceOf(s); }
 	
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, String name)
 	{
 		clazz.resolveNameR(node, info, name)
 	}
 	
-	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, String name)
 	{
 		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in "+this),
 		checkResolved(),
@@ -456,13 +459,13 @@ public final class CompaundType extends Type {
 			$cut
 		}
 	}
-	private rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
+	private rule resolveNameR_1(ASTNode@ node, ResInfo info, String name)
 	{
 		clazz instanceof Struct,
 		node @= getStruct().members,
 		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
 	}
-	private rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
+	private rule resolveNameR_3(ASTNode@ node, ResInfo info, String name)
 		TypeProvider@ sup;
 	{
 		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
@@ -470,7 +473,7 @@ public final class CompaundType extends Type {
 		sup.make(this.bindings()).resolveNameAccessR(node,info,name)
 	}
 
-	private rule resolveNameR_4(ASTNode@ node, ResInfo info, KString name)
+	private rule resolveNameR_4(ASTNode@ node, ResInfo info, String name)
 		ASTNode@ forw;
 		TypeProvider@ sup;
 	{
@@ -487,12 +490,12 @@ public final class CompaundType extends Type {
 		((Field)forw).type.applay(this).resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveCallStaticR(Method@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveCallStaticR(Method@ node, ResInfo info, String name, CallType mt)
 	{
 		clazz.resolveStructMethodR(node, info, name, mt, this)
 	}
 	
-	public rule resolveCallAccessR(Method@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
 		ASTNode@ member;
 		TypeProvider@ sup;
 		Field@ forw;
@@ -667,7 +670,7 @@ public final class ArrayType extends Type {
 
 	public boolean isStructInstanceOf(Struct s)	{ return s == tpObject.clazz; }
 	public Type getMetaSuper()						{ return tpObject; }
-	public Meta getMeta(KString name)				{ return null; }
+	public Meta getMeta(String name)				{ return null; }
 	
 	public TypeProvider[] getAllSuperTypes() {
 		return new TypeProvider[] {
@@ -676,7 +679,7 @@ public final class ArrayType extends Type {
 		};
 	}
 
-	public rule resolveCallAccessR(Method@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
 	{
 		tpObject.resolveCallAccessR(node, info, name, mt)
 	}
@@ -774,10 +777,10 @@ public final class WrapperType extends CTimeType {
 	public final Type getUnboxedType()	{ return Type.getRealType(getEnclosedType(), wrapped_field.type); }
 	
 	public Struct getStruct()			{ return getEnclosedType().getStruct(); }
-	public Meta getMeta(KString name)	{ return getEnclosedType().getMeta(name); }
+	public Meta getMeta(String name)	{ return getEnclosedType().getMeta(name); }
 	public Type getMetaSuper()			{ return getEnclosedType(); }
 
-	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, String name)
 	{
 		info.isForwardsAllowed(),$cut,
 		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in wrapper type "+this),
@@ -795,7 +798,7 @@ public final class WrapperType extends CTimeType {
 		getEnclosedType().resolveNameAccessR(node, info, name)
 	}
 
-	public rule resolveCallAccessR(Method@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
 	{
 		info.isForwardsAllowed(),$cut,
 		trace(Kiev.debugResolve, "Resolving method "+name+" in wrapper type "+this),
@@ -886,16 +889,16 @@ public final class OuterType extends CTimeType {
 
 	public boolean isStructInstanceOf(Struct s)	{ return outer.isStructInstanceOf(s); }
 	public Type getMetaSuper()						{ return outer; }
-	public Meta getMeta(KString name)				{ return outer.getMeta(name); }
+	public Meta getMeta(String name)				{ return outer.getMeta(name); }
 	
 	public TypeProvider[] getAllSuperTypes() {
 		return outer.getAllSuperTypes();
 	}
 
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name) { outer.resolveStaticNameR(node,info,name) }
-	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name) { outer.resolveNameAccessR(node,info,name) }
-	public rule resolveCallStaticR(Method@ node, ResInfo info, KString name, CallType mt) { outer.resolveCallStaticR(node,info,name,mt) }
-	public rule resolveCallAccessR(Method@ node, ResInfo info, KString name, CallType mt) { outer.resolveCallAccessR(node,info,name,mt) }
+	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, String name) { outer.resolveStaticNameR(node,info,name) }
+	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, String name) { outer.resolveNameAccessR(node,info,name) }
+	public rule resolveCallStaticR(Method@ node, ResInfo info, String name, CallType mt) { outer.resolveCallStaticR(node,info,name,mt) }
+	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt) { outer.resolveCallAccessR(node,info,name,mt) }
 	
 	public Type getErasedType() { return outer.getErasedType(); }
 	public boolean checkResolved() { return outer.checkResolved(); }

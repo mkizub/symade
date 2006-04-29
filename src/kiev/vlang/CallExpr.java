@@ -35,14 +35,25 @@ public class CallExpr extends ENode {
 	@virtual typedef RView = RCallExpr;
 
 	@att public ENode				obj;
-	@ref public Method				func;
+	@att public SymbolRef			ident;
 	@ref public CallType			mt;
 	@att public NArr<ENode>			args;
+
+	@getter public Method get$func() {
+		if (ident == null) return null;
+		Symbol sym = ident.symbol;
+		if (sym == null) return null;
+		ASTNode res = sym.parent;
+		if (res instanceof Method)
+			return (Method)res;
+		return null;
+	}
 
 	@nodeview
 	public static final view VCallExpr of CallExpr extends VENode {
 		public		ENode			obj;
-		public		Method			func;
+		public		SymbolRef		ident;
+		public:ro	Method			func;
 		public		CallType		mt;
 		public:ro	NArr<ENode>		args;
 	}
@@ -59,7 +70,7 @@ public class CallExpr extends ENode {
 		} else {
 			this.obj = obj;
 		}
-		this.func = func;
+		this.ident = new SymbolRef(pos,func.id);
 		this.mt = mt;
 		this.args.addAll(args);
 		if (super_flag)
@@ -191,13 +202,13 @@ public class ClosureCallExpr extends ENode {
 	}
 
 	public Method getCallIt(CallType tp) {
-		KString call_it_name;
+		String call_it_name;
 		Type ret;
 		if( tp.ret().isReference() ) {
-			call_it_name = KString.from("call_Object");
+			call_it_name = "call_Object";
 			ret = Type.tpObject;
 		} else {
-			call_it_name = KString.from("call_"+tp.ret());
+			call_it_name = ("call_"+tp.ret()).intern();
 			ret = tp.ret();
 		}
 		return Type.tpClosureClazz.resolveMethod(call_it_name, ret);

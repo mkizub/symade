@@ -38,7 +38,7 @@ public abstract class TypeDef extends TypeDecl {
 
 	public TypeDef() {}
 
-	public TypeDef(KString name) {
+	public TypeDef(String name) {
 		id = new Symbol(name);
 	}
 
@@ -110,7 +110,7 @@ public final class TypeAssign extends TypeDef {
 
 	public TypeAssign() {}
 
-	public TypeAssign(KString nm) {
+	public TypeAssign(String nm) {
 		super(nm);
 	}
 
@@ -123,7 +123,7 @@ public final class TypeAssign extends TypeDef {
 		this.type_ref = sup;
 	}
 
-	public TypeAssign(KString nm, Type sup) {
+	public TypeAssign(String nm, Type sup) {
 		super(nm);
 		this.type_ref = new TypeRef(sup);
 	}
@@ -184,7 +184,7 @@ public final class TypeConstr extends TypeDef {
 
 	public TypeConstr() {}
 
-	public TypeConstr(KString nm) {
+	public TypeConstr(String nm) {
 		super(nm);
 	}
 
@@ -197,7 +197,7 @@ public final class TypeConstr extends TypeDef {
 		this.upper_bound.add(sup);
 	}
 
-	public TypeConstr(KString nm, Type sup) {
+	public TypeConstr(String nm, Type sup) {
 		super(nm);
 		this.upper_bound.add(new TypeRef(sup));
 	}

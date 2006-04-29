@@ -56,17 +56,17 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	private void processFileHeader(FileUnit fu) {
 		// Process file imports...
 		boolean java_lang_found = false;
-		KString java_lang_name = KString.from("java.lang");
+		String java_lang_name = "java.lang";
 		boolean kiev_stdlib_found = false;
-		KString kiev_stdlib_name = KString.from("kiev.stdlib");
+		String kiev_stdlib_name = "kiev.stdlib";
 		boolean kiev_stdlib_meta_found = false;
-		KString kiev_stdlib_meta_name = KString.from("kiev.stdlib.meta");
+		String kiev_stdlib_meta_name = "kiev.stdlib.meta";
 
 		foreach (SNode n; fu.members) {
 			try {
 				processSyntax(n);
 				if (n instanceof Import && n.resolved instanceof Struct) {
-					KString name = ((Struct)n.resolved).qname();
+					String name = ((Struct)n.resolved).qname();
 					if( n.mode == Import.ImportMode.IMPORT_CLASS && name == java_lang_name)
 						java_lang_found = true;
 					else if( n.mode == Import.ImportMode.IMPORT_CLASS && name == kiev_stdlib_name)
@@ -102,16 +102,16 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	}
 
 	public void processSyntax(Import:ASTNode astn) {
-		KString name = astn.name.name;
+		String name = astn.name.name;
 		Struct scope = Env.root;
 		DNode n;
 		int dot;
 		do {
 			dot = name.indexOf('.');
-			KString head;
+			String head;
 			if (dot > 0) {
-				head = name.substr(0,dot);
-				name = name.substr(dot+1);
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1).intern();
 			} else {
 				head = name;
 			}
@@ -142,7 +142,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void processSyntax(Opdef:ASTNode astn) {
 		int prior = astn.prior;
 		int opmode = astn.opmode;
-		KString image = astn.image;
+		String image = astn.image;
 		switch(opmode) {
 		case Operator.LFY:
 			{
@@ -235,13 +235,13 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				if (me.isClazz() && pkg.isClazz()) {
 					int n = 0;
 					for(Struct p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz) n++;
-					KString fldName = KString.from(nameThis+"$"+n);
+					String fldName = (nameThis+"$"+n).intern();
 					boolean found = false;
 					foreach (Field f; me.members; f.id.equals(fldName))
 						found = true;
 					if (!found) {
 						TypeDef td = new TypeAssign(
-							new Symbol(me.pos,KString.from("outer$"+n+"$type")),
+							new Symbol(me.pos,"outer$"+n+"$type"),
 							new TypeRef(pkg.ctype));
 						td.setSynthetic(true);
 						me.members.append(td);
@@ -488,14 +488,14 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			}
 			else if (members[i] instanceof Field && ((Field)members[i]).isEnumField()) {
 				Field f = (Field)members[i];
-				KString text = f.id.sname;
+				String text = f.id.sname;
 				MetaAlias al = f.getMetaAlias();
 				if (al != null) {
 					foreach (ConstStringExpr n; al.getAliases()) {
 						KString nm = n.value;
 						if (nm.len > 2 && nm.byteAt(0) == '\"') {
-							f.id.addAlias(nm);
-							text = nm.substr(1,nm.len-2);
+							f.id.addAlias(nm.toString().intern());
+							text = nm.substr(1,nm.len-2).toString();
 							break;
 						}
 					}

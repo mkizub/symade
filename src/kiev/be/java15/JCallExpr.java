@@ -181,7 +181,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			}
 			else if( func.id.uname == nameObjGetClass ) {
 				CompaundType reft = ((CoreType)objt).getRefTypeForPrimitive();
-				Field f = reft.clazz.resolveField(KString.from("TYPE"));
+				Field f = reft.clazz.resolveField("TYPE");
 				code.addInstr(Instr.op_pop);
 				code.addInstr(Instr.op_getstatic,(JField)f,reft);
 			}
@@ -215,7 +215,7 @@ public final view JCallExpr of CallExpr extends JENode {
 				case 'F':
 					{
 					JMethod m = Type.tpFloatRef.getJStruct().resolveMethod(
-						KString.from("floatToIntBits"),
+						"floatToIntBits",
 						KString.from("(F)I")
 						);
 					code.addInstr(op_call,m,false);
@@ -224,7 +224,7 @@ public final view JCallExpr of CallExpr extends JENode {
 				case 'D':
 					{
 					JMethod m = Type.tpDoubleRef.getJStruct().resolveMethod(
-						KString.from("doubleToLongBits"),
+						"doubleToLongBits",
 						KString.from("(D)J")
 						);
 					code.addInstr(op_call,m,false);
@@ -264,8 +264,7 @@ public final view JCallExpr of CallExpr extends JENode {
 					sign = KString.from("(D)Ljava/lang/String;");
 					break;
 				}
-				JMethod m = Type.tpString.getJStruct().resolveMethod(
-					KString.from("valueOf"),sign);
+				JMethod m = Type.tpString.getJStruct().resolveMethod("valueOf",sign);
 				code.addInstr(op_call,m,false);
 			}
 			else
@@ -338,13 +337,13 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 	}
 
 	public JMethod getCallIt(CallType tp) {
-		KString call_it_name;
+		String call_it_name;
 		KString call_it_sign;
 		if( tp.ret().isReference() ) {
-			call_it_name = KString.from("call_Object");
+			call_it_name = "call_Object";
 			call_it_sign = KString.from("()Ljava/lang/Object;");
 		} else {
-			call_it_name = KString.from("call_"+tp.ret());
+			call_it_name = ("call_"+tp.ret()).intern();
 			call_it_sign = KString.from("()"+tp.ret().getJType().java_signature);
 		}
 		return ((JStruct)Type.tpClosureClazz).resolveMethod(call_it_name, call_it_sign);
@@ -376,7 +375,7 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 		case '&':
 		case 'R': sig = sigObj; break;
 		}
-		JMethod m = ((JStruct)Type.tpClosureClazz).resolveMethod(KString.from("addArg"),sig);
+		JMethod m = ((JStruct)Type.tpClosureClazz).resolveMethod("addArg",sig);
 		if( m == null )
 			Kiev.reportError(expr,"Unknown method for kiev.vlang.closure");
 		return m;

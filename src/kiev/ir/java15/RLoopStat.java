@@ -200,12 +200,12 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 		}
 		if( itype ≡ Type.tpRule ) {
-			iter = new Var(pos,KString.from("$env"),itype,0);
+			iter = new Var(pos,"$env",itype,0);
 		}
 		else if( var != null ) {
-			iter = new Var(var.pos,KString.from(var.id.uname+"$iter"),itype,0);
+			iter = new Var(var.pos,var.id.uname+"$iter",itype,0);
 			if (mode == ForEachStat.ARRAY) {
-				iter_array = new Var(container.pos,KString.from(var.id.uname+"$arr"),container.getType(),0);
+				iter_array = new Var(container.pos,var.id.uname+"$arr",container.getType(),0);
 			}
 		}
 		else {
@@ -344,7 +344,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			if (ce.getType().isInstanceOf(var.getType())) {
 				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,new LVarExpr(var.pos,var),ce);
 			} else {
-				Var tmp = new Var(var.pos, KString.from("tmp"), ce.getType(), ACC_FINAL);
+				Var tmp = new Var(var.pos, "tmp", ce.getType(), ACC_FINAL);
 				tmp.init = ce;
 				Block b = new Block();
 				b.addSymbol(tmp);

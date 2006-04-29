@@ -44,8 +44,8 @@ public abstract view JLvalueExpr of LvalueExpr extends JENode {
 
 @nodeview
 public abstract view JAccessExpr of AccessExpr extends JLvalueExpr {
-	public:ro	JENode	obj;
-	public:ro	KString		ident;
+	public:ro	JENode		obj;
+	public:ro	SymbolRef	ident;
 }
 
 @nodeview
@@ -191,7 +191,7 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			// We need to get the type of object in stack
 			JType jt = code.stack_at(0);
 			Type t = Signature.getType(jt.java_signature);
-			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
+			ENode o = new LVarExpr(pos,new Var(pos,"",t,0));
 			Struct s = objType.getStruct();
 			CallType mt = new CallType(new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -218,7 +218,7 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			Type t = Signature.getType(jt.java_signature);
 			if( !(code.stack_at(1).isIntegerInCode() || code.stack_at(0).isReference()) )
 				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
-			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
+			ENode o = new LVarExpr(pos,new Var(pos,"",t,0));
 			Struct s = obj.getType().getStruct();
 			CallType mt = new CallType(new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -302,11 +302,11 @@ public final view JThisExpr of ThisExpr extends JLvalueExpr {
 
 @nodeview
 public final view JLVarExpr of LVarExpr extends JLvalueExpr {
-	public:ro	KString		ident;
+	public:ro	SymbolRef	ident;
 	public:ro	JVar		var;
 
 	public JField resolveProxyVar(Code code) {
-		JField proxy_var = code.clazz.resolveField(this.ident,true);
+		JField proxy_var = code.clazz.resolveField(this.ident.name,true);
 		if( proxy_var == null && code.method.isStatic() && !code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var;
@@ -324,7 +324,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		// Bind the correct var
 		if( !var.jparent.equals(code.method) ) {
 			assert( var.jparent instanceof JMethod, "Non-parametrs var in condition" );
-			if( this.ident==nameResultVar ) {
+			if (this.ident.name == nameResultVar) {
 				var = code.method.getRetVar();
 			} else {
 				for(int i=0; i < code.method.params.length; i++) {

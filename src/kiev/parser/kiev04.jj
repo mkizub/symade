@@ -178,7 +178,7 @@ public abstract class kiev040 {
 
 	/*{
 	private Struct mkStruct(Symbol name, int flags, ASTModifiers modifiers, ASTNode parent) {
-		KString nm;
+		String nm;
 		Struct outer;
 		boolean direct;
 		if (parent instanceof FileUnit) {
@@ -216,7 +216,7 @@ public abstract class kiev040 {
 		if (parent instanceof FileUnit) {
 			clazz.setLocal(false);
 			clazz.setStatic(true);
-			Env.createProjectInfo(clazz.qname(), Kiev.curFile);
+			Env.createProjectInfo(clazz.qname(), String.valueOf(Kiev.curFile));
 		}
 		else if (parent instanceof Struct)
 			clazz.setLocal(parent.isLocal());
@@ -1494,7 +1494,7 @@ Meta Annotation() :
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
 			AnnotationValues(n)
-		|	v = AnnotationValueAny() { v.type = new MetaValueType(KString.from("value")); n.set(v); }
+		|	v = AnnotationValueAny() { v.type = new MetaValueType("value"); n.set(v); }
 		]
 		")"
 	]
@@ -1675,8 +1675,9 @@ FormPar MethodFormalParameter(ASTModifiers modifiers) :
 {
 	tp = Type()
 	(
-		LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals(":")) })
-		(":") st = Type()
+		LOOKAHEAD({ !Kiev.javaMode && getToken(1).kind == COLON })
+		":"
+		st = Type()
 	)?
 	id = Name()
 	( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); if (st!= null) st = new TypeExpr(st,t); } )*
@@ -2202,13 +2203,7 @@ SymbolRef QName() :
 		LOOKAHEAD(2)
 		"."
 		id2 = NameRef()
-		{
-			id.name = new KStringBuffer(id.name.len+1+id2.name.len)
-				.append_fast(id.name)
-				.append_fast((byte)'.')
-				.append_fast(id2.name)
-				.toKString();
-		}
+		{ id.name = id.name+'.'+id2.name; }
 	)*
 	{ return id; }
 }
@@ -2232,13 +2227,7 @@ ASTIdentifier QIdentifier() :
 		LOOKAHEAD(2)
 		"."
 		id2 = Identifier()
-		{
-			id.name = new KStringBuffer(id.name.len+1+id2.name.len)
-				.append_fast(id.name)
-				.append_fast((byte)'.')
-				.append_fast(id2.name)
-				.toKString();
-		}
+		{ id.name = id.name+'.'+id2.name; }
 	)*
 	{ return id; }
 }
@@ -2446,7 +2435,7 @@ ASTOperator Operator() :
 	)
 	{
 		op.pos = t.getPos();
-		op.image = KString.from(image);
+		op.image = image;
 		return op;
 	}
 }
@@ -2540,7 +2529,7 @@ ENode ReparseExpression() :
 ENode CallExpression() :
 { ASTCallExpression e = new ASTCallExpression(); }
 {
-	e.func = NameRef() { e.pos = e.func.pos; }
+	e.ident = NameRef() { e.pos = e.ident.pos; }
 	[
 		"<"
 			e.targs += Type()
@@ -2558,7 +2547,7 @@ ENode CallExpression() :
 ENode CallAccessExpression(ENode obj) :
 { ASTCallAccessExpression e = new ASTCallAccessExpression(); e.obj = obj; }
 {
-	e.func = NameRef() { e.pos = e.func.pos; }
+	e.ident = NameRef() { e.pos = e.ident.pos; }
 	[
 		"<"
 			e.targs += Type()
@@ -3046,7 +3035,7 @@ CondStat CondStatement() :
 				sb.append(t.image).append(' ');
 				t = t.next;
 			}
-			ConstStringExpr e = new ConstStringExpr(KString.from(sb.toString()));
+			ConstStringExpr e = new ConstStringExpr(sb.toString());
 			e.pos = pos;
 			st.message = e;
 		}

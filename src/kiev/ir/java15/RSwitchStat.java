@@ -150,8 +150,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					mode = SwitchStat.ENUM_SWITCH;
 				}
 				else if( tp.isReference() ) {
-					tmpvar = new LVarExpr(sel.pos, new Var(sel.pos,KString.from(
-						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0));
+					tmpvar = new LVarExpr(sel.pos, new Var(sel.pos,"tmp$sel$"+Integer.toHexString(sel.hashCode()),tp,0));
 					me = new Block(pos);
 					this.replaceWithNode(me);
 					ENode old_sel = ~this.sel;
@@ -165,15 +164,15 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 						cae.pos = pos;
 						cae.obj = new LVarExpr(tmpvar.pos,tmpvar.getVar());
 						cae.obj.resolve(null);
-						cae.func = new SymbolRef(pos, nameGetCaseTag);
+						cae.ident = new SymbolRef(pos, nameGetCaseTag);
 					} else {
 						mode = SwitchStat.TYPE_SWITCH;
-						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(old_sel.hashCode())),
+						typehash = new Field("fld$sel$"+Integer.toHexString(old_sel.hashCode()),
 							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
 						ctx_clazz.addField(typehash);
 						CallExpr cae = new CallExpr(pos,
 							new SFldExpr(pos,typehash),
-							Type.tpTypeSwitchHash.clazz.resolveMethod(KString.from("index"),Type.tpInt, Type.tpObject),
+							Type.tpTypeSwitchHash.clazz.resolveMethod("index",Type.tpInt, Type.tpObject),
 							new ENode[]{new LVarExpr(pos,tmpvar.getVar())}
 							);
 						sel = cae;
@@ -195,7 +194,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					CaseLabel c = (CaseLabel)cases[i];
 					if( c.type == null || !c.type.isReference() )
 						throw new CompilerException(c,"Mixed switch and typeswitch cases");
-					KString name = c.type.getStruct().qname();
+					KString name = KString.from(c.type.getStruct().qname());
 					typenames = (KString[])Arrays.append(typenames,name);
 					if( c.val != null )
 						c.val = new ConstIntExpr(i);

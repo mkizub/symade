@@ -78,7 +78,7 @@ public class PassInfo {
 	// No instances
 	private PassInfo() {}
 
-	public static boolean checkClassName(ASTNode from, KString qname) {
+	public static boolean checkClassName(ASTNode from, String qname) {
 		DNode@ node;
 		if (!resolveNameR(from, node,new ResInfo(from),qname))
 			return false;
@@ -95,9 +95,9 @@ public class PassInfo {
 		((ScopeOfOperators)p).resolveOperatorR(op)
 	}
 
-	public static rule resolveQualifiedNameR(ASTNode from, ASTNode@ node, ResInfo path, KString name)
-		KString@ qname_head;
-		KString@ qname_tail;
+	public static rule resolveQualifiedNameR(ASTNode from, ASTNode@ node, ResInfo path, String name)
+		String@ qname_head;
+		String@ qname_tail;
 		ASTNode@ p;
 		DNode@ sp;
 		ParentEnumerator pe;
@@ -105,8 +105,8 @@ public class PassInfo {
 		trace( Kiev.debugResolve, "PassInfo: resolving name "+name),
 		name.indexOf('.') > 0, $cut,
 		trace( Kiev.debugResolve, "PassInfo: name '"+name+"' is qualified"),
-		qname_head ?= name.substr(0,name.lastIndexOf('.')),
-		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
+		qname_head ?= name.substring(0,name.lastIndexOf('.')).intern(),
+		qname_tail ?= name.substring(name.lastIndexOf('.')+1).intern(),
 		resolveQualifiedNameR(from,sp,path,qname_head),
 		sp instanceof Struct,
 		path.space_prev = from,
@@ -121,9 +121,7 @@ public class PassInfo {
 		((ScopeOfNames)p).resolveNameR(node,path,name)
 	}
 
-	public static rule resolveNameR(ASTNode from, ASTNode@ node, ResInfo path, KString name)
-		KString@ qname_head;
-		KString@ qname_tail;
+	public static rule resolveNameR(ASTNode from, ASTNode@ node, ResInfo path, String name)
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{
@@ -165,7 +163,7 @@ public class PassInfo {
 		Object sc,
 		Method@ node,
 		ResInfo info,
-		KString name,
+		String name,
 		CallType mt)
 	{
 		trace(Kiev.debugResolve,"Resolving best method "+Method.toString(name,mt)+" in "+sc);
@@ -307,9 +305,7 @@ public class PassInfo {
 		throw new RuntimeException(msg.toString());
 	}
 
-	public static rule resolveMethodR(ASTNode from, Method@ node, ResInfo path, KString name, CallType mt)
-		KString@ qname_head;
-		KString@ qname_tail;
+	public static rule resolveMethodR(ASTNode from, Method@ node, ResInfo path, String name, CallType mt)
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{

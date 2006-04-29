@@ -36,7 +36,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 		 public Access						acc;
 	@att public Symbol						id; // short and unique names
-		 public KString						q_name;	// qualified name
+		 public String						q_name;	// qualified name
 		 public KString						b_name;	// bytecode name
 		 public CompaundTypeProvider		imeta_type;
 		 public WrapperTypeProvider			wmeta_type;
@@ -356,15 +356,15 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return false;
 	}
 
-	public Field resolveField(KString name) {
+	public Field resolveField(String name) {
 		return resolveField(this,name,this,true);
 	}
 
-	public Field resolveField(KString name, boolean fatal) {
+	public Field resolveField(String name, boolean fatal) {
 		return resolveField(this,name,this,fatal);
 	}
 
-	private static Field resolveField(Struct self, KString name, Struct where, boolean fatal) {
+	private static Field resolveField(Struct self, String name, Struct where, boolean fatal) {
 		self.getStruct().checkResolved();
 		foreach(Field f; self.members; f.id.equals(name) ) return f;
 		if( self.super_type != null ) return resolveField(self.super_type.getStruct(),name,where,fatal);
@@ -373,7 +373,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return null;
 	}
 
-	public Method resolveMethod(KString name, Type ret, ...) {
+	public Method resolveMethod(String name, Type ret, ...) {
 		Type[] args = new Type[va_args.length];
 		for (int i=0; i < va_args.length; i++)
 			args[i] = (Type)va_args[i];
@@ -422,7 +422,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 		public final Struct getStruct() { return (Struct)this; }
 
-		public final KString qname();
+		public final String qname();
 		public boolean isClazz();
 		// a pizza case	
 		public final boolean isPizzaCase();
@@ -474,9 +474,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public Struct addCase(Struct cas);
 
 		public boolean instanceOf(Struct cl);
-		public Field resolveField(KString name);
-		public Field resolveField(KString name, boolean fatal);
-		public Method resolveMethod(KString name, Type ret, ...);
+		public Field resolveField(String name);
+		public Field resolveField(String name, boolean fatal);
+		public Method resolveMethod(String name, Type ret, ...);
 		public Constructor getClazzInitMethod();
 
 		public boolean preResolveIn() {
@@ -544,20 +544,20 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@getter public Access			get$acc()			{ return this.acc; }
 	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
 
-	public final KString qname() {
+	public final String qname() {
 		if (q_name != null)
 			return q_name;
 		Struct pkg = package_clazz;
 		if (pkg == null || pkg == Env.root)
 			q_name = id.uname;
 		else
-			q_name = KString.from(pkg.qname()+"."+id.uname);
+			q_name = (pkg.qname()+"."+id.uname).intern();
 		return q_name;
 	}
 
 	Struct() {
-		this.id = new Symbol(null,KString.Empty);
-		this.q_name = KString.Empty;
+		this.id = new Symbol(null,"");
+		this.q_name = "";
 		this.b_name = KString.Empty;
 	}
 	
@@ -669,7 +669,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
 	{
 		info.isStaticAllowed(),
 		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this),
@@ -693,7 +693,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			$cut
 		}
 	}
-	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
+	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, String name)
 		TypeDef@ arg;
 	{
 			this.id.equals(name), node ?= this
@@ -710,14 +710,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			node @= sub_clazz,
 			((Struct)node).id.equals(name)
 	}
-	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name)
+	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, String name)
 	{
 		node @= members,
 		{	node instanceof Field && ((Field)node).isStatic() && ((Field)node).id.equals(name)
 		;	node instanceof TypeDef && ((TypeDef)node).id.equals(name)
 		}
 	}
-	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
+	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, String name)
 		TypeRef@ sup_ref;
 		Struct@ sup;
 	{
@@ -732,14 +732,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 	}
 
-	public boolean tryLoad(ASTNode@ node, KString name) {
+	public boolean tryLoad(ASTNode@ node, String name) {
 		if( isPackage() ) {
 			Struct cl;
-			KString qn = name;
+			String qn = name;
 			if (this.equals(Env.root))
 				cl = Env.loadStruct(qn);
 			else
-				cl = Env.loadStruct(qn=KString.from(this.qname()+"."+name));
+				cl = Env.loadStruct(qn=(this.qname()+"."+name).intern());
 			if( cl != null ) {
 				trace(Kiev.debugResolve,"Struct "+cl+" found in "+this);
 				node = cl;
@@ -752,12 +752,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return false;
 	}
 
-	final public rule resolveMethodR(Method@ node, ResInfo info, KString name, CallType mt)
+	final public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
 	{
 		resolveStructMethodR(node, info, name, mt, this.ctype)
 	}
 
-	public rule resolveStructMethodR(Method@ node, ResInfo info, KString name, CallType mt, Type tp)
+	public rule resolveStructMethodR(Method@ node, ResInfo info, String name, CallType mt, Type tp)
 		ASTNode@ member;
 		Type@ sup;
 	{
@@ -875,9 +875,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 						if( !isStatic() ) {
 							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
-							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
+							init.params.append(new FormPar(pos,"max$args",Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
 						} else {
-							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
+							init.params.append(new FormPar(pos,"max$args",Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
 						}
 					} else {
 						if( package_clazz.isClazz() && !isStatic() ) {
@@ -887,9 +887,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 							init.params.append(new FormPar(pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 						}
 						if( isEnum() ) {
-							init.params.append(new FormPar(pos,KString.from("name"),Type.tpString,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
+							init.params.append(new FormPar(pos,"name",Type.tpString,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
 							init.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
-							//init.params.append(new FormPar(pos,KString.from("text"),Type.tpString,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
+							//init.params.append(new FormPar(pos,"text",Type.tpString,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
 						}
 						if (isStructView()) {
 							init.params.append(new FormPar(pos,nameImpl,view_of.getType(),FormPar.PARAM_NORMAL,ACC_FINAL|ACC_SYNTHETIC));

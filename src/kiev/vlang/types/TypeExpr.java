@@ -18,25 +18,30 @@ public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	static KString opPVar   = KString.from("@");
-	static KString opRef    = KString.from("&");
-	static KString opWraper = KString.from("\u229b"); // ⊛
+	static String opPVar   = "@";
+	static String opRef    = "&";
+	static String opWraper = "\u229b"; // ⊛
 	
 	@virtual typedef This  = TypeExpr;
 	@virtual typedef VView = VTypeExpr;
 
 	@att public TypeRef					arg;
-	@att public KString					op;
+	@att public String					op;
 
+	@setter
+	public void set$op(String value) {
+		this.op = (value != null) ? value.intern() : null;
+	}
+	
 	@nodeview
 	public static final view VTypeExpr of TypeExpr extends VTypeRef {
 		public TypeRef				arg;
-		public KString				op;
+		public String				op;
 	}
 
 	public TypeExpr() {}
 
-	public TypeExpr(TypeRef arg, KString op) {
+	public TypeExpr(TypeRef arg, String op) {
 		this.pos = arg.pos;
 		this.arg = arg;
 		this.op = op;
@@ -47,7 +52,7 @@ public class TypeExpr extends TypeRef {
 		if (op.kind == ParserConstants.OPERATOR_LRBRACKETS)
 			this.op = Constants.nameArrayOp;
 		else
-			this.op = KString.from(op.image);
+			this.op = op.image;
 		this.pos = op.getPos();
 	}
 

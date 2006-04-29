@@ -364,17 +364,17 @@ public abstract class Operator implements Constants {
 	public static final int XFXFY		= 9;
 
 	// Order/arity strings
-	public static final KString[]	orderAndArityNames = new KString[] {
-		KString.from("lfy"),		// LFY
-		KString.from("xfx"),		// XFX
-		KString.from("xfy"),		// XFY
-		KString.from("yfx"),		// YFX
-		KString.from("yfy"),		// YFY
-		KString.from("xf"),			// XF
-		KString.from("yf"),			// YF
-		KString.from("fx"),			// FX
-		KString.from("fy"),			// FY
-		KString.from("xfxfy")		// XFXFY
+	public static final String[]	orderAndArityNames = new String[] {
+		"lfy",		// LFY
+		"xfx",		// XFX
+		"xfy",		// XFY
+		"yfx",		// YFX
+		"yfy",		// YFY
+		"xf",		// XF
+		"yf",		// YF
+		"fx",		// FX
+		"fy",		// FY
+		"xfxfy"		// XFXFY
 	};
 
 	public static OpTypes 								iopt;	// initialization OpTypes
@@ -391,20 +391,20 @@ public abstract class Operator implements Constants {
 	public static OpTypes.TypeRule otUpperCastNumber(int i, int j)	{ return iopt.new rtUpperCastNumber( i, j ); }
 	public static OpTypes.TypeRule otDownCast(int i, int j)			{ return iopt.new rtDownCast( i, j ); }
 
-	public			int			priority;
-	public			KString		image;
-	public			KString		name;
-	public			Instr		instr;
-    public			int			mode;
-    public			boolean		is_standard;
-    public			OpTypes[]	types;
+	public				int			priority;
+	public				String		image;
+	public				String		name;
+	public				Instr		instr;
+    public				int			mode;
+    public				boolean		is_standard;
+    public				OpTypes[]	types;
 	@virtual @abstract
-    public			KString		smode;
+    public:r,r,r,rw		String		smode;
 
-	protected Operator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
+	protected Operator(int pr, String img, String nm, Instr in, String oa, boolean std) {
 		priority = pr;
-		image = img;
-		name = nm;
+		image = img.intern();
+		name = nm==null?null:nm.intern();
 		instr = in;
 		is_standard = std;
 		types = new OpTypes[0];
@@ -425,8 +425,7 @@ public abstract class Operator implements Constants {
 
 	public boolean isStandard() { return is_standard; }
 
-	@setter public void set$smode(KString sm) { throw new RuntimeException(); }
-	@getter public KString get$smode() { return orderAndArityNames[mode]; }
+	@getter public String get$smode() { return orderAndArityNames[mode]; }
 
 	public void addTypes(OpTypes.TypeRule rt, ...) {
 		iopt.trtypes = new TypeRule[va_args.length+1];
@@ -458,11 +457,11 @@ public abstract class Operator implements Constants {
 	}
 
 	public static void cleanupMethod(Method m) {
-		Hashtable<KString,Operator> hashes[] = new Hashtable<KString,Operator>[]{
+		Hashtable<String,Operator> hashes[] = new Hashtable<String,Operator>[]{
 			AssignOperator.hash, BinaryOperator.hash, PrefixOperator.hash,
 			PostfixOperator.hash, MultiOperator.hash
 		};
-		foreach( Hashtable<KString,Operator> hash; hashes ) {
+		foreach( Hashtable<String,Operator> hash; hashes ) {
 			foreach( Operator op; hash; op.types.length > 0 ) {
 				for(int i=0; i < op.types.length; i++) {
 					OpTypes opt = op.types[i];
@@ -520,7 +519,7 @@ public abstract class Operator implements Constants {
 		return "operator("+priority+","+orderAndArityNames[mode]+","+image+")";
 	}
 
-	public static String toDeclString(int pr,KString sm,KString im) {
+	public static String toDeclString(int pr,String sm,String im) {
 		return "operator("+pr+","+sm+","+im+")";
 	}
 
@@ -528,7 +527,7 @@ public abstract class Operator implements Constants {
 
 public class AssignOperator extends Operator {
 
-	public static Hashtable<KString,AssignOperator>	hash = new Hashtable<KString,AssignOperator>();
+	public static Hashtable<String,AssignOperator>	hash = new Hashtable<String,AssignOperator>();
 
 	// Assign (binary) operators
 	public static final AssignOperator Assign;
@@ -546,63 +545,63 @@ public class AssignOperator extends Operator {
 	public static final AssignOperator AssignMod;
 
 	static {
-		Assign = newAssignOperator(KString.from("="), KString.from("opAssign"),null,true);
+		Assign = newAssignOperator("=", "opAssign",null,true);
 			iopt=new OpTypes();
 			Assign.addTypes(otSame(1),otTheAny(),otSame(1));
-		Assign2 = newAssignOperator(KString.from(":="), KString.from("opAssign"),null,true);
+		Assign2 = newAssignOperator(":=", "opAssign",null,true);
 			iopt=new OpTypes();
 			Assign2.addTypes(otSame(1),otTheAny(),otSame(1));
 
-		AssignBitOr = newAssignOperator(KString.from("|="), KString.from("opAssignBitOr"), Instr.op_or,true);
+		AssignBitOr = newAssignOperator("|=", "opAssignBitOr", Instr.op_or,true);
 			iopt=new OpTypes();
 			AssignBitOr.addTypes(otSame(1),otInteger(),otSame(1));
 			AssignBitOr.addTypes(otSame(1),otBoolean(),otSame(1));
-		AssignBitXor = newAssignOperator(KString.from("^="), KString.from("opAssignBitXor"), Instr.op_xor,true);
+		AssignBitXor = newAssignOperator("^=", "opAssignBitXor", Instr.op_xor,true);
 			iopt=new OpTypes();
 			AssignBitXor.addTypes(otSame(1),otInteger(),otSame(1));
 			AssignBitXor.addTypes(otSame(1),otBoolean(),otSame(1));
-		AssignBitAnd = newAssignOperator(KString.from("&="), KString.from("opAssignBitAnd"), Instr.op_and,true);
+		AssignBitAnd = newAssignOperator("&=", "opAssignBitAnd", Instr.op_and,true);
 			iopt=new OpTypes();
 			AssignBitAnd.addTypes(otSame(1),otInteger(),otSame(1));
 			AssignBitAnd.addTypes(otSame(1),otBoolean(),otSame(1));
 
-		AssignLeftShift = newAssignOperator(KString.from("<<="), KString.from("opAssignLeftShift"), Instr.op_shl,true);
+		AssignLeftShift = newAssignOperator("<<=", "opAssignLeftShift", Instr.op_shl,true);
 			iopt=new OpTypes();
 			AssignLeftShift.addTypes(otSame(1),otInteger(),otType(Type.tpInt));
-		AssignRightShift = newAssignOperator(KString.from(">>="), KString.from("opAssignRightShift"), Instr.op_shr,true);
+		AssignRightShift = newAssignOperator(">>=", "opAssignRightShift", Instr.op_shr,true);
 			iopt=new OpTypes();
 			AssignRightShift.addTypes(otSame(1),otInteger(),otType(Type.tpInt));
-		AssignUnsignedRightShift = newAssignOperator(KString.from(">>>="), KString.from("opAssignUnsignedRightShift"), Instr.op_ushr,true);
+		AssignUnsignedRightShift = newAssignOperator(">>>=", "opAssignUnsignedRightShift", Instr.op_ushr,true);
 			iopt=new OpTypes();
 			AssignUnsignedRightShift.addTypes(otSame(1),otInteger(),otType(Type.tpInt));
 
-		AssignAdd = newAssignOperator(KString.from("+="), KString.from("opAssignAdd"), Instr.op_add,true);
+		AssignAdd = newAssignOperator("+=", "opAssignAdd", Instr.op_add,true);
 			iopt=new OpTypes();
 			AssignAdd.addTypes(otSame(1),otNumber(),otSame(1));
 			iopt=new OpTypes();
 			AssignAdd.addTypes(otType(Type.tpChar),otType(Type.tpChar),otInteger());
-		AssignSub = newAssignOperator(KString.from("-="), KString.from("opAssignSub"), Instr.op_sub,true);
+		AssignSub = newAssignOperator("-=", "opAssignSub", Instr.op_sub,true);
 			iopt=new OpTypes();
 			AssignSub.addTypes(otSame(1),otNumber(),otSame(1));
 			iopt=new OpTypes();
 			AssignSub.addTypes(otType(Type.tpChar),otType(Type.tpChar),otInteger());
-		AssignMul = newAssignOperator(KString.from("*="), KString.from("opAssignMul"), Instr.op_mul,true);
+		AssignMul = newAssignOperator("*=", "opAssignMul", Instr.op_mul,true);
 			iopt=new OpTypes();
 			AssignMul.addTypes(otSame(1),otNumber(),otSame(1));
-		AssignDiv = newAssignOperator(KString.from("/="), KString.from("opAssignDiv"), Instr.op_div,true);
+		AssignDiv = newAssignOperator("/=", "opAssignDiv", Instr.op_div,true);
 			iopt=new OpTypes();
 			AssignDiv.addTypes(otSame(1),otNumber(),otSame(1));
-		AssignMod = newAssignOperator(KString.from("%="), KString.from("opAssignMod"), Instr.op_rem,true);
+		AssignMod = newAssignOperator("%=", "opAssignMod", Instr.op_rem,true);
 			iopt=new OpTypes();
 			AssignMod.addTypes(otSame(1),otNumber(),otSame(1));
 	}
 
-	protected AssignOperator(KString img, KString nm, Instr in, boolean std) {
+	protected AssignOperator(String img, String nm, Instr in, boolean std) {
 		super(opAssignPriority,img,nm,in,orderAndArityNames[LFY],std);
 		hash.put(img,this);
 	}
 
-	public static AssignOperator newAssignOperator(KString img, KString nm, Instr in, boolean std) {
+	public static AssignOperator newAssignOperator(String img, String nm, Instr in, boolean std) {
 		AssignOperator op = hash.get(img);
 		if( op != null ) {
 			// Verify priority, and instruction
@@ -615,7 +614,7 @@ public class AssignOperator extends Operator {
 		return new AssignOperator(img,nm,in,std);
 	}
 
-	public static AssignOperator getOperator(KString im) {
+	public static AssignOperator getOperator(String im) {
 		return hash.get(im);
 	}
 
@@ -623,7 +622,7 @@ public class AssignOperator extends Operator {
 
 public class BinaryOperator extends Operator {
 
-	public static Hashtable<KString,BinaryOperator>	hash = new Hashtable<KString,BinaryOperator>();
+	public static Hashtable<String,BinaryOperator>	hash = new Hashtable<String,BinaryOperator>();
 
 	// Binary operators
 	public static final BinaryOperator BooleanOr;
@@ -651,48 +650,48 @@ public class BinaryOperator extends Operator {
 	public static final BinaryOperator Comma;
 	
 	static {
-		BooleanOr = newBinaryOperator(opBooleanOrPriority, KString.from("||"), KString.from("opBooleanOr"),null,orderAndArityNames[YFX],true);
+		BooleanOr = newBinaryOperator(opBooleanOrPriority, "||", "opBooleanOr",null,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
 //			BooleanOr.addTypes(otType(Type.tpBoolean),otBoolean(),otBoolean());
-		BooleanAnd = newBinaryOperator(opBooleanAndPriority, KString.from("&&"), KString.from("opBooleanAnd"),null,orderAndArityNames[YFX],true);
+		BooleanAnd = newBinaryOperator(opBooleanAndPriority, "&&", "opBooleanAnd",null,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
 //			BooleanAnd.addTypes(otType(Type.tpBoolean),otBoolean(),otBoolean());
 		BooleanOr.is_boolean_op = true;
 		BooleanAnd.is_boolean_op = true;
 
-		BitOr = newBinaryOperator(opBitOrPriority, KString.from("|"), KString.from("opBitOr"),Instr.op_or,orderAndArityNames[YFX],true);
+		BitOr = newBinaryOperator(opBitOrPriority, "|", "opBitOr",Instr.op_or,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
 //			BitOr.addTypes(otSame(1),otInteger(),otSame(1));
-		BitXor = newBinaryOperator(opBitXorPriority, KString.from("^"), KString.from("opBitXor"),Instr.op_xor,orderAndArityNames[YFX],true);
+		BitXor = newBinaryOperator(opBitXorPriority, "^", "opBitXor",Instr.op_xor,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
 //			BitXor.addTypes(otSame(1),otInteger(),otSame(1));
-		BitAnd = newBinaryOperator(opBitAndPriority, KString.from("&"), KString.from("opBitAnd"),Instr.op_and,orderAndArityNames[YFX],true);
+		BitAnd = newBinaryOperator(opBitAndPriority, "&", "opBitAnd",Instr.op_and,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
 //			BitAnd.addTypes(otSame(1),otInteger(),otSame(1));
 
-		Equals = newBinaryOperator(opEqualsPriority, KString.from("=="), KString.from("opEquals"),null,orderAndArityNames[XFX],true);
+		Equals = newBinaryOperator(opEqualsPriority, "==", "opEquals",null,orderAndArityNames[XFX],true);
 //			iopt=new OpTypes();
 //			Equals.addTypes(otType(Type.tpBoolean),otAny(),otAny());
-		NotEquals = newBinaryOperator(opEqualsPriority, KString.from("!="), KString.from("opNotEquals"),null,orderAndArityNames[XFX],true);
+		NotEquals = newBinaryOperator(opEqualsPriority, "!=", "opNotEquals",null,orderAndArityNames[XFX],true);
 //			iopt=new OpTypes();
 //			NotEquals.addTypes(otType(Type.tpBoolean),otAny(),otAny());
-		InstanceOf = newBinaryOperator(opInstanceOfPriority, KString.from("instanceof"), KString.from("opInstanceOf"),Instr.op_instanceof,orderAndArityNames[XFX],true);
+		InstanceOf = newBinaryOperator(opInstanceOfPriority, "instanceof", "opInstanceOf",Instr.op_instanceof,orderAndArityNames[XFX],true);
 //			iopt=new OpTypes();
 //			InstanceOf.addTypes(otType(Type.tpBoolean),otReference(),otType(Type.tpVoid));
 		Equals.is_boolean_op = true;
 		NotEquals.is_boolean_op = true;
 		InstanceOf.is_boolean_op = true;
 
-		LessThen = newBinaryOperator(opComparePriority, KString.from("<"), KString.from("opLessThen"),null,orderAndArityNames[XFX],true);
+		LessThen = newBinaryOperator(opComparePriority, "<", "opLessThen",null,orderAndArityNames[XFX],true);
 //			iopt=new OpTypes();
 //			LessThen.addTypes(otType(Type.tpBoolean),otUpperCastNumber(1,2),otSame(1));
-		LessEquals = newBinaryOperator(opComparePriority, KString.from("<="), KString.from("opLessEquals"),null,orderAndArityNames[XFX],true);
+		LessEquals = newBinaryOperator(opComparePriority, "<=", "opLessEquals",null,orderAndArityNames[XFX],true);
 //			iopt=new OpTypes();
 //			LessEquals.addTypes(otType(Type.tpBoolean),otUpperCastNumber(1,2),otSame(1));
-		GreaterThen = newBinaryOperator(opComparePriority, KString.from(">"), KString.from("opGreaterThen"),null,orderAndArityNames[XFX],true);
+		GreaterThen = newBinaryOperator(opComparePriority, ">", "opGreaterThen",null,orderAndArityNames[XFX],true);
 //			iopt=new OpTypes();
 //			GreaterThen.addTypes(otType(Type.tpBoolean),otUpperCastNumber(1,2),otSame(1));
-		GreaterEquals = newBinaryOperator(opComparePriority, KString.from(">="), KString.from("opGreaterEquals"),null,orderAndArityNames[XFX],true);
+		GreaterEquals = newBinaryOperator(opComparePriority, ">=", "opGreaterEquals",null,orderAndArityNames[XFX],true);
 //			iopt=new OpTypes();
 //			GreaterEquals.addTypes(otType(Type.tpBoolean),otUpperCastNumber(1,2),otSame(1));
 		LessThen.is_boolean_op = true;
@@ -700,49 +699,49 @@ public class BinaryOperator extends Operator {
 		GreaterThen.is_boolean_op = true;
 		GreaterEquals.is_boolean_op = true;
 
-		LeftShift = newBinaryOperator(opShiftPriority, KString.from("<<"), KString.from("opLeftShift"),Instr.op_shl,orderAndArityNames[XFX],true);
+		LeftShift = newBinaryOperator(opShiftPriority, "<<", "opLeftShift",Instr.op_shl,orderAndArityNames[XFX],true);
 //			iopt=new OpTypes();
 //			LeftShift.addTypes(otSame(1),otInteger(),otInteger());
-		RightShift = newBinaryOperator(opShiftPriority, KString.from(">>"), KString.from("opRightShift"),Instr.op_shr,orderAndArityNames[XFX],true);
+		RightShift = newBinaryOperator(opShiftPriority, ">>", "opRightShift",Instr.op_shr,orderAndArityNames[XFX],true);
 //			iopt=new OpTypes();
 //			RightShift.addTypes(otSame(1),otInteger(),otInteger());
-		UnsignedRightShift = newBinaryOperator(opShiftPriority, KString.from(">>>"), KString.from("opUnsignedRightShift"),Instr.op_ushr,orderAndArityNames[XFX],true);
+		UnsignedRightShift = newBinaryOperator(opShiftPriority, ">>>", "opUnsignedRightShift",Instr.op_ushr,orderAndArityNames[XFX],true);
 //			iopt=new OpTypes();
 //			UnsignedRightShift.addTypes(otSame(1),otInteger(),otInteger());
 
-		Add = newBinaryOperator(opAddPriority, KString.from("+"), KString.from("opAdd"),Instr.op_add,orderAndArityNames[YFX],true);
+		Add = newBinaryOperator(opAddPriority, "+", "opAdd",Instr.op_add,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
 //			Add.addTypes(otType(Type.tpString),otType(Type.tpString),otAny());
 //			iopt=new OpTypes();
 //			Add.addTypes(otType(Type.tpString),otAny(),otType(Type.tpString));
 //			iopt=new OpTypes();
 //			Add.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
-		Sub = newBinaryOperator(opAddPriority, KString.from("-"), KString.from("opSub"),Instr.op_sub,orderAndArityNames[YFX],true);
+		Sub = newBinaryOperator(opAddPriority, "-", "opSub",Instr.op_sub,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
 //			Sub.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
 
-		Mul = newBinaryOperator(opMulPriority, KString.from("*"), KString.from("opMul"),Instr.op_mul,orderAndArityNames[YFX],true);
+		Mul = newBinaryOperator(opMulPriority, "*", "opMul",Instr.op_mul,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
 //			Mul.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
-		Div = newBinaryOperator(opMulPriority, KString.from("/"), KString.from("opDiv"),Instr.op_div,orderAndArityNames[YFX],true);
+		Div = newBinaryOperator(opMulPriority, "/", "opDiv",Instr.op_div,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
 //			Div.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
-		Mod = newBinaryOperator(opMulPriority, KString.from("%"), KString.from("opMod"),Instr.op_rem,orderAndArityNames[YFX],true);
+		Mod = newBinaryOperator(opMulPriority, "%", "opMod",Instr.op_rem,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
 //			Mod.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
 
-		Access = newBinaryOperator(opAccessPriority, KString.from("."), KString.from("opAccess"),null,orderAndArityNames[YFX],true);
-		Comma = newBinaryOperator(1, KString.from(","), KString.from("opComma"),null,orderAndArityNames[YFX],true);
+		Access = newBinaryOperator(opAccessPriority, ".", "opAccess",null,orderAndArityNames[YFX],true);
+		Comma = newBinaryOperator(1, ",", "opComma",null,orderAndArityNames[YFX],true);
 	}
 
 	public boolean is_boolean_op;
 
-	protected BinaryOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
+	protected BinaryOperator(int pr, String img, String nm, Instr in, String oa, boolean std) {
 		super(pr,img,nm,in,oa,std);
 		hash.put(img,this);
 	}
 
-	public static BinaryOperator newBinaryOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
+	public static BinaryOperator newBinaryOperator(int pr, String img, String nm, Instr in, String oa, boolean std) {
 		BinaryOperator op = hash.get(img);
 		if( op != null ) {
 			if (pr == 0)
@@ -757,7 +756,7 @@ public class BinaryOperator extends Operator {
 		return new BinaryOperator(pr,img,nm,in,oa,std);
 	}
 
-	public static BinaryOperator getOperator(KString im) {
+	public static BinaryOperator getOperator(String im) {
 		return hash.get(im);
 	}
 
@@ -765,26 +764,26 @@ public class BinaryOperator extends Operator {
 
 public class MultiOperator extends Operator {
 
-	public static Hashtable<KString,MultiOperator>	hash = new Hashtable<KString,MultiOperator>();
+	public static Hashtable<String,MultiOperator>	hash = new Hashtable<String,MultiOperator>();
 
 	// Binary operators
 	public static final MultiOperator Conditional;
 
 	static {
-		Conditional = newMultiOperator(opConditionalPriority, new KString[]{KString.from("?"),KString.from(":")}, KString.from("opChoice"),true);
+		Conditional = newMultiOperator(opConditionalPriority, new String[]{"?",":"}, "opChoice",true);
 			iopt=new OpTypes();
 			Conditional.addTypes(otDownCast(2,3),otBoolean(),otAny(),otAny());
 	}
 
-	public KString[]	images;
+	public String[]	images;
 
-	protected MultiOperator(int pr, KString[] img, KString nm, boolean std) {
+	protected MultiOperator(int pr, String[] img, String nm, boolean std) {
 		super(pr,img[0],nm,null,orderAndArityNames[XFXFY],std);
 		images = img;
 		hash.put(img[0],this);
 	}
 
-	public static MultiOperator newMultiOperator(int pr, KString[] img, KString nm, boolean std) {
+	public static MultiOperator newMultiOperator(int pr, String[] img, String nm, boolean std) {
 		MultiOperator op = hash.get(img[0]);
 		if( op != null ) {
 			if (pr == 0)
@@ -803,7 +802,7 @@ public class MultiOperator extends Operator {
 		return new MultiOperator(pr,img,nm,std);
 	}
 
-	public static MultiOperator getOperator(KString im) {
+	public static MultiOperator getOperator(String im) {
 		return hash.get(im);
 	}
 
@@ -811,7 +810,7 @@ public class MultiOperator extends Operator {
 
 public class PrefixOperator extends Operator {
 
-	public static Hashtable<KString,PrefixOperator>	hash = new Hashtable<KString,PrefixOperator>();
+	public static Hashtable<String,PrefixOperator>	hash = new Hashtable<String,PrefixOperator>();
 
 	// Unary prefix operators
 	public static final PrefixOperator Pos;
@@ -822,34 +821,34 @@ public class PrefixOperator extends Operator {
 	public static final PrefixOperator BooleanNot;
 
 	static {
-		Pos = newPrefixOperator(opNegPriority, KString.from("+"), KString.from("opPos"),Instr.op_nop,orderAndArityNames[FY],true);
+		Pos = newPrefixOperator(opNegPriority, "+", "opPos",Instr.op_nop,orderAndArityNames[FY],true);
 //			iopt=new OpTypes();
 //			Pos.addTypes(otSame(1),otNumber());
-		Neg = newPrefixOperator(opNegPriority, KString.from("-"), KString.from("opNeg"),Instr.op_neg,orderAndArityNames[FY],true);
+		Neg = newPrefixOperator(opNegPriority, "-", "opNeg",Instr.op_neg,orderAndArityNames[FY],true);
 //			iopt=new OpTypes();
 //			Neg.addTypes(otSame(1),otNumber());
 
-		PreIncr = newPrefixOperator(opIncrPriority, KString.from("++"), KString.from("opPreIncr"),null,orderAndArityNames[FX],true);
+		PreIncr = newPrefixOperator(opIncrPriority, "++", "opPreIncr",null,orderAndArityNames[FX],true);
 //			iopt=new OpTypes();
 //			PreIncr.addTypes(otSame(1),otInteger());
-		PreDecr = newPrefixOperator(opIncrPriority, KString.from("--"), KString.from("opPreDecr"),null,orderAndArityNames[FX],true);
+		PreDecr = newPrefixOperator(opIncrPriority, "--", "opPreDecr",null,orderAndArityNames[FX],true);
 //			iopt=new OpTypes();
 //			PreDecr.addTypes(otSame(1),otInteger());
 
-		BitNot = newPrefixOperator(opBitNotPriority, KString.from("~"), KString.from("opBitNot"),null,orderAndArityNames[FY],true);
+		BitNot = newPrefixOperator(opBitNotPriority, "~", "opBitNot",null,orderAndArityNames[FY],true);
 //			iopt=new OpTypes();
 //			BitNot.addTypes(otSame(1),otInteger());
-		BooleanNot = newPrefixOperator(opBooleanNotPriority, KString.from("!"), KString.from("opBooleanNot"),null,orderAndArityNames[FY],true);
+		BooleanNot = newPrefixOperator(opBooleanNotPriority, "!", "opBooleanNot",null,orderAndArityNames[FY],true);
 //			iopt=new OpTypes();
 //			BooleanNot.addTypes(otType(Type.tpBoolean),otBoolean());
 	}
 
-	protected PrefixOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
+	protected PrefixOperator(int pr, String img, String nm, Instr in, String oa, boolean std) {
 		super(pr,img,nm,in,oa,std);
 		hash.put(img,this);
 	}
 
-	public static PrefixOperator newPrefixOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
+	public static PrefixOperator newPrefixOperator(int pr, String img, String nm, Instr in, String oa, boolean std) {
 		PrefixOperator op = hash.get(img);
 		if( op != null ) {
 			if (pr == 0)
@@ -864,7 +863,7 @@ public class PrefixOperator extends Operator {
 		return new PrefixOperator(pr,img,nm,in,oa,std);
 	}
 
-	public static PrefixOperator getOperator(KString im) {
+	public static PrefixOperator getOperator(String im) {
 		return hash.get(im);
 	}
 
@@ -872,28 +871,28 @@ public class PrefixOperator extends Operator {
 
 public class PostfixOperator extends Operator {
 
-	public static Hashtable<KString,PostfixOperator>	hash = new Hashtable<KString,PostfixOperator>();
+	public static Hashtable<String,PostfixOperator>	hash = new Hashtable<String,PostfixOperator>();
 
 	// Unary postfix operators
 	public static final PostfixOperator PostIncr;
 	public static final PostfixOperator PostDecr;
 
 	static {
-		PostIncr = newPostfixOperator(opIncrPriority, KString.from("++"), KString.from("opPostIncr"),null,orderAndArityNames[XF],true);
+		PostIncr = newPostfixOperator(opIncrPriority, "++", "opPostIncr",null,orderAndArityNames[XF],true);
 //			iopt=new OpTypes();
 //			PostIncr.addTypes(otSame(1),otInteger());
-		PostDecr = newPostfixOperator(opIncrPriority, KString.from("--"), KString.from("opPostDecr"),null,orderAndArityNames[XF],true);
+		PostDecr = newPostfixOperator(opIncrPriority, "--", "opPostDecr",null,orderAndArityNames[XF],true);
 //			iopt=new OpTypes();
 //			PostDecr.addTypes(otSame(1),otInteger());
 	}
 
 
-	protected PostfixOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
+	protected PostfixOperator(int pr, String img, String nm, Instr in, String oa, boolean std) {
 		super(pr,img,nm,in,oa,std);
 		hash.put(img,this);
 	}
 
-	public static PostfixOperator newPostfixOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
+	public static PostfixOperator newPostfixOperator(int pr, String img, String nm, Instr in, String oa, boolean std) {
 		PostfixOperator op = hash.get(img);
 		if( op != null ) {
 			if (pr == 0)
@@ -908,7 +907,7 @@ public class PostfixOperator extends Operator {
 		return new PostfixOperator(pr,img,nm,in,oa,std);
 	}
 
-	public static PostfixOperator getOperator(KString im) {
+	public static PostfixOperator getOperator(String im) {
 		return hash.get(im);
 	}
 
@@ -920,7 +919,7 @@ public class CastOperator extends Operator {
 	public boolean  reinterp;
 
 	public CastOperator(Type tp, boolean r) {
-		super(opCastPriority,KString.Empty,KString.from("(cast)"),null,orderAndArityNames[FY],true);
+		super(opCastPriority,"","(cast)",null,orderAndArityNames[FY],true);
 		type = tp;
 		reinterp = r;
 	}

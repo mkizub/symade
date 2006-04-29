@@ -575,30 +575,39 @@ public class SymbolRef extends ASTNode {
 	@virtual typedef JView = JSymbolRef;
 	@virtual typedef RView = RSymbolRef;
 
-	@att public KString		name; // unresolved name
+	@att public String		name; // unresolved name
 	@ref public Symbol		symbol; // resolved symbol
 
 	@nodeview
 	public static view VSymbolRef of SymbolRef extends NodeView {
-		public KString	name;
+		public String	name;
 		public Symbol	symbol;
 	}
 
 	public SymbolRef() {}
 
-	public SymbolRef(KString name) {
+	public SymbolRef(String name) {
 		this.name = name;
 	}
 
-	public SymbolRef(int pos, KString name) {
+	public SymbolRef(int pos, String name) {
 		this.pos = pos;
 		this.name = name;
+	}
+
+	public SymbolRef(int pos, Symbol id) {
+		this.pos = pos;
+		this.name = id.sname;
+		this.symbol = id;
 	}
 
 	public boolean equals(Object nm) {
 		if (nm instanceof Symbol) return nm == this.name;
 		if (nm instanceof SymbolRef) return nm.name == this.name;
-		if (nm instanceof KString) return nm == this.name;
+		if (nm instanceof String) return nm == this.name;
+		if (nm instanceof KString) {
+			Kiev.reportWarning(this,"Compare SymbolRef.equals(KString)")
+		}
 		return false;
 	}
 
@@ -607,12 +616,15 @@ public class SymbolRef extends ASTNode {
 		if (t.image.startsWith("#id\""))
 			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
 		else
-			this.name = KString.from(t.image);
+			this.name = t.image;
 	}
 	
-	public KString toKString() alias operator(210,fy,$cast) { return name; }
-    
-	public String toString() { return name.toString(); }
+	@setter
+	public void set$name(String value) {
+		this.name = (value != null) ? value.intern() : null;
+	}
+	
+	public String toString() { return symbol == null ? name : symbol.toString(); }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(name).space();

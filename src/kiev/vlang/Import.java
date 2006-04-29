@@ -93,7 +93,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		return this;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		Struct@ s;
 		Struct@ sub;
 		ASTNode@ tmp;
@@ -145,7 +145,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		}
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo path, KString name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo path, String name, CallType mt)
 	{
 		mode == ImportMode.IMPORT_STATIC && !star && this.resolved instanceof Method,
 		((Method)this.resolved).equalsByCast(name,mt,null,path),
@@ -202,7 +202,7 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		return getType().getStruct();
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name) {
+	public rule resolveNameR(ASTNode@ node, ResInfo path, String name) {
 		path.space_prev == this.type,
 		this.arg.id.equals(name),
 		node ?= this.arg

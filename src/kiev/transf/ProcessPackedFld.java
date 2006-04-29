@@ -48,8 +48,8 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 			return;
 		}
 		Struct s = f.ctx_clazz;
-		KString mp_in = mp.getFld();
-		if( mp_in != null && mp_in.len > 0 ) {
+		String mp_in = mp.getFld();
+		if( mp_in != null && mp_in.length() > 0 ) {
 			Field p = s.resolveField(mp_in,false);
 			if( p == null ) {
 				Kiev.reportError(f,"Packer field "+mp_in+" not found");
@@ -107,8 +107,8 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			// Locate or create nearest packer field that can hold this one
 			MetaPacked mp = f.getMetaPacked();
 			if( mp.packer == null ) {
-				KString mp_in = mp.getFld();
-				if( mp_in != null && mp_in.len > 0 ) {
+				String mp_in = mp.getFld();
+				if( mp_in != null && mp_in.length() > 0 ) {
 					Field p = s.resolveField(mp_in,false);
 					if( p == null ) {
 						Kiev.reportError(f,"Packer field "+mp_in+" not found");
@@ -134,7 +134,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 					mpr.setSize(mpr.getSize() + mp.getSize());
 				} else {
 					// Create
-					Field p = new Field(KString.from("$pack$"+countPackerFields(s)),Type.tpInt,ACC_PUBLIC|ACC_SYNTHETIC);
+					Field p = new Field("$pack$"+countPackerFields(s),Type.tpInt,ACC_PUBLIC|ACC_SYNTHETIC);
 					p.pos = s.pos;
 					MetaPacker mpr = new MetaPacker();
 					p.addNodeData(mpr, MetaPacker.ATTR);
@@ -193,7 +193,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);
 		IFldExpr ae = fa.ncopy();
-		ae.var = mp.packer;
+		ae.ident.symbol = mp.packer.id;
 		ENode expr = ae;
 		if (mp.getOffset() > 0) {
 			ConstExpr sexpr = new ConstIntExpr(mp.getOffset());
@@ -231,16 +231,16 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			acc = ((LVarExpr)fa.obj).getVar();
 		}
 		else {
-			Var var = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
+			Var var = new Var(0,"tmp$acc",fa.obj.getType(),0);
 			var.init = ~fa.obj;
 			be.addSymbol(var);
 			acc = var;
 		}
-		Var fval = new Var(0,KString.from("tmp$fldval"),Type.tpInt,0);
+		Var fval = new Var(0,"tmp$fldval",Type.tpInt,0);
 		MetaPacked mp = f.getMetaPacked();
 		fval.init = new IFldExpr(fa.pos, mkAccess(acc), mp.packer);
 		be.addSymbol(fval);
-		Var tmp = new Var(0,KString.from("tmp$val"),Type.tpInt,0);
+		Var tmp = new Var(0,"tmp$val",Type.tpInt,0);
 		be.addSymbol(tmp);
 		if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
 			ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);
@@ -316,15 +316,15 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 				acc = ((LVarExpr)fa.obj).getVar();
 			}
 			else {
-				Var var = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
+				Var var = new Var(0,"tmp$acc",fa.obj.getType(),0);
 				var.init = fa.obj;
 				be.addSymbol(var);
 				acc = var;
 			}
-			Var fval = new Var(0,KString.from("tmp$fldval"),Type.tpInt,0);
+			Var fval = new Var(0,"tmp$fldval",Type.tpInt,0);
 			fval.init = new IFldExpr(fa.pos, mkAccess(acc), mp.packer);
 			be.addSymbol(fval);
-			Var tmp = new Var(0,KString.from("tmp$val"),Type.tpInt,0);
+			Var tmp = new Var(0,"tmp$val",Type.tpInt,0);
 			be.addSymbol(tmp);
 			{
 				ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);

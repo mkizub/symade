@@ -21,14 +21,19 @@ public class Opdef extends SNode {
 
 	@att public int					prior;
 	@att public int					opmode;
-	@att public KString				image;
+	@att public String				image;
 	@ref public Operator			resolved;
 
+	@setter
+	public void set$image(String value) {
+		this.image = (value != null) ? value.intern() : null;
+	}
+	
 	@nodeview
 	public static view VOpdef of Opdef extends VSNode {
 		public int					prior;
 		public int					opmode;
-		public KString				image;
+		public String				image;
 		public Operator				resolved;
 	}
 
@@ -56,7 +61,7 @@ public class Opdef extends SNode {
 	
 	public void setMode(SymbolRef n) {
 		opmode = -1;
-		KString optype = ((SymbolRef)n).name;
+		String optype = ((SymbolRef)n).name;
 		for(int i=0; i < Operator.orderAndArityNames.length; i++) {
 			if( Operator.orderAndArityNames[i].equals(optype) ) {
 				opmode = i;
@@ -77,7 +82,7 @@ public class Opdef extends SNode {
 	}
 	
 	public String toString() {
-		return image.toString();
+		return image;
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {

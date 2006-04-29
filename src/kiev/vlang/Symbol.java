@@ -21,30 +21,31 @@ public class Symbol extends ASTNode {
 	@virtual typedef This  = Symbol;
 	@virtual typedef VView = VSymbol;
 
-	@att public KString		sname; // source code name, may be null for anonymouse symbols
-	public KString			uname; // unique name in scope, never null, usually equals to name
-	public KString[]		aliases;
+	@att
+	public String		sname; // source code name, may be null for anonymouse symbols
+	public String		uname; // unique name in scope, never null, usually equals to name
+	public String[]		aliases;
 
 	@nodeview
 	public static view VSymbol of Symbol extends NodeView {
-		public:ro KString	sname;
-		public:ro KString	uname;
-		public:ro KString[]	aliases;
+		public:ro String	sname;
+		public:ro String	uname;
+		public:ro String[]	aliases;
 	}
 
 	public Symbol() {}
-	public Symbol(int pos, KString sname) {
+	public Symbol(int pos, String sname) {
 		this.pos = pos;
 		this.sname = sname;
 	}
 	
-	public Symbol(KString sname) {
+	public Symbol(String sname) {
 		this.sname = sname;
 	}
 	
-	public Symbol(KString sname, KString uname) {
+	public Symbol(String sname, String uname) {
 		this.sname = sname;
-		this.uname = uname;
+		this.uname = uname.intern();
 	}
 	
 	public void callbackChildChanged(AttrSlot attr) {
@@ -54,16 +55,16 @@ public class Symbol extends ASTNode {
 		}
 	}
 
-	public void addAlias(KString al) {
+	public void addAlias(String al) {
 		if (al == null || al == sname || al == uname)
 			return;
 		// Check we do not have this alias already
 		if (aliases == null) {
-			aliases = new KString[]{ al };
+			aliases = new String[]{ al };
 		} else {
-			foreach(KString n; aliases; n == al)
+			foreach(String n; aliases; n == al)
 				return;
-			aliases = (KString[])Arrays.append(aliases, al);
+			aliases = (String[])Arrays.append(aliases, al);
 		}
 	}
 
@@ -72,15 +73,17 @@ public class Symbol extends ASTNode {
 		if (t.image.startsWith("#id\""))
 			this.sname = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
 		else
-			this.sname = KString.from(t.image);
-		this.uname = this.sname;
+			this.sname = t.image;
 	}
 	
 	@setter
-	public void set$sname(KString value) {
-		this.sname = value;
-		if (value != null)
-			this.uname = value;
+	public void set$sname(String value) {
+		if (value != null) {
+			this.sname = value.intern();
+			this.uname = this.sname;
+		} else {
+			this.sname = null;
+		}
 	}
 	
 	public boolean equals(Object:Object nm) {
@@ -91,23 +94,23 @@ public class Symbol extends ASTNode {
 		if (this.equals(nm.sname)) return true;
 		if (this.equals(nm.uname)) return true;
 		if (nm.aliases != null) {
-			foreach(KString n; nm.aliases; this.equals(n))
+			foreach(String n; nm.aliases; this.equals(n))
 				return true;
 		}
 		return false;
 	}
 
-	public boolean equals(KString:Object nm) {
+	public boolean equals(String:Object nm) {
 		if (sname == nm) return true;
 		if (uname == nm) return true;
 		if (aliases != null) {
-			foreach(KString n; aliases; n == nm)
+			foreach(String n; aliases; n == nm)
 				return true;
 		}
 		return false;
 	}
 
 	public String toString() {
-		return (sname != null) ? sname.toString() : uname.toString();
+		return (sname != null) ? sname : uname;
 	}
 }

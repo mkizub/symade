@@ -52,7 +52,7 @@ public final class MetaSet extends ASTNode {
 		}
 	}
 	
-	public Meta get(KString name) {
+	public Meta get(String name) {
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
 			if (metas[i].type.getType().getStruct().qname() == name)
@@ -80,7 +80,7 @@ public final class MetaSet extends ASTNode {
 	{
 		return unset(meta.type.getType().getStruct().qname());
 	}
-	public Meta unset(KString name) alias del alias operator (5,lfy,-=)
+	public Meta unset(String name) alias del alias operator (5,lfy,-=)
 	{
 		if (name == null)
 			throw new NullPointerException();
@@ -117,16 +117,16 @@ public final class MetaSet extends ASTNode {
 }
 
 public final class MetaValueType {
-	public KString	name;
+	public String	name;
 	public Type		ret;
-	public MetaValueType(KString name) {
+	public MetaValueType(String name) {
 		this.name = name;
 	}
-	public MetaValueType(KString name, Type ret) {
+	public MetaValueType(String name, Type ret) {
 		this.name = name;
 		this.ret = ret;
 	}
-	public String toString() { return String.valueOf(name); }
+	public String toString() { return name; }
 }
 
 @node
@@ -162,7 +162,7 @@ public class Meta extends ENode {
 		this.type = type;
 	}
 	
-	public static Meta newMeta(KString name)
+	public static Meta newMeta(String name)
 		alias operator(210,lfy,new)
 	{
 		return new Meta(new TypeNameRef(name));
@@ -184,7 +184,7 @@ public class Meta extends ENode {
 		if (mt == null || mt.getStruct() == null || !mt.getStruct().isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
-		KString name = ((CompaundType)mt).clazz.qname();
+		String name = ((CompaundType)mt).clazz.qname();
 		Meta m = this;
 		if (m != this) {
 			this.replaceWithNode(m);
@@ -260,7 +260,7 @@ public class Meta extends ENode {
 		return this;
 	}
 	
-	public MetaValue get(KString name) {
+	public MetaValue get(String name) {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].type.name == name) {
@@ -271,7 +271,7 @@ public class Meta extends ENode {
 		throw new RuntimeException("Value "+name+" not found in "+type+" annotation");
 	}
 	
-	public boolean getZ(KString name) {
+	public boolean getZ(String name) {
 		MetaValueScalar mv = (MetaValueScalar)get(name);
 		ASTNode v = mv.value;
 		if (v == null)
@@ -281,7 +281,7 @@ public class Meta extends ENode {
 		throw new RuntimeException("Value "+name+" in annotation "+type+" is not a boolean constant, but "+v);
 	}
 	
-	public int getI(KString name) {
+	public int getI(String name) {
 		MetaValueScalar mv = (MetaValueScalar)get(name);
 		ASTNode v = mv.value;
 		if (v == null)
@@ -291,7 +291,7 @@ public class Meta extends ENode {
 		throw new RuntimeException("Value "+name+" in annotation "+type+" is not an int constant, but "+v);
 	}
 	
-	public KString getS(KString name) {
+	public KString getS(String name) {
 		MetaValueScalar mv = (MetaValueScalar)get(name);
 		ASTNode v = mv.value;
 		if (v == null)
@@ -316,7 +316,7 @@ public class Meta extends ENode {
 		return value;
 	}
 
-	public MetaValue setZ(KString name, boolean val)
+	public MetaValue setZ(String name, boolean val)
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
@@ -331,7 +331,7 @@ public class Meta extends ENode {
 		return mv;
 	}
 
-	public MetaValue setI(KString name, int val)
+	public MetaValue setI(String name, int val)
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
@@ -346,7 +346,7 @@ public class Meta extends ENode {
 		return mv;
 	}
 
-	public MetaValue setS(KString name, KString val)
+	public MetaValue setS(String name, KString val)
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
@@ -365,7 +365,7 @@ public class Meta extends ENode {
 	{
 		return unset(value.type.name);
 	}
-	public MetaValue unset(KString name) alias del alias operator (5,lfy,-=)
+	public MetaValue unset(String name) alias del alias operator (5,lfy,-=)
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
@@ -456,7 +456,7 @@ public abstract class MetaValue extends ASTNode {
 	
 	public void verify() {
 		if (type == null)
-			type = new MetaValueType(KString.from("value"));
+			type = new MetaValueType("value");
 	}
 	
 	void resolveValue(Type reqType, ENode value) {

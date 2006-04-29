@@ -877,9 +877,9 @@ stop:;
 	/** add all files from project file if need to rebuild
 	*/
 	static String[] addRequaredToMake(String[] args) {
-		for(Enumeration<KString> e=Env.projectHash.keys(); e.hasMoreElements();) {
+		for(Enumeration<String> e=Env.projectHash.keys(); e.hasMoreElements();) {
 			try {
-				KString key = (KString)e.nextElement();
+				String key = e.nextElement();
 				ProjectFile value = Env.projectHash.get(key);
 				File fclass = new File(Kiev.output_dir,value.bname.toString());
 				if( fclass.exists() && fclass.isDirectory() ) {

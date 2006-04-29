@@ -60,7 +60,7 @@ public final view JNewExpr of NewExpr extends JENode {
 				ENode tie = new IFldExpr(pos,new ThisExpr(pos),((Struct)code.clazz).resolveField(nameTypeInfo));
 				ENode e = new CastExpr(pos,type,
 					new CallExpr(pos,tie,
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newInstance"),Type.tpObject,Type.tpInt),
+						Type.tpTypeInfo.clazz.resolveMethod("newInstance",Type.tpObject,Type.tpInt),
 						new ENode[]{new ConstIntExpr(i)}
 					)
 				);

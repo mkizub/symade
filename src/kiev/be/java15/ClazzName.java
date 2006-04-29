@@ -90,7 +90,7 @@ class ClazzName implements Constants {
 		KString name;
 		if( outer.isPackage() ) {
 			assert(!isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
-			if (outer.qname() != KString.Empty) {
+			if (outer.qname() != "") {
 				bytecode_name = KString.from(((JStruct)outer).bname()+delim+short_name);
 				name = KString.from(outer.qname()+"."+short_name);
 			} else {
@@ -115,7 +115,7 @@ class ClazzName implements Constants {
 		while(sc.hasMoreChars()) {
 			char ch = sc.nextChar();
 			if( ch == '$' ) {
-				KString tmp = str.substr(0,sc.pos-1);
+				String tmp = str.substr(0,sc.pos-1).toString().intern();
 				byte b = (byte)(Env.existsStruct(tmp)?'.':'$');
 				sb.append_fast(b);
 			} else {

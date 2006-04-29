@@ -36,7 +36,7 @@ public final view RFinallyInfo of FinallyInfo extends RENode {
 
 	public void resolve(Type reqType) {
 		if (ret_arg == null)
-			ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
+			ret_arg = new Var(pos,"",Type.tpObject,0);
 		try {
 			body.resolve(Type.tpVoid);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);

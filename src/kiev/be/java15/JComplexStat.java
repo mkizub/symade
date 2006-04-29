@@ -220,7 +220,7 @@ public view JFinallyInfo of FinallyInfo extends JENode {
 	public		CodeCatchInfo	code_catcher;
 
 	public void generate(Code code, Type reqType) {
-		JVar arg = (JVar)new Var(pos,KString.Empty,Type.tpThrowable,0);
+		JVar arg = (JVar)new Var(pos,"",Type.tpThrowable,0);
 		try {
 			CodeCatchInfo null_ci = null;
 			// This label must be created by TryStat's generate routine;

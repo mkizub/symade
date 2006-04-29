@@ -21,11 +21,16 @@ public class ASTOperator extends ENode {
 	@virtual typedef This  = ASTOperator;
 	@virtual typedef VView = VASTOperator;
 
-	@att public KString		image;
+	@att public String		image;
 
+	@setter
+	public void set$name(String value) {
+		this.image = (value != null) ? value.intern() : null;
+	}
+	
 	@nodeview
 	public static view VASTOperator of ASTOperator extends VENode {
-		public KString		image;
+		public String		image;
 	}
 	
 	ASTOperator() {}

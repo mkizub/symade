@@ -43,7 +43,7 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	public final Struct getStruct() { return (Struct)this; }
 
-	public final KString qname();
+	public final String qname();
 
 	public boolean isClazz();
 	// a pizza case	
@@ -96,9 +96,9 @@ public final view RStruct of Struct extends RTypeDecl {
 	public Struct addCase(Struct cas);
 
 	public boolean instanceOf(Struct cl);
-	public Field resolveField(KString name);
-	public Field resolveField(KString name, boolean fatal);
-	public Method resolveMethod(KString name, Type ret, ...);
+	public Field resolveField(String name);
+	public Field resolveField(String name, boolean fatal);
+	public Method resolveMethod(String name, Type ret, ...);
 	public Constructor getClazzInitMethod();
 
 	public ENode accessTypeInfoField(ASTNode from, Type t, boolean from_gen) {
@@ -117,7 +117,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			}
 			if (this.instanceOf(Type.tpTypeInfo.clazz) && ctx_method != null && ctx_method.id.uname == nameInit) {
 				if (t instanceof ArgType)
-					return new ASTIdentifier(from.pos,t.name);
+					return new ASTIdentifier(from.pos,t.name.toString());
 			}
 			if (this.isTypeUnerasable()) {
 				ENode ti_access;
@@ -139,8 +139,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				if (t instanceof ArgType) {
 					// Get corresponded type argument
 					ArgType at = (ArgType)t;
-					KString fnm = new KStringBuffer(nameTypeInfo.len+1+at.name.len)
-							.append(nameTypeInfo).append('$').append(at.name).toKString();
+					String fnm = (nameTypeInfo+'$'+at.name).intern();
 					Field ti_arg = typeinfo_clazz.resolveField(fnm);
 					if (ti_arg == null)
 						throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+from.ctx_method);
@@ -180,7 +179,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				continue;
 			i++;
 		}
-		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ti_expr.getType(),ACC_SYNTHETIC|ACC_STATIC|ACC_FINAL); // package-private for inner classes
+		Field f = new Field(nameTypeInfo+"$"+i,ti_expr.getType(),ACC_SYNTHETIC|ACC_STATIC|ACC_FINAL); // package-private for inner classes
 		f.init = ti_expr;
 		getStruct().addField(f);
 		f.resolveDecl();
@@ -239,14 +238,14 @@ public final view RStruct of Struct extends RTypeDecl {
 		{
 			Constructor init = new Constructor(ACC_PROTECTED);
 			init.body = new Block(pos);
-			init.params.add(new FormPar(pos,KString.from("hash"),Type.tpInt,FormPar.PARAM_NORMAL,ACC_FINAL));
-			init.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
+			init.params.add(new FormPar(pos,"hash",Type.tpInt,FormPar.PARAM_NORMAL,ACC_FINAL));
+			init.params.add(new FormPar(pos,"clazz",Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
 			// add in it arguments fields, and prepare for constructor
 			foreach (ArgType at; this.getTypeInfoArgs()) {
-				KString fname = KString.from(nameTypeInfo+"$"+at.name);
+				String fname = nameTypeInfo+"$"+at.name;
 				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
-				FormPar v = new FormPar(pos,at.name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
+				FormPar v = new FormPar(pos,at.name.toString(),Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
 				init.params.append(v);
 				init.body.stats.append(new ExprStat(pos,
 					new AssignExpr(pos,AssignOperator.Assign,
@@ -271,7 +270,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				Type t = at.applay(this.ctype);
 				ENode expr;
 				if (t instanceof ArgType)
-					expr = new ASTIdentifier(pos,t.name);
+					expr = new ASTIdentifier(pos,t.name.toString());
 				else if (t.isUnerasable())
 					expr = new TypeInfoExpr(pos,new TypeRef(t));
 				else
@@ -295,19 +294,19 @@ public final view RStruct of Struct extends RTypeDecl {
 		// 	return ti;
 		// }
 		{
-			Method init = new Method(KString.from("newTypeInfo"), typeinfo_clazz.ctype, ACC_STATIC|ACC_PUBLIC);
-			init.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
-			init.params.add(new FormPar(pos,KString.from("args"),new ArrayType(Type.tpTypeInfo),FormPar.PARAM_NORMAL,ACC_FINAL));
+			Method init = new Method("newTypeInfo", typeinfo_clazz.ctype, ACC_STATIC|ACC_PUBLIC);
+			init.params.add(new FormPar(pos,"clazz",Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
+			init.params.add(new FormPar(pos,"args",new ArrayType(Type.tpTypeInfo),FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.body = new Block(pos);
-			Var h = new Var(pos,KString.from("hash"),Type.tpInt,ACC_FINAL);
-			Var v = new Var(pos,KString.from("ti"),typeinfo_clazz.ctype,0);
-			Method mhash = Type.tpTypeInfo.clazz.resolveMethod(KString.from("hashCode"),Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
+			Var h = new Var(pos,"hash",Type.tpInt,ACC_FINAL);
+			Var v = new Var(pos,"ti",typeinfo_clazz.ctype,0);
+			Method mhash = Type.tpTypeInfo.clazz.resolveMethod("hashCode",Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
 			h.init = new CallExpr(pos,null,mhash,new ENode[]{
 				new LVarExpr(pos,init.params[0]),
 				new LVarExpr(pos,init.params[1])
 			});
 			init.body.addSymbol(h);
-			Method mget = Type.tpTypeInfo.clazz.resolveMethod(KString.from("get"),Type.tpTypeInfo,Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
+			Method mget = Type.tpTypeInfo.clazz.resolveMethod("get",Type.tpTypeInfo,Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
 			v.init = new CallExpr(pos,null,mget,new ENode[]{
 				new LVarExpr(pos,h),
 				new LVarExpr(pos,init.params[0]),
@@ -339,14 +338,14 @@ public final view RStruct of Struct extends RTypeDecl {
 		// 	return true;
 		// }
 		{
-			Method meq = new Method(KString.from("eq"), Type.tpBoolean, ACC_PUBLIC);
-			meq.params.add(new FormPar(pos,KString.from("clazz"),Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
-			meq.params.add(new FormPar(pos,KString.from("args"),new ArrayType(Type.tpTypeInfo),FormPar.PARAM_VARARGS,ACC_FINAL));
+			Method meq = new Method("eq", Type.tpBoolean, ACC_PUBLIC);
+			meq.params.add(new FormPar(pos,"clazz",Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
+			meq.params.add(new FormPar(pos,"args",new ArrayType(Type.tpTypeInfo),FormPar.PARAM_VARARGS,ACC_FINAL));
 			typeinfo_clazz.addMethod(meq);
 			meq.body = new Block(pos);
 			meq.body.stats.add(new IfElseStat(pos,
 				new BinaryBoolExpr(pos,BinaryOperator.NotEquals,
-					new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField(KString.from("clazz"))),
+					new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField("clazz")),
 					new LVarExpr(pos,meq.params[0])
 					),
 				new ReturnStat(pos,new ConstBoolExpr(false)),
@@ -354,7 +353,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			));
 			int idx = 0;
 			foreach (ArgType at; this.getTypeInfoArgs()) {
-				Field f = typeinfo_clazz.resolveField(KString.from(nameTypeInfo+"$"+at.name));
+				Field f = typeinfo_clazz.resolveField((nameTypeInfo+"$"+at.name).intern());
 				meq.body.stats.add(new IfElseStat(pos,
 					new BinaryBoolExpr(pos,BinaryOperator.NotEquals,
 						new IFldExpr(pos,new ThisExpr(pos), f),
@@ -377,17 +376,17 @@ public final view RStruct of Struct extends RTypeDecl {
 		// 	return true;
 		// }
 		{
-			Method misa = new Method(KString.from("$assignableFrom"), Type.tpBoolean, ACC_PUBLIC);
-			misa.params.add(new FormPar(pos,KString.from("ti"),Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL));
+			Method misa = new Method("$assignableFrom", Type.tpBoolean, ACC_PUBLIC);
+			misa.params.add(new FormPar(pos,"ti",Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
 			misa.body.stats.add(new IfElseStat(pos,
 				new BooleanNotExpr(pos,
 					new CallExpr(pos,
-						new IFldExpr(pos,new ThisExpr(), typeinfo_clazz.resolveField(KString.from("clazz"))),
-						Type.tpClass.clazz.resolveMethod(KString.from("isAssignableFrom"),Type.tpBoolean,Type.tpClass),
+						new IFldExpr(pos,new ThisExpr(), typeinfo_clazz.resolveField("clazz")),
+						Type.tpClass.clazz.resolveMethod("isAssignableFrom",Type.tpBoolean,Type.tpClass),
 						new ENode[]{
-							new IFldExpr(pos,new LVarExpr(pos,misa.params[0]), typeinfo_clazz.resolveField(KString.from("clazz")))
+							new IFldExpr(pos,new LVarExpr(pos,misa.params[0]), typeinfo_clazz.resolveField("clazz"))
 						}
 					)
 				),
@@ -401,12 +400,12 @@ public final view RStruct of Struct extends RTypeDecl {
 				)
 			));
 			foreach (ArgType at; this.getTypeInfoArgs()) {
-				Field f = typeinfo_clazz.resolveField(KString.from(nameTypeInfo+"$"+at.name));
+				Field f = typeinfo_clazz.resolveField((nameTypeInfo+"$"+at.name).intern());
 				misa.body.stats.add(new IfElseStat(pos,
 					new BooleanNotExpr(pos,
 						new CallExpr(pos,
 							new IFldExpr(pos,new ThisExpr(), f),
-							Type.tpTypeInfo.clazz.resolveMethod(KString.from("$assignableFrom"),Type.tpBoolean,Type.tpTypeInfo),
+							Type.tpTypeInfo.clazz.resolveMethod("$assignableFrom",Type.tpBoolean,Type.tpTypeInfo),
 							new ENode[]{
 								new IFldExpr(pos,new LVarExpr(pos,misa.params[0]), f)
 							}
@@ -425,8 +424,8 @@ public final view RStruct of Struct extends RTypeDecl {
 		// 	return this.$assignableFrom(((Outer)obj).$typeinfo));
 		// }
 		{
-			Method misa = new Method(KString.from("$instanceof"), Type.tpBoolean, ACC_PUBLIC);
-			misa.params.add(new FormPar(pos,KString.from("obj"),Type.tpObject,FormPar.PARAM_NORMAL,ACC_FINAL));
+			Method misa = new Method("$instanceof", Type.tpBoolean, ACC_PUBLIC);
+			misa.params.add(new FormPar(pos,"obj",Type.tpObject,FormPar.PARAM_NORMAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
 			misa.body.stats.add(new IfElseStat(pos,
@@ -440,8 +439,8 @@ public final view RStruct of Struct extends RTypeDecl {
 			misa.body.stats.add(new IfElseStat(pos,
 				new BooleanNotExpr(pos,
 					new CallExpr(pos,
-						new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField(KString.from("clazz"))),
-						Type.tpClass.clazz.resolveMethod(KString.from("isInstance"),Type.tpBoolean,Type.tpObject),
+						new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField("clazz")),
+						Type.tpClass.clazz.resolveMethod("isInstance",Type.tpBoolean,Type.tpObject),
 						new ENode[]{new LVarExpr(pos,misa.params[0])}
 						)
 					),
@@ -451,7 +450,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			misa.body.stats.add(new ReturnStat(pos,
 				new CallExpr(pos,
 					new ThisExpr(),
-					typeinfo_clazz.resolveMethod(KString.from("$assignableFrom"),Type.tpBoolean,Type.tpTypeInfo),
+					typeinfo_clazz.resolveMethod("$assignableFrom",Type.tpBoolean,Type.tpTypeInfo),
 					new ENode[]{
 						new IFldExpr(pos,
 							new CastExpr(pos,this.ctype,new LVarExpr(pos,misa.params[0])),
@@ -512,12 +511,12 @@ public final view RStruct of Struct extends RTypeDecl {
 	}
 
 	static final class VTableEntry {
-		KString      name;
-		CallType     etype;
+		String			name;
+		CallType		etype;
 		protected:no,ro,ro,rw
-		List<Method> methods = List.Nil;
-		VTableEntry  overloader;
-		VTableEntry(KString name, CallType etype) {
+		List<Method>	methods = List.Nil;
+		VTableEntry		overloader;
+		VTableEntry(String name, CallType etype) {
 			this.name = name;
 			this.etype = etype;
 		}
@@ -545,7 +544,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			if (m.isMethodBridge())
 				continue;
 			CallType etype = m.etype;
-			KString name = m.id.uname;
+			String name = m.id.uname;
 			boolean is_new = true;
 			foreach (VTableEntry vte; vtable) {
 				if (name == vte.name && etype ≈ vte.etype) {
@@ -668,8 +667,8 @@ public final view RStruct of Struct extends RTypeDecl {
 			if (m.ctx_clazz == this && !m.isVirtualStatic()) {
 				m.setVirtualStatic(true);
 				if (m.name.name == vte.name) {
-					KString name = m.name.name;
-					m.name.name = KString.from(name+"$mm$"+tmp);
+					String name = m.name.name;
+					m.name.name = (name+"$mm$"+tmp).intern();
 					m.name.addAlias(name);
 				}
 			}
@@ -737,7 +736,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			// create a proxy call
 			m = new Method(vte.name, vte.etype.ret(), ACC_PUBLIC | ACC_BRIDGE | ACC_SYNTHETIC);
 			for (int i=0; i < vte.etype.arity; i++)
-				m.params.append(new FormPar(0,KString.from("arg$"+i),vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
+				m.params.append(new FormPar(0,"arg$"+i,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
 			members.append(m);
 			m.body = new Block();
 			if( m.type.ret() ≡ Type.tpVoid )
@@ -987,7 +986,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						((RStruct)t.getStruct()).autoGenerateTypeinfoClazz();
 					ENode tibe = new CallExpr(pos,
 						accessTypeInfoField(mmt.m,t,false),
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("$instanceof"),Type.tpBoolean,Type.tpObject),
+						Type.tpTypeInfo.clazz.resolveMethod("$instanceof",Type.tpBoolean,Type.tpObject),
 						new ENode[]{ new LVarExpr(pos,mm.params[j]) }
 						);
 					if( be == null )
@@ -1232,14 +1231,14 @@ public final view RStruct of Struct extends RTypeDecl {
 						else
 							ce = es.expr;
 						if( ce instanceof ASTCallExpression ) {
-							SymbolRef nm = ((ASTCallExpression)ce).func;
+							SymbolRef nm = ((ASTCallExpression)ce).ident;
 							if( !(nm.name.equals(nameThis) || nm.name.equals(nameSuper) ) )
 								gen_def_constr = true;
 							else if( nm.name.equals(nameSuper) )
 								m.setNeedFieldInits(true);
 						}
 						else if( ce instanceof CallExpr ) {
-							KString nm = ((CallExpr)ce).func.id.uname;
+							String nm = ((CallExpr)ce).func.id.uname;
 							if( !(nm.equals(nameThis) || nm.equals(nameSuper) || nm.equals(nameInit)) )
 								gen_def_constr = true;
 							else {
@@ -1257,7 +1256,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					m.setNeedFieldInits(true);
 					ASTCallExpression call_super = new ASTCallExpression();
 					call_super.pos = pos;
-					call_super.func = new SymbolRef(pos, nameSuper);
+					call_super.ident = new SymbolRef(pos, nameSuper);
 					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;
@@ -1274,9 +1273,9 @@ public final view RStruct of Struct extends RTypeDecl {
 						}
 					}
 					else if( isEnum() ) {
-						call_super.args.add(new ASTIdentifier(pos, KString.from("name")));
+						call_super.args.add(new ASTIdentifier(pos, "name"));
 						call_super.args.add(new ASTIdentifier(pos, nameEnumOrdinal));
-						//call_super.args.add(new ASTIdentifier(pos, KString.from("text")));
+						//call_super.args.add(new ASTIdentifier(pos, "text"));
 					}
 					else if( isForward() && package_clazz.isStructView() && super_type.getStruct().package_clazz.isStructView() ) {
 						call_super.args.add(new ASTIdentifier(pos, nameImpl));
@@ -1382,8 +1381,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						if( !m.id.equals(nameInit) ) continue;
 						for(int j=0; j < proxy_fields.length; j++) {
 							int par = m.params.length;
-							KString nm = new KStringBuffer().append(nameVarProxy)
-								.append(proxy_fields[j].id).toKString();
+							String nm = proxy_fields[j].id.sname;
 							m.params.append(new FormPar(m.pos,nm,proxy_fields[j].type,FormPar.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
 							m.body.stats.insert(
 								new ExprStat(m.pos,

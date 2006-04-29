@@ -112,146 +112,146 @@ public interface StdTypes {
 		tpNull		= new CoreType(Constants.nameNull,    flReference);
 //		tpRule		= new CoreType(Constants.nameRule,    flReference);
 
-		Struct tpRuleClazz = new Struct(new Symbol(KString.from("rule")),Env.root,ACC_PUBLIC);
+		Struct tpRuleClazz = new Struct(new Symbol("rule"),Env.root,ACC_PUBLIC);
 		tpRule				= tpRuleClazz.ctype;
 		tpRuleClazz.setResolved(true);
 		tpRule.flags		= flResolved | flReference;
 
-		Struct java_lang = Env.newPackage(KString.from("java.lang"));
-		Struct java_lang_annotation = Env.newPackage(KString.from("java.lang.annotation"));
-		Struct java_util = Env.newPackage(KString.from("java.util"));
-		Struct kiev_stdlib = Env.newPackage(KString.from("kiev.stdlib"));
-		Struct kiev_stdlib_meta = Env.newPackage(KString.from("kiev.stdlib.meta"));
+		Struct java_lang = Env.newPackage("java.lang");
+		Struct java_lang_annotation = Env.newPackage("java.lang.annotation");
+		Struct java_util = Env.newPackage("java.util");
+		Struct kiev_stdlib = Env.newPackage("kiev.stdlib");
+		Struct kiev_stdlib_meta = Env.newPackage("kiev.stdlib.meta");
 
-		Struct tpObjectClazz = Env.newStruct(KString.from("Object"),java_lang,ACC_PUBLIC);
+		Struct tpObjectClazz = Env.newStruct("Object",java_lang,ACC_PUBLIC);
 		tpObject				= tpObjectClazz.ctype;
 
-		Struct tpClassClazz = Env.newStruct(KString.from("Class"),java_lang,ACC_PUBLIC|ACC_FINAL);
+		Struct tpClassClazz = Env.newStruct("Class",java_lang,ACC_PUBLIC|ACC_FINAL);
 		tpClass					= tpClassClazz.ctype;
 
-		Struct tpDebugClazz = Env.newStruct(KString.from("Debug"),kiev_stdlib,ACC_PUBLIC);
+		Struct tpDebugClazz = Env.newStruct("Debug",kiev_stdlib,ACC_PUBLIC);
 		tpDebug				= tpDebugClazz.ctype;
 
-		Struct tpTypeInfoClazz = Env.newStruct(KString.from("TypeInfo"),kiev_stdlib,ACC_PUBLIC|ACC_FINAL);
+		Struct tpTypeInfoClazz = Env.newStruct("TypeInfo",kiev_stdlib,ACC_PUBLIC|ACC_FINAL);
 		tpTypeInfo				= tpTypeInfoClazz.ctype;
 
-		Struct tpTypeInfoInterfaceClazz = Env.newStruct(KString.from("TypeInfoInterface"),kiev_stdlib,ACC_PUBLIC|ACC_INTERFACE);
+		Struct tpTypeInfoInterfaceClazz = Env.newStruct("TypeInfoInterface",kiev_stdlib,ACC_PUBLIC|ACC_INTERFACE);
 		tpTypeInfoInterface				= tpTypeInfoInterfaceClazz.ctype;
 
-		Struct tpCloneableClazz = Env.newStruct(KString.from("Cloneable"),java_lang,ACC_PUBLIC|ACC_INTERFACE);
+		Struct tpCloneableClazz = Env.newStruct("Cloneable",java_lang,ACC_PUBLIC|ACC_INTERFACE);
 		tpCloneable				= tpCloneableClazz.ctype;
 
 		
-		TypeDef tdWrapperArg = new TypeConstr(KString.from("_boxed_"), tpObject);
-		tpWrapperArg = new ArgType(KString.from("_boxed_"),tdWrapperArg);
+		TypeDef tdWrapperArg = new TypeConstr("_boxed_", tpObject);
+		tpWrapperArg = new ArgType("_boxed_",tdWrapperArg);
 		tpWrapperArg.flags |= flHidden;
 		
-		TypeDef tdArrayArg = new TypeConstr(KString.from("_elem_"), tpAny);
-		tpArrayArg = new ArgType(KString.from("_elem_"),tdArrayArg);
+		TypeDef tdArrayArg = new TypeConstr("_elem_", tpAny);
+		tpArrayArg = new ArgType("_elem_",tdArrayArg);
 		tpArrayArg.flags |= flHidden;
 		tpArray					= ArrayType.newArrayType(Type.tpAny);
 		tpArray.flags			|= flResolved | flReference | flArray;
 
-		Struct tpBooleanRefClazz = Env.newStruct(KString.from("Boolean"),java_lang,ACC_PUBLIC);
+		Struct tpBooleanRefClazz = Env.newStruct("Boolean",java_lang,ACC_PUBLIC);
 		tpBooleanRef			= tpBooleanRefClazz.ctype;
 
-		Struct tpCharRefClazz = Env.newStruct(KString.from("Character"),java_lang,ACC_PUBLIC);
+		Struct tpCharRefClazz = Env.newStruct("Character",java_lang,ACC_PUBLIC);
 		tpCharRef			= tpCharRefClazz.ctype;
 
-		Struct tpNumberRefClazz = Env.newStruct(KString.from("Number"),java_lang,ACC_PUBLIC);
+		Struct tpNumberRefClazz = Env.newStruct("Number",java_lang,ACC_PUBLIC);
 		tpNumberRef			= tpNumberRefClazz.ctype;
 
-		Struct tpByteRefClazz = Env.newStruct(KString.from("Byte"),java_lang,ACC_PUBLIC);
+		Struct tpByteRefClazz = Env.newStruct("Byte",java_lang,ACC_PUBLIC);
 		tpByteRef			= tpByteRefClazz.ctype;
 
-		Struct tpShortRefClazz = Env.newStruct(KString.from("Short"),java_lang,ACC_PUBLIC);
+		Struct tpShortRefClazz = Env.newStruct("Short",java_lang,ACC_PUBLIC);
 		tpShortRef			= tpShortRefClazz.ctype;
 
-		Struct tpIntRefClazz = Env.newStruct(KString.from("Integer"),java_lang,ACC_PUBLIC);
+		Struct tpIntRefClazz = Env.newStruct("Integer",java_lang,ACC_PUBLIC);
 		tpIntRef			= tpIntRefClazz.ctype;
 
-		Struct tpLongRefClazz = Env.newStruct(KString.from("Long"),java_lang,ACC_PUBLIC);
+		Struct tpLongRefClazz = Env.newStruct("Long",java_lang,ACC_PUBLIC);
 		tpLongRef			= tpLongRefClazz.ctype;
 
-		Struct tpFloatRefClazz = Env.newStruct(KString.from("Float"),java_lang,ACC_PUBLIC);
+		Struct tpFloatRefClazz = Env.newStruct("Float",java_lang,ACC_PUBLIC);
 		tpFloatRef			= tpFloatRefClazz.ctype;
 
-		Struct tpDoubleRefClazz = Env.newStruct(KString.from("Double"),java_lang,ACC_PUBLIC);
+		Struct tpDoubleRefClazz = Env.newStruct("Double",java_lang,ACC_PUBLIC);
 		tpDoubleRef			= tpDoubleRefClazz.ctype;
 
-		Struct tpVoidRefClazz = Env.newStruct(KString.from("Void"),java_lang,ACC_PUBLIC);
+		Struct tpVoidRefClazz = Env.newStruct("Void",java_lang,ACC_PUBLIC);
 		tpVoidRef			= tpVoidRefClazz.ctype;
 
-		Struct tpStringClazz = Env.newStruct(KString.from("String"),java_lang,ACC_PUBLIC);
+		Struct tpStringClazz = Env.newStruct("String",java_lang,ACC_PUBLIC);
 		tpString				= tpStringClazz.ctype;
 
-		Struct tpAnnotationClazz = Env.newStruct(KString.from("Annotation"),java_lang_annotation,ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT);
+		Struct tpAnnotationClazz = Env.newStruct("Annotation",java_lang_annotation,ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT);
 		tpAnnotation			= tpAnnotationClazz.ctype;
 		
-		Struct tpThrowableClazz = Env.newStruct(KString.from("Throwable"),java_lang,ACC_PUBLIC);
+		Struct tpThrowableClazz = Env.newStruct("Throwable",java_lang,ACC_PUBLIC);
 		tpThrowable				= tpThrowableClazz.ctype;
 
-		Struct tpErrorClazz = Env.newStruct(KString.from("Error"),java_lang,ACC_PUBLIC);
+		Struct tpErrorClazz = Env.newStruct("Error",java_lang,ACC_PUBLIC);
 		tpError				= tpErrorClazz.ctype;
 
-		Struct tpExceptionClazz = Env.newStruct(KString.from("Exception"),java_lang,ACC_PUBLIC);
+		Struct tpExceptionClazz = Env.newStruct("Exception",java_lang,ACC_PUBLIC);
 		tpException				= tpExceptionClazz.ctype;
 
-		Struct tpCastExceptionClazz = Env.newStruct(KString.from("ClassCastException"),java_lang,ACC_PUBLIC);
+		Struct tpCastExceptionClazz = Env.newStruct("ClassCastException",java_lang,ACC_PUBLIC);
 		tpCastException				= tpCastExceptionClazz.ctype;
 
-		Struct tpRuntimeExceptionClazz = Env.newStruct(KString.from("RuntimeException"),java_lang,ACC_PUBLIC);
+		Struct tpRuntimeExceptionClazz = Env.newStruct("RuntimeException",java_lang,ACC_PUBLIC);
 		tpRuntimeException				= tpRuntimeExceptionClazz.ctype;
 
-		Struct tpAssertExceptionClazz = Env.newStruct(KString.from("AssertionFailedException"),kiev_stdlib,ACC_PUBLIC);
+		Struct tpAssertExceptionClazz = Env.newStruct("AssertionFailedException",kiev_stdlib,ACC_PUBLIC);
 		tpAssertException				= tpAssertExceptionClazz.ctype;
 
-		Struct tpEnumClazz = Env.newStruct(KString.from("Enum"),java_lang,ACC_PUBLIC | ACC_ABSTRACT);
+		Struct tpEnumClazz = Env.newStruct("Enum",java_lang,ACC_PUBLIC | ACC_ABSTRACT);
 		tpEnum					= tpEnumClazz.ctype;
 
-		tpClosureClazz = Env.newStruct(KString.from("closure"),kiev_stdlib,ACC_PUBLIC);
+		tpClosureClazz = Env.newStruct("closure",kiev_stdlib,ACC_PUBLIC);
 		tpClosure				= tpClosureClazz.ctype;
 
-		Struct tpTypeSwitchHashClazz = Env.newStruct(KString.from("TypeSwitchHash"),kiev_stdlib,ACC_PUBLIC);
+		Struct tpTypeSwitchHashClazz = Env.newStruct("TypeSwitchHash",kiev_stdlib,ACC_PUBLIC);
 		tpTypeSwitchHash			= tpTypeSwitchHashClazz.ctype;
 
 
-		Struct tpJavaEnumerationClazz = Env.newStruct(KString.from("Enumeration"),java_util,ACC_PUBLIC);
+		Struct tpJavaEnumerationClazz = Env.newStruct("Enumeration",java_util,ACC_PUBLIC);
 		tpJavaEnumeration	= tpJavaEnumerationClazz.ctype;
 		
-		Struct tpKievEnumerationClazz = Env.newStruct(KString.from("Enumeration"),kiev_stdlib,ACC_PUBLIC);
-		tpKievEnumerationClazz.args.add(new TypeConstr(KString.from("A")));
+		Struct tpKievEnumerationClazz = Env.newStruct("Enumeration",kiev_stdlib,ACC_PUBLIC);
+		tpKievEnumerationClazz.args.add(new TypeConstr("A"));
 		tpKievEnumeration	= tpKievEnumerationClazz.ctype;
 		
 		
-		Struct tpArrayEnumeratorClazz = Env.newStruct(KString.from("ArrayEnumerator"),kiev_stdlib,ACC_PUBLIC);
-		tpArrayEnumeratorClazz.args.add(new TypeConstr(KString.from("A")));
+		Struct tpArrayEnumeratorClazz = Env.newStruct("ArrayEnumerator",kiev_stdlib,ACC_PUBLIC);
+		tpArrayEnumeratorClazz.args.add(new TypeConstr("A"));
 		tpArrayEnumerator	= tpArrayEnumeratorClazz.ctype;
 		
 
-		Struct tpPrologVarClazz = Env.newStruct(KString.from("PVar"),kiev_stdlib,ACC_PUBLIC);
-		tpPrologVarClazz.args.add(new TypeConstr(KString.from("A")));
+		Struct tpPrologVarClazz = Env.newStruct("PVar",kiev_stdlib,ACC_PUBLIC);
+		tpPrologVarClazz.args.add(new TypeConstr("A"));
 		tpPrologVar	= tpPrologVarClazz.ctype;
 
-		Struct tpRefProxyClazz = Env.newStruct(KString.from("Ref"),kiev_stdlib,ACC_PUBLIC);
-		tpRefProxyClazz.args.add(new TypeConstr(KString.from("A")));
+		Struct tpRefProxyClazz = Env.newStruct("Ref",kiev_stdlib,ACC_PUBLIC);
+		tpRefProxyClazz.args.add(new TypeConstr("A"));
 		tpRefProxy	= tpRefProxyClazz.ctype;
 
 
-		TypeDef tdCallRetArg = new TypeConstr(KString.from("_ret_"), tpAny);
+		TypeDef tdCallRetArg = new TypeConstr("_ret_", tpAny);
 		tpCallRetArg = new ArgType(tdCallRetArg.id.uname,tdCallRetArg);
 		tpCallRetArg.flags |= flHidden;
 		
 		tpCallParamArgs = new ArgType[128];
 		for (int i=0; i < tpCallParamArgs.length; i++) {
-			TypeDef tdCallParamArg = new TypeConstr(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
+			TypeDef tdCallParamArg = new TypeConstr("_"+Integer.toHexString(i)+"_", tpAny);
 			tpCallParamArgs[i] = new ArgType(tdCallParamArg.id.uname,tdCallParamArg);
 			tpCallParamArgs[i].flags |= flHidden;
 		}
 		
 		tpUnattachedArgs = new ArgType[128] ;
 		for (int i=0; i < tpUnattachedArgs.length; i++) {
-			TypeDef tdUnattachedArg = new TypeConstr(KString.from("_"+Integer.toHexString(i)+"_"), tpAny);
+			TypeDef tdUnattachedArg = new TypeConstr("_"+Integer.toHexString(i)+"_", tpAny);
 			tpUnattachedArgs[i] = new ArgType(tdUnattachedArg.id.uname,tdUnattachedArg);
 			//tpUnattachedArgs[i].flags |= flHidden;
 		}

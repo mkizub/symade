@@ -30,7 +30,6 @@ public final view RShadow of Shadow extends RENode {
 @nodeview
 public final view RArrayLengthExpr of ArrayLengthExpr extends RENode {
 	public ENode			obj;
-	public SymbolRef		ident;
 
 	public void resolve(Type reqType) {
 		obj.resolve(null);
@@ -50,7 +49,7 @@ public final view RTypeClassExpr of TypeClassExpr extends RENode {
 		Type tp = type.getType();
 		if (!tp.isReference()) {
 			Type rt = ((CoreType)tp).getRefTypeForPrimitive();
-			Field f = rt.clazz.resolveField(KString.from("TYPE"));
+			Field f = rt.clazz.resolveField("TYPE");
 			replaceWithNodeResolve(reqType,new SFldExpr(pos,f));
 			return;
 		}

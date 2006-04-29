@@ -126,7 +126,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		return st;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
 		Var@ var;
 		ASTNode@ n;
 	{
@@ -265,7 +265,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		return "catch( "+arg+" )";
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 	{
 		node ?= arg, ((Var)node).id.equals(name)
 	}

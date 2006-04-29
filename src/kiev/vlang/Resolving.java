@@ -330,11 +330,11 @@ public interface Scope {
 }
 
 public interface ScopeOfNames extends Scope {
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name);
+	public rule resolveNameR(ASTNode@ node, ResInfo path, String name);
 }
 
 public interface ScopeOfMethods extends Scope {
-	public rule resolveMethodR(Method@ node, ResInfo path, KString name, CallType mt);
+	public rule resolveMethodR(Method@ node, ResInfo path, String name, CallType mt);
 }
 
 public interface ScopeOfOperators extends ScopeOfNames {

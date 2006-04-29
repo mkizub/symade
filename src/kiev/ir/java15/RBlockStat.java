@@ -23,7 +23,7 @@ public final view RSynchronizedStat of SynchronizedStat extends RENode {
 	public void resolve(Type reqType) {
 		try {
 			expr.resolve(null);
-			expr_var = new Var(pos,KString.Empty,Type.tpObject,0);
+			expr_var = new Var(pos,"",Type.tpObject,0);
 		} catch(Exception e ) { Kiev.reportError(this,e); }
 		try {
 			body.resolve(Type.tpVoid);

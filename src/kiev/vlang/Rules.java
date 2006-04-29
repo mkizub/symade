@@ -54,7 +54,7 @@ public class RuleMethod extends Method {
 		super(id, new TypeRef(Type.tpRule), fl);
 		this.pos = id.pos;
 	}
-	public RuleMethod(KString name, int fl) {
+	public RuleMethod(String name, int fl) {
 		super(new Symbol(name), new TypeRef(Type.tpRule), fl);
 	}
 
@@ -82,7 +82,7 @@ public class RuleMethod extends Method {
 		return max_vars++;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		Var@ var;
 	{
 		inlined_by_dispatcher || path.space_prev.pslot.name == "targs",$cut,false

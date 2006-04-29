@@ -142,11 +142,11 @@ public final class Field extends LvalDNode implements Named, Accessable {
 		trace(Kiev.debugCreation,"New field created: "+name+" with type "+ftype);
 	}
 
-	public Field(KString name, TypeRef ftype, int flags) {
+	public Field(String name, TypeRef ftype, int flags) {
 		this(new Symbol(name),ftype,flags);
 	}
 	
-	public Field(KString name, Type type, int flags) {
+	public Field(String name, Type type, int flags) {
 		this(new Symbol(name),new TypeRef(type),flags);
 	}
 	
@@ -199,10 +199,10 @@ public final class Field extends LvalDNode implements Named, Accessable {
 
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
-		if( !id.equals(KString.Empty) )
+		if( id.uname != "" )
 			type.toJava(dmp).forsed_space().append(id);
 		if( init != null ) {
-			if( !id.equals(KString.Empty) )
+			if( id.uname != "" )
 				dmp.append(" = ");
 			init.toJava(dmp);
 		}

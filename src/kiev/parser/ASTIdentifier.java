@@ -22,16 +22,21 @@ public class ASTIdentifier extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	static KString op_instanceof = KString.from("instanceof");
+	static String op_instanceof = "instanceof";
 
 	@virtual typedef This  = ASTIdentifier;
 	@virtual typedef VView = VASTIdentifier;
 
-	@att public KString name;
+	@att public String name;
 
+	@setter
+	public void set$name(String value) {
+		this.name = (value != null) ? value.intern() : null;
+	}
+	
 	@nodeview
 	public static view VASTIdentifier of ASTIdentifier extends VENode {
-		public KString name;
+		public String name;
 
 		public boolean preResolveIn() {
 			// predefined operators
@@ -106,11 +111,11 @@ public class ASTIdentifier extends ENode {
 
 	public ASTIdentifier() {}
 
-	public ASTIdentifier(KString name) {
+	public ASTIdentifier(String name) {
 		this.name = name;
 	}
 
-	public ASTIdentifier(int pos, KString name) {
+	public ASTIdentifier(int pos, String name) {
 		this.pos = pos;
 		this.name = name;
 	}
@@ -122,7 +127,7 @@ public class ASTIdentifier extends ENode {
 		if (t.image.startsWith("#id\""))
 			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
 		else
-			this.name = KString.from(t.image);
+			this.name = t.image;
 	}
 	
 	public void resolve(Type reqType) {
@@ -158,7 +163,7 @@ public class ASTIdentifier extends ENode {
 				if( val == null ) val = Env.getProperty(prop.replace('_','.'));
 				if( val != null ) {
 					if( reqType ≡ null || reqType ≈ Type.tpString) {
-						replaceWithNode(new ConstStringExpr(KString.from(val)));
+						replaceWithNode(new ConstStringExpr(val));
 						return;
 					}
 					if( reqType.isBoolean() ) {
@@ -175,7 +180,7 @@ public class ASTIdentifier extends ENode {
 					if( reqType.isNumber() ) {
 						replaceWithNode(new ConstDoubleExpr(Double.valueOf(val).doubleValue()));
 					}
-					replaceWithNode(new ConstStringExpr(KString.from(val)));
+					replaceWithNode(new ConstStringExpr(val));
 					return;
 				}
 				if( reqType.isBoolean() )
@@ -213,12 +218,8 @@ public class ASTIdentifier extends ENode {
 		replaceWithNodeResolve(reqType, info.buildAccess(this, null, v));
 	}
 
-	public KString toKString() {
-		return name;
-	}
-    
 	public String toString() {
-		return name.toString();
+		return name;
 	}
 
 	public Dumper toJava(Dumper dmp) {

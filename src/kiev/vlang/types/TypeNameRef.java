@@ -20,18 +20,23 @@ public class TypeNameRef extends TypeRef {
 	@virtual typedef This  = TypeNameRef;
 	@virtual typedef VView = VTypeNameRef;
 
-	@att public TypeRef					outer;
-	@att public KString					name;
+	@att public TypeRef			outer;
+	@att public String			name;
 
+	@setter
+	public void set$name(String value) {
+		this.name = (value != null) ? value.intern() : null;
+	}
+	
 	@nodeview
 	public static final view VTypeNameRef of TypeNameRef extends VTypeRef {
 		public TypeRef				outer;
-		public KString				name;
+		public String				name;
 	}
 
 	public TypeNameRef() {}
 
-	public TypeNameRef(KString nm) {
+	public TypeNameRef(String nm) {
 		name = nm;
 	}
 

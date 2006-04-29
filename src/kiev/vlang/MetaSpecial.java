@@ -117,13 +117,13 @@ public class MetaPacked extends MetaSpecial {
 		offset = new ConstIntExpr(val);
 	}
 	
-	public KString getFld() {
+	public String getFld() {
 		SymbolRef fld = this.fld;
 		if (fld != null)
 			return fld.name;
-		return KString.Empty;
+		return "";
 	}
-	public void setFld(KString val) {
+	public void setFld(String val) {
 		fld = new SymbolRef(val);
 	}
 }

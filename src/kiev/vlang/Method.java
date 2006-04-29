@@ -328,14 +328,14 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	
 	public Method() {}
 
-	public Method(KString name, Type ret) {
+	public Method(String name, Type ret) {
 		this(new Symbol(name),new TypeRef(ret),0);
 	}
 
-	public Method(KString name, Type ret, int fl) {
+	public Method(String name, Type ret, int fl) {
 		this(name,new TypeRef(ret),fl);
 	}
-	public Method(KString name, TypeRef type_ret, int fl) {
+	public Method(String name, TypeRef type_ret, int fl) {
 		this(new Symbol(name), type_ret, fl);
 	}
 	public Method(Symbol id, TypeRef type_ret, int fl) {
@@ -394,19 +394,19 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		return sb.toString();
 	}
 
-	public static String toString(KString nm, NArr<ENode> args) {
+	public static String toString(String nm, NArr<ENode> args) {
 		return toString(nm,args.toArray(),null);
 	}
 
-	public static String toString(KString nm, ENode[] args) {
+	public static String toString(String nm, ENode[] args) {
 		return toString(nm,args,null);
 	}
 
-	public static String toString(KString nm, NArr<ENode> args, Type ret) {
+	public static String toString(String nm, NArr<ENode> args, Type ret) {
 		return toString(nm,args.toArray(),ret);
 	}
 	
-	public static String toString(KString nm, ENode[] args, Type ret) {
+	public static String toString(String nm, ENode[] args, Type ret) {
 		StringBuffer sb = new StringBuffer(nm+"(");
 		for(int i=0; args!=null && i < args.length; i++) {
 			sb.append(args[i].getType().toString());
@@ -419,7 +419,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		return sb.toString();
 	}
 
-	public static String toString(KString nm, CallType mt) {
+	public static String toString(String nm, CallType mt) {
 		StringBuffer sb = new StringBuffer(nm+"(");
 		for(int i=0; i < mt.arity; i++) {
 			sb.append(mt.arg(i).toString());
@@ -465,7 +465,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		}
 	}
 
-	public boolean equalsByCast(KString name, CallType mt, Type tp, ResInfo info) {
+	public boolean equalsByCast(String name, CallType mt, Type tp, ResInfo info) {
 		if (!this.id.equals(name)) return false;
 		int type_len = this.type.arity;
 		int args_len = mt.arity;
@@ -595,7 +595,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		return dmp;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		FormPar@ var;
 	{
 		inlined_by_dispatcher || path.space_prev.pslot.name == "targs",$cut,false
@@ -626,7 +626,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		var.type.resolveNameAccessR(node,path,name)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
 		Var@ n;
 	{
 		info.isForwardsAllowed(),
@@ -671,7 +671,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 			int i = 0;
 			foreach (TypeDef td; targs) {
 				td.setTypeUnerasable(true);
-				FormPar v = new FormPar(td.pos,KString.from(nameTypeInfo+"$"+td.id.uname), Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
+				FormPar v = new FormPar(td.pos,nameTypeInfo+"$"+td.id.uname, Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
 				params.add(v);
 			}
 		}
@@ -860,7 +860,7 @@ public class WBCCondition extends DNode {
 
 	public WBCCondition() {}
 
-	public WBCCondition(int pos, WBCType cond, KString name, ENode body) {
+	public WBCCondition(int pos, WBCType cond, String name, ENode body) {
 		this.pos = pos;
 		if (name != null)
 			this.id = new Symbol(name);

@@ -33,15 +33,16 @@ public final class JEnv {
 	Struct loadStruct(ClazzName name) throws RuntimeException {
 		if (name.name == KString.Empty) return Env.root;
 		// Check class is already loaded
-		if (Env.classHashOfFails.get(name.name) != null ) return null;
-		Struct cl = Env.resolveStruct(name.name);
+		String qname = name.name.toString().intern();
+		if (Env.classHashOfFails.get(qname) != null ) return null;
+		Struct cl = Env.resolveStruct(qname);
 		// Load if not loaded or not resolved
 		if( cl == null )
 			cl = loadClazz(name);
 		else if( !cl.isResolved() && !cl.isAnonymouse() )
 			cl = loadClazz(name);
 		if( cl == null )
-			Env.classHashOfFails.put(name.name);
+			Env.classHashOfFails.put(qname);
 		return cl;
 	}
 
@@ -50,7 +51,7 @@ public final class JEnv {
 		int start = 0;
 		int end = bc_name.indexOf('/', start);
 		while (end > 0) {
-			KString nm = bc_name.substr(start, end);
+			String nm = bc_name.substr(start, end).toString().intern();
 			Struct ss = null;
 			foreach (Struct s; pkg.sub_clazz; s.id.equals(nm)) {
 				ss = s;
@@ -64,8 +65,8 @@ public final class JEnv {
 		}
 		end = bc_name.indexOf('$', start);
 		while (end > 0) {
-			KString nm = bc_name.substr(start, end);
-			assert (!Character.isDigit((char)nm.byteAt(0)));
+			String nm = bc_name.substr(start, end).toString().intern();
+			assert (!Character.isDigit(nm.charAt(0)));
 			Struct ss = null;
 			foreach (Struct s; pkg.sub_clazz; s.id.equals(nm)) {
 				ss = s;
@@ -77,20 +78,20 @@ public final class JEnv {
 			start = end+1;
 			end = bc_name.indexOf('$', start);
 		}
-		KString nm = bc_name.substr(start);
+		String nm = bc_name.substr(start).toString().intern();
 		//assert (!Character.isDigit((char)nm.byteAt(0)));
 		foreach (Struct s; pkg.sub_clazz; s.id.equals(nm))
 			return s;
 		return Env.newStruct(nm, true, pkg, 0, cleanup);
 	}
 
-	public boolean existsClazz(KString qname) {
-		return stdClassLoader.existsClazz(ClazzName.fromToplevelName(qname).bytecode_name.toString());
+	public boolean existsClazz(String qname) {
+		return stdClassLoader.existsClazz(ClazzName.fromToplevelName(KString.from(qname)).bytecode_name.toString());
 	}
 
 	/** Actually load class from specified file and dir */
-	public Struct loadClazz(KString qname) throws RuntimeException {
-		return loadClazz(ClazzName.fromToplevelName(qname),false);
+	public Struct loadClazz(String qname) throws RuntimeException {
+		return loadClazz(ClazzName.fromToplevelName(KString.from(qname)),false);
 	}
 
 	/** Actually load class from specified file and dir */
@@ -109,14 +110,14 @@ public final class JEnv {
 		diff_time = curr_time = System.currentTimeMillis();
 		kiev.bytecode.Clazz clazz = stdClassLoader.loadClazz(name.bytecode_name.toString());
 		if( clazz != null ) {
-			Struct cl = Env.resolveStruct(name.name);
+			Struct cl = Env.resolveStruct(name.name.toString().intern());
 			if( cl == null || !cl.isResolved() || cl.package_clazz==null ) {
 				// Ensure the parent package/outer class is loaded
 				Struct pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 				if( pkg == null ) {
 					pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 					if( pkg == null )
-						pkg = Env.newPackage(name.package_name());
+						pkg = Env.newPackage(name.package_name().toString().intern());
 				}
 				if( !pkg.isResolved() ) {
 					pkg = loadStruct(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
@@ -139,7 +140,7 @@ public final class JEnv {
 			return cl;
 		}
 		// CLASSPATH is scanned, try project file
-		ProjectFile pf = Env.projectHash.get(name.name);
+		ProjectFile pf = Env.projectHash.get(name.name.toString().intern());
 		File file = null;
 		KString filename = null;
 		KString cur_file = null;
@@ -204,7 +205,7 @@ public final class JEnv {
 			k.interface_only = Kiev.interface_only;
 			Kiev.curFile = cur_file;
 		}
-		Struct cl = Env.resolveStruct(name.name);
+		Struct cl = Env.resolveStruct(name.name.toString().intern());
 		return cl;
 	}
 

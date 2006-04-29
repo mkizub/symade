@@ -152,7 +152,7 @@ public static final view JTypeRef of TypeRef extends JENode {
 
 @nodeview
 public static final view JSymbolRef of SymbolRef extends JNode {
-	public:ro KString name;
+	public:ro String name;
 
 	public void generate(Code code, Type reqType) {
 		// don't generate here

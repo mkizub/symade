@@ -115,14 +115,14 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 			if( args.size() == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt),
+						Type.tpTypeInfo.clazz.resolveMethod("newArray",Type.tpObject,Type.tpInt),
 						new ENode[]{~args[0]}
 					)));
 				return;
 			} else {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,new ArrayType(Type.tpInt)),
+						Type.tpTypeInfo.clazz.resolveMethod("newArray",Type.tpObject,new ArrayType(Type.tpInt)),
 						new ENode[]{
 							new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.delToArray())
 						}
@@ -224,19 +224,19 @@ public final view RNewClosure of NewClosure extends RENode {
 		Block body = ~this.body;
 		Type ret = ctype.ret();
 		if( ret ≢ Type.tpRule ) {
-			KString call_name;
+			String call_name;
 			if( ret.isReference() ) {
 				ret = Type.tpObject;
-				call_name = KString.from("call_Object");
+				call_name = "call_Object";
 			} else {
-				call_name = KString.from("call_"+ret);
+				call_name = ("call_"+ret).intern();
 			}
 			Method md = new Method(call_name, ret, ACC_PUBLIC);
 			md.pos = pos;
 			md.body = body;
 			clazz.members.add(md);
 		} else {
-			KString call_name = KString.from("call_rule");
+			String call_name = "call_rule";
 			RuleMethod md = new RuleMethod(call_name,ACC_PUBLIC);
 			md.pos = pos;
 			md.body = body;

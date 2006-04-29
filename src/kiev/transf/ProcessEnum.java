@@ -93,7 +93,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 
 		// toString
 		{
-			Method tostr = new Method(KString.from("toString"),Type.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
+			Method tostr = new Method("toString",Type.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
 			tostr.id.addAlias(nameCastOp);
 			tostr.pos = pos;
 			tostr.body = new Block(pos);
@@ -105,10 +105,10 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			CaseLabel[] cases = new CaseLabel[eflds.length+1];
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
-				KString str = f.id.sname;
+				String str = f.id.sname;
 				if (f.id.aliases != null) {
 					str = f.id.aliases[0];
-					str = str.substr(1,str.length()-1);
+					str = str.substring(1,str.length()-1);
 				}
 				cases[i] = new CaseLabel(pos,new ConstIntExpr(i)	,
 					new ENode[]{
@@ -127,23 +127,23 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 
 		// fromString
 		{
-			Method fromstr = new Method(KString.from("valueOf"),clazz.ctype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			Method fromstr = new Method("valueOf",clazz.ctype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			fromstr.id.addAlias(nameCastOp);
-			fromstr.id.addAlias(KString.from("fromString"));
+			fromstr.id.addAlias("fromString");
 			fromstr.pos = pos;
-			fromstr.params.add(new FormPar(pos,KString.from("val"),Type.tpString, FormPar.PARAM_NORMAL,0));
+			fromstr.params.add(new FormPar(pos,"val",Type.tpString, FormPar.PARAM_NORMAL,0));
 			fromstr.body = new Block(pos);
 			AssignExpr ae = new AssignExpr(pos,AssignOperator.Assign,
 				new LVarExpr(pos,fromstr.params[0]),
 				new CallExpr(pos,
 					new LVarExpr(pos,fromstr.params[0]),
-					Type.tpString.clazz.resolveMethod(KString.from("intern"),Type.tpString),
+					Type.tpString.clazz.resolveMethod("intern",Type.tpString),
 					ENode.emptyArray
 				));
 			fromstr.body.stats.add(new ExprStat(pos,ae));
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
-				KString str = f.id.sname;
+				String str = f.id.sname;
 				IfElseStat ifst = new IfElseStat(pos,
 					new BinaryBoolExpr(pos,BinaryOperator.Equals,
 						new LVarExpr(pos,fromstr.params[0]),
@@ -154,8 +154,8 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 				fromstr.body.stats.add(ifst);
 				if (f.id.aliases != null) {
 					str = f.id.aliases[0];
-					if (str.byteAt(0) == (byte)'\"') {
-						str = str.substr(1,str.length()-1);
+					if (str.charAt(0) == '\"') {
+						str = str.substring(1,str.length()-1);
 						if (str != f.id.sname) {
 							ifst = new IfElseStat(pos,
 								new BinaryBoolExpr(pos,BinaryOperator.Equals,

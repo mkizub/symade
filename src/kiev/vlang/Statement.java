@@ -86,7 +86,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
@@ -493,7 +493,7 @@ public class BreakStat extends ENode {
 	
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("break");
-		if( ident != null && !ident.name.equals(KString.Empty) )
+		if( ident != null && ident.name != "" )
 			dmp.space().append(ident);
 		return dmp.append(';').newLine();
 	}
@@ -579,7 +579,7 @@ public class ContinueStat extends ENode {
 	
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("continue");
-		if( ident != null && !ident.name.equals(KString.Empty) )
+		if( ident != null && ident.name != "" )
 			dmp.space().append(ident);
 		return dmp.append(';').newLine();
 	}
@@ -637,7 +637,7 @@ public class GotoStat extends ENode {
 
 	public GotoStat() {}
 	
-	public static LabeledStat[] resolveStat(KString name, ASTNode st, LabeledStat[] stats) {
+	public static LabeledStat[] resolveStat(String name, ASTNode st, LabeledStat[] stats) {
 		int i;
 		switch( st ) {
 		case SwitchStat:

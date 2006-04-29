@@ -622,8 +622,6 @@ public class CommaExpr extends ENode {
 		return sb.toString();
 	}
 
-	public KString getName() { return KString.Empty; };
-
 	public Dumper toJava(Dumper dmp) {
 		for(int i=0; i < exprs.length; i++) {
 			exprs[i].toJava(dmp);
@@ -683,7 +681,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		stats.insert((ASTNode)sym,idx);
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
 		ASTNode@ n;
 	{
 		n @= new SymbolIterator(this.stats, info.space_prev),
@@ -706,7 +704,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		n.getType().resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, KString name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
@@ -1053,35 +1051,35 @@ public class CastExpr extends ENode {
 		if( !tp.isReference() ) return;
 		if( tp ≈ Type.tpBooleanRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpBooleanRef.clazz.resolveMethod(KString.from("booleanValue"),Type.tpBoolean),ENode.emptyArray
+				Type.tpBooleanRef.clazz.resolveMethod("booleanValue",Type.tpBoolean),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpByteRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpByteRef.clazz.resolveMethod(KString.from("byteValue"),Type.tpByte),ENode.emptyArray
+				Type.tpByteRef.clazz.resolveMethod("byteValue",Type.tpByte),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpShortRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpShortRef.clazz.resolveMethod(KString.from("shortValue"),Type.tpShort),ENode.emptyArray
+				Type.tpShortRef.clazz.resolveMethod("shortValue",Type.tpShort),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpIntRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpIntRef.clazz.resolveMethod(KString.from("intValue"),Type.tpInt),ENode.emptyArray
+				Type.tpIntRef.clazz.resolveMethod("intValue",Type.tpInt),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpLongRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpLongRef.clazz.resolveMethod(KString.from("longValue"),Type.tpLong),ENode.emptyArray
+				Type.tpLongRef.clazz.resolveMethod("longValue",Type.tpLong),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpFloatRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpFloatRef.clazz.resolveMethod(KString.from("floatValue"),Type.tpFloat),ENode.emptyArray
+				Type.tpFloatRef.clazz.resolveMethod("floatValue",Type.tpFloat),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpDoubleRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpDoubleRef.clazz.resolveMethod(KString.from("doubleValue"),Type.tpDouble),ENode.emptyArray
+				Type.tpDoubleRef.clazz.resolveMethod("doubleValue",Type.tpDouble),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpCharRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpCharRef.clazz.resolveMethod(KString.from("charValue"),Type.tpChar),ENode.emptyArray
+				Type.tpCharRef.clazz.resolveMethod("charValue",Type.tpChar),ENode.emptyArray
 			);});
 		else
 			throw new RuntimeException("Type "+tp+" is not a reflection of primitive type");

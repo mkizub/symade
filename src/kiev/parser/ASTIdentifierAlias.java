@@ -36,11 +36,16 @@ public final class ASTIdentifierAlias extends ASTAlias {
 	@virtual typedef This  = ASTIdentifierAlias;
 	@virtual typedef VView = ASTIdentifierAliasView;
 
-	@att public KString		name;
+	@att public String		name;
 
+	@setter
+	public void set$name(String value) {
+		this.name = (value != null) ? value.intern() : null;
+	}
+	
 	@nodeview
 	public static view ASTIdentifierAliasView of ASTIdentifierAlias extends ASTAliasView {
-		public KString		name;
+		public String		name;
 	}
 
 	public ASTIdentifierAlias() {}

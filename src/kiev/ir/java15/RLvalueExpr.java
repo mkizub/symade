@@ -104,9 +104,9 @@ public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 
 @nodeview
 public static final view RIFldExpr of IFldExpr extends RLvalueExpr {
-	public ENode		obj;
-	public SymbolRef	ident;
-	public Field		var;
+	public		ENode		obj;
+	public		SymbolRef	ident;
+	public:ro	Field		var;
 
 	public void resolve(Type reqType) throws RuntimeException {
 		obj.resolve(null);
@@ -175,10 +175,10 @@ public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 @nodeview
 public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 
-	static final KString namePEnv = KString.from("$env");
+	static final String namePEnv = "$env";
 
-	public SymbolRef	ident;
-	public Var			var;
+	public		SymbolRef	ident;
+	public:ro	Var			var;
 
 	public Var getVar();
 
@@ -230,9 +230,9 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 
 @nodeview
 public static final view RSFldExpr of SFldExpr extends RLvalueExpr {
-	public ENode		obj;
-	public SymbolRef	ident;
-	public Field		var;
+	public		ENode		obj;
+	public		SymbolRef	ident;
+	public:ro	Field		var;
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;

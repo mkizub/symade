@@ -121,7 +121,7 @@ public class Var extends LvalDNode implements Named {
 
 	public Var() {}
 
-	public Var(int pos, KString name, Type type, int flags)
+	public Var(int pos, String name, Type type, int flags)
 		require type != null;
 	{
 		this.pos = pos;
@@ -139,7 +139,7 @@ public class Var extends LvalDNode implements Named {
 		this.vtype = vtype;
 	}
 
-	public Var(KString name, Type type)
+	public Var(String name, Type type)
 		require type != null;
 	{
 		this.id = new Symbol(name);
@@ -261,7 +261,7 @@ public final class FormPar extends Var {
 	
 	public FormPar() {}
 
-	public FormPar(int pos, KString name, Type type, int kind, int flags) {
+	public FormPar(int pos, String name, Type type, int kind, int flags) {
 		super(name,type);
 		this.pos = pos;
 		this.flags = flags;

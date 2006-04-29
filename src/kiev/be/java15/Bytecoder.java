@@ -112,7 +112,7 @@ public class Bytecoder implements JConstants {
 			}
 		}
 		Type ftype = Signature.getType(f_type);
-		f = new Field(f_name,ftype,f_flags);
+		f = new Field(f_name.toString(),ftype,f_flags);
 		if( acc != null ) f.acc = acc;
 		if( nm != null )
 			f.id.aliases = nm.aliases;
@@ -132,6 +132,7 @@ public class Bytecoder implements JConstants {
 		kiev.bytecode.Method bcm = bcclazz.methods[index];
 		int m_flags = bcm.flags;
 		KString m_name = bcm.getName(bcclazz);
+		String m_name_s = m_name.toString().intern();
 		KString m_type_java = bcm.getSignature(bcclazz);
 		KString m_type = m_type_java;
 		Attr[] attrs = Attr.emptyArray;
@@ -170,23 +171,23 @@ public class Bytecoder implements JConstants {
 		if( m == null ) {
 //			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
 //				mtype = new CallType(mtype.args,Type.tpRule);
-//				m = new RuleMethod(m_name,m_flags);
+//				m = new RuleMethod(m_name_s,m_flags);
 //			}
 //			else
-			if (m_name == nameInit || m_name == nameClassInit)
+			if (m_name_s == nameInit || m_name_s == nameClassInit)
 				m = new Constructor(m_flags);
 			else
-				m = new Method(m_name,mtype.ret(),m_flags);
+				m = new Method(m_name_s,mtype.ret(),m_flags);
 			cl.members.append(m);
 			for (int i=0; i < mtype.arity; i++) {
 				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
-					FormPar fp = new FormPar(new Symbol(KString.from("va_arg")),
+					FormPar fp = new FormPar(new Symbol("va_arg"),
 						new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_VARARGS,ACC_FINAL);
 						m.params.add(fp);
 						mtype = m.etype;
 						break;
 				} else {
-					FormPar fp = new FormPar(new Symbol(KString.from("arg"+i)),
+					FormPar fp = new FormPar(new Symbol("arg"+i),
 						new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_NORMAL,0);
 						m.params.add(fp);
 				}
@@ -330,7 +331,7 @@ public class Bytecoder implements JConstants {
 								break;
 							}
 						}
-						if (anon || cn.package_name() != cl.qname()) {
+						if (anon || cn.package_name() != KString.from(cl.qname())) {
 							inner[i] == null;
 						} else {
 							Struct inn = Env.jenv.loadStruct(cn);

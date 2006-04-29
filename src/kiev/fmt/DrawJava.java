@@ -161,10 +161,10 @@ public class DrawJavaEnumAlias extends DrawTerm {
 
 	public void preFormat(DrawContext cont) {
 		Field f = (Field)node;
-		KString str = f.id.sname;
+		String str = f.id.sname;
 		if (f.id.aliases != null) {
 			str = f.id.aliases[0];
-			str = str.substr(1,str.length()-1);
+			str = str.substring(1,str.length()-1);
 		}
 		text = "\""+str+"\"";
 		super.preFormat(cont);

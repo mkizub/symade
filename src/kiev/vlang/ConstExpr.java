@@ -373,6 +373,7 @@ public final class ConstStringExpr extends ConstExpr {
 	
 	public ConstStringExpr() {}
 	public ConstStringExpr(KString value) { this.value = value; }
+	public ConstStringExpr(String value) { this.value = KString.from(value); }
 
 	public Type		getType()			{ return Type.tpString; }
 
@@ -594,19 +595,19 @@ public abstract class ConstExpr extends ENode {
 		}
     }
 
-    public static KString source2ascii(String source) {
-    	KStringBuffer ksb = new KStringBuffer(source.length()*2);
+    public static String source2ascii(String source) {
+    	StringBuffer sb = new StringBuffer(source.length());
         int i = 0;
         int len = source.length();
         while (i < len) {
             if (source.charAt(i) == '\\' && i + 1 < len) {
                 i++;
                 switch (source.charAt(i)) {
-                case 'n':	ksb.append((byte)'\n'); i++; continue;
-                case 't':	ksb.append((byte)'\t'); i++; continue;
-                case 'b':	ksb.append((byte)'\b'); i++; continue;
-                case 'r':	ksb.append((byte)'\r'); i++; continue;
-                case 'f':	ksb.append((byte)'\f'); i++; continue;
+                case 'n':	sb.append('\n'); i++; continue;
+                case 't':	sb.append('\t'); i++; continue;
+                case 'b':	sb.append('\b'); i++; continue;
+                case 'r':	sb.append('\r'); i++; continue;
+                case 'f':	sb.append('\f'); i++; continue;
                 case '0': case '1': case '2': case '3': case '4': case '5':
                 case '6': case '7': case '8': case '9':
                 	{
@@ -614,7 +615,7 @@ public abstract class ConstExpr extends ENode {
                 	for(int k=0; k < 3 && i < len && source.charAt(i) >='0' && source.charAt(i) <='8'; k++, i++) {
                 		code = code*8 + (source.charAt(i) - '0');
                 	}
-                    ksb.append((byte)code);
+                    sb.append((char)code);
                     continue;
                 	}
                 case 'u':
@@ -628,16 +629,16 @@ public abstract class ConstExpr extends ENode {
                             k++;
                         }
                         if (d >= 0) {
-	                        ksb.append((char)code);
+	                        sb.append((char)code);
                             i = i + 5;
                             continue;
                         }
                     }
                 }
             }
-            ksb.append(source.charAt(i++));
+            sb.append(source.charAt(i++));
         }
-        return ksb.toKString();
+        return sb.toString();
     }
 
 }

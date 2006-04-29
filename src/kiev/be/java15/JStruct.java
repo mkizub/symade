@@ -42,14 +42,14 @@ public final view JStruct of Struct extends JTypeDecl {
 	@getter
 	public final JBaseType		get$jsuper_type()	{ return ((Struct)this).super_type == null ? null : (JBaseType)((Struct)this).super_type.getJType(); }
 
-	public final KString qname();
+	public final String qname();
 
 	public final KString bname() {
 		if (b_name != null)
 			return b_name;
 		JStruct pkg = package_clazz;
 		if (pkg == null || ((Struct)pkg) == Env.root)
-			b_name = id.uname;
+			b_name = KString.from(id.uname);
 		else if (pkg.isPackage())
 			b_name = KString.from(pkg.bname()+"/"+id.uname);
 		else
@@ -114,15 +114,15 @@ public final view JStruct of Struct extends JTypeDecl {
 		return false;
 	}
 
-	public JField resolveField(KString name) {
+	public JField resolveField(String name) {
 		return resolveField(this,name,this,true);
 	}
 
-	public JField resolveField(KString name, boolean fatal) {
+	public JField resolveField(String name, boolean fatal) {
 		return resolveField(this,name,this,fatal);
 	}
 
-	private static JField resolveField(@forward JStruct self, KString name, JStruct where, boolean fatal) {
+	private static JField resolveField(@forward JStruct self, String name, JStruct where, boolean fatal) {
 		self.checkResolved();
 		foreach(JField f; members) {
 			if (f.id.equals(name))
@@ -135,15 +135,15 @@ public final view JStruct of Struct extends JTypeDecl {
 		return null;
 	}
 
-	public JMethod resolveMethod(KString name, KString sign) {
+	public JMethod resolveMethod(String name, KString sign) {
 		return resolveMethod(this,name,sign,this,true);
 	}
 
-	public JMethod resolveMethod(KString name, KString sign, boolean fatal) {
+	public JMethod resolveMethod(String name, KString sign, boolean fatal) {
 		return resolveMethod(this,name,sign,this,fatal);
 	}
 
-	private static JMethod resolveMethod(@forward JStruct self, KString name, KString sign, JStruct where, boolean fatal) {
+	private static JMethod resolveMethod(@forward JStruct self, String name, KString sign, JStruct where, boolean fatal) {
 		self.checkResolved();
 		foreach (JMethod m; members) {
 			if( m.id.equals(name) && m.type.getJType().java_signature.equals(sign))

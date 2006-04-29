@@ -28,14 +28,25 @@ public class ASTCallAccessExpression extends ENode {
 	@virtual typedef VView = VASTCallAccessExpression;
 
 	@att public ENode				obj;
-	@ref public SymbolRef			func;
+	@att public SymbolRef			ident;
 	@att public NArr<TypeRef>		targs;
 	@att public NArr<ENode>			args;
+
+	@getter public Method get$func() {
+		if (ident == null) return null;
+		Symbol sym = ident.symbol;
+		if (sym == null) return null;
+		ASTNode res = sym.parent;
+		if (res instanceof Method)
+			return (Method)res;
+		return null;
+	}
 
 	@nodeview
 	public static view VASTCallAccessExpression of ASTCallAccessExpression extends VENode {
 		public		ENode			obj;
-		public		SymbolRef		func;
+		public		SymbolRef		ident;
+		public:ro	Method			func;
 		public:ro	NArr<TypeRef>	targs;
 		public:ro	NArr<ENode>		args;
 
@@ -60,8 +71,8 @@ public class ASTCallAccessExpression extends ENode {
 					ta[i] = args[i].getType();
 				CallType mt = new CallType(ta,null);
 				try {
-					if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,func.name,mt) )
-						throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,null));
+					if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ident.name,mt) )
+						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,null));
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				info.leaveSuper();
 				info.leaveForward(obj);
@@ -105,7 +116,7 @@ public class ASTCallAccessExpression extends ENode {
 				Method@ m;
 				ResInfo info = new ResInfo(this,res_flags);
 				try {
-					if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
+					if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
 						if (tps.length == 1 && res_flags == 0)
 							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args.delToArray());
 						else if (res_flags == 0)
@@ -138,7 +149,7 @@ public class ASTCallAccessExpression extends ENode {
 				goto try_static;
 			}
 			if (cnt == 0) {
-				StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(func.name,mt)+"' in:\n");
+				StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(ident.name,mt)+"' in:\n");
 				for(int si=0; si < res.length; si++) {
 					if (tps[si] == null)
 						continue;
@@ -158,10 +169,10 @@ public class ASTCallAccessExpression extends ENode {
 	
 	public ASTCallAccessExpression() {}
 	
-	public ASTCallAccessExpression(int pos, ENode obj, KString func, ENode[] args) {
+	public ASTCallAccessExpression(int pos, ENode obj, String func, ENode[] args) {
 		this.pos = pos;
 		this.obj = obj;
-		this.func = new SymbolRef(pos, func);
+		this.ident = new SymbolRef(pos, func);
 		this.args.addAll(args);
 	}
 
@@ -194,9 +205,9 @@ public class ASTCallAccessExpression extends ENode {
 				ta[i] = args[i].getType();
 			CallType mt = new CallType(ta,ret);
 			try {
-				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,func.name,mt) ) {
+				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ident.name,mt) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
-					throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,ret));
+					throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,ret));
 				}
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			info.leaveSuper();
@@ -241,7 +252,7 @@ public class ASTCallAccessExpression extends ENode {
 			Method@ m;
 			ResInfo info = new ResInfo(this,res_flags);
 			try {
-				if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
+				if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
 					if (tps.length == 1 && res_flags == 0)
 						res[si] = info.buildCall(this, obj, m, info.mt, args.delToArray());
 					else if (res_flags == 0)
@@ -274,7 +285,7 @@ public class ASTCallAccessExpression extends ENode {
 			goto try_static;
 		}
 		if (cnt == 0) {
-			StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(func.name,mt)+"' in:\n");
+			StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(ident.name,mt)+"' in:\n");
 			for(int si=0; si < res.length; si++) {
 				if (tps[si] == null)
 					continue;
@@ -293,7 +304,7 @@ public class ASTCallAccessExpression extends ENode {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-    	sb.append(obj).append('.').append(func).append('(');
+    	sb.append(obj).append('.').append(ident).append('(');
 		for(int i=0; i < args.length; i++) {
 			sb.append(args[i]);
 			if( i < args.length-1 )
@@ -303,7 +314,7 @@ public class ASTCallAccessExpression extends ENode {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-    	dmp.append(obj).append('.').append(func).append('(');
+    	dmp.append(obj).append('.').append(ident).append('(');
 		for(int i=0; i < args.length; i++) {
 			args[i].toJava(dmp);
 			if( i < args.length-1 )
