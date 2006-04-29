@@ -346,8 +346,6 @@ public class Editor extends UIView implements KeyListener {
 					text = text.substring(0, edit_offset)+
 					       text.substring(edit_offset+1);
 					symbol.sname = KString.from(text);
-					symbol.uname = symbol.sname;
-					symbol.parent.callbackChildChanged(symbol.pslot);
 				}
 				break;
 			case KeyEvent.VK_BACK_SPACE:
@@ -356,8 +354,6 @@ public class Editor extends UIView implements KeyListener {
 					text = text.substring(0, edit_offset)+
 					       text.substring(edit_offset+1);
 					symbol.sname = KString.from(text);
-					symbol.uname = symbol.sname;
-					symbol.parent.callbackChildChanged(symbol.pslot);
 				}
 				break;
 			default:
@@ -367,8 +363,6 @@ public class Editor extends UIView implements KeyListener {
 						   text.substring(edit_offset);
 					edit_offset++;
 					symbol.sname = KString.from(text);
-					symbol.uname = symbol.sname;
-					symbol.parent.callbackChildChanged(symbol.pslot);
 				}
 			}
 			view_canvas.cursor_offset = edit_offset;

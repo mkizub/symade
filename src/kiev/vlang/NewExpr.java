@@ -211,6 +211,7 @@ public final class NewArrayExpr extends ENode {
 		foreach (ENode e; args) this.args.append(e);
 	}
 
+	@getter
 	public ArrayType get$arrtype() {
 		ArrayType art = this.arrtype;
 		if (art != null)
@@ -290,6 +291,7 @@ public final class NewInitializedArrayExpr extends ENode {
 		
 	@getter public final int	get$dim()	{ return this.dims.length; }
 
+	@getter
 	public ArrayType get$arrtype() {
 		ArrayType art = ((NewInitializedArrayExpr)this).arrtype;
 		if (art != null)

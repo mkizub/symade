@@ -102,8 +102,8 @@ public final view RStruct of Struct extends RTypeDecl {
 	public Constructor getClazzInitMethod();
 
 	public ENode accessTypeInfoField(ASTNode from, Type t, boolean from_gen) {
-		while (t instanceof WrapperType)
-			t = ((WrapperType)t).getEnclosedType();
+		while (t instanceof CTimeType)
+			t = t.getEnclosedType();
 		Method ctx_method = from.ctx_method;
 		if (t.isUnerasable()) {
 			if (ctx_method != null && ctx_method.isTypeUnerasable() && t instanceof ArgType) {
@@ -980,7 +980,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					else
 						be = new InstanceofExpr(pos, new LVarExpr(pos,mm.params[j]), t);
 				}
-				if (t instanceof WrapperType)
+				while (t instanceof CTimeType)
 					t = t.getEnclosedType();
 				if (t instanceof CompaundType && ((CompaundType)t).clazz.isTypeUnerasable()) {
 					if (t.getStruct().typeinfo_clazz == null)
@@ -1401,8 +1401,8 @@ public final view RStruct of Struct extends RTypeDecl {
 			Kiev.reportError(this,e);
 		}
 		setGenerated(true);
-		diff_time = System.currentTimeMillis() - curr_time;
-		if( Kiev.verbose ) Kiev.reportInfo("Resolved class "+this,diff_time);
+		//diff_time = System.currentTimeMillis() - curr_time;
+		//if( Kiev.verbose ) Kiev.reportInfo("Resolved class "+this,diff_time);
 	}
 	
 }

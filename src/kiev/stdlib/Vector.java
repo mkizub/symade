@@ -90,6 +90,7 @@ public class Vector<A> implements Cloneable
 		}
 	}
 
+	@setter
 	public final synchronized void setSize(int newSize)
 		alias set$length
 	{
@@ -107,6 +108,7 @@ public class Vector<A> implements Cloneable
 		return data.length;
 	}
 
+	@getter
 	public int size()
 		alias length
 		alias get$length

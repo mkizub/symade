@@ -243,11 +243,11 @@ public abstract class ASTRuleNode extends ENode {
 	@att public int					idx;
 	@att public int					depth = -1;
 
-	public int get$base() {	return ((ASTRuleNode)this).base; }
-	public void set$base(int b) { ((ASTRuleNode)this).base = b; }
+	@getter public int get$base() {	return ((ASTRuleNode)this).base; }
+	@setter public void set$base(int b) { ((ASTRuleNode)this).base = b; }
 
-	public int get$idx() {	return ((ASTRuleNode)this).idx; }
-	public void set$idx(int i) { ((ASTRuleNode)this).idx = i; }
+	@getter public int get$idx() {	return ((ASTRuleNode)this).idx; }
+	@setter public void set$idx(int i) { ((ASTRuleNode)this).idx = i; }
 
 	@nodeview
 	public static abstract view VASTRuleNode of ASTRuleNode extends VENode {
@@ -520,7 +520,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
     public void resolve(Type reqType) {
 		var.resolve(null);
-		expr.resolve(((WrapperType)var.var.type).getUnboxedType());
+		expr.resolve(((CTimeType)var.var.type).getUnboxedType());
     }
 
 	public void resolve1(JumpNodes jn) {

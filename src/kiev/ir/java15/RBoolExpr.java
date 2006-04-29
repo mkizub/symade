@@ -238,7 +238,7 @@ public view RInstanceofExpr of InstanceofExpr extends RBoolExpr {
 				new BinaryBoolExpr(pos, BinaryOperator.NotEquals,~expr,new ConstNullExpr()));
 			return;
 		}
-		if (tp instanceof WrapperType)
+		while (tp instanceof CTimeType)
 			tp = tp.getEnclosedType();
 		if (tp instanceof CompaundType) {
 			CompaundType bt = (CompaundType)tp;

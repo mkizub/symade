@@ -21,9 +21,9 @@ public class Symbol extends ASTNode {
 	@virtual typedef This  = Symbol;
 	@virtual typedef VView = VSymbol;
 
-	public KString		sname; // source code name, may be null for anonymouse symbols
-	public KString		uname; // unique name in scope, never null, usually equals to name
-	public KString[]	aliases;
+	@att public KString		sname; // source code name, may be null for anonymouse symbols
+	public KString			uname; // unique name in scope, never null, usually equals to name
+	public KString[]		aliases;
 
 	@nodeview
 	public static view VSymbol of Symbol extends NodeView {
@@ -36,12 +36,10 @@ public class Symbol extends ASTNode {
 	public Symbol(int pos, KString sname) {
 		this.pos = pos;
 		this.sname = sname;
-		this.uname = sname;
 	}
 	
 	public Symbol(KString sname) {
 		this.sname = sname;
-		this.uname = sname;
 	}
 	
 	public Symbol(KString sname, KString uname) {
@@ -49,6 +47,13 @@ public class Symbol extends ASTNode {
 		this.uname = uname;
 	}
 	
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if (attr.name == "sname")
+				parent.callbackChildChanged(pslot);
+		}
+	}
+
 	public void addAlias(KString al) {
 		if (al == null || al == sname || al == uname)
 			return;
@@ -69,6 +74,13 @@ public class Symbol extends ASTNode {
 		else
 			this.sname = KString.from(t.image);
 		this.uname = this.sname;
+	}
+	
+	@setter
+	public void set$sname(KString value) {
+		this.sname = value;
+		if (value != null)
+			this.uname = value;
 	}
 	
 	public boolean equals(Object:Object nm) {

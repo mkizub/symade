@@ -413,6 +413,7 @@ public final class ArgType extends Type {
 }
 
 public final class CompaundType extends Type {
+	@getter
 	public final Struct get$clazz() { return ((CompaundTypeProvider)meta_type).clazz; }
 
 	public CompaundType(CompaundTypeProvider meta_type, TVarBld bindings) {
@@ -739,6 +740,7 @@ public final class WrapperType extends CTimeType {
 		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()), flReference | flWrapper, tpWrapperArg, unwrapped_type);
 	}
 
+	@getter
 	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
 	
 	public Type make(TVarSet bindings) { return meta_type.make(bindings); }
@@ -863,6 +865,7 @@ public final class OuterType extends CTimeType {
 		super(meta_type, flReference, meta_type.tdef.getAType(), outer);
 	}
 
+	@getter
 	public Type get$outer()			{ return this.tvars[0].unalias().result(); }
 	
 	public Type getUnboxedType()	{ return outer; }

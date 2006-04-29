@@ -37,7 +37,9 @@ public final view JStruct of Struct extends JTypeDecl {
 	public		Attr[]				attrs;
 	public:ro	JArr<JNode>			members;
 
+	@getter
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
+	@getter
 	public final JBaseType		get$jsuper_type()	{ return ((Struct)this).super_type == null ? null : (JBaseType)((Struct)this).super_type.getJType(); }
 
 	public final KString qname();

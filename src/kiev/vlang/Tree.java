@@ -115,9 +115,9 @@ public final class NArr<N extends ASTNode> {
 		return $pslot;
 	}
 	
+	@getter
 	public int size()
 		alias length
-		alias get$size
 		alias get$length
 	{
 		return $nodes.length;
@@ -387,9 +387,9 @@ public final class NArr<N extends ASTNode> {
 			return getNArr().$pslot;
 		}
 		
+		@getter
 		public int size()
 			alias length
-			alias get$size
 			alias get$length
 		{
 			return getNArr().size();

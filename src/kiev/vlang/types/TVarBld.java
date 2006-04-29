@@ -63,6 +63,7 @@ public final class TVarBld implements TVSet {
 		return this.tvars;
 	}
 	
+	@getter
 	public int size()
 		alias length
 		alias get$length
