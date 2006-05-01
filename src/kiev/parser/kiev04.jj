@@ -999,7 +999,7 @@ TypeNameRef Package() :
 	qn = QName()
 	";"
 	{
-		tr.name = qn.name;
+		tr.ident = qn;
 		tr.pos = qn.pos;
 		Struct pkg = Env.newPackage(qn.name);
 		tr.lnk = pkg.ctype;
@@ -2085,7 +2085,7 @@ TypeNameRef TypeQName() :
 }
 
 TypeRef TypeWithArgs() :
-{ SymbolRef id; TypeRef res; TypeWithArgsRef tra; }
+{ SymbolRef id; TypeNameRef res; TypeWithArgsRef tra; }
 {
 	id = QName() { res = new TypeNameRef(id); }
 	(	LOOKAHEAD(2)

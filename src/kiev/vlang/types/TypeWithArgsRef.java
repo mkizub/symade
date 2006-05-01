@@ -12,7 +12,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class TypeWithArgsRef extends TypeRef {
+public class TypeWithArgsRef extends TypeNameRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
@@ -20,27 +20,28 @@ public class TypeWithArgsRef extends TypeRef {
 	@virtual typedef VView = VTypeWithArgsRef;
 
 	@att public NArr<TypeRef>			args;
-	@att public TypeRef					base_type;
 
 	@nodeview
-	public static final view VTypeWithArgsRef of TypeWithArgsRef extends VTypeRef {
+	public static final view VTypeWithArgsRef of TypeWithArgsRef extends VTypeNameRef {
 		public:ro	NArr<TypeRef>			args;
-		public		TypeRef					base_type;
 	}
 
 	public TypeWithArgsRef() {}
 
-	public TypeWithArgsRef(TypeRef base) {
-		this.pos = base.pos;
-		this.base_type = base;
+	public TypeWithArgsRef(TypeRef outer, SymbolRef nm) {
+		super(outer, nm);
+	}
+
+	public TypeWithArgsRef(TypeNameRef tnr) {
+		super(tnr);
 	}
 
 	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
-		Type tp = base_type.getType();
+		Type tp = super.getType();
 		if (tp == null || !(tp instanceof CompaundType))
-			throw new CompilerException(this,"Compaund type "+base_type+" is not found");
+			throw new CompilerException(this,"Compaund type "+super.toString()+" is not found");
 		TVarSet tpset = ((CompaundTypeProvider)tp.meta_type).getTemplBindings();
 		TVarBld set = new TVarBld();
 		int a = 0;
@@ -68,7 +69,7 @@ public class TypeWithArgsRef extends TypeRef {
 
 	public Struct getStruct() {
 		if (this.lnk != null) return this.lnk.getStruct();
-		return base_type.getStruct();
+		return super.getStruct();
 	}
 
 	public String toString() {
@@ -76,7 +77,7 @@ public class TypeWithArgsRef extends TypeRef {
 			return String.valueOf(this.lnk);
 		} else {
 			StringBuffer sb = new StringBuffer();
-			sb.append(base_type);
+			sb.append(super.toString());
 			sb.append('<');
 			for (int i=0; i < args.length; i++) {
 				sb.append(args[i]);

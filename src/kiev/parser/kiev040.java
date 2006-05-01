@@ -676,7 +676,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(PACKAGE);
     qn = QName();
     jj_consume_token(SEMICOLON);
-                tr.name = qn.name;
+                tr.ident = qn;
                 tr.pos = qn.pos;
                 Struct pkg = Env.newPackage(qn.name);
                 tr.lnk = pkg.ctype;
@@ -2936,7 +2936,7 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final public TypeRef TypeWithArgs() throws ParseException {
-  SymbolRef id; TypeRef res; TypeWithArgsRef tra;
+  SymbolRef id; TypeNameRef res; TypeWithArgsRef tra;
     id = QName();
                        res = new TypeNameRef(id);
     label_45:

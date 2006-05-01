@@ -21,58 +21,68 @@ public class TypeNameRef extends TypeRef {
 	@virtual typedef VView = VTypeNameRef;
 
 	@att public TypeRef			outer;
-	@att public String			name;
+	@att public SymbolRef		ident;
 
-	@setter
-	public void set$name(String value) {
-		this.name = (value != null) ? value.intern() : null;
-	}
-	
 	@nodeview
-	public static final view VTypeNameRef of TypeNameRef extends VTypeRef {
+	public static view VTypeNameRef of TypeNameRef extends VTypeRef {
 		public TypeRef				outer;
-		public String				name;
+		public SymbolRef			ident;
 	}
 
 	public TypeNameRef() {}
 
 	public TypeNameRef(String nm) {
-		name = nm;
+		this.ident = new SymbolRef(nm);
 	}
 
 	public TypeNameRef(SymbolRef nm) {
 		this.pos = pos;
-		this.name = nm.name;
+		this.ident = nm;
 	}
 
 	public TypeNameRef(SymbolRef nm, Type tp) {
 		this.pos = pos;
-		this.name = nm.name;
+		this.ident = nm;
 		this.lnk = tp;
 	}
 
 	public TypeNameRef(TypeRef outer, SymbolRef nm) {
 		this.pos = pos;
 		this.outer = outer;
-		this.name = nm.name;
+		this.ident = nm;
+	}
+
+	public TypeNameRef(TypeNameRef tnr) {
+		this.pos = tnr.pos;
+		if (tnr.outer != null)
+			this.outer = ~tnr.outer;
+		this.ident = ~tnr.ident;
 	}
 
 	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
 		Type tp;
-		if (this.outer != null) {
+		if (ident.symbol != null && ident.symbol.parent instanceof TypeDecl) {
+			if (outer != null)
+				tp = ((TypeDecl)ident.symbol.parent).getType().bind(outer.getType().bindings());
+			else
+				tp = ((TypeDecl)ident.symbol.parent).getType();
+		}
+		else if (this.outer != null) {
 			Type outer = this.outer.getType();
 			ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
 			TypeDecl@ td;
-			if!(outer.resolveStaticNameR(td,info,name))
-				throw new CompilerException(this,"Unresolved type "+name+" in "+outer);
+			if!(outer.resolveStaticNameR(td,info,ident.name))
+				throw new CompilerException(this,"Unresolved type "+ident+" in "+outer);
+			ident.symbol = td.getName();
 			td.checkResolved();
 			tp = td.getType().bind(outer.bindings());
 		} else {
 			TypeDecl@ td;
-			if( !PassInfo.resolveQualifiedNameR(((TypeNameRef)this),td,new ResInfo(this,ResInfo.noForwards),name) )
-				throw new CompilerException(this,"Unresolved type "+name);
+			if( !PassInfo.resolveQualifiedNameR(((TypeNameRef)this),td,new ResInfo(this,ResInfo.noForwards),ident.name) )
+				throw new CompilerException(this,"Unresolved type "+ident);
+			ident.symbol = td.getName();
 			td.checkResolved();
 			tp = td.getType();
 		}
@@ -90,26 +100,26 @@ public class TypeNameRef extends TypeRef {
 			Struct outer = this.outer.getStruct();
 			ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
 			TypeDecl@ td;
-			if!(outer.resolveNameR(td,info,name))
-				throw new CompilerException(this,"Unresolved type "+name+" in "+outer);
+			if!(outer.resolveNameR(td,info,ident.name))
+				throw new CompilerException(this,"Unresolved type "+ident+" in "+outer);
 			return td.getStruct();
 		} else {
 			TypeDecl@ td;
-			if( !PassInfo.resolveQualifiedNameR(this,td,new ResInfo(this,ResInfo.noForwards),name) )
-				throw new CompilerException(this,"Unresolved type "+name);
+			if( !PassInfo.resolveQualifiedNameR(this,td,new ResInfo(this,ResInfo.noForwards),ident.name) )
+				throw new CompilerException(this,"Unresolved type "+ident);
 			return td.getStruct();
 		}
 	}
 
 	public String toString() {
 		if (outer == null)
-			return name;
-		return outer+"."+String.valueOf(name);
+			return ident.toString();
+		return outer+"."+ident.toString();
 	}
 	public Dumper toJava(Dumper dmp) {
 		if (outer == null)
-			return dmp.append(name);
-		return dmp.append(outer).append('.').append(name);
+			return dmp.append(ident);
+		return dmp.append(outer).append('.').append(ident);
 	}
 }
 
