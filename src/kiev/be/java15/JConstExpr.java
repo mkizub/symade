@@ -92,7 +92,7 @@ public final view JConstDoubleExpr of ConstDoubleExpr extends JConstExpr {
 
 @nodeview
 public final view JConstStringExpr of ConstStringExpr extends JConstExpr {
-	public:ro KString	value;
+	public:ro String	value;
 	public Object	getConstValue()		{ return value; }
 }
 
@@ -152,8 +152,8 @@ public abstract view JConstExpr of ConstExpr extends JENode {
 		else if( value instanceof Double ) {
 			code.addConst(((Double)value).doubleValue());
 		}
-		else if( value instanceof KString ) {
-			code.addConst((KString)value);
+		else if( value instanceof String ) {
+			code.addConst(KString.from((String)value));
 		}
 		else throw new RuntimeException("Internal error: unknown type of constant "+value.getClass());
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);

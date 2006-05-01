@@ -1014,7 +1014,7 @@ public class JavaSyntax extends Syntax {
 		seRuleCallExpr = set(
 				expr("obj", Constants.opAccessPriority),
 				sep("."),
-				ident("func.id"),
+				ident("func"),
 				sep("("),
 				lst("args",node(),sep(","),lout_empty.ncopy()),
 				sep(")")
@@ -1050,7 +1050,7 @@ public class JavaSyntax extends Syntax {
 		seCallExpr = set(
 				expr("obj", new FormatInfoHint("call-accessor"), Constants.opAccessPriority),
 				sep("."),
-				ident("func.id"),
+				ident("ident"),
 				sep("("),
 				lst("args",node(),sep(","),lout_empty.ncopy()),
 				sep(")")

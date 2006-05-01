@@ -487,7 +487,7 @@ public class Compiler {
 			Kiev.k = new Parser(new StringReader(""));
 			for(int i=0; i < args.length; i++) {
 				try {
-					Kiev.curFile = KString.from(args[i]);
+					Kiev.curFile = args[i].intern();
 					java.io.InputStreamReader file_reader = null;
 					char[] file_chars = new char[8196];
 					int file_sz = 0;
@@ -517,7 +517,7 @@ public class Compiler {
 					diff_time = System.currentTimeMillis() - curr_time;
 					bis.close();
 					runGC();
-					Kiev.curFile = KString.Empty;
+					Kiev.curFile = "";
 					if( Kiev.verbose )
 						Kiev.reportInfo("Scanned file   "+args[i],diff_time);
 					System.out.flush();
@@ -600,7 +600,7 @@ public class Compiler {
 					diff_time = curr_time = System.currentTimeMillis();
 					Kiev.parseFile(fu);
 					diff_time = System.currentTimeMillis() - curr_time;
-					Kiev.curFile = KString.Empty;
+					Kiev.curFile = "";
 				} catch (Exception ioe) {
 					Kiev.reportParserError(0,ioe);
 				}

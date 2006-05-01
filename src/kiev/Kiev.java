@@ -29,7 +29,7 @@ public final class Kiev {
 	public static long		programm_mem = 0;
 	public static int		errCount = 0;
 	public static int		warnCount = 0;
-	public static KString	curFile = KString.Empty;
+	public static String	curFile = "";
 
    	public static void reportError(Throwable e) {
 		ASTNode dummy = null;
@@ -175,7 +175,7 @@ public final class Kiev {
 			if( method != null ) method.setBad(true);
 			if( clazz != null ) clazz.setBad(true);
 		}
-		KString cf = null;
+		String cf = null;
 		if (file_unit != null) {
 			cf = file_unit.filename;
 			if (javacerrors) {
@@ -654,7 +654,7 @@ public final class Kiev {
 	
 	public static boolean runProcessors((TransfProcessor, FileUnit)->void step) {
 		foreach (FileUnit fu; Kiev.files) {
-			KString curr_file = Kiev.curFile;
+			String curr_file = Kiev.curFile;
 			Kiev.curFile = fu.filename;
 			boolean[] exts = Kiev.getExtSet();
 			try {

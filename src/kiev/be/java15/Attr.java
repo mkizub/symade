@@ -305,6 +305,8 @@ public class ConstantValueAttr extends Attr {
 			constPool.addNumberCP((Number)value);
 		else if( value instanceof Character )
 			constPool.addNumberCP(Integer.valueOf((int)((Character)value).charValue()));
+		else if( value instanceof String )
+			constPool.addStringCP(KString.from((String)value));
 		else if( value instanceof KString )
 			constPool.addStringCP((KString)value);
 		else if( value instanceof Boolean ) {
@@ -325,6 +327,9 @@ public class ConstantValueAttr extends Attr {
 			break;
 		case Number:
 			cva.cp_value = bcclazz.pool[constPool.getNumberCP((Number)value).pos];
+			break;
+		case String:
+			cva.cp_value = bcclazz.pool[constPool.getStringCP(KString.from((String)value)).pos];
 			break;
 		case KString:
 			cva.cp_value = bcclazz.pool[constPool.getStringCP((KString)value).pos];
@@ -438,6 +443,7 @@ public abstract class MetaAttr extends Attr {
 			else if( v instanceof Float )			constPool.addNumberCP((Float)v);
 			else if( v instanceof Double )			constPool.addNumberCP((Double)v);
 			else if( v instanceof KString )			constPool.addAsciiCP((KString)v);
+			else if( v instanceof String )			constPool.addAsciiCP((String)v);
 		}
 		else if (value instanceof TypeRef) {
 			constPool.addClazzCP(((TypeRef)value).getType().getJType().java_signature);
@@ -521,6 +527,10 @@ public abstract class MetaAttr extends Attr {
 				ev.tag = (byte)'s';
 				ev.const_value_index = constPool.getAsciiCP((KString)v).pos;
 			}
+			else if( v instanceof String ) {
+				ev.tag = (byte)'s';
+				ev.const_value_index = constPool.getAsciiCP(KString.from((String)v)).pos;
+			}
 			return ev;
 		}
 		else if (value instanceof TypeRef) {
@@ -587,7 +597,7 @@ public abstract class RMetaAttr extends MetaAttr {
 
 public class RVMetaAttr extends RMetaAttr {
 	public RVMetaAttr(MetaSet metas) {
-		super(Constants.attrRVAnnotations, metas);
+		super(JConstants.attrRVAnnotations, metas);
 	}
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		kiev.bytecode.RVAnnotations a = new kiev.bytecode.RVAnnotations();
@@ -605,7 +615,7 @@ public class RVMetaAttr extends RMetaAttr {
 
 public class RIMetaAttr extends RMetaAttr {
 	public RIMetaAttr(MetaSet metas) {
-		super(Constants.attrRIAnnotations, metas);
+		super(JConstants.attrRIAnnotations, metas);
 	}
 }
 
@@ -631,7 +641,7 @@ public abstract class ParMetaAttr extends MetaAttr {
 
 public class RVParMetaAttr extends ParMetaAttr {
 	public RVParMetaAttr(MetaSet[] metas) {
-		super(Constants.attrRVParAnnotations, metas);
+		super(JConstants.attrRVParAnnotations, metas);
 	}
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		kiev.bytecode.RVParAnnotations a = new kiev.bytecode.RVParAnnotations();

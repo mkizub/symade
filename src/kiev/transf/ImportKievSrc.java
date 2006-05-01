@@ -492,10 +492,10 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				MetaAlias al = f.getMetaAlias();
 				if (al != null) {
 					foreach (ConstStringExpr n; al.getAliases()) {
-						KString nm = n.value;
-						if (nm.len > 2 && nm.byteAt(0) == '\"') {
-							f.id.addAlias(nm.toString().intern());
-							text = nm.substr(1,nm.len-2).toString();
+						String nm = n.value;
+						if (nm.length() > 2 && nm.charAt(0) == '\"') {
+							f.id.addAlias(nm.intern());
+							text = nm.substring(1,nm.length()-1).toString();
 							break;
 						}
 					}

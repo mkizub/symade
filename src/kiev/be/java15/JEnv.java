@@ -125,7 +125,7 @@ public final class JEnv {
 				}
 				if( cl == null ) {
 					cl = makeStruct(name.bytecode_name,false);
-					new FileUnit(KString.from(name.src_name+".class"), pkg).members.add(cl);
+					new FileUnit(name.src_name+".class", pkg).members.add(cl);
 				}
 			}
 			cl = new Bytecoder(cl,clazz,null).readClazz();
@@ -142,12 +142,12 @@ public final class JEnv {
 		// CLASSPATH is scanned, try project file
 		ProjectFile pf = Env.projectHash.get(name.name.toString().intern());
 		File file = null;
-		KString filename = null;
-		KString cur_file = null;
+		String filename = null;
+		String cur_file = null;
 		if( pf != null && pf.file != null) {
 			File file = pf.file;
 			if( file.exists() && file.canRead() ) {
-				filename = KString.from(file.toString());
+				filename = file.toString();
 				cur_file = Kiev.curFile;
 				Kiev.curFile = filename;
 			}
@@ -156,7 +156,7 @@ public final class JEnv {
 			// Not found in project - lookup in CLASSPATH .java or .kiev file
 			file = stdClassLoader.findSourceFile(name.bytecode_name.toString());
 			if( file != null && file.exists() && file.canRead() ) {
-				filename = KString.from(file.toString());
+				filename = file.toString();
 				cur_file = Kiev.curFile;
 				Kiev.curFile = filename;
 				if( Kiev.verbose ) Kiev.reportInfo("Found non-project source file "+file,0L);

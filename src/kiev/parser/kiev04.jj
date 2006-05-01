@@ -940,7 +940,7 @@ FileUnit FileUnit(String filename) :
 		oldFileUnit = curFileUnit;
 		FileUnit fu = new FileUnit();
 		curFileUnit = fu;
-		fu.filename = KString.from(filename);
+		fu.filename = filename;
 		fu.pos = 0;
 		declMode = true;
 		ASTModifiers modifiers;
@@ -1253,7 +1253,7 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 		":"
 		text = StringConstExpression()
 		{
-			text.value = KString.from("\""+text.value+"\"");
+			text.value = "\""+text.value+"\"";
 			f.addNodeData(new MetaAlias(text), MetaAlias.ATTR);
 		}
 	]

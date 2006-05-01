@@ -16,7 +16,7 @@ import syntax kiev.Syntax;
 
 @nodeview
 public static final view RFileUnit of FileUnit extends RDNode {
-	public		KString					filename;
+	public		String					filename;
 	public		TypeNameRef				pkg;
 	public:ro	NArr<ASTNode>			members;
 	public:ro	boolean[]				disabled_extensions;
@@ -24,7 +24,7 @@ public static final view RFileUnit of FileUnit extends RDNode {
 
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving file "+filename);
-		KString curr_file = Kiev.curFile;
+		String curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		boolean[] exts = Kiev.getExtSet();
         try {

@@ -200,12 +200,12 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 		
 		if( !isPackage() ) {
-			KString fu = jctx_file_unit.filename;
-			int p = fu.lastIndexOf((byte)'/');
-			if (p >= 0) fu = fu.substr(p+1);
-			p = fu.lastIndexOf((byte)'\\');
-			if (p >= 0) fu = fu.substr(p+1);
-			SourceFileAttr sfa = new SourceFileAttr(fu);
+			String fu = jctx_file_unit.filename;
+			int p = fu.lastIndexOf('/');
+			if (p >= 0) fu = fu.substring(p+1);
+			p = fu.lastIndexOf('\\');
+			if (p >= 0) fu = fu.substring(p+1);
+			SourceFileAttr sfa = new SourceFileAttr(KString.from(fu));
 			this.addAttr(sfa);
 		}
 		

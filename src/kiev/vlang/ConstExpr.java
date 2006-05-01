@@ -364,16 +364,15 @@ public final class ConstStringExpr extends ConstExpr {
 	@virtual typedef VView = VConstStringExpr;
 	@virtual typedef JView = JConstStringExpr;
 
-	@att public KString value;
+	@att public String value;
 
 	@nodeview
 	public static view VConstStringExpr of ConstStringExpr extends VConstExpr {
-		public KString		value;
+		public String		value;
 	}
 	
 	public ConstStringExpr() {}
-	public ConstStringExpr(KString value) { this.value = value; }
-	public ConstStringExpr(String value) { this.value = KString.from(value); }
+	public ConstStringExpr(String value) { this.value = value; }
 
 	public Type		getType()			{ return Type.tpString; }
 
@@ -426,7 +425,7 @@ public abstract class ConstExpr extends ENode {
 			else if( value instanceof Double ) dmp.append(value).append('D');
 			else dmp.append(value);
 		}
-		else if( value instanceof KString ) {
+		else if( value instanceof String ) {
 			dmp.append('\"');
 			byte[] val = Convert.string2source(value.toString());
 			dmp.append(new String(val,0));
@@ -448,7 +447,7 @@ public abstract class ConstExpr extends ENode {
 	public static ConstExpr fromConst(Object o) {
 		if (o == null)              return new ConstNullExpr   ();
 		if (o instanceof Integer)   return new ConstIntExpr    (((Integer)  o).intValue());
-		if (o instanceof KString)   return new ConstStringExpr (((KString)  o));
+		if (o instanceof String)    return new ConstStringExpr (((String)   o));
 		if (o instanceof Byte)      return new ConstByteExpr   (((Byte)     o).byteValue());
 		if (o instanceof Short)     return new ConstShortExpr  (((Short)    o).shortValue());
 		if (o instanceof Long)      return new ConstLongExpr   (((Long)     o).longValue());

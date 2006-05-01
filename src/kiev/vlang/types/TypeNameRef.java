@@ -103,7 +103,7 @@ public class TypeNameRef extends TypeRef {
 
 	public String toString() {
 		if (outer == null)
-			return String.valueOf(name);
+			return name;
 		return outer+"."+String.valueOf(name);
 	}
 	public Dumper toJava(Dumper dmp) {

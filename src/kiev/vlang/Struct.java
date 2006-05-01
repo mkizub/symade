@@ -828,7 +828,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 		if( Kiev.debug ) System.out.println("AutoGenerating members for "+this);
 
-		KString oldfn = Kiev.curFile;
+		String oldfn = Kiev.curFile;
 		boolean[] old_exts = Kiev.getExtSet();
 		{
 			ASTNode fu = parent;

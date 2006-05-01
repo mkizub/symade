@@ -439,8 +439,6 @@ public final class LVarExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 
-	static final KString namePEnv = KString.from("$env");
-
 	@virtual typedef This  = LVarExpr;
 	@virtual typedef VView = VLVarExpr;
 	@virtual typedef JView = JLVarExpr;

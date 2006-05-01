@@ -770,14 +770,14 @@ public final class RuleCallExpr extends ASTRuleNode {
 	@virtual typedef VView = VRuleCallExpr;
 
 	@att public ENode				obj;
-	@ref public Named				func;
+	@att public SymbolRef			ident;
 	@att public NArr<ENode>			args;
 	@att public int					env_var;
 
 	@nodeview
 	public static final view VRuleCallExpr of RuleCallExpr extends VASTRuleNode {
 		public		ENode			obj;
-		public		Named			func;
+		public		SymbolRef		ident;
 		public:ro	NArr<ENode>		args;
 		public		int				env_var;
 	}
@@ -787,7 +787,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	public RuleCallExpr(CallExpr expr) {
 		this.pos = expr.pos;
 		this.obj = ~expr.obj;
-		this.func = expr.func;
+		this.ident = ~expr.ident;
 		this.args.addAll(expr.args.delToArray());
 		this.setSuperExpr(expr.isSuperExpr());
 	}
@@ -796,11 +796,11 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.pos = expr.pos;
 		this.obj = ~expr.expr;
 		if( expr.expr instanceof LVarExpr )
-			this.func = ((LVarExpr)expr.expr).getVar();
+			this.ident = ~((LVarExpr)expr.expr).ident;
 		else if( expr.expr instanceof SFldExpr )
-			this.func = ((SFldExpr)expr.expr).var;
+			this.ident = ~((SFldExpr)expr.expr).ident;
 		else if( expr.expr instanceof IFldExpr ) {
-			this.func = ((IFldExpr)expr.expr).var;
+			this.ident = ~((IFldExpr)expr.expr).ident;
 			this.obj = ~((IFldExpr)expr.expr).obj;
 		}
 		this.args.addAll(expr.args.delToArray());
@@ -841,7 +841,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		else if (this.isSuperExpr()) {
 			sb.append("super.");
 		}
-		sb.append(func.getName()).append('(');
+		sb.append(ident).append('(');
 		for(int i=0; i < args.length; i++) {
 			sb.append(Kiev.reparseExpr(args[i],true));
 			if( i < args.length-1) sb.append(',');

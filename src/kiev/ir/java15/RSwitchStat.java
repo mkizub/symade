@@ -185,7 +185,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 			}
 		}
 		sel.resolve(Type.tpInt);
-		KString[] typenames = new KString[0];
+		TypeRef[] typenames = new TypeRef[0];
 		int defindex = -1;
 		for(int i=0; i < cases.length; i++) {
 			try {
@@ -194,8 +194,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					CaseLabel c = (CaseLabel)cases[i];
 					if( c.type == null || !c.type.isReference() )
 						throw new CompilerException(c,"Mixed switch and typeswitch cases");
-					KString name = KString.from(c.type.getStruct().qname());
-					typenames = (KString[])Arrays.append(typenames,name);
+					typenames = (TypeRef[])Arrays.append(typenames,new TypeRef(c.val == null? c.pos : c.val.pos,c.type));
 					if( c.val != null )
 						c.val = new ConstIntExpr(i);
 					else
@@ -208,12 +207,12 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 			}
 		}
 		if( mode == SwitchStat.TYPE_SWITCH ) {
-			ConstExpr[] signs = new ConstExpr[typenames.length];
-			for(int j=0; j < signs.length; j++)
-				signs[j] = new ConstStringExpr(typenames[j]);
-			if( defindex < 0 ) defindex = signs.length;
+			TypeClassExpr[] types = new TypeClassExpr[typenames.length];
+			for(int j=0; j < types.length; j++)
+				types[j] = new TypeClassExpr(typenames[j].pos,typenames[j]);
+			if( defindex < 0 ) defindex = types.length;
 			typehash.init = new NewExpr(ctx_clazz.pos,Type.tpTypeSwitchHash,
-				new ENode[]{ new NewInitializedArrayExpr(ctx_clazz.pos,new TypeRef(Type.tpString),1,signs),
+				new ENode[]{ new NewInitializedArrayExpr(ctx_clazz.pos,new TypeRef(Type.tpClass),1,types),
 					new ConstIntExpr(defindex)
 				});
 			Constructor clinit = ctx_clazz.getClazzInitMethod();

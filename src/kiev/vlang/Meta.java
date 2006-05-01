@@ -291,7 +291,7 @@ public class Meta extends ENode {
 		throw new RuntimeException("Value "+name+" in annotation "+type+" is not an int constant, but "+v);
 	}
 	
-	public KString getS(String name) {
+	public String getS(String name) {
 		MetaValueScalar mv = (MetaValueScalar)get(name);
 		ASTNode v = mv.value;
 		if (v == null)
@@ -346,7 +346,7 @@ public class Meta extends ENode {
 		return mv;
 	}
 
-	public MetaValue setS(String name, KString val)
+	public MetaValue setS(String name, String val)
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {

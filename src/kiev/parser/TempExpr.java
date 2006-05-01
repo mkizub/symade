@@ -274,21 +274,27 @@ public class UnresCallExpr extends UnresExpr {
 	@virtual typedef VView = VUnresCallExpr;
 
 	@ref public ENode				obj;
-	@ref public Named				func;
+	@ref public SymbolRef			func;
 	@ref public CallType			mt;
 	@ref public NArr<ENode>			args;
 
 	@nodeview
 	public static view VUnresCallExpr of UnresCallExpr extends VUnresExpr {
 		public		ENode			obj;
-		public		Named			func;
+		public		SymbolRef		func;
 		public		CallType		mt;
 		public:ro	NArr<ENode>		args;
 	}
 	
 	public UnresCallExpr() {}
 
-	public UnresCallExpr(int pos, ENode obj, Named func, CallType mt, ENode[] args, boolean super_flag) {
+	public UnresCallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args, boolean super_flag) {
+		this(pos, obj, new SymbolRef(pos, func.id), mt, args, super_flag);
+	}
+	public UnresCallExpr(int pos, ENode obj, Symbol func, CallType mt, ENode[] args, boolean super_flag) {
+		this(pos, obj, new SymbolRef(pos, func), mt, args, super_flag);
+	}
+	public UnresCallExpr(int pos, ENode obj, SymbolRef func, CallType mt, ENode[] args, boolean super_flag) {
 		this.pos = pos;
 		this.obj = obj;
 		this.func = func;
@@ -318,18 +324,18 @@ public class UnresCallExpr extends UnresExpr {
 				args[i].detach();
 		}
 		if (obj instanceof TypeRef) {
-			if (func instanceof Method) {
-				Method m = (Method)func;
-				CallExpr ce = new CallExpr(pos, ~obj, m, mt, args.toArray());
+			if (func.symbol.parent instanceof Method) {
+				//Method m = (Method)func.symbol.parent;
+				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args.toArray(), false);
 				return ce;
 			} else {
-				Field f = (Field)func;
+				Field f = (Field)func.symbol.parent;
 				return new ClosureCallExpr(pos, new SFldExpr(pos, f), args.toArray());
 			}
 		} else {
-			if (func instanceof Method) {
-				Method m = (Method)func;
-				CallExpr ce = new CallExpr(pos, ~obj, m, mt, args.toArray(), isSuperExpr());
+			if (func.symbol.parent instanceof Method) {
+				//Method m = (Method)func.symbol.parent;
+				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args.toArray(), isSuperExpr());
 				ce.setCastCall(this.isCastCall());
 				return ce;
 			} else {

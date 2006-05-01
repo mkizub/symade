@@ -60,29 +60,32 @@ public class CallExpr extends ENode {
 	
 	public CallExpr() {}
 
-	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args, boolean super_flag) {
+	public CallExpr(int pos, ENode obj, SymbolRef ident, CallType mt, ENode[] args, boolean super_flag) {
 		this.pos = pos;
+		this.ident = ident;
 		if (obj == null) {
-			if !(func.isStatic() || func instanceof Constructor) {
+			if !(func.isStatic() || func instanceof Constructor)
 				throw new RuntimeException("Call to non-static method "+func+" without accessor");
-			}
 			this.obj = new TypeRef(func.ctx_clazz.ctype);
 		} else {
 			this.obj = obj;
 		}
-		this.ident = new SymbolRef(pos,func.id);
 		this.mt = mt;
 		this.args.addAll(args);
 		if (super_flag)
 			this.setSuperExpr(true);
 	}
 
+	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args, boolean super_flag) {
+		this(pos, obj, new SymbolRef(pos,func.id), mt, args, super_flag);
+	}
+
 	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args) {
-		this(pos, obj, func, mt, args, false);
+		this(pos, obj, new SymbolRef(pos,func.id), mt, args, false);
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
-		this(pos, obj, func, null, args, false);
+		this(pos, obj, new SymbolRef(pos,func.id), null, args, false);
 	}
 
 	public int getPriority() { return Constants.opCallPriority; }

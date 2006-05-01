@@ -73,22 +73,6 @@ public interface Constants extends AccessFlags {
 	public final static String nameStrBuffAppend	= "append";
 	public final static String nameStrValueOf		= "valueOf";
 
-	// Well known attributes
-	public final static KString attrCode				= KString.from("Code");
-	public final static KString attrSourceFile			= KString.from("SourceFile");
-	public final static KString attrLocalVarTable		= KString.from("LocalVariableTable");
-	public final static KString attrLinenoTable		= KString.from("LineNumberTable");
-	public final static KString attrExceptions			= KString.from("Exceptions");
-	public final static KString attrInnerClasses		= KString.from("InnerClasses");
-	public final static KString attrConstantValue		= KString.from("ConstantValue");
-	public final static KString attrRequire			= KString.from("kiev.Require");
-	public final static KString attrEnsure				= KString.from("kiev.Ensure");
-	public final static KString attrRVAnnotations		= KString.from("RuntimeVisibleAnnotations");
-	public final static KString attrRIAnnotations		= KString.from("RuntimeInvisibleAnnotations");
-	public final static KString attrRVParAnnotations	= KString.from("RuntimeVisibleParameterAnnotations");
-	public final static KString attrRIParAnnotations	= KString.from("RuntimeInvisibleParameterAnnotations");
-	public final static KString attrAnnotationDefault	= KString.from("AnnotationDefault");
-
 	public final static KString nameAny		= KString.from("any");
 	public final static KString sigAny			= KString.from("?");
 	public final static KString nameVoid		= KString.from("void");

@@ -108,7 +108,10 @@ public class Bytecoder implements JConstants {
 			if( at == null ) continue;
 			if( at.name.equals(attrConstantValue) && (f_flags & ACC_FINAL)!=0 ) {
 				ConstantValueAttr a = (ConstantValueAttr)at;
-				f_init = ConstExpr.fromConst(a.value);
+				if (a.value instanceof KString)
+					f_init = ConstExpr.fromConst(a.value.toString());
+				else
+					f_init = ConstExpr.fromConst(a.value);
 			}
 		}
 		Type ftype = Signature.getType(f_type);

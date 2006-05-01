@@ -31,7 +31,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	@virtual typedef JView = JFileUnit;
 	@virtual typedef RView = RFileUnit;
 
-	@att public KString			filename;
+	@att public String			filename;
 	@att public TypeNameRef		pkg;
 	@att public NArr<ASTNode>	members;
 	
@@ -45,9 +45,14 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	@getter public Method get$ctx_method() { return null; }
 	@getter public Method get$child_ctx_method() { return null; }
 
+	@setter
+	public void set$filename(String value) {
+		this.filename = (value != null) ? value.intern() : null;
+	}
+	
 	@nodeview
 	public static final view VFileUnit of FileUnit extends VDNode {
-		public		KString					filename;
+		public		String					filename;
 		public		TypeNameRef				pkg;
 		public:ro	NArr<ASTNode>			members;
 		public:ro	NArr<PrescannedBody>	bodies;
@@ -67,9 +72,9 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	}
 
 	public FileUnit() {
-		this(KString.Empty, Env.root);
+		this("", Env.root);
 	}
-	public FileUnit(KString name, Struct pkg) {
+	public FileUnit(String name, Struct pkg) {
 		this.filename = name;
 		this.pkg = new TypeNameRef(pkg.qname());
 		this.pkg.lnk = pkg.ctype;
@@ -79,13 +84,11 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		bodies.append(b);
 	}
 
-	public KString getName() { return filename; }
-
-	public String toString() { return /*getClass()+":="+*/filename.toString(); }
+	public String toString() { return filename; }
 
 	public void resolveMetaDefaults() {
 		trace(Kiev.debugResolve,"Resolving meta defaults in file "+filename);
-		KString curr_file = Kiev.curFile;
+		String curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		boolean[] exts = Kiev.getExtSet();
         try {
@@ -102,7 +105,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 
 	public void resolveMetaValues() {
 		trace(Kiev.debugResolve,"Resolving meta values in file "+filename);
-		KString curr_file = Kiev.curFile;
+		String curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		boolean[] exts = Kiev.getExtSet();
         try {
@@ -136,7 +139,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		disabled_extensions[i] = !enabled;
 	}
 	
-	private boolean debugTryResolveIn(KString name, String msg) {
+	private boolean debugTryResolveIn(String name, String msg) {
 		trace(Kiev.debugResolve,"Resolving "+name+" in "+msg);
 		return true;
 	}
@@ -218,7 +221,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	}
 
 	public void toJava(String output_dir) {
-		KString curr_file = Kiev.curFile;
+		String curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		try {
 			foreach (Struct n; members) {

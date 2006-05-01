@@ -22,7 +22,7 @@ package kiev.stdlib;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -42,10 +42,16 @@ public class TypeSwitchHash {
 
 	private TypeSwitchHashEntry[]	table;
 	private String[]				signs;
+	private Class[]					types;
 	private int						defindex;
 
 	public TypeSwitchHash(String[] signs, int defindex) {
 		this.signs = signs;
+		this.defindex = defindex;
+	}
+
+	public TypeSwitchHash(Class[] types, int defindex) {
+		this.types = types;
 		this.defindex = defindex;
 	}
 
@@ -82,35 +88,23 @@ public class TypeSwitchHash {
 	}
 	
 	private void makeClazzHash() {
-		int n = signs.length*2;
-		if( n < 16 ) n = 16;
-		table = new TypeSwitchHashEntry[n];
-		for(int i=0; i < signs.length; i++) {
-			Class clazz = Class.forName(signs[i]);
-			addClazz(clazz,i);
-		}
-		signs = null;
-	}
-/*	
-	public static void main(String[] args) {
-		String[] names = new String[]{
-				"java.lang.Object",
-				"java.lang.Number",
-				"java.lang.Integer",
-				"java.lang.String"
-			};
-		TypeSwitchHash h = new TypeSwitchHash(names,0);
-		Object[] test = new Object[]{
-				new Object(),
-				new Integer(1),
-				new String("hello"),
-				new Float(1.0f),
-				new Double(2.0).getClass()
-			};
-		for(int i=0; i < test.length; i++) {
-			System.out.println("Index for \t"+test[i].getClass()+"\t is "+h.index(test[i])+" \""+names[h.index(test[i])]+"\"");
+		if (signs != null) {
+			int n = signs.length*2+1;
+			if( n < 17 ) n = 17;
+			table = new TypeSwitchHashEntry[n];
+			for(int i=0; i < signs.length; i++) {
+				Class clazz = Class.forName(signs[i], false, this.getClass().getClassLoader());
+				addClazz(clazz,i);
+			}
+			signs = null;
+		} else {
+			int n = types.length*2+1;
+			if( n < 17 ) n = 17;
+			table = new TypeSwitchHashEntry[n];
+			for(int i=0; i < types.length; i++)
+				addClazz(types[i],i);
+			types = null;
 		}
 	}
-*/
 }
 

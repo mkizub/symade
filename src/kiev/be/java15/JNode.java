@@ -12,7 +12,7 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 @nodeview
-public view JNode of ASTNode implements Constants {
+public view JNode of ASTNode implements JConstants {
 
 	public String toString();
 	public Dumper toJava(Dumper dmp);

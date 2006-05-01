@@ -498,7 +498,7 @@ public abstract class kiev040 implements kiev040Constants {
                 oldFileUnit = curFileUnit;
                 FileUnit fu = new FileUnit();
                 curFileUnit = fu;
-                fu.filename = KString.from(filename);
+                fu.filename = filename;
                 fu.pos = 0;
                 declMode = true;
                 ASTModifiers modifiers;
@@ -1237,7 +1237,7 @@ public abstract class kiev040 implements kiev040Constants {
     case COLON:
       jj_consume_token(COLON);
       text = StringConstExpression();
-                        text.value = KString.from("\""+text.value+"\"");
+                        text.value = "\""+text.value+"\"";
                         f.addNodeData(new MetaAlias(text), MetaAlias.ATTR);
       break;
     default:
