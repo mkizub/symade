@@ -36,7 +36,7 @@ public view RNode of ASTNode implements Constants {
 	public Object getVal(String name);
 	public void setVal(String name, Object val);
 	public final void callbackDetached();
-	public final void callbackAttached(ASTNode parent, AttrSlot pslot);
+	public final void callbackAttached();
 	public final void callbackChildChanged(AttrSlot attr);
 	public final void callbackRootChanged();
 	public final NodeData getNodeData(AttrSlot attr);

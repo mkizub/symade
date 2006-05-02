@@ -60,11 +60,11 @@ public final class MetaVirtual extends MetaSpecial {
 
 	public MetaVirtual() { super(ATTR); }
 
-	public void callbackAttached(ASTNode node, AttrSlot pslot) {
-		super.callbackAttached(node, pslot);
-		if (node instanceof DNode) {
-			node.setVirtual(true);
-		}
+	public void callbackAttached() {
+		super.callbackAttached();
+		ASTNode parent = parent();
+		if (parent instanceof DNode)
+			parent.setVirtual(true);
 	}
 	public void callbackDetached() {
 		ASTNode parent = this.parent();

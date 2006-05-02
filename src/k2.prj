@@ -461,6 +461,7 @@ kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
 kiev.vlang.ArrayLengthExpr kiev/vlang/ArrayLengthExpr kiev\vlang\Expr.java
 kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
+kiev.vlang.AttachInfo kiev/vlang/AttachInfo kiev\vlang\AST.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
 kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\BooleanExpr.java
@@ -538,6 +539,7 @@ kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
 kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.Label kiev/vlang/Label kiev\vlang\LoopStatement.java
 kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java
+kiev.vlang.ListAttachInfo kiev/vlang/ListAttachInfo kiev\vlang\AST.java
 kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java
 kiev.vlang.LvalDNode kiev/vlang/LvalDNode kiev\vlang\DNode.java
 kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\LvalueExpr.java

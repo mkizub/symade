@@ -57,6 +57,56 @@ public interface SetBody {
 	public boolean setBody(ENode body);
 }
 
+class AttachInfo {
+	final   ASTNode		p_self;
+	final   ASTNode		p_parent;
+	final   AttrSlot	p_slot;
+	private ASTNode		p_ctx_root;
+	AttachInfo(ASTNode self, ASTNode parent, AttrSlot slot) {
+		this.p_self = self;
+		this.p_parent = parent;
+		this.p_slot = slot;
+	}
+	ASTNode get_ctx_root() {
+		if (this.p_ctx_root != null)
+			return this.p_ctx_root;
+		ASTNode root = p_parent.get$ctx_root();
+		this.p_ctx_root = root;
+		return root;
+	}
+	ASTNode next() { return null; }
+	ASTNode prev() { return null; }
+	void detach() {
+		this.p_ctx_root = null;
+	}
+};
+
+class ListAttachInfo extends AttachInfo {
+	private ListAttachInfo	p_prev;
+	private ListAttachInfo	p_next;
+	ListAttachInfo(ASTNode self, ASTNode parent, AttrSlot slot, ListAttachInfo prev, ListAttachInfo next) {
+		super(self,parent,slot);
+		if (prev != null) {
+			this.p_prev = prev;
+			prev.p_next = this;
+		}
+		if (next != null) {
+			next.p_prev = this;
+			this.p_next = next;
+		}
+	}
+	ASTNode next() { return p_next == null ? null : p_next.p_self; }
+	ASTNode prev() { return p_prev == null ? null : p_prev.p_self; }
+	void detach() {
+		if (p_prev != null)
+			p_prev.p_next = p_next;
+		if (p_next != null)
+			p_next.p_prev = p_prev;
+		super.detach();
+	}
+};
+	
+
 @node
 public abstract class ASTNode implements NodeData, Constants, Cloneable {
 
@@ -68,25 +118,6 @@ public abstract class ASTNode implements NodeData, Constants, Cloneable {
 	public static ASTNode[] emptyArray = new ASTNode[0];
     public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
 
-	final class AttachInfo {
-		ASTNode			p_parent;
-		AttrSlot		p_slot;
-		ASTNode			p_prev;
-		ASTNode			p_next;
-		ASTNode			p_ctx_root;
-		AttachInfo(ASTNode parent, AttrSlot slot) {
-			this.p_parent = parent;
-			this.p_slot = slot;
-		}
-		ASTNode get_ctx_root() {
-			if (this.p_ctx_root != null)
-				return this.p_ctx_root;
-			ASTNode root = p_parent.get$ctx_root();
-			this.p_ctx_root = root;
-			return root;
-		}
-	};
-	
 	public  int				pos;
 	public  int				compileflags;
 	private AttachInfo		p_info;
@@ -149,10 +180,11 @@ public abstract class ASTNode implements NodeData, Constants, Cloneable {
 	public @packed:1,compileflags,30 boolean is_hidden;
 	public @packed:1,compileflags,31 boolean is_bad;
 
+	final AttachInfo pinfo() { return this.p_info; }
 	public final ASTNode parent() { return this.p_info == null ? null : this.p_info.p_parent; }
 	public final AttrSlot pslot() { return this.p_info == null ? null : this.p_info.p_slot; }
-	public final ASTNode pprev() { return this.p_info == null ? null : this.p_info.p_prev; }
-	public final ASTNode pnext() { return this.p_info == null ? null : this.p_info.p_next; }
+	public final ASTNode pprev() { return this.p_info == null ? null : this.p_info.prev(); }
+	public final ASTNode pnext() { return this.p_info == null ? null : this.p_info.next(); }
 	
 	public AttrSlot[] values() {
 		return AttrSlot.emptyArray;
@@ -209,14 +241,7 @@ public abstract class ASTNode implements NodeData, Constants, Cloneable {
 		// do detcah
 		AttachInfo pinfo = this.p_info;
 		this.p_info = null;
-		if (pinfo.p_prev != null) {
-			pinfo.p_prev.p_info.p_next = pinfo.p_next;
-			pinfo.p_prev = null;
-		}
-		if (pinfo.p_next != null) {
-			pinfo.p_next.p_info.p_prev = pinfo.p_prev;
-			pinfo.p_next = null;
-		}
+		pinfo.detach();
 		// notify nodes about new root
 		this.walkTree(new TreeWalker() {
 			public boolean pre_exec(NodeData n) { n.callbackRootChanged(); return true; }
@@ -226,34 +251,25 @@ public abstract class ASTNode implements NodeData, Constants, Cloneable {
 	}
 
 	// for NArr only
-	final void callbackAttached(ASTNode parent, AttrSlot pslot, ASTNode prev, ASTNode next) {
-		assert (pslot.is_attr);
+	final void callbackAttached(ListAttachInfo pinfo) {
+		assert (pinfo.p_slot.is_attr);
 		assert(!isAttached());
-		assert(parent != null && parent != this);
-		this.p_info = new AttachInfo(parent, pslot);
-		// set prev/next
-		if (prev != null) {
-			prev.p_info.p_next = this;
-			this.p_info.p_prev = prev;
-		}
-		if (next != null) {
-			next.p_info.p_prev = this;
-			this.p_info.p_next = next;
-		}
-		// notify nodes about new root
-		this.walkTree(new TreeWalker() {
-			public boolean pre_exec(NodeData n) { n.callbackRootChanged(); return true; }
-		});
-		// notify parent about the changed slot
-		parent().callbackChildChanged(pslot());
+		assert(pinfo.p_parent != null && pinfo.p_parent != this);
+		assert(pinfo.p_self == this);
+		this.p_info = pinfo;
+		this.callbackAttached();
 	}
 
-	public void callbackAttached(ASTNode parent, AttrSlot pslot) {
+	public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
 		assert (pslot.is_attr);
 		assert(!isAttached());
 		assert(parent != null && parent != this);
 		// do attach
-		this.p_info = new AttachInfo(parent, pslot);
+		this.p_info = new AttachInfo(this, parent, pslot);
+		this.callbackAttached();
+	}
+
+	public void callbackAttached() {
 		// notify nodes about new root
 		this.walkTree(new TreeWalker() {
 			public boolean pre_exec(NodeData n) { n.callbackRootChanged(); return true; }
@@ -521,7 +537,7 @@ public abstract class ASTNode implements NodeData, Constants, Cloneable {
 		public Object getVal(String name);
 		public void setVal(String name, Object val);
 		public final void callbackDetached();
-		public final void callbackAttached(ASTNode parent, AttrSlot pslot);
+		public final void callbackAttached();
 		public final void callbackChildChanged(AttrSlot attr);
 		public final void callbackRootChanged();
 		public final NodeData getNodeData(AttrSlot attr);
