@@ -482,7 +482,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public boolean preResolveIn() {
 			if (this.isLoadedFromBytecode())
 				return false;
-			if (parent instanceof Struct || parent instanceof FileUnit)
+			if (parent() instanceof Struct || parent() instanceof FileUnit)
 				return true;
 			if (ctx_method==null || ctx_method.isStatic())
 				this.setStatic(true);
@@ -683,7 +683,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			resolveNameR_2(node,info,name), // resolve in imports
 			$cut
 		;	info.isSuperAllowed(),
-			info.space_prev == null || (info.space_prev.pslot.name != "super_bound" && info.space_prev.pslot.name != "interfaces"),
+			info.space_prev == null || (info.space_prev.pslot().name != "super_bound" && info.space_prev.pslot().name != "interfaces"),
 			trace(Kiev.debugResolve,"Struct: resolving in super-class of "+this),
 			resolveNameR_3(node,info,name), // resolve in super-classes
 			$cut
@@ -831,9 +831,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		String oldfn = Kiev.curFile;
 		boolean[] old_exts = Kiev.getExtSet();
 		{
-			ASTNode fu = parent;
+			ASTNode fu = parent();
 			while( fu != null && !(fu instanceof FileUnit))
-				fu = fu.parent;
+				fu = fu.parent();
 			if( fu != null ) {
 				Kiev.curFile = ((FileUnit)fu).filename;
 				Kiev.setExtSet(((FileUnit)fu).disabled_extensions);

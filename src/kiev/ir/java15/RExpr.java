@@ -792,10 +792,6 @@ public static final view RCastExpr of CastExpr extends RENode {
 	public:no,no,no,rw final void resolve2(Type reqType) {
 		Type type = this.type.getType();
 		expr.resolve(type);
-//		if( e instanceof Struct )
-//			expr = Expr.toExpr((Struct)e,reqType,pos,parent);
-//		else
-//			expr = (Expr)e;
 		if (reqType ≡ Type.tpVoid) {
 			setResolved(true);
 		}

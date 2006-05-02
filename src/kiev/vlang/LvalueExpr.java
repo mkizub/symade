@@ -206,7 +206,7 @@ public final class IFldExpr extends LvalueExpr {
 		if (ident == null) return null;
 		Symbol sym = ident.symbol;
 		if (sym == null) return null;
-		ASTNode res = sym.parent;
+		ASTNode res = sym.parent();
 		if (res instanceof Field)
 			return (Field)res;
 		return null;
@@ -450,7 +450,7 @@ public final class LVarExpr extends LvalueExpr {
 		if (ident == null) return null;
 		Symbol sym = ident.symbol;
 		if (sym == null) return null;
-		ASTNode res = sym.parent;
+		ASTNode res = sym.parent();
 		if (res instanceof Var)
 			return (Var)res;
 		return null;
@@ -550,7 +550,7 @@ public final class SFldExpr extends LvalueExpr {
 		if (ident == null) return null;
 		Symbol sym = ident.symbol;
 		if (sym == null) return null;
-		ASTNode res = sym.parent;
+		ASTNode res = sym.parent();
 		if (res instanceof Field)
 			return (Field)res;
 		return null;

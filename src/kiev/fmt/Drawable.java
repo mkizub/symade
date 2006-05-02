@@ -19,7 +19,6 @@ public abstract class Drawable extends ASTNode {
 	// the node we draw
 	@ref
 	public ASTNode			node;
-	public AttrSlot			dslot;
 	// can be text (line/pos) or graphics (pixel x,y,w,h,baseline info) and so on,
 	// filled/modified during preFormat/postFormat
 	public DrawGeometry		geometry;
@@ -35,11 +34,6 @@ public abstract class Drawable extends ASTNode {
 		this.node = node;
 		this.geometry = new DrawGeometry();
 		this.syntax = syntax;
-	}
-	public void callbackAttached(ASTNode parent, AttrSlot pslot) {
-		super.callbackAttached(parent, pslot);
-		if (parent == this.node)
-			dslot = pslot;
 	}
 
 	public void init(Formatter fmt) {}
@@ -60,10 +54,10 @@ public abstract class Drawable extends ASTNode {
 	public final DrawTerm getNextLeaf() {
 		Drawable p = this;
 		for (;;) {
-			while (p.pnext == null && (p=p.parent) != null);
+			while (p.pnext() == null && (p=p.parent()) != null);
 			if (p == null)
 				return null;
-			p = p.pnext;
+			p = p.pnext();
 			if (p.isUnvisible())
 				continue;
 			DrawTerm d = p.getFirstLeaf();
@@ -77,10 +71,10 @@ public abstract class Drawable extends ASTNode {
 	public final DrawTerm getPrevLeaf() {
 		Drawable p = this;
 		for (;;) {
-			while (p.pprev == null && (p=p.parent) != null);
+			while (p.pprev() == null && (p=p.parent()) != null);
 			if (p == null)
 				return null;
-			p = p.pprev;
+			p = p.pprev();
 			if (p.isUnvisible())
 				continue;
 			DrawTerm d = p.getLastLeaf();

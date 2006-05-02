@@ -43,11 +43,11 @@ public class Var extends LvalDNode implements Named {
 	@getter public final Type get$type() { return this.vtype.getType(); }
 	
 	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
+		if (isAttached()) {
 			if      (attr.name == "vtype")
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 			else if (attr.name == "meta")
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 		}
 	}	
 
@@ -228,9 +228,9 @@ public final class FormPar extends Var {
 		 public int			kind;
 
 	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
+		if (isAttached()) {
 			if (attr.name == "stype")
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 			else
 				super.callbackChildChanged(attr);
 		}
@@ -818,9 +818,9 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 		case IN:
 			if (func_in != null)
 				return func_in.calc(this);
-			if (parent_dfs.isSeqSpace() && node_impl.pprev != null)
-				return node_impl.pprev.getDFlow().calc(OUT);
-			assert(parent_dfi == node_impl.parent.getDFlow());
+			if (parent_dfs.isSeqSpace() && node_impl.pprev() != null)
+				return node_impl.pprev().getDFlow().calc(OUT);
+			assert(parent_dfi == node_impl.parent().getDFlow());
 			return DFFunc.calc(parent_dfs.func_in, parent_dfi);
 		case OUT:
 			return func_out.calc(this);
@@ -935,8 +935,8 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 		if (!is_root) {
 			if (ASSERT_MORE) assert(this.parent_dfi == null);
 			if (ASSERT_MORE) assert(this.parent_dfs == null);
-			parent_dfi = node.parent.getDFlow();
-			parent_dfs = parent_dfi.getSocket(node.pslot.name);
+			parent_dfi = node.parent().getDFlow();
+			parent_dfs = parent_dfi.getSocket(node.pslot().name);
 			if (parent_dfs instanceof DFSocketChild) {
 				int socket_idx = ((DFSocketChild)parent_dfs).socket_idx;
 				if (ASSERT_MORE) assert (parent_dfi.attached[socket_idx] == null);
@@ -947,7 +947,7 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 		}
 	}
 	public void callbackAttached(ASTNode node, AttrSlot pslot) {
-		if (node.parent != null)
+		if (node.isAttached())
 			nodeAttached(node, pslot);
 	}
 	
@@ -1046,12 +1046,12 @@ public abstract class DFFunc implements DataFlowSlots {
 		if (lst == null) lst = new Vector<ASTNode>();
 		assert(!lst.contains(node));
 		assert(node.isAttached());
-		if (node.pslot.is_space)
-			assert(((NArr<ASTNode>)node.parent.getVal(node.pslot.name)).contains(node));
+		if (node.pslot().is_space)
+			assert(((NArr<ASTNode>)node.parent().getVal(node.pslot().name)).contains(node));
 		else
-			assert(node.parent.getVal(node.pslot.name) == node);
+			assert(node.parent().getVal(node.pslot().name) == node);
 		lst.append(node);
-		checkNode(node.parent, lst);
+		checkNode(node.parent(), lst);
 		return true;
 	}
 
@@ -1067,12 +1067,12 @@ public abstract class DFFunc implements DataFlowSlots {
 			if (dfi.func_in != null) {
 				f = dfi.func_in;
 			}
-			else if (dfi.parent_dfs.isSeqSpace() && dfi.node_impl.pprev != null) {
-				dfi = dfi.node_impl.pprev.getDFlow();
+			else if (dfi.parent_dfs.isSeqSpace() && dfi.node_impl.pprev() != null) {
+				dfi = dfi.node_impl.pprev().getDFlow();
 				f = dfi.func_out;
 			}
 			else {
-				if (ASSERT_MORE) assert(dfi.parent_dfi == dfi.node_impl.parent.getDFlow());
+				if (ASSERT_MORE) assert(dfi.parent_dfi == dfi.node_impl.parent().getDFlow());
 				f = dfi.parent_dfs.func_in;
 				dfi = dfi.parent_dfi;
 			}

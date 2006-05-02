@@ -31,7 +31,7 @@ public view JNode of ASTNode implements JConstants {
 	public final boolean isHidden();
 	public final boolean isBad();
 	
-	@getter public final JNode get$jparent() { return (JNode)((ASTNode)this).parent; }
+	@getter public final JNode get$jparent() { return (JNode)((ASTNode)this).parent(); }
 	@getter public JFileUnit get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
 	@getter public JStruct get$jctx_clazz() { return this.jparent.child_jctx_clazz; }
 	@getter public JStruct get$child_jctx_clazz() { return this.jparent.get$child_jctx_clazz(); }

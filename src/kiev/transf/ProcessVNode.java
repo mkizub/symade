@@ -23,7 +23,6 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	public static final String mnRef				= "kiev.vlang.ref"; 
 	public static final String nameNArr			= "kiev.vlang.NArr"; 
 	public static final String nameAttrSlot		= "kiev.vlang.AttrSlot"; 
-	private static final String nameParent			= "parent"; 
 	private static final String nameCopyable		= "copyable"; 
 	
 	private static final String sigValues			= "()[Lkiev/vlang/AttrSlot;";
@@ -85,7 +84,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Meta fmatt = f.meta.get(mnAtt);
 			Meta fmref = f.meta.get(mnRef);
 			if (fmatt != null || fmref != null) {
-				Kiev.reportError(f,"Field "+f+" of non-@node class "+f.parent+" may not be @att or @ref");
+				Kiev.reportError(f,"Field "+f+" of non-@node class "+f.parent()+" may not be @att or @ref");
 			}
 		}
 	}
@@ -96,11 +95,11 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		//if (fmatt != null || fmref != null) {
 		//	System.out.println("process @node: field "+f+" has @att="+fmatt+" and @ref="+fmref);
 		if (fmatt != null && fmref != null) {
-			Kiev.reportError(f,"Field "+f.parent+"."+f+" marked both @att and @ref");
+			Kiev.reportError(f,"Field "+f.parent()+"."+f+" marked both @att and @ref");
 		}
 		if (fmatt != null || fmref != null) {
 			if (f.isStatic())
-				Kiev.reportError(f,"Field "+f.parent+"."+f+" is static and cannot have @att or @ref");
+				Kiev.reportError(f,"Field "+f.parent()+"."+f+" is static and cannot have @att or @ref");
 			boolean isArr = false;
 			{
 				Type ft = f.type;
@@ -112,21 +111,21 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
 			if (fmatt != null) {
 				if (isArr && f.init != null) {
-					Kiev.reportError(f,"Field "+f.parent+"."+f+" may not have initializer");
+					Kiev.reportError(f,"Field "+f.parent()+"."+f+" may not have initializer");
 				}
 				if (!isArr)
 					f.setVirtual(true);
 			}
 			else if (fmref != null) {
 				if (isArr && f.init != null)
-					Kiev.reportError(f,"Field "+f.parent+"."+f+" may not have initializer");
+					Kiev.reportError(f,"Field "+f.parent()+"."+f+" may not have initializer");
 			}
 		}
 		else if !(f.isStatic()) {
 			if (f.type.isInstanceOf(tpNArr))
-				Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
+				Kiev.reportWarning(f,"Field "+f.parent()+"."+f+" must be marked with @att or @ref");
 			else if (isNodeKind(f.type))
-				Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
+				Kiev.reportWarning(f,"Field "+f.parent()+"."+f+" must be marked with @att or @ref");
 		}
 	}
 	
@@ -207,7 +206,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Field af = s.addField(new Field(fname, tpAttrSlot, ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 			af.init = e;
 			vals_init[i] = new SFldExpr(af.pos, af);
-			if (f.parent != s)
+			if (f.parent() != s)
 				continue;
 			if (isArr && !f.isAbstract()) {
 				f.init = new NewExpr(f.pos, f.getType(), new ENode[]{

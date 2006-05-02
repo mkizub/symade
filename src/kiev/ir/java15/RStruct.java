@@ -950,7 +950,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				}
 				last_st.elseSt = br;
 			}
-			assert (mm.parent == self.getStruct());
+			assert (mm.parent() == self.getStruct());
 			if (st != null) {
 				Block body = new Block(0);
 				body.stats.add(st);
@@ -1029,7 +1029,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		assert (dispatched != dispatcher);
 		assert (dispatched.isAttached());
 		if (dispatched.ctx_clazz == self.getStruct()) {
-			assert (dispatched.parent == self.getStruct());
+			assert (dispatched.parent() == self.getStruct());
 			return new InlineMethodStat(pos,~dispatched,dispatcher);
 		} else {
 			return makeDispatchCall(self,pos,dispatched,dispatcher);
@@ -1104,7 +1104,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		public StringBuffer dump(int i, StringBuffer sb) {
 			for(int j=0; j < i; j++) sb.append('\t');
 			if (m != null)
-				sb.append(m.parent).append('.').append(m).append('\n');
+				sb.append(m.parent()).append('.').append(m).append('\n');
 			else
 				sb.append("root:\n");
 			for(int j=0; j < uppers.length; j++) {
@@ -1295,7 +1295,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				}
 				if (isForward() && package_clazz.isStructView()) {
 					Field fview = this.resolveField(nameImpl);
-					if (fview.parent == (Struct)this) {
+					if (fview.parent() == (Struct)this) {
 						foreach (FormPar fp; m.params; fp.id.equals(nameImpl)) {
 							stats.insert(
 								new ExprStat(pos,

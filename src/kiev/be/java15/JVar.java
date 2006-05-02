@@ -39,7 +39,6 @@ public final view JVar of Var extends JLvalDNode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Var declaration");
-		//assert (parent instanceof Block || parent instanceof ExprStat || parent instanceof ForInit);
 		code.setLinePos(this);
 		try {
 			if( init != null ) {

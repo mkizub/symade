@@ -81,13 +81,13 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
 			CaseLabel cl = (CaseLabel)dfi.node_impl;
-			if (cl.parent instanceof SwitchStat) {
-				ENode sel = ((SwitchStat)cl.parent).sel;
+			if (cl.parent() instanceof SwitchStat) {
+				ENode sel = ((SwitchStat)cl.parent()).sel;
 				if (sel != null)
 					res = sel.getDFlow().out();
 			}
-			if (cl.pprev != null) {
-				DFState prev = cl.pprev.getDFlow().out();
+			if (cl.pprev() != null) {
+				DFState prev = cl.pprev().getDFlow().out();
 				if (res != null)
 					res = DFState.join(res,prev);
 				else

@@ -38,10 +38,6 @@ public final view RCallExpr of CallExpr extends RENode {
 	}
 
 	public void resolve(Type reqType) {
-//		if (isResolved()) {
-//			assert(func.parent instanceof Struct);
-//			return;
-//		}
 		if (func.isStatic() && !(obj instanceof TypeRef))
 			this.obj = new TypeRef(obj.getType());
 		obj.resolve(null);
@@ -84,10 +80,10 @@ public final view RCallExpr of CallExpr extends RENode {
 				tmp_expr = null;
 			}
 		}
-		if !(func.parent instanceof Struct) {
-			ASTNode n = func.parent;
-			while !(n instanceof Method) n = n.parent;
-			assert (n.parent instanceof Struct);
+		if !(func.parent() instanceof Struct) {
+			ASTNode n = func.parent();
+			while !(n instanceof Method) n = n.parent();
+			assert (n.parent() instanceof Struct);
 			ident.symbol = ((Method)n).id;
 		}
 		setResolved(true);

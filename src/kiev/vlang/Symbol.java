@@ -49,9 +49,9 @@ public class Symbol extends ASTNode {
 	}
 	
 	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
+		if (isAttached()) {
 			if (attr.name == "sname")
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 		}
 	}
 

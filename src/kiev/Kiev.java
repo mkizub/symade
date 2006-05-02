@@ -59,7 +59,7 @@ public final class Kiev {
 			Struct clazz = null;
 			Method method = null;
 			try {
-				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
 					pos = f.pos;
 				method = from.ctx_method;
 				clazz = from.ctx_clazz;
@@ -155,7 +155,7 @@ public final class Kiev {
 			Method method = null;
 			try {
 				ASTNode f = from;
-				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
 					pos = f.pos;
 				method = from.ctx_method;
 				clazz = from.ctx_clazz;
@@ -267,7 +267,7 @@ public final class Kiev {
 			Method method = null;
 			try {
 				ASTNode f = from;
-				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
 					pos = f.pos;
 				method = from.ctx_method;
 				clazz = from.ctx_clazz;
@@ -491,7 +491,7 @@ public final class Kiev {
 				ASTNode n = (ASTNode)b;
 				while( n != null ) {
 					pl = new List.Cons<ASTNode>(n,pl);
-					n = n.parent;
+					n = n.parent();
 				}
 				if( pl.head() != f ) {
 					reportError(b,"Prescanned body highest parent is "+pl.head()+" but "+f+" is expected");
@@ -516,7 +516,7 @@ public final class Kiev {
 				default:
 					throw new RuntimeException("Unknown mode of prescanned block: "+b.mode);
 				}
-				if( !((SetBody)b.parent).setBody(bl) ) {
+				if( !((SetBody)b.parent()).setBody(bl) ) {
 					reportError(b,"Prescanned body does not math");
 				}
 				b.replaceWithNode(null);

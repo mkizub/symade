@@ -248,7 +248,7 @@ public class Access implements Constants {
 		else if( n instanceof Method ) sb.append("method ");
 		else if( n instanceof Struct ) sb.append("class ");
 		if( n instanceof Struct ) sb.append(n);
-		else sb.append(n.parent).append('.').append(n);
+		else sb.append(n.parent()).append('.').append(n);
 		sb.append("\n\tfrom class ").append(getStructOf(from));
 		Kiev.reportError(from,new RuntimeException(sb.toString()));
 	}

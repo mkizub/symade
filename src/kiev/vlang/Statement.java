@@ -127,8 +127,8 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
 			InlineMethodStat node = (InlineMethodStat)dfi.node_impl;
-			DataFlowInfo pdfi = node.parent.getDFlow();
-			res = DFFunc.calc(pdfi.getSocket(node.pslot.name).func_in, pdfi);
+			DataFlowInfo pdfi = node.parent().getDFlow();
+			res = DFFunc.calc(pdfi.getSocket(node.pslot().name).func_in, pdfi);
 			dfi.setResult(res_idx, res);
 			return res;
 		}
@@ -231,14 +231,14 @@ public class ReturnStat extends ENode {
 	}
 
 	public static void autoReturn(Type reqType, RENode expr) {
-		if (expr.parent instanceof ReturnStat)
+		if (expr.parent() instanceof ReturnStat)
 			return;
 		expr.setAutoReturnable(false);
 		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr.getENode()); });
 	}
 
 	public static void autoReturn(Type reqType, ENode expr) {
-		if (expr.parent instanceof ReturnStat)
+		if (expr.parent() instanceof ReturnStat)
 			return;
 		expr.setAutoReturnable(false);
 		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr); });
@@ -446,7 +446,7 @@ public class BreakStat extends ENode {
 				dest = null;
 			}
 			if( ident == null ) {
-				for(p=parent; !(p instanceof Method || p.isBreakTarget()); p = p.parent );
+				for(p=parent(); !(p instanceof Method || p.isBreakTarget()); p = p.parent() );
 				if( p instanceof Method || p == null ) {
 					Kiev.reportError(this,"Break not within loop/switch statement");
 				} else {
@@ -460,12 +460,12 @@ public class BreakStat extends ENode {
 				}
 			} else {
 		label_found:
-				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
+				for(p=parent(); !(p instanceof Method) ; p=p.parent() ) {
 					if (p instanceof LabeledStat && p.id.equals(ident.name))
 						throw new RuntimeException("Label "+ident+" does not refer to break target");
 					if (!p.isBreakTarget()) continue;
 					ASTNode pp = p;
-					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
+					for(p=p.parent(); p instanceof LabeledStat; p = p.parent()) {
 						if (p.id.equals(ident.name)) {
 							p = pp;
 							break label_found;
@@ -532,7 +532,7 @@ public class ContinueStat extends ENode {
 				dest = null;
 			}
 			if( ident == null ) {
-				for(p=parent; !(p instanceof LoopStat || p instanceof Method); p = p.parent );
+				for(p=parent(); !(p instanceof LoopStat || p instanceof Method); p = p.parent() );
 				if( p instanceof Method || p == null ) {
 					Kiev.reportError(this,"Continue not within loop statement");
 				} else {
@@ -546,12 +546,12 @@ public class ContinueStat extends ENode {
 				}
 			} else {
 		label_found:
-				for(p=parent; !(p instanceof Method) ; p=p.parent ) {
+				for(p=parent(); !(p instanceof Method) ; p=p.parent() ) {
 					if( p instanceof LabeledStat && p.id.equals(ident.name) )
 						throw new RuntimeException("Label "+ident+" does not refer to continue target");
 					if !(p instanceof LoopStat) continue;
 					ASTNode pp = p;
-					for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
+					for(p=p.parent(); p instanceof LabeledStat; p = p.parent()) {
 						if( p.id.equals(ident.name) ) {
 							p = pp;
 							break label_found;

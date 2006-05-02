@@ -181,8 +181,8 @@ public class Editor extends UIView implements KeyListener {
 		else if (mask == KeyEvent.ALT_DOWN_MASK && !mode_edit) {
 			switch (code) {
 			case KeyEvent.VK_UP:
-				if (cur_elem.parent != null) {
-					view_canvas.current = cur_elem = cur_elem.parent;
+				if (cur_elem.isAttached()) {
+					view_canvas.current = cur_elem = cur_elem.parent();
 					view_canvas.repaint();
 				}
 				evt.consume(); 

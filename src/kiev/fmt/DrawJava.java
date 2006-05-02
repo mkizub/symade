@@ -136,8 +136,8 @@ public class DrawJavaType extends DrawTerm {
 			text = String.valueOf(tr);
 		}
 
-		if (node.parent instanceof FormPar) {
-			FormPar fp = (FormPar)node.parent;
+		if (node.parent() instanceof FormPar) {
+			FormPar fp = (FormPar)node.parent();
 			if (fp.kind == FormPar.PARAM_VARARGS && tr.getType().isArray() && text.endsWith("[]")) {
 				text = text.substring(0,text.length()-2) + "...";
 			}

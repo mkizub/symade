@@ -85,11 +85,11 @@ public class RuleMethod extends Method {
 	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		Var@ var;
 	{
-		inlined_by_dispatcher || path.space_prev.pslot.name == "targs",$cut,false
+		inlined_by_dispatcher || path.space_prev.pslot().name == "targs",$cut,false
 	;
-		path.space_prev.pslot.name == "params" ||
-		path.space_prev.pslot.name == "type_ref" ||
-		path.space_prev.pslot.name == "dtype_ref",$cut,
+		path.space_prev.pslot().name == "params" ||
+		path.space_prev.pslot().name == "type_ref" ||
+		path.space_prev.pslot().name == "dtype_ref",$cut,
 		node @= targs,
 		((TypeDef)node).id.equals(name)
 	;
@@ -115,7 +115,7 @@ public class RuleMethod extends Method {
 	}
 
     public ASTNode pass3() {
-		if !( parent instanceof Struct )
+		if !( parent() instanceof Struct )
 			throw new CompilerException(this,"Method must be declared on class level only");
 		Struct clazz = this.ctx_clazz;
 		// TODO: check flags for fields
@@ -629,10 +629,10 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 		}
 		iter_var = ((RuleMethod)ctx_method).add_iterator_var();
-		ASTNode rb = this.parent;
+		ASTNode rb = this.parent();
 		while( rb!=null && !(rb instanceof RuleBlock)) {
-			Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
-			rb = rb.parent;
+			Debug.assert(rb.isAttached(), "Parent of "+rb.getClass()+":"+rb+" is null");
+			rb = rb.parent();
 		}
 		Debug.assert(rb != null);
 		Debug.assert(rb instanceof RuleBlock);
@@ -816,10 +816,10 @@ public final class RuleCallExpr extends ASTRuleNode {
 		base = ((RuleMethod)ctx_method).allocNewBase(1);
 		depth = ((RuleMethod)ctx_method).push();
 		env_var = ((RuleMethod)ctx_method).add_iterator_var();
-		ASTNode rb = this.parent;
+		ASTNode rb = this.parent();
 		while( rb!=null && !(rb instanceof RuleBlock)) {
-			Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
-			rb = rb.parent;
+			Debug.assert(rb.isAttached(), "Parent of "+rb.getClass()+":"+rb+" is null");
+			rb = rb.parent();
 		}
 		Debug.assert(rb != null);
 		Debug.assert(rb instanceof RuleBlock);
@@ -933,7 +933,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 
 	public void resolve(Type reqType) {
 		super.resolve(reqType);
-		if (pslot == null) return; // check we were replaced
+		if (!isAttached()) return; // check we were replaced
 		if (!expr.getType().equals(Type.tpBoolean))
 			throw new CompilerException(expr,"Boolean expression is requared");
 		if (bt_expr != null)
@@ -993,7 +993,7 @@ public final class RuleExpr extends RuleExprBase {
 
 	public void resolve(Type reqType) {
 		super.resolve(reqType);
-		if (pslot == null) {
+		if (!isAttached()) {
 			if (bt_expr != null)
 				throw new CompilerException(bt_expr,"Backtrace expression ignored for rule-call");
 			return;

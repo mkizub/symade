@@ -93,7 +93,7 @@ public class DrawNodeTerm extends DrawTerm {
 				if (attrs[i] == "")
 					break;
 				if (attrs[i] == "parent")
-					o = o.parent;
+					o = o.parent();
 				else
 					o = o.getVal(attrs[i]);
 			}

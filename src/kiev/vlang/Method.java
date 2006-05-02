@@ -63,14 +63,14 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	@virtual public:ro				CallType		etype;
 
 	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
+		if (isAttached()) {
 			if      (attr.name == "params") {
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 			}
 			else if (attr.name == "conditions")
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 			else if (attr.name == "annotation_default")
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 		}
 		if (attr.name == "params" || attr.name == "flags")
 			invalid_types = true;
@@ -598,11 +598,11 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		FormPar@ var;
 	{
-		inlined_by_dispatcher || path.space_prev.pslot.name == "targs",$cut,false
+		inlined_by_dispatcher || path.space_prev.pslot().name == "targs",$cut,false
 	;
-		path.space_prev.pslot.name == "params" ||
-		path.space_prev.pslot.name == "type_ref" ||
-		path.space_prev.pslot.name == "dtype_ref",$cut,
+		path.space_prev.pslot().name == "params" ||
+		path.space_prev.pslot().name == "type_ref" ||
+		path.space_prev.pslot().name == "dtype_ref",$cut,
 		node @= targs,
 		((TypeDef)node).id.equals(name)
 	;
@@ -643,7 +643,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	}
 
     public ASTNode pass3() {
-		if !( this.parent instanceof Struct )
+		if !( this.parent() instanceof Struct )
 			throw new CompilerException(this,"Method must be declared on class level only");
 		Struct clazz = this.ctx_clazz;
 		// TODO: check flags for methods

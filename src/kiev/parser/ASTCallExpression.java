@@ -35,7 +35,7 @@ public class ASTCallExpression extends ENode {
 		if (ident == null) return null;
 		Symbol sym = ident.symbol;
 		if (sym == null) return null;
-		ASTNode res = sym.parent;
+		ASTNode res = sym.parent();
 		if (res instanceof Method)
 			return (Method)res;
 		return null;

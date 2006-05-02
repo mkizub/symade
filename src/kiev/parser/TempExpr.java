@@ -324,17 +324,15 @@ public class UnresCallExpr extends UnresExpr {
 				args[i].detach();
 		}
 		if (obj instanceof TypeRef) {
-			if (func.symbol.parent instanceof Method) {
-				//Method m = (Method)func.symbol.parent;
+			if (func.symbol.parent() instanceof Method) {
 				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args.toArray(), false);
 				return ce;
 			} else {
-				Field f = (Field)func.symbol.parent;
+				Field f = (Field)func.symbol.parent();
 				return new ClosureCallExpr(pos, new SFldExpr(pos, f), args.toArray());
 			}
 		} else {
-			if (func.symbol.parent instanceof Method) {
-				//Method m = (Method)func.symbol.parent;
+			if (func.symbol.parent() instanceof Method) {
 				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args.toArray(), isSuperExpr());
 				ce.setCastCall(this.isCastCall());
 				return ce;

@@ -22,8 +22,8 @@ public final class MetaSet extends ASTNode {
 	@att public NArr<Meta>			metas;
 
 	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
-			if (attr.name == "metas") parent.callbackChildChanged(pslot);
+		if (isAttached()) {
+			if (attr.name == "metas") parent().callbackChildChanged(pslot());
 		}
 	}
 
@@ -142,11 +142,11 @@ public class Meta extends ENode {
 	@att public NArr<MetaValue>			values;
 
 	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
+		if (isAttached()) {
 			if      (attr.name == "type")
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 			else if (attr.name == "values")
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 		}
 	}
 

@@ -52,11 +52,11 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	@getter public final Type	get$type() { return this.ftype.getType(); }
 
 	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
+		if (isAttached()) {
 			if      (attr.name == "ftype")
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 			else if (attr.name == "meta")
-				parent.callbackChildChanged(pslot);
+				parent().callbackChildChanged(pslot());
 		}
 	}
 

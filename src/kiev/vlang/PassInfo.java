@@ -34,15 +34,12 @@ public final class ParentEnumerator implements Enumeration<ASTNode> {
 		this.n = n;
 	}
 	public boolean hasMoreElements() {
-		return n.parent != null;
+		return n.isAttached();
 	}
 	public ASTNode nextElement() {
-		if (r == null) {
-			r = n.parent;
-		} else {
+		if (r != null)
 			n = r;
-			r = n.parent;
-		}
+		r = n.parent();
 		return r;
 	}
 }
@@ -52,9 +49,9 @@ public class SymbolIterator implements Enumeration<ASTNode> {
 	ASTNode last_stat;
 	public SymbolIterator(NArr<ASTNode> stats, ASTNode element) {
 		this.stats = stats;
-		if (element != null && element.pslot == stats.getPSlot()) {
+		if (element != null && element.pslot() == stats.getPSlot()) {
 			assert(stats.indexOf(element) >= 0);
-			last_stat = element.pprev;
+			last_stat = element.pprev();
 		} else {
 			if (stats.size() > 0)
 				last_stat = stats[stats.size()-1];
@@ -66,7 +63,7 @@ public class SymbolIterator implements Enumeration<ASTNode> {
 	public ASTNode nextElement() {
 		if ( last_stat != null ) {
 			ASTNode r = last_stat;
-			last_stat = last_stat.pprev;
+			last_stat = last_stat.pprev();
 			return r;
 		}
 		throw new NoSuchElementException();
@@ -195,7 +192,7 @@ public class PassInfo {
 		if (Kiev.debugResolve) {
 			StringBuffer msg = new StringBuffer("Found "+methods.length+" candidate methods:\n");
 			for(int i=0; i < methods.length; i++) {
-				msg.append("\t").append(methods[i].parent).append('.').append(paths[i]).append(methods[i]).append('\n');
+				msg.append("\t").append(methods[i].parent()).append('.').append(paths[i]).append(methods[i]).append('\n');
 			}
 			msg.append("while resolving ").append(Method.toString(name,mt));
 			trace(Kiev.debugResolve,msg.toString());
@@ -298,7 +295,7 @@ public class PassInfo {
 		
 		StringBuffer msg = new StringBuffer("Umbigous methods:\n");
 		for(int i=0; i < methods.length; i++) {
-			msg.append("\t").append(methods[i].parent).append('.');
+			msg.append("\t").append(methods[i].parent()).append('.');
 			msg.append(paths[i]).append(methods[i]).append('\n');
 		}
 		msg.append("while resolving ").append(Method.toString(name,mt));
@@ -322,7 +319,7 @@ public class PassInfo {
 		if( !exc.isInstanceOf(Type.tpThrowable) )
 			throw new CompilerException(from,"A class of object for throw statement must be a subclass of "+Type.tpThrowable+" but type "+exc+" found");
 		if( exc.isInstanceOf(Type.tpError) || exc.isInstanceOf(Type.tpRuntimeException) ) return true;
-		for (; from != null; from = from.parent) {
+		for (; from != null; from = from.parent()) {
 			if( from instanceof TryStat ) {
 				TryStat trySt = (TryStat)from;
 				for(int j=0; j < trySt.catchers.length; j++)

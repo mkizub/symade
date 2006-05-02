@@ -89,11 +89,11 @@ public final class TVar {
 
 	public String toString() {
 		if (isFree())
-			return idx+": free  "+var.definer.parent+"."+var.definer+"."+var.name;
+			return idx+": free  "+var.definer.parent()+"."+var.definer+"."+var.name;
 		else if (isAlias())
-			return idx+": alias "+var.definer.parent+"."+var.definer+"."+var.name+" > "+set.getTVars()[this.ref];
+			return idx+": alias "+var.definer.parent()+"."+var.definer+"."+var.name+" > "+set.getTVars()[this.ref];
 		else
-			return idx+": bound "+var.definer.parent+"."+var.definer+"."+var.name+" = "+val;
+			return idx+": bound "+var.definer.parent()+"."+var.definer+"."+var.name+" = "+val;
 	}
 }
 

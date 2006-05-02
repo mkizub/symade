@@ -63,11 +63,11 @@ public class TypeNameRef extends TypeRef {
 		if (this.lnk != null)
 			return this.lnk;
 		Type tp;
-		if (ident.symbol != null && ident.symbol.parent instanceof TypeDecl) {
+		if (ident.symbol != null && ident.symbol.parent() instanceof TypeDecl) {
 			if (outer != null)
-				tp = ((TypeDecl)ident.symbol.parent).getType().bind(outer.getType().bindings());
+				tp = ((TypeDecl)ident.symbol.parent()).getType().bind(outer.getType().bindings());
 			else
-				tp = ((TypeDecl)ident.symbol.parent).getType();
+				tp = ((TypeDecl)ident.symbol.parent()).getType();
 		}
 		else if (this.outer != null) {
 			Type outer = this.outer.getType();

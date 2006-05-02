@@ -26,8 +26,8 @@ public class TypeCallRef extends TypeRef {
 
 	public void callbackChildChanged(AttrSlot attr) {
 		this.lnk = null;
-		if (parent != null && pslot != null) {
-			parent.callbackChildChanged(pslot);
+		if (isAttached()) {
+			parent().callbackChildChanged(pslot());
 		}
 	}
 
