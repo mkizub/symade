@@ -72,10 +72,10 @@ public abstract class ASTNode implements NodeData, Constants, Cloneable {
 	public					int				compileflags;
 	public:ro,ro,ro,rw		ASTNode			parent;
 	public:ro,ro,ro,rw		AttrSlot		pslot;
-	public:ro,ro,rw,rw		ASTNode			pprev;
-	public:ro,ro,rw,rw		ASTNode			pnext;
+	public:ro,ro,ro,rw		ASTNode			pprev;
+	public:ro,ro,ro,rw		ASTNode			pnext;
 	public:ro,ro,ro,rw		ASTNode			ctx_root;
-	private:no,no,no,rw		NodeData[]		ndata;
+	private					NodeData[]		ndata;
 	// Structures	
 	public @packed:1,compileflags,16 boolean is_struct_local;
 	public @packed:1,compileflags,17 boolean is_struct_anomymouse;
@@ -191,8 +191,14 @@ public abstract class ASTNode implements NodeData, Constants, Cloneable {
 		this.parent = null;
 		this.pslot = null;
 		this.ctx_root = this;
-		this.pprev = null;
-		this.pnext = null;
+		if (this.pprev != null) {
+			this.pprev.pnext = this.pnext;
+			this.pprev = null;
+		}
+		if (this.pnext != null) {
+			this.pnext.pprev = this.pprev;
+			this.pnext = null;
+		}
 		// notify nodes about new root
 		this.walkTree(new TreeWalker() {
 			public boolean pre_exec(NodeData n) { n.callbackRootChanged(); return true; }
@@ -200,7 +206,25 @@ public abstract class ASTNode implements NodeData, Constants, Cloneable {
 		// notify parent about the changed slot
 		parent.callbackChildChanged(pslot);
 	}
-	
+
+	// for NArr only
+	final void callbackAttached(ASTNode parent, AttrSlot pslot, ASTNode prev, ASTNode next) {
+		assert (pslot.is_attr);
+		assert(!isAttached());
+		assert(parent != null && parent != this);
+		// set prev/next
+		if (prev != null) {
+			prev.pnext = this;
+			this.pprev = prev;
+		}
+		if (next != null) {
+			next.pprev = this;
+			this.pnext = next;
+		}
+		// do the rest
+		this.callbackAttached(parent, pslot);
+	}
+
 	public void callbackAttached(ASTNode parent, AttrSlot pslot) {
 		if (pslot.is_attr) {
 			assert(!isAttached());
