@@ -21,8 +21,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	public static final String mnNodeSet			= "kiev.vlang.nodeset"; 
 	public static final String mnAtt				= "kiev.vlang.att"; 
 	public static final String mnRef				= "kiev.vlang.ref"; 
+	public static final String nameNode			= "kiev.vlang.ASTNode"; 
 	public static final String nameNArr			= "kiev.vlang.NArr"; 
 	public static final String nameAttrSlot		= "kiev.vlang.AttrSlot"; 
+	public static final String nameSpaceAttrSlot			= "kiev.vlang.SpaceAttrSlot"; 
+	public static final String nameSpaceRefAttrSlot		= "kiev.vlang.SpaceRefAttrSlot"; 
+	public static final String nameSpaceAttAttrSlot		= "kiev.vlang.SpaceAttAttrSlot"; 
 	private static final String nameCopyable		= "copyable"; 
 	
 	private static final String sigValues			= "()[Lkiev/vlang/AttrSlot;";
@@ -31,8 +35,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	private static final String sigCopy			= "()Ljava/lang/Object;";
 	private static final String sigCopyTo			= "(Ljava/lang/Object;)Ljava/lang/Object;";
 	
-	private static Type tpNArr;
-	private static Type tpAttrSlot;
+
+	static Type tpNode;
+	static Type tpNArr;
+	static Type tpAttrSlot;
+	static Type tpSpaceAttrSlot;
+	static Type tpSpaceRefAttrSlot;
+	static Type tpSpaceAttAttrSlot;
 
 	private ProcessVNode() {
 		super(Kiev.Ext.VNode);
@@ -144,7 +153,72 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		foreach (Method m; s.members; m.id.equals(name)) return true;
 		return false;
 	}
+	
+	private Type makeNodeAttrClass(Struct snode, Field f) {
+		boolean isAtt = (f.meta.get(mnAtt) != null);
+		boolean isArr = f.getType().isInstanceOf(tpNArr);
+		Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
+		if (!isArr)
+			return tpAttrSlot;
+		Struct s = Env.newStruct(("NodeAttr_"+f.id.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,true);
+		s.setResolved(true);
+		snode.members.add(s);
+		if (isAtt) {
+			TVarBld set = new TVarBld();
+			set.append(tpSpaceAttAttrSlot.getStruct().args[0].getAType(), clz_tp);
+			s.super_type = tpSpaceAttAttrSlot.applay(set);
+		} else {
+			TVarBld set = new TVarBld();
+			set.append(tpSpaceRefAttrSlot.getStruct().args[0].getAType(), clz_tp);
+			s.super_type = tpSpaceRefAttrSlot.applay(set);
+		}
+		// make constructor
+		{
+			Constructor ctor = new Constructor(0);
+			ctor.params.add(new FormPar(0, "name", Type.tpString, FormPar.PARAM_NORMAL, ACC_FINAL));
+			ctor.params.add(new FormPar(0, "clazz", Type.tpClass, FormPar.PARAM_NORMAL, ACC_FINAL));
+			s.members.add(ctor);
+			ctor.body = new Block(0);
+			ctor.body.stats.add(new ExprStat(
+				new CallExpr(f.pos,
+					null,
+					s.super_type.getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpClass),
+					null,
+					new ENode[]{
+						new LVarExpr(f.pos, ctor.params[0]),
+						new LVarExpr(f.pos, ctor.params[1])
+					},
+					true
+				)
+			));
+		}
+		// add public N[] getArr(ASTNode parent)
+		{
+			Method getArr = new Method("getArr",new ArrayType(tpNode),ACC_PUBLIC | ACC_SYNTHETIC);
+			getArr.params.add(new FormPar(0, "parent", tpNode, FormPar.PARAM_NORMAL, ACC_FINAL));
+			s.addMethod(getArr);
+			getArr.body = new Block(0);
+			ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, getArr.params[0]) ), f);
+			val = new IFldExpr(f.pos,val,tpNArr.getStruct().resolveField("$nodes"));
+			getArr.body.stats.add(new ReturnStat(f.pos,val));
+		}
+		// add public void setArr(ASTNode parent, N[] narr)
+		{
+			Method setArr = new Method("setArr",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+			setArr.params.add(new FormPar(0, "parent", tpNode, FormPar.PARAM_NORMAL, ACC_FINAL));
+			setArr.params.add(new FormPar(0, "narr", new ArrayType(tpNode), FormPar.PARAM_NORMAL, ACC_FINAL));
+			s.addMethod(setArr);
+			setArr.body = new Block(0);
+			ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, setArr.params[0]) ), f);
+			lval = new IFldExpr(f.pos,lval,tpNArr.getStruct().resolveField("$nodes"));
+			setArr.body.stats.add(new ExprStat(
+				new AssignExpr(f.pos,AssignOperator.Assign2,lval,new LVarExpr(0, setArr.params[1]))
+			));
+		}
 
+		Kiev.runProcessorsOn(s);
+		return s.ctype;
+	}
 	
 	public void autoGenerateMembers(ASTNode:ASTNode node) {
 		return;
@@ -156,6 +230,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	}
 	
 	private void autoGenerateMembers(Struct:ASTNode s) {
+		if (tpNode == null)
+			tpNode = Env.loadStruct(nameNode).ctype;
+		if (tpNode == null) {
+			Kiev.reportError("Cannot find class "+nameNode);
+			return;
+		}
 		if (tpNArr == null)
 			tpNArr = Env.loadStruct(nameNArr).ctype;
 		if (tpNArr == null) {
@@ -166,6 +246,24 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			tpAttrSlot = Env.loadStruct(nameAttrSlot).ctype;
 		if (tpAttrSlot == null) {
 			Kiev.reportError(s,"Cannot find class "+nameAttrSlot);
+			return;
+		}
+		if (tpSpaceAttrSlot == null)
+			tpSpaceAttrSlot = Env.loadStruct(nameSpaceAttrSlot).ctype;
+		if (tpSpaceAttrSlot == null) {
+			Kiev.reportError(s,"Cannot find class "+nameSpaceAttrSlot);
+			return;
+		}
+		if (tpSpaceRefAttrSlot == null)
+			tpSpaceRefAttrSlot = Env.loadStruct(nameSpaceRefAttrSlot).ctype;
+		if (tpSpaceRefAttrSlot == null) {
+			Kiev.reportError(s,"Cannot find class "+nameSpaceRefAttrSlot);
+			return;
+		}
+		if (tpSpaceAttAttrSlot == null)
+			tpSpaceAttAttrSlot = Env.loadStruct(nameSpaceAttAttrSlot).ctype;
+		if (tpSpaceAttAttrSlot == null) {
+			Kiev.reportError(s,"Cannot find class "+nameSpaceAttAttrSlot);
 			return;
 		}
 		foreach (Struct dn; s.members)
@@ -195,15 +293,28 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			boolean isAtt = (f.meta.get(mnAtt) != null);
 			boolean isArr = f.getType().isInstanceOf(tpNArr);
 			Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
+			Type tpa = makeNodeAttrClass(s,f);
 			TypeClassExpr clz_expr = new TypeClassExpr(0, new TypeRef(clz_tp));
-			ENode e = new NewExpr(0, tpAttrSlot, new ENode[]{
-				new ConstStringExpr(f.id.sname),
-				new ConstBoolExpr(isAtt),
-				new ConstBoolExpr(isArr),
-				clz_expr
-			});
+			ENode e;
+			if (isArr && isAtt)
+				e = new NewExpr(0, tpa, new ENode[]{
+					new ConstStringExpr(f.id.sname),
+					clz_expr
+				});
+			else if (isArr && !isAtt)
+				e = new NewExpr(0, tpa, new ENode[]{
+					new ConstStringExpr(f.id.sname),
+					clz_expr
+				});
+			else
+				e= new NewExpr(0, tpa, new ENode[]{
+					new ConstStringExpr(f.id.sname),
+					new ConstBoolExpr(isAtt),
+					new ConstBoolExpr(isArr),
+					clz_expr
+				});
 			String fname = "nodeattr$"+f.id.sname;
-			Field af = s.addField(new Field(fname, tpAttrSlot, ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
+			Field af = s.addField(new Field(fname, e.getType(), ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 			af.init = e;
 			vals_init[i] = new SFldExpr(af.pos, af);
 			if (f.parent() != s)
@@ -437,10 +548,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 class JavaVNodeBackend extends BackendProcessor implements Constants {
 	public static final String nameMetaGetter = ProcessVirtFld.nameMetaGetter; 
 	public static final String nameMetaSetter = ProcessVirtFld.nameMetaSetter; 
-	
-	public static final String nameNode			= "kiev.vlang.ASTNode"; 
 
-	private static Type tpNode;
+	Type tpNode = ProcessVNode.tpNode;
+	Type tpNArr = ProcessVNode.tpNArr;
+	Type tpSpaceAttrSlot = ProcessVNode.tpSpaceAttrSlot;
+	
+	Method treeDelToArray;
+	Method attrDelToArray;
 
 	private JavaVNodeBackend() {
 		super(Kiev.Backend.Java15);
@@ -468,13 +582,6 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 	}
 	
 	private static void fixSetterMethod(Struct s, Field f) {
-		if (tpNode == null)
-			tpNode = Env.loadStruct(nameNode).ctype;
-		if (tpNode == null) {
-			Kiev.reportError("Cannot find class "+nameNode);
-			return;
-		}
-
 		assert(f.meta.get(ProcessVNode.mnAtt) != null);
 
 		MetaVirtual mv = f.getMetaVirtual();
@@ -500,7 +607,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 		Block body = set_var.body;
 		String fname = ("nodeattr$"+f.id.sname).intern();
 		Field fatt = f.ctx_clazz.resolveField(fname);
-		if (f.type.isInstanceOf(tpNode)) {
+		if (f.type.isInstanceOf(ProcessVNode.tpNode)) {
 			ENode p_st = new IfElseStat(0,
 					new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 						new IFldExpr(0,new ThisExpr(0),f,true),
@@ -560,5 +667,45 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 		}
 		set_var.meta.set(new Meta(ProcessVNode.mnAtt)).resolve();
 	}
+
+	////////////////////////////////////////////////////
+	//	   PASS - resolve (actually rewrite)          //
+	////////////////////////////////////////////////////
+
+	public void resolve(ASTNode node) {
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return rewrite((ASTNode)n); return false; }
+		});
+	}
+	
+	boolean rewrite(ASTNode:ASTNode o) {
+		return true;
+	}
+
+	boolean rewrite(CallExpr:ASTNode ce) {
+		if (treeDelToArray == null)
+			treeDelToArray = tpNArr.getStruct().resolveMethod("delToArray",new ArrayType(tpNode));
+		if (attrDelToArray == null)
+			attrDelToArray = tpSpaceAttrSlot.getStruct().resolveMethod("delToArray",new ArrayType(tpNode),tpNode);
+
+		if (ce.func != treeDelToArray)
+			return true;
+		if !(ce.obj instanceof IFldExpr) {
+			Kiev.reportError(ce,"Cannot rewrite");
+			return true;
+		}
+		IFldExpr fa = ce.obj;
+		Field f = fa.var;
+		Struct st = (Struct)f.parent();
+		if (st.package_clazz.isStructView())
+			st = st.package_clazz.view_of.getStruct();
+		Field fattr = st.resolveField(("nodeattr$"+f.id.sname).intern());
+		SFldExpr sfe = new SFldExpr(ce.pos,fattr);
+		CallExpr nce = new CallExpr(ce.pos,sfe,attrDelToArray,new ENode[]{~fa.obj});
+		ce.replaceWithNodeResolve(null,nce);
+		rewriteNode(nce);
+		return false;
+	}
+	
 }
 
