@@ -684,7 +684,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
 		ASTNode@ n;
 	{
-		n @= new SymbolIterator(this.stats, info.space_prev),
+		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
 		{
 			n instanceof Var,
 			((Var)n).id.equals(name),
@@ -698,7 +698,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		}
 	;
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this.stats, info.space_prev),
+		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
 		n instanceof Var && ((Var)n).isForward() && ((Var)n).id.equals(name),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		n.getType().resolveNameAccessR(node,info,name)
@@ -708,7 +708,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this.stats, info.space_prev),
+		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
 		n instanceof Var && ((Var)n).isForward(),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		((Var)n).getType().resolveCallAccessR(node,info,name,mt)

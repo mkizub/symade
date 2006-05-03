@@ -107,12 +107,11 @@ public final view RStruct of Struct extends RTypeDecl {
 		Method ctx_method = from.ctx_method;
 		if (t.isUnerasable()) {
 			if (ctx_method != null && ctx_method.isTypeUnerasable() && t instanceof ArgType) {
-				NArr<TypeDef> targs = ctx_method.targs;
-				for (int i=0; i < targs.length; i++) {
-					TypeDef td = targs[i];
-					if (td.getAType() == t) {
+				int i=0;
+				foreach (TypeDef td; ctx_method.targs) {
+					if (td.getAType() == t)
 						return new LVarExpr(from.pos, ctx_method.getTypeInfoParam(FormPar.PARAM_TYPEINFO_N+i));
-					}
+					i++;
 				}
 			}
 			if (this.instanceOf(Type.tpTypeInfo.clazz) && ctx_method != null && ctx_method.id.uname == nameInit) {
@@ -1219,12 +1218,11 @@ public final view RStruct of Struct extends RTypeDecl {
 				Block initbody = m.body;
 
 				boolean gen_def_constr = false;
-				NArr<ASTNode> stats = initbody.stats;
-				if( stats.length==0 ) {
+				if (initbody.stats.length == 0) {
 					gen_def_constr = true;
 				} else {
-					if( stats[0] instanceof ExprStat ) {
-						ExprStat es = (ExprStat)stats[0];
+					if (initbody.stats[0] instanceof ExprStat) {
+						ExprStat es = (ExprStat)initbody.stats[0];
 						ENode ce = es.expr;
 						if( es.expr instanceof ASTExpression )
 							ce = ((ASTExpression)es.expr).nodes[0];
@@ -1280,11 +1278,11 @@ public final view RStruct of Struct extends RTypeDecl {
 					else if( isForward() && package_clazz.isStructView() && super_type.getStruct().package_clazz.isStructView() ) {
 						call_super.args.add(new ASTIdentifier(pos, nameImpl));
 					}
-					stats.insert(new ExprStat(call_super),0);
+					initbody.stats.insert(new ExprStat(call_super),0);
 				}
 				int p = 1;
 				if( package_clazz.isClazz() && !isStatic() ) {
-					stats.insert(
+					initbody.stats.insert(
 						new ExprStat(pos,
 							new AssignExpr(pos,AssignOperator.Assign,
 								new IFldExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf((Struct)this)),
@@ -1297,7 +1295,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					Field fview = this.resolveField(nameImpl);
 					if (fview.parent() == (Struct)this) {
 						foreach (FormPar fp; m.params; fp.id.equals(nameImpl)) {
-							stats.insert(
+							initbody.stats.insert(
 								new ExprStat(pos,
 									new AssignExpr(pos,AssignOperator.Assign,
 										new IFldExpr(pos,new ThisExpr(pos),resolveField(nameImpl)),
@@ -1313,7 +1311,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					Field tif = resolveField(nameTypeInfo);
 					Var v = m.getTypeInfoParam(FormPar.PARAM_TYPEINFO);
 					assert(v != null);
-					stats.insert(
+					initbody.stats.insert(
 						new ExprStat(pos,
 							new AssignExpr(m.pos,AssignOperator.Assign,
 								new IFldExpr(m.pos,new ThisExpr(0),tif),
@@ -1322,7 +1320,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						p++);
 				}
 				if( instance_init != null && m.isNeedFieldInits() ) {
-					stats.insert(instance_init.body.ncopy(),p++);
+					initbody.stats.insert(instance_init.body.ncopy(),p++);
 				}
 			}
 		}

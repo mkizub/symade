@@ -394,18 +394,10 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		return sb.toString();
 	}
 
-	public static String toString(String nm, NArr<ENode> args) {
-		return toString(nm,args.toArray(),null);
-	}
-
 	public static String toString(String nm, ENode[] args) {
 		return toString(nm,args,null);
 	}
 
-	public static String toString(String nm, NArr<ENode> args, Type ret) {
-		return toString(nm,args.toArray(),ret);
-	}
-	
 	public static String toString(String nm, ENode[] args, Type ret) {
 		StringBuffer sb = new StringBuffer(nm+"(");
 		for(int i=0; args!=null && i < args.length; i++) {
@@ -435,9 +427,9 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		return dmp.append(id);
 	}
 
-	public void makeArgs(NArr<ENode> args, Type t) {
+	public void makeArgs(ENode[] args, Type t) {
 		checkRebuildTypes();
-		assert(args.getPSlot().is_attr);
+		//assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
 			int i=0;
 			for(; i < type.arity; i++) {

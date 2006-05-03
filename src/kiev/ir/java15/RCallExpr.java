@@ -41,7 +41,7 @@ public final view RCallExpr of CallExpr extends RENode {
 		if (func.isStatic() && !(obj instanceof TypeRef))
 			this.obj = new TypeRef(obj.getType());
 		obj.resolve(null);
-		func.makeArgs(args, reqType);
+		func.makeArgs(args.getArray(), reqType);
 		if( func.id.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			Method mmm = ctx_method;
 			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.ctype;
@@ -72,9 +72,8 @@ public final view RCallExpr of CallExpr extends RENode {
 				args[i].resolve(Type.getRealType(obj.getType(),func.type.arg(i)));
 		}
 		if (func.isTypeUnerasable()) {
-			TypeDef[] targs = func.targs.toArray();
-			for (int i=0; i < targs.length; i++) {
-				Type tp = mt.resolve(targs[i].getAType());
+			foreach (TypeDef td; func.targs) {
+				Type tp = mt.resolve(td.getAType());
 				tmp_expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
 				tmp_expr.resolve(null);
 				tmp_expr = null;

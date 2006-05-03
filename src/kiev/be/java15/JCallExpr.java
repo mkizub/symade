@@ -154,9 +154,8 @@ public final view JCallExpr of CallExpr extends JENode {
 			}
 		}
 		if (func.isTypeUnerasable()) {
-			TypeDef[] targs = ((Method)func).targs.toArray();
-			for (int i=0; i < targs.length; i++) {
-				Type tp = mt.resolve(targs[i].getAType());
+			foreach (TypeDef td; ((Method)func).targs) {
+				Type tp = mt.resolve(td.getAType());
 				tmp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
 				tmp_expr.generate(code,null);
 				tmp_expr = null;

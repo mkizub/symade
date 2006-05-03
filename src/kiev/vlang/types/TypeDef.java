@@ -170,8 +170,8 @@ public final class TypeConstr extends TypeDef {
 		return super_types;
 	}
 
-	public TypeRef[] getUpperBounds() { return upper_bound.toArray(); }
-	public TypeRef[] getLowerBounds() { return lower_bound.toArray(); }
+	public TypeRef[] getUpperBounds() { return upper_bound.getArray(); }
+	public TypeRef[] getLowerBounds() { return lower_bound.getArray(); }
 
 	@nodeview
 	public static final view VTypeConstr of TypeConstr extends VTypeDef {

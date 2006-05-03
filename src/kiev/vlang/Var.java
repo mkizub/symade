@@ -1103,11 +1103,16 @@ public abstract class DFFunc implements DataFlowSlots {
 				}
 			}
 			else if (dfs instanceof DFSocketSpace) {
-				NArr<ASTNode> space = (NArr<ASTNode>)dfi.node_impl.getVal(dfs.pslot_name);
-				if (space.size() == 0) {
+				Object space = dfi.node_impl.getVal(dfs.pslot_name);
+				ASTNode[] arr;
+				if (space instanceof NArr<ASTNode>)
+					arr = ((NArr<ASTNode>)space).getArray();
+				else
+					arr = (ASTNode[])space;
+				if (arr.length == 0) {
 					f = dfs.func_in;
 				} else {
-					dfi = space[space.size()-1].getDFlow();
+					dfi = arr[arr.length-1].getDFlow();
 					f = dfi.func_out;
 				}
 			}

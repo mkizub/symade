@@ -73,13 +73,13 @@ public static final view RNewExpr of NewExpr extends RENode {
 		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 			func = m;
-			m.makeArgs(args,type);
+			m.makeArgs(args.getArray(),type);
 			for(int i=0; i < args.length; i++)
 				args[i].resolve(mt.arg(i));
 		}
 		else {
 			throw new CompilerException(this,"Can't find apropriative initializer for "+
-				Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
+				Method.toString(nameInit,args.getArray(),Type.tpVoid)+" for "+type);
 		}
 		setResolved(true);
 		if (isAutoReturnable())

@@ -248,7 +248,7 @@ public class Meta extends ENode {
 					ENode v = mvs.value.ncopy();
 					values.append(new MetaValueScalar(mvt, v));
 				} else {
-					ENode[] arr = ((MetaValueArray)m.annotation_default).values.toArray();
+					ENode[] arr = ((MetaValueArray)m.annotation_default).values.getArray();
 					for(int j=0; j < arr.length; j++)
 						arr[j] = arr[j].ncopy();
 					values.append(new MetaValueArray(mvt, arr));

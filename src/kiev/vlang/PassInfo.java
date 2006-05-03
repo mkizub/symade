@@ -45,16 +45,15 @@ public final class ParentEnumerator implements Enumeration<ASTNode> {
 }
 
 public class SymbolIterator implements Enumeration<ASTNode> {
-	NArr<ASTNode> stats;
+	ASTNode[] stats;
 	ASTNode last_stat;
-	public SymbolIterator(NArr<ASTNode> stats, ASTNode element) {
+	public SymbolIterator(ASTNode[] stats, ASTNode element) {
 		this.stats = stats;
-		if (element != null && element.pslot() == stats.getPSlot()) {
-			assert(stats.indexOf(element) >= 0);
+		if (element != null && Arrays.indexOf(stats,element) >= 0) {
 			last_stat = element.pprev();
 		} else {
-			if (stats.size() > 0)
-				last_stat = stats[stats.size()-1];
+			if (stats.length > 0)
+				last_stat = stats[stats.length-1];
 		}
 	}
 	public boolean hasMoreElements() {

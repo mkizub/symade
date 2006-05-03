@@ -760,6 +760,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public rule resolveStructMethodR(Method@ node, ResInfo info, String name, CallType mt, Type tp)
 		ASTNode@ member;
 		Type@ sup;
+		TypeRef@ supref;
 	{
 		info.isStaticAllowed(),
 		checkResolved(),
@@ -784,9 +785,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			((Struct)member).resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,((Struct)member).ctype))
 		;	info.isSuperAllowed(),
 			isInterface(),
-			sup @= TypeRef.linked_elements(interfaces),
+			supref @= interfaces,
 			info.enterSuper() : info.leaveSuper(),
-			sup.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
+			supref.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,supref.getType()))
 		}
 	}
 

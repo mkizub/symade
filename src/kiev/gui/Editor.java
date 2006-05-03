@@ -538,7 +538,7 @@ public class Editor extends UIView implements KeyListener {
 			}
 		}
 	}
-
+/*
 	class AddNewNodeToListAction extends TextAction {
 		private final Class				cls;
 		private final NArr<ASTNode>		lst;
@@ -555,5 +555,5 @@ public class Editor extends UIView implements KeyListener {
 			formatAndPaint();
 		}
 	}
-
+*/
 }

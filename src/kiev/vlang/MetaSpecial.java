@@ -179,7 +179,7 @@ public class MetaAlias extends MetaSpecial {
 	}
 
 	public ENode[] getAliases() {
-		return aliases.toArray();
+		return aliases.getArray();
 	}
 }
 
@@ -206,7 +206,7 @@ public class MetaThrows extends MetaSpecial {
 	}
 	
 	public TypeNameRef[] getThrowns() {
-		return exceptions.toArray();
+		return exceptions.getArray();
 	}
 }
 
@@ -235,7 +235,7 @@ public class MetaPizzaCase extends MetaSpecial {
 	}
 	
 	public Field[] getFields() {
-		return fields.toArray();
+		return fields.getArray();
 	}
 	
 	public int getTag() { return this.tag; }

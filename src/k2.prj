@@ -616,6 +616,8 @@ kiev.vlang.ScopeStaticFieldInfo kiev/vlang/ScopeStaticFieldInfo kiev\vlang\Var.j
 kiev.vlang.ScopeVarInfo kiev/vlang/ScopeVarInfo kiev\vlang\Var.java
 kiev.vlang.SetBody kiev/vlang/SetBody kiev\vlang\AST.java
 kiev.vlang.Shadow kiev/vlang/Shadow kiev\vlang\Expr.java
+kiev.vlang.SpaceAttAttrSlot kiev/vlang/SpaceAttAttrSlot kiev\vlang\Tree.java
+kiev.vlang.SpaceRefAttrSlot kiev/vlang/SpaceRefAttrSlot kiev\vlang\Tree.java
 kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
 kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java

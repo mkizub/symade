@@ -24,7 +24,7 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 	@att public int					priority;
 	@att public SyntaxSeparator		l_paren;
 	@att public SyntaxSeparator		r_paren;
-	public FormatInfoHint			hint;
+	@att public FormatInfoHint		hint;
 
 	public SyntaxJavaExpr() {}
 	public SyntaxJavaExpr(String name, FormatInfoHint hint, DrawLayout layout, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
@@ -65,7 +65,7 @@ public class SyntaxJavaAccess extends SyntaxElem {
 public class SyntaxJavaType extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaType;
 
-	public FormatInfoHint hint;
+	@att public FormatInfoHint hint;
 	
 	public SyntaxJavaType() {}
 	public SyntaxJavaType(FormatInfoHint hint, DrawLayout layout) {

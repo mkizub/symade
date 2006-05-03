@@ -269,9 +269,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Method copyV = new Method("copy",Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
 			s.addMethod(copyV);
 			copyV.body = new Block(0);
-			NArr<ENode> stats = copyV.body.stats;
 			Var v = new Var(0, "node",s.ctype,0);
-			stats.append(new ReturnStat(0,new ASTCallExpression(0,
+			copyV.body.stats.append(new ReturnStat(0,new ASTCallExpression(0,
 				"copyTo",	new ENode[]{new NewExpr(0,s.ctype,ENode.emptyArray)})));
 		}
 		// copyTo(Object)
@@ -282,7 +281,6 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			copyV.params.append(new FormPar(0,"to$node", Type.tpObject, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(copyV);
 			copyV.body = new Block();
-			NArr<ENode> stats = copyV.body.stats;
 			Var v = new Var(0,"node",s.ctype,0);
 			if (s.super_bound.getType() != null && isNodeKind(s.super_type)) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
@@ -313,12 +311,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 						cae.obj = new IFldExpr(0,new LVarExpr(0,v),f);
 						cae.ident = new SymbolRef(0, "copyFrom");
 						cae.args.append(new IFldExpr(0,new ThisExpr(),f));
-						stats.append(new ExprStat(0,cae));
+						copyV.body.stats.append(new ExprStat(0,cae));
 					} else {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						cae.obj = new IFldExpr(0, new ThisExpr(),f);
 						cae.ident = new SymbolRef(0, "copy");
-						stats.append( 
+						copyV.body.stats.append( 
 							new IfElseStat(0,
 								new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 									new IFldExpr(0,new ThisExpr(),f),
@@ -335,7 +333,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 						);
 					}
 				} else {
-					stats.append( 
+					copyV.body.stats.append( 
 						new ExprStat(0,
 							new AssignExpr(0,AssignOperator.Assign,
 								new IFldExpr(0,new LVarExpr(0,v),f),
@@ -345,7 +343,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					);
 				}
 			}
-			stats.append(new ReturnStat(0,new LVarExpr(0,v)));
+			copyV.body.stats.append(new ReturnStat(0,new LVarExpr(0,v)));
 		}
 		// setVal(String, Object)
 		if (hasMethod(s, "setVal")) {
@@ -404,6 +402,29 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		}
 	}
 	
+	////////////////////////////////////////////////////
+	//	   PASS - verification                        //
+	////////////////////////////////////////////////////
+
+	public void verify(ASTNode node) {
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(NodeData n) {
+				if (n instanceof DNode)
+					verifyDecl((DNode)n);
+				return true;
+			}
+		});
+		return;
+	}
+
+	void verifyDecl(DNode dn) {
+		if !(dn.getType().isInstanceOf(tpNArr))
+			return;
+		if (dn instanceof Var)
+			Kiev.reportWarning(dn,"Var cannot be NArr");
+		return;
+	}
+
 	public BackendProcessor getBackend(Kiev.Backend backend) {
 		if (backend == Kiev.Backend.Java15)
 			return JavaVNodeBackend;

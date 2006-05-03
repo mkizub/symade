@@ -525,10 +525,10 @@ public static view RBlock of Block extends RENode {
 	public:ro	NArr<ASTNode>		stats;
 
 	public void resolve(Type reqType) {
-		RBlock.resolveStats(reqType, this, stats);
+		RBlock.resolveStats(reqType, this, stats.getArray());
 	}
 
-	public static void resolveStats(Type reqType, RENode self, NArr<ASTNode> stats) {
+	public static void resolveStats(Type reqType, RENode self, ASTNode[] stats) {
 		int sz = stats.length - 1;
 		for (int i=0; i <= sz; i++) {
 			ASTNode st = stats[i];

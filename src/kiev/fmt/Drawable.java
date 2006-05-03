@@ -23,6 +23,7 @@ public abstract class Drawable extends ASTNode {
 	// filled/modified during preFormat/postFormat
 	public DrawGeometry		geometry;
 	// syntax kind & draw layout
+	@ref
 	public SyntaxElem		syntax;
 	// current (selected) layout
 	int						curr_layout;

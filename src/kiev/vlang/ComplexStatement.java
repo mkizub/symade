@@ -134,7 +134,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		var.id.equals(name),
 		node ?= var
 	;
-		n @= new SymbolIterator(this.stats, info.space_prev),
+		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
 		{
 			n instanceof Var,
 			((Var)n).id.equals(name),
@@ -148,7 +148,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		}
 	;
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this.stats, info.space_prev),
+		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
 		n instanceof Var && ((Var)n).isForward() && ((Var)n).id.equals(name),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		n.getType().resolveNameAccessR(node,info,name)

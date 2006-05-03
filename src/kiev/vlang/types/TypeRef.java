@@ -134,12 +134,6 @@ public class TypeRef extends ENode {
 		}
 		throw new CompilerException(this,"Type "+this+" is not a singleton");
 	}
-	
-	public static Enumeration<Type> linked_elements(NArr<TypeRef> arr) {
-		Vector<Type> tmp = new Vector<Type>();
-		foreach (TypeRef tr; arr) { if (tr.lnk != null) tmp.append(tr.lnk); }
-		return tmp.elements();
-	}
 }
 
 

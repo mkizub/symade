@@ -160,7 +160,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 			clazz.super_bound = new TypeRef(Type.tpObject);
 		}
 		clazz.members.append(impl);
-		foreach (DNode dn; clazz.members.toArray()) {
+		foreach (DNode dn; clazz.members.getArray()) {
 			if (dn instanceof Method && !(dn instanceof Constructor) && dn.isPublic() && !dn.isStatic()) {
 				Method cm = dn;
 				Block b = cm.body;

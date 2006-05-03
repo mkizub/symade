@@ -92,6 +92,42 @@ public class MetaAttrSlot extends AttrSlot {
 	public abstract Object get(ASTNode node);
 }
 
+public class SpaceRefAttrSlot<N extends ASTNode> extends AttrSlot {
+	public SpaceRefAttrSlot(String name, Class clazz) {
+		super(name, false, true, clazz);
+	}
+	
+	public N[] getArr(ASTNode parent) { return ((NArr<N>)parent.getVal(this.name)).getArray(); }
+	public void setArr(ASTNode parent, N[] narr) { parent.setVal(this.name, narr); }
+	
+	public void set(ASTNode parent, int idx, N node) {
+		N[] narr = getArr(parent);
+		narr[idx] = node;
+	}
+}
+
+public class SpaceAttAttrSlot<N extends ASTNode> extends AttrSlot {
+	public SpaceAttAttrSlot(String name, Class clazz) {
+		super(name, true, true, clazz);
+	}
+	
+	public N[] getArr(ASTNode parent) { return ((NArr<N>)parent.getVal(this.name)).getArray(); }
+	public void setArr(ASTNode parent, N[] narr) { parent.setVal(this.name, narr); }
+	
+	public void set(ASTNode parent, int idx, N node) {
+		assert(!node.isAttached());
+		N[] narr = getArr(parent);
+		ASTNode old = narr[idx];
+		old.callbackDetached();
+		narr[idx] = node;
+		ListAttachInfo prv = null;
+		ListAttachInfo nxt = null;
+		if (idx > 0) prv = (ListAttachInfo)narr[idx-1].pinfo();
+		if (idx+1 < narr.length) nxt = (ListAttachInfo)narr[idx+1].pinfo();
+		node.callbackAttached(new ListAttachInfo(node, parent, this, prv, nxt));
+	}
+}
+
 @unerasable
 public final class NArr<N extends ASTNode> {
 
@@ -299,12 +335,16 @@ public final class NArr<N extends ASTNode> {
 		return -1;
 	}
 	
-	public N[] toArray() {
-		int sz = $nodes.length;
-		N[] arr = new N[sz];
-		for (int i=0; i < sz; i++)
-			arr[i] = $nodes[i];
-		return arr;
+//	public N[] toArray() {
+//		int sz = $nodes.length;
+//		N[] arr = new N[sz];
+//		for (int i=0; i < sz; i++)
+//			arr[i] = $nodes[i];
+//		return arr;
+//	}
+
+	public N[] getArray() {
+		return $nodes;
 	}
 
 	public N[] delToArray() {

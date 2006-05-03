@@ -72,7 +72,7 @@ public class ASTCallAccessExpression extends ENode {
 				CallType mt = new CallType(ta,null);
 				try {
 					if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ident.name,mt) )
-						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,null));
+						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args.getArray(),null));
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				info.leaveSuper();
 				info.leaveForward(obj);
@@ -81,7 +81,6 @@ public class ASTCallAccessExpression extends ENode {
 					CallExpr cae = new CallExpr(pos,~obj,meth,args.delToArray());
 					cae.setSuperExpr(true);
 					replaceWithNode(cae);
-					//meth.makeArgs(cae.args, tp);
 					return;
 				}
 				throw new CompilerException(obj,"Super-call via forwarding is not allowed");
@@ -207,7 +206,7 @@ public class ASTCallAccessExpression extends ENode {
 			try {
 				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ident.name,mt) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
-					throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,ret));
+					throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args.getArray(),ret));
 				}
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			info.leaveSuper();
@@ -217,7 +216,6 @@ public class ASTCallAccessExpression extends ENode {
 				CallExpr cae = new CallExpr(pos,~obj,meth,args.delToArray());
 				cae.setSuperExpr(true);
 				replaceWithNode(cae);
-				//meth.makeArgs(cae.args, tp);
 				cae.resolve(ret);
 				return;
 			}
