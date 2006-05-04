@@ -1047,7 +1047,7 @@ public abstract class DFFunc implements DataFlowSlots {
 		assert(!lst.contains(node));
 		assert(node.isAttached());
 		if (node.pslot().is_space)
-			assert(((NArr<ASTNode>)node.parent().getVal(node.pslot().name)).contains(node));
+			assert(((NArr<ASTNode>)node.parent().getVal(node.pslot().name)).indexOf(node) >= 0);
 		else
 			assert(node.parent().getVal(node.pslot().name) == node);
 		lst.append(node);

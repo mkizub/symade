@@ -52,12 +52,13 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 			Var v = null;
 			foreach (FormPar fp; init.params; fp.id.uname == f.id.uname) {
 				init.body.stats.insert(
+					p++,
 					new ExprStat(
 						new AssignExpr(f.pos,AssignOperator.Assign,
 							new IFldExpr(f.pos,new ThisExpr(f.pos),f),
 							new LVarExpr(f.pos,fp)
 						)
-					),p++
+					)
 				);
 				break;
 			}

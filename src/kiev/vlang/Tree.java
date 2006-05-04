@@ -99,9 +99,44 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 	protected N[] getArr(ASTNode parent) { return ((NArr<N>)parent.getVal(this.name)).$nodes; }
 	protected void setArr(ASTNode parent, N[] narr) { ((NArr<N>)parent.getVal(this.name)).$nodes = narr; }
 
-	public final N[] getArray(ASTNode parent) { return this.getArr(parent); }
+	public final N[] getArray(ASTNode parent) {
+		return this.getArr(parent);
+	}
 
-	public abstract void set(ASTNode parent, int idx, N node);
+	public final int indexOf(ASTNode parent, ASTNode node) {
+		N[] narr = getArr(parent);
+		int sz = narr.length;
+		for (int i=0; i < sz; i++) {
+			if (narr[i] == node)
+				return i;
+		}
+		return -1;
+	}
+
+	public final void detach(ASTNode parent, ASTNode old)
+	{
+		N[] narr = getArr(parent);
+		int sz = narr.length;
+		for (int i=0; i < sz; i++) {
+			if (narr[i] == old) {
+				this.del(parent,i);
+				return;
+			}
+		}
+		throw new RuntimeException("Not found node");
+	}
+	
+	public final void addAll(ASTNode parent, N[] arr) {
+		for (int i=0; i < arr.length; i++)
+			add(parent, arr[i]);
+	}
+
+	public abstract N set(ASTNode parent, int idx, N node);
+	public abstract N add(ASTNode parent, N node);
+	public abstract void del(ASTNode parent, int idx);
+	public abstract void insert(ASTNode parent, int idx, N node);
+	public abstract void copyFrom(ASTNode parent, N[] arr);
+	public abstract void delAll(ASTNode parent);
 	public abstract N[] delToArray(ASTNode parent);
 
 }
@@ -111,11 +146,60 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		super(name, false, clazz);
 	}
 	
-	public void set(ASTNode parent, int idx, N node) {
+	public N set(ASTNode parent, int idx, N node) {
 		N[] narr = getArr(parent);
 		narr[idx] = node;
+		return node;
 	}
 
+	public N add(ASTNode parent, N node) {
+		N[] narr = getArr(parent);
+		int sz = narr.length;
+		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
+		for (int i=0; i < sz; i++)
+			tmp[i] = narr[i];
+		tmp[sz] = node;
+		setArr(parent,tmp);
+		return node;
+	}
+
+	public void del(ASTNode parent, int idx) {
+		N[] narr = getArr(parent);
+		int sz = narr.length-1;
+		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz); //new N[sz];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = narr[i];
+		for (; i < sz; i++)
+			tmp[i] = narr[i+1];
+		setArr(parent,tmp);
+	}
+
+	public void insert(ASTNode parent, int idx, N node) {
+		N[] narr = getArr(parent);
+		int sz = narr.length;
+		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = narr[i];
+		tmp[idx] = node;
+		for (; i < sz; i++)
+			tmp[i+1] = narr[i];
+		setArr(parent,tmp);
+	}
+
+	public void copyFrom(ASTNode parent, N[] arr) {
+		foreach (N n; arr)
+			add(parent, n);
+	}
+	
+	public void delAll(ASTNode parent) {
+		N[] narr = getArr(parent);
+		if (narr.length == 0)
+			return;
+		setArr(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+	}
+	
 	public N[] delToArray(ASTNode parent) {
 		N[] narr = getArr(parent);
 		setArr(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
@@ -128,7 +212,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		super(name, true, clazz);
 	}
 	
-	public void set(ASTNode parent, int idx, N node) {
+	public N set(ASTNode parent, int idx, N node) {
 		assert(!node.isAttached());
 		N[] narr = getArr(parent);
 		ASTNode old = narr[idx];
@@ -139,8 +223,73 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		if (idx > 0) prv = (ListAttachInfo)narr[idx-1].pinfo();
 		if (idx+1 < narr.length) nxt = (ListAttachInfo)narr[idx+1].pinfo();
 		node.callbackAttached(new ListAttachInfo(node, parent, this, prv, nxt));
+		return node;
 	}
 
+	public N add(ASTNode parent, N node) {
+		assert(!node.isAttached());
+		assert(indexOf(parent,node) < 0);
+		N[] narr = getArr(parent);
+		int sz = narr.length;
+		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
+		for (int i=0; i < sz; i++)
+			tmp[i] = narr[i];
+		tmp[sz] = node;
+		setArr(parent,tmp);
+		ListAttachInfo prv = null;
+		if (sz > 0) prv = (ListAttachInfo)tmp[sz-1].pinfo();
+		node.callbackAttached(new ListAttachInfo(node, parent, this, prv, null));
+		return node;
+	}
+
+	public void del(ASTNode parent, int idx) {
+		N[] narr = getArr(parent);
+		ASTNode old = narr[idx];
+		old.callbackDetached();
+		int sz = narr.length-1;
+		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz); //new N[sz];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = narr[i];
+		for (; i < sz; i++)
+			tmp[i] = narr[i+1];
+		setArr(parent,tmp);
+	}
+
+	public void insert(ASTNode parent, int idx, N node) {
+		assert(!node.isAttached());
+		assert(indexOf(parent,node) < 0);
+		N[] narr = getArr(parent);
+		int sz = narr.length;
+		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = narr[i];
+		tmp[idx] = node;
+		for (; i < sz; i++)
+			tmp[i+1] = narr[i];
+		setArr(parent,tmp);
+		ListAttachInfo prv = null;
+		ListAttachInfo nxt = null;
+		if (idx > 0) prv = (ListAttachInfo)tmp[idx-1].pinfo();
+		if (idx+1 < tmp.length) nxt = (ListAttachInfo)tmp[idx+1].pinfo();
+		node.callbackAttached(new ListAttachInfo(node, parent, this, prv, nxt));
+	}
+
+	public void copyFrom(ASTNode parent, N[] arr) {
+		foreach (N n; arr)
+			add(parent, n.ncopy());
+	}
+	
+	public void delAll(ASTNode parent) {
+		N[] narr = getArr(parent);
+		if (narr.length == 0)
+			return;
+		setArr(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+		for (int i=0; i < narr.length; i++)
+			narr[i].callbackDetached();
+	}
+	
 	public N[] delToArray(ASTNode parent) {
 		N[] narr = getArr(parent);
 		setArr(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
@@ -192,6 +341,7 @@ public final class NArr<N extends ASTNode> {
 		alias operator(210,lfy,[])
 		require { node != null; }
 	{
+		// for compatibility with kiev-0.4b
 		final boolean is_attr = ($pslot != null && $pslot.is_attr);
 		assert(!is_attr || !node.isAttached());
 		if (is_attr) {
@@ -214,6 +364,7 @@ public final class NArr<N extends ASTNode> {
 		alias operator(5, lfy, +=)
 		require { node != null; }
 	{
+		// for compatibility with kiev-0.4b
 		final boolean is_attr = ($pslot != null && $pslot.is_attr);
 		assert(!is_attr || !node.isAttached());
 		if (is_attr)
@@ -236,29 +387,12 @@ public final class NArr<N extends ASTNode> {
 	public void addAll(N[] arr)
 		alias appendAll
 	{
+		// for compatibility with kiev-0.4b
 		foreach(N n; arr) add(n);
 	}
 
-	public void addUniq(N node)
-		alias appendUniq
-	{
-		if (indexOf(node) < 0) add(node);
-	}
-
-	public void addUniq(N[] arr)
-		alias appendUniq
-	{
-		foreach(N n; arr) addUniq(n);
-	}
-
-	public N insert(N node, int idx)
-	{
-		return insert(idx, node);
-	}
-	
-	public N insert(int idx, N node)
-		require { node != null; }
-	{
+	public void insert(int idx, N node) {
+		// for compatibility with kiev-0.4b
 		final boolean is_attr = ($pslot != null && $pslot.is_attr);
 		assert(!is_attr || !node.isAttached());
 		if (is_attr)
@@ -279,11 +413,11 @@ public final class NArr<N extends ASTNode> {
 			if (idx+1 < size()) nxt = (ListAttachInfo)$nodes[idx+1].pinfo();
 			node.callbackAttached(new ListAttachInfo(node, $parent_impl, $pslot, prv, nxt));
 		}
-		return node;
 	}
 
 	public void detach(ASTNode old)
 	{
+		// for compatibility with kiev-0.4b
 		int sz = $nodes.length;
 		for (int i=0; i < sz; i++) {
 			if ($nodes[i] == old) {
@@ -296,6 +430,7 @@ public final class NArr<N extends ASTNode> {
 	
 	public void del(int idx)
 	{
+		// for compatibility with kiev-0.4b
 		ASTNode old = $nodes[idx];
 		final boolean is_attr = ($pslot != null && $pslot.is_attr);
 		if (is_attr)
@@ -311,6 +446,7 @@ public final class NArr<N extends ASTNode> {
 	}
 
 	public void delAll() {
+		// for compatibility with kiev-0.4b
 		if (this.$nodes.length == 0)
 			return;
 		if ($pslot != null && $pslot.is_attr) {
@@ -321,21 +457,17 @@ public final class NArr<N extends ASTNode> {
 	};
 	
 	public void copyFrom(NArr<N> arr) {
+		// for compatibility with kiev-0.4b
+		copyFrom(arr.getArray());
+	}
+	
+	public void copyFrom(N[] arr) {
+		// for compatibility with kiev-0.4b
 		if ($pslot != null && $pslot.is_attr) {
 			foreach (N n; arr)
 				append(n.ncopy());
 		} else {
 			foreach (N n; arr)
-				append(n);
-		}
-	}
-	
-	public void moveFrom(NArr<N> arr) {
-		if ($pslot != null && $pslot.is_attr) {
-			foreach (N n; arr.$nodes)
-				append(~n);
-		} else {
-			foreach (N n; arr.$nodes)
 				append(n);
 		}
 	}
@@ -349,6 +481,7 @@ public final class NArr<N extends ASTNode> {
 	}
 	
 	public int indexOf(ASTNode node) {
+		// for compatibility with kiev-0.4b
 		int sz = $nodes.length;
 		for (int i=0; i < sz; i++) {
 			if ($nodes[i] == node)
@@ -362,6 +495,7 @@ public final class NArr<N extends ASTNode> {
 	}
 
 	public N[] delToArray() {
+		// for compatibility with kiev-0.4b
 		int sz = $nodes.length;
 		N[] arr = $nodes;
 		$nodes = new N[0];
@@ -455,23 +589,6 @@ public final class NArr<N extends ASTNode> {
 			foreach(J n; arr) add(n);
 		}
 	
-		public void addUniq(J node)
-			alias appendUniq
-		{
-			if (indexOf(node) < 0) add(node);
-		}
-	
-		public void addUniq(J[] arr)
-			alias appendUniq
-		{
-			foreach(J n; arr) addUniq(n);
-		}
-	
-		public J insert(J node, int idx)
-		{
-			return insert(idx, node);
-		}
-		
 		public J insert(int idx, J node)
 			require { node != null; }
 		{
@@ -481,11 +598,7 @@ public final class NArr<N extends ASTNode> {
 	
 		public void detach(J old) { getNArr().detach((N)old); }
 		public void del(int idx) { getNArr().del(idx); }
-		public void delAll() { getNArr().delAll(); }
-		public void copyFrom(JArr<J> arr) { getNArr().copyFrom(arr.getNArr()); }
-		public void moveFrom(JArr<J> arr) { getNArr().moveFrom(arr.getNArr()); }
 		public boolean contains(J node) { return getNArr().contains((N)node); }
-		public int indexOf(J node) { return getNArr().indexOf((N)node); }
 		public J[] toArray() {
 			int sz = getNArr().$nodes.length;
 			J[] arr = new J[sz];

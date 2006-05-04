@@ -373,11 +373,15 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	
 	public void addViolatedField(Field f) {
 		if( isInvariantMethod() ) {
-			f.invs.addUniq(this);
-			if( this.ctx_clazz.instanceOf(f.ctx_clazz) )
-				violated_fields.addUniq(f);
+			if (f.invs.indexOf(this) < 0)
+				f.invs.add(this);
+			if( this.ctx_clazz.instanceOf(f.ctx_clazz) ) {
+				if (violated_fields.indexOf(f) < 0)
+					violated_fields.add(f);
+			}
 		} else {
-			violated_fields.addUniq(f);
+			if (violated_fields.indexOf(f) < 0)
+				violated_fields.add(f);
 		}
 	}
 

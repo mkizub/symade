@@ -104,8 +104,10 @@ public view RMethod of Method extends RDNode {
 				foreach(Method inv; f.invs; ctx_clazz.instanceOf(inv.ctx_clazz) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
-					if( !(id.sname.startsWith(nameSet) || id.sname.startsWith(nameGet)) )
-						conditions.addUniq(inv.conditions[0]);
+					if( !(id.sname.startsWith(nameSet) || id.sname.startsWith(nameGet)) ) {
+						if (conditions.indexOf(inv.conditions[0]) < 0)
+							conditions.add(inv.conditions[0]);
+					}
 				}
 			}
 		}
@@ -122,7 +124,7 @@ public final view RConstructor of Constructor extends RMethod {
 		RMethod.resolveMethod(this); // super.resolveDecl()
 		ENode[] addstats = this.addstats.delToArray();
 		for(int i=0; i < addstats.length; i++) {
-			body.stats.insert(addstats[i],i);
+			body.stats.insert(i,addstats[i]);
 			trace(Kiev.debugResolve,"ENode added to constructor: "+addstats[i]);
 		}
 	}

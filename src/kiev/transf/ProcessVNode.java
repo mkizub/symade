@@ -421,7 +421,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						cae.obj = new IFldExpr(0,new LVarExpr(0,v),f);
 						cae.ident = new SymbolRef(0, "copyFrom");
-						cae.args.append(new IFldExpr(0,new ThisExpr(),f));
+						cae.args.append(new IFldExpr(0,new IFldExpr(0,new ThisExpr(),f),tpNArr.getStruct().resolveField("$nodes")));
 						copyV.body.stats.append(new ExprStat(0,cae));
 					} else {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
@@ -555,6 +555,24 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 	
 	Method treeDelToArray;
 	Method attrDelToArray;
+	Method treeDelAll;
+	Method attrDelAll;
+	Method treeAddAll;
+	Method attrAddAll;
+	Method treeCopyFrom;
+	Method attrCopyFrom;
+	Method treeIndexOf;
+	Method attrIndexOf;
+	Method treeSet;
+	Method attrSet;
+	Method treeAdd;
+	Method attrAdd;
+	Method treeDel;
+	Method attrDel;
+	Method treeDetach;
+	Method attrDetach;
+	Method treeInsert;
+	Method attrInsert;
 
 	private JavaVNodeBackend() {
 		super(Kiev.Backend.Java15);
@@ -683,15 +701,45 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 	}
 
 	boolean rewrite(CallExpr:ASTNode ce) {
-		if (treeDelToArray == null)
+		if (treeDelToArray == null) {
 			treeDelToArray = tpNArr.getStruct().resolveMethod("delToArray",new ArrayType(tpNode));
-		if (attrDelToArray == null)
 			attrDelToArray = tpSpaceAttrSlot.getStruct().resolveMethod("delToArray",new ArrayType(tpNode),tpNode);
+			treeDelAll = tpNArr.getStruct().resolveMethod("delAll",Type.tpVoid);
+			attrDelAll = tpSpaceAttrSlot.getStruct().resolveMethod("delAll",Type.tpVoid,tpNode);
+			treeAddAll = tpNArr.getStruct().resolveMethod("addAll",Type.tpVoid,new ArrayType(tpNode));
+			attrAddAll = tpSpaceAttrSlot.getStruct().resolveMethod("addAll",Type.tpVoid,tpNode,new ArrayType(tpNode));
+			treeCopyFrom = tpNArr.getStruct().resolveMethod("copyFrom",Type.tpVoid,new ArrayType(tpNode));
+			attrCopyFrom = tpSpaceAttrSlot.getStruct().resolveMethod("copyFrom",Type.tpVoid,tpNode,new ArrayType(tpNode));
+			treeIndexOf = tpNArr.getStruct().resolveMethod("indexOf",Type.tpVoid,tpNode);
+			attrIndexOf = tpSpaceAttrSlot.getStruct().resolveMethod("indexOf",Type.tpVoid,tpNode,tpNode);
+			treeSet = tpNArr.getStruct().resolveMethod("set",tpNode,Type.tpInt,tpNode);
+			attrSet = tpSpaceAttrSlot.getStruct().resolveMethod("set",tpNode,tpNode,Type.tpInt,tpNode);
+			treeAdd = tpNArr.getStruct().resolveMethod("add",tpNode,tpNode);
+			attrAdd = tpSpaceAttrSlot.getStruct().resolveMethod("add",tpNode,tpNode,tpNode);
+			treeDel = tpNArr.getStruct().resolveMethod("del",Type.tpVoid,Type.tpInt);
+			attrDel = tpSpaceAttrSlot.getStruct().resolveMethod("del",Type.tpVoid,tpNode,Type.tpInt);
+			treeDetach = tpNArr.getStruct().resolveMethod("detach",Type.tpVoid,tpNode);
+			attrDetach = tpSpaceAttrSlot.getStruct().resolveMethod("detach",Type.tpVoid,tpNode,tpNode);
+			treeInsert = tpNArr.getStruct().resolveMethod("insert",Type.tpVoid,Type.tpInt,tpNode);
+			attrInsert = tpSpaceAttrSlot.getStruct().resolveMethod("insert",Type.tpVoid,tpNode,Type.tpInt,tpNode);
+		}
 
-		if (ce.func != treeDelToArray)
-			return true;
+		Method m_attr;
+		
+		if      (ce.func == treeDelToArray)	m_attr = attrDelToArray;
+		else if (ce.func == treeDelAll)			m_attr = attrDelAll;
+		else if (ce.func == treeAddAll)			m_attr = attrAddAll;
+		else if (ce.func == treeCopyFrom)		m_attr = attrCopyFrom;
+		else if (ce.func == treeIndexOf)		m_attr = attrIndexOf;
+		else if (ce.func == treeSet)			m_attr = attrSet;
+		else if (ce.func == treeAdd)			m_attr = attrAdd;
+		else if (ce.func == treeDel)			m_attr = attrDel;
+		else if (ce.func == treeDetach)			m_attr = attrDetach;
+		else if (ce.func == treeInsert)			m_attr = attrInsert;
+		else									return true;
+
 		if !(ce.obj instanceof IFldExpr) {
-			Kiev.reportError(ce,"Cannot rewrite");
+			Kiev.reportWarning(ce,"Cannot rewrite");
 			return true;
 		}
 		IFldExpr fa = ce.obj;
@@ -701,7 +749,9 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 			st = st.package_clazz.view_of.getStruct();
 		Field fattr = st.resolveField(("nodeattr$"+f.id.sname).intern());
 		SFldExpr sfe = new SFldExpr(ce.pos,fattr);
-		CallExpr nce = new CallExpr(ce.pos,sfe,attrDelToArray,new ENode[]{~fa.obj});
+		ENode[] args = ce.args.delToArray();
+		args = (ENode[])Arrays.insert(args,~fa.obj,0);
+		CallExpr nce = new CallExpr(ce.pos,sfe,m_attr,args);
 		ce.replaceWithNodeResolve(null,nce);
 		rewriteNode(nce);
 		return false;

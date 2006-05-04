@@ -861,11 +861,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					package_clazz.checkResolved();
 					if( package_clazz.isClazz() && !isStatic() ) {
 						// Add formal parameter
-						m.params.insert(new FormPar(m.pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC),0);
+						m.params.insert(0,new FormPar(m.pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 						retype = true;
 					}
 					if (!isInterface() && isTypeUnerasable()) {
-						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC),(retype?1:0));
+						m.params.insert((retype?1:0),new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 						retype = true;
 					}
 				}
@@ -929,8 +929,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				trace(Kiev.debugMultiMethod,"Method "+m+" overrides "+mi+" of type "+mit+" in class "+this);
 				mm = mi;
 				// Append constraints to m from mm
-				foreach(WBCCondition cond; mm.conditions)
-					m.conditions.appendUniq(cond);
+				foreach(WBCCondition cond; mm.conditions; m.conditions.indexOf(cond) < 0)
+					m.conditions.add(cond);
 				if( mmret == null && mm != null ) mmret = mm;
 				break;
 			} else {

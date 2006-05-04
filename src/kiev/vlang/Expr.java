@@ -678,7 +678,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 				Kiev.reportError((ASTNode)sym,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}
-		stats.insert((ASTNode)sym,idx);
+		stats.insert(idx,(ASTNode)sym);
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)

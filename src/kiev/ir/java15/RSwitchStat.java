@@ -128,7 +128,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 			Block bl = new Block(cas.pos, cas.stats.delToArray());
 			bl.setBreakTarget(true);
 			if( ((CaseLabel)cas).val == null ) {
-				bl.stats.insert(new ExprStat(sel.pos,~sel),0);
+				bl.stats.insert(0,new ExprStat(sel.pos,~sel));
 				this.replaceWithNodeResolve(Type.tpVoid, bl);
 				return;
 			} else {
@@ -322,7 +322,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 		if( isMethodAbrupted() && defCase==null ) {
 			ENode thrErr = new ThrowStat(pos,new NewExpr(pos,Type.tpError,ENode.emptyArray));
 			CaseLabel dc = new CaseLabel(pos,null,new ENode[]{thrErr});
-			cases.insert(dc,0);
+			cases.insert(0,dc);
 			dc.resolve(Type.tpVoid);
 		}
 		if( mode == SwitchStat.ENUM_SWITCH ) {

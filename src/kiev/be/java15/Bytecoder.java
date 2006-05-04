@@ -165,7 +165,8 @@ public class Bytecoder implements JConstants {
 						conditions = (WBCCondition[])Arrays.appendUniq(conditions,wbc);
 				} else {
 					wbc.definer = m;
-					m.conditions.appendUniq(wbc);
+					if (m.conditions.indexOf(wbc) < 0)
+						m.conditions.add(wbc);
 				}
 			}
 		}

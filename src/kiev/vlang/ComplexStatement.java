@@ -122,7 +122,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 
 	public ASTNode addStatement(int i, ASTNode st) {
 		if( st == null ) return null;
-		stats.insert(st,i);
+		stats.insert(i,st);
 		return st;
 	}
 

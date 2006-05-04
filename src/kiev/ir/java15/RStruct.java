@@ -264,7 +264,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			ASTCallExpression call_super = new ASTCallExpression(pos, nameSuper, ENode.emptyArray);
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
-			init.body.stats.insert(new ExprStat(call_super),0);
+			init.body.stats.insert(0,new ExprStat(call_super));
 			foreach (ArgType at; ((RStruct)super_type.clazz).getTypeInfoArgs()) {
 				Type t = at.applay(this.ctype);
 				ENode expr;
@@ -813,7 +813,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				// Make it static and add abstract method
 				Method def = new Method(m.id.uname,m.type.ret(),m.getFlags()|ACC_STATIC);
 				def.pos = m.pos;
-				def.params.moveFrom(m.params); // move, because the vars are resolved
+				def.params.addAll(m.params.delToArray()); // move, because the vars are resolved
 				m.params.copyFrom(def.params);
 				def.params.insert(0,new FormPar(pos,Constants.nameThis,self.ctype,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
 				defaults.members.add(def);
@@ -1278,17 +1278,18 @@ public final view RStruct of Struct extends RTypeDecl {
 					else if( isForward() && package_clazz.isStructView() && super_type.getStruct().package_clazz.isStructView() ) {
 						call_super.args.add(new ASTIdentifier(pos, nameImpl));
 					}
-					initbody.stats.insert(new ExprStat(call_super),0);
+					initbody.stats.insert(0,new ExprStat(call_super));
 				}
 				int p = 1;
 				if( package_clazz.isClazz() && !isStatic() ) {
 					initbody.stats.insert(
+						p++,
 						new ExprStat(pos,
 							new AssignExpr(pos,AssignOperator.Assign,
 								new IFldExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf((Struct)this)),
 								new LVarExpr(pos,m.params[0])
 							)
-						),p++
+						)
 					);
 				}
 				if (isForward() && package_clazz.isStructView()) {
@@ -1296,12 +1297,13 @@ public final view RStruct of Struct extends RTypeDecl {
 					if (fview.parent() == (Struct)this) {
 						foreach (FormPar fp; m.params; fp.id.equals(nameImpl)) {
 							initbody.stats.insert(
+								p++,
 								new ExprStat(pos,
 									new AssignExpr(pos,AssignOperator.Assign,
 										new IFldExpr(pos,new ThisExpr(pos),resolveField(nameImpl)),
 										new LVarExpr(pos,fp)
 									)
-								),p++
+								)
 							);
 							break;
 						}
@@ -1312,15 +1314,16 @@ public final view RStruct of Struct extends RTypeDecl {
 					Var v = m.getTypeInfoParam(FormPar.PARAM_TYPEINFO);
 					assert(v != null);
 					initbody.stats.insert(
+						p++,
 						new ExprStat(pos,
 							new AssignExpr(m.pos,AssignOperator.Assign,
 								new IFldExpr(m.pos,new ThisExpr(0),tif),
 								new LVarExpr(m.pos,v)
-							)),
-						p++);
+							))
+						);
 				}
 				if( instance_init != null && m.isNeedFieldInits() ) {
-					initbody.stats.insert(instance_init.body.ncopy(),p++);
+					initbody.stats.insert(p++,instance_init.body.ncopy());
 				}
 			}
 		}
@@ -1382,12 +1385,13 @@ public final view RStruct of Struct extends RTypeDecl {
 							String nm = proxy_fields[j].id.sname;
 							m.params.append(new FormPar(m.pos,nm,proxy_fields[j].type,FormPar.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
 							m.body.stats.insert(
+								1,
 								new ExprStat(m.pos,
 									new AssignExpr(m.pos,AssignOperator.Assign,
 										new IFldExpr(m.pos,new ThisExpr(0),proxy_fields[j]),
 										new LVarExpr(m.pos,m.params[par])
 									)
-								),1
+								)
 							);
 						}
 					}
