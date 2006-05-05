@@ -29,7 +29,7 @@ public abstract class MetaSpecial extends ASTNode {
 		this.attr = attr;
 	}
 	
-	public ANode nodeCopiedTo(ASTNode node) {
+	public ANode nodeCopiedTo(ANode node) {
 		return this.ncopy();
 	}
 	
@@ -249,7 +249,7 @@ public abstract class MetaFlag extends MetaSpecial {
 	public MetaFlag(MetaAttrSlot attr) { super(attr); }
 	public Object copy() { return this; }
 	
-	public ANode nodeCopiedTo(ASTNode node) {
+	public ANode nodeCopiedTo(ANode node) {
 		return this; // attach the same instance to the copied node
 	}
 	public final void set(ASTNode node, Object value) {

@@ -24,12 +24,10 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 	@att public int					priority;
 	@att public SyntaxSeparator		l_paren;
 	@att public SyntaxSeparator		r_paren;
-	@att public FormatInfoHint		hint;
 
 	public SyntaxJavaExpr() {}
 	public SyntaxJavaExpr(String name, FormatInfoHint hint, DrawLayout layout, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
-		super(name,layout);
-		this.hint = hint;
+		super(name,hint,layout);
 		this.priority = priority;
 		this.l_paren = l_paren;
 		this.r_paren = r_paren;

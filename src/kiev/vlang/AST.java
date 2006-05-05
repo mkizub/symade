@@ -42,15 +42,15 @@ public enum TopLevelPass {
 public abstract class ANode {
 
 	private AttachInfo		p_info;
+	private AttachInfo[]	ndata;
 
 	public final boolean    isAttached()    { return p_info != null; }
 	public final AttachInfo getAttachInfo() { return p_info; }
 	public final void       setAttachInfo(AttachInfo ai) { p_info = ai; }
 
-	public abstract ANode nodeCopiedTo(ASTNode node);
-	public abstract void callbackAttached(ASTNode parent, AttrSlot pslot);
+	public abstract ANode nodeCopiedTo(ANode node);
+	public abstract void callbackAttached(ANode parent, AttrSlot pslot);
 	public abstract void callbackDetached();
-	public abstract void walkTree(TreeWalker walker);
 
 	@getter public final ANode get$ctx_root() {
 		if (!isAttached())
@@ -84,6 +84,131 @@ public abstract class ANode {
 	public void setVal(String name, Object val) {
 		throw new RuntimeException("No @att value \"" + name + "\" in ANode");
 	}
+
+	public final ANode getNodeData(AttrSlot attr) {
+		assert (attr.isData());
+		if (ndata != null) {
+			foreach (AttachInfo ai; ndata) {
+				if (ai.p_slot.name == attr.name)
+					return ai.p_self;
+			}
+		}
+		return null;
+	}
+	
+	public final void addNodeData(ANode d, AttrSlot attr) {
+		assert (attr.isData());
+		if (ndata != null) {
+			AttachInfo[] ndata = this.ndata;
+			int sz = ndata.length;
+			for (int i=0; i < sz; i++) {
+				AttachInfo ai = ndata[i];
+				if (ai.p_slot.name == attr.name) {
+					assert(ai.p_slot == attr);
+					if (ai.p_self == d)
+						return;
+					if (attr.is_attr) {
+						ai.p_self.callbackDetached();
+						d.callbackAttached(this, attr);
+					} else {
+						ndata[i] = new AttachInfo(d,this,attr);
+					}
+					return;
+				}
+			}
+			AttachInfo[] tmp = new AttachInfo[sz+1];
+			for (int i=0; i < sz; i++)
+				tmp[i] = ndata[i];
+			tmp[sz] = new AttachInfo(d,this,attr);
+			this.ndata = tmp;
+		} else {
+			this.ndata = new AttachInfo[]{new AttachInfo(d,this,attr)};
+		}
+		if (attr.is_attr)
+			d.callbackAttached(this, attr);
+	}
+	
+	public final void delNodeData(AttrSlot attr) {
+		AttachInfo[] ndata = this.ndata;
+		assert (attr.isData());
+		if (ndata != null) {
+			int sz = ndata.length-1;
+			for (int idx=0; idx <= sz; idx++) {
+				AttachInfo ai = ndata[idx];
+				if (ai.p_slot.name == attr.name) {
+					assert(ai.p_slot == attr);
+					AttachInfo[] tmp = new AttachInfo[sz];
+					int i;
+					for (i=0; i < idx; i++) tmp[i] = ndata[i];
+					for (   ; i <  sz; i++) tmp[i] = ndata[i+1];
+					this.ndata = tmp;
+					if (attr.is_attr)
+						ai.p_self.callbackDetached();
+					return;
+				}
+			}
+		}
+	}
+
+	public final void walkTree(TreeWalker walker) {
+		if (walker.pre_exec(this)) {
+			foreach (AttrSlot attr; this.values(); attr.is_attr) {
+				Object val = this.getVal(attr.name);
+				if (val == null)
+					continue;
+				if (attr.is_space) {
+					NArr<ASTNode> vals = (NArr<ASTNode>)val;
+					for (int i=0; i < vals.length; i++) {
+						try {
+							vals[i].walkTree(walker);
+						} catch (ReWalkNodeException e) { i--; }
+					}
+				}
+				else if (val instanceof ASTNode) {
+				re_walk_node:;
+					try {
+						val.walkTree(walker);
+					} catch (ReWalkNodeException e) {
+						val = this.getVal(attr.name);
+						if (val != null)
+							goto re_walk_node;
+					}
+				}
+			}
+			if (ndata != null) {
+				foreach (AttachInfo ai; this.ndata; ai.p_slot.is_attr)
+					ai.p_self.walkTree(walker);
+			}
+		}
+		walker.post_exec(this);
+	}
+
+	public Object copyTo(Object to$node) {
+		ANode node = (ANode)to$node;
+		if (this.ndata != null) {
+			for (int i=0; i < this.ndata.length; i++) {
+				AttachInfo ai = this.ndata[i];
+				if (!ai.p_slot.is_attr)
+					continue;
+				ANode nd = ai.p_self.nodeCopiedTo(node);
+				if (nd == null)
+					continue;
+				if (node.ndata == null) {
+					node.ndata = new AttachInfo[]{new AttachInfo(nd,node,ai.p_slot)};
+				} else {
+					int sz = node.ndata.length;
+					AttachInfo[] tmp = new AttachInfo[sz+1];
+					for (int j=0; j < sz; j++)
+						tmp[j] = node.ndata[j];
+					tmp[sz] = new AttachInfo(nd,node,ai.p_slot);
+					node.ndata = tmp;
+				}
+				nd.callbackAttached(node, ai.p_slot);
+			}
+		}
+		return node;
+	}
+
 }
 
 public class TreeWalker {
@@ -158,7 +283,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public  int				pos;
 	public  int				compileflags;
-	private ANode[]			ndata;
 
 	// Structures	
 	public @packed:1,compileflags,16 boolean is_struct_local;
@@ -228,33 +352,15 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 		
 	public Object copyTo(Object to$node) {
-		ASTNode node = (ASTNode)to$node;
+		ASTNode node = (ASTNode)super.copyTo(to$node);
 		node.pos			= this.pos;
 		node.compileflags	= this.compileflags;
-		if (this.ndata != null) {
-			for (int i=0; i < this.ndata.length; i++) {
-				ANode nd = this.ndata[i].nodeCopiedTo(node);
-				if (nd == null)
-					continue;
-				if (node.ndata == null) {
-					node.ndata = new ANode[]{nd};
-				} else {
-					int sz = node.ndata.length;
-					ANode[] tmp = new ANode[sz+1];
-					for (int j=0; j < sz; j++)
-						tmp[j] = node.ndata[j];
-					tmp[sz] = nd;
-					node.ndata = tmp;
-				}
-				nd.callbackAttached(node, this.ndata[i].getAttachInfo().p_slot);
-			}
-		}
 		return node;
 	}
 
 	public final int getPosLine() { return pos >>> 11; }
 	
-	public ANode nodeCopiedTo(ASTNode node) {
+	public ANode nodeCopiedTo(ANode node) {
 		return ncopy();
 	}
 
@@ -282,7 +388,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		this.callbackAttached();
 	}
 
-	public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
+	public final void callbackAttached(ANode parent, AttrSlot pslot) {
 		assert (pslot.is_attr);
 		assert(!isAttached());
 		assert(parent != null && parent != this);
@@ -298,96 +404,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		});
 		// notify parent about the changed slot
 		parent().callbackChildChanged(pslot());
-	}
-
-	public final ANode getNodeData(AttrSlot attr) {
-		assert (attr.isData());
-		if (ndata != null) {
-			foreach (ANode nd; ndata) {
-				if (nd.getAttachInfo().p_slot.name == attr.name)
-					return nd;
-			}
-		}
-		return null;
-	}
-	
-	public final void addNodeData(ANode d, AttrSlot attr) {
-		if (ndata != null) {
-			assert (attr.isData());
-			ANode[] ndata = this.ndata;
-			int sz = ndata.length;
-			for (int i=0; i < sz; i++) {
-				ANode nd = ndata[i];
-				if (nd.getAttachInfo().p_slot.name == attr.name) {
-					if (nd == d)
-						return;
-					nd.callbackDetached();
-					d.callbackAttached(this, attr);
-					return;
-				}
-			}
-			ANode[] tmp = new ANode[sz+1];
-			for (int i=0; i < sz; i++)
-				tmp[i] = ndata[i];
-			tmp[sz] = d;
-			this.ndata = tmp;
-		} else {
-			this.ndata = new ANode[]{d};
-		}
-		d.callbackAttached(this, attr);
-	}
-	
-	public final void delNodeData(AttrSlot attr) {
-		ANode[] ndata = this.ndata;
-		assert (attr.isData());
-		if (ndata != null) {
-			int sz = ndata.length-1;
-			for (int idx=0; idx <= sz; idx++) {
-				ANode nd = ndata[idx];
-				if (nd.getAttachInfo().p_slot.name == attr.name) {
-					ANode[] tmp   = new ANode[sz];
-					nd.callbackDetached();
-					int i;
-					for (i=0; i < idx; i++) tmp[i] = ndata[i];
-					for (   ; i <  sz; i++) tmp[i] = ndata[i+1];
-					this.ndata = tmp;
-					return;
-				}
-			}
-		}
-	}
-
-	public final void walkTree(TreeWalker walker) {
-		if (walker.pre_exec(this)) {
-			foreach (AttrSlot attr; this.values(); attr.is_attr) {
-				Object val = this.getVal(attr.name);
-				if (val == null)
-					continue;
-				if (attr.is_space) {
-					NArr<ASTNode> vals = (NArr<ASTNode>)val;
-					for (int i=0; i < vals.length; i++) {
-						try {
-							vals[i].walkTree(walker);
-						} catch (ReWalkNodeException e) { i--; }
-					}
-				}
-				else if (val instanceof ASTNode) {
-				re_walk_node:;
-					try {
-						val.walkTree(walker);
-					} catch (ReWalkNodeException e) {
-						val = this.getVal(attr.name);
-						if (val != null)
-							goto re_walk_node;
-					}
-				}
-			}
-			if (ndata != null) {
-				foreach (ANode nd; this.ndata)
-					nd.walkTree(walker);
-			}
-		}
-		walker.post_exec(this);
 	}
 
 	// build data flow for this node

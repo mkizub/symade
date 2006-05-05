@@ -42,7 +42,7 @@ public abstract class AbstractFormatter implements Formatter {
 		this.syntax = syntax;
 		String name = "fmt info "+Integer.toHexString(++counter);
 		name = name.intern();
-		this.ATTR = new DataAttrSlot(name,true,Shadow.class);
+		this.ATTR = new DataAttrSlot(name,false,Drawable.class);
 	}
 
 	public abstract Drawable format(ASTNode node);
@@ -54,12 +54,12 @@ public abstract class AbstractFormatter implements Formatter {
 			SyntaxSpace ssp = new SyntaxSpace(lout);
 			return new DrawSpace(null, ssp);
 		}
-		Shadow sdr = node.getNodeData(ATTR);
-		if (sdr != null)
-			return (Drawable)sdr.node;
+		Drawable dr = (Drawable)node.getNodeData(ATTR);
+		if (dr != null)
+			return dr;
 		SyntaxElem stx_elem = syntax.getSyntaxElem(node, hint);
-		Drawable dr = stx_elem.makeDrawable(this,node);
-		node.addNodeData(new Shadow(dr), ATTR);
+		dr = stx_elem.makeDrawable(this,node);
+		node.addNodeData(dr, ATTR);
 		return dr;
 	}
 
@@ -70,7 +70,6 @@ public abstract class AbstractFormatter implements Formatter {
 }
 
 public class TextFormatter extends AbstractFormatter {
-	public static final AttrSlot ATTR = new DataAttrSlot("text fmt info",true,Shadow.class);	
 	private Syntax syntax;
 	
 	public TextFormatter(Syntax syntax) {

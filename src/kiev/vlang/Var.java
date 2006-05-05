@@ -667,7 +667,7 @@ public interface DataFlowSlots {
 }
 
 public final class DataFlowInfo extends ANode implements DataFlowSlots {
-	public static final AttrSlot ATTR = new DataAttrSlot("data flow info",false,DataFlowInfo.class);	
+	public static final AttrSlot ATTR = new DataAttrSlot("data flow info",true,DataFlowInfo.class);	
 	
 	private static final Hashtable<Class, DataFlowInfo> data_flows = new Hashtable<Class, DataFlowInfo>(128);
 
@@ -699,11 +699,6 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 	final DFFunc func_fls;
 	final DFFunc func_jmp;
 
-	public void walkTree(TreeWalker walker) {
-		if (walker.pre_exec(this))
-			walker.post_exec(this);
-	}
-	
 	public static DataFlowInfo newDataFlowInfo(ASTNode node_impl) {
 		DataFlowInfo template = data_flows.get(node_impl.getClass());
 		if (template == null) {
@@ -917,7 +912,7 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		}
 	}
 	
-	public ANode nodeCopiedTo(ASTNode node) {
+	public ANode nodeCopiedTo(ANode node) {
 		return null; // do not copy on node copy
 	}
 	
@@ -944,10 +939,10 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 			}
 		}
 	}
-	public void callbackAttached(ASTNode node, AttrSlot pslot) {
+	public void callbackAttached(ANode node, AttrSlot pslot) {
 		this.setAttachInfo(new AttachInfo(this, node, pslot));
 		if (node.isAttached())
-			nodeAttached(node, pslot);
+			nodeAttached((ASTNode)node, pslot);
 	}
 	
 	private void nodeDetached() {
