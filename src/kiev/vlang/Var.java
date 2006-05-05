@@ -920,11 +920,12 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		if (node_impl.ctx_root == node_impl)
 			nodeDetached();
 		else if (!is_root && this.parent_dfi == null)
-			nodeAttached(node_impl, ATTR);
+			nodeAttached();
 	}
 	
-	private void nodeAttached(ASTNode node, AttrSlot pslot) {
-		assert (pslot == ATTR);
+	private void nodeAttached() {
+		assert (pslot() == ATTR);
+		ASTNode node = (ASTNode)parent();
 		if (!is_root) {
 			if (ASSERT_MORE) assert(this.parent_dfi == null);
 			if (ASSERT_MORE) assert(this.parent_dfs == null);
@@ -939,10 +940,10 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 			}
 		}
 	}
-	public void callbackAttached(ANode node, AttrSlot pslot) {
-		this.setAttachInfo(new AttachInfo(this, node, pslot));
-		if (node.isAttached())
-			nodeAttached((ASTNode)node, pslot);
+	public void callbackAttached() {
+		super.callbackAttached();
+		if (parent().isAttached())
+			nodeAttached();
 	}
 	
 	private void nodeDetached() {
@@ -962,7 +963,7 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		}
 	}
 	public void callbackDetached() {
-		this.setAttachInfo(null);
+		super.callbackDetached();
 		nodeDetached();
 	}
 	

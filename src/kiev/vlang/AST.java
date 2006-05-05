@@ -44,25 +44,52 @@ public abstract class ANode {
 	private AttachInfo		p_info;
 	private AttachInfo[]	ndata;
 
+	public abstract ANode nodeCopiedTo(ANode node);
+
 	public final boolean    isAttached()    { return p_info != null; }
 	public final AttachInfo getAttachInfo() { return p_info; }
-	public final void       setAttachInfo(AttachInfo ai) { p_info = ai; }
 
-	public abstract ANode nodeCopiedTo(ANode node);
-	public abstract void callbackAttached(ANode parent, AttrSlot pslot);
-	public abstract void callbackDetached();
+	public final void callbackAttached(ANode parent, AttrSlot pslot) {
+		this.callbackAttached(new AttachInfo(this, parent, pslot));
+	}
+	public final void callbackAttached(AttachInfo pinfo) {
+		assert (pinfo.p_slot.is_attr);
+		assert(!isAttached());
+		assert(pinfo.p_parent != null && pinfo.p_parent != this);
+		assert(pinfo.p_self == this);
+		this.p_info = pinfo;
+		this.callbackAttached();
+	}
+	public void callbackAttached() {
+		// notify nodes about new root
+		this.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) { n.callbackRootChanged(); return true; }
+		});
+		// notify parent about the changed slot
+		parent().callbackChildChanged(p_info.p_slot);
+	}
+	public void callbackDetached() {
+		assert(isAttached());
+		// do detcah
+		AttachInfo pinfo = this.p_info;
+		this.p_info = null;
+		pinfo.detach();
+		// notify nodes about new root
+		this.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) { n.callbackRootChanged(); return true; }
+		});
+		// notify parent about the changed slot
+		pinfo.p_parent.callbackChildChanged(pinfo.p_slot);
+	}
+
 
 	@getter public final ANode get$ctx_root() {
 		if (!isAttached())
 			return this;
 		return this.getAttachInfo().get_ctx_root();
 	}
-	public void callbackChildChanged(AttrSlot attr) {
-		// do nothing
-	}
-	public void callbackRootChanged() {
-		// do nothing
-	}	
+	public void callbackChildChanged(AttrSlot attr) { /* do nothing */ }
+	public void callbackRootChanged() { /* do nothing */ }
 
 	public final ANode parent() { return this.p_info == null ? null : this.p_info.p_parent; }
 	public final AttrSlot pslot() { return this.p_info == null ? null : this.p_info.p_slot; }
@@ -364,48 +391,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		return ncopy();
 	}
 
-	public void callbackDetached() {
-		assert(isAttached());
-		// do detcah
-		AttachInfo pinfo = this.getAttachInfo();
-		this.setAttachInfo(null);
-		pinfo.detach();
-		// notify nodes about new root
-		this.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { n.callbackRootChanged(); return true; }
-		});
-		// notify parent about the changed slot
-		pinfo.p_parent.callbackChildChanged(pinfo.p_slot);
-	}
-
-	// for NArr only
-	final void callbackAttached(ListAttachInfo pinfo) {
-		assert (pinfo.p_slot.is_attr);
-		assert(!isAttached());
-		assert(pinfo.p_parent != null && pinfo.p_parent != this);
-		assert(pinfo.p_self == this);
-		this.setAttachInfo(pinfo);
-		this.callbackAttached();
-	}
-
-	public final void callbackAttached(ANode parent, AttrSlot pslot) {
-		assert (pslot.is_attr);
-		assert(!isAttached());
-		assert(parent != null && parent != this);
-		// do attach
-		this.setAttachInfo(new AttachInfo(this, parent, pslot));
-		this.callbackAttached();
-	}
-
-	public void callbackAttached() {
-		// notify nodes about new root
-		this.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { n.callbackRootChanged(); return true; }
-		});
-		// notify parent about the changed slot
-		parent().callbackChildChanged(pslot());
-	}
-
 	// build data flow for this node
 	public final DataFlowInfo getDFlow() {
 		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ATTR);
@@ -555,8 +540,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		public AttrSlot[] values();
 		public Object getVal(String name);
 		public void setVal(String name, Object val);
-		public final void callbackDetached();
-		public final void callbackAttached();
 		public final void callbackChildChanged(AttrSlot attr);
 		public final void callbackRootChanged();
 		public final ANode getNodeData(AttrSlot attr);
