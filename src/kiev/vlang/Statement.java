@@ -127,7 +127,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
 			InlineMethodStat node = (InlineMethodStat)dfi.node_impl;
-			DataFlowInfo pdfi = node.parent().getDFlow();
+			DataFlowInfo pdfi = ((ASTNode)node.parent()).getDFlow();
 			res = DFFunc.calc(pdfi.getSocket(node.pslot().name).func_in, pdfi);
 			dfi.setResult(res_idx, res);
 			return res;

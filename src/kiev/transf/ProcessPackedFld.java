@@ -172,7 +172,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 
 	public void rewriteNode(ASTNode fu) {
 		fu.walkTree(new TreeWalker() {
-			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return JavaPackedFldBackend.this.rewrite((ASTNode)n); return false; }
+			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return JavaPackedFldBackend.this.rewrite((ASTNode)n); return false; }
 		});
 	}
 	

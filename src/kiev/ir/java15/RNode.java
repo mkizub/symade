@@ -24,14 +24,14 @@ public view RNode of ASTNode implements Constants {
 	public int			pos;
 	public int			compileflags;
 	
-	@getter public final ASTNode get$ctx_root();
+	@getter public final ANode get$ctx_root();
 	@getter public final FileUnit get$ctx_file_unit();
 	@getter public final Struct get$ctx_clazz();
 	@getter public final Struct get$child_ctx_clazz();
 	@getter public final Method get$ctx_method();
 	@getter public final Method get$child_ctx_method();
 
-	public final ASTNode parent();
+	public final ANode parent();
 	public AttrSlot[] values();
 	public Object getVal(String name);
 	public void setVal(String name, Object val);
@@ -39,8 +39,8 @@ public view RNode of ASTNode implements Constants {
 	public final void callbackAttached();
 	public final void callbackChildChanged(AttrSlot attr);
 	public final void callbackRootChanged();
-	public final NodeData getNodeData(AttrSlot attr);
-	public final void addNodeData(NodeData d, AttrSlot attr);
+	public final ANode getNodeData(AttrSlot attr);
+	public final void addNodeData(ANode d, AttrSlot attr);
 	public final void delNodeData(AttrSlot attr);
 	public final DataFlowInfo getDFlow();
 	public final ASTNode replaceWithNode(ASTNode node);

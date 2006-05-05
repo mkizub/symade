@@ -87,7 +87,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 					res = sel.getDFlow().out();
 			}
 			if (cl.pprev() != null) {
-				DFState prev = cl.pprev().getDFlow().out();
+				DFState prev = ((ASTNode)cl.pprev()).getDFlow().out();
 				if (res != null)
 					res = DFState.join(res,prev);
 				else

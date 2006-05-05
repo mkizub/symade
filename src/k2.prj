@@ -452,6 +452,7 @@ kiev.transf.ProcessView kiev/transf/ProcessView kiev\transf\ProcessView.java
 kiev.transf.ProcessVirtFld kiev/transf/ProcessVirtFld kiev\transf\ProcessVirtFld.java
 kiev.transf.TransfProcessor kiev/transf/TransfProcessor kiev\transf\TransfProcessor.java
 kiev.transf.VSrcBackend kiev/transf/VSrcBackend kiev\transf\ImportKievSrc.java
+kiev.vlang.ANode kiev/vlang/ANode kiev\vlang\AST.java
 kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java
 kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
 kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
@@ -579,7 +580,6 @@ kiev.vlang.NewArrayExpr kiev/vlang/NewArrayExpr kiev\vlang\NewExpr.java
 kiev.vlang.NewClosure kiev/vlang/NewClosure kiev\vlang\NewExpr.java
 kiev.vlang.NewExpr kiev/vlang/NewExpr kiev\vlang\NewExpr.java
 kiev.vlang.NewInitializedArrayExpr kiev/vlang/NewInitializedArrayExpr kiev\vlang\NewExpr.java
-kiev.vlang.NodeData kiev/vlang/NodeData kiev\vlang\AST.java
 kiev.vlang.NopExpr kiev/vlang/NopExpr kiev\vlang\ENode.java
 kiev.vlang.OpTypes kiev/vlang/OpTypes kiev\vlang\Operator.java
 kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java

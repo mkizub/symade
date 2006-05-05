@@ -13,7 +13,7 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
-public abstract class MetaSpecial extends ASTNode implements NodeData {
+public abstract class MetaSpecial extends ASTNode {
 	
 	public static final MetaSpecial[] emptyArray = new MetaSpecial[0];
 	
@@ -29,11 +29,7 @@ public abstract class MetaSpecial extends ASTNode implements NodeData {
 		this.attr = attr;
 	}
 	
-	public final AttrSlot getNodeDataId() {
-		return attr;
-	}
-	
-	public NodeData nodeCopiedTo(ASTNode node) {
+	public ANode nodeCopiedTo(ASTNode node) {
 		return this.ncopy();
 	}
 	
@@ -253,7 +249,7 @@ public abstract class MetaFlag extends MetaSpecial {
 	public MetaFlag(MetaAttrSlot attr) { super(attr); }
 	public Object copy() { return this; }
 	
-	public NodeData nodeCopiedTo(ASTNode node) {
+	public ANode nodeCopiedTo(ASTNode node) {
 		return this; // attach the same instance to the copied node
 	}
 	public final void set(ASTNode node, Object value) {

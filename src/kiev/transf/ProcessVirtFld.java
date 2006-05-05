@@ -299,7 +299,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 
 	public void rewriteNode(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return JavaVirtFldBackend.this.rewrite((ASTNode)n); return false; }
+			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return JavaVirtFldBackend.this.rewrite((ASTNode)n); return false; }
 		});
 	}
 	

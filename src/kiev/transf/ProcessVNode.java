@@ -519,7 +519,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 
 	public void verify(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(NodeData n) {
+			public boolean pre_exec(ANode n) {
 				if (n instanceof DNode)
 					verifyDecl((DNode)n);
 				return true;
@@ -692,7 +692,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 
 	public void resolve(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return rewrite((ASTNode)n); return false; }
+			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return rewrite((ASTNode)n); return false; }
 		});
 	}
 	

@@ -20,9 +20,9 @@ public view JNode of ASTNode implements JConstants {
 	public:ro	int			pos;
 //	public:ro	int			compileflags;
 	
-	public final void addNodeData(NodeData d, AttrSlot attr);
+	public final void addNodeData(ANode d, AttrSlot attr);
 	public final void delNodeData(AttrSlot attr);
-	public final NodeData getNodeData(AttrSlot attr);
+	public final ANode getNodeData(AttrSlot attr);
 
     public final int getPosLine();
 	public final boolean isAttached();
@@ -31,7 +31,7 @@ public view JNode of ASTNode implements JConstants {
 	public final boolean isHidden();
 	public final boolean isBad();
 	
-	@getter public final JNode get$jparent() { return (JNode)((ASTNode)this).parent(); }
+	@getter public final JNode get$jparent() { return (JNode)(ASTNode)((ASTNode)this).parent(); }
 	@getter public JFileUnit get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
 	@getter public JStruct get$jctx_clazz() { return this.jparent.child_jctx_clazz; }
 	@getter public JStruct get$child_jctx_clazz() { return this.jparent.get$child_jctx_clazz(); }

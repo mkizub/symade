@@ -220,8 +220,8 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		narr[idx] = node;
 		ListAttachInfo prv = null;
 		ListAttachInfo nxt = null;
-		if (idx > 0) prv = (ListAttachInfo)narr[idx-1].pinfo();
-		if (idx+1 < narr.length) nxt = (ListAttachInfo)narr[idx+1].pinfo();
+		if (idx > 0) prv = (ListAttachInfo)narr[idx-1].getAttachInfo();
+		if (idx+1 < narr.length) nxt = (ListAttachInfo)narr[idx+1].getAttachInfo();
 		node.callbackAttached(new ListAttachInfo(node, parent, this, prv, nxt));
 		return node;
 	}
@@ -237,7 +237,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		tmp[sz] = node;
 		setArr(parent,tmp);
 		ListAttachInfo prv = null;
-		if (sz > 0) prv = (ListAttachInfo)tmp[sz-1].pinfo();
+		if (sz > 0) prv = (ListAttachInfo)tmp[sz-1].getAttachInfo();
 		node.callbackAttached(new ListAttachInfo(node, parent, this, prv, null));
 		return node;
 	}
@@ -271,8 +271,8 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		setArr(parent,tmp);
 		ListAttachInfo prv = null;
 		ListAttachInfo nxt = null;
-		if (idx > 0) prv = (ListAttachInfo)tmp[idx-1].pinfo();
-		if (idx+1 < tmp.length) nxt = (ListAttachInfo)tmp[idx+1].pinfo();
+		if (idx > 0) prv = (ListAttachInfo)tmp[idx-1].getAttachInfo();
+		if (idx+1 < tmp.length) nxt = (ListAttachInfo)tmp[idx+1].getAttachInfo();
 		node.callbackAttached(new ListAttachInfo(node, parent, this, prv, nxt));
 	}
 
@@ -352,8 +352,8 @@ public final class NArr<N extends ASTNode> {
 		if (is_attr) {
 			ListAttachInfo prv = null;
 			ListAttachInfo nxt = null;
-			if (idx > 0) prv = (ListAttachInfo)$nodes[idx-1].pinfo();
-			if (idx+1 < size()) nxt = (ListAttachInfo)$nodes[idx+1].pinfo();
+			if (idx > 0) prv = (ListAttachInfo)$nodes[idx-1].getAttachInfo();
+			if (idx+1 < size()) nxt = (ListAttachInfo)$nodes[idx+1].getAttachInfo();
 			node.callbackAttached(new ListAttachInfo(node, $parent_impl, $pslot, prv, nxt));
 		}
 		return node;
@@ -378,7 +378,7 @@ public final class NArr<N extends ASTNode> {
 		$nodes[sz] = node;
 		if (is_attr) {
 			ListAttachInfo prv = null;
-			if (sz > 0) prv = (ListAttachInfo)$nodes[sz-1].pinfo();
+			if (sz > 0) prv = (ListAttachInfo)$nodes[sz-1].getAttachInfo();
 			node.callbackAttached(new ListAttachInfo(node, $parent_impl, $pslot, prv, null));
 		}
 		return node;
@@ -409,8 +409,8 @@ public final class NArr<N extends ASTNode> {
 		if (is_attr) {
 			ListAttachInfo prv = null;
 			ListAttachInfo nxt = null;
-			if (idx > 0) prv = (ListAttachInfo)$nodes[idx-1].pinfo();
-			if (idx+1 < size()) nxt = (ListAttachInfo)$nodes[idx+1].pinfo();
+			if (idx > 0) prv = (ListAttachInfo)$nodes[idx-1].getAttachInfo();
+			if (idx+1 < size()) nxt = (ListAttachInfo)$nodes[idx+1].getAttachInfo();
 			node.callbackAttached(new ListAttachInfo(node, $parent_impl, $pslot, prv, nxt));
 		}
 	}

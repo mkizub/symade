@@ -666,7 +666,7 @@ public interface DataFlowSlots {
 	public final boolean ASSERT_MORE = false;
 }
 
-public final class DataFlowInfo implements NodeData, DataFlowSlots {
+public final class DataFlowInfo extends ANode implements DataFlowSlots {
 	public static final AttrSlot ATTR = new DataAttrSlot("data flow info",false,DataFlowInfo.class);	
 	
 	private static final Hashtable<Class, DataFlowInfo> data_flows = new Hashtable<Class, DataFlowInfo>(128);
@@ -698,8 +698,6 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 	final DFFunc func_tru;
 	final DFFunc func_fls;
 	final DFFunc func_jmp;
-
-	public final AttrSlot getNodeDataId() { return ATTR; }
 
 	public void walkTree(TreeWalker walker) {
 		if (walker.pre_exec(this))
@@ -819,8 +817,8 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 			if (func_in != null)
 				return func_in.calc(this);
 			if (parent_dfs.isSeqSpace() && node_impl.pprev() != null)
-				return node_impl.pprev().getDFlow().calc(OUT);
-			assert(parent_dfi == node_impl.parent().getDFlow());
+				return ((ASTNode)node_impl.pprev()).getDFlow().calc(OUT);
+			assert(parent_dfi == ((ASTNode)node_impl.parent()).getDFlow());
 			return DFFunc.calc(parent_dfs.func_in, parent_dfi);
 		case OUT:
 			return func_out.calc(this);
@@ -919,7 +917,7 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 		}
 	}
 	
-	public NodeData nodeCopiedTo(ASTNode node) {
+	public ANode nodeCopiedTo(ASTNode node) {
 		return null; // do not copy on node copy
 	}
 	
@@ -935,7 +933,7 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 		if (!is_root) {
 			if (ASSERT_MORE) assert(this.parent_dfi == null);
 			if (ASSERT_MORE) assert(this.parent_dfs == null);
-			parent_dfi = node.parent().getDFlow();
+			parent_dfi = ((ASTNode)node.parent()).getDFlow();
 			parent_dfs = parent_dfi.getSocket(node.pslot().name);
 			if (parent_dfs instanceof DFSocketChild) {
 				int socket_idx = ((DFSocketChild)parent_dfs).socket_idx;
@@ -947,6 +945,7 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 		}
 	}
 	public void callbackAttached(ASTNode node, AttrSlot pslot) {
+		this.setAttachInfo(new AttachInfo(this, node, pslot));
 		if (node.isAttached())
 			nodeAttached(node, pslot);
 	}
@@ -968,6 +967,7 @@ public final class DataFlowInfo implements NodeData, DataFlowSlots {
 		}
 	}
 	public void callbackDetached() {
+		this.setAttachInfo(null);
 		nodeDetached();
 	}
 	
@@ -1040,7 +1040,8 @@ public abstract class DFFunc implements DataFlowSlots {
 	public case DFFuncAbrupt(final DFFunc f1, final int res_idx);
 	public case DFFuncLabel(final DFFunc func_in, final DFFunc[] link_in, final int lock_mask, final int res_idx);
 	
-	static boolean checkNode(ASTNode node, Vector<ASTNode> lst) {
+	static boolean checkNode(ANode _node, Vector<ASTNode> lst) {
+		ASTNode node = (ASTNode)_node;
 		if (node instanceof FileUnit || node instanceof Method)
 			return true;
 		if (lst == null) lst = new Vector<ASTNode>();
@@ -1068,11 +1069,11 @@ public abstract class DFFunc implements DataFlowSlots {
 				f = dfi.func_in;
 			}
 			else if (dfi.parent_dfs.isSeqSpace() && dfi.node_impl.pprev() != null) {
-				dfi = dfi.node_impl.pprev().getDFlow();
+				dfi = ((ASTNode)dfi.node_impl.pprev()).getDFlow();
 				f = dfi.func_out;
 			}
 			else {
-				if (ASSERT_MORE) assert(dfi.parent_dfi == dfi.node_impl.parent().getDFlow());
+				if (ASSERT_MORE) assert(dfi.parent_dfi == ((ASTNode)dfi.node_impl.parent()).getDFlow());
 				f = dfi.parent_dfs.func_in;
 				dfi = dfi.parent_dfi;
 			}

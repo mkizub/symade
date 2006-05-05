@@ -705,24 +705,24 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 	public void preResolve(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return n.preResolveIn(); return false; }
-			public void post_exec(NodeData n) { if (n instanceof ASTNode) n.preResolveOut(); }
+			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preResolveIn(); return false; }
+			public void post_exec(ANode n) { if (n instanceof ASTNode) n.preResolveOut(); }
 		});
 		return;
 	}
 
 	public void mainResolve(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return n.mainResolveIn(); return false; }
-			public void post_exec(NodeData n) { if (n instanceof ASTNode) n.mainResolveOut(); }
+			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.mainResolveIn(); return false; }
+			public void post_exec(ANode n) { if (n instanceof ASTNode) n.mainResolveOut(); }
 		});
 		return;
 	}
 
 	public void verify(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return n.preVerify(); return false; }
-			//public void post_exec(NodeData n) { if (n instanceof ASTNode) n.postVerify(); }
+			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preVerify(); return false; }
+			//public void post_exec(ANode n) { if (n instanceof ASTNode) n.postVerify(); }
 		});
 		return;
 	}
@@ -753,14 +753,14 @@ class JavaBackend extends BackendProcessor {
 	public void preGenerate() {
 		foreach (FileUnit fu; Kiev.files) {
 			fu.walkTree(new TreeWalker() {
-				public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return n.preGenerate(); return false; }
+				public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preGenerate(); return false; }
 			});
 		}
 	}
 
 	public void preGenerate(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(NodeData n) { if (n instanceof ASTNode) return n.preGenerate(); return false; }
+			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preGenerate(); return false; }
 		});
 	}
 
@@ -821,7 +821,7 @@ class VSrcBackend extends BackendProcessor {
 
 	private void cleanFormatting(ASTNode node, AttrSlot attr) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(NodeData n) {
+			public boolean pre_exec(ANode n) {
 				if (n instanceof ASTNode)
 					n.delNodeData(attr);
 				return true;
