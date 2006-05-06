@@ -184,11 +184,15 @@ public abstract class ANode {
 	public final void walkTree(TreeWalker walker) {
 		if (walker.pre_exec(this)) {
 			foreach (AttrSlot attr; this.values(); attr.is_attr) {
-				Object val = this.getVal(attr.name);
+				Object val = attr.get(this);
 				if (val == null)
 					continue;
 				if (attr.is_space) {
-					NArr<ASTNode> vals = (NArr<ASTNode>)val;
+					ASTNode[] vals;
+					if (val instanceof NArr)
+						vals = val.$nodes;
+					else
+						vals = (ASTNode[])val;
 					for (int i=0; i < vals.length; i++) {
 						try {
 							vals[i].walkTree(walker);
@@ -200,7 +204,7 @@ public abstract class ANode {
 					try {
 						val.walkTree(walker);
 					} catch (ReWalkNodeException e) {
-						val = this.getVal(attr.name);
+						val = attr.get(this);
 						if (val != null)
 							goto re_walk_node;
 					}
@@ -403,32 +407,52 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public final ASTNode replaceWithNode(ASTNode node) {
 		assert(isAttached());
-		if (pslot().is_space) {
+		ANode parent = parent();
+		AttrSlot pslot = pslot();
+		if (pslot instanceof SpaceAttrSlot) {
 			assert(node != null);
-			NArr<ASTNode> space = (NArr<ASTNode>)parent().getVal(pslot().name);
+			int idx = pslot.indexOf(parent, this);
+			assert(idx >= 0);
+			if (node.pos == 0) node.pos = this.pos;
+			pslot.set(parent, idx, node);
+		}
+		else if (pslot.is_space) {
+			assert(node != null);
+			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
 			int idx = space.indexOf(this);
 			assert(idx >= 0);
 			if (node.pos == 0) node.pos = this.pos;
 			space[idx] = node;
 		}
-		else if (pslot().isData()) {
-			assert(parent().getNodeData(pslot()) == this);
+		else if (pslot.isData()) {
+			assert(parent.getNodeData(pslot) == this);
 			if (node != null && node.pos == 0) node.pos = this.pos;
-			parent().addNodeData(node, pslot());
+			pslot.set(parent, node);
 		}
 		else {
-			assert(parent().getVal(pslot().name) == this);
+			assert(pslot.get(parent) == this);
 			if (node != null && node.pos == 0) node.pos = this.pos;
-			parent().setVal(pslot().name, node);
+			pslot.set(parent, node);
 		}
 		assert(node == null || node.isAttached());
 		return node;
 	}
 	public final ASTNode replaceWith(()->ASTNode fnode) {
 		assert(isAttached());
-		ASTNode parent = this.parent();
-		AttrSlot pslot = this.getAttachInfo().p_slot;
-		if (pslot.is_space) {
+		ASTNode parent = parent();
+		AttrSlot pslot = pslot();
+		if (pslot instanceof SpaceAttrSlot) {
+			int idx = pslot.indexOf(parent, this);
+			assert(idx >= 0);
+			pslot.set(parent, idx, this.getDummyNode());
+			ASTNode n = fnode();
+			assert(n != null);
+			if (n.pos == 0) n.pos = this.pos;
+			pslot.set(parent, idx, n);
+			assert(n.isAttached());
+			return n;
+		}
+		else if (pslot.is_space) {
 			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
 			int idx = space.indexOf(this);
 			assert(idx >= 0);
@@ -451,11 +475,11 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 			return n;
 		}
 		else {
-			assert(parent.getVal(pslot.name) == this);
-			parent.setVal(pslot.name, this.getDummyNode());
+			assert(pslot.get(parent) == this);
+			pslot.set(parent, this.getDummyNode());
 			ASTNode n = fnode();
 			if (n != null && n.pos == 0) n.pos = this.pos;
-			parent.setVal(pslot.name, n);
+			pslot.set(parent, n);
 			assert(n == null || n.isAttached());
 			return n;
 		}
@@ -538,8 +562,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		public final ANode parent();
 		public final AttrSlot pslot();
 		public AttrSlot[] values();
-		public Object getVal(String name);
-		public void setVal(String name, Object val);
 		public final void callbackChildChanged(AttrSlot attr);
 		public final void callbackRootChanged();
 		public final ANode getNodeData(AttrSlot attr);
@@ -577,15 +599,16 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	{
 		if (!isAttached())
 			return this;
-		if (pslot().is_space) {
-			((NArr<ASTNode>)parent().getVal(pslot().name)).detach(this);
-		}
-		else if (pslot().isData()) {
-			parent().delNodeData(pslot());
-		}
-		else {
-			parent().setVal(pslot().name,null);
-		}
+		ANode parent = parent();
+		AttrSlot pslot = pslot();
+		if (pslot instanceof SpaceAttrSlot)
+			pslot.detach(parent, this);
+		else if (pslot().is_space)
+			((NArr<ASTNode>)parent.getVal(pslot.name)).detach(this);
+		else if (pslot.isData())
+			parent.delNodeData(pslot);
+		else
+			pslot.set(parent,null);
 		assert(!isAttached());
 		return this;
 	}

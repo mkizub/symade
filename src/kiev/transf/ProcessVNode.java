@@ -21,9 +21,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	public static final String mnNodeSet			= "kiev.vlang.nodeset"; 
 	public static final String mnAtt				= "kiev.vlang.att"; 
 	public static final String mnRef				= "kiev.vlang.ref"; 
+	public static final String nameANode			= "kiev.vlang.ANode"; 
 	public static final String nameNode			= "kiev.vlang.ASTNode"; 
 	public static final String nameNArr			= "kiev.vlang.NArr"; 
 	public static final String nameAttrSlot		= "kiev.vlang.AttrSlot"; 
+	public static final String nameRefAttrSlot		= "kiev.vlang.RefAttrSlot"; 
+	public static final String nameAttAttrSlot		= "kiev.vlang.AttAttrSlot"; 
 	public static final String nameSpaceAttrSlot			= "kiev.vlang.SpaceAttrSlot"; 
 	public static final String nameSpaceRefAttrSlot		= "kiev.vlang.SpaceRefAttrSlot"; 
 	public static final String nameSpaceAttAttrSlot		= "kiev.vlang.SpaceAttAttrSlot"; 
@@ -36,9 +39,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	private static final String sigCopyTo			= "(Ljava/lang/Object;)Ljava/lang/Object;";
 	
 
+	static Type tpANode;
 	static Type tpNode;
 	static Type tpNArr;
 	static Type tpAttrSlot;
+	static Type tpRefAttrSlot;
+	static Type tpAttAttrSlot;
 	static Type tpSpaceAttrSlot;
 	static Type tpSpaceRefAttrSlot;
 	static Type tpSpaceAttAttrSlot;
@@ -158,19 +164,24 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		boolean isAtt = (f.meta.get(mnAtt) != null);
 		boolean isArr = f.getType().isInstanceOf(tpNArr);
 		Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
-		if (!isArr)
-			return tpAttrSlot;
 		Struct s = Env.newStruct(("NodeAttr_"+f.id.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,true);
 		s.setResolved(true);
 		snode.members.add(s);
-		if (isAtt) {
-			TVarBld set = new TVarBld();
-			set.append(tpSpaceAttAttrSlot.getStruct().args[0].getAType(), clz_tp);
-			s.super_type = tpSpaceAttAttrSlot.applay(set);
+		if (isArr) {
+			if (isAtt) {
+				TVarBld set = new TVarBld();
+				set.append(tpSpaceAttAttrSlot.getStruct().args[0].getAType(), clz_tp);
+				s.super_type = tpSpaceAttAttrSlot.applay(set);
+			} else {
+				TVarBld set = new TVarBld();
+				set.append(tpSpaceRefAttrSlot.getStruct().args[0].getAType(), clz_tp);
+				s.super_type = tpSpaceRefAttrSlot.applay(set);
+			}
 		} else {
-			TVarBld set = new TVarBld();
-			set.append(tpSpaceRefAttrSlot.getStruct().args[0].getAType(), clz_tp);
-			s.super_type = tpSpaceRefAttrSlot.applay(set);
+			if (isAtt)
+				s.super_type = tpAttAttrSlot;
+			else
+				s.super_type = tpRefAttrSlot;
 		}
 		// make constructor
 		{
@@ -192,28 +203,62 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				)
 			));
 		}
-		// add public N[] getArr(ASTNode parent)
-		{
-			Method getArr = new Method("getArr",new ArrayType(tpNode),ACC_PUBLIC | ACC_SYNTHETIC);
-			getArr.params.add(new FormPar(0, "parent", tpNode, FormPar.PARAM_NORMAL, ACC_FINAL));
-			s.addMethod(getArr);
-			getArr.body = new Block(0);
-			ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, getArr.params[0]) ), f);
-			val = new IFldExpr(f.pos,val,tpNArr.getStruct().resolveField("$nodes"));
-			getArr.body.stats.add(new ReturnStat(f.pos,val));
-		}
-		// add public void setArr(ASTNode parent, N[] narr)
-		{
-			Method setArr = new Method("setArr",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
-			setArr.params.add(new FormPar(0, "parent", tpNode, FormPar.PARAM_NORMAL, ACC_FINAL));
-			setArr.params.add(new FormPar(0, "narr", new ArrayType(tpNode), FormPar.PARAM_NORMAL, ACC_FINAL));
-			s.addMethod(setArr);
-			setArr.body = new Block(0);
-			ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, setArr.params[0]) ), f);
-			lval = new IFldExpr(f.pos,lval,tpNArr.getStruct().resolveField("$nodes"));
-			setArr.body.stats.add(new ExprStat(
-				new AssignExpr(f.pos,AssignOperator.Assign2,lval,new LVarExpr(0, setArr.params[1]))
-			));
+		if (isArr) {
+			// add public N[] get(ASTNode parent)
+			{
+				Method getArr = new Method("get",new ArrayType(tpNode),ACC_PUBLIC | ACC_SYNTHETIC);
+				getArr.params.add(new FormPar(0, "parent", tpANode, FormPar.PARAM_NORMAL, ACC_FINAL));
+				s.addMethod(getArr);
+				getArr.body = new Block(0);
+				ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, getArr.params[0]) ), f);
+				val = new IFldExpr(f.pos,val,tpNArr.getStruct().resolveField("$nodes"));
+				getArr.body.stats.add(new ReturnStat(f.pos,val));
+			}
+			// add public void set(ASTNode parent, N[]:Object narr)
+			{
+				Method setArr = new Method("set",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+				setArr.params.add(new FormPar(0, "parent", tpANode, FormPar.PARAM_NORMAL, ACC_FINAL));
+				setArr.params.add(new FormPar(0, "narr", Type.tpObject /*new ArrayType(tpNode)*/, FormPar.PARAM_NORMAL, ACC_FINAL));
+				s.addMethod(setArr);
+				setArr.body = new Block(0);
+				ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, setArr.params[0]) ), f);
+				lval = new IFldExpr(f.pos,lval,tpNArr.getStruct().resolveField("$nodes"));
+				setArr.body.stats.add(new ExprStat(
+					new AssignExpr(f.pos,AssignOperator.Assign2,lval,new LVarExpr(0, setArr.params[1]))
+				));
+			}
+		} else {
+			// add public N[] get(ASTNode parent)
+			{
+				Method getVal = new Method("get",Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
+				getVal.params.add(new FormPar(0, "parent", tpANode, FormPar.PARAM_NORMAL, ACC_FINAL));
+				s.addMethod(getVal);
+				getVal.body = new Block(0);
+				ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, getVal.params[0]) ), f);
+				getVal.body.stats.add(new ReturnStat(f.pos,val));
+				if!(val.getType().isReference())
+					CastExpr.autoCastToReference(val);
+			}
+			// add public void set(ASTNode parent, N[]:Object narr)
+			{
+				Method setVal = new Method("set",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+				setVal.params.add(new FormPar(0, "parent", tpANode, FormPar.PARAM_NORMAL, ACC_FINAL));
+				setVal.params.add(new FormPar(0, "val", Type.tpObject, FormPar.PARAM_NORMAL, ACC_FINAL));
+				s.addMethod(setVal);
+				setVal.body = new Block(0);
+				ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, setVal.params[0]) ), f);
+				ENode val = new LVarExpr(0, setVal.params[1]);
+				Type ftp = f.getType();
+				if (ftp.isReference())
+					val = new CastExpr(0,ftp,val);
+				else
+					val = new CastExpr(0,((CoreType)ftp).getRefTypeForPrimitive(),val);
+				setVal.body.stats.add(new ExprStat(
+					new AssignExpr(f.pos,AssignOperator.Assign2,lval,val)
+				));
+				if!(ftp.isReference())
+					CastExpr.autoCastToPrimitive(val);
+			}
 		}
 
 		Kiev.runProcessorsOn(s);
@@ -230,10 +275,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	}
 	
 	private void autoGenerateMembers(Struct:ASTNode s) {
-		if (tpNode == null) {
+		if (tpANode == null) {
+			tpANode = Env.loadStruct(nameANode, true).ctype;
 			tpNode = Env.loadStruct(nameNode, true).ctype;
 			tpNArr = Env.loadStruct(nameNArr, true).ctype;
 			tpAttrSlot = Env.loadStruct(nameAttrSlot, true).ctype;
+			tpRefAttrSlot = Env.loadStruct(nameRefAttrSlot, true).ctype;
+			tpAttAttrSlot = Env.loadStruct(nameAttAttrSlot, true).ctype;
 			tpSpaceAttrSlot = Env.loadStruct(nameSpaceAttrSlot, true).ctype;
 			tpSpaceRefAttrSlot = Env.loadStruct(nameSpaceRefAttrSlot, true).ctype;
 			tpSpaceAttAttrSlot = Env.loadStruct(nameSpaceAttAttrSlot, true).ctype;
@@ -275,22 +323,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
 			Type tpa = makeNodeAttrClass(s,f);
 			TypeClassExpr clz_expr = new TypeClassExpr(0, new TypeRef(clz_tp));
-			ENode e;
-			if (isArr && isAtt)
-				e = new NewExpr(0, tpa, new ENode[]{
+			ENode e = new NewExpr(0, tpa, new ENode[]{
 					new ConstStringExpr(f.id.sname),
-					clz_expr
-				});
-			else if (isArr && !isAtt)
-				e = new NewExpr(0, tpa, new ENode[]{
-					new ConstStringExpr(f.id.sname),
-					clz_expr
-				});
-			else
-				e= new NewExpr(0, tpa, new ENode[]{
-					new ConstStringExpr(f.id.sname),
-					new ConstBoolExpr(isAtt),
-					new ConstBoolExpr(isArr),
 					clz_expr
 				});
 			Field af = s.addField(new Field(fname, e.getType(), ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
@@ -552,6 +586,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 	public static final String nameMetaGetter = ProcessVirtFld.nameMetaGetter; 
 	public static final String nameMetaSetter = ProcessVirtFld.nameMetaSetter; 
 
+	Type tpANode = ProcessVNode.tpANode;
 	Type tpNode = ProcessVNode.tpNode;
 	Type tpNArr = ProcessVNode.tpNArr;
 	Type tpSpaceAttrSlot = ProcessVNode.tpSpaceAttrSlot;
@@ -628,7 +663,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 		Block body = set_var.body;
 		String fname = ("nodeattr$"+f.id.sname).intern();
 		Field fatt = f.ctx_clazz.resolveField(fname);
-		if (f.type.isInstanceOf(ProcessVNode.tpNode)) {
+		if (f.type.isInstanceOf(ProcessVNode.tpANode)) {
 			ENode p_st = new IfElseStat(0,
 					new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 						new IFldExpr(0,new ThisExpr(),f,true),
@@ -706,25 +741,25 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 	boolean rewrite(CallExpr:ASTNode ce) {
 		if (treeDelToArray == null) {
 			treeDelToArray = tpNArr.getStruct().resolveMethod("delToArray",new ArrayType(tpNode));
-			attrDelToArray = tpSpaceAttrSlot.getStruct().resolveMethod("delToArray",new ArrayType(tpNode),tpNode);
+			attrDelToArray = tpSpaceAttrSlot.getStruct().resolveMethod("delToArray",new ArrayType(tpNode),tpANode);
 			treeDelAll = tpNArr.getStruct().resolveMethod("delAll",Type.tpVoid);
-			attrDelAll = tpSpaceAttrSlot.getStruct().resolveMethod("delAll",Type.tpVoid,tpNode);
+			attrDelAll = tpSpaceAttrSlot.getStruct().resolveMethod("delAll",Type.tpVoid,tpANode);
 			treeAddAll = tpNArr.getStruct().resolveMethod("addAll",Type.tpVoid,new ArrayType(tpNode));
-			attrAddAll = tpSpaceAttrSlot.getStruct().resolveMethod("addAll",Type.tpVoid,tpNode,new ArrayType(tpNode));
+			attrAddAll = tpSpaceAttrSlot.getStruct().resolveMethod("addAll",Type.tpVoid,tpANode,new ArrayType(tpNode));
 			treeCopyFrom = tpNArr.getStruct().resolveMethod("copyFrom",Type.tpVoid,new ArrayType(tpNode));
-			attrCopyFrom = tpSpaceAttrSlot.getStruct().resolveMethod("copyFrom",Type.tpVoid,tpNode,new ArrayType(tpNode));
+			attrCopyFrom = tpSpaceAttrSlot.getStruct().resolveMethod("copyFrom",Type.tpVoid,tpANode,new ArrayType(tpNode));
 			treeIndexOf = tpNArr.getStruct().resolveMethod("indexOf",Type.tpVoid,tpNode);
-			attrIndexOf = tpSpaceAttrSlot.getStruct().resolveMethod("indexOf",Type.tpVoid,tpNode,tpNode);
+			attrIndexOf = tpSpaceAttrSlot.getStruct().resolveMethod("indexOf",Type.tpVoid,tpANode,tpNode);
 			treeSet = tpNArr.getStruct().resolveMethod("set",tpNode,Type.tpInt,tpNode);
-			attrSet = tpSpaceAttrSlot.getStruct().resolveMethod("set",tpNode,tpNode,Type.tpInt,tpNode);
+			attrSet = tpSpaceAttrSlot.getStruct().resolveMethod("set",tpNode,tpANode,Type.tpInt,tpNode);
 			treeAdd = tpNArr.getStruct().resolveMethod("add",tpNode,tpNode);
-			attrAdd = tpSpaceAttrSlot.getStruct().resolveMethod("add",tpNode,tpNode,tpNode);
+			attrAdd = tpSpaceAttrSlot.getStruct().resolveMethod("add",tpANode,tpNode,tpNode);
 			treeDel = tpNArr.getStruct().resolveMethod("del",Type.tpVoid,Type.tpInt);
-			attrDel = tpSpaceAttrSlot.getStruct().resolveMethod("del",Type.tpVoid,tpNode,Type.tpInt);
+			attrDel = tpSpaceAttrSlot.getStruct().resolveMethod("del",Type.tpVoid,tpANode,Type.tpInt);
 			treeDetach = tpNArr.getStruct().resolveMethod("detach",Type.tpVoid,tpNode);
-			attrDetach = tpSpaceAttrSlot.getStruct().resolveMethod("detach",Type.tpVoid,tpNode,tpNode);
+			attrDetach = tpSpaceAttrSlot.getStruct().resolveMethod("detach",Type.tpVoid,tpANode,tpNode);
 			treeInsert = tpNArr.getStruct().resolveMethod("insert",Type.tpVoid,Type.tpInt,tpNode);
-			attrInsert = tpSpaceAttrSlot.getStruct().resolveMethod("insert",Type.tpVoid,tpNode,Type.tpInt,tpNode);
+			attrInsert = tpSpaceAttrSlot.getStruct().resolveMethod("insert",Type.tpVoid,tpANode,Type.tpInt,tpNode);
 		}
 
 		Method m_attr;

@@ -4432,7 +4432,7 @@ public abstract class kiev040 implements kiev040Constants {
                         declMode = true;
       try {
         modifiers = Modifiers();
-        clazz = TypeDeclaration(modifiers, stats.getParent());
+        clazz = TypeDeclaration(modifiers, (ASTNode)stats.getParent());
                           stats += clazz;
         switch (jj_nt.kind) {
         case SEMICOLON:

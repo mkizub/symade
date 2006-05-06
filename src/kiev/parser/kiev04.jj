@@ -2992,7 +2992,7 @@ void BlockStatement(NArrNodes stats) :
 		}
 		try {
 			modifiers = Modifiers()
-			clazz = TypeDeclaration(modifiers, stats.getParent())
+			clazz = TypeDeclaration(modifiers, (ASTNode)stats.getParent())
 			{ stats += clazz; }
 			[ ";" ]
 		} finally {

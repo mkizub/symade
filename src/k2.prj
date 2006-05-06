@@ -462,6 +462,7 @@ kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
 kiev.vlang.ArrayLengthExpr kiev/vlang/ArrayLengthExpr kiev\vlang\Expr.java
 kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
+kiev.vlang.AttAttrSlot kiev/vlang/AttAttrSlot kiev\vlang\Tree.java
 kiev.vlang.AttachInfo kiev/vlang/AttachInfo kiev\vlang\AST.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
 kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
@@ -590,6 +591,7 @@ kiev.vlang.PostfixOperator kiev/vlang/PostfixOperator kiev\vlang\Operator.java
 kiev.vlang.PrefixOperator kiev/vlang/PrefixOperator kiev\vlang\Operator.java
 kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java
 kiev.vlang.ReWalkNodeException kiev/vlang/ReWalkNodeException kiev\vlang\AST.java
+kiev.vlang.RefAttrSlot kiev/vlang/RefAttrSlot kiev\vlang\Tree.java
 kiev.vlang.ReinterpExpr kiev/vlang/ReinterpExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
 kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java

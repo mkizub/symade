@@ -65,11 +65,11 @@ public class AttrSlot {
 	public boolean isMeta() { return false; }
 	public boolean isData() { return false; }
 
-	public void set(ASTNode node, Object value) {
-		node.setVal(name, value);
+	public void set(ANode parent, Object value) {
+		parent.setVal(name, value);
 	}
-	public Object get(ASTNode node) {
-		return node.getVal(name);
+	public Object get(ANode parent) {
+		return parent.getVal(name);
 	}
 }
 
@@ -79,6 +79,13 @@ public class DataAttrSlot extends AttrSlot {
 	}
 	public boolean isMeta() { return false; }
 	public boolean isData() { return true; }
+
+	public void set(ANode parent, Object value) {
+		parent.addNodeData((ANode)value, this);
+	}
+	public Object get(ANode parent) {
+		return parent.getNodeData(this);
+	}
 }
 
 public class MetaAttrSlot extends AttrSlot {
@@ -88,23 +95,41 @@ public class MetaAttrSlot extends AttrSlot {
 	public boolean isMeta() { return true; }
 	public boolean isData() { return true; }
 
-	public abstract void set(ASTNode node, Object value);
-	public abstract Object get(ASTNode node);
+	public abstract void set(ANode node, Object value);
+	public abstract Object get(ANode node);
+}
+
+public abstract class RefAttrSlot extends AttrSlot {
+	public RefAttrSlot(String name, Class clazz) {
+		super(name, false, false, clazz);
+	}
+
+	public abstract void set(ANode parent, Object value);
+	public abstract Object get(ANode parent);
+}
+
+public abstract class AttAttrSlot extends AttrSlot {
+	public AttAttrSlot(String name, Class clazz) {
+		super(name, true, false, clazz);
+	}
+	
+	public abstract void set(ANode parent, Object value);
+	public abstract Object get(ANode parent);
 }
 
 public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 	public SpaceAttrSlot(String name, boolean is_attr, Class clazz) {
 		super(name, is_attr, true, clazz);
 	}
-	protected N[] getArr(ASTNode parent) { return ((NArr<N>)parent.getVal(this.name)).$nodes; }
-	protected void setArr(ASTNode parent, N[] narr) { ((NArr<N>)parent.getVal(this.name)).$nodes = narr; }
+	public N[] get(ANode parent) { return ((NArr<N>)parent.getVal(this.name)).$nodes; }
+	public void set(ANode parent, Object narr) { ((NArr<N>)parent.getVal(this.name)).$nodes = (N[])narr; }
 
-	public final N[] getArray(ASTNode parent) {
-		return this.getArr(parent);
+	public final N[] getArray(ANode parent) {
+		return this.get(parent);
 	}
 
-	public final int indexOf(ASTNode parent, ASTNode node) {
-		N[] narr = getArr(parent);
+	public final int indexOf(ANode parent, ASTNode node) {
+		N[] narr = get(parent);
 		int sz = narr.length;
 		for (int i=0; i < sz; i++) {
 			if (narr[i] == node)
@@ -113,9 +138,9 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 		return -1;
 	}
 
-	public final void detach(ASTNode parent, ASTNode old)
+	public final void detach(ANode parent, ASTNode old)
 	{
-		N[] narr = getArr(parent);
+		N[] narr = get(parent);
 		int sz = narr.length;
 		for (int i=0; i < sz; i++) {
 			if (narr[i] == old) {
@@ -126,18 +151,18 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 		throw new RuntimeException("Not found node");
 	}
 	
-	public final void addAll(ASTNode parent, N[] arr) {
+	public final void addAll(ANode parent, N[] arr) {
 		for (int i=0; i < arr.length; i++)
 			add(parent, arr[i]);
 	}
 
-	public abstract N set(ASTNode parent, int idx, N node);
-	public abstract N add(ASTNode parent, N node);
-	public abstract void del(ASTNode parent, int idx);
-	public abstract void insert(ASTNode parent, int idx, N node);
-	public abstract void copyFrom(ASTNode parent, N[] arr);
-	public abstract void delAll(ASTNode parent);
-	public abstract N[] delToArray(ASTNode parent);
+	public abstract N set(ANode parent, int idx, N node);
+	public abstract N add(ANode parent, N node);
+	public abstract void del(ANode parent, int idx);
+	public abstract void insert(ANode parent, int idx, N node);
+	public abstract void copyFrom(ANode parent, N[] arr);
+	public abstract void delAll(ANode parent);
+	public abstract N[] delToArray(ANode parent);
 
 }
 
@@ -146,25 +171,25 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		super(name, false, clazz);
 	}
 	
-	public N set(ASTNode parent, int idx, N node) {
-		N[] narr = getArr(parent);
+	public N set(ANode parent, int idx, N node) {
+		N[] narr = get(parent);
 		narr[idx] = node;
 		return node;
 	}
 
-	public N add(ASTNode parent, N node) {
-		N[] narr = getArr(parent);
+	public N add(ANode parent, N node) {
+		N[] narr = get(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
 		for (int i=0; i < sz; i++)
 			tmp[i] = narr[i];
 		tmp[sz] = node;
-		setArr(parent,tmp);
+		set(parent,tmp);
 		return node;
 	}
 
-	public void del(ASTNode parent, int idx) {
-		N[] narr = getArr(parent);
+	public void del(ANode parent, int idx) {
+		N[] narr = get(parent);
 		int sz = narr.length-1;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz); //new N[sz];
 		int i;
@@ -172,11 +197,11 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 			tmp[i] = narr[i];
 		for (; i < sz; i++)
 			tmp[i] = narr[i+1];
-		setArr(parent,tmp);
+		set(parent,tmp);
 	}
 
-	public void insert(ASTNode parent, int idx, N node) {
-		N[] narr = getArr(parent);
+	public void insert(ANode parent, int idx, N node) {
+		N[] narr = get(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
 		int i;
@@ -185,24 +210,24 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		tmp[idx] = node;
 		for (; i < sz; i++)
 			tmp[i+1] = narr[i];
-		setArr(parent,tmp);
+		set(parent,tmp);
 	}
 
-	public void copyFrom(ASTNode parent, N[] arr) {
+	public void copyFrom(ANode parent, N[] arr) {
 		foreach (N n; arr)
 			add(parent, n);
 	}
 	
-	public void delAll(ASTNode parent) {
-		N[] narr = getArr(parent);
+	public void delAll(ANode parent) {
+		N[] narr = get(parent);
 		if (narr.length == 0)
 			return;
-		setArr(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+		set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
 	}
 	
-	public N[] delToArray(ASTNode parent) {
-		N[] narr = getArr(parent);
-		setArr(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+	public N[] delToArray(ANode parent) {
+		N[] narr = get(parent);
+		set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
 		return narr;
 	}
 }
@@ -212,9 +237,9 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		super(name, true, clazz);
 	}
 	
-	public N set(ASTNode parent, int idx, N node) {
+	public N set(ANode parent, int idx, N node) {
 		assert(!node.isAttached());
-		N[] narr = getArr(parent);
+		N[] narr = get(parent);
 		ASTNode old = narr[idx];
 		old.callbackDetached();
 		narr[idx] = node;
@@ -226,24 +251,24 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		return node;
 	}
 
-	public N add(ASTNode parent, N node) {
+	public N add(ANode parent, N node) {
 		assert(!node.isAttached());
 		assert(indexOf(parent,node) < 0);
-		N[] narr = getArr(parent);
+		N[] narr = get(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
 		for (int i=0; i < sz; i++)
 			tmp[i] = narr[i];
 		tmp[sz] = node;
-		setArr(parent,tmp);
+		set(parent,tmp);
 		ListAttachInfo prv = null;
 		if (sz > 0) prv = (ListAttachInfo)tmp[sz-1].getAttachInfo();
 		node.callbackAttached(new ListAttachInfo(node, parent, this, prv, null));
 		return node;
 	}
 
-	public void del(ASTNode parent, int idx) {
-		N[] narr = getArr(parent);
+	public void del(ANode parent, int idx) {
+		N[] narr = get(parent);
 		ASTNode old = narr[idx];
 		old.callbackDetached();
 		int sz = narr.length-1;
@@ -253,13 +278,13 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 			tmp[i] = narr[i];
 		for (; i < sz; i++)
 			tmp[i] = narr[i+1];
-		setArr(parent,tmp);
+		set(parent,tmp);
 	}
 
-	public void insert(ASTNode parent, int idx, N node) {
+	public void insert(ANode parent, int idx, N node) {
 		assert(!node.isAttached());
 		assert(indexOf(parent,node) < 0);
-		N[] narr = getArr(parent);
+		N[] narr = get(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
 		int i;
@@ -268,7 +293,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		tmp[idx] = node;
 		for (; i < sz; i++)
 			tmp[i+1] = narr[i];
-		setArr(parent,tmp);
+		set(parent,tmp);
 		ListAttachInfo prv = null;
 		ListAttachInfo nxt = null;
 		if (idx > 0) prv = (ListAttachInfo)tmp[idx-1].getAttachInfo();
@@ -276,23 +301,23 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		node.callbackAttached(new ListAttachInfo(node, parent, this, prv, nxt));
 	}
 
-	public void copyFrom(ASTNode parent, N[] arr) {
+	public void copyFrom(ANode parent, N[] arr) {
 		foreach (N n; arr)
 			add(parent, n.ncopy());
 	}
 	
-	public void delAll(ASTNode parent) {
-		N[] narr = getArr(parent);
+	public void delAll(ANode parent) {
+		N[] narr = get(parent);
 		if (narr.length == 0)
 			return;
-		setArr(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+		set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
 		for (int i=0; i < narr.length; i++)
 			narr[i].callbackDetached();
 	}
 	
-	public N[] delToArray(ASTNode parent) {
-		N[] narr = getArr(parent);
-		setArr(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+	public N[] delToArray(ANode parent) {
+		N[] narr = get(parent);
+		set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
 		for (int i=0; i < narr.length; i++)
 			narr[i].callbackDetached();
 		return narr;
@@ -302,11 +327,11 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 @unerasable
 public final class NArr<N extends ASTNode> {
 
-    private final ASTNode	 	$parent_impl;
+    private final ANode		 	$parent_impl;
 	private final AttrSlot		$pslot;
 	public        N[]			$nodes;
 	
-	public NArr(ASTNode parent_impl, AttrSlot pslot) {
+	public NArr(ANode parent_impl, AttrSlot pslot) {
 		this.$parent_impl = parent_impl;
 		this.$pslot = pslot;
 		this.$nodes = new N[0];
@@ -314,7 +339,7 @@ public final class NArr<N extends ASTNode> {
 			assert (pslot == null || !pslot.is_attr);
 	}
 	
-	public ASTNode getParent() {
+	public ANode getParent() {
 		return $parent_impl;
 	}
 	
