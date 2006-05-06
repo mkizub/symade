@@ -230,41 +230,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	}
 	
 	private void autoGenerateMembers(Struct:ASTNode s) {
-		if (tpNode == null)
-			tpNode = Env.loadStruct(nameNode).ctype;
 		if (tpNode == null) {
-			Kiev.reportError("Cannot find class "+nameNode);
-			return;
-		}
-		if (tpNArr == null)
-			tpNArr = Env.loadStruct(nameNArr).ctype;
-		if (tpNArr == null) {
-			Kiev.reportError(s,"Cannot find class "+nameNArr);
-			return;
-		}
-		if (tpAttrSlot == null)
-			tpAttrSlot = Env.loadStruct(nameAttrSlot).ctype;
-		if (tpAttrSlot == null) {
-			Kiev.reportError(s,"Cannot find class "+nameAttrSlot);
-			return;
-		}
-		if (tpSpaceAttrSlot == null)
-			tpSpaceAttrSlot = Env.loadStruct(nameSpaceAttrSlot).ctype;
-		if (tpSpaceAttrSlot == null) {
-			Kiev.reportError(s,"Cannot find class "+nameSpaceAttrSlot);
-			return;
-		}
-		if (tpSpaceRefAttrSlot == null)
-			tpSpaceRefAttrSlot = Env.loadStruct(nameSpaceRefAttrSlot).ctype;
-		if (tpSpaceRefAttrSlot == null) {
-			Kiev.reportError(s,"Cannot find class "+nameSpaceRefAttrSlot);
-			return;
-		}
-		if (tpSpaceAttAttrSlot == null)
-			tpSpaceAttAttrSlot = Env.loadStruct(nameSpaceAttAttrSlot).ctype;
-		if (tpSpaceAttAttrSlot == null) {
-			Kiev.reportError(s,"Cannot find class "+nameSpaceAttAttrSlot);
-			return;
+			tpNode = Env.loadStruct(nameNode, true).ctype;
+			tpNArr = Env.loadStruct(nameNArr, true).ctype;
+			tpAttrSlot = Env.loadStruct(nameAttrSlot, true).ctype;
+			tpSpaceAttrSlot = Env.loadStruct(nameSpaceAttrSlot, true).ctype;
+			tpSpaceRefAttrSlot = Env.loadStruct(nameSpaceRefAttrSlot, true).ctype;
+			tpSpaceAttAttrSlot = Env.loadStruct(nameSpaceAttAttrSlot, true).ctype;
 		}
 		foreach (Struct dn; s.members)
 			this.autoGenerateMembers(dn);
@@ -272,6 +244,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			return;
 		if (!isNodeImpl(s))
 			return;
+		if (hasField(s, nameEnumValuesFld)) {
+			// already generated
+			return;
+		}
+		if (s.super_type != null && isNodeKind(s.super_type)) {
+			this.autoGenerateMembers(s.super_type.getStruct());
+		}
 		// attribute names array
 		Vector<Field> aflds = new Vector<Field>();
 		if (isNodeImpl(s)) {
@@ -283,15 +262,16 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				ss = ss.super_bound.getStruct();
 			}
 		}
-		if (hasField(s, nameEnumValuesFld)) {
-			Kiev.reportWarning(s,"Field "+s+"."+nameEnumValuesFld+" already exists, @node members are not generated");
-			return;
-		}
 		ENode[] vals_init = new ENode[aflds.size()];
 		for(int i=0; i < vals_init.length; i++) {
 			Field f = aflds[i];
 			boolean isAtt = (f.meta.get(mnAtt) != null);
 			boolean isArr = f.getType().isInstanceOf(tpNArr);
+			String fname = "nodeattr$"+f.id.sname;
+			if (f.parent() != s) {
+				vals_init[i] = new SFldExpr(f.pos, s.resolveField(fname.intern(), true));
+				continue;
+			}
 			Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
 			Type tpa = makeNodeAttrClass(s,f);
 			TypeClassExpr clz_expr = new TypeClassExpr(0, new TypeRef(clz_tp));
@@ -313,12 +293,9 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					new ConstBoolExpr(isArr),
 					clz_expr
 				});
-			String fname = "nodeattr$"+f.id.sname;
 			Field af = s.addField(new Field(fname, e.getType(), ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
 			af.init = e;
 			vals_init[i] = new SFldExpr(af.pos, af);
-			if (f.parent() != s)
-				continue;
 			if (isArr && !f.isAbstract()) {
 				f.init = new NewExpr(f.pos, f.getType(), new ENode[]{
 					new ThisExpr(),
@@ -346,13 +323,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			getV.params.add(new FormPar(0, "name", Type.tpString, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(getV);
 			getV.body = new Block(0);
-			for(int i=0; i < aflds.length; i++) {
-				ENode ee = new IFldExpr(0,new ThisExpr(0),aflds[i]);
+			foreach (Field f; aflds; f.parent() == s) {
+				ENode ee = new IFldExpr(0,new ThisExpr(),f);
 				getV.body.stats.add(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new LVarExpr(0, getV.params[0]),
-							new ConstStringExpr(aflds[i].id.sname)
+							new ConstStringExpr(f.id.sname)
 						),
 						new ReturnStat(0, ee),
 						null
@@ -361,13 +338,27 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				if!(ee.getType().isReference())
 					CastExpr.autoCastToReference(ee);
 			}
-			StringConcatExpr msg = new StringConcatExpr();
-			msg.appendArg(new ConstStringExpr("No @att value \""));
-			msg.appendArg(new LVarExpr(0, getV.params[0]));
-			msg.appendArg(new ConstStringExpr("\" in "+s.id));
-			getV.body.stats.add(
-				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
-			);
+			Type sup = s.super_type;
+			if (sup != null && isNodeKind(sup)) {
+				getV.body.stats.add(
+					new ReturnStat(0,
+						new CallExpr(0,
+							new ThisExpr(true),
+							sup.getStruct().resolveMethod("getVal",Type.tpObject,Type.tpString),
+							null,
+							new ENode[]{new LVarExpr(0, getV.params[0])},
+							true)
+					)
+				);
+			} else {
+				StringConcatExpr msg = new StringConcatExpr();
+				msg.appendArg(new ConstStringExpr("No @att value \""));
+				msg.appendArg(new LVarExpr(0, getV.params[0]));
+				msg.appendArg(new ConstStringExpr("\" in "+s.id));
+				getV.body.stats.add(
+					new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
+				);
+			}
 		}
 		// copy()
 		if (s.meta.get(mnNode) != null && !s.meta.get(mnNode).getZ(nameCopyable) || s.isAbstract()) {
@@ -465,18 +456,18 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			setV.params.append(new FormPar(0, "val", Type.tpObject, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(setV);
 			setV.body = new Block(0);
-			for(int i=0; i < aflds.length; i++) {
-				boolean isArr = aflds[i].getType().isInstanceOf(tpNArr);
-				if (isArr || aflds[i].isFinal() || !Access.writeable(aflds[i]))
+			foreach (Field f; aflds; f.parent() == s) {
+				boolean isArr = f.getType().isInstanceOf(tpNArr);
+				if (isArr || f.isFinal() || !Access.writeable(f))
 					continue;
 				{	// check if we may not copy the field
-					Meta fmeta = aflds[i].meta.get(mnAtt);
+					Meta fmeta = f.meta.get(mnAtt);
 					if (fmeta == null)
-						fmeta = aflds[i].meta.get(mnRef);
+						fmeta = f.meta.get(mnRef);
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
-				Type atp = aflds[i].getType();
+				Type atp = f.getType();
 				ENode ee;
 				if (atp.isReference())
 					ee = new CastExpr(0,atp,new LVarExpr(0, setV.params[1]));
@@ -486,12 +477,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new LVarExpr(0, setV.params[0]),
-							new ConstStringExpr(aflds[i].id.sname)
+							new ConstStringExpr(f.id.sname)
 							),
 						new Block(0, new ENode[]{
 							new ExprStat(0,
 								new AssignExpr(0,AssignOperator.Assign,
-									new IFldExpr(0,new ThisExpr(0),aflds[i]),
+									new IFldExpr(0,new ThisExpr(),f),
 									ee
 								)
 							),
@@ -500,16 +491,28 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 						null
 					)
 				);
-				if!(aflds[i].getType().isReference())
+				if!(f.getType().isReference())
 					CastExpr.autoCastToPrimitive(ee);
 			}
-			StringConcatExpr msg = new StringConcatExpr();
-			msg.appendArg(new ConstStringExpr("No @att value \""));
-			msg.appendArg(new LVarExpr(0, setV.params[0]));
-			msg.appendArg(new ConstStringExpr("\" in "+s.id));
-			setV.body.stats.add(
-				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
-			);
+			Type sup = s.super_type;
+			if (sup != null && isNodeKind(sup)) {
+				setV.body.stats.add(
+					new CallExpr(0,
+						new ThisExpr(true),
+						sup.getStruct().resolveMethod("setVal",Type.tpVoid,Type.tpString,Type.tpObject),
+						null,
+						new ENode[]{new LVarExpr(0, setV.params[0]),new LVarExpr(0, setV.params[1])},
+						true)
+				);
+			} else {
+				StringConcatExpr msg = new StringConcatExpr();
+				msg.appendArg(new ConstStringExpr("No @att value \""));
+				msg.appendArg(new LVarExpr(0, setV.params[0]));
+				msg.appendArg(new ConstStringExpr("\" in "+s.id));
+				setV.body.stats.add(
+					new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
+				);
+			}
 		}
 	}
 	
@@ -628,13 +631,13 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 		if (f.type.isInstanceOf(ProcessVNode.tpNode)) {
 			ENode p_st = new IfElseStat(0,
 					new BinaryBoolExpr(0, BinaryOperator.NotEquals,
-						new IFldExpr(0,new ThisExpr(0),f,true),
+						new IFldExpr(0,new ThisExpr(),f,true),
 						new ConstNullExpr()
 					),
 					new Block(0,new ENode[]{
 						new ExprStat(0,
 							new ASTCallAccessExpression(0,
-								new IFldExpr(0,new ThisExpr(0),f,true),
+								new IFldExpr(0,new ThisExpr(),f,true),
 								"callbackDetached",
 								ENode.emptyArray
 							)
@@ -663,7 +666,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 			body.stats.append(p_st);
 		} else {
 			Var old = new Var(body.pos,"$old",f.type,ACC_FINAL);
-			old.init = new IFldExpr(0,new ThisExpr(0),f,true);
+			old.init = new IFldExpr(0,new ThisExpr(),f,true);
 			body.stats.insert(0,old);
 			ENode p_st = new IfElseStat(0,
 					new BinaryBoolExpr(0, BinaryOperator.NotEquals,

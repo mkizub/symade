@@ -337,7 +337,7 @@ public class Env extends Struct {
 		}
 	}
 
-	public static boolean existsStruct(String qname) throws RuntimeException {
+	public static boolean existsStruct(String qname) {
 		if (qname == "") return true;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return false;
@@ -348,7 +348,14 @@ public class Env extends Struct {
 		return jenv.existsClazz(qname);
 	}
 
-	public static Struct loadStruct(String qname) throws RuntimeException {
+	public static Struct loadStruct(String qname, boolean fatal) {
+		Struct s = loadStruct(qname);
+		if (fatal && s == null)
+			throw new RuntimeException("Cannot find class "+qname);
+		return s;
+	}
+
+	public static Struct loadStruct(String qname) {
 		if (qname == "") return Env.root;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
@@ -363,7 +370,7 @@ public class Env extends Struct {
 		return cl;
 	}
 
-	public static Struct loadStruct(Struct cl) throws RuntimeException {
+	public static Struct loadStruct(Struct cl) {
 		if (cl == Env.root) return Env.root;
 		// Load if not loaded or not resolved
 		if (!cl.isResolved() && !cl.isAnonymouse())

@@ -106,6 +106,10 @@ public abstract class ANode {
 		return AttrSlot.emptyArray;
 	}
 	public Object getVal(String name) {
+		if (ndata != null) {
+			foreach (AttachInfo ai; ndata; ai.p_slot.name == name)
+				return ai.p_self;
+		}
 		throw new RuntimeException("No @att value \"" + name + "\" in ANode");
 	}
 	public void setVal(String name, Object val) {
@@ -371,12 +375,8 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public AttrSlot[] values() {
 		return AttrSlot.emptyArray;
 	}
-	public Object getVal(String name) {
-		throw new RuntimeException("No @att value \"" + name + "\" in NodeImpl");
-	}
-	public void setVal(String name, Object val) {
-		throw new RuntimeException("No @att value \"" + name + "\" in NodeImpl");
-	}
+	public Object getVal(String name) { return super.getVal(name); }
+	public void setVal(String name, Object val) { super.setVal(name,val); }
 		
 	public Object copyTo(Object to$node) {
 		ASTNode node = (ASTNode)super.copyTo(to$node);
@@ -412,9 +412,9 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 			space[idx] = node;
 		}
 		else if (pslot().isData()) {
-			assert(((ASTNode)parent()).getNodeData(pslot()) == this);
+			assert(parent().getNodeData(pslot()) == this);
 			if (node != null && node.pos == 0) node.pos = this.pos;
-			((ASTNode)parent()).addNodeData(node, pslot());
+			parent().addNodeData(node, pslot());
 		}
 		else {
 			assert(parent().getVal(pslot().name) == this);
@@ -581,7 +581,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 			((NArr<ASTNode>)parent().getVal(pslot().name)).detach(this);
 		}
 		else if (pslot().isData()) {
-			((ASTNode)parent()).delNodeData(pslot());
+			parent().delNodeData(pslot());
 		}
 		else {
 			parent().setVal(pslot().name,null);
