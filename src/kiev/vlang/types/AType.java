@@ -21,20 +21,20 @@ import syntax kiev.Syntax;
 
 public abstract class AType implements StdTypes, TVSet {
 	
-	public final					TypeProvider		meta_type;
-	public:ro,ro,ro,rw		TVar[]				tvars;
-	public:ro,ro,ro,rw		TArg[]				appls;
-	public							int					flags;
-	private							int					version;
+	public final			MetaType	meta_type;
+	public:ro,ro,ro,rw		TVar[]		tvars;
+	public:ro,ro,ro,rw		TArg[]		appls;
+	public					int			flags;
+	private					int			version;
 	
-	protected AType(TypeProvider meta_type, int flags, TVar[] tvars, TArg[] appls) {
+	protected AType(MetaType meta_type, int flags, TVar[] tvars, TArg[] appls) {
 		this.meta_type = meta_type;
 		this.flags = flags;
 		this.tvars = tvars;
 		this.appls = appls;
 	}
 	
-	protected AType(TypeProvider meta_type, int flags, TVarBld bld)
+	protected AType(MetaType meta_type, int flags, TVarBld bld)
 	{
 		this.meta_type = meta_type;
 		this.flags = flags;

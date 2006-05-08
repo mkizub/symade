@@ -37,7 +37,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	
 	public void autoGenerateMembers(Struct:ASTNode s) {
 		addAbstractFields(s);
-		foreach(Struct sub; s.sub_clazz)
+		foreach(Struct sub; s.sub_decls)
 			autoGenerateMembers(sub);
 	}
 	
@@ -203,7 +203,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			if (s.isInterface() && !f.isAbstract())
 				f.setAbstract(true);
 		}
-		foreach(Struct sub; s.sub_clazz)
+		foreach(Struct sub; s.sub_decls)
 			preGenerate(sub);
 	}
 	

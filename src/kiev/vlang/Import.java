@@ -95,7 +95,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		Struct@ s;
-		Struct@ sub;
+		DNode@ sub;
 		ASTNode@ tmp;
 	{
 		this.resolved instanceof Method, $cut, false
@@ -114,11 +114,9 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		s ?= ((Struct)this.resolved),
 		{
 			!s.isPackage(),
-			sub @= s.sub_clazz,
-			{
-				sub.qname() == name, node ?= sub.$var
-			;	sub.id.equals(name), node ?= sub.$var
-			}
+			sub @= s.sub_decls,
+			sub.id.equals(name),
+			node ?= sub.$var
 		;	s.isPackage(), s.resolveNameR(node,path,name)
 		}
 	;
@@ -166,7 +164,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 }
 
 @node
-public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
+public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 
 	@dflow(out="this:in") private static class DFI {}
 
@@ -192,10 +190,6 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 	
 	public boolean checkResolved() {
 		return type.getType().checkResolved();
-	}
-	
-	public Symbol getName() {
-		return new Symbol(op.image);
 	}
 	
 	public Struct getStruct() {

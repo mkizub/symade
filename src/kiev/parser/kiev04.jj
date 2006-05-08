@@ -177,6 +177,16 @@ public abstract class kiev040 {
 	}
 
 	/*{
+	private MetaType mkMetaType(Symbol name, ASTModifiers modifiers, FileUnit fu) {
+		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
+		MetaType mt = Env.newMetaType(name, pkg, true);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(mt);
+		foreach (Meta m; modifiers.annotations)
+			mt.meta.set(m.ncopy());
+		return mt;
+	}
+
 	private Struct mkStruct(Symbol name, int flags, ASTModifiers modifiers, ASTNode parent) {
 		String nm;
 		Struct outer;
@@ -595,6 +605,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 //| < INSTANCEOF: "instanceof" >
 | < INT: "int" >
 | < INTERFACE: "interface" >
+| < METATYPE: "metatype" >
 | < LONG: "long" >
 | < NATIVE: "native" >
 | < NEW: "new" >
@@ -940,7 +951,7 @@ FileUnit FileUnit(String filename) :
 		oldFileUnit = curFileUnit;
 		FileUnit fu = new FileUnit();
 		curFileUnit = fu;
-		fu.filename = filename;
+		fu.id = new Symbol(filename);
 		fu.pos = 0;
 		declMode = true;
 		ASTModifiers modifiers;
@@ -963,6 +974,7 @@ FileUnit FileUnit(String filename) :
 			|	fu.members += Typedef(modifiers)
 			|	fu.members += Opdef(modifiers)
 			|	fu.members += TypeDeclaration(modifiers, fu) [ ";" ]
+			|	fu.members += MetaTypeDeclaration(modifiers, fu) [ ";" ]
 			|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 				fu.members += SyntaxDeclaration(modifiers, fu) [ ";" ]
 			)
@@ -1123,6 +1135,29 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		"}"
 	} finally { curClazz = oldClazz; }
 	{ return clazz; }
+}
+
+MetaType MetaTypeDeclaration(ASTModifiers modifiers, FileUnit parent) :
+{ MetaType mt; Symbol name; Struct oldClazz; }
+{
+	"metatype"
+	name = Name()
+	{
+		mt = mkMetaType(name, modifiers, parent);
+	}
+	{ oldClazz = curClazz; curClazz = null; }
+	try {
+		"{"
+//		(
+//			modifiers = Modifiers()
+//			(
+//				clazz.members += Typedef(modifiers)
+//			|	clazz.members += Opdef(modifiers)
+//			)
+//		)*
+		"}"
+	} finally { curClazz = oldClazz; }
+	{ return mt; }
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
@@ -2870,7 +2905,7 @@ ENode ReparseStatement() :
 ENode LabeledStatement() :
 { LabeledStat st = new LabeledStat(); }
 {
-	st.id = Name()
+	st.lbl.id = Name()
 	":"
 	{ st.pos = getToken(0).getPos(); }
 	st.stat = Statement()

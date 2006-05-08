@@ -39,6 +39,7 @@ public abstract class DNode extends ASTNode {
 	
 		 public		int			flags;
 	@att public		MetaSet		meta;
+	@att public		Symbol		id; // short and unique names
 
 //	public @packed:1,flags, 0 boolean is_acc_public;
 //	public @packed:1,flags, 1 boolean is_acc_private;
@@ -239,8 +240,9 @@ public abstract class DNode extends ASTNode {
 
 		public Dumper toJavaDecl(Dumper dmp);
 		
-		public int		flags;
-		public MetaSet	meta;
+		public:ro int		flags;
+		public:ro MetaSet	meta;
+		public:ro Symbol	id;
 
 		public final boolean isPublic()	;
 		public final boolean isPrivate();
@@ -289,6 +291,8 @@ public abstract class DNode extends ASTNode {
 		public final void setVirtual(boolean on);
 		public final boolean isForward();
 		public final void setForward(boolean on);
+
+		public final Symbol getName();
 	}
 
 	public DNode() {}
@@ -302,6 +306,8 @@ public abstract class DNode extends ASTNode {
 
 	public int getFlags() { return flags; }
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
+
+	public final Symbol getName() { return id; }
 }
 
 @node
@@ -367,7 +373,7 @@ public abstract class LvalDNode extends DNode {
 
 
 @node
-public abstract class TypeDecl extends DNode implements Named {
+public abstract class TypeDecl extends DNode {
 
 	@virtual typedef This  = TypeDecl;
 	@virtual typedef VView = VTypeDecl;
@@ -375,16 +381,16 @@ public abstract class TypeDecl extends DNode implements Named {
 	@virtual typedef RView = RTypeDecl;
 
 	public void callbackSuperTypeChanged(TypeDecl chg) {}
-	public TypeProvider[] getAllSuperTypes() { return TypeProvider.emptyArray; }
-	protected final void addSuperTypes(TypeRef suptr, Vector<TypeProvider> types) {
+	public MetaType[] getAllSuperTypes() { return MetaType.emptyArray; }
+	protected final void addSuperTypes(TypeRef suptr, Vector<MetaType> types) {
 		Type sup = suptr.getType();
 		if (sup == null)
 			return;
-		TypeProvider tt = sup.getStruct().imeta_type;
+		MetaType tt = sup.getStruct().imeta_type;
 		if (!types.contains(tt))
 			types.append(tt);
-		TypeProvider[] sup_types = sup.getStruct().getAllSuperTypes();
-		foreach (TypeProvider t; sup_types) {
+		MetaType[] sup_types = sup.getStruct().getAllSuperTypes();
+		foreach (MetaType t; sup_types) {
 			if (!types.contains(t))
 				types.append(t);
 		}
@@ -392,12 +398,11 @@ public abstract class TypeDecl extends DNode implements Named {
 
 	@nodeview
 	public static view VTypeDecl of TypeDecl extends VDNode {
-		public TypeProvider[] getAllSuperTypes();
+		public MetaType[] getAllSuperTypes();
 	}
 
 	public TypeDecl() {}
 
-	public abstract Symbol		getName();
 	public abstract boolean		checkResolved();
 	public abstract Struct		getStruct();
 

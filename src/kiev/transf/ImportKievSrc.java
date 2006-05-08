@@ -245,7 +245,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 							new TypeRef(pkg.ctype));
 						td.setSynthetic(true);
 						me.members.append(td);
-						OuterTypeProvider.instance(me,td);
+						OuterMetaType.instance(me,td);
 						Field f = new Field(fldName,td.getAType(),ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC);
 						f.pos = me.pos;
 						me.members.append(f);
@@ -647,7 +647,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					Kiev.reportError(n, "Annotations may only have methods and final fields");
 			}
 		}
-		foreach (Struct sub; clazz.sub_clazz)
+		foreach (Struct sub; clazz.sub_decls)
 			resolveMetaDecl(sub);
 	}
 
@@ -836,7 +836,7 @@ class VSrcBackend extends BackendProcessor {
 
 		try {
 			File f;
-			String out_file = fu.filename.toString();
+			String out_file = fu.id.toString();
 			make_output_dir(output_dir,out_file);
 			f = new File(output_dir,out_file);
 			FileOutputStream out;

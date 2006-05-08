@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public final class Field extends LvalDNode implements Named, Accessable {
+public final class Field extends LvalDNode implements Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
 	private static final Field dummyNode = new Field();
@@ -36,8 +36,6 @@ public final class Field extends LvalDNode implements Named, Accessable {
 
 	/** Field' access */
 		 public Access				acc;
-	/** Name of the field */
-	@att public Symbol				id;
 	/** Type of the field */
 	@att public TypeRef				ftype;
 	/** Initial value of this field */
@@ -103,7 +101,6 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	@nodeview
 	public static final view VField of Field extends VLvalDNode {
 		public		Access			acc;
-		public		Symbol			id;
 		public		TypeRef			ftype;
 		public		ENode			init;
 		public		ConstExpr		const_value;
@@ -190,8 +187,6 @@ public final class Field extends LvalDNode implements Named, Accessable {
 	}
 
 	public String toString() { return id.toString(); }
-
-	public Symbol getName() { return id; }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(id).space();

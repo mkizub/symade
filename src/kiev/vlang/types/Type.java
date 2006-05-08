@@ -28,7 +28,7 @@ public abstract class Type extends AType {
 	public abstract Type getMetaSuper();
 	public abstract String toString();
 	public abstract boolean checkResolved();
-	public abstract TypeProvider[] getAllSuperTypes();
+	public abstract MetaType[] getAllSuperTypes();
 	public abstract Type getErasedType();
 	public abstract Dumper toJava(Dumper dmp);
 	
@@ -54,13 +54,13 @@ public abstract class Type extends AType {
 	public Struct getStruct() { return null; }
 	public Meta getMeta(String name) { return null; }
 
-	protected Type(TypeProvider meta_type, int flags, TVarBld bindings)
+	protected Type(MetaType meta_type, int flags, TVarBld bindings)
 		require { meta_type != null; }
 	{
 		super(meta_type, flags, bindings);
 	}
 
-	protected Type(TypeProvider meta_type, int flags, TVar[] tvars, TArg[] appls)
+	protected Type(MetaType meta_type, int flags, TVar[] tvars, TArg[] appls)
 		require { meta_type != null; }
 	{
 		super(meta_type, flags, tvars, appls);
@@ -204,7 +204,7 @@ public abstract class Type extends AType {
 	public static CompaundType getProxyType(Type tp) {
 		TVarBld set = new TVarBld();
 		set.append(tpRefProxy.clazz.args[0].getAType(), tp);
-		return (CompaundType)((CompaundTypeProvider)tpRefProxy.meta_type).make(set);
+		return (CompaundType)((CompaundMetaType)tpRefProxy.meta_type).make(set);
 	}
 
 }
@@ -212,15 +212,15 @@ public abstract class Type extends AType {
 public final class CoreType extends Type {
 	public final KString name;
 	CoreType(KString name, int flags) {
-		super(new CoreTypeProvider(), flags | flResolved, TVar.emptyArray, TArg.emptyArray);
-		((CoreTypeProvider)meta_type).core_type = this;
+		super(new CoreMetaType(), flags | flResolved, TVar.emptyArray, TArg.emptyArray);
+		((CoreMetaType)meta_type).core_type = this;
 		this.name = name;
 	}
 	public Meta getMeta(String name)	{ return null; }
 	public Type getErasedType()			{ return this; }
 	public Type getMetaSuper()			{ return null; }
 	public boolean checkResolved()		{ return true; }
-	public TypeProvider[] getAllSuperTypes()	{ return TypeProvider.emptyArray; }
+	public MetaType[] getAllSuperTypes()	{ return MetaType.emptyArray; }
 	public String toString()			{ return name.toString(); }
 	public Dumper toJava(Dumper dmp)	{ return dmp.append(name.toString()); }
 
@@ -335,7 +335,7 @@ public final class ArgType extends Type {
 		this(KString.from(name), definer);
 	}
 	public ArgType(KString name, TypeDef definer) {
-		super(ArgTypeProvider.instance, flReference, TVar.emptyArray, TArg.emptyArray);
+		super(ArgMetaType.instance, flReference, TVar.emptyArray, TArg.emptyArray);
 		this.name = name;
 		this.definer = definer;
 		if (definer.isTypeAbstract())   this.flags |= flAbstract;
@@ -361,7 +361,7 @@ public final class ArgType extends Type {
 
 	public boolean isStructInstanceOf(Struct s)	{ return getMetaSuper().isStructInstanceOf(s); }
 	public Meta getMeta(String name)				{ return getMetaSuper().getMeta(name); }
-	public TypeProvider[] getAllSuperTypes()		{ return definer.getAllSuperTypes(); }
+	public MetaType[] getAllSuperTypes()		{ return definer.getAllSuperTypes(); }
 	public Struct getStruct()						{ return definer.getStruct(); }
 
 	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, String name)
@@ -417,9 +417,9 @@ public final class ArgType extends Type {
 
 public final class CompaundType extends Type {
 	@getter
-	public final Struct get$clazz() { return ((CompaundTypeProvider)meta_type).clazz; }
+	public final Struct get$clazz() { return ((CompaundMetaType)meta_type).clazz; }
 
-	public CompaundType(CompaundTypeProvider meta_type, TVarBld bindings) {
+	public CompaundType(CompaundMetaType meta_type, TVarBld bindings) {
 		super(meta_type, flReference, bindings);
 	}
 	
@@ -466,7 +466,7 @@ public final class CompaundType extends Type {
 		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
 	}
 	private rule resolveNameR_3(ASTNode@ node, ResInfo info, String name)
-		TypeProvider@ sup;
+		MetaType@ sup;
 	{
 		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
 		sup @= clazz.getAllSuperTypes(),
@@ -475,7 +475,7 @@ public final class CompaundType extends Type {
 
 	private rule resolveNameR_4(ASTNode@ node, ResInfo info, String name)
 		ASTNode@ forw;
-		TypeProvider@ sup;
+		MetaType@ sup;
 	{
 		forw @= getStruct().members,
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
@@ -483,8 +483,8 @@ public final class CompaundType extends Type {
 		((Field)forw).type.applay(this).resolveNameAccessR(node,info,name)
 	;	info.isSuperAllowed(),
 		sup @= clazz.getAllSuperTypes(),
-		sup instanceof CompaundTypeProvider,
-		forw @= ((CompaundTypeProvider)sup).clazz.members,
+		sup instanceof CompaundMetaType,
+		forw @= ((CompaundMetaType)sup).clazz.members,
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
 		((Field)forw).type.applay(this).resolveNameAccessR(node,info,name)
@@ -497,7 +497,7 @@ public final class CompaundType extends Type {
 	
 	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
 		ASTNode@ member;
-		TypeProvider@ sup;
+		MetaType@ sup;
 		Field@ forw;
 	{
 		checkResolved(),
@@ -523,8 +523,8 @@ public final class CompaundType extends Type {
 		;
 			info.isForwardsAllowed(),
 			sup @= clazz.getAllSuperTypes(),
-			sup instanceof CompaundTypeProvider,
-			member @= ((CompaundTypeProvider)sup).clazz.members,
+			sup instanceof CompaundMetaType,
+			member @= ((CompaundMetaType)sup).clazz.members,
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
 			((Field)member).type.applay(this).resolveCallAccessR(node,info,name,mt)
@@ -640,7 +640,7 @@ public final class CompaundType extends Type {
 		return false;
 	}
 
-	public final TypeProvider[] getAllSuperTypes() {
+	public final MetaType[] getAllSuperTypes() {
 		return clazz.getAllSuperTypes();
 	}
 }
@@ -656,7 +656,7 @@ public final class ArrayType extends Type {
 	}
 	
 	private ArrayType(Type arg) {
-		super(ArrayTypeProvider.instance, flReference | flArray, new TVarBld(tpArrayArg, arg).close());
+		super(ArrayMetaType.instance, flReference | flArray, new TVarBld(tpArrayArg, arg).close());
 	}
 
 	public Type make(TVarSet bindings) { return meta_type.make(bindings); }
@@ -672,8 +672,8 @@ public final class ArrayType extends Type {
 	public Type getMetaSuper()						{ return tpObject; }
 	public Meta getMeta(String name)				{ return null; }
 	
-	public TypeProvider[] getAllSuperTypes() {
-		return new TypeProvider[] {
+	public MetaType[] getAllSuperTypes() {
+		return new MetaType[] {
 			tpObject.meta_type,
 			tpCloneable.meta_type
 		};
@@ -719,7 +719,7 @@ public final class ArrayType extends Type {
 
 public abstract class CTimeType extends Type {
 
-	protected CTimeType(TypeProvider meta_type, int flags, ArgType arg, Type enclosed_type) {
+	protected CTimeType(MetaType meta_type, int flags, ArgType arg, Type enclosed_type) {
 		super(meta_type, flags, new TVarBld(arg, enclosed_type).close());
 	}
 
@@ -740,11 +740,11 @@ public final class WrapperType extends CTimeType {
 	}
 	
 	public WrapperType(CompaundType unwrapped_type) {
-		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()), flReference | flWrapper, tpWrapperArg, unwrapped_type);
+		super(WrapperMetaType.instance(unwrapped_type.getStruct()), flReference | flWrapper, tpWrapperArg, unwrapped_type);
 	}
 
 	@getter
-	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
+	private Field get$wrapped_field() { return ((WrapperMetaType)this.meta_type).field; }
 	
 	public Type make(TVarSet bindings) { return meta_type.make(bindings); }
 
@@ -846,7 +846,7 @@ public final class WrapperType extends CTimeType {
 		return false;
 	}
 
-	public TypeProvider[] getAllSuperTypes() {
+	public MetaType[] getAllSuperTypes() {
 		return getEnclosedType().getAllSuperTypes();
 	}
 
@@ -864,7 +864,7 @@ public final class OuterType extends CTimeType {
 		return new OuterType(of_clazz.ometa_type, type);
 	}
 	
-	private OuterType(OuterTypeProvider meta_type, Type outer) {
+	private OuterType(OuterMetaType meta_type, Type outer) {
 		super(meta_type, flReference, meta_type.tdef.getAType(), outer);
 	}
 
@@ -891,7 +891,7 @@ public final class OuterType extends CTimeType {
 	public Type getMetaSuper()						{ return outer; }
 	public Meta getMeta(String name)				{ return outer.getMeta(name); }
 	
-	public TypeProvider[] getAllSuperTypes() {
+	public MetaType[] getAllSuperTypes() {
 		return outer.getAllSuperTypes();
 	}
 
@@ -924,7 +924,7 @@ public final class CallType extends Type {
 
 	CallType(TVarBld bld, int arity, boolean is_closure)
 	{
-		super(CallTypeProvider.instance, flCallable, bld);
+		super(CallMetaType.instance, flCallable, bld);
 		this.arity = arity;
 		if (is_closure)
 			flags |= flReference;
@@ -1114,7 +1114,7 @@ public final class CallType extends Type {
 	
 	public Type getMetaSuper()	{ if (isReference()) return tpObject; return null; }
 
-	public TypeProvider[] getAllSuperTypes() { return TypeProvider.emptyArray; }
+	public MetaType[] getAllSuperTypes() { return MetaType.emptyArray; }
 
 	public Type getErasedType() {
 		if (this.isReference())

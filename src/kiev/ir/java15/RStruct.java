@@ -20,10 +20,9 @@ public final view RStruct of Struct extends RTypeDecl {
 	static final AttrSlot TI_ATTR = new DataAttrSlot("rstruct ti field temp expr",true,TypeInfoExpr.class);	
 
 	public				Access					acc;
-	public:ro			Symbol					id;
-	public:ro			CompaundTypeProvider	imeta_type;
-	public				WrapperTypeProvider		wmeta_type;
-	public				OuterTypeProvider		ometa_type;
+	public:ro			CompaundMetaType		imeta_type;
+	public				WrapperMetaType			wmeta_type;
+	public				OuterMetaType			ometa_type;
 	public:ro			CompaundType			ctype;
 	public				TypeRef					view_of;
 	public				TypeRef					super_bound;
@@ -32,14 +31,14 @@ public final view RStruct of Struct extends RTypeDecl {
 	public				Struct					package_clazz;
 	public				Struct					typeinfo_clazz;
 	public				Struct					iface_impl;
-	public:ro			NArr<Struct>			sub_clazz;
+	public:ro			NArr<DNode>				sub_decls;
 	public:ro			NArr<TypeDecl>			direct_extenders;
 	public:ro			NArr<ASTNode>			members;
 
 	@getter public final CompaundType	get$super_type();
 	@setter public final void set$super_type(CompaundType tp);
 
-	public TypeProvider[] getAllSuperTypes();
+	public MetaType[] getAllSuperTypes();
 
 	public final Struct getStruct() { return (Struct)this; }
 
@@ -467,7 +466,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		if( isPackage() ) return false;
 		
 		// first, pre-generate super-types
-		foreach (CompaundTypeProvider sup; this.getAllSuperTypes())
+		foreach (CompaundMetaType sup; this.getAllSuperTypes())
 			sup.clazz.preGenerate();
 
 		// generate typeinfo class, if needed

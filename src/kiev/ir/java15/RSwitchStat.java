@@ -297,12 +297,9 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 							//PizzaCaseAttr case_attr;
 							int caseno = 0;
 							Struct tpclz = tp.getStruct();
-							for(int i=0; i < tpclz.sub_clazz.length; i++) {
-								if( tpclz.sub_clazz[i].isPizzaCase() ) {
-//									case_attr = (PizzaCaseAttr)tpclz.sub_clazz[i].getAttr(attrPizzaCase);
-//									if( case_attr!=null && case_attr.caseno > caseno )
-//										caseno = case_attr.caseno;
-									MetaPizzaCase meta = tpclz.sub_clazz[i].getMetaPizzaCase();
+							foreach (Struct sub; tpclz.sub_decls) {
+								if( sub.isPizzaCase() ) {
+									MetaPizzaCase meta = sub.getMetaPizzaCase();
 									if( meta!=null && meta.getTag() > caseno )
 										caseno = meta.getTag();
 								}

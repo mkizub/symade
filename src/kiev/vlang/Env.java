@@ -91,7 +91,7 @@ public class Env extends Struct {
 		root = this;
 		setPackage();
 		setResolved(true);
-		/*this.imeta_type =*/ new CompaundTypeProvider(this);
+		/*this.imeta_type =*/ new CompaundMetaType(this);
 		this.super_bound = new TypeRef();
 	}
 
@@ -122,7 +122,7 @@ public class Env extends Struct {
 		while (end > 0) {
 			String nm = qname.substring(start, end).intern();
 			Struct ss = null;
-			foreach (Struct s; pkg.sub_clazz; s.id.equals(nm)) {
+			foreach (Struct s; pkg.sub_decls; s.id.equals(nm)) {
 				ss = s;
 				break;
 			}
@@ -133,7 +133,7 @@ public class Env extends Struct {
 			end = qname.indexOf('.', start);
 		}
 		String nm = qname.substring(start).intern();
-		foreach (Struct s; pkg.sub_clazz; s.id.equals(nm))
+		foreach (Struct s; pkg.sub_decls; s.id.equals(nm))
 			return s;
 		return null;
 	}
@@ -147,7 +147,7 @@ public class Env extends Struct {
 		assert(outer != null);
 		Struct bcl = null;
 		if (direct && sname != null) {
-			foreach (Struct s; outer.sub_clazz; s.id.equals(sname)) {
+			foreach (Struct s; outer.sub_decls; s.id.equals(sname)) {
 				bcl = s;
 				break;
 			}
@@ -162,7 +162,7 @@ public class Env extends Struct {
 				cl.super_bound = new TypeRef();
 				cl.interfaces.delAll();
 				cl.args.delAll();
-				cl.sub_clazz.delAll();
+				cl.sub_decls.delAll();
 				foreach(Method m; cl.members; m.isOperatorMethod() )
 					Operator.cleanupMethod(m);
 				cl.members.delAll();
@@ -201,7 +201,7 @@ public class Env extends Struct {
 
 	public static Struct newPackage(String sname, Struct outer) {
 		Struct cl = null;
-		foreach (Struct s; outer.sub_clazz; s.id.equals(sname)) {
+		foreach (Struct s; outer.sub_decls; s.id.equals(sname)) {
 			cl = s;
 			break;
 		}
@@ -210,6 +210,31 @@ public class Env extends Struct {
 		cl.setPackage();
 		cl.setResolved(true);
 		return cl;
+	}
+
+	public static MetaType newMetaType(Symbol id, Struct pkg, boolean cleanup) {
+		if (pkg == null)
+			pkg = Env.root;
+		assert (pkg.isPackage());
+		MetaType mt = null;
+		foreach (MetaType pmt; pkg.sub_decls; pmt.id.equals(id)) {
+			mt = pmt;
+			break;
+		}
+		if (mt == null) {
+			mt = new MetaType();
+			mt.id = id;
+			mt.pkg = pkg;
+		}
+		else if( cleanup ) {
+			mt.flags = 0;
+			mt.version = 0;
+			//mt.super_meta_type = null;
+			mt.pkg = pkg;
+			mt.members.delAll();
+		}
+
+		return mt;
 	}
 
 	/** Default environment initialization */

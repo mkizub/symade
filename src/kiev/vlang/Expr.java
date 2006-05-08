@@ -663,18 +663,18 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		this.stats.addAll(sts);
 	}
 
-	public void addSymbol(Named sym) {
-		foreach(ASTNode n; stats; n instanceof Named) {
-			if (((Named)n).getName().equals(sym.getName()) ) {
+	public void addSymbol(DNode sym) {
+		foreach(DNode n; stats; n.getName() != null) {
+			if (n.getName().equals(sym.getName()) ) {
 				Kiev.reportError((ASTNode)sym,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}
 		stats.append((ASTNode)sym);
 	}
 
-	public void insertSymbol(Named sym, int idx) {
-		foreach(ASTNode n; stats; n instanceof Named) {
-			if (((Named)n).getName().equals(sym.getName()) ) {
+	public void insertSymbol(DNode sym, int idx) {
+		foreach(DNode n; stats; n.getName() != null) {
+			if (n.getName().equals(sym.getName()) ) {
 				Kiev.reportError((ASTNode)sym,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}

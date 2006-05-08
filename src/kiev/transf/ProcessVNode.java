@@ -80,7 +80,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	}
 	
 	public void pass3(Struct:ASTNode s) {
-		foreach (Struct sub; s.sub_clazz)
+		foreach (Struct sub; s.sub_decls)
 			pass3(sub);
 		if (isNodeKind(s)) {
 			// Check fields of the @node
@@ -633,7 +633,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 	public void preGenerate(Struct:ASTNode s) {
 		foreach(Field f; s.members; !f.isStatic() && f.isVirtual() && f.meta.get(ProcessVNode.mnAtt) != null)
 			fixSetterMethod(s, f);
-		foreach(Struct sub; s.sub_clazz)
+		foreach(Struct sub; s.sub_decls)
 			preGenerate(sub);
 	}
 	

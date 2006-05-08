@@ -22,7 +22,6 @@ public view RMethod of Method extends RDNode {
 	public final void checkRebuildTypes();
 
 	public				Access				acc;
-	public				Symbol				id;
 	public:ro			NArr<TypeDef>		targs;
 	public				TypeRef				type_ret;
 	public				TypeRef				dtype_ret;
@@ -150,7 +149,6 @@ public final view RInitializer of Initializer extends RDNode {
 @nodeview
 public final view RWBCCondition of WBCCondition extends RDNode {
 	public WBCType				cond;
-	public Symbol				id;
 	public ENode				body;
 	public Method				definer;
 	public CodeAttr				code_attr;

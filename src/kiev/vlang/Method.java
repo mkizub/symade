@@ -27,7 +27,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
+public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in")	Block		body;
@@ -40,8 +40,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 	@virtual typedef RView = RMethod;
 
 		 public Access				acc;
-	@att public Symbol				id;
-		 CallTypeProvider			meta_type;
+		 CallMetaType				meta_type;
 	@att public NArr<TypeDef>		targs;
 	@att public TypeRef				type_ret;
 	@att public TypeRef				dtype_ret;
@@ -249,8 +248,7 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		public final void checkRebuildTypes();
 	
 		public				Access				acc;
-		public				Symbol				id;
-		public				CallTypeProvider	meta_type;
+		public				CallMetaType		meta_type;
 		public:ro			NArr<TypeDef>		targs;
 		public				TypeRef				type_ret;
 		public				TypeRef				dtype_ret;
@@ -424,8 +422,6 @@ public class Method extends DNode implements Named,ScopeOfNames,ScopeOfMethods,S
 		sb.append(")->").append(mt.ret());
 		return sb.toString();
 	}
-
-	public Symbol getName() { return id; }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(id);
@@ -840,7 +836,6 @@ public class WBCCondition extends DNode {
 	@virtual typedef RView = RWBCCondition;
 
 	@att public WBCType				cond;
-	@att public Symbol				id;
 	@att public ENode				body;
 	@ref public Method				definer;
 	@att public CodeAttr			code_attr;
@@ -848,7 +843,6 @@ public class WBCCondition extends DNode {
 	@nodeview
 	public static final view VWBCCondition of WBCCondition extends VDNode {
 		public WBCType				cond;
-		public Symbol				id;
 		public ENode				body;
 		public Method				definer;
 		public CodeAttr				code_attr;

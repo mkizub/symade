@@ -22,7 +22,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Var extends LvalDNode implements Named {
+public class Var extends LvalDNode {
 	
 	private static final Var dummyNode = new FormPar();
 	
@@ -35,7 +35,6 @@ public class Var extends LvalDNode implements Named {
 	@virtual typedef JView = JVar;
 	@virtual typedef RView = RVar;
 
-	@att public Symbol		id;
 	@att public TypeRef		vtype;
 	@att public ENode		init;
 		 public int			bcpos = -1;
@@ -96,7 +95,6 @@ public class Var extends LvalDNode implements Named {
 		
 	@nodeview
 	public static view VVar of Var extends VLvalDNode {
-		public	Symbol		id;
 		public	TypeRef		vtype;
 		public	ENode		init;
 		public	int			bcpos;
@@ -164,8 +162,6 @@ public class Var extends LvalDNode implements Named {
 	public int hashCode() {
 		return id.hashCode();
 	}
-
-	public Symbol getName() { return id; }
 
 	public Type	getType() { return type; }
 

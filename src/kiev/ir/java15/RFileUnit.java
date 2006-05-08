@@ -16,16 +16,15 @@ import syntax kiev.Syntax;
 
 @nodeview
 public static final view RFileUnit of FileUnit extends RDNode {
-	public		String					filename;
 	public		TypeNameRef				pkg;
 	public:ro	NArr<ASTNode>			members;
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 
 	public void resolveDecl() {
-		trace(Kiev.debugResolve,"Resolving file "+filename);
+		trace(Kiev.debugResolve,"Resolving file "+id);
 		String curr_file = Kiev.curFile;
-		Kiev.curFile = filename;
+		Kiev.curFile = id.sname;
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);

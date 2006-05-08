@@ -63,8 +63,9 @@ public static view RDNode of DNode extends RNode {
 
 	public Dumper toJavaDecl(Dumper dmp);
 	
-	public int		flags;
-	public MetaSet	meta;
+	public:ro int		flags;
+	public:ro MetaSet	meta;
+	public:ro Symbol	id;
 
 	public final boolean isPublic()	;
 	public final boolean isPrivate();
@@ -224,7 +225,7 @@ public final view RNopExpr of NopExpr extends RENode {
 
 @nodeview
 public view RTypeDecl of TypeDecl extends RDNode {
-	public TypeProvider[] getAllSuperTypes();
+	public MetaType[] getAllSuperTypes();
 }
 
 @nodeview

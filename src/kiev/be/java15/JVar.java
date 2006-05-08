@@ -17,7 +17,6 @@ import static kiev.stdlib.Debug.*;
 @nodeview
 public final view JVar of Var extends JLvalDNode {
 	
-	public:ro	Symbol			id;
 	public:ro	Type			vtype;
 	public:ro	JType			jtype;
 	public:ro	JENode			init;

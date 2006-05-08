@@ -22,7 +22,6 @@ import syntax kiev.Syntax;
 
 @nodeview
 public final view JFileUnit of FileUnit extends JDNode {
-	public		String					filename;
 	public		TypeNameRef				pkg;
 	public:ro	JArr<JNode>				members;
 	public:ro	boolean[]				disabled_extensions;
@@ -33,7 +32,7 @@ public final view JFileUnit of FileUnit extends JDNode {
 	public void generate() {
 		long curr_time = 0L, diff_time = 0L;
 		String cur_file = Kiev.curFile;
-		Kiev.curFile = filename;
+		Kiev.curFile = id.sname;
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);

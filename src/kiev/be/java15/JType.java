@@ -10,21 +10,34 @@ import kiev.transf.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-public class JPrimitiveTypeProvider extends TypeProvider {
-	static final JPrimitiveTypeProvider instance = new JPrimitiveTypeProvider();
-	JPrimitiveTypeProvider() {
+@node
+public class JPrimitiveMetaType extends MetaType {
+
+	@virtual typedef This  = JPrimitiveMetaType;
+
+	static final JPrimitiveMetaType instance = new JPrimitiveMetaType();
+	JPrimitiveMetaType() {
 	}
 }
 
-public class JFakeTypeProvider extends TypeProvider {
-	static final JFakeTypeProvider instance = new JFakeTypeProvider();
-	JFakeTypeProvider() {
+@node
+public class JFakeMetaType extends MetaType {
+
+	@virtual typedef This  = JFakeMetaType;
+
+	static final JFakeMetaType instance = new JFakeMetaType();
+	JFakeMetaType() {
 	}
 }
 
-public class JBaseTypeProvider extends TypeProvider {
+@node
+public class JBaseMetaType extends MetaType {
+
+	@virtual typedef This  = JBaseMetaType;
+
 	public final Struct clazz;
-	JBaseTypeProvider(Struct clazz) {
+	JBaseMetaType() {}
+	JBaseMetaType(Struct clazz) {
 		this.clazz = clazz;
 	}
 }
@@ -77,11 +90,11 @@ public abstract class JType {
 	
 	public static final JArrayType tpArray			= ($cast JArrayType)StdTypes.tpArray.getJType();
 
-	public final TypeProvider	jmeta_type;
+	public final MetaType		jmeta_type;
 	public final KString		java_signature;
 	public final int			flags;
 	
-	JType(TypeProvider meta_type, KString java_signature, int flags) {
+	JType(MetaType meta_type, KString java_signature, int flags) {
 		this.jmeta_type = meta_type;
 		this.java_signature = java_signature;
 		this.flags = flags;
@@ -143,7 +156,7 @@ public abstract class JType {
 
 public final class JFakeType extends JType {
 	JFakeType(CoreType vtype, KString signature) {
-		super(JFakeTypeProvider.instance, signature, vtype.flags | flFake);
+		super(JFakeMetaType.instance, signature, vtype.flags | flFake);
 		assert (vtype.jtype == null);
 		vtype.jtype = this;
 	}
@@ -162,7 +175,7 @@ public class JPrimitiveType extends JType {
 	private final CoreType vtype;
 	
 	JPrimitiveType(CoreType vtype, KString signature) {
-		super(JPrimitiveTypeProvider.instance, signature, vtype.flags);
+		super(JPrimitiveMetaType.instance, signature, vtype.flags);
 		assert (vtype.jtype == null);
 		vtype.jtype = this;
 		this.vtype = vtype;
@@ -183,7 +196,7 @@ public class JBaseType extends JType {
 	public final Struct clazz;
 
 	private JBaseType(KString java_signature, Struct clazz) {
-		super(new JBaseTypeProvider(clazz), java_signature, flReference);
+		super(new JBaseMetaType(clazz), java_signature, flReference);
 		this.clazz = clazz;
 	}
 	
@@ -208,7 +221,7 @@ public class JBaseType extends JType {
 	}
 	
 	public String toClassForNameString() {
-		Struct s = ((JBaseTypeProvider)this.jmeta_type).clazz;
+		Struct s = ((JBaseMetaType)this.jmeta_type).clazz;
 		return ((JStruct)s).bname().toString().replace('/','.');
 	}
 
@@ -237,7 +250,7 @@ public class JArrayType extends JType {
 	public final JType				jarg;
 	
 	private JArrayType(KString java_signature, JType jarg) {
-		super(ArrayTypeProvider.instance, java_signature, flReference | flArray);
+		super(ArrayMetaType.instance, java_signature, flReference | flArray);
 		this.jarg = jarg;
 	}
 
@@ -279,7 +292,7 @@ public class JMethodType extends JType {
 	public final JType				jret;
 	
 	private JMethodType(KString java_signature, JType[] jargs, JType jret) {
-		super(CallTypeProvider.instance, java_signature, flCallable);
+		super(CallMetaType.instance, java_signature, flCallable);
 		this.jargs = jargs;
 		this.jret = jret;
 	}

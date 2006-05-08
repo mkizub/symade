@@ -4,7 +4,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
-import kiev.be.java15.JBaseTypeProvider;
+import kiev.be.java15.JBaseMetaType;
 import kiev.be.java15.JStruct;
 
 import static kiev.stdlib.Debug.*;

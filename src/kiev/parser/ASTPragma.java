@@ -13,7 +13,7 @@ public final class ASTPragma extends DNode {
 	@virtual typedef This  = ASTPragma;
 	@virtual typedef VView = VASTPragma;
 
-	@att public boolean				enable;
+	@att public boolean					enable;
 	@att public NArr<ConstStringExpr>	options;
 
 	@nodeview

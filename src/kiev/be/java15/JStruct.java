@@ -25,7 +25,6 @@ import syntax kiev.Syntax;
 public final view JStruct of Struct extends JTypeDecl {
 
 	public:ro	Access				acc;
-	public:ro	Symbol				id;
 	public		KString				b_name;
 	public:ro	CompaundType		ctype;
 	public:ro	JBaseType			jtype;
@@ -33,7 +32,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	public:ro	JType[]				interfaces;
 	public:ro	JStruct				package_clazz;
 	public:ro	JStruct				iface_impl;
-	public:ro	JArr<JStruct>		sub_clazz;
+	public:ro	JArr<JDNode>		sub_decls;
 	public		Attr[]				attrs;
 	public:ro	JArr<JNode>			members;
 
@@ -176,11 +175,11 @@ public final view JStruct of Struct extends JTypeDecl {
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return;
 		
-		JStruct[] sub_clazz = this.sub_clazz.toArray();
+		JDNode[] sub_decls = this.sub_decls.toArray();
 		JNode[] members = this.members.toArray();
 		
 		if( !isPackage() ) {
-			foreach (JStruct sub; sub_clazz)
+			foreach (JStruct sub; sub_decls)
 				sub.generate();
 		}
 
@@ -193,14 +192,14 @@ public final view JStruct of Struct extends JTypeDecl {
 			constPool.addClazzCP(iface.java_signature);
 		}
 		if( !isPackage() ) {
-			foreach (JStruct sub; sub_clazz) {
+			foreach (JStruct sub; sub_decls) {
 				sub.checkResolved();
 				constPool.addClazzCP(sub.ctype.getJType().java_signature);
 			}
 		}
 		
 		if( !isPackage() ) {
-			String fu = jctx_file_unit.filename;
+			String fu = jctx_file_unit.id.sname;
 			int p = fu.lastIndexOf('/');
 			if (p >= 0) fu = fu.substring(p+1);
 			p = fu.lastIndexOf('\\');
@@ -209,15 +208,15 @@ public final view JStruct of Struct extends JTypeDecl {
 			this.addAttr(sfa);
 		}
 		
-		if( !isPackage() && sub_clazz.length > 0 ) {
+		if( !isPackage() && sub_decls.length > 0 ) {
 			InnerClassesAttr a = new InnerClassesAttr();
-			JStruct[] inner = new JStruct[sub_clazz.length];
-			JStruct[] outer = new JStruct[sub_clazz.length];
-			short[] inner_access = new short[sub_clazz.length];
-			for(int j=0; j < sub_clazz.length; j++) {
-				inner[j] = sub_clazz[j];
+			JStruct[] inner = new JStruct[sub_decls.length];
+			JStruct[] outer = new JStruct[sub_decls.length];
+			short[] inner_access = new short[sub_decls.length];
+			for(int j=0; j < sub_decls.length; j++) {
+				inner[j] = sub_decls[j];
 				outer[j] = this;
-				inner_access[j] = sub_clazz[j].getJavaFlags();
+				inner_access[j] = sub_decls[j].getJavaFlags();
 				constPool.addClazzCP(inner[j].ctype.getJType().java_signature);
 			}
 			a.inner = inner;
@@ -335,7 +334,7 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	public void cleanup() {
 		if( !isPackage() ) {
-			foreach (JStruct sub; this.sub_clazz)
+			foreach (JStruct sub; this.sub_decls)
 				sub.cleanup();
 		}
 

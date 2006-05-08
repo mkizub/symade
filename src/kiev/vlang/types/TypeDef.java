@@ -20,16 +20,14 @@ public abstract class TypeDef extends TypeDecl {
 	@virtual typedef This  = TypeDef;
 	@virtual typedef VView = VTypeDef;
 
-	@att public Symbol					id;
 	@ref public ArgType					lnk;
 	
-	public abstract TypeProvider[] getAllSuperTypes();
+	public abstract MetaType[] getAllSuperTypes();
 	public abstract TypeRef[] getUpperBounds();
 	public abstract TypeRef[] getLowerBounds();
 
 	@nodeview
 	public static abstract view VTypeDef of TypeDef extends VTypeDecl {
-		public		Symbol				id;
 		public		ArgType				lnk;
 
 		public Struct getStruct();
@@ -59,8 +57,6 @@ public abstract class TypeDef extends TypeDecl {
 		return this.lnk;
 	}
 
-	public Symbol getName() { return id; }
-
 	public abstract boolean checkResolved();
 	
 	public abstract Struct getStruct();
@@ -82,16 +78,16 @@ public final class TypeAssign extends TypeDef {
 	@virtual typedef VView = VTypeAssign;
 
 	@att public TypeRef				type_ref;
-	@ref private TypeProvider[]		super_types;
+	@ref private MetaType[]			super_types;
 
 	public void callbackSuperTypeChanged(TypeDecl chg) {
 		super_types = null;
 	}
 
-	public TypeProvider[] getAllSuperTypes() {
+	public MetaType[] getAllSuperTypes() {
 		if (super_types != null)
 			return super_types;
-		Vector<TypeProvider> types = new Vector<TypeProvider>();
+		Vector<MetaType> types = new Vector<MetaType>();
 		addSuperTypes(type_ref, types);
 		super_types = types.toArray();
 		return super_types;
@@ -151,20 +147,20 @@ public final class TypeConstr extends TypeDef {
 
 	@att public NArr<TypeRef>			upper_bound;
 	@att public NArr<TypeRef>			lower_bound;
-	@ref private TypeProvider[]			super_types;
+	@ref private MetaType[]				super_types;
 
 	public void callbackSuperTypeChanged(TypeDecl chg) {
 		super_types = null;
 	}
 
-	public TypeProvider[] getAllSuperTypes() {
+	public MetaType[] getAllSuperTypes() {
 		if (super_types != null)
 			return super_types;
-		Vector<TypeProvider> types = new Vector<TypeProvider>();
+		Vector<MetaType> types = new Vector<MetaType>();
 		foreach (TypeRef up; upper_bound)
 			addSuperTypes(up, types);
 		if (types.length == 0)
-			super_types = TypeProvider.emptyArray;
+			super_types = MetaType.emptyArray;
 		else
 			super_types = types.toArray();
 		return super_types;

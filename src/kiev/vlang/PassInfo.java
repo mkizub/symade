@@ -24,10 +24,6 @@ public interface ContinueTarget {
 	public JLabel getCntLabel();
 }
 
-public interface Named {
-	public Symbol getName();
-}
-
 public final class ParentEnumerator implements Enumeration<ASTNode> {
 	ASTNode n, r;
 	public ParentEnumerator(ASTNode n) {

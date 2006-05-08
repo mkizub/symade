@@ -31,7 +31,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	public void verify(Struct:ASTNode s) {
 		foreach (Field n; s.members)
 			verify(n);
-		foreach (Struct sub; s.sub_clazz)
+		foreach (Struct sub; s.sub_decls)
 			verify(sub);
 	}
 	

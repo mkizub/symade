@@ -177,7 +177,7 @@ public final class Kiev {
 		}
 		String cf = null;
 		if (file_unit != null) {
-			cf = file_unit.filename;
+			cf = file_unit.id.sname;
 			if (javacerrors) {
 				String fn = new File(cf.toString()).getAbsolutePath();
 				System.out.println(fn+":"+(pos>>>11)+": "+err+": "+msg);
@@ -458,7 +458,7 @@ public final class Kiev {
 		InputStreamReader file_reader = null;
 		char[] file_chars = new char[8196];
 		int file_sz = 0;
-		curFile = f.filename;
+		curFile = f.id.sname;
 		try {
 			file_reader = new InputStreamReader(new FileInputStream(curFile.toString()), "UTF-8");
 			for (;;) {
@@ -655,7 +655,7 @@ public final class Kiev {
 	public static boolean runProcessors((TransfProcessor, FileUnit)->void step) {
 		foreach (FileUnit fu; Kiev.files) {
 			String curr_file = Kiev.curFile;
-			Kiev.curFile = fu.filename;
+			Kiev.curFile = fu.id.sname;
 			boolean[] exts = Kiev.getExtSet();
 			try {
 				Kiev.setExtSet(fu.disabled_extensions);

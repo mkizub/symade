@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
 
 
 @node
-public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
+public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -35,12 +35,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@virtual typedef RView = RStruct;
 
 		 public Access						acc;
-	@att public Symbol						id; // short and unique names
 		 public String						q_name;	// qualified name
 		 public KString						b_name;	// bytecode name
-		 public CompaundTypeProvider		imeta_type;
-		 public WrapperTypeProvider			wmeta_type;
-		 public OuterTypeProvider			ometa_type;
+		 public CompaundMetaType			imeta_type;
+		 public WrapperMetaType				wmeta_type;
+		 public OuterMetaType				ometa_type;
 		 public CompaundType				ctype;
 	@att public TypeRef						view_of;
 	@att public TypeRef						super_bound;
@@ -49,11 +48,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@ref public Struct						package_clazz;
 	@ref public Struct						typeinfo_clazz;
 	@ref public Struct						iface_impl;
-	@ref public NArr<Struct>				sub_clazz;
+	@ref public NArr<DNode>					sub_decls;
 	@ref public NArr<TypeDecl>				direct_extenders;
 	public kiev.be.java15.Attr[]			attrs = kiev.be.java15.Attr.emptyArray;
 	@att public NArr<ASTNode>				members;
-		 private TypeProvider[]				super_types;
+		 private MetaType[]					super_types;
 
 	@getter public final CompaundType	get$super_type()	{ return (CompaundType)super_bound.lnk; }
 	@setter public final void set$super_type(CompaundType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
@@ -74,7 +73,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	private void resetNames() {
 		q_name = null;
 		b_name = null;
-		foreach (Struct s; sub_clazz)
+		foreach (Struct s; sub_decls)
 			s.resetNames(); 
 	}
 	
@@ -85,15 +84,15 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			td.callbackSuperTypeChanged(chg);
 	}
 	
-	public TypeProvider[] getAllSuperTypes() {
+	public MetaType[] getAllSuperTypes() {
 		if (super_types != null)
 			return super_types;
-		Vector<TypeProvider> types = new Vector<TypeProvider>();
+		Vector<MetaType> types = new Vector<MetaType>();
 		addSuperTypes(super_bound, types);
 		foreach (TypeRef it; interfaces)
 			addSuperTypes(it, types);
 		if (types.length == 0)
-			super_types = TypeProvider.emptyArray;
+			super_types = MetaType.emptyArray;
 		else
 			super_types = types.toArray();
 		return super_types;
@@ -247,8 +246,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	/** Add information about new sub structure, this class (package) containes */
 	public Struct addSubStruct(Struct sub) {
 		// Check we already have this sub-class
-		for(int i=0; i < sub_clazz.length; i++) {
-			if( sub_clazz[i].equals(sub) ) {
+		for(int i=0; i < sub_decls.length; i++) {
+			if( sub_decls[i].equals(sub) ) {
 				// just ok
 				return sub;
 			}
@@ -260,7 +259,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				+sub.package_clazz+" that differs from "+this);
 		}
 
-		sub_clazz.append(sub);
+		sub_decls.append(sub);
 
 		trace(Kiev.debugMembers,"Sub-class "+sub+" added to class "+this);
 		if (sub.id.sname == nameClTypeInfo) {
@@ -399,10 +398,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@nodeview
 	public static final view VStruct of Struct extends VTypeDecl {
 		public				Access					acc;
-		public:ro			Symbol					id;
-		public:ro			CompaundTypeProvider	imeta_type;
-		public				WrapperTypeProvider		wmeta_type;
-		public				OuterTypeProvider		ometa_type;
+		public:ro			CompaundMetaType		imeta_type;
+		public				WrapperMetaType			wmeta_type;
+		public				OuterMetaType			ometa_type;
 		public:ro			CompaundType			ctype;
 		public				TypeRef					view_of;
 		public				TypeRef					super_bound;
@@ -411,14 +409,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public				Struct					package_clazz;
 		public				Struct					typeinfo_clazz;
 		public				Struct					iface_impl;
-		public:ro			NArr<Struct>			sub_clazz;
+		public:ro			NArr<DNode>				sub_decls;
 		public:ro			NArr<TypeDecl>			direct_extenders;
 		public:ro			NArr<ASTNode>			members;
 
 		@getter public final CompaundType	get$super_type();
 		@setter public final void set$super_type(CompaundType tp);
 
-		public TypeProvider[] getAllSuperTypes();
+		public MetaType[] getAllSuperTypes();
 
 		public final Struct getStruct() { return (Struct)this; }
 
@@ -514,9 +512,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			}
 			// Process inner classes and cases
 			if( !isPackage() ) {
-				for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-					resolveFinalFields((VStruct)sub_clazz[i]);
-				}
+				foreach (Struct sub; sub_decls)
+					resolveFinalFields((VStruct)sub);
 			}
 		}
 
@@ -564,7 +561,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public Struct(Symbol id, Struct outer, int flags) {
 		this.flags = flags;
 		this.id = id;
-		this.imeta_type = new CompaundTypeProvider(this);
+		this.imeta_type = new CompaundMetaType(this);
 		this.ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
@@ -582,8 +579,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public String toString() { return qname().toString(); }
 
-	public Symbol getName() { return id; }
-	
 	public MetaPizzaCase getMetaPizzaCase() {
 		return (MetaPizzaCase)this.getNodeData(MetaPizzaCase.ATTR);
 	}
@@ -624,7 +619,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	
 	public int countAnonymouseInnerStructs() {
 		int i=0;
-		foreach(Struct s; sub_clazz; s.isAnonymouse() || s.isLocal()) i++;
+		foreach(Struct s; sub_decls; s.isAnonymouse() || s.isLocal()) i++;
 		return i;
 	}
 
@@ -707,7 +702,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		;	node @= members,
 			node instanceof Struct && ((Struct)node).id.equals(name)
 		;	isPackage(),
-			node @= sub_clazz,
+			node @= sub_decls,
 			((Struct)node).id.equals(name)
 	}
 	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, String name)
@@ -836,7 +831,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			while( fu != null && !(fu instanceof FileUnit))
 				fu = fu.parent();
 			if( fu != null ) {
-				Kiev.curFile = ((FileUnit)fu).filename;
+				Kiev.curFile = ((FileUnit)fu).id.sname;
 				Kiev.setExtSet(((FileUnit)fu).disabled_extensions);
 			}
 		}
@@ -968,9 +963,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			}
 		}
 		if( !isPackage() ) {
-			for(int i=0; i < sub_clazz.length; i++) {
-				if( !sub_clazz[i].isAnonymouse() )
-					sub_clazz[i].resolveMetaDefaults();
+			foreach (Struct sub; sub_decls) {
+				if (!sub.isAnonymouse())
+					sub.resolveMetaDefaults();
 			}
 		}
 	}
@@ -995,8 +990,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 		
 		if( !isPackage() ) {
-			for(int i=0; i < sub_clazz.length; i++) {
-				sub_clazz[i].resolveMetaValues();
+			foreach (Struct sub; sub_decls) {
+				sub.resolveMetaValues();
 			}
 		}
 	}

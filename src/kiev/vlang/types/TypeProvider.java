@@ -4,7 +4,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
-import kiev.be.java15.JBaseTypeProvider;
+import kiev.be.java15.JBaseMetaType;
 import kiev.be.java15.JStruct;
 
 import static kiev.stdlib.Debug.*;
@@ -15,11 +15,11 @@ public final class TVarSet extends AType {
 	public static final TVarSet emptySet = new TVarSet();
 
 	private TVarSet() {
-		super(DummyTypeProvider.instance, 0, TVar.emptyArray, TArg.emptyArray);
+		super(MetaType.dummy, 0, TVar.emptyArray, TArg.emptyArray);
 	}
 	
 	TVarSet(TVarBld bld) {
-		super(DummyTypeProvider.instance, 0, bld);
+		super(MetaType.dummy, 0, bld);
 	}
 	
 }
@@ -116,21 +116,27 @@ public final class TArg {
 }
 
 
+@node
+public class MetaType extends DNode {
 
-public abstract class TypeProvider {
-	public final static TypeProvider[] emptyArray = new TypeProvider[0];
-	public int version;
-	public TypeProvider() {}
-	public abstract Type make(TVSet bindings);
-	public abstract Type bind(Type t, TVSet bindings);
-	public abstract Type rebind(Type t, TVSet bindings);
-	public abstract Type applay(Type t, TVSet bindings);
-	public TVarSet getTemplBindings() { return TVarSet.emptySet; }
-}
+	@virtual typedef This  = MetaType;
+	@virtual typedef VView = VMetaType;
 
-public class DummyTypeProvider extends TypeProvider {
-	static final DummyTypeProvider instance = new DummyTypeProvider();
-	private DummyTypeProvider() {}
+	public final static MetaType[] emptyArray = new MetaType[0];
+	static final MetaType dummy = new MetaType();
+
+	@nodeview
+	public static view VMetaType of MetaType extends VDNode {
+		public:ro	Struct			pkg;
+		public:ro	NArr<ASTNode>	members;
+	}
+
+	@ref public int				version;
+//	@att public MetaTypeRef		super_meta_type;
+	@ref public Struct			pkg;
+	@att public NArr<ASTNode>	members;
+
+	public MetaType() {}
 	public Type make(TVSet bindings) {
 		throw new RuntimeException("make() in DummyType");
 	}
@@ -143,12 +149,17 @@ public class DummyTypeProvider extends TypeProvider {
 	public Type applay(Type t, TVSet bindings) {
 		throw new RuntimeException("applay() in DummyType");
 	}
+	public TVarSet getTemplBindings() { return TVarSet.emptySet; }
 }
 
-public class CoreTypeProvider extends TypeProvider {
+@node
+public class CoreMetaType extends MetaType {
+
+	@virtual typedef This  = CoreMetaType;
+
 	CoreType core_type;
 	
-	CoreTypeProvider() {}
+	CoreMetaType() {}
 	
 	public Type make(TVSet bindings) {
 		return core_type;
@@ -164,13 +175,18 @@ public class CoreTypeProvider extends TypeProvider {
 	}
 }
 
-public final class CompaundTypeProvider extends TypeProvider {
+@node
+public final class CompaundMetaType extends MetaType {
+
+	@virtual typedef This  = CompaundMetaType;
+
 	public final Struct			clazz;
 	
 	private TVarSet			templ_bindings;
 	private int				templ_version;
 	
-	public CompaundTypeProvider(Struct clazz) {
+	public CompaundMetaType() {}
+	public CompaundMetaType(Struct clazz) {
 		this.clazz = clazz;
 		if (this.clazz == Env.root) Env.root.imeta_type = this;
 		this.templ_bindings = TVarSet.emptySet;
@@ -219,9 +235,13 @@ public final class CompaundTypeProvider extends TypeProvider {
 	}
 }
 
-public class ArrayTypeProvider extends TypeProvider {
-	public static final ArrayTypeProvider instance = new ArrayTypeProvider();
-	private ArrayTypeProvider() {}
+@node
+public class ArrayMetaType extends MetaType {
+
+	@virtual typedef This  = ArrayMetaType;
+
+	public static final ArrayMetaType instance = new ArrayMetaType();
+	private ArrayMetaType() {}
 
 	public Type make(TVSet bindings) {
 		return ArrayType.newArrayType(bindings.resolve(StdTypes.tpArrayArg));
@@ -238,9 +258,13 @@ public class ArrayTypeProvider extends TypeProvider {
 	}
 }
 
-public class ArgTypeProvider extends TypeProvider {
-	public static final ArgTypeProvider instance = new ArgTypeProvider();
-	private ArgTypeProvider() {}
+@node
+public class ArgMetaType extends MetaType {
+
+	@virtual typedef This  = ArgMetaType;
+
+	public static final ArgMetaType instance = new ArgMetaType();
+	private ArgMetaType() {}
 
 	public Type make(TVSet bindings) {
 		throw new RuntimeException("make() in ArgType");
@@ -262,15 +286,20 @@ public class ArgTypeProvider extends TypeProvider {
 	}
 }
 
-public class WrapperTypeProvider extends TypeProvider {
+@node
+public class WrapperMetaType extends MetaType {
+
+	@virtual typedef This  = WrapperMetaType;
+
 	public final Struct		clazz;
 	public final Field		field;
-	public static WrapperTypeProvider instance(Struct clazz) {
+	public static WrapperMetaType instance(Struct clazz) {
 		if (clazz.wmeta_type == null)
-			clazz.wmeta_type = new WrapperTypeProvider(clazz);
+			clazz.wmeta_type = new WrapperMetaType(clazz);
 		return clazz.wmeta_type;
 	}
-	private WrapperTypeProvider(Struct clazz) {
+	private WrapperMetaType() {}
+	private WrapperMetaType(Struct clazz) {
 		this.clazz = clazz;
 		this.field = clazz.getWrappedField(true);
 	}
@@ -289,15 +318,20 @@ public class WrapperTypeProvider extends TypeProvider {
 	}
 }
 
-public class OuterTypeProvider extends TypeProvider {
+@node
+public class OuterMetaType extends MetaType {
+
+	@virtual typedef This  = OuterMetaType;
+
 	public final Struct		clazz;
 	public final TypeDef	tdef;
-	public static OuterTypeProvider instance(Struct clazz, TypeDef tdef) {
+	public static OuterMetaType instance(Struct clazz, TypeDef tdef) {
 		if (clazz.ometa_type == null)
-			clazz.ometa_type = new OuterTypeProvider(clazz, tdef);
+			clazz.ometa_type = new OuterMetaType(clazz, tdef);
 		return clazz.ometa_type;
 	}
-	private OuterTypeProvider(Struct clazz, TypeDef tdef) {
+	private OuterMetaType() {}
+	private OuterMetaType(Struct clazz, TypeDef tdef) {
 		this.clazz = clazz;
 		this.tdef = tdef;
 	}
@@ -317,9 +351,13 @@ public class OuterTypeProvider extends TypeProvider {
 	}
 }
 
-public class CallTypeProvider extends TypeProvider {
-	public static final CallTypeProvider instance = new CallTypeProvider();
-	private CallTypeProvider() {}
+@node
+public class CallMetaType extends MetaType {
+
+	@virtual typedef This  = CallMetaType;
+
+	public static final CallMetaType instance = new CallMetaType();
+	private CallMetaType() {}
 	public Type bind(Type t, TVSet bindings) {
 		if (!t.isAbstract() || bindings.getTVars().length == 0 || t.bindings().getTVars().length == 0) return t;
 		if!(t instanceof CallType) return t;
