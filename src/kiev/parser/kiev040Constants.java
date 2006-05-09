@@ -170,6 +170,9 @@ public interface kiev040Constants {
   int OPERATOR_UPPER_BOUND = 180;
   int OPERATOR_LOWER_BOUND = 181;
   int OPERATOR = 182;
+  int AST_CALL = 183;
+  int AST_ARRAY_LENGTH = 184;
+  int AST_SELF = 185;
 
   int DEFAULT = 0;
   int IN_PRAGMA = 1;
@@ -362,6 +365,9 @@ public interface kiev040Constants {
     "\"\\u2264\"",
     "\"\\u2265\"",
     "<OPERATOR>",
+    "\"#Call\"",
+    "\"#ArrayLength\"",
+    "\"#Self\"",
   };
 
 }

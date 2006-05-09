@@ -120,7 +120,7 @@ public class ArrayLengthExpr extends ENode {
 	public ArrayLengthExpr(int pos, ENode obj, SymbolRef length) {
 		this.pos = pos;
 		assert(length.name == nameLength);
-		this.ident = new SymbolRef(pos,nameLength);
+		this.ident = ~length;
 		this.obj = obj;
 	}
 

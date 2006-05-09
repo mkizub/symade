@@ -935,6 +935,13 @@ TOKEN : /* OPERATORS */
 | < OPERATOR:	    ["\u2200"-"\u22F1"] >
 }
 
+<DEFAULT>
+TOKEN : /* AST nodes */
+{
+  < AST_CALL: "#Call" >
+| < AST_ARRAY_LENGTH: "#ArrayLength" >
+| < AST_SELF: "#Self" >
+}
 
 /*****************************************
  * THE JAVA LANGUAGE GRAMMAR STARTS HERE *
@@ -1615,7 +1622,7 @@ void FieldDecls(ASTModifiers modifiers, NArrNodes members) :
 }
 
 Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
-{ Token t; Symbol id; Field f; Symbol func; ENode body; }
+{ Token t; Symbol id; Field f; Symbol func; ASTNode body; }
 {
 	id = Name()
 	{ f = mkField(id, modifiers, type, first); }
@@ -1630,7 +1637,7 @@ Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 			(
 				func = Name()
 				(	body = Block()
-				|	body = Expression()
+				|	body = RewriteCode()
 				)
 				{
 					if (func.sname.equals("get"))
@@ -3423,4 +3430,29 @@ FinallyInfo FinallyInfo() :
 }
 
 
+RewriteNode RewriteCode() :
+{ RewriteNode rn; }
+{
+	(
+		"#Self"				{ rn = new RewriteNodeSelf(); }
+	|
+		"#Call"				{ rn = new RewriteNodeCall(); }
+		RewriteNodeArgs(rn)
+	|
+		"#ArrayLength"		{ rn = new RewriteNodeArrayLength(); }
+		RewriteNodeArgs(rn)
+	)
+	{ return rn; }
+}
+
+void RewriteNodeArgs(RewriteNode rn) :
+{}
+{
+	"("
+	[
+		rn.args += RewriteCode()
+		( "," rn.args += RewriteCode() )*
+	]
+	")"
+}
 

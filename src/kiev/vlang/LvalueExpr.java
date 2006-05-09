@@ -93,12 +93,12 @@ public final class AccessExpr extends LvalueExpr {
 				res = new ASTNode[tps.length];
 				for (int si=0; si < tps.length; si++) {
 					Type tp = tps[si];
-					if( ident.name.equals(nameLength) ) {
-						if( tp.isArray() ) {
-							tps[si] = Type.tpInt;
-							res[si] = new ArrayLengthExpr(pos, e.ncopy(), ident.ncopy());
-						}
-					}
+//					if( ident.name.equals(nameLength) ) {
+//						if( tp.isArray() ) {
+//							tps[si] = Type.tpInt;
+//							res[si] = new ArrayLengthExpr(pos, e.ncopy(), ident.ncopy());
+//						}
+//					}
 				}
 				// fall down
 			}

@@ -196,7 +196,14 @@ public abstract class ANode {
 					for (int i=0; i < vals.length; i++) {
 						try {
 							vals[i].walkTree(walker);
-						} catch (ReWalkNodeException e) { i--; }
+						} catch (ReWalkNodeException e) {
+							i--;
+							val = attr.get(this);
+							if (val instanceof NArr)
+								vals = val.$nodes;
+							else
+								vals = (ASTNode[])val;
+						}
 					}
 				}
 				else if (val instanceof ASTNode) {

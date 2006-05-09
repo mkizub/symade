@@ -47,12 +47,12 @@ public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 			res = new ENode[tps.length];
 			for (int si=0; si < tps.length; si++) {
 				Type tp = tps[si];
-				if( ident.name.equals(nameLength) ) {
-					if( tp.isArray() ) {
-						tps[si] = Type.tpInt;
-						res[si] = new ArrayLengthExpr(pos,e.ncopy(), ident.ncopy());
-					}
-				}
+//				if( ident.name.equals(nameLength) ) {
+//					if( tp.isArray() ) {
+//						tps[si] = Type.tpInt;
+//						res[si] = new ArrayLengthExpr(pos,e.ncopy(), ident.ncopy());
+//					}
+//				}
 			}
 			// fall down
 		}
@@ -107,6 +107,12 @@ public static final view RIFldExpr of IFldExpr extends RLvalueExpr {
 	public		ENode		obj;
 	public		SymbolRef	ident;
 	public:ro	Field		var;
+
+	public boolean preGenerate() {
+		if (var.getter instanceof RewriteNode)
+			((RewriteNode)var.getter).rewrite(this);
+		return true;
+	}
 
 	public void resolve(Type reqType) throws RuntimeException {
 		obj.resolve(null);

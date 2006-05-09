@@ -314,6 +314,7 @@ public final class ArrayMetaType extends MetaType {
 		instance.pkg.sub_decls.add(instance);
 		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL);
 		length.acc = new Access(0xAA); //public:ro
+		length.getter = new RewriteNodeArrayLength(new RewriteNode[]{new RewriteNodeSelf()});
 		instance.members.add(length);
 	}
 	private ArrayMetaType() {}
