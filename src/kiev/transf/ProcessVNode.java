@@ -640,11 +640,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 	private static void fixSetterMethod(Struct s, Field f) {
 		assert(f.meta.get(ProcessVNode.mnAtt) != null);
 
-		MetaVirtual mv = f.getMetaVirtual();
-		if (mv == null)
-			return;
-
-		Method set_var = mv.set;
+		Method set_var = (Method)Field.SETTER_ATTR.get(f);
 		if (set_var == null || set_var.isAbstract() || set_var.isStatic())
 			return;
 		if (set_var.meta.get(ProcessVNode.mnAtt) != null)

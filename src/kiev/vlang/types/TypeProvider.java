@@ -127,16 +127,22 @@ public class MetaType extends DNode {
 
 	@nodeview
 	public static view VMetaType of MetaType extends VDNode {
+		public:ro	TypeRef			super_bound;
 		public:ro	Struct			pkg;
 		public:ro	NArr<ASTNode>	members;
 	}
 
 	@ref public int				version;
-//	@att public MetaTypeRef		super_meta_type;
+	@att public TypeRef			super_bound;
 	@ref public Struct			pkg;
 	@att public NArr<ASTNode>	members;
 
 	public MetaType() {}
+	
+	public Type getMetaSuper(Type tp) {
+		return null;
+	}
+	
 	public Type make(TVSet bindings) {
 		throw new RuntimeException("make() in DummyType");
 	}
@@ -150,6 +156,8 @@ public class MetaType extends DNode {
 		throw new RuntimeException("applay() in DummyType");
 	}
 	public TVarSet getTemplBindings() { return TVarSet.emptySet; }
+
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name) { false }
 }
 
 @node
@@ -160,6 +168,10 @@ public class CoreMetaType extends MetaType {
 	CoreType core_type;
 	
 	CoreMetaType() {}
+	
+	public Type getMetaSuper(Type tp) {
+		return null;
+	}
 	
 	public Type make(TVSet bindings) {
 		return core_type;
@@ -193,6 +205,10 @@ public final class CompaundMetaType extends MetaType {
 		this.templ_version = -1;
 	}
 	
+	public Type getMetaSuper(Type tp) {
+		return clazz.super_type;
+	}
+
 	public Type make(TVSet bindings) {
 		return new CompaundType(this, getTemplBindings().bind_bld(bindings));
 	}
@@ -233,15 +249,78 @@ public final class CompaundMetaType extends MetaType {
 		templ_bindings = new TVarSet(vs.close());
 		templ_version = version;
 	}
+
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+	{
+		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in "+tp),
+		clazz.checkResolved(),
+		{
+			trace(Kiev.debugResolve,"Type: resolving in "+tp),
+			resolveNameR_1(node,info,name),	// resolve in this class
+			$cut
+		;	info.isSuperAllowed(),
+			trace(Kiev.debugResolve,"Type: resolving in super-type of "+tp),
+			resolveNameR_3(tp,node,info,name),	// resolve in super-classes
+			$cut
+		;	info.isForwardsAllowed(),
+			trace(Kiev.debugResolve,"Type: resolving in forwards of "+tp),
+			resolveNameR_4(tp,node,info,name),	// resolve in forwards
+			$cut
+		}
+	}
+	private rule resolveNameR_1(ASTNode@ node, ResInfo info, String name)
+	{
+		node @= clazz.members,
+		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
+	}
+	private rule resolveNameR_3(Type tp, ASTNode@ node, ResInfo info, String name)
+		MetaType@ sup;
+	{
+		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
+		sup @= clazz.getAllSuperTypes(),
+		sup.make(tp.bindings()).resolveNameAccessR(node,info,name)
+	}
+
+	private rule resolveNameR_4(Type tp, ASTNode@ node, ResInfo info, String name)
+		ASTNode@ forw;
+		MetaType@ sup;
+	{
+		forw @= clazz.members,
+		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
+		info.enterForward(forw) : info.leaveForward(forw),
+		((Field)forw).type.applay(tp).resolveNameAccessR(node,info,name)
+	;	info.isSuperAllowed(),
+		sup @= clazz.getAllSuperTypes(),
+		sup instanceof CompaundMetaType,
+		forw @= ((CompaundMetaType)sup).clazz.members,
+		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
+		info.enterForward(forw) : info.leaveForward(forw),
+		((Field)forw).type.applay(tp).resolveNameAccessR(node,info,name)
+	}
+
 }
 
 @node
-public class ArrayMetaType extends MetaType {
+public final class ArrayMetaType extends MetaType {
 
 	@virtual typedef This  = ArrayMetaType;
 
-	public static final ArrayMetaType instance = new ArrayMetaType();
+	public static final ArrayMetaType instance;
+	static {
+		instance = new ArrayMetaType();
+		instance.id = new Symbol("_array_");
+		instance.super_bound = new TypeRef(StdTypes.tpObject);
+		instance.pkg = Env.newPackage("kiev.stdlib");
+		instance.pkg.sub_decls.add(instance);
+		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL);
+		length.acc = new Access(0xAA); //public:ro
+		instance.members.add(length);
+	}
 	private ArrayMetaType() {}
+
+	public Type getMetaSuper(Type tp) {
+		return super_bound.getType();
+	}
 
 	public Type make(TVSet bindings) {
 		return ArrayType.newArrayType(bindings.resolve(StdTypes.tpArrayArg));
@@ -256,6 +335,13 @@ public class ArrayMetaType extends MetaType {
 		if( !t.isAbstract() || bindings.getTVars().length == 0 ) return t;
 		return ArrayType.newArrayType(((ArrayType)t).arg.applay(bindings));
 	}
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+	{
+		node @= members,
+		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
+	;
+		getMetaSuper(tp).resolveNameAccessR(node,info,name)
+	}
 }
 
 @node
@@ -265,6 +351,14 @@ public class ArgMetaType extends MetaType {
 
 	public static final ArgMetaType instance = new ArgMetaType();
 	private ArgMetaType() {}
+
+	public Type getMetaSuper(Type tp) {
+		ArgType at = (ArgType)tp;
+		TypeRef[] up = at.definer.getUpperBounds();
+		if (up.length == 0)
+			return StdTypes.tpObject;
+		return up[0].getType();
+	}
 
 	public Type make(TVSet bindings) {
 		throw new RuntimeException("make() in ArgType");
@@ -283,6 +377,12 @@ public class ArgMetaType extends MetaType {
 		}
 		// Not found, return itself
 		return t;
+	}
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+		TypeRef@ sup;
+	{
+		sup @= ((ArgType)tp).definer.getUpperBounds(),
+		sup.getType().resolveNameAccessR(node, info, name)
 	}
 }
 
@@ -303,6 +403,12 @@ public class WrapperMetaType extends MetaType {
 		this.clazz = clazz;
 		this.field = clazz.getWrappedField(true);
 	}
+
+	public Type getMetaSuper(Type tp) {
+		WrapperType wt = (WrapperType)tp;
+		return tp.getEnclosedType();
+	}
+
 	public Type make(TVSet bindings) {
 		return WrapperType.newWrapperType(bindings.resolve(StdTypes.tpWrapperArg));
 	}
@@ -316,6 +422,25 @@ public class WrapperMetaType extends MetaType {
 		if (!t.isAbstract() || bindings.getTVars().length == 0) return t;
 		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().applay(bindings));
 	}
+
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+	{
+		info.isForwardsAllowed(),$cut,
+		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in wrapper type "+tp),
+		tp.checkResolved(),
+		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
+		{
+			info.enterForward(field, 0) : info.leaveForward(field, 0),
+			((WrapperType)tp).getUnboxedType().resolveNameAccessR(node, info, name),
+			$cut
+		;	info.enterSuper(10) : info.leaveSuper(10),
+			((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info, name)
+		}
+	;
+		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
+		((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info, name)
+	}
+
 }
 
 @node
@@ -336,6 +461,11 @@ public class OuterMetaType extends MetaType {
 		this.tdef = tdef;
 	}
 
+	public Type getMetaSuper(Type tp) {
+		OuterType ot = (OuterType)tp;
+		return ot.outer;
+	}
+
 	public Type make(TVSet bindings) {
 		return OuterType.newOuterType(clazz,bindings.resolve(tdef.getAType()));
 	}
@@ -349,6 +479,10 @@ public class OuterMetaType extends MetaType {
 		if (!t.isAbstract() || bindings.getTVars().length == 0) return t;
 		return OuterType.newOuterType(clazz,((OuterType)t).outer.applay(bindings));
 	}
+
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name) {
+		((OuterType)tp).outer.resolveNameAccessR(node,info,name)
+	}
 }
 
 @node
@@ -358,6 +492,14 @@ public class CallMetaType extends MetaType {
 
 	public static final CallMetaType instance = new CallMetaType();
 	private CallMetaType() {}
+
+	public Type getMetaSuper(Type tp) {
+		CallType ct = (CallType)tp;
+		if (ct.isReference())
+			return StdTypes.tpObject;
+		return null;
+	}
+
 	public Type bind(Type t, TVSet bindings) {
 		if (!t.isAbstract() || bindings.getTVars().length == 0 || t.bindings().getTVars().length == 0) return t;
 		if!(t instanceof CallType) return t;

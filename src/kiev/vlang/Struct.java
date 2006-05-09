@@ -703,7 +703,7 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 			node instanceof Struct && ((Struct)node).id.equals(name)
 		;	isPackage(),
 			node @= sub_decls,
-			((Struct)node).id.equals(name)
+			((DNode)node).id.equals(name)
 	}
 	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, String name)
 	{

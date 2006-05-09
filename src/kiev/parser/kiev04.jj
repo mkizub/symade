@@ -1146,15 +1146,20 @@ MetaType MetaTypeDeclaration(ASTModifiers modifiers, FileUnit parent) :
 		mt = mkMetaType(name, modifiers, parent);
 	}
 	{ oldClazz = curClazz; curClazz = null; }
+	[
+		"extends"
+		mt.super_bound = Type()
+	]
 	try {
 		"{"
-//		(
-//			modifiers = Modifiers()
+		(
+			modifiers = Modifiers()
 //			(
-//				clazz.members += Typedef(modifiers)
-//			|	clazz.members += Opdef(modifiers)
+//			|
+//				LOOKAHEAD( Type() <IDENTIFIER> ("{" | "," | ";") )
+				FieldDecls(modifiers, mt.members)
 //			)
-//		)*
+		)*
 		"}"
 	} finally { curClazz = oldClazz; }
 	{ return mt; }
@@ -1269,8 +1274,8 @@ void TypeBodyDeclaration(Struct clazz) :
 			LOOKAHEAD( ClazzArguments() Type() <IDENTIFIER> "(" )
 			clazz.members += MethodDeclaration(modifiers)
 		|
-			LOOKAHEAD( Type() <IDENTIFIER> (<OPERATOR_LRBRACKETS>)* ("=" | ":=" | "," | ";") )
-			FieldDecls(modifiers, clazz)
+			LOOKAHEAD( Type() <IDENTIFIER> (<OPERATOR_LRBRACKETS>)* ("{" | "=" | ":=" | "," | ";") )
+			FieldDecls(modifiers, clazz.members)
 		)
 	)*
 	{ comments_alone(clazz.members); }
@@ -1432,7 +1437,7 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 
 	| "@unerasable"		{ modifiers += MetaUnerasable; }
 	
-	| "@virtual"		{ modifiers += new MetaVirtual(); }
+	| "@virtual"		{ modifiers += MetaVirtual; }
 	
 	| "static"			{ modifiers += MetaStatic; }
 	| "@static"			{ modifiers += MetaStatic; }
@@ -1595,22 +1600,22 @@ MetaValueArray AnnotationValueValueArrayInitializer() :
 }
 
 
-void FieldDecls(ASTModifiers modifiers, Struct clazz) :
+void FieldDecls(ASTModifiers modifiers, NArrNodes members) :
 { boolean old_declMode; TypeRef type; }
 {
 	{ old_declMode = declMode; declMode = false; }
 	try {
 		type = Type()
-		clazz.members += FieldDecl(modifiers, type, true)
+		members += FieldDecl(modifiers, type, true)
 		(	","
-			clazz.members += FieldDecl(modifiers, type, false)
+			members += FieldDecl(modifiers, type, false)
 		)*
 	} finally { declMode = old_declMode; }
 	";"
 }
 
 Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
-{ Token t; Symbol id; Field f; }
+{ Token t; Symbol id; Field f; Symbol func; ENode body; }
 {
 	id = Name()
 	{ f = mkField(id, modifiers, type, first); }
@@ -1618,9 +1623,28 @@ Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 	[
 		(
 			"="
+			f.init = VariableInitializer()
 		|	":=" { f.setInitWrapper(true); }
+			f.init = VariableInitializer()
+		|	"{"
+			(
+				func = Name()
+				(	body = Block()
+				|	body = Expression()
+				)
+				{
+					if (func.sname.equals("get"))
+						f.getter = body;
+					else if (func.sname.equals("set"))
+						f.setter = body;
+					else if (func.sname.equals("init"))
+						f.initializer = body;
+					else
+						kiev.Kiev.reportParserError(func.pos, "Expected get/set/init bodies");
+				}
+			)+
+			"}"
 		)
-		f.init = VariableInitializer()
 	]
 	{ return f; }
 }

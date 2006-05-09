@@ -38,39 +38,6 @@ public abstract class MetaSpecial extends ASTNode {
 }
 
 @node
-public final class MetaVirtual extends MetaSpecial {
-	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.virtual", MetaVirtual.class);
-
-	@virtual typedef This  = MetaVirtual;
-	@virtual typedef VView = VMetaVirtual;
-
-	/** Getter/setter methods for this field */
-	@ref public Method		get;
-	@ref public Method		set;
-
-	@nodeview
-	public static view VMetaVirtual of MetaVirtual extends VMetaSpecial {
-		public Method		get;
-		public Method		set;
-	}
-
-	public MetaVirtual() { super(ATTR); }
-
-	public void callbackAttached() {
-		super.callbackAttached();
-		ASTNode parent = parent();
-		if (parent instanceof DNode)
-			parent.setVirtual(true);
-	}
-	public void callbackDetached() {
-		ASTNode parent = this.parent();
-		super.callbackDetached();
-		if (parent instanceof DNode)
-			parent.setVirtual(false);
-	}
-}
-
-@node
 public class MetaPacked extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.packed", MetaPacked.class);
 
@@ -303,6 +270,18 @@ public final class MetaForward extends MetaFlag {
 	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setForward(val); }
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isForward(); }
 }
+
+@singleton
+@node
+public final class MetaVirtual extends MetaFlag {
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.virtual", MetaVirtual.class);
+
+	public MetaVirtual() { super(ATTR); }
+
+	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setVirtual(val); }
+	public boolean getZ(ASTNode node)					{ return ((DNode)node).isVirtual(); }
+}
+
 
 @singleton
 @node

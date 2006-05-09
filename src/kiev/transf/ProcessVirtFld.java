@@ -73,8 +73,8 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
 			if (f.parent() != m.parent())
 				return;
-			MetaVirtual mv = f.getMetaVirtual();
-			if (mv != null && mv.set != null && mv.set != m)
+			Method setter = (Method)Field.SETTER_ATTR.get(f);
+			if (setter != null && setter != m)
 				return;
 			if (f.acc == null) f.acc = new Access(0);
 		} else {
@@ -83,9 +83,8 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			f.acc.flags = 0;
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
-		if (f.getMetaVirtual() == null)
-			f.addNodeData(new MetaVirtual(), MetaVirtual.ATTR);
-		f.getMetaVirtual().set = m;
+		f.setVirtual(true);
+		Field.SETTER_ATTR.set(f, m);
 		if (m.meta.get(nameMetaSetter) == null) {
 			Kiev.reportWarning(m,"Method looks to be a setter, but @setter is not specified");
 		}
@@ -121,8 +120,8 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
 			if (f.parent() != m.parent())
 				return;
-			MetaVirtual mv = f.getMetaVirtual();
-			if (mv != null && mv.get != null && mv.get != m)
+			Method getter = (Method)Field.GETTER_ATTR.get(f);
+			if (getter != null && getter != m)
 				return;
 			if (f.acc == null) f.acc = new Access(0);
 		} else {
@@ -131,9 +130,8 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			f.acc.flags = 0;
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
-		if (f.getMetaVirtual() == null)
-			f.addNodeData(new MetaVirtual(), MetaVirtual.ATTR);
-		f.getMetaVirtual().get = m;
+		f.setVirtual(true);
+		Field.GETTER_ATTR.set(f, m);
 		if (m.meta.get(nameMetaGetter) == null) {
 			Kiev.reportWarning(m,"Method looks to be a getter, but @getter is not specified");
 		}
@@ -216,9 +214,6 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 
 		if( !f.isVirtual() ) return;
 
-		if (f.getMetaVirtual() == null)
-			f.addNodeData(new MetaVirtual(), MetaVirtual.ATTR);
-
 		// Check set$/get$ methods
 		boolean set_found = false;
 		boolean get_found = false;
@@ -264,7 +259,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				);
 				body.stats.append(ass_st);
 			}
-			f.getMetaVirtual().set = set_var;
+			Field.SETTER_ATTR.set(f, set_var);
 		}
 		else if( set_found && !Access.writeable(f) ) {
 			Kiev.reportError(f,"Virtual set$ method for non-writeable field "+f);
@@ -285,7 +280,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				get_var.body = body;
 				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 			}
-			f.getMetaVirtual().get = get_var;
+			Field.GETTER_ATTR.set(f, get_var);
 		}
 		else if( get_found && !Access.readable(f) ) {
 			Kiev.reportError(f,"Virtual get$ method for non-readable field "+f);
@@ -320,12 +315,13 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			return true;
 		}
 		// We rewrite by get$ method. set$ method is rewritten by AssignExpr
-		if (f.getMetaVirtual().get == null) {
+		Method getter = (Method)Field.GETTER_ATTR.get(f);
+		if (getter == null) {
 			Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
 			fa.setAsField(true);
 			return true;
 		}
-		ENode ce = new CallExpr(fa.pos, ~fa.obj, f.getMetaVirtual().get, ENode.emptyArray);
+		ENode ce = new CallExpr(fa.pos, ~fa.obj, getter, ENode.emptyArray);
 		//ce = ce.resolveExpr(fa.getType());
 		fa.replaceWithNode(ce);
 		rewriteNode(ce);
@@ -346,12 +342,14 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				return true;
 			}
 			// Rewrite by set$ method
-			if (f.getMetaVirtual().set == null) {
+			Method getter = (Method)Field.GETTER_ATTR.get(f);
+			Method setter = (Method)Field.SETTER_ATTR.get(f);
+			if (setter == null) {
 				Kiev.reportError(fa, "Setter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}
-			if (f.getMetaVirtual().get == null && (!ae.isGenVoidExpr() || !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2))) {
+			if (getter == null && (!ae.isGenVoidExpr() || !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2))) {
 				Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
@@ -371,7 +369,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			else if (ae.op == AssignOperator.AssignBitAnd)               op = BinaryOperator.BitAnd;
 			ENode expr;
 			if (ae.isGenVoidExpr() && (ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2)) {
-				expr = new CallExpr(ae.pos, ~fa.obj, f.getMetaVirtual().set, new ENode[]{~ae.value});
+				expr = new CallExpr(ae.pos, ~fa.obj, setter, new ENode[]{~ae.value});
 			}
 			else {
 				Block be = new Block(ae.pos);
@@ -390,15 +388,15 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				}
 				ENode g;
 				if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
-					g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray);
+					g = new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray);
 					g = new BinaryExpr(ae.pos, op, g, ~ae.value);
 				} else {
 					g = ~ae.value;
 				}
-				g = new CallExpr(ae.pos, mkAccess(acc), f.getMetaVirtual().set, new ENode[]{g});
+				g = new CallExpr(ae.pos, mkAccess(acc), setter, new ENode[]{g});
 				be.stats.add(new ExprStat(0, g));
 				if (!ae.isGenVoidExpr()) {
-					g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray);
+					g = new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray);
 					be.stats.add(g);
 				}
 				expr = be;
@@ -430,12 +428,14 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				return true;
 			}
 			// Rewrite by set$ method
-			if (f.getMetaVirtual().set == null) {
+			Method getter = (Method)Field.GETTER_ATTR.get(f);
+			Method setter = (Method)Field.SETTER_ATTR.get(f);
+			if (setter == null) {
 				Kiev.reportError(fa, "Setter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}
-			if (f.getMetaVirtual().get == null) {
+			if (getter == null) {
 				Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
@@ -475,16 +475,16 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				else
 					ce = new ConstIntExpr(-1);
 				ENode g;
-				g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray);
+				g = new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray);
 				if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
 					g = new AssignExpr(ie.pos, AssignOperator.Assign, mkAccess(res), g);
 				g = new BinaryExpr(ie.pos, BinaryOperator.Add, ce, g);
-				g = new CallExpr(ie.pos, mkAccess(acc), f.getMetaVirtual().set, new ENode[]{g});
+				g = new CallExpr(ie.pos, mkAccess(acc), setter, new ENode[]{g});
 				be.stats.add(new ExprStat(0, g));
 				if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
 					be.stats.add(mkAccess(res));
 				else
-					be.stats.add(new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray));
+					be.stats.add(new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray));
 				expr = be;
 			}
 			ie.replaceWithNode(expr);

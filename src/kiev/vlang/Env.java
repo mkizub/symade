@@ -229,7 +229,7 @@ public class Env extends Struct {
 		else if( cleanup ) {
 			mt.flags = 0;
 			mt.version = 0;
-			//mt.super_meta_type = null;
+			mt.super_bound = null;
 			mt.pkg = pkg;
 			mt.members.delAll();
 		}

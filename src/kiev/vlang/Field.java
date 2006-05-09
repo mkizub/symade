@@ -23,6 +23,9 @@ import syntax kiev.Syntax;
 public final class Field extends LvalDNode implements Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
+	public static final AttrSlot GETTER_ATTR = new DataAttrSlot("getter method",false,Method.class);	
+	public static final AttrSlot SETTER_ATTR = new DataAttrSlot("setter method",false,Method.class);	
+
 	private static final Field dummyNode = new Field();
 	
 	@dflow(out="init") private static class DFI {
@@ -42,6 +45,10 @@ public final class Field extends LvalDNode implements Accessable {
 	@att public ENode				init;
 	/** Constant value of this field */
 	@ref public ConstExpr			const_value;
+	/** Getter/Setter/Initializer */
+	@att public ASTNode				getter;
+	@att public ASTNode				setter;
+	@att public ASTNode				initializer;
 	/** Array of attributes of this field */
 	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 	/** Array of invariant methods, that check this field */
@@ -168,10 +175,6 @@ public final class Field extends LvalDNode implements Accessable {
 		else if (this.const_value != null)
 			return this.const_value.getConstValue();
 		throw new RuntimeException("Request for constant value of non-constant expression");
-	}
-
-	public final MetaVirtual getMetaVirtual() {
-		return (MetaVirtual)this.getNodeData(MetaVirtual.ATTR);
 	}
 
 	public final MetaPacked getMetaPacked() {
