@@ -138,6 +138,12 @@ public class MetaType extends DNode {
 	@att public NArr<ASTNode>	members;
 
 	public MetaType() {}
+
+	public String qname() {
+		if (this.pkg == null)
+			return this.id.sname;
+		return (this.pkg.qname()+"."+this.id.uname).intern();
+	}
 	
 	public Type getMetaSuper(Type tp) {
 		return null;
@@ -314,7 +320,11 @@ public final class ArrayMetaType extends MetaType {
 		instance.pkg.sub_decls.add(instance);
 		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL);
 		length.acc = new Access(0xAA); //public:ro
-		length.getter = new RewriteNodeArrayLength(new RewriteNode[]{new RewriteNodeSelf()});
+		length.getter = new RewriteNodeFactory(
+			ArrayLengthExpr.class,new RewriteNodeArg[]{
+				new RewriteNodeArg("obj", new RewriteNodeVar("obj")),
+				new RewriteNodeArg("ident", new RewriteNodeVar("ident")),
+			});
 		instance.members.add(length);
 	}
 	private ArrayMetaType() {}

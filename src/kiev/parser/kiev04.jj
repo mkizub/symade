@@ -184,6 +184,7 @@ public abstract class kiev040 {
 			sa.attachTo(mt);
 		foreach (Meta m; modifiers.annotations)
 			mt.meta.set(m.ncopy());
+		Env.createProjectInfo(mt, String.valueOf(Kiev.curFile));
 		return mt;
 	}
 
@@ -226,7 +227,7 @@ public abstract class kiev040 {
 		if (parent instanceof FileUnit) {
 			clazz.setLocal(false);
 			clazz.setStatic(true);
-			Env.createProjectInfo(clazz.qname(), String.valueOf(Kiev.curFile));
+			Env.createProjectInfo(clazz, String.valueOf(Kiev.curFile));
 		}
 		else if (parent instanceof Struct)
 			clazz.setLocal(parent.isLocal());
@@ -933,14 +934,6 @@ TOKEN : /* OPERATORS */
 | < OPERATOR_LOWER_BOUND:    "\u2265" > // ≥
 
 | < OPERATOR:	    ["\u2200"-"\u22F1"] >
-}
-
-<DEFAULT>
-TOKEN : /* AST nodes */
-{
-  < AST_CALL: "#Call" >
-| < AST_ARRAY_LENGTH: "#ArrayLength" >
-| < AST_SELF: "#Self" >
 }
 
 /*****************************************
@@ -3431,28 +3424,42 @@ FinallyInfo FinallyInfo() :
 
 
 RewriteNode RewriteCode() :
-{ RewriteNode rn; }
+{ RewriteNode rn; Token t; }
 {
 	(
-		"#Self"				{ rn = new RewriteNodeSelf(); }
+		"#"
+		t=<IDENTIFIER>
+		{ rn = new RewriteNodeFactory(t.image); }
+		RewriteNodeArgs((RewriteNodeFactory)rn)
 	|
-		"#Call"				{ rn = new RewriteNodeCall(); }
-		RewriteNodeArgs(rn)
-	|
-		"#ArrayLength"		{ rn = new RewriteNodeArrayLength(); }
-		RewriteNodeArgs(rn)
+		t=<IDENTIFIER>
+		{ rn = new RewriteNodeVar(t.image); }
+		(
+			"."
+			t=<IDENTIFIER>
+			{ rn = new RewriteNodeAccess(rn, t.image); }
+		)*
 	)
 	{ return rn; }
 }
 
-void RewriteNodeArgs(RewriteNode rn) :
+void RewriteNodeArgs(RewriteNodeFactory nf) :
 {}
 {
 	"("
 	[
-		rn.args += RewriteCode()
-		( "," rn.args += RewriteCode() )*
+		nf.args += RewriteNodeArg()
+		( "," nf.args += RewriteNodeArg() )*
 	]
 	")"
+}
+
+RewriteNodeArg RewriteNodeArg() :
+{ Token t; RewriteNode rn; }
+{
+	t = <IDENTIFIER>
+	"="
+	rn = RewriteCode()
+	{ return new RewriteNodeArg(t.image, rn); }
 }
 

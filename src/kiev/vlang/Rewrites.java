@@ -15,6 +15,13 @@ import syntax kiev.Syntax;
  *
  */
 
+final class RewriteContext {
+	final ASTNode root;
+
+	RewriteContext(ASTNode root) {
+		this.root = root;
+	}
+}
 
 @node
 public abstract class RewriteNode extends SNode {
@@ -24,98 +31,159 @@ public abstract class RewriteNode extends SNode {
 	@virtual typedef This  = RewriteNode;
 	@virtual typedef VView = VRewriteNode;
 
-	@att public NArr<RewriteNode>			args;
-
 	@nodeview
 	public static view VRewriteNode of RewriteNode extends VSNode {
-		public:ro NArr<RewriteNode>			args;
 	}
 
 	public RewriteNode() {}
-	public RewriteNode(RewriteNode[] args) {
-		if (args != null)
-			this.args.addAll(args);
-	}
+
+	public abstract Object makeValue(RewriteContext ctx);
 
 	public void rewrite(ASTNode self) {
-		ASTNode rn = getNode(self);
+		ASTNode rn = (ASTNode)makeValue(new RewriteContext(self));
 		self.replaceWithNode(rn);
 		throw ReWalkNodeException.instance;
 	}
-
-	public abstract ASTNode getNode(ASTNode self);
 }
 
 @node
-public final class RewriteNodeSelf extends RewriteNode {
+public final class RewriteNodeFactory extends RewriteNode {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = RewriteNodeSelf;
-	@virtual typedef VView = VRewriteNodeSelf;
+	@virtual typedef This  = RewriteNodeFactory;
+	@virtual typedef VView = VRewriteNodeFactory;
+
+	     public Class					node_class;
+	@att public NArr<RewriteNodeArg>	args;
 
 	@nodeview
-	public static final view VRewriteNodeSelf of RewriteNodeSelf extends VRewriteNode {
+	public static final view VRewriteNodeFactory of RewriteNodeFactory extends VRewriteNode {
+		public:ro Class					node_class;
+		public:ro NArr<RewriteNodeArg>	args;
 	}
 
-	public RewriteNodeSelf() {}
-
-	public ASTNode getNode(ASTNode self) {
-		return self;
+	public RewriteNodeFactory() {}
+	public RewriteNodeFactory(Class node_class) {
+		this.node_class = node_class;
 	}
-}
-
-@node
-public final class RewriteNodeCall extends RewriteNode {
-	
-	@dflow(out="this:in") private static class DFI {}
-	
-	@virtual typedef This  = RewriteNodeCall;
-	@virtual typedef VView = VRewriteNodeCall;
-
-	@nodeview
-	public static final view VRewriteNodeCall of RewriteNodeCall extends VRewriteNode {
+	public RewriteNodeFactory(Class node_class, RewriteNodeArg[] args) {
+		this.node_class = node_class;
+		this.args.addAll(args);
+	}
+	public RewriteNodeFactory(String class_name) {
+		if (class_name.indexOf(".") > 0)
+			node_class = Class.forName(class_name);
+		else
+			node_class = Class.forName("kiev.vlang."+class_name);
 	}
 
-	public RewriteNodeCall() {}
-	public RewriteNodeCall(RewriteNode[] args) {
-		super(args);
-	}
-
-	public ASTNode getNode(ASTNode self) {
-		throw new CompilerException(self, "Cannot rewrite #Call");
-	}
-}
-
-@node
-public final class RewriteNodeArrayLength extends RewriteNode {
-	
-	@dflow(out="this:in") private static class DFI {}
-	
-	@virtual typedef This  = RewriteNodeArrayLength;
-	@virtual typedef VView = VRewriteNodeArrayLength;
-
-	@nodeview
-	public static final view VRewriteNodeArrayLength of RewriteNodeArrayLength extends VRewriteNode {
-	}
-
-	public RewriteNodeArrayLength() {}
-	public RewriteNodeArrayLength(RewriteNode[] args) {
-		super(args);
-	}
-
-	public ASTNode getNode(ASTNode self) {
-		ASTNode[] args = new ASTNode[this.args.length];
-		for (int i=0; i < args.length; i++)
-			args[i] = this.args[i].getNode(self);
-		ASTNode res = null;
-		if (args.length == 1 && args[0] instanceof IFldExpr) {
-			IFldExpr arg = (IFldExpr)args[0];
-			res = new ArrayLengthExpr(arg.pos, ~arg.obj, ~arg.ident);
+	public Object makeValue(RewriteContext ctx) {
+		ASTNode res = (ASTNode)node_class.newInstance();
+		foreach (RewriteNodeArg rn; args) {
+			ASTNode r = rn.makeValue(ctx);
+			res.setVal(rn.attr, ~r);
 		}
-		if (res == null)
-			throw new CompilerException(self, "Cannot rewrite #ArrayLength");
 		return res;
+	}
+}
+
+@node
+public final class RewriteNodeArg extends RewriteNode {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
+	@virtual typedef This  = RewriteNodeArg;
+	@virtual typedef VView = VRewriteNodeArg;
+
+	@att public RewriteNode		node;
+	@att public String			attr;
+
+	@setter
+	public void set$attr(String value) {
+		this.attr = (value != null) ? value.intern() : null;
+	}
+	
+	@nodeview
+	public static final view VRewriteNodeArg of RewriteNodeArg extends VRewriteNode {
+		public:ro RewriteNode		node;
+		public:ro String			attr;
+	}
+
+	public RewriteNodeArg() {}
+	public RewriteNodeArg(String attr, RewriteNode node) {
+		this.attr = attr;
+		this.node = node;
+	}
+
+	public Object makeValue(RewriteContext ctx) {
+		return node.makeValue(ctx);
+	}
+}
+
+@node
+public final class RewriteNodeVar extends RewriteNode {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
+	@virtual typedef This  = RewriteNodeVar;
+	@virtual typedef VView = VRewriteNodeVar;
+
+	@att public String			name;
+
+	@setter
+	public void set$name(String value) {
+		this.name = (value != null) ? value.intern() : null;
+	}
+	
+	@nodeview
+	public static final view VRewriteNodeVar of RewriteNodeVar extends VRewriteNode {
+		public:ro String			name;
+	}
+
+	public RewriteNodeVar() {}
+	public RewriteNodeVar(String name) {
+		this.name = name;
+	}
+
+	public Object makeValue(RewriteContext ctx) {
+		if (name == "self")
+			return ctx.root;
+		else
+			return ctx.root.getVal(name);
+	}
+}
+
+@node
+public final class RewriteNodeAccess extends RewriteNode {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
+	@virtual typedef This  = RewriteNodeAccess;
+	@virtual typedef VView = VRewriteNodeAccess;
+
+	@att public RewriteNode		node;
+	@att public String			attr;
+
+	@setter
+	public void set$attr(String value) {
+		this.attr = (value != null) ? value.intern() : null;
+	}
+	
+	@nodeview
+	public static final view VRewriteNodeAccess of RewriteNodeAccess extends VRewriteNode {
+		public:ro RewriteNode		node;
+		public:ro String			attr;
+	}
+
+	public RewriteNodeAccess() {}
+	public RewriteNodeAccess(RewriteNode node, String attr) {
+		this.node = node;
+		this.attr = attr;
+	}
+
+	public Object makeValue(RewriteContext ctx) {
+		return node.getVal(attr);
 	}
 }
 

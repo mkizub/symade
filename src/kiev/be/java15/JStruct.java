@@ -296,9 +296,10 @@ public final view JStruct of Struct extends JTypeDecl {
 				Code.patchCodeConstants(ca);
 			}
 		}
-		if( Kiev.safe && isBad() ) return;
+		if( Kiev.safe && isBad() )
+			return;
 		this.toBytecode(constPool);
-		Env.setProjectInfo(qname(), bname(), true);
+		Env.setProjectInfo((Struct)this, true);
 	}
 
 	public void toBytecode(ConstPool constPool) {

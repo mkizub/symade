@@ -532,6 +532,7 @@ public final class Kiev {
 	
 	// Backends
 	static public enum Backend {
+		Generic					: "generic",
 		Java15					: "java15",
 		VSrc					: "vsrc"
 	};
@@ -541,6 +542,7 @@ public final class Kiev {
 	public static boolean javaMode			= false;
 		//System.getProperties().get("java.ext.version") != null;
 	static public enum Ext {
+		Rewrite					: "rewrite"			,
 		JavaOnly				: "java only"		,
 		GotoCase				: "goto case"		,
 		Goto					: "goto"			,
@@ -571,6 +573,7 @@ public final class Kiev {
 	
 	public static TransfProcessor[] transfProcessors			= new TransfProcessor[Ext.values().length];
 	static {
+		transfProcessors[(int)Ext.Rewrite]			= ProcessRewrite;
 		transfProcessors[(int)Ext.JavaOnly]		= ImportKievSrc;
 		transfProcessors[(int)Ext.VirtualFields]	= ProcessVirtFld;
 		transfProcessors[(int)Ext.PackedFields]	= ProcessPackedFld;

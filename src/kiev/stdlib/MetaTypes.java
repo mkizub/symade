@@ -9,8 +9,7 @@ package kiev.stdlib;
 public metatype _array_ extends Object {
 	public:ro final int length
 	{
-		get #ArrayLength(#Self)
+		get #ArrayLengthExpr(obj=obj, ident=ident)
 	};
 }
-
 

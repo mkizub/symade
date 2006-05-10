@@ -14,8 +14,10 @@ import java.util.zip.*;
 
 import kiev.be.java15.Bytecoder;
 import kiev.be.java15.Attr;
+import kiev.be.java15.JStruct;
 import kiev.be.java15.JEnv;
 
+import static kiev.vlang.ProjectFileType.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -25,37 +27,37 @@ import syntax kiev.Syntax;
  *
  */
 
+public enum ProjectFileType {
+	CLASS,
+	INTERFACE,
+	ENUM,
+	SYNTAX,
+	PACKAGE,
+	METATYPE
+}
 @node
 public final class ProjectFile extends ASTNode {
 
 	@virtual typedef This  = ProjectFile;
 	@virtual typedef VView = ProjectFileView;
 
-	public String		qname;
-	public KString		bname;
-	public File			file;
-	public boolean		bad = true;
+	public ProjectFileType		type;
+	public String				qname;
+	public KString				bname;
+	public File					file;
+	public boolean				bad;
 
 	@nodeview
 	public static final view ProjectFileView of ProjectFile extends NodeView {
-		public String		qname;
-		public KString		bname;
-		public File			file;
-		public boolean		bad;
+		public ProjectFileType		type;
+		public String				qname;
+		public KString				bname;
+		public File					file;
+		public boolean				bad;
 	}
 
 	public ProjectFile() {}
 	
-	public ProjectFile(String qname, KString bname, File f) {
-		this.qname = qname;
-		this.bname = bname;
-		this.file = f;
-	}
-
-	public ProjectFile(String qname, KString bname, String f) {
-		this(qname, bname, new File(f));
-	}
-
     public Dumper toJava(Dumper dmp) { return dmp; }
 
 }
@@ -115,7 +117,7 @@ public class Env extends Struct {
 		return "<root>";
 	}
 
-	public static Struct resolveStruct(String qname) {
+	public static DNode resolveStruct(String qname) {
 		Struct pkg = Env.root;
 		int start = 0;
 		int end = qname.indexOf('.', start);
@@ -133,8 +135,8 @@ public class Env extends Struct {
 			end = qname.indexOf('.', start);
 		}
 		String nm = qname.substring(start).intern();
-		foreach (Struct s; pkg.sub_decls; s.id.equals(nm))
-			return s;
+		foreach (DNode dn; pkg.sub_decls; dn.id.equals(nm))
+			return dn;
 		return null;
 	}
 	
@@ -253,20 +255,32 @@ public class Env extends Struct {
 				while(in.ready()) {
 					String line = in.readLine();
 					if( line==null ) continue;
-					StringTokenizer st = new StringTokenizer(line);
-					if( !st.hasMoreTokens() ) continue;
-					String class_name = st.nextToken();
-					String class_bytecode_name = st.nextToken();
-					String class_source_name = st.nextToken();
-					String bad = null;
-					if( st.hasMoreTokens() )
-						bad = st.nextToken();
-					ProjectFile value = new ProjectFile(class_name.intern(),KString.from(class_bytecode_name),class_source_name);
-					if( bad != null && bad.equals("bad") )
-						value.bad = true;
-					else
-						value.bad = false;
-					projectHash.put(class_name, value);
+					String[] args = line.trim().split("\\s+");
+					if (args.length == 0)
+						continue;
+					int idx = 0;
+					ProjectFile pf = new ProjectFile();
+					pf.type = ProjectFileType.fromString(args[idx++]);
+					switch (pf.type) {
+					case CLASS:
+					case INTERFACE:
+					case ENUM:
+					case SYNTAX:
+					case PACKAGE:
+						pf.qname = args[idx++].intern();
+						pf.bname = KString.from(args[idx++]);
+						pf.file = new File(args[idx++]);
+						break;
+					case METATYPE:
+						pf.qname = args[idx++].intern();
+						pf.file = new File(args[idx++]);
+						break;
+					}
+					for (int i=idx; i < args.length; i++) {
+						if (args[i].equals("bad"))
+							pf.bad = true;
+					}
+					projectHash.put(pf.qname, pf);
 				}
 				in.close();
 			} catch (EOFException e) {
@@ -286,12 +300,21 @@ public class Env extends Struct {
 			Vector<String> strs = new Vector<String>();
 			for(Enumeration<String> e=projectHash.keys(); e.hasMoreElements();) {
 				String key = e.nextElement();
-				ProjectFile value = projectHash.get(key);
-				Struct cl = resolveStruct(value.qname);
-				if( cl != null && cl.isBad() ) value.bad = true;
-				if !(cl instanceof Struct)
-					continue;
-				strs.append(value.qname+" "+value.bname+" "+value.file+(value.bad?" bad":""));
+				ProjectFile pf = projectHash.get(key);
+				DNode cl = resolveStruct(pf.qname);
+				if (cl != null && cl.isBad()) pf.bad = true;
+				if (cl instanceof MetaType) {
+					pf.type = METATYPE;
+					strs.append(pf.type+" "+pf.qname+" "+pf.file+(pf.bad?" bad":""));
+				}
+				else if (cl instanceof Struct) {
+					if      (cl.isSyntax())		pf.type = SYNTAX;
+					else if (cl.isPackage())	pf.type = PACKAGE;
+					else if (cl.isInterface())	pf.type = INTERFACE;
+					else if (cl.isEnum())		pf.type = ENUM;
+					else						pf.type = CLASS;
+					strs.append(pf.type+" "+pf.qname+" "+pf.bname+" "+pf.file+(pf.bad?" bad":""));
+				}
 			}
 			String[] sarr = (String[])strs;
 			sortStrings(sarr);
@@ -301,23 +324,56 @@ public class Env extends Struct {
 		}
 	}
 
-	public static void createProjectInfo(String qname, String f) {
+	public static void createProjectInfo(Struct clazz, String f) {
+		String qname = clazz.qname();
 		ProjectFile pf = projectHash.get(qname);
-		if( pf == null )
-			projectHash.put(qname,new ProjectFile(qname,null,f));
+		if( pf == null ) {
+			ProjectFile pf = new ProjectFile();
+			pf.qname = qname;
+			pf.file = new File(f);
+			projectHash.put(qname,pf);
+		}
 		else {
-			pf.bad = true;
 			if( !pf.file.getName().equals(f) )
 				pf.file = new File(f);
 		}
+		setProjectInfo(clazz, false);
 	}
 
-	public static void setProjectInfo(String qname, KString bname, boolean good) {
+	public static void createProjectInfo(MetaType mt, String f) {
+		String qname = mt.qname();
 		ProjectFile pf = projectHash.get(qname);
+		if( pf == null ) {
+			ProjectFile pf = new ProjectFile();
+			pf.qname = qname;
+			pf.file = new File(f);
+			projectHash.put(qname,pf);
+		}
+		else {
+			if( !pf.file.getName().equals(f) )
+				pf.file = new File(f);
+		}
+		setProjectInfo(mt, false);
+	}
+
+	public static void setProjectInfo(Struct clazz, boolean good) {
+		ProjectFile pf = projectHash.get(clazz.qname());
 		if (pf != null) {
-			if (bname != null)
-				pf.bname = bname;
+			pf.bname = ((JStruct)clazz).bname();
 			pf.bad = !good;
+			if      (clazz.isSyntax())		pf.type = SYNTAX;
+			else if (clazz.isPackage())		pf.type = PACKAGE;
+			else if (clazz.isInterface())	pf.type = INTERFACE;
+			else if (clazz.isEnum())		pf.type = ENUM;
+			else							pf.type = CLASS;
+		}
+	}
+
+	public static void setProjectInfo(MetaType mt, boolean good) {
+		ProjectFile pf = projectHash.get(mt.qname());
+		if (pf != null) {
+			pf.bad = !good;
+			pf.type = METATYPE;
 		}
 	}
 

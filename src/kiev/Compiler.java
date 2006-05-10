@@ -881,6 +881,14 @@ stop:;
 			try {
 				String key = e.nextElement();
 				ProjectFile value = Env.projectHash.get(key);
+				if (value.type == ProjectFileType.METATYPE) {
+					String nm = value.file.toString();
+					if( !Arrays.contains(args,nm) ) {
+						if( Kiev.verbose ) System.out.println("File "+nm+" - metatype");
+						args = (String[])Arrays.append(args,nm);
+					}
+					continue;
+				}
 				File fclass = new File(Kiev.output_dir,value.bname.toString());
 				if( fclass.exists() && fclass.isDirectory() ) {
 					fclass = new File(Kiev.output_dir,value.bname+"/package.class");
@@ -899,7 +907,7 @@ stop:;
 				long fjava_modified = fjava.lastModified();
 				if( fclass_modified < fjava_modified || Kiev.makeall_project ) {
 					String nm = fjava.toString();
-					if( !Arrays.contains((Object)args,(Object)nm) ) {
+					if( !Arrays.contains(args,nm) ) {
 						if( Kiev.verbose ) System.out.println("File "+nm+" - outdated");
 						args = (String[])Arrays.append(args,nm);
 					}
