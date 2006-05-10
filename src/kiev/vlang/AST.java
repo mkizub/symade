@@ -250,7 +250,6 @@ public abstract class ANode {
 		}
 		return node;
 	}
-
 }
 
 public class TreeWalker {
@@ -646,6 +645,10 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public final boolean preGenerate() { return ((RView)this).preGenerate(); }
 	
+
+	public Object doRewrite(RewriteContext ctx) {
+		throw new CompilerException(this, "Node "+this.getClass().getName()+" is not a rewriter");
+	}
 }
 
 

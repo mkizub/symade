@@ -522,6 +522,10 @@ public final class LVarExpr extends LvalueExpr {
 		dmp.append(var);
 		return dmp.space();
 	}
+
+	public Object doRewrite(RewriteContext ctx) {
+		return ctx.root.getVal(ident.name);
+	}
 }
 
 @node

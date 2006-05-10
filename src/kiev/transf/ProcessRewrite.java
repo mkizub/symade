@@ -53,9 +53,17 @@ class RewriteBackend extends BackendProcessor implements Constants {
 	
 	boolean rewrite(IFldExpr:ANode fa) {
 		Field f = fa.var;
-		if (f.getter instanceof RewriteNode)
-			((RewriteNode)f.getter).rewrite(fa);
+		if (f.isMacro()) {
+			if (f.getter != null)
+				doRewrite(f.getter,fa);
+		}
 		return true;
 	}	
+
+	private void doRewrite(ENode rewriter, ASTNode self) {
+		ASTNode rn = (ASTNode)rewriter.doRewrite(new RewriteContext(self));
+		self.replaceWithNode(rn);
+		throw ReWalkNodeException.instance;
+	}
 }
 

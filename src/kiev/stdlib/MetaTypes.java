@@ -7,9 +7,10 @@ package kiev.stdlib;
  */
 
 public metatype _array_ extends Object {
+	@macro
 	public:ro final int length
 	{
-		get #ArrayLengthExpr(obj=obj, ident=ident)
+		get { new#ArrayLengthExpr(obj=obj, ident=ident) }
 	};
 }
 

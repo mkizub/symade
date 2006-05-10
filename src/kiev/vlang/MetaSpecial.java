@@ -282,6 +282,16 @@ public final class MetaVirtual extends MetaFlag {
 	public boolean getZ(ASTNode node)					{ return ((DNode)node).isVirtual(); }
 }
 
+@singleton
+@node
+public final class MetaMacro extends MetaFlag {
+	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.macro", MetaMacro.class);
+
+	public MetaMacro() { super(ATTR); }
+
+	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setMacro(val); }
+	public boolean getZ(ASTNode node)					{ return ((DNode)node).isMacro(); }
+}
 
 @singleton
 @node

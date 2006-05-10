@@ -67,6 +67,8 @@ public abstract class DNode extends ASTNode {
 	public @packed:1,flags,16 boolean is_forward;			// var/field/method, type is wrapper
 	public @packed:1,flags,17 boolean is_virtual;			// var/field, method is 'static virtual', struct is 'view'
 	public @packed:1,flags,18 boolean is_type_unerasable;	// typedecl, method/struct as parent of typedef
+
+	public @packed:1,flags,19 boolean is_macro;			// macro-declarations for fields, methods, etc
 	
 	public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
 	public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }
@@ -86,6 +88,8 @@ public abstract class DNode extends ASTNode {
 	public final boolean isAbstract()			{ return this.is_abstract; }
 	public final boolean isMathStrict()		{ return this.is_math_strict; }
 	public final boolean isSynthetic()			{ return this.is_synthetic; }
+
+	public final boolean isMacro()				{ return this.is_macro; }
 	
 	public final boolean isStructView()		{ return this.is_virtual; }
 	public final boolean isTypeUnerasable()	{ return this.is_type_unerasable; }
@@ -198,6 +202,13 @@ public abstract class DNode extends ASTNode {
 	public void setSynthetic(boolean on) {
 		if (this.is_synthetic != on) {
 			this.is_synthetic = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
+	public void setMacro(boolean on) {
+		if (this.is_macro != on) {
+			this.is_macro = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}

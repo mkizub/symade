@@ -46,9 +46,9 @@ public final class Field extends LvalDNode implements Accessable {
 	/** Constant value of this field */
 	@ref public ConstExpr			const_value;
 	/** Getter/Setter/Initializer */
-	@att public ASTNode				getter;
-	@att public ASTNode				setter;
-	@att public ASTNode				initializer;
+	@att public ENode				getter;
+	@att public ENode				setter;
+	@att public ENode				initializer;
 	/** Array of attributes of this field */
 	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 	/** Array of invariant methods, that check this field */

@@ -319,11 +319,12 @@ public final class ArrayMetaType extends MetaType {
 		instance.pkg = Env.newPackage("kiev.stdlib");
 		instance.pkg.sub_decls.add(instance);
 		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL);
+		length.setMacro(true);
 		length.acc = new Access(0xAA); //public:ro
 		length.getter = new RewriteNodeFactory(
 			ArrayLengthExpr.class,new RewriteNodeArg[]{
-				new RewriteNodeArg("obj", new RewriteNodeVar("obj")),
-				new RewriteNodeArg("ident", new RewriteNodeVar("ident")),
+				new RewriteNodeArg("obj", new LVarExpr("obj")),
+				new RewriteNodeArg("ident", new LVarExpr("ident")),
 			});
 		instance.members.add(length);
 	}

@@ -427,6 +427,7 @@ kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
 kiev.stdlib.meta.alias kiev/stdlib/meta/alias kiev\stdlib\meta\alias.java
 kiev.stdlib.meta.forward kiev/stdlib/meta/forward kiev\stdlib\meta\forward.java
 kiev.stdlib.meta.getter kiev/stdlib/meta/getter kiev\stdlib\meta\virtual.java
+kiev.stdlib.meta.macro kiev/stdlib/meta/macro kiev\stdlib\meta\macro.java
 kiev.stdlib.meta.packed kiev/stdlib/meta/packed kiev\stdlib\meta\packed.java
 kiev.stdlib.meta.packer kiev/stdlib/meta/packer kiev\stdlib\meta\packed.java
 kiev.stdlib.meta.pcase kiev/stdlib/meta/pcase kiev\stdlib\meta\pcase.java
@@ -434,6 +435,7 @@ kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtual.java
 kiev.stdlib.meta.singleton kiev/stdlib/meta/singleton kiev\stdlib\meta\singleton.java
 kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java
 kiev.stdlib.meta.unerasable kiev/stdlib/meta/unerasable kiev\stdlib\meta\unerasable.java
+kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\BackendProcessor.java
 kiev.transf.ImportKievSrc kiev/transf/ImportKievSrc kiev\transf\ImportKievSrc.java
 kiev.transf.JavaBackend kiev/transf/JavaBackend kiev\transf\ImportKievSrc.java
@@ -553,6 +555,7 @@ kiev.vlang.MetaAttrSlot kiev/vlang/MetaAttrSlot kiev\vlang\Tree.java
 kiev.vlang.MetaFinal kiev/vlang/MetaFinal kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaFlag kiev/vlang/MetaFlag kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaForward kiev/vlang/MetaForward kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaMacro kiev/vlang/MetaMacro kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaNative kiev/vlang/MetaNative kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java
@@ -597,11 +600,8 @@ kiev.vlang.ReinterpExpr kiev/vlang/ReinterpExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
 kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java
 kiev.vlang.RewriteContext kiev/vlang/RewriteContext kiev\vlang\Rewrites.java
-kiev.vlang.RewriteNode kiev/vlang/RewriteNode kiev\vlang\Rewrites.java
-kiev.vlang.RewriteNodeAccess kiev/vlang/RewriteNodeAccess kiev\vlang\Rewrites.java
 kiev.vlang.RewriteNodeArg kiev/vlang/RewriteNodeArg kiev\vlang\Rewrites.java
 kiev.vlang.RewriteNodeFactory kiev/vlang/RewriteNodeFactory kiev\vlang\Rewrites.java
-kiev.vlang.RewriteNodeVar kiev/vlang/RewriteNodeVar kiev\vlang\Rewrites.java
 kiev.vlang.RuleAndExpr kiev/vlang/RuleAndExpr kiev\vlang\Rules.java
 kiev.vlang.RuleBlock kiev/vlang/RuleBlock kiev\vlang\Rules.java
 kiev.vlang.RuleCallExpr kiev/vlang/RuleCallExpr kiev\vlang\Rules.java

@@ -652,6 +652,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < META_UNERASABLE:   "@unerasable"   >
 | < META_VIRTUAL:      "@virtual"      >
 | < META_PACKED:       "@packed"       >
+| < META_MACRO:        "@macro"        >
 | < META_STATIC:       "@static"       >
 | < META_ABSTRACT:     "@abstract"     >
 | < META_FINAL:        "@final"        >
@@ -1434,10 +1435,9 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 	  "@singleton"		{ modifiers += MetaSingleton; }
 
 	| "@forward"		{ modifiers += MetaForward; }
-
 	| "@unerasable"		{ modifiers += MetaUnerasable; }
-	
 	| "@virtual"		{ modifiers += MetaVirtual; }
+	| "@macro"			{ modifiers += MetaMacro; }
 	
 	| "static"			{ modifiers += MetaStatic; }
 	| "@static"			{ modifiers += MetaStatic; }
@@ -1615,7 +1615,7 @@ void FieldDecls(ASTModifiers modifiers, NArrNodes members) :
 }
 
 Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
-{ Token t; Symbol id; Field f; Symbol func; ASTNode body; }
+{ Token t; Symbol id; Field f; Symbol func; ENode body; }
 {
 	id = Name()
 	{ f = mkField(id, modifiers, type, first); }
@@ -1629,9 +1629,7 @@ Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 		|	"{"
 			(
 				func = Name()
-				(	body = Block()
-				|	body = RewriteCode()
-				)
+				body = Block()
 				{
 					if (func.sname.equals("get"))
 						f.getter = body;
@@ -2647,6 +2645,9 @@ ENode AccessExpression() :
 		LOOKAHEAD(2)
 		e = Identifier()
 	|
+		LOOKAHEAD("new" "#" <IDENTIFIER> "(" )
+		e = RewriteFactoryCall()
+	|
 		LOOKAHEAD("new" NArrType() (<OPERATOR_LRBRACKETS>)+ "{" )
 		e = NewInitializedArrayExpression()
 	|
@@ -3423,23 +3424,12 @@ FinallyInfo FinallyInfo() :
 }
 
 
-RewriteNode RewriteCode() :
-{ RewriteNode rn; Token t; }
+RewriteNodeFactory RewriteFactoryCall() :
+{ RewriteNodeFactory rn; Token t; }
 {
-	(
-		"#"
-		t=<IDENTIFIER>
-		{ rn = new RewriteNodeFactory(t.image); }
-		RewriteNodeArgs((RewriteNodeFactory)rn)
-	|
-		t=<IDENTIFIER>
-		{ rn = new RewriteNodeVar(t.image); }
-		(
-			"."
-			t=<IDENTIFIER>
-			{ rn = new RewriteNodeAccess(rn, t.image); }
-		)*
-	)
+	"new" "#"
+	t=<IDENTIFIER>		{ rn = new RewriteNodeFactory(t.image); }
+	RewriteNodeArgs(rn)
 	{ return rn; }
 }
 
@@ -3455,11 +3445,11 @@ void RewriteNodeArgs(RewriteNodeFactory nf) :
 }
 
 RewriteNodeArg RewriteNodeArg() :
-{ Token t; RewriteNode rn; }
+{ Token t; ENode rn; }
 {
 	t = <IDENTIFIER>
 	"="
-	rn = RewriteCode()
+	rn = ExpressionNT(noCommaTokenSet)
 	{ return new RewriteNodeArg(t.image, rn); }
 }
 

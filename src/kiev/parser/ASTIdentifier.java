@@ -225,5 +225,9 @@ public class ASTIdentifier extends ENode {
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(name).space();
 	}
+
+	public Object doRewrite(RewriteContext ctx) {
+		return ctx.root.getVal(name);
+	}
 }
 
