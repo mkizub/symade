@@ -54,8 +54,8 @@ class RewriteBackend extends BackendProcessor implements Constants {
 	boolean rewrite(IFldExpr:ANode fa) {
 		Field f = fa.var;
 		if (f.isMacro()) {
-			if (f.getter != null)
-				doRewrite(f.getter,fa);
+			if (f.init != null)
+				doRewrite(f.init,fa);
 		}
 		return true;
 	}	

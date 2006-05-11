@@ -392,6 +392,18 @@ public abstract class kiev040 {
 		return v;
 	}
 	
+	private RewritePattern mkRewritePattern(Symbol id, ASTModifiers modifiers, TypeRef tp) {
+		RewritePattern v = new RewritePattern(id, tp);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attachTo(v);
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet();
+			foreach (Meta m; modifiers.annotations)
+				v.meta.set(m.ncopy());
+		}
+		return v;
+	}
+	
 	private	Initializer mkInitializer(int pos, ASTModifiers modifiers) {
 		Initializer init = new Initializer(pos,0);
 		foreach (MetaSpecial sa; modifiers.specials)
@@ -1627,20 +1639,7 @@ Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 		|	":=" { f.setInitWrapper(true); }
 			f.init = VariableInitializer()
 		|	"{"
-			(
-				func = Name()
-				body = Block()
-				{
-					if (func.sname.equals("get"))
-						f.getter = body;
-					else if (func.sname.equals("set"))
-						f.setter = body;
-					else if (func.sname.equals("init"))
-						f.initializer = body;
-					else
-						kiev.Kiev.reportParserError(func.pos, "Expected get/set/init bodies");
-				}
-			)+
+			f.init = RewriteMatch()
 			"}"
 		)
 	]
@@ -3422,6 +3421,52 @@ FinallyInfo FinallyInfo() :
 	st.body = Block()
 	{ return st; }
 }
+
+
+
+RewriteMatch RewriteMatch() :
+{ TypeRef tp; Symbol id; RewriteMatch rm = new RewriteMatch(); }
+{
+	(
+		rm.cases += RewriteCase()
+	)+
+	{ return rm; }
+}
+
+RewriteCase RewriteCase() :
+{ RewriteCase c = new RewriteCase(); }
+{
+	"case"		{ c.pos = getToken(0).getPos(); }
+	c.var = RewriteCasePattern()
+	":"
+	(
+		BlockStatement(c.stats)
+	)+
+	{ return c; }
+}
+
+RewritePattern RewriteCasePattern() :
+{ ASTModifiers modifiers; TypeRef tp; Symbol id; RewritePattern p; }
+{
+	modifiers = Modifiers()
+	tp = Type()
+	id = Name()
+	{ p = mkRewritePattern(id, modifiers, tp); }
+	[
+	"("
+		[
+			p.vars += RewriteCasePattern()
+			(
+				","
+				p.vars += RewriteCasePattern()
+			)*
+		]
+	")"
+	]
+	{ return p; }
+}
+
+
 
 
 RewriteNodeFactory RewriteFactoryCall() :

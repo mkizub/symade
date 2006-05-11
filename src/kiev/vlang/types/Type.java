@@ -325,6 +325,31 @@ public final class CoreType extends Type {
 
 }
 
+public final class ASTNodeType extends Type {
+	ASTNodeType(Struct clazz) {
+		super(ASTNodeMetaType.instance(clazz), flResolved, TVar.emptyArray, TArg.emptyArray);
+	}
+	public Meta getMeta(String name)		{ return null; }
+	public Type getErasedType()				{ return this; }
+	public boolean checkResolved()			{ return true; }
+	public MetaType[] getAllSuperTypes()	{ return MetaType.emptyArray; }
+	public String toString()				{ return ((ASTNodeMetaType)meta_type).clazz.qname()+"#"; }
+	public Dumper toJava(Dumper dmp)		{ throw new RuntimeException("ASTNodeType.toJava()"); }
+
+	public JType getJType()					{ throw new RuntimeException("ASTNodeType.getJType()"); }
+	
+	public boolean isAutoCastableTo(Type t)
+	{
+		return super.isAutoCastableTo(t);
+	}
+
+	public boolean isCastableTo(Type t) {
+		if( this ≡ t) return true;
+		return super.isCastableTo(t);
+	}
+
+}
+
 public final class ArgType extends Type {
 
 	public static final ArgType[] emptyArray = new ArgType[0];

@@ -224,15 +224,18 @@ public class Env extends Struct {
 			break;
 		}
 		if (mt == null) {
-			mt = new MetaType();
-			mt.id = id;
-			mt.pkg = pkg;
+			mt = new MetaType(id, pkg, ACC_INTERFACE | ACC_MACRO);
 		}
 		else if( cleanup ) {
-			mt.flags = 0;
 			mt.version = 0;
-			mt.super_bound = null;
-			mt.pkg = pkg;
+			mt.flags = ACC_MACRO;
+			mt.package_clazz = pkg;
+			mt.typeinfo_clazz = null;
+			mt.view_of = null;
+			mt.super_bound = new TypeRef();
+			mt.interfaces.delAll();
+			mt.args.delAll();
+			mt.sub_decls.delAll();
 			mt.members.delAll();
 		}
 

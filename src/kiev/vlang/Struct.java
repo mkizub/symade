@@ -40,6 +40,7 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		 public CompaundMetaType			imeta_type;
 		 public WrapperMetaType				wmeta_type;
 		 public OuterMetaType				ometa_type;
+		 public ASTNodeMetaType				ameta_type;
 		 public CompaundType				ctype;
 	@att public TypeRef						view_of;
 	@att public TypeRef						super_bound;
@@ -501,7 +502,7 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		private static void resolveFinalFields(@forward VStruct self) {
 			trace(Kiev.debugResolve,"Resolving final fields for class "+qname());
 			// Resolve final values of class's fields
-			foreach (Field f; members) {
+			foreach (Field f; members; !f.isMacro()) {
 				try {
 					f.resolveDecl();
 				} catch( Exception e ) {
@@ -552,7 +553,7 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		return q_name;
 	}
 
-	Struct() {
+	public Struct() {
 		this.id = new Symbol(null,"");
 		this.q_name = "";
 		this.b_name = KString.Empty;

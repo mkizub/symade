@@ -117,34 +117,20 @@ public final class TArg {
 
 
 @node
-public class MetaType extends DNode {
+public class MetaType extends Struct {
 
 	@virtual typedef This  = MetaType;
-	@virtual typedef VView = VMetaType;
 
 	public final static MetaType[] emptyArray = new MetaType[0];
 	static final MetaType dummy = new MetaType();
 
-	@nodeview
-	public static view VMetaType of MetaType extends VDNode {
-		public:ro	TypeRef			super_bound;
-		public:ro	Struct			pkg;
-		public:ro	NArr<ASTNode>	members;
-	}
-
 	@ref public int				version;
-	@att public TypeRef			super_bound;
-	@ref public Struct			pkg;
-	@att public NArr<ASTNode>	members;
 
 	public MetaType() {}
-
-	public String qname() {
-		if (this.pkg == null)
-			return this.id.sname;
-		return (this.pkg.qname()+"."+this.id.uname).intern();
+	public MetaType(Symbol id, Struct outer, int flags) {
+		super(id, outer, flags | ACC_INTERFACE | ACC_MACRO);
 	}
-	
+
 	public Type getMetaSuper(Type tp) {
 		return null;
 	}
@@ -167,14 +153,14 @@ public class MetaType extends DNode {
 }
 
 @node
-public class CoreMetaType extends MetaType {
+public final class CoreMetaType extends MetaType {
 
 	@virtual typedef This  = CoreMetaType;
 
 	CoreType core_type;
 	
 	CoreMetaType() {}
-	
+
 	public Type getMetaSuper(Type tp) {
 		return null;
 	}
@@ -190,6 +176,48 @@ public class CoreMetaType extends MetaType {
 	}
 	public Type applay(Type t, TVSet bindings) {
 		return t;
+	}
+}
+
+@node
+public final class ASTNodeMetaType extends MetaType {
+
+	@virtual typedef This  = ASTNodeMetaType;
+
+	@ref public Struct clazz;
+
+	public static ASTNodeMetaType instance(Struct clazz) {
+		if (clazz.ameta_type == null)
+			clazz.ameta_type = new ASTNodeMetaType(clazz);
+		return clazz.ameta_type;
+	}
+
+	ASTNodeMetaType() {}
+	ASTNodeMetaType(Struct clazz) {
+		this.clazz = clazz;
+	}
+
+	public Type getMetaSuper(Type tp) {
+		return null;
+	}
+
+	public Type make(TVSet bindings) {
+		throw new RuntimeException("make() in ASTNodeMetaType");
+	}
+	public Type bind(Type t, TVSet bindings) {
+		throw new RuntimeException("bind() in ASTNodeMetaType");
+	}
+	public Type rebind(Type t, TVSet bindings) {
+		throw new RuntimeException("rebind() in ASTNodeMetaType");
+	}
+	public Type applay(Type t, TVSet bindings) {
+		return t;
+	}
+
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+	{
+		node @= clazz.members,
+		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
 	}
 }
 
@@ -311,24 +339,37 @@ public final class ArrayMetaType extends MetaType {
 
 	@virtual typedef This  = ArrayMetaType;
 
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="false")	DNode[]		members;
+	}
+
 	public static final ArrayMetaType instance;
 	static {
 		instance = new ArrayMetaType();
-		instance.id = new Symbol("_array_");
-		instance.super_bound = new TypeRef(StdTypes.tpObject);
-		instance.pkg = Env.newPackage("kiev.stdlib");
-		instance.pkg.sub_decls.add(instance);
+		instance.setResolved(true);
+		instance.package_clazz.sub_decls.add(instance);
 		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL);
 		length.setMacro(true);
 		length.acc = new Access(0xAA); //public:ro
-		length.getter = new RewriteNodeFactory(
-			ArrayLengthExpr.class,new RewriteNodeArg[]{
-				new RewriteNodeArg("obj", new LVarExpr("obj")),
-				new RewriteNodeArg("ident", new LVarExpr("ident")),
-			});
+		RewriteMatch rmatch = new RewriteMatch();
+		length.init = rmatch;
+		RewriteCase rget = new RewriteCase();
+		rget.var = new RewritePattern("self", new ASTNodeType(Env.newStruct("IFldExpr", Env.newPackage("kiev.vlang"), ACC_PUBLIC)));
+		rmatch.cases += rget;
+		rget.stats.append(
+			new RewriteNodeFactory(
+				ArrayLengthExpr.class,new RewriteNodeArg[]{
+					new RewriteNodeArg("obj",   new IFldExpr(new LVarExpr(0, rget.var), "obj"  )),
+					new RewriteNodeArg("ident", new IFldExpr(new LVarExpr(0, rget.var), "ident"))
+				}
+			)
+		);
 		instance.members.add(length);
 	}
-	private ArrayMetaType() {}
+	private ArrayMetaType() {
+		super(new Symbol("_array_"), Env.newPackage("kiev.stdlib"), ACC_PUBLIC|ACC_FINAL);
+		this.super_bound = new TypeRef(StdTypes.tpObject);
+	}
 
 	public Type getMetaSuper(Type tp) {
 		return super_bound.getType();

@@ -24,9 +24,108 @@ public final class RewriteContext {
 }
 
 @node
+public final class RewriteMatch extends ENode {
+
+	@dflow(out="this:in") private static class DFI {
+	@dflow(in="this:in", seq="false")	RewriteCase[]		cases;
+	}
+
+	@virtual typedef This  = RewriteMatch;
+	@virtual typedef VView = VRewriteMatch;
+
+	@att public NArr<RewriteCase>		cases;
+
+	@nodeview
+	public static final view VRewriteMatch of RewriteMatch extends VENode {
+		public:ro NArr<RewriteCase>		cases;
+	}
+
+	public RewriteMatch() {}
+
+	public Object doRewrite(RewriteContext ctx) {
+		foreach (RewriteCase rc; cases) {
+			if (rc.var.match(ctx.root))
+				return rc.doRewrite(ctx);
+		}
+		throw new CompilerException(ctx.root, "Cannot rewrite");
+	}
+
+}
+
+@node
+public final class RewritePattern extends Var {
+
+	@dflow(out="this:in") private static class DFI {}
+
+	@virtual typedef This  = RewritePattern;
+	@virtual typedef VView = VRewritePattern;
+
+	@att public NArr<RewritePattern>	vars;
+
+	@nodeview
+	public static final view VRewritePattern of RewritePattern extends VVar {
+		public:ro NArr<RewritePattern>	vars;
+	}
+
+	public RewritePattern() {}
+	public RewritePattern(Symbol id, TypeRef tp) {
+		super(id, tp, 0);
+	}
+	public RewritePattern(String id, ASTNodeType tp) {
+		super(new Symbol(id), new TypeRef(tp), 0);
+	}
+
+	public boolean match(ASTNode node) {
+		if ( ((ASTNodeMetaType)((ASTNodeType)getType()).meta_type).clazz.qname().equals(node.getClass().getName()) )
+			return true;
+		return false;
+	}
+
+}
+
+@node
+public final class RewriteCase extends ENode implements ScopeOfNames {
+
+	@dflow(out="this:in") private static class DFI {
+	@dflow(in="this:in")			RewritePattern		var;
+	@dflow(in="var", seq="true")	ASTNode[]			stats;
+	}
+
+	@virtual typedef This  = RewriteCase;
+	@virtual typedef VView = VRewriteCase;
+
+	@att public RewritePattern		var;
+	@att public NArr<ASTNode>		stats;
+
+	@nodeview
+	public static final view VRewriteCase of RewriteCase extends VENode {
+		public:ro RewritePattern	var;
+		public:ro NArr<ASTNode>		stats;
+	}
+
+	public RewriteCase() {}
+
+	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
+	{
+		var.id.equals(name),
+		node ?= var
+	}
+
+	public Object doRewrite(RewriteContext ctx) {
+		ASTNode res = null;
+		foreach (ASTNode stat; stats)
+			res = stat.doRewrite(ctx);
+		return res;
+	}
+
+}
+
+@node
 public final class RewriteNodeFactory extends ENode {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@dflow(out="this:in") private static class DFI {
+	@dflow(in="this:in", seq="true")	RewriteNodeArg[]	args;
+	}
 	
 	@virtual typedef This  = RewriteNodeFactory;
 	@virtual typedef VView = VRewriteNodeFactory;
@@ -38,10 +137,6 @@ public final class RewriteNodeFactory extends ENode {
 	public static final view VRewriteNodeFactory of RewriteNodeFactory extends VENode {
 		public:ro Class					node_class;
 		public:ro NArr<RewriteNodeArg>	args;
-
-		public boolean preResolveIn() { return false; }
-		public boolean mainResolveIn() { return false; }
-		public boolean preVerify() { return false; }
 	}
 
 	public RewriteNodeFactory() {}
@@ -73,7 +168,9 @@ public final class RewriteNodeFactory extends ENode {
 @node
 public final class RewriteNodeArg extends ENode {
 	
-	@dflow(out="this:in") private static class DFI {}
+	@dflow(out="this:in") private static class DFI {
+	@dflow(in="this:in")	ENode				node;
+	}
 	
 	@virtual typedef This  = RewriteNodeArg;
 	@virtual typedef VView = VRewriteNodeArg;

@@ -24,7 +24,7 @@ import syntax kiev.Syntax;
 @node
 public class Var extends LvalDNode {
 	
-	private static final Var dummyNode = new FormPar();
+	private static final Var dummyNode = new Var();
 	
 	@dflow(out="this:out()") private static class DFI {
 	@dflow(in="this:in")	ENode			init;
@@ -212,6 +212,8 @@ public class Var extends LvalDNode {
 @node
 public final class FormPar extends Var {
 	
+	private static final FormPar dummyNode = new FormPar();
+	
 	@dflow(out="this:out()") private static class DFI {
 	@dflow(in="this:in")	ENode			init;
 	}
@@ -271,6 +273,10 @@ public final class FormPar extends Var {
 		this.flags = flags;
 		this.kind = kind;
 		this.stype = stype == null ? vtype.ncopy() : stype;
+	}
+	
+	public ASTNode getDummyNode() {
+		return FormPar.dummyNode;
 	}
 	
 }
@@ -695,13 +701,21 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 	final DFFunc func_fls;
 	final DFFunc func_jmp;
 
-	public static DataFlowInfo newDataFlowInfo(ASTNode node_impl) {
-		DataFlowInfo template = data_flows.get(node_impl.getClass());
+	private static DataFlowInfo getTemplate(Class cls) {
+		DataFlowInfo template = data_flows.get(cls);
 		if (template == null) {
-			template = new DataFlowInfo(((ASTNode)node_impl.getClass().newInstance()));
-			data_flows.put(node_impl.getClass(), template);
+			try {
+				template = new DataFlowInfo((ASTNode)cls.newInstance());
+			} catch (java.lang.IllegalAccessException e) {
+				cls = cls.getSuperclass();
+				template = getTemplate(cls.getSuperclass());
+			}
+			data_flows.put(cls, template);
 		}
-		return new DataFlowInfo(node_impl, template);
+		return template;
+	}
+	public static DataFlowInfo newDataFlowInfo(ASTNode node_impl) {
+		return new DataFlowInfo(node_impl, getTemplate(node_impl.getClass()));
 	}
 	private DataFlowInfo(ASTNode node_impl, DataFlowInfo template) {
 		this.node_impl = node_impl;

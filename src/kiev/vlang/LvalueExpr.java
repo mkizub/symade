@@ -235,6 +235,11 @@ public final class IFldExpr extends LvalueExpr {
 		if (direct_access) setAsField(true);
 	}
 
+	public IFldExpr(ENode obj, String ident) {
+		this.obj = obj;
+		this.ident = new SymbolRef(0,ident);
+	}
+
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public Type getType() {
@@ -295,6 +300,11 @@ public final class IFldExpr extends LvalueExpr {
 			dmp.append(obj).append('.');
 		}
 		return dmp.append(var.id).space();
+	}
+
+	public Object doRewrite(RewriteContext ctx) {
+		ASTNode obj = (ASTNode)obj.doRewrite(ctx);
+		return obj.getVal(ident.name);
 	}
 }
 
@@ -524,7 +534,9 @@ public final class LVarExpr extends LvalueExpr {
 	}
 
 	public Object doRewrite(RewriteContext ctx) {
-		return ctx.root.getVal(ident.name);
+		if (var instanceof RewritePattern)
+			return ctx.root;
+		throw new RuntimeException("doRewrite on unresolved var "+this);
 	}
 }
 

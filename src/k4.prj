@@ -347,6 +347,7 @@ CLASS kiev.vlang.MetaAttrSlot kiev/vlang/MetaAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.MetaFinal kiev/vlang/MetaFinal kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaFlag kiev/vlang/MetaFlag kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaForward kiev/vlang/MetaForward kiev\vlang\MetaSpecial.java
+CLASS kiev.vlang.MetaMacro kiev/vlang/MetaMacro kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaNative kiev/vlang/MetaNative kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java
@@ -389,12 +390,12 @@ CLASS kiev.vlang.RefAttrSlot kiev/vlang/RefAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.ReinterpExpr kiev/vlang/ReinterpExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
 CLASS kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java
+CLASS kiev.vlang.RewriteCase kiev/vlang/RewriteCase kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RewriteContext kiev/vlang/RewriteContext kiev\vlang\Rewrites.java
-CLASS kiev.vlang.RewriteNode kiev/vlang/RewriteNode kiev\vlang\Rewrites.java
-CLASS kiev.vlang.RewriteNodeAccess kiev/vlang/RewriteNodeAccess kiev\vlang\Rewrites.java
+CLASS kiev.vlang.RewriteMatch kiev/vlang/RewriteMatch kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RewriteNodeArg kiev/vlang/RewriteNodeArg kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RewriteNodeFactory kiev/vlang/RewriteNodeFactory kiev\vlang\Rewrites.java
-CLASS kiev.vlang.RewriteNodeVar kiev/vlang/RewriteNodeVar kiev\vlang\Rewrites.java
+CLASS kiev.vlang.RewritePattern kiev/vlang/RewritePattern kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RuleAndExpr kiev/vlang/RuleAndExpr kiev\vlang\Rules.java
 CLASS kiev.vlang.RuleBlock kiev/vlang/RuleBlock kiev\vlang\Rules.java
 CLASS kiev.vlang.RuleCallExpr kiev/vlang/RuleCallExpr kiev\vlang\Rules.java
@@ -436,6 +437,8 @@ CLASS kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 CLASS kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
 CLASS kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
+CLASS kiev.vlang.types.ASTNodeMetaType kiev/vlang/types/ASTNodeMetaType kiev\vlang\types\TypeProvider.java
+CLASS kiev.vlang.types.ASTNodeType kiev/vlang/types/ASTNodeType kiev\vlang\types\Type.java
 CLASS kiev.vlang.types.AType kiev/vlang/types/AType kiev\vlang\types\AType.java
 CLASS kiev.vlang.types.ArgMetaType kiev/vlang/types/ArgMetaType kiev\vlang\types\TypeProvider.java
 CLASS kiev.vlang.types.ArgType kiev/vlang/types/ArgType kiev\vlang\types\Type.java
@@ -669,6 +672,7 @@ INTERFACE kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtu
 INTERFACE kiev.stdlib.meta.singleton kiev/stdlib/meta/singleton kiev\stdlib\meta\singleton.java
 INTERFACE kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java
 INTERFACE kiev.stdlib.meta.unerasable kiev/stdlib/meta/unerasable kiev\stdlib\meta\unerasable.java
+INTERFACE kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 INTERFACE kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
 INTERFACE kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
 INTERFACE kiev.vlang.BreakTarget kiev/vlang/BreakTarget kiev\vlang\PassInfo.java
@@ -689,5 +693,5 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
-METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypes.java
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java

@@ -28,7 +28,7 @@ public static final view RFileUnit of FileUnit extends RDNode {
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			foreach (DNode n; members) {
+			foreach (DNode n; members; !n.isMacro()) {
 				try {
 					n.resolveDecl();
 				} catch(Exception e) {

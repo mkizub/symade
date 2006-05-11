@@ -599,9 +599,12 @@ kiev.vlang.RefAttrSlot kiev/vlang/RefAttrSlot kiev\vlang\Tree.java
 kiev.vlang.ReinterpExpr kiev/vlang/ReinterpExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
 kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java
+kiev.vlang.RewriteCase kiev/vlang/RewriteCase kiev\vlang\Rewrites.java
 kiev.vlang.RewriteContext kiev/vlang/RewriteContext kiev\vlang\Rewrites.java
+kiev.vlang.RewriteMatch kiev/vlang/RewriteMatch kiev\vlang\Rewrites.java
 kiev.vlang.RewriteNodeArg kiev/vlang/RewriteNodeArg kiev\vlang\Rewrites.java
 kiev.vlang.RewriteNodeFactory kiev/vlang/RewriteNodeFactory kiev\vlang\Rewrites.java
+kiev.vlang.RewritePattern kiev/vlang/RewritePattern kiev\vlang\Rewrites.java
 kiev.vlang.RuleAndExpr kiev/vlang/RuleAndExpr kiev\vlang\Rules.java
 kiev.vlang.RuleBlock kiev/vlang/RuleBlock kiev\vlang\Rules.java
 kiev.vlang.RuleCallExpr kiev/vlang/RuleCallExpr kiev\vlang\Rules.java
@@ -657,6 +660,8 @@ kiev.vlang.nodeimpl kiev/vlang/nodeimpl kiev\vlang\Tree.java
 kiev.vlang.nodeset kiev/vlang/nodeset kiev\vlang\Tree.java
 kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
+kiev.vlang.types.ASTNodeMetaType kiev/vlang/types/ASTNodeMetaType kiev\vlang\types\TypeProvider.java
+kiev.vlang.types.ASTNodeType kiev/vlang/types/ASTNodeType kiev\vlang\types\Type.java
 kiev.vlang.types.AType kiev/vlang/types/AType kiev\vlang\types\AType.java
 kiev.vlang.types.ArgMetaType kiev/vlang/types/ArgMetaType kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.ArgType kiev/vlang/types/ArgType kiev\vlang\types\Type.java

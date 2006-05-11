@@ -40,7 +40,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	
 	@dflow(in="this:in()", out="stats") private static class DFI {
 	@dflow(in="this:in", seq="true") Var[]		pattern;
-	@dflow(in="pattern", seq="true") ENode[]	stats;
+	@dflow(in="pattern", seq="true") ASTNode[]	stats;
 	}
 	
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];

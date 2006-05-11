@@ -20,6 +20,7 @@ public class TypeExpr extends TypeRef {
 
 	static String opPVar   = "@";
 	static String opRef    = "&";
+	static String opAST    = "#";
 	static String opWraper = "\u229b"; // ⊛
 	
 	@virtual typedef This  = TypeExpr;
@@ -66,6 +67,9 @@ public class TypeExpr extends TypeRef {
 		}
 		else if (op == opWraper) {
 			tp = new WrapperType((CompaundType)tp);
+		}
+		else if (op == opAST) {
+			tp = new ASTNodeType(tp.getStruct());
 		}
 		else {
 			Type t;
