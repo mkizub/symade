@@ -215,9 +215,14 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+		MetaType@ sup;
 	{
 		node @= clazz.members,
 		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
+	;
+		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
+		sup @= clazz.getAllSuperTypes(),
+		sup.make(tp.bindings()).resolveNameAccessR(node,info,name)
 	}
 }
 

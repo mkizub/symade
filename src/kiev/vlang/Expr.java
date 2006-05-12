@@ -699,7 +699,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	;
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
-		n instanceof Var && ((Var)n).isForward() && ((Var)n).id.equals(name),
+		n instanceof Var && ((Var)n).isForward(),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		n.getType().resolveNameAccessR(node,info,name)
 	}

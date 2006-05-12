@@ -239,25 +239,32 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				if!(val.getType().isReference())
 					CastExpr.autoCastToReference(val);
 			}
-			// add public void set(ASTNode parent, N[]:Object narr)
+			// add public void set(ASTNode parent, Object narr)
 			{
 				Method setVal = new Method("set",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
 				setVal.params.add(new FormPar(0, "parent", tpANode, FormPar.PARAM_NORMAL, ACC_FINAL));
 				setVal.params.add(new FormPar(0, "val", Type.tpObject, FormPar.PARAM_NORMAL, ACC_FINAL));
 				s.addMethod(setVal);
 				setVal.body = new Block(0);
-				ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, setVal.params[0]) ), f);
-				ENode val = new LVarExpr(0, setVal.params[1]);
-				Type ftp = f.getType();
-				if (ftp.isReference())
-					val = new CastExpr(0,ftp,val);
-				else
-					val = new CastExpr(0,((CoreType)ftp).getRefTypeForPrimitive(),val);
-				setVal.block.stats.add(new ExprStat(
-					new AssignExpr(f.pos,AssignOperator.Assign2,lval,val)
-				));
-				if!(ftp.isReference())
-					CastExpr.autoCastToPrimitive(val);
+				if (!f.isFinal() && Access.writeable(f)) {
+					ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, setVal.params[0]) ), f);
+					ENode val = new LVarExpr(0, setVal.params[1]);
+					Type ftp = f.getType();
+					if (ftp.isReference())
+						val = new CastExpr(0,ftp,val);
+					else
+						val = new CastExpr(0,((CoreType)ftp).getRefTypeForPrimitive(),val);
+					setVal.block.stats.add(new ExprStat(
+						new AssignExpr(f.pos,AssignOperator.Assign2,lval,val)
+					));
+					if!(ftp.isReference())
+						CastExpr.autoCastToPrimitive(val);
+				} else {
+					ConstStringExpr msg = new ConstStringExpr((isAtt ? "@att " : "@ref ")+f.id+" is not writeable");
+					setVal.block.stats.add(
+						new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
+					);
+				}
 			}
 		}
 

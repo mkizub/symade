@@ -180,6 +180,7 @@ public abstract class kiev040 {
 	private MetaType mkMetaType(Symbol name, ASTModifiers modifiers, FileUnit fu) {
 		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
 		MetaType mt = Env.newMetaType(name, pkg, true);
+		mt.setResolved(true);
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attachTo(mt);
 		foreach (Meta m; modifiers.annotations)
@@ -987,7 +988,6 @@ FileUnit FileUnit(String filename) :
 			|	fu.members += Typedef(modifiers)
 			|	fu.members += Opdef(modifiers)
 			|	fu.members += TypeDeclaration(modifiers, fu) [ ";" ]
-			|	fu.members += MetaTypeDeclaration(modifiers, fu) [ ";" ]
 			|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 				fu.members += SyntaxDeclaration(modifiers, fu) [ ";" ]
 			)
@@ -1150,34 +1150,6 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	{ return clazz; }
 }
 
-MetaType MetaTypeDeclaration(ASTModifiers modifiers, FileUnit parent) :
-{ MetaType mt; Symbol name; Struct oldClazz; }
-{
-	"metatype"
-	name = Name()
-	{
-		mt = mkMetaType(name, modifiers, parent);
-	}
-	{ oldClazz = curClazz; curClazz = null; }
-	[
-		"extends"
-		mt.super_bound = Type()
-	]
-	try {
-		"{"
-		(
-			modifiers = Modifiers()
-//			(
-//			|
-//				LOOKAHEAD( Type() <IDENTIFIER> ("{" | "," | ";") )
-				FieldDecls(modifiers, mt.members)
-//			)
-		)*
-		"}"
-	} finally { curClazz = oldClazz; }
-	{ return mt; }
-}
-
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 { Struct clazz; Symbol name; Struct oldClazz; TypeConstr[] args; }
 {
@@ -1246,6 +1218,21 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			clazz.interfaces += NArrType()
 			( "," clazz.interfaces += NArrType()	)*
 		]
+	|	"metatype"
+		name = Name()
+		{
+			clazz = mkMetaType(name, modifiers, (FileUnit)parent);
+		}
+		args = ClazzArguments() { clazz.args.addAll(args); }
+//		[
+			"extends"
+			clazz.super_bound = Type()
+//		]
+//		[
+//			"implements"
+//			clazz.interfaces += NArrType()
+//			( "," clazz.interfaces += NArrType()	)*
+//		]
 	)
 	{ oldClazz = curClazz; curClazz = clazz; }
 	try {
@@ -1638,9 +1625,8 @@ Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 			f.init = VariableInitializer()
 		|	":=" { f.setInitWrapper(true); }
 			f.init = VariableInitializer()
-		|	"{"
+		|
 			f.init = RewriteMatch()
-			"}"
 		)
 	]
 	{ return f; }
@@ -3419,9 +3405,11 @@ FinallyInfo FinallyInfo() :
 RewriteMatch RewriteMatch() :
 { TypeRef tp; Symbol id; RewriteMatch rm = new RewriteMatch(); }
 {
+	"{"
 	(
 		rm.cases += RewriteCase()
 	)+
+	"}"
 	{ return rm; }
 }
 

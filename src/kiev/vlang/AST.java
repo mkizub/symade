@@ -324,6 +324,10 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public  int				pos;
 	public  int				compileflags;
+	@ref @abstract
+	public:ro ANode			parent;
+	
+	@getter public final ANode get$parent() { return parent(); }
 
 	// Structures	
 	public @packed:1,compileflags,16 boolean is_struct_local;
