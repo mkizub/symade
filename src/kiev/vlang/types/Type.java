@@ -326,9 +326,33 @@ public final class CoreType extends Type {
 }
 
 public final class ASTNodeType extends Type {
-	ASTNodeType(Struct clazz) {
-		super(ASTNodeMetaType.instance(clazz), flResolved, TVar.emptyArray, TArg.emptyArray);
+	public static ASTNodeType newASTNodeType(Struct of_clazz)
+		alias operator(240,lfy,new)
+	{
+		return new ASTNodeType(ASTNodeMetaType.instance(of_clazz), TVarBld.emptySet);
 	}
+
+	public static ASTNodeType newASTNodeType(RewritePattern rp)
+		alias operator(240,lfy,new)
+	{
+		Struct of_clazz = rp.vtype.getStruct();
+		ASTNodeMetaType meta_type = ASTNodeMetaType.instance(of_clazz);
+		TVarBld tvb = new TVarBld();
+		foreach (RewritePattern var; rp.vars) {
+			ASTNodeType ast = newASTNodeType(var);
+			KString name = KString.from("attr$"+var.id+"$type");
+			foreach (TVar tv; meta_type.getTemplBindings().tvars; tv.var.name == name) {
+				tvb.append(tv.var, ast);
+				break;
+			}
+		}
+		return new ASTNodeType(meta_type, tvb.close());
+	}
+
+	private ASTNodeType(ASTNodeMetaType meta_type, TVarBld bindings) {
+		super(meta_type, flResolved, bindings);
+	}
+
 	public Meta getMeta(String name)		{ return null; }
 	public Type getErasedType()				{ return this; }
 	public boolean checkResolved()			{ return true; }
@@ -338,6 +362,8 @@ public final class ASTNodeType extends Type {
 
 	public JType getJType()					{ throw new RuntimeException("ASTNodeType.getJType()"); }
 	
+	public Struct getStruct() { return ((ASTNodeMetaType)meta_type).clazz; }
+
 	public boolean isAutoCastableTo(Type t)
 	{
 		return super.isAutoCastableTo(t);

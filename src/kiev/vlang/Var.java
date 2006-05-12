@@ -39,7 +39,7 @@ public class Var extends LvalDNode {
 	@att public ENode		init;
 		 public int			bcpos = -1;
 
-	@getter public final Type get$type() { return this.vtype.getType(); }
+	@getter public Type get$type() { return this.vtype.getType(); }
 	
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {

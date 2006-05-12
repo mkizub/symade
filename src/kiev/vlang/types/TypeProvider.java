@@ -186,6 +186,9 @@ public final class ASTNodeMetaType extends MetaType {
 
 	@ref public Struct clazz;
 
+	private TVarSet			templ_bindings;
+	private int				templ_version;
+
 	public static ASTNodeMetaType instance(Struct clazz) {
 		if (clazz.ameta_type == null)
 			clazz.ameta_type = new ASTNodeMetaType(clazz);
@@ -195,6 +198,8 @@ public final class ASTNodeMetaType extends MetaType {
 	ASTNodeMetaType() {}
 	ASTNodeMetaType(Struct clazz) {
 		this.clazz = clazz;
+		this.templ_bindings = TVarSet.emptySet;
+		this.templ_version = -1;
 	}
 
 	public Type getMetaSuper(Type tp) {
@@ -212,6 +217,24 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 	public Type applay(Type t, TVSet bindings) {
 		return t;
+	}
+
+	public TVarSet getTemplBindings() {
+		if (this.version != this.templ_version)
+			makeTemplBindings();
+		return templ_bindings;
+	}
+
+	private void makeTemplBindings() {
+		TVarBld vs = new TVarBld();
+		foreach (TypeAssign ta; clazz.members; ta.id.sname.matches("attr\\$.*\\$type"))
+			vs.append(ta.getAType(), null);
+		TypeRef st = clazz.super_bound;
+		if (st.getType() ≢ null) {
+			vs.append(st.getType().bindings());
+		}
+		templ_bindings = new TVarSet(vs.close());
+		templ_version = version;
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)

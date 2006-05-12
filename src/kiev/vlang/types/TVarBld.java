@@ -23,7 +23,7 @@ public final class TVarBld implements TVSet {
 
 	public:ro,rw,ro,rw	TVar[]		tvars;
 	public:ro,ro,ro,rw	TArg[]		appls;
-	private						boolean		closed;
+	private				boolean		closed;
 
 	public TVarBld() {
 		tvars = TVar.emptyArray;

@@ -308,7 +308,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			if (isAbstract() && isStatic()) {
 				setBad(true);
 				ctx_clazz.setBad(true);
-				Kiev.reportError(this,"Static method cannot be declared abstract");
+				Kiev.reportWarning(this,"Static method cannot be declared abstract");
 			}
 			if (ctx_clazz.isInterface() && !ctx_clazz.isStructView()) {
 				if (isFinal()) {

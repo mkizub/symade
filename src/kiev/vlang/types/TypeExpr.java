@@ -114,6 +114,8 @@ public class TypeExpr extends TypeRef {
 				return WrapperType.tpWrappedPrologVar.getStruct();
 			else if (op == opRef)
 				return WrapperType.tpWrappedRefProxy.getStruct();
+			else if (op == opAST)
+				return arg.getStruct();
 			else
 				throw new CompilerException(this,"Typedef for type operator "+op+" not found");
 		}

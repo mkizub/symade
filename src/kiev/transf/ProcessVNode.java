@@ -135,6 +135,17 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				if (isArr && f.init != null)
 					Kiev.reportError(f,"Field "+f.parent()+"."+f+" may not have initializer");
 			}
+			Struct fts = f.type.getStruct();
+			if (fts != null) {
+				TypeDef td = new TypeAssign(
+					new Symbol(f.pos,"attr$"+f.id+"$type"),
+					new TypeRef(new ASTNodeType(f.type.getStruct())));
+				td.setSynthetic(true);
+				Struct clazz = (Struct)f.parent();
+				clazz.members.append(td);
+				if (clazz.ameta_type != null)
+					clazz.ameta_type.version++;
+			}
 		}
 		else if !(f.isStatic()) {
 			if (f.type.isInstanceOf(tpNArr))

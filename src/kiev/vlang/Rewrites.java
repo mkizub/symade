@@ -75,6 +75,9 @@ public final class RewritePattern extends Var {
 		super(new Symbol(id), new TypeRef(tp), 0);
 	}
 
+	@getter public Type get$type() { return new ASTNodeType(this); }
+	public Type	getType() { return new ASTNodeType(this); }
+
 	public boolean match(ASTNode node) {
 		if ( ((ASTNodeMetaType)((ASTNodeType)getType()).meta_type).clazz.qname().equals(node.getClass().getName()) )
 			return true;

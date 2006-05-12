@@ -243,7 +243,16 @@ public final class IFldExpr extends LvalueExpr {
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public Type getType() {
-		return Type.getRealType(obj.getType(),var.type);
+		Type ot = obj.getType();
+		if (ot instanceof ASTNodeType) {
+			KString name = KString.from("attr$"+var.id+"$type");
+			foreach (TVar tv; ot.bindings().tvars; tv.var.name == name) {
+				return ot.resolve(tv.var);
+			}
+			return new ASTNodeType(var.type.getStruct());
+		} else {
+			return Type.getRealType(ot,var.type);
+		}
 	}
 
 	public boolean	isConstantExpr() {
