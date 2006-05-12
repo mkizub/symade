@@ -109,7 +109,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			dfIn.params.add(new FormPar(0, "child", tpNode, FormPar.PARAM_NORMAL, 0));
 			dfIn.body = new Block(0);
 			Var var = new Var(0, "name",Type.tpString,ACC_FINAL);
-			dfIn.body.stats.add(var);
+			dfIn.block.stats.add(var);
 			{
 				AccessExpr ae0 = new AccessExpr(0, new LVarExpr(0,dfIn.params[0]), new SymbolRef("pslot"));
 				AccessExpr ae1 = new AccessExpr(0, ae0, new SymbolRef("name"));
@@ -125,7 +125,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				ce.ident = new SymbolRef(fname);
 				if (seq)
 					ce.args.add(new LVarExpr(0, dfIn.params[0]));
-				dfIn.body.stats.add(
+				dfIn.block.stats.add(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new LVarExpr(0, var),
@@ -140,7 +140,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			msg.appendArg(new ConstStringExpr("No @dflow value \""));
 			msg.appendArg(new LVarExpr(0, var));
 			msg.appendArg(new ConstStringExpr("\" in "+s.id));
-			dfIn.body.stats.add(
+			dfIn.block.stats.add(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
 			s.addMethod(dfIn);
@@ -218,7 +218,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				}
 				dfIn.body = new Block(0);
 				if (isArr && seq) {
-					dfIn.body.stats.add(
+					dfIn.block.stats.add(
 						new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								acc_prev,
@@ -230,7 +230,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 					);
 				}
 				if (cae_fls != null) {
-					dfIn.body.stats.add(
+					dfIn.block.stats.add(
 						new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								acc_fld,
@@ -241,7 +241,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 						)
 					);
 				} else {
-					dfIn.body.stats.add(
+					dfIn.block.stats.add(
 						new ReturnStat(0,cae_tru)
 					);
 				}

@@ -27,7 +27,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
+public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessable,PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in")	Block		body;
@@ -47,8 +47,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,SetBody
 	@att public NArr<FormPar>		params;
 	@att public NArr<ASTAlias>		aliases;
 	@att public Var					retvar;
-	@att public Block				body;
-	@att public PrescannedBody 		pbody;
+	@att public ENode				body;
 	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 	@att public NArr<WBCCondition> 	conditions;
 	@ref public NArr<Field>			violated_fields;
@@ -78,6 +77,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,SetBody
 	@getter public final CallType				get$type()	{ checkRebuildTypes(); return this.type; }
 	@getter public final CallType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
 	@getter public final CallType				get$etype()	{ checkRebuildTypes(); return (CallType)this.dtype.getErasedType(); }
+
+	@getter public final Block					get$block()	{ return (Block)this.body; }
 
 	public Var getRetVar() {
 		if( retvar == null )
@@ -258,7 +259,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,SetBody
 		public:ro			NArr<FormPar>		params;
 		public:ro			NArr<ASTAlias>		aliases;
 		public				Var					retvar;
-		public				Block				body;
+		public				ENode				body;
 		public:ro			NArr<WBCCondition>	conditions;
 		public:ro			NArr<Field>			violated_fields;
 		public				MetaValue			annotation_default;
@@ -644,7 +645,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,SetBody
 		else if( clazz.isClazz() && clazz.isFinal() ) setFinal(true);
 		else if( clazz.isInterface() ) {
 			setPublic();
-			if( pbody == null ) setAbstract(true);
+			if (body == null) setAbstract(true);
 		}
 
 		if (clazz.isAnnotation() && params.length != 0) {
@@ -653,10 +654,9 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,SetBody
 			setVarArgs(false);
 		}
 
-		if (clazz.isAnnotation() && (body != null || pbody != null)) {
+		if (clazz.isAnnotation() && (body != null)) {
 			Kiev.reportError(this, "Annotation methods may not have bodies");
 			body = null;
-			pbody = null;
 		}
 
 		if (isTypeUnerasable()) {
@@ -736,12 +736,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,SetBody
 
 	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of methods "+this);
-		if (this.body == null) {
-			this.body = (Block)body;
-		} else {
-			throw new RuntimeException("Added body to method "+this+" which already have body");
-		}
-
+		this.body = body;
 		return true;
 	}
 
@@ -776,10 +771,10 @@ public class Constructor extends Method {
 }
 
 @node
-public class Initializer extends DNode implements SetBody, PreScanneable {
+public class Initializer extends DNode implements PreScanneable {
 	
 	@dflow(out="body") private static class DFI {
-	@dflow(in="this:in")				Block		body;
+	@dflow(in="this:in")		ENode		body;
 	}
 
 	@virtual typedef This  = Initializer;
@@ -787,12 +782,13 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	@virtual typedef JView = JInitializer;
 	@virtual typedef RView = RInitializer;
 
-	@att public Block				body;
-	@att public PrescannedBody		pbody;
+	@att public ENode				body;
+
+	@getter public final Block get$block()	{ return (Block)this.body; }
 
 	@nodeview
 	public static final view VInitializer of Initializer extends VDNode {
-		public Block				body;
+		public ENode				body;
 	}
 
 	public Initializer() {}
@@ -805,12 +801,7 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 
 	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of initializer "+this);
-		if (this.body == null) {
-			this.body = (Block)body;
-		}
-		else {
-			throw new RuntimeException("Added body to initializer "+this+" which already has body");
-		}
+		this.body = body;
 		return true;
 	}
 

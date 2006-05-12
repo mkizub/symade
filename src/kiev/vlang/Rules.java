@@ -124,7 +124,7 @@ public class RuleMethod extends Method {
 		else if( clazz.isClazz() && clazz.isFinal() ) setFinal(true);
 		else if( clazz.isInterface() ) {
 			setPublic();
-			if( pbody == null ) setAbstract(true);
+			if( body == null ) setAbstract(true);
 		}
 		if (params.length == 0 || params[0].kind != FormPar.PARAM_RULE_ENV)
 			params.insert(0, new FormPar(pos,namePEnv,Type.tpRule,FormPar.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
@@ -300,7 +300,7 @@ public abstract class ASTRuleNode extends ENode {
 
 
 @node
-public final class RuleBlock extends Block {
+public final class RuleBlock extends ENode {
 	
 	@dflow(out="node") private static class DFI {
 	@dflow(in="this:in")	ASTRuleNode		node;
@@ -314,7 +314,7 @@ public final class RuleBlock extends Block {
 	@att public StringBuffer	fields_buf;
 
 	@nodeview
-	public static view VRuleBlock of RuleBlock extends VBlock {
+	public static view VRuleBlock of RuleBlock extends VENode {
 		public ASTRuleNode		node;
 		public StringBuffer		fields_buf;
 	}

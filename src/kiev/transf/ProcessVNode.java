@@ -190,7 +190,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			ctor.params.add(new FormPar(0, "clazz", Type.tpClass, FormPar.PARAM_NORMAL, ACC_FINAL));
 			s.members.add(ctor);
 			ctor.body = new Block(0);
-			ctor.body.stats.add(new ExprStat(
+			ctor.block.stats.add(new ExprStat(
 				new CallExpr(f.pos,
 					null,
 					s.super_type.getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpClass),
@@ -212,7 +212,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				getArr.body = new Block(0);
 				ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, getArr.params[0]) ), f);
 				val = new IFldExpr(f.pos,val,tpNArr.getStruct().resolveField("$nodes"));
-				getArr.body.stats.add(new ReturnStat(f.pos,val));
+				getArr.block.stats.add(new ReturnStat(f.pos,val));
 			}
 			// add public void set(ASTNode parent, N[]:Object narr)
 			{
@@ -223,7 +223,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				setArr.body = new Block(0);
 				ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, setArr.params[0]) ), f);
 				lval = new IFldExpr(f.pos,lval,tpNArr.getStruct().resolveField("$nodes"));
-				setArr.body.stats.add(new ExprStat(
+				setArr.block.stats.add(new ExprStat(
 					new AssignExpr(f.pos,AssignOperator.Assign2,lval,new LVarExpr(0, setArr.params[1]))
 				));
 			}
@@ -235,7 +235,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				s.addMethod(getVal);
 				getVal.body = new Block(0);
 				ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.ctype, new LVarExpr(0, getVal.params[0]) ), f);
-				getVal.body.stats.add(new ReturnStat(f.pos,val));
+				getVal.block.stats.add(new ReturnStat(f.pos,val));
 				if!(val.getType().isReference())
 					CastExpr.autoCastToReference(val);
 			}
@@ -253,7 +253,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					val = new CastExpr(0,ftp,val);
 				else
 					val = new CastExpr(0,((CoreType)ftp).getRefTypeForPrimitive(),val);
-				setVal.body.stats.add(new ExprStat(
+				setVal.block.stats.add(new ExprStat(
 					new AssignExpr(f.pos,AssignOperator.Assign2,lval,val)
 				));
 				if!(ftp.isReference())
@@ -349,7 +349,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Method elems = new Method(nameEnumValues,new ArrayType(tpAttrSlot),ACC_PUBLIC | ACC_SYNTHETIC);
 			s.addMethod(elems);
 			elems.body = new Block(0);
-			elems.body.stats.add(
+			elems.block.stats.add(
 				new ReturnStat(0,
 					new SFldExpr(0,vals) ) );
 			// Object getVal(String)
@@ -359,7 +359,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			getV.body = new Block(0);
 			foreach (Field f; aflds; f.parent() == s) {
 				ENode ee = new IFldExpr(0,new ThisExpr(),f);
-				getV.body.stats.add(
+				getV.block.stats.add(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new LVarExpr(0, getV.params[0]),
@@ -374,7 +374,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			}
 			Type sup = s.super_type;
 			if (sup != null && isNodeKind(sup)) {
-				getV.body.stats.add(
+				getV.block.stats.add(
 					new ReturnStat(0,
 						new CallExpr(0,
 							new ThisExpr(true),
@@ -389,7 +389,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				msg.appendArg(new ConstStringExpr("No @att value \""));
 				msg.appendArg(new LVarExpr(0, getV.params[0]));
 				msg.appendArg(new ConstStringExpr("\" in "+s.id));
-				getV.body.stats.add(
+				getV.block.stats.add(
 					new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 				);
 			}
@@ -406,7 +406,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			s.addMethod(copyV);
 			copyV.body = new Block(0);
 			Var v = new Var(0, "node",s.ctype,0);
-			copyV.body.stats.append(new ReturnStat(0,new ASTCallExpression(0,
+			copyV.block.stats.append(new ReturnStat(0,new ASTCallExpression(0,
 				"copyTo",	new ENode[]{new NewExpr(0,s.ctype,ENode.emptyArray)})));
 		}
 		// copyTo(Object)
@@ -424,10 +424,10 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				cae.ident = new SymbolRef(0,"copyTo");
 				cae.args.append(new ASTIdentifier(0,"to$node"));
 				v.init = new CastExpr(0,s.ctype,cae);
-				copyV.body.addSymbol(v);
+				copyV.block.addSymbol(v);
 			} else {
 				v.init = new CastExpr(0,s.ctype,new ASTIdentifier(0,"to$node"));
-				copyV.body.addSymbol(v);
+				copyV.block.addSymbol(v);
 			}
 			foreach (Field f; s.members) {
 				if (f.isPackedField() || f.isAbstract() || f.isStatic())
@@ -447,12 +447,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 						cae.obj = new IFldExpr(0,new LVarExpr(0,v),f);
 						cae.ident = new SymbolRef(0, "copyFrom");
 						cae.args.append(new IFldExpr(0,new IFldExpr(0,new ThisExpr(),f),tpNArr.getStruct().resolveField("$nodes")));
-						copyV.body.stats.append(new ExprStat(0,cae));
+						copyV.block.stats.append(new ExprStat(0,cae));
 					} else {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						cae.obj = new IFldExpr(0, new ThisExpr(),f);
 						cae.ident = new SymbolRef(0, "copy");
-						copyV.body.stats.append( 
+						copyV.block.stats.append( 
 							new IfElseStat(0,
 								new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 									new IFldExpr(0,new ThisExpr(),f),
@@ -469,7 +469,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 						);
 					}
 				} else {
-					copyV.body.stats.append( 
+					copyV.block.stats.append( 
 						new ExprStat(0,
 							new AssignExpr(0,AssignOperator.Assign,
 								new IFldExpr(0,new LVarExpr(0,v),f),
@@ -479,7 +479,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					);
 				}
 			}
-			copyV.body.stats.append(new ReturnStat(0,new LVarExpr(0,v)));
+			copyV.block.stats.append(new ReturnStat(0,new LVarExpr(0,v)));
 		}
 		// setVal(String, Object)
 		if (hasMethod(s, "setVal")) {
@@ -507,7 +507,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					ee = new CastExpr(0,atp,new LVarExpr(0, setV.params[1]));
 				else
 					ee = new CastExpr(0,((CoreType)atp).getRefTypeForPrimitive(),new LVarExpr(0, setV.params[1]));
-				setV.body.stats.add(
+				setV.block.stats.add(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new LVarExpr(0, setV.params[0]),
@@ -530,7 +530,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			}
 			Type sup = s.super_type;
 			if (sup != null && isNodeKind(sup)) {
-				setV.body.stats.add(
+				setV.block.stats.add(
 					new CallExpr(0,
 						new ThisExpr(true),
 						sup.getStruct().resolveMethod("setVal",Type.tpVoid,Type.tpString,Type.tpObject),
@@ -543,7 +543,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				msg.appendArg(new ConstStringExpr("No @att value \""));
 				msg.appendArg(new LVarExpr(0, setV.params[0]));
 				msg.appendArg(new ConstStringExpr("\" in "+s.id));
-				setV.body.stats.add(
+				setV.block.stats.add(
 					new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 				);
 			}

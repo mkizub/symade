@@ -178,7 +178,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 			RuleMethod rm = (RuleMethod)ctx_method;
 			assert(rm.params[0].type ≡ Type.tpRule);
 			Var pEnv = null;
-			foreach (Var vd; rm.body.stats) {
+			foreach (Var vd; rm.block.stats) {
 				if (vd.id.equals(namePEnv)) {
 					assert(vd.type.isInstanceOf(Type.tpRule));
 					pEnv = vd;
@@ -189,7 +189,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 				Kiev.reportError(this, "Cannot find "+namePEnv);
 				return false;
 			}
-			Struct s = (Struct)rm.body.stats[0];
+			Struct s = (Struct)rm.block.stats[0];
 			Field f = s.resolveField(ident.name);
 			replaceWithNode(new IFldExpr(pos, new LVarExpr(pos, pEnv), ~ident, f));
 		}

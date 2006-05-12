@@ -51,7 +51,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 		foreach (Field f; flds) {
 			Var v = null;
 			foreach (FormPar fp; init.params; fp.id.uname == f.id.uname) {
-				init.body.stats.insert(
+				init.block.stats.insert(
 					p++,
 					new ExprStat(
 						new AssignExpr(f.pos,AssignOperator.Assign,
@@ -105,7 +105,7 @@ class PizzaCaseBackend extends BackendProcessor implements Constants {
 
 			Method gettag = new Method(nameGetCaseTag,Type.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
 			gettag.body = new Block(gettag.pos);
-			gettag.body.stats.add(
+			gettag.block.stats.add(
 				new ReturnStat(gettag.pos,new SFldExpr(ftag.pos,ftag))
 			);
 			clazz.addMethod(gettag);
@@ -114,7 +114,7 @@ class PizzaCaseBackend extends BackendProcessor implements Constants {
 			// Add get$case$tag() method to itself
 			Method gettag = new Method(Constants.nameGetCaseTag,Type.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
 			gettag.body = new Block(gettag.pos);
-			gettag.body.stats.add(
+			gettag.block.stats.add(
 				new ReturnStat(gettag.pos,new ConstIntExpr(0))
 			);
 			clazz.addMethod(gettag);

@@ -22,7 +22,7 @@ public final view JMethod of Method extends JDNode {
 
 	public:ro	Access					acc;
 	public:ro	JArr<JVar>				params;
-	public:ro	JBlock					body;
+	public:ro	JENode					body;
 	public		Attr[]					attrs;
 	public:ro	JArr<JWBCCondition>		conditions;
 	public:ro	JArr<JField>			violated_fields;
@@ -32,6 +32,8 @@ public final view JMethod of Method extends JDNode {
 	public:ro	CallType				type;
 	public:ro	CallType				dtype;
 	public:ro	CallType				etype;
+
+	public:ro	JBlock					block;
 
 	public MetaThrows getMetaThrows();
 	
@@ -52,7 +54,7 @@ public final view JMethod of Method extends JDNode {
 	public JVar getVarArgParam() { return (JVar) ((Method)this).getVarArgParam(); }
 	
 	public CodeLabel getBreakLabel() {
-		return body.getBreakLabel();
+		return block.getBreakLabel();
 	}
 
 	/** Add information about new attribute that belongs to this class */
@@ -176,7 +178,7 @@ public final view JMethod of Method extends JDNode {
 
 @nodeview
 public final view JInitializer of Initializer extends JDNode {
-	public:ro	JBlock		body;
+	public:ro	JENode		body;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Initializer");

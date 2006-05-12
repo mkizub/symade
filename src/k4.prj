@@ -655,7 +655,6 @@ INTERFACE kiev.ir.java15.RWBCCondition kiev/ir/java15/RWBCCondition kiev\ir\java
 INTERFACE kiev.ir.java15.RWhileStat kiev/ir/java15/RWhileStat kiev\ir\java15\RLoopStat.java
 INTERFACE kiev.ir.java15.RWithStat kiev/ir/java15/RWithStat kiev\ir\java15\RBlockStat.java
 INTERFACE kiev.parser.ParserConstants kiev/parser/ParserConstants kiev\parser\kiev040.java
-INTERFACE kiev.parser.PreScanneable kiev/parser/PreScanneable kiev\parser\PreScanneable.java
 INTERFACE kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
 INTERFACE kiev.parser.kiev040Constants kiev/parser/kiev040Constants kiev\parser\kiev040Constants.java
 INTERFACE kiev.stdlib.AssertionHandler kiev/stdlib/AssertionHandler kiev\stdlib\Debug.java
@@ -679,11 +678,11 @@ INTERFACE kiev.vlang.BreakTarget kiev/vlang/BreakTarget kiev\vlang\PassInfo.java
 INTERFACE kiev.vlang.Constants kiev/vlang/Constants kiev\vlang\Constants.java
 INTERFACE kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java
 INTERFACE kiev.vlang.DataFlowSlots kiev/vlang/DataFlowSlots kiev\vlang\Var.java
+INTERFACE kiev.vlang.PreScanneable kiev/vlang/PreScanneable kiev\vlang\AST.java
 INTERFACE kiev.vlang.Scope kiev/vlang/Scope kiev\vlang\Resolving.java
 INTERFACE kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java
 INTERFACE kiev.vlang.ScopeOfNames kiev/vlang/ScopeOfNames kiev\vlang\Resolving.java
 INTERFACE kiev.vlang.ScopeOfOperators kiev/vlang/ScopeOfOperators kiev\vlang\Resolving.java
-INTERFACE kiev.vlang.SetBody kiev/vlang/SetBody kiev\vlang\AST.java
 INTERFACE kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
 INTERFACE kiev.vlang.dflow kiev/vlang/dflow kiev\vlang\Tree.java
 INTERFACE kiev.vlang.node kiev/vlang/node kiev\vlang\Tree.java

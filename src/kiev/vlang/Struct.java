@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
 
 
 @node
-public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
+public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, ScopeOfOperators, PreScanneable, Accessable {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -1061,8 +1061,8 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 	public boolean setBody(ENode body) {
 		if( !isPizzaCase() ) return false;
 		Method init = (Method)members[0];
-		if (init.body != null)
-			init.body.stats.add(body);
+		if (init.body instanceof Block)
+			init.block.stats.add(body);
 		else
 			init.setBody(body);
 		return true;

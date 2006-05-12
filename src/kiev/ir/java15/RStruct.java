@@ -245,7 +245,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				typeinfo_clazz.addField(f);
 				FormPar v = new FormPar(pos,at.name.toString(),Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
 				init.params.append(v);
-				init.body.stats.append(new ExprStat(pos,
+				init.block.stats.append(new ExprStat(pos,
 					new AssignExpr(pos,AssignOperator.Assign,
 						new IFldExpr(pos,new ThisExpr(pos),f),
 						new LVarExpr(pos,v)
@@ -263,7 +263,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			ASTCallExpression call_super = new ASTCallExpression(pos, nameSuper, ENode.emptyArray);
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
-			init.body.stats.insert(0,new ExprStat(call_super));
+			init.block.stats.insert(0,new ExprStat(call_super));
 			foreach (ArgType at; ((RStruct)super_type.clazz).getTypeInfoArgs()) {
 				Type t = at.applay(this.ctype);
 				ENode expr;
@@ -303,14 +303,14 @@ public final view RStruct of Struct extends RTypeDecl {
 				new LVarExpr(pos,init.params[0]),
 				new LVarExpr(pos,init.params[1])
 			});
-			init.body.addSymbol(h);
+			init.block.addSymbol(h);
 			Method mget = Type.tpTypeInfo.clazz.resolveMethod("get",Type.tpTypeInfo,Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
 			v.init = new CallExpr(pos,null,mget,new ENode[]{
 				new LVarExpr(pos,h),
 				new LVarExpr(pos,init.params[0]),
 				new LVarExpr(pos,init.params[1])
 			});
-			init.body.addSymbol(v);
+			init.block.addSymbol(v);
 			NewExpr ne = new NewExpr(pos,typeinfo_clazz.ctype,
 				new ENode[]{
 					new LVarExpr(pos,h),
@@ -319,12 +319,12 @@ public final view RStruct of Struct extends RTypeDecl {
 			int i = 0;
 			foreach (ArgType at; this.getTypeInfoArgs())
 				ne.args.add(new ContainerAccessExpr(pos, new LVarExpr(pos,init.params[1]), new ConstIntExpr(i++)));
-			init.body.stats.add(new IfElseStat(pos,
+			init.block.stats.add(new IfElseStat(pos,
 				new BinaryBoolExpr(pos,BinaryOperator.Equals,new LVarExpr(pos,v),new ConstNullExpr()),
 				new ExprStat(pos,new AssignExpr(pos, AssignOperator.Assign,new LVarExpr(pos,v),ne)),
 				null
 			));
-			init.body.stats.add(new ReturnStat(pos,new LVarExpr(pos,v)));
+			init.block.stats.add(new ReturnStat(pos,new LVarExpr(pos,v)));
 			typeinfo_clazz.addMethod(init);
 		}
 		
@@ -341,7 +341,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			meq.params.add(new FormPar(pos,"args",new ArrayType(Type.tpTypeInfo),FormPar.PARAM_VARARGS,ACC_FINAL));
 			typeinfo_clazz.addMethod(meq);
 			meq.body = new Block(pos);
-			meq.body.stats.add(new IfElseStat(pos,
+			meq.block.stats.add(new IfElseStat(pos,
 				new BinaryBoolExpr(pos,BinaryOperator.NotEquals,
 					new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField("clazz")),
 					new LVarExpr(pos,meq.params[0])
@@ -352,7 +352,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			int idx = 0;
 			foreach (ArgType at; this.getTypeInfoArgs()) {
 				Field f = typeinfo_clazz.resolveField((nameTypeInfo+"$"+at.name).intern());
-				meq.body.stats.add(new IfElseStat(pos,
+				meq.block.stats.add(new IfElseStat(pos,
 					new BinaryBoolExpr(pos,BinaryOperator.NotEquals,
 						new IFldExpr(pos,new ThisExpr(pos), f),
 						new ContainerAccessExpr(pos, new LVarExpr(pos,meq.params[1]), new ConstIntExpr(idx))
@@ -362,7 +362,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				));
 				idx++;
 			}
-			meq.body.stats.add(new ReturnStat(pos,new ConstBoolExpr(true)));
+			meq.block.stats.add(new ReturnStat(pos,new ConstBoolExpr(true)));
 		}
 		
 		// create assignableFrom function
@@ -378,7 +378,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			misa.params.add(new FormPar(pos,"ti",Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
-			misa.body.stats.add(new IfElseStat(pos,
+			misa.block.stats.add(new IfElseStat(pos,
 				new BooleanNotExpr(pos,
 					new CallExpr(pos,
 						new IFldExpr(pos,new ThisExpr(), typeinfo_clazz.resolveField("clazz")),
@@ -391,7 +391,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				new ReturnStat(pos,new ConstBoolExpr(false)),
 				null
 			));
-			misa.body.stats.add(new ExprStat(pos,
+			misa.block.stats.add(new ExprStat(pos,
 				new AssignExpr(pos,AssignOperator.Assign,
 					new LVarExpr(pos,misa.params[0]),
 					new CastExpr(pos,typeinfo_clazz.ctype,new LVarExpr(pos,misa.params[0]))
@@ -399,7 +399,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			));
 			foreach (ArgType at; this.getTypeInfoArgs()) {
 				Field f = typeinfo_clazz.resolveField((nameTypeInfo+"$"+at.name).intern());
-				misa.body.stats.add(new IfElseStat(pos,
+				misa.block.stats.add(new IfElseStat(pos,
 					new BooleanNotExpr(pos,
 						new CallExpr(pos,
 							new IFldExpr(pos,new ThisExpr(), f),
@@ -413,7 +413,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					null
 				));
 			}
-			misa.body.stats.add(new ReturnStat(pos,new ConstBoolExpr(true)));
+			misa.block.stats.add(new ReturnStat(pos,new ConstBoolExpr(true)));
 		}
 		// create $instanceof function
 		// public boolean $instanceof(Object obj) {
@@ -426,7 +426,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			misa.params.add(new FormPar(pos,"obj",Type.tpObject,FormPar.PARAM_NORMAL,ACC_FINAL));
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
-			misa.body.stats.add(new IfElseStat(pos,
+			misa.block.stats.add(new IfElseStat(pos,
 				new BinaryBoolExpr(pos,BinaryOperator.Equals,
 					new LVarExpr(pos,misa.params[0]),
 					new ConstNullExpr()
@@ -434,7 +434,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				new ReturnStat(pos,new ConstBoolExpr(false)),
 				null
 			));
-			misa.body.stats.add(new IfElseStat(pos,
+			misa.block.stats.add(new IfElseStat(pos,
 				new BooleanNotExpr(pos,
 					new CallExpr(pos,
 						new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField("clazz")),
@@ -445,7 +445,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				new ReturnStat(pos,new ConstBoolExpr(false)),
 				null
 			));
-			misa.body.stats.add(new ReturnStat(pos,
+			misa.block.stats.add(new ReturnStat(pos,
 				new CallExpr(pos,
 					new ThisExpr(),
 					typeinfo_clazz.resolveMethod("$assignableFrom",Type.tpBoolean,Type.tpTypeInfo),
@@ -683,7 +683,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			root.body = new Block(root.pos);
 		IfElseStat st = makeDispatchStat(root,mmt);
 		if (st != null)
-			root.body.stats.insert(0, st);
+			root.block.stats.insert(0, st);
 	}
 */
 	private static void autoProxyMixinMethods(@forward RStruct self, VTableEntry vte) {
@@ -738,9 +738,9 @@ public final view RStruct of Struct extends RTypeDecl {
 			members.append(m);
 			m.body = new Block();
 			if( m.type.ret() ≡ Type.tpVoid )
-				m.body.stats.add(new ExprStat(0,makeDispatchCall(self,0, m, def)));
+				m.block.stats.add(new ExprStat(0,makeDispatchCall(self,0, m, def)));
 			else
-				m.body.stats.add(new ReturnStat(0,makeDispatchCall(self,0, m, def)));
+				m.block.stats.add(new ReturnStat(0,makeDispatchCall(self,0, m, def)));
 		}
 		vte.add(m);
 	}
@@ -775,9 +775,9 @@ public final view RStruct of Struct extends RTypeDecl {
 			trace(Kiev.debugMultiMethod,"Created a bridge method "+self+"."+bridge+" for vtable entry "+vte.name+vte.etype);
 			bridge.body = new Block();
 			if (bridge.type.ret() ≢ Type.tpVoid)
-				bridge.body.stats.append(new ReturnStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
+				bridge.block.stats.append(new ReturnStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
 			else
-				bridge.body.stats.append(new ExprStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
+				bridge.block.stats.append(new ExprStat(mo.pos,makeDispatchCall(self,mo.pos, bridge, mo)));
 			vte.add(bridge);
 		}
 	}
@@ -953,7 +953,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				Block body = new Block(0);
 				body.stats.add(st);
 				if (mm.body != null)
-					mm.body.stats.insert(0, body);
+					mm.block.stats.insert(0, body);
 				else
 					mm.body = body;
 			}
@@ -1140,7 +1140,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				if( f.isStatic() ) {
 					if( class_init == null )
 						class_init = getClazzInitMethod();
-					class_init.body.stats.add(
+					class_init.block.stats.add(
 						new ExprStat(f.init.pos,
 							new AssignExpr(f.init.pos,
 								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
@@ -1162,7 +1162,7 @@ public final view RStruct of Struct extends RTypeDecl {
 								new Shadow(f.init)
 							)
 						);
-					instance_init.body.stats.add(init_stat);
+					instance_init.block.stats.add(init_stat);
 					init_stat.setHidden(true);
 				}
 				f.setAddedToInit(true);
@@ -1173,14 +1173,14 @@ public final view RStruct of Struct extends RTypeDecl {
 				if (init.isStatic()) {
 					if( class_init == null )
 						class_init = getClazzInitMethod();
-					class_init.body.stats.add(init_stat);
+					class_init.block.stats.add(init_stat);
 				} else {
 					if( instance_init == null ) {
 						instance_init = new Initializer();
 						instance_init.pos = init.pos;
 						instance_init.body = new Block();
 					}
-					instance_init.body.stats.add(init_stat);
+					instance_init.block.stats.add(init_stat);
 				}
 			}
 		}
@@ -1383,7 +1383,7 @@ public final view RStruct of Struct extends RTypeDecl {
 							int par = m.params.length;
 							String nm = proxy_fields[j].id.sname;
 							m.params.append(new FormPar(m.pos,nm,proxy_fields[j].type,FormPar.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
-							m.body.stats.insert(
+							m.block.stats.insert(
 								1,
 								new ExprStat(m.pos,
 									new AssignExpr(m.pos,AssignOperator.Assign,

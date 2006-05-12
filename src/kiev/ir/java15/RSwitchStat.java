@@ -216,7 +216,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					new ConstIntExpr(defindex)
 				});
 			Constructor clinit = ctx_clazz.getClazzInitMethod();
-			clinit.body.stats.add(
+			clinit.block.stats.add(
 				new ExprStat(typehash.init.pos,
 					new AssignExpr(typehash.init.pos,AssignOperator.Assign
 						,new SFldExpr(typehash.pos,typehash),new Shadow(typehash.init))

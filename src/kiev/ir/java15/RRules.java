@@ -46,7 +46,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret() ≡ Type.tpVoid ) {
-					body.stats.append(new ReturnStat(pos,null));
+					block.stats.append(new ReturnStat(pos,null));
 					body.setAbrupted(true);
 				} else {
 					Kiev.reportError(body,"Return requared");
@@ -60,7 +60,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 }
 
 @nodeview
-public final view RRuleBlock of RuleBlock extends RBlock {
+public final view RRuleBlock of RuleBlock extends RENode {
 	public ASTRuleNode		node;
 	public StringBuffer		fields_buf;
 
@@ -117,7 +117,7 @@ public final view RRuleBlock of RuleBlock extends RBlock {
 		trace(Kiev.debugRules,"Rule text generated:\n"+sb);
 		Block mbody = Kiev.parseBlock((RuleBlock)this,sb);
 		ctx_method.body = mbody;
-		mbody.stats.addAll(stats.delToArray());
+		//mbody.stats.addAll(stats.delToArray());
 		return false;
 	}
 }

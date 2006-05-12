@@ -494,7 +494,7 @@ public final class Kiev {
 					n = n.parent();
 				}
 				if( pl.head() != f ) {
-					reportError(b,"Prescanned body highest parent is "+pl.head()+" but "+f+" is expected");
+					reportError(b,"Prescanned body highest parent is "+pl.head()+" but "+b.expected_parent+" is expected in file "+f);
 					continue;
 				}
 				foreach(ASTNode nn; pl) {
@@ -505,21 +505,10 @@ public final class Kiev {
 					else if (nn instanceof Method)
 						Kiev.k.curMethod = (Method)nn;
 				}
-				Block bl;
-				switch(b.mode) {
-				case PrescannedBody.BlockMode:
-					bl = Kiev.k.PrescannedBlock(b);
-					break;
-				case PrescannedBody.RuleBlockMode:
-					bl = Kiev.k.PrescannedRuleBlock(b);
-					break;
-				default:
-					throw new RuntimeException("Unknown mode of prescanned block: "+b.mode);
-				}
-				if( !((SetBody)b.parent()).setBody(bl) ) {
+				ENode bl = Kiev.k.PrescannedBlock(b);
+				if( !((PreScanneable)b.parent()).setBody(bl) ) {
 					reportError(b,"Prescanned body does not math");
 				}
-				b.replaceWithNode(null);
 				pl = pl.reverse();
 			}
 		} finally {

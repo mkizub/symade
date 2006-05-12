@@ -257,7 +257,7 @@ public class TreeWalker {
 	public void post_exec(ANode n) {}
 }
 
-public interface SetBody {
+public interface PreScanneable {
 	public boolean setBody(ENode body);
 }
 

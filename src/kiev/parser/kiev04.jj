@@ -1833,15 +1833,15 @@ ASTOperatorAlias OperatorAlias() :
 	{ return a; }
 }
 
-Block MaybeSkipBlock() :
-{ boolean old_declMode; Block bl = null; }
+ENode MaybeSkipBlock() :
+{ boolean old_declMode; ENode bl = null; }
 {
 	(
 		LOOKAHEAD({ interface_only })
 		"{"
 		{
 			Token tk = getToken(0);
-			PrescannedBody pbody = new PrescannedBody(tk.beginLine,tk.beginColumn);
+			PrescannedBody pbody = new PrescannedBody((ASTNode)presc, tk.beginLine, tk.beginColumn);
 			curFileUnit.addPrescannedBody(pbody);
 			int depth = 1;
 			do {
@@ -1849,15 +1849,20 @@ Block MaybeSkipBlock() :
 				if( tk.kind == LBRACE ) depth++;
 				else if( tk.kind == RBRACE ) depth--;
 			} while( depth > 0 );
-			presc.pbody = pbody;
-			if( presc instanceof RuleMethod )
+			if (presc instanceof RuleMethod)
 				pbody.mode = PrescannedBody.RuleBlockMode;
+			else if (presc instanceof Method && ((Method)presc).isMacro())
+				pbody.mode = PrescannedBody.RewriteMatchMode;
 			else
 				pbody.mode = PrescannedBody.BlockMode;
+			bl = pbody;
 		}
 	|
 		LOOKAHEAD({ presc instanceof RuleMethod })
 		bl = RuleBlock()
+	|
+		LOOKAHEAD({ presc instanceof Method && ((Method)presc).isMacro() })
+		bl = RewriteMatch()
 	|
 		bl = Block()
 	)
@@ -2077,7 +2082,6 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 Initializer Initializer(ASTModifiers modifiers) :
 {
 	Initializer n = mkInitializer(getToken(0).getPos(),modifiers);
-	Block bl;
 }
 {
 	{
@@ -2087,8 +2091,7 @@ Initializer Initializer(ASTModifiers modifiers) :
 		}*/
 	}
 	{ presc = n; }
-	bl = MaybeSkipBlock()
-	{	if (bl != null) n.body = bl;	}
+	n.body = MaybeSkipBlock()
 	[ ";" ]
 	
 	{ return n; }
@@ -2937,7 +2940,7 @@ ENode LabeledStatement() :
 }
 
 
-Block PrescannedBlock(PrescannedBody b) :
+ENode PrescannedBlock(PrescannedBody b) :
 {
 	Token t;
 	// Skip to the start of prescanned body
@@ -2953,10 +2956,22 @@ Block PrescannedBlock(PrescannedBody b) :
 		}
 		getNextToken();
 	}
-	Block bl;
+	ENode bl = null;
 }
 {
-	bl=Block()
+	(
+		LOOKAHEAD({b.mode == PrescannedBody.BlockMode})
+		bl=Block()
+	|
+		LOOKAHEAD({b.mode == PrescannedBody.RuleBlockMode})
+		bl=RuleBlock()
+	|
+		LOOKAHEAD({b.mode == PrescannedBody.CondBlockMode})
+		bl=CondBlock()
+	|
+		LOOKAHEAD({b.mode == PrescannedBody.RewriteMatchMode})
+		bl=RewriteMatch()
+	)
 	{ return bl; }
 }
 
@@ -2976,29 +2991,6 @@ Block Block() :
 		)*
 	} finally { declMode = old_declMode; }
     "}"
-	{ return bl; }
-}
-
-RuleBlock PrescannedRuleBlock(PrescannedBody b) :
-{
-	Token t;
-	// Skip to the start of prescanned body
-	Token tk;
-	for(;;) {
-		tk = getToken(1);
-		if( tk.beginLine==b.lineno && tk.beginColumn==b.columnno )
-			break;
-		if( tk.kind == EOF ) {
-			throw new CompilerException(b,
-				"Expected to find start of block after scanning. Have you changed the file?"
-			);
-		}
-		getNextToken();
-	}
-	RuleBlock bl;
-}
-{
-	bl=RuleBlock()
 	{ return bl; }
 }
 
@@ -3494,7 +3486,11 @@ RewriteNodeArg RewriteNodeArg() :
 {
 	t = <IDENTIFIER>
 	"="
-	rn = ExpressionNT(noCommaTokenSet)
+	(
+		rn = ArrayInitializer()
+	|
+		rn = ExpressionNT(noCommaTokenSet)
+	)
 	{ return new RewriteNodeArg(t.image, rn); }
 }
 

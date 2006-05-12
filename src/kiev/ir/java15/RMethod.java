@@ -31,12 +31,14 @@ public view RMethod of Method extends RDNode {
 	public:ro			NArr<FormPar>		params;
 	public:ro			NArr<ASTAlias>		aliases;
 	public				Var					retvar;
-	public				Block				body;
+	public				ENode				body;
 	public:ro			NArr<WBCCondition>	conditions;
 	public:ro			NArr<Field>			violated_fields;
 	public				MetaValue			annotation_default;
 	public				boolean				inlined_by_dispatcher;
 	public				boolean				invalid_types;
+
+	public:ro			Block				block;
 
 	public Var getRetVar();
 	public MetaThrows getMetaThrows();
@@ -82,7 +84,7 @@ public view RMethod of Method extends RDNode {
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret() ≡ Type.tpVoid ) {
-					body.stats.append(new ReturnStat(pos,null));
+					block.stats.append(new ReturnStat(pos,null));
 					body.setMethodAbrupted(true);
 				} else {
 					Kiev.reportError(self,"Return requared");
@@ -123,7 +125,7 @@ public final view RConstructor of Constructor extends RMethod {
 		RMethod.resolveMethod(this); // super.resolveDecl()
 		ENode[] addstats = this.addstats.delToArray();
 		for(int i=0; i < addstats.length; i++) {
-			body.stats.insert(i,addstats[i]);
+			block.stats.insert(i,addstats[i]);
 			trace(Kiev.debugResolve,"ENode added to constructor: "+addstats[i]);
 		}
 	}
@@ -131,7 +133,9 @@ public final view RConstructor of Constructor extends RMethod {
 
 @nodeview
 public final view RInitializer of Initializer extends RDNode {
-	public Block				body;
+	public:ro ENode			body;
+	public:ro Block			block;
+
 
 	public void resolveDecl() {
 		if( isResolved() ) return;

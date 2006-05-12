@@ -57,7 +57,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			Method mvals = new Method(nameEnumValues,new ArrayType(clazz.ctype),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
 			mvals.pos = pos;
 			mvals.body = new Block(pos);
-			mvals.body.stats.add(
+			mvals.block.stats.add(
 				new ReturnStat(pos,
 					new SFldExpr(pos,clazz.resolveField(nameEnumValuesFld)) ) );
 			clazz.addMethod(mvals);
@@ -87,7 +87,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					});
 			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
-			tome.body.stats.add(sw);
+			tome.block.stats.add(sw);
 			clazz.addMethod(tome);
 		}
 
@@ -121,7 +121,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					});
 			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
-			tostr.body.stats.add(sw);
+			tostr.block.stats.add(sw);
 			clazz.addMethod(tostr);
 		}
 
@@ -140,7 +140,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					Type.tpString.clazz.resolveMethod("intern",Type.tpString),
 					ENode.emptyArray
 				));
-			fromstr.body.stats.add(new ExprStat(pos,ae));
+			fromstr.block.stats.add(new ExprStat(pos,ae));
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
 				String str = f.id.sname;
@@ -151,7 +151,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					new ReturnStat(pos,new SFldExpr(pos,f)),
 					null
 					);
-				fromstr.body.stats.add(ifst);
+				fromstr.block.stats.add(ifst);
 				if (f.id.aliases != null) {
 					str = f.id.aliases[0];
 					if (str.charAt(0) == '\"') {
@@ -164,12 +164,12 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 									new ReturnStat(pos,new SFldExpr(pos,f)),
 									null
 									);
-							fromstr.body.stats.add(ifst);
+							fromstr.block.stats.add(ifst);
 						}
 					}
 				}
 			}
-			fromstr.body.stats.add(
+			fromstr.block.stats.add(
 				new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,ENode.emptyArray))
 				);
 			clazz.addMethod(fromstr);

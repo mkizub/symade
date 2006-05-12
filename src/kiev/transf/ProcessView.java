@@ -68,7 +68,7 @@ public class ProcessView extends TransfProcessor implements Constants {
 				cast.setAbstract(true);
 			} else {
 				cast.body = new Block();
-				cast.body.stats.add(new ReturnStat(0, new ConstBoolExpr()));
+				cast.block.stats.add(new ReturnStat(0, new ConstBoolExpr()));
 			}
 			clazz.view_of.getStruct().addMethod(cast);
 		}
@@ -230,9 +230,9 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 			foreach (FormPar fp; m.params)
 				ce.args.append(new LVarExpr(fp.pos, fp));
 			if (ct.ret() ≢ Type.tpVoid)
-				m.body.stats.add(new ReturnStat(m.pos, ce));
+				m.block.stats.add(new ReturnStat(m.pos, ce));
 			else
-				m.body.stats.add(new ExprStat(m.pos, ce));
+				m.block.stats.add(new ExprStat(m.pos, ce));
 		}
 		
 		// generate getter/setter methods
@@ -288,7 +288,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 		foreach (Method dn; clazz.view_of.getStruct().members) {
 			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
 				if (!dn.isAbstract() && dn.isSynthetic()) {
-					dn.body.stats[0] = new ReturnStat(0, new NewExpr(0, impl.ctype, new ENode[]{new ThisExpr()}));
+					dn.block.stats[0] = new ReturnStat(0, new NewExpr(0, impl.ctype, new ENode[]{new ThisExpr()}));
 				}
 				break;
 			}
@@ -300,7 +300,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 				if (dn.isSynthetic()) {
 					dn.setAbstract(false);
 					dn.body = new Block();
-					dn.body.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
+					dn.block.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
 				}
 				break;
 			}

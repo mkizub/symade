@@ -362,7 +362,6 @@ kiev.parser.ParseException kiev/parser/ParseException kiev\parser\ParseException
 kiev.parser.Parser kiev/parser/Parser kiev\parser\kiev040.java
 kiev.parser.ParserConstants kiev/parser/ParserConstants kiev\parser\kiev040.java
 kiev.parser.PostfixExpr kiev/parser/PostfixExpr kiev\parser\TempExpr.java
-kiev.parser.PreScanneable kiev/parser/PreScanneable kiev\parser\PreScanneable.java
 kiev.parser.PrefixExpr kiev/parser/PrefixExpr kiev\parser\TempExpr.java
 kiev.parser.PrescannedBody kiev/parser/PrescannedBody kiev\parser\PrescannedBody.java
 kiev.parser.SimpleCharStream kiev/parser/SimpleCharStream kiev\parser\SimpleCharStream.java
@@ -591,6 +590,7 @@ kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueE
 kiev.vlang.ParentEnumerator kiev/vlang/ParentEnumerator kiev\vlang\PassInfo.java
 kiev.vlang.PassInfo kiev/vlang/PassInfo kiev\vlang\PassInfo.java
 kiev.vlang.PostfixOperator kiev/vlang/PostfixOperator kiev\vlang\Operator.java
+kiev.vlang.PreScanneable kiev/vlang/PreScanneable kiev\vlang\AST.java
 kiev.vlang.PrefixOperator kiev/vlang/PrefixOperator kiev\vlang\Operator.java
 kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java
 kiev.vlang.ProjectFileType kiev/vlang/ProjectFileType kiev\vlang\Env.java
@@ -626,7 +626,6 @@ kiev.vlang.ScopeOfNames kiev/vlang/ScopeOfNames kiev\vlang\Resolving.java
 kiev.vlang.ScopeOfOperators kiev/vlang/ScopeOfOperators kiev\vlang\Resolving.java
 kiev.vlang.ScopeStaticFieldInfo kiev/vlang/ScopeStaticFieldInfo kiev\vlang\Var.java
 kiev.vlang.ScopeVarInfo kiev/vlang/ScopeVarInfo kiev\vlang\Var.java
-kiev.vlang.SetBody kiev/vlang/SetBody kiev\vlang\AST.java
 kiev.vlang.Shadow kiev/vlang/Shadow kiev\vlang\Expr.java
 kiev.vlang.SpaceAttAttrSlot kiev/vlang/SpaceAttAttrSlot kiev\vlang\Tree.java
 kiev.vlang.SpaceAttrSlot kiev/vlang/SpaceAttrSlot kiev\vlang\Tree.java

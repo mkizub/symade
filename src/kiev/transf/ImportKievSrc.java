@@ -629,7 +629,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					Method m = (Method)n;
 					if (m.params.length != 0)
 						Kiev.reportError(m, "Annotation methods may not have arguments");
-					if (m.body != null || m.pbody != null)
+					if (m.body != null)
 						Kiev.reportError(m, "Annotation methods may not have bodies");
 					if (m.conditions.length > 0)
 						Kiev.reportError(m, "Annotation methods may not have work-by-contruct conditions");

@@ -336,7 +336,7 @@ public final class NewInitializedArrayExpr extends ENode {
 public final class NewClosure extends ENode implements ScopeOfNames {
 	
 	@dflow(out="this:in") private static class DFI {
-	@dflow(in="this:in")	Block		body;
+	@dflow(in="this:in")	ENode		body;
 	}
 
 
@@ -347,7 +347,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 
 	@att public TypeRef				type_ret;
 	@att public NArr<FormPar>		params;
-	@att public Block				body;
+	@att public ENode				body;
 	@att public Struct				clazz;
 	@ref public CallType			ctype;
 
@@ -355,7 +355,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	public static final view VNewClosure of NewClosure extends VENode {
 		public TypeRef			type_ret;
 		public NArr<FormPar>	params;
-		public Block			body;
+		public ENode			body;
 		public Struct			clazz;
 		public CallType			ctype;
 	}
