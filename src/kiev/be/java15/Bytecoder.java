@@ -51,9 +51,10 @@ public class Bytecoder implements JConstants {
 		if (bcclazz.getSuperClazzName() != null) {
 			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
 			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
-		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
-			if (!Env.loadStruct(cl.super_type.clazz).isResolved())
-				throw new RuntimeException("Class "+cl.super_type.clazz.qname()+" not found");
+			CompaundType st = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
+		    cl.super_types.append(new TypeRef(st));
+			if (!Env.loadStruct(st.clazz).isResolved())
+				throw new RuntimeException("Class "+st.clazz.qname()+" not found");
 		}
 
 		// Read interfaces
@@ -65,7 +66,7 @@ public class Bytecoder implements JConstants {
 				throw new RuntimeException("Class "+interf+" not found");
 			if (!interf.clazz.isInterface())
 				throw new RuntimeException("Class "+interf+" is not an interface");
-			cl.interfaces.append(new TypeRef(interf));
+			cl.super_types.append(new TypeRef(interf));
 		}
 
 		cl.members.delAll();
@@ -518,17 +519,22 @@ public class Bytecoder implements JConstants {
 		trace(Kiev.debugBytecodeGen,"note: class "+cl+" class signature = "+cl_sig);
 		bcclazz.cp_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(cl_sig).pos];
 	    // This class's superclass name
-	    if( cl.super_type != null ) {
-		    KString sup_sig = cl.super_type.getJType().java_signature;
+	    if (cl.super_types.length > 0) {
+			Type tp = cl.super_types[0].getType();
+			assert(tp.getStruct().isClazz());
+		    KString sup_sig = tp.getJType().java_signature;
 		    bcclazz.cp_super_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(sup_sig).pos];
 		} else {
 			bcclazz.cp_super_clazz = null;
 		}
 
-	    bcclazz.cp_interfaces = new kiev.bytecode.ClazzPoolConstant[cl.interfaces.length];
-		for(int i=0; i < cl.interfaces.length; i++) {
-		    KString interf_sig = cl.interfaces[i].getJType().java_signature;
-			bcclazz.cp_interfaces[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(interf_sig).pos];
+		assert(cl.super_types.length > 0);
+	    bcclazz.cp_interfaces = new kiev.bytecode.ClazzPoolConstant[cl.super_types.length-1];
+		for(int i=1; i < cl.super_types.length; i++) {
+			Type tp = cl.super_types[i].getType();
+			assert(tp.getStruct().isInterface());
+		    KString interf_sig = tp.getJType().java_signature;
+			bcclazz.cp_interfaces[i-1] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(interf_sig).pos];
 		}
 
 		{

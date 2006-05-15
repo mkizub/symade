@@ -68,7 +68,6 @@ public class ASTCallExpression extends ENode {
 						throw new CompilerException(this,"Method "+Method.toString(ident.name,args.getArray())+" unresolved");
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
-					Type st = ctx_clazz.super_type;
 					CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),false);
 					replaceWithNode(ce);
 					return;
@@ -79,11 +78,10 @@ public class ASTCallExpression extends ENode {
 				CallType mt = new CallType(ta,Type.tpVoid);
 				ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 				try {
-					if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.id.uname,mt) )
+					if( !PassInfo.resolveBestMethodR(ctx_clazz.super_types[0].getType(),m,info,ctx_method.id.uname,mt) )
 						throw new CompilerException(this,"Method "+Method.toString(ident.name,args.getArray())+" unresolved");
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
-					Type st = ctx_clazz.super_type;
 					CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),true);
 					replaceWithNode(ce);
 					return;
@@ -157,7 +155,6 @@ public class ASTCallExpression extends ENode {
 			if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.id.uname,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(ident.name,args.getArray())+" unresolved");
             if( info.isEmpty() ) {
-				Type st = ctx_clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),false);
 				replaceWithNode(ce);
 				ce.resolve(ret);
@@ -171,10 +168,9 @@ public class ASTCallExpression extends ENode {
 				ta[i] = args[i].getType();
 			CallType mt = new CallType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.id.uname,mt) )
+			if( !PassInfo.resolveBestMethodR(ctx_clazz.super_types[0].getType(),m,info,ctx_method.id.uname,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(ident.name,args.getArray())+" unresolved");
             if( info.isEmpty() ) {
-				Type st = ctx_clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),true);
 				replaceWithNode(ce);
 				ce.resolve(ret);

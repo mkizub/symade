@@ -60,7 +60,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		return s.meta.get(mnNode) != null || s.meta.get(mnNodeImpl) != null || s.meta.get(mnNodeSet) != null;
 	}
 	private boolean isNodeKind(Type t) {
-		if (t.getStruct() != null)
+		if (t != null && t.getStruct() != null)
 			return isNodeKind(t.getStruct());
 		return false;
 	}
@@ -89,11 +89,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			return;
 		}
 		
-		if (s.super_bound.getType() != null && isNodeKind(s.super_type)) {
-			if (s.meta.get(mnNodeView) == null)
-				Kiev.reportError(s,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
+		if (s.meta.get(mnNodeView) == null) {
+			foreach (TypeRef st; s.super_types; isNodeKind(st.getType()))
+				Kiev.reportError(s,"Class "+s+" must be marked with @node: it extends @node");
 			return;
 		}
+
 		// Check fields to not have @att and @ref
 		foreach (Field f; s.members) {
 			Meta fmatt = f.meta.get(mnAtt);
@@ -182,17 +183,17 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			if (isAtt) {
 				TVarBld set = new TVarBld();
 				set.append(tpSpaceAttAttrSlot.getStruct().args[0].getAType(), clz_tp);
-				s.super_type = tpSpaceAttAttrSlot.applay(set);
+				s.super_types.insert(0, new TypeRef(tpSpaceAttAttrSlot.applay(set)));
 			} else {
 				TVarBld set = new TVarBld();
 				set.append(tpSpaceRefAttrSlot.getStruct().args[0].getAType(), clz_tp);
-				s.super_type = tpSpaceRefAttrSlot.applay(set);
+				s.super_types.insert(0, new TypeRef(tpSpaceRefAttrSlot.applay(set)));
 			}
 		} else {
 			if (isAtt)
-				s.super_type = tpAttAttrSlot;
+				s.super_types.insert(0, new TypeRef(tpAttAttrSlot));
 			else
-				s.super_type = tpRefAttrSlot;
+				s.super_types.insert(0, new TypeRef(tpRefAttrSlot));
 		}
 		// make constructor
 		{
@@ -204,7 +205,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			ctor.block.stats.add(new ExprStat(
 				new CallExpr(f.pos,
 					null,
-					s.super_type.getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpClass),
+					s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpClass),
 					null,
 					new ENode[]{
 						new LVarExpr(f.pos, ctor.params[0]),
@@ -314,9 +315,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			// already generated
 			return;
 		}
-		if (s.super_type != null && isNodeKind(s.super_type)) {
-			this.autoGenerateMembers(s.super_type.getStruct());
-		}
+		foreach (TypeRef st; s.super_types; isNodeKind(st.getStruct()))
+			this.autoGenerateMembers(st.getStruct());
 		// attribute names array
 		Vector<Field> aflds = new Vector<Field>();
 		if (isNodeImpl(s)) {
@@ -325,7 +325,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				foreach (Field f; ss.members; !f.isStatic() && (f.meta.get(mnAtt) != null || f.meta.get(mnRef) != null)) {
 					aflds.append(f);
 				}
-				ss = ss.super_bound.getStruct();
+				ss = ss.super_types[0].getStruct();
 			}
 		}
 		ENode[] vals_init = new ENode[aflds.size()];
@@ -390,13 +390,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				if!(ee.getType().isReference())
 					CastExpr.autoCastToReference(ee);
 			}
-			Type sup = s.super_type;
-			if (sup != null && isNodeKind(sup)) {
+			Struct sup = s.super_types[0].getStruct();
+			if (isNodeKind(sup)) {
 				getV.block.stats.add(
 					new ReturnStat(0,
 						new CallExpr(0,
 							new ThisExpr(true),
-							sup.getStruct().resolveMethod("getVal",Type.tpObject,Type.tpString),
+							sup.resolveMethod("getVal",Type.tpObject,Type.tpString),
 							null,
 							new ENode[]{new LVarExpr(0, getV.params[0])},
 							true)
@@ -436,7 +436,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			s.addMethod(copyV);
 			copyV.body = new Block();
 			Var v = new Var(0,"node",s.ctype,0);
-			if (s.super_bound.getType() != null && isNodeKind(s.super_type)) {
+			if (isNodeKind(s.super_types[0].getStruct())) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
 				cae.obj = new ASTIdentifier(0,"super");
 				cae.ident = new SymbolRef(0,"copyTo");
@@ -546,12 +546,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				if!(f.getType().isReference())
 					CastExpr.autoCastToPrimitive(ee);
 			}
-			Type sup = s.super_type;
-			if (sup != null && isNodeKind(sup)) {
+			Struct sup = s.super_types[0].getStruct();
+			if (isNodeKind(sup)) {
 				setV.block.stats.add(
 					new CallExpr(0,
 						new ThisExpr(true),
-						sup.getStruct().resolveMethod("setVal",Type.tpVoid,Type.tpString,Type.tpObject),
+						sup.resolveMethod("setVal",Type.tpVoid,Type.tpString,Type.tpObject),
 						null,
 						new ENode[]{new LVarExpr(0, setV.params[0]),new LVarExpr(0, setV.params[1])},
 						true)

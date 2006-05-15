@@ -1164,14 +1164,14 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			"extends"
 			(
 				LOOKAHEAD("rule")
-				clazz.super_bound = PrimitiveType()
-			|	clazz.super_bound = NArrType()
+				clazz.super_types += PrimitiveType()
+			|	clazz.super_types += NArrType()
 			)
 		]
 		[
 			"implements"
-			clazz.interfaces += NArrType()
-			( "," clazz.interfaces += NArrType()	)*
+			clazz.super_types += NArrType()
+			( "," clazz.super_types += NArrType()	)*
 		]
 	|	"interface"
 		name = Name()
@@ -1181,8 +1181,8 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
 			"extends"
-			clazz.interfaces += NArrType()
-			( "," clazz.interfaces += NArrType()	)*
+			clazz.super_types += NArrType()
+			( "," clazz.super_types += NArrType()	)*
 		]
 	|	"@interface"
 		(	name = Name()
@@ -1209,14 +1209,14 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			"extends"
 			(
 				LOOKAHEAD("rule")
-				clazz.super_bound = PrimitiveType()
-			|	clazz.super_bound = NArrType()
+				clazz.super_types += PrimitiveType()
+			|	clazz.super_types += NArrType()
 			)
 		]
 		[
 			"implements"
-			clazz.interfaces += NArrType()
-			( "," clazz.interfaces += NArrType()	)*
+			clazz.super_types += NArrType()
+			( "," clazz.super_types += NArrType()	)*
 		]
 	|	"metatype"
 		name = Name()
@@ -1226,12 +1226,12 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		args = ClazzArguments() { clazz.args.addAll(args); }
 //		[
 			"extends"
-			clazz.super_bound = Type()
+			clazz.super_types += Type()
 //		]
 //		[
 //			"implements"
-//			clazz.interfaces += NArrType()
-//			( "," clazz.interfaces += NArrType()	)*
+//			clazz.super_types += NArrType()
+//			( "," clazz.super_types += NArrType()	)*
 //		]
 	)
 	{ oldClazz = curClazz; curClazz = clazz; }
@@ -1307,7 +1307,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 	name = Name()
 	{
 		clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
-		clazz.super_type = parent.ctype;
+		//clazz.super_types.insert(0, new TypeRef(parent.ctype));
 		clazz.setPizzaCase(true);
 		clazz.setSingleton(true);
 	}

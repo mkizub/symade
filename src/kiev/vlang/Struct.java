@@ -43,8 +43,7 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		 public ASTNodeMetaType				ameta_type;
 		 public CompaundType				ctype;
 	@att public TypeRef						view_of;
-	@att public TypeRef						super_bound;
-	@att public NArr<TypeRef>				interfaces;
+	@att public NArr<TypeRef>				super_types;
 	@att public NArr<TypeConstr>			args;
 	@ref public Struct						package_clazz;
 	@ref public Struct						typeinfo_clazz;
@@ -53,15 +52,11 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 	@ref public NArr<TypeDecl>				direct_extenders;
 	public kiev.be.java15.Attr[]			attrs = kiev.be.java15.Attr.emptyArray;
 	@att public NArr<ASTNode>				members;
-		 private MetaType[]					super_types;
-
-	@getter public final CompaundType	get$super_type()	{ return (CompaundType)super_bound.lnk; }
-	@setter public final void set$super_type(CompaundType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
+		 private MetaType[]					super_meta_types;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (attr.name == "args" ||
-			attr.name == "super_bound" ||
-			attr.name == "interfaces" ||
+			attr.name == "super_types" ||
 			attr.name == "package_clazz"
 		) {
 			this.callbackSuperTypeChanged(this);
@@ -79,24 +74,23 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 	}
 	
 	public void callbackSuperTypeChanged(TypeDecl chg) {
-		super_types = null;
+		super_meta_types = null;
 		imeta_type.version++;
 		foreach (TypeDecl td; direct_extenders)
 			td.callbackSuperTypeChanged(chg);
 	}
 	
 	public MetaType[] getAllSuperTypes() {
-		if (super_types != null)
-			return super_types;
+		if (super_meta_types != null)
+			return super_meta_types;
 		Vector<MetaType> types = new Vector<MetaType>();
-		addSuperTypes(super_bound, types);
-		foreach (TypeRef it; interfaces)
+		foreach (TypeRef it; super_types)
 			addSuperTypes(it, types);
 		if (types.length == 0)
-			super_types = MetaType.emptyArray;
+			super_meta_types = MetaType.emptyArray;
 		else
-			super_types = types.toArray();
-		return super_types;
+			super_meta_types = types.toArray();
+		return super_meta_types;
 	}
 	
 	public boolean isClazz() {
@@ -344,32 +338,30 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 	@getter public Struct get$child_ctx_clazz()	{ return (Struct)this; }
 
 	public boolean instanceOf(Struct cl) {
-		if( cl == null ) return false;
-		if( this.getStruct().equals(cl) ) return true;
-		if( super_bound.getStruct() != null && super_bound.getStruct().instanceOf(cl) )
-			return true;
-		if( cl.isInterface() ) {
-			for(int i=0; i < interfaces.length; i++) {
-				if( interfaces[i].getStruct().instanceOf(cl) ) return true;
-			}
+		if (cl == null) return false;
+		if (this.getStruct().equals(cl)) return true;
+		foreach (TypeRef st; super_types; st.getStruct() != null) {
+			if (st.getStruct().instanceOf(cl))
+				return true;
 		}
 		return false;
 	}
 
 	public Field resolveField(String name) {
-		return resolveField(this,name,this,true);
+		return resolveField(name,true);
 	}
 
 	public Field resolveField(String name, boolean fatal) {
-		return resolveField(this,name,this,fatal);
-	}
-
-	private static Field resolveField(Struct self, String name, Struct where, boolean fatal) {
-		self.getStruct().checkResolved();
-		foreach(Field f; self.members; f.id.equals(name) ) return f;
-		if( self.super_type != null ) return resolveField(self.super_type.getStruct(),name,where,fatal);
+		checkResolved();
+		foreach (Field f; this.members; f.id.equals(name))
+			return f;
+		foreach (TypeRef tr; this.super_types; tr.getStruct() != null) {
+			Field f = tr.getStruct().resolveField(name, false);
+			if (f != null)
+				return f;
+		}
 		if (fatal)
-			throw new RuntimeException("Unresolved field "+name+" in class "+where);
+			throw new RuntimeException("Unresolved field "+name+" in class "+this);
 		return null;
 	}
 
@@ -404,8 +396,7 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		public				OuterMetaType			ometa_type;
 		public:ro			CompaundType			ctype;
 		public				TypeRef					view_of;
-		public				TypeRef					super_bound;
-		public:ro			NArr<TypeRef>			interfaces;
+		public:ro			NArr<TypeRef>			super_types;
 		public:ro			NArr<TypeConstr>		args;
 		public				Struct					package_clazz;
 		public				Struct					typeinfo_clazz;
@@ -413,9 +404,6 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		public:ro			NArr<DNode>				sub_decls;
 		public:ro			NArr<TypeDecl>			direct_extenders;
 		public:ro			NArr<ASTNode>			members;
-
-		@getter public final CompaundType	get$super_type();
-		@setter public final void set$super_type(CompaundType tp);
 
 		public MetaType[] getAllSuperTypes();
 
@@ -524,15 +512,9 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 
 		// verify resolved tree
 		public boolean preVerify() {
-			if (isClazz() && super_type != null && super_type.getStruct().isFinal()) {
-				Kiev.reportError(this, "Class "+this+" extends final class "+super_type);
-	
-			}
-			else if (isInterface()) {
-				foreach (TypeRef i; interfaces) {
-					if(i.getStruct().isFinal())
-						Kiev.reportError(this, "Iterface "+this+" extends final interface "+i);
-				}
+			foreach (TypeRef i; super_types) {
+				if (i.getStruct().isFinal())
+					Kiev.reportError(this, "Struct "+this+" extends final struct "+i);
 			}
 			return true;
 		}
@@ -564,7 +546,6 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		this.id = id;
 		this.imeta_type = new CompaundMetaType(this);
 		this.ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);
-		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
 		package_clazz = outer;
 		trace(Kiev.debugCreation,"New clazz created: "+qname() +" as "+id.uname+", member of "+outer);
@@ -679,7 +660,7 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 			resolveNameR_2(node,info,name), // resolve in imports
 			$cut
 		;	info.isSuperAllowed(),
-			info.space_prev == null || (info.space_prev.pslot().name != "super_bound" && info.space_prev.pslot().name != "interfaces"),
+			info.space_prev == null || (info.space_prev.pslot().name != "super_types"),
 			trace(Kiev.debugResolve,"Struct: resolving in super-class of "+this),
 			resolveNameR_3(node,info,name), // resolve in super-classes
 			$cut
@@ -717,15 +698,10 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		TypeRef@ sup_ref;
 		Struct@ sup;
 	{
-		{	sup_ref ?= super_bound,
-			sup ?= sup_ref.getStruct(),
-			info.enterSuper() : info.leaveSuper(),
-			sup.resolveNameR(node,info,name)
-		;	sup_ref @= interfaces,
-			sup ?= sup_ref.getStruct(),
-			info.enterSuper() : info.leaveSuper(),
-			sup.resolveNameR(node,info,name)
-		}
+		sup_ref @= super_types,
+		sup ?= sup_ref.getStruct(),
+		info.enterSuper() : info.leaveSuper(),
+		sup.resolveNameR(node,info,name)
 	}
 
 	public boolean tryLoad(ASTNode@ node, String name) {
@@ -772,26 +748,16 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 			node ?= ((Method)member),
 			((Method)node).equalsByCast(name,mt,tp,info)
 		;	info.isSuperAllowed(),
-			sup ?= super_type,
-			info.enterSuper() : info.leaveSuper(),
-			sup.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
-		;	isInterface(),
-			member ?= iface_impl,
-			info.enterMode(ResInfo.noSuper) : info.leaveMode(),
-			((Struct)member).resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,((Struct)member).ctype))
-		;	info.isSuperAllowed(),
-			isInterface(),
-			supref @= interfaces,
+			supref @= super_types,
 			info.enterSuper() : info.leaveSuper(),
 			supref.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,supref.getType()))
 		}
 	}
 
 	public Field getWrappedField(boolean required) {
-		if (super_type != null && super_type.clazz instanceof Struct) {
-			Struct ss = (Struct)super_type.clazz;
-			Field wf = ss.getWrappedField(false);
-			if(wf != null)
+		foreach (TypeRef st; super_types; st.getStruct() != null) {
+			Field wf = st.getStruct().getWrappedField(false);
+			if (wf != null)
 				return wf;
 		}
 		Field wf = null;
@@ -815,13 +781,8 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		if( isMembersGenerated() ) return;
 		if( isPackage() ) return;
 
-		if( super_type != null && !super_type.clazz.isMembersGenerated() ) {
-			super_type.clazz.autoGenerateMembers();
-		}
-		for(int i=0; i < interfaces.length; i++) {
-			if( !interfaces[i].getStruct().isMembersGenerated() )
-				interfaces[i].getStruct().autoGenerateMembers();
-		}
+		foreach (TypeRef tr; super_types; !tr.getStruct().isMembersGenerated())
+			tr.getStruct().autoGenerateMembers();
 
 		if( Kiev.debug ) System.out.println("AutoGenerating members for "+this);
 
@@ -869,7 +830,7 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 					trace(Kiev.debugResolve,nameInit+" not found in class "+this);
 					Constructor init = new Constructor(ACC_PUBLIC);
 					init.setHidden(true);
-					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
+					if (this != Type.tpClosureClazz && this.instanceOf(Type.tpClosureClazz)) {
 						if( !isStatic() ) {
 							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 							init.params.append(new FormPar(pos,"max$args",Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
@@ -910,8 +871,13 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 
 	public Method getOverwrittenMethod(Type base, Method m) {
 		Method mm = null, mmret = null;
-		if( super_type != null && !isInterface() )
-			mm = super_type.clazz.getOverwrittenMethod(base,m);
+		if (!isInterface()) {
+			foreach (TypeRef st; super_types; st.getStruct() != null) {
+				mm = st.getStruct().getOverwrittenMethod(base,m);
+				if (mm != null)
+					break;
+			}
+		}
 		if( mmret == null && mm != null ) mmret = mm;
 		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+"."+m+" in "+this);
 		foreach (Method mi; members) {
@@ -1012,11 +978,11 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 				}
 				dmp.append("> */");
 			}
-			if( interfaces!=null && interfaces.length > 0 ) {
+			if (super_types.length > 1 ) {
 				dmp.space().append("extends").forsed_space();
-				for(int i=0; i < interfaces.length; i++) {
-					dmp.append(interfaces[i]);
-					if( i < (interfaces.length-1) ) dmp.append(',').space();
+				for(int i=1; i < super_types.length; i++) {
+					dmp.append(super_types[i]);
+					if( i < (super_types.length-1) ) dmp.append(',').space();
 				}
 			}
 		} else {
@@ -1031,13 +997,14 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 				dmp.append("> */");
 			}
 			dmp.forsed_space();
-			if( super_type != null && !super_type.equals(Type.tpObject) && super_type.isReference())
-				dmp.append("extends").forsed_space().append(jthis.super_type.clazz).forsed_space();
-			if( interfaces!=null && interfaces.length > 0 ) {
+			Type st = super_types.length > 0 ? super_types[0].getType() : null;
+			if( st != null && st ≉ Type.tpObject && st.isReference())
+				dmp.append("extends").forsed_space().append(st).forsed_space();
+			if( super_types.length > 1 ) {
 				dmp.space().append("implements").forsed_space();
-				for(int i=0; i < interfaces.length; i++) {
-					dmp.append(this.interfaces[i]);
-					if( i < (interfaces.length-1) ) dmp.append(',').space();
+				for(int i=0; i < super_types.length; i++) {
+					dmp.append(this.super_types[i]);
+					if( i < (super_types.length-1) ) dmp.append(',').space();
 				}
 			}
 		}

@@ -133,8 +133,8 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 					foreach(Method m; ss.members; m.id.equals(nameArrayOp))
 						break lookup_op;
 				}
-				if( s.super_type != null ) {
-					s = s.super_type.clazz;
+				if( s.super_types.length > 0 ) {
+					s = s.super_types[0].getStruct();
 					continue;
 				}
 				throw new RuntimeException("Resolved object "+obj+" of type "+obj.getType()+" is not an array and does not overrides '[]' operator");

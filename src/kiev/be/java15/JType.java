@@ -230,8 +230,9 @@ public class JBaseType extends JType {
 	}
 	
 	public JType getSuperType() {
-		Type sup = clazz.super_type;
-		if (sup == null) return null;
+		if (clazz.super_types.length == 0)
+			return null;
+		Type sup = clazz.super_types[0].getType();
 		return sup.getJType();
 	}
 	

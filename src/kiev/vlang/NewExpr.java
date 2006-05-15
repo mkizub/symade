@@ -66,12 +66,13 @@ public final class NewExpr extends ENode {
 			clazz.setLocal(true);
 			clazz.setAnonymouse(true);
 			clazz.setStatic(ctx_method==null || ctx_method.isStatic());
+			clazz.super_types.delAll();
 			TypeRef sup_tr = this.type.ncopy();
 			if( sup.clazz.isInterface() ) {
-				clazz.super_type = Type.tpObject;
-				clazz.interfaces.add(sup_tr);
+				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
+				clazz.super_types.add(sup_tr);
 			} else {
-				clazz.super_bound = sup_tr;
+				clazz.super_types.insert(0, sup_tr);
 			}
 	
 			{
@@ -158,10 +159,7 @@ public final class NewExpr extends ENode {
 		if( !tp.getStruct().isAnonymouse() ) {
 			dmp.append("new ").append(tp).append('(');
 		} else {
-			if( tp.getStruct().interfaces.length > 0 )
-				dmp.append("new ").append(tp.getStruct().interfaces[0].getStruct().qname()).append('(');
-			else
-				dmp.append("new ").append(tp.getStruct().super_type.clazz.qname()).append('(');
+			dmp.append("new ").append(tp.getStruct().super_types[0].getStruct().qname()).append('(');
 		}
 		for(int i=0; i < args.length; i++) {
 			args[i].toJava(dmp);
@@ -400,7 +398,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	public Dumper toJava(Dumper dmp) {
 		CallType type = (CallType)this.getType();
 		Struct cl = clazz;
-		dmp.append("new ").append(cl.super_type.clazz.qname()).append('(')
+		dmp.append("new ").append(cl.super_types[0].getStruct().qname()).append('(')
 			.append(String.valueOf(type.arity)).append(')');
 		dmp.space().append('{').newLine(1);
 		foreach (DNode n; cl.members)

@@ -990,7 +990,7 @@ public abstract class kiev040 implements kiev040Constants {
       case EXTENDS:
         jj_consume_token(EXTENDS);
         if (jj_2_6(2147483647)) {
-          clazz.super_bound = PrimitiveType();
+          clazz.super_types += PrimitiveType();
         } else {
           switch (jj_nt.kind) {
           case BOOLEAN:
@@ -1005,7 +1005,7 @@ public abstract class kiev040 implements kiev040Constants {
           case RULE:
           case REPARSE_TYPE:
           case IDENTIFIER:
-            clazz.super_bound = NArrType();
+            clazz.super_types += NArrType();
             break;
           default:
             jj_consume_token(-1);
@@ -1019,7 +1019,7 @@ public abstract class kiev040 implements kiev040Constants {
       switch (jj_nt.kind) {
       case IMPLEMENTS:
         jj_consume_token(IMPLEMENTS);
-        clazz.interfaces += NArrType();
+        clazz.super_types += NArrType();
         label_8:
         while (true) {
           switch (jj_nt.kind) {
@@ -1030,7 +1030,7 @@ public abstract class kiev040 implements kiev040Constants {
             break label_8;
           }
           jj_consume_token(COMMA);
-          clazz.interfaces += NArrType();
+          clazz.super_types += NArrType();
         }
         break;
       default:
@@ -1046,7 +1046,7 @@ public abstract class kiev040 implements kiev040Constants {
       switch (jj_nt.kind) {
       case EXTENDS:
         jj_consume_token(EXTENDS);
-        clazz.interfaces += NArrType();
+        clazz.super_types += NArrType();
         label_9:
         while (true) {
           switch (jj_nt.kind) {
@@ -1057,7 +1057,7 @@ public abstract class kiev040 implements kiev040Constants {
             break label_9;
           }
           jj_consume_token(COMMA);
-          clazz.interfaces += NArrType();
+          clazz.super_types += NArrType();
         }
         break;
       default:
@@ -1104,7 +1104,7 @@ public abstract class kiev040 implements kiev040Constants {
       case EXTENDS:
         jj_consume_token(EXTENDS);
         if (jj_2_7(2147483647)) {
-          clazz.super_bound = PrimitiveType();
+          clazz.super_types += PrimitiveType();
         } else {
           switch (jj_nt.kind) {
           case BOOLEAN:
@@ -1119,7 +1119,7 @@ public abstract class kiev040 implements kiev040Constants {
           case RULE:
           case REPARSE_TYPE:
           case IDENTIFIER:
-            clazz.super_bound = NArrType();
+            clazz.super_types += NArrType();
             break;
           default:
             jj_consume_token(-1);
@@ -1133,7 +1133,7 @@ public abstract class kiev040 implements kiev040Constants {
       switch (jj_nt.kind) {
       case IMPLEMENTS:
         jj_consume_token(IMPLEMENTS);
-        clazz.interfaces += NArrType();
+        clazz.super_types += NArrType();
         label_10:
         while (true) {
           switch (jj_nt.kind) {
@@ -1144,7 +1144,7 @@ public abstract class kiev040 implements kiev040Constants {
             break label_10;
           }
           jj_consume_token(COMMA);
-          clazz.interfaces += NArrType();
+          clazz.super_types += NArrType();
         }
         break;
       default:
@@ -1158,7 +1158,7 @@ public abstract class kiev040 implements kiev040Constants {
       args = ClazzArguments();
                                           clazz.args.addAll(args);
       jj_consume_token(EXTENDS);
-      clazz.super_bound = Type();
+      clazz.super_types += Type();
       break;
     default:
       jj_consume_token(-1);
@@ -1290,7 +1290,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(CASE);
     name = Name();
                 clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
-                clazz.super_type = parent.ctype;
+                //clazz.super_types.insert(0, new TypeRef(parent.ctype));
                 clazz.setPizzaCase(true);
                 clazz.setSingleton(true);
     args = ClazzArguments();

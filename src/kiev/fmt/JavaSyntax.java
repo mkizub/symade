@@ -475,7 +475,7 @@ public class JavaSyntax extends Syntax {
 			SyntaxElem class_ext = opt("extends",
 				new CalcOption(){
 					public boolean calc(ASTNode node) {
-						if (node instanceof Struct && node.super_bound != null && node.super_bound.getType() != Type.tpObject)
+						if (node instanceof Struct && node.super_types.length > 0 && node.super_types[0].getType() ≉ Type.tpObject)
 							return true;
 						return false;
 					}

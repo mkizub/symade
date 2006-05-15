@@ -66,6 +66,8 @@ public view JDNode of DNode extends JNode {
 	public final boolean isAbstract()			{ return (flags & ACC_ABSTRACT) != 0; }
 	public final boolean isSuper()				{ return (flags & ACC_SUPER) != 0; }
 
+	public final boolean isMacro();
+
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 
 	public void setPrivate();

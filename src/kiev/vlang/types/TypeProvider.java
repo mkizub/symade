@@ -229,10 +229,8 @@ public final class ASTNodeMetaType extends MetaType {
 		TVarBld vs = new TVarBld();
 		foreach (TypeAssign ta; clazz.members; ta.id.sname.matches("attr\\$.*\\$type"))
 			vs.append(ta.getAType(), null);
-		TypeRef st = clazz.super_bound;
-		if (st.getType() ≢ null) {
+		foreach (TypeRef st; clazz.super_types; st.getType() ≢ null)
 			vs.append(st.getType().bindings());
-		}
 		templ_bindings = new TVarSet(vs.close());
 		templ_version = version;
 	}
@@ -268,12 +266,9 @@ public final class CompaundMetaType extends MetaType {
 	}
 	
 	public Type[] getMetaSupers(Type tp) {
-		if (clazz.super_type == null)
-			return Type.emptyArray;
-		Type[] stps = new Type[clazz.interfaces.length+1];
-		stps[0] = clazz.super_type;
-		for (int i=0; i < clazz.interfaces.length; i++)
-			stps[i+1] = clazz.interfaces[i].getType();
+		Type[] stps = new Type[clazz.super_types.length];
+		for (int i=0; i < clazz.super_types.length; i++)
+			stps[i] = clazz.super_types[i].getType();
 		return stps;
 	}
 
@@ -308,12 +303,8 @@ public final class CompaundMetaType extends MetaType {
 		foreach (TypeDef td; clazz.members) {
 			vs.append(td.getAType(), null);
 		}
-		TypeRef st = clazz.super_bound;
-		if (st.getType() ≢ null) {
+		foreach (TypeRef st; clazz.super_types; st.getType() ≢ null)
 			vs.append(st.getType().bindings());
-			foreach (TypeRef it; clazz.interfaces)
-				vs.append(it.getType().bindings());
-		}
 		templ_bindings = new TVarSet(vs.close());
 		templ_version = version;
 	}
@@ -402,11 +393,14 @@ public final class ArrayMetaType extends MetaType {
 	}
 	private ArrayMetaType() {
 		super(new Symbol("_array_"), Env.newPackage("kiev.stdlib"), ACC_PUBLIC|ACC_FINAL);
-		this.super_bound = new TypeRef(StdTypes.tpObject);
+		this.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 	}
 
 	public Type[] getMetaSupers(Type tp) {
-		return new Type[]{super_bound.getType()};
+		Type[] stps = new Type[super_types.length];
+		for (int i=0; i < stps.length; i++)
+			stps[i] = super_types[i].getType();
+		return stps;
 	}
 
 	public Type make(TVSet bindings) {

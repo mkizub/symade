@@ -205,7 +205,7 @@ public final view RNewClosure of NewClosure extends RENode {
 			clazz.setStatic(true);
 		if (!Env.loadStruct(Type.tpClosureClazz).isResolved())
 			throw new RuntimeException("Core class "+Type.tpClosureClazz+" not found");
-		clazz.super_type = Type.tpClosureClazz.ctype;
+		clazz.super_types.insert(0, new TypeRef(Type.tpClosureClazz.ctype));
 		Kiev.runProcessorsOn(clazz);
 		((NewClosure)this).getType();
 

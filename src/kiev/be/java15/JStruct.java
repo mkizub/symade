@@ -28,8 +28,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	public		KString				b_name;
 	public:ro	CompaundType		ctype;
 	public:ro	JBaseType			jtype;
-	public:ro	JBaseType			jsuper_type;
-	public:ro	JType[]				interfaces;
+	public:ro	JType[]				super_types;
 	public:ro	JStruct				package_clazz;
 	public:ro	JStruct				iface_impl;
 	public:ro	JArr<JDNode>		sub_decls;
@@ -38,8 +37,6 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	@getter
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
-	@getter
-	public final JBaseType		get$jsuper_type()	{ return ((Struct)this).super_type == null ? null : (JBaseType)((Struct)this).super_type.getJType(); }
 
 	public final String qname();
 
@@ -103,36 +100,29 @@ public final view JStruct of Struct extends JTypeDecl {
 	public boolean instanceOf(JStruct cl) {
 		if( cl == null ) return false;
 		if( this.equals(cl) ) return true;
-		if( jsuper_type != null && jsuper_type.getJStruct().instanceOf(cl) )
+		foreach (JType jt; super_types; jt.getJStruct().instanceOf(cl))
 			return true;
-		if( cl.isInterface() ) {
-			foreach (JType iface; interfaces) {
-				if( iface.getJStruct().instanceOf(cl) ) return true;
-			}
-		}
 		return false;
 	}
 
 	public JField resolveField(String name) {
-		return resolveField(this,name,this,true);
+		return resolveField(name,true);
 	}
 
 	public JField resolveField(String name, boolean fatal) {
-		return resolveField(this,name,this,fatal);
-	}
-
-	private static JField resolveField(@forward JStruct self, String name, JStruct where, boolean fatal) {
-		self.checkResolved();
-		foreach(JField f; members) {
-			if (f.id.equals(name))
+		checkResolved();
+		foreach (JField f; this.members; f.id.equals(name))
+			return f;
+		foreach (JType jt; this.super_types) {
+			JField f = jt.getJStruct().resolveField(name, false);
+			if (f != null)
 				return f;
 		}
-		if( jsuper_type != null )
-			return resolveField(jsuper_type.getJStruct(),name,where,fatal);
 		if (fatal)
-			throw new RuntimeException("Unresolved field "+name+" in class "+where);
+			throw new RuntimeException("Unresolved field "+name+" in class "+this);
 		return null;
 	}
+
 
 	public JMethod resolveMethod(String name, KString sign) {
 		return resolveMethod(this,name,sign,this,true);
@@ -159,11 +149,8 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 		trace(Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+self);
 		JMethod m = null;
-		if( jsuper_type != null )
-			m = resolveMethod(jsuper_type.getJStruct(),name,sign,where,fatal);
-		if( m != null ) return m;
-		foreach(JType interf; interfaces) {
-			m = resolveMethod(interf.getJStruct(),name,sign,where,fatal);
+		foreach (JType jst; super_types) {
+			m = resolveMethod(jst.getJStruct(),name,sign,where,fatal);
 			if( m != null ) return m;
 		}
 		if (fatal)
@@ -185,12 +172,8 @@ public final view JStruct of Struct extends JTypeDecl {
 
 		ConstPool constPool = new ConstPool();
 		constPool.addClazzCP(this.ctype.getJType().java_signature);
-		if( jsuper_type != null ) {
-			constPool.addClazzCP(jsuper_type.java_signature);
-		}
-		foreach (JType iface; interfaces) {
-			constPool.addClazzCP(iface.java_signature);
-		}
+		foreach (JType jst; super_types)
+			constPool.addClazzCP(jst.java_signature);
 		if( !isPackage() ) {
 			foreach (JStruct sub; sub_decls) {
 				sub.checkResolved();
@@ -298,7 +281,8 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 		if( Kiev.safe && isBad() )
 			return;
-		this.toBytecode(constPool);
+		if !(isPackage() || isSyntax() || isMacro())
+			this.toBytecode(constPool);
 		Env.setProjectInfo((Struct)this, true);
 	}
 

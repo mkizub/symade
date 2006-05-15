@@ -25,8 +25,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	public				OuterMetaType			ometa_type;
 	public:ro			CompaundType			ctype;
 	public				TypeRef					view_of;
-	public				TypeRef					super_bound;
-	public:ro			NArr<TypeRef>			interfaces;
+	public:ro			NArr<TypeRef>			super_types;
 	public:ro			NArr<TypeDef>			args;
 	public				Struct					package_clazz;
 	public				Struct					typeinfo_clazz;
@@ -34,9 +33,6 @@ public final view RStruct of Struct extends RTypeDecl {
 	public:ro			NArr<DNode>				sub_decls;
 	public:ro			NArr<TypeDecl>			direct_extenders;
 	public:ro			NArr<ASTNode>			members;
-
-	@getter public final CompaundType	get$super_type();
-	@setter public final void set$super_type(CompaundType tp);
 
 	public MetaType[] getAllSuperTypes();
 
@@ -225,10 +221,10 @@ public final view RStruct of Struct extends RTypeDecl {
 		members.add(typeinfo_clazz);
 		typeinfo_clazz.setPublic();
 		typeinfo_clazz.setResolved(true);
-		if (super_type != null && ((Struct)super_type.clazz).typeinfo_clazz != null)
-			typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.ctype;
+		if (super_types.length > 0 && super_types[0].getStruct().typeinfo_clazz != null)
+			typeinfo_clazz.super_types.insert(0, new TypeRef(super_types[0].getStruct().typeinfo_clazz.ctype));
 		else
-			typeinfo_clazz.super_type = Type.tpTypeInfo;
+			typeinfo_clazz.super_types.insert(0, new TypeRef(Type.tpTypeInfo));
 		getStruct().addSubStruct(typeinfo_clazz);
 		typeinfo_clazz.pos = pos;
 
@@ -264,7 +260,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
 			init.block.stats.insert(0,new ExprStat(call_super));
-			foreach (ArgType at; ((RStruct)super_type.clazz).getTypeInfoArgs()) {
+			foreach (ArgType at; ((RStruct)super_types[0].getStruct()).getTypeInfoArgs()) {
 				Type t = at.applay(this.ctype);
 				ENode expr;
 				if (t instanceof ArgType)
@@ -529,11 +525,8 @@ public final view RStruct of Struct extends RTypeDecl {
 			return;
 		processed = new List.Cons<Struct>(this.getStruct(), processed);
 		// take vtable from super-types
-		if (super_bound.getType() != null) {
-			((RStruct)super_bound.getType().getStruct()).buildVTable(vtable, processed);
-			foreach (TypeRef sup; interfaces)
-				((RStruct)sup.getType().getStruct()).buildVTable(vtable, processed);
-		}
+		foreach (TypeRef sup; super_types)
+			((RStruct)sup.getType().getStruct()).buildVTable(vtable, processed);
 		
 		// process override
 		foreach (Method m; members; !(m instanceof Constructor)) {
@@ -882,8 +875,8 @@ public final view RStruct of Struct extends RTypeDecl {
 			}
 			Method overwr = null;
 
-			if (super_type != null )
-				overwr = super_type.clazz.getOverwrittenMethod(self.ctype,m);
+			if (super_types.length > 0)
+				overwr = super_types[0].getStruct().getOverwrittenMethod(self.ctype,m);
 
 			// nothing to do, if no methods to combine
 			if (mlistb.length() == 1 && mm != null) {
@@ -1254,7 +1247,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					ASTCallExpression call_super = new ASTCallExpression();
 					call_super.pos = pos;
 					call_super.ident = new SymbolRef(pos, nameSuper);
-					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
+					if( super_types.length > 0 && super_types[0].getStruct() == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;
 						call_super.args.add(max_args);
@@ -1262,7 +1255,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					else if( package_clazz.isClazz() && isAnonymouse() ) {
 						int skip_args = 0;
 						if( !isStatic() ) skip_args++;
-						if( this.isTypeUnerasable() && super_type.clazz.isTypeUnerasable() ) skip_args++;
+						if( this.isTypeUnerasable() && super_types[0].getStruct().isTypeUnerasable() ) skip_args++;
 						if( m.params.length > skip_args+1 ) {
 							for(int i=skip_args+1; i < m.params.length; i++) {
 								call_super.args.append( new LVarExpr(m.pos,m.params[i]));
@@ -1274,7 +1267,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						call_super.args.add(new ASTIdentifier(pos, nameEnumOrdinal));
 						//call_super.args.add(new ASTIdentifier(pos, "text"));
 					}
-					else if( isForward() && package_clazz.isStructView() && super_type.getStruct().package_clazz.isStructView() ) {
+					else if( isForward() && package_clazz.isStructView() && super_types[0].getStruct().package_clazz.isStructView() ) {
 						call_super.args.add(new ASTIdentifier(pos, nameImpl));
 					}
 					initbody.stats.insert(0,new ExprStat(call_super));

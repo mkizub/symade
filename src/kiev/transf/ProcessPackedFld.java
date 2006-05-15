@@ -161,8 +161,8 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		ASTNode@ n;
 		Field ff;
 	{
-		s.super_type != null,
-		locatePackerField(f,size,(Struct)s.super_type.clazz)
+		s.super_types.length > 0,
+		locatePackerField(f,size,s.super_types[0].getStruct())
 	;	n @= s.members,
 		n instanceof Field && ((Field)n).isPackerField(),
 		ff = (Field)n : ff = null,

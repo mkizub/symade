@@ -94,7 +94,6 @@ public class Env extends Struct {
 		setPackage();
 		setResolved(true);
 		/*this.imeta_type =*/ new CompaundMetaType(this);
-		this.super_bound = new TypeRef();
 	}
 
 	public Object copy() {
@@ -161,8 +160,7 @@ public class Env extends Struct {
 				cl.package_clazz = outer;
 				cl.typeinfo_clazz = null;
 				cl.view_of = null;
-				cl.super_bound = new TypeRef();
-				cl.interfaces.delAll();
+				cl.super_types.delAll();
 				cl.args.delAll();
 				cl.sub_decls.delAll();
 				foreach(Method m; cl.members; m.isOperatorMethod() )
@@ -232,8 +230,7 @@ public class Env extends Struct {
 			mt.package_clazz = pkg;
 			mt.typeinfo_clazz = null;
 			mt.view_of = null;
-			mt.super_bound = new TypeRef();
-			mt.interfaces.delAll();
+			mt.super_types.delAll();
 			mt.args.delAll();
 			mt.sub_decls.delAll();
 			mt.members.delAll();

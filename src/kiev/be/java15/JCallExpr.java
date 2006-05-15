@@ -119,7 +119,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			}
 			if( func.id.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 				JMethod mmm = jctx_method;
-				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? ((Struct)jctx_clazz).super_type : ((Struct)jctx_clazz).ctype;
+				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? ((Struct)jctx_clazz).super_types[0].getType() : ((Struct)jctx_clazz).ctype;
 				assert(mmm.id.equals(nameInit));
 				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?

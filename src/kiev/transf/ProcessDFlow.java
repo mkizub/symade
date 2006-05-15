@@ -92,13 +92,16 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 		Vector<Field> aflds = new Vector<Field>();
 		{
 			Struct ss = s;
-			while (ss != null && ss.meta.get(mnNode) != null) {
+			while (ss.meta.get(mnNode) != null) {
 				int p = 0;
 				foreach (Field f; ss.members; !f.isStatic() && f.meta.get(mnNode) != null) {
 					aflds.insert(p, f);
 					p++;
 				}
-				ss = ss.super_type.getStruct();
+				if (ss.super_types.length > 0)
+					ss = ss.super_types[0].getStruct();
+				else
+					break;
 			}
 		}
 		// DFState getDFlowIn(ASTNode $child)

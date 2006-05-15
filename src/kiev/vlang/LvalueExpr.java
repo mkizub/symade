@@ -429,7 +429,7 @@ public final class ThisExpr extends LvalueExpr {
 			if (ctx_clazz.id.uname == nameIFaceImpl)
 				return ctx_clazz.package_clazz.ctype;
 			if (isSuperExpr())
-				ctx_clazz.super_type;
+				ctx_clazz.super_types[0].getType();
 			return ctx_clazz.ctype;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);

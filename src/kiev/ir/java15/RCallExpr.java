@@ -42,9 +42,9 @@ public final view RCallExpr of CallExpr extends RENode {
 			this.obj = new TypeRef(obj.getType());
 		obj.resolve(null);
 		func.makeArgs(args.getArray(), reqType);
-		if( func.id.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
+		if( func instanceof Constructor && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			Method mmm = ctx_method;
-			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.ctype;
+			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_types[0].getType() : ctx_clazz.ctype;
 			assert(ctx_method.id.equals(nameInit));
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?

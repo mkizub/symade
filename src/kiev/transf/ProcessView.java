@@ -150,14 +150,17 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 		}
 		clazz.iface_impl = impl;
 		{
-			preGenerate(clazz.super_bound.getStruct());
-			Struct s = getViewImpl(clazz.super_bound);
+			foreach (TypeRef st; clazz.super_types)
+				preGenerate(st.getStruct());
+			Struct s = getViewImpl(clazz.super_types[0]);
 			if (s != null)
-				impl.super_bound = new TypeRef(s.ctype);
-			impl.interfaces.add(new TypeRef(clazz.ctype));
-			if (clazz.super_bound.getStruct().isInterface())
-				clazz.interfaces.insert(0,~clazz.super_bound); 
-			clazz.super_bound = new TypeRef(Type.tpObject);
+				impl.super_types += new TypeRef(s.ctype);
+			else
+				impl.super_types += new TypeRef(Type.tpObject);
+			impl.super_types += new TypeRef(clazz.ctype);
+			
+			if (clazz.super_types[0].getType() ≉ Type.tpObject)
+				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
 		}
 		clazz.members.append(impl);
 		foreach (DNode dn; clazz.members.getArray()) {

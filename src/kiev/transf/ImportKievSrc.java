@@ -342,12 +342,12 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			clazz.setStatic(true);
 
 		if (clazz.isAnnotation()) {
-			clazz.super_type = Type.tpObject;
-			clazz.interfaces.add(new TypeRef(Type.tpAnnotation));
+			clazz.super_types.add(new TypeRef(Type.tpObject));
+			clazz.super_types.add(new TypeRef(Type.tpAnnotation));
 		}
 		else if (clazz.isEnum()) {
 			clazz.setStatic(true);
-			clazz.super_type = Type.tpEnum;
+			clazz.super_types.insert(0, new TypeRef(Type.tpEnum));
 			// assign type of enum fields
 			if (clazz.isEnum()) {
 				foreach (Field f; clazz.members; f.isEnumField())
@@ -370,17 +370,18 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				}
 				sup_ref.args.add(new TypeRef(p.args[i].getAType()));
 			}
-			clazz.super_bound = sup_ref;
+			clazz.super_types.insert(0, sup_ref);
 		}
 		else if (clazz.isSyntax() || clazz.isPackage()) {
 			clazz.setAbstract(true);
 			clazz.setMembersGenerated(true);
 			clazz.setStatementsGenerated(true);
-			clazz.super_type = null;
+			clazz.super_types.delAll();
 		}
 		else if( clazz.isInterface() ) {
-			clazz.super_type = Type.tpObject;
-			foreach(TypeRef tr; clazz.interfaces) {
+			if (clazz.super_types.length == 0 || clazz.super_types[0].getType() ≉ Type.tpObject)
+				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
+			foreach(TypeRef tr; clazz.super_types) {
 				Struct s = tr.getType().getStruct();
 				if (s != null)
 					getStructType(s, path);
@@ -389,19 +390,17 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		else {
 			if (clazz.view_of != null)
 				clazz.view_of.getType();
-			Type sup = clazz.super_bound == null ? null : clazz.super_bound.getType();
-			if (sup == null && clazz != Type.tpObject.clazz)
-				clazz.super_type = sup = Type.tpObject;
-			if (sup != null) {
-				Struct s = sup.getStruct();
-				if (s != null)
-					getStructType(s, path);
-			}
-			foreach(TypeRef tr; clazz.interfaces) {
+			foreach(TypeRef tr; clazz.super_types) {
 				Struct s = tr.getType().getStruct();
 				if (s != null)
 					getStructType(s, path);
 			}
+			if (clazz.super_types.length == 0) {
+				if (clazz != Type.tpObject.clazz)
+					clazz.super_types.insert(0, new TypeRef(Type.tpObject));
+			}
+			else if (clazz.super_types[0].getStruct().isInterface())
+				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
 		}
 		
 		clazz.imeta_type.version++;
@@ -414,7 +413,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					a.setTypeUnerasable(true);
 			}
 			if (!clazz.instanceOf(Type.tpTypeInfoInterface.clazz))
-				clazz.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
+				clazz.super_types.append(new TypeRef(Type.tpTypeInfoInterface));
 		}
 
 		clazz.setArgsResolved(true);
