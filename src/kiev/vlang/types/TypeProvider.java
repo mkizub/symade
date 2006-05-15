@@ -131,8 +131,8 @@ public class MetaType extends Struct {
 		super(id, outer, flags | ACC_INTERFACE | ACC_MACRO);
 	}
 
-	public Type getMetaSuper(Type tp) {
-		return null;
+	public Type[] getMetaSupers(Type tp) {
+		return Type.emptyArray;
 	}
 	
 	public Type make(TVSet bindings) {
@@ -161,8 +161,8 @@ public final class CoreMetaType extends MetaType {
 	
 	CoreMetaType() {}
 
-	public Type getMetaSuper(Type tp) {
-		return null;
+	public Type[] getMetaSupers(Type tp) {
+		return Type.emptyArray;
 	}
 	
 	public Type make(TVSet bindings) {
@@ -202,8 +202,8 @@ public final class ASTNodeMetaType extends MetaType {
 		this.templ_version = -1;
 	}
 
-	public Type getMetaSuper(Type tp) {
-		return null;
+	public Type[] getMetaSupers(Type tp) {
+		return Type.emptyArray;
 	}
 
 	public Type make(TVSet bindings) {
@@ -267,8 +267,14 @@ public final class CompaundMetaType extends MetaType {
 		this.templ_version = -1;
 	}
 	
-	public Type getMetaSuper(Type tp) {
-		return clazz.super_type;
+	public Type[] getMetaSupers(Type tp) {
+		if (clazz.super_type == null)
+			return Type.emptyArray;
+		Type[] stps = new Type[clazz.interfaces.length+1];
+		stps[0] = clazz.super_type;
+		for (int i=0; i < clazz.interfaces.length; i++)
+			stps[i+1] = clazz.interfaces[i].getType();
+		return stps;
 	}
 
 	public Type make(TVSet bindings) {
@@ -399,8 +405,8 @@ public final class ArrayMetaType extends MetaType {
 		this.super_bound = new TypeRef(StdTypes.tpObject);
 	}
 
-	public Type getMetaSuper(Type tp) {
-		return super_bound.getType();
+	public Type[] getMetaSupers(Type tp) {
+		return new Type[]{super_bound.getType()};
 	}
 
 	public Type make(TVSet bindings) {
@@ -417,11 +423,13 @@ public final class ArrayMetaType extends MetaType {
 		return ArrayType.newArrayType(((ArrayType)t).arg.applay(bindings));
 	}
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+		Type@ st;
 	{
 		node @= members,
 		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
 	;
-		getMetaSuper(tp).resolveNameAccessR(node,info,name)
+		st @= getMetaSupers(tp),
+		st.resolveNameAccessR(node,info,name)
 	}
 }
 
@@ -433,12 +441,15 @@ public class ArgMetaType extends MetaType {
 	public static final ArgMetaType instance = new ArgMetaType();
 	private ArgMetaType() {}
 
-	public Type getMetaSuper(Type tp) {
+	public Type[] getMetaSupers(Type tp) {
 		ArgType at = (ArgType)tp;
-		TypeRef[] up = at.definer.getUpperBounds();
-		if (up.length == 0)
-			return StdTypes.tpObject;
-		return up[0].getType();
+		TypeRef[] ups = at.definer.getUpperBounds();
+		if (ups.length == 0)
+			return new Type[]{StdTypes.tpObject};
+		Type[] stps = new Type[ups.length];
+		for (int i=0; i < stps.length; i++)
+			stps[i] = ups[i].getType();
+		return stps;
 	}
 
 	public Type make(TVSet bindings) {
@@ -485,9 +496,9 @@ public class WrapperMetaType extends MetaType {
 		this.field = clazz.getWrappedField(true);
 	}
 
-	public Type getMetaSuper(Type tp) {
+	public Type[] getMetaSupers(Type tp) {
 		WrapperType wt = (WrapperType)tp;
-		return tp.getEnclosedType();
+		return new Type[]{tp.getEnclosedType(),tp.getUnboxedType()};
 	}
 
 	public Type make(TVSet bindings) {
@@ -542,9 +553,9 @@ public class OuterMetaType extends MetaType {
 		this.tdef = tdef;
 	}
 
-	public Type getMetaSuper(Type tp) {
+	public Type[] getMetaSupers(Type tp) {
 		OuterType ot = (OuterType)tp;
-		return ot.outer;
+		return new Type[]{ot.outer};
 	}
 
 	public Type make(TVSet bindings) {
@@ -574,11 +585,11 @@ public class CallMetaType extends MetaType {
 	public static final CallMetaType instance = new CallMetaType();
 	private CallMetaType() {}
 
-	public Type getMetaSuper(Type tp) {
+	public Type[] getMetaSupers(Type tp) {
 		CallType ct = (CallType)tp;
 		if (ct.isReference())
-			return StdTypes.tpObject;
-		return null;
+			return new Type[]{StdTypes.tpObject};
+		return Type.emptyArray;
 	}
 
 	public Type bind(Type t, TVSet bindings) {

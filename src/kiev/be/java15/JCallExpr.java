@@ -39,7 +39,7 @@ public final view JCallExpr of CallExpr extends JENode {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.isStructInstanceOf((Struct)func.jctx_clazz) ) {
+		if( !ot.getJType().isInstanceOf(func.jctx_clazz.jtype) ) {
 			trace( Kiev.debugNodeTypes, "Need checkcast for method "+ot+"."+func);
 			code.addInstr(Instr.op_checkcast,func.jctx_clazz.ctype);
 		}

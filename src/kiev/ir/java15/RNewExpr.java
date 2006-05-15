@@ -28,32 +28,28 @@ public static final view RNewExpr of NewExpr extends RENode {
 				ReturnStat.autoReturn(reqType, this);
 			return;
 		}
-		CompaundType type;
+		Type type;
 		if (this.clazz != null) {
+			this.clazz.resolveDecl();
 			type = this.clazz.ctype;
 		} else {
-			Type t = this.type.getType();
-			while (t != null && !(t instanceof CompaundType))
-				t = t.getMetaSuper();
-			type = (CompaundType)t;
+			type = this.type.getType();
 		}
-		if!(type instanceof CompaundType)
+		Struct s = type.getStruct();
+		if (s == null)
 			Kiev.reportWarning(this,"Instantiation of non-concrete type "+this.type+" ???");
-		if( type.getStruct().isAnonymouse() ) {
-			type.getStruct().resolveDecl();
-		}
-		if (outer == null && type.clazz.ometa_type != null) {
+		if (outer == null && s.ometa_type != null) {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
 			outer = new ThisExpr(pos);
 		}
 		if( outer != null ) {
 			outer.resolve(null);
-			type = (CompaundType)type.bind(new TVarBld(type.clazz.ometa_type.tdef.getAType(), outer.getType()));
+			type = type.bind(new TVarBld(s.ometa_type.tdef.getAType(), outer.getType()));
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
-		if( type.clazz.isTypeUnerasable() )
+		if (s.isTypeUnerasable() )
 			((RStruct)ctx_clazz).accessTypeInfoField((NewExpr)this,type,false); // Create static field for this type typeinfo
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)

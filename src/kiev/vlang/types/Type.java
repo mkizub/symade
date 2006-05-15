@@ -31,8 +31,8 @@ public abstract class Type extends AType {
 	public abstract Type getErasedType();
 	public abstract Dumper toJava(Dumper dmp);
 	
-	public final Type getMetaSuper() {
-		return meta_type.getMetaSuper(this);
+	public final Type[] getMetaSupers() {
+		return meta_type.getMetaSupers(this);
 	}
 	// accessor.field
 	public final Type applay(TVSet bindings) {
@@ -146,23 +146,19 @@ public abstract class Type extends AType {
 		while( tp != null ) {
 			if( tp1.isInstanceOf(tp) && tp2.isInstanceOf(tp) )
 				return tp;
-			tp = tp.getMetaSuper();
+			Type[] stps = tp.getMetaSupers();
+			if (stps.length > 0)
+				tp = stps[0];
+			else
+				return null;
 		}
 		return tp;
 	}
 
 	public boolean isCastableTo(Type t) {
 		if( this.isReference() && t ≡ tpNull ) return true;
-		if( t instanceof ArgType && this.isCastableTo(t.getMetaSuper()) )
+		foreach (Type st; t.getMetaSupers(); this.isCastableTo(st))
 			return true;
-		if( t instanceof OuterType )
-			return this.isCastableTo(t.outer);
-		if( t instanceof CTimeType ) {
-			if (this.isCastableTo(t.getEnclosedType()))
-				return true;
-			if (this.isCastableTo(t.getUnboxedType()))
-				return true;
-		}
 		return false;
 	}
 
@@ -185,8 +181,6 @@ public abstract class Type extends AType {
 	public final boolean isForward()		{ return (flags & flForward)		!= 0 ; }
 	public final boolean isHidden()			{ return (flags & flHidden)			!= 0 ; }
 
-	public boolean isStructInstanceOf(Struct s)	{ return false; }
-	
 	public Type getUnboxedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
 	public Type getEnclosedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
 	public ENode makeUnboxedExpr(ENode from)		{ throw new RuntimeException("Type "+this+" is not a box type"); } 
@@ -403,14 +397,21 @@ public final class ArgType extends Type {
 	
 	public JType getJType() {
 		if (jtype == null)
-			jtype = getMetaSuper().getJType();
+			jtype = getErasedType().getJType();
 		return jtype;
 	}
 
-	public boolean isStructInstanceOf(Struct s)	{ return getMetaSuper().isStructInstanceOf(s); }
-	public Meta getMeta(String name)				{ return getMetaSuper().getMeta(name); }
+	public Meta getMeta(String name)				{ return definer.meta == null ? null : definer.meta.get(name); }
 	public MetaType[] getAllSuperTypes()			{ return definer.getAllSuperTypes(); }
 	public Struct getStruct()						{ return definer.getStruct(); }
+	public boolean checkResolved()					{ return definer.checkResolved(); }
+	public Type getErasedType() {
+		TypeRef[] up = definer.getUpperBounds();
+		if (up.length == 0)
+			return tpObject;
+		return up[0].getType().getErasedType();
+	}
+
 
 	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
 		TypeRef@ sup;
@@ -421,9 +422,6 @@ public final class ArgType extends Type {
 		sup.getType().resolveCallAccessR(node, info, name, mt)
 	}
 	
-	public Type getErasedType() { return getMetaSuper().getErasedType(); }
-	public boolean checkResolved() { return definer.checkResolved(); }
-
 	public String toString() {
 		return name.toString();
 	}
@@ -475,8 +473,6 @@ public final class CompaundType extends Type {
 	public Meta getMeta(String name)			{ return clazz.meta.get(name); }
 	public Type getErasedType()					{ return clazz.ctype; }
 
-	public boolean isStructInstanceOf(Struct s)	{ return clazz.instanceOf(s); }
-	
 	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, String name)
 	{
 		clazz.resolveNameR(node, info, name)
@@ -593,10 +589,7 @@ public final class CompaundType extends Type {
 				}
 				return true;
 			}
-			if (_t2 instanceof CTimeType || _t2 instanceof ArgType) {
-				return this.isInstanceOf(_t2.getMetaSuper());
-			}
-			return false;
+			return super.isInstanceOf(_t2);
 		}
 		CompaundType t2 = (CompaundType)_t2;
 		CompaundType t1 = this;
@@ -660,7 +653,6 @@ public final class ArrayType extends Type {
 		return jtype;
 	}
 
-	public boolean isStructInstanceOf(Struct s)	{ return s == tpObject.clazz; }
 	public Meta getMeta(String name)				{ return null; }
 	
 	public MetaType[] getAllSuperTypes() {
@@ -744,8 +736,6 @@ public final class WrapperType extends CTimeType {
 			jtype = getEnclosedType().getJType();
 		return jtype;
 	}
-
-	public boolean isStructInstanceOf(Struct s)	{ return getEnclosedType().isStructInstanceOf(s); }
 
 	public final ENode makeUnboxedExpr(ENode from) {
 		return new IFldExpr(from.pos, ~from, wrapped_field);
@@ -859,7 +849,6 @@ public final class OuterType extends CTimeType {
 		return jtype;
 	}
 
-	public boolean isStructInstanceOf(Struct s)	{ return outer.isStructInstanceOf(s); }
 	public Meta getMeta(String name)				{ return outer.getMeta(name); }
 	
 	public MetaType[] getAllSuperTypes() {

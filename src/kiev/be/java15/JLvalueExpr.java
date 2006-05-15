@@ -59,7 +59,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.isStructInstanceOf((Struct)var.jctx_clazz) )
+		if( !ot.getJType().isInstanceOf(var.jctx_clazz.jtype) )
 			code.addInstr(Instr.op_checkcast,var.jctx_clazz.ctype);
 	}
 
@@ -357,7 +357,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		}
 		if( chtp == null )
 			chtp = var.type.getErasedType();
-		if( !var.type.isStructInstanceOf(chtp.getStruct()) ) {
+		if( !var.type.getJType().isInstanceOf(chtp.getJType()) ) {
 			code.addInstr(op_checkcast,var.type);
 			return;
 		}
