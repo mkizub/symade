@@ -25,16 +25,10 @@ public final view RStruct of Struct extends RTypeDecl {
 	public				OuterMetaType			ometa_type;
 	public:ro			CompaundType			ctype;
 	public				TypeRef					view_of;
-	public:ro			NArr<TypeRef>			super_types;
-	public:ro			NArr<TypeDef>			args;
 	public				Struct					package_clazz;
 	public				Struct					typeinfo_clazz;
 	public				Struct					iface_impl;
 	public:ro			NArr<DNode>				sub_decls;
-	public:ro			NArr<TypeDecl>			direct_extenders;
-	public:ro			NArr<ASTNode>			members;
-
-	public MetaType[] getAllSuperTypes();
 
 	public final Struct getStruct() { return (Struct)this; }
 

@@ -84,9 +84,10 @@ public interface StdTypes {
 
 	public static final CompaundType tpTypeSwitchHash;
 
-	public static final ArrayType tpArray;
+	public static final ArrayType  tpArray;
+	public static final TypeConstr tdArrayArg;
+	public static final ArgType    tpArrayArg;
 
-	public static final ArgType   tpArrayArg;
 	public static final ArgType   tpWrapperArg;
 	public static final ArgType   tpCallRetArg;
 	public static final ArgType[] tpCallParamArgs;
@@ -146,8 +147,9 @@ public interface StdTypes {
 		tpWrapperArg = new ArgType("_boxed_",tdWrapperArg);
 		tpWrapperArg.flags |= flHidden;
 		
-		TypeDef tdArrayArg = new TypeConstr("_elem_", tpAny);
+		tdArrayArg = new TypeConstr("_elem_", tpAny);
 		tpArrayArg = new ArgType("_elem_",tdArrayArg);
+		tdArrayArg.lnk = tpArrayArg;
 		tpArrayArg.flags |= flHidden;
 		tpArray					= ArrayType.newArrayType(Type.tpAny);
 		tpArray.flags			|= flResolved | flReference | flArray;

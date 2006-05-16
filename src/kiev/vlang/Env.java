@@ -156,6 +156,7 @@ public class Env extends Struct {
 		if( bcl != null ) {
 			Struct cl = (Struct)bcl;
 			if( cleanup ) {
+				cl.type_decl_version = 0;
 				cl.flags = acces;
 				cl.package_clazz = outer;
 				cl.typeinfo_clazz = null;
@@ -225,14 +226,11 @@ public class Env extends Struct {
 			mt = new MetaType(id, pkg, ACC_INTERFACE | ACC_MACRO);
 		}
 		else if( cleanup ) {
-			mt.version = 0;
+			mt.type_decl_version = 0;
 			mt.flags = ACC_MACRO;
 			mt.package_clazz = pkg;
-			mt.typeinfo_clazz = null;
-			mt.view_of = null;
 			mt.super_types.delAll();
-			mt.args.delAll();
-			mt.sub_decls.delAll();
+			//mt.args.delAll();
 			mt.members.delAll();
 		}
 

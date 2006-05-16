@@ -43,27 +43,19 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		 public ASTNodeMetaType				ameta_type;
 		 public CompaundType				ctype;
 	@att public TypeRef						view_of;
-	@att public NArr<TypeRef>				super_types;
-	@att public NArr<TypeConstr>			args;
 	@ref public Struct						package_clazz;
 	@ref public Struct						typeinfo_clazz;
 	@ref public Struct						iface_impl;
 	@ref public NArr<DNode>					sub_decls;
-	@ref public NArr<TypeDecl>				direct_extenders;
 	public kiev.be.java15.Attr[]			attrs = kiev.be.java15.Attr.emptyArray;
-	@att public NArr<ASTNode>				members;
-		 private MetaType[]					super_meta_types;
 
 	public void callbackChildChanged(AttrSlot attr) {
-		if (attr.name == "args" ||
-			attr.name == "super_types" ||
-			attr.name == "package_clazz"
-		) {
+		if (attr.name == "package_clazz")
 			this.callbackSuperTypeChanged(this);
-		}
-		if (attr.name == "id") {
+		else if (attr.name == "id")
 			resetNames();
-		}
+		else
+			super.callbackChildChanged(attr);
 	}
 	
 	private void resetNames() {
@@ -71,26 +63,6 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		b_name = null;
 		foreach (Struct s; sub_decls)
 			s.resetNames(); 
-	}
-	
-	public void callbackSuperTypeChanged(TypeDecl chg) {
-		super_meta_types = null;
-		imeta_type.version++;
-		foreach (TypeDecl td; direct_extenders)
-			td.callbackSuperTypeChanged(chg);
-	}
-	
-	public MetaType[] getAllSuperTypes() {
-		if (super_meta_types != null)
-			return super_meta_types;
-		Vector<MetaType> types = new Vector<MetaType>();
-		foreach (TypeRef it; super_types)
-			addSuperTypes(it, types);
-		if (types.length == 0)
-			super_meta_types = MetaType.emptyArray;
-		else
-			super_meta_types = types.toArray();
-		return super_meta_types;
 	}
 	
 	public boolean isClazz() {
@@ -187,55 +159,6 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 			this.is_struct_generated = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
-	}
-	// indicates that type of the structure was attached
-	public final boolean isTypeResolved() {
-		return this.is_struct_type_resolved;
-	}
-	public final void setTypeResolved(boolean on) {
-		if (this.is_struct_type_resolved != on) {
-			this.is_struct_type_resolved = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// indicates that type arguments of the structure were resolved
-	public final boolean isArgsResolved() {
-		return this.is_struct_args_resolved;
-	}
-	public final void setArgsResolved(boolean on) {
-		if (this.is_struct_args_resolved != on) {
-			this.is_struct_args_resolved = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// kiev annotation
-	public final boolean isAnnotation() {
-		return this.is_struct_annotation;
-	}
-	public final void setAnnotation(boolean on) {
-		assert(!on || (!isPackage() && !isSyntax()));
-		if (this.is_struct_annotation != on) {
-			this.is_struct_annotation = on;
-			if (on) this.setInterface(true);
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// java enum
-	public final boolean isEnum() {
-		return this.is_struct_enum;
-	}
-	public final void setEnum(boolean on) {
-		if (this.is_struct_enum != on) {
-			this.is_struct_enum = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// structure was loaded from bytecode
-	public final boolean isLoadedFromBytecode() {
-		return this.is_struct_bytecode;
-	}
-	public final void setLoadedFromBytecode(boolean on) {
-		this.is_struct_bytecode = on;
 	}
 
 	/** Add information about new sub structure, this class (package) containes */
@@ -396,16 +319,10 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		public				OuterMetaType			ometa_type;
 		public:ro			CompaundType			ctype;
 		public				TypeRef					view_of;
-		public:ro			NArr<TypeRef>			super_types;
-		public:ro			NArr<TypeConstr>		args;
 		public				Struct					package_clazz;
 		public				Struct					typeinfo_clazz;
 		public				Struct					iface_impl;
 		public:ro			NArr<DNode>				sub_decls;
-		public:ro			NArr<TypeDecl>			direct_extenders;
-		public:ro			NArr<ASTNode>			members;
-
-		public MetaType[] getAllSuperTypes();
 
 		public final Struct getStruct() { return (Struct)this; }
 
@@ -444,14 +361,6 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		// indicates that type arguments of the structure were resolved
 		public final boolean isArgsResolved();
 		public final void setArgsResolved(boolean on);
-		// kiev annotation
-		public final boolean isAnnotation();
-		public final void setAnnotation(boolean on);
-		// java enum
-		public final boolean isEnum();
-		// structure was loaded from bytecode
-		public final boolean isLoadedFromBytecode();
-		public final void setLoadedFromBytecode(boolean on);
 
 		public Struct addSubStruct(Struct sub);
 		public Method addMethod(Method m);

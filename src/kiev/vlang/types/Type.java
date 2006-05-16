@@ -77,12 +77,12 @@ public abstract class Type extends AType {
 	}
 
 	public boolean isInstanceOf(Type t) alias operator (60, xfx, ≥ ) {
-		return this.equals(t);
+		return this.equals(t) || t ≡ tpAny;
 	}
 
 	public boolean isAutoCastableTo(Type t)
 	{
-		if( t ≡ Type.tpVoid ) return true;
+		if( t ≡ Type.tpVoid || t ≡ Type.tpAny ) return true;
 		if( this.isReference() && t.isReference() && (this ≡ tpNull || t ≡ tpNull) ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( this ≡ Type.tpRule && t ≡ Type.tpBoolean ) return true;
@@ -156,7 +156,7 @@ public abstract class Type extends AType {
 	}
 
 	public boolean isCastableTo(Type t) {
-		if( this.isReference() && t ≡ tpNull ) return true;
+		if( this.isReference() && t ≡ tpNull || t ≡ Type.tpAny  ) return true;
 		foreach (Type st; t.getMetaSupers(); this.isCastableTo(st))
 			return true;
 		return false;
@@ -226,7 +226,7 @@ public final class CoreType extends Type {
 	
 	public boolean isAutoCastableTo(Type t)
 	{
-		if( t ≡ Type.tpVoid ) return true;
+		if( t ≡ Type.tpVoid || t ≡ Type.tpAny ) return true;
 		if( this.isBoolean() && t.isBoolean() ) return true;
 		if( this ≡ tpByte && (t ≡ tpShort || t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return true;
 		if( (this ≡ tpShort || this ≡ tpChar) && (t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return true;
@@ -237,7 +237,7 @@ public final class CoreType extends Type {
 	}
 
 	public boolean isCastableTo(Type t) {
-		if( this ≡ t) return true;
+		if( this ≡ t || t ≡ Type.tpAny ) return true;
 		if( this.isNumber() && t.isNumber() ) return true;
 		if( t.isReference() && this ≡ tpNull ) return true;
 		if( t.getStruct() != null && t.getStruct().isEnum())
@@ -406,7 +406,7 @@ public final class ArgType extends Type {
 	public Struct getStruct()						{ return definer.getStruct(); }
 	public boolean checkResolved()					{ return definer.checkResolved(); }
 	public Type getErasedType() {
-		TypeRef[] up = definer.getUpperBounds();
+		TypeRef[] up = definer.super_types.getArray();
 		if (up.length == 0)
 			return tpObject;
 		return up[0].getType().getErasedType();
@@ -416,9 +416,9 @@ public final class ArgType extends Type {
 	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
 		TypeRef@ sup;
 	{
-		definer.getUpperBounds().length == 0, $cut,
+		definer.super_types.getArray().length == 0, $cut,
 		tpObject.resolveCallAccessR(node, info, name, mt)
-	;	sup @= definer.getUpperBounds(),
+	;	sup @= definer.super_types.getArray(),
 		sup.getType().resolveCallAccessR(node, info, name, mt)
 	}
 	
@@ -431,8 +431,8 @@ public final class ArgType extends Type {
 	}
 
 	public boolean isCastableTo(Type t) {
-		if( this ≡ t) return true;
-		TypeRef[] up = definer.getUpperBounds();
+		if( this ≡ t || t ≡ Type.tpAny ) return true;
+		TypeRef[] up = definer.super_types.getArray();
 		if (up.length == 0)
 			return tpObject.isCastableTo(t);
 		foreach (TypeRef tr; up) {
@@ -443,8 +443,8 @@ public final class ArgType extends Type {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this ≡ t) return true;
-		TypeRef[] up = definer.getUpperBounds();
+		if (this ≡ t || t ≡ tpAny) return true;
+		TypeRef[] up = definer.super_types.getArray();
 		if (up.length == 0)
 			return tpObject.isInstanceOf(t);
 		foreach (TypeRef tr; up) {
@@ -545,7 +545,7 @@ public final class CompaundType extends Type {
 
 	public boolean isAutoCastableTo(Type t)
 	{
-		if( t ≡ Type.tpVoid ) return true;
+		if( t ≡ Type.tpVoid || t ≡ Type.tpAny ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( this.clazz.isStructView() && this.clazz.view_of.getType().isAutoCastableTo(t) ) return true;
 		if( t instanceof CoreType && !t.isReference() ) {
@@ -559,7 +559,7 @@ public final class CompaundType extends Type {
 
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
-		if( t ≡ tpNull ) return true;
+		if( t ≡ tpNull || t ≡ Type.tpAny ) return true;
 		if( this.isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		if( t.isReference() && t.getStruct() != null &&
@@ -570,13 +570,13 @@ public final class CompaundType extends Type {
 	}
 
 	public boolean isInstanceOf(Type _t2) {
-		if( this ≡ _t2 ) return true;
+		if( this ≡ _t2 || _t2 ≡ Type.tpAny ) return true;
 		if( this.isReference() && _t2 ≈ Type.tpObject ) return true;
 		if!(_t2 instanceof CompaundType) {
 			if (_t2 instanceof ArgType) {
 				ArgType at = (ArgType)_t2;
-				if (at.definer.getUpperBounds().length > 0) {
-					foreach (TypeRef tr; at.definer.getUpperBounds()) {
+				if (at.definer.super_types.getArray().length > 0) {
+					foreach (TypeRef tr; at.definer.super_types.getArray()) {
 						if (!this.isInstanceOf(tr.getType()))
 							return false;
 					}
@@ -684,7 +684,7 @@ public final class ArrayType extends Type {
 	}
 
 	public boolean isCastableTo(Type t) {
-		if( t ≡ tpNull ) return true;
+		if( t ≡ tpNull || t ≡ tpAny ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		return super.isCastableTo(t);
@@ -692,7 +692,7 @@ public final class ArrayType extends Type {
 
 	public boolean isInstanceOf(Type t) {
 		if (this ≡ t) return true;
-		if (t ≈ Type.tpObject) return true;
+		if (t ≈ Type.tpObject || t ≡ Type.tpAny ) return true;
 		if (t instanceof ArrayType)
 			return arg.isInstanceOf(t.arg);
 		return false;
@@ -802,7 +802,7 @@ public final class WrapperType extends CTimeType {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this ≡ t) return true;
+		if (this ≡ t || t ≡ tpAny) return true;
 		if (t instanceof WrapperType)
 			return getEnclosedType().isInstanceOf(t.getEnclosedType());
 		return false;
@@ -870,7 +870,7 @@ public final class OuterType extends CTimeType {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this ≡ t) return true;
+		if (this ≡ t || t ≡ tpAny) return true;
 		if (t instanceof OuterType && t.meta_type == this.meta_type)
 			t = t.outer;
 		return outer.isInstanceOf(t);
@@ -993,7 +993,7 @@ public final class CallType extends Type {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this ≡ t) return true;
+		if (this ≡ t || t ≡ tpAny) return true;
 		if (t instanceof CallType) {
 			CallType ct = (CallType)t;
 			if( this.arity != ct.arity ) return false;

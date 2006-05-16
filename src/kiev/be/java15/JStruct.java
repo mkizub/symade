@@ -28,12 +28,10 @@ public final view JStruct of Struct extends JTypeDecl {
 	public		KString				b_name;
 	public:ro	CompaundType		ctype;
 	public:ro	JBaseType			jtype;
-	public:ro	JType[]				super_types;
 	public:ro	JStruct				package_clazz;
 	public:ro	JStruct				iface_impl;
 	public:ro	JArr<JDNode>		sub_decls;
 	public		Attr[]				attrs;
-	public:ro	JArr<JNode>			members;
 
 	@getter
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }

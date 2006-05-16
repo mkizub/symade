@@ -117,22 +117,48 @@ public final class TArg {
 
 
 @node
-public class MetaType extends Struct {
+public class MetaType extends TypeDecl {
 
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="false")	DNode[]		members;
+	}
 	@virtual typedef This  = MetaType;
 
 	public final static MetaType[] emptyArray = new MetaType[0];
 	static final MetaType dummy = new MetaType();
 
-	@ref public int				version;
+	@ref public Struct						package_clazz;
+		 public String						q_name;	// qualified name
+
+	public final String qname() {
+		if (q_name != null)
+			return q_name;
+		Struct pkg = package_clazz;
+		if (pkg == null || pkg == Env.root)
+			q_name = id.uname;
+		else
+			q_name = (pkg.qname()+"."+id.uname).intern();
+		return q_name;
+	}
+
+	@nodeview
+	public static final view VMetaType of MetaType extends VTypeDecl {
+		public				Struct					package_clazz;
+	}
 
 	public MetaType() {}
 	public MetaType(Symbol id, Struct outer, int flags) {
-		super(id, outer, flags | ACC_INTERFACE | ACC_MACRO);
+		this.flags = flags | ACC_INTERFACE | ACC_MACRO;
+		this.id = id;
+		package_clazz = outer;
 	}
 
 	public Type[] getMetaSupers(Type tp) {
 		return Type.emptyArray;
+	}
+	
+	public boolean checkTypeVersion(int version) {
+		return type_decl_version == version;
 	}
 	
 	public Type make(TVSet bindings) {
@@ -150,6 +176,24 @@ public class MetaType extends Struct {
 	public TVarSet getTemplBindings() { return TVarSet.emptySet; }
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name) { false }
+
+	static class MetaTypeDFFunc extends DFFunc {
+		final int res_idx;
+		MetaTypeDFFunc(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
+		}
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			res = DFState.makeNewState();
+			dfi.setResult(res_idx, res);
+			return res;
+		}
+	}
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		return new MetaTypeDFFunc(dfi);
+	}
+
 }
 
 @node
@@ -187,7 +231,6 @@ public final class ASTNodeMetaType extends MetaType {
 	@ref public Struct clazz;
 
 	private TVarSet			templ_bindings;
-	private int				templ_version;
 
 	public static ASTNodeMetaType instance(Struct clazz) {
 		if (clazz.ameta_type == null)
@@ -199,13 +242,16 @@ public final class ASTNodeMetaType extends MetaType {
 	ASTNodeMetaType(Struct clazz) {
 		this.clazz = clazz;
 		this.templ_bindings = TVarSet.emptySet;
-		this.templ_version = -1;
 	}
 
 	public Type[] getMetaSupers(Type tp) {
 		return Type.emptyArray;
 	}
 
+	public boolean checkTypeVersion(int version) {
+		return type_decl_version == version && clazz.type_decl_version == version;
+	}
+	
 	public Type make(TVSet bindings) {
 		throw new RuntimeException("make() in ASTNodeMetaType");
 	}
@@ -220,7 +266,7 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 
 	public TVarSet getTemplBindings() {
-		if (this.version != this.templ_version)
+		if (this.type_decl_version != clazz.type_decl_version)
 			makeTemplBindings();
 		return templ_bindings;
 	}
@@ -232,7 +278,7 @@ public final class ASTNodeMetaType extends MetaType {
 		foreach (TypeRef st; clazz.super_types; st.getType() ≢ null)
 			vs.append(st.getType().bindings());
 		templ_bindings = new TVarSet(vs.close());
-		templ_version = version;
+		type_decl_version = clazz.type_decl_version;
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
@@ -255,14 +301,12 @@ public final class CompaundMetaType extends MetaType {
 	public final Struct			clazz;
 	
 	private TVarSet			templ_bindings;
-	private int				templ_version;
 	
 	public CompaundMetaType() {}
 	public CompaundMetaType(Struct clazz) {
 		this.clazz = clazz;
 		if (this.clazz == Env.root) Env.root.imeta_type = this;
 		this.templ_bindings = TVarSet.emptySet;
-		this.templ_version = -1;
 	}
 	
 	public Type[] getMetaSupers(Type tp) {
@@ -272,6 +316,10 @@ public final class CompaundMetaType extends MetaType {
 		return stps;
 	}
 
+	public boolean checkTypeVersion(int version) {
+		return type_decl_version == version && clazz.type_decl_version == version;
+	}
+	
 	public Type make(TVSet bindings) {
 		return new CompaundType(this, getTemplBindings().bind_bld(bindings));
 	}
@@ -291,7 +339,7 @@ public final class CompaundMetaType extends MetaType {
 	}
 	
 	public TVarSet getTemplBindings() {
-		if (this.version != this.templ_version)
+		if (this.type_decl_version != clazz.type_decl_version)
 			makeTemplBindings();
 		return templ_bindings;
 	}
@@ -306,7 +354,7 @@ public final class CompaundMetaType extends MetaType {
 		foreach (TypeRef st; clazz.super_types; st.getType() ≢ null)
 			vs.append(st.getType().bindings());
 		templ_bindings = new TVarSet(vs.close());
-		templ_version = version;
+		type_decl_version = clazz.type_decl_version;
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
@@ -368,8 +416,10 @@ public final class ArrayMetaType extends MetaType {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
 	}
 
+	private static TVarSet			templ_bindings;
 	public static final ArrayMetaType instance;
 	static {
+		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpArrayArg, null).close());
 		instance = new ArrayMetaType();
 		instance.setResolved(true);
 		instance.package_clazz.sub_decls.add(instance);
@@ -394,6 +444,7 @@ public final class ArrayMetaType extends MetaType {
 	private ArrayMetaType() {
 		super(new Symbol("_array_"), Env.newPackage("kiev.stdlib"), ACC_PUBLIC|ACC_FINAL);
 		this.super_types.insert(0, new TypeRef(StdTypes.tpObject));
+		this.args.add(StdTypes.tdArrayArg);
 	}
 
 	public Type[] getMetaSupers(Type tp) {
@@ -402,6 +453,8 @@ public final class ArrayMetaType extends MetaType {
 			stps[i] = super_types[i].getType();
 		return stps;
 	}
+
+	public TVarSet getTemplBindings() { return templ_bindings; }
 
 	public Type make(TVSet bindings) {
 		return ArrayType.newArrayType(bindings.resolve(StdTypes.tpArrayArg));
@@ -437,7 +490,7 @@ public class ArgMetaType extends MetaType {
 
 	public Type[] getMetaSupers(Type tp) {
 		ArgType at = (ArgType)tp;
-		TypeRef[] ups = at.definer.getUpperBounds();
+		TypeRef[] ups = at.definer.super_types.getArray();
 		if (ups.length == 0)
 			return new Type[]{StdTypes.tpObject};
 		Type[] stps = new Type[ups.length];
@@ -467,7 +520,7 @@ public class ArgMetaType extends MetaType {
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
 		TypeRef@ sup;
 	{
-		sup @= ((ArgType)tp).definer.getUpperBounds(),
+		sup @= ((ArgType)tp).definer.super_types.getArray(),
 		sup.getType().resolveNameAccessR(node, info, name)
 	}
 }
@@ -477,6 +530,10 @@ public class WrapperMetaType extends MetaType {
 
 	@virtual typedef This  = WrapperMetaType;
 
+	private static TVarSet			templ_bindings;
+	static {
+		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpWrapperArg, null).close());
+	}
 	public final Struct		clazz;
 	public final Field		field;
 	public static WrapperMetaType instance(Struct clazz) {
@@ -494,6 +551,8 @@ public class WrapperMetaType extends MetaType {
 		WrapperType wt = (WrapperType)tp;
 		return new Type[]{tp.getEnclosedType(),tp.getUnboxedType()};
 	}
+	public TVarSet getTemplBindings() { return templ_bindings; }
+
 
 	public Type make(TVSet bindings) {
 		return WrapperType.newWrapperType(bindings.resolve(StdTypes.tpWrapperArg));
@@ -534,6 +593,7 @@ public class OuterMetaType extends MetaType {
 
 	@virtual typedef This  = OuterMetaType;
 
+	private TVarSet			templ_bindings;
 	public final Struct		clazz;
 	public final TypeDef	tdef;
 	public static OuterMetaType instance(Struct clazz, TypeDef tdef) {
@@ -545,12 +605,15 @@ public class OuterMetaType extends MetaType {
 	private OuterMetaType(Struct clazz, TypeDef tdef) {
 		this.clazz = clazz;
 		this.tdef = tdef;
+		this.templ_bindings = new TVarSet(new TVarBld(tdef.getAType(), null).close());
 	}
 
 	public Type[] getMetaSupers(Type tp) {
 		OuterType ot = (OuterType)tp;
 		return new Type[]{ot.outer};
 	}
+	public TVarSet getTemplBindings() { return templ_bindings; }
+
 
 	public Type make(TVSet bindings) {
 		return OuterType.newOuterType(clazz,bindings.resolve(tdef.getAType()));

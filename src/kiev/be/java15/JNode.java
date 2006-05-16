@@ -8,6 +8,8 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.vlang.NArr.JArr;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -142,6 +144,8 @@ public final view JLocalStructDecl of LocalStructDecl extends JENode {
 */
 @nodeview
 public view JTypeDecl of TypeDecl extends JDNode {
+	public:ro	JType[]				super_types;
+	public:ro	JArr<JNode>			members;
 }
 
 @nodeview

@@ -42,7 +42,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void pass1(FileUnit:ASTNode astn) {
 		FileUnit fu = astn;
 		processFileHeader(fu);
-		foreach (Struct n; astn.members) {
+		foreach (ASTNode n; astn.members) {
 			try {
 				processSyntax(n);
 			} catch(Exception e ) { Kiev.reportError(n,e); }
@@ -310,116 +310,131 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			pass2(n);
 	}
 
-	public void pass2(Struct:ASTNode astn) {
+	public void pass2(TypeDecl:ASTNode astn) {
 		try {
-			Struct clazz = (Struct)astn;
+			TypeDecl td = (TypeDecl)astn;
 			// Verify meta-data to the new structure
-			clazz.meta.verify();
-			foreach (DNode dn; clazz.members; dn.meta != null)
+			if (td.meta != null)
+				td.meta.verify();
+			foreach (DNode dn; td.members; dn.meta != null)
 				dn.meta.verify();
-			getStructType(clazz, new Stack<Struct>());
-			if( !clazz.isPackage() ) {
-				foreach (Struct s; clazz.members)
-					pass2(s);
-			}
+			getStructType(td, new Stack<TypeDecl>());
+			foreach (TypeDecl s; td.members)
+				pass2(s);
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}
 	
-	private CompaundType getStructType(Struct clazz, Stack<Struct> path) {
-		if (clazz.isTypeResolved()) {
-			if (!clazz.isArgsResolved())
-				throw new CompilerException(clazz, "Recursive type declaration for class "+clazz+" via "+path);
-			return clazz.ctype;
+	private CompaundType getStructType(TypeDecl tdecl, Stack<TypeDecl> path) {
+		if (tdecl.isTypeResolved()) {
+			if (!tdecl.isArgsResolved())
+				throw new CompilerException(tdecl, "Recursive type declaration for class "+tdecl+" via "+path);
+			return (tdecl instanceof Struct) ? tdecl.ctype : null;
 		}
-		path.push(clazz);
+		path.push(tdecl);
 		
-		clazz.setTypeResolved(true);
+		tdecl.setTypeResolved(true);
 		
-		for (Struct p = clazz.package_clazz; p != null; p = p.package_clazz)
-			getStructType(p, path);
-
-		if (clazz.parent() instanceof FileUnit)
-			clazz.setStatic(true);
-
-		if (clazz.isAnnotation()) {
-			clazz.super_types.add(new TypeRef(Type.tpObject));
-			clazz.super_types.add(new TypeRef(Type.tpAnnotation));
+		if (tdecl instanceof Struct) {
+			for (Struct p = tdecl.package_clazz; p != null; p = p.package_clazz)
+				getStructType(p, path);
 		}
-		else if (clazz.isEnum()) {
-			clazz.setStatic(true);
-			clazz.super_types.insert(0, new TypeRef(Type.tpEnum));
-			// assign type of enum fields
-			if (clazz.isEnum()) {
-				foreach (Field f; clazz.members; f.isEnumField())
-					f.ftype = new TypeRef(clazz.ctype);
+
+		if (tdecl.parent() instanceof FileUnit)
+			tdecl.setStatic(true);
+
+		if (tdecl instanceof Struct) {
+			Struct clazz = (Struct)tdecl;
+			if (clazz.isAnnotation()) {
+				clazz.super_types.add(new TypeRef(Type.tpObject));
+				clazz.super_types.add(new TypeRef(Type.tpAnnotation));
 			}
-		}
-		else if (clazz.isPizzaCase()) {
-			clazz.setStatic(true);
-			Struct p = clazz.ctx_clazz;
-			p.addCase(clazz);
-			getStructType(p, path);
-			TypeWithArgsRef sup_ref = new TypeWithArgsRef(null, new SymbolRef(clazz.pos,p.id));
-		next_case_arg:
-			for(int i=0; i < p.args.length; i++) {
-				for(int j=0; j < clazz.args.length; j++) {
-					if (p.args[i].id.uname == clazz.args[j].id.uname) {
-						sup_ref.args.add(new TypeRef(clazz.args[j].getAType()));
-						continue next_case_arg;
-					}
+			else if (tdecl.isEnum()) {
+				clazz.setStatic(true);
+				clazz.super_types.insert(0, new TypeRef(Type.tpEnum));
+				// assign type of enum fields
+				if (clazz.isEnum()) {
+					foreach (Field f; clazz.members; f.isEnumField())
+						f.ftype = new TypeRef(clazz.ctype);
 				}
-				sup_ref.args.add(new TypeRef(p.args[i].getAType()));
 			}
-			clazz.super_types.insert(0, sup_ref);
-		}
-		else if (clazz.isSyntax() || clazz.isPackage()) {
-			clazz.setAbstract(true);
-			clazz.setMembersGenerated(true);
-			clazz.setStatementsGenerated(true);
-			clazz.super_types.delAll();
-		}
-		else if( clazz.isInterface() ) {
-			if (clazz.super_types.length == 0 || clazz.super_types[0].getType() ≉ Type.tpObject)
-				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
-			foreach(TypeRef tr; clazz.super_types) {
-				Struct s = tr.getType().getStruct();
-				if (s != null)
-					getStructType(s, path);
+			else if (clazz.isPizzaCase()) {
+				clazz.setStatic(true);
+				Struct p = clazz.ctx_clazz;
+				p.addCase(clazz);
+				getStructType(p, path);
+				TypeWithArgsRef sup_ref = new TypeWithArgsRef(null, new SymbolRef(clazz.pos,p.id));
+			next_case_arg:
+				for(int i=0; i < p.args.length; i++) {
+					for(int j=0; j < clazz.args.length; j++) {
+						if (p.args[i].id.uname == clazz.args[j].id.uname) {
+							sup_ref.args.add(new TypeRef(clazz.args[j].getAType()));
+							continue next_case_arg;
+						}
+					}
+					sup_ref.args.add(new TypeRef(p.args[i].getAType()));
+				}
+				clazz.super_types.insert(0, sup_ref);
+			}
+			else if (clazz.isSyntax() || clazz.isPackage()) {
+				clazz.setAbstract(true);
+				clazz.setMembersGenerated(true);
+				clazz.setStatementsGenerated(true);
+				clazz.super_types.delAll();
+			}
+			else if( clazz.isInterface() ) {
+				if (clazz.super_types.length == 0 || clazz.super_types[0].getType() ≉ Type.tpObject)
+					clazz.super_types.insert(0, new TypeRef(Type.tpObject));
+				foreach(TypeRef tr; clazz.super_types) {
+					Struct s = tr.getType().getStruct();
+					if (s != null)
+						getStructType(s, path);
+				}
+			}
+			else {
+				if (clazz.view_of != null)
+					clazz.view_of.getType();
+				foreach(TypeRef tr; clazz.super_types) {
+					Struct s = tr.getType().getStruct();
+					if (s != null)
+						getStructType(s, path);
+				}
+				if (clazz.super_types.length == 0) {
+					if (clazz != Type.tpObject.clazz)
+						clazz.super_types.insert(0, new TypeRef(Type.tpObject));
+				}
+				else if (clazz.super_types[0].getStruct().isInterface())
+					clazz.super_types.insert(0, new TypeRef(Type.tpObject));
 			}
 		}
 		else {
-			if (clazz.view_of != null)
-				clazz.view_of.getType();
-			foreach(TypeRef tr; clazz.super_types) {
+			foreach(TypeRef tr; tdecl.super_types) {
 				Struct s = tr.getType().getStruct();
 				if (s != null)
 					getStructType(s, path);
 			}
-			if (clazz.super_types.length == 0) {
-				if (clazz != Type.tpObject.clazz)
-					clazz.super_types.insert(0, new TypeRef(Type.tpObject));
-			}
-			else if (clazz.super_types[0].getStruct().isInterface())
-				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
 		}
 		
-		clazz.imeta_type.version++;
-		clazz.ctype.bindings(); // update the type
-		if (clazz.ctype.isUnerasable()) {
-			if (!clazz.isTypeUnerasable()) {
-				Kiev.reportWarning(clazz,"Type "+clazz+" must be annotated as @unerasable");
-				clazz.setTypeUnerasable(true);
-				foreach (TypeDef a; clazz.args)
-					a.setTypeUnerasable(true);
+		tdecl.type_decl_version++;
+		if (tdecl instanceof Struct) {
+			Struct clazz = (Struct)tdecl;
+			clazz.ctype.bindings(); // update the type
+			if (clazz.ctype.isUnerasable()) {
+				Struct clazz = (Struct)tdecl;
+				if (!clazz.isTypeUnerasable()) {
+					Kiev.reportWarning(clazz,"Type "+clazz+" must be annotated as @unerasable");
+					clazz.setTypeUnerasable(true);
+					foreach (TypeDef a; clazz.args)
+						a.setTypeUnerasable(true);
+				}
+				if (!clazz.instanceOf(Type.tpTypeInfoInterface.clazz))
+					clazz.super_types.append(new TypeRef(Type.tpTypeInfoInterface));
 			}
-			if (!clazz.instanceOf(Type.tpTypeInfoInterface.clazz))
-				clazz.super_types.append(new TypeRef(Type.tpTypeInfoInterface));
 		}
 
-		clazz.setArgsResolved(true);
+		tdecl.setArgsResolved(true);
 		path.pop();
 		
-		return clazz.ctype;
+		return (tdecl instanceof Struct) ? tdecl.ctype : null;
 	}
 
 	////////////////////////////////////////////////////

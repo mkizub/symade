@@ -225,6 +225,10 @@ public final view RNopExpr of NopExpr extends RENode {
 
 @nodeview
 public view RTypeDecl of TypeDecl extends RDNode {
+	public:ro			NArr<TypeRef>			super_types;
+	public:ro			NArr<TypeDef>			args;
+	public:ro			NArr<ASTNode>			members;
+
 	public MetaType[] getAllSuperTypes();
 }
 

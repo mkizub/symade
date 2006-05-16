@@ -987,6 +987,7 @@ FileUnit FileUnit(String filename) :
 				fu.members += Import(modifiers)
 			|	fu.members += Typedef(modifiers)
 			|	fu.members += Opdef(modifiers)
+			|	fu.members += MetaTypeDeclaration(modifiers, fu) [ ";" ]
 			|	fu.members += TypeDeclaration(modifiers, fu) [ ";" ]
 			|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 				fu.members += SyntaxDeclaration(modifiers, fu) [ ";" ]
@@ -1094,7 +1095,7 @@ TypeDecl Typedef(ASTModifiers modifiers) :
 		id = Name()
 		"="
 		tr = Type()
-		{ n = mkTypeAssign(id, modifiers); n.type_ref = tr; }
+		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
 	|
 		LOOKAHEAD(3, <IDENTIFIER> TypeOperatorChar() <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
 		{ n = new TypeOpDef(); }
@@ -1104,7 +1105,7 @@ TypeDecl Typedef(ASTModifiers modifiers) :
 	|
 		tr = Type()
 		id = Name()
-		{ n = mkTypeAssign(id, modifiers); n.type_ref = tr; }
+		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
 	) ";"
 	{ return n; }
 }
@@ -1148,6 +1149,31 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		"}"
 	} finally { curClazz = oldClazz; }
 	{ return clazz; }
+}
+
+MetaType MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
+{ MetaType mt; Symbol name; Struct oldClazz; TypeConstr[] args; }
+{
+	"metatype"
+	name = Name()
+	{
+		mt = mkMetaType(name, modifiers, (FileUnit)parent);
+	}
+	args = ClazzArguments() { mt.args.addAll(args); }
+//	[
+		"extends"
+		mt.super_types += Type()
+//	]
+//	[
+//		"implements"
+//		mt.super_types += NArrType()
+//		( "," mt.super_types += NArrType()	)*
+//	]
+	{ oldClazz = curClazz; curClazz = null; }
+	try {
+		TypeBodyDeclaration(mt)
+	} finally { curClazz = oldClazz; }
+	{ return mt; }
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
@@ -1218,21 +1244,6 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			clazz.super_types += NArrType()
 			( "," clazz.super_types += NArrType()	)*
 		]
-	|	"metatype"
-		name = Name()
-		{
-			clazz = mkMetaType(name, modifiers, (FileUnit)parent);
-		}
-		args = ClazzArguments() { clazz.args.addAll(args); }
-//		[
-			"extends"
-			clazz.super_types += Type()
-//		]
-//		[
-//			"implements"
-//			clazz.super_types += NArrType()
-//			( "," clazz.super_types += NArrType()	)*
-//		]
 	)
 	{ oldClazz = curClazz; curClazz = clazz; }
 	try {
@@ -1241,7 +1252,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	{ return clazz; }
 }
 
-void TypeBodyDeclaration(Struct clazz) :
+void TypeBodyDeclaration(TypeDecl clazz) :
 { ASTModifiers modifiers; }
 {
 	"{"
@@ -1262,8 +1273,8 @@ void TypeBodyDeclaration(Struct clazz) :
 			clazz.members += Initializer(modifiers)
 		|	clazz.members += InvariantDeclaration(modifiers) [ ";" ]
 		|	clazz.members += TypeDeclaration(modifiers, clazz) [ ";" ]
-		|	clazz.members += CaseTypeDeclaration(modifiers, clazz)
 		|	clazz.members += MemberArgDecl(modifiers)
+		|	clazz.members += CaseTypeDeclaration(modifiers, (Struct)clazz)
 		|
 			LOOKAHEAD( "rule" <IDENTIFIER> "(" )
 			clazz.members += RuleDeclaration(modifiers)
@@ -1356,12 +1367,12 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 		(
 			"="
 			{ arg = mkTypeAssign(name,modifiers); }
-			t = Type() { arg.type_ref = t; }
+			t = Type() { arg.super_types += t; }
 			";"
 		|
 			{ arg = mkTypeConstr(name,modifiers); }
 			(
-				<OPERATOR_UPPER_BOUND> t = Type() { arg.upper_bound.add(t);}
+				<OPERATOR_UPPER_BOUND> t = Type() { arg.super_types.add(t);}
 			|	<OPERATOR_LOWER_BOUND> t = Type() { arg.lower_bound.add(t);}
 			)+
 			";"
@@ -1377,8 +1388,8 @@ TypeConstr ArgumentDeclaration() :
 	{ arg = mkTypeConstr(name,null); arg.setAbstract(true); }
 	[
 		"extends"
-		tr = NArrType() { arg.upper_bound.add(tr); }
-		( "&" tr = NArrType() { arg.upper_bound.add(tr); } )*
+		tr = NArrType() { arg.super_types.add(tr); }
+		( "&" tr = NArrType() { arg.super_types.add(tr); } )*
 	]
 	[
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("super") }) //"super"

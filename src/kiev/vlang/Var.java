@@ -707,7 +707,6 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 			try {
 				template = new DataFlowInfo((ASTNode)cls.newInstance());
 			} catch (java.lang.IllegalAccessException e) {
-				cls = cls.getSuperclass();
 				template = getTemplate(cls.getSuperclass());
 			}
 			data_flows.put(cls, template);

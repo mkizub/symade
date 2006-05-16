@@ -71,9 +71,9 @@ public abstract class AType implements StdTypes, TVSet {
 	}
 	
 	public final AType bindings() {
-		if (this.version != this.meta_type.version) {
+		if (!this.meta_type.checkTypeVersion(this.version)) {
 			this.setFromBld(meta_type.getTemplBindings().bind_bld(this));
-			this.version = this.meta_type.version;
+			this.version = this.meta_type.type_decl_version;
 		}
 		return this;
 	}

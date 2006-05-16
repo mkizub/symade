@@ -391,9 +391,78 @@ public abstract class TypeDecl extends DNode {
 	@virtual typedef JView = JTypeDecl;
 	@virtual typedef RView = RTypeDecl;
 
-	public void callbackSuperTypeChanged(TypeDecl chg) {}
-	public MetaType[] getAllSuperTypes() { return MetaType.emptyArray; }
-	protected final void addSuperTypes(TypeRef suptr, Vector<MetaType> types) {
+	@att public NArr<TypeConstr>			args;
+	@att public NArr<TypeRef>				super_types;
+	@att public NArr<ASTNode>				members;
+		 private MetaType[]					super_meta_types;
+		 private TypeDecl[]					direct_extenders;
+		 public int							type_decl_version;
+
+	// kiev annotation
+	public final boolean isAnnotation() {
+		return this.is_struct_annotation;
+	}
+	public final void setAnnotation(boolean on) {
+		assert(!on || (!isPackage() && !isSyntax()));
+		if (this.is_struct_annotation != on) {
+			this.is_struct_annotation = on;
+			if (on) this.setInterface(true);
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// java enum
+	public final boolean isEnum() {
+		return this.is_struct_enum;
+	}
+	public final void setEnum(boolean on) {
+		if (this.is_struct_enum != on) {
+			this.is_struct_enum = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// structure was loaded from bytecode
+	public final boolean isLoadedFromBytecode() {
+		return this.is_struct_bytecode;
+	}
+	public final void setLoadedFromBytecode(boolean on) {
+		this.is_struct_bytecode = on;
+	}
+
+	// indicates that type of the structure was attached
+	public final boolean isTypeResolved() {
+		return this.is_struct_type_resolved;
+	}
+	public final void setTypeResolved(boolean on) {
+		if (this.is_struct_type_resolved != on) {
+			this.is_struct_type_resolved = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// indicates that type arguments of the structure were resolved
+	public final boolean isArgsResolved() {
+		return this.is_struct_args_resolved;
+	}
+	public final void setArgsResolved(boolean on) {
+		if (this.is_struct_args_resolved != on) {
+			this.is_struct_args_resolved = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
+	public final MetaType[] getAllSuperTypes() {
+		if (super_meta_types != null)
+			return super_meta_types;
+		Vector<MetaType> types = new Vector<MetaType>();
+		foreach (TypeRef it; super_types)
+			addSuperTypes(it, types);
+		if (types.length == 0)
+			super_meta_types = MetaType.emptyArray;
+		else
+			super_meta_types = types.toArray();
+		return super_meta_types;
+	}
+	
+	private void addSuperTypes(TypeRef suptr, Vector<MetaType> types) {
 		Type sup = suptr.getType();
 		if (sup == null)
 			return;
@@ -407,9 +476,36 @@ public abstract class TypeDecl extends DNode {
 		}
 	}
 
+	public final void callbackSuperTypeChanged(TypeDecl chg) {
+		super_meta_types = null;
+		type_decl_version++;
+		if (direct_extenders != null) {
+			foreach (TypeDecl td; direct_extenders)
+				td.callbackSuperTypeChanged(chg);
+		}
+	}
+	
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "args" || attr.name == "super_types") {
+			this.callbackSuperTypeChanged(this);
+		}
+	}
+
 	@nodeview
 	public static view VTypeDecl of TypeDecl extends VDNode {
+		public:ro			NArr<TypeConstr>		args;
+		public:ro			NArr<TypeRef>			super_types;
+		public:ro			NArr<ASTNode>			members;
+
 		public MetaType[] getAllSuperTypes();
+		// kiev annotation
+		public final boolean isAnnotation();
+		public final void setAnnotation(boolean on);
+		// java enum
+		public final boolean isEnum();
+		// structure was loaded from bytecode
+		public final boolean isLoadedFromBytecode();
+		public final void setLoadedFromBytecode(boolean on);
 	}
 
 	public TypeDecl() {}

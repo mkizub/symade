@@ -413,14 +413,14 @@ public class JavaSyntax extends Syntax {
 						public boolean calc(ASTNode node) {
 							if !(node instanceof TypeConstr) return false;
 							TypeConstr tc = (TypeConstr)node;
-							if (tc.upper_bound.size() == 0) return false;
-							if (tc.upper_bound.size() == 1 && tc.upper_bound[0].getType() ≈ Type.tpObject) return false;
+							if (tc.super_types.size() == 0) return false;
+							if (tc.super_types.size() == 1 && tc.super_types[0].getType() ≈ Type.tpObject) return false;
 							return true;
 						}
 					},
 					set(
 						kw("extends"),
-						lst("upper_bound", node(), oper("&"), lout_empty.ncopy())
+						lst("super_types", node(), oper("&"), lout_empty.ncopy())
 						),
 					null, lout_empty.ncopy()
 					),
@@ -433,7 +433,7 @@ public class JavaSyntax extends Syntax {
 					)
 				);
 			seTypeConstr = setl(lout_nl.ncopy(), typedef_prefix.ncopy(), kw("typedef"), ident("id"), 
-				lst("upper_bound", set(oper("\u2264"), node()), null, lout_empty.ncopy()),
+				lst("super_types", set(oper("\u2264"), node()), null, lout_empty.ncopy()),
 				lst("lower_bound", set(oper("\u2265"), node()), null, lout_empty.ncopy()),
 				sep(";")
 				);

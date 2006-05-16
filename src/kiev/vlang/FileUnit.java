@@ -201,8 +201,8 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		for(int i=0; i < members.length; i++)
-			toJava("classes", (Struct)members[i]);
+		foreach (Struct s; members)
+			toJava("classes", s);
 		return dmp;
 	}
 

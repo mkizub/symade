@@ -22,8 +22,6 @@ public abstract class TypeDef extends TypeDecl {
 
 	@ref public ArgType					lnk;
 	
-	public abstract MetaType[] getAllSuperTypes();
-	public abstract TypeRef[] getUpperBounds();
 	public abstract TypeRef[] getLowerBounds();
 
 	@nodeview
@@ -77,29 +75,10 @@ public final class TypeAssign extends TypeDef {
 	@virtual typedef This  = TypeAssign;
 	@virtual typedef VView = VTypeAssign;
 
-	@att public TypeRef				type_ref;
-	@ref private MetaType[]			super_types;
-
-	public void callbackSuperTypeChanged(TypeDecl chg) {
-		super_types = null;
-	}
-
-	public MetaType[] getAllSuperTypes() {
-		if (super_types != null)
-			return super_types;
-		Vector<MetaType> types = new Vector<MetaType>();
-		addSuperTypes(type_ref, types);
-		super_types = types.toArray();
-		return super_types;
-	}
-
-	public TypeRef[] getUpperBounds() { return type_ref == null ? new TypeRef[0] : new TypeRef[]{type_ref}; }
-	public TypeRef[] getLowerBounds() { return type_ref == null ? new TypeRef[0] : new TypeRef[]{type_ref}; }
+	public TypeRef[] getLowerBounds() { return super_types.getArray(); }
 
 	@nodeview
 	public static final view VTypeAssign of TypeAssign extends VTypeDef {
-		public:ro	TypeRef		type_ref;
-
 		public Struct getStruct();
 		public ArgType getAType();
 	}
@@ -116,23 +95,23 @@ public final class TypeAssign extends TypeDef {
 
 	public TypeAssign(Symbol nm, TypeRef sup) {
 		super(nm);
-		this.type_ref = sup;
+		this.super_types.add(sup);
 	}
 
 	public TypeAssign(String nm, Type sup) {
 		super(nm);
-		this.type_ref = new TypeRef(sup);
+		this.super_types.add(new TypeRef(sup));
 	}
 	
 	public boolean checkResolved() {
-		if (type_ref != null)
-			type_ref.checkResolved();
+		foreach (TypeRef tr; super_types)
+			tr.checkResolved();
 		return true;
 	}
 	
 	public Struct getStruct() {
-		if (type_ref != null)
-			return type_ref.getStruct();
+		if (super_types.length > 0)
+			return super_types[0].getStruct();
 		return null;
 	}
 }
@@ -145,33 +124,12 @@ public final class TypeConstr extends TypeDef {
 	@virtual typedef This  = TypeConstr;
 	@virtual typedef VView = VTypeConstr;
 
-	@att public NArr<TypeRef>			upper_bound;
 	@att public NArr<TypeRef>			lower_bound;
-	@ref private MetaType[]				super_types;
 
-	public void callbackSuperTypeChanged(TypeDecl chg) {
-		super_types = null;
-	}
-
-	public MetaType[] getAllSuperTypes() {
-		if (super_types != null)
-			return super_types;
-		Vector<MetaType> types = new Vector<MetaType>();
-		foreach (TypeRef up; upper_bound)
-			addSuperTypes(up, types);
-		if (types.length == 0)
-			super_types = MetaType.emptyArray;
-		else
-			super_types = types.toArray();
-		return super_types;
-	}
-
-	public TypeRef[] getUpperBounds() { return upper_bound.getArray(); }
 	public TypeRef[] getLowerBounds() { return lower_bound.getArray(); }
 
 	@nodeview
 	public static final view VTypeConstr of TypeConstr extends VTypeDef {
-		public:ro	NArr<TypeRef>		upper_bound;
 		public:ro	NArr<TypeRef>		lower_bound;
 
 		public Struct getStruct();
@@ -190,22 +148,24 @@ public final class TypeConstr extends TypeDef {
 
 	public TypeConstr(Symbol nm, TypeRef sup) {
 		super(nm);
-		this.upper_bound.add(sup);
+		this.super_types.add(sup);
 	}
 
 	public TypeConstr(String nm, Type sup) {
 		super(nm);
-		this.upper_bound.add(new TypeRef(sup));
+		this.super_types.add(new TypeRef(sup));
 	}
 	
 	public boolean checkResolved() {
-		foreach (TypeRef tr; upper_bound)
+		foreach (TypeRef tr; super_types)
+			tr.checkResolved();
+		foreach (TypeRef tr; lower_bound)
 			tr.checkResolved();
 		return true;
 	}
 	
 	public Struct getStruct() {
-		foreach (TypeRef tr; upper_bound) {
+		foreach (TypeRef tr; super_types) {
 			Struct s = tr.getStruct();
 			if (s != null)
 				return s;
