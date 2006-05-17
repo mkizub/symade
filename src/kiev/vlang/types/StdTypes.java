@@ -144,12 +144,11 @@ public interface StdTypes {
 
 		
 		TypeDef tdWrapperArg = new TypeConstr("_boxed_", tpObject);
-		tpWrapperArg = new ArgType("_boxed_",tdWrapperArg);
+		tpWrapperArg = tdWrapperArg.getAType();
 		tpWrapperArg.flags |= flHidden;
 		
 		tdArrayArg = new TypeConstr("_elem_", tpAny);
-		tpArrayArg = new ArgType("_elem_",tdArrayArg);
-		tdArrayArg.lnk = tpArrayArg;
+		tpArrayArg = tdArrayArg.getAType();
 		tpArrayArg.flags |= flHidden;
 		tpArray					= ArrayType.newArrayType(Type.tpAny);
 		tpArray.flags			|= flResolved | flReference | flArray;
@@ -241,20 +240,20 @@ public interface StdTypes {
 
 
 		TypeDef tdCallRetArg = new TypeConstr("_ret_", tpAny);
-		tpCallRetArg = new ArgType(tdCallRetArg.id.uname,tdCallRetArg);
+		tpCallRetArg = tdCallRetArg.getAType();
 		tpCallRetArg.flags |= flHidden;
 		
 		tpCallParamArgs = new ArgType[128];
 		for (int i=0; i < tpCallParamArgs.length; i++) {
 			TypeDef tdCallParamArg = new TypeConstr("_"+Integer.toHexString(i)+"_", tpAny);
-			tpCallParamArgs[i] = new ArgType(tdCallParamArg.id.uname,tdCallParamArg);
+			tpCallParamArgs[i] = tdCallParamArg.getAType();
 			tpCallParamArgs[i].flags |= flHidden;
 		}
 		
 		tpUnattachedArgs = new ArgType[128] ;
 		for (int i=0; i < tpUnattachedArgs.length; i++) {
 			TypeDef tdUnattachedArg = new TypeConstr("_"+Integer.toHexString(i)+"_", tpAny);
-			tpUnattachedArgs[i] = new ArgType(tdUnattachedArg.id.uname,tdUnattachedArg);
+			tpUnattachedArgs[i] = tdUnattachedArg.getAType();
 			//tpUnattachedArgs[i].flags |= flHidden;
 		}
 	}

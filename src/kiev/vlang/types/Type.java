@@ -211,7 +211,7 @@ public abstract class Type extends AType {
 public final class CoreType extends Type {
 	public final KString name;
 	CoreType(KString name, int flags) {
-		super(new CoreMetaType(), flags | flResolved, TVar.emptyArray, TArg.emptyArray);
+		super(new CoreMetaType(name), flags | flResolved, TVar.emptyArray, TArg.emptyArray);
 		((CoreMetaType)meta_type).core_type = this;
 		this.name = name;
 	}
@@ -374,19 +374,13 @@ public final class ArgType extends Type {
 
 	public static final ArgType[] emptyArray = new ArgType[0];
 	
-	/** Variouse names of the type */
-	public final KString			name;
+	public final String name;
+	
+	@getter public final TypeDef get$definer() { return (TypeDef)meta_type.tdecl; }
 
-	/** The class this argument belongs to */
-	public final TypeDef			definer;
-
-	public ArgType(String name, TypeDef definer) {
-		this(KString.from(name), definer);
-	}
-	public ArgType(KString name, TypeDef definer) {
-		super(ArgMetaType.instance, flReference, TVar.emptyArray, TArg.emptyArray);
-		this.name = name;
-		this.definer = definer;
+	public ArgType(ArgMetaType meta_type) {
+		super(meta_type, flReference, TVar.emptyArray, TArg.emptyArray);
+		this.name = meta_type.tdecl.id.uname;
 		if (definer.isTypeAbstract())   this.flags |= flAbstract;
 		if (definer.isTypeUnerasable()) this.flags |= flUnerasable;
 		if (definer.isTypeVirtual())    this.flags |= flVirtual;
@@ -423,11 +417,11 @@ public final class ArgType extends Type {
 	}
 	
 	public String toString() {
-		return name.toString();
+		return String.valueOf(definer.id);
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append(name);
+		return dmp.append(String.valueOf(definer.id));
 	}
 
 	public boolean isCastableTo(Type t) {
@@ -480,7 +474,7 @@ public final class CompaundType extends Type {
 	
 	public rule resolveCallStaticR(Method@ node, ResInfo info, String name, CallType mt)
 	{
-		clazz.resolveStructMethodR(node, info, name, mt, this)
+		clazz.resolveMethodR(node, info, name, mt)
 	}
 	
 	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)

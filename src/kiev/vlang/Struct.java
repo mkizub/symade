@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
 
 
 @node
-public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, ScopeOfOperators, PreScanneable, Accessable {
+public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -35,7 +35,6 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 	@virtual typedef RView = RStruct;
 
 		 public Access						acc;
-		 public String						q_name;	// qualified name
 		 public KString						b_name;	// bytecode name
 		 public CompaundMetaType			imeta_type;
 		 public WrapperMetaType				wmeta_type;
@@ -538,81 +537,23 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		return true;
 	}
 	
-	public rule resolveOperatorR(Operator@ op)
-		ASTNode@ imp;
-	{
-		trace( Kiev.debugResolve, "Resolving operator: "+op+" in syntax "+this),
-		{
-			imp @= members,
-			imp instanceof Opdef && ((Opdef)imp).resolved != null,
-			op ?= ((Opdef)imp).resolved,
-			trace( Kiev.debugResolve, "Resolved operator: "+op+" in syntax "+this)
-		;	imp @= members,
-			imp instanceof Import && ((Import)imp).mode == Import.ImportMode.IMPORT_SYNTAX,
-			((Struct)((Import)imp).resolved).resolveOperatorR(op)
-		}
-	}
-
-	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
+	public final rule resolveNameR(ASTNode@ node, ResInfo info, String name)
 	{
 		info.isStaticAllowed(),
-		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this),
-		checkResolved(),
 		{
-			trace(Kiev.debugResolve,"Struct: resolving in "+this),
-			resolveNameR_1(node,info,name), // resolve in this class
-			$cut
-		;	info.isImportsAllowed(),
-			trace(Kiev.debugResolve,"Struct: resolving in imports of "+this),
-			resolveNameR_2(node,info,name), // resolve in imports
-			$cut
-		;	info.isSuperAllowed(),
-			info.space_prev == null || (info.space_prev.pslot().name != "super_types"),
-			trace(Kiev.debugResolve,"Struct: resolving in super-class of "+this),
-			resolveNameR_3(node,info,name), // resolve in super-classes
-			$cut
-		;	this.isPackage(),
-			trace(Kiev.debugResolve,"Struct: trying to load in package "+this),
-			tryLoad(node,name),
-			$cut
-		}
-	}
-	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, String name)
-		TypeDef@ arg;
-	{
-			this.id.equals(name), node ?= this
-		;	arg @= args,
-			arg.id.equals(name),
-			node ?= arg
-		;	node @= members,
-			node instanceof TypeDef && ((TypeDef)node).id.equals(name)
-		;	node @= members,
-			node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
-		;	node @= members,
-			node instanceof Struct && ((Struct)node).id.equals(name)
-		;	isPackage(),
+			super.resolveNameR(node, info, name), $cut
+		;
+			isPackage(),
 			node @= sub_decls,
 			((DNode)node).id.equals(name)
-	}
-	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, String name)
-	{
-		node @= members,
-		{	node instanceof Field && ((Field)node).isStatic() && ((Field)node).id.equals(name)
-		;	node instanceof TypeDef && ((TypeDef)node).id.equals(name)
+		;
+			tryLoad(node,name), $cut
 		}
-	}
-	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, String name)
-		TypeRef@ sup_ref;
-		Struct@ sup;
-	{
-		sup_ref @= super_types,
-		sup ?= sup_ref.getStruct(),
-		info.enterSuper() : info.leaveSuper(),
-		sup.resolveNameR(node,info,name)
 	}
 
 	public boolean tryLoad(ASTNode@ node, String name) {
 		if( isPackage() ) {
+			trace(Kiev.debugResolve,"Struct: trying to load in package "+this);
 			Struct cl;
 			String qn = name;
 			if (this.equals(Env.root))
@@ -626,39 +567,9 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 			} else {
 				trace(Kiev.debugResolve,"Class "+qn+" not found in "+this);
 			}
+			node = null;
 		}
-		node = null;
 		return false;
-	}
-
-	final public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
-	{
-		resolveStructMethodR(node, info, name, mt, this.ctype)
-	}
-
-	public rule resolveStructMethodR(Method@ node, ResInfo info, String name, CallType mt, Type tp)
-		ASTNode@ member;
-		Type@ sup;
-		TypeRef@ supref;
-	{
-		info.isStaticAllowed(),
-		checkResolved(),
-		trace(Kiev.debugResolve, "Resolving "+name+" in "+this),
-		{
-			member @= members,
-			member instanceof Method,
-			info.check(member),
-			node ?= ((Method)member),
-			((Method)node).equalsByCast(name,mt,tp,info)
-		;	info.isImportsAllowed() && isPackage(),
-			member @= members, member instanceof Method,
-			node ?= ((Method)member),
-			((Method)node).equalsByCast(name,mt,tp,info)
-		;	info.isSuperAllowed(),
-			supref @= super_types,
-			info.enterSuper() : info.leaveSuper(),
-			supref.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,supref.getType()))
-		}
 	}
 
 	public Field getWrappedField(boolean required) {

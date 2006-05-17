@@ -384,7 +384,7 @@ public abstract class LvalDNode extends DNode {
 
 
 @node
-public class TypeDecl extends DNode {
+public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
 
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -551,6 +551,79 @@ public class TypeDecl extends DNode {
 	}
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
 		return new TypeDeclDFFunc(dfi);
+	}
+
+	public rule resolveOperatorR(Operator@ op)
+		ASTNode@ imp;
+	{
+		trace( Kiev.debugResolve, "Resolving operator: "+op+" in syntax "+this),
+		{
+			imp @= members,
+			imp instanceof Opdef && ((Opdef)imp).resolved != null,
+			op ?= ((Opdef)imp).resolved,
+			trace( Kiev.debugResolve, "Resolved operator: "+op+" in syntax "+this)
+		;	imp @= members,
+			imp instanceof Import && ((Import)imp).mode == Import.ImportMode.IMPORT_SYNTAX,
+			((Struct)((Import)imp).resolved).resolveOperatorR(op)
+		}
+	}
+
+	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
+	{
+		info.isStaticAllowed(),
+		trace(Kiev.debugResolve,"TypeDecl: Resolving name "+name+" in "+this),
+		checkResolved(),
+		{
+			trace(Kiev.debugResolve,"TypeDecl: resolving in "+this),
+			resolveNameR_1(node,info,name), // resolve in this class
+			$cut
+		;	info.isSuperAllowed(),
+			info.space_prev == null || (info.space_prev.pslot().name != "super_types"),
+			trace(Kiev.debugResolve,"TypeDecl: resolving in super-class of "+this),
+			resolveNameR_3(node,info,name), // resolve in super-classes
+			$cut
+		}
+	}
+	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, String name)
+	{
+			this.id.equals(name), node ?= this
+		;	node @= args,
+			((TypeDef)node).id.equals(name)
+		;	node @= members,
+			node instanceof DNode && ((DNode)node).id != null && ((DNode)node).id.equals(name) && info.check(node)
+	}
+	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, String name)
+		TypeRef@ sup_ref;
+		Struct@ sup;
+	{
+		sup_ref @= super_types,
+		sup ?= sup_ref.getStruct(),
+		info.enterSuper() : info.leaveSuper(),
+		sup.resolveNameR(node,info,name)
+	}
+
+	final public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
+		ASTNode@ member;
+		TypeRef@ supref;
+	{
+		info.isStaticAllowed(),
+		checkResolved(),
+		trace(Kiev.debugResolve, "Resolving "+name+" in "+this),
+		{
+			member @= members,
+			member instanceof Method,
+			info.check(member),
+			node ?= ((Method)member),
+			((Method)node).equalsByCast(name,mt,Type.tpVoid,info)
+		;	info.isImportsAllowed() && isPackage(),
+			member @= members, member instanceof Method,
+			node ?= ((Method)member),
+			((Method)node).equalsByCast(name,mt,Type.tpVoid,info)
+		;	info.isSuperAllowed(),
+			supref @= super_types,
+			info.enterSuper() : info.leaveSuper(),
+			supref.getType().meta_type.tdecl.resolveMethodR(node,info,name,mt)
+		}
 	}
 
 }

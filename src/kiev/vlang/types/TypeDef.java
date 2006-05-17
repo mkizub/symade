@@ -20,13 +20,13 @@ public abstract class TypeDef extends TypeDecl {
 	@virtual typedef This  = TypeDef;
 	@virtual typedef VView = VTypeDef;
 
-	@ref public ArgType					lnk;
+	public ArgMetaType ameta_type;
 	
 	public abstract TypeRef[] getLowerBounds();
 
 	@nodeview
 	public static abstract view VTypeDef of TypeDef extends VTypeDecl {
-		public		ArgType				lnk;
+		public		ArgMetaType				ameta_type;
 
 		public Struct getStruct();
 		public ArgType getAType();
@@ -47,15 +47,15 @@ public abstract class TypeDef extends TypeDecl {
 		return getAType();
 	}
 	public ArgType getAType() {
-		if (this.lnk != null)
-			return this.lnk;
+		if (this.ameta_type != null)
+			return this.ameta_type.atype;
 		if (this.meta != null)
 			this.meta.verify();
-		this.lnk = new ArgType(id.uname,(TypeDef)this);
-		return this.lnk;
+		this.ameta_type = new ArgMetaType(this);
+		return this.ameta_type.atype;
 	}
 
-	public abstract boolean checkResolved();
+//	public abstract boolean checkResolved();
 	
 	public abstract Struct getStruct();
 	
@@ -103,11 +103,11 @@ public final class TypeAssign extends TypeDef {
 		this.super_types.add(new TypeRef(sup));
 	}
 	
-	public boolean checkResolved() {
-		foreach (TypeRef tr; super_types)
-			tr.checkResolved();
-		return true;
-	}
+//	public boolean checkResolved() {
+//		foreach (TypeRef tr; super_types)
+//			tr.checkResolved();
+//		return true;
+//	}
 	
 	public Struct getStruct() {
 		if (super_types.length > 0)
@@ -156,13 +156,13 @@ public final class TypeConstr extends TypeDef {
 		this.super_types.add(new TypeRef(sup));
 	}
 	
-	public boolean checkResolved() {
-		foreach (TypeRef tr; super_types)
-			tr.checkResolved();
-		foreach (TypeRef tr; lower_bound)
-			tr.checkResolved();
-		return true;
-	}
+//	public boolean checkResolved() {
+//		foreach (TypeRef tr; super_types)
+//			tr.checkResolved();
+//		foreach (TypeRef tr; lower_bound)
+//			tr.checkResolved();
+//		return true;
+//	}
 	
 	public Struct getStruct() {
 		foreach (TypeRef tr; super_types) {

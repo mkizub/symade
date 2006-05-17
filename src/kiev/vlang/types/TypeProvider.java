@@ -54,7 +54,11 @@ public final class CoreMetaType extends MetaType {
 
 	CoreType core_type;
 	
-	CoreMetaType() {}
+	CoreMetaType(KString name) {
+		this.tdecl = new TypeDecl();
+		this.tdecl.id = new Symbol(String.valueOf(name));
+		this.tdecl.setResolved(true);
+	}
 
 	public Type[] getMetaSupers(Type tp) {
 		return Type.emptyArray;
@@ -88,6 +92,7 @@ public final class ASTNodeMetaType extends MetaType {
 
 	ASTNodeMetaType() {}
 	ASTNodeMetaType(Struct clazz) {
+		super(clazz);
 		this.clazz = clazz;
 		this.templ_bindings = TVarSet.emptySet;
 	}
@@ -323,12 +328,16 @@ public final class ArrayMetaType extends MetaType {
 
 public class ArgMetaType extends MetaType {
 
-	public static final ArgMetaType instance = new ArgMetaType();
-	private ArgMetaType() {}
+	public final ArgType atype;
+	
+	public ArgMetaType(TypeDef definer) {
+		super(definer);
+		atype = new ArgType(this);
+	}
 
 	public Type[] getMetaSupers(Type tp) {
 		ArgType at = (ArgType)tp;
-		TypeRef[] ups = at.definer.super_types.getArray();
+		TypeRef[] ups = tdecl.super_types.getArray();
 		if (ups.length == 0)
 			return new Type[]{StdTypes.tpObject};
 		Type[] stps = new Type[ups.length];
@@ -338,7 +347,7 @@ public class ArgMetaType extends MetaType {
 	}
 
 	public Type make(TVSet bindings) {
-		throw new RuntimeException("make() in ArgType");
+		return atype;
 	}
 	public Type bind(Type t, TVSet bindings) {
 		return t; //throw new RuntimeException("bind() in ArgType");
@@ -358,7 +367,7 @@ public class ArgMetaType extends MetaType {
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
 		TypeRef@ sup;
 	{
-		sup @= ((ArgType)tp).definer.super_types.getArray(),
+		sup @= tdecl.super_types.getArray(),
 		sup.getType().resolveNameAccessR(node, info, name)
 	}
 }
@@ -378,6 +387,7 @@ public class WrapperMetaType extends MetaType {
 	}
 	private WrapperMetaType() {}
 	private WrapperMetaType(Struct clazz) {
+		super(clazz);
 		this.clazz = clazz;
 		this.field = clazz.getWrappedField(true);
 	}
@@ -435,6 +445,7 @@ public class OuterMetaType extends MetaType {
 	}
 	private OuterMetaType() {}
 	private OuterMetaType(Struct clazz, TypeDef tdef) {
+		super(clazz);
 		this.clazz = clazz;
 		this.tdef = tdef;
 		this.templ_bindings = new TVarSet(new TVarBld(tdef.getAType(), null).close());
@@ -468,8 +479,18 @@ public class OuterMetaType extends MetaType {
 
 public class CallMetaType extends MetaType {
 
-	public static final CallMetaType instance = new CallMetaType();
-	private CallMetaType() {}
+	public static final CallMetaType instance;
+	static {
+		TypeDecl tdecl = new TypeDecl();
+		tdecl.id = new Symbol("_call_type_");
+		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
+		tdecl.flags = AccessFlags.ACC_MACRO|AccessFlags.ACC_PUBLIC|AccessFlags.ACC_FINAL;
+		tdecl.setResolved(true);
+		instance = new CallMetaType(tdecl);
+	}
+	private CallMetaType(TypeDecl tdecl) {
+		super(tdecl);
+	}
 
 	public Type[] getMetaSupers(Type tp) {
 		CallType ct = (CallType)tp;
