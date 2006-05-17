@@ -73,7 +73,7 @@ public abstract class AType implements StdTypes, TVSet {
 	public final AType bindings() {
 		if (!this.meta_type.checkTypeVersion(this.version)) {
 			this.setFromBld(meta_type.getTemplBindings().bind_bld(this));
-			this.version = this.meta_type.type_decl_version;
+			this.version = this.meta_type.version;
 		}
 		return this;
 	}
@@ -319,5 +319,111 @@ public abstract class AType implements StdTypes, TVSet {
 		return sb.toString();
 	}
 }
+
+public final class TVarSet extends AType {
+
+	public static final TVarSet emptySet = new TVarSet();
+
+	private TVarSet() {
+		super(MetaType.dummy, 0, TVar.emptyArray, TArg.emptyArray);
+	}
+	
+	TVarSet(TVarBld bld) {
+		super(MetaType.dummy, 0, bld);
+	}
+	
+}
+
+
+public final class TVar {
+	public static final TVar[] emptyArray = new TVar[0];
+
+	public final TVSet			set;	// the set this TVar belongs to
+	public final int			idx;	// position in the set (set.tvars[idx] == this)
+	public final ArgType		var;	// variable
+	public final Type			val;	// value of the TVar (null for free vars, ArgType for aliases) 
+	public final int			ref;	// reference to actual TVar, for aliases
+
+	// copy
+	private TVar(TVSet set, int idx, ArgType var, Type val, int ref) {
+		this.set = set;
+		this.idx = idx;
+		this.var = var;
+		this.val = val;
+		this.ref = ref;
+	}
+	
+	// free vars
+	TVar(TVSet set, int idx, ArgType var) {
+		this.set = set;
+		this.idx = idx;
+		this.var = var;
+		this.ref = -1;
+	}
+
+	// bound vars
+	TVar(TVSet set, int idx, ArgType var, Type val) {
+		this.set = set;
+		this.idx = idx;
+		this.var = var;
+		this.val = val;
+		this.ref = -1;
+	}
+
+	// aliases vars
+	TVar(TVSet set, int idx, ArgType var, ArgType val, int ref) {
+		this.set = set;
+		this.idx = idx;
+		this.var = var;
+		this.val = val;
+		this.ref = ref;
+	}
+
+	public Type result() {
+		return val == null? var : val;
+	}
+	
+	public TVar copy(TVSet set) {
+		return new TVar(set, idx, var, val, ref);
+	}
+
+	public TVar unalias() {
+		TVar r = this;
+		while (r.ref >= 0) r = set.getTVars()[r.ref];
+		return r;
+	}
+	
+	public boolean isFree() { return val == null; }
+	
+	public boolean isAlias() { return ref >= 0; }
+
+	public String toString() {
+		if (isFree())
+			return idx+": free  "+var.definer.parent()+"."+var.definer+"."+var.name;
+		else if (isAlias())
+			return idx+": alias "+var.definer.parent()+"."+var.definer+"."+var.name+" > "+set.getTVars()[this.ref];
+		else
+			return idx+": bound "+var.definer.parent()+"."+var.definer+"."+var.name+" = "+val;
+	}
+}
+
+public final class TArg {
+	public static final TArg[] emptyArray = new TArg[0];
+
+	public final TVSet			set;	// the set this TVar belongs to
+	public final int			idx;	// position in the set (set.appls[idx] == this)
+	public final ArgType		var;	// variable
+
+	TArg(TVSet set, int idx, ArgType var) {
+		this.set = set;
+		this.idx = idx;
+		this.var = var;
+	}
+
+	public TArg copy(TVSet set) {
+		return new TArg(set, idx, var);
+	}
+}
+
 
 

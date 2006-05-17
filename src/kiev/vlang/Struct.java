@@ -43,7 +43,6 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		 public ASTNodeMetaType				ameta_type;
 		 public CompaundType				ctype;
 	@att public TypeRef						view_of;
-	@ref public Struct						package_clazz;
 	@ref public Struct						typeinfo_clazz;
 	@ref public Struct						iface_impl;
 	@ref public NArr<DNode>					sub_decls;
@@ -319,7 +318,6 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		public				OuterMetaType			ometa_type;
 		public:ro			CompaundType			ctype;
 		public				TypeRef					view_of;
-		public				Struct					package_clazz;
 		public				Struct					typeinfo_clazz;
 		public				Struct					iface_impl;
 		public:ro			NArr<DNode>				sub_decls;
@@ -456,7 +454,7 @@ public class Struct extends TypeDecl implements ScopeOfNames, ScopeOfMethods, Sc
 		this.imeta_type = new CompaundMetaType(this);
 		this.ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);
 		this.meta = new MetaSet();
-		package_clazz = outer;
+		this.package_clazz = outer;
 		trace(Kiev.debugCreation,"New clazz created: "+qname() +" as "+id.uname+", member of "+outer);
 	}
 

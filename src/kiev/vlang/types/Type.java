@@ -457,7 +457,7 @@ public final class ArgType extends Type {
 
 public final class CompaundType extends Type {
 	@getter
-	public final Struct get$clazz() { return ((CompaundMetaType)meta_type).clazz; }
+	public final Struct get$clazz() { return (Struct)meta_type.tdecl; }
 
 	public CompaundType(CompaundMetaType meta_type, TVarBld bindings) {
 		super(meta_type, flReference, bindings);
@@ -512,7 +512,7 @@ public final class CompaundType extends Type {
 			info.isForwardsAllowed(),
 			sup @= clazz.getAllSuperTypes(),
 			sup instanceof CompaundMetaType,
-			member @= ((CompaundMetaType)sup).clazz.members,
+			member @= sup.tdecl.members,
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
 			((Field)member).type.applay(this).resolveCallAccessR(node,info,name,mt)

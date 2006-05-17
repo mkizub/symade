@@ -10,147 +10,18 @@ import kiev.be.java15.JStruct;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-public final class TVarSet extends AType {
-
-	public static final TVarSet emptySet = new TVarSet();
-
-	private TVarSet() {
-		super(MetaType.dummy, 0, TVar.emptyArray, TArg.emptyArray);
-	}
-	
-	TVarSet(TVarBld bld) {
-		super(MetaType.dummy, 0, bld);
-	}
-	
-}
-
-
-public final class TVar {
-	public static final TVar[] emptyArray = new TVar[0];
-
-	public final TVSet			set;	// the set this TVar belongs to
-	public final int			idx;	// position in the set (set.tvars[idx] == this)
-	public final ArgType		var;	// variable
-	public final Type			val;	// value of the TVar (null for free vars, ArgType for aliases) 
-	public final int			ref;	// reference to actual TVar, for aliases
-
-	// copy
-	private TVar(TVSet set, int idx, ArgType var, Type val, int ref) {
-		this.set = set;
-		this.idx = idx;
-		this.var = var;
-		this.val = val;
-		this.ref = ref;
-	}
-	
-	// free vars
-	TVar(TVSet set, int idx, ArgType var) {
-		this.set = set;
-		this.idx = idx;
-		this.var = var;
-		this.ref = -1;
-	}
-
-	// bound vars
-	TVar(TVSet set, int idx, ArgType var, Type val) {
-		this.set = set;
-		this.idx = idx;
-		this.var = var;
-		this.val = val;
-		this.ref = -1;
-	}
-
-	// aliases vars
-	TVar(TVSet set, int idx, ArgType var, ArgType val, int ref) {
-		this.set = set;
-		this.idx = idx;
-		this.var = var;
-		this.val = val;
-		this.ref = ref;
-	}
-
-	public Type result() {
-		return val == null? var : val;
-	}
-	
-	public TVar copy(TVSet set) {
-		return new TVar(set, idx, var, val, ref);
-	}
-
-	public TVar unalias() {
-		TVar r = this;
-		while (r.ref >= 0) r = set.getTVars()[r.ref];
-		return r;
-	}
-	
-	public boolean isFree() { return val == null; }
-	
-	public boolean isAlias() { return ref >= 0; }
-
-	public String toString() {
-		if (isFree())
-			return idx+": free  "+var.definer.parent()+"."+var.definer+"."+var.name;
-		else if (isAlias())
-			return idx+": alias "+var.definer.parent()+"."+var.definer+"."+var.name+" > "+set.getTVars()[this.ref];
-		else
-			return idx+": bound "+var.definer.parent()+"."+var.definer+"."+var.name+" = "+val;
-	}
-}
-
-public final class TArg {
-	public static final TArg[] emptyArray = new TArg[0];
-
-	public final TVSet			set;	// the set this TVar belongs to
-	public final int			idx;	// position in the set (set.appls[idx] == this)
-	public final ArgType		var;	// variable
-
-	TArg(TVSet set, int idx, ArgType var) {
-		this.set = set;
-		this.idx = idx;
-		this.var = var;
-	}
-
-	public TArg copy(TVSet set) {
-		return new TArg(set, idx, var);
-	}
-}
-
-
-@node
-public class MetaType extends TypeDecl {
-
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
-	}
-	@virtual typedef This  = MetaType;
+public class MetaType {
 
 	public final static MetaType[] emptyArray = new MetaType[0];
 	static final MetaType dummy = new MetaType();
 
-	@ref public Struct						package_clazz;
-		 public String						q_name;	// qualified name
-
-	public final String qname() {
-		if (q_name != null)
-			return q_name;
-		Struct pkg = package_clazz;
-		if (pkg == null || pkg == Env.root)
-			q_name = id.uname;
-		else
-			q_name = (pkg.qname()+"."+id.uname).intern();
-		return q_name;
-	}
-
-	@nodeview
-	public static final view VMetaType of MetaType extends VTypeDecl {
-		public				Struct					package_clazz;
-	}
+	public TypeDecl					tdecl;
+	public int						version;
+	
 
 	public MetaType() {}
-	public MetaType(Symbol id, Struct outer, int flags) {
-		this.flags = flags | ACC_INTERFACE | ACC_MACRO;
-		this.id = id;
-		package_clazz = outer;
+	public MetaType(TypeDecl tdecl) {
+		this.tdecl = tdecl;
 	}
 
 	public Type[] getMetaSupers(Type tp) {
@@ -158,7 +29,7 @@ public class MetaType extends TypeDecl {
 	}
 	
 	public boolean checkTypeVersion(int version) {
-		return type_decl_version == version;
+		return this.version == version;
 	}
 	
 	public Type make(TVSet bindings) {
@@ -177,29 +48,9 @@ public class MetaType extends TypeDecl {
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name) { false }
 
-	static class MetaTypeDFFunc extends DFFunc {
-		final int res_idx;
-		MetaTypeDFFunc(DataFlowInfo dfi) {
-			res_idx = dfi.allocResult(); 
-		}
-		DFState calc(DataFlowInfo dfi) {
-			DFState res = dfi.getResult(res_idx);
-			if (res != null) return res;
-			res = DFState.makeNewState();
-			dfi.setResult(res_idx, res);
-			return res;
-		}
-	}
-	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
-		return new MetaTypeDFFunc(dfi);
-	}
-
 }
 
-@node
 public final class CoreMetaType extends MetaType {
-
-	@virtual typedef This  = CoreMetaType;
 
 	CoreType core_type;
 	
@@ -223,12 +74,9 @@ public final class CoreMetaType extends MetaType {
 	}
 }
 
-@node
 public final class ASTNodeMetaType extends MetaType {
 
-	@virtual typedef This  = ASTNodeMetaType;
-
-	@ref public Struct clazz;
+	public Struct clazz;
 
 	private TVarSet			templ_bindings;
 
@@ -249,7 +97,7 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 
 	public boolean checkTypeVersion(int version) {
-		return type_decl_version == version && clazz.type_decl_version == version;
+		return this.version == version && clazz.type_decl_version == version;
 	}
 	
 	public Type make(TVSet bindings) {
@@ -266,7 +114,7 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 
 	public TVarSet getTemplBindings() {
-		if (this.type_decl_version != clazz.type_decl_version)
+		if (this.version != clazz.type_decl_version)
 			makeTemplBindings();
 		return templ_bindings;
 	}
@@ -278,7 +126,7 @@ public final class ASTNodeMetaType extends MetaType {
 		foreach (TypeRef st; clazz.super_types; st.getType() ≢ null)
 			vs.append(st.getType().bindings());
 		templ_bindings = new TVarSet(vs.close());
-		type_decl_version = clazz.type_decl_version;
+		this.version = clazz.type_decl_version;
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
@@ -293,31 +141,26 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 }
 
-@node
 public final class CompaundMetaType extends MetaType {
 
-	@virtual typedef This  = CompaundMetaType;
-
-	public final Struct			clazz;
-	
 	private TVarSet			templ_bindings;
 	
 	public CompaundMetaType() {}
 	public CompaundMetaType(Struct clazz) {
-		this.clazz = clazz;
-		if (this.clazz == Env.root) Env.root.imeta_type = this;
+		super(clazz);
+		if (this.tdecl == Env.root) Env.root.imeta_type = this;
 		this.templ_bindings = TVarSet.emptySet;
 	}
 	
 	public Type[] getMetaSupers(Type tp) {
-		Type[] stps = new Type[clazz.super_types.length];
-		for (int i=0; i < clazz.super_types.length; i++)
-			stps[i] = clazz.super_types[i].getType();
+		Type[] stps = new Type[tdecl.super_types.length];
+		for (int i=0; i < tdecl.super_types.length; i++)
+			stps[i] = tdecl.super_types[i].getType();
 		return stps;
 	}
 
 	public boolean checkTypeVersion(int version) {
-		return type_decl_version == version && clazz.type_decl_version == version;
+		return this.version == version && tdecl.type_decl_version == version;
 	}
 	
 	public Type make(TVSet bindings) {
@@ -339,28 +182,28 @@ public final class CompaundMetaType extends MetaType {
 	}
 	
 	public TVarSet getTemplBindings() {
-		if (this.type_decl_version != clazz.type_decl_version)
+		if (this.version != tdecl.type_decl_version)
 			makeTemplBindings();
 		return templ_bindings;
 	}
 	
 	private void makeTemplBindings() {
 		TVarBld vs = new TVarBld();
-		foreach (TypeDef ad; clazz.args)
+		foreach (TypeDef ad; tdecl.args)
 			vs.append(ad.getAType(), null);
-		foreach (TypeDef td; clazz.members) {
+		foreach (TypeDef td; tdecl.members) {
 			vs.append(td.getAType(), null);
 		}
-		foreach (TypeRef st; clazz.super_types; st.getType() ≢ null)
+		foreach (TypeRef st; tdecl.super_types; st.getType() ≢ null)
 			vs.append(st.getType().bindings());
 		templ_bindings = new TVarSet(vs.close());
-		type_decl_version = clazz.type_decl_version;
+		this.version = tdecl.type_decl_version;
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
 	{
 		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in "+tp),
-		clazz.checkResolved(),
+		tdecl.checkResolved(),
 		{
 			trace(Kiev.debugResolve,"Type: resolving in "+tp),
 			resolveNameR_1(node,info,name),	// resolve in this class
@@ -377,14 +220,14 @@ public final class CompaundMetaType extends MetaType {
 	}
 	private rule resolveNameR_1(ASTNode@ node, ResInfo info, String name)
 	{
-		node @= clazz.members,
+		node @= tdecl.members,
 		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
 	}
 	private rule resolveNameR_3(Type tp, ASTNode@ node, ResInfo info, String name)
 		MetaType@ sup;
 	{
 		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
-		sup @= clazz.getAllSuperTypes(),
+		sup @= tdecl.getAllSuperTypes(),
 		sup.make(tp.bindings()).resolveNameAccessR(node,info,name)
 	}
 
@@ -392,14 +235,14 @@ public final class CompaundMetaType extends MetaType {
 		ASTNode@ forw;
 		MetaType@ sup;
 	{
-		forw @= clazz.members,
+		forw @= tdecl.members,
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
 		((Field)forw).type.applay(tp).resolveNameAccessR(node,info,name)
 	;	info.isSuperAllowed(),
-		sup @= clazz.getAllSuperTypes(),
+		sup @= tdecl.getAllSuperTypes(),
 		sup instanceof CompaundMetaType,
-		forw @= ((CompaundMetaType)sup).clazz.members,
+		forw @= ((CompaundMetaType)sup).tdecl.members,
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
 		((Field)forw).type.applay(tp).resolveNameAccessR(node,info,name)
@@ -407,29 +250,27 @@ public final class CompaundMetaType extends MetaType {
 
 }
 
-@node
 public final class ArrayMetaType extends MetaType {
-
-	@virtual typedef This  = ArrayMetaType;
-
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
-	}
 
 	private static TVarSet			templ_bindings;
 	public static final ArrayMetaType instance;
 	static {
 		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpArrayArg, null).close());
-		instance = new ArrayMetaType();
-		instance.setResolved(true);
-		instance.package_clazz.sub_decls.add(instance);
-		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL);
+		TypeDecl tdecl = new TypeDecl();
+		tdecl.id = new Symbol("_array_");
+		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
+		tdecl.flags = AccessFlags.ACC_MACRO|AccessFlags.ACC_PUBLIC|AccessFlags.ACC_FINAL;
+		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
+		tdecl.args.add(StdTypes.tdArrayArg);
+		tdecl.setResolved(true);
+		tdecl.package_clazz.sub_decls.add(tdecl);
+		Field length = new Field("length", StdTypes.tpInt, AccessFlags.ACC_PUBLIC|AccessFlags.ACC_FINAL);
 		length.setMacro(true);
 		length.acc = new Access(0xAA); //public:ro
 		RewriteMatch rmatch = new RewriteMatch();
 		length.init = rmatch;
 		RewriteCase rget = new RewriteCase();
-		rget.var = new RewritePattern("self", new ASTNodeType(Env.newStruct("IFldExpr", Env.newPackage("kiev.vlang"), ACC_PUBLIC)));
+		rget.var = new RewritePattern("self", new ASTNodeType(Env.newStruct("IFldExpr", Env.newPackage("kiev.vlang"), AccessFlags.ACC_PUBLIC)));
 		rmatch.cases += rget;
 		rget.stats.append(
 			new RewriteNodeFactory(
@@ -439,18 +280,18 @@ public final class ArrayMetaType extends MetaType {
 				}
 			)
 		);
-		instance.members.add(length);
+		tdecl.members.add(length);
+		
+		instance = new ArrayMetaType(tdecl);
 	}
-	private ArrayMetaType() {
-		super(new Symbol("_array_"), Env.newPackage("kiev.stdlib"), ACC_PUBLIC|ACC_FINAL);
-		this.super_types.insert(0, new TypeRef(StdTypes.tpObject));
-		this.args.add(StdTypes.tdArrayArg);
+	private ArrayMetaType(TypeDecl tdecl) {
+		super(tdecl);
 	}
 
 	public Type[] getMetaSupers(Type tp) {
-		Type[] stps = new Type[super_types.length];
+		Type[] stps = new Type[tdecl.super_types.length];
 		for (int i=0; i < stps.length; i++)
-			stps[i] = super_types[i].getType();
+			stps[i] = tdecl.super_types[i].getType();
 		return stps;
 	}
 
@@ -472,7 +313,7 @@ public final class ArrayMetaType extends MetaType {
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
 		Type@ st;
 	{
-		node @= members,
+		node @= tdecl.members,
 		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
 	;
 		st @= getMetaSupers(tp),
@@ -480,10 +321,7 @@ public final class ArrayMetaType extends MetaType {
 	}
 }
 
-@node
 public class ArgMetaType extends MetaType {
-
-	@virtual typedef This  = ArgMetaType;
 
 	public static final ArgMetaType instance = new ArgMetaType();
 	private ArgMetaType() {}
@@ -525,10 +363,7 @@ public class ArgMetaType extends MetaType {
 	}
 }
 
-@node
 public class WrapperMetaType extends MetaType {
-
-	@virtual typedef This  = WrapperMetaType;
 
 	private static TVarSet			templ_bindings;
 	static {
@@ -588,10 +423,7 @@ public class WrapperMetaType extends MetaType {
 
 }
 
-@node
 public class OuterMetaType extends MetaType {
-
-	@virtual typedef This  = OuterMetaType;
 
 	private TVarSet			templ_bindings;
 	public final Struct		clazz;
@@ -634,10 +466,7 @@ public class OuterMetaType extends MetaType {
 	}
 }
 
-@node
 public class CallMetaType extends MetaType {
-
-	@virtual typedef This  = CallMetaType;
 
 	public static final CallMetaType instance = new CallMetaType();
 	private CallMetaType() {}

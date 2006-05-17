@@ -213,17 +213,20 @@ public class Env extends Struct {
 		return cl;
 	}
 
-	public static MetaType newMetaType(Symbol id, Struct pkg, boolean cleanup) {
+	public static TypeDecl newMetaType(Symbol id, Struct pkg, boolean cleanup) {
 		if (pkg == null)
 			pkg = Env.root;
 		assert (pkg.isPackage());
-		MetaType mt = null;
-		foreach (MetaType pmt; pkg.sub_decls; pmt.id.equals(id)) {
+		TypeDecl mt = null;
+		foreach (TypeDecl pmt; pkg.sub_decls; pmt.id.equals(id)) {
 			mt = pmt;
 			break;
 		}
 		if (mt == null) {
-			mt = new MetaType(id, pkg, ACC_INTERFACE | ACC_MACRO);
+			mt = new TypeDecl();
+			mt.id = id;
+			mt.package_clazz = pkg;
+			mt.flags = ACC_MACRO;
 		}
 		else if( cleanup ) {
 			mt.type_decl_version = 0;
@@ -301,17 +304,16 @@ public class Env extends Struct {
 				ProjectFile pf = projectHash.get(key);
 				DNode cl = resolveStruct(pf.qname);
 				if (cl != null && cl.isBad()) pf.bad = true;
-				if (cl instanceof MetaType) {
-					pf.type = METATYPE;
-					strs.append(pf.type+" "+pf.qname+" "+pf.file+(pf.bad?" bad":""));
-				}
-				else if (cl instanceof Struct) {
+				if (cl instanceof Struct) {
 					if      (cl.isSyntax())		pf.type = SYNTAX;
 					else if (cl.isPackage())	pf.type = PACKAGE;
 					else if (cl.isInterface())	pf.type = INTERFACE;
 					else if (cl.isEnum())		pf.type = ENUM;
 					else						pf.type = CLASS;
 					strs.append(pf.type+" "+pf.qname+" "+pf.bname+" "+pf.file+(pf.bad?" bad":""));
+				} else {
+					pf.type = METATYPE;
+					strs.append(pf.type+" "+pf.qname+" "+pf.file+(pf.bad?" bad":""));
 				}
 			}
 			String[] sarr = (String[])strs;
@@ -322,8 +324,10 @@ public class Env extends Struct {
 		}
 	}
 
-	public static void createProjectInfo(Struct clazz, String f) {
-		String qname = clazz.qname();
+	public static void createProjectInfo(TypeDecl tdecl, String f) {
+		String qname = tdecl.qname();
+		if (qname == null || qname == "")
+			return;
 		ProjectFile pf = projectHash.get(qname);
 		if( pf == null ) {
 			ProjectFile pf = new ProjectFile();
@@ -335,43 +339,24 @@ public class Env extends Struct {
 			if( !pf.file.getName().equals(f) )
 				pf.file = new File(f);
 		}
-		setProjectInfo(clazz, false);
+		setProjectInfo(tdecl, false);
 	}
 
-	public static void createProjectInfo(MetaType mt, String f) {
-		String qname = mt.qname();
-		ProjectFile pf = projectHash.get(qname);
-		if( pf == null ) {
-			ProjectFile pf = new ProjectFile();
-			pf.qname = qname;
-			pf.file = new File(f);
-			projectHash.put(qname,pf);
-		}
-		else {
-			if( !pf.file.getName().equals(f) )
-				pf.file = new File(f);
-		}
-		setProjectInfo(mt, false);
-	}
-
-	public static void setProjectInfo(Struct clazz, boolean good) {
-		ProjectFile pf = projectHash.get(clazz.qname());
+	public static void setProjectInfo(TypeDecl tdecl, boolean good) {
+		ProjectFile pf = projectHash.get(tdecl.qname());
 		if (pf != null) {
-			pf.bname = ((JStruct)clazz).bname();
+			if (tdecl instanceof Struct)
+				pf.bname = ((JStruct)(Struct)tdecl).bname();
 			pf.bad = !good;
-			if      (clazz.isSyntax())		pf.type = SYNTAX;
-			else if (clazz.isPackage())		pf.type = PACKAGE;
-			else if (clazz.isInterface())	pf.type = INTERFACE;
-			else if (clazz.isEnum())		pf.type = ENUM;
-			else							pf.type = CLASS;
-		}
-	}
-
-	public static void setProjectInfo(MetaType mt, boolean good) {
-		ProjectFile pf = projectHash.get(mt.qname());
-		if (pf != null) {
-			pf.bad = !good;
-			pf.type = METATYPE;
+			if (tdecl instanceof Struct) {
+				if      (tdecl.isSyntax())		pf.type = SYNTAX;
+				else if (tdecl.isPackage())		pf.type = PACKAGE;
+				else if (tdecl.isInterface())	pf.type = INTERFACE;
+				else if (tdecl.isEnum())		pf.type = ENUM;
+				else							pf.type = CLASS;
+			} else {
+				pf.type = METATYPE;
+			}
 		}
 	}
 

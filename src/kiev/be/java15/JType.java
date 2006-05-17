@@ -10,30 +10,21 @@ import kiev.transf.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-@node
 public class JPrimitiveMetaType extends MetaType {
-
-	@virtual typedef This  = JPrimitiveMetaType;
 
 	static final JPrimitiveMetaType instance = new JPrimitiveMetaType();
 	JPrimitiveMetaType() {
 	}
 }
 
-@node
 public class JFakeMetaType extends MetaType {
-
-	@virtual typedef This  = JFakeMetaType;
 
 	static final JFakeMetaType instance = new JFakeMetaType();
 	JFakeMetaType() {
 	}
 }
 
-@node
 public class JBaseMetaType extends MetaType {
-
-	@virtual typedef This  = JBaseMetaType;
 
 	public final Struct clazz;
 	JBaseMetaType() {}

@@ -384,19 +384,25 @@ public abstract class LvalDNode extends DNode {
 
 
 @node
-public abstract class TypeDecl extends DNode {
+public class TypeDecl extends DNode {
+
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="false")	DNode[]		members;
+	}
 
 	@virtual typedef This  = TypeDecl;
 	@virtual typedef VView = VTypeDecl;
 	@virtual typedef JView = JTypeDecl;
 	@virtual typedef RView = RTypeDecl;
 
+	@ref public Struct						package_clazz;
 	@att public NArr<TypeConstr>			args;
 	@att public NArr<TypeRef>				super_types;
 	@att public NArr<ASTNode>				members;
 		 private MetaType[]					super_meta_types;
 		 private TypeDecl[]					direct_extenders;
 		 public int							type_decl_version;
+		 public String						q_name;	// qualified name
 
 	// kiev annotation
 	public final boolean isAnnotation() {
@@ -493,9 +499,10 @@ public abstract class TypeDecl extends DNode {
 
 	@nodeview
 	public static view VTypeDecl of TypeDecl extends VDNode {
-		public:ro			NArr<TypeConstr>		args;
-		public:ro			NArr<TypeRef>			super_types;
-		public:ro			NArr<ASTNode>			members;
+		public:ro	Struct					package_clazz;
+		public:ro	NArr<TypeConstr>		args;
+		public:ro	NArr<TypeRef>			super_types;
+		public:ro	NArr<ASTNode>			members;
 
 		public MetaType[] getAllSuperTypes();
 		// kiev annotation
@@ -510,14 +517,42 @@ public abstract class TypeDecl extends DNode {
 
 	public TypeDecl() {}
 
-	public abstract boolean		checkResolved();
-	public abstract Struct		getStruct();
+	public boolean checkResolved() { return true; }
+	public Struct getStruct() { return null; }
 
 	public final boolean isTypeAbstract()		{ return this.isAbstract(); }
 	public final boolean isTypeVirtual()		{ return this.isVirtual(); }
 	public final boolean isTypeFinal()			{ return this.isFinal(); }
 	public final boolean isTypeStatic()		{ return this.isStatic(); }
 	public final boolean isTypeForward()		{ return this.isForward(); }
+
+	public String qname() {
+		if (q_name != null)
+			return q_name;
+		Struct pkg = package_clazz;
+		if (pkg == null)
+			return null;
+		q_name = (pkg.qname()+"."+id.uname).intern();
+		return q_name;
+	}
+
+	static class TypeDeclDFFunc extends DFFunc {
+		final int res_idx;
+		TypeDeclDFFunc(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
+		}
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			res = DFState.makeNewState();
+			dfi.setResult(res_idx, res);
+			return res;
+		}
+	}
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		return new TypeDeclDFFunc(dfi);
+	}
+
 }
 
 

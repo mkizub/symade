@@ -65,7 +65,7 @@ public abstract class kiev040 implements kiev040Constants {
                 else if( token.next==null ) pos = token.getPos();
                 else pos = token.next.getPos();
                 if( kiev.Kiev.debug ) {
-                        kiev.Kiev.reportParserError(pos, "Internal error:\n"+e);
+                        kiev.Kiev.reportParserError(pos, "Internal error:\n"+e, e);
                 } else {
                         kiev.Kiev.reportParserError(pos, "Internal error");
                 }
@@ -163,16 +163,16 @@ public abstract class kiev040 implements kiev040Constants {
         }
 
         /*{
-	private MetaType mkMetaType(Symbol name, ASTModifiers modifiers, FileUnit fu) {
+	private TypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, FileUnit fu) {
 		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
-		MetaType mt = Env.newMetaType(name, pkg, true);
-		mt.setResolved(true);
+		TypeDecl tdecl = Env.newMetaType(name, pkg, true);
+		tdecl.setResolved(true);
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(mt);
+			sa.attachTo(tdecl);
 		foreach (Meta m; modifiers.annotations)
-			mt.meta.set(m.ncopy());
-		Env.createProjectInfo(mt, String.valueOf(Kiev.curFile));
-		return mt;
+			tdecl.meta.set(m.ncopy());
+		Env.createProjectInfo(tdecl, String.valueOf(Kiev.curFile));
+		return tdecl;
 	}
 
 	private Struct mkStruct(Symbol name, int flags, ASTModifiers modifiers, ASTNode parent) {
@@ -986,22 +986,22 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public MetaType MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) throws ParseException {
-  MetaType mt; Symbol name; Struct oldClazz; TypeConstr[] args;
+  final public TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) throws ParseException {
+  TypeDecl tdecl; Symbol name; Struct oldClazz; TypeConstr[] args;
     jj_consume_token(METATYPE);
     name = Name();
-                mt = mkMetaType(name, modifiers, (FileUnit)parent);
+                tdecl = mkMetaType(name, modifiers, (FileUnit)parent);
     args = ClazzArguments();
-                                  mt.args.addAll(args);
+                                  tdecl.args.addAll(args);
     jj_consume_token(EXTENDS);
-    mt.super_types += Type();
+    tdecl.super_types += Type();
           oldClazz = curClazz; curClazz = null;
     try {
-      TypeBodyDeclaration(mt);
+      TypeBodyDeclaration(tdecl);
     } finally {
                     curClazz = oldClazz;
     }
-          {if (true) return mt;}
+          {if (true) return tdecl;}
     throw new Error("Missing return statement in function");
   }
 

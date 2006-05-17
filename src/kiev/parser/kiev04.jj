@@ -79,7 +79,7 @@ public abstract class kiev040 {
 		else if( token.next==null ) pos = token.getPos();
 		else pos = token.next.getPos();
 		if( kiev.Kiev.debug ) {
-			kiev.Kiev.reportParserError(pos, "Internal error:\n"+e);
+			kiev.Kiev.reportParserError(pos, "Internal error:\n"+e, e);
 		} else {
 			kiev.Kiev.reportParserError(pos, "Internal error");
 		}
@@ -177,16 +177,16 @@ public abstract class kiev040 {
 	}
 
 	/*{
-	private MetaType mkMetaType(Symbol name, ASTModifiers modifiers, FileUnit fu) {
+	private TypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, FileUnit fu) {
 		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
-		MetaType mt = Env.newMetaType(name, pkg, true);
-		mt.setResolved(true);
+		TypeDecl tdecl = Env.newMetaType(name, pkg, true);
+		tdecl.setResolved(true);
 		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attachTo(mt);
+			sa.attachTo(tdecl);
 		foreach (Meta m; modifiers.annotations)
-			mt.meta.set(m.ncopy());
-		Env.createProjectInfo(mt, String.valueOf(Kiev.curFile));
-		return mt;
+			tdecl.meta.set(m.ncopy());
+		Env.createProjectInfo(tdecl, String.valueOf(Kiev.curFile));
+		return tdecl;
 	}
 
 	private Struct mkStruct(Symbol name, int flags, ASTModifiers modifiers, ASTNode parent) {
@@ -1151,29 +1151,29 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	{ return clazz; }
 }
 
-MetaType MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ MetaType mt; Symbol name; Struct oldClazz; TypeConstr[] args; }
+TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
+{ TypeDecl tdecl; Symbol name; Struct oldClazz; TypeConstr[] args; }
 {
 	"metatype"
 	name = Name()
 	{
-		mt = mkMetaType(name, modifiers, (FileUnit)parent);
+		tdecl = mkMetaType(name, modifiers, (FileUnit)parent);
 	}
-	args = ClazzArguments() { mt.args.addAll(args); }
+	args = ClazzArguments() { tdecl.args.addAll(args); }
 //	[
 		"extends"
-		mt.super_types += Type()
+		tdecl.super_types += Type()
 //	]
 //	[
 //		"implements"
-//		mt.super_types += NArrType()
-//		( "," mt.super_types += NArrType()	)*
+//		tdecl.super_types += NArrType()
+//		( "," tdecl.super_types += NArrType()	)*
 //	]
 	{ oldClazz = curClazz; curClazz = null; }
 	try {
-		TypeBodyDeclaration(mt)
+		TypeBodyDeclaration(tdecl)
 	} finally { curClazz = oldClazz; }
-	{ return mt; }
+	{ return tdecl; }
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :

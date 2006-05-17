@@ -457,7 +457,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		
 		// first, pre-generate super-types
 		foreach (CompaundMetaType sup; this.getAllSuperTypes())
-			sup.clazz.preGenerate();
+			((Struct)sup.tdecl).preGenerate();
 
 		// generate typeinfo class, if needed
 		autoGenerateTypeinfoClazz();

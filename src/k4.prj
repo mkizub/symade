@@ -454,10 +454,10 @@ CLASS kiev.vlang.types.CoreType kiev/vlang/types/CoreType kiev\vlang\types\Type.
 CLASS kiev.vlang.types.MetaType kiev/vlang/types/MetaType kiev\vlang\types\TypeProvider.java
 CLASS kiev.vlang.types.OuterMetaType kiev/vlang/types/OuterMetaType kiev\vlang\types\TypeProvider.java
 CLASS kiev.vlang.types.OuterType kiev/vlang/types/OuterType kiev\vlang\types\Type.java
-CLASS kiev.vlang.types.TArg kiev/vlang/types/TArg kiev\vlang\types\TypeProvider.java
-CLASS kiev.vlang.types.TVar kiev/vlang/types/TVar kiev\vlang\types\TypeProvider.java
+CLASS kiev.vlang.types.TArg kiev/vlang/types/TArg kiev\vlang\types\AType.java
+CLASS kiev.vlang.types.TVar kiev/vlang/types/TVar kiev\vlang\types\AType.java
 CLASS kiev.vlang.types.TVarBld kiev/vlang/types/TVarBld kiev\vlang\types\TVarBld.java
-CLASS kiev.vlang.types.TVarSet kiev/vlang/types/TVarSet kiev\vlang\types\TypeProvider.java
+CLASS kiev.vlang.types.TVarSet kiev/vlang/types/TVarSet kiev\vlang\types\AType.java
 CLASS kiev.vlang.types.Type kiev/vlang/types/Type kiev\vlang\types\Type.java
 CLASS kiev.vlang.types.TypeAssign kiev/vlang/types/TypeAssign kiev\vlang\types\TypeDef.java
 CLASS kiev.vlang.types.TypeCallRef kiev/vlang/types/TypeCallRef kiev\vlang\types\TypeCallRef.java

@@ -145,7 +145,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				Struct clazz = (Struct)f.parent();
 				clazz.members.append(td);
 				if (clazz.ameta_type != null)
-					clazz.ameta_type.type_decl_version++;
+					clazz.ameta_type.version++;
 			}
 		}
 		else if !(f.isStatic()) {
