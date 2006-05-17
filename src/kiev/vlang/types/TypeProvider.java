@@ -47,6 +47,7 @@ public class MetaType {
 	public TVarSet getTemplBindings() { return TVarSet.emptySet; }
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name) { false }
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt) { false }
 
 }
 
@@ -253,6 +254,40 @@ public final class CompaundMetaType extends MetaType {
 		((Field)forw).type.applay(tp).resolveNameAccessR(node,info,name)
 	}
 
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt)
+		ASTNode@ member;
+		MetaType@ sup;
+		Field@ forw;
+	{
+		tp.checkResolved(),
+		trace(Kiev.debugResolve, "Resolving method "+name+" in "+this),
+		{
+			member @= tdecl.members,
+			member instanceof Method,
+			info.check(member),
+			node ?= ((Method)member),
+			((Method)node).equalsByCast(name,mt,tp,info)
+		;
+			info.isSuperAllowed(),
+			info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
+			sup @= tdecl.getAllSuperTypes(),
+			sup.make(tp.bindings()).resolveCallAccessR(node,info,name,mt)
+		;
+			info.isForwardsAllowed(),
+			member @= tdecl.members,
+			member instanceof Field && ((Field)member).isForward(),
+			info.enterForward(member) : info.leaveForward(member),
+			((Field)member).type.applay(tp).resolveCallAccessR(node,info,name,mt)
+		;
+			info.isForwardsAllowed(),
+			sup @= tdecl.getAllSuperTypes(),
+			member @= sup.tdecl.members,
+			member instanceof Field && ((Field)member).isForward(),
+			info.enterForward(member) : info.leaveForward(member),
+			((Field)member).type.applay(tp).resolveCallAccessR(node,info,name,mt)
+		}
+	}
+
 }
 
 public final class ArrayMetaType extends MetaType {
@@ -324,6 +359,11 @@ public final class ArrayMetaType extends MetaType {
 		st @= getMetaSupers(tp),
 		st.resolveNameAccessR(node,info,name)
 	}
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt)
+	{
+		StdTypes.tpObject.resolveCallAccessR(node, info, name, mt)
+	}
+	
 }
 
 public class ArgMetaType extends MetaType {
@@ -364,12 +404,23 @@ public class ArgMetaType extends MetaType {
 		// Not found, return itself
 		return t;
 	}
+
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
 		TypeRef@ sup;
 	{
 		sup @= tdecl.super_types.getArray(),
 		sup.getType().resolveNameAccessR(node, info, name)
 	}
+
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt)
+		TypeRef@ sup;
+	{
+		tdecl.super_types.getArray().length == 0, $cut,
+		StdTypes.tpObject.resolveCallAccessR(node, info, name, mt)
+	;	sup @= tdecl.super_types.getArray(),
+		sup.getType().resolveCallAccessR(node, info, name, mt)
+	}
+	
 }
 
 public class WrapperMetaType extends MetaType {
@@ -431,6 +482,24 @@ public class WrapperMetaType extends MetaType {
 		((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info, name)
 	}
 
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt)
+	{
+		info.isForwardsAllowed(),$cut,
+		trace(Kiev.debugResolve, "Resolving method "+name+" in wrapper type "+this),
+		tp.checkResolved(),
+		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
+		{
+			info.enterForward(field, 0) : info.leaveForward(field, 0),
+			((WrapperType)tp).getUnboxedType().resolveCallAccessR(node, info, name, mt),
+			$cut
+		;	info.enterSuper(10) : info.leaveSuper(10),
+			((WrapperType)tp).getEnclosedType().resolveCallAccessR(node, info, name, mt)
+		}
+	;
+		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
+		((WrapperType)tp).getEnclosedType().resolveCallAccessR(node, info, name, mt)
+	}
+	
 }
 
 public class OuterMetaType extends MetaType {
@@ -474,6 +543,9 @@ public class OuterMetaType extends MetaType {
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name) {
 		((OuterType)tp).outer.resolveNameAccessR(node,info,name)
+	}
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt) {
+		((OuterType)tp).outer.resolveCallAccessR(node,info,name,mt)
 	}
 }
 

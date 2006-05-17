@@ -55,8 +55,6 @@ public abstract class TypeDef extends TypeDecl {
 		return this.ameta_type.atype;
 	}
 
-//	public abstract boolean checkResolved();
-	
 	public abstract Struct getStruct();
 	
 	public String toString() {
@@ -102,12 +100,6 @@ public final class TypeAssign extends TypeDef {
 		super(nm);
 		this.super_types.add(new TypeRef(sup));
 	}
-	
-//	public boolean checkResolved() {
-//		foreach (TypeRef tr; super_types)
-//			tr.checkResolved();
-//		return true;
-//	}
 	
 	public Struct getStruct() {
 		if (super_types.length > 0)
@@ -155,14 +147,6 @@ public final class TypeConstr extends TypeDef {
 		super(nm);
 		this.super_types.add(new TypeRef(sup));
 	}
-	
-//	public boolean checkResolved() {
-//		foreach (TypeRef tr; super_types)
-//			tr.checkResolved();
-//		foreach (TypeRef tr; lower_bound)
-//			tr.checkResolved();
-//		return true;
-//	}
 	
 	public Struct getStruct() {
 		foreach (TypeRef tr; super_types) {

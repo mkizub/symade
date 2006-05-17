@@ -73,7 +73,7 @@ public class TypeNameRef extends TypeRef {
 			Type outer = this.outer.getType();
 			ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
 			TypeDecl@ td;
-			if!(outer.resolveStaticNameR(td,info,ident.name))
+			if!(outer.meta_type.tdecl.resolveNameR(td,info,ident.name))
 				throw new CompilerException(this,"Unresolved type "+ident+" in "+outer);
 			ident.symbol = td.getName();
 			td.checkResolved();

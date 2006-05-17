@@ -105,7 +105,7 @@ public final class AccessExpr extends LvalueExpr {
 					else
 						res[si] = makeExpr(v,info,obj.ncopy());
 				}
-				else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
+				else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name))
 					res[si] = makeExpr(v,info,tp.getStruct());
 			}
 			int cnt = 0;

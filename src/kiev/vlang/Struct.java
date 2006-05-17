@@ -293,7 +293,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		CallType mt = new CallType(args,ret);
 		Method@ m;
 		if (!this.ctype.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
-			!this.ctype.resolveCallStaticR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
+			!this.resolveMethodR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
 			throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
 		return (Method)m;
 	}

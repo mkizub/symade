@@ -34,6 +34,11 @@ public abstract class Type extends AType {
 	public final Type[] getMetaSupers() {
 		return meta_type.getMetaSupers(this);
 	}
+
+	// construct new type from this one
+	public final Type make(TVSet bindings) {
+		return meta_type.make(bindings);
+	}
 	// accessor.field
 	public final Type applay(TVSet bindings) {
 		return meta_type.applay(this,bindings);
@@ -68,9 +73,9 @@ public abstract class Type extends AType {
 		super(meta_type, flags, tvars, appls);
 	}
 
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, String name) { false }
-	public rule resolveCallStaticR(Method@ node, ResInfo info, String name, CallType mt) { false }
-	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt) { false }
+	public final rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt) {
+		meta_type.resolveCallAccessR(this,node,info,name,mt)
+	}
 
 	public final rule resolveNameAccessR(ASTNode@ node, ResInfo info, String name) {
 		meta_type.resolveNameAccessR(this,node,info,name)
@@ -406,16 +411,6 @@ public final class ArgType extends Type {
 		return up[0].getType().getErasedType();
 	}
 
-
-	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
-		TypeRef@ sup;
-	{
-		definer.super_types.getArray().length == 0, $cut,
-		tpObject.resolveCallAccessR(node, info, name, mt)
-	;	sup @= definer.super_types.getArray(),
-		sup.getType().resolveCallAccessR(node, info, name, mt)
-	}
-	
 	public String toString() {
 		return String.valueOf(definer.id);
 	}
@@ -466,52 +461,6 @@ public final class CompaundType extends Type {
 	public Struct getStruct()					{ return clazz; }
 	public Meta getMeta(String name)			{ return clazz.meta.get(name); }
 	public Type getErasedType()					{ return clazz.ctype; }
-
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, String name)
-	{
-		clazz.resolveNameR(node, info, name)
-	}
-	
-	public rule resolveCallStaticR(Method@ node, ResInfo info, String name, CallType mt)
-	{
-		clazz.resolveMethodR(node, info, name, mt)
-	}
-	
-	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
-		ASTNode@ member;
-		MetaType@ sup;
-		Field@ forw;
-	{
-		checkResolved(),
-		trace(Kiev.debugResolve, "Resolving method "+name+" in "+this),
-		{
-			clazz instanceof Struct,
-			member @= getStruct().members,
-			member instanceof Method,
-			info.check(member),
-			node ?= ((Method)member),
-			((Method)node).equalsByCast(name,mt,this,info)
-		;
-			info.isSuperAllowed(),
-			info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
-			sup @= clazz.getAllSuperTypes(),
-			sup.make(this.bindings()).resolveCallAccessR(node,info,name,mt)
-		;
-			info.isForwardsAllowed(),
-			member @= getStruct().members,
-			member instanceof Field && ((Field)member).isForward(),
-			info.enterForward(member) : info.leaveForward(member),
-			((Field)member).type.applay(this).resolveCallAccessR(node,info,name,mt)
-		;
-			info.isForwardsAllowed(),
-			sup @= clazz.getAllSuperTypes(),
-			sup instanceof CompaundMetaType,
-			member @= sup.tdecl.members,
-			member instanceof Field && ((Field)member).isForward(),
-			info.enterForward(member) : info.leaveForward(member),
-			((Field)member).type.applay(this).resolveCallAccessR(node,info,name,mt)
-		}
-	}
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
@@ -638,8 +587,6 @@ public final class ArrayType extends Type {
 		super(ArrayMetaType.instance, flReference | flArray, new TVarBld(tpArrayArg, arg).close());
 	}
 
-	public Type make(TVarSet bindings) { return meta_type.make(bindings); }
-	
 	public JType getJType() {
 		if (jtype == null) {
 			jtype = new JArrayType(this.arg.getJType());
@@ -656,11 +603,6 @@ public final class ArrayType extends Type {
 		};
 	}
 
-	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
-	{
-		tpObject.resolveCallAccessR(node, info, name, mt)
-	}
-	
 	public Type getErasedType() {
 		return newArrayType(arg.getErasedType());
 	}
@@ -723,8 +665,6 @@ public final class WrapperType extends CTimeType {
 	@getter
 	private Field get$wrapped_field() { return ((WrapperMetaType)this.meta_type).field; }
 	
-	public Type make(TVarSet bindings) { return meta_type.make(bindings); }
-
 	public JType getJType() {
 		if (jtype == null)
 			jtype = getEnclosedType().getJType();
@@ -754,24 +694,6 @@ public final class WrapperType extends CTimeType {
 	public Struct getStruct()			{ return getEnclosedType().getStruct(); }
 	public Meta getMeta(String name)	{ return getEnclosedType().getMeta(name); }
 
-	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt)
-	{
-		info.isForwardsAllowed(),$cut,
-		trace(Kiev.debugResolve, "Resolving method "+name+" in wrapper type "+this),
-		checkResolved(),
-		info.enterReinterp(getEnclosedType()) : info.leaveReinterp(),
-		{
-			info.enterForward(wrapped_field, 0) : info.leaveForward(wrapped_field, 0),
-			getUnboxedType().resolveCallAccessR(node, info, name, mt),
-			$cut
-		;	info.enterSuper(10) : info.leaveSuper(10),
-			getEnclosedType().resolveCallAccessR(node, info, name, mt)
-		}
-	;
-		info.enterReinterp(getEnclosedType()) : info.leaveReinterp(),
-		getEnclosedType().resolveCallAccessR(node, info, name, mt)
-	}
-	
 	public boolean checkResolved() {
 		return getEnclosedType().checkResolved() && getUnboxedType().checkResolved();
 	}
@@ -849,10 +771,6 @@ public final class OuterType extends CTimeType {
 		return outer.getAllSuperTypes();
 	}
 
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, String name) { outer.resolveStaticNameR(node,info,name) }
-	public rule resolveCallStaticR(Method@ node, ResInfo info, String name, CallType mt) { outer.resolveCallStaticR(node,info,name,mt) }
-	public rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt) { outer.resolveCallAccessR(node,info,name,mt) }
-	
 	public Type getErasedType() { return outer.getErasedType(); }
 	public boolean checkResolved() { return outer.checkResolved(); }
 	public String toString() { return outer.toString(); }

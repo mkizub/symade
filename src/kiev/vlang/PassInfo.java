@@ -169,7 +169,7 @@ public class PassInfo {
 		}
 		else if (sc instanceof Type && info.isStaticAllowed()) {
 			Type tp = (Type)sc;
-			foreach( tp.resolveCallStaticR(node,info,name,mt) )
+			foreach( tp.meta_type.tdecl.resolveMethodR(node,info,name,mt) )
 				addResolvedMethod((Method)node,info,methods,paths,types);
 		}
 		else if (sc instanceof Type) {

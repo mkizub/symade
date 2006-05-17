@@ -193,7 +193,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		ASTNode@ syn;
 	{
 		pkg != null,
-		pkg.getType().resolveCallStaticR(node,path,name,mt)
+		pkg.getStruct().resolveMethodR(node,path,name,mt)
 	;	syn @= members,
 		syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_STATIC,
 		trace( Kiev.debugResolve, "In file syntax: "+syn),
