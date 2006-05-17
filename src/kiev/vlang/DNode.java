@@ -403,6 +403,8 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		 private TypeDecl[]					direct_extenders;
 		 public int							type_decl_version;
 		 public String						q_name;	// qualified name
+		 public MetaType					xmeta_type;
+		 public Type						xtype;
 
 	// kiev annotation
 	public final boolean isAnnotation() {
@@ -505,6 +507,7 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		public:ro	NArr<ASTNode>			members;
 
 		public MetaType[] getAllSuperTypes();
+		public boolean instanceOf(Struct cl);
 		// kiev annotation
 		public final boolean isAnnotation();
 		public final void setAnnotation(boolean on);
@@ -517,6 +520,7 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 
 	public TypeDecl() {}
 
+	public Type getType() { return this.xtype == null ? Type.tpVoid : this.xtype; }
 	public boolean checkResolved() { return true; }
 	public Struct getStruct() { return null; }
 
@@ -551,6 +555,16 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 	}
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
 		return new TypeDeclDFFunc(dfi);
+	}
+
+	public final boolean instanceOf(TypeDecl tdecl) {
+		if (tdecl == null) return false;
+		if (this == tdecl) return true;
+		foreach (TypeRef st; super_types; st.getStruct() != null) {
+			if (st.getStruct().instanceOf(tdecl))
+				return true;
+		}
+		return false;
 	}
 
 	public rule resolveOperatorR(Operator@ op)

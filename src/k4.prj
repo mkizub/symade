@@ -470,6 +470,7 @@ CLASS kiev.vlang.types.TypeRef kiev/vlang/types/TypeRef kiev\vlang\types\TypeRef
 CLASS kiev.vlang.types.TypeWithArgsRef kiev/vlang/types/TypeWithArgsRef kiev\vlang\types\TypeWithArgsRef.java
 CLASS kiev.vlang.types.WrapperMetaType kiev/vlang/types/WrapperMetaType kiev\vlang\types\TypeProvider.java
 CLASS kiev.vlang.types.WrapperType kiev/vlang/types/WrapperType kiev\vlang\types\Type.java
+CLASS kiev.vlang.types.XType kiev/vlang/types/XType kiev\vlang\types\Type.java
 ENUM kiev.CError kiev/CError kiev\Errors.java
 ENUM kiev.SeverError kiev/SeverError kiev\Errors.java
 ENUM kiev.be.java15.Instr kiev/be/java15/Instr kiev\be\java15\Instr.java

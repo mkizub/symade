@@ -40,9 +40,9 @@ public class TypeWithArgsRef extends TypeNameRef {
 		if (this.lnk != null)
 			return this.lnk;
 		Type tp = super.getType();
-		if (tp == null || !(tp instanceof CompaundType))
-			throw new CompilerException(this,"Compaund type "+super.toString()+" is not found");
-		TVarSet tpset = ((CompaundMetaType)tp.meta_type).getTemplBindings();
+		if (tp == null)
+			throw new CompilerException(this,"Type "+super.toString()+" is not found");
+		TVarSet tpset = tp.meta_type.getTemplBindings();
 		TVarBld set = new TVarBld();
 		int a = 0;
 		for(int b=0; a < args.length && b < tpset.tvars.length; b++) {

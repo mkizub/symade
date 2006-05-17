@@ -217,27 +217,31 @@ public class Env extends Struct {
 		if (pkg == null)
 			pkg = Env.root;
 		assert (pkg.isPackage());
-		TypeDecl mt = null;
+		TypeDecl tdecl = null;
 		foreach (TypeDecl pmt; pkg.sub_decls; pmt.id.equals(id)) {
-			mt = pmt;
+			tdecl = pmt;
 			break;
 		}
-		if (mt == null) {
-			mt = new TypeDecl();
-			mt.id = id;
-			mt.package_clazz = pkg;
-			mt.flags = ACC_MACRO;
+		if (tdecl == null) {
+			tdecl = new TypeDecl();
+			tdecl.id = id;
+			tdecl.package_clazz = pkg;
+			tdecl.flags = ACC_MACRO;
+			tdecl.type_decl_version = 1;
+			tdecl.xmeta_type = new MetaType(tdecl);
+			tdecl.xtype = tdecl.xmeta_type.make(TVarBld.emptySet);
+			pkg.sub_decls.add(tdecl);
 		}
 		else if( cleanup ) {
-			mt.type_decl_version = 0;
-			mt.flags = ACC_MACRO;
-			mt.package_clazz = pkg;
-			mt.super_types.delAll();
-			//mt.args.delAll();
-			mt.members.delAll();
+			tdecl.type_decl_version++;
+			tdecl.flags = ACC_MACRO;
+			tdecl.package_clazz = pkg;
+			tdecl.super_types.delAll();
+			//tdecl.args.delAll();
+			tdecl.members.delAll();
 		}
 
-		return mt;
+		return tdecl;
 	}
 
 	/** Default environment initialization */

@@ -694,3 +694,4 @@ kiev.vlang.types.TypeRef kiev/vlang/types/TypeRef kiev\vlang\types\TypeRef.java
 kiev.vlang.types.TypeWithArgsRef kiev/vlang/types/TypeWithArgsRef kiev\vlang\types\TypeWithArgsRef.java
 kiev.vlang.types.WrapperMetaType kiev/vlang/types/WrapperMetaType kiev\vlang\types\TypeProvider.java
 kiev.vlang.types.WrapperType kiev/vlang/types/WrapperType kiev\vlang\types\Type.java
+kiev.vlang.types.XType kiev/vlang/types/XType kiev\vlang\types\Type.java

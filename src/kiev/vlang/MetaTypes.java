@@ -1,7 +1,8 @@
-package kiev.vlang;
+package kiev.vlang.test;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
 
@@ -93,5 +94,12 @@ public metatype RefArray<N extends ANode> extends N[] {
 			new#CallExpr(obj=getAttr(obj.var),ident="insert",args={obj.obj, idx, node})
 	}
 
+}
+
+class Test {
+	RefArray<ASTNode> rarr;
+	int foo() {
+		return rarr.length;
+	}
 }
 

@@ -258,16 +258,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		
 	@getter public Struct get$child_ctx_clazz()	{ return (Struct)this; }
 
-	public boolean instanceOf(Struct cl) {
-		if (cl == null) return false;
-		if (this.getStruct().equals(cl)) return true;
-		foreach (TypeRef st; super_types; st.getStruct() != null) {
-			if (st.getStruct().instanceOf(cl))
-				return true;
-		}
-		return false;
-	}
-
 	public Field resolveField(String name) {
 		return resolveField(name,true);
 	}
@@ -366,7 +356,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		public void removeField(Field f);
 		public Struct addCase(Struct cas);
 
-		public boolean instanceOf(Struct cl);
 		public Field resolveField(String name);
 		public Field resolveField(String name, boolean fatal);
 		public Method resolveMethod(String name, Type ret, ...);
@@ -452,6 +441,8 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		this.id = id;
 		this.imeta_type = new CompaundMetaType(this);
 		this.ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);
+		this.xmeta_type = this.imeta_type;
+		this.xtype = this.ctype;
 		this.meta = new MetaSet();
 		this.package_clazz = outer;
 		trace(Kiev.debugCreation,"New clazz created: "+qname() +" as "+id.uname+", member of "+outer);

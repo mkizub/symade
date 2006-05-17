@@ -213,11 +213,126 @@ public abstract class Type extends AType {
 
 }
 
+public final class XType extends Type {
+
+	public XType(MetaType meta_type, TVarBld bindings) {
+		super(meta_type, 0, bindings);
+	}
+	
+	public final JType getJType() {
+		return null;
+	}
+
+	public Struct getStruct()					{ return null; }
+	public Meta getMeta(String name)			{ return null; }
+	public Type getErasedType()					{ return StdTypes.tpVoid; }
+
+	public String toString() {
+		TypeDecl tdecl = meta_type.tdecl;
+		StringBuffer str = new StringBuffer();
+		str.append(tdecl.qname());
+		int n = tdecl.args.length;
+		if (n > 0) {
+			str.append('<');
+			for(int i=0; i < n; i++) {
+				str.append(resolve(tdecl.args[i].getAType()));
+				if( i < n-1)
+					str.append(',');
+			}
+			str.append('>');
+		}
+		return str.toString();
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		return meta_type.tdecl.toJava(dmp);
+	}
+
+	public boolean checkResolved() {
+		return true;
+	}
+
+	public boolean isAutoCastableTo(Type t)
+	{
+		if( t ≡ Type.tpVoid || t ≡ Type.tpAny ) return true;
+		if( isInstanceOf(t) ) return true;
+		return super.isAutoCastableTo(t);
+	}
+
+	public boolean isCastableTo(Type t) {
+		if( this ≈ t ) return true;
+		if( t ≡ Type.tpAny ) return true;
+		if( this.isInstanceOf(t) ) return true;
+		if( t.isInstanceOf(this) ) return true;
+		return super.isCastableTo(t);
+	}
+
+	public boolean isInstanceOf(Type _t2) {
+		if( this ≡ _t2 || _t2 ≡ Type.tpAny ) return true;
+		if( this.isReference() && _t2 ≈ Type.tpObject ) return true;
+		if!(_t2 instanceof XType) {
+			if (_t2 instanceof ArgType) {
+				ArgType at = (ArgType)_t2;
+				if (at.definer.super_types.getArray().length > 0) {
+					foreach (TypeRef tr; at.definer.super_types.getArray()) {
+						if (!this.isInstanceOf(tr.getType()))
+							return false;
+					}
+				}
+				if (at.definer.getLowerBounds().length > 0) {
+					foreach (TypeRef tr; at.definer.getLowerBounds()) {
+						if (!tr.getType().isInstanceOf(this))
+							return false;
+					}
+				}
+				return true;
+			}
+			return super.isInstanceOf(_t2);
+		}
+		XType t2 = (XType)_t2;
+		XType t1 = this;
+		try {
+			t1.checkResolved();
+			t2.checkResolved();
+		} catch(Exception e ) {
+			if( Kiev.verbose ) e.printStackTrace(System.out);
+			throw new RuntimeException("Unresolved type:"+e);
+		}
+		// Check class1 >= class2 && bindings
+		if (t1.meta_type.tdecl.instanceOf(t2.meta_type.tdecl)) {
+			if (t1.meta_type.tdecl != t2.meta_type.tdecl)
+				return true; // if it extends the class, it's always an instance of it
+			// if clazz is the same, check all bindings to be instanceof upper bindings
+			AType b1 = t1.bindings();
+			AType b2 = t2.bindings();
+			for(int i=0; i < b2.tvars.length; i++) {
+				TVar v2 = b2.tvars[i];
+				if (v2.isAlias())
+					continue;
+				Type r2 = v2.result();
+				if (v2.var ≡ r2)
+					continue;
+				Type r1 = b1.resolve(v2.var);
+				if (r1 ≡ r2)
+					continue;
+				if (!r1.isInstanceOf(r2))
+					return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public final MetaType[] getAllSuperTypes() {
+		return meta_type.tdecl.getAllSuperTypes();
+	}
+}
+
 public final class CoreType extends Type {
 	public final KString name;
 	CoreType(KString name, int flags) {
 		super(new CoreMetaType(name), flags | flResolved, TVar.emptyArray, TArg.emptyArray);
-		((CoreMetaType)meta_type).core_type = this;
+		((CoreMetaType)meta_type).tdecl.xtype = this;
 		this.name = name;
 	}
 	public Meta getMeta(String name)	{ return null; }

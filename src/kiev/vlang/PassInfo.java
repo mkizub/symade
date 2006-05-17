@@ -100,9 +100,9 @@ public class PassInfo {
 		qname_head ?= name.substring(0,name.lastIndexOf('.')).intern(),
 		qname_tail ?= name.substring(name.lastIndexOf('.')+1).intern(),
 		resolveQualifiedNameR(from,sp,path,qname_head),
-		sp instanceof Struct,
+		sp instanceof TypeDecl,
 		path.space_prev = from,
-		((Struct)sp).resolveNameR(node,path,qname_tail)
+		((TypeDecl)sp).resolveNameR(node,path,qname_tail)
 	;
 		pe = new ParentEnumerator(from),
 		p @= pe,
