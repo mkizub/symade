@@ -20,7 +20,6 @@ public final view RStruct of Struct extends RTypeDecl {
 	static final AttrSlot TI_ATTR = new DataAttrSlot("rstruct ti field temp expr",true,TypeInfoExpr.class);	
 
 	public				Access					acc;
-	public:ro			CompaundMetaType		imeta_type;
 	public				WrapperMetaType			wmeta_type;
 	public				OuterMetaType			ometa_type;
 	public:ro			CompaundType			ctype;
@@ -139,7 +138,7 @@ public final view RStruct of Struct extends RTypeDecl {
 
 		// Special case for interfaces, that cannot have private fields,
 		// but need typeinfo in <clinit>
-		if ((from.ctx_method == null || from.ctx_method.id.uname == nameClassInit) && from.ctx_clazz.isInterface()) {
+		if ((from.ctx_method == null || from.ctx_method.id.uname == nameClassInit) && from.ctx_tdecl.isInterface()) {
 			return new TypeInfoExpr(from.pos, new TypeRef(t));
 		}
 		
@@ -196,7 +195,7 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	public List<ArgType> getTypeInfoArgs() {
 		ListBuffer<ArgType> lb = new ListBuffer<ArgType>();
-		TVar[] templ = this.imeta_type.getTemplBindings().tvars;
+		TVar[] templ = this.xmeta_type.getTemplBindings().tvars;
 		foreach (TVar tv; templ; tv.isFree() && tv.var.isUnerasable())
 			lb.append(tv.var);
 		return lb.toList();
@@ -474,7 +473,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				if (vte.overloader != null)
 				trace("            overloaded by "+vte.overloader.name+vte.overloader.etype);
 				foreach (Method m; vte.methods)
-					trace("        "+m.ctx_clazz+"."+m.id.uname+m.type);
+					trace("        "+m.ctx_tdecl+"."+m.id.uname+m.type);
 			}
 		}
 		
@@ -604,7 +603,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				Method m2 = mmset[i];
 				if (m2.type ≉ m1.type)
 					continue; // different overloading
-				if (m2.ctx_clazz.instanceOf(m1.ctx_clazz))
+				if (m2.ctx_tdecl.instanceOf(m1.ctx_tdecl))
 					continue next_m1; // m2 overrides m1
 				mmset[i] = m1; // m1 overrides m2
 				continue next_m1;
@@ -615,7 +614,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		// check we have any new method in this class
 		Method found = null;
 		foreach (Method m; mmset) {
-			if (m.ctx_clazz == this.getStruct()) {
+			if (m.ctx_tdecl == this.getStruct()) {
 				found = m;
 				break;
 			}
@@ -633,7 +632,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		members.append(root);
 		// check if we already have this method in this class
 		foreach (Method m; mmset) {
-			if (m.ctx_clazz == this && m.type.applay(this.ctype) ≈ root.type.applay(this.ctype)) {
+			if (m.ctx_tdecl == this && m.type.applay(this.ctype) ≈ root.type.applay(this.ctype)) {
 				members.detach(root);
 				root = found = m;
 				break;
@@ -649,7 +648,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		// make multimethods to be static
 		int tmp = 1;
 		foreach (Method m; mmset; m != root) {
-			if (m.ctx_clazz == this && !m.isVirtualStatic()) {
+			if (m.ctx_tdecl == this && !m.isVirtualStatic()) {
 				m.setVirtualStatic(true);
 				if (m.name.name == vte.name) {
 					String name = m.name.name;
@@ -676,7 +675,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	private static void autoProxyMixinMethods(@forward RStruct self, VTableEntry vte) {
 		// check we have a virtual method for this entry
 		foreach (Method m; vte.methods) {
-			if (m.ctx_clazz.isInterface())
+			if (m.ctx_tdecl.isInterface())
 				continue;
 			// found a virtual method, nothing to proxy here
 			return;
@@ -689,7 +688,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				continue;
 			Method fnd = null;
 			Type[] params = m.type.params();
-			params = (Type[])Arrays.insert(params,m.ctx_clazz.ctype,0);
+			params = (Type[])Arrays.insert(params,m.ctx_tdecl.xtype,0);
 			CallType mt = new CallType(params, m.type.ret());
 			foreach (Method dm; iface_impl.members; dm.id.uname == m.id.uname && dm.type ≈ mt) {
 				fnd = dm;
@@ -697,14 +696,14 @@ public final view RStruct of Struct extends RTypeDecl {
 			}
 			if (def == null)
 				def = fnd; // first method found
-			else if (fnd.ctx_clazz.instanceOf(def.ctx_clazz))
+			else if (fnd.ctx_tdecl.instanceOf(def.ctx_tdecl))
 				def = fnd; // overriden default implementation
-			else if (def.ctx_clazz.instanceOf(fnd.ctx_clazz))
+			else if (def.ctx_tdecl.instanceOf(fnd.ctx_tdecl))
 				; // just ignore
 			else
 				Kiev.reportWarning(self,"Umbigous default implementation for methods:\n"+
-					"    "+def.ctx_clazz+"."+def+"\n"+
-					"    "+fnd.ctx_clazz+"."+fnd
+					"    "+def.ctx_tdecl+"."+def+"\n"+
+					"    "+fnd.ctx_tdecl+"."+fnd
 				);
 		}
 		Method m = null;
@@ -740,7 +739,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		// find overloader method
 		Method mo = null;
 		foreach (Method m; vte.methods) {
-			if (m.ctx_clazz == self.getStruct() && m.etype ≈ ovr.etype) {
+			if (m.ctx_tdecl == self.getStruct() && m.etype ≈ ovr.etype) {
 				mo = m;
 				break;
 			}
@@ -748,7 +747,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		if (mo == null)
 			return; // not overloaded in this class
 	next_m:
-		foreach (Method m; vte.methods; m.ctx_clazz != self.getStruct()) {
+		foreach (Method m; vte.methods; m.ctx_tdecl != self.getStruct()) {
 			// check this class have no such a method
 			foreach (Method x; self.members; x.id.uname == m.id.uname) {
 				if (x.etype ≈ vte.etype)
@@ -1013,7 +1012,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	private static ENode makeMMDispatchCall(@forward RStruct self, int pos, Method dispatcher, Method dispatched) {
 		assert (dispatched != dispatcher);
 		assert (dispatched.isAttached());
-		if (dispatched.ctx_clazz == self.getStruct()) {
+		if (dispatched.ctx_tdecl == self.getStruct()) {
 			assert (dispatched.parent() == self.getStruct());
 			return new InlineMethodStat(pos,~dispatched,dispatcher);
 		} else {
@@ -1026,7 +1025,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		ENode obj = null;
 		if (!dispatched.isStatic() && !dispatcher.isStatic())
 			obj = new ThisExpr(pos);
-		CallExpr ce = new CallExpr(pos, obj, dispatched, null, ENode.emptyArray, self.getStruct() != dispatched.ctx_clazz);
+		CallExpr ce = new CallExpr(pos, obj, dispatched, null, ENode.emptyArray, self.getStruct() != dispatched.ctx_tdecl);
 		if (dispatched.isVirtualStatic() && !dispatcher.isStatic())
 			ce.args.append(new ThisExpr(pos));
 		foreach (FormPar fp; dispatcher.params)

@@ -256,7 +256,7 @@ public final class CompaundMetaType extends MetaType {
 	public CompaundMetaType() {}
 	public CompaundMetaType(Struct clazz) {
 		super(clazz);
-		if (this.tdecl == Env.root) Env.root.imeta_type = this;
+		if (this.tdecl == Env.root) Env.root.xmeta_type = this;
 		this.templ_bindings = TVarSet.emptySet;
 	}
 	

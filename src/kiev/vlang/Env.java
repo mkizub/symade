@@ -93,7 +93,7 @@ public class Env extends Struct {
 		root = this;
 		setPackage();
 		setResolved(true);
-		/*this.imeta_type =*/ new CompaundMetaType(this);
+		new CompaundMetaType(this);
 	}
 
 	public Object copy() {

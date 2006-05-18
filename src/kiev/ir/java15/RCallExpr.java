@@ -44,14 +44,14 @@ public final view RCallExpr of CallExpr extends RENode {
 		func.makeArgs(args.getArray(), reqType);
 		if( func instanceof Constructor && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			Method mmm = ctx_method;
-			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_types[0].getType() : ctx_clazz.ctype;
+			Type tp = mmm.ctx_tdecl != func.ctx_tdecl ? ctx_tdecl.super_types[0].getType() : ctx_tdecl.xtype;
 			assert(ctx_method.id.equals(nameInit));
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?
 			if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
 				tmp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 			else
-				tmp_expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
+				tmp_expr = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
 			tmp_expr.resolve(null);
 			tmp_expr =  null;
 		}
@@ -74,7 +74,7 @@ public final view RCallExpr of CallExpr extends RENode {
 		if (func.isTypeUnerasable()) {
 			foreach (TypeDef td; func.targs) {
 				Type tp = mt.resolve(td.getAType());
-				tmp_expr = ((RStruct)ctx_clazz).accessTypeInfoField((CallExpr)this,tp,false);
+				tmp_expr = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
 				tmp_expr.resolve(null);
 				tmp_expr = null;
 			}

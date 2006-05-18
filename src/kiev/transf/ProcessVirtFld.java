@@ -310,7 +310,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			return true;
 		String get_name = (nameGet+f.id.sname).intern();
 
-		if (fa.ctx_method != null && fa.ctx_method.id.equals(get_name) && fa.ctx_clazz.instanceOf(f.ctx_clazz)) {
+		if (fa.ctx_method != null && fa.ctx_method.id.equals(get_name) && fa.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
 			fa.setAsField(true);
 			return true;
 		}
@@ -337,7 +337,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				return true;
 			String set_name = (nameSet+f.id.sname).intern();
 	
-			if (ae.ctx_method != null && ae.ctx_method.id.equals(set_name) && ae.ctx_clazz.instanceOf(f.ctx_clazz)) {
+			if (ae.ctx_method != null && ae.ctx_method.id.equals(set_name) && ae.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
 				fa.setAsField(true);
 				return true;
 			}
@@ -422,7 +422,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 	
 			if (ie.ctx_method != null
 			&& (ie.ctx_method.id.equals(set_name) || ie.ctx_method.id.equals(get_name))
-			&& ie.ctx_clazz.instanceOf(f.ctx_clazz) )
+			&& ie.ctx_tdecl.instanceOf(f.ctx_tdecl) )
 			{
 				fa.setAsField(true);
 				return true;

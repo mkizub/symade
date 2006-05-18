@@ -26,7 +26,7 @@ public class ResInfo {
 	private int			forwards_p;
 	
 	private int			transforms;
-	private Struct		from_scope;
+	private TypeDecl	from_scope;
 	
 	// a real type of the method in Method.compare() call
 	public CallType	mt;
@@ -53,10 +53,10 @@ public class ResInfo {
 		flags = fl;
 		flags_stack = new int[16];
 		forwards_stack = new ASTNode[16];
-		if (from instanceof Struct)
-			from_scope = (Struct)from;
+		if (from instanceof TypeDecl)
+			from_scope = (TypeDecl)from;
 		else
-			from_scope = from.ctx_clazz;
+			from_scope = from.ctx_tdecl;
 	}
 	
 	public void enterMode(int fl) {
@@ -142,7 +142,7 @@ public class ResInfo {
 			}
 			if (d.isPrivate()) {
 				// check visibility of this or inner classes
-				Struct s = from_scope;
+				TypeDecl s = from_scope;
 				while (s != null && s != n.parent() && s.package_clazz.isClazz())
 					s = s.package_clazz;
 				if (s == null || s != n.parent())
@@ -248,7 +248,7 @@ public class ResInfo {
 				if !(meth.isStatic())
 					throw new CompilerException(at, "Don't know how to build call of "+meth+" via "+this);
 				//return new CallExpr(pos,meth,args);
-				return new UnresCallExpr(at.pos, new TypeRef(meth.ctx_clazz.ctype), meth, mt, args, false);
+				return new UnresCallExpr(at.pos, new TypeRef(meth.ctx_tdecl.xtype), meth, mt, args, false);
 			}
 			ENode expr = from;
 			if (forwards_p > 0)
@@ -260,7 +260,7 @@ public class ResInfo {
 			if (from == null && forwards_p == 0) {
 				if !(node.isStatic())
 					throw new CompilerException(at, "Don't know how to build closure for "+node+" via "+this);
-				return new UnresCallExpr(at.pos, new TypeRef(f.ctx_clazz.ctype), f.id, mt, args, false);
+				return new UnresCallExpr(at.pos, new TypeRef(f.ctx_tdecl.xtype), f.id, mt, args, false);
 			}
 			ENode expr = buildAccess(at, from, f);
 			return new UnresCallExpr(at.pos,expr,f.id,mt,args,false);

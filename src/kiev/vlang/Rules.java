@@ -105,7 +105,7 @@ public class RuleMethod extends Method {
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_clazz.ctype.resolveNameAccessR(node,path,name)
+		this.ctx_tdecl.xtype.resolveNameAccessR(node,path,name)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
@@ -117,7 +117,7 @@ public class RuleMethod extends Method {
     public ASTNode pass3() {
 		if !( parent() instanceof Struct )
 			throw new CompilerException(this,"Method must be declared on class level only");
-		Struct clazz = this.ctx_clazz;
+		Struct clazz = this.ctx_tdecl;
 		// TODO: check flags for fields
 		if( clazz.isPackage() ) setStatic(true);
 		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);

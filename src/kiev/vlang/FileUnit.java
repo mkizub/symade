@@ -39,8 +39,8 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		 public boolean				scanned_for_interface_only;
 
 	@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this; }
-	@getter public Struct get$ctx_clazz() { return null; }
-	@getter public Struct get$child_ctx_clazz() { return null; }
+	@getter public TypeDecl get$ctx_tdecl() { return null; }
+	@getter public TypeDecl get$child_ctx_tdecl() { return null; }
 	@getter public Method get$ctx_method() { return null; }
 	@getter public Method get$child_ctx_method() { return null; }
 

@@ -102,7 +102,7 @@ final class Signature {
 
 		if (isArgument)
 			throw new RuntimeException("not implemented"); //return new ArgType(cname,null);
-		return new CompaundType(clazz.imeta_type, TVarBld.emptySet);
+		return new CompaundType((CompaundMetaType)clazz.xmeta_type, TVarBld.emptySet);
 	}
 
 	public static Type getTypeOfClazzCP(KString.KStringScanner sc) {
@@ -130,7 +130,7 @@ final class Signature {
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '<' expected");
 		clazz = Env.jenv.makeStruct(sc.str.substr(pos,sc.pos), false);
 
-		return new CompaundType(clazz.imeta_type, TVarBld.emptySet);
+		return new CompaundType((CompaundMetaType)clazz.xmeta_type, TVarBld.emptySet);
 	}
 
 	public static KString getJavaSignature(KString sig) {

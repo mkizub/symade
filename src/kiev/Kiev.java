@@ -62,7 +62,7 @@ public final class Kiev {
 				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
 					pos = f.pos;
 				method = from.ctx_method;
-				clazz = from.ctx_clazz;
+				clazz = from.ctx_tdecl;
 				fu = from.ctx_file_unit;
 			} catch (Exception e) { /*ignore*/}
 			if( e.getMessage() == null )
@@ -158,7 +158,7 @@ public final class Kiev {
 				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
 					pos = f.pos;
 				method = from.ctx_method;
-				clazz = from.ctx_clazz;
+				clazz = from.ctx_tdecl;
 				fu = from.ctx_file_unit;
 			} catch (Exception e) { /*ignore*/}
 			report(pos,fu,clazz,method,SeverError.Error,msg);
@@ -270,7 +270,7 @@ public final class Kiev {
 				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
 					pos = f.pos;
 				method = from.ctx_method;
-				clazz = from.ctx_clazz;
+				clazz = from.ctx_tdecl;
 				fu = from.ctx_file_unit;
 			} catch (Exception e) { /*ignore*/}
 			report(pos,fu,clazz,method,SeverError.Warning,msg);
@@ -440,7 +440,7 @@ public final class Kiev {
 		k.reparse_body = true;
 		k.reparse_pos = from.pos;
 		k.curFileUnit = from.ctx_file_unit;
-		k.curClazz = from.ctx_clazz;
+		k.curClazz = from.ctx_tdecl;
 		k.curMethod = from.ctx_method;
 		Block body = null;
 		try {

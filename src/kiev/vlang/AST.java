@@ -97,8 +97,8 @@ public abstract class ANode {
 	public final ANode pnext() { return this.p_info == null ? null : this.p_info.next(); }
 	
 	@getter public FileUnit get$ctx_file_unit() { return this.parent().get$ctx_file_unit(); }
-	@getter public Struct get$ctx_clazz() { return this.parent().child_ctx_clazz; }
-	@getter public Struct get$child_ctx_clazz() { return this.parent().get$child_ctx_clazz(); }
+	@getter public TypeDecl get$ctx_tdecl() { return this.parent().child_ctx_tdecl; }
+	@getter public TypeDecl get$child_ctx_tdecl() { return this.parent().get$child_ctx_tdecl(); }
 	@getter public Method get$ctx_method() { return this.parent().child_ctx_method; }
 	@getter public Method get$child_ctx_method() { return this.parent().get$child_ctx_method(); }
 
@@ -564,8 +564,8 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		
 		@getter public final ANode get$ctx_root();
 		@getter public final FileUnit get$ctx_file_unit();
-		@getter public final Struct get$ctx_clazz();
-		@getter public final Struct get$child_ctx_clazz();
+		@getter public final TypeDecl get$ctx_tdecl();
+		@getter public final TypeDecl get$child_ctx_tdecl();
 		@getter public final Method get$ctx_method();
 		@getter public final Method get$child_ctx_method();
 

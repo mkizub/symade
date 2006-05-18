@@ -36,7 +36,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 
 		 public Access						acc;
 		 public KString						b_name;	// bytecode name
-		 public CompaundMetaType			imeta_type;
 		 public WrapperMetaType				wmeta_type;
 		 public OuterMetaType				ometa_type;
 		 public ASTNodeMetaType				ameta_type;
@@ -74,36 +73,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	public final void setPizzaCase(boolean on) {
 		if (this.is_struct_pizza_case != on) {
 			this.is_struct_pizza_case = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// a structure with the only one instance (singleton)	
-	public final boolean isSingleton() {
-		return this.is_struct_singleton;
-	}
-	public final void setSingleton(boolean on) {
-		if (this.is_struct_singleton != on) {
-			this.is_struct_singleton = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// a local (in method) class	
-	public final boolean isLocal() {
-		return this.is_struct_local;
-	}
-	public final void setLocal(boolean on) {
-		if (this.is_struct_local != on) {
-			this.is_struct_local = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// an anonymouse (unnamed) class	
-	public final boolean isAnonymouse() {
-		return this.is_struct_anomymouse;
-	}
-	public final void setAnonymouse(boolean on) {
-		if (this.is_struct_anomymouse != on) {
-			this.is_struct_anomymouse = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
@@ -256,38 +225,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		return cas;
 	}
 		
-	@getter public Struct get$child_ctx_clazz()	{ return (Struct)this; }
-
-	public Field resolveField(String name) {
-		return resolveField(name,true);
-	}
-
-	public Field resolveField(String name, boolean fatal) {
-		checkResolved();
-		foreach (Field f; this.members; f.id.equals(name))
-			return f;
-		foreach (TypeRef tr; this.super_types; tr.getStruct() != null) {
-			Field f = tr.getStruct().resolveField(name, false);
-			if (f != null)
-				return f;
-		}
-		if (fatal)
-			throw new RuntimeException("Unresolved field "+name+" in class "+this);
-		return null;
-	}
-
-	public Method resolveMethod(String name, Type ret, ...) {
-		Type[] args = new Type[va_args.length];
-		for (int i=0; i < va_args.length; i++)
-			args[i] = (Type)va_args[i];
-		CallType mt = new CallType(args,ret);
-		Method@ m;
-		if (!this.ctype.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
-			!this.resolveMethodR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
-			throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
-		return (Method)m;
-	}
-
 	public Constructor getClazzInitMethod() {
 		foreach(Constructor n; members; n.id.equals(nameClassInit) )
 			return n;
@@ -302,7 +239,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	@nodeview
 	public static final view VStruct of Struct extends VTypeDecl {
 		public				Access					acc;
-		public:ro			CompaundMetaType		imeta_type;
 		public				WrapperMetaType			wmeta_type;
 		public				OuterMetaType			ometa_type;
 		public:ro			CompaundType			ctype;
@@ -318,15 +254,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		// a pizza case	
 		public final boolean isPizzaCase();
 		public final void setPizzaCase(boolean on);
-		// a structure with the only one instance (singleton)	
-		public final boolean isSingleton();
-		public final void setSingleton(boolean on);
-		// a local (in method) class	
-		public final boolean isLocal();
-		public final void setLocal(boolean on);
-		// an anonymouse (unnamed) class	
-		public final boolean isAnonymouse();
-		public final void setAnonymouse(boolean on);
 		// has pizza cases
 		public final boolean isHasCases();
 		public final void setHasCases(boolean on);
@@ -342,12 +269,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		// indicates that the structrue was generared (from template)
 		public final boolean isGenerated();
 		public final void setGenerated(boolean on);
-		// indicates that type of the structure was attached
-		public final boolean isTypeResolved();
-		public final void setTypeResolved(boolean on);
-		// indicates that type arguments of the structure were resolved
-		public final boolean isArgsResolved();
-		public final void setArgsResolved(boolean on);
 
 		public Struct addSubStruct(Struct sub);
 		public Method addMethod(Method m);
@@ -356,9 +277,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		public void removeField(Field f);
 		public Struct addCase(Struct cas);
 
-		public Field resolveField(String name);
-		public Field resolveField(String name, boolean fatal);
-		public Method resolveMethod(String name, Type ret, ...);
 		public Constructor getClazzInitMethod();
 
 		public boolean preResolveIn() {
@@ -439,9 +357,8 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	public Struct(Symbol id, Struct outer, int flags) {
 		this.flags = flags;
 		this.id = id;
-		this.imeta_type = new CompaundMetaType(this);
-		this.ctype = new CompaundType(this.imeta_type, TVarBld.emptySet);
-		this.xmeta_type = this.imeta_type;
+		this.xmeta_type = new CompaundMetaType(this);
+		this.ctype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
 		this.xtype = this.ctype;
 		this.meta = new MetaSet();
 		this.package_clazz = outer;

@@ -244,7 +244,7 @@ public view RInstanceofExpr of InstanceofExpr extends RBoolExpr {
 			CompaundType bt = (CompaundType)tp;
 			if (tp.clazz.isTypeUnerasable()) {
 				replaceWithNodeResolve(reqType, new CallExpr(pos,
-						((RStruct)ctx_clazz).accessTypeInfoField((InstanceofExpr)this,type.getType(), false),
+						((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((InstanceofExpr)this,type.getType(), false),
 						Type.tpTypeInfo.clazz.resolveMethod("$instanceof",Type.tpBoolean,Type.tpObject),
 						new ENode[]{~expr}
 						)

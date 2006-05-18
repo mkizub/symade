@@ -22,6 +22,8 @@ public abstract class TypeDef extends TypeDecl {
 
 	public ArgMetaType ameta_type;
 	
+	@getter public TypeDecl get$child_ctx_tdecl() { return this.parent().get$child_ctx_tdecl(); }
+
 	public abstract TypeRef[] getLowerBounds();
 
 	@nodeview

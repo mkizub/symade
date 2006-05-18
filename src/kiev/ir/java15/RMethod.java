@@ -73,7 +73,7 @@ public view RMethod of Method extends RDNode {
 	static void resolveMethod(@forward RMethod self) {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+self);
-		assert( ctx_clazz == parent() || inlined_by_dispatcher );
+		assert( ctx_tdecl == parent() || inlined_by_dispatcher );
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
@@ -101,8 +101,8 @@ public view RMethod of Method extends RDNode {
 
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
-			foreach(Field f; violated_fields; ctx_clazz.instanceOf(f.ctx_clazz) ) {
-				foreach(Method inv; f.invs; ctx_clazz.instanceOf(inv.ctx_clazz) ) {
+			foreach(Field f; violated_fields; ctx_tdecl.instanceOf(f.ctx_tdecl) ) {
+				foreach(Method inv; f.invs; ctx_tdecl.instanceOf(inv.ctx_tdecl) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(id.sname.startsWith(nameSet) || id.sname.startsWith(nameGet)) ) {

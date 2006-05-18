@@ -181,15 +181,15 @@ public class Access implements Constants {
 	public static void verifyWrite(JNode from, JNode n) { verifyAccess((ASTNode)from,(ASTNode)n,1); }
 	public static void verifyReadWrite(JNode from, JNode n) { verifyAccess((ASTNode)from,(ASTNode)n,3); }
 
-	private static Struct getStructOf(ASTNode n) {
-		if( n instanceof Struct ) return (Struct)n;
-		return n.ctx_clazz;
+	private static TypeDecl getStructOf(ASTNode n) {
+		if( n instanceof TypeDecl ) return (TypeDecl)n;
+		return n.ctx_tdecl;
 	}
 
 	private static Struct getPackageOf(ASTNode n) {
-		Struct pkg = getStructOf(n);
+		TypeDecl pkg = getStructOf(n);
 		while( !pkg.isPackage() ) pkg = pkg.package_clazz;
-		return pkg;
+		return (Struct)pkg;
 	}
 
 	private static void verifyAccess(ASTNode from, ASTNode n, int acc) {
@@ -206,8 +206,8 @@ public class Access implements Constants {
 
 		// Check for private access from inner class
 		if (((DNode)n).isPrivate()) {
-			Struct outer1 = getStructOf(from);
-			Struct outer2 = getStructOf(n);
+			TypeDecl outer1 = getStructOf(from);
+			TypeDecl outer2 = getStructOf(n);
 			while (!outer1.package_clazz.isPackage())
 				outer1 = outer1.package_clazz;
 			while (!outer2.package_clazz.isPackage())

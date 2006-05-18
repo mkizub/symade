@@ -676,7 +676,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 
 		Block body = set_var.body;
 		String fname = ("nodeattr$"+f.id.sname).intern();
-		Field fatt = f.ctx_clazz.resolveField(fname);
+		Field fatt = f.ctx_tdecl.resolveField(fname);
 		if (f.type.isInstanceOf(ProcessVNode.tpANode)) {
 			ENode p_st = new IfElseStat(0,
 					new BinaryBoolExpr(0, BinaryOperator.NotEquals,

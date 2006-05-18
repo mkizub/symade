@@ -50,7 +50,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
 		if (s.isTypeUnerasable() )
-			((RStruct)ctx_clazz).accessTypeInfoField((NewExpr)this,type,false); // Create static field for this type typeinfo
+			((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewExpr)this,type,false); // Create static field for this type typeinfo
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
@@ -107,7 +107,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
-			ENode ti = ((RStruct)ctx_clazz).accessTypeInfoField((NewArrayExpr)this,type,false);
+			ENode ti = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewArrayExpr)this,type,false);
 			if( args.size() == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
@@ -197,7 +197,7 @@ public final view RNewClosure of NewClosure extends RENode {
 	public boolean preGenerate() {
 		if (clazz != null)
 			return true;
-		clazz = Env.newStruct(null,false,ctx_clazz,0,true);
+		clazz = Env.newStruct(null,false,(Struct)ctx_tdecl,0,true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
@@ -210,7 +210,7 @@ public final view RNewClosure of NewClosure extends RENode {
 		((NewClosure)this).getType();
 
 		// scan the body, and replace ThisExpr with OuterThisExpr
-		Struct clz = this.ctx_clazz;
+		Struct clz = (Struct)this.ctx_tdecl;
 		body.walkTree(new TreeWalker() {
 			public void post_exec(ANode n) {
 				if (n instanceof ThisExpr) n.replaceWithNode(new OuterThisAccessExpr(n.pos, clz));

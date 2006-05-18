@@ -306,7 +306,7 @@ public class OpTypes {
 			} else {
 				// Check method is of nodes[1]'s class
 				if( method.type.arity == (nodes.length-2) && nodes[1] != null
-					&& getExprType(nodes[1],ts[1]).isInstanceOf(method.ctx_clazz.ctype)
+					&& getExprType(nodes[1],ts[1]).isInstanceOf(method.ctx_tdecl.xtype)
 				)
 					;
 				// Check method arg of nodes[1]'s class

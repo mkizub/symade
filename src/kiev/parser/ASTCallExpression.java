@@ -51,7 +51,7 @@ public class ASTCallExpression extends ENode {
 		public void mainResolveOut() {
 			// method of current class or first-order function
 			Method@ m;
-			Type tp = ctx_clazz.ctype;
+			Type tp = ctx_tdecl.xtype;
 			
 			Type[] ata = new Type[targs.length];
 			for (int i=0; i < ata.length; i++)
@@ -78,7 +78,7 @@ public class ASTCallExpression extends ENode {
 				CallType mt = new CallType(ta,Type.tpVoid);
 				ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 				try {
-					if( !PassInfo.resolveBestMethodR(ctx_clazz.super_types[0].getType(),m,info,ctx_method.id.uname,mt) )
+					if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ctx_method.id.uname,mt) )
 						throw new CompilerException(this,"Method "+Method.toString(ident.name,args.getArray())+" unresolved");
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
@@ -143,7 +143,7 @@ public class ASTCallExpression extends ENode {
         }
 		// method of current class or first-order function
 		Method@ m;
-		Type tp = ctx_clazz.ctype;
+		Type tp = ctx_tdecl.xtype;
 		Type ret = reqType;
 	retry_with_null_ret:;
 		if( ident.name.equals(nameThis) ) {
@@ -168,7 +168,7 @@ public class ASTCallExpression extends ENode {
 				ta[i] = args[i].getType();
 			CallType mt = new CallType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(ctx_clazz.super_types[0].getType(),m,info,ctx_method.id.uname,mt) )
+			if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ctx_method.id.uname,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(ident.name,args.getArray())+" unresolved");
             if( info.isEmpty() ) {
 				CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),true);

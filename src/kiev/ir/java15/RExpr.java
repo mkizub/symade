@@ -79,7 +79,7 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.ctype));
 		cl_expr.resolve(Type.tpClass);
 		foreach (ArgType at; ((RStruct)clazz).getTypeInfoArgs())
-			cl_args.add(((RStruct)ctx_clazz).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false));
+			cl_args.add(((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false));
 		foreach (ENode tie; cl_args)
 			tie.resolve(null);
 		setResolved(true);
@@ -601,8 +601,8 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 		}
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
-			if (ctx_clazz != null && opt.method != null && opt.method.type.arity == 1) {
-				if ( !ctx_clazz.ctype.isInstanceOf(opt.method.ctx_clazz.ctype) )
+			if (ctx_tdecl != null && opt.method != null && opt.method.type.arity == 1) {
+				if ( !ctx_tdecl.xtype.isInstanceOf(opt.method.ctx_tdecl.xtype) )
 					continue;
 			}
 			Type[] tps = new Type[]{null,et};

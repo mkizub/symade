@@ -71,7 +71,7 @@ public class ASTCallAccessExpression extends ENode {
 					ta[i] = args[i].getType();
 				CallType mt = new CallType(ta,null);
 				try {
-					if( !PassInfo.resolveBestMethodR(ctx_clazz.super_types[0].getType(),m,info,ident.name,mt) )
+					if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ident.name,mt) )
 						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args.getArray(),null));
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				info.leaveSuper();
@@ -204,7 +204,7 @@ public class ASTCallAccessExpression extends ENode {
 				ta[i] = args[i].getType();
 			CallType mt = new CallType(ta,ret);
 			try {
-				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_types[0].getType(),m,info,ident.name,mt) ) {
+				if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ident.name,mt) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
 					throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args.getArray(),ret));
 				}

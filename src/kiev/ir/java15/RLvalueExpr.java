@@ -154,7 +154,7 @@ public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 		if( isResolved() ) return;
 		if (ctx_method != null &&
 			ctx_method.isStatic() &&
-			ctx_clazz.id.uname != nameIFaceImpl
+			ctx_tdecl.id.uname != nameIFaceImpl
 		)
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 		setResolved(true);
@@ -198,16 +198,16 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 	
 	public void resolve(Type reqType) throws RuntimeException {
 		// Check if we try to access this var from local inner/anonymouse class
-		if( ctx_clazz.isLocal() ) {
-			if( getVar().ctx_clazz != this.ctx_clazz ) {
+		if( ctx_tdecl.isLocal() ) {
+			if( getVar().ctx_tdecl != this.ctx_tdecl ) {
 				var.setNeedProxy(true);
 				setAsField(true);
 				// Now we need to add this var as a fields to
 				// local class and to initializer of this class
 				Field vf;
-				if( (vf = ctx_clazz.resolveField(ident.name,false)) == null ) {
+				if( (vf = ctx_tdecl.resolveField(ident.name,false)) == null ) {
 					// Add field
-					vf = ctx_clazz.addField(new Field(ident.name,var.type,ACC_PUBLIC));
+					vf = ctx_tdecl.members.add(new Field(ident.name,var.type,ACC_PUBLIC));
 					vf.setNeedProxy(true);
 					vf.init = this.getENode().ncopy();
 				}
@@ -246,9 +246,9 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends RLv
 	public void resolve(Type reqType) throws RuntimeException {
 		outer_refs.delAll();
 		trace(Kiev.debugResolve,"Resolving "+this);
-		Field ou_ref = OuterThisAccessExpr.outerOf(ctx_clazz);
+		Field ou_ref = OuterThisAccessExpr.outerOf((Struct)ctx_tdecl);
 		if( ou_ref == null )
-			throw new RuntimeException("Outer 'this' reference in non-inner or static inner class "+ctx_clazz);
+			throw new RuntimeException("Outer 'this' reference in non-inner or static inner class "+ctx_tdecl);
 		do {
 			trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
 			outer_refs.append(ou_ref);
@@ -256,7 +256,7 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends RLv
 			ou_ref = OuterThisAccessExpr.outerOf(ou_ref.type.getStruct());
 		} while( ou_ref!=null );
 		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.ctype) )
-			throw new RuntimeException("Outer class "+outer+" not found for inner class "+ctx_clazz);
+			throw new RuntimeException("Outer class "+outer+" not found for inner class "+ctx_tdecl);
 		if( Kiev.debugResolve ) {
 			StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");
 			for(int i=0; i < outer_refs.length; i++)

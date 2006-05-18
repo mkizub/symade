@@ -180,8 +180,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			}
 		}
 		if (!is_static && !is_mth_virtual_static) {
-			type_set.append(ctx_clazz.ctype.bindings());
-			dtype_set.append(ctx_clazz.ctype.bindings());
+			type_set.append(ctx_tdecl.xtype.bindings());
+			dtype_set.append(ctx_tdecl.xtype.bindings());
 		}
 		Vector<Type> args = new Vector<Type>();
 		Vector<Type> dargs = new Vector<Type>();
@@ -197,8 +197,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				assert(fp.isForward());
 				assert(fp.isFinal());
 				assert(fp.id.uname == nameThisDollar);
-				assert(fp.type ≈ this.ctx_clazz.package_clazz.ctype);
-				dargs.append(this.ctx_clazz.package_clazz.ctype);
+				assert(fp.type ≈ this.ctx_tdecl.package_clazz.ctype);
+				dargs.append(this.ctx_tdecl.package_clazz.ctype);
 				break;
 			case FormPar.PARAM_RULE_ENV:
 				assert(this instanceof RuleMethod);
@@ -304,13 +304,13 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		}
 	
 		public boolean preVerify() {
-			Struct ctx_clazz = this.ctx_clazz;
+			Struct ctx_tdecl = this.ctx_tdecl;
 			if (isAbstract() && isStatic()) {
 				setBad(true);
-				ctx_clazz.setBad(true);
+				ctx_tdecl.setBad(true);
 				Kiev.reportWarning(this,"Static method cannot be declared abstract");
 			}
-			if (ctx_clazz.isInterface() && !ctx_clazz.isStructView()) {
+			if (ctx_tdecl.isInterface() && !ctx_tdecl.isStructView()) {
 				if (isFinal()) {
 					Kiev.reportWarning(this,"Interface methods cannot be final");
 					setFinal(false);
@@ -374,7 +374,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		if( isInvariantMethod() ) {
 			if (f.invs.indexOf(this) < 0)
 				f.invs.add(this);
-			if( this.ctx_clazz.instanceOf(f.ctx_clazz) ) {
+			if( this.ctx_tdecl.instanceOf(f.ctx_tdecl) ) {
 				if (violated_fields.indexOf(f) < 0)
 					violated_fields.add(f);
 			}
@@ -571,7 +571,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		if( !id.equals(nameInit) )
 			dmp.space().append(type.ret()).forsed_space().append(id);
 		else
-			dmp.space().append(this.ctx_clazz.id);
+			dmp.space().append(this.ctx_tdecl.id);
 		dmp.append('(');
 		for(int i=0; i < params.length; i++) {
 			params[i].toJavaDecl(dmp,params[i].dtype);
@@ -610,7 +610,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_clazz.ctype.resolveNameAccessR(node,path,name)
+		this.ctx_tdecl.xtype.resolveNameAccessR(node,path,name)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
@@ -626,7 +626,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	{
 		!this.isStatic(),
 		info.enterForward(ThisExpr.thisPar) : info.leaveForward(ThisExpr.thisPar),
-		this.ctx_clazz.ctype.resolveCallAccessR(node,info,name,mt)
+		this.ctx_tdecl.xtype.resolveCallAccessR(node,info,name,mt)
 	;
 		n @= params,
 		n.isForward(),
@@ -638,7 +638,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
     public ASTNode pass3() {
 		if !( this.parent() instanceof Struct )
 			throw new CompilerException(this,"Method must be declared on class level only");
-		Struct clazz = this.ctx_clazz;
+		Struct clazz = this.ctx_tdecl;
 		// TODO: check flags for methods
 		if( clazz.isPackage() ) setStatic(true);
 		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);

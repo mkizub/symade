@@ -169,7 +169,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 						mode = SwitchStat.TYPE_SWITCH;
 						typehash = new Field("fld$sel$"+Integer.toHexString(old_sel.hashCode()),
 							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
-						ctx_clazz.addField(typehash);
+						ctx_tdecl.members.add(typehash);
 						CallExpr cae = new CallExpr(pos,
 							new SFldExpr(pos,typehash),
 							Type.tpTypeSwitchHash.clazz.resolveMethod("index",Type.tpInt, Type.tpObject),
@@ -211,11 +211,11 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 			for(int j=0; j < types.length; j++)
 				types[j] = new TypeClassExpr(typenames[j].pos,typenames[j]);
 			if( defindex < 0 ) defindex = types.length;
-			typehash.init = new NewExpr(ctx_clazz.pos,Type.tpTypeSwitchHash,
-				new ENode[]{ new NewInitializedArrayExpr(ctx_clazz.pos,new TypeRef(Type.tpClass),1,types),
+			typehash.init = new NewExpr(ctx_tdecl.pos,Type.tpTypeSwitchHash,
+				new ENode[]{ new NewInitializedArrayExpr(ctx_tdecl.pos,new TypeRef(Type.tpClass),1,types),
 					new ConstIntExpr(defindex)
 				});
-			Constructor clinit = ctx_clazz.getClazzInitMethod();
+			Constructor clinit = ((Struct)ctx_tdecl).getClazzInitMethod();
 			clinit.block.stats.add(
 				new ExprStat(typehash.init.pos,
 					new AssignExpr(typehash.init.pos,AssignOperator.Assign

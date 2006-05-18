@@ -406,6 +406,38 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		 public MetaType					xmeta_type;
 		 public Type						xtype;
 
+	@getter public TypeDecl get$child_ctx_tdecl()	{ return this; }
+
+	// a structure with the only one instance (singleton)	
+	public final boolean isSingleton() {
+		return this.is_struct_singleton;
+	}
+	public final void setSingleton(boolean on) {
+		if (this.is_struct_singleton != on) {
+			this.is_struct_singleton = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a local (in method) class	
+	public final boolean isLocal() {
+		return this.is_struct_local;
+	}
+	public final void setLocal(boolean on) {
+		if (this.is_struct_local != on) {
+			this.is_struct_local = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// an anonymouse (unnamed) class	
+	public final boolean isAnonymouse() {
+		return this.is_struct_anomymouse;
+	}
+	public final void setAnonymouse(boolean on) {
+		if (this.is_struct_anomymouse != on) {
+			this.is_struct_anomymouse = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
 	// kiev annotation
 	public final boolean isAnnotation() {
 		return this.is_struct_annotation;
@@ -474,7 +506,7 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		Type sup = suptr.getType();
 		if (sup == null)
 			return;
-		MetaType tt = sup.getStruct().imeta_type;
+		MetaType tt = sup.getStruct().xmeta_type;
 		if (!types.contains(tt))
 			types.append(tt);
 		MetaType[] sup_types = sup.getStruct().getAllSuperTypes();
@@ -505,9 +537,23 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		public:ro	NArr<TypeConstr>		args;
 		public:ro	NArr<TypeRef>			super_types;
 		public:ro	NArr<ASTNode>			members;
+		public:ro	MetaType				xmeta_type;
+		public:ro	Type					xtype;
 
 		public MetaType[] getAllSuperTypes();
 		public boolean instanceOf(Struct cl);
+		public Field resolveField(String name);
+		public Field resolveField(String name, boolean fatal);
+		public Method resolveMethod(String name, Type ret, ...);
+		// a structure with the only one instance (singleton)	
+		public final boolean isSingleton();
+		public final void setSingleton(boolean on);
+		// a local (in method) class	
+		public final boolean isLocal();
+		public final void setLocal(boolean on);
+		// an anonymouse (unnamed) class	
+		public final boolean isAnonymouse();
+		public final void setAnonymouse(boolean on);
 		// kiev annotation
 		public final boolean isAnnotation();
 		public final void setAnnotation(boolean on);
@@ -565,6 +611,36 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 				return true;
 		}
 		return false;
+	}
+
+	public Field resolveField(String name) {
+		return resolveField(name,true);
+	}
+
+	public Field resolveField(String name, boolean fatal) {
+		checkResolved();
+		foreach (Field f; this.members; f.id.equals(name))
+			return f;
+		foreach (TypeRef tr; this.super_types; tr.getStruct() != null) {
+			Field f = tr.getStruct().resolveField(name, false);
+			if (f != null)
+				return f;
+		}
+		if (fatal)
+			throw new RuntimeException("Unresolved field "+name+" in class "+this);
+		return null;
+	}
+
+	public Method resolveMethod(String name, Type ret, ...) {
+		Type[] args = new Type[va_args.length];
+		for (int i=0; i < va_args.length; i++)
+			args[i] = (Type)va_args[i];
+		CallType mt = new CallType(args,ret);
+		Method@ m;
+		if (!this.xtype.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
+			!this.resolveMethodR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
+			throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
+		return (Method)m;
 	}
 
 	public rule resolveOperatorR(Operator@ op)

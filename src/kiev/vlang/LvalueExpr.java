@@ -424,13 +424,13 @@ public final class ThisExpr extends LvalueExpr {
 
 	public Type getType() {
 		try {
-			if (ctx_clazz == null)
+			if (ctx_tdecl == null)
 				return Type.tpVoid;
-			if (ctx_clazz.id.uname == nameIFaceImpl)
-				return ctx_clazz.package_clazz.ctype;
+			if (ctx_tdecl.id.uname == nameIFaceImpl)
+				return ctx_tdecl.package_clazz.ctype;
 			if (isSuperExpr())
-				ctx_clazz.super_types[0].getType();
-			return ctx_clazz.ctype;
+				ctx_tdecl.super_types[0].getType();
+			return ctx_tdecl.xtype;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
 			return Type.tpVoid;
@@ -583,13 +583,13 @@ public final class SFldExpr extends LvalueExpr {
 
 	public SFldExpr(int pos, Field var) {
 		this.pos = pos;
-		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
+		this.obj = new TypeRef(pos,var.ctx_tdecl.xtype);
 		this.ident = new SymbolRef(pos,var.id);
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
 		this.pos = pos;
-		this.obj = new TypeRef(pos,var.ctx_clazz.ctype);
+		this.obj = new TypeRef(pos,var.ctx_tdecl.xtype);
 		this.ident = new SymbolRef(pos,var.id);
 		if (direct_access) setAsField(true);
 	}
@@ -639,7 +639,7 @@ public final class SFldExpr extends LvalueExpr {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		Struct cl = var.ctx_clazz;
+		Struct cl = var.ctx_tdecl;
 		return dmp.space().append(cl.qname()).append('.').append(var.id).space();
 	}
 
@@ -681,9 +681,9 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 
 	public Type getType() {
 		try {
-			if (ctx_clazz == null || outer_refs.size() == 0)
+			if (ctx_tdecl == null || outer_refs.size() == 0)
 				return outer.ctype;
-			Type tp = ctx_clazz.ctype;
+			Type tp = ctx_tdecl.xtype;
 			foreach (Field f; outer_refs)
 				tp = f.type.applay(tp);
 			return tp;

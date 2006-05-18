@@ -47,7 +47,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 				Kiev.reportError(f, "Packed field has no @packed attribute");
 			return;
 		}
-		Struct s = f.ctx_clazz;
+		Struct s = f.ctx_tdecl;
 		String mp_in = mp.getFld();
 		if( mp_in != null && mp_in.length() > 0 ) {
 			Field p = s.resolveField(mp_in,false);

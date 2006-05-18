@@ -26,8 +26,8 @@ public view RNode of ASTNode implements Constants {
 	
 	@getter public final ANode get$ctx_root();
 	@getter public final FileUnit get$ctx_file_unit();
-	@getter public final Struct get$ctx_clazz();
-	@getter public final Struct get$child_ctx_clazz();
+	@getter public final TypeDecl get$ctx_tdecl();
+	@getter public final TypeDecl get$child_ctx_tdecl();
 	@getter public final Method get$ctx_method();
 	@getter public final Method get$child_ctx_method();
 
@@ -228,6 +228,8 @@ public view RTypeDecl of TypeDecl extends RDNode {
 	public:ro			NArr<TypeRef>			super_types;
 	public:ro			NArr<TypeDef>			args;
 	public:ro			NArr<ASTNode>			members;
+	public:ro			MetaType				xmeta_type;
+	public:ro			Type					xtype;
 
 	public MetaType[] getAllSuperTypes();
 }
