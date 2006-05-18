@@ -543,8 +543,17 @@ public final class LVarExpr extends LvalueExpr {
 	}
 
 	public Object doRewrite(RewriteContext ctx) {
+		Var var = this.var;
 		if (var instanceof RewritePattern)
 			return ctx.root;
+		if (ctx.root instanceof CallExpr && var instanceof FormPar && var.parent() instanceof Method) {
+			int idx = 0;
+			foreach (FormPar fp; ((Method)var.parent()).params; fp.kind == FormPar.PARAM_NORMAL) {
+				if (fp == var)
+					return ((CallExpr)ctx.root).args[idx];
+				idx++;
+			}
+		}
 		throw new RuntimeException("doRewrite on unresolved var "+this);
 	}
 }

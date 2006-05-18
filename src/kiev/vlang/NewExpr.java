@@ -328,6 +328,13 @@ public final class NewInitializedArrayExpr extends ENode {
 		dmp.append('}');
 		return dmp;
 	}
+
+	public Object doRewrite(RewriteContext ctx) {
+		Object[] arr = new ENode[args.length];
+		for (int i=0; i < arr.length; i++)
+			arr[i] = args[i].doRewrite(ctx);
+		return arr;
+	}
 }
 
 @node

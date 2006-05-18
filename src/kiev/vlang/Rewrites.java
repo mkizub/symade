@@ -165,7 +165,7 @@ public final class RewriteNodeFactory extends ENode {
 	public Object doRewrite(RewriteContext ctx) {
 		ASTNode res = (ASTNode)node_class.newInstance();
 		foreach (RewriteNodeArg rn; args) {
-			ASTNode r = rn.doRewrite(ctx);
+			Object r = rn.doRewrite(ctx);
 			AttrSlot attr = null;
 			foreach (AttrSlot a; res.values(); a.name == rn.attr) {
 				attr = a;
@@ -173,15 +173,37 @@ public final class RewriteNodeFactory extends ENode {
 			}
 			if (attr == null)
 				throw new CompilerException(ctx.root, "Cannot find attribute "+rn.attr+" in node "+res.getClass().getName());
-			if (r instanceof ConstStringExpr) {
-				if (attr.clazz == SymbolRef.class)
-					r = new SymbolRef(r.value);
-				else if (attr.clazz == Symbol.class)
-					r = new Symbol(r.value);
+			if (attr instanceof SpaceAttrSlot) {
+				if (r instanceof Object[]) {
+					foreach (Object o; (Object[])r)
+						attr.add(res, fixup(attr,o));
+				} else {
+					attr.add(res, fixup(attr,r));
+				}
 			}
-			attr.set(res, ~r);
+			else if (attr.is_space) {
+				if (r instanceof Object[]) {
+					foreach (Object o; (Object[])r)
+						((NArr<ASTNode>)res.getVal(attr.name)).add(fixup(attr,o));
+				} else {
+					((NArr<ASTNode>)res.getVal(attr.name)).add(fixup(attr,r));
+				}
+			}
+			else {
+				attr.set(res, fixup(attr,r));
+			}
 		}
 		return res;
+	}
+	private ASTNode fixup(AttrSlot attr, Object o) {
+		ASTNode r = (ASTNode)o;
+		if (r instanceof ConstStringExpr) {
+			if (attr.clazz == SymbolRef.class)
+				r = new SymbolRef(r.value);
+			else if (attr.clazz == Symbol.class)
+				r = new Symbol(r.value);
+		}
+		return ~r;
 	}
 
 }

@@ -108,6 +108,20 @@ public metatype RefArray<N extends ANode> extends N[] {
 			new#CallExpr(obj=self.obj, ident="size")
 	}
 
+	@macro
+	public static int static_size(RefArray<N> rarr)
+	{
+		case @forward CallExpr# self():
+			new#ArrayLengthExpr(obj=rarr, ident=self.ident)
+	}
+
+	@macro
+	public static int static_size_length(RefArray<N> rarr)
+	{
+		case @forward CallExpr# self():
+			new#CallExpr(obj=self.obj, ident="static_size", args={rarr})
+	}
+
 }
 
 class Test {
@@ -120,6 +134,12 @@ class Test {
 	}
 	int bar_length() {
 		return rarr.size_length();
+	}
+	int static_bar_size() {
+		return RefArray.static_size(rarr);
+	}
+	int static_bar_length() {
+		return RefArray.static_size_length(rarr);
 	}
 }
 
