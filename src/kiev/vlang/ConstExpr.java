@@ -444,6 +444,10 @@ public abstract class ConstExpr extends ENode {
 		return dmp;
 	}
 
+	public Object doRewrite(RewriteContext ctx) {
+		return this;
+	}
+
 	public static ConstExpr fromConst(Object o) {
 		if (o == null)              return new ConstNullExpr   ();
 		if (o instanceof Integer)   return new ConstIntExpr    (((Integer)  o).intValue());

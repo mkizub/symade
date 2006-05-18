@@ -166,7 +166,20 @@ public final class RewriteNodeFactory extends ENode {
 		ASTNode res = (ASTNode)node_class.newInstance();
 		foreach (RewriteNodeArg rn; args) {
 			ASTNode r = rn.doRewrite(ctx);
-			res.setVal(rn.attr, ~r);
+			AttrSlot attr = null;
+			foreach (AttrSlot a; res.values(); a.name == rn.attr) {
+				attr = a;
+				break;
+			}
+			if (attr == null)
+				throw new CompilerException(ctx.root, "Cannot find attribute "+rn.attr+" in node "+res.getClass().getName());
+			if (r instanceof ConstStringExpr) {
+				if (attr.clazz == SymbolRef.class)
+					r = new SymbolRef(r.value);
+				else if (attr.clazz == Symbol.class)
+					r = new Symbol(r.value);
+			}
+			attr.set(res, ~r);
 		}
 		return res;
 	}

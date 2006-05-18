@@ -94,12 +94,32 @@ public metatype RefArray<N extends ANode> extends N[] {
 			new#CallExpr(obj=getAttr(obj.var),ident="insert",args={obj.obj, idx, node})
 	}
 
+	@macro
+	public int size()
+	{
+		case @forward CallExpr# self():
+			new#ArrayLengthExpr(obj=self.obj, ident=self.ident)
+	}
+
+	@macro
+	public int size_length()
+	{
+		case @forward CallExpr# self():
+			new#CallExpr(obj=self.obj, ident="size")
+	}
+
 }
 
 class Test {
 	RefArray<ASTNode> rarr;
 	int foo() {
 		return rarr.length;
+	}
+	int bar_size() {
+		return rarr.size();
+	}
+	int bar_length() {
+		return rarr.size_length();
 	}
 }
 

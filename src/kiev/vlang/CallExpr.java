@@ -2,6 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.parser.*;
 import kiev.vlang.Operator.*;
 import kiev.vlang.types.*;
 
@@ -56,6 +57,126 @@ public class CallExpr extends ENode {
 		public:ro	Method			func;
 		public		CallType		mt;
 		public:ro	NArr<ENode>		args;
+
+		public void mainResolveOut() {
+			if (func != null)
+				return;
+			if( obj instanceof ASTIdentifier
+			&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
+			&& !ctx_method.isStatic() )
+			{
+				ThisExpr te = new ThisExpr(obj.pos);
+				te.setSuperExpr(true);
+				obj = te;
+			}
+			
+			if (obj instanceof ThisExpr && obj.isSuperExpr()) {
+				Method@ m;
+				Type tp = null;
+				ResInfo info = new ResInfo(this);
+				info.enterForward(obj);
+				info.enterSuper();
+				Type[] ta = new Type[args.length];
+				for (int i=0; i < ta.length; i++)
+					ta[i] = args[i].getType();
+				CallType mt = new CallType(ta,null);
+				try {
+					if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ident.name,mt) )
+						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args.getArray(),null));
+				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
+				info.leaveSuper();
+				info.leaveForward(obj);
+				if( info.isEmpty() ) {
+					this.ident.symbol = m.id;
+					this.mt = info.mt;
+					this.setSuperExpr(true);
+					return;
+				}
+				throw new CompilerException(obj,"Super-call via forwarding is not allowed");
+			}
+			
+			CallType mt = this.mt;
+			if (mt == null) {
+				Type[] ta = new Type[args.length];
+				for (int i=0; i < ta.length; i++)
+					ta[i] = args[i].getType();
+				mt = new CallType(ta,null);
+			}
+			int res_flags = ResInfo.noStatic | ResInfo.noImports;
+			ENode[] res;
+			Type[] tps;
+		try_static:;
+			if( obj instanceof TypeRef ) {
+				Type tp = ((TypeRef)obj).getType();
+				tps = new Type[]{tp};
+				res = new ENode[1];
+				res_flags = 0;
+			} else {
+				tps = obj.getAccessTypes();
+				res = new ENode[tps.length];
+				// fall down
+			}
+			for (int si=0; si < tps.length; si++) {
+				Type tp = tps[si];
+				Method@ m;
+				ResInfo info = new ResInfo(this,res_flags);
+				try {
+					if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
+						if (tps.length == 1 && res_flags == 0)
+							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args.getArray());
+						else if (res_flags == 0)
+							res[si] = info.buildCall((ASTNode)this, new TypeRef(tps[si]), m, info.mt, args.getArray());
+						else
+							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args.getArray());
+					}
+				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
+			}
+			int cnt = 0;
+			int idx = -1;
+			for (int si=0; si < res.length; si++) {
+				if (res[si] != null) {
+					cnt ++;
+					if (idx < 0) idx = si;
+				}
+			}
+			if (cnt > 1) {
+				StringBuffer msg = new StringBuffer("Umbigous methods:\n");
+				for(int si=0; si < res.length; si++) {
+					if (res[si] == null)
+						continue;
+					msg.append("\t").append(res[si]).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				throw new CompilerException(this, msg.toString());
+			}
+			if (cnt == 0 && res_flags != 0) {
+				res_flags = 0;
+				goto try_static;
+			}
+			if (cnt == 0) {
+				StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(ident.name,mt)+"' in:\n");
+				for(int si=0; si < res.length; si++) {
+					if (tps[si] == null)
+						continue;
+					msg.append("\t").append(tps[si]).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				throw new CompilerException(this, msg.toString());
+			}
+			ENode e = res[idx];
+			if (e instanceof UnresCallExpr) {
+				if (e.obj == this.obj) {
+					this.ident.symbol = e.func.symbol;
+					this.mt = e.mt;
+					return;
+				}
+			}
+			if (e instanceof UnresExpr)
+				e = ((UnresExpr)e).toResolvedExpr();
+			if (isPrimaryExpr())
+				e.setPrimaryExpr(true);
+			this.replaceWithNode( e );
+		}
 	}
 	
 	public CallExpr() {}

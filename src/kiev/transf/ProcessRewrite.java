@@ -51,6 +51,12 @@ class RewriteBackend extends BackendProcessor implements Constants {
 		return true;
 	}
 	
+	boolean rewrite(DNode:ANode dn) {
+		if (dn.isMacro())
+			return false;
+		return true;
+	}	
+
 	boolean rewrite(IFldExpr:ANode fa) {
 		Field f = fa.var;
 		if (f.isMacro()) {
@@ -58,11 +64,21 @@ class RewriteBackend extends BackendProcessor implements Constants {
 				doRewrite(f.init,fa);
 		}
 		return true;
-	}	
+	}
+
+	boolean rewrite(CallExpr:ANode ce) {
+		Method m = ce.func;
+		if (m.isMacro()) {
+			if (m.body != null)
+				doRewrite(m.body,ce);
+		}
+		return true;
+	}
 
 	private void doRewrite(ENode rewriter, ASTNode self) {
 		ASTNode rn = (ASTNode)rewriter.doRewrite(new RewriteContext(self));
 		self.replaceWithNode(rn);
+		Kiev.runProcessorsOn(rn);
 		throw ReWalkNodeException.instance;
 	}
 }
