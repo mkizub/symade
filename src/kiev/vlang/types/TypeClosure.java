@@ -52,6 +52,9 @@ public class TypeClosureRef extends TypeRef {
 	public Struct getStruct() {
 		return null;
 	}
+	public TypeDecl getTypeDecl() {
+		return CallMetaType.instance.tdecl;
+	}
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append('(');

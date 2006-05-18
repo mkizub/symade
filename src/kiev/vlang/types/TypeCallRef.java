@@ -78,6 +78,9 @@ public class TypeCallRef extends TypeRef {
 	public Struct getStruct() {
 		return null;
 	}
+	public TypeDecl getTypeDecl() {
+		return CallMetaType.instance.tdecl;
+	}
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();

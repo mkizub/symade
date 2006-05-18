@@ -73,29 +73,29 @@ public interface Constants extends AccessFlags {
 	public final static String nameStrBuffAppend	= "append";
 	public final static String nameStrValueOf		= "valueOf";
 
-	public final static KString nameAny		= KString.from("any");
+	public final static String nameAny			= "any";
 	public final static KString sigAny			= KString.from("?");
-	public final static KString nameVoid		= KString.from("void");
+	public final static String nameVoid		= "void";
 	public final static KString sigVoid		= KString.from("V");
-	public final static KString nameBoolean	= KString.from("boolean");
+	public final static String nameBoolean		= "boolean";
 	public final static KString sigBoolean		= KString.from("Z");
-	public final static KString nameByte		= KString.from("byte");
+	public final static String nameByte		= "byte";
 	public final static KString sigByte		= KString.from("B");
-	public final static KString nameChar		= KString.from("char");
+	public final static String nameChar		= "char";
 	public final static KString sigChar		= KString.from("C");
-	public final static KString nameShort		= KString.from("short");
+	public final static String nameShort		= "short";
 	public final static KString sigShort		= KString.from("S");
-	public final static KString nameInt		= KString.from("int");
+	public final static String nameInt			= "int";
 	public final static KString sigInt			= KString.from("I");
-	public final static KString nameLong		= KString.from("long");
+	public final static String nameLong		= "long";
 	public final static KString sigLong		= KString.from("J");
-	public final static KString nameFloat		= KString.from("float");
+	public final static String nameFloat		= "float";
 	public final static KString sigFloat		= KString.from("F");
-	public final static KString nameDouble		= KString.from("double");
+	public final static String nameDouble		= "double";
 	public final static KString sigDouble		= KString.from("D");
-	public final static KString nameNull		= KString.from("null");
+	public final static String nameNull		= "null";
 	public final static KString sigNull		= KString.from("0");
-	public final static KString nameRule		= KString.from("rule");
+	public final static String nameRule		= "rule";
 	public final static KString sigRule		= KString.from("R");
 
 

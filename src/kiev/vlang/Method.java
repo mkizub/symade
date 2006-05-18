@@ -304,7 +304,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		}
 	
 		public boolean preVerify() {
-			Struct ctx_tdecl = this.ctx_tdecl;
+			TypeDecl ctx_tdecl = this.ctx_tdecl;
 			if (isAbstract() && isStatic()) {
 				setBad(true);
 				ctx_tdecl.setBad(true);
@@ -636,9 +636,9 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 
     public ASTNode pass3() {
-		if !( this.parent() instanceof Struct )
+		if !( this.parent() instanceof TypeDecl )
 			throw new CompilerException(this,"Method must be declared on class level only");
-		Struct clazz = this.ctx_tdecl;
+		TypeDecl clazz = this.ctx_tdecl;
 		// TODO: check flags for methods
 		if( clazz.isPackage() ) setStatic(true);
 		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);

@@ -123,6 +123,26 @@ public class TypeExpr extends TypeRef {
 			return ((TypeDecl)v).getStruct();
 		throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
 	}
+	public TypeDecl getTypeDecl() {
+		if (this.lnk != null)
+			return this.lnk.meta_type.tdecl;
+		if (op == Constants.nameArrayOp)
+			return ArrayMetaType.instance.tdecl;
+		DNode@ v;
+		if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {
+			if (op == opPVar)
+				return WrapperType.tpWrappedPrologVar.meta_type.tdecl;
+			else if (op == opRef)
+				return WrapperType.tpWrappedRefProxy.meta_type.tdecl;
+			else if (op == opAST)
+				return ASTNodeMetaType.instance(arg.getStruct()).tdecl;
+			else
+				throw new CompilerException(this,"Typedef for type operator "+op+" not found");
+		}
+		if (v instanceof TypeDecl)
+			return (TypeDecl)v;
+		throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
+	}
 
 	public String toString() {
 		if (this.lnk != null)

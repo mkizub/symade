@@ -408,6 +408,9 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 
 	@getter public TypeDecl get$child_ctx_tdecl()	{ return this; }
 
+	public boolean isClazz() {
+		return false;
+	}
 	// a structure with the only one instance (singleton)	
 	public final boolean isSingleton() {
 		return this.is_struct_singleton;
@@ -506,10 +509,10 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		Type sup = suptr.getType();
 		if (sup == null)
 			return;
-		MetaType tt = sup.getStruct().xmeta_type;
-		if (!types.contains(tt))
+		MetaType tt = sup.meta_type.tdecl.xmeta_type;
+		if (tt != null && !types.contains(tt))
 			types.append(tt);
-		MetaType[] sup_types = sup.getStruct().getAllSuperTypes();
+		MetaType[] sup_types = sup.meta_type.tdecl.getAllSuperTypes();
 		foreach (MetaType t; sup_types) {
 			if (!types.contains(t))
 				types.append(t);
@@ -545,6 +548,8 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		public Field resolveField(String name);
 		public Field resolveField(String name, boolean fatal);
 		public Method resolveMethod(String name, Type ret, ...);
+		public final String qname();
+		public boolean isClazz();
 		// a structure with the only one instance (singleton)	
 		public final boolean isSingleton();
 		public final void setSingleton(boolean on);
@@ -606,8 +611,8 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 	public final boolean instanceOf(TypeDecl tdecl) {
 		if (tdecl == null) return false;
 		if (this == tdecl) return true;
-		foreach (TypeRef st; super_types; st.getStruct() != null) {
-			if (st.getStruct().instanceOf(tdecl))
+		foreach (TypeRef st; super_types; st.getTypeDecl() != null) {
+			if (st.getTypeDecl().instanceOf(tdecl))
 				return true;
 		}
 		return false;
@@ -621,8 +626,8 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		checkResolved();
 		foreach (Field f; this.members; f.id.equals(name))
 			return f;
-		foreach (TypeRef tr; this.super_types; tr.getStruct() != null) {
-			Field f = tr.getStruct().resolveField(name, false);
+		foreach (TypeRef tr; this.super_types; tr.getTypeDecl() != null) {
+			Field f = tr.getTypeDecl().resolveField(name, false);
 			if (f != null)
 				return f;
 		}
@@ -684,12 +689,11 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 	}
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, String name)
 		TypeRef@ sup_ref;
-		Struct@ sup;
 	{
 		sup_ref @= super_types,
-		sup ?= sup_ref.getStruct(),
+		sup_ref.getTypeDecl() != null,
 		info.enterSuper() : info.leaveSuper(),
-		sup.resolveNameR(node,info,name)
+		sup_ref.getTypeDecl().resolveNameR(node,info,name)
 	}
 
 	final public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)

@@ -67,11 +67,6 @@ public class TypeWithArgsRef extends TypeNameRef {
 		return true;
 	}
 
-	public Struct getStruct() {
-		if (this.lnk != null) return this.lnk.getStruct();
-		return super.getStruct();
-	}
-
 	public String toString() {
 		if (this.lnk != null) {
 			return String.valueOf(this.lnk);

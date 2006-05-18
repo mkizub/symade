@@ -217,15 +217,30 @@ public final class XType extends Type {
 
 	public XType(MetaType meta_type, TVarBld bindings) {
 		super(meta_type, 0, bindings);
+		foreach (MetaType mt; meta_type.tdecl.getAllSuperTypes()) {
+			if (mt instanceof CompaundMetaType) flags |= flReference;
+			if (mt instanceof ArrayMetaType) flags |= flArray;
+		}
 	}
 	
-	public final JType getJType() {
-		return null;
+	public JType getJType() {
+		if (jtype == null) {
+			foreach (Type t; getMetaSupers()) {
+				jtype = t.getJType();
+				if (jtype != null)
+					return jtype;
+			}
+		}
+		return jtype;
+	}
+	public Type getErasedType() {
+		foreach (Type t; getMetaSupers(); t != null && t != Type.tpVoid)
+			return t;
+		return Type.tpVoid;
 	}
 
 	public Struct getStruct()					{ return null; }
 	public Meta getMeta(String name)			{ return null; }
-	public Type getErasedType()					{ return StdTypes.tpVoid; }
 
 	public String toString() {
 		TypeDecl tdecl = meta_type.tdecl;
@@ -329,11 +344,11 @@ public final class XType extends Type {
 }
 
 public final class CoreType extends Type {
-	public final KString name;
-	CoreType(KString name, int flags) {
+	public final String name;
+	CoreType(String name, int flags) {
 		super(new CoreMetaType(name), flags | flResolved, TVar.emptyArray, TArg.emptyArray);
 		((CoreMetaType)meta_type).tdecl.xtype = this;
-		this.name = name;
+		this.name = name.intern();
 	}
 	public Meta getMeta(String name)	{ return null; }
 	public Type getErasedType()			{ return this; }
@@ -454,7 +469,7 @@ public final class ASTNodeType extends Type {
 		TVarBld tvb = new TVarBld();
 		foreach (RewritePattern var; rp.vars) {
 			ASTNodeType ast = newASTNodeType(var);
-			KString name = KString.from("attr$"+var.id+"$type");
+			String name = ("attr$"+var.id+"$type").intern();
 			foreach (TVar tv; meta_type.getTemplBindings().tvars; tv.var.name == name) {
 				tvb.append(tv.var, ast);
 				break;

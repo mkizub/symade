@@ -30,9 +30,6 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	public final Struct getStruct() { return (Struct)this; }
 
-	public final String qname();
-
-	public boolean isClazz();
 	// a pizza case	
 	public final boolean isPizzaCase();
 	public final void setPizzaCase(boolean on);

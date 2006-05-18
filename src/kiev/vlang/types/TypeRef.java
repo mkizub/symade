@@ -79,6 +79,7 @@ public class TypeRef extends ENode {
 	public boolean isArray() { return getType().isArray(); }
 	public boolean checkResolved() { return getType().checkResolved(); } 
 	public Struct getStruct() { if (lnk == null) return null; return lnk.getStruct(); }
+	public TypeDecl getTypeDecl() { if (lnk == null) return null; return lnk.meta_type.tdecl; }
 	public JType getJType() { return getType().getJType(); }
 
 	public void resolve(Type reqType) {

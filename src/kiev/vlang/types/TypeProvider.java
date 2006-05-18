@@ -47,7 +47,8 @@ public class MetaType {
 		throw new RuntimeException("rebind() in DummyType");
 	}
 	public Type applay(Type t, TVSet bindings) {
-		throw new RuntimeException("applay() in DummyType");
+		if (!t.isAbstract() || bindings.getTVars().length == 0) return t;
+		return new XType(this, t.bindings().applay_bld(bindings));
 	}
 
 	public TVarSet getTemplBindings() {
@@ -156,9 +157,9 @@ public final class CoreMetaType extends MetaType {
 
 	CoreType core_type;
 	
-	CoreMetaType(KString name) {
+	CoreMetaType(String name) {
 		this.tdecl = new TypeDecl();
-		this.tdecl.id = new Symbol(String.valueOf(name));
+		this.tdecl.id = new Symbol(name);
 		this.tdecl.setResolved(true);
 	}
 
@@ -336,6 +337,7 @@ public final class ArrayMetaType extends MetaType {
 		tdecl.members.add(length);
 		
 		instance = new ArrayMetaType(tdecl);
+		tdecl.xmeta_type = instance;
 		tdecl.xtype = ArrayType.newArrayType(Type.tpAny);
 	}
 	private ArrayMetaType(TypeDecl tdecl) {

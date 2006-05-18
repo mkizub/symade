@@ -62,7 +62,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	
 	public boolean isClazz() {
-		return !isPackage() && !isInterface();
+		return !isPackage() && !isInterface() && !isSyntax();
 	}
 	
 	// a pizza case	
@@ -247,8 +247,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 
 		public final Struct getStruct() { return (Struct)this; }
 
-		public final String qname();
-		public boolean isClazz();
 		// a pizza case	
 		public final boolean isPizzaCase();
 		public final void setPizzaCase(boolean on);

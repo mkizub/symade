@@ -245,7 +245,7 @@ public final class IFldExpr extends LvalueExpr {
 	public Type getType() {
 		Type ot = obj.getType();
 		if (ot instanceof ASTNodeType) {
-			KString name = KString.from("attr$"+var.id+"$type");
+			String name = ("attr$"+var.id+"$type").intern();
 			foreach (TVar tv; ot.bindings().tvars; tv.var.name == name) {
 				return ot.resolve(tv.var);
 			}

@@ -111,6 +111,23 @@ public class TypeNameRef extends TypeRef {
 		}
 	}
 
+	public TypeDecl getTypeDecl() {
+		if (this.lnk != null) return this.lnk.meta_type.tdecl;
+		if (this.outer != null) {
+			TypeDecl outer = this.outer.getTypeDecl();
+			ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
+			TypeDecl@ td;
+			if!(outer.resolveNameR(td,info,ident.name))
+				throw new CompilerException(this,"Unresolved type "+ident+" in "+outer);
+			return (TypeDecl)td;
+		} else {
+			TypeDecl@ td;
+			if( !PassInfo.resolveQualifiedNameR(this,td,new ResInfo(this,ResInfo.noForwards),ident.name) )
+				throw new CompilerException(this,"Unresolved type "+ident);
+			return (TypeDecl)td.getStruct();
+		}
+	}
+
 	public String toString() {
 		if (outer == null)
 			return ident.toString();
