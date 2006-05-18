@@ -37,8 +37,8 @@ public class OpTypes {
 			t = (Type)n;
 			break;
 		case Struct:
-			trace( Kiev.debugOperators,"type of "+n+" is "+((Struct)n).ctype);
-			t = ((Struct)n).ctype;
+			trace( Kiev.debugOperators,"type of "+n+" is "+((Struct)n).xtype);
+			t = ((Struct)n).xtype;
 			break;
 		}
 		if( t == null )

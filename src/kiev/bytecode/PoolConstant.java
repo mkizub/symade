@@ -24,7 +24,7 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -82,8 +82,8 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 	public static void fillConstantPool(ReadContext cont, PoolConstant[] pool, int pool_offset) {
 		int len = pool.length;
 		for(int i=pool_offset; i < len; i++) {
-			int ctype = cont.readByte();
-			switch(ctype) {
+			int xtype = cont.readByte();
+			switch(xtype) {
 			case CONSTANT_UTF8:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_UTF8");
 				pool[i] = new Utf8PoolConstant(i, cont);
@@ -133,7 +133,7 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 				pool[i] = new NameAndTypePoolConstant(i, cont);
 				break;
 			default:
-				assert(false,"Bad pool constant type "+ctype+" for constant "+i);
+				assert(false,"Bad pool constant type "+xtype+" for constant "+i);
 			}
 			if( pool[i].double_slot() ) {
 				assert(i < pool.length-1,"Double-slotted pool constant type at the end of constants");

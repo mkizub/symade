@@ -575,7 +575,7 @@ public final class CompaundType extends Type {
 
 	public Struct getStruct()					{ return clazz; }
 	public Meta getMeta(String name)			{ return clazz.meta.get(name); }
-	public Type getErasedType()					{ return clazz.ctype; }
+	public Type getErasedType()					{ return clazz.xtype; }
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();

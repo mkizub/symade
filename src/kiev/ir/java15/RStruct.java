@@ -19,12 +19,11 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	static final AttrSlot TI_ATTR = new DataAttrSlot("rstruct ti field temp expr",true,TypeInfoExpr.class);	
 
-	public				Access					acc;
-	public				WrapperMetaType			wmeta_type;
-	public				OuterMetaType			ometa_type;
-	public:ro			CompaundType			ctype;
-	public				TypeRef					view_of;
-	public				Struct					package_clazz;
+	public:ro			Access					acc;
+	public:ro			WrapperMetaType			wmeta_type;
+	public:ro			OuterMetaType			ometa_type;
+	public:ro			TypeRef					view_of;
+	public:ro			Struct					package_clazz;
 	public				Struct					typeinfo_clazz;
 	public				Struct					iface_impl;
 	public:ro			NArr<DNode>				sub_decls;
@@ -120,7 +119,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					ti_access = new IFldExpr(from.pos,new ThisExpr(pos),ti);
 				}
 				// Check that we need our $typeinfo
-				if (this.ctype ≈ t)
+				if (this.xtype ≈ t)
 					return ti_access;
 	
 				if (t instanceof ArgType) {
@@ -215,7 +214,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		typeinfo_clazz.setPublic();
 		typeinfo_clazz.setResolved(true);
 		if (super_types.length > 0 && super_types[0].getStruct().typeinfo_clazz != null)
-			typeinfo_clazz.super_types.insert(0, new TypeRef(super_types[0].getStruct().typeinfo_clazz.ctype));
+			typeinfo_clazz.super_types.insert(0, new TypeRef(super_types[0].getStruct().typeinfo_clazz.xtype));
 		else
 			typeinfo_clazz.super_types.insert(0, new TypeRef(Type.tpTypeInfo));
 		getStruct().addSubStruct(typeinfo_clazz);
@@ -243,7 +242,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			}
 	
 			// create typeinfo field
-			Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.ctype,ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
+			Field tif = getStruct().addField(new Field(nameTypeInfo,typeinfo_clazz.xtype,ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 			// add constructor to the class
 			typeinfo_clazz.addMethod(init);
 			
@@ -254,7 +253,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
 			init.block.stats.insert(0,new ExprStat(call_super));
 			foreach (ArgType at; ((RStruct)super_types[0].getStruct()).getTypeInfoArgs()) {
-				Type t = at.applay(this.ctype);
+				Type t = at.applay(this.xtype);
 				ENode expr;
 				if (t instanceof ArgType)
 					expr = new ASTIdentifier(pos,t.name.toString());
@@ -281,12 +280,12 @@ public final view RStruct of Struct extends RTypeDecl {
 		// 	return ti;
 		// }
 		{
-			Method init = new Method("newTypeInfo", typeinfo_clazz.ctype, ACC_STATIC|ACC_PUBLIC);
+			Method init = new Method("newTypeInfo", typeinfo_clazz.xtype, ACC_STATIC|ACC_PUBLIC);
 			init.params.add(new FormPar(pos,"clazz",Type.tpClass,FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.params.add(new FormPar(pos,"args",new ArrayType(Type.tpTypeInfo),FormPar.PARAM_NORMAL,ACC_FINAL));
 			init.body = new Block(pos);
 			Var h = new Var(pos,"hash",Type.tpInt,ACC_FINAL);
-			Var v = new Var(pos,"ti",typeinfo_clazz.ctype,0);
+			Var v = new Var(pos,"ti",typeinfo_clazz.xtype,0);
 			Method mhash = Type.tpTypeInfo.clazz.resolveMethod("hashCode",Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
 			h.init = new CallExpr(pos,null,mhash,new ENode[]{
 				new LVarExpr(pos,init.params[0]),
@@ -300,7 +299,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				new LVarExpr(pos,init.params[1])
 			});
 			init.block.addSymbol(v);
-			NewExpr ne = new NewExpr(pos,typeinfo_clazz.ctype,
+			NewExpr ne = new NewExpr(pos,typeinfo_clazz.xtype,
 				new ENode[]{
 					new LVarExpr(pos,h),
 					new LVarExpr(pos,init.params[0])
@@ -383,7 +382,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			misa.block.stats.add(new ExprStat(pos,
 				new AssignExpr(pos,AssignOperator.Assign,
 					new LVarExpr(pos,misa.params[0]),
-					new CastExpr(pos,typeinfo_clazz.ctype,new LVarExpr(pos,misa.params[0]))
+					new CastExpr(pos,typeinfo_clazz.xtype,new LVarExpr(pos,misa.params[0]))
 				)
 			));
 			foreach (ArgType at; this.getTypeInfoArgs()) {
@@ -440,7 +439,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					typeinfo_clazz.resolveMethod("$assignableFrom",Type.tpBoolean,Type.tpTypeInfo),
 					new ENode[]{
 						new IFldExpr(pos,
-							new CastExpr(pos,this.ctype,new LVarExpr(pos,misa.params[0])),
+							new CastExpr(pos,this.xtype,new LVarExpr(pos,misa.params[0])),
 							this.resolveField(nameTypeInfo)
 						)
 					}
@@ -558,7 +557,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			if (!this.isInterface()) {
 				foreach (VTableEntry vte2; vtable; vte2 != vte && vte2.name == vte.name) {
 					foreach (Method m; vte2.methods; !vte.methods.contains(m)) {
-						CallType mt = m.dtype.toCallTypeRetAny().applay(this.ctype);
+						CallType mt = m.dtype.toCallTypeRetAny().applay(this.xtype);
 						if (mt ≈ et)
 							vte.add(m);
 					}
@@ -632,7 +631,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		members.append(root);
 		// check if we already have this method in this class
 		foreach (Method m; mmset) {
-			if (m.ctx_tdecl == this && m.type.applay(this.ctype) ≈ root.type.applay(this.ctype)) {
+			if (m.ctx_tdecl == this && m.type.applay(this.xtype) ≈ root.type.applay(this.xtype)) {
 				members.detach(root);
 				root = found = m;
 				break;
@@ -800,7 +799,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				def.pos = m.pos;
 				def.params.addAll(m.params.delToArray()); // move, because the vars are resolved
 				m.params.copyFrom(def.params);
-				def.params.insert(0,new FormPar(pos,Constants.nameThis,self.ctype,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
+				def.params.insert(0,new FormPar(pos,Constants.nameThis,self.xtype,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
 				defaults.members.add(def);
 				def.body = ~m.body;
 				def.setVirtualStatic(true);
@@ -869,7 +868,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			Method overwr = null;
 
 			if (super_types.length > 0)
-				overwr = super_types[0].getStruct().getOverwrittenMethod(self.ctype,m);
+				overwr = super_types[0].getStruct().getOverwrittenMethod(self.xtype,m);
 
 			// nothing to do, if no methods to combine
 			if (mlistb.length() == 1 && mm != null) {

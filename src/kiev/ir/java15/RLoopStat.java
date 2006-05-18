@@ -164,30 +164,30 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		container.resolve(null);
 
 		Type itype;
-		Type ctype = container.getType();
+		Type xtype = container.getType();
 		Method@ elems;
 		Method@ nextelem;
 		Method@ moreelem;
-		if (ctype instanceof CTimeType) {
-			container = ctype.makeUnboxedExpr(container);
+		if (xtype instanceof CTimeType) {
+			container = xtype.makeUnboxedExpr(container);
 			container.resolve(null);
-			ctype = container.getType();
+			xtype = container.getType();
 		}
-		if( ctype.isArray() ) {
+		if( xtype.isArray() ) {
 			itype = Type.tpInt;
 			mode = ForEachStat.ARRAY;
-		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
-			itype = ctype;
+		} else if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {
+			itype = xtype;
 			mode = ForEachStat.KENUM;
-		} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
-			itype = ctype;
+		} else if( xtype.isInstanceOf( Type.tpJavaEnumeration) ) {
+			itype = xtype;
 			mode = ForEachStat.JENUM;
-		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
+		} else if( PassInfo.resolveBestMethodR(xtype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameElements,new CallType(Type.emptyArray,Type.tpAny))
 		) {
-			itype = Type.getRealType(ctype,elems.type.ret());
+			itype = Type.getRealType(xtype,elems.type.ret());
 			mode = ForEachStat.ELEMS;
-		} else if( ctype ≡ Type.tpRule &&
+		} else if( xtype ≡ Type.tpRule &&
 			(
 			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret() ≡ Type.tpRule )
 			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() ≡ Type.tpRule )
@@ -197,7 +197,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			mode = ForEachStat.RULE;
 		} else {
 			throw new CompilerException(container,"Container must be an array or an Enumeration "+
-				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
+				"or a class that implements 'Enumeration elements()' method, but "+xtype+" found");
 		}
 		if( itype ≡ Type.tpRule ) {
 			iter = new Var(pos,"$env",itype,0);

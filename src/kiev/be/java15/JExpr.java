@@ -82,8 +82,8 @@ public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 		Struct ti_clazz = type.getStruct().typeinfo_clazz;
 		if (ti_clazz == null)
 			ti_clazz = Type.tpTypeInfo.clazz;
-		Method func = ti_clazz.resolveMethod("newTypeInfo", ti_clazz.ctype, Type.tpClass, new ArrayType(Type.tpTypeInfo));
-		code.addInstr(op_call,(JMethod)func,false,ti_clazz.ctype);
+		Method func = ti_clazz.resolveMethod("newTypeInfo", ti_clazz.xtype, Type.tpClass, new ArrayType(Type.tpTypeInfo));
+		code.addInstr(op_call,(JMethod)func,false,ti_clazz.xtype);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
@@ -208,7 +208,7 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 	}
 
 	public JMethod getMethodFor(JENode expr) {
-		Method m = clazzStringBuffer.resolveMethod("append",clazzStringBuffer.ctype,expr.getType());
+		Method m = clazzStringBuffer.resolveMethod("append",clazzStringBuffer.xtype,expr.getType());
 		return (JMethod)m;
 	}
 
@@ -217,7 +217,7 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 		trace(Kiev.debugStatGen,"\t\tgenerating StringConcatExpr: "+this);
 		code.setLinePos(this);
 		JENode[] args = this.args.toArray();
-		code.addInstr(op_new,clazzStringBuffer.ctype);
+		code.addInstr(op_new,clazzStringBuffer.xtype);
 		code.addInstr(op_dup);
 		code.addInstr(op_call,(JMethod)clazzStringBufferInit,false);
 		for(int i=0; i < args.length; i++) {

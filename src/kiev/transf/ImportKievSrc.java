@@ -242,7 +242,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					if (!found) {
 						TypeDef td = new TypeAssign(
 							new Symbol(me.pos,"outer$"+n+"$type"),
-							new TypeRef(pkg.ctype));
+							new TypeRef(pkg.xtype));
 						td.setSynthetic(true);
 						me.members.append(td);
 						OuterMetaType.instance(me,td);
@@ -324,11 +324,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}
 	
-	private CompaundType getStructType(TypeDecl tdecl, Stack<TypeDecl> path) {
+	private Type getStructType(TypeDecl tdecl, Stack<TypeDecl> path) {
 		if (tdecl.isTypeResolved()) {
 			if (!tdecl.isArgsResolved())
 				throw new CompilerException(tdecl, "Recursive type declaration for class "+tdecl+" via "+path);
-			return (tdecl instanceof Struct) ? tdecl.ctype : null;
+			return tdecl.xtype;
 		}
 		path.push(tdecl);
 		
@@ -354,7 +354,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				// assign type of enum fields
 				if (clazz.isEnum()) {
 					foreach (Field f; clazz.members; f.isEnumField())
-						f.ftype = new TypeRef(clazz.ctype);
+						f.ftype = new TypeRef(clazz.xtype);
 				}
 			}
 			else if (clazz.isPizzaCase()) {
@@ -417,8 +417,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		tdecl.type_decl_version++;
 		if (tdecl instanceof Struct) {
 			Struct clazz = (Struct)tdecl;
-			clazz.ctype.bindings(); // update the type
-			if (clazz.ctype.isUnerasable()) {
+			clazz.xtype.bindings(); // update the type
+			if (clazz.xtype.isUnerasable()) {
 				Struct clazz = (Struct)tdecl;
 				if (!clazz.isTypeUnerasable()) {
 					Kiev.reportWarning(clazz,"Type "+clazz+" must be annotated as @unerasable");
@@ -434,7 +434,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		tdecl.setArgsResolved(true);
 		path.pop();
 		
-		return (tdecl instanceof Struct) ? tdecl.ctype : null;
+		return tdecl.xtype;
 	}
 
 	////////////////////////////////////////////////////
@@ -514,7 +514,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						}
 					}
 				}
-				f.init = new NewExpr(f.pos,me.ctype,new ENode[]{
+				f.init = new NewExpr(f.pos,me.xtype,new ENode[]{
 							new ConstStringExpr(f.id.sname),
 							new ConstIntExpr(next_enum_val)
 							//new ConstStringExpr(text)
@@ -611,9 +611,9 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		if (me.isSingleton()) {
 			me.setFinal(true);
 			if (me.resolveField(nameInstance, false) == null) {
-				Field inst = new Field(nameInstance, me.ctype, ACC_STATIC|ACC_FINAL|ACC_PUBLIC|ACC_SYNTHETIC);
+				Field inst = new Field(nameInstance, me.xtype, ACC_STATIC|ACC_FINAL|ACC_PUBLIC|ACC_SYNTHETIC);
 				inst.pos = me.pos;
-				inst.init = new NewExpr(me.pos, me.ctype, ENode.emptyArray);
+				inst.init = new NewExpr(me.pos, me.xtype, ENode.emptyArray);
 				me.addField(inst);
 			}
 		}

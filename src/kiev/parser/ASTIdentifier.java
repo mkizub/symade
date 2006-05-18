@@ -208,7 +208,7 @@ public class ASTIdentifier extends ENode {
 					}
 				}
 			}
-			replaceWithNode(new TypeNameRef(new SymbolRef(pos,name),s.ctype));
+			replaceWithNode(new TypeNameRef(new SymbolRef(pos,name),s.xtype));
 			return;
 		}
 		else if( v instanceof TypeDecl ) {

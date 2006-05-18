@@ -26,7 +26,7 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	public:ro	Access				acc;
 	public		KString				b_name;
-	public:ro	CompaundType		ctype;
+	public:ro	CompaundType		xtype;
 	public:ro	JBaseType			jtype;
 	public:ro	JStruct				package_clazz;
 	public:ro	JStruct				iface_impl;
@@ -34,7 +34,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	public		Attr[]				attrs;
 
 	@getter
-	public final JBaseType		get$jtype()			{ return (JBaseType)this.ctype.getJType(); }
+	public final JBaseType		get$jtype()			{ return (JBaseType)this.xtype.getJType(); }
 
 	public final String qname();
 
@@ -169,13 +169,13 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 
 		ConstPool constPool = new ConstPool();
-		constPool.addClazzCP(this.ctype.getJType().java_signature);
+		constPool.addClazzCP(this.xtype.getJType().java_signature);
 		foreach (JType jst; super_types)
 			constPool.addClazzCP(jst.java_signature);
 		if( !isPackage() ) {
 			foreach (JStruct sub; sub_decls) {
 				sub.checkResolved();
-				constPool.addClazzCP(sub.ctype.getJType().java_signature);
+				constPool.addClazzCP(sub.xtype.getJType().java_signature);
 			}
 		}
 		
@@ -198,7 +198,7 @@ public final view JStruct of Struct extends JTypeDecl {
 				inner[j] = sub_decls[j];
 				outer[j] = this;
 				inner_access[j] = sub_decls[j].getJavaFlags();
-				constPool.addClazzCP(inner[j].ctype.getJType().java_signature);
+				constPool.addClazzCP(inner[j].xtype.getJType().java_signature);
 			}
 			a.inner = inner;
 			a.outer = outer;

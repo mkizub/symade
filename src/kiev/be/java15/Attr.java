@@ -452,7 +452,7 @@ public abstract class MetaAttr extends Attr {
 			SFldExpr ae = (SFldExpr)value;
 			Field f = ae.var;
 			Struct s = (Struct)f.ctx_tdecl;
-			constPool.addAsciiCP(s.ctype.getJType().java_signature);
+			constPool.addAsciiCP(s.xtype.getJType().java_signature);
 			constPool.addAsciiCP(f.id.uname);
 		}
 		else if (value instanceof Meta) {
@@ -545,7 +545,7 @@ public abstract class MetaAttr extends Attr {
 			Struct s = (Struct)f.ctx_tdecl;
 			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
 			ev.tag = (byte)'e';
-			ev.type_name_index = constPool.getAsciiCP(s.ctype.getJType().java_signature).pos;
+			ev.type_name_index = constPool.getAsciiCP(s.xtype.getJType().java_signature).pos;
 			ev.const_name_index = constPool.getAsciiCP(f.id.uname).pos;
 			return ev;
 		}

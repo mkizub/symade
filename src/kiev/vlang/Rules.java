@@ -606,27 +606,27 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		base = ((RuleMethod)ctx_method).allocNewBase(2);
 		depth = ((RuleMethod)ctx_method).push();
 		expr.resolve(null);
-		Type ctype = expr.getType();
+		Type xtype = expr.getType();
 		Method@ elems;
-		if( ctype.isArray() ) {
+		if( xtype.isArray() ) {
 			TVarBld set = new TVarBld();
-			set.append(Type.tpArrayEnumerator.clazz.args[0].getAType(), ((ArrayType)ctype).arg);
+			set.append(Type.tpArrayEnumerator.clazz.args[0].getAType(), ((ArrayType)xtype).arg);
 			itype = ((CompaundMetaType)Type.tpArrayEnumerator.meta_type).make(set);
 			mode = ARRAY;
-		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
-			itype = ctype;
+		} else if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {
+			itype = xtype;
 			mode = KENUM;
-		} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
-			itype = ctype;
+		} else if( xtype.isInstanceOf( Type.tpJavaEnumeration) ) {
+			itype = xtype;
 			mode = JENUM;
-		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
+		} else if( PassInfo.resolveBestMethodR(xtype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameElements,new CallType(Type.emptyArray,Type.tpAny))
 		) {
-			itype = Type.getRealType(ctype,elems.type.ret());
+			itype = Type.getRealType(xtype,elems.type.ret());
 			mode = ELEMS;
 		} else {
 			throw new CompilerException(expr,"Container must be an array or an Enumeration "+
-				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
+				"or a class that implements 'Enumeration elements()' method, but "+xtype+" found");
 		}
 		iter_var = ((RuleMethod)ctx_method).add_iterator_var();
 		ASTNode rb = this.parent();

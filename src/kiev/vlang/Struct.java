@@ -39,7 +39,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		 public WrapperMetaType				wmeta_type;
 		 public OuterMetaType				ometa_type;
 		 public ASTNodeMetaType				ameta_type;
-		 public CompaundType				ctype;
 	@att public TypeRef						view_of;
 	@ref public Struct						typeinfo_clazz;
 	@ref public Struct						iface_impl;
@@ -241,7 +240,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		public				Access					acc;
 		public				WrapperMetaType			wmeta_type;
 		public				OuterMetaType			ometa_type;
-		public:ro			CompaundType			ctype;
 		public				TypeRef					view_of;
 		public				Struct					typeinfo_clazz;
 		public				Struct					iface_impl;
@@ -358,8 +356,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		this.flags = flags;
 		this.id = id;
 		this.xmeta_type = new CompaundMetaType(this);
-		this.ctype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
-		this.xtype = this.ctype;
+		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
 		this.meta = new MetaSet();
 		this.package_clazz = outer;
 		trace(Kiev.debugCreation,"New clazz created: "+qname() +" as "+id.uname+", member of "+outer);
@@ -371,7 +368,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		throw new CompilerException(this,"Struct node cannot be copied");
 	};
 
-	public Type getType() { return this.ctype; }
+	public Type getType() { return this.xtype; }
 
 	public String toString() { return qname().toString(); }
 
@@ -544,11 +541,11 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 					package_clazz.checkResolved();
 					if( package_clazz.isClazz() && !isStatic() ) {
 						// Add formal parameter
-						m.params.insert(0,new FormPar(m.pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+						m.params.insert(0,new FormPar(m.pos,nameThisDollar,package_clazz.xtype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 						retype = true;
 					}
 					if (!isInterface() && isTypeUnerasable()) {
-						m.params.insert((retype?1:0),new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
+						m.params.insert((retype?1:0),new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.xtype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 						retype = true;
 					}
 				}
@@ -558,17 +555,17 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 					init.setHidden(true);
 					if (this != Type.tpClosureClazz && this.instanceOf(Type.tpClosureClazz)) {
 						if( !isStatic() ) {
-							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.xtype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 							init.params.append(new FormPar(pos,"max$args",Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
 						} else {
 							init.params.append(new FormPar(pos,"max$args",Type.tpInt,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));
 						}
 					} else {
 						if( package_clazz.isClazz() && !isStatic() ) {
-							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.ctype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
+							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.xtype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 						}
 						if (!isInterface() && isTypeUnerasable()) {
-							init.params.append(new FormPar(pos,nameTypeInfo,typeinfo_clazz.ctype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
+							init.params.append(new FormPar(pos,nameTypeInfo,typeinfo_clazz.xtype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 						}
 						if( isEnum() ) {
 							init.params.append(new FormPar(pos,"name",Type.tpString,FormPar.PARAM_NORMAL,ACC_SYNTHETIC));

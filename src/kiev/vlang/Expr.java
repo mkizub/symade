@@ -217,7 +217,7 @@ public class TypeInfoExpr extends ENode {
 	public Type getType() {
 		Type t = type.getType().getErasedType();
 		if (t.isUnerasable())
-			return t.getStruct().typeinfo_clazz.ctype;
+			return t.getStruct().typeinfo_clazz.xtype;
 		return Type.tpTypeInfo;
 	}
 

@@ -197,8 +197,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				assert(fp.isForward());
 				assert(fp.isFinal());
 				assert(fp.id.uname == nameThisDollar);
-				assert(fp.type ≈ this.ctx_tdecl.package_clazz.ctype);
-				dargs.append(this.ctx_tdecl.package_clazz.ctype);
+				assert(fp.type ≈ this.ctx_tdecl.package_clazz.xtype);
+				dargs.append(this.ctx_tdecl.package_clazz.xtype);
 				break;
 			case FormPar.PARAM_RULE_ENV:
 				assert(this instanceof RuleMethod);

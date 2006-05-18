@@ -556,7 +556,7 @@ public final class Code implements JConstants {
 			}
 		}
 		KString sign;
-		JType ttt = Type.getRealType(tp,((JStruct)m.jparent).ctype).getJType();
+		JType ttt = Type.getRealType(tp,((JStruct)m.jparent).xtype).getJType();
 		sign = m.etype.getJType().java_signature;
 		CP cpm;
 		if( m.jctx_clazz.isInterface() )
@@ -1256,9 +1256,9 @@ public final class Code implements JConstants {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
-		JType ttt = Type.getRealType(tp.getErasedType(),f.jctx_clazz.ctype).getJType();
+		JType ttt = Type.getRealType(tp.getErasedType(),f.jctx_clazz.xtype).getJType();
 		KString struct_sig = ttt.java_signature;
-		KString field_sig = Type.getRealType(f.jctx_clazz.ctype,f.type).getJType().java_signature;
+		KString field_sig = Type.getRealType(f.jctx_clazz.xtype,f.type).getJType().java_signature;
 		FieldCP cpf = constPool.addFieldCP(struct_sig,KString.from(f.id.uname),field_sig);
 	    switch(i) {
         case op_getstatic:

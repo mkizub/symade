@@ -124,7 +124,7 @@ public final class NewExpr extends ENode {
 
 	public Type getType() {
 		if (this.clazz != null)
-			return this.clazz.ctype;
+			return this.clazz.xtype;
 		Type type = this.type.getType();
 		Struct clazz = type.getStruct();
 		if (outer == null && type.getStruct() != null && type.getStruct().ometa_type != null) {
@@ -347,7 +347,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	@att public NArr<FormPar>		params;
 	@att public ENode				body;
 	@att public Struct				clazz;
-	@ref public CallType			ctype;
+	@ref public CallType			xtype;
 
 	@nodeview
 	public static final view VNewClosure of NewClosure extends VENode {
@@ -355,7 +355,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		public NArr<FormPar>	params;
 		public ENode			body;
 		public Struct			clazz;
-		public CallType			ctype;
+		public CallType			xtype;
 	}
 
 	public NewClosure() {}
@@ -367,13 +367,13 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Type getType() {
-		if (ctype != null)
-			return ctype;
+		if (xtype != null)
+			return xtype;
 		Vector<Type> args = new Vector<Type>();
 		foreach (FormPar fp; params)
 			args.append(fp.getType());
-		ctype = new CallType(args.toArray(), type_ret.getType(), true);
-		return ctype;
+		xtype = new CallType(args.toArray(), type_ret.getType(), true);
+		return xtype;
 	}
 
 	public String toString() {

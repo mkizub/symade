@@ -31,7 +31,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		Type type;
 		if (this.clazz != null) {
 			this.clazz.resolveDecl();
-			type = this.clazz.ctype;
+			type = this.clazz.xtype;
 		} else {
 			type = this.type.getType();
 		}
@@ -192,7 +192,7 @@ public final view RNewClosure of NewClosure extends RENode {
 	public NArr<FormPar>	params;
 	public Block			body;
 	public Struct			clazz;
-	public CallType			ctype;
+	public CallType			xtype;
 
 	public boolean preGenerate() {
 		if (clazz != null)
@@ -205,7 +205,7 @@ public final view RNewClosure of NewClosure extends RENode {
 			clazz.setStatic(true);
 		if (!Env.loadStruct(Type.tpClosureClazz).isResolved())
 			throw new RuntimeException("Core class "+Type.tpClosureClazz+" not found");
-		clazz.super_types.insert(0, new TypeRef(Type.tpClosureClazz.ctype));
+		clazz.super_types.insert(0, new TypeRef(Type.tpClosureClazz.xtype));
 		Kiev.runProcessorsOn(clazz);
 		((NewClosure)this).getType();
 
@@ -218,7 +218,7 @@ public final view RNewClosure of NewClosure extends RENode {
 		});
 
 		Block body = ~this.body;
-		Type ret = ctype.ret();
+		Type ret = xtype.ret();
 		if( ret ≢ Type.tpRule ) {
 			String call_name;
 			if( ret.isReference() ) {

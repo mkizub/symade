@@ -41,7 +41,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		Type ot = obj.getType();
 		if( !ot.getJType().isInstanceOf(func.jctx_clazz.jtype) ) {
 			trace( Kiev.debugNodeTypes, "Need checkcast for method "+ot+"."+func);
-			code.addInstr(Instr.op_checkcast,func.jctx_clazz.ctype);
+			code.addInstr(Instr.op_checkcast,func.jctx_clazz.xtype);
 		}
 	}
 
@@ -51,7 +51,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		Access.verifyRead(this,func);
 		CodeLabel ok_label = null;
 		CodeLabel null_cast_label = null;
-		if( func.jctx_clazz.ctype.isInstanceOf(Type.tpDebug) ) {
+		if( func.jctx_clazz.xtype.isInstanceOf(Type.tpDebug) ) {
 			String fname = func.id.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
@@ -84,7 +84,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			else
 				code.addNullConst();
 		}
-		else if( func.jctx_clazz.ctype.isInstanceOf(Type.tpDebug) ) {
+		else if( func.jctx_clazz.xtype.isInstanceOf(Type.tpDebug) ) {
 			int mode = 0;
 			String fname = func.id.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 ) mode = 1;
@@ -119,7 +119,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			}
 			if( func.id.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 				JMethod mmm = jctx_method;
-				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? ((Struct)jctx_clazz).super_types[0].getType() : ((Struct)jctx_clazz).ctype;
+				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? ((Struct)jctx_clazz).super_types[0].getType() : ((Struct)jctx_clazz).xtype;
 				assert(mmm.id.equals(nameInit));
 				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?
@@ -166,7 +166,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		// for parametriezed with primitive types classes
 		Type objt = obj.getType();
 		if( !objt.isReference() ) {
-			if( func.jctx_clazz.ctype ≉ Type.tpObject )
+			if( func.jctx_clazz.xtype ≉ Type.tpObject )
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 			if( func.id.uname == nameObjEquals ) {
 				CodeLabel label_true = code.newLabel();
@@ -297,28 +297,28 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 	public:ro JArr<JENode>	args;
 	public:ro Boolean		is_a_call;
 	
-	@getter public final CallType	get$ctype() { return (CallType)((ClosureCallExpr)this).expr.getType(); }
+	@getter public final CallType	get$xtype() { return (CallType)((ClosureCallExpr)this).expr.getType(); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ClosureCallExpr: "+this);
 		code.setLinePos(this);
 		// Load ref to closure
 		expr.generate(code,null);
-		CallType ctype = this.ctype;
+		CallType xtype = this.xtype;
 		JENode[] args = this.args.toArray();
 		// Clone it
 		if( args.length > 0 ) {
 			JMethod clone_it = ((JStruct)Type.tpClosureClazz).resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 			code.addInstr(op_call,clone_it,false);
 			if( Kiev.verify )
-				code.addInstr(op_checkcast,Type.tpClosureClazz.ctype);
+				code.addInstr(op_checkcast,Type.tpClosureClazz.xtype);
 			// Add arguments
 			for(int i=0; i < args.length; i++) {
 				args[i].generate(code,null);
-				code.addInstr(op_call,getMethodFor(ctype.arg(i).getJType()),false);
+				code.addInstr(op_call,getMethodFor(xtype.arg(i).getJType()),false);
 			}
 		}
-		JMethod call_it = getCallIt(ctype);
+		JMethod call_it = getCallIt(xtype);
 		// Check if we need to call
 		if( is_a_call.booleanValue() ) {
 			if( call_it.type.ret() ≡ Type.tpRule )

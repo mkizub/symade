@@ -515,7 +515,7 @@ public class Bytecoder implements JConstants {
 	    	bcclazz.flags |= ACC_SUPER;
 
 		// This class name
-		KString cl_sig = cl.ctype.getJType().java_signature;
+		KString cl_sig = cl.xtype.getJType().java_signature;
 		trace(Kiev.debugBytecodeGen,"note: class "+cl+" class signature = "+cl_sig);
 		bcclazz.cp_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(cl_sig).pos];
 	    // This class's superclass name

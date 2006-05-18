@@ -60,7 +60,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
 		if( !ot.getJType().isInstanceOf(var.jctx_clazz.jtype) )
-			code.addInstr(Instr.op_checkcast,var.jctx_clazz.ctype);
+			code.addInstr(Instr.op_checkcast,var.jctx_clazz.xtype);
 	}
 
 	public void generateLoad(Code code) {
@@ -375,7 +375,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		} else {
 			if( isAsField() ) {
 				code.addInstrLoadThis();
-				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.ctype);
+				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.xtype);
 			} else {
 				code.addInstr(op_load,var);
 			}
@@ -396,7 +396,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 			if( isAsField() ) {
 				code.addInstrLoadThis();
 				code.addInstr(op_dup);
-				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.ctype);
+				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.xtype);
 			} else {
 				code.addInstr(op_load,var);
 				code.addInstr(op_dup);
@@ -430,7 +430,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 			code.addInstr(op_store,var);
 		} else {
 			if( isAsField() ) {
-				code.addInstr(op_putfield,resolveProxyVar(code),code.clazz.ctype);
+				code.addInstr(op_putfield,resolveProxyVar(code),code.clazz.xtype);
 			} else {
 				code.addInstr(op_store,var);
 			}
@@ -450,10 +450,10 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		} else {
 			if( isAsField() ) {
 				code.addInstr(op_dup_x);
-				code.addInstr(op_putfield,resolveVarVal(),code.clazz.ctype);
+				code.addInstr(op_putfield,resolveVarVal(),code.clazz.xtype);
 			} else {
 				code.addInstr(op_dup_x);
-				code.addInstr(op_putfield,resolveVarVal(),code.clazz.ctype);
+				code.addInstr(op_putfield,resolveVarVal(),code.clazz.xtype);
 			}
 		}
 		generateVerifyCheckCast(code);
@@ -473,14 +473,14 @@ public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
 		code.setLinePos(this);
 		Access.verifyRead(this,var);
-		code.addInstr(op_getstatic,var,code.clazz.ctype);
+		code.addInstr(op_getstatic,var,code.clazz.xtype);
 	}
 
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load & dup: "+this);
 		code.setLinePos(this);
 		Access.verifyRead(this,var);
-		code.addInstr(op_getstatic,var,code.clazz.ctype);
+		code.addInstr(op_getstatic,var,code.clazz.xtype);
 	}
 
 	public void generateAccess(Code code) {
@@ -491,7 +491,7 @@ public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store only: "+this);
 		code.setLinePos(this);
 		Access.verifyWrite(this,var);
-		code.addInstr(op_putstatic,var,code.clazz.ctype);
+		code.addInstr(op_putstatic,var,code.clazz.xtype);
 	}
 
 	public void generateStoreDupValue(Code code) {
@@ -499,7 +499,7 @@ public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 		code.setLinePos(this);
 		Access.verifyWrite(this,var);
 		code.addInstr(op_dup);
-		code.addInstr(op_putstatic,var,code.clazz.ctype);
+		code.addInstr(op_putstatic,var,code.clazz.xtype);
 	}
 
 }
@@ -514,7 +514,7 @@ public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JLvalueExp
 		code.setLinePos(this);
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++)
-			code.addInstr(op_getfield,outer_refs[i],code.clazz.ctype);
+			code.addInstr(op_getfield,outer_refs[i],code.clazz.xtype);
 	}
 
 	public void generateLoadDup(Code code) {
@@ -523,7 +523,7 @@ public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JLvalueExp
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++) {
 			if( i == outer_refs.length-1 ) code.addInstr(op_dup);
-			code.addInstr(op_getfield,outer_refs[i],code.clazz.ctype);
+			code.addInstr(op_getfield,outer_refs[i],code.clazz.xtype);
 		}
 	}
 
@@ -532,19 +532,19 @@ public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JLvalueExp
 		code.setLinePos(this);
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length-1; i++) {
-			code.addInstr(op_getfield,outer_refs[i],code.clazz.ctype);
+			code.addInstr(op_getfield,outer_refs[i],code.clazz.xtype);
 		}
 	}
 
 	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store only: "+this);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.ctype);
+		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.xtype);
 	}
 
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store & dup: "+this);
 		code.addInstr(op_dup_x);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.ctype);
+		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.xtype);
 	}
 
 }

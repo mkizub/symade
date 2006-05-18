@@ -70,7 +70,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public FileUnit(String name, Struct pkg) {
 		this.id = new Symbol(name);
 		this.pkg = new TypeNameRef(pkg.qname());
-		this.pkg.lnk = pkg.ctype;
+		this.pkg.lnk = pkg.xtype;
 	}
 
 	public void addPrescannedBody(PrescannedBody b) {

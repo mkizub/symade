@@ -160,7 +160,7 @@ public final class AccessExpr extends LvalueExpr {
 			return info.buildAccess((AccessExpr)this, o, v);
 		}
 		else if( v instanceof Struct ) {
-			TypeRef tr = new TypeRef(((Struct)v).ctype);
+			TypeRef tr = new TypeRef(((Struct)v).xtype);
 			return tr;
 		}
 		else {
@@ -427,7 +427,7 @@ public final class ThisExpr extends LvalueExpr {
 			if (ctx_tdecl == null)
 				return Type.tpVoid;
 			if (ctx_tdecl.id.uname == nameIFaceImpl)
-				return ctx_tdecl.package_clazz.ctype;
+				return ctx_tdecl.package_clazz.xtype;
 			if (isSuperExpr())
 				ctx_tdecl.super_types[0].getType();
 			return ctx_tdecl.xtype;
@@ -672,7 +672,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
 		this.pos = pos;
-		this.obj = new TypeRef(pos,outer.ctype);
+		this.obj = new TypeRef(pos,outer.xtype);
 		this.ident = new SymbolRef(pos,nameThis);
 		this.outer = outer;
 	}
@@ -682,14 +682,14 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 	public Type getType() {
 		try {
 			if (ctx_tdecl == null || outer_refs.size() == 0)
-				return outer.ctype;
+				return outer.xtype;
 			Type tp = ctx_tdecl.xtype;
 			foreach (Field f; outer_refs)
 				tp = f.type.applay(tp);
 			return tp;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
-			return outer.ctype;
+			return outer.xtype;
 		}
 	}
 

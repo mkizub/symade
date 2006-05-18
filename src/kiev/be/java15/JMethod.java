@@ -87,7 +87,7 @@ public final view JMethod of Method extends JDNode {
 				if( !isBad() ) {
 					JVar thisPar = null;
 					if (!isStatic()) {
-						thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
+						thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_clazz.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 						code.addVar(thisPar);
 					}
 					code.addVars(params.toArray());
@@ -208,7 +208,7 @@ public final final view JWBCCondition of WBCCondition extends JDNode {
 			try {
 				JVar thisPar = null;
 				if( !isStatic() ) {
-					thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_clazz.ctype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
+					thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_clazz.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 					code.addVar(thisPar);
 				}
 				code.addVars(m.params.toArray());

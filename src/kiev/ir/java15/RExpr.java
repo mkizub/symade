@@ -74,9 +74,9 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 		if (clazz.isTypeUnerasable()) {
 			if (clazz.typeinfo_clazz == null)
 				((RStruct)clazz).autoGenerateTypeinfoClazz();
-			ftype = clazz.typeinfo_clazz.ctype;
+			ftype = clazz.typeinfo_clazz.xtype;
 		}
-		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.ctype));
+		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.xtype));
 		cl_expr.resolve(Type.tpClass);
 		foreach (ArgType at; ((RStruct)clazz).getTypeInfoArgs())
 			cl_args.add(((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false));
@@ -848,7 +848,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		if( et.isReference() && type.isReference() && et.getStruct() != null
 		 && et.getStruct().package_clazz.isClazz()
 		 && !(et instanceof ArgType)
-		 && !et.getStruct().isStatic() && et.getStruct().package_clazz.ctype.isAutoCastableTo(type)
+		 && !et.getStruct().isStatic() && et.getStruct().package_clazz.xtype.isAutoCastableTo(type)
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,

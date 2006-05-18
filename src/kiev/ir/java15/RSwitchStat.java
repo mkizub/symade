@@ -52,7 +52,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 									throw new RuntimeException("Pattern variable "+p.id+" has type "+p.type+" but type "+tp+" is expected");
 								p.init = new IFldExpr(p.pos,
 										new CastExpr(p.pos,
-											Type.getRealType(sw.tmpvar.getType(),cas.ctype),
+											Type.getRealType(sw.tmpvar.getType(),cas.xtype),
 											new LVarExpr(p.pos,sw.tmpvar.getVar())
 										),
 										f

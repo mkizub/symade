@@ -57,13 +57,13 @@ public class ProcessView extends TransfProcessor implements Constants {
 		// add a cast from clazz.view_of to this view
 		boolean cast_found = false;
 		foreach (Method dn; clazz.view_of.getStruct().members) {
-			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
+			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.xtype) {
 				cast_found = true;
 				break;
 			}
 		}
 		if (!cast_found) {
-			Method cast = new Method(nameCastOp, clazz.ctype, ACC_PUBLIC|ACC_SYNTHETIC);
+			Method cast = new Method(nameCastOp, clazz.xtype, ACC_PUBLIC|ACC_SYNTHETIC);
 			if (clazz.isAbstract()) {
 				cast.setAbstract(true);
 			} else {
@@ -154,10 +154,10 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 				preGenerate(st.getStruct());
 			Struct s = getViewImpl(clazz.super_types[0]);
 			if (s != null)
-				impl.super_types += new TypeRef(s.ctype);
+				impl.super_types += new TypeRef(s.xtype);
 			else
 				impl.super_types += new TypeRef(Type.tpObject);
-			impl.super_types += new TypeRef(clazz.ctype);
+			impl.super_types += new TypeRef(clazz.xtype);
 			
 			if (clazz.super_types[0].getType() ≉ Type.tpObject)
 				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
@@ -289,9 +289,9 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 		
 		// add a cast from clazz.view_of to this view
 		foreach (Method dn; clazz.view_of.getStruct().members) {
-			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.ctype) {
+			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.xtype) {
 				if (!dn.isAbstract() && dn.isSynthetic()) {
-					dn.block.stats[0] = new ReturnStat(0, new NewExpr(0, impl.ctype, new ENode[]{new ThisExpr()}));
+					dn.block.stats[0] = new ReturnStat(0, new NewExpr(0, impl.xtype, new ENode[]{new ThisExpr()}));
 				}
 				break;
 			}
