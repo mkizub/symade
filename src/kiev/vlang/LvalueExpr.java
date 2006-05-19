@@ -192,6 +192,8 @@ public final class IFldExpr extends LvalueExpr {
 
 	@att public ENode			obj;
 	@att public SymbolRef		ident;
+	@abstract
+	@ref public:ro Field		var;
 
 	@getter public Field get$var() {
 		if (ident == null) return null;
@@ -352,7 +354,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	public Type getType() {
 		try {
 			Type t = obj.getType();
-			if( t.isArray() )
+			if (t instanceof ArrayType)
 				return Type.getRealType(t,((ArrayType)t).arg);
 			// Resolve overloaded access method
 			Method@ v;
@@ -376,7 +378,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 
 	public Type[] getAccessTypes() {
 		Type t = obj.getType();
-		if( t.isArray() )
+		if (t instanceof ArrayType)
 			return new Type[]{Type.getRealType(t,((ArrayType)t).arg)};
 		Method@ v;
 		CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
@@ -546,11 +548,11 @@ public final class LVarExpr extends LvalueExpr {
 		Var var = this.var;
 		if (var instanceof RewritePattern)
 			return ctx.root;
-		if (ctx.root instanceof CallExpr && var instanceof FormPar && var.parent() instanceof Method) {
+		if (var instanceof FormPar && ctx.root instanceof CallExpr && var.parent() == ((CallExpr)ctx.root).func) {
 			int idx = 0;
 			foreach (FormPar fp; ((Method)var.parent()).params; fp.kind == FormPar.PARAM_NORMAL) {
 				if (fp == var)
-					return ((CallExpr)ctx.root).args[idx];
+					return ctx.args[idx];
 				idx++;
 			}
 		}
@@ -586,6 +588,29 @@ public final class SFldExpr extends LvalueExpr {
 		public		ENode		obj;
 		public		SymbolRef	ident;
 		public:ro	Field		var;
+
+		public void mainResolveOut() {
+			if (var != null) {
+				if (!var.isStatic())
+					throw new CompilerException(this, "Field "+var+" is not static");
+				if (obj == null)
+					obj = new TypeRef(pos,var.ctx_tdecl.xtype);
+				return;
+			}
+			
+			if !(obj instanceof TypeRef)
+				throw new CompilerException(this, "Static field access requires type as accessor");
+			Type tp = this.obj.getType();
+			DNode@ v;
+			ResInfo info;
+			tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name);
+			DNode res = (DNode)v;
+			if (res == null)
+				throw new CompilerException(this, "Unresolved static field "+ident+" in "+tp);
+			if !(res instanceof Field || !res.isStatic())
+				throw new CompilerException(this, "Resolved "+ident+" in "+tp+" is not a static field");
+			ident.symbol = res.id;
+		}
 	}
 
 	public SFldExpr() {}

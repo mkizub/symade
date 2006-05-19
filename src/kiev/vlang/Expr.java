@@ -584,12 +584,13 @@ public class StringConcatExpr extends ENode {
 	public Object doRewrite(RewriteContext ctx) {
 		StringBuffer sb = new StringBuffer();
 		foreach (ENode e; args) {
-			if (e instanceof ConstCharExpr)
-				sb.append(e.value);
-			else if (e instanceof ConstStringExpr)
-				sb.append(e.value);
+			Object o = e.doRewrite(ctx);
+			if (o instanceof ConstCharExpr)
+				sb.append(o.value);
+			else if (o instanceof ConstStringExpr)
+				sb.append(o.value);
 			else
-				sb.append(e);
+				sb.append(o);
 		}
 		return new ConstStringExpr(sb.toString());
 	}

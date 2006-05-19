@@ -224,7 +224,7 @@ public class CallExpr extends ENode {
 			sb.append('(').append(obj).append(").");
 		else
 			sb.append(obj).append('.');
-		sb.append(func.id).append('(');
+		sb.append(ident).append('(');
 		for(int i=0; i < args.length; i++) {
 			sb.append(args[i]);
 			if( i < args.length-1 )
@@ -262,6 +262,21 @@ public class CallExpr extends ENode {
 		}
 		dmp.append(')');
 		return dmp;
+	}
+
+	public Object doRewrite(RewriteContext ctx) {
+		if (func == null || func.body == null || !func.isMacro())
+			super.doRewrite(ctx);
+		int idx = -1;
+		Object[] args = new Object[this.args.length];
+		foreach(FormPar fp; func.params; fp.kind == FormPar.PARAM_NORMAL) {
+			idx++;
+			if (fp.type instanceof ASTNodeType)
+				args[idx] = this.args[idx].doRewrite(ctx);
+			else
+				args[idx] = this.args[idx];
+		}
+		return func.body.doRewrite(new RewriteContext(this, args));
 	}
 }
 

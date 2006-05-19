@@ -124,22 +124,30 @@ public metatype RefArray<N extends ANode> extends N[] {
 
 }
 
-class Test {
+@node
+class Test extends ASTNode {
+	public static SpaceRefAttrSlot<ASTNode> nodeattr$rarr;
 	RefArray<ASTNode> rarr;
-	int foo() {
-		return rarr.length;
-	}
-	int bar_size() {
-		return rarr.size();
-	}
-	int bar_length() {
-		return rarr.size_length();
-	}
-	int static_bar_size() {
-		return RefArray.static_size(rarr);
-	}
-	int static_bar_length() {
-		return RefArray.static_size_length(rarr);
+	@ref ASTNode astn;
+	void foo() {
+		int i;
+		i = rarr.length;
+		i = rarr.size();
+		i = rarr.size_length();
+		i = RefArray.static_size(rarr);
+		i = RefArray.static_size_length(rarr);
+		ASTNode[] x;
+		x = rarr.delToArray();
+		rarr.delAll();
+		rarr.addAll(x);
+		rarr.copyFrom(x);
+		i = rarr.indexOf(astn);
+		rarr[0] = rarr[1];
+		//rarr += astn;
+		rarr.add(astn);
+		rarr.del(0);
+		rarr.detach(astn);
+		rarr.insert(0, astn);
 	}
 }
 

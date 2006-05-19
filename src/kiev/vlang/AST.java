@@ -320,7 +320,21 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	@virtual typedef RView = RNode;
 	
 	public static ASTNode[] emptyArray = new ASTNode[0];
-    public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
+	private static final class RefAttrSlot_flags extends RefAttrSlot {
+		RefAttrSlot_flags(String name, Class clazz) { super(name, clazz); }
+		public final void set(ANode parent, Object value) { throw new RuntimeException("@ref flags is not writeable"); }
+		public final Object get(ANode parent) { return new Integer(((ASTNode)parent).compileflags); }
+	}
+	public static final RefAttrSlot_flags nodeattr$flags = new RefAttrSlot_flags("flags", Integer.TYPE);
+
+	private static final class RefAttrSlot_parent extends RefAttrSlot {
+		RefAttrSlot_parent(String name, Class clazz) { super(name, clazz); }
+		public final void set(ANode parent, Object value) { throw new RuntimeException("@ref parent is not writeable"); }
+		public final Object get(ANode parent) { return parent.parent(); }
+	}
+	public static final RefAttrSlot_parent nodeattr$parent = new RefAttrSlot_parent("parent", ANode.class);
+
+	private static final AttrSlot[] $values = {nodeattr$parent, nodeattr$flags};
 
 	public  int				pos;
 	public  int				compileflags;
@@ -387,9 +401,13 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public @packed:1,compileflags,31 boolean is_bad;
 
 	public AttrSlot[] values() {
-		return AttrSlot.emptyArray;
+		return ASTNode.$values;
 	}
-	public Object getVal(String name) { return super.getVal(name); }
+	public Object getVal(String name) {
+		if (name == "parent")
+			return parent();
+		return super.getVal(name);
+	}
 	public void setVal(String name, Object val) { super.setVal(name,val); }
 		
 	public Object copyTo(Object to$node) {

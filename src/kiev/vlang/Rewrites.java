@@ -17,9 +17,11 @@ import syntax kiev.Syntax;
 
 public final class RewriteContext {
 	public final ASTNode root;
+	public final Object[] args;
 
-	public RewriteContext(ASTNode root) {
+	public RewriteContext(ASTNode root, Object[] args) {
 		this.root = root;
+		this.args = args;
 	}
 }
 
@@ -202,6 +204,12 @@ public final class RewriteNodeFactory extends ENode {
 				r = new SymbolRef(r.value);
 			else if (attr.clazz == Symbol.class)
 				r = new Symbol(r.value);
+		}
+		else if (r instanceof TypeDecl) {
+			if (attr.clazz == TypeRef.class)
+				r = new TypeRef(r.xtype);
+			else if (attr.clazz == ENode.class)
+				r = new TypeRef(r.xtype);
 		}
 		return ~r;
 	}

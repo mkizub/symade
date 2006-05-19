@@ -593,6 +593,7 @@ MORE :
 TOKEN : /* RESERVED WORDS AND LITERALS */
 {
   < ABSTRACT: "abstract" >
+| < ANY: "any" >
 | < BOOLEAN: "boolean" >
 | < BREAK: "break" >
 | < BYTE: "byte" >
@@ -631,7 +632,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 // | < SUPER: "super" >
 | < SWITCH: "switch" >
 | < SYNCHRONIZED: "synchronized" >
-| < WITH: "with" > { if(Kiev.javaMode||Kiev.disabled(Ext.With)) matchedToken.kind=IDENTIFIER; }
+| < WITH: "with" >
 // | < THIS: "this" >
 | < THROW: "throw" >
 | < THROWS: "throws" >
@@ -640,24 +641,23 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < TRY: "try" >
 | < VOID: "void" >
 | < VOLATILE: "volatile" >
-| < VIEW: "view" > { if(Kiev.javaMode || Kiev.disabled(Ext.View) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+| < VIEW: "view" >
 | < WHILE: "while" >
-//| < UNDERSCORE: "_" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 | < ARROW: "->" >
 | < FUNCTION: "fun" >
 | < VARARGS: "..." >
-| < RULE: "rule" > { if(Kiev.javaMode || Kiev.disabled(Ext.Logic) ) matchedToken.kind=IDENTIFIER; }
-| < PCUT: "$cut" > { if(Kiev.javaMode || Kiev.disabled(Ext.Logic) ) matchedToken.kind=IDENTIFIER; }
-| < CAST: "$cast" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
-| < REINTERP: "$reinterp" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
-| < ALIAS: "alias" > { if(Kiev.javaMode || Kiev.disabled(Ext.Alias)  || !parser.declMode) matchedToken.kind=IDENTIFIER; }
-| < OPERATOR_ID: "operator" > { if(Kiev.javaMode || Kiev.disabled(Ext.Operator) ) matchedToken.kind=IDENTIFIER; }
-| < TYPEDEF: "typedef" > { if(Kiev.javaMode || Kiev.disabled(Ext.Typedef)  || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+| < RULE: "rule" >
+| < PCUT: "$cut" >
+| < CAST: "$cast" >
+| < REINTERP: "$reinterp" >
+| < ALIAS: "alias" >
+| < OPERATOR_ID: "operator" >
+| < TYPEDEF: "typedef" >
 | < ENUM: "enum" >
 
-| < REQUIRE: "require" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
-| < ENSURE: "ensure" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
-| < INVARIANT: "invariant" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+| < REQUIRE: "require" >
+| < ENSURE: "ensure" >
+| < INVARIANT: "invariant" >
 
 | < META_INTERFACE:    "@interface"    >
 | < META_SINGLETON:    "@singleton"    >
@@ -1028,7 +1028,7 @@ TypeNameRef Package() :
 		tr.ident = qn;
 		tr.pos = qn.pos;
 		Struct pkg = Env.newPackage(qn.name);
-		tr.lnk = pkg.ctype;
+		tr.lnk = pkg.xtype;
 		return tr;
 	}
 }
@@ -1188,16 +1188,12 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
 			"extends"
-			(
-				LOOKAHEAD("rule")
-				clazz.super_types += PrimitiveType()
-			|	clazz.super_types += NArrType()
-			)
+			clazz.super_types += Type()
 		]
 		[
 			"implements"
-			clazz.super_types += NArrType()
-			( "," clazz.super_types += NArrType()	)*
+			clazz.super_types += Type()
+			( "," clazz.super_types += Type()	)*
 		]
 	|	"interface"
 		name = Name()
@@ -1207,8 +1203,8 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
 			"extends"
-			clazz.super_types += NArrType()
-			( "," clazz.super_types += NArrType()	)*
+			clazz.super_types += Type()
+			( "," clazz.super_types += Type()	)*
 		]
 	|	"@interface"
 		(	name = Name()
@@ -1233,16 +1229,12 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
 			"extends"
-			(
-				LOOKAHEAD("rule")
-				clazz.super_types += PrimitiveType()
-			|	clazz.super_types += NArrType()
-			)
+			clazz.super_types += Type()
 		]
 		[
 			"implements"
-			clazz.super_types += NArrType()
-			( "," clazz.super_types += NArrType()	)*
+			clazz.super_types += Type()
+			( "," clazz.super_types += Type()	)*
 		]
 	)
 	{ oldClazz = curClazz; curClazz = clazz; }
@@ -1318,7 +1310,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 	name = Name()
 	{
 		clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
-		//clazz.super_types.insert(0, new TypeRef(parent.ctype));
+		//clazz.super_types.insert(0, new TypeRef(parent.xtype));
 		clazz.setPizzaCase(true);
 		clazz.setSingleton(true);
 	}
@@ -1388,13 +1380,13 @@ TypeConstr ArgumentDeclaration() :
 	{ arg = mkTypeConstr(name,null); arg.setAbstract(true); }
 	[
 		"extends"
-		tr = NArrType() { arg.super_types.add(tr); }
-		( "&" tr = NArrType() { arg.super_types.add(tr); } )*
+		tr = Type() { arg.super_types.add(tr); }
+		( "&" tr = Type() { arg.super_types.add(tr); } )*
 	]
 	[
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("super") }) //"super"
-		tr = NArrType() { arg.lower_bound.add(tr); }
-		( "&" tr = NArrType() { arg.lower_bound.add(tr); } )*
+		tr = Type() { arg.lower_bound.add(tr); }
+		( "&" tr = Type() { arg.lower_bound.add(tr); } )*
 	]
 	{ return arg; }
 }
@@ -2204,6 +2196,7 @@ TypeRef PrimitiveType() :
 	| t="double"	{ tp.lnk = Type.tpDouble; }
 	| t="void"		{ tp.lnk = Type.tpVoid; }
 	| t="rule"		{ tp.lnk = Type.tpRule; }
+	| t="any"		{ tp.lnk = Type.tpAny; }
 	)
 	{ tp.pos = t.getPos(); return tp; }
 }
