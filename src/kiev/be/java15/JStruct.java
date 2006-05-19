@@ -26,15 +26,17 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	public:ro	Access				acc;
 	public		KString				b_name;
-	public:ro	CompaundType		xtype;
-	public:ro	JBaseType			jtype;
 	public:ro	JStruct				package_clazz;
 	public:ro	JStruct				iface_impl;
 	public:ro	JArr<JDNode>		sub_decls;
 	public		Attr[]				attrs;
 
-	@getter
-	public final JBaseType		get$jtype()			{ return (JBaseType)this.xtype.getJType(); }
+	public final boolean isPizzaCase();
+	public final boolean isHasCases();
+	public final boolean isMembersGenerated();
+	public final boolean isMembersPreGenerated();
+	public final boolean isStatementsGenerated();
+	public final boolean isGenerated();
 
 	public final String qname();
 
@@ -51,25 +53,6 @@ public final view JStruct of Struct extends JTypeDecl {
 		return b_name;
 	}
 
-	public final boolean isClazz();
-	public final boolean isPackage();
-	public final boolean isPizzaCase();
-	public final boolean isLocal();
-	public final boolean isAnonymouse();
-	public final boolean isHasCases();
-	public final boolean isMembersGenerated();
-	public final boolean isMembersPreGenerated();
-	public final boolean isStatementsGenerated();
-	public final boolean isGenerated();
-	public final boolean isAnnotation();
-	public final boolean isEnum();
-	public final boolean isSyntax()	;
-	public final boolean isLoadedFromBytecode();
-
-	@getter public JStruct get$child_jctx_clazz() { return this; }
-
-	public boolean checkResolved();
-	
 	/** Add information about new attribute that belongs to this class */
 	public Attr addAttr(Attr a) {
 		// Check we already have this attribute
@@ -95,14 +78,6 @@ public final view JStruct of Struct extends JTypeDecl {
 		return (JENode)((RStruct)((Struct)this)).accessTypeInfoField((ASTNode)from, t, from_gen);
 	}
 	
-	public boolean instanceOf(JStruct cl) {
-		if( cl == null ) return false;
-		if( this.equals(cl) ) return true;
-		foreach (JType jt; super_types; jt.getJStruct().instanceOf(cl))
-			return true;
-		return false;
-	}
-
 	public JField resolveField(String name) {
 		return resolveField(name,true);
 	}

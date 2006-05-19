@@ -26,7 +26,7 @@ public final view RShadow of Shadow extends RENode {
 		setResolved(true);
 	}
 }
-
+/*
 @nodeview
 public final view RArrayLengthExpr of ArrayLengthExpr extends RENode {
 	public ENode			obj;
@@ -40,7 +40,7 @@ public final view RArrayLengthExpr of ArrayLengthExpr extends RENode {
 			ReturnStat.autoReturn(reqType, this);
 	}
 }
-
+*/
 @nodeview
 public final view RTypeClassExpr of TypeClassExpr extends RENode {
 	public TypeRef		type;

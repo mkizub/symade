@@ -80,7 +80,7 @@ public static view RDNode of DNode extends RNode {
 	public final boolean isFieldTransient();
 	public final boolean isMethodVarargs();
 	public final boolean isStructBcLoaded();
-	public final boolean isMethodNative();
+	public final boolean isNative();
 	public final boolean isInterface();
 	public final boolean isAbstract();
 	public final boolean isMathStrict();
@@ -105,7 +105,7 @@ public static view RDNode of DNode extends RNode {
 	public final void setMethodBridge(boolean on);
 	public final void setFieldTransient(boolean on);
 	public final void setMethodVarargs(boolean on);
-	public final void setMethodNative(boolean on);
+	public final void setNative(boolean on);
 	public final void setInterface(boolean on);
 	public final void setAbstract(boolean on);
 	public final void setStructView();

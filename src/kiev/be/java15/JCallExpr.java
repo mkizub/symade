@@ -39,9 +39,9 @@ public final view JCallExpr of CallExpr extends JENode {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.getJType().isInstanceOf(func.jctx_clazz.jtype) ) {
+		if( !ot.getJType().isInstanceOf(func.jctx_tdecl.jtype) ) {
 			trace( Kiev.debugNodeTypes, "Need checkcast for method "+ot+"."+func);
-			code.addInstr(Instr.op_checkcast,func.jctx_clazz.xtype);
+			code.addInstr(Instr.op_checkcast,func.jctx_tdecl.xtype);
 		}
 	}
 
@@ -51,7 +51,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		Access.verifyRead(this,func);
 		CodeLabel ok_label = null;
 		CodeLabel null_cast_label = null;
-		if( func.jctx_clazz.xtype.isInstanceOf(Type.tpDebug) ) {
+		if( func.jctx_tdecl.xtype.isInstanceOf(Type.tpDebug) ) {
 			String fname = func.id.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
@@ -84,7 +84,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			else
 				code.addNullConst();
 		}
-		else if( func.jctx_clazz.xtype.isInstanceOf(Type.tpDebug) ) {
+		else if( func.jctx_tdecl.xtype.isInstanceOf(Type.tpDebug) ) {
 			int mode = 0;
 			String fname = func.id.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 ) mode = 1;
@@ -118,15 +118,19 @@ public final view JCallExpr of CallExpr extends JENode {
 				}
 			}
 			if( func.id.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
-				JMethod mmm = jctx_method;
-				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? ((Struct)jctx_clazz).super_types[0].getType() : ((Struct)jctx_clazz).xtype;
-				assert(mmm.id.equals(nameInit));
+				JMethod jmm = jctx_method;
+				Type tp;
+				if (!jmm.jctx_tdecl.equals(func.jctx_tdecl))
+					tp = ((TypeDecl)jctx_tdecl).super_types[0].getType();
+				else
+					tp = ((TypeDecl)jctx_tdecl).xtype;
+				assert(jmm.id.equals(nameInit));
 				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?
-				if (mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
-					tmp_expr = (JENode)new LVarExpr(pos,(Var)mmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
+				if (jmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
+					tmp_expr = (JENode)new LVarExpr(pos,(Var)jmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
 				else
-					tmp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
+					tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
 				tmp_expr.generate(code,null);
 				tmp_expr = null;
 			}
@@ -156,7 +160,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		if (func.isTypeUnerasable()) {
 			foreach (TypeDef td; ((Method)func).targs) {
 				Type tp = mt.resolve(td.getAType());
-				tmp_expr = jctx_clazz.accessTypeInfoField(this,tp,true);
+				tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
 				tmp_expr.generate(code,null);
 				tmp_expr = null;
 			}
@@ -166,7 +170,7 @@ public final view JCallExpr of CallExpr extends JENode {
 		// for parametriezed with primitive types classes
 		Type objt = obj.getType();
 		if( !objt.isReference() ) {
-			if( func.jctx_clazz.xtype ≉ Type.tpObject )
+			if( func.jctx_tdecl.xtype ≉ Type.tpObject )
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 			if( func.id.uname == nameObjEquals ) {
 				CodeLabel label_true = code.newLabel();

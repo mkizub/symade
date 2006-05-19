@@ -366,8 +366,8 @@ public final class MetaNative extends MetaFlag {
 
 	private MetaNative() { super(ATTR); }
 	
-	public void    setZ(ASTNode node, boolean val)		{ ((Method)node).setMethodNative(val); }
-	public boolean getZ(ASTNode node)					{ return ((Method)node).isMethodNative(); }
+	public void    setZ(ASTNode node, boolean val)		{ ((DNode)node).setNative(val); }
+	public boolean getZ(ASTNode node)					{ return ((DNode)node).isNative(); }
 }
 
 @singleton

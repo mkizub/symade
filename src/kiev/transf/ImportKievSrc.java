@@ -583,17 +583,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				}
 				if( f.getMetaPacked() != null )
 					f.setPackedField(true);
-//				if (fdecl.init == null && !ftype.isArray()) {
-//					if (ftype instanceof CTimeType)
-//						f.init = ftype.makeInitExpr(fdecl,fdecl.init);
-//				} else {
-//					if (ftype instanceof CTimeType) {
-//						f.init = ftype.makeInitExpr(fdecl,fdecl.init);
-//					} else {
-//						f.init = fdecl.init;
-//						f.setInitWrapper(false);
-//					}
-//				}
 			}
 			else if( members[i] instanceof WBCCondition ) {
 				WBCCondition inv = (WBCCondition)members[i];

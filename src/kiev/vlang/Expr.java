@@ -11,8 +11,8 @@ import kiev.be.java15.JENode;
 import kiev.be.java15.JLvalueExpr;
 import kiev.ir.java15.RShadow;
 import kiev.be.java15.JShadow;
-import kiev.ir.java15.RArrayLengthExpr;
-import kiev.be.java15.JArrayLengthExpr;
+//import kiev.ir.java15.RArrayLengthExpr;
+//import kiev.be.java15.JArrayLengthExpr;
 import kiev.ir.java15.RTypeClassExpr;
 import kiev.be.java15.JTypeClassExpr;
 import kiev.ir.java15.RTypeInfoExpr;
@@ -88,7 +88,7 @@ public class Shadow extends ENode {
 	}
 
 }
-
+/*
 @node
 public class ArrayLengthExpr extends ENode {
 	
@@ -145,7 +145,7 @@ public class ArrayLengthExpr extends ENode {
 		return dmp;
 	}
 }
-
+*/
 @node
 public class TypeClassExpr extends ENode {
 	

@@ -1,9 +1,9 @@
 package kiev.stdlib;
 
-import kiev.vlang.ArrayLengthExpr;
-import kiev.vlang.CallExpr;
-import kiev.vlang.ContainerAccessExpr;
-import kiev.vlang.IFldExpr;
+//import kiev.vlang.ArrayLengthExpr;
+//import kiev.vlang.CallExpr;
+//import kiev.vlang.ContainerAccessExpr;
+//import kiev.vlang.IFldExpr;
 
 /**
  * @author Maxim Kizub
@@ -13,18 +13,15 @@ import kiev.vlang.IFldExpr;
 
 public metatype _array_<_elem_ extends any> extends Object {
 	@macro
-	public:ro final int length
-	{
-		case IFldExpr# self(): new#ArrayLengthExpr(obj=self.obj, ident=self.ident)
-	};
+	public:ro final native int length;
 
 	@macro
-	public _elem_ get(int idx)
+	public native _elem_ get(int idx)
 		alias operator(210,xfy,[])
-	{
-		case @forward CallExpr# self():
-			new#ContainerAccessExpr(obj=self.obj, index=idx)
-	}
+;//	{
+//		case @forward CallExpr# self():
+//			new#ContainerAccessExpr(obj=self.obj, index=idx)
+//	}
 
 //	@macro
 //	public _elem_ set(int idx, _elem_ val)

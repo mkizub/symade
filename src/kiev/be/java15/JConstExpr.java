@@ -103,9 +103,19 @@ public abstract view JConstExpr of ConstExpr extends JENode {
 	public abstract Object getConstValue();
 	
 	public void generate(Code code, Type reqType) {
-		Object value = getConstValue();
-		trace(Kiev.debugStatGen,"\t\tgenerating ConstExpr: "+value);
-		code.setLinePos(this);
+		JConstExpr.generateConst(this, code, reqType);
+	}
+
+	public static void generateConst(JConstExpr self, Code code, Type reqType) {
+		Object value;
+		if (self == null) {
+			trace(Kiev.debugStatGen,"\t\tgenerating dummy value");
+			value = null;
+		} else {
+			value = self.getConstValue();
+			trace(Kiev.debugStatGen,"\t\tgenerating ConstExpr: "+value);
+			code.setLinePos(self);
+		}
 		if( value == null ) {
 			// Special case for generation of parametriezed
 			// with primitive types classes

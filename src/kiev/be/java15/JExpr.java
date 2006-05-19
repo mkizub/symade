@@ -27,7 +27,7 @@ public final view JShadow of Shadow extends JENode {
 	}
 	
 }
-
+/*
 @nodeview
 public final view JArrayLengthExpr of ArrayLengthExpr extends JENode {
 	public:ro JENode		obj;
@@ -39,9 +39,8 @@ public final view JArrayLengthExpr of ArrayLengthExpr extends JENode {
 		code.addInstr(Instr.op_arrlength);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
-
 }
-
+*/
 @nodeview
 public final view JTypeClassExpr of TypeClassExpr extends JENode {
 	public:ro	Type			type;

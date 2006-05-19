@@ -35,8 +35,8 @@ public view JNode of ASTNode implements JConstants {
 	
 	@getter public final JNode get$jparent() { return (JNode)(ASTNode)((ASTNode)this).parent(); }
 	@getter public JFileUnit get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
-	@getter public JStruct get$jctx_clazz() { return this.jparent.child_jctx_clazz; }
-	@getter public JStruct get$child_jctx_clazz() { return this.jparent.get$child_jctx_clazz(); }
+	@getter public JTypeDecl get$jctx_tdecl() { return this.jparent.child_jctx_tdecl; }
+	@getter public JTypeDecl get$child_jctx_tdecl() { return this.jparent.get$child_jctx_tdecl(); }
 	@getter public JMethod get$jctx_method() { return this.jparent.child_jctx_method; }
 	@getter public JMethod get$child_jctx_method() { return this.jparent.get$child_jctx_method(); }
 
@@ -146,6 +146,34 @@ public final view JLocalStructDecl of LocalStructDecl extends JENode {
 public view JTypeDecl of TypeDecl extends JDNode {
 	public:ro	JType[]				super_types;
 	public:ro	JArr<JNode>			members;
+
+	@getter public JTypeDecl get$child_jctx_tdecl() { return this; }
+
+	public:ro	Type				xtype;
+	public:ro	JType				jtype;
+	@getter
+	public final JType				get$jtype()			{ return this.xtype.getJType(); }
+
+
+	public final boolean isClazz();
+	public final boolean isPackage();
+	public final boolean isLocal();
+	public final boolean isAnonymouse();
+	public final boolean isAnnotation();
+	public final boolean isEnum();
+	public final boolean isSyntax()	;
+	public final boolean isLoadedFromBytecode();
+
+	public boolean checkResolved();
+	
+	public boolean instanceOf(JTypeDecl cl) {
+		if( cl == null ) return false;
+		if( this.equals(cl) ) return true;
+		foreach (JType jt; super_types; jt.getJTypeDecl().instanceOf(cl))
+			return true;
+		return false;
+	}
+
 }
 
 @nodeview

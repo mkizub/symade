@@ -54,7 +54,7 @@ public abstract class DNode extends ASTNode {
 	public @packed:1,flags, 6 boolean is_mth_bridge;		// method
 	public @packed:1,flags, 7 boolean is_fld_transient;	// field
 	public @packed:1,flags, 7 boolean is_mth_varargs;		// method
-	public @packed:1,flags, 8 boolean is_mth_native;
+	public @packed:1,flags, 8 boolean is_native;			// native method, backend operation/field/struct
 	public @packed:1,flags, 9 boolean is_struct_interface;
 	public @packed:1,flags,10 boolean is_abstract;
 	public @packed:1,flags,11 boolean is_math_strict;		// strict math
@@ -83,7 +83,7 @@ public abstract class DNode extends ASTNode {
 	public final boolean isFieldTransient()	{ return this.is_fld_transient; }
 	public final boolean isMethodVarargs()		{ return this.is_mth_varargs; }
 	public final boolean isStructBcLoaded()	{ return this.is_struct_bytecode; }
-	public final boolean isMethodNative()		{ return this.is_mth_native; }
+	public final boolean isNative()				{ return this.is_native; }
 	public final boolean isInterface()			{ return this.is_struct_interface; }
 	public final boolean isAbstract()			{ return this.is_abstract; }
 	public final boolean isMathStrict()		{ return this.is_math_strict; }
@@ -181,9 +181,9 @@ public abstract class DNode extends ASTNode {
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
-	public void setMethodNative(boolean on) {
-		if (this.is_mth_native != on) {
-			this.is_mth_native = on;
+	public void setNative(boolean on) {
+		if (this.is_native != on) {
+			this.is_native = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
@@ -268,7 +268,7 @@ public abstract class DNode extends ASTNode {
 		public final boolean isFieldTransient();
 		public final boolean isMethodVarargs();
 		public final boolean isStructBcLoaded();
-		public final boolean isMethodNative();
+		public final boolean isNative();
 		public final boolean isInterface();
 		public final boolean isAbstract();
 		public final boolean isMathStrict();
@@ -293,7 +293,7 @@ public abstract class DNode extends ASTNode {
 		public final void setMethodBridge(boolean on);
 		public final void setFieldTransient(boolean on);
 		public final void setMethodVarargs(boolean on);
-		public final void setMethodNative(boolean on);
+		public final void setNative(boolean on);
 		public final void setInterface(boolean on);
 		public final void setAbstract(boolean on);
 		public final void setStructView();

@@ -81,13 +81,13 @@ public final view JMethod of Method extends JDNode {
 		foreach(JWBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
 			cond.generate(constPool,Type.tpVoid);
 		if( !isAbstract() && body != null ) {
-			Code code = new Code(jctx_clazz, this, constPool);
+			Code code = new Code((JStruct)jctx_tdecl, this, constPool);
 			code.generation = true;
 			try {
 				if( !isBad() ) {
 					JVar thisPar = null;
 					if (!isStatic()) {
-						thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_clazz.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
+						thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_tdecl.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 						code.addVar(thisPar);
 					}
 					code.addVars(params.toArray());
@@ -195,7 +195,7 @@ public final final view JWBCCondition of WBCCondition extends JDNode {
 	public		CodeAttr			code_attr;
 
 	public void generate(ConstPool constPool, Type reqType) {
-		Code code = new Code(jctx_clazz, jctx_method, constPool);
+		Code code = new Code((JStruct)jctx_tdecl, jctx_method, constPool);
 		code.generation = true;
 		code.cond_generation = true;
 		if( cond == WBCType.CondInvariant ) {
@@ -208,7 +208,7 @@ public final final view JWBCCondition of WBCCondition extends JDNode {
 			try {
 				JVar thisPar = null;
 				if( !isStatic() ) {
-					thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_clazz.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
+					thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_tdecl.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 					code.addVar(thisPar);
 				}
 				code.addVars(m.params.toArray());

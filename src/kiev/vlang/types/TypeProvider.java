@@ -318,22 +318,21 @@ public final class ArrayMetaType extends MetaType {
 		tdecl.args.add(StdTypes.tdArrayArg);
 		tdecl.setResolved(true);
 		tdecl.package_clazz.sub_decls.add(tdecl);
-		Field length = new Field("length", StdTypes.tpInt, AccessFlags.ACC_PUBLIC|AccessFlags.ACC_FINAL);
-		length.setMacro(true);
+		Field length = new Field("length", StdTypes.tpInt, AccessFlags.ACC_PUBLIC|AccessFlags.ACC_FINAL|AccessFlags.ACC_MACRO|AccessFlags.ACC_NATIVE);
 		length.acc = new Access(0xAA); //public:ro
-		RewriteMatch rmatch = new RewriteMatch();
-		length.init = rmatch;
-		RewriteCase rget = new RewriteCase();
-		rget.var = new RewritePattern("self", new ASTNodeType(Env.newStruct("IFldExpr", Env.newPackage("kiev.vlang"), AccessFlags.ACC_PUBLIC)));
-		rmatch.cases += rget;
-		rget.stats.append(
-			new RewriteNodeFactory(
-				ArrayLengthExpr.class,new RewriteNodeArg[]{
-					new RewriteNodeArg("obj",   new IFldExpr(new LVarExpr(0, rget.var), "obj"  )),
-					new RewriteNodeArg("ident", new IFldExpr(new LVarExpr(0, rget.var), "ident"))
-				}
-			)
-		);
+//		RewriteMatch rmatch = new RewriteMatch();
+//		length.init = rmatch;
+//		RewriteCase rget = new RewriteCase();
+//		rget.var = new RewritePattern("self", new ASTNodeType(Env.newStruct("IFldExpr", Env.newPackage("kiev.vlang"), AccessFlags.ACC_PUBLIC)));
+//		rmatch.cases += rget;
+//		rget.stats.append(
+//			new RewriteNodeFactory(
+//				ArrayLengthExpr.class,new RewriteNodeArg[]{
+//					new RewriteNodeArg("obj",   new IFldExpr(new LVarExpr(0, rget.var), "obj"  )),
+//					new RewriteNodeArg("ident", new IFldExpr(new LVarExpr(0, rget.var), "ident"))
+//				}
+//			)
+//		);
 		tdecl.members.add(length);
 		
 		instance = new ArrayMetaType(tdecl);

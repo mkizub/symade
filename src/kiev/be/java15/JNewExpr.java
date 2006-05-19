@@ -78,7 +78,7 @@ public final view JNewExpr of NewExpr extends JENode {
 			outer.generate(code,null);
 		if (func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			// Create static field for this type typeinfo
-			tmp_expr = jctx_clazz.accessTypeInfoField(this,type,true);
+			tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,type,true);
 			tmp_expr.generate(code,null);
 			tmp_expr = null;
 		}

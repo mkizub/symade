@@ -282,7 +282,8 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			/* iter < container.length */
 			iter_cond = new BinaryBoolExpr(iter.pos,BinaryOperator.LessThen,
 				new LVarExpr(iter.pos,iter),
-				new ArrayLengthExpr(iter.pos,new LVarExpr(0,iter_array))
+				//new ArrayLengthExpr(iter.pos,new LVarExpr(0,iter_array))
+				new IFldExpr(iter.pos,new LVarExpr(0,iter_array),Type.tpArray.resolveField("length"))
 				);
 			break;
 		case ForEachStat.KENUM:

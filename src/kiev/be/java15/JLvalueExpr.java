@@ -50,6 +50,9 @@ public abstract view JAccessExpr of AccessExpr extends JLvalueExpr {
 
 @nodeview
 public final view JIFldExpr of IFldExpr extends JLvalueExpr {
+	
+	private static final Field arr_length = Type.tpArray.resolveField("length");
+	
 	public:ro JENode		obj;
 	public:ro JField		var;
 
@@ -59,8 +62,8 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.getJType().isInstanceOf(var.jctx_clazz.jtype) )
-			code.addInstr(Instr.op_checkcast,var.jctx_clazz.xtype);
+		if( !ot.getJType().isInstanceOf(var.jctx_tdecl.jtype) )
+			code.addInstr(Instr.op_checkcast,var.jctx_tdecl.xtype);
 	}
 
 	public void generateLoad(Code code) {
@@ -73,9 +76,20 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 		Access.verifyRead(this,var);
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
-		code.addInstr(op_getfield,var,obj.getType());
-		if( Kiev.verify && var.type instanceof ArgType && getType().isReference() )
-			code.addInstr(op_checkcast,getType());
+		if (var.isNative()) {
+			Field var = (Field)this.var;
+			assert(var.isMacro());
+			if (var == arr_length) {
+				code.addInstr(Instr.op_arrlength);
+			} else {
+				Kiev.reportError(this, "IFldExpr: Unknown native macro field "+var);
+				JConstExpr.generateConst(null, code, getType());
+			}
+		} else {
+			code.addInstr(op_getfield,var,obj.getType());
+			if( Kiev.verify && var.type instanceof ArgType && getType().isReference() )
+				code.addInstr(op_checkcast,getType());
+		}
 	}
 
 	public void generateLoadDup(Code code) {
@@ -89,9 +103,20 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
 		code.addInstr(op_dup);
-		code.addInstr(op_getfield,var,obj.getType());
-		if( Kiev.verify && var.type instanceof ArgType && getType().isReference() )
-			code.addInstr(op_checkcast,getType());
+		if (var.isNative()) {
+			Field var = (Field)this.var;
+			assert(var.isMacro());
+			if (var == arr_length) {
+				code.addInstr(Instr.op_arrlength);
+			} else {
+				Kiev.reportError(this, "IFldExpr: Unknown native macro field "+var);
+				JConstExpr.generateConst(null, code, getType());
+			}
+		} else {
+			code.addInstr(op_getfield,var,obj.getType());
+			if( Kiev.verify && var.type instanceof ArgType && getType().isReference() )
+				code.addInstr(op_checkcast,getType());
+		}
 	}
 
 	public void generateAccess(Code code) {
@@ -111,7 +136,14 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		Access.verifyWrite(this,var);
-		code.addInstr(op_putfield,var,obj.getType());
+		if (var.isNative()) {
+			assert(var.isMacro());
+			Kiev.reportError(this, "IFldExpr: Unknown native macro field "+var);
+			code.addInstr(op_pop);
+			code.addInstr(op_pop);
+		} else {
+			code.addInstr(op_putfield,var,obj.getType());
+		}
 	}
 
 	public void generateStoreDupValue(Code code) {
@@ -123,7 +155,14 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		Access.verifyWrite(this,var);
 		code.addInstr(op_dup_x);
-		code.addInstr(op_putfield,var,obj.getType());
+		if (var.isNative()) {
+			assert(var.isMacro());
+			Kiev.reportError(this, "IFldExpr: Unknown native macro field "+var);
+			code.addInstr(op_pop);
+			code.addInstr(op_pop);
+		} else {
+			code.addInstr(op_putfield,var,obj.getType());
+		}
 	}
 
 }

@@ -94,34 +94,6 @@ public metatype RefArray<N extends ANode> extends N[] {
 			new#CallExpr(obj=getAttr(obj.var),ident="insert",args={obj.obj, idx, node})
 	}
 
-	@macro
-	public int size()
-	{
-		case @forward CallExpr# self():
-			new#ArrayLengthExpr(obj=self.obj, ident=self.ident)
-	}
-
-	@macro
-	public int size_length()
-	{
-		case @forward CallExpr# self():
-			new#CallExpr(obj=self.obj, ident="size")
-	}
-
-	@macro
-	public static int static_size(RefArray<N> rarr)
-	{
-		case @forward CallExpr# self():
-			new#ArrayLengthExpr(obj=rarr, ident=self.ident)
-	}
-
-	@macro
-	public static int static_size_length(RefArray<N> rarr)
-	{
-		case @forward CallExpr# self():
-			new#CallExpr(obj=self.obj, ident="static_size", args={rarr})
-	}
-
 }
 
 @node
@@ -132,10 +104,6 @@ class Test extends ASTNode {
 	void foo() {
 		int i;
 		i = rarr.length;
-		i = rarr.size();
-		i = rarr.size_length();
-		i = RefArray.static_size(rarr);
-		i = RefArray.static_size_length(rarr);
 		ASTNode[] x;
 		x = rarr.delToArray();
 		rarr.delAll();

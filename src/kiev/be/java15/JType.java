@@ -96,6 +96,7 @@ public abstract class JType {
 	public abstract String toClassForNameString();
 	public abstract JType getSuperType();
 	public JStruct getJStruct() { return null; }
+	public JTypeDecl getJTypeDecl() { return (JTypeDecl)jmeta_type.tdecl; }
 
 	public final boolean isReference()		{ return (flags & flReference)		!= 0 ; }
 	public final boolean isArray()			{ return (flags & flArray)			!= 0 ; }
@@ -141,7 +142,7 @@ public abstract class JType {
 	}
 
 	public boolean isInstanceOf(JType t) {
-		return this == t;
+		return this == t || t == tpAny;
 	}
 }
 
@@ -228,7 +229,7 @@ public class JBaseType extends JType {
 	}
 	
 	public boolean isInstanceOf(JType _t2) {
-		if( this == _t2 ) return true;
+		if( this == _t2  || _t2 == tpAny) return true;
 		if!(_t2 instanceof JBaseType) return false;
 		JBaseType t2 = (JBaseType)_t2;
 		JBaseType t1 = this;
@@ -269,7 +270,7 @@ public class JArrayType extends JType {
 	}
 	
 	public boolean isInstanceOf(JType t) {
-		if (this == t) return true;
+		if (this == t || t == tpAny) return true;
 		if (t == JType.tpObject) return true;
 		if (t == JType.tpCloneable) return true;
 		if (t instanceof JArrayType)

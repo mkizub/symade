@@ -211,6 +211,7 @@ public abstract class Type extends AType {
 		return (CompaundType)((CompaundMetaType)tpRefProxy.meta_type).make(set);
 	}
 
+	public final Field resolveField(String name) { return meta_type.tdecl.resolveField(name); }
 }
 
 public final class XType extends Type {

@@ -259,7 +259,6 @@ CLASS kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java
 CLASS kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
 CLASS kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
 CLASS kiev.vlang.AccessExpr kiev/vlang/AccessExpr kiev\vlang\LvalueExpr.java
-CLASS kiev.vlang.ArrayLengthExpr kiev/vlang/ArrayLengthExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 CLASS kiev.vlang.AttAttrSlot kiev/vlang/AttAttrSlot kiev\vlang\Tree.java
@@ -483,7 +482,6 @@ ENUM kiev.vlang.TopLevelPass kiev/vlang/TopLevelPass kiev\vlang\AST.java
 ENUM kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
 INTERFACE kiev.be.java15.IBoolExpr kiev/be/java15/IBoolExpr kiev\be\java15\JBoolExpr.java
 INTERFACE kiev.be.java15.JAccessExpr kiev/be/java15/JAccessExpr kiev\be\java15\JLvalueExpr.java
-INTERFACE kiev.be.java15.JArrayLengthExpr kiev/be/java15/JArrayLengthExpr kiev\be\java15\JExpr.java
 INTERFACE kiev.be.java15.JAssignExpr kiev/be/java15/JAssignExpr kiev\be\java15\JExpr.java
 INTERFACE kiev.be.java15.JBinaryBoolExpr kiev/be/java15/JBinaryBoolExpr kiev\be\java15\JBoolExpr.java
 INTERFACE kiev.be.java15.JBinaryBooleanAndExpr kiev/be/java15/JBinaryBooleanAndExpr kiev\be\java15\JBoolExpr.java
@@ -579,7 +577,6 @@ INTERFACE kiev.fmt.CalcOption kiev/fmt/CalcOption kiev\fmt\SyntaxLayout.java
 INTERFACE kiev.fmt.DrawDevice kiev/fmt/DrawDevice kiev\fmt\DrawDevice.java
 INTERFACE kiev.fmt.Formatter kiev/fmt/Formatter kiev\fmt\Formatter.java
 INTERFACE kiev.ir.java15.RAccessExpr kiev/ir/java15/RAccessExpr kiev\ir\java15\RLvalueExpr.java
-INTERFACE kiev.ir.java15.RArrayLengthExpr kiev/ir/java15/RArrayLengthExpr kiev\ir\java15\RExpr.java
 INTERFACE kiev.ir.java15.RAssignExpr kiev/ir/java15/RAssignExpr kiev\ir\java15\RExpr.java
 INTERFACE kiev.ir.java15.RBinaryBoolExpr kiev/ir/java15/RBinaryBoolExpr kiev\ir\java15\RBoolExpr.java
 INTERFACE kiev.ir.java15.RBinaryBooleanAndExpr kiev/ir/java15/RBinaryBooleanAndExpr kiev\ir\java15\RBoolExpr.java
@@ -694,6 +691,9 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
+METATYPE kiev.be.java15.JArrayLengthExpr kiev\be\java15\JExpr.java
+METATYPE kiev.ir.java15.RArrayLengthExpr kiev\ir\java15\RExpr.java
 METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.vlang.ArrayLengthExpr kiev\vlang\Expr.java
 METATYPE kiev.vlang.test.RefArray kiev\vlang\MetaTypes.java bad
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java

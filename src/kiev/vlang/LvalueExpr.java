@@ -210,6 +210,29 @@ public final class IFldExpr extends LvalueExpr {
 		public		ENode		obj;
 		public		SymbolRef	ident;
 		public:ro	Field		var;
+
+		// verify resolved tree
+		public boolean preVerify() {
+			Field f = this.var;
+			if (!f.isAttached()) {
+				Type tp = obj.getType();
+				DNode@ v;
+				ResInfo info;
+				if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),f.id.sname) ) {
+					if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).type != f.type) {
+						Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
+					} else {
+						f = (Field)v;
+						ident.symbol = f.id;
+					}
+				} else {
+					Kiev.reportError(this, "Error resolving "+f+" in "+tp);
+				}
+			}
+			if (f.isStatic() || (f.isMacro() && !f.isNative()))
+				Kiev.reportError(this, "Bad instance field "+f+" access from "+obj);
+			return true;
+		}
 	}
 	
 	public IFldExpr() {}
@@ -610,6 +633,28 @@ public final class SFldExpr extends LvalueExpr {
 			if !(res instanceof Field || !res.isStatic())
 				throw new CompilerException(this, "Resolved "+ident+" in "+tp+" is not a static field");
 			ident.symbol = res.id;
+		}
+		// verify resolved tree
+		public boolean preVerify() {
+			Field f = this.var;
+			if (!f.isAttached()) {
+				Type tp = obj.getType();
+				DNode@ v;
+				ResInfo info;
+				if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),f.id.sname)) {
+					if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).type != f.type) {
+						Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
+					} else {
+						f = (Field)v;
+						ident.symbol = f.id;
+					}
+				} else {
+					Kiev.reportError(this, "Error resolving "+f+" in "+tp);
+				}
+			}
+			if (!f.isStatic() || (f.isMacro() && !f.isNative()))
+				Kiev.reportError(this, "Bad static field "+f+" access from "+obj);
+			return true;
 		}
 	}
 

@@ -29,7 +29,6 @@ kiev.be.java15.InnerClassesAttr kiev/be/java15/InnerClassesAttr kiev\be\java15\A
 kiev.be.java15.Instr kiev/be/java15/Instr kiev\be\java15\Instr.java
 kiev.be.java15.InterfaceMethodCP kiev/be/java15/InterfaceMethodCP kiev\be\java15\ConstPool.java
 kiev.be.java15.JAccessExpr kiev/be/java15/JAccessExpr kiev\be\java15\JLvalueExpr.java
-kiev.be.java15.JArrayLengthExpr kiev/be/java15/JArrayLengthExpr kiev\be\java15\JExpr.java
 kiev.be.java15.JArrayType kiev/be/java15/JArrayType kiev\be\java15\JType.java
 kiev.be.java15.JAssignExpr kiev/be/java15/JAssignExpr kiev\be\java15\JExpr.java
 kiev.be.java15.JBaseMetaType kiev/be/java15/JBaseMetaType kiev\be\java15\JType.java
@@ -266,7 +265,6 @@ kiev.gui.InfoView kiev/gui/InfoView kiev\gui\InfoView.java
 kiev.gui.UIView kiev/gui/UIView kiev\gui\UIView.java
 kiev.gui.Window kiev/gui/Window kiev\gui\Window.java
 kiev.ir.java15.RAccessExpr kiev/ir/java15/RAccessExpr kiev\ir\java15\RLvalueExpr.java
-kiev.ir.java15.RArrayLengthExpr kiev/ir/java15/RArrayLengthExpr kiev\ir\java15\RExpr.java
 kiev.ir.java15.RAssignExpr kiev/ir/java15/RAssignExpr kiev\ir\java15\RExpr.java
 kiev.ir.java15.RBinaryBoolExpr kiev/ir/java15/RBinaryBoolExpr kiev\ir\java15\RBoolExpr.java
 kiev.ir.java15.RBinaryBooleanAndExpr kiev/ir/java15/RBinaryBooleanAndExpr kiev\ir\java15\RBoolExpr.java
@@ -461,7 +459,6 @@ kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
 kiev.vlang.AccessExpr kiev/vlang/AccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
 kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
-kiev.vlang.ArrayLengthExpr kiev/vlang/ArrayLengthExpr kiev\vlang\Expr.java
 kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.AttAttrSlot kiev/vlang/AttAttrSlot kiev\vlang\Tree.java

@@ -59,7 +59,7 @@ class RewriteBackend extends BackendProcessor implements Constants {
 
 	boolean rewrite(IFldExpr:ANode fa) {
 		Field f = fa.var;
-		if (f.isMacro()) {
+		if (f.isMacro() && !f.isNative()) {
 			if (f.init != null)
 				doRewrite(f.init, fa, ASTNode.emptyArray);
 		}
@@ -68,7 +68,7 @@ class RewriteBackend extends BackendProcessor implements Constants {
 
 	boolean rewrite(CallExpr:ANode ce) {
 		Method m = ce.func;
-		if (m.isMacro()) {
+		if (m.isMacro() && !m.isNative()) {
 			if (m.body != null) {
 				doRewrite(ce, ce, ASTNode.emptyArray);
 			}
