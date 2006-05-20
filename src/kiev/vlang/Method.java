@@ -180,8 +180,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			}
 		}
 		if (!is_static && !is_mth_virtual_static) {
-			type_set.append(ctx_tdecl.xtype.bindings());
-			dtype_set.append(ctx_tdecl.xtype.bindings());
+			type_set.append(ctx_tdecl.xtype.meta_type.getTemplBindings());
+			dtype_set.append(ctx_tdecl.xtype.meta_type.getTemplBindings());
 		}
 		Vector<Type> args = new Vector<Type>();
 		Vector<Type> dargs = new Vector<Type>();
@@ -216,7 +216,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				break;
 			case FormPar.PARAM_VARARGS:
 				//assert(fp.isFinal());
-				assert(fp.type.isArray());
+				assert(fp.type instanceof ArrayType);
 				dargs.append(fp.type);
 				break;
 			case FormPar.PARAM_LVAR_PROXY:
@@ -694,13 +694,13 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		if (annotation_default != null) {
 			Type tp = this.type_ret.getType();
 			Type t = tp;
-			if (t.isArray()) {
+			if (t instanceof ArrayType) {
 				if (annotation_default instanceof MetaValueScalar) {
 					MetaValueArray mva = new MetaValueArray(annotation_default.type);
 					mva.values.add(((MetaValueScalar)annotation_default).value);
 					annotation_default = mva;
 				}
-				t = ((ArrayType)t).arg;
+				t = t.arg;
 			}
 			if (t.isReference()) {
 				t.checkResolved();

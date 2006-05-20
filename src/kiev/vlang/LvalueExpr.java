@@ -378,7 +378,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		try {
 			Type t = obj.getType();
 			if (t instanceof ArrayType)
-				return Type.getRealType(t,((ArrayType)t).arg);
+				return Type.getRealType(t,t.arg);
 			// Resolve overloaded access method
 			Method@ v;
 			CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
@@ -402,7 +402,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	public Type[] getAccessTypes() {
 		Type t = obj.getType();
 		if (t instanceof ArrayType)
-			return new Type[]{Type.getRealType(t,((ArrayType)t).arg)};
+			return new Type[]{Type.getRealType(t,t.arg)};
 		Method@ v;
 		CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
 		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);

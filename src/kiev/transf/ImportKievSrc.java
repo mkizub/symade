@@ -453,9 +453,9 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	}
 
 
-	public void pass3(Struct:ASTNode astn) {
+	public void pass3(TypeDecl:ASTNode astn) {
 		int pos = astn.pos;
-		Struct me = astn;
+		TypeDecl me = astn;
 		int next_enum_val = 0;
 		trace(Kiev.debugResolve,"Pass 3 for class "+me);
 		if (me.isSyntax()) {
@@ -603,13 +603,13 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				Field inst = new Field(nameInstance, me.xtype, ACC_STATIC|ACC_FINAL|ACC_PUBLIC|ACC_SYNTHETIC);
 				inst.pos = me.pos;
 				inst.init = new NewExpr(me.pos, me.xtype, ENode.emptyArray);
-				me.addField(inst);
+				me.members += inst;
 			}
 		}
 
 		// Process inner classes and cases
 		if( !me.isPackage() ) {
-			foreach (Struct n; me.members)
+			foreach (TypeDecl n; me.members)
 				pass3(n);
 		}
 	}

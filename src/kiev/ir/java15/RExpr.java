@@ -26,21 +26,7 @@ public final view RShadow of Shadow extends RENode {
 		setResolved(true);
 	}
 }
-/*
-@nodeview
-public final view RArrayLengthExpr of ArrayLengthExpr extends RENode {
-	public ENode			obj;
 
-	public void resolve(Type reqType) {
-		obj.resolve(null);
-		if !(obj.getType().isArray())
-			throw new CompilerException(this, "Access to array length for non-array type "+obj.getType());
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
-	}
-}
-*/
 @nodeview
 public final view RTypeClassExpr of TypeClassExpr extends RENode {
 	public TypeRef		type;

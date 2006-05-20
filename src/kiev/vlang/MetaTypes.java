@@ -13,7 +13,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public metatype RefArray<N extends ANode> extends N[] {
+public metatype NodeSpace<N extends ANode> extends N[] {
 	
 	@macro
 	private static ENode# getAttr(Field# f) {
@@ -99,7 +99,7 @@ public metatype RefArray<N extends ANode> extends N[] {
 @node
 class Test extends ASTNode {
 	public static SpaceRefAttrSlot<ASTNode> nodeattr$rarr;
-	RefArray<ASTNode> rarr;
+	NodeSpace<ASTNode> rarr;
 	@ref ASTNode astn;
 	void foo() {
 		int i;
@@ -111,7 +111,7 @@ class Test extends ASTNode {
 		rarr.copyFrom(x);
 		i = rarr.indexOf(astn);
 		rarr[0] = rarr[1];
-		//rarr += astn;
+		rarr += astn;
 		rarr.add(astn);
 		rarr.del(0);
 		rarr.detach(astn);

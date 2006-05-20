@@ -214,16 +214,14 @@ public class Meta extends ENode {
 			Type tp = m.type.ret();
 			v.type.ret = tp;
 			Type t = tp;
-			if (t.isArray()) {
-				ArrayType at = (ArrayType)t;
+			if (t instanceof ArrayType) {
 				if (v instanceof MetaValueScalar) {
 					ENode val = ((MetaValueScalar)v).value;
 					MetaValueArray mva = new MetaValueArray(v.type); 
 					values[n] = v = mva;
 					mva.values.add(~val);
 				}
-				
-				t = at.arg;
+				t = t.arg;
 			}
 			if (t.isReference()) {
 				t.checkResolved();
@@ -243,7 +241,7 @@ public class Meta extends ENode {
 			if (m.annotation_default != null) {
 				MetaValueType mvt = new MetaValueType(m.id.uname);
 				mvt.ret = m.type.ret();
-				if (!m.type.ret().isArray()) {
+				if !(m.type.ret() instanceof ArrayType) {
 					MetaValueScalar mvs = (MetaValueScalar)m.annotation_default;
 					ENode v = mvs.value.ncopy();
 					values.append(new MetaValueScalar(mvt, v));

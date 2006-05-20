@@ -11,8 +11,6 @@ import kiev.be.java15.JENode;
 import kiev.be.java15.JLvalueExpr;
 import kiev.ir.java15.RShadow;
 import kiev.be.java15.JShadow;
-//import kiev.ir.java15.RArrayLengthExpr;
-//import kiev.be.java15.JArrayLengthExpr;
 import kiev.ir.java15.RTypeClassExpr;
 import kiev.be.java15.JTypeClassExpr;
 import kiev.ir.java15.RTypeInfoExpr;
@@ -88,64 +86,7 @@ public class Shadow extends ENode {
 	}
 
 }
-/*
-@node
-public class ArrayLengthExpr extends ENode {
-	
-	@dflow(out="obj") private static class DFI {
-	@dflow(in="this:in")	ENode			obj;
-	}
-	
-	@virtual typedef This  = ArrayLengthExpr;
-	@virtual typedef VView = VArrayLengthExpr;
-	@virtual typedef JView = JArrayLengthExpr;
-	@virtual typedef RView = RArrayLengthExpr;
 
-	@att public ENode			obj;
-	@att public SymbolRef		ident;
-
-	@nodeview
-	public static final view VArrayLengthExpr of ArrayLengthExpr extends VENode {
-		public ENode			obj;
-		public SymbolRef		ident;
-	}
-
-	public ArrayLengthExpr() {}
-
-	public ArrayLengthExpr(int pos, ENode obj) {
-		this.pos = pos;
-		this.ident = new SymbolRef(pos,nameLength);
-		this.obj = obj;
-	}
-	public ArrayLengthExpr(int pos, ENode obj, SymbolRef length) {
-		this.pos = pos;
-		assert(length.name == nameLength);
-		this.ident = ~length;
-		this.obj = obj;
-	}
-
-	public Operator getOp() { return BinaryOperator.Access; }
-
-	public Type getType() { return Type.tpInt; }
-
-	public String toString() {
-		if( obj.getPriority() < opAccessPriority )
-			return "("+obj.toString()+").length";
-		else
-			return obj.toString()+".length";
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		if( obj.getPriority() < opAccessPriority ) {
-			dmp.append('(');
-			obj.toJava(dmp).append(").length").space();
-		} else {
-			obj.toJava(dmp).append(".length").space();
-		}
-		return dmp;
-	}
-}
-*/
 @node
 public class TypeClassExpr extends ENode {
 	
@@ -253,6 +194,35 @@ public class AssignExpr extends LvalueExpr {
 		public AssignOperator	op;
 		public ENode			lval;
 		public ENode			value;
+
+		public void mainResolveOut() {
+			Type et1 = lval.getType();
+			Type et2 = value.getType();
+			// Find out overloaded operator
+			if (op == AssignOperator.Assign && lval instanceof ContainerAccessExpr) {
+				ContainerAccessExpr cae = (ContainerAccessExpr)lval;
+				Type ect1 = cae.obj.getType();
+				Type ect2 = cae.index.getType();
+				Method@ m;
+				ResInfo info = new ResInfo(this,ResInfo.noStatic | ResInfo.noImports);
+				CallType mt = new CallType(new Type[]{ect2,et2},et2);
+				if (PassInfo.resolveBestMethodR(ect1,m,info,"[]",mt)) {
+					ENode res = info.buildCall((ASTNode)this, cae.obj, m, info.mt, new ENode[]{~cae.index,~value});
+					if (res instanceof UnresExpr)
+						res = ((UnresExpr)res).toResolvedExpr();
+					this.replaceWithNode(res);
+					return;
+				}
+			}
+			foreach(OpTypes opt; op.types ) {
+				Type[] tps = new Type[]{null,et1,et2};
+				ASTNode[] argsarr = new ASTNode[]{null,lval,value};
+				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
+					replaceWithNode(new CallExpr(pos,~lval,opt.method,new ENode[]{~value}));
+					return;
+				}
+			}
+		}
 	}
 	
 	public AssignExpr() {}

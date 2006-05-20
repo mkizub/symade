@@ -608,10 +608,10 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		expr.resolve(null);
 		Type xtype = expr.getType();
 		Method@ elems;
-		if( xtype.isArray() ) {
+		if( xtype.isInstanceOf(Type.tpArray) ) {
 			TVarBld set = new TVarBld();
-			set.append(Type.tpArrayEnumerator.clazz.args[0].getAType(), ((ArrayType)xtype).arg);
-			itype = ((CompaundMetaType)Type.tpArrayEnumerator.meta_type).make(set);
+			set.append(Type.tpArrayEnumerator.clazz.args[0].getAType(), xtype.resolve(Type.tpArray.meta_type.tdecl.args[0].getAType()));
+			itype = Type.tpArrayEnumerator.meta_type.make(set);
 			mode = ARRAY;
 		} else if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {
 			itype = xtype;

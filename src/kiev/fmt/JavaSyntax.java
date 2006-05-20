@@ -248,7 +248,6 @@ public class JavaSyntax extends Syntax {
 	final SyntaxElem seNewClosure;
 	// others exprs
 	final SyntaxElem seShadow;
-	//final SyntaxElem seArrayLengthExpr;
 	final SyntaxElem seTypeClassExpr;
 	final SyntaxElem seTypeInfoExpr;
 	final SyntaxElem seStringConcatExpr;
@@ -1123,7 +1122,6 @@ public class JavaSyntax extends Syntax {
 				);
 
 		seShadow = attr("node");
-		//seArrayLengthExpr = set(expr("obj", Constants.opAccessPriority), sep("."), kw("length"));
 		seTypeClassExpr = set(ident("type"), sep("."), kw("class"));
 		seTypeInfoExpr = set(ident("type"), sep("."), kw("type"));
 		seConditionalExpr = set(
@@ -1289,7 +1287,6 @@ public class JavaSyntax extends Syntax {
 		case ClosureCallExpr: return seClosureCallExpr;
 		case StringConcatExpr: return seStringConcatExpr;
 		case CommaExpr: return seCommaExpr;
-		//case ArrayLengthExpr: return seArrayLengthExpr;
 		case TypeClassExpr: return seTypeClassExpr;
 		case TypeInfoExpr: return seTypeInfoExpr;
 		case ConditionalExpr: return seConditionalExpr;

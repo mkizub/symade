@@ -173,7 +173,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			container.resolve(null);
 			xtype = container.getType();
 		}
-		if( xtype.isArray() ) {
+		if( xtype.isInstanceOf(Type.tpArray) ) {
 			itype = Type.tpInt;
 			mode = ForEachStat.ARRAY;
 		} else if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {
@@ -282,7 +282,6 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			/* iter < container.length */
 			iter_cond = new BinaryBoolExpr(iter.pos,BinaryOperator.LessThen,
 				new LVarExpr(iter.pos,iter),
-				//new ArrayLengthExpr(iter.pos,new LVarExpr(0,iter_array))
 				new IFldExpr(iter.pos,new LVarExpr(0,iter_array),Type.tpArray.resolveField("length"))
 				);
 			break;
