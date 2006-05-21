@@ -10,7 +10,7 @@ import kiev.be.java15.JStruct;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-public class MetaType {
+public class MetaType implements Constants {
 
 	public final static MetaType[] emptyArray = new MetaType[0];
 	static final MetaType dummy = new MetaType();
@@ -157,10 +157,17 @@ public final class CoreMetaType extends MetaType {
 
 	CoreType core_type;
 	
-	CoreMetaType(String name) {
-		this.tdecl = new TypeDecl();
-		this.tdecl.id = new Symbol(name);
-		this.tdecl.setResolved(true);
+	CoreMetaType(String name, Type super_type) {
+		TypeDecl tdecl = new TypeDecl();
+		this.tdecl = tdecl;
+		tdecl.id = new Symbol(name);
+		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
+		tdecl.flags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+		tdecl.setResolved(true);
+		tdecl.xmeta_type = this;
+		tdecl.package_clazz.sub_decls.add(tdecl);
+		if (super_type != null)
+			tdecl.super_types.add(new TypeRef(super_type));
 	}
 
 	public TVarSet getTemplBindings() { return TVarSet.emptySet; }
@@ -313,17 +320,17 @@ public final class ArrayMetaType extends MetaType {
 		TypeDecl tdecl = new TypeDecl();
 		tdecl.id = new Symbol("_array_");
 		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
-		tdecl.flags = AccessFlags.ACC_MACRO|AccessFlags.ACC_PUBLIC|AccessFlags.ACC_FINAL;
+		tdecl.flags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 		tdecl.args.add(StdTypes.tdArrayArg);
 		tdecl.setResolved(true);
 		tdecl.package_clazz.sub_decls.add(tdecl);
-		Field length = new Field("length", StdTypes.tpInt, AccessFlags.ACC_PUBLIC|AccessFlags.ACC_FINAL|AccessFlags.ACC_MACRO|AccessFlags.ACC_NATIVE);
+		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
 		length.acc = new Access(0xAA); //public:ro
 //		RewriteMatch rmatch = new RewriteMatch();
 //		length.init = rmatch;
 //		RewriteCase rget = new RewriteCase();
-//		rget.var = new RewritePattern("self", new ASTNodeType(Env.newStruct("IFldExpr", Env.newPackage("kiev.vlang"), AccessFlags.ACC_PUBLIC)));
+//		rget.var = new RewritePattern("self", new ASTNodeType(Env.newStruct("IFldExpr", Env.newPackage("kiev.vlang"), ACC_PUBLIC)));
 //		rmatch.cases += rget;
 //		rget.stats.append(
 //			new RewriteNodeFactory(
@@ -555,7 +562,7 @@ public class CallMetaType extends MetaType {
 		TypeDecl tdecl = new TypeDecl();
 		tdecl.id = new Symbol("_call_type_");
 		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
-		tdecl.flags = AccessFlags.ACC_MACRO|AccessFlags.ACC_PUBLIC|AccessFlags.ACC_FINAL;
+		tdecl.flags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.setResolved(true);
 		instance = new CallMetaType(tdecl);
 	}

@@ -207,19 +207,27 @@ public class AssignExpr extends LvalueExpr {
 				ResInfo info = new ResInfo(this,ResInfo.noStatic | ResInfo.noImports);
 				CallType mt = new CallType(new Type[]{ect2,et2},et2);
 				if (PassInfo.resolveBestMethodR(ect1,m,info,"[]",mt)) {
-					ENode res = info.buildCall((ASTNode)this, cae.obj, m, info.mt, new ENode[]{~cae.index,~value});
-					if (res instanceof UnresExpr)
-						res = ((UnresExpr)res).toResolvedExpr();
-					this.replaceWithNode(res);
-					return;
+					Method rm = (Method)m;
+					if !(rm.isMacro() && rm.isNative()) {
+						ENode res = info.buildCall((ASTNode)this, cae.obj, m, info.mt, new ENode[]{~cae.index,~value});
+						if (res instanceof UnresExpr)
+							res = ((UnresExpr)res).toResolvedExpr();
+						this.replaceWithNode(res);
+						return;
+					}
 				}
-			}
-			foreach(OpTypes opt; op.types ) {
-				Type[] tps = new Type[]{null,et1,et2};
-				ASTNode[] argsarr = new ASTNode[]{null,lval,value};
-				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-					replaceWithNode(new CallExpr(pos,~lval,opt.method,new ENode[]{~value}));
-					return;
+			} else {
+				foreach(OpTypes opt; op.types ) {
+					Type[] tps = new Type[]{null,et1,et2};
+					ASTNode[] argsarr = new ASTNode[]{null,lval,value};
+					if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
+						Method rm = opt.method;
+						if !(rm.isMacro() && rm.isNative()) {
+							replaceWithNode(new CallExpr(pos,~lval,opt.method,new ENode[]{~value}));
+							return;
+						}
+						break;
+					}
 				}
 			}
 		}
@@ -393,12 +401,9 @@ public class BinaryExpr extends ENode {
 				Type[] tps = new Type[]{null,et1,et2};
 				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
 				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-					func = opt.method;
-//					ENode e;
-//					if( opt.method.isStatic() )
-//						replaceWithNode(new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
-//					else
-//						replaceWithNode(new CallExpr(pos,~expr1,opt.method,new ENode[]{~expr2}));
+					Method rm = opt.method;
+					if !(rm.isMacro() && rm.isNative())
+						func = opt.method;
 					return;
 				}
 			}

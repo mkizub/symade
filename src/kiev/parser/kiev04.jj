@@ -1152,18 +1152,26 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ TypeDecl tdecl; Symbol name; Struct oldClazz; TypeConstr[] args; }
+{ TypeDecl tdecl; Symbol name; TypeRef tp; Struct oldClazz; TypeConstr[] args; }
 {
 	"metatype"
-	name = Name()
-	{
-		tdecl = mkMetaType(name, modifiers, (FileUnit)parent);
-	}
-	args = ClazzArguments() { tdecl.args.addAll(args); }
-//	[
+	(
+		name = Name()
+		{
+			tdecl = mkMetaType(name, modifiers, (FileUnit)parent);	
+		}
+		args = ClazzArguments() { tdecl.args.addAll(args); }
+	|
+		tp   = PrimitiveType()
+		{
+			name = new Symbol( tp.pos, ((CoreType)tp.getType()).name );
+			tdecl = mkMetaType(name, modifiers, (FileUnit)parent);	
+		}
+	)
+	[
 		"extends"
 		tdecl.super_types += Type()
-//	]
+	]
 //	[
 //		"implements"
 //		tdecl.super_types += NArrType()

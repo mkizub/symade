@@ -691,10 +691,16 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
-METATYPE kiev.be.java15.JArrayLengthExpr kiev\be\java15\JExpr.java
-METATYPE kiev.ir.java15.RArrayLengthExpr kiev\ir\java15\RExpr.java
 METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypes.java bad
-METATYPE kiev.vlang.ArrayLengthExpr kiev\vlang\Expr.java
+METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib.byte kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib.char kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib.double kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib.float kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.vlang.test.NodeSpace kiev\vlang\MetaTypes.java bad
-METATYPE kiev.vlang.test.RefArray kiev\vlang\MetaTypes.java bad
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java

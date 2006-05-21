@@ -165,6 +165,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
 			((Import)syn).resolveNameR(node,path,name)
 		;	syn instanceof Opdef && ((Opdef)syn).resolved != null,
+			((Opdef)syn).image == name,
 			node ?= ((Opdef)syn),
 			trace( Kiev.debugResolve, "Resolved operator: "+syn+" in file "+this)
 		}

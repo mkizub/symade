@@ -346,8 +346,9 @@ public final class XType extends Type {
 
 public final class CoreType extends Type {
 	public final String name;
-	CoreType(String name, int flags) {
-		super(new CoreMetaType(name), flags | flResolved, TVar.emptyArray, TArg.emptyArray);
+	CoreType(String name, Type super_type, int flags) {
+		super(new CoreMetaType(name,super_type), flags | flResolved, TVar.emptyArray, TArg.emptyArray);
+		((CoreMetaType)meta_type).core_type = this;
 		((CoreMetaType)meta_type).tdecl.xtype = this;
 		this.name = name.intern();
 	}

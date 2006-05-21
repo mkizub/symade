@@ -152,7 +152,9 @@ public static final view RAssignExpr of AssignExpr extends RLvalueExpr {
 			Type[] tps = new Type[]{null,et1,et2};
 			ASTNode[] argsarr = new ASTNode[]{null,lval,value};
 			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				replaceWithNodeResolve(reqType, new CallExpr(pos,~lval,opt.method,new ENode[]{~value}));
+				Method rm = opt.method;
+				if !(rm.isMacro() && rm.isNative())
+					replaceWithNodeResolve(reqType, new CallExpr(pos,~lval,opt.method,new ENode[]{~value}));
 				return;
 			}
 		}
@@ -306,11 +308,13 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 			Type[] tps = new Type[]{null,et1,et2};
 			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
 			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				ENode e;
-				if( opt.method.isStatic() )
-					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
-				else
-					replaceWithNodeResolve(reqType, new CallExpr(pos,~expr1,opt.method,new ENode[]{~expr2}));
+				Method rm = opt.method;
+				if !(rm.isMacro() && rm.isNative()) {
+					if( opt.method.isStatic() )
+						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
+					else
+						replaceWithNodeResolve(reqType, new CallExpr(pos,~expr1,opt.method,new ENode[]{~expr2}));
+				}
 				return;
 			}
 		}
@@ -594,11 +598,13 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 			Type[] tps = new Type[]{null,et};
 			ASTNode[] argsarr = new ASTNode[]{null,expr};
 			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				ENode e;
-				if ( opt.method.isStatic() )
-					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr}));
-				else
-					replaceWithNodeResolve(reqType, new CallExpr(pos,~expr,opt.method,ENode.emptyArray));
+				Method rm = opt.method;
+				if !(rm.isMacro() && rm.isNative()) {
+					if ( opt.method.isStatic() )
+						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr}));
+					else
+						replaceWithNodeResolve(reqType, new CallExpr(pos,~expr,opt.method,ENode.emptyArray));
+				}
 				return;
 			}
 		}

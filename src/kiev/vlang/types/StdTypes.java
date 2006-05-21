@@ -100,23 +100,16 @@ public interface StdTypes {
 		tpEnvClazz.xtype	= tpEnv;
 		tpEnv.flags			= flResolved;
 
-		tpAny		= new CoreType(Constants.nameAny,     0);
-		tpVoid		= new CoreType(Constants.nameVoid,    0);
-		tpBoolean	= new CoreType(Constants.nameBoolean, flBoolean | flIntegerInCode);
-		tpByte		= new CoreType(Constants.nameByte,    flInteger | flIntegerInCode);
-		tpChar		= new CoreType(Constants.nameChar,    flInteger | flIntegerInCode);
-		tpShort		= new CoreType(Constants.nameShort,   flInteger | flIntegerInCode);
-		tpInt		= new CoreType(Constants.nameInt,     flInteger | flIntegerInCode);
-		tpLong		= new CoreType(Constants.nameLong,    flInteger | flDoubleSize);
-		tpFloat		= new CoreType(Constants.nameFloat,   flFloat);
-		tpDouble	= new CoreType(Constants.nameDouble,  flFloat   | flDoubleSize);
-		tpNull		= new CoreType(Constants.nameNull,    flReference);
-//		tpRule		= new CoreType(Constants.nameRule,    flReference);
-
-		Struct tpRuleClazz = new Struct(new Symbol("rule"),Env.root,ACC_PUBLIC);
-		tpRule				= tpRuleClazz.xtype;
-		tpRuleClazz.setResolved(true);
-		tpRule.flags		= flResolved | flReference;
+		tpAny		= new CoreType(Constants.nameAny,     null,  0);
+		tpVoid		= new CoreType(Constants.nameVoid,    null,  0);
+		tpBoolean	= new CoreType(Constants.nameBoolean, tpAny, flBoolean | flIntegerInCode);
+		tpByte		= new CoreType(Constants.nameByte,    tpAny, flInteger | flIntegerInCode);
+		tpChar		= new CoreType(Constants.nameChar,    tpAny, flInteger | flIntegerInCode);
+		tpShort		= new CoreType(Constants.nameShort,   tpAny, flInteger | flIntegerInCode);
+		tpInt		= new CoreType(Constants.nameInt,     tpAny, flInteger | flIntegerInCode);
+		tpLong		= new CoreType(Constants.nameLong,    tpAny, flInteger | flDoubleSize);
+		tpFloat		= new CoreType(Constants.nameFloat,   tpAny, flFloat);
+		tpDouble	= new CoreType(Constants.nameDouble,  tpAny, flFloat   | flDoubleSize);
 
 		Struct java_lang = Env.newPackage("java.lang");
 		Struct java_lang_annotation = Env.newPackage("java.lang.annotation");
@@ -129,6 +122,14 @@ public interface StdTypes {
 
 		Struct tpClassClazz = Env.newStruct("Class",java_lang,ACC_PUBLIC|ACC_FINAL);
 		tpClass					= tpClassClazz.xtype;
+
+		tpNull		= new CoreType(Constants.nameNull,    tpObject, flReference);
+
+//		tpRule		= new CoreType(Constants.nameRule,    flReference);
+		Struct tpRuleClazz = new Struct(new Symbol("rule"),Env.root,ACC_PUBLIC);
+		tpRule				= tpRuleClazz.xtype;
+		tpRuleClazz.setResolved(true);
+		tpRule.flags		= flResolved | flReference;
 
 		Struct tpDebugClazz = Env.newStruct("Debug",kiev_stdlib,ACC_PUBLIC);
 		tpDebug				= tpDebugClazz.xtype;

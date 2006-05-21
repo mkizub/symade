@@ -146,10 +146,13 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 			Type[] tps = new Type[]{null,et1,et2};
 			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
 			if( opt.match(tps,argsarr) ) {
-				if( opt.method.isStatic() )
-					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
-				else
-					replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{~expr2}));
+				Method rm = opt.method;
+				if !(rm.isMacro() && rm.isNative()) {
+					if( opt.method.isStatic() )
+						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
+					else
+						replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{~expr2}));
+				}
 				return;
 			}
 		}
