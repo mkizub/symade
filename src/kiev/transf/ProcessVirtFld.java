@@ -303,6 +303,12 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		return true;
 	}
 
+	boolean rewrite(DNode:ASTNode dn) {
+		if (dn.isMacro())
+			return false;
+		return true;
+	}
+
 	boolean rewrite(IFldExpr:ASTNode fa) {
 		//System.out.println("ProcessVirtFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
 		Field f = fa.var;

@@ -91,7 +91,7 @@ public class DrawOptional extends DrawCtrl {
 @node
 public class DrawIntChoice extends DrawCtrl {
 
-	@ref NArr<Drawable> args;
+	@ref Drawable[] args;
 
 	public DrawIntChoice() {}
 	public DrawIntChoice(ASTNode node, SyntaxIntChoice syntax) {
@@ -107,7 +107,7 @@ public class DrawIntChoice extends DrawCtrl {
 	public void preFormat(DrawContext cont) {
 		SyntaxIntChoice sc = (SyntaxIntChoice)syntax;
 		int idx = ((Integer)node.getVal(sc.name)).intValue();
-		if (idx >= 0 && idx < args.size())
+		if (idx >= 0 && idx < args.length)
 			arg = args[idx];
 		else
 			arg = null;
@@ -118,7 +118,7 @@ public class DrawIntChoice extends DrawCtrl {
 @node
 public class DrawEnumChoice extends DrawCtrl {
 
-	@ref NArr<Drawable> args;
+	@ref Drawable[] args;
 
 	public DrawEnumChoice() {}
 	public DrawEnumChoice(ASTNode node, SyntaxEnumChoice syntax) {
@@ -134,7 +134,7 @@ public class DrawEnumChoice extends DrawCtrl {
 	public void preFormat(DrawContext cont) {
 		SyntaxEnumChoice sc = (SyntaxEnumChoice)syntax;
 		java.lang.Enum en = (java.lang.Enum)node.getVal(sc.name);
-		if (en == null || en.ordinal() >= args.size())
+		if (en == null || en.ordinal() >= args.length)
 			arg = null;
 		else
 			arg = args[en.ordinal()];

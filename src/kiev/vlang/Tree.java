@@ -164,6 +164,16 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 	public abstract void delAll(ANode parent);
 	public abstract N[] delToArray(ANode parent);
 
+	@unerasable
+	public final <J extends JNode> J[] toJArray(ANode parent) {
+		N[] narr = get(parent);
+		int sz = narr.length;
+		J[] jarr = new J[sz];
+		for (int i=0; i < sz; i++)
+			jarr[i] = (J)narr[i];
+		return jarr;
+	}
+
 }
 
 public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {

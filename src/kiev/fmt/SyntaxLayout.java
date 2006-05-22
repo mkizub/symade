@@ -267,6 +267,8 @@ public class SpaceInfo extends ASTNode {
 public final class SpaceCmd extends ASTNode {
 	@virtual typedef This  = SpaceCmd;
 
+	public static final SpaceCmd[] emptyArray = new SpaceCmd[0];
+
 	private final int	idx;
 	@ref SpaceInfo			si;
 	@att final boolean		before;
@@ -365,7 +367,7 @@ public final class DrawLayout extends ASTNode {
 	@virtual typedef This  = DrawLayout;
 
 	@att int				count;
-	@att NArr<SpaceCmd>		spaces;
+	@att SpaceCmd[]			spaces;
 	
 	public DrawLayout() { this.count = 1; }
 	public DrawLayout(SpaceCmd[] spaces) {
@@ -380,6 +382,8 @@ public final class DrawLayout extends ASTNode {
 @node
 public abstract class SyntaxElem extends ASTNode {
 	@virtual typedef This  = SyntaxElem;
+
+	public static final SyntaxElem[] emptyArray = new SyntaxElem[0];
 
 	@att public DrawLayout			layout;
 	@att public DrawFormat			fmt;
@@ -500,7 +504,7 @@ public class SyntaxList extends SyntaxElem {
 public class SyntaxSet extends SyntaxElem {
 	@virtual typedef This  = SyntaxSet;
 
-	@att public NArr<SyntaxElem> elements;
+	@att public SyntaxElem[] elements;
 
 	public SyntaxSet() {}
 	public SyntaxSet(DrawLayout layout) {

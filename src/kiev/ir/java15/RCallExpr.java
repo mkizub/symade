@@ -23,7 +23,7 @@ public final view RCallExpr of CallExpr extends RENode {
 	public:ro	SymbolRef		ident;
 	public:ro	Method			func;
 	public		CallType		mt;
-	public:ro	NArr<ENode>		args;
+	public:ro	ENode[]			args;
 	abstract
 	public 		ENode			tmp_expr;
 	
@@ -41,7 +41,7 @@ public final view RCallExpr of CallExpr extends RENode {
 		if (func.isStatic() && !(obj instanceof TypeRef))
 			this.obj = new TypeRef(obj.getType());
 		obj.resolve(null);
-		func.makeArgs(args.getArray(), reqType);
+		func.makeArgs(args, reqType);
 		if( func instanceof Constructor && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			Method mmm = ctx_method;
 			Type tp = mmm.ctx_tdecl != func.ctx_tdecl ? ctx_tdecl.super_types[0].getType() : ctx_tdecl.xtype;

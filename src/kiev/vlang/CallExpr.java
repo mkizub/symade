@@ -38,7 +38,7 @@ public class CallExpr extends ENode {
 	@att public ENode				obj;
 	@att public SymbolRef			ident;
 	@ref public CallType			mt;
-	@att public NArr<ENode>			args;
+	@att public ENode[]				args;
 
 	@getter public Method get$func() {
 		if (ident == null) return null;
@@ -56,7 +56,7 @@ public class CallExpr extends ENode {
 		public		SymbolRef		ident;
 		public:ro	Method			func;
 		public		CallType		mt;
-		public:ro	NArr<ENode>		args;
+		public:ro	ENode[]			args;
 
 		public void mainResolveOut() {
 			if (func != null)
@@ -82,7 +82,7 @@ public class CallExpr extends ENode {
 				CallType mt = new CallType(ta,null);
 				try {
 					if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ident.name,mt) )
-						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args.getArray(),null));
+						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,null));
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				info.leaveSuper();
 				info.leaveForward(obj);
@@ -123,11 +123,11 @@ public class CallExpr extends ENode {
 				try {
 					if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
 						if (tps.length == 1 && res_flags == 0)
-							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args.getArray());
+							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args);
 						else if (res_flags == 0)
-							res[si] = info.buildCall((ASTNode)this, new TypeRef(tps[si]), m, info.mt, args.getArray());
+							res[si] = info.buildCall((ASTNode)this, new TypeRef(tps[si]), m, info.mt, args);
 						else
-							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args.getArray());
+							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args);
 					}
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			}

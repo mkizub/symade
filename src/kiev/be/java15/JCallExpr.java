@@ -22,7 +22,7 @@ public final view JCallExpr of CallExpr extends JENode {
 	public:ro	JENode			obj;
 	public:ro	JMethod			func;
 	public:ro	CallType		mt;
-	public:ro	JArr<JENode>	args;
+	public:ro	JENode[]		args;
 	abstract
 	public 		JENode			tmp_expr;
 	
@@ -71,7 +71,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			else
 				throw new RuntimeException("Non-static method "+func+" is called from static method "+code.method);
 		}
-		JENode[] args = this.args.toArray();
+		JENode[] args = this.args;
 		int i = 0;
 		if( func.isRuleMethod() ) {
 			// Very special case for rule call from inside of RuleMethod

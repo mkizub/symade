@@ -541,7 +541,7 @@ public class Editor extends UIView implements KeyListener {
 /*
 	class AddNewNodeToListAction extends TextAction {
 		private final Class				cls;
-		private final NArr<ASTNode>		lst;
+		private final ASTNode[]			lst;
 		private final int				index;
 		AddNewNodeToListAction(Class cls, NArr<ASTNode> lst, int index) {
 			super(cls.getName());
