@@ -772,9 +772,9 @@ public static final view RCastExpr of CastExpr extends RENode {
 		v.$unbind();
 		info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports);
 		mt = new CallType(new Type[]{expr.getType()},this.type.getType());
-		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
+		if( PassInfo.resolveMethodR(this,v,info,nameCastOp,mt) ) {
 			assert(v.isStatic());
-			ENode call = new CallExpr(pos,null,(Method)v,new ENode[]{~expr});
+			ENode call = new CallExpr(pos,null,(Method)v,info.mt,new ENode[]{~expr});
 			replaceWithNodeResolve(type.getType(),call);
 			return true;
 		}

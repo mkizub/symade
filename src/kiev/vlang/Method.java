@@ -660,6 +660,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		}
 
 		if (isTypeUnerasable()) {
+			foreach (FormPar fp; params.getArray(); fp.kind >= FormPar.PARAM_TYPEINFO_N)
+				fp.detach();
 			int i = 0;
 			foreach (TypeDef td; targs) {
 				td.setTypeUnerasable(true);
