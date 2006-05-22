@@ -29,7 +29,7 @@ public class MetaType implements Constants {
 			return Type.emptyArray;
 		Type[] stps = new Type[tdecl.super_types.length];
 		for (int i=0; i < stps.length; i++)
-			stps[i] = tdecl.super_types[i].getType();
+			stps[i] = tdecl.super_types[i].getType().applay(tp);
 		return stps;
 	}
 

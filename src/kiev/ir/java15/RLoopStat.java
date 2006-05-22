@@ -341,11 +341,12 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			break;
 		}
 		if (ce != null) {
+			var_init = ce; // to allow ce.getType()
 			if (ce.getType().isInstanceOf(var.getType())) {
-				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,new LVarExpr(var.pos,var),ce);
+				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,new LVarExpr(var.pos,var),~ce);
 			} else {
 				Var tmp = new Var(var.pos, "tmp", ce.getType(), ACC_FINAL);
-				tmp.init = ce;
+				tmp.init = ~ce;
 				Block b = new Block();
 				b.addSymbol(tmp);
 				b.stats.add(new IfElseStat(tmp.pos,

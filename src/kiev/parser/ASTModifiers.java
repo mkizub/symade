@@ -19,14 +19,14 @@ public final class ASTModifiers extends ASTNode {
 	@virtual typedef VView = ASTModifiersView;
 
 	@att public Access 				acc;
-	@att public NArr<Meta>			annotations;
-		 public MetaSpecial[]		specials = MetaSpecial.emptyArray;
+	@att public Meta[]				annotations;
+	@ref public MetaSpecial[]		specials;
 
 	@nodeview
 	public static final view ASTModifiersView of ASTModifiers extends NodeView {
 		public		Access 				acc;
-		public:ro	NArr<Meta>			annotations;
-		public		MetaSpecial[]		specials;		
+		public:ro	Meta[]				annotations;
+		public:ro	MetaSpecial[]		specials;		
 	}
 
 	public ASTModifiers() {}
@@ -34,16 +34,13 @@ public final class ASTModifiers extends ASTNode {
 	public MetaSpecial add(MetaSpecial sa)
 		alias operator(5, lfy, +=)
 	{
-		this.specials = (MetaSpecial[])Arrays.append(this.specials, sa);
+		this.specials += sa;
 		return sa;
 	}
 
     public Dumper toJava(Dumper dmp) {
 		foreach (Meta m; annotations)
 			dmp.append(m);
-		//Env.toJavaModifiers(dmp,(short)modifier);
-		//if( (modifier & ACC_VIRTUAL		) > 0 ) dmp.append("/*virtual*/ ");
-		//if( (modifier & ACC_FORWARD		) > 0 ) dmp.append("/*forward*/ ");
 		
 		if (acc != null) dmp.append(acc.toString());
 		
