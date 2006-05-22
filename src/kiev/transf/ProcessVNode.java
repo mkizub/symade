@@ -23,7 +23,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	public static final String mnRef				= "kiev.vlang.ref"; 
 	public static final String nameANode			= "kiev.vlang.ANode"; 
 	public static final String nameNode			= "kiev.vlang.ASTNode"; 
-	public static final String nameNArr			= "kiev.vlang.NArr"; 
+	public static final String nameNArr			= "kiev.vlang.NArr";
+	public static final String nameNodeSpace		= "kiev.vlang.NodeSpace"; 
 	public static final String nameAttrSlot		= "kiev.vlang.AttrSlot"; 
 	public static final String nameRefAttrSlot		= "kiev.vlang.RefAttrSlot"; 
 	public static final String nameAttAttrSlot		= "kiev.vlang.AttAttrSlot"; 
@@ -42,6 +43,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	static Type tpANode;
 	static Type tpNode;
 	static Type tpNArr;
+	static Type tpNArray;
+	static Type tpNodeSpace;
 	static Type tpAttrSlot;
 	static Type tpRefAttrSlot;
 	static Type tpAttAttrSlot;
@@ -73,8 +76,19 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	}
 	
 	public void pass3(FileUnit:ASTNode fu) {
-		if (tpNArr == null)
-			tpNArr = Env.loadStruct(nameNArr).xtype;
+		if (tpANode == null) {
+			tpANode = Env.loadStruct(nameANode, true).xtype;
+			tpNode = Env.loadStruct(nameNode, true).xtype;
+			tpNArr = Env.loadStruct(nameNArr, true).xtype;
+			tpNArray = new ArrayType(tpANode);
+			tpNodeSpace = Env.newMetaType(new Symbol("NodeSpace"), Env.newPackage("kiev.vlang"), false).xtype;
+			tpAttrSlot = Env.loadStruct(nameAttrSlot, true).xtype;
+			tpRefAttrSlot = Env.loadStruct(nameRefAttrSlot, true).xtype;
+			tpAttAttrSlot = Env.loadStruct(nameAttAttrSlot, true).xtype;
+			tpSpaceAttrSlot = Env.loadStruct(nameSpaceAttrSlot, true).xtype;
+			tpSpaceRefAttrSlot = Env.loadStruct(nameSpaceRefAttrSlot, true).xtype;
+			tpSpaceAttAttrSlot = Env.loadStruct(nameSpaceAttAttrSlot, true).xtype;
+		}
 		foreach (Struct n; fu.members)
 			pass3(n);
 	}
@@ -123,6 +137,14 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					f.setFinal(true);
 					isArr = true;
 				}
+				else if (ft.isInstanceOf(tpNArray)) {
+					if !(ft.isInstanceOf(tpNodeSpace)) {
+						ArgType arg = tpNodeSpace.bindings().tvars[0].var;
+						Type bnd = ft.resolve(StdTypes.tpArrayArg);
+						f.ftype = new TypeRef(f.ftype.pos, tpNodeSpace.applay(new TVarBld(arg, bnd)));
+					}
+					isArr = true;
+				}
 			}
 			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
 			if (fmatt != null) {
@@ -151,6 +173,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		else if !(f.isStatic()) {
 			if (f.type.isInstanceOf(tpNArr))
 				Kiev.reportWarning(f,"Field "+f.parent()+"."+f+" must be marked with @att or @ref");
+			else if (f.type.isInstanceOf(tpNArray))
+				Kiev.reportWarning(f,"Field "+f.parent()+"."+f+" must be marked with @att or @ref");
 			else if (isNodeKind(f.type))
 				Kiev.reportWarning(f,"Field "+f.parent()+"."+f+" must be marked with @att or @ref");
 		}
@@ -174,7 +198,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	
 	private Type makeNodeAttrClass(Struct snode, Field f) {
 		boolean isAtt = (f.meta.get(mnAtt) != null);
-		boolean isArr = f.getType().isInstanceOf(tpNArr);
+		boolean isArr = f.getType().isInstanceOf(tpNArr) || f.getType().isInstanceOf(tpNArray);
 		Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
 		Struct s = Env.newStruct(("NodeAttr_"+f.id.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,true);
 		s.setResolved(true);
@@ -223,7 +247,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				s.addMethod(getArr);
 				getArr.body = new Block(0);
 				ENode val = new IFldExpr(f.pos, new CastExpr(f.pos, snode.xtype, new LVarExpr(0, getArr.params[0]) ), f);
-				val = new IFldExpr(f.pos,val,tpNArr.getStruct().resolveField("$nodes"));
+				if (f.getType().isInstanceOf(tpNArr))
+					val = new IFldExpr(f.pos,val,tpNArr.getStruct().resolveField("$nodes"));
 				getArr.block.stats.add(new ReturnStat(f.pos,val));
 			}
 			// add public void set(ASTNode parent, N[]:Object narr)
@@ -234,7 +259,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				s.addMethod(setArr);
 				setArr.body = new Block(0);
 				ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.xtype, new LVarExpr(0, setArr.params[0]) ), f);
-				lval = new IFldExpr(f.pos,lval,tpNArr.getStruct().resolveField("$nodes"));
+				if (f.getType().isInstanceOf(tpNArr))
+					lval = new IFldExpr(f.pos,lval,tpNArr.getStruct().resolveField("$nodes"));
 				setArr.block.stats.add(new ExprStat(
 					new AssignExpr(f.pos,AssignOperator.Assign2,lval,new LVarExpr(0, setArr.params[1]))
 				));
@@ -294,17 +320,6 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	}
 	
 	private void autoGenerateMembers(Struct:ASTNode s) {
-		if (tpANode == null) {
-			tpANode = Env.loadStruct(nameANode, true).xtype;
-			tpNode = Env.loadStruct(nameNode, true).xtype;
-			tpNArr = Env.loadStruct(nameNArr, true).xtype;
-			tpAttrSlot = Env.loadStruct(nameAttrSlot, true).xtype;
-			tpRefAttrSlot = Env.loadStruct(nameRefAttrSlot, true).xtype;
-			tpAttAttrSlot = Env.loadStruct(nameAttAttrSlot, true).xtype;
-			tpSpaceAttrSlot = Env.loadStruct(nameSpaceAttrSlot, true).xtype;
-			tpSpaceRefAttrSlot = Env.loadStruct(nameSpaceRefAttrSlot, true).xtype;
-			tpSpaceAttAttrSlot = Env.loadStruct(nameSpaceAttAttrSlot, true).xtype;
-		}
 		foreach (Struct dn; s.members)
 			this.autoGenerateMembers(dn);
 		if (!s.isClazz())
@@ -332,7 +347,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		for(int i=0; i < vals_init.length; i++) {
 			Field f = aflds[i];
 			boolean isAtt = (f.meta.get(mnAtt) != null);
-			boolean isArr = f.getType().isInstanceOf(tpNArr);
+			boolean isArr = f.getType().isInstanceOf(tpNArr) || f.getType().isInstanceOf(tpNArray);
 			String fname = "nodeattr$"+f.id.sname;
 			if (f.parent() != s) {
 				vals_init[i] = new SFldExpr(f.pos, s.resolveField(fname.intern(), true));
@@ -349,11 +364,21 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			af.init = e;
 			vals_init[i] = new SFldExpr(af.pos, af);
 			if (isArr && !f.isAbstract()) {
-				f.init = new NewExpr(f.pos, f.getType(), new ENode[]{
-					new ThisExpr(),
-					new SFldExpr(f.pos, af)
-				});
-				f.init.setHidden(true);
+				if (f.getType().isInstanceOf(tpNArr)) {
+					f.init = new NewExpr(f.pos, f.getType(), new ENode[]{
+						new ThisExpr(),
+						new SFldExpr(f.pos, af)
+					});
+				} else {
+					TypeDecl N = f.getType().resolve(StdTypes.tpArrayArg).meta_type.tdecl;
+					Field emptyArray = N.resolveField("emptyArray", false);
+					if (emptyArray == null || emptyArray.parent() != N)
+						Kiev.reportError(f, "Cannot find 'emptyArray' field in "+N);
+					else
+						f.init = new ReinterpExpr(f.pos, f.getType(), new SFldExpr(f.pos, emptyArray));
+				}
+				if (f.init != null)
+					f.init.setHidden(true);
 			}
 			if (isAtt && !isArr)
 				f.setVirtual(true);
@@ -458,13 +483,16 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 						continue; // do not copy the field
 				}
 				boolean isNode = (isNodeKind(f.getType()));
-				boolean isArr = f.getType().isInstanceOf(tpNArr);
+				boolean isArr = f.getType().isInstanceOf(tpNArr) || f.getType().isInstanceOf(tpNArray);
 				if (f.meta.get(mnAtt) != null && (isNode || isArr)) {
 					if (isArr) {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						cae.obj = new IFldExpr(0,new LVarExpr(0,v),f);
 						cae.ident = new SymbolRef(0, "copyFrom");
-						cae.args.append(new IFldExpr(0,new IFldExpr(0,new ThisExpr(),f),tpNArr.getStruct().resolveField("$nodes")));
+						if (f.getType().isInstanceOf(tpNArr))
+							cae.args.append(new IFldExpr(0,new IFldExpr(0,new ThisExpr(),f),tpNArr.getStruct().resolveField("$nodes")));
+						else
+							cae.args.append(new IFldExpr(0,new ThisExpr(),f));
 						copyV.block.stats.append(new ExprStat(0,cae));
 					} else {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
@@ -509,7 +537,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			s.addMethod(setV);
 			setV.body = new Block(0);
 			foreach (Field f; aflds; f.parent() == s) {
-				boolean isArr = f.getType().isInstanceOf(tpNArr);
+				boolean isArr = f.getType().isInstanceOf(tpNArr) || f.getType().isInstanceOf(tpNArray);
 				if (isArr || f.isFinal() || !Access.writeable(f))
 					continue;
 				{	// check if we may not copy the field

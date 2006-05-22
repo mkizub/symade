@@ -283,29 +283,25 @@ public final class XType extends Type {
 		return super.isCastableTo(t);
 	}
 
-	public boolean isInstanceOf(Type _t2) {
-		if( this ≡ _t2 || _t2 ≡ Type.tpAny ) return true;
-		if( this.isReference() && _t2 ≈ Type.tpObject ) return true;
-		if!(_t2 instanceof XType) {
-			if (_t2 instanceof ArgType) {
-				ArgType at = (ArgType)_t2;
-				if (at.definer.super_types.getArray().length > 0) {
-					foreach (TypeRef tr; at.definer.super_types.getArray()) {
-						if (!this.isInstanceOf(tr.getType()))
-							return false;
-					}
+	public boolean isInstanceOf(Type t2) {
+		if( this ≡ t2 || t2 ≡ Type.tpAny ) return true;
+		if( this.isReference() && t2 ≈ Type.tpObject ) return true;
+		if (t2 instanceof ArgType) {
+			ArgType at = (ArgType)t2;
+			if (at.definer.super_types.getArray().length > 0) {
+				foreach (TypeRef tr; at.definer.super_types.getArray()) {
+					if (!this.isInstanceOf(tr.getType()))
+						return false;
 				}
-				if (at.definer.getLowerBounds().length > 0) {
-					foreach (TypeRef tr; at.definer.getLowerBounds()) {
-						if (!tr.getType().isInstanceOf(this))
-							return false;
-					}
-				}
-				return true;
 			}
-			return super.isInstanceOf(_t2);
+			if (at.definer.getLowerBounds().length > 0) {
+				foreach (TypeRef tr; at.definer.getLowerBounds()) {
+					if (!tr.getType().isInstanceOf(this))
+						return false;
+				}
+			}
+			return true;
 		}
-		XType t2 = (XType)_t2;
 		XType t1 = this;
 		try {
 			t1.checkResolved();

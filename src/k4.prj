@@ -423,6 +423,7 @@ CLASS kiev.vlang.Symbol kiev/vlang/Symbol kiev\vlang\Symbol.java
 CLASS kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java
 CLASS kiev.vlang.SymbolRef kiev/vlang/SymbolRef kiev\vlang\AST.java
 CLASS kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
+CLASS kiev.vlang.Test kiev/vlang/Test kiev\vlang\MetaTypes.java
 CLASS kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
 CLASS kiev.vlang.TreeWalker kiev/vlang/TreeWalker kiev\vlang\AST.java
@@ -436,7 +437,6 @@ CLASS kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 CLASS kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
 CLASS kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
-CLASS kiev.vlang.test.Test kiev/vlang/test/Test kiev\vlang\MetaTypes.java
 CLASS kiev.vlang.types.ASTNodeMetaType kiev/vlang/types/ASTNodeMetaType kiev\vlang\types\TypeProvider.java
 CLASS kiev.vlang.types.ASTNodeType kiev/vlang/types/ASTNodeType kiev\vlang\types\Type.java
 CLASS kiev.vlang.types.AType kiev/vlang/types/AType kiev\vlang\types\AType.java
@@ -702,5 +702,7 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
 METATYPE kiev.vlang.test.NodeSpace kiev\vlang\MetaTypes.java bad
+METATYPE kiev.vlang.test.Test kiev\vlang\MetaTypes.java
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java

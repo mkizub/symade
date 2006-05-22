@@ -1,4 +1,4 @@
-package kiev.vlang.test;
+package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
@@ -98,8 +98,7 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 
 @node
 class Test extends ASTNode {
-	public static SpaceRefAttrSlot<ASTNode> nodeattr$rarr;
-	NodeSpace<ASTNode> rarr;
+	@ref ASTNode[] rarr;
 	@ref ASTNode astn;
 	void foo() {
 		int i;

@@ -290,6 +290,8 @@ public static final view RReinterpExpr of ReinterpExpr extends RLvalueExpr {
 			;
 		else if (extp.isInstanceOf(type))
 			;
+		else if (extp.getErasedType().isInstanceOf(type.getErasedType()))
+			;
 		else if (type instanceof CTimeType && type.getEnclosedType() ≈ extp)
 			;
 		else if (extp instanceof CTimeType && extp.getEnclosedType() ≈ type)
