@@ -249,7 +249,7 @@ public class ASTExpression extends ENode {
 			resolveExpr(result1,rest1,expr,op.getArgPriority(n)),
 			{
 				n == op.images.length,
-				result ?= new ConsAN(result1,List.Nil),
+				result ?= new ConsAN(result1,(List<ENode>)List.Nil),
 				rest ?= rest1
 			;
 				n < op.images.length,

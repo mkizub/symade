@@ -76,7 +76,7 @@ public final view RReturnStat of ReturnStat extends RENode {
 			if( expr == null )
 				Kiev.reportError(this,"Return must return a value in non-void method");
 			else if (!expr.getType().isInstanceOf(ctx_method.type.ret()) && expr.getType() != Type.tpNull)
-				Kiev.reportError(this,"Return expression is not of type "+ctx_method.type.ret());
+				Kiev.reportWarning(this,"Return expression is not of type "+ctx_method.type.ret());
 		}
 	}
 }

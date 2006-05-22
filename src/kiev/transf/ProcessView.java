@@ -166,7 +166,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 		foreach (DNode dn; clazz.members.getArray()) {
 			if (dn instanceof Method && !(dn instanceof Constructor) && dn.isPublic() && !dn.isStatic()) {
 				Method cm = dn;
-				Block b = cm.body;
+				ENode b = cm.body;
 				if (b != null)
 					~b;
 				Method m = cm.ncopy();

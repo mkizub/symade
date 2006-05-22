@@ -156,19 +156,29 @@ public abstract class ENode extends ASTNode {
 		}
 	}
 
+	private static void do_resolve(Type reqType, ASTNode node) {
+		try {
+			Kiev.runBackends(Kiev.useBackend, fun (BackendProcessor bep)->void { bep.preGenerate(node); });
+		} catch (ReWalkNodeException e) {
+			do_resolve(reqType, e.replacer);
+			return;
+		}
+		((ENode)node).resolve(reqType);
+	}
+	
 	public final void replaceWithNodeResolve(Type reqType, ENode node) {
 		assert(isAttached());
 		ASTNode n = this.replaceWithNode(node);
 		assert(n == node);
 		assert(n.isAttached());
-		((ENode)n).resolve(reqType);
+		do_resolve(reqType,n);
 	}
 
 	public final void replaceWithResolve(Type reqType, ()->ENode fnode) {
 		assert(isAttached());
 		ASTNode n = this.replaceWith(fnode);
 		assert(n.isAttached());
-		((ENode)n).resolve(reqType);
+		do_resolve(reqType,n);
 	}
 
 	public final void replaceWithNodeResolve(ENode node) {
@@ -176,14 +186,14 @@ public abstract class ENode extends ASTNode {
 		ASTNode n = this.replaceWithNode(node);
 		assert(n == node);
 		assert(n.isAttached());
-		((ENode)n).resolve(null);
+		do_resolve(null,n);
 	}
 
 	public final void replaceWithResolve(()->ENode fnode) {
 		assert(isAttached());
 		ASTNode n = this.replaceWith(fnode);
 		assert(n.isAttached());
-		((ENode)n).resolve(null);
+		do_resolve(null,n);
 	}
 	
 	@nodeview

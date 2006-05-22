@@ -65,7 +65,7 @@ public final view RRuleBlock of RuleBlock extends RENode {
 	public StringBuffer		fields_buf;
 
 	public boolean preGenerate() {
-		node.resolve(Type.tpVoid);
+		node.rnResolve();
 		fields_buf = new StringBuffer();
 		node.resolve1(new JumpNodes(false,null,false,null,false));
 		StringBuffer sb = new StringBuffer(256);

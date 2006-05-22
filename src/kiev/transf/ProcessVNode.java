@@ -632,10 +632,10 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 	public static final String nameMetaGetter = ProcessVirtFld.nameMetaGetter; 
 	public static final String nameMetaSetter = ProcessVirtFld.nameMetaSetter; 
 
-	Type tpANode = ProcessVNode.tpANode;
-	Type tpNode = ProcessVNode.tpNode;
-	Type tpNArr = ProcessVNode.tpNArr;
-	Type tpSpaceAttrSlot = ProcessVNode.tpSpaceAttrSlot;
+	Type tpANode;
+	Type tpNode;
+	Type tpNArr;
+	Type tpSpaceAttrSlot;
 	
 	Method treeDelToArray;
 	Method attrDelToArray;
@@ -672,6 +672,12 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 	}
 	
 	public void preGenerate(FileUnit:ASTNode fu) {
+		if (tpANode == null) {
+			tpANode = ProcessVNode.tpANode;
+			tpNode = ProcessVNode.tpNode;
+			tpNArr = ProcessVNode.tpNArr;
+			tpSpaceAttrSlot = ProcessVNode.tpSpaceAttrSlot;
+		}
 		foreach (Struct dn; fu.members)
 			this.preGenerate(dn);
 	}

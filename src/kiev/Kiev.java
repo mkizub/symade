@@ -639,7 +639,11 @@ public final class Kiev {
 				continue;
 			BackendProcessor bep = tp.getBackend(be);
 			if (bep != null)
-				try { step(bep); } catch (Exception e) { Kiev.reportError(e); }
+				try { step(bep); } catch (Exception e) {
+					if (e instanceof ReWalkNodeException)
+						throw (ReWalkNodeException)e;
+					Kiev.reportError(e);
+				}
 		}
 		return (Kiev.errCount > 0); // true if failed
 	}

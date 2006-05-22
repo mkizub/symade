@@ -312,8 +312,8 @@ public final class XType extends Type {
 		}
 		// Check class1 >= class2 && bindings
 		if (t1.meta_type.tdecl.instanceOf(t2.meta_type.tdecl)) {
-			if (t1.meta_type.tdecl != t2.meta_type.tdecl)
-				return true; // if it extends the class, it's always an instance of it
+//			if (t1.meta_type.tdecl != t2.meta_type.tdecl)
+//				return true; // if it extends the class, it's always an instance of it
 			// if clazz is the same, check all bindings to be instanceof upper bindings
 			AType b1 = t1.bindings();
 			AType b2 = t2.bindings();
@@ -673,8 +673,8 @@ public final class CompaundType extends Type {
 		}
 		// Check class1 >= class2 && bindings
 		if (t1.clazz.instanceOf(t2.clazz)) {
-			if (t1.clazz != t2.clazz)
-				return true; // if it extends the class, it's always an instance of it
+//			if (t1.clazz != t2.clazz)
+//				return true; // if it extends the class, it's always an instance of it
 			// if clazz is the same, check all bindings to be instanceof upper bindings
 			AType b1 = t1.bindings();
 			AType b2 = t2.bindings();
