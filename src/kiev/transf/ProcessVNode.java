@@ -140,7 +140,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				else if (ft.isInstanceOf(tpNArray)) {
 					if !(ft.isInstanceOf(tpNodeSpace)) {
 						ArgType arg = tpNodeSpace.bindings().tvars[0].var;
-						Type bnd = ft.resolve(StdTypes.tpArrayArg);
+						Type bnd = ((ArrayType)ft).arg;
 						f.ftype = new TypeRef(f.ftype.pos, tpNodeSpace.applay(new TVarBld(arg, bnd)));
 					}
 					isArr = true;

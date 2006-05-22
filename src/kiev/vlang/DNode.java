@@ -591,6 +591,8 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		return q_name;
 	}
 
+	public String toString() { return package_clazz==null ? id.uname : qname(); }
+
 	static class TypeDeclDFFunc extends DFFunc {
 		final int res_idx;
 		TypeDeclDFFunc(DataFlowInfo dfi) {
