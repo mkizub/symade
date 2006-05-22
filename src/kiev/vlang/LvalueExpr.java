@@ -302,7 +302,9 @@ public final class IFldExpr extends LvalueExpr {
 	}
 
 	public String toString() {
-		if( obj.getPriority() < opAccessPriority )
+		if (obj == null)
+			return String.valueOf(ident);
+		if (obj.getPriority() < opAccessPriority)
 			return "("+obj.toString()+")."+var.toString();
 		else
 			return obj.toString()+"."+var.toString();

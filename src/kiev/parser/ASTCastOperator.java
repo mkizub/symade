@@ -50,7 +50,7 @@ public class ASTCastOperator extends ASTOperator {
 			for (int i=1; i < names.length; i++)
 				e = new AccessExpr(type.pos, e, new SymbolRef(type.pos, names[i]));
 			replaceWithNode(e);
-			throw ReWalkNodeException.instance;
+			throw new ReWalkNodeException(e);
 		}
 	}
 

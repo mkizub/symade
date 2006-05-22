@@ -5,7 +5,6 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.parser.*;
-import kiev.be.java15.JNode;
 
 import static kiev.stdlib.Debug.*;
 
@@ -93,14 +92,6 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 	{
 		case @forward CallExpr# self(IFldExpr# obj):
 			new#CallExpr(obj=getAttr(obj.var),ident="insert",args={obj.obj, idx, node})
-	}
-
-	@macro
-	public <J extends JNode> J[] toJArray()
-		alias operator(210,fy,$cast)
-	{
-		case @forward CallExpr# self(IFldExpr# obj):
-			new#CallExpr(obj=getAttr(obj.var),ident="toJArray",args={obj.obj})
 	}
 
 }

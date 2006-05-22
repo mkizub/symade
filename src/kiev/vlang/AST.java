@@ -776,6 +776,8 @@ public class CompilerException extends RuntimeException {
 }
 
 public class ReWalkNodeException extends RuntimeException {
-	public static final ReWalkNodeException instance = new ReWalkNodeException();
-	private ReWalkNodeException() {}
+	ASTNode replacer;
+	public ReWalkNodeException(ASTNode replacer) {
+		this.replacer = replacer;
+	}
 }

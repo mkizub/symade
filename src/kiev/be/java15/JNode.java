@@ -16,6 +16,17 @@ import syntax kiev.Syntax;
 @nodeview
 public view JNode of ASTNode implements JConstants {
 
+	@unerasable
+	public static <J extends JNode> J[] toJArray(NodeSpace<ASTNode> narr)
+		alias operator(210,fy,$cast)
+	{
+		int sz = narr.length;
+		J[] jarr = new J[sz];
+		for (int i=0; i < sz; i++)
+			jarr[i] = (J)narr[i];
+		return jarr;
+	}
+
 	public String toString();
 	public Dumper toJava(Dumper dmp);
 	

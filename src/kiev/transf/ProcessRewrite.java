@@ -80,7 +80,7 @@ class RewriteBackend extends BackendProcessor implements Constants {
 		ASTNode rn = (ASTNode)rewriter.doRewrite(new RewriteContext(self, args));
 		self.replaceWithNode(rn);
 		Kiev.runProcessorsOn(rn);
-		throw ReWalkNodeException.instance;
+		throw new ReWalkNodeException(rn);
 	}
 }
 

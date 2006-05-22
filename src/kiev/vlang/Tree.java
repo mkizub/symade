@@ -164,16 +164,6 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 	public abstract void delAll(ANode parent);
 	public abstract N[] delToArray(ANode parent);
 
-	@unerasable
-	public final <J extends JNode> J[] toJArray(ANode parent) {
-		N[] narr = get(parent);
-		int sz = narr.length;
-		J[] jarr = new J[sz];
-		for (int i=0; i < sz; i++)
-			jarr[i] = (J)narr[i];
-		return jarr;
-	}
-
 }
 
 public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
@@ -578,14 +568,6 @@ public final class NArr<N extends ASTNode> {
 
 		public NArr<N> getNArr() { return NArr.this; }
 		
-		public JNode getParent() {
-			return (J)NArr.this.$parent_impl;
-		}
-		
-		public AttrSlot getPSlot() {
-			return getNArr().$pslot;
-		}
-		
 		@getter
 		public int size()
 			alias length
@@ -601,39 +583,6 @@ public final class NArr<N extends ASTNode> {
 			return (J)getNArr().get(idx);
 		}
 		
-		public J set(int idx, J node)
-			alias operator(210,lfy,[])
-			require { node != null; }
-		{
-			getNArr().set(idx, (N)node);
-			return node;
-		}
-	
-		public J add(J node)
-			alias append
-			alias operator(5, lfy, +=)
-			require { node != null; }
-		{
-			getNArr().add((N)node);
-			return node;
-		}
-	
-		public void addAll(J[] arr)
-			alias appendAll
-		{
-			foreach(J n; arr) add(n);
-		}
-	
-		public J insert(int idx, J node)
-			require { node != null; }
-		{
-			getNArr().insert(idx,(N)node);
-			return node;
-		}
-	
-		public void detach(J old) { getNArr().detach((N)old); }
-		public void del(int idx) { getNArr().del(idx); }
-		public boolean contains(J node) { return getNArr().contains((N)node); }
 		public J[] toArray() {
 			int sz = getNArr().$nodes.length;
 			J[] arr = new J[sz];

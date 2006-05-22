@@ -105,8 +105,8 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 		if( type instanceof ArgType ) {
 			if( !type.isUnerasable())
 				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
-			if( ctx_method==null || ctx_method.isStatic() )
-				throw new CompilerException(this,"Access to argument "+type+" from static method");
+			//if( ctx_method==null || ctx_method.isStatic() )
+			//	throw new CompilerException(this,"Access to argument "+type+" from static method");
 			ENode ti = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewArrayExpr)this,type,false);
 			if( args.size() == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
