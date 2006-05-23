@@ -510,9 +510,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				Vector<Type> bindings = new Vector<Type>();
 				// bind from mt
 				for (int i=0; i < rt.arity; i++)
-					bindings = addBindingsFor(at, mt.arg(i), rt.arg(i), bindings);
-				if (mt.ret() ≢ Type.tpAny)
-					bindings = addBindingsFor(at, mt.ret(), rt.ret(), bindings);
+					addBindingsFor(at, mt.arg(i), rt.arg(i), bindings);
+				addBindingsFor(at, mt.ret(), rt.ret(), bindings);
 				if (bindings.length == 0) {
 					trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 						+" do not allow to infer type: "+at);
@@ -542,9 +541,15 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 
 	// compares pattern type (pt) with query type (qt) to find bindings for argument type (at),
 	// and adds found bindings to the set of bindings
-	private static Vector<Type> addBindingsFor(ArgType at, Type pt, Type qt, Vector<Type> bindings) {
+	private static void addBindingsFor(ArgType at, Type pt, Type qt, Vector<Type> bindings) {
+		if (pt ≡ null || pt ≡ Type.tpAny || pt ≡ at)
+			return;
+		if (qt ≡ at) {
+			bindings.append(pt);
+			return;
+		}
 		if (!qt.hasApplayable(at))
-			return bindings;
+			return;
 		final int qt_size = qt.tvars.length;
 		for (int i=0; i < qt_size; i++) {
 			TVar qtv = qt.tvars[i];
@@ -561,7 +566,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				}
 			}
 		}
-		return bindings;
+		return;
 	}
 	
 
