@@ -77,7 +77,7 @@ public final class TypeAssign extends TypeDef {
 	@virtual typedef This  = TypeAssign;
 	@virtual typedef VView = VTypeAssign;
 
-	public TypeRef[] getLowerBounds() { return super_types.getArray(); }
+	public TypeRef[] getLowerBounds() { return super_types; }
 
 	@nodeview
 	public static final view VTypeAssign of TypeAssign extends VTypeDef {
@@ -116,6 +116,8 @@ public final class TypeAssign extends TypeDef {
 public final class TypeConstr extends TypeDef {
 
 	@dflow(out="this:in") private static class DFI {}
+
+	public static final TypeConstr[] emptyArray = new TypeConstr[0];
 
 	@virtual typedef This  = TypeConstr;
 	@virtual typedef VView = VTypeConstr;

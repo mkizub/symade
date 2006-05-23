@@ -412,8 +412,8 @@ public class JavaSyntax extends Syntax {
 						public boolean calc(ASTNode node) {
 							if !(node instanceof TypeConstr) return false;
 							TypeConstr tc = (TypeConstr)node;
-							if (tc.super_types.size() == 0) return false;
-							if (tc.super_types.size() == 1 && tc.super_types[0].getType() ≈ Type.tpObject) return false;
+							if (tc.super_types.length == 0) return false;
+							if (tc.super_types.length == 1 && tc.super_types[0].getType() ≈ Type.tpObject) return false;
 							return true;
 						}
 					},

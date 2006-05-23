@@ -8,8 +8,6 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
-import kiev.vlang.NArr.JArr;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -24,6 +22,17 @@ public view JNode of ASTNode implements JConstants {
 		J[] jarr = new J[sz];
 		for (int i=0; i < sz; i++)
 			jarr[i] = (J)narr[i];
+		return jarr;
+	}
+
+	@unerasable
+	public static JType[] toJTypeArray(NodeSpace<ASTNode> narr)
+		alias operator(210,fy,$cast)
+	{
+		int sz = narr.length;
+		JType[] jarr = new JType[sz];
+		for (int i=0; i < sz; i++)
+			jarr[i] = narr[i].getType().getJType();
 		return jarr;
 	}
 
@@ -156,7 +165,7 @@ public final view JLocalStructDecl of LocalStructDecl extends JENode {
 @nodeview
 public view JTypeDecl of TypeDecl extends JDNode {
 	public:ro	JType[]				super_types;
-	public:ro	JArr<JNode>			members;
+	public:ro	JNode[]				members;
 
 	@getter public JTypeDecl get$child_jctx_tdecl() { return this; }
 

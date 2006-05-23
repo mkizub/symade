@@ -26,7 +26,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	public:ro			Struct					package_clazz;
 	public				Struct					typeinfo_clazz;
 	public				Struct					iface_impl;
-	public:ro			NArr<DNode>				sub_decls;
+	public:ro			DNode[]					sub_decls;
 
 	public final Struct getStruct() { return (Struct)this; }
 
@@ -207,7 +207,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
 		flags |= ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC;
 		typeinfo_clazz = Env.newStruct(nameClTypeInfo,true,this.getStruct(),flags,true);
-		members.add(typeinfo_clazz);
+		((Struct)this).members.add(typeinfo_clazz);
 		typeinfo_clazz.setPublic();
 		typeinfo_clazz.setResolved(true);
 		if (super_types.length > 0 && super_types[0].getStruct().typeinfo_clazz != null)
@@ -711,13 +711,13 @@ public final view RStruct of Struct extends RTypeDecl {
 			m = new Method(vte.name, vte.etype.ret(), ACC_ABSTRACT | ACC_PUBLIC | ACC_SYNTHETIC);
 			for (int i=0; i < vte.etype.arity; i++)
 				m.params.append(new FormPar(0,def.params[i].id.uname,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
-			members.append(m);
+			((Struct)self).members.append(m);
 		} else {
 			// create a proxy call
 			m = new Method(vte.name, vte.etype.ret(), ACC_PUBLIC | ACC_BRIDGE | ACC_SYNTHETIC);
 			for (int i=0; i < vte.etype.arity; i++)
 				m.params.append(new FormPar(0,"arg$"+i,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
-			members.append(m);
+			((Struct)self).members.append(m);
 			m.body = new Block();
 			if( m.type.ret() ≡ Type.tpVoid )
 				m.block.stats.add(new ExprStat(0,makeDispatchCall(self,0, m, def)));
@@ -753,7 +753,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			for (int i=0; i < vte.etype.arity; i++)
 				bridge.params.append(new FormPar(mo.pos,m.params[i].id.uname,vte.etype.arg(i),FormPar.PARAM_NORMAL,ACC_FINAL));
 			bridge.pos = mo.pos;
-			members.append(bridge);
+			((Struct)self).members.append(bridge);
 			trace(Kiev.debugMultiMethod,"Created a bridge method "+self+"."+bridge+" for vtable entry "+vte.name+vte.etype);
 			bridge.body = new Block();
 			if (bridge.type.ret() ≢ Type.tpVoid)
@@ -779,7 +779,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					defaults = Env.newStruct(nameIFaceImpl,true,
 						self.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT | ACC_FORWARD, true
 					);
-					members.add(defaults);
+					((Struct)self).members.add(defaults);
 					defaults.setResolved(true);
 					iface_impl = defaults;
 					Kiev.runProcessorsOn(defaults);
@@ -832,12 +832,12 @@ public final view RStruct of Struct extends RTypeDecl {
 				mmm.targs.copyFrom(m.targs);
 				foreach (FormPar fp; m.params)
 					mmm.params.add(new FormPar(fp.pos,fp.id.uname,fp.stype.getType(),fp.kind,fp.flags));
-				self.members.add(mmm);
+				((Struct)self).members.add(mmm);
 			}
 			CallType type1 = mmm.type;
 			CallType dtype1 = mmm.dtype;
 			CallType etype1 = mmm.etype;
-			self.members.detach(mmm);
+			((Struct)self).members.detach(mmm);
 			Method mm = null;
 			trace(Kiev.debugMultiMethod,"Generating dispatch method for "+m+" with dispatch type "+etype1);
 			// find all methods with the same java type
@@ -1347,8 +1347,11 @@ public final view RStruct of Struct extends RTypeDecl {
 				} catch(Exception e ) { Kiev.reportError(m,e); }
 			}
 
-			foreach(DNode n; members; n instanceof Method || n instanceof Initializer) {
-				n.resolveDecl();
+			// for(;;) beacause a constructor may be added during resolving
+			for(int i=0; i < members.length; i++) {
+				ASTNode n = members[i];
+				if (n instanceof Method || n instanceof Initializer)
+					((DNode)n).resolveDecl();
 			}
 			
 			// Autogenerate hidden args for initializers of local class

@@ -1054,7 +1054,7 @@ public abstract class DFFunc implements DataFlowSlots {
 		assert(!lst.contains(node));
 		assert(node.isAttached());
 		if (node.pslot().is_space)
-			assert(((NArr<ASTNode>)node.parent().getVal(node.pslot().name)).indexOf(node) >= 0);
+			assert(((SpaceAttrSlot<ASTNode>)node.pslot()).indexOf(node.parent(),node) >= 0);
 		else
 			assert(node.parent().getVal(node.pslot().name) == node);
 		lst.append(node);
@@ -1111,11 +1111,7 @@ public abstract class DFFunc implements DataFlowSlots {
 			}
 			else if (dfs instanceof DFSocketSpace) {
 				Object space = dfi.node_impl.getVal(dfs.pslot_name);
-				ASTNode[] arr;
-				if (space instanceof NArr<ASTNode>)
-					arr = ((NArr<ASTNode>)space).getArray();
-				else
-					arr = (ASTNode[])space;
+				ASTNode[] arr = (ASTNode[])space;
 				if (arr.length == 0) {
 					f = dfs.func_in;
 				} else {

@@ -9,8 +9,6 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import java.io.*;
 
-import kiev.vlang.NArr.JArr;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 

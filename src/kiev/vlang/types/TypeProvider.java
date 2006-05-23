@@ -381,7 +381,7 @@ public class ArgMetaType extends MetaType {
 
 	public Type[] getMetaSupers(Type tp) {
 		ArgType at = (ArgType)tp;
-		TypeRef[] ups = tdecl.super_types.getArray();
+		TypeRef[] ups = tdecl.super_types;
 		if (ups.length == 0)
 			return new Type[]{StdTypes.tpObject};
 		Type[] stps = new Type[ups.length];
@@ -414,16 +414,16 @@ public class ArgMetaType extends MetaType {
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
 		TypeRef@ sup;
 	{
-		sup @= tdecl.super_types.getArray(),
+		sup @= tdecl.super_types,
 		sup.getType().resolveNameAccessR(node, info, name)
 	}
 
 	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt)
 		TypeRef@ sup;
 	{
-		tdecl.super_types.getArray().length == 0, $cut,
+		tdecl.super_types.length == 0, $cut,
 		StdTypes.tpObject.resolveCallAccessR(node, info, name, mt)
-	;	sup @= tdecl.super_types.getArray(),
+	;	sup @= tdecl.super_types,
 		sup.getType().resolveCallAccessR(node, info, name, mt)
 	}
 	

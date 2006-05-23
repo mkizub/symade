@@ -6,8 +6,6 @@ import kiev.parser.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.NArr.JArr;
-
 import static kiev.stdlib.Debug.*;
 
 /**

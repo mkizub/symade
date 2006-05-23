@@ -639,9 +639,9 @@ public class CalcOptionNotEmpty implements CalcOption {
 		if (node == null)
 			return false;
 		Object obj = node.getVal(name);
-		if !(obj instanceof NArr<ASTNode>)
-			return false;
-		return ((NArr<ASTNode>)obj).size() > 0;
+		if (obj instanceof ASTNode[])
+			return obj.length > 0;
+		return false;
 	}
 }
 

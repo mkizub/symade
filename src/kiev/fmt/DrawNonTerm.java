@@ -102,11 +102,7 @@ public class DrawNonTermList extends DrawNonTerm {
 	public void init(Formatter fmt) {
 		SyntaxList slst = (SyntaxList)this.syntax;
 		Object oarr = node.getVal(slst.name);
-		ASTNode[] narr;
-		if (oarr instanceof NArr)
-			narr = ((NArr<ASTNode>)oarr).getArray();
-		else
-			narr = (ASTNode[])oarr;
+		ASTNode[] narr = (ASTNode[])oarr;
 		int sz = narr.length;
 		boolean need_sep = false;
 		for (int i=0; i < sz; i++) {

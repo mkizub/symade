@@ -288,8 +288,8 @@ public final class XType extends Type {
 		if( this.isReference() && t2 ≈ Type.tpObject ) return true;
 		if (t2 instanceof ArgType) {
 			ArgType at = (ArgType)t2;
-			if (at.definer.super_types.getArray().length > 0) {
-				foreach (TypeRef tr; at.definer.super_types.getArray()) {
+			if (at.definer.super_types.length > 0) {
+				foreach (TypeRef tr; at.definer.super_types) {
 					if (!this.isInstanceOf(tr.getType()))
 						return false;
 				}
@@ -533,7 +533,7 @@ public final class ArgType extends Type {
 	public Struct getStruct()						{ return definer.getStruct(); }
 	public boolean checkResolved()					{ return definer.checkResolved(); }
 	public Type getErasedType() {
-		TypeRef[] up = definer.super_types.getArray();
+		TypeRef[] up = definer.super_types;
 		if (up.length == 0)
 			return tpObject;
 		return up[0].getType().getErasedType();
@@ -549,7 +549,7 @@ public final class ArgType extends Type {
 
 	public boolean isCastableTo(Type t) {
 		if( this ≡ t || t ≡ Type.tpAny ) return true;
-		TypeRef[] up = definer.super_types.getArray();
+		TypeRef[] up = definer.super_types;
 		if (up.length == 0)
 			return tpObject.isCastableTo(t);
 		foreach (TypeRef tr; up) {
@@ -561,7 +561,7 @@ public final class ArgType extends Type {
 
 	public boolean isInstanceOf(Type t) {
 		if (this ≡ t || t ≡ tpAny) return true;
-		TypeRef[] up = definer.super_types.getArray();
+		TypeRef[] up = definer.super_types;
 		if (up.length == 0)
 			return tpObject.isInstanceOf(t);
 		foreach (TypeRef tr; up) {
@@ -646,8 +646,8 @@ public final class CompaundType extends Type {
 		if!(_t2 instanceof CompaundType) {
 			if (_t2 instanceof ArgType) {
 				ArgType at = (ArgType)_t2;
-				if (at.definer.super_types.getArray().length > 0) {
-					foreach (TypeRef tr; at.definer.super_types.getArray()) {
+				if (at.definer.super_types.length > 0) {
+					foreach (TypeRef tr; at.definer.super_types) {
 						if (!this.isInstanceOf(tr.getType()))
 							return false;
 					}

@@ -25,10 +25,6 @@ import java.io.Reader;
 
 import static kiev.vlang.AccessFlags.*;
 
-typedef NArr<TypeWithArgsRef> NArrTypeWithArgsRefs;
-typedef NArr<ENode> NArrENodes;
-typedef NArr<ASTNode> NArrNodes;
-
 }*/ 
 
 public final class Parser extends kiev040 {
@@ -429,13 +425,6 @@ public abstract class kiev040 {
 
 	}*/
 
-	void comments_alone(NArrNodes arr) {
-		Comment[] comments = get_comments();
-		if (comments == null || comments.length == 0)
-			return;
-		for (int i=0; i < comments.length; i++)
-			arr.append(comments[i]);
-	}
 	void comments_alone(SpacePtr arr) {
 		Comment[] comments = get_comments();
 		if (comments == null || comments.length == 0)
@@ -1261,7 +1250,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 void TypeBodyDeclaration(TypeDecl clazz) :
-{ ASTModifiers modifiers; }
+{ ASTModifiers modifiers; SpacePtr clazz_members = clazz.getSpacePtr("members"); }
 {
 	"{"
 	(
@@ -1275,7 +1264,7 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 		[ ";" ]
 	)?
 	(
-		{ comments_alone(clazz.members); }
+		{ comments_alone(clazz_members); }
 		modifiers = Modifiers()
 		(
 			clazz.members += Initializer(modifiers)
@@ -1294,10 +1283,10 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 			clazz.members += MethodDeclaration(modifiers)
 		|
 			LOOKAHEAD( Type() <IDENTIFIER> (<OPERATOR_LRBRACKETS>)* ("{" | "=" | ":=" | "," | ";") )
-			FieldDecls(modifiers, clazz.members)
+			FieldDecls(modifiers, clazz_members)
 		)
 	)*
-	{ comments_alone(clazz.members); }
+	{ comments_alone(clazz_members); }
 	"}"
 }
 
@@ -1618,15 +1607,15 @@ MetaValueArray AnnotationValueValueArrayInitializer() :
 }
 
 
-void FieldDecls(ASTModifiers modifiers, NArrNodes members) :
+void FieldDecls(ASTModifiers modifiers, SpacePtr clazz_members) :
 { boolean old_declMode; TypeRef type; }
 {
 	{ old_declMode = declMode; declMode = false; }
 	try {
 		type = Type()
-		members += FieldDecl(modifiers, type, true)
+		clazz_members += FieldDecl(modifiers, type, true)
 		(	","
-			members += FieldDecl(modifiers, type, false)
+			clazz_members += FieldDecl(modifiers, type, false)
 		)*
 	} finally { declMode = old_declMode; }
 	";"

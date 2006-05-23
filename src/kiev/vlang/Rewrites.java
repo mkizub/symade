@@ -186,16 +186,7 @@ public final class RewriteNodeFactory extends ENode {
 				} else {
 					attr.add(res, fixup(attr,r));
 				}
-			}
-			else if (attr.is_space) {
-				if (r instanceof Object[]) {
-					foreach (Object o; (Object[])r)
-						((NArr<ASTNode>)res.getVal(attr.name)).add(fixup(attr,o));
-				} else {
-					((NArr<ASTNode>)res.getVal(attr.name)).add(fixup(attr,r));
-				}
-			}
-			else {
+			} else {
 				attr.set(res, fixup(attr,r));
 			}
 		}

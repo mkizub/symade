@@ -8,7 +8,6 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
-import kiev.vlang.NArr.JArr;
 import kiev.vlang.InlineMethodStat.ParamRedir;
 
 import static kiev.be.java15.Instr.*;

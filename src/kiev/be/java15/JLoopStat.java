@@ -8,8 +8,6 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
-import kiev.vlang.NArr.JArr;
-
 import static kiev.be.java15.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

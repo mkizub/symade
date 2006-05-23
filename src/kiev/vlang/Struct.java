@@ -42,7 +42,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	@att public TypeRef						view_of;
 	@ref public Struct						typeinfo_clazz;
 	@ref public Struct						iface_impl;
-	@ref public NArr<DNode>					sub_decls;
+	@ref public DNode[]						sub_decls;
 	public kiev.be.java15.Attr[]			attrs = kiev.be.java15.Attr.emptyArray;
 
 	public void callbackChildChanged(AttrSlot attr) {
@@ -243,7 +243,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		public				TypeRef					view_of;
 		public				Struct					typeinfo_clazz;
 		public				Struct					iface_impl;
-		public:ro			NArr<DNode>				sub_decls;
+		public:ro			DNode[]					sub_decls;
 
 		public final Struct getStruct() { return (Struct)this; }
 

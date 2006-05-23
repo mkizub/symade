@@ -576,11 +576,6 @@ public final class NArr<N extends ASTNode> {
 		return arr;
 	}
 
-	@unerasable
-	public <J extends JNode> JArr<J> toJArr() alias operator(210,fy,$cast) {
-		return new JArr<J>();
-	}
-
 	public Type[] toTypeArray() alias operator(210,fy,$cast) {
 		int sz = $nodes.length;
 		Type[] arr = new Type[sz];
@@ -608,45 +603,6 @@ public final class NArr<N extends ASTNode> {
 		};
 	}
 
-	@unerasable
-	public final class JArr<J extends JNode> {
-
-		public NArr<N> getNArr() { return NArr.this; }
-		
-		@getter
-		public int size()
-			alias length
-			alias get$length
-		{
-			return getNArr().size();
-		}
-	
-		public final J get(int idx)
-			alias at
-			alias operator(210,xfy,[])
-		{
-			return (J)getNArr().get(idx);
-		}
-		
-		public J[] toArray() {
-			int sz = getNArr().$nodes.length;
-			J[] arr = new J[sz];
-			for (int i=0; i < sz; i++)
-				arr[i] = this[i];
-			return arr;
-		}
-	
-		public Enumeration<J> elements() {
-			return new Enumeration<J>() {
-				int current;
-				public boolean hasMoreElements() { return current < JArr.this.size(); }
-				public J nextElement() {
-					if ( current < size() ) return JArr.this[current++];
-					throw new NoSuchElementException(Integer.toString(JArr.this.size()));
-				}
-			};
-		}
-	}
 }
 
 

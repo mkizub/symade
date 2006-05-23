@@ -9,7 +9,6 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import java.io.*;
 
-import kiev.vlang.NArr.JArr;
 import kiev.ir.java15.RStruct;
 
 import static kiev.stdlib.Debug.*;
@@ -28,7 +27,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	public		KString				b_name;
 	public:ro	JStruct				package_clazz;
 	public:ro	JStruct				iface_impl;
-	public:ro	JArr<JDNode>		sub_decls;
+	public:ro	JDNode[]			sub_decls;
 	public		Attr[]				attrs;
 
 	public final boolean isPizzaCase();
@@ -135,8 +134,8 @@ public final view JStruct of Struct extends JTypeDecl {
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return;
 		
-		JDNode[] sub_decls = this.sub_decls.toArray();
-		JNode[] members = this.members.toArray();
+		JDNode[] sub_decls = this.sub_decls;
+		JNode[] members = this.members;
 		
 		if( !isPackage() ) {
 			foreach (JStruct sub; sub_decls)

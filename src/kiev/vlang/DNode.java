@@ -398,9 +398,9 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	
 	@ref public Struct						package_clazz;
-	@att public NArr<TypeConstr>			args;
-	@att public NArr<TypeRef>				super_types;
-	@att public NArr<ASTNode>				members;
+	@att public TypeConstr[]				args;
+	@att public TypeRef[]					super_types;
+	@att public ASTNode[]					members;
 		 private MetaType[]					super_meta_types;
 	@ref private TypeDecl[]					direct_extenders;
 		 public int							type_decl_version;
@@ -537,9 +537,9 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 	@nodeview
 	public static view VTypeDecl of TypeDecl extends VDNode {
 		public:ro	Struct					package_clazz;
-		public:ro	NArr<TypeConstr>		args;
-		public:ro	NArr<TypeRef>			super_types;
-		public:ro	NArr<ASTNode>			members;
+		public:ro	TypeConstr[]			args;
+		public:ro	TypeRef[]				super_types;
+		public:ro	ASTNode[]				members;
 		public:ro	MetaType				xmeta_type;
 		public:ro	Type					xtype;
 

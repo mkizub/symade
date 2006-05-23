@@ -462,7 +462,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			return;
 		}
 		// Process members
-		ASTNode[] members = astn.members.getArray();
+		ASTNode[] members = astn.members;
 		for(int i=0; i < members.length; i++) {
 			if( members[i] instanceof Initializer ) {
 				Initializer init = (Initializer)members[i];

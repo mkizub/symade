@@ -188,21 +188,14 @@ public abstract class ANode {
 				if (val == null)
 					continue;
 				if (attr.is_space) {
-					ASTNode[] vals;
-					if (val instanceof NArr)
-						vals = val.$nodes;
-					else
-						vals = (ASTNode[])val;
+					ASTNode[] vals = (ASTNode[])val;
 					for (int i=0; i < vals.length; i++) {
 						try {
 							vals[i].walkTree(walker);
 						} catch (ReWalkNodeException e) {
 							i--;
 							val = attr.get(this);
-							if (val instanceof NArr)
-								vals = val.$nodes;
-							else
-								vals = (ASTNode[])val;
+							vals = (ASTNode[])val;
 						}
 					}
 				}
@@ -456,14 +449,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 			if (node.pos == 0) node.pos = this.pos;
 			pslot.set(parent, idx, node);
 		}
-		else if (pslot.is_space) {
-			assert(node != null);
-			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
-			int idx = space.indexOf(this);
-			assert(idx >= 0);
-			if (node.pos == 0) node.pos = this.pos;
-			space[idx] = node;
-		}
 		else if (pslot.isData()) {
 			assert(parent.getNodeData(pslot) == this);
 			if (node != null && node.pos == 0) node.pos = this.pos;
@@ -489,18 +474,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 			assert(n != null);
 			if (n.pos == 0) n.pos = this.pos;
 			pslot.set(parent, idx, n);
-			assert(n.isAttached());
-			return n;
-		}
-		else if (pslot.is_space) {
-			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
-			int idx = space.indexOf(this);
-			assert(idx >= 0);
-			space[idx] = this.getDummyNode();
-			ASTNode n = fnode();
-			assert(n != null);
-			if (n.pos == 0) n.pos = this.pos;
-			space[idx] = n;
 			assert(n.isAttached());
 			return n;
 		}
@@ -643,8 +616,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot)
 			pslot.detach(parent, this);
-		else if (pslot().is_space)
-			((NArr<ASTNode>)parent.getVal(pslot.name)).detach(this);
 		else if (pslot.isData())
 			parent.delNodeData(pslot);
 		else
