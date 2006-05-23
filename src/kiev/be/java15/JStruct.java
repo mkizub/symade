@@ -212,7 +212,7 @@ public final view JStruct of Struct extends JTypeDecl {
 				if( m.isAccessedFromInner())
 					((Method)m).setPkgPrivate();
 
-				JWBCCondition[] conditions = m.conditions.toArray();
+				JWBCCondition[] conditions = m.conditions;
 				for(int j=0; j < conditions.length; j++) {
 					if( conditions[j].definer.equals(m) ) {
 						m.addAttr(conditions[j].code_attr);
@@ -221,7 +221,7 @@ public final view JStruct of Struct extends JTypeDecl {
 
 				if (m.meta.size() > 0) m.addAttr(new RVMetaAttr(m.meta));
 				boolean has_pmeta = false;
-				JVar[] params = m.params.toArray();
+				JVar[] params = m.params;
 				foreach (JVar p; params; p.meta != null && m.meta.size() > 0)
 					has_pmeta = true;
 				if (has_pmeta) {

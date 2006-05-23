@@ -395,12 +395,14 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 	@virtual typedef JView = JTypeDecl;
 	@virtual typedef RView = RTypeDecl;
 
+	public static final TypeDecl[] emptyArray = new TypeDecl[0];
+	
 	@ref public Struct						package_clazz;
 	@att public NArr<TypeConstr>			args;
 	@att public NArr<TypeRef>				super_types;
 	@att public NArr<ASTNode>				members;
 		 private MetaType[]					super_meta_types;
-		 private TypeDecl[]					direct_extenders;
+	@ref private TypeDecl[]					direct_extenders;
 		 public int							type_decl_version;
 		 public String						q_name;	// qualified name
 		 public MetaType					xmeta_type;
@@ -522,10 +524,8 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 	public final void callbackSuperTypeChanged(TypeDecl chg) {
 		super_meta_types = null;
 		type_decl_version++;
-		if (direct_extenders != null) {
-			foreach (TypeDecl td; direct_extenders)
-				td.callbackSuperTypeChanged(chg);
-		}
+		foreach (TypeDecl td; direct_extenders)
+			td.callbackSuperTypeChanged(chg);
 	}
 	
 	public void callbackChildChanged(AttrSlot attr) {

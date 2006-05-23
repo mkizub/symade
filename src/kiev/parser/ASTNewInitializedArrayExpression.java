@@ -26,13 +26,13 @@ public class ASTNewInitializedArrayExpression extends ENode {
 
 	@att public int					dim;
 	@att public TypeRef				type;
-	@att public NArr<ENode>			args;
+	@att public ENode[]				args;
 
 	@nodeview
 	public static view VASTNewInitializedArrayExpression of ASTNewInitializedArrayExpression extends VENode {
 		public		int				dim;
 		public		TypeRef			type;
-		public:ro	NArr<ENode>		args;
+		public:ro	ENode[]			args;
 	
 		public void mainResolveOut() {
 			Type tp = type.getType();

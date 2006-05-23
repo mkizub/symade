@@ -18,8 +18,8 @@ import syntax kiev.Syntax;
 public static final view RCaseLabel of CaseLabel extends RENode {
 	public		ENode			val;
 	public		Type			type;
-	public:ro	NArr<Var>		pattern;
-	public:ro	NArr<ASTNode>	stats;
+	public:ro	Var[]			pattern;
+	public:ro	ASTNode[]		stats;
 
 	public void resolve(Type reqType) {
 		boolean pizza_case = false;
@@ -94,7 +94,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 			}
 		} catch(Exception e ) { Kiev.reportError(this,e); }
 
-		RBlock.resolveStats(Type.tpVoid, this, stats.getArray());
+		RBlock.resolveStats(Type.tpVoid, this, stats);
 
 		if( val != null ) {
 			if( !val.isConstantExpr() )
@@ -109,7 +109,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 public static final view RSwitchStat of SwitchStat extends RENode {
 	public		int						mode;
 	public		ENode					sel;
-	public:ro	NArr<CaseLabel>			cases;
+	public:ro	CaseLabel[]				cases;
 	public		LVarExpr				tmpvar;
 	public		CaseLabel				defCase;
 	public		Field					typehash; // needed for re-resolving
@@ -319,7 +319,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 		if( isMethodAbrupted() && defCase==null ) {
 			ENode thrErr = new ThrowStat(pos,new NewExpr(pos,Type.tpError,ENode.emptyArray));
 			CaseLabel dc = new CaseLabel(pos,null,new ENode[]{thrErr});
-			cases.insert(0,dc);
+			((SwitchStat)this).cases.insert(0,dc);
 			dc.resolve(Type.tpVoid);
 		}
 		if( mode == SwitchStat.ENUM_SWITCH ) {

@@ -17,6 +17,8 @@ public abstract class TypeDef extends TypeDecl {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	public static final TypeDef[] emptyArray = new TypeDef[0];
+
 	@virtual typedef This  = TypeDef;
 	@virtual typedef VView = VTypeDef;
 
@@ -118,13 +120,13 @@ public final class TypeConstr extends TypeDef {
 	@virtual typedef This  = TypeConstr;
 	@virtual typedef VView = VTypeConstr;
 
-	@att public NArr<TypeRef>			lower_bound;
+	@att public TypeRef[]			lower_bound;
 
-	public TypeRef[] getLowerBounds() { return lower_bound.getArray(); }
+	public TypeRef[] getLowerBounds() { return lower_bound; }
 
 	@nodeview
 	public static final view VTypeConstr of TypeConstr extends VTypeDef {
-		public:ro	NArr<TypeRef>		lower_bound;
+		public:ro	TypeRef[]		lower_bound;
 
 		public Struct getStruct();
 		public ArgType getAType();

@@ -294,13 +294,13 @@ public class ClosureCallExpr extends ENode {
 	@virtual typedef RView = RClosureCallExpr;
 
 	@att public ENode				expr;
-	@att public NArr<ENode>			args;
+	@att public ENode[]				args;
 	@att public Boolean				is_a_call;
 
 	@nodeview
 	public static final view VClosureCallExpr of ClosureCallExpr extends VENode {
 		public		ENode			expr;
-		public:ro	NArr<ENode>		args;
+		public:ro	ENode[]			args;
 		public		Boolean			is_a_call;
 
 		public Method getCallIt(CallType tp);
@@ -311,7 +311,7 @@ public class ClosureCallExpr extends ENode {
 	public ClosureCallExpr(int pos, ENode expr, ENode[] args) {
 		this.pos = pos;
 		this.expr = expr;
-		foreach(ENode e; args) this.args.append(e);
+		this.args.addAll(args);
 	}
 
 	public int getPriority() { return Constants.opCallPriority; }

@@ -42,7 +42,7 @@ public final class NewExpr extends ENode {
 	@virtual typedef RView = RNewExpr;
 
 	@att public TypeRef				type;
-	@att public NArr<ENode>			args;
+	@att public ENode[]				args;
 	@att public ENode				outer;
 	@att public Struct				clazz; // if this new expression defines new class
 	@ref public Method				func;
@@ -50,7 +50,7 @@ public final class NewExpr extends ENode {
 	@nodeview
 	public static final view VNewExpr of NewExpr extends VENode {
 		public		TypeRef				type;
-		public:ro	NArr<ENode>			args;
+		public:ro	ENode[]				args;
 		public		ENode				outer;
 		public		Struct				clazz;
 		public		Method				func;
@@ -191,13 +191,13 @@ public final class NewArrayExpr extends ENode {
 	@virtual typedef RView = RNewArrayExpr;
 
 	@att public TypeRef				type;
-	@att public NArr<ENode>			args;
+	@att public ENode[]				args;
 	     public ArrayType			arrtype;
 
 	@nodeview
 	public static final view VNewArrayExpr of NewArrayExpr extends VENode {
 		public		TypeRef				type;
-		public:ro	NArr<ENode>			args;
+		public:ro	ENode[]				args;
 		public		ArrayType			arrtype;
 	}
 
@@ -215,7 +215,7 @@ public final class NewArrayExpr extends ENode {
 		if (art != null)
 			return art;
 		art = new ArrayType(type.getType());
-		for(int i=1; i < args.size(); i++) art = new ArrayType(art);
+		for(int i=1; i < args.length; i++) art = new ArrayType(art);
 		this.arrtype = art;
 		return art;
 	}
@@ -227,7 +227,7 @@ public final class NewArrayExpr extends ENode {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("new ").append(type.toString());
-		for(int i=0; i < args.size(); i++) {
+		for(int i=0; i < args.length; i++) {
 			sb.append('[');
 			ENode arg = args[i];
 			sb.append(arg.toString());
@@ -238,7 +238,7 @@ public final class NewArrayExpr extends ENode {
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("new ").append(type);
-		for(int i=0; i < args.size(); i++) {
+		for(int i=0; i < args.length; i++) {
 			dmp.append('[');
 			ENode arg = args[i];
 			arg.toJava(dmp);
@@ -261,14 +261,14 @@ public final class NewInitializedArrayExpr extends ENode {
 	@virtual typedef RView = RNewInitializedArrayExpr;
 
 	@att public TypeRef				type;
-	@att public NArr<ENode>			args;
+	@att public ENode[]				args;
 	@att public int[]				dims;
 	@ref public ArrayType			arrtype;
 
 	@nodeview
 	public static final view VNewInitializedArrayExpr of NewInitializedArrayExpr extends VENode {
 		public		TypeRef				type;
-		public:ro	NArr<ENode>			args;
+		public:ro	ENode[]				args;
 		public		int[]				dims;
 		public		ArrayType			arrtype;
 		
@@ -351,7 +351,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	@virtual typedef RView = RNewClosure;
 
 	@att public TypeRef				type_ret;
-	@att public NArr<FormPar>		params;
+	@att public FormPar[]			params;
 	@att public ENode				body;
 	@att public Struct				clazz;
 	@ref public CallType			xtype;
@@ -359,7 +359,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	@nodeview
 	public static final view VNewClosure of NewClosure extends VENode {
 		public TypeRef			type_ret;
-		public NArr<FormPar>	params;
+		public FormPar[]		params;
 		public ENode			body;
 		public Struct			clazz;
 		public CallType			xtype;

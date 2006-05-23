@@ -24,7 +24,7 @@ public final view JField of Field extends JLvalDNode {
 	public:ro	JENode				init;
 	public:ro	JConstExpr			const_value;
 	public		Attr[]				attrs;
-	public:ro	JArr<JMethod>		invs;
+	public:ro	JMethod[]			invs;
 	
 	@getter public final Type	get$type()	{ return ((Field)this).ftype.getType(); }
 	

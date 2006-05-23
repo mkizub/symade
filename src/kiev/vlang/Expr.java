@@ -137,13 +137,13 @@ public class TypeInfoExpr extends ENode {
 
 	@att public TypeRef				type;
 	@att public TypeClassExpr		cl_expr;
-	@att public NArr<ENode>			cl_args;
+	@att public ENode[]				cl_args;
 
 	@nodeview
 	public static final view VTypeInfoExpr of TypeInfoExpr extends VENode {
 		public		TypeRef				type;
 		public		TypeClassExpr		cl_expr;
-		public:ro	NArr<ENode>			cl_args;
+		public:ro	ENode[]				cl_args;
 	}
 
 	public TypeInfoExpr() {}
@@ -517,11 +517,11 @@ public class StringConcatExpr extends ENode {
 	@virtual typedef JView = JStringConcatExpr;
 	@virtual typedef RView = RStringConcatExpr;
 
-	@att public NArr<ENode>			args;
+	@att public ENode[]				args;
 
 	@nodeview
 	public static final view VStringConcatExpr of StringConcatExpr extends VENode {
-		public:ro	NArr<ENode>		args;
+		public:ro	ENode[]			args;
 	}
 	
 	public StringConcatExpr() {}
@@ -583,11 +583,11 @@ public class CommaExpr extends ENode {
 	@virtual typedef JView = JCommaExpr;
 	@virtual typedef RView = RCommaExpr;
 
-	@att public NArr<ENode>		exprs;
+	@att public ENode[]			exprs;
 
 	@nodeview
 	public static final view VCommaExpr of CommaExpr extends VENode {
-		public:ro	NArr<ENode>		exprs;
+		public:ro	ENode[]			exprs;
 	}
 	
 	public CommaExpr() {}
@@ -633,12 +633,12 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef JView = JBlock;
 	@virtual typedef RView = RBlock;
 
-	@att public NArr<ASTNode>		stats;
+	@att public ASTNode[]			stats;
 	@ref public CodeLabel			break_label;
 
 	@nodeview
 	public static view VBlock of Block extends VENode {
-		public:ro	NArr<ASTNode>		stats;
+		public:ro	ASTNode[]		stats;
 	}
 	
 	public Block() {}
@@ -673,7 +673,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
 		ASTNode@ n;
 	{
-		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
 			n instanceof Var,
 			((Var)n).id.equals(name),
@@ -687,7 +687,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		}
 	;
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		n instanceof Var && ((Var)n).isForward(),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		n.getType().resolveNameAccessR(node,info,name)
@@ -697,7 +697,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		n instanceof Var && ((Var)n).isForward(),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		((Var)n).getType().resolveCallAccessR(node,info,name,mt)

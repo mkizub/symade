@@ -571,7 +571,7 @@ public abstract class MetaAttr extends Attr {
 				a.values[n] = write_value(constPool, ((MetaValueScalar)v).value);
 			} else {
 				MetaValueArray mva = (MetaValueArray)v;
-				a.values[n] = write_values(constPool, mva.values.getArray());
+				a.values[n] = write_values(constPool, mva.values);
 			}
 			n++;
 		}
@@ -683,7 +683,7 @@ public class DefaultMetaAttr extends MetaAttr {
 		if (mv instanceof MetaValueScalar)
 			a.value = write_value(constPool, ((MetaValueScalar)mv).value);
 		else
-			a.value = write_values(constPool, ((MetaValueArray)mv).values.getArray());
+			a.value = write_values(constPool, ((MetaValueArray)mv).values);
 		return a;
 	}
 }

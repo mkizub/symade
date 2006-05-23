@@ -19,11 +19,11 @@ public class TypeWithArgsRef extends TypeNameRef {
 	@virtual typedef This  = TypeWithArgsRef;
 	@virtual typedef VView = VTypeWithArgsRef;
 
-	@att public NArr<TypeRef>			args;
+	@att public TypeRef[]			args;
 
 	@nodeview
 	public static final view VTypeWithArgsRef of TypeWithArgsRef extends VTypeNameRef {
-		public:ro	NArr<TypeRef>			args;
+		public:ro	TypeRef[]			args;
 	}
 
 	public TypeWithArgsRef() {}

@@ -7,8 +7,6 @@ import kiev.transf.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
-import kiev.vlang.NArr.JArr;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -21,11 +19,11 @@ import syntax kiev.Syntax;
 public final view JMethod of Method extends JDNode {
 
 	public:ro	Access					acc;
-	public:ro	JArr<JVar>				params;
+	public:ro	JVar[]					params;
 	public:ro	JENode					body;
 	public		Attr[]					attrs;
-	public:ro	JArr<JWBCCondition>		conditions;
-	public:ro	JArr<JField>			violated_fields;
+	public:ro	JWBCCondition[]			conditions;
+	public:ro	JField[]				violated_fields;
 	public:ro	MetaValue				annotation_default;
 	public:ro	boolean					inlined_by_dispatcher;
 
@@ -90,7 +88,7 @@ public final view JMethod of Method extends JDNode {
 						thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_tdecl.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 						code.addVar(thisPar);
 					}
-					code.addVars(params.toArray());
+					code.addVars(params);
 					if( Kiev.verify )
 						generateArgumentCheck(code);
 					if( Kiev.debugOutputC ) {
@@ -134,7 +132,7 @@ public final view JMethod of Method extends JDNode {
 							code.addInstr(Instr.op_return);
 						}
 					}
-					code.removeVars(params.toArray());
+					code.removeVars(params);
 					if( thisPar != null ) code.removeVar(thisPar);
 				} else {
 					code.addInstr(Instr.op_new,Type.tpError);
@@ -211,11 +209,11 @@ public final final view JWBCCondition of WBCCondition extends JDNode {
 					thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_tdecl.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 					code.addVar(thisPar);
 				}
-				code.addVars(m.params.toArray());
+				code.addVars(m.params);
 				if( cond==WBCType.CondEnsure && m.type.ret() ≢ Type.tpVoid ) code.addVar(m.getRetVar());
 				body.generate(code,Type.tpVoid);
 				if( cond==WBCType.CondEnsure && m.type.ret() ≢ Type.tpVoid ) code.removeVar(m.getRetVar());
-				code.removeVars(m.params.toArray());
+				code.removeVars(m.params);
 				if( thisPar != null ) code.removeVar(thisPar);
 				code.generateCode(this);
 			} catch(Exception e) {

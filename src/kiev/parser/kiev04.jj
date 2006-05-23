@@ -436,6 +436,13 @@ public abstract class kiev040 {
 		for (int i=0; i < comments.length; i++)
 			arr.append(comments[i]);
 	}
+	void comments_alone(SpacePtr arr) {
+		Comment[] comments = get_comments();
+		if (comments == null || comments.length == 0)
+			return;
+		for (int i=0; i < comments.length; i++)
+			arr += comments[i];
+	}
 	void comments_before(ASTNode node) {
 		Comment[] comments = get_comments();
 		if (comments == null || comments.length == 0)
@@ -971,6 +978,7 @@ FileUnit FileUnit(String filename) :
 		ASTModifiers modifiers;
 		oldClazz = curClazz;
 		curClazz = Env.root;
+		SpacePtr fu_members = fu.getSpacePtr("members");
 	}
 	try {
 		(
@@ -981,7 +989,7 @@ FileUnit FileUnit(String filename) :
 			{ curClazz = fu.pkg.getStruct(); }
 		]
 		(
-			{ comments_alone(fu.members); }
+			{ comments_alone(fu_members); }
 			modifiers = Modifiers()
 			(
 				fu.members += Import(modifiers)
@@ -993,7 +1001,7 @@ FileUnit FileUnit(String filename) :
 				fu.members += SyntaxDeclaration(modifiers, fu) [ ";" ]
 			)
 		)*
-		{ comments_alone(fu.members); }
+		{ comments_alone(fu_members); }
 		<EOF>
 	}
 	catch(ParseError e) { rpe("Bad modifiers",e); }
@@ -2985,7 +2993,7 @@ Block Block() :
 	}
 	try {
     	(
-			BlockStatement(bl.stats)
+			BlockStatement(bl.getSpacePtr("stats"))
 		)*
 	} finally { declMode = old_declMode; }
     "}"
@@ -3028,7 +3036,7 @@ Block CondBlock() :
 	{ return bl; }
 }
 
-void BlockStatement(NArrNodes stats) :
+void BlockStatement(SpacePtr stats) :
 { boolean old_declMode; ASTModifiers modifiers; TypeRef tp; Struct clazz; Var var; }
 {
 	{ comments_alone(stats); }
@@ -3041,7 +3049,7 @@ void BlockStatement(NArrNodes stats) :
 		}
 		try {
 			modifiers = Modifiers()
-			clazz = TypeDeclaration(modifiers, (ASTNode)stats.getParent())
+			clazz = TypeDeclaration(modifiers, (ASTNode)stats.node)
 			{ stats += clazz; }
 			[ ";" ]
 		} finally {
@@ -3140,7 +3148,7 @@ CaseLabel NormalCase() :
 		":"
 	)
 	(
-		BlockStatement(c.stats)
+		BlockStatement(c.getSpacePtr("stats"))
 	)*
 	{ return c; }
 }
@@ -3162,7 +3170,7 @@ CaseLabel PizzaCase() :
 	]
 	")" ":"
 	(
-		BlockStatement(c.stats)
+		BlockStatement(c.getSpacePtr("stats"))
 	)*
 	{ return c; }
 }
@@ -3432,7 +3440,7 @@ RewriteCase RewriteCase() :
 	c.var = RewriteCasePattern()
 	":"
 	(
-		BlockStatement(c.stats)
+		BlockStatement(c.getSpacePtr("stats"))
 	)+
 	{ return c; }
 }

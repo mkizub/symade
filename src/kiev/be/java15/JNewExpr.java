@@ -8,8 +8,6 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
-import kiev.vlang.NArr.JArr;
-
 import static kiev.be.java15.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -19,7 +17,7 @@ public final view JNewExpr of NewExpr extends JENode {
 
 	static final AttrSlot ATTR = new DataAttrSlot("jnew temp expr",true,ENode.class);	
 
-	public:ro	JArr<JENode>	args;
+	public:ro	JENode[]		args;
 	public:ro	JENode			outer;
 	public:ro	JMethod			func;
 	abstract
@@ -38,7 +36,7 @@ public final view JNewExpr of NewExpr extends JENode {
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
 		Type type = this.getType();
-		JENode[] args = this.args.toArray();
+		JENode[] args = this.args;
 		code.setLinePos(this);
 		while( type instanceof ArgType && !type.isUnerasable())
 			type = type.getErasedType();
@@ -100,13 +98,13 @@ public final view JNewExpr of NewExpr extends JENode {
 @nodeview
 public final view JNewArrayExpr of NewArrayExpr extends JENode {
 	public:ro	Type				type;
-	public:ro	JArr<JENode>		args;
+	public:ro	JENode[]			args;
 	public:ro	Type				arrtype;
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewArrayExpr: "+this);
 		Type type = this.type;
-		JENode[] args = this.args.toArray();
+		JENode[] args = this.args;
 		code.setLinePos(this);
 		if( args.length == 1 ) {
 			args[0].generate(code,null);
@@ -130,7 +128,7 @@ public final view JNewArrayExpr of NewArrayExpr extends JENode {
 @nodeview
 public final view JNewInitializedArrayExpr of NewInitializedArrayExpr extends JENode {
 	public:ro	Type				type;
-	public:ro	JArr<JENode>		args;
+	public:ro	JENode[]			args;
 	public:ro	int					dim;
 	public:ro	int[]				dims;
 	public:ro	Type				arrtype;
@@ -140,7 +138,7 @@ public final view JNewInitializedArrayExpr of NewInitializedArrayExpr extends JE
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);
 		Type type = this.type;
-		JENode[] args = this.args.toArray();
+		JENode[] args = this.args;
 		code.setLinePos(this);
 		if( dim == 1 ) {
 			code.addConst(args.length);

@@ -107,7 +107,7 @@ public final view JDoWhileStat of DoWhileStat extends JLoopStat {
 
 @nodeview
 public final view JForInit of ForInit extends JENode {
-	public:ro	JArr<JVar>	decls;
+	public:ro	JVar[]	decls;
 }
 
 @nodeview
@@ -163,7 +163,7 @@ public final view JForStat of ForStat extends JLoopStat {
 
 			if( init != null && init instanceof JForInit ) {
 				JForInit fi = (JForInit)init;
-				JVar[] decls = fi.decls.toArray();
+				JVar[] decls = fi.decls;
 				for(int i=decls.length-1; i >= 0; i--) {
 					code.removeVar(decls[i]);
 				}

@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
 @nodeview
 public final view JFileUnit of FileUnit extends JDNode {
 	public		TypeNameRef				pkg;
-	public:ro	JArr<JNode>				members;
+	public:ro	JNode[]					members;
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 

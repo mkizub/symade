@@ -2,7 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.vlang.types.TypeNameRef;
+import kiev.vlang.types.TypeRef;
 import kiev.parser.ASTIdentifier;
 
 import static kiev.stdlib.Debug.*;
@@ -125,11 +125,11 @@ public class MetaAlias extends MetaSpecial {
 	@virtual typedef This  = MetaAlias;
 	@virtual typedef VView = VMetaAlias;
 
-	@att public NArr<ENode>		 aliases;
+	@att public ENode[]			 aliases;
 
 	@nodeview
 	public static view VMetaAlias of MetaAlias extends VMetaSpecial {
-		public:ro NArr<ENode>		 aliases;
+		public:ro ENode[]		 aliases;
 	}
 
 	public MetaAlias() {
@@ -142,7 +142,7 @@ public class MetaAlias extends MetaSpecial {
 	}
 
 	public ENode[] getAliases() {
-		return aliases.getArray();
+		return aliases;
 	}
 }
 
@@ -153,23 +153,23 @@ public class MetaThrows extends MetaSpecial {
 	@virtual typedef This  = MetaThrows;
 	@virtual typedef VView = VMetaThrows;
 
-	@att public NArr<TypeNameRef>		 exceptions;
+	@att public TypeRef[]		 exceptions;
 
 	@nodeview
 	public static view VMetaThrows of MetaThrows extends VMetaSpecial {
-		public:ro NArr<TypeNameRef>		 exceptions;
+		public:ro TypeRef[]		 exceptions;
 	}
 
 	public MetaThrows() {
 		super(ATTR);
 	}
 
-	public void add(TypeNameRef thr) {
+	public void add(TypeRef thr) {
 		exceptions += thr;
 	}
 	
-	public TypeNameRef[] getThrowns() {
-		return exceptions.getArray();
+	public TypeRef[] getThrowns() {
+		return exceptions;
 	}
 }
 
@@ -180,12 +180,12 @@ public class MetaPizzaCase extends MetaSpecial {
 	@virtual typedef This  = MetaPizzaCase;
 	@virtual typedef VView = VMetaPizzaCase;
 
-	@ref public NArr<Field>		 fields;
+	@ref public Field[]			 fields;
 	@att public int				 tag;
 
 	@nodeview
 	public static view VMetaPizzaCase of MetaPizzaCase extends VMetaSpecial {
-		public:ro NArr<Field>	fields;
+		public:ro Field[]		fields;
 		public int				tag;
 	}
 
@@ -198,7 +198,7 @@ public class MetaPizzaCase extends MetaSpecial {
 	}
 	
 	public Field[] getFields() {
-		return fields.getArray();
+		return fields;
 	}
 	
 	public int getTag() { return this.tag; }

@@ -48,7 +48,7 @@ public final class Field extends LvalDNode implements Accessable {
 	/** Array of attributes of this field */
 	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 	/** Array of invariant methods, that check this field */
-	@ref public NArr<Method>		invs;
+	@ref public Method[]			invs;
 
 	@getter public final Type	get$type() { return this.ftype.getType(); }
 
@@ -107,7 +107,7 @@ public final class Field extends LvalDNode implements Accessable {
 		public		TypeRef			ftype;
 		public		ENode			init;
 		public		ConstExpr		const_value;
-		public:ro	NArr<Method>	invs;
+		public:ro	Method[]		invs;
 		
 		@getter public final Type	get$type();
 		

@@ -49,7 +49,7 @@ public final view RFinallyInfo of FinallyInfo extends RENode {
 @nodeview
 public final view RTryStat of TryStat extends RENode {
 	public		ENode				body;
-	public:ro	NArr<CatchInfo>		catchers;
+	public:ro	CatchInfo[]			catchers;
 	public		FinallyInfo			finally_catcher;
 
 	public void resolve(Type reqType) {

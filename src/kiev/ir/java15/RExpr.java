@@ -49,7 +49,7 @@ public final view RTypeClassExpr of TypeClassExpr extends RENode {
 public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 	public		TypeRef				type;
 	public		TypeClassExpr		cl_expr;
-	public:ro	NArr<ENode>			cl_args;
+	public:ro	ENode[]				cl_args;
 
 	public void resolve(Type reqType) {
 		if (isResolved())
@@ -65,7 +65,7 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.xtype));
 		cl_expr.resolve(Type.tpClass);
 		foreach (ArgType at; ((RStruct)clazz).getTypeInfoArgs())
-			cl_args.add(((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false));
+			((TypeInfoExpr)this).cl_args.add(((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false));
 		foreach (ENode tie; cl_args)
 			tie.resolve(null);
 		setResolved(true);
@@ -478,7 +478,7 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 
 @nodeview
 public static final view RStringConcatExpr of StringConcatExpr extends RENode {
-	public:ro	NArr<ENode>		args;
+	public:ro	ENode[]			args;
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -492,7 +492,7 @@ public static final view RStringConcatExpr of StringConcatExpr extends RENode {
 
 @nodeview
 public static final view RCommaExpr of CommaExpr extends RENode {
-	public:ro	NArr<ENode>		exprs;
+	public:ro	ENode[]		exprs;
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -512,10 +512,10 @@ public static final view RCommaExpr of CommaExpr extends RENode {
 
 @nodeview
 public static view RBlock of Block extends RENode {
-	public:ro	NArr<ASTNode>		stats;
+	public:ro	ASTNode[]		stats;
 
 	public void resolve(Type reqType) {
-		RBlock.resolveStats(reqType, this, stats.getArray());
+		RBlock.resolveStats(reqType, this, stats);
 	}
 
 	public static void resolveStats(Type reqType, RENode self, ASTNode[] stats) {

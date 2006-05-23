@@ -362,10 +362,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 
 	public Struct getStruct() { return this; }
 
-	public Object copy() {
-		throw new CompilerException(this,"Struct node cannot be copied");
-	};
-
 	public Type getType() { return this.xtype; }
 
 	public String toString() { return qname().toString(); }

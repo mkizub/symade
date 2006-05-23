@@ -211,11 +211,11 @@ public class MultiExpr extends UnresExpr {
 	@virtual typedef This  = MultiExpr;
 	@virtual typedef VView = VMultiExpr;
 
-	@ref public NArr<ENode>			exprs;
+	@ref public ENode[]			exprs;
 
 	@nodeview
 	public static final view VMultiExpr of MultiExpr extends VUnresExpr {
-		public:ro	NArr<ENode>			exprs;
+		public:ro	ENode[]			exprs;
 	}
 
 	public MultiExpr() {}
@@ -276,14 +276,14 @@ public class UnresCallExpr extends UnresExpr {
 	@ref public ENode				obj;
 	@ref public SymbolRef			func;
 	@ref public CallType			mt;
-	@ref public NArr<ENode>			args;
+	@ref public ENode[]				args;
 
 	@nodeview
 	public static view VUnresCallExpr of UnresCallExpr extends VUnresExpr {
 		public		ENode			obj;
 		public		SymbolRef		func;
 		public		CallType		mt;
-		public:ro	NArr<ENode>		args;
+		public:ro	ENode[]			args;
 	}
 	
 	public UnresCallExpr() {}
@@ -325,19 +325,19 @@ public class UnresCallExpr extends UnresExpr {
 		}
 		if (obj instanceof TypeRef) {
 			if (func.symbol.parent() instanceof Method) {
-				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args.getArray(), false);
+				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args, false);
 				return ce;
 			} else {
 				Field f = (Field)func.symbol.parent();
-				return new ClosureCallExpr(pos, new SFldExpr(pos, f), args.getArray());
+				return new ClosureCallExpr(pos, new SFldExpr(pos, f), args);
 			}
 		} else {
 			if (func.symbol.parent() instanceof Method) {
-				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args.getArray(), isSuperExpr());
+				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args, isSuperExpr());
 				ce.setCastCall(this.isCastCall());
 				return ce;
 			} else {
-				return new ClosureCallExpr(pos, ~obj, args.getArray());
+				return new ClosureCallExpr(pos, ~obj, args);
 			}
 		}
 	}

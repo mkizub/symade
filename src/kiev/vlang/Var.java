@@ -212,6 +212,7 @@ public class Var extends LvalDNode {
 @node
 public final class FormPar extends Var {
 	
+	public static FormPar[]	emptyArray = new FormPar[0];
 	private static final FormPar dummyNode = new FormPar();
 	
 	@dflow(out="this:out()") private static class DFI {

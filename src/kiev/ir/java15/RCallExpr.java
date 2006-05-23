@@ -94,7 +94,7 @@ public final view RCallExpr of CallExpr extends RENode {
 @nodeview
 public final view RClosureCallExpr of ClosureCallExpr extends RENode {
 	public		ENode			expr;
-	public:ro	NArr<ENode>		args;
+	public:ro	ENode[]			args;
 	public		Boolean			is_a_call;
 
 	public Method getCallIt(CallType tp);

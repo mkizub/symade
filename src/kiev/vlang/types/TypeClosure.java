@@ -20,11 +20,11 @@ public class TypeClosureRef extends TypeRef {
 	@virtual typedef This  = TypeClosureRef;
 	@virtual typedef VView = VTypeClosureRef;
 
-	@att public NArr<TypeRef>		types;
+	@att public TypeRef[]		types;
 
 	@nodeview
 	public static final view VTypeClosureRef of TypeClosureRef extends VTypeRef {
-		public:ro	NArr<TypeRef>			types;
+		public:ro	TypeRef[]			types;
 	}
 
 	public TypeClosureRef() {}

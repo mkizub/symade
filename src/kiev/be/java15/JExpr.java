@@ -8,8 +8,6 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
-import kiev.vlang.NArr.JArr;
-
 import static kiev.be.java15.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -43,15 +41,15 @@ public final view JTypeClassExpr of TypeClassExpr extends JENode {
 
 @nodeview
 public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
-	public:ro	Type					type;
+	public:ro	Type				type;
 	public:ro	JTypeClassExpr		cl_expr;
-	public:ro	JArr<JENode>		cl_args;
+	public:ro	JENode[]			cl_args;
 
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeInfoExpr: "+this);
 		code.setLinePos(this);
 		cl_expr.generate(code,null);
-		JENode[] cl_args = this.cl_args.toArray();
+		JENode[] cl_args = this.cl_args;
 		if (cl_args.length > 0) { 
 			code.addConst(cl_args.length);
 			code.addInstr(Instr.op_newarray,Type.tpTypeInfo);
@@ -175,7 +173,7 @@ public view JBinaryExpr of BinaryExpr extends JENode {
 
 @nodeview
 public view JStringConcatExpr of StringConcatExpr extends JENode {
-	public:ro	JArr<JENode>		args;
+	public:ro	JENode[]			args;
 
 	public static Struct clazzStringBuffer;
 	public static Method clazzStringBufferToString;
@@ -202,7 +200,7 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating StringConcatExpr: "+this);
 		code.setLinePos(this);
-		JENode[] args = this.args.toArray();
+		JENode[] args = this.args;
 		code.addInstr(op_new,clazzStringBuffer.xtype);
 		code.addInstr(op_dup);
 		code.addInstr(op_call,(JMethod)clazzStringBufferInit,false);
@@ -218,11 +216,11 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 
 @nodeview
 public view JCommaExpr of CommaExpr extends JENode {
-	public:ro	JArr<JENode>		exprs;
+	public:ro	JENode[]			exprs;
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
-		JENode[] exprs = this.exprs.toArray();
+		JENode[] exprs = this.exprs;
 		for(int i=0; i < exprs.length; i++) {
 			if( i < exprs.length-1 )
 				exprs[i].generate(code,Type.tpVoid);
@@ -234,13 +232,13 @@ public view JCommaExpr of CommaExpr extends JENode {
 
 @nodeview
 public view JBlock of Block extends JENode {
-	public:ro	JArr<JNode>		stats;
+	public:ro	JNode[]			stats;
 	public		CodeLabel		break_label;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Block");
 		code.setLinePos(this);
-		JNode[] stats = this.stats.toArray();
+		JNode[] stats = this.stats;
 		break_label = code.newLabel();
 		for(int i=0; i < stats.length; i++) {
 			try {

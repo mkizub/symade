@@ -31,7 +31,7 @@ public class RuleMethod extends Method {
 	@virtual typedef VView = VRuleMethod;
 	@virtual typedef RView = RRuleMethod;
 
-	@att public NArr<Var>			localvars;
+	@att public Var[]				localvars;
 	@att public int					base = 1;
 	@att public int					max_depth;
 	@att public int					state_depth;
@@ -40,7 +40,7 @@ public class RuleMethod extends Method {
 
 	@nodeview
 	public static final view VRuleMethod of RuleMethod extends VMethod {
-		public:ro	NArr<Var>			localvars;
+		public:ro	Var[]				localvars;
 		public		int					base;
 		public		int					max_depth;
 		public		int					state_depth;
@@ -343,7 +343,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 	@virtual typedef This  = RuleOrExpr;
 	@virtual typedef VView = VRuleOrExpr;
 
-	@att public NArr<ASTRuleNode>			rules;
+	@att public ASTRuleNode[]			rules;
 
 	public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base(); }
 	public void set$base(int b) {}
@@ -353,7 +353,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 
 	@nodeview
 	public static final view VRuleOrExpr of RuleOrExpr extends VASTRuleNode {
-		public:ro	NArr<ASTRuleNode>			rules;
+		public:ro	ASTRuleNode[]			rules;
 	}
 
 	public RuleOrExpr() {}
@@ -407,7 +407,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 	@virtual typedef This  = RuleAndExpr;
 	@virtual typedef VView = VRuleAndExpr;
 
-	@att public NArr<ASTRuleNode>			rules;
+	@att public ASTRuleNode[]			rules;
 
 	public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base();	}
 	public void set$base(int b) {}
@@ -417,7 +417,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 
 	@nodeview
 	public static final view VRuleAndExpr of RuleAndExpr extends VASTRuleNode {
-		public:ro	NArr<ASTRuleNode>			rules;
+		public:ro	ASTRuleNode[]			rules;
 	}
 
 	public RuleAndExpr() {}
@@ -775,14 +775,14 @@ public final class RuleCallExpr extends ASTRuleNode {
 
 	@att public ENode				obj;
 	@att public SymbolRef			ident;
-	@att public NArr<ENode>			args;
+	@att public ENode[]				args;
 	@att public int					env_var;
 
 	@nodeview
 	public static final view VRuleCallExpr of RuleCallExpr extends VASTRuleNode {
 		public		ENode			obj;
 		public		SymbolRef		ident;
-		public:ro	NArr<ENode>		args;
+		public:ro	ENode[]			args;
 		public		int				env_var;
 	}
 	

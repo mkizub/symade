@@ -29,8 +29,8 @@ public class ASTCallAccessExpression extends ENode {
 
 	@att public ENode				obj;
 	@att public SymbolRef			ident;
-	@att public NArr<TypeRef>		targs;
-	@att public NArr<ENode>			args;
+	@att public TypeRef[]			targs;
+	@att public ENode[]				args;
 
 	@getter public Method get$func() {
 		if (ident == null) return null;
@@ -47,8 +47,8 @@ public class ASTCallAccessExpression extends ENode {
 		public		ENode			obj;
 		public		SymbolRef		ident;
 		public:ro	Method			func;
-		public:ro	NArr<TypeRef>	targs;
-		public:ro	NArr<ENode>		args;
+		public:ro	TypeRef[]		targs;
+		public:ro	ENode[]			args;
 
 		public void mainResolveOut() {
 			if( obj instanceof ASTIdentifier
@@ -72,13 +72,13 @@ public class ASTCallAccessExpression extends ENode {
 				CallType mt = new CallType(ta,null);
 				try {
 					if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ident.name,mt) )
-						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args.getArray(),null));
+						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,null));
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				info.leaveSuper();
 				info.leaveForward(obj);
 				if( info.isEmpty() ) {
 					Method meth = (Method)m;
-					CallExpr cae = new CallExpr(pos,~obj,meth,args.delToArray());
+					CallExpr cae = new CallExpr(pos,~obj,meth,((ASTCallAccessExpression)this).args.delToArray());
 					cae.setSuperExpr(true);
 					replaceWithNode(cae);
 					return;
@@ -117,11 +117,11 @@ public class ASTCallAccessExpression extends ENode {
 				try {
 					if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
 						if (tps.length == 1 && res_flags == 0)
-							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args.delToArray());
+							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args);
 						else if (res_flags == 0)
-							res[si] = info.buildCall((ASTNode)this, new TypeRef(tps[si]), m, info.mt, args.delToArray());
+							res[si] = info.buildCall((ASTNode)this, new TypeRef(tps[si]), m, info.mt, args);
 						else
-							res[si] = info.buildCall((ASTNode)this, obj.ncopy(), m, info.mt, args.delToArray());
+							res[si] = info.buildCall((ASTNode)this, obj.ncopy(), m, info.mt, args);
 					}
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			}
@@ -206,7 +206,7 @@ public class ASTCallAccessExpression extends ENode {
 			try {
 				if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ident.name,mt) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
-					throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args.getArray(),ret));
+					throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,ret));
 				}
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			info.leaveSuper();

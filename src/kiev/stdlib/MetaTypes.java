@@ -434,6 +434,6 @@ public metatype _array_<_elem_ extends any> extends Object {
 	public _elem_ get(int idx) alias operator(210, xfy, [] );
 
 	@macro @native
-	public _elem_ set(int idx, _elem_ val) alias operator(210, lfy, [] );
+	public <R extends _elem_> R set(int idx, R val) alias operator(210, lfy, [] );
 }
 

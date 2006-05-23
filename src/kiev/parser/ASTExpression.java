@@ -30,11 +30,11 @@ public class ASTExpression extends ENode {
 	@virtual typedef This  = ASTExpression;
 	@virtual typedef VView = VASTExpression;
 
-	@att public NArr<ENode>			nodes;
+	@att public ENode[]				nodes;
 
 	@nodeview
 	public static final view VASTExpression of ASTExpression extends VENode {
-		public:ro	NArr<ENode>			nodes;
+		public:ro	ENode[]			nodes;
 
 		public void preResolveOut() {
 			if (nodes.length == 1) {

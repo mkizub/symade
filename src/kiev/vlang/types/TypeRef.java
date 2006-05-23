@@ -23,6 +23,7 @@ import syntax kiev.Syntax;
 @node
 public class TypeRef extends ENode {
 
+	public static final TypeRef[] emptyArray = new TypeRef[0];
 	public static final TypeRef dummyNode = new TypeRef();
 	
 	@dflow(out="this:in") private static class DFI {}

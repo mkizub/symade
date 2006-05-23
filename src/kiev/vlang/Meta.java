@@ -19,7 +19,7 @@ public final class MetaSet extends ASTNode {
 	@virtual typedef This  = MetaSet;
 	@virtual typedef VView = VMetaSet;
 
-	@att public NArr<Meta>			metas;
+	@att public Meta[]				metas;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
@@ -29,7 +29,7 @@ public final class MetaSet extends ASTNode {
 
 	@nodeview
 	public static final view VMetaSet of MetaSet extends NodeView {
-		public:ro	NArr<Meta>			metas;
+		public:ro	Meta[]			metas;
 	}
 
 	public MetaSet() {}
@@ -139,7 +139,7 @@ public class Meta extends ENode {
 	@virtual typedef VView = VMeta;
 
 	@att public TypeRef					type;
-	@att public NArr<MetaValue>			values;
+	@att public MetaValue[]				values;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
@@ -153,7 +153,7 @@ public class Meta extends ENode {
 	@nodeview
 	public static view VMeta of Meta extends VENode {
 		public		TypeRef					type;
-		public:ro	NArr<MetaValue>			values;
+		public:ro	MetaValue[]				values;
 	}
 
 	public Meta() {}
@@ -246,7 +246,7 @@ public class Meta extends ENode {
 					ENode v = mvs.value.ncopy();
 					values.append(new MetaValueScalar(mvt, v));
 				} else {
-					ENode[] arr = ((MetaValueArray)m.annotation_default).values.getArray();
+					ENode[] arr = ((MetaValueArray)m.annotation_default).values;
 					for(int j=0; j < arr.length; j++)
 						arr[j] = arr[j].ncopy();
 					values.append(new MetaValueArray(mvt, arr));
@@ -556,11 +556,11 @@ public final class MetaValueArray extends MetaValue {
 	@virtual typedef This  = MetaValueArray;
 	@virtual typedef VView = VMetaValueArray;
 
-	@att public NArr<ENode>			values;
+	@att public ENode[]				values;
 
 	@nodeview
 	public static final view VMetaValueArray of MetaValueArray extends VMetaValue {
-		public:ro	NArr<ENode>			values;
+		public:ro	ENode[]			values;
 	}
 
 	public MetaValueArray() {}

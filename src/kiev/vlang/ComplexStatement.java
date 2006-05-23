@@ -52,16 +52,16 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 
 	@att public ENode			val;
 	@ref public Type			type;
-	@att public NArr<Var>		pattern;
-	@att public NArr<ASTNode>	stats;
+	@att public Var[]			pattern;
+	@att public ASTNode[]		stats;
 	@ref public CodeLabel		case_label;
 
 	@nodeview
 	public static final view VCaseLabel of CaseLabel extends VENode {
 		public		ENode			val;
 		public		Type			type;
-		public:ro	NArr<Var>		pattern;
-		public:ro	NArr<ASTNode>	stats;
+		public:ro	Var[]			pattern;
+		public:ro	ASTNode[]		stats;
 	}
 
 	public CaseLabel() {}
@@ -134,7 +134,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		var.id.equals(name),
 		node ?= var
 	;
-		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
 			n instanceof Var,
 			((Var)n).id.equals(name),
@@ -148,7 +148,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		}
 	;
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this.stats.getArray(), info.space_prev),
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		n instanceof Var && ((Var)n).isForward() && ((Var)n).id.equals(name),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		n.getType().resolveNameAccessR(node,info,name)
@@ -188,7 +188,7 @@ public class SwitchStat extends ENode {
 
 	@att                 public int mode; /* = NORMAL_SWITCH; */
 	@att                 public ENode					sel;
-	@att                 public NArr<CaseLabel>		cases;
+	@att                 public CaseLabel[]			cases;
 	@att                 public LVarExpr				tmpvar;
 	@ref                 public CaseLabel				defCase;
 	@ref                 public Field					typehash; // needed for re-resolving
@@ -200,7 +200,7 @@ public class SwitchStat extends ENode {
 	public static final view VSwitchStat of SwitchStat extends VENode {
 		public		int						mode;
 		public		ENode					sel;
-		public:ro	NArr<CaseLabel>			cases;
+		public:ro	CaseLabel[]				cases;
 		public		LVarExpr				tmpvar;
 		public		CaseLabel				defCase;
 		public		Field					typehash; // needed for re-resolving
@@ -327,14 +327,14 @@ public class TryStat extends ENode {
 	@virtual typedef RView = RTryStat;
 
 	@att public ENode				body;
-	@att public NArr<CatchInfo>		catchers;
+	@att public CatchInfo[]			catchers;
 	@att public FinallyInfo			finally_catcher;
 	@att public CodeLabel			end_label;
 
 	@nodeview
 	public static final view VTryStat of TryStat extends VENode {
 		public		ENode				body;
-		public:ro	NArr<CatchInfo>		catchers;
+		public:ro	CatchInfo[]			catchers;
 		public		FinallyInfo			finally_catcher;
 	}
 

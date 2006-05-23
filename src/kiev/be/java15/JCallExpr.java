@@ -298,7 +298,7 @@ public final view JCallExpr of CallExpr extends JENode {
 @nodeview
 public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 	public:ro JENode		expr;
-	public:ro JArr<JENode>	args;
+	public:ro JENode[]		args;
 	public:ro Boolean		is_a_call;
 	
 	@getter public final CallType	get$xtype() { return (CallType)((ClosureCallExpr)this).expr.getType(); }
@@ -309,7 +309,7 @@ public final view JClosureCallExpr of ClosureCallExpr extends JENode {
 		// Load ref to closure
 		expr.generate(code,null);
 		CallType xtype = this.xtype;
-		JENode[] args = this.args.toArray();
+		JENode[] args = this.args;
 		// Clone it
 		if( args.length > 0 ) {
 			JMethod clone_it = ((JStruct)Type.tpClosureClazz).resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));

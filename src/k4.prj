@@ -263,6 +263,7 @@ CLASS kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 CLASS kiev.vlang.AttAttrSlot kiev/vlang/AttAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.AttachInfo kiev/vlang/AttachInfo kiev\vlang\AST.java
+CLASS kiev.vlang.AttrPtr kiev/vlang/AttrPtr kiev\vlang\Tree.java
 CLASS kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
 CLASS kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\BooleanExpr.java
@@ -415,6 +416,7 @@ CLASS kiev.vlang.ScopeVarInfo kiev/vlang/ScopeVarInfo kiev\vlang\Var.java
 CLASS kiev.vlang.Shadow kiev/vlang/Shadow kiev\vlang\Expr.java
 CLASS kiev.vlang.SpaceAttAttrSlot kiev/vlang/SpaceAttAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.SpaceAttrSlot kiev/vlang/SpaceAttrSlot kiev\vlang\Tree.java
+CLASS kiev.vlang.SpacePtr kiev/vlang/SpacePtr kiev\vlang\Tree.java
 CLASS kiev.vlang.SpaceRefAttrSlot kiev/vlang/SpaceRefAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java

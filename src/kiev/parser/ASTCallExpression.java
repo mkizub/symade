@@ -28,8 +28,8 @@ public class ASTCallExpression extends ENode {
 	@virtual typedef VView = VASTCallExpression;
 
 	@att public SymbolRef			ident;
-	@att public NArr<TypeRef>		targs;
-	@att public NArr<ENode>			args;
+	@att public TypeRef[]			targs;
+	@att public ENode[]				args;
 
 	@getter public Method get$func() {
 		if (ident == null) return null;
@@ -45,8 +45,8 @@ public class ASTCallExpression extends ENode {
 	public static view VASTCallExpression of ASTCallExpression extends VENode {
 		public		SymbolRef		ident;
 		public:ro	Method			func;
-		public:ro	NArr<TypeRef>	targs;
-		public:ro	NArr<ENode>		args;
+		public:ro	TypeRef[]		targs;
+		public:ro	ENode[]			args;
 
 		public void mainResolveOut() {
 			// method of current class or first-order function
@@ -65,10 +65,10 @@ public class ASTCallExpression extends ENode {
 				ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 				try {
 					if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.id.uname,mt) )
-						throw new CompilerException(this,"Method "+Method.toString(ident.name,args.getArray())+" unresolved");
+						throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
-					CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),false);
+					CallExpr ce = new CallExpr(pos,null,m,info.mt,((ASTCallExpression)this).args.delToArray(),false);
 					replaceWithNode(ce);
 					return;
 				}
@@ -79,10 +79,10 @@ public class ASTCallExpression extends ENode {
 				ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 				try {
 					if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ctx_method.id.uname,mt) )
-						throw new CompilerException(this,"Method "+Method.toString(ident.name,args.getArray())+" unresolved");
+						throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
-					CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),true);
+					CallExpr ce = new CallExpr(pos,null,m,info.mt,((ASTCallExpression)this).args.delToArray(),true);
 					replaceWithNode(ce);
 					return;
 				}
@@ -97,25 +97,25 @@ public class ASTCallExpression extends ENode {
 						ResInfo info = new ResInfo(this);
 						try {
 							if( !PassInfo.resolveNameR((ASTNode)this,closure,info,ident.name) )
-								throw new CompilerException(this,"Unresolved method "+Method.toString(ident.name,args.getArray(),null));
+								throw new CompilerException(this,"Unresolved method "+Method.toString(ident.name,args,null));
 						} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 						try {
 							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof CallType
 							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof CallType
 							) {
-								replaceWithNode(new ClosureCallExpr(pos,info.buildAccess((ASTNode)this,null,closure),args.delToArray()));
+								replaceWithNode(new ClosureCallExpr(pos,info.buildAccess((ASTNode)this,null,closure),((ASTCallExpression)this).args.delToArray()));
 								return;
 							}
 						} catch(Exception eee) {
 							Kiev.reportError(this,eee);
 						}
-						throw new CompilerException(this,"Unresolved method "+Method.toString(ident.name,args.getArray()));
+						throw new CompilerException(this,"Unresolved method "+Method.toString(ident.name,args));
 					}
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 	
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				ENode e = info.buildCall((ASTNode)this,null,m,info.mt,args.getArray());
+				ENode e = info.buildCall((ASTNode)this,null,m,info.mt,args);
 				if (e instanceof UnresExpr)
 					e = ((UnresExpr)e).toResolvedExpr();
 				if (isPrimaryExpr())
@@ -153,7 +153,7 @@ public class ASTCallExpression extends ENode {
 			CallType mt = new CallType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.id.uname,mt) )
-				throw new CompilerException(this,"Method "+Method.toString(ident.name,args.getArray())+" unresolved");
+				throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),false);
 				replaceWithNode(ce);
@@ -169,7 +169,7 @@ public class ASTCallExpression extends ENode {
 			CallType mt = new CallType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ctx_method.id.uname,mt) )
-				throw new CompilerException(this,"Method "+Method.toString(ident.name,args.getArray())+" unresolved");
+				throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),true);
 				replaceWithNode(ce);
@@ -194,7 +194,7 @@ public class ASTCallExpression extends ENode {
 				ResInfo info = new ResInfo(this);
 				if( !PassInfo.resolveNameR(this,closure,info,ident.name) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
-					throw new CompilerException(this,"Unresolved method "+Method.toString(ident.name,args.getArray(),ret));
+					throw new CompilerException(this,"Unresolved method "+Method.toString(ident.name,args,ret));
 				}
 				try {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof CallType
@@ -207,7 +207,7 @@ public class ASTCallExpression extends ENode {
 					Kiev.reportError(this,eee);
 				}
 				if( ret != null ) { ret = null; goto retry_with_null_ret; }
-				throw new CompilerException(this,"Unresolved method "+Method.toString(ident.name,args.getArray()));
+				throw new CompilerException(this,"Unresolved method "+Method.toString(ident.name,args));
 			}
 			if( reqType instanceof CallType ) {
 				NewClosure nc = new NewClosure(pos);
@@ -215,7 +215,7 @@ public class ASTCallExpression extends ENode {
 				for (int i=0; i < nc.params.length; i++)
 					nc.params.append(new FormPar(pos,"arg"+(i+1),((Method)m).type.arg(i),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
 				Block bs = new Block(pos);
-				ENode[] oldargs = args.getArray();
+				ENode[] oldargs = args;
 				ENode[] cargs = new ENode[nc.params.length];
 				for(int i=0; i < cargs.length; i++)
 					cargs[i] = new LVarExpr(pos,(Var)nc.params[i]);
@@ -239,7 +239,7 @@ public class ASTCallExpression extends ENode {
 			} else {
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				ENode e = info.buildCall(this,null,m,info.mt,args.getArray());
+				ENode e = info.buildCall(this,null,m,info.mt,args);
 				if (e instanceof UnresExpr)
 					e = ((UnresExpr)e).toResolvedExpr();
 				if (isPrimaryExpr())

@@ -250,6 +250,18 @@ public abstract class ANode {
 		}
 		return node;
 	}
+	
+	public final AttrPtr getAttrPtr(String name) {
+		foreach (AttrSlot attr; this.values(); attr.name == name)
+			return new AttrPtr(this, attr);
+		throw new RuntimeException("No @att/@ref attribute '"+name+"' in "+getClass());
+	}
+	
+	public final SpacePtr getSpacePtr(String name) {
+		foreach (AttrSlot attr; this.values(); attr.name == name && attr.is_space)
+			return new SpacePtr(this, (SpaceAttrSlot<ASTNode>)attr);
+		throw new RuntimeException("No @att/@ref space '"+name+"' in "+getClass());
+	}
 }
 
 public class TreeWalker {

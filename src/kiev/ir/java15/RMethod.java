@@ -22,18 +22,18 @@ public view RMethod of Method extends RDNode {
 	public final void checkRebuildTypes();
 
 	public				Access				acc;
-	public:ro			NArr<TypeDef>		targs;
+	public:ro			TypeDef[]			targs;
 	public				TypeRef				type_ret;
 	public				TypeRef				dtype_ret;
 	public:ro			CallType			type;
 	public:ro			CallType			dtype;
 	public:ro			CallType			etype;
-	public:ro			NArr<FormPar>		params;
-	public:ro			NArr<ASTAlias>		aliases;
+	public:ro			FormPar[]			params;
+	public:ro			ASTAlias[]			aliases;
 	public				Var					retvar;
 	public				ENode				body;
-	public:ro			NArr<WBCCondition>	conditions;
-	public:ro			NArr<Field>			violated_fields;
+	public:ro			WBCCondition[]		conditions;
+	public:ro			Field[]				violated_fields;
 	public				MetaValue			annotation_default;
 	public				boolean				inlined_by_dispatcher;
 	public				boolean				invalid_types;
@@ -106,8 +106,8 @@ public view RMethod of Method extends RDNode {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(id.sname.startsWith(nameSet) || id.sname.startsWith(nameGet)) ) {
-						if (conditions.indexOf(inv.conditions[0]) < 0)
-							conditions.add(inv.conditions[0]);
+						if (((Method)self).conditions.indexOf(inv.conditions[0]) < 0)
+							((Method)self).conditions.add(inv.conditions[0]);
 					}
 				}
 			}
@@ -119,11 +119,10 @@ public view RMethod of Method extends RDNode {
 
 @nodeview
 public final view RConstructor of Constructor extends RMethod {
-	public:ro	NArr<ENode>			addstats;
 
 	public void resolveDecl() {
 		RMethod.resolveMethod(this); // super.resolveDecl()
-		ENode[] addstats = this.addstats.delToArray();
+		ENode[] addstats = ((Constructor)this).addstats.delToArray();
 		for(int i=0; i < addstats.length; i++) {
 			block.stats.insert(i,addstats[i]);
 			trace(Kiev.debugResolve,"ENode added to constructor: "+addstats[i]);

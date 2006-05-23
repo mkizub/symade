@@ -360,6 +360,8 @@ public final class ConstStringExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	public static final ConstStringExpr[] emptyArray = new ConstStringExpr[0];
+	
 	@virtual typedef This  = ConstStringExpr;
 	@virtual typedef VView = VConstStringExpr;
 	@virtual typedef JView = JConstStringExpr;

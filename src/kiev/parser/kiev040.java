@@ -422,6 +422,13 @@ public abstract class kiev040 implements kiev040Constants {
                 for (int i=0; i < comments.length; i++)
                         arr.append(comments[i]);
         }
+        void comments_alone(SpacePtr arr) {
+                Comment[] comments = get_comments();
+                if (comments == null || comments.length == 0)
+                        return;
+                for (int i=0; i < comments.length; i++)
+                        arr += comments[i];
+        }
         void comments_before(ASTNode node) {
                 Comment[] comments = get_comments();
                 if (comments == null || comments.length == 0)
@@ -528,6 +535,7 @@ public abstract class kiev040 implements kiev040Constants {
                 ASTModifiers modifiers;
                 oldClazz = curClazz;
                 curClazz = Env.root;
+                SpacePtr fu_members = fu.getSpacePtr("members");
     try {
       label_1:
       while (true) {
@@ -555,7 +563,7 @@ public abstract class kiev040 implements kiev040Constants {
         } else {
           break label_2;
         }
-                          comments_alone(fu.members);
+                          comments_alone(fu_members);
         modifiers = Modifiers();
         switch (jj_nt.kind) {
         case IMPORT:
@@ -607,7 +615,7 @@ public abstract class kiev040 implements kiev040Constants {
           }
         }
       }
-                  comments_alone(fu.members);
+                  comments_alone(fu_members);
       jj_consume_token(0);
     } catch (ParseError e) {
                               rpe("Bad modifiers",e);
@@ -4419,7 +4427,7 @@ public abstract class kiev040 implements kiev040Constants {
         } else {
           break label_68;
         }
-        BlockStatement(bl.stats);
+        BlockStatement(bl.getSpacePtr("stats"));
       }
     } finally {
                     declMode = old_declMode;
@@ -4475,7 +4483,7 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public void BlockStatement(NArrNodes stats) throws ParseException {
+  final public void BlockStatement(SpacePtr stats) throws ParseException {
   boolean old_declMode; ASTModifiers modifiers; TypeRef tp; Struct clazz; Var var;
           comments_alone(stats);
     if (jj_2_91(2147483647)) {
@@ -4483,7 +4491,7 @@ public abstract class kiev040 implements kiev040Constants {
                         declMode = true;
       try {
         modifiers = Modifiers();
-        clazz = TypeDeclaration(modifiers, (ASTNode)stats.getParent());
+        clazz = TypeDeclaration(modifiers, (ASTNode)stats.node);
                           stats += clazz;
         switch (jj_nt.kind) {
         case SEMICOLON:
@@ -4643,7 +4651,7 @@ public abstract class kiev040 implements kiev040Constants {
       } else {
         break label_72;
       }
-      BlockStatement(c.stats);
+      BlockStatement(c.getSpacePtr("stats"));
     }
           {if (true) return c;}
     throw new Error("Missing return statement in function");
@@ -4683,7 +4691,7 @@ public abstract class kiev040 implements kiev040Constants {
       } else {
         break label_74;
       }
-      BlockStatement(c.stats);
+      BlockStatement(c.getSpacePtr("stats"));
     }
           {if (true) return c;}
     throw new Error("Missing return statement in function");
@@ -5033,7 +5041,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(COLON);
     label_78:
     while (true) {
-      BlockStatement(c.stats);
+      BlockStatement(c.getSpacePtr("stats"));
       if (jj_2_108(1)) {
         ;
       } else {
@@ -5792,43 +5800,6 @@ public abstract class kiev040 implements kiev040Constants {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_110(); }
     catch(LookaheadSuccess ls) { return true; }
-  }
-
-  final private boolean jj_3R_204() {
-    if (jj_3R_81()) return true;
-    if (jj_3R_89()) return true;
-    if (jj_3R_428()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_429()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_460() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(70)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(55)) return true;
-    }
-    return false;
-  }
-
-  final private boolean jj_3_91() {
-    if (jj_3R_81()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(23)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(41)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(77)) return true;
-    }
-    }
-    return false;
   }
 
   final private boolean jj_3R_357() {
@@ -10531,6 +10502,43 @@ public abstract class kiev040 implements kiev040Constants {
     if (jj_3R_81()) return true;
     if (jj_3R_89()) return true;
     if (jj_3R_140()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_204() {
+    if (jj_3R_81()) return true;
+    if (jj_3R_89()) return true;
+    if (jj_3R_428()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_429()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_460() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(70)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(55)) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3_91() {
+    if (jj_3R_81()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(23)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(41)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(77)) return true;
+    }
+    }
     return false;
   }
 

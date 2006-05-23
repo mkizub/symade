@@ -8,8 +8,6 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
-import kiev.vlang.NArr.JArr;
-
 import static kiev.be.java15.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -18,8 +16,8 @@ import syntax kiev.Syntax;
 public final view JCaseLabel of CaseLabel extends JENode {
 	public:ro	JENode			val;
 	public:ro	Type			type;
-	public:ro	JArr<JVar>		pattern;
-	public:ro	JArr<JNode>		stats;
+	public:ro	JVar[]			pattern;
+	public:ro	JNode[]			stats;
 	public		CodeLabel		case_label;
 
 	public CodeLabel getLabel(Code code) {
@@ -52,6 +50,7 @@ public final view JCaseLabel of CaseLabel extends JENode {
 				p.generate(code,Type.tpVoid);
 			}
 		}
+		JNode[] stats = this.stats;
 		for(int i=0; i < stats.length; i++) {
 			try {
 				JNode st = stats[i];
@@ -72,7 +71,7 @@ public final view JCaseLabel of CaseLabel extends JENode {
 public view JSwitchStat of SwitchStat extends JENode implements BreakTarget {
 	public:ro	int					mode;
 	public:ro	JENode				sel;
-	public:ro	JArr<JCaseLabel>	cases;
+	public:ro	JCaseLabel[]		cases;
 	public:ro	JLVarExpr			tmpvar;
 	public:ro	JCaseLabel			defCase;
 	public:ro	JField				typehash; // needed for re-resolving
@@ -89,7 +88,7 @@ public view JSwitchStat of SwitchStat extends JENode implements BreakTarget {
 		int lo = Integer.MAX_VALUE;
 		int hi = Integer.MIN_VALUE;
 
-		JCaseLabel[] cases = this.cases.toArray();
+		JCaseLabel[] cases = this.cases;
 		
 		int ntags = defCase==null? cases.length : cases.length-1;
 		int[] tags = new int[ntags];
@@ -248,7 +247,7 @@ public view JFinallyInfo of FinallyInfo extends JENode {
 @nodeview
 public final view JTryStat of TryStat extends JENode {
 	public:ro	JENode				body;
-	public:ro	JArr<JCatchInfo>	catchers;
+	public:ro	JCatchInfo[]		catchers;
 	public:ro	JFinallyInfo		finally_catcher;
 	public		CodeLabel			end_label;
 

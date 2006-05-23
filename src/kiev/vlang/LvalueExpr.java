@@ -739,14 +739,14 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 	@att public ENode			obj;
 	@att public SymbolRef		ident;
 	@ref public Struct			outer;
-	@ref public NArr<Field>		outer_refs;
+	@ref public Field[]			outer_refs;
 
 	@nodeview
 	public static final view VOuterThisAccessExpr of OuterThisAccessExpr extends VLvalueExpr {
 		public		ENode			obj;
 		public		SymbolRef		ident;
 		public		Struct			outer;
-		public:ro	NArr<Field>		outer_refs;
+		public:ro	Field[]			outer_refs;
 	}
 
 	public OuterThisAccessExpr() {}
@@ -762,7 +762,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 
 	public Type getType() {
 		try {
-			if (ctx_tdecl == null || outer_refs.size() == 0)
+			if (ctx_tdecl == null || outer_refs.length == 0)
 				return outer.xtype;
 			Type tp = ctx_tdecl.xtype;
 			foreach (Field f; outer_refs)
@@ -784,6 +784,22 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 			}
 		}
 		return null;
+	}
+	
+	public void setupOuterFields() {
+		this.outer_refs.delAll();
+		Field ou_ref = OuterThisAccessExpr.outerOf((Struct)ctx_tdecl);
+		if( ou_ref == null )
+			throw new CompilerException(this, "Outer 'this' reference in non-inner or static inner class "+ctx_tdecl);
+		do {
+			outer_refs.append(ou_ref);
+			if( ou_ref.type.isInstanceOf(outer.xtype) ) break;
+			ou_ref = OuterThisAccessExpr.outerOf(ou_ref.type.getStruct());
+		} while( ou_ref!=null );
+		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.xtype) )
+			throw new CompilerException(this, "Outer class "+outer+" not found for inner class "+ctx_tdecl);
+		if( ctx_method.isStatic() && !ctx_method.isVirtualStatic() )
+			throw new CompilerException(this, "Access to 'this' in static method "+ctx_method);
 	}
 
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.qname()).append(".this").space(); }

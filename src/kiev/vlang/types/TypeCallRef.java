@@ -20,9 +20,9 @@ public class TypeCallRef extends TypeRef {
 	@virtual typedef This  = TypeCallRef;
 	@virtual typedef VView = VTypeCallRef;
 
-	@ref public NArr<TypeDef>			targs;
-	@att public NArr<TypeRef>			args;
-	@att public TypeRef					ret;
+	@ref public TypeDef[]			targs;
+	@att public TypeRef[]			args;
+	@att public TypeRef				ret;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		this.lnk = null;
@@ -33,9 +33,9 @@ public class TypeCallRef extends TypeRef {
 
 	@nodeview
 	public static final view VTypeCallRef of TypeCallRef extends VTypeRef {
-		public:ro	NArr<TypeDef>			targs;
-		public:ro	NArr<TypeRef>			args;
-		public		TypeRef					ret;
+		public:ro	TypeDef[]			targs;
+		public:ro	TypeRef[]			args;
+		public		TypeRef				ret;
 
 		public CallType getMType();
 	}

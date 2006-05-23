@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 @nodeview
 public static final view RNewExpr of NewExpr extends RENode {
 	public		TypeRef				type;
-	public:ro	NArr<ENode>			args;
+	public:ro	ENode[]				args;
 	public		ENode				outer;
 	public		Struct				clazz;
 	public		Method				func;
@@ -60,7 +60,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		if( this.clazz == null && (ctx_method==null || !ctx_method.id.equals(nameNewOp)) ) {
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
 			if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
-				CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
+				CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,((NewExpr)this).args.delToArray());
 				replaceWithNodeResolve(n);
 				return;
 			}
@@ -69,13 +69,13 @@ public static final view RNewExpr of NewExpr extends RENode {
 		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 			func = m;
-			m.makeArgs(args.getArray(),type);
+			m.makeArgs(args,type);
 			for(int i=0; i < args.length; i++)
 				args[i].resolve(mt.arg(i));
 		}
 		else {
 			throw new CompilerException(this,"Can't find apropriative initializer for "+
-				Method.toString(nameInit,args.getArray(),Type.tpVoid)+" for "+type);
+				Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
 		}
 		setResolved(true);
 		if (isAutoReturnable())
@@ -86,7 +86,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 @nodeview
 public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 	public		TypeRef				type;
-	public:ro	NArr<ENode>			args;
+	public:ro	ENode[]				args;
 	public		ArrayType			arrtype;
 
 	@getter public final Type	get$arrtype();
@@ -108,7 +108,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 			//if( ctx_method==null || ctx_method.isStatic() )
 			//	throw new CompilerException(this,"Access to argument "+type+" from static method");
 			ENode ti = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewArrayExpr)this,type,false);
-			if( args.size() == 1 ) {
+			if( args.length == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
 						Type.tpTypeInfo.clazz.resolveMethod("newArray",Type.tpObject,Type.tpInt),
@@ -120,7 +120,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 					new CallExpr(pos,ti,
 						Type.tpTypeInfo.clazz.resolveMethod("newArray",Type.tpObject,new ArrayType(Type.tpInt)),
 						new ENode[]{
-							new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.delToArray())
+							new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,((NewArrayExpr)this).args.delToArray())
 						}
 					)));
 				return;
@@ -135,7 +135,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 @nodeview
 public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr extends RENode {
 	public		TypeRef				type;
-	public:ro	NArr<ENode>			args;
+	public:ro	ENode[]				args;
 	public		int[]				dims;
 	public		ArrayType			arrtype;
 	
@@ -188,11 +188,11 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr ext
 
 @nodeview
 public final view RNewClosure of NewClosure extends RENode {
-	public TypeRef			type_ret;
-	public NArr<FormPar>	params;
-	public Block			body;
-	public Struct			clazz;
-	public CallType			xtype;
+	public		TypeRef			type_ret;
+	public:ro	FormPar[]		params;
+	public		Block			body;
+	public		Struct			clazz;
+	public		CallType		xtype;
 
 	public boolean preGenerate() {
 		if (clazz != null)
@@ -239,7 +239,7 @@ public final view RNewClosure of NewClosure extends RENode {
 			clazz.members.add(md);
 		}
 
-		FormPar[] params = this.params.delToArray();
+		FormPar[] params = ((NewClosure)this).params.delToArray();
 		for(int i=0; i < params.length; i++) {
 			FormPar v = params[i];
 			ENode val = new ContainerAccessExpr(pos,

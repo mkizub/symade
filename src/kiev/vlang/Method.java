@@ -41,16 +41,16 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 
 		 public Access				acc;
 		 CallMetaType				meta_type;
-	@att public NArr<TypeDef>		targs;
+	@att public TypeDef[]			targs;
 	@att public TypeRef				type_ret;
 	@att public TypeRef				dtype_ret;
-	@att public NArr<FormPar>		params;
-	@att public NArr<ASTAlias>		aliases;
+	@att public FormPar[]			params;
+	@att public ASTAlias[]			aliases;
 	@att public Var					retvar;
 	@att public ENode				body;
 	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
-	@att public NArr<WBCCondition> 	conditions;
-	@ref public NArr<Field>			violated_fields;
+	@att public WBCCondition[]	 	conditions;
+	@ref public Field[]				violated_fields;
 	@att public MetaValue			annotation_default;
 		 public boolean				inlined_by_dispatcher;
 		 public boolean				invalid_types;
@@ -241,7 +241,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 
 	@getter public Method get$child_ctx_method() { return (Method)this; }
-		
+
 
 	@nodeview
 	public static view VMethod of Method extends VDNode {
@@ -250,18 +250,18 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	
 		public				Access				acc;
 		public				CallMetaType		meta_type;
-		public:ro			NArr<TypeDef>		targs;
+		public:ro			TypeDef[]			targs;
 		public				TypeRef				type_ret;
 		public				TypeRef				dtype_ret;
 		public:ro			CallType			type;
 		public:ro			CallType			dtype;
 		public:ro			CallType			etype;
-		public:ro			NArr<FormPar>		params;
-		public:ro			NArr<ASTAlias>		aliases;
+		public:ro			FormPar[]			params;
+		public:ro			ASTAlias[]			aliases;
 		public				Var					retvar;
 		public				ENode				body;
-		public:ro			NArr<WBCCondition>	conditions;
-		public:ro			NArr<Field>			violated_fields;
+		public:ro			WBCCondition[]		conditions;
+		public:ro			Field[]				violated_fields;
 		public				MetaValue			annotation_default;
 		public				boolean				inlined_by_dispatcher;
 		public				boolean				invalid_types;
@@ -510,9 +510,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				Vector<Type> bindings = new Vector<Type>();
 				// bind from mt
 				for (int i=0; i < rt.arity; i++)
-					bindings = addBindingsFor(at, mt.arg(i), rt.arg(i), bindings);
-				if (mt.ret() ≢ Type.tpAny)
-					bindings = addBindingsFor(at, mt.ret(), rt.ret(), bindings);
+					addBindingsFor(at, mt.arg(i), rt.arg(i), bindings);
+				addBindingsFor(at, mt.ret(), rt.ret(), bindings);
 				if (bindings.length == 0) {
 					trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 						+" do not allow to infer type: "+at);
@@ -542,9 +541,15 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 
 	// compares pattern type (pt) with query type (qt) to find bindings for argument type (at),
 	// and adds found bindings to the set of bindings
-	private static Vector<Type> addBindingsFor(ArgType at, Type pt, Type qt, Vector<Type> bindings) {
+	private static void addBindingsFor(ArgType at, Type pt, Type qt, Vector<Type> bindings) {
+		if (pt ≡ null || pt ≡ Type.tpAny || pt ≡ at)
+			return;
+		if (qt ≡ at) {
+			bindings.append(pt);
+			return;
+		}
 		if (!qt.hasApplayable(at))
-			return bindings;
+			return;
 		final int qt_size = qt.tvars.length;
 		for (int i=0; i < qt_size; i++) {
 			TVar qtv = qt.tvars[i];
@@ -561,7 +566,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				}
 			}
 		}
-		return bindings;
+		return;
 	}
 	
 
@@ -660,7 +665,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		}
 
 		if (isTypeUnerasable()) {
-			foreach (FormPar fp; params.getArray(); fp.kind >= FormPar.PARAM_TYPEINFO_N)
+			foreach (FormPar fp; params; fp.kind >= FormPar.PARAM_TYPEINFO_N)
 				fp.detach();
 			int i = 0;
 			foreach (TypeDef td; targs) {
@@ -757,11 +762,11 @@ public class Constructor extends Method {
 	@virtual typedef VView = VConstructor;
 	@virtual typedef RView = RConstructor;
 
-	@att public NArr<ENode>			addstats;
+	@att public ENode[]				addstats;
 
 	@nodeview
 	public static final view VConstructor of Constructor extends VMethod {
-		public:ro	NArr<ENode>			addstats;
+		public:ro	ENode[]				addstats;
 	}
 
 	public Constructor() {}
@@ -823,6 +828,8 @@ public class WBCCondition extends DNode {
 	@dflow(in="this:in")			ENode		body;
 	}
 	
+	public static WBCCondition[]	emptyArray = new WBCCondition[0];
+
 	@virtual typedef This  = WBCCondition;
 	@virtual typedef VView = VWBCCondition;
 	@virtual typedef JView = JWBCCondition;

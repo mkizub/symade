@@ -57,7 +57,7 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 	}
 
 	@macro
-	public N set(int idx, N node)
+	public <R extends N> R set(int idx, R node)
 		alias operator(210,lfy,[])
 	{
 		case @forward CallExpr# self(IFldExpr# obj):

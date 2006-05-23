@@ -33,7 +33,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	@att public SymbolRef			name;
 	@att public ImportMode			mode = ImportMode.IMPORT_CLASS;
 	@att public boolean				star;
-	@att public NArr<TypeRef>		args;
+	@att public TypeRef[]			args;
 	
 	@ref public boolean				of_method;
 	@ref public DNode				resolved;
@@ -43,7 +43,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		public		SymbolRef			name;
 		public		ImportMode			mode;
 		public		boolean				star;
-		public:ro	NArr<TypeRef>		args;
+		public:ro	TypeRef[]			args;
 		public		boolean				of_method;
 		public		DNode				resolved;
 		

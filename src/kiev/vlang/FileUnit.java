@@ -32,9 +32,9 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	@virtual typedef RView = RFileUnit;
 
 	@att public TypeNameRef		pkg;
-	@att public NArr<ASTNode>	members;
+	@att public ASTNode[]		members;
 	
-	@ref public NArr<PrescannedBody>	bodies;
+	@ref public PrescannedBody[]	bodies;
 		 public final boolean[]		disabled_extensions = Kiev.getCmdLineExtSet();
 		 public boolean				scanned_for_interface_only;
 
@@ -47,8 +47,8 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	@nodeview
 	public static final view VFileUnit of FileUnit extends VDNode {
 		public		TypeNameRef				pkg;
-		public:ro	NArr<ASTNode>			members;
-		public:ro	NArr<PrescannedBody>	bodies;
+		public:ro	ASTNode[]				members;
+		public:ro	PrescannedBody[]		bodies;
 		public:ro	boolean[]				disabled_extensions;
 		public		boolean					scanned_for_interface_only;
 

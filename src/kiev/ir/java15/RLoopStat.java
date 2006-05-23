@@ -71,7 +71,7 @@ public static view RDoWhileStat of DoWhileStat extends RLoopStat {
 
 @nodeview
 public static final view RForInit of ForInit extends RENode {
-	public:ro	NArr<Var>		decls;
+	public:ro	Var[]		decls;
 
 	public void resolve(Type reqType) {
 		foreach (Var v; decls)
@@ -258,18 +258,6 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 				new LVarExpr(iter.pos,iter), new ConstNullExpr()
 				);
 			iter_init.resolve(Type.tpVoid);
-//			// now is hidden // Also, patch the rule argument
-//			NArr<ENode> args = null;
-//			if( container instanceof CallExpr ) {
-//				args = ((CallExpr)container).args;
-//			}
-//			else if( container instanceof ClosureCallExpr ) {
-//				args = ((ClosureCallExpr)container).args;
-//			}
-//			else
-//				Debug.assert("Unknown type of rule - "+container.getClass());
-//			args[0] = new LVarExpr(container.pos,iter);
-//			args[0].resolve(Type.tpRule);
 			}
 			break;
 		}

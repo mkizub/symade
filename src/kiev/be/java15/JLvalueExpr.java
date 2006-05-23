@@ -8,8 +8,6 @@ import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
-import kiev.vlang.NArr.JArr;
-
 import static kiev.be.java15.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -386,7 +384,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		Type chtp = null;
 		if( var.jparent instanceof JMethod ) {
 			JMethod m = (JMethod)var.jparent;
-			JVar[] params = m.params.toArray();
+			JVar[] params = m.params;
 			for(int i=0; i < params.length; i++) {
 				if( var == params[i] ) {
 					chtp = m.etype.arg(i);
@@ -546,7 +544,7 @@ public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 @nodeview
 public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JLvalueExpr {
 	public:ro	Struct			outer;
-	public:ro	JArr<JField>	outer_refs;
+	public:ro	JField[]		outer_refs;
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load only: "+this);

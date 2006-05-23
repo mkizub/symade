@@ -35,11 +35,11 @@ public final class RewriteMatch extends ENode {
 	@virtual typedef This  = RewriteMatch;
 	@virtual typedef VView = VRewriteMatch;
 
-	@att public NArr<RewriteCase>		cases;
+	@att public RewriteCase[]		cases;
 
 	@nodeview
 	public static final view VRewriteMatch of RewriteMatch extends VENode {
-		public:ro NArr<RewriteCase>		cases;
+		public:ro RewriteCase[]		cases;
 	}
 
 	public RewriteMatch() {}
@@ -59,14 +59,16 @@ public final class RewritePattern extends Var {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	public static final RewritePattern[] emptyArray = new RewritePattern[0];
+	
 	@virtual typedef This  = RewritePattern;
 	@virtual typedef VView = VRewritePattern;
 
-	@att public NArr<RewritePattern>	vars;
+	@att public RewritePattern[]		vars;
 
 	@nodeview
 	public static final view VRewritePattern of RewritePattern extends VVar {
-		public:ro NArr<RewritePattern>	vars;
+		public:ro RewritePattern[]		vars;
 	}
 
 	public RewritePattern() {}
@@ -96,16 +98,18 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 	@dflow(in="var", seq="true")	ASTNode[]			stats;
 	}
 
+	public static final RewriteCase[] emptyArray = new RewriteCase[0];
+	
 	@virtual typedef This  = RewriteCase;
 	@virtual typedef VView = VRewriteCase;
 
 	@att public RewritePattern		var;
-	@att public NArr<ASTNode>		stats;
+	@att public ASTNode[]			stats;
 
 	@nodeview
 	public static final view VRewriteCase of RewriteCase extends VENode {
 		public:ro RewritePattern	var;
-		public:ro NArr<ASTNode>		stats;
+		public:ro ASTNode[]			stats;
 	}
 
 	public RewriteCase() {}
@@ -141,12 +145,12 @@ public final class RewriteNodeFactory extends ENode {
 	@virtual typedef VView = VRewriteNodeFactory;
 
 	     public Class					node_class;
-	@att public NArr<RewriteNodeArg>	args;
+	@att public RewriteNodeArg[]		args;
 
 	@nodeview
 	public static final view VRewriteNodeFactory of RewriteNodeFactory extends VENode {
 		public:ro Class					node_class;
-		public:ro NArr<RewriteNodeArg>	args;
+		public:ro RewriteNodeArg[]		args;
 	}
 
 	public RewriteNodeFactory() {}
@@ -222,6 +226,8 @@ public final class RewriteNodeArg extends ENode {
 	@dflow(out="this:in") private static class DFI {
 	@dflow(in="this:in")	ENode				node;
 	}
+	
+	public static final RewriteNodeArg[] emptyArray = new RewriteNodeArg[0];
 	
 	@virtual typedef This  = RewriteNodeArg;
 	@virtual typedef VView = VRewriteNodeArg;

@@ -232,12 +232,12 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef JView = JForInit;
 	@virtual typedef RView = RForInit;
 
-	@att public final TypeRef		type_ref;
-	@att public final NArr<Var>		decls;
+	@att public TypeRef		type_ref;
+	@att public Var[]		decls;
 
 	@nodeview
 	public static final view VForInit of ForInit extends VENode {
-		public:ro	NArr<Var>		decls;
+		public:ro	Var[]			decls;
 	}
 
 	public ForInit() {}

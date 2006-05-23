@@ -241,30 +241,18 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends RLv
 	public		ENode			obj;
 	public		SymbolRef		ident;
 	public		Struct			outer;
-	public:ro	NArr<Field>		outer_refs;
+	public:ro	Field[]			outer_refs;
 
+	public void setupOuterFields();
+	
 	public void resolve(Type reqType) throws RuntimeException {
-		outer_refs.delAll();
 		trace(Kiev.debugResolve,"Resolving "+this);
-		Field ou_ref = OuterThisAccessExpr.outerOf((Struct)ctx_tdecl);
-		if( ou_ref == null )
-			throw new RuntimeException("Outer 'this' reference in non-inner or static inner class "+ctx_tdecl);
-		do {
-			trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
-			outer_refs.append(ou_ref);
-			if( ou_ref.type.isInstanceOf(outer.xtype) ) break;
-			ou_ref = OuterThisAccessExpr.outerOf(ou_ref.type.getStruct());
-		} while( ou_ref!=null );
-		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.xtype) )
-			throw new RuntimeException("Outer class "+outer+" not found for inner class "+ctx_tdecl);
+		setupOuterFields();
 		if( Kiev.debugResolve ) {
 			StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");
 			for(int i=0; i < outer_refs.length; i++)
 				sb.append("->").append(outer_refs[i].id);
 			System.out.println(sb.toString());
-		}
-		if( ctx_method.isStatic() && !ctx_method.isVirtualStatic() ) {
-			throw new RuntimeException("Access to 'this' in static method "+ctx_method);
 		}
 		setResolved(true);
 		if (isAutoReturnable())

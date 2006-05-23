@@ -96,10 +96,6 @@ public class Env extends Struct {
 		new CompaundMetaType(this);
 	}
 
-	public Object copy() {
-		throw new CompilerException(this,"Env node cannot be copied");
-	};
-
 	public static void setProperty(String prop, String value) {
 		props.put(prop,value);
 	}

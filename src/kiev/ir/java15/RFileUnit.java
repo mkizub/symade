@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 @nodeview
 public static final view RFileUnit of FileUnit extends RDNode {
 	public		TypeNameRef				pkg;
-	public:ro	NArr<ASTNode>			members;
+	public:ro	ASTNode[]				members;
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 

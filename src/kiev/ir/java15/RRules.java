@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 
 @nodeview
 public final view RRuleMethod of RuleMethod extends RMethod {
-	public:ro	NArr<Var>			localvars;
+	public:ro	Var[]				localvars;
 	public		int					base;
 	public		int					max_depth;
 	public		int					state_depth;
