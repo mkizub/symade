@@ -34,7 +34,6 @@ public view RMethod of Method extends RDNode {
 	public				ENode				body;
 	public:ro			WBCCondition[]		conditions;
 	public:ro			Field[]				violated_fields;
-	public				MetaValue			annotation_default;
 	public				boolean				inlined_by_dispatcher;
 	public				boolean				invalid_types;
 
@@ -78,16 +77,16 @@ public view RMethod of Method extends RDNode {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
 			}
-			if( body != null ) {
+			if (body != null && !(body instanceof MetaValue)) {
 				body.setAutoReturnable(true);
 				body.resolve(type.ret());
-			}
-			if( body != null && !body.isMethodAbrupted() ) {
-				if( type.ret() ≡ Type.tpVoid ) {
-					block.stats.append(new ReturnStat(pos,null));
-					body.setMethodAbrupted(true);
-				} else {
-					Kiev.reportError(self,"Return requared");
+				if (!body.isMethodAbrupted()) {
+					if (type.ret() ≡ Type.tpVoid) {
+						block.stats.append(new ReturnStat(pos,null));
+						body.setMethodAbrupted(true);
+					} else {
+						Kiev.reportError(self,"Return requared");
+					}
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {

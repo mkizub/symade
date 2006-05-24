@@ -24,7 +24,6 @@ public final view JMethod of Method extends JDNode {
 	public		Attr[]					attrs;
 	public:ro	JWBCCondition[]			conditions;
 	public:ro	JField[]				violated_fields;
-	public:ro	MetaValue				annotation_default;
 	public:ro	boolean					inlined_by_dispatcher;
 
 	public:ro	CallType				type;
@@ -78,7 +77,7 @@ public final view JMethod of Method extends JDNode {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
 		foreach(JWBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
 			cond.generate(constPool,Type.tpVoid);
-		if( !isAbstract() && body != null ) {
+		if( !isAbstract() && body != null && !(body instanceof MetaValue)) {
 			Code code = new Code((JStruct)jctx_tdecl, this, constPool);
 			code.generation = true;
 			try {

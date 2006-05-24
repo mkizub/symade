@@ -458,16 +458,18 @@ public abstract class MetaAttr extends Attr {
 		else if (value instanceof Meta) {
 			Meta m = (Meta)value;
 			constPool.addAsciiCP(m.type.getType().getJType().java_signature);
-			foreach (MetaValue v; m) {
+			TypeDecl tdecl = m.type.getType().meta_type.tdecl;
+			foreach (Method mm; tdecl.members) {
+				MetaValue v = m.get(mm.id.uname); 
 				generateValue(constPool,v);
 			}
 		}
 		else if (value instanceof MetaValueScalar) {
-			constPool.addAsciiCP(value.type.name);
+			constPool.addAsciiCP(value.ident.name);
 			generateValue(constPool,((MetaValueScalar)value).value);
 		}
 		else if (value instanceof MetaValueArray) {
-			constPool.addAsciiCP(value.type.name);
+			constPool.addAsciiCP(value.ident.name);
 			MetaValueArray va = (MetaValueArray)value; 
 			foreach (ASTNode n; va.values)
 				generateValue(constPool,n);
@@ -561,12 +563,17 @@ public abstract class MetaAttr extends Attr {
 	}
 
 	public void write_annotation(ConstPool constPool, Meta m, kiev.bytecode.Annotation.annotation a) {
+		TypeDecl tdecl = m.type.getType().meta_type.tdecl;
 		a.type_index = constPool.getAsciiCP(m.type.getType().getJType().java_signature).pos;
-		a.names = new int[m.size()];
-		a.values = new kiev.bytecode.Annotation.element_value[m.size()];
 		int n = 0;
-		foreach (MetaValue v; m) {
-			a.names[n] = constPool.addAsciiCP(v.type.name).pos;
+		foreach (Method mm; tdecl.members)
+			n++;
+		a.names = new int[n];
+		a.values = new kiev.bytecode.Annotation.element_value[n];
+		n = 0;
+		foreach (Method mm; tdecl.members) {
+			MetaValue v = m.get(mm.id.uname); 
+			a.names[n] = constPool.addAsciiCP(v.ident.name).pos;
 			if (v instanceof MetaValueScalar) {
 				a.values[n] = write_value(constPool, ((MetaValueScalar)v).value);
 			} else {

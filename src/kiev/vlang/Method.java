@@ -51,7 +51,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 	@att public WBCCondition[]	 	conditions;
 	@ref public Field[]				violated_fields;
-	@att public MetaValue			annotation_default;
 		 public boolean				inlined_by_dispatcher;
 		 public boolean				invalid_types;
 
@@ -66,8 +65,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				parent().callbackChildChanged(pslot());
 			}
 			else if (attr.name == "conditions")
-				parent().callbackChildChanged(pslot());
-			else if (attr.name == "annotation_default")
 				parent().callbackChildChanged(pslot());
 		}
 		if (attr.name == "params" || attr.name == "flags")
@@ -262,7 +259,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		public				ENode				body;
 		public:ro			WBCCondition[]		conditions;
 		public:ro			Field[]				violated_fields;
-		public				MetaValue			annotation_default;
 		public				boolean				inlined_by_dispatcher;
 		public				boolean				invalid_types;
 	
@@ -586,7 +582,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		dmp.append(')').space();
 		foreach(WBCCondition cond; conditions) 
 			cond.toJava(dmp);
-		if( isAbstract() || body == null ) {
+		if( body == null ) {
 			dmp.append(';').newLine();
 		} else {
 			dmp.append(body).newLine();
@@ -660,7 +656,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			setVarArgs(false);
 		}
 
-		if (clazz.isAnnotation() && (body != null)) {
+		if (clazz.isAnnotation() && body != null && !(body instanceof MetaValue)) {
 			Kiev.reportError(this, "Annotation methods may not have bodies");
 			body = null;
 		}
@@ -688,8 +684,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		checkRebuildTypes();
 		trace(Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
 		meta.verify();
-		if (annotation_default != null)
-			annotation_default.verify();
+		if (body instanceof MetaValue)
+			((MetaValue)body).verify();
 		foreach(ASTAlias al; aliases) al.attach(this);
 
 		foreach(WBCCondition cond; conditions)
@@ -699,23 +695,23 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
     }
 
 	public void resolveMetaDefaults() {
-		if (annotation_default != null) {
+		if (body instanceof MetaValue) {
 			Type tp = this.type_ret.getType();
 			Type t = tp;
 			if (t instanceof ArrayType) {
-				if (annotation_default instanceof MetaValueScalar) {
-					MetaValueArray mva = new MetaValueArray(annotation_default.type);
-					mva.values.add(((MetaValueScalar)annotation_default).value);
-					annotation_default = mva;
+				if (body instanceof MetaValueScalar) {
+					MetaValueArray mva = new MetaValueArray(new SymbolRef(body.pos, this.id));
+					mva.values.add(~((MetaValueScalar)body).value);
+					body = mva;
 				}
 				t = t.arg;
 			}
 			if (t.isReference()) {
 				t.checkResolved();
 				if (t.getStruct() == null || !(t ≈ Type.tpString || t ≈ Type.tpClass || t.getStruct().isAnnotation() || t.getStruct().isEnum()))
-					throw new CompilerException(annotation_default, "Bad annotation value type "+tp);
+					throw new CompilerException(body, "Bad annotation value type "+tp);
 			}
-			annotation_default.resolve(t);
+			((MetaValue)body).resolve(t);
 		}
 	}
 	

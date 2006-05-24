@@ -656,18 +656,18 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 
 	public void resolveMetaValues() {
 		foreach (Meta m; meta)
-			m.resolve();
+			m.resolve(null);
 		foreach(DNode dn; members) {
 			if (dn.meta != null) {
 				foreach (Meta m; dn.meta)
-					m.resolve();
+					m.resolve(null);
 			}
 			if (dn instanceof Method) {
 				Method meth = (Method)dn;
 				foreach (Var p; meth.params) {
 					if (p.meta != null) {
 						foreach (Meta m; p.meta)
-							m.resolve();
+							m.resolve(null);
 					}
 				}
 			}

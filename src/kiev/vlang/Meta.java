@@ -116,19 +116,6 @@ public final class MetaSet extends ASTNode {
 	
 }
 
-public final class MetaValueType {
-	public String	name;
-	public Type		ret;
-	public MetaValueType(String name) {
-		this.name = name;
-	}
-	public MetaValueType(String name, Type ret) {
-		this.name = name;
-		this.ret = ret;
-	}
-	public String toString() { return name; }
-}
-
 @node
 public class Meta extends ENode {
 	public final static Meta[] emptyArray = new Meta[0];
@@ -168,6 +155,8 @@ public class Meta extends ENode {
 		return new Meta(new TypeNameRef(name));
 	}
 	
+	public Type getType() { return type.getType(); }
+	
 	public ASTNode getDummyNode() {
 		return Meta.dummyNode;
 	}
@@ -197,36 +186,35 @@ public class Meta extends ENode {
 		return;
 	}
 	
-	public Meta resolve() {
+	public void resolve(Type reqType) {
 		Struct s = type.getType().getStruct();
 		s.checkResolved();
 		for (int n=0; n < values.length; n++) {
 			MetaValue v = values[n];
 			Method m = null;
 			foreach (Method sm; s.members) {
-				if( sm.id.equals(v.type.name)) {
+				if( sm.id.equals(v.ident.name)) {
 					m = sm;
 					break;
 				}
 			}
 			if (m == null)
-				throw new CompilerException(v, "Unresolved method "+v.type.name+" in class "+s);
-			Type tp = m.type.ret();
-			v.type.ret = tp;
-			Type t = tp;
+				throw new CompilerException(v, "Unresolved method "+v.ident+" in class "+s);
+			v.ident.symbol = m.id;
+			Type t = m.type.ret();
 			if (t instanceof ArrayType) {
 				if (v instanceof MetaValueScalar) {
 					ENode val = ((MetaValueScalar)v).value;
-					MetaValueArray mva = new MetaValueArray(v.type); 
-					values[n] = v = mva;
+					MetaValueArray mva = new MetaValueArray(~v.ident); 
 					mva.values.add(~val);
+					values[n] = v = mva;
 				}
 				t = t.arg;
 			}
 			if (t.isReference()) {
 				t.checkResolved();
 				if (t.getStruct() == null || !(t ≈ Type.tpString || t ≈ Type.tpClass || t.getStruct().isAnnotation() || t.getStruct().isEnum()))
-					throw new CompilerException(m, "Bad annotation value type "+tp);
+					throw new CompilerException(m, "Bad annotation value type "+t);
 			}
 			v.resolve(t);
 		}
@@ -234,38 +222,26 @@ public class Meta extends ENode {
 	next_method:
 		foreach (Method m; s.members) {
 			for(int j=0; j < values.length; j++) {
-				if (values[j].type.name == m.id.uname)
+				if (values[j].ident.symbol != null)
 					continue next_method;
 			}
 			// value not specified - does the method has a default meta-value?
-			if (m.annotation_default != null) {
-				MetaValueType mvt = new MetaValueType(m.id.uname);
-				mvt.ret = m.type.ret();
-				if !(m.type.ret() instanceof ArrayType) {
-					MetaValueScalar mvs = (MetaValueScalar)m.annotation_default;
-					ENode v = mvs.value.ncopy();
-					values.append(new MetaValueScalar(mvt, v));
-				} else {
-					ENode[] arr = ((MetaValueArray)m.annotation_default).values;
-					for(int j=0; j < arr.length; j++)
-						arr[j] = arr[j].ncopy();
-					values.append(new MetaValueArray(mvt, arr));
-				}
-				continue;
-			}
-			throw new CompilerException(m, "Annotation value "+m.id+" is not specified");
+			if !(m.body instanceof MetaValue)
+				Kiev.reportError(this, "Annotation value "+m.id+" is not specified");
 		}
-		return this;
 	}
 	
 	public MetaValue get(String name) {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
-			if (values[i].type.name == name) {
+			if (values[i].ident.name == name) {
 				MetaValue v = values[i];
 				return v;
 			}
 		}
+		TypeDecl td = getType().meta_type.tdecl;
+		foreach (Method m; td.members; m.id.equals(name))
+			return (MetaValue)m.body;
 		throw new RuntimeException("Value "+name+" not found in "+type+" annotation");
 	}
 	
@@ -305,7 +281,7 @@ public class Meta extends ENode {
 			throw new NullPointerException();
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
-			if (values[i].type.name == value.type.name) {
+			if (values[i].ident.name == value.ident.name) {
 				values[i] = value;
 				return value;
 			}
@@ -318,13 +294,12 @@ public class Meta extends ENode {
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
-			if (values[i].type.name == name) {
+			if (values[i].ident.name == name) {
 				((MetaValueScalar)values[i]).value = new ConstBoolExpr(val);
 				return values[i];
 			}
 		}
-		MetaValueType mvt = new MetaValueType(name, Type.tpBoolean);
-		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstBoolExpr(val));
+		MetaValueScalar mv = new MetaValueScalar(new SymbolRef(name), new ConstBoolExpr(val));
 		values.append(mv);
 		return mv;
 	}
@@ -333,13 +308,12 @@ public class Meta extends ENode {
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
-			if (values[i].type.name == name) {
+			if (values[i].ident.name == name) {
 				((MetaValueScalar)values[i]).value = new ConstIntExpr(val);
 				return values[i];
 			}
 		}
-		MetaValueType mvt = new MetaValueType(name, Type.tpInt);
-		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstIntExpr(val));
+		MetaValueScalar mv = new MetaValueScalar(new SymbolRef(name), new ConstIntExpr(val));
 		values.append(mv);
 		return mv;
 	}
@@ -348,26 +322,25 @@ public class Meta extends ENode {
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
-			if (values[i].type.name == name) {
+			if (values[i].ident.name == name) {
 				((MetaValueScalar)values[i]).value = new ConstStringExpr(val);
 				return values[i];
 			}
 		}
-		MetaValueType mvt = new MetaValueType(name, Type.tpString);
-		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstStringExpr(val));
+		MetaValueScalar mv = new MetaValueScalar(new SymbolRef(name), new ConstStringExpr(val));
 		values.append(mv);
 		return mv;
 	}
 
 	public MetaValue unset(MetaValue value) alias del alias operator (5,lfy,-=)
 	{
-		return unset(value.type.name);
+		return unset(value.ident.name);
 	}
 	public MetaValue unset(String name) alias del alias operator (5,lfy,-=)
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
-			if (values[i].type.name == name) {
+			if (values[i].ident.name == name) {
 				MetaValue v = values[i];
 				values.del(i);
 				return v;
@@ -408,7 +381,7 @@ public class Meta extends ENode {
 			s.checkResolved();
 			foreach (Method m; s.members) {
 				MetaValue v = get(m.id.sname);
-				if (v.valueEquals(m.annotation_default))
+				if (v.valueEquals(m.body))
 					continue;
 				if (need_lp) {
 					dmp.append('(');
@@ -417,7 +390,7 @@ public class Meta extends ENode {
 				else if (need_comma) {
 					dmp.append(',');
 				}
-				dmp.append(v.type.name).append('=');
+				dmp.append(v.ident).append('=');
 				v.toJava(dmp);
 				need_comma = true;
 			}
@@ -429,42 +402,37 @@ public class Meta extends ENode {
 }
 
 @node
-public abstract class MetaValue extends ASTNode {
+public abstract class MetaValue extends ENode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
 	@virtual typedef This  = MetaValue;
 	@virtual typedef VView = VMetaValue;
 
-	@att public MetaValueType			type;
+	@att public SymbolRef			ident;
 
 	@nodeview
-	public static abstract view VMetaValue of MetaValue extends NodeView {
-		public MetaValueType			type;
+	public static abstract view VMetaValue of MetaValue extends VENode {
+		public SymbolRef			ident;
 	}
 
 	public MetaValue() {}
 
-	public MetaValue(MetaValueType type) {
-		this.type  = type;
+	public MetaValue(SymbolRef ident) {
+		this.ident  = ident;
 	}
 
 	public abstract boolean valueEquals(MetaValue mv);
 
-	public abstract void resolve(Type reqType);
-	
 	public void verify() {
-		if (type == null)
-			type = new MetaValueType("value");
+		if (parent() instanceof Method && pslot().name == "body") {
+			Method m = (Method)parent();
+			ident = new SymbolRef(pos, m.id);
+		}
+		else if (ident == null) {
+			ident = new SymbolRef("value");
+		}
 	}
 	
-	void resolveValue(Type reqType, ENode value) {
-		if (value instanceof Meta) {
-			((Meta)value).resolve();
-			return;
-		}
-		value.resolve(reqType);
-	}
-
 	boolean checkValue(Type reqType, ENode value) {
 		if (value instanceof TypeRef) {
 			if (reqType ≈ Type.tpClass) {
@@ -491,7 +459,7 @@ public abstract class MetaValue extends ASTNode {
 			throw new CompilerException(this, "Annotation value must be a constant, but found "+v+" ("+v.getClass()+")");
 		Type vt = v.getType();
 		if (vt ≉ reqType)
-			throw new CompilerException(this, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
+			throw new CompilerException(this, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+ident);
 		return false;
 	}
 
@@ -514,12 +482,12 @@ public final class MetaValueScalar extends MetaValue {
 
 	public MetaValueScalar() {}
 
-	public MetaValueScalar(MetaValueType type) {
-		super(type);
+	public MetaValueScalar(SymbolRef ident) {
+		super(ident);
 	}
 
-	public MetaValueScalar(MetaValueType type, ENode value) {
-		super(type);
+	public MetaValueScalar(SymbolRef ident, ENode value) {
+		super(ident);
 		this.value = value;
 	}
 
@@ -537,9 +505,9 @@ public final class MetaValueScalar extends MetaValue {
 	}
 	
 	public void resolve(Type reqType) {
-		resolveValue(reqType, this.value);
-		while (checkValue(reqType, this.value))
-			resolveValue(reqType, this.value);
+		value.resolve(reqType);
+		while (checkValue(reqType, value))
+			value.resolve(reqType);
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
@@ -565,12 +533,12 @@ public final class MetaValueArray extends MetaValue {
 
 	public MetaValueArray() {}
 
-	public MetaValueArray(MetaValueType type) {
-		super(type);
+	public MetaValueArray(SymbolRef ident) {
+		super(ident);
 	}
 
-	public MetaValueArray(MetaValueType type, ENode[] values) {
-		super(type);
+	public MetaValueArray(SymbolRef ident, ENode[] values) {
+		super(ident);
 		this.values.addAll(values);
 	}
 
@@ -598,9 +566,9 @@ public final class MetaValueArray extends MetaValue {
 	
 	public void resolve(Type reqType) {
 		for (int i=0; i < values.length; i++) {
-			resolveValue(reqType, this.values[i]);
+			this.values[i].resolve(reqType);
 			while (checkValue(reqType, this.values[i]))
-				resolveValue(reqType, this.values[i]);
+				this.values[i].resolve(reqType);
 		}
 	}
 

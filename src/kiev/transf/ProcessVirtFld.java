@@ -238,7 +238,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			else if (f.meta.get(ProcessVNode.mnAtt) != null)
 				set_var.setFinal(true);
 			s.addMethod(set_var);
-			set_var.meta.set(new Meta(nameMetaSetter)).resolve();
+			set_var.meta.set(new Meta(nameMetaSetter)).resolve(null);
 			FormPar value;
 			if (f.isStatic()) {
 				value = new FormPar(f.pos,"value",f.type,FormPar.PARAM_NORMAL,0);
@@ -274,7 +274,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				get_var.setFinal(true);
 			s.addMethod(get_var);
-			get_var.meta.set(new Meta(nameMetaGetter)).resolve();
+			get_var.meta.set(new Meta(nameMetaGetter)).resolve(null);
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
 				get_var.body = body;

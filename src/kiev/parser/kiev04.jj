@@ -1541,7 +1541,7 @@ Meta Annotation() :
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
 			AnnotationValues(n)
-		|	v = AnnotationValueAny() { v.type = new MetaValueType("value"); n.set(v); }
+		|	v = AnnotationValueAny(new SymbolRef("value")) { n.set(v); }
 		]
 		")"
 	]
@@ -1553,53 +1553,53 @@ void AnnotationValues(Meta m) :
 {
 	id = NameRef()
 	"="
-	v = AnnotationValueAny()
-	{ v.type = new MetaValueType(id.name); m.set(v); }
+	v = AnnotationValueAny(id)
+	{ m.set(v); }
 	(
 		","
 		id = NameRef()
 		"="
-		v = AnnotationValueAny()
-		{ v.type = new MetaValueType(id.name); m.set(v); }
+		v = AnnotationValueAny(id)
+		{ v.ident = id; m.set(v); }
 	)*
 }
 
-MetaValue AnnotationValueAny() :
+MetaValue AnnotationValueAny(SymbolRef id) :
 { ENode n; MetaValue v; }
 {
 	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
 		n = Annotation()
-		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
-	|	v = AnnotationValueValueArrayInitializer()
+		{ v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n; }
+	|	v = AnnotationValueValueArrayInitializer(id)
 	|	n = ExpressionNT(null)
-		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
+		{ v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n; }
 	)
 	{ return v; }
 }
 
-MetaValueScalar AnnotationValueScalar() :
+MetaValueScalar AnnotationValueScalar(SymbolRef id) :
 { ENode n; MetaValueScalar v; }
 {
 	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
 		n = Annotation()
-		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
+		{ v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n; }
 	|	n = ExpressionNT(null)
-		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
+		{ v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n; }
 	)
 	{ return v; }
 }
 
-MetaValueArray AnnotationValueValueArrayInitializer() :
+MetaValueArray AnnotationValueValueArrayInitializer(SymbolRef id) :
 { MetaValueScalar n; MetaValueArray v; }
 {
-	{ v = new MetaValueArray(); }
+	{ v = new MetaValueArray(id); }
 	"{"
 	[
-		n = AnnotationValueScalar() { v.values.add(~n.value); }
+		n = AnnotationValueScalar(null) { v.values.add(~n.value); }
 		(	","
-			n = AnnotationValueScalar() { v.values.add(~n.value); }
+			n = AnnotationValueScalar(null) { v.values.add(~n.value); }
 		)*
 	]
 	"}"
@@ -1906,7 +1906,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 		LOOKAHEAD("{")
 		{ presc = m; }
 		m.body = MaybeSkipBlock() [ ";" ]
-	|	[ "default" m.annotation_default = AnnotationValueAny() ] ";"
+	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id)) ] ";"
 	)
 	} finally { curMethod = oldMethod; }
 	{ return m; }

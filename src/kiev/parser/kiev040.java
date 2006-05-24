@@ -1852,8 +1852,8 @@ public abstract class kiev040 implements kiev040Constants {
         if (jj_2_13(2147483647)) {
           AnnotationValues(n);
         } else if (jj_2_14(1)) {
-          v = AnnotationValueAny();
-                                                   v.type = new MetaValueType("value"); n.set(v);
+          v = AnnotationValueAny(new SymbolRef("value"));
+                                                                         n.set(v);
         } else {
           jj_consume_token(-1);
           throw new ParseException();
@@ -1874,8 +1874,8 @@ public abstract class kiev040 implements kiev040Constants {
   SymbolRef id; MetaValue v;
     id = NameRef();
     jj_consume_token(ASSIGN);
-    v = AnnotationValueAny();
-          v.type = new MetaValueType(id.name); m.set(v);
+    v = AnnotationValueAny(id);
+          m.set(v);
     label_20:
     while (true) {
       switch (jj_nt.kind) {
@@ -1888,25 +1888,25 @@ public abstract class kiev040 implements kiev040Constants {
       jj_consume_token(COMMA);
       id = NameRef();
       jj_consume_token(ASSIGN);
-      v = AnnotationValueAny();
-                  v.type = new MetaValueType(id.name); m.set(v);
+      v = AnnotationValueAny(id);
+                  v.ident = id; m.set(v);
     }
   }
 
-  final public MetaValue AnnotationValueAny() throws ParseException {
+  final public MetaValue AnnotationValueAny(SymbolRef id) throws ParseException {
   ENode n; MetaValue v;
     if (jj_2_16(2147483647)) {
       n = Annotation();
-                  v = new MetaValueScalar(); ((MetaValueScalar)v).value = n;
+                  v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n;
     } else {
       switch (jj_nt.kind) {
       case LBRACE:
-        v = AnnotationValueValueArrayInitializer();
+        v = AnnotationValueValueArrayInitializer(id);
         break;
       default:
         if (jj_2_17(1)) {
           n = ExpressionNT(null);
-                  v = new MetaValueScalar(); ((MetaValueScalar)v).value = n;
+                  v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n;
         } else {
           jj_consume_token(-1);
           throw new ParseException();
@@ -1917,14 +1917,14 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public MetaValueScalar AnnotationValueScalar() throws ParseException {
+  final public MetaValueScalar AnnotationValueScalar(SymbolRef id) throws ParseException {
   ENode n; MetaValueScalar v;
     if (jj_2_18(2147483647)) {
       n = Annotation();
-                  v = new MetaValueScalar(); ((MetaValueScalar)v).value = n;
+                  v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n;
     } else if (jj_2_19(1)) {
       n = ExpressionNT(null);
-                  v = new MetaValueScalar(); ((MetaValueScalar)v).value = n;
+                  v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n;
     } else {
       jj_consume_token(-1);
       throw new ParseException();
@@ -1933,13 +1933,13 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public MetaValueArray AnnotationValueValueArrayInitializer() throws ParseException {
+  final public MetaValueArray AnnotationValueValueArrayInitializer(SymbolRef id) throws ParseException {
   MetaValueScalar n; MetaValueArray v;
-          v = new MetaValueArray();
+          v = new MetaValueArray(id);
     jj_consume_token(LBRACE);
     if (jj_2_20(1)) {
-      n = AnnotationValueScalar();
-                                              v.values.add(~n.value);
+      n = AnnotationValueScalar(null);
+                                                  v.values.add(~n.value);
       label_21:
       while (true) {
         switch (jj_nt.kind) {
@@ -1950,8 +1950,8 @@ public abstract class kiev040 implements kiev040Constants {
           break label_21;
         }
         jj_consume_token(COMMA);
-        n = AnnotationValueScalar();
-                                                      v.values.add(~n.value);
+        n = AnnotationValueScalar(null);
+                                                          v.values.add(~n.value);
       }
     } else {
       ;
@@ -2538,7 +2538,7 @@ public abstract class kiev040 implements kiev040Constants {
           switch (jj_nt.kind) {
           case _DEFAULT:
             jj_consume_token(_DEFAULT);
-            m.annotation_default = AnnotationValueAny();
+            m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id));
             break;
           default:
             ;

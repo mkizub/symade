@@ -366,7 +366,6 @@ CLASS kiev.vlang.MetaUnerasable kiev/vlang/MetaUnerasable kiev\vlang\MetaSpecial
 CLASS kiev.vlang.MetaValue kiev/vlang/MetaValue kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaValueArray kiev/vlang/MetaValueArray kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaValueScalar kiev/vlang/MetaValueScalar kiev\vlang\Meta.java
-CLASS kiev.vlang.MetaValueType kiev/vlang/MetaValueType kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaVirtual kiev/vlang/MetaVirtual kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaVolatile kiev/vlang/MetaVolatile kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.Method kiev/vlang/Method kiev\vlang\Method.java
@@ -705,6 +704,7 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.vlang.MetaValueType kiev\vlang\Meta.java
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
 METATYPE kiev.vlang.test.NodeSpace kiev\vlang\MetaTypes.java bad
 METATYPE kiev.vlang.test.Test kiev\vlang\MetaTypes.java

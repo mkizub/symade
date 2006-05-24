@@ -230,8 +230,8 @@ public final view JStruct of Struct extends JTypeDecl {
 						mss[i] = params[i].meta;
 					m.addAttr(new RVParMetaAttr(mss));
 				}
-				if (m.annotation_default != null)
-					m.addAttr(new DefaultMetaAttr(m.annotation_default));
+				if (isAnnotation() && m.body instanceof MetaValue)
+					m.addAttr(new DefaultMetaAttr((MetaValue)m.body));
 
 				foreach (Attr a; m.attrs)
 					a.generate(constPool);

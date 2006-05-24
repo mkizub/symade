@@ -719,7 +719,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 				);
 			body.stats.append(p_st);
 		}
-		set_var.meta.set(new Meta(ProcessVNode.mnAtt)).resolve();
+		set_var.meta.set(new Meta(ProcessVNode.mnAtt)).resolve(null);
 	}
 
 }
