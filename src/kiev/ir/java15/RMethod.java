@@ -19,8 +19,6 @@ import syntax kiev.Syntax;
 @nodeview
 public view RMethod of Method extends RDNode {
 
-	public final void checkRebuildTypes();
-
 	public				Access				acc;
 	public:ro			TypeDef[]			targs;
 	public				TypeRef				type_ret;
@@ -30,12 +28,8 @@ public view RMethod of Method extends RDNode {
 	public:ro			CallType			etype;
 	public:ro			FormPar[]			params;
 	public:ro			ASTAlias[]			aliases;
-	public				Var					retvar;
 	public				ENode				body;
 	public:ro			WBCCondition[]		conditions;
-	public:ro			Field[]				violated_fields;
-	public				boolean				inlined_by_dispatcher;
-	public				boolean				invalid_types;
 
 	public:ro			Block				block;
 
@@ -65,6 +59,7 @@ public view RMethod of Method extends RDNode {
 	// a dispatcher (for multimethods)	
 	public final boolean isDispatcherMethod();
 	public final void setDispatcherMethod(boolean on);
+	public final boolean isInlinedByDispatcherMethod();
 
 	public void resolveDecl() {
 		RMethod.resolveMethod(this);
@@ -72,7 +67,8 @@ public view RMethod of Method extends RDNode {
 	static void resolveMethod(@forward RMethod self) {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+self);
-		assert( ctx_tdecl == parent() || inlined_by_dispatcher );
+		assert( ctx_tdecl == parent() || isInlinedByDispatcherMethod() );
+		Method.ATTR_VIOLATED_FIELDS.clear((Method)self);
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
@@ -100,8 +96,10 @@ public view RMethod of Method extends RDNode {
 
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
+			Field[] violated_fields = Method.ATTR_VIOLATED_FIELDS.get((Method)self);
 			foreach(Field f; violated_fields; ctx_tdecl.instanceOf(f.ctx_tdecl) ) {
-				foreach(Method inv; f.invs; ctx_tdecl.instanceOf(inv.ctx_tdecl) ) {
+				Method[] invs = Field.ATTR_INVARIANT_CHECKERS.get(f);
+				foreach(Method inv; invs; ctx_tdecl.instanceOf(inv.ctx_tdecl) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(id.sname.startsWith(nameSet) || id.sname.startsWith(nameGet)) ) {
@@ -110,6 +108,7 @@ public view RMethod of Method extends RDNode {
 					}
 				}
 			}
+			Method.ATTR_VIOLATED_FIELDS.clear((Method)self);
 		}
 		
 		setResolved(true);

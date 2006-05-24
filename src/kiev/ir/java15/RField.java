@@ -20,7 +20,6 @@ public static final view RField of Field extends RLvalDNode {
 	public		TypeRef			ftype;
 	public		ENode			init;
 	public		ConstExpr		const_value;
-	public:ro	Method[]		invs;
 	
 	@getter public final Type	get$type();
 	

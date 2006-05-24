@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 @nodeview
 public final view RStruct of Struct extends RTypeDecl {
 
-	static final AttrSlot TI_ATTR = new DataAttrSlot("rstruct ti field temp expr",true,TypeInfoExpr.class);	
+	static final AttrSlot TI_ATTR = new DataAttrSlot("rstruct ti field temp expr",true,false,TypeInfoExpr.class);	
 
 	public:ro			Access					acc;
 	public:ro			WrapperMetaType			wmeta_type;

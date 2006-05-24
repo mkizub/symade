@@ -414,9 +414,11 @@ CLASS kiev.vlang.ScopeStaticFieldInfo kiev/vlang/ScopeStaticFieldInfo kiev\vlang
 CLASS kiev.vlang.ScopeVarInfo kiev/vlang/ScopeVarInfo kiev\vlang\Var.java
 CLASS kiev.vlang.Shadow kiev/vlang/Shadow kiev\vlang\Expr.java
 CLASS kiev.vlang.SpaceAttAttrSlot kiev/vlang/SpaceAttAttrSlot kiev\vlang\Tree.java
+CLASS kiev.vlang.SpaceAttDataAttrSlot kiev/vlang/SpaceAttDataAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.SpaceAttrSlot kiev/vlang/SpaceAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.SpacePtr kiev/vlang/SpacePtr kiev\vlang\Tree.java
 CLASS kiev.vlang.SpaceRefAttrSlot kiev/vlang/SpaceRefAttrSlot kiev\vlang\Tree.java
+CLASS kiev.vlang.SpaceRefDataAttrSlot kiev/vlang/SpaceRefDataAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
 CLASS kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java

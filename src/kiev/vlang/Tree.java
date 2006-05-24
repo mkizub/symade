@@ -86,13 +86,14 @@ public final class SpacePtr {
 	}
 }
 
-public class AttrSlot {
+public abstract class AttrSlot {
 	public static final AttrSlot[] emptyArray = new AttrSlot[0];
 	
 	public final String  name; // field (property) name
 	public final boolean is_attr; // @att or @ref
 	public final boolean is_space; // if Node[]
 	public final Class   clazz; // type of the fields
+	public final Object  defaultValue;
 	
 	public AttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
 		assert (name.intern() == name);
@@ -100,22 +101,30 @@ public class AttrSlot {
 		this.is_attr = is_attr;
 		this.is_space = is_space;
 		this.clazz = clazz;
+		if (is_space) defaultValue = java.lang.reflect.Array.newInstance(clazz,0);
+		else if (clazz == Boolean.class) defaultValue = Boolean.FALSE;
+		else if (clazz == Character.class) defaultValue = new Character('\0');
+		else if (clazz == Byte.class) defaultValue = new Byte((byte)0);
+		else if (clazz == Short.class) defaultValue = new Short((short)0);
+		else if (clazz == Integer.class) defaultValue = new Integer(0);
+		else if (clazz == Long.class) defaultValue = new Long(0L);
+		else if (clazz == Float.class) defaultValue = new Float(0.f);
+		else if (clazz == Double.class) defaultValue = new Double(0.);
+		else if (clazz == String.class) defaultValue = "";
+		else defaultValue = null;
 	}
 	
 	public boolean isMeta() { return false; }
 	public boolean isData() { return false; }
 
-	public void set(ANode parent, Object value) {
-		parent.setVal(name, value);
-	}
-	public Object get(ANode parent) {
-		return parent.getVal(name);
-	}
+	public abstract void set(ANode parent, Object value);
+	public abstract Object get(ANode parent);
+	public void clear(ANode parent) { this.set(parent, defaultValue); }
 }
 
 public class DataAttrSlot extends AttrSlot {
-	public DataAttrSlot(String name, boolean is_attr, Class clazz) {
-		super(name,is_attr,false,clazz);
+	public DataAttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
+		super(name,is_attr,is_space,clazz);
 	}
 	public boolean isMeta() { return false; }
 	public boolean isData() { return true; }
@@ -126,17 +135,17 @@ public class DataAttrSlot extends AttrSlot {
 	public Object get(ANode parent) {
 		return parent.getNodeData(this);
 	}
+	public void clear(ANode parent) {
+		return parent.delNodeData(this);
+	}
 }
 
-public class MetaAttrSlot extends AttrSlot {
+public class MetaAttrSlot extends DataAttrSlot {
 	public MetaAttrSlot(String name, Class clazz) {
 		super(name,true,false,clazz);
 	}
 	public boolean isMeta() { return true; }
 	public boolean isData() { return true; }
-
-	public abstract void set(ANode node, Object value);
-	public abstract Object get(ANode node);
 }
 
 public abstract class RefAttrSlot extends AttrSlot {
@@ -161,8 +170,8 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 	public SpaceAttrSlot(String name, boolean is_attr, Class clazz) {
 		super(name, is_attr, true, clazz);
 	}
-	public N[] get(ANode parent) { return (N[])parent.getVal(this.name); }
-	public void set(ANode parent, Object narr) { parent.setVal(this.name,narr); }
+	public abstract N[] get(ANode parent);
+	public abstract void set(ANode parent, Object narr);
 
 	public final N[] getArray(ANode parent) {
 		return this.get(parent);
@@ -276,6 +285,25 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		return narr;
 	}
 }
+public class SpaceRefDataAttrSlot<N extends ASTNode> extends SpaceRefAttrSlot<N> {
+	public SpaceRefDataAttrSlot(String name, Class clazz) {
+		super(name, clazz);
+	}
+	public boolean isData() { return true; }
+
+	public void set(ANode parent, Object value) {
+		parent.addNodeData(value, this);
+	}
+	public N[] get(ANode parent) {
+		Object value = parent.getNodeData(this);
+		if (value == null)
+			return (N[])defaultValue;
+		return (N[])value;
+	}
+	public void clear(ANode parent) {
+		return parent.delNodeData(this);
+	}
+}
 
 public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	public SpaceAttAttrSlot(String name, Class clazz) {
@@ -366,6 +394,25 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		for (int i=0; i < narr.length; i++)
 			narr[i].callbackDetached();
 		return narr;
+	}
+}
+public class SpaceAttDataAttrSlot<N extends ASTNode> extends SpaceAttAttrSlot<N> {
+	public SpaceAttDataAttrSlot(String name, Class clazz) {
+		super(name, clazz);
+	}
+	public boolean isData() { return true; }
+
+	public void set(ANode parent, Object value) {
+		parent.addNodeData(value, this);
+	}
+	public N[] get(ANode parent) {
+		Object value = parent.getNodeData(this);
+		if (value == null)
+			return (N[])defaultValue;
+		return (N[])value;
+	}
+	public void clear(ANode parent) {
+		return parent.delNodeData(this);
 	}
 }
 

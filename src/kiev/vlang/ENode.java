@@ -294,7 +294,7 @@ public abstract class ENode extends ASTNode {
 @node
 public final class NopExpr extends ENode {
 
-	public static final AttrSlot ATTR = new DataAttrSlot("temp expr",true,ENode.class);	
+	public static final AttrSlot ATTR = new DataAttrSlot("temp expr",true,false,ENode.class);	
 
 	@dflow(out="this:in") private static class DFI {}
 

@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 @nodeview
 public final view RCallExpr of CallExpr extends RENode {
 
-	static final AttrSlot ATTR = new DataAttrSlot("rcall temp expr",true,ENode.class);	
+	static final AttrSlot ATTR = new DataAttrSlot("rcall temp expr",true,false,ENode.class);	
 
 	public		ENode			obj;
 	public:ro	SymbolRef		ident;

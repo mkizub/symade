@@ -78,7 +78,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	public InlineMethodStat(int pos, Method m, Method in) {
 		this.pos = pos;
 		method = m;
-		method.inlined_by_dispatcher = true;
+		method.setInlinedByDispatcherMethod(true);
 		assert(m.params.length == in.params.length);
 		params_redir = new ParamRedir[m.params.length];
 		for (int i=0; i < m.params.length; i++) {

@@ -34,25 +34,24 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	@dflow(in="this:in")	WBCCondition[] 	conditions;
 	}
 
+	public static final AttrSlot ATTR_RET_VAR = new DataAttrSlot("method ret var",true,false,Var.class);	
+	public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",Field.class);	
+
 	@virtual typedef This  = Method;
 	@virtual typedef VView = VMethod;
 	@virtual typedef JView = JMethod;
 	@virtual typedef RView = RMethod;
 
 		 public Access				acc;
-		 CallMetaType				meta_type;
 	@att public TypeDef[]			targs;
 	@att public TypeRef				type_ret;
 	@att public TypeRef				dtype_ret;
 	@att public FormPar[]			params;
 	@att public ASTAlias[]			aliases;
-	@att public Var					retvar;
 	@att public ENode				body;
 	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 	@att public WBCCondition[]	 	conditions;
-	@ref public Field[]				violated_fields;
-		 public boolean				inlined_by_dispatcher;
-		 public boolean				invalid_types;
+
 
 	@virtual public					CallType		type;
 	@virtual public					CallType		dtype;
@@ -67,19 +66,24 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			else if (attr.name == "conditions")
 				parent().callbackChildChanged(pslot());
 		}
-		if (attr.name == "params" || attr.name == "flags")
-			invalid_types = true;
+		if (attr.name == "params" || attr.name == "flags") {
+			type = null;
+			dtype = null;
+		}
 	}
 
-	@getter public final CallType				get$type()	{ checkRebuildTypes(); return this.type; }
-	@getter public final CallType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
-	@getter public final CallType				get$etype()	{ checkRebuildTypes(); return (CallType)this.dtype.getErasedType(); }
+	@getter public final CallType				get$type()	{ if (this.type == null) rebuildTypes(); return this.type; }
+	@getter public final CallType				get$dtype()	{ if (this.dtype == null) rebuildTypes(); return this.dtype; }
+	@getter public final CallType				get$etype()	{ if (this.dtype == null) rebuildTypes(); return (CallType)this.dtype.getErasedType(); }
 
 	@getter public final Block					get$block()	{ return (Block)this.body; }
 
 	public Var getRetVar() {
-		if( retvar == null )
+		Var retvar = (Var)ATTR_RET_VAR.get(this);
+		if( retvar == null ) {
 			retvar = new Var(pos,nameResultVar,type_ret.getType(),ACC_FINAL);
+			ATTR_RET_VAR.set(this, retvar);
+		}
 		return retvar;
 	}
 
@@ -162,9 +166,14 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
-
-	public final void checkRebuildTypes() {
-		if (invalid_types) rebuildTypes();
+	// a methood inlined bt dispatcher (for multimethods)	
+	public final boolean isInlinedByDispatcherMethod() {
+		return this.is_mth_inlined_by_dispatcher;
+	}
+	public final void setInlinedByDispatcherMethod(boolean on) {
+		if (this.is_mth_inlined_by_dispatcher != on) {
+			this.is_mth_inlined_by_dispatcher = on;
+		}
 	}
 
 	final void rebuildTypes() {
@@ -234,7 +243,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		}
 		this.type = new CallType(type_set, args.toArray(), type_ret.getType(), false);
 		this.dtype = new CallType(dtype_set, dargs.toArray(), dtype_ret.getType(), false);
-		invalid_types = false;
 	}
 
 	@getter public Method get$child_ctx_method() { return (Method)this; }
@@ -243,10 +251,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	@nodeview
 	public static view VMethod of Method extends VDNode {
 
-		public final void checkRebuildTypes();
-	
 		public				Access				acc;
-		public				CallMetaType		meta_type;
 		public:ro			TypeDef[]			targs;
 		public				TypeRef				type_ret;
 		public				TypeRef				dtype_ret;
@@ -255,12 +260,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		public:ro			CallType			etype;
 		public:ro			FormPar[]			params;
 		public:ro			ASTAlias[]			aliases;
-		public				Var					retvar;
 		public				ENode				body;
 		public:ro			WBCCondition[]		conditions;
-		public:ro			Field[]				violated_fields;
-		public				boolean				inlined_by_dispatcher;
-		public				boolean				invalid_types;
 	
 		public Var getRetVar();
 		public MetaThrows getMetaThrows();
@@ -288,14 +289,15 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		// a dispatcher (for multimethods)	
 		public final boolean isDispatcherMethod();
 		public final void setDispatcherMethod(boolean on);
+		public final boolean isInlinedByDispatcherMethod();
 
 		public boolean preResolveIn() {
-			checkRebuildTypes();
+			Type t = this.type; // rebuildTypes()
 			return true;
 		}
 	
 		public boolean mainResolveIn() {
-			checkRebuildTypes();
+			Type t = this.type; // rebuildTypes()
 			return true;
 		}
 	
@@ -340,43 +342,45 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		this.type_ret = type_ret;
 		this.dtype_ret = type_ret.ncopy();
 		this.meta = new MetaSet();
-		invalid_types = true;
 	}
 
 	public Type	getType() { return type; }
 
 	public FormPar getOuterThisParam() {
-		checkRebuildTypes();
+		Type t = this.type; // rebuildTypes()
 		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_OUTER_THIS)
 			return fp;
 		return null;
 	}
 	
 	public FormPar getTypeInfoParam(int kind) {
-		checkRebuildTypes();
+		Type t = this.type; // rebuildTypes()
 		foreach (FormPar fp; params; fp.kind == kind)
 			return fp;
 		return null;
 	}
 	
 	public FormPar getVarArgParam() {
-		checkRebuildTypes();
+		Type t = this.type; // rebuildTypes()
 		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_VARARGS)
 			return fp;
 		return null;
 	}
 	
 	public void addViolatedField(Field f) {
+		if (!this.ctx_tdecl.instanceOf(f.ctx_tdecl))
+			return;
+		Field[] violated_fields = Method.ATTR_VIOLATED_FIELDS.get((Method)this);
 		if( isInvariantMethod() ) {
-			if (f.invs.indexOf(this) < 0)
-				f.invs.add(this);
+			if (Field.ATTR_INVARIANT_CHECKERS.indexOf(f,this) < 0)
+				Field.ATTR_INVARIANT_CHECKERS.add(f,this);
 			if( this.ctx_tdecl.instanceOf(f.ctx_tdecl) ) {
-				if (violated_fields.indexOf(f) < 0)
-					violated_fields.add(f);
+				if (Method.ATTR_VIOLATED_FIELDS.indexOf(this, f) < 0)
+					Method.ATTR_VIOLATED_FIELDS.add(this,f);
 			}
 		} else {
-			if (violated_fields.indexOf(f) < 0)
-				violated_fields.add(f);
+			if (Method.ATTR_VIOLATED_FIELDS.indexOf(this,f) < 0)
+				Method.ATTR_VIOLATED_FIELDS.add(this,f);
 		}
 	}
 
@@ -425,7 +429,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 
 	public void makeArgs(ENode[] args, Type t) {
-		checkRebuildTypes();
+		Type t = this.type; // rebuildTypes()
 		//assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
 			int i=0;
@@ -593,7 +597,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		FormPar@ var;
 	{
-		inlined_by_dispatcher || path.space_prev.pslot().name == "targs",$cut,false
+		isInlinedByDispatcherMethod() || path.space_prev.pslot().name == "targs",$cut,false
 	;
 		path.space_prev.pslot().name == "params" ||
 		path.space_prev.pslot().name == "type_ref" ||
@@ -605,7 +609,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		var.id.equals(name),
 		node ?= var
 	;
-		node ?= retvar, ((Var)node).id.equals(name)
+		name == nameResultVar,
+		node ?= (Var)ATTR_RET_VAR.get(this)
 	;
 		node @= targs,
 		((TypeDef)node).id.equals(name)
@@ -681,7 +686,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				fp.meta.verify();
 		}
 
-		checkRebuildTypes();
+		Type t = this.type; // rebuildTypes()
 		trace(Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
 		meta.verify();
 		if (body instanceof MetaValue)

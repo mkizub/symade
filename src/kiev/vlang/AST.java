@@ -56,7 +56,7 @@ public abstract class ANode {
 		assert (pinfo.p_slot.is_attr);
 		assert(!isAttached());
 		assert(pinfo.p_parent != null && pinfo.p_parent != this);
-		assert(pinfo.p_self == this);
+		assert(pinfo.p_data == this);
 		this.p_info = pinfo;
 		this.callbackAttached();
 	}
@@ -108,7 +108,7 @@ public abstract class ANode {
 	public Object getVal(String name) {
 		if (ndata != null) {
 			foreach (AttachInfo ai; ndata; ai.p_slot.name == name)
-				return ai.p_self;
+				return ai.p_data;
 		}
 		throw new RuntimeException("No @att value \"" + name + "\" in ANode");
 	}
@@ -116,18 +116,18 @@ public abstract class ANode {
 		throw new RuntimeException("No @att value \"" + name + "\" in ANode");
 	}
 
-	public final ANode getNodeData(AttrSlot attr) {
+	public final Object getNodeData(AttrSlot attr) {
 		assert (attr.isData());
 		if (ndata != null) {
 			foreach (AttachInfo ai; ndata) {
 				if (ai.p_slot.name == attr.name)
-					return ai.p_self;
+					return ai.p_data;
 			}
 		}
 		return null;
 	}
 	
-	public final void addNodeData(ANode d, AttrSlot attr) {
+	public final void addNodeData(Object d, AttrSlot attr) {
 		assert (attr.isData());
 		if (ndata != null) {
 			AttachInfo[] ndata = this.ndata;
@@ -136,11 +136,13 @@ public abstract class ANode {
 				AttachInfo ai = ndata[i];
 				if (ai.p_slot.name == attr.name) {
 					assert(ai.p_slot == attr);
-					if (ai.p_self == d)
+					if (ai.p_data == d)
 						return;
 					if (attr.is_attr) {
-						ai.p_self.callbackDetached();
-						d.callbackAttached(this, attr);
+						if (ai.p_data instanceof ANode)
+							((ANode)ai.p_data).callbackDetached();
+						if (d instanceof ANode)
+							d.callbackAttached(this, attr);
 					} else {
 						ndata[i] = new AttachInfo(d,this,attr);
 					}
@@ -155,7 +157,7 @@ public abstract class ANode {
 		} else {
 			this.ndata = new AttachInfo[]{new AttachInfo(d,this,attr)};
 		}
-		if (attr.is_attr)
+		if (attr.is_attr && d instanceof ANode)
 			d.callbackAttached(this, attr);
 	}
 	
@@ -173,8 +175,8 @@ public abstract class ANode {
 					for (i=0; i < idx; i++) tmp[i] = ndata[i];
 					for (   ; i <  sz; i++) tmp[i] = ndata[i+1];
 					this.ndata = tmp;
-					if (attr.is_attr)
-						ai.p_self.callbackDetached();
+					if (attr.is_attr && ai.p_data instanceof ANode)
+						((ANode)ai.p_data).callbackDetached();
 					return;
 				}
 			}
@@ -211,8 +213,8 @@ public abstract class ANode {
 				}
 			}
 			if (ndata != null) {
-				foreach (AttachInfo ai; this.ndata; ai.p_slot.is_attr)
-					ai.p_self.walkTree(walker);
+				foreach (AttachInfo ai; this.ndata; ai.p_slot.is_attr && ai.p_data instanceof ANode)
+					((ANode)ai.p_data).walkTree(walker);
 			}
 		}
 		walker.post_exec(this);
@@ -225,7 +227,9 @@ public abstract class ANode {
 				AttachInfo ai = this.ndata[i];
 				if (!ai.p_slot.is_attr)
 					continue;
-				ANode nd = ai.p_self.nodeCopiedTo(node);
+				if !(ai.p_data instanceof ANode)
+					continue;
+				ANode nd = ((ANode)ai.p_data).nodeCopiedTo(node);
 				if (nd == null)
 					continue;
 				if (node.ndata == null) {
@@ -267,12 +271,12 @@ public interface PreScanneable {
 }
 
 class AttachInfo {
-	final   ANode		p_self;
+	final   Object		p_data;
 	final   ANode		p_parent;
 	final   AttrSlot	p_slot;
 	private ANode		p_ctx_root;
-	AttachInfo(ANode self, ANode parent, AttrSlot slot) {
-		this.p_self = self;
+	AttachInfo(Object data, ANode parent, AttrSlot slot) {
+		this.p_data = data;
 		this.p_parent = parent;
 		this.p_slot = slot;
 	}
@@ -304,8 +308,8 @@ class ListAttachInfo extends AttachInfo {
 			this.p_next = next;
 		}
 	}
-	ANode next() { return p_next == null ? null : p_next.p_self; }
-	ANode prev() { return p_prev == null ? null : p_prev.p_self; }
+	ANode next() { return p_next == null ? null : (ANode)p_next.p_data; }
+	ANode prev() { return p_prev == null ? null : (ANode)p_prev.p_data; }
 	void detach() {
 		if (p_prev != null)
 			p_prev.p_next = p_next;
@@ -383,7 +387,8 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public @packed:1,compileflags,19 boolean is_mth_need_fields_init;
 	public @packed:1,compileflags,20 boolean is_mth_local;
 	public @packed:1,compileflags,21 boolean is_mth_dispatcher;
-	public @packed:1,compileflags,22 boolean is_mth_invariant;
+	public @packed:1,compileflags,22 boolean is_mth_inlined_by_dispatcher;
+	public @packed:1,compileflags,23 boolean is_mth_invariant;
 	
 	// Var/field
 	public @packed:1,compileflags,16 boolean is_init_wrapper;
@@ -577,7 +582,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		public AttrSlot[] values();
 		public final void callbackChildChanged(AttrSlot attr);
 		public final void callbackRootChanged();
-		public final ANode getNodeData(AttrSlot attr);
+		public final Object getNodeData(AttrSlot attr);
 		public final void addNodeData(ANode d, AttrSlot attr);
 		public final void delNodeData(AttrSlot attr);
 		public DataFlowInfo getDFlow();

@@ -85,7 +85,7 @@ public class RuleMethod extends Method {
 	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		Var@ var;
 	{
-		inlined_by_dispatcher || path.space_prev.pslot().name == "targs",$cut,false
+		isInlinedByDispatcherMethod() || path.space_prev.pslot().name == "targs",$cut,false
 	;
 		path.space_prev.pslot().name == "params" ||
 		path.space_prev.pslot().name == "type_ref" ||
@@ -97,7 +97,7 @@ public class RuleMethod extends Method {
 		var.id.equals(name),
 		node ?= var
 	;
-		inlined_by_dispatcher,$cut,false
+		isInlinedByDispatcherMethod(),$cut,false
 	;
 		var @= params,
 		var.id.equals(name),

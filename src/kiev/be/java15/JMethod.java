@@ -23,8 +23,6 @@ public final view JMethod of Method extends JDNode {
 	public:ro	JENode					body;
 	public		Attr[]					attrs;
 	public:ro	JWBCCondition[]			conditions;
-	public:ro	JField[]				violated_fields;
-	public:ro	boolean					inlined_by_dispatcher;
 
 	public:ro	CallType				type;
 	public:ro	CallType				dtype;
@@ -42,6 +40,7 @@ public final view JMethod of Method extends JDNode {
 	public final boolean isOperatorMethod();
 	public final boolean isNeedFieldInits();
 	public final boolean isInvariantMethod();
+	public final boolean isInlinedByDispatcherMethod();
 	public final boolean isLocalMethod();
 
 	@getter public JMethod get$child_jctx_method() { return this; }

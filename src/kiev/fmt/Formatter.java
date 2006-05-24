@@ -42,7 +42,7 @@ public abstract class AbstractFormatter implements Formatter {
 		this.syntax = syntax;
 		String name = "fmt info "+Integer.toHexString(++counter);
 		name = name.intern();
-		this.ATTR = new DataAttrSlot(name,false,Drawable.class);
+		this.ATTR = new DataAttrSlot(name,false,false,Drawable.class);
 	}
 
 	public abstract Drawable format(ASTNode node);

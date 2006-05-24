@@ -23,8 +23,9 @@ import syntax kiev.Syntax;
 public final class Field extends LvalDNode implements Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
-	public static final AttrSlot GETTER_ATTR = new DataAttrSlot("getter method",false,Method.class);	
-	public static final AttrSlot SETTER_ATTR = new DataAttrSlot("setter method",false,Method.class);	
+	public static final AttrSlot GETTER_ATTR = new DataAttrSlot("getter method",false,false,Method.class);
+	public static final AttrSlot SETTER_ATTR = new DataAttrSlot("setter method",false,false,Method.class);
+	public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",Method.class);	
 
 	private static final Field dummyNode = new Field();
 	
@@ -47,8 +48,6 @@ public final class Field extends LvalDNode implements Accessable {
 	@ref public ConstExpr			const_value;
 	/** Array of attributes of this field */
 	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
-	/** Array of invariant methods, that check this field */
-	@ref public Method[]			invs;
 
 	@getter public final Type	get$type() { return this.ftype.getType(); }
 
@@ -107,7 +106,6 @@ public final class Field extends LvalDNode implements Accessable {
 		public		TypeRef			ftype;
 		public		ENode			init;
 		public		ConstExpr		const_value;
-		public:ro	Method[]		invs;
 		
 		@getter public final Type	get$type();
 		
