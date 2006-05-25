@@ -8,10 +8,6 @@ import kiev.transf.*;
 
 import kiev.ir.java15.RENode;
 import kiev.be.java15.JENode;
-//import kiev.be.java15.JVarDecl;
-//import kiev.ir.java15.RVarDecl;
-//import kiev.be.java15.JLocalStructDecl;
-//import kiev.ir.java15.RLocalStructDecl;
 import kiev.ir.java15.RNopExpr;
 
 import static kiev.stdlib.Debug.*;
@@ -27,13 +23,15 @@ public abstract class ENode extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 	
-	private static final ENode dummyNode = new NopExpr();
-
 	@virtual typedef This  = ENode;
 	@virtual typedef VView = VENode;
 	@virtual typedef JView = JENode;
 	@virtual typedef RView = RENode;
 
+	@ref
+	@virtual
+	public Method			func;
+	
 	//
 	// Expr specific
 	//
@@ -199,7 +197,7 @@ public abstract class ENode extends ASTNode {
 	@nodeview
 	public static abstract view VENode of ENode extends NodeView {
 
-		public final ENode getENode() { return (ENode)this; }
+		public Method			func;
 		
 		//
 		// Expr specific
@@ -250,6 +248,7 @@ public abstract class ENode extends ASTNode {
 		public final void replaceWithResolve(()->ENode fnode);
 
 		public final Operator getOp();
+		public ENode[] getArgs();
 		public final int getPriority();
 		public final boolean valueEquals(Object o);
 		public final boolean isConstantExpr();
@@ -265,10 +264,12 @@ public abstract class ENode extends ASTNode {
 	}
 
 	public ASTNode getDummyNode() {
-		return ENode.dummyNode;
+		return NopExpr.dummyNode;
 	}
 
 	public Operator getOp() { return null; }
+	
+	public ENode[] getArgs() { return null; }
 
 	public int getPriority() {
 		if (isPrimaryExpr())
@@ -294,7 +295,7 @@ public abstract class ENode extends ASTNode {
 @node
 public final class NopExpr extends ENode {
 
-	public static final AttrSlot ATTR = new DataAttrSlot("temp expr",true,false,ENode.class);	
+	public static final ENode dummyNode = new NopExpr();
 
 	@dflow(out="this:in") private static class DFI {}
 

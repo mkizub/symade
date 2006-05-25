@@ -132,7 +132,7 @@ public abstract view RLvalDNode of LvalDNode extends RDNode {
 @nodeview
 public static view RENode of ENode extends RNode {
 
-	public final ENode getENode() { return (ENode)this; }
+	public	Method			func;
 	
 	//
 	// Expr specific
@@ -183,6 +183,7 @@ public static view RENode of ENode extends RNode {
 	public final void replaceWithResolve(()->ENode fnode);
 
 	public final Operator getOp();
+	public final ENode[] getArgs();
 	public final int getPriority();
 	public final boolean valueEquals(Object o);
 	public final boolean isConstantExpr();
@@ -192,27 +193,7 @@ public static view RENode of ENode extends RNode {
 		throw new CompilerException(this,"Resolve call for e-node "+getClass());
 	}
 }
-/*
-@nodeview
-public final view RVarDecl of VarDecl extends RENode {
-	public Var		var;
 
-	public void resolve(Type reqType) {
-		var.resolveDecl();
-		setResolved(true);
-	}
-}
-
-@nodeview
-public final view RLocalStructDecl of LocalStructDecl extends RENode {
-	public Struct		clazz;
-	
-	public void resolve(Type reqType) {
-		clazz.resolveDecl();
-		setResolved(true);
-	}
-}
-*/
 @nodeview
 public final view RNopExpr of NopExpr extends RENode {
 

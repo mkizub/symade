@@ -41,20 +41,31 @@ public class CallExpr extends ENode {
 	@att public ENode[]				args;
 
 	@getter public Method get$func() {
+		if (func != null) return func;
 		if (ident == null) return null;
 		Symbol sym = ident.symbol;
 		if (sym == null) return null;
 		ASTNode res = sym.parent();
-		if (res instanceof Method)
+		if (res instanceof Method) {
+			func = (Method)res;
 			return (Method)res;
+		}
 		return null;
+	}
+	@setter public void set$func(Method m) {
+		this.func = m;
+		if (ident != null) {
+			if (m != null)
+				this.ident.symbol = m.id;
+			else
+				this.ident.symbol = null;
+		}
 	}
 
 	@nodeview
 	public static final view VCallExpr of CallExpr extends VENode {
 		public		ENode			obj;
 		public		SymbolRef		ident;
-		public:ro	Method			func;
 		public		CallType		mt;
 		public:ro	ENode[]			args;
 
@@ -87,7 +98,7 @@ public class CallExpr extends ENode {
 				info.leaveSuper();
 				info.leaveForward(obj);
 				if( info.isEmpty() ) {
-					this.ident.symbol = m.id;
+					this.func = m;
 					this.mt = info.mt;
 					this.setSuperExpr(true);
 					return;
@@ -166,6 +177,7 @@ public class CallExpr extends ENode {
 			ENode e = res[idx];
 			if (e instanceof UnresCallExpr) {
 				if (e.obj == this.obj) {
+					this.func = null;
 					this.ident.symbol = e.func.symbol;
 					this.mt = e.mt;
 					return;

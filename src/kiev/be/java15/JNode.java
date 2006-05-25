@@ -107,6 +107,8 @@ public view JLvalDNode of LvalDNode extends JDNode {
 @nodeview
 public view JENode of ENode extends JNode {
 	
+	public:ro	JMethod			func;
+
 	//
 	// Expr specific
 	//
@@ -142,26 +144,7 @@ public view JENode of ENode extends JNode {
 	}
 
 }
-/*
-@nodeview
-public final view JVarDecl of VarDecl extends JENode {
 
-	public:ro	JVar	var;
-
-	public void generate(Code code, Type reqType) {
-		this.var.generate(code,Type.tpVoid);
-	}
-}
-
-@nodeview
-public final view JLocalStructDecl of LocalStructDecl extends JENode {
-	public:ro Struct		clazz;
-
-	public void generate(Code code, Type reqType) {
-		// don't generate here
-	}
-}
-*/
 @nodeview
 public view JTypeDecl of TypeDecl extends JDNode {
 	public:ro	JType[]				super_types;

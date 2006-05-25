@@ -18,7 +18,6 @@ public final view JCallExpr of CallExpr extends JENode {
 	static final AttrSlot ATTR = new DataAttrSlot("jcall temp expr",true,false,ENode.class);	
 
 	public:ro	JENode			obj;
-	public:ro	JMethod			func;
 	public:ro	CallType		mt;
 	public:ro	JENode[]		args;
 	abstract

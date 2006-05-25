@@ -45,7 +45,6 @@ public final class NewExpr extends ENode {
 	@att public ENode[]				args;
 	@att public ENode				outer;
 	@att public Struct				clazz; // if this new expression defines new class
-	@ref public Method				func;
 
 	@nodeview
 	public static final view VNewExpr of NewExpr extends VENode {
@@ -53,7 +52,6 @@ public final class NewExpr extends ENode {
 		public:ro	ENode[]				args;
 		public		ENode				outer;
 		public		Struct				clazz;
-		public		Method				func;
 
 		public boolean preResolveIn() {
 			if( clazz == null )

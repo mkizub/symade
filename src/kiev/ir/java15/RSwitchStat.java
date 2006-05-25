@@ -156,7 +156,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					ENode old_sel = ~this.sel;
 					tmpvar.getVar().init = old_sel;
 					me.addSymbol(tmpvar.getVar());
-					me.stats.add(this.getENode());
+					me.stats.add((ENode)this);
 					if( tp.getStruct() != null && tp.getStruct().isHasCases() ) {
 						mode = SwitchStat.PIZZA_SWITCH;
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();

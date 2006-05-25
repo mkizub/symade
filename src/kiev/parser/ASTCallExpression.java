@@ -32,19 +32,30 @@ public class ASTCallExpression extends ENode {
 	@att public ENode[]				args;
 
 	@getter public Method get$func() {
+		if (func != null) return func;
 		if (ident == null) return null;
 		Symbol sym = ident.symbol;
 		if (sym == null) return null;
 		ASTNode res = sym.parent();
-		if (res instanceof Method)
+		if (res instanceof Method) {
+			func = (Method)res;
 			return (Method)res;
+		}
 		return null;
+	}
+	@setter public void set$func(Method m) {
+		this.func = m;
+		if (ident != null) {
+			if (m != null)
+				this.ident.symbol = m.id;
+			else
+				this.ident.symbol = null;
+		}
 	}
 
 	@nodeview
 	public static view VASTCallExpression of ASTCallExpression extends VENode {
 		public		SymbolRef		ident;
-		public:ro	Method			func;
 		public:ro	TypeRef[]		targs;
 		public:ro	ENode[]			args;
 

@@ -21,7 +21,6 @@ public final view RCallExpr of CallExpr extends RENode {
 
 	public		ENode			obj;
 	public:ro	SymbolRef		ident;
-	public:ro	Method			func;
 	public		CallType		mt;
 	public:ro	ENode[]			args;
 	abstract
@@ -83,7 +82,7 @@ public final view RCallExpr of CallExpr extends RENode {
 			ASTNode n = func.parent();
 			while !(n instanceof Method) n = n.parent();
 			assert (n.parent() instanceof TypeDecl);
-			ident.symbol = ((Method)n).id;
+			this.func = (Method)n;
 		}
 		setResolved(true);
 		if (isAutoReturnable())

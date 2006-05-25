@@ -234,7 +234,7 @@ public class ReturnStat extends ENode {
 		if (expr.parent() instanceof ReturnStat)
 			return;
 		expr.setAutoReturnable(false);
-		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr.getENode()); });
+		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ((ENode)expr).detach()); });
 	}
 
 	public static void autoReturn(Type reqType, ENode expr) {

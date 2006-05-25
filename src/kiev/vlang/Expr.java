@@ -335,14 +335,12 @@ public class BinaryExpr extends ENode {
 	@ref public BinaryOperator	op;
 	@att public ENode			expr1;
 	@att public ENode			expr2;
-	@ref public Method			func;
 
 	@nodeview
 	public static final view VBinaryExpr of BinaryExpr extends VENode {
 		public BinaryOperator	op;
 		public ENode			expr1;
 		public ENode			expr2;
-		public Method			func;
 
 		public void mainResolveOut() {
 			Type et1 = expr1.getType();

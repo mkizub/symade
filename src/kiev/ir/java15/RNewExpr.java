@@ -20,7 +20,6 @@ public static final view RNewExpr of NewExpr extends RENode {
 	public:ro	ENode[]				args;
 	public		ENode				outer;
 	public		Struct				clazz;
-	public		Method				func;
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) {

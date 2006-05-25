@@ -19,7 +19,6 @@ public final view JNewExpr of NewExpr extends JENode {
 
 	public:ro	JENode[]		args;
 	public:ro	JENode			outer;
-	public:ro	JMethod			func;
 	abstract
 	public 		JENode			tmp_expr;
 	
