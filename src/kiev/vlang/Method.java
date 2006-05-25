@@ -545,7 +545,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		if (pt ≡ null || pt ≡ Type.tpAny || pt ≡ at)
 			return;
 		if (qt ≡ at) {
-			bindings.append(pt);
+			if (pt.isInstanceOf(at))
+				bindings.append(pt);
 			return;
 		}
 		if (!qt.hasApplayable(at))
@@ -556,7 +557,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			if (!qtv.isAlias()) {
 				if (qtv.val ≡ at) {
 					Type bnd = pt.resolve(qtv.var);
-					if (bnd ≢ qtv.var && !bindings.contains(bnd))
+					if (bnd ≢ qtv.var && !bindings.contains(bnd) && bnd.isInstanceOf(at))
 						bindings.append(bnd);
 				}
 				else if (qtv.val.hasApplayable(at)) {
