@@ -193,7 +193,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);
 		IFldExpr ae = fa.ncopy();
-		ae.ident.symbol = mp.packer.id;
+		ae.ident.symbol = mp.packer;
 		ENode expr = ae;
 		if (mp.getOffset() > 0) {
 			ConstExpr sexpr = new ConstIntExpr(mp.getOffset());

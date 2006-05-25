@@ -34,23 +34,17 @@ public class ASTCallExpression extends ENode {
 	@getter public Method get$func() {
 		if (func != null) return func;
 		if (ident == null) return null;
-		Symbol sym = ident.symbol;
-		if (sym == null) return null;
-		ASTNode res = sym.parent();
-		if (res instanceof Method) {
-			func = (Method)res;
-			return (Method)res;
+		DNode sym = ident.symbol;
+		if (sym instanceof Method) {
+			func = (Method)sym;
+			return (Method)sym;
 		}
 		return null;
 	}
 	@setter public void set$func(Method m) {
 		this.func = m;
-		if (ident != null) {
-			if (m != null)
-				this.ident.symbol = m.id;
-			else
-				this.ident.symbol = null;
-		}
+		if (ident != null)
+			this.ident.symbol = m;
 	}
 
 	@nodeview

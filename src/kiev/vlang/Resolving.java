@@ -260,15 +260,15 @@ public class ResInfo {
 			if (from == null && forwards_p == 0) {
 				if !(node.isStatic())
 					throw new CompilerException(at, "Don't know how to build closure for "+node+" via "+this);
-				return new UnresCallExpr(at.pos, new TypeRef(f.ctx_tdecl.xtype), f.id, mt, args, false);
+				return new UnresCallExpr(at.pos, new TypeRef(f.ctx_tdecl.xtype), f, mt, args, false);
 			}
 			ENode expr = buildAccess(at, from, f);
-			return new UnresCallExpr(at.pos,expr,f.id,mt,args,false);
+			return new UnresCallExpr(at.pos,expr,f,mt,args,false);
 		}
 		else if (node instanceof Var) {
 			Var var = (Var)node;
 			ENode expr = buildAccess(at, from, var);
-			return new UnresCallExpr(at.pos,expr,var.id,mt,args,false);
+			return new UnresCallExpr(at.pos,expr,var,mt,args,false);
 		}
 		throw new CompilerException(at, "Don't know how to call "+node+" via "+this);
 	}

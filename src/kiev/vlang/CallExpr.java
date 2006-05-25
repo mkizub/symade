@@ -43,23 +43,17 @@ public class CallExpr extends ENode {
 	@getter public Method get$func() {
 		if (func != null) return func;
 		if (ident == null) return null;
-		Symbol sym = ident.symbol;
-		if (sym == null) return null;
-		ASTNode res = sym.parent();
-		if (res instanceof Method) {
-			func = (Method)res;
-			return (Method)res;
+		DNode sym = ident.symbol;
+		if (sym instanceof Method) {
+			func = (Method)sym;
+			return (Method)sym;
 		}
 		return null;
 	}
 	@setter public void set$func(Method m) {
 		this.func = m;
-		if (ident != null) {
-			if (m != null)
-				this.ident.symbol = m.id;
-			else
-				this.ident.symbol = null;
-		}
+		if (ident != null)
+			this.ident.symbol = m;
 	}
 
 	@nodeview
@@ -210,15 +204,15 @@ public class CallExpr extends ENode {
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef(pos,func.id), mt, args, super_flag);
+		this(pos, obj, new SymbolRef(pos,func), mt, args, super_flag);
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args) {
-		this(pos, obj, new SymbolRef(pos,func.id), mt, args, false);
+		this(pos, obj, new SymbolRef(pos,func), mt, args, false);
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
-		this(pos, obj, new SymbolRef(pos,func.id), null, args, false);
+		this(pos, obj, new SymbolRef(pos,func), null, args, false);
 	}
 
 	public int getPriority() { return Constants.opCallPriority; }

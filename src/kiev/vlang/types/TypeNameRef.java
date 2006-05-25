@@ -63,11 +63,11 @@ public class TypeNameRef extends TypeRef {
 		if (this.lnk != null)
 			return this.lnk;
 		Type tp;
-		if (ident.symbol != null && ident.symbol.parent() instanceof TypeDecl) {
+		if (ident.symbol instanceof TypeDecl) {
 			if (outer != null)
-				tp = ((TypeDecl)ident.symbol.parent()).getType().bind(outer.getType().bindings());
+				tp = ((TypeDecl)ident.symbol).getType().bind(outer.getType().bindings());
 			else
-				tp = ((TypeDecl)ident.symbol.parent()).getType();
+				tp = ((TypeDecl)ident.symbol).getType();
 		}
 		else if (this.outer != null) {
 			Type outer = this.outer.getType();
@@ -75,14 +75,14 @@ public class TypeNameRef extends TypeRef {
 			TypeDecl@ td;
 			if!(outer.meta_type.tdecl.resolveNameR(td,info,ident.name))
 				throw new CompilerException(this,"Unresolved type "+ident+" in "+outer);
-			ident.symbol = td.getName();
+			ident.symbol = td;
 			td.checkResolved();
 			tp = td.getType().bind(outer.bindings());
 		} else {
 			TypeDecl@ td;
 			if( !PassInfo.resolveQualifiedNameR(((TypeNameRef)this),td,new ResInfo(this,ResInfo.noForwards),ident.name) )
 				throw new CompilerException(this,"Unresolved type "+ident);
-			ident.symbol = td.getName();
+			ident.symbol = td;
 			td.checkResolved();
 			tp = td.getType();
 		}

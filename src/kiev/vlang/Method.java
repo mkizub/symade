@@ -705,7 +705,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			Type t = tp;
 			if (t instanceof ArrayType) {
 				if (body instanceof MetaValueScalar) {
-					MetaValueArray mva = new MetaValueArray(new SymbolRef(body.pos, this.id));
+					MetaValueArray mva = new MetaValueArray(new SymbolRef(body.pos, this));
 					mva.values.add(~((MetaValueScalar)body).value);
 					body = mva;
 				}

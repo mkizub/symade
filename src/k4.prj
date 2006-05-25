@@ -424,7 +424,7 @@ CLASS kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
 CLASS kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
 CLASS kiev.vlang.Symbol kiev/vlang/Symbol kiev\vlang\Symbol.java
 CLASS kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java
-CLASS kiev.vlang.SymbolRef kiev/vlang/SymbolRef kiev\vlang\AST.java
+CLASS kiev.vlang.SymbolRef kiev/vlang/SymbolRef kiev\vlang\Symbol.java
 CLASS kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
 CLASS kiev.vlang.Test kiev/vlang/Test kiev\vlang\MetaTypes.java
 CLASS kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
@@ -554,7 +554,6 @@ INTERFACE kiev.be.java15.JShadow kiev/be/java15/JShadow kiev\be\java15\JExpr.jav
 INTERFACE kiev.be.java15.JStringConcatExpr kiev/be/java15/JStringConcatExpr kiev\be\java15\JExpr.java
 INTERFACE kiev.be.java15.JStruct kiev/be/java15/JStruct kiev\be\java15\JStruct.java
 INTERFACE kiev.be.java15.JSwitchStat kiev/be/java15/JSwitchStat kiev\be\java15\JComplexStat.java
-INTERFACE kiev.be.java15.JSymbolRef kiev/be/java15/JSymbolRef kiev\be\java15\JNode.java
 INTERFACE kiev.be.java15.JSynchronizedStat kiev/be/java15/JSynchronizedStat kiev\be\java15\JComplexStat.java
 INTERFACE kiev.be.java15.JThisExpr kiev/be/java15/JThisExpr kiev\be\java15\JLvalueExpr.java
 INTERFACE kiev.be.java15.JThrowStat kiev/be/java15/JThrowStat kiev\be\java15\JStatement.java
@@ -643,7 +642,6 @@ INTERFACE kiev.ir.java15.RShadow kiev/ir/java15/RShadow kiev\ir\java15\RExpr.jav
 INTERFACE kiev.ir.java15.RStringConcatExpr kiev/ir/java15/RStringConcatExpr kiev\ir\java15\RExpr.java
 INTERFACE kiev.ir.java15.RStruct kiev/ir/java15/RStruct kiev\ir\java15\RStruct.java
 INTERFACE kiev.ir.java15.RSwitchStat kiev/ir/java15/RSwitchStat kiev\ir\java15\RSwitchStat.java
-INTERFACE kiev.ir.java15.RSymbolRef kiev/ir/java15/RSymbolRef kiev\ir\java15\RNode.java
 INTERFACE kiev.ir.java15.RSynchronizedStat kiev/ir/java15/RSynchronizedStat kiev\ir\java15\RBlockStat.java
 INTERFACE kiev.ir.java15.RThisExpr kiev/ir/java15/RThisExpr kiev\ir\java15\RLvalueExpr.java
 INTERFACE kiev.ir.java15.RThrowStat kiev/ir/java15/RThrowStat kiev\ir\java15\RStat.java
@@ -695,6 +693,8 @@ INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
 METATYPE kiev.be.java15.JNodeUtils kiev\be\java15\JNode.java bad
+METATYPE kiev.be.java15.JSymbolRef kiev\be\java15\JNode.java bad
+METATYPE kiev.ir.java15.RSymbolRef kiev\ir\java15\RNode.java bad
 METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad

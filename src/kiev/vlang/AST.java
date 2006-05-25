@@ -11,8 +11,6 @@ import kiev.parser.*;
 import kiev.be.java15.JType;
 import kiev.ir.java15.RNode;
 import kiev.be.java15.JNode;
-import kiev.be.java15.JSymbolRef;
-import kiev.ir.java15.RSymbolRef;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -661,72 +659,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 }
 
-
-@node
-public class SymbolRef extends ASTNode {
-
-	@dflow(out="this:in") private static class DFI {}
-
-	@virtual typedef This  = SymbolRef;
-	@virtual typedef VView = VSymbolRef;
-	@virtual typedef JView = JSymbolRef;
-	@virtual typedef RView = RSymbolRef;
-
-	@att public String		name; // unresolved name
-	@ref public Symbol		symbol; // resolved symbol
-
-	@nodeview
-	public static view VSymbolRef of SymbolRef extends NodeView {
-		public String	name;
-		public Symbol	symbol;
-	}
-
-	public SymbolRef() {}
-
-	public SymbolRef(String name) {
-		this.name = name;
-	}
-
-	public SymbolRef(int pos, String name) {
-		this.pos = pos;
-		this.name = name;
-	}
-
-	public SymbolRef(int pos, Symbol id) {
-		this.pos = pos;
-		this.name = id.sname;
-		this.symbol = id;
-	}
-
-	public boolean equals(Object nm) {
-		if (nm instanceof Symbol) return nm == this.name;
-		if (nm instanceof SymbolRef) return nm.name == this.name;
-		if (nm instanceof String) return nm == this.name;
-		if (nm instanceof KString) {
-			Kiev.reportWarning(this,"Compare SymbolRef.equals(KString)")
-		}
-		return false;
-	}
-
-	public void set(Token t) {
-        pos = t.getPos();
-		if (t.image.startsWith("#id\""))
-			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
-		else
-			this.name = t.image;
-	}
-	
-	@setter
-	public void set$name(String value) {
-		this.name = (value != null) ? value.intern() : null;
-	}
-	
-	public String toString() { return symbol == null ? name : symbol.toString(); }
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append(name).space();
-	}
-}
 
 public class CompilerException extends RuntimeException {
 	public ASTNode	from;

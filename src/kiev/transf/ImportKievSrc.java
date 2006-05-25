@@ -362,7 +362,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				Struct p = clazz.ctx_tdecl;
 				p.addCase(clazz);
 				getStructType(p, path);
-				TypeWithArgsRef sup_ref = new TypeWithArgsRef(null, new SymbolRef(clazz.pos,p.id));
+				TypeWithArgsRef sup_ref = new TypeWithArgsRef(null, new SymbolRef(clazz.pos,p));
 			next_case_arg:
 				for(int i=0; i < p.args.length; i++) {
 					for(int j=0; j < clazz.args.length; j++) {

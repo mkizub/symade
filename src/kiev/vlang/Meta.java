@@ -200,7 +200,7 @@ public class Meta extends ENode {
 			}
 			if (m == null)
 				throw new CompilerException(v, "Unresolved method "+v.ident+" in class "+s);
-			v.ident.symbol = m.id;
+			v.ident.symbol = m;
 			Type t = m.type.ret();
 			if (t instanceof ArrayType) {
 				if (v instanceof MetaValueScalar) {
@@ -426,7 +426,7 @@ public abstract class MetaValue extends ENode {
 	public void verify() {
 		if (parent() instanceof Method && pslot().name == "body") {
 			Method m = (Method)parent();
-			ident = new SymbolRef(pos, m.id);
+			ident = new SymbolRef(pos, m);
 		}
 		else if (ident == null) {
 			ident = new SymbolRef("value");

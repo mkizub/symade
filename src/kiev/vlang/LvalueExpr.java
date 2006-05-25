@@ -197,11 +197,9 @@ public final class IFldExpr extends LvalueExpr {
 
 	@getter public Field get$var() {
 		if (ident == null) return null;
-		Symbol sym = ident.symbol;
-		if (sym == null) return null;
-		ASTNode res = sym.parent();
-		if (res instanceof Field)
-			return (Field)res;
+		DNode sym = ident.symbol;
+		if (sym instanceof Field)
+			return (Field)sym;
 		return null;
 	}
 
@@ -223,7 +221,7 @@ public final class IFldExpr extends LvalueExpr {
 						Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
 					} else {
 						f = (Field)v;
-						ident.symbol = f.id;
+						ident.symbol = f;
 					}
 				} else {
 					Kiev.reportError(this, "Error resolving "+f+" in "+tp);
@@ -241,21 +239,21 @@ public final class IFldExpr extends LvalueExpr {
 		this.pos = pos;
 		this.obj = obj;
 		this.ident = ident;
-		this.ident.symbol = var.id;
+		this.ident.symbol = var;
 		assert(obj != null && var != null);
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var) {
 		this.pos = pos;
 		this.obj = obj;
-		this.ident = new SymbolRef(pos,var.id);
+		this.ident = new SymbolRef(pos,var);
 		assert(obj != null && var != null);
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var, boolean direct_access) {
 		this.pos = pos;
 		this.obj = obj;
-		this.ident = new SymbolRef(pos,var.id);
+		this.ident = new SymbolRef(pos,var);
 		assert(obj != null && var != null);
 		if (direct_access) setAsField(true);
 	}
@@ -485,11 +483,9 @@ public final class LVarExpr extends LvalueExpr {
 
 	@getter public Var get$var() {
 		if (ident == null) return null;
-		Symbol sym = ident.symbol;
-		if (sym == null) return null;
-		ASTNode res = sym.parent();
-		if (res instanceof Var)
-			return (Var)res;
+		DNode sym = ident.symbol;
+		if (sym instanceof Var)
+			return (Var)sym;
 		return null;
 	}
 
@@ -514,7 +510,7 @@ public final class LVarExpr extends LvalueExpr {
 	public LVarExpr() {}
 	public LVarExpr(int pos, Var var) {
 		this.pos = pos;
-		this.ident = new SymbolRef(pos, var.id);
+		this.ident = new SymbolRef(pos, var);
 	}
 	public LVarExpr(int pos, String name) {
 		this.pos = pos;
@@ -540,7 +536,7 @@ public final class LVarExpr extends LvalueExpr {
 		ResInfo info = new ResInfo(this);
 		if( !PassInfo.resolveNameR((ASTNode)this,v,info,ident.name) )
 			throw new CompilerException(this,"Unresolved var "+ident);
-		ident.symbol = v.id;
+		ident.symbol = v;
 		return (Var)v;
 	}
 
@@ -600,11 +596,9 @@ public final class SFldExpr extends LvalueExpr {
 
 	@getter public Field get$var() {
 		if (ident == null) return null;
-		Symbol sym = ident.symbol;
-		if (sym == null) return null;
-		ASTNode res = sym.parent();
-		if (res instanceof Field)
-			return (Field)res;
+		DNode sym = ident.symbol;
+		if (sym instanceof Field)
+			return (Field)sym;
 		return null;
 	}
 
@@ -634,7 +628,7 @@ public final class SFldExpr extends LvalueExpr {
 				throw new CompilerException(this, "Unresolved static field "+ident+" in "+tp);
 			if !(res instanceof Field || !res.isStatic())
 				throw new CompilerException(this, "Resolved "+ident+" in "+tp+" is not a static field");
-			ident.symbol = res.id;
+			ident.symbol = res;
 		}
 		// verify resolved tree
 		public boolean preVerify() {
@@ -648,7 +642,7 @@ public final class SFldExpr extends LvalueExpr {
 						Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
 					} else {
 						f = (Field)v;
-						ident.symbol = f.id;
+						ident.symbol = f;
 					}
 				} else {
 					Kiev.reportError(this, "Error resolving "+f+" in "+tp);
@@ -665,13 +659,13 @@ public final class SFldExpr extends LvalueExpr {
 	public SFldExpr(int pos, Field var) {
 		this.pos = pos;
 		this.obj = new TypeRef(pos,var.ctx_tdecl.xtype);
-		this.ident = new SymbolRef(pos,var.id);
+		this.ident = new SymbolRef(pos,var);
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
 		this.pos = pos;
 		this.obj = new TypeRef(pos,var.ctx_tdecl.xtype);
-		this.ident = new SymbolRef(pos,var.id);
+		this.ident = new SymbolRef(pos,var);
 		if (direct_access) setAsField(true);
 	}
 

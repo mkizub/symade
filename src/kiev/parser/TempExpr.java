@@ -288,10 +288,7 @@ public class UnresCallExpr extends UnresExpr {
 	
 	public UnresCallExpr() {}
 
-	public UnresCallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef(pos, func.id), mt, args, super_flag);
-	}
-	public UnresCallExpr(int pos, ENode obj, Symbol func, CallType mt, ENode[] args, boolean super_flag) {
+	public UnresCallExpr(int pos, ENode obj, DNode func, CallType mt, ENode[] args, boolean super_flag) {
 		this(pos, obj, new SymbolRef(pos, func), mt, args, super_flag);
 	}
 	public UnresCallExpr(int pos, ENode obj, SymbolRef func, CallType mt, ENode[] args, boolean super_flag) {
@@ -324,15 +321,15 @@ public class UnresCallExpr extends UnresExpr {
 				args[i].detach();
 		}
 		if (obj instanceof TypeRef) {
-			if (func.symbol.parent() instanceof Method) {
+			if (func.symbol instanceof Method) {
 				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args, false);
 				return ce;
 			} else {
-				Field f = (Field)func.symbol.parent();
+				Field f = (Field)func.symbol;
 				return new ClosureCallExpr(pos, new SFldExpr(pos, f), args);
 			}
 		} else {
-			if (func.symbol.parent() instanceof Method) {
+			if (func.symbol instanceof Method) {
 				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args, isSuperExpr());
 				ce.setCastCall(this.isCastCall());
 				return ce;

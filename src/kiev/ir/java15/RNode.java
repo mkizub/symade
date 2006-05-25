@@ -217,8 +217,4 @@ public view RTypeDecl of TypeDecl extends RDNode {
 	public boolean isClazz();
 }
 
-@nodeview
-public final view RSymbolRef of SymbolRef extends RNode {
-	public String name;
-}
 
