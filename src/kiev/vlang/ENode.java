@@ -28,9 +28,7 @@ public abstract class ENode extends ASTNode {
 	@virtual typedef JView = JENode;
 	@virtual typedef RView = RENode;
 
-	@ref
-	@virtual
-	public Method			func;
+	@att public SymbolRef		ident;
 	
 	//
 	// Expr specific
@@ -197,7 +195,7 @@ public abstract class ENode extends ASTNode {
 	@nodeview
 	public static abstract view VENode of ENode extends NodeView {
 
-		public Method			func;
+		public SymbolRef			ident;
 		
 		//
 		// Expr specific

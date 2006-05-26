@@ -43,7 +43,6 @@ public abstract view JLvalueExpr of LvalueExpr extends JENode {
 @nodeview
 public abstract view JAccessExpr of AccessExpr extends JLvalueExpr {
 	public:ro	JENode		obj;
-	public:ro	SymbolRef	ident;
 }
 
 @nodeview
@@ -339,7 +338,6 @@ public final view JThisExpr of ThisExpr extends JLvalueExpr {
 
 @nodeview
 public final view JLVarExpr of LVarExpr extends JLvalueExpr {
-	public:ro	SymbolRef	ident;
 	public:ro	JVar		var;
 
 	public JField resolveProxyVar(Code code) {

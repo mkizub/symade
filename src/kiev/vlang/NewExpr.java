@@ -46,6 +46,17 @@ public final class NewExpr extends ENode {
 	@att public ENode				outer;
 	@att public Struct				clazz; // if this new expression defines new class
 
+	@getter public Method get$func() {
+		if (ident == null) return null;
+		DNode sym = ident.symbol;
+		if (sym instanceof Method)
+			return (Method)sym;
+		return null;
+	}
+	@setter public void set$func(Method m) {
+		this.ident.symbol = m;
+	}
+
 	@nodeview
 	public static final view VNewExpr of NewExpr extends VENode {
 		public		TypeRef				type;
@@ -98,12 +109,14 @@ public final class NewExpr extends ENode {
 
 	public NewExpr(int pos, Type type, ENode[] args) {
 		this.pos = pos;
+		this.ident = new SymbolRef(nameInit);
 		this.type = new TypeRef(type);
 		foreach (ENode e; args) this.args.append(e);
 	}
 
 	public NewExpr(int pos, TypeRef type, ENode[] args) {
 		this.pos = pos;
+		this.ident = new SymbolRef(nameInit);
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
 	}

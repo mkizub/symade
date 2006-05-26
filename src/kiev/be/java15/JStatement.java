@@ -255,7 +255,6 @@ public final view JLabeledStat of LabeledStat extends JENode {
 
 @nodeview
 public final view JBreakStat of BreakStat extends JENode {
-	public:ro	SymbolRef	ident;
 	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
@@ -337,7 +336,6 @@ public final view JBreakStat of BreakStat extends JENode {
 
 @nodeview
 public final view JContinueStat of ContinueStat extends JENode {
-	public:ro	SymbolRef	ident;
 	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {
@@ -404,7 +402,6 @@ public final view JContinueStat of ContinueStat extends JENode {
 
 @nodeview
 public final view JGotoStat of GotoStat extends JENode {
-	public:ro	SymbolRef	ident;
 	public:ro	JLabel		dest;
 
 	public void generate(Code code, Type reqType) {

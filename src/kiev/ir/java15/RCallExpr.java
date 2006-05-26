@@ -19,8 +19,8 @@ public final view RCallExpr of CallExpr extends RENode {
 
 	static final AttrSlot ATTR = new DataAttrSlot("rcall temp expr",true,false,ENode.class);	
 
+	public:ro	Method			func;
 	public		ENode			obj;
-	public:ro	SymbolRef		ident;
 	public		CallType		mt;
 	public:ro	ENode[]			args;
 	abstract
@@ -82,7 +82,7 @@ public final view RCallExpr of CallExpr extends RENode {
 			ASTNode n = func.parent();
 			while !(n instanceof Method) n = n.parent();
 			assert (n.parent() instanceof TypeDecl);
-			this.func = (Method)n;
+			this.ident.symbol = (Method)n;
 		}
 		setResolved(true);
 		if (isAutoReturnable())

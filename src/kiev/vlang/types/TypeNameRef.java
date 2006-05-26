@@ -21,12 +21,10 @@ public class TypeNameRef extends TypeRef {
 	@virtual typedef VView = VTypeNameRef;
 
 	@att public TypeRef			outer;
-	@att public SymbolRef		ident;
 
 	@nodeview
 	public static view VTypeNameRef of TypeNameRef extends VTypeRef {
 		public TypeRef				outer;
-		public SymbolRef			ident;
 	}
 
 	public TypeNameRef() {}

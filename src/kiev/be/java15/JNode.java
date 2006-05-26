@@ -107,7 +107,7 @@ public view JLvalDNode of LvalDNode extends JDNode {
 @nodeview
 public view JENode of ENode extends JNode {
 	
-	public:ro	JMethod			func;
+	public:ro	SymbolRef			ident;
 
 	//
 	// Expr specific

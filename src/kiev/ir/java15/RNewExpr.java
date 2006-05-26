@@ -16,6 +16,7 @@ import syntax kiev.Syntax;
 
 @nodeview
 public static final view RNewExpr of NewExpr extends RENode {
+	public:ro	Method				func;
 	public		TypeRef				type;
 	public:ro	ENode[]				args;
 	public		ENode				outer;
@@ -67,7 +68,8 @@ public static final view RNewExpr of NewExpr extends RENode {
 		mt = (CallType)Type.getRealType(type,new CallType(ta,Type.tpVoid));
 		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
-			func = m;
+			if (ident == null) ident = new SymbolRef(nameInit);
+			ident.symbol = m;
 			m.makeArgs(args,type);
 			for(int i=0; i < args.length; i++)
 				args[i].resolve(mt.arg(i));

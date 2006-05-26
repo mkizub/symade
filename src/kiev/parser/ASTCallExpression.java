@@ -27,29 +27,22 @@ public class ASTCallExpression extends ENode {
 	@virtual typedef This  = ASTCallExpression;
 	@virtual typedef VView = VASTCallExpression;
 
-	@att public SymbolRef			ident;
 	@att public TypeRef[]			targs;
 	@att public ENode[]				args;
 
 	@getter public Method get$func() {
-		if (func != null) return func;
 		if (ident == null) return null;
 		DNode sym = ident.symbol;
-		if (sym instanceof Method) {
-			func = (Method)sym;
+		if (sym instanceof Method)
 			return (Method)sym;
-		}
 		return null;
 	}
 	@setter public void set$func(Method m) {
-		this.func = m;
-		if (ident != null)
-			this.ident.symbol = m;
+		this.ident.symbol = m;
 	}
 
 	@nodeview
 	public static view VASTCallExpression of ASTCallExpression extends VENode {
-		public		SymbolRef		ident;
 		public:ro	TypeRef[]		targs;
 		public:ro	ENode[]			args;
 

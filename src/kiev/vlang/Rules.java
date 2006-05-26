@@ -774,14 +774,12 @@ public final class RuleCallExpr extends ASTRuleNode {
 	@virtual typedef VView = VRuleCallExpr;
 
 	@att public ENode				obj;
-	@att public SymbolRef			ident;
 	@att public ENode[]				args;
 	@att public int					env_var;
 
 	@nodeview
 	public static final view VRuleCallExpr of RuleCallExpr extends VASTRuleNode {
 		public		ENode			obj;
-		public		SymbolRef		ident;
 		public:ro	ENode[]			args;
 		public		int				env_var;
 	}

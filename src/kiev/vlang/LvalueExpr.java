@@ -66,12 +66,10 @@ public final class AccessExpr extends LvalueExpr {
 	@virtual typedef RView = RAccessExpr;
 
 	@att public ENode			obj;
-	@att public SymbolRef		ident;
 
 	@nodeview
 	public static final view VAccessExpr of AccessExpr extends VLvalueExpr {
 		public ENode		obj;
-		public SymbolRef	ident;
 
 		public final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o);
 
@@ -191,7 +189,6 @@ public final class IFldExpr extends LvalueExpr {
 	@virtual typedef RView = RIFldExpr;
 
 	@att public ENode			obj;
-	@att public SymbolRef		ident;
 	@abstract
 	@ref public:ro Field		var;
 
@@ -206,7 +203,6 @@ public final class IFldExpr extends LvalueExpr {
 	@nodeview
 	public static final view VIFldExpr of IFldExpr extends VLvalueExpr {
 		public		ENode		obj;
-		public		SymbolRef	ident;
 		public:ro	Field		var;
 
 		// verify resolved tree
@@ -479,8 +475,6 @@ public final class LVarExpr extends LvalueExpr {
 	@virtual typedef JView = JLVarExpr;
 	@virtual typedef RView = RLVarExpr;
 
-	@att public SymbolRef	ident;
-
 	@getter public Var get$var() {
 		if (ident == null) return null;
 		DNode sym = ident.symbol;
@@ -491,7 +485,6 @@ public final class LVarExpr extends LvalueExpr {
 
 	@nodeview
 	public static final view VLVarExpr of LVarExpr extends VLvalueExpr {
-		public		SymbolRef	ident;
 		public:ro	Var			var;
 
 		public Var getVar();
@@ -592,7 +585,6 @@ public final class SFldExpr extends LvalueExpr {
 	@virtual typedef RView = RSFldExpr;
 
 	@att public ENode			obj;
-	@att public SymbolRef		ident;
 
 	@getter public Field get$var() {
 		if (ident == null) return null;
@@ -605,7 +597,6 @@ public final class SFldExpr extends LvalueExpr {
 	@nodeview
 	public static final view VSFldExpr of SFldExpr extends VLvalueExpr {
 		public		ENode		obj;
-		public		SymbolRef	ident;
 		public:ro	Field		var;
 
 		public void mainResolveOut() {
@@ -731,14 +722,12 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 	@virtual typedef RView = ROuterThisAccessExpr;
 
 	@att public ENode			obj;
-	@att public SymbolRef		ident;
 	@ref public Struct			outer;
 	@ref public Field[]			outer_refs;
 
 	@nodeview
 	public static final view VOuterThisAccessExpr of OuterThisAccessExpr extends VLvalueExpr {
 		public		ENode			obj;
-		public		SymbolRef		ident;
 		public		Struct			outer;
 		public:ro	Field[]			outer_refs;
 	}

@@ -17,6 +17,7 @@ public final view JNewExpr of NewExpr extends JENode {
 
 	static final AttrSlot ATTR = new DataAttrSlot("jnew temp expr",true,false,ENode.class);	
 
+	public:ro	JMethod			func;
 	public:ro	JENode[]		args;
 	public:ro	JENode			outer;
 	abstract

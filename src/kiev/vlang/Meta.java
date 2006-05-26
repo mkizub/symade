@@ -408,11 +408,8 @@ public abstract class MetaValue extends ENode {
 	@virtual typedef This  = MetaValue;
 	@virtual typedef VView = VMetaValue;
 
-	@att public SymbolRef			ident;
-
 	@nodeview
 	public static abstract view VMetaValue of MetaValue extends VENode {
-		public SymbolRef			ident;
 	}
 
 	public MetaValue() {}

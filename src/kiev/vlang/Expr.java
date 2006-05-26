@@ -400,8 +400,10 @@ public class BinaryExpr extends ENode {
 				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
 				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 					Method rm = opt.method;
-					if !(rm.isMacro() && rm.isNative())
-						func = opt.method;
+					if !(rm.isMacro() && rm.isNative()) {
+						if (ident == null) ident = new SymbolRef(op.image);
+						ident.symbol = opt.method;
+					}
 					return;
 				}
 			}

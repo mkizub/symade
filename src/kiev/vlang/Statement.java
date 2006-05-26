@@ -419,7 +419,6 @@ public class BreakStat extends ENode {
 	@virtual typedef JView = JBreakStat;
 	@virtual typedef RView = RBreakStat;
 
-	@att public SymbolRef	ident;
 	@ref public Label		dest;
 
 	public void callbackRootChanged() {
@@ -432,7 +431,6 @@ public class BreakStat extends ENode {
 
 	@nodeview
 	public static final view VBreakStat of BreakStat extends VENode {
-		public SymbolRef		ident;
 		public Label			dest;
 
 		public boolean mainResolveIn() {
@@ -505,7 +503,6 @@ public class ContinueStat extends ENode {
 	@virtual typedef JView = JContinueStat;
 	@virtual typedef RView = RContinueStat;
 
-	@att public SymbolRef	ident;
 	@ref public Label		dest;
 
 	public void callbackRootChanged() {
@@ -518,7 +515,6 @@ public class ContinueStat extends ENode {
 
 	@nodeview
 	public static final view VContinueStat of ContinueStat extends VENode {
-		public SymbolRef		ident;
 		public Label			dest;
 
 		public boolean mainResolveIn() {
@@ -591,7 +587,6 @@ public class GotoStat extends ENode {
 	@virtual typedef JView = JGotoStat;
 	@virtual typedef RView = RGotoStat;
 
-	@att public SymbolRef	ident;
 	@ref public Label		dest;
 
 	public void callbackRootChanged() {
@@ -604,7 +599,6 @@ public class GotoStat extends ENode {
 
 	@nodeview
 	public static final view VGotoStat of GotoStat extends VENode {
-		public SymbolRef		ident;
 		public Label			dest;
 
 		public boolean mainResolveIn() {

@@ -132,7 +132,7 @@ public abstract view RLvalDNode of LvalDNode extends RDNode {
 @nodeview
 public static view RENode of ENode extends RNode {
 
-	public	Method			func;
+	public	SymbolRef			ident;
 	
 	//
 	// Expr specific

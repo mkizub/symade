@@ -36,30 +36,24 @@ public class CallExpr extends ENode {
 	@virtual typedef RView = RCallExpr;
 
 	@att public ENode				obj;
-	@att public SymbolRef			ident;
 	@ref public CallType			mt;
 	@att public ENode[]				args;
 
 	@getter public Method get$func() {
-		if (func != null) return func;
 		if (ident == null) return null;
 		DNode sym = ident.symbol;
-		if (sym instanceof Method) {
-			func = (Method)sym;
+		if (sym instanceof Method)
 			return (Method)sym;
-		}
 		return null;
 	}
 	@setter public void set$func(Method m) {
-		this.func = m;
-		if (ident != null)
-			this.ident.symbol = m;
+		this.ident.symbol = m;
 	}
 
 	@nodeview
 	public static final view VCallExpr of CallExpr extends VENode {
+		public:ro	Method			func;
 		public		ENode			obj;
-		public		SymbolRef		ident;
 		public		CallType		mt;
 		public:ro	ENode[]			args;
 
@@ -92,7 +86,7 @@ public class CallExpr extends ENode {
 				info.leaveSuper();
 				info.leaveForward(obj);
 				if( info.isEmpty() ) {
-					this.func = m;
+					this.ident.symbol = m;
 					this.mt = info.mt;
 					this.setSuperExpr(true);
 					return;
@@ -171,7 +165,6 @@ public class CallExpr extends ENode {
 			ENode e = res[idx];
 			if (e instanceof UnresCallExpr) {
 				if (e.obj == this.obj) {
-					this.func = null;
 					this.ident.symbol = e.func.symbol;
 					this.mt = e.mt;
 					return;
