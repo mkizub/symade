@@ -177,6 +177,11 @@ public class PassInfo {
 			foreach( tp.resolveCallAccessR(node,info,name,mt) )
 				addResolvedMethod((Method)node,info,methods,paths,types);
 		}
+		else if (sc instanceof Operator) {
+			Operator op = (Operator)sc;
+			foreach( op.resolveOperatorMethodR(node,info,name,mt) )
+				addResolvedMethod((Method)node,info,methods,paths,types);
+		}
 		else
 			throw new RuntimeException("Unknown scope "+sc);
 		if( methods.size() == 0 ) {

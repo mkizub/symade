@@ -91,7 +91,7 @@ public final class ASTOperatorAlias extends ASTAlias {
     private void checkPublicAccess(Method m) {
     	if( !m.isStatic() ) return;
     	if( m.isPrivate() || m.isProtected() ) return;
-    	Struct pkg = m.ctx_tdecl;
+    	TypeDecl pkg = m.ctx_tdecl;
     	while( pkg != null && !pkg.isPackage() ) pkg = pkg.package_clazz;
     	if( pkg == null || pkg == Env.root ) return;
     	foreach(ASTNode n; pkg.members; n == m ) return;
@@ -174,6 +174,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 					);
 				iopt=new OpTypes();
 				op.addTypes(otTheType(opret),otTheType(oparg1),otType(oparg2));
+				m.id.addAlias(op.image);
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
 			}
 			break;
@@ -212,6 +213,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg1),otType(oparg2));
+				m.id.addAlias(op.image);
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
 			}
 			break;
@@ -253,6 +255,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg));
+				m.id.addAlias(op.image);
 				if( Kiev.verbose ) System.out.println("Attached prefix "+op+" to method "+m);
 			}
 			break;
@@ -276,6 +279,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg));
+				m.id.addAlias(op.image);
 				if( Kiev.verbose ) System.out.println("Attached postfix "+op+" to method "+m);
 			}
 			break;

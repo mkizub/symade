@@ -66,19 +66,19 @@ public metatype boolean extends any {
 	public boolean assign(boolean val) alias lfy operator = ;
 
 	@macro @native
-	public boolean bool_or(boolean val) alias yfx operator || ;
+	public static boolean bool_or(boolean b1, boolean b2) alias yfx operator || ;
 
 	@macro @native
-	public boolean bool_and(boolean val) alias yfx operator && ;
+	public static boolean bool_and(boolean b1, boolean b2) alias yfx operator && ;
 
 	@macro @native
-	public boolean bool_eq(boolean val) alias xfx operator == ;
+	public static boolean bool_eq(boolean b1, boolean b2) alias xfx operator == ;
 
 	@macro @native
-	public boolean bool_neq(boolean val) alias xfx operator != ;
+	public static boolean bool_neq(boolean b1, boolean b2) alias xfx operator != ;
 
 	@macro @native
-	public boolean bool_not() alias fy operator ! ;
+	public static boolean bool_not(boolean b1) alias fy operator ! ;
 }
 
 public metatype char extends any {
@@ -89,11 +89,23 @@ public metatype char extends any {
 public metatype byte extends any {
 	@macro @native
 	public byte assign(byte val) alias lfy operator = ;
+
+	@macro @native
+	public byte positive() alias fy operator + ;
+
+	@macro @native
+	public byte negative() alias fy operator - ;
 }
 
 public metatype short extends any {
 	@macro @native
 	public short assign(short val) alias lfy operator = ;
+
+	@macro @native
+	public short positive() alias fy operator + ;
+
+	@macro @native
+	public short negative() alias fy operator - ;
 }
 
 public metatype int extends any {
@@ -134,55 +146,55 @@ public metatype int extends any {
 	public int assign_rem(int val) alias lfy operator %= ;
 
 	@macro @native
-	public int bit_or(int val) alias yfx operator | ;
+	public static int bit_or(int i1, int i2) alias yfx operator | ;
 
 	@macro @native
-	public int bit_xor(int val) alias yfx operator ^ ;
+	public static int bit_xor(int i1, int i2) alias yfx operator ^ ;
 
 	@macro @native
-	public int bit_and(int val) alias yfx operator & ;
+	public static int bit_and(int i1, int i2) alias yfx operator & ;
 
 	@macro @native
-	public boolean bool_eq(int val) alias xfx operator == ;
+	public static boolean bool_eq(int i1, int i2) alias xfx operator == ;
 
 	@macro @native
-	public boolean bool_neq(int val) alias xfx operator != ;
+	public static boolean bool_neq(int i1, int i2) alias xfx operator != ;
 
 	@macro @native
-	public boolean bool_ge(int val) alias xfx operator >= ;
+	public static boolean bool_ge(int i1, int i2) alias xfx operator >= ;
 
 	@macro @native
-	public boolean bool_le(int val) alias xfx operator <= ;
+	public static boolean bool_le(int i1, int i2) alias xfx operator <= ;
 
 	@macro @native
-	public boolean bool_gt(int val) alias xfx operator > ;
+	public static boolean bool_gt(int i1, int i2) alias xfx operator > ;
 
 	@macro @native
-	public boolean bool_lt(int val) alias xfx operator < ;
+	public static boolean bool_lt(int i1, int i2) alias xfx operator < ;
 
 	@macro @native
-	public int left_shift(int val) alias xfx operator << ;
+	public static int left_shift(int i1, int shft) alias xfx operator << ;
 
 	@macro @native
-	public int right_shift(int val) alias xfx operator >> ;
+	public static int right_shift(int i1, int shft) alias xfx operator >> ;
 
 	@macro @native
-	public int unsigned_right_shift(int val) alias xfx operator >>> ;
+	public static int unsigned_right_shift(int i1, int shft) alias xfx operator >>> ;
 
 	@macro @native
-	public int add(int val) alias yfx operator + ;
+	public static int add(int i1, int i2) alias yfx operator + ;
 
 	@macro @native
-	public int sub(int val) alias yfx operator - ;
+	public static int sub(int i1, int i2) alias yfx operator - ;
 
 	@macro @native
-	public int mul(int val) alias yfx operator * ;
+	public static int mul(int i1, int i2) alias yfx operator * ;
 
 	@macro @native
-	public int div(int val) alias yfx operator / ;
+	public static int div(int i1, int i2) alias yfx operator / ;
 
 	@macro @native
-	public int rem(int val) alias yfx operator % ;
+	public static int rem(int i1, int i2) alias yfx operator % ;
 
 	@macro @native
 	public int positive() alias fy operator + ;
@@ -197,7 +209,7 @@ public metatype int extends any {
 	public int pre_decr() alias fx operator -- ;
 
 	@macro @native
-	public int bit_not() alias fy operator ~ ;
+	public static int bit_not(int i1) alias fy operator ~ ;
 
 	@macro @native
 	public int post_incr() alias xf operator ++ ;
@@ -245,55 +257,55 @@ public metatype long extends any {
 	public long assign_rem(long val) alias lfy operator %= ;
 
 	@macro @native
-	public long bit_or(long val) alias yfx operator | ;
+	public static long bit_or(long l1, long l2) alias yfx operator | ;
 
 	@macro @native
-	public long bit_xor(long val) alias yfx operator ^ ;
+	public static long bit_xor(long l1, long l2) alias yfx operator ^ ;
 
 	@macro @native
-	public long bit_and(long val) alias yfx operator & ;
+	public static long bit_and(long l1, long l2) alias yfx operator & ;
 
 	@macro @native
-	public boolean bool_eq(long val) alias xfx operator == ;
+	public static boolean bool_eq(long l1, long l2) alias xfx operator == ;
 
 	@macro @native
-	public boolean bool_neq(long val) alias xfx operator != ;
+	public static boolean bool_neq(long l1, long l2) alias xfx operator != ;
 
 	@macro @native
-	public boolean bool_ge(long val) alias xfx operator >= ;
+	public static boolean bool_ge(long l1, long l2) alias xfx operator >= ;
 
 	@macro @native
-	public boolean bool_le(long val) alias xfx operator <= ;
+	public static boolean bool_le(long l1, long l2) alias xfx operator <= ;
 
 	@macro @native
-	public boolean bool_gt(long val) alias xfx operator > ;
+	public static boolean bool_gt(long l1, long l2) alias xfx operator > ;
 
 	@macro @native
-	public boolean bool_lt(long val) alias xfx operator < ;
+	public static boolean bool_lt(long l1, long l2) alias xfx operator < ;
 
 	@macro @native
-	public long left_shift(int val) alias xfx operator << ;
+	public static long left_shift(long val, int shft) alias xfx operator << ;
 
 	@macro @native
-	public long right_shift(int val) alias xfx operator >> ;
+	public static long right_shift(long val, int shft) alias xfx operator >> ;
 
 	@macro @native
-	public long unsigned_right_shift(int val) alias xfx operator >>> ;
+	public static long unsigned_right_shift(long val, int shft) alias xfx operator >>> ;
 
 	@macro @native
-	public long add(long val) alias yfx operator + ;
+	public static long add(long l1, long l2) alias yfx operator + ;
 
 	@macro @native
-	public long sub(long val) alias yfx operator - ;
+	public static long sub(long l1, long l2) alias yfx operator - ;
 
 	@macro @native
-	public long mul(long val) alias yfx operator * ;
+	public static long mul(long l1, long l2) alias yfx operator * ;
 
 	@macro @native
-	public long div(int val) alias yfx operator / ;
+	public static long div(long l1, long l2) alias yfx operator / ;
 
 	@macro @native
-	public long rem(long val) alias yfx operator % ;
+	public static long rem(long l1, long l2) alias yfx operator % ;
 
 	@macro @native
 	public long positive() alias fy operator + ;
@@ -308,7 +320,7 @@ public metatype long extends any {
 	public long pre_decr() alias fx operator -- ;
 
 	@macro @native
-	public long bit_not() alias fy operator ~ ;
+	public static long bit_not(long val) alias fy operator ~ ;
 
 	@macro @native
 	public long post_incr() alias xf operator ++ ;
@@ -338,37 +350,43 @@ public metatype float extends any {
 	public float assign_rem(float val) alias lfy operator %= ;
 
 	@macro @native
-	public boolean bool_eq(float val) alias xfx operator == ;
+	public static boolean bool_eq(float f1, float f2) alias xfx operator == ;
 
 	@macro @native
-	public boolean bool_neq(float val) alias xfx operator != ;
+	public static boolean bool_neq(float f1, float f2) alias xfx operator != ;
 
 	@macro @native
-	public boolean bool_ge(float val) alias xfx operator >= ;
+	public static boolean bool_ge(float f1, float f2) alias xfx operator >= ;
 
 	@macro @native
-	public boolean bool_le(float val) alias xfx operator <= ;
+	public static boolean bool_le(float f1, float f2) alias xfx operator <= ;
 
 	@macro @native
-	public boolean bool_gt(float val) alias xfx operator > ;
+	public static boolean bool_gt(float f1, float f2) alias xfx operator > ;
 
 	@macro @native
-	public boolean bool_lt(float val) alias xfx operator < ;
+	public static boolean bool_lt(float f1, float f2) alias xfx operator < ;
 
 	@macro @native
-	public float add(float val) alias yfx operator + ;
+	public static float add(float f1, float f2) alias yfx operator + ;
 
 	@macro @native
-	public float sub(float val) alias yfx operator - ;
+	public static float sub(float f1, float f2) alias yfx operator - ;
 
 	@macro @native
-	public float mul(float val) alias yfx operator * ;
+	public static float mul(float f1, float f2) alias yfx operator * ;
 
 	@macro @native
-	public float div(float val) alias yfx operator / ;
+	public static float div(float f1, float f2) alias yfx operator / ;
 
 	@macro @native
-	public float rem(float val) alias yfx operator % ;
+	public static float rem(float f1, float f2) alias yfx operator % ;
+
+	@macro @native
+	public float positive() alias fy operator + ;
+
+	@macro @native
+	public float negative() alias fy operator - ;
 
 }
 
@@ -392,37 +410,43 @@ public metatype double extends any {
 	public double assign_rem(double val) alias lfy operator %= ;
 
 	@macro @native
-	public boolean bool_eq(double val) alias xfx operator == ;
+	public static boolean bool_eq(double d1, double d2) alias xfx operator == ;
 
 	@macro @native
-	public boolean bool_neq(double val) alias xfx operator != ;
+	public static boolean bool_neq(double d1, double d2) alias xfx operator != ;
 
 	@macro @native
-	public boolean bool_ge(double val) alias xfx operator >= ;
+	public static boolean bool_ge(double d1, double d2) alias xfx operator >= ;
 
 	@macro @native
-	public boolean bool_le(double val) alias xfx operator <= ;
+	public static boolean bool_le(double d1, double d2) alias xfx operator <= ;
 
 	@macro @native
-	public boolean bool_gt(double val) alias xfx operator > ;
+	public static boolean bool_gt(double d1, double d2) alias xfx operator > ;
 
 	@macro @native
-	public boolean bool_lt(double val) alias xfx operator < ;
+	public static boolean bool_lt(double d1, double d2) alias xfx operator < ;
 
 	@macro @native
-	public double add(double val) alias yfx operator + ;
+	public static double add(double d1, double d2) alias yfx operator + ;
 
 	@macro @native
-	public double sub(double val) alias yfx operator - ;
+	public static double sub(double d1, double d2) alias yfx operator - ;
 
 	@macro @native
-	public double mul(double val) alias yfx operator * ;
+	public static double mul(double d1, double d2) alias yfx operator * ;
 
 	@macro @native
-	public double div(double val) alias yfx operator / ;
+	public static double div(double d1, double d2) alias yfx operator / ;
 
 	@macro @native
-	public double rem(double val) alias yfx operator % ;
+	public static double rem(double d1, double d2) alias yfx operator % ;
+
+	@macro @native
+	public double positive() alias fy operator + ;
+
+	@macro @native
+	public double negative() alias fy operator - ;
 
 }
 
@@ -435,5 +459,18 @@ public metatype _array_<_elem_ extends any> extends Object {
 
 	@macro @native
 	public <R extends _elem_> R set(int idx, R val) alias operator(210, lfy, [] );
+}
+
+public metatype GString extends java.lang.String {
+
+	@macro @native
+	public static String str_concat(String s1, String s2) alias yfx operator + ;
+
+	@macro @native
+	public static String str_concat(any s1, String s2) alias yfx operator + ;
+
+	@macro @native
+	public static String str_concat(String s1, any s2) alias yfx operator + ;
+
 }
 

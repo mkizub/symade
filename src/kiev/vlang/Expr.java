@@ -345,6 +345,11 @@ public class BinaryExpr extends ENode {
 		public void mainResolveOut() {
 			Type et1 = expr1.getType();
 			Type et2 = expr2.getType();
+			
+			Method m = op.resolveMethod(this);
+			if (m == null)
+				Kiev.reportWarning(this, "Unresolved method for operator "+op);
+			
 			if( op == BinaryOperator.Add
 				&& ( et1 ≈ Type.tpString || et2 ≈ Type.tpString ||
 					(et1 instanceof CTimeType && et1.getUnboxedType() ≈ Type.tpString) ||
@@ -437,6 +442,8 @@ public class BinaryExpr extends ENode {
 	}
 
 	public Operator getOp() { return op; }
+	
+	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
 	public Type getType() {
 		Type t1 = expr1.getType();
@@ -775,6 +782,12 @@ public class UnaryExpr extends ENode {
 	public static view VUnaryExpr of UnaryExpr extends VENode {
 		public Operator			op;
 		public ENode			expr;
+
+		public void mainResolveOut() {
+			Method m = op.resolveMethod(this);
+			if (m == null)
+				Kiev.reportWarning(this, "Unresolved method for operator "+op);
+		}
 	}
 	
 	public UnaryExpr() {}
@@ -786,6 +799,8 @@ public class UnaryExpr extends ENode {
 	}
 
 	public Operator getOp() { return op; }
+
+	public ENode[] getArgs() { return new ENode[]{expr}; }
 
 	public Type getType() {
 		return expr.getType();
@@ -843,6 +858,12 @@ public class IncrementExpr extends ENode {
 	public static final view VIncrementExpr of IncrementExpr extends VENode {
 		public Operator		op;
 		public ENode		lval;
+
+		public void mainResolveOut() {
+			Method m = op.resolveMethod(this);
+			if (m == null)
+				Kiev.reportWarning(this, "Unresolved method for operator "+op);
+		}
 	}
 	
 	public IncrementExpr() {}
@@ -854,6 +875,8 @@ public class IncrementExpr extends ENode {
 	}
 
 	public Operator getOp() { return op; }
+
+	public ENode[] getArgs() { return new ENode[]{lval}; }
 
 	public Type getType() {
 		return lval.getType();

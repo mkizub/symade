@@ -522,7 +522,36 @@ public abstract class Operator implements Constants {
 	public static String toDeclString(int pr,String sm,String im) {
 		return "operator("+pr+","+sm+","+im+")";
 	}
+	
+	public Method resolveMethod(ENode expr) {
+		Method@ m;
+		ENode[] args = expr.getArgs();
+		ResInfo info = new ResInfo(expr, ResInfo.noStatic);
+		Type[] tps = new Type[args.length-1];
+		for (int i=0; i < tps.length; i++)
+			tps[i] = args[i+1].getType();
+		CallType mt = new CallType(tps, null);
+		if (PassInfo.resolveBestMethodR(args[0].getType(),m,info,this.image,mt))
+			return (Method)m;
+		info = new ResInfo(expr, 0);
+		tps = new Type[args.length];
+		for (int i=0; i < tps.length; i++)
+			tps[i] = args[i].getType();
+		mt = new CallType(tps, null);
+		if (PassInfo.resolveBestMethodR(this,m,info,this.image,mt))
+			return (Method)m;
+		return null;
+	}
 
+	final public rule resolveOperatorMethodR(Method@ node, ResInfo info, String name, CallType mt)
+		OpTypes@ opt;
+	{
+		opt @= types,
+		opt.method != null,
+		info.check(opt.method),
+		opt.method.equalsByCast(name,mt,Type.tpVoid,info),
+		node ?= opt.method
+	}
 }
 
 public class AssignOperator extends Operator {

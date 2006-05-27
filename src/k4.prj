@@ -695,6 +695,7 @@ INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld
 METATYPE kiev.be.java15.JNodeUtils kiev\be\java15\JNode.java bad
 METATYPE kiev.be.java15.JSymbolRef kiev\be\java15\JNode.java bad
 METATYPE kiev.ir.java15.RSymbolRef kiev\ir\java15\RNode.java bad
+METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad
