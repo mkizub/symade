@@ -66,6 +66,24 @@ public metatype boolean extends any {
 	public boolean assign(boolean val) alias lfy operator = ;
 
 	@macro @native
+	public int assign_bit_or(int val) alias lfy operator |= ;
+
+	@macro @native
+	public int assign_bit_and(int val) alias lfy operator &= ;
+
+	@macro @native
+	public int assign_bit_xor(int val) alias lfy operator ^= ;
+
+	@macro @native
+	public static boolean bit_or(boolean b1, boolean b2) alias yfx operator | ;
+
+	@macro @native
+	public static boolean bit_and(boolean b1, boolean b2) alias yfx operator & ;
+
+	@macro @native
+	public static boolean bit_xor(boolean b1, boolean b2) alias yfx operator ^ ;
+
+	@macro @native
 	public static boolean bool_or(boolean b1, boolean b2) alias yfx operator || ;
 
 	@macro @native
@@ -143,7 +161,7 @@ public metatype int extends any {
 	public int assign_div(int val) alias lfy operator /= ;
 
 	@macro @native
-	public int assign_rem(int val) alias lfy operator %= ;
+	public int assign_mod(int val) alias lfy operator %= ;
 
 	@macro @native
 	public static int bit_or(int i1, int i2) alias yfx operator | ;
@@ -194,7 +212,7 @@ public metatype int extends any {
 	public static int div(int i1, int i2) alias yfx operator / ;
 
 	@macro @native
-	public static int rem(int i1, int i2) alias yfx operator % ;
+	public static int mod(int i1, int i2) alias yfx operator % ;
 
 	@macro @native
 	public int positive() alias fy operator + ;
@@ -254,7 +272,7 @@ public metatype long extends any {
 	public long assign_div(long val) alias lfy operator /= ;
 
 	@macro @native
-	public long assign_rem(long val) alias lfy operator %= ;
+	public long assign_mod(long val) alias lfy operator %= ;
 
 	@macro @native
 	public static long bit_or(long l1, long l2) alias yfx operator | ;
@@ -305,7 +323,7 @@ public metatype long extends any {
 	public static long div(long l1, long l2) alias yfx operator / ;
 
 	@macro @native
-	public static long rem(long l1, long l2) alias yfx operator % ;
+	public static long mod(long l1, long l2) alias yfx operator % ;
 
 	@macro @native
 	public long positive() alias fy operator + ;
@@ -347,7 +365,7 @@ public metatype float extends any {
 	public float assign_div(float val) alias lfy operator /= ;
 
 	@macro @native
-	public float assign_rem(float val) alias lfy operator %= ;
+	public float assign_mod(float val) alias lfy operator %= ;
 
 	@macro @native
 	public static boolean bool_eq(float f1, float f2) alias xfx operator == ;
@@ -380,7 +398,7 @@ public metatype float extends any {
 	public static float div(float f1, float f2) alias yfx operator / ;
 
 	@macro @native
-	public static float rem(float f1, float f2) alias yfx operator % ;
+	public static float mod(float f1, float f2) alias yfx operator % ;
 
 	@macro @native
 	public float positive() alias fy operator + ;
@@ -407,7 +425,7 @@ public metatype double extends any {
 	public double assign_div(double val) alias lfy operator /= ;
 
 	@macro @native
-	public double assign_rem(double val) alias lfy operator %= ;
+	public double assign_mod(double val) alias lfy operator %= ;
 
 	@macro @native
 	public static boolean bool_eq(double d1, double d2) alias xfx operator == ;
@@ -440,7 +458,7 @@ public metatype double extends any {
 	public static double div(double d1, double d2) alias yfx operator / ;
 
 	@macro @native
-	public static double rem(double d1, double d2) alias yfx operator % ;
+	public static double mod(double d1, double d2) alias yfx operator % ;
 
 	@macro @native
 	public double positive() alias fy operator + ;

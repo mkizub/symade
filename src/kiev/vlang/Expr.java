@@ -441,6 +441,21 @@ public class BinaryExpr extends ENode {
 		this.expr2 = expr2;
 	}
 
+	public BinaryExpr(CoreMethod cm, BinaryOperator op, ENode[] args) {
+		this.ident = new SymbolRef(op.image,cm);
+		this.op = op;
+		this.expr1 = args[0];
+		this.expr2 = args[1];
+	}
+
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		this.op = (BinaryOperator)op;
+		this.ident = new SymbolRef(op.image, cm);
+		this.expr1 = args[0];
+		this.expr2 = args[1];
+	}
+	
 	public Operator getOp() { return op; }
 	
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
@@ -798,6 +813,13 @@ public class UnaryExpr extends ENode {
 		this.expr = expr;
 	}
 
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		this.op = (Operator)op;
+		this.ident = new SymbolRef(op.image, cm);
+		this.expr = args[0];
+	}
+	
 	public Operator getOp() { return op; }
 
 	public ENode[] getArgs() { return new ENode[]{expr}; }
@@ -874,6 +896,13 @@ public class IncrementExpr extends ENode {
 		this.lval = lval;
 	}
 
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		this.op = (Operator)op;
+		this.ident = new SymbolRef(op.image, cm);
+		this.lval = args[0];
+	}
+	
 	public Operator getOp() { return op; }
 
 	public ENode[] getArgs() { return new ENode[]{lval}; }

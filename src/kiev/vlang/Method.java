@@ -11,6 +11,7 @@ import kiev.be.java15.JDNode;
 import kiev.ir.java15.RMethod;
 import kiev.be.java15.JMethod;
 import kiev.ir.java15.RConstructor;
+import kiev.ir.java15.RCoreMethod;
 import kiev.ir.java15.RInitializer;
 import kiev.be.java15.JInitializer;
 import kiev.ir.java15.RWBCCondition;

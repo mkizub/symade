@@ -115,6 +115,9 @@ class Test extends ASTNode {
 		rarr.del(0);
 		rarr.detach(astn);
 		rarr.insert(0, astn);
+		
+		boolean x;
+		//x.bool_not();
 	}
 }
 

@@ -149,6 +149,11 @@ public class SymbolRef extends ASTNode {
 		this.symbol = symbol;
 	}
 
+	public SymbolRef(String name, DNode symbol) {
+		this.name = name;
+		this.symbol = symbol;
+	}
+
 	public boolean equals(Object nm) {
 		if (nm instanceof Symbol) return nm.equals(this.name);
 		if (nm instanceof SymbolRef) return nm.name == this.name;

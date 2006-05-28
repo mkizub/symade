@@ -258,29 +258,39 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				a.setTypeUnerasable(true);
 		}
 		
-		if (me.isSyntax()) {
-			trace(Kiev.debugResolve,"Pass 1 for syntax "+me);
-			for (int i=0; i < me.members.length; i++) {
-				ASTNode n = me.members[i];
-				try {
-					if (n instanceof TypeOpDef) {
-						processSyntax(n);
-						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
-					}
-					else if (n instanceof Opdef) {
-						processSyntax(n);
-						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
-					}
-				} catch(Exception e ) {
-					Kiev.reportError(n,e);
-				}
-			}
-		}
-
-		foreach (Struct dn; me.members)
+		foreach (ASTNode dn; me.members)
 			processSyntax(dn);
 	}
 	
+	public void processSyntax(TypeDecl:ASTNode astn) {
+		foreach (ASTNode dn; astn.members)
+			processSyntax(dn);
+	}
+
+	public void processSyntax(Method:ASTNode astn) {
+		Method me = astn;
+		if (me.isMacro() && me.isNative()) {
+			if !(me instanceof CoreMethod) {
+				CoreMethod cm = new CoreMethod();
+				cm.pos = me.pos;
+				cm.compileflags = me.compileflags;
+				cm.flags = me.flags;
+				if (me.meta != null) cm.meta = ~me.meta;
+				cm.id = ~me.id;
+				cm.acc = me.acc;
+				cm.targs.addAll(me.targs.delToArray());
+				if (me.type_ret != null) cm.type_ret = ~me.type_ret;
+				if (me.dtype_ret != null) cm.dtype_ret = ~me.dtype_ret;
+				cm.params.addAll(me.params.delToArray());
+				cm.aliases.addAll(me.aliases.delToArray());
+				if (me.body != null) cm.body = ~me.body;
+				cm.conditions.addAll(me.conditions.delToArray());
+				me.replaceWithNode(cm);
+				return; 
+			}
+		}
+	}
+
 	/////////////////////////////////////////////////////
 	//													//
 	//		   PASS 2 - create types for structures	//
@@ -468,6 +478,12 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				Initializer init = (Initializer)members[i];
 				// TODO: check flags for initialzer
 				if( me.isPackage() ) init.setStatic(true);
+			}
+			else if (members[i] instanceof CoreMethod) {
+				CoreMethod cm = (CoreMethod)members[i];
+				cm.pass3();
+				cm.attachToCompiler();
+				Access.verifyDecl(cm);
 			}
 			else if( members[i] instanceof RuleMethod ) {
 				RuleMethod m = (RuleMethod)members[i];

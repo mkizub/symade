@@ -99,6 +99,14 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		this.expr2 = expr2;
 	}
 
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		assert (op == BinaryOperator.BooleanOr);
+		this.ident = new SymbolRef(op.image, cm);
+		this.expr1 = args[0];
+		this.expr2 = args[1];
+	}
+	
 	public Operator getOp() { return BinaryOperator.BooleanOr; }
 
 	public String toString() {
@@ -166,6 +174,14 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		this.expr2 = expr2;
 	}
 
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		assert (op == BinaryOperator.BooleanAnd);
+		this.ident = new SymbolRef(op.image, cm);
+		this.expr1 = args[0];
+		this.expr2 = args[1];
+	}
+	
 	public Operator getOp() { return BinaryOperator.BooleanAnd; }
 
 	public String toString() {
@@ -248,6 +264,14 @@ public class BinaryBoolExpr extends BoolExpr {
 		this.expr2 = expr2;
 	}
 
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		this.op = (BinaryOperator)op;
+		this.ident = new SymbolRef(op.image, cm);
+		this.expr1 = args[0];
+		this.expr2 = args[1];
+	}
+	
 	public Operator getOp() { return op; }
 
 	public String toString() {
@@ -307,6 +331,14 @@ public class InstanceofExpr extends BoolExpr {
 		this.type = new TypeRef(type);
 	}
 
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		assert (op == BinaryOperator.InstanceOf);
+		this.ident = new SymbolRef(op.image, cm);
+		this.expr = args[0];
+		this.type = (TypeRef)args[1];
+	}
+	
 	public Operator getOp() { return BinaryOperator.InstanceOf; }
 
 	public String toString() {
@@ -389,6 +421,13 @@ public class BooleanNotExpr extends BoolExpr {
 		this.expr = expr;
 	}
 
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		assert (op == PrefixOperator.BooleanNot);
+		this.ident = new SymbolRef(op.image, cm);
+		this.expr = args[0];
+	}
+	
 	public Operator getOp() { return PrefixOperator.BooleanNot; }
 
 	public String toString() {

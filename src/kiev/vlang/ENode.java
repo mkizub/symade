@@ -257,6 +257,10 @@ public abstract class ENode extends ASTNode {
 	
 	public ENode() {}
 
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		throw new RuntimeException("Cannot init "+getClass()+" from "+node.getClass());
+	}
+	
 	public Type[] getAccessTypes() {
 		return new Type[]{getType()};
 	}
