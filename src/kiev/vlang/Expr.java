@@ -343,91 +343,18 @@ public class BinaryExpr extends ENode {
 		public ENode			expr2;
 
 		public void mainResolveOut() {
-			Type et1 = expr1.getType();
-			Type et2 = expr2.getType();
-			
 			Method m = op.resolveMethod(this);
-			if (m == null)
-				Kiev.reportWarning(this, "Unresolved method for operator "+op);
-			
-			if( op == BinaryOperator.Add
-				&& ( et1 ≈ Type.tpString || et2 ≈ Type.tpString ||
-					(et1 instanceof CTimeType && et1.getUnboxedType() ≈ Type.tpString) ||
-					(et2 instanceof CTimeType && et2.getUnboxedType() ≈ Type.tpString)
-				   )
-			) {
-				if( expr1 instanceof StringConcatExpr ) {
-					StringConcatExpr sce = (StringConcatExpr)expr1;
-					if (et2 instanceof CTimeType) expr2 = et2.makeUnboxedExpr(expr2);
-					sce.appendArg(expr2);
-					trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
-					replaceWithNode(~sce);
-				} else {
-					StringConcatExpr sce = new StringConcatExpr(pos);
-					if (et1 instanceof CTimeType) expr1 = et1.makeUnboxedExpr(expr1);
-					sce.appendArg(expr1);
-					if (et2 instanceof CTimeType) expr2 = et2.makeUnboxedExpr(expr2);
-					sce.appendArg(expr2);
-					trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
-					replaceWithNode(sce);
-				}
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+op);
 				return;
 			}
-			else if( ( et1.isNumber() && et2.isNumber() ) &&
-				(    op==BinaryOperator.Add
-				||   op==BinaryOperator.Sub
-				||   op==BinaryOperator.Mul
-				||   op==BinaryOperator.Div
-				||   op==BinaryOperator.Mod
-				)
-			) {
+			if (ident == null)
+				ident = new SymbolRef(pos, op.image);
+			if (m instanceof CoreMethod && m.core_func != null) {
+				m.normilizeExpr(this);
 				return;
-			}
-			else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
-				(    op==BinaryOperator.LeftShift
-				||   op==BinaryOperator.RightShift
-				||   op==BinaryOperator.UnsignedRightShift
-				)
-			) {
-				return;
-			}
-			else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
-				(    op==BinaryOperator.BitOr
-				||   op==BinaryOperator.BitXor
-				||   op==BinaryOperator.BitAnd
-				)
-			) {
-				return;
-			}
-			// Not a standard operator, find out overloaded
-			foreach(OpTypes opt; op.types ) {
-				Type[] tps = new Type[]{null,et1,et2};
-				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
-				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-					Method rm = opt.method;
-					if !(rm.isMacro() && rm.isNative()) {
-						if (ident == null) ident = new SymbolRef(op.image);
-						ident.symbol = opt.method;
-					}
-					return;
-				}
-			}
-			// Not a standard and not overloaded, try wrapped classes
-			if (et1 instanceof CTimeType && et2 instanceof CTimeType) {
-				expr1 = et1.makeUnboxedExpr(expr1);
-				expr2 = et1.makeUnboxedExpr(expr2);
-				mainResolveOut();
-				return;
-			}
-			if (et1 instanceof CTimeType) {
-				expr1 = et1.makeUnboxedExpr(expr1);
-				mainResolveOut();
-				return;
-			}
-			if (et2 instanceof CTimeType) {
-				expr2 = et1.makeUnboxedExpr(expr2);
-				mainResolveOut();
-				return;
+			} else {
+				ident.symbol = m;
 			}
 		}
 	}
@@ -461,38 +388,14 @@ public class BinaryExpr extends ENode {
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
 	public Type getType() {
-		Type t1 = expr1.getType();
-		Type t2 = expr2.getType();
-		if( op==BinaryOperator.BitOr || op==BinaryOperator.BitXor || op==BinaryOperator.BitAnd ) {
-			if( (t1.isInteger() && t2.isInteger()) || (t1.isBoolean() && t2.isBoolean()) ) {
-				if( t1 ≡ Type.tpLong || t2 ≡ Type.tpLong ) return Type.tpLong;
-				if( t1.isAutoCastableTo(Type.tpBoolean) && t2.isAutoCastableTo(Type.tpBoolean) ) return Type.tpBoolean;
-				return Type.tpInt;
-			}
-		}
-		else if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
-			if( t2.isInteger() ) {
-				if( t1 ≡ Type.tpLong ) return Type.tpLong;
-				if( t1.isInteger() )	return Type.tpInt;
-			}
-		}
-		else if( op==BinaryOperator.Add || op==BinaryOperator.Sub || op==BinaryOperator.Mul || op==BinaryOperator.Div || op==BinaryOperator.Mod ) {
-			// Special case for '+' operator if one arg is a String
-			if( op==BinaryOperator.Add && t1.equals(Type.tpString) || t2.equals(Type.tpString) ) return Type.tpString;
+		if (ident != null && ident.symbol != null)
+			return ((Method)ident.symbol).type.ret();
 
-			if( t1.isNumber() && t2.isNumber() ) {
-				if( t1 ≡ Type.tpDouble || t2 ≡ Type.tpDouble ) return Type.tpDouble;
-				if( t1 ≡ Type.tpFloat  || t2 ≡ Type.tpFloat )  return Type.tpFloat;
-				if( t1 ≡ Type.tpLong   || t2 ≡ Type.tpLong )   return Type.tpLong;
-				return Type.tpInt;
-			}
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			Type[] tps = new Type[]{null,t1,t2};
-			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null )
-				return opt.method.type.ret();
+		Method m = op.resolveMethod(this);
+		if (m != null) {
+			if (ident == null) ident = new SymbolRef(pos, op.image);
+			ident.symbol = m;
+			return m.type.ret();
 		}
 		return Type.tpVoid;
 	}
@@ -552,6 +455,22 @@ public class StringConcatExpr extends ENode {
 		this.pos = pos;
 	}
 
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		assert (op == BinaryOperator.Add);
+		this.ident = new SymbolRef(op.image, cm);
+		ENode arg1 = args[0];
+		ENode arg2 = args[1];
+		if (arg1 instanceof StringConcatExpr)
+			this.args.addAll(arg1.args.delToArray());
+		else
+			this.args.add(arg1);
+		if (arg2 instanceof StringConcatExpr)
+			this.args.addAll(arg2.args.delToArray());
+		else
+			this.args.add(arg2);
+	}
+	
 	public Operator getOp() { return BinaryOperator.Add; }
 
 	public Type getType() { return Type.tpString; }
@@ -1039,6 +958,11 @@ public class CastExpr extends ENode {
 	public CastExpr(int pos, TypeRef type, ENode expr) {
 		this.pos = pos;
 		this.type = type;
+		this.expr = expr;
+	}
+
+	public CastExpr(Type type, ENode expr) {
+		this.type = new TypeRef(type);
 		this.expr = expr;
 	}
 

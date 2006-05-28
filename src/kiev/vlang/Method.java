@@ -430,12 +430,12 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 
 	public void makeArgs(ENode[] args, Type t) {
-		Type t = this.type; // rebuildTypes()
+		CallType mt = this.type;
 		//assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
 			int i=0;
-			for(; i < type.arity; i++) {
-				Type ptp = Type.getRealType(t,type.arg(i));
+			for(; i < mt.arity; i++) {
+				Type ptp = Type.getRealType(t,mt.arg(i));
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}
@@ -451,8 +451,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				}
 			}
 		} else {
-			for(int i=0; i < type.arity; i++) {
-				Type ptp = Type.getRealType(t,type.arg(i));
+			for(int i=0; i < mt.arity; i++) {
+				Type ptp = Type.getRealType(t,mt.arg(i));
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}

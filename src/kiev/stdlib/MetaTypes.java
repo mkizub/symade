@@ -482,13 +482,13 @@ public metatype _array_<_elem_ extends any> extends Object {
 public metatype GString extends java.lang.String {
 
 	@macro @native
-	public static String str_concat(String s1, String s2) alias yfx operator + ;
+	public static String str_concat_ss(String s1, String s2) alias yfx operator + ;
 
 	@macro @native
-	public static String str_concat(any s1, String s2) alias yfx operator + ;
+	public static String str_concat_as(any s1, String s2) alias yfx operator + ;
 
 	@macro @native
-	public static String str_concat(String s1, any s2) alias yfx operator + ;
+	public static String str_concat_sa(String s1, any s2) alias yfx operator + ;
 
 }
 

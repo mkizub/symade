@@ -551,7 +551,11 @@ CLASS kiev.vlang.SpaceAttrSlot kiev/vlang/SpaceAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.SpacePtr kiev/vlang/SpacePtr kiev\vlang\Tree.java
 CLASS kiev.vlang.SpaceRefAttrSlot kiev/vlang/SpaceRefAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.SpaceRefDataAttrSlot kiev/vlang/SpaceRefDataAttrSlot kiev\vlang\Tree.java
+CLASS kiev.vlang.StringConcat kiev/vlang/StringConcat kiev\vlang\CoreMethod.java
+CLASS kiev.vlang.StringConcatAS kiev/vlang/StringConcatAS kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
+CLASS kiev.vlang.StringConcatSA kiev/vlang/StringConcatSA kiev\vlang\CoreMethod.java
+CLASS kiev.vlang.StringConcatSS kiev/vlang/StringConcatSS kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
 CLASS kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
 CLASS kiev.vlang.Symbol kiev/vlang/Symbol kiev\vlang\Symbol.java

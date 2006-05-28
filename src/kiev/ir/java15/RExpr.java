@@ -247,233 +247,56 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		expr1.resolve(null);
-		expr2.resolve(null);
-		Type et1 = expr1.getType();
-		Type et2 = expr2.getType();
-		if( op == BinaryOperator.Add
-			&& ( et1 ≈ Type.tpString || et2 ≈ Type.tpString ||
-				(et1 instanceof CTimeType && et1.getUnboxedType() ≈ Type.tpString) ||
-				(et2 instanceof CTimeType && et2.getUnboxedType() ≈ Type.tpString)
-			   )
-		) {
-			if( expr1 instanceof StringConcatExpr ) {
-				StringConcatExpr sce = (StringConcatExpr)expr1;
-				if (et2 instanceof CTimeType) expr2 = et2.makeUnboxedExpr(expr2);
-				sce.appendArg(expr2);
-				trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
-				replaceWithNodeResolve(Type.tpString, ~sce);
-			} else {
-				StringConcatExpr sce = new StringConcatExpr(pos);
-				if (et1 instanceof CTimeType) expr1 = et1.makeUnboxedExpr(expr1);
-				sce.appendArg(expr1);
-				if (et2 instanceof CTimeType) expr2 = et2.makeUnboxedExpr(expr2);
-				sce.appendArg(expr2);
-				trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
-				replaceWithNodeResolve(Type.tpString, sce);
-			}
-			return;
-		}
-		else if( ( et1.isNumber() && et2.isNumber() ) &&
-			(    op==BinaryOperator.Add
-			||   op==BinaryOperator.Sub
-			||   op==BinaryOperator.Mul
-			||   op==BinaryOperator.Div
-			||   op==BinaryOperator.Mod
-			)
-		) {
-			this.resolve2(null);
-			return;
-		}
-		else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
-			(    op==BinaryOperator.LeftShift
-			||   op==BinaryOperator.RightShift
-			||   op==BinaryOperator.UnsignedRightShift
-			)
-		) {
-			this.resolve2(null);
-			return;
-		}
-		else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
-			(    op==BinaryOperator.BitOr
-			||   op==BinaryOperator.BitXor
-			||   op==BinaryOperator.BitAnd
-			)
-		) {
-			this.resolve2(null);
-			return;
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				Method rm = opt.method;
-				if !(rm.isMacro() && rm.isNative()) {
-					if( opt.method.isStatic() )
-						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
-					else
-						replaceWithNodeResolve(reqType, new CallExpr(pos,~expr1,opt.method,new ENode[]{~expr2}));
-				}
+		
+		if (ident == null)
+			ident = new SymbolRef(pos, op.image);
+		if (ident.symbol == null) {
+			Method m = op.resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+op);
 				return;
 			}
-		}
-		// Not a standard and not overloaded, try wrapped classes
-		if (et1 instanceof CTimeType && et2 instanceof CTimeType) {
-			expr1 = et1.makeUnboxedExpr(expr1);
-			expr2 = et1.makeUnboxedExpr(expr2);
-			resolve(reqType);
-			return;
-		}
-		if (et1 instanceof CTimeType) {
-			expr1 = et1.makeUnboxedExpr(expr1);
-			resolve(reqType);
-			return;
-		}
-		if (et2 instanceof CTimeType) {
-			expr2 = et1.makeUnboxedExpr(expr2);
-			resolve(reqType);
-			return;
-		}
-		resolve2(reqType);
-	}
-
-	public:no,no,no,rw final void resolve2(Type reqType) {
-		expr1.resolve(null);
-		expr2.resolve(null);
-
-		Type rt = getType();
-		Type t1 = expr1.getType();
-		Type t2 = expr2.getType();
-
-		// Special case for '+' operator if one arg is a String
-		if( op==BinaryOperator.Add && expr1.getType().equals(Type.tpString) || expr2.getType().equals(Type.tpString) ) {
-			if( expr1 instanceof StringConcatExpr ) {
-				StringConcatExpr sce = (StringConcatExpr)expr1;
-				sce.appendArg(expr2);
-				trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
-				replaceWithNodeResolve(Type.tpString, sce);
+			if (m instanceof CoreMethod && m.core_func != null) {
+				try {
+					m.normilizeExpr(this);
+				} catch (ReWalkNodeException rne) {
+					((ENode)rne.replacer).resolve(reqType);
+					return;
+				}
 			} else {
-				StringConcatExpr sce = new StringConcatExpr(pos);
-				sce.appendArg(expr1);
-				sce.appendArg(expr2);
-				trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
-				replaceWithNodeResolve(Type.tpString, sce);
+				ident.symbol = m;
 			}
+		}
+		Method m = (Method)ident.symbol;
+		if (m.isStatic()) {
+			m.makeArgs(getArgs(),reqType);
+			expr1.resolve(m.params[0].getType());
+			expr2.resolve(m.params[1].getType());
+		} else {
+			m.makeArgs(new ENode[]{expr2},reqType);
+			expr1.resolve(((TypeDecl)m.parent()).xtype);
+			expr2.resolve(m.params[0].getType());
+		}
+		if !(m instanceof CoreMethod) {
+			// Not a standard operator
+			if( m.isStatic() )
+				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~expr1,~expr2}));
+			else
+				replaceWithNodeResolve(reqType, new CallExpr(pos,~expr1,m,new ENode[]{~expr2}));
 			return;
 		}
-
-		if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
-			if( !t2.isIntegerInCode() ) {
-				expr2 = new CastExpr(pos,Type.tpInt,expr2);
-				expr2.resolve(Type.tpInt);
-			}
-		} else {
-			if( !rt.equals(t1) && t1.isCastableTo(rt) ) {
-				expr1 = new CastExpr(pos,rt,~expr1);
-				expr1.resolve(null);
-			}
-			if( !rt.equals(t2) && t2.isCastableTo(rt) ) {
-				expr2 = new CastExpr(pos,rt,~expr2);
-				expr2.resolve(null);
-			}
-		}
-
 		// Check if both expressions are constant
 		if( expr1.isConstantExpr() && expr2.isConstantExpr() ) {
-			Number val1 = (Number)expr1.getConstValue();
-			Number val2 = (Number)expr2.getConstValue();
-			if( op == BinaryOperator.BitOr ) {
-				if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() | val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() | val2.intValue()));
-			}
-			else if( op == BinaryOperator.BitXor ) {
-				if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() ^ val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() ^ val2.intValue()));
-			}
-			else if( op == BinaryOperator.BitAnd ) {
-				if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() & val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() & val2.intValue()));
-			}
-			else if( op == BinaryOperator.LeftShift ) {
-				if( val1 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() << val2.intValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() << val2.intValue()));
-			}
-			else if( op == BinaryOperator.RightShift ) {
-				if( val1 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() >> val2.intValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() >> val2.intValue()));
-			}
-			else if( op == BinaryOperator.UnsignedRightShift ) {
-				if( val1 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() >>> val2.intValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() >>> val2.intValue()));
-			}
-			else if( op == BinaryOperator.Add ) {
-				if( val1 instanceof Double || val2 instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val1.doubleValue() + val2.doubleValue()));
-				else if( val1 instanceof Float || val2 instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val1.floatValue() + val2.floatValue()));
-				else if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() + val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() + val2.intValue()));
-			}
-			else if( op == BinaryOperator.Sub ) {
-				if( val1 instanceof Double || val2 instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val1.doubleValue() - val2.doubleValue()));
-				else if( val1 instanceof Float || val2 instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val1.floatValue() - val2.floatValue()));
-				else if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() - val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() - val2.intValue()));
-			}
-			else if( op == BinaryOperator.Mul ) {
-				if( val1 instanceof Double || val2 instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val1.doubleValue() * val2.doubleValue()));
-				else if( val1 instanceof Float || val2 instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val1.floatValue() * val2.floatValue()));
-				else if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() * val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() * val2.intValue()));
-			}
-			else if( op == BinaryOperator.Div ) {
-				if( val1 instanceof Double || val2 instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val1.doubleValue() / val2.doubleValue()));
-				else if( val1 instanceof Float || val2 instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val1.floatValue() / val2.floatValue()));
-				else if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() / val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() / val2.intValue()));
-			}
-			else if( op == BinaryOperator.Mod ) {
-				if( val1 instanceof Double || val2 instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val1.doubleValue() % val2.doubleValue()));
-				else if( val1 instanceof Float || val2 instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val1.floatValue() % val2.floatValue()));
-				else if( val1 instanceof Long || val2 instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() % val2.longValue()));
-				else
-					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() % val2.intValue()));
-			}
+			ConstExpr ce = ((CoreMethod)m).calc(this);
+			replaceWithNodeResolve(reqType, ce);
+			return;
 		}
+		
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);
 	}
+
 }
 
 @nodeview
