@@ -208,6 +208,16 @@ public class CallExpr extends ENode {
 		this(pos, obj, new SymbolRef(pos,func), null, args, false);
 	}
 
+	public ENode[] getArgs() {
+		if (func.isStatic())
+			return this.args;
+		ENode[] args = new ENode[this.args.length+1];
+		args[0] = obj;
+		for (int i=0; i < this.args.length; i++)
+			args[i+1] = this.args[i];
+		return args;
+	}
+
 	public int getPriority() { return Constants.opCallPriority; }
 
 	public Type getType() {

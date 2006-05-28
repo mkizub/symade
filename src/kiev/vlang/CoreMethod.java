@@ -223,12 +223,6 @@ abstract class BinaryFunc extends CoreFunc {
 			expr.ident.symbol = core_method;
 			return;
 		}
-		if (expr instanceof CallExpr) {
-			ENode en = (ENode)cls.newInstance();
-			en.initFrom(expr, op, core_method, expr.args.delToArray());
-			expr.replaceWithNode(en);
-			throw new ReWalkNodeException(en);
-		}
 		ENode[] args = expr.getArgs();
 		if (args == null || args.length != 2) {
 			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+cls);
@@ -252,12 +246,22 @@ abstract class BinaryFunc extends CoreFunc {
 
 abstract class UnaryFunc extends CoreFunc {
 	public void normilizeExpr(ENode expr, Class cls, Operator op) {
-		if (expr instanceof CallExpr) {
-			ENode en = (ENode)cls.newInstance();
-			en.initFrom(expr, op, core_method, expr.args.delToArray());
-			expr.replaceWithNode(en);
-			throw new ReWalkNodeException(en);
+		if (expr.getClass() == cls) {
+			if (expr.ident == null) expr.ident = new SymbolRef(expr.pos, op.image);
+			expr.ident.symbol = core_method;
+			return;
 		}
+		ENode[] args = expr.getArgs();
+		if (args == null || args.length != 1) {
+			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+cls);
+			return;
+		}
+		ENode en = (ENode)cls.newInstance();
+		foreach (ENode e; args)
+			e.detach();
+		en.initFrom(expr, op, core_method, args);
+		expr.replaceWithNode(en);
+		throw new ReWalkNodeException(en);
 	}
 	public ConstExpr calc(ENode expr) {
 		ENode[] args = expr.getArgs();

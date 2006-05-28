@@ -300,6 +300,63 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 }
 
 @nodeview
+public static view RUnaryExpr of UnaryExpr extends RENode {
+	public Operator			op;
+	public ENode			expr;
+
+	public void resolve(Type reqType) {
+		if( isResolved() ) return;
+		
+		if (ident == null)
+			ident = new SymbolRef(pos, op.image);
+		if (ident.symbol == null) {
+			Method m = op.resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+op);
+				return;
+			}
+			if (m instanceof CoreMethod && m.core_func != null) {
+				try {
+					m.normilizeExpr(this);
+				} catch (ReWalkNodeException rne) {
+					((ENode)rne.replacer).resolve(reqType);
+					return;
+				}
+			} else {
+				ident.symbol = m;
+			}
+		}
+		Method m = (Method)ident.symbol;
+		if (m.isStatic()) {
+			m.makeArgs(getArgs(),reqType);
+			expr.resolve(m.params[0].getType());
+		} else {
+			m.makeArgs(ENode.emptyArray,reqType);
+			expr.resolve(((TypeDecl)m.parent()).xtype);
+		}
+		if !(m instanceof CoreMethod) {
+			// Not a standard operator
+			if( m.isStatic() )
+				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~expr}));
+			else
+				replaceWithNodeResolve(reqType, new CallExpr(pos,~expr,m,ENode.emptyArray));
+			return;
+		}
+		// Check if expression is a constant
+		if (expr.isConstantExpr()) {
+			ConstExpr ce = ((CoreMethod)m).calc(this);
+			replaceWithNodeResolve(reqType, ce);
+			return;
+		}
+		
+		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
+	}
+}
+
+
+@nodeview
 public static final view RStringConcatExpr of StringConcatExpr extends RENode {
 	public:ro	ENode[]			args;
 
@@ -372,124 +429,6 @@ public static view RBlock of Block extends RENode {
 		}
 	}
 }
-
-@nodeview
-public static view RUnaryExpr of UnaryExpr extends RENode {
-	public Operator			op;
-	public ENode			expr;
-
-	public void resolve(Type reqType) {
-		if( isResolved() ) return;
-		expr.resolve(reqType);
-		Type et = expr.getType();
-		if( et.isNumber() &&
-			(  op==PrefixOperator.PreIncr
-			|| op==PrefixOperator.PreDecr
-			|| op==PostfixOperator.PostIncr
-			|| op==PostfixOperator.PostDecr
-			)
-		) {
-			replaceWithNodeResolve(reqType, new IncrementExpr(pos,op,~expr));
-			return;
-		}
-		if( et.isAutoCastableTo(Type.tpBoolean) &&
-			(  op==PrefixOperator.PreIncr
-			|| op==PrefixOperator.BooleanNot
-			)
-		) {
-			replaceWithNodeResolve(Type.tpBoolean, new BooleanNotExpr(pos,~expr));
-			return;
-		}
-		if( et.isNumber() &&
-			(  op==PrefixOperator.Pos
-			|| op==PrefixOperator.Neg
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		if( et.isInteger() && op==PrefixOperator.BitNot ) {
-			this.resolve2(reqType);
-			return;
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			if (ctx_tdecl != null && opt.method != null && opt.method.type.arity == 1) {
-				if ( !ctx_tdecl.xtype.isInstanceOf(opt.method.ctx_tdecl.xtype) )
-					continue;
-			}
-			Type[] tps = new Type[]{null,et};
-			ASTNode[] argsarr = new ASTNode[]{null,expr};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				Method rm = opt.method;
-				if !(rm.isMacro() && rm.isNative()) {
-					if ( opt.method.isStatic() )
-						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr}));
-					else
-						replaceWithNodeResolve(reqType, new CallExpr(pos,~expr,opt.method,ENode.emptyArray));
-				}
-				return;
-			}
-		}
-		// Not a standard and not overloaded, try wrapped classes
-		if (et instanceof CTimeType) {
-			replaceWithNodeResolve(reqType, new UnaryExpr(pos,op,et.makeUnboxedExpr(expr)));
-			return;
-		}
-		resolve2(reqType);
-	}
-
-	public:no,no,no,rw final void resolve2(Type reqType) {
-		expr.resolve(null);
-		if( op==PrefixOperator.PreIncr
-		||  op==PrefixOperator.PreDecr
-		||  op==PostfixOperator.PostIncr
-		||  op==PostfixOperator.PostDecr
-		) {
-			replaceWithNodeResolve(reqType, new IncrementExpr(pos,op,expr));
-			return;
-		} else if( op==PrefixOperator.BooleanNot ) {
-			replaceWithNodeResolve(reqType, new BooleanNotExpr(pos,expr));
-			return;
-		}
-		// Check if expression is constant
-		if( expr.isConstantExpr() ) {
-			Number val = (Number)expr.getConstValue();
-			if( op == PrefixOperator.Pos ) {
-				if( val instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(val.doubleValue()));
-				else if( val instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(val.floatValue()));
-				else if( val instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(val.longValue()));
-				else if( val instanceof Integer )
-					replaceWithNodeResolve(new ConstIntExpr(val.intValue()));
-				else if( val instanceof Short )
-					replaceWithNodeResolve(new ConstShortExpr(val.shortValue()));
-				else if( val instanceof Byte )
-					replaceWithNodeResolve(new ConstByteExpr(val.byteValue()));
-			}
-			else if( op == PrefixOperator.Neg ) {
-				if( val instanceof Double )
-					replaceWithNodeResolve(new ConstDoubleExpr(-val.doubleValue()));
-				else if( val instanceof Float )
-					replaceWithNodeResolve(new ConstFloatExpr(-val.floatValue()));
-				else if( val instanceof Long )
-					replaceWithNodeResolve(new ConstLongExpr(-val.longValue()));
-				else if( val instanceof Integer )
-					replaceWithNodeResolve(new ConstIntExpr(-val.intValue()));
-				else if( val instanceof Short )
-					replaceWithNodeResolve(new ConstShortExpr(-val.shortValue()));
-				else if( val instanceof Byte )
-					replaceWithNodeResolve(new ConstByteExpr(-val.byteValue()));
-			}
-		}
-		setResolved(true);
-		if (isAutoReturnable())
-			ReturnStat.autoReturn(reqType, this);
-	}
-}
-
 
 @nodeview
 public static final view RIncrementExpr of IncrementExpr extends RENode {

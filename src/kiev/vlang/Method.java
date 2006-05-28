@@ -539,6 +539,47 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		info.mt = rt;
 		return true;
 	}
+	
+	public final CallType makeType(ENode[] args) {
+		Type[] mt;
+		CallType rt;
+		if (this.isStatic()) {
+			mt = new Type[args.length];
+			for (int i=0; i < mt.length; i++)
+				mt[i] = args[i].getType();
+			rt = this.type;
+		} else {
+			mt = new Type[args.length-1];
+			for (int i=0; i < mt.length; i++)
+				mt[i] = args[i+1].getType();
+			rt = (CallType)this.type.bind(args[0].getType().bindings());
+		}
+		foreach (TypeDef td; this.targs) {
+			ArgType at = td.getAType();
+			Type bnd = rt.resolve(at);
+			if (bnd ≡ at) {
+				Vector<Type> bindings = new Vector<Type>();
+				// bind from mt
+				for (int i=0; i < rt.arity; i++)
+					addBindingsFor(at, mt[i], rt.arg(i), bindings);
+				//addBindingsFor(at, mt.ret(), rt.ret(), bindings);
+				if (bindings.length == 0) {
+					//trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+					//	+" do not allow to infer type: "+at);
+					continue;
+				}
+				Type b = bindings.at(0);
+				for (int i=1; i < bindings.length; i++)
+					b = Type.leastCommonType(b, bindings.at(i));
+				//trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+				//	+" infer argument: "+at+" to "+b);
+				if (b ≡ Type.tpAny)
+					continue;
+				rt = rt.rebind(new TVarBld(at, b));
+			}
+		}
+		return rt;
+	}
 
 	// compares pattern type (pt) with query type (qt) to find bindings for argument type (at),
 	// and adds found bindings to the set of bindings

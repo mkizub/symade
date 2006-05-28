@@ -388,16 +388,19 @@ public class BinaryExpr extends ENode {
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
 	public Type getType() {
-		if (ident != null && ident.symbol != null)
-			return ((Method)ident.symbol).type.ret();
-
-		Method m = op.resolveMethod(this);
-		if (m != null) {
+		Method m;
+		if (ident != null && ident.symbol != null) {
+			m = (Method)ident.symbol;
+		} else {
+			m = op.resolveMethod(this);
+			if (m == null)
+				return Type.tpVoid;
 			if (ident == null) ident = new SymbolRef(pos, op.image);
 			ident.symbol = m;
-			return m.type.ret();
 		}
-		return Type.tpVoid;
+		Type ret = m.type.ret();
+		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
+		return m.makeType(getArgs()).ret();
 	}
 
 	public String toString() {
@@ -425,6 +428,111 @@ public class BinaryExpr extends ENode {
 			dmp.append('(').append(expr2).append(')');
 		} else {
 			dmp.append(expr2);
+		}
+		return dmp;
+	}
+}
+
+@node
+public class UnaryExpr extends ENode {
+	
+	@dflow(out="expr") private static class DFI {
+	@dflow(out="this:in")			ENode		expr;
+	}
+
+	@virtual typedef This  = UnaryExpr;
+	@virtual typedef VView = VUnaryExpr;
+	@virtual typedef JView = JUnaryExpr;
+	@virtual typedef RView = RUnaryExpr;
+
+	@ref public Operator		op;
+	@att public ENode			expr;
+
+	@nodeview
+	public static view VUnaryExpr of UnaryExpr extends VENode {
+		public Operator			op;
+		public ENode			expr;
+
+		public void mainResolveOut() {
+			Method m = op.resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+op);
+				return;
+			}
+			if (ident == null)
+				ident = new SymbolRef(pos, op.image);
+			if (m instanceof CoreMethod && m.core_func != null) {
+				m.normilizeExpr(this);
+				return;
+			} else {
+				ident.symbol = m;
+			}
+		}
+	}
+	
+	public UnaryExpr() {}
+
+	public UnaryExpr(int pos, Operator op, ENode expr) {
+		this.pos = pos;
+		this.op = op;
+		this.expr = expr;
+	}
+
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		this.op = (Operator)op;
+		this.ident = new SymbolRef(op.image, cm);
+		this.expr = args[0];
+	}
+	
+	public Operator getOp() { return op; }
+
+	public ENode[] getArgs() { return new ENode[]{expr}; }
+
+	public Type getType() {
+		Method m;
+		if (ident != null && ident.symbol != null) {
+			m = (Method)ident.symbol;
+		} else {
+			m = op.resolveMethod(this);
+			if (m == null)
+				return Type.tpVoid;
+			if (ident == null) ident = new SymbolRef(pos, op.image);
+			ident.symbol = m;
+		}
+		Type ret = m.type.ret();
+		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
+		return m.makeType(getArgs()).ret();
+	}
+
+	public String toString() {
+		if( op == PostfixOperator.PostIncr || op == PostfixOperator.PostDecr )
+			if( expr.getPriority() < op.priority )
+				return "("+expr.toString()+")"+op.image;
+			else
+				return expr.toString()+op.image;
+		else
+			if( expr.getPriority() < op.priority )
+				return op.image+"("+expr.toString()+")";
+			else
+				return op.image+expr.toString();
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		if( op == PostfixOperator.PostIncr || op == PostfixOperator.PostDecr ) {
+			if( expr.getPriority() < op.priority ) {
+				dmp.append('(').append(expr).append(')');
+			} else {
+				dmp.append(expr);
+			}
+			dmp.append(op.image);
+		} else {
+			dmp.append(op.image);
+			if( expr.getPriority() < op.priority ) {
+				dmp.append('(').append(expr).append(')');
+			} else {
+				dmp.append(expr);
+			}
 		}
 		return dmp;
 	}
@@ -694,89 +802,6 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		foreach (ASTNode stat; stats)
 			res = stat.doRewrite(ctx);
 		return res;
-	}
-}
-
-@node
-public class UnaryExpr extends ENode {
-	
-	@dflow(out="expr") private static class DFI {
-	@dflow(out="this:in")			ENode		expr;
-	}
-
-	@virtual typedef This  = UnaryExpr;
-	@virtual typedef VView = VUnaryExpr;
-	@virtual typedef JView = JUnaryExpr;
-	@virtual typedef RView = RUnaryExpr;
-
-	@ref public Operator		op;
-	@att public ENode			expr;
-
-	@nodeview
-	public static view VUnaryExpr of UnaryExpr extends VENode {
-		public Operator			op;
-		public ENode			expr;
-
-		public void mainResolveOut() {
-			Method m = op.resolveMethod(this);
-			if (m == null)
-				Kiev.reportWarning(this, "Unresolved method for operator "+op);
-		}
-	}
-	
-	public UnaryExpr() {}
-
-	public UnaryExpr(int pos, Operator op, ENode expr) {
-		this.pos = pos;
-		this.op = op;
-		this.expr = expr;
-	}
-
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
-		this.pos = node.pos;
-		this.op = (Operator)op;
-		this.ident = new SymbolRef(op.image, cm);
-		this.expr = args[0];
-	}
-	
-	public Operator getOp() { return op; }
-
-	public ENode[] getArgs() { return new ENode[]{expr}; }
-
-	public Type getType() {
-		return expr.getType();
-	}
-
-	public String toString() {
-		if( op == PostfixOperator.PostIncr || op == PostfixOperator.PostDecr )
-			if( expr.getPriority() < op.priority )
-				return "("+expr.toString()+")"+op.image;
-			else
-				return expr.toString()+op.image;
-		else
-			if( expr.getPriority() < op.priority )
-				return op.image+"("+expr.toString()+")";
-			else
-				return op.image+expr.toString();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		if( op == PostfixOperator.PostIncr || op == PostfixOperator.PostDecr ) {
-			if( expr.getPriority() < op.priority ) {
-				dmp.append('(').append(expr).append(')');
-			} else {
-				dmp.append(expr);
-			}
-			dmp.append(op.image);
-		} else {
-			dmp.append(op.image);
-			if( expr.getPriority() < op.priority ) {
-				dmp.append('(').append(expr).append(')');
-			} else {
-				dmp.append(expr);
-			}
-		}
-		return dmp;
 	}
 }
 

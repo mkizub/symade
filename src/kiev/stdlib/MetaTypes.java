@@ -221,19 +221,19 @@ public metatype int extends any {
 	public int negative() alias fy operator - ;
 
 	@macro @native
-	public int pre_incr() alias fx operator ++ ;
+	public static int pre_incr(int lval) alias fx operator ++ ;
 
 	@macro @native
-	public int pre_decr() alias fx operator -- ;
+	public static int pre_decr(int lval) alias fx operator -- ;
 
 	@macro @native
 	public static int bit_not(int i1) alias fy operator ~ ;
 
 	@macro @native
-	public int post_incr() alias xf operator ++ ;
+	public static int post_incr(int lval) alias xf operator ++ ;
 
 	@macro @native
-	public int post_decr() alias xf operator -- ;
+	public static int post_decr(int lval) alias xf operator -- ;
 
 }
 
@@ -332,19 +332,19 @@ public metatype long extends any {
 	public long negative() alias fy operator - ;
 
 	@macro @native
-	public long pre_incr() alias fx operator ++ ;
+	public static long pre_incr(long lval) alias fx operator ++ ;
 
 	@macro @native
-	public long pre_decr() alias fx operator -- ;
+	public static long pre_decr(long lval) alias fx operator -- ;
 
 	@macro @native
 	public static long bit_not(long val) alias fy operator ~ ;
 
 	@macro @native
-	public long post_incr() alias xf operator ++ ;
+	public static long post_incr(long lval) alias xf operator ++ ;
 
 	@macro @native
-	public long post_decr() alias xf operator -- ;
+	public static long post_decr(long lval) alias xf operator -- ;
 
 }
 
