@@ -1744,7 +1744,7 @@ FormPar MethodVarargsParameter(ASTModifiers modifiers) :
 		if (tp == null) {
 			tp = new TypeRef(t.getPos(),new ArrayType(Type.tpObject));
 		} else {
-			tp = new TypeExpr(tp, Constants.nameArrayOp);
+			tp = new TypeExpr(tp, Constants.nameArrayTypeOp);
 			tp.pos = t.getPos();
 		}
 		if (id == null) {
@@ -1808,9 +1808,9 @@ ASTOperatorAlias OperatorAlias() :
 		(
 			op = Operator()				{ a.setImage(op); }
 		|	id = NameRef()				{ a.setImage(id); }
-		|	<OPERATOR_LRBRACKETS>		{ a.image = kiev.vlang.Constants.nameArrayOp; }
-		|	"new"						{ a.image = kiev.vlang.Constants.nameNewOp; }
-		|	"$cast"						{ a.image = kiev.vlang.Constants.nameCastOp; }
+		|	<OPERATOR_LRBRACKETS>		{ a.image = "[]"; }
+		|	"new"						{ a.image = "new"; }
+		|	"$cast"						{ a.image = "$cast"; }
 		)
 		")"
 	|
@@ -1819,9 +1819,9 @@ ASTOperatorAlias OperatorAlias() :
 		(
 			op = Operator()				{ a.setImage(op); }
 		|	id = NameRef()				{ a.setImage(id); }
-		|	<OPERATOR_LRBRACKETS>		{ a.image = kiev.vlang.Constants.nameArrayOp; }
-		|	"new"						{ a.image = kiev.vlang.Constants.nameNewOp; }
-		|	"$cast"						{ a.image = kiev.vlang.Constants.nameCastOp; }
+		|	<OPERATOR_LRBRACKETS>		{ a.image = "[]"; }
+		|	"new"						{ a.image = "new"; }
+		|	"$cast"						{ a.image = "$cast"; }
 		)
 	)
 	{ return a; }
@@ -1906,7 +1906,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 		LOOKAHEAD("{")
 		{ presc = m; }
 		m.body = MaybeSkipBlock() [ ";" ]
-	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id)) ] ";"
+	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m)) ] ";"
 	)
 	} finally { curMethod = oldMethod; }
 	{ return m; }

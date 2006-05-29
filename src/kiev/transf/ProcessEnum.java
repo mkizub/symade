@@ -66,7 +66,8 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		
 		// Cast from int
 		{
-			Method tome = new Method(nameCastOp,clazz.xtype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			Method tome = new Method("fromInt",clazz.xtype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
+			tome.id.addAlias(nameCastOp);
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt, FormPar.PARAM_NORMAL,0));
 			tome.body = new Block(pos);

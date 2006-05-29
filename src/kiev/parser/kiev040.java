@@ -2229,7 +2229,7 @@ public abstract class kiev040 implements kiev040Constants {
                 if (tp == null) {
                         tp = new TypeRef(t.getPos(),new ArrayType(Type.tpObject));
                 } else {
-                        tp = new TypeExpr(tp, Constants.nameArrayOp);
+                        tp = new TypeExpr(tp, Constants.nameArrayTypeOp);
                         tp.pos = t.getPos();
                 }
                 if (id == null) {
@@ -2331,15 +2331,15 @@ public abstract class kiev040 implements kiev040Constants {
           break;
         case OPERATOR_LRBRACKETS:
           jj_consume_token(OPERATOR_LRBRACKETS);
-                                                          a.image = kiev.vlang.Constants.nameArrayOp;
+                                                          a.image = "[]";
           break;
         case NEW:
           jj_consume_token(NEW);
-                                                                          a.image = kiev.vlang.Constants.nameNewOp;
+                                                                          a.image = "new";
           break;
         case CAST:
           jj_consume_token(CAST);
-                                                                          a.image = kiev.vlang.Constants.nameCastOp;
+                                                                          a.image = "$cast";
           break;
         default:
           jj_consume_token(-1);
@@ -2363,15 +2363,15 @@ public abstract class kiev040 implements kiev040Constants {
           break;
         case OPERATOR_LRBRACKETS:
           jj_consume_token(OPERATOR_LRBRACKETS);
-                                                          a.image = kiev.vlang.Constants.nameArrayOp;
+                                                          a.image = "[]";
           break;
         case NEW:
           jj_consume_token(NEW);
-                                                                          a.image = kiev.vlang.Constants.nameNewOp;
+                                                                          a.image = "new";
           break;
         case CAST:
           jj_consume_token(CAST);
-                                                                          a.image = kiev.vlang.Constants.nameCastOp;
+                                                                          a.image = "$cast";
           break;
         default:
           jj_consume_token(-1);

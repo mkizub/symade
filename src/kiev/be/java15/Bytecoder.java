@@ -209,7 +209,7 @@ public class Bytecoder implements JConstants {
 		}
 		if( nm != null ) {
 			m.id.aliases = nm.aliases;
-			if( Kiev.verbose && m.id.equals(nameArrayOp)) {
+			if( Kiev.verbose && m.id.equals(nameArrayAccessOp)) {
 				System.out.println("Attached operator [] to method "+m);
 			}
 			else if( Kiev.verbose && m.id.equals(nameNewOp)) {

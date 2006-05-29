@@ -18,10 +18,10 @@ public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	static String opPVar   = "@";
-	static String opRef    = "&";
-	static String opAST    = "#";
-	static String opWraper = "\u229b"; // ⊛
+	static String opPVar   = "T @";
+	static String opRef    = "T &";
+	static String opAST    = "T #";
+	static String opWraper = "T \u229b"; // ⊛
 	
 	@virtual typedef This  = TypeExpr;
 	@virtual typedef VView = VTypeExpr;
@@ -51,9 +51,9 @@ public class TypeExpr extends TypeRef {
 	public TypeExpr(TypeRef arg, Token op) {
 		this.arg = arg;
 		if (op.kind == ParserConstants.OPERATOR_LRBRACKETS)
-			this.op = Constants.nameArrayOp;
+			this.op = nameArrayTypeOp;
 		else
-			this.op = op.image;
+			this.op = ("T "+op.image).intern();
 		this.pos = op.getPos();
 	}
 
@@ -62,7 +62,7 @@ public class TypeExpr extends TypeRef {
 			return this.lnk;
 		Type tp = arg.getType();
 		DNode@ v;
-		if (op == Constants.nameArrayOp) {
+		if (op == nameArrayTypeOp) {
 			tp = new ArrayType(tp);
 		}
 		else if (op == opWraper) {
@@ -106,7 +106,7 @@ public class TypeExpr extends TypeRef {
 	public Struct getStruct() {
 		if (this.lnk != null)
 			return this.lnk.getStruct();
-		if (op == Constants.nameArrayOp)
+		if (op == nameArrayTypeOp)
 			return null;
 		DNode@ v;
 		if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {
@@ -126,7 +126,7 @@ public class TypeExpr extends TypeRef {
 	public TypeDecl getTypeDecl() {
 		if (this.lnk != null)
 			return this.lnk.meta_type.tdecl;
-		if (op == Constants.nameArrayOp)
+		if (op == nameArrayTypeOp)
 			return ArrayMetaType.instance.tdecl;
 		DNode@ v;
 		if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {

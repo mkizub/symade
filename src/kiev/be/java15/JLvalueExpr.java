@@ -182,8 +182,8 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			Method@ v;
 			CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
 			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
-				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
+			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayAccessOp,mt) )
+				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayAccessOp,mt));
 			obj.generate(code,null);
 			index.generate(code,null);
 			Method func = (Method)v;
@@ -231,8 +231,8 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			Struct s = objType.getStruct();
 			CallType mt = new CallType(new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
-				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
+			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayAccessOp,mt) )
+				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayAccessOp,mt)+" in "+objType);
 			Method func = (Method)v;
 			code.addInstr(Instr.op_call,(JMethod)func,false,objType);
 			// Pop return value
@@ -258,8 +258,8 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			Struct s = obj.getType().getStruct();
 			CallType mt = new CallType(new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
-				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
+			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayAccessOp,mt) )
+				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayAccessOp,mt));
 			// The method must return the value to duplicate
 			Method func = (Method)v;
 			code.addInstr(Instr.op_call,(JMethod)func,false,obj.getType());

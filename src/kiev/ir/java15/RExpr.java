@@ -249,7 +249,7 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 		if( isResolved() ) return;
 		
 		if (ident == null)
-			ident = new SymbolRef(pos, op.image);
+			ident = new SymbolRef(pos, op.name);
 		if (ident.symbol == null) {
 			Method m = op.resolveMethod(this);
 			if (m == null) {
@@ -308,7 +308,7 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 		if( isResolved() ) return;
 		
 		if (ident == null)
-			ident = new SymbolRef(pos, op.image);
+			ident = new SymbolRef(pos, op.name);
 		if (ident.symbol == null) {
 			Method m = op.resolveMethod(this);
 			if (m == null) {

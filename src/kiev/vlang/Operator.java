@@ -404,7 +404,7 @@ public abstract class Operator implements Constants {
 	protected Operator(int pr, String img, String nm, Instr in, String oa, boolean std) {
 		priority = pr;
 		image = img.intern();
-		name = nm==null?null:nm.intern();
+		name = nm.intern();
 		instr = in;
 		is_standard = std;
 		types = new OpTypes[0];
@@ -420,7 +420,7 @@ public abstract class Operator implements Constants {
 		if (this == o) return true;
 		if (!(o instanceof Operator)) return false;
 		Operator op = (Operator)o;
-		return this.image == op.image && this.mode == op.mode && this.priority == op.priority;
+		return this.name == op.name && this.mode == op.mode && this.priority == op.priority;
 	}
 
 	public boolean isStandard() { return is_standard; }
@@ -531,14 +531,14 @@ public abstract class Operator implements Constants {
 		for (int i=0; i < tps.length; i++)
 			tps[i] = args[i+1].getType();
 		CallType mt = new CallType(tps, null);
-		if (PassInfo.resolveBestMethodR(args[0].getType(),m,info,this.image,mt))
+		if (PassInfo.resolveBestMethodR(args[0].getType(),m,info,this.name,mt))
 			return (Method)m;
 		info = new ResInfo(expr, 0);
 		tps = new Type[args.length];
 		for (int i=0; i < tps.length; i++)
 			tps[i] = args[i].getType();
 		mt = new CallType(tps, null);
-		if (PassInfo.resolveBestMethodR(this,m,info,this.image,mt))
+		if (PassInfo.resolveBestMethodR(this,m,info,this.name,mt))
 			return (Method)m;
 		return null;
 	}
@@ -574,53 +574,53 @@ public class AssignOperator extends Operator {
 	public static final AssignOperator AssignMod;
 
 	static {
-		Assign = newAssignOperator("=", "opAssign",null,true);
+		Assign = newAssignOperator("=", "L = V",null,true);
 			iopt=new OpTypes();
 			Assign.addTypes(otSame(1),otTheAny(),otSame(1));
-		Assign2 = newAssignOperator(":=", "opAssign",null,true);
+		Assign2 = newAssignOperator(":=", "L := V",null,true);
 			iopt=new OpTypes();
 			Assign2.addTypes(otSame(1),otTheAny(),otSame(1));
 
-		AssignBitOr = newAssignOperator("|=", "opAssignBitOr", Instr.op_or,true);
+		AssignBitOr = newAssignOperator("|=", "L |= V", Instr.op_or,true);
 			iopt=new OpTypes();
 			AssignBitOr.addTypes(otSame(1),otInteger(),otSame(1));
 			AssignBitOr.addTypes(otSame(1),otBoolean(),otSame(1));
-		AssignBitXor = newAssignOperator("^=", "opAssignBitXor", Instr.op_xor,true);
+		AssignBitXor = newAssignOperator("^=", "L ^= V", Instr.op_xor,true);
 			iopt=new OpTypes();
 			AssignBitXor.addTypes(otSame(1),otInteger(),otSame(1));
 			AssignBitXor.addTypes(otSame(1),otBoolean(),otSame(1));
-		AssignBitAnd = newAssignOperator("&=", "opAssignBitAnd", Instr.op_and,true);
+		AssignBitAnd = newAssignOperator("&=", "L &= V", Instr.op_and,true);
 			iopt=new OpTypes();
 			AssignBitAnd.addTypes(otSame(1),otInteger(),otSame(1));
 			AssignBitAnd.addTypes(otSame(1),otBoolean(),otSame(1));
 
-		AssignLeftShift = newAssignOperator("<<=", "opAssignLeftShift", Instr.op_shl,true);
+		AssignLeftShift = newAssignOperator("<<=", "L <<= V", Instr.op_shl,true);
 			iopt=new OpTypes();
 			AssignLeftShift.addTypes(otSame(1),otInteger(),otType(Type.tpInt));
-		AssignRightShift = newAssignOperator(">>=", "opAssignRightShift", Instr.op_shr,true);
+		AssignRightShift = newAssignOperator(">>=", "L >>= V", Instr.op_shr,true);
 			iopt=new OpTypes();
 			AssignRightShift.addTypes(otSame(1),otInteger(),otType(Type.tpInt));
-		AssignUnsignedRightShift = newAssignOperator(">>>=", "opAssignUnsignedRightShift", Instr.op_ushr,true);
+		AssignUnsignedRightShift = newAssignOperator(">>>=", "L >>>= V", Instr.op_ushr,true);
 			iopt=new OpTypes();
 			AssignUnsignedRightShift.addTypes(otSame(1),otInteger(),otType(Type.tpInt));
 
-		AssignAdd = newAssignOperator("+=", "opAssignAdd", Instr.op_add,true);
+		AssignAdd = newAssignOperator("+=", "L += V", Instr.op_add,true);
 			iopt=new OpTypes();
 			AssignAdd.addTypes(otSame(1),otNumber(),otSame(1));
 			iopt=new OpTypes();
 			AssignAdd.addTypes(otType(Type.tpChar),otType(Type.tpChar),otInteger());
-		AssignSub = newAssignOperator("-=", "opAssignSub", Instr.op_sub,true);
+		AssignSub = newAssignOperator("-=", "L -= V", Instr.op_sub,true);
 			iopt=new OpTypes();
 			AssignSub.addTypes(otSame(1),otNumber(),otSame(1));
 			iopt=new OpTypes();
 			AssignSub.addTypes(otType(Type.tpChar),otType(Type.tpChar),otInteger());
-		AssignMul = newAssignOperator("*=", "opAssignMul", Instr.op_mul,true);
+		AssignMul = newAssignOperator("*=", "L *= V", Instr.op_mul,true);
 			iopt=new OpTypes();
 			AssignMul.addTypes(otSame(1),otNumber(),otSame(1));
-		AssignDiv = newAssignOperator("/=", "opAssignDiv", Instr.op_div,true);
+		AssignDiv = newAssignOperator("/=", "L /= V", Instr.op_div,true);
 			iopt=new OpTypes();
 			AssignDiv.addTypes(otSame(1),otNumber(),otSame(1));
-		AssignMod = newAssignOperator("%=", "opAssignMod", Instr.op_rem,true);
+		AssignMod = newAssignOperator("%=", "L %= V", Instr.op_rem,true);
 			iopt=new OpTypes();
 			AssignMod.addTypes(otSame(1),otNumber(),otSame(1));
 	}
@@ -632,14 +632,8 @@ public class AssignOperator extends Operator {
 
 	public static AssignOperator newAssignOperator(String img, String nm, Instr in, boolean std) {
 		AssignOperator op = hash.get(img);
-		if( op != null ) {
-			// Verify priority, and instruction
-//			if( op.instr != in ) {
-//				throw new RuntimeException("Wrong redeclaration of operator "+op+
-//					"\n\tshould be "+op.toDeclString()+" but found "+Operator.toDeclString(...));
-//			}
+		if( op != null )
 			return op;
-		}
 		return new AssignOperator(img,nm,in,std);
 	}
 
@@ -679,88 +673,44 @@ public class BinaryOperator extends Operator {
 	public static final BinaryOperator Comma;
 	
 	static {
-		BooleanOr = newBinaryOperator(opBooleanOrPriority, "||", "opBooleanOr",null,orderAndArityNames[YFX],true);
-//			iopt=new OpTypes();
-//			BooleanOr.addTypes(otType(Type.tpBoolean),otBoolean(),otBoolean());
-		BooleanAnd = newBinaryOperator(opBooleanAndPriority, "&&", "opBooleanAnd",null,orderAndArityNames[YFX],true);
-//			iopt=new OpTypes();
-//			BooleanAnd.addTypes(otType(Type.tpBoolean),otBoolean(),otBoolean());
+		BooleanOr = newBinaryOperator(opBooleanOrPriority, "||", "V || V",null,orderAndArityNames[YFX],true);
+		BooleanAnd = newBinaryOperator(opBooleanAndPriority, "&&", "V && V",null,orderAndArityNames[YFX],true);
 		BooleanOr.is_boolean_op = true;
 		BooleanAnd.is_boolean_op = true;
 
-		BitOr = newBinaryOperator(opBitOrPriority, "|", "opBitOr",Instr.op_or,orderAndArityNames[YFX],true);
-//			iopt=new OpTypes();
-//			BitOr.addTypes(otSame(1),otInteger(),otSame(1));
-		BitXor = newBinaryOperator(opBitXorPriority, "^", "opBitXor",Instr.op_xor,orderAndArityNames[YFX],true);
-//			iopt=new OpTypes();
-//			BitXor.addTypes(otSame(1),otInteger(),otSame(1));
-		BitAnd = newBinaryOperator(opBitAndPriority, "&", "opBitAnd",Instr.op_and,orderAndArityNames[YFX],true);
-//			iopt=new OpTypes();
-//			BitAnd.addTypes(otSame(1),otInteger(),otSame(1));
+		BitOr = newBinaryOperator(opBitOrPriority, "|", "V | V",Instr.op_or,orderAndArityNames[YFX],true);
+		BitXor = newBinaryOperator(opBitXorPriority, "^", "V ^ V",Instr.op_xor,orderAndArityNames[YFX],true);
+		BitAnd = newBinaryOperator(opBitAndPriority, "&", "V & V",Instr.op_and,orderAndArityNames[YFX],true);
 
-		Equals = newBinaryOperator(opEqualsPriority, "==", "opEquals",null,orderAndArityNames[XFX],true);
-//			iopt=new OpTypes();
-//			Equals.addTypes(otType(Type.tpBoolean),otAny(),otAny());
-		NotEquals = newBinaryOperator(opEqualsPriority, "!=", "opNotEquals",null,orderAndArityNames[XFX],true);
-//			iopt=new OpTypes();
-//			NotEquals.addTypes(otType(Type.tpBoolean),otAny(),otAny());
-		InstanceOf = newBinaryOperator(opInstanceOfPriority, "instanceof", "opInstanceOf",Instr.op_instanceof,orderAndArityNames[XFX],true);
-//			iopt=new OpTypes();
-//			InstanceOf.addTypes(otType(Type.tpBoolean),otReference(),otType(Type.tpVoid));
+		Equals = newBinaryOperator(opEqualsPriority, "==", "V == V",null,orderAndArityNames[XFX],true);
+		NotEquals = newBinaryOperator(opEqualsPriority, "!=", "V != V",null,orderAndArityNames[XFX],true);
+		InstanceOf = newBinaryOperator(opInstanceOfPriority, "instanceof", "V instanceof T",Instr.op_instanceof,orderAndArityNames[XFX],true);
 		Equals.is_boolean_op = true;
 		NotEquals.is_boolean_op = true;
 		InstanceOf.is_boolean_op = true;
 
-		LessThen = newBinaryOperator(opComparePriority, "<", "opLessThen",null,orderAndArityNames[XFX],true);
-//			iopt=new OpTypes();
-//			LessThen.addTypes(otType(Type.tpBoolean),otUpperCastNumber(1,2),otSame(1));
-		LessEquals = newBinaryOperator(opComparePriority, "<=", "opLessEquals",null,orderAndArityNames[XFX],true);
-//			iopt=new OpTypes();
-//			LessEquals.addTypes(otType(Type.tpBoolean),otUpperCastNumber(1,2),otSame(1));
-		GreaterThen = newBinaryOperator(opComparePriority, ">", "opGreaterThen",null,orderAndArityNames[XFX],true);
-//			iopt=new OpTypes();
-//			GreaterThen.addTypes(otType(Type.tpBoolean),otUpperCastNumber(1,2),otSame(1));
-		GreaterEquals = newBinaryOperator(opComparePriority, ">=", "opGreaterEquals",null,orderAndArityNames[XFX],true);
-//			iopt=new OpTypes();
-//			GreaterEquals.addTypes(otType(Type.tpBoolean),otUpperCastNumber(1,2),otSame(1));
+		LessThen = newBinaryOperator(opComparePriority, "<", "V < V",null,orderAndArityNames[XFX],true);
+		LessEquals = newBinaryOperator(opComparePriority, "<=", "V <= V",null,orderAndArityNames[XFX],true);
+		GreaterThen = newBinaryOperator(opComparePriority, ">", "V > V",null,orderAndArityNames[XFX],true);
+		GreaterEquals = newBinaryOperator(opComparePriority, ">=", "V >= V",null,orderAndArityNames[XFX],true);
 		LessThen.is_boolean_op = true;
 		LessEquals.is_boolean_op = true;
 		GreaterThen.is_boolean_op = true;
 		GreaterEquals.is_boolean_op = true;
 
-		LeftShift = newBinaryOperator(opShiftPriority, "<<", "opLeftShift",Instr.op_shl,orderAndArityNames[XFX],true);
-//			iopt=new OpTypes();
-//			LeftShift.addTypes(otSame(1),otInteger(),otInteger());
-		RightShift = newBinaryOperator(opShiftPriority, ">>", "opRightShift",Instr.op_shr,orderAndArityNames[XFX],true);
-//			iopt=new OpTypes();
-//			RightShift.addTypes(otSame(1),otInteger(),otInteger());
-		UnsignedRightShift = newBinaryOperator(opShiftPriority, ">>>", "opUnsignedRightShift",Instr.op_ushr,orderAndArityNames[XFX],true);
-//			iopt=new OpTypes();
-//			UnsignedRightShift.addTypes(otSame(1),otInteger(),otInteger());
+		LeftShift = newBinaryOperator(opShiftPriority, "<<", "V << V",Instr.op_shl,orderAndArityNames[XFX],true);
+		RightShift = newBinaryOperator(opShiftPriority, ">>", "V >> V",Instr.op_shr,orderAndArityNames[XFX],true);
+		UnsignedRightShift = newBinaryOperator(opShiftPriority, ">>>", "V >>> V",Instr.op_ushr,orderAndArityNames[XFX],true);
 
-		Add = newBinaryOperator(opAddPriority, "+", "opAdd",Instr.op_add,orderAndArityNames[YFX],true);
-//			iopt=new OpTypes();
-//			Add.addTypes(otType(Type.tpString),otType(Type.tpString),otAny());
-//			iopt=new OpTypes();
-//			Add.addTypes(otType(Type.tpString),otAny(),otType(Type.tpString));
-//			iopt=new OpTypes();
-//			Add.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
-		Sub = newBinaryOperator(opAddPriority, "-", "opSub",Instr.op_sub,orderAndArityNames[YFX],true);
-//			iopt=new OpTypes();
-//			Sub.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
+		Add = newBinaryOperator(opAddPriority, "+", "V + V",Instr.op_add,orderAndArityNames[YFX],true);
+		Sub = newBinaryOperator(opAddPriority, "-", "V - V",Instr.op_sub,orderAndArityNames[YFX],true);
 
-		Mul = newBinaryOperator(opMulPriority, "*", "opMul",Instr.op_mul,orderAndArityNames[YFX],true);
-//			iopt=new OpTypes();
-//			Mul.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
-		Div = newBinaryOperator(opMulPriority, "/", "opDiv",Instr.op_div,orderAndArityNames[YFX],true);
-//			iopt=new OpTypes();
-//			Div.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
-		Mod = newBinaryOperator(opMulPriority, "%", "opMod",Instr.op_rem,orderAndArityNames[YFX],true);
-//			iopt=new OpTypes();
-//			Mod.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
+		Mul = newBinaryOperator(opMulPriority, "*", "V * V",Instr.op_mul,orderAndArityNames[YFX],true);
+		Div = newBinaryOperator(opMulPriority, "/", "V / V",Instr.op_div,orderAndArityNames[YFX],true);
+		Mod = newBinaryOperator(opMulPriority, "%", "V % V",Instr.op_rem,orderAndArityNames[YFX],true);
 
-		Access = newBinaryOperator(opAccessPriority, ".", "opAccess",null,orderAndArityNames[YFX],true);
-		Comma = newBinaryOperator(1, ",", "opComma",null,orderAndArityNames[YFX],true);
+		Access = newBinaryOperator(opAccessPriority, ".", "V . N",null,orderAndArityNames[YFX],true);
+		Comma = newBinaryOperator(1, ",", "V , V",null,orderAndArityNames[YFX],true);
 	}
 
 	public boolean is_boolean_op;
@@ -799,7 +749,7 @@ public class MultiOperator extends Operator {
 	public static final MultiOperator Conditional;
 
 	static {
-		Conditional = newMultiOperator(opConditionalPriority, new String[]{"?",":"}, "opChoice",true);
+		Conditional = newMultiOperator(opConditionalPriority, new String[]{"?",":"}, "V ? V : V",true);
 			iopt=new OpTypes();
 			Conditional.addTypes(otDownCast(2,3),otBoolean(),otAny(),otAny());
 	}
@@ -850,26 +800,14 @@ public class PrefixOperator extends Operator {
 	public static final PrefixOperator BooleanNot;
 
 	static {
-		Pos = newPrefixOperator(opNegPriority, "+", "opPos",Instr.op_nop,orderAndArityNames[FY],true);
-//			iopt=new OpTypes();
-//			Pos.addTypes(otSame(1),otNumber());
-		Neg = newPrefixOperator(opNegPriority, "-", "opNeg",Instr.op_neg,orderAndArityNames[FY],true);
-//			iopt=new OpTypes();
-//			Neg.addTypes(otSame(1),otNumber());
+		Pos = newPrefixOperator(opNegPriority, "+", "+ V",Instr.op_nop,orderAndArityNames[FY],true);
+		Neg = newPrefixOperator(opNegPriority, "-", "- V",Instr.op_neg,orderAndArityNames[FY],true);
 
-		PreIncr = newPrefixOperator(opIncrPriority, "++", "opPreIncr",null,orderAndArityNames[FX],true);
-//			iopt=new OpTypes();
-//			PreIncr.addTypes(otSame(1),otInteger());
-		PreDecr = newPrefixOperator(opIncrPriority, "--", "opPreDecr",null,orderAndArityNames[FX],true);
-//			iopt=new OpTypes();
-//			PreDecr.addTypes(otSame(1),otInteger());
+		PreIncr = newPrefixOperator(opIncrPriority, "++", "++ V",null,orderAndArityNames[FX],true);
+		PreDecr = newPrefixOperator(opIncrPriority, "--", "-- V",null,orderAndArityNames[FX],true);
 
-		BitNot = newPrefixOperator(opBitNotPriority, "~", "opBitNot",null,orderAndArityNames[FY],true);
-//			iopt=new OpTypes();
-//			BitNot.addTypes(otSame(1),otInteger());
-		BooleanNot = newPrefixOperator(opBooleanNotPriority, "!", "opBooleanNot",null,orderAndArityNames[FY],true);
-//			iopt=new OpTypes();
-//			BooleanNot.addTypes(otType(Type.tpBoolean),otBoolean());
+		BitNot = newPrefixOperator(opBitNotPriority, "~", "~ V",null,orderAndArityNames[FY],true);
+		BooleanNot = newPrefixOperator(opBooleanNotPriority, "!", "! V",null,orderAndArityNames[FY],true);
 	}
 
 	protected PrefixOperator(int pr, String img, String nm, Instr in, String oa, boolean std) {
@@ -907,12 +845,8 @@ public class PostfixOperator extends Operator {
 	public static final PostfixOperator PostDecr;
 
 	static {
-		PostIncr = newPostfixOperator(opIncrPriority, "++", "opPostIncr",null,orderAndArityNames[XF],true);
-//			iopt=new OpTypes();
-//			PostIncr.addTypes(otSame(1),otInteger());
-		PostDecr = newPostfixOperator(opIncrPriority, "--", "opPostDecr",null,orderAndArityNames[XF],true);
-//			iopt=new OpTypes();
-//			PostDecr.addTypes(otSame(1),otInteger());
+		PostIncr = newPostfixOperator(opIncrPriority, "++", "V ++",null,orderAndArityNames[XF],true);
+		PostDecr = newPostfixOperator(opIncrPriority, "--", "V --",null,orderAndArityNames[XF],true);
 	}
 
 
@@ -948,7 +882,7 @@ public class CastOperator extends Operator {
 	public boolean  reinterp;
 
 	public CastOperator(Type tp, boolean r) {
-		super(opCastPriority,"","(cast)",null,orderAndArityNames[FY],true);
+		super(opCastPriority,"","( T ) V",null,orderAndArityNames[FY],true);
 		type = tp;
 		reinterp = r;
 	}

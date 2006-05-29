@@ -63,7 +63,8 @@ public class ProcessView extends TransfProcessor implements Constants {
 			}
 		}
 		if (!cast_found) {
-			Method cast = new Method(nameCastOp, clazz.xtype, ACC_PUBLIC|ACC_SYNTHETIC);
+			Method cast = new Method("$cast", clazz.xtype, ACC_PUBLIC|ACC_SYNTHETIC);
+			cast.id.addAlias(nameCastOp);
 			if (clazz.isAbstract()) {
 				cast.setAbstract(true);
 			} else {
@@ -81,7 +82,8 @@ public class ProcessView extends TransfProcessor implements Constants {
 			}
 		}
 		if (!cast_found) {
-			Method cast = new Method(nameCastOp, clazz.view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
+			Method cast = new Method("$cast", clazz.view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
+			cast.id.addAlias(nameCastOp);
 			clazz.addMethod(cast);
 		}
 	}

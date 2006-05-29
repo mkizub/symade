@@ -102,7 +102,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == BinaryOperator.BooleanOr);
-		this.ident = new SymbolRef(op.image, cm);
+		this.ident = new SymbolRef(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -177,7 +177,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == BinaryOperator.BooleanAnd);
-		this.ident = new SymbolRef(op.image, cm);
+		this.ident = new SymbolRef(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -267,7 +267,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = (BinaryOperator)op;
-		this.ident = new SymbolRef(op.image, cm);
+		this.ident = new SymbolRef(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -334,7 +334,7 @@ public class InstanceofExpr extends BoolExpr {
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == BinaryOperator.InstanceOf);
-		this.ident = new SymbolRef(op.image, cm);
+		this.ident = new SymbolRef(op.name, cm);
 		this.expr = args[0];
 		this.type = (TypeRef)args[1];
 	}
@@ -424,7 +424,7 @@ public class BooleanNotExpr extends BoolExpr {
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == PrefixOperator.BooleanNot);
-		this.ident = new SymbolRef(op.image, cm);
+		this.ident = new SymbolRef(op.name, cm);
 		this.expr = args[0];
 	}
 	

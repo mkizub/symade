@@ -206,7 +206,7 @@ public class AssignExpr extends LvalueExpr {
 				Method@ m;
 				ResInfo info = new ResInfo(this,ResInfo.noStatic | ResInfo.noImports);
 				CallType mt = new CallType(new Type[]{ect2,et2},et2);
-				if (PassInfo.resolveBestMethodR(ect1,m,info,"[]",mt)) {
+				if (PassInfo.resolveBestMethodR(ect1,m,info,nameArrayAccessOp,mt)) {
 					Method rm = (Method)m;
 					if !(rm.isMacro() && rm.isNative()) {
 						ENode res = info.buildCall((ASTNode)this, cae.obj, m, info.mt, new ENode[]{~cae.index,~value});
@@ -349,7 +349,7 @@ public class BinaryExpr extends ENode {
 				return;
 			}
 			if (ident == null)
-				ident = new SymbolRef(pos, op.image);
+				ident = new SymbolRef(pos, op.name);
 			if (m instanceof CoreMethod && m.core_func != null) {
 				m.normilizeExpr(this);
 				return;
@@ -369,7 +369,7 @@ public class BinaryExpr extends ENode {
 	}
 
 	public BinaryExpr(CoreMethod cm, BinaryOperator op, ENode[] args) {
-		this.ident = new SymbolRef(op.image,cm);
+		this.ident = new SymbolRef(op.name,cm);
 		this.op = op;
 		this.expr1 = args[0];
 		this.expr2 = args[1];
@@ -378,7 +378,7 @@ public class BinaryExpr extends ENode {
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = (BinaryOperator)op;
-		this.ident = new SymbolRef(op.image, cm);
+		this.ident = new SymbolRef(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -395,7 +395,7 @@ public class BinaryExpr extends ENode {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			if (ident == null) ident = new SymbolRef(pos, op.image);
+			if (ident == null) ident = new SymbolRef(pos, op.name);
 			ident.symbol = m;
 		}
 		Type ret = m.type.ret();
@@ -460,7 +460,7 @@ public class UnaryExpr extends ENode {
 				return;
 			}
 			if (ident == null)
-				ident = new SymbolRef(pos, op.image);
+				ident = new SymbolRef(pos, op.name);
 			if (m instanceof CoreMethod && m.core_func != null) {
 				m.normilizeExpr(this);
 				return;
@@ -481,7 +481,7 @@ public class UnaryExpr extends ENode {
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = (Operator)op;
-		this.ident = new SymbolRef(op.image, cm);
+		this.ident = new SymbolRef(op.name, cm);
 		this.expr = args[0];
 	}
 	
@@ -497,7 +497,7 @@ public class UnaryExpr extends ENode {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			if (ident == null) ident = new SymbolRef(pos, op.image);
+			if (ident == null) ident = new SymbolRef(pos, op.name);
 			ident.symbol = m;
 		}
 		Type ret = m.type.ret();
@@ -566,7 +566,7 @@ public class StringConcatExpr extends ENode {
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == BinaryOperator.Add);
-		this.ident = new SymbolRef(op.image, cm);
+		this.ident = new SymbolRef(op.name, cm);
 		ENode arg1 = args[0];
 		ENode arg2 = args[1];
 		if (arg1 instanceof StringConcatExpr)
@@ -843,7 +843,7 @@ public class IncrementExpr extends ENode {
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = (Operator)op;
-		this.ident = new SymbolRef(op.image, cm);
+		this.ident = new SymbolRef(op.name, cm);
 		this.lval = args[0];
 	}
 	
