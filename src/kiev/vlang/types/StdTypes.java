@@ -90,6 +90,7 @@ public interface StdTypes {
 
 	public static final ArgType   tpWrapperArg;
 	public static final ArgType   tpCallRetArg;
+	public static final ArgType   tpCallThisArg;
 	public static final ArgType[] tpCallParamArgs;
 	public static final ArgType[] tpUnattachedArgs;
 
@@ -243,6 +244,10 @@ public interface StdTypes {
 		TypeDef tdCallRetArg = new TypeConstr("_ret_", tpAny);
 		tpCallRetArg = tdCallRetArg.getAType();
 		tpCallRetArg.flags |= flHidden;
+		
+		TypeDef tdCallThisArg = new TypeConstr("_this_", tpAny);
+		tpCallThisArg = tdCallThisArg.getAType();
+		tpCallThisArg.flags |= flHidden;
 		
 		tpCallParamArgs = new ArgType[128];
 		for (int i=0; i < tpCallParamArgs.length; i++) {

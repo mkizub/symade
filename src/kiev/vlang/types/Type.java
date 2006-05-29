@@ -927,6 +927,7 @@ public final class CallType extends Type {
 		this.arity = arity;
 		if (is_closure)
 			flags |= flReference;
+		//assert (this.bindings().tvars[0].var ≡ tpCallRetArg);
 	}
 	
 	public static CallType createCallType(Type[] args, Type ret)
@@ -951,21 +952,23 @@ public final class CallType extends Type {
 		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
 		ret   = (ret  == null) ? Type.tpAny : ret;
 		TVarBld vs = new TVarBld();
-		for (int i=0; i < targs.length; i++)
-			vs.append(tpUnattachedArgs[i], targs[i]);
 		vs.append(tpCallRetArg, ret);
 		for (int i=0; i < args.length; i++)
 			vs.append(tpCallParamArgs[i], args[i]);
+		for (int i=0; i < targs.length; i++)
+			vs.append(tpUnattachedArgs[i], targs[i]);
 		return new CallType(vs.close(),args.length,is_closure);
 	}
-	public static CallType createCallType(TVarBld vs, Type[] args, Type ret, boolean is_closure)
+	public static CallType createCallType(TVarBld mvs, Type[] args, Type ret, boolean is_closure)
 		alias operator(210,lfy,new)
 	{
 		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
 		ret   = (ret  == null) ? Type.tpAny : ret;
+		TVarBld vs = new TVarBld();
 		vs.append(tpCallRetArg, ret);
 		for (int i=0; i < args.length; i++)
 			vs.append(tpCallParamArgs[i], args[i]);
+		vs.append(mvs);
 		return new CallType(vs.close(),args.length,is_closure);
 	}
 
@@ -976,28 +979,27 @@ public final class CallType extends Type {
 	
 	public Type ret() {
 		AType bindings = this.bindings();
-		foreach (TVar tv; bindings.tvars; tv.var ≡ tpCallRetArg)
-			return tv.unalias().result().applay(bindings);
-		return tpAny;
+		TVar tv = bindings.tvars[0];
+		assert (tv.var ≡ tpCallRetArg);
+		return tv.unalias().result().applay(bindings);
 	}
 	
 	public Type arg(int idx) {
-		ArgType param = tpCallParamArgs[idx];
 		AType bindings = this.bindings();
-		foreach (TVar tv; bindings.tvars; tv.var ≡ param)
-			return tv.unalias().result().applay(bindings);
-		throw new NoSuchElementException("Method param "+idx);
+		TVar tv = bindings.tvars[idx+1];
+		assert (tv.var ≡ tpCallParamArgs[idx]);
+		return tv.unalias().result().applay(bindings);
 	}
 	
 	public Type[] params() {
-		if (this.arity == 0)
+		int arity = this.arity;
+		if (arity == 0)
 			return Type.emptyArray;
-		Type[] params = new Type[this.arity];
-		int i=0;
-		foreach (TVar tv; this.tvars; tv.var ≡ tpCallParamArgs[i]) {
-			params[i++] = tv.unalias().result();
-			if (i >= this.arity)
-				break;
+		Type[] params = new Type[arity];
+		TVar[] tvars = this.tvars;
+		for (int i=0; i < arity; i++) {
+			assert (tvars[i+1].var ≡ tpCallParamArgs[i]);
+			params[i] = tvars[i+1].unalias().result();
 		}
 		return params;
 	}
