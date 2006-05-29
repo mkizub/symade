@@ -41,6 +41,21 @@ public abstract class BoolExpr extends ENode {
 
 	@nodeview
 	public abstract static view VBoolExpr of BoolExpr extends VENode {
+		public void mainResolveOut() {
+			Method m = getOp().resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+getOp());
+				return;
+			}
+			if (ident == null)
+				ident = new SymbolRef(pos, getOp().name);
+			if (m instanceof CoreMethod && m.core_func != null) {
+				m.normilizeExpr(this);
+				return;
+			} else {
+				ident.symbol = m;
+			}
+		}
 	}
 
 	public BoolExpr() {}
@@ -108,6 +123,8 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	}
 	
 	public Operator getOp() { return BinaryOperator.BooleanOr; }
+
+	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -184,6 +201,8 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	
 	public Operator getOp() { return BinaryOperator.BooleanAnd; }
 
+	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		if( expr1.getPriority() < opBooleanAndPriority )
@@ -236,23 +255,6 @@ public class BinaryBoolExpr extends BoolExpr {
 		public BinaryOperator	op;
 		public ENode			expr1;
 		public ENode			expr2;
-
-		public void mainResolveOut() {
-			Type et1 = expr1.getType();
-			Type et2 = expr2.getType();
-			if( op==BinaryOperator.BooleanOr ) {
-				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-					replaceWithNode(new BinaryBooleanOrExpr(pos,expr1,expr2));
-					return;
-				}
-			}
-			else if( op==BinaryOperator.BooleanAnd ) {
-				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-					replaceWithNode(new BinaryBooleanAndExpr(pos,expr1,expr2));
-					return;
-				}
-			}
-		}
 	}
 	
 	public BinaryBoolExpr() {}
@@ -273,6 +275,8 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 	
 	public Operator getOp() { return op; }
+
+	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -340,6 +344,8 @@ public class InstanceofExpr extends BoolExpr {
 	}
 	
 	public Operator getOp() { return BinaryOperator.InstanceOf; }
+
+	public ENode[] getArgs() { return new ENode[]{expr,type}; }
 
 	public String toString() {
 		return expr+" instanceof "+type;
@@ -429,6 +435,8 @@ public class BooleanNotExpr extends BoolExpr {
 	}
 	
 	public Operator getOp() { return PrefixOperator.BooleanNot; }
+
+	public ENode[] getArgs() { return new ENode[]{expr}; }
 
 	public String toString() {
 		if( expr.getPriority() < opBooleanNotPriority )

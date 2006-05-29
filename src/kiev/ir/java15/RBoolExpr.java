@@ -102,108 +102,51 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		resolveExprs();
-		Type et1 = expr1.getType();
-		Type et2 = expr2.getType();
-		if( ( et1.isNumber() && et2.isNumber() ) &&
-			(    op==BinaryOperator.LessThen
-			||   op==BinaryOperator.LessEquals
-			||   op==BinaryOperator.GreaterThen
-			||   op==BinaryOperator.GreaterEquals
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( op==BinaryOperator.BooleanOr ) {
-			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanOrExpr(pos,~expr1,~expr2));
-				return;
-			}
-		}
-		else if( op==BinaryOperator.BooleanAnd ) {
-			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanAndExpr(pos,~expr1,~expr2));
-				return;
-			}
-		}
-		else if(
-			(	(et1.isNumber() && et2.isNumber())
-			 || (et1.isReference() && et2.isReference())
-			 || (et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean))
-			 || (et1.getStruct() != null && et1.getStruct().isEnum() && et2.isIntegerInCode())
-			 || (et1.isIntegerInCode() && et2.getStruct() != null && et2.getStruct().isEnum())
-			) &&
-			(   op==BinaryOperator.Equals
-			||  op==BinaryOperator.NotEquals
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
-			if( opt.match(tps,argsarr) ) {
-				Method rm = opt.method;
-				if !(rm.isMacro() && rm.isNative()) {
-					if( opt.method.isStatic() )
-						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{~expr1,~expr2}));
-					else
-						replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{~expr2}));
-				}
-				return;
-			}
-		}
-		throw new CompilerException(this,"Unresolved expression "+this);
-	}
-	
-	public:no,no,no,rw final void resolve2(Type reqType) {
-		Type t1 = expr1.getType();
-		Type t2 = expr2.getType();
-		if( t1 ≉ t2 ) {
-			if( t1.isReference() != t2.isReference()) {
-				if (t1.getStruct() != null && t1.getStruct().isEnum() && !t1.isIntegerInCode()) {
-					expr1 = new CastExpr(expr1.pos,Type.tpInt,~expr1);
-					expr1.resolve(Type.tpInt);
-					t1 = expr1.getType();
-				}
-				if (t2.getStruct() != null && t2.getStruct().isEnum() && !t2.isIntegerInCode()) {
-					expr2 = new CastExpr(expr2.pos,Type.tpInt,~expr2);
-					expr2.resolve(Type.tpInt);
-					t2 = expr2.getType();
-				}
-				if( t1.isReference() != t2.isReference() && t1.isIntegerInCode() != t2.isIntegerInCode())
-					throw new CompilerException(this,"Boolean operator on reference and non-reference types");
-			}
-			if( !t1.isReference() && !t2.isReference()) {
-				Type t;
-				if      (t1 ≡ Type.tpDouble || t2 ≡ Type.tpDouble ) t = Type.tpDouble;
-				else if (t1 ≡ Type.tpFloat  || t2 ≡ Type.tpFloat  ) t = Type.tpFloat;
-				else if (t1 ≡ Type.tpLong   || t2 ≡ Type.tpLong   ) t = Type.tpLong;
-				else t = Type.tpInt;
 
-				if( t ≢ t1 && t1.isCastableTo(t) ) {
-					expr1 = new CastExpr(pos,t,~expr1);
-					expr1.resolve(t);
-				}
-				if( t ≢ t2 && t2.isCastableTo(t) ) {
-					expr2 = new CastExpr(pos,t,~expr2);
-					expr2.resolve(t);
-				}
+		if (ident == null)
+			ident = new SymbolRef(pos, op.name);
+		if (ident.symbol == null) {
+			Method m = op.resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+op);
+				return;
 			}
-			if( t1.isReference() && t2.isReference()) {
-				if (t1 ≢ Type.tpNull && t2 ≢ Type.tpNull) {
-					if (!t1.isInstanceOf(t2) && !t2.isInstanceOf(t1))
-						Kiev.reportWarning(this, "Operation "+op+" on uncomparable types "+t1+" and "+t2);
-					if (t1.getStruct() != null && t1.getStruct().isStructView())
-						Kiev.reportWarning(this, "Operation "+op+" on a view type "+t1);
-					if (t2.getStruct() != null && t2.getStruct().isStructView())
-						Kiev.reportWarning(this, "Operation "+op+" on a view type "+t2);
+			if (m instanceof CoreMethod && m.core_func != null) {
+				try {
+					m.normilizeExpr(this);
+				} catch (ReWalkNodeException rne) {
+					((ENode)rne.replacer).resolve(reqType);
+					return;
 				}
+			} else {
+				ident.symbol = m;
 			}
 		}
+		Method m = (Method)ident.symbol;
+		if (m.isStatic()) {
+			m.makeArgs(getArgs(),reqType);
+			expr1.resolve(m.params[0].getType());
+			expr2.resolve(m.params[1].getType());
+		} else {
+			m.makeArgs(new ENode[]{expr2},reqType);
+			expr1.resolve(((TypeDecl)m.parent()).xtype);
+			expr2.resolve(m.params[0].getType());
+		}
+		if !(m instanceof CoreMethod) {
+			// Not a standard operator
+			if( m.isStatic() )
+				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~expr1,~expr2}));
+			else
+				replaceWithNodeResolve(reqType, new CallExpr(pos,~expr1,m,new ENode[]{~expr2}));
+			return;
+		}
+		// Check if both expressions are constant
+		if( expr1.isConstantExpr() && expr2.isConstantExpr() ) {
+			ConstExpr ce = ((CoreMethod)m).calc(this);
+			replaceWithNodeResolve(reqType, ce);
+			return;
+		}
+		
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);
@@ -267,10 +210,47 @@ public view RBooleanNotExpr of BooleanNotExpr extends RBoolExpr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		expr.resolve(Type.tpBoolean);
+		
+		if (ident == null)
+			ident = new SymbolRef(pos, getOp().name);
+		if (ident.symbol == null) {
+			Method m = getOp().resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+getOp());
+				return;
+			}
+			if (m instanceof CoreMethod && m.core_func != null) {
+				try {
+					m.normilizeExpr(this);
+				} catch (ReWalkNodeException rne) {
+					((ENode)rne.replacer).resolve(reqType);
+					return;
+				}
+			} else {
+				ident.symbol = m;
+			}
+		}
+		Method m = (Method)ident.symbol;
+		if (m.isStatic()) {
+			m.makeArgs(getArgs(),reqType);
+			expr.resolve(m.params[0].getType());
+		} else {
+			m.makeArgs(ENode.emptyArray,reqType);
+			expr.resolve(((TypeDecl)m.parent()).xtype);
+		}
+		if !(m instanceof CoreMethod) {
+			// Not a standard operator
+			if( m.isStatic() )
+				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~expr}));
+			else
+				replaceWithNodeResolve(reqType, new CallExpr(pos,~expr,m,ENode.emptyArray));
+			return;
+		}
 		BoolExpr.checkBool(expr);
-		if( expr.isConstantExpr() ) {
-			replaceWithNode(new ConstBoolExpr(!((Boolean)expr.getConstValue()).booleanValue()));
+		// Check if expression is a constant
+		if (expr.isConstantExpr()) {
+			ConstExpr ce = ((CoreMethod)m).calc(this);
+			replaceWithNodeResolve(reqType, ce);
 			return;
 		}
 		setResolved(true);

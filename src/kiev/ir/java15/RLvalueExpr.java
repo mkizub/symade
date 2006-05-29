@@ -128,7 +128,7 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 				s.checkResolved();
 				if (s instanceof Struct) {
 					Struct ss = (Struct)s;
-					foreach(Method m; ss.members; m.id.equals(nameArrayAccessOp))
+					foreach(Method m; ss.members; m.id.equals(nameArrayGetOp))
 						break lookup_op;
 				}
 				if( s.super_types.length > 0 ) {

@@ -57,7 +57,17 @@ operator  -- ,  xf, 210; // lf
  *
  */
 
-public metatype any {}
+public metatype any {
+	@macro @native
+	public static boolean _instanceof_(any val, any type) alias xfx operator operator instanceof ;
+
+	@macro @native
+	public static boolean ref_eq(Object o1, Object o2) alias xfx operator == ;
+
+	@macro @native
+	public static boolean ref_neq(Object o1, Object o2) alias xfx operator != ;
+
+}
 
 public metatype void {}
 

@@ -50,7 +50,7 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 	}
 
 	@macro
-	public void indexOf(N node)
+	public int indexOf(N node)
 	{
 		case @forward CallExpr# self(IFldExpr# obj):
 			new#CallExpr(obj=getAttr(obj.var),ident="indexOf",args={obj.obj, node})

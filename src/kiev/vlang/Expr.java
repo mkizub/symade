@@ -206,7 +206,7 @@ public class AssignExpr extends LvalueExpr {
 				Method@ m;
 				ResInfo info = new ResInfo(this,ResInfo.noStatic | ResInfo.noImports);
 				CallType mt = new CallType(new Type[]{ect2,et2},et2);
-				if (PassInfo.resolveBestMethodR(ect1,m,info,nameArrayAccessOp,mt)) {
+				if (PassInfo.resolveBestMethodR(ect1,m,info,nameArraySetOp,mt)) {
 					Method rm = (Method)m;
 					if !(rm.isMacro() && rm.isNative()) {
 						ENode res = info.buildCall((ASTNode)this, cae.obj, m, info.mt, new ENode[]{~cae.index,~value});

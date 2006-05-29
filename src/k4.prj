@@ -259,6 +259,7 @@ CLASS kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java
 CLASS kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
 CLASS kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
 CLASS kiev.vlang.AccessExpr kiev/vlang/AccessExpr kiev\vlang\LvalueExpr.java
+CLASS kiev.vlang.AnyInstanceOf kiev/vlang/AnyInstanceOf kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 CLASS kiev.vlang.AttAttrSlot kiev/vlang/AttAttrSlot kiev\vlang\Tree.java
@@ -505,6 +506,8 @@ CLASS kiev.vlang.NewClosure kiev/vlang/NewClosure kiev\vlang\NewExpr.java
 CLASS kiev.vlang.NewExpr kiev/vlang/NewExpr kiev\vlang\NewExpr.java
 CLASS kiev.vlang.NewInitializedArrayExpr kiev/vlang/NewInitializedArrayExpr kiev\vlang\NewExpr.java
 CLASS kiev.vlang.NopExpr kiev/vlang/NopExpr kiev\vlang\ENode.java
+CLASS kiev.vlang.ObjectBoolEQ kiev/vlang/ObjectBoolEQ kiev\vlang\CoreMethod.java
+CLASS kiev.vlang.ObjectBoolNE kiev/vlang/ObjectBoolNE kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.OpTypes kiev/vlang/OpTypes kiev\vlang\Operator.java
 CLASS kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java
 CLASS kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java

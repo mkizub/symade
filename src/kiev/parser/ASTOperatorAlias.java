@@ -98,7 +98,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 2 arguments");
 					if( m.type.ret() ≉ m.type.arg(1) )
 						throw new CompilerException(this,"Method "+m+" must return "+m.type.arg(1));
-					m.id.addAlias(nameArrayAccessOp);
+					m.id.addAlias(nameArraySetOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
 				}
@@ -146,7 +146,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 1 argument");
 					if( m.type.ret() ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
-					m.id.addAlias(nameArrayAccessOp);
+					m.id.addAlias(nameArrayGetOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
 				}

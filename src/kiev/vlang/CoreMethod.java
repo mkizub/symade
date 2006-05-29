@@ -56,6 +56,11 @@ public abstract class CoreFunc {
 	static {
 		coreFuncs = new Hashtable<String,CoreFunc>(1024);
 
+		coreFuncs.put("kiev.stdlib.any:_instanceof_",       AnyInstanceOf);
+
+		coreFuncs.put("kiev.stdlib.any:bool_eq",            ObjectBoolEQ);
+		coreFuncs.put("kiev.stdlib.any:bool_neq",           ObjectBoolNE);
+
 		coreFuncs.put("kiev.stdlib.boolean:assign",         BoolAssign);
 		coreFuncs.put("kiev.stdlib.boolean:assign_bit_or",  BoolAssignBitOR);
 		coreFuncs.put("kiev.stdlib.boolean:assign_bit_xor", BoolAssignBitXOR);
@@ -272,6 +277,32 @@ abstract class UnaryFunc extends CoreFunc {
 	}
 }
 
+
+/////////////////////////////////////////////////
+//         any                                 //
+/////////////////////////////////////////////////
+
+@singleton
+class AnyInstanceOf extends BinaryFunc {
+	public Instr getJavaInstr() { return Instr.op_instanceof; }
+	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, InstanceofExpr.class, BinaryOperator.InstanceOf); }
+//	protected ConstExpr doCalc(Object:Object arg1, Type:Object arg2) { new ConstBoolExpr(arg2.booleanValue()) }
+}
+
+
+@singleton
+class ObjectBoolEQ extends BinaryFunc {
+	public Instr getJavaInstr() { return null; }
+	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.Equals); }
+//	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg1.booleanValue() == arg2.booleanValue()) }
+}
+
+@singleton
+class ObjectBoolNE extends BinaryFunc {
+	public Instr getJavaInstr() { return null; }
+	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.NotEquals); }
+//	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg1.booleanValue() != arg2.booleanValue()) }
+}
 
 /////////////////////////////////////////////////
 //         boolean                             //

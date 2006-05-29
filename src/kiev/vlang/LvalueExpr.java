@@ -379,8 +379,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			Method@ v;
 			CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayAccessOp,mt) )
-				return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayAccessOp,mt)+" in "+t);
+			if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayGetOp,mt) )
+				return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
 			return Type.getRealType(t,((Method)v).type.ret());
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
@@ -402,8 +402,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		Method@ v;
 		CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
 		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-		if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayAccessOp,mt) )
-			return Type.emptyArray; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayAccessOp,mt)+" in "+t);
+		if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayGetOp,mt) )
+			return Type.emptyArray; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
 		return new Type[]{Type.getRealType(t,((Method)v).type.ret())};
 	}
 

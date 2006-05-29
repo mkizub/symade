@@ -480,7 +480,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 			((TypeRef)expr).toExpr(type);
 		Type extp = Type.getRealType(type,expr.getType());
 		if( type ≡ Type.tpBoolean && extp ≡ Type.tpRule ) {
-			replaceWithNode(expr);
+			replaceWithNode(~expr);
 			return;
 		}
 		// Try to find $cast method

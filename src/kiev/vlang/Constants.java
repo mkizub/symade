@@ -48,7 +48,8 @@ public interface Constants extends AccessFlags {
 	public final static String nameClosureMaxArgs	= "max$args";
 	public final static String nameClosureTopArg	= "top$arg";
 	public final static String nameArrayTypeOp		= "T []";
-	public final static String nameArrayAccessOp	= "V [ V ]";
+	public final static String nameArrayGetOp		= "V [ V ]";
+	public final static String nameArraySetOp		= "V [ V ] = V";
 	public final static String nameNewOp			= "new T";
 	public final static String nameCastOp			= "( T ) V";
 	public final static String nameReturnVar		= "$return";
