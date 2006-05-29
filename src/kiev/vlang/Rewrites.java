@@ -126,7 +126,7 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 	}
 
 	public Object doRewrite(RewriteContext ctx) {
-		ASTNode res = null;
+		Object res = null;
 		foreach (ASTNode stat; stats)
 			res = stat.doRewrite(ctx);
 		return res;

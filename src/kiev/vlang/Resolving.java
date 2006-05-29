@@ -220,7 +220,7 @@ public class ResInfo {
 				ASTNode fwn = forwards_stack[n];
 				if (fwn instanceof ReinterpExpr) {
 					fwn.expr = e;
-					e = fwn;
+					e = (ReinterpExpr)fwn;
 				}
 				else if (fwn instanceof Field) {
 					if (fwn.isStatic())

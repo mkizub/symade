@@ -249,7 +249,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				setArr.body = new Block(0);
 				ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.xtype, new LVarExpr(0, setArr.params[0]) ), f);
 				setArr.block.stats.add(new ExprStat(
-					new AssignExpr(f.pos,AssignOperator.Assign2,lval,new LVarExpr(0, setArr.params[1]))
+					new AssignExpr(f.pos,AssignOperator.Assign2,lval,new CastExpr(f.pos, f.getType(), new LVarExpr(0, setArr.params[1])))
 				));
 			}
 		} else {

@@ -343,7 +343,10 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 					null
 				));
 				b.stats.add(
-					new AssignExpr(var.pos,AssignOperator.Assign2,new LVarExpr(var.pos,var),new LVarExpr(tmp.pos,tmp))
+					new AssignExpr(var.pos,AssignOperator.Assign2,
+						new LVarExpr(var.pos,var),
+						new CastExpr(var.pos, var.getType(), new LVarExpr(tmp.pos,tmp))
+						)
 				);
 				var_init = b;
 			}

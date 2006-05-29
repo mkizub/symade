@@ -118,30 +118,30 @@ public interface StdTypes {
 		Struct kiev_stdlib_meta = Env.newPackage("kiev.stdlib.meta");
 
 		Struct tpObjectClazz = Env.newStruct("Object",java_lang,ACC_PUBLIC);
-		tpObject				= tpObjectClazz.xtype;
+		tpObject				= (CompaundType)tpObjectClazz.xtype;
 
 		Struct tpClassClazz = Env.newStruct("Class",java_lang,ACC_PUBLIC|ACC_FINAL);
-		tpClass					= tpClassClazz.xtype;
+		tpClass					= (CompaundType)tpClassClazz.xtype;
 
 		tpNull		= new CoreType(Constants.nameNull,    tpObject, flReference);
 
 //		tpRule		= new CoreType(Constants.nameRule,    flReference);
 		Struct tpRuleClazz = new Struct(new Symbol("rule"),Env.root,ACC_PUBLIC);
-		tpRule				= tpRuleClazz.xtype;
+		tpRule				= (CompaundType)tpRuleClazz.xtype;
 		tpRuleClazz.setResolved(true);
 		tpRule.flags		= flResolved | flReference;
 
 		Struct tpDebugClazz = Env.newStruct("Debug",kiev_stdlib,ACC_PUBLIC);
-		tpDebug				= tpDebugClazz.xtype;
+		tpDebug				= (CompaundType)tpDebugClazz.xtype;
 
 		Struct tpTypeInfoClazz = Env.newStruct("TypeInfo",kiev_stdlib,ACC_PUBLIC|ACC_FINAL);
-		tpTypeInfo				= tpTypeInfoClazz.xtype;
+		tpTypeInfo				= (CompaundType)tpTypeInfoClazz.xtype;
 
 		Struct tpTypeInfoInterfaceClazz = Env.newStruct("TypeInfoInterface",kiev_stdlib,ACC_PUBLIC|ACC_INTERFACE);
-		tpTypeInfoInterface				= tpTypeInfoInterfaceClazz.xtype;
+		tpTypeInfoInterface				= (CompaundType)tpTypeInfoInterfaceClazz.xtype;
 
 		Struct tpCloneableClazz = Env.newStruct("Cloneable",java_lang,ACC_PUBLIC|ACC_INTERFACE);
-		tpCloneable				= tpCloneableClazz.xtype;
+		tpCloneable				= (CompaundType)tpCloneableClazz.xtype;
 
 		
 		TypeDef tdWrapperArg = new TypeConstr("_boxed_", tpObject);
@@ -155,89 +155,89 @@ public interface StdTypes {
 		tpArray.flags			|= flResolved | flReference | flArray;
 
 		Struct tpBooleanRefClazz = Env.newStruct("Boolean",java_lang,ACC_PUBLIC);
-		tpBooleanRef			= tpBooleanRefClazz.xtype;
+		tpBooleanRef			= (CompaundType)tpBooleanRefClazz.xtype;
 
 		Struct tpCharRefClazz = Env.newStruct("Character",java_lang,ACC_PUBLIC);
-		tpCharRef			= tpCharRefClazz.xtype;
+		tpCharRef			= (CompaundType)tpCharRefClazz.xtype;
 
 		Struct tpNumberRefClazz = Env.newStruct("Number",java_lang,ACC_PUBLIC);
-		tpNumberRef			= tpNumberRefClazz.xtype;
+		tpNumberRef			= (CompaundType)tpNumberRefClazz.xtype;
 
 		Struct tpByteRefClazz = Env.newStruct("Byte",java_lang,ACC_PUBLIC);
-		tpByteRef			= tpByteRefClazz.xtype;
+		tpByteRef			= (CompaundType)tpByteRefClazz.xtype;
 
 		Struct tpShortRefClazz = Env.newStruct("Short",java_lang,ACC_PUBLIC);
-		tpShortRef			= tpShortRefClazz.xtype;
+		tpShortRef			= (CompaundType)tpShortRefClazz.xtype;
 
 		Struct tpIntRefClazz = Env.newStruct("Integer",java_lang,ACC_PUBLIC);
-		tpIntRef			= tpIntRefClazz.xtype;
+		tpIntRef			= (CompaundType)tpIntRefClazz.xtype;
 
 		Struct tpLongRefClazz = Env.newStruct("Long",java_lang,ACC_PUBLIC);
-		tpLongRef			= tpLongRefClazz.xtype;
+		tpLongRef			= (CompaundType)tpLongRefClazz.xtype;
 
 		Struct tpFloatRefClazz = Env.newStruct("Float",java_lang,ACC_PUBLIC);
-		tpFloatRef			= tpFloatRefClazz.xtype;
+		tpFloatRef			= (CompaundType)tpFloatRefClazz.xtype;
 
 		Struct tpDoubleRefClazz = Env.newStruct("Double",java_lang,ACC_PUBLIC);
-		tpDoubleRef			= tpDoubleRefClazz.xtype;
+		tpDoubleRef			= (CompaundType)tpDoubleRefClazz.xtype;
 
 		Struct tpVoidRefClazz = Env.newStruct("Void",java_lang,ACC_PUBLIC);
-		tpVoidRef			= tpVoidRefClazz.xtype;
+		tpVoidRef			= (CompaundType)tpVoidRefClazz.xtype;
 
 		Struct tpStringClazz = Env.newStruct("String",java_lang,ACC_PUBLIC);
-		tpString				= tpStringClazz.xtype;
+		tpString				= (CompaundType)tpStringClazz.xtype;
 
 		Struct tpAnnotationClazz = Env.newStruct("Annotation",java_lang_annotation,ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT);
-		tpAnnotation			= tpAnnotationClazz.xtype;
+		tpAnnotation			= (CompaundType)tpAnnotationClazz.xtype;
 		
 		Struct tpThrowableClazz = Env.newStruct("Throwable",java_lang,ACC_PUBLIC);
-		tpThrowable				= tpThrowableClazz.xtype;
+		tpThrowable				= (CompaundType)tpThrowableClazz.xtype;
 
 		Struct tpErrorClazz = Env.newStruct("Error",java_lang,ACC_PUBLIC);
-		tpError				= tpErrorClazz.xtype;
+		tpError				= (CompaundType)tpErrorClazz.xtype;
 
 		Struct tpExceptionClazz = Env.newStruct("Exception",java_lang,ACC_PUBLIC);
-		tpException				= tpExceptionClazz.xtype;
+		tpException				= (CompaundType)tpExceptionClazz.xtype;
 
 		Struct tpCastExceptionClazz = Env.newStruct("ClassCastException",java_lang,ACC_PUBLIC);
-		tpCastException				= tpCastExceptionClazz.xtype;
+		tpCastException				= (CompaundType)tpCastExceptionClazz.xtype;
 
 		Struct tpRuntimeExceptionClazz = Env.newStruct("RuntimeException",java_lang,ACC_PUBLIC);
-		tpRuntimeException				= tpRuntimeExceptionClazz.xtype;
+		tpRuntimeException				= (CompaundType)tpRuntimeExceptionClazz.xtype;
 
 		Struct tpAssertExceptionClazz = Env.newStruct("AssertionFailedException",kiev_stdlib,ACC_PUBLIC);
-		tpAssertException				= tpAssertExceptionClazz.xtype;
+		tpAssertException				= (CompaundType)tpAssertExceptionClazz.xtype;
 
 		Struct tpEnumClazz = Env.newStruct("Enum",java_lang,ACC_PUBLIC | ACC_ABSTRACT);
-		tpEnum					= tpEnumClazz.xtype;
+		tpEnum					= (CompaundType)tpEnumClazz.xtype;
 
 		tpClosureClazz = Env.newStruct("closure",kiev_stdlib,ACC_PUBLIC);
-		tpClosure				= tpClosureClazz.xtype;
+		tpClosure				= (CompaundType)tpClosureClazz.xtype;
 
 		Struct tpTypeSwitchHashClazz = Env.newStruct("TypeSwitchHash",kiev_stdlib,ACC_PUBLIC);
-		tpTypeSwitchHash			= tpTypeSwitchHashClazz.xtype;
+		tpTypeSwitchHash			= (CompaundType)tpTypeSwitchHashClazz.xtype;
 
 
 		Struct tpJavaEnumerationClazz = Env.newStruct("Enumeration",java_util,ACC_PUBLIC);
-		tpJavaEnumeration	= tpJavaEnumerationClazz.xtype;
+		tpJavaEnumeration	= (CompaundType)tpJavaEnumerationClazz.xtype;
 		
 		Struct tpKievEnumerationClazz = Env.newStruct("Enumeration",kiev_stdlib,ACC_PUBLIC);
 		tpKievEnumerationClazz.args.add(new TypeConstr("A"));
-		tpKievEnumeration	= tpKievEnumerationClazz.xtype;
+		tpKievEnumeration	= (CompaundType)tpKievEnumerationClazz.xtype;
 		
 		
 		Struct tpArrayEnumeratorClazz = Env.newStruct("ArrayEnumerator",kiev_stdlib,ACC_PUBLIC);
 		tpArrayEnumeratorClazz.args.add(new TypeConstr("A"));
-		tpArrayEnumerator	= tpArrayEnumeratorClazz.xtype;
+		tpArrayEnumerator	= (CompaundType)tpArrayEnumeratorClazz.xtype;
 		
 
 		Struct tpPrologVarClazz = Env.newStruct("PVar",kiev_stdlib,ACC_PUBLIC);
 		tpPrologVarClazz.args.add(new TypeConstr("A"));
-		tpPrologVar	= tpPrologVarClazz.xtype;
+		tpPrologVar	= (CompaundType)tpPrologVarClazz.xtype;
 
 		Struct tpRefProxyClazz = Env.newStruct("Ref",kiev_stdlib,ACC_PUBLIC);
 		tpRefProxyClazz.args.add(new TypeConstr("A"));
-		tpRefProxy	= tpRefProxyClazz.xtype;
+		tpRefProxy	= (CompaundType)tpRefProxyClazz.xtype;
 
 
 		TypeDef tdCallRetArg = new TypeConstr("_ret_", tpAny);

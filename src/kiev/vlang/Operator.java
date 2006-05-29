@@ -582,47 +582,18 @@ public class AssignOperator extends Operator {
 			Assign2.addTypes(otSame(1),otTheAny(),otSame(1));
 
 		AssignBitOr = newAssignOperator("|=", "L |= V", Instr.op_or,true);
-			iopt=new OpTypes();
-			AssignBitOr.addTypes(otSame(1),otInteger(),otSame(1));
-			AssignBitOr.addTypes(otSame(1),otBoolean(),otSame(1));
 		AssignBitXor = newAssignOperator("^=", "L ^= V", Instr.op_xor,true);
-			iopt=new OpTypes();
-			AssignBitXor.addTypes(otSame(1),otInteger(),otSame(1));
-			AssignBitXor.addTypes(otSame(1),otBoolean(),otSame(1));
 		AssignBitAnd = newAssignOperator("&=", "L &= V", Instr.op_and,true);
-			iopt=new OpTypes();
-			AssignBitAnd.addTypes(otSame(1),otInteger(),otSame(1));
-			AssignBitAnd.addTypes(otSame(1),otBoolean(),otSame(1));
 
 		AssignLeftShift = newAssignOperator("<<=", "L <<= V", Instr.op_shl,true);
-			iopt=new OpTypes();
-			AssignLeftShift.addTypes(otSame(1),otInteger(),otType(Type.tpInt));
 		AssignRightShift = newAssignOperator(">>=", "L >>= V", Instr.op_shr,true);
-			iopt=new OpTypes();
-			AssignRightShift.addTypes(otSame(1),otInteger(),otType(Type.tpInt));
 		AssignUnsignedRightShift = newAssignOperator(">>>=", "L >>>= V", Instr.op_ushr,true);
-			iopt=new OpTypes();
-			AssignUnsignedRightShift.addTypes(otSame(1),otInteger(),otType(Type.tpInt));
 
 		AssignAdd = newAssignOperator("+=", "L += V", Instr.op_add,true);
-			iopt=new OpTypes();
-			AssignAdd.addTypes(otSame(1),otNumber(),otSame(1));
-			iopt=new OpTypes();
-			AssignAdd.addTypes(otType(Type.tpChar),otType(Type.tpChar),otInteger());
 		AssignSub = newAssignOperator("-=", "L -= V", Instr.op_sub,true);
-			iopt=new OpTypes();
-			AssignSub.addTypes(otSame(1),otNumber(),otSame(1));
-			iopt=new OpTypes();
-			AssignSub.addTypes(otType(Type.tpChar),otType(Type.tpChar),otInteger());
 		AssignMul = newAssignOperator("*=", "L *= V", Instr.op_mul,true);
-			iopt=new OpTypes();
-			AssignMul.addTypes(otSame(1),otNumber(),otSame(1));
 		AssignDiv = newAssignOperator("/=", "L /= V", Instr.op_div,true);
-			iopt=new OpTypes();
-			AssignDiv.addTypes(otSame(1),otNumber(),otSame(1));
 		AssignMod = newAssignOperator("%=", "L %= V", Instr.op_rem,true);
-			iopt=new OpTypes();
-			AssignMod.addTypes(otSame(1),otNumber(),otSame(1));
 	}
 
 	protected AssignOperator(String img, String nm, Instr in, boolean std) {

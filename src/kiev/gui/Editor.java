@@ -182,7 +182,7 @@ public class Editor extends UIView implements KeyListener {
 			switch (code) {
 			case KeyEvent.VK_UP:
 				if (cur_elem.isAttached()) {
-					view_canvas.current = cur_elem = cur_elem.parent();
+					view_canvas.current = cur_elem = (Drawable)cur_elem.parent();
 					view_canvas.repaint();
 				}
 				evt.consume(); 

@@ -39,7 +39,7 @@ public interface ParserConstants extends kiev040Constants {
 public abstract class kiev040 {
 
 	public FileUnit			curFileUnit;
-	public Struct			curClazz;
+	public TypeDecl			curClazz;
 	public Method			curMethod;
 	public boolean			interface_only = false;
 	public boolean			reparse_body = false;
@@ -187,7 +187,7 @@ public abstract class kiev040 {
 
 	private Struct mkStruct(Symbol name, int flags, ASTModifiers modifiers, ASTNode parent) {
 		String nm;
-		Struct outer;
+		TypeDecl outer;
 		boolean direct;
 		if (parent instanceof FileUnit) {
 			nm = name.sname;
@@ -211,7 +211,7 @@ public abstract class kiev040 {
 			outer = curClazz;
 			direct = false;
 		}
-		Struct clazz = Env.newStruct(nm,direct,curClazz,flags,true);
+		Struct clazz = Env.newStruct(nm,direct,(Struct)curClazz,flags,true);
 		if (name != null)
 			clazz.pos  = name.pos;
 		else
@@ -955,7 +955,7 @@ TOKEN : /* OPERATORS */
  */
 
 FileUnit FileUnit(String filename) :
-{ FileUnit oldFileUnit; Struct oldClazz; }
+{ FileUnit oldFileUnit; TypeDecl oldClazz; }
 {
 	{
 		oldFileUnit = curFileUnit;
@@ -1125,7 +1125,7 @@ Opdef Opdef(ASTModifiers modifiers) :
 }
 
 Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; Symbol name; Struct oldClazz; }
+{ Struct clazz; Symbol name; TypeDecl oldClazz; }
 {
 	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 	<IDENTIFIER>	// "syntax"
@@ -1149,7 +1149,7 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ TypeDecl tdecl; Symbol name; TypeRef tp; Struct oldClazz; TypeConstr[] args; }
+{ TypeDecl tdecl; Symbol name; TypeRef tp; TypeDecl oldClazz; TypeConstr[] args; }
 {
 	"metatype"
 	(
@@ -1182,7 +1182,7 @@ TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; Symbol name; Struct oldClazz; TypeConstr[] args; }
+{ Struct clazz; Symbol name; TypeDecl oldClazz; TypeConstr[] args; }
 {
 	(
 		"class"
@@ -1344,10 +1344,10 @@ TypeConstr[] ClazzArguments() :
 	[
 		"<"
 			arg = ArgumentDeclaration()
-			{ args = (TypeDef[])Arrays.append(args,arg); }
+			{ args = (TypeConstr[])Arrays.append(args,arg); }
 			(	","
 				arg = ArgumentDeclaration()
-				{ args = (TypeDef[])Arrays.append(args,arg); }
+				{ args = (TypeConstr[])Arrays.append(args,arg); }
 			)*
 		">"
 	]
@@ -2805,7 +2805,8 @@ NewExpr NewExpression() :
 {
 	boolean old_mode;
 	ASTModifiers modifiers;
-	Struct clazz, oldClazz;
+	Struct clazz;
+	TypeDecl oldClazz;
 	NewExpr ne = new NewExpr();
 	ne.pos = getToken(1).getPos();
 }

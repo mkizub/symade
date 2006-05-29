@@ -634,7 +634,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 				"or a class that implements 'Enumeration elements()' method, but "+xtype+" found");
 		}
 		iter_var = ((RuleMethod)ctx_method).add_iterator_var();
-		ASTNode rb = this.parent();
+		ANode rb = this.parent();
 		while( rb!=null && !(rb instanceof RuleBlock)) {
 			Debug.assert(rb.isAttached(), "Parent of "+rb.getClass()+":"+rb+" is null");
 			rb = rb.parent();
@@ -817,7 +817,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		base = ((RuleMethod)ctx_method).allocNewBase(1);
 		depth = ((RuleMethod)ctx_method).push();
 		env_var = ((RuleMethod)ctx_method).add_iterator_var();
-		ASTNode rb = this.parent();
+		ANode rb = this.parent();
 		while( rb!=null && !(rb instanceof RuleBlock)) {
 			Debug.assert(rb.isAttached(), "Parent of "+rb.getClass()+":"+rb+" is null");
 			rb = rb.parent();

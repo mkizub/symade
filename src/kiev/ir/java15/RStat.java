@@ -188,7 +188,7 @@ public final view RBreakStat of BreakStat extends RENode {
 			dest = null;
 		}
 		if( ident == null ) {
-			for(p=parent(); !(p instanceof Method || p.isBreakTarget()); p = p.parent() );
+			for(p=(ASTNode)parent(); !(p instanceof Method || p.isBreakTarget()); p = (ASTNode)p.parent() );
 			if( p instanceof Method || p == null ) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
@@ -202,12 +202,12 @@ public final view RBreakStat of BreakStat extends RENode {
 			}
 		} else {
 	label_found:
-			for(p=parent(); !(p instanceof Method) ; p=p.parent() ) {
+			for(p=(ASTNode)parent(); !(p instanceof Method) ; p=(ASTNode)p.parent() ) {
 				if (p instanceof LabeledStat && p.lbl.id.uname.equals(ident.name))
 					throw new RuntimeException("Label "+ident+" does not refer to break target");
 				if (!p.isBreakTarget()) continue;
 				ASTNode pp = p;
-				for(p=p.parent(); p instanceof LabeledStat; p = p.parent()) {
+				for(p=(ASTNode)p.parent(); p instanceof LabeledStat; p = (ASTNode)p.parent()) {
 					if (p.lbl.id.equals(ident.name)) {
 						p = pp;
 						break label_found;
@@ -278,7 +278,7 @@ public final view RGotoCaseStat of GotoCaseStat extends RENode {
 
 	public void resolve(Type reqType) {
 		setAbrupted(true);
-		for(ASTNode node = this.parent(); node != null; node = node.parent()) {
+		for(ASTNode node = (ASTNode)this.parent(); node != null; node = (ASTNode)node.parent()) {
 			if (node instanceof SwitchStat) {
 				this.sw = (SwitchStat)node;
 				break;

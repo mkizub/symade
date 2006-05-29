@@ -798,7 +798,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public Object doRewrite(RewriteContext ctx) {
-		ASTNode res = null;
+		Object res = null;
 		foreach (ASTNode stat; stats)
 			res = stat.doRewrite(ctx);
 		return res;

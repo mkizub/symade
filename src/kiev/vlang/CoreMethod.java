@@ -58,8 +58,8 @@ public abstract class CoreFunc {
 
 		coreFuncs.put("kiev.stdlib.any:_instanceof_",       AnyInstanceOf);
 
-		coreFuncs.put("kiev.stdlib.any:bool_eq",            ObjectBoolEQ);
-		coreFuncs.put("kiev.stdlib.any:bool_neq",           ObjectBoolNE);
+		coreFuncs.put("kiev.stdlib.any:ref_eq",             ObjectBoolEQ);
+		coreFuncs.put("kiev.stdlib.any:ref_neq",            ObjectBoolNE);
 
 		coreFuncs.put("kiev.stdlib.boolean:assign",         BoolAssign);
 		coreFuncs.put("kiev.stdlib.boolean:assign_bit_or",  BoolAssignBitOR);

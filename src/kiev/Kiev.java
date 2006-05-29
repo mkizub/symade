@@ -56,10 +56,10 @@ public final class Kiev {
 			pos = from.pos;
 			ASTNode f = from;
 			FileUnit fu = null;
-			Struct clazz = null;
+			TypeDecl clazz = null;
 			Method method = null;
 			try {
-				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
 					pos = f.pos;
 				method = from.ctx_method;
 				clazz = from.ctx_tdecl;
@@ -151,11 +151,11 @@ public final class Kiev {
 		if (from != null) {
 			int pos = from.pos;
 			FileUnit fu = null;
-			Struct clazz = null;
+			TypeDecl clazz = null;
 			Method method = null;
 			try {
 				ASTNode f = from;
-				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
 					pos = f.pos;
 				method = from.ctx_method;
 				clazz = from.ctx_tdecl;
@@ -167,7 +167,7 @@ public final class Kiev {
 		}
 	}
 
-	private static void report(int pos, FileUnit file_unit, Struct clazz, Method method, SeverError err, String msg) {
+	private static void report(int pos, FileUnit file_unit, TypeDecl clazz, Method method, SeverError err, String msg) {
 		if (err == SeverError.Warning) {
 			warnCount++;
 		} else {
@@ -263,11 +263,11 @@ public final class Kiev {
 			int pos = from.pos;
 			int pos = from.pos;
 			FileUnit fu = null;
-			Struct clazz = null;
+			TypeDecl clazz = null;
 			Method method = null;
 			try {
 				ASTNode f = from;
-				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent())
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = (ASTNode)from.parent())
 					pos = f.pos;
 				method = from.ctx_method;
 				clazz = from.ctx_tdecl;
@@ -491,7 +491,7 @@ public final class Kiev {
 				ASTNode n = (ASTNode)b;
 				while( n != null ) {
 					pl = new List.Cons<ASTNode>(n,pl);
-					n = n.parent();
+					n = (ASTNode)n.parent();
 				}
 				if( pl.head() != f ) {
 					reportError(b,"Prescanned body highest parent is "+pl.head()+" but "+b.expected_parent+" is expected in file "+f);

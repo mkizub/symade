@@ -506,7 +506,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		String oldfn = Kiev.curFile;
 		boolean[] old_exts = Kiev.getExtSet();
 		{
-			ASTNode fu = parent();
+			ANode fu = parent();
 			while( fu != null && !(fu instanceof FileUnit))
 				fu = fu.parent();
 			if( fu != null ) {

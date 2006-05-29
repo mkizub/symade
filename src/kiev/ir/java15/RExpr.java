@@ -55,12 +55,10 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 		if (isResolved())
 			return;
 		Type type = this.type.getType();
-		CompaundType ftype = Type.tpTypeInfo;
 		Struct clazz = type.getStruct();
 		if (clazz.isTypeUnerasable()) {
 			if (clazz.typeinfo_clazz == null)
 				((RStruct)clazz).autoGenerateTypeinfoClazz();
-			ftype = clazz.typeinfo_clazz.xtype;
 		}
 		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.xtype));
 		cl_expr.resolve(Type.tpClass);
@@ -207,11 +205,18 @@ public static final view RAssignExpr of AssignExpr extends RLvalueExpr {
 			}
 		}
 		else if( !t2.isInstanceOf(t1) ) {
-			if( t2.isCastableTo(t1) ) {
+			if (t2 ≡ StdTypes.tpNull && t1.isReference())
+				;
+			if (t2.isAutoCastableTo(t1)) {
+				value = new CastExpr(pos,t1,~value);
+				value.resolve(t1);
+			}
+			else if( t2.isCastableTo(t1) ) {
+				Kiev.reportWarning(this, "Unsafe casting from "+t2+" to type "+t1);
 				value = new CastExpr(pos,t1,~value);
 				value.resolve(t1);
 			} else {
-				throw new RuntimeException("Value of type "+t2+" can't be assigned to "+lval);
+				Kiev.reportError(this, "Value of type "+t2+" can't be assigned to "+lval);
 			}
 		}
 		getDFlow().out();

@@ -57,10 +57,10 @@ public abstract class Drawable extends ASTNode {
 	public final DrawTerm getNextLeaf() {
 		Drawable p = this;
 		for (;;) {
-			while (p.pnext() == null && (p=p.parent()) != null);
+			while (p.pnext() == null && (p=(Drawable)p.parent()) != null);
 			if (p == null)
 				return null;
-			p = p.pnext();
+			p = (Drawable)p.pnext();
 			if (p.isUnvisible())
 				continue;
 			DrawTerm d = p.getFirstLeaf();
@@ -74,10 +74,10 @@ public abstract class Drawable extends ASTNode {
 	public final DrawTerm getPrevLeaf() {
 		Drawable p = this;
 		for (;;) {
-			while (p.pprev() == null && (p=p.parent()) != null);
+			while (p.pprev() == null && (p=(Drawable)p.parent()) != null);
 			if (p == null)
 				return null;
-			p = p.pprev();
+			p = (Drawable)p.pprev();
 			if (p.isUnvisible())
 				continue;
 			DrawTerm d = p.getLastLeaf();

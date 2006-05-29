@@ -169,7 +169,7 @@ public final view JStruct of Struct extends JTypeDecl {
 			JStruct[] outer = new JStruct[sub_decls.length];
 			short[] inner_access = new short[sub_decls.length];
 			for(int j=0; j < sub_decls.length; j++) {
-				inner[j] = sub_decls[j];
+				inner[j] = (JStruct)sub_decls[j];
 				outer[j] = this;
 				inner_access[j] = sub_decls[j].getJavaFlags();
 				constPool.addClazzCP(inner[j].xtype.getJType().java_signature);

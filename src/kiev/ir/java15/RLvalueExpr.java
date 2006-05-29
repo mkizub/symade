@@ -204,7 +204,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 				Field vf;
 				if( (vf = ctx_tdecl.resolveField(ident.name,false)) == null ) {
 					// Add field
-					vf = ctx_tdecl.members.add(new Field(ident.name,var.type,ACC_PUBLIC));
+					vf = (Field)ctx_tdecl.members.add(new Field(ident.name,var.type,ACC_PUBLIC));
 					vf.setNeedProxy(true);
 					vf.init = ((ENode)this).ncopy();
 				}

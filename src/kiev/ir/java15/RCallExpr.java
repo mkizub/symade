@@ -79,7 +79,7 @@ public final view RCallExpr of CallExpr extends RENode {
 			}
 		}
 		if !(func.parent() instanceof TypeDecl) {
-			ASTNode n = func.parent();
+			ANode n = func.parent();
 			while !(n instanceof Method) n = n.parent();
 			assert (n.parent() instanceof TypeDecl);
 			this.ident.symbol = (Method)n;

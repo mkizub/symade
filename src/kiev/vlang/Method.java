@@ -493,7 +493,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				a++;
 			}
 			if (a > 0)
-				rt = rt.rebind(set);
+				rt = (CallType)rt.rebind(set);
 		}
 		
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
@@ -525,7 +525,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 					+" infer argument: "+at+" to "+b);
 				if (b ≡ Type.tpAny)
 					return false;
-				rt = rt.rebind(new TVarBld(at, b));
+				rt = (CallType)rt.rebind(new TVarBld(at, b));
 			}
 		}
 		
@@ -575,7 +575,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				//	+" infer argument: "+at+" to "+b);
 				if (b ≡ Type.tpAny)
 					continue;
-				rt = rt.rebind(new TVarBld(at, b));
+				rt = (CallType)rt.rebind(new TVarBld(at, b));
 			}
 		}
 		return rt;
