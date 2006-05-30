@@ -183,7 +183,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			itype = xtype;
 			mode = ForEachStat.JENUM;
 		} else if( PassInfo.resolveBestMethodR(xtype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameElements,new CallType(Type.emptyArray,Type.tpAny))
+				nameElements,new CallType(xtype,null,null,Type.tpAny,false))
 		) {
 			itype = Type.getRealType(xtype,elems.type.ret());
 			mode = ForEachStat.ELEMS;
@@ -278,7 +278,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.ELEMS:
 			/* iter.hasMoreElements() */
 			if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameHasMoreElements,new CallType(Type.emptyArray,Type.tpAny)) )
+				nameHasMoreElements,new CallType(itype,null,null,Type.tpAny,false)) )
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			iter_cond = new CallExpr(	iter.pos,
 					new LVarExpr(iter.pos,iter),
@@ -316,7 +316,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.ELEMS:
 			/* var = iter.nextElement() */
 			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-					nameNextElement,new CallType(Type.emptyArray,Type.tpAny)) )
+					nameNextElement,new CallType(itype,null,null,Type.tpAny,false)) )
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			ce = new CallExpr(iter.pos,
 					new LVarExpr(iter.pos,iter),

@@ -642,7 +642,7 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		Type[] args = new Type[va_args.length];
 		for (int i=0; i < va_args.length; i++)
 			args[i] = (Type)va_args[i];
-		CallType mt = new CallType(args,ret);
+		CallType mt = new CallType(null,null,args,ret,false);
 		Method@ m;
 		if (!this.xtype.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
 			!this.resolveMethodR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))

@@ -927,25 +927,9 @@ public final class CallType extends Type {
 		this.arity = arity;
 		if (is_closure)
 			flags |= flReference;
-		//assert (this.bindings().tvars[0].var ≡ tpCallRetArg);
 	}
 	
-	public static CallType createCallType(Type[] args, Type ret)
-		alias operator(210,lfy,new)
-	{
-		return createCallType(null,args,ret,false);
-	}
-	public static CallType createCallType(Type[] args, Type ret, boolean is_closure)
-		alias operator(210,lfy,new)
-	{
-		return createCallType(null,args,ret,is_closure);
-	}
-	public static CallType createCallType(Type[] targs, Type[] args, Type ret)
-		alias operator(210,lfy,new)
-	{
-		return createCallType(targs,args,ret,false);
-	}
-	public static CallType createCallType(Type[] targs, Type[] args, Type ret, boolean is_closure)
+	public static CallType createCallType(Type accessor, Type[] targs, Type[] args, Type ret, boolean is_closure)
 		alias operator(210,lfy,new)
 	{
 		targs = (targs != null && targs.length > 0) ? targs : Type.emptyArray;
@@ -955,6 +939,8 @@ public final class CallType extends Type {
 		vs.append(tpCallRetArg, ret);
 		for (int i=0; i < args.length; i++)
 			vs.append(tpCallParamArgs[i], args[i]);
+		if (accessor != null)
+			vs.append(tpCallThisArg, accessor);
 		for (int i=0; i < targs.length; i++)
 			vs.append(tpUnattachedArgs[i], targs[i]);
 		return new CallType(vs.close(),args.length,is_closure);
@@ -1068,15 +1054,6 @@ public final class CallType extends Type {
 			return dmp.append("/* ERROR: "+this+" */");
 	}
 
-	public CallType getMMType() {
-		Type[] types = new Type[arity];
-		for(int i=0; i < types.length; i++) {
-			if( !arg(i).isReference() ) types[i] = arg(i);
-			else types[i] = Type.tpObject;
-		}
-		return new CallType(types,ret(),isReference());
-	}
-
 	public boolean greater(CallType tp) {
 		if( this.arity != tp.arity ) return false;
 		if( !ret().isInstanceOf(tp.ret()) ) return false;
@@ -1119,11 +1096,11 @@ public final class CallType extends Type {
 		if (this.isReference())
 			return Type.tpClosure;
 		if( this.arity == 0 )
-			return new CallType(Type.emptyArray,this.ret().getErasedType(),isReference());
+			return new CallType(null,null,null,this.ret().getErasedType(),false);
 		Type[] targs = new Type[this.arity];
 		for(int i=0; i < this.arity; i++)
 			targs[i] = this.arg(i).getErasedType();
-		return new CallType(targs,this.ret().getErasedType(),isReference());
+		return new CallType(null,null,targs,this.ret().getErasedType(),false);
 	}
 
 }

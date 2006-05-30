@@ -530,14 +530,14 @@ public abstract class Operator implements Constants {
 		Type[] tps = new Type[args.length-1];
 		for (int i=0; i < tps.length; i++)
 			tps[i] = args[i+1].getType();
-		CallType mt = new CallType(tps, null);
+		CallType mt = new CallType(args[0].getType(), null, tps, null, false);
 		if (PassInfo.resolveBestMethodR(args[0].getType(),m,info,this.name,mt))
 			return (Method)m;
 		info = new ResInfo(expr, 0);
 		tps = new Type[args.length];
 		for (int i=0; i < tps.length; i++)
 			tps[i] = args[i].getType();
-		mt = new CallType(tps, null);
+		mt = new CallType(null, null, tps, null, false);
 		if (PassInfo.resolveBestMethodR(this,m,info,this.name,mt))
 			return (Method)m;
 		return null;

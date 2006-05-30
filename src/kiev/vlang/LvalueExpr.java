@@ -377,7 +377,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 				return Type.getRealType(t,t.arg);
 			// Resolve overloaded access method
 			Method@ v;
-			CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
+			CallType mt = new CallType(t,null,new Type[]{index.getType()},Type.tpAny,false);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayGetOp,mt) )
 				return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
@@ -400,7 +400,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		if (t instanceof ArrayType)
 			return new Type[]{Type.getRealType(t,t.arg)};
 		Method@ v;
-		CallType mt = new CallType(new Type[]{index.getType()},Type.tpAny);
+		CallType mt = new CallType(t,null,new Type[]{index.getType()},Type.tpAny,false);
 		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 		if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayGetOp,mt) )
 			return Type.emptyArray; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);

@@ -603,7 +603,6 @@ CLASS kiev.vlang.types.TVarBld kiev/vlang/types/TVarBld kiev\vlang\types\TVarBld
 CLASS kiev.vlang.types.TVarSet kiev/vlang/types/TVarSet kiev\vlang\types\AType.java
 CLASS kiev.vlang.types.Type kiev/vlang/types/Type kiev\vlang\types\Type.java
 CLASS kiev.vlang.types.TypeAssign kiev/vlang/types/TypeAssign kiev\vlang\types\TypeDef.java
-CLASS kiev.vlang.types.TypeCallRef kiev/vlang/types/TypeCallRef kiev\vlang\types\TypeCallRef.java
 CLASS kiev.vlang.types.TypeClosureRef kiev/vlang/types/TypeClosureRef kiev\vlang\types\TypeClosure.java
 CLASS kiev.vlang.types.TypeConstr kiev/vlang/types/TypeConstr kiev\vlang\types\TypeDef.java
 CLASS kiev.vlang.types.TypeDef kiev/vlang/types/TypeDef kiev\vlang\types\TypeDef.java
@@ -833,9 +832,6 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
-METATYPE kiev.be.java15.JNodeUtils kiev\be\java15\JNode.java bad
-METATYPE kiev.be.java15.JSymbolRef kiev\be\java15\JNode.java bad
-METATYPE kiev.ir.java15.RSymbolRef kiev\ir\java15\RNode.java bad
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
@@ -848,10 +844,5 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
-METATYPE kiev.vlang.IntBitOr kiev\vlang\CoreMethod.java bad
-METATYPE kiev.vlang.IntREM kiev\vlang\CoreMethod.java bad
-METATYPE kiev.vlang.MetaValueType kiev\vlang\Meta.java
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
-METATYPE kiev.vlang.test.NodeSpace kiev\vlang\MetaTypes.java bad
-METATYPE kiev.vlang.test.Test kiev\vlang\MetaTypes.java
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java

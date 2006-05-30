@@ -58,18 +58,22 @@ public class ASTCallAccessExpression extends ENode {
 				obj = te;
 			}
 			
+			Type[] ata = new Type[targs.length];
+			for (int i=0; i < ata.length; i++)
+				ata[i] = targs[i].getType();
+			Type[] ta = new Type[args.length];
+			for (int i=0; i < ta.length; i++)
+				ta[i] = args[i].getType();
+
 			if (obj instanceof ThisExpr && obj.isSuperExpr()) {
 				Method@ m;
-				Type tp = null;
+				Type tp = ctx_tdecl.super_types[0].getType();
 				ResInfo info = new ResInfo(this);
 				info.enterForward(obj);
 				info.enterSuper();
-				Type[] ta = new Type[args.length];
-				for (int i=0; i < ta.length; i++)
-					ta[i] = args[i].getType();
-				CallType mt = new CallType(ta,null);
+				CallType mt = new CallType(tp,ata,ta,null,false);
 				try {
-					if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ident.name,mt) )
+					if( !PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt) )
 						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,null));
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				info.leaveSuper();
@@ -85,15 +89,6 @@ public class ASTCallAccessExpression extends ENode {
 			}
 			
 			CallType mt = null;
-			{
-				Type[] ata = new Type[targs.length];
-				for (int i=0; i < ata.length; i++)
-					ata[i] = targs[i].getType();
-				Type[] ta = new Type[args.length];
-				for (int i=0; i < ta.length; i++)
-					ta[i] = args[i].getType();
-				mt = new CallType(ata,ta,null);
-			}
 			int res_flags = ResInfo.noStatic | ResInfo.noImports;
 			ENode[] res;
 			Type[] tps;
@@ -112,6 +107,7 @@ public class ASTCallAccessExpression extends ENode {
 				Type tp = tps[si];
 				Method@ m;
 				ResInfo info = new ResInfo(this,res_flags);
+				mt = new CallType(res_flags==0?null:tp,ata,ta,null,false);
 				try {
 					if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
 						if (tps.length == 1 && res_flags == 0)
@@ -189,20 +185,24 @@ public class ASTCallAccessExpression extends ENode {
 			obj = te;
 		}
 		
+		Type[] ata = new Type[targs.length];
+		for (int i=0; i < ata.length; i++)
+			ata[i] = targs[i].getType();
+		Type[] ta = new Type[args.length];
+		for (int i=0; i < ta.length; i++)
+			ta[i] = args[i].getType();
+
 		if (obj instanceof ThisExpr && obj.isSuperExpr()) {
 			Type ret = reqType;
 			Method@ m;
+			Type tp = ctx_tdecl.super_types[0].getType();
 	retry_with_null_ret:;
-			Type tp = null;
 			ResInfo info = new ResInfo(this);
 			info.enterForward(obj);
 			info.enterSuper();
-			Type[] ta = new Type[args.length];
-			for (int i=0; i < ta.length; i++)
-				ta[i] = args[i].getType();
-			CallType mt = new CallType(ta,ret);
+			CallType mt = new CallType(tp,ata,ta,ret,false);
 			try {
-				if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ident.name,mt) ) {
+				if( !PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
 					throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,ret));
 				}
@@ -223,12 +223,6 @@ public class ASTCallAccessExpression extends ENode {
 		obj.resolve(null);
 		
 		CallType mt = null;
-		{
-			Type[] ta = new Type[args.length];
-			for (int i=0; i < ta.length; i++)
-				ta[i] = args[i].getType();
-			mt = new CallType(ta,null);
-		}
 		int res_flags = ResInfo.noStatic | ResInfo.noImports;
 		ENode[] res;
 		Type[] tps;
@@ -247,6 +241,7 @@ public class ASTCallAccessExpression extends ENode {
 			Type tp = tps[si];
 			Method@ m;
 			ResInfo info = new ResInfo(this,res_flags);
+			mt = new CallType(res_flags==0?null:tp,ata,ta,null,false);
 			try {
 				if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
 					if (tps.length == 1 && res_flags == 0)

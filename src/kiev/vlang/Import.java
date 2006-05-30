@@ -83,7 +83,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		for(int j=0; j < types.length; j++,i++)
 			types[j] = args[i].getType();
 		Method@ v;
-		CallType mt = new CallType(types,Type.tpAny);
+		CallType mt = new CallType(null,null,types,Type.tpAny,false);
 		if( !PassInfo.resolveMethodR(this,v,null,name.name,mt) )
 			throw new CompilerException(this,"Unresolved method "+Method.toString(name.name,mt));
 		DNode n = v;

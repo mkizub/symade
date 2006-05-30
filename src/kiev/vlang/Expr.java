@@ -205,7 +205,7 @@ public class AssignExpr extends LvalueExpr {
 				Type ect2 = cae.index.getType();
 				Method@ m;
 				ResInfo info = new ResInfo(this,ResInfo.noStatic | ResInfo.noImports);
-				CallType mt = new CallType(new Type[]{ect2,et2},et2);
+				CallType mt = new CallType(null,null,new Type[]{ect2,et2},et2,false);
 				if (PassInfo.resolveBestMethodR(ect1,m,info,nameArraySetOp,mt)) {
 					Method rm = (Method)m;
 					if !(rm.isMacro() && rm.isNative()) {

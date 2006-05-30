@@ -685,7 +685,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			Method fnd = null;
 			Type[] params = m.type.params();
 			params = (Type[])Arrays.insert(params,m.ctx_tdecl.xtype,0);
-			CallType mt = new CallType(params, m.type.ret());
+			CallType mt = new CallType(self.xtype,null,params,m.type.ret(),false);
 			foreach (Method dm; iface_impl.members; dm.id.uname == m.id.uname && dm.type ≈ mt) {
 				fnd = dm;
 				break;

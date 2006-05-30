@@ -42,7 +42,7 @@ public class TypeClosureRef extends TypeRef {
 			tps[i] = types[i].getType();
 		}
 		Type ret = types[types.length-1].getType();
-		this.lnk = new CallType(tps,ret,true);
+		this.lnk = new CallType(null,null,tps,ret,true);
 		return this.lnk;
 	}
 	

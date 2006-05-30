@@ -71,16 +71,16 @@ public class CallExpr extends ENode {
 			
 			if (obj instanceof ThisExpr && obj.isSuperExpr()) {
 				Method@ m;
-				Type tp = null;
+				Type tp = ctx_tdecl.super_types[0].getType();
 				ResInfo info = new ResInfo(this);
 				info.enterForward(obj);
 				info.enterSuper();
 				Type[] ta = new Type[args.length];
 				for (int i=0; i < ta.length; i++)
 					ta[i] = args[i].getType();
-				CallType mt = new CallType(ta,null);
+				CallType mt = new CallType(tp,null,ta,null,false);
 				try {
-					if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ident.name,mt) )
+					if( !PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt) )
 						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,null));
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				info.leaveSuper();
@@ -94,13 +94,6 @@ public class CallExpr extends ENode {
 				throw new CompilerException(obj,"Super-call via forwarding is not allowed");
 			}
 			
-			CallType mt = this.mt;
-			if (mt == null) {
-				Type[] ta = new Type[args.length];
-				for (int i=0; i < ta.length; i++)
-					ta[i] = args[i].getType();
-				mt = new CallType(ta,null);
-			}
 			int res_flags = ResInfo.noStatic | ResInfo.noImports;
 			ENode[] res;
 			Type[] tps;
@@ -119,6 +112,13 @@ public class CallExpr extends ENode {
 				Type tp = tps[si];
 				Method@ m;
 				ResInfo info = new ResInfo(this,res_flags);
+				CallType mt = this.mt;
+				if (mt == null) {
+					Type[] ta = new Type[args.length];
+					for (int i=0; i < ta.length; i++)
+						ta[i] = args[i].getType();
+					mt = new CallType(res_flags==0?null:tp,null,ta,null,false);
+				}
 				try {
 					if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
 						if (tps.length == 1 && res_flags == 0)
@@ -333,7 +333,7 @@ public class ClosureCallExpr extends ENode {
 			return t.ret();
 		Type[] types = new Type[t.arity - args.length];
 		for(int i=0; i < types.length; i++) types[i] = t.arg(i+args.length);
-		t = new CallType(types,t.ret(),true);
+		t = new CallType(null,null,types,t.ret(),true);
 		return t;
 	}
 

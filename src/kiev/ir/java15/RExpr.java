@@ -526,7 +526,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		Method@ v;
 		ResInfo info = new ResInfo(this,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 		v.$unbind();
-		CallType mt = new CallType(Type.emptyArray,this.type.getType());
+		CallType mt = new CallType(et,null,null,this.type.getType(),false);
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
 			ENode call = info.buildCall((ASTNode)this,~expr,(Method)v,info.mt,ENode.emptyArray);
 			if (call instanceof UnresExpr)
@@ -538,7 +538,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		}
 		v.$unbind();
 		info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports);
-		mt = new CallType(new Type[]{expr.getType()},this.type.getType());
+		mt = new CallType(null,null,new Type[]{expr.getType()},this.type.getType(),false);
 		if( PassInfo.resolveMethodR(this,v,info,nameCastOp,mt) ) {
 			assert(v.isStatic());
 			ENode call = new CallExpr(pos,null,(Method)v,info.mt,new ENode[]{~expr});

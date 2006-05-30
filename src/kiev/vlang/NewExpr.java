@@ -390,7 +390,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		Vector<Type> args = new Vector<Type>();
 		foreach (FormPar fp; params)
 			args.append(fp.getType());
-		xtype = new CallType(args.toArray(), type_ret.getType(), true);
+		xtype = new CallType(null, null, args.toArray(), type_ret.getType(), true);
 		return xtype;
 	}
 
