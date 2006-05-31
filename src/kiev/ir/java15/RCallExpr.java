@@ -40,6 +40,7 @@ public final view RCallExpr of CallExpr extends RENode {
 		if (func.isStatic() && !(obj instanceof TypeRef))
 			this.obj = new TypeRef(obj.getType());
 		obj.resolve(null);
+		Method func = func;
 		func.makeArgs(args, mt);
 		if( func instanceof Constructor && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			Method mmm = ctx_method;

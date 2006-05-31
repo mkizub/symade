@@ -81,8 +81,45 @@ public abstract class Type extends AType {
 		meta_type.resolveNameAccessR(this,node,info,name)
 	}
 
-	public boolean isInstanceOf(Type t) alias operator (60, xfx, ≥ ) {
-		return this.equals(t) || t ≡ tpAny;
+	public boolean isInstanceOf(Type t2) alias operator (60, xfx, ≥ ) {
+		Type t1 = this;
+		if( t1 ≡ t2 || t2 ≡ Type.tpAny ) return true;
+		if( t1.isReference() && t2 ≈ Type.tpObject ) return true;
+		if (t2 instanceof ArgType) {
+			ArgType at = (ArgType)t2;
+			if (at.definer.super_types.length > 0) {
+				foreach (TypeRef tr; at.definer.super_types) {
+					if (!this.isInstanceOf(tr.getType()))
+						return false;
+				}
+			}
+			if (at.definer.getLowerBounds().length > 0) {
+				foreach (TypeRef tr; at.definer.getLowerBounds()) {
+					if (!tr.getType().isInstanceOf(this))
+						return false;
+				}
+			}
+			return true;
+		}
+		if (t1.meta_type.tdecl.instanceOf(t2.meta_type.tdecl)) {
+			AType b1 = t1.bindings();
+			AType b2 = t2.bindings();
+			for(int i=0; i < b2.tvars.length; i++) {
+				TVar v2 = b2.tvars[i];
+				if (v2.isAlias())
+					continue;
+				Type r2 = v2.result();
+				if (v2.var ≡ r2)
+					continue;
+				Type r1 = b1.resolve(v2.var);
+				if (r1 ≡ r2)
+					continue;
+				if (!r1.isInstanceOf(r2))
+					return false;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	public boolean isAutoCastableTo(Type t)
@@ -281,58 +318,6 @@ public final class XType extends Type {
 		if( this.isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		return super.isCastableTo(t);
-	}
-
-	public boolean isInstanceOf(Type t2) {
-		if( this ≡ t2 || t2 ≡ Type.tpAny ) return true;
-		if( this.isReference() && t2 ≈ Type.tpObject ) return true;
-		if (t2 instanceof ArgType) {
-			ArgType at = (ArgType)t2;
-			if (at.definer.super_types.length > 0) {
-				foreach (TypeRef tr; at.definer.super_types) {
-					if (!this.isInstanceOf(tr.getType()))
-						return false;
-				}
-			}
-			if (at.definer.getLowerBounds().length > 0) {
-				foreach (TypeRef tr; at.definer.getLowerBounds()) {
-					if (!tr.getType().isInstanceOf(this))
-						return false;
-				}
-			}
-			return true;
-		}
-		XType t1 = this;
-		try {
-			t1.checkResolved();
-			t2.checkResolved();
-		} catch(Exception e ) {
-			if( Kiev.verbose ) e.printStackTrace(System.out);
-			throw new RuntimeException("Unresolved type:"+e);
-		}
-		// Check class1 >= class2 && bindings
-		if (t1.meta_type.tdecl.instanceOf(t2.meta_type.tdecl)) {
-//			if (t1.meta_type.tdecl != t2.meta_type.tdecl)
-//				return true; // if it extends the class, it's always an instance of it
-			// if clazz is the same, check all bindings to be instanceof upper bindings
-			AType b1 = t1.bindings();
-			AType b2 = t2.bindings();
-			for(int i=0; i < b2.tvars.length; i++) {
-				TVar v2 = b2.tvars[i];
-				if (v2.isAlias())
-					continue;
-				Type r2 = v2.result();
-				if (v2.var ≡ r2)
-					continue;
-				Type r1 = b1.resolve(v2.var);
-				if (r1 ≡ r2)
-					continue;
-				if (!r1.isInstanceOf(r2))
-					return false;
-			}
-			return true;
-		}
-		return false;
 	}
 
 	public final MetaType[] getAllSuperTypes() {
@@ -640,62 +625,6 @@ public final class CompaundType extends Type {
 		return super.isCastableTo(t);
 	}
 
-	public boolean isInstanceOf(Type _t2) {
-		if( this ≡ _t2 || _t2 ≡ Type.tpAny ) return true;
-		if( this.isReference() && _t2 ≈ Type.tpObject ) return true;
-		if!(_t2 instanceof CompaundType) {
-			if (_t2 instanceof ArgType) {
-				ArgType at = (ArgType)_t2;
-				if (at.definer.super_types.length > 0) {
-					foreach (TypeRef tr; at.definer.super_types) {
-						if (!this.isInstanceOf(tr.getType()))
-							return false;
-					}
-				}
-				if (at.definer.getLowerBounds().length > 0) {
-					foreach (TypeRef tr; at.definer.getLowerBounds()) {
-						if (!tr.getType().isInstanceOf(this))
-							return false;
-					}
-				}
-				return true;
-			}
-			return super.isInstanceOf(_t2);
-		}
-		CompaundType t2 = (CompaundType)_t2;
-		CompaundType t1 = this;
-		try {
-			t1.checkResolved();
-			t2.checkResolved();
-		} catch(Exception e ) {
-			if( Kiev.verbose ) e.printStackTrace(System.out);
-			throw new RuntimeException("Unresolved type:"+e);
-		}
-		// Check class1 >= class2 && bindings
-		if (t1.clazz.instanceOf(t2.clazz)) {
-//			if (t1.clazz != t2.clazz)
-//				return true; // if it extends the class, it's always an instance of it
-			// if clazz is the same, check all bindings to be instanceof upper bindings
-			AType b1 = t1.bindings();
-			AType b2 = t2.bindings();
-			for(int i=0; i < b2.tvars.length; i++) {
-				TVar v2 = b2.tvars[i];
-				if (v2.isAlias())
-					continue;
-				Type r2 = v2.result();
-				if (v2.var ≡ r2)
-					continue;
-				Type r1 = b1.resolve(v2.var);
-				if (r1 ≡ r2)
-					continue;
-				if (!r1.isInstanceOf(r2))
-					return false;
-			}
-			return true;
-		}
-		return false;
-	}
-
 	public final MetaType[] getAllSuperTypes() {
 		return clazz.getAllSuperTypes();
 	}
@@ -752,14 +681,6 @@ public final class ArrayType extends Type {
 		if( isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		return super.isCastableTo(t);
-	}
-
-	public boolean isInstanceOf(Type t) {
-		if (this ≡ t) return true;
-		if (t ≈ Type.tpObject || t ≡ Type.tpAny ) return true;
-		if (t instanceof ArrayType)
-			return arg.isInstanceOf(t.arg);
-		return false;
 	}
 
 }

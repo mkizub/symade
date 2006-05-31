@@ -58,6 +58,8 @@ public abstract class CoreFunc {
 
 		coreFuncs.put("kiev.stdlib.any:_instanceof_",       AnyInstanceOf);
 
+		coreFuncs.put("kiev.stdlib.any:ref_assign",         ObjectAssign);
+		coreFuncs.put("kiev.stdlib.any:ref_assign2",        ObjectAssign2);
 		coreFuncs.put("kiev.stdlib.any:ref_eq",             ObjectBoolEQ);
 		coreFuncs.put("kiev.stdlib.any:ref_neq",            ObjectBoolNE);
 
@@ -201,6 +203,7 @@ public abstract class CoreFunc {
 		coreFuncs.put("kiev.stdlib.GString:str_concat_ss",  StringConcatSS);
 		coreFuncs.put("kiev.stdlib.GString:str_concat_as",  StringConcatAS);
 		coreFuncs.put("kiev.stdlib.GString:str_concat_sa",  StringConcatSA);
+		coreFuncs.put("kiev.stdlib.GString:str_assign_add", StringAssignADD);
 	}
 	
 	static void attachToCompiler(CoreMethod cm) {
@@ -238,6 +241,7 @@ abstract class BinaryFunc extends CoreFunc {
 			e.detach();
 		en.initFrom(expr, op, core_method, args);
 		expr.replaceWithNode(en);
+		Kiev.runProcessorsOn(en);
 		throw new ReWalkNodeException(en);
 	}
 	public ConstExpr calc(ENode expr) {
@@ -266,6 +270,7 @@ abstract class UnaryFunc extends CoreFunc {
 			e.detach();
 		en.initFrom(expr, op, core_method, args);
 		expr.replaceWithNode(en);
+		Kiev.runProcessorsOn(en);
 		throw new ReWalkNodeException(en);
 	}
 	public ConstExpr calc(ENode expr) {
@@ -286,22 +291,31 @@ abstract class UnaryFunc extends CoreFunc {
 class AnyInstanceOf extends BinaryFunc {
 	public Instr getJavaInstr() { return Instr.op_instanceof; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, InstanceofExpr.class, BinaryOperator.InstanceOf); }
-//	protected ConstExpr doCalc(Object:Object arg1, Type:Object arg2) { new ConstBoolExpr(arg2.booleanValue()) }
 }
 
+
+@singleton
+class ObjectAssign extends BinaryFunc {
+	public Instr getJavaInstr() { return null; }
+	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign); }
+}
+
+@singleton
+class ObjectAssign2 extends BinaryFunc {
+	public Instr getJavaInstr() { return null; }
+	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign2); }
+}
 
 @singleton
 class ObjectBoolEQ extends BinaryFunc {
 	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.Equals); }
-//	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg1.booleanValue() == arg2.booleanValue()) }
 }
 
 @singleton
 class ObjectBoolNE extends BinaryFunc {
 	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.NotEquals); }
-//	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg1.booleanValue() != arg2.booleanValue()) }
 }
 
 /////////////////////////////////////////////////
@@ -1262,4 +1276,12 @@ class StringConcatSS extends StringConcat {}
 class StringConcatAS extends StringConcat {}
 @singleton
 class StringConcatSA extends StringConcat {}
+
+@singleton
+class StringAssignADD extends BinaryFunc {
+	public Instr getJavaInstr() { return null; }
+	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignAdd); }
+	protected ConstExpr doCalc(String:Object arg1, Object:Object arg2) { new ConstStringExpr(String.valueOf(arg1) + String.valueOf(arg2)) }
+}
+
 

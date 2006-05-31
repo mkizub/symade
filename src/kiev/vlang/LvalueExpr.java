@@ -157,8 +157,8 @@ public final class AccessExpr extends LvalueExpr {
 		if( v instanceof Field ) {
 			return info.buildAccess((AccessExpr)this, o, v);
 		}
-		else if( v instanceof Struct ) {
-			TypeRef tr = new TypeRef(((Struct)v).xtype);
+		else if( v instanceof TypeDecl ) {
+			TypeRef tr = new TypeRef(((TypeDecl)v).xtype);
 			return tr;
 		}
 		else {

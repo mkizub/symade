@@ -217,13 +217,19 @@ public class AssignExpr extends LvalueExpr {
 					}
 				}
 			} else {
+				Method m = op.resolveMethod(this);
+				//if (m == null)
+				//	Kiev.reportWarning(this, "Unresolved method for operator "+op);
 				foreach(OpTypes opt; op.types ) {
 					Type[] tps = new Type[]{null,et1,et2};
 					ASTNode[] argsarr = new ASTNode[]{null,lval,value};
 					if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 						Method rm = opt.method;
 						if !(rm.isMacro() && rm.isNative()) {
-							replaceWithNode(new CallExpr(pos,~lval,opt.method,new ENode[]{~value}));
+							if( m.isStatic() )
+								replaceWithNode(new CallExpr(pos,null,rm,new ENode[]{~lval,~value}));
+							else
+								replaceWithNode(new CallExpr(pos,~lval,rm,new ENode[]{~value}));
 							return;
 						}
 						break;
@@ -243,6 +249,8 @@ public class AssignExpr extends LvalueExpr {
 	}
 
 	public Operator getOp() { return op; }
+
+	public ENode[] getArgs() { return new ENode[]{lval,value}; }
 
 	public Type getType() { return lval.getType(); }
 

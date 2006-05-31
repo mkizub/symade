@@ -187,7 +187,9 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			}
 		}
 		if (!is_static && !is_mth_virtual_static) {
+			type_set.append(StdTypes.tpCallThisArg,null);
 			type_set.append(ctx_tdecl.xtype.meta_type.getTemplBindings());
+			dtype_set.append(StdTypes.tpCallThisArg,null);
 			dtype_set.append(ctx_tdecl.xtype.meta_type.getTemplBindings());
 		}
 		Vector<Type> args = new Vector<Type>();
@@ -476,6 +478,9 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		}
 		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
 		CallType rt = (CallType)this.type.bind(tp.bindings());
+		if (!this.isStatic() && tp != null && tp != Type.tpVoid) {
+			rt = rt.rebind(new TVarBld(StdTypes.tpCallThisArg, tp));
+		}
 		
 		if ((mt.bindings().tvars.length - mt.arity - 1) > 0) {
 			TVarBld set = new TVarBld();
@@ -639,11 +644,13 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		FormPar@ var;
 	{
-		isInlinedByDispatcherMethod() || path.space_prev.pslot().name == "targs",$cut,false
+		isInlinedByDispatcherMethod() , $cut, false
 	;
+		path.space_prev.pslot().name == "targs" ||
 		path.space_prev.pslot().name == "params" ||
 		path.space_prev.pslot().name == "type_ref" ||
-		path.space_prev.pslot().name == "dtype_ref",$cut,
+		path.space_prev.pslot().name == "dtype_ref",
+		$cut,
 		node @= targs,
 		((TypeDef)node).id.equals(name)
 	;

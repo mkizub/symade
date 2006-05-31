@@ -126,7 +126,7 @@ public class CallExpr extends ENode {
 						else if (res_flags == 0)
 							res[si] = info.buildCall((ASTNode)this, new TypeRef(tps[si]), m, info.mt, args);
 						else
-							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args);
+							res[si] = info.buildCall((ASTNode)this, obj.ncopy(), m, info.mt, args);
 					}
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			}

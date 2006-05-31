@@ -136,6 +136,10 @@ public class TypeRef extends ENode {
 		}
 		throw new CompilerException(this,"Type "+this+" is not a singleton");
 	}
+
+	public Object doRewrite(RewriteContext ctx) {
+		return this;
+	}
 }
 
 

@@ -521,6 +521,8 @@ CLASS kiev.vlang.NewClosure kiev/vlang/NewClosure kiev\vlang\NewExpr.java
 CLASS kiev.vlang.NewExpr kiev/vlang/NewExpr kiev\vlang\NewExpr.java
 CLASS kiev.vlang.NewInitializedArrayExpr kiev/vlang/NewInitializedArrayExpr kiev\vlang\NewExpr.java
 CLASS kiev.vlang.NopExpr kiev/vlang/NopExpr kiev\vlang\ENode.java
+CLASS kiev.vlang.ObjectAssign kiev/vlang/ObjectAssign kiev\vlang\CoreMethod.java
+CLASS kiev.vlang.ObjectAssign2 kiev/vlang/ObjectAssign2 kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ObjectBoolEQ kiev/vlang/ObjectBoolEQ kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ObjectBoolNE kiev/vlang/ObjectBoolNE kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.OpTypes kiev/vlang/OpTypes kiev\vlang\Operator.java
@@ -569,6 +571,7 @@ CLASS kiev.vlang.SpaceAttrSlot kiev/vlang/SpaceAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.SpacePtr kiev/vlang/SpacePtr kiev\vlang\Tree.java
 CLASS kiev.vlang.SpaceRefAttrSlot kiev/vlang/SpaceRefAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.SpaceRefDataAttrSlot kiev/vlang/SpaceRefDataAttrSlot kiev\vlang\Tree.java
+CLASS kiev.vlang.StringAssignADD kiev/vlang/StringAssignADD kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.StringConcat kiev/vlang/StringConcat kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.StringConcatAS kiev/vlang/StringConcatAS kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java

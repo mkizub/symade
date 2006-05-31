@@ -94,10 +94,12 @@ public class MetaType implements Constants {
 	}
 	private rule resolveNameR_3(Type tp, ASTNode@ node, ResInfo info, String name)
 		MetaType@ sup;
+		Type@ tmp;
 	{
 		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
 		sup @= tdecl.getAllSuperTypes(),
-		sup.make(tp.bindings()).resolveNameAccessR(node,info,name)
+		tmp ?= sup.make(tp.bindings()),
+		tmp.meta_type.resolveNameAccessR(tmp,node,info,name)
 	}
 
 	private rule resolveNameR_4(Type tp, ASTNode@ node, ResInfo info, String name)
@@ -120,6 +122,7 @@ public class MetaType implements Constants {
 	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt)
 		ASTNode@ member;
 		MetaType@ sup;
+		Type@ tmp;
 		Field@ forw;
 	{
 		tp.checkResolved(),
@@ -134,7 +137,8 @@ public class MetaType implements Constants {
 			info.isSuperAllowed(),
 			info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
 			sup @= tdecl.getAllSuperTypes(),
-			sup.make(tp.bindings()).resolveCallAccessR(node,info,name,mt)
+			tmp ?= sup.make(tp.bindings()),
+			tmp.meta_type.resolveCallAccessR(tmp,node,info,name,mt)
 		;
 			info.isForwardsAllowed(),
 			member @= tdecl.members,
@@ -244,13 +248,15 @@ public final class ASTNodeMetaType extends MetaType {
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
 		MetaType@ sup;
+		Type@ tmp;
 	{
 		node @= clazz.members,
 		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
 	;
 		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
 		sup @= clazz.getAllSuperTypes(),
-		sup.make(tp.bindings()).resolveNameAccessR(node,info,name)
+		tmp ?= sup.make(tp.bindings()),
+		tmp.meta_type.resolveNameAccessR(tmp,node,info,name)
 	}
 
 	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt) { false }
@@ -426,7 +432,6 @@ public class ArgMetaType extends MetaType {
 	;	sup @= tdecl.super_types,
 		sup.getType().resolveCallAccessR(node, info, name, mt)
 	}
-	
 }
 
 public class WrapperMetaType extends MetaType {
