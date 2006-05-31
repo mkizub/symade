@@ -13,35 +13,13 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-@singleton
-public final class ProcessRewrite extends TransfProcessor implements Constants {
-	
-	private ProcessRewrite() {
-		super(Kiev.Ext.Rewrite);
-	}
-	
-	public BackendProcessor getBackend(Kiev.Backend backend) {
-		return RewriteBackend;
-	}
-	
-}
 
 @singleton
-class RewriteBackend extends BackendProcessor implements Constants {
-	
-	private RewriteBackend() {
-		super(Kiev.Backend.Generic);
-	}
-	
-	public void preGenerate() {
-		foreach (FileUnit fu; Kiev.files) {
-			fu.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) { return rewrite(n); }
-			});
-		}
-	}
+public class RewriteME_PreGenerate extends BackendProcessor {
+	private RewriteME_PreGenerate() { super(Kiev.Backend.Generic); }
+	public String getDescr() { "Rewrite rules" }
 
-	public void preGenerate(ASTNode node) {
+	public void process(ASTNode node) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { return rewrite(n); }
 		});

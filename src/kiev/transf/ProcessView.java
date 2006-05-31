@@ -14,12 +14,10 @@ import syntax kiev.Syntax;
  *
  */
 @singleton
-public class ProcessView extends TransfProcessor implements Constants {
+public class ViewFE_GenMembers extends TransfProcessor {
+	private ViewFE_GenMembers() { super(Kiev.Ext.View); }
+	public String getDescr() { "Class views members generation" }
 
-	private ProcessView() {
-		super(Kiev.Ext.View);
-	}
-	
 	private Struct getViewImpl(TypeRef tr) {
 		if (tr == null) return null;
 		Struct clazz = tr.getStruct();
@@ -32,19 +30,19 @@ public class ProcessView extends TransfProcessor implements Constants {
 		return clazz.iface_impl;
 	}
 
-	public void autoGenerateMembers(ASTNode:ASTNode node) {
+	public void process(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void autoGenerateMembers(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.autoGenerateMembers(dn);
+			this.process(dn);
 	}
 	
-	public void autoGenerateMembers(Struct:ASTNode clazz) {
+	public void process(Struct:ASTNode clazz) {
 		if !( clazz.isStructView() ) {
 			foreach (Struct dn; clazz.members) {
-				this.autoGenerateMembers(dn);
+				this.process(dn);
 			}
 			return;
 		}
@@ -87,22 +85,13 @@ public class ProcessView extends TransfProcessor implements Constants {
 			clazz.addMethod(cast);
 		}
 	}
-	
-	public BackendProcessor getBackend(Kiev.Backend backend) {
-		if (backend == Kiev.Backend.Java15)
-			return JavaViewBackend;
-		return null;
-	}
-	
 }
 
 @singleton
-class JavaViewBackend extends BackendProcessor implements Constants {
+public class ViewME_PreGenerate extends BackendProcessor implements Constants {
+	private ViewME_PreGenerate() { super(Kiev.Backend.Java15); }
+	public String getDescr() { "Class views pre-generation" }
 
-	private JavaViewBackend() {
-		super(Kiev.Backend.Java15);
-	}
-	
 	private Struct getViewImpl(TypeRef tr) {
 		if (tr == null) return null;
 		Struct clazz = tr.getStruct();
@@ -119,19 +108,19 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 	//	   PASS - preGenerate                         //
 	////////////////////////////////////////////////////
 
-	public void preGenerate(ASTNode:ASTNode node) {
+	public void process(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void preGenerate(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.preGenerate(dn);
+			this.process(dn);
 	}
 	
-	public void preGenerate(Struct:ASTNode clazz) {
+	public void process(Struct:ASTNode clazz) {
 		if !( clazz.isStructView() ) {
 			foreach (Struct dn; clazz.members)
-				this.preGenerate(dn);
+				this.process(dn);
 			return;
 		}
 		
@@ -153,7 +142,7 @@ class JavaViewBackend extends BackendProcessor implements Constants {
 		clazz.iface_impl = impl;
 		{
 			foreach (TypeRef st; clazz.super_types)
-				preGenerate(st.getStruct());
+				process(st.getStruct());
 			Struct s = getViewImpl(clazz.super_types[0]);
 			if (s != null)
 				impl.super_types += new TypeRef(s.xtype);

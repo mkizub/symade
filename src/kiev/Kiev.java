@@ -392,7 +392,6 @@ public final class Kiev {
 	// Scanning & parsing
 	public static Parser				k;
 	public static Vector<FileUnit>		files = new Vector<FileUnit>();
-	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
 
 	public static Hashtable<String,Object> parserAddresses = new Hashtable<String,Object>();
 	private static int		parserAddrIdx;
@@ -422,13 +421,6 @@ public final class Kiev {
 
 	public static String reparseType(Type tp) {
 		return "#type"+parserAddr(tp)+"#".toLowerCase();
-	}
-
-	public static boolean passLessThen(TopLevelPass p) {
-		return ((int)pass_no) < ((int)p);
-	}
-	public static boolean passGreaterEquals(TopLevelPass p) {
-		return ((int)pass_no) >= ((int)p);
 	}
 
 	public static Block parseBlock(ASTNode from, StringBuffer sb) {
@@ -560,26 +552,86 @@ public final class Kiev {
 	private static boolean[] command_line_disabled_extensions	= new boolean[Ext.values().length];
 	private static boolean[] disabled_extensions				= new boolean[Ext.values().length];
 	
-	public static TransfProcessor[] transfProcessors			= new TransfProcessor[Ext.values().length];
+	private static int					fe_pass_no;
+	private static int					me_pass_no;
+	private static int					be_pass_no;
+	private static TransfProcessor[]	feProcessors;
+	private static BackendProcessor[]	meProcessors;
+	private static BackendProcessor[]	beProcessors;
 	static {
-		transfProcessors[(int)Ext.Rewrite]			= ProcessRewrite;
-		transfProcessors[(int)Ext.JavaOnly]		= ImportKievSrc;
-		transfProcessors[(int)Ext.VirtualFields]	= ProcessVirtFld;
-		transfProcessors[(int)Ext.PackedFields]	= ProcessPackedFld;
-		transfProcessors[(int)Ext.Enum]				= ProcessEnum;
-		transfProcessors[(int)Ext.View]				= ProcessView;
-		transfProcessors[(int)Ext.PizzaCase]		= ProcessPizzaCase;
-		transfProcessors[(int)Ext.VNode]			= ProcessVNode;
-		transfProcessors[(int)Ext.DFlow]			= ProcessDFlow;
+		{
+			Vector<TransfProcessor> processors = new Vector<TransfProcessor>();
+			processors.append(KievFE_Pass1);
+			processors.append(KievFE_Pass2);
+			processors.append(KievFE_MetaDecls);
+			processors.append(KievFE_MetaDefaults);
+			processors.append(KievFE_MetaValues);
+			processors.append(KievFE_Pass3);
+			processors.append(PizzaFE_Pass3);
+			processors.append(VNodeFE_Pass3);
+			processors.append(KievFE_SrcParse);
+			processors.append(KievFE_GenMembers);
+			processors.append(VirtFldFE_GenMembers);
+			processors.append(EnumFE_GenMembers);
+			processors.append(ViewFE_GenMembers);
+			processors.append(VNodeFE_GenMembers);
+			processors.append(KievFE_PreResolve);
+			processors.append(KievFE_MainResolve);
+			processors.append(KievFE_Verify);
+			processors.append(PackedFldME_Verify);
+			//processors.append(VNodeFE_Verify);
+			feProcessors = processors.toArray();
+		}
+		
+		{
+			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
+			processors.append(RewriteME_PreGenerate);
+			processors.append(KievME_PreGenartion);
+			processors.append(VirtFldME_PreGenerate);
+			processors.append(PackedFldME_PreGenerate);
+			processors.append(PizzaME_PreGenerate);
+			processors.append(ViewME_PreGenerate);
+			processors.append(VNodeME_PreGenerate);
+			meProcessors = processors.toArray();
+		}
+
+		{
+			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
+			processors.append(KievBE_Resolve);
+			processors.append(VirtFldBE_Rewrite);
+			processors.append(PackedFldBE_Rewrite);
+			processors.append(KievBE_Generate);
+			processors.append(ExportBE_Generate);
+			beProcessors = processors.toArray();
+		}
+
 		setExtension(false, "vnode");
 		setExtension(false, "dflow");
 	}
 	
-	public static TransfProcessor getProcessor(Ext ext) {
-		TransfProcessor tp = transfProcessors[(int)ext];
-		if (tp != null && !tp.isDisabled())
-			return tp;
-		return null;
+	public static void resetFrontEndPass() {
+		fe_pass_no = 0;
+		me_pass_no = 0;
+		be_pass_no = 0;
+	}
+	public static boolean nextFrontEndPass() {
+		fe_pass_no += 1;
+		return fe_pass_no < feProcessors.length;
+	}
+	public static void resetMidEndPass() {
+		me_pass_no = 0;
+		be_pass_no = 0;
+	}
+	public static boolean nextMidEndPass() {
+		me_pass_no += 1;
+		return me_pass_no < meProcessors.length;
+	}
+	public static void resetBackEndPass() {
+		be_pass_no = 0;
+	}
+	public static boolean nextBackEndPass() {
+		be_pass_no += 1;
+		return be_pass_no < beProcessors.length;
 	}
 	
 	public static boolean disabled(Ext ext) {
@@ -591,11 +643,6 @@ public final class Kiev {
 		int idx = (int)ext;
 		return !disabled_extensions[idx];
 	}
-	
-//	public static void check(int pos, Ext ext) {
-//		if (!enabled(ext))
-//			throw new CompilerException(pos,"Error: extension disabled, to enable use: pragma enable \""+ext+"\";");
-//	}
 	
 	public static boolean[] getCmdLineExtSet() {
 		return (boolean[])command_line_disabled_extensions.clone();
@@ -633,32 +680,21 @@ public final class Kiev {
 		}
 	}
 	
-	public static boolean runBackends(Kiev.Backend be, (BackendProcessor)->void step) {
-		foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
-			if (!tp.isEnabled() )
-				continue;
-			BackendProcessor bep = tp.getBackend(be);
-			if (bep != null)
-				try { step(bep); } catch (Exception e) { Kiev.reportError(e); }
-		}
-		return (Kiev.errCount > 0); // true if failed
-	}
-	
-	public static boolean runProcessors((TransfProcessor, FileUnit)->void step) {
+	public static String runCurrentFrontEndProcessor() {
+		TransfProcessor tp = feProcessors[fe_pass_no];
+		if (!tp.isEnabled())
+			return null;
 		foreach (FileUnit fu; Kiev.files) {
 			String curr_file = Kiev.curFile;
 			Kiev.curFile = fu.id.sname;
 			boolean[] exts = Kiev.getExtSet();
 			try {
 				Kiev.setExtSet(fu.disabled_extensions);
-				foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
-					try {
-						if (tp.isEnabled() )
-							step(tp,fu);
-					}
-					catch (Exception e) {
-						Kiev.reportError(fu,e);
-					}
+				try {
+					tp.process(fu);
+				}
+				catch (Exception e) {
+					Kiev.reportError(fu,e);
 				}
 			}
 			finally {
@@ -666,59 +702,77 @@ public final class Kiev {
 				Kiev.setExtSet(exts);
 			}
 		}
-		return (Kiev.errCount > 0); // true if failed
+		return tp.getDescr();
+	}
+
+	public static String runCurrentMidEndProcessor() {
+		BackendProcessor bp = meProcessors[me_pass_no];
+		if (!bp.isEnabled())
+			return null;
+		foreach (FileUnit fu; Kiev.files) {
+			String curr_file = Kiev.curFile;
+			Kiev.curFile = fu.id.sname;
+			boolean[] exts = Kiev.getExtSet();
+			try {
+				Kiev.setExtSet(fu.disabled_extensions);
+				try {
+					bp.process(fu);
+				}
+				catch (Exception e) {
+					Kiev.reportError(fu,e);
+				}
+			}
+			finally {
+				Kiev.curFile = curr_file;
+				Kiev.setExtSet(exts);
+			}
+		}
+		return bp.getDescr();
+	}
+
+	public static void openBackEndFileUnit(FileUnit fu) {
+		Kiev.curFile = fu.id.sname;
+		Kiev.setExtSet(fu.disabled_extensions);
+	}
+	public static void closeBackEndFileUnit() {
+		Kiev.curFile = "";
+		Kiev.setExtSet(getCmdLineExtSet());
+	}
+	
+	public static String runCurrentBackEndProcessor(FileUnit fu) {
+		BackendProcessor bp = beProcessors[be_pass_no];
+		if (!bp.isEnabled())
+			return null;
+		try {
+			bp.process(fu);
+		} catch (Exception e) {
+			Kiev.reportError(e);
+		}
+		return bp.getDescr();
 	}
 	
 	public static void runProcessorsOn(ASTNode node) {
-		if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.pass1(node);
+		int N = fe_pass_no;
+		for (int i=0; i < N; i++) {
+			TransfProcessor tp = feProcessors[i];
+			if (tp.isEnabled())
+				tp.process(node);
 		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passStructTypes) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.pass2(node);
+		if (N < feProcessors.length)
+			return;
+		N = me_pass_no;
+		for (int i=0; i < N; i++) {
+			BackendProcessor mp = meProcessors[i];
+			if (mp.isEnabled())
+				mp.process(node);
 		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveMetaDecls) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.resolveMetaDecl(node);
-		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveMetaDefaults) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.resolveMetaDefaults(node);
-		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveMetaValues) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.resolveMetaValues(node);
-		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.pass3(node);
-		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passAutoGenerateMembers) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.autoGenerateMembers(node);
-		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passPreResolve) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.preResolve(node);
-		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passMainResolve) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.mainResolve(node);
-		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passVerify) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.verify(node);
-		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passPreGenerate) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
-				if !(tp.isEnabled())
-					continue;
-				BackendProcessor bep = tp.getBackend(Kiev.useBackend);
-				if (bep == null)
-					continue;
-				bep.preGenerate(node);
-			}
+		if (N < meProcessors.length)
+			return;
+		N = be_pass_no;
+		for (int i=0; i < N; i++) {
+			BackendProcessor[] bp = beProcessors[i];
+			if (bp.isEnabled())
+				bp.process(node);
 		}
 	}
 

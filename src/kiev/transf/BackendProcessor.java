@@ -13,21 +13,19 @@ import syntax kiev.Syntax;
  *
  */
 
-public abstract class BackendProcessor {
+public abstract class BackendProcessor implements Constants {
 	private Kiev.Backend backend;
 	
 	BackendProcessor(Kiev.Backend backend) {
 		this.backend = backend;
 	}
+	public boolean isEnabled() {
+		return this.backend == Kiev.Backend.Generic || this.backend == Kiev.useBackend;
+	}
+
+	public abstract String getDescr();
 	
 	// create back-end nodes
-	public void		preGenerate()				{ foreach (FileUnit fu; Kiev.files) preGenerate(fu); }
-	public void		preGenerate(ASTNode node)	{ return; }
-	// resolve back-end
-	public void		resolve(ASTNode node)		{ return; }
-	// rewrite back-end nodes
-	public void		rewriteNode(ASTNode node)	{ return; }
-	// generate back-end
-	public void		generate(ASTNode node)		{ return; }
+	public void process(ASTNode node) { return; }
 }
 

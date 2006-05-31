@@ -12,9 +12,7 @@ import static kiev.stdlib.Debug.*;
  * @author Maxim Kizub
  *
  */
-@singleton
-public final class ProcessVNode extends TransfProcessor implements Constants {
-
+abstract class VNode_Base extends TransfProcessor {
 	public static final String mnNode				= "kiev.vlang.node"; 
 	public static final String mnNodeView			= "kiev.vlang.nodeview"; 
 	public static final String mnNodeImpl			= "kiev.vlang.nodeimpl"; 
@@ -30,15 +28,14 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	public static final String nameSpaceAttrSlot			= "kiev.vlang.SpaceAttrSlot"; 
 	public static final String nameSpaceRefAttrSlot		= "kiev.vlang.SpaceRefAttrSlot"; 
 	public static final String nameSpaceAttAttrSlot		= "kiev.vlang.SpaceAttAttrSlot"; 
-	private static final String nameCopyable		= "copyable"; 
+	public static final String nameCopyable		= "copyable"; 
 	
-	private static final String sigValues			= "()[Lkiev/vlang/AttrSlot;";
-	private static final String sigGetVal			= "(Ljava/lang/String;)Ljava/lang/Object;";
-	private static final String sigSetVal			= "(Ljava/lang/String;Ljava/lang/Object;)V";
-	private static final String sigCopy			= "()Ljava/lang/Object;";
-	private static final String sigCopyTo			= "(Ljava/lang/Object;)Ljava/lang/Object;";
+	static final String sigValues			= "()[Lkiev/vlang/AttrSlot;";
+	static final String sigGetVal			= "(Ljava/lang/String;)Ljava/lang/Object;";
+	static final String sigSetVal			= "(Ljava/lang/String;Ljava/lang/Object;)V";
+	static final String sigCopy				= "()Ljava/lang/Object;";
+	static final String sigCopyTo			= "(Ljava/lang/Object;)Ljava/lang/Object;";
 	
-
 	static Type tpANode;
 	static Type tpNode;
 	static Type tpNArray;
@@ -50,30 +47,34 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	static Type tpSpaceRefAttrSlot;
 	static Type tpSpaceAttAttrSlot;
 
-	private ProcessVNode() {
-		super(Kiev.Ext.VNode);
-	}
-	
-	private boolean isNodeImpl(Struct s) {
+	VNode_Base() { super(Kiev.Ext.VNode); }
+
+	final boolean isNodeImpl(Struct s) {
 		return s.meta.get(mnNode) != null || s.meta.get(mnNodeImpl) != null;
 	}
-	private boolean isNodeKind(Struct s) {
+	final boolean isNodeKind(Struct s) {
 		return s.meta.get(mnNode) != null || s.meta.get(mnNodeImpl) != null || s.meta.get(mnNodeSet) != null;
 	}
-	private boolean isNodeKind(Type t) {
+	final boolean isNodeKind(Type t) {
 		if (t != null && t.getStruct() != null)
 			return isNodeKind(t.getStruct());
 		return false;
 	}
+}
 
-	/////////////////////////////////////////////
-	//      Verify the VNode tree structure    //
-    /////////////////////////////////////////////
+/////////////////////////////////////////////
+//      Verify the VNode tree structure    //
+/////////////////////////////////////////////
 
-	public void pass3(ASTNode:ASTNode node) {
+@singleton
+public final class VNodeFE_Pass3 extends VNode_Base {
+
+	public String getDescr() { "VNode members creation" }
+
+	public void process(ASTNode:ASTNode node) {
 	}
 	
-	public void pass3(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		if (tpANode == null) {
 			tpANode = Env.loadStruct(nameANode, true).xtype;
 			tpNode = Env.loadStruct(nameNode, true).xtype;
@@ -87,16 +88,16 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			tpSpaceAttAttrSlot = Env.loadStruct(nameSpaceAttAttrSlot, true).xtype;
 		}
 		foreach (Struct n; fu.members)
-			pass3(n);
+			process(n);
 	}
 	
-	public void pass3(Struct:ASTNode s) {
+	public void process(Struct:ASTNode s) {
 		foreach (Struct sub; s.sub_decls)
-			pass3(sub);
+			process(sub);
 		if (isNodeKind(s)) {
 			// Check fields of the @node
 			foreach (Field n; s.members)
-				pass3(n);
+				process(n);
 			return;
 		}
 		
@@ -116,7 +117,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		}
 	}
 	
-	public void pass3(Field:ASTNode f) {
+	public void process(Field:ASTNode f) {
 		Meta fmatt = f.meta.get(mnAtt);
 		Meta fmref = f.meta.get(mnRef);
 		//if (fmatt != null || fmref != null) {
@@ -170,10 +171,15 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				Kiev.reportWarning(f,"Field "+f.parent()+"."+f+" must be marked with @att or @ref");
 		}
 	}
-	
-	//////////////////////////////////////////////////////
-	//   Generate class members (enumerate sub-nodes)   //
-    //////////////////////////////////////////////////////
+}
+
+//////////////////////////////////////////////////////
+//   Generate class members (enumerate sub-nodes)   //
+//////////////////////////////////////////////////////
+
+@singleton
+public final class VNodeFE_GenMembers extends VNode_Base {
+	public String getDescr() { "VNode members generation" }
 
 	private boolean hasField(Struct s, String name) {
 		s.checkResolved();
@@ -297,18 +303,18 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		return s.xtype;
 	}
 	
-	public void autoGenerateMembers(ASTNode:ASTNode node) {
+	public void process(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void autoGenerateMembers(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.autoGenerateMembers(dn);
+			this.process(dn);
 	}
 	
-	private void autoGenerateMembers(Struct:ASTNode s) {
+	private void process(Struct:ASTNode s) {
 		foreach (Struct dn; s.members)
-			this.autoGenerateMembers(dn);
+			this.process(dn);
 		if (!s.isClazz())
 			return;
 		if (!isNodeImpl(s))
@@ -318,7 +324,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			return;
 		}
 		foreach (TypeRef st; s.super_types; isNodeKind(st.getStruct()))
-			this.autoGenerateMembers(st.getStruct());
+			this.process(st.getStruct());
 		// attribute names array
 		Vector<Field> aflds = new Vector<Field>();
 		if (isNodeImpl(s)) {
@@ -572,10 +578,15 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			}
 		}
 	}
-	
-	////////////////////////////////////////////////////
-	//	   PASS - verification                        //
-	////////////////////////////////////////////////////
+}
+
+////////////////////////////////////////////////////
+//	   PASS - verification                        //
+////////////////////////////////////////////////////
+
+@singleton
+public final class VNodeFE_Verify extends VNode_Base {
+	public String getDescr() { "VNode verify" }
 
 	public void verify(ASTNode node) {
 		node.walkTree(new TreeWalker() {
@@ -591,61 +602,52 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	void verifyDecl(DNode dn) {
 		return;
 	}
-
-	public BackendProcessor getBackend(Kiev.Backend backend) {
-		if (backend == Kiev.Backend.Java15)
-			return JavaVNodeBackend;
-		return null;
-	}
-	
 }
 
 @singleton
-class JavaVNodeBackend extends BackendProcessor implements Constants {
-	public static final String nameMetaGetter = ProcessVirtFld.nameMetaGetter; 
-	public static final String nameMetaSetter = ProcessVirtFld.nameMetaSetter; 
+public class VNodeME_PreGenerate extends BackendProcessor {
+	public static final String nameMetaGetter = VirtFldFE_GenMembers.nameMetaGetter; 
+	public static final String nameMetaSetter = VirtFldFE_GenMembers.nameMetaSetter; 
 
 	Type tpANode;
 	Type tpNode;
 	Type tpSpaceAttrSlot;
 	
-	private JavaVNodeBackend() {
-		super(Kiev.Backend.Java15);
-	}
-	
+	private VNodeME_PreGenerate() { super(Kiev.Backend.Java15); }
+	public String getDescr() { "VNode pre-generation" }
 
 	////////////////////////////////////////////////////
 	//	   PASS - preGenerate                         //
 	////////////////////////////////////////////////////
 
-	public void preGenerate(ASTNode:ASTNode node) {
+	public void process(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void preGenerate(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		if (tpANode == null) {
-			tpANode = ProcessVNode.tpANode;
-			tpNode = ProcessVNode.tpNode;
-			tpSpaceAttrSlot = ProcessVNode.tpSpaceAttrSlot;
+			tpANode = VNode_Base.tpANode;
+			tpNode = VNode_Base.tpNode;
+			tpSpaceAttrSlot = VNode_Base.tpSpaceAttrSlot;
 		}
 		foreach (Struct dn; fu.members)
-			this.preGenerate(dn);
+			this.process(dn);
 	}
 	
-	public void preGenerate(Struct:ASTNode s) {
-		foreach(Field f; s.members; !f.isStatic() && f.isVirtual() && f.meta.get(ProcessVNode.mnAtt) != null)
+	public void process(Struct:ASTNode s) {
+		foreach(Field f; s.members; !f.isStatic() && f.isVirtual() && f.meta.get(VNode_Base.mnAtt) != null)
 			fixSetterMethod(s, f);
 		foreach(Struct sub; s.sub_decls)
-			preGenerate(sub);
+			process(sub);
 	}
 	
 	private static void fixSetterMethod(Struct s, Field f) {
-		assert(f.meta.get(ProcessVNode.mnAtt) != null);
+		assert(f.meta.get(VNode_Base.mnAtt) != null);
 
 		Method set_var = (Method)Field.SETTER_ATTR.get(f);
 		if (set_var == null || set_var.isAbstract() || set_var.isStatic())
 			return;
-		if (set_var.meta.get(ProcessVNode.mnAtt) != null)
+		if (set_var.meta.get(VNode_Base.mnAtt) != null)
 			return; // already generated
 
 		FormPar value = null;
@@ -661,7 +663,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 		Block body = set_var.body;
 		String fname = ("nodeattr$"+f.id.sname).intern();
 		Field fatt = f.ctx_tdecl.resolveField(fname);
-		if (f.type.isInstanceOf(ProcessVNode.tpANode)) {
+		if (f.type.isInstanceOf(VNode_Base.tpANode)) {
 			ENode p_st = new IfElseStat(0,
 					new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 						new IFldExpr(0,new ThisExpr(),f,true),
@@ -719,7 +721,7 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 				);
 			body.stats.append(p_st);
 		}
-		set_var.meta.set(new Meta(ProcessVNode.mnAtt)).resolve(null);
+		set_var.meta.set(new Meta(VNode_Base.mnAtt)).resolve(null);
 	}
 
 }

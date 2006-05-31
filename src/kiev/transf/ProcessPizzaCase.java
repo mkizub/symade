@@ -14,24 +14,22 @@ import syntax kiev.Syntax;
  *
  */
 @singleton
-public class ProcessPizzaCase extends TransfProcessor implements Constants {
-	
-	private ProcessPizzaCase() {
-		super(Kiev.Ext.PizzaCase);
+public class PizzaFE_Pass3 extends TransfProcessor {
+	private PizzaFE_Pass3() { super(Kiev.Ext.PizzaCase); }
+	public String getDescr() { "Pizza case members" }
+
+	public void process(ASTNode:ASTNode node) {
 	}
 
-	public void pass3(ASTNode:ASTNode node) {
-	}
-
-	public void pass3(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		foreach (ASTNode n; fu.members)
-			pass3(n);
+			process(n);
 	}
 
-	public void pass3(Struct:ASTNode clazz) {
+	public void process(Struct:ASTNode clazz) {
 		if !(clazz.isPizzaCase()) {
 			foreach (Struct dn; clazz.members)
-				this.pass3(dn);
+				this.process(dn);
 			return;
 		}
 		if (clazz.isSingleton())
@@ -66,34 +64,25 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 		init.pos = clazz.pos;
 		clazz.addMethod(init);
 	}
-
-	public BackendProcessor getBackend(Kiev.Backend backend) {
-		if (backend == Kiev.Backend.Java15)
-			return PizzaCaseBackend;
-		return null;
-	}
-	
 }
 
 @singleton
-class PizzaCaseBackend extends BackendProcessor implements Constants {
+public class PizzaME_PreGenerate extends BackendProcessor {
+	private PizzaME_PreGenerate() { super(Kiev.Backend.Java15); }
+	public String getDescr() { "Pizza case pre-generation" }
 
-	private PizzaCaseBackend() {
-		super(Kiev.Backend.Java15);
-	}
-	
-	public void preGenerate(ASTNode:ASTNode node) {
+	public void process(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void preGenerate(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.preGenerate(dn);
+			this.process(dn);
 	}
 	
-	public void preGenerate(Struct:ASTNode clazz) {
+	public void process(Struct:ASTNode clazz) {
 		foreach (Struct dn; clazz.members)
-			this.preGenerate(dn);
+			this.process(dn);
 		if( clazz.isPizzaCase() ) {
 			MetaPizzaCase meta = clazz.getMetaPizzaCase();
 			//PizzaCaseAttr case_attr = (PizzaCaseAttr)clazz.getAttr(attrPizzaCase);
@@ -121,6 +110,5 @@ class PizzaCaseBackend extends BackendProcessor implements Constants {
 		}
 
 	}
-
 }
 

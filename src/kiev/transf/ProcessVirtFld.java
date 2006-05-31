@@ -13,32 +13,31 @@ import static kiev.stdlib.Debug.*;
  *
  */
 @singleton
-public final class ProcessVirtFld extends TransfProcessor implements Constants {
+public final class VirtFldFE_GenMembers extends TransfProcessor {
 
 	public static final String nameMetaGetter = "kiev.stdlib.meta.getter"; 
 	public static final String nameMetaSetter = "kiev.stdlib.meta.setter"; 
 	
-	private ProcessVirtFld() {
-		super(Kiev.Ext.VirtualFields);
-	}
+	private VirtFldFE_GenMembers() { super(Kiev.Ext.VirtualFields); }
+	public String getDescr() { "Virtual fields members generation" }
 
 	////////////////////////////////////////////////////
 	//	   PASS - autoGenerateMembers                 //
 	////////////////////////////////////////////////////
 
-	public void autoGenerateMembers(ASTNode:ASTNode node) {
+	public void process(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void autoGenerateMembers(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.autoGenerateMembers(dn);
+			this.process(dn);
 	}
 	
-	public void autoGenerateMembers(Struct:ASTNode s) {
+	public void process(Struct:ASTNode s) {
 		addAbstractFields(s);
 		foreach(Struct sub; s.sub_decls)
-			autoGenerateMembers(sub);
+			process(sub);
 	}
 	
 	public void addAbstractFields(Struct s) {
@@ -159,40 +158,31 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		f.acc.flags |= f.acc.flags << 16;
 		Access.verifyDecl(f);
 	}
-	
-	public BackendProcessor getBackend(Kiev.Backend backend) {
-		if (backend == Kiev.Backend.Java15)
-			return JavaVirtFldBackend;
-		return null;
-	}
-	
 }
 
+////////////////////////////////////////////////////
+//	   PASS - preGenerate                         //
+////////////////////////////////////////////////////
+
 @singleton
-class JavaVirtFldBackend extends BackendProcessor implements Constants {
+public class VirtFldME_PreGenerate extends BackendProcessor implements Constants {
 
-	public static final String nameMetaGetter = ProcessVirtFld.nameMetaGetter; 
-	public static final String nameMetaSetter = ProcessVirtFld.nameMetaSetter; 
+	public static final String nameMetaGetter = VirtFldFE_GenMembers.nameMetaGetter; 
+	public static final String nameMetaSetter = VirtFldFE_GenMembers.nameMetaSetter; 
 	
-	private JavaVirtFldBackend() {
-		super(Kiev.Backend.Java15);
-	}
-	
+	private VirtFldME_PreGenerate() { super(Kiev.Backend.Java15); }
+	public String getDescr() { "Virtual fields pre-generation" }
 
-	////////////////////////////////////////////////////
-	//	   PASS - preGenerate                         //
-	////////////////////////////////////////////////////
-
-	public void preGenerate(ASTNode:ASTNode node) {
+	public void process(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void preGenerate(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.preGenerate(dn);
+			this.process(dn);
 	}
 	
-	public void preGenerate(Struct:ASTNode s) {
+	public void process(Struct:ASTNode s) {
 		foreach(Field f; s.members)
 			addMethodsForVirtualField(s, f);
 		foreach(Field f; s.members) {
@@ -202,7 +192,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				f.setAbstract(true);
 		}
 		foreach(Struct sub; s.sub_decls)
-			preGenerate(sub);
+			this.process(sub);
 	}
 	
 	private static void addMethodsForVirtualField(Struct s, Field f) {
@@ -235,7 +225,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			Method set_var = new Method(set_name,Type.tpVoid,f.getJavaFlags() | ACC_SYNTHETIC);
 			if (s.isInterface())
 				set_var.setFinal(false);
-			else if (f.meta.get(ProcessVNode.mnAtt) != null)
+			else if (f.meta.get(VNode_Base.mnAtt) != null)
 				set_var.setFinal(true);
 			s.addMethod(set_var);
 			set_var.meta.set(new Meta(nameMetaSetter)).resolve(null);
@@ -271,7 +261,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			Method get_var = new Method(get_name,f.type,f.getJavaFlags() | ACC_SYNTHETIC);
 			if (s.isInterface())
 				get_var.setFinal(false);
-			if (f.meta.get(ProcessVNode.mnAtt) != null)
+			if (f.meta.get(VNode_Base.mnAtt) != null)
 				get_var.setFinal(true);
 			s.addMethod(get_var);
 			get_var.meta.set(new Meta(nameMetaGetter)).resolve(null);
@@ -286,15 +276,24 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			Kiev.reportError(f,"Virtual get$ method for non-readable field "+f);
 		}
 	}
-
+}
 	
-	////////////////////////////////////////////////////
-	//	   PASS - rewrite code                        //
-	////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+//	   PASS - rewrite code                        //
+////////////////////////////////////////////////////
 
-	public void rewriteNode(ASTNode node) {
+@singleton
+public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
+
+	public static final String nameMetaGetter = VirtFldFE_GenMembers.nameMetaGetter; 
+	public static final String nameMetaSetter = VirtFldFE_GenMembers.nameMetaSetter; 
+	
+	private VirtFldBE_Rewrite() { super(Kiev.Backend.Java15); }
+	public String getDescr() { "Virtual fields rewrite" }
+
+	public void process(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return JavaVirtFldBackend.this.rewrite((ASTNode)n); return false; }
+			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return VirtFldBE_Rewrite.this.rewrite((ASTNode)n); return false; }
 		});
 	}
 	
@@ -330,7 +329,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		ENode ce = new CallExpr(fa.pos, ~fa.obj, getter, ENode.emptyArray);
 		//ce = ce.resolveExpr(fa.getType());
 		fa.replaceWithNode(ce);
-		rewriteNode(ce);
+		process(ce);
 		return false;
 	}
 	
@@ -410,7 +409,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			ae.replaceWithNode(expr);
 			expr.setGenVoidExpr(ae.isGenVoidExpr());
 			expr.resolve(ae_tp);
-			rewriteNode(expr);
+			process(expr);
 			return false;
 		}
 		return true;
@@ -496,7 +495,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			ie.replaceWithNode(expr);
 			expr.setGenVoidExpr(ie.isGenVoidExpr());
 			expr.resolve(ie_tp);
-			rewriteNode(expr);
+			process(expr);
 			return false;
 		}
 		return true;

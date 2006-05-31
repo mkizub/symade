@@ -21,22 +21,6 @@ import syntax kiev.Syntax;
  *
  */
 
-public enum TopLevelPass {
-	passStartCleanup		   ,	// start of compilation or cleanup before next incremental compilation
-	passProcessSyntax		   ,	// process syntax - some import, typedef, operator and macro
-	passStructTypes			   ,	// inheritance and types of structures
-	passResolveMetaDecls	   ,	// resolved meta types declarations
-	passResolveMetaDefaults	   ,	// resolved default values for meta-methods
-	passResolveMetaValues	   ,	// resolve values in meta-data
-	passCreateMembers		   ,	// create declared members of structures
-	passAutoGenerateMembers	   ,	// generation of members
-	passPreResolve			   ,	// pre-resolve nodes
-	passMainResolve			   ,	// main resolve for vlang
-	passVerify				   ,	// verify the tree before generation
-	passPreGenerate			   ,	// prepare tree for generation phase
-	passGenerate			   		// resolve, generate and so on - each file separatly
-};
-
 public abstract class ANode {
 
 	private AttachInfo		p_info;

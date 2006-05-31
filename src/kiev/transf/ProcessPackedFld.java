@@ -14,28 +14,26 @@ import syntax kiev.Syntax;
  *
  */
 @singleton
-public final class ProcessPackedFld extends TransfProcessor implements Constants {
-	
-	private ProcessPackedFld() {
-		super(Kiev.Ext.PackedFields);
+public final class PackedFldME_Verify extends TransfProcessor {
+	private PackedFldME_Verify() { super(Kiev.Ext.PackedFields); }
+	public String getDescr() { "Packed fields verification" }
+
+	public void process(ASTNode:ASTNode node) {
 	}
 	
-	public void verify(ASTNode:ASTNode node) {
-	}
-	
-	public void verify(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		foreach (Struct n; fu.members)
-			verify(n);
+			process(n);
 	}
 	
-	public void verify(Struct:ASTNode s) {
+	public void process(Struct:ASTNode s) {
 		foreach (Field n; s.members)
-			verify(n);
+			process(n);
 		foreach (Struct sub; s.sub_decls)
-			verify(sub);
+			process(sub);
 	}
 	
-	public void verify(Field:ASTNode f) {
+	public void process(Field:ASTNode f) {
 		MetaPacked mp = f.getMetaPacked();
 		if !(f.isPackedField() ) {
 			if (mp != null)
@@ -64,43 +62,23 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		}
 	}
 	
-	public BackendProcessor getBackend(Kiev.Backend backend) {
-		if (backend == Kiev.Backend.Java15)
-			return JavaPackedFldBackend;
-		return null;
-	}
-	
 }
 
 @singleton
-class JavaPackedFldBackend extends BackendProcessor implements Constants {
-	
-	private static final int[] masks =
-		{	0,
-			0x1       ,0x3       ,0x7       ,0xF       ,
-			0x1F      ,0x3F      ,0x7F      ,0xFF      ,
-			0x1FF     ,0x3FF     ,0x7FF     ,0xFFF     ,
-			0x1FFF    ,0x3FFF    ,0x7FFF    ,0xFFFF    ,
-			0x1FFFF   ,0x3FFFF   ,0x7FFFF   ,0xFFFFF   ,
-			0x1FFFFF  ,0x3FFFFF  ,0x7FFFFF  ,0xFFFFFF  ,
-			0x1FFFFFF ,0x3FFFFFF ,0x7FFFFFF ,0xFFFFFFF ,
-			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
-		};
+public class PackedFldME_PreGenerate extends BackendProcessor {
+	private PackedFldME_PreGenerate() { super(Kiev.Backend.Java15); }
+	public String getDescr() { "Packed fields pre-generation" }
 
-	private JavaPackedFldBackend() {
-		super(Kiev.Backend.Java15);
-	}
-	
-	public void preGenerate(ASTNode:ASTNode node) {
+	public void process(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void preGenerate(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.preGenerate(dn);
+			this.process(dn);
 	}
 	
-	public void preGenerate(Struct:ASTNode s) {
+	public void process(Struct:ASTNode s) {
 		// Setup packed/packer fields
 		foreach(Field f; s.members; f.isPackedField() ) {
 			Field@ packer;
@@ -147,7 +125,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 				}
 			}
 			foreach(Struct n; s.members)
-				this.preGenerate(n);
+				this.process(n);
 		}
 	}
 
@@ -170,9 +148,28 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		f ?= ff
 	}
 
-	public void rewriteNode(ASTNode fu) {
+}
+
+@singleton
+public class PackedFldBE_Rewrite extends BackendProcessor {
+	private static final int[] masks =
+		{	0,
+			0x1       ,0x3       ,0x7       ,0xF       ,
+			0x1F      ,0x3F      ,0x7F      ,0xFF      ,
+			0x1FF     ,0x3FF     ,0x7FF     ,0xFFF     ,
+			0x1FFF    ,0x3FFF    ,0x7FFF    ,0xFFFF    ,
+			0x1FFFF   ,0x3FFFF   ,0x7FFFF   ,0xFFFFF   ,
+			0x1FFFFF  ,0x3FFFFF  ,0x7FFFFF  ,0xFFFFFF  ,
+			0x1FFFFFF ,0x3FFFFFF ,0x7FFFFFF ,0xFFFFFFF ,
+			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
+		};
+
+	private PackedFldBE_Rewrite() { super(Kiev.Backend.Java15); }
+	public String getDescr() { "Packed fields rewrite" }
+
+	public void process(ASTNode fu) {
 		fu.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return JavaPackedFldBackend.this.rewrite((ASTNode)n); return false; }
+			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return PackedFldBE_Rewrite.this.rewrite((ASTNode)n); return false; }
 		});
 	}
 	
@@ -210,7 +207,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			expr = new ReinterpExpr(fa.pos, Type.tpBoolean, expr);
 
 		fa.replaceWithNode(expr);
-		rewriteNode(expr);
+		process(expr);
 		return false;
 	}
 	
@@ -283,7 +280,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		}
 		ae.replaceWithNode(be);
 		be.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
-		rewriteNode(be);
+		process(be);
 		return false;
 	}
 	
@@ -374,7 +371,7 @@ class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 		}
 		ie.replaceWithNode(expr);
-		rewriteNode(expr);
+		process(expr);
 		return false;
 	}
 	

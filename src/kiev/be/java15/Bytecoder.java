@@ -88,9 +88,9 @@ public class Bytecoder implements JConstants {
 				((JStruct)cl).addAttr(at);
 			}
 		}
-		ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
-		if (tp != null)
-			tp.addAbstractFields(cl);
+		//ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
+		//if (tp != null)
+		//	tp.addAbstractFields(cl);
 		return cl;
 	}
 

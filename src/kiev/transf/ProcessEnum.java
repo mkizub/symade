@@ -13,26 +13,25 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
+
 @singleton
-public class ProcessEnum extends TransfProcessor implements Constants {
+public class EnumFE_GenMembers extends TransfProcessor {
+	private EnumFE_GenMembers() { super(Kiev.Ext.Enum); }
+	public String getDescr() { "Enum members generation" }
 
-	private ProcessEnum() {
-		super(Kiev.Ext.Enum);
-	}
-
-	public void autoGenerateMembers(ASTNode:ASTNode node) {
+	public void process(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void autoGenerateMembers(FileUnit:ASTNode fu) {
+	public void process(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.autoGenerateMembers(dn);
+			this.process(dn);
 	}
 	
-	public void autoGenerateMembers(Struct:ASTNode clazz) {
+	public void process(Struct:ASTNode clazz) {
 		if !( clazz.isEnum() ) {
 			foreach (Struct dn; clazz.members)
-				this.autoGenerateMembers(dn);
+				this.process(dn);
 			return;
 		}
 		

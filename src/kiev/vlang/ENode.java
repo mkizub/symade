@@ -154,7 +154,7 @@ public abstract class ENode extends ASTNode {
 
 	private static void do_resolve(Type reqType, ASTNode node) {
 		try {
-			Kiev.runBackends(Kiev.useBackend, fun (BackendProcessor bep)->void { bep.preGenerate(node); });
+			Kiev.runProcessorsOn(node);
 		} catch (ReWalkNodeException e) {
 			do_resolve(reqType, e.replacer);
 			return;
