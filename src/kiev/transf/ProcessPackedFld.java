@@ -169,24 +169,23 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 
 	public void process(ASTNode fu) {
 		fu.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return PackedFldBE_Rewrite.this.rewrite((ASTNode)n); return false; }
+			public boolean pre_exec(ANode n) { PackedFldBE_Rewrite.this.rewrite(n); return true; }
 		});
 	}
 	
-	boolean rewrite(ASTNode:ASTNode n) {
+	void rewrite(ANode:ANode n) {
 		//System.out.println("ProcessPackedFld: rewrite "+(o==null?"null":o.getClass().getName())+" in "+id);
-		return true;
 	}
 
-	boolean rewrite(IFldExpr:ASTNode fa) {
+	void rewrite(IFldExpr:ANode fa) {
 		//System.out.println("ProcessPackedFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
 		Field f = fa.var;
 		if( !f.isPackedField() )
-			return true;
+			return;
 		MetaPacked mp = f.getMetaPacked();
 		if( mp == null || mp.packer == null ) {
 			Kiev.reportError(fa, "Internal error: packed field "+f+" has no packer");
-			return true;
+			return;
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);
 		IFldExpr ae = fa.ncopy();
@@ -206,19 +205,17 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		else if( mp.getSize() == 1 && f.type ≡ Type.tpBoolean )
 			expr = new ReinterpExpr(fa.pos, Type.tpBoolean, expr);
 
-		fa.replaceWithNode(expr);
-		process(expr);
-		return false;
+		fa.replaceWithNodeReWalk(expr);
 	}
 	
-	boolean rewrite(AssignExpr:ASTNode ae) {
+	void rewrite(AssignExpr:ANode ae) {
 		//System.out.println("ProcessPackedFld: rewrite "+ae.getClass().getName()+" "+ae+" in "+id);
 		if !(ae.lval instanceof IFldExpr)
-			return true;
+			return;
 		IFldExpr fa = (IFldExpr)ae.lval;
 		Field f = fa.var;
 		if( !f.isPackedField() )
-			return true;
+			return;
 		Block be = new Block(ae.pos);
 		Object acc;
 		if (fa.obj instanceof ThisExpr) {
@@ -278,20 +275,17 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		if (!ae.isGenVoidExpr()) {
 			be.stats.add(mkAccess(tmp));
 		}
-		ae.replaceWithNode(be);
-		be.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
-		process(be);
-		return false;
+		ae.replaceWithNodeReWalk(be);
 	}
 	
-	boolean rewrite(IncrementExpr:ASTNode ie) {
+	void rewrite(IncrementExpr:ANode ie) {
 		//System.out.println("ProcessPackedFld: rewrite "+ie.getClass().getName()+" "+ie+" in "+id);
 		if !(ie.lval instanceof IFldExpr)
-			return true;
+			return;
 		IFldExpr fa = (IFldExpr)ie.lval;
 		Field f = fa.var;
 		if( !f.isPackedField() )
-			return true;
+			return;
 		MetaPacked mp = f.getMetaPacked();
 		ENode expr;
 		if (ie.isGenVoidExpr()) {
@@ -300,7 +294,6 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 			} else {
 				expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(-1));
 			}
-			expr.resolve(Type.tpVoid);
 			expr.setGenVoidExpr(true);
 		}
 		else {
@@ -368,11 +361,8 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 				be.stats.add(mkAccess(tmp));
 			}
 			expr = be;
-			expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 		}
-		ie.replaceWithNode(expr);
-		process(expr);
-		return false;
+		ie.replaceWithNodeReWalk(expr);
 	}
 	
 	private ENode mkAccess(Object o) {

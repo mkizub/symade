@@ -770,7 +770,7 @@ public final class Kiev {
 			return;
 		N = be_pass_no;
 		for (int i=0; i < N; i++) {
-			BackendProcessor[] bp = beProcessors[i];
+			BackendProcessor bp = beProcessors[i];
 			if (bp.isEnabled())
 				bp.process(node);
 		}

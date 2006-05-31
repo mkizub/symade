@@ -49,9 +49,8 @@ public class ASTCastOperator extends ASTOperator {
 			ENode e = new ASTIdentifier(type.pos, names[0]);
 			for (int i=1; i < names.length; i++)
 				e = new AccessExpr(type.pos, e, new SymbolRef(type.pos, names[i]));
-			replaceWithNode(e);
-			Kiev.runProcessorsOn(e);
-			throw new ReWalkNodeException(e);
+			replaceWithNodeReWalk(e);
+			throw new Error();
 		}
 	}
 

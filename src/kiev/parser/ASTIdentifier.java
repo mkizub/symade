@@ -103,7 +103,7 @@ public class ASTIdentifier extends ENode {
 				replaceWithNode(new TypeRef(td.getType()));
 			}
 			else {
-				replaceWithNode(info.buildAccess((ASTNode)this, null, v));
+				replaceWithNode(info.buildAccess((ASTNode)this, null, v).closeBuild());
 			}
 			return false;
 		}
@@ -215,7 +215,7 @@ public class ASTIdentifier extends ENode {
 			replaceWithNode(new TypeRef(((TypeDecl)v).getType()));
 			return;
 		}
-		replaceWithNodeResolve(reqType, info.buildAccess(this, null, v));
+		replaceWithNodeResolve(reqType, info.buildAccess(this, null, v).closeBuild());
 	}
 
 	public String toString() {

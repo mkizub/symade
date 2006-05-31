@@ -210,16 +210,25 @@ public class AssignExpr extends LvalueExpr {
 					Method rm = (Method)m;
 					if !(rm.isMacro() && rm.isNative()) {
 						ENode res = info.buildCall((ASTNode)this, cae.obj, m, info.mt, new ENode[]{~cae.index,~value});
-						if (res instanceof UnresExpr)
-							res = ((UnresExpr)res).toResolvedExpr();
-						this.replaceWithNode(res);
-						return;
+						res = res.closeBuild();
+						this.replaceWithNodeReWalk(res);
 					}
 				}
 			} else {
 				Method m = op.resolveMethod(this);
-				//if (m == null)
-				//	Kiev.reportWarning(this, "Unresolved method for operator "+op);
+				if (m == null) {
+					Kiev.reportWarning(this, "Unresolved method for operator "+op);
+				} else {
+					if (ident == null)
+						ident = new SymbolRef(pos, op.name);
+					if (m instanceof CoreMethod && m.core_func != null) {
+						m.normilizeExpr(this);
+						return;
+					} else {
+						ident.symbol = m;
+					}
+				}
+				/*
 				foreach(OpTypes opt; op.types ) {
 					Type[] tps = new Type[]{null,et1,et2};
 					ASTNode[] argsarr = new ASTNode[]{null,lval,value};
@@ -235,6 +244,7 @@ public class AssignExpr extends LvalueExpr {
 						break;
 					}
 				}
+				*/
 			}
 		}
 	}
@@ -248,6 +258,14 @@ public class AssignExpr extends LvalueExpr {
 		this.value = value;
 	}
 
+	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+		this.pos = node.pos;
+		this.op = (AssignOperator)op;
+		this.ident = new SymbolRef(op.name, cm);
+		this.lval = args[0];
+		this.value = args[1];
+	}
+	
 	public Operator getOp() { return op; }
 
 	public ENode[] getArgs() { return new ENode[]{lval,value}; }

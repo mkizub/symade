@@ -173,6 +173,7 @@ CLASS kiev.parser.ASTModifiers kiev/parser/ASTModifiers kiev\parser\ASTModifiers
 CLASS kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java
 CLASS kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java
 CLASS kiev.parser.ASTPragma kiev/parser/ASTPragma kiev\parser\ASTPragma.java
+CLASS kiev.parser.AccFldExpr kiev/parser/AccFldExpr kiev\parser\TempExpr.java
 CLASS kiev.parser.InfixExpr kiev/parser/InfixExpr kiev\parser\TempExpr.java
 CLASS kiev.parser.MultiExpr kiev/parser/MultiExpr kiev\parser\TempExpr.java
 CLASS kiev.parser.Opdef kiev/parser/Opdef kiev\parser\Opdef.java

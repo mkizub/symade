@@ -51,8 +51,7 @@ public final view RWithStat of WithStat extends RENode {
 			}
 			if (var_or_field == null) {
 				Kiev.reportError(this,"With statement needs variable or field argument");
-				this.replaceWithNode(body);
-				body.resolve(Type.tpVoid);
+				this.replaceWithNodeResolve(reqType,body);
 				return;
 			}
 		} catch(Exception e ) {

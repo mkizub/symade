@@ -35,6 +35,17 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 		return true;
 	}	
 
+	boolean rewrite(AssignExpr:ANode ae) {
+		if (ae.ident == null)
+			return true;
+		Method m = (Method)ae.ident.symbol;
+		if (m != null && m.isMacro() && !m.isNative()) {
+			if (m.body != null)
+				doRewrite(m.body, ae, ae.getArgs());
+		}
+		return true;
+	}
+
 	boolean rewrite(IFldExpr:ANode fa) {
 		Field f = fa.var;
 		if (f.isMacro() && !f.isNative()) {
@@ -56,9 +67,7 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 
 	private void doRewrite(ENode rewriter, ASTNode self, ASTNode[] args) {
 		ASTNode rn = (ASTNode)rewriter.doRewrite(new RewriteContext(self, args));
-		self.replaceWithNode(rn);
-		Kiev.runProcessorsOn(rn);
-		throw new ReWalkNodeException(rn);
+		self.replaceWithNodeReWalk(rn);
 	}
 }
 

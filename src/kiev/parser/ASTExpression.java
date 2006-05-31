@@ -69,9 +69,7 @@ public class ASTExpression extends ENode {
 				return;
 			}
 			
-			ENode e = results.head();
-			if (e instanceof UnresExpr)
-				e = ((UnresExpr)e).toResolvedExpr();
+			ENode e = ((ENode)results.head()).closeBuild();
 			if (isPrimaryExpr())
 				e.setPrimaryExpr(true);
 			this.replaceWithNode(~e);

@@ -425,6 +425,11 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		return df;
 	}
 
+	public final void replaceWithNodeReWalk(ASTNode node) {
+		node = replaceWithNode(node);
+		Kiev.runProcessorsOn(node);
+		throw new ReWalkNodeException(node);
+	}
 	public final ASTNode replaceWithNode(ASTNode node) {
 		assert(isAttached());
 		ANode parent = parent();
@@ -448,6 +453,11 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		}
 		assert(node == null || node.isAttached());
 		return node;
+	}
+	public final void replaceWithReWalk(()->ASTNode fnode) {
+		ASTNode node = replaceWith(fnode);
+		Kiev.runProcessorsOn(node);
+		throw new ReWalkNodeException(node);
 	}
 	public final ASTNode replaceWith(()->ASTNode fnode) {
 		assert(isAttached());
@@ -568,6 +578,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		public final void addNodeData(ANode d, AttrSlot attr);
 		public final void delNodeData(AttrSlot attr);
 		public DataFlowInfo getDFlow();
+		public final void    replaceWithNodeReWalk(ASTNode node);
 		public final ASTNode replaceWithNode(ASTNode node);
 		public final ASTNode replaceWith(()->ASTNode fnode);
 		public final boolean isAttached();

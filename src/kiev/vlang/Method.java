@@ -479,7 +479,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
 		CallType rt = (CallType)this.type.bind(tp.bindings());
 		if (!this.isStatic() && tp != null && tp != Type.tpVoid) {
-			rt = rt.rebind(new TVarBld(StdTypes.tpCallThisArg, tp));
+			rt = (CallType)rt.rebind(new TVarBld(StdTypes.tpCallThisArg, tp));
 		}
 		
 		if ((mt.bindings().tvars.length - mt.arity - 1) > 0) {

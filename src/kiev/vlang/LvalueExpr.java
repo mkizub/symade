@@ -74,21 +74,21 @@ public final class AccessExpr extends LvalueExpr {
 		public final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o);
 
 		public void mainResolveOut() {
-			ASTNode[] res;
+			ENode[] res;
 			Type[] tps;
 
 			ENode obj = this.obj;
 			// pre-resolve result
 			if( obj instanceof TypeRef ) {
 				tps = new Type[]{ ((TypeRef)obj).getType() };
-				res = new ASTNode[1];
+				res = new ENode[1];
 				if( ident.name.equals(nameThis) )
 					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
 			}
 			else {
 				ENode e = obj;
 				tps = e.getAccessTypes();
-				res = new ASTNode[tps.length];
+				res = new ENode[tps.length];
 				// fall down
 			}
 			for (int si=0; si < tps.length; si++) {
@@ -99,9 +99,9 @@ public final class AccessExpr extends LvalueExpr {
 				ResInfo info;
 				if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) ) {
 					if (this.obj != null)
-						res[si] = makeExpr(v,info,~this.obj);
+						res[si] = makeExpr(v,info,this.obj);
 					else
-						res[si] = makeExpr(v,info,obj.ncopy());
+						res[si] = makeExpr(v,info,obj);
 				}
 				else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name))
 					res[si] = makeExpr(v,info,tp.getStruct());
@@ -135,7 +135,8 @@ public final class AccessExpr extends LvalueExpr {
 				this.obj = obj;
 				throw new CompilerException(this, msg.toString());
 			}
-			this.replaceWithNode(res[idx]);
+			ENode e = res[idx].closeBuild();
+			this.replaceWithNodeReWalk(e);
 		}
 	}
 	

@@ -182,9 +182,9 @@ public final class RewriteNodeFactory extends ENode {
 			if (attr instanceof SpaceAttrSlot) {
 				if (r instanceof Object[]) {
 					foreach (Object o; (Object[])r)
-						attr.add(res, fixup(attr,o));
+						attr.add(res, (ASTNode)fixup(attr,o));
 				} else {
-					attr.add(res, fixup(attr,r));
+					attr.add(res, (ASTNode)fixup(attr,r));
 				}
 			} else {
 				attr.set(res, fixup(attr,r));
@@ -192,21 +192,22 @@ public final class RewriteNodeFactory extends ENode {
 		}
 		return res;
 	}
-	private ASTNode fixup(AttrSlot attr, Object o) {
-		ASTNode r = (ASTNode)o;
-		if (r instanceof ConstStringExpr) {
+	private Object fixup(AttrSlot attr, Object o) {
+		if (o instanceof ConstStringExpr) {
 			if (attr.clazz == SymbolRef.class)
-				r = new SymbolRef(r.value);
+				o = new SymbolRef(o.value);
 			else if (attr.clazz == Symbol.class)
-				r = new Symbol(r.value);
+				o = new Symbol(o.value);
 		}
-		else if (r instanceof TypeDecl) {
+		else if (o instanceof TypeDecl) {
 			if (attr.clazz == TypeRef.class)
-				r = new TypeRef(r.xtype);
+				o = new TypeRef(o.xtype);
 			else if (attr.clazz == ENode.class)
-				r = new TypeRef(r.xtype);
+				o = new TypeRef(o.xtype);
 		}
-		return ~r;
+		if (o instanceof ASTNode)
+			o = o.detach();
+		return o;
 	}
 
 }

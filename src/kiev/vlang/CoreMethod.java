@@ -58,8 +58,8 @@ public abstract class CoreFunc {
 
 		coreFuncs.put("kiev.stdlib.any:_instanceof_",       AnyInstanceOf);
 
-		coreFuncs.put("kiev.stdlib.any:ref_assign",         ObjectAssign);
-		coreFuncs.put("kiev.stdlib.any:ref_assign2",        ObjectAssign2);
+		coreFuncs.put("kiev.vlang.Globals:ref_assign",      ObjectAssign);
+		coreFuncs.put("kiev.vlang.Globals:ref_assign2",     ObjectAssign2);
 		coreFuncs.put("kiev.stdlib.any:ref_eq",             ObjectBoolEQ);
 		coreFuncs.put("kiev.stdlib.any:ref_neq",            ObjectBoolNE);
 
@@ -240,9 +240,7 @@ abstract class BinaryFunc extends CoreFunc {
 		foreach (ENode e; args)
 			e.detach();
 		en.initFrom(expr, op, core_method, args);
-		expr.replaceWithNode(en);
-		Kiev.runProcessorsOn(en);
-		throw new ReWalkNodeException(en);
+		expr.replaceWithNodeReWalk(en);
 	}
 	public ConstExpr calc(ENode expr) {
 		ENode[] args = expr.getArgs();
@@ -269,9 +267,7 @@ abstract class UnaryFunc extends CoreFunc {
 		foreach (ENode e; args)
 			e.detach();
 		en.initFrom(expr, op, core_method, args);
-		expr.replaceWithNode(en);
-		Kiev.runProcessorsOn(en);
-		throw new ReWalkNodeException(en);
+		expr.replaceWithNodeReWalk(en);
 	}
 	public ConstExpr calc(ENode expr) {
 		ENode[] args = expr.getArgs();

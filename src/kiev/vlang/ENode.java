@@ -251,6 +251,7 @@ public abstract class ENode extends ASTNode {
 		public final boolean valueEquals(Object o);
 		public final boolean isConstantExpr();
 		public final Object	getConstValue();
+		public final ENode closeBuild();
 	}
 
 	public static final ENode[] emptyArray = new ENode[0];
@@ -288,6 +289,8 @@ public abstract class ENode extends ASTNode {
 		throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 	
+	public ENode closeBuild() { return this; }
+
 	public void resolve(Type reqType) {
 		((RView)this).resolve(reqType);
 	}

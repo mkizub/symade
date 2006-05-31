@@ -101,7 +101,10 @@ public class ASTCallExpression extends ENode {
 							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof CallType
 							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof CallType
 							) {
-								replaceWithNode(new ClosureCallExpr(pos,info.buildAccess((ASTNode)this,null,closure),((ASTCallExpression)this).args.delToArray()));
+								replaceWithNode(new ClosureCallExpr(pos,
+									info.buildAccess((ASTNode)this,null,closure).closeBuild(),
+									((ASTCallExpression)this).args.delToArray()
+								));
 								return;
 							}
 						} catch(Exception eee) {
@@ -113,9 +116,7 @@ public class ASTCallExpression extends ENode {
 	
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				ENode e = info.buildCall((ASTNode)this,null,m,info.mt,args);
-				if (e instanceof UnresExpr)
-					e = ((UnresExpr)e).toResolvedExpr();
+				ENode e = info.buildCall((ASTNode)this,null,m,info.mt,args).closeBuild();
 				if (isPrimaryExpr())
 					e.setPrimaryExpr(true);
 				this.replaceWithNode(e);
@@ -198,7 +199,10 @@ public class ASTCallExpression extends ENode {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof CallType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof CallType
 					) {
-						replaceWithNodeResolve(ret, new ClosureCallExpr(pos,info.buildAccess(this,closure),args.delToArray()));
+						replaceWithNodeResolve(ret, new ClosureCallExpr(pos,
+							info.buildAccess(this,closure).closeBuild(),
+							args.delToArray()
+						));
 						return;
 					}
 				} catch(Exception eee) {
@@ -237,9 +241,7 @@ public class ASTCallExpression extends ENode {
 			} else {
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				ENode e = info.buildCall(this,null,m,info.mt,args);
-				if (e instanceof UnresExpr)
-					e = ((UnresExpr)e).toResolvedExpr();
+				ENode e = info.buildCall(this,null,m,info.mt,args).closeBuild();
 				if (isPrimaryExpr())
 					e.setPrimaryExpr(true);
 				this.replaceWithNodeResolve( reqType, e );

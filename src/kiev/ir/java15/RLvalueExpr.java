@@ -54,7 +54,7 @@ public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 			ResInfo info;
 			if (!(obj instanceof TypeRef) &&
 				tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),ident.name) )
-				res[si] = makeExpr(v,info,~obj);
+				res[si] = makeExpr(v,info,obj);
 			else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name))
 				res[si] = makeExpr(v,info,tp.getStruct());
 		}
@@ -84,11 +84,10 @@ public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 				msg.append("\t").append(tps[si]).append('\n');
 			}
 			msg.append("while resolving ").append(this);
-			this.obj = this.obj;
 			throw new CompilerException(this, msg.toString());
 			//return;
 		}
-		this.replaceWithNodeResolve(reqType,~res[idx]);
+		this.replaceWithNodeResolve(reqType,res[idx].closeBuild());
 	}
 }
 
@@ -266,7 +265,7 @@ public static final view RReinterpExpr of ReinterpExpr extends RLvalueExpr {
 		Type type = this.getType();
 		Type extp = expr.getType();
 		if (type ≈ extp) {
-			replaceWithNode(~expr);
+			replaceWithNodeResolve(reqType,~expr);
 			return;
 		}
 		if (type.isIntegerInCode() && extp.isIntegerInCode())

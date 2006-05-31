@@ -32,8 +32,6 @@ public abstract class UnresExpr extends ENode {
 	
 	public UnresExpr() {}
 	
-	public abstract ENode toResolvedExpr();
-
 	public Operator getOp() { return op; }
 	
 	public final void callbackAttached() {
@@ -41,7 +39,7 @@ public abstract class UnresExpr extends ENode {
 	}
 	
 	public void resolve(Type reqType) {
-		replaceWithResolve(reqType, fun ()->ENode {return toResolvedExpr();});
+		replaceWithResolve(reqType, fun ()->ENode {return closeBuild();});
 	}
 	
 }
@@ -77,12 +75,8 @@ public class PrefixExpr extends UnresExpr {
 		return op + " ( " +expr+ " )"; 
 	}
 
-	public ENode toResolvedExpr() {
-		ENode e = expr;
-		if (e instanceof UnresExpr)
-			e = ((UnresExpr)e).toResolvedExpr();
-		else
-			e.detach();
+	public ENode closeBuild() {
+		ENode e = expr.closeBuild().detach();
 		Operator op = this.op;
 		if (op instanceof CastOperator) {
 			if (op.reinterp)
@@ -126,12 +120,8 @@ public class PostfixExpr extends UnresExpr {
 		return "( " +expr+ " ) "+op; 
 	}
 
-	public ENode toResolvedExpr() {
-		ENode e = expr;
-		if (e instanceof UnresExpr)
-			e = ((UnresExpr)e).toResolvedExpr();
-		else
-			e.detach();
+	public ENode closeBuild() {
+		ENode e = expr.closeBuild().detach();
 		return new UnaryExpr(0,op,e);
 	}
 	
@@ -171,17 +161,13 @@ public class InfixExpr extends UnresExpr {
 		return "( " +expr1+ " ) "+op+" ( "+expr2+" )"; 
 	}
 	
-	public ENode toResolvedExpr() {
-		ENode e1 = expr1;
-		if (e1 instanceof UnresExpr)
-			e1 = ((UnresExpr)e1).toResolvedExpr();
-		else
-			e1.detach();
-		ENode e2 = expr2;
-		if (e2 instanceof UnresExpr)
-			e2 = ((UnresExpr)e2).toResolvedExpr();
-		else
-			e2.detach();
+	public ENode closeBuild() {
+		ENode e1 = expr1.closeBuild().detach();
+		ENode e2 = expr2.closeBuild().detach();
+		if (op == null && e1 instanceof ReinterpExpr) {
+			e1.expr = e2;
+			return e1;
+		}
 		if (op instanceof AssignOperator)
 			return new AssignExpr(pos,(AssignOperator)op,e1,e2);
 		if (((BinaryOperator)op).is_boolean_op) {
@@ -238,23 +224,11 @@ public class MultiExpr extends UnresExpr {
 		return sb.toString(); 
 	}
 
-	public ENode toResolvedExpr() {
+	public ENode closeBuild() {
 		if (op == MultiOperator.Conditional) {
-			ENode e1 = exprs[0];
-			if (e1 instanceof UnresExpr)
-				e1 = ((UnresExpr)e1).toResolvedExpr();
-			else
-				e1.detach();
-			ENode e2 = exprs[1];
-			if (e2 instanceof UnresExpr)
-				e2 = ((UnresExpr)e2).toResolvedExpr();
-			else
-				e2.detach();
-			ENode e3 = exprs[2];
-			if (e3 instanceof UnresExpr)
-				e3 = ((UnresExpr)e3).toResolvedExpr();
-			else
-				e3.detach();
+			ENode e1 = exprs[0].closeBuild().detach();
+			ENode e2 = exprs[1].closeBuild().detach();
+			ENode e3 = exprs[2].closeBuild().detach();
 			return new ConditionalExpr(pos,e1,e2,e3);
 		}
 		throw new CompilerException(this,"Multi-operators are not implemented");
@@ -313,16 +287,13 @@ public class UnresCallExpr extends UnresExpr {
 		return sb.toString(); 
 	}
 
-	public ENode toResolvedExpr() {
-		for (int i=0; i < args.length; i++) {
-			if (args[i] instanceof UnresExpr)
-				args[i] = ((UnresExpr)args[i]).toResolvedExpr();
-			else
-				args[i].detach();
-		}
+	public ENode closeBuild() {
+		ENode obj = this.obj.closeBuild().detach();
+		for (int i=0; i < args.length; i++)
+			args[i].closeBuild().detach();
 		if (obj instanceof TypeRef) {
 			if (func.symbol instanceof Method) {
-				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args, false);
+				CallExpr ce = new CallExpr(pos, obj, ~func, mt, args, false);
 				return ce;
 			} else {
 				Field f = (Field)func.symbol;
@@ -330,16 +301,66 @@ public class UnresCallExpr extends UnresExpr {
 			}
 		} else {
 			if (func.symbol instanceof Method) {
-				CallExpr ce = new CallExpr(pos, ~obj, ~func, mt, args, isSuperExpr());
+				CallExpr ce = new CallExpr(pos, obj, ~func, mt, args, isSuperExpr());
 				ce.setCastCall(this.isCastCall());
 				return ce;
 			} else {
-				return new ClosureCallExpr(pos, ~obj, args);
+				return new ClosureCallExpr(pos, obj, args);
 			}
 		}
 	}
 }
 
+
+/**
+ * Represents unresolved, temporary created access expression.
+ */
+@node
+public class AccFldExpr extends UnresExpr {
+
+	@virtual typedef This  = AccFldExpr;
+	@virtual typedef VView = VAccFldExpr;
+
+	@ref public ENode				obj;
+	@ref public Field				fld;
+
+	@nodeview
+	public static view VAccFldExpr of AccFldExpr extends VUnresExpr {
+		public				ENode			obj;
+		public				Field			fld;
+	}
+	
+	public AccFldExpr() {}
+
+	public AccFldExpr(int pos, ENode obj, Field fld) {
+		this.pos = pos;
+		this.op = op;
+		this.obj = obj;
+		this.fld = fld;
+	}
+	
+	public AccFldExpr(int pos, Field fld) {
+		this.pos = pos;
+		this.op = op;
+		this.fld = fld;
+		assert (fld.isStatic());
+	}
+	
+	public String toString() {
+		if (fld.isStatic())
+			return fld.parent()+ "."+fld.id;
+		else
+			return obj+ "."+fld.id;
+	}
+	
+	public ENode closeBuild() {
+		if (fld.isStatic()) {
+			return new SFldExpr(pos,fld);
+		} else {
+			return new IFldExpr(pos,obj.closeBuild().detach(),fld);
+		}
+	}
+}
 
 
 

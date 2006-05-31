@@ -76,13 +76,13 @@ public metatype boolean extends any {
 	public boolean assign(boolean val) alias lfy operator = ;
 
 	@macro @native
-	public int assign_bit_or(int val) alias lfy operator |= ;
+	public int assign_bit_or(boolean val) alias lfy operator |= ;
 
 	@macro @native
-	public int assign_bit_and(int val) alias lfy operator &= ;
+	public int assign_bit_and(boolean val) alias lfy operator &= ;
 
 	@macro @native
-	public int assign_bit_xor(int val) alias lfy operator ^= ;
+	public int assign_bit_xor(boolean val) alias lfy operator ^= ;
 
 	@macro @native
 	public static boolean bit_or(boolean b1, boolean b2) alias yfx operator | ;
@@ -500,5 +500,7 @@ public metatype GString extends java.lang.String {
 	@macro @native
 	public static String str_concat_sa(String s1, any s2) alias yfx operator + ;
 
+	@macro @native
+	public static String str_assign_add(String s1, any s2) alias lfy operator += ;
 }
 

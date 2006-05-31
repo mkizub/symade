@@ -1,6 +1,8 @@
 package kiev.vlang;
 
 import kiev.*;
+import kiev.parser.AccFldExpr;
+import kiev.parser.InfixExpr;
 import kiev.parser.UnresCallExpr;
 import kiev.vlang.types.*;
 
@@ -178,7 +180,7 @@ public class ResInfo {
 			// var or static field
 			if (node instanceof Field) {
 				if (node.isStatic())
-					return new SFldExpr(at.pos,(Field)node);
+					return new AccFldExpr(at.pos,(Field)node);
 				throw new CompilerException(at, "Static access to an instance field "+node);
 			}
 			if (node instanceof Var) {
@@ -194,14 +196,14 @@ public class ResInfo {
 				// static field access
 				if (isEmpty() && node instanceof Field) {
 					if (node.isStatic())
-						return new SFldExpr(at.pos,(Field)node);
+						return new AccFldExpr(at.pos,(Field)node);
 					throw new CompilerException(at, "Static access to an instance field "+node);
 				}
 				else if (forwards_stack[0] instanceof Field) {
 					Field ff = (Field)forwards_stack[0];
 					if (!ff.isStatic())
 						throw new CompilerException(at, "Static access to an instance field "+ff);
-					e = new SFldExpr(at.pos,ff);
+					e = new AccFldExpr(at.pos,ff);
 					n++;
 				}
 			} else {
@@ -219,22 +221,20 @@ public class ResInfo {
 			for (; n < forwards_p; n++) {
 				ASTNode fwn = forwards_stack[n];
 				if (fwn instanceof ReinterpExpr) {
-					fwn.expr = e;
-					e = (ReinterpExpr)fwn;
+					e = new InfixExpr(e.pos, null, (ReinterpExpr)fwn, e);
 				}
 				else if (fwn instanceof Field) {
 					if (fwn.isStatic())
 						throw new CompilerException(at, "Non-static access to static field "+fwn+" via "+this);
-					e = new IFldExpr(at.pos, e, (Field)fwn);
+					e = new AccFldExpr(at.pos, e, (Field)fwn);
 				}
 				else
 					throw new CompilerException(at, "Don't know how to build access to field "+node+" through "+e+" via "+this+" because of "+fwn);
 			}
 			if (node instanceof Field) {
-				e = new IFldExpr(at.pos, e, (Field)node);
+				e = new AccFldExpr(at.pos, e, (Field)node);
 			} else {
-				((ReinterpExpr)node).expr = e;
-				e = (ReinterpExpr)node;
+				e = new InfixExpr(e.pos, null, (ReinterpExpr)node, e);
 			}
 			return e;
 		}
@@ -247,7 +247,6 @@ public class ResInfo {
 			if (from == null && forwards_p == 0) {
 				if !(meth.isStatic())
 					throw new CompilerException(at, "Don't know how to build call of "+meth+" via "+this);
-				//return new CallExpr(pos,meth,args);
 				return new UnresCallExpr(at.pos, new TypeRef(meth.ctx_tdecl.xtype), meth, mt, args, false);
 			}
 			ENode expr = from;

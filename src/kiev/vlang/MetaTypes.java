@@ -71,6 +71,8 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 	{
 		case @forward CallExpr# self(IFldExpr# obj):
 			new#CallExpr(obj=getAttr(obj.var),ident="add",args={obj.obj, node})
+		case @forward AssignExpr# self(IFldExpr# lval):
+			new#CallExpr(obj=getAttr(lval.var),ident="add",args={lval.obj, self.value})
 	}
 
 	@macro
@@ -101,6 +103,9 @@ class Test extends ASTNode {
 	@ref ASTNode[] rarr;
 	@ref ASTNode astn;
 	void foo() {
+		DNode@ d;
+		DNode x;
+		x = d;
 		int i;
 		i = rarr.length;
 		ASTNode[] x;

@@ -151,8 +151,12 @@ public static final view RAssignExpr of AssignExpr extends RLvalueExpr {
 			ASTNode[] argsarr = new ASTNode[]{null,lval,value};
 			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 				Method rm = opt.method;
-				if !(rm.isMacro() && rm.isNative())
-					replaceWithNodeResolve(reqType, new CallExpr(pos,~lval,opt.method,new ENode[]{~value}));
+				if !(rm.isMacro() && rm.isNative()) {
+					if( rm.isStatic() )
+						replaceWithNodeResolve(reqType, new CallExpr(pos,null,rm,new ENode[]{~lval,~value}));
+					else
+						replaceWithNodeResolve(reqType, new CallExpr(pos,~lval,rm,new ENode[]{~value}));
+				}
 				return;
 			}
 		}
@@ -485,7 +489,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 			((TypeRef)expr).toExpr(type);
 		Type extp = Type.getRealType(type,expr.getType());
 		if( type ≡ Type.tpBoolean && extp ≡ Type.tpRule ) {
-			replaceWithNode(~expr);
+			replaceWithNodeResolve(reqType,~expr);
 			return;
 		}
 		// Try to find $cast method
@@ -528,9 +532,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		v.$unbind();
 		CallType mt = new CallType(et,null,null,this.type.getType(),false);
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
-			ENode call = info.buildCall((ASTNode)this,~expr,(Method)v,info.mt,ENode.emptyArray);
-			if (call instanceof UnresExpr)
-				call = ((UnresExpr)call).toResolvedExpr();
+			ENode call = info.buildCall((ASTNode)this,~expr,(Method)v,info.mt,ENode.emptyArray).closeBuild();
 			if (this.type.getType().isReference())
 				call.setCastCall(true);
 			replaceWithNodeResolve(type.getType(),call);

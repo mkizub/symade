@@ -328,9 +328,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 		}
 		ENode ce = new CallExpr(fa.pos, ~fa.obj, getter, ENode.emptyArray);
 		//ce = ce.resolveExpr(fa.getType());
-		fa.replaceWithNode(ce);
-		process(ce);
-		return false;
+		fa.replaceWithNodeReWalk(ce);
+		throw new Error();
 	}
 	
 	boolean rewrite(AssignExpr:ASTNode ae) {
@@ -406,11 +405,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				}
 				expr = be;
 			}
-			ae.replaceWithNode(expr);
 			expr.setGenVoidExpr(ae.isGenVoidExpr());
-			expr.resolve(ae_tp);
-			process(expr);
-			return false;
+			ae.replaceWithNodeReWalk(expr);
 		}
 		return true;
 	}
@@ -492,11 +488,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 					be.stats.add(new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray));
 				expr = be;
 			}
-			ie.replaceWithNode(expr);
 			expr.setGenVoidExpr(ie.isGenVoidExpr());
-			expr.resolve(ie_tp);
-			process(expr);
-			return false;
+			ie.replaceWithNodeReWalk(expr);
 		}
 		return true;
 	}
