@@ -163,8 +163,10 @@ public final class ASTOperatorAlias extends ASTAlias {
 					prior = Constants.opAssignPriority;
 				if( prior != Constants.opAssignPriority )
 					throw new CompilerException(this,"Assign operator must have priority "+Constants.opAssignPriority);
-				if( m.isStatic() )
-					throw new CompilerException(this,"Assign operator can't be static");
+				if( m.isStatic() ) {
+					Kiev.reportWarning(this,"Assign operator can't be static");
+					return;
+				}
 				else if( !m.isStatic() && m.type.arity == 1 )
 					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(0); }
 				else

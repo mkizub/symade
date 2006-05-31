@@ -597,8 +597,9 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		FormPar@ var;
 	{
-		inlined_by_dispatcher || path.space_prev.pslot().name == "targs",$cut,false
+		inlined_by_dispatcher,$cut,false
 	;
+		path.space_prev.pslot().name == "targs" ||
 		path.space_prev.pslot().name == "params" ||
 		path.space_prev.pslot().name == "type_ref" ||
 		path.space_prev.pslot().name == "dtype_ref",$cut,
