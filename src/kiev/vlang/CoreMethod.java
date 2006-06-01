@@ -8,6 +8,7 @@ import kiev.vlang.types.*;
 
 import kiev.ir.java15.RCoreMethod;
 import kiev.be.java15.Instr;
+import kiev.be.java15.Code;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -48,6 +49,21 @@ public class CoreMethod extends Method {
 
 	public ConstExpr calc(ENode expr) {
 		return core_func.calc(expr);
+	}
+
+	public void genJavaCode(Code code, Type reqType) {
+		if (core_func == null) {
+			Kiev.reportError(this, "Unresolved core function "+this+" at generatioin phase");
+			return;
+		}
+		try {
+			core_func.genJavaCode(code, reqType);
+		} catch (CompilerException e) {
+			if (e.from == null)
+				Kiev.reportError(this, "Unsupported core function "+this+" for java backend");
+			else
+				Kiev.reportError(e.from, "Unsupported core function "+this+" for java backend");
+		}
 	}
 }
 
@@ -220,7 +236,7 @@ public abstract class CoreFunc {
 	
 	public CoreMethod core_method;
 	
-	public abstract Instr getJavaInstr();
+	public abstract void genJavaCode(Code code, Type reqType);
 	public abstract void normilizeExpr(ENode expr);
 	public abstract ConstExpr calc(ENode expr);
 }
@@ -250,6 +266,11 @@ abstract class BinaryFunc extends CoreFunc {
 	protected ConstExpr doCalc(Object:Object arg1, Object:Object arg2) {
 		throw new RuntimeException("Cannot calculate a const from "+arg1+" and "+arg2);
 	}
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_pop);
+		code.addInstr(Instr.op_pop);
+		throw new CompilerException("binary opcode");
+	}
 }
 
 abstract class UnaryFunc extends CoreFunc {
@@ -277,6 +298,10 @@ abstract class UnaryFunc extends CoreFunc {
 	protected ConstExpr doCalc(Object:Object arg) {
 		throw new RuntimeException("Cannot calculate a const from "+arg);
 	}
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_pop);
+		throw new CompilerException("binary opcode");
+	}
 }
 
 
@@ -286,38 +311,35 @@ abstract class UnaryFunc extends CoreFunc {
 
 @singleton
 class AnyInstanceOf extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_instanceof; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, InstanceofExpr.class, BinaryOperator.InstanceOf); }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_instanceof);
+	}
 }
 
 
 @singleton
 class ObjectAssign extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign); }
 }
 
 @singleton
 class ObjectAssign2 extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign2); }
 }
 
 @singleton
 class ObjectPvarINIT extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign2); }
 }
 
 @singleton
 class ObjectBoolEQ extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.Equals); }
 }
 
 @singleton
 class ObjectBoolNE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.NotEquals); }
 }
 
@@ -327,84 +349,96 @@ class ObjectBoolNE extends BinaryFunc {
 
 @singleton
 class BoolAssign extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg2.booleanValue()) }
 }
 
 @singleton
 class BoolAssignBitOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_or; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignBitOr); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg2.booleanValue() | arg2.booleanValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_or);
+	}
 }
 
 @singleton
 class BoolAssignBitXOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_xor; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignBitXor); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg2.booleanValue() ^ arg2.booleanValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_xor);
+	}
 }
 
 @singleton
 class BoolAssignBitAND extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_and; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignBitAnd); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg2.booleanValue() & arg2.booleanValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_and);
+	}
 }
 
 @singleton
 class BoolBitOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_or; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.BitOr); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg2.booleanValue() | arg2.booleanValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_or);
+	}
 }
 
 @singleton
 class BoolBitXOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_xor; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.BitXor); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg2.booleanValue() ^ arg2.booleanValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_xor);
+	}
 }
 
 @singleton
 class BoolBitAND extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_and; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.BitAnd); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg2.booleanValue() & arg2.booleanValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_and);
+	}
 }
 
 @singleton
 class BoolBoolOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_or; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBooleanOrExpr.class, BinaryOperator.BooleanOr); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg2.booleanValue() | arg2.booleanValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_or);
+	}
 }
 
 @singleton
 class BoolBoolAND extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_and; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBooleanAndExpr.class, BinaryOperator.BooleanAnd); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg2.booleanValue() & arg2.booleanValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_and);
+	}
 }
 
 @singleton
 class BoolBoolEQ extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.Equals); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg1.booleanValue() == arg2.booleanValue()) }
 }
 
 @singleton
 class BoolBoolNE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.NotEquals); }
 	protected ConstExpr doCalc(Boolean:Object arg1, Boolean:Object arg2) { new ConstBoolExpr(arg1.booleanValue() != arg2.booleanValue()) }
 }
 
 @singleton
 class BoolBoolNOT extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BooleanNotExpr.class, PrefixOperator.BooleanNot); }
 	protected ConstExpr doCalc(Boolean:Object arg) { new ConstBoolExpr( !arg.booleanValue()) }
 }
@@ -416,7 +450,6 @@ class BoolBoolNOT extends UnaryFunc {
 
 @singleton
 class CharAssign extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign); }
 	protected ConstExpr doCalc(Character:Object arg1, Character:Object arg2) { new ConstCharExpr(arg2.charValue()) }
 }
@@ -427,23 +460,26 @@ class CharAssign extends BinaryFunc {
 
 @singleton
 class ByteAssign extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstByteExpr((byte)arg2.intValue()) }
 }
 
 @singleton
 class BytePOS extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_nop; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Pos); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstByteExpr( (byte) + arg.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		//code.addInstr(Instr.op_nop);
+	}
 }
 
 @singleton
 class ByteNEG extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_neg; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Neg); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstByteExpr( (byte) - arg.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_neg);
+	}
 }
 
 /////////////////////////////////////////////////
@@ -452,23 +488,26 @@ class ByteNEG extends UnaryFunc {
 
 @singleton
 class ShortAssign extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstShortExpr((short)arg2.intValue()) }
 }
 
 @singleton
 class ShortPOS extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_nop; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Pos); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstShortExpr( (short) + arg.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		//code.addInstr(Instr.op_nop);
+	}
 }
 
 @singleton
 class ShortNEG extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_neg; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Neg); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstShortExpr( (short) - arg.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_neg);
+	}
 }
 
 /////////////////////////////////////////////////
@@ -477,252 +516,292 @@ class ShortNEG extends UnaryFunc {
 
 @singleton
 class IntAssign extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue()) }
 }
 
 @singleton
 class IntAssignBitOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_or; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignBitOr); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() | arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_or);
+	}
 }
 
 @singleton
 class IntAssignBitXOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_xor; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignBitXor); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() ^ arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_xor);
+	}
 }
 
 @singleton
 class IntAssignBitAND extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_and; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignBitAnd); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() & arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_and);
+	}
 }
 
 @singleton
 class IntAssignLShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_shl; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignLeftShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() << arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_shl);
+	}
 }
 
 @singleton
 class IntAssignRShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_shr; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignRightShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() >> arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_shr);
+	}
 }
 
 @singleton
 class IntAssignUShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_ushr; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignUnsignedRightShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() >>> arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_ushr);
+	}
 }
 
 @singleton
 class IntAssignADD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_add; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignAdd); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() + arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_add);
+	}
 }
 
 @singleton
 class IntAssignSUB extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_sub; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignSub); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() - arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_sub);
+	}
 }
 
 @singleton
 class IntAssignMUL extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_mul; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignMul); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() * arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_mul);
+	}
 }
 
 @singleton
 class IntAssignDIV extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_div; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignDiv); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() / arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_div);
+	}
 }
 
 @singleton
 class IntAssignMOD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_rem; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignMod); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg2.intValue() % arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_rem);
+	}
 }
 
 @singleton
 class IntBitOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_or; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.BitOr); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() | arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_or);
+	}
 }
 
 @singleton
 class IntBitXOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_xor; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.BitXor); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() ^ arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_xor);
+	}
 }
 
 @singleton
 class IntBitAND extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_and; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.BitAnd); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() & arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_and);
+	}
 }
 
 @singleton
 class IntBitNOT extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.BitNot); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstIntExpr( ~ arg.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addConst(-1);
+		code.addInstr(Instr.op_xor);
+	}
 }
 
 @singleton
 class IntBoolEQ extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.Equals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.intValue() == arg2.intValue()) }
 }
 
 @singleton
 class IntBoolNE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.NotEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.intValue() != arg2.intValue()) }
 }
 
 @singleton
 class IntBoolGE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.GreaterEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.intValue() >= arg2.intValue()) }
 }
 
 @singleton
 class IntBoolLE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.LessEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.intValue() <= arg2.intValue()) }
 }
 
 @singleton
 class IntBoolGT extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.GreaterThen); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.intValue() > arg2.intValue()) }
 }
 
 @singleton
 class IntBoolLT extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.LessThen); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.intValue() < arg2.intValue()) }
 }
 
 @singleton
 class IntLShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_shl; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.LeftShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() << arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_shl);
+	}
 }
 
 @singleton
 class IntRShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_shr; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.RightShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() >> arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_shr);
+	}
 }
 
 @singleton
 class IntUShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_ushr; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.UnsignedRightShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() >>> arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_ushr);
+	}
 }
 
 @singleton
 class IntADD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_add; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Add); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() + arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_add);
+	}
 }
 
 @singleton
 class IntSUB extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_sub; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Sub); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() - arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_sub);
+	}
 }
 
 @singleton
 class IntMUL extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_mul; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Mul); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() * arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_mul);
+	}
 }
 
 @singleton
 class IntDIV extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_div; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Div); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() / arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_div);
+	}
 }
 
 @singleton
 class IntMOD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_rem; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Mod); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstIntExpr(arg1.intValue() % arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_rem);
+	}
 }
 
 @singleton
 class IntPOS extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_nop; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Pos); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstIntExpr( + arg.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		//code.addInstr(Instr.op_nop);
+	}
 }
 
 @singleton
 class IntNEG extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_neg; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Neg); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstIntExpr( - arg.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_neg);
+	}
 }
 
 @singleton
 class IntPreINCR extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, IncrementExpr.class, PrefixOperator.PreIncr); }
 	protected ConstExpr doCalc(Number:Object arg) { null }
 }
 
 @singleton
 class IntPreDECR extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, IncrementExpr.class, PrefixOperator.PreDecr); }
 	protected ConstExpr doCalc(Number:Object arg) { null }
 }
 
 @singleton
 class IntPostINCR extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, IncrementExpr.class, PostfixOperator.PostIncr); }
 	protected ConstExpr doCalc(Number:Object arg) { null }
 }
 
 @singleton
 class IntPostDECR extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, IncrementExpr.class, PostfixOperator.PostDecr); }
 	protected ConstExpr doCalc(Number:Object arg) { null }
 }
@@ -734,252 +813,292 @@ class IntPostDECR extends UnaryFunc {
 
 @singleton
 class LongAssign extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue()) }
 }
 
 @singleton
 class LongAssignBitOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_or; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignBitOr); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() | arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_or);
+	}
 }
 
 @singleton
 class LongAssignBitXOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_xor; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignBitXor); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() ^ arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_xor);
+	}
 }
 
 @singleton
 class LongAssignBitAND extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_and; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignBitAnd); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() & arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_and);
+	}
 }
 
 @singleton
 class LongAssignLShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_shl; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignLeftShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() << arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_shl);
+	}
 }
 
 @singleton
 class LongAssignRShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_shr; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignRightShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() >> arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_shr);
+	}
 }
 
 @singleton
 class LongAssignUShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_ushr; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignUnsignedRightShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() >>> arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_ushr);
+	}
 }
 
 @singleton
 class LongAssignADD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_add; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignAdd); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() + arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_add);
+	}
 }
 
 @singleton
 class LongAssignSUB extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_sub; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignSub); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() - arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_sub);
+	}
 }
 
 @singleton
 class LongAssignMUL extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_mul; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignMul); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() * arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_mul);
+	}
 }
 
 @singleton
 class LongAssignDIV extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_div; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignDiv); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() / arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_div);
+	}
 }
 
 @singleton
 class LongAssignMOD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_rem; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignMod); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg2.longValue() % arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_rem);
+	}
 }
 
 @singleton
 class LongBitOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_or; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.BitOr); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() | arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_or);
+	}
 }
 
 @singleton
 class LongBitXOR extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_xor; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.BitXor); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() ^ arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_xor);
+	}
 }
 
 @singleton
 class LongBitAND extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_and; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.BitAnd); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() & arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_and);
+	}
 }
 
 @singleton
 class LongBitNOT extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.BitNot); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstLongExpr( ~ arg.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addConst(-1L);
+		code.addInstr(Instr.op_xor);
+	}
 }
 
 @singleton
 class LongBoolEQ extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.Equals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.longValue() == arg2.longValue()) }
 }
 
 @singleton
 class LongBoolNE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.NotEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.longValue() != arg2.longValue()) }
 }
 
 @singleton
 class LongBoolGE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.GreaterEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.longValue() >= arg2.longValue()) }
 }
 
 @singleton
 class LongBoolLE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.LessEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.longValue() <= arg2.longValue()) }
 }
 
 @singleton
 class LongBoolGT extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.GreaterThen); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.longValue() > arg2.longValue()) }
 }
 
 @singleton
 class LongBoolLT extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.LessThen); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.longValue() < arg2.longValue()) }
 }
 
 @singleton
 class LongLShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_shl; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.LeftShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() << arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_shl);
+	}
 }
 
 @singleton
 class LongRShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_shr; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.RightShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() >> arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_shr);
+	}
 }
 
 @singleton
 class LongUShift extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_ushr; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.UnsignedRightShift); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() >>> arg2.intValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_ushr);
+	}
 }
 
 @singleton
 class LongADD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_add; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Add); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() + arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_add);
+	}
 }
 
 @singleton
 class LongSUB extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_sub; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Sub); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() - arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_sub);
+	}
 }
 
 @singleton
 class LongMUL extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_mul; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Mul); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() * arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_mul);
+	}
 }
 
 @singleton
 class LongDIV extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_div; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Div); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() / arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_div);
+	}
 }
 
 @singleton
 class LongMOD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_rem; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Mod); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstLongExpr(arg1.longValue() % arg2.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_rem);
+	}
 }
 
 @singleton
 class LongPOS extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_nop; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Pos); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstLongExpr( + arg.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		//code.addInstr(Instr.op_nop);
+	}
 }
 
 @singleton
 class LongNEG extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_neg; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Neg); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstLongExpr( - arg.longValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_neg);
+	}
 }
 
 @singleton
 class LongPreINCR extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, IncrementExpr.class, PrefixOperator.PreIncr); }
 	protected ConstExpr doCalc(Number:Object arg) { null }
 }
 
 @singleton
 class LongPreDECR extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, IncrementExpr.class, PrefixOperator.PreDecr); }
 	protected ConstExpr doCalc(Number:Object arg) { null }
 }
 
 @singleton
 class LongPostINCR extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, IncrementExpr.class, PostfixOperator.PostIncr); }
 	protected ConstExpr doCalc(Number:Object arg) { null }
 }
 
 @singleton
 class LongPostDECR extends UnaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, IncrementExpr.class, PostfixOperator.PostDecr); }
 	protected ConstExpr doCalc(Number:Object arg) { null }
 }
@@ -991,135 +1110,152 @@ class LongPostDECR extends UnaryFunc {
 
 @singleton
 class FloatAssign extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg2.floatValue()) }
 }
 
 @singleton
 class FloatAssignADD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_add; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignAdd); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg2.floatValue() + arg2.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_add);
+	}
 }
 
 @singleton
 class FloatAssignSUB extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_sub; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignSub); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg2.floatValue() - arg2.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_sub);
+	}
 }
 
 @singleton
 class FloatAssignMUL extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_mul; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignMul); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg2.floatValue() * arg2.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_mul);
+	}
 }
 
 @singleton
 class FloatAssignDIV extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_div; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignDiv); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg2.floatValue() / arg2.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_div);
+	}
 }
 
 @singleton
 class FloatAssignMOD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_rem; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignMod); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg2.floatValue() % arg2.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_rem);
+	}
 }
 
 @singleton
 class FloatBoolEQ extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.Equals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.floatValue() == arg2.floatValue()) }
 }
 
 @singleton
 class FloatBoolNE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.NotEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.floatValue() != arg2.floatValue()) }
 }
 
 @singleton
 class FloatBoolGE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.GreaterEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.floatValue() >= arg2.floatValue()) }
 }
 
 @singleton
 class FloatBoolLE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.LessEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.floatValue() <= arg2.floatValue()) }
 }
 
 @singleton
 class FloatBoolGT extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.GreaterThen); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.floatValue() > arg2.floatValue()) }
 }
 
 @singleton
 class FloatBoolLT extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.LessThen); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.floatValue() < arg2.floatValue()) }
 }
 
 @singleton
 class FloatADD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_add; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Add); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg1.floatValue() + arg2.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_add);
+	}
 }
 
 @singleton
 class FloatSUB extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_sub; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Sub); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg1.floatValue() - arg2.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_sub);
+	}
 }
 
 @singleton
 class FloatMUL extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_mul; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Mul); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg1.floatValue() * arg2.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_mul);
+	}
 }
 
 @singleton
 class FloatDIV extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_div; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Div); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg1.floatValue() / arg2.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_div);
+	}
 }
 
 @singleton
 class FloatMOD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_rem; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Mod); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstFloatExpr(arg1.floatValue() % arg2.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_rem);
+	}
 }
 
 @singleton
 class FloatPOS extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_nop; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Pos); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstFloatExpr( + arg.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		//code.addInstr(Instr.op_nop);
+	}
 }
 
 @singleton
 class FloatNEG extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_neg; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Neg); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstFloatExpr( - arg.floatValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_neg);
+	}
 }
 
 
@@ -1130,135 +1266,152 @@ class FloatNEG extends UnaryFunc {
 
 @singleton
 class DoubleAssign extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg2.doubleValue()) }
 }
 
 @singleton
 class DoubleAssignADD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_add; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignAdd); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg2.doubleValue() + arg2.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_add);
+	}
 }
 
 @singleton
 class DoubleAssignSUB extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_sub; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignSub); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg2.doubleValue() - arg2.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_sub);
+	}
 }
 
 @singleton
 class DoubleAssignMUL extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_mul; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignMul); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg2.doubleValue() * arg2.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_mul);
+	}
 }
 
 @singleton
 class DoubleAssignDIV extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_div; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignDiv); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg2.doubleValue() / arg2.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_div);
+	}
 }
 
 @singleton
 class DoubleAssignMOD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_rem; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignMod); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg2.doubleValue() % arg2.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_rem);
+	}
 }
 
 @singleton
 class DoubleBoolEQ extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.Equals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.doubleValue() == arg2.doubleValue()) }
 }
 
 @singleton
 class DoubleBoolNE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.NotEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.doubleValue() != arg2.doubleValue()) }
 }
 
 @singleton
 class DoubleBoolGE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.GreaterEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.doubleValue() >= arg2.doubleValue()) }
 }
 
 @singleton
 class DoubleBoolLE extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.LessEquals); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.doubleValue() <= arg2.doubleValue()) }
 }
 
 @singleton
 class DoubleBoolGT extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.GreaterThen); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.doubleValue() > arg2.doubleValue()) }
 }
 
 @singleton
 class DoubleBoolLT extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryBoolExpr.class, BinaryOperator.LessThen); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstBoolExpr(arg1.doubleValue() < arg2.doubleValue()) }
 }
 
 @singleton
 class DoubleADD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_add; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Add); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg1.doubleValue() + arg2.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_add);
+	}
 }
 
 @singleton
 class DoubleSUB extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_sub; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Sub); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg1.doubleValue() - arg2.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_sub);
+	}
 }
 
 @singleton
 class DoubleMUL extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_mul; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Mul); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg1.doubleValue() * arg2.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_mul);
+	}
 }
 
 @singleton
 class DoubleDIV extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_div; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Div); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg1.doubleValue() / arg2.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_div);
+	}
 }
 
 @singleton
 class DoubleMOD extends BinaryFunc {
-	public Instr getJavaInstr() { return Instr.op_rem; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, BinaryExpr.class, BinaryOperator.Mod); }
 	protected ConstExpr doCalc(Number:Object arg1, Number:Object arg2) { new ConstDoubleExpr(arg1.doubleValue() % arg2.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_rem);
+	}
 }
 
 @singleton
 class DoublePOS extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_nop; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Pos); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstDoubleExpr( + arg.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		//code.addInstr(Instr.op_nop);
+	}
 }
 
 @singleton
 class DoubleNEG extends UnaryFunc {
-	public Instr getJavaInstr() { return Instr.op_neg; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, UnaryExpr.class, PrefixOperator.Neg); }
 	protected ConstExpr doCalc(Number:Object arg) { new ConstDoubleExpr( - arg.doubleValue()) }
+	public void genJavaCode(Code code, Type reqType) {
+		code.addInstr(Instr.op_neg);
+	}
 }
 
 
@@ -1268,7 +1421,6 @@ class DoubleNEG extends UnaryFunc {
 /////////////////////////////////////////////////
 
 abstract class StringConcat extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, StringConcatExpr.class, BinaryOperator.Add); }
 	protected ConstExpr doCalc(Object arg1, Object arg2) { new ConstStringExpr(String.valueOf(arg1) + String.valueOf(arg2)) }
 }
@@ -1282,7 +1434,6 @@ class StringConcatSA extends StringConcat {}
 
 @singleton
 class StringAssignADD extends BinaryFunc {
-	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) {
 		super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignAdd);
 		ENode[] args = expr.getArgs();

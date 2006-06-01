@@ -122,9 +122,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(0); }
 				else
 					throw new CompilerException(this,"Method "+m+" must have 2 arguments");
-				AssignOperator op = AssignOperator.newAssignOperator(
-					image,("L "+image+" V").intern(),null,false
-					);
+				AssignOperator op = AssignOperator.newAssignOperator(image,("L "+image+" V").intern(),false);
 				m.id.addAlias(op.name);
 				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
@@ -161,7 +159,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(this,"Method "+m+" must have 2 arguments");
 				BinaryOperator op = BinaryOperator.newBinaryOperator(
-					prior,image,("V "+image+" V").intern(),null,Operator.orderAndArityNames[opmode],false
+					prior,image,("V "+image+" V").intern(),Operator.orderAndArityNames[opmode],false
 					);
 				m.id.addAlias(op.name);
 				op.addMethod(m);
@@ -202,7 +200,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Non-static method "+m+" must have 0 or 1 argument");
 				}
 				PrefixOperator op = PrefixOperator.newPrefixOperator(
-					prior,image,(image+" V").intern(),null,Operator.orderAndArityNames[opmode],false
+					prior,image,(image+" V").intern(),Operator.orderAndArityNames[opmode],false
 					);
 				m.id.addAlias(op.name);
 				op.addMethod(m);
@@ -225,7 +223,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(this,"Method "+m+" must have 1 argument");
 				PostfixOperator op = PostfixOperator.newPostfixOperator(
-					prior,image,("V "+image).intern(),null,Operator.orderAndArityNames[opmode],false
+					prior,image,("V "+image).intern(),Operator.orderAndArityNames[opmode],false
 					);
 				m.id.addAlias(op.name);
 				op.addMethod(m);

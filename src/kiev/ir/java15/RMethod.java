@@ -125,6 +125,8 @@ public final view RConstructor of Constructor extends RMethod {
 			block.stats.insert(i,addstats[i]);
 			trace(Kiev.debugResolve,"ENode added to constructor: "+addstats[i]);
 		}
+		for(int i=0; i < addstats.length; i++)
+			addstats[i].resolve(Type.tpVoid);
 	}
 }
 

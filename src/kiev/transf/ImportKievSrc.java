@@ -152,7 +152,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					astn.resolved = op;
 					return;
 				}
-				op = AssignOperator.newAssignOperator(image,("L "+image+" V").intern(),null,false);
+				op = AssignOperator.newAssignOperator(image,("L "+image+" V").intern(),false);
 				if( Kiev.verbose ) System.out.println("Declared assign operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
 				return;
@@ -171,7 +171,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					astn.resolved = op;
 					return;
 				}
-				op = BinaryOperator.newBinaryOperator(prior,image,("V "+image+" V").intern(),null,Operator.orderAndArityNames[opmode],false);
+				op = BinaryOperator.newBinaryOperator(prior,image,("V "+image+" V").intern(),Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared infix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
 				return;
@@ -188,7 +188,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					astn.resolved = op;
 					return;
 				}
-				op = PrefixOperator.newPrefixOperator(prior,image,(image+" V").intern(),null,Operator.orderAndArityNames[opmode],false);
+				op = PrefixOperator.newPrefixOperator(prior,image,(image+" V").intern(),Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared prefix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
 				return;
@@ -205,7 +205,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					astn.resolved = op;
 					return;
 				}
-				op = PostfixOperator.newPostfixOperator(prior,image,("V "+image).intern(),null,Operator.orderAndArityNames[opmode],false);
+				op = PostfixOperator.newPostfixOperator(prior,image,("V "+image).intern(),Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared postfix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
 				return;

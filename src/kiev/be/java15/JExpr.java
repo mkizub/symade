@@ -81,13 +81,19 @@ public view JAssignExpr of AssignExpr extends JLvalueExpr {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
+		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
+			return;
+		}
+		CoreMethod m = (CoreMethod)ident.symbol;
+
 		code.setLinePos(this);
 		JLvalueExpr lval = (JLvalueExpr)this.lval;
 		if( reqType ≢ Type.tpVoid ) {
 			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
 				lval.generateLoadDup(code);
 				value.generate(code,null);
-				code.addInstr(op.instr);
+				m.genJavaCode(code, reqType);
 				lval.generateStoreDupValue(code);
 			} else {
 				lval.generateAccess(code);
@@ -98,7 +104,7 @@ public view JAssignExpr of AssignExpr extends JLvalueExpr {
 			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
 				lval.generateLoadDup(code);
 				value.generate(code,null);
-				code.addInstr(op.instr);
+				m.genJavaCode(code, reqType);
 				lval.generateStore(code);
 			} else {
 				lval.generateAccess(code);
@@ -110,12 +116,18 @@ public view JAssignExpr of AssignExpr extends JLvalueExpr {
 
 	/** Just load value referenced by lvalue */
 	public void generateLoad(Code code) {
+		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
+			return;
+		}
+		CoreMethod m = (CoreMethod)ident.symbol;
+
 		code.setLinePos(this);
 		JLvalueExpr lval = (JLvalueExpr)this.lval;
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-			code.addInstr(op.instr);
+			m.genJavaCode(code, null);
 		lval.generateStoreDupValue(code);
 	}
 
@@ -132,23 +144,35 @@ public view JAssignExpr of AssignExpr extends JLvalueExpr {
 
 	/** Stores value using previously duped info */
 	public void generateStore(Code code) {
+		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
+			return;
+		}
+		CoreMethod m = (CoreMethod)ident.symbol;
+
 		code.setLinePos(this);
 		JLvalueExpr lval = (JLvalueExpr)this.lval;
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-			code.addInstr(op.instr);
+			m.genJavaCode(code, null);
 		lval.generateStore(code);
 	}
 
 	/** Stores value using previously duped info, and put stored value in stack */
 	public void generateStoreDupValue(Code code) {
+		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
+			return;
+		}
+		CoreMethod m = (CoreMethod)ident.symbol;
+
 		code.setLinePos(this);
 		JLvalueExpr lval = (JLvalueExpr)this.lval;
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-			code.addInstr(op.instr);
+			m.genJavaCode(code, null);
 		lval.generateStoreDupValue(code);
 	}
 
@@ -162,10 +186,37 @@ public view JBinaryExpr of BinaryExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BinaryExpr: "+this);
+		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
+			return;
+		}
+		CoreMethod m = (CoreMethod)ident.symbol;
+
 		code.setLinePos(this);
 		expr1.generate(code,null);
 		expr2.generate(code,null);
-		code.addInstr(op.instr);
+		m.genJavaCode(code, reqType);
+		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+	}
+
+}
+
+@nodeview
+public view JUnaryExpr of UnaryExpr extends JENode {
+	public:ro	Operator			op;
+	public:ro	JENode			expr;
+
+	public void generate(Code code, Type reqType) {
+		trace(Kiev.debugStatGen,"\t\tgenerating UnaryExpr: "+this);
+		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
+			return;
+		}
+		CoreMethod m = (CoreMethod)ident.symbol;
+
+		code.setLinePos(this);
+		expr.generate(code,null);
+		m.genJavaCode(code, reqType);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
@@ -271,29 +322,6 @@ public view JBlock of Block extends JENode {
 			throw new RuntimeException("Wrong generation phase for getting 'break' label");
 		return break_label;
 	}
-}
-
-@nodeview
-public view JUnaryExpr of UnaryExpr extends JENode {
-	public:ro	Operator			op;
-	public:ro	JENode			expr;
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating UnaryExpr: "+this);
-		code.setLinePos(this);
-		expr.generate(code,null);
-		if( op == PrefixOperator.BitNot ) {
-			if( expr.getType() ≡ Type.tpLong )
-				code.addConst(-1L);
-			else
-				code.addConst(-1);
-			code.addInstr(op_xor);
-		} else {
-			code.addInstr(op.instr);
-		}
-		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
-	}
-
 }
 
 @nodeview

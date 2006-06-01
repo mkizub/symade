@@ -1377,6 +1377,7 @@ public final view RStruct of Struct extends RTypeDecl {
 									)
 								)
 							);
+							((ENode)m.block.stats[1]).resolve(Type.tpVoid);
 						}
 					}
 				}
