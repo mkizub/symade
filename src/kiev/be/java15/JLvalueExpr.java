@@ -540,46 +540,16 @@ public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 }
 
 @nodeview
-public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JLvalueExpr {
+public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JENode {
 	public:ro	Struct			outer;
 	public:ro	JField[]		outer_refs;
 
-	public void generateLoad(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load only: "+this);
+	public void generate(Code code, Type reqType) {
+		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr: "+this);
 		code.setLinePos(this);
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++)
 			code.addInstr(op_getfield,outer_refs[i],code.clazz.xtype);
-	}
-
-	public void generateLoadDup(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load & dup: "+this);
-		code.setLinePos(this);
-		code.addInstrLoadThis();
-		for(int i=0; i < outer_refs.length; i++) {
-			if( i == outer_refs.length-1 ) code.addInstr(op_dup);
-			code.addInstr(op_getfield,outer_refs[i],code.clazz.xtype);
-		}
-	}
-
-	public void generateAccess(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - access only: "+this);
-		code.setLinePos(this);
-		code.addInstrLoadThis();
-		for(int i=0; i < outer_refs.length-1; i++) {
-			code.addInstr(op_getfield,outer_refs[i],code.clazz.xtype);
-		}
-	}
-
-	public void generateStore(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store only: "+this);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.xtype);
-	}
-
-	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store & dup: "+this);
-		code.addInstr(op_dup_x);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.xtype);
 	}
 
 }

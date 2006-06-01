@@ -232,7 +232,7 @@ public static final view RSFldExpr of SFldExpr extends RLvalueExpr {
 }
 
 @nodeview
-public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends RLvalueExpr {
+public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends RENode {
 	public		ENode			obj;
 	public		Struct			outer;
 	public:ro	Field[]			outer_refs;

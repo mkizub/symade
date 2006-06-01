@@ -713,7 +713,7 @@ public final class SFldExpr extends LvalueExpr {
 }
 
 @node
-public final class OuterThisAccessExpr extends LvalueExpr {
+public final class OuterThisAccessExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 
@@ -727,7 +727,7 @@ public final class OuterThisAccessExpr extends LvalueExpr {
 	@ref public Field[]			outer_refs;
 
 	@nodeview
-	public static final view VOuterThisAccessExpr of OuterThisAccessExpr extends VLvalueExpr {
+	public static final view VOuterThisAccessExpr of OuterThisAccessExpr extends VENode {
 		public		ENode			obj;
 		public		Struct			outer;
 		public:ro	Field[]			outer_refs;

@@ -173,7 +173,7 @@ public class TypeInfoExpr extends ENode {
 }
 
 @node
-public class AssignExpr extends LvalueExpr {
+public class AssignExpr extends ENode {
 	
 	@dflow(out="this:out()") private static class DFI {
 	@dflow(in="this:in")	ENode			lval;
@@ -190,7 +190,7 @@ public class AssignExpr extends LvalueExpr {
 	@att public ENode			value;
 
 	@nodeview
-	public static final view VAssignExpr of AssignExpr extends VLvalueExpr {
+	public static final view VAssignExpr of AssignExpr extends VENode {
 		public AssignOperator	op;
 		public ENode			lval;
 		public ENode			value;

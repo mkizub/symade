@@ -73,7 +73,7 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 }
 
 @nodeview
-public static final view RAssignExpr of AssignExpr extends RLvalueExpr {
+public static final view RAssignExpr of AssignExpr extends RENode {
 	public AssignOperator	op;
 	public ENode			lval;
 	public ENode			value;

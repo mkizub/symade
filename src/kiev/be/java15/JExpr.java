@@ -74,7 +74,7 @@ public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 }
 
 @nodeview
-public view JAssignExpr of AssignExpr extends JLvalueExpr {
+public view JAssignExpr of AssignExpr extends JENode {
 	public:ro	AssignOperator		op;
 	public:ro	JENode			lval;
 	public:ro	JENode			value;
@@ -85,97 +85,10 @@ public view JAssignExpr of AssignExpr extends JLvalueExpr {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
-		CoreMethod m = (CoreMethod)ident.symbol;
-
 		code.setLinePos(this);
-		JLvalueExpr lval = (JLvalueExpr)this.lval;
-		if( reqType ≢ Type.tpVoid ) {
-			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
-				lval.generateLoadDup(code);
-				value.generate(code,null);
-				m.genJavaCode(code, reqType);
-				lval.generateStoreDupValue(code);
-			} else {
-				lval.generateAccess(code);
-				value.generate(code,null);
-				lval.generateStoreDupValue(code);
-			}
-		} else {
-			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
-				lval.generateLoadDup(code);
-				value.generate(code,null);
-				m.genJavaCode(code, reqType);
-				lval.generateStore(code);
-			} else {
-				lval.generateAccess(code);
-				value.generate(code,null);
-				lval.generateStore(code);
-			}
-		}
-	}
-
-	/** Just load value referenced by lvalue */
-	public void generateLoad(Code code) {
-		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
-			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
-			return;
-		}
 		CoreMethod m = (CoreMethod)ident.symbol;
-
-		code.setLinePos(this);
-		JLvalueExpr lval = (JLvalueExpr)this.lval;
-		lval.generateLoadDup(code);
-		value.generate(code,null);
-		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-			m.genJavaCode(code, null);
-		lval.generateStoreDupValue(code);
+		m.bend_func.generate(code,reqType,this);
 	}
-
-	/** Load value and dup info needed for generateStore or generateStoreDupValue
-		(the caller MUST provide one of Store call after a while)
-	*/
-	public void generateLoadDup(Code code) {
-		throw new RuntimeException("Too complex lvalue expression "+this);
-	}
-
-	public void generateAccess(Code code) {
-		throw new RuntimeException("Too complex lvalue expression "+this);
-	}
-
-	/** Stores value using previously duped info */
-	public void generateStore(Code code) {
-		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
-			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
-			return;
-		}
-		CoreMethod m = (CoreMethod)ident.symbol;
-
-		code.setLinePos(this);
-		JLvalueExpr lval = (JLvalueExpr)this.lval;
-		lval.generateLoadDup(code);
-		value.generate(code,null);
-		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-			m.genJavaCode(code, null);
-		lval.generateStore(code);
-	}
-
-	/** Stores value using previously duped info, and put stored value in stack */
-	public void generateStoreDupValue(Code code) {
-		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
-			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
-			return;
-		}
-		CoreMethod m = (CoreMethod)ident.symbol;
-
-		code.setLinePos(this);
-		JLvalueExpr lval = (JLvalueExpr)this.lval;
-		lval.generateLoadDup(code);
-		value.generate(code,null);
-		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-			m.genJavaCode(code, null);
-		lval.generateStoreDupValue(code);
-	}
-
 }
 
 @nodeview
@@ -190,13 +103,9 @@ public view JBinaryExpr of BinaryExpr extends JENode {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
-		CoreMethod m = (CoreMethod)ident.symbol;
-
 		code.setLinePos(this);
-		expr1.generate(code,null);
-		expr2.generate(code,null);
-		m.genJavaCode(code, reqType);
-		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+		CoreMethod m = (CoreMethod)ident.symbol;
+		m.bend_func.generate(code,reqType,this);
 	}
 
 }
@@ -212,12 +121,9 @@ public view JUnaryExpr of UnaryExpr extends JENode {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
-		CoreMethod m = (CoreMethod)ident.symbol;
-
 		code.setLinePos(this);
-		expr.generate(code,null);
-		m.genJavaCode(code, reqType);
-		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
+		CoreMethod m = (CoreMethod)ident.symbol;
+		m.bend_func.generate(code,reqType,this);
 	}
 
 }
@@ -334,7 +240,56 @@ public final view JIncrementExpr of IncrementExpr extends JENode {
 		code.setLinePos(this);
 		JLvalueExpr lval = (JLvalueExpr)this.lval;
 		if( reqType ≢ Type.tpVoid ) {
-			generateLoad(code);
+			if( lval instanceof JLVarExpr ) {
+				JLVarExpr va = (JLVarExpr)lval;
+				if( va.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
+					if( op == PrefixOperator.PreIncr ) {
+						code.addInstrIncr(va.var,1);
+						code.addInstr(op_load,va.var);
+						return;
+					}
+					else if( op == PostfixOperator.PostIncr ) {
+						code.addInstr(op_load,va.var);
+						code.addInstrIncr(va.var,1);
+						return;
+					}
+					else if( op == PrefixOperator.PreDecr ) {
+						code.addInstrIncr(va.var,-1);
+						code.addInstr(op_load,va.var);
+						return;
+					}
+					else if( op == PostfixOperator.PostDecr ) {
+						code.addInstr(op_load,va.var);
+						code.addInstrIncr(va.var,-1);
+						return;
+					}
+				}
+			}
+			lval.generateLoadDup(code);
+			if( op == PrefixOperator.PreIncr ) {
+				pushProperConstant(code,1);
+				code.addInstr(op_add);
+				lval.generateStoreDupValue(code);
+			}
+			else if( op == PrefixOperator.PreDecr ) {
+				pushProperConstant(code,-1);
+				code.addInstr(op_add);
+				lval.generateStoreDupValue(code);
+			}
+			else if( op == PostfixOperator.PostIncr ) {
+				pushProperConstant(code,1);
+				code.addInstr(op_add);
+				lval.generateStoreDupValue(code);
+				pushProperConstant(code,-1);
+				code.addInstr(op_add);
+			}
+			else if( op == PostfixOperator.PostDecr ) {
+				pushProperConstant(code,-1);
+				code.addInstr(op_add);
+				lval.generateStoreDupValue(code);
+				pushProperConstant(code,1);
+				code.addInstr(op_add);
+			}
 		} else {
 			if( lval instanceof JLVarExpr ) {
 				JLVarExpr va = (JLVarExpr)lval;
@@ -371,63 +326,6 @@ public final view JIncrementExpr of IncrementExpr extends JENode {
 				code.addInstr(op_add);
 				lval.generateStore(code);
 			}
-		}
-	}
-
-	/** Just load value referenced by lvalue */
-	public:n,n,n,rw void generateLoad(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: - load "+this);
-		code.setLinePos(this);
-		JLvalueExpr lval = (JLvalueExpr)this.lval;
-		if( lval instanceof JLVarExpr ) {
-			JLVarExpr va = (JLVarExpr)lval;
-			if( va.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
-				if( op == PrefixOperator.PreIncr ) {
-					code.addInstrIncr(va.var,1);
-					code.addInstr(op_load,va.var);
-					return;
-				}
-				else if( op == PostfixOperator.PostIncr ) {
-					code.addInstr(op_load,va.var);
-					code.addInstrIncr(va.var,1);
-					return;
-				}
-				else if( op == PrefixOperator.PreDecr ) {
-					code.addInstrIncr(va.var,-1);
-					code.addInstr(op_load,va.var);
-					return;
-				}
-				else if( op == PostfixOperator.PostDecr ) {
-					code.addInstr(op_load,va.var);
-					code.addInstrIncr(va.var,-1);
-					return;
-				}
-			}
-		}
-		lval.generateLoadDup(code);
-		if( op == PrefixOperator.PreIncr ) {
-			pushProperConstant(code,1);
-			code.addInstr(op_add);
-			lval.generateStoreDupValue(code);
-		}
-		else if( op == PrefixOperator.PreDecr ) {
-			pushProperConstant(code,-1);
-			code.addInstr(op_add);
-			lval.generateStoreDupValue(code);
-		}
-		else if( op == PostfixOperator.PostIncr ) {
-			pushProperConstant(code,1);
-			code.addInstr(op_add);
-			lval.generateStoreDupValue(code);
-			pushProperConstant(code,-1);
-			code.addInstr(op_add);
-		}
-		else if( op == PostfixOperator.PostDecr ) {
-			pushProperConstant(code,-1);
-			code.addInstr(op_add);
-			lval.generateStoreDupValue(code);
-			pushProperConstant(code,1);
-			code.addInstr(op_add);
 		}
 	}
 

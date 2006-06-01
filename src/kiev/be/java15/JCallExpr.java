@@ -46,6 +46,12 @@ public final view JCallExpr of CallExpr extends JENode {
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating CallExpr: "+this);
 		code.setLinePos(this);
+		JMethod func = this.func;
+		if (((Method)func) instanceof CoreMethod) {
+			CoreMethod m = (CoreMethod)(Method)func;
+			m.bend_func.generate(code,reqType,this);
+			return;
+		}
 		Access.verifyRead(this,func);
 		CodeLabel ok_label = null;
 		CodeLabel null_cast_label = null;
