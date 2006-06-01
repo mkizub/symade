@@ -3,6 +3,7 @@ CLASS kiev.Kiev kiev/Kiev kiev\Kiev.java
 CLASS kiev.Main kiev/Main kiev\Main.java
 CLASS kiev.be.java15.AsciiCP kiev/be/java15/AsciiCP kiev\be\java15\ConstPool.java
 CLASS kiev.be.java15.AssignFunc kiev/be/java15/AssignFunc kiev\be\java15\CoreFunc.java
+CLASS kiev.be.java15.AssignIntOpFunc kiev/be/java15/AssignIntOpFunc kiev\be\java15\CoreFunc.java
 CLASS kiev.be.java15.AssignWithOpFunc kiev/be/java15/AssignWithOpFunc kiev\be\java15\CoreFunc.java
 CLASS kiev.be.java15.Attr kiev/be/java15/Attr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.BEndFunc kiev/be/java15/BEndFunc kiev\be\java15\CoreFunc.java
@@ -25,8 +26,11 @@ CLASS kiev.be.java15.ContractAttr kiev/be/java15/ContractAttr kiev\be\java15\Att
 CLASS kiev.be.java15.DefaultMetaAttr kiev/be/java15/DefaultMetaAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.ExceptionsAttr kiev/be/java15/ExceptionsAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.FieldCP kiev/be/java15/FieldCP kiev\be\java15\ConstPool.java
+CLASS kiev.be.java15.IncrFunc kiev/be/java15/IncrFunc kiev\be\java15\CoreFunc.java
 CLASS kiev.be.java15.InnerClassesAttr kiev/be/java15/InnerClassesAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.IntBitNOT kiev/be/java15/IntBitNOT kiev\be\java15\CoreFunc.java
+CLASS kiev.be.java15.IntPostIncrFunc kiev/be/java15/IntPostIncrFunc kiev\be\java15\CoreFunc.java
+CLASS kiev.be.java15.IntPreIncrFunc kiev/be/java15/IntPreIncrFunc kiev\be\java15\CoreFunc.java
 CLASS kiev.be.java15.InterfaceMethodCP kiev/be/java15/InterfaceMethodCP kiev\be\java15\ConstPool.java
 CLASS kiev.be.java15.JArrayType kiev/be/java15/JArrayType kiev\be\java15\JType.java
 CLASS kiev.be.java15.JBaseMetaType kiev/be/java15/JBaseMetaType kiev\be\java15\JType.java
@@ -41,12 +45,16 @@ CLASS kiev.be.java15.JType kiev/be/java15/JType kiev\be\java15\JType.java
 CLASS kiev.be.java15.LinenoTableAttr kiev/be/java15/LinenoTableAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.LocalVarTableAttr kiev/be/java15/LocalVarTableAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.LongBitNOT kiev/be/java15/LongBitNOT kiev\be\java15\CoreFunc.java
+CLASS kiev.be.java15.LongPostIncrFunc kiev/be/java15/LongPostIncrFunc kiev\be\java15\CoreFunc.java
+CLASS kiev.be.java15.LongPreIncrFunc kiev/be/java15/LongPreIncrFunc kiev\be\java15\CoreFunc.java
 CLASS kiev.be.java15.MetaAttr kiev/be/java15/MetaAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.MethodCP kiev/be/java15/MethodCP kiev\be\java15\ConstPool.java
 CLASS kiev.be.java15.NameTypeCP kiev/be/java15/NameTypeCP kiev\be\java15\ConstPool.java
 CLASS kiev.be.java15.NodeCP kiev/be/java15/NodeCP kiev\be\java15\ConstPool.java
 CLASS kiev.be.java15.NumberCP kiev/be/java15/NumberCP kiev\be\java15\ConstPool.java
 CLASS kiev.be.java15.ParMetaAttr kiev/be/java15/ParMetaAttr kiev\be\java15\Attr.java
+CLASS kiev.be.java15.PostIncrFunc kiev/be/java15/PostIncrFunc kiev\be\java15\CoreFunc.java
+CLASS kiev.be.java15.PreIncrFunc kiev/be/java15/PreIncrFunc kiev\be\java15\CoreFunc.java
 CLASS kiev.be.java15.RIMetaAttr kiev/be/java15/RIMetaAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.RMetaAttr kiev/be/java15/RMetaAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.RVMetaAttr kiev/be/java15/RVMetaAttr kiev\be\java15\Attr.java

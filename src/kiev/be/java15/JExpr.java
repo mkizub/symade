@@ -237,113 +237,14 @@ public final view JIncrementExpr of IncrementExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: "+this);
+		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
+			return;
+		}
 		code.setLinePos(this);
-		JLvalueExpr lval = (JLvalueExpr)this.lval;
-		if( reqType ≢ Type.tpVoid ) {
-			if( lval instanceof JLVarExpr ) {
-				JLVarExpr va = (JLVarExpr)lval;
-				if( va.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
-					if( op == PrefixOperator.PreIncr ) {
-						code.addInstrIncr(va.var,1);
-						code.addInstr(op_load,va.var);
-						return;
-					}
-					else if( op == PostfixOperator.PostIncr ) {
-						code.addInstr(op_load,va.var);
-						code.addInstrIncr(va.var,1);
-						return;
-					}
-					else if( op == PrefixOperator.PreDecr ) {
-						code.addInstrIncr(va.var,-1);
-						code.addInstr(op_load,va.var);
-						return;
-					}
-					else if( op == PostfixOperator.PostDecr ) {
-						code.addInstr(op_load,va.var);
-						code.addInstrIncr(va.var,-1);
-						return;
-					}
-				}
-			}
-			lval.generateLoadDup(code);
-			if( op == PrefixOperator.PreIncr ) {
-				pushProperConstant(code,1);
-				code.addInstr(op_add);
-				lval.generateStoreDupValue(code);
-			}
-			else if( op == PrefixOperator.PreDecr ) {
-				pushProperConstant(code,-1);
-				code.addInstr(op_add);
-				lval.generateStoreDupValue(code);
-			}
-			else if( op == PostfixOperator.PostIncr ) {
-				pushProperConstant(code,1);
-				code.addInstr(op_add);
-				lval.generateStoreDupValue(code);
-				pushProperConstant(code,-1);
-				code.addInstr(op_add);
-			}
-			else if( op == PostfixOperator.PostDecr ) {
-				pushProperConstant(code,-1);
-				code.addInstr(op_add);
-				lval.generateStoreDupValue(code);
-				pushProperConstant(code,1);
-				code.addInstr(op_add);
-			}
-		} else {
-			if( lval instanceof JLVarExpr ) {
-				JLVarExpr va = (JLVarExpr)lval;
-				if( va.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
-					if( op==PrefixOperator.PreIncr || op==PostfixOperator.PostIncr ) {
-						code.addInstrIncr(va.var,1);
-						return;
-					}
-					else if( op==PrefixOperator.PreDecr || op==PostfixOperator.PostDecr ) {
-						code.addInstrIncr(va.var,-1);
-						return;
-					}
-				}
-			}
-			lval.generateLoadDup(code);
-
-			if( op == PrefixOperator.PreIncr ) {
-				pushProperConstant(code,1);
-				code.addInstr(op_add);
-				lval.generateStore(code);
-			}
-			else if( op == PrefixOperator.PreDecr ) {
-				pushProperConstant(code,-1);
-				code.addInstr(op_add);
-				lval.generateStore(code);
-			}
-			else if( op == PostfixOperator.PostIncr ) {
-				pushProperConstant(code,1);
-				code.addInstr(op_add);
-				lval.generateStore(code);
-			}
-			else if( op == PostfixOperator.PostDecr ) {
-				pushProperConstant(code,-1);
-				code.addInstr(op_add);
-				lval.generateStore(code);
-			}
-		}
+		CoreMethod m = (CoreMethod)ident.symbol;
+		m.bend_func.generate(code,reqType,this);
 	}
-
-	public:n,n,n,rw void pushProperConstant(Code code, int i) {
-		Type lt = lval.getType();
-		if( i > 0 ) { // 1
-			if     ( lt ≡ Type.tpDouble ) code.addConst(1.D);
-			else if( lt ≡ Type.tpFloat  ) code.addConst(1.F);
-			else if( lt ≡ Type.tpLong   ) code.addConst(1L);
-			else code.addConst(1);
-		} else { // -1
-			if     ( lt ≡ Type.tpDouble ) code.addConst(-1.D);
-			else if( lt ≡ Type.tpFloat  ) code.addConst(-1.F);
-			else if( lt ≡ Type.tpLong   ) code.addConst(-1L);
-			else code.addConst(-1);
-		}
-	}
-
 }
 
 @nodeview

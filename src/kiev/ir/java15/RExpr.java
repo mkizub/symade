@@ -375,7 +375,48 @@ public static final view RIncrementExpr of IncrementExpr extends RENode {
 	public ENode		lval;
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
+		if( isResolved() ) {
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
+			return;
+		}
+		
+		if (ident == null)
+			ident = new SymbolRef(pos, op.name);
+		if (ident.symbol == null) {
+			Method m = op.resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+op);
+				return;
+			}
+			if (m instanceof CoreMethod && m.core_func != null) {
+				try {
+					m.normilizeExpr(this);
+				} catch (ReWalkNodeException rne) {
+					((ENode)rne.replacer).resolve(reqType);
+					return;
+				}
+			} else {
+				ident.symbol = m;
+			}
+		}
+		Method m = (Method)ident.symbol;
+		if (m.isStatic()) {
+			m.makeArgs(getArgs(),reqType);
+			lval.resolve(m.params[0].getType());
+		} else {
+			m.makeArgs(ENode.emptyArray,reqType);
+			lval.resolve(((TypeDecl)m.parent()).xtype);
+		}
+		if !(m instanceof CoreMethod) {
+			// Not a standard operator
+			if( m.isStatic() )
+				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~lval}));
+			else
+				replaceWithNodeResolve(reqType, new CallExpr(pos,~lval,m,ENode.emptyArray));
+			return;
+		}
+		
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);

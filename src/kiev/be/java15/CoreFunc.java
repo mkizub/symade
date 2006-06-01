@@ -55,8 +55,8 @@ public abstract class BEndFunc {
 		coreFuncs.put("kiev.stdlib.int:assign_left_shift",             new AssignWithOpFunc(Instr.op_shl));
 		coreFuncs.put("kiev.stdlib.int:assign_right_shift",            new AssignWithOpFunc(Instr.op_shr));
 		coreFuncs.put("kiev.stdlib.int:assign_unsigned_right_shift",   new AssignWithOpFunc(Instr.op_ushr));
-		coreFuncs.put("kiev.stdlib.int:assign_add",         new AssignWithOpFunc(Instr.op_add));
-		coreFuncs.put("kiev.stdlib.int:assign_sub",         new AssignWithOpFunc(Instr.op_sub));
+		coreFuncs.put("kiev.stdlib.int:assign_add",         new AssignIntOpFunc(Instr.op_add));
+		coreFuncs.put("kiev.stdlib.int:assign_sub",         new AssignIntOpFunc(Instr.op_sub));
 		coreFuncs.put("kiev.stdlib.int:assign_mul",         new AssignWithOpFunc(Instr.op_mul));
 		coreFuncs.put("kiev.stdlib.int:assign_div",         new AssignWithOpFunc(Instr.op_div));
 		coreFuncs.put("kiev.stdlib.int:assign_mod",         new AssignWithOpFunc(Instr.op_rem));
@@ -80,10 +80,10 @@ public abstract class BEndFunc {
 		coreFuncs.put("kiev.stdlib.int:mod",                new BinaryOpFunc(Instr.op_rem));
 		coreFuncs.put("kiev.stdlib.int:positive",           new UnaryOpFunc(Instr.op_nop));
 		coreFuncs.put("kiev.stdlib.int:negative",           new UnaryOpFunc(Instr.op_neg));
-//		coreFuncs.put("kiev.stdlib.int:pre_incr",           IntPreINCR);
-//		coreFuncs.put("kiev.stdlib.int:pre_decr",           IntPreDECR);
-//		coreFuncs.put("kiev.stdlib.int:post_incr",          IntPostINCR);
-//		coreFuncs.put("kiev.stdlib.int:post_decr",          IntPostDECR);
+		coreFuncs.put("kiev.stdlib.int:pre_incr",           new IntPreIncrFunc(Instr.op_add, 1));
+		coreFuncs.put("kiev.stdlib.int:pre_decr",           new IntPreIncrFunc(Instr.op_add, -1));
+		coreFuncs.put("kiev.stdlib.int:post_incr",          new IntPostIncrFunc(Instr.op_add, 1));
+		coreFuncs.put("kiev.stdlib.int:post_decr",          new IntPostIncrFunc(Instr.op_add, -1));
 		
 		coreFuncs.put("kiev.stdlib.long:assign",            new AssignFunc());
 		coreFuncs.put("kiev.stdlib.long:assign_bit_or",     new AssignWithOpFunc(Instr.op_or));
@@ -117,10 +117,10 @@ public abstract class BEndFunc {
 		coreFuncs.put("kiev.stdlib.long:mod",               new BinaryOpFunc(Instr.op_rem));
 		coreFuncs.put("kiev.stdlib.long:positive",          new UnaryOpFunc(Instr.op_nop));
 		coreFuncs.put("kiev.stdlib.long:negative",          new UnaryOpFunc(Instr.op_neg));
-//		coreFuncs.put("kiev.stdlib.long:pre_incr",          LongPreINCR);
-//		coreFuncs.put("kiev.stdlib.long:pre_decr",          LongPreDECR);
-//		coreFuncs.put("kiev.stdlib.long:post_incr",         LongPostINCR);
-//		coreFuncs.put("kiev.stdlib.long:post_decr",         LongPostDECR);
+		coreFuncs.put("kiev.stdlib.long:pre_incr",          new LongPreIncrFunc(Instr.op_add, 1));
+		coreFuncs.put("kiev.stdlib.long:pre_decr",          new LongPreIncrFunc(Instr.op_add, -1));
+		coreFuncs.put("kiev.stdlib.long:post_incr",         new LongPostIncrFunc(Instr.op_add, 1));
+		coreFuncs.put("kiev.stdlib.long:post_decr",         new LongPostIncrFunc(Instr.op_add, -1));
 		
 		coreFuncs.put("kiev.stdlib.float:assign",           new AssignFunc());
 		coreFuncs.put("kiev.stdlib.float:assign_add",       new AssignWithOpFunc(Instr.op_add));
@@ -226,6 +226,35 @@ final class AssignWithOpFunc extends BEndFunc {
 	}
 }
 
+final class AssignIntOpFunc extends BEndFunc {
+	private final Instr instr;
+	AssignIntOpFunc(Instr instr) { this.instr = instr; }
+	public void generate(Code code, Type reqType, JENode expr) {
+		JENode[] args = this.getJArgs(expr);
+		JLvalueExpr lval = (JLvalueExpr)args[0];
+		JENode value = args[1];
+		if( lval instanceof JLVarExpr && value instanceof JConstExpr) {
+			JLVarExpr va = (JLVarExpr)lval;
+			if( !va.var.isNeedProxy() || va.isUseNoProxy() ) {
+				int val = ((Number)((JConstExpr)value).getConstValue()).intValue();
+				if (instr == Instr.op_sub) val = -val;
+				if (val >= Byte.MIN_VALUE && val <= Byte.MAX_VALUE) {
+					IntPreIncrFunc.genVarIncr(code, reqType, va, val);
+					return;
+				}
+			}
+		}
+		// like in AssignWithOpFunc
+		lval.generateLoadDup(code);
+		value.generate(code,null);
+		code.addInstr(instr);
+		if( reqType ≢ Type.tpVoid )
+			lval.generateStoreDupValue(code);
+		else
+			lval.generateStore(code);
+	}
+}
+
 final class BinaryOpFunc extends BEndFunc {
 	private final Instr instr;
 	BinaryOpFunc(Instr instr) { this.instr = instr; }
@@ -272,4 +301,116 @@ final class LongBitNOT extends BEndFunc {
 		code.addInstr(Instr.op_xor);
 	}
 }
+
+
+abstract class IncrFunc extends BEndFunc {
+	final Instr instr;
+	IncrFunc(Instr instr) { this.instr = instr; }
+	abstract void genIncr(Code code, Type reqType, JLvalueExpr lval);
+	abstract void pushProperConstant(Code code);
+	public void generate(Code code, Type reqType, JENode expr) {
+		JLvalueExpr lval = (JLvalueExpr)this.getJArgs(expr)[0];
+		genIncr(code, reqType, lval);
+	}
+}
+
+abstract class PreIncrFunc extends IncrFunc {
+	PreIncrFunc(Instr instr) { super(instr); }
+	public void genIncr(Code code, Type reqType, JLvalueExpr lval) {
+		if( reqType ≢ Type.tpVoid ) {
+			lval.generateLoadDup(code);
+			pushProperConstant(code);
+			code.addInstr(instr);
+			lval.generateStoreDupValue(code);
+		} else {
+			lval.generateLoadDup(code);
+			pushProperConstant(code);
+			code.addInstr(instr);
+			lval.generateStore(code);
+		}
+	}
+}
+
+abstract class PostIncrFunc extends IncrFunc {
+	PostIncrFunc(Instr instr) { super(instr); }
+	abstract JVar makeTempVar();
+	public void genIncr(Code code, Type reqType, JLvalueExpr lval) {
+		if( reqType ≢ Type.tpVoid ) {
+			lval.generateLoadDup(code);
+			code.addInstr(Instr.op_dup);
+			JVar tmp_var = makeTempVar();
+			code.addVar(tmp_var);
+			code.addInstr(Instr.op_store,tmp_var);
+			pushProperConstant(code);
+			code.addInstr(instr);
+			lval.generateStore(code);
+			code.addInstr(Instr.op_load,tmp_var);
+			code.removeVar(tmp_var);
+		} else {
+			lval.generateLoadDup(code);
+			pushProperConstant(code);
+			code.addInstr(instr);
+			lval.generateStore(code);
+		}
+	}
+}
+
+final class IntPreIncrFunc extends PreIncrFunc {
+	private final int val;
+	IntPreIncrFunc(Instr instr, int val) { super(instr); this.val = val; }
+	void pushProperConstant(Code code) { code.addConst(val); }
+	public void generate(Code code, Type reqType, JENode expr) {
+		JLvalueExpr lval = (JLvalueExpr)this.getJArgs(expr)[0];
+		if( lval instanceof JLVarExpr ) {
+			JLVarExpr va = (JLVarExpr)lval;
+			if( !va.var.isNeedProxy() || va.isUseNoProxy() ) {
+				genVarIncr(code, reqType, va, val);
+				return;
+			}
+		}
+		genIncr(code, reqType, lval);
+	}
+	public static void genVarIncr(Code code, Type reqType, JLVarExpr va, int val) {
+		code.addInstrIncr(va.var,val);
+		if( reqType ≢ Type.tpVoid )
+			code.addInstr(op_load,va.var);
+	}
+}
+
+final class IntPostIncrFunc extends PostIncrFunc {
+	private final int val;
+	IntPostIncrFunc(Instr instr, int val) { super(instr); this.val = val; }
+	void pushProperConstant(Code code) { code.addConst(val); }
+	JVar makeTempVar() { return (JVar)new Var(0,"",Type.tpInt,0); }
+	public void generate(Code code, Type reqType, JENode expr) {
+		JLvalueExpr lval = (JLvalueExpr)this.getJArgs(expr)[0];
+		if( lval instanceof JLVarExpr ) {
+			JLVarExpr va = (JLVarExpr)lval;
+			if( !va.var.isNeedProxy() || va.isUseNoProxy() ) {
+				genVarIncr(code, reqType, va, val);
+				return;
+			}
+		}
+		genIncr(code, reqType, lval);
+	}
+	public static void genVarIncr(Code code, Type reqType, JLVarExpr va, int val) {
+		if( reqType ≢ Type.tpVoid )
+			code.addInstr(op_load,va.var);
+		code.addInstrIncr(va.var,val);
+	}
+}
+
+final class LongPreIncrFunc extends PreIncrFunc {
+	private final long val;
+	LongPreIncrFunc(Instr instr, long val) { super(instr); this.val = val; }
+	void pushProperConstant(Code code) { code.addConst(val); }
+}
+
+final class LongPostIncrFunc extends PostIncrFunc {
+	private final long val;
+	LongPostIncrFunc(Instr instr, long val) { super(instr); this.val = val; }
+	void pushProperConstant(Code code) { code.addConst(val); }
+	JVar makeTempVar() { return (JVar)new Var(0,"",Type.tpLong,0); }
+}
+
 
