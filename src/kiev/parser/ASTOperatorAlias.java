@@ -8,7 +8,6 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.OpTypes.*;
 import static kiev.vlang.Operator.*;
 import syntax kiev.Syntax;
 
@@ -85,7 +84,6 @@ public final class ASTOperatorAlias extends ASTAlias {
 		if( !(n instanceof Method) )
 			throw new CompilerException(this,"Node of type "+n.getClass()+" cannot be aliased with operator");
 		Method m = (Method)n;
-		iopt = null;
 
 		switch(opmode) {
 		case Operator.LFY:
@@ -127,9 +125,8 @@ public final class ASTOperatorAlias extends ASTAlias {
 				AssignOperator op = AssignOperator.newAssignOperator(
 					image,("L "+image+" V").intern(),null,false
 					);
-				iopt=new OpTypes();
-				op.addTypes(otTheType(opret),otTheType(oparg1),otType(oparg2));
 				m.id.addAlias(op.name);
+				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
 			}
 			break;
@@ -166,9 +163,8 @@ public final class ASTOperatorAlias extends ASTAlias {
 				BinaryOperator op = BinaryOperator.newBinaryOperator(
 					prior,image,("V "+image+" V").intern(),null,Operator.orderAndArityNames[opmode],false
 					);
-				iopt=new OpTypes();
-				op.addTypes(otType(opret),otType(oparg1),otType(oparg2));
 				m.id.addAlias(op.name);
+				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
 			}
 			break;
@@ -208,9 +204,8 @@ public final class ASTOperatorAlias extends ASTAlias {
 				PrefixOperator op = PrefixOperator.newPrefixOperator(
 					prior,image,(image+" V").intern(),null,Operator.orderAndArityNames[opmode],false
 					);
-				iopt=new OpTypes();
-				op.addTypes(otType(opret),otType(oparg));
 				m.id.addAlias(op.name);
+				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached prefix "+op+" to method "+m);
 			}
 			break;
@@ -232,9 +227,8 @@ public final class ASTOperatorAlias extends ASTAlias {
 				PostfixOperator op = PostfixOperator.newPostfixOperator(
 					prior,image,("V "+image).intern(),null,Operator.orderAndArityNames[opmode],false
 					);
-				iopt=new OpTypes();
-				op.addTypes(otType(opret),otType(oparg));
 				m.id.addAlias(op.name);
+				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached postfix "+op+" to method "+m);
 			}
 			break;
@@ -244,7 +238,6 @@ public final class ASTOperatorAlias extends ASTAlias {
 			throw new CompilerException(this,"Unknown operator mode "+opmode);
 		}
 		checkPublicAccess(m);
-		iopt.method = m;
 		m.setOperatorMethod(true);
 	}
 

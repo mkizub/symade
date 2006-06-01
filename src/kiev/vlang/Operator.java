@@ -1,12 +1,10 @@
 package kiev.vlang;
 
 import kiev.Kiev;
-import kiev.vlang.OpTypes.*;
 import kiev.vlang.types.*;
 import kiev.be.java15.Instr;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.OpTypes.*;
 import static kiev.vlang.Operator.*;
 
 import syntax kiev.Syntax;
@@ -15,331 +13,6 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-
-public class OpTypes {
-	public TypeRule		trtypes[];
-    public Method		method;
-
-	public OpTypes() {}
-
-	public static Type getExprType(Object n, Type tp) {
-		Type t = null;
-		switch(n) {
-		case ENode:
-		{
-			ENode e = (ENode)n;
-			trace( Kiev.debugOperators,"type of "+n+" is "+e.getType());
-			t = e.getType();
-			break;
-		}
-		case Type:
-			trace( Kiev.debugOperators,"type of "+n+" is "+((Type)n));
-			t = (Type)n;
-			break;
-		case Struct:
-			trace( Kiev.debugOperators,"type of "+n+" is "+((Struct)n).xtype);
-			t = ((Struct)n).xtype;
-			break;
-		}
-		if( t == null )
-			throw new RuntimeException("getExprType of "+(n==null?"null":n.getClass().toString()));
-		return t;
-	}
-
-	public abstract class TypeRule {
-		int position;
-		boolean auto_cast;
-		public TypeRule() { auto_cast = true; }
-		public TypeRule(boolean auto_cast) { this.auto_cast = auto_cast; }
-		public abstract rule resolve(Type[] types, ASTNode[] nodes);
-	}
-
-	public class rtAny extends TypeRule {
-		public rtAny() {}
-
-		public rtAny(boolean auto ) { super(auto); }
-
-		public rule resolve(Type[] types, ASTNode[] nodes)
-		{
-			trace( Kiev.debugOperators,"check "+(position==0?"ret":"arg"+position)+" ("+nodes[position]+") to be "+this),
-			{
-				// Skip rule
-//				types[position] == null, nodes[position] == null, $cut,
-//				trace( Kiev.debugOperators,"type "+types[position]+" ("+nodes[position]+") match to be "+this)
-//			;
-				// If both present, then check they match
-				types[position] != null, nodes[position] != null, $cut,
-				{
-					auto_cast,
-					getExprType(nodes[position],types[position]).getAutoCastTo(types[position])!=null
-				;	!auto_cast,
-					getExprType(nodes[position],types[position]).isInstanceOf(types[position])
-				},
-				trace( Kiev.debugOperators,"type "+getExprType(nodes[position],types[position])+" ("+nodes[position]+") match to be "+types[position])
-			;
-//				// If type exists - let it be
-//				types[position] != null, $cut,
-//				trace( Kiev.debugOperators,"type "+types[position]+" ("+nodes[position]+") match to be "+this)
-//			;
-				// If type not exists - try resolve expression
-				types[position] == null, nodes[position] != null, $cut,
-				types[position] = getExprType(nodes[position],types[position]),
-				trace( Kiev.debugOperators,"type "+types[position]+" ("+nodes[position]+") resolved and match to be "+this)
-			},
-			trace( Kiev.debugOperators,"type "+types[position]+" resolved for "+(position==0?"ret":"arg"+position))
-		}
-		public String toString() { return "<any>"; }
-	}
-
-	public class rtType extends TypeRule {
-		public Type				type;
-		public int				flag;
-
-		public rtType( int flag ) { this.flag = flag; }
-
-		public rtType( Type type ) { this.type = type; }
-
-		public rtType( int flag, boolean auto ) { super(auto); this.flag = flag; }
-
-		public rtType( Type type, boolean auto ) { super(auto); this.type = type; }
-
-		public rule resolve(Type[] types, ASTNode[] nodes)
-		{
-			trace( Kiev.debugOperators,"check "+(position==0?"ret":"arg"+position)+" ("+nodes[position]+") to be "+this),
-			{
-				// If type given
-				type!=null, $cut,
-				{
-					// If nodes not exists - simply set the type
-					nodes[position] == null, $cut,
-					types[position] = type
-				;
-					// If nodes exists, check it match
-					nodes[position] != null, $cut,
-					{
-						auto_cast,
-						{
-							types[position] != null, types[position].getAutoCastTo(type)!=null
-						;	getExprType(nodes[position],types[position]).getAutoCastTo(type)!=null,
-							types[position] = getExprType(nodes[position],types[position]),
-							types[position].getAutoCastTo(type)!=null
-						}
-					;	!auto_cast,
-						{
-							types[position] != null, types[position].isInstanceOf(type)
-						;	getExprType(nodes[position],types[position]).isInstanceOf(type),
-							types[position] = getExprType(nodes[position],types[position]),
-							types[position].isInstanceOf(type)
-						}
-					}
-				}
-			;
-				// Now, if a flag of type is known
-				$cut,
-				{
-//					// If nodes not exists - skip the rule
-//					nodes[position] == null, $cut
-//				;
-					// If nodes exists, check it match
-					nodes[position] != null, $cut,
-					{
-						types[position] != null, (this.flag & types[position].flags) != 0
-					;	(this.flag & getExprType(nodes[position],types[position]).flags) != 0,
-						types[position] = getExprType(nodes[position],types[position])
-					}
-				}
-			},
-			trace( Kiev.debugOperators,"type "+types[position]+" resolved for "+(position==0?"ret":"arg"+position))
-		}
-
-		public String toString() {
-			if( type != null ) return type.toString();
-			switch(flag) {
-			case Type.flReference:		return "<reference>";
-			case Type.flInteger:		return "<integer>";
-			case Type.flFloat:			return "<float>";
-			case Type.flNumber:			return "<number>";
-			case Type.flArray:			return "<array>";
-			case Type.flBoolean:		return "<boolean>";
-			}
-			return "<type "+flag+">";
-		}
-	}
-
-	rule resolveRef(TypeRule tr, int ref, Type[] types, ASTNode[] nodes)
-		TypeRule@ at;
-	{
-		trace( Kiev.debugOperators,"need to find out "+(ref==0?"ret":"arg"+ref)+" ("+nodes[ref]+") referred by "+tr),
-		{
-//			types[ref] == Type.tpAny,					// locked
-//			$cut,
-//			trace( Kiev.debugOperators,"op_type_res: type at "+ref+" is already locked!!! Assuming own type "+getExprType(nodes[ref],types[ref])),
-//			types[ref] = getExprType(nodes[ref],null)
-//		;
-			types[ref] == null,							// not resolved yet
-			$cut,
-			at ?= this.trtypes[ref],
-			at.resolve(types,nodes)						// resolve
-		;
-			types[ref] != null,							// not resolved yet
-			$cut,
-			trace( Kiev.debugOperators,"op_type_res: type at "+ref+" is already resolved as "+types[ref]),
-			types[ref] ≢ Type.tpAny					// already resolved
-		},
-		trace( Kiev.debugOperators,"type "+types[ref]+" resolved for "+(ref==0?"ret":"arg"+ref))
-	}
-
-	public class rtSame extends TypeRule {
-		public int		ref;
-
-		public rtSame(int ref) { this.ref = ref; }
-		public rule resolve(Type[] types, ASTNode[] nodes)
-		{
-			trace( Kiev.debugOperators,"opt_check "+position+": "+nodes[position]+" to be Same("+ref+")"),
-			// Resolve reference, if need
-			resolveRef(this,ref,types,nodes),
-			trace( Kiev.debugOperators,"opt_check "+position+": "+types[position]+" to be Same("+ref+")"),
-			{
-				// If both ebscant then assign
-				types[position] == null, nodes[position] == null, $cut,
-				trace( Kiev.debugOperators,"opt_check "+position+" type set to be "+types[ref]),
-				types[position] = types[ref]
-			;
-				// If both present, then check they match
-				types[position] != null, nodes[position] != null, $cut,
-				trace( Kiev.debugOperators,"opt_check "+position+" type "+getExprType(nodes[position],types[position])+" to be same as "+types[ref]),
-				getExprType(nodes[position],types[position]).getAutoCastTo(types[ref])!=null
-			;
-				// If type exists - let it be
-				types[position] != null, $cut,
-				trace( Kiev.debugOperators,"opt_check "+position+" type "+types[position]+" to be same as "+types[ref]),
-				types[position].getAutoCastTo(types[ref])!=null
-			;
-				// If type not exists - try resolve expression
-				types[position] == null, nodes[position] != null, $cut,
-				types[position] = getExprType(nodes[position],types[ref]),
-				trace( Kiev.debugOperators,"opt_check "+position+" type "+types[position]+" to be same as "+types[ref]),
-				types[position].getAutoCastTo(types[ref])!=null
-			},
-			trace( Kiev.debugOperators,"opt_check "+position+" set to be "+types[position])
-		}
-
-		public String toString() { return "<same "+ref+">"; }
-	}
-
-	public class rtUpperCastNumber extends TypeRule {
-		public int		ref1;
-		public int		ref2;
-
-		public rtUpperCastNumber(int ref1, int ref2) { this.ref1 = ref1; this.ref2 = ref2; }
-		public rule resolve(Type[] types, ASTNode[] nodes)
-			Type@ tp;
-		{
-			trace( Kiev.debugOperators,"opt_check "+position+": "+nodes[position]+" to be UpperCastNumber("+ref1+","+ref2+")"),
-			{
-				ref1 != position, resolveRef(this,ref1,types,nodes)
-			;	ref1 == position, types[ref1] = getExprType(nodes[ref1],types[ref1])
-			},
-			{
-				ref2 != position, resolveRef(this,ref2,types,nodes)
-			;	ref2 == position, types[ref2] = getExprType(nodes[ref2],types[ref2])
-			},
-			trace( Kiev.debugOperators,"opt_check "+types[ref1]+" and "+types[ref2]+" to be UpperCastable to "+types[position]),
-			{
-				types[ref1] == null && types[ref2] == null, $cut
-			;
-				types[ref1] == null && types[ref2].isNumber(), $cut
-			;
-				types[ref2] == null && types[ref1].isNumber(), $cut
-			;
-				types[ref1].isNumber() && types[ref2].isNumber(),
-				{
-					types[ref1] ≡ Type.tpDouble || types[ref2] ≡ Type.tpDouble, tp ?= Type.tpDouble
-				;	types[ref1] ≡ Type.tpFloat || types[ref2] ≡ Type.tpFloat, tp ?= Type.tpFloat
-				;	types[ref1] ≡ Type.tpLong || types[ref2] ≡ Type.tpLong, tp ?= Type.tpLong
-				;	types[ref1] ≡ Type.tpInt || types[ref2] ≡ Type.tpInt, tp ?= Type.tpInt
-				;	types[ref1] ≡ Type.tpChar || types[ref2] ≡ Type.tpChar, tp ?= Type.tpChar
-				;	types[ref1] ≡ Type.tpShort || types[ref2] ≡ Type.tpShort, tp ?= Type.tpShort
-				;	types[ref1] ≡ Type.tpByte || types[ref2] ≡ Type.tpByte, tp ?= Type.tpByte
-				},
-				types[position] = tp
-			},
-			trace( Kiev.debugOperators,"opt_check "+position+" set to be "+types[position])
-		}
-
-		public String toString() { return "<uppercast "+ref1+","+ref2+">"; }
-	}
-
-	public class rtDownCast extends TypeRule {
-		public int		ref1;
-		public int		ref2;
-
-		public rtDownCast(int ref1, int ref2) { this.ref1 = ref1; this.ref2 = ref2; }
-		public rule resolve(Type[] types, ASTNode[] nodes)
-		{
-			trace( Kiev.debugOperators,"opt_check "+position+": "+nodes[position]+" to be DownCast("+ref1+","+ref2+")"),
-			{
-				ref1 != position, resolveRef(this,ref1,types,nodes)
-			;	ref1 == position, types[ref1] = getExprType(nodes[ref1],types[ref1])
-			},
-			{
-				ref2 != position, resolveRef(this,ref2,types,nodes)
-			;	ref2 == position, types[ref2] = getExprType(nodes[ref2],types[ref2])
-			},
-			{
-				{ types[ref1] == null ; types[ref2] == null }
-			;
-				types[ref1].isReference() && types[ref2].isReference(),
-				types[position] = Type.leastCommonType(types[ref1],types[ref2])
-			},
-			trace( Kiev.debugOperators,"opt_check "+position+" set to be "+types[position])
-		}
-
-		public String toString() { return "<downcast "+ref1+","+ref2+">"; }
-	}
-
-	public boolean match(Type[] ts, ASTNode[] nodes) {
-		trace( Kiev.debugOperators,"Resolving "+Arrays.toString(nodes)+" to match "+Arrays.toString(ts));
-		if( method != null ) {
-			if( method.isStatic() ) {
-				// Check we've imported the method
-			} else {
-				// Check method is of nodes[1]'s class
-				if( method.type.arity == (nodes.length-2) && nodes[1] != null
-					&& getExprType(nodes[1],ts[1]).isInstanceOf(method.ctx_tdecl.xtype)
-				)
-					;
-				// Check method arg of nodes[1]'s class
-				//else if( method.type.args.length == 1 && nodes[1] != null
-				//	&& getExprType(nodes[1],ts[1]).isInstanceOf(method.type.args[0])
-				//)
-				//	;
-				else
-					return false;
-			}
-		}
-		for(int i=0; i < ts.length; i++) {
-//			if( ts[i] == null ) {
-				trace( Kiev.debugOperators,"need to find out "+(i==0?"ret":"arg"+i)+" ("+nodes[i]+") to match "+ts[i]);
-				if( !trtypes[i].resolve(ts,nodes) ) {
-					trace( Kiev.debugOperators,"op_type_res: "+i+" may not be defined");
-					return false;
-				}
-				trace( Kiev.debugOperators,"op_type_res: "+i+" was found to be "+ts[i]);
-//			}
-		}
-		return true;
-	}
-
-	public boolean match(ASTNode[] nodes) {
-		Type[] ts = new Type[trtypes.length];
-		return match(ts,nodes);
-	}
-
-	public String toString() { return "{"+Arrays.toString(trtypes)+"}"; }
-
-}
-
 
 public abstract class Operator implements Constants {
 
@@ -377,27 +50,13 @@ public abstract class Operator implements Constants {
 		"xfxfy"		// XFXFY
 	};
 
-	public static OpTypes 								iopt;	// initialization OpTypes
-	public static OpTypes.TypeRule otAny()				{ return iopt.new rtAny(); }
-	public static OpTypes.TypeRule otTheAny()			{ return iopt.new rtAny(false); }
-	public static OpTypes.TypeRule otBoolean()			{ return iopt.new rtType( Type.flBoolean ); }
-	public static OpTypes.TypeRule otNumber()			{ return iopt.new rtType( Type.flNumber ); }
-	public static OpTypes.TypeRule otInteger()			{ return iopt.new rtType( Type.flInteger ); }
-	public static OpTypes.TypeRule otReference()		{ return iopt.new rtType( Type.flReference ); }
-	public static OpTypes.TypeRule otArray()			{ return iopt.new rtType( Type.flArray ); }
-	public static OpTypes.TypeRule otSame(int i)		{ return iopt.new rtSame( i ); }
-	public static OpTypes.TypeRule otType(Type tp)		{ return iopt.new rtType( tp ); }
-	public static OpTypes.TypeRule otTheType(Type tp)	{ return iopt.new rtType( tp, false ); }
-	public static OpTypes.TypeRule otUpperCastNumber(int i, int j)	{ return iopt.new rtUpperCastNumber( i, j ); }
-	public static OpTypes.TypeRule otDownCast(int i, int j)			{ return iopt.new rtDownCast( i, j ); }
-
 	public				int			priority;
 	public				String		image;
 	public				String		name;
 	public				Instr		instr;
     public				int			mode;
     public				boolean		is_standard;
-    public				OpTypes[]	types;
+    public				Method[]	methods;
 	@virtual @abstract
     public:r,r,r,rw		String		smode;
 
@@ -407,7 +66,7 @@ public abstract class Operator implements Constants {
 		name = nm.intern();
 		instr = in;
 		is_standard = std;
-		types = new OpTypes[0];
+		methods = new Method[0];
 		for(int i=0; i < orderAndArityNames.length; i++) {
 			if( orderAndArityNames[i].equals(oa) ) {
 				mode = i;
@@ -427,33 +86,11 @@ public abstract class Operator implements Constants {
 
 	@getter public String get$smode() { return orderAndArityNames[mode]; }
 
-	public void addTypes(OpTypes.TypeRule rt, ...) {
-		iopt.trtypes = new TypeRule[va_args.length+1];
-		iopt.trtypes[0] = rt;
-		iopt.trtypes[0].position = 0;
-		for(int i=1; i < iopt.trtypes.length; i++) {
-			iopt.trtypes[i] = (TypeRule)va_args[i-1];
-			iopt.trtypes[i].position = i;
-		}
-		types = (OpTypes[])Arrays.append(types,iopt);
-	}
-
-	public void removeTypes(OpTypes opt) {
-		for(int i=0; i < types.length; i++) {
-			if( types[i] == opt ) {
-				removeTypes(i);
+	public void addMethod(Method m) {
+		for(int i=0; i < methods.length; i++)
+			if (methods[i] == m)
 				return;
-			}
-		}
-		throw new RuntimeException("OpTypes "+opt+" do not exists in "+this);
-	}
-
-	public void removeTypes(int index) {
-		OpTypes[] newtypes = new OpTypes[types.length-1];
-		for(int k=0, l=0; k < types.length; k++) {
-			if( k != index ) newtypes[l++] = types[k];
-		}
-		types = newtypes;
+		methods = (Method[])Arrays.appendUniq(methods,m);
 	}
 
 	public static void cleanupMethod(Method m) {
@@ -462,11 +99,16 @@ public abstract class Operator implements Constants {
 			PostfixOperator.hash, MultiOperator.hash
 		};
 		foreach( Hashtable<String,Operator> hash; hashes ) {
-			foreach( Operator op; hash; op.types.length > 0 ) {
-				for(int i=0; i < op.types.length; i++) {
-					OpTypes opt = op.types[i];
-					if (opt.method == m) {
-						op.removeTypes(i);
+			foreach( Operator op; hash ) {
+				Method[] methods = op.methods;
+				for(int i=0; i < methods.length; i++) {
+					if (methods[i] == m) {
+						Method[] tmp = new Method[methods.length-1];
+						for (int j=0; j < i; j++)
+							tmp[j] = methods[j];
+						for (int j=i; j < tmp.length; j++)
+							tmp[j] = methods[j+1];
+						op.methods[i] = methods = tmp;
 						i--;
 					}
 				}
@@ -544,13 +186,12 @@ public abstract class Operator implements Constants {
 	}
 
 	final public rule resolveOperatorMethodR(Method@ node, ResInfo info, String name, CallType mt)
-		OpTypes@ opt;
+		Method@ m;
 	{
-		opt @= types,
-		opt.method != null,
-		info.check(opt.method),
-		opt.method.equalsByCast(name,mt,Type.tpVoid,info),
-		node ?= opt.method
+		m @= this.methods,
+		info.check(m),
+		m.equalsByCast(name,mt,Type.tpVoid,info),
+		node ?= m
 	}
 }
 
@@ -575,11 +216,7 @@ public class AssignOperator extends Operator {
 
 	static {
 		Assign = newAssignOperator("=", "L = V",null,true);
-			iopt=new OpTypes();
-			Assign.addTypes(otSame(1),otTheAny(),otSame(1));
 		Assign2 = newAssignOperator(":=", "L := V",null,true);
-			iopt=new OpTypes();
-			Assign2.addTypes(otSame(1),otTheAny(),otSame(1));
 
 		AssignBitOr = newAssignOperator("|=", "L |= V", Instr.op_or,true);
 		AssignBitXor = newAssignOperator("^=", "L ^= V", Instr.op_xor,true);
@@ -721,8 +358,6 @@ public class MultiOperator extends Operator {
 
 	static {
 		Conditional = newMultiOperator(opConditionalPriority, new String[]{"?",":"}, "V ? V : V",true);
-			iopt=new OpTypes();
-			Conditional.addTypes(otDownCast(2,3),otBoolean(),otAny(),otAny());
 	}
 
 	public String[]	images;

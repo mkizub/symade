@@ -219,7 +219,6 @@ public class Bytecoder implements JConstants {
 		if( op != null ) {
 			Type opret = m.type.ret();
 			Type oparg1, oparg2;
-			Operator.iopt = null;
 			switch(op.mode) {
 			case Operator.LFY:
 				if( m.isStatic() )
@@ -229,8 +228,8 @@ public class Bytecoder implements JConstants {
 				else
 					throw new RuntimeException("Method "+m+" must be virtual and have 1 argument");
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
-				Operator.iopt = new OpTypes();
-				op.addTypes(otSame(1),otType(oparg1),otType(oparg2));
+				m.id.addAlias(op.name);
+				op.addMethod(m);
 				break;
 			case Operator.XFX:
 			case Operator.YFX:
@@ -247,8 +246,8 @@ public class Bytecoder implements JConstants {
 				else
 					throw new RuntimeException("Method "+m+" must have 2 arguments");
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
-				Operator.iopt = new OpTypes();
-				op.addTypes(otType(opret),otType(oparg1),otType(oparg2));
+				m.id.addAlias(op.name);
+				op.addMethod(m);
 				break;
 			case Operator.FX:
 			case Operator.FY:
@@ -267,8 +266,8 @@ public class Bytecoder implements JConstants {
 				else
 					throw new RuntimeException("Method "+m+" must have 1 argument");
 				if( Kiev.verbose ) System.out.println("Attached unary "+op+" to method "+m);
-				Operator.iopt = new OpTypes();
-				op.addTypes(otType(opret),otType(oparg1));
+				m.id.addAlias(op.name);
+				op.addMethod(m);
 				break;
 			case Operator.XFXFY:
 				throw new RuntimeException("Multioperators are not supported yet");
@@ -276,7 +275,6 @@ public class Bytecoder implements JConstants {
 				throw new RuntimeException("Unknown operator mode "+op.mode);
 			}
 
-			Operator.iopt.method = m;
 			m.setOperatorMethod(true);
 		}
 		if( m.isStatic()

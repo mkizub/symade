@@ -5,7 +5,6 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.OpTypes.*;
 import static kiev.vlang.Operator.*;
 
 /**
