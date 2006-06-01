@@ -526,6 +526,7 @@ CLASS kiev.vlang.ObjectAssign kiev/vlang/ObjectAssign kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ObjectAssign2 kiev/vlang/ObjectAssign2 kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ObjectBoolEQ kiev/vlang/ObjectBoolEQ kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ObjectBoolNE kiev/vlang/ObjectBoolNE kiev\vlang\CoreMethod.java
+CLASS kiev.vlang.ObjectPvarINIT kiev/vlang/ObjectPvarINIT kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.OpTypes kiev/vlang/OpTypes kiev\vlang\Operator.java
 CLASS kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java
 CLASS kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java

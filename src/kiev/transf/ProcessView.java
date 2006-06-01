@@ -255,7 +255,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				);
 				body.stats.append(ass_st);
 				body.stats.append(new ReturnStat(f.pos,null));
-				if!(f.getType().isAutoCastableTo(view_fld.getType()))
+				if (f.getType().getAutoCastTo(view_fld.getType()) == null)
 					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,view_fld.getType(),~val); });
 				set_var.setAbstract(false);
 			}
@@ -272,7 +272,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 					clazz.view_of.getType().getStruct().resolveField(f.id.sname)
 				);
 				body.stats.add(new ReturnStat(f.pos,val));
-				if!(val.getType().isAutoCastableTo(f.getType()))
+				if (val.getType().getAutoCastTo(f.getType()) == null)
 					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,f.getType(),~val); });
 				get_var.setAbstract(false);
 			}

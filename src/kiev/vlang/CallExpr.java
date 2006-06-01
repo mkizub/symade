@@ -153,7 +153,7 @@ public class CallExpr extends ENode {
 				goto try_static;
 			}
 			if (cnt == 0) {
-				StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(ident.name,mt)+"' in:\n");
+				StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(ident.name,args)+"' in:\n");
 				for(int si=0; si < res.length; si++) {
 					if (tps[si] == null)
 						continue;

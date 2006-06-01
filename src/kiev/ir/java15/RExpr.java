@@ -84,134 +84,55 @@ public static final view RAssignExpr of AssignExpr extends RLvalueExpr {
 				ReturnStat.autoReturn(reqType, this);
 			return;
 		}
-		lval.resolve(reqType);
-		Type et1 = lval.getType();
-		if (op == AssignOperator.Assign && et1 instanceof CTimeType)
-			value.resolve(et1.getUnboxedType());
-		else if (op == AssignOperator.Assign2 && et1 instanceof CTimeType)
-			value.resolve(et1.getEnclosedType());
-		else
-			value.resolve(et1);
-		if (value instanceof TypeRef)
-			((TypeRef)value).toExpr(et1);
-		Type et2 = value.getType();
-		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !(et1 instanceof CTimeType) && !(et2 instanceof CTimeType)) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( op == AssignOperator.Assign2 && et1 instanceof CTimeType && et2.isInstanceOf(et1)) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( op == AssignOperator.AssignAdd && et1 ≈ Type.tpString ) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( ( et1.isNumber() && et2.isNumber() ) &&
-			(    op==AssignOperator.AssignAdd
-			||   op==AssignOperator.AssignSub
-			||   op==AssignOperator.AssignMul
-			||   op==AssignOperator.AssignDiv
-			||   op==AssignOperator.AssignMod
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
-			(    op==AssignOperator.AssignLeftShift
-			||   op==AssignOperator.AssignRightShift
-			||   op==AssignOperator.AssignUnsignedRightShift
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( ( et1.isInteger() && et2.isInteger() ) &&
-			(    op==AssignOperator.AssignBitOr
-			||   op==AssignOperator.AssignBitXor
-			||   op==AssignOperator.AssignBitAnd
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		else if( ( et1.isBoolean() && et2.isBoolean() ) &&
-			(    op==AssignOperator.AssignBitOr
-			||   op==AssignOperator.AssignBitXor
-			||   op==AssignOperator.AssignBitAnd
-			)
-		) {
-			this.resolve2(reqType);
-			return;
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,lval,value};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				Method rm = opt.method;
-				if !(rm.isMacro() && rm.isNative()) {
-					if( rm.isStatic() )
-						replaceWithNodeResolve(reqType, new CallExpr(pos,null,rm,new ENode[]{~lval,~value}));
-					else
-						replaceWithNodeResolve(reqType, new CallExpr(pos,~lval,rm,new ENode[]{~value}));
-				}
-				return;
-			}
-		}
-		// Not a standard and not overloaded, try wrapped classes
-		if (op != AssignOperator.Assign2) {
-			if (et1 instanceof CTimeType && et2 instanceof CTimeType) {
-				lval = et1.makeUnboxedExpr(lval);
-				value = et2.makeUnboxedExpr(value);
-				resolve(reqType);
-				return;
-			}
-			else if (et1 instanceof CTimeType) {
-				lval = et1.makeUnboxedExpr(lval);
-				resolve(reqType);
-				return;
-			}
-			else if (et2 instanceof CTimeType) {
-				value = et2.makeUnboxedExpr(value);
-				resolve(reqType);
-				return;
-			}
-		}
-		this.resolve2(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
-	}
 
-	public:no,no,no,rw final void resolve2(Type reqType) {
-		lval.resolve(null);
-		if( !(lval instanceof LvalueExpr) )
-			throw new RuntimeException("Can't assign to "+lval+": lvalue requared");
-		Type t1 = lval.getType();
-		if (t1 instanceof CTimeType && (value.isForWrapper() || op == AssignOperator.Assign2))
-			t1 = t1.getEnclosedType();
-		if( op==AssignOperator.AssignAdd && t1 ≈ Type.tpString ) {
-			op = AssignOperator.Assign;
-			value = new BinaryExpr(pos,BinaryOperator.Add,new Shadow(lval),~value);
-		}
-		if (value instanceof TypeRef)
-			((TypeRef)value).toExpr(t1);
-		else if (value instanceof ENode)
-			value.resolve(t1);
-		else
-			throw new CompilerException(value, "Can't opeerate on "+value);
-		Type t2 = value.getType();
-		if (t2 instanceof CTimeType && (value.isForWrapper() || op == AssignOperator.Assign2))
-			t2 = t2.getEnclosedType();
-		if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
-			if( !t2.isIntegerInCode() ) {
-				value = new CastExpr(pos,Type.tpInt,~value);
-				value.resolve(Type.tpInt);
+		if (ident == null)
+			ident = new SymbolRef(pos, op.name);
+		if (ident.symbol == null) {
+			Method m = op.resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+op);
+				return;
+			}
+			if (m instanceof CoreMethod && m.core_func != null) {
+				try {
+					m.normilizeExpr(this);
+				} catch (ReWalkNodeException rne) {
+					((ENode)rne.replacer).resolve(reqType);
+					return;
+				}
+			} else {
+				ident.symbol = m;
 			}
 		}
-		else if( !t2.isInstanceOf(t1) ) {
-			if (t2 ≡ StdTypes.tpNull && t1.isReference())
+		Method m = (Method)ident.symbol;
+		if (m.isStatic()) {
+			m.makeArgs(getArgs(),reqType);
+			lval.resolve(m.params[0].getType());
+			value.resolve(m.params[1].getType());
+		} else {
+			m.makeArgs(new ENode[]{value},reqType);
+			lval.resolve(((TypeDecl)m.parent()).xtype);
+			value.resolve(m.params[0].getType());
+		}
+		if !(m instanceof CoreMethod) {
+			// Not a standard operator
+			if (m.isMacro())
+				replaceWithNodeResolve(reqType, (ENode)m.body.doRewrite(new RewriteContext(this, getArgs())));
+			else if( m.isStatic() )
+				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~lval,~value}));
+			else
+				replaceWithNodeResolve(reqType, new CallExpr(pos,~lval,m,new ENode[]{~value}));
+			return;
+		}
+
+		Type t1 = lval.getType();
+		Type t2 = value.getType();
+		if( !t2.isInstanceOf(t1) ) {
+			if (t2 ≡ StdTypes.tpNull && t1.isReference() || m instanceof CoreMethod)
 				;
-			if (t2.isAutoCastableTo(t1)) {
+			else if (t2.getErasedType().isInstanceOf(t1.getErasedType()))
+				;
+			else if (t2.getAutoCastTo(t1) != null) {
 				value = new CastExpr(pos,t1,~value);
 				value.resolve(t1);
 			}
@@ -242,6 +163,7 @@ public static final view RAssignExpr of AssignExpr extends RLvalueExpr {
 					ctx_method.addViolatedField( ((IFldExpr)lval).var );
 			}
 		}
+
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);
@@ -255,7 +177,11 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 	public ENode			expr2;
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
+		if( isResolved() ) {
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
+			return;
+		}
 		
 		if (ident == null)
 			ident = new SymbolRef(pos, op.name);
@@ -314,7 +240,11 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 	public ENode			expr;
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return;
+		if( isResolved() ) {
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
+			return;
+		}
 		
 		if (ident == null)
 			ident = new SymbolRef(pos, op.name);
@@ -493,7 +423,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 			return;
 		}
 		// Try to find $cast method
-		if( !extp.isAutoCastableTo(type) ) {
+		if (extp.getAutoCastTo(type) == null) {
 			if( tryOverloadedCast(extp) )
 				return;
 			if (extp instanceof CTimeType) {
@@ -502,14 +432,14 @@ public static final view RCastExpr of CastExpr extends RENode {
 				return;
 			}
 		}
-		else if (extp instanceof CTimeType && extp.getUnboxedType().isAutoCastableTo(type)) {
+		else if (extp instanceof CTimeType && extp.getUnboxedType().getAutoCastTo(type) != null) {
 			if( tryOverloadedCast(extp) )
 				return;
 			expr = extp.makeUnboxedExpr(expr);
 			resolve(reqType);
 			return;
 		}
-		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView() && extp.getStruct().view_of.getType().isAutoCastableTo(type)) {
+		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView() && extp.getStruct().view_of.getType().getAutoCastTo(type) != null) {
 			if( tryOverloadedCast(extp) )
 				return;
 			this.resolve2(type);
@@ -587,7 +517,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 			return;
 		}
 		// Try to find $cast method
-		if( !et.isAutoCastableTo(type) && tryOverloadedCast(et))
+		if( et.getAutoCastTo(type) == null && tryOverloadedCast(et))
 			return;
 
 		if( et.isReference() != type.isReference() && !(expr instanceof ClosureCallExpr) )
@@ -609,7 +539,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		if( et.isReference() && type.isReference() && et.getStruct() != null
 		 && et.getStruct().package_clazz.isClazz()
 		 && !(et instanceof ArgType)
-		 && !et.getStruct().isStatic() && et.getStruct().package_clazz.xtype.isAutoCastableTo(type)
+		 && !et.getStruct().isStatic() && et.getStruct().package_clazz.xtype.getAutoCastTo(type) != null
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,
@@ -652,7 +582,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 			}
 		}
 		if( !et.equals(type) && expr instanceof ClosureCallExpr && et instanceof CallType ) {
-			if( et.isAutoCastableTo(type) ) {
+			if( et.getAutoCastTo(type) != null ) {
 				((ClosureCallExpr)expr).is_a_call = Boolean.TRUE;
 				return;
 			}

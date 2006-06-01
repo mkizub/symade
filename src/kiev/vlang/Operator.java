@@ -71,7 +71,7 @@ public class OpTypes {
 				types[position] != null, nodes[position] != null, $cut,
 				{
 					auto_cast,
-					getExprType(nodes[position],types[position]).isAutoCastableTo(types[position])
+					getExprType(nodes[position],types[position]).getAutoCastTo(types[position])!=null
 				;	!auto_cast,
 					getExprType(nodes[position],types[position]).isInstanceOf(types[position])
 				},
@@ -119,10 +119,10 @@ public class OpTypes {
 					{
 						auto_cast,
 						{
-							types[position] != null, types[position].isAutoCastableTo(type)
-						;	getExprType(nodes[position],types[position]).isAutoCastableTo(type),
+							types[position] != null, types[position].getAutoCastTo(type)!=null
+						;	getExprType(nodes[position],types[position]).getAutoCastTo(type)!=null,
 							types[position] = getExprType(nodes[position],types[position]),
-							types[position].isAutoCastableTo(type)
+							types[position].getAutoCastTo(type)!=null
 						}
 					;	!auto_cast,
 						{
@@ -208,18 +208,18 @@ public class OpTypes {
 				// If both present, then check they match
 				types[position] != null, nodes[position] != null, $cut,
 				trace( Kiev.debugOperators,"opt_check "+position+" type "+getExprType(nodes[position],types[position])+" to be same as "+types[ref]),
-				getExprType(nodes[position],types[position]).isAutoCastableTo(types[ref])
+				getExprType(nodes[position],types[position]).getAutoCastTo(types[ref])!=null
 			;
 				// If type exists - let it be
 				types[position] != null, $cut,
 				trace( Kiev.debugOperators,"opt_check "+position+" type "+types[position]+" to be same as "+types[ref]),
-				types[position].isAutoCastableTo(types[ref])
+				types[position].getAutoCastTo(types[ref])!=null
 			;
 				// If type not exists - try resolve expression
 				types[position] == null, nodes[position] != null, $cut,
 				types[position] = getExprType(nodes[position],types[ref]),
 				trace( Kiev.debugOperators,"opt_check "+position+" type "+types[position]+" to be same as "+types[ref]),
-				types[position].isAutoCastableTo(types[ref])
+				types[position].getAutoCastTo(types[ref])!=null
 			},
 			trace( Kiev.debugOperators,"opt_check "+position+" set to be "+types[position])
 		}

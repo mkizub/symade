@@ -81,10 +81,7 @@ public final view RRuleBlock of RuleBlock extends RENode {
 		// Local variables
 		foreach(Var v; rule_method.localvars) {
 			String tp = Kiev.reparseType(v.type);
-			if (v.type instanceof CTimeType)
-				sb.append(tp+' '+v.id.uname+" := new "+tp+"();\n");
-			else
-				sb.append(tp+' '+v.id.uname+";\n");
+			sb.append(tp+' '+v.id.uname+";\n");
 		}
 		// tmp variables inserted here
 		sb.append(fields_buf.toString());

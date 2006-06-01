@@ -735,12 +735,16 @@ public final class KievFE_SrcParse extends TransfProcessor {
 	public void process(FileUnit:ASTNode fu) {
 		if (fu.scanned_for_interface_only)
 			return;
+		long curr_time = System.currentTimeMillis();
 		try {
 			Kiev.parseFile(fu);
 			Kiev.curFile = "";
 		} catch (Exception ioe) {
 			Kiev.reportParserError(0,ioe);
 		}
+		long diff_time = System.currentTimeMillis() - curr_time;
+		if( Kiev.verbose )
+			Kiev.reportInfo("Parsed file    "+fu,diff_time);
 	}
 }
 

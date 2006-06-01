@@ -60,6 +60,7 @@ public abstract class CoreFunc {
 
 		coreFuncs.put("kiev.vlang.Globals:ref_assign",      ObjectAssign);
 		coreFuncs.put("kiev.vlang.Globals:ref_assign2",     ObjectAssign2);
+		coreFuncs.put("kiev.vlang.Globals:ref_pvar_init",   ObjectPvarINIT);
 		coreFuncs.put("kiev.stdlib.any:ref_eq",             ObjectBoolEQ);
 		coreFuncs.put("kiev.stdlib.any:ref_neq",            ObjectBoolNE);
 
@@ -298,6 +299,12 @@ class ObjectAssign extends BinaryFunc {
 
 @singleton
 class ObjectAssign2 extends BinaryFunc {
+	public Instr getJavaInstr() { return null; }
+	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign2); }
+}
+
+@singleton
+class ObjectPvarINIT extends BinaryFunc {
 	public Instr getJavaInstr() { return null; }
 	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.Assign2); }
 }
@@ -1276,8 +1283,21 @@ class StringConcatSA extends StringConcat {}
 @singleton
 class StringAssignADD extends BinaryFunc {
 	public Instr getJavaInstr() { return null; }
-	public void normilizeExpr(ENode expr) { super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignAdd); }
-	protected ConstExpr doCalc(String:Object arg1, Object:Object arg2) { new ConstStringExpr(String.valueOf(arg1) + String.valueOf(arg2)) }
+	public void normilizeExpr(ENode expr) {
+		super.normilizeExpr(expr, AssignExpr.class, AssignOperator.AssignAdd);
+		ENode[] args = expr.getArgs();
+		if (args == null || args.length != 2) {
+			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass());
+			return;
+		}
+		ENode lval = args[0];
+		ENode value = args[1];
+		ENode en = new AssignExpr(expr.pos, AssignOperator.Assign,
+			~lval,
+			new BinaryExpr(expr.pos,BinaryOperator.Add,lval.ncopy(),~value)
+			);
+		expr.replaceWithNodeReWalk(en);
+	}
 }
 
 

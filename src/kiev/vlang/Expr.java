@@ -228,23 +228,6 @@ public class AssignExpr extends LvalueExpr {
 						ident.symbol = m;
 					}
 				}
-				/*
-				foreach(OpTypes opt; op.types ) {
-					Type[] tps = new Type[]{null,et1,et2};
-					ASTNode[] argsarr = new ASTNode[]{null,lval,value};
-					if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-						Method rm = opt.method;
-						if !(rm.isMacro() && rm.isNative()) {
-							if( m.isStatic() )
-								replaceWithNode(new CallExpr(pos,null,rm,new ENode[]{~lval,~value}));
-							else
-								replaceWithNode(new CallExpr(pos,~lval,rm,new ENode[]{~value}));
-							return;
-						}
-						break;
-					}
-				}
-				*/
 			}
 		}
 	}

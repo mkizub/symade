@@ -466,7 +466,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 			} else {
 				trace(Kiev.debugResolve,"Class "+qn+" not found in "+this);
 			}
-			node = null;
 		}
 		return false;
 	}

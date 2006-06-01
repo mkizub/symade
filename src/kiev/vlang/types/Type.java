@@ -122,35 +122,28 @@ public abstract class Type extends AType {
 		return false;
 	}
 
-	public boolean isAutoCastableTo(Type t)
+	public Type getAutoCastTo(Type t)
 	{
-		if( t ≡ Type.tpVoid || t ≡ Type.tpAny ) return true;
-		if( this.isReference() && t.isReference() && (this ≡ tpNull || t ≡ tpNull) ) return true;
-		if( isInstanceOf(t) ) return true;
-		if( this ≡ Type.tpRule && t ≡ Type.tpBoolean ) return true;
-		if( this.isBoolean() && t.isBoolean() ) return true;
+		if( t ≡ tpVoid ) return tpVoid;
+		if( t ≡ tpAny ) return tpAny;
+		if( this.isReference() && t.isReference() && (this ≡ tpNull || t ≡ tpNull) ) return this;
+		if( this.isInstanceOf(t) ) return this;
+		if( this ≡ tpRule && t ≡ tpBoolean ) return tpBoolean;
+		if( this.isBoolean() && t.isBoolean() ) return tpBoolean;
 		if( this.isReference() && !t.isReference() ) {
-			if( ((CoreType)t).getRefTypeForPrimitive() ≈ this ) return true;
-			else if( !Kiev.javaMode && t ≡ Type.tpInt && this ≥ Type.tpEnum )
-				return true;
-		}
-		if( this.isReference() && !t.isReference() ) {
-			if( ((CoreType)t).getRefTypeForPrimitive() ≈ this ) return true;
-			else if( !Kiev.javaMode && this ≡ Type.tpInt && t ≥ Type.tpEnum ) return true;
+			if( ((CoreType)t).getRefTypeForPrimitive() ≈ this ) return t;
+			else if( t ≡ Type.tpInt && this ≥ Type.tpEnum )
+				return t;
 		}
 		if( this instanceof CTimeType || t instanceof CTimeType ) {
 			if( this instanceof CTimeType && t instanceof CTimeType )
-				return this.getUnboxedType().isAutoCastableTo(t.getUnboxedType());
-			else if( this instanceof CTimeType && this.getUnboxedType().isAutoCastableTo(t) )
-				return true;
-			else if( t instanceof CTimeType && this.isAutoCastableTo(t.getUnboxedType()) )
-				return true;
-			return false;
+				return this.getUnboxedType().getAutoCastTo(t.getUnboxedType());
+			else if( this instanceof CTimeType )
+				return this.getUnboxedType().getAutoCastTo(t);
+			//else if( t instanceof CTimeType )
+			//	return this.getAutoCastTo(t.getUnboxedType());
 		}
-		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).arity == 0 ) {
-			if( ((CallType)this).ret().isAutoCastableTo(t) ) return true;
-		}
-		return false;
+		return null;
 	}
 
 	public Type betterCast(Type t1, Type t2) {
@@ -305,13 +298,6 @@ public final class XType extends Type {
 		return true;
 	}
 
-	public boolean isAutoCastableTo(Type t)
-	{
-		if( t ≡ Type.tpVoid || t ≡ Type.tpAny ) return true;
-		if( isInstanceOf(t) ) return true;
-		return super.isAutoCastableTo(t);
-	}
-
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
 		if( t ≡ Type.tpAny ) return true;
@@ -342,16 +328,22 @@ public final class CoreType extends Type {
 
 	public JType getJType()				{ return this.jtype; }
 	
-	public boolean isAutoCastableTo(Type t)
+	public Type getAutoCastTo(Type t)
 	{
-		if( t ≡ Type.tpVoid || t ≡ Type.tpAny ) return true;
-		if( this.isBoolean() && t.isBoolean() ) return true;
-		if( this ≡ tpByte && (t ≡ tpShort || t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return true;
-		if( (this ≡ tpShort || this ≡ tpChar) && (t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return true;
-		if( this ≡ tpInt && (t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return true;
-		if( this ≡ tpLong && ( t ≡ tpFloat || t ≡ tpDouble) ) return true;
-		if( this ≡ tpFloat && t ≡ tpDouble ) return true;
-		return super.isAutoCastableTo(t);
+		if( t ≡ tpVoid ) return tpVoid;
+		if( t ≡ tpAny ) return tpAny;
+		if( this.isBoolean() && t.isBoolean() ) return tpBoolean;
+		if( this ≡ tpByte && (t ≡ tpShort || t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return t;
+		if( (this ≡ tpShort || this ≡ tpChar) && (t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return t;
+		if( this ≡ tpInt && (t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return t;
+		if( this ≡ tpLong && t ≡ tpDouble ) return t;
+		if( this ≡ tpFloat && t ≡ tpDouble ) return t;
+		if( this ≡ tpNull && t.isReference() ) return t;
+		if( !this.isReference() && t.isReference() ) {
+			if( this.getRefTypeForPrimitive() ≈ t ) return t;
+			else if( this ≡ Type.tpInt && t ≥ Type.tpEnum ) return t;
+		}
+		return super.getAutoCastTo(t);
 	}
 
 	public boolean isCastableTo(Type t) {
@@ -476,11 +468,6 @@ public final class ASTNodeType extends Type {
 	
 	public Struct getStruct() { return ((ASTNodeMetaType)meta_type).clazz; }
 
-	public boolean isAutoCastableTo(Type t)
-	{
-		return super.isAutoCastableTo(t);
-	}
-
 	public boolean isCastableTo(Type t) {
 		if( this ≡ t) return true;
 		return super.isCastableTo(t);
@@ -599,18 +586,19 @@ public final class CompaundType extends Type {
 		return clazz.checkResolved();
 	}
 
-	public boolean isAutoCastableTo(Type t)
+	public Type getAutoCastTo(Type t)
 	{
-		if( t ≡ Type.tpVoid || t ≡ Type.tpAny ) return true;
-		if( isInstanceOf(t) ) return true;
-		if( this.clazz.isStructView() && this.clazz.view_of.getType().isAutoCastableTo(t) ) return true;
+		if( t ≡ tpVoid ) return t;
+		if( t ≡ tpAny ) return t;
+		if( isInstanceOf(t) ) return this;
+		if( this.clazz.isStructView() && this.clazz.view_of.getType().getAutoCastTo(t) != null ) return t;
 		if( t instanceof CoreType && !t.isReference() ) {
 			if( t.getRefTypeForPrimitive() ≈ this )
-				return true;
+				return t;
 			else if( t ≡ Type.tpInt && this ≥ Type.tpEnum )
-				return true;
+				return t;
 		}
-		return super.isAutoCastableTo(t);
+		return super.getAutoCastTo(t);
 	}
 
 	public boolean isCastableTo(Type t) {
@@ -952,6 +940,15 @@ public final class CallType extends Type {
 			return true;
 		}
 		return false;
+	}
+
+	public Type getAutoCastTo(Type t)
+	{
+		Type r = super.getAutoCastTo(t);
+		if (r != null ) return r;
+		if (this.arity == 0 && !(t instanceof CallType))
+			return this.ret().getAutoCastTo(t);
+		return null;
 	}
 
 	public String toString() {

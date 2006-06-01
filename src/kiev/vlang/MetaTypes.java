@@ -13,6 +13,35 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
+class Test extends ASTNode {
+	@ref ASTNode[] rarr;
+	@ref ASTNode astn;
+	String@ sss;
+	void foo() {
+		DNode@ d;
+		DNode x;
+		x = d;
+		int i;
+		i = rarr.length;
+		ASTNode[] x;
+		x = rarr.delToArray();
+		rarr.delAll();
+		rarr.addAll(x);
+		rarr.copyFrom(x);
+		i = rarr.indexOf(astn);
+		rarr[0] = rarr[1];
+		rarr += astn;
+		rarr.add(astn);
+		rarr.del(0);
+		rarr.detach(astn);
+		rarr.insert(0, astn);
+		
+		boolean x;
+		//x.bool_not();
+	}
+}
+
 public metatype NodeSpace<N extends ANode> extends N[] {
 	
 	@macro
@@ -98,31 +127,4 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 
 }
 
-@node
-class Test extends ASTNode {
-	@ref ASTNode[] rarr;
-	@ref ASTNode astn;
-	void foo() {
-		DNode@ d;
-		DNode x;
-		x = d;
-		int i;
-		i = rarr.length;
-		ASTNode[] x;
-		x = rarr.delToArray();
-		rarr.delAll();
-		rarr.addAll(x);
-		rarr.copyFrom(x);
-		i = rarr.indexOf(astn);
-		rarr[0] = rarr[1];
-		rarr += astn;
-		rarr.add(astn);
-		rarr.del(0);
-		rarr.detach(astn);
-		rarr.insert(0, astn);
-		
-		boolean x;
-		//x.bool_not();
-	}
-}
 

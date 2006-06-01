@@ -502,7 +502,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		}
 		
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
-			if (!mt.arg(i).isAutoCastableTo(rt.arg(i))) {
+			if (mt.arg(i).getAutoCastTo(rt.arg(i)) == null) {
 				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" differ in param # "+i+": "+mt.arg(i)+" not auto-castable to "+rt.arg(i));
 				return false;
@@ -534,7 +534,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			}
 		}
 		
-		if (mt.ret() ≢ Type.tpAny && !rt.ret().isAutoCastableTo(mt.ret())) {
+		if (mt.ret() ≢ Type.tpAny && rt.ret().getAutoCastTo(mt.ret()) == null) {
 			trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 				+" differ in return type : "+rt.ret()+" not auto-castable to "+mt.ret());
 			return false;
@@ -592,8 +592,9 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		if (pt ≡ null || pt ≡ Type.tpAny || pt ≡ at)
 			return;
 		if (qt ≡ at) {
-			if (pt.isInstanceOf(at))
-				bindings.append(pt);
+			Type t = pt.getAutoCastTo(at);
+			if (t != null)
+				bindings.append(t);
 			return;
 		}
 		if (!qt.hasApplayable(at))
@@ -604,8 +605,11 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			if (!qtv.isAlias()) {
 				if (qtv.val ≡ at) {
 					Type bnd = pt.resolve(qtv.var);
-					if (bnd ≢ qtv.var && !bindings.contains(bnd) && bnd.isInstanceOf(at))
-						bindings.append(bnd);
+					if (bnd ≢ qtv.var && !bindings.contains(bnd)) {
+						Type t = bnd.getAutoCastTo(at);
+						if (t != null)
+							bindings.append(t);
+					}
 				}
 				else if (qtv.val.hasApplayable(at)) {
 					Type bnd = pt.resolve(qtv.var);
