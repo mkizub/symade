@@ -24,7 +24,7 @@ public class ASTOperator extends ENode {
 	@att public String		image;
 
 	@setter
-	public void set$name(String value) {
+	public void set$image(String value) {
 		this.image = (value != null) ? value.intern() : null;
 	}
 	

@@ -543,6 +543,7 @@ CLASS kiev.vlang.ObjectAssign2 kiev/vlang/ObjectAssign2 kiev\vlang\CoreMethod.ja
 CLASS kiev.vlang.ObjectBoolEQ kiev/vlang/ObjectBoolEQ kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ObjectBoolNE kiev/vlang/ObjectBoolNE kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ObjectPvarINIT kiev/vlang/ObjectPvarINIT kiev\vlang\CoreMethod.java
+CLASS kiev.vlang.OpArg kiev/vlang/OpArg kiev\vlang\Operator.java
 CLASS kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java
 CLASS kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.ParentEnumerator kiev/vlang/ParentEnumerator kiev\vlang\PassInfo.java

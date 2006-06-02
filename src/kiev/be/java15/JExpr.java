@@ -269,8 +269,8 @@ public view JConditionalExpr of ConditionalExpr extends JENode {
 			code.addInstr(Instr.op_goto,endLabel);
 			code.addInstr(Instr.set_label,elseLabel);
 			expr2.generate(code,null);
-			if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 			code.addInstr(Instr.set_label,endLabel);
+			if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 		}
 	}
 }

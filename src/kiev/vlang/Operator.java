@@ -4,7 +4,10 @@ import kiev.Kiev;
 import kiev.vlang.types.*;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.Operator.*;
+import kiev.vlang.OpArg.EXPR;
+import kiev.vlang.OpArg.TYPE;
+import kiev.vlang.OpArg.OPER;
+import kiev.vlang.OpArg.IDENT;
 
 import syntax kiev.Syntax;
 
@@ -13,7 +16,25 @@ import syntax kiev.Syntax;
  *
  */
 
-public abstract class Operator implements Constants {
+public abstract class OpArg {
+	public case EXPR(final int priority);
+	public case TYPE();
+	public case OPER(final String text);
+	public case IDENT(final String text);
+	
+	public String toString() {
+		switch (this) {
+		case EXPR(int priority)	: return "EXPR/"+priority;
+		case TYPE()				: return "TYPE";
+		case OPER(String text)	: return "OPER "+text;
+		case IDENT(String text)	: return "IDENT \""+text+"\"";
+		}
+	}
+}
+
+public class Operator implements Constants {
+
+	public static Hashtable<String,Operator>	allOperatorsHash = new Hashtable<String,Operator>();
 
 	// Assign orders
 	public static final int LFY			= 0;
@@ -48,17 +69,27 @@ public abstract class Operator implements Constants {
 		"fy",		// FY
 		"xfxfy"		// XFXFY
 	};
+	
+	static {
+		AssignOperator.Initialize();
+		BinaryOperator.Initialize();
+		MultiOperator.Initialize();
+		PrefixOperator.Initialize();
+		PostfixOperator.Initialize();
+	}
 
+	public				OpArg[]		args;
 	public				int			priority;
 	public				String		image;
 	public				String		name;
-    public				int			mode;
-    public				boolean		is_standard;
-    public				Method[]	methods;
+	public				int			mode;
+	public				boolean		is_standard;
+	public				Method[]	methods;
 	@virtual @abstract
-    public:r,r,r,rw		String		smode;
+	public:r,r,r,rw		String		smode;
 
-	protected Operator(int pr, String img, String nm, String oa, boolean std) {
+	protected Operator(OpArg[] opa, int pr, String img, String nm, String oa, boolean std) {
+		args = opa;
 		priority = pr;
 		image = img.intern();
 		name = nm.intern();
@@ -91,23 +122,17 @@ public abstract class Operator implements Constants {
 	}
 
 	public static void cleanupMethod(Method m) {
-		Hashtable<String,Operator> hashes[] = new Hashtable<String,Operator>[]{
-			AssignOperator.hash, BinaryOperator.hash, PrefixOperator.hash,
-			PostfixOperator.hash, MultiOperator.hash
-		};
-		foreach( Hashtable<String,Operator> hash; hashes ) {
-			foreach( Operator op; hash ) {
-				Method[] methods = op.methods;
-				for(int i=0; i < methods.length; i++) {
-					if (methods[i] == m) {
-						Method[] tmp = new Method[methods.length-1];
-						for (int j=0; j < i; j++)
-							tmp[j] = methods[j];
-						for (int j=i; j < tmp.length; j++)
-							tmp[j] = methods[j+1];
-						op.methods[i] = methods = tmp;
-						i--;
-					}
+		foreach( Operator op; allOperatorsHash ) {
+			Method[] methods = op.methods;
+			for(int i=0; i < methods.length; i++) {
+				if (methods[i] == m) {
+					Method[] tmp = new Method[methods.length-1];
+					for (int j=0; j < i; j++)
+						tmp[j] = methods[j];
+					for (int j=i; j < tmp.length; j++)
+						tmp[j] = methods[j+1];
+					op.methods[i] = methods = tmp;
+					i--;
 				}
 			}
 		}
@@ -194,8 +219,6 @@ public abstract class Operator implements Constants {
 
 public class AssignOperator extends Operator {
 
-	public static Hashtable<String,AssignOperator>	hash = new Hashtable<String,AssignOperator>();
-
 	// Assign (binary) operators
 	public static final AssignOperator Assign;
 	public static final AssignOperator Assign2;
@@ -211,46 +234,73 @@ public class AssignOperator extends Operator {
 	public static final AssignOperator AssignDiv;
 	public static final AssignOperator AssignMod;
 
-	static {
-		Assign = newAssignOperator("=", "L = V", true);
-		Assign2 = newAssignOperator(":=", "L := V", true);
+	static void Initialize() {
+		Assign = newAssignOperator("=", "L = V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER("="),new EXPR(opAssignPriority)}
+		);
+		Assign2 = newAssignOperator(":=", "L := V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER(":="),new EXPR(opAssignPriority)}
+		);
 
-		AssignBitOr = newAssignOperator("|=", "L |= V", true);
-		AssignBitXor = newAssignOperator("^=", "L ^= V", true);
-		AssignBitAnd = newAssignOperator("&=", "L &= V", true);
+		AssignBitOr = newAssignOperator("|=", "L |= V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER("|="),new EXPR(opAssignPriority)}
+		);
+		AssignBitXor = newAssignOperator("^=", "L ^= V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER("^="),new EXPR(opAssignPriority)}
+		);
+		AssignBitAnd = newAssignOperator("&=", "L &= V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER("&="),new EXPR(opAssignPriority)}
+		);
 
-		AssignLeftShift = newAssignOperator("<<=", "L <<= V", true);
-		AssignRightShift = newAssignOperator(">>=", "L >>= V", true);
-		AssignUnsignedRightShift = newAssignOperator(">>>=", "L >>>= V", true);
+		AssignLeftShift = newAssignOperator("<<=", "L <<= V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER("<<="),new EXPR(opAssignPriority)}
+		);
+		AssignRightShift = newAssignOperator(">>=", "L >>= V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER(">>="),new EXPR(opAssignPriority)}
+		);
+		AssignUnsignedRightShift = newAssignOperator(">>>=", "L >>>= V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER(">>>="),new EXPR(opAssignPriority)}
+		);
 
-		AssignAdd = newAssignOperator("+=", "L += V", true);
-		AssignSub = newAssignOperator("-=", "L -= V", true);
-		AssignMul = newAssignOperator("*=", "L *= V", true);
-		AssignDiv = newAssignOperator("/=", "L /= V", true);
-		AssignMod = newAssignOperator("%=", "L %= V", true);
+		AssignAdd = newAssignOperator("+=", "L += V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER("+="),new EXPR(opAssignPriority)}
+		);
+		AssignSub = newAssignOperator("-=", "L -= V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER("-="),new EXPR(opAssignPriority)}
+		);
+		AssignMul = newAssignOperator("*=", "L *= V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER("*="),new EXPR(opAssignPriority)}
+		);
+		AssignDiv = newAssignOperator("/=", "L /= V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER("/="),new EXPR(opAssignPriority)}
+		);
+		AssignMod = newAssignOperator("%=", "L %= V", true,
+			new OpArg[]{new EXPR(opAssignPriority+1),new OPER("%="),new EXPR(opAssignPriority)}
+		);
 	}
 
-	protected AssignOperator(String img, String nm, boolean std) {
-		super(opAssignPriority,img,nm,orderAndArityNames[LFY],std);
-		hash.put(img,this);
+	protected AssignOperator(OpArg[] opa, String img, String nm, boolean std) {
+		super(opa,opAssignPriority,img,nm,orderAndArityNames[LFY],std);
+		allOperatorsHash.put(nm,this);
 	}
 
-	public static AssignOperator newAssignOperator(String img, String nm, boolean std) {
-		AssignOperator op = hash.get(img);
+	public static AssignOperator newAssignOperator(String img, String nm, boolean std, OpArg[] opa) {
+		AssignOperator op = allOperatorsHash.get(nm);
 		if( op != null )
 			return op;
-		return new AssignOperator(img,nm,std);
+		return new AssignOperator(opa,img,nm,std);
 	}
 
-	public static AssignOperator getOperator(String im) {
-		return hash.get(im);
+	public static AssignOperator getOperator(String nm) {
+		Operator op = allOperatorsHash.get(nm);
+		if (op instanceof AssignOperator)
+			return (AssignOperator)op;
+		return null;
 	}
 
 }
 
 public class BinaryOperator extends Operator {
-
-	public static Hashtable<String,BinaryOperator>	hash = new Hashtable<String,BinaryOperator>();
 
 	// Binary operators
 	public static final BinaryOperator BooleanOr;
@@ -277,56 +327,100 @@ public class BinaryOperator extends Operator {
 	public static final BinaryOperator Access;
 	public static final BinaryOperator Comma;
 	
-	static {
-		BooleanOr = newBinaryOperator(opBooleanOrPriority, "||", "V || V",orderAndArityNames[YFX],true);
-		BooleanAnd = newBinaryOperator(opBooleanAndPriority, "&&", "V && V",orderAndArityNames[YFX],true);
+	static void Initialize() {
+		BooleanOr = newBinaryOperator(opBooleanOrPriority, "||", "V || V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opBooleanOrPriority),new OPER("||"),new EXPR(opBooleanOrPriority+1)}
+		);
+		BooleanAnd = newBinaryOperator(opBooleanAndPriority, "&&", "V && V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opBooleanAndPriority),new OPER("&&"),new EXPR(opBooleanAndPriority+1)}
+		);
 		BooleanOr.is_boolean_op = true;
 		BooleanAnd.is_boolean_op = true;
 
-		BitOr = newBinaryOperator(opBitOrPriority, "|", "V | V",orderAndArityNames[YFX],true);
-		BitXor = newBinaryOperator(opBitXorPriority, "^", "V ^ V",orderAndArityNames[YFX],true);
-		BitAnd = newBinaryOperator(opBitAndPriority, "&", "V & V",orderAndArityNames[YFX],true);
+		BitOr = newBinaryOperator(opBitOrPriority, "|", "V | V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opBitOrPriority),new OPER("|"),new EXPR(opBitOrPriority+1)}
+		);
+		BitXor = newBinaryOperator(opBitXorPriority, "^", "V ^ V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opBitXorPriority),new OPER("^"),new EXPR(opBitXorPriority+1)}
+		);
+		BitAnd = newBinaryOperator(opBitAndPriority, "&", "V & V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opBitAndPriority),new OPER("&"),new EXPR(opBitAndPriority+1)}
+		);
 
-		Equals = newBinaryOperator(opEqualsPriority, "==", "V == V",orderAndArityNames[XFX],true);
-		NotEquals = newBinaryOperator(opEqualsPriority, "!=", "V != V",orderAndArityNames[XFX],true);
-		InstanceOf = newBinaryOperator(opInstanceOfPriority, "instanceof", "V instanceof T",orderAndArityNames[XFX],true);
+		Equals = newBinaryOperator(opEqualsPriority, "==", "V == V",orderAndArityNames[XFX],true,
+			new OpArg[]{new EXPR(opEqualsPriority+1),new OPER("=="),new EXPR(opEqualsPriority+1)}
+		);
+		NotEquals = newBinaryOperator(opEqualsPriority, "!=", "V != V",orderAndArityNames[XFX],true,
+			new OpArg[]{new EXPR(opEqualsPriority+1),new OPER("!="),new EXPR(opEqualsPriority+1)}
+		);
+		InstanceOf = newBinaryOperator(opInstanceOfPriority, "instanceof", "V instanceof T",orderAndArityNames[XFX],true,
+			new OpArg[]{new EXPR(opInstanceOfPriority+1),new OPER("instanceof"),new TYPE()}
+		);
 		Equals.is_boolean_op = true;
 		NotEquals.is_boolean_op = true;
 		InstanceOf.is_boolean_op = true;
 
-		LessThen = newBinaryOperator(opComparePriority, "<", "V < V",orderAndArityNames[XFX],true);
-		LessEquals = newBinaryOperator(opComparePriority, "<=", "V <= V",orderAndArityNames[XFX],true);
-		GreaterThen = newBinaryOperator(opComparePriority, ">", "V > V",orderAndArityNames[XFX],true);
-		GreaterEquals = newBinaryOperator(opComparePriority, ">=", "V >= V",orderAndArityNames[XFX],true);
+		LessThen = newBinaryOperator(opComparePriority, "<", "V < V",orderAndArityNames[XFX],true,
+			new OpArg[]{new EXPR(opComparePriority+1),new OPER("<"),new EXPR(opComparePriority+1)}
+		);
+		LessEquals = newBinaryOperator(opComparePriority, "<=", "V <= V",orderAndArityNames[XFX],true,
+			new OpArg[]{new EXPR(opComparePriority+1),new OPER("<="),new EXPR(opComparePriority+1)}
+		);
+		GreaterThen = newBinaryOperator(opComparePriority, ">", "V > V",orderAndArityNames[XFX],true,
+			new OpArg[]{new EXPR(opComparePriority+1),new OPER(">"),new EXPR(opComparePriority+1)}
+		);
+		GreaterEquals = newBinaryOperator(opComparePriority, ">=", "V >= V",orderAndArityNames[XFX],true,
+			new OpArg[]{new EXPR(opComparePriority+1),new OPER(">="),new EXPR(opComparePriority+1)}
+		);
 		LessThen.is_boolean_op = true;
 		LessEquals.is_boolean_op = true;
 		GreaterThen.is_boolean_op = true;
 		GreaterEquals.is_boolean_op = true;
 
-		LeftShift = newBinaryOperator(opShiftPriority, "<<", "V << V",orderAndArityNames[XFX],true);
-		RightShift = newBinaryOperator(opShiftPriority, ">>", "V >> V",orderAndArityNames[XFX],true);
-		UnsignedRightShift = newBinaryOperator(opShiftPriority, ">>>", "V >>> V",orderAndArityNames[XFX],true);
+		LeftShift = newBinaryOperator(opShiftPriority, "<<", "V << V",orderAndArityNames[XFX],true,
+			new OpArg[]{new EXPR(opShiftPriority+1),new OPER("<<"),new EXPR(opShiftPriority+1)}
+		);
+		RightShift = newBinaryOperator(opShiftPriority, ">>", "V >> V",orderAndArityNames[XFX],true,
+			new OpArg[]{new EXPR(opShiftPriority+1),new OPER(">>"),new EXPR(opShiftPriority+1)}
+		);
+		UnsignedRightShift = newBinaryOperator(opShiftPriority, ">>>", "V >>> V",orderAndArityNames[XFX],true,
+			new OpArg[]{new EXPR(opShiftPriority+1),new OPER(">>>"),new EXPR(opShiftPriority+1)}
+		);
 
-		Add = newBinaryOperator(opAddPriority, "+", "V + V",orderAndArityNames[YFX],true);
-		Sub = newBinaryOperator(opAddPriority, "-", "V - V",orderAndArityNames[YFX],true);
+		Add = newBinaryOperator(opAddPriority, "+", "V + V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opAddPriority),new OPER("+"),new EXPR(opAddPriority+1)}
+		);
+		Sub = newBinaryOperator(opAddPriority, "-", "V - V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opAddPriority),new OPER("-"),new EXPR(opAddPriority+1)}
+		);
 
-		Mul = newBinaryOperator(opMulPriority, "*", "V * V",orderAndArityNames[YFX],true);
-		Div = newBinaryOperator(opMulPriority, "/", "V / V",orderAndArityNames[YFX],true);
-		Mod = newBinaryOperator(opMulPriority, "%", "V % V",orderAndArityNames[YFX],true);
+		Mul = newBinaryOperator(opMulPriority, "*", "V * V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opMulPriority),new OPER("*"),new EXPR(opMulPriority+1)}
+		);
+		Div = newBinaryOperator(opMulPriority, "/", "V / V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opMulPriority),new OPER("/"),new EXPR(opMulPriority+1)}
+		);
+		Mod = newBinaryOperator(opMulPriority, "%", "V % V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opMulPriority),new OPER("%"),new EXPR(opMulPriority+1)}
+		);
 
-		Access = newBinaryOperator(opAccessPriority, ".", "V . N",orderAndArityNames[YFX],true);
-		Comma = newBinaryOperator(1, ",", "V , V",orderAndArityNames[YFX],true);
+		Access = newBinaryOperator(opAccessPriority, ".", "V . N",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(opAccessPriority),new OPER("."),new IDENT("")}
+		);
+		Comma = newBinaryOperator(1, ",", "V , V",orderAndArityNames[YFX],true,
+			new OpArg[]{new EXPR(1),new OPER(","),new EXPR(2)}
+		);
 	}
 
 	public boolean is_boolean_op;
 
-	protected BinaryOperator(int pr, String img, String nm, String oa, boolean std) {
-		super(pr,img,nm,oa,std);
-		hash.put(img,this);
+	protected BinaryOperator(OpArg[] opa, int pr, String img, String nm, String oa, boolean std) {
+		super(opa,pr,img,nm,oa,std);
+		allOperatorsHash.put(nm,this);
 	}
 
-	public static BinaryOperator newBinaryOperator(int pr, String img, String nm, String oa, boolean std) {
-		BinaryOperator op = hash.get(img);
+	public static BinaryOperator newBinaryOperator(int pr, String img, String nm, String oa, boolean std, OpArg[] opa) {
+		BinaryOperator op = allOperatorsHash.get(nm);
 		if( op != null ) {
 			if (pr == 0)
 				pr = op.priority;
@@ -337,36 +431,39 @@ public class BinaryOperator extends Operator {
 			}
 			return op;
 		}
-		return new BinaryOperator(pr,img,nm,oa,std);
+		return new BinaryOperator(opa,pr,img,nm,oa,std);
 	}
 
-	public static BinaryOperator getOperator(String im) {
-		return hash.get(im);
+	public static BinaryOperator getOperator(String nm) {
+		Operator op = allOperatorsHash.get(nm);
+		if (op instanceof BinaryOperator)
+			return (BinaryOperator)op;
+		return null;
 	}
 
 }
 
 public class MultiOperator extends Operator {
 
-	public static Hashtable<String,MultiOperator>	hash = new Hashtable<String,MultiOperator>();
-
 	// Binary operators
 	public static final MultiOperator Conditional;
 
-	static {
-		Conditional = newMultiOperator(opConditionalPriority, new String[]{"?",":"}, "V ? V : V",true);
+	static void Initialize() {
+		Conditional = newMultiOperator(opConditionalPriority, new String[]{"?",":"}, "V ? V : V",true,
+			new OpArg[]{new EXPR(opConditionalPriority+1),new OPER("?"),new EXPR(opConditionalPriority+1),new OPER(":"),new EXPR(opConditionalPriority)}
+		);
 	}
 
 	public String[]	images;
 
-	protected MultiOperator(int pr, String[] img, String nm, boolean std) {
-		super(pr,img[0],nm,orderAndArityNames[XFXFY],std);
+	protected MultiOperator(OpArg[] opa, int pr, String[] img, String nm, boolean std) {
+		super(opa,pr,img[0],nm,orderAndArityNames[XFXFY],std);
 		images = img;
-		hash.put(img[0],this);
+		allOperatorsHash.put(nm,this);
 	}
 
-	public static MultiOperator newMultiOperator(int pr, String[] img, String nm, boolean std) {
-		MultiOperator op = hash.get(img[0]);
+	public static MultiOperator newMultiOperator(int pr, String[] img, String nm, boolean std, OpArg[] opa) {
+		MultiOperator op = allOperatorsHash.get(nm);
 		if( op != null ) {
 			if (pr == 0)
 				pr = op.priority;
@@ -381,18 +478,19 @@ public class MultiOperator extends Operator {
 			}
 			return op;
 		}
-		return new MultiOperator(pr,img,nm,std);
+		return new MultiOperator(opa,pr,img,nm,std);
 	}
 
-	public static MultiOperator getOperator(String im) {
-		return hash.get(im);
+	public static MultiOperator getOperator(String nm) {
+		Operator op = allOperatorsHash.get(nm);
+		if (op instanceof MultiOperator)
+			return (MultiOperator)op;
+		return null;
 	}
 
 }
 
 public class PrefixOperator extends Operator {
-
-	public static Hashtable<String,PrefixOperator>	hash = new Hashtable<String,PrefixOperator>();
 
 	// Unary prefix operators
 	public static final PrefixOperator Pos;
@@ -402,24 +500,36 @@ public class PrefixOperator extends Operator {
 	public static final PrefixOperator BitNot;
 	public static final PrefixOperator BooleanNot;
 
-	static {
-		Pos = newPrefixOperator(opNegPriority, "+", "+ V",orderAndArityNames[FY],true);
-		Neg = newPrefixOperator(opNegPriority, "-", "- V",orderAndArityNames[FY],true);
+	static void Initialize() {
+		Pos = newPrefixOperator(opNegPriority, "+", "+ V",orderAndArityNames[FY],true,
+			new OpArg[]{new OPER("+"),new EXPR(opNegPriority)}
+		);
+		Neg = newPrefixOperator(opNegPriority, "-", "- V",orderAndArityNames[FY],true,
+			new OpArg[]{new OPER("-"),new EXPR(opNegPriority)}
+		);
 
-		PreIncr = newPrefixOperator(opIncrPriority, "++", "++ V",orderAndArityNames[FX],true);
-		PreDecr = newPrefixOperator(opIncrPriority, "--", "-- V",orderAndArityNames[FX],true);
+		PreIncr = newPrefixOperator(opIncrPriority, "++", "++ V",orderAndArityNames[FX],true,
+			new OpArg[]{new OPER("++"),new EXPR(opIncrPriority+1)}
+		);
+		PreDecr = newPrefixOperator(opIncrPriority, "--", "-- V",orderAndArityNames[FX],true,
+			new OpArg[]{new OPER("--"),new EXPR(opIncrPriority+1)}
+		);
 
-		BitNot = newPrefixOperator(opBitNotPriority, "~", "~ V",orderAndArityNames[FY],true);
-		BooleanNot = newPrefixOperator(opBooleanNotPriority, "!", "! V",orderAndArityNames[FY],true);
+		BitNot = newPrefixOperator(opBitNotPriority, "~", "~ V",orderAndArityNames[FY],true,
+			new OpArg[]{new OPER("~"),new EXPR(opBitNotPriority)}
+		);
+		BooleanNot = newPrefixOperator(opBooleanNotPriority, "!", "! V",orderAndArityNames[FY],true,
+			new OpArg[]{new OPER("!"),new EXPR(opBooleanNotPriority)}
+		);
 	}
 
-	protected PrefixOperator(int pr, String img, String nm, String oa, boolean std) {
-		super(pr,img,nm,oa,std);
-		hash.put(img,this);
+	protected PrefixOperator(OpArg[] opa, int pr, String img, String nm, String oa, boolean std) {
+		super(opa,pr,img,nm,oa,std);
+		allOperatorsHash.put(nm,this);
 	}
 
-	public static PrefixOperator newPrefixOperator(int pr, String img, String nm, String oa, boolean std) {
-		PrefixOperator op = hash.get(img);
+	public static PrefixOperator newPrefixOperator(int pr, String img, String nm, String oa, boolean std, OpArg[] opa) {
+		PrefixOperator op = allOperatorsHash.get(nm);
 		if( op != null ) {
 			if (pr == 0)
 				pr = op.priority;
@@ -430,36 +540,41 @@ public class PrefixOperator extends Operator {
 			}
 			return op;
 		}
-		return new PrefixOperator(pr,img,nm,oa,std);
+		return new PrefixOperator(opa,pr,img,nm,oa,std);
 	}
 
-	public static PrefixOperator getOperator(String im) {
-		return hash.get(im);
+	public static PrefixOperator getOperator(String nm) {
+		Operator op = allOperatorsHash.get(nm);
+		if (op instanceof PrefixOperator)
+			return (PrefixOperator)op;
+		return null;
 	}
 
 }
 
 public class PostfixOperator extends Operator {
 
-	public static Hashtable<String,PostfixOperator>	hash = new Hashtable<String,PostfixOperator>();
-
 	// Unary postfix operators
 	public static final PostfixOperator PostIncr;
 	public static final PostfixOperator PostDecr;
 
-	static {
-		PostIncr = newPostfixOperator(opIncrPriority, "++", "V ++",orderAndArityNames[XF],true);
-		PostDecr = newPostfixOperator(opIncrPriority, "--", "V --",orderAndArityNames[XF],true);
+	static void Initialize() {
+		PostIncr = newPostfixOperator(opIncrPriority, "++", "V ++",orderAndArityNames[XF],true,
+			new OpArg[]{new EXPR(opIncrPriority+1),new OPER("++")}
+		);
+		PostDecr = newPostfixOperator(opIncrPriority, "--", "V --",orderAndArityNames[XF],true,
+			new OpArg[]{new EXPR(opIncrPriority+1),new OPER("--")}
+		);
 	}
 
 
-	protected PostfixOperator(int pr, String img, String nm, String oa, boolean std) {
-		super(pr,img,nm,oa,std);
-		hash.put(img,this);
+	protected PostfixOperator(OpArg[] opa, int pr, String img, String nm, String oa, boolean std) {
+		super(opa,pr,img,nm,oa,std);
+		allOperatorsHash.put(nm,this);
 	}
 
-	public static PostfixOperator newPostfixOperator(int pr, String img, String nm, String oa, boolean std) {
-		PostfixOperator op = hash.get(img);
+	public static PostfixOperator newPostfixOperator(int pr, String img, String nm, String oa, boolean std, OpArg[] opa) {
+		PostfixOperator op = allOperatorsHash.get(nm);
 		if( op != null ) {
 			if (pr == 0)
 				pr = op.priority;
@@ -470,22 +585,27 @@ public class PostfixOperator extends Operator {
 			}
 			return op;
 		}
-		return new PostfixOperator(pr,img,nm,oa,std);
+		return new PostfixOperator(opa,pr,img,nm,oa,std);
 	}
 
-	public static PostfixOperator getOperator(String im) {
-		return hash.get(im);
+	public static PostfixOperator getOperator(String nm) {
+		Operator op = allOperatorsHash.get(nm);
+		if (op instanceof PostfixOperator)
+			return (PostfixOperator)op;
+		return null;
 	}
 
 }
 
 public class CastOperator extends Operator {
 
+	private static final OpArg[] castArgs = {new OPER("("),new TYPE(),new OPER(")"),new EXPR(opCastPriority)};
+	
 	public Type		type;
 	public boolean  reinterp;
 
 	public CastOperator(Type tp, boolean r) {
-		super(opCastPriority,"","( T ) V",orderAndArityNames[FY],true);
+		super(castArgs,opCastPriority,"","( T ) V",orderAndArityNames[FY],true);
 		type = tp;
 		reinterp = r;
 	}

@@ -122,7 +122,9 @@ public final class ASTOperatorAlias extends ASTAlias {
 					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(0); }
 				else
 					throw new CompilerException(this,"Method "+m+" must have 2 arguments");
-				AssignOperator op = AssignOperator.newAssignOperator(image,("L "+image+" V").intern(),false);
+				AssignOperator op = AssignOperator.getOperator("L "+image+" V");
+				if (op == null)
+					throw new CompilerException(this,"Assign operator "+image+" not found");
 				m.id.addAlias(op.name);
 				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
@@ -158,9 +160,11 @@ public final class ASTOperatorAlias extends ASTAlias {
 					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(1); }
 				else
 					throw new CompilerException(this,"Method "+m+" must have 2 arguments");
-				BinaryOperator op = BinaryOperator.newBinaryOperator(
-					prior,image,("V "+image+" V").intern(),Operator.orderAndArityNames[opmode],false
-					);
+				BinaryOperator op = BinaryOperator.getOperator("V "+image+" V");
+				if (op == null)
+					op = BinaryOperator.getOperator("V "+image+" T");
+				if (op == null)
+					throw new CompilerException(this,"Binary operator "+image+" not found");
 				m.id.addAlias(op.name);
 				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
@@ -199,9 +203,9 @@ public final class ASTOperatorAlias extends ASTAlias {
 					else
 						throw new CompilerException(this,"Non-static method "+m+" must have 0 or 1 argument");
 				}
-				PrefixOperator op = PrefixOperator.newPrefixOperator(
-					prior,image,(image+" V").intern(),Operator.orderAndArityNames[opmode],false
-					);
+				PrefixOperator op = PrefixOperator.getOperator(image+" V");
+				if (op == null)
+					throw new CompilerException(this,"Prefix operator "+image+" not found");
 				m.id.addAlias(op.name);
 				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached prefix "+op+" to method "+m);
@@ -222,9 +226,9 @@ public final class ASTOperatorAlias extends ASTAlias {
 					oparg = m.ctx_tdecl.xtype;
 				else
 					throw new CompilerException(this,"Method "+m+" must have 1 argument");
-				PostfixOperator op = PostfixOperator.newPostfixOperator(
-					prior,image,("V "+image).intern(),Operator.orderAndArityNames[opmode],false
-					);
+				PostfixOperator op = PostfixOperator.getOperator("V "+image);
+				if (op == null)
+					throw new CompilerException(this,"Postfix operator "+image+" not found");
 				m.id.addAlias(op.name);
 				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached postfix "+op+" to method "+m);

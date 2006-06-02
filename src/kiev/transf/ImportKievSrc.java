@@ -152,7 +152,9 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					astn.resolved = op;
 					return;
 				}
-				op = AssignOperator.newAssignOperator(image,("L "+image+" V").intern(),false);
+				op = AssignOperator.newAssignOperator(image,("L "+image+" V").intern(),false,
+					new OpArg[]{new OpArg.EXPR(opAssignPriority+1),new OpArg.OPER(image.intern()),new OpArg.EXPR(opAssignPriority)}
+				);
 				if( Kiev.verbose ) System.out.println("Declared assign operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
 				return;
@@ -171,7 +173,14 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					astn.resolved = op;
 					return;
 				}
-				op = BinaryOperator.newBinaryOperator(prior,image,("V "+image+" V").intern(),Operator.orderAndArityNames[opmode],false);
+				String name = (image == "instanceof") ? ("V "+image+" T") : ("V "+image+" V");
+				op = BinaryOperator.newBinaryOperator(prior,image,name.intern(),Operator.orderAndArityNames[opmode],false,
+					new OpArg[]{
+						new OpArg.EXPR(prior+((opmode==Operator.XFX||opmode==Operator.XFY)?1:0)),
+						new OpArg.OPER(image.intern()),
+						new OpArg.EXPR(prior+((opmode==Operator.XFX||opmode==Operator.YFX)?1:0)),
+					}
+				);
 				if( Kiev.verbose ) System.out.println("Declared infix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
 				return;
@@ -179,7 +188,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		case Operator.FX:
 		case Operator.FY:
 			{
-				PrefixOperator op = PrefixOperator.getOperator(image);
+				PrefixOperator op = PrefixOperator.getOperator(image+" V");
 				if (op != null) {
 					if (prior != op.priority)
 						throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
@@ -188,7 +197,12 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					astn.resolved = op;
 					return;
 				}
-				op = PrefixOperator.newPrefixOperator(prior,image,(image+" V").intern(),Operator.orderAndArityNames[opmode],false);
+				op = PrefixOperator.newPrefixOperator(prior,image,(image+" V").intern(),Operator.orderAndArityNames[opmode],false,
+					new OpArg[]{
+						new OpArg.OPER(image.intern()),
+						new OpArg.EXPR(prior+((opmode==Operator.FX)?1:0))
+					}
+				);
 				if( Kiev.verbose ) System.out.println("Declared prefix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
 				return;
@@ -196,7 +210,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		case Operator.XF:
 		case Operator.YF:
 			{
-				PostfixOperator op = PostfixOperator.getOperator(image);
+				PostfixOperator op = PostfixOperator.getOperator("V "+image);
 				if (op != null) {
 					if (prior != op.priority)
 						throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
@@ -205,7 +219,12 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					astn.resolved = op;
 					return;
 				}
-				op = PostfixOperator.newPostfixOperator(prior,image,("V "+image).intern(),Operator.orderAndArityNames[opmode],false);
+				op = PostfixOperator.newPostfixOperator(prior,image,("V "+image).intern(),Operator.orderAndArityNames[opmode],false,
+					new OpArg[]{
+						new OpArg.EXPR(prior+((opmode==Operator.XF)?1:0)),
+						new OpArg.OPER(image.intern())
+					}
+				);
 				if( Kiev.verbose ) System.out.println("Declared postfix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
 				return;

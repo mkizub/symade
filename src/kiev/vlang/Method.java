@@ -501,7 +501,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				rt = (CallType)rt.rebind(set);
 		}
 		
-		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
+		for(int i=0; i < (isVarArgs()?(type_len-1):type_len); i++) {
 			if (mt.arg(i).getAutoCastTo(rt.arg(i)) == null) {
 				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" differ in param # "+i+": "+mt.arg(i)+" not auto-castable to "+rt.arg(i));

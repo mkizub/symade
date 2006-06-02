@@ -15,50 +15,12 @@ import static kiev.stdlib.Debug.*;
 
 @node
 class Test extends ASTNode {
-	@ref ASTNode[] rarr;
-	@ref ASTNode astn;
-	String@ sss;
-	int fi;
 	void foo() {
-		DNode@ d;
-		DNode x;
-		x = d;
-		int i = 0;
-		i++;
-		i--;
-		++i;
-		--i;
-		int j = 0;
-		j = i++;
-		j = i--;
-		j = ++i;
-		j = --i;
-		j += 10;
-		j += 1000;
-		fi++;
-		fi--;
-		++fi;
-		--fi;
-		j = fi++;
-		j = fi--;
-		j = ++fi;
-		j = --fi;
-		i = rarr.length;
-		ASTNode[] x;
-		x = rarr.delToArray();
-		rarr.delAll();
-		rarr.addAll(x);
-		rarr.copyFrom(x);
-		i = rarr.indexOf(astn);
-		rarr[0] = rarr[1];
-		rarr += astn;
-		rarr.add(astn);
-		rarr.del(0);
-		rarr.detach(astn);
-		rarr.insert(0, astn);
-		
-		boolean x;
-		//x.bool_not();
+		int i;
+		i = (int) i;
+		i = (int) i + 100;
+		byte b;
+		b = i > 0 ? ((byte)1) : ((byte)2);
 	}
 }
 

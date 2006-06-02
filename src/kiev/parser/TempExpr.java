@@ -69,6 +69,7 @@ public class PrefixExpr extends UnresExpr {
 		this.pos = pos;
 		this.op = op;
 		this.expr = expr;
+		assert (op != null && expr != null);
 	}
 	
 	public String toString() {
@@ -114,6 +115,7 @@ public class PostfixExpr extends UnresExpr {
 		this.pos = pos;
 		this.op = op;
 		this.expr = expr;
+		assert (op != null && expr != null);
 	}
 	
 	public String toString() {
@@ -155,6 +157,7 @@ public class InfixExpr extends UnresExpr {
 		this.op = op;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
+		assert (expr1 != null && expr2 != null);
 	}
 	
 	public String toString() {
@@ -206,11 +209,10 @@ public class MultiExpr extends UnresExpr {
 
 	public MultiExpr() {}
 
-	public MultiExpr(int pos, MultiOperator op, List<ENode> exprs) {
+	public MultiExpr(int pos, MultiOperator op, ENode[] exprs) {
 		this.pos = pos;
 		this.op = op;
-		foreach (ENode n; exprs)
-			this.exprs.add(~n);
+		this.exprs.addAll(exprs);
 	}
 
 	public String toString() {

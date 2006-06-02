@@ -1019,22 +1019,22 @@ public final class RuleExpr extends RuleExprBase {
 			// No unification need
 			"enter$"+idx+":;\n"+
 				( expr.getType().equals(Type.tpBoolean) ?
-					"if ( ! "+Kiev.reparseExpr(expr,true)+" ) {\n"+
+(					"if ( ! "+Kiev.reparseExpr(expr,true)+" ) {\n"+
 						createTextBacktrack(false)+					// backtrack, bt$ already loaded
 					"}\n"+
 					createTextMoreCheck(false)
-				: bt_expr == null ?
-					Kiev.reparseExpr(expr,true)+";\n"+
+)				: bt_expr == null ?
+(					Kiev.reparseExpr(expr,true)+";\n"+
 					createTextMoreCheck(false)
-				:
-					"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
+)				:
+(					"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 					"bt$ = "+base+";\n"+							// set new backtrack state to point itself
 					Kiev.reparseExpr(expr,true)+";\n"+
 					createTextMoreCheck(true)+
 			"case "+base+":\n"+
 					Kiev.reparseExpr(bt_expr,true)+";\n"+
 					createTextBacktrack(true)						// backtrack, bt$ needs to be loaded
-				)
+)				)
 		);
 	}
 }

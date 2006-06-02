@@ -43,9 +43,9 @@ public class Cell_boolean extends Cell {
 	
 	public Cell_boolean(boolean $val){ this.$val = $val; }
 	public boolean	to_boolean()	{ return $val; }
-	public byte		to_byte()		{ return $val? (byte)1 : (byte)0; }
+	public byte		to_byte()		{ return $val? ((byte)1) : ((byte)0); }
 	public char		to_char()		{ return $val? 'T' : 'F'; }
-	public short	to_short()		{ return $val? (short)1 : (short)0; }
+	public short	to_short()		{ return $val? ((short)1) : ((short)0); }
 	public int		to_int()		{ return $val? 1 : 0; }
 	public long		to_long()		{ return $val? 1L : 0L; }
 	public float	to_float()		{ return $val? 1.f : 0.f; }
