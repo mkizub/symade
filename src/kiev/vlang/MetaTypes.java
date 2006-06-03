@@ -16,11 +16,9 @@ import static kiev.stdlib.Debug.*;
 @node
 class Test extends ASTNode {
 	void foo() {
-		int i;
-		i = (int) i;
-		i = (int) i + 100;
-		byte b;
-		b = i > 0 ? ((byte)1) : ((byte)2);
+		//10 + 20 + 30 + 40;
+		//10 < 20 - 30 || false;
+		//30 > 0 ? (byte)10 : (byte)20;
 	}
 }
 

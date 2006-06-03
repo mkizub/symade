@@ -401,6 +401,7 @@ public abstract class kiev040 implements kiev040Constants {
 
 	
 	private ENode mkNotExpr(ASTOperator not, ENode cond) {
+		cond.setPrimaryExpr(true);
 		ASTExpression e = new ASTExpression();
 		e.pos = cond.pos;
 		e.nodes.append(not);

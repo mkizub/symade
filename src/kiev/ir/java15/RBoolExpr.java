@@ -57,49 +57,6 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 	public ENode			expr1;
 	public ENode			expr2;
 
-	public:no,no,no,rw final boolean resolveExprs() {
-		expr1.resolve(null);
-		if (!expr1.isForWrapper() && expr1.getType() instanceof CTimeType) {
-			expr1 = expr1.getType().makeUnboxedExpr(expr1);
-			expr1.resolve(null);
-		}
-
-		expr2.resolve(null);
-		if( expr2 instanceof TypeRef )
-			getExprByStruct(((TypeRef)expr2).getType().getStruct());
-		expr2.resolve(null);
-		if (!expr2.isForWrapper() && expr2.getType() instanceof CTimeType) {
-			expr2 = expr2.getType().makeUnboxedExpr(expr2);
-			expr2.resolve(null);
-		}
-		return true;
-	}
-
-	public:no,no,no,rw final void getExprByStruct(Struct cas) {
-		if( cas.isPizzaCase() ) {
-			if( !(op==BinaryOperator.Equals || op==BinaryOperator.NotEquals) )
-				throw new CompilerException(this,"Undefined operation "+op.image+" on cased class");
-//			PizzaCaseAttr ca = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
-//			expr2 = new ConstIntExpr(ca.caseno);
-			MetaPizzaCase meta = cas.getMetaPizzaCase();
-			expr2 = new ConstIntExpr(meta.getTag());
-			expr2.resolve(Type.tpInt);
-			Type tp = expr1.getType();
-			if (tp instanceof CTimeType) {
-				tp.makeUnboxedExpr(expr1);
-				expr1.resolve(null);
-				tp = expr1.getType();
-			}
-			if (tp.getStruct() == null || (!tp.getStruct().isPizzaCase() && !tp.getStruct().isHasCases()))
-				throw new CompilerException(this,"Compare non-cased class "+tp+" with class's case "+cas);
-			Method m = tp.getStruct().resolveMethod(nameGetCaseTag,Type.tpInt);
-			expr1 = new CallExpr(expr1.pos,~expr1,m,ENode.emptyArray);
-			expr1.resolve(Type.tpInt);
-		} else {
-			throw new CompilerException(this,"Class "+cas+" is not a cased class");
-		}
-	}
-
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 

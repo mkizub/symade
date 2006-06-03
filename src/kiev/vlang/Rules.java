@@ -542,7 +542,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
 			// Unbound
 				createTextVarAccess(var)+".$bind("+Kiev.reparseExpr(expr,true)+");\n"+
-				"if( !"+createTextVarAccess(var)+".$is_bound ) {\n"+
+				"if !( "+createTextVarAccess(var)+".$is_bound ) {\n"+
 					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
 				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
@@ -554,7 +554,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
 			// Already bound
 			"bound$"+idx+":;\n"+
-				"if( ! "+createTextVarAccess(var)+".equals("+Kiev.reparseExpr(expr,true)+") ) {\n"+	// check
+				"if !( "+createTextVarAccess(var)+".equals("+Kiev.reparseExpr(expr,true)+") ) {\n"+	// check
 					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
 				createTextMoreCheck(false)							// check next
@@ -857,7 +857,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
 			"case "+base+":\n"+
-				"if( ! "+createTextCall()+" ) {\n"+
+				"if !( "+createTextCall()+" ) {\n"+
 					createTextBacktrack(true)+					// backtrack, bt$ may needs to be loaded
 				"}\n"+
 				createTextMoreCheck(false)
@@ -959,7 +959,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 					""
 				:	Kiev.reparseExpr(bt_expr,true)+";\n"
 				)+
-				"if ( ! "+Kiev.reparseExpr(expr,true)+" ) {\n"+
+				"if !( "+Kiev.reparseExpr(expr,true)+" ) {\n"+
 					createTextBacktrack(true)+						// backtrack, bt$ may needs to be loaded
 				"}\n"+
 				createTextMoreCheck(false)
@@ -1019,22 +1019,22 @@ public final class RuleExpr extends RuleExprBase {
 			// No unification need
 			"enter$"+idx+":;\n"+
 				( expr.getType().equals(Type.tpBoolean) ?
-(					"if ( ! "+Kiev.reparseExpr(expr,true)+" ) {\n"+
+					"if !( "+Kiev.reparseExpr(expr,true)+" ) {\n"+
 						createTextBacktrack(false)+					// backtrack, bt$ already loaded
 					"}\n"+
 					createTextMoreCheck(false)
-)				: bt_expr == null ?
-(					Kiev.reparseExpr(expr,true)+";\n"+
+				: bt_expr == null ?
+					Kiev.reparseExpr(expr,true)+";\n"+
 					createTextMoreCheck(false)
-)				:
-(					"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
+				:
+					"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 					"bt$ = "+base+";\n"+							// set new backtrack state to point itself
 					Kiev.reparseExpr(expr,true)+";\n"+
 					createTextMoreCheck(true)+
 			"case "+base+":\n"+
 					Kiev.reparseExpr(bt_expr,true)+";\n"+
 					createTextBacktrack(true)						// backtrack, bt$ needs to be loaded
-)				)
+				)
 		);
 	}
 }

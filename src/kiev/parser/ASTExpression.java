@@ -117,44 +117,40 @@ public class ASTExpression extends ENode {
 		opArgs = new ENode[2],
 		pushRes(opArgs,0) : popRes(),
 		resolveCastExpr(expr, opArgs),
-		resolveExprNext(ret, expr)
+		resolveExprNext(ret, expr, priority)
 	;
 		restLength() > 1,
 		op @= Operator.allOperatorsHash,
-		op.priority >= priority,
-		restLength() >= op.args.length,
+		matchOpStart(op, priority),
 		trace( Kiev.debugOperators, "resolveExpr: 2 for "+op),
-		matchOpStart(op),
 		opArgs = makeOpArgs(op) : popRes(),
 		resolveOpArg(expr, op, 1, opArgs),
-		resolveExprNext(ret, expr)
+		resolveExprNext(ret, expr, priority)
 	;
 		restLength() > 0,
 		!(nodes[cur_pos] instanceof ASTOperator),
+		nodes[cur_pos].getPriority() >= priority,
 		trace( Kiev.debugOperators, "resolveExpr: 3 res "+nodes[cur_pos]),
 		ret ?= nodes[cur_pos],
 		++cur_pos : --cur_pos
 	}
 	
-	public rule resolveExprNext(ENode@ ret, ENode prev)
+	public rule resolveExprNext(ENode@ ret, ENode prev, int priority)
 		ENode@			expr;
 		Operator@		op;
 		ENode[]			opArgs;
 	{
-		trace( Kiev.debugOperators, "resolveExprNext: 0 restLength "+restLength()+" prev: "+prev),
-		restLength() == 0,
-		$cut,
-		ret ?= prev
-	;
+		trace( Kiev.debugOperators, "resolveExprNext: 0 restLength "+restLength()+" priority "+priority+" prev: "+prev),
 		restLength() > 1,
 		op @= Operator.allOperatorsHash,
-		op.priority <= prev.getPriority(),
-		restLength() >= op.args.length-1,
+		matchOpStart(op,prev,priority),
 		trace( Kiev.debugOperators, "resolveExprNext: 1 for "+prev+" "+op),
-		matchOpStart(op,prev),
 		opArgs = makeOpArgs(op,prev) : popRes(),
 		resolveOpArg(expr, op, 2, opArgs),
-		resolveExprNext(ret, expr)
+		resolveExprNext(ret, expr, priority)
+	;
+		trace( Kiev.debugOperators, "resolveExprNext: 2 res "+prev),
+		ret ?= prev
 	}
 	
 	public rule resolveCastExpr(ENode@ ret, ENode[] result)
@@ -174,19 +170,19 @@ public class ASTExpression extends ENode {
 		trace( Kiev.debugOperators, "resolveOpArg: 1"),
 		ret ?= makeExpr(op,result)
 	;
-		op.args[pos] == OpArg.EXPR,
+		op.args[pos] instanceof OpArg.EXPR,
 		resolveExpr(expr,((OpArg.EXPR)op.args[pos]).priority),
 		result[pos] = expr,
 		trace( Kiev.debugOperators, "resolveOpArg: 2 added "+expr),
 		resolveOpArg(ret, op, pos+1, result)
 	;
-		op.args[pos] == OpArg.TYPE,
+		op.args[pos] instanceof OpArg.TYPE,
 		nodes[cur_pos] instanceof TypeRef,
 		trace( Kiev.debugOperators, "resolveOpArg: 3 added "+nodes[cur_pos]),
 		pushRes(result,pos) : popRes(),
 		resolveOpArg(ret, op, pos+1, result)
 	;
-		op.args[pos] == OpArg.OPER,
+		op.args[pos] instanceof OpArg.OPER,
 		nodes[cur_pos] instanceof ASTOperator,
 		((OpArg.OPER)op.args[pos]).text == ((ASTOperator)nodes[cur_pos]).image,
 		trace( Kiev.debugOperators, "resolveOpArg: 4 added "+nodes[cur_pos]),
@@ -194,19 +190,33 @@ public class ASTExpression extends ENode {
 		resolveOpArg(ret, op, pos+1, result)
 	}
 	
-	private boolean matchOpStart(Operator op) {
+	private boolean matchOpStart(Operator op, int priority) {
+		if (op.priority < priority) return false;
+		if (restLength() < op.args.length) return false;
 		ENode en = nodes[cur_pos];
-		if (op.args[0] == OpArg.OPER) return (en instanceof ASTOperator && en.image == ((OpArg.OPER)op.args[0]).text);
-		if (op.args[0] == OpArg.TYPE) return (en instanceof TypeRef);
-		if (op.args[0] == OpArg.EXPR) return !(en instanceof ASTOperator) && en.getPriority() >= ((OpArg.EXPR)op.args[0]).priority;
+		if (op.args[0] instanceof OpArg.OPER) return (en instanceof ASTOperator && en.image == ((OpArg.OPER)op.args[0]).text);
+		if (op.args[0] instanceof OpArg.TYPE) return (en instanceof TypeRef);
+		if (op.args[0] instanceof OpArg.EXPR) {
+			if (en instanceof ASTOperator) return false;
+			if (en.getPriority() < ((OpArg.EXPR)op.args[0]).priority) return false;
+			if (op.args.length > 1 && op.args[1] instanceof OpArg.OPER) {
+				en = nodes[cur_pos+1];
+				if !(en instanceof ASTOperator && en.image == ((OpArg.OPER)op.args[1]).text)
+					return false;
+			}
+			return true;
+		}
 		return false;
 	}
-	private boolean matchOpStart(Operator op, ENode prev) {
+	private boolean matchOpStart(Operator op, ENode prev, int priority) {
+		if (op.priority < priority) return false;
+		if (restLength() < op.args.length-1) return false;
 		ENode en = nodes[cur_pos];
-		if (op.args[0] != OpArg.EXPR || prev.getPriority() < ((OpArg.EXPR)op.args[0]).priority) return false;
-		if (op.args[1] == OpArg.OPER) return (en instanceof ASTOperator && en.image == ((OpArg.OPER)op.args[1]).text);
-		if (op.args[1] == OpArg.TYPE) return (en instanceof TypeRef);
-		if (op.args[1] == OpArg.EXPR) return !(en instanceof ASTOperator) && en.getPriority() >= ((OpArg.EXPR)op.args[1]).priority;
+		if!(op.args[0] instanceof OpArg.EXPR) return false;
+		if (((OpArg.EXPR)op.args[0]).priority > prev.getPriority()) return false;
+		if (op.args[1] instanceof OpArg.OPER) return (en instanceof ASTOperator && en.image == ((OpArg.OPER)op.args[1]).text);
+		if (op.args[1] instanceof OpArg.TYPE) return (en instanceof TypeRef);
+		if (op.args[1] instanceof OpArg.EXPR) return !(en instanceof ASTOperator) && en.getPriority() >= ((OpArg.EXPR)op.args[1]).priority;
 		return false;
 	}
 	private int restLength() {
