@@ -81,7 +81,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			// Very special case for rule call from inside of RuleMethod
 			JNode p = (JNode)this.jparent;
 			if (p instanceof JAssignExpr
-				&& ((JAssignExpr)p).op == AssignOperator.Assign
+				&& ((JAssignExpr)p).op == Operator.Assign
 				&& ((JAssignExpr)p).lval.getType() ≡ Type.tpRule
 				)
 				((JAssignExpr)p).lval.generate(code,null);

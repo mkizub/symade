@@ -171,14 +171,14 @@ public final view RStruct of Struct extends RTypeDecl {
 		if( ctx_method != null && ctx_method.id.equals(nameClassInit) ) {
 			class_init.addstats.append(
 				new ExprStat(f.init.pos,
-					new AssignExpr(f.init.pos,AssignOperator.Assign
+					new AssignExpr(f.init.pos,Operator.Assign
 						,new SFldExpr(f.pos,f),new Shadow(f.init))
 				)
 			);
 		} else {
 			class_init.addstats.append(
 				new ExprStat(f.init.pos,
-					new AssignExpr(f.init.pos,AssignOperator.Assign
+					new AssignExpr(f.init.pos,Operator.Assign
 						,new SFldExpr(f.pos,f),new Shadow(f.init))
 				)
 			);
@@ -231,7 +231,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				FormPar v = new FormPar(pos,at.name.toString(),Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
 				init.params.append(v);
 				init.block.stats.append(new ExprStat(pos,
-					new AssignExpr(pos,AssignOperator.Assign,
+					new AssignExpr(pos,Operator.Assign,
 						new IFldExpr(pos,new ThisExpr(pos),f),
 						new LVarExpr(pos,v)
 					)
@@ -305,8 +305,8 @@ public final view RStruct of Struct extends RTypeDecl {
 			foreach (ArgType at; this.getTypeInfoArgs())
 				ne.args.add(new ContainerAccessExpr(pos, new LVarExpr(pos,init.params[1]), new ConstIntExpr(i++)));
 			init.block.stats.add(new IfElseStat(pos,
-				new BinaryBoolExpr(pos,BinaryOperator.Equals,new LVarExpr(pos,v),new ConstNullExpr()),
-				new ExprStat(pos,new AssignExpr(pos, AssignOperator.Assign,new LVarExpr(pos,v),ne)),
+				new BinaryBoolExpr(pos,Operator.Equals,new LVarExpr(pos,v),new ConstNullExpr()),
+				new ExprStat(pos,new AssignExpr(pos, Operator.Assign,new LVarExpr(pos,v),ne)),
 				null
 			));
 			init.block.stats.add(new ReturnStat(pos,new LVarExpr(pos,v)));
@@ -327,7 +327,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			typeinfo_clazz.addMethod(meq);
 			meq.body = new Block(pos);
 			meq.block.stats.add(new IfElseStat(pos,
-				new BinaryBoolExpr(pos,BinaryOperator.NotEquals,
+				new BinaryBoolExpr(pos,Operator.NotEquals,
 					new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField("clazz")),
 					new LVarExpr(pos,meq.params[0])
 					),
@@ -338,7 +338,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			foreach (ArgType at; this.getTypeInfoArgs()) {
 				Field f = typeinfo_clazz.resolveField((nameTypeInfo+"$"+at.name).intern());
 				meq.block.stats.add(new IfElseStat(pos,
-					new BinaryBoolExpr(pos,BinaryOperator.NotEquals,
+					new BinaryBoolExpr(pos,Operator.NotEquals,
 						new IFldExpr(pos,new ThisExpr(pos), f),
 						new ContainerAccessExpr(pos, new LVarExpr(pos,meq.params[1]), new ConstIntExpr(idx))
 						),
@@ -377,7 +377,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				null
 			));
 			misa.block.stats.add(new ExprStat(pos,
-				new AssignExpr(pos,AssignOperator.Assign,
+				new AssignExpr(pos,Operator.Assign,
 					new LVarExpr(pos,misa.params[0]),
 					new CastExpr(pos,typeinfo_clazz.xtype,new LVarExpr(pos,misa.params[0]))
 				)
@@ -412,7 +412,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			typeinfo_clazz.addMethod(misa);
 			misa.body = new Block(pos);
 			misa.block.stats.add(new IfElseStat(pos,
-				new BinaryBoolExpr(pos,BinaryOperator.Equals,
+				new BinaryBoolExpr(pos,Operator.Equals,
 					new LVarExpr(pos,misa.params[0]),
 					new ConstNullExpr()
 					),
@@ -1125,7 +1125,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					class_init.block.stats.add(
 						new ExprStat(f.init.pos,
 							new AssignExpr(f.init.pos,
-								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
+								f.isInitWrapper() ? Operator.Assign2 : Operator.Assign,
 								new SFldExpr(f.pos,f),new Shadow(f.init)
 							)
 						)
@@ -1139,7 +1139,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					ENode init_stat;
 					init_stat = new ExprStat(f.init.pos,
 							new AssignExpr(f.init.pos,
-								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
+								f.isInitWrapper() ? Operator.Assign2 : Operator.Assign,
 								new IFldExpr(f.pos,new ThisExpr(0),f),
 								new Shadow(f.init)
 							)
@@ -1266,7 +1266,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					initbody.stats.insert(
 						p++,
 						new ExprStat(pos,
-							new AssignExpr(pos,AssignOperator.Assign,
+							new AssignExpr(pos,Operator.Assign,
 								new IFldExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf((Struct)this)),
 								new LVarExpr(pos,m.params[0])
 							)
@@ -1280,7 +1280,7 @@ public final view RStruct of Struct extends RTypeDecl {
 							initbody.stats.insert(
 								p++,
 								new ExprStat(pos,
-									new AssignExpr(pos,AssignOperator.Assign,
+									new AssignExpr(pos,Operator.Assign,
 										new IFldExpr(pos,new ThisExpr(pos),resolveField(nameImpl)),
 										new LVarExpr(pos,fp)
 									)
@@ -1297,7 +1297,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					initbody.stats.insert(
 						p++,
 						new ExprStat(pos,
-							new AssignExpr(m.pos,AssignOperator.Assign,
+							new AssignExpr(m.pos,Operator.Assign,
 								new IFldExpr(m.pos,new ThisExpr(0),tif),
 								new LVarExpr(m.pos,v)
 							))
@@ -1371,7 +1371,7 @@ public final view RStruct of Struct extends RTypeDecl {
 							m.block.stats.insert(
 								1,
 								new ExprStat(m.pos,
-									new AssignExpr(m.pos,AssignOperator.Assign,
+									new AssignExpr(m.pos,Operator.Assign,
 										new IFldExpr(m.pos,new ThisExpr(0),proxy_fields[j]),
 										new LVarExpr(m.pos,m.params[par])
 									)

@@ -53,7 +53,7 @@ public final view RBinaryBooleanAndExpr of BinaryBooleanAndExpr extends RBoolExp
 
 @nodeview
 public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
-	public BinaryOperator	op;
+	public Operator			op;
 	public ENode			expr1;
 	public ENode			expr2;
 
@@ -138,7 +138,7 @@ public view RInstanceofExpr of InstanceofExpr extends RBoolExpr {
 		}
 		if (expr.getType().isInstanceOf(tp)) {
 			replaceWithNodeResolve(reqType,
-				new BinaryBoolExpr(pos, BinaryOperator.NotEquals,~expr,new ConstNullExpr()));
+				new BinaryBoolExpr(pos, Operator.NotEquals,~expr,new ConstNullExpr()));
 			return;
 		}
 		while (tp instanceof CTimeType)

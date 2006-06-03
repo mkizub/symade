@@ -260,7 +260,7 @@ public final class IFldExpr extends LvalueExpr {
 		this.ident = new SymbolRef(0,ident);
 	}
 
-	public Operator getOp() { return BinaryOperator.Access; }
+	public Operator getOp() { return Operator.Access; }
 
 	public Type getType() {
 		Type ot = obj.getType();
@@ -661,7 +661,7 @@ public final class SFldExpr extends LvalueExpr {
 		if (direct_access) setAsField(true);
 	}
 
-	public Operator getOp() { return BinaryOperator.Access; }
+	public Operator getOp() { return Operator.Access; }
 
 	public Type getType() {
 		try {
@@ -742,7 +742,7 @@ public final class OuterThisAccessExpr extends ENode {
 		this.outer = outer;
 	}
 
-	public Operator getOp() { return BinaryOperator.Access; }
+	public Operator getOp() { return Operator.Access; }
 
 	public Type getType() {
 		try {
@@ -812,10 +812,6 @@ public final class ReinterpExpr extends LvalueExpr {
 
 	public ReinterpExpr() {}
 
-	public ReinterpExpr(Type type) {
-		this.type = new TypeRef(type);
-	}
-
 	public ReinterpExpr(int pos, Type type, ENode expr) {
 		this.pos = pos;
 		this.type = new TypeRef(type);
@@ -828,13 +824,17 @@ public final class ReinterpExpr extends LvalueExpr {
 		this.expr = expr;
 	}
 
+	public Operator getOp() { return Operator.Reinterp; }
+
+	public ENode[] getArgs() { return new ENode[]{type, expr}; }
+
+	public String toString() { return getOp().toString(this); }
+
 	public int getPriority() { return opCastPriority; }
 
 	public Type getType() {
 		return this.type.getType();
 	}
-
-	public String toString() { return "(($reinterp "+type+")"+expr+")"; }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(expr);

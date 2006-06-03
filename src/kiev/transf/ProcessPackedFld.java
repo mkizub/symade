@@ -193,9 +193,9 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		ENode expr = ae;
 		if (mp.getOffset() > 0) {
 			ConstExpr sexpr = new ConstIntExpr(mp.getOffset());
-			expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
+			expr = new BinaryExpr(fa.pos, Operator.UnsignedRightShift, expr, sexpr);
 		}
-		expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, expr, mexpr);
+		expr = new BinaryExpr(fa.pos, Operator.BitAnd, expr, mexpr);
 		if( mp.getSize() == 8 && f.type ≡ Type.tpByte )
 			expr = new CastExpr(fa.pos, Type.tpByte, expr);
 		else if( mp.getSize() == 16 && f.type ≡ Type.tpShort )
@@ -236,12 +236,12 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		be.addSymbol(fval);
 		Var tmp = new Var(0,"tmp$val",Type.tpInt,0);
 		be.addSymbol(tmp);
-		if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
+		if !(ae.op == Operator.Assign || ae.op == Operator.Assign2) {
 			ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);
-			ENode expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), mexpr);
+			ENode expr = new BinaryExpr(fa.pos, Operator.BitAnd, mkAccess(fval), mexpr);
 			if (mp.getOffset() > 0) {
 				ConstExpr sexpr = new ConstIntExpr(mp.getOffset());
-				expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
+				expr = new BinaryExpr(fa.pos, Operator.UnsignedRightShift, expr, sexpr);
 			}
 			if( mp.getSize() == 8 && f.type ≡ Type.tpByte )
 				expr = new CastExpr(fa.pos, Type.tpByte, expr);
@@ -259,15 +259,15 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		
 		{
 			ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);
-			ENode expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(tmp), mexpr);
+			ENode expr_l = new BinaryExpr(fa.pos, Operator.BitAnd, mkAccess(tmp), mexpr);
 			if (mp.getOffset() > 0) {
 				ConstExpr sexpr = new ConstIntExpr(mp.getOffset());
-				expr_l = new BinaryExpr(fa.pos, BinaryOperator.LeftShift, expr_l, sexpr);
+				expr_l = new BinaryExpr(fa.pos, Operator.LeftShift, expr_l, sexpr);
 			}
 			ConstExpr clear = new ConstIntExpr(~(masks[mp.getSize()]<<mp.getOffset()));
-			ENode expr_r = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), clear);
-			ENode expr = new BinaryExpr(fa.pos, BinaryOperator.BitOr, expr_r, expr_l);
-			expr = new AssignExpr(fa.pos, AssignOperator.Assign,
+			ENode expr_r = new BinaryExpr(fa.pos, Operator.BitAnd, mkAccess(fval), clear);
+			ENode expr = new BinaryExpr(fa.pos, Operator.BitOr, expr_r, expr_l);
+			expr = new AssignExpr(fa.pos, Operator.Assign,
 				new IFldExpr(fa.pos, mkAccess(acc), mp.packer),
 				expr);
 			be.stats.add(new ExprStat(fa.pos, expr));
@@ -289,10 +289,10 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		MetaPacked mp = f.getMetaPacked();
 		ENode expr;
 		if (ie.isGenVoidExpr()) {
-			if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr) {
-				expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(1));
+			if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {
+				expr = new AssignExpr(ie.pos, Operator.AssignAdd, ie.lval, new ConstIntExpr(1));
 			} else {
-				expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(-1));
+				expr = new AssignExpr(ie.pos, Operator.AssignAdd, ie.lval, new ConstIntExpr(-1));
 			}
 			expr.setGenVoidExpr(true);
 		}
@@ -318,20 +318,20 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 			be.addSymbol(tmp);
 			{
 				ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);
-				ENode expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), mexpr);
+				ENode expr = new BinaryExpr(fa.pos, Operator.BitAnd, mkAccess(fval), mexpr);
 				if (mp.getOffset() > 0) {
 					ConstExpr sexpr = new ConstIntExpr(mp.getOffset());
-					expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
+					expr = new BinaryExpr(fa.pos, Operator.UnsignedRightShift, expr, sexpr);
 				}
 				if( mp.getSize() == 8 && f.type ≡ Type.tpByte )
 					expr = new CastExpr(fa.pos, Type.tpByte, expr);
 				else if( mp.getSize() == 16 && f.type ≡ Type.tpShort )
 					expr = new CastExpr(fa.pos, Type.tpShort, expr);
 				ConstExpr ce;
-				if (ie.op == PrefixOperator.PreIncr)
-					tmp.init = new BinaryExpr(0, BinaryOperator.Add, expr, new ConstIntExpr(1));
-				else if (ie.op == PrefixOperator.PreDecr)
-					tmp.init = new BinaryExpr(0, BinaryOperator.Sub, expr, new ConstIntExpr(1));
+				if (ie.op == Operator.PreIncr)
+					tmp.init = new BinaryExpr(0, Operator.Add, expr, new ConstIntExpr(1));
+				else if (ie.op == Operator.PreDecr)
+					tmp.init = new BinaryExpr(0, Operator.Sub, expr, new ConstIntExpr(1));
 				else
 					tmp.init = expr;
 			}
@@ -339,20 +339,20 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 			{
 				ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);
 				ENode expr_l;
-				if (ie.op == PostfixOperator.PostIncr)
-					expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, new BinaryExpr(0,BinaryOperator.Add,mkAccess(tmp),new ConstIntExpr(1)), mexpr);
-				else if (ie.op == PostfixOperator.PostDecr)
-					expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, new BinaryExpr(0,BinaryOperator.Sub,mkAccess(tmp),new ConstIntExpr(1)), mexpr);
+				if (ie.op == Operator.PostIncr)
+					expr_l = new BinaryExpr(fa.pos, Operator.BitAnd, new BinaryExpr(0,Operator.Add,mkAccess(tmp),new ConstIntExpr(1)), mexpr);
+				else if (ie.op == Operator.PostDecr)
+					expr_l = new BinaryExpr(fa.pos, Operator.BitAnd, new BinaryExpr(0,Operator.Sub,mkAccess(tmp),new ConstIntExpr(1)), mexpr);
 				else
-					expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(tmp), mexpr);
+					expr_l = new BinaryExpr(fa.pos, Operator.BitAnd, mkAccess(tmp), mexpr);
 				if (mp.getOffset() > 0) {
 					ConstExpr sexpr = new ConstIntExpr(mp.getOffset());
-					expr_l = new BinaryExpr(fa.pos, BinaryOperator.LeftShift, expr_l, sexpr);
+					expr_l = new BinaryExpr(fa.pos, Operator.LeftShift, expr_l, sexpr);
 				}
 				ConstExpr clear = new ConstIntExpr(~(masks[mp.getSize()]<<mp.getOffset()));
-				ENode expr_r = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), clear);
-				ENode expr = new BinaryExpr(fa.pos, BinaryOperator.BitOr, expr_r, expr_l);
-				expr = new AssignExpr(fa.pos, AssignOperator.Assign,
+				ENode expr_r = new BinaryExpr(fa.pos, Operator.BitAnd, mkAccess(fval), clear);
+				ENode expr = new BinaryExpr(fa.pos, Operator.BitOr, expr_r, expr_l);
+				expr = new AssignExpr(fa.pos, Operator.Assign,
 					new IFldExpr(fa.pos, mkAccess(acc), mp.packer),
 					expr);
 				be.stats.add(new ExprStat(fa.pos, expr));

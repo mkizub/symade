@@ -29,6 +29,8 @@ public metatype Globals extends any {
 	{
 		case AssignExpr# self():
 			new #AssignExpr(lval=self.lval,op=self.op,value=new #CallExpr(obj=self.value,ident="get$$var"))
+		case CallExpr# self():
+			new #AssignExpr(lval=lval,op="L = V",value=new #CallExpr(obj=val,ident="get$$var"))
 	}
 
 	@macro

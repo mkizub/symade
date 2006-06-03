@@ -2,7 +2,7 @@ package kiev.vlang;
 
 import kiev.*;
 import kiev.parser.AccFldExpr;
-import kiev.parser.InfixExpr;
+import kiev.parser.UnresOpExpr;
 import kiev.parser.UnresCallExpr;
 import kiev.vlang.types.*;
 
@@ -24,7 +24,7 @@ public class ResInfo {
 	private int			flags;
 	private int[]		flags_stack;
 	private int			flags_p;
-	private ASTNode[]	forwards_stack;
+	private Object[]	forwards_stack;
 	private int			forwards_p;
 	
 	private int			transforms;
@@ -54,7 +54,7 @@ public class ResInfo {
 	public ResInfo(ASTNode from, int fl) {
 		flags = fl;
 		flags_stack = new int[16];
-		forwards_stack = new ASTNode[16];
+		forwards_stack = new Object[16];
 		if (from instanceof TypeDecl)
 			from_scope = (TypeDecl)from;
 		else
@@ -72,7 +72,7 @@ public class ResInfo {
 	}
 	
 	public void enterReinterp(Type tp) {
-		forwards_stack[forwards_p++] = new ReinterpExpr(tp);
+		forwards_stack[forwards_p++] = tp;
 		flags_stack[flags_p++] = flags;
 		flags |= noStatic | noImports;
 		trace(Kiev.debugResolve,"Entering dewrap, now "+this);
@@ -169,12 +169,11 @@ public class ResInfo {
 	public ENode buildAccess(ASTNode at, ASTNode from) {
 		if (isEmpty())
 			return buildAccess(at, null, from);
-			//throw new CompilerException(pos, "Empty access build requested");
 		else
 			return buildAccess(at, from, forwards_stack[--forwards_p]);
 	}
 	
-	public ENode buildAccess(ASTNode at, ASTNode from, ASTNode node) {
+	public ENode buildAccess(ASTNode at, ASTNode from, Object node) {
 		trace(Kiev.debugResolve,"Building access from "+from+" to "+node+" via "+this);
 		if (from == null && isEmpty()) {
 			// var or static field
@@ -217,11 +216,11 @@ public class ResInfo {
 			e = buildVarAccess(at, (Var)forwards_stack[n]);
 			n++;
 		}
-		if (e != null && (node instanceof Field || node instanceof ReinterpExpr)) {
+		if (e != null && (node instanceof Field || node instanceof Type)) {
 			for (; n < forwards_p; n++) {
-				ASTNode fwn = forwards_stack[n];
-				if (fwn instanceof ReinterpExpr) {
-					e = new InfixExpr(e.pos, null, (ReinterpExpr)fwn, e);
+				Object fwn = forwards_stack[n];
+				if (fwn instanceof Type) {
+					e = new UnresOpExpr(e.pos, Operator.Reinterp, new ENode[]{new TypeRef((Type)fwn), e});
 				}
 				else if (fwn instanceof Field) {
 					if (fwn.isStatic())
@@ -234,7 +233,7 @@ public class ResInfo {
 			if (node instanceof Field) {
 				e = new AccFldExpr(at.pos, e, (Field)node);
 			} else {
-				e = new InfixExpr(e.pos, null, (ReinterpExpr)node, e);
+				e = new UnresOpExpr(e.pos, Operator.Reinterp, new ENode[]{new TypeRef((Type)node), e});
 			}
 			return e;
 		}
@@ -285,7 +284,7 @@ public class ResInfo {
 		ri.flags          = this.flags;
 		ri.flags_stack    = (int[])this.flags_stack.clone();
 		ri.flags_p        = this.flags_p;
-		ri.forwards_stack = (ASTNode[])this.forwards_stack.clone();
+		ri.forwards_stack = (Object[])this.forwards_stack.clone();
 		ri.forwards_p     = this.forwards_p;
 		ri.transforms     = this.transforms;
 		ri.mt             = this.mt;

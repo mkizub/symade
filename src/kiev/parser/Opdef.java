@@ -5,7 +5,6 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.Operator.*;
 
 /**
  * @author Maxim Kizub
@@ -41,8 +40,17 @@ public class Opdef extends SNode {
 	public Opdef(Operator op) {
 		this.prior = op.priority;
 		this.opmode = op.mode;
-		this.image = op.image;
 		this.resolved = op;
+		foreach (OpArg arg; op.args; ) {
+			if (arg instanceof OpArg.OPER) {
+				this.image = ((OpArg.OPER)arg).text;
+				break;
+			}
+			if (arg instanceof OpArg.IDENT && arg.text != "") {
+				this.image = ((OpArg.IDENT)arg).text;
+				break;
+			}
+		}
 	}
 	
 	public void setImage(ASTNode n) {

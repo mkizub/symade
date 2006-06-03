@@ -68,7 +68,7 @@ public abstract class BoolExpr extends ENode {
 			return;
 		if (et ≡ Type.tpRule) {
 			e.replaceWithResolve(Type.tpBoolean, fun ()->ENode {
-				return new BinaryBoolExpr(e.pos,BinaryOperator.NotEquals,e,new ConstNullExpr());
+				return new BinaryBoolExpr(e.pos,Operator.NotEquals,e,new ConstNullExpr());
 			});
 			return;
 		}
@@ -116,48 +116,20 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == BinaryOperator.BooleanOr);
+		assert (op == Operator.BooleanOr);
 		this.ident = new SymbolRef(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOp() { return BinaryOperator.BooleanOr; }
+	public Operator getOp() { return Operator.BooleanOr; }
 
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		if (expr1 == null)
-			sb.append("(?)");
-		else if( expr1.getPriority() < opBooleanOrPriority )
-			sb.append('(').append(expr1).append(')');
-		else
-			sb.append(expr1);
-		sb.append(BinaryOperator.BooleanOr.image);
-		if (expr2 == null)
-			sb.append("(?)");
-		else if( expr2.getPriority() < opBooleanOrPriority )
-			sb.append('(').append(expr2).append(')');
-		else
-			sb.append(expr2);
-		return sb.toString();
-	}
+	public String toString() { return getOp().toString(this); }
 
-	public Dumper toJava(Dumper dmp) {
-		if( expr1.getPriority() < opBooleanOrPriority ) {
-			dmp.append('(').append(expr1).append(')');
-		} else {
-			dmp.append(expr1);
-		}
-		dmp.append(BinaryOperator.BooleanOr.image);
-		if( expr2.getPriority() < opBooleanOrPriority ) {
-			dmp.append('(').append(expr2).append(')');
-		} else {
-			dmp.append(expr2);
-		}
-		return dmp;
-	}
+	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
+
 }
 
 
@@ -193,44 +165,20 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == BinaryOperator.BooleanAnd);
+		assert (op == Operator.BooleanAnd);
 		this.ident = new SymbolRef(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
 	
-	public Operator getOp() { return BinaryOperator.BooleanAnd; }
+	public Operator getOp() { return Operator.BooleanAnd; }
 
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		if( expr1.getPriority() < opBooleanAndPriority )
-			sb.append('(').append(expr1).append(')');
-		else
-			sb.append(expr1);
-		sb.append(BinaryOperator.BooleanAnd.image);
-		if( expr2.getPriority() < opBooleanAndPriority )
-			sb.append('(').append(expr2).append(')');
-		else
-			sb.append(expr2);
-		return sb.toString();
-	}
+	public String toString() { return getOp().toString(this); }
 
-	public Dumper toJava(Dumper dmp) {
-		if( expr1.getPriority() < opBooleanAndPriority ) {
-			dmp.append('(').append(expr1).append(')');
-		} else {
-			dmp.append(expr1);
-		}
-		dmp.append(BinaryOperator.BooleanAnd.image);
-		if( expr2.getPriority() < opBooleanAndPriority ) {
-			dmp.append('(').append(expr2).append(')');
-		} else {
-			dmp.append(expr2);
-		}
-		return dmp;
-	}
+	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
+
 }
 
 @node
@@ -246,20 +194,20 @@ public class BinaryBoolExpr extends BoolExpr {
 	@virtual typedef JView = JBinaryBoolExpr;
 	@virtual typedef RView = RBinaryBoolExpr;
 
-	@ref public BinaryOperator	op;
+	@ref public Operator		op;
 	@att public ENode			expr1;
 	@att public ENode			expr2;
 
 	@nodeview
 	public static final view VBinaryBoolExpr of BinaryBoolExpr extends VBoolExpr {
-		public BinaryOperator	op;
+		public Operator			op;
 		public ENode			expr1;
 		public ENode			expr2;
 	}
 	
 	public BinaryBoolExpr() {}
 
-	public BinaryBoolExpr(int pos, BinaryOperator op, ENode expr1, ENode expr2) {
+	public BinaryBoolExpr(int pos, Operator op, ENode expr1, ENode expr2) {
 		this.pos = pos;
 		this.op = op;
 		this.expr1 = expr1;
@@ -268,7 +216,7 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
-		this.op = (BinaryOperator)op;
+		this.op = op;
 		this.ident = new SymbolRef(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
@@ -278,26 +226,10 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append(expr1).append(op.image).append(expr2);
-		return sb.toString();
-	}
+	public String toString() { return getOp().toString(this); }
 
-	public Dumper toJava(Dumper dmp) {
-		if( expr1.getPriority() < op.priority ) {
-			dmp.append('(').append(expr1).append(')');
-		} else {
-			dmp.append(expr1);
-		}
-		dmp.append(op.image);
-		if( expr2.getPriority() < op.priority ) {
-			dmp.append('(').append(expr2).append(')');
-		} else {
-			dmp.append(expr2);
-		}
-		return dmp;
-	}
+	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
+
 }
 
 @node
@@ -337,19 +269,19 @@ public class InstanceofExpr extends BoolExpr {
 
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == BinaryOperator.InstanceOf);
+		assert (op == Operator.InstanceOf);
 		this.ident = new SymbolRef(op.name, cm);
 		this.expr = args[0];
 		this.type = (TypeRef)args[1];
 	}
 	
-	public Operator getOp() { return BinaryOperator.InstanceOf; }
+	public Operator getOp() { return Operator.InstanceOf; }
 
 	public ENode[] getArgs() { return new ENode[]{expr,type}; }
 
-	public String toString() {
-		return expr+" instanceof "+type;
-	}
+	public String toString() { return getOp().toString(this); }
+
+	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
 	static class InstanceofExprDFFunc extends DFFunc {
 		final DFFunc f;
@@ -393,12 +325,6 @@ public class InstanceofExpr extends BoolExpr {
 		}
 		return dfs;
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.space();
-		dmp.append(expr).append(" instanceof ").append(type).space();
-		return dmp;
-	}
 }
 
 @node
@@ -429,30 +355,18 @@ public class BooleanNotExpr extends BoolExpr {
 
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == PrefixOperator.BooleanNot);
+		assert (op == Operator.BooleanNot);
 		this.ident = new SymbolRef(op.name, cm);
 		this.expr = args[0];
 	}
 	
-	public Operator getOp() { return PrefixOperator.BooleanNot; }
+	public Operator getOp() { return Operator.BooleanNot; }
 
 	public ENode[] getArgs() { return new ENode[]{expr}; }
 
-	public String toString() {
-		if( expr.getPriority() < opBooleanNotPriority )
-			return "!("+expr+")";
-		else
-			return "!"+expr;
-	}
+	public String toString() { return getOp().toString(this); }
 
-	public Dumper toJava(Dumper dmp) {
-		dmp.space().append('!');
-		if( expr.getPriority() < opBooleanNotPriority ) {
-			dmp.append('(').append(expr).append(')');
-		} else {
-			dmp.append(expr);
-		}
-		return dmp;
-	}
+	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
+
 }
 

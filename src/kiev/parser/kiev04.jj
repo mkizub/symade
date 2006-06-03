@@ -2524,15 +2524,16 @@ void MaybeCastOperatorLA() :
 	)
 }
 
-ENode CastOperator(boolean sure) :
-{ Token t; ASTCastOperator op = new ASTCastOperator(); op.sure = sure; }
+void CastOperator(ASTExpression e) :
+{ Token t; ASTOperator op; }
 {
-	t="("
-	{ op.pos = t.getPos(); }
-	[ <CAST> | <REINTERP> {op.reinterp=true;} ]
-	op.type = Type()
-	")"
-	{ return op; }
+	t="(" { op = new ASTOperator(t); e.nodes += op; }
+	[
+		<CAST>		{ op.image = op.image+"$cast"; }
+	|	<REINTERP>	{ op.image = op.image+"$reinterp"; }
+	]
+	e.nodes += Type()
+	t=")" { e.nodes += new ASTOperator(t); }
 }
 
 ENode ExpressionNT(int[] nt_new) :
@@ -2554,9 +2555,9 @@ ENode Expression() :
 	|	LOOKAHEAD({ operatorLA(1) })
 		e.nodes += Operator()
 	|	LOOKAHEAD( SureCastOperatorLA() )
-		e.nodes += CastOperator(true)
+		CastOperator(e)
 	|	LOOKAHEAD( MaybeCastOperatorLA() )
-		e.nodes += CastOperator(false)
+		CastOperator(e)
 	|	LOOKAHEAD(2)
 		e.nodes += AccessExpression()
 	)+

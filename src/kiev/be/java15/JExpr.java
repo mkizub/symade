@@ -75,7 +75,7 @@ public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 
 @nodeview
 public view JAssignExpr of AssignExpr extends JENode {
-	public:ro	AssignOperator		op;
+	public:ro	Operator		op;
 	public:ro	JENode			lval;
 	public:ro	JENode			value;
 
@@ -93,7 +93,7 @@ public view JAssignExpr of AssignExpr extends JENode {
 
 @nodeview
 public view JBinaryExpr of BinaryExpr extends JENode {
-	public:ro	BinaryOperator	op;
+	public:ro	Operator	op;
 	public:ro	JENode		expr1;
 	public:ro	JENode		expr2;
 

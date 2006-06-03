@@ -241,7 +241,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				Block body = new Block(f.pos);
 				set_var.body = body;
 				ENode ass_st = new ExprStat(f.pos,
-					new AssignExpr(f.pos,AssignOperator.Assign,
+					new AssignExpr(f.pos,Operator.Assign,
 						f.isStatic()? new SFldExpr(f.pos,f,true)
 									: new IFldExpr(f.pos,new ThisExpr(0),f,true),
 						new LVarExpr(f.pos,value)
@@ -353,26 +353,26 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				fa.setAsField(true);
 				return true;
 			}
-			if (getter == null && (!ae.isGenVoidExpr() || !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2))) {
+			if (getter == null && (!ae.isGenVoidExpr() || !(ae.op == Operator.Assign || ae.op == Operator.Assign2))) {
 				Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}
 			Type ae_tp = ae.isGenVoidExpr() ? Type.tpVoid : ae.getType();
-			BinaryOperator op = null;
-			if      (ae.op == AssignOperator.AssignAdd)                  op = BinaryOperator.Add;
-			else if (ae.op == AssignOperator.AssignSub)                  op = BinaryOperator.Sub;
-			else if (ae.op == AssignOperator.AssignMul)                  op = BinaryOperator.Mul;
-			else if (ae.op == AssignOperator.AssignDiv)                  op = BinaryOperator.Div;
-			else if (ae.op == AssignOperator.AssignMod)                  op = BinaryOperator.Mod;
-			else if (ae.op == AssignOperator.AssignLeftShift)            op = BinaryOperator.LeftShift;
-			else if (ae.op == AssignOperator.AssignRightShift)           op = BinaryOperator.RightShift;
-			else if (ae.op == AssignOperator.AssignUnsignedRightShift)   op = BinaryOperator.UnsignedRightShift;
-			else if (ae.op == AssignOperator.AssignBitOr)                op = BinaryOperator.BitOr;
-			else if (ae.op == AssignOperator.AssignBitXor)               op = BinaryOperator.BitXor;
-			else if (ae.op == AssignOperator.AssignBitAnd)               op = BinaryOperator.BitAnd;
+			Operator op = null;
+			if      (ae.op == Operator.AssignAdd)                  op = Operator.Add;
+			else if (ae.op == Operator.AssignSub)                  op = Operator.Sub;
+			else if (ae.op == Operator.AssignMul)                  op = Operator.Mul;
+			else if (ae.op == Operator.AssignDiv)                  op = Operator.Div;
+			else if (ae.op == Operator.AssignMod)                  op = Operator.Mod;
+			else if (ae.op == Operator.AssignLeftShift)            op = Operator.LeftShift;
+			else if (ae.op == Operator.AssignRightShift)           op = Operator.RightShift;
+			else if (ae.op == Operator.AssignUnsignedRightShift)   op = Operator.UnsignedRightShift;
+			else if (ae.op == Operator.AssignBitOr)                op = Operator.BitOr;
+			else if (ae.op == Operator.AssignBitXor)               op = Operator.BitXor;
+			else if (ae.op == Operator.AssignBitAnd)               op = Operator.BitAnd;
 			ENode expr;
-			if (ae.isGenVoidExpr() && (ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2)) {
+			if (ae.isGenVoidExpr() && (ae.op == Operator.Assign || ae.op == Operator.Assign2)) {
 				expr = new CallExpr(ae.pos, ~fa.obj, setter, new ENode[]{~ae.value});
 			}
 			else {
@@ -391,7 +391,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 					acc = var;
 				}
 				ENode g;
-				if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
+				if !(ae.op == Operator.Assign || ae.op == Operator.Assign2) {
 					g = new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray);
 					g = new BinaryExpr(ae.pos, op, g, ~ae.value);
 				} else {
@@ -444,10 +444,10 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			ENode expr;
 			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
 			if (ie.isGenVoidExpr()) {
-				if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr) {
-					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ~ie.lval, new ConstIntExpr(1));
+				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {
+					expr = new AssignExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(1));
 				} else {
-					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ~ie.lval, new ConstIntExpr(-1));
+					expr = new AssignExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(-1));
 				}
 			}
 			else {
@@ -466,23 +466,23 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 					acc = var;
 				}
 				Var res = null;
-				if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr) {
+				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr) {
 					res = new Var(0,"tmp$res",f.getType(),0);
 					be.addSymbol(res);
 				}
 				ConstExpr ce;
-				if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr)
+				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr)
 					ce = new ConstIntExpr(1);
 				else
 					ce = new ConstIntExpr(-1);
 				ENode g;
 				g = new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray);
-				if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
-					g = new AssignExpr(ie.pos, AssignOperator.Assign, mkAccess(res), g);
-				g = new BinaryExpr(ie.pos, BinaryOperator.Add, ce, g);
+				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr)
+					g = new AssignExpr(ie.pos, Operator.Assign, mkAccess(res), g);
+				g = new BinaryExpr(ie.pos, Operator.Add, ce, g);
 				g = new CallExpr(ie.pos, mkAccess(acc), setter, new ENode[]{g});
 				be.stats.add(new ExprStat(0, g));
-				if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
+				if (ie.op == Operator.PostIncr || ie.op == Operator.PostDecr)
 					be.stats.add(mkAccess(res));
 				else
 					be.stats.add(new CallExpr(0, mkAccess(acc), getter, ENode.emptyArray));

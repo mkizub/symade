@@ -111,7 +111,7 @@ public class TypeClassExpr extends ENode {
 		this.type = type;
 	}
 
-	public Operator getOp() { return BinaryOperator.Access; }
+	public Operator getOp() { return Operator.Access; }
 
 	public Type getType() { return Type.tpClass; }
 
@@ -153,7 +153,7 @@ public class TypeInfoExpr extends ENode {
 		this.type = type;
 	}
 
-	public Operator getOp() { return BinaryOperator.Access; }
+	public Operator getOp() { return Operator.Access; }
 
 	public Type getType() {
 		Type t = type.getType().getErasedType();
@@ -185,13 +185,13 @@ public class AssignExpr extends ENode {
 	@virtual typedef JView = JAssignExpr;
 	@virtual typedef RView = RAssignExpr;
 
-	@ref public AssignOperator	op;
+	@ref public Operator		op;
 	@att public ENode			lval;
 	@att public ENode			value;
 
 	@nodeview
 	public static final view VAssignExpr of AssignExpr extends VENode {
-		public AssignOperator	op;
+		public Operator			op;
 		public ENode			lval;
 		public ENode			value;
 
@@ -199,7 +199,7 @@ public class AssignExpr extends ENode {
 			Type et1 = lval.getType();
 			Type et2 = value.getType();
 			// Find out overloaded operator
-			if (op == AssignOperator.Assign && lval instanceof ContainerAccessExpr) {
+			if (op == Operator.Assign && lval instanceof ContainerAccessExpr) {
 				ContainerAccessExpr cae = (ContainerAccessExpr)lval;
 				Type ect1 = cae.obj.getType();
 				Type ect2 = cae.index.getType();
@@ -234,7 +234,7 @@ public class AssignExpr extends ENode {
 	
 	public AssignExpr() {}
 
-	public AssignExpr(int pos, AssignOperator op, ENode lval, ENode value) {
+	public AssignExpr(int pos, Operator op, ENode lval, ENode value) {
 		this.pos = pos;
 		this.op = op;
 		this.lval = lval;
@@ -243,7 +243,7 @@ public class AssignExpr extends ENode {
 
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
-		this.op = (AssignOperator)op;
+		this.op = op;
 		this.ident = new SymbolRef(op.name, cm);
 		this.lval = args[0];
 		this.value = args[1];
@@ -255,19 +255,9 @@ public class AssignExpr extends ENode {
 
 	public Type getType() { return lval.getType(); }
 
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		if( lval.getPriority() < opAssignPriority )
-			sb.append('(').append(lval).append(')');
-		else
-			sb.append(lval);
-		sb.append(op.image);
-		if( value.getPriority() < opAssignPriority )
-			sb.append('(').append(value).append(')');
-		else
-			sb.append(value);
-		return sb.toString();
-	}
+	public String toString() { return getOp().toString(this); }
+
+	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
 	static class AssignExprDFFunc extends DFFunc {
 		final DFFunc f;
@@ -308,23 +298,6 @@ public class AssignExpr extends ENode {
 		return dfs;
 	}
 
-	public Dumper toJava(Dumper dmp) {
-		if( lval.getPriority() < opAssignPriority ) {
-			dmp.append('(').append(lval).append(')');
-		} else {
-			dmp.append(lval);
-		}
-		if (op != AssignOperator.Assign2)
-			dmp.space().append(op.image).space();
-		else
-			dmp.space().append(AssignOperator.Assign.image).space();
-		if( value.getPriority() < opAssignPriority ) {
-			dmp.append('(').append(value).append(')');
-		} else {
-			dmp.append(value);
-		}
-		return dmp;
-	}
 }
 
 
@@ -341,13 +314,13 @@ public class BinaryExpr extends ENode {
 	@virtual typedef JView = JBinaryExpr;
 	@virtual typedef RView = RBinaryExpr;
 
-	@ref public BinaryOperator	op;
+	@ref public Operator		op;
 	@att public ENode			expr1;
 	@att public ENode			expr2;
 
 	@nodeview
 	public static final view VBinaryExpr of BinaryExpr extends VENode {
-		public BinaryOperator	op;
+		public Operator			op;
 		public ENode			expr1;
 		public ENode			expr2;
 
@@ -370,14 +343,14 @@ public class BinaryExpr extends ENode {
 	
 	public BinaryExpr() {}
 
-	public BinaryExpr(int pos, BinaryOperator op, ENode expr1, ENode expr2) {
+	public BinaryExpr(int pos, Operator op, ENode expr1, ENode expr2) {
 		this.pos = pos;
 		this.op = op;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
 
-	public BinaryExpr(CoreMethod cm, BinaryOperator op, ENode[] args) {
+	public BinaryExpr(CoreMethod cm, Operator op, ENode[] args) {
 		this.ident = new SymbolRef(op.name,cm);
 		this.op = op;
 		this.expr1 = args[0];
@@ -386,7 +359,7 @@ public class BinaryExpr extends ENode {
 
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
-		this.op = (BinaryOperator)op;
+		this.op = op;
 		this.ident = new SymbolRef(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
@@ -395,6 +368,10 @@ public class BinaryExpr extends ENode {
 	public Operator getOp() { return op; }
 	
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
+
+	public String toString() { return getOp().toString(this); }
+
+	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
 	public Type getType() {
 		Method m;
@@ -410,35 +387,6 @@ public class BinaryExpr extends ENode {
 		Type ret = m.type.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
 		return m.makeType(getArgs()).ret();
-	}
-
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		if( expr1.getPriority() < op.priority )
-			sb.append('(').append(expr1).append(')');
-		else
-			sb.append(expr1);
-		sb.append(op.image);
-		if( expr2.getPriority() < op.priority )
-			sb.append('(').append(expr2).append(')');
-		else
-			sb.append(expr2);
-		return sb.toString();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		if( expr1.getPriority() < op.priority ) {
-			dmp.append('(').append(expr1).append(')');
-		} else {
-			dmp.append(expr1);
-		}
-		dmp.append(op.image);
-		if( expr2.getPriority() < op.priority ) {
-			dmp.append('(').append(expr2).append(')');
-		} else {
-			dmp.append(expr2);
-		}
-		return dmp;
 	}
 }
 
@@ -498,6 +446,10 @@ public class UnaryExpr extends ENode {
 
 	public ENode[] getArgs() { return new ENode[]{expr}; }
 
+	public String toString() { return getOp().toString(this); }
+
+	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
+
 	public Type getType() {
 		Method m;
 		if (ident != null && ident.symbol != null) {
@@ -514,37 +466,6 @@ public class UnaryExpr extends ENode {
 		return m.makeType(getArgs()).ret();
 	}
 
-	public String toString() {
-		if( op == PostfixOperator.PostIncr || op == PostfixOperator.PostDecr )
-			if( expr.getPriority() < op.priority )
-				return "("+expr.toString()+")"+op.image;
-			else
-				return expr.toString()+op.image;
-		else
-			if( expr.getPriority() < op.priority )
-				return op.image+"("+expr.toString()+")";
-			else
-				return op.image+expr.toString();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		if( op == PostfixOperator.PostIncr || op == PostfixOperator.PostDecr ) {
-			if( expr.getPriority() < op.priority ) {
-				dmp.append('(').append(expr).append(')');
-			} else {
-				dmp.append(expr);
-			}
-			dmp.append(op.image);
-		} else {
-			dmp.append(op.image);
-			if( expr.getPriority() < op.priority ) {
-				dmp.append('(').append(expr).append(')');
-			} else {
-				dmp.append(expr);
-			}
-		}
-		return dmp;
-	}
 }
 
 @node
@@ -574,7 +495,7 @@ public class StringConcatExpr extends ENode {
 
 	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
 		this.pos = node.pos;
-		assert (op == BinaryOperator.Add);
+		assert (op == Operator.Add);
 		this.ident = new SymbolRef(op.name, cm);
 		ENode arg1 = args[0];
 		ENode arg2 = args[1];
@@ -588,7 +509,7 @@ public class StringConcatExpr extends ENode {
 			this.args.add(arg2);
 	}
 	
-	public Operator getOp() { return BinaryOperator.Add; }
+	public Operator getOp() { return Operator.Add; }
 
 	public Type getType() { return Type.tpString; }
 
@@ -864,31 +785,10 @@ public class IncrementExpr extends ENode {
 		return lval.getType();
 	}
 
-	public String toString() {
-		if( op == PostfixOperator.PostIncr || op == PostfixOperator.PostDecr )
-			return lval.toString()+op.image;
-		else
-			return op.image+lval.toString();
-	}
+	public String toString() { return getOp().toString(this); }
 
-	public Dumper toJava(Dumper dmp) {
-		if( op == PostfixOperator.PostIncr || op == PostfixOperator.PostDecr ) {
-			if( lval.getPriority() < op.priority ) {
-				dmp.append('(').append(lval).append(')');
-			} else {
-				dmp.append(lval);
-			}
-			dmp.append(op.image);
-		} else {
-			dmp.append(op.image);
-			if( lval.getPriority() < op.priority ) {
-				dmp.append('(').append(lval).append(')');
-			} else {
-				dmp.append(lval);
-			}
-		}
-		return dmp;
-	}
+	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
+
 }
 
 @node
@@ -925,7 +825,13 @@ public class ConditionalExpr extends ENode {
 		this.expr2 = expr2;
 	}
 
-	public Operator getOp() { return MultiOperator.Conditional; }
+	public Operator getOp() { return Operator.Conditional; }
+
+	public ENode[] getArgs() { return new ENode[]{cond, expr1, expr2}; }
+
+	public String toString() { return getOp().toString(this); }
+
+	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
 	public Type getType() {
 		Type t1 = expr1.getType();
@@ -942,22 +848,6 @@ public class ConditionalExpr extends ENode {
 		}
 		return expr1.getType();
 	}
-
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append('(').append(cond).append(") ? ");
-		sb.append('(').append(expr1).append(") : ");
-		sb.append('(').append(expr2).append(") ");
-		return sb.toString();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("((");
-		dmp.append(cond).append(") ? (");
-		dmp.append(expr1).append(") : (");
-		dmp.append(expr2).append("))");
-		return dmp;
-	}
 }
 
 @node
@@ -972,13 +862,13 @@ public class CastExpr extends ENode {
 	@virtual typedef JView = JCastExpr;
 	@virtual typedef RView = RCastExpr;
 
-	@att public ENode		expr;
 	@att public TypeRef		type;
+	@att public ENode		expr;
 
 	@nodeview
 	public static final view VCastExpr of CastExpr extends VENode {
-		public ENode	expr;
 		public TypeRef	type;
+		public ENode	expr;
 	}
 	
 	public CastExpr() {}
@@ -1000,14 +890,16 @@ public class CastExpr extends ENode {
 		this.expr = expr;
 	}
 
+	public Operator getOp() { return Operator.CastForce; }
+
 	public int getPriority() { return opCastPriority; }
+
+	public ENode[] getArgs() { return new ENode[]{type, expr}; }
+
+	public String toString() { return getOp().toString(this); }
 
 	public Type getType() {
 		return type.getType();
-	}
-
-	public String toString() {
-		return "(("+type+")"+expr+")";
 	}
 
 	public Type[] getAccessTypes() {

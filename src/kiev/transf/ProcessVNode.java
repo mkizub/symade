@@ -255,7 +255,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				setArr.body = new Block(0);
 				ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.xtype, new LVarExpr(0, setArr.params[0]) ), f);
 				setArr.block.stats.add(new ExprStat(
-					new AssignExpr(f.pos,AssignOperator.Assign,lval,new CastExpr(f.pos, f.getType(), new LVarExpr(0, setArr.params[1])))
+					new AssignExpr(f.pos,Operator.Assign,lval,new CastExpr(f.pos, f.getType(), new LVarExpr(0, setArr.params[1])))
 				));
 			}
 		} else {
@@ -286,7 +286,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 					else
 						val = new CastExpr(0,((CoreType)ftp).getRefTypeForPrimitive(),val);
 					setVal.block.stats.add(new ExprStat(
-						new AssignExpr(f.pos,AssignOperator.Assign,lval,val)
+						new AssignExpr(f.pos,Operator.Assign,lval,val)
 					));
 					if!(ftp.isReference())
 						CastExpr.autoCastToPrimitive(val);
@@ -390,7 +390,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				ENode ee = new IFldExpr(0,new ThisExpr(),f);
 				getV.block.stats.add(
 					new IfElseStat(0,
-						new BinaryBoolExpr(0, BinaryOperator.Equals,
+						new BinaryBoolExpr(0, Operator.Equals,
 							new LVarExpr(0, getV.params[0]),
 							new ConstStringExpr(f.id.sname)
 						),
@@ -483,12 +483,12 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 						cae.ident = new SymbolRef(0, "copy");
 						copyV.block.stats.append( 
 							new IfElseStat(0,
-								new BinaryBoolExpr(0, BinaryOperator.NotEquals,
+								new BinaryBoolExpr(0, Operator.NotEquals,
 									new IFldExpr(0,new ThisExpr(),f),
 									new ConstNullExpr()
 									),
 								new ExprStat(0,
-									new AssignExpr(0,AssignOperator.Assign,
+									new AssignExpr(0,Operator.Assign,
 										new IFldExpr(0,new LVarExpr(0,v),f),
 										new CastExpr(0,f.getType(),cae)
 									)
@@ -500,7 +500,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				} else {
 					copyV.block.stats.append( 
 						new ExprStat(0,
-							new AssignExpr(0,AssignOperator.Assign,
+							new AssignExpr(0,Operator.Assign,
 								new IFldExpr(0,new LVarExpr(0,v),f),
 								new IFldExpr(0,new ThisExpr(),f)
 							)
@@ -538,13 +538,13 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 					ee = new CastExpr(0,((CoreType)atp).getRefTypeForPrimitive(),new LVarExpr(0, setV.params[1]));
 				setV.block.stats.add(
 					new IfElseStat(0,
-						new BinaryBoolExpr(0, BinaryOperator.Equals,
+						new BinaryBoolExpr(0, Operator.Equals,
 							new LVarExpr(0, setV.params[0]),
 							new ConstStringExpr(f.id.sname)
 							),
 						new Block(0, new ENode[]{
 							new ExprStat(0,
-								new AssignExpr(0,AssignOperator.Assign,
+								new AssignExpr(0,Operator.Assign,
 									new IFldExpr(0,new ThisExpr(),f),
 									ee
 								)
@@ -665,7 +665,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		Field fatt = f.ctx_tdecl.resolveField(fname);
 		if (f.type.isInstanceOf(VNode_Base.tpANode)) {
 			ENode p_st = new IfElseStat(0,
-					new BinaryBoolExpr(0, BinaryOperator.NotEquals,
+					new BinaryBoolExpr(0, Operator.NotEquals,
 						new IFldExpr(0,new ThisExpr(),f,true),
 						new ConstNullExpr()
 					),
@@ -682,7 +682,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				);
 			body.stats.insert(0,p_st);
 			ENode p_st = new IfElseStat(0,
-					new BinaryBoolExpr(0, BinaryOperator.NotEquals,
+					new BinaryBoolExpr(0, Operator.NotEquals,
 						new LVarExpr(0, value),
 						new ConstNullExpr()
 					),
@@ -704,7 +704,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			old.init = new IFldExpr(0,new ThisExpr(),f,true);
 			body.stats.insert(0,old);
 			ENode p_st = new IfElseStat(0,
-					new BinaryBoolExpr(0, BinaryOperator.NotEquals,
+					new BinaryBoolExpr(0, Operator.NotEquals,
 						new LVarExpr(0, value),
 						new LVarExpr(0, old)
 					),

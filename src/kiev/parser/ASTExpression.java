@@ -110,15 +110,6 @@ public class ASTExpression extends ENode {
 	{
 		trace( Kiev.debugOperators, "resolveExpr: 0 restLength "+restLength()+" priority "+priority),
 
-		restLength() > 1 && nodes[cur_pos] instanceof ASTCastOperator,
-		opCastPriority >= priority,
-		nodes[cur_pos] instanceof ASTCastOperator,
-		trace( Kiev.debugOperators, "Resolving cast: "+nodes[cur_pos]),
-		opArgs = new ENode[2],
-		pushRes(opArgs,0) : popRes(),
-		resolveCastExpr(expr, opArgs),
-		resolveExprNext(ret, expr, priority)
-	;
 		restLength() > 1,
 		op @= Operator.allOperatorsHash,
 		matchOpStart(op, priority),
@@ -153,14 +144,6 @@ public class ASTExpression extends ENode {
 		ret ?= prev
 	}
 	
-	public rule resolveCastExpr(ENode@ ret, ENode[] result)
-		ENode@ expr;
-	{
-		resolveExpr(expr,opCastPriority),
-		result[1] = expr,
-		ret ?= makeExpr(((ASTCastOperator)result[0]).resolveOperator(), result)
-	}
-
 	public rule resolveOpArg(ENode@ ret, Operator op, int pos, ENode[] result)
 		ENode@ expr;
 	{
@@ -241,21 +224,13 @@ public class ASTExpression extends ENode {
 		--cur_pos;
 	}
 	private ENode makeExpr(Operator op, ENode[] result) {
-		assert (op != null);
-		if (op instanceof CastOperator)
-			return new PrefixExpr(result[0].pos, op, result[1]);
-		if (op instanceof PrefixOperator)
-			return new PrefixExpr(result[0].pos, op, result[1]);
-		if (op instanceof PostfixOperator)
-			return new PrefixExpr(result[1].pos, op, result[0]);
-		if (op instanceof BinaryOperator)
-			return new InfixExpr(result[1].pos, op, result[0], result[2]);
-		if (op instanceof AssignOperator)
-			return new InfixExpr(result[1].pos, op, result[0], result[2]);
-		if (op instanceof MultiOperator)
-			return new MultiExpr(result[1].pos, (MultiOperator)op, new ENode[]{result[0],result[2],result[4]});
-		assert (false, "Unknown operator kind: "+op.getClass());
-		return null;
+		int pos = this.pos;
+		foreach (ENode e; result; e.pos > 0) {
+			pos = e.pos;
+			if (e instanceof ASTOperator)
+				break;
+		}
+		return new UnresOpExpr(pos, op, result);
 	}
 }
 

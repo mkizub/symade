@@ -133,7 +133,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 				return;
 			} else {
 				IfElseStat st = new IfElseStat(pos,
-						new BinaryBoolExpr(sel.pos,BinaryOperator.Equals,~sel,~cas.val),
+						new BinaryBoolExpr(sel.pos,Operator.Equals,~sel,~cas.val),
 						bl,
 						null
 					);
@@ -218,7 +218,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 			Constructor clinit = ((Struct)ctx_tdecl).getClazzInitMethod();
 			clinit.block.stats.add(
 				new ExprStat(typehash.init.pos,
-					new AssignExpr(typehash.init.pos,AssignOperator.Assign
+					new AssignExpr(typehash.init.pos,Operator.Assign
 						,new SFldExpr(typehash.pos,typehash),new Shadow(typehash.init))
 				)
 			);

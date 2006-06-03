@@ -74,7 +74,7 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 
 @nodeview
 public static final view RAssignExpr of AssignExpr extends RENode {
-	public AssignOperator	op;
+	public Operator			op;
 	public ENode			lval;
 	public ENode			value;
 
@@ -172,7 +172,7 @@ public static final view RAssignExpr of AssignExpr extends RENode {
 
 @nodeview
 public static final view RBinaryExpr of BinaryExpr extends RENode {
-	public BinaryOperator	op;
+	public Operator			op;
 	public ENode			expr1;
 	public ENode			expr2;
 
@@ -538,7 +538,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		if (et ≡ Type.tpNull && reqType.isReference())
 			return;
 		if( type ≡ Type.tpBoolean && et ≡ Type.tpRule ) {
-			replaceWithNodeResolve(type, new BinaryBoolExpr(pos,BinaryOperator.NotEquals,expr,new ConstNullExpr()));
+			replaceWithNodeResolve(type, new BinaryBoolExpr(pos,Operator.NotEquals,expr,new ConstNullExpr()));
 			return;
 		}
 		if( type.isBoolean() && et.isBoolean() )

@@ -1167,7 +1167,7 @@ public final class Code implements JConstants {
 			return;
 		}
 		CodeVar v = vars[vv.bcpos];
-		add_opcode_and_short(opc_iinc, (v.stack_pos)<<8 | ((byte)val & 0xFF) );
+		add_opcode_and_short(opc_iinc, v.stack_pos<<8 | ((byte)val & 0xFF) );
 	}
 
 

@@ -134,7 +134,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			fromstr.pos = pos;
 			fromstr.params.add(new FormPar(pos,"val",Type.tpString, FormPar.PARAM_NORMAL,0));
 			fromstr.body = new Block(pos);
-			AssignExpr ae = new AssignExpr(pos,AssignOperator.Assign,
+			AssignExpr ae = new AssignExpr(pos,Operator.Assign,
 				new LVarExpr(pos,fromstr.params[0]),
 				new CallExpr(pos,
 					new LVarExpr(pos,fromstr.params[0]),
@@ -146,7 +146,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				Field f = eflds[i];
 				String str = f.id.sname;
 				IfElseStat ifst = new IfElseStat(pos,
-					new BinaryBoolExpr(pos,BinaryOperator.Equals,
+					new BinaryBoolExpr(pos,Operator.Equals,
 						new LVarExpr(pos,fromstr.params[0]),
 						new ConstStringExpr(str)),
 					new ReturnStat(pos,new SFldExpr(pos,f)),
@@ -159,7 +159,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 						str = str.substring(1,str.length()-1);
 						if (str != f.id.sname) {
 							ifst = new IfElseStat(pos,
-								new BinaryBoolExpr(pos,BinaryOperator.Equals,
+								new BinaryBoolExpr(pos,Operator.Equals,
 									new LVarExpr(pos,fromstr.params[0]),
 									new ConstStringExpr(str)),
 									new ReturnStat(pos,new SFldExpr(pos,f)),

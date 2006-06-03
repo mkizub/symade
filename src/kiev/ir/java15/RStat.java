@@ -290,7 +290,7 @@ public final view RGotoCaseStat of GotoCaseStat extends RENode {
 			throw new CompilerException(this,"goto case statement not within a switch statement");
 		if( expr != null ) {
 			if( sw.mode == SwitchStat.TYPE_SWITCH ) {
-				expr = new AssignExpr(pos,AssignOperator.Assign,
+				expr = new AssignExpr(pos,Operator.Assign,
 					new LVarExpr(pos,sw.tmpvar.getVar()),~expr);
 				expr.resolve(Type.tpVoid);
 				expr.setGenVoidExpr(true);

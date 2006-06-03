@@ -181,7 +181,6 @@ CLASS kiev.gui.Window kiev/gui/Window kiev\gui\Window.java
 CLASS kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
 CLASS kiev.parser.ASTCallAccessExpression kiev/parser/ASTCallAccessExpression kiev\parser\ASTCallAccessExpression.java
 CLASS kiev.parser.ASTCallExpression kiev/parser/ASTCallExpression kiev\parser\ASTCallExpression.java
-CLASS kiev.parser.ASTCastOperator kiev/parser/ASTCastOperator kiev\parser\ASTCastOperator.java
 CLASS kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
 CLASS kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.java
 CLASS kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIdentifierAlias.java
@@ -190,20 +189,17 @@ CLASS kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.ja
 CLASS kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java
 CLASS kiev.parser.ASTPragma kiev/parser/ASTPragma kiev\parser\ASTPragma.java
 CLASS kiev.parser.AccFldExpr kiev/parser/AccFldExpr kiev\parser\TempExpr.java
-CLASS kiev.parser.InfixExpr kiev/parser/InfixExpr kiev\parser\TempExpr.java
-CLASS kiev.parser.MultiExpr kiev/parser/MultiExpr kiev\parser\TempExpr.java
 CLASS kiev.parser.Opdef kiev/parser/Opdef kiev\parser\Opdef.java
 CLASS kiev.parser.ParseError kiev/parser/ParseError kiev\parser\ParseError.java
 CLASS kiev.parser.ParseException kiev/parser/ParseException kiev\parser\ParseException.java
 CLASS kiev.parser.Parser kiev/parser/Parser kiev\parser\kiev040.java
-CLASS kiev.parser.PostfixExpr kiev/parser/PostfixExpr kiev\parser\TempExpr.java
-CLASS kiev.parser.PrefixExpr kiev/parser/PrefixExpr kiev\parser\TempExpr.java
 CLASS kiev.parser.PrescannedBody kiev/parser/PrescannedBody kiev\parser\PrescannedBody.java
 CLASS kiev.parser.SimpleCharStream kiev/parser/SimpleCharStream kiev\parser\SimpleCharStream.java
 CLASS kiev.parser.Token kiev/parser/Token kiev\parser\Token.java
 CLASS kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java
 CLASS kiev.parser.UnresCallExpr kiev/parser/UnresCallExpr kiev\parser\TempExpr.java
 CLASS kiev.parser.UnresExpr kiev/parser/UnresExpr kiev\parser\TempExpr.java
+CLASS kiev.parser.UnresOpExpr kiev/parser/UnresOpExpr kiev\parser\TempExpr.java
 CLASS kiev.parser.kiev040 kiev/parser/kiev040 kiev\parser\kiev040.java
 CLASS kiev.parser.kiev040TokenManager kiev/parser/kiev040TokenManager kiev\parser\kiev040TokenManager.java
 CLASS kiev.stdlib.Array kiev/stdlib/Array kiev\stdlib\SupportTypes.java
@@ -293,7 +289,6 @@ CLASS kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
 CLASS kiev.vlang.AccessExpr kiev/vlang/AccessExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.AnyInstanceOf kiev/vlang/AnyInstanceOf kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
-CLASS kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 CLASS kiev.vlang.AttAttrSlot kiev/vlang/AttAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.AttachInfo kiev/vlang/AttachInfo kiev\vlang\AST.java
 CLASS kiev.vlang.AttrPtr kiev/vlang/AttrPtr kiev\vlang\Tree.java
@@ -303,7 +298,6 @@ CLASS kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang
 CLASS kiev.vlang.BinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev\vlang\BooleanExpr.java
 CLASS kiev.vlang.BinaryExpr kiev/vlang/BinaryExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.BinaryFunc kiev/vlang/BinaryFunc kiev\vlang\CoreMethod.java
-CLASS kiev.vlang.BinaryOperator kiev/vlang/BinaryOperator kiev\vlang\Operator.java
 CLASS kiev.vlang.Block kiev/vlang/Block kiev\vlang\Expr.java
 CLASS kiev.vlang.BoolAssign kiev/vlang/BoolAssign kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.BoolAssignBitAND kiev/vlang/BoolAssignBitAND kiev\vlang\CoreMethod.java
@@ -326,7 +320,6 @@ CLASS kiev.vlang.BytePOS kiev/vlang/BytePOS kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.CallExpr kiev/vlang/CallExpr kiev\vlang\CallExpr.java
 CLASS kiev.vlang.CaseLabel kiev/vlang/CaseLabel kiev\vlang\ComplexStatement.java
 CLASS kiev.vlang.CastExpr kiev/vlang/CastExpr kiev\vlang\Expr.java
-CLASS kiev.vlang.CastOperator kiev/vlang/CastOperator kiev\vlang\Operator.java
 CLASS kiev.vlang.CatchInfo kiev/vlang/CatchInfo kiev\vlang\ComplexStatement.java
 CLASS kiev.vlang.CharAssign kiev/vlang/CharAssign kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ClosureCallExpr kiev/vlang/ClosureCallExpr kiev\vlang\CallExpr.java
@@ -531,7 +524,6 @@ CLASS kiev.vlang.MetaValueScalar kiev/vlang/MetaValueScalar kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaVirtual kiev/vlang/MetaVirtual kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaVolatile kiev/vlang/MetaVolatile kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.Method kiev/vlang/Method kiev\vlang\Method.java
-CLASS kiev.vlang.MultiOperator kiev/vlang/MultiOperator kiev\vlang\Operator.java
 CLASS kiev.vlang.NArr kiev/vlang/NArr kiev\vlang\Tree.java
 CLASS kiev.vlang.NewArrayExpr kiev/vlang/NewArrayExpr kiev\vlang\NewExpr.java
 CLASS kiev.vlang.NewClosure kiev/vlang/NewClosure kiev\vlang\NewExpr.java
@@ -548,8 +540,6 @@ CLASS kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java
 CLASS kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.ParentEnumerator kiev/vlang/ParentEnumerator kiev\vlang\PassInfo.java
 CLASS kiev.vlang.PassInfo kiev/vlang/PassInfo kiev\vlang\PassInfo.java
-CLASS kiev.vlang.PostfixOperator kiev/vlang/PostfixOperator kiev\vlang\Operator.java
-CLASS kiev.vlang.PrefixOperator kiev/vlang/PrefixOperator kiev\vlang\Operator.java
 CLASS kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java
 CLASS kiev.vlang.ReWalkNodeException kiev/vlang/ReWalkNodeException kiev\vlang\AST.java
 CLASS kiev.vlang.RefAttrSlot kiev/vlang/RefAttrSlot kiev\vlang\Tree.java

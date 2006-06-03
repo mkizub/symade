@@ -239,7 +239,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				Field view_fld = clazz.view_of.getType().getStruct().resolveField(f.id.sname);
 				ENode val = new LVarExpr(f.pos,set_var.params[0]);
 				ENode ass_st = new ExprStat(f.pos,
-					new AssignExpr(f.pos,AssignOperator.Assign,
+					new AssignExpr(f.pos,Operator.Assign,
 						new IFldExpr(f.pos,
 							new CastExpr(f.pos,
 								clazz.view_of.getType(),

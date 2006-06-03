@@ -51,27 +51,27 @@ public abstract view JBoolExpr of BoolExpr extends JENode implements IBoolExpr {
 					Object ce = be.expr2.getConstValue();
 					if( ((Number)ce).intValue() == 0 ) {
 						optimized = true;
-						if( be.op == BinaryOperator.LessThen ) {
+						if( be.op == Operator.LessThen ) {
 							be.expr1.generate(code,null);
 							code.addInstr(Instr.op_ifge,label);
 						}
-						else if( be.op == BinaryOperator.LessEquals ) {
+						else if( be.op == Operator.LessEquals ) {
 							be.expr1.generate(code,null);
 							code.addInstr(Instr.op_ifgt,label);
 						}
-						else if( be.op == BinaryOperator.GreaterThen ) {
+						else if( be.op == Operator.GreaterThen ) {
 							be.expr1.generate(code,null);
 							code.addInstr(Instr.op_ifle,label);
 						}
-						else if( be.op == BinaryOperator.GreaterEquals ) {
+						else if( be.op == Operator.GreaterEquals ) {
 							be.expr1.generate(code,null);
 							code.addInstr(Instr.op_iflt,label);
 						}
-						else if( be.op == BinaryOperator.Equals ) {
+						else if( be.op == Operator.Equals ) {
 							be.expr1.generate(code,null);
 							code.addInstr(Instr.op_ifne,label);
 						}
-						else if( be.op == BinaryOperator.NotEquals ) {
+						else if( be.op == Operator.NotEquals ) {
 							be.expr1.generate(code,null);
 							code.addInstr(Instr.op_ifeq,label);
 						}
@@ -153,7 +153,7 @@ public final view JBinaryBooleanAndExpr of BinaryBooleanAndExpr extends JBoolExp
 
 @nodeview
 public final view JBinaryBoolExpr of BinaryBoolExpr extends JBoolExpr {
-	public:ro BinaryOperator		op;
+	public:ro Operator			op;
 	public:ro JENode			expr1;
 	public:ro JENode			expr2;
 
@@ -165,34 +165,34 @@ public final view JBinaryBoolExpr of BinaryBoolExpr extends JBoolExpr {
 			Object cv = ce.getConstValue();
 			if( cv == null ) {
 				expr1.generate(code,Type.tpBoolean);
-				if( op == BinaryOperator.Equals) code.addInstr(Instr.op_ifnull,label);
-				else if( op == BinaryOperator.NotEquals ) code.addInstr(Instr.op_ifnonnull,label);
+				if( op == Operator.Equals) code.addInstr(Instr.op_ifnull,label);
+				else if( op == Operator.NotEquals ) code.addInstr(Instr.op_ifnonnull,label);
 				else throw new RuntimeException("Only == and != boolean operations permitted on 'null' constant");
 				return;
 			}
 			else if( expr2.getType().isIntegerInCode() && cv instanceof Number && ((Number)cv).intValue() == 0 ) {
 				expr1.generate(code,Type.tpBoolean);
-				if( op == BinaryOperator.Equals ) {
+				if( op == Operator.Equals ) {
 					code.addInstr(Instr.op_ifeq,label);
 					return;
 				}
-				else if( op == BinaryOperator.NotEquals ) {
+				else if( op == Operator.NotEquals ) {
 					code.addInstr(Instr.op_ifne,label);
 					return;
 				}
-				else if( op == BinaryOperator.LessThen ) {
+				else if( op == Operator.LessThen ) {
 					code.addInstr(Instr.op_iflt,label);
 					return;
 				}
-				else if( op == BinaryOperator.LessEquals ) {
+				else if( op == Operator.LessEquals ) {
 					code.addInstr(Instr.op_ifle,label);
 					return;
 				}
-				else if( op == BinaryOperator.GreaterThen ) {
+				else if( op == Operator.GreaterThen ) {
 					code.addInstr(Instr.op_ifgt,label);
 					return;
 				}
-				else if( op == BinaryOperator.GreaterEquals ) {
+				else if( op == Operator.GreaterEquals ) {
 					code.addInstr(Instr.op_ifge,label);
 					return;
 				}
@@ -200,12 +200,12 @@ public final view JBinaryBoolExpr of BinaryBoolExpr extends JBoolExpr {
 		}
 		expr1.generate(code,Type.tpBoolean);
 		expr2.generate(code,Type.tpBoolean);
-		if( op == BinaryOperator.Equals )				code.addInstr(Instr.op_ifcmpeq,label);
-		else if( op == BinaryOperator.NotEquals )		code.addInstr(Instr.op_ifcmpne,label);
-		else if( op == BinaryOperator.LessThen )		code.addInstr(Instr.op_ifcmplt,label);
-		else if( op == BinaryOperator.LessEquals )		code.addInstr(Instr.op_ifcmple,label);
-		else if( op == BinaryOperator.GreaterThen )	code.addInstr(Instr.op_ifcmpgt,label);
-		else if( op == BinaryOperator.GreaterEquals )	code.addInstr(Instr.op_ifcmpge,label);
+		if     ( op == Operator.Equals )			code.addInstr(Instr.op_ifcmpeq,label);
+		else if( op == Operator.NotEquals )		code.addInstr(Instr.op_ifcmpne,label);
+		else if( op == Operator.LessThen )			code.addInstr(Instr.op_ifcmplt,label);
+		else if( op == Operator.LessEquals )		code.addInstr(Instr.op_ifcmple,label);
+		else if( op == Operator.GreaterThen )		code.addInstr(Instr.op_ifcmpgt,label);
+		else if( op == Operator.GreaterEquals )	code.addInstr(Instr.op_ifcmpge,label);
 	}
 
 	public void generate_iffalse(Code code, CodeLabel label) {
@@ -216,34 +216,34 @@ public final view JBinaryBoolExpr of BinaryBoolExpr extends JBoolExpr {
 			Object cv = ce.getConstValue();
 			if( cv == null ) {
 				expr1.generate(code,Type.tpBoolean);
-				if( op == BinaryOperator.Equals) code.addInstr(Instr.op_ifnonnull,label);
-				else if( op == BinaryOperator.NotEquals ) code.addInstr(Instr.op_ifnull,label);
+				if( op == Operator.Equals) code.addInstr(Instr.op_ifnonnull,label);
+				else if( op == Operator.NotEquals ) code.addInstr(Instr.op_ifnull,label);
 				else throw new RuntimeException("Only == and != boolean operations permitted on 'null' constant");
 				return;
 			}
 			else if( expr2.getType().isIntegerInCode() && cv instanceof Number && ((Number)cv).intValue() == 0 ) {
 				expr1.generate(code,Type.tpBoolean);
-				if( op == BinaryOperator.Equals ) {
+				if( op == Operator.Equals ) {
 					code.addInstr(Instr.op_ifne,label);
 					return;
 				}
-				else if( op == BinaryOperator.NotEquals ) {
+				else if( op == Operator.NotEquals ) {
 					code.addInstr(Instr.op_ifeq,label);
 					return;
 				}
-				else if( op == BinaryOperator.LessThen ) {
+				else if( op == Operator.LessThen ) {
 					code.addInstr(Instr.op_ifge,label);
 					return;
 				}
-				else if( op == BinaryOperator.LessEquals ) {
+				else if( op == Operator.LessEquals ) {
 					code.addInstr(Instr.op_ifgt,label);
 					return;
 				}
-				else if( op == BinaryOperator.GreaterThen ) {
+				else if( op == Operator.GreaterThen ) {
 					code.addInstr(Instr.op_ifle,label);
 					return;
 				}
-				else if( op == BinaryOperator.GreaterEquals ) {
+				else if( op == Operator.GreaterEquals ) {
 					code.addInstr(Instr.op_iflt,label);
 					return;
 				}
@@ -251,12 +251,12 @@ public final view JBinaryBoolExpr of BinaryBoolExpr extends JBoolExpr {
 		}
 		expr1.generate(code,Type.tpBoolean);
 		expr2.generate(code,Type.tpBoolean);
-		if( op == BinaryOperator.Equals )				code.addInstr(Instr.op_ifcmpne,label);
-		else if( op == BinaryOperator.NotEquals )		code.addInstr(Instr.op_ifcmpeq,label);
-		else if( op == BinaryOperator.LessThen )		code.addInstr(Instr.op_ifcmpge,label);
-		else if( op == BinaryOperator.LessEquals )		code.addInstr(Instr.op_ifcmpgt,label);
-		else if( op == BinaryOperator.GreaterThen )	code.addInstr(Instr.op_ifcmple,label);
-		else if( op == BinaryOperator.GreaterEquals )	code.addInstr(Instr.op_ifcmplt,label);
+		if     ( op == Operator.Equals )			code.addInstr(Instr.op_ifcmpne,label);
+		else if( op == Operator.NotEquals )		code.addInstr(Instr.op_ifcmpeq,label);
+		else if( op == Operator.LessThen )			code.addInstr(Instr.op_ifcmpge,label);
+		else if( op == Operator.LessEquals )		code.addInstr(Instr.op_ifcmpgt,label);
+		else if( op == Operator.GreaterThen )		code.addInstr(Instr.op_ifcmple,label);
+		else if( op == Operator.GreaterEquals )	code.addInstr(Instr.op_ifcmplt,label);
 	}
 }
 

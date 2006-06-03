@@ -52,7 +52,7 @@ public class PizzaFE_Pass3 extends TransfProcessor {
 				init.block.stats.insert(
 					p++,
 					new ExprStat(
-						new AssignExpr(f.pos,AssignOperator.Assign,
+						new AssignExpr(f.pos,Operator.Assign,
 							new IFldExpr(f.pos,new ThisExpr(f.pos),f),
 							new LVarExpr(f.pos,fp)
 						)

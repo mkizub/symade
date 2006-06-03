@@ -292,19 +292,22 @@ public class JavaSyntax extends Syntax {
 	protected SyntaxSet expr(String expr1, Operator op, String expr2)
 	{
 		DrawLayout lout = new DrawLayout();
-		return setl(lout, expr(expr1, op.getArgPriority(0)), oper(op), expr(expr2, op.getArgPriority(1)));
+//		return setl(lout, expr(expr1, op.getArgPriority(0)), oper(op), expr(expr2, op.getArgPriority(1)));
+		return null;
 	}
 
 	protected SyntaxSet expr(Operator op, String expr2)
 	{
 		DrawLayout lout = new DrawLayout();
-		return setl(lout, oper(op), expr(expr2, op.getArgPriority()));
+//		return setl(lout, oper(op), expr(expr2, op.getArgPriority()));
+		return null;
 	}
 
 	protected SyntaxSet expr(String expr1, Operator op)
 	{
 		DrawLayout lout = new DrawLayout();
-		return setl(lout, expr(expr1, op.getArgPriority()), oper(op));
+//		return setl(lout, expr(expr1, op.getArgPriority()), oper(op));
+		return null;
 	}
 	
 	protected SyntaxElem accs() {
@@ -1035,15 +1038,15 @@ public class JavaSyntax extends Syntax {
 		seOuterThisAccessExpr = set(ident("outer"), sep("."), kw("this"));
 		seReinterpExpr = set(sep("("), kw("$reinterp"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
 		
-		seBinaryBooleanOrExpr = expr("expr1", BinaryOperator.BooleanOr, "expr2");
-		seBinaryBooleanAndExpr = expr("expr1", BinaryOperator.BooleanAnd, "expr2");
-		seInstanceofExpr = expr("expr", BinaryOperator.InstanceOf, "type");
+		seBinaryBooleanOrExpr = expr("expr1", Operator.BooleanOr, "expr2");
+		seBinaryBooleanAndExpr = expr("expr1", Operator.BooleanAnd, "expr2");
+		seInstanceofExpr = expr("expr", Operator.InstanceOf, "type");
 //			set(
 //			expr("expr", Constants.opInstanceOfPriority),
 //			kw("instanceof"),
 //			attr("type", new FormatInfoHint("no-args"))
 //			);
-		seBooleanNotExpr = expr(PrefixOperator.BooleanNot, "expr");
+		seBooleanNotExpr = expr(Operator.BooleanNot, "expr");
 		seCallExpr = set(
 				expr("obj", new FormatInfoHint("call-accessor"), Constants.opAccessPriority),
 				sep("."),
@@ -1072,13 +1075,13 @@ public class JavaSyntax extends Syntax {
 				sep(")")
 				);
 		seStringConcatExpr = lst("args",
-				expr("this", BinaryOperator.Add.priority),
-				oper(BinaryOperator.Add),
+				expr("this", Operator.Add.priority),
+				oper(Operator.Add),
 				lout_empty.ncopy()
 			);
 		seCommaExpr = lst("exprs",
-				expr("this", BinaryOperator.Comma.priority),
-				oper(BinaryOperator.Comma),
+				expr("this", Operator.Comma.priority),
+				oper(Operator.Comma),
 				lout_empty.ncopy()
 			);
 
@@ -1125,11 +1128,11 @@ public class JavaSyntax extends Syntax {
 		seTypeClassExpr = set(ident("type"), sep("."), kw("class"));
 		seTypeInfoExpr = set(ident("type"), sep("."), kw("type"));
 		seConditionalExpr = set(
-			expr("cond", MultiOperator.opConditionalPriority+1),
+			expr("cond", Operator.opConditionalPriority+1),
 			oper("?"),
-			expr("expr1", MultiOperator.opConditionalPriority+1),
+			expr("expr1", Operator.opConditionalPriority+1),
 			oper(":"),
-			expr("expr2", MultiOperator.opConditionalPriority)
+			expr("expr2", Operator.opConditionalPriority)
 			);
 		seCastExpr = set(sep("("), kw("$cast"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
 		seNopExpr = new SyntaxSpace(new DrawLayout());
@@ -1307,7 +1310,7 @@ public class JavaSyntax extends Syntax {
 			return seComment;
 		}
 
-		case UnaryExpr: {
+/*		case UnaryExpr: {
 			Operator op = ((UnaryExpr)node).op;
 			SyntaxElem se = exprs.get(op);
 			if (se == null) {
@@ -1358,7 +1361,7 @@ public class JavaSyntax extends Syntax {
 			}
 			return se;
 		}
-		}
+*/		}
 		return super.getSyntaxElem(node, hint);
 	}
 }

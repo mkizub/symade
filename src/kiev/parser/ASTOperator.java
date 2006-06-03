@@ -14,7 +14,7 @@ import kiev.stdlib.*;
  */
 
 @node
-public class ASTOperator extends ENode {
+public final class ASTOperator extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
 
@@ -34,6 +34,10 @@ public class ASTOperator extends ENode {
 	}
 	
 	ASTOperator() {}
+	ASTOperator(Token t) {
+		this.pos = t.getPos();
+		this.image = t.image;
+	}
 	
 	public void resolve(Type reqType) {
 		throw new RuntimeException();

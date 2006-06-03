@@ -218,12 +218,12 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			/* iter = 0; arr = container;*/
 			iter_init = new CommaExpr();
 			((CommaExpr)iter_init).exprs.add(
-				new AssignExpr(iter.pos,AssignOperator.Assign,
+				new AssignExpr(iter.pos,Operator.Assign,
 					new LVarExpr(container.pos,iter_array),
 					container.ncopy()
 				));
 			((CommaExpr)iter_init).exprs.add(
-				new AssignExpr(iter.pos,AssignOperator.Assign,
+				new AssignExpr(iter.pos,Operator.Assign,
 					new LVarExpr(iter.pos,iter),
 					new ConstIntExpr(0)
 				));
@@ -231,21 +231,21 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			break;
 		case ForEachStat.KENUM:
 			/* iter = container; */
-			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+			iter_init = new AssignExpr(iter.pos, Operator.Assign,
 				new LVarExpr(iter.pos,iter), container.ncopy()
 				);
 			iter_init.resolve(iter.type);
 			break;
 		case ForEachStat.JENUM:
 			/* iter = container; */
-			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+			iter_init = new AssignExpr(iter.pos, Operator.Assign,
 				new LVarExpr(iter.pos,iter), container.ncopy()
 				);
 			iter_init.resolve(iter.type);
 			break;
 		case ForEachStat.ELEMS:
 			/* iter = container.elements(); */
-			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+			iter_init = new AssignExpr(iter.pos, Operator.Assign,
 				new LVarExpr(iter.pos,iter),
 				new CallExpr(container.pos,container.ncopy(),elems,ENode.emptyArray)
 				);
@@ -254,7 +254,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.RULE:
 			/* iter = rule(iter/hidden,...); */
 			{
-			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+			iter_init = new AssignExpr(iter.pos, Operator.Assign,
 				new LVarExpr(iter.pos,iter), new ConstNullExpr()
 				);
 			iter_init.resolve(Type.tpVoid);
@@ -268,7 +268,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		switch( mode ) {
 		case ForEachStat.ARRAY:
 			/* iter < container.length */
-			iter_cond = new BinaryBoolExpr(iter.pos,BinaryOperator.LessThen,
+			iter_cond = new BinaryBoolExpr(iter.pos,Operator.LessThen,
 				new LVarExpr(iter.pos,iter),
 				new IFldExpr(iter.pos,new LVarExpr(0,iter_array),Type.tpArray.resolveField("length"))
 				);
@@ -290,8 +290,8 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			/* (iter = rule(iter, ...)) != null */
 			iter_cond = new BinaryBoolExpr(
 				container.pos,
-				BinaryOperator.NotEquals,
-				new AssignExpr(container.pos,AssignOperator.Assign,
+				Operator.NotEquals,
+				new AssignExpr(container.pos,Operator.Assign,
 					new LVarExpr(container.pos,iter),
 					container.ncopy()),
 				new ConstNullExpr()
@@ -331,7 +331,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		if (ce != null) {
 			var_init = ce; // to allow ce.getType()
 			if (ce.getType().isInstanceOf(var.getType())) {
-				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,new LVarExpr(var.pos,var),~ce);
+				var_init = new AssignExpr(var.pos,Operator.Assign2,new LVarExpr(var.pos,var),~ce);
 			} else {
 				Var tmp = new Var(var.pos, "tmp", ce.getType(), ACC_FINAL);
 				tmp.init = ~ce;
@@ -343,7 +343,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 					null
 				));
 				b.stats.add(
-					new AssignExpr(var.pos,AssignOperator.Assign2,
+					new AssignExpr(var.pos,Operator.Assign2,
 						new LVarExpr(var.pos,var),
 						new CastExpr(var.pos, var.getType(), new LVarExpr(tmp.pos,tmp))
 						)
@@ -370,7 +370,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		// Increment iterator
 		if( mode == ForEachStat.ARRAY ) {
 			/* iter++ */
-			iter_incr = new IncrementExpr(iter.pos,PostfixOperator.PostIncr,
+			iter_incr = new IncrementExpr(iter.pos,Operator.PostIncr,
 				new LVarExpr(iter.pos,iter)
 				);
 			iter_incr.resolve(Type.tpVoid);
