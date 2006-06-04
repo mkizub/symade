@@ -26,21 +26,22 @@ import syntax kiev.stdlib.Syntax;
 public final class PVar<A>
 {
 
+	private A			$_var_;
+	private PVar<A>		$_pvar_;
+	
 	@virtual
 	@forward
-	public  A			$var;
-	
-	private PVar<A>		$pvar;
+	@abstract
+	public A			$var;
 	
 	@virtual
 	@abstract
-	@access:ro
-	public  boolean		$is_bound;
+	public:ro boolean	$is_bound;
 
 	public PVar() {}
 
 	public PVar(A var) {
-		this.$var = var;
+		this.$_var_ = var;
 	}
 
 	@getter
@@ -48,19 +49,19 @@ public final class PVar<A>
 		alias $get_var
 		alias operator(210,fy,$cast)
 	{
-		if ($pvar != null)
-			return $pvar.$get_var();
+		if ($_pvar_ != null)
+			return $_pvar_.$get_var();
 		else
-			return $var;
+			return $_var_;
 	}
 
 	@getter
 	public boolean get$$is_bound()
 		alias $get_is_bound
 	{
-		if ($pvar != null)
-			return $pvar.$get_is_bound();
-		return $var != null;
+		if ($_pvar_ != null)
+			return $_pvar_.$get_is_bound();
+		return $_var_ != null;
 	}
 
 	public String toString() {
@@ -81,30 +82,40 @@ public final class PVar<A>
 		return (v1==null && v2==null) || v1.equals(v2);
 	}
 
+	@setter
 	public void $bind(A var)
+		alias set$$var
 	{
-		this.$pvar = null;
-		this.$var = var;
+		this.$_pvar_ = null;
+		this.$_var_ = var;
 	}
 
 	public void $bind(PVar<A> var)
 	{
-		this.$var = null;
-		this.$pvar = var;
+		this.$_var_ = null;
+		if (var.$is_bound)
+			this.$_var_ = var.$var;
+		else
+			this.$_pvar_ = var;
 	}
 
 	public boolean $bind_chk(A var)
 	{
-		this.$pvar = null;
-		this.$var = var;
-		return $is_bound;
+		this.$_pvar_ = null;
+		this.$_var_ = var;
+		return var != null;
 	}
 
 	public boolean $bind_chk(PVar<A> var)
 	{
-		this.$var = null;
-		this.$pvar = var;
-		return $is_bound;
+		this.$_var_ = null;
+		if (var.$is_bound) {
+			this.$_var_ = var.$var;
+			return true;
+		} else {
+			this.$_pvar_ = var;
+			return false;
+		}
 	}
 
 	public boolean $rebind_chk(A var)
@@ -120,8 +131,8 @@ public final class PVar<A>
 	}
 
 	public void $unbind() {
-		this.$var = null;
-		if (this.$pvar != null) this.$pvar = null;
+		this.$_var_ = null;
+		this.$_pvar_ = null;
 	}
 
 	public void $checkIsBinded(String name) {
