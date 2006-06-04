@@ -1137,6 +1137,11 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		clazz = mkStruct(name, ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
 	}
 	{ oldClazz = curClazz; curClazz = clazz; }
+	[
+		"extends"
+		clazz.super_types += Type()
+		( "," clazz.super_types += Type()	)*
+	]
 	try {
 		"{"
 		(

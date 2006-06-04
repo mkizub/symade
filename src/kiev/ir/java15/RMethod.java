@@ -78,11 +78,11 @@ public view RMethod of Method extends RDNode {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
 			}
-			if( body != null ) {
+			if( body != null && !((Method)self).isMacro()) {
 				body.setAutoReturnable(true);
 				body.resolve(type.ret());
 			}
-			if( body != null && !body.isMethodAbrupted() ) {
+			if( body != null && !((Method)self).isMacro() && !body.isMethodAbrupted() ) {
 				if( type.ret() ≡ Type.tpVoid ) {
 					block.stats.append(new ReturnStat(pos,null));
 					body.setMethodAbrupted(true);

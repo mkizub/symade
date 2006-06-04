@@ -84,7 +84,7 @@ public final view JMethod of Method extends JDNode {
 			Code code = new Code((JStruct)jctx_tdecl, this, constPool);
 			code.generation = true;
 			try {
-				if( !isBad() ) {
+				if( !isBad() && !((Method)this).isMacro() ) {
 					JVar thisPar = null;
 					if (!isStatic()) {
 						thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_tdecl.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
@@ -139,7 +139,11 @@ public final view JMethod of Method extends JDNode {
 				} else {
 					code.addInstr(Instr.op_new,Type.tpError);
 					code.addInstr(Instr.op_dup);
-					KString msg = KString.from("Compiled with errors");
+					KString msg;
+					if (((Method)this).isMacro())
+						msg = KString.from("Macro method invocation");
+					else
+						msg = KString.from("Compiled with errors");
 					constPool.addStringCP(msg);
 					code.addConst(msg);
 					JMethod func = Type.tpError.getJStruct().resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));

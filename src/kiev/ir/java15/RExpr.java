@@ -75,6 +75,41 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 }
 
 @nodeview
+public final view RAssertEnabledExpr of AssertEnabledExpr extends RENode {
+
+	public void resolve(Type reqType) {
+		// get top-level class
+		TypeDecl clazz = ctx_tdecl;
+		while !(clazz.package_clazz.isPackage() || clazz.package_clazz.isInterface()) clazz = clazz.package_clazz;
+		// find $assertionsEnabled
+		foreach (Field f; clazz.members; f.id.equals("$assertionsEnabled")) {
+			replaceWithNodeResolve(reqType, new SFldExpr(pos,f));
+			return;
+		}
+		Field f = new Field("$assertionsEnabled", Type.tpBoolean, ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
+		clazz.members.add(f);
+		f.init = new CallExpr(0,
+			new TypeClassExpr(0,new TypeRef(clazz.xtype)),
+			Type.tpClass.clazz.resolveMethod("desiredAssertionStatus", Type.tpBoolean),
+			ENode.emptyArray
+			);
+		f.resolveDecl();
+		if !(f.isAddedToInit()) {
+			// Add initialization in <clinit>
+			Constructor class_init = ((Struct)clazz).getClazzInitMethod();
+			class_init.addstats.insert(0,
+				new ExprStat(f.init.pos,
+					new AssignExpr(f.init.pos,AssignOperator.Assign
+						,new SFldExpr(f.pos,f),new Shadow(f.init))
+				)
+			);
+			f.setAddedToInit(true);
+		}
+		replaceWithNodeResolve(reqType, new SFldExpr(pos,f));
+	}
+}
+
+@nodeview
 public static final view RAssignExpr of AssignExpr extends RLvalueExpr {
 	public AssignOperator	op;
 	public ENode			lval;

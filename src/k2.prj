@@ -265,6 +265,7 @@ kiev.gui.InfoView kiev/gui/InfoView kiev\gui\InfoView.java
 kiev.gui.UIView kiev/gui/UIView kiev\gui\UIView.java
 kiev.gui.Window kiev/gui/Window kiev\gui\Window.java
 kiev.ir.java15.RAccessExpr kiev/ir/java15/RAccessExpr kiev\ir\java15\RLvalueExpr.java
+kiev.ir.java15.RAssertEnabledExpr kiev/ir/java15/RAssertEnabledExpr kiev\ir\java15\RExpr.java
 kiev.ir.java15.RAssignExpr kiev/ir/java15/RAssignExpr kiev\ir\java15\RExpr.java
 kiev.ir.java15.RBinaryBoolExpr kiev/ir/java15/RBinaryBoolExpr kiev\ir\java15\RBoolExpr.java
 kiev.ir.java15.RBinaryBooleanAndExpr kiev/ir/java15/RBinaryBooleanAndExpr kiev\ir\java15\RBoolExpr.java
@@ -459,6 +460,7 @@ kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
 kiev.vlang.AccessExpr kiev/vlang/AccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
 kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
+kiev.vlang.AssertEnabledExpr kiev/vlang/AssertEnabledExpr kiev\vlang\Expr.java
 kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.AttAttrSlot kiev/vlang/AttAttrSlot kiev\vlang\Tree.java
