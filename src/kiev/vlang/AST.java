@@ -634,6 +634,10 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
     	return dmp;
     }
 	
+	public boolean hasName(String name) {
+		return false;
+	}
+	
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncIn() for "+getClass()); }
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncOut() for "+getClass()); }
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }

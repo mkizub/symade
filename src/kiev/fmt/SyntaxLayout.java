@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
 import java.awt.Color;
 import java.awt.Font;
 
-public class Syntax {
+public class TextSyntax {
 	public static final int SYNTAX_KIND_SPACE   = 1;
 	public static final int SYNTAX_KIND_TOKEN   = 2;
 	public static final int SYNTAX_KIND_INDEX   = 3;
@@ -40,7 +40,7 @@ public class Syntax {
 	public static final int SYNTAX_ROLE_ARR_SEPARATOR      = 7;
 	public static final int SYNTAX_ROLE_ARR_SUFFIX         = 8;
 	
-	public Syntax parent_syntax;
+	public TextSyntax parent_syntax;
 	
 	public SpaceInfo siSp     = new SpaceInfo("sp",       SP_SPACE,    1, 4);
 	public SpaceInfo siSpSEPR = new SpaceInfo("sp-sepr",  SP_SPACE,    1, 4);

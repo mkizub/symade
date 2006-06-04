@@ -23,6 +23,7 @@ package kiev.bytecode;
 import java.io.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

@@ -21,10 +21,11 @@
 package kiev.bytecode;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 

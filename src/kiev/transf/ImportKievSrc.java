@@ -140,100 +140,39 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		int prior = astn.prior;
 		int opmode = astn.opmode;
 		String image = astn.image;
+		String decl = null;
 		switch(opmode) {
-		case Operator.LFY:
-			{
-				Operator op = Operator.getOperator(image);
-				if (op != null) {
-					if (prior != op.priority)
-						throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
-					if (opmode != op.mode)
-						throw new CompilerException(astn,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					astn.resolved = op;
-					return;
-				}
-				op = Operator.newOperator(opAssignPriority, image, ("L "+image+" V").intern(), Operator.orderAndArityNames[Operator.LFY], false,
-					new OpArg[]{new OpArg.EXPR(opAssignPriority+1),new OpArg.OPER(image.intern()),new OpArg.EXPR(opAssignPriority)}
-				);
-				if( Kiev.verbose ) System.out.println("Declared assign operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				astn.resolved = op;
-				return;
-			}
-		case Operator.XFX:
-		case Operator.YFX:
-		case Operator.XFY:
-		case Operator.YFY:
-			{
-				Operator op = Operator.getOperator(image);
-				if (op != null) {
-					if (prior != op.priority)
-						throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
-					if (opmode != op.mode)
-						throw new CompilerException(astn,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					astn.resolved = op;
-					return;
-				}
-				String name = (image == "instanceof") ? ("V "+image+" T") : ("V "+image+" V");
-				op = Operator.newOperator(prior,image,name.intern(),Operator.orderAndArityNames[opmode],false,
-					new OpArg[]{
-						new OpArg.EXPR(prior+((opmode==Operator.XFX||opmode==Operator.XFY)?1:0)),
-						new OpArg.OPER(image.intern()),
-						new OpArg.EXPR(prior+((opmode==Operator.XFX||opmode==Operator.YFX)?1:0)),
-					}
-				);
-				if( Kiev.verbose ) System.out.println("Declared infix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				astn.resolved = op;
-				return;
-			}
-		case Operator.FX:
-		case Operator.FY:
-			{
-				Operator op = Operator.getOperator(image+" V");
-				if (op != null) {
-					if (prior != op.priority)
-						throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
-					if (opmode != op.mode)
-						throw new CompilerException(astn,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					astn.resolved = op;
-					return;
-				}
-				op = Operator.newOperator(prior,image,(image+" V").intern(),Operator.orderAndArityNames[opmode],false,
-					new OpArg[]{
-						new OpArg.OPER(image.intern()),
-						new OpArg.EXPR(prior+((opmode==Operator.FX)?1:0))
-					}
-				);
-				if( Kiev.verbose ) System.out.println("Declared prefix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				astn.resolved = op;
-				return;
-			}
-		case Operator.XF:
-		case Operator.YF:
-			{
-				Operator op = Operator.getOperator("V "+image);
-				if (op != null) {
-					if (prior != op.priority)
-						throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
-					if (opmode != op.mode)
-						throw new CompilerException(astn,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					astn.resolved = op;
-					return;
-				}
-				op = Operator.newOperator(prior,image,("V "+image).intern(),Operator.orderAndArityNames[opmode],false,
-					new OpArg[]{
-						new OpArg.EXPR(prior+((opmode==Operator.XF)?1:0)),
-						new OpArg.OPER(image.intern())
-					}
-				);
-				if( Kiev.verbose ) System.out.println("Declared postfix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				astn.resolved = op;
-				return;
-			}
-		case Operator.XFXFY:
+		case Opdef.LFY:	decl = "X "+image+" Y";	break;
+		case Opdef.XFX:
+			if (image == "instanceof")
+				decl = "X "+image+" T";
+			else
+				decl = "X "+image+" X";
+			break;
+		case Opdef.YFX:	decl = "Y "+image+" X";	break;
+		case Opdef.XFY:	decl = "X "+image+" Y";	break;
+		case Opdef.YFY: decl = "Y "+image+" Y"; break;
+		case Opdef.FX:	decl = image+" X";	break;
+		case Opdef.FY:	decl = image+" Y";	break;
+		case Opdef.XF:	decl = "X "+image;	break;
+		case Opdef.YF:	decl = "Y "+image;	break;
+		case Opdef.XFXFY:
 			throw new CompilerException(astn,"Multioperators are not supported yet");
 		default:
 			throw new CompilerException(astn,"Unknown operator mode "+opmode);
 		}
+		String name = OpArg.toOpName(OpArg.fromOpString(prior,decl));
+		Operator op = Operator.getOperator(name);
+		if (op != null) {
+			if (prior != op.priority)
+				throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
+			astn.resolved = op;
+			return;
+		}
+		op = Operator.newOperator(prior, decl);
+		if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
+		astn.resolved = op;
+		return;
 	}
 
 	public void processSyntax(Struct:ASTNode astn) {
@@ -406,11 +345,24 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				}
 				clazz.super_types.insert(0, sup_ref);
 			}
-			else if (clazz.isSyntax() || clazz.isPackage()) {
+			else if (clazz.isPackage()) {
 				clazz.setAbstract(true);
 				clazz.setMembersGenerated(true);
 				clazz.setStatementsGenerated(true);
 				clazz.super_types.delAll();
+			}
+			else if (clazz.isSyntax()) {
+				clazz.setAbstract(true);
+				clazz.setMembersGenerated(true);
+				clazz.setStatementsGenerated(true);
+				foreach(TypeRef tr; clazz.super_types) {
+					Struct s = tr.getType().getStruct();
+					if (s != null) {
+						getStructType(s, path);
+						if (!s.isSyntax())
+							Kiev.reportError(clazz,"Syntax "+clazz+" extends non-syntax "+s);
+					}
+				}
 			}
 			else if( clazz.isInterface() ) {
 				if (clazz.super_types.length == 0 || clazz.super_types[0].getType() ≉ Type.tpObject)

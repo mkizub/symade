@@ -427,7 +427,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	{
 		{	node ?= var
 		;	node ?= iter
-		}, ((Var)node).id.equals(name)
+		},
+		node.hasName(name)
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)

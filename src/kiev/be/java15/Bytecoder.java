@@ -9,6 +9,7 @@ import kiev.vlang.types.*;
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java15.Instr.*;
 import static kiev.vlang.Operator.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -217,7 +218,7 @@ public class Bytecoder implements JConstants {
 			}
 		}
 		if( op != null ) {
-			Type opret = m.type.ret();
+/*			Type opret = m.type.ret();
 			Type oparg1, oparg2;
 			switch(op.mode) {
 			case Operator.LFY:
@@ -276,7 +277,7 @@ public class Bytecoder implements JConstants {
 			}
 
 			m.setOperatorMethod(true);
-		}
+*/		}
 		if( m.isStatic()
 		 && !m.id.equals(nameClassInit)
 		 && cl.package_clazz.isInterface()

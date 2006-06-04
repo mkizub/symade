@@ -5,6 +5,7 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -17,6 +18,42 @@ public class Opdef extends SNode {
 	@virtual typedef This  = Opdef;
 	@virtual typedef VView = VOpdef;
 
+	// Assign orders
+	public static final int LFY			= 0;
+
+	// Binary orders
+	public static final int XFX			= 1;
+	public static final int XFY			= 2;
+	public static final int YFX			= 3;
+	public static final int YFY			= 4;
+
+	// Prefix orders
+	public static final int XF			= 5;
+	public static final int YF			= 6;
+
+	// Postfix orders
+	public static final int FX			= 7;
+	public static final int FY			= 8;
+
+	// Multi operators
+	public static final int XFXFY		= 9;
+	public static final int FXFY		= 10;
+
+	// Order/arity strings
+	public static final String[]	orderAndArityNames = new String[] {
+		"lfy",		// LFY
+		"xfx",		// XFX
+		"xfy",		// XFY
+		"yfx",		// YFX
+		"yfy",		// YFY
+		"xf",		// XF
+		"yf",		// YF
+		"fx",		// FX
+		"fy",		// FY
+		"xfxfy",	// XFXFY
+		"fxfy"		// FXFY
+	};
+	
 	@att public int					prior;
 	@att public int					opmode;
 	@att public String				image;
@@ -37,22 +74,6 @@ public class Opdef extends SNode {
 
 	public Opdef() {}
 	
-	public Opdef(Operator op) {
-		this.prior = op.priority;
-		this.opmode = op.mode;
-		this.resolved = op;
-		foreach (OpArg arg; op.args; ) {
-			if (arg instanceof OpArg.OPER) {
-				this.image = ((OpArg.OPER)arg).text;
-				break;
-			}
-			if (arg instanceof OpArg.IDENT && arg.text != "") {
-				this.image = ((OpArg.IDENT)arg).text;
-				break;
-			}
-		}
-	}
-	
 	public void setImage(ASTNode n) {
 		this.pos = n.pos;
 		if( n instanceof ASTOperator ) {
@@ -69,14 +90,14 @@ public class Opdef extends SNode {
 	public void setMode(SymbolRef n) {
 		opmode = -1;
 		String optype = ((SymbolRef)n).name;
-		for(int i=0; i < Operator.orderAndArityNames.length; i++) {
-			if( Operator.orderAndArityNames[i].equals(optype) ) {
+		for(int i=0; i < Opdef.orderAndArityNames.length; i++) {
+			if( Opdef.orderAndArityNames[i].equals(optype) ) {
 				opmode = i;
 				break;
 			}
 		}
 		if( opmode < 0 )
-			throw new CompilerException(n,"Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
+			throw new CompilerException(n,"Operator mode must be one of "+Arrays.toString(Opdef.orderAndArityNames));
 		return;
 	}
 	
@@ -91,6 +112,13 @@ public class Opdef extends SNode {
 	public String toString() {
 		return image;
 	}
+	
+	public boolean hasName(String name) {
+		if (resolved == null) return false;
+		foreach (OpArg.OPER arg; resolved.args; arg.text == name)
+			return true;
+		return false;
+	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
 		return toJava(dmp);
@@ -99,7 +127,7 @@ public class Opdef extends SNode {
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append("/* operator ")
 			.append(Integer.toString(prior)).forsed_space()
-			.append(Operator.orderAndArityNames[opmode]).forsed_space()
+			.append(orderAndArityNames[opmode]).forsed_space()
 			.append(image).append(" */").space();
 	}
 

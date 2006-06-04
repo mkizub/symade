@@ -4,6 +4,7 @@ import kiev.stdlib.*;
 import java.io.*;
 import kiev.vlang.*;
 import kiev.parser.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

@@ -15,7 +15,6 @@ import kiev.be.java15.JClosureCallExpr;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java15.Instr.*;
-
 import syntax kiev.Syntax;
 
 /**

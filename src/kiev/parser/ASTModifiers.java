@@ -7,6 +7,8 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.vlang.types.*;
 
+import syntax kiev.Syntax;
+
 /**
  * @author Maxim Kizub
  *

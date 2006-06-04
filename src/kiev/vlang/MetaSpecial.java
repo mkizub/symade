@@ -6,6 +6,7 @@ import kiev.vlang.types.TypeRef;
 import kiev.parser.ASTIdentifier;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

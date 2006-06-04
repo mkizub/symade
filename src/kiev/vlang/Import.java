@@ -96,7 +96,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		Struct@ s;
 		DNode@ sub;
-		ASTNode@ tmp;
 	{
 		this.resolved instanceof Method, $cut, false
 	;
@@ -128,19 +127,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		node instanceof Field && ((Field)node).isStatic() && ((Field)node).isPublic()
 	;
 		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
-		((Struct)this.resolved).checkResolved(),
-		tmp @= ((Struct)this.resolved).members,
-		{
-			tmp instanceof Field,
-			trace(Kiev.debugResolve,"Syntax check field "+tmp+" == "+name),
-			((Field)tmp).id.equals(name),
-			node ?= tmp
-		;	tmp instanceof TypeDef,
-			trace(Kiev.debugResolve,"Syntax check typedef "+tmp+" == "+name),
-			((TypeDef)tmp).id.equals(name),
-			node ?= ((TypeDef)tmp)
-		//;	trace(Kiev.debugResolve,"Syntax check "+tmp.getClass()+" "+tmp+" == "+name), false
-		}
+		((Struct)this.resolved).resolveNameR(node,path,name)
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo path, String name, CallType mt)

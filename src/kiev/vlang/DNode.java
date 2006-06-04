@@ -319,6 +319,12 @@ public abstract class DNode extends ASTNode {
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 
 	public final Symbol getName() { return id; }
+
+	public boolean hasName(String name) {
+		if (id == null) return false;
+		return id.equals(name);
+	}
+
 }
 
 @node
@@ -384,7 +390,7 @@ public abstract class LvalDNode extends DNode {
 
 
 @node
-public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
+public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -650,21 +656,6 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 		return (Method)m;
 	}
 
-	public rule resolveOperatorR(Operator@ op)
-		ASTNode@ imp;
-	{
-		trace( Kiev.debugResolve, "Resolving operator: "+op+" in syntax "+this),
-		{
-			imp @= members,
-			imp instanceof Opdef && ((Opdef)imp).resolved != null,
-			op ?= ((Opdef)imp).resolved,
-			trace( Kiev.debugResolve, "Resolved operator: "+op+" in syntax "+this)
-		;	imp @= members,
-			imp instanceof Import && ((Import)imp).mode == Import.ImportMode.IMPORT_SYNTAX,
-			((Struct)((Import)imp).resolved).resolveOperatorR(op)
-		}
-	}
-
 	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
 	{
 		info.isStaticAllowed(),
@@ -683,11 +674,13 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Sco
 	}
 	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, String name)
 	{
-			this.id.equals(name), node ?= this
+			this.id.equals(name),
+			node ?= this
 		;	node @= args,
-			((TypeDef)node).id.equals(name)
+			node.hasName(name)
 		;	node @= members,
-			node instanceof DNode && ((DNode)node).id != null && ((DNode)node).id.equals(name) && info.check(node)
+			node.hasName(name),
+			info.check(node)
 	}
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, String name)
 		TypeRef@ sup_ref;

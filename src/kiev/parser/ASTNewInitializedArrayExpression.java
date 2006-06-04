@@ -8,6 +8,8 @@ import kiev.vlang.types.*;
 import kiev.stdlib.*;
 import kiev.transf.*;
 
+import syntax kiev.Syntax;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$

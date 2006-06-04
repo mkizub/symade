@@ -4,8 +4,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
-import syntax kiev.Syntax;
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

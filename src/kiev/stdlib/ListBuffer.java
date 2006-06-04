@@ -20,6 +20,8 @@
 
 package kiev.stdlib;
 
+import syntax kiev.stdlib.Syntax;
+
 /**
  * This Class is a growable buffer for lists, modelled after class
  * java.lang.StringBuffer. It is mainly used
@@ -30,7 +32,7 @@ package kiev.stdlib;
  * further changes to the buffer will cause a copy to be made. <p>
  * @author Martin Odersky
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  */
 
 import kiev.stdlib.List.*;

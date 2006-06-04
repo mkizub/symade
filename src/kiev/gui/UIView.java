@@ -35,9 +35,9 @@ public abstract class UIView extends ASTNode implements MouseListener, Component
 	/** The root node of document we edit - the whole program */
 	@ref public Drawable	view_root;
 	/** The syntax in use */
-	@ref public Syntax		syntax;
+	@ref public TextSyntax	syntax;
 
-	public UIView(Window window, Syntax syntax, Canvas view_canvas) {
+	public UIView(Window window, TextSyntax syntax, Canvas view_canvas) {
 		this.parent_window = window;
 		this.syntax        = syntax;
 		this.view_canvas   = view_canvas;
@@ -46,7 +46,7 @@ public abstract class UIView extends ASTNode implements MouseListener, Component
 		view_canvas.addComponentListener(this);
 	}
 	
-	public Syntax getSyntax() { return syntax; }
+	public TextSyntax getSyntax() { return syntax; }
 	
 	public abstract void formatAndPaint();
 

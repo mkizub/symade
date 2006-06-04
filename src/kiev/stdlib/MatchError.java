@@ -20,10 +20,12 @@
   
 package kiev.stdlib;
 
+import syntax kiev.stdlib.Syntax;
+
 /** a class for errors due to missing patterns
  * @author   Martin Odersky
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 public class MatchError extends Error {

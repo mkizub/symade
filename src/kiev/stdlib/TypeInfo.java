@@ -24,6 +24,8 @@ import java.util.StringTokenizer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
+import syntax kiev.stdlib.Syntax;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$

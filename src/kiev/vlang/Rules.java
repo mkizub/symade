@@ -91,7 +91,7 @@ public class RuleMethod extends Method {
 		path.space_prev.pslot().name == "type_ref" ||
 		path.space_prev.pslot().name == "dtype_ref",$cut,
 		node @= targs,
-		((TypeDef)node).id.equals(name)
+		node.hasName(name)
 	;
 		var @= localvars,
 		var.id.equals(name),

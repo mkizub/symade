@@ -1,5 +1,7 @@
 package kiev.be.java15;
 
+import syntax kiev.Syntax;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$

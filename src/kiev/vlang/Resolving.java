@@ -129,7 +129,7 @@ public class ResInfo {
 	}
 	
 	public boolean check(ASTNode n) {
-		if (n instanceof Var) {
+		if (n instanceof Var || n instanceof SNode) {
 			return true;
 		}
 		else if (n instanceof Field || n instanceof Method) {
@@ -334,10 +334,4 @@ public interface ScopeOfNames extends Scope {
 public interface ScopeOfMethods extends Scope {
 	public rule resolveMethodR(Method@ node, ResInfo path, String name, CallType mt);
 }
-
-public interface ScopeOfOperators extends ScopeOfNames {
-	public rule resolveOperatorR(Operator@ op);
-}
-
-
 

@@ -11,6 +11,7 @@ import java.net.*;
 import java.util.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

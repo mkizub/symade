@@ -79,14 +79,6 @@ public class PassInfo {
 		return false;
 	}
 
-	public static rule resolveOperatorR(ASTNode from, Operator@ op)
-		ASTNode@ p;
-	{
-		p @= new ParentEnumerator(from),
-		p instanceof ScopeOfOperators,
-		((ScopeOfOperators)p).resolveOperatorR(op)
-	}
-
 	public static rule resolveQualifiedNameR(ASTNode from, ASTNode@ node, ResInfo path, String name)
 		String@ qname_head;
 		String@ qname_tail;

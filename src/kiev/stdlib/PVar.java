@@ -20,6 +20,8 @@
 
 package kiev.stdlib;
 
+import syntax kiev.stdlib.Syntax;
+
 @unerasable
 public final class PVar<A>
 {

@@ -147,7 +147,7 @@ public class CalcOptionJavaFlag implements CalcOption {
 }
 
 
-public class JavaSyntax extends Syntax {
+public class JavaSyntax extends TextSyntax {
 
 	final SyntaxElem seFileUnit;
 	final SyntaxElem seStructClass;

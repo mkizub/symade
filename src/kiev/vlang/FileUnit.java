@@ -24,7 +24,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
+public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef This  = FileUnit;
 	@virtual typedef VView = VFileUnit;
@@ -137,37 +137,18 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		return true;
 	}
 
-	public rule resolveOperatorR(Operator@ op)
-		ASTNode@ syn;
-	{
-		trace( Kiev.debugResolve, "Resolving operator: "+op+" in file "+this),
-		{
-			syn @= members,
-			syn instanceof Opdef && ((Opdef)syn).resolved != null,
-			op ?= ((Opdef)syn).resolved,
-			trace( Kiev.debugResolve, "Resolved operator: "+op+" in file "+this)
-		;	syn @= members,
-			syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_SYNTAX,
-			((Struct)((Import)syn).resolved).resolveOperatorR(op)
-		}
-	}
-
 	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
 		ASTNode@ syn;
 	{
 		syn @= members,
 		{
-			syn instanceof TypeDef,
-			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
-			((TypeDef)syn).id.equals(name),
-			node ?= ((TypeDef)syn)
+			syn instanceof TypeDef && syn.hasName(name),
+			node ?= syn
 		;	syn instanceof Import && !((Import)syn).star,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
 			((Import)syn).resolveNameR(node,path,name)
-		;	syn instanceof Opdef && ((Opdef)syn).resolved != null,
-			((Opdef)syn).image == name,
-			node ?= ((Opdef)syn),
-			trace( Kiev.debugResolve, "Resolved operator: "+syn+" in file "+this)
+		;	syn instanceof Opdef && ((Opdef)syn).hasName(name),
+			node ?= syn
 		}
 	;
 		pkg != null,
@@ -176,14 +157,9 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	;
 		syn @= members,
 		syn instanceof Import,
-		{
-			((Import)syn).star,
-			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
-			((Import)syn).resolveNameR(node,path,name)
-		;	((Import)syn).mode == Import.ImportMode.IMPORT_SYNTAX,
-			((Import)syn).resolved != null,
-			((Struct)((Import)syn).resolved).resolveNameR(node,path,name)
-		}
+		((Import)syn).star,
+		trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
+		((Import)syn).resolveNameR(node,path,name)
 	;
 		trace( Kiev.debugResolve, "In root package"),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),

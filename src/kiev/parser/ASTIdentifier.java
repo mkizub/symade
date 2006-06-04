@@ -22,8 +22,6 @@ public class ASTIdentifier extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	static String op_instanceof = "instanceof";
-
 	@virtual typedef This  = ASTIdentifier;
 	@virtual typedef VView = VASTIdentifier;
 
@@ -39,16 +37,7 @@ public class ASTIdentifier extends ENode {
 		public String name;
 
 		public boolean preResolveIn() {
-			// predefined operators
-			if( name == op_instanceof ) {
-				ASTOperator op = new ASTOperator();
-				op.pos = this.pos;
-				op.image = op_instanceof;
-				this.replaceWithNode(op);
-				return false;
-			}
-			// predefined names
-			if( name == Constants.nameFILE ) {
+/*			if( name == Constants.nameFILE ) {
 				ConstExpr ce = new ConstStringExpr(Kiev.curFile);
 				//ce.text_name = this.name;
 				replaceWithNode(ce);
@@ -80,7 +69,8 @@ public class ASTIdentifier extends ENode {
 				Kiev.reportWarning(this,"Keyword '$return' is deprecated. Replace with 'Result', please");
 				name = Constants.nameResultVar;
 			}
-			else if( name == Constants.nameThis ) {
+			else
+*/			if( name == Constants.nameThis ) {
 				ThisExpr te = new ThisExpr(pos);
 				replaceWithNode(te);
 				return false;
@@ -93,11 +83,17 @@ public class ASTIdentifier extends ENode {
 			}
 	
 			// resolve in the path of scopes
-			DNode@ v;
+			ASTNode@ v;
 			ResInfo info = new ResInfo(this);
 			if( !PassInfo.resolveNameR((ASTNode)this,v,info,name) )
 				throw new CompilerException(this,"Unresolved identifier "+name);
-			if( v instanceof TypeDecl ) {
+			if( v instanceof Opdef ) {
+				ASTOperator op = new ASTOperator();
+				op.pos = pos;
+				op.image = name;
+				replaceWithNode(op);
+			}
+			else if( v instanceof TypeDecl ) {
 				TypeDecl td = (TypeDecl)v;
 				td.checkResolved();
 				replaceWithNode(new TypeRef(td.getType()));
@@ -113,6 +109,11 @@ public class ASTIdentifier extends ENode {
 
 	public ASTIdentifier(String name) {
 		this.name = name;
+	}
+
+	public ASTIdentifier(Token t) {
+		this.pos = t.getPos();
+		this.name = t.image;
 	}
 
 	public ASTIdentifier(int pos, String name) {

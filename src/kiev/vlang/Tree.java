@@ -10,6 +10,7 @@ import kiev.be.java15.JNode;
 
 import static kiev.stdlib.Debug.*;
 import java.lang.annotation.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

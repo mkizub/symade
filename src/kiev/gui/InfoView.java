@@ -23,7 +23,7 @@ import java.awt.event.KeyListener;
 @node(copyable=false)
 public class InfoView extends UIView implements KeyListener {
 
-	public InfoView(Window window, Syntax syntax, Canvas info_canvas) {
+	public InfoView(Window window, TextSyntax syntax, Canvas info_canvas) {
 		super(window, syntax, info_canvas);
 		view_canvas.addKeyListener(this);
 	}

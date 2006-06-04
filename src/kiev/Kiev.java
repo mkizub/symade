@@ -9,6 +9,7 @@ import kiev.transf.*;
 import kiev.be.java15.Code;
 import kiev.be.java15.JNode;
 
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

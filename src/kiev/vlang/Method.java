@@ -656,7 +656,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		path.space_prev.pslot().name == "dtype_ref",
 		$cut,
 		node @= targs,
-		((TypeDef)node).id.equals(name)
+		node.hasName(name)
 	;
 		var @= params,
 		var.id.equals(name),
@@ -666,7 +666,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		node ?= (Var)ATTR_RET_VAR.get(this)
 	;
 		node @= targs,
-		((TypeDef)node).id.equals(name)
+		node.hasName(name)
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),

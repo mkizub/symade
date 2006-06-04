@@ -42,7 +42,7 @@ public class Editor extends UIView implements KeyListener {
 	/** The object in clipboard */
 	@ref public ASTNode		in_clipboard;
 	
-	public Editor(Window window, Syntax syntax, Canvas view_canvas) {
+	public Editor(Window window, TextSyntax syntax, Canvas view_canvas) {
 		super(window, syntax, view_canvas);
 		view_canvas.addKeyListener(this);
 	}

@@ -20,6 +20,8 @@
   
 package kiev.stdlib;
 
+import syntax kiev.stdlib.Syntax;
+
 /** a class for immutable lists
  * @see		ListBuffer
  * @author Martin Odersky

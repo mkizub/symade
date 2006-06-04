@@ -24,6 +24,7 @@ import java.io.Reader;
 /*{
 
 import static kiev.vlang.AccessFlags.*;
+import syntax kiev.Syntax;
 
 }*/ 
 
@@ -1134,6 +1135,11 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	{
 		clazz = mkStruct(name, ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
 	}
+	[
+		"extends"
+		clazz.super_types += Type()
+		( "," clazz.super_types += Type()	)*
+	]
 	{ oldClazz = curClazz; curClazz = clazz; }
 	try {
 		"{"
@@ -2268,9 +2274,7 @@ ASTIdentifier Identifier() :
 {
 	t=<IDENTIFIER>
 	{
-		ASTIdentifier id = new ASTIdentifier();
-		id.set(t);
-		return id;
+		return new ASTIdentifier(t);
 	}
 }
 
@@ -2525,12 +2529,12 @@ void MaybeCastOperatorLA() :
 }
 
 void CastOperator(ASTExpression e) :
-{ Token t; ASTOperator op; }
+{ Token t; }
 {
-	t="(" { op = new ASTOperator(t); e.nodes += op; }
+	t="(" { e.nodes += new ASTOperator(t); }
 	[
-		<CAST>		{ op.image = op.image+"$cast"; }
-	|	<REINTERP>	{ op.image = op.image+"$reinterp"; }
+		t="$cast"		{ e.nodes += new ASTOperator(t); }
+	|	t="$reinterp"	{ e.nodes += new ASTOperator(t); }
 	]
 	e.nodes += Type()
 	t=")" { e.nodes += new ASTOperator(t); }

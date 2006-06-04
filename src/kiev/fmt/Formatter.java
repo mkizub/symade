@@ -35,10 +35,10 @@ public abstract class AbstractFormatter implements Formatter {
 
 	private static final int counter;
 
-	public final Syntax syntax;
+	public final TextSyntax syntax;
 	private AttrSlot ATTR;	
 	
-	protected AbstractFormatter(Syntax syntax) {
+	protected AbstractFormatter(TextSyntax syntax) {
 		this.syntax = syntax;
 		String name = "fmt info "+Integer.toHexString(++counter);
 		name = name.intern();
@@ -70,9 +70,9 @@ public abstract class AbstractFormatter implements Formatter {
 }
 
 public class TextFormatter extends AbstractFormatter {
-	private Syntax syntax;
+	private TextSyntax syntax;
 	
-	public TextFormatter(Syntax syntax) {
+	public TextFormatter(TextSyntax syntax) {
 		super(syntax);
 	}
 
@@ -126,7 +126,7 @@ public class GfxFormatter extends AbstractFormatter {
 
 	private Graphics2D gfx;
 	
-	public GfxFormatter(Syntax syntax, Graphics2D gfx) {
+	public GfxFormatter(TextSyntax syntax, Graphics2D gfx) {
 		super(syntax);
 		this.gfx = gfx;
 	}

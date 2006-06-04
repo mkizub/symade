@@ -52,14 +52,14 @@ public final class ASTOperatorAlias extends ASTAlias {
 	public void setMode(SymbolRef n) {
 		opmode = -1;
 		String optype = n.name;
-		for(int i=0; i < Operator.orderAndArityNames.length; i++) {
-			if( Operator.orderAndArityNames[i].equals(optype) ) {
+		for(int i=0; i < Opdef.orderAndArityNames.length; i++) {
+			if( Opdef.orderAndArityNames[i].equals(optype) ) {
 				opmode = i;
 				break;
 			}
 		}
 		if( opmode < 0 )
-			throw new CompilerException(n,"Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
+			throw new CompilerException(n,"Operator mode must be one of "+Arrays.toString(Opdef.orderAndArityNames));
 		return;
 	}
 	
@@ -86,7 +86,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 		Method m = (Method)n;
 
 		switch(opmode) {
-		case Operator.LFY:
+		case Opdef.LFY:
 			{
 				// Special case fo "[]" and "new" operators
 				if( image.equals("[]") ) {
@@ -122,7 +122,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(0); }
 				else
 					throw new CompilerException(this,"Method "+m+" must have 2 arguments");
-				Operator op = Operator.getOperator("L "+image+" V");
+				Operator op = Operator.getOperator("V "+image+" V");
 				if (op == null)
 					throw new CompilerException(this,"Assign operator "+image+" not found");
 				m.id.addAlias(op.name);
@@ -130,10 +130,10 @@ public final class ASTOperatorAlias extends ASTAlias {
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
 			}
 			break;
-		case Operator.XFX:
-		case Operator.YFX:
-		case Operator.XFY:
-		case Operator.YFY:
+		case Opdef.XFX:
+		case Opdef.YFX:
+		case Opdef.XFY:
+		case Opdef.YFY:
 			{
 				// Special case fo "[]" and "new" operators
 				if( image.equals("[]") ) {
@@ -170,8 +170,8 @@ public final class ASTOperatorAlias extends ASTAlias {
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
 			}
 			break;
-		case Operator.FX:
-		case Operator.FY:
+		case Opdef.FX:
+		case Opdef.FY:
 			{
 				// Special case fo "$cast" operator
 				if( image.equals("$cast") ) {
@@ -211,8 +211,8 @@ public final class ASTOperatorAlias extends ASTAlias {
 				if( Kiev.verbose ) System.out.println("Attached prefix "+op+" to method "+m);
 			}
 			break;
-		case Operator.XF:
-		case Operator.YF:
+		case Opdef.XF:
+		case Opdef.YF:
 			{
 				Type opret = m.type.ret();
 				Type oparg;
@@ -234,7 +234,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 				if( Kiev.verbose ) System.out.println("Attached postfix "+op+" to method "+m);
 			}
 			break;
-		case Operator.XFXFY:
+		case Opdef.XFXFY:
 			throw new CompilerException(this,"Multioperators are not supported yet");
 		default:
 			throw new CompilerException(this,"Unknown operator mode "+opmode);
@@ -250,7 +250,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append("/* alias operator(")
 			.append(Integer.toString(prior)).append(",")
-			.append(Operator.orderAndArityNames[opmode]).append(",")
+			.append(Opdef.orderAndArityNames[opmode]).append(",")
 			.append(image).append(") */").space();
 	}
 

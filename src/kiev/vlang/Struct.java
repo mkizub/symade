@@ -444,7 +444,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		;
 			isPackage(),
 			node @= sub_decls,
-			((DNode)node).id.equals(name)
+			node.hasName(name)
 		;
 			tryLoad(node,name), $cut
 		}

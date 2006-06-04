@@ -20,6 +20,8 @@
   
 package kiev.stdlib;
 
+import syntax kiev.stdlib.Syntax;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$

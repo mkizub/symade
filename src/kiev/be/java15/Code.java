@@ -7,6 +7,7 @@ import kiev.vlang.types.CallType;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java15.Instr.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub

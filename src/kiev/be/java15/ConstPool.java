@@ -4,6 +4,8 @@ import kiev.*;
 
 import java.io.*;
 
+import syntax kiev.Syntax;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$

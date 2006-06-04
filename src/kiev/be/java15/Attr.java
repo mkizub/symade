@@ -6,6 +6,8 @@ import kiev.vlang.types.*;
 
 import java.io.File;
 
+import syntax kiev.Syntax;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$

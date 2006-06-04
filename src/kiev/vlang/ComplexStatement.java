@@ -135,17 +135,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		node ?= var
 	;
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		{
-			n instanceof Var,
-			((Var)n).id.equals(name),
-			node ?= ((Var)n)
-		;	n instanceof Struct,
-			((Struct)n).id.equals(name),
-			node ?= ((Struct)n)
-		;	n instanceof TypeDecl,
-			((TypeDecl)n).getName().equals(name),
-			node ?= ((TypeDecl)n)
-		}
+		n.hasName(name),
+		node ?= n
 	;
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),

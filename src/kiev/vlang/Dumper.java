@@ -4,6 +4,8 @@ import kiev.Main;
 import kiev.stdlib.*;
 import kiev.vlang.types.*;
 
+import syntax kiev.Syntax;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$

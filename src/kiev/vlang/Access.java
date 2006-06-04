@@ -6,6 +6,7 @@ import kiev.stdlib.*;
 import kiev.be.java15.JNode;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header$

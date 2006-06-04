@@ -90,7 +90,7 @@ public class MetaType implements Constants {
 	private rule resolveNameR_1(ASTNode@ node, ResInfo info, String name)
 	{
 		node @= tdecl.members,
-		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
+		node instanceof Field && node.hasName(name) && info.check(node)
 	}
 	private rule resolveNameR_3(Type tp, ASTNode@ node, ResInfo info, String name)
 		MetaType@ sup;
@@ -251,7 +251,7 @@ public final class ASTNodeMetaType extends MetaType {
 		Type@ tmp;
 	{
 		node @= clazz.members,
-		node instanceof Field && ((Field)node).id.equals(name) && info.check(node)
+		node instanceof Field && node.hasName(name) && info.check(node)
 	;
 		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
 		sup @= clazz.getAllSuperTypes(),

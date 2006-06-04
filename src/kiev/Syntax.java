@@ -1,6 +1,6 @@
 package kiev;
 
-syntax Syntax {
+syntax Syntax extends kiev.stdlib.Syntax {
 
 //import kiev.Kiev;
 //import kiev.CError;
