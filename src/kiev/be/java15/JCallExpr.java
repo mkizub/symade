@@ -215,8 +215,8 @@ public final view JCallExpr of CallExpr extends JENode {
 				case 'J':
 					code.addInstr(Instr.op_dup);
 					code.addConst(32);
-					code.addInstr(Instr.op_shl);
-					code.addInstr(Instr.op_xor);
+					code.addInstr(Instr.op_lshl);
+					code.addInstr(Instr.op_lxor);
 					code.addInstr(Instr.op_x2y,Type.tpInt);
 					break;
 				case 'F':
@@ -237,8 +237,8 @@ public final view JCallExpr of CallExpr extends JENode {
 					code.addInstr(op_call,m,false);
 					code.addInstr(Instr.op_dup);
 					code.addConst(32);
-					code.addInstr(Instr.op_shl);
-					code.addInstr(Instr.op_xor);
+					code.addInstr(Instr.op_lshl);
+					code.addInstr(Instr.op_lxor);
 					code.addInstr(Instr.op_x2y,Type.tpInt);
 					}
 					break;

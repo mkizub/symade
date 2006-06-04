@@ -749,75 +749,6 @@ public final class Code implements JConstants {
 			throw new RuntimeException("Var "+v+" has illegal offset "+v.stack_pos+" in method");
 	}
 
-	private static int[] add_ops = new int[]{opc_iadd,opc_ladd,opc_fadd,opc_dadd};
-	private static int[] sub_ops = new int[]{opc_isub,opc_lsub,opc_fsub,opc_dsub};
-	private static int[] mul_ops = new int[]{opc_imul,opc_lmul,opc_fmul,opc_dmul};
-	private static int[] div_ops = new int[]{opc_idiv,opc_ldiv,opc_fdiv,opc_ddiv};
-	private static int[] rem_ops = new int[]{opc_irem,opc_lrem,opc_frem,opc_drem};
-
-	private static int[] and_ops = new int[]{opc_iand,opc_land,0xFFFF,0xFFFF};
-	private static int[] or_ops = new int[]{opc_ior,opc_lor,0xFFFF,0xFFFF};
-	private static int[] xor_ops = new int[]{opc_ixor,opc_lxor,0xFFFF,0xFFFF};
-
-	private static int[] shift_left_ops = new int[]{opc_ishl,opc_lshl,0xFFFF,0xFFFF};
-	private static int[] shift_right_ops = new int[]{opc_ishr,opc_lshr,0xFFFF,0xFFFF};
-	private static int[] ushift_right_ops = new int[]{opc_iushr,opc_lushr,0xFFFF,0xFFFF};
-
-	private static int[] neg_ops = new int[]{opc_ineg,opc_lneg,opc_fneg,opc_dneg};
-
-	/** Unary operation. Choose native bytecode depending
-		on operand's (in stack) type from input array
-	 */
-	private void generateUnaryOp(int[] ops) {
-		JType pt1 = stack_at(0);
-		int op;
-
-		if( pt1 == JType.tpLong )			op = ops[1];
-		else if( pt1 == JType.tpFloat )		op = ops[2];
-		else if( pt1 == JType.tpDouble )	op = ops[3];
-		else if( pt1.isIntegerInCode() )	op = ops[0];
-		else
-            throw new RuntimeException("Bad unary operation on type with type "+pt1);
-		add_opcode(op);
-	}
-
-	/** Binary operation. Choose native bytecode depending
-		on operand's (in stack) types from input array
-	 */
-	private void generateBinaryOp(int[] ops) {
-		JType pt1 = stack_at(0);
-		JType pt2 = stack_at(1);
-		int op;
-
-		if( pt1 == JType.tpLong && pt2 == JType.tpLong )			op = ops[1];
-		else if( pt1 == JType.tpFloat && pt2 == JType.tpFloat)	op = ops[2];
-		else if( pt1 == JType.tpDouble && pt2 == JType.tpDouble)	op = ops[3];
-		else if( pt1.isIntegerInCode() && pt2.isIntegerInCode() )
-			op = ops[0];
-		else
-            throw new RuntimeException("Bad binary operation on types with types "+pt1+" and "+pt2);
-		add_opcode(op);
-	}
-
-	/** Binary shift operation. Choose native bytecode depending
-		on operand's (in stack) types from input array
-	 */
-	private void generateShiftOp(int[] ops) {
-		JType pt1 = stack_at(1);
-		JType pt2 = stack_at(0);
-		int op;
-
-		if( !pt2.isIntegerInCode() )
-            throw new RuntimeException("Shift operation with non-integer shift argument of type: "+pt2);
-		else if( pt1 == JType.tpLong )	op = ops[1];
-		else if( pt1 == JType.tpFloat )	op = ops[2];
-		else if( pt1 == JType.tpDouble )	op = ops[3];
-		else if( pt1.isIntegerInCode() )	op = ops[0];
-		else
-            throw new RuntimeException("Bad shift operation on types with types "+pt1+" and "+pt2);
-		add_opcode(op);
-	}
-
 	/** Binary operation instanceof.
 	 */
 	private void generateInstanceofOp(JType type) {
@@ -1133,18 +1064,42 @@ public final class Code implements JConstants {
         case op_dup_x2:					generateDupX2();					break;
         case op_dup2:					generateDup2();						break;
         case op_swap:					generateSwap();						break;
-        case op_add:					generateBinaryOp(add_ops);			break;
-        case op_sub:					generateBinaryOp(sub_ops);			break;
-        case op_mul:					generateBinaryOp(mul_ops);			break;
-        case op_div:					generateBinaryOp(div_ops);			break;
-        case op_rem:					generateBinaryOp(rem_ops);			break;
-        case op_neg:					generateUnaryOp(neg_ops);			break;
-        case op_shl:					generateShiftOp(shift_left_ops);	break;
-        case op_shr:					generateShiftOp(shift_right_ops);	break;
-        case op_ushr:					generateShiftOp(ushift_right_ops);	break;
-        case op_and:					generateBinaryOp(and_ops);			break;
-        case op_or:						generateBinaryOp(or_ops);			break;
-        case op_xor:					generateBinaryOp(xor_ops);			break;
+        case op_iadd:					add_opcode(opc_iadd);				break;
+        case op_ladd:					add_opcode(opc_ladd);				break;
+        case op_fadd:					add_opcode(opc_fadd);				break;
+        case op_dadd:					add_opcode(opc_dadd);				break;
+        case op_isub:					add_opcode(opc_isub);				break;
+        case op_lsub:					add_opcode(opc_lsub);				break;
+        case op_fsub:					add_opcode(opc_fsub);				break;
+        case op_dsub:					add_opcode(opc_dsub);				break;
+        case op_imul:					add_opcode(opc_imul);				break;
+        case op_lmul:					add_opcode(opc_lmul);				break;
+        case op_fmul:					add_opcode(opc_fmul);				break;
+        case op_dmul:					add_opcode(opc_dmul);				break;
+        case op_idiv:					add_opcode(opc_idiv);				break;
+        case op_ldiv:					add_opcode(opc_ldiv);				break;
+        case op_fdiv:					add_opcode(opc_fdiv);				break;
+        case op_ddiv:					add_opcode(opc_ddiv);				break;
+        case op_irem:					add_opcode(opc_irem);				break;
+        case op_lrem:					add_opcode(opc_lrem);				break;
+        case op_frem:					add_opcode(opc_frem);				break;
+        case op_drem:					add_opcode(opc_drem);				break;
+        case op_ineg:					add_opcode(opc_ineg);				break;
+        case op_lneg:					add_opcode(opc_lneg);				break;
+        case op_fneg:					add_opcode(opc_fneg);				break;
+        case op_dneg:					add_opcode(opc_dneg);				break;
+        case op_ishl:					add_opcode(opc_ishl);				break;
+        case op_lshl:					add_opcode(opc_lshl);				break;
+        case op_ishr:					add_opcode(opc_ishr);				break;
+        case op_lshr:					add_opcode(opc_lshr);				break;
+        case op_iushr:					add_opcode(opc_iushr);				break;
+        case op_lushr:					add_opcode(opc_lushr);				break;
+        case op_iand:					add_opcode(opc_iand);				break;
+        case op_land:					add_opcode(opc_land);				break;
+        case op_ior:					add_opcode(opc_ior);				break;
+        case op_lor:					add_opcode(opc_lor);				break;
+        case op_ixor:					add_opcode(opc_ixor);				break;
+        case op_lxor:					add_opcode(opc_lxor);				break;
         case op_return:					generateReturn();
         	reachable = false;
         	break;
