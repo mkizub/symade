@@ -567,7 +567,7 @@ public class Compiler {
 
 stop:;
 		Env.dumpProjectFile();
-		if( Kiev.verbose || Kiev.errCount > 0 )
+		if( Kiev.verbose || Kiev.errCount > 0  || Kiev.warnCount > 0)
 			Kiev.reportTotals();
 		if !(Kiev.interactive) {
 			System.exit(Kiev.errCount > 0 ? 1 : 0);

@@ -180,6 +180,7 @@ public final view JIfElseStat of IfElseStat extends JENode {
 
 @nodeview
 public final view JCondStat of CondStat extends JENode {
+	public:ro	JENode		enabled;
 	public:ro	JENode		cond;
 	public:ro	JENode		message;
 
@@ -208,6 +209,8 @@ public final view JCondStat of CondStat extends JENode {
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating CondStat");
+		if (!Kiev.debugOutputA)
+			return;
 		code.setLinePos(this);
 		try {
 			if(cond.isConstantExpr() ) {
@@ -220,6 +223,7 @@ public final view JCondStat of CondStat extends JENode {
 				}
 			} else {
 				CodeLabel else_label = code.newLabel();
+				JBoolExpr.gen_iffalse(code, enabled, else_label);
 				JBoolExpr.gen_iftrue(code, cond, else_label);
 				generateAssertName(code);
 				message.generate(code,Type.tpString);

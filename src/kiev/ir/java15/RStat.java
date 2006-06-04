@@ -142,11 +142,16 @@ public final view RIfElseStat of IfElseStat extends RENode {
 
 @nodeview
 public final view RCondStat of CondStat extends RENode {
+	public ENode		enabled;
 	public ENode		cond;
 	public ENode		message;
 
 	public void resolve(Type reqType) {
 		try {
+			if (enabled == null)
+				enabled = new AssertEnabledExpr();
+			enabled.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(enabled);
 			cond.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(cond);
 		} catch(Exception e ) {

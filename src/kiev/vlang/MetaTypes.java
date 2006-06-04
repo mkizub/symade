@@ -16,10 +16,10 @@ import syntax kiev.Syntax;
 
 @node
 class Test extends ASTNode {
-	void foo() {
-		//10 + 20 + 30 + 40;
-		//10 < 20 - 30 || false;
-		//30 > 0 ? (byte)10 : (byte)20;
+	void foo(int i)
+		require i < 100;
+	{
+		assert(i > 0);
 	}
 }
 

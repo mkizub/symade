@@ -16,8 +16,6 @@ import syntax kiev.Syntax;
 public final view JConstBoolExpr of ConstBoolExpr extends JConstExpr implements IBoolExpr {
 	public:ro boolean	value;
 
-	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
-	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: "+this);
 		code.setLinePos(this);
@@ -45,63 +43,51 @@ public final view JConstBoolExpr of ConstBoolExpr extends JConstExpr implements 
 
 @nodeview
 public final view JConstNullExpr of ConstNullExpr extends JConstExpr {
-	public Object	getConstValue()		{ return null; }
 }
 
 @nodeview
 public final view JConstByteExpr of ConstByteExpr extends JConstExpr {
 	public:ro byte		value;
-	public Object	getConstValue()		{ return Byte.valueOf(value); }
 }
 
 @nodeview
 public final view JConstShortExpr of ConstShortExpr extends JConstExpr {
 	public:ro short		value;
-	public Object	getConstValue()		{ return Short.valueOf(value); }
 }
 
 @nodeview
 public final view JConstIntExpr of ConstIntExpr extends JConstExpr {
 	public:ro int		value;
-	public Object	getConstValue()		{ return Integer.valueOf(value); }
 }
 
 @nodeview
 public final view JConstLongExpr of ConstLongExpr extends JConstExpr {
 	public:ro long		value;
-	public Object	getConstValue()		{ return Long.valueOf(value); }
 }
 	
 @nodeview
 public final view JConstCharExpr of ConstCharExpr extends JConstExpr {
 	public:ro char		value;
-	public Object	getConstValue()		{ return Character.valueOf(value); }
 }
 
 @nodeview
 public final view JConstFloatExpr of ConstFloatExpr extends JConstExpr {
 	public:ro float		value;
-	public Object	getConstValue()		{ return Float.valueOf(value); }
 }
 
 @nodeview
 public final view JConstDoubleExpr of ConstDoubleExpr extends JConstExpr {
 	public:ro double		value;
-	public Object	getConstValue()		{ return Double.valueOf(value); }
 }
 
 @nodeview
 public final view JConstStringExpr of ConstStringExpr extends JConstExpr {
 	public:ro String	value;
-	public Object	getConstValue()		{ return value; }
 }
 
 @nodeview
 public abstract view JConstExpr of ConstExpr extends JENode {
 
-	public boolean isConstantExpr() { return true; }
-	public abstract Object getConstValue();
-	
 	public void generate(Code code, Type reqType) {
 		JConstExpr.generateConst(this, code, reqType);
 	}

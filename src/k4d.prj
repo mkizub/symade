@@ -288,6 +288,7 @@ CLASS kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
 CLASS kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
 CLASS kiev.vlang.AccessExpr kiev/vlang/AccessExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.AnyInstanceOf kiev/vlang/AnyInstanceOf kiev\vlang\CoreMethod.java
+CLASS kiev.vlang.AssertEnabledExpr kiev/vlang/AssertEnabledExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.AttAttrSlot kiev/vlang/AttAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.AttachInfo kiev/vlang/AttachInfo kiev\vlang\AST.java
@@ -743,6 +744,7 @@ INTERFACE kiev.fmt.CalcOption kiev/fmt/CalcOption kiev\fmt\SyntaxLayout.java
 INTERFACE kiev.fmt.DrawDevice kiev/fmt/DrawDevice kiev\fmt\DrawDevice.java
 INTERFACE kiev.fmt.Formatter kiev/fmt/Formatter kiev\fmt\Formatter.java
 INTERFACE kiev.ir.java15.RAccessExpr kiev/ir/java15/RAccessExpr kiev\ir\java15\RLvalueExpr.java
+INTERFACE kiev.ir.java15.RAssertEnabledExpr kiev/ir/java15/RAssertEnabledExpr kiev\ir\java15\RExpr.java
 INTERFACE kiev.ir.java15.RAssignExpr kiev/ir/java15/RAssignExpr kiev\ir\java15\RExpr.java
 INTERFACE kiev.ir.java15.RBinaryBoolExpr kiev/ir/java15/RBinaryBoolExpr kiev\ir\java15\RBoolExpr.java
 INTERFACE kiev.ir.java15.RBinaryBooleanAndExpr kiev/ir/java15/RBinaryBooleanAndExpr kiev\ir\java15\RBoolExpr.java

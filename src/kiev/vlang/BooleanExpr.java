@@ -130,6 +130,40 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
+	public boolean	isConstantExpr() {
+		if (expr1.isConstantExpr()) {
+			Object b1 = expr1.getConstValue();
+			if (b1 instanceof Boolean && b1.booleanValue())
+				return true;
+		}
+		if (expr2.isConstantExpr()) {
+			Object b2 = expr2.getConstValue();
+			if (b2 instanceof Boolean && b2.booleanValue())
+				return true;
+		}
+		if (expr1.isConstantExpr() && expr2.isConstantExpr()) {
+			Object b1 = expr1.getConstValue();
+			Object b2 = expr2.getConstValue();
+			if (b1 instanceof Boolean && b2 instanceof Boolean)
+				return true;
+		}
+		return false;
+	}
+	public Object	getConstValue() {
+		if (expr1.isConstantExpr()) {
+			Object b1 = expr1.getConstValue();
+			if (b1 instanceof Boolean && b1.booleanValue())
+				return Boolean.TRUE;
+		}
+		if (expr2.isConstantExpr()) {
+			Object b2 = expr2.getConstValue();
+			if (b2 instanceof Boolean && b2.booleanValue())
+				return Boolean.TRUE;
+		}
+		Boolean b1 = (Boolean)expr1.getConstValue();
+		Boolean b2 = (Boolean)expr2.getConstValue();
+		return Boolean.valueOf(b1.booleanValue() || b2.booleanValue());
+	}
 }
 
 
@@ -179,6 +213,40 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 
 	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
+	public boolean	isConstantExpr() {
+		if (expr1.isConstantExpr()) {
+			Object b1 = expr1.getConstValue();
+			if (b1 instanceof Boolean && !b1.booleanValue())
+				return true;
+		}
+		if (expr2.isConstantExpr()) {
+			Object b2 = expr2.getConstValue();
+			if (b2 instanceof Boolean && !b2.booleanValue())
+				return true;
+		}
+		if (expr1.isConstantExpr() && expr2.isConstantExpr()) {
+			Object b1 = expr1.getConstValue();
+			Object b2 = expr2.getConstValue();
+			if (b1 instanceof Boolean && b2 instanceof Boolean)
+				return true;
+		}
+		return false;
+	}
+	public Object	getConstValue() {
+		if (expr1.isConstantExpr()) {
+			Object b1 = expr1.getConstValue();
+			if (b1 instanceof Boolean && !b1.booleanValue())
+				return Boolean.FALSE;
+		}
+		if (expr2.isConstantExpr()) {
+			Object b2 = expr2.getConstValue();
+			if (b2 instanceof Boolean && !b2.booleanValue())
+				return Boolean.FALSE;
+		}
+		Boolean b1 = (Boolean)expr1.getConstValue();
+		Boolean b2 = (Boolean)expr2.getConstValue();
+		return Boolean.valueOf(b1.booleanValue() && b2.booleanValue());
+	}
 }
 
 @node
@@ -368,5 +436,17 @@ public class BooleanNotExpr extends BoolExpr {
 
 	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
+	public boolean	isConstantExpr() {
+		if (expr.isConstantExpr()) {
+			Object b1 = expr.getConstValue();
+			if (b1 instanceof Boolean)
+				return true;
+		}
+		return false;
+	}
+	public Object	getConstValue() {
+		Boolean b = (Boolean)expr.getConstValue();
+		return b.booleanValue() ? Boolean.FALSE : Boolean.TRUE;
+	}
 }
 

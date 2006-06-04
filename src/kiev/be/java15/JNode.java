@@ -132,10 +132,8 @@ public view JENode of ENode extends JNode {
 	public final boolean isBreakTarget();
 	public final void setAutoReturnable(boolean on);
 	
-	public boolean isConstantExpr() { return false; }
-	public Object	getConstValue() {
-		throw new RuntimeException("Request for constant value of non-constant expression");
-    }
+	public boolean isConstantExpr();
+	public Object	getConstValue();
 
 	public void generate(Code code, Type reqType) {
 		Dumper dmp = new Dumper();

@@ -114,6 +114,8 @@ public static view RDNode of DNode extends RNode {
 	public final void setVirtual(boolean on);
 	public final boolean isForward();
 	public final void setForward(boolean on);
+
+	public final boolean isMacro();
 	
 	public boolean preGenerate() { return true; }
 	public void resolveDecl() { /* empty */ }

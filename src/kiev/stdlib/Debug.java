@@ -20,6 +20,7 @@
   
 package kiev.stdlib;
 
+import kiev.vlang.CallExpr;
 import syntax kiev.stdlib.Syntax;
 
 /**
@@ -124,6 +125,16 @@ public class Debug {
 
 	public static void trace(boolean cond, java.io.PrintStream log, String msg) {
 		if( cond ) log.println(msg);
+	}
+
+	/**
+	 *  Unconditional assert method. Always throws
+	 *  provided exception or pass exception
+	 *  to $AssertionHandler
+	 */
+	public static void assert(Throwable t) {
+		if( $AssertionHandler == null ) throw t;
+		else $AssertionHandler.failedAssertion(t);
 	}
 
 	/**
@@ -238,13 +249,14 @@ public class Debug {
 	 *
 	 *  @param	cond	the condition
 	 */
-	public static void assert(boolean cond) {
-		if( !cond ) {
-			AssertionFailedException afe =
-				new AssertionFailedException();
-			if( $AssertionHandler == null ) throw afe;
-			else $AssertionHandler.failedAssertion(afe);
-		}
+	@macro
+	public static void assert(boolean cond)
+	{
+		case CallExpr# self():
+			new #IfElseStat(
+				cond=new #BinaryBooleanAndExpr(expr1=new #AssertEnabledExpr(), expr2=new #BooleanNotExpr(expr=cond)),
+				thenSt=new #CallExpr(obj=self.obj,ident="assert")
+				)
 	}
 
 	/**
@@ -254,13 +266,14 @@ public class Debug {
 	 *  @param	cond	the condition
 	 *  @param	msg		the message for exception
 	 */
-	public static void assert(boolean cond, String msg) {
-		if( !cond ) {
-			AssertionFailedException afe =
-				new AssertionFailedException(msg);
-			if( $AssertionHandler == null ) throw afe;
-			else $AssertionHandler.failedAssertion(afe);
-		}
+	@macro
+	public static void assert(boolean cond, String msg)
+	{
+		case CallExpr# self():
+			new #IfElseStat(
+				cond=new #BinaryBooleanAndExpr(expr1=new #AssertEnabledExpr(), expr2=new #BooleanNotExpr(expr=cond)),
+				thenSt=new #CallExpr(obj=self.obj,ident="assert",args={msg})
+				)
 	}
 
 	/**
@@ -269,13 +282,16 @@ public class Debug {
 	 *  or passed to $AssertionHandler
 	 *
 	 *  @param	cond	the condition
-	 *  @param	rte		the RuntimeExceptionmessage for exception
+	 *  @param	t		the Throwable for exception
 	 */
-	public static void assert(boolean cond, RuntimeException rte) {
-		if( !cond ) {
-			if( $AssertionHandler == null ) throw rte;
-			else $AssertionHandler.failedAssertion(rte);
-		}
+	@macro
+	public static void assert(boolean cond, Throwable t)
+	{
+		case CallExpr# self():
+			new #IfElseStat(
+				cond=new #BinaryBooleanAndExpr(expr1=new #AssertEnabledExpr(), expr2=new #BooleanNotExpr(expr=cond)),
+				thenSt=new #CallExpr(obj=self.obj,ident="assert",args={t})
+				)
 	}
 
 }
@@ -330,7 +346,7 @@ public class InvariantFailedException extends AssertionFailedException {
 public interface AssertionHandler {
 	@virtual
 	public abstract boolean	enabled;
-	public void failedAssertion(RuntimeException e);
+	public void failedAssertion(Throwable e);
 }
 
 /**
@@ -354,7 +370,7 @@ public class TTYAssertionHandler implements AssertionHandler {
 	public TTYAssertionHandler() { this(true); }
 	public TTYAssertionHandler(boolean enabled) { this.enabled = enabled; }
 	
-	public void failedAssertion(RuntimeException e) {
+	public void failedAssertion(Throwable e) {
 		if( !enabled ) throw e;
 		int ch;
 	show_message:

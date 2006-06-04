@@ -73,7 +73,7 @@ public view RMethod of Method extends RDNode {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
 			}
-			if (body != null && !(body instanceof MetaValue)) {
+			if (body != null && !isMacro() && !(body instanceof MetaValue)) {
 				body.setAutoReturnable(true);
 				body.resolve(type.ret());
 				if (!body.isMethodAbrupted()) {

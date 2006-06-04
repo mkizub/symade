@@ -351,11 +351,13 @@ public class CondStat extends ENode {
 	@virtual typedef JView = JCondStat;
 	@virtual typedef RView = RCondStat;
 
-	@att public ENode			cond;
-	@att public ENode			message;
+	@att public ENode		enabled;
+	@att public ENode		cond;
+	@att public ENode		message;
 
 	@nodeview
 	public static final view VCondStat of CondStat extends VENode {
+		public ENode		enabled;
 		public ENode		cond;
 		public ENode		message;
 	}

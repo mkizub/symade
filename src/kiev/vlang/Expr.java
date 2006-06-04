@@ -15,6 +15,7 @@ import kiev.ir.java15.RTypeClassExpr;
 import kiev.be.java15.JTypeClassExpr;
 import kiev.ir.java15.RTypeInfoExpr;
 import kiev.be.java15.JTypeInfoExpr;
+import kiev.ir.java15.RAssertEnabledExpr;
 import kiev.ir.java15.RAssignExpr;
 import kiev.be.java15.JAssignExpr;
 import kiev.ir.java15.RBinaryExpr;
@@ -169,6 +170,37 @@ public class TypeInfoExpr extends ENode {
 	public Dumper toJava(Dumper dmp) {
 		type.toJava(dmp).append(".type").space();
 		return dmp;
+	}
+}
+
+@node
+public class AssertEnabledExpr extends ENode {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
+	@virtual typedef This  = AssertEnabledExpr;
+	@virtual typedef VView = VAssertEnabledExpr;
+	@virtual typedef RView = RAssertEnabledExpr;
+
+	@nodeview
+	public static final view VAssertEnabledExpr of AssertEnabledExpr extends VENode {
+	}
+
+	public AssertEnabledExpr() {}
+
+	public Type getType() {
+		return Type.tpBoolean;
+	}
+
+	public boolean	isConstantExpr() { return !Kiev.debugOutputA; }
+	public Object	getConstValue() { return Boolean.FALSE; }
+
+	public String toString() {
+		return "$assertionsEnabled";
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		return dmp.append("$assertionsEnabled").space();
 	}
 }
 
