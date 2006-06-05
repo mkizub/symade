@@ -84,6 +84,10 @@ public class Debug {
 	 */
 	public static AssertionHandler			$AssertionHandler;
 
+	public static void trace_force(String msg) {
+		Debug.log.println(msg);
+	}
+	
 	/**
 	 *  trace is a generic tracing/logging method.
 	 *  It uses "log" stream to trace/log program
@@ -93,8 +97,14 @@ public class Debug {
 	 *  @param	msg		the message to log
 	 */
 
-	public static void trace(String msg) {
-		Debug.log.println(msg);
+	@macro
+	public static void trace(String msg)
+	{
+		case CallExpr# self():
+			if ($GenTraces)
+				new #CallExpr(obj=self.obj,ident="trace_force",args={msg})
+			else
+				new #NopExpr()
 	}
 
 	/**
@@ -110,21 +120,14 @@ public class Debug {
 	 *  @param	msg		the message to log
 	 */
 
-	public static void trace(boolean cond, String msg) {
-		if( cond ) Debug.log.println(msg);
-	}
-
-	/**
-	 *  The version of trace method with specified
-	 *  log stream.
-	 *
-	 *  @param	cond	the condition
-	 *  @param	log		the log stream to print to
-	 *  @param	msg		the message to log
-	 */
-
-	public static void trace(boolean cond, java.io.PrintStream log, String msg) {
-		if( cond ) log.println(msg);
+	@macro
+	public static void trace(boolean cond, String msg)
+	{
+		case CallExpr# self():
+			if ($GenTraces)
+				new #IfElseStat(cond=cond,thenSt=new #CallExpr(obj=self.obj,ident="trace_force",args={msg}))
+			else
+				new #NopExpr()
 	}
 
 	/**
@@ -253,10 +256,13 @@ public class Debug {
 	public static void assert(boolean cond)
 	{
 		case CallExpr# self():
-			new #IfElseStat(
-				cond=new #BinaryBooleanAndExpr(expr1=new #AssertEnabledExpr(), expr2=new #BooleanNotExpr(expr=cond)),
-				thenSt=new #CallExpr(obj=self.obj,ident="assert")
-				)
+			if ($GenAsserts)
+				new #IfElseStat(
+					cond=new #BinaryBooleanAndExpr(expr1=new #AssertEnabledExpr(), expr2=new #BooleanNotExpr(expr=cond)),
+					thenSt=new #CallExpr(obj=self.obj,ident="assert")
+					)
+			else
+				new #NopExpr()
 	}
 
 	/**
@@ -270,10 +276,13 @@ public class Debug {
 	public static void assert(boolean cond, String msg)
 	{
 		case CallExpr# self():
-			new #IfElseStat(
-				cond=new #BinaryBooleanAndExpr(expr1=new #AssertEnabledExpr(), expr2=new #BooleanNotExpr(expr=cond)),
-				thenSt=new #CallExpr(obj=self.obj,ident="assert",args={msg})
-				)
+			if ($GenAsserts)
+				new #IfElseStat(
+					cond=new #BinaryBooleanAndExpr(expr1=new #AssertEnabledExpr(), expr2=new #BooleanNotExpr(expr=cond)),
+					thenSt=new #CallExpr(obj=self.obj,ident="assert",args={msg})
+					)
+			else
+				new #NopExpr()
 	}
 
 	/**
@@ -288,10 +297,13 @@ public class Debug {
 	public static void assert(boolean cond, Throwable t)
 	{
 		case CallExpr# self():
-			new #IfElseStat(
-				cond=new #BinaryBooleanAndExpr(expr1=new #AssertEnabledExpr(), expr2=new #BooleanNotExpr(expr=cond)),
-				thenSt=new #CallExpr(obj=self.obj,ident="assert",args={t})
-				)
+			if ($GenAsserts)
+				new #IfElseStat(
+					cond=new #BinaryBooleanAndExpr(expr1=new #AssertEnabledExpr(), expr2=new #BooleanNotExpr(expr=cond)),
+					thenSt=new #CallExpr(obj=self.obj,ident="assert",args={t})
+					)
+			else
+				new #NopExpr()
 	}
 
 }

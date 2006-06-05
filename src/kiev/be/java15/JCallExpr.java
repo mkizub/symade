@@ -55,11 +55,6 @@ public final view JCallExpr of CallExpr extends JENode {
 		Access.verifyRead(this,func);
 		CodeLabel ok_label = null;
 		CodeLabel null_cast_label = null;
-		if( func.jctx_tdecl.xtype.isInstanceOf(Type.tpDebug) ) {
-			String fname = func.id.toString().toLowerCase();
-			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
-			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
-		}
 		if !(obj instanceof JTypeRef) {
 			obj.generate(code,null);
 			if (isCastCall()) {
@@ -87,29 +82,6 @@ public final view JCallExpr of CallExpr extends JENode {
 				((JAssignExpr)p).lval.generate(code,null);
 			else
 				code.addNullConst();
-		}
-		else if( func.jctx_tdecl.xtype.isInstanceOf(Type.tpDebug) ) {
-			int mode = 0;
-			String fname = func.id.toString().toLowerCase();
-			if( fname.indexOf("assert") >= 0 ) mode = 1;
-			else if( fname.indexOf("trace") >= 0 ) mode = 2;
-			if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
-				ok_label = code.newLabel();
-				JENode arg0 = args[0];
-				if( arg0 instanceof IBoolExpr ) {
-					if( mode == 1 ) arg0.generate_iftrue(code,ok_label);
-					else arg0.generate_iffalse(code,ok_label);
-				} else {
-					arg0.generate(code,null);
-					if( mode == 1 ) code.addInstr(Instr.op_ifne,ok_label);
-					else code.addInstr(Instr.op_ifeq,ok_label);
-				}
-				if( mode == 1 )
-					code.addConst(0);
-				else
-					code.addConst(1);
-				i++;
-			}
 		}
 		else {
 			if( func.id.equals(nameInit) && func.getOuterThisParam() != null) {

@@ -245,7 +245,7 @@ public final class Kiev {
 		if (nowarn)
 			return;
 		if( debug && verbose) new Exception().printStackTrace(System.out);
-		report(code.last_lineno<<11, (FileUnit)code.clazz.jctx_file_unit, (Struct)code.clazz, (Method)code.method, SeverError.Warning, msg);
+		report(code.last_lineno<<11, (FileUnit)code.clazz.jctx_file_unit, (TypeDecl)code.clazz, (Method)code.method, SeverError.Warning, msg);
 	}
 	
 	public static void reportWarning(String msg) {
@@ -427,7 +427,7 @@ public final class Kiev {
 	public static Block parseBlock(ASTNode from, StringBuffer sb) {
 		StringBufferInputStream is = new StringBufferInputStream(sb.toString());
 		FileUnit oldFileUnit = k.curFileUnit;
-		Struct oldClazz = k.curClazz;
+		TypeDecl oldClazz = k.curClazz;
 		Method oldMethod = k.curMethod;
 		k.ReInit(is);
 		k.reparse_body = true;
@@ -493,8 +493,8 @@ public final class Kiev {
 				foreach(ASTNode nn; pl) {
 					if (nn instanceof FileUnit)
 						Kiev.k.curFileUnit = (FileUnit)nn;
-					else if (nn instanceof Struct)
-						Kiev.k.curClazz = (Struct)nn;
+					else if (nn instanceof TypeDecl)
+						Kiev.k.curClazz = (TypeDecl)nn;
 					else if (nn instanceof Method)
 						Kiev.k.curMethod = (Method)nn;
 				}
