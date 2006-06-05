@@ -1,5 +1,7 @@
 package kiev.stdlib;
 
+import kiev.vlang.NewExpr;
+import kiev.vlang.CallExpr;
 import syntax kiev.stdlib.Syntax;
 
 /**
@@ -58,11 +60,71 @@ public metatype boolean extends any {
 
 	@macro @native
 	public static boolean bool_not(boolean b1) alias fy operator ! ;
+
+	@macro
+	public boolean equals(boolean val)
+	{
+		case CallExpr# self(): new #BinaryBoolExpr(expr1=self.obj,op="V == V",expr2=val)
+	}
+
+	@macro
+	public Class getClass()
+	{
+		case CallExpr# self(): new #SFldExpr(obj=java.lang.Boolean,ident="TYPE")
+	}
+
+	@macro
+	public boolean clone()
+	{
+		case CallExpr# self(): self.obj
+	}
+
+	@macro
+	public String toString()
+	{
+		case CallExpr# self(): new #CallExpr(obj=java.lang.String,ident="valueOf",args={self.obj})
+	}
+
+	@macro
+	public int hashCode()
+	{
+		case CallExpr# self(): new #CallExpr(obj=new #NewExpr(type=java.lang.Boolean,args={self.obj}),ident="hashCode")
+	}
 }
 
 public metatype char extends any {
 	@macro @native
 	public char assign(char val) alias lfy operator = ;
+
+	@macro
+	public boolean equals(char val)
+	{
+		case CallExpr# self(): new #BinaryBoolExpr(expr1=self.obj,op="V == V",expr2=val)
+	}
+
+	@macro
+	public Class getClass()
+	{
+		case CallExpr# self(): new #SFldExpr(obj=java.lang.Character,ident="TYPE")
+	}
+
+	@macro
+	public char clone()
+	{
+		case CallExpr# self(): self.obj
+	}
+
+	@macro
+	public String toString()
+	{
+		case CallExpr# self(): new #CallExpr(obj=java.lang.String,ident="valueOf",args={self.obj})
+	}
+
+	@macro
+	public int hashCode()
+	{
+		case CallExpr# self(): new #CallExpr(obj=new #NewExpr(type=java.lang.Character,args={self.obj}),ident="hashCode")
+	}
 }
 
 public metatype byte extends any {
@@ -74,6 +136,36 @@ public metatype byte extends any {
 
 	@macro @native
 	public byte negative() alias fy operator - ;
+
+	@macro
+	public boolean equals(byte val)
+	{
+		case CallExpr# self(): new #BinaryBoolExpr(expr1=self.obj,op="V == V",expr2=val)
+	}
+
+	@macro
+	public Class getClass()
+	{
+		case CallExpr# self(): new #SFldExpr(obj=java.lang.Byte,ident="TYPE")
+	}
+
+	@macro
+	public byte clone()
+	{
+		case CallExpr# self(): self.obj
+	}
+
+	@macro
+	public String toString()
+	{
+		case CallExpr# self(): new #CallExpr(obj=java.lang.String,ident="valueOf",args={self.obj})
+	}
+
+	@macro
+	public int hashCode()
+	{
+		case CallExpr# self(): new #CallExpr(obj=new #NewExpr(type=java.lang.Byte,args={self.obj}),ident="hashCode")
+	}
 }
 
 public metatype short extends any {
@@ -85,6 +177,36 @@ public metatype short extends any {
 
 	@macro @native
 	public short negative() alias fy operator - ;
+
+	@macro
+	public boolean equals(short val)
+	{
+		case CallExpr# self(): new #BinaryBoolExpr(expr1=self.obj,op="V == V",expr2=val)
+	}
+
+	@macro
+	public Class getClass()
+	{
+		case CallExpr# self(): new #SFldExpr(obj=java.lang.Short,ident="TYPE")
+	}
+
+	@macro
+	public short clone()
+	{
+		case CallExpr# self(): self.obj
+	}
+
+	@macro
+	public String toString()
+	{
+		case CallExpr# self(): new #CallExpr(obj=java.lang.String,ident="valueOf",args={self.obj})
+	}
+
+	@macro
+	public int hashCode()
+	{
+		case CallExpr# self(): new #CallExpr(obj=new #NewExpr(type=java.lang.Short,args={self.obj}),ident="hashCode")
+	}
 }
 
 public metatype int extends any {
@@ -196,6 +318,35 @@ public metatype int extends any {
 	@macro @native
 	public static int post_decr(int lval) alias xf operator -- ;
 
+	@macro
+	public boolean equals(int val)
+	{
+		case CallExpr# self(): new #BinaryBoolExpr(expr1=self.obj,op="V == V",expr2=val)
+	}
+
+	@macro
+	public Class getClass()
+	{
+		case CallExpr# self(): new #SFldExpr(obj=java.lang.Integer,ident="TYPE")
+	}
+
+	@macro
+	public int clone()
+	{
+		case CallExpr# self(): self.obj
+	}
+
+	@macro
+	public String toString()
+	{
+		case CallExpr# self(): new #CallExpr(obj=java.lang.String,ident="valueOf",args={self.obj})
+	}
+
+	@macro
+	public int hashCode()
+	{
+		case CallExpr# self(): new #CallExpr(obj=new #NewExpr(type=java.lang.Integer,args={self.obj}),ident="hashCode")
+	}
 }
 
 public metatype long extends any {
@@ -307,6 +458,35 @@ public metatype long extends any {
 	@macro @native
 	public static long post_decr(long lval) alias xf operator -- ;
 
+	@macro
+	public boolean equals(long val)
+	{
+		case CallExpr# self(): new #BinaryBoolExpr(expr1=self.obj,op="V == V",expr2=val)
+	}
+
+	@macro
+	public Class getClass()
+	{
+		case CallExpr# self(): new #SFldExpr(obj=java.lang.Long,ident="TYPE")
+	}
+
+	@macro
+	public long clone()
+	{
+		case CallExpr# self(): self.obj
+	}
+
+	@macro
+	public String toString()
+	{
+		case CallExpr# self(): new #CallExpr(obj=java.lang.String,ident="valueOf",args={self.obj})
+	}
+
+	@macro
+	public int hashCode()
+	{
+		case CallExpr# self(): new #CallExpr(obj=new #NewExpr(type=java.lang.Long,args={self.obj}),ident="hashCode")
+	}
 }
 
 public metatype float extends any {
@@ -367,6 +547,35 @@ public metatype float extends any {
 	@macro @native
 	public float negative() alias fy operator - ;
 
+	@macro
+	public boolean equals(float val)
+	{
+		case CallExpr# self(): new #BinaryBoolExpr(expr1=self.obj,op="V == V",expr2=val)
+	}
+
+	@macro
+	public Class getClass()
+	{
+		case CallExpr# self(): new #SFldExpr(obj=java.lang.Float,ident="TYPE")
+	}
+
+	@macro
+	public float clone()
+	{
+		case CallExpr# self(): self.obj
+	}
+
+	@macro
+	public String toString()
+	{
+		case CallExpr# self(): new #CallExpr(obj=java.lang.String,ident="valueOf",args={self.obj})
+	}
+
+	@macro
+	public int hashCode()
+	{
+		case CallExpr# self(): new #CallExpr(obj=new #NewExpr(type=java.lang.Float,args={self.obj}),ident="hashCode")
+	}
 }
 
 public metatype double extends any {
@@ -427,6 +636,35 @@ public metatype double extends any {
 	@macro @native
 	public double negative() alias fy operator - ;
 
+	@macro
+	public boolean equals(double val)
+	{
+		case CallExpr# self(): new #BinaryBoolExpr(expr1=self.obj,op="V == V",expr2=val)
+	}
+
+	@macro
+	public Class getClass()
+	{
+		case CallExpr# self(): new #SFldExpr(obj=java.lang.Double,ident="TYPE")
+	}
+
+	@macro
+	public double clone()
+	{
+		case CallExpr# self(): self.obj
+	}
+
+	@macro
+	public String toString()
+	{
+		case CallExpr# self(): new #CallExpr(obj=java.lang.String,ident="valueOf",args={self.obj})
+	}
+
+	@macro
+	public int hashCode()
+	{
+		case CallExpr# self(): new #CallExpr(obj=new #NewExpr(type=java.lang.Double,args={self.obj}),ident="hashCode")
+	}
 }
 
 public metatype _array_<_elem_ extends any> extends Object {

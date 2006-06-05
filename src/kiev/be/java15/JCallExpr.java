@@ -53,7 +53,6 @@ public final view JCallExpr of CallExpr extends JENode {
 			return;
 		}
 		Access.verifyRead(this,func);
-		CodeLabel ok_label = null;
 		CodeLabel null_cast_label = null;
 		if !(obj instanceof JTypeRef) {
 			obj.generate(code,null);
@@ -141,116 +140,9 @@ public final view JCallExpr of CallExpr extends JENode {
 				tmp_expr = null;
 			}
 		}
-		
-		// Special meaning of Object.equals and so on
-		// for parametriezed with primitive types classes
-		Type objt = obj.getType();
-		if( !objt.isReference() ) {
-			if( func.jctx_tdecl.xtype ≉ Type.tpObject )
-				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
-			if( func.id.uname == nameObjEquals ) {
-				CodeLabel label_true = code.newLabel();
-				CodeLabel label_false = code.newLabel();
-				code.addInstr(Instr.op_ifcmpeq,label_true);
-				code.addConst(0);
-				code.addInstr(Instr.op_goto,label_false);
-				code.addInstr(Instr.set_label,label_true);
-				code.addConst(1);
-				code.addInstr(Instr.set_label,label_false);
-			}
-			else if( func.id.uname == nameObjGetClass ) {
-				CompaundType reft = ((CoreType)objt).getRefTypeForPrimitive();
-				Field f = reft.clazz.resolveField("TYPE");
-				code.addInstr(Instr.op_pop);
-				code.addInstr(Instr.op_getstatic,(JField)f,reft);
-			}
-			else if( func.id.uname == nameObjHashCode ) {
-				switch(objt.getJType().java_signature.byteAt(0)) {
-				case 'Z':
-					{
-					CodeLabel label_true = code.newLabel();
-					CodeLabel label_false = code.newLabel();
-					code.addInstr(Instr.op_ifne,label_true);
-					code.addConst(1237);
-					code.addInstr(Instr.op_goto,label_false);
-					code.addInstr(Instr.set_label,label_true);
-					code.addConst(1231);
-					code.addInstr(Instr.set_label,label_false);
-					}
-					break;
-				case 'B':
-				case 'S':
-				case 'I':
-				case 'C':
-					// the value is hashcode itself
-					break;
-				case 'J':
-					code.addInstr(Instr.op_dup);
-					code.addConst(32);
-					code.addInstr(Instr.op_lshl);
-					code.addInstr(Instr.op_lxor);
-					code.addInstr(Instr.op_x2y,Type.tpInt);
-					break;
-				case 'F':
-					{
-					JMethod m = Type.tpFloatRef.getJStruct().resolveMethod(
-						"floatToIntBits",
-						KString.from("(F)I")
-						);
-					code.addInstr(op_call,m,false);
-					}
-					break;
-				case 'D':
-					{
-					JMethod m = Type.tpDoubleRef.getJStruct().resolveMethod(
-						"doubleToLongBits",
-						KString.from("(D)J")
-						);
-					code.addInstr(op_call,m,false);
-					code.addInstr(Instr.op_dup);
-					code.addConst(32);
-					code.addInstr(Instr.op_lshl);
-					code.addInstr(Instr.op_lxor);
-					code.addInstr(Instr.op_x2y,Type.tpInt);
-					}
-					break;
-				}
-			}
-			else if( func.id.uname == nameObjClone ) {
-				// Do nothing ;-)
-			}
-			else if( func.id.uname == nameObjToString ) {
-				KString sign = null;
-				switch(objt.getJType().java_signature.byteAt(0)) {
-				case 'Z':
-					sign = KString.from("(Z)Ljava/lang/String;");
-					break;
-				case 'C':
-					sign = KString.from("(C)Ljava/lang/String;");
-					break;
-				case 'B':
-				case 'S':
-				case 'I':
-					sign = KString.from("(I)Ljava/lang/String;");
-					break;
-				case 'J':
-					sign = KString.from("(J)Ljava/lang/String;");
-					break;
-				case 'F':
-					sign = KString.from("(F)Ljava/lang/String;");
-					break;
-				case 'D':
-					sign = KString.from("(D)Ljava/lang/String;");
-					break;
-				}
-				JMethod m = Type.tpString.getJStruct().resolveMethod("valueOf",sign);
-				code.addInstr(op_call,m,false);
-			}
-			else
-				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
-		}
-		else
-			code.addInstr(op_call,func,isSuperExpr(),obj.getType());
+
+		// Now, do the call instruction 		
+		code.addInstr(op_call,func,isSuperExpr(),obj.getType());
 		if( null_cast_label != null ) {
 			code.stack_pop();
 			code.stack_push(JType.tpNull);
@@ -264,8 +156,6 @@ public final view JCallExpr of CallExpr extends JENode {
 			 && (!func.etype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() || null_cast_label != null) )
 				code.addInstr(op_checkcast,getType());
 		}
-		if( ok_label != null )
-			code.addInstr(Instr.set_label,ok_label);
 	}
 
 }

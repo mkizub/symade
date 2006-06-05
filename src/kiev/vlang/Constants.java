@@ -68,13 +68,7 @@ public interface Constants extends AccessFlags {
 	public final static String nameDEBUG		= "$DEBUG";
 	public final static String nameDEF			= "$D";
 
-	public final static String nameObjGetClass		= "getClass";
-	public final static String nameObjHashCode		= "hashCode";
-	public final static String nameObjEquals		= "equals";
-	public final static String nameObjClone		= "clone";
-	public final static String nameObjToString		= "toString";
 	public final static String nameStrBuffAppend	= "append";
-	public final static String nameStrValueOf		= "valueOf";
 
 	public final static String nameAny			= "any";
 	public final static KString sigAny			= KString.from("?");

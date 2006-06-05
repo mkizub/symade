@@ -592,7 +592,7 @@ CLASS kiev.vlang.Symbol kiev/vlang/Symbol kiev\vlang\Symbol.java
 CLASS kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java
 CLASS kiev.vlang.SymbolRef kiev/vlang/SymbolRef kiev\vlang\Symbol.java
 CLASS kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
-CLASS kiev.vlang.Test kiev/vlang/Test kiev\vlang\MetaTypes.java
+CLASS kiev.vlang.Test kiev/vlang/Test kiev\vlang\MetaTypes.java bad
 CLASS kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
 CLASS kiev.vlang.TreeWalker kiev/vlang/TreeWalker kiev\vlang\AST.java
