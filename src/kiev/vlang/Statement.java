@@ -336,6 +336,19 @@ public class IfElseStat extends ENode {
 		}
 		return dmp;
 	}
+
+	public Object doRewrite(RewriteContext ctx) {
+		if (cond.isConstantExpr()) {
+			Boolean b = (Boolean)cond.getConstValue();
+			if (b.booleanValue())
+				return thenSt.doRewrite(ctx);
+			if (elseSt != null)
+				return elseSt.doRewrite(ctx);
+			throw new RuntimeException("doRewrite on 'if' without 'else'");
+		}
+		throw new RuntimeException("doRewrite on non-const 'if' condition "+cond);
+	}
+
 }
 
 @node

@@ -296,6 +296,18 @@ public class Env extends Struct {
 		}
 
 		root.setPackage();
+		root.addSpecialField("$GenAsserts", Type.tpBoolean, new ConstBoolExpr(Kiev.debugOutputA));
+		root.addSpecialField("$GenTraces",  Type.tpBoolean, new ConstBoolExpr(Kiev.debugOutputT));
+	}
+	
+	private void addSpecialField(String name, Type tp, ENode init) {
+		foreach (Field f; members; f.id.equals(name)) {
+			f.init = init;
+			return;
+		}
+		Field f = new Field(name,tp,ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC);
+		f.init = init;
+		members.add(f);
 	}
 
 	public static void dumpProjectFile() {
