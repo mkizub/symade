@@ -245,7 +245,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			
 			// and add super-constructor call
 			init.setNeedFieldInits(true);
-			ASTCallExpression call_super = new ASTCallExpression(pos, nameSuper, ENode.emptyArray);
+			CallExpr call_super = new CallExpr(pos, null, new SymbolRef(nameSuper), null, ENode.emptyArray);
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
 			init.block.stats.insert(0,new ExprStat(call_super));
@@ -443,6 +443,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				)
 			));
 		}
+		Kiev.runProcessorsOn(typeinfo_clazz)
 	}
 	
 	public boolean preGenerate() {
@@ -907,24 +908,24 @@ public final view RStruct of Struct extends RTypeDecl {
 				for(int k=0; k < vae.length; k++) {
 					vae[k] = new CastExpr(0,mm.type.arg(k), new LVarExpr(0,mm.params[k]));
 				}
+				CallExpr ce = new CallExpr(0,new ThisExpr(true),overwr,null,vae);
+				ce.setSuperExpr(true);
 				if( m.type.ret() ≢ Type.tpVoid ) {
 					if( overwr.type.ret() ≡ Type.tpVoid )
 						br = new Block(0,new ENode[]{
-							new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,null,vae,true)),
+							new ExprStat(0,ce),
 							new ReturnStat(0,new ConstNullExpr())
 						});
+					else if( !overwr.type.ret().isReference() && mm.type.ret().isReference() ) {
+						br = new ReturnStat(0,ce);
+						CastExpr.autoCastToReference(ce);
+					}
 					else {
-						if( !overwr.type.ret().isReference() && mm.type.ret().isReference() ) {
-							CallExpr ce = new CallExpr(0,new ThisExpr(true),overwr,null,vae,true);
-							br = new ReturnStat(0,ce);
-							CastExpr.autoCastToReference(ce);
-						}
-						else
-							br = new ReturnStat(0,new CallExpr(0,new ThisExpr(true),overwr,null,vae,true));
+						br = new ReturnStat(0,ce);
 					}
 				} else {
 					br = new Block(0,new ENode[]{
-						new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,null,vae,true)),
+						new ExprStat(0,ce),
 						new ReturnStat(0,null)
 					});
 				}
@@ -1021,7 +1022,9 @@ public final view RStruct of Struct extends RTypeDecl {
 		ENode obj = null;
 		if (!dispatched.isStatic() && !dispatcher.isStatic())
 			obj = new ThisExpr(pos);
-		CallExpr ce = new CallExpr(pos, obj, dispatched, null, ENode.emptyArray, self.getStruct() != dispatched.ctx_tdecl);
+		CallExpr ce = new CallExpr(pos, obj, dispatched, null, ENode.emptyArray);
+		if (self.getStruct() != dispatched.ctx_tdecl)
+			ce.setSuperExpr(true);
 		if (dispatched.isVirtualStatic() && !dispatcher.isStatic())
 			ce.args.append(new ThisExpr(pos));
 		foreach (FormPar fp; dispatcher.params)
@@ -1205,25 +1208,14 @@ public final view RStruct of Struct extends RTypeDecl {
 					if (initbody.stats[0] instanceof ExprStat) {
 						ExprStat es = (ExprStat)initbody.stats[0];
 						ENode ce = es.expr;
-						if( es.expr instanceof ASTExpression )
-							ce = ((ASTExpression)es.expr).nodes[0];
-						else
-							ce = es.expr;
-						if( ce instanceof ASTCallExpression ) {
-							SymbolRef nm = ((ASTCallExpression)ce).ident;
-							if( !(nm.name.equals(nameThis) || nm.name.equals(nameSuper) ) )
-								gen_def_constr = true;
-							else if( nm.name.equals(nameSuper) )
+						if (ce instanceof CallExpr && ce.func instanceof Constructor) {
+							String nm = ce.ident.name;
+							if (nm == nameThis)
+								; // this(args)
+							else if (nm == nameSuper)
 								m.setNeedFieldInits(true);
-						}
-						else if( ce instanceof CallExpr ) {
-							String nm = ((CallExpr)ce).func.id.uname;
-							if( !(nm.equals(nameThis) || nm.equals(nameSuper) || nm.equals(nameInit)) )
-								gen_def_constr = true;
-							else {
-								if( nm.equals(nameSuper) || (nm.equals(nameInit) && es.expr.isSuperExpr()) )
-									m.setNeedFieldInits(true);
-							}
+							else
+								throw new CompilerException(ce,"Expected one of this() or super() constructor call");
 						}
 						else
 							gen_def_constr = true;
@@ -1233,9 +1225,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				}
 				if( gen_def_constr ) {
 					m.setNeedFieldInits(true);
-					ASTCallExpression call_super = new ASTCallExpression();
-					call_super.pos = pos;
-					call_super.ident = new SymbolRef(pos, nameSuper);
+					CallExpr call_super = new CallExpr(pos, null, new SymbolRef(pos, nameSuper), null, ENode.emptyArray);
 					if( super_types.length > 0 && super_types[0].getStruct() == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;
@@ -1260,11 +1250,11 @@ public final view RStruct of Struct extends RTypeDecl {
 						call_super.args.add(new ASTIdentifier(pos, nameImpl));
 					}
 					initbody.stats.insert(0,new ExprStat(call_super));
+					Kiev.runProcessorsOn(initbody.stats[0]);
 				}
 				int p = 1;
 				if( package_clazz.isClazz() && !isStatic() ) {
-					initbody.stats.insert(
-						p++,
+					initbody.stats.insert(p,
 						new ExprStat(pos,
 							new AssignExpr(pos,Operator.Assign,
 								new IFldExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf((Struct)this)),
@@ -1272,13 +1262,14 @@ public final view RStruct of Struct extends RTypeDecl {
 							)
 						)
 					);
+					Kiev.runProcessorsOn(initbody.stats[p]);
+					p++;
 				}
 				if (isForward() && package_clazz.isStructView()) {
 					Field fview = this.resolveField(nameImpl);
 					if (fview.parent() == (Struct)this) {
 						foreach (FormPar fp; m.params; fp.id.equals(nameImpl)) {
-							initbody.stats.insert(
-								p++,
+							initbody.stats.insert(p,
 								new ExprStat(pos,
 									new AssignExpr(pos,Operator.Assign,
 										new IFldExpr(pos,new ThisExpr(pos),resolveField(nameImpl)),
@@ -1286,6 +1277,8 @@ public final view RStruct of Struct extends RTypeDecl {
 									)
 								)
 							);
+							Kiev.runProcessorsOn(initbody.stats[p]);
+							p++;
 							break;
 						}
 					}
@@ -1294,17 +1287,20 @@ public final view RStruct of Struct extends RTypeDecl {
 					Field tif = resolveField(nameTypeInfo);
 					Var v = m.getTypeInfoParam(FormPar.PARAM_TYPEINFO);
 					assert(v != null);
-					initbody.stats.insert(
-						p++,
+					initbody.stats.insert(p,
 						new ExprStat(pos,
 							new AssignExpr(m.pos,Operator.Assign,
 								new IFldExpr(m.pos,new ThisExpr(0),tif),
 								new LVarExpr(m.pos,v)
 							))
 						);
+					Kiev.runProcessorsOn(initbody.stats[p]);
+					p++;
 				}
 				if( instance_init != null && m.isNeedFieldInits() ) {
-					initbody.stats.insert(p++,instance_init.body.ncopy());
+					initbody.stats.insert(p,instance_init.body.ncopy());
+					Kiev.runProcessorsOn(initbody.stats[p]);
+					p++;
 				}
 			}
 		}

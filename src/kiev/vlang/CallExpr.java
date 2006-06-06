@@ -59,30 +59,53 @@ public class CallExpr extends ENode {
 		public final CallType getCallType();
 
 		public void mainResolveOut() {
-			if (func != null)
+			if (func != null) {
+				if (obj == null) {
+					assert (func.isStatic() || func instanceof Constructor);
+					obj = new TypeRef(pos, func.ctx_tdecl.xtype);
+				}
 				return;
-			if( obj instanceof ASTIdentifier
-			&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
-			&& !ctx_method.isStatic() )
-			{
-				ThisExpr te = new ThisExpr(obj.pos);
-				te.setSuperExpr(true);
-				obj = te;
 			}
 			
+			Method@ m;
+			Type tp = ctx_tdecl.xtype;
+			CallType mt = null;
+
+			Type[] ata = new Type[targs.length];
+			for (int i=0; i < ata.length; i++)
+				ata[i] = targs[i].getType();
+			Type[] ta = new Type[args.length];
+			for (int i=0; i < ta.length; i++)
+				ta[i] = args[i].getType();
+
+			// constructor call "this(args)"
+			if (ident.name == nameThis) {
+				mt = new CallType(tp,ata,ta,Type.tpVoid,false);
+				ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+				if (!PassInfo.resolveBestMethodR(tp,m,info,ctx_method.id.uname,mt))
+					throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
+				ident.symbol = (Method)m;
+				obj = new TypeRef(tp);
+				return;
+			}
+			// constructor call "super(args)"
+			if (ident.name == nameSuper) {
+				mt = new CallType(tp,ata,ta,Type.tpVoid,false);
+				ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+				if (!PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ctx_method.id.uname,mt))
+					throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
+				ident.symbol = (Method)m;
+				obj = new TypeRef(m.ctx_tdecl.xtype);
+				return;
+			}
+			// super-call "super.func(args)"
 			if (obj instanceof ThisExpr && obj.isSuperExpr()) {
 				Method@ m;
 				Type tp = ctx_tdecl.super_types[0].getType();
 				ResInfo info = new ResInfo(this);
 				info.enterForward(obj);
 				info.enterSuper();
-				Type[] ata = new Type[targs.length];
-				for (int i=0; i < ata.length; i++)
-					ata[i] = targs[i].getType();
-				Type[] ta = new Type[args.length];
-				for (int i=0; i < ta.length; i++)
-					ta[i] = args[i].getType();
-				CallType mt = new CallType(tp,null,ta,null,false);
+				mt = new CallType(tp,ata,ta,null,false);
 				try {
 					if( !PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt) )
 						throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,null));
@@ -97,53 +120,123 @@ public class CallExpr extends ENode {
 				throw new CompilerException(obj,"Super-call via forwarding is not allowed");
 			}
 			
-			int res_flags = ResInfo.noStatic | ResInfo.noImports;
+			int cnt = 0;
 			ENode[] res;
 			Type[] tps;
-		try_static:;
-			if( obj instanceof TypeRef ) {
-				Type tp = ((TypeRef)obj).getType();
+			if (obj == null) {
 				tps = new Type[]{tp};
 				res = new ENode[1];
-				res_flags = 0;
+			}
+			else if( obj instanceof TypeRef ) {
+				Type otp = ((TypeRef)obj).getType();
+				tps = new Type[]{otp};
+				res = new ENode[1];
+				goto try_static;
 			} else {
 				tps = obj.getAccessTypes();
 				res = new ENode[tps.length];
-				// fall down
 			}
-			for (int si=0; si < tps.length; si++) {
-				Type tp = tps[si];
-				Method@ m;
-				ResInfo info = new ResInfo(this,res_flags);
-				CallType mt;
-				{
-					Type[] ata = new Type[targs.length];
-					for (int i=0; i < ata.length; i++)
-						ata[i] = targs[i].getType();
-					Type[] ta = new Type[args.length];
-					for (int i=0; i < ta.length; i++)
-						ta[i] = args[i].getType();
-					mt = new CallType(res_flags==0?null:tp,null,ta,null,false);
-				}
-				try {
-					if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
-						if (tps.length == 1 && res_flags == 0)
+
+			if (cnt == 0) {
+				// try virtual call first
+				for (int si=0; si < tps.length; si++) {
+					tp = tps[si];
+					Method@ m;
+					ResInfo info = new ResInfo(this, ResInfo.noStatic | ResInfo.noImports);
+					mt = new CallType(tp,ata,ta,null,false);
+					if (obj == null) {
+						if (PassInfo.resolveMethodR((ASTNode)this,m,info,ident.name,mt)) {
 							res[si] = info.buildCall((ASTNode)this, obj, m, targs, args);
-						else if (res_flags == 0)
-							res[si] = info.buildCall((ASTNode)this, new TypeRef(tps[si]), m, targs, args);
-						else
+							cnt += 1;
+						}
+					} else {
+						if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
 							res[si] = info.buildCall((ASTNode)this, obj, m, targs, args);
+							cnt += 1;
+						}
 					}
-				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
-			}
-			int cnt = 0;
-			int idx = -1;
-			for (int si=0; si < res.length; si++) {
-				if (res[si] != null) {
-					cnt ++;
-					if (idx < 0) idx = si;
 				}
 			}
+
+			if (cnt == 0) {
+				// try closure var or an instance fiels
+				for (int si=0; si < tps.length; si++) {
+					tp = tps[si];
+					DNode@ closure;
+					ResInfo info = new ResInfo(this, ResInfo.noStatic | ResInfo.noImports);
+					if (obj == null) {
+						if (PassInfo.resolveNameR((ASTNode)this,closure,info,ident.name)) { 
+							if ((closure instanceof Var || closure instanceof Field)
+								&& Type.getRealType(tp,closure.getType()) instanceof CallType
+							) {
+								res[si] = info.buildCall((ASTNode)this, obj, closure, targs, args);
+								cnt += 1;
+							}
+						}
+					} else {
+						if (tp.resolveNameAccessR(closure,info,ident.name)) { 
+							if ((closure instanceof Var || closure instanceof Field)
+								&& Type.getRealType(tp,closure.getType()) instanceof CallType
+							) {
+								res[si] = info.buildCall((ASTNode)this, obj, closure, targs, args);
+								cnt += 1;
+							}
+						}
+					}
+				}
+			}
+
+		try_static:;
+			if (cnt == 0) {
+				// try static call
+				for (int si=0; si < tps.length; si++) {
+					tp = tps[si];
+					Method@ m;
+					ResInfo info = new ResInfo(this, 0);
+					mt = new CallType(null,ata,ta,null,false);
+					if (obj == null) {
+						if (PassInfo.resolveMethodR((ASTNode)this,m,info,ident.name,mt)) {
+							res[si] = info.buildCall((ASTNode)this, obj, m, targs, args);
+							cnt += 1;
+						}
+					} else {
+						if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
+							res[si] = info.buildCall((ASTNode)this, obj, m, targs, args);
+							cnt += 1;
+						}
+					}
+				}
+			}
+			
+			if (cnt == 0) {
+				// try closure static field
+				for (int si=0; si < tps.length; si++) {
+					tp = tps[si];
+					DNode@ closure;
+					ResInfo info = new ResInfo(this, ResInfo.noImports);
+					if (obj == null) {
+						if (PassInfo.resolveNameR((ASTNode)this,closure,info,ident.name)) { 
+							if (closure instanceof Field
+								&& Type.getRealType(tp,closure.getType()) instanceof CallType
+							) {
+								res[si] = info.buildCall((ASTNode)this, obj, closure, targs, args);
+								cnt += 1;
+							}
+						}
+					} else {
+						if (tp.meta_type.tdecl.resolveNameR(closure,info,ident.name)) { 
+							if (closure instanceof Field
+								&& Type.getRealType(tp,closure.getType()) instanceof CallType
+							) {
+								res[si] = info.buildCall((ASTNode)this, obj, closure, targs, args);
+								cnt += 1;
+							}
+						}
+					}
+				}
+			}
+
+
 			if (cnt > 1) {
 				StringBuffer msg = new StringBuffer("Umbigous methods:\n");
 				for(int si=0; si < res.length; si++) {
@@ -154,11 +247,7 @@ public class CallExpr extends ENode {
 				msg.append("while resolving ").append(this);
 				throw new CompilerException(this, msg.toString());
 			}
-			if (cnt == 0 && res_flags != 0) {
-				res_flags = 0;
-				goto try_static;
-			}
-			if (cnt == 0) {
+			else if (cnt == 0) {
 				StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(ident.name,args)+"' in:\n");
 				for(int si=0; si < res.length; si++) {
 					if (tps[si] == null)
@@ -168,52 +257,51 @@ public class CallExpr extends ENode {
 				msg.append("while resolving ").append(this);
 				throw new CompilerException(this, msg.toString());
 			}
-			ENode e = res[idx];
-			if (e instanceof UnresCallExpr) {
-				if (e.obj == this.obj) {
-					this.ident.symbol = e.func.symbol;
-					return;
+			
+			for (int si=0; si < res.length; si++) {
+				ENode e = res[si];
+				if (e != null) {
+					if (e instanceof UnresCallExpr && e.obj == this.obj) {
+						this.ident.symbol = e.func.symbol;
+						return;
+					}
+					e = e.closeBuild();
+					if (isPrimaryExpr())
+						e.setPrimaryExpr(true);
+					this.replaceWithNodeReWalk(e);
 				}
 			}
-			e = e.closeBuild();
-			if (isPrimaryExpr())
-				e.setPrimaryExpr(true);
-			this.replaceWithNodeReWalk(e);
 		}
+
+		// verify resolved call
+		public boolean preVerify() {
+			if (func.isStatic() && !func.isVirtualStatic() && !(obj instanceof TypeRef))
+				obj = new TypeRef(obj.pos,func.ctx_tdecl.xtype);
+			return true;
+		}
+
 	}
 	
 	public CallExpr() {}
 
-	public CallExpr(int pos, ENode obj, SymbolRef ident, TypeRef[] targs, ENode[] args, boolean super_flag) {
+	public CallExpr(int pos, ENode obj, SymbolRef ident, TypeRef[] targs, ENode[] args) {
 		this.pos = pos;
 		this.ident = ident;
-		if (obj == null) {
-			if !(func.isStatic() || func instanceof Constructor)
-				throw new RuntimeException("Call to non-static method "+func+" without accessor");
-			this.obj = new TypeRef(func.ctx_tdecl.xtype);
-		} else {
-			this.obj = obj;
-		}
+		this.obj = obj;
 		this.targs.addAll(targs);
 		this.args.addAll(args);
-		if (super_flag)
-			this.setSuperExpr(true);
-	}
-
-	public CallExpr(int pos, ENode obj, Method func, TypeRef[] targs, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef(pos,func), targs, args, super_flag);
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, TypeRef[] targs, ENode[] args) {
-		this(pos, obj, new SymbolRef(pos,func), targs, args, false);
+		this(pos, obj, new SymbolRef(pos,func), targs, args);
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
-		this(pos, obj, new SymbolRef(pos,func), null, args, false);
+		this(pos, obj, new SymbolRef(pos,func), null, args);
 	}
 
 	public ENode[] getArgs() {
-		if (func.isStatic())
+		if (func == null || func.isStatic())
 			return this.args;
 		ENode[] args = new ENode[this.args.length+1];
 		args[0] = obj;
@@ -226,21 +314,28 @@ public class CallExpr extends ENode {
 
 	public Type getType() {
 		Method m = this.func;
+		if (m == null)
+			return Type.tpVoid;
 		Type ret = m.type.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
 		return getCallType().ret();
 	}
 
 	public CallType getCallType() {
+		Method m = this.func;
+		if (m == null)
+			return new CallType(null,null,null,Type.tpVoid,false);
 		return this.func.makeType(this.targs, this.getArgs());
 	}
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		if( obj.getPriority() > opAccessPriority )
-			sb.append('(').append(obj).append(").");
-		else
-			sb.append(obj).append('.');
+		if (obj != null) {
+			if( obj.getPriority() > opAccessPriority )
+				sb.append('(').append(obj).append(").");
+			else
+				sb.append(obj).append('.');
+		}
 		sb.append(ident).append('(');
 		for(int i=0; i < args.length; i++) {
 			sb.append(args[i]);

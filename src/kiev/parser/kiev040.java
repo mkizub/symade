@@ -3846,7 +3846,7 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final public ENode CallExpression() throws ParseException {
-  ASTCallExpression e = new ASTCallExpression();
+  CallExpr e = new CallExpr();
     e.ident = NameRef();
                               e.pos = e.ident.pos;
     switch (jj_nt.kind) {
@@ -3894,7 +3894,7 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final public ENode CallAccessExpression(ENode obj) throws ParseException {
-  ASTCallAccessExpression e = new ASTCallAccessExpression(); e.obj = obj;
+  CallExpr e = new CallExpr(); e.obj = obj;
     e.ident = NameRef();
                               e.pos = e.ident.pos;
     switch (jj_nt.kind) {

@@ -80,13 +80,13 @@ public final view JMethod of Method extends JDNode {
 			Code code = new Code((JStruct)jctx_tdecl, this, constPool);
 			code.generation = true;
 			try {
+				JVar thisPar = null;
+				if (!isStatic()) {
+					thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_tdecl.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
+					code.addVar(thisPar);
+				}
+				code.addVars(params);
 				if( !isBad() && !isMacro() ) {
-					JVar thisPar = null;
-					if (!isStatic()) {
-						thisPar = (JVar)new FormPar(pos,Constants.nameThis,jctx_tdecl.xtype,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
-						code.addVar(thisPar);
-					}
-					code.addVars(params);
 					if( Kiev.verify )
 						generateArgumentCheck(code);
 					if( Kiev.debugOutputC ) {
@@ -130,8 +130,6 @@ public final view JMethod of Method extends JDNode {
 							code.addInstr(Instr.op_return);
 						}
 					}
-					code.removeVars(params);
-					if( thisPar != null ) code.removeVar(thisPar);
 				} else {
 					code.addInstr(Instr.op_new,Type.tpError);
 					code.addInstr(Instr.op_dup);
@@ -146,6 +144,8 @@ public final view JMethod of Method extends JDNode {
 					code.addInstr(Instr.op_call,func,false);
 					code.addInstr(Instr.op_throw);
 				}
+				code.removeVars(params);
+				if( thisPar != null ) code.removeVar(thisPar);
 				code.generateCode();
 			} catch(Exception e) {
 				Kiev.reportError(this,e);

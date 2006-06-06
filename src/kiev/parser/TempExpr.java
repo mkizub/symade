@@ -172,7 +172,7 @@ public class UnresCallExpr extends UnresExpr {
 			args[i] = args[i].closeBuild().detach();
 		if (obj instanceof TypeRef) {
 			if (func.symbol instanceof Method) {
-				CallExpr ce = new CallExpr(pos, obj, ~func, targs, args, false);
+				CallExpr ce = new CallExpr(pos, obj, ~func, targs, args);
 				return ce;
 			} else {
 				Field f = (Field)func.symbol;
@@ -180,7 +180,9 @@ public class UnresCallExpr extends UnresExpr {
 			}
 		} else {
 			if (func.symbol instanceof Method) {
-				CallExpr ce = new CallExpr(pos, obj, ~func, targs, args, isSuperExpr());
+				CallExpr ce = new CallExpr(pos, obj, ~func, targs, args);
+				if (isSuperExpr())
+					ce.setSuperExpr(true);
 				ce.setCastCall(this.isCastCall());
 				return ce;
 			} else {

@@ -179,8 +179,6 @@ CLASS kiev.gui.InfoView kiev/gui/InfoView kiev\gui\InfoView.java
 CLASS kiev.gui.UIView kiev/gui/UIView kiev\gui\UIView.java
 CLASS kiev.gui.Window kiev/gui/Window kiev\gui\Window.java
 CLASS kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
-CLASS kiev.parser.ASTCallAccessExpression kiev/parser/ASTCallAccessExpression kiev\parser\ASTCallAccessExpression.java
-CLASS kiev.parser.ASTCallExpression kiev/parser/ASTCallExpression kiev\parser\ASTCallExpression.java
 CLASS kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
 CLASS kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.java
 CLASS kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIdentifierAlias.java
@@ -858,7 +856,6 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
-METATYPE kiev.fmt.Syntax kiev\fmt\SyntaxLayout.java bad
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad

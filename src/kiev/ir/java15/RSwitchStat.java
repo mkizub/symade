@@ -159,12 +159,9 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					me.stats.add((ENode)this);
 					if( tp.getStruct() != null && tp.getStruct().isHasCases() ) {
 						mode = SwitchStat.PIZZA_SWITCH;
-						ASTCallAccessExpression cae = new ASTCallAccessExpression();
-						sel = cae;
-						cae.pos = pos;
-						cae.obj = new LVarExpr(tmpvar.pos,tmpvar.getVar());
-						cae.obj.resolve(null);
-						cae.ident = new SymbolRef(pos, nameGetCaseTag);
+						sel = new CallExpr(pos,new LVarExpr(tmpvar.pos,tmpvar.getVar()),
+							new SymbolRef(pos, nameGetCaseTag),null,ENode.emptyArray);
+						Kiev.runProcessorsOn(sel);
 					} else {
 						mode = SwitchStat.TYPE_SWITCH;
 						typehash = new Field("fld$sel$"+Integer.toHexString(old_sel.hashCode()),

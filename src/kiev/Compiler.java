@@ -180,6 +180,7 @@ public class Compiler {
 					args[a] = null;
 				}
 				else if( args[a].equals("-debug")) {
+					Kiev.class.getClassLoader().setDefaultAssertionStatus(onoff);
 					args[a] = null;
 					String dbg = args[++a];
 					args[a] = null;

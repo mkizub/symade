@@ -292,7 +292,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		}
 
 		public final boolean mainResolveIn() {
-			resolveFinalFields(this);
 			return true; //!isLocal();
 		}
 
@@ -316,6 +315,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		}
 
 		public void mainResolveOut() {
+			resolveFinalFields(this);
 			((Struct)this).cleanDFlow();
 		}
 

@@ -223,19 +223,18 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			ctor.params.add(new FormPar(0, "name", Type.tpString, FormPar.PARAM_NORMAL, ACC_FINAL));
 			ctor.params.add(new FormPar(0, "clazz", Type.tpClass, FormPar.PARAM_NORMAL, ACC_FINAL));
 			s.members.add(ctor);
-			ctor.body = new Block(0);
-			ctor.block.stats.add(new ExprStat(
-				new CallExpr(f.pos,
-					null,
-					s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpClass),
+			CallExpr ce = new CallExpr(f.pos,
+					new TypeRef(s.super_types[0].getType()),
+					new SymbolRef("super",s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpClass)),
 					null,
 					new ENode[]{
 						new LVarExpr(f.pos, ctor.params[0]),
 						new LVarExpr(f.pos, ctor.params[1])
-					},
-					true
-				)
-			));
+					}
+				);
+			ce.setSuperExpr(true);
+			ctor.body = new Block(0);
+			ctor.block.stats.add(new ExprStat(ce));
 		}
 		if (isArr) {
 			// add public N[] get(ASTNode parent)
@@ -404,16 +403,14 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			}
 			Struct sup = s.super_types[0].getStruct();
 			if (isNodeKind(sup)) {
-				getV.block.stats.add(
-					new ReturnStat(0,
-						new CallExpr(0,
-							new ThisExpr(true),
-							sup.resolveMethod("getVal",Type.tpObject,Type.tpString),
-							null,
-							new ENode[]{new LVarExpr(0, getV.params[0])},
-							true)
-					)
-				);
+				CallExpr ce = new CallExpr(0,
+						new ThisExpr(true),
+						sup.resolveMethod("getVal",Type.tpObject,Type.tpString),
+						null,
+						new ENode[]{new LVarExpr(0, getV.params[0])}
+						);
+				ce.setSuperExpr(true);
+				getV.block.stats.add(new ReturnStat(0,ce));
 			} else {
 				StringConcatExpr msg = new StringConcatExpr();
 				msg.appendArg(new ConstStringExpr("No @att value \""));
@@ -436,8 +433,8 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			s.addMethod(copyV);
 			copyV.body = new Block(0);
 			Var v = new Var(0, "node",s.xtype,0);
-			copyV.block.stats.append(new ReturnStat(0,new ASTCallExpression(0,
-				"copyTo",	new ENode[]{new NewExpr(0,s.xtype,ENode.emptyArray)})));
+			copyV.block.stats.append(new ReturnStat(0,new CallExpr(0,new ThisExpr(),
+				new SymbolRef("copyTo"), null, new ENode[]{new NewExpr(0,s.xtype,ENode.emptyArray)})));
 		}
 		// copyTo(Object)
 		if (hasMethod(s, "copyTo")) {
@@ -449,10 +446,8 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			copyV.body = new Block();
 			Var v = new Var(0,"node",s.xtype,0);
 			if (isNodeKind(s.super_types[0].getStruct())) {
-				ASTCallAccessExpression cae = new ASTCallAccessExpression();
-				cae.obj = new ASTIdentifier(0,"super");
-				cae.ident = new SymbolRef(0,"copyTo");
-				cae.args.append(new ASTIdentifier(0,"to$node"));
+				CallExpr cae = new CallExpr(0,new ThisExpr(true),
+					new SymbolRef("copyTo"),null,new ENode[]{new LVarExpr(0,copyV.params[0])});
 				v.init = new CastExpr(0,s.xtype,cae);
 				copyV.block.addSymbol(v);
 			} else {
@@ -473,15 +468,18 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				boolean isArr = f.getType().isInstanceOf(tpNArray);
 				if (f.meta.get(mnAtt) != null && (isNode || isArr)) {
 					if (isArr) {
-						ASTCallAccessExpression cae = new ASTCallAccessExpression();
-						cae.obj = new IFldExpr(0,new LVarExpr(0,v),f);
-						cae.ident = new SymbolRef(0, "copyFrom");
-						cae.args.append(new IFldExpr(0,new ThisExpr(),f));
+						CallExpr cae = new CallExpr(0,
+							new IFldExpr(0,new LVarExpr(0,v),f),
+							new SymbolRef("copyFrom"),
+							null,
+							new ENode[]{new IFldExpr(0,new ThisExpr(),f)});
 						copyV.block.stats.append(new ExprStat(0,cae));
 					} else {
-						ASTCallAccessExpression cae = new ASTCallAccessExpression();
-						cae.obj = new IFldExpr(0, new ThisExpr(),f);
-						cae.ident = new SymbolRef(0, "copy");
+						CallExpr cae = new CallExpr(0,
+							new IFldExpr(0, new ThisExpr(),f),
+							new SymbolRef("copy"),
+							null,
+							ENode.emptyArray);
 						copyV.block.stats.append( 
 							new IfElseStat(0,
 								new BinaryBoolExpr(0, Operator.NotEquals,
@@ -560,14 +558,14 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			}
 			Struct sup = s.super_types[0].getStruct();
 			if (isNodeKind(sup)) {
-				setV.block.stats.add(
-					new CallExpr(0,
-						new ThisExpr(true),
-						sup.resolveMethod("setVal",Type.tpVoid,Type.tpString,Type.tpObject),
-						null,
-						new ENode[]{new LVarExpr(0, setV.params[0]),new LVarExpr(0, setV.params[1])},
-						true)
-				);
+				CallExpr ce = new CallExpr(0,
+					new ThisExpr(true),
+					sup.resolveMethod("setVal",Type.tpVoid,Type.tpString,Type.tpObject),
+					null,
+					new ENode[]{new LVarExpr(0, setV.params[0]),new LVarExpr(0, setV.params[1])}
+					);
+				ce.setSuperExpr(true);
+				setV.block.stats.add(ce);
 			} else {
 				StringConcatExpr msg = new StringConcatExpr();
 				msg.appendArg(new ConstStringExpr("No @att value \""));
@@ -672,9 +670,10 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					),
 					new Block(0,new ENode[]{
 						new ExprStat(0,
-							new ASTCallAccessExpression(0,
+							new CallExpr(0,
 								new IFldExpr(0,new ThisExpr(),f,true),
-								"callbackDetached",
+								new SymbolRef("callbackDetached"),
+								null,
 								ENode.emptyArray
 							)
 						)
@@ -682,15 +681,17 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					null
 				);
 			body.stats.insert(0,p_st);
-			ENode p_st = new IfElseStat(0,
+			Kiev.runProcessorsOn(p_st);
+			p_st = new IfElseStat(0,
 					new BinaryBoolExpr(0, Operator.NotEquals,
 						new LVarExpr(0, value),
 						new ConstNullExpr()
 					),
 					new ExprStat(0,
-						new ASTCallAccessExpression(0,
+						new CallExpr(0,
 							new LVarExpr(0, value),
-							"callbackAttached",
+							new SymbolRef("callbackAttached"),
+							null,
 							new ENode[] {
 								new ThisExpr(),
 								new SFldExpr(f.pos, fatt)
@@ -700,6 +701,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					null
 				);
 			body.stats.append(p_st);
+			Kiev.runProcessorsOn(p_st);
 		} else {
 			Var old = new Var(body.pos,"$old",f.type,ACC_FINAL);
 			old.init = new IFldExpr(0,new ThisExpr(),f,true);
@@ -710,9 +712,10 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 						new LVarExpr(0, old)
 					),
 					new ExprStat(0,
-						new ASTCallAccessExpression(0,
+						new CallExpr(0,
 							new ThisExpr(),
-							"callbackChildChanged",
+							new SymbolRef("callbackChildChanged"),
+							null,
 							new ENode[] {
 								new SFldExpr(f.pos, fatt)
 							}
@@ -721,6 +724,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					null
 				);
 			body.stats.append(p_st);
+			Kiev.runProcessorsOn(p_st);
 		}
 		set_var.meta.set(new Meta(VNode_Base.mnAtt)).resolve(null);
 	}

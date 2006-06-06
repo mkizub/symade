@@ -2587,7 +2587,7 @@ ENode ReparseExpression() :
 }
 
 ENode CallExpression() :
-{ ASTCallExpression e = new ASTCallExpression(); }
+{ CallExpr e = new CallExpr(); }
 {
 	e.ident = NameRef() { e.pos = e.ident.pos; }
 	[
@@ -2605,7 +2605,7 @@ ENode CallExpression() :
 }
 
 ENode CallAccessExpression(ENode obj) :
-{ ASTCallAccessExpression e = new ASTCallAccessExpression(); e.obj = obj; }
+{ CallExpr e = new CallExpr(); e.obj = obj; }
 {
 	e.ident = NameRef() { e.pos = e.ident.pos; }
 	[
