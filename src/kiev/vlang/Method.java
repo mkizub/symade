@@ -545,7 +545,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		return true;
 	}
 	
-	public final CallType makeType(ENode[] args) {
+	public final CallType makeType(TypeRef[] targs, ENode[] args) {
 		Type[] mt;
 		CallType rt;
 		if (this.isStatic()) {
@@ -558,6 +558,20 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			for (int i=0; i < mt.length; i++)
 				mt[i] = args[i+1].getType();
 			rt = (CallType)this.type.bind(args[0].getType().bindings());
+		}
+		if (targs != null && targs.length > 0) {
+			TVarBld set = new TVarBld();
+			int a = 0;
+			foreach (TVar tv; rt.bindings().tvars) {
+				if (tv.var.isHidden())
+					continue;
+				Type bound = targs[a].getType();
+				ArgType arg = this.targs[a].getAType();
+				set.append(arg, bound);
+				a++;
+			}
+			if (a > 0)
+				rt = (CallType)rt.rebind(set);
 		}
 		foreach (TypeDef td; this.targs) {
 			ArgType at = td.getAType();

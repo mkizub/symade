@@ -23,7 +23,7 @@ public metatype Globals extends any {
 	public static <L extends Object, R extends L> R ref_assign2(L lval, R val) alias lfy operator := ;
 
 	@macro @native
-	public static <L extends Object, R extends L> PVar<R> ref_pvar_init(L@ lval, PVar<R> val) alias lfy operator := ;
+	public static <L extends Object, R extends L> R@ ref_pvar_init(L@ lval, R@ val) alias lfy operator := ;
 
 	@macro
 	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) alias lfy operator =

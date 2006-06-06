@@ -241,7 +241,7 @@ public class AssignExpr extends ENode {
 				if (PassInfo.resolveBestMethodR(ect1,m,info,nameArraySetOp,mt)) {
 					Method rm = (Method)m;
 					if !(rm.isMacro() && rm.isNative()) {
-						ENode res = info.buildCall((ASTNode)this, cae.obj, m, info.mt, new ENode[]{~cae.index,~value});
+						ENode res = info.buildCall((ASTNode)this, cae.obj, m, null, new ENode[]{~cae.index,~value});
 						res = res.closeBuild();
 						this.replaceWithNodeReWalk(res);
 					}
@@ -418,7 +418,7 @@ public class BinaryExpr extends ENode {
 		}
 		Type ret = m.type.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
-		return m.makeType(getArgs()).ret();
+		return m.makeType(null,getArgs()).ret();
 	}
 }
 
@@ -495,7 +495,7 @@ public class UnaryExpr extends ENode {
 		}
 		Type ret = m.type.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
-		return m.makeType(getArgs()).ret();
+		return m.makeType(null,getArgs()).ret();
 	}
 
 }

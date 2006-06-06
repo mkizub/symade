@@ -202,6 +202,7 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 	}
 	
 	public final void addAll(ANode parent, N[] arr) {
+		if (arr == null) return;
 		for (int i=0; i < arr.length; i++)
 			add(parent, arr[i]);
 	}

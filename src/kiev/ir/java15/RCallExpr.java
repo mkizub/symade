@@ -21,11 +21,13 @@ public final view RCallExpr of CallExpr extends RENode {
 
 	public:ro	Method			func;
 	public		ENode			obj;
-	public		CallType		mt;
+	public:ro	TypeRef[]		targs;
 	public:ro	ENode[]			args;
 	abstract
 	public 		ENode			tmp_expr;
 	
+	public final CallType getCallType();
+
 	@getter public final ENode get$tmp_expr() {
 		return (ENode)this.getNodeData(ATTR);
 	}
@@ -41,6 +43,7 @@ public final view RCallExpr of CallExpr extends RENode {
 			this.obj = new TypeRef(obj.getType());
 		obj.resolve(null);
 		Method func = func;
+		CallType mt = this.getCallType();
 		func.makeArgs(args, mt);
 		if( func instanceof Constructor && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 			Method mmm = ctx_method;

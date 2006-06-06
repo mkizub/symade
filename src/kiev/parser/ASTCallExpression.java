@@ -66,7 +66,8 @@ public class ASTCallExpression extends ENode {
 						throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
-					CallExpr ce = new CallExpr(pos,null,m,info.mt,((ASTCallExpression)this).args.delToArray(),false);
+					ASTCallExpression self = (ASTCallExpression)this;
+					CallExpr ce = new CallExpr(pos,null,m,self.targs.delToArray(),self.args.delToArray(),false);
 					replaceWithNode(ce);
 					return;
 				}
@@ -80,7 +81,8 @@ public class ASTCallExpression extends ENode {
 						throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 				if( info.isEmpty() ) {
-					CallExpr ce = new CallExpr(pos,null,m,info.mt,((ASTCallExpression)this).args.delToArray(),true);
+					ASTCallExpression self = (ASTCallExpression)this;
+					CallExpr ce = new CallExpr(pos,null,m,self.targs.delToArray(),self.args.delToArray(),true);
 					replaceWithNode(ce);
 					return;
 				}
@@ -116,7 +118,7 @@ public class ASTCallExpression extends ENode {
 	
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				ENode e = info.buildCall((ASTNode)this,null,m,info.mt,args).closeBuild();
+				ENode e = info.buildCall((ASTNode)this,null,m,targs,args).closeBuild();
 				if (isPrimaryExpr())
 					e.setPrimaryExpr(true);
 				this.replaceWithNode(e);
@@ -157,7 +159,7 @@ public class ASTCallExpression extends ENode {
 			if( !PassInfo.resolveBestMethodR(tp,m,info,ctx_method.id.uname,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
             if( info.isEmpty() ) {
-				CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),false);
+				CallExpr ce = new CallExpr(pos,null,m,targs.delToArray(),args.delToArray(),false);
 				replaceWithNode(ce);
 				ce.resolve(ret);
 				return;
@@ -173,7 +175,7 @@ public class ASTCallExpression extends ENode {
 			if( !PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ctx_method.id.uname,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
             if( info.isEmpty() ) {
-				CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),true);
+				CallExpr ce = new CallExpr(pos,null,m,targs.delToArray(),args.delToArray(),true);
 				replaceWithNode(ce);
 				ce.resolve(ret);
 				return;
@@ -241,7 +243,7 @@ public class ASTCallExpression extends ENode {
 			} else {
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				ENode e = info.buildCall(this,null,m,info.mt,args).closeBuild();
+				ENode e = info.buildCall(this,null,m,targs,args).closeBuild();
 				if (isPrimaryExpr())
 					e.setPrimaryExpr(true);
 				this.replaceWithNodeResolve( reqType, e );

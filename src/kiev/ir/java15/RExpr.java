@@ -542,7 +542,14 @@ public static final view RCastExpr of CastExpr extends RENode {
 		v.$unbind();
 		CallType mt = new CallType(et,null,null,this.type.getType(),false);
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
-			ENode call = info.buildCall((ASTNode)this,~expr,(Method)v,info.mt,ENode.emptyArray).closeBuild();
+			Method m = (Method)v;
+			TypeRef[] targs = new TypeRef[m.targs.length];
+			for (int i=0; i < targs.length; i++) {
+				ArgType at = m.targs[i].getAType();
+				Type tp = info.mt.resolve(at);
+				targs[i] = new TypeRef(tp);
+			}
+			ENode call = info.buildCall((ASTNode)this,~expr,m,targs,ENode.emptyArray).closeBuild();
 			if (this.type.getType().isReference())
 				call.setCastCall(true);
 			replaceWithNodeResolve(type.getType(),call);
@@ -552,8 +559,15 @@ public static final view RCastExpr of CastExpr extends RENode {
 		info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports);
 		mt = new CallType(null,null,new Type[]{expr.getType()},this.type.getType(),false);
 		if( PassInfo.resolveMethodR(this,v,info,nameCastOp,mt) ) {
-			assert(v.isStatic());
-			ENode call = new CallExpr(pos,null,(Method)v,info.mt,new ENode[]{~expr});
+			Method m = (Method)v;
+			TypeRef[] targs = new TypeRef[m.targs.length];
+			for (int i=0; i < targs.length; i++) {
+				ArgType at = m.targs[i].getAType();
+				Type tp = info.mt.resolve(at);
+				targs[i] = new TypeRef(tp);
+			}
+			assert(m.isStatic());
+			ENode call = new CallExpr(pos,null,m,targs,new ENode[]{~expr});
 			replaceWithNodeResolve(type.getType(),call);
 			return true;
 		}

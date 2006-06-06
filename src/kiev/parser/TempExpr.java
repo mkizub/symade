@@ -126,27 +126,27 @@ public class UnresCallExpr extends UnresExpr {
 
 	@ref public ENode				obj;
 	@ref public SymbolRef			func;
-	@ref public CallType			mt;
+	@ref public TypeRef[]			targs;
 	@ref public ENode[]				args;
 
 	@nodeview
 	public static view VUnresCallExpr of UnresCallExpr extends VUnresExpr {
 		public		ENode			obj;
 		public		SymbolRef		func;
-		public		CallType		mt;
+		public:ro	TypeRef[]		targs;
 		public:ro	ENode[]			args;
 	}
 	
 	public UnresCallExpr() {}
 
-	public UnresCallExpr(int pos, ENode obj, DNode func, CallType mt, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef(pos, func), mt, args, super_flag);
+	public UnresCallExpr(int pos, ENode obj, DNode func, TypeRef[] targs, ENode[] args, boolean super_flag) {
+		this(pos, obj, new SymbolRef(pos, func), targs, args, super_flag);
 	}
-	public UnresCallExpr(int pos, ENode obj, SymbolRef func, CallType mt, ENode[] args, boolean super_flag) {
+	public UnresCallExpr(int pos, ENode obj, SymbolRef func, TypeRef[] targs, ENode[] args, boolean super_flag) {
 		this.pos = pos;
 		this.obj = obj;
 		this.func = func;
-		this.mt = mt;
+		this.targs.addAll(targs);
 		this.args.addAll(args);
 		this.setSuperExpr(super_flag);
 	}
@@ -166,11 +166,13 @@ public class UnresCallExpr extends UnresExpr {
 
 	public ENode closeBuild() {
 		ENode obj = this.obj.closeBuild().detach();
+		for (int i=0; i < targs.length; i++)
+			targs[i].detach();
 		for (int i=0; i < args.length; i++)
 			args[i] = args[i].closeBuild().detach();
 		if (obj instanceof TypeRef) {
 			if (func.symbol instanceof Method) {
-				CallExpr ce = new CallExpr(pos, obj, ~func, mt, args, false);
+				CallExpr ce = new CallExpr(pos, obj, ~func, targs, args, false);
 				return ce;
 			} else {
 				Field f = (Field)func.symbol;
@@ -178,7 +180,7 @@ public class UnresCallExpr extends UnresExpr {
 			}
 		} else {
 			if (func.symbol instanceof Method) {
-				CallExpr ce = new CallExpr(pos, obj, ~func, mt, args, isSuperExpr());
+				CallExpr ce = new CallExpr(pos, obj, ~func, targs, args, isSuperExpr());
 				ce.setCastCall(this.isCastCall());
 				return ce;
 			} else {

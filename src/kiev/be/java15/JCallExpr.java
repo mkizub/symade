@@ -19,11 +19,12 @@ public final view JCallExpr of CallExpr extends JENode {
 
 	public:ro	JMethod			func;
 	public:ro	JENode			obj;
-	public:ro	CallType		mt;
 	public:ro	JENode[]		args;
 	abstract
 	public 		JENode			tmp_expr;
-	
+
+	public final CallType getCallType();
+
 	@getter public final JENode get$tmp_expr() {
 		return (JENode)(ENode)this.getNodeData(ATTR);
 	}
@@ -133,6 +134,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			}
 		}
 		if (func.isTypeUnerasable()) {
+			CallType mt = this.getCallType();
 			foreach (TypeDef td; ((Method)func).targs) {
 				Type tp = mt.resolve(td.getAType());
 				tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
@@ -153,7 +155,7 @@ public final view JCallExpr of CallExpr extends JENode {
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && getType().isReference()
-			 && (!func.etype.ret().isInstanceOf(getType().getErasedType()) || getType().isArray() || null_cast_label != null) )
+			 && (!func.etype.ret().isInstanceOf(getType().getErasedType()) || null_cast_label != null) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}

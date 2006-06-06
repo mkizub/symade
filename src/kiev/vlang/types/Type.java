@@ -722,7 +722,9 @@ public final class WrapperType extends CTimeType {
 			e = new NewExpr(dn.pos,getEnclosedType(),ENode.emptyArray);
 		else
 			e = new NewExpr(init.pos,getEnclosedType(),new ENode[]{~init});
+		e = new ReinterpExpr(e.pos,this,~e);
 		e.setForWrapper(true);
+		
 		return e;
 	}
 	

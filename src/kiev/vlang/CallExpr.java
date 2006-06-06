@@ -35,7 +35,7 @@ public class CallExpr extends ENode {
 	@virtual typedef RView = RCallExpr;
 
 	@att public ENode				obj;
-	@ref public CallType			mt;
+	@att public TypeRef[]			targs;
 	@att public ENode[]				args;
 
 	@getter public Method get$func() {
@@ -53,8 +53,10 @@ public class CallExpr extends ENode {
 	public static final view VCallExpr of CallExpr extends VENode {
 		public:ro	Method			func;
 		public		ENode			obj;
-		public		CallType		mt;
+		public:ro	TypeRef[]		targs;
 		public:ro	ENode[]			args;
+
+		public final CallType getCallType();
 
 		public void mainResolveOut() {
 			if (func != null)
@@ -74,6 +76,9 @@ public class CallExpr extends ENode {
 				ResInfo info = new ResInfo(this);
 				info.enterForward(obj);
 				info.enterSuper();
+				Type[] ata = new Type[targs.length];
+				for (int i=0; i < ata.length; i++)
+					ata[i] = targs[i].getType();
 				Type[] ta = new Type[args.length];
 				for (int i=0; i < ta.length; i++)
 					ta[i] = args[i].getType();
@@ -86,7 +91,6 @@ public class CallExpr extends ENode {
 				info.leaveForward(obj);
 				if( info.isEmpty() ) {
 					this.ident.symbol = m;
-					this.mt = info.mt;
 					this.setSuperExpr(true);
 					return;
 				}
@@ -111,8 +115,11 @@ public class CallExpr extends ENode {
 				Type tp = tps[si];
 				Method@ m;
 				ResInfo info = new ResInfo(this,res_flags);
-				CallType mt = this.mt;
-				if (mt == null) {
+				CallType mt;
+				{
+					Type[] ata = new Type[targs.length];
+					for (int i=0; i < ata.length; i++)
+						ata[i] = targs[i].getType();
 					Type[] ta = new Type[args.length];
 					for (int i=0; i < ta.length; i++)
 						ta[i] = args[i].getType();
@@ -121,11 +128,11 @@ public class CallExpr extends ENode {
 				try {
 					if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
 						if (tps.length == 1 && res_flags == 0)
-							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args);
+							res[si] = info.buildCall((ASTNode)this, obj, m, targs, args);
 						else if (res_flags == 0)
-							res[si] = info.buildCall((ASTNode)this, new TypeRef(tps[si]), m, info.mt, args);
+							res[si] = info.buildCall((ASTNode)this, new TypeRef(tps[si]), m, targs, args);
 						else
-							res[si] = info.buildCall((ASTNode)this, obj, m, info.mt, args);
+							res[si] = info.buildCall((ASTNode)this, obj, m, targs, args);
 					}
 				} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			}
@@ -165,7 +172,6 @@ public class CallExpr extends ENode {
 			if (e instanceof UnresCallExpr) {
 				if (e.obj == this.obj) {
 					this.ident.symbol = e.func.symbol;
-					this.mt = e.mt;
 					return;
 				}
 			}
@@ -178,7 +184,7 @@ public class CallExpr extends ENode {
 	
 	public CallExpr() {}
 
-	public CallExpr(int pos, ENode obj, SymbolRef ident, CallType mt, ENode[] args, boolean super_flag) {
+	public CallExpr(int pos, ENode obj, SymbolRef ident, TypeRef[] targs, ENode[] args, boolean super_flag) {
 		this.pos = pos;
 		this.ident = ident;
 		if (obj == null) {
@@ -188,18 +194,18 @@ public class CallExpr extends ENode {
 		} else {
 			this.obj = obj;
 		}
-		this.mt = mt;
+		this.targs.addAll(targs);
 		this.args.addAll(args);
 		if (super_flag)
 			this.setSuperExpr(true);
 	}
 
-	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef(pos,func), mt, args, super_flag);
+	public CallExpr(int pos, ENode obj, Method func, TypeRef[] targs, ENode[] args, boolean super_flag) {
+		this(pos, obj, new SymbolRef(pos,func), targs, args, super_flag);
 	}
 
-	public CallExpr(int pos, ENode obj, Method func, CallType mt, ENode[] args) {
-		this(pos, obj, new SymbolRef(pos,func), mt, args, false);
+	public CallExpr(int pos, ENode obj, Method func, TypeRef[] targs, ENode[] args) {
+		this(pos, obj, new SymbolRef(pos,func), targs, args, false);
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
@@ -219,10 +225,14 @@ public class CallExpr extends ENode {
 	public int getPriority() { return Constants.opCallPriority; }
 
 	public Type getType() {
-		if (mt == null)
-			return Type.getRealType(obj.getType(),func.type.ret());
-		else
-			return mt.ret();
+		Method m = this.func;
+		Type ret = m.type.ret();
+		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
+		return getCallType().ret();
+	}
+
+	public CallType getCallType() {
+		return this.func.makeType(this.targs, this.getArgs());
 	}
 
 	public String toString() {

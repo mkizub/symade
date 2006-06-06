@@ -16,9 +16,11 @@ import syntax kiev.Syntax;
 
 @node
 class Test extends ASTNode {
-//	boolean foo(int i) {
-//		i.hashCode().equals(1)
-//	}
+	void foo() {
+		DNode@ pv;
+		DNode dn;
+		dn = pv;
+	}
 }
 
 public metatype NodeSpace<N extends ANode> extends N[] {
