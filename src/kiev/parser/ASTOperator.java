@@ -15,7 +15,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(name="Op")
 public final class ASTOperator extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}

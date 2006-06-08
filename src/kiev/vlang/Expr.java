@@ -48,7 +48,7 @@ import syntax kiev.Syntax;
  */
 
 
-@node
+@node(name="Shadow")
 public class Shadow extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -173,7 +173,7 @@ public class TypeInfoExpr extends ENode {
 	}
 }
 
-@node
+@node(name="AssertEnabled")
 public class AssertEnabledExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -204,7 +204,7 @@ public class AssertEnabledExpr extends ENode {
 	}
 }
 
-@node
+@node(name="Set")
 public class AssignExpr extends ENode {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -247,19 +247,17 @@ public class AssignExpr extends ENode {
 					}
 				}
 			} else {
-				Method m = op.resolveMethod(this);
-				if (m == null) {
-					Kiev.reportWarning(this, "Unresolved method for operator "+op);
-				} else {
-					if (ident == null)
-						ident = new SymbolRef(pos, op.name);
-					if (m instanceof CoreMethod && m.core_func != null) {
-						m.normilizeExpr(this);
+				Method m;
+				if (ident == null || ident.symbol == null) {
+					m = getOp().resolveMethod(this);
+					if (m == null) {
+						Kiev.reportError(this, "Unresolved method for operator "+getOp());
 						return;
-					} else {
-						ident.symbol = m;
 					}
+				} else {
+					m = (Method)ident.symbol;
 				}
+				m.normilizeExpr(this);
 			}
 		}
 	}
@@ -273,7 +271,7 @@ public class AssignExpr extends ENode {
 		this.value = value;
 	}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = op;
 		this.ident = new SymbolRef(op.name, cm);
@@ -333,7 +331,7 @@ public class AssignExpr extends ENode {
 }
 
 
-@node
+@node(name="BinOp")
 public class BinaryExpr extends ENode {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -357,19 +355,17 @@ public class BinaryExpr extends ENode {
 		public ENode			expr2;
 
 		public void mainResolveOut() {
-			Method m = op.resolveMethod(this);
-			if (m == null) {
-				Kiev.reportError(this, "Unresolved method for operator "+op);
-				return;
-			}
-			if (ident == null)
-				ident = new SymbolRef(pos, op.name);
-			if (m instanceof CoreMethod && m.core_func != null) {
-				m.normilizeExpr(this);
-				return;
+			Method m;
+			if (ident == null || ident.symbol == null) {
+				m = getOp().resolveMethod(this);
+				if (m == null) {
+					Kiev.reportError(this, "Unresolved method for operator "+getOp());
+					return;
+				}
 			} else {
-				ident.symbol = m;
+				m = (Method)ident.symbol;
 			}
+			m.normilizeExpr(this);
 		}
 	}
 	
@@ -389,7 +385,7 @@ public class BinaryExpr extends ENode {
 		this.expr2 = args[1];
 	}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = op;
 		this.ident = new SymbolRef(op.name, cm);
@@ -422,7 +418,7 @@ public class BinaryExpr extends ENode {
 	}
 }
 
-@node
+@node(name="UnaryOp")
 public class UnaryExpr extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -443,19 +439,17 @@ public class UnaryExpr extends ENode {
 		public ENode			expr;
 
 		public void mainResolveOut() {
-			Method m = op.resolveMethod(this);
-			if (m == null) {
-				Kiev.reportError(this, "Unresolved method for operator "+op);
-				return;
-			}
-			if (ident == null)
-				ident = new SymbolRef(pos, op.name);
-			if (m instanceof CoreMethod && m.core_func != null) {
-				m.normilizeExpr(this);
-				return;
+			Method m;
+			if (ident == null || ident.symbol == null) {
+				m = getOp().resolveMethod(this);
+				if (m == null) {
+					Kiev.reportError(this, "Unresolved method for operator "+getOp());
+					return;
+				}
 			} else {
-				ident.symbol = m;
+				m = (Method)ident.symbol;
 			}
+			m.normilizeExpr(this);
 		}
 	}
 	
@@ -467,7 +461,7 @@ public class UnaryExpr extends ENode {
 		this.expr = expr;
 	}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = (Operator)op;
 		this.ident = new SymbolRef(op.name, cm);
@@ -500,7 +494,7 @@ public class UnaryExpr extends ENode {
 
 }
 
-@node
+@node(name="StrConcat")
 public class StringConcatExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -525,7 +519,7 @@ public class StringConcatExpr extends ENode {
 		this.pos = pos;
 	}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.Add);
 		this.ident = new SymbolRef(op.name, cm);
@@ -582,7 +576,7 @@ public class StringConcatExpr extends ENode {
 	}
 }
 
-@node
+@node(name="Comma")
 public class CommaExpr extends ENode {
 	
 	@dflow(out="exprs") private static class DFI {
@@ -632,7 +626,7 @@ public class CommaExpr extends ENode {
 	}
 }
 
-@node
+@node(name="Block")
 public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -758,7 +752,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
-@node
+@node(name="IncrOp")
 public class IncrementExpr extends ENode {
 	
 	@dflow(out="lval") private static class DFI {
@@ -793,7 +787,7 @@ public class IncrementExpr extends ENode {
 		this.lval = lval;
 	}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = (Operator)op;
 		this.ident = new SymbolRef(op.name, cm);
@@ -814,7 +808,7 @@ public class IncrementExpr extends ENode {
 
 }
 
-@node
+@node(name="IfOp")
 public class ConditionalExpr extends ENode {
 	
 	@dflow(out="join expr1 expr2") private static class DFI {
@@ -873,7 +867,7 @@ public class ConditionalExpr extends ENode {
 	}
 }
 
-@node
+@node(name="Cast")
 public class CastExpr extends ENode {
 
 	@dflow(out="expr") private static class DFI {

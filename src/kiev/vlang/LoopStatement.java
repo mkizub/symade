@@ -59,7 +59,7 @@ public abstract class LoopStat extends ENode implements ContinueTarget {
 }
 
 
-@node
+@node(name="Label")
 public final class Label extends DNode {
 	
 	@dflow(out="this:out()") private static class DFI {}
@@ -130,7 +130,7 @@ public final class Label extends DNode {
 	}
 }
 
-@node
+@node(name="While")
 public class WhileStat extends LoopStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -174,7 +174,7 @@ public class WhileStat extends LoopStat {
 	}
 }
 
-@node
+@node(name="DoWhile")
 public class DoWhileStat extends LoopStat {
 
 	@dflow(out="lblbrk") private static class DFI {
@@ -277,7 +277,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
-@node
+@node(name="For")
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -357,7 +357,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
-@node
+@node(name="ForEach")
 public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {

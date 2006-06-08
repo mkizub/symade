@@ -42,19 +42,17 @@ public abstract class BoolExpr extends ENode {
 	@nodeview
 	public abstract static view VBoolExpr of BoolExpr extends VENode {
 		public void mainResolveOut() {
-			Method m = getOp().resolveMethod(this);
-			if (m == null) {
-				Kiev.reportError(this, "Unresolved method for operator "+getOp());
-				return;
-			}
-			if (ident == null)
-				ident = new SymbolRef(pos, getOp().name);
-			if (m instanceof CoreMethod && m.core_func != null) {
-				m.normilizeExpr(this);
-				return;
+			Method m;
+			if (ident == null || ident.symbol == null) {
+				m = getOp().resolveMethod(this);
+				if (m == null) {
+					Kiev.reportError(this, "Unresolved method for operator "+getOp());
+					return;
+				}
 			} else {
-				ident.symbol = m;
+				m = (Method)ident.symbol;
 			}
+			m.normilizeExpr(this);
 		}
 	}
 
@@ -84,7 +82,7 @@ public abstract class BoolExpr extends ENode {
 	
 }
 
-@node
+@node(name="Or")
 public class BinaryBooleanOrExpr extends BoolExpr {
 
 	@dflow(tru="join expr1:true expr2:true", fls="expr2:false") private static class DFI {
@@ -114,7 +112,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		this.expr2 = expr2;
 	}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.BooleanOr);
 		this.ident = new SymbolRef(op.name, cm);
@@ -167,7 +165,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 }
 
 
-@node
+@node(name="And")
 public class BinaryBooleanAndExpr extends BoolExpr {
 
 	@dflow(fls="join expr1:false expr2:false", tru="expr2:true") private static class DFI {
@@ -197,7 +195,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		this.expr2 = expr2;
 	}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.BooleanAnd);
 		this.ident = new SymbolRef(op.name, cm);
@@ -249,7 +247,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 }
 
-@node
+@node(name="Cmp")
 public class BinaryBoolExpr extends BoolExpr {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -282,7 +280,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		this.expr2 = expr2;
 	}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = op;
 		this.ident = new SymbolRef(op.name, cm);
@@ -300,7 +298,7 @@ public class BinaryBoolExpr extends BoolExpr {
 
 }
 
-@node
+@node(name="InstanceOf")
 public class InstanceofExpr extends BoolExpr {
 
 	@dflow(tru="this:tru()", fls="expr") private static class DFI {
@@ -335,7 +333,7 @@ public class InstanceofExpr extends BoolExpr {
 		this.type = new TypeRef(type);
 	}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.InstanceOf);
 		this.ident = new SymbolRef(op.name, cm);
@@ -395,7 +393,7 @@ public class InstanceofExpr extends BoolExpr {
 	}
 }
 
-@node
+@node(name="Not")
 public class BooleanNotExpr extends BoolExpr {
 	
 	@dflow(fls="expr:true", tru="expr:false") private static class DFI {
@@ -421,7 +419,7 @@ public class BooleanNotExpr extends BoolExpr {
 		this.expr = expr;
 	}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.BooleanNot);
 		this.ident = new SymbolRef(op.name, cm);

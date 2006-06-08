@@ -13,7 +13,7 @@ import syntax kiev.Syntax;
  */
 
 // Meta information about a node
-@node
+@node(name="MetaSet")
 public final class MetaSet extends ASTNode {
 	
 	@virtual typedef This  = MetaSet;
@@ -116,7 +116,7 @@ public final class MetaSet extends ASTNode {
 	
 }
 
-@node
+@node(name="Meta")
 public class Meta extends ENode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
@@ -464,7 +464,7 @@ public abstract class MetaValue extends ENode {
 	public abstract Dumper toJava(Dumper dmp);
 }
 
-@node
+@node(name="MetaVal")
 public final class MetaValueScalar extends MetaValue {
 
 	@virtual typedef This  = MetaValueScalar;
@@ -515,7 +515,7 @@ public final class MetaValueScalar extends MetaValue {
 	}
 }
 
-@node
+@node(name="MetaArr")
 public final class MetaValueArray extends MetaValue {
 
 	@virtual typedef This  = MetaValueArray;

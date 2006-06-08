@@ -124,34 +124,33 @@ public static final view RAssignExpr of AssignExpr extends RENode {
 			return;
 		}
 
-		if (ident == null)
-			ident = new SymbolRef(pos, op.name);
-		if (ident.symbol == null) {
-			Method m = op.resolveMethod(this);
+		Method m;
+		if (ident == null || ident.symbol == null) {
+			m = getOp().resolveMethod(this);
 			if (m == null) {
-				Kiev.reportError(this, "Unresolved method for operator "+op);
+				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
-			if (m instanceof CoreMethod && m.core_func != null) {
-				try {
-					m.normilizeExpr(this);
-				} catch (ReWalkNodeException rne) {
-					((ENode)rne.replacer).resolve(reqType);
-					return;
-				}
-			} else {
-				ident.symbol = m;
-			}
+		} else {
+			m = (Method)ident.symbol;
 		}
-		Method m = (Method)ident.symbol;
+		m.normilizeExpr(this);
+		CallType ct = m.makeType(null,getArgs());
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
-			lval.resolve(m.params[0].getType());
-			value.resolve(m.params[1].getType());
+			ENode[] args = getArgs();
+			for (int i=0; i < args.length; i++)
+				args[i].resolve(ct.arg(i));
 		} else {
-			m.makeArgs(new ENode[]{value},reqType);
-			lval.resolve(((TypeDecl)m.parent()).xtype);
-			value.resolve(m.params[0].getType());
+			ENode[] args = getArgs();
+			ENode[] tmp = new ENode[args.length-1];
+			for (int i=0; i < tmp.length; i++)
+				tmp[i] = args[i+1];
+			m.makeArgs(tmp,reqType);
+			args = getArgs();
+			args[0].resolve(((TypeDecl)m.parent()).xtype);
+			for (int i=1; i < args.length; i++)
+				args[i].resolve(ct.arg(i-1));
 		}
 		if !(m instanceof CoreMethod) {
 			// Not a standard operator
@@ -222,34 +221,26 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 			return;
 		}
 		
-		if (ident == null)
-			ident = new SymbolRef(pos, op.name);
-		if (ident.symbol == null) {
-			Method m = op.resolveMethod(this);
+		Method m;
+		if (ident == null || ident.symbol == null) {
+			m = getOp().resolveMethod(this);
 			if (m == null) {
-				Kiev.reportError(this, "Unresolved method for operator "+op);
+				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
-			if (m instanceof CoreMethod && m.core_func != null) {
-				try {
-					m.normilizeExpr(this);
-				} catch (ReWalkNodeException rne) {
-					((ENode)rne.replacer).resolve(reqType);
-					return;
-				}
-			} else {
-				ident.symbol = m;
-			}
+		} else {
+			m = (Method)ident.symbol;
 		}
-		Method m = (Method)ident.symbol;
+		m.normilizeExpr(this);
+		CallType ct = m.makeType(null,getArgs());
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
-			expr1.resolve(m.params[0].getType());
-			expr2.resolve(m.params[1].getType());
+			expr1.resolve(ct.arg(0));
+			expr2.resolve(ct.arg(1));
 		} else {
 			m.makeArgs(new ENode[]{expr2},reqType);
 			expr1.resolve(((TypeDecl)m.parent()).xtype);
-			expr2.resolve(m.params[0].getType());
+			expr2.resolve(ct.arg(0));
 		}
 		if !(m instanceof CoreMethod) {
 			// Not a standard operator
@@ -285,29 +276,21 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 			return;
 		}
 		
-		if (ident == null)
-			ident = new SymbolRef(pos, op.name);
-		if (ident.symbol == null) {
-			Method m = op.resolveMethod(this);
+		Method m;
+		if (ident == null || ident.symbol == null) {
+			m = getOp().resolveMethod(this);
 			if (m == null) {
-				Kiev.reportError(this, "Unresolved method for operator "+op);
+				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
-			if (m instanceof CoreMethod && m.core_func != null) {
-				try {
-					m.normilizeExpr(this);
-				} catch (ReWalkNodeException rne) {
-					((ENode)rne.replacer).resolve(reqType);
-					return;
-				}
-			} else {
-				ident.symbol = m;
-			}
+		} else {
+			m = (Method)ident.symbol;
 		}
-		Method m = (Method)ident.symbol;
+		m.normilizeExpr(this);
+		CallType ct = m.makeType(null,getArgs());
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
-			expr.resolve(m.params[0].getType());
+			expr.resolve(ct.arg(0));
 		} else {
 			m.makeArgs(ENode.emptyArray,reqType);
 			expr.resolve(((TypeDecl)m.parent()).xtype);
@@ -420,26 +403,17 @@ public static final view RIncrementExpr of IncrementExpr extends RENode {
 			return;
 		}
 		
-		if (ident == null)
-			ident = new SymbolRef(pos, op.name);
-		if (ident.symbol == null) {
-			Method m = op.resolveMethod(this);
+		Method m;
+		if (ident == null || ident.symbol == null) {
+			m = getOp().resolveMethod(this);
 			if (m == null) {
-				Kiev.reportError(this, "Unresolved method for operator "+op);
+				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
-			if (m instanceof CoreMethod && m.core_func != null) {
-				try {
-					m.normilizeExpr(this);
-				} catch (ReWalkNodeException rne) {
-					((ENode)rne.replacer).resolve(reqType);
-					return;
-				}
-			} else {
-				ident.symbol = m;
-			}
+		} else {
+			m = (Method)ident.symbol;
 		}
-		Method m = (Method)ident.symbol;
+		m.normilizeExpr(this);
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
 			lval.resolve(m.params[0].getType());

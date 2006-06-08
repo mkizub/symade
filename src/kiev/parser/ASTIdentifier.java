@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(name="Id")
 public class ASTIdentifier extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}

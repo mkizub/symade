@@ -19,7 +19,7 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
  *
  */
 
-@node
+@node(name="Expr")
 public class ASTExpression extends ENode {
 
 	@dflow(out="nodes") private static class DFI {

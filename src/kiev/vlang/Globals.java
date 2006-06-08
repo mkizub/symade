@@ -17,15 +17,16 @@ import syntax kiev.Syntax;
 public metatype Globals extends any {
 
 	@macro @native
+	@macro @native @CompilerNode("Set")
 	public static <L extends Object, R extends L> R ref_assign(L lval, R val) alias lfy operator = ;
 
-	@macro @native
+	@macro @native @CompilerNode("Set")
 	public static <L extends Object, R extends L> R ref_assign2(L lval, R val) alias lfy operator := ;
 
-	@macro @native
+	@macro @native @CompilerNode("Set")
 	public static <L extends Object, R extends L> R@ ref_pvar_init(L@ lval, R@ val) alias lfy operator := ;
 
-	@macro
+	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) alias lfy operator =
 	{
 		case AssignExpr# self():
@@ -34,7 +35,7 @@ public metatype Globals extends any {
 			new #AssignExpr(lval=lval,op="V = V",value=new #CallExpr(obj=val,ident="get$$var"))
 	}
 
-	@macro
+	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R val) alias lfy operator =
 	{
 		case CallExpr# self():
@@ -43,7 +44,7 @@ public metatype Globals extends any {
 			new #CallExpr(obj=self.lval,ident="$bind",args={self.value})
 	}
 
-	@macro
+	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R@ val) alias lfy operator =
 	{
 		case CallExpr# self():

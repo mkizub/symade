@@ -154,7 +154,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	}
 }
 
-@node
+@node(name="ExprSt")
 public class ExprStat extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -203,7 +203,7 @@ public class ExprStat extends ENode {
 	}
 }
 
-@node
+@node(name="Return")
 public class ReturnStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
@@ -252,7 +252,7 @@ public class ReturnStat extends ENode {
 	}
 }
 
-@node
+@node(name="Throw")
 public class ThrowStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
@@ -284,7 +284,7 @@ public class ThrowStat extends ENode {
 	}
 }
 
-@node
+@node(name="If")
 public class IfElseStat extends ENode {
 	
 	@dflow(out="join thenSt elseSt") private static class DFI {
@@ -351,7 +351,7 @@ public class IfElseStat extends ENode {
 
 }
 
-@node
+@node(name="CondSt")
 public class CondStat extends ENode {
 	
 	@dflow(out="cond:true") private static class DFI {
@@ -391,7 +391,7 @@ public class CondStat extends ENode {
 	}
 }
 
-@node
+@node(name="LblSt")
 public class LabeledStat extends ENode {
 	
 	@dflow(out="stat") private static class DFI {
@@ -424,7 +424,7 @@ public class LabeledStat extends ENode {
 	}
 }
 
-@node
+@node(name="Break")
 public class BreakStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -508,7 +508,7 @@ public class BreakStat extends ENode {
 	}
 }
 
-@node
+@node(name="Continue")
 public class ContinueStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -592,7 +592,7 @@ public class ContinueStat extends ENode {
 	}
 }
 
-@node
+@node(name="Goto")
 public class GotoStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -734,7 +734,7 @@ public class GotoStat extends ENode {
 	}
 }
 
-@node
+@node(name="GotoCase")
 public class GotoCaseStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {

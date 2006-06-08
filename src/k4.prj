@@ -826,6 +826,7 @@ INTERFACE kiev.stdlib.AssertionHandler kiev/stdlib/AssertionHandler kiev\stdlib\
 INTERFACE kiev.stdlib.Enumeration kiev/stdlib/Enumeration kiev\stdlib\Enumeration.java
 INTERFACE kiev.stdlib.TypeInfoInterface kiev/stdlib/TypeInfoInterface kiev\stdlib\TypeInfo.java
 INTERFACE kiev.stdlib.TypeInfoXInterface kiev/stdlib/TypeInfoXInterface kiev\stdlib\TypeInfoX.java
+INTERFACE kiev.stdlib.meta.CompilerNode kiev/stdlib/meta/CompilerNode kiev\stdlib\meta\CompilerNode.java
 INTERFACE kiev.stdlib.meta.alias kiev/stdlib/meta/alias kiev\stdlib\meta\alias.java
 INTERFACE kiev.stdlib.meta.forward kiev/stdlib/meta/forward kiev\stdlib\meta\forward.java
 INTERFACE kiev.stdlib.meta.getter kiev/stdlib/meta/getter kiev\stdlib\meta\virtual.java

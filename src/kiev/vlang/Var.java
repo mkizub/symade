@@ -21,7 +21,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(name="Var")
 public class Var extends LvalDNode {
 	
 	private static final Var dummyNode = new Var();
@@ -209,7 +209,7 @@ public class Var extends LvalDNode {
 
 }
 
-@node
+@node(name="FormPar")
 public final class FormPar extends Var {
 	
 	public static FormPar[]	emptyArray = new FormPar[0];

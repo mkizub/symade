@@ -35,7 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(name="Case")
 public class CaseLabel extends ENode implements ScopeOfNames {
 	
 	@dflow(in="this:in()", out="stats") private static class DFI {
@@ -157,7 +157,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	}
 }
 
-@node
+@node(name="Switch")
 public class SwitchStat extends ENode {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -224,7 +224,7 @@ public class SwitchStat extends ENode {
 	}
 }
 
-@node
+@node(name="Catch")
 public class CatchInfo extends ENode implements ScopeOfNames {
 	
 	@dflow(out="body") private static class DFI {
@@ -268,7 +268,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	}
 }
 
-@node
+@node(name="Finally")
 public class FinallyInfo extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -303,7 +303,7 @@ public class FinallyInfo extends ENode {
 
 }
 
-@node
+@node(name="Try")
 public class TryStat extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -342,7 +342,7 @@ public class TryStat extends ENode {
 
 }
 
-@node
+@node(name="Synchronized")
 public class SynchronizedStat extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -379,7 +379,7 @@ public class SynchronizedStat extends ENode {
 
 }
 
-@node
+@node(name="With")
 public class WithStat extends ENode {
 
 	@dflow(out="body") private static class DFI {

@@ -46,6 +46,8 @@ public class CoreMethod extends Method {
 	public void normilizeExpr(ENode expr) {
 		if (core_func != null)
 			core_func.normilizeExpr(expr);
+		else
+			super.normilizeExpr(expr);
 	}
 
 	public ConstExpr calc(ENode expr) {

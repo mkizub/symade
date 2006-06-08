@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(name="FileUnit")
 public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef This  = FileUnit;

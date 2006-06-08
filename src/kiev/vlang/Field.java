@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(name="Field")
 public final class Field extends LvalDNode implements Accessable {
 	public static Field[]	emptyArray = new Field[0];
 

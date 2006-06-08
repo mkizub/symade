@@ -30,6 +30,7 @@ public @interface dflow {
 
 // syntax-tree node
 public @interface node {
+	String name() default "";
 	boolean copyable() default true;
 }
 // syntax-tree node view

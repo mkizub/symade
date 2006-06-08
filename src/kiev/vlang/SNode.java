@@ -39,7 +39,7 @@ public class SNode extends ASTNode {
 
 }
 
-@node
+@node(name="Comment")
 public class Comment extends SNode {
 
 	@virtual typedef This  = Comment;

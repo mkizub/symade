@@ -53,7 +53,7 @@ public abstract class LvalueExpr extends ENode {
 	public LvalueExpr() {}
 }
 
-@node
+@node(name="Access")
 public final class AccessExpr extends LvalueExpr {
 	
 	@dflow(out="obj") private static class DFI {
@@ -177,7 +177,7 @@ public final class AccessExpr extends LvalueExpr {
 	}
 }
 
-@node
+@node(name="IFld")
 public final class IFldExpr extends LvalueExpr {
 	
 	@dflow(out="obj") private static class DFI {
@@ -339,7 +339,7 @@ public final class IFldExpr extends LvalueExpr {
 	}
 }
 
-@node
+@node(name="SetAccess")
 public final class ContainerAccessExpr extends LvalueExpr {
 	
 	@dflow(out="index") private static class DFI {
@@ -370,6 +370,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	}
 
 	public int getPriority() { return opContainerElementPriority; }
+
+	public ENode[] getArgs() { return new ENode[]{obj,index}; }
 
 	public Type getType() {
 		try {
@@ -419,7 +421,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	}
 }
 
-@node
+@node(name="This")
 public final class ThisExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -466,7 +468,7 @@ public final class ThisExpr extends LvalueExpr {
 	}
 }
 
-@node
+@node(name="LVar")
 public final class LVarExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -575,7 +577,7 @@ public final class LVarExpr extends LvalueExpr {
 	}
 }
 
-@node
+@node(name="SFld")
 public final class SFldExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -712,7 +714,7 @@ public final class SFldExpr extends LvalueExpr {
 
 }
 
-@node
+@node(name="OuterThis")
 public final class OuterThisAccessExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -789,7 +791,7 @@ public final class OuterThisAccessExpr extends ENode {
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.qname()).append(".this").space(); }
 }
 
-@node
+@node(name="Reinterp")
 public final class ReinterpExpr extends LvalueExpr {
 	
 	@dflow(out="expr") private static class DFI {

@@ -60,26 +60,17 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 
-		if (ident == null)
-			ident = new SymbolRef(pos, op.name);
-		if (ident.symbol == null) {
-			Method m = op.resolveMethod(this);
+		Method m;
+		if (ident == null || ident.symbol == null) {
+			m = getOp().resolveMethod(this);
 			if (m == null) {
-				Kiev.reportError(this, "Unresolved method for operator "+op);
+				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
-			if (m instanceof CoreMethod && m.core_func != null) {
-				try {
-					m.normilizeExpr(this);
-				} catch (ReWalkNodeException rne) {
-					((ENode)rne.replacer).resolve(reqType);
-					return;
-				}
-			} else {
-				ident.symbol = m;
-			}
+		} else {
+			m = (Method)ident.symbol;
 		}
-		Method m = (Method)ident.symbol;
+		m.normilizeExpr(this);
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
 			expr1.resolve(m.params[0].getType());
@@ -168,26 +159,17 @@ public view RBooleanNotExpr of BooleanNotExpr extends RBoolExpr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		
-		if (ident == null)
-			ident = new SymbolRef(pos, getOp().name);
-		if (ident.symbol == null) {
-			Method m = getOp().resolveMethod(this);
+		Method m;
+		if (ident == null || ident.symbol == null) {
+			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
-			if (m instanceof CoreMethod && m.core_func != null) {
-				try {
-					m.normilizeExpr(this);
-				} catch (ReWalkNodeException rne) {
-					((ENode)rne.replacer).resolve(reqType);
-					return;
-				}
-			} else {
-				ident.symbol = m;
-			}
+		} else {
+			m = (Method)ident.symbol;
 		}
-		Method m = (Method)ident.symbol;
+		m.normilizeExpr(this);
 		if (m.isStatic()) {
 			m.makeArgs(getArgs(),reqType);
 			expr.resolve(m.params[0].getType());

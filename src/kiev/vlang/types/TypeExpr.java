@@ -18,6 +18,8 @@ public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	public static final Hashtable<String,Struct>	AllNodes = new Hashtable<String,Struct>(256);
+
 	static String opPVar   = "T @";
 	static String opRef    = "T &";
 	static String opAST    = "T #";
@@ -60,6 +62,14 @@ public class TypeExpr extends TypeRef {
 	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
+		if (op == opAST) {
+			Struct s = AllNodes.get(arg.toString());
+			if (s != null) {
+				arg.lnk = s.xtype;
+				this.lnk = new ASTNodeType(s);
+				return this.lnk;
+			}
+		}
 		Type tp = arg.getType();
 		DNode@ v;
 		if (op == nameArrayTypeOp) {

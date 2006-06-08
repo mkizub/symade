@@ -27,7 +27,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(name="Method")
 public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessable,PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
@@ -431,6 +431,52 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		return dmp.append(id);
 	}
 
+	public void normilizeExpr(ENode expr) {
+		if (expr.ident == null) {
+			Operator op = expr.getOp();
+			if (op != null)
+				expr.ident = new SymbolRef(op.name,this);
+			else
+				expr.ident = new SymbolRef(this.id.sname,this);
+		} else {
+			expr.ident.symbol = this;
+		}
+		if (!isMacro())
+			return;
+		Meta m = this.meta.get("kiev.stdlib.meta.CompilerNode");
+		if (m == null)
+			return;
+		Struct s = TypeExpr.AllNodes.get(m.getS("value"));
+		if (s == null) {
+			Kiev.reportWarning(expr,"Compiler node '"+m.getS("value")+"' does not exists");
+			return;
+		}
+		Class cls = Class.forName(s.qname());
+		if (expr.getClass() == cls)
+			return;
+		ENode[] args = expr.getArgs();
+		if (args == null) {
+			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+cls);
+			return;
+		}
+		ENode en = (ENode)cls.newInstance();
+		foreach (ENode e; args)
+			e.detach();
+		Operator op = expr.getOp();
+		if (op == null && this.isOperatorMethod()) {
+	lookup_op:
+			foreach (Operator o; Operator.allOperatorsHash) {
+				foreach (Method x; o.methods; x == this) {
+					op = o;
+					break lookup_op;
+				}
+			}
+		}
+		en.initFrom(expr, op, this, args);
+		expr.replaceWithNodeReWalk(en);
+		
+	}
+
 	public void makeArgs(ENode[] args, Type t) {
 		CallType mt = this.type;
 		//assert(args.getPSlot().is_attr);
@@ -818,7 +864,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 
 }
 
-@node
+@node(name="Ctor")
 public class Constructor extends Method {
 	
 	@dflow(in="root()") private static class DFI {
@@ -846,7 +892,7 @@ public class Constructor extends Method {
 	}
 }
 
-@node
+@node(name="InitBlock")
 public class Initializer extends DNode implements PreScanneable {
 	
 	@dflow(out="body") private static class DFI {

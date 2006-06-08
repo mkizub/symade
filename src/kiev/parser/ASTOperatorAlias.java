@@ -111,17 +111,10 @@ public final class ASTOperatorAlias extends ASTAlias {
 				}
 
 				Type opret = m.type.ret();
-				Type oparg1, oparg2;
 				if( prior == 0 )
 					prior = Constants.opAssignPriority;
 				if( prior != Constants.opAssignPriority )
 					throw new CompilerException(this,"Assign operator must have priority "+Constants.opAssignPriority);
-				if( m.isStatic() && m.type.arity == 2 )
-					{ oparg1 = m.type.arg(0); oparg2 = m.type.arg(1); }
-				else if( !m.isStatic() && m.type.arity == 1 )
-					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(0); }
-				else
-					throw new CompilerException(this,"Method "+m+" must have 2 arguments");
 				Operator op = Operator.getOperator("V "+image+" V");
 				if (op == null)
 					throw new CompilerException(this,"Assign operator "+image+" not found");
@@ -149,17 +142,6 @@ public final class ASTOperatorAlias extends ASTAlias {
 				}
 
 				Type opret = m.type.ret();
-				Type oparg1, oparg2;
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 2 )
-					{ oparg1 = m.type.arg(0); oparg2 = m.type.arg(1); }
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 3 )
-					{ oparg1 = m.type.arg(1); oparg2 = m.type.arg(2); }
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
-					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(0); }
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
-					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(1); }
-				else
-					throw new CompilerException(this,"Method "+m+" must have 2 arguments");
 				Operator op = Operator.getOperator("V "+image+" V");
 				if (op == null)
 					op = Operator.getOperator("V "+image+" T");
@@ -186,23 +168,6 @@ public final class ASTOperatorAlias extends ASTAlias {
 				}
 
 				Type opret = m.type.ret();
-				Type oparg;
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
-					oparg = m.type.arg(0);
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
-					oparg = m.type.arg(1);
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 0 )
-					oparg = m.ctx_tdecl.xtype;
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
-					oparg = m.type.arg(0);
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 1 )
-					oparg = m.ctx_tdecl.xtype;
-				else {
-					if (m.isStatic())
-						throw new CompilerException(this,"Static method "+m+" must have 1 argument");
-					else
-						throw new CompilerException(this,"Non-static method "+m+" must have 0 or 1 argument");
-				}
 				Operator op = Operator.getOperator(image+" V");
 				if (op == null)
 					throw new CompilerException(this,"Prefix operator "+image+" not found");
@@ -215,17 +180,6 @@ public final class ASTOperatorAlias extends ASTAlias {
 		case Opdef.YF:
 			{
 				Type opret = m.type.ret();
-				Type oparg;
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
-					oparg = m.type.arg(0);
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
-					oparg = m.type.arg(1);
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 0 )
-					oparg = m.ctx_tdecl.xtype;
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 1 )
-					oparg = m.ctx_tdecl.xtype;
-				else
-					throw new CompilerException(this,"Method "+m+" must have 1 argument");
 				Operator op = Operator.getOperator("V "+image);
 				if (op == null)
 					throw new CompilerException(this,"Postfix operator "+image+" not found");

@@ -258,7 +258,7 @@ public abstract class ENode extends ASTNode {
 	
 	public ENode() {}
 
-	public void initFrom(ENode node, Operator op, CoreMethod cm, ENode[] args) {
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		throw new RuntimeException("Cannot init "+getClass()+" from "+node.getClass());
 	}
 	
@@ -297,7 +297,7 @@ public abstract class ENode extends ASTNode {
 
 }
 
-@node
+@node(name="NoOp")
 public final class NopExpr extends ENode {
 
 	public static final ENode dummyNode = new NopExpr();

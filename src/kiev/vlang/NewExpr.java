@@ -29,7 +29,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(name="New")
 public final class NewExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -189,7 +189,7 @@ public final class NewExpr extends ENode {
 	}
 }
 
-@node
+@node(name="NewArr")
 public final class NewArrayExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -259,7 +259,7 @@ public final class NewArrayExpr extends ENode {
 	}
 }
 
-@node
+@node(name="NewArrInitialized")
 public final class NewInitializedArrayExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -348,7 +348,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	}
 }
 
-@node
+@node(name="NewClosure")
 public final class NewClosure extends ENode implements ScopeOfNames {
 	
 	@dflow(out="this:in") private static class DFI {
