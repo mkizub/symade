@@ -666,18 +666,22 @@ public metatype double extends any {
 		case CallExpr# self(): new #CallExpr(obj=new #NewExpr(type=java.lang.Double,args={self.obj}),ident="hashCode")
 	}
 }
-
+/*
 public metatype _array_<_elem_ extends any> extends Object {
 	@macro @native
 	public:ro final int length;
 
 	@macro @native
-	public _elem_ get(int idx) alias xfy operator [] ;
+	public lvalue element(int idx) alias xfy operator []
+	{
+		@macro @native @getter
+		public _elem_ get$element(int idx);
 
-	@macro @native
-	public <R extends _elem_> R set(int idx, R val) alias lfy operator [] ;
+		@macro @native @setter
+		public <R extends _elem_> R set$element(int idx, R val);
+	}
 }
-
+*/
 public metatype GString extends java.lang.String {
 
 	@macro @native @CompilerNode("StrConcat")

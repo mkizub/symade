@@ -858,7 +858,6 @@ INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
-METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.byte kiev\stdlib\MetaTypes.java bad
