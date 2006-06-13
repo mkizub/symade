@@ -327,20 +327,11 @@ public final class ArrayMetaType extends MetaType {
 		tdecl.package_clazz.sub_decls.add(tdecl);
 		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
 		length.acc = new Access(0xAA); //public:ro
-//		RewriteMatch rmatch = new RewriteMatch();
-//		length.init = rmatch;
-//		RewriteCase rget = new RewriteCase();
-//		rget.var = new RewritePattern("self", new ASTNodeType(Env.newStruct("IFldExpr", Env.newPackage("kiev.vlang"), ACC_PUBLIC)));
-//		rmatch.cases += rget;
-//		rget.stats.append(
-//			new RewriteNodeFactory(
-//				ArrayLengthExpr.class,new RewriteNodeArg[]{
-//					new RewriteNodeArg("obj",   new IFldExpr(new LVarExpr(0, rget.var), "obj"  )),
-//					new RewriteNodeArg("ident", new IFldExpr(new LVarExpr(0, rget.var), "ident"))
-//				}
-//			)
-//		);
 		tdecl.members.add(length);
+		Method get = new Method("get", StdTypes.tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
+		get.params.add(new FormPar(0,"idx",StdTypes.tpInt,FormPar.PARAM_NORMAL,0));
+		get.id.addAlias(Constants.nameArrayOp);
+		tdecl.members.add(get);
 		
 		instance = new ArrayMetaType(tdecl);
 		tdecl.xmeta_type = instance;
