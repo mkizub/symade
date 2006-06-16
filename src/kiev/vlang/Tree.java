@@ -424,16 +424,22 @@ public final class Transaction {
 	private static Transaction currentTransaction;
 
 	public static Transaction open() {
-		if (currentTransaction != null)
-			return currentTransaction;
+		assert (currentTransaction == null);
 		currentTransaction = new Transaction();
 		return currentTransaction;
 	}
 
+	public static Transaction current() {
+		assert (currentTransaction != null);
+		return currentTransaction;
+	}
+
 	public static void close() {
-		Transaction tr = currentTransaction;
-		foreach (ASTNode n; tr.nodes)
-			n.locked = true;
+		assert (currentTransaction != null);
+		ASTNode[] nodes = currentTransaction.nodes;
+		int n = currentTransaction.size;
+		for (int i=0; i < n; i++)
+			nodes[i].locked = true;
 		currentTransaction = null;
 	}
 

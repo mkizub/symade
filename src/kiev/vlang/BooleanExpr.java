@@ -20,7 +20,6 @@ import kiev.ir.java15.RBooleanNotExpr;
 import kiev.be.java15.JBooleanNotExpr;
 
 import kiev.be.java15.Code;
-import kiev.be.java15.CodeLabel;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java15.Instr.*;

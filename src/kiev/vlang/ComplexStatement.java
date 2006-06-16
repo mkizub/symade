@@ -54,7 +54,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	@ref public Type			type;
 	@att public Var[]			pattern;
 	@att public ASTNode[]		stats;
-	@ref public CodeLabel		case_label;
+	     public CodeLabel		case_label;
 
 	@nodeview
 	public static final view VCaseLabel of CaseLabel extends VENode {
@@ -185,7 +185,7 @@ public class SwitchStat extends ENode {
 	@ref                 public Field					typehash; // needed for re-resolving
 	@att(copyable=false) public Label					lblcnt;
 	@att(copyable=false) public Label					lblbrk;
-	@att                 public CodeSwitch				cosw;
+	                     public CodeSwitch				cosw;
 
 	@nodeview
 	public static final view VSwitchStat of SwitchStat extends VENode {
@@ -241,8 +241,8 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 
 	@att public Var				arg;
 	@att public ENode			body;
-	@att public CodeLabel		handler;
-	@att public CodeCatchInfo	code_catcher;
+	     public CodeLabel		handler;
+	     public CodeCatchInfo	code_catcher;
 
 	@nodeview
 	public static final view VCatchInfo of CatchInfo extends VENode {
@@ -282,9 +282,9 @@ public class FinallyInfo extends ENode {
 
 	@att public ENode			body;
 	@att public Var				ret_arg;
-	@att public CodeLabel		subr_label;
-	@att public CodeLabel		handler;
-	@att public CodeCatchInfo	code_catcher;
+	     public CodeLabel		subr_label;
+	     public CodeLabel		handler;
+	     public CodeCatchInfo	code_catcher;
 
 	@nodeview
 	public static final view VFinallyInfo of FinallyInfo extends VENode {
@@ -320,7 +320,7 @@ public class TryStat extends ENode {
 	@att public ENode				body;
 	@att public CatchInfo[]			catchers;
 	@att public FinallyInfo			finally_catcher;
-	@att public CodeLabel			end_label;
+	     public CodeLabel			end_label;
 
 	@nodeview
 	public static final view VTryStat of TryStat extends VENode {
@@ -358,9 +358,9 @@ public class SynchronizedStat extends ENode {
 	@att public ENode			expr;
 	@att public Var				expr_var;
 	@att public ENode			body;
-	@att public CodeLabel		handler;
-	@att public CodeCatchInfo	code_catcher;
-	@att public CodeLabel		end_label;
+	     public CodeLabel		handler;
+	     public CodeCatchInfo	code_catcher;
+	     public CodeLabel		end_label;
 
 	@nodeview
 	public static final view VSynchronizedStat of SynchronizedStat extends VENode {
@@ -395,7 +395,7 @@ public class WithStat extends ENode {
 	@att public ENode		expr;
 	@att public ENode		body;
 	@ref public LvalDNode	var_or_field;
-	@att public CodeLabel	end_label;
+	     public CodeLabel	end_label;
 
 	@nodeview
 	public static final view VWithStat of WithStat extends VENode {

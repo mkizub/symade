@@ -65,6 +65,9 @@ public view JNode of ASTNode implements JConstants {
 
 	public final Type getType() { return ((ASTNode)this).getType(); }
 	
+	public final void openForEdit() {
+		((ASTNode)this).open();
+	}
 }
 
 @nodeview

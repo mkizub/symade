@@ -250,6 +250,7 @@ CLASS kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\Back
 CLASS kiev.transf.EnumFE_GenMembers kiev/transf/EnumFE_GenMembers kiev\transf\ProcessEnum.java
 CLASS kiev.transf.ExportBE_Generate kiev/transf/ExportBE_Generate kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievBE_Generate kiev/transf/KievBE_Generate kiev\transf\ImportKievSrc.java
+CLASS kiev.transf.KievBE_Lock kiev/transf/KievBE_Lock kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievBE_Resolve kiev/transf/KievBE_Resolve kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_GenMembers kiev/transf/KievFE_GenMembers kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_MainResolve kiev/transf/KievFE_MainResolve kiev\transf\ImportKievSrc.java

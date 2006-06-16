@@ -828,6 +828,18 @@ public final class KievBE_Resolve extends BackendProcessor {
 	}
 }
 
+@singleton
+public final class KievBE_Lock extends BackendProcessor {
+	private KievBE_Lock() { super(Kiev.Backend.Generic); }
+	public String getDescr() { "Lock nodes" }
+
+	public void process(ASTNode node) {
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) { n.locked = true; return true; }
+		});
+	}
+}
+
 
 ////////////////////////////////////////////////////
 //	   PASS - backend generate                    //
@@ -840,18 +852,23 @@ public final class KievBE_Generate extends BackendProcessor {
 
 	public void process(ASTNode node) {
 		if (node instanceof FileUnit) {
-			if( Kiev.source_only ) {
-				if( Kiev.output_dir == null )
-					if( Kiev.verbose ) System.out.println("Dumping to Java source file "+node);
-				else
-					if( Kiev.verbose ) System.out.println("Dumping to Java source file "+node+" into "+Kiev.output_dir+" dir");
-				try {
-					node.toJava(Kiev.output_dir);
-				} catch (Exception rte) { Kiev.reportError(rte); }
-			} else {
-				try {
-					((JFileUnit)(FileUnit)node).generate();
-				} catch (Exception rte) { Kiev.reportError(rte); }
+			Transaction tr = Transaction.open();
+			try {
+				if( Kiev.source_only ) {
+					if( Kiev.output_dir == null )
+						if( Kiev.verbose ) System.out.println("Dumping to Java source file "+node);
+					else
+						if( Kiev.verbose ) System.out.println("Dumping to Java source file "+node+" into "+Kiev.output_dir+" dir");
+					try {
+						node.toJava(Kiev.output_dir);
+					} catch (Exception rte) { Kiev.reportError(rte); }
+				} else {
+					try {
+						((JFileUnit)(FileUnit)node).generate();
+					} catch (Exception rte) { Kiev.reportError(rte); }
+				}
+			} finally {
+				tr.close();
 			}
 		}
 	}

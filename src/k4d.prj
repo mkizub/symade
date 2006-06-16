@@ -250,6 +250,7 @@ CLASS kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\Back
 CLASS kiev.transf.EnumFE_GenMembers kiev/transf/EnumFE_GenMembers kiev\transf\ProcessEnum.java
 CLASS kiev.transf.ExportBE_Generate kiev/transf/ExportBE_Generate kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievBE_Generate kiev/transf/KievBE_Generate kiev\transf\ImportKievSrc.java
+CLASS kiev.transf.KievBE_Lock kiev/transf/KievBE_Lock kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievBE_Resolve kiev/transf/KievBE_Resolve kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_GenMembers kiev/transf/KievFE_GenMembers kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_MainResolve kiev/transf/KievFE_MainResolve kiev\transf\ImportKievSrc.java
@@ -593,6 +594,7 @@ CLASS kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\Complex
 CLASS kiev.vlang.Test kiev/vlang/Test kiev\vlang\MetaTypes.java
 CLASS kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
+CLASS kiev.vlang.Transaction kiev/vlang/Transaction kiev\vlang\Tree.java
 CLASS kiev.vlang.TreeWalker kiev/vlang/TreeWalker kiev\vlang\AST.java
 CLASS kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 CLASS kiev.vlang.TypeClassExpr kiev/vlang/TypeClassExpr kiev\vlang\Expr.java

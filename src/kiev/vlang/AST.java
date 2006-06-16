@@ -25,6 +25,8 @@ public abstract class ANode {
 
 	private AttachInfo		p_info;
 	private AttachInfo[]	ndata;
+	public int				version;
+	public boolean			locked;
 
 	public abstract ANode nodeCopiedTo(ANode node);
 
@@ -329,8 +331,8 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public int				pos;
 	public int				compileflags;
-	public int				version;
-	public boolean			locked;
+	private This			prev_version_node;
+	private This			next_version_node;
 	@ref @abstract
 	public:ro ANode			parent;
 	
@@ -661,11 +663,15 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public This open() {
 		if (!locked)
 			return this;
-		This node = this.ncopy();
-		Transaction tr = Transaction.open();
+		This node = (This)this.clone();
+		Transaction tr = Transaction.current();
 		node.version = tr.version;
-		tr.add(node);
-		return node;
+		node.prev_version_node = this.prev_version_node;
+		node.next_version_node = this;
+		this.prev_version_node = node;
+		this.locked = false;
+		tr.add(this);
+		return this;
 	}
 }
 

@@ -319,9 +319,9 @@ public final view JSynchronizedStat of SynchronizedStat extends JENode {
 	public:ro	JENode			expr;
 	public:ro	JVar			expr_var;
 	public:ro	JENode			body;
-	public				CodeLabel		handler;
-	public				CodeCatchInfo	code_catcher;
-	public				CodeLabel		end_label;
+	public		CodeLabel		handler;
+	public		CodeCatchInfo	code_catcher;
+	public		CodeLabel		end_label;
 
 	public void generate(Code code, Type reqType) {
 		expr.generate(code,null);
@@ -370,7 +370,7 @@ public final view JWithStat of WithStat extends JENode {
 	public:ro	JENode		expr;
 	public:ro	JENode		body;
 	public:ro	JLvalDNode	var_or_field;
-	public				CodeLabel	end_label;
+	public		CodeLabel	end_label;
 
 	public void generate(Code code, Type reqType) {
 		end_label = code.newLabel();

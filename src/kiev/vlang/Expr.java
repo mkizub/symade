@@ -639,7 +639,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef RView = RBlock;
 
 	@att public ASTNode[]			stats;
-	@ref public CodeLabel			break_label;
+	     public CodeLabel			break_label;
 
 	@nodeview
 	public static view VBlock of Block extends VENode {

@@ -604,10 +604,10 @@ stop:;
 				Kiev.resetBackEndPass();
 				Kiev.openBackEndFileUnit(fu);
 				do {
-					//diff_time = curr_time = System.currentTimeMillis();
+					diff_time = curr_time = System.currentTimeMillis();
 					String msg = Kiev.runCurrentBackEndProcessor(fu);
-					//diff_time = System.currentTimeMillis() - curr_time;
-					//if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
+					diff_time = System.currentTimeMillis() - curr_time;
+					if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
 				} while (Kiev.nextBackEndPass() && (Kiev.errCount == errCount || Kiev.source_only));
 				fu.cleanup();
 				Kiev.closeBackEndFileUnit();
