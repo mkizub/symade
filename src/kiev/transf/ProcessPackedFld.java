@@ -18,22 +18,29 @@ public final class PackedFldME_Verify extends TransfProcessor {
 	private PackedFldME_Verify() { super(Kiev.Ext.PackedFields); }
 	public String getDescr() { "Packed fields verification" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(ASTNode:ASTNode node) {
+	}
+	
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach (Struct n; fu.members)
-			process(n);
+			doProcess(n);
 	}
 	
-	public void process(Struct:ASTNode s) {
+	public void doProcess(Struct:ASTNode s) {
 		foreach (Field n; s.members)
-			process(n);
+			doProcess(n);
 		foreach (Struct sub; s.sub_decls)
-			process(sub);
+			doProcess(sub);
 	}
 	
-	public void process(Field:ASTNode f) {
+	public void doProcess(Field:ASTNode f) {
 		MetaPacked mp = f.getMetaPacked();
 		if !(f.isPackedField() ) {
 			if (mp != null)
@@ -69,16 +76,23 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 	private PackedFldME_PreGenerate() { super(Kiev.Backend.Java15); }
 	public String getDescr() { "Packed fields pre-generation" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.process(dn);
+			this.doProcess(dn);
 	}
 	
-	public void process(Struct:ASTNode s) {
+	public void doProcess(Struct:ASTNode s) {
 		// Setup packed/packer fields
 		foreach(Field f; s.members; f.isPackedField() ) {
 			Field@ packer;
@@ -125,7 +139,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 				}
 			}
 			foreach(Struct n; s.members)
-				this.process(n);
+				this.doProcess(n);
 		}
 	}
 
@@ -167,10 +181,13 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 	private PackedFldBE_Rewrite() { super(Kiev.Backend.Java15); }
 	public String getDescr() { "Packed fields rewrite" }
 
-	public void process(ASTNode fu) {
-		fu.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { PackedFldBE_Rewrite.this.rewrite(n); return true; }
-		});
+	public void process(ASTNode fu, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			fu.walkTree(new TreeWalker() {
+				public boolean pre_exec(ANode n) { PackedFldBE_Rewrite.this.rewrite(n); return true; }
+			});
+		} finally { tr.leave(); }
 	}
 	
 	void rewrite(ANode:ANode n) {
@@ -216,6 +233,8 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		Field f = fa.var;
 		if( !f.isPackedField() )
 			return;
+		ae.open();
+		fa.open();
 		Block be = new Block(ae.pos);
 		Object acc;
 		if (fa.obj instanceof ThisExpr) {
@@ -286,13 +305,14 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		Field f = fa.var;
 		if( !f.isPackedField() )
 			return;
+		ie.open();
 		MetaPacked mp = f.getMetaPacked();
 		ENode expr;
 		if (ie.isGenVoidExpr()) {
 			if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {
-				expr = new AssignExpr(ie.pos, Operator.AssignAdd, ie.lval, new ConstIntExpr(1));
+				expr = new AssignExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(1));
 			} else {
-				expr = new AssignExpr(ie.pos, Operator.AssignAdd, ie.lval, new ConstIntExpr(-1));
+				expr = new AssignExpr(ie.pos, Operator.AssignAdd, ~ie.lval, new ConstIntExpr(-1));
 			}
 			expr.setGenVoidExpr(true);
 		}

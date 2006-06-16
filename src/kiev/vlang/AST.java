@@ -23,10 +23,14 @@ import syntax kiev.Syntax;
 
 public abstract class ANode {
 
+	@virtual typedef This  = ANode;
+
 	private AttachInfo		p_info;
 	private AttachInfo[]	ndata;
 	public int				version;
 	public boolean			locked;
+	private This			prev_version_node;
+	private This			next_version_node;
 
 	public abstract ANode nodeCopiedTo(ANode node);
 
@@ -243,6 +247,20 @@ public abstract class ANode {
 			return new SpacePtr(this, (SpaceAttrSlot<ASTNode>)attr);
 		throw new RuntimeException("No @att/@ref space '"+name+"' in "+getClass());
 	}
+
+	public This open() {
+		if (!locked)
+			return this;
+		This node = (This)this.clone();
+		Transaction tr = Transaction.current();
+		node.version = tr.version;
+		node.prev_version_node = this.prev_version_node;
+		node.next_version_node = this;
+		this.prev_version_node = node;
+		this.locked = false;
+		tr.add(this);
+		return this;
+	}
 }
 
 public class TreeWalker {
@@ -331,8 +349,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public int				pos;
 	public int				compileflags;
-	private This			prev_version_node;
-	private This			next_version_node;
 	@ref @abstract
 	public:ro ANode			parent;
 	
@@ -436,7 +452,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public final ASTNode replaceWithNode(ASTNode node) {
 		assert(isAttached());
-		ANode parent = parent();
+		ANode parent = parent().open();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot) {
 			assert(node != null);
@@ -465,7 +481,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public final ASTNode replaceWith(()->ASTNode fnode) {
 		assert(isAttached());
-		ASTNode parent = parent();
+		ASTNode parent = parent().open();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot) {
 			int idx = pslot.indexOf(parent, this);
@@ -658,20 +674,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public Object doRewrite(RewriteContext ctx) {
 		throw new CompilerException(this, "Node "+this.getClass().getName()+" is not a rewriter");
-	}
-
-	public This open() {
-		if (!locked)
-			return this;
-		This node = (This)this.clone();
-		Transaction tr = Transaction.current();
-		node.version = tr.version;
-		node.prev_version_node = this.prev_version_node;
-		node.next_version_node = this;
-		this.prev_version_node = node;
-		this.locked = false;
-		tr.add(this);
-		return this;
 	}
 }
 

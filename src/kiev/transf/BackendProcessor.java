@@ -24,8 +24,6 @@ public abstract class BackendProcessor implements Constants {
 	}
 
 	public abstract String getDescr();
-	
-	// create back-end nodes
-	public void process(ASTNode node) { return; }
+	public abstract void process(ASTNode node, Transaction tr);
 }
 

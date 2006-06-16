@@ -19,7 +19,7 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 	private RewriteME_PreGenerate() { super(Kiev.Backend.Generic); }
 	public String getDescr() { "Rewrite rules" }
 
-	public void process(ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { return rewrite(n); }
 		});

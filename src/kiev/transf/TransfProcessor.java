@@ -28,7 +28,6 @@ public abstract class TransfProcessor implements Constants {
 	}
 	
 	public abstract String getDescr();
-	
-	public void process(ASTNode node) { return; }
+	public abstract void process(ASTNode node, Transaction tr);
 }
 

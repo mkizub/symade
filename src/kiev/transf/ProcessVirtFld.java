@@ -26,19 +26,26 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	//	   PASS - autoGenerateMembers                 //
 	////////////////////////////////////////////////////
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.process(dn);
+			this.doProcess(dn);
 	}
 	
-	public void process(Struct:ASTNode s) {
+	public void doProcess(Struct:ASTNode s) {
 		addAbstractFields(s);
 		foreach(Struct sub; s.sub_decls)
-			process(sub);
+			doProcess(sub);
 	}
 	
 	public void addAbstractFields(Struct s) {
@@ -174,16 +181,23 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 	private VirtFldME_PreGenerate() { super(Kiev.Backend.Java15); }
 	public String getDescr() { "Virtual fields pre-generation" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.process(dn);
+			this.doProcess(dn);
 	}
 	
-	public void process(Struct:ASTNode s) {
+	public void doProcess(Struct:ASTNode s) {
 		foreach(Field f; s.members)
 			addMethodsForVirtualField(s, f);
 		foreach(Field f; s.members) {
@@ -193,7 +207,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				f.setAbstract(true);
 		}
 		foreach(Struct sub; s.sub_decls)
-			this.process(sub);
+			this.doProcess(sub);
 	}
 	
 	private static void addMethodsForVirtualField(Struct s, Field f) {
@@ -292,7 +306,14 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 	private VirtFldBE_Rewrite() { super(Kiev.Backend.Java15); }
 	public String getDescr() { "Virtual fields rewrite" }
 
-	public void process(ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode node) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return VirtFldBE_Rewrite.this.rewrite((ASTNode)n); return false; }
 		});

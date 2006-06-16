@@ -18,18 +18,25 @@ public class PizzaFE_Pass3 extends TransfProcessor {
 	private PizzaFE_Pass3() { super(Kiev.Ext.PizzaCase); }
 	public String getDescr() { "Pizza case members" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 	}
 
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach (ASTNode n; fu.members)
-			process(n);
+			doProcess(n);
 	}
 
-	public void process(Struct:ASTNode clazz) {
+	public void doProcess(Struct:ASTNode clazz) {
 		if !(clazz.isPizzaCase()) {
 			foreach (Struct dn; clazz.members)
-				this.process(dn);
+				this.doProcess(dn);
 			return;
 		}
 		if (clazz.isSingleton())
@@ -71,18 +78,25 @@ public class PizzaME_PreGenerate extends BackendProcessor {
 	private PizzaME_PreGenerate() { super(Kiev.Backend.Java15); }
 	public String getDescr() { "Pizza case pre-generation" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.process(dn);
+			this.doProcess(dn);
 	}
 	
-	public void process(Struct:ASTNode clazz) {
+	public void doProcess(Struct:ASTNode clazz) {
 		foreach (Struct dn; clazz.members)
-			this.process(dn);
+			this.doProcess(dn);
 		if( clazz.isPizzaCase() ) {
 			MetaPizzaCase meta = clazz.getMetaPizzaCase();
 			//PizzaCaseAttr case_attr = (PizzaCaseAttr)clazz.getAttr(attrPizzaCase);

@@ -72,10 +72,17 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 
 	public String getDescr() { "VNode members creation" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(ASTNode:ASTNode node) {
+	}
+	
+	public void doProcess(FileUnit:ASTNode fu) {
 		if (tpANode == null) {
 			tpANode = Env.loadStruct(nameANode, true).xtype;
 			tpNode = Env.loadStruct(nameNode, true).xtype;
@@ -89,12 +96,12 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpSpaceAttAttrSlot = Env.loadStruct(nameSpaceAttAttrSlot, true).xtype;
 		}
 		foreach (Struct n; fu.members)
-			process(n);
+			doProcess(n);
 	}
 	
-	public void process(Struct:ASTNode s) {
+	public void doProcess(Struct:ASTNode s) {
 		foreach (Struct sub; s.sub_decls)
-			process(sub);
+			doProcess(sub);
 		if (isNodeKind(s)) {
 			// add node name to global map of compiler nodes
 			if (s.meta.get(mnNode) != null) {
@@ -106,7 +113,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 
 			// Check fields of the @node
 			foreach (Field n; s.members)
-				process(n);
+				doProcess(n);
 			return;
 		}
 		
@@ -126,7 +133,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 		}
 	}
 	
-	public void process(Field:ASTNode f) {
+	public void doProcess(Field:ASTNode f) {
 		Meta fmatt = f.meta.get(mnAtt);
 		Meta fmref = f.meta.get(mnRef);
 		//if (fmatt != null || fmref != null) {
@@ -311,18 +318,25 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		return s.xtype;
 	}
 	
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.process(dn);
+			this.doProcess(dn);
 	}
 	
-	private void process(Struct:ASTNode s) {
+	private void doProcess(Struct:ASTNode s) {
 		foreach (Struct dn; s.members)
-			this.process(dn);
+			this.doProcess(dn);
 		if (!s.isClazz())
 			return;
 		if (!isNodeImpl(s))
@@ -332,7 +346,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			return;
 		}
 		foreach (TypeRef st; s.super_types; isNodeKind(st.getStruct()))
-			this.process(st.getStruct());
+			this.doProcess(st.getStruct());
 		// attribute names array
 		Vector<Field> aflds = new Vector<Field>();
 		if (isNodeImpl(s)) {
@@ -634,25 +648,32 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	//	   PASS - preGenerate                         //
 	////////////////////////////////////////////////////
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(FileUnit:ASTNode fu) {
 		if (tpANode == null) {
 			tpANode = VNode_Base.tpANode;
 			tpNode = VNode_Base.tpNode;
 			tpSpaceAttrSlot = VNode_Base.tpSpaceAttrSlot;
 		}
 		foreach (Struct dn; fu.members)
-			this.process(dn);
+			this.doProcess(dn);
 	}
 	
-	public void process(Struct:ASTNode s) {
+	public void doProcess(Struct:ASTNode s) {
 		foreach(Field f; s.members; !f.isStatic() && f.isVirtual() && f.meta.get(VNode_Base.mnAtt) != null)
 			fixSetterMethod(s, f);
 		foreach(Struct sub; s.sub_decls)
-			process(sub);
+			doProcess(sub);
 	}
 	
 	private static void fixSetterMethod(Struct s, Field f) {

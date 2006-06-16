@@ -32,11 +32,18 @@ public final class KievFE_Pass1 extends TransfProcessor {
 	private KievFE_Pass1() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Syntax" }
 	
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode astn) {
+	public void doProcess(FileUnit:ASTNode astn) {
 		FileUnit fu = astn;
 		processFileHeader(fu);
 		foreach (ASTNode n; astn.members) {
@@ -46,7 +53,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		}
 	}
 
-	public void process(Struct:ASTNode astn) {
+	public void doProcess(Struct:ASTNode astn) {
 		processSyntax(astn);
 	}
 	
@@ -258,11 +265,18 @@ public final class KievFE_Pass2 extends TransfProcessor {
 	private KievFE_Pass2() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Class types" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode astn) {
+	public void doProcess(FileUnit:ASTNode astn) {
 		FileUnit fu = astn;
 
 		foreach (ASTNode n; astn.members) {
@@ -277,10 +291,10 @@ public final class KievFE_Pass2 extends TransfProcessor {
 		}
 
 		foreach (ASTNode n; astn.members)
-			process(n);
+			doProcess(n);
 	}
 
-	public void process(TypeDecl:ASTNode astn) {
+	public void doProcess(TypeDecl:ASTNode astn) {
 		try {
 			TypeDecl td = (TypeDecl)astn;
 			// Verify meta-data to the new structure
@@ -290,7 +304,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				dn.meta.verify();
 			getStructType(td, new Stack<TypeDecl>());
 			foreach (TypeDecl s; td.members)
-				process(s);
+				doProcess(s);
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}
 	
@@ -432,16 +446,23 @@ public final class KievFE_Pass3 extends TransfProcessor {
 	private KievFE_Pass3() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Class members" }
 
-	public void process(ASTNode:ASTNode astn) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode astn) {
 	}
 
-	public void process(FileUnit:ASTNode astn) {
+	public void doProcess(FileUnit:ASTNode astn) {
 		foreach (ASTNode n; astn.members)
-			process(n);
+			doProcess(n);
 	}
 
 
-	public void process(TypeDecl:ASTNode astn) {
+	public void doProcess(TypeDecl:ASTNode astn) {
 		int pos = astn.pos;
 		TypeDecl me = astn;
 		int next_enum_val = 0;
@@ -604,7 +625,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 		// Process inner classes and cases
 		if( !me.isPackage() ) {
 			foreach (TypeDecl n; me.members)
-				process(n);
+				doProcess(n);
 		}
 	}
 }
@@ -618,13 +639,20 @@ public final class KievFE_MetaDecls extends TransfProcessor {
 	private KievFE_MetaDecls() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Annotation's declaration" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
 	}
-	public void process(FileUnit:ASTNode fu) {
+	
+	public void doProcess(ASTNode:ASTNode node) {
+	}
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach(Struct n; fu.members)
-			process(n);
+			doProcess(n);
 	}
-	public void process(Struct:ASTNode clazz) {
+	public void doProcess(Struct:ASTNode clazz) {
 		if (clazz.isAnnotation()) {
 			foreach(ASTNode n; clazz.members) {
 				if( n instanceof Method ) {
@@ -650,7 +678,7 @@ public final class KievFE_MetaDecls extends TransfProcessor {
 			}
 		}
 		foreach (Struct sub; clazz.sub_decls)
-			process(sub);
+			doProcess(sub);
 	}
 }
 
@@ -663,13 +691,20 @@ public final class KievFE_MetaDefaults extends TransfProcessor {
 	private KievFE_MetaDefaults() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Annotation's defaults" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
 	}
-	public void process(FileUnit:ASTNode fu) {
+	
+	public void doProcess(ASTNode:ASTNode node) {
+	}
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach(Struct n; fu.members)
-			process(n);
+			doProcess(n);
 	}
-	public void process(Struct:ASTNode clazz) {
+	public void doProcess(Struct:ASTNode clazz) {
 		clazz.resolveMetaDefaults();
 	}
 }
@@ -683,13 +718,20 @@ public final class KievFE_MetaValues extends TransfProcessor {
 	private KievFE_MetaValues() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Annotation values" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
 	}
-	public void process(FileUnit:ASTNode fu) {
+	
+	public void doProcess(ASTNode:ASTNode node) {
+	}
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach(Struct n; fu.members)
-			process(n);
+			doProcess(n);
 	}
-	public void process(Struct:ASTNode clazz) {
+	public void doProcess(Struct:ASTNode clazz) {
 		clazz.resolveMetaValues();
 	}
 }
@@ -703,7 +745,16 @@ public final class KievFE_SrcParse extends TransfProcessor {
 	private KievFE_SrcParse() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Full Parser" }
 
-	public void process(FileUnit:ASTNode fu) {
+	public void process(ASTNode node, Transaction tr) {
+		if (node instanceof FileUnit) {
+			tr = Transaction.enter(tr);
+			try {
+				doProcess((FileUnit)node);
+			} finally { tr.leave(); }
+		}
+	}
+	
+	public void doProcess(FileUnit fu) {
 		if (fu.scanned_for_interface_only)
 			return;
 		long curr_time = System.currentTimeMillis();
@@ -728,13 +779,20 @@ public final class KievFE_GenMembers extends TransfProcessor {
 	private KievFE_GenMembers() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Members generation" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
 	}
-	public void process(FileUnit:ASTNode fu) {
+	
+	public void doProcess(ASTNode:ASTNode node) {
+	}
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach(Struct n; fu.members)
-			process(n);
+			doProcess(n);
 	}
-	public void process(Struct:ASTNode clazz) {
+	public void doProcess(Struct:ASTNode clazz) {
 		clazz.autoGenerateMembers();
 	}
 }
@@ -748,7 +806,7 @@ public final class KievFE_PreResolve extends TransfProcessor {
 	private KievFE_PreResolve() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Kiev pre-resolve" }
 
-	public void process(ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preResolveIn(); return false; }
 			public void post_exec(ANode n) { if (n instanceof ASTNode) n.preResolveOut(); }
@@ -766,7 +824,7 @@ public final class KievFE_MainResolve extends TransfProcessor {
 	private KievFE_MainResolve() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Kiev main-resolve" }
 
-	public void process(ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.mainResolveIn(); return false; }
 			public void post_exec(ANode n) { if (n instanceof ASTNode) n.mainResolveOut(); }
@@ -784,7 +842,7 @@ public final class KievFE_Verify extends TransfProcessor {
 	private KievFE_Verify() { super(Kiev.Ext.JavaOnly); }
 	public String getDescr() { "Kiev verify" }
 
-	public void process(ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preVerify(); return false; }
 			//public void post_exec(ANode n) { if (n instanceof ASTNode) n.postVerify(); }
@@ -803,7 +861,7 @@ public final class KievME_PreGenartion extends BackendProcessor {
 	private KievME_PreGenartion() { super(Kiev.Backend.Java15); }
 	public String getDescr() { "Kiev pre-generation" }
 
-	public void process(ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preGenerate(); return false; }
 		});
@@ -820,7 +878,7 @@ public final class KievBE_Resolve extends BackendProcessor {
 	private KievBE_Resolve() { super(Kiev.Backend.Java15); }
 	public String getDescr() { "Kiev resolve" }
 
-	public void process(ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
 		if (node instanceof ENode)
 			node.resolve(null);
 		else if (node instanceof DNode)
@@ -833,7 +891,7 @@ public final class KievBE_Lock extends BackendProcessor {
 	private KievBE_Lock() { super(Kiev.Backend.Generic); }
 	public String getDescr() { "Lock nodes" }
 
-	public void process(ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { n.locked = true; return true; }
 		});
@@ -850,9 +908,9 @@ public final class KievBE_Generate extends BackendProcessor {
 	private KievBE_Generate() { super(Kiev.Backend.Java15); }
 	public String getDescr() { "Class generation" }
 
-	public void process(ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
 		if (node instanceof FileUnit) {
-			Transaction tr = Transaction.open();
+			tr = Transaction.enter(tr);
 			try {
 				if( Kiev.source_only ) {
 					if( Kiev.output_dir == null )
@@ -867,9 +925,7 @@ public final class KievBE_Generate extends BackendProcessor {
 						((JFileUnit)(FileUnit)node).generate();
 					} catch (Exception rte) { Kiev.reportError(rte); }
 				}
-			} finally {
-				tr.close();
-			}
+			} finally { tr.leave(); }
 		}
 	}
 }
@@ -883,7 +939,7 @@ public final class ExportBE_Generate extends BackendProcessor {
 	private ExportBE_Generate() { super(Kiev.Backend.VSrc); }
 	public String getDescr() { "Source generation" }
 
-	public void process(ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
 		StringBuffer sb = new StringBuffer(1024);
 		TextFormatter f = new TextFormatter(new JavaSyntax());
 		try {

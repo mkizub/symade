@@ -429,32 +429,51 @@ public final class Transaction {
 		return currentTransaction;
 	}
 
+	public static Transaction enter(Transaction tr) {
+		if (tr == null)
+			return open();
+		tr.recursion_counter++;
+		return tr;
+	}
+
+	public static Transaction get() {
+		return currentTransaction;
+	}
+
 	public static Transaction current() {
 		assert (currentTransaction != null);
 		return currentTransaction;
 	}
 
-	public static void close() {
-		assert (currentTransaction != null);
-		ASTNode[] nodes = currentTransaction.nodes;
-		int n = currentTransaction.size;
+	public void close() {
+		assert (currentTransaction == this);
+		ANode[] nodes = this.nodes;
+		int n = this.size;
 		for (int i=0; i < n; i++)
 			nodes[i].locked = true;
+		this.size = 0;
 		currentTransaction = null;
 	}
 
+	public void leave() {
+		if (--recursion_counter <= 0)
+			close();
+	}
+
 	public int version;
+	private int recursion_counter;
 	private int size;
-	private ASTNode[] nodes;
+	private ANode[] nodes;
 
 	private Transaction() {
-		version = ++currentVersion;
-		nodes = new ASTNode[64];
+		this.version = ++currentVersion;
+		this.recursion_counter = 1;
+		this.nodes = new ANode[64];
 	}
 	
-	public void add(ASTNode node) {
+	public void add(ANode node) {
 		if (size >= nodes.length) {
-			ASTNode[] tmp = new ASTNode[size*2];
+			ANode[] tmp = new ANode[size*2];
 			System.arraycopy(nodes,0,tmp,0,size);
 			nodes = tmp;
 		}

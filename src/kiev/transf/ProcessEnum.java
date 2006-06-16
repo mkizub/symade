@@ -19,19 +19,26 @@ public class EnumFE_GenMembers extends TransfProcessor {
 	private EnumFE_GenMembers() { super(Kiev.Ext.Enum); }
 	public String getDescr() { "Enum members generation" }
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.process(dn);
+			this.doProcess(dn);
 	}
 	
-	public void process(Struct:ASTNode clazz) {
+	public void doProcess(Struct:ASTNode clazz) {
 		if !( clazz.isEnum() ) {
 			foreach (Struct dn; clazz.members)
-				this.process(dn);
+				this.doProcess(dn);
 			return;
 		}
 		

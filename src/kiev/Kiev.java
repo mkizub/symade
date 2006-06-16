@@ -600,8 +600,8 @@ public final class Kiev {
 			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
 			processors.append(KievBE_Resolve);
 			processors.append(VirtFldBE_Rewrite);
-			processors.append(PackedFldBE_Rewrite);
 			processors.append(KievBE_Lock);
+			processors.append(PackedFldBE_Rewrite);
 			processors.append(KievBE_Generate);
 			processors.append(ExportBE_Generate);
 			beProcessors = processors.toArray();
@@ -693,7 +693,7 @@ public final class Kiev {
 			try {
 				Kiev.setExtSet(fu.disabled_extensions);
 				try {
-					tp.process(fu);
+					tp.process(fu,Transaction.get());
 				}
 				catch (Exception e) {
 					Kiev.reportError(fu,e);
@@ -718,7 +718,7 @@ public final class Kiev {
 			try {
 				Kiev.setExtSet(fu.disabled_extensions);
 				try {
-					bp.process(fu);
+					bp.process(fu,Transaction.get());
 				}
 				catch (Exception e) {
 					Kiev.reportError(fu,e);
@@ -746,7 +746,7 @@ public final class Kiev {
 		if (!bp.isEnabled())
 			return null;
 		try {
-			bp.process(fu);
+			bp.process(fu,Transaction.get());
 		} catch (Exception e) {
 			Kiev.reportError(e);
 		}
@@ -754,28 +754,31 @@ public final class Kiev {
 	}
 	
 	public static void runProcessorsOn(ASTNode node) {
-		int N = fe_pass_no;
-		for (int i=0; i < N; i++) {
-			TransfProcessor tp = feProcessors[i];
-			if (tp.isEnabled())
-				tp.process(node);
-		}
-		if (N < feProcessors.length)
-			return;
-		N = me_pass_no;
-		for (int i=0; i < N; i++) {
-			BackendProcessor mp = meProcessors[i];
-			if (mp.isEnabled())
-				mp.process(node);
-		}
-		if (N < meProcessors.length)
-			return;
-		N = be_pass_no;
-		for (int i=0; i < N; i++) {
-			BackendProcessor bp = beProcessors[i];
-			if (bp.isEnabled())
-				bp.process(node);
-		}
+		Transaction tr = Transaction.enter(Transaction.get());
+		try {
+			int N = fe_pass_no;
+			for (int i=0; i < N; i++) {
+				TransfProcessor tp = feProcessors[i];
+				if (tp.isEnabled())
+					tp.process(node,Transaction.get());
+			}
+			if (N < feProcessors.length)
+				return;
+			N = me_pass_no;
+			for (int i=0; i < N; i++) {
+				BackendProcessor mp = meProcessors[i];
+				if (mp.isEnabled())
+					mp.process(node,Transaction.get());
+			}
+			if (N < meProcessors.length)
+				return;
+			N = be_pass_no;
+			for (int i=0; i < N; i++) {
+				BackendProcessor bp = beProcessors[i];
+				if (bp.isEnabled())
+					bp.process(node,Transaction.get());
+			}
+		} finally { tr.leave(); }
 	}
 
 }

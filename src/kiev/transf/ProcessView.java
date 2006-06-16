@@ -30,19 +30,26 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		return clazz.iface_impl;
 	}
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.process(dn);
+			this.doProcess(dn);
 	}
 	
-	public void process(Struct:ASTNode clazz) {
+	public void doProcess(Struct:ASTNode clazz) {
 		if !( clazz.isStructView() ) {
 			foreach (Struct dn; clazz.members) {
-				this.process(dn);
+				this.doProcess(dn);
 			}
 			return;
 		}
@@ -108,19 +115,26 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 	//	   PASS - preGenerate                         //
 	////////////////////////////////////////////////////
 
-	public void process(ASTNode:ASTNode node) {
+	public void process(ASTNode node, Transaction tr) {
+		tr = Transaction.enter(tr);
+		try {
+			doProcess(node);
+		} finally { tr.leave(); }
+	}
+	
+	public void doProcess(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void process(FileUnit:ASTNode fu) {
+	public void doProcess(FileUnit:ASTNode fu) {
 		foreach (Struct dn; fu.members)
-			this.process(dn);
+			this.doProcess(dn);
 	}
 	
-	public void process(Struct:ASTNode clazz) {
+	public void doProcess(Struct:ASTNode clazz) {
 		if !( clazz.isStructView() ) {
 			foreach (Struct dn; clazz.members)
-				this.process(dn);
+				this.doProcess(dn);
 			return;
 		}
 		
@@ -142,7 +156,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		clazz.iface_impl = impl;
 		{
 			foreach (TypeRef st; clazz.super_types)
-				process(st.getStruct());
+				doProcess(st.getStruct());
 			Struct s = getViewImpl(clazz.super_types[0]);
 			if (s != null)
 				impl.super_types += new TypeRef(s.xtype);
