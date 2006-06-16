@@ -3177,6 +3177,7 @@ IfElseStat IfStatement() :
 {
 	"if"
 	{ st.pos = getToken(0).getPos(); }
+	[ "#" ]
 	[
 		LOOKAHEAD("!")
 		not = Operator()
