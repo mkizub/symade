@@ -309,14 +309,10 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 	public void process(ASTNode node, Transaction tr) {
 		tr = Transaction.enter(tr);
 		try {
-			doProcess(node);
+			node.walkTree(new TreeWalker() {
+				public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return VirtFldBE_Rewrite.this.rewrite((ASTNode)n); return false; }
+			});
 		} finally { tr.leave(); }
-	}
-	
-	public void doProcess(ASTNode node) {
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return VirtFldBE_Rewrite.this.rewrite((ASTNode)n); return false; }
-		});
 	}
 	
 	boolean rewrite(ASTNode:ASTNode o) {
@@ -348,8 +344,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			fa.setAsField(true);
 			return true;
 		}
+		fa.open();
 		ENode ce = new CallExpr(fa.pos, ~fa.obj, getter, ENode.emptyArray);
-		//ce = ce.resolveExpr(fa.getType());
 		fa.replaceWithNodeReWalk(ce);
 		throw new Error();
 	}
@@ -380,6 +376,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				fa.setAsField(true);
 				return true;
 			}
+			ae.open();
+			fa.open();
 			Type ae_tp = ae.isGenVoidExpr() ? Type.tpVoid : ae.getType();
 			Operator op = null;
 			if      (ae.op == Operator.AssignAdd)                  op = Operator.Add;
@@ -464,6 +462,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				return true;
 			}
 			ENode expr;
+			ie.open();
+			fa.open();
 			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
 			if (ie.isGenVoidExpr()) {
 				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {
