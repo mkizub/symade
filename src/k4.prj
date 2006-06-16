@@ -593,6 +593,7 @@ CLASS kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\Complex
 CLASS kiev.vlang.Test kiev/vlang/Test kiev\vlang\MetaTypes.java
 CLASS kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
+CLASS kiev.vlang.Transaction kiev/vlang/Transaction kiev\vlang\Tree.java
 CLASS kiev.vlang.TreeWalker kiev/vlang/TreeWalker kiev\vlang\AST.java
 CLASS kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 CLASS kiev.vlang.TypeClassExpr kiev/vlang/TypeClassExpr kiev\vlang\Expr.java

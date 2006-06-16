@@ -327,8 +327,10 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	private static final AttrSlot[] $values = {nodeattr$parent, nodeattr$flags};
 
-	public  int				pos;
-	public  int				compileflags;
+	public int				pos;
+	public int				compileflags;
+	public int				version;
+	public boolean			locked;
 	@ref @abstract
 	public:ro ANode			parent;
 	
@@ -651,10 +653,19 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public final void postVerify() { ((VView)this).postVerify(); }
 
 	public final boolean preGenerate() { return ((RView)this).preGenerate(); }
-	
 
 	public Object doRewrite(RewriteContext ctx) {
 		throw new CompilerException(this, "Node "+this.getClass().getName()+" is not a rewriter");
+	}
+
+	public This open() {
+		if (!locked)
+			return this;
+		This node = this.ncopy();
+		Transaction tr = Transaction.open();
+		node.version = tr.version;
+		tr.add(node);
+		return node;
 	}
 }
 

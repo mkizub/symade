@@ -526,6 +526,13 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			setV.params.append(new FormPar(0, "val", Type.tpObject, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(setV);
 			setV.body = new Block(0);
+			// check the node is not locked
+			{
+				setV.block.stats.add(new ExprStat(
+					new CallExpr(0,new TypeRef(Type.tpDebug), new SymbolRef("assert"),null,
+						new ENode[]{new BooleanNotExpr(0,new AccessExpr(0,new ThisExpr(),new SymbolRef("locked")))})
+				));
+			}
 			foreach (Field f; aflds; f.parent() == s) {
 				boolean isArr = f.getType().isInstanceOf(tpNArray);
 				if (isArr || f.isFinal() || !Access.writeable(f))
@@ -732,6 +739,15 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					null
 				);
 			body.stats.append(p_st);
+			Kiev.runProcessorsOn(p_st);
+		}
+		// check the node is not locked
+		{
+			ENode p_st = new ExprStat(
+				new CallExpr(0,new TypeRef(Type.tpDebug), new SymbolRef("assert"),null,
+					new ENode[]{new BooleanNotExpr(0,new AccessExpr(0,new ThisExpr(),new SymbolRef("locked")))})
+			);
+			body.stats.insert(0,p_st);
 			Kiev.runProcessorsOn(p_st);
 		}
 		set_var.meta.set(new Meta(VNode_Base.mnAtt)).resolve(null);

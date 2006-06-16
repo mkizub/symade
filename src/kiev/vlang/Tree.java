@@ -419,6 +419,46 @@ public class SpaceAttDataAttrSlot<N extends ASTNode> extends SpaceAttAttrSlot<N>
 	}
 }
 
+public final class Transaction {
+	private static int currentVersion;
+	private static Transaction currentTransaction;
+
+	public static Transaction open() {
+		if (currentTransaction != null)
+			return currentTransaction;
+		currentTransaction = new Transaction();
+		return currentTransaction;
+	}
+
+	public static void close() {
+		Transaction tr = currentTransaction;
+		foreach (ASTNode n; tr.nodes)
+			n.locked = true;
+		currentTransaction = null;
+	}
+
+	public int version;
+	private int size;
+	private ASTNode[] nodes;
+
+	private Transaction() {
+		version = ++currentVersion;
+		nodes = new ASTNode[64];
+	}
+	
+	public void add(ASTNode node) {
+		if (size >= nodes.length) {
+			ASTNode[] tmp = new ASTNode[size*2];
+			System.arraycopy(nodes,0,tmp,0,size);
+			nodes = tmp;
+		}
+		nodes[size++] = node;
+	}
+}
+
+
+
+
 @unerasable
 public final class NArr<N extends ASTNode> {
 
