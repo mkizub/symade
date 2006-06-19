@@ -248,7 +248,7 @@ public abstract class ANode {
 		throw new RuntimeException("No @att/@ref space '"+name+"' in "+getClass());
 	}
 
-	public This open() {
+	public final ANode open() {
 		if (!locked)
 			return this;
 		This node = (This)this.clone();
@@ -623,7 +623,13 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		public void postVerify() {}
 	}
 	
-	public ASTNode() {}
+	public ASTNode() {
+		Transaction tr = Transaction.get();
+		if (tr != null) {
+			this.version = tr.version;
+			tr.add(this);
+		}
+	}
 
 	public final This detach()
 		alias operator (210,fy,~)

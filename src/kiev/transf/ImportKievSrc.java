@@ -729,10 +729,7 @@ public final class KievFE_SrcParse extends TransfProcessor {
 
 	public void process(ASTNode node, Transaction tr) {
 		if (node instanceof FileUnit) {
-			tr = Transaction.enter(tr);
-			try {
-				doProcess((FileUnit)node);
-			} finally { tr.leave(); }
+			doProcess((FileUnit)node);
 		}
 	}
 	

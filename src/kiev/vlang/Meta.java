@@ -502,9 +502,13 @@ public final class MetaValueScalar extends MetaValue {
 	}
 	
 	public void resolve(Type reqType) {
-		value.resolve(reqType);
-		while (checkValue(reqType, value))
-			value.resolve(reqType);
+		boolean ok;
+		do {
+			ok = true;
+			try {
+				Kiev.runFrontEndProcessorsOn(value);
+			} catch (ReWalkNodeException e) { ok = false; }
+		} while (ok && checkValue(reqType, value));
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
@@ -563,9 +567,13 @@ public final class MetaValueArray extends MetaValue {
 	
 	public void resolve(Type reqType) {
 		for (int i=0; i < values.length; i++) {
-			this.values[i].resolve(reqType);
-			while (checkValue(reqType, this.values[i]))
-				this.values[i].resolve(reqType);
+			boolean ok;
+			do {
+				ok = true;
+				try {
+					Kiev.runFrontEndProcessorsOn(this.values[i]);
+				} catch (ReWalkNodeException e) { ok = false; }
+			} while (ok && checkValue(reqType, this.values[i]));
 		}
 	}
 

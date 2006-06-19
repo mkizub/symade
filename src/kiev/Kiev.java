@@ -754,22 +754,30 @@ public final class Kiev {
 		return bp.getDescr();
 	}
 	
+	public static void runFrontEndProcessorsOn(ASTNode node) {
+		for (int i=fe_pass_no; i < feProcessors.length; i++) {
+			TransfProcessor tp = feProcessors[i];
+			if (tp.isEnabled())
+				tp.process(node,Transaction.get());
+		}
+	}
+
 	public static void runProcessorsOn(ASTNode node) {
+		int N = fe_pass_no;
+		for (int i=0; i < N; i++) {
+			TransfProcessor tp = feProcessors[i];
+			if (tp.isEnabled())
+				tp.process(node,Transaction.get());
+		}
+		if (N < feProcessors.length)
+			return;
 		Transaction tr = Transaction.enter(Transaction.get());
 		try {
-			int N = fe_pass_no;
-			for (int i=0; i < N; i++) {
-				TransfProcessor tp = feProcessors[i];
-				if (tp.isEnabled())
-					tp.process(node,Transaction.get());
-			}
-			if (N < feProcessors.length)
-				return;
 			N = me_pass_no;
 			for (int i=0; i < N; i++) {
 				BackendProcessor mp = meProcessors[i];
 				if (mp.isEnabled())
-					mp.process(node,Transaction.get());
+					mp.process(node,tr);
 			}
 			if (N < meProcessors.length)
 				return;
@@ -777,7 +785,7 @@ public final class Kiev {
 			for (int i=0; i < N; i++) {
 				BackendProcessor bp = beProcessors[i];
 				if (bp.isEnabled())
-					bp.process(node,Transaction.get());
+					bp.process(node,tr);
 			}
 		} finally { tr.leave(); }
 	}
