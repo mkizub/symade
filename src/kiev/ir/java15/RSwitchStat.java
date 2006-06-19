@@ -37,6 +37,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 						//PizzaCaseAttr case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
 						MetaPizzaCase meta = cas.getMetaPizzaCase();
 						//val = new ConstIntExpr(case_attr.caseno);
+						this.open();
 						val = new ConstIntExpr(meta.getTag());
 						if( pattern.length > 0 ) {
 							Field[] fields = meta.getFields();
@@ -50,6 +51,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
 								if( !p.type.isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
 									throw new RuntimeException("Pattern variable "+p.id+" has type "+p.type+" but type "+tp+" is expected");
+								p.open();
 								p.init = new IFldExpr(p.pos,
 										new CastExpr(p.pos,
 											Type.getRealType(sw.tmpvar.getType(),cas.xtype),
@@ -64,6 +66,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 					} else {
 						if( sw.mode != SwitchStat.TYPE_SWITCH )
 							throw new CompilerException(this,"Type case in non-type switch");
+						this.open();
 						if( val.getType() ≈ Type.tpObject ) {
 							val = null;
 							sw.defCase = (CaseLabel)this;
@@ -79,6 +82,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 						Type et = sw.sel.getType();
 						if( f.var.type ≢ et )
 							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
+						this.open();
 						if (et.getStruct() != null && et.getStruct().isEnum())
 							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField(f.var));
 						else
@@ -89,8 +93,10 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 				}
 			} else {
 				sw.defCase = (CaseLabel)this;
-				if( sw.mode == SwitchStat.TYPE_SWITCH )
+				if( sw.mode == SwitchStat.TYPE_SWITCH ) {
+					this.open();
 					this.type = Type.tpObject;
+				}
 			}
 		} catch(Exception e ) { Kiev.reportError(this,e); }
 
@@ -132,6 +138,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 				this.replaceWithNodeResolve(Type.tpVoid, bl);
 				return;
 			} else {
+				cas.open();
 				IfElseStat st = new IfElseStat(pos,
 						new BinaryBoolExpr(sel.pos,Operator.Equals,~sel,~cas.val),
 						bl,
@@ -150,6 +157,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					mode = SwitchStat.ENUM_SWITCH;
 				}
 				else if( tp.isReference() ) {
+					this.open();
 					tmpvar = new LVarExpr(sel.pos, new Var(sel.pos,"tmp$sel$"+Integer.toHexString(sel.hashCode()),tp,0));
 					me = new Block(pos);
 					this.replaceWithNode(me);

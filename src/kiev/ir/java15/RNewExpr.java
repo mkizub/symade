@@ -41,6 +41,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		if (outer == null && s.ometa_type != null) {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
+			this.open();
 			outer = new ThisExpr(pos);
 		}
 		if( outer != null ) {
@@ -68,7 +69,11 @@ public static final view RNewExpr of NewExpr extends RENode {
 		mt = (CallType)Type.getRealType(type,new CallType(type,null,ta,Type.tpVoid,false));
 		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
-			if (ident == null) ident = new SymbolRef(nameInit);
+			if (ident == null) {
+				this.open();
+				ident = new SymbolRef(nameInit);
+			}
+			ident.open();
 			ident.symbol = m;
 			m.makeArgs(args,type);
 			for(int i=0; i < args.length; i++)
@@ -154,6 +159,7 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr ext
 		if( this.type == null ) {
 			if( !reqType.isArray() )
 				throw new CompilerException(this,"Type "+reqType+" is not an array type");
+			this.open();
 			type = reqType;
 			this.arrtype = (ArrayType)reqType;
 			Type art = reqType;

@@ -161,6 +161,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		//	}
 		//
 
+		this.open();
 		container.resolve(null);
 
 		Type itype;

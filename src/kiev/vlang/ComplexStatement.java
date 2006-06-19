@@ -177,7 +177,7 @@ public class SwitchStat extends ENode {
 	@virtual typedef JView = JSwitchStat;
 	@virtual typedef RView = RSwitchStat;
 
-	@att                 public int mode; /* = NORMAL_SWITCH; */
+	                     public int mode; /* = NORMAL_SWITCH; */
 	@att                 public ENode					sel;
 	@att                 public CaseLabel[]			cases;
 	@att                 public LVarExpr				tmpvar;

@@ -148,8 +148,10 @@ public final view RCondStat of CondStat extends RENode {
 
 	public void resolve(Type reqType) {
 		try {
-			if (enabled == null)
+			if (enabled == null) {
+				this.open();
 				enabled = new AssertEnabledExpr();
+			}
 			enabled.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(enabled);
 			cond.resolve(Type.tpBoolean);

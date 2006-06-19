@@ -630,7 +630,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	{
 		if (!isAttached())
 			return this;
-		ANode parent = parent();
+		ANode parent = parent().open();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot)
 			pslot.detach(parent, this);

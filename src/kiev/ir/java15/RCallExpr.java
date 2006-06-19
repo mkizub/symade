@@ -107,6 +107,7 @@ public final view RClosureCallExpr of ClosureCallExpr extends RENode {
 		if !(extp instanceof CallType)
 			throw new CompilerException(expr,"Expression "+expr+" is not a closure");
 		CallType tp = (CallType)extp;
+		this.open();
 		if( reqType != null && reqType instanceof CallType )
 			is_a_call = Boolean.FALSE;
 		else if( (reqType == null || !(reqType instanceof CallType)) && tp.arity==args.length )

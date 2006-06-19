@@ -879,10 +879,13 @@ public final class KievBE_Resolve extends BackendProcessor {
 	public String getDescr() { "Kiev resolve" }
 
 	public void process(ASTNode node, Transaction tr) {
-		if (node instanceof ENode)
-			node.resolve(null);
-		else if (node instanceof DNode)
-			node.resolveDecl();
+		tr = Transaction.enter(tr);
+		try {
+			if (node instanceof ENode)
+				node.resolve(null);
+			else if (node instanceof DNode)
+				node.resolveDecl();
+		} finally { tr.leave(); }
 	}
 }
 

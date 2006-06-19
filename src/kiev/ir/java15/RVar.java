@@ -41,6 +41,7 @@ public static view RVar of Var extends RLvalDNode {
 		if (init instanceof TypeRef)
 			((TypeRef)init).toExpr(tp);
 		if (tp instanceof CTimeType) {
+			this.open();
 			init = tp.makeInitExpr((Var)this,init);
 			try {
 				Kiev.runProcessorsOn(init);
@@ -54,6 +55,7 @@ public static view RVar of Var extends RLvalDNode {
 				init.resolve(tp);
 				Type it = init.getType();
 				if( !it.isInstanceOf(tp) ) {
+					this.open();
 					init = new CastExpr(init.pos,tp,~init);
 					init.resolve(tp);
 				}
