@@ -19,10 +19,7 @@ public final class PackedFldME_Verify extends TransfProcessor {
 	public String getDescr() { "Packed fields verification" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
-		try {
-			doProcess(node);
-		} finally { tr.leave(); }
+		doProcess(node);
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {
@@ -99,6 +96,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			// Locate or create nearest packer field that can hold this one
 			MetaPacked mp = f.getMetaPacked();
 			if( mp.packer == null ) {
+				mp.open();
 				String mp_in = mp.getFld();
 				if( mp_in != null && mp_in.length() > 0 ) {
 					Field p = s.resolveField(mp_in,false);

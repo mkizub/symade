@@ -113,8 +113,8 @@ public final view RRuleBlock of RuleBlock extends RENode {
 		sb.append("}\n");
 		trace(Kiev.debugRules,"Rule text generated:\n"+sb);
 		Block mbody = Kiev.parseBlock((RuleBlock)this,sb);
+		ctx_method.open();
 		ctx_method.body = mbody;
-		//mbody.stats.addAll(stats.delToArray());
 		return false;
 	}
 }

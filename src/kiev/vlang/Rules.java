@@ -23,7 +23,7 @@ public class RuleMethod extends Method {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in")	Var[]			localvars;
-	@dflow(in="this:in")	Block		body;
+	@dflow(in="this:in")	Block			body;
 	@dflow(in="this:in")	WBCCondition[] 	conditions;
 	}
 
@@ -32,11 +32,11 @@ public class RuleMethod extends Method {
 	@virtual typedef RView = RRuleMethod;
 
 	@att public Var[]				localvars;
-	@att public int					base = 1;
-	@att public int					max_depth;
-	@att public int					state_depth;
-	@att public int					max_vars;
-	@att public int					index;		// index counter for RuleNode.idx
+	     public int					base = 1;
+	     public int					max_depth;
+	     public int					state_depth;
+	     public int					max_vars;
+	     public int					index;		// index counter for RuleNode.idx
 
 	@nodeview
 	public static final view VRuleMethod of RuleMethod extends VMethod {
@@ -238,10 +238,10 @@ public abstract class ASTRuleNode extends ENode {
 	@virtual typedef This  = ASTRuleNode;
 	@virtual typedef VView = VASTRuleNode;
 
-	@att public JumpNodes			jn;
-	@att public int					base;
-	@att public int					idx;
-	@att public int					depth = -1;
+	public JumpNodes			jn;
+	public int					base;
+	public int					idx;
+	public int					depth = -1;
 
 	@getter public int get$base() {	return ((ASTRuleNode)this).base; }
 	@setter public void set$base(int b) { ((ASTRuleNode)this).base = b; }
@@ -310,7 +310,7 @@ public final class RuleBlock extends ENode {
 	@virtual typedef RView = RRuleBlock;
 
 	@att public ASTRuleNode		node;
-	@att public StringBuffer	fields_buf;
+	     public StringBuffer	fields_buf;
 
 	@nodeview
 	public static view VRuleBlock of RuleBlock extends VENode {
@@ -580,8 +580,8 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	@att public LVarExpr	var;		// variable of type PVar<...>
 	@att public ENode		expr;		// expression to check/unify
 	@att public int			iter_var;	// iterator var
-	@att public Type		itype;
-	@att public int			mode;
+	     public Type		itype;
+	     public int			mode;
 
 	@nodeview
 	public static final view VRuleIsoneofExpr of RuleIsoneofExpr extends VASTRuleNode {
@@ -633,6 +633,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			throw new CompilerException(expr,"Container must be an array or an Enumeration "+
 				"or a class that implements 'Enumeration elements()' method, but "+xtype+" found");
 		}
+		this.open();
 		iter_var = ((RuleMethod)ctx_method).add_iterator_var();
 		ANode rb = this.parent();
 		while( rb!=null && !(rb instanceof RuleBlock)) {

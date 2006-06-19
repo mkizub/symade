@@ -586,6 +586,7 @@ public final class Kiev {
 		
 		{
 			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
+			processors.append(KievBE_Lock);
 			processors.append(RewriteME_PreGenerate);
 			processors.append(KievME_PreGenartion);
 			processors.append(VirtFldME_PreGenerate);

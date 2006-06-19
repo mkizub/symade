@@ -66,8 +66,11 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 	}
 
 	private void doRewrite(ENode rewriter, ASTNode self, ASTNode[] args) {
-		ASTNode rn = (ASTNode)rewriter.doRewrite(new RewriteContext(self, args));
-		self.replaceWithNodeReWalk(rn);
+		Transaction tr = Transaction.enter(Transaction.get());
+		try {
+			ASTNode rn = (ASTNode)rewriter.doRewrite(new RewriteContext(self, args));
+			self.replaceWithNodeReWalk(rn);
+		} finally { tr.leave(); }
 	}
 }
 

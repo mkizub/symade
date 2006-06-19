@@ -204,6 +204,7 @@ public final view RNewClosure of NewClosure extends RENode {
 	public boolean preGenerate() {
 		if (clazz != null)
 			return true;
+		this.open();
 		clazz = Env.newStruct(null,false,(Struct)ctx_tdecl,0,true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);
@@ -256,6 +257,7 @@ public final view RNewClosure of NewClosure extends RENode {
 				val = new CastExpr(v.pos,v.type,val);
 			else
 				val = new CastExpr(v.pos,((CoreType)v.type).getRefTypeForPrimitive(),val);
+			v.open();
 			v.init = val;
 			body.insertSymbol(v,i);
 			if( !v.type.isReference() )

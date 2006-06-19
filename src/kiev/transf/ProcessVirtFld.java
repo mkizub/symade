@@ -27,10 +27,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	////////////////////////////////////////////////////
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
-		try {
-			doProcess(node);
-		} finally { tr.leave(); }
+		doProcess(node);
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {
@@ -254,6 +251,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			}
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
+				set_var.open();
 				set_var.body = body;
 				ENode ass_st = new ExprStat(f.pos,
 					new AssignExpr(f.pos,Operator.Assign,
@@ -282,6 +280,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			get_var.meta.set(new Meta(nameMetaGetter)).resolve(null);
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
+				get_var.open();
 				get_var.body = body;
 				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 			}

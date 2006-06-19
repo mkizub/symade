@@ -20,10 +20,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 	public String getDescr() { "Enum members generation" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
-		try {
-			doProcess(node);
-		} finally { tr.leave(); }
+		doProcess(node);
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {

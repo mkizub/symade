@@ -31,10 +31,7 @@ public class ViewFE_GenMembers extends TransfProcessor {
 	}
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
-		try {
-			doProcess(node);
-		} finally { tr.leave(); }
+		doProcess(node);
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {
@@ -229,6 +226,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				m.setAbstract(true);
 				continue;
 			}
+			m.open();
 			m.body = new Block(m.pos);
 			CallExpr ce = new CallExpr(m.pos,
 				new CastExpr(m.pos, clazz.view_of.getType(),
@@ -249,6 +247,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			if (mv_set != null && mv_set.isSynthetic()) {
 				Method set_var = mv_set;
 				Block body = new Block(f.pos);
+				set_var.open();
 				set_var.body = body;
 				Field view_fld = clazz.view_of.getType().getStruct().resolveField(f.id.sname);
 				ENode val = new LVarExpr(f.pos,set_var.params[0]);
@@ -277,6 +276,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			if (mv_get != null && mv_get.isSynthetic()) {
 				Method get_var = mv_get;
 				Block body = new Block(f.pos);
+				get_var.open();
 				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,
 					new CastExpr(f.pos,
@@ -307,6 +307,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
 				if (dn.isSynthetic()) {
 					dn.setAbstract(false);
+					dn.open();
 					dn.body = new Block();
 					dn.block.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
 				}

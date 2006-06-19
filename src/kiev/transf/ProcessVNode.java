@@ -73,10 +73,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 	public String getDescr() { "VNode members creation" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
-		try {
-			doProcess(node);
-		} finally { tr.leave(); }
+		doProcess(node);
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {
@@ -319,10 +316,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 	}
 	
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
-		try {
-			doProcess(node);
-		} finally { tr.leave(); }
+		doProcess(node);
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {

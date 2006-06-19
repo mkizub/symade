@@ -19,10 +19,7 @@ public class PizzaFE_Pass3 extends TransfProcessor {
 	public String getDescr() { "Pizza case members" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
-		try {
-			doProcess(node);
-		} finally { tr.leave(); }
+		doProcess(node);
 	}
 	
 	public void doProcess(ASTNode:ASTNode node) {
@@ -102,9 +99,8 @@ public class PizzaME_PreGenerate extends BackendProcessor {
 			//PizzaCaseAttr case_attr = (PizzaCaseAttr)clazz.getAttr(attrPizzaCase);
 			Field ftag = clazz.addField(new Field(
 				nameCaseTag,Type.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
-			//ConstExpr ce = new ConstIntExpr(case_attr.caseno);
-			ConstExpr ce = new ConstIntExpr(meta.getTag());
-			ftag.init = ce;
+			ftag.open();
+			ftag.init = new ConstIntExpr(meta.getTag());
 
 			Method gettag = new Method(nameGetCaseTag,Type.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
 			gettag.body = new Block(gettag.pos);
