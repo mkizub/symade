@@ -102,10 +102,11 @@ public final view RAssertEnabledExpr of AssertEnabledExpr extends RENode {
 			class_init.addstats.insert(0,
 				new ExprStat(f.init.pos,
 					new AssignExpr(f.init.pos,Operator.Assign
-						,new SFldExpr(f.pos,f),new Shadow(f.init))
+						,new SFldExpr(f.pos,f),f.init.ncopy())
 				)
 			);
 			f.setAddedToInit(true);
+			Kiev.runProcessorsOn(class_init.addstats[0]);
 		}
 		replaceWithNodeResolve(reqType, new SFldExpr(pos,f));
 	}

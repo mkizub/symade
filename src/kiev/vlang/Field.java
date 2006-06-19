@@ -121,6 +121,18 @@ public final class Field extends LvalDNode implements Accessable {
 		// field's initializer was already added to class initializer
 		public final boolean isAddedToInit();
 		public final void setAddedToInit(boolean on);
+
+		public boolean preResolveIn() {
+			ENode init = this.init;
+			if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
+				Type tp = getType();
+				if!(tp instanceof ArrayType)
+					Kiev.reportError(this,"Scalar field is initialized by array");
+				else
+					init.setType((ArrayType)tp);
+			}
+			return true;
+		}
 	}
 
 	@setter public final void		set$acc(Access val)	{ this.acc = val; Access.verifyDecl(this); }

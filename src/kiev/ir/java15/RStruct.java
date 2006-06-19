@@ -172,16 +172,18 @@ public final view RStruct of Struct extends RTypeDecl {
 			class_init.addstats.append(
 				new ExprStat(f.init.pos,
 					new AssignExpr(f.init.pos,Operator.Assign
-						,new SFldExpr(f.pos,f),new Shadow(f.init))
+						,new SFldExpr(f.pos,f),f.init.ncopy())
 				)
 			);
+			Kiev.runProcessorsOn(class_init.addstats[class_init.addstats.length-1]);
 		} else {
 			class_init.addstats.append(
 				new ExprStat(f.init.pos,
 					new AssignExpr(f.init.pos,Operator.Assign
-						,new SFldExpr(f.pos,f),new Shadow(f.init))
+						,new SFldExpr(f.pos,f),f.init.ncopy())
 				)
 			);
+			Kiev.runProcessorsOn(class_init.addstats[class_init.addstats.length-1]);
 		}
 		f.setAddedToInit(true);
 		ENode e = new SFldExpr(from.pos,f);
@@ -1106,8 +1108,11 @@ public final view RStruct of Struct extends RTypeDecl {
 		// <clinit> & common$init, if need
 		Constructor class_init = null;
 		Initializer instance_init = null;
+		int static_pos = -1;
 
 		foreach (DNode n; members; n instanceof Field || n instanceof Initializer) {
+			if (n == instance_init)
+				continue;
 			if( isInterface() && !n.isAbstract() ) {
 				n.setStatic(true);
 				n.setFinal(true);
@@ -1123,32 +1128,43 @@ public final view RStruct of Struct extends RTypeDecl {
 				if (f.isAddedToInit())
 					continue;
 				if( f.isStatic() ) {
-					if( class_init == null )
+					if( class_init == null ) {
 						class_init = getClazzInitMethod();
-					class_init.block.stats.add(
-						new ExprStat(f.init.pos,
+						static_pos = class_init.block.stats.length-1;
+						if (static_pos < 0) {
+							static_pos = 0;
+						} else {
+							assert (class_init.block.stats[static_pos] instanceof ReturnStat);
+						}
+					}
+					ENode init_stat = new ExprStat(f.init.pos,
 							new AssignExpr(f.init.pos,
 								f.isInitWrapper() ? Operator.Assign2 : Operator.Assign,
-								new SFldExpr(f.pos,f),new Shadow(f.init)
+								new SFldExpr(f.pos,f),f.init.ncopy()
 							)
-						)
-					);
+						);
+					class_init.block.stats.insert(static_pos++,init_stat);
+					Kiev.runProcessorsOn(init_stat);
+					RStruct.runResolveOn(init_stat);
 				} else {
 					if( instance_init == null ) {
 						instance_init = new Initializer();
 						instance_init.pos = f.init.pos;
 						instance_init.body = new Block();
+						((Struct)this).members.add(instance_init);
 					}
 					ENode init_stat;
 					init_stat = new ExprStat(f.init.pos,
 							new AssignExpr(f.init.pos,
 								f.isInitWrapper() ? Operator.Assign2 : Operator.Assign,
 								new IFldExpr(f.pos,new ThisExpr(0),f),
-								new Shadow(f.init)
+								f.init.ncopy()
 							)
 						);
 					instance_init.block.stats.add(init_stat);
 					init_stat.setHidden(true);
+					Kiev.runProcessorsOn(init_stat);
+					RStruct.runResolveOn(init_stat);
 				}
 				f.setAddedToInit(true);
 			} else {
@@ -1156,16 +1172,26 @@ public final view RStruct of Struct extends RTypeDecl {
 				ENode init_stat = new Shadow(init);
 				init_stat.setHidden(true);
 				if (init.isStatic()) {
-					if( class_init == null )
+					if( class_init == null ) {
 						class_init = getClazzInitMethod();
-					class_init.block.stats.add(init_stat);
+						static_pos = class_init.block.stats.length-1;
+						if (static_pos < 0) {
+							static_pos = 0;
+						} else {
+							assert (class_init.block.stats[static_pos] instanceof ReturnStat);
+						}
+					}
+					class_init.block.stats.insert(static_pos++,init_stat);
 				} else {
 					if( instance_init == null ) {
 						instance_init = new Initializer();
 						instance_init.pos = init.pos;
 						instance_init.body = new Block();
+						((Struct)this).members.add(instance_init);
 					}
 					instance_init.block.stats.add(init_stat);
+					Kiev.runProcessorsOn(init_stat);
+					RStruct.runResolveOn(init_stat);
 				}
 			}
 		}
@@ -1251,6 +1277,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					}
 					initbody.stats.insert(0,new ExprStat(call_super));
 					Kiev.runProcessorsOn(initbody.stats[0]);
+					RStruct.runResolveOn(initbody.stats[0]);
 				}
 				int p = 1;
 				if( package_clazz.isClazz() && !isStatic() ) {
@@ -1263,6 +1290,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						)
 					);
 					Kiev.runProcessorsOn(initbody.stats[p]);
+					RStruct.runResolveOn(initbody.stats[p]);
 					p++;
 				}
 				if (isForward() && package_clazz.isStructView()) {
@@ -1278,6 +1306,7 @@ public final view RStruct of Struct extends RTypeDecl {
 								)
 							);
 							Kiev.runProcessorsOn(initbody.stats[p]);
+							RStruct.runResolveOn(initbody.stats[p]);
 							p++;
 							break;
 						}
@@ -1295,21 +1324,29 @@ public final view RStruct of Struct extends RTypeDecl {
 							))
 						);
 					Kiev.runProcessorsOn(initbody.stats[p]);
+					RStruct.runResolveOn(initbody.stats[p]);
 					p++;
 				}
 				if( instance_init != null && m.isNeedFieldInits() ) {
 					initbody.stats.insert(p,instance_init.body.ncopy());
 					Kiev.runProcessorsOn(initbody.stats[p]);
+					RStruct.runResolveOn(initbody.stats[p]);
 					p++;
 				}
 			}
 		}
 	}
 
+	private static void runResolveOn(ASTNode node) {
+		if (node instanceof ENode)
+			node.resolve(null);
+		else if (node instanceof DNode)
+			node.resolveDecl();
+	}
+	
 	public void resolveDecl() {
 		if( isGenerated() ) return;
 		long curr_time;
-		autoGenerateStatements();
 		if( !isPackage() ) {
 			foreach (Struct ss; members) {
 				try {
@@ -1346,9 +1383,17 @@ public final view RStruct of Struct extends RTypeDecl {
 			// for(;;) beacause a constructor may be added during resolving
 			for(int i=0; i < members.length; i++) {
 				ASTNode n = members[i];
+				if (n instanceof Field)
+					n.resolveDecl();
+			}
+			for(int i=0; i < members.length; i++) {
+				ASTNode n = members[i];
 				if (n instanceof Method || n instanceof Initializer)
 					((DNode)n).resolveDecl();
 			}
+			autoGenerateStatements();
+			foreach (Constructor c; members; !c.isResolved())
+				c.resolveDecl();
 			
 			// Autogenerate hidden args for initializers of local class
 			if( isLocal() ) {

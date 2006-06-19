@@ -216,7 +216,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 			clinit.block.stats.add(
 				new ExprStat(typehash.init.pos,
 					new AssignExpr(typehash.init.pos,Operator.Assign
-						,new SFldExpr(typehash.pos,typehash),new Shadow(typehash.init))
+						,new SFldExpr(typehash.pos,typehash),typehash.init.ncopy())
 				)
 			);
 			//typehash.resolveDecl();

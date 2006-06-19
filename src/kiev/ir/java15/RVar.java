@@ -43,6 +43,7 @@ public static view RVar of Var extends RLvalDNode {
 		if (tp instanceof CTimeType) {
 			init = tp.makeInitExpr((Var)this,init);
 			try {
+				Kiev.runProcessorsOn(init);
 				init.resolve(tp.getEnclosedType());
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);

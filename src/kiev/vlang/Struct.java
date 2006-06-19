@@ -295,27 +295,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 			return true; //!isLocal();
 		}
 
-		private static void resolveFinalFields(@forward VStruct self) {
-			trace(Kiev.debugResolve,"Resolving final fields for class "+qname());
-			// Resolve final values of class's fields
-			foreach (Field f; members; !f.isMacro()) {
-				try {
-					f.resolveDecl();
-				} catch( Exception e ) {
-					Kiev.reportError(f.init,e);
-				}
-				trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
-						(f.isStatic()?"Static":"Instance")+" fields: "+qname()+"::"+f.id+" = "+f.init);
-			}
-			// Process inner classes and cases
-			if( !isPackage() ) {
-				foreach (Struct sub; sub_decls)
-					resolveFinalFields((VStruct)sub);
-			}
-		}
-
 		public void mainResolveOut() {
-			resolveFinalFields(this);
 			((Struct)this).cleanDFlow();
 		}
 

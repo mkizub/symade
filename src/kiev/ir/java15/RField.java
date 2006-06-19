@@ -45,6 +45,7 @@ public static final view RField of Field extends RLvalDNode {
 		if (tp instanceof CTimeType) {
 			init = tp.makeInitExpr(this,init);
 			try {
+				Kiev.runProcessorsOn(init);
 				init.resolve(tp.getEnclosedType());
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);

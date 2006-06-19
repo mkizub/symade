@@ -113,6 +113,18 @@ public class Var extends LvalDNode {
 		// "super" var
 		public final boolean isVarSuper();
 		public final void setVarSuper(boolean on);
+
+		public boolean preResolveIn() {
+			ENode init = this.init;
+			if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
+				Type tp = getType();
+				if!(tp instanceof ArrayType)
+					Kiev.reportError(this,"Scalar var is initialized by array");
+				else
+					init.setType((ArrayType)tp);
+			}
+			return true;
+		}
 	}
 
 	public static Var[]	emptyArray = new Var[0];

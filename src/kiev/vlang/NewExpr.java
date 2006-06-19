@@ -274,7 +274,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	@att public TypeRef				type;
 	@att public ENode[]				args;
 	@att public int[]				dims;
-	@ref public ArrayType			arrtype;
+	     public ArrayType			arrtype;
 
 	@nodeview
 	public static final view VNewInitializedArrayExpr of NewInitializedArrayExpr extends VENode {
@@ -286,6 +286,22 @@ public final class NewInitializedArrayExpr extends ENode {
 		@getter public final int	get$dim();
 
 		@getter public final Type	get$arrtype();
+
+		public boolean preResolveIn() {
+			if (type == null)
+				return true;
+			Type tp = getType();
+			if!(tp instanceof ArrayType)
+				throw new CompilerException(this,"Wrong dimension of array initializer");
+			tp = ((ArrayType)tp).arg;
+			foreach (NewInitializedArrayExpr arg; args; arg.type == null) {
+				if!(tp instanceof ArrayType)
+					Kiev.reportError(this,"Wrong dimension of array initializer");
+				else
+					arg.setType((ArrayType)tp);
+			}
+			return true;
+		}
 	}
 
 	public NewInitializedArrayExpr() {}
@@ -302,18 +318,37 @@ public final class NewInitializedArrayExpr extends ENode {
 
 	@getter
 	public ArrayType get$arrtype() {
-		ArrayType art = ((NewInitializedArrayExpr)this).arrtype;
+		ArrayType art = this.arrtype;
 		if (art != null)
 			return art;
 		art = new ArrayType(type.getType());
 		for(int i=1; i < dim; i++) art = new ArrayType(art);
-		((NewInitializedArrayExpr)this).arrtype = art;
+		this.arrtype = art;
 		return art;
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Type getType() { return arrtype; }
+
+	public void setType(ArrayType reqType) {
+		assert (this.type == null);
+		this.arrtype = (ArrayType)reqType;
+		Type art = reqType;
+		int dim = 0;
+		while (art instanceof ArrayType) { dim++; art = art.arg; }
+		this.type = new TypeRef(art);
+		this.dims = new int[dim];
+		this.dims[0] = args.length;
+
+		foreach (NewInitializedArrayExpr arg; args; arg.type == null) {
+			Type tp = reqType.arg;
+			if!(tp instanceof ArrayType)
+				Kiev.reportError(this,"Wrong dimension of array initializer");
+			else
+				arg.setType((ArrayType)tp);
+		}
+	}
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
