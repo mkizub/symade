@@ -187,7 +187,6 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
         Kiev.parserAddresses.clear();
 		Kiev.k.presc = null;
 		foreach(Struct n; members) ((JStruct)n).cleanup();
-		bodies.delAll();
 	}
 
 	public void toJava(String output_dir) {

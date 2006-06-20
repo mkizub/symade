@@ -104,8 +104,12 @@ public class Compiler {
 		int a = 0;
 		if( args==null ) args = new String[0];
 		int alen = args.length;
+		for(a=0; a < alen ;a++) {
+			if( args[a].equals("-debug"))
+				ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
+		}
 		try {
-			for(; a < alen ;a++) {
+			for(a=0; a < alen ;a++) {
 				boolean onoff = true;
 				if( args[a] == null ) continue;
 				if( args[a].equals("--") ) {
@@ -180,7 +184,6 @@ public class Compiler {
 					args[a] = null;
 				}
 				else if( args[a].equals("-debug")) {
-					Kiev.class.getClassLoader().setDefaultAssertionStatus(onoff);
 					args[a] = null;
 					String dbg = args[++a];
 					args[a] = null;
