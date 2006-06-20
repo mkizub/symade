@@ -357,15 +357,16 @@ public static view RBlock of Block extends RENode {
 	public:ro	ASTNode[]		stats;
 
 	public void resolve(Type reqType) {
-		RBlock.resolveStats(reqType, this, stats);
+		RBlock.resolveStats(reqType, getSpacePtr("stats"));
 	}
 
-	public static void resolveStats(Type reqType, RENode self, ASTNode[] stats) {
-		int sz = stats.length - 1;
-		for (int i=0; i <= sz; i++) {
+	public static void resolveStats(Type reqType, SpacePtr stats) {
+		ENode self = (ENode)stats.node;
+		int sz = stats.length;
+		for (int i=0; i < sz; i++) {
 			ASTNode st = stats[i];
 			try {
-				if( (i == sz) && self.isAutoReturnable() && st instanceof ENode)
+				if( (i == sz-1) && self.isAutoReturnable() && st instanceof ENode)
 					st.setAutoReturnable(true);
 				if( self.isAbrupted() && (st instanceof LabeledStat) )
 					self.setAbrupted(false);

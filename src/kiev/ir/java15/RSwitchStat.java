@@ -100,7 +100,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 			}
 		} catch(Exception e ) { Kiev.reportError(this,e); }
 
-		RBlock.resolveStats(Type.tpVoid, this, stats);
+		RBlock.resolveStats(Type.tpVoid, getSpacePtr("stats"));
 
 		if( val != null ) {
 			if( !val.isConstantExpr() )

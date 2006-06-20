@@ -54,6 +54,7 @@ public view RNode of ASTNode implements Constants {
 	public final void    setBad(boolean on);
 
 	public final Type getType();
+	public final SpacePtr getSpacePtr(String name);
 	public void open() { ((ASTNode)this).open(); }
 
 	public boolean preGenerate() { return true; }

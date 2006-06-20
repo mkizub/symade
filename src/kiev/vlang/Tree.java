@@ -68,6 +68,13 @@ public final class SpacePtr {
 		this.slot = slot;
 	}
 
+	@getter
+	public int size()
+		alias get$length
+	{
+		return slot.get(node).length;
+	}
+
 	public ASTNode get(int idx)
 		alias operator(210,xfy,[])
 	{
@@ -229,12 +236,15 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	}
 	
 	public final N set(ANode parent, int idx, N node) {
-		N[] narr = get(parent);
+		parent.open();
+		N[] narr = (N[])get(parent).clone();
 		narr[idx] = node;
+		set(parent,narr);
 		return node;
 	}
 
 	public final N add(ANode parent, N node) {
+		parent.open();
 		N[] narr = get(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
@@ -246,6 +256,7 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	}
 
 	public final void del(ANode parent, int idx) {
+		parent.open();
 		N[] narr = get(parent);
 		int sz = narr.length-1;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz); //new N[sz];
@@ -258,6 +269,7 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	}
 
 	public final void insert(ANode parent, int idx, N node) {
+		parent.open();
 		N[] narr = get(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
@@ -279,12 +291,16 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		N[] narr = get(parent);
 		if (narr.length == 0)
 			return;
+		parent.open();
 		set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
 	}
 	
 	public final N[] delToArray(ANode parent) {
 		N[] narr = get(parent);
-		set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+		if (narr.length > 0) {
+			parent.open();
+			set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+		}
 		return narr;
 	}
 }
@@ -315,10 +331,12 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	
 	public final N set(ANode parent, int idx, N node) {
 		assert(!node.isAttached());
-		N[] narr = get(parent);
+		parent.open();
+		N[] narr = (N[])get(parent).clone();
 		ASTNode old = narr[idx];
 		old.callbackDetached();
 		narr[idx] = node;
+		set(parent,narr);
 		ListAttachInfo prv = null;
 		ListAttachInfo nxt = null;
 		if (idx > 0) prv = (ListAttachInfo)narr[idx-1].getAttachInfo();
@@ -330,6 +348,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	public final N add(ANode parent, N node) {
 		assert(!node.isAttached());
 		assert(indexOf(parent,node) < 0);
+		parent.open();
 		N[] narr = get(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
@@ -344,6 +363,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	}
 
 	public final void del(ANode parent, int idx) {
+		parent.open();
 		N[] narr = get(parent);
 		ASTNode old = narr[idx];
 		old.callbackDetached();
@@ -360,6 +380,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	public final void insert(ANode parent, int idx, N node) {
 		assert(!node.isAttached());
 		assert(indexOf(parent,node) < 0);
+		parent.open();
 		N[] narr = get(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
@@ -386,6 +407,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		N[] narr = get(parent);
 		if (narr.length == 0)
 			return;
+		parent.open();
 		set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
 		for (int i=0; i < narr.length; i++)
 			narr[i].callbackDetached();
@@ -393,9 +415,12 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	
 	public final N[] delToArray(ANode parent) {
 		N[] narr = get(parent);
-		set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
-		for (int i=0; i < narr.length; i++)
-			narr[i].callbackDetached();
+		if (narr.length > 0) {
+			parent.open();
+			set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+			for (int i=0; i < narr.length; i++)
+				narr[i].callbackDetached();
+		}
 		return narr;
 	}
 }
