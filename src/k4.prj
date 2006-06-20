@@ -249,11 +249,10 @@ CLASS kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
 CLASS kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\BackendProcessor.java
 CLASS kiev.transf.EnumFE_GenMembers kiev/transf/EnumFE_GenMembers kiev\transf\ProcessEnum.java
 CLASS kiev.transf.ExportBE_Generate kiev/transf/ExportBE_Generate kiev\transf\ImportKievSrc.java
-CLASS kiev.transf.KievBE_CheckLock kiev/transf/KievBE_CheckLock kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievBE_Generate kiev/transf/KievBE_Generate kiev\transf\ImportKievSrc.java
-CLASS kiev.transf.KievBE_Lock kiev/transf/KievBE_Lock kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievBE_Resolve kiev/transf/KievBE_Resolve kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_GenMembers kiev/transf/KievFE_GenMembers kiev\transf\ImportKievSrc.java
+CLASS kiev.transf.KievFE_Lock kiev/transf/KievFE_Lock kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_MainResolve kiev/transf/KievFE_MainResolve kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_MetaDecls kiev/transf/KievFE_MetaDecls kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_MetaDefaults kiev/transf/KievFE_MetaDefaults kiev\transf\ImportKievSrc.java
@@ -871,6 +870,8 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.transf.KievBE_CheckLock kiev\transf\ImportKievSrc.java bad
+METATYPE kiev.transf.KievBE_Lock kiev\transf\ImportKievSrc.java bad
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java

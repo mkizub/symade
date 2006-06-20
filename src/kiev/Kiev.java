@@ -581,39 +581,28 @@ public final class Kiev {
 			processors.append(KievFE_Verify);
 			processors.append(PackedFldME_Verify);
 			//processors.append(VNodeFE_Verify);
+			processors.append(KievFE_Lock);
 			feProcessors = processors.toArray();
 		}
 		
 		{
 			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
-			processors.append(KievBE_Lock);
 			processors.append(RewriteME_PreGenerate);
-			processors.append(KievBE_CheckLock);
 			processors.append(KievME_PreGenartion);
-			processors.append(KievBE_CheckLock);
 			processors.append(VirtFldME_PreGenerate);
-			processors.append(KievBE_CheckLock);
 			processors.append(PackedFldME_PreGenerate);
-			processors.append(KievBE_CheckLock);
 			processors.append(PizzaME_PreGenerate);
-			processors.append(KievBE_CheckLock);
 			processors.append(ViewME_PreGenerate);
-			processors.append(KievBE_CheckLock);
 			processors.append(VNodeME_PreGenerate);
-			processors.append(KievBE_CheckLock);
 			meProcessors = processors.toArray();
 		}
 
 		{
 			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
 			processors.append(KievBE_Resolve);
-			processors.append(KievBE_CheckLock);
 			processors.append(VirtFldBE_Rewrite);
-			processors.append(KievBE_CheckLock);
 			processors.append(PackedFldBE_Rewrite);
-			processors.append(KievBE_CheckLock);
 			processors.append(KievBE_Generate);
-			processors.append(KievBE_CheckLock);
 			processors.append(ExportBE_Generate);
 			beProcessors = processors.toArray();
 		}

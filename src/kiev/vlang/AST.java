@@ -236,6 +236,16 @@ public abstract class ANode {
 		return node;
 	}
 	
+	public void setFrom(Object from$node) {
+		ANode node = (ANode)from$node;
+		this.p_info = node.p_info;
+		this.ndata = node.ndata;
+		this.version = node.version;
+		this.locked = node.locked;
+		this.prev_version_node = node.prev_version_node;
+		this.next_version_node = node.next_version_node;
+	}
+	
 	public final AttrPtr getAttrPtr(String name) {
 		foreach (AttrSlot attr; this.values(); attr.name == name)
 			return new AttrPtr(this, attr);
@@ -251,7 +261,7 @@ public abstract class ANode {
 	public final ANode open() {
 		if (!locked)
 			return this;
-		This node = (This)this.clone();
+		ANode node = (ANode)this.clone();
 		Transaction tr = Transaction.current();
 		node.version = tr.version;
 		node.prev_version_node = this.prev_version_node;
@@ -260,6 +270,17 @@ public abstract class ANode {
 		this.locked = false;
 		tr.add(this);
 		return this;
+	}
+
+	public final void rollback() {
+		assert (!locked);
+		if (this.prev_version_node == null)
+			return;
+		assert (this.prev_version_node.locked);
+		ANode node = (ANode)this.clone();
+		node.prev_version_node = this;
+		this.setFrom(this.prev_version_node);
+		this.next_version_node = node;
 	}
 }
 

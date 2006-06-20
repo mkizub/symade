@@ -485,6 +485,16 @@ public final class Transaction {
 			close();
 	}
 
+	public void rollback() {
+		assert (currentTransaction == this);
+		ANode[] nodes = this.nodes;
+		int n = this.size;
+		for (int i=0; i < n; i++)
+			nodes[i].rollback();
+		this.size = 0;
+		currentTransaction = null;
+	}
+
 	public int version;
 	private int recursion_counter;
 	private int size;

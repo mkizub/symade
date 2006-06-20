@@ -604,16 +604,19 @@ stop:;
 			for(int i=0; i < Kiev.files.length; i++) {
 				final int errCount = Kiev.errCount;
 				final FileUnit fu = Kiev.files[i];
-				Kiev.resetBackEndPass();
-				Kiev.openBackEndFileUnit(fu);
-				do {
-					diff_time = curr_time = System.currentTimeMillis();
-					String msg = Kiev.runCurrentBackEndProcessor(fu);
-					diff_time = System.currentTimeMillis() - curr_time;
-					if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
-				} while (Kiev.nextBackEndPass() && (Kiev.errCount == errCount || Kiev.source_only));
-				fu.cleanup();
-				Kiev.closeBackEndFileUnit();
+				Transaction tr = Transaction.open();
+				try {
+					Kiev.resetBackEndPass();
+					Kiev.openBackEndFileUnit(fu);
+					do {
+						diff_time = curr_time = System.currentTimeMillis();
+						String msg = Kiev.runCurrentBackEndProcessor(fu);
+						diff_time = System.currentTimeMillis() - curr_time;
+						if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
+					} while (Kiev.nextBackEndPass() && (Kiev.errCount == errCount || Kiev.source_only));
+					fu.cleanup();
+					Kiev.closeBackEndFileUnit();
+				} finally { tr.rollback(); }
 				Kiev.files[i] = null;
 				runGC();
 			}

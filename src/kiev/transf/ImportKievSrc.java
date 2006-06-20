@@ -828,6 +828,56 @@ public final class KievFE_Verify extends TransfProcessor {
 }
 
 
+@singleton
+public final class KievFE_Lock extends TransfProcessor {
+	private KievFE_Lock() { super(Kiev.Ext.JavaOnly); }
+	public String getDescr() { "Lock nodes" }
+
+	public void process(ASTNode node, Transaction tr) {
+		if (Transaction.get() != null)
+			return;
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) { n.locked = true; return true; }
+		});
+	}
+}
+
+/*
+@singleton
+public final class KievBE_Lock extends BackendProcessor {
+	private KievBE_Lock() { super(Kiev.Backend.Generic); }
+	public String getDescr() { "Lock nodes" }
+
+	public void process(ASTNode node, Transaction tr) {
+		if (Transaction.get() != null)
+			return;
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) { n.locked = true; return true; }
+		});
+	}
+}
+
+
+@singleton
+public final class KievBE_CheckLock extends BackendProcessor {
+	private KievBE_CheckLock() { super(Kiev.Backend.Generic); }
+	public String getDescr() { "Check nodes' locks" }
+
+	public void process(ASTNode node, Transaction tr) {
+		if (Transaction.get() != null)
+			return;
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) { if (!n.locked && n instanceof ASTNode) reportError(n); return true; }
+		});
+	}
+	
+	final static void reportError(ANode n) {
+		System.out.println("Unlocked node "+n);
+		assert(false);
+	}
+}
+*/
+
 ////////////////////////////////////////////////////
 //	   PASS - backend pre-generation              //
 ////////////////////////////////////////////////////
@@ -867,41 +917,6 @@ public final class KievBE_Resolve extends BackendProcessor {
 		} finally { tr.leave(); }
 	}
 }
-
-@singleton
-public final class KievBE_Lock extends BackendProcessor {
-	private KievBE_Lock() { super(Kiev.Backend.Generic); }
-	public String getDescr() { "Lock nodes" }
-
-	public void process(ASTNode node, Transaction tr) {
-		if (Transaction.get() != null)
-			return;
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { n.locked = true; return true; }
-		});
-	}
-}
-
-
-@singleton
-public final class KievBE_CheckLock extends BackendProcessor {
-	private KievBE_CheckLock() { super(Kiev.Backend.Generic); }
-	public String getDescr() { "Check nodes' locks" }
-
-	public void process(ASTNode node, Transaction tr) {
-		if (Transaction.get() != null)
-			return;
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { if (!n.locked && n instanceof ASTNode) reportError(n); return true; }
-		});
-	}
-	
-	final static void reportError(ANode n) {
-		System.out.println("Unlocked node "+n);
-		assert(false);
-	}
-}
-
 
 ////////////////////////////////////////////////////
 //	   PASS - backend generate                    //

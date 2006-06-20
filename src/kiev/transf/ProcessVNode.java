@@ -525,6 +525,33 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			}
 			copyV.block.stats.append(new ReturnStat(0,new LVarExpr(0,v)));
 		}
+		// setFrom(Object), a reverted clone()
+		if (hasMethod(s, "setFrom")) {
+			Kiev.reportWarning(s,"Method "+s+"."+"setFrom already exists, @node member is not generated");
+		} else {
+			Method setF = new Method("setFrom",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+			setF.params.append(new FormPar(0,"from$node", Type.tpObject, FormPar.PARAM_NORMAL, 0));
+			s.addMethod(setF);
+			setF.body = new Block();
+			Var v = new Var(0,"node",s.xtype,0);
+			v.init = new CastExpr(0,s.xtype,new ASTIdentifier(0,"from$node"));
+			setF.block.addSymbol(v);
+			foreach (Field f; s.members) {
+				if (f.isPackedField() || f.isAbstract() || f.isStatic())
+					continue;
+				setF.block.stats.append( 
+					new ExprStat(0,
+						new AssignExpr(0,Operator.Assign,
+							new IFldExpr(0,new ThisExpr(),f,true),
+							new IFldExpr(0,new LVarExpr(0,v),f,true)
+						)
+					)
+				);
+			}
+			CallExpr cae = new CallExpr(0,new ThisExpr(true),
+				new SymbolRef("setFrom"),null,new ENode[]{new LVarExpr(0,v)});
+			setF.block.stats.append(cae);
+		}
 		// setVal(String, Object)
 		if (hasMethod(s, "setVal")) {
 			Kiev.reportWarning(s,"Method "+s+"."+"setVal"+sigSetVal+" already exists, @node member is not generated");
