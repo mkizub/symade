@@ -33,14 +33,8 @@ public final class RewriteMatch extends ENode {
 	}
 
 	@virtual typedef This  = RewriteMatch;
-	@virtual typedef VView = VRewriteMatch;
 
 	@att public RewriteCase[]		cases;
-
-	@nodeview
-	public static final view VRewriteMatch of RewriteMatch extends VENode {
-		public:ro RewriteCase[]		cases;
-	}
 
 	public RewriteMatch() {}
 
@@ -62,14 +56,8 @@ public final class RewritePattern extends Var {
 	public static final RewritePattern[] emptyArray = new RewritePattern[0];
 	
 	@virtual typedef This  = RewritePattern;
-	@virtual typedef VView = VRewritePattern;
 
 	@att public RewritePattern[]		vars;
-
-	@nodeview
-	public static final view VRewritePattern of RewritePattern extends VVar {
-		public:ro RewritePattern[]		vars;
-	}
 
 	public RewritePattern() {}
 	public RewritePattern(Symbol id, TypeRef tp) {
@@ -101,16 +89,9 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 	public static final RewriteCase[] emptyArray = new RewriteCase[0];
 	
 	@virtual typedef This  = RewriteCase;
-	@virtual typedef VView = VRewriteCase;
 
 	@att public RewritePattern		var;
 	@att public ASTNode[]			stats;
-
-	@nodeview
-	public static final view VRewriteCase of RewriteCase extends VENode {
-		public:ro RewritePattern	var;
-		public:ro ASTNode[]			stats;
-	}
 
 	public RewriteCase() {}
 
@@ -142,16 +123,9 @@ public final class RewriteNodeFactory extends ENode {
 	}
 	
 	@virtual typedef This  = RewriteNodeFactory;
-	@virtual typedef VView = VRewriteNodeFactory;
 
 	     public Class					node_class;
 	@att public RewriteNodeArg[]		args;
-
-	@nodeview
-	public static final view VRewriteNodeFactory of RewriteNodeFactory extends VENode {
-		public:ro Class					node_class;
-		public:ro RewriteNodeArg[]		args;
-	}
 
 	public RewriteNodeFactory() {}
 	public RewriteNodeFactory(Class node_class) {
@@ -224,7 +198,6 @@ public final class RewriteNodeArg extends ENode {
 	public static final RewriteNodeArg[] emptyArray = new RewriteNodeArg[0];
 	
 	@virtual typedef This  = RewriteNodeArg;
-	@virtual typedef VView = VRewriteNodeArg;
 
 	@att public ENode		node;
 	@att public String		attr;
@@ -234,12 +207,6 @@ public final class RewriteNodeArg extends ENode {
 		this.attr = (value != null) ? value.intern() : null;
 	}
 	
-	@nodeview
-	public static final view VRewriteNodeArg of RewriteNodeArg extends VENode {
-		public:ro ENode		node;
-		public:ro String	attr;
-	}
-
 	public RewriteNodeArg() {}
 	public RewriteNodeArg(String attr, ENode node) {
 		this.attr = attr;

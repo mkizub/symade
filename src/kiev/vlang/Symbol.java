@@ -19,19 +19,11 @@ public class Symbol extends ASTNode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = Symbol;
-	@virtual typedef VView = VSymbol;
 
 	@att
 	public String		sname; // source code name, may be null for anonymouse symbols
 	public String		uname; // unique name in scope, never null, usually equals to name
 	public String[]		aliases;
-
-	@nodeview
-	public static view VSymbol of Symbol extends NodeView {
-		public:ro String	sname;
-		public:ro String	uname;
-		public:ro String[]	aliases;
-	}
 
 	public Symbol() {}
 	public Symbol(int pos, String sname) {
@@ -121,16 +113,9 @@ public class SymbolRef extends ASTNode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = SymbolRef;
-	@virtual typedef VView = VSymbolRef;
 
 	@att public String		name; // unresolved name
 	@ref public DNode		symbol; // resolved symbol
-
-	@nodeview
-	public static view VSymbolRef of SymbolRef extends NodeView {
-		public String	name;
-		public DNode	symbol;
-	}
 
 	public SymbolRef() {}
 

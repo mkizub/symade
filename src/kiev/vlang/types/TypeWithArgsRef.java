@@ -17,14 +17,8 @@ public class TypeWithArgsRef extends TypeNameRef {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeWithArgsRef;
-	@virtual typedef VView = VTypeWithArgsRef;
 
 	@att public TypeRef[]			args;
-
-	@nodeview
-	public static final view VTypeWithArgsRef of TypeWithArgsRef extends VTypeNameRef {
-		public:ro	TypeRef[]			args;
-	}
 
 	public TypeWithArgsRef() {}
 

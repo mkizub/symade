@@ -38,18 +38,11 @@ import syntax kiev.Syntax;
 @node
 public abstract class LoopStat extends ENode implements ContinueTarget {
 	@virtual typedef This  = LoopStat;
-	@virtual typedef VView = VLoopStat;
 	@virtual typedef JView = JLoopStat;
 	@virtual typedef RView = RLoopStat;
 
 	@att(copyable=false)	public Label		lblcnt;
 	@att(copyable=false)	public Label		lblbrk;
-
-	@nodeview
-	public static abstract view VLoopStat of LoopStat extends VENode {
-		public:ro	Label					lblcnt;
-		public:ro	Label					lblbrk;
-	}
 
 	protected LoopStat() {
 		lblcnt = new Label();
@@ -65,7 +58,6 @@ public final class Label extends DNode {
 	@dflow(out="this:out()") private static class DFI {}
 
 	@virtual typedef This  = Label;
-	@virtual typedef VView = VLabel;
 	@virtual typedef JView = JLabel;
 	@virtual typedef RView = RLabel;
 
@@ -88,13 +80,6 @@ public final class Label extends DNode {
 		links = links.diff(lnk);
 	}
 
-	@nodeview
-	public final static view VLabel of Label extends VDNode {
-		public List<ASTNode>		links;
-		public void addLink(ASTNode lnk);
-		public void delLink(ASTNode lnk);
-	}
-	
 	public Label() {}
 
 	static class LabelDFFunc extends DFFunc {
@@ -141,18 +126,11 @@ public class WhileStat extends LoopStat {
 	}
 
 	@virtual typedef This  = WhileStat;
-	@virtual typedef VView = VWhileStat;
 	@virtual typedef JView = JWhileStat;
 	@virtual typedef RView = RWhileStat;
 
 	@att public ENode		cond;
 	@att public ENode		body;
-
-	@nodeview
-	public static final view VWhileStat of WhileStat extends VLoopStat {
-		public ENode		cond;
-		public ENode		body;
-	}
 
 	public WhileStat() {}
 
@@ -174,18 +152,11 @@ public class DoWhileStat extends LoopStat {
 	}
 
 	@virtual typedef This  = DoWhileStat;
-	@virtual typedef VView = VDoWhileStat;
 	@virtual typedef JView = JDoWhileStat;
 	@virtual typedef RView = RDoWhileStat;
 
 	@att public ENode		cond;
 	@att public ENode		body;
-
-	@nodeview
-	public static view VDoWhileStat of DoWhileStat extends VLoopStat {
-		public ENode		cond;
-		public ENode		body;
-	}
 
 	public DoWhileStat() {}
 
@@ -204,17 +175,11 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	@virtual typedef This  = ForInit;
-	@virtual typedef VView = VForInit;
 	@virtual typedef JView = JForInit;
 	@virtual typedef RView = RForInit;
 
 	@att public TypeRef		type_ref;
 	@att public Var[]		decls;
-
-	@nodeview
-	public static final view VForInit of ForInit extends VENode {
-		public:ro	Var[]			decls;
-	}
 
 	public ForInit() {}
 
@@ -258,7 +223,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 	
 	@virtual typedef This  = ForStat;
-	@virtual typedef VView = VForStat;
 	@virtual typedef JView = JForStat;
 	@virtual typedef RView = RForStat;
 
@@ -266,14 +230,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	@att public ENode		cond;
 	@att public ENode		body;
 	@att public ENode		iter;
-
-	@nodeview
-	public static final view VForStat of ForStat extends VLoopStat {
-		public ENode		init;
-		public ENode		cond;
-		public ENode		body;
-		public ENode		iter;
-	}
 
 	public ForStat() {}
 	
@@ -324,7 +280,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	public static final int	RULE  = 4;
 
 	@virtual typedef This  = ForEachStat;
-	@virtual typedef VView = VForEachStat;
 	@virtual typedef JView = JForEachStat;
 	@virtual typedef RView = RForEachStat;
 
@@ -339,21 +294,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	@att public ENode		cond;
 	@att public ENode		body;
 	@att public ENode		iter_incr;
-
-	@nodeview
-	public static final view VForEachStat of ForEachStat extends VLoopStat {
-		public int			mode;
-		public ENode		container;
-		public Var			var;
-		public Var			iter;
-		public Var			iter_array;
-		public ENode		iter_init;
-		public ENode		iter_cond;
-		public ENode		var_init;
-		public ENode		cond;
-		public ENode		body;
-		public ENode		iter_incr;
-	}
 
 	public ForEachStat() {}
 	

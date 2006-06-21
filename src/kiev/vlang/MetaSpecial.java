@@ -21,10 +21,6 @@ public abstract class MetaSpecial extends ASTNode {
 	public final MetaAttrSlot attr;
 	
 	@virtual typedef This  = MetaSpecial;
-	@virtual typedef VView = VMetaSpecial;
-
-	@nodeview
-	public static view VMetaSpecial of MetaSpecial extends NodeView {}
 
 	public MetaSpecial(MetaAttrSlot attr) {
 		this.attr = attr;
@@ -43,20 +39,11 @@ public class MetaPacked extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.packed", MetaPacked.class);
 
 	@virtual typedef This  = MetaPacked;
-	@virtual typedef VView = VMetaPacked;
 
 	@att public ENode			 size;
 	@att public ENode			 offset;
 	@att public SymbolRef		 fld;
 	@ref public Field			 packer;
-
-	@nodeview
-	public static view VMetaPacked of MetaPacked extends VMetaSpecial {
-		public ENode			 size;
-		public ENode			 offset;
-		public SymbolRef		 fld;
-		public Field			 packer;
-	}
 
 	public MetaPacked() { super(ATTR); }
 
@@ -96,14 +83,8 @@ public class MetaPacker extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.packer", MetaPacker.class);
 
 	@virtual typedef This  = MetaPacker;
-	@virtual typedef VView = VMetaPacker;
 
 	@att public ENode			 size;
-
-	@nodeview
-	public static view VMetaPacker of MetaPacker extends VMetaSpecial {
-		public ENode			 size;
-	}
 
 	public MetaPacker() { super(ATTR); }
 
@@ -124,14 +105,8 @@ public class MetaAlias extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.alias", MetaAlias.class);
 
 	@virtual typedef This  = MetaAlias;
-	@virtual typedef VView = VMetaAlias;
 
 	@att public ENode[]			 aliases;
-
-	@nodeview
-	public static view VMetaAlias of MetaAlias extends VMetaSpecial {
-		public:ro ENode[]		 aliases;
-	}
 
 	public MetaAlias() {
 		super(ATTR);
@@ -152,14 +127,8 @@ public class MetaThrows extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.throws", MetaThrows.class);
 
 	@virtual typedef This  = MetaThrows;
-	@virtual typedef VView = VMetaThrows;
 
 	@att public TypeRef[]		 exceptions;
-
-	@nodeview
-	public static view VMetaThrows of MetaThrows extends VMetaSpecial {
-		public:ro TypeRef[]		 exceptions;
-	}
 
 	public MetaThrows() {
 		super(ATTR);
@@ -179,16 +148,9 @@ public class MetaPizzaCase extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.pcase", MetaPizzaCase.class);
 
 	@virtual typedef This  = MetaPizzaCase;
-	@virtual typedef VView = VMetaPizzaCase;
 
 	@ref public Field[]			 fields;
 	@att public int				 tag;
-
-	@nodeview
-	public static view VMetaPizzaCase of MetaPizzaCase extends VMetaSpecial {
-		public:ro Field[]		fields;
-		public int				tag;
-	}
 
 	public MetaPizzaCase() {
 		super(ATTR);

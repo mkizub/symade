@@ -34,7 +34,6 @@ public final class Field extends LvalDNode implements Accessable {
 	}
 
 	@virtual typedef This  = Field;
-	@virtual typedef VView = VField;
 	@virtual typedef JView = JField;
 	@virtual typedef RView = RField;
 
@@ -100,41 +99,6 @@ public final class Field extends LvalDNode implements Accessable {
 		}
 	}
 
-	@nodeview
-	public static final view VField of Field extends VLvalDNode {
-		public		Access			acc;
-		public		TypeRef			ftype;
-		public		ENode			init;
-		public		ConstExpr		const_value;
-		
-		@getter public final Type	get$type();
-		
-		// is a field of enum
-		public final boolean isEnumField();
-		public final void setEnumField(boolean on);
-		// packer field (auto-generated for packed fields)
-		public final boolean isPackerField();
-		public final void setPackerField(boolean on);
-		// packed field
-		public final boolean isPackedField();
-		public final void setPackedField(boolean on);
-		// field's initializer was already added to class initializer
-		public final boolean isAddedToInit();
-		public final void setAddedToInit(boolean on);
-
-		public boolean preResolveIn() {
-			ENode init = this.init;
-			if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
-				Type tp = getType();
-				if!(tp instanceof ArrayType)
-					Kiev.reportError(this,"Scalar field is initialized by array");
-				else
-					init.setType((ArrayType)tp);
-			}
-			return true;
-		}
-	}
-
 	@setter public final void		set$acc(Access val)	{ this.acc = val; Access.verifyDecl(this); }
 	@getter public final Access		get$acc()			{ return this.acc; }
 
@@ -193,6 +157,18 @@ public final class Field extends LvalDNode implements Accessable {
 
 	public final MetaAlias getMetaAlias() {
 		return (MetaAlias)this.getNodeData(MetaAlias.ATTR);
+	}
+
+	public boolean preResolveIn() {
+		ENode init = this.init;
+		if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
+			Type tp = getType();
+			if!(tp instanceof ArrayType)
+				Kiev.reportError(this,"Scalar field is initialized by array");
+			else
+				init.setType((ArrayType)tp);
+		}
+		return true;
 	}
 
 	public String toString() { return id.toString(); }

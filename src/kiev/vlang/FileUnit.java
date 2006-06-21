@@ -27,7 +27,6 @@ import syntax kiev.Syntax;
 public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef This  = FileUnit;
-	@virtual typedef VView = VFileUnit;
 	@virtual typedef JView = JFileUnit;
 	@virtual typedef RView = RFileUnit;
 
@@ -43,26 +42,6 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	@getter public TypeDecl get$child_ctx_tdecl() { return null; }
 	@getter public Method get$ctx_method() { return null; }
 	@getter public Method get$child_ctx_method() { return null; }
-
-	@nodeview
-	public static final view VFileUnit of FileUnit extends VDNode {
-		public		TypeNameRef				pkg;
-		public:ro	ASTNode[]				members;
-		public:ro	PrescannedBody[]		bodies;
-		public:ro	boolean[]				disabled_extensions;
-		public		boolean					scanned_for_interface_only;
-
-		public boolean preResolveIn() {
-			foreach (Import imp; members) {
-				try {
-					imp.resolveImports();
-				} catch(Exception e ) {
-					Kiev.reportError(imp,e);
-				}
-			}
-			return true;
-		}
-	}
 
 	public FileUnit() {
 		this("", Env.root);
@@ -111,6 +90,17 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 				}
 			}
 		} finally { Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
+	}
+
+	public boolean preResolveIn() {
+		foreach (Import imp; members) {
+			try {
+				imp.resolveImports();
+			} catch(Exception e ) {
+				Kiev.reportError(imp,e);
+			}
+		}
+		return true;
 	}
 
 	public void setPragma(ASTPragma pr) {

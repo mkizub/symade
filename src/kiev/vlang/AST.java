@@ -352,7 +352,6 @@ class ListAttachInfo extends AttachInfo {
 public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	@virtual typedef This  = ASTNode;
-	@virtual typedef VView = NodeView;
 	@virtual typedef JView = JNode;
 	@virtual typedef RView = RNode;
 	
@@ -600,54 +599,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	
 	public Type getType() { return Type.tpVoid; }
 
-	@nodeview
-	public static abstract view NodeView of ASTNode implements Constants {
-		public String toString();
-		
-		public int			pos;
-		public int			compileflags;
-		
-		@getter public final ANode get$ctx_root();
-		@getter public final FileUnit get$ctx_file_unit();
-		@getter public final TypeDecl get$ctx_tdecl();
-		@getter public final TypeDecl get$child_ctx_tdecl();
-		@getter public final Method get$ctx_method();
-		@getter public final Method get$child_ctx_method();
-
-		public final ANode parent();
-		public final AttrSlot pslot();
-		public AttrSlot[] values();
-		public final void callbackChildChanged(AttrSlot attr);
-		public final void callbackRootChanged();
-		public final Object getNodeData(AttrSlot attr);
-		public final void addNodeData(ANode d, AttrSlot attr);
-		public final void delNodeData(AttrSlot attr);
-		public DataFlowInfo getDFlow();
-		public final void    replaceWithNodeReWalk(ASTNode node);
-		public final ASTNode replaceWithNode(ASTNode node);
-		public final ASTNode replaceWith(()->ASTNode fnode);
-		public final boolean isAttached();
-		public final boolean isBreakTarget();
-		public final void    setBreakTarget(boolean on);
-		public final boolean isAccessedFromInner();
-		public final void    setAccessedFromInner(boolean on);
-		public final boolean isResolved();
-		public final void    setResolved(boolean on);
-		public final boolean isHidden();
-		public final void    setHidden(boolean on);
-		public final boolean isBad();
-		public final void    setBad(boolean on);
-
-		public final Type getType();
-
-		public boolean preResolveIn() { return true; }
-		public void preResolveOut() {}
-		public boolean mainResolveIn() { return true; }
-		public void mainResolveOut() {}
-		public boolean preVerify() { return true; }
-		public void postVerify() {}
-	}
-	
 	public ASTNode() {
 		Transaction tr = Transaction.get();
 		if (tr != null) {
@@ -689,12 +640,12 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }
 	public DFFunc newDFFuncFls(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncFls() for "+getClass()); }
 
-	public final boolean preResolveIn() { return ((VView)this).preResolveIn(); }
-	public final void preResolveOut() { ((VView)this).preResolveOut(); }
-	public final boolean mainResolveIn() { return ((VView)this).mainResolveIn(); }
-	public final void mainResolveOut() { ((VView)this).mainResolveOut(); }
-	public final boolean preVerify() { return ((VView)this).preVerify(); }
-	public final void postVerify() { ((VView)this).postVerify(); }
+	public boolean preResolveIn() { return true; }
+	public void preResolveOut() {}
+	public boolean mainResolveIn() { return true; }
+	public void mainResolveOut() {}
+	public boolean preVerify() { return true; }
+	public void postVerify() {}
 
 	public final boolean preGenerate() { return ((RView)this).preGenerate(); }
 
@@ -717,15 +668,6 @@ public class CompilerException extends RuntimeException {
 	public CompilerException(ASTNode from, CError err_id, String msg) {
 		super(msg);
 		this.from = from;
-		this.err_id = err_id;
-	}
-	public CompilerException(ASTNode.NodeView from, String msg) {
-		super(msg);
-		this.from = (ASTNode)from;
-	}
-	public CompilerException(ASTNode.NodeView from, CError err_id, String msg) {
-		super(msg);
-		this.from = (ASTNode)from;
 		this.err_id = err_id;
 	}
 	public CompilerException(JNode from, String msg) {

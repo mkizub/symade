@@ -17,7 +17,6 @@ import syntax kiev.Syntax;
 public final class MetaSet extends ASTNode {
 	
 	@virtual typedef This  = MetaSet;
-	@virtual typedef VView = VMetaSet;
 
 	@att public Meta[]				metas;
 
@@ -25,11 +24,6 @@ public final class MetaSet extends ASTNode {
 		if (isAttached()) {
 			if (attr.name == "metas") parent().callbackChildChanged(pslot());
 		}
-	}
-
-	@nodeview
-	public static final view VMetaSet of MetaSet extends NodeView {
-		public:ro	Meta[]			metas;
 	}
 
 	public MetaSet() {}
@@ -123,7 +117,6 @@ public class Meta extends ENode {
 	public static final Meta dummyNode = new Meta();
 	
 	@virtual typedef This  = Meta;
-	@virtual typedef VView = VMeta;
 
 	@att public TypeRef					type;
 	@att public MetaValue[]				values;
@@ -135,12 +128,6 @@ public class Meta extends ENode {
 			else if (attr.name == "values")
 				parent().callbackChildChanged(pslot());
 		}
-	}
-
-	@nodeview
-	public static view VMeta of Meta extends VENode {
-		public		TypeRef					type;
-		public:ro	MetaValue[]				values;
 	}
 
 	public Meta() {}
@@ -374,11 +361,6 @@ public abstract class MetaValue extends ENode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
 	@virtual typedef This  = MetaValue;
-	@virtual typedef VView = VMetaValue;
-
-	@nodeview
-	public static abstract view VMetaValue of MetaValue extends VENode {
-	}
 
 	public MetaValue() {}
 
@@ -433,14 +415,8 @@ public abstract class MetaValue extends ENode {
 public final class MetaValueScalar extends MetaValue {
 
 	@virtual typedef This  = MetaValueScalar;
-	@virtual typedef VView = VMetaValueScalar;
 
 	@att public ENode			value;
-
-	@nodeview
-	public static final view VMetaValueScalar of MetaValueScalar extends VMetaValue {
-		public ENode			value;
-	}
 
 	public MetaValueScalar() {}
 
@@ -481,14 +457,8 @@ public final class MetaValueScalar extends MetaValue {
 public final class MetaValueArray extends MetaValue {
 
 	@virtual typedef This  = MetaValueArray;
-	@virtual typedef VView = VMetaValueArray;
 
 	@att public ENode[]				values;
-
-	@nodeview
-	public static final view VMetaValueArray of MetaValueArray extends VMetaValue {
-		public:ro	ENode[]			values;
-	}
 
 	public MetaValueArray() {}
 

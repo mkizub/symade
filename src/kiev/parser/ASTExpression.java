@@ -27,37 +27,29 @@ public class ASTExpression extends ENode {
 	}
 	
 	@virtual typedef This  = ASTExpression;
-	@virtual typedef VView = VASTExpression;
 
 	@att public ENode[]				nodes;
 
 	private int cur_pos;
 
-	@nodeview
-	public static final view VASTExpression of ASTExpression extends VENode {
-		public:ro	ENode[]			nodes;
-		
-		public ENode parseExpr();
-
-		public void preResolveOut() {
-			if (nodes.length == 1) {
-				ENode n = nodes[0];
-				this.replaceWithNode(~n);
-				return;
-			}
-			ENode e = parseExpr();
-			if (e != null) {
-				e = e.closeBuild();
-				if (isPrimaryExpr())
-					e.setPrimaryExpr(true);
-				this.replaceWithNode(~e);
-			}
-		}
-	}
-
 	public ASTExpression() {}
 
 	public int		getPriority() { return 256; }
+
+	public void preResolveOut() {
+		if (nodes.length == 1) {
+			ENode n = nodes[0];
+			this.replaceWithNode(~n);
+			return;
+		}
+		ENode e = parseExpr();
+		if (e != null) {
+			e = e.closeBuild();
+			if (isPrimaryExpr())
+				e.setPrimaryExpr(true);
+			this.replaceWithNode(~e);
+		}
+	}
 
     public String toString() {
     	StringBuffer sb = new StringBuffer();

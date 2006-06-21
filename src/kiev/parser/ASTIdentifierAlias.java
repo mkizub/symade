@@ -20,11 +20,6 @@ public abstract class ASTAlias extends ASTNode {
 	public static ASTAlias[]	emptyArray = new ASTAlias[0];
 	
 	@virtual typedef This  = ASTAlias;
-	@virtual typedef VView = ASTAliasView;
-
-	@nodeview
-	public static view ASTAliasView of ASTAlias extends NodeView {
-	}
 
 	public ASTAlias() {}
 	
@@ -36,7 +31,6 @@ public abstract class ASTAlias extends ASTNode {
 public final class ASTIdentifierAlias extends ASTAlias {
 
 	@virtual typedef This  = ASTIdentifierAlias;
-	@virtual typedef VView = ASTIdentifierAliasView;
 
 	@att public String		name;
 
@@ -45,11 +39,6 @@ public final class ASTIdentifierAlias extends ASTAlias {
 		this.name = (value != null) ? value.intern() : null;
 	}
 	
-	@nodeview
-	public static view ASTIdentifierAliasView of ASTIdentifierAlias extends ASTAliasView {
-		public String		name;
-	}
-
 	public ASTIdentifierAlias() {}
 	
 	public void attach(ASTNode n) {

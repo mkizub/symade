@@ -20,15 +20,9 @@ import syntax kiev.Syntax;
 public abstract class UnresExpr extends ENode {
 
 	@virtual typedef This  = UnresExpr;
-	@virtual typedef VView = VUnresExpr;
 
 	@ref public Operator				op;
 
-	@nodeview
-	public static view VUnresExpr of UnresExpr extends VENode {
-		public				Operator			op;
-	}
-	
 	public UnresExpr() {}
 	
 	public Operator getOp() { return op; }
@@ -53,15 +47,9 @@ public abstract class UnresExpr extends ENode {
 public class UnresOpExpr extends UnresExpr {
 	
 	@virtual typedef This  = UnresOpExpr;
-	@virtual typedef VView = VUnresOpExpr;
 
 	@ref public ENode[]				exprs;
 
-	@nodeview
-	public static view VUnresOpExpr of UnresOpExpr extends VUnresExpr {
-		public:ro	ENode[]			exprs;
-	}
-	
 	public UnresOpExpr() {}
 
 	public UnresOpExpr(int pos, Operator op, ENode[] exprs) {
@@ -122,21 +110,12 @@ public class UnresOpExpr extends UnresExpr {
 public class UnresCallExpr extends UnresExpr {
 
 	@virtual typedef This  = UnresCallExpr;
-	@virtual typedef VView = VUnresCallExpr;
 
 	@ref public ENode				obj;
 	@ref public SymbolRef			func;
 	@ref public TypeRef[]			targs;
 	@ref public ENode[]				args;
 
-	@nodeview
-	public static view VUnresCallExpr of UnresCallExpr extends VUnresExpr {
-		public		ENode			obj;
-		public		SymbolRef		func;
-		public:ro	TypeRef[]		targs;
-		public:ro	ENode[]			args;
-	}
-	
 	public UnresCallExpr() {}
 
 	public UnresCallExpr(int pos, ENode obj, DNode func, TypeRef[] targs, ENode[] args, boolean super_flag) {
@@ -200,17 +179,10 @@ public class UnresCallExpr extends UnresExpr {
 public class AccFldExpr extends UnresExpr {
 
 	@virtual typedef This  = AccFldExpr;
-	@virtual typedef VView = VAccFldExpr;
 
 	@ref public ENode				obj;
 	@ref public Field				fld;
 
-	@nodeview
-	public static view VAccFldExpr of AccFldExpr extends VUnresExpr {
-		public				ENode			obj;
-		public				Field			fld;
-	}
-	
 	public AccFldExpr() {}
 
 	public AccFldExpr(int pos, ENode obj, Field fld) {

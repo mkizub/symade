@@ -35,10 +35,6 @@ import kiev.be.java15.JGotoStat;
 import kiev.ir.java15.RGotoCaseStat;
 import kiev.be.java15.JGotoCaseStat;
 
-import kiev.vlang.Method.VMethod;
-import kiev.vlang.LoopStat.VLoopStat;
-import kiev.vlang.LabeledStat.VLabeledStat;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -60,18 +56,11 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	};
 
 	@virtual typedef This  = InlineMethodStat;
-	@virtual typedef VView = VInlineMethodStat;
 	@virtual typedef JView = JInlineMethodStat;
 	@virtual typedef RView = RInlineMethodStat;
 
 	@att public Method			method;
 	@ref public ParamRedir[]	params_redir;
-
-	@nodeview
-	public static final view VInlineMethodStat of InlineMethodStat extends VENode {
-		public Method			method;
-		public ParamRedir[]		params_redir;
-	}
 
 	public InlineMethodStat() {}
 
@@ -146,16 +135,10 @@ public class ExprStat extends ENode {
 	}
 
 	@virtual typedef This  = ExprStat;
-	@virtual typedef VView = VExprStat;
 	@virtual typedef JView = JExprStat;
 	@virtual typedef RView = RExprStat;
 
 	@att public ENode	expr;
-
-	@nodeview
-	public static final view VExprStat of ExprStat extends VENode {
-		public ENode		expr;
-	}
 
 	public ExprStat() {}
 
@@ -186,16 +169,10 @@ public class ReturnStat extends ENode {
 	}
 
 	@virtual typedef This  = ReturnStat;
-	@virtual typedef VView = VReturnStat;
 	@virtual typedef JView = JReturnStat;
 	@virtual typedef RView = RReturnStat;
 
 	@att public ENode	expr;
-
-	@nodeview
-	public static final view VReturnStat of ReturnStat extends VENode {
-		public ENode		expr;
-	}
 
 	public ReturnStat() {}
 
@@ -228,16 +205,10 @@ public class ThrowStat extends ENode {
 	}
 
 	@virtual typedef This  = ThrowStat;
-	@virtual typedef VView = VThrowStat;
 	@virtual typedef JView = JThrowStat;
 	@virtual typedef RView = RThrowStat;
 
 	@att public ENode	expr;
-
-	@nodeview
-	public static final view VThrowStat of ThrowStat extends VENode {
-		public ENode		expr;
-	}
 
 	public ThrowStat() {}
 
@@ -258,7 +229,6 @@ public class IfElseStat extends ENode {
 	}
 
 	@virtual typedef This  = IfElseStat;
-	@virtual typedef VView = VIfElseStat;
 	@virtual typedef JView = JIfElseStat;
 	@virtual typedef RView = RIfElseStat;
 
@@ -266,13 +236,6 @@ public class IfElseStat extends ENode {
 	@att public ENode			thenSt;
 	@att public ENode			elseSt;
 
-	@nodeview
-	public static final view VIfElseStat of IfElseStat extends VENode {
-		public ENode		cond;
-		public ENode		thenSt;
-		public ENode		elseSt;
-	}
-	
 	public IfElseStat() {}
 	
 	public IfElseStat(int pos, ENode cond, ENode thenSt, ENode elseSt) {
@@ -305,7 +268,6 @@ public class CondStat extends ENode {
 	}
 
 	@virtual typedef This  = CondStat;
-	@virtual typedef VView = VCondStat;
 	@virtual typedef JView = JCondStat;
 	@virtual typedef RView = RCondStat;
 
@@ -313,13 +275,6 @@ public class CondStat extends ENode {
 	@att public ENode		cond;
 	@att public ENode		message;
 
-	@nodeview
-	public static final view VCondStat of CondStat extends VENode {
-		public ENode		enabled;
-		public ENode		cond;
-		public ENode		message;
-	}
-	
 	public CondStat() {}
 
 	public CondStat(int pos, ENode cond, ENode message) {
@@ -340,19 +295,12 @@ public class LabeledStat extends ENode {
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
 	@virtual typedef This  = LabeledStat;
-	@virtual typedef VView = VLabeledStat;
 	@virtual typedef JView = JLabeledStat;
 	@virtual typedef RView = RLabeledStat;
 
 	@att public Label			lbl;
 	@att public ENode			stat;
 
-	@nodeview
-	public static final view VLabeledStat of LabeledStat extends VENode {
-		public Label			lbl;
-		public ENode			stat;
-	}
-	
 	public LabeledStat() {
 		this.lbl = new Label();
 	}
@@ -364,7 +312,6 @@ public class BreakStat extends ENode {
 	@dflow(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = BreakStat;
-	@virtual typedef VView = VBreakStat;
 	@virtual typedef JView = JBreakStat;
 	@virtual typedef RView = RBreakStat;
 
@@ -378,61 +325,56 @@ public class BreakStat extends ENode {
 		super.callbackRootChanged();
 	}
 
-	@nodeview
-	public static final view VBreakStat of BreakStat extends VENode {
-		public Label			dest;
-
-		public boolean mainResolveIn() {
-			ASTNode p;
-			if (dest != null) {
-				dest.delLink((BreakStat)this);
-				dest = null;
-			}
-			if( ident == null ) {
-				for(p=(ASTNode)parent(); !(p instanceof Method || p.isBreakTarget()); p = (ASTNode)p.parent() );
-				if( p instanceof Method || p == null ) {
-					Kiev.reportError(this,"Break not within loop/switch statement");
-				} else {
-					if (p instanceof LoopStat) {
-						Label l = p.lblbrk;
-						if (l != null) {
-							dest = l;
-							l.addLink((BreakStat)this);
-						}
-					}
-				}
-			} else {
-		label_found:
-				for(p=(ASTNode)parent(); !(p instanceof Method) ; p=(ASTNode)p.parent() ) {
-					if (p instanceof LabeledStat && p.lbl.id.equals(ident.name))
-						throw new RuntimeException("Label "+ident+" does not refer to break target");
-					if (!p.isBreakTarget()) continue;
-					ASTNode pp = p;
-					for(p=(ASTNode)p.parent(); p instanceof LabeledStat; p = (ASTNode)p.parent()) {
-						if (p.lbl.id.equals(ident.name)) {
-							p = pp;
-							break label_found;
-						}
-					}
-					p = pp;
-				}
-				if( p instanceof Method || p == null) {
-					Kiev.reportError(this,"Break not within loop/switch statement");
-				} else {
-					if (p instanceof LoopStat) {
-						Label l = p.lblbrk;
-						if (l != null) {
-							dest = l;
-							l.addLink((BreakStat)this);
-						}
-					}
-				}
-			}
-			return false; // don't pre-resolve
-		}
-	}
-	
 	public BreakStat() {}
+
+	public boolean mainResolveIn() {
+		ASTNode p;
+		if (dest != null) {
+			dest.delLink((BreakStat)this);
+			dest = null;
+		}
+		if( ident == null ) {
+			for(p=(ASTNode)parent(); !(p instanceof Method || p.isBreakTarget()); p = (ASTNode)p.parent() );
+			if( p instanceof Method || p == null ) {
+				Kiev.reportError(this,"Break not within loop/switch statement");
+			} else {
+				if (p instanceof LoopStat) {
+					Label l = p.lblbrk;
+					if (l != null) {
+						dest = l;
+						l.addLink((BreakStat)this);
+					}
+				}
+			}
+		} else {
+	label_found:
+			for(p=(ASTNode)parent(); !(p instanceof Method) ; p=(ASTNode)p.parent() ) {
+				if (p instanceof LabeledStat && p.lbl.id.equals(ident.name))
+					throw new RuntimeException("Label "+ident+" does not refer to break target");
+				if (!p.isBreakTarget()) continue;
+				ASTNode pp = p;
+				for(p=(ASTNode)p.parent(); p instanceof LabeledStat; p = (ASTNode)p.parent()) {
+					if (p.lbl.id.equals(ident.name)) {
+						p = pp;
+						break label_found;
+					}
+				}
+				p = pp;
+			}
+			if( p instanceof Method || p == null) {
+				Kiev.reportError(this,"Break not within loop/switch statement");
+			} else {
+				if (p instanceof LoopStat) {
+					Label l = p.lblbrk;
+					if (l != null) {
+						dest = l;
+						l.addLink((BreakStat)this);
+					}
+				}
+			}
+		}
+		return false; // don't pre-resolve
+	}
 }
 
 @node(name="Continue")
@@ -441,7 +383,6 @@ public class ContinueStat extends ENode {
 	@dflow(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = ContinueStat;
-	@virtual typedef VView = VContinueStat;
 	@virtual typedef JView = JContinueStat;
 	@virtual typedef RView = RContinueStat;
 
@@ -455,61 +396,56 @@ public class ContinueStat extends ENode {
 		super.callbackRootChanged();
 	}
 
-	@nodeview
-	public static final view VContinueStat of ContinueStat extends VENode {
-		public Label			dest;
-
-		public boolean mainResolveIn() {
-			ASTNode p;
-			if (dest != null) {
-				dest.delLink((ContinueStat)this);
-				dest = null;
-			}
-			if( ident == null ) {
-				for(p=(ASTNode)parent(); !(p instanceof LoopStat || p instanceof Method); p = (ASTNode)p.parent() );
-				if( p instanceof Method || p == null ) {
-					Kiev.reportError(this,"Continue not within loop statement");
-				} else {
-					if (p instanceof LoopStat) {
-						Label l = p.lblcnt;
-						if (l != null) {
-							dest = l;
-							l.addLink((ContinueStat)this);
-						}
-					}
-				}
-			} else {
-		label_found:
-				for(p=(ASTNode)parent(); !(p instanceof Method) ; p=(ASTNode)p.parent() ) {
-					if( p instanceof LabeledStat && p.lbl.id.equals(ident.name) )
-						throw new RuntimeException("Label "+ident+" does not refer to continue target");
-					if !(p instanceof LoopStat) continue;
-					ASTNode pp = p;
-					for(p=(ASTNode)p.parent(); p instanceof LabeledStat; p = (ASTNode)p.parent()) {
-						if( p.lbl.id.equals(ident.name) ) {
-							p = pp;
-							break label_found;
-						}
-					}
-					p = pp;
-				}
-				if( p instanceof Method || p == null) {
-					Kiev.reportError(this,"Continue not within loop statement");
-				} else {
-					if (p instanceof LoopStat) {
-						Label l = p.lblcnt;
-						if (l != null) {
-							dest = l;
-							l.addLink((ContinueStat)this);
-						}
-					}
-				}
-			}
-			return false; // don't pre-resolve
-		}
-	}
-	
 	public ContinueStat() {}
+
+	public boolean mainResolveIn() {
+		ASTNode p;
+		if (dest != null) {
+			dest.delLink((ContinueStat)this);
+			dest = null;
+		}
+		if( ident == null ) {
+			for(p=(ASTNode)parent(); !(p instanceof LoopStat || p instanceof Method); p = (ASTNode)p.parent() );
+			if( p instanceof Method || p == null ) {
+				Kiev.reportError(this,"Continue not within loop statement");
+			} else {
+				if (p instanceof LoopStat) {
+					Label l = p.lblcnt;
+					if (l != null) {
+						dest = l;
+						l.addLink((ContinueStat)this);
+					}
+				}
+			}
+		} else {
+	label_found:
+			for(p=(ASTNode)parent(); !(p instanceof Method) ; p=(ASTNode)p.parent() ) {
+				if( p instanceof LabeledStat && p.lbl.id.equals(ident.name) )
+					throw new RuntimeException("Label "+ident+" does not refer to continue target");
+				if !(p instanceof LoopStat) continue;
+				ASTNode pp = p;
+				for(p=(ASTNode)p.parent(); p instanceof LabeledStat; p = (ASTNode)p.parent()) {
+					if( p.lbl.id.equals(ident.name) ) {
+						p = pp;
+						break label_found;
+					}
+				}
+				p = pp;
+			}
+			if( p instanceof Method || p == null) {
+				Kiev.reportError(this,"Continue not within loop statement");
+			} else {
+				if (p instanceof LoopStat) {
+					Label l = p.lblcnt;
+					if (l != null) {
+						dest = l;
+						l.addLink((ContinueStat)this);
+					}
+				}
+			}
+		}
+		return false; // don't pre-resolve
+	}
 }
 
 @node(name="Goto")
@@ -518,7 +454,6 @@ public class GotoStat extends ENode {
 	@dflow(jmp="this:in") private static class DFI {}
 
 	@virtual typedef This  = GotoStat;
-	@virtual typedef VView = VGotoStat;
 	@virtual typedef JView = JGotoStat;
 	@virtual typedef RView = RGotoStat;
 
@@ -532,36 +467,31 @@ public class GotoStat extends ENode {
 		super.callbackRootChanged();
 	}
 
-	@nodeview
-	public static final view VGotoStat of GotoStat extends VENode {
-		public Label			dest;
-
-		public boolean mainResolveIn() {
-			if (dest != null) {
-				dest.delLink((GotoStat)this);
-				dest = null;
-			}
-			LabeledStat[] stats = resolveStat(ident.name,ctx_method.body, LabeledStat.emptyArray);
-			if( stats.length == 0 ) {
-				Kiev.reportError(this,"Label "+ident+" unresolved");
-				return false;
-			}
-			if( stats.length > 1 ) {
-				Kiev.reportError(this,"Umbigouse label "+ident+" in goto statement");
-			}
-			LabeledStat stat = stats[0];
-			if( stat == null ) {
-				Kiev.reportError(this,"Label "+ident+" unresolved");
-				return false;
-			}
-			dest = stat.lbl;
-			dest.addLink((GotoStat)this);
-			return false; // don't pre-resolve
-		}
-	}
-
 	public GotoStat() {}
 	
+	public boolean mainResolveIn() {
+		if (dest != null) {
+			dest.delLink((GotoStat)this);
+			dest = null;
+		}
+		LabeledStat[] stats = resolveStat(ident.name,ctx_method.body, LabeledStat.emptyArray);
+		if( stats.length == 0 ) {
+			Kiev.reportError(this,"Label "+ident+" unresolved");
+			return false;
+		}
+		if( stats.length > 1 ) {
+			Kiev.reportError(this,"Umbigouse label "+ident+" in goto statement");
+		}
+		LabeledStat stat = stats[0];
+		if( stat == null ) {
+			Kiev.reportError(this,"Label "+ident+" unresolved");
+			return false;
+		}
+		dest = stat.lbl;
+		dest.addLink((GotoStat)this);
+		return false; // don't pre-resolve
+	}
+
 	public static LabeledStat[] resolveStat(String name, ASTNode st, LabeledStat[] stats) {
 		int i;
 		switch( st ) {
@@ -658,19 +588,12 @@ public class GotoCaseStat extends ENode {
 	}
 
 	@virtual typedef This  = GotoCaseStat;
-	@virtual typedef VView = VGotoCaseStat;
 	@virtual typedef JView = JGotoCaseStat;
 	@virtual typedef RView = RGotoCaseStat;
 
 	@att public ENode		expr;
 	@ref public SwitchStat	sw;
 
-	@nodeview
-	public static final view VGotoCaseStat of GotoCaseStat extends VENode {
-		public ENode		expr;
-		public SwitchStat	sw;
-	}
-	
 	public GotoCaseStat() {}
 }
 

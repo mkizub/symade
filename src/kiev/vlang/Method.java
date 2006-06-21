@@ -39,7 +39,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",Field.class);	
 
 	@virtual typedef This  = Method;
-	@virtual typedef VView = VMethod;
 	@virtual typedef JView = JMethod;
 	@virtual typedef RView = RMethod;
 
@@ -251,76 +250,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	@getter public Method get$child_ctx_method() { return (Method)this; }
 
 
-	@nodeview
-	public static view VMethod of Method extends VDNode {
-
-		public				Access				acc;
-		public:ro			TypeDef[]			targs;
-		public				TypeRef				type_ret;
-		public				TypeRef				dtype_ret;
-		public:ro			CallType			type;
-		public:ro			CallType			dtype;
-		public:ro			CallType			etype;
-		public:ro			FormPar[]			params;
-		public:ro			ASTAlias[]			aliases;
-		public				ENode				body;
-		public:ro			WBCCondition[]		conditions;
-	
-		public Var getRetVar();
-		public MetaThrows getMetaThrows();
-		
-		// virtual static method
-		public final boolean isVirtualStatic();
-		public final void setVirtualStatic(boolean on);
-		// method with variable number of arguments	
-		public final boolean isVarArgs();
-		public final void setVarArgs(boolean on);
-		// logic rule method
-		public final boolean isRuleMethod();
-		// method with attached operator	
-		public final boolean isOperatorMethod();
-		public final void setOperatorMethod(boolean on);
-		// need fields initialization	
-		public final boolean isNeedFieldInits();
-		public final void setNeedFieldInits(boolean on);
-		// a method generated as invariant	
-		public final boolean isInvariantMethod();
-		public final void setInvariantMethod(boolean on);
-		// a local method (closure code or inner method)	
-		public final boolean isLocalMethod();
-		public final void setLocalMethod(boolean on);
-		// a dispatcher (for multimethods)	
-		public final boolean isDispatcherMethod();
-		public final void setDispatcherMethod(boolean on);
-		public final boolean isInlinedByDispatcherMethod();
-
-		public boolean preResolveIn() {
-			Type t = this.type; // rebuildTypes()
-			return true;
-		}
-	
-		public boolean mainResolveIn() {
-			Type t = this.type; // rebuildTypes()
-			return true;
-		}
-	
-		public boolean preVerify() {
-			TypeDecl ctx_tdecl = this.ctx_tdecl;
-			if (isAbstract() && isStatic()) {
-				setBad(true);
-				ctx_tdecl.setBad(true);
-				Kiev.reportWarning(this,"Static method cannot be declared abstract");
-			}
-			if (ctx_tdecl.isInterface() && !ctx_tdecl.isStructView()) {
-				if (isFinal()) {
-					Kiev.reportWarning(this,"Interface methods cannot be final");
-					setFinal(false);
-				}
-			}
-			return true;
-		}
-	}
-
 	public static Method[]	emptyArray = new Method[0];
 
 	@getter public Access			get$acc()			{ return this.acc; }
@@ -385,6 +314,32 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			if (Method.ATTR_VIOLATED_FIELDS.indexOf(this,f) < 0)
 				Method.ATTR_VIOLATED_FIELDS.add(this,f);
 		}
+	}
+
+	public boolean preResolveIn() {
+		Type t = this.type; // rebuildTypes()
+		return true;
+	}
+
+	public boolean mainResolveIn() {
+		Type t = this.type; // rebuildTypes()
+		return true;
+	}
+
+	public boolean preVerify() {
+		TypeDecl ctx_tdecl = this.ctx_tdecl;
+		if (isAbstract() && isStatic()) {
+			setBad(true);
+			ctx_tdecl.setBad(true);
+			Kiev.reportWarning(this,"Static method cannot be declared abstract");
+		}
+		if (ctx_tdecl.isInterface() && !ctx_tdecl.isStructView()) {
+			if (isFinal()) {
+				Kiev.reportWarning(this,"Interface methods cannot be final");
+				setFinal(false);
+			}
+		}
+		return true;
 	}
 
 	public String toString() {
@@ -846,15 +801,9 @@ public class Constructor extends Method {
 	}
 
 	@virtual typedef This  = Constructor;
-	@virtual typedef VView = VConstructor;
 	@virtual typedef RView = RConstructor;
 
 	@att public ENode[]				addstats;
-
-	@nodeview
-	public static final view VConstructor of Constructor extends VMethod {
-		public:ro	ENode[]				addstats;
-	}
 
 	public Constructor() {}
 
@@ -872,18 +821,12 @@ public class Initializer extends DNode implements PreScanneable {
 	}
 
 	@virtual typedef This  = Initializer;
-	@virtual typedef VView = VInitializer;
 	@virtual typedef JView = JInitializer;
 	@virtual typedef RView = RInitializer;
 
 	@att public ENode				body;
 
 	@getter public final Block get$block()	{ return (Block)this.body; }
-
-	@nodeview
-	public static final view VInitializer of Initializer extends VDNode {
-		public ENode				body;
-	}
 
 	public Initializer() {}
 
@@ -918,7 +861,6 @@ public class WBCCondition extends DNode {
 	public static WBCCondition[]	emptyArray = new WBCCondition[0];
 
 	@virtual typedef This  = WBCCondition;
-	@virtual typedef VView = VWBCCondition;
 	@virtual typedef JView = JWBCCondition;
 	@virtual typedef RView = RWBCCondition;
 
@@ -926,14 +868,6 @@ public class WBCCondition extends DNode {
 	@att public ENode				body;
 	@ref public Method				definer;
 	@att public CodeAttr			code_attr;
-
-	@nodeview
-	public static final view VWBCCondition of WBCCondition extends VDNode {
-		public WBCType				cond;
-		public ENode				body;
-		public Method				definer;
-		public CodeAttr				code_attr;
-	}
 
 	public WBCCondition() {}
 

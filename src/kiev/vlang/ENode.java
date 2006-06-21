@@ -24,7 +24,6 @@ public abstract class ENode extends ASTNode {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = ENode;
-	@virtual typedef VView = VENode;
 	@virtual typedef JView = JENode;
 	@virtual typedef RView = RENode;
 
@@ -192,68 +191,6 @@ public abstract class ENode extends ASTNode {
 		do_resolve(null,n);
 	}
 	
-	@nodeview
-	public static abstract view VENode of ENode extends NodeView {
-
-		public SymbolRef			ident;
-		
-		//
-		// Expr specific
-		//
-	
-		// use no proxy	
-		public final boolean isUseNoProxy();
-		public final void setUseNoProxy(boolean on);
-		// use as field (disable setter/getter calls for virtual fields)
-		public final boolean isAsField();
-		public final void setAsField(boolean on);
-		// expression will generate void value
-		public final boolean isGenVoidExpr();
-		public final void setGenVoidExpr(boolean on);
-		// used bt for()
-		public final boolean isForWrapper();
-		public final void setForWrapper(boolean on);
-		// used for primary expressions, i.e. (a+b)
-		public final boolean isPrimaryExpr();
-		public final void setPrimaryExpr(boolean on);
-		// used for super-expressions, i.e. (super.foo or super.foo())
-		public final boolean isSuperExpr();
-		public final void setSuperExpr(boolean on);
-		// used for cast calls (to check for null)
-		public final boolean isCastCall();
-		public final void setCastCall(boolean on);
-	
-		//
-		// Statement specific flags
-		//
-		
-		// abrupted
-		public final boolean isAbrupted();
-		public final void setAbrupted(boolean on);
-		// breaked
-		public final boolean isBreaked();
-		public final void setBreaked(boolean on);
-		// method-abrupted
-		public final boolean isMethodAbrupted();
-		public final void setMethodAbrupted(boolean on);
-		// auto-returnable
-		public final boolean isAutoReturnable();
-		public final void setAutoReturnable(boolean on);
-
-		public final void replaceWithNodeResolve(Type reqType, ENode node);
-		public final void replaceWithResolve(Type reqType, ()->ENode fnode);
-		public final void replaceWithNodeResolve(ENode node);
-		public final void replaceWithResolve(()->ENode fnode);
-
-		public final Operator getOp();
-		public ENode[] getArgs();
-		public final int getPriority();
-		public final boolean valueEquals(Object o);
-		public final boolean isConstantExpr();
-		public final Object	getConstValue();
-		public final ENode closeBuild();
-	}
-
 	public static final ENode[] emptyArray = new ENode[0];
 	
 	public ENode() {}
@@ -305,12 +242,7 @@ public final class NopExpr extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = NopExpr;
-	@virtual typedef VView = VNopExpr;
 	@virtual typedef RView = RNopExpr;
-
-	@nodeview
-	public static final view VNopExpr of NopExpr extends VENode {
-	}
 
 	public NopExpr() {}
 	

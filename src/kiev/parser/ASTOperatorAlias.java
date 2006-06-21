@@ -21,18 +21,10 @@ import syntax kiev.Syntax;
 public final class ASTOperatorAlias extends ASTAlias {
 
 	@virtual typedef This  = ASTOperatorAlias;
-	@virtual typedef VView = ASTOperatorAliasView;
 
 	@att public int					prior;
 	@att public int					opmode;
 	@att public String				image;
-
-	@nodeview
-	public static view ASTOperatorAliasView of ASTOperatorAlias extends ASTAliasView {
-		public int					prior;
-		public int					opmode;
-		public String				image;
-	}
 
 	public ASTOperatorAlias() {}
 	

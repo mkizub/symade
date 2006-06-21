@@ -21,18 +21,12 @@ public final class ASTOperator extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = ASTOperator;
-	@virtual typedef VView = VASTOperator;
 
 	@att public String		image;
 
 	@setter
 	public void set$image(String value) {
 		this.image = (value != null) ? value.intern() : null;
-	}
-	
-	@nodeview
-	public static view VASTOperator of ASTOperator extends VENode {
-		public String		image;
 	}
 	
 	ASTOperator() {}

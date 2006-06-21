@@ -18,16 +18,11 @@ import syntax kiev.Syntax;
 public class SNode extends ASTNode {
 
 	@virtual typedef This  = SNode;
-	@virtual typedef VView = VSNode;
 
 	@dflow(out="this:in") private static class DFI {}
 
 	public static final SNode dummyNode = new SNode();
 
-	@nodeview
-	public static view VSNode of SNode extends NodeView {
-	}
-	
 	public SNode() {}
 
 	public ASTNode getDummyNode() {

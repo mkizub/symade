@@ -26,7 +26,6 @@ public class TypeExpr extends TypeRef {
 	static String opWraper = "T \u229b"; // ⊛
 	
 	@virtual typedef This  = TypeExpr;
-	@virtual typedef VView = VTypeExpr;
 
 	@att public TypeRef					arg;
 	@att public String					op;
@@ -36,12 +35,6 @@ public class TypeExpr extends TypeRef {
 		this.op = (value != null) ? value.intern() : null;
 	}
 	
-	@nodeview
-	public static final view VTypeExpr of TypeExpr extends VTypeRef {
-		public TypeRef				arg;
-		public String				op;
-	}
-
 	public TypeExpr() {}
 
 	public TypeExpr(TypeRef arg, String op) {

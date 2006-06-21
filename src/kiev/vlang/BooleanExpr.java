@@ -34,30 +34,26 @@ import syntax kiev.Syntax;
 public abstract class BoolExpr extends ENode {
 
 	@virtual typedef This  = BoolExpr;
-	@virtual typedef VView = VBoolExpr;
 	@virtual typedef JView = JBoolExpr;
-	@virtual typedef VView = RBoolExpr;
-
-	@nodeview
-	public abstract static view VBoolExpr of BoolExpr extends VENode {
-		public void mainResolveOut() {
-			Method m;
-			if (ident == null || ident.symbol == null) {
-				m = getOp().resolveMethod(this);
-				if (m == null) {
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-					return;
-				}
-			} else {
-				m = (Method)ident.symbol;
-			}
-			m.normilizeExpr(this);
-		}
-	}
+	@virtual typedef RView = RBoolExpr;
 
 	public BoolExpr() {}
 
 	public Type getType() { return Type.tpBoolean; }
+
+	public void mainResolveOut() {
+		Method m;
+		if (ident == null || ident.symbol == null) {
+			m = getOp().resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+getOp());
+				return;
+			}
+		} else {
+			m = (Method)ident.symbol;
+		}
+		m.normilizeExpr(this);
+	}
 
 	public static void checkBool(ENode e) {
 		Type et = e.getType();
@@ -90,19 +86,12 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BinaryBooleanOrExpr;
-	@virtual typedef VView = VBinaryBooleanOrExpr;
 	@virtual typedef JView = JBinaryBooleanOrExpr;
 	@virtual typedef RView = RBinaryBooleanOrExpr;
 
 	@att public ENode			expr1;
 	@att public ENode			expr2;
 
-	@nodeview
-	public static final view VBinaryBooleanOrExpr of BinaryBooleanOrExpr extends VBoolExpr {
-		public ENode		expr1;
-		public ENode		expr2;
-	}
-	
 	public BinaryBooleanOrExpr() {}
 
 	public BinaryBooleanOrExpr(int pos, ENode expr1, ENode expr2) {
@@ -171,19 +160,12 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BinaryBooleanAndExpr;
-	@virtual typedef VView = VBinaryBooleanAndExpr;
 	@virtual typedef JView = JBinaryBooleanAndExpr;
 	@virtual typedef RView = RBinaryBooleanAndExpr;
 
 	@att public ENode			expr1;
 	@att public ENode			expr2;
 
-	@nodeview
-	public static final view VBinaryBooleanAndExpr of BinaryBooleanAndExpr extends VBoolExpr {
-		public ENode		expr1;
-		public ENode		expr2;
-	}
-	
 	public BinaryBooleanAndExpr() {}
 
 	public BinaryBooleanAndExpr(int pos, ENode expr1, ENode expr2) {
@@ -251,7 +233,6 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BinaryBoolExpr;
-	@virtual typedef VView = VBinaryBoolExpr;
 	@virtual typedef JView = JBinaryBoolExpr;
 	@virtual typedef RView = RBinaryBoolExpr;
 
@@ -259,13 +240,6 @@ public class BinaryBoolExpr extends BoolExpr {
 	@att public ENode			expr1;
 	@att public ENode			expr2;
 
-	@nodeview
-	public static final view VBinaryBoolExpr of BinaryBoolExpr extends VBoolExpr {
-		public Operator			op;
-		public ENode			expr1;
-		public ENode			expr2;
-	}
-	
 	public BinaryBoolExpr() {}
 
 	public BinaryBoolExpr(int pos, Operator op, ENode expr1, ENode expr2) {
@@ -298,19 +272,12 @@ public class InstanceofExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = InstanceofExpr;
-	@virtual typedef VView = VInstanceofExpr;
 	@virtual typedef JView = JInstanceofExpr;
 	@virtual typedef RView = RInstanceofExpr;
 
 	@att public ENode		expr;
 	@att public TypeRef		type;
 
-	@nodeview
-	public static view VInstanceofExpr of InstanceofExpr extends VBoolExpr {
-		public ENode	expr;
-		public TypeRef	type;
-	}
-	
 	public InstanceofExpr() {}
 
 	public InstanceofExpr(int pos, ENode expr, TypeRef type) {
@@ -391,17 +358,11 @@ public class BooleanNotExpr extends BoolExpr {
 	}
 	
 	@virtual typedef This  = BooleanNotExpr;
-	@virtual typedef VView = VBooleanNotExpr;
 	@virtual typedef JView = JBooleanNotExpr;
 	@virtual typedef RView = RBooleanNotExpr;
 
 	@att public ENode		expr;
 
-	@nodeview
-	public static view VBooleanNotExpr of BooleanNotExpr extends VBoolExpr {
-		public ENode		expr;
-	}
-	
 	public BooleanNotExpr() {}
 
 	public BooleanNotExpr(int pos, ENode expr) {

@@ -31,7 +31,6 @@ public class Var extends LvalDNode {
 	}
 
 	@virtual typedef This  = Var;
-	@virtual typedef VView = VVar;
 	@virtual typedef JView = JVar;
 	@virtual typedef RView = RVar;
 
@@ -93,40 +92,6 @@ public class Var extends LvalDNode {
 
 	@getter public final Type get$type() { return this.vtype.getType(); }
 		
-	@nodeview
-	public static view VVar of Var extends VLvalDNode {
-		public	TypeRef		vtype;
-		public	ENode		init;
-		public	int			bcpos;
-
-		@getter public final Type get$type();
-		
-		// is a local var in a rule 
-		public final boolean isLocalRuleVar();
-		public final void setLocalRuleVar(boolean on);
-		// closure proxy
-		public final boolean isClosureProxy();
-		public final void setClosureProxy(boolean on);
-		// "this" var
-		public final boolean isVarThis();
-		public final void setVarThis(boolean on);
-		// "super" var
-		public final boolean isVarSuper();
-		public final void setVarSuper(boolean on);
-
-		public boolean preResolveIn() {
-			ENode init = this.init;
-			if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
-				Type tp = getType();
-				if!(tp instanceof ArrayType)
-					Kiev.reportError(this,"Scalar var is initialized by array");
-				else
-					init.setType((ArrayType)tp);
-			}
-			return true;
-		}
-	}
-
 	public static Var[]	emptyArray = new Var[0];
 
 	public Var() {}
@@ -167,6 +132,18 @@ public class Var extends LvalDNode {
 		return Var.dummyNode;
 	}
 	
+	public boolean preResolveIn() {
+		ENode init = this.init;
+		if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
+			Type tp = getType();
+			if!(tp instanceof ArrayType)
+				Kiev.reportError(this,"Scalar var is initialized by array");
+			else
+				init.setType((ArrayType)tp);
+		}
+		return true;
+	}
+
 	public String toString() {
 		return id.toString()/*+":="+type*/;
 	}
@@ -213,7 +190,6 @@ public final class FormPar extends Var {
 	}
 	
 	@virtual typedef This  = FormPar;
-	@virtual typedef VView = VFormPar;
 	@virtual typedef RView = RFormPar;
 
 	@att public TypeRef		stype;
@@ -234,14 +210,6 @@ public final class FormPar extends Var {
 		return ((FormPar)this).stype.getType();
 	}
 		
-	@nodeview
-	public static view VFormPar of FormPar extends VVar {
-		public TypeRef		stype;
-		public int			kind;
-
-		@getter public final Type get$dtype();
-	}
-	
 	public static final int PARAM_NORMAL       = 0;
 	public static final int PARAM_THIS         = 1;
 	public static final int PARAM_OUTER_THIS   = 2;

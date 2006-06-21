@@ -42,12 +42,6 @@ public class ResInfo {
 
 	private ResInfo() {}
 	
-	public ResInfo(ASTNode.NodeView from) {
-		this((ASTNode)from, 0);
-	}
-	public ResInfo(ASTNode.NodeView from, int fl) {
-		this((ASTNode)from, fl);
-	}
 	public ResInfo(ASTNode from) {
 		this(from, 0);
 	}

@@ -16,7 +16,6 @@ import syntax kiev.Syntax;
 @node
 public class Opdef extends SNode {
 	@virtual typedef This  = Opdef;
-	@virtual typedef VView = VOpdef;
 
 	// Assign orders
 	public static final int LFY			= 0;
@@ -64,14 +63,6 @@ public class Opdef extends SNode {
 		this.image = (value != null) ? value.intern() : null;
 	}
 	
-	@nodeview
-	public static view VOpdef of Opdef extends VSNode {
-		public int					prior;
-		public int					opmode;
-		public String				image;
-		public Operator				resolved;
-	}
-
 	public Opdef() {}
 	
 	public void setImage(ASTNode n) {

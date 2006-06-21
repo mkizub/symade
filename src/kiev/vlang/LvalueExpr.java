@@ -42,13 +42,8 @@ import syntax kiev.Syntax;
 public abstract class LvalueExpr extends ENode {
 
 	@virtual typedef This  = LvalueExpr;
-	@virtual typedef VView = VLvalueExpr;
 	@virtual typedef JView = JLvalueExpr;
 	@virtual typedef RView = RLvalueExpr;
-
-	@nodeview
-	public abstract static view VLvalueExpr of LvalueExpr extends VENode {
-	}
 
 	public LvalueExpr() {}
 }
@@ -61,85 +56,11 @@ public final class AccessExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = AccessExpr;
-	@virtual typedef VView = VAccessExpr;
 	@virtual typedef JView = JAccessExpr;
 	@virtual typedef RView = RAccessExpr;
 
 	@att public ENode			obj;
 
-	@nodeview
-	public static final view VAccessExpr of AccessExpr extends VLvalueExpr {
-		public ENode		obj;
-
-		public final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o);
-
-		public void mainResolveOut() {
-			ENode[] res;
-			Type[] tps;
-
-			ENode obj = this.obj;
-			// pre-resolve result
-			if( obj instanceof TypeRef ) {
-				tps = new Type[]{ ((TypeRef)obj).getType() };
-				res = new ENode[1];
-				if( ident.name.equals(nameThis) )
-					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
-			}
-			else {
-				ENode e = obj;
-				tps = e.getAccessTypes();
-				res = new ENode[tps.length];
-				// fall down
-			}
-			for (int si=0; si < tps.length; si++) {
-				if (res[si] != null)
-					continue;
-				Type tp = tps[si];
-				DNode@ v;
-				ResInfo info;
-				if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) ) {
-					if (this.obj != null)
-						res[si] = makeExpr(v,info,this.obj);
-					else
-						res[si] = makeExpr(v,info,obj);
-				}
-				else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name))
-					res[si] = makeExpr(v,info,tp.getStruct());
-			}
-			int cnt = 0;
-			int idx = -1;
-			for (int si=0; si < res.length; si++) {
-				if (res[si] != null) {
-					cnt ++;
-					if (idx < 0) idx = si;
-				}
-			}
-			if (cnt > 1) {
-				StringBuffer msg = new StringBuffer("Umbigous access:\n");
-				for(int si=0; si < res.length; si++) {
-					if (res[si] == null)
-						continue;
-					msg.append("\t").append(res[si]).append('\n');
-				}
-				msg.append("while resolving ").append(this);
-				throw new CompilerException(this, msg.toString());
-			}
-			if (cnt == 0) {
-				StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
-				for(int si=0; si < res.length; si++) {
-					if (tps[si] == null)
-						continue;
-					msg.append("\t").append(tps[si]).append('\n');
-				}
-				msg.append("while resolving ").append(this);
-				this.obj = obj;
-				throw new CompilerException(this, msg.toString());
-			}
-			ENode e = res[idx].closeBuild();
-			this.replaceWithNodeReWalk(e);
-		}
-	}
-	
 	public AccessExpr() {}
 
 	public AccessExpr(int pos) {
@@ -170,6 +91,72 @@ public final class AccessExpr extends LvalueExpr {
 	public String toString() {
     	return obj+"."+ident;
 	}
+
+	public void mainResolveOut() {
+		ENode[] res;
+		Type[] tps;
+
+		ENode obj = this.obj;
+		// pre-resolve result
+		if( obj instanceof TypeRef ) {
+			tps = new Type[]{ ((TypeRef)obj).getType() };
+			res = new ENode[1];
+			if( ident.name.equals(nameThis) )
+				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+		}
+		else {
+			ENode e = obj;
+			tps = e.getAccessTypes();
+			res = new ENode[tps.length];
+			// fall down
+		}
+		for (int si=0; si < tps.length; si++) {
+			if (res[si] != null)
+				continue;
+			Type tp = tps[si];
+			DNode@ v;
+			ResInfo info;
+			if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) ) {
+				if (this.obj != null)
+					res[si] = makeExpr(v,info,this.obj);
+				else
+					res[si] = makeExpr(v,info,obj);
+			}
+			else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name))
+				res[si] = makeExpr(v,info,tp.getStruct());
+		}
+		int cnt = 0;
+		int idx = -1;
+		for (int si=0; si < res.length; si++) {
+			if (res[si] != null) {
+				cnt ++;
+				if (idx < 0) idx = si;
+			}
+		}
+		if (cnt > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous access:\n");
+			for(int si=0; si < res.length; si++) {
+				if (res[si] == null)
+					continue;
+				msg.append("\t").append(res[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(this, msg.toString());
+		}
+		if (cnt == 0) {
+			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+			for(int si=0; si < res.length; si++) {
+				if (tps[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			this.obj = obj;
+			throw new CompilerException(this, msg.toString());
+		}
+		ENode e = res[idx].closeBuild();
+		this.replaceWithNodeReWalk(e);
+	}
 }
 
 @node(name="IFld")
@@ -180,7 +167,6 @@ public final class IFldExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = IFldExpr;
-	@virtual typedef VView = VIFldExpr;
 	@virtual typedef JView = JIFldExpr;
 	@virtual typedef RView = RIFldExpr;
 
@@ -196,35 +182,6 @@ public final class IFldExpr extends LvalueExpr {
 		return null;
 	}
 
-	@nodeview
-	public static final view VIFldExpr of IFldExpr extends VLvalueExpr {
-		public		ENode		obj;
-		public:ro	Field		var;
-
-		// verify resolved tree
-		public boolean preVerify() {
-			Field f = this.var;
-			if (!f.isAttached()) {
-				Type tp = obj.getType();
-				DNode@ v;
-				ResInfo info;
-				if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),f.id.sname) ) {
-					if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).type != f.type) {
-						Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
-					} else {
-						f = (Field)v;
-						ident.symbol = f;
-					}
-				} else {
-					Kiev.reportError(this, "Error resolving "+f+" in "+tp);
-				}
-			}
-			if (f.isStatic() || (f.isMacro() && !f.isNative()))
-				Kiev.reportError(this, "Bad instance field "+f+" access from "+obj);
-			return true;
-		}
-	}
-	
 	public IFldExpr() {}
 
 	public IFldExpr(int pos, ENode obj, SymbolRef ident, Field var) {
@@ -323,6 +280,29 @@ public final class IFldExpr extends LvalueExpr {
 		ASTNode obj = (ASTNode)obj.doRewrite(ctx);
 		return obj.getVal(ident.name);
 	}
+
+	// verify resolved tree
+	public boolean preVerify() {
+		Field f = this.var;
+		if (!f.isAttached()) {
+			Type tp = obj.getType();
+			DNode@ v;
+			ResInfo info;
+			if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),f.id.sname) ) {
+				if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).type != f.type) {
+					Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
+				} else {
+					f = (Field)v;
+					ident.symbol = f;
+				}
+			} else {
+				Kiev.reportError(this, "Error resolving "+f+" in "+tp);
+			}
+		}
+		if (f.isStatic() || (f.isMacro() && !f.isNative()))
+			Kiev.reportError(this, "Bad instance field "+f+" access from "+obj);
+		return true;
+	}
 }
 
 @node(name="SetAccess")
@@ -334,19 +314,12 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = ContainerAccessExpr;
-	@virtual typedef VView = VContainerAccessExpr;
 	@virtual typedef JView = JContainerAccessExpr;
 	@virtual typedef RView = RContainerAccessExpr;
 
 	@att public ENode		obj;
 	@att public ENode		index;
 
-	@nodeview
-	public static final view VContainerAccessExpr of ContainerAccessExpr extends VLvalueExpr {
-		public ENode		obj;
-		public ENode		index;
-	}
-	
 	public ContainerAccessExpr() {}
 
 	public ContainerAccessExpr(int pos, ENode obj, ENode index) {
@@ -405,14 +378,9 @@ public final class ThisExpr extends LvalueExpr {
 	static public final FormPar thisPar = new FormPar(0,Constants.nameThis,Type.tpVoid,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD|ACC_SYNTHETIC);
 	
 	@virtual typedef This  = ThisExpr;
-	@virtual typedef VView = VThisExpr;
 	@virtual typedef JView = JThisExpr;
 	@virtual typedef RView = RThisExpr;
 
-	@nodeview
-	public static final view VThisExpr of ThisExpr extends VLvalueExpr {
-	}
-	
 	public ThisExpr() {}
 	public ThisExpr(int pos) {
 		this.pos = pos;
@@ -446,7 +414,6 @@ public final class LVarExpr extends LvalueExpr {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = LVarExpr;
-	@virtual typedef VView = VLVarExpr;
 	@virtual typedef JView = JLVarExpr;
 	@virtual typedef RView = RLVarExpr;
 
@@ -458,23 +425,6 @@ public final class LVarExpr extends LvalueExpr {
 		return null;
 	}
 
-	@nodeview
-	public static final view VLVarExpr of LVarExpr extends VLvalueExpr {
-		public:ro	Var			var;
-
-		public Var getVar();
-
-		public boolean preResolveIn() {
-			getVar(); // calls resolving
-			return false;
-		}
-	
-		public boolean mainResolveIn() {
-			getVar(); // calls resolving
-			return false;
-		}
-	}
-	
 	public LVarExpr() {}
 	public LVarExpr(int pos, Var var) {
 		this.pos = pos;
@@ -516,6 +466,16 @@ public final class LVarExpr extends LvalueExpr {
 			this.ident = new SymbolRef(pos, t.image);
 	}
 	
+	public boolean preResolveIn() {
+		getVar(); // calls resolving
+		return false;
+	}
+
+	public boolean mainResolveIn() {
+		getVar(); // calls resolving
+		return false;
+	}
+
 	public String toString() {
 		return ident.toString();
 	}
@@ -549,7 +509,6 @@ public final class SFldExpr extends LvalueExpr {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = SFldExpr;
-	@virtual typedef VView = VSFldExpr;
 	@virtual typedef JView = JSFldExpr;
 	@virtual typedef RView = RSFldExpr;
 
@@ -561,57 +520,6 @@ public final class SFldExpr extends LvalueExpr {
 		if (sym instanceof Field)
 			return (Field)sym;
 		return null;
-	}
-
-	@nodeview
-	public static final view VSFldExpr of SFldExpr extends VLvalueExpr {
-		public		ENode		obj;
-		public:ro	Field		var;
-
-		public void mainResolveOut() {
-			if (var != null) {
-				if (!var.isStatic())
-					throw new CompilerException(this, "Field "+var+" is not static");
-				if (obj == null)
-					obj = new TypeRef(pos,var.ctx_tdecl.xtype);
-				return;
-			}
-			
-			if !(obj instanceof TypeRef)
-				throw new CompilerException(this, "Static field access requires type as accessor");
-			Type tp = this.obj.getType();
-			DNode@ v;
-			ResInfo info;
-			tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name);
-			DNode res = (DNode)v;
-			if (res == null)
-				throw new CompilerException(this, "Unresolved static field "+ident+" in "+tp);
-			if !(res instanceof Field || !res.isStatic())
-				throw new CompilerException(this, "Resolved "+ident+" in "+tp+" is not a static field");
-			ident.symbol = res;
-		}
-		// verify resolved tree
-		public boolean preVerify() {
-			Field f = this.var;
-			if (!f.isAttached()) {
-				Type tp = obj.getType();
-				DNode@ v;
-				ResInfo info;
-				if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),f.id.sname)) {
-					if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).type != f.type) {
-						Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
-					} else {
-						f = (Field)v;
-						ident.symbol = f;
-					}
-				} else {
-					Kiev.reportError(this, "Error resolving "+f+" in "+tp);
-				}
-			}
-			if (!f.isStatic() || (f.isMacro() && !f.isNative()))
-				Kiev.reportError(this, "Bad static field "+f+" access from "+obj);
-			return true;
-		}
 	}
 
 	public SFldExpr() {}
@@ -672,6 +580,52 @@ public final class SFldExpr extends LvalueExpr {
 			types = (Type[])sni.getTypes().clone();
 		return types;
 	}
+
+	public void mainResolveOut() {
+		if (var != null) {
+			if (!var.isStatic())
+				throw new CompilerException(this, "Field "+var+" is not static");
+			if (obj == null)
+				obj = new TypeRef(pos,var.ctx_tdecl.xtype);
+			return;
+		}
+		
+		if !(obj instanceof TypeRef)
+			throw new CompilerException(this, "Static field access requires type as accessor");
+		Type tp = this.obj.getType();
+		DNode@ v;
+		ResInfo info;
+		tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name);
+		DNode res = (DNode)v;
+		if (res == null)
+			throw new CompilerException(this, "Unresolved static field "+ident+" in "+tp);
+		if !(res instanceof Field || !res.isStatic())
+			throw new CompilerException(this, "Resolved "+ident+" in "+tp+" is not a static field");
+		ident.symbol = res;
+	}
+
+	// verify resolved tree
+	public boolean preVerify() {
+		Field f = this.var;
+		if (!f.isAttached()) {
+			Type tp = obj.getType();
+			DNode@ v;
+			ResInfo info;
+			if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),f.id.sname)) {
+				if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).type != f.type) {
+					Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
+				} else {
+					f = (Field)v;
+					ident.symbol = f;
+				}
+			} else {
+				Kiev.reportError(this, "Error resolving "+f+" in "+tp);
+			}
+		}
+		if (!f.isStatic() || (f.isMacro() && !f.isNative()))
+			Kiev.reportError(this, "Bad static field "+f+" access from "+obj);
+		return true;
+	}
 }
 
 @node(name="OuterThis")
@@ -680,20 +634,12 @@ public final class OuterThisAccessExpr extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = OuterThisAccessExpr;
-	@virtual typedef VView = VOuterThisAccessExpr;
 	@virtual typedef JView = JOuterThisAccessExpr;
 	@virtual typedef RView = ROuterThisAccessExpr;
 
 	@att public ENode			obj;
 	@ref public Struct			outer;
 	@ref public Field[]			outer_refs;
-
-	@nodeview
-	public static final view VOuterThisAccessExpr of OuterThisAccessExpr extends VENode {
-		public		ENode			obj;
-		public		Struct			outer;
-		public:ro	Field[]			outer_refs;
-	}
 
 	public OuterThisAccessExpr() {}
 
@@ -757,18 +703,11 @@ public final class ReinterpExpr extends LvalueExpr {
 	}
 
 	@virtual typedef This  = ReinterpExpr;
-	@virtual typedef VView = VReinterpExpr;
 	@virtual typedef JView = JReinterpExpr;
 	@virtual typedef RView = RReinterpExpr;
 
 	@att public TypeRef		type;
 	@att public ENode		expr;
-
-	@nodeview
-	public static final view VReinterpExpr of ReinterpExpr extends VLvalueExpr {
-		public TypeRef		type;
-		public ENode		expr;
-	}
 
 	public ReinterpExpr() {}
 

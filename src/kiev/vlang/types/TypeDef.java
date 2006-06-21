@@ -20,21 +20,12 @@ public abstract class TypeDef extends TypeDecl {
 	public static final TypeDef[] emptyArray = new TypeDef[0];
 
 	@virtual typedef This  = TypeDef;
-	@virtual typedef VView = VTypeDef;
 
 	public ArgMetaType ameta_type;
 	
 	@getter public TypeDecl get$child_ctx_tdecl() { return this.parent().get$child_ctx_tdecl(); }
 
 	public abstract TypeRef[] getLowerBounds();
-
-	@nodeview
-	public static abstract view VTypeDef of TypeDef extends VTypeDecl {
-		public		ArgMetaType				ameta_type;
-
-		public Struct getStruct();
-		public ArgType getAType();
-	}
 
 	public TypeDef() {}
 
@@ -72,15 +63,8 @@ public final class TypeAssign extends TypeDef {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeAssign;
-	@virtual typedef VView = VTypeAssign;
 
 	public TypeRef[] getLowerBounds() { return super_types; }
-
-	@nodeview
-	public static final view VTypeAssign of TypeAssign extends VTypeDef {
-		public Struct getStruct();
-		public ArgType getAType();
-	}
 
 	public TypeAssign() {}
 
@@ -117,19 +101,10 @@ public final class TypeConstr extends TypeDef {
 	public static final TypeConstr[] emptyArray = new TypeConstr[0];
 
 	@virtual typedef This  = TypeConstr;
-	@virtual typedef VView = VTypeConstr;
 
 	@att public TypeRef[]			lower_bound;
 
 	public TypeRef[] getLowerBounds() { return lower_bound; }
-
-	@nodeview
-	public static final view VTypeConstr of TypeConstr extends VTypeDef {
-		public:ro	TypeRef[]		lower_bound;
-
-		public Struct getStruct();
-		public ArgType getAType();
-	}
 
 	public TypeConstr() {}
 

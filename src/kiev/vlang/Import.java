@@ -28,7 +28,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	}
 
 	@virtual typedef This  = Import;
-	@virtual typedef VView = VImport;
 
 	@att public SymbolRef			name;
 	@att public ImportMode			mode = ImportMode.IMPORT_CLASS;
@@ -38,18 +37,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	@ref public boolean				of_method;
 	@ref public DNode				resolved;
 
-	@nodeview
-	public static final view VImport of Import extends VSNode {
-		public		SymbolRef			name;
-		public		ImportMode			mode;
-		public		boolean				star;
-		public:ro	TypeRef[]			args;
-		public		boolean				of_method;
-		public		DNode				resolved;
-		
-		public boolean mainResolveIn() { return false; }
-	}
-
 	public Import() {}
 
 	public Import(Struct node, boolean star) {
@@ -58,6 +45,8 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		this.mode = mode;
 		this.star = star;
 	}
+
+	public boolean mainResolveIn() { return false; }
 
 	public String toString() {
 		StringBuffer str = new StringBuffer("import ");
@@ -150,25 +139,17 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeOpDef;
-	@virtual typedef VView = VTypeOpDef;
 
 	@att public ASTOperator		op;
 	@att public TypeRef			type;
 	@att public TypeDef			arg;
 
-	@nodeview
-	public static final view VTypeOpDef of TypeOpDef extends VTypeDecl {
-		public	ASTOperator		op;
-		public	TypeRef			type;
-		public	TypeDef			arg;
-
-		public boolean mainResolveIn() { return false; }
-	}
-
 	public TypeOpDef() {}
 	
 	public Type getType() { return type.getType(); }
 	
+	public boolean mainResolveIn() { return false; }
+
 	public boolean checkResolved() {
 		return type.getType().checkResolved();
 	}

@@ -46,7 +46,6 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
 	@virtual typedef This  = CaseLabel;
-	@virtual typedef VView = VCaseLabel;
 	@virtual typedef JView = JCaseLabel;
 	@virtual typedef RView = RCaseLabel;
 
@@ -55,14 +54,6 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	@att public Var[]			pattern;
 	@att public ASTNode[]		stats;
 	     public CodeLabel		case_label;
-
-	@nodeview
-	public static final view VCaseLabel of CaseLabel extends VENode {
-		public		ENode			val;
-		public		Type			type;
-		public:ro	Var[]			pattern;
-		public:ro	ASTNode[]		stats;
-	}
 
 	public CaseLabel() {}
 
@@ -162,7 +153,6 @@ public class SwitchStat extends ENode {
 	public static final int ENUM_SWITCH = 3;
 
 	@virtual typedef This  = SwitchStat;
-	@virtual typedef VView = VSwitchStat;
 	@virtual typedef JView = JSwitchStat;
 	@virtual typedef RView = RSwitchStat;
 
@@ -175,18 +165,6 @@ public class SwitchStat extends ENode {
 	@att(copyable=false) public Label					lblcnt;
 	@att(copyable=false) public Label					lblbrk;
 	                     public CodeSwitch				cosw;
-
-	@nodeview
-	public static final view VSwitchStat of SwitchStat extends VENode {
-		public		int						mode;
-		public		ENode					sel;
-		public:ro	CaseLabel[]				cases;
-		public		LVarExpr				tmpvar;
-		public		CaseLabel				defCase;
-		public		Field					typehash; // needed for re-resolving
-		public:ro	Label					lblcnt;
-		public:ro	Label					lblbrk;
-	}
 
 	public SwitchStat() {
 		setBreakTarget(true);
@@ -216,7 +194,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
 	@virtual typedef This  = CatchInfo;
-	@virtual typedef VView = VCatchInfo;
 	@virtual typedef JView = JCatchInfo;
 	@virtual typedef RView = RCatchInfo;
 
@@ -225,12 +202,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	     public CodeLabel		handler;
 	     public CodeCatchInfo	code_catcher;
 
-	@nodeview
-	public static final view VCatchInfo of CatchInfo extends VENode {
-		public Var				arg;
-		public ENode			body;
-	}
-	
 	public CatchInfo() {}
 
 	public String toString() {
@@ -251,7 +222,6 @@ public class FinallyInfo extends ENode {
 	}
 	
 	@virtual typedef This  = FinallyInfo;
-	@virtual typedef VView = VFinallyInfo;
 	@virtual typedef JView = JFinallyInfo;
 	@virtual typedef RView = RFinallyInfo;
 
@@ -261,12 +231,6 @@ public class FinallyInfo extends ENode {
 	     public CodeLabel		handler;
 	     public CodeCatchInfo	code_catcher;
 
-	@nodeview
-	public static final view VFinallyInfo of FinallyInfo extends VENode {
-		public ENode		body;
-		public Var			ret_arg;
-	}
-	
 	public FinallyInfo() {}
 
 	public String toString() { return "finally"; }
@@ -282,7 +246,6 @@ public class TryStat extends ENode {
 	}
 	
 	@virtual typedef This  = TryStat;
-	@virtual typedef VView = VTryStat;
 	@virtual typedef JView = JTryStat;
 	@virtual typedef RView = RTryStat;
 
@@ -290,13 +253,6 @@ public class TryStat extends ENode {
 	@att public CatchInfo[]			catchers;
 	@att public FinallyInfo			finally_catcher;
 	     public CodeLabel			end_label;
-
-	@nodeview
-	public static final view VTryStat of TryStat extends VENode {
-		public		ENode				body;
-		public:ro	CatchInfo[]			catchers;
-		public		FinallyInfo			finally_catcher;
-	}
 
 	public TryStat() {}
 }
@@ -310,7 +266,6 @@ public class SynchronizedStat extends ENode {
 	}
 	
 	@virtual typedef This  = SynchronizedStat;
-	@virtual typedef VView = VSynchronizedStat;
 	@virtual typedef JView = JSynchronizedStat;
 	@virtual typedef RView = RSynchronizedStat;
 
@@ -320,13 +275,6 @@ public class SynchronizedStat extends ENode {
 	     public CodeLabel		handler;
 	     public CodeCatchInfo	code_catcher;
 	     public CodeLabel		end_label;
-
-	@nodeview
-	public static final view VSynchronizedStat of SynchronizedStat extends VENode {
-		public ENode			expr;
-		public Var				expr_var;
-		public ENode			body;
-	}
 
 	public SynchronizedStat() {}
 }
@@ -340,7 +288,6 @@ public class WithStat extends ENode {
 	}
 	
 	@virtual typedef This  = WithStat;
-	@virtual typedef VView = VWithStat;
 	@virtual typedef JView = JWithStat;
 	@virtual typedef RView = RWithStat;
 
@@ -348,13 +295,6 @@ public class WithStat extends ENode {
 	@att public ENode		body;
 	@ref public LvalDNode	var_or_field;
 	     public CodeLabel	end_label;
-
-	@nodeview
-	public static final view VWithStat of WithStat extends VENode {
-		public ENode		expr;
-		public ENode		body;
-		public LvalDNode	var_or_field;
-	}
 
 	public WithStat() {}
 }

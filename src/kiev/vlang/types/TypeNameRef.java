@@ -18,14 +18,8 @@ public class TypeNameRef extends TypeRef {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeNameRef;
-	@virtual typedef VView = VTypeNameRef;
 
 	@att public TypeRef			outer;
-
-	@nodeview
-	public static view VTypeNameRef of TypeNameRef extends VTypeRef {
-		public TypeRef				outer;
-	}
 
 	public TypeNameRef() {}
 

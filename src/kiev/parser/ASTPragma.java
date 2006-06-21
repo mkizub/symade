@@ -13,16 +13,9 @@ import syntax kiev.Syntax;
 public final class ASTPragma extends DNode {
 
 	@virtual typedef This  = ASTPragma;
-	@virtual typedef VView = VASTPragma;
 
 	@att public boolean					enable;
 	@att public ConstStringExpr[]		options;
-
-	@nodeview
-	public static view VASTPragma of ASTPragma extends VDNode {
-		public		boolean					enable;
-		public:ro	ConstStringExpr[]		options;
-	}
 
 	public ASTPragma() {}
 	

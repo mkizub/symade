@@ -54,16 +54,10 @@ public class Shadow extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = Shadow;
-	@virtual typedef VView = VShadow;
 	@virtual typedef JView = JShadow;
 	@virtual typedef RView = RShadow;
 
 	@ref public ASTNode	node;
-
-	@nodeview
-	public static final view VShadow of Shadow extends VENode {
-		public ASTNode		node;
-	}
 
 	public Shadow() {}
 	public Shadow(ASTNode node) {
@@ -89,16 +83,10 @@ public class TypeClassExpr extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = TypeClassExpr;
-	@virtual typedef VView = VTypeClassExpr;
 	@virtual typedef JView = JTypeClassExpr;
 	@virtual typedef RView = RTypeClassExpr;
 
 	@att public TypeRef		type;
-
-	@nodeview
-	public static final view VTypeClassExpr of TypeClassExpr extends VENode {
-		public TypeRef		type;
-	}
 
 	public TypeClassExpr() {}
 
@@ -122,20 +110,12 @@ public class TypeInfoExpr extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = TypeInfoExpr;
-	@virtual typedef VView = VTypeInfoExpr;
 	@virtual typedef JView = JTypeInfoExpr;
 	@virtual typedef RView = RTypeInfoExpr;
 
 	@att public TypeRef				type;
 	@att public TypeClassExpr		cl_expr;
 	@att public ENode[]				cl_args;
-
-	@nodeview
-	public static final view VTypeInfoExpr of TypeInfoExpr extends VENode {
-		public		TypeRef				type;
-		public		TypeClassExpr		cl_expr;
-		public:ro	ENode[]				cl_args;
-	}
 
 	public TypeInfoExpr() {}
 
@@ -164,12 +144,7 @@ public class AssertEnabledExpr extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 	
 	@virtual typedef This  = AssertEnabledExpr;
-	@virtual typedef VView = VAssertEnabledExpr;
 	@virtual typedef RView = RAssertEnabledExpr;
-
-	@nodeview
-	public static final view VAssertEnabledExpr of AssertEnabledExpr extends VENode {
-	}
 
 	public AssertEnabledExpr() {}
 
@@ -194,7 +169,6 @@ public class AssignExpr extends ENode {
 	}
 	
 	@virtual typedef This  = AssignExpr;
-	@virtual typedef VView = VAssignExpr;
 	@virtual typedef JView = JAssignExpr;
 	@virtual typedef RView = RAssignExpr;
 
@@ -202,47 +176,6 @@ public class AssignExpr extends ENode {
 	@att public ENode			lval;
 	@att public ENode			value;
 
-	@nodeview
-	public static final view VAssignExpr of AssignExpr extends VENode {
-		public Operator			op;
-		public ENode			lval;
-		public ENode			value;
-
-		public void mainResolveOut() {
-			Type et1 = lval.getType();
-			Type et2 = value.getType();
-			// Find out overloaded operator
-			if (op == Operator.Assign && lval instanceof ContainerAccessExpr) {
-				ContainerAccessExpr cae = (ContainerAccessExpr)lval;
-				Type ect1 = cae.obj.getType();
-				Type ect2 = cae.index.getType();
-				Method@ m;
-				ResInfo info = new ResInfo(this,ResInfo.noStatic | ResInfo.noImports);
-				CallType mt = new CallType(null,null,new Type[]{ect2,et2},et2,false);
-				if (PassInfo.resolveBestMethodR(ect1,m,info,nameArraySetOp,mt)) {
-					Method rm = (Method)m;
-					if !(rm.isMacro() && rm.isNative()) {
-						ENode res = info.buildCall((ASTNode)this, cae.obj, m, null, new ENode[]{~cae.index,~value});
-						res = res.closeBuild();
-						this.replaceWithNodeReWalk(res);
-					}
-				}
-			} else {
-				Method m;
-				if (ident == null || ident.symbol == null) {
-					m = getOp().resolveMethod(this);
-					if (m == null) {
-						Kiev.reportError(this, "Unresolved method for operator "+getOp());
-						return;
-					}
-				} else {
-					m = (Method)ident.symbol;
-				}
-				m.normilizeExpr(this);
-			}
-		}
-	}
-	
 	public AssignExpr() {}
 
 	public AssignExpr(int pos, Operator op, ENode lval, ENode value) {
@@ -267,6 +200,40 @@ public class AssignExpr extends ENode {
 	public Type getType() { return lval.getType(); }
 
 	public String toString() { return getOp().toString(this); }
+
+	public void mainResolveOut() {
+		Type et1 = lval.getType();
+		Type et2 = value.getType();
+		// Find out overloaded operator
+		if (op == Operator.Assign && lval instanceof ContainerAccessExpr) {
+			ContainerAccessExpr cae = (ContainerAccessExpr)lval;
+			Type ect1 = cae.obj.getType();
+			Type ect2 = cae.index.getType();
+			Method@ m;
+			ResInfo info = new ResInfo(this,ResInfo.noStatic | ResInfo.noImports);
+			CallType mt = new CallType(null,null,new Type[]{ect2,et2},et2,false);
+			if (PassInfo.resolveBestMethodR(ect1,m,info,nameArraySetOp,mt)) {
+				Method rm = (Method)m;
+				if !(rm.isMacro() && rm.isNative()) {
+					ENode res = info.buildCall((ASTNode)this, cae.obj, m, null, new ENode[]{~cae.index,~value});
+					res = res.closeBuild();
+					this.replaceWithNodeReWalk(res);
+				}
+			}
+		} else {
+			Method m;
+			if (ident == null || ident.symbol == null) {
+				m = getOp().resolveMethod(this);
+				if (m == null) {
+					Kiev.reportError(this, "Unresolved method for operator "+getOp());
+					return;
+				}
+			} else {
+				m = (Method)ident.symbol;
+			}
+			m.normilizeExpr(this);
+		}
+	}
 
 	static class AssignExprDFFunc extends DFFunc {
 		final DFFunc f;
@@ -319,7 +286,6 @@ public class BinaryExpr extends ENode {
 	}
 	
 	@virtual typedef This  = BinaryExpr;
-	@virtual typedef VView = VBinaryExpr;
 	@virtual typedef JView = JBinaryExpr;
 	@virtual typedef RView = RBinaryExpr;
 
@@ -327,27 +293,6 @@ public class BinaryExpr extends ENode {
 	@att public ENode			expr1;
 	@att public ENode			expr2;
 
-	@nodeview
-	public static final view VBinaryExpr of BinaryExpr extends VENode {
-		public Operator			op;
-		public ENode			expr1;
-		public ENode			expr2;
-
-		public void mainResolveOut() {
-			Method m;
-			if (ident == null || ident.symbol == null) {
-				m = getOp().resolveMethod(this);
-				if (m == null) {
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-					return;
-				}
-			} else {
-				m = (Method)ident.symbol;
-			}
-			m.normilizeExpr(this);
-		}
-	}
-	
 	public BinaryExpr() {}
 
 	public BinaryExpr(int pos, Operator op, ENode expr1, ENode expr2) {
@@ -393,6 +338,20 @@ public class BinaryExpr extends ENode {
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
 		return m.makeType(null,getArgs()).ret();
 	}
+
+	public void mainResolveOut() {
+		Method m;
+		if (ident == null || ident.symbol == null) {
+			m = getOp().resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+getOp());
+				return;
+			}
+		} else {
+			m = (Method)ident.symbol;
+		}
+		m.normilizeExpr(this);
+	}
 }
 
 @node(name="UnaryOp")
@@ -403,33 +362,12 @@ public class UnaryExpr extends ENode {
 	}
 
 	@virtual typedef This  = UnaryExpr;
-	@virtual typedef VView = VUnaryExpr;
 	@virtual typedef JView = JUnaryExpr;
 	@virtual typedef RView = RUnaryExpr;
 
 	@ref public Operator		op;
 	@att public ENode			expr;
 
-	@nodeview
-	public static view VUnaryExpr of UnaryExpr extends VENode {
-		public Operator			op;
-		public ENode			expr;
-
-		public void mainResolveOut() {
-			Method m;
-			if (ident == null || ident.symbol == null) {
-				m = getOp().resolveMethod(this);
-				if (m == null) {
-					Kiev.reportError(this, "Unresolved method for operator "+getOp());
-					return;
-				}
-			} else {
-				m = (Method)ident.symbol;
-			}
-			m.normilizeExpr(this);
-		}
-	}
-	
 	public UnaryExpr() {}
 
 	public UnaryExpr(int pos, Operator op, ENode expr) {
@@ -467,6 +405,19 @@ public class UnaryExpr extends ENode {
 		return m.makeType(null,getArgs()).ret();
 	}
 
+	public void mainResolveOut() {
+		Method m;
+		if (ident == null || ident.symbol == null) {
+			m = getOp().resolveMethod(this);
+			if (m == null) {
+				Kiev.reportError(this, "Unresolved method for operator "+getOp());
+				return;
+			}
+		} else {
+			m = (Method)ident.symbol;
+		}
+		m.normilizeExpr(this);
+	}
 }
 
 @node(name="StrConcat")
@@ -477,17 +428,11 @@ public class StringConcatExpr extends ENode {
 	}
 
 	@virtual typedef This  = StringConcatExpr;
-	@virtual typedef VView = VStringConcatExpr;
 	@virtual typedef JView = JStringConcatExpr;
 	@virtual typedef RView = RStringConcatExpr;
 
 	@att public ENode[]				args;
 
-	@nodeview
-	public static final view VStringConcatExpr of StringConcatExpr extends VENode {
-		public:ro	ENode[]			args;
-	}
-	
 	public StringConcatExpr() {}
 
 	public StringConcatExpr(int pos) {
@@ -551,17 +496,11 @@ public class CommaExpr extends ENode {
 	}
 
 	@virtual typedef This  = CommaExpr;
-	@virtual typedef VView = VCommaExpr;
 	@virtual typedef JView = JCommaExpr;
 	@virtual typedef RView = RCommaExpr;
 
 	@att public ENode[]			exprs;
 
-	@nodeview
-	public static final view VCommaExpr of CommaExpr extends VENode {
-		public:ro	ENode[]			exprs;
-	}
-	
 	public CommaExpr() {}
 
 	public CommaExpr(ENode expr) {
@@ -592,18 +531,12 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	@virtual typedef This  = Block;
-	@virtual typedef VView = VBlock;
 	@virtual typedef JView = JBlock;
 	@virtual typedef RView = RBlock;
 
 	@att public ASTNode[]			stats;
 	     public CodeLabel			break_label;
 
-	@nodeview
-	public static view VBlock of Block extends VENode {
-		public:ro	ASTNode[]		stats;
-	}
-	
 	public Block() {}
 
 	public Block(int pos) {
@@ -710,25 +643,12 @@ public class IncrementExpr extends ENode {
 	}
 
 	@virtual typedef This  = IncrementExpr;
-	@virtual typedef VView = VIncrementExpr;
 	@virtual typedef JView = JIncrementExpr;
 	@virtual typedef RView = RIncrementExpr;
 
 	@ref public Operator			op;
 	@att public ENode				lval;
 
-	@nodeview
-	public static final view VIncrementExpr of IncrementExpr extends VENode {
-		public Operator		op;
-		public ENode		lval;
-
-		public void mainResolveOut() {
-			Method m = op.resolveMethod(this);
-			if (m == null)
-				Kiev.reportWarning(this, "Unresolved method for operator "+op);
-		}
-	}
-	
 	public IncrementExpr() {}
 
 	public IncrementExpr(int pos, Operator op, ENode lval) {
@@ -753,6 +673,12 @@ public class IncrementExpr extends ENode {
 	}
 
 	public String toString() { return getOp().toString(this); }
+
+	public void mainResolveOut() {
+		Method m = op.resolveMethod(this);
+		if (m == null)
+			Kiev.reportWarning(this, "Unresolved method for operator "+op);
+	}
 }
 
 @node(name="IfOp")
@@ -765,7 +691,6 @@ public class ConditionalExpr extends ENode {
 	}
 
 	@virtual typedef This  = ConditionalExpr;
-	@virtual typedef VView = VConditionalExpr;
 	@virtual typedef JView = JConditionalExpr;
 	@virtual typedef RView = RConditionalExpr;
 
@@ -773,13 +698,6 @@ public class ConditionalExpr extends ENode {
 	@att public ENode			expr1;
 	@att public ENode			expr2;
 
-	@nodeview
-	public static final view VConditionalExpr of ConditionalExpr extends VENode {
-		public ENode		cond;
-		public ENode		expr1;
-		public ENode		expr2;
-	}
-	
 	public ConditionalExpr() {}
 
 	public ConditionalExpr(int pos, ENode cond, ENode expr1, ENode expr2) {
@@ -820,19 +738,12 @@ public class CastExpr extends ENode {
 	}
 
 	@virtual typedef This  = CastExpr;
-	@virtual typedef VView = VCastExpr;
 	@virtual typedef JView = JCastExpr;
 	@virtual typedef RView = RCastExpr;
 
 	@att public TypeRef		type;
 	@att public ENode		expr;
 
-	@nodeview
-	public static final view VCastExpr of CastExpr extends VENode {
-		public TypeRef	type;
-		public ENode	expr;
-	}
-	
 	public CastExpr() {}
 
 	public CastExpr(int pos, Type type, ENode expr) {

@@ -39,22 +39,12 @@ public enum ProjectFileType {
 public final class ProjectFile extends ASTNode {
 
 	@virtual typedef This  = ProjectFile;
-	@virtual typedef VView = ProjectFileView;
 
 	public ProjectFileType		type;
 	public String				qname;
 	public KString				bname;
 	public File					file;
 	public boolean				bad;
-
-	@nodeview
-	public static final view ProjectFileView of ProjectFile extends NodeView {
-		public ProjectFileType		type;
-		public String				qname;
-		public KString				bname;
-		public File					file;
-		public boolean				bad;
-	}
 
 	public ProjectFile() {}
 }

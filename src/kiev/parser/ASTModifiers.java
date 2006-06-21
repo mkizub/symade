@@ -18,18 +18,10 @@ import syntax kiev.Syntax;
 public final class ASTModifiers extends ASTNode {
 	
 	@virtual typedef This  = ASTModifiers;
-	@virtual typedef VView = ASTModifiersView;
 
 	@att public Access 				acc;
 	@att public Meta[]				annotations;
 	@ref public MetaSpecial[]		specials;
-
-	@nodeview
-	public static final view ASTModifiersView of ASTModifiers extends NodeView {
-		public		Access 				acc;
-		public:ro	Meta[]				annotations;
-		public:ro	MetaSpecial[]		specials;		
-	}
 
 	public ASTModifiers() {}
 	

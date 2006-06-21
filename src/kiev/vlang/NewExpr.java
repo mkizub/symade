@@ -37,7 +37,6 @@ public final class NewExpr extends ENode {
 	}
 
 	@virtual typedef This  = NewExpr;
-	@virtual typedef VView = VNewExpr;
 	@virtual typedef JView = JNewExpr;
 	@virtual typedef RView = RNewExpr;
 
@@ -57,54 +56,6 @@ public final class NewExpr extends ENode {
 		this.ident.symbol = m;
 	}
 
-	@nodeview
-	public static final view VNewExpr of NewExpr extends VENode {
-		public		TypeRef				type;
-		public:ro	ENode[]				args;
-		public		ENode				outer;
-		public		Struct				clazz;
-
-		public boolean preResolveIn() {
-			if( clazz == null )
-				return true;
-			Type tp = type.getType();
-			tp.checkResolved();
-			// Local anonymouse class
-			CompaundType sup  = (CompaundType)tp;
-			clazz.setResolved(true);
-			clazz.setLocal(true);
-			clazz.setAnonymouse(true);
-			clazz.setStatic(ctx_method==null || ctx_method.isStatic());
-			clazz.super_types.delAll();
-			TypeRef sup_tr = this.type.ncopy();
-			if( sup.clazz.isInterface() ) {
-				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
-				clazz.super_types.add(sup_tr);
-			} else {
-				clazz.super_types.insert(0, sup_tr);
-			}
-	
-			{
-				// Create default initializer, if number of arguments > 0
-				if( args.length > 0 ) {
-					Constructor init = new Constructor(ACC_PUBLIC);
-					for(int i=0; i < args.length; i++) {
-						args[i].resolve(null);
-						init.params.append(new FormPar(pos,"arg$"+i,args[i].getType(),FormPar.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
-					}
-					init.pos = pos;
-					init.body = new Block(pos);
-					init.setPublic();
-					clazz.addMethod(init);
-				}
-			}
-	
-			// Process inner classes and cases
-			Kiev.runProcessorsOn(clazz);
-			return true;
-		}
-	}
-	
 	public NewExpr() {}
 
 	public NewExpr(int pos, Type type, ENode[] args) {
@@ -150,6 +101,46 @@ public final class NewExpr extends ENode {
 		return type.rebind(vset);
 	}
 
+	public boolean preResolveIn() {
+		if( clazz == null )
+			return true;
+		Type tp = type.getType();
+		tp.checkResolved();
+		// Local anonymouse class
+		CompaundType sup  = (CompaundType)tp;
+		clazz.setResolved(true);
+		clazz.setLocal(true);
+		clazz.setAnonymouse(true);
+		clazz.setStatic(ctx_method==null || ctx_method.isStatic());
+		clazz.super_types.delAll();
+		TypeRef sup_tr = this.type.ncopy();
+		if( sup.clazz.isInterface() ) {
+			clazz.super_types.insert(0, new TypeRef(Type.tpObject));
+			clazz.super_types.add(sup_tr);
+		} else {
+			clazz.super_types.insert(0, sup_tr);
+		}
+
+		{
+			// Create default initializer, if number of arguments > 0
+			if( args.length > 0 ) {
+				Constructor init = new Constructor(ACC_PUBLIC);
+				for(int i=0; i < args.length; i++) {
+					args[i].resolve(null);
+					init.params.append(new FormPar(pos,"arg$"+i,args[i].getType(),FormPar.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
+				}
+				init.pos = pos;
+				init.body = new Block(pos);
+				init.setPublic();
+				clazz.addMethod(init);
+			}
+		}
+
+		// Process inner classes and cases
+		Kiev.runProcessorsOn(clazz);
+		return true;
+	}
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("new ").append(type).append('(');
@@ -171,20 +162,12 @@ public final class NewArrayExpr extends ENode {
 	}
 
 	@virtual typedef This  = NewArrayExpr;
-	@virtual typedef VView = VNewArrayExpr;
 	@virtual typedef JView = JNewArrayExpr;
 	@virtual typedef RView = RNewArrayExpr;
 
 	@att public TypeRef				type;
 	@att public ENode[]				args;
 	     public ArrayType			arrtype;
-
-	@nodeview
-	public static final view VNewArrayExpr of NewArrayExpr extends VENode {
-		public		TypeRef				type;
-		public:ro	ENode[]				args;
-		public		ArrayType			arrtype;
-	}
 
 	public NewArrayExpr() {}
 
@@ -230,7 +213,6 @@ public final class NewInitializedArrayExpr extends ENode {
 	}
 
 	@virtual typedef This  = NewInitializedArrayExpr;
-	@virtual typedef VView = VNewInitializedArrayExpr;
 	@virtual typedef JView = JNewInitializedArrayExpr;
 	@virtual typedef RView = RNewInitializedArrayExpr;
 
@@ -238,34 +220,6 @@ public final class NewInitializedArrayExpr extends ENode {
 	@att public ENode[]				args;
 	@att public int[]				dims;
 	     public ArrayType			arrtype;
-
-	@nodeview
-	public static final view VNewInitializedArrayExpr of NewInitializedArrayExpr extends VENode {
-		public		TypeRef				type;
-		public:ro	ENode[]				args;
-		public		int[]				dims;
-		public		ArrayType			arrtype;
-		
-		@getter public final int	get$dim();
-
-		@getter public final Type	get$arrtype();
-
-		public boolean preResolveIn() {
-			if (type == null)
-				return true;
-			Type tp = getType();
-			if!(tp instanceof ArrayType)
-				throw new CompilerException(this,"Wrong dimension of array initializer");
-			tp = ((ArrayType)tp).arg;
-			foreach (NewInitializedArrayExpr arg; args; arg.type == null) {
-				if!(tp instanceof ArrayType)
-					Kiev.reportError(this,"Wrong dimension of array initializer");
-				else
-					arg.setType((ArrayType)tp);
-			}
-			return true;
-		}
-	}
 
 	public NewInitializedArrayExpr() {}
 
@@ -313,6 +267,22 @@ public final class NewInitializedArrayExpr extends ENode {
 		}
 	}
 
+	public boolean preResolveIn() {
+		if (type == null)
+			return true;
+		Type tp = getType();
+		if!(tp instanceof ArrayType)
+			throw new CompilerException(this,"Wrong dimension of array initializer");
+		tp = ((ArrayType)tp).arg;
+		foreach (NewInitializedArrayExpr arg; args; arg.type == null) {
+			if!(tp instanceof ArrayType)
+				Kiev.reportError(this,"Wrong dimension of array initializer");
+			else
+				arg.setType((ArrayType)tp);
+		}
+		return true;
+	}
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("new ").append(type.toString());
@@ -344,7 +314,6 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 
 
 	@virtual typedef This  = NewClosure;
-	@virtual typedef VView = VNewClosure;
 	@virtual typedef JView = JNewClosure;
 	@virtual typedef RView = RNewClosure;
 
@@ -353,15 +322,6 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 	@att public ENode				body;
 	@att public Struct				clazz;
 	@ref public CallType			xtype;
-
-	@nodeview
-	public static final view VNewClosure of NewClosure extends VENode {
-		public TypeRef			type_ret;
-		public FormPar[]		params;
-		public ENode			body;
-		public Struct			clazz;
-		public CallType			xtype;
-	}
 
 	public NewClosure() {}
 

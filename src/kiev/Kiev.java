@@ -37,9 +37,6 @@ public final class Kiev {
 		reportError(dummy, e);
 	}
 	
-   	public static void reportError(ASTNode.NodeView from, Throwable e) {
-		reportError((ASTNode)from,e);
-	}
    	public static void reportError(JNode from, Throwable e) {
 		reportError((ASTNode)from,e);
 	}
@@ -140,9 +137,6 @@ public final class Kiev {
 		reportError(dummy, msg);
 	}
 	
-   	public static void reportError(ASTNode.NodeView from, String msg) {
-		reportError((ASTNode)from,msg);
-	}
    	public static void reportError(JNode from, String msg) {
 		reportError((ASTNode)from,msg);
 	}
@@ -250,10 +244,6 @@ public final class Kiev {
 	
 	public static void reportWarning(String msg) {
 		reportWarning(null, msg);
-	}
-	
-	public static void reportWarning(ASTNode.NodeView from, String msg) {
-		reportWarning((ASTNode)from, msg);
 	}
 	
 	public static void reportWarning(ASTNode from, String msg) {

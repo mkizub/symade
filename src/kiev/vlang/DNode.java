@@ -24,7 +24,6 @@ import syntax kiev.Syntax;
 public abstract class DNode extends ASTNode {
 
 	@virtual typedef This  = DNode;
-	@virtual typedef VView = VDNode;
 	@virtual typedef JView = JDNode;
 	@virtual typedef RView = RDNode;
 	
@@ -246,64 +245,6 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 
-	@nodeview
-	public static abstract view VDNode of DNode extends NodeView {
-
-		public:ro int		flags;
-		public:ro MetaSet	meta;
-		public:ro Symbol	id;
-
-		public final boolean isPublic()	;
-		public final boolean isPrivate();
-		public final boolean isProtected();
-		public final boolean isPkgPrivate();
-		public final boolean isStatic();
-		public final boolean isFinal();
-		public final boolean isSynchronized();
-		public final boolean isVolatile();
-		public final boolean isFieldVolatile();
-		public final boolean isMethodBridge();
-		public final boolean isFieldTransient();
-		public final boolean isMethodVarargs();
-		public final boolean isStructBcLoaded();
-		public final boolean isNative();
-		public final boolean isInterface();
-		public final boolean isAbstract();
-		public final boolean isMathStrict();
-		public final boolean isSynthetic();
-		
-		public final boolean isStructView();
-		public final boolean isTypeUnerasable();
-		public final boolean isPackage();
-		public final boolean isSyntax();
-
-		public final void setPublic();
-		public final void setPrivate();
-		public final void setProtected();
-		public final void setPkgPrivate();
-		public final void setPackage();
-		public final void setSyntax();
-		public final void setStatic(boolean on);
-		public final void setFinal(boolean on);
-		public final void setSynchronized(boolean on);
-		public final void setVolatile(boolean on);
-		public final void setFieldVolatile(boolean on);
-		public final void setMethodBridge(boolean on);
-		public final void setFieldTransient(boolean on);
-		public final void setMethodVarargs(boolean on);
-		public final void setNative(boolean on);
-		public final void setInterface(boolean on);
-		public final void setAbstract(boolean on);
-		public final void setStructView();
-		public final void setTypeUnerasable(boolean on);
-		public final boolean isVirtual();
-		public final void setVirtual(boolean on);
-		public final boolean isForward();
-		public final void setForward(boolean on);
-
-		public final Symbol getName();
-	}
-
 	public DNode() {}
 
 	public ASTNode getDummyNode() {
@@ -329,11 +270,7 @@ public final class DummyDNode extends DNode {
 	public static final DummyDNode dummyNode = new DummyDNode();
 
 	@virtual typedef This  = DummyDNode;
-	@virtual typedef VView = VDummyDNode;
 
-	@nodeview
-	public static final view VDummyDNode of DummyDNode extends VDNode {
-	}
 	private DummyDNode() {}
 }
 
@@ -346,7 +283,6 @@ public final class DummyDNode extends DNode {
 public abstract class LvalDNode extends DNode {
 
 	@virtual typedef This  = LvalDNode;
-	@virtual typedef VView = VLvalDNode;
 	@virtual typedef JView = JLvalDNode;
 	@virtual typedef RView = RLvalDNode;
 
@@ -371,16 +307,6 @@ public abstract class LvalDNode extends DNode {
 		}
 	}
 
-	@nodeview
-	public static abstract view VLvalDNode of LvalDNode extends VDNode {
-		// init wrapper
-		public final boolean isInitWrapper();
-		public final void setInitWrapper(boolean on);
-		// need a proxy access 
-		public final boolean isNeedProxy();
-		public final void setNeedProxy(boolean on);
-	}
-
 	public LvalDNode() {}
 
 }
@@ -394,7 +320,6 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	@virtual typedef This  = TypeDecl;
-	@virtual typedef VView = VTypeDecl;
 	@virtual typedef JView = JTypeDecl;
 	@virtual typedef RView = RTypeDecl;
 
@@ -535,41 +460,6 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 		if (attr.name == "args" || attr.name == "super_types") {
 			this.callbackSuperTypeChanged(this);
 		}
-	}
-
-	@nodeview
-	public static view VTypeDecl of TypeDecl extends VDNode {
-		public:ro	Struct					package_clazz;
-		public:ro	TypeConstr[]			args;
-		public:ro	TypeRef[]				super_types;
-		public:ro	ASTNode[]				members;
-		public:ro	MetaType				xmeta_type;
-		public:ro	Type					xtype;
-
-		public MetaType[] getAllSuperTypes();
-		public boolean instanceOf(Struct cl);
-		public Field resolveField(String name);
-		public Field resolveField(String name, boolean fatal);
-		public Method resolveMethod(String name, Type ret, ...);
-		public final String qname();
-		public boolean isClazz();
-		// a structure with the only one instance (singleton)	
-		public final boolean isSingleton();
-		public final void setSingleton(boolean on);
-		// a local (in method) class	
-		public final boolean isLocal();
-		public final void setLocal(boolean on);
-		// an anonymouse (unnamed) class	
-		public final boolean isAnonymouse();
-		public final void setAnonymouse(boolean on);
-		// kiev annotation
-		public final boolean isAnnotation();
-		public final void setAnnotation(boolean on);
-		// java enum
-		public final boolean isEnum();
-		// structure was loaded from bytecode
-		public final boolean isLoadedFromBytecode();
-		public final void setLoadedFromBytecode(boolean on);
 	}
 
 	public TypeDecl() {}

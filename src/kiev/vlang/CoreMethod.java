@@ -26,16 +26,11 @@ public class CoreMethod extends Method {
 	}
 
 	@virtual typedef This  = CoreMethod;
-	@virtual typedef VView = VCoreMethod;
 	@virtual typedef RView = RCoreMethod;
 
 	public CoreFunc core_func;
 	public BEndFunc bend_func;
 	
-	@nodeview
-	public static final view VCoreMethod of CoreMethod extends VMethod {
-	}
-
 	public CoreMethod() {}
 	
 	public void attachToCompiler() {

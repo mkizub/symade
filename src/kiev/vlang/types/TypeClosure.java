@@ -18,14 +18,8 @@ public class TypeClosureRef extends TypeRef {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeClosureRef;
-	@virtual typedef VView = VTypeClosureRef;
 
 	@att public TypeRef[]		types;
-
-	@nodeview
-	public static final view VTypeClosureRef of TypeClosureRef extends VTypeRef {
-		public:ro	TypeRef[]			types;
-	}
 
 	public TypeClosureRef() {}
 	

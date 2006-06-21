@@ -30,7 +30,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 
 	@virtual typedef This  = Struct;
-	@virtual typedef VView = VStruct;
 	@virtual typedef JView = JStruct;
 	@virtual typedef RView = RStruct;
 
@@ -235,81 +234,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		return class_init;
 	}
 
-	@nodeview
-	public static final view VStruct of Struct extends VTypeDecl {
-		public				Access					acc;
-		public				WrapperMetaType			wmeta_type;
-		public				OuterMetaType			ometa_type;
-		public				TypeRef					view_of;
-		public				Struct					typeinfo_clazz;
-		public				Struct					iface_impl;
-		public:ro			DNode[]					sub_decls;
-
-		public final Struct getStruct() { return (Struct)this; }
-
-		// a pizza case	
-		public final boolean isPizzaCase();
-		public final void setPizzaCase(boolean on);
-		// has pizza cases
-		public final boolean isHasCases();
-		public final void setHasCases(boolean on);
-		// indicates that structure members were generated
-		public final boolean isMembersGenerated();
-		public final void setMembersGenerated(boolean on);
-		// indicates that structure members were pre-generated
-		public final boolean isMembersPreGenerated();
-		public final void setMembersPreGenerated(boolean on);
-		// indicates that statements in code were generated
-		public final boolean isStatementsGenerated();
-		public final void setStatementsGenerated(boolean on);
-		// indicates that the structrue was generared (from template)
-		public final boolean isGenerated();
-		public final void setGenerated(boolean on);
-
-		public Struct addSubStruct(Struct sub);
-		public Method addMethod(Method m);
-		public void removeMethod(Method m);
-		public Field addField(Field f);
-		public void removeField(Field f);
-		public Struct addCase(Struct cas);
-
-		public Constructor getClazzInitMethod();
-
-		public boolean preResolveIn() {
-			if (this.isLoadedFromBytecode())
-				return false;
-			if (parent() instanceof Struct || parent() instanceof FileUnit)
-				return true;
-			if (ctx_method==null || ctx_method.isStatic())
-				this.setStatic(true);
-			this.setResolved(true);
-			this.setLocal(true);
-			this.setLoadedFromBytecode(true);
-			try {
-				Kiev.runProcessorsOn(this);
-			} finally { this.setLoadedFromBytecode(false); }
-			return true;
-		}
-
-		public final boolean mainResolveIn() {
-			return true; //!isLocal();
-		}
-
-		public void mainResolveOut() {
-			((Struct)this).cleanDFlow();
-		}
-
-		// verify resolved tree
-		public boolean preVerify() {
-			foreach (TypeRef i; super_types) {
-				if (i.getStruct().isFinal())
-					Kiev.reportError(this, "Struct "+this+" extends final struct "+i);
-			}
-			return true;
-		}
-
-	}
-
 	@getter public Access			get$acc()			{ return this.acc; }
 	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
 
@@ -409,6 +333,39 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		return true;
 	}
 	
+	public boolean preResolveIn() {
+		if (this.isLoadedFromBytecode())
+			return false;
+		if (parent() instanceof Struct || parent() instanceof FileUnit)
+			return true;
+		if (ctx_method==null || ctx_method.isStatic())
+			this.setStatic(true);
+		this.setResolved(true);
+		this.setLocal(true);
+		this.setLoadedFromBytecode(true);
+		try {
+			Kiev.runProcessorsOn(this);
+		} finally { this.setLoadedFromBytecode(false); }
+		return true;
+	}
+
+	public final boolean mainResolveIn() {
+		return true; //!isLocal();
+	}
+
+	public void mainResolveOut() {
+		((Struct)this).cleanDFlow();
+	}
+
+	// verify resolved tree
+	public boolean preVerify() {
+		foreach (TypeRef i; super_types) {
+			if (i.getStruct().isFinal())
+				Kiev.reportError(this, "Struct "+this+" extends final struct "+i);
+		}
+		return true;
+	}
+
 	public final rule resolveNameR(ASTNode@ node, ResInfo info, String name)
 	{
 		info.isStaticAllowed(),

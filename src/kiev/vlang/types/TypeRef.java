@@ -29,25 +29,9 @@ public class TypeRef extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@virtual typedef This  = TypeRef;
-	@virtual typedef VView = VTypeRef;
 	@virtual typedef JView = JTypeRef;
 
 	@ref public Type	lnk;
-
-	@nodeview
-	public static view VTypeRef of TypeRef extends VENode {
-		public Type	lnk;
-	
-		public boolean preResolveIn() {
-			((TypeRef)this).getType(); // calls resolving
-			return false;
-		}
-	
-		public boolean mainResolveIn() {
-			((TypeRef)this).getType(); // calls resolving
-			return false;
-		}
-	}
 
 	public TypeRef() {}
 	
@@ -82,6 +66,16 @@ public class TypeRef extends ENode {
 	public Struct getStruct() { if (lnk == null) return null; return lnk.getStruct(); }
 	public TypeDecl getTypeDecl() { if (lnk == null) return null; return lnk.meta_type.tdecl; }
 	public JType getJType() { return getType().getJType(); }
+
+	public boolean preResolveIn() {
+		((TypeRef)this).getType(); // calls resolving
+		return false;
+	}
+
+	public boolean mainResolveIn() {
+		((TypeRef)this).getType(); // calls resolving
+		return false;
+	}
 
 	public void resolve(Type reqType) {
 		if (reqType ≢ null && reqType ≉ Type.tpClass)
