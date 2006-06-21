@@ -200,12 +200,4 @@ public final class ASTOperatorAlias extends ASTAlias {
 	public String toString() {
 		return image.toString();
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append("/* alias operator(")
-			.append(Integer.toString(prior)).append(",")
-			.append(Opdef.orderAndArityNames[opmode]).append(",")
-			.append(image).append(") */").space();
-	}
-
 }

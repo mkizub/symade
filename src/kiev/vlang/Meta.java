@@ -367,38 +367,6 @@ public class Meta extends ENode {
 			}
 		};
 	}
-
-	public Dumper toJavaDecl(Dumper dmp) {
-		return this.toJava(dmp).newLine();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append('@').append(type.getType().getStruct().id.sname);
-		boolean need_lp = true;
-		boolean need_comma = false;
-		if (values.length != 0) {
-			Struct s = type.getType().getStruct();
-			s.checkResolved();
-			foreach (Method m; s.members) {
-				MetaValue v = get(m.id.sname);
-				if (v.valueEquals(m.body))
-					continue;
-				if (need_lp) {
-					dmp.append('(');
-					need_lp = false;
-				}
-				else if (need_comma) {
-					dmp.append(',');
-				}
-				dmp.append(v.ident).append('=');
-				v.toJava(dmp);
-				need_comma = true;
-			}
-			if (!need_lp)
-				dmp.append(')');
-		}
-		return dmp;
-	}
 }
 
 @node
@@ -459,9 +427,6 @@ public abstract class MetaValue extends ENode {
 			throw new CompilerException(this, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+ident);
 		return false;
 	}
-
-	public abstract Dumper toJavaDecl(Dumper dmp);
-	public abstract Dumper toJava(Dumper dmp);
 }
 
 @node(name="MetaVal")
@@ -509,13 +474,6 @@ public final class MetaValueScalar extends MetaValue {
 				Kiev.runFrontEndProcessorsOn(value);
 			} catch (ReWalkNodeException e) { ok = false; }
 		} while (ok && checkValue(reqType, value));
-	}
-
-	public Dumper toJavaDecl(Dumper dmp) {
-		return value.toJava(dmp);
-	}
-	public Dumper toJava(Dumper dmp) {
-		return value.toJava(dmp);
 	}
 }
 
@@ -575,21 +533,6 @@ public final class MetaValueArray extends MetaValue {
 				} catch (ReWalkNodeException e) { ok = false; }
 			} while (ok && checkValue(reqType, this.values[i]));
 		}
-	}
-
-	public Dumper toJavaDecl(Dumper dmp) {
-		return toJava(dmp);
-	}
-	public Dumper toJava(Dumper dmp) {
-		dmp.append('{');
-		for (int i=0; i < values.length; i++) {
-			ENode v = values[i];
-			v.toJava(dmp);
-			if (i < values.length-1)
-				dmp.append(',');
-		}
-		dmp.append('}');
-		return dmp;
 	}
 }
 

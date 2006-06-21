@@ -335,11 +335,6 @@ public class Compiler {
 						Kiev.gc_mem = (long)(1024*1024.D);
 					continue;
 				}
-				else if( args[a].equals("-src") ) {
-					Kiev.source_only = onoff;
-					args[a] = null;
-					continue;
-				}
 				else if( args[a].equals("-vsrc")) {
 					Kiev.useBackend = Kiev.Backend.VSrc;
 					args[a] = null;
@@ -613,10 +608,10 @@ stop:;
 						String msg = Kiev.runCurrentBackEndProcessor(fu);
 						diff_time = System.currentTimeMillis() - curr_time;
 						if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
-					} while (Kiev.nextBackEndPass() && (Kiev.errCount == errCount || Kiev.source_only));
+					} while (Kiev.nextBackEndPass() && Kiev.errCount == errCount);
 					fu.cleanup();
 					Kiev.closeBackEndFileUnit();
-				} finally { tr.rollback(); }
+				} finally { tr.rollback(false); }
 				Kiev.files[i] = null;
 				runGC();
 			}
@@ -673,7 +668,7 @@ stop:;
  "Usage:  java kiev.Main [-g] [-debug x,y,z,..] [-prompt] [-i]\n"
 +"           [-pipe] [-server]\n"
 +"           [-gc N] [-d output_dir] [-verbose] [-classpath search_path]\n"
-+"           [-D=var] [-src] [-verify] file.java ...\n"
++"           [-D=var] [-verify] file.java ...\n"
 +"\n"
 +"  Each switch may be prepended by '-no' to change the default value.\n"
 +"      For example, -no-project defeats the project feature.\n"
@@ -718,7 +713,6 @@ stop:;
 +"\n"
 +" -java            Java source code input; Kiev-specific keywords\n"
 +"                  are treated as identifiers.\n"
-+" -src             Dump Java source code instead of bytecode (debug only).\n"
 +" -verify          Generate verifiable code.\n"
 +" -safe            Do not generate class files with compiler errors.\n"
 +"\n"

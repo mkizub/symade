@@ -81,7 +81,4 @@ public class TypeWithArgsRef extends TypeNameRef {
 			return sb.append('>').toString();
 		}
 	}
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append(this.toString());
-	}
 }

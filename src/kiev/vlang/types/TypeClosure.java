@@ -55,14 +55,4 @@ public class TypeClosureRef extends TypeRef {
 	public TypeDecl getTypeDecl() {
 		return CallMetaType.instance.tdecl;
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append('(');
-		for(int i=0; i < types.length-1; i++) {
-			dmp.append(types[i]);
-			if( i < types.length-2) dmp.append(',').space();
-		}
-		dmp.append(")->").append(types[types.length-1]).space();
-		return dmp;
-	}
 }

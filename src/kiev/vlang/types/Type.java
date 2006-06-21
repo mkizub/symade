@@ -29,7 +29,6 @@ public abstract class Type extends AType {
 	public abstract boolean checkResolved();
 	public abstract MetaType[] getAllSuperTypes();
 	public abstract Type getErasedType();
-	public abstract Dumper toJava(Dumper dmp);
 	
 	public final Type[] getMetaSupers() {
 		return meta_type.getMetaSupers(this);
@@ -290,10 +289,6 @@ public final class XType extends Type {
 		return str.toString();
 	}
 
-	public Dumper toJava(Dumper dmp) {
-		return meta_type.tdecl.toJava(dmp);
-	}
-
 	public boolean checkResolved() {
 		return true;
 	}
@@ -324,7 +319,6 @@ public final class CoreType extends Type {
 	public boolean checkResolved()		{ return true; }
 	public MetaType[] getAllSuperTypes()	{ return MetaType.emptyArray; }
 	public String toString()			{ return name.toString(); }
-	public Dumper toJava(Dumper dmp)	{ return dmp.append(name.toString()); }
 
 	public JType getJType()				{ return this.jtype; }
 	
@@ -462,7 +456,6 @@ public final class ASTNodeType extends Type {
 	public boolean checkResolved()			{ return true; }
 	public MetaType[] getAllSuperTypes()	{ return MetaType.emptyArray; }
 	public String toString()				{ return ((ASTNodeMetaType)meta_type).clazz.qname()+"#"; }
-	public Dumper toJava(Dumper dmp)		{ throw new RuntimeException("ASTNodeType.toJava()"); }
 
 	public JType getJType()					{ throw new RuntimeException("ASTNodeType.getJType()"); }
 	
@@ -513,10 +506,6 @@ public final class ArgType extends Type {
 
 	public String toString() {
 		return String.valueOf(definer.id);
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append(String.valueOf(definer.id));
 	}
 
 	public boolean isCastableTo(Type t) {
@@ -576,10 +565,6 @@ public final class CompaundType extends Type {
 			str.append('>');
 		}
 		return str.toString();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return clazz.toJava(dmp);
 	}
 
 	public boolean checkResolved() {
@@ -660,10 +645,6 @@ public final class ArrayType extends Type {
 		return String.valueOf(arg)+"[]";
 	}
 
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append(arg).append("[]");
-	}
-
 	public boolean isCastableTo(Type t) {
 		if( t ≡ tpNull || t ≡ tpAny ) return true;
 		if( isInstanceOf(t) ) return true;
@@ -740,9 +721,6 @@ public final class WrapperType extends CTimeType {
 	public String toString() {
 		return getEnclosedType().toString()+'\u229b'; // PVar<String>⊛ - wrapper type for PVar<String>
 	}
-	public Dumper toJava(Dumper dmp) {
-		return getEnclosedType().toJava(dmp);
-	}
 
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
@@ -813,7 +791,6 @@ public final class OuterType extends CTimeType {
 	public Type getErasedType() { return outer.getErasedType(); }
 	public boolean checkResolved() { return outer.checkResolved(); }
 	public String toString() { return outer.toString(); }
-	public Dumper toJava(Dumper dmp) { return outer.toJava(dmp); }
 
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
@@ -965,13 +942,6 @@ public final class CallType extends Type {
 		}
 		str.append(")->").append(ret());
 		return str.toString();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		if (this.isReference())
-			return Type.tpClosureClazz.toJava(dmp);
-		else
-			return dmp.append("/* ERROR: "+this+" */");
 	}
 
 	public boolean greater(CallType tp) {

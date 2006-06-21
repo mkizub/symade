@@ -119,17 +119,5 @@ public class Opdef extends SNode {
 			return true;
 		return false;
 	}
-
-	public Dumper toJavaDecl(Dumper dmp) {
-		return toJava(dmp);
-	}
-	
-	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append("/* operator ")
-			.append(Integer.toString(prior)).forsed_space()
-			.append(orderAndArityNames[opmode]).forsed_space()
-			.append(image).append(" */").space();
-	}
-
 }
 

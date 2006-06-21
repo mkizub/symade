@@ -427,10 +427,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		return sb.toString();
 	}
 
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append(id);
-	}
-
 	public void normilizeExpr(ENode expr) {
 		if (expr.ident == null) {
 			Operator op = expr.getOp();
@@ -679,30 +675,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			}
 		}
 		return;
-	}
-	
-
-	// TODO
-	public Dumper toJavaDecl(Dumper dmp) {
-		Env.toJavaModifiers(dmp,getJavaFlags());
-		if( !id.equals(nameInit) )
-			dmp.space().append(type.ret()).forsed_space().append(id);
-		else
-			dmp.space().append(this.ctx_tdecl.id);
-		dmp.append('(');
-		for(int i=0; i < params.length; i++) {
-			params[i].toJavaDecl(dmp,params[i].dtype);
-			if( i < (params.length-1) ) dmp.append(",");
-		}
-		dmp.append(')').space();
-		foreach(WBCCondition cond; conditions) 
-			cond.toJava(dmp);
-		if( body == null ) {
-			dmp.append(';').newLine();
-		} else {
-			dmp.append(body).newLine();
-		}
-		return dmp;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
@@ -976,10 +948,6 @@ public class WBCCondition extends DNode {
 	public boolean setBody(ENode body) {
 		this.body = body;
 		return true;
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append(body);
 	}
 }
 

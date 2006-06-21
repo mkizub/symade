@@ -200,25 +200,6 @@ public class Var extends LvalDNode {
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
 		return new VarDFFunc(dfi);
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append(id);
-	}
-
-	public Dumper toJavaDecl(Dumper dmp) {
-		Env.toJavaModifiers(dmp,getJavaFlags());
-		dmp.append(type).forsed_space().append(id);
-		if (init != null)
-			dmp.space().append('=').append(init);
-		dmp.append(';').newLine();
-		return dmp;
-	}
-
-	public Dumper toJavaDecl(Dumper dmp, Type etype) {
-		Env.toJavaModifiers(dmp,getJavaFlags());
-		return dmp.append(etype).forsed_space().append(id);
-	}
-
 }
 
 @node(name="FormPar")

@@ -57,9 +57,6 @@ public final class ProjectFile extends ASTNode {
 	}
 
 	public ProjectFile() {}
-	
-    public Dumper toJava(Dumper dmp) { return dmp; }
-
 }
 
 
@@ -452,23 +449,6 @@ public class Env extends Struct {
 		if (!cl.isResolved() && !cl.isAnonymouse())
 			jenv.loadClazz(cl);
 		return cl;
-	}
-
-	public static Dumper toJavaModifiers( Dumper dmp, short mods ) {
-		if( (mods & ACC_PUBLIC		) > 0 ) dmp.append("public ");
-		if( (mods & ACC_PRIVATE		) > 0 ) dmp.append("private ");
-		if( (mods & ACC_PROTECTED	) > 0 ) dmp.append("protected ");
-
-		if( (mods & ACC_FINAL		) > 0 ) dmp.append("final ");
-		if( (mods & ACC_STATIC		) > 0 ) dmp.append("static ");
-		if( (mods & ACC_ABSTRACT	) > 0 ) dmp.append("abstract ");
-		if( (mods & ACC_NATIVE		) > 0 ) dmp.append("native ");
-
-		if( (mods & ACC_SYNCHRONIZED) > 0 ) dmp.append("synchronized ");
-		if( (mods & ACC_VOLATILE	) > 0 ) dmp.append("volatile ");
-		if( (mods & ACC_TRANSIENT	) > 0 ) dmp.append("transient ");
-
-		return dmp;
 	}
 }
 

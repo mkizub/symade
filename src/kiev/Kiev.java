@@ -368,7 +368,6 @@ public final class Kiev {
 	public static boolean errorPrompt		= false;
 
 	public static boolean run_gui			= false;
-	public static boolean source_only		= false;
 	public static boolean make_project		= false;
 	public static boolean makeall_project	= false;
 	public static boolean interactive		= false;

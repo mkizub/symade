@@ -249,8 +249,6 @@ public abstract class DNode extends ASTNode {
 	@nodeview
 	public static abstract view VDNode of DNode extends NodeView {
 
-		public Dumper toJavaDecl(Dumper dmp);
-		
 		public:ro int		flags;
 		public:ro MetaSet	meta;
 		public:ro Symbol	id;
@@ -313,7 +311,6 @@ public abstract class DNode extends ASTNode {
 	}
 	
 	public final void resolveDecl() { ((RView)this).resolveDecl(); }
-	public abstract Dumper toJavaDecl(Dumper dmp);
 
 	public int getFlags() { return flags; }
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }

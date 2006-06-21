@@ -485,12 +485,13 @@ public final class Transaction {
 			close();
 	}
 
-	public void rollback() {
+	public void rollback(boolean save_next) {
 		assert (currentTransaction == this);
 		ANode[] nodes = this.nodes;
 		int n = this.size;
 		for (int i=0; i < n; i++)
-			nodes[i].rollback();
+			nodes[i].rollback(save_next);
+		this.nodes = null;
 		this.size = 0;
 		currentTransaction = null;
 	}

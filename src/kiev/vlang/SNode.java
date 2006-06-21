@@ -35,7 +35,6 @@ public class SNode extends ASTNode {
 	}
 	
 	public final void resolveDecl() {}
-	public Dumper toJavaDecl(Dumper dmp) { return dmp; }
 
 }
 
@@ -57,43 +56,5 @@ public class Comment extends SNode {
 	@att public String  text;
 	
 	public Comment() {}
-
-	public Dumper toJavaDecl(Dumper dmp) {
-		String text = this.text;
-		if (text == null) text = "";
-		if (eol_form) {
-			if (multiline) {
-				String[] lines = text.split("\n");
-				foreach (String s; lines)
-					dmp.append("// ").append(s).newLine();
-			} else {
-				dmp.append("// ").append(text).newLine();
-			}
-		}
-		else if (doc_form) {
-			if (multiline) {
-				dmp.newLine().append("/**").newLine();
-				String[] lines = text.split("\n");
-				foreach (String s; lines)
-					dmp.append(" * ").append(s).newLine();
-				dmp.append(" */").newLine();
-			} else {
-				dmp.append("/** ").append(text).append(" */").newLine();
-			}
-		}
-		else {
-			if (multiline) {
-				dmp.newLine().append("/*").newLine();
-				String[] lines = text.split("\n");
-				foreach (String s; lines)
-					dmp.append(" * ").append(s).newLine();
-				dmp.append(" */").newLine();
-			} else {
-				dmp.append(" /* ").append(text).append(" */ ");
-			}
-		}
-		return dmp;
-	}
-
 }
 

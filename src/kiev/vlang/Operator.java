@@ -278,42 +278,6 @@ public final class Operator implements Constants {
 		return sb.toString().trim();
 	}
 
-	public Dumper toJava(Dumper dmp, ENode e) {
-		ENode[] exprs = e.getArgs();
-		int eidx = 0;
-		foreach (OpArg arg; this.args) {
-			switch (arg) {
-			case EXPR(int priority):
-			{
-				if (eidx < exprs.length) {
-					ENode e = exprs[eidx++];
-					if (e.getPriority() < priority)
-						dmp.append('(').append(e).append(')');
-					else
-						dmp.append(e).space();
-				} else {
-					dmp.append("(???)");
-				}
-				continue;
-			}
-			case TYPE():
-			{
-				if (eidx < exprs.length) {
-					ENode e = exprs[eidx++];
-					dmp.append(e).space();
-				} else {
-					dmp.append("(???)");
-				}
-				continue;
-			}
-			case OPER(String text):
-				dmp.space().append(text).space();
-				continue;
-			}
-		}
-		return dmp;
-	}
-
 	public static Operator getOperator(String nm) {
 		return allOperatorsHash.get(nm);
 	}

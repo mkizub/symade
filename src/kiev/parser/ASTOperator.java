@@ -48,10 +48,5 @@ public final class ASTOperator extends ENode {
 	public String toString() {
 		return image.toString();
 	}
-    
-    public Dumper toJava(Dumper dmp) {
-    	dmp.space().append(image).space();
-        return dmp;
-    }
 }
 

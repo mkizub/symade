@@ -27,15 +27,4 @@ public final class ASTPragma extends DNode {
 	public ASTPragma() {}
 	
 	public void resolve(Type reqType) {}
-	
-	public Dumper toJavaDecl(Dumper dmp) {
-		return toJava(dmp);
-	}
-	
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("/* pragma ").append(enable?"enable":"disable").space();
-		foreach (ConstStringExpr e; options)
-			dmp.forsed_space().append(e);
-		return dmp.append("; */").newLine();
-	}
 }

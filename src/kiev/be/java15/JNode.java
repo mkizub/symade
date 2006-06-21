@@ -37,7 +37,6 @@ public view JNode of ASTNode implements JConstants {
 	}
 
 	public String toString();
-	public Dumper toJava(Dumper dmp);
 	
 	public:ro	int			pos;
 //	public:ro	int			compileflags;
@@ -139,9 +138,7 @@ public view JENode of ENode extends JNode {
 	public Object	getConstValue();
 
 	public void generate(Code code, Type reqType) {
-		Dumper dmp = new Dumper();
-		dmp.append(this);
-		throw new CompilerException(this,"Unresolved node ("+((ENode)this).getClass()+") generation, expr: "+dmp);
+		throw new CompilerException(this,"Unresolved node ("+((ENode)this).getClass()+") generation");
 	}
 
 }

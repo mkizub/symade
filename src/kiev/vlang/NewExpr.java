@@ -161,32 +161,6 @@ public final class NewExpr extends ENode {
 		sb.append(')');
 		return sb.toString();
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		Type tp = type.getType();
-		if( !tp.isReference() ) {
-			return dmp.append('0');
-		}
-		if( !tp.getStruct().isAnonymouse() ) {
-			dmp.append("new ").append(tp).append('(');
-		} else {
-			dmp.append("new ").append(tp.getStruct().super_types[0].getStruct().qname()).append('(');
-		}
-		for(int i=0; i < args.length; i++) {
-			args[i].toJava(dmp);
-			if( i < args.length-1 )
-				dmp.append(',');
-		}
-		dmp.append(')');
-		if( tp.getStruct().isAnonymouse() ) {
-			Struct cl = tp.getStruct();
-			dmp.space().append('{').newLine(1);
-			foreach (DNode n; cl.members)
-				n.toJavaDecl(dmp).newLine();
-			dmp.newLine(-1).append('}').newLine();
-		}
-		return dmp;
-	}
 }
 
 @node(name="NewArr")
@@ -245,17 +219,6 @@ public final class NewArrayExpr extends ENode {
 			sb.append(']');
 		}
 		return sb.toString();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("new ").append(type);
-		for(int i=0; i < args.length; i++) {
-			dmp.append('[');
-			ENode arg = args[i];
-			arg.toJava(dmp);
-			dmp.append(']');
-		}
-		return dmp;
 	}
 }
 
@@ -364,17 +327,6 @@ public final class NewInitializedArrayExpr extends ENode {
 
 	public int getElementsNumber(int i) { return dims[i]; }
 
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("new ").append(arrtype);
-		dmp.append('{');
-		for(int i=0; i < args.length; i++) {
-			args[i].toJava(dmp);
-			if( i < args.length-1 ) dmp.append(',').space();
-		}
-		dmp.append('}');
-		return dmp;
-	}
-
 	public Object doRewrite(RewriteContext ctx) {
 		Object[] arr = new ENode[args.length];
 		for (int i=0; i < arr.length; i++)
@@ -446,18 +398,6 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		p @= params,
 		p.id.equals(name),
 		node ?= p
-	}
-	
-	public Dumper toJava(Dumper dmp) {
-		CallType type = (CallType)this.getType();
-		Struct cl = clazz;
-		dmp.append("new ").append(cl.super_types[0].getStruct().qname()).append('(')
-			.append(String.valueOf(type.arity)).append(')');
-		dmp.space().append('{').newLine(1);
-		foreach (DNode n; cl.members)
-			n.toJavaDecl(dmp).newLine();
-		dmp.newLine(-1).append('}').newLine();
-		return dmp;
 	}
 }
 

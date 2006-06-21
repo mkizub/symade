@@ -142,12 +142,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		((Struct)this.resolved).resolveMethodR(node,path,name,mt),
 		node instanceof Method && node.isStatic() && node.isPublic()
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append(this.toString()).append(";").newLine();
-		return dmp;
-	}
-
 }
 
 @node
@@ -192,9 +186,5 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 	public String toString() {
 		return "typedef "+arg+op+" "+type+"<"+arg+">;";
 	}
-
-	public Dumper toJava(Dumper dmp) {
-    	return dmp.append("/* ").append(toString()).append(" */").newLine();
-    }
 }
 

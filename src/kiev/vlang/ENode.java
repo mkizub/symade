@@ -316,8 +316,6 @@ public final class NopExpr extends ENode {
 	
 	public String toString() { return ""; }
 
-	public Dumper toJava(Dumper dmp) { return dmp; }
-
 	public Type getType() {
 		return Type.tpVoid;
 	}

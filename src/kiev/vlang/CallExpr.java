@@ -345,37 +345,6 @@ public class CallExpr extends ENode {
 		sb.append(')');
 		return sb.toString();
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		if( func.getName().equals(nameInit) ) {
-			if( isSuperExpr() )
-				dmp.append(nameSuper);
-			else
-				dmp.append(nameThis);
-		} else {
-			if( obj != null ) {
-				if( obj.getPriority() < opCallPriority ) {
-					dmp.append('(').append(obj).append(").");
-				} else {
-					dmp.append(obj).append('.');
-				}
-			}
-			else if( isSuperExpr() )
-				dmp.append("super.");
-			else if( func instanceof Method && func.isStatic() )
-				dmp.append(func.ctx_tdecl.qname()).append('.');
-			dmp.append(func.getName());
-		}
-		dmp.append('(');
-		for(int i=0; i < args.length; i++) {
-			dmp.append(args[i]);
-			if( i < args.length-1 )
-				dmp.append(',');
-		}
-		dmp.append(')');
-		return dmp;
-	}
-
 	public Object doRewrite(RewriteContext ctx) {
 		if (func == null || func.body == null || !func.isMacro())
 			super.doRewrite(ctx);
@@ -463,23 +432,5 @@ public class ClosureCallExpr extends ENode {
 			ret = tp.ret();
 		}
 		return Type.tpClosureClazz.resolveMethod(call_it_name, ret);
-	}
-	
-	public Dumper toJava(Dumper dmp) {
-		expr.toJava(dmp).append(".clone()");
-		for(int i=0; i < args.length; i++) {
-			dmp.append(".addArg(");
-			args[i].toJava(dmp);
-			dmp.append(')');
-		}
-		if (is_a_call == null)
-			is_a_call = Boolean.valueOf(((CallType)expr.getType()).arity==args.length);
-		if (is_a_call.booleanValue()) {
-			Method call_it = getCallIt((CallType)expr.getType());
-			dmp.append('.').append(call_it.id).append('(');
-			if( call_it.type.ret() ≡ Type.tpRule ) dmp.append("null");
-			dmp.append(')');
-		}
-		return dmp;
 	}
 }

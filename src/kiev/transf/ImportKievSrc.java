@@ -931,19 +931,9 @@ public final class KievBE_Generate extends BackendProcessor {
 		if (node instanceof FileUnit) {
 			tr = Transaction.enter(tr);
 			try {
-				if( Kiev.source_only ) {
-					if( Kiev.output_dir == null )
-						if( Kiev.verbose ) System.out.println("Dumping to Java source file "+node);
-					else
-						if( Kiev.verbose ) System.out.println("Dumping to Java source file "+node+" into "+Kiev.output_dir+" dir");
-					try {
-						node.toJava(Kiev.output_dir);
-					} catch (Exception rte) { Kiev.reportError(rte); }
-				} else {
-					try {
-						((JFileUnit)(FileUnit)node).generate();
-					} catch (Exception rte) { Kiev.reportError(rte); }
-				}
+				try {
+					((JFileUnit)(FileUnit)node).generate();
+				} catch (Exception rte) { Kiev.reportError(rte); }
 			} finally { tr.leave(); }
 		}
 	}

@@ -39,14 +39,5 @@ public final class ASTModifiers extends ASTNode {
 		this.specials += sa;
 		return sa;
 	}
-
-    public Dumper toJava(Dumper dmp) {
-		foreach (Meta m; annotations)
-			dmp.append(m);
-		
-		if (acc != null) dmp.append(acc.toString());
-		
-		return dmp;
-    }
 }
 

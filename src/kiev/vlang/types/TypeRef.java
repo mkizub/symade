@@ -99,10 +99,6 @@ public class TypeRef extends ENode {
 		return String.valueOf(lnk);
 	}
 	
-	public Dumper toJava(Dumper dmp) {
-		return lnk.toJava(dmp);
-	}
-	
 	public void toExpr(Type reqType) {
 		Type st = getType();
 		Struct s = st.getStruct();

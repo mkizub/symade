@@ -272,15 +272,20 @@ public abstract class ANode {
 		return this;
 	}
 
-	public final void rollback() {
+	public final void rollback(boolean save_next) {
 		assert (!locked);
 		if (this.prev_version_node == null)
 			return;
 		assert (this.prev_version_node.locked);
-		ANode node = (ANode)this.clone();
-		node.prev_version_node = this;
-		this.setFrom(this.prev_version_node);
-		this.next_version_node = node;
+		if (save_next) {
+			ANode node = (ANode)this.clone();
+			node.prev_version_node = this;
+			this.setFrom(this.prev_version_node);
+			this.next_version_node = node;
+		} else {
+			this.setFrom(this.prev_version_node);
+			this.next_version_node = null;
+		}
 	}
 }
 
@@ -598,7 +603,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	@nodeview
 	public static abstract view NodeView of ASTNode implements Constants {
 		public String toString();
-		public Dumper toJava(Dumper dmp);
 		
 		public int			pos;
 		public int			compileflags;
@@ -676,11 +680,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public abstract Object copy();
 
-    public Dumper toJava(Dumper dmp) {
-    	dmp.append("/* INTERNAL ERROR - ").append(this.getClass().toString()).append(" */");
-    	return dmp;
-    }
-	
 	public boolean hasName(String name) {
 		return false;
 	}

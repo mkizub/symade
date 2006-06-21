@@ -125,8 +125,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 	public String toString() { return getOp().toString(this); }
 
-	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
-
 	public boolean	isConstantExpr() {
 		if (expr1.isConstantExpr()) {
 			Object b1 = expr1.getConstValue();
@@ -207,8 +205,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
 	public String toString() { return getOp().toString(this); }
-
-	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
 	public boolean	isConstantExpr() {
 		if (expr1.isConstantExpr()) {
@@ -292,9 +288,6 @@ public class BinaryBoolExpr extends BoolExpr {
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
 	public String toString() { return getOp().toString(this); }
-
-	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
-
 }
 
 @node(name="InstanceOf")
@@ -345,8 +338,6 @@ public class InstanceofExpr extends BoolExpr {
 	public ENode[] getArgs() { return new ENode[]{expr,type}; }
 
 	public String toString() { return getOp().toString(this); }
-
-	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
 	static class InstanceofExprDFFunc extends DFFunc {
 		final DFFunc f;
@@ -430,8 +421,6 @@ public class BooleanNotExpr extends BoolExpr {
 	public ENode[] getArgs() { return new ENode[]{expr}; }
 
 	public String toString() { return getOp().toString(this); }
-
-	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
 	public boolean	isConstantExpr() {
 		if (expr.isConstantExpr()) {

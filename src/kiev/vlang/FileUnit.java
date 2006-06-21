@@ -177,72 +177,10 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		((Import)syn).resolveMethodR(node,path,name,mt)
 	}
 
-	public Dumper toJava(Dumper dmp) {
-		foreach (Struct s; members)
-			toJava("classes", s);
-		return dmp;
-	}
-
 	public void cleanup() {
         Kiev.parserAddresses.clear();
 		Kiev.k.presc = null;
 		foreach(Struct n; members) ((JStruct)n).cleanup();
-	}
-
-	public void toJava(String output_dir) {
-		String curr_file = Kiev.curFile;
-		Kiev.curFile = id.sname;
-		try {
-			foreach (Struct n; members) {
-				try {
-					toJava(output_dir, n);
-				} catch(Exception e) {
-					Kiev.reportError(n,e);
-				}
-			}
-		} finally { Kiev.curFile = curr_file; }
-	}
-
-	public void toJava(String output_dir, Struct cl) {
-		if( output_dir ==null ) output_dir = "classes";
-		Dumper dmp = new Dumper();
-		if( cl.package_clazz != null && cl.package_clazz != Env.root ) {
-			dmp.append("package ").append(cl.package_clazz.qname()).append(';').newLine();
-		}
-		foreach (SNode syn; members)
-			dmp.append(syn);
-
-		cl.toJavaDecl(dmp);
-
-		try {
-			File f;
-			Struct jcl = cl;
-			String out_file = jcl.qname().replace('.',File.separatorChar).toString();
-			make_output_dir(output_dir,out_file);
-			f = new File(output_dir,out_file+".java");
-			FileOutputStream out;
-			try {
-				out = new FileOutputStream(f);
-			} catch( java.io.FileNotFoundException e ) {
-				System.gc();
-				System.runFinalization();
-				System.gc();
-				System.runFinalization();
-				out = new FileOutputStream(f);
-			}
-			out.write(dmp.toString().getBytes());
-			out.close();
-		} catch( IOException e ) {
-			System.out.println("Create/write error while Kiev-to-Java exporting: "+e);
-		}
-	}
-
-	private static void make_output_dir(String top_dir, String filename) throws IOException {
-		File dir;
-		dir = new File(top_dir,filename);
-		dir = new File(dir.getParent());
-		dir.mkdirs();
-		if( !dir.exists() || !dir.isDirectory() ) throw new RuntimeException("Can't create output dir "+dir);
 	}
 }
 

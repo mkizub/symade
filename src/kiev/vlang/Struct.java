@@ -377,13 +377,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		throw new RuntimeException("Enum value for field "+f+" not found in "+this);
 	}
 
-	public Dumper toJava(Dumper dmp) {
-		if (isLocal())
-			return dmp.append(id.uname);
-		else
-			return dmp.append(qname());
-	}
-	
 	public int countAnonymouseInnerStructs() {
 		int i=0;
 		foreach(Struct s; sub_decls; s.isAnonymouse() || s.isLocal()) i++;
@@ -659,68 +652,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		}
 	}
 	
-	public Dumper toJavaDecl(Dumper dmp) {
-		Struct jthis = this;
-		if( Kiev.verbose ) System.out.println("[ Dumping class "+jthis+"]");
-		Env.toJavaModifiers(dmp,getJavaFlags());
-		if( isInterface() ) {
-			dmp.append("interface").forsed_space();
-			dmp.append(jthis.id.toString()).space();
-			if( this.args.length > 0 ) {
-				dmp.append("/* <");
-				for(int i=0; i < this.args.length; i++) {
-					dmp.append(this.args[i]);
-					if( i < this.args.length-1 ) dmp.append(',');
-				}
-				dmp.append("> */");
-			}
-			if (super_types.length > 1 ) {
-				dmp.space().append("extends").forsed_space();
-				for(int i=1; i < super_types.length; i++) {
-					dmp.append(super_types[i]);
-					if( i < (super_types.length-1) ) dmp.append(',').space();
-				}
-			}
-		} else {
-			dmp.append("class").forsed_space();
-			dmp.append(jthis.id.toString());
-			if( this.args.length > 0 ) {
-				dmp.append("/* <");
-				for(int i=0; i < this.args.length; i++) {
-					dmp.append(this.args[i]);
-					if( i < this.args.length-1 ) dmp.append(',');
-				}
-				dmp.append("> */");
-			}
-			dmp.forsed_space();
-			Type st = super_types.length > 0 ? super_types[0].getType() : null;
-			if( st != null && st ≉ Type.tpObject && st.isReference())
-				dmp.append("extends").forsed_space().append(st).forsed_space();
-			if( super_types.length > 1 ) {
-				dmp.space().append("implements").forsed_space();
-				for(int i=0; i < super_types.length; i++) {
-					dmp.append(this.super_types[i]);
-					if( i < (super_types.length-1) ) dmp.append(',').space();
-				}
-			}
-		}
-		dmp.forsed_space().append('{').newLine(1);
-		if( !isPackage() ) {
-			foreach (Struct s; members) {
-				s.toJavaDecl(dmp).newLine();
-			}
-		}
-		foreach (Field f; members) {
-			f.toJavaDecl(dmp).newLine();
-		}
-		foreach (Method m; members) {
-			if( m.id.equals(nameClassInit) ) continue;
-			m.toJavaDecl(dmp).newLine();
-		}
-		dmp.newLine(-1).append('}').newLine();
-		return dmp;
-	}
-
 	public boolean setBody(ENode body) {
 		if( !isPizzaCase() ) return false;
 		Method init = (Method)members[0];

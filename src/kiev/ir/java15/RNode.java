@@ -19,7 +19,6 @@ import syntax kiev.Syntax;
 @nodeview
 public view RNode of ASTNode implements Constants {
 	public String toString();
-	public Dumper toJava(Dumper dmp);
 	
 	public int			pos;
 	public int			compileflags;
@@ -63,8 +62,6 @@ public view RNode of ASTNode implements Constants {
 @nodeview
 public static view RDNode of DNode extends RNode {
 
-	public Dumper toJavaDecl(Dumper dmp);
-	
 	public:ro int		flags;
 	public:ro MetaSet	meta;
 	public:ro Symbol	id;

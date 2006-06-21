@@ -136,22 +136,6 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
 		return new InlineMethodStatDFFuncOut(dfi);
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.space().append('{').newLine(1);
-		foreach (ParamRedir redir; params_redir)
-			dmp.append("/* ")
-			.append(redir.old_var.type.toString()).space().append(redir.old_var)
-			.append('=').append(redir.new_var)
-			.append(';').append(" */").newLine();
-		dmp.append("/* Body of method "+method+" */").newLine();
-		if (method.body == null)
-			dmp.append(';');
-		else
-			dmp.append(method.body);
-		dmp.newLine(-1).append('}').newLine();
-		return dmp;
-	}
 }
 
 @node(name="ExprSt")
@@ -191,15 +175,6 @@ public class ExprStat extends ENode {
 			return expr+";";
 		else
 			return ";";
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		if( isHidden() ) dmp.append("/* ");
-		if (expr != null)
-			expr.toJava(dmp);
-		dmp.append(';');
-		if( isHidden() ) dmp.append(" */");
-		return dmp.newLine();
 	}
 }
 
@@ -243,13 +218,6 @@ public class ReturnStat extends ENode {
 		expr.setAutoReturnable(false);
 		expr.replaceWithResolve(reqType, fun ()->ENode { return new ReturnStat(expr.pos, ~expr); });
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("return");
-		if( expr != null )
-			dmp.space().append(expr);
-		return dmp.append(';').newLine();
-	}
 }
 
 @node(name="Throw")
@@ -277,10 +245,6 @@ public class ThrowStat extends ENode {
 		this.pos = pos;
 		this.expr = expr;
 		setMethodAbrupted(true);
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append("throw").space().append(expr).append(';').newLine();
 	}
 }
 
@@ -316,25 +280,6 @@ public class IfElseStat extends ENode {
 		this.cond = cond;
 		this.thenSt = thenSt;
 		this.elseSt = elseSt;
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("if(").space().append(cond).space()
-			.append(')');
-		if( thenSt instanceof Block || thenSt instanceof InlineMethodStat) dmp.forsed_space();
-		else dmp.newLine(1);
-		dmp.append(thenSt);
-		if( thenSt instanceof Block || thenSt instanceof InlineMethodStat) dmp.newLine();
-		else dmp.newLine(-1);
-		if( elseSt != null ) {
-			dmp.append("else");
-			if( elseSt instanceof IfElseStat || elseSt instanceof Block || elseSt instanceof InlineMethodStat ) dmp.forsed_space();
-			else dmp.newLine(1);
-			dmp.append(elseSt).newLine();
-			if( elseSt instanceof IfElseStat || elseSt instanceof Block || elseSt instanceof InlineMethodStat ) dmp.newLine();
-			else dmp.newLine(-1);
-		}
-		return dmp;
 	}
 
 	public Object doRewrite(RewriteContext ctx) {
@@ -382,13 +327,6 @@ public class CondStat extends ENode {
 		this.cond = cond;
 		this.message = message;
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("if( !(").append(cond)
-			.append(") ) throw new kiev.stdlib.AssertionFailedException(")
-			.append(message).append(");").newLine();
-		return dmp;
-	}
 }
 
 @node(name="LblSt")
@@ -417,10 +355,6 @@ public class LabeledStat extends ENode {
 	
 	public LabeledStat() {
 		this.lbl = new Label();
-	}
-	
-	public Dumper toJava(Dumper dmp) {
-		return dmp.newLine(-1).append(lbl.id).append(':').newLine(1).append(stat);
 	}
 }
 
@@ -499,13 +433,6 @@ public class BreakStat extends ENode {
 	}
 	
 	public BreakStat() {}
-	
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("break");
-		if( ident != null && ident.name != "" )
-			dmp.space().append(ident);
-		return dmp.append(';').newLine();
-	}
 }
 
 @node(name="Continue")
@@ -583,13 +510,6 @@ public class ContinueStat extends ENode {
 	}
 	
 	public ContinueStat() {}
-	
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("continue");
-		if( ident != null && ident.name != "" )
-			dmp.space().append(ident);
-		return dmp.append(';').newLine();
-	}
 }
 
 @node(name="Goto")
@@ -728,10 +648,6 @@ public class GotoStat extends ENode {
 		}
 		return stats;
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append("goto").space().append(ident).append(';').newLine();
-	}
 }
 
 @node(name="GotoCase")
@@ -756,14 +672,5 @@ public class GotoCaseStat extends ENode {
 	}
 	
 	public GotoCaseStat() {}
-	
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("goto");
-		if( expr != null )
-			dmp.append(" case ").append(expr);
-		else
-			dmp.space().append("default");
-		return dmp.append(';').newLine();
-	}
 }
 

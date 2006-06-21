@@ -170,11 +170,6 @@ public final class AccessExpr extends LvalueExpr {
 	public String toString() {
     	return obj+"."+ident;
 	}
-
-	public Dumper toJava(Dumper dmp) {
-    	dmp.append(obj).append('.').append(ident.name);
-		return dmp;
-	}
 }
 
 @node(name="IFld")
@@ -323,15 +318,6 @@ public final class IFldExpr extends LvalueExpr {
 		}
 		return null;
 	}
-	
-	public Dumper toJava(Dumper dmp) {
-		if( obj.getPriority() < opAccessPriority ) {
-			dmp.append('(').append(obj).append(").");
-		} else {
-			dmp.append(obj).append('.');
-		}
-		return dmp.append(var.id).space();
-	}
 
 	public Object doRewrite(RewriteContext ctx) {
 		ASTNode obj = (ASTNode)obj.doRewrite(ctx);
@@ -409,16 +395,6 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			return Type.emptyArray; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
 		return new Type[]{Type.getRealType(t,((Method)v).type.ret())};
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		if( obj.getPriority() < opContainerElementPriority ) {
-			dmp.append('(').append(obj).append(')');
-		} else {
-			dmp.append(obj);
-		}
-		dmp.append('[').append(index).append(']');
-		return dmp;
-	}
 }
 
 @node(name="This")
@@ -462,10 +438,6 @@ public final class ThisExpr extends LvalueExpr {
 	}
 
 	public String toString() { return isSuperExpr() ? "super" : "this"; }
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append(toString()).space();
-	}
 }
 
 @node(name="LVar")
@@ -555,12 +527,6 @@ public final class LVarExpr extends LvalueExpr {
 		return (Type[])sni.getTypes().clone();
 	}
 	
-	public Dumper toJava(Dumper dmp) {
-		dmp.space();
-		dmp.append(var);
-		return dmp.space();
-	}
-
 	public Object doRewrite(RewriteContext ctx) {
 		Var var = this.var;
 		if (var instanceof RewritePattern)
@@ -706,12 +672,6 @@ public final class SFldExpr extends LvalueExpr {
 			types = (Type[])sni.getTypes().clone();
 		return types;
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		Struct cl = var.ctx_tdecl;
-		return dmp.space().append(cl.qname()).append('.').append(var.id).space();
-	}
-
 }
 
 @node(name="OuterThis")
@@ -787,8 +747,6 @@ public final class OuterThisAccessExpr extends ENode {
 		if( ctx_method.isStatic() && !ctx_method.isVirtualStatic() )
 			throw new CompilerException(this, "Access to 'this' in static method "+ctx_method);
 	}
-
-	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.qname()).append(".this").space(); }
 }
 
 @node(name="Reinterp")
@@ -836,10 +794,6 @@ public final class ReinterpExpr extends LvalueExpr {
 
 	public Type getType() {
 		return this.type.getType();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append(expr);
 	}
 }
 

@@ -66,12 +66,6 @@ public class ASTExpression extends ENode {
         return sb.toString();
     }
 
-    public Dumper toJava(Dumper dmp) {
-    	foreach(ENode n; nodes)
-	    	dmp.space().append(n).space();
-        return dmp;
-    }
-
 	public ENode parseExpr() {
 		cur_pos = 0;
 		List<ENode> results = List.Nil;

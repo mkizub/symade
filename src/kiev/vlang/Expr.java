@@ -81,11 +81,6 @@ public class Shadow extends ENode {
 	public String toString() {
 		return "(shadow of) "+node;
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		return node.toJava(dmp);
-	}
-
 }
 
 @node
@@ -118,11 +113,6 @@ public class TypeClassExpr extends ENode {
 
 	public String toString() {
 		return type.toString()+".class";
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		type.toJava(dmp).append(".class").space();
-		return dmp;
 	}
 }
 
@@ -166,11 +156,6 @@ public class TypeInfoExpr extends ENode {
 	public String toString() {
 		return type+".type";
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		type.toJava(dmp).append(".type").space();
-		return dmp;
-	}
 }
 
 @node(name="AssertEnabled")
@@ -197,10 +182,6 @@ public class AssertEnabledExpr extends ENode {
 
 	public String toString() {
 		return "$assertionsEnabled";
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append("$assertionsEnabled").space();
 	}
 }
 
@@ -286,8 +267,6 @@ public class AssignExpr extends ENode {
 	public Type getType() { return lval.getType(); }
 
 	public String toString() { return getOp().toString(this); }
-
-	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
 	static class AssignExprDFFunc extends DFFunc {
 		final DFFunc f;
@@ -399,8 +378,6 @@ public class BinaryExpr extends ENode {
 
 	public String toString() { return getOp().toString(this); }
 
-	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
-
 	public Type getType() {
 		Method m;
 		if (ident != null && ident.symbol != null) {
@@ -473,8 +450,6 @@ public class UnaryExpr extends ENode {
 	public ENode[] getArgs() { return new ENode[]{expr}; }
 
 	public String toString() { return getOp().toString(this); }
-
-	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
 	public Type getType() {
 		Method m;
@@ -553,14 +528,6 @@ public class StringConcatExpr extends ENode {
 		args.append(~expr);
 	}
 
-	public Dumper toJava(Dumper dmp) {
-		for(int i=0; i < args.length; i++) {
-			args[i].toJava(dmp);
-			if( i < args.length-1 ) dmp.append('+');
-		}
-		return dmp;
-	}
-
 	public Object doRewrite(RewriteContext ctx) {
 		StringBuffer sb = new StringBuffer();
 		foreach (ENode e; args) {
@@ -614,15 +581,6 @@ public class CommaExpr extends ENode {
 				sb.append(',');
 		}
 		return sb.toString();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		for(int i=0; i < exprs.length; i++) {
-			exprs[i].toJava(dmp);
-			if( i < exprs.length-1 )
-				dmp.append(',');
-		}
-		return dmp;
 	}
 }
 
@@ -736,14 +694,6 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		return "{...}";
 	}
 
-	public Dumper toJava(Dumper dmp) {
-		dmp.space().append('{').newLine(1);
-		foreach (ENode s; stats)
-			s.toJava(dmp);
-		dmp.newLine(-1).append('}').newLine();
-		return dmp;
-	}
-
 	public Object doRewrite(RewriteContext ctx) {
 		Object res = null;
 		foreach (ASTNode stat; stats)
@@ -803,9 +753,6 @@ public class IncrementExpr extends ENode {
 	}
 
 	public String toString() { return getOp().toString(this); }
-
-	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
-
 }
 
 @node(name="IfOp")
@@ -847,8 +794,6 @@ public class ConditionalExpr extends ENode {
 	public ENode[] getArgs() { return new ENode[]{cond, expr1, expr2}; }
 
 	public String toString() { return getOp().toString(this); }
-
-	public Dumper toJava(Dumper dmp) { return getOp().toJava(dmp, this); }
 
 	public Type getType() {
 		Type t1 = expr1.getType();
@@ -997,12 +942,6 @@ public class CastExpr extends ENode {
 			);});
 		else
 			throw new RuntimeException("Type "+tp+" is not a reflection of primitive type");
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("((").append(type).append(")(");
-		dmp.append(expr).append("))");
-		return dmp;
 	}
 }
 

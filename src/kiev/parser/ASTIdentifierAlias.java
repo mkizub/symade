@@ -69,9 +69,5 @@ public final class ASTIdentifierAlias extends ASTAlias {
 		return name.toString();
 	}
     
-	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append("/* alias ").append(name).append(" */").space();
-	}
-
 }
 

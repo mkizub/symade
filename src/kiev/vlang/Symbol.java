@@ -176,10 +176,6 @@ public class SymbolRef extends ASTNode {
 	}
 	
 	public String toString() { return symbol == null ? name : symbol.id.toString(); }
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append(name).space();
-	}
 }
 
 

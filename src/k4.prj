@@ -376,7 +376,6 @@ CLASS kiev.vlang.DoubleNEG kiev/vlang/DoubleNEG kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.DoublePOS kiev/vlang/DoublePOS kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.DoubleSUB kiev/vlang/DoubleSUB kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.DummyDNode kiev/vlang/DummyDNode kiev\vlang\DNode.java
-CLASS kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java
 CLASS kiev.vlang.ENode kiev/vlang/ENode kiev\vlang\ENode.java
 CLASS kiev.vlang.Env kiev/vlang/Env kiev\vlang\Env.java
 CLASS kiev.vlang.ExprStat kiev/vlang/ExprStat kiev\vlang\Statement.java
@@ -870,8 +869,6 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
-METATYPE kiev.transf.KievBE_CheckLock kiev\transf\ImportKievSrc.java bad
-METATYPE kiev.transf.KievBE_Lock kiev\transf\ImportKievSrc.java bad
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java

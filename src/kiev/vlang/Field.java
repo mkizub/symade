@@ -196,21 +196,5 @@ public final class Field extends LvalDNode implements Accessable {
 	}
 
 	public String toString() { return id.toString(); }
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append(id).space();
-	}
-
-	public Dumper toJavaDecl(Dumper dmp) {
-		Env.toJavaModifiers(dmp,getJavaFlags());
-		if( id.uname != "" )
-			type.toJava(dmp).forsed_space().append(id);
-		if( init != null ) {
-			if( id.uname != "" )
-				dmp.append(" = ");
-			init.toJava(dmp);
-		}
-		return dmp.append(';');
-	}
 }
 

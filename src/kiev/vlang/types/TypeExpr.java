@@ -159,8 +159,5 @@ public class TypeExpr extends TypeRef {
 			return this.lnk.toString();
 		return String.valueOf(arg)+op;
 	}
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append(this.toString());
-	}
 }
 

@@ -67,10 +67,6 @@ public final class ConstBoolExpr extends ConstExpr {
 	}
 
 	public String	toString() { return String.valueOf(value); }
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append(String.valueOf(value)).space();
-	}
 }
 
 @node
@@ -416,35 +412,6 @@ public abstract class ConstExpr extends ENode {
 	public abstract Object getConstValue();
 
 	public boolean	isConstantExpr() { return true; }
-
-	
-	public Dumper	toJava(Dumper dmp) {
-		Object value = getConstValue();
-		if( value == null ) dmp.space().append("null").space();
-		else if( value instanceof Number ) {
-			if( value instanceof Long ) dmp.append(value).append('L');
-			else if( value instanceof Float ) dmp.append(value).append('F');
-			else if( value instanceof Double ) dmp.append(value).append('D');
-			else dmp.append(value);
-		}
-		else if( value instanceof String ) {
-			dmp.append('\"');
-			byte[] val = Convert.string2source(value.toString());
-			dmp.append(new String(val,0));
-			dmp.append('\"');
-		}
-		else if( value instanceof java.lang.Boolean )
-			if( ((Boolean)value).booleanValue() )
-				dmp.space().append("true").space();
-			else
-				dmp.space().append("false").space();
-		else if( value instanceof java.lang.Character ) {
-			char ch = ((java.lang.Character)value).charValue();
-			return dmp.append('\'').append(Convert.escape(ch)).append('\'');
-		}
-		else throw new RuntimeException("Internal error: unknown type of constant "+value.getClass());
-		return dmp;
-	}
 
 	public Object doRewrite(RewriteContext ctx) {
 		return this;

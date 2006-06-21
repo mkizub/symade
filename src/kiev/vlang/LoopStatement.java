@@ -161,17 +161,6 @@ public class WhileStat extends LoopStat {
 		this.cond = cond;
 		this.body = body;
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("while").space().append('(').space().append(cond)
-			.space().append(')');
-		if( body instanceof ExprStat || body instanceof Block ) dmp.forsed_space();
-		else dmp.newLine(1);
-		dmp.append(body);
-		if( body instanceof ExprStat || body instanceof Block ) dmp.newLine();
-		else dmp.newLine(-1);
-		return dmp;
-	}
 }
 
 @node(name="DoWhile")
@@ -204,19 +193,6 @@ public class DoWhileStat extends LoopStat {
 		this.pos = pos;
 		this.cond = cond;
 		this.body = body;
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("do");
-
-		if( body instanceof ExprStat || body instanceof Block ) dmp.forsed_space();
-		else dmp.newLine(1);
-		dmp.append(body);
-		if( body instanceof ExprStat || body instanceof Block ) dmp.newLine();
-		else dmp.newLine(-1);
-
-		dmp.append("while").space().append('(').space().append(cond).space().append(");").newLine();
-		return dmp;
 	}
 }
 
@@ -266,14 +242,6 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		var.isForward(),
 		info.enterForward(var) : info.leaveForward(var),
 		var.getType().resolveCallAccessR(node,info,name,mt)
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		for(int i=0; i < decls.length; i++) {
-			decls[i].toJava(dmp);
-			if( i < decls.length-1 ) dmp.append(',').space();
-		}
-		return dmp;
 	}
 }
 
@@ -328,32 +296,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	{
 		init instanceof ForInit,
 		((ForInit)init).resolveMethodR(node,info,name,mt)
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("for").space().append('(');
-		if( init != null && init instanceof ENode ) dmp.append(init);
-		else if( init != null ) {
-			dmp.append(init).append(';');
-		} else {
-			dmp.append(';');
-		}
-
-		if( cond != null )
-			dmp.append(cond);
-		dmp.append(';');
-
-		if( iter != null )
-			dmp.append(iter);
-		dmp.space().append(')').space();
-
-		if( body instanceof ExprStat || body instanceof Block ) dmp.forsed_space();
-		else dmp.newLine(1);
-		dmp.append(body);
-		if( body instanceof ExprStat || body instanceof Block ) dmp.newLine();
-		else dmp.newLine(-1);
-
-		return dmp;
 	}
 }
 
@@ -440,30 +382,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
 		n.getType().resolveCallAccessR(node,info,name,mt)
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("for").space().append('(');
-		if( iter_init != null )
-			dmp.append(iter_init).append(';');
-		if( iter_cond != null )
-			dmp.append(iter_cond).append(';');
-		if( iter_incr != null )
-			dmp.append(iter_incr);
-		dmp.append(')').space();
-
-		if( body instanceof ExprStat || body instanceof Block ) dmp.forsed_space();
-		else dmp.newLine(1);
-		if( var_init != null )
-			dmp.append(var_init).newLine();
-		if( cond != null )
-			dmp.append("if !(").append(cond).append(") continue;").newLine();
-
-		dmp.append(body);
-		if( body instanceof ExprStat || body instanceof Block ) dmp.newLine();
-		else dmp.newLine(-1);
-
-		return dmp;
 	}
 }
 

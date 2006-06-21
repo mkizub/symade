@@ -64,9 +64,6 @@ public abstract class TypeDef extends TypeDecl {
 	public String toString() {
 		return String.valueOf(id);
 	}
-	public Dumper toJava(Dumper dmp) {
-		return dmp.append(this.toString());
-	}
 }
 
 @node

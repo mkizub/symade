@@ -131,10 +131,5 @@ public class TypeNameRef extends TypeRef {
 			return ident.toString();
 		return outer+"."+ident.toString();
 	}
-	public Dumper toJava(Dumper dmp) {
-		if (outer == null)
-			return dmp.append(ident);
-		return dmp.append(outer).append('.').append(ident);
-	}
 }
 

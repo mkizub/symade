@@ -144,17 +144,6 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
 		n.getType().resolveNameAccessR(node,info,name)
 	}
-	
-	public Dumper toJava(Dumper dmp) {
-		if( val == null )
-			dmp.newLine(-1).append("default:");
-		else
-			dmp.newLine(-1).append("case ").append(val).append(':');
-		dmp.newLine(1);
-		foreach (ASTNode s; stats)
-			s.toJava(dmp);
-		return dmp;
-	}
 }
 
 @node(name="Switch")
@@ -214,14 +203,6 @@ public class SwitchStat extends ENode {
 	}
 
 	public String toString() { return "switch("+sel+")"; }
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.newLine().append("switch").space().append('(')
-			.append(sel).space().append(')').space().append('{').newLine(1);
-		for(int i=0; i < cases.length; i++) dmp.append(cases[i]);
-		dmp.newLine(-1).append('}').newLine();
-		return dmp;
-	}
 }
 
 @node(name="Catch")
@@ -260,12 +241,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	{
 		node ?= arg, ((Var)node).id.equals(name)
 	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.newLine().append("catch").space().append('(').space();
-		arg.toJavaDecl(dmp).space().append(')').space().append(body);
-		return dmp;
-	}
 }
 
 @node(name="Finally")
@@ -295,12 +270,6 @@ public class FinallyInfo extends ENode {
 	public FinallyInfo() {}
 
 	public String toString() { return "finally"; }
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.newLine().append("finally").space().append(body).newLine();
-		return dmp;
-	}
-
 }
 
 @node(name="Try")
@@ -330,16 +299,6 @@ public class TryStat extends ENode {
 	}
 
 	public TryStat() {}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("try").space().append(body).newLine();
-		for(int i=0; i < catchers.length; i++)
-			dmp.append(catchers[i]).newLine();
-		if(finally_catcher != null)
-			dmp.append(finally_catcher).newLine();
-		return dmp;
-	}
-
 }
 
 @node(name="Synchronized")
@@ -370,13 +329,6 @@ public class SynchronizedStat extends ENode {
 	}
 
 	public SynchronizedStat() {}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("synchronized").space().append('(').space().append(expr)
-			.space().append(')').forsed_space().append(body).newLine();
-		return dmp;
-	}
-
 }
 
 @node(name="With")
@@ -405,11 +357,5 @@ public class WithStat extends ENode {
 	}
 
 	public WithStat() {}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("/*with ").space().append('(').space().append(expr)
-			.space().append(")*/").forsed_space().append(body).newLine();
-		return dmp;
-	}
 }
 
