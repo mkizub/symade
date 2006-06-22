@@ -42,6 +42,8 @@ public class Editor extends UIView implements KeyListener {
 	/** The object in clipboard */
 	@ref public ASTNode		in_clipboard;
 	
+	private Stack<Transaction>		changes = new Stack<Transaction>();
+	
 	private Hashtable<Integer,KeyHandler> naviMap;
 	private Hashtable<Integer,KeyHandler> editMap;
 
@@ -109,6 +111,8 @@ public class Editor extends UIView implements KeyListener {
 				if (cur_elem instanceof DrawNodeTerm) {
 					Object obj = ((DrawNodeTerm)cur_elem).getTextObject();
 					if (obj instanceof Symbol) {
+						changes.push(Transaction.open());
+						obj.open();
 						edit_offset = 0;
 						mode_edit = true;
 						view_canvas.cursor_offset = edit_offset;
@@ -139,6 +143,18 @@ public class Editor extends UIView implements KeyListener {
 				evt.consume();
 				kiev.Compiler.runBackEnd(null);
 				formatAndPaint(true);
+				break;
+			}
+		}
+		else if (mask == KeyEvent.CTRL_DOWN_MASK && !mode_edit) {
+			evt.consume(); 
+			switch (code) {
+			case KeyEvent.VK_Z:
+				if (changes.length > 0) {
+					Transaction tr = changes.pop();
+					tr.rollback(false);
+					formatAndPaint(true);
+				}
 				break;
 			}
 		}
@@ -281,6 +297,7 @@ public class Editor extends UIView implements KeyListener {
 			case KeyEvent.VK_ENTER:
 				edit_offset = -1;
 				mode_edit = false;
+				changes.peek().close();
 				break;
 			case KeyEvent.VK_DELETE:
 				if (edit_offset < text.length()) {
@@ -297,6 +314,14 @@ public class Editor extends UIView implements KeyListener {
 					symbol.sname = text;
 				}
 				break;
+			case KeyEvent.VK_ESCAPE: {
+				edit_offset = -1;
+				mode_edit = false;
+				Transaction tr = changes.pop();
+				tr.close();
+				tr.rollback(false);
+				break;
+				}
 			default:
 				if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
 					text = text.substring(0, edit_offset)+

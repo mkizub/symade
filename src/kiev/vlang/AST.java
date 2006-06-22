@@ -273,7 +273,7 @@ public abstract class ANode {
 	}
 
 	public final void rollback(boolean save_next) {
-		assert (!locked);
+		//assert (!locked);
 		if (this.prev_version_node == null)
 			return;
 		assert (this.prev_version_node.locked);

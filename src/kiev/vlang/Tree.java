@@ -476,7 +476,6 @@ public final class Transaction {
 		int n = this.size;
 		for (int i=0; i < n; i++)
 			nodes[i].locked = true;
-		this.size = 0;
 		currentTransaction = null;
 	}
 
@@ -486,14 +485,12 @@ public final class Transaction {
 	}
 
 	public void rollback(boolean save_next) {
-		assert (currentTransaction == this);
 		ANode[] nodes = this.nodes;
 		int n = this.size;
 		for (int i=0; i < n; i++)
 			nodes[i].rollback(save_next);
-		this.nodes = null;
-		this.size = 0;
-		currentTransaction = null;
+		if (currentTransaction == this)
+			currentTransaction = null;
 	}
 
 	public int version;
