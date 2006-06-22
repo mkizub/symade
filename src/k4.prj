@@ -549,6 +549,7 @@ CLASS kiev.vlang.RewriteCase kiev/vlang/RewriteCase kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RewriteContext kiev/vlang/RewriteContext kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RewriteMatch kiev/vlang/RewriteMatch kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RewriteNodeArg kiev/vlang/RewriteNodeArg kiev\vlang\Rewrites.java
+CLASS kiev.vlang.RewriteNodeArgArray kiev/vlang/RewriteNodeArgArray kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RewriteNodeFactory kiev/vlang/RewriteNodeFactory kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RewritePattern kiev/vlang/RewritePattern kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RuleAndExpr kiev/vlang/RuleAndExpr kiev\vlang\Rules.java

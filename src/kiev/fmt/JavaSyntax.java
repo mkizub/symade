@@ -21,6 +21,7 @@ import syntax kiev.Syntax;
 public class SyntaxJavaExpr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxJavaExpr;
 
+	@att public int					idx;
 	@att public int					priority;
 	@att public SyntaxSeparator		l_paren;
 	@att public SyntaxSeparator		r_paren;
@@ -28,13 +29,26 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 	public SyntaxJavaExpr() {}
 	public SyntaxJavaExpr(String name, FormatInfoHint hint, DrawLayout layout, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
 		super(name,hint,layout);
+		this.idx = -1;
+		this.priority = priority;
+		this.l_paren = l_paren;
+		this.r_paren = r_paren;
+	}
+	public SyntaxJavaExpr(int idx, FormatInfoHint hint, DrawLayout layout, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
+		super("",hint,layout);
+		this.idx = idx;
 		this.priority = priority;
 		this.l_paren = l_paren;
 		this.r_paren = r_paren;
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
-		ASTNode n = (name == "this") ? node : (ASTNode)node.getVal(name);
+		ASTNode n;
+		if (idx >= 0) {
+			n = ((ENode)node).getArgs()[idx];
+		} else {
+			n = (name == "this") ? node : (ASTNode)node.getVal(name);
+		}
 		Drawable dr = new DrawJavaExpr(n, this);
 		dr.init(fmt);
 		return dr;
@@ -234,10 +248,7 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seOuterThisAccessExpr;
 	final SyntaxElem seReinterpExpr;
 	// boolean exprs
-	final SyntaxElem seBinaryBooleanOrExpr;
-	final SyntaxElem seBinaryBooleanAndExpr;
 	final SyntaxElem seInstanceofExpr;
-	final SyntaxElem seBooleanNotExpr;
 	final SyntaxElem seCallExpr;
 	final SyntaxElem seCallConstr;
 	final SyntaxElem seClosureCallExpr;
@@ -246,13 +257,21 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seNewArrayExpr;
 	final SyntaxElem seNewInitializedArrayExpr;
 	final SyntaxElem seNewClosure;
+	// rewrites
+	final SyntaxElem seRewriteMatch;
+	final SyntaxElem seRewritePattern;
+	final SyntaxElem seRewriteCase;
+	final SyntaxElem seRewriteNodeFactory;
+	final SyntaxElem seRewriteNodeArg;
+	final SyntaxElem seRewriteNodeArgArray;
 	// others exprs
 	final SyntaxElem seShadow;
 	final SyntaxElem seTypeClassExpr;
 	final SyntaxElem seTypeInfoExpr;
+	final SyntaxElem seAssertEnabledExpr;
 	final SyntaxElem seStringConcatExpr;
 	final SyntaxElem seCommaExpr;
-	final SyntaxElem seConditionalExpr;
+	//final SyntaxElem seConditionalExpr;
 	final SyntaxElem seCastExpr;
 	final SyntaxElem seNopExpr;
 
@@ -275,6 +294,13 @@ public class JavaSyntax extends TextSyntax {
 		return new SyntaxOptional(name, new CalcOptionJavaFlag(size, offs, val), kw(name), null, lout);
 	}
 
+	protected SyntaxJavaExpr expr(int idx, int priority)
+	{
+		DrawLayout lout = new DrawLayout();
+		SyntaxJavaExpr se = new SyntaxJavaExpr(idx, null, lout, priority, sep("("), sep(")"));
+		return se;
+	}
+
 	protected SyntaxJavaExpr expr(String expr, int priority)
 	{
 		DrawLayout lout = new DrawLayout();
@@ -289,27 +315,31 @@ public class JavaSyntax extends TextSyntax {
 		return se;
 	}
 
-	protected SyntaxSet expr(String expr1, Operator op, String expr2)
+	protected SyntaxSet expr(Operator op)
 	{
-		DrawLayout lout = new DrawLayout();
-//		return setl(lout, expr(expr1, op.getArgPriority(0)), oper(op), expr(expr2, op.getArgPriority(1)));
-		return null;
+		SyntaxElem[] elems = new SyntaxElem[op.args.length];
+		int earg = 0;
+		for (int i=0; i < elems.length; i++) {
+			OpArg arg = op.args[i];
+			switch (arg) {
+			case OpArg.EXPR(int priority):
+				elems[i] = expr(earg,priority);
+				earg++;
+				continue;
+			case OpArg.TYPE():
+				elems[i] = type(null);
+				earg++;
+				continue;
+			case OpArg.OPER(String text):
+				elems[i] = oper(text);
+				continue;
+			}
+		}
+		SyntaxSet set = new SyntaxSet(new DrawLayout());
+		set.elements.addAll(elems);
+		return set;
 	}
 
-	protected SyntaxSet expr(Operator op, String expr2)
-	{
-		DrawLayout lout = new DrawLayout();
-//		return setl(lout, oper(op), expr(expr2, op.getArgPriority()));
-		return null;
-	}
-
-	protected SyntaxSet expr(String expr1, Operator op)
-	{
-		DrawLayout lout = new DrawLayout();
-//		return setl(lout, expr(expr1, op.getArgPriority()), oper(op));
-		return null;
-	}
-	
 	protected SyntaxElem accs() {
 		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
 				new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
@@ -474,30 +504,10 @@ public class JavaSyntax extends TextSyntax {
 					sep(">")
 				), null, lout_empty.ncopy());
 			DrawLayout lout_ext = new DrawLayout(new SpaceCmd[]{new SpaceCmd(siSp, SP_ADD_BEFORE, 0)});
-			SyntaxElem class_ext = opt("extends",
-				new CalcOption(){
-					public boolean calc(ASTNode node) {
-						if (node instanceof Struct && node.super_types.length > 0 && node.super_types[0].getType() ≉ Type.tpObject)
-							return true;
-						return false;
-					}
-				},
-				set(
-					kw("extends"), ident("super_bound")
-					),
-				null, lout_ext.ncopy()
-				);
-			SyntaxElem class_impl = opt("implements", new CalcOptionNotEmpty("interfaces"),
-				set(
-					kw("implements"),
-					lst("interfaces", node(), sep(","), lout_empty.ncopy())
-					),
-				null, lout_ext.ncopy()
-				);
-			SyntaxElem iface_ext = opt("extends", new CalcOptionNotEmpty("interfaces"),
+			SyntaxElem class_ext = opt("extends", new CalcOptionNotEmpty("super_types"),
 				set(
 					kw("extends"),
-					lst("interfaces", node(), sep(","), lout_empty.ncopy())
+					lst("super_types", node(), sep(","), lout_empty.ncopy())
 					),
 				null, lout_ext.ncopy()
 				);
@@ -523,8 +533,7 @@ public class JavaSyntax extends TextSyntax {
 						kw("class"),
 						ident("id"),
 						struct_args.ncopy(),
-						class_ext.ncopy(),
-						class_impl.ncopy()),
+						class_ext.ncopy()),
 					seStructBody.ncopy()
 				);
 			// interface
@@ -535,7 +544,7 @@ public class JavaSyntax extends TextSyntax {
 						kw("interface"),
 						ident("id"),
 						struct_args.ncopy(),
-						iface_ext),
+						class_ext),
 					seStructBody.ncopy()
 				);
 			// view
@@ -548,8 +557,7 @@ public class JavaSyntax extends TextSyntax {
 						struct_args.ncopy(),
 						kw("of"),
 						ident("view_of"),
-						class_ext.ncopy(),
-						class_impl.ncopy()),
+						class_ext.ncopy()),
 					seStructBody.ncopy()
 				);
 			// annotation
@@ -661,8 +669,8 @@ public class JavaSyntax extends TextSyntax {
 							sep(")")
 							)
 						);
-			seMetaValueScalar = set(ident("type"), oper("="), attr("value"));
-			seMetaValueArray = set(ident("type"), oper("="),
+			seMetaValueScalar = set(ident("ident"), oper("="), attr("value"));
+			seMetaValueArray = set(ident("ident"), oper("="),
 						set(sep("{"),
 							lst("values",node(),sep(","),lout_empty.ncopy()),
 							sep("}")
@@ -891,7 +899,7 @@ public class JavaSyntax extends TextSyntax {
 		seReturnStat = set(kw("return"), opt("expr"), sep(";"));
 		seThrowStat = set(kw("throw"), attr("expr"), sep(";"));
 		seCondStat = set(attr("cond"), opt("message", set(sep(":"), attr("message"))), sep(";"));
-		seLabeledStat = set(ident("id"), sep(":"), attr("stat"));
+		seLabeledStat = set(ident("lbl.id"), sep(":"), attr("stat"));
 		seBreakStat = set(kw("break"), opt("ident", ident("ident")), sep(";"));
 		seContinueStat = set(kw("continue"), opt("ident", ident("ident")), sep(";"));
 		seGotoStat = set(kw("goto"), opt("ident", ident("ident")), sep(";"));
@@ -1038,15 +1046,12 @@ public class JavaSyntax extends TextSyntax {
 		seOuterThisAccessExpr = set(ident("outer"), sep("."), kw("this"));
 		seReinterpExpr = set(sep("("), kw("$reinterp"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
 		
-		seBinaryBooleanOrExpr = expr("expr1", Operator.BooleanOr, "expr2");
-		seBinaryBooleanAndExpr = expr("expr1", Operator.BooleanAnd, "expr2");
-		seInstanceofExpr = expr("expr", Operator.InstanceOf, "type");
-//			set(
-//			expr("expr", Constants.opInstanceOfPriority),
-//			kw("instanceof"),
-//			attr("type", new FormatInfoHint("no-args"))
-//			);
-		seBooleanNotExpr = expr(Operator.BooleanNot, "expr");
+		seInstanceofExpr = //expr("expr", Operator.InstanceOf, "type");
+			set(
+			expr("expr", Constants.opInstanceOfPriority),
+			kw("instanceof"),
+			attr("type", new FormatInfoHint("no-args"))
+			);
 		seCallExpr = set(
 				expr("obj", new FormatInfoHint("call-accessor"), Constants.opAccessPriority),
 				sep("."),
@@ -1076,12 +1081,12 @@ public class JavaSyntax extends TextSyntax {
 				);
 		seStringConcatExpr = lst("args",
 				expr("this", Operator.Add.priority),
-				oper(Operator.Add),
+				oper("+"),
 				lout_empty.ncopy()
 			);
 		seCommaExpr = lst("exprs",
 				expr("this", Operator.Comma.priority),
-				oper(Operator.Comma),
+				oper(","),
 				lout_empty.ncopy()
 			);
 
@@ -1123,17 +1128,62 @@ public class JavaSyntax extends TextSyntax {
 				ident("type_ret"),
 				attr("body")
 				);
+		{
+			seRewriteMatch = set(
+					sep("{", lout_nl.ncopy()),
+					par(plIndented, lst("cases",setl(lout_nl.ncopy(),node()),null,lout_nl.ncopy())),
+					sep("}")
+					);
+			seRewriteCase = set(
+					kw("case"),
+					attr("var"),
+					sep(":", lout_nl.ncopy()),
+					par(plIndented, lst("stats",setl(lout_nl.ncopy(),node(new FormatInfoHint("stat"))),null,lout_nl.ncopy()))
+					);
+			DrawLayout lout_pattern_args = new DrawLayout(new SpaceCmd[]{
+					new SpaceCmd(siSp, SP_ADD_AFTER, 0)
+				});
+			seRewritePattern = set(
+					opt("meta"),
+					jflag(1,16,1, "@forward"),
+					ident("vtype"),
+					ident("id"),
+					opt("vars", new CalcOptionNotEmpty("vars"),
+						set(
+							sep("("),
+							lst("vars", node(), sep(","), lout_empty.ncopy()),
+							sep(")")
+						), null, lout_pattern_args.ncopy()
+					)
+				);
+			seRewriteNodeFactory = set(
+					kw("new"),
+					oper("#"),
+					ident("node_class"),
+					sep("("),
+					lst("args",node(),sep(","),lout_empty.ncopy()),
+					sep(")")
+					);
+			seRewriteNodeArg = set(ident("attr"), oper("="), attr("node"));
+			seRewriteNodeArgArray = set(
+				sep("{"),
+				lst("args",node(),sep(","),lout_empty.ncopy()),
+				sep("}")
+				);
+		}
+
 
 		seShadow = attr("node");
 		seTypeClassExpr = set(ident("type"), sep("."), kw("class"));
 		seTypeInfoExpr = set(ident("type"), sep("."), kw("type"));
-		seConditionalExpr = set(
-			expr("cond", Operator.opConditionalPriority+1),
-			oper("?"),
-			expr("expr1", Operator.opConditionalPriority+1),
-			oper(":"),
-			expr("expr2", Operator.opConditionalPriority)
-			);
+		seAssertEnabledExpr = kw("$assertionsEnabled");
+		//seConditionalExpr = set(
+		//	expr("cond", Operator.opConditionalPriority+1),
+		//	oper("?"),
+		//	expr("expr1", Operator.opConditionalPriority+1),
+		//	oper(":"),
+		//	expr("expr2", Operator.opConditionalPriority)
+		//	);
 		seCastExpr = set(sep("("), kw("$cast"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
 		seNopExpr = new SyntaxSpace(new DrawLayout());
 		seNopExpr.is_hidden = true;
@@ -1279,10 +1329,7 @@ public class JavaSyntax extends TextSyntax {
 		case OuterThisAccessExpr: return seOuterThisAccessExpr;
 		case ReinterpExpr: return seReinterpExpr;
 		
-		case BinaryBooleanOrExpr: return seBinaryBooleanOrExpr;
-		case BinaryBooleanAndExpr: return seBinaryBooleanAndExpr;
 		case InstanceofExpr: return seInstanceofExpr;
-		case BooleanNotExpr: return seBooleanNotExpr;
 		case CallExpr:
 			if (((CallExpr)node).func instanceof Constructor)
 				return seCallConstr;
@@ -1292,7 +1339,9 @@ public class JavaSyntax extends TextSyntax {
 		case CommaExpr: return seCommaExpr;
 		case TypeClassExpr: return seTypeClassExpr;
 		case TypeInfoExpr: return seTypeInfoExpr;
-		case ConditionalExpr: return seConditionalExpr;
+		case AssertEnabledExpr: return 	seAssertEnabledExpr;
+
+		//case ConditionalExpr: return seConditionalExpr;
 		case CastExpr: return seCastExpr;
 		case NopExpr: return seNopExpr;
 
@@ -1300,6 +1349,13 @@ public class JavaSyntax extends TextSyntax {
 		case NewArrayExpr: return seNewArrayExpr;
 		case NewInitializedArrayExpr: return seNewInitializedArrayExpr;
 		case NewClosure: return seNewClosure;
+		
+		case RewriteMatch: return seRewriteMatch;
+		case RewriteCase: return seRewriteCase;
+		case RewritePattern: return seRewritePattern;
+		case RewriteNodeFactory: return seRewriteNodeFactory;
+		case RewriteNodeArg: return seRewriteNodeArg;
+		case RewriteNodeArgArray: return seRewriteNodeArgArray;
 
 		case Comment: {
 			Comment c = (Comment)node;
@@ -1310,58 +1366,18 @@ public class JavaSyntax extends TextSyntax {
 			return seComment;
 		}
 
-/*		case UnaryExpr: {
-			Operator op = ((UnaryExpr)node).op;
+		case ENode:
+		{
+			ENode e = (ENode)node;
+			Operator op = e.getOp();
 			SyntaxElem se = exprs.get(op);
 			if (se == null) {
-				if (op instanceof PrefixOperator)
-					se = expr(op, "expr");
-				else
-					se = expr("expr", op);
+				se = expr(op);
 				exprs.put(op, se);
 			}
 			return se;
 		}
-		case IncrementExpr: {
-			Operator op = ((IncrementExpr)node).op;
-			SyntaxElem se = exprs.get(op);
-			if (se == null) {
-				if (op instanceof PrefixOperator)
-					se = expr(op, "expr");
-				else
-					se = expr("expr", op);
-				exprs.put(op, se);
-			}
-			return se;
 		}
-		case BinaryExpr: {
-			Operator op = ((BinaryExpr)node).op;
-			SyntaxElem se = exprs.get(op);
-			if (se == null) {
-				se = expr("expr1", op, "expr2");
-				exprs.put(op, se);
-			}
-			return se;
-		}
-		case BinaryBoolExpr: {
-			Operator op = ((BinaryBoolExpr)node).op;
-			SyntaxElem se = exprs.get(op);
-			if (se == null) {
-				se = expr("expr1", op, "expr2");
-				exprs.put(op, se);
-			}
-			return se;
-		}
-		case AssignExpr: {
-			Operator op = ((AssignExpr)node).op;
-			SyntaxElem se = exprs.get(op);
-			if (se == null) {
-				se = expr("lval", op, "value");
-				exprs.put(op, se);
-			}
-			return se;
-		}
-*/		}
 		return super.getSyntaxElem(node, hint);
 	}
 }

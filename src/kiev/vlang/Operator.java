@@ -277,6 +277,25 @@ public final class Operator implements Constants {
 		}
 		return sb.toString().trim();
 	}
+	
+	public int getArgPriority(int idx) {
+		int eidx = 0;
+		foreach (OpArg arg; this.args) {
+			switch (arg) {
+			case EXPR(int priority):
+				if (eidx == idx) return priority;
+				eidx++;
+				continue;
+			case TYPE():
+				if (eidx == idx) return 255;
+				eidx++;
+				continue;
+			case OPER(String text):
+				continue;
+			}
+		}
+		return 255;
+	}
 
 	public static Operator getOperator(String nm) {
 		return allOperatorsHash.get(nm);

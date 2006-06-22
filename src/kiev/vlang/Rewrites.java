@@ -124,7 +124,7 @@ public final class RewriteNodeFactory extends ENode {
 	
 	@virtual typedef This  = RewriteNodeFactory;
 
-	     public Class					node_class;
+	@ref public Class					node_class;
 	@att public RewriteNodeArg[]		args;
 
 	public RewriteNodeFactory() {}
@@ -215,6 +215,39 @@ public final class RewriteNodeArg extends ENode {
 
 	public Object doRewrite(RewriteContext ctx) {
 		return node.doRewrite(ctx);
+	}
+}
+
+@node(name="NewArrInitialized")
+public final class RewriteNodeArgArray extends ENode {
+	
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]		args;
+	}
+
+	@virtual typedef This  = RewriteNodeArgArray;
+
+	@att public ENode[]				args;
+
+	public RewriteNodeArgArray() {}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append('{');
+		for(int i=0; i < args.length; i++) {
+			if (i > 0)
+				sb.append(',');
+			sb.append(args[i]);
+		}
+		sb.append('}');
+		return sb.toString();
+	}
+
+	public Object doRewrite(RewriteContext ctx) {
+		Object[] arr = new ENode[args.length];
+		for (int i=0; i < arr.length; i++)
+			arr[i] = args[i].doRewrite(ctx);
+		return arr;
 	}
 }
 

@@ -640,7 +640,7 @@ public class CalcOptionNotEmpty implements CalcOption {
 			return false;
 		Object obj = node.getVal(name);
 		if (obj instanceof ASTNode[])
-			return obj.length > 0;
+			return ((ASTNode[])obj).length > 0;
 		return false;
 	}
 }

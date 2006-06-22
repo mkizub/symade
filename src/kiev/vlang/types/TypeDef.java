@@ -64,6 +64,15 @@ public final class TypeAssign extends TypeDef {
 
 	@virtual typedef This  = TypeAssign;
 
+	@abstract @virtual
+	@ref public:ro TypeRef type_ref;
+	
+	@getter public TypeRef get$type_ref() {
+		if (super_types.length == 0)
+			return null;
+		return super_types[0];
+	}
+	
 	public TypeRef[] getLowerBounds() { return super_types; }
 
 	public TypeAssign() {}

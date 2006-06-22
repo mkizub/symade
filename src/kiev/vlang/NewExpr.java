@@ -219,7 +219,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	@att public TypeRef				type;
 	@att public ENode[]				args;
 	@att public int[]				dims;
-	     public ArrayType			arrtype;
+	@ref public ArrayType			arrtype;
 
 	public NewInitializedArrayExpr() {}
 
@@ -296,13 +296,6 @@ public final class NewInitializedArrayExpr extends ENode {
 	}
 
 	public int getElementsNumber(int i) { return dims[i]; }
-
-	public Object doRewrite(RewriteContext ctx) {
-		Object[] arr = new ENode[args.length];
-		for (int i=0; i < arr.length; i++)
-			arr[i] = args[i].doRewrite(ctx);
-		return arr;
-	}
 }
 
 @node(name="NewClosure")

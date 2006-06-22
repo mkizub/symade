@@ -3491,10 +3491,26 @@ RewriteNodeArg RewriteNodeArg() :
 	t = <IDENTIFIER>
 	"="
 	(
-		rn = ArrayInitializer()
+		rn = RewriteNodeArgArrayInit()
 	|
 		rn = ExpressionNT(noCommaTokenSet)
 	)
 	{ return new RewriteNodeArg(t.image, rn); }
+}
+
+RewriteNodeArgArray RewriteNodeArgArrayInit() :
+{ RewriteNodeArgArray rn = new RewriteNodeArgArray(); }
+{
+	"{" { rn.pos = getToken(0).getPos(); }
+	[	LOOKAHEAD(2)
+		rn.args += ExpressionNT(noCommaTokenSet)
+		(	LOOKAHEAD(2)
+			","
+			rn.args += VariableInitializer()
+		)*
+		[ "," ]
+	]
+	"}"
+	{ return rn; }
 }
 

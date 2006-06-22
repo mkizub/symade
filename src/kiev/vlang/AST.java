@@ -98,10 +98,10 @@ public abstract class ANode {
 			foreach (AttachInfo ai; ndata; ai.p_slot.name == name)
 				return ai.p_data;
 		}
-		throw new RuntimeException("No @att value \"" + name + "\" in ANode");
+		throw new RuntimeException("No @att value \"" + name + "\" in "+getClass().getName());
 	}
 	public void setVal(String name, Object val) {
-		throw new RuntimeException("No @att value \"" + name + "\" in ANode");
+		throw new RuntimeException("No @att value \"" + name + "\" in "+getClass().getName());
 	}
 
 	public final Object getNodeData(AttrSlot attr) {
