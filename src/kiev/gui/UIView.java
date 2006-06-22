@@ -48,7 +48,7 @@ public abstract class UIView extends ASTNode implements MouseListener, Component
 	
 	public TextSyntax getSyntax() { return syntax; }
 	
-	public abstract void formatAndPaint();
+	public abstract void formatAndPaint(boolean full);
 
 	public void mouseClicked(MouseEvent e) {
 		view_canvas.requestFocus();
@@ -62,6 +62,6 @@ public abstract class UIView extends ASTNode implements MouseListener, Component
 	public void componentMoved(ComponentEvent e) {}
 	public void componentShown(ComponentEvent e) {}
 	public void componentResized(ComponentEvent e) {
-		formatAndPaint();
+		formatAndPaint(true);
 	}
 }

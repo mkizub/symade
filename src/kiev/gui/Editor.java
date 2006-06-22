@@ -34,13 +34,29 @@ public class Editor extends UIView implements KeyListener {
 	/** Current editor mode */
 	private boolean			mode_edit;
 	/** Current x position for scrolling up/down */
-	private int				cur_x;
+	int						cur_x;
 	/** Current edit offset */
 	private int				edit_offset;
 	/** Current item */
 	@ref public Drawable	cur_elem;
 	/** The object in clipboard */
 	@ref public ASTNode		in_clipboard;
+	
+	private Hashtable<Integer,KeyHandler> naviMap;
+	private Hashtable<Integer,KeyHandler> editMap;
+
+	{
+		this.naviMap = new Hashtable<Integer,KeyHandler>();
+		this.editMap = new Hashtable<Integer,KeyHandler>();
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_LEFT),      new NavigateView(this,NavigateView.LEFT));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_RIGHT),     new NavigateView(this,NavigateView.RIGHT));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_UP),        new NavigateView(this,NavigateView.LINE_UP));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_DOWN),      new NavigateView(this,NavigateView.LINE_DOWN));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_HOME),      new NavigateView(this,NavigateView.LINE_HOME));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_END),       new NavigateView(this,NavigateView.LINE_END));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_UP),   new NavigateView(this,NavigateView.PAGE_UP));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_DOWN), new NavigateView(this,NavigateView.PAGE_DOWN));
+	}
 	
 	public Editor(Window window, TextSyntax syntax, Canvas view_canvas) {
 		super(window, syntax, view_canvas);
@@ -53,13 +69,14 @@ public class Editor extends UIView implements KeyListener {
 		cur_elem = view_root.getFirstLeaf();
 	}
 	
-	public void formatAndPaint() {
+	public void formatAndPaint(boolean full) {
 		view_canvas.current = cur_elem;
-		formatter.format(the_root);
+		if (full)
+			formatter.format(the_root);
 		view_canvas.repaint();
 		ASTNode src = cur_elem!=null ? cur_elem.node : null;
 		parent_window.info_view.the_root = src;
-		parent_window.info_view.formatAndPaint();
+		parent_window.info_view.formatAndPaint(true);
 	}
 
 	public void keyReleased(KeyEvent evt) {
@@ -82,28 +99,13 @@ public class Editor extends UIView implements KeyListener {
 		int code = evt.getKeyCode();
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
 		if (mask == 0 && !mode_edit) {
-			switch (code) {
-			case KeyEvent.VK_LEFT:  navigatePrev(true);     evt.consume(); break;
-			case KeyEvent.VK_RIGHT: navigateNext(true);     evt.consume(); break;
-			case KeyEvent.VK_UP:    navigateUp  (true);     evt.consume(); break;
-			case KeyEvent.VK_DOWN:  navigateDown(true);     evt.consume(); break;
-			case KeyEvent.VK_HOME:  navigateLineHome(true); evt.consume(); break;
-			case KeyEvent.VK_END:   navigateLineEnd(true);  evt.consume(); break;
-			case KeyEvent.VK_PAGE_UP:
-				code = view_canvas.last_visible.geometry.lineno - view_canvas.first_visible.geometry.lineno -1;
-				view_canvas.first_line -= code;
-				for (int i=code; i >= 0; i--)
-					navigateUp(i==0);
+			KeyHandler kh = naviMap.get(Integer.valueOf(code));
+			if (kh != null) {
+				kh.process();
 				evt.consume();
-				break;
-			case KeyEvent.VK_PAGE_DOWN:
-				code = view_canvas.last_visible.geometry.lineno - view_canvas.first_visible.geometry.lineno -1;
-				view_canvas.first_line += code;
-				for (int i=code; i >= 0; i--)
-					navigateDown(i==0);
-				evt.consume();
-				break;
-			case KeyEvent.VK_E:
+				return;
+			}
+			if (code == KeyEvent.VK_E) {
 				if (cur_elem instanceof DrawNodeTerm) {
 					Object obj = ((DrawNodeTerm)cur_elem).getTextObject();
 					if (obj instanceof Symbol) {
@@ -114,69 +116,8 @@ public class Editor extends UIView implements KeyListener {
 					}
 				}
 				evt.consume(); 
-				break;
-/*			case KeyEvent.VK_I:{
-				MDrawable nt = cur_elem.getDrwParent();
-				if (Type.isA(nt, World.theTypeOfNonTermStructs)) {
-					MNode src = (MNode)nt.getn(World._attr_nt_struct_src);
-					if (src instanceof MType) {
-						MValue val = Type.cast(src).instantiate(World.getWorld((MNode)the_root));
-						if (val != null) {
-							List lst = World.theMeta_container;
-							lst.add(val);
-							formatAndPaint();
-							Verificator.verify();
-						}
-					}
-				}
-				}
-				evt.consume(); 
-				break;
-			case KeyEvent.VK_N:{
-				MDrawable nt = cur_elem.getDrwParent();
-				if (Type.isA(nt, World.theTypeOfNonTermStructs) && cur_elem instanceof MToken &&
-						Type.isA(cur_elem, World.theTypeOfTerminals))
-				{
-					MNode parent = (MNode)nt.getn(World._attr_nt_struct_src);
-					MNode src  = ((MTerminal)cur_elem).src;
-					MAttr attr = ((MTerminal)cur_elem).getAttr();
-					MType type = (MType)attr.getn(World._attr_attr_type);
-					if (src.getn(attr) == null && type != null && attr.getDefinitionMode()==Attr.ATTR_DEFINITION_REQUIRED) {
-						MValue val = Type.cast(type).instantiate(World.getWorld((MNode)the_root));
-						if (val != null) {
-							val.init(parent, attr);
-							formatAndPaint();
-							Verificator.verify();
-						}
-					}
-				}
-				}
-				evt.consume(); 
-				break;
-			case KeyEvent.VK_A:{
-				MDrawable nt = cur_elem.getDrwParent();
-				if (Type.isA(nt, World.theTypeOfNonTermArrays)) {
-					List src = (List)nt.getn(World._attr_nt_arr_src);
-					int idx = cur_elem.pslot_in_src;
-					if (idx < 0) idx = 0;
-					if (idx > src.size()) idx = src.size();
-					if (src.of_definitions) {
-						MType tp = (MType)World.getType(src).representation_node.getn(World._attr_list_element_type);
-						if (tp.hashed_type.getDirectChildren().length == 0) {
-							MNode n = MNode.newMNode(tp, src, idx);
-							formatAndPaint();
-							Verificator.verify();
-						} else {
-							// build a menu of types to instantiate
-							JPopupMenu m = buildTypeSelectPopupMenu(tp.hashed_type, src, idx);
-							m.show(view_canvas, cur_elem.x, cur_elem.y + cur_elem.h);
-						}
-					}
-				}
-				}
-				evt.consume(); 
-				break;
-*/			}
+				return;
+			}
 		}
 		else if (mask == KeyEvent.ALT_DOWN_MASK && !mode_edit) {
 			switch (code) {
@@ -197,7 +138,7 @@ public class Editor extends UIView implements KeyListener {
 			case KeyEvent.VK_C:
 				evt.consume();
 				kiev.Compiler.runBackEnd(null);
-				formatAndPaint();
+				formatAndPaint(true);
 				break;
 			}
 		}
@@ -222,7 +163,7 @@ public class Editor extends UIView implements KeyListener {
 					World.export(((MTerminal)cur_elem).src);
 //					if (cur_elem.getn(World._attr_term_edit_nv_attr) == World._attr_self) {
 //						parent_window.export_view.the_root = cur_elem.getn(World._attr_term_edit_nv_node);
-//						parent_window.export_view.formatAndPaint();
+//						parent_window.export_view.formatAndPaint(true);
 //					}
 				}
 				evt.consume(); 
@@ -245,7 +186,7 @@ public class Editor extends UIView implements KeyListener {
 						if (dr.pslot_in_src == idx)
 							break;
 					}
-					formatAndPaint();
+					formatAndPaint(true);
 					Verificator.verify();
 				}
 				}
@@ -256,7 +197,7 @@ public class Editor extends UIView implements KeyListener {
 					if (((MTerminal)cur_elem).getAttr() == World._attr_self) {
 						in_clipboard = ((MTerminal)cur_elem).src;
 						parent_window.clip_view.the_root = in_clipboard;
-						parent_window.clip_view.formatAndPaint();
+						parent_window.clip_view.formatAndPaint(true);
 					}
 				}
 				evt.consume(); 
@@ -283,7 +224,7 @@ public class Editor extends UIView implements KeyListener {
 										}
 									}
 								}
-								formatAndPaint();
+								formatAndPaint(true);
 								Verificator.verify();
 							}
 						}
@@ -297,7 +238,7 @@ public class Editor extends UIView implements KeyListener {
 							MType tp = (MType)attr.getn(World._attr_attr_type);
 							if (tp == null || Type.isA(in_clipboard, tp)) {
 								src.setv(attr, in_clipboard);
-								formatAndPaint();
+								formatAndPaint(true);
 								Verificator.verify();
 							}
 						}
@@ -316,7 +257,7 @@ public class Editor extends UIView implements KeyListener {
 				DefaultDrawer.create(the_root, this, World._attr_ui_view_root);
 				cur_elem = view_root.getFirstLeaf();
 				view_canvas.root = view_root;
-				formatAndPaint();
+				formatAndPaint(true);
 				System.gc();
 				System.gc();
 				Verificator.verify();
@@ -366,7 +307,7 @@ public class Editor extends UIView implements KeyListener {
 				}
 			}
 			view_canvas.cursor_offset = edit_offset;
-			formatAndPaint();
+			formatAndPaint(true);
 		}
 	}
 	
@@ -401,130 +342,7 @@ public class Editor extends UIView implements KeyListener {
 		return m;
 	}
 */
-	private void navigatePrev(boolean repaint) {
-		DrawTerm prev = cur_elem.getFirstLeaf().getPrevLeaf();
-		if (prev != null) {
-			view_canvas.current = cur_elem = prev;
-			cur_x = prev.geometry.x;
-		}
-		if (repaint) {
-			makeCurrentVisible();
-			formatAndPaint();
-		}
-	}
-	private void navigateNext(boolean repaint) {
-		DrawTerm next = cur_elem.getFirstLeaf().getNextLeaf();
-		if (next != null) {
-			view_canvas.current = cur_elem = next;
-			cur_x = next.geometry.x;
-		}
-		if (repaint) {
-			makeCurrentVisible();
-			formatAndPaint();
-		}
-	}
-	private void navigateUp(boolean repaint) {
-		DrawTerm n = null;
-		DrawTerm prev = cur_elem.getFirstLeaf();
-		if (prev != null)
-			prev = prev.getPrevLeaf();
-		while (prev != null) {
-			if (prev.geometry.do_newline > 0) {
-				n = prev;
-				break;
-			}
-			prev = prev.getPrevLeaf();
-		}
-		while (n != null) {
-			if (n.geometry.x <= cur_x && n.geometry.x+n.geometry.w >= cur_x)
-				break;
-			prev = n.getPrevLeaf();
-			if (prev == null || prev.geometry.do_newline > 0)
-				break;
-			if (prev.geometry.x+prev.geometry.w < cur_x)
-				break;
-			n = prev;
-		}
-		if (n != null) {
-			view_canvas.current = cur_elem = n;
-		}
-		if (repaint) {
-			makeCurrentVisible();
-			formatAndPaint();
-		}
-	}
-	private void navigateDown(boolean repaint) {
-		DrawTerm n = null;
-		DrawTerm next = cur_elem.getFirstLeaf();
-		while (next != null) {
-			if (next.geometry.do_newline > 0) {
-				n = next.getNextLeaf();
-				break;
-			}
-			next = next.getNextLeaf();
-		}
-		while (n != null) {
-			if (n.geometry.x <= cur_x && n.geometry.x+n.geometry.w >= cur_x)
-				break;
-			next = n.getNextLeaf();
-			if (next == null)
-				break;
-			if (next.geometry.x > cur_x)
-				break;
-			if (next.geometry.do_newline > 0)
-				break;
-			n = next;
-		}
-		if (n != null) {
-			view_canvas.current = cur_elem = n;
-		}
-		if (repaint) {
-			makeCurrentVisible();
-			formatAndPaint();
-		}
-	}
-	private void navigateLineHome(boolean repaint) {
-		int lineno = cur_elem.getFirstLeaf().geometry.lineno;
-		for (;;) {
-			DrawTerm dr = cur_elem.getPrevLeaf();
-			if (dr == null || dr.geometry.lineno != lineno)
-				break;
-			cur_elem = dr;
-		}
-		view_canvas.current = cur_elem;
-		cur_x = cur_elem.geometry.x;
-		if (repaint)
-			formatAndPaint();
-	}
-	private void navigateLineEnd(boolean repaint) {
-		int lineno = cur_elem.getFirstLeaf().geometry.lineno;
-		for (;;) {
-			DrawTerm dr = cur_elem.getNextLeaf();
-			if (dr == null || dr.geometry.lineno != lineno)
-				break;
-			cur_elem = dr;
-		}
-		view_canvas.current = cur_elem;
-		cur_x = cur_elem.geometry.x;
-		if (repaint)
-			formatAndPaint();
-	}
 	
-	private void makeCurrentVisible() {
-		int top_lineno = view_canvas.first_visible.geometry.lineno;
-		int bot_lineno = view_canvas.last_visible.geometry.lineno;
-		int height = bot_lineno - top_lineno;
-		
-		if (top_lineno > 0 && cur_elem.getFirstLeaf().geometry.lineno <= top_lineno) {
-			view_canvas.first_line = cur_elem.getFirstLeaf().geometry.lineno -1;
-		}
-		if (bot_lineno < view_canvas.num_lines && cur_elem.getFirstLeaf().geometry.lineno >= bot_lineno) {
-			view_canvas.first_line = cur_elem.getFirstLeaf().geometry.lineno - height + 1;
-		}
-		if (view_canvas.first_line < 0)
-			view_canvas.first_line = 0;
-	}
-
 	public void mousePressed(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY() + view_canvas.translated_y;
@@ -533,7 +351,7 @@ public class Editor extends UIView implements KeyListener {
 			if (dr.geometry.x < x && dr.geometry.y < y && dr.geometry.x+dr.geometry.w >= x && dr.geometry.y+dr.geometry.h >= y) {
 				cur_elem = dr;
 				cur_x = cur_elem.geometry.x;
-				formatAndPaint();
+				formatAndPaint(false);
 				break;
 			}
 		}
@@ -552,8 +370,193 @@ public class Editor extends UIView implements KeyListener {
 		public void actionPerformed(ActionEvent e) {
 			ASTNode node = cls.newInstance();
 			lst.insert(node, index);
-			formatAndPaint();
+			formatAndPaint(true);
 		}
 	}
 */
 }
+
+public interface KeyHandler {
+	public void process();
+}
+
+final class NavigateView implements KeyHandler {
+	static final int NONE       = 0;
+	static final int LEFT       = 1;
+	static final int RIGHT      = 2;
+	static final int LINE_UP    = 3;
+	static final int LINE_DOWN  = 4;
+	static final int LINE_HOME  = 5;
+	static final int LINE_END   = 6;
+	static final int PAGE_UP    = 7;
+	static final int PAGE_DOWN  = 8;
+
+	final Editor uiv;
+	final int cmd;
+	NavigateView(Editor uiv, int cmd) {
+		this.uiv = uiv;
+		this.cmd = cmd;
+	}
+
+	public void process() {
+		switch (cmd) {
+		case LEFT:       navigatePrev(true); return;
+		case RIGHT:      navigateNext(true); return;
+		case LINE_UP:    navigateUp(true);   return;
+		case LINE_DOWN:  navigateDn(true); return;
+		case LINE_HOME:  navigateLineHome(true); return;
+		case LINE_END:   navigateLineEnd(true);  return;
+		case PAGE_UP:    navigatePageUp();  return;
+		case PAGE_DOWN:  navigatePageDn();  return;
+		}
+	}
+
+	private void navigatePrev(boolean repaint) {
+		final Editor uiv = this.uiv;
+		DrawTerm prev = uiv.cur_elem.getFirstLeaf().getPrevLeaf();
+		if (prev != null) {
+			uiv.view_canvas.current = uiv.cur_elem = prev;
+			uiv.cur_x = prev.geometry.x;
+		}
+		if (repaint) {
+			makeCurrentVisible();
+			uiv.formatAndPaint(false);
+		}
+	}
+	private void navigateNext(boolean repaint) {
+		final Editor uiv = this.uiv;
+		DrawTerm next = uiv.cur_elem.getFirstLeaf().getNextLeaf();
+		if (next != null) {
+			uiv.view_canvas.current = uiv.cur_elem = next;
+			uiv.cur_x = next.geometry.x;
+		}
+		if (repaint) {
+			makeCurrentVisible();
+			uiv.formatAndPaint(false);
+		}
+	}
+	private void navigateUp(boolean repaint) {
+		final Editor uiv = this.uiv;
+		DrawTerm n = null;
+		DrawTerm prev = uiv.cur_elem.getFirstLeaf();
+		if (prev != null)
+			prev = prev.getPrevLeaf();
+		while (prev != null) {
+			if (prev.geometry.do_newline > 0) {
+				n = prev;
+				break;
+			}
+			prev = prev.getPrevLeaf();
+		}
+		while (n != null) {
+			if (n.geometry.x <= uiv.cur_x && n.geometry.x+n.geometry.w >= uiv.cur_x)
+				break;
+			prev = n.getPrevLeaf();
+			if (prev == null || prev.geometry.do_newline > 0)
+				break;
+			if (prev.geometry.x+prev.geometry.w < uiv.cur_x)
+				break;
+			n = prev;
+		}
+		if (n != null) {
+			uiv.view_canvas.current = uiv.cur_elem = n;
+		}
+		if (repaint) {
+			makeCurrentVisible();
+			uiv.formatAndPaint(false);
+		}
+	}
+	private void navigateDn(boolean repaint) {
+		final Editor uiv = this.uiv;
+		DrawTerm n = null;
+		DrawTerm next = uiv.cur_elem.getFirstLeaf();
+		while (next != null) {
+			if (next.geometry.do_newline > 0) {
+				n = next.getNextLeaf();
+				break;
+			}
+			next = next.getNextLeaf();
+		}
+		while (n != null) {
+			if (n.geometry.x <= uiv.cur_x && n.geometry.x+n.geometry.w >= uiv.cur_x)
+				break;
+			next = n.getNextLeaf();
+			if (next == null)
+				break;
+			if (next.geometry.x > uiv.cur_x)
+				break;
+			if (next.geometry.do_newline > 0)
+				break;
+			n = next;
+		}
+		if (n != null) {
+			uiv.view_canvas.current = uiv.cur_elem = n;
+		}
+		if (repaint) {
+			makeCurrentVisible();
+			uiv.formatAndPaint(false);
+		}
+	}
+	private void navigateLineHome(boolean repaint) {
+		final Editor uiv = this.uiv;
+		int lineno = uiv.cur_elem.getFirstLeaf().geometry.lineno;
+		for (;;) {
+			DrawTerm dr = uiv.cur_elem.getPrevLeaf();
+			if (dr == null || dr.geometry.lineno != lineno)
+				break;
+			uiv.cur_elem = dr;
+		}
+		uiv.view_canvas.current = uiv.cur_elem;
+		uiv.cur_x = uiv.cur_elem.geometry.x;
+		if (repaint)
+			uiv.formatAndPaint(false);
+	}
+	private void navigateLineEnd(boolean repaint) {
+		final Editor uiv = this.uiv;
+		int lineno = uiv.cur_elem.getFirstLeaf().geometry.lineno;
+		for (;;) {
+			DrawTerm dr = uiv.cur_elem.getNextLeaf();
+			if (dr == null || dr.geometry.lineno != lineno)
+				break;
+			uiv.cur_elem = dr;
+		}
+		uiv.view_canvas.current = uiv.cur_elem;
+		uiv.cur_x = uiv.cur_elem.geometry.x;
+		if (repaint)
+			uiv.formatAndPaint(false);
+	}
+	private void navigatePageUp() {
+		final Editor uiv = this.uiv;
+		int offs = uiv.view_canvas.last_visible.geometry.lineno - uiv.view_canvas.first_visible.geometry.lineno -1;
+		uiv.view_canvas.first_line -= offs;
+		for (int i=offs; i >= 0; i--)
+			navigateUp(i==0);
+		return;
+	}
+	private void navigatePageDn() {
+		final Editor uiv = this.uiv;
+		int offs = uiv.view_canvas.last_visible.geometry.lineno - uiv.view_canvas.first_visible.geometry.lineno -1;
+		uiv.view_canvas.first_line += offs;
+		for (int i=offs; i >= 0; i--)
+			navigateDn(i==0);
+		return;
+	}
+
+	private void makeCurrentVisible() {
+		final Editor uiv = this.uiv;
+		int top_lineno = uiv.view_canvas.first_visible.geometry.lineno;
+		int bot_lineno = uiv.view_canvas.last_visible.geometry.lineno;
+		int height = bot_lineno - top_lineno;
+		
+		if (top_lineno > 0 && uiv.cur_elem.getFirstLeaf().geometry.lineno <= top_lineno) {
+			uiv.view_canvas.first_line = uiv.cur_elem.getFirstLeaf().geometry.lineno -1;
+		}
+		if (bot_lineno < uiv.view_canvas.num_lines && uiv.cur_elem.getFirstLeaf().geometry.lineno >= bot_lineno) {
+			uiv.view_canvas.first_line = uiv.cur_elem.getFirstLeaf().geometry.lineno - height + 1;
+		}
+		if (uiv.view_canvas.first_line < 0)
+			uiv.view_canvas.first_line = 0;
+	}
+
+}
+

@@ -176,6 +176,7 @@ CLASS kiev.fmt.TextSyntax kiev/fmt/TextSyntax kiev\fmt\SyntaxLayout.java
 CLASS kiev.gui.Canvas kiev/gui/Canvas kiev\gui\Canvas.java
 CLASS kiev.gui.Editor kiev/gui/Editor kiev\gui\Editor.java
 CLASS kiev.gui.InfoView kiev/gui/InfoView kiev\gui\InfoView.java
+CLASS kiev.gui.NavigateView kiev/gui/NavigateView kiev\gui\Editor.java
 CLASS kiev.gui.UIView kiev/gui/UIView kiev\gui\UIView.java
 CLASS kiev.gui.Window kiev/gui/Window kiev\gui\Window.java
 CLASS kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
@@ -743,6 +744,7 @@ INTERFACE kiev.bytecode.NewArrayConstants kiev/bytecode/NewArrayConstants kiev\b
 INTERFACE kiev.fmt.CalcOption kiev/fmt/CalcOption kiev\fmt\SyntaxLayout.java
 INTERFACE kiev.fmt.DrawDevice kiev/fmt/DrawDevice kiev\fmt\DrawDevice.java
 INTERFACE kiev.fmt.Formatter kiev/fmt/Formatter kiev\fmt\Formatter.java
+INTERFACE kiev.gui.KeyHandler kiev/gui/KeyHandler kiev\gui\Editor.java
 INTERFACE kiev.ir.java15.RAccessExpr kiev/ir/java15/RAccessExpr kiev\ir\java15\RLvalueExpr.java
 INTERFACE kiev.ir.java15.RAssertEnabledExpr kiev/ir/java15/RAssertEnabledExpr kiev\ir\java15\RExpr.java
 INTERFACE kiev.ir.java15.RAssignExpr kiev/ir/java15/RAssignExpr kiev\ir\java15\RExpr.java

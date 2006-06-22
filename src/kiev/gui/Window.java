@@ -73,16 +73,16 @@ public class Window extends JFrame {
 		expl_view   = new InfoView(this, new JavaSyntax(), expl_canvas);
 //		export_view = new InfoView(this, new JavaSyntax(), export_canvas);
 		editor_view.setRoot(null);
-		editor_view.formatAndPaint();
+		editor_view.formatAndPaint(true);
 		expl_view.the_root = null;
-		expl_view.formatAndPaint();
+		expl_view.formatAndPaint(true);
 	}
 	
 	public void setRoot(ASTNode root) {
 		editor_view.setRoot(root);
-		editor_view.formatAndPaint();
+		editor_view.formatAndPaint(true);
 //		expl_view.the_root = null;
-//		expl_view.formatAndPaint();
+//		expl_view.formatAndPaint(true);
 	}
 
 }
