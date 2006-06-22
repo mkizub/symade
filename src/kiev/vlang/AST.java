@@ -45,6 +45,7 @@ public abstract class ANode {
 		assert(!isAttached());
 		assert(pinfo.p_parent != null && pinfo.p_parent != this);
 		assert(pinfo.p_data == this);
+		this.open();
 		this.p_info = pinfo;
 		this.callbackAttached();
 	}
@@ -58,6 +59,7 @@ public abstract class ANode {
 	}
 	public void callbackDetached() {
 		assert(isAttached());
+		this.open();
 		// do detcah
 		AttachInfo pinfo = this.p_info;
 		this.p_info = null;
@@ -132,6 +134,7 @@ public abstract class ANode {
 						if (d instanceof ANode)
 							d.callbackAttached(this, attr);
 					} else {
+						ndata = (AttachInfo[])ndata.clone();
 						ndata[i] = new AttachInfo(d,this,attr);
 					}
 					return;
@@ -454,6 +457,13 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		return node;
 	}
 
+	public void setFrom(Object from$node) {
+		ASTNode node = (ASTNode)from$node;
+		this.pos = node.pos;
+		this.compileflags = node.compileflags;
+		super.setFrom(node);
+	}
+	
 	public final int getPosLine() { return pos >>> 11; }
 	
 	public ANode nodeCopiedTo(ANode node) {

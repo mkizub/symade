@@ -640,9 +640,6 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 	// will be a set of fields (DataFlow nodes for children) in code-generation 
 	final DFSocket[] children;
 	
-	// attached (to DFSocketChild) DataFlowInfo nodes
-	final DataFlowInfo[] attached;
-	
 	// hashed set of DFState for functions
 	private final DFState[] results;
 	
@@ -652,11 +649,6 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 	// is a dflow root
 	final boolean is_root;
 	
-	// a socket of the parent node this data flow is plugged in
-	@access:no,no,ro,rw DFSocket			parent_dfs;
-	// DataFlowInfo of the parent node this data flow is plugged in
-	@access:no,no,ro,rw DataFlowInfo		parent_dfi;
-
 	final DFFunc func_in;
 	final DFFunc func_out;
 	final DFFunc func_tru;
@@ -683,8 +675,6 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		this.children = template.children;
 		if (template.results != null)
 			this.results = new DFState[template.results.length];
-		if (template.attached != null)
-			this.attached = new DataFlowInfo[template.attached.length];
 		this.is_root = template.is_root;
 		this.func_in = template.func_in;
 		this.func_out = template.func_out;
@@ -714,8 +704,6 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 				dflows.put(attr.name,dfd);
 			}
 		}
-		if (attach_idx > 0)
-			this.attached = new DataFlowInfo[attach_idx];
 		children = chl_dfs.toArray();
 		int lock_idx = 0;
 		foreach (String name; dflows.keys()) {
@@ -782,9 +770,10 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		case IN:
 			if (func_in != null)
 				return func_in.calc(this);
+			DataFlowInfo parent_dfi = ((ASTNode)node_impl.parent()).getDFlow();
+			DFSocket parent_dfs = parent_dfi.getSocket(node_impl.pslot().name);
 			if (parent_dfs.isSeqSpace() && node_impl.pprev() != null)
 				return ((ASTNode)node_impl.pprev()).getDFlow().calc(OUT);
-			assert(parent_dfi == ((ASTNode)node_impl.parent()).getDFlow());
 			return DFFunc.calc(parent_dfs.func_in, parent_dfi);
 		case OUT:
 			return func_out.calc(this);
@@ -887,57 +876,6 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		return null; // do not copy on node copy
 	}
 	
-	public void callbackRootChanged() {
-		if (node_impl.ctx_root == node_impl)
-			nodeDetached();
-		else if (!is_root && this.parent_dfi == null)
-			nodeAttached();
-	}
-	
-	private void nodeAttached() {
-		assert (pslot() == ATTR);
-		ASTNode node = (ASTNode)parent();
-		if (!is_root) {
-			if (ASSERT_MORE) assert(this.parent_dfi == null);
-			if (ASSERT_MORE) assert(this.parent_dfs == null);
-			parent_dfi = ((ASTNode)node.parent()).getDFlow();
-			parent_dfs = parent_dfi.getSocket(node.pslot().name);
-			if (parent_dfs instanceof DFSocketChild) {
-				int socket_idx = ((DFSocketChild)parent_dfs).socket_idx;
-				if (ASSERT_MORE) assert (parent_dfi.attached[socket_idx] == null);
-				parent_dfi.attached[socket_idx] = this;
-			} else {
-				if (ASSERT_MORE) assert (parent_dfs instanceof DFSocketSpace);
-			}
-		}
-	}
-	public void callbackAttached() {
-		super.callbackAttached();
-		if (parent().isAttached())
-			nodeAttached();
-	}
-	
-	private void nodeDetached() {
-		if (parent_dfs != null) {
-			assert(parent_dfi != null);
-			if (parent_dfs instanceof DFSocketChild) {
-				int socket_idx = ((DFSocketChild)parent_dfs).socket_idx;
-				if (ASSERT_MORE) assert (parent_dfi.attached[socket_idx] == this);
-				parent_dfi.attached[socket_idx] = null;
-			} else {
-				if (ASSERT_MORE) assert (parent_dfs instanceof DFSocketSpace);
-			}
-			this.parent_dfi = null;
-			this.parent_dfs = null;
-		} else {
-			assert(parent_dfi == null);
-		}
-	}
-	public void callbackDetached() {
-		super.callbackDetached();
-		nodeDetached();
-	}
-	
 }
 
 public abstract class DFSocket implements DataFlowSlots, Cloneable {
@@ -962,15 +900,10 @@ public class DFSocketChild extends DFSocket {
 	}
 
 	public final DataFlowInfo getAttached(DataFlowInfo owner_dfi) {
-		DataFlowInfo dfi = owner_dfi.attached[socket_idx];
-		if (dfi == null) {
-			Object obj = owner_dfi.node_impl.getVal(pslot_name);
-			if (obj instanceof ASTNode) {
-				dfi = ((ASTNode)obj).getDFlow();
-				if (ASSERT_MORE) assert (dfi == owner_dfi.attached[socket_idx] || dfi.is_root);
-			}
-		}
-		return dfi;
+		Object obj = owner_dfi.node_impl.getVal(pslot_name);
+		if (obj instanceof ASTNode)
+			return obj.getDFlow();
+		return null;
 	}
 }
 
@@ -1034,15 +967,16 @@ public abstract class DFFunc implements DataFlowSlots {
 			if (ASSERT_MORE) assert(checkNode(dfi.node_impl,null));
 			if (dfi.func_in != null) {
 				f = dfi.func_in;
-			}
-			else if (dfi.parent_dfs.isSeqSpace() && dfi.node_impl.pprev() != null) {
-				dfi = ((ASTNode)dfi.node_impl.pprev()).getDFlow();
-				f = dfi.func_out;
-			}
-			else {
-				if (ASSERT_MORE) assert(dfi.parent_dfi == ((ASTNode)dfi.node_impl.parent()).getDFlow());
-				f = dfi.parent_dfs.func_in;
-				dfi = dfi.parent_dfi;
+			} else {
+				DataFlowInfo parent_dfi = ((ASTNode)dfi.node_impl.parent()).getDFlow();
+				DFSocket parent_dfs = parent_dfi.getSocket(dfi.node_impl.pslot().name);
+				if (parent_dfs.isSeqSpace() && dfi.node_impl.pprev() != null) {
+					dfi = ((ASTNode)dfi.node_impl.pprev()).getDFlow();
+					f = dfi.func_out;
+				} else {
+					f = parent_dfs.func_in;
+					dfi = parent_dfi;
+				}
 			}
 			break;
 		case DFFuncThisOut():

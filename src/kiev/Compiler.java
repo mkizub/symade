@@ -582,6 +582,7 @@ stop:;
 			be = Kiev.useBackend;
 		if( Kiev.verbose ) Kiev.reportInfo("Running back-end "+be,0);
 		long curr_time = 0L, diff_time = 0L;
+		Transaction tr_me = Transaction.open();
 		try {
 			////////////////////////////////////////////////////
 			//	                  Midend                      //
@@ -595,6 +596,8 @@ stop:;
 				if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
 				if( Kiev.errCount > 0 ) throw new Kiev.CompilationAbortError();
 			} while (Kiev.nextMidEndPass());
+			
+			tr_me.close();
 
 			for(int i=0; i < Kiev.files.length; i++) {
 				final int errCount = Kiev.errCount;
@@ -612,7 +615,6 @@ stop:;
 					fu.cleanup();
 					Kiev.closeBackEndFileUnit();
 				} finally { tr.rollback(false); }
-				Kiev.files[i] = null;
 				runGC();
 			}
 		} catch( Throwable e) {
@@ -620,6 +622,8 @@ stop:;
 				Env.dumpProjectFile();
 			Kiev.reportError(e);
 			return false;
+		} finally {
+			tr_me.rollback(false);
 		}
 		boolean ret = (Kiev.errCount == 0);
 		diff_time = System.currentTimeMillis() - curr_time;
