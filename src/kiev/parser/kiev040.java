@@ -425,7 +425,7 @@ public abstract class kiev040 implements kiev040Constants {
                 if (comments == null || comments.length == 0)
                         return;
                 for (int i=0; i < comments.length; i++)
-                        node.addNodeData(comments[i], Comment.ATTR_BEFORE);
+                        Comment.ATTR_BEFORE.set(node, comments[i]);
         }
 
         Comment[] get_comments() {
@@ -1297,7 +1297,7 @@ public abstract class kiev040 implements kiev040Constants {
       jj_consume_token(COLON);
       text = StringConstExpression();
                         text.value = "\""+text.value+"\"";
-                        f.addNodeData(new MetaAlias(text), MetaAlias.ATTR);
+                        MetaAlias.ATTR.set(f, new MetaAlias(text));
       break;
     default:
       ;
@@ -2516,7 +2516,7 @@ public abstract class kiev040 implements kiev040Constants {
       switch (jj_nt.kind) {
       case THROWS:
         thr = Throws();
-                                 m.addNodeData(thr, MetaThrows.ATTR);
+                                  MetaThrows.ATTR.set(m, thr);
         break;
       default:
         ;
@@ -2640,7 +2640,7 @@ public abstract class kiev040 implements kiev040Constants {
       switch (jj_nt.kind) {
       case THROWS:
         thr = Throws();
-                                 m.addNodeData(thr, MetaThrows.ATTR);
+                                  MetaThrows.ATTR.set(m, thr);
         break;
       default:
         ;

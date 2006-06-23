@@ -15,7 +15,7 @@ import syntax kiev.Syntax;
 @nodeview
 public final view JNewExpr of NewExpr extends JENode {
 
-	static final AttrSlot ATTR = new DataAttrSlot("jnew temp expr",true,false,ENode.class);	
+	static final AttrSlot ATTR = new TmpAttrSlot("jnew temp expr",true,false,ENode.class);	
 
 	public:ro	JMethod			func;
 	public:ro	JENode[]		args;
@@ -24,13 +24,13 @@ public final view JNewExpr of NewExpr extends JENode {
 	public 		JENode			tmp_expr;
 	
 	@getter public final JENode get$tmp_expr() {
-		return (JENode)(ENode)this.getNodeData(ATTR);
+		return (JENode)(ENode)ATTR.get((ENode)this);
 	}
 	@setter public final void set$tmp_expr(JENode e) {
 		if (e != null)
-			this.addNodeData((ENode)e, ATTR);
+			ATTR.set((ENode)this, (ENode)e);
 		else
-			this.delNodeData(ATTR);
+			ATTR.clear((ENode)this);
 	}
 
 	public void generate(Code code, Type reqType) {

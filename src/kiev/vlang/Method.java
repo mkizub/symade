@@ -35,8 +35,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	@dflow(in="this:in")	WBCCondition[] 	conditions;
 	}
 
-	public static final AttrSlot ATTR_RET_VAR = new DataAttrSlot("method ret var",true,false,Var.class);	
-	public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",Field.class);	
+	public static final AttrSlot ATTR_RET_VAR = new TmpAttrSlot("method ret var",true,false,Var.class);	
+	public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,Field.class);	
 
 	@virtual typedef This  = Method;
 	@virtual typedef JView = JMethod;
@@ -88,7 +88,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 
 	public MetaThrows getMetaThrows() {
-		return (MetaThrows)this.getNodeData(MetaThrows.ATTR);
+		return (MetaThrows)MetaThrows.ATTR.get(this);
 	}
 
 	// virtual static method

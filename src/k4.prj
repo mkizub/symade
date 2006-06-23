@@ -354,7 +354,6 @@ CLASS kiev.vlang.DFSocketSpaceSeq kiev/vlang/DFSocketSpaceSeq kiev\vlang\Var.jav
 CLASS kiev.vlang.DFSocketSpaceUnknown kiev/vlang/DFSocketSpaceUnknown kiev\vlang\Var.java
 CLASS kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 CLASS kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\DNode.java
-CLASS kiev.vlang.DataAttrSlot kiev/vlang/DataAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.DataFlowInfo kiev/vlang/DataFlowInfo kiev\vlang\Var.java
 CLASS kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.DoubleADD kiev/vlang/DoubleADD kiev\vlang\CoreMethod.java
@@ -380,6 +379,7 @@ CLASS kiev.vlang.DummyDNode kiev/vlang/DummyDNode kiev\vlang\DNode.java
 CLASS kiev.vlang.ENode kiev/vlang/ENode kiev\vlang\ENode.java
 CLASS kiev.vlang.Env kiev/vlang/Env kiev\vlang\Env.java
 CLASS kiev.vlang.ExprStat kiev/vlang/ExprStat kiev\vlang\Statement.java
+CLASS kiev.vlang.ExtAttrSlot kiev/vlang/ExtAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.Field kiev/vlang/Field kiev\vlang\Field.java
 CLASS kiev.vlang.FileUnit kiev/vlang/FileUnit kiev\vlang\FileUnit.java
 CLASS kiev.vlang.FinallyInfo kiev/vlang/FinallyInfo kiev\vlang\ComplexStatement.java
@@ -575,7 +575,6 @@ CLASS kiev.vlang.ShortAssign kiev/vlang/ShortAssign kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ShortNEG kiev/vlang/ShortNEG kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ShortPOS kiev/vlang/ShortPOS kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.SpaceAttAttrSlot kiev/vlang/SpaceAttAttrSlot kiev\vlang\Tree.java
-CLASS kiev.vlang.SpaceAttDataAttrSlot kiev/vlang/SpaceAttDataAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.SpaceAttrSlot kiev/vlang/SpaceAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.SpacePtr kiev/vlang/SpacePtr kiev\vlang\Tree.java
 CLASS kiev.vlang.SpaceRefAttrSlot kiev/vlang/SpaceRefAttrSlot kiev\vlang\Tree.java
@@ -595,6 +594,7 @@ CLASS kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\Complex
 CLASS kiev.vlang.Test kiev/vlang/Test kiev\vlang\MetaTypes.java
 CLASS kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
+CLASS kiev.vlang.TmpAttrSlot kiev/vlang/TmpAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.Transaction kiev/vlang/Transaction kiev\vlang\Tree.java
 CLASS kiev.vlang.TreeWalker kiev/vlang/TreeWalker kiev\vlang\AST.java
 CLASS kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
@@ -872,6 +872,8 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.vlang.DataAttrSlot kiev\vlang\Tree.java
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
+METATYPE kiev.vlang.SpaceAttDataAttrSlot kiev\vlang\Tree.java
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java

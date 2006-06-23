@@ -41,10 +41,6 @@ public view JNode of ASTNode implements JConstants {
 	public:ro	int			pos;
 //	public:ro	int			compileflags;
 	
-	public final void addNodeData(ANode d, AttrSlot attr);
-	public final void delNodeData(AttrSlot attr);
-	public final Object getNodeData(AttrSlot attr);
-
     public final int getPosLine();
 	public final boolean isAttached();
 	public final boolean isAccessedFromInner();

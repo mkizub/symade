@@ -15,7 +15,7 @@ import syntax kiev.Syntax;
 @nodeview
 public final view JCallExpr of CallExpr extends JENode {
 
-	static final AttrSlot ATTR = new DataAttrSlot("jcall temp expr",true,false,ENode.class);	
+	static final AttrSlot ATTR = new TmpAttrSlot("jcall temp expr",true,false,ENode.class);	
 
 	public:ro	JMethod			func;
 	public:ro	JENode			obj;
@@ -26,13 +26,13 @@ public final view JCallExpr of CallExpr extends JENode {
 	public final CallType getCallType();
 
 	@getter public final JENode get$tmp_expr() {
-		return (JENode)(ENode)this.getNodeData(ATTR);
+		return (JENode)(ENode)ATTR.get((ENode)this);
 	}
 	@setter public final void set$tmp_expr(JENode e) {
 		if (e != null)
-			this.addNodeData((ENode)e, ATTR);
+			ATTR.set(this, (ENode)e);
 		else
-			this.delNodeData(ATTR);
+			ATTR.clear(this);
 	}
 
 	public void generateCheckCastIfNeeded(Code code) {

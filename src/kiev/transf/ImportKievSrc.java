@@ -554,7 +554,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				if( pack != null ) {
 					if( f.isStatic() ) {
 						Kiev.reportWarning(fdecl,"Packing of static field(s) ignored");
-						f.delNodeData(MetaPacked.ATTR);
+						MetaPacked.ATTR.clear(f);
 					}
 					else if( !ftype.isIntegerInCode() ) {
 						if( ftype.getStruct() != null && ftype.getStruct().isEnum() ) {
@@ -562,7 +562,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 						} else {
 							Kiev.reportError(fdecl,"Packing of reference type is not allowed");
 						}
-						f.delNodeData(MetaPacked.ATTR);
+						MetaPacked.ATTR.clear(f);
 					} else {
 						int max_pack_size = 32;
 						if( ftype ≡ Type.tpShort || ftype ≡ Type.tpChar ) {
@@ -579,11 +579,11 @@ public final class KievFE_Pass3 extends TransfProcessor {
 						}
 						if( pack.getSize() < 0 || pack.getSize() > max_pack_size ) {
 							Kiev.reportError(fdecl,"Bad size "+pack.getSize()+" of packed field");
-							f.delNodeData(MetaPacked.ATTR);
+							MetaPacked.ATTR.clear(f);
 						}
 						else if( pack.getOffset() >= 0 && pack.getSize()+pack.getOffset() > 32) {
 							Kiev.reportError(fdecl,"Size+offset "+(pack.getSize()+pack.getOffset())+" do not fit in 32 bit boundary");
-							f.delNodeData(MetaPacked.ATTR);
+							MetaPacked.ATTR.clear(f);
 						}
 					}
 				}
@@ -838,7 +838,7 @@ public final class KievFE_Lock extends TransfProcessor {
 			return;
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
-				n.delNodeData(DataFlowInfo.ATTR);
+				DataFlowInfo.ATTR.clear(n);
 				n.locked = true;
 				return true;
 			}
@@ -975,7 +975,7 @@ public final class ExportBE_Generate extends BackendProcessor {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
 				if (n instanceof ASTNode)
-					n.delNodeData(attr);
+					attr.clear(n);
 				return true;
 			}
 		});

@@ -42,7 +42,7 @@ public abstract class AbstractFormatter implements Formatter {
 		this.syntax = syntax;
 		String name = "fmt info "+Integer.toHexString(++counter);
 		name = name.intern();
-		this.ATTR = new DataAttrSlot(name,false,false,Drawable.class);
+		this.ATTR = new TmpAttrSlot(name,false,false,Drawable.class);
 	}
 
 	public abstract Drawable format(ASTNode node);
@@ -54,12 +54,12 @@ public abstract class AbstractFormatter implements Formatter {
 			SyntaxSpace ssp = new SyntaxSpace(lout);
 			return new DrawSpace(null, ssp);
 		}
-		Drawable dr = (Drawable)node.getNodeData(ATTR);
+		Drawable dr = (Drawable)ATTR.get(node);
 		if (dr != null)
 			return dr;
 		SyntaxElem stx_elem = syntax.getSyntaxElem(node, hint);
 		dr = stx_elem.makeDrawable(this,node);
-		node.addNodeData(dr, ATTR);
+		ATTR.set(node, dr);
 		return dr;
 	}
 

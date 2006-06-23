@@ -124,37 +124,53 @@ public abstract class AttrSlot {
 	}
 	
 	public boolean isMeta() { return false; }
-	public boolean isData() { return false; }
+	public boolean isExtData() { return false; }
+	public boolean isTmpData() { return false; }
 
 	public abstract void set(ANode parent, Object value);
 	public abstract Object get(ANode parent);
 	public void clear(ANode parent) { this.set(parent, defaultValue); }
 }
 
-public class DataAttrSlot extends AttrSlot {
-	public DataAttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
+public class ExtAttrSlot extends AttrSlot {
+	public ExtAttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
 		super(name,is_attr,is_space,clazz);
 	}
-	public boolean isMeta() { return false; }
-	public boolean isData() { return true; }
+	public boolean isExtData() { return true; }
 
 	public void set(ANode parent, Object value) {
-		parent.addNodeData((ANode)value, this);
+		parent.addExtData((ANode)value, this);
 	}
 	public Object get(ANode parent) {
-		return parent.getNodeData(this);
+		return parent.getExtData(this);
 	}
 	public void clear(ANode parent) {
-		return parent.delNodeData(this);
+		return parent.delExtData(this);
 	}
 }
 
-public class MetaAttrSlot extends DataAttrSlot {
+public class TmpAttrSlot extends AttrSlot {
+	public TmpAttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
+		super(name,is_attr,is_space,clazz);
+	}
+	public boolean isTmpData() { return true; }
+
+	public void set(ANode parent, Object value) {
+		parent.addTmpData((ANode)value, this);
+	}
+	public Object get(ANode parent) {
+		return parent.getTmpData(this);
+	}
+	public void clear(ANode parent) {
+		return parent.delTmpData(this);
+	}
+}
+
+public class MetaAttrSlot extends ExtAttrSlot {
 	public MetaAttrSlot(String name, Class clazz) {
 		super(name,true,false,clazz);
 	}
 	public boolean isMeta() { return true; }
-	public boolean isData() { return true; }
 }
 
 public abstract class RefAttrSlot extends AttrSlot {
@@ -304,25 +320,6 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		return narr;
 	}
 }
-public class SpaceRefDataAttrSlot<N extends ASTNode> extends SpaceRefAttrSlot<N> {
-	public SpaceRefDataAttrSlot(String name, Class clazz) {
-		super(name, clazz);
-	}
-	public boolean isData() { return true; }
-
-	public void set(ANode parent, Object value) {
-		parent.addNodeData(value, this);
-	}
-	public N[] get(ANode parent) {
-		Object value = parent.getNodeData(this);
-		if (value == null)
-			return (N[])defaultValue;
-		return (N[])value;
-	}
-	public void clear(ANode parent) {
-		return parent.delNodeData(this);
-	}
-}
 
 public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	public SpaceAttAttrSlot(String name, Class clazz) {
@@ -424,23 +421,34 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		return narr;
 	}
 }
-public class SpaceAttDataAttrSlot<N extends ASTNode> extends SpaceAttAttrSlot<N> {
-	public SpaceAttDataAttrSlot(String name, Class clazz) {
+
+public class SpaceRefDataAttrSlot<N extends ASTNode> extends SpaceRefAttrSlot<N> {
+	private final boolean is_ext;
+	
+	public SpaceRefDataAttrSlot(String name, boolean is_ext, Class clazz) {
 		super(name, clazz);
+		this.is_ext = is_ext;
 	}
-	public boolean isData() { return true; }
+	public boolean isExtData() { return is_ext; }
+	public boolean isTmpData() { return !is_ext; }
 
 	public void set(ANode parent, Object value) {
-		parent.addNodeData(value, this);
+		if (is_ext)
+			parent.addExtData((N[])value, this);
+		else
+			parent.addTmpData((N[])value, this);
 	}
 	public N[] get(ANode parent) {
-		Object value = parent.getNodeData(this);
+		Object value = is_ext ? parent.getExtData(this) : parent.getTmpData(this);
 		if (value == null)
 			return (N[])defaultValue;
 		return (N[])value;
 	}
 	public void clear(ANode parent) {
-		return parent.delNodeData(this);
+		if (is_ext)
+			return parent.delExtData(this);
+		else
+			return parent.delTmpData(this);
 	}
 }
 

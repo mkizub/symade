@@ -34,9 +34,6 @@ public view RNode of ASTNode implements Constants {
 	public AttrSlot[] values();
 	public final void callbackChildChanged(AttrSlot attr);
 	public final void callbackRootChanged();
-	public final Object getNodeData(AttrSlot attr);
-	public final void addNodeData(ANode d, AttrSlot attr);
-	public final void delNodeData(AttrSlot attr);
 	public final DataFlowInfo getDFlow();
 	public final ASTNode replaceWithNode(ASTNode node);
 	public final ASTNode replaceWith(()->ASTNode fnode);

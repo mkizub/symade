@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 @nodeview
 public final view RStruct of Struct extends RTypeDecl {
 
-	static final AttrSlot TI_ATTR = new DataAttrSlot("rstruct ti field temp expr",true,false,TypeInfoExpr.class);	
+	static final AttrSlot TI_ATTR = new TmpAttrSlot("rstruct ti field temp expr",true,false,TypeInfoExpr.class);	
 
 	public:ro			Access					acc;
 	public:ro			WrapperMetaType			wmeta_type;
@@ -148,9 +148,10 @@ public final view RStruct of Struct extends RTypeDecl {
 		this.open();
 		TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
 		// check we can use a static field
-		from.addNodeData(ti_expr, TI_ATTR);
-		ti_expr.resolve(null);
-		~ti_expr;
+		TI_ATTR.set(from, ti_expr);
+		try {
+			ti_expr.resolve(null);
+		} finally { ~ti_expr; }
 		foreach (ENode ti_arg; ti_expr.cl_args; !(ti_arg instanceof SFldExpr)) {
 			// oops, cannot make it a static field
 			return ti_expr;

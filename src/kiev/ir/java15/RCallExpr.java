@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 @nodeview
 public final view RCallExpr of CallExpr extends RENode {
 
-	static final AttrSlot ATTR = new DataAttrSlot("rcall temp expr",true,false,ENode.class);	
+	static final AttrSlot ATTR = new TmpAttrSlot("rcall temp expr",true,false,ENode.class);	
 
 	public:ro	Method			func;
 	public		ENode			obj;
@@ -29,13 +29,13 @@ public final view RCallExpr of CallExpr extends RENode {
 	public final CallType getCallType();
 
 	@getter public final ENode get$tmp_expr() {
-		return (ENode)this.getNodeData(ATTR);
+		return (ENode)ATTR.get((ENode)this);
 	}
 	@setter public final void set$tmp_expr(ENode e) {
 		if (e != null)
-			this.addNodeData(e, ATTR);
+			ATTR.set((ENode)this, e);
 		else
-			this.delNodeData(ATTR);
+			ATTR.clear((ENode)this);
 	}
 
 	public void resolve(Type reqType) {

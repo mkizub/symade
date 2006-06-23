@@ -26,13 +26,12 @@ public abstract class ANode {
 	@virtual typedef This  = ANode;
 
 	private AttachInfo		p_info;
-	private AttachInfo[]	ndata;
+	private AttachInfo[]	ext_data;
+	private AttachInfo[]	tmp_data;
 	public int				version;
 	public boolean			locked;
 	private This			prev_version_node;
 	private This			next_version_node;
-
-	public abstract ANode nodeCopiedTo(ANode node);
 
 	public final boolean    isAttached()    { return p_info != null; }
 	public final AttachInfo getAttachInfo() { return p_info; }
@@ -96,8 +95,12 @@ public abstract class ANode {
 		return AttrSlot.emptyArray;
 	}
 	public Object getVal(String name) {
-		if (ndata != null) {
-			foreach (AttachInfo ai; ndata; ai.p_slot.name == name)
+		if (ext_data != null) {
+			foreach (AttachInfo ai; ext_data; ai.p_slot.name == name)
+				return ai.p_data;
+		}
+		if (tmp_data != null) {
+			foreach (AttachInfo ai; tmp_data; ai.p_slot.name == name)
 				return ai.p_data;
 		}
 		throw new RuntimeException("No @att value \"" + name + "\" in "+getClass().getName());
@@ -106,10 +109,10 @@ public abstract class ANode {
 		throw new RuntimeException("No @att value \"" + name + "\" in "+getClass().getName());
 	}
 
-	public final Object getNodeData(AttrSlot attr) {
-		assert (attr.isData());
-		if (ndata != null) {
-			foreach (AttachInfo ai; ndata) {
+	public final Object getExtData(AttrSlot attr) {
+		assert (attr.isExtData());
+		if (ext_data != null) {
+			foreach (AttachInfo ai; ext_data) {
 				if (ai.p_slot.name == attr.name)
 					return ai.p_data;
 			}
@@ -117,64 +120,132 @@ public abstract class ANode {
 		return null;
 	}
 	
-	public final void addNodeData(Object d, AttrSlot attr) {
-		assert (attr.isData());
-		if (ndata != null) {
-			AttachInfo[] ndata = this.ndata;
-			int sz = ndata.length;
+	public final Object getTmpData(AttrSlot attr) {
+		assert (attr.isTmpData());
+		if (tmp_data != null) {
+			foreach (AttachInfo ai; tmp_data) {
+				if (ai.p_slot.name == attr.name)
+					return ai.p_data;
+			}
+		}
+		return null;
+	}
+	
+	public final void addExtData(Object d, AttrSlot attr) {
+		assert (attr.isExtData());
+		if (ext_data != null) {
+			AttachInfo[] data = this.ext_data;
+			int sz = data.length;
 			for (int i=0; i < sz; i++) {
-				AttachInfo ai = ndata[i];
+				AttachInfo ai = data[i];
 				if (ai.p_slot.name == attr.name) {
 					assert(ai.p_slot == attr);
 					if (ai.p_data == d)
 						return;
+					this.open();
+					ext_data = (AttachInfo[])data.clone();
+					ext_data[i] = new AttachInfo(d,this,attr);
 					if (attr.is_attr) {
-						this.open();
-						ndata = (AttachInfo[])ndata.clone();
-						ndata[i] = new AttachInfo(d,this,attr);
 						if (ai.p_data instanceof ANode)
 							((ANode)ai.p_data).callbackDetached();
 						if (d instanceof ANode)
 							d.callbackAttached(this, attr);
-					} else {
-						ndata = (AttachInfo[])ndata.clone();
-						ndata[i] = new AttachInfo(d,this,attr);
 					}
 					return;
 				}
 			}
-			if (attr.is_attr)
-				this.open();
+			this.open();
 			AttachInfo[] tmp = new AttachInfo[sz+1];
 			for (int i=0; i < sz; i++)
-				tmp[i] = ndata[i];
+				tmp[i] = data[i];
 			tmp[sz] = new AttachInfo(d,this,attr);
-			this.ndata = tmp;
+			ext_data = tmp;
 		} else {
-			if (attr.is_attr)
-				this.open();
-			this.ndata = new AttachInfo[]{new AttachInfo(d,this,attr)};
+			this.open();
+			ext_data = new AttachInfo[]{new AttachInfo(d,this,attr)};
 		}
 		if (attr.is_attr && d instanceof ANode)
 			d.callbackAttached(this, attr);
 	}
 	
-	public final void delNodeData(AttrSlot attr) {
-		AttachInfo[] ndata = this.ndata;
-		assert (attr.isData());
-		if (ndata != null) {
-			int sz = ndata.length-1;
-			for (int idx=0; idx <= sz; idx++) {
-				AttachInfo ai = ndata[idx];
+	public final void addTmpData(Object d, AttrSlot attr) {
+		assert (attr.isTmpData());
+		if (tmp_data != null) {
+			AttachInfo[] data = this.tmp_data;
+			int sz = data.length;
+			for (int i=0; i < sz; i++) {
+				AttachInfo ai = data[i];
 				if (ai.p_slot.name == attr.name) {
 					assert(ai.p_slot == attr);
-					if (attr.is_attr)
-						this.open();
-					AttachInfo[] tmp = new AttachInfo[sz];
-					int i;
-					for (i=0; i < idx; i++) tmp[i] = ndata[i];
-					for (   ; i <  sz; i++) tmp[i] = ndata[i+1];
-					this.ndata = tmp;
+					if (ai.p_data == d)
+						return;
+					tmp_data[i] = new AttachInfo(d,this,attr);
+					if (attr.is_attr) {
+						if (ai.p_data instanceof ANode)
+							((ANode)ai.p_data).callbackDetached();
+						if (d instanceof ANode)
+							d.callbackAttached(this, attr);
+					}
+					return;
+				}
+			}
+			AttachInfo[] tmp = new AttachInfo[sz+1];
+			for (int i=0; i < sz; i++)
+				tmp[i] = data[i];
+			tmp[sz] = new AttachInfo(d,this,attr);
+			tmp_data = tmp;
+		} else {
+			tmp_data = new AttachInfo[]{new AttachInfo(d,this,attr)};
+		}
+		if (attr.is_attr && d instanceof ANode)
+			d.callbackAttached(this, attr);
+	}
+	
+	public final void delExtData(AttrSlot attr) {
+		AttachInfo[] data = this.ext_data;
+		assert (attr.isExtData());
+		if (data != null) {
+			int sz = data.length-1;
+			for (int idx=0; idx <= sz; idx++) {
+				AttachInfo ai = data[idx];
+				if (ai.p_slot.name == attr.name) {
+					assert(ai.p_slot == attr);
+					this.open();
+					if (sz == 0) {
+						this.ext_data = null;
+					} else {
+						AttachInfo[] tmp = new AttachInfo[sz];
+						int i;
+						for (i=0; i < idx; i++) tmp[i] = data[i];
+						for (   ; i <  sz; i++) tmp[i] = data[i+1];
+						this.ext_data = tmp;
+					}
+					if (attr.is_attr && ai.p_data instanceof ANode)
+						((ANode)ai.p_data).callbackDetached();
+					return;
+				}
+			}
+		}
+	}
+
+	public final void delTmpData(AttrSlot attr) {
+		AttachInfo[] data = this.tmp_data;
+		assert (attr.isTmpData());
+		if (data != null) {
+			int sz = data.length-1;
+			for (int idx=0; idx <= sz; idx++) {
+				AttachInfo ai = data[idx];
+				if (ai.p_slot.name == attr.name) {
+					assert(ai.p_slot == attr);
+					if (sz == 0) {
+						this.tmp_data = null;
+					} else {
+						AttachInfo[] tmp = new AttachInfo[sz];
+						int i;
+						for (i=0; i < idx; i++) tmp[i] = data[i];
+						for (   ; i <  sz; i++) tmp[i] = data[i+1];
+						this.tmp_data = tmp;
+					}
 					if (attr.is_attr && ai.p_data instanceof ANode)
 						((ANode)ai.p_data).callbackDetached();
 					return;
@@ -212,8 +283,12 @@ public abstract class ANode {
 					}
 				}
 			}
-			if (ndata != null) {
-				foreach (AttachInfo ai; this.ndata; ai.p_slot.is_attr && ai.p_data instanceof ANode)
+			if (ext_data != null) {
+				foreach (AttachInfo ai; ext_data; ai.p_slot.is_attr && ai.p_data instanceof ANode)
+					((ANode)ai.p_data).walkTree(walker);
+			}
+			if (tmp_data != null) {
+				foreach (AttachInfo ai; tmp_data; ai.p_slot.is_attr && ai.p_data instanceof ANode)
 					((ANode)ai.p_data).walkTree(walker);
 			}
 		}
@@ -222,28 +297,23 @@ public abstract class ANode {
 
 	public Object copyTo(Object to$node) {
 		ANode node = (ANode)to$node;
-		if (this.ndata != null) {
-			for (int i=0; i < this.ndata.length; i++) {
-				AttachInfo ai = this.ndata[i];
-				if (!ai.p_slot.is_attr)
-					continue;
-				if !(ai.p_data instanceof ANode)
-					continue;
-				ANode nd = ((ANode)ai.p_data).nodeCopiedTo(node);
-				if (nd == null)
-					continue;
-				if (node.ndata == null) {
-					node.ndata = new AttachInfo[]{new AttachInfo(nd,node,ai.p_slot)};
+		if (this.ext_data != null) {
+			int N = this.ext_data.length;
+			node.ext_data = new AttachInfo[N];
+			for (int i=0; i < N; i++) {
+				AttachInfo ai = this.ext_data[i];
+				if (ai.p_slot.is_attr && ai.p_data instanceof ASTNode) {
+					ASTNode nd = ((ASTNode)ai.p_data).ncopy();
+					node.ext_data[i] = new AttachInfo(nd,node,ai.p_slot);
+					nd.callbackAttached(node, ai.p_slot);
 				} else {
-					int sz = node.ndata.length;
-					AttachInfo[] tmp = new AttachInfo[sz+1];
-					for (int j=0; j < sz; j++)
-						tmp[j] = node.ndata[j];
-					tmp[sz] = new AttachInfo(nd,node,ai.p_slot);
-					node.ndata = tmp;
+					node.ext_data[i] = ai;
 				}
-				nd.callbackAttached(node, ai.p_slot);
 			}
+		}
+		if (this.tmp_data != null) {
+			foreach (AttachInfo ai; this.tmp_data)
+				assert (!ai.p_slot.is_attr);
 		}
 		return node;
 	}
@@ -251,11 +321,15 @@ public abstract class ANode {
 	public void setFrom(Object from$node) {
 		ANode node = (ANode)from$node;
 		this.p_info = node.p_info;
-		this.ndata = node.ndata;
+		this.ext_data = node.ext_data;
 		this.version = node.version;
 		this.locked = node.locked;
 		this.prev_version_node = node.prev_version_node;
 		this.next_version_node = node.next_version_node;
+		if (this.tmp_data != null) {
+			foreach (AttachInfo ai; this.tmp_data)
+				assert (!ai.p_slot.is_attr);
+		}
 	}
 	
 	public final AttrPtr getAttrPtr(String name) {
@@ -475,16 +549,12 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	
 	public final int getPosLine() { return pos >>> 11; }
 	
-	public ANode nodeCopiedTo(ANode node) {
-		return ncopy();
-	}
-
 	// build data flow for this node
 	public final DataFlowInfo getDFlow() {
-		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ATTR);
+		DataFlowInfo df = (DataFlowInfo)DataFlowInfo.ATTR.get(this);
 		if (df == null) {
 			df = DataFlowInfo.newDataFlowInfo(this);
-			this.addNodeData(df, DataFlowInfo.ATTR);
+			DataFlowInfo.ATTR.set(this, df);
 		}
 		return df;
 	}
@@ -505,8 +575,13 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 			if (node.pos == 0) node.pos = this.pos;
 			pslot.set(parent, idx, node);
 		}
-		else if (pslot.isData()) {
-			assert(parent.getNodeData(pslot) == this);
+		else if (pslot.isExtData()) {
+			assert(parent.getExtData(pslot) == this);
+			if (node != null && node.pos == 0) node.pos = this.pos;
+			pslot.set(parent, node);
+		}
+		else if (pslot.isTmpData()) {
+			assert(parent.getTmpData(pslot) == this);
 			if (node != null && node.pos == 0) node.pos = this.pos;
 			pslot.set(parent, node);
 		}
@@ -538,13 +613,23 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 			assert(n.isAttached());
 			return n;
 		}
-		else if (pslot.isData()) {
-			assert(parent.getNodeData(pslot) == this);
-			parent.delNodeData(pslot);
+		else if (pslot.isExtData()) {
+			assert(parent.getExtData(pslot) == this);
+			parent.delExtData(pslot);
 			ASTNode n = fnode();
 			assert(n != null);
 			if (n.pos == 0) n.pos = this.pos;
-			parent.addNodeData(n, pslot);
+			parent.addExtData(n, pslot);
+			assert(n.isAttached());
+			return n;
+		}
+		else if (pslot.isTmpData()) {
+			assert(parent.getTmpData(pslot) == this);
+			parent.delTmpData(pslot);
+			ASTNode n = fnode();
+			assert(n != null);
+			if (n.pos == 0) n.pos = this.pos;
+			parent.addTmpData(n, pslot);
 			assert(n.isAttached());
 			return n;
 		}
@@ -614,7 +699,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public final void cleanDFlow() {
 		walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) n.delNodeData(DataFlowInfo.ATTR); return true; }
+			public boolean pre_exec(ANode n) { DataFlowInfo.ATTR.clear(n); return true; }
 		});
 	}
 	
@@ -637,8 +722,10 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot)
 			pslot.detach(parent, this);
-		else if (pslot.isData())
-			parent.delNodeData(pslot);
+		else if (pslot.isExtData())
+			parent.delExtData(pslot);
+		else if (pslot.isTmpData())
+			parent.delTmpData(pslot);
 		else
 			pslot.set(parent,null);
 		assert(!isAttached());

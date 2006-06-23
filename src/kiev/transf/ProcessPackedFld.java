@@ -102,13 +102,13 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					Field p = s.resolveField(mp_in,false);
 					if( p == null ) {
 						Kiev.reportError(f,"Packer field "+mp_in+" not found");
-						f.delNodeData(MetaPacked.ATTR);
+						MetaPacked.ATTR.clear(f);
 						f.setPackedField(false);
 						continue;
 					}
 					if( p.type ≢ Type.tpInt ) {
 						Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
-						f.delNodeData(MetaPacked.ATTR);
+						MetaPacked.ATTR.clear(f);
 						f.setPackedField(false);
 						continue;
 					}
@@ -127,7 +127,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					Field p = new Field("$pack$"+countPackerFields(s),Type.tpInt,ACC_PUBLIC|ACC_SYNTHETIC);
 					p.pos = s.pos;
 					MetaPacker mpr = new MetaPacker();
-					p.addNodeData(mpr, MetaPacker.ATTR);
+					MetaPacker.ATTR.set(p, mpr);
 					p.setPackerField(true);
 					s.addField(p);
 					mp.packer = p;

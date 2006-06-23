@@ -14,7 +14,6 @@ import syntax kiev.Syntax;
 
 @node
 public abstract class Drawable extends ASTNode {
-	//static final AttrSlot ATTR = new DataAttrSlot("draw info",false,Drawable.class);
 
 	public static final Drawable[] emptyArray = new Drawable[0];
 

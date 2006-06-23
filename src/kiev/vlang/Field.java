@@ -23,9 +23,9 @@ import syntax kiev.Syntax;
 public final class Field extends LvalDNode implements Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
-	public static final AttrSlot GETTER_ATTR = new DataAttrSlot("getter method",false,false,Method.class);
-	public static final AttrSlot SETTER_ATTR = new DataAttrSlot("setter method",false,false,Method.class);
-	public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",Method.class);	
+	public static final AttrSlot GETTER_ATTR = new ExtAttrSlot("getter method",false,false,Method.class);
+	public static final AttrSlot SETTER_ATTR = new ExtAttrSlot("setter method",false,false,Method.class);
+	public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,Method.class);	
 
 	private static final Field dummyNode = new Field();
 	
@@ -148,15 +148,15 @@ public final class Field extends LvalDNode implements Accessable {
 	}
 
 	public final MetaPacked getMetaPacked() {
-		return (MetaPacked)this.getNodeData(MetaPacked.ATTR);
+		return (MetaPacked)MetaPacked.ATTR.get(this);
 	}
 
 	public final MetaPacker getMetaPacker() {
-		return (MetaPacker)this.getNodeData(MetaPacker.ATTR);
+		return (MetaPacker)MetaPacker.ATTR.get(this);
 	}
 
 	public final MetaAlias getMetaAlias() {
-		return (MetaAlias)this.getNodeData(MetaAlias.ATTR);
+		return (MetaAlias)MetaAlias.ATTR.get(this);
 	}
 
 	public boolean preResolveIn() {

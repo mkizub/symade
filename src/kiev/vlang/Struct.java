@@ -223,7 +223,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		}
 		MetaPizzaCase meta = cas.getMetaPizzaCase();
 		if (meta == null)
-			cas.addNodeData(meta = new MetaPizzaCase(), MetaPizzaCase.ATTR);
+			MetaPizzaCase.ATTR.set(cas, meta = new MetaPizzaCase());
 		meta.setTag(caseno + 1);
 		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
 		return cas;
@@ -277,7 +277,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	public String toString() { return qname().toString(); }
 
 	public MetaPizzaCase getMetaPizzaCase() {
-		return (MetaPizzaCase)this.getNodeData(MetaPizzaCase.ATTR);
+		return (MetaPizzaCase)MetaPizzaCase.ATTR.get(this);
 	}
 
 	public Field[] getEnumFields() {

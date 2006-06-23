@@ -26,12 +26,8 @@ public abstract class MetaSpecial extends ASTNode {
 		this.attr = attr;
 	}
 	
-	public ANode nodeCopiedTo(ANode node) {
-		return this.ncopy();
-	}
-	
-	public void attachTo(ASTNode node) { node.addNodeData(this, attr); }
-	public void detachFrom(ASTNode node) { node.delNodeData(attr); }
+	public void attachTo(ASTNode node) { attr.set(node, this); }
+	public void detachFrom(ASTNode node) { attr.clear(node); }
 }
 
 @node
@@ -179,24 +175,21 @@ public abstract class MetaFlag extends MetaSpecial {
 	public MetaFlag(MetaAttrSlot attr) { super(attr); }
 	public Object copy() { return this; }
 	
-	public ANode nodeCopiedTo(ANode node) {
-		return this; // attach the same instance to the copied node
-	}
 	public final void set(ASTNode node, Object value) {
 		try {
 			this.setZ(node, ((Boolean)value).booleanValue());
 		} catch (ClassCastException e) {
 			if (((Boolean)value).booleanValue())
-				node.addNodeData(this, this.attr);
+				this.attr.set(node, this);
 			else
-				node.delNodeData(this.attr);
+				this.attr.clear(node);
 		}
 	}
 	public final Object get(ASTNode node) {
 		try {
 			return Boolean.valueOf(this.getZ(node));
 		} catch (ClassCastException e) {
-			return Boolean.valueOf(node.getNodeData(this.attr) != null);
+			return Boolean.valueOf(this.attr.get(node) != null);
 		}
 	}
 }

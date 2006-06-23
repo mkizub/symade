@@ -631,7 +631,7 @@ public interface DataFlowSlots {
 }
 
 public final class DataFlowInfo extends ANode implements DataFlowSlots {
-	public static final AttrSlot ATTR = new DataAttrSlot("data flow info",false,false,DataFlowInfo.class);	
+	public static final AttrSlot ATTR = new TmpAttrSlot("data flow info",false,false,DataFlowInfo.class);	
 	
 	private static final Hashtable<Class, DataFlowInfo> data_flows = new Hashtable<Class, DataFlowInfo>(128);
 
@@ -871,11 +871,6 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 			throw new RuntimeException("Internal error: DFFunc.make("+func+":"+port+")");
 		}
 	}
-	
-	public ANode nodeCopiedTo(ANode node) {
-		return null; // do not copy on node copy
-	}
-	
 }
 
 public abstract class DFSocket implements DataFlowSlots, Cloneable {
