@@ -39,6 +39,7 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setUseNoProxy(boolean on) {
 		if (this.is_expr_use_no_proxy != on) {
+			this.open();
 			this.is_expr_use_no_proxy = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -49,6 +50,7 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setAsField(boolean on) {
 		if (this.is_expr_as_field != on) {
+			this.open();
 			this.is_expr_as_field = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -59,6 +61,7 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setGenVoidExpr(boolean on) {
 		if (this.is_expr_gen_void != on) {
+			this.open();
 			this.is_expr_gen_void = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -69,6 +72,7 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setForWrapper(boolean on) {
 		if (this.is_expr_for_wrapper != on) {
+			this.open();
 			this.is_expr_for_wrapper = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -89,6 +93,7 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setSuperExpr(boolean on) {
 		if (this.is_expr_super != on) {
+			this.open();
 			this.is_expr_super = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -99,6 +104,7 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setCastCall(boolean on) {
 		if (this.is_expr_cast_call != on) {
+			this.open();
 			this.is_expr_cast_call = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -115,6 +121,7 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setAbrupted(boolean on) {
 		if (this.is_stat_abrupted != on) {
+			this.open();
 			this.is_stat_abrupted = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -125,6 +132,7 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setBreaked(boolean on) {
 		if (this.is_stat_breaked != on) {
+			this.open();
 			this.is_stat_breaked = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -135,6 +143,7 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setMethodAbrupted(boolean on) {
 		if (this.is_stat_method_abrupted != on) {
+			this.open();
 			this.is_stat_method_abrupted = on;
 			if (on) this.is_stat_abrupted = true;
 			this.callbackChildChanged(nodeattr$flags);
@@ -146,6 +155,7 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setAutoReturnable(boolean on) {
 		if (this.is_stat_auto_returnable != on) {
+			this.open();
 			this.is_stat_auto_returnable = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}

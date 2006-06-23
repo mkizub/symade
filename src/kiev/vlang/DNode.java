@@ -97,36 +97,42 @@ public abstract class DNode extends ASTNode {
 
 	public void setPublic() {
 		if (this.is_access != MASK_ACC_PUBLIC) {
+			this.open();
 			this.is_access = MASK_ACC_PUBLIC;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	public void setPrivate() {
 		if (this.is_access != MASK_ACC_PRIVATE) {
+			this.open();
 			this.is_access = MASK_ACC_PRIVATE;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	public void setProtected() {
 		if (this.is_access != MASK_ACC_PROTECTED) {
+			this.open();
 			this.is_access = MASK_ACC_PROTECTED;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	public void setPkgPrivate() {
 		if (this.is_access != MASK_ACC_DEFAULT) {
+			this.open();
 			this.is_access = MASK_ACC_DEFAULT;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	public final void setPackage() {
 		if (this.is_access != MASK_ACC_NAMESPACE) {
+			this.open();
 			this.is_access = MASK_ACC_NAMESPACE;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	public final void setSyntax() {
 		if (this.is_access != MASK_ACC_SYNTAX) {
+			this.open();
 			this.is_access = MASK_ACC_SYNTAX;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -134,12 +140,14 @@ public abstract class DNode extends ASTNode {
 
 	public void setStatic(boolean on) {
 		if (this.is_static != on) {
+			this.open();
 			this.is_static = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	public void setFinal(boolean on) {
 		if (this.is_final != on) {
+			this.open();
 			this.is_final = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -176,6 +184,7 @@ public abstract class DNode extends ASTNode {
 	}
 	public void setMethodVarargs(boolean on) {
 		if (this.is_mth_varargs != on) {
+			this.open();
 			this.is_mth_varargs = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -188,12 +197,14 @@ public abstract class DNode extends ASTNode {
 	}
 	public void setInterface(boolean on) {
 		if (this.is_struct_interface != on) {
+			this.open();
 			this.is_struct_interface = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	public void setAbstract(boolean on) {
 		if (this.is_abstract != on) {
+			this.open();
 			this.is_abstract = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -214,12 +225,14 @@ public abstract class DNode extends ASTNode {
 
 	public void setStructView() {
 		if (!this.is_virtual) {
+			this.open();
 			this.is_virtual = true;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	public void setTypeUnerasable(boolean on) {
 		if (this.is_type_unerasable != on) {
+			this.open();
 			this.is_type_unerasable = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -230,6 +243,7 @@ public abstract class DNode extends ASTNode {
 	}
 	public final void setVirtual(boolean on) {
 		if (this.is_virtual != on) {
+			this.open();
 			this.is_virtual = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -240,6 +254,7 @@ public abstract class DNode extends ASTNode {
 	}
 	@setter public final void setForward(boolean on) {
 		if (this.is_forward != on) {
+			this.open();
 			this.is_forward = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -292,6 +307,7 @@ public abstract class LvalDNode extends DNode {
 	}
 	@setter public final void setInitWrapper(boolean on) {
 		if (this.is_init_wrapper != on) {
+			this.open();
 			this.is_init_wrapper = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -302,6 +318,7 @@ public abstract class LvalDNode extends DNode {
 	}
 	@setter public final void setNeedProxy(boolean on) {
 		if (this.is_need_proxy != on) {
+			this.open();
 			this.is_need_proxy = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -347,6 +364,7 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 	}
 	public final void setSingleton(boolean on) {
 		if (this.is_struct_singleton != on) {
+			this.open();
 			this.is_struct_singleton = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -389,6 +407,7 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 	}
 	public final void setEnum(boolean on) {
 		if (this.is_struct_enum != on) {
+			this.open();
 			this.is_struct_enum = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -407,6 +426,7 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 	}
 	public final void setTypeResolved(boolean on) {
 		if (this.is_struct_type_resolved != on) {
+			this.open();
 			this.is_struct_type_resolved = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -417,6 +437,7 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 	}
 	public final void setArgsResolved(boolean on) {
 		if (this.is_struct_args_resolved != on) {
+			this.open();
 			this.is_struct_args_resolved = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}

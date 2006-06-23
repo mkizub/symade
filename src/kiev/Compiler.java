@@ -582,6 +582,7 @@ stop:;
 			be = Kiev.useBackend;
 		if( Kiev.verbose ) Kiev.reportInfo("Running back-end "+be,0);
 		long curr_time = 0L, diff_time = 0L;
+		long be_start_time = System.currentTimeMillis();
 		Transaction tr_me = Transaction.open();
 		try {
 			////////////////////////////////////////////////////
@@ -626,7 +627,7 @@ stop:;
 			tr_me.rollback(false);
 		}
 		boolean ret = (Kiev.errCount == 0);
-		diff_time = System.currentTimeMillis() - curr_time;
+		diff_time = System.currentTimeMillis() - be_start_time;
 		if( Kiev.verbose ) Kiev.reportInfo("Back-end "+be+" completed: "+(ret?"OK":"FAIL"),diff_time);
 		return ret;
 	}

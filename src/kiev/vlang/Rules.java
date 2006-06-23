@@ -346,6 +346,7 @@ public final class RuleOrExpr extends ASTRuleNode {
     }
 
 	public void resolve1(JumpNodes jn) {
+		this.open();
 		this.jn = jn;
 		JumpNodes j;
 		int depth = ((RuleMethod)ctx_method).state_depth;
@@ -423,6 +424,7 @@ public final class RuleAndExpr extends ASTRuleNode {
     }
 
 	public void resolve1(JumpNodes jn) {
+		this.open();
 		this.jn = jn;
 		JumpNodes j;
 		boolean more_back = jn.more_back;
@@ -483,6 +485,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
     }
 
 	public void resolve1(JumpNodes jn) {
+		this.open();
 		this.jn = jn;
 		idx = ++((RuleMethod)ctx_method).index;
 		base = ((RuleMethod)ctx_method).allocNewBase(1);
@@ -550,6 +553,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
     }
 
 	public void resolve1(JumpNodes jn) {
+		this.open();
 		this.jn = jn;
 		idx = ++((RuleMethod)ctx_method).index;
 		base = ((RuleMethod)ctx_method).allocNewBase(2);
@@ -688,6 +692,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	public void rnResolve() {}
 
 	public void resolve1(JumpNodes jn) {
+		this.open();
 		this.jn = jn;
 		idx = ++((RuleMethod)ctx_method).index;
 	}
@@ -744,6 +749,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	public void rnResolve() {}
 
 	public void resolve1(JumpNodes jn) {
+		this.open();
 		this.jn = jn;
 		idx = ++((RuleMethod)ctx_method).index;
 		base = ((RuleMethod)ctx_method).allocNewBase(1);
@@ -862,6 +868,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 
 	public void resolve1(JumpNodes jn) {
+		this.open();
 		this.jn = jn;
 		idx = ++((RuleMethod)ctx_method).index;
 		base = ((RuleMethod)ctx_method).allocNewBase(1);
@@ -921,6 +928,7 @@ public final class RuleExpr extends RuleExprBase {
 	}
 
 	public void resolve1(JumpNodes jn) {
+		this.open();
 		this.jn = jn;
 		idx = ++((RuleMethod)ctx_method).index;
 		if (bt_expr != null) {

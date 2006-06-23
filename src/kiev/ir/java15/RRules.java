@@ -25,6 +25,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 	public		int					index;		// index counter for RuleNode.idx
 
 	public boolean preGenerate() {
+		this.open();
 		Var penv = params[0];
 		assert(penv.id.uname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 		if( body instanceof RuleBlock ) {
@@ -65,6 +66,7 @@ public final view RRuleBlock of RuleBlock extends RENode {
 	public StringBuffer		fields_buf;
 
 	public boolean preGenerate() {
+		this.open();
 		node.rnResolve();
 		fields_buf = new StringBuffer();
 		node.resolve1(new JumpNodes(false,null,false,null,false));
@@ -113,7 +115,6 @@ public final view RRuleBlock of RuleBlock extends RENode {
 		sb.append("}\n");
 		trace(Kiev.debugRules,"Rule text generated:\n"+sb);
 		Block mbody = Kiev.parseBlock((RuleBlock)this,sb);
-		ctx_method.open();
 		ctx_method.body = mbody;
 		return false;
 	}

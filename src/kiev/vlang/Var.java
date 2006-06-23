@@ -631,7 +631,7 @@ public interface DataFlowSlots {
 }
 
 public final class DataFlowInfo extends ANode implements DataFlowSlots {
-	public static final AttrSlot ATTR = new DataAttrSlot("data flow info",true,false,DataFlowInfo.class);	
+	public static final AttrSlot ATTR = new DataAttrSlot("data flow info",false,false,DataFlowInfo.class);	
 	
 	private static final Hashtable<Class, DataFlowInfo> data_flows = new Hashtable<Class, DataFlowInfo>(128);
 

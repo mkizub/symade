@@ -145,6 +145,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			if (((TypeInfoExpr)f.init).type.getType() ≈ t)
 				return new SFldExpr(from.pos,f);
 		}
+		this.open();
 		TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
 		// check we can use a static field
 		from.addNodeData(ti_expr, TI_ATTR);

@@ -70,6 +70,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	public final void setPizzaCase(boolean on) {
 		if (this.is_struct_pizza_case != on) {
+			this.open();
 			this.is_struct_pizza_case = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -80,6 +81,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	public final void setHasCases(boolean on) {
 		if (this.is_struct_has_pizza_cases != on) {
+			this.open();
 			this.is_struct_has_pizza_cases = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -90,6 +92,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	public final void setMembersGenerated(boolean on) {
 		if (this.is_struct_members_generated != on) {
+			this.open();
 			this.is_struct_members_generated = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -100,6 +103,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	public final void setMembersPreGenerated(boolean on) {
 		if (this.is_struct_pre_generated != on) {
+			this.open();
 			this.is_struct_pre_generated = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -111,6 +115,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	public final void setStatementsGenerated(boolean on) {
 		if (this.is_struct_statements_generated != on) {
+			this.open();
 			this.is_struct_statements_generated = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -121,6 +126,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	public final void setGenerated(boolean on) {
 		if (this.is_struct_generated != on) {
+			this.open();
 			this.is_struct_generated = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}

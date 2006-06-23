@@ -129,6 +129,9 @@ public abstract class ANode {
 					if (ai.p_data == d)
 						return;
 					if (attr.is_attr) {
+						this.open();
+						ndata = (AttachInfo[])ndata.clone();
+						ndata[i] = new AttachInfo(d,this,attr);
 						if (ai.p_data instanceof ANode)
 							((ANode)ai.p_data).callbackDetached();
 						if (d instanceof ANode)
@@ -140,12 +143,16 @@ public abstract class ANode {
 					return;
 				}
 			}
+			if (attr.is_attr)
+				this.open();
 			AttachInfo[] tmp = new AttachInfo[sz+1];
 			for (int i=0; i < sz; i++)
 				tmp[i] = ndata[i];
 			tmp[sz] = new AttachInfo(d,this,attr);
 			this.ndata = tmp;
 		} else {
+			if (attr.is_attr)
+				this.open();
 			this.ndata = new AttachInfo[]{new AttachInfo(d,this,attr)};
 		}
 		if (attr.is_attr && d instanceof ANode)
@@ -161,6 +168,8 @@ public abstract class ANode {
 				AttachInfo ai = ndata[idx];
 				if (ai.p_slot.name == attr.name) {
 					assert(ai.p_slot == attr);
+					if (attr.is_attr)
+						this.open();
 					AttachInfo[] tmp = new AttachInfo[sz];
 					int i;
 					for (i=0; i < idx; i++) tmp[i] = ndata[i];
@@ -556,6 +565,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public final void setBreakTarget(boolean on) {
 		if (this.is_stat_break_target != on) {
+			this.open();
 			this.is_stat_break_target = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -576,6 +586,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	@setter public final void setResolved(boolean on) {
 		if (this.is_resolved != on) {
+			this.open();
 			this.is_resolved = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}

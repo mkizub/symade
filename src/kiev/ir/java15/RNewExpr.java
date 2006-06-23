@@ -24,10 +24,12 @@ public static final view RNewExpr of NewExpr extends RENode {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
+			assert (func != null);
 			if (isAutoReturnable())
 				ReturnStat.autoReturn(reqType, this);
 			return;
 		}
+		this.open();
 		Type type;
 		if (this.clazz != null) {
 			this.clazz.resolveDecl();
