@@ -13,7 +13,7 @@ import syntax kiev.Syntax;
 
 
 @node
-public abstract class Drawable extends ASTNode {
+public abstract class Drawable extends ANode {
 
 	public static final Drawable[] emptyArray = new Drawable[0];
 

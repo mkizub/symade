@@ -167,7 +167,7 @@ public final class CoreMetaType extends MetaType {
 		tdecl.id = new Symbol(name);
 		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
 		tdecl.flags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-		tdecl.setResolved(true);
+		tdecl.setTypeDeclLoaded(true);
 		tdecl.xmeta_type = this;
 		tdecl.package_clazz.sub_decls.add(tdecl);
 		if (super_type != null)
@@ -329,7 +329,7 @@ public final class ArrayMetaType extends MetaType {
 		tdecl.flags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 		tdecl.args.add(StdTypes.tdArrayArg);
-		tdecl.setResolved(true);
+		tdecl.setTypeDeclLoaded(true);
 		tdecl.package_clazz.sub_decls.add(tdecl);
 		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
 		length.acc = new Access(0xAA); //public:ro
@@ -559,7 +559,7 @@ public class CallMetaType extends MetaType {
 		tdecl.id = new Symbol("_call_type_");
 		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
 		tdecl.flags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-		tdecl.setResolved(true);
+		tdecl.setTypeDeclLoaded(true);
 		instance = new CallMetaType(tdecl);
 	}
 	private CallMetaType(TypeDecl tdecl) {

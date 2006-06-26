@@ -326,14 +326,14 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 
 	public final boolean checkResolved() {
-		if( !isResolved() ) {
-			if (!Env.loadStruct(this).isResolved()) {
+		if( !isTypeDeclLoaded() ) {
+			if (!Env.loadStruct(this).isTypeDeclLoaded()) {
 				if (isPackage())
-					setResolved(true);
+					setTypeDeclLoaded(true);
 				else
 					throw new RuntimeException("Class "+this+" not found");
 			}
-			if (!isResolved())
+			if (!isTypeDeclLoaded())
 				throw new RuntimeException("Class "+this+" unresolved");
 		}
 		return true;
@@ -346,7 +346,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 			return true;
 		if (ctx_method==null || ctx_method.isStatic())
 			this.setStatic(true);
-		this.setResolved(true);
+		this.setTypeDeclLoaded(true);
 		this.setLocal(true);
 		this.setLoadedFromBytecode(true);
 		try {

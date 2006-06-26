@@ -108,7 +108,7 @@ public final class NewExpr extends ENode {
 		tp.checkResolved();
 		// Local anonymouse class
 		CompaundType sup  = (CompaundType)tp;
-		clazz.setResolved(true);
+		clazz.setTypeDeclLoaded(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
 		clazz.setStatic(ctx_method==null || ctx_method.isStatic());

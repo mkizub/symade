@@ -130,7 +130,7 @@ public interface StdTypes {
 //		tpRule		= new CoreType(Constants.nameRule,    flReference);
 		Struct tpRuleClazz = new Struct(new Symbol("rule"),Env.root,ACC_PUBLIC);
 		tpRule				= (CompaundType)tpRuleClazz.xtype;
-		tpRuleClazz.setResolved(true);
+		tpRuleClazz.setTypeDeclLoaded(true);
 		tpRule.flags		= flResolved | flReference;
 
 		Struct tpDebugClazz = Env.newStruct("Debug",kiev_stdlib,ACC_PUBLIC);

@@ -211,7 +211,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		boolean isArr = f.getType().isInstanceOf(tpNArray);
 		Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
 		Struct s = Env.newStruct(("NodeAttr_"+f.id.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,true);
-		s.setResolved(true);
+		s.setTypeDeclLoaded(true);
 		snode.members.add(s);
 		if (isArr) {
 			if (isAtt) {
@@ -251,7 +251,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		if (isArr) {
 			// add public N[] get(ASTNode parent)
 			{
-				Method getArr = new Method("get",new ArrayType(tpNode),ACC_PUBLIC | ACC_SYNTHETIC);
+				Method getArr = new Method("get",new ArrayType(tpANode),ACC_PUBLIC | ACC_SYNTHETIC);
 				getArr.params.add(new FormPar(0, "parent", tpANode, FormPar.PARAM_NORMAL, ACC_FINAL));
 				s.addMethod(getArr);
 				getArr.body = new Block(0);
@@ -262,7 +262,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			{
 				Method setArr = new Method("set",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
 				setArr.params.add(new FormPar(0, "parent", tpANode, FormPar.PARAM_NORMAL, ACC_FINAL));
-				setArr.params.add(new FormPar(0, "narr", Type.tpObject /*new ArrayType(tpNode)*/, FormPar.PARAM_NORMAL, ACC_FINAL));
+				setArr.params.add(new FormPar(0, "narr", Type.tpObject /*new ArrayType(tpANode)*/, FormPar.PARAM_NORMAL, ACC_FINAL));
 				s.addMethod(setArr);
 				setArr.body = new Block(0);
 				ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.xtype, new LVarExpr(0, setArr.params[0]) ), f);
@@ -562,7 +562,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			s.addMethod(setV);
 			setV.body = new Block(0);
 			// check the node is not locked
-			{
+			if (s.xtype.isInstanceOf(tpNode)) {
 				setV.block.stats.add(new ExprStat(
 					new CallExpr(0,new TypeRef(Type.tpDebug), new SymbolRef("assert"),null,
 						new ENode[]{new BooleanNotExpr(0,new AccessExpr(0,new ThisExpr(),new SymbolRef("locked")))})
@@ -697,7 +697,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			doProcess(sub);
 	}
 	
-	private static void fixSetterMethod(Struct s, Field f) {
+	private void fixSetterMethod(Struct s, Field f) {
 		assert(f.meta.get(VNode_Base.mnAtt) != null);
 
 		Method set_var = (Method)Field.SETTER_ATTR.get(f);
@@ -784,7 +784,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			Kiev.runProcessorsOn(p_st);
 		}
 		// check the node is not locked
-		{
+		if (s.xtype.isInstanceOf(tpNode)) {
 			ENode p_st = new ExprStat(
 				new CallExpr(0,new TypeRef(Type.tpDebug), new SymbolRef("assert"),null,
 					new ENode[]{new BooleanNotExpr(0,new AccessExpr(0,new ThisExpr(),new SymbolRef("locked")))})

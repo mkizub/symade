@@ -79,7 +79,7 @@ public class Env extends Struct {
 		super();
 		root = this;
 		setPackage();
-		setResolved(true);
+		setTypeDeclLoaded(true);
 		new CompaundMetaType(this);
 	}
 
@@ -192,7 +192,7 @@ public class Env extends Struct {
 		if (cl == null)
 			cl = newStruct(sname,outer,0);
 		cl.setPackage();
-		cl.setResolved(true);
+		cl.setTypeDeclLoaded(true);
 		return cl;
 	}
 
@@ -426,7 +426,7 @@ public class Env extends Struct {
 		// Load if not loaded or not resolved
 		if (cl == null)
 			cl = jenv.loadClazz(qname);
-		else if (!cl.isResolved() && !cl.isAnonymouse())
+		else if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse())
 			cl = jenv.loadClazz(cl);
 		if (cl == null)
 			classHashOfFails.put(qname);
@@ -436,7 +436,7 @@ public class Env extends Struct {
 	public static Struct loadStruct(Struct cl) {
 		if (cl == Env.root) return Env.root;
 		// Load if not loaded or not resolved
-		if (!cl.isResolved() && !cl.isAnonymouse())
+		if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse())
 			jenv.loadClazz(cl);
 		return cl;
 	}

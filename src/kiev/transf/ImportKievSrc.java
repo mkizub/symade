@@ -838,8 +838,10 @@ public final class KievFE_Lock extends TransfProcessor {
 			return;
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
-				DataFlowInfo.ATTR.clear(n);
-				n.locked = true;
+				if (n instanceof ASTNode) {
+					DataFlowInfo.ATTR.clear(n);
+					n.locked = true;
+				}
 				return true;
 			}
 		});

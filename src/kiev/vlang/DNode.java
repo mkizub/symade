@@ -69,6 +69,8 @@ public abstract class DNode extends ASTNode {
 
 	public @packed:1,flags,19 boolean is_macro;			// macro-declarations for fields, methods, etc
 	
+	public @packed:1,flags,20 boolean is_tdecl_loaded;		// TypeDecl was fully loaded (from src or bytecode) 
+	
 	public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
 	public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }
 	public final boolean isProtected()			{ return this.is_access == MASK_ACC_PROTECTED; }
@@ -357,6 +359,16 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 
 	public boolean isClazz() {
 		return false;
+	}
+	// resolved
+	@getter public final boolean isTypeDeclLoaded() {
+		return this.is_tdecl_loaded;
+	}
+	@setter public final void setTypeDeclLoaded(boolean on) {
+		if (this.is_tdecl_loaded != on) {
+			this.is_tdecl_loaded = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// a structure with the only one instance (singleton)	
 	public final boolean isSingleton() {

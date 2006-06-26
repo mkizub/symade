@@ -62,8 +62,8 @@ public final class AttrPtr {
 
 public final class SpacePtr {
 	public final ANode node;
-	public final SpaceAttrSlot<ASTNode> slot;
-	public SpacePtr(ANode node, SpaceAttrSlot<ASTNode> slot) {
+	public final SpaceAttrSlot<ANode> slot;
+	public SpacePtr(ANode node, SpaceAttrSlot<ANode> slot) {
 		this.node = node;
 		this.slot = slot;
 	}
@@ -75,19 +75,19 @@ public final class SpacePtr {
 		return slot.get(node).length;
 	}
 
-	public ASTNode get(int idx)
+	public ANode get(int idx)
 		alias operator(210,xfy,[])
 	{
 		return slot.get(node, idx);
 	}
 
-	public ASTNode set(int idx, ASTNode val)
+	public ANode set(int idx, ANode val)
 		alias operator(210,lfy,[])
 	{
 		return slot.set(node, idx, val);
 	}
 
-	public ASTNode add(ASTNode val)
+	public ANode add(ANode val)
 		alias append
 		alias operator(5, lfy, +=)
 	{
@@ -191,7 +191,7 @@ public abstract class AttAttrSlot extends AttrSlot {
 	public abstract Object get(ANode parent);
 }
 
-public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
+public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 	public SpaceAttrSlot(String name, boolean is_attr, Class clazz) {
 		super(name, is_attr, true, clazz);
 	}
@@ -202,7 +202,7 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 		return this.get(parent);
 	}
 
-	public final int indexOf(ANode parent, ASTNode node) {
+	public final int indexOf(ANode parent, ANode node) {
 		N[] narr = get(parent);
 		int sz = narr.length;
 		for (int i=0; i < sz; i++) {
@@ -212,7 +212,7 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 		return -1;
 	}
 
-	public final void detach(ANode parent, ASTNode old)
+	public final void detach(ANode parent, ANode old)
 	{
 		N[] narr = get(parent);
 		int sz = narr.length;
@@ -246,7 +246,7 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 
 }
 
-public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
+public class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N> {
 	public SpaceRefAttrSlot(String name, Class clazz) {
 		super(name, false, clazz);
 	}
@@ -321,7 +321,7 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	}
 }
 
-public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
+public class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N> {
 	public SpaceAttAttrSlot(String name, Class clazz) {
 		super(name, true, clazz);
 	}
@@ -330,7 +330,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 		assert(!node.isAttached());
 		parent.open();
 		N[] narr = (N[])get(parent).clone();
-		ASTNode old = narr[idx];
+		ANode old = narr[idx];
 		old.callbackDetached();
 		narr[idx] = node;
 		set(parent,narr);
@@ -362,7 +362,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	public final void del(ANode parent, int idx) {
 		parent.open();
 		N[] narr = get(parent);
-		ASTNode old = narr[idx];
+		ANode old = narr[idx];
 		old.callbackDetached();
 		int sz = narr.length-1;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz); //new N[sz];
@@ -422,7 +422,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	}
 }
 
-public class SpaceRefDataAttrSlot<N extends ASTNode> extends SpaceRefAttrSlot<N> {
+public class SpaceRefDataAttrSlot<N extends ANode> extends SpaceRefAttrSlot<N> {
 	private final boolean is_ext;
 	
 	public SpaceRefDataAttrSlot(String name, boolean is_ext, Class clazz) {
@@ -480,7 +480,7 @@ public final class Transaction {
 
 	public void close() {
 		assert (currentTransaction == this);
-		ANode[] nodes = this.nodes;
+		ASTNode[] nodes = this.nodes;
 		int n = this.size;
 		for (int i=0; i < n; i++)
 			nodes[i].locked = true;
@@ -493,7 +493,7 @@ public final class Transaction {
 	}
 
 	public void rollback(boolean save_next) {
-		ANode[] nodes = this.nodes;
+		ASTNode[] nodes = this.nodes;
 		int n = this.size;
 		for (int i=0; i < n; i++)
 			nodes[i].rollback(save_next);
@@ -504,17 +504,17 @@ public final class Transaction {
 	public int version;
 	private int recursion_counter;
 	private int size;
-	private ANode[] nodes;
+	private ASTNode[] nodes;
 
 	private Transaction() {
 		this.version = ++currentVersion;
 		this.recursion_counter = 1;
-		this.nodes = new ANode[64];
+		this.nodes = new ASTNode[64];
 	}
 	
-	public void add(ANode node) {
+	public void add(ASTNode node) {
 		if (size >= nodes.length) {
-			ANode[] tmp = new ANode[size*2];
+			ASTNode[] tmp = new ASTNode[size*2];
 			System.arraycopy(nodes,0,tmp,0,size);
 			nodes = tmp;
 		}
@@ -526,227 +526,82 @@ public final class Transaction {
 
 
 @unerasable
-public final class NArr<N extends ASTNode> {
+public final class NArr<N extends ANode> {
 
     private final ANode		 	$parent_impl;
 	private final AttrSlot		$pslot;
 	public        N[]			$nodes;
 	
-	public NArr(ANode parent_impl, AttrSlot pslot) {
-		this.$parent_impl = parent_impl;
-		this.$pslot = pslot;
-		this.$nodes = new N[0];
-		if (parent_impl == null)
-			assert (pslot == null || !pslot.is_attr);
-	}
+	public NArr(ANode parent_impl, AttrSlot pslot) {}
 	
-	public ANode getParent() {
-		return $parent_impl;
-	}
+	public ANode getParent() { return null; }
 	
-	public AttrSlot getPSlot() {
-		return $pslot;
-	}
+	public AttrSlot getPSlot() { return null; }
 	
 	@getter
 	public int size()
 		alias length
 		alias get$length
 	{
-		return $nodes.length;
+		return 0;
 	}
 
 	public final N get(int idx)
 		alias at
 		alias operator(210,xfy,[])
-	{
-		return $nodes[idx];
-	}
+	{ return null; }
 	
 	public N set(int idx, N node)
 		alias operator(210,lfy,[])
 		require { node != null; }
-	{
-		// for compatibility with kiev-0.4b
-		final boolean is_attr = ($pslot != null && $pslot.is_attr);
-		assert(!is_attr || !node.isAttached());
-		if (is_attr) {
-			ASTNode old = $nodes[idx];
-			old.callbackDetached();
-		}
-		$nodes[idx] = node;
-		if (is_attr) {
-			ListAttachInfo prv = null;
-			ListAttachInfo nxt = null;
-			if (idx > 0) prv = (ListAttachInfo)$nodes[idx-1].getAttachInfo();
-			if (idx+1 < size()) nxt = (ListAttachInfo)$nodes[idx+1].getAttachInfo();
-			node.callbackAttached(new ListAttachInfo(node, $parent_impl, $pslot, prv, nxt));
-		}
-		return node;
-	}
+	{ return null; }
 
 	public N add(N node)
 		alias append
 		alias operator(5, lfy, +=)
 		require { node != null; }
-	{
-		// for compatibility with kiev-0.4b
-		final boolean is_attr = ($pslot != null && $pslot.is_attr);
-		assert(!is_attr || !node.isAttached());
-		if (is_attr)
-			assert(indexOf(node) < 0);
-		int sz = $nodes.length;
-		N[] tmp = new N[sz+1];
-		int i;
-		for (i=0; i < sz; i++)
-			tmp[i] = $nodes[i];
-		$nodes = tmp;
-		$nodes[sz] = node;
-		if (is_attr) {
-			ListAttachInfo prv = null;
-			if (sz > 0) prv = (ListAttachInfo)$nodes[sz-1].getAttachInfo();
-			node.callbackAttached(new ListAttachInfo(node, $parent_impl, $pslot, prv, null));
-		}
-		return node;
-	}
+	{ return null; }
 
 	public void addAll(N[] arr)
 		alias appendAll
 	{
-		// for compatibility with kiev-0.4b
-		foreach(N n; arr) add(n);
 	}
 
 	public void insert(int idx, N node) {
-		// for compatibility with kiev-0.4b
-		final boolean is_attr = ($pslot != null && $pslot.is_attr);
-		assert(!is_attr || !node.isAttached());
-		if (is_attr)
-			assert(indexOf(node) < 0);
-		int sz = $nodes.length;
-		N[] tmp = new N[sz+1];
-		int i;
-		for (i=0; i < idx; i++)
-			tmp[i] = $nodes[i];
-		tmp[idx] = node;
-		for (; i < sz; i++)
-			tmp[i+1] = $nodes[i];
-		$nodes = tmp;
-		if (is_attr) {
-			ListAttachInfo prv = null;
-			ListAttachInfo nxt = null;
-			if (idx > 0) prv = (ListAttachInfo)$nodes[idx-1].getAttachInfo();
-			if (idx+1 < size()) nxt = (ListAttachInfo)$nodes[idx+1].getAttachInfo();
-			node.callbackAttached(new ListAttachInfo(node, $parent_impl, $pslot, prv, nxt));
-		}
 	}
 
-	public void detach(ASTNode old)
+	public void detach(ANode old)
 	{
-		// for compatibility with kiev-0.4b
-		int sz = $nodes.length;
-		for (int i=0; i < sz; i++) {
-			if ($nodes[i] == old) {
-				this.del(i);
-				return;
-			}
-		}
-		throw new RuntimeException("Not found node");
 	}
 	
 	public void del(int idx)
 	{
-		// for compatibility with kiev-0.4b
-		ASTNode old = $nodes[idx];
-		final boolean is_attr = ($pslot != null && $pslot.is_attr);
-		if (is_attr)
-			old.callbackDetached();
-		int sz = $nodes.length-1;
-		N[] tmp = new N[sz];
-		int i;
-		for (i=0; i < idx; i++)
-			tmp[i] = $nodes[i];
-		for (; i < sz; i++)
-			tmp[i] = $nodes[i+1];
-		$nodes = tmp;
 	}
 
 	public void delAll() {
-		// for compatibility with kiev-0.4b
-		if (this.$nodes.length == 0)
-			return;
-		if ($pslot != null && $pslot.is_attr) {
-			foreach (N node; $nodes)
-				node.callbackDetached();
-		}
-		this.$nodes = new N[0];
-	};
+	}
 	
 	public void copyFrom(NArr<N> arr) {
-		// for compatibility with kiev-0.4b
-		copyFrom(arr.getArray());
 	}
 	
 	public void copyFrom(N[] arr) {
-		// for compatibility with kiev-0.4b
-		if ($pslot != null && $pslot.is_attr) {
-			foreach (N n; arr)
-				append(n.ncopy());
-		} else {
-			foreach (N n; arr)
-				append(n);
-		}
 	}
 	
-	public boolean contains(ASTNode node) {
-		for (int i=0; i < $nodes.length; i++) {
-			if ($nodes[i].equals(node))
-				return true;
-		}
+	public boolean contains(ANode node) {
 		return false;
 	}
 	
-	public int indexOf(ASTNode node) {
-		// for compatibility with kiev-0.4b
-		int sz = $nodes.length;
-		for (int i=0; i < sz; i++) {
-			if ($nodes[i] == node)
-				return i;
-		}
+	public int indexOf(ANode node) {
 		return -1;
 	}
 	
-	public N[] getArray() {
-		return $nodes;
-	}
+	public N[] getArray() { return null; }
 
-	public N[] delToArray() {
-		// for compatibility with kiev-0.4b
-		int sz = $nodes.length;
-		N[] arr = $nodes;
-		$nodes = new N[0];
-		for (int i=0; i < sz; i++) {
-			N node = arr[i];
-			node.callbackDetached();
-		}
-		return arr;
-	}
+	public N[] delToArray() { return null; }
 
-	public Type[] toTypeArray() alias operator(210,fy,$cast) {
-		int sz = $nodes.length;
-		Type[] arr = new Type[sz];
-		for (int i=0; i < sz; i++)
-			arr[i] = $nodes[i].getType();
-		return arr;
-	}
+	public Type[] toTypeArray() alias operator(210,fy,$cast) { return null; }
 
-	public JType[] toJTypeArray() alias operator(210,fy,$cast) {
-		int sz = $nodes.length;
-		JType[] arr = new JType[sz];
-		for (int i=0; i < sz; i++)
-			arr[i] = $nodes[i].getType().getJType();
-		return arr;
-	}
+	public JType[] toJTypeArray() alias operator(210,fy,$cast) { return null; }
 
 	public Enumeration<N> elements() {
 		return new Enumeration<N>() {

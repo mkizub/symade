@@ -364,7 +364,7 @@ public static view RBlock of Block extends RENode {
 		ENode self = (ENode)stats.node;
 		int sz = stats.length;
 		for (int i=0; i < sz; i++) {
-			ASTNode st = stats[i];
+			ASTNode st = (ASTNode)stats[i];
 			try {
 				if( (i == sz-1) && self.isAutoReturnable() && st instanceof ENode)
 					st.setAutoReturnable(true);
@@ -383,11 +383,11 @@ public static view RBlock of Block extends RENode {
 				else if (st instanceof DNode) {
 					st.resolveDecl();
 				}
-				st = stats[i];
+				st = (ASTNode)stats[i];
 				if( st instanceof ENode && st.isAbrupted() && !self.isBreaked() ) self.setAbrupted(true);
 				if( st instanceof ENode && st.isMethodAbrupted() && !self.isBreaked() ) self.setMethodAbrupted(true);
 			} catch(Exception e ) {
-				Kiev.reportError(stats[i],e);
+				Kiev.reportError((ASTNode)stats[i],e);
 			}
 		}
 	}

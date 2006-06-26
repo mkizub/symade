@@ -163,7 +163,7 @@ public abstract class kiev040 implements kiev040Constants {
 	private TypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, FileUnit fu) {
 		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
 		TypeDecl tdecl = Env.newMetaType(name, pkg, true);
-		tdecl.setResolved(true);
+		tdecl.setTypeDeclLoaded(true);
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attachTo(tdecl);
 		foreach (Meta m; modifiers.annotations)
@@ -203,7 +203,7 @@ public abstract class kiev040 implements kiev040Constants {
 			clazz.pos  = name.pos;
 		else
 			clazz.pos  = parent.pos;
-		clazz.setResolved(true);
+		clazz.setTypeDeclLoaded(true);
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attachTo(clazz);
 		if (modifiers.acc != null)

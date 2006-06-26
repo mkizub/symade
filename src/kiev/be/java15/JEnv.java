@@ -37,7 +37,7 @@ public final class JEnv {
 		// Load if not loaded or not resolved
 		if( cl == null )
 			cl = loadClazz(name);
-		else if( !cl.isResolved() && !cl.isAnonymouse() )
+		else if( !cl.isTypeDeclLoaded() && !cl.isAnonymouse() )
 			cl = loadClazz(name);
 		if( cl == null )
 			Env.classHashOfFails.put(qname);
@@ -109,7 +109,7 @@ public final class JEnv {
 		kiev.bytecode.Clazz clazz = stdClassLoader.loadClazz(name.bytecode_name.toString());
 		if( clazz != null ) {
 			Struct cl = Env.resolveStruct(name.name.toString().intern());
-			if( cl == null || !cl.isResolved() || cl.package_clazz==null ) {
+			if( cl == null || !cl.isTypeDeclLoaded() || cl.package_clazz==null ) {
 				// Ensure the parent package/outer class is loaded
 				Struct pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 				if( pkg == null ) {
@@ -117,7 +117,7 @@ public final class JEnv {
 					if( pkg == null )
 						pkg = Env.newPackage(name.package_name().toString().intern());
 				}
-				if( !pkg.isResolved() ) {
+				if( !pkg.isTypeDeclLoaded() ) {
 					pkg = loadStruct(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
 					//pkg = loadClazz(pkg.name);
 				}

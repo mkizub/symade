@@ -28,10 +28,6 @@ public abstract class ANode {
 	private AttachInfo		p_info;
 	private AttachInfo[]	ext_data;
 	private AttachInfo[]	tmp_data;
-	public int				version;
-	public boolean			locked;
-	private This			prev_version_node;
-	private This			next_version_node;
 
 	public final boolean    isAttached()    { return p_info != null; }
 	public final AttachInfo getAttachInfo() { return p_info; }
@@ -261,18 +257,18 @@ public abstract class ANode {
 				if (val == null)
 					continue;
 				if (attr.is_space) {
-					ASTNode[] vals = (ASTNode[])val;
+					ANode[] vals = (ANode[])val;
 					for (int i=0; i < vals.length; i++) {
 						try {
 							vals[i].walkTree(walker);
 						} catch (ReWalkNodeException e) {
 							i--;
 							val = attr.get(this);
-							vals = (ASTNode[])val;
+							vals = (ANode[])val;
 						}
 					}
 				}
-				else if (val instanceof ASTNode) {
+				else if (val instanceof ANode) {
 				re_walk_node:;
 					try {
 						val.walkTree(walker);
@@ -294,6 +290,11 @@ public abstract class ANode {
 		}
 		walker.post_exec(this);
 	}
+
+	public final This ncopy() {
+		return (This)this.copy();
+	}
+	public abstract Object copy();
 
 	public Object copyTo(Object to$node) {
 		ANode node = (ANode)to$node;
@@ -318,20 +319,6 @@ public abstract class ANode {
 		return node;
 	}
 	
-	public void setFrom(Object from$node) {
-		ANode node = (ANode)from$node;
-		this.p_info = node.p_info;
-		this.ext_data = node.ext_data;
-		this.version = node.version;
-		this.locked = node.locked;
-		this.prev_version_node = node.prev_version_node;
-		this.next_version_node = node.next_version_node;
-		if (this.tmp_data != null) {
-			foreach (AttachInfo ai; this.tmp_data)
-				assert (!ai.p_slot.is_attr);
-		}
-	}
-	
 	public final AttrPtr getAttrPtr(String name) {
 		foreach (AttrSlot attr; this.values(); attr.name == name)
 			return new AttrPtr(this, attr);
@@ -344,35 +331,17 @@ public abstract class ANode {
 		throw new RuntimeException("No @att/@ref space '"+name+"' in "+getClass());
 	}
 
-	public final ANode open() {
-		if (!locked)
-			return this;
-		ANode node = (ANode)this.clone();
-		Transaction tr = Transaction.current();
-		node.version = tr.version;
-		node.prev_version_node = this.prev_version_node;
-		node.next_version_node = this;
-		this.prev_version_node = node;
-		this.locked = false;
-		tr.add(this);
-		return this;
-	}
-
-	public final void rollback(boolean save_next) {
-		//assert (!locked);
-		if (this.prev_version_node == null)
-			return;
-		assert (this.prev_version_node.locked);
-		if (save_next) {
-			ANode node = (ANode)this.clone();
-			node.prev_version_node = this;
-			this.setFrom(this.prev_version_node);
-			this.next_version_node = node;
-		} else {
-			this.setFrom(this.prev_version_node);
-			this.next_version_node = null;
+	public void setFrom(Object from$node) {
+		ANode node = (ANode)from$node;
+		this.p_info = node.p_info;
+		this.ext_data = node.ext_data;
+		if (this.tmp_data != null) {
+			foreach (AttachInfo ai; this.tmp_data)
+				assert (!ai.p_slot.is_attr);
 		}
 	}
+	
+	public void open() {}
 }
 
 public class TreeWalker {
@@ -460,6 +429,10 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public int				pos;
 	public int				compileflags;
+	public int				version;
+	public boolean			locked;
+	private This			prev_version_node;
+	private This			next_version_node;
 	@ref @abstract
 	public:ro ANode			parent;
 	
@@ -544,9 +517,43 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		ASTNode node = (ASTNode)from$node;
 		this.pos = node.pos;
 		this.compileflags = node.compileflags;
+		this.version = node.version;
+		this.locked = node.locked;
+		this.prev_version_node = node.prev_version_node;
+		this.next_version_node = node.next_version_node;
 		super.setFrom(node);
 	}
-	
+
+	public final void open() {
+		if (!locked)
+			return;
+		ASTNode node = (ASTNode)this.clone();
+		Transaction tr = Transaction.current();
+		node.version = tr.version;
+		node.prev_version_node = this.prev_version_node;
+		node.next_version_node = this;
+		this.prev_version_node = node;
+		this.locked = false;
+		tr.add(this);
+		return;
+	}
+
+	public final void rollback(boolean save_next) {
+		//assert (!locked);
+		if (this.prev_version_node == null)
+			return;
+		assert (this.prev_version_node.locked);
+		if (save_next) {
+			ASTNode node = (ASTNode)this.clone();
+			node.prev_version_node = this;
+			this.setFrom(this.prev_version_node);
+			this.next_version_node = node;
+		} else {
+			this.setFrom(this.prev_version_node);
+			this.next_version_node = null;
+		}
+	}
+
 	public final int getPosLine() { return pos >>> 11; }
 	
 	// build data flow for this node
@@ -566,7 +573,8 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public final ASTNode replaceWithNode(ASTNode node) {
 		assert(isAttached());
-		ANode parent = parent().open();
+		ANode parent = parent();
+		parent.open();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot) {
 			assert(node != null);
@@ -600,7 +608,8 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public final ASTNode replaceWith(()->ASTNode fnode) {
 		assert(isAttached());
-		ASTNode parent = parent().open();
+		ASTNode parent = parent();
+		parent.open();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot) {
 			int idx = pslot.indexOf(parent, this);
@@ -671,7 +680,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	@setter public final void setResolved(boolean on) {
 		if (this.is_resolved != on) {
-			this.open();
 			this.is_resolved = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -718,7 +726,8 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	{
 		if (!isAttached())
 			return this;
-		ANode parent = parent().open();
+		ANode parent = parent();
+		parent.open();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot)
 			pslot.detach(parent, this);
@@ -734,11 +743,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	
 	public abstract ASTNode getDummyNode();
 	
-	public final This ncopy() {
-		return (This)this.copy();
-	}
-	public abstract Object copy();
-
 	public boolean hasName(String name) {
 		return false;
 	}
