@@ -49,18 +49,6 @@ public class Var extends LvalDNode {
 		}
 	}	
 
-	// is a local var in a rule 
-	public final boolean isLocalRuleVar() {
-		return this.is_var_local_rule_var;
-	}
-	public final void setLocalRuleVar(boolean on) {
-		if (this.is_var_local_rule_var != on) {
-			assert(!locked);
-			this.is_var_local_rule_var = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-
 	@getter public final Type get$type() { return this.vtype.getType(); }
 		
 	public static Var[]	emptyArray = new Var[0];
@@ -147,6 +135,23 @@ public class Var extends LvalDNode {
 	}
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
 		return new VarDFFunc(dfi);
+	}
+}
+
+@node(name="Var")
+public class LocalRuleVar extends Var {
+	public static LocalRuleVar[]	emptyArray = new LocalRuleVar[0];
+	private static final LocalRuleVar dummyNode = new LocalRuleVar();
+
+	public LocalRuleVar() {}
+	public LocalRuleVar(Symbol id, TypeRef vtype, int flags)
+		require vtype != null;
+	{
+		super(id,vtype,flags);
+	}
+
+	public ASTNode getDummyNode() {
+		return LocalRuleVar.dummyNode;
 	}
 }
 

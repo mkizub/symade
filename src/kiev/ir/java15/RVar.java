@@ -22,10 +22,6 @@ public static view RVar of Var extends RLvalDNode {
 
 	@getter public final Type get$type();
 	
-	// is a local var in a rule 
-	public final boolean isLocalRuleVar();
-	public final void setLocalRuleVar(boolean on);
-
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		Type tp = this.type;

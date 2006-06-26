@@ -30,7 +30,7 @@ public class RuleMethod extends Method {
 	@virtual typedef This  = RuleMethod;
 	@virtual typedef RView = RRuleMethod;
 
-	@att public Var[]				localvars;
+	@att public LocalRuleVar[]		localvars;
 	     public int					base = 1;
 	     public int					max_depth;
 	     public int					state_depth;
@@ -125,8 +125,6 @@ public class RuleMethod extends Method {
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
-		foreach (Var lv; localvars)
-			lv.setLocalRuleVar(true);
 		trace(Kiev.debugMultiMethod,"Rule "+this+" has erased type "+this.etype);
 		foreach(ASTAlias al; aliases) al.attach(this);
 
@@ -272,7 +270,7 @@ public abstract class ASTRuleNode extends ENode {
 	}
 
 	public String createTextVarAccess(LVarExpr v) {
-		if( !v.getVar().isLocalRuleVar() ) return v.ident.toString();
+		if !(v.getVar() instanceof LocalRuleVar) return v.ident.toString();
 		return "$env."+v;
 	}
 }

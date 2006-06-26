@@ -50,8 +50,8 @@ public abstract class AbstractFormatter implements Formatter {
 	public Drawable getDrawable(ASTNode node, FormatInfoHint hint) {
 		if (node == null) {
 			DrawLayout lout = new DrawLayout();
-			lout.is_hidden = true;
 			SyntaxSpace ssp = new SyntaxSpace(lout);
+			ssp.is_hidden = true;
 			return new DrawSpace(null, ssp);
 		}
 		Drawable dr = (Drawable)ATTR.get(node);

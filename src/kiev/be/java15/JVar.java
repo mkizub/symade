@@ -32,8 +32,6 @@ public final view JVar of Var extends JLvalDNode {
 		return this.get$type().getJType();
 	}
 	
-	public final boolean isLocalRuleVar();
-
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Var declaration");
 		code.setLinePos(this);

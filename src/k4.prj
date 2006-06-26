@@ -456,6 +456,7 @@ CLASS kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.Label kiev/vlang/Label kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java
 CLASS kiev.vlang.ListAttachInfo kiev/vlang/ListAttachInfo kiev\vlang\AST.java
+CLASS kiev.vlang.LocalRuleVar kiev/vlang/LocalRuleVar kiev\vlang\Var.java
 CLASS kiev.vlang.LongADD kiev/vlang/LongADD kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.LongAssign kiev/vlang/LongAssign kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.LongAssignADD kiev/vlang/LongAssignADD kiev\vlang\CoreMethod.java

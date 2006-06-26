@@ -171,7 +171,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 	public Var getVar();
 
 	public boolean preGenerate() {
-		if (getVar().isLocalRuleVar()) {
+		if (getVar() instanceof LocalRuleVar) {
 			RuleMethod rm = (RuleMethod)ctx_method;
 			assert(rm.params[0].type ≡ Type.tpRule);
 			Var pEnv = null;

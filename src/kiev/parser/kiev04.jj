@@ -366,6 +366,30 @@ public abstract class kiev040 {
 		return v;
 	}
 	
+	private LocalRuleVar mkRuleVar(Symbol id, ASTModifiers modifiers, TypeRef tp, boolean first) {
+		if (!first)
+			tp = tp.ncopy();
+		LocalRuleVar v = new LocalRuleVar(id, tp, 0);
+		if (first) {
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attachTo(v);
+		} else {
+			foreach (MetaSpecial sa; modifiers.specials)
+				(sa.ncopy()).attachTo(v);
+		}
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet();
+			if (first) {
+				foreach (Meta m; modifiers.annotations)
+					v.meta.set(m.ncopy());
+			} else {
+				foreach (Meta m; modifiers.annotations)
+					v.meta.set(m.ncopy());
+			}
+		}
+		return v;
+	}
+	
 	private FormPar mkFormPar(Symbol id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
 		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, 0);
 		foreach (MetaSpecial sa; modifiers.specials)
@@ -1649,11 +1673,23 @@ void LocalVarDecls(ASTModifiers modifiers, RuleMethod meth) :
 { TypeRef type; }
 {
 	type = Type()
-	meth.localvars += VarDecl(modifiers, type, true)
+	meth.localvars += RuleVarDecl(modifiers, type, true)
 	(	","
-		meth.localvars += VarDecl(modifiers, type, false)
+		meth.localvars += RuleVarDecl(modifiers, type, false)
 	)*
 	";"
+}
+
+LocalRuleVar RuleVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
+{ Token t; Symbol id; LocalRuleVar lv; }
+{
+	id = Name()
+	{ lv = mkRuleVar(id, modifiers, type, first); }
+	[
+		"="
+		lv.init = VariableInitializer()
+	]
+	{ return lv; }
 }
 
 Var VarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
