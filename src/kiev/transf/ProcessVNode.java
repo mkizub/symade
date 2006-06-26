@@ -788,26 +788,26 @@ class JavaVNodeBackend extends BackendProcessor implements Constants {
 
 	boolean rewrite(CallExpr:ASTNode ce) {
 		if (treeDelToArray == null) {
-			treeDelToArray = tpNArr.getStruct().resolveMethod("delToArray",new ArrayType(tpNode));
-			attrDelToArray = tpSpaceAttrSlot.getStruct().resolveMethod("delToArray",new ArrayType(tpNode),tpANode);
+			treeDelToArray = tpNArr.getStruct().resolveMethod("delToArray",new ArrayType(tpANode));
+			attrDelToArray = tpSpaceAttrSlot.getStruct().resolveMethod("delToArray",new ArrayType(tpANode),tpANode);
 			treeDelAll = tpNArr.getStruct().resolveMethod("delAll",Type.tpVoid);
 			attrDelAll = tpSpaceAttrSlot.getStruct().resolveMethod("delAll",Type.tpVoid,tpANode);
-			treeAddAll = tpNArr.getStruct().resolveMethod("addAll",Type.tpVoid,new ArrayType(tpNode));
-			attrAddAll = tpSpaceAttrSlot.getStruct().resolveMethod("addAll",Type.tpVoid,tpANode,new ArrayType(tpNode));
-			treeCopyFrom = tpNArr.getStruct().resolveMethod("copyFrom",Type.tpVoid,new ArrayType(tpNode));
-			attrCopyFrom = tpSpaceAttrSlot.getStruct().resolveMethod("copyFrom",Type.tpVoid,tpANode,new ArrayType(tpNode));
-			treeIndexOf = tpNArr.getStruct().resolveMethod("indexOf",Type.tpVoid,tpNode);
-			attrIndexOf = tpSpaceAttrSlot.getStruct().resolveMethod("indexOf",Type.tpVoid,tpANode,tpNode);
-			treeSet = tpNArr.getStruct().resolveMethod("set",tpNode,Type.tpInt,tpNode);
-			attrSet = tpSpaceAttrSlot.getStruct().resolveMethod("set",tpNode,tpANode,Type.tpInt,tpNode);
-			treeAdd = tpNArr.getStruct().resolveMethod("add",tpNode,tpNode);
-			attrAdd = tpSpaceAttrSlot.getStruct().resolveMethod("add",tpANode,tpNode,tpNode);
+			treeAddAll = tpNArr.getStruct().resolveMethod("addAll",Type.tpVoid,new ArrayType(tpANode));
+			attrAddAll = tpSpaceAttrSlot.getStruct().resolveMethod("addAll",Type.tpVoid,tpANode,new ArrayType(tpANode));
+			treeCopyFrom = tpNArr.getStruct().resolveMethod("copyFrom",Type.tpVoid,new ArrayType(tpANode));
+			attrCopyFrom = tpSpaceAttrSlot.getStruct().resolveMethod("copyFrom",Type.tpVoid,tpANode,new ArrayType(tpANode));
+			treeIndexOf = tpNArr.getStruct().resolveMethod("indexOf",Type.tpVoid,tpANode);
+			attrIndexOf = tpSpaceAttrSlot.getStruct().resolveMethod("indexOf",Type.tpVoid,tpANode,tpANode);
+			treeSet = tpNArr.getStruct().resolveMethod("set",tpANode,Type.tpInt,tpANode);
+			attrSet = tpSpaceAttrSlot.getStruct().resolveMethod("set",tpANode,tpANode,Type.tpInt,tpANode);
+			treeAdd = tpNArr.getStruct().resolveMethod("add",tpANode,tpANode);
+			attrAdd = tpSpaceAttrSlot.getStruct().resolveMethod("add",tpANode,tpANode,tpANode);
 			treeDel = tpNArr.getStruct().resolveMethod("del",Type.tpVoid,Type.tpInt);
 			attrDel = tpSpaceAttrSlot.getStruct().resolveMethod("del",Type.tpVoid,tpANode,Type.tpInt);
-			treeDetach = tpNArr.getStruct().resolveMethod("detach",Type.tpVoid,tpNode);
-			attrDetach = tpSpaceAttrSlot.getStruct().resolveMethod("detach",Type.tpVoid,tpANode,tpNode);
-			treeInsert = tpNArr.getStruct().resolveMethod("insert",Type.tpVoid,Type.tpInt,tpNode);
-			attrInsert = tpSpaceAttrSlot.getStruct().resolveMethod("insert",Type.tpVoid,tpANode,Type.tpInt,tpNode);
+			treeDetach = tpNArr.getStruct().resolveMethod("detach",Type.tpVoid,tpANode);
+			attrDetach = tpSpaceAttrSlot.getStruct().resolveMethod("detach",Type.tpVoid,tpANode,tpANode);
+			treeInsert = tpNArr.getStruct().resolveMethod("insert",Type.tpVoid,Type.tpInt,tpANode);
+			attrInsert = tpSpaceAttrSlot.getStruct().resolveMethod("insert",Type.tpVoid,tpANode,Type.tpInt,tpANode);
 		}
 
 		Method m_attr;
