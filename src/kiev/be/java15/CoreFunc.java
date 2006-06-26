@@ -235,7 +235,7 @@ final class AssignIntOpFunc extends BEndFunc {
 		JENode value = args[1];
 		if( lval instanceof JLVarExpr && value instanceof JConstExpr) {
 			JLVarExpr va = (JLVarExpr)lval;
-			if( !va.var.isNeedProxy() || va.isUseNoProxy() ) {
+			if( !va.var.isNeedProxy() ) {
 				int val = ((Number)((JConstExpr)value).getConstValue()).intValue();
 				if (instr == Instr.op_isub) val = -val;
 				if (val >= Byte.MIN_VALUE && val <= Byte.MAX_VALUE) {
@@ -363,7 +363,7 @@ final class IntPreIncrFunc extends PreIncrFunc {
 		JLvalueExpr lval = (JLvalueExpr)this.getJArgs(expr)[0];
 		if( lval instanceof JLVarExpr ) {
 			JLVarExpr va = (JLVarExpr)lval;
-			if( !va.var.isNeedProxy() || va.isUseNoProxy() ) {
+			if( !va.var.isNeedProxy() ) {
 				genVarIncr(code, reqType, va, val);
 				return;
 			}
@@ -386,7 +386,7 @@ final class IntPostIncrFunc extends PostIncrFunc {
 		JLvalueExpr lval = (JLvalueExpr)this.getJArgs(expr)[0];
 		if( lval instanceof JLVarExpr ) {
 			JLVarExpr va = (JLVarExpr)lval;
-			if( !va.var.isNeedProxy() || va.isUseNoProxy() ) {
+			if( !va.var.isNeedProxy() ) {
 				genVarIncr(code, reqType, va, val);
 				return;
 			}

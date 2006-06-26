@@ -70,7 +70,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	public final void setPizzaCase(boolean on) {
 		if (this.is_struct_pizza_case != on) {
-			this.open();
+			assert(!locked);
 			this.is_struct_pizza_case = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -81,18 +81,18 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	public final void setHasCases(boolean on) {
 		if (this.is_struct_has_pizza_cases != on) {
-			this.open();
+			assert(!locked);
 			this.is_struct_has_pizza_cases = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// indicates that structure members were generated
 	public final boolean isMembersGenerated() {
-		return this.is_struct_members_generated;
+		return this.is_struct_fe_passed || this.is_struct_members_generated;
 	}
 	public final void setMembersGenerated(boolean on) {
+		assert (!this.is_struct_fe_passed);
 		if (this.is_struct_members_generated != on) {
-			this.open();
 			this.is_struct_members_generated = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -103,35 +103,11 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	public final void setMembersPreGenerated(boolean on) {
 		if (this.is_struct_pre_generated != on) {
-			this.open();
 			this.is_struct_pre_generated = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	
-	// indicates that statements in code were generated
-	public final boolean isStatementsGenerated() {
-		return this.is_struct_statements_generated;
-	}
-	public final void setStatementsGenerated(boolean on) {
-		if (this.is_struct_statements_generated != on) {
-			this.open();
-			this.is_struct_statements_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// indicates that the structrue was generared (from template)
-	public final boolean isGenerated() {
-		return this.is_struct_generated;
-	}
-	public final void setGenerated(boolean on) {
-		if (this.is_struct_generated != on) {
-			this.open();
-			this.is_struct_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-
 	/** Add information about new sub structure, this class (package) containes */
 	public Struct addSubStruct(Struct sub) {
 		// Check we already have this sub-class
@@ -365,6 +341,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 
 	// verify resolved tree
 	public boolean preVerify() {
+		setFrontEndPassed();
 		foreach (TypeRef i; super_types) {
 			if (i.getStruct().isFinal())
 				Kiev.reportError(this, "Struct "+this+" extends final struct "+i);

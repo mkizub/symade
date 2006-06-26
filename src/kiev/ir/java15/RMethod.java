@@ -53,9 +53,6 @@ public view RMethod of Method extends RDNode {
 	// a method generated as invariant	
 	public final boolean isInvariantMethod();
 	public final void setInvariantMethod(boolean on);
-	// a local method (closure code or inner method)	
-	public final boolean isLocalMethod();
-	public final void setLocalMethod(boolean on);
 	// a dispatcher (for multimethods)	
 	public final boolean isDispatcherMethod();
 	public final void setDispatcherMethod(boolean on);

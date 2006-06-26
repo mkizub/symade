@@ -51,12 +51,6 @@ public final view RStruct of Struct extends RTypeDecl {
 	// indicates that structure members were pre-generated
 	public final boolean isMembersPreGenerated();
 	public final void setMembersPreGenerated(boolean on);
-	// indicates that statements in code were generated
-	public final boolean isStatementsGenerated();
-	public final void setStatementsGenerated(boolean on);
-	// indicates that the structrue was generared (from template)
-	public final boolean isGenerated();
-	public final void setGenerated(boolean on);
 	// indicates that type of the structure was attached
 	public final boolean isTypeResolved();
 	public final void setTypeResolved(boolean on);
@@ -1116,8 +1110,21 @@ public final view RStruct of Struct extends RTypeDecl {
 			if (n == instance_init)
 				continue;
 			if( isInterface() && !n.isAbstract() ) {
-				n.setStatic(true);
-				n.setFinal(true);
+				if (n instanceof Field && !n.isStatic()) {
+					Kiev.reportError(n,"Non-static field "+n+" in interface "+this);
+					n.open();
+					n.setStatic(true);
+				}
+				if (n instanceof Field && !n.isFinal()) {
+					Kiev.reportError(n,"Non-final field "+n+" in interface "+this);
+					n.open();
+					n.setFinal(true);
+				}
+				if (n instanceof Initializer && !n.isStatic()) {
+					Kiev.reportError(n,"Non-static initializer in interface "+this);
+					n.open();
+					n.setStatic(true);
+				}
 			}
 			if( n instanceof Field ) {
 				Field f = (Field)n;
@@ -1347,7 +1354,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	}
 	
 	public void resolveDecl() {
-		if( isGenerated() ) return;
+		if( isResolved() ) return;
 		long curr_time;
 		if( !isPackage() ) {
 			foreach (Struct ss; members) {
@@ -1428,7 +1435,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}
-		setGenerated(true);
+		setResolved(true);
 		//diff_time = System.currentTimeMillis() - curr_time;
 		//if( Kiev.verbose ) Kiev.reportInfo("Resolved class "+this,diff_time);
 	}

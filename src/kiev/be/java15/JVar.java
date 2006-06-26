@@ -33,9 +33,6 @@ public final view JVar of Var extends JLvalDNode {
 	}
 	
 	public final boolean isLocalRuleVar();
-	public final boolean isClosureProxy();
-	public final boolean isVarThis();
-	public final boolean isVarSuper();
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Var declaration");

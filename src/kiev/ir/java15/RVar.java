@@ -25,15 +25,6 @@ public static view RVar of Var extends RLvalDNode {
 	// is a local var in a rule 
 	public final boolean isLocalRuleVar();
 	public final void setLocalRuleVar(boolean on);
-	// closure proxy
-	public final boolean isClosureProxy();
-	public final void setClosureProxy(boolean on);
-	// "this" var
-	public final boolean isVarThis();
-	public final void setVarThis(boolean on);
-	// "super" var
-	public final boolean isVarSuper();
-	public final void setVarSuper(boolean on);
 
 	public void resolveDecl() {
 		if( isResolved() ) return;

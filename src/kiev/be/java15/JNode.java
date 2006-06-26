@@ -39,7 +39,6 @@ public view JNode of ASTNode implements JConstants {
 	public String toString();
 	
 	public:ro	int			pos;
-//	public:ro	int			compileflags;
 	
     public final int getPosLine();
 	public final boolean isAttached();
@@ -111,7 +110,6 @@ public view JENode of ENode extends JNode {
 	// Expr specific
 	//
 
-	public final boolean isUseNoProxy();
 	public final boolean isAsField();
 	public final boolean isGenVoidExpr();
 	public final boolean isForWrapper();

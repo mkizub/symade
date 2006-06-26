@@ -142,6 +142,11 @@ public class Editor extends UIView implements KeyListener {
 			case KeyEvent.VK_C:
 				evt.consume();
 				kiev.Compiler.runBackEnd(null);
+				foreach (FileUnit fu; kiev.Kiev.files) {
+					walkTree(new TreeWalker() {
+						public boolean pre_exec(ANode n) { if (n instanceof ASTNode) { n.compileflags &= 0xFFFF0000; } return true; }
+					});
+				}
 				formatAndPaint(true);
 				break;
 			}

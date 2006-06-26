@@ -21,7 +21,6 @@ public view RNode of ASTNode implements Constants {
 	public String toString();
 	
 	public int			pos;
-	public int			compileflags;
 	
 	@getter public final ANode get$ctx_root();
 	@getter public final FileUnit get$ctx_file_unit();
@@ -136,9 +135,6 @@ public static view RENode of ENode extends RNode {
 	// Expr specific
 	//
 
-	// use no proxy	
-	public final boolean isUseNoProxy();
-	public final void setUseNoProxy(boolean on);
 	// use as field (disable setter/getter calls for virtual fields)
 	public final boolean isAsField();
 	public final void setAsField(boolean on);

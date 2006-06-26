@@ -34,8 +34,6 @@ public final view JStruct of Struct extends JTypeDecl {
 	public final boolean isHasCases();
 	public final boolean isMembersGenerated();
 	public final boolean isMembersPreGenerated();
-	public final boolean isStatementsGenerated();
-	public final boolean isGenerated();
 
 	public final String qname();
 
@@ -187,8 +185,10 @@ public final view JStruct of Struct extends JTypeDecl {
 			constPool.addAsciiCP(f.id.uname);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
-			if( f.isAccessedFromInner())
+			if( f.isAccessedFromInner()) {
+				f.openForEdit();
 				((Field)f).setPkgPrivate();
+			}
 			if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
 			if (f.isStatic() && f.init != null && f.init.isConstantExpr()) {
 				Object co = f.init.getConstValue();
@@ -208,8 +208,10 @@ public final view JStruct of Struct extends JTypeDecl {
 			try {
 				m.generate(constPool);
 
-				if( m.isAccessedFromInner())
+				if( m.isAccessedFromInner()) {
+					m.openForEdit();
 					((Method)m).setPkgPrivate();
+				}
 
 				JWBCCondition[] conditions = m.conditions;
 				for(int j=0; j < conditions.length; j++) {

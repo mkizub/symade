@@ -439,62 +439,61 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	@getter public final ANode get$parent() { return parent(); }
 
 	// Structures	
-	public @packed:1,compileflags,16 boolean is_struct_local;
-	public @packed:1,compileflags,17 boolean is_struct_anomymouse;
-	public @packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
-	public @packed:1,compileflags,19 boolean is_struct_members_generated;
-	public @packed:1,compileflags,20 boolean is_struct_pre_generated;
-	public @packed:1,compileflags,21 boolean is_struct_statements_generated;
-	public @packed:1,compileflags,22 boolean is_struct_generated;
-	public @packed:1,compileflags,23 boolean is_struct_type_resolved;
-	public @packed:1,compileflags,24 boolean is_struct_args_resolved;
-	public @packed:1,compileflags,25 boolean is_struct_bytecode;	// struct was loaded from bytecode
-	public @packed:1,compileflags,26 boolean is_struct_singleton;
-	public @packed:1,compileflags,27 boolean is_struct_pizza_case;
+	public @packed:1,compileflags,8  boolean is_struct_type_resolved; // KievFE_Pass2
+	public @packed:1,compileflags,9  boolean is_struct_args_resolved; // KievFE_Pass2
+	public @packed:1,compileflags,10 boolean is_struct_members_generated; // KievFE_Pass2
+	public @packed:1,compileflags,11 boolean is_struct_pre_generated; // KievME_PreGenartion
+
+	public @packed:1,compileflags,16 boolean is_struct_fe_passed;
+	public @packed:1,compileflags,17 boolean is_struct_local;
+	public @packed:1,compileflags,18 boolean is_struct_anomymouse;
+	public @packed:1,compileflags,19 boolean is_struct_has_pizza_cases;
+	public @packed:1,compileflags,20 boolean is_struct_bytecode;	// struct was loaded from bytecode
+	public @packed:1,compileflags,21 boolean is_struct_singleton;
+	public @packed:1,compileflags,22 boolean is_struct_pizza_case;
 	
-	// Expression flags
-	public @packed:1,compileflags,16 boolean is_expr_use_no_proxy;
-	public @packed:1,compileflags,17 boolean is_expr_as_field;
-	public @packed:1,compileflags,18 boolean is_expr_gen_void;
-	public @packed:1,compileflags,19 boolean is_expr_for_wrapper;
-	public @packed:1,compileflags,20 boolean is_expr_primary;
-	public @packed:1,compileflags,21 boolean is_expr_super;
-	public @packed:1,compileflags,22 boolean is_expr_cast_call;
+	// Expression/statement flags
+	public @packed:1,compileflags,8  boolean is_expr_gen_void;
+	public @packed:1,compileflags,9  boolean is_expr_for_wrapper;
+	public @packed:1,compileflags,10 boolean is_expr_cast_call;
+
+	public @packed:1,compileflags,16 boolean is_expr_as_field;
+	public @packed:1,compileflags,17 boolean is_expr_primary;
+	public @packed:1,compileflags,18 boolean is_expr_super;
+
 	// Statement flags
-	public @packed:1,compileflags,23 boolean is_stat_abrupted;
-	public @packed:1,compileflags,24 boolean is_stat_breaked;
-	public @packed:1,compileflags,25 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
-	public @packed:1,compileflags,26 boolean is_stat_auto_returnable;
-	public @packed:1,compileflags,27 boolean is_stat_break_target;
+	public @packed:1,compileflags,11 boolean is_stat_abrupted;
+	public @packed:1,compileflags,12 boolean is_stat_breaked;
+	public @packed:1,compileflags,13 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
+	public @packed:1,compileflags,14 boolean is_stat_auto_returnable;
+
+	public @packed:1,compileflags,19 boolean is_stat_break_target;
 	
 	// Method flags
-	public @packed:1,compileflags,17 boolean is_mth_virtual_static;
-	public @packed:1,compileflags,18 boolean is_mth_operator;
-	public @packed:1,compileflags,19 boolean is_mth_need_fields_init;
-	public @packed:1,compileflags,20 boolean is_mth_local;
-	public @packed:1,compileflags,21 boolean is_mth_dispatcher;
-	public @packed:1,compileflags,22 boolean is_mth_inlined_by_dispatcher;
-	public @packed:1,compileflags,23 boolean is_mth_invariant;
+	public @packed:1,compileflags,8  boolean is_mth_need_fields_init;
+	public @packed:1,compileflags,9  boolean is_mth_dispatcher;
+	public @packed:1,compileflags,10 boolean is_mth_inlined_by_dispatcher;
+
+	public @packed:1,compileflags,16 boolean is_mth_virtual_static;
+	public @packed:1,compileflags,17 boolean is_mth_operator;
+	public @packed:1,compileflags,18 boolean is_mth_invariant;
 	
 	// Var/field
-	public @packed:1,compileflags,16 boolean is_init_wrapper;
-	public @packed:1,compileflags,17 boolean is_need_proxy;
+	public @packed:1,compileflags,8  boolean is_need_proxy;
+	public @packed:1,compileflags,9  boolean is_init_wrapper;
+	public @packed:1,compileflags,10 boolean is_fld_added_to_init;
 	// Var specific
-	public @packed:1,compileflags,18 boolean is_var_local_rule_var;
-	public @packed:1,compileflags,19 boolean is_var_closure_proxy;
-	public @packed:1,compileflags,20 boolean is_var_this;
-	public @packed:1,compileflags,21 boolean is_var_super;
+	public @packed:1,compileflags,16 boolean is_var_local_rule_var;
 
 	// Field specific
-	public @packed:1,compileflags,18 boolean is_fld_packer;
-	public @packed:1,compileflags,19 boolean is_fld_packed;
-	public @packed:1,compileflags,20 boolean is_fld_added_to_init;
+	public @packed:1,compileflags,17 boolean is_fld_packer;
+	public @packed:1,compileflags,18 boolean is_fld_packed;
 
 	// General flags
-	public @packed:1,compileflags,28 boolean is_accessed_from_inner;
-	public @packed:1,compileflags,29 boolean is_resolved;
-	public @packed:1,compileflags,30 boolean is_hidden;
-	public @packed:1,compileflags,31 boolean is_bad;
+	public @packed:1,compileflags,4 boolean is_accessed_from_inner;
+	public @packed:1,compileflags,3 boolean is_resolved;
+	public @packed:1,compileflags,2 boolean is_hidden;
+	public @packed:1,compileflags,1 boolean is_bad;
 
 	public AttrSlot[] values() {
 		return ASTNode.$values;
@@ -659,7 +658,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public final void setBreakTarget(boolean on) {
 		if (this.is_stat_break_target != on) {
-			this.open();
+			assert(!locked);
 			this.is_stat_break_target = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}

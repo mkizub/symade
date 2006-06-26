@@ -41,7 +41,6 @@ public final view JMethod of Method extends JDNode {
 	public final boolean isNeedFieldInits();
 	public final boolean isInvariantMethod();
 	public final boolean isInlinedByDispatcherMethod();
-	public final boolean isLocalMethod();
 
 	@getter public JMethod get$child_jctx_method() { return this; }
 

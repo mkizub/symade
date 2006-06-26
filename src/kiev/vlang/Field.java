@@ -75,6 +75,7 @@ public final class Field extends LvalDNode implements Accessable {
 	}
 	public final void setPackerField(boolean on) {
 		if (this.is_fld_packer != on) {
+			assert(!locked);
 			this.is_fld_packer = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -85,6 +86,7 @@ public final class Field extends LvalDNode implements Accessable {
 	}
 	public final void setPackedField(boolean on) {
 		if (this.is_fld_packed != on) {
+			assert(!locked);
 			this.is_fld_packed = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}

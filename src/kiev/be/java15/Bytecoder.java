@@ -44,7 +44,6 @@ public class Bytecoder implements JConstants {
 
 		cl.setTypeDeclLoaded(true);
 		cl.setMembersGenerated(true);
-		cl.setStatementsGenerated(true);
 
 		trace(Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
 

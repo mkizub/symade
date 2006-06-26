@@ -356,13 +356,11 @@ public final class KievFE_Pass2 extends TransfProcessor {
 			else if (clazz.isPackage()) {
 				clazz.setAbstract(true);
 				clazz.setMembersGenerated(true);
-				clazz.setStatementsGenerated(true);
 				clazz.super_types.delAll();
 			}
 			else if (clazz.isSyntax()) {
 				clazz.setAbstract(true);
 				clazz.setMembersGenerated(true);
-				clazz.setStatementsGenerated(true);
 				foreach(TypeRef tr; clazz.super_types) {
 					Struct s = tr.getType().getStruct();
 					if (s != null) {
@@ -839,8 +837,10 @@ public final class KievFE_Lock extends TransfProcessor {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
 				if (n instanceof ASTNode) {
-					DataFlowInfo.ATTR.clear(n);
-					n.locked = true;
+					ASTNode astn = (ASTNode)n;
+					DataFlowInfo.ATTR.clear(astn);
+					astn.compileflags &= 0xFFFF0000;
+					astn.locked = true;
 				}
 				return true;
 			}

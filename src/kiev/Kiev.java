@@ -569,7 +569,6 @@ public final class Kiev {
 			processors.append(KievFE_MainResolve);
 			processors.append(KievFE_Verify);
 			processors.append(PackedFldME_Verify);
-			//processors.append(VNodeFE_Verify);
 			processors.append(KievFE_Lock);
 			feProcessors = processors.toArray();
 		}

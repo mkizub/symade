@@ -97,6 +97,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 	public final void setVirtualStatic(boolean on) {
 		if (this.is_mth_virtual_static != on) {
+			assert(!locked);
 			this.is_mth_virtual_static = on;
 			if (!isStatic()) this.setStatic(true);
 			this.callbackChildChanged(nodeattr$flags);
@@ -108,6 +109,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 	public final void setVarArgs(boolean on) {
 		if (this.is_mth_varargs != on) {
+			assert(!locked);
 			this.is_mth_varargs = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -122,6 +124,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 	public final void setOperatorMethod(boolean on) {
 		if (this.is_mth_operator != on) {
+			assert(!locked);
 			this.is_mth_operator = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -142,17 +145,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 	public final void setInvariantMethod(boolean on) {
 		if (this.is_mth_invariant != on) {
+			assert(!locked);
 			this.is_mth_invariant = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// a local method (closure code or inner method)	
-	public final boolean isLocalMethod() {
-		return this.is_mth_local;
-	}
-	public final void setLocalMethod(boolean on) {
-		if (this.is_mth_local != on) {
-			this.is_mth_local = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
@@ -162,6 +156,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 	public final void setDispatcherMethod(boolean on) {
 		if (this.is_mth_dispatcher != on) {
+			assert(!locked);
 			this.is_mth_dispatcher = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
@@ -687,12 +682,12 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			throw new CompilerException(this,"Method must be declared on class level only");
 		TypeDecl clazz = this.ctx_tdecl;
 		// TODO: check flags for methods
-		if( clazz.isPackage() ) setStatic(true);
-		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);
-		else if( clazz.isClazz() && clazz.isFinal() ) setFinal(true);
-		else if( clazz.isInterface() ) {
+		if( clazz.isPackage() && !isStatic() ) { this.open(); setStatic(true); }
+		if( isPrivate() && isFinal() ) { this.open(); setFinal(false); }
+		else if( clazz.isClazz() && clazz.isFinal() && !isFinal() ) { this.open(); setFinal(true); }
+		else if( clazz.isInterface() && !isPublic() ) {
 			setPublic();
-			if (body == null) setAbstract(true);
+			if (body == null && !isAbstract()) setAbstract(true);
 		}
 
 		if (clazz.isAnnotation() && params.length != 0) {

@@ -403,7 +403,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		code.setLinePos(this);
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if( !var.isNeedProxy() ) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_load,var);
@@ -423,7 +423,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		code.setLinePos(this);
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if( !var.isNeedProxy() ) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_load,var);
@@ -445,7 +445,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		code.setLinePos(this);
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if( !var.isNeedProxy() ) {
 		} else {
 			if( isAsField() ) {
 				code.addInstrLoadThis();
@@ -459,7 +459,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		code.setLinePos(this);
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if( !var.isNeedProxy() ) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_store,var);
@@ -477,7 +477,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 		code.setLinePos(this);
 		JVar var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if( !var.isNeedProxy() ) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_dup);

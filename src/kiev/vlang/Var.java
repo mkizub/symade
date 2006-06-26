@@ -55,37 +55,8 @@ public class Var extends LvalDNode {
 	}
 	public final void setLocalRuleVar(boolean on) {
 		if (this.is_var_local_rule_var != on) {
+			assert(!locked);
 			this.is_var_local_rule_var = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// closure proxy
-	public final boolean isClosureProxy() {
-		return this.is_var_closure_proxy;
-	}
-	public final void setClosureProxy(boolean on) {
-		if (this.is_var_closure_proxy != on) {
-			this.is_var_closure_proxy = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// "this" var
-	public final boolean isVarThis() {
-		return this.is_var_this;
-	}
-	public final void setVarThis(boolean on) {
-		if (this.is_var_this != on) {
-			this.is_var_this = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// "super" var
-	public final boolean isVarSuper() {
-		return this.is_var_super;
-	}
-	public final void setVarSuper(boolean on) {
-		if (this.is_var_super != on) {
-			this.is_var_super = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
@@ -145,7 +116,7 @@ public class Var extends LvalDNode {
 	}
 
 	public String toString() {
-		return id.toString()/*+":="+type*/;
+		return id.toString();
 	}
 
 	public int hashCode() {
