@@ -173,6 +173,7 @@ CLASS kiev.fmt.SyntaxToken kiev/fmt/SyntaxToken kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.TextFormatter kiev/fmt/TextFormatter kiev\fmt\Formatter.java
 CLASS kiev.fmt.TextPrinter kiev/fmt/TextPrinter kiev\fmt\DrawDevice.java
 CLASS kiev.fmt.TextSyntax kiev/fmt/TextSyntax kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.XmlDumpSyntax kiev/fmt/XmlDumpSyntax kiev\fmt\XmlDumpSyntax.java
 CLASS kiev.gui.Canvas kiev/gui/Canvas kiev\gui\Canvas.java
 CLASS kiev.gui.Editor kiev/gui/Editor kiev\gui\Editor.java
 CLASS kiev.gui.InfoView kiev/gui/InfoView kiev\gui\InfoView.java
