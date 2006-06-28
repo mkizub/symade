@@ -95,32 +95,32 @@ public class InfoView extends UIView implements KeyListener {
 					break;
 				JFileChooser jfc = new JFileChooser(".");
 				jfc.setFileFilter(new FileFilter() {
-					public boolean accept(File f) { f.getName().toLowerCase().endsWith(".xml") }
+					public boolean accept(File f) { f.isDirectory() || f.getName().toLowerCase().endsWith(".xml") }
 					public String getDescription() { "XML file for node tree dump" }
 				});
 				if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
 					break;
 				try {
-					StringBuffer sb = new StringBuffer(1024);
-					TextFormatter tf = new TextFormatter(new XmlDumpSyntax());
-					try {
-						Drawable dr = tf.format(this.the_root);
-						TextPrinter pr = new TextPrinter(sb);
-						pr.draw(dr);
-					} finally {
-						AttrSlot attr = tf.getAttr();
-						this.the_root.walkTree(new TreeWalker() {
-							public boolean pre_exec(ANode n) { attr.clear(n); return true; }
-						});
-					}
-					File f = jfc.getSelectedFile();
-					FileOutputStream out;
-					out = new FileOutputStream(f);
-					out.write(sb.toString().getBytes("UTF-8"));
-					out.close();
+					Env.dumpTextFile(this.the_root, jfc.getSelectedFile(), new XmlDumpSyntax());
 				} catch( IOException e ) {
 					System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 				}
+				}
+			case KeyEvent.VK_L: {
+				evt.consume();
+				JFileChooser jfc = new JFileChooser(".");
+				jfc.setFileFilter(new FileFilter() {
+					public boolean accept(File f) { f.isDirectory() || f.getName().toLowerCase().endsWith(".xml") }
+					public String getDescription() { "XML file for node tree import" }
+				});
+				if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
+					break;
+				try {
+					this.the_root = Env.loadFromXmlFile(jfc.getSelectedFile());
+				} catch( IOException e ) {
+					System.out.println("Read error while Xml-to-Kiev importing: "+e);
+				}
+				this.formatAndPaint(true);
 				}
 			}
 		}

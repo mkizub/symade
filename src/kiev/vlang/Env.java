@@ -5,12 +5,17 @@ import kiev.parser.Parser;
 import kiev.parser.ParseException;
 import kiev.parser.ParseError;
 import kiev.transf.*;
+import kiev.fmt.*;
 import kiev.vlang.types.*;
 
 import java.io.*;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.zip.*;
+import javax.xml.parsers.*;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 import kiev.be.java15.Bytecoder;
 import kiev.be.java15.Attr;
@@ -439,6 +444,135 @@ public class Env extends Struct {
 		if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse())
 			jenv.loadClazz(cl);
 		return cl;
+	}
+	
+	public static void dumpTextFile(ASTNode node, File f, TextSyntax stx)
+		throws IOException
+	{
+		StringBuffer sb = new StringBuffer(1024);
+		TextFormatter tf = new TextFormatter(stx);
+		try {
+			Drawable dr = tf.format(node);
+			TextPrinter pr = new TextPrinter(sb);
+			pr.draw(dr);
+		} finally {
+			AttrSlot attr = tf.getAttr();
+			node.walkTree(new TreeWalker() {
+				public boolean pre_exec(ANode n) { attr.clear(n); return true; }
+			});
+		}
+		make_output_dir(f);
+		FileOutputStream out = new FileOutputStream(f);
+		out.write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
+		out.write(sb.toString().getBytes("UTF-8"));
+		out.close();
+	}
+
+	private static void make_output_dir(File f) throws IOException {
+		File dir = f.getParentFile();
+		dir.mkdirs();
+		if( !dir.exists() || !dir.isDirectory() ) throw new IOException("Can't create output dir "+dir);
+	}
+	
+	public static ASTNode loadFromXmlFile(File f) {
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParser saxParser = factory.newSAXParser();
+		SAXHandler handler = new SAXHandler();
+		saxParser.parse(f, handler);
+		return handler.root;
+	}
+	
+	final static class SAXHandler extends DefaultHandler {
+		ASTNode root;
+		boolean expect_attr;
+		Stack<ANode> nodes = new Stack<ANode>();
+		Stack<AttrSlot> attrs = new Stack<AttrSlot>();
+		String text;
+		public void startElement(String uri, String sName, String qName, Attributes attributes)
+			throws SAXException
+		{
+			if (root == null) {
+				assert (!expect_attr);
+				assert (qName.equals("node"));
+				String cl_name = attributes.getValue("class");
+				root = (ASTNode)Class.forName(cl_name).newInstance();
+				nodes.push(root);
+				expect_attr = true;
+				System.out.println("push root");
+				return;
+			}
+			if (qName.equals("node")) {
+				assert (!expect_attr);
+				String cl_name = attributes.getValue("class");
+				ANode n = (ANode)Class.forName(cl_name).newInstance();
+				System.out.println("push node "+nodes.length);
+				nodes.push(n);
+				expect_attr = true;
+				return;
+			}
+			assert (expect_attr);
+			ANode n = nodes.peek();
+			foreach (AttrSlot attr; n.values(); attr.name.equals(qName)) {
+				System.out.println("push attr "+attr.name);
+				attrs.push(attr);
+				expect_attr = false;
+				return;
+			}
+			throw new SAXException("Attribute '"+qName+"' not found in "+n.getClass());
+		}
+		public void endElement(String uri, String sName, String qName)
+			throws SAXException
+		{
+			if (expect_attr) {
+				assert(qName.equals("node"));
+				ANode n = nodes.pop();
+				if (n == root) {
+					System.out.println("pop  root");
+					expect_attr = false;
+					return;
+				}
+				System.out.println("pop  node "+nodes.length);
+				AttrSlot attr = attrs.peek();
+				if (attr.is_space) {
+					SpaceAttrSlot<ANode> sa = (SpaceAttrSlot<ANode>)attr;
+					System.out.println("add node to "+attr.name);
+					sa.add(nodes.peek(),n);
+				} else {
+					System.out.println("set node to "+attr.name);
+					attr.set(nodes.peek(),n);
+				}
+				expect_attr = false;
+			} else {
+				AttrSlot attr = attrs.pop();
+				System.out.println("pop  attr "+attr.name);
+				if (text != null) {
+					System.out.println("set text: "+text);
+					if (attr.clazz == String.class)
+						attr.set(nodes.peek(),text);
+					else if (attr.clazz == Boolean.TYPE)
+						attr.set(nodes.peek(),Boolean.valueOf(text.trim()));
+					else if (attr.clazz == Integer.TYPE)
+						attr.set(nodes.peek(),Integer.valueOf(text.trim()));
+					else if (Enum.class.isAssignableFrom(attr.clazz))
+						attr.set(nodes.peek(),Enum.valueOf(attr.clazz,text.trim()));
+					else
+						throw new SAXException("Attribute '"+attr.name+"' of "+nodes.peek().getClass()+" uses unsupported "+attr.clazz);
+					text = null;
+				}
+				expect_attr = true;
+			}
+		}
+		public void characters(char[] ch, int start, int length) {
+			if (expect_attr || attrs.length <= 0)
+				return;
+			AttrSlot attr = attrs.peek();
+			if (ANode.class.isAssignableFrom(attr.clazz))
+				return;
+			if (text == null)
+				text = new String(ch, start, length);
+			else
+				text += new String(ch, start, length);
+		}
 	}
 }
 
