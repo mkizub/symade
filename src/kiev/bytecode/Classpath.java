@@ -29,7 +29,7 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -223,24 +223,20 @@ public class ZipClasspathEntry implements ClasspathEntry {
 				continue;
 			if (nm.startsWith("META-INF"))
 				continue;
-			if (nm.charAt(nm.length()-1)=='/') {
-				nm = nm.intern();
-				if (direntries.contains(nm))
-					continue;
-				//System.out.println("DirEntry "+nm);
-				direntries.put(nm,nm);
-				continue;
-			}
-			int p = nm.lastIndexOf('/');
-			if (p < 0)
-				continue;
-			nm = nm.substring(0,p+1);
-			nm = nm.intern();
-			if (direntries.contains(nm))
-				continue;
-			//System.out.println("DirEntry "+nm);
-			direntries.put(nm,nm);
+			addDirEntries(nm);
 		}
+	}
+	private void addDirEntries(String nm) {
+		int p = nm.lastIndexOf('/');
+		if (p <= 0)
+			return;
+		nm = nm.substring(0,p+1);
+		nm = nm.intern();
+		if (direntries.contains(nm))
+			return;
+		//System.out.println("DirEntry "+nm);
+		direntries.put(nm,nm);
+		addDirEntries(nm.substring(0,p))
 	}
 
 	public File findSourceFile(String name) {
