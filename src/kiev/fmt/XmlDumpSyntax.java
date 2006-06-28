@@ -44,6 +44,12 @@ public class XmlDumpSyntax extends TextSyntax {
 	private SyntaxElem close(String name) {
 		return new SyntaxKeyword("</"+name+">",lout_nl_ba.ncopy());
 	}
+	private SyntaxElem open0(String name) {
+		return new SyntaxKeyword("<"+name+">",new DrawLayout());
+	}
+	private SyntaxElem close0(String name) {
+		return new SyntaxKeyword("</"+name+">",lout_nl.ncopy());
+	}
 	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
 		if (node == null)
 			return seNull;
@@ -68,12 +74,14 @@ public class XmlDumpSyntax extends TextSyntax {
 					setl(lout_nl.ncopy(), open(attr.name), par(plIndented, attr(attr.name)), close(attr.name))
 					);
 			}
+			else if (Enum.class.isAssignableFrom(attr.clazz))
+				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
 			else if (attr.clazz == String.class)
-				ss.elements += setl(lout_nl.ncopy(), kw("<str attr='"+attr.name+"'>"), string(attr.name), kw("</str>"));
+				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
 			else if (attr.clazz == Integer.TYPE)
-				ss.elements += setl(lout_nl.ncopy(), kw("<int attr='"+attr.name+"'>"), attr(attr.name), kw("</int>"));
+				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
 			else if (attr.clazz == Boolean.TYPE)
-				ss.elements += setl(lout_nl.ncopy(), kw("<bool attr='"+attr.name+"'>"), attr(attr.name), kw("</bool>"));
+				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
 			else
 				ss.elements += kw("<error attr='"+attr.name+"'"+" class='"+nm+"' />");
 		}

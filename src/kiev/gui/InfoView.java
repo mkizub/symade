@@ -15,6 +15,11 @@ import syntax kiev.Syntax;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 
 
 /**
@@ -80,6 +85,43 @@ public class InfoView extends UIView implements KeyListener {
 				}
 				evt.consume(); 
 				break;
+			}
+		}
+		else if (mask == KeyEvent.ALT_DOWN_MASK) {
+			switch (code) {
+			case KeyEvent.VK_S: {
+				evt.consume();
+				if (this.the_root == null)
+					break;
+				JFileChooser jfc = new JFileChooser(".");
+				jfc.setFileFilter(new FileFilter() {
+					public boolean accept(File f) { f.getName().toLowerCase().endsWith(".xml") }
+					public String getDescription() { "XML file for node tree dump" }
+				});
+				if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
+					break;
+				try {
+					StringBuffer sb = new StringBuffer(1024);
+					TextFormatter tf = new TextFormatter(new XmlDumpSyntax());
+					try {
+						Drawable dr = tf.format(this.the_root);
+						TextPrinter pr = new TextPrinter(sb);
+						pr.draw(dr);
+					} finally {
+						AttrSlot attr = tf.getAttr();
+						this.the_root.walkTree(new TreeWalker() {
+							public boolean pre_exec(ANode n) { attr.clear(n); return true; }
+						});
+					}
+					File f = jfc.getSelectedFile();
+					FileOutputStream out;
+					out = new FileOutputStream(f);
+					out.write(sb.toString().getBytes("UTF-8"));
+					out.close();
+				} catch( IOException e ) {
+					System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
+				}
+				}
 			}
 		}
 	}
