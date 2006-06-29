@@ -160,11 +160,11 @@ public class DrawContext implements Cloneable {
 	}
 	
 	private void addSpaceInfo(SpaceCmd sc) {
-		KString name = sc.si.name;
+		String name = sc.si.id.uname;
 		SpaceKind kind = sc.si.kind;
 		for (int i=0; i < space_infos.size(); i++) {
 			SpaceCmd csi = space_infos[i];
-			if (csi.si.name == name && csi.si.kind == kind) {
+			if (csi.si.id.uname == name && csi.si.kind == kind) {
 				if (csi.eat)
 					return;
 				if (sc.eat) {

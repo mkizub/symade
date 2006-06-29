@@ -456,10 +456,7 @@ public class Env extends Struct {
 			TextPrinter pr = new TextPrinter(sb);
 			pr.draw(dr);
 		} finally {
-			AttrSlot attr = tf.getAttr();
-			node.walkTree(new TreeWalker() {
-				public boolean pre_exec(ANode n) { attr.clear(n); return true; }
-			});
+			tf.cleanup(node);
 		}
 		make_output_dir(f);
 		FileOutputStream out = new FileOutputStream(f);

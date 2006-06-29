@@ -22,6 +22,8 @@ public interface Formatter {
 	public AttrSlot getAttr();
 	public String   escapeString(String str);
 	public String   escapeChar(char ch);
+	public void     setSyntax(TextSyntax stx);
+	public void     cleanup(ASTNode node);
 }
 
 @node
@@ -37,7 +39,7 @@ public abstract class AbstractFormatter implements Formatter {
 
 	private static final int counter;
 
-	public final TextSyntax syntax;
+	public TextSyntax syntax;
 	private AttrSlot ATTR;	
 	
 	protected AbstractFormatter(TextSyntax syntax) {
@@ -49,6 +51,17 @@ public abstract class AbstractFormatter implements Formatter {
 
 	public abstract Drawable format(ASTNode node);
 	
+	public void setSyntax(TextSyntax stx) {
+		this.syntax = stx;
+	}
+	
+	public void cleanup(ASTNode node) {
+		AttrSlot attr = this.getAttr();
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) { attr.clear(n); return true; }
+		});
+	}
+
 	public String escapeString(String str) {
 		return syntax.escapeString(str);
 	}

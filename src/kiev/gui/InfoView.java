@@ -13,12 +13,16 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import javax.swing.text.TextAction;
 import javax.swing.JFileChooser;
+import javax.swing.JPopupMenu;
+import javax.swing.JMenuItem;
 import javax.swing.filechooser.FileFilter;
 
 
@@ -125,6 +129,32 @@ public class InfoView extends UIView implements KeyListener {
 				}
 				break;
 			}
+		}
+		else if (mask == (KeyEvent.CTRL_DOWN_MASK|KeyEvent.ALT_DOWN_MASK)) {
+			switch (code) {
+			case KeyEvent.VK_S: {
+				evt.consume();
+				// build a menu of types to instantiate
+				JPopupMenu m = new JPopupMenu();
+				m.add(new JMenuItem(new SetSyntaxAction("Java Syntax", JavaSyntax.class)));
+				m.add(new JMenuItem(new SetSyntaxAction("XML dump Syntax", XmlDumpSyntax.class)));
+				m.add(new JMenuItem(new SetSyntaxAction("Syntax for Syntax", SyntaxForSyntax.class)));
+				m.show(view_canvas, 0, 0);
+				break;
+				}
+			}
+		}
+	}
+	
+	class SetSyntaxAction extends TextAction {
+		private Class clazz;
+		SetSyntaxAction(String text, Class clazz) {
+			super(text);
+			this.clazz = clazz;
+		}
+		public void actionPerformed(ActionEvent e) {
+			TextSyntax stx = (TextSyntax)clazz.newInstance();
+			InfoView.this.setSyntax(stx);
 		}
 	}
 }

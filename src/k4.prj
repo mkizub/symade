@@ -151,6 +151,7 @@ CLASS kiev.fmt.SyntaxAttr kiev/fmt/SyntaxAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxCharAttr kiev/fmt/SyntaxCharAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxElem kiev/fmt/SyntaxElem kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxEnumChoice kiev/fmt/SyntaxEnumChoice kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.SyntaxForSyntax kiev/fmt/SyntaxForSyntax kiev\fmt\SyntaxForSyntax.java
 CLASS kiev.fmt.SyntaxIdentAttr kiev/fmt/SyntaxIdentAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxIntChoice kiev/fmt/SyntaxIntChoice kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxJavaAccess kiev/fmt/SyntaxJavaAccess kiev\fmt\JavaSyntax.java
@@ -177,7 +178,10 @@ CLASS kiev.fmt.XmlDumpSyntax kiev/fmt/XmlDumpSyntax kiev\fmt\XmlDumpSyntax.java
 CLASS kiev.gui.Canvas kiev/gui/Canvas kiev\gui\Canvas.java
 CLASS kiev.gui.Editor kiev/gui/Editor kiev\gui\Editor.java
 CLASS kiev.gui.InfoView kiev/gui/InfoView kiev\gui\InfoView.java
+CLASS kiev.gui.IntEditor kiev/gui/IntEditor kiev\gui\Editor.java
 CLASS kiev.gui.NavigateView kiev/gui/NavigateView kiev\gui\Editor.java
+CLASS kiev.gui.SymbolEditor kiev/gui/SymbolEditor kiev\gui\Editor.java
+CLASS kiev.gui.TextEditor kiev/gui/TextEditor kiev\gui\Editor.java
 CLASS kiev.gui.UIView kiev/gui/UIView kiev\gui\UIView.java
 CLASS kiev.gui.Window kiev/gui/Window kiev\gui\Window.java
 CLASS kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java

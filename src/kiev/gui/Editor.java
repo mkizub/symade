@@ -32,11 +32,9 @@ public class Editor extends UIView implements KeyListener {
 	/** Symbols used by editor */
 	
 	/** Current editor mode */
-	private boolean			mode_edit;
+	private KeyListener		item_editor;
 	/** Current x position for scrolling up/down */
 	int						cur_x;
-	/** Current edit offset */
-	private int				edit_offset;
 	/** Current item */
 	@ref public Drawable	cur_elem;
 	/** The object in clipboard */
@@ -97,10 +95,14 @@ public class Editor extends UIView implements KeyListener {
 	}
 	
 	public void keyPressed(KeyEvent evt) {
+		if (item_editor != null) {
+			item_editor.keyPressed(evt);
+			return;
+		}
 		//System.out.println(evt);
 		int code = evt.getKeyCode();
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-		if (mask == 0 && !mode_edit) {
+		if (mask == 0) {
 			KeyHandler kh = naviMap.get(Integer.valueOf(code));
 			if (kh != null) {
 				kh.process();
@@ -109,13 +111,24 @@ public class Editor extends UIView implements KeyListener {
 			}
 			if (code == KeyEvent.VK_E) {
 				if (cur_elem instanceof DrawNodeTerm) {
-					Object obj = ((DrawNodeTerm)cur_elem).getTextObject();
+					AttrPtr pattr = ((DrawNodeTerm)cur_elem).getAttrPtr();
+					Object obj = pattr.get();
 					if (obj instanceof Symbol) {
 						changes.push(Transaction.open());
 						obj.open();
-						edit_offset = 0;
-						mode_edit = true;
-						view_canvas.cursor_offset = edit_offset;
+						item_editor = new SymbolEditor((Symbol)obj, this);
+						view_canvas.repaint();
+					}
+					else if (obj instanceof Integer) {
+						changes.push(Transaction.open());
+						pattr.node.open();
+						item_editor = new IntEditor(pattr, this);
+						view_canvas.repaint();
+					}
+					else if (obj instanceof ConstIntExpr) {
+						changes.push(Transaction.open());
+						obj.open();
+						item_editor = new IntEditor(obj.getAttrPtr("value"), this);
 						view_canvas.repaint();
 					}
 				}
@@ -123,7 +136,7 @@ public class Editor extends UIView implements KeyListener {
 				return;
 			}
 		}
-		else if (mask == KeyEvent.ALT_DOWN_MASK && !mode_edit) {
+		else if (mask == KeyEvent.ALT_DOWN_MASK) {
 			switch (code) {
 			case KeyEvent.VK_UP:
 				if (cur_elem.isAttached()) {
@@ -151,7 +164,7 @@ public class Editor extends UIView implements KeyListener {
 				break;
 			}
 		}
-		else if (mask == KeyEvent.CTRL_DOWN_MASK && !mode_edit) {
+		else if (mask == KeyEvent.CTRL_DOWN_MASK) {
 			evt.consume(); 
 			switch (code) {
 			case KeyEvent.VK_Z:
@@ -286,59 +299,20 @@ public class Editor extends UIView implements KeyListener {
 				break;
 			}
 		}
-*/		else if (mode_edit) {
-			Symbol symbol = (Symbol)((DrawNodeTerm)cur_elem).getTextObject();
-			String text = symbol.sname.toString();
-			evt.consume();
-			switch (code) {
-			case KeyEvent.VK_LEFT:
-				if (edit_offset > 0)
-					edit_offset--;
-				break;
-			case KeyEvent.VK_RIGHT:
-				if (edit_offset < text.length())
-					edit_offset++;
-				break;
-			case KeyEvent.VK_ENTER:
-				edit_offset = -1;
-				mode_edit = false;
-				changes.peek().close();
-				break;
-			case KeyEvent.VK_DELETE:
-				if (edit_offset < text.length()) {
-					text = text.substring(0, edit_offset)+
-					       text.substring(edit_offset+1);
-					symbol.sname = text;
-				}
-				break;
-			case KeyEvent.VK_BACK_SPACE:
-				if (edit_offset > 0) {
-					edit_offset--;
-					text = text.substring(0, edit_offset)+
-					       text.substring(edit_offset+1);
-					symbol.sname = text;
-				}
-				break;
-			case KeyEvent.VK_ESCAPE: {
-				edit_offset = -1;
-				mode_edit = false;
-				Transaction tr = changes.pop();
-				tr.close();
-				tr.rollback(false);
-				break;
-				}
-			default:
-				if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
-					text = text.substring(0, edit_offset)+
-					       evt.getKeyChar()+
-						   text.substring(edit_offset);
-					edit_offset++;
-					symbol.sname = text;
-				}
-			}
-			view_canvas.cursor_offset = edit_offset;
-			formatAndPaint(true);
+*/	}
+	
+	public void stopItemEditor(boolean revert) {
+		if (item_editor == null)
+			return;
+		item_editor = null;
+		if (revert) {
+			Transaction tr = changes.pop();
+			tr.close();
+			tr.rollback(false);
+		} else {
+			changes.peek().close();
 		}
+		this.formatAndPaint(true);
 	}
 	
 /*	private JPopupMenu buildTypeSelectPopupMenu(Type tp, List lst, int idx) {
@@ -588,5 +562,104 @@ final class NavigateView implements KeyHandler {
 			uiv.view_canvas.first_line = 0;
 	}
 
+}
+
+abstract class TextEditor implements KeyListener {
+	
+	private final Editor	editor;
+	private       int		edit_offset;
+
+	TextEditor(Editor editor) {
+		this.editor = editor;
+		this.editor.view_canvas.cursor_offset = edit_offset;
+	}
+
+	abstract String getText();
+	abstract void setText(String text);
+
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
+	
+	public void keyPressed(KeyEvent evt) {
+		int code = evt.getKeyCode();
+		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+		if (mask != 0)
+			return;
+		evt.consume();
+		String text = this.getText();
+		switch (code) {
+		case KeyEvent.VK_LEFT:
+			if (edit_offset > 0)
+				edit_offset--;
+			break;
+		case KeyEvent.VK_RIGHT:
+			if (edit_offset < text.length())
+				edit_offset++;
+			break;
+		case KeyEvent.VK_DELETE:
+			if (edit_offset < text.length()) {
+				text = text.substring(0, edit_offset)+text.substring(edit_offset+1);
+				this.setText(text);
+			}
+			break;
+		case KeyEvent.VK_BACK_SPACE:
+			if (edit_offset > 0) {
+				edit_offset--;
+				text = text.substring(0, edit_offset)+text.substring(edit_offset+1);
+				this.setText(text);
+			}
+			break;
+		case KeyEvent.VK_ENTER:
+			editor.view_canvas.cursor_offset = edit_offset = -1;
+			editor.stopItemEditor(false);
+			return;
+		case KeyEvent.VK_ESCAPE:
+			editor.view_canvas.cursor_offset = edit_offset = -1;
+			editor.stopItemEditor(true);
+			return;
+		default:
+			if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
+				text = text.substring(0, edit_offset)+evt.getKeyChar()+text.substring(edit_offset);
+				edit_offset++;
+				this.setText(text);
+			}
+		}
+		editor.view_canvas.cursor_offset = edit_offset;
+		editor.formatAndPaint(true);
+	}
+}
+
+final class SymbolEditor extends TextEditor {
+	
+	private final Symbol	symbol;
+
+	SymbolEditor(Symbol symbol, Editor editor) {
+		super(editor);
+		this.symbol = symbol;
+	}
+	
+	String getText() {
+		return symbol.sname;
+	}
+	void setText(String text) {
+		symbol.sname = text;
+	}
+}
+
+final class IntEditor extends TextEditor {
+	
+	private final AttrPtr	pattr;
+
+	IntEditor(AttrPtr pattr, Editor editor) {
+		super(editor);
+		this.pattr = pattr;
+	}
+	
+	String getText() {
+		return String.valueOf(pattr.get());
+	}
+	void setText(String text) {
+		pattr.set(Integer.valueOf(text));
+	}
 }
 

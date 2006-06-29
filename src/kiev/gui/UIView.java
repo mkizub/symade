@@ -47,6 +47,13 @@ public abstract class UIView extends ASTNode implements MouseListener, Component
 	}
 	
 	public TextSyntax getSyntax() { return syntax; }
+	public void setSyntax(TextSyntax syntax) {
+		this.syntax = syntax;
+		if (the_root != null)
+			formatter.cleanup(the_root);
+		formatter.setSyntax(syntax);
+		formatAndPaint(true);
+	}
 	
 	public abstract void formatAndPaint(boolean full);
 

@@ -252,10 +252,9 @@ public enum SpaceAction {
 }
 
 @node
-public class SpaceInfo extends ASTNode {
+public class SpaceInfo extends DNode {
 	@virtual typedef This  = SpaceInfo;
 
-	@att KString		name;
 	@att SpaceKind		kind;
 	@att int			text_size;
 	@att int			pixel_size;
@@ -263,7 +262,7 @@ public class SpaceInfo extends ASTNode {
 	
 	public SpaceInfo() {}
 	public SpaceInfo(String name, SpaceKind kind, int text_size, int pixel_size) {
-		this.name = KString.from(name);
+		this.id = new Symbol(name);
 		this.kind = kind;
 		this.text_size = text_size;
 		this.pixel_size = pixel_size;
@@ -276,7 +275,6 @@ public final class SpaceCmd extends ASTNode {
 
 	public static final SpaceCmd[] emptyArray = new SpaceCmd[0];
 
-	private final int	idx;
 	@ref SpaceInfo			si;
 	@att final boolean		before;
 	@att final boolean		eat;
@@ -298,7 +296,6 @@ public final class SpaceCmd extends ASTNode {
 		this.eat = eat;
 		this.from_attempt = from_attempt;
 	}
-	public int getIdx() { return idx; }
 }
 
 @node

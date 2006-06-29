@@ -89,24 +89,18 @@ public class DrawNodeTerm extends DrawTerm {
 	}
 
 	public String getText() {
-		return String.valueOf(getTextObject());
+		return String.valueOf(getAttrPtr().get());
 	}
 	
-	public final Object getTextObject() {
-		Object o = node;
-		for (int i=0; i < attrs.length; i++) {
-			if (o instanceof ASTNode) {
-				if (attrs[i] == "")
-					break;
-				if (attrs[i] == "parent")
-					o = o.parent();
-				else
-					o = o.getVal(attrs[i]);
-			}
-			else
-				return null;
+	public final AttrPtr getAttrPtr() {
+		ASTNode n = node;
+		for (int i=0; i < attrs.length-1; i++) {
+			n = (ASTNode)n.getVal(attrs[i]);
 		}
-		return o;
+		String attr = attrs[attrs.length-1];
+		if (attr == "")
+			return new AttrPtr(n.parent(), n.pslot());
+		return n.getAttrPtr(attr);
 	}
 }
 
@@ -118,7 +112,7 @@ public class DrawCharTerm extends DrawNodeTerm {
 	}
 
 	public String getText() {
-		Character ch = (Character)getTextObject();
+		Character ch = (Character)getAttrPtr().get();
 		return fmt.escapeChar(ch.charValue());
 	}
 }
@@ -131,7 +125,7 @@ public class DrawStrTerm extends DrawNodeTerm {
 	}
 
 	public String getText() {
-		String str = String.valueOf(getTextObject());
+		String str = String.valueOf(getAttrPtr().get());
 		return fmt.escapeString(str);
 	}
 }
