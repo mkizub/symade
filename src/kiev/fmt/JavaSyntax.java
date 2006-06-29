@@ -1216,6 +1216,14 @@ public class JavaSyntax extends TextSyntax {
 				});
 		seCommentNlAfter = new SyntaxJavaComment(lout_comment_nl_after);
 	}
+
+	public String escapeString(String str) {
+		return '\"'+new String(Convert.string2source(str), 0)+'\"';
+	}
+	public String escapeChar(char ch) {
+		return "'"+Convert.escape(ch)+"'";
+	}
+
 	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
 		switch (node) {
 		case FileUnit: return seFileUnit;

@@ -14,11 +14,17 @@ import syntax kiev.Syntax;
 
 @node
 public abstract class DrawTerm extends Drawable {
+	Formatter fmt;
 	public DrawTerm() {}
 	public DrawTerm(ASTNode node, SyntaxElem syntax) {
 		super(node, syntax);
 	}
 	
+	public void init(Formatter fmt) {
+		super.init(fmt);
+		this.fmt = fmt;
+	}
+
 	public DrawTerm getFirstLeaf() { return isUnvisible() ? null : this; }
 	public DrawTerm getLastLeaf()  { return isUnvisible() ? null : this; }
 
@@ -113,7 +119,7 @@ public class DrawCharTerm extends DrawNodeTerm {
 
 	public String getText() {
 		Character ch = (Character)getTextObject();
-		return "'"+Convert.escape(ch.charValue())+"'";
+		return fmt.escapeChar(ch.charValue());
 	}
 }
 
@@ -126,7 +132,7 @@ public class DrawStrTerm extends DrawNodeTerm {
 
 	public String getText() {
 		String str = String.valueOf(getTextObject());
-		return '\"'+new String(Convert.string2source(str), 0)+'\"';
+		return fmt.escapeString(str);
 	}
 }
 

@@ -20,6 +20,8 @@ public interface Formatter {
 	public Drawable format(ASTNode node);
 	public Drawable getDrawable(ASTNode node, FormatInfoHint hint);
 	public AttrSlot getAttr();
+	public String   escapeString(String str);
+	public String   escapeChar(char ch);
 }
 
 @node
@@ -47,6 +49,13 @@ public abstract class AbstractFormatter implements Formatter {
 
 	public abstract Drawable format(ASTNode node);
 	
+	public String escapeString(String str) {
+		return syntax.escapeString(str);
+	}
+	public String escapeChar(char ch) {
+		return syntax.escapeChar(ch);
+	}
+
 	public Drawable getDrawable(ASTNode node, FormatInfoHint hint) {
 		if (node == null) {
 			DrawLayout lout = new DrawLayout();

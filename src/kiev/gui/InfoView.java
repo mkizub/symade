@@ -106,6 +106,7 @@ public class InfoView extends UIView implements KeyListener {
 					System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 				}
 				}
+				break;
 			case KeyEvent.VK_L: {
 				evt.consume();
 				JFileChooser jfc = new JFileChooser(".");
@@ -122,6 +123,7 @@ public class InfoView extends UIView implements KeyListener {
 				}
 				this.formatAndPaint(true);
 				}
+				break;
 			}
 		}
 	}

@@ -38,6 +38,33 @@ public class XmlDumpSyntax extends TextSyntax {
 		seNull = new SyntaxSpace(new DrawLayout());
 		seNull.is_hidden = true;
 	}
+
+	public String escapeString(String str) {
+		StringBuffer sb = new StringBuffer(str);
+		boolean changed = false;
+		for(int i=0; i < sb.length(); i++) {
+			switch (sb.charAt(i)) {
+			case '&':  sb.setCharAt(i, '&'); sb.insert(i+1,"amp;");  i += 4; changed = true; continue;
+			case '<':  sb.setCharAt(i, '&'); sb.insert(i+1,"lt;");   i += 3; changed = true; continue;
+			case '>':  sb.setCharAt(i, '&'); sb.insert(i+1,"gt;");   i += 3; changed = true; continue;
+			case '\"': sb.setCharAt(i, '&'); sb.insert(i+1,"quot;"); i += 5; changed = true; continue;
+			case '\'': sb.setCharAt(i, '&'); sb.insert(i+1,"apos;"); i += 5; changed = true; continue;
+			}
+		}
+		if (changed) return sb.toString();
+		return str;
+	}
+	public String escapeChar(char ch) {
+		switch (ch) {
+		case '&':  return "&amp;";
+		case '<':  return "&lt;";
+		case '>':  return "&gt;";
+		case '\"': return "&quot;";
+		case '\'': return "&apos;";
+		default: return String.valueOf(ch);
+		}
+	}
+	
 	private SyntaxElem open(String name) {
 		return new SyntaxKeyword("<"+name+">",lout_nl_ba.ncopy());
 	}
@@ -77,19 +104,20 @@ public class XmlDumpSyntax extends TextSyntax {
 			else if (Enum.class.isAssignableFrom(attr.clazz))
 				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
 			else if (attr.clazz == String.class)
-				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
-			else if (attr.clazz == Integer.TYPE)
-				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
-			else if (attr.clazz == Boolean.TYPE)
+				ss.elements += set(open0(attr.name), new SyntaxStrAttr(attr.name,new DrawLayout()), close0(attr.name));
+			else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
+				attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
+				attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
+				)
 				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
 			else
 				ss.elements += kw("<error attr='"+attr.name+"'"+" class='"+nm+"' />");
 		}
 		{
 			SyntaxSet sn = new SyntaxSet(lout_nl.ncopy());
-			sn.elements += new SyntaxKeyword("<node class='"+nm+"'>",lout_nl_ba.ncopy());
+			sn.elements += new SyntaxKeyword("<a-node class='"+nm+"'>",lout_nl_ba.ncopy());
 			sn.elements += par(plIndented, ss);
-			sn.elements += new SyntaxKeyword("</node>",lout_nl_ba.ncopy());
+			sn.elements += new SyntaxKeyword("</a-node>",lout_nl_ba.ncopy());
 			se = sn;
 		}
 		seAll.put(nm,se);

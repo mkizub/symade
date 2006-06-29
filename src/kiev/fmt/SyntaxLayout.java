@@ -51,6 +51,13 @@ public class TextSyntax {
 	
 	public ParagraphLayout plIndented = new ParagraphLayout("par-indented", 4, 20);
 	
+	public String escapeString(String str) {
+		return str;
+	}
+	public String escapeChar(char ch) {
+		return String.valueOf(ch);
+	}
+
 	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
 		return kw("?"+node.getClass().getName()+"?");
 	}

@@ -493,19 +493,19 @@ public class Env extends Struct {
 		{
 			if (root == null) {
 				assert (!expect_attr);
-				assert (qName.equals("node"));
+				assert (qName.equals("a-node"));
 				String cl_name = attributes.getValue("class");
 				root = (ASTNode)Class.forName(cl_name).newInstance();
 				nodes.push(root);
 				expect_attr = true;
-				System.out.println("push root");
+				//System.out.println("push root");
 				return;
 			}
-			if (qName.equals("node")) {
+			if (qName.equals("a-node")) {
 				assert (!expect_attr);
 				String cl_name = attributes.getValue("class");
 				ANode n = (ANode)Class.forName(cl_name).newInstance();
-				System.out.println("push node "+nodes.length);
+				//System.out.println("push node "+nodes.length);
 				nodes.push(n);
 				expect_attr = true;
 				return;
@@ -513,7 +513,7 @@ public class Env extends Struct {
 			assert (expect_attr);
 			ANode n = nodes.peek();
 			foreach (AttrSlot attr; n.values(); attr.name.equals(qName)) {
-				System.out.println("push attr "+attr.name);
+				//System.out.println("push attr "+attr.name);
 				attrs.push(attr);
 				expect_attr = false;
 				return;
@@ -524,35 +524,47 @@ public class Env extends Struct {
 			throws SAXException
 		{
 			if (expect_attr) {
-				assert(qName.equals("node"));
+				assert(qName.equals("a-node"));
 				ANode n = nodes.pop();
 				if (n == root) {
-					System.out.println("pop  root");
+					//System.out.println("pop  root");
 					expect_attr = false;
 					return;
 				}
-				System.out.println("pop  node "+nodes.length);
+				//System.out.println("pop  node "+nodes.length);
 				AttrSlot attr = attrs.peek();
 				if (attr.is_space) {
 					SpaceAttrSlot<ANode> sa = (SpaceAttrSlot<ANode>)attr;
-					System.out.println("add node to "+attr.name);
+					//System.out.println("add node to "+attr.name);
 					sa.add(nodes.peek(),n);
 				} else {
-					System.out.println("set node to "+attr.name);
+					//System.out.println("set node to "+attr.name);
 					attr.set(nodes.peek(),n);
 				}
 				expect_attr = false;
 			} else {
 				AttrSlot attr = attrs.pop();
-				System.out.println("pop  attr "+attr.name);
+				//System.out.println("pop  attr "+attr.name);
 				if (text != null) {
-					System.out.println("set text: "+text);
+					//System.out.println("set text: "+text);
 					if (attr.clazz == String.class)
 						attr.set(nodes.peek(),text);
 					else if (attr.clazz == Boolean.TYPE)
 						attr.set(nodes.peek(),Boolean.valueOf(text.trim()));
 					else if (attr.clazz == Integer.TYPE)
 						attr.set(nodes.peek(),Integer.valueOf(text.trim()));
+					else if (attr.clazz == Byte.TYPE)
+						attr.set(nodes.peek(),Byte.valueOf(text.trim()));
+					else if (attr.clazz == Short.TYPE)
+						attr.set(nodes.peek(),Short.valueOf(text.trim()));
+					else if (attr.clazz == Long.TYPE)
+						attr.set(nodes.peek(),Long.valueOf(text.trim()));
+					else if (attr.clazz == Float.TYPE)
+						attr.set(nodes.peek(),Float.valueOf(text.trim()));
+					else if (attr.clazz == Double.TYPE)
+						attr.set(nodes.peek(),Double.valueOf(text.trim()));
+					else if (attr.clazz == Character.TYPE)
+						attr.set(nodes.peek(),Character.valueOf(text.trim().charAt(0)));
 					else if (Enum.class.isAssignableFrom(attr.clazz))
 						attr.set(nodes.peek(),Enum.valueOf(attr.clazz,text.trim()));
 					else

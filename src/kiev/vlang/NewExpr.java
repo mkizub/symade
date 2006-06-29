@@ -218,7 +218,7 @@ public final class NewInitializedArrayExpr extends ENode {
 
 	@att public TypeRef				type;
 	@att public ENode[]				args;
-	@att public int[]				dims;
+	@ref public int[]				dims;
 	@ref public ArrayType			arrtype;
 
 	public NewInitializedArrayExpr() {}
