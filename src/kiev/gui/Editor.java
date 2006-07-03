@@ -54,6 +54,10 @@ public class Editor extends InfoView implements KeyListener {
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_END),       new NavigateEditor(this,NavigateView.LINE_END));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_UP),   new NavigateEditor(this,NavigateView.PAGE_UP));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_DOWN), new NavigateEditor(this,NavigateView.PAGE_DOWN));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_E),         new ChooseItemEditor(this));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_P),         new NewElemEditor(this,NewElemEditor.INSERT_HERE));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_A),         new NewElemEditor(this,NewElemEditor.INSERT_NEXT));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_N),         new NewElemEditor(this,NewElemEditor.SETNEW_HERE));
 	}
 	
 	public Editor(Window window, TextSyntax syntax, Canvas view_canvas) {
@@ -303,6 +307,14 @@ public class Editor extends InfoView implements KeyListener {
 		super.keyPressed(evt);
 	}
 	
+	public void startItemEditor(ANode obj, KeyListener item_editor) {
+		assert (this.item_editor == null);
+		this.item_editor = item_editor;
+		changes.push(Transaction.open());
+		obj.open();
+		view_canvas.repaint();
+	}
+
 	public void stopItemEditor(boolean revert) {
 		if (item_editor == null)
 			return;
@@ -554,6 +566,134 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 
 }
 
+final class ChooseItemEditor implements KeyHandler {
+
+	private final Editor	editor;
+
+	ChooseItemEditor(Editor editor) {
+		this.editor = editor;
+	}
+
+	public void process() {
+		Drawable dr = editor.cur_elem;
+		if (dr instanceof DrawNodeTerm) {
+			KeyListener item_editor = null;
+			AttrPtr pattr = dr.getAttrPtr();
+			Object obj = pattr.get();
+			if (obj instanceof Symbol)
+				editor.startItemEditor((Symbol)obj, new SymbolEditor((Symbol)obj, editor));
+			else if (obj instanceof Integer)
+				editor.startItemEditor(pattr.node, new IntEditor(pattr, editor));
+			else if (obj instanceof ConstIntExpr)
+				editor.startItemEditor((ConstIntExpr)obj, new IntEditor(obj.getAttrPtr("value"), editor));
+			else if (Enum.class.isAssignableFrom(pattr.slot.clazz))
+				editor.startItemEditor(pattr.node, new EnumEditor(pattr, dr, editor));
+		}
+	}
+}
+
+final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener {
+
+	static final int INSERT_HERE = 0;
+	static final int INSERT_NEXT = 1;
+	static final int SETNEW_HERE = 2;
+
+	private final Editor	editor;
+	private final int		mode;
+
+	NewElemEditor(Editor editor, int mode) {
+		this.editor = editor;
+		this.mode = mode;
+	}
+
+	public void process() {
+		Drawable dr = editor.cur_elem;
+		if (mode == SETNEW_HERE) {
+			ASTNode n = dr.node;
+			while (n == null) {
+				dr = (Drawable)dr.parent();
+				if (dr == null)
+					break;
+				n = dr.node;
+			}
+			if (n == null)
+				return;
+			if (dr.syntax instanceof SyntaxAttr) {
+				SyntaxAttr satt = (SyntaxAttr)dr.syntax;
+				if (satt.expected_types.length > 0) {
+					JPopupMenu m = new JPopupMenu("Set new item");
+					foreach (SymbolRef sr; satt.expected_types; sr.symbol instanceof Struct) {
+						m.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, n, satt.name)));
+					}
+					int x = dr.geometry.x;
+					int y = dr.geometry.y + dr.geometry.h;
+					m.addPopupMenuListener(this);
+					m.show(editor.view_canvas, x, y);
+					editor.startItemEditor(n, this);
+				}
+			}
+		} else {
+			while (dr != null && !(dr instanceof DrawNonTermList))
+				dr = (Drawable)dr.parent();
+			if (dr instanceof DrawNonTermList && ((SyntaxList)dr.syntax).expected_types.length > 0) {
+				SyntaxList slst = (SyntaxList)dr.syntax;
+				if (slst.expected_types.length > 0) {
+					JPopupMenu m = new JPopupMenu(mode==INSERT_HERE ? "Prepend new item" : "Append new item");
+					foreach (SymbolRef sr; slst.expected_types; sr.symbol instanceof Struct) {
+						m.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, dr.node, slst.name)));
+					}
+					int x = dr.geometry.x;
+					int y = dr.geometry.y + dr.geometry.h;
+					m.addPopupMenuListener(this);
+					m.show(editor.view_canvas, x, y);
+					editor.startItemEditor(dr.node, this);
+				}
+			}
+		}
+	}
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
+	public void keyPressed(KeyEvent evt) {}
+	public void popupMenuCanceled(PopupMenuEvent e) { editor.stopItemEditor(true); }
+	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+	class NewElemAction extends TextAction {
+		private Struct	cls;
+		private ANode	node;
+		private String	attr;
+		NewElemAction(Struct cls, ANode node, String attr) {
+			super(cls.id.sname);
+			this.cls = cls;
+			this.node = node;
+			this.attr = attr;
+		}
+		public void actionPerformed(ActionEvent e) {
+			ANode obj = (ANode)Class.forName(cls.qname()).newInstance();
+			foreach (AttrSlot a; node.values(); a.name == attr) {
+				switch (mode) {
+				case INSERT_HERE:
+				case SETNEW_HERE:
+					if (a.is_space)
+						((SpaceAttrSlot<ANode>)a).insert(node,0,obj);
+					else
+						a.set(node, obj);
+					break;
+				case INSERT_NEXT:
+					if (a.is_space)
+						((SpaceAttrSlot<ANode>)a).add(node,obj);
+					else
+						a.set(node, obj);
+					break;
+				}
+				editor.stopItemEditor(false);
+				return;
+			}
+			editor.stopItemEditor(true);
+			return;
+		}
+	}
+}
+
 abstract class TextEditor implements KeyListener {
 	
 	private final Editor	editor;
@@ -577,6 +717,9 @@ abstract class TextEditor implements KeyListener {
 			return;
 		evt.consume();
 		String text = this.getText();
+		if (text == null) { text = ""; }
+		if (edit_offset < 0) { editor.view_canvas.cursor_offset = edit_offset = 0; }
+		if (edit_offset > text.length()) { editor.view_canvas.cursor_offset = edit_offset = text.length(); }
 		switch (code) {
 		case KeyEvent.VK_LEFT:
 			if (edit_offset > 0)

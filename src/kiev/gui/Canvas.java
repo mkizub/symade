@@ -211,6 +211,7 @@ public class Canvas extends JPanel implements DrawDevice {
 			}
 		} else {
 			String s = leaf.getText();
+			if (s == null) s = "<?>";
 			if (s.length() != 0) {
 				TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
 				tl.draw(g, x, y+b);

@@ -114,6 +114,8 @@ public class SymbolRef extends ASTNode {
 
 	@virtual typedef This  = SymbolRef;
 
+	public static final SymbolRef[] emptyArray = new SymbolRef[0];
+
 	@att public String		name; // unresolved name
 	@ref public DNode		symbol; // resolved symbol
 

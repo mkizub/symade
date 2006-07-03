@@ -95,13 +95,15 @@ public abstract class DrawNonTerm extends Drawable {
 @node
 public class DrawNonTermList extends DrawNonTerm {
 
+	Object oarr;
+	
 	public DrawNonTermList() {}
 	public DrawNonTermList(ASTNode node, SyntaxElem syntax) {
 		super(node, syntax);
 	}
 	public void init(Formatter fmt) {
 		SyntaxList slst = (SyntaxList)this.syntax;
-		Object oarr = node.getVal(slst.name);
+		oarr = node.getVal(slst.name);
 		ASTNode[] narr = (ASTNode[])oarr;
 		int sz = narr.length;
 		boolean need_sep = false;
@@ -118,6 +120,14 @@ public class DrawNonTermList extends DrawNonTerm {
 		}
 	}
 
+	public void preFormat(DrawContext cont) {
+		SyntaxList slst = (SyntaxList)this.syntax;
+		if (oarr != node.getVal(slst.name)) {
+			args.delAll();
+			this.init(cont.fmt);
+		}
+		super.preFormat(cont);
+	}
 }
 
 @node

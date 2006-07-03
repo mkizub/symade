@@ -21,6 +21,7 @@ import java.awt.geom.Rectangle2D;
 
 public class DrawContext implements Cloneable {
 	
+	public Formatter				fmt;
 	public Graphics2D				gfx;
 	public int						width;
 	public int						x, y;
@@ -30,7 +31,8 @@ public class DrawContext implements Cloneable {
 	private DrawTerm				last_term;
 	private DrawContext				prev_ctx;
 	
-	public DrawContext(Graphics2D gfx) {
+	public DrawContext(Formatter fmt, Graphics2D gfx) {
+		this.fmt = fmt;
 		this.gfx = gfx;
 		line_started = true;
 		space_infos = new Vector<SpaceCmd>();
@@ -85,7 +87,8 @@ public class DrawContext implements Cloneable {
 		} else {
 			String text = dr.getText();
 			if (gfx != null) {
-				if (text.length() != 0) {
+				if (text == null) text = "<?>";
+				if (text != null && text.length() != 0) {
 					DrawFormat fmt = dr.syntax.fmt;
 					Font  font  = fmt.font.native_font;
 					if (font == null) font = new Font("Dialog", Font.PLAIN, 12);

@@ -485,8 +485,9 @@ public class SyntaxList extends SyntaxElem {
 	@virtual typedef This  = SyntaxList;
 
 	@att public String		name;
-	@att public SyntaxElem element;
-	@att public SyntaxElem separator;
+	@att public SyntaxElem	element;
+	@att public SyntaxElem	separator;
+	@att public SymbolRef[]	expected_types;
 	     public CalcOption filter;
 
 	public SyntaxList() {}
@@ -528,6 +529,7 @@ public class SyntaxAttr extends SyntaxElem {
 
 	@att public String			name;
 	@att public FormatInfoHint	hint;
+	@att public SymbolRef[]		expected_types;
 
 	public SyntaxAttr() {}
 	public SyntaxAttr(String name, DrawLayout layout) {

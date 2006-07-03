@@ -31,11 +31,15 @@ public class SyntaxForSyntax extends TextSyntax {
 				new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
 			});
 		// file unit
+		SyntaxList fu_members = lst("members", lout_nl.ncopy());
+		fu_members.expected_types += new SymbolRef(0, Env.newStruct("SpaceInfo",Env.newPackage("kiev.fmt"),0));
 		seFileUnit = setl(lout_nl.ncopy(),
 				opt("pkg", setl(lout_pkg, kw("namespace"), ident("pkg"))),
-				lst("members", lout_nl.ncopy())
+				fu_members
 			);
-		seSpaceInfo = setl(lout_nl.ncopy(),kw("def-space"),ident("id"),attr("kind"),attr("text_size"),attr("pixel_size"));
+		SyntaxIdentAttr id = ident("id");
+		id.expected_types += new SymbolRef(0, Env.newStruct("Symbol",Env.newPackage("kiev.vlang"),0));
+		seSpaceInfo = setl(lout_nl.ncopy(),kw("def-space"),id,attr("kind"),attr("text_size"),attr("pixel_size"));
 	}
 
 	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {

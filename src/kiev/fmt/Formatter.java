@@ -99,11 +99,11 @@ public class TextFormatter extends AbstractFormatter {
 	}
 
 	public Drawable format(ASTNode node) {
-		DrawContext ctx = new DrawContext(null);
+		DrawContext ctx = new DrawContext(this,null);
 		ctx.width = 100;
 		Drawable root = getDrawable(node, null);
 		root.preFormat(ctx);
-		ctx = new DrawContext(null);
+		ctx = new DrawContext(this,null);
 		ctx.width = 100;
 		root.postFormat(ctx, true);
 		
@@ -154,11 +154,11 @@ public class GfxFormatter extends AbstractFormatter {
 	}
 
 	public Drawable format(ASTNode node) {
-		DrawContext ctx = new DrawContext(gfx);
+		DrawContext ctx = new DrawContext(this,gfx);
 		ctx.width = 100;
 		Drawable root = getDrawable(node, null);
 		root.preFormat(ctx);
-		ctx = new DrawContext(gfx);
+		ctx = new DrawContext(this,gfx);
 		ctx.width = 100;
 		root.postFormat(ctx, true);
 		

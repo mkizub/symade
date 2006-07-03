@@ -176,12 +176,14 @@ CLASS kiev.fmt.TextPrinter kiev/fmt/TextPrinter kiev\fmt\DrawDevice.java bad
 CLASS kiev.fmt.TextSyntax kiev/fmt/TextSyntax kiev\fmt\SyntaxLayout.java bad
 CLASS kiev.fmt.XmlDumpSyntax kiev/fmt/XmlDumpSyntax kiev\fmt\XmlDumpSyntax.java bad
 CLASS kiev.gui.Canvas kiev/gui/Canvas kiev\gui\Canvas.java bad
+CLASS kiev.gui.ChooseItemEditor kiev/gui/ChooseItemEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.Editor kiev/gui/Editor kiev\gui\Editor.java bad
 CLASS kiev.gui.EnumEditor kiev/gui/EnumEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.InfoView kiev/gui/InfoView kiev\gui\InfoView.java bad
 CLASS kiev.gui.IntEditor kiev/gui/IntEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.NavigateEditor kiev/gui/NavigateEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.NavigateView kiev/gui/NavigateView kiev\gui\InfoView.java bad
+CLASS kiev.gui.NewElemEditor kiev/gui/NewElemEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.SymbolEditor kiev/gui/SymbolEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.TextEditor kiev/gui/TextEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.UIView kiev/gui/UIView kiev\gui\UIView.java bad
