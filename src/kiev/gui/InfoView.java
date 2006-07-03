@@ -32,11 +32,28 @@ import javax.swing.filechooser.FileFilter;
 @node(copyable=false)
 public class InfoView extends UIView implements KeyListener {
 
+	protected final Hashtable<Integer,KeyHandler> naviMap;
+
+	{
+		this.naviMap = new Hashtable<Integer,KeyHandler>();
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_UP),        new NavigateView(this,NavigateView.LINE_UP));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_DOWN),      new NavigateView(this,NavigateView.LINE_DOWN));
+//		this.naviMap.put(Integer.valueOf(KeyEvent.VK_HOME),      new NavigateView(this,NavigateView.LINE_HOME));
+//		this.naviMap.put(Integer.valueOf(KeyEvent.VK_END),       new NavigateView(this,NavigateView.LINE_END));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_UP),   new NavigateView(this,NavigateView.PAGE_UP));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_DOWN), new NavigateView(this,NavigateView.PAGE_DOWN));
+	}
+	
 	public InfoView(Window window, TextSyntax syntax, Canvas info_canvas) {
 		super(window, syntax, info_canvas);
 		view_canvas.addKeyListener(this);
 	}
 
+	public void setRoot(ASTNode root) {
+		this.the_root = root;
+		view_canvas.root = view_root = formatter.format(the_root);
+	}
+	
 	public void formatAndPaint(boolean full) {
 		view_canvas.root = null;
 		if (the_root != null && full)
@@ -44,52 +61,19 @@ public class InfoView extends UIView implements KeyListener {
 		view_canvas.repaint();
 	}
 
-	public void keyReleased(KeyEvent evt) {
-		//System.out.println(evt);
-	}
-	public void keyTyped(KeyEvent evt) {
-		//System.out.println(evt);
-	}
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
 	
 	public void keyPressed(KeyEvent evt) {
-		//System.out.println(evt);
 		int code = evt.getKeyCode();
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
 		if (mask == 0) {
-			switch (code) {
-			case KeyEvent.VK_UP:
-				if (view_canvas.first_line > 0) {
-					--view_canvas.first_line;
-					view_canvas.repaint();
-				}
-				evt.consume(); 
-				break;
-			case KeyEvent.VK_DOWN:
-				if (view_canvas.first_line < view_canvas.num_lines) {
-					++view_canvas.first_line;
-					view_canvas.repaint();
-				}
-				evt.consume(); 
-				break;
-			case KeyEvent.VK_PAGE_UP:
-				if (view_canvas.first_line > 0) {
-					view_canvas.first_line -= view_canvas.last_visible.geometry.lineno - view_canvas.first_visible.geometry.lineno - 1;
-					if (view_canvas.first_line < 0)
-						view_canvas.first_line = 0;
-					view_canvas.repaint();
-				}
-				evt.consume(); 
-				break;
-			case KeyEvent.VK_PAGE_DOWN:
-				if (view_canvas.first_line < view_canvas.num_lines) {
-					view_canvas.first_line += view_canvas.last_visible.geometry.lineno - view_canvas.first_visible.geometry.lineno -1;
-					if (view_canvas.first_line >= view_canvas.num_lines)
-						view_canvas.first_line = view_canvas.num_lines-1;
-					view_canvas.repaint();
-				}
-				evt.consume(); 
-				break;
+			KeyHandler kh = naviMap.get(Integer.valueOf(code));
+			if (kh != null) {
+				kh.process();
+				evt.consume();
 			}
+			return;
 		}
 		else if (mask == KeyEvent.ALT_DOWN_MASK) {
 			switch (code) {
@@ -121,7 +105,7 @@ public class InfoView extends UIView implements KeyListener {
 				if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
 					break;
 				try {
-					this.the_root = Env.loadFromXmlFile(jfc.getSelectedFile());
+					setRoot(Env.loadFromXmlFile(jfc.getSelectedFile()));
 				} catch( IOException e ) {
 					System.out.println("Read error while Xml-to-Kiev importing: "+e);
 				}
@@ -158,3 +142,66 @@ public class InfoView extends UIView implements KeyListener {
 		}
 	}
 }
+
+class NavigateView implements KeyHandler {
+	static final int NONE       = 0;
+	static final int LEFT       = 1;
+	static final int RIGHT      = 2;
+	static final int LINE_UP    = 3;
+	static final int LINE_DOWN  = 4;
+	static final int LINE_HOME  = 5;
+	static final int LINE_END   = 6;
+	static final int PAGE_UP    = 7;
+	static final int PAGE_DOWN  = 8;
+
+	final InfoView uiv;
+	final int cmd;
+	NavigateView(InfoView uiv, int cmd) {
+		this.uiv = uiv;
+		this.cmd = cmd;
+	}
+
+	public void process() {
+		switch (cmd) {
+		case LINE_UP:    navigateUp();   return;
+		case LINE_DOWN:  navigateDn(); return;
+		case PAGE_UP:    navigatePageUp();  return;
+		case PAGE_DOWN:  navigatePageDn();  return;
+		}
+	}
+
+	private void navigateUp() {
+		Canvas view_canvas = uiv.view_canvas;
+		if (view_canvas.first_line > 0) {
+			--view_canvas.first_line;
+			view_canvas.repaint();
+		}
+	}
+	private void navigateDn() {
+		Canvas view_canvas = uiv.view_canvas;
+		if (view_canvas.first_line < view_canvas.num_lines) {
+			++view_canvas.first_line;
+			view_canvas.repaint();
+		}
+	}
+	private void navigatePageUp() {
+		Canvas view_canvas = uiv.view_canvas;
+		if (view_canvas.first_line > 0) {
+			view_canvas.first_line -= view_canvas.last_visible.geometry.lineno - view_canvas.first_visible.geometry.lineno - 1;
+			if (view_canvas.first_line < 0)
+				view_canvas.first_line = 0;
+			view_canvas.repaint();
+		}
+	}
+	private void navigatePageDn() {
+		Canvas view_canvas = uiv.view_canvas;
+		if (view_canvas.first_line < view_canvas.num_lines) {
+			view_canvas.first_line += view_canvas.last_visible.geometry.lineno - view_canvas.first_visible.geometry.lineno -1;
+			if (view_canvas.first_line >= view_canvas.num_lines)
+				view_canvas.first_line = view_canvas.num_lines-1;
+			view_canvas.repaint();
+		}
+	}
+}
+
+

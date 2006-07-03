@@ -27,7 +27,7 @@ import javax.swing.text.TextAction;
  * @author mkizub
  */
 @node(copyable=false)
-public class Editor extends UIView implements KeyListener {
+public class Editor extends InfoView implements KeyListener {
 	
 	/** Symbols used by editor */
 	
@@ -42,50 +42,39 @@ public class Editor extends UIView implements KeyListener {
 	
 	private Stack<Transaction>		changes = new Stack<Transaction>();
 	
-	private Hashtable<Integer,KeyHandler> naviMap;
-	private Hashtable<Integer,KeyHandler> editMap;
-
 	{
-		this.naviMap = new Hashtable<Integer,KeyHandler>();
-		this.editMap = new Hashtable<Integer,KeyHandler>();
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_LEFT),      new NavigateView(this,NavigateView.LEFT));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_RIGHT),     new NavigateView(this,NavigateView.RIGHT));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_UP),        new NavigateView(this,NavigateView.LINE_UP));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_DOWN),      new NavigateView(this,NavigateView.LINE_DOWN));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_HOME),      new NavigateView(this,NavigateView.LINE_HOME));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_END),       new NavigateView(this,NavigateView.LINE_END));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_UP),   new NavigateView(this,NavigateView.PAGE_UP));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_DOWN), new NavigateView(this,NavigateView.PAGE_DOWN));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_LEFT),      new NavigateEditor(this,NavigateView.LEFT));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_RIGHT),     new NavigateEditor(this,NavigateView.RIGHT));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_UP),        new NavigateEditor(this,NavigateView.LINE_UP));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_DOWN),      new NavigateEditor(this,NavigateView.LINE_DOWN));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_HOME),      new NavigateEditor(this,NavigateView.LINE_HOME));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_END),       new NavigateEditor(this,NavigateView.LINE_END));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_UP),   new NavigateEditor(this,NavigateView.PAGE_UP));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_DOWN), new NavigateEditor(this,NavigateView.PAGE_DOWN));
 	}
 	
 	public Editor(Window window, TextSyntax syntax, Canvas view_canvas) {
 		super(window, syntax, view_canvas);
-		view_canvas.addKeyListener(this);
 	}
 	
 	public void setRoot(ASTNode root) {
-		this.the_root = root;
-		view_canvas.root = view_root = formatter.format(the_root);
+		super.setRoot(root);
 		cur_elem = view_root.getFirstLeaf();
 	}
 	
+	public void setSyntax(TextSyntax syntax) {
+		cur_elem = null;
+		super.setSyntax(syntax);
+	}
+
 	public void formatAndPaint(boolean full) {
 		view_canvas.current = cur_elem;
-		if (full)
-			formatter.format(the_root);
-		view_canvas.repaint();
+		super.formatAndPaint(full);
 		ASTNode src = cur_elem!=null ? cur_elem.node : null;
 		parent_window.info_view.the_root = src;
 		parent_window.info_view.formatAndPaint(true);
 	}
 
-	public void keyReleased(KeyEvent evt) {
-		//System.out.println(evt);
-	}
-	public void keyTyped(KeyEvent evt) {
-		//System.out.println(evt);
-	}
-	
 	private boolean isSpaceOrHidden(Drawable dr) {
 		return dr.isUnvisible() || isSpace(dr);
 	}
@@ -93,6 +82,9 @@ public class Editor extends UIView implements KeyListener {
 	private boolean isSpace(Drawable dr) {
 		return dr instanceof DrawSpace;
 	}
+	
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
 	
 	public void keyPressed(KeyEvent evt) {
 		if (item_editor != null) {
@@ -299,7 +291,9 @@ public class Editor extends UIView implements KeyListener {
 				break;
 			}
 		}
-*/	}
+*/
+		super.keyPressed(evt);
+	}
 	
 	public void stopItemEditor(boolean revert) {
 		if (item_editor == null)
@@ -384,22 +378,10 @@ public interface KeyHandler {
 	public void process();
 }
 
-final class NavigateView implements KeyHandler {
-	static final int NONE       = 0;
-	static final int LEFT       = 1;
-	static final int RIGHT      = 2;
-	static final int LINE_UP    = 3;
-	static final int LINE_DOWN  = 4;
-	static final int LINE_HOME  = 5;
-	static final int LINE_END   = 6;
-	static final int PAGE_UP    = 7;
-	static final int PAGE_DOWN  = 8;
+final class NavigateEditor extends NavigateView implements KeyHandler {
 
-	final Editor uiv;
-	final int cmd;
-	NavigateView(Editor uiv, int cmd) {
-		this.uiv = uiv;
-		this.cmd = cmd;
+	NavigateEditor(Editor uiv, int cmd) {
+		super(uiv,cmd);
 	}
 
 	public void process() {
@@ -416,7 +398,7 @@ final class NavigateView implements KeyHandler {
 	}
 
 	private void navigatePrev(boolean repaint) {
-		final Editor uiv = this.uiv;
+		final Editor uiv = (Editor)this.uiv;
 		DrawTerm prev = uiv.cur_elem.getFirstLeaf().getPrevLeaf();
 		if (prev != null) {
 			uiv.view_canvas.current = uiv.cur_elem = prev;
@@ -428,7 +410,7 @@ final class NavigateView implements KeyHandler {
 		}
 	}
 	private void navigateNext(boolean repaint) {
-		final Editor uiv = this.uiv;
+		final Editor uiv = (Editor)this.uiv;
 		DrawTerm next = uiv.cur_elem.getFirstLeaf().getNextLeaf();
 		if (next != null) {
 			uiv.view_canvas.current = uiv.cur_elem = next;
@@ -440,7 +422,7 @@ final class NavigateView implements KeyHandler {
 		}
 	}
 	private void navigateUp(boolean repaint) {
-		final Editor uiv = this.uiv;
+		final Editor uiv = (Editor)this.uiv;
 		DrawTerm n = null;
 		DrawTerm prev = uiv.cur_elem.getFirstLeaf();
 		if (prev != null)
@@ -471,7 +453,7 @@ final class NavigateView implements KeyHandler {
 		}
 	}
 	private void navigateDn(boolean repaint) {
-		final Editor uiv = this.uiv;
+		final Editor uiv = (Editor)this.uiv;
 		DrawTerm n = null;
 		DrawTerm next = uiv.cur_elem.getFirstLeaf();
 		while (next != null) {
@@ -502,7 +484,7 @@ final class NavigateView implements KeyHandler {
 		}
 	}
 	private void navigateLineHome(boolean repaint) {
-		final Editor uiv = this.uiv;
+		final Editor uiv = (Editor)this.uiv;
 		int lineno = uiv.cur_elem.getFirstLeaf().geometry.lineno;
 		for (;;) {
 			DrawTerm dr = uiv.cur_elem.getPrevLeaf();
@@ -516,7 +498,7 @@ final class NavigateView implements KeyHandler {
 			uiv.formatAndPaint(false);
 	}
 	private void navigateLineEnd(boolean repaint) {
-		final Editor uiv = this.uiv;
+		final Editor uiv = (Editor)this.uiv;
 		int lineno = uiv.cur_elem.getFirstLeaf().geometry.lineno;
 		for (;;) {
 			DrawTerm dr = uiv.cur_elem.getNextLeaf();
@@ -530,7 +512,7 @@ final class NavigateView implements KeyHandler {
 			uiv.formatAndPaint(false);
 	}
 	private void navigatePageUp() {
-		final Editor uiv = this.uiv;
+		final Editor uiv = (Editor)this.uiv;
 		int offs = uiv.view_canvas.last_visible.geometry.lineno - uiv.view_canvas.first_visible.geometry.lineno -1;
 		uiv.view_canvas.first_line -= offs;
 		for (int i=offs; i >= 0; i--)
@@ -538,7 +520,7 @@ final class NavigateView implements KeyHandler {
 		return;
 	}
 	private void navigatePageDn() {
-		final Editor uiv = this.uiv;
+		final Editor uiv = (Editor)this.uiv;
 		int offs = uiv.view_canvas.last_visible.geometry.lineno - uiv.view_canvas.first_visible.geometry.lineno -1;
 		uiv.view_canvas.first_line += offs;
 		for (int i=offs; i >= 0; i--)
@@ -547,7 +529,7 @@ final class NavigateView implements KeyHandler {
 	}
 
 	private void makeCurrentVisible() {
-		final Editor uiv = this.uiv;
+		final Editor uiv = (Editor)this.uiv;
 		int top_lineno = uiv.view_canvas.first_visible.geometry.lineno;
 		int bot_lineno = uiv.view_canvas.last_visible.geometry.lineno;
 		int height = bot_lineno - top_lineno;

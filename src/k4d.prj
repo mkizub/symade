@@ -179,7 +179,8 @@ CLASS kiev.gui.Canvas kiev/gui/Canvas kiev\gui\Canvas.java
 CLASS kiev.gui.Editor kiev/gui/Editor kiev\gui\Editor.java
 CLASS kiev.gui.InfoView kiev/gui/InfoView kiev\gui\InfoView.java
 CLASS kiev.gui.IntEditor kiev/gui/IntEditor kiev\gui\Editor.java
-CLASS kiev.gui.NavigateView kiev/gui/NavigateView kiev\gui\Editor.java
+CLASS kiev.gui.NavigateEditor kiev/gui/NavigateEditor kiev\gui\Editor.java
+CLASS kiev.gui.NavigateView kiev/gui/NavigateView kiev\gui\InfoView.java
 CLASS kiev.gui.SymbolEditor kiev/gui/SymbolEditor kiev\gui\Editor.java
 CLASS kiev.gui.TextEditor kiev/gui/TextEditor kiev\gui\Editor.java
 CLASS kiev.gui.UIView kiev/gui/UIView kiev\gui\UIView.java
