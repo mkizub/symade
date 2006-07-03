@@ -12,6 +12,7 @@ import kiev.fmt.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import java.util.EnumSet;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -21,6 +22,8 @@ import java.awt.event.MouseEvent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.event.PopupMenuEvent;
 import javax.swing.text.TextAction;
 
 /**
@@ -69,7 +72,10 @@ public class Editor extends InfoView implements KeyListener {
 
 	public void formatAndPaint(boolean full) {
 		view_canvas.current = cur_elem;
-		super.formatAndPaint(full);
+		if (full)
+			super.formatAndPaint(full);
+		else
+			view_canvas.repaint();
 		ASTNode src = cur_elem!=null ? cur_elem.node : null;
 		parent_window.info_view.the_root = src;
 		parent_window.info_view.formatAndPaint(true);
@@ -106,21 +112,23 @@ public class Editor extends InfoView implements KeyListener {
 					AttrPtr pattr = ((DrawNodeTerm)cur_elem).getAttrPtr();
 					Object obj = pattr.get();
 					if (obj instanceof Symbol) {
-						changes.push(Transaction.open());
-						obj.open();
 						item_editor = new SymbolEditor((Symbol)obj, this);
-						view_canvas.repaint();
 					}
 					else if (obj instanceof Integer) {
-						changes.push(Transaction.open());
-						pattr.node.open();
+						obj = pattr.node;
 						item_editor = new IntEditor(pattr, this);
-						view_canvas.repaint();
 					}
 					else if (obj instanceof ConstIntExpr) {
-						changes.push(Transaction.open());
-						obj.open();
 						item_editor = new IntEditor(obj.getAttrPtr("value"), this);
+					}
+					else if (Enum.class.isAssignableFrom(pattr.slot.clazz)) {
+						obj = pattr.node;
+						item_editor = new EnumEditor(pattr, cur_elem, this);
+					}
+
+					if (item_editor != null) {
+						changes.push(Transaction.open());
+						((ANode)obj).open();
 						view_canvas.repaint();
 					}
 				}
@@ -642,6 +650,43 @@ final class IntEditor extends TextEditor {
 	}
 	void setText(String text) {
 		pattr.set(Integer.valueOf(text));
+	}
+}
+
+class EnumEditor implements KeyListener, PopupMenuListener {
+	private final Editor	editor;
+	private final AttrPtr	pattr;
+	EnumEditor(AttrPtr pattr, Drawable cur_elem, Editor editor) {
+		this.editor = editor;
+		this.pattr = pattr;
+		JPopupMenu m = new JPopupMenu();
+		EnumSet ens = EnumSet.allOf(pattr.slot.clazz);
+		foreach (Enum e; ens.toArray())
+			m.add(new JMenuItem(new SetSyntaxAction(e)));
+		int x = cur_elem.geometry.x;
+		int y = cur_elem.geometry.y + cur_elem.geometry.h;
+		m.addPopupMenuListener(this);
+		m.show(editor.view_canvas, x, y);
+	}
+
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
+	public void keyPressed(KeyEvent evt) {}
+	
+	public void popupMenuCanceled(PopupMenuEvent e) { editor.stopItemEditor(true); }
+	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+
+	class SetSyntaxAction extends TextAction {
+		private Enum val;
+		SetSyntaxAction(Enum val) {
+			super(val.toString());
+			this.val = val;
+		}
+		public void actionPerformed(ActionEvent e) {
+			pattr.set(val);
+			editor.stopItemEditor(false);
+		}
 	}
 }
 

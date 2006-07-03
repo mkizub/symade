@@ -476,6 +476,12 @@ public class Env extends Struct {
 		SAXParser saxParser = factory.newSAXParser();
 		SAXHandler handler = new SAXHandler();
 		saxParser.parse(f, handler);
+		handler.root.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) {
+				if (n instanceof ASTNode) n.locked = true;
+				return true;
+			}
+		});
 		return handler.root;
 	}
 	
