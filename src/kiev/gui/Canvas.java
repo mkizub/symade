@@ -187,11 +187,8 @@ public class Canvas extends JPanel implements DrawDevice {
 //		if (leaf instanceof DrawSpace)
 //			return;
 		
-		DrawFormat fmt = leaf.syntax.fmt;
-		Color color = fmt.color.native_color;
-		if (color == null) color = defaultTextColor;
-		Font  font  = fmt.font.native_font;
-		if (font == null) font = defaultTextFont;
+		Color color = leaf.syntax.lout.color;
+		Font  font  = leaf.syntax.lout.font;
 		if (set_white)
 			g.setColor(Color.WHITE);
 		else

@@ -71,8 +71,7 @@ public abstract class AbstractFormatter implements Formatter {
 
 	public Drawable getDrawable(ASTNode node, FormatInfoHint hint) {
 		if (node == null) {
-			DrawLayout lout = new DrawLayout();
-			SyntaxSpace ssp = new SyntaxSpace(lout);
+			SyntaxSpace ssp = new SyntaxSpace();
 			ssp.is_hidden = true;
 			return new DrawSpace(null, ssp);
 		}

@@ -63,7 +63,7 @@ public abstract class DrawNonTerm extends Drawable {
 			context = context.pushState(); 
 			// for each possible layout. assign it to all sub-components
 			// and try to layout them;
-			final int layouts_size = syntax.layout.count;
+			final int layouts_size = syntax.lout.count;
 		next_layout:
 			for (int i=0; i < layouts_size; i++) {
 				boolean last = (i == layouts_size-1);

@@ -27,15 +27,15 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 	@att public SyntaxSeparator		r_paren;
 
 	public SyntaxJavaExpr() {}
-	public SyntaxJavaExpr(String name, FormatInfoHint hint, DrawLayout layout, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
-		super(name,hint,layout);
+	public SyntaxJavaExpr(String name, FormatInfoHint hint, SpaceCmd[] spaces, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
+		super(name,hint,spaces);
 		this.idx = -1;
 		this.priority = priority;
 		this.l_paren = l_paren;
 		this.r_paren = r_paren;
 	}
-	public SyntaxJavaExpr(int idx, FormatInfoHint hint, DrawLayout layout, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
-		super("",hint,layout);
+	public SyntaxJavaExpr(int idx, FormatInfoHint hint, SpaceCmd[] spaces, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
+		super("",hint,spaces);
 		this.idx = idx;
 		this.priority = priority;
 		this.l_paren = l_paren;
@@ -61,8 +61,8 @@ public class SyntaxJavaAccess extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaAccess;
 
 	public SyntaxJavaAccess() {}
-	public SyntaxJavaAccess(DrawLayout layout) {
-		super(layout);
+	public SyntaxJavaAccess(SpaceCmd[] spaces) {
+		super(spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -80,8 +80,8 @@ public class SyntaxJavaType extends SyntaxElem {
 	@att public FormatInfoHint hint;
 	
 	public SyntaxJavaType() {}
-	public SyntaxJavaType(FormatInfoHint hint, DrawLayout layout) {
-		super(layout);
+	public SyntaxJavaType(FormatInfoHint hint, SpaceCmd[] spaces) {
+		super(spaces);
 		this.hint = hint;
 	}
 
@@ -97,8 +97,8 @@ public class SyntaxJavaEnumAlias extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaEnumAlias;
 
 	public SyntaxJavaEnumAlias() {}
-	public SyntaxJavaEnumAlias(DrawLayout layout) {
-		super(layout);
+	public SyntaxJavaEnumAlias(SpaceCmd[] spaces) {
+		super(spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -114,8 +114,8 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaPackedField;
 
 	public SyntaxJavaPackedField() {}
-	public SyntaxJavaPackedField(DrawLayout layout) {
-		super(layout);
+	public SyntaxJavaPackedField(SpaceCmd[] spaces) {
+		super(spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -131,8 +131,8 @@ public class SyntaxJavaComment extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaComment;
 
 	public SyntaxJavaComment() {}
-	public SyntaxJavaComment(DrawLayout layout) {
-		super(layout);
+	public SyntaxJavaComment(SpaceCmd[] spaces) {
+		super(spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -290,27 +290,27 @@ public class JavaSyntax extends TextSyntax {
 
 	protected SyntaxElem jflag(int size, int offs, int val, String name)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		return new SyntaxOptional(name, new CalcOptionJavaFlag(size, offs, val), kw(name), null, lout);
 	}
 
 	protected SyntaxJavaExpr expr(int idx, int priority)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		SyntaxJavaExpr se = new SyntaxJavaExpr(idx, null, lout, priority, sep("("), sep(")"));
 		return se;
 	}
 
 	protected SyntaxJavaExpr expr(String expr, int priority)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, null, lout, priority, sep("("), sep(")"));
 		return se;
 	}
 
 	protected SyntaxJavaExpr expr(String expr, FormatInfoHint hint, int priority)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, hint, lout, priority, sep("("), sep(")"));
 		return se;
 	}
@@ -335,68 +335,68 @@ public class JavaSyntax extends TextSyntax {
 				continue;
 			}
 		}
-		SyntaxSet set = new SyntaxSet(new DrawLayout());
+		SyntaxSet set = new SyntaxSet(new SpaceCmd[0]);
 		set.elements.addAll(elems);
 		return set;
 	}
 
 	protected SyntaxElem accs() {
-		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
 				new SpaceCmd(siSp, SP_ADD_AFTER, 0),
-			});
+			};
 		return new SyntaxJavaAccess(lout);
 	}
 	
 	protected SyntaxSeparator sep(String sep)
 	{
 		if (sep == ";") {
-			DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout = new SpaceCmd[] {
 					new SpaceCmd(siSpWORD, SP_EAT_BEFORE, 0),
 					new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
 					new SpaceCmd(siSp,     SP_ADD_AFTER, 0),
-				});
+				};
 				return new SyntaxSeparator(sep,lout);
 		}
 		if (sep == "{" || sep == "}") {
-			DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout = new SpaceCmd[] {
 					new SpaceCmd(siSp, SP_ADD_AFTER, 0),
 					new SpaceCmd(siSp, SP_ADD_AFTER, 0),
-				});
+				};
 			return new SyntaxSeparator(sep,lout);
 		}
 		return super.sep(sep);
 	}
 	
 	protected SyntaxJavaType type(FormatInfoHint hint) {
-		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpWORD, SP_ADD_BEFORE, 0),
 				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
 				new SpaceCmd(siSpWORD, SP_ADD_AFTER, 0),
-			});
+			};
 		return new SyntaxJavaType(hint,lout);
 	}
 
 	public JavaSyntax() {
-		DrawLayout lout_empty = new DrawLayout();
-		DrawLayout lout_nl = new DrawLayout(new SpaceCmd[]{new SpaceCmd(siNl,SP_ADD_AFTER,0)});
-		DrawLayout lout_nl_nl = new DrawLayout(new SpaceCmd[]{new SpaceCmd(siNl,SP_ADD_BEFORE,0),new SpaceCmd(siNl,SP_ADD_AFTER,0)});
-		DrawLayout lout_nl_grp = new DrawLayout(new SpaceCmd[]{new SpaceCmd(siNlGrp,SP_ADD_AFTER,0)});
+		SpaceCmd[] lout_empty = new SpaceCmd[0];
+		SpaceCmd[] lout_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_ADD_AFTER,0)};
+		SpaceCmd[] lout_nl_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_ADD_BEFORE,0),new SpaceCmd(siNl,SP_ADD_AFTER,0)};
+		SpaceCmd[] lout_nl_grp = new SpaceCmd[] {new SpaceCmd(siNlGrp,SP_ADD_AFTER,0)};
 		{
-			DrawLayout lout_pkg = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout_pkg = new SpaceCmd[] {
 					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
-				});
+				};
 			// file unit
-			seFileUnit = setl(lout_nl.ncopy(),
+			seFileUnit = setl(lout_nl,
 					opt("pkg", setl(lout_pkg, kw("package"), ident("pkg"), sep(";"))),
-					lst("members", lout_nl.ncopy())
+					lst("members", lout_nl)
 				);
 		}
 		{
-			SyntaxElem sp_hid = new SyntaxSpace(new DrawLayout());
+			SyntaxElem sp_hid = new SyntaxSpace(new SpaceCmd[0]);
 			sp_hid.is_hidden = true;
 			// import
-			seImport = setl(lout_nl.ncopy(),
+			seImport = setl(lout_nl,
 				kw("import"),
 				alt_enum("mode",
 					sp_hid.ncopy(),
@@ -405,9 +405,9 @@ public class JavaSyntax extends TextSyntax {
 					kw("syntax")
 					),
 				ident("name"),
-				opt("star",new CalcOptionTrue("star"), sep(".*"), null, lout_empty.ncopy()),
+				opt("star",new CalcOptionTrue("star"), sep(".*"), null, lout_empty),
 				sep(";"));
-			seOpdef = setl(lout_nl.ncopy(),
+			seOpdef = setl(lout_nl,
 				kw("operator"),
 				ident("image"),
 				sep(","),
@@ -427,7 +427,7 @@ public class JavaSyntax extends TextSyntax {
 				ident("prior"),
 				sep(";")
 				);
-			SyntaxElem typedef_prefix = setl(lout_empty.ncopy(),
+			SyntaxElem typedef_prefix = setl(lout_empty,
 					opt("meta"),
 //					jflag(1,12,1, "@synthetic"),
 					jflag(1,16,1, "@forward"),
@@ -437,9 +437,9 @@ public class JavaSyntax extends TextSyntax {
 					jflag(1,4,1,  "final"),
 					jflag(1,10,1, "abstract")
 					);
-			seTypeAssign = setl(lout_nl.ncopy(), typedef_prefix.ncopy(), kw("typedef"), ident("id"), oper("="), attr("type_ref"), sep(";"));
+			seTypeAssign = setl(lout_nl, typedef_prefix.ncopy(), kw("typedef"), ident("id"), oper("="), attr("type_ref"), sep(";"));
 			
-			seTypeConstrClassArg = setl(lout_empty.ncopy(), ident("id"),
+			seTypeConstrClassArg = setl(lout_empty, ident("id"),
 				opt("upper_bound",
 					new CalcOption() {
 						public boolean calc(ASTNode node) {
@@ -452,44 +452,44 @@ public class JavaSyntax extends TextSyntax {
 					},
 					set(
 						kw("extends"),
-						lst("super_types", node(), oper("&"), lout_empty.ncopy())
+						lst("super_types", node(), oper("&"), lout_empty)
 						),
-					null, lout_empty.ncopy()
+					null, lout_empty
 					),
 				opt("lower_bound", new CalcOptionNotEmpty("lower_bound"),
 					set(
 						kw("super"),
-						lst("lower_bound", node(), sep("&"), lout_empty.ncopy())
+						lst("lower_bound", node(), sep("&"), lout_empty)
 						),
-					null, lout_empty.ncopy()
+					null, lout_empty
 					)
 				);
-			seTypeConstr = setl(lout_nl.ncopy(), typedef_prefix.ncopy(), kw("typedef"), ident("id"), 
-				lst("super_types", set(oper("\u2264"), node()), null, lout_empty.ncopy()),
-				lst("lower_bound", set(oper("\u2265"), node()), null, lout_empty.ncopy()),
+			seTypeConstr = setl(lout_nl, typedef_prefix.ncopy(), kw("typedef"), ident("id"), 
+				lst("super_types", set(oper("\u2264"), node()), null, lout_empty),
+				lst("lower_bound", set(oper("\u2265"), node()), null, lout_empty),
 				sep(";")
 				);
 		}
 		{
-			DrawLayout lout_struct = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout_struct = new SpaceCmd[] {
 					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
-				});
-			DrawLayout lout_struct_hdr = new DrawLayout(new SpaceCmd[]{
+				};
+			SpaceCmd[] lout_struct_hdr = new SpaceCmd[] {
 					new SpaceCmd(siNlOrBlock, SP_ADD_AFTER, 0)
-				});
-			DrawLayout lout_struct_block_start = new DrawLayout(new SpaceCmd[]{
+				};
+			SpaceCmd[] lout_struct_block_start = new SpaceCmd[] {
 					new SpaceCmd(siNlOrBlock, SP_EAT_BEFORE, 0),
 					new SpaceCmd(siNl,        SP_ADD_AFTER,  0),
 					new SpaceCmd(siSp,        SP_ADD_BEFORE, 0),
-				});
-			DrawLayout lout_struct_block_end = new DrawLayout(new SpaceCmd[]{
+				};
+			SpaceCmd[] lout_struct_block_end = new SpaceCmd[] {
 					new SpaceCmd(siNl,        SP_ADD_BEFORE, 0),
 					new SpaceCmd(siNl,        SP_ADD_AFTER,  0),
 					new SpaceCmd(siSp,        SP_ADD_BEFORE, 0),
-				});
-			SyntaxElem struct_prefix = setl(lout_struct_hdr.ncopy(),
+				};
+			SyntaxElem struct_prefix = setl(lout_struct_hdr,
 					attr("meta"),
-					opt("singleton", new CalcOption() {public boolean calc(ASTNode node) {return ((Struct)node).isSingleton();}}, kw("@singleton"), null, lout_empty.ncopy()),
+					opt("singleton", new CalcOption() {public boolean calc(ASTNode node) {return ((Struct)node).isSingleton();}}, kw("@singleton"), null, lout_empty),
 //					jflag(1,12,1, "@synthetic"),
 					jflag(1,18,1, "@unerasable"),
 					jflag(1,3,1,  "static"),
@@ -500,18 +500,18 @@ public class JavaSyntax extends TextSyntax {
 			SyntaxElem struct_args = opt("args", new CalcOptionNotEmpty("args"),
 				set(
 					sep("<"),
-					lst("args", node(new FormatInfoHint("class-arg")), sep(","), lout_empty.ncopy()),
+					lst("args", node(new FormatInfoHint("class-arg")), sep(","), lout_empty),
 					sep(">")
-				), null, lout_empty.ncopy());
-			DrawLayout lout_ext = new DrawLayout(new SpaceCmd[]{new SpaceCmd(siSp, SP_ADD_BEFORE, 0)});
+				), null, lout_empty);
+			SpaceCmd[] lout_ext = new SpaceCmd[] {new SpaceCmd(siSp, SP_ADD_BEFORE, 0)};
 			SyntaxElem class_ext = opt("extends", new CalcOptionNotEmpty("super_types"),
 				set(
 					kw("extends"),
-					lst("super_types", node(), sep(","), lout_empty.ncopy())
+					lst("super_types", node(), sep(","), lout_empty)
 					),
-				null, lout_ext.ncopy()
+				null, lout_ext
 				);
-			SyntaxList struct_members = lst("members",lout_empty.ncopy());
+			SyntaxList struct_members = lst("members",lout_empty);
 			struct_members.filter = new CalcOption() {
 				public boolean calc(ASTNode node) {
 					if (node instanceof DNode && node.isSynthetic())
@@ -527,7 +527,7 @@ public class JavaSyntax extends TextSyntax {
 					);
 			// class
 			seStructClass = set(
-					setl(lout_struct_hdr.ncopy(),
+					setl(lout_struct_hdr,
 						struct_prefix.ncopy(),
 						accs(),
 						kw("class"),
@@ -538,7 +538,7 @@ public class JavaSyntax extends TextSyntax {
 				);
 			// interface
 			seStructInterface = set(
-					setl(lout_struct_hdr.ncopy(),
+					setl(lout_struct_hdr,
 						struct_prefix.ncopy(),
 						accs(),
 						kw("interface"),
@@ -549,7 +549,7 @@ public class JavaSyntax extends TextSyntax {
 				);
 			// view
 			seStructView = set(
-					setl(lout_struct_hdr.ncopy(),
+					setl(lout_struct_hdr,
 						struct_prefix.ncopy(),
 						accs(),
 						kw("view"),
@@ -562,7 +562,7 @@ public class JavaSyntax extends TextSyntax {
 				);
 			// annotation
 			seStructAnnotation = set(
-					setl(lout_struct_hdr.ncopy(),
+					setl(lout_struct_hdr,
 						struct_prefix.ncopy(),
 						accs(),
 						kw("@interface"),
@@ -571,7 +571,7 @@ public class JavaSyntax extends TextSyntax {
 				);
 			// syntax
 			seStructSyntax = set(
-					setl(lout_struct_hdr.ncopy(),
+					setl(lout_struct_hdr,
 						struct_prefix.ncopy(),
 						accs(),
 						kw("syntax"),
@@ -580,19 +580,19 @@ public class JavaSyntax extends TextSyntax {
 				);
 
 			// case
-			SyntaxElem case_prefix = setl(lout_struct_hdr.ncopy(),
+			SyntaxElem case_prefix = setl(lout_struct_hdr,
 					attr("meta"),
 					jflag(1,18,1, "@unerasable")
 					);
 			SyntaxList case_fields = lst("members",
 				set(attr("meta"), ident("ftype"), ident("id")),
 				sep(","),
-				lout_empty.ncopy()
+				lout_empty
 				);
 			case_fields.filter = new CalcOption() {
 				public boolean calc(ASTNode node) { return node instanceof Field && !node.isSynthetic(); }
 			};
-			seStructCase = setl(lout_nl_grp.ncopy(),
+			seStructCase = setl(lout_nl_grp,
 					case_prefix,
 					accs(),
 					kw("case"),
@@ -608,7 +608,7 @@ public class JavaSyntax extends TextSyntax {
 							sep(")")
 							),
 						null,
-						lout_empty.ncopy()
+						lout_empty
 						),
 					sep(";")
 				);
@@ -622,13 +622,13 @@ public class JavaSyntax extends TextSyntax {
 								return ((Field)node).getMetaAlias() != null;
 							}
 						},
-						set(sep(":"), new SyntaxJavaEnumAlias(lout_empty.ncopy())),
+						set(sep(":"), new SyntaxJavaEnumAlias(lout_empty)),
 						null,
-						lout_empty.ncopy()
+						lout_empty
 						)
 					),
 				sep_nl(","),
-				lout_empty.ncopy());
+				lout_empty);
 			enum_fields.filter = new CalcOption() {
 				public boolean calc(ASTNode node) {
 					if (node instanceof Field && node.isEnumField())
@@ -636,7 +636,7 @@ public class JavaSyntax extends TextSyntax {
 					return false;
 				}
 			};
-			SyntaxList enum_members = lst("members",lout_empty.ncopy());
+			SyntaxList enum_members = lst("members",lout_empty);
 			enum_members.filter = new CalcOption() {
 				public boolean calc(ASTNode node) {
 					if ((node instanceof DNode && node.isSynthetic()) || (node instanceof Field && node.isEnumField()))
@@ -645,45 +645,45 @@ public class JavaSyntax extends TextSyntax {
 				}
 			};
 			seStructEnum = set(
-					setl(lout_struct_hdr.ncopy(),
+					setl(lout_struct_hdr,
 						struct_prefix.ncopy(),
 						accs(),
 						kw("enum"),
 						ident("id")),
 					set(
-						sep("{", lout_struct_block_start.ncopy()),
+						sep("{", lout_struct_block_start),
 						par(plIndented, enum_fields),
 						sep(";"),
-						new SyntaxSpace(lout_nl_grp.ncopy()),
+						new SyntaxSpace(lout_nl_grp),
 						par(plIndented, enum_members),
-						sep("}", lout_struct_block_end.ncopy())
+						sep("}", lout_struct_block_end)
 					)
 				);
 		}
 		{
-			seMetaSet = lst("metas", lout_empty.ncopy());
-			seMeta = setl(lout_nl.ncopy(), oper("@"), ident("type"),
+			seMetaSet = lst("metas", lout_empty);
+			seMeta = setl(lout_nl, oper("@"), ident("type"),
 						set(
 							sep("("),
-							lst("values",node(),sep(","),lout_empty.ncopy()),
+							lst("values",node(),sep(","),lout_empty),
 							sep(")")
 							)
 						);
 			seMetaValueScalar = set(ident("ident"), oper("="), attr("value"));
 			seMetaValueArray = set(ident("ident"), oper("="),
 						set(sep("{"),
-							lst("values",node(),sep(","),lout_empty.ncopy()),
+							lst("values",node(),sep(","),lout_empty),
 							sep("}")
 							)
 						);
 		}
 		{
-			DrawLayout lout_field = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout_field = new SpaceCmd[] {
 					new SpaceCmd(siFldGrpNl, SP_EAT_BEFORE,0),
 					new SpaceCmd(siFldGrpNl, SP_ADD_AFTER, 0),
 					new SpaceCmd(siNl,       SP_ADD_AFTER, 0),
-				});
-			SyntaxElem field_prefix = setl(lout_empty.ncopy(),
+				};
+			SyntaxElem field_prefix = setl(lout_empty,
 					attr("meta"),
 //					jflag(1,12,1, "@synthetic"),
 					jflag(1,16,1, "@forward"),
@@ -692,9 +692,9 @@ public class JavaSyntax extends TextSyntax {
 						new CalcOption() {
 							public boolean calc(ASTNode node) {return ((Field)node).isPackedField();}
 						},
-						new SyntaxJavaPackedField(lout_empty.ncopy()),
+						new SyntaxJavaPackedField(lout_empty),
 						null,
-						lout_empty.ncopy()
+						lout_empty
 						),
 					jflag(1,3,1,  "static"),
 					jflag(1,4,1,  "final"),
@@ -703,13 +703,13 @@ public class JavaSyntax extends TextSyntax {
 					jflag(1,10,1, "abstract"),
 					jflag(1,11,1, "strict")
 					);
-			SyntaxElem var_prefix = setl(lout_empty.ncopy(),
+			SyntaxElem var_prefix = setl(lout_empty,
 //					jflag(1,12,1, "@synthetic"),
 					jflag(1,16,1, "@forward"),
 					jflag(1,4,1,  "final")
 					);
 			// field
-			seFieldDecl = setl(lout_field.ncopy(), field_prefix, accs(),
+			seFieldDecl = setl(lout_field, field_prefix, accs(),
 				ident("ftype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
 				);
 			// vars
@@ -733,19 +733,19 @@ public class JavaSyntax extends TextSyntax {
 					},
 					set(sep0(":"), attr("stype")),
 					null,
-					lout_empty.ncopy()
+					lout_empty
 					),
 				ident("id")
 				);
 		}
 		{
-			DrawLayout lout_method_type_args = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout_method_type_args = new SpaceCmd[] {
 					new SpaceCmd(siSp, SP_ADD_AFTER, 0)
-				});
-			DrawLayout lout_method = new DrawLayout(new SpaceCmd[]{
+				};
+			SpaceCmd[] lout_method = new SpaceCmd[] {
 					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
-				});
-			SyntaxElem method_prefix = setl(lout_empty.ncopy(),
+				};
+			SyntaxElem method_prefix = setl(lout_empty,
 //					jflag(1,6,1,  "@bridge"),
 //					jflag(1,7,1,  "@varargs"),
 //					jflag(1,12,1, "@synthetic"),
@@ -759,11 +759,11 @@ public class JavaSyntax extends TextSyntax {
 					jflag(1,10,1, "abstract"),
 					jflag(1,11,1, "strict")
 					);
-			SyntaxElem init_prefix = setl(lout_empty.ncopy(),
+			SyntaxElem init_prefix = setl(lout_empty,
 //					jflag(1,12,1, "@synthetic"),
 					jflag(1,3,1,  "static")
 					);
-			SyntaxList method_params = lst("params",node(),sep(","),lout_empty.ncopy());
+			SyntaxList method_params = lst("params",node(),sep(","),lout_empty);
 			method_params.filter = new CalcOption() {
 				public boolean calc(ASTNode node) {
 					if (node instanceof DNode && node.isSynthetic())
@@ -774,24 +774,24 @@ public class JavaSyntax extends TextSyntax {
 			SyntaxElem method_type_args = opt("targs", new CalcOptionNotEmpty("targs"),
 				set(
 					sep("<"),
-					lst("targs", node(new FormatInfoHint("class-arg")), sep(","), lout_empty.ncopy()),
+					lst("targs", node(new FormatInfoHint("class-arg")), sep(","), lout_empty),
 					sep(">")
-				), null, lout_method_type_args.ncopy());
+				), null, lout_method_type_args);
 			// constructor
-			seConstructor = setl(lout_method.ncopy(),
-				setl(lout_empty.ncopy(), attr("meta"), method_prefix.ncopy(), accs(),
+			seConstructor = setl(lout_method,
+				setl(lout_empty, attr("meta"), method_prefix.ncopy(), accs(),
 					ident("parent.id"),
 					set(sep("("),
 						method_params.ncopy(),
 						sep(")")
 						)
 					),
-				par(plIndented, lst("conditions", lout_empty.ncopy())),
+				par(plIndented, lst("conditions", lout_empty)),
 				attr("body")
 				);
 			// method
-			seMethod = setl(lout_method.ncopy(),
-				setl(lout_empty.ncopy(), attr("meta"), method_prefix.ncopy(), accs(),
+			seMethod = setl(lout_method,
+				setl(lout_empty, attr("meta"), method_prefix.ncopy(), accs(),
 					method_type_args.ncopy(),
 					ident("type_ret"), ident("id"),
 					set(sep("("),
@@ -799,13 +799,13 @@ public class JavaSyntax extends TextSyntax {
 						sep(")")
 						)
 					),
-				par(plIndented, lst("aliases", lout_empty.ncopy())),
-				par(plIndented, lst("conditions", lout_empty.ncopy())),
-				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty.ncopy())
+				par(plIndented, lst("aliases", lout_empty)),
+				par(plIndented, lst("conditions", lout_empty)),
+				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty)
 				);
 			// logical rule method
-			seRuleMethod = setl(lout_method.ncopy(),
-				setl(lout_nl.ncopy(), attr("meta"), method_prefix.ncopy(), accs(),
+			seRuleMethod = setl(lout_method,
+				setl(lout_nl, attr("meta"), method_prefix.ncopy(), accs(),
 					method_type_args.ncopy(),
 					kw("rule"), ident("id"),
 					set(sep("("),
@@ -813,14 +813,14 @@ public class JavaSyntax extends TextSyntax {
 						sep(")")
 						)
 					),
-				par(plIndented, lst("aliases", lout_empty.ncopy())),
-				par(plIndented, lst("localvars", setl(lout_nl.ncopy(), node(), sep(";")), null, lout_nl.ncopy())),
-				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty.ncopy())
+				par(plIndented, lst("aliases", lout_empty)),
+				par(plIndented, lst("localvars", setl(lout_nl, node(), sep(";")), null, lout_nl)),
+				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty)
 				);
-			seInitializer = setl(lout_method.ncopy(), opt("meta"), init_prefix, attr("body"));
+			seInitializer = setl(lout_method, opt("meta"), init_prefix, attr("body"));
 			
-			seMethodAlias = setl(lout_nl_nl.ncopy(), kw("alias"), ident("name"));
-			seOperatorAlias = setl(lout_nl_nl.ncopy(),
+			seMethodAlias = setl(lout_nl_nl, kw("alias"), ident("name"));
+			seOperatorAlias = setl(lout_nl_nl,
 				kw("alias"),
 				alt_int("opmode",
 					kw("lfy"),
@@ -839,61 +839,61 @@ public class JavaSyntax extends TextSyntax {
 				);
 			
 			seWBCCondition = opt("body",
-				setl(lout_nl_nl.ncopy(),
+				setl(lout_nl_nl,
 					alt_enum("cond", kw("error"), kw("require"), kw("ensure"), kw("invariant")),
 					opt("id", set(sep("["), ident("id"), sep("]"))),
 					attr("body")
 				));
 		}
 		{
-			DrawLayout lout_code_block_start = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout_code_block_start = new SpaceCmd[] {
 					new SpaceCmd(siNlOrBlock,     SP_EAT_BEFORE, 0),
 					new SpaceCmd(siNl,            SP_ADD_AFTER,  0),
 					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
 					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
-				});
-			DrawLayout lout_code_block_end = new DrawLayout(new SpaceCmd[]{
+				};
+			SpaceCmd[] lout_code_block_end = new SpaceCmd[] {
 					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
 					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
-				});
+				};
 			// block expression
 			seBlock = set(
-					sep("{", lout_code_block_start.ncopy()),
-					par(plIndented, lst("stats", setl(lout_nl.ncopy(),node(new FormatInfoHint("stat"))),null,lout_empty.ncopy())),
-					sep("}", lout_code_block_end.ncopy())
+					sep("{", lout_code_block_start),
+					par(plIndented, lst("stats", setl(lout_nl,node(new FormatInfoHint("stat"))),null,lout_empty)),
+					sep("}", lout_code_block_end)
 					);
 			// rule block
-			DrawLayout lout_rule_block_end = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout_rule_block_end = new SpaceCmd[] {
 					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
 					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
 					new SpaceCmd(siNl,            SP_ADD_BEFORE,  0),
-				});
+				};
 			seRuleBlock = set(
-					sep("{", lout_code_block_start.ncopy()),
+					sep("{", lout_code_block_start),
 					par(plIndented, attr("node")),
-					sep("}", lout_rule_block_end.ncopy())
+					sep("}", lout_rule_block_end)
 					);
 			// rule OR block
-			DrawLayout lout_rule_or = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout_rule_or = new SpaceCmd[] {
 					new SpaceCmd(siNl,            SP_ADD_BEFORE,  0),
 					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
 					new SpaceCmd(siNl,            SP_ADD_AFTER,  0),
 					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
-				});
+				};
 			SyntaxElem rule_or = new SyntaxSeparator(";",lout_rule_or);
 			seRuleOrExpr = set(
-					sep("{", lout_code_block_start.ncopy()),
-					lst("rules", par(plIndented, node()), rule_or, lout_nl.ncopy()),
-					sep("}", lout_code_block_end.ncopy())
+					sep("{", lout_code_block_start),
+					lst("rules", par(plIndented, node()), rule_or, lout_nl),
+					sep("}", lout_code_block_end)
 					);
 			// rule AND block
-			DrawLayout lout_rule_and = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout_rule_and = new SpaceCmd[] {
 					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
 					new SpaceCmd(siNl,            SP_ADD_AFTER,  0),
 					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
-				});
+				};
 			SyntaxElem rule_and = new SyntaxSeparator(",",lout_rule_and);
-			seRuleAndExpr = lst("rules", node(), rule_and, lout_nl.ncopy());
+			seRuleAndExpr = lst("rules", node(), rule_and, lout_nl);
 		}
 		seExprStat = set(opt("expr"), sep(";"));
 		seReturnStat = set(kw("return"), opt("expr"), sep(";"));
@@ -903,49 +903,49 @@ public class JavaSyntax extends TextSyntax {
 		seBreakStat = set(kw("break"), opt("ident", ident("ident")), sep(";"));
 		seContinueStat = set(kw("continue"), opt("ident", ident("ident")), sep(";"));
 		seGotoStat = set(kw("goto"), opt("ident", ident("ident")), sep(";"));
-		seGotoCaseStat = set(kw("goto"), opt("expr", new CalcOptionNotNull("expr"), set(kw("case"), attr("expr")), kw("default"), lout_empty.ncopy()), sep(";"));
+		seGotoCaseStat = set(kw("goto"), opt("expr", new CalcOptionNotNull("expr"), set(kw("case"), attr("expr")), kw("default"), lout_empty), sep(";"));
 
 		{
-			DrawLayout lout_cond = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout_cond = new SpaceCmd[] {
 					new SpaceCmd(siNlOrBlock,   SP_ADD_AFTER,  0),
 					new SpaceCmd(siSp,          SP_ADD_BEFORE, 0),
 					new SpaceCmd(siSp,          SP_ADD_AFTER,  0),
-				});
+				};
 			seIfElseStat = set(
 				kw("if"),
-				setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")),
+				setl(lout_cond, sep("("), attr("cond"), sep(")")),
 				par(plStatIndented, attr("thenSt")),
 				opt("elseSt",
 					set(
-						setl(lout_cond.ncopy(), new SyntaxSpace(lout_nl.ncopy()), kw("else")),
+						setl(lout_cond, new SyntaxSpace(lout_nl), kw("else")),
 						par(plStatIndented, attr("elseSt"))
 						)
 					)
 				);
 			seWhileStat = set(
 				kw("while"),
-				setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")),
+				setl(lout_cond, sep("("), attr("cond"), sep(")")),
 				par(plStatIndented, attr("body"))
 				);
 			seDoWhileStat = set(
 				kw("do"),
 				par(plStatIndented, attr("body")),
 				kw("while"),
-				setl(lout_cond.ncopy(), sep("("), attr("cond"), sep(")")),
+				setl(lout_cond, sep("("), attr("cond"), sep(")")),
 				sep(";")
 				);
 			seForInit = set(
 				ident("type_ref"),
-				lst("decls",node(new FormatInfoHint("no-type")),sep(","),lout_empty.ncopy())
+				lst("decls",node(new FormatInfoHint("no-type")),sep(","),lout_empty)
 				);
 			seForStat = set(
 				kw("for"),
-				setl(lout_cond.ncopy(), sep("("), opt("init"), sep(";"), opt("cond"), sep(";"), opt("iter"), sep(")")),
+				setl(lout_cond, sep("("), opt("init"), sep(";"), opt("cond"), sep(";"), opt("iter"), sep(")")),
 				par(plStatIndented, attr("body"))
 				);
 			seForEachStat = set(
 				kw("foreach"),
-				setl(lout_cond.ncopy(), sep("("), opt("var", set(attr("var"), sep(";"))), attr("container"), opt("cond", set(sep(";"), attr("cond"))), sep(")")),
+				setl(lout_cond, sep("("), opt("var", set(attr("var"), sep(";"))), attr("container"), opt("cond", set(sep(";"), attr("cond"))), sep(")")),
 				par(plStatIndented, attr("body"))
 				);
 			
@@ -957,31 +957,31 @@ public class JavaSyntax extends TextSyntax {
 						opt("pattern", new CalcOptionNotEmpty("pattern"),
 							set(
 								sep("("),
-								lst("pattern",node(),sep(","),lout_empty.ncopy()),
+								lst("pattern",node(),sep(","),lout_empty),
 								sep(")")
 								),
 							null,
-							lout_empty.ncopy()
+							lout_empty
 							)
 						),
 					kw("default"),
-					lout_empty.ncopy()
+					lout_empty
 					),
-				sep(":", lout_nl.ncopy()),
-				par(plIndented, lst("stats",setl(lout_nl.ncopy(),node(new FormatInfoHint("stat"))),null,lout_nl.ncopy()))
+				sep(":", lout_nl),
+				par(plIndented, lst("stats",setl(lout_nl,node(new FormatInfoHint("stat"))),null,lout_nl))
 				);
 			seSwitchStat = set(
 				kw("switch"),
-				setl(lout_cond.ncopy(), sep("("), attr("sel"), sep(")")),
+				setl(lout_cond, sep("("), attr("sel"), sep(")")),
 				set(
-					sep("{", lout_nl.ncopy()),
-					lst("cases",setl(lout_nl.ncopy(),node()),null,lout_nl.ncopy()),
+					sep("{", lout_nl),
+					lst("cases",setl(lout_nl,node()),null,lout_nl),
 					sep("}")
 					)
 				);
 			seCatchInfo = set(
 				kw("catch"),
-				setl(lout_cond.ncopy(), sep("("), attr("arg"), sep(")")),
+				setl(lout_cond, sep("("), attr("arg"), sep(")")),
 				par(plStatIndented, attr("body"))
 				);
 			seFinallyInfo = set(
@@ -991,17 +991,17 @@ public class JavaSyntax extends TextSyntax {
 			seTryStat = set(
 				kw("try"),
 				par(plStatIndented, attr("body")),
-				lst("catchers",lout_empty.ncopy()),
+				lst("catchers",lout_empty),
 				opt("finally_catcher", attr("finally_catcher"))
 				);
 			seSynchronizedStat = set(
 				kw("synchronized"),
-				setl(lout_cond.ncopy(), sep("("), attr("expr"), sep(")")),
+				setl(lout_cond, sep("("), attr("expr"), sep(")")),
 				par(plStatIndented, attr("body"))
 				);
 			seWithStat = set(
 				kw("with"),
-				setl(lout_cond.ncopy(), sep("("), attr("expr"), sep(")")),
+				setl(lout_cond, sep("("), attr("expr"), sep(")")),
 				par(plStatIndented, attr("body"))
 				);
 		}
@@ -1024,7 +1024,7 @@ public class JavaSyntax extends TextSyntax {
 				sep("."),
 				ident("func"),
 				sep("("),
-				lst("args",node(),sep(","),lout_empty.ncopy()),
+				lst("args",node(),sep(","),lout_empty),
 				sep(")")
 				);
 		seRuleWhileExpr = set(kw("while"), expr("expr", 1), opt("bt_expr", set(oper(":"), expr("bt_expr", 1))));
@@ -1039,7 +1039,7 @@ public class JavaSyntax extends TextSyntax {
 						},
 						kw("this"),
 						kw("super"),
-						lout_empty.ncopy()
+						lout_empty
 						);
 		seLVarExpr = ident("ident");
 		seSFldExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
@@ -1057,7 +1057,7 @@ public class JavaSyntax extends TextSyntax {
 				sep("."),
 				ident("ident"),
 				sep("("),
-				lst("args",node(),sep(","),lout_empty.ncopy()),
+				lst("args",node(),sep(","),lout_empty),
 				sep(")")
 				);
 		seCallConstr = set(
@@ -1067,27 +1067,27 @@ public class JavaSyntax extends TextSyntax {
 					},
 					kw("super"),
 					kw("this"),
-					lout_empty.ncopy()
+					lout_empty
 					),
 				sep("("),
-				lst("args",node(),sep(","),lout_empty.ncopy()),
+				lst("args",node(),sep(","),lout_empty),
 				sep(")")
 				);
 		seClosureCallExpr = set(
 				expr("expr", Constants.opCallPriority),
 				sep("("),
-				lst("args",node(),sep(","),lout_empty.ncopy()),
+				lst("args",node(),sep(","),lout_empty),
 				sep(")")
 				);
 		seStringConcatExpr = lst("args",
 				expr("this", Operator.Add.priority),
 				oper("+"),
-				lout_empty.ncopy()
+				lout_empty
 			);
 		seCommaExpr = lst("exprs",
 				expr("this", Operator.Comma.priority),
 				oper(","),
-				lout_empty.ncopy()
+				lout_empty
 			);
 
 		seNewExpr = set(
@@ -1095,7 +1095,7 @@ public class JavaSyntax extends TextSyntax {
 				kw("new"),
 				ident("type"),
 				sep("("),
-				lst("args",node(),sep(","),lout_empty.ncopy()),
+				lst("args",node(),sep(","),lout_empty),
 				sep(")"),
 				opt("clazz", attr("clazz", new FormatInfoHint("anonymouse")))
 				);
@@ -1109,20 +1109,20 @@ public class JavaSyntax extends TextSyntax {
 						sep("]")
 					),
 					null,
-					lout_empty.ncopy()
+					lout_empty
 					)
 				);
 		seNewInitializedArrayExpr = set(
 				kw("new"),
 				ident("arrtype"),
 				sep("{"),
-				lst("args",node(),sep(","),lout_empty.ncopy()),
+				lst("args",node(),sep(","),lout_empty),
 				sep("}")
 				);
 		seNewClosure = set(
 				kw("fun"),
 				sep("("),
-				lst("params",node(),sep(","),lout_empty.ncopy()),
+				lst("params",node(),sep(","),lout_empty),
 				sep(")"),
 				sep("->"),
 				ident("type_ret"),
@@ -1130,19 +1130,19 @@ public class JavaSyntax extends TextSyntax {
 				);
 		{
 			seRewriteMatch = set(
-					sep("{", lout_nl.ncopy()),
-					par(plIndented, lst("cases",setl(lout_nl.ncopy(),node()),null,lout_nl.ncopy())),
+					sep("{", lout_nl),
+					par(plIndented, lst("cases",setl(lout_nl,node()),null,lout_nl)),
 					sep("}")
 					);
 			seRewriteCase = set(
 					kw("case"),
 					attr("var"),
-					sep(":", lout_nl.ncopy()),
-					par(plIndented, lst("stats",setl(lout_nl.ncopy(),node(new FormatInfoHint("stat"))),null,lout_nl.ncopy()))
+					sep(":", lout_nl),
+					par(plIndented, lst("stats",setl(lout_nl,node(new FormatInfoHint("stat"))),null,lout_nl))
 					);
-			DrawLayout lout_pattern_args = new DrawLayout(new SpaceCmd[]{
+			SpaceCmd[] lout_pattern_args = new SpaceCmd[] {
 					new SpaceCmd(siSp, SP_ADD_AFTER, 0)
-				});
+				};
 			seRewritePattern = set(
 					opt("meta"),
 					jflag(1,16,1, "@forward"),
@@ -1151,9 +1151,9 @@ public class JavaSyntax extends TextSyntax {
 					opt("vars", new CalcOptionNotEmpty("vars"),
 						set(
 							sep("("),
-							lst("vars", node(), sep(","), lout_empty.ncopy()),
+							lst("vars", node(), sep(","), lout_empty),
 							sep(")")
-						), null, lout_pattern_args.ncopy()
+						), null, lout_pattern_args
 					)
 				);
 			seRewriteNodeFactory = set(
@@ -1161,13 +1161,13 @@ public class JavaSyntax extends TextSyntax {
 					oper("#"),
 					ident("node_class"),
 					sep("("),
-					lst("args",node(),sep(","),lout_empty.ncopy()),
+					lst("args",node(),sep(","),lout_empty),
 					sep(")")
 					);
 			seRewriteNodeArg = set(ident("attr"), oper("="), attr("node"));
 			seRewriteNodeArgArray = set(
 				sep("{"),
-				lst("args",node(),sep(","),lout_empty.ncopy()),
+				lst("args",node(),sep(","),lout_empty),
 				sep("}")
 				);
 		}
@@ -1185,35 +1185,35 @@ public class JavaSyntax extends TextSyntax {
 		//	expr("expr2", Operator.opConditionalPriority)
 		//	);
 		seCastExpr = set(sep("("), kw("$cast"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
-		seNopExpr = new SyntaxSpace(new DrawLayout());
+		seNopExpr = new SyntaxSpace(new SpaceCmd[0]);
 		seNopExpr.is_hidden = true;
 		
-		DrawLayout lout_comment = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout_comment = new SpaceCmd[] {
 					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
 					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
-				});
+				};
 		seComment = new SyntaxJavaComment(lout_comment);
 
-		DrawLayout lout_comment_nl = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout_comment_nl = new SpaceCmd[] {
 					new SpaceCmd(siNl, SP_ADD_BEFORE, 0),
 					new SpaceCmd(siNl, SP_ADD_AFTER,  0),
 					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
 					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
-				});
+				};
 		seCommentNl = new SyntaxJavaComment(lout_comment_nl);
 
-		DrawLayout lout_comment_nl_before = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout_comment_nl_before = new SpaceCmd[] {
 					new SpaceCmd(siNl, SP_ADD_BEFORE, 0),
 					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
 					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
-				});
+				};
 		seCommentNlBefore = new SyntaxJavaComment(lout_comment_nl_before);
 
-		DrawLayout lout_comment_nl_after = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout_comment_nl_after = new SpaceCmd[] {
 					new SpaceCmd(siNl, SP_ADD_AFTER,  0),
 					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
 					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
-				});
+				};
 		seCommentNlAfter = new SyntaxJavaComment(lout_comment_nl_after);
 	}
 

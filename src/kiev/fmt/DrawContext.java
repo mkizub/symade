@@ -26,22 +26,25 @@ public class DrawContext implements Cloneable {
 	public int						width;
 	public int						x, y;
 	public boolean					line_started;
-	public Vector<SpaceCmd>			space_infos;
+	public Vector<LayoutSpace>		space_infos;
 	public Stack<DrawParagraph>		paragraphs;
 	private DrawTerm				last_term;
 	private DrawContext				prev_ctx;
+	private Font					default_font;
 	
 	public DrawContext(Formatter fmt, Graphics2D gfx) {
 		this.fmt = fmt;
 		this.gfx = gfx;
 		line_started = true;
-		space_infos = new Vector<SpaceCmd>();
+		space_infos = new Vector<LayoutSpace>();
 		paragraphs = new Stack<DrawParagraph>();
+		if (gfx != null)
+			default_font = new Font("Dialog", Font.PLAIN, 12);
 	}
 	
 	public Object clone() {
 		DrawContext dc = (DrawContext)super.clone();
-		dc.space_infos = (Vector<SpaceCmd>)this.space_infos.clone();
+		dc.space_infos = (Vector<LayoutSpace>)this.space_infos.clone();
 		dc.paragraphs = (Stack<DrawParagraph>)this.paragraphs.clone();
 		return dc;
 	}
@@ -66,9 +69,7 @@ public class DrawContext implements Cloneable {
 			foreach(String text; lines) {
 				if (gfx != null) {
 					if (text.length() != 0) {
-						DrawFormat fmt = dr.syntax.fmt;
-						Font  font  = fmt.font.native_font;
-						if (font == null) font = new Font("Dialog", Font.PLAIN, 12);
+						Font  font  = dr.syntax.lout.font;
 						TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
 						Rectangle2D rect = tl.getBounds();
 						dg.w = (int)Math.max(dg.w, Math.ceil(tl.getAdvance()));
@@ -89,9 +90,7 @@ public class DrawContext implements Cloneable {
 			if (gfx != null) {
 				if (text == null) text = "<?>";
 				if (text != null && text.length() != 0) {
-					DrawFormat fmt = dr.syntax.fmt;
-					Font  font  = fmt.font.native_font;
-					if (font == null) font = new Font("Dialog", Font.PLAIN, 12);
+					Font  font  = dr.syntax.lout.font;
 					TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
 					Rectangle2D rect = tl.getBounds();
 					dg.w = (int)Math.ceil(tl.getAdvance());
@@ -138,20 +137,17 @@ public class DrawContext implements Cloneable {
 	
 	private void flushSpaceRequests() {
 		int max_space = 0;
-		foreach (SpaceCmd csi; space_infos; csi.si.kind == SP_SPACE) {
-			if (!csi.eat)
-				max_space = Math.max(gfx==null ? csi.si.text_size : csi.si.pixel_size, max_space);
+		int max_nl = 0;
+		foreach (LayoutSpace csi; space_infos; !csi.eat) {
+			if (csi.new_line)
+				max_nl = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_nl);
+			else
+				max_space = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_space);
 		}
 		if (line_started)
 			this.x = getIndent();
 		else
 			this.x += max_space;
-
-		int max_nl = 0;
-		foreach (SpaceCmd csi; space_infos; csi.si.kind == SP_NEW_LINE) {
-			if (!csi.eat)
-				max_nl = Math.max(gfx==null ? csi.si.text_size : csi.si.pixel_size, max_nl);
-		}
 
 		if (max_nl > 0) {
 			if (last_term != null)
@@ -162,12 +158,11 @@ public class DrawContext implements Cloneable {
 		space_infos.removeAllElements();
 	}
 	
-	private void addSpaceInfo(SpaceCmd sc) {
-		String name = sc.si.id.uname;
-		SpaceKind kind = sc.si.kind;
+	private void addSpaceInfo(LayoutSpace sc) {
+		String name = sc.name;
 		for (int i=0; i < space_infos.size(); i++) {
-			SpaceCmd csi = space_infos[i];
-			if (csi.si.id.uname == name && csi.si.kind == kind) {
+			LayoutSpace csi = space_infos[i];
+			if (csi.name == name) {
 				if (csi.eat)
 					return;
 				if (sc.eat) {
@@ -180,12 +175,12 @@ public class DrawContext implements Cloneable {
 	}
 	
 	private void processSpaceBeforeRequest(Drawable dr) {
-		foreach (SpaceCmd si; dr.syntax.layout.spaces; si.before)
+		foreach (LayoutSpace si; dr.syntax.lout.spaces; si.before)
 			addSpaceInfo(si);
 	}
 	
 	private void processSpaceAfterRequest(Drawable dr) {
-		foreach (SpaceCmd si; dr.syntax.layout.spaces; !si.before)
+		foreach (LayoutSpace si; dr.syntax.lout.spaces; !si.before)
 			addSpaceInfo(si);
 	}
 	

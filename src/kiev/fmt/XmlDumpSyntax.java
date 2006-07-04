@@ -21,21 +21,21 @@ public class XmlDumpSyntax extends TextSyntax {
 
 	final Hashtable<String,SyntaxElem> seAll;
 
-	final DrawLayout lout_nl;
-	final DrawLayout lout_nl_ba;
+	final SpaceCmd[] lout_nl;
+	final SpaceCmd[] lout_nl_ba;
 
 	final SyntaxElem seNull;
 
 	public XmlDumpSyntax() {
-		lout_nl    = new DrawLayout(new SpaceCmd[]{
+		lout_nl    = new SpaceCmd[] {
 				new SpaceCmd(siNl,SP_ADD_AFTER,0)
-			});
-		lout_nl_ba = new DrawLayout(new SpaceCmd[]{
+			};
+		lout_nl_ba = new SpaceCmd[] {
 				new SpaceCmd(siNl, SP_ADD_BEFORE, 0),
-				new SpaceCmd(siNl, SP_ADD_AFTER, 0),
-			});
+				new SpaceCmd(siNl, SP_ADD_AFTER, 0)
+			};
 		seAll = new Hashtable<String,SyntaxElem>();
-		seNull = new SyntaxSpace(new DrawLayout());
+		seNull = new SyntaxSpace();
 		seNull.is_hidden = true;
 	}
 
@@ -66,16 +66,16 @@ public class XmlDumpSyntax extends TextSyntax {
 	}
 	
 	private SyntaxElem open(String name) {
-		return new SyntaxKeyword("<"+name+">",lout_nl_ba.ncopy());
+		return new SyntaxKeyword("<"+name+">",lout_nl_ba);
 	}
 	private SyntaxElem close(String name) {
-		return new SyntaxKeyword("</"+name+">",lout_nl_ba.ncopy());
+		return new SyntaxKeyword("</"+name+">",lout_nl_ba);
 	}
 	private SyntaxElem open0(String name) {
-		return new SyntaxKeyword("<"+name+">",new DrawLayout());
+		return new SyntaxKeyword("<"+name+">",new SpaceCmd[0]);
 	}
 	private SyntaxElem close0(String name) {
-		return new SyntaxKeyword("</"+name+">",lout_nl.ncopy());
+		return new SyntaxKeyword("</"+name+">",lout_nl);
 	}
 	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
 		if (node == null)
@@ -84,27 +84,27 @@ public class XmlDumpSyntax extends TextSyntax {
 		SyntaxElem se = seAll.get(nm);
 		if (se != null)
 			return se;
-		SyntaxSet ss = new SyntaxSet(lout_nl.ncopy());
+		SyntaxSet ss = new SyntaxSet(lout_nl);
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
 			if (attr.is_space) {
 				ss.elements += opt(attr.name, new CalcOptionNotEmpty(attr.name),
-						setl(lout_nl.ncopy(),
+						setl(lout_nl,
 							open(attr.name),
-							par(plIndented, new SyntaxList(attr.name, node(), null, lout_nl.ncopy())),
+							par(plIndented, new SyntaxList(attr.name, node(), null, lout_nl)),
 							close(attr.name)
 							),
-						null,new DrawLayout()
+						null,new SpaceCmd[0]
 						);
 			}
 			else if (ANode.class.isAssignableFrom(attr.clazz)) {
 				ss.elements += opt(attr.name,
-					setl(lout_nl.ncopy(), open(attr.name), par(plIndented, attr(attr.name)), close(attr.name))
+					setl(lout_nl, open(attr.name), par(plIndented, attr(attr.name)), close(attr.name))
 					);
 			}
 			else if (Enum.class.isAssignableFrom(attr.clazz))
 				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
 			else if (attr.clazz == String.class)
-				ss.elements += set(open0(attr.name), new SyntaxStrAttr(attr.name,new DrawLayout()), close0(attr.name));
+				ss.elements += set(open0(attr.name), new SyntaxStrAttr(attr.name,new SpaceCmd[0]), close0(attr.name));
 			else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
 				attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
 				attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
@@ -114,10 +114,10 @@ public class XmlDumpSyntax extends TextSyntax {
 				ss.elements += kw("<error attr='"+attr.name+"'"+" class='"+nm+"' />");
 		}
 		{
-			SyntaxSet sn = new SyntaxSet(lout_nl.ncopy());
-			sn.elements += new SyntaxKeyword("<a-node class='"+nm+"'>",lout_nl_ba.ncopy());
+			SyntaxSet sn = new SyntaxSet(lout_nl);
+			sn.elements += new SyntaxKeyword("<a-node class='"+nm+"'>",lout_nl_ba);
 			sn.elements += par(plIndented, ss);
-			sn.elements += new SyntaxKeyword("</a-node>",lout_nl_ba.ncopy());
+			sn.elements += new SyntaxKeyword("</a-node>",lout_nl_ba);
 			se = sn;
 		}
 		seAll.put(nm,se);

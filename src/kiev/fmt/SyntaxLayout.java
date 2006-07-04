@@ -63,19 +63,19 @@ public class TextSyntax {
 	}
 	
 	protected SyntaxParagraphLayout par(ParagraphLayout par, SyntaxElem elem) {
-		SyntaxParagraphLayout spl = new SyntaxParagraphLayout(elem, par, new DrawLayout());
+		SyntaxParagraphLayout spl = new SyntaxParagraphLayout(elem, par, new SpaceCmd[0]);
 		return spl;
 	}
 	
 	protected SyntaxSet set(SyntaxElem... elems) {
-		DrawLayout lout_empty = new DrawLayout();
+		SpaceCmd[] lout_empty = new SpaceCmd[0];
 		SyntaxSet set = new SyntaxSet(lout_empty);
 		set.elements.addAll(elems);
 		return set;
 	}
 	
-	protected SyntaxSet setl(DrawLayout layout, SyntaxElem... elems) {
-		SyntaxSet set = new SyntaxSet(layout);
+	protected SyntaxSet setl(SpaceCmd[] spaces, SyntaxElem... elems) {
+		SyntaxSet set = new SyntaxSet(spaces);
 		set.elements.addAll(elems);
 		return set;
 	}
@@ -84,19 +84,19 @@ public class TextSyntax {
 			String name,
 			SyntaxElem element,
 			SyntaxElem separator,
-			DrawLayout layout
+			SpaceCmd[] spaces
 	)
 	{
-		SyntaxList lst = new SyntaxList(name.intern(), element, separator, layout);
+		SyntaxList lst = new SyntaxList(name.intern(), element, separator, spaces);
 		return lst;
 	}
 
 	protected SyntaxList lst(
 			String name,
-			DrawLayout layout
+			SpaceCmd[] spaces
 	)
 	{
-		SyntaxList lst = new SyntaxList(name.intern(), node(), null, layout);
+		SyntaxList lst = new SyntaxList(name.intern(), node(), null, spaces);
 		return lst;
 	}
 
@@ -112,76 +112,76 @@ public class TextSyntax {
 
 	protected SyntaxAttr attr(String slot)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		return new SyntaxAttr(slot, lout);
 	}
 
 	protected SyntaxAttr attr(String slot, FormatInfoHint hint)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		return new SyntaxAttr(slot, hint, lout);
 	}
 
 	protected SyntaxIdentAttr ident(String slot)
 	{
-		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
 				new SpaceCmd(siSpWORD, SP_ADD_AFTER, 0),
-			});
+			};
 		return new SyntaxIdentAttr(slot,lout);
 	}
 
 	protected SyntaxCharAttr charcter(String slot)
 	{
-		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
 				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
-			});
+			};
 		return new SyntaxCharAttr(slot,lout);
 	}
 
 	protected SyntaxStrAttr string(String slot)
 	{
-		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
 				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
-			});
+			};
 		return new SyntaxStrAttr(slot,lout);
 	}
 
 	protected SyntaxKeyword kw(String kw)
 	{
-		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
 				new SpaceCmd(siSpWORD, SP_ADD_AFTER, 0),
-			});
+			};
 		return new SyntaxKeyword(kw,lout);
 	}
 
 	protected SyntaxSeparator sep(String sep)
 	{
-		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpWORD, SP_EAT_BEFORE, 0),
 				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
 				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
-			});
+			};
 		return new SyntaxSeparator(sep,lout);
 	}
 
 	protected SyntaxSeparator sep0(String sep)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		return new SyntaxSeparator(sep,lout);
 	}
 
 	protected SyntaxSeparator sep_nl(String sep)
 	{
-		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpWORD, SP_EAT_BEFORE, 0),
 				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
 				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
 				new SpaceCmd(siNl,     SP_ADD_AFTER, 0),
-			});
+			};
 		return new SyntaxSeparator(sep,lout);
 	}
 
@@ -192,38 +192,38 @@ public class TextSyntax {
 
 	protected SyntaxOperator oper(String op)
 	{
-		DrawLayout lout = new DrawLayout(new SpaceCmd[]{
+		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpOPER, SP_ADD_BEFORE, 0),
 				new SpaceCmd(siSpOPER, SP_ADD_AFTER, 0),
-			});
+			};
 		return new SyntaxOperator(op.intern(),lout);
 	}
 
-	protected SyntaxSeparator sep(String sep, DrawLayout layout)
+	protected SyntaxSeparator sep(String sep, SpaceCmd[] spaces)
 	{
-		return new SyntaxSeparator(sep,layout);
+		return new SyntaxSeparator(sep,spaces);
 	}
 	
 	protected SyntaxOptional opt(String name)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		return opt(name,new CalcOptionNotNull(name),attr(name),null,lout);
 	}
 	
 	protected SyntaxOptional opt(String name, SyntaxElem opt_true)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		return opt(name,new CalcOptionNotNull(name),opt_true,null,lout);
 	}
 
-	protected SyntaxOptional opt(String name, CalcOption calc, SyntaxElem opt_true, SyntaxElem opt_false, DrawLayout lout)
+	protected SyntaxOptional opt(String name, CalcOption calc, SyntaxElem opt_true, SyntaxElem opt_false, SpaceCmd[] spaces)
 	{
-		return new SyntaxOptional(name,calc,opt_true,opt_false,lout);
+		return new SyntaxOptional(name,calc,opt_true,opt_false,spaces);
 	}
 
 	protected SyntaxIntChoice alt_int(String name, SyntaxElem... options)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		SyntaxIntChoice sc = new SyntaxIntChoice(name,lout);
 		sc.elements.addAll(options);
 		return sc;
@@ -231,7 +231,7 @@ public class TextSyntax {
 
 	protected SyntaxEnumChoice alt_enum(String name, SyntaxElem... options)
 	{
-		DrawLayout lout = new DrawLayout();
+		SpaceCmd[] lout = new SpaceCmd[0];
 		SyntaxEnumChoice sc = new SyntaxEnumChoice(name,lout);
 		sc.elements.addAll(options);
 		return sc;
@@ -258,7 +258,6 @@ public class SpaceInfo extends DNode {
 	@att SpaceKind		kind;
 	@att int			text_size;
 	@att int			pixel_size;
-	@att int			from_attempt;
 	
 	public SpaceInfo() {}
 	public SpaceInfo(String name, SpaceKind kind, int text_size, int pixel_size) {
@@ -275,26 +274,18 @@ public final class SpaceCmd extends ASTNode {
 
 	public static final SpaceCmd[] emptyArray = new SpaceCmd[0];
 
-	@ref SpaceInfo			si;
-	@att final boolean		before;
-	@att final boolean		eat;
-	@att final int			from_attempt;
+	@ref public SpaceInfo		si;
+	@att public int				from_attempt;
+	@att public SpaceAction		action;
 	
 	public SpaceCmd() {}
 	public SpaceCmd(SpaceInfo si, SpaceAction action) {
-		this(si, action==SP_ADD_BEFORE||action==SP_EAT_BEFORE, action==SP_EAT_BEFORE||action==SP_EAT_AFTER, 0);
+		this(si, action, 0);
 	}
 	public SpaceCmd(SpaceInfo si, SpaceAction action, int from_attempt) {
-		this(si, action==SP_ADD_BEFORE||action==SP_EAT_BEFORE, action==SP_EAT_BEFORE||action==SP_EAT_AFTER, from_attempt);
-	}
-	public SpaceCmd(SpaceInfo si, boolean before, boolean eat) {
-		this(si, before, eat, 0);
-	}
-	public SpaceCmd(SpaceInfo si, boolean before, boolean eat, int from_attempt) {
 		this.si = si;
-		this.before = before;
-		this.eat = eat;
 		this.from_attempt = from_attempt;
+		this.action = action;
 	}
 }
 
@@ -341,45 +332,52 @@ public class ParagraphLayoutBlock extends ParagraphLayout {
 }
 
 @node
-public final class DrawColor extends ASTNode {
-	public Color native_color;
+public final class DrawColor extends DNode {
+	@att
+	public int rgb_color;
+
 	
 	public DrawColor() {}
-}
-
-@node
-public final class DrawFont extends ASTNode {
-	public Font native_font;
-	
-	public DrawFont() {}
-}
-
-@node
-public final class DrawFormat extends ASTNode {
-	@ref public DrawColor	color;
-	@ref public DrawFont	font;
-	
-	public DrawFormat() {}
-	public DrawFormat(DrawColor color, DrawFont font) {
-		this.color = color;
-		this.font = font;
+	public DrawColor(int rgb_color) {
+		this.rgb_color = rgb_color;
 	}
 }
 
 @node
-public final class DrawLayout extends ASTNode {
-	@virtual typedef This  = DrawLayout;
+public final class DrawFont extends DNode {
+	@att
+	public String font_name;
 
-	@att int				count;
-	@att SpaceCmd[]			spaces;
+	public DrawFont() {}
+	public DrawFont(String font_name) {
+		this.font_name = font_name;
+	}
+}
+
+public final class LayoutSpace {
+	public String		name;
+	public int			from_attempt;
+	public boolean		new_line;
+	public boolean		before;
+	public boolean		eat;
+	public int			text_size;
+	public int			pixel_size;
+}
+
+public final class DrawLayout {
+
+	private static final Font default_font = Font.decode("Dialog-PLAIN-12");
 	
-	public DrawLayout() { this.count = 1; }
-	public DrawLayout(SpaceCmd[] spaces) {
-		this.spaces.addAll(spaces);
-		int count = 1;
-		for (int i=0; i < spaces.length; i++)
-			count = Math.max(count, spaces[i].from_attempt+1);
-		this.count = count;
+	public int				count;
+	public boolean			is_hidden;
+	public Color 			color;
+	public Font				font;
+	public LayoutSpace[]	spaces;
+
+	public DrawLayout() {
+		this.count = 1;
+		this.color = Color.BLACK;
+		this.font = default_font;
 	}
 }
 
@@ -389,18 +387,57 @@ public abstract class SyntaxElem extends ASTNode {
 
 	public static final SyntaxElem[] emptyArray = new SyntaxElem[0];
 
-	@att public DrawLayout			layout;
-	@att public DrawFormat			fmt;
+	@att public SpaceCmd[]			spaces;
+	@ref public DrawColor			color;
+	@ref public DrawFont			font;
 	@att public boolean				is_hidden;
+
+	public:r,r,r,rw DrawLayout		lout;
 	
 	public SyntaxElem() {}
-	public SyntaxElem(DrawLayout layout) {
-		this.layout = layout;
-		this.fmt = new DrawFormat(new DrawColor(), new DrawFont());
+	public SyntaxElem(SpaceCmd[] spaces) {
+		this.spaces.copyFrom(spaces);
+		this.color = new DrawColor();
+		this.font = new DrawFont();
 	}
 
 	public abstract Drawable makeDrawable(Formatter fmt, ASTNode node);
-
+	
+	@getter
+	public DrawLayout get$lout() {
+		if (lout == null) {
+			lout = new DrawLayout();
+			compile();
+		}
+		return lout;
+	}
+	
+	private void compile() {
+		DrawLayout lout = this.lout;
+		lout.is_hidden = is_hidden;
+		if (color != null)
+			lout.color = new Color(color.rgb_color);
+		if (font != null)
+			lout.font = Font.decode(font.font_name);
+		lout.spaces = new LayoutSpace[spaces.length];
+		for (int i=0; i < lout.spaces.length; i++) {
+			SpaceCmd sc = spaces[i];
+			LayoutSpace ls = new LayoutSpace();
+			ls.name = sc.si.id.uname;
+			ls.from_attempt = sc.from_attempt;
+			if (sc.si.kind == SP_NEW_LINE) ls.new_line = true;
+			ls.text_size = sc.si.text_size;
+			ls.pixel_size = sc.si.pixel_size;
+			switch (sc.action) {
+			case SP_ADD_BEFORE: ls.before = true;  ls.eat = false; break;
+			case SP_EAT_BEFORE: ls.before = true;  ls.eat = true;  break;
+			case SP_ADD_AFTER:  ls.before = false; ls.eat = false; break;
+			case SP_EAT_AFTER:  ls.before = false; ls.eat = true;  break;
+			}
+			lout.spaces[i] = ls;
+			lout.count = Math.max(lout.count, sc.from_attempt+1);
+		}
+	}
 }
 
 @node
@@ -408,8 +445,8 @@ public class SyntaxSpace extends SyntaxElem {
 	@virtual typedef This  = SyntaxSpace;
 
 	public SyntaxSpace() {}
-	public SyntaxSpace(DrawLayout layout) {
-		super(layout);
+	public SyntaxSpace(SpaceCmd[] spaces) {
+		super(spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -426,8 +463,8 @@ public abstract class SyntaxToken extends SyntaxElem {
 	@att public String text;
 
 	public SyntaxToken() {}
-	public SyntaxToken(String text, DrawLayout layout) {
-		super(layout);
+	public SyntaxToken(String text, SpaceCmd[] spaces) {
+		super(spaces);
 		this.text = text.intern();
 	}
 }
@@ -437,8 +474,8 @@ public class SyntaxKeyword extends SyntaxToken {
 	@virtual typedef This  = SyntaxKeyword;
 
 	public SyntaxKeyword() {}
-	public SyntaxKeyword(String text, DrawLayout layout) {
-		super(text, layout);
+	public SyntaxKeyword(String text, SpaceCmd[] spaces) {
+		super(text, spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -453,8 +490,8 @@ public class SyntaxOperator extends SyntaxToken {
 	@virtual typedef This  = SyntaxOperator;
 
 	public SyntaxOperator() {}
-	public SyntaxOperator(String text, DrawLayout layout) {
-		super(text, layout);
+	public SyntaxOperator(String text, SpaceCmd[] spaces) {
+		super(text, spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -469,8 +506,8 @@ public class SyntaxSeparator extends SyntaxToken {
 	@virtual typedef This  = SyntaxSeparator;
 
 	public SyntaxSeparator() {}
-	public SyntaxSeparator(String text, DrawLayout layout) {
-		super(text, layout);
+	public SyntaxSeparator(String text, SpaceCmd[] spaces) {
+		super(text, spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -491,8 +528,8 @@ public class SyntaxList extends SyntaxElem {
 	     public CalcOption filter;
 
 	public SyntaxList() {}
-	public SyntaxList(String name, SyntaxElem element, SyntaxElem separator, DrawLayout layout) {
-		super(layout);
+	public SyntaxList(String name, SyntaxElem element, SyntaxElem separator, SpaceCmd[] spaces) {
+		super(spaces);
 		this.name = name.intern();
 		this.element = element;
 		this.separator = separator;
@@ -512,8 +549,8 @@ public class SyntaxSet extends SyntaxElem {
 	@att public SyntaxElem[] elements;
 
 	public SyntaxSet() {}
-	public SyntaxSet(DrawLayout layout) {
-		super(layout);
+	public SyntaxSet(SpaceCmd[] spaces) {
+		super(spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -532,12 +569,12 @@ public class SyntaxAttr extends SyntaxElem {
 	@att public SymbolRef[]		expected_types;
 
 	public SyntaxAttr() {}
-	public SyntaxAttr(String name, DrawLayout layout) {
-		super(layout);
+	public SyntaxAttr(String name, SpaceCmd[] spaces) {
+		super(spaces);
 		this.name = name.intern();
 	}
-	public SyntaxAttr(String name, FormatInfoHint hint, DrawLayout layout) {
-		super(layout);
+	public SyntaxAttr(String name, FormatInfoHint hint, SpaceCmd[] spaces) {
+		super(spaces);
 		this.name = name.intern();
 		this.hint = hint;
 	}
@@ -562,7 +599,6 @@ public class SyntaxNode extends SyntaxElem {
 
 	public SyntaxNode() {}
 	public SyntaxNode(FormatInfoHint hint) {
-		super(new DrawLayout());
 		this.hint = hint;
 	}
 
@@ -576,8 +612,8 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxIdentAttr;
 
 	public SyntaxIdentAttr() {}
-	public SyntaxIdentAttr(String name, DrawLayout layout) {
-		super(name,layout);
+	public SyntaxIdentAttr(String name, SpaceCmd[] spaces) {
+		super(name,spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -592,8 +628,8 @@ public class SyntaxCharAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxCharAttr;
 
 	public SyntaxCharAttr() {}
-	public SyntaxCharAttr(String name, DrawLayout layout) {
-		super(name,layout);
+	public SyntaxCharAttr(String name, SpaceCmd[] spaces) {
+		super(name,spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -608,8 +644,8 @@ public class SyntaxStrAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxStrAttr;
 
 	public SyntaxStrAttr() {}
-	public SyntaxStrAttr(String name, DrawLayout layout) {
-		super(name,layout);
+	public SyntaxStrAttr(String name, SpaceCmd[] spaces) {
+		super(name,spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
@@ -673,8 +709,8 @@ public class SyntaxOptional extends SyntaxElem {
 	@att public String name;
 
 	public SyntaxOptional() {}
-	public SyntaxOptional(String name, CalcOption calculator, SyntaxElem opt_true, SyntaxElem opt_false, DrawLayout layout) {
-		super(layout);
+	public SyntaxOptional(String name, CalcOption calculator, SyntaxElem opt_true, SyntaxElem opt_false, SpaceCmd[] spaces) {
+		super(spaces);
 		this.calculator = calculator;
 		this.opt_true = opt_true;
 		this.opt_false = opt_false;
@@ -695,8 +731,8 @@ public class SyntaxIntChoice extends SyntaxSet {
 	@att public String name;
 
 	public SyntaxIntChoice() {}
-	public SyntaxIntChoice(String name, DrawLayout layout) {
-		super(layout);
+	public SyntaxIntChoice(String name, SpaceCmd[] spaces) {
+		super(spaces);
 		this.name = name.intern();
 	}
 
@@ -714,8 +750,8 @@ public class SyntaxEnumChoice extends SyntaxSet {
 	@att public String name;
 
 	public SyntaxEnumChoice() {}
-	public SyntaxEnumChoice(String name, DrawLayout layout) {
-		super(layout);
+	public SyntaxEnumChoice(String name, SpaceCmd[] spaces) {
+		super(spaces);
 		this.name = name.intern();
 	}
 
@@ -734,8 +770,8 @@ public class SyntaxParagraphLayout extends SyntaxElem {
 	@ref public ParagraphLayout		par;
 
 	public SyntaxParagraphLayout() {}
-	public SyntaxParagraphLayout(SyntaxElem elem, ParagraphLayout par, DrawLayout layout) {
-		super(layout);
+	public SyntaxParagraphLayout(SyntaxElem elem, ParagraphLayout par, SpaceCmd[] spaces) {
+		super(spaces);
 		this.elem = elem;
 		this.par = par;
 	}
