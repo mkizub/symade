@@ -89,6 +89,33 @@ public class DrawOptional extends DrawCtrl {
 }
 
 @node
+public class DrawFolded extends DrawCtrl {
+
+	@ref Drawable dr_folded;
+	@ref Drawable dr_unfolded;
+	
+	public DrawFolded() {}
+	public DrawFolded(ASTNode node, SyntaxFolder syntax) {
+		super(node, syntax);
+	}
+
+	public void init(Formatter fmt) {
+		SyntaxFolder sc = (SyntaxFolder)syntax;
+		dr_folded = sc.folded.makeDrawable(fmt, node);
+		dr_unfolded = sc.unfolded.makeDrawable(fmt, node);
+	}
+
+	public void preFormat(DrawContext cont) {
+		SyntaxFolder sc = (SyntaxFolder)syntax;
+		if (node.isDrawFolded())
+			arg = dr_folded;
+		else
+			arg = dr_unfolded;
+		super.preFormat(cont);
+	}
+}
+
+@node
 public class DrawIntChoice extends DrawCtrl {
 
 	@ref Drawable[] args;

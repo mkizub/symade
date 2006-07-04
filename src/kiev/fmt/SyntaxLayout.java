@@ -237,6 +237,11 @@ public class TextSyntax {
 		return sc;
 	}
 
+	protected SyntaxFolder folder(SyntaxElem folded, SyntaxElem unfolded, SpaceCmd[] spaces)
+	{
+		return new SyntaxFolder(folded,unfolded,spaces);
+	}
+
 }
 
 public enum SpaceKind {
@@ -378,6 +383,18 @@ public final class DrawLayout {
 		this.count = 1;
 		this.color = Color.BLACK;
 		this.font = default_font;
+	}
+}
+
+@node
+public final class SyntaxElemDecl extends DNode {
+	@att SymbolRef		node;
+	@att SyntaxElem		elem;
+
+	public SyntaxElemDecl() {}
+	public SyntaxElemDecl(Struct cls, SyntaxElem elem) {
+		this.node = new SymbolRef(0,cls);
+		this.elem = elem;
 	}
 }
 
@@ -723,6 +740,28 @@ public class SyntaxOptional extends SyntaxElem {
 		return dr;
 	}
 }
+
+
+@node
+public class SyntaxFolder extends SyntaxElem {
+	@virtual typedef This  = SyntaxFolder;
+
+	@att public SyntaxElem folded;
+	@att public SyntaxElem unfolded;
+
+	public SyntaxFolder() {}
+	public SyntaxFolder(SyntaxElem folded, SyntaxElem unfolded, SpaceCmd[] spaces) {
+		this.folded = folded;
+		this.unfolded = unfolded;
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+		Drawable dr = new DrawFolded(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
 
 @node
 public class SyntaxIntChoice extends SyntaxSet {

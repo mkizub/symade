@@ -58,6 +58,7 @@ public class Editor extends InfoView implements KeyListener {
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_P),         new NewElemEditor(this,NewElemEditor.INSERT_HERE));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_A),         new NewElemEditor(this,NewElemEditor.INSERT_NEXT));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_N),         new NewElemEditor(this,NewElemEditor.SETNEW_HERE));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_F),         new FolderTrigger(this));
 	}
 	
 	public Editor(Window window, TextSyntax syntax, Canvas view_canvas) {
@@ -589,6 +590,24 @@ final class ChooseItemEditor implements KeyHandler {
 			else if (Enum.class.isAssignableFrom(pattr.slot.clazz))
 				editor.startItemEditor(pattr.node, new EnumEditor(pattr, dr, editor));
 		}
+	}
+}
+
+final class FolderTrigger implements KeyHandler {
+
+	private final Editor	editor;
+
+	FolderTrigger(Editor editor) {
+		this.editor = editor;
+	}
+
+	public void process() {
+		Drawable dr = editor.cur_elem;
+		ASTNode n = dr.node;
+		if (n != null) {
+			n.setDrawFolded(!n.isDrawFolded());
+		}
+		editor.formatAndPaint(true);
 	}
 }
 

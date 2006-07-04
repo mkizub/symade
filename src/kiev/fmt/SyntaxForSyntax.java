@@ -23,6 +23,8 @@ public class SyntaxForSyntax extends TextSyntax {
 	final SyntaxElem seSpaceInfo;
 	final SyntaxElem seDrawColor;
 	final SyntaxElem seDrawFont;
+	final SyntaxElem seSyntaxElemDecl;
+	final SyntaxElem seSyntaxKeyword;
 
 	public SyntaxForSyntax() {
 		SpaceCmd[] lout_empty = new SpaceCmd[0];
@@ -37,6 +39,7 @@ public class SyntaxForSyntax extends TextSyntax {
 		fu_members.expected_types += new SymbolRef(0, Env.newStruct("SpaceInfo",Env.newPackage("kiev.fmt"),0));
 		fu_members.expected_types += new SymbolRef(0, Env.newStruct("DrawColor",Env.newPackage("kiev.fmt"),0));
 		fu_members.expected_types += new SymbolRef(0, Env.newStruct("DrawFont",Env.newPackage("kiev.fmt"),0));
+		fu_members.expected_types += new SymbolRef(0, Env.newStruct("SyntaxElemDecl",Env.newPackage("kiev.fmt"),0));
 		seFileUnit = setl(lout_nl,
 				opt("pkg", setl(lout_pkg, kw("namespace"), ident("pkg"))),
 				fu_members
@@ -46,6 +49,24 @@ public class SyntaxForSyntax extends TextSyntax {
 		seSpaceInfo = setl(lout_nl,kw("def-space"),id.ncopy(),attr("kind"),attr("text_size"),attr("pixel_size"));
 		seDrawColor = setl(lout_nl,kw("def-color"),id.ncopy(),attr("rgb_color"));
 		seDrawFont  = setl(lout_nl,kw("def-font"), id.ncopy(),attr("font_name"));
+		SyntaxAttr node_attr = attr("node");
+		node_attr.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
+		SyntaxAttr elem_attr = attr("elem");
+		elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxKeyword",Env.newPackage("kiev.fmt"),0));
+		seSyntaxElemDecl = setl(lout_nl,kw("def-syntax"), id.ncopy(), node_attr, elem_attr);
+		seSyntaxKeyword = folder(
+			attr("text"),
+			set(
+				attr("text"),
+				sep("<"),
+					kw("font"),oper("="),attr("font"),
+					kw("color"),oper("="),attr("color"),
+					kw("hidden"),oper("="),attr("is_hidden"),
+					kw("spaces"),oper("="),sep("{"),lst("spaces",node(),sep(","),new SpaceCmd[0]),sep("}"),
+				sep(">")
+				),
+			new SpaceCmd[0]
+			);
 	}
 
 	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
@@ -54,6 +75,8 @@ public class SyntaxForSyntax extends TextSyntax {
 		case SpaceInfo: return seSpaceInfo;
 		case DrawColor: return seDrawColor;
 		case DrawFont:  return seDrawFont;
+		case SyntaxElemDecl: return seSyntaxElemDecl;
+		case SyntaxKeyword: return seSyntaxKeyword;
 		}
 		return super.getSyntaxElem(node,hint);
 	}

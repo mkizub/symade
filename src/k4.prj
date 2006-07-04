@@ -116,6 +116,7 @@ CLASS kiev.fmt.DrawColor kiev/fmt/DrawColor kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawContext kiev/fmt/DrawContext kiev\fmt\DrawContext.java
 CLASS kiev.fmt.DrawCtrl kiev/fmt/DrawCtrl kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawEnumChoice kiev/fmt/DrawEnumChoice kiev\fmt\DrawCtrl.java
+CLASS kiev.fmt.DrawFolded kiev/fmt/DrawFolded kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawFont kiev/fmt/DrawFont kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawGeometry kiev/fmt/DrawGeometry kiev\fmt\DrawGeometry.java
 CLASS kiev.fmt.DrawIntChoice kiev/fmt/DrawIntChoice kiev\fmt\DrawCtrl.java
@@ -150,7 +151,9 @@ CLASS kiev.fmt.SpaceInfo kiev/fmt/SpaceInfo kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxAttr kiev/fmt/SyntaxAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxCharAttr kiev/fmt/SyntaxCharAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxElem kiev/fmt/SyntaxElem kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.SyntaxElemDecl kiev/fmt/SyntaxElemDecl kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxEnumChoice kiev/fmt/SyntaxEnumChoice kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.SyntaxFolder kiev/fmt/SyntaxFolder kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxForSyntax kiev/fmt/SyntaxForSyntax kiev\fmt\SyntaxForSyntax.java
 CLASS kiev.fmt.SyntaxIdentAttr kiev/fmt/SyntaxIdentAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxIntChoice kiev/fmt/SyntaxIntChoice kiev\fmt\SyntaxLayout.java
@@ -179,6 +182,7 @@ CLASS kiev.gui.Canvas kiev/gui/Canvas kiev\gui\Canvas.java
 CLASS kiev.gui.ChooseItemEditor kiev/gui/ChooseItemEditor kiev\gui\Editor.java
 CLASS kiev.gui.Editor kiev/gui/Editor kiev\gui\Editor.java
 CLASS kiev.gui.EnumEditor kiev/gui/EnumEditor kiev\gui\Editor.java
+CLASS kiev.gui.FolderTrigger kiev/gui/FolderTrigger kiev\gui\Editor.java
 CLASS kiev.gui.InfoView kiev/gui/InfoView kiev\gui\InfoView.java
 CLASS kiev.gui.IntEditor kiev/gui/IntEditor kiev\gui\Editor.java
 CLASS kiev.gui.NavigateEditor kiev/gui/NavigateEditor kiev\gui\Editor.java
