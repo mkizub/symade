@@ -41,9 +41,9 @@ import syntax kiev.Syntax;
 @node
 public abstract class LvalueExpr extends ENode {
 
-	@virtual typedef This  = LvalueExpr;
-	@virtual typedef JView = JLvalueExpr;
-	@virtual typedef RView = RLvalueExpr;
+	@virtual typedef This  ≤ LvalueExpr;
+	@virtual typedef JView ≤ JLvalueExpr;
+	@virtual typedef RView ≤ RLvalueExpr;
 
 	public LvalueExpr() {}
 }
@@ -67,7 +67,7 @@ public final class AccessExpr extends LvalueExpr {
 		this.pos = pos;
 	}
 	
-	public AccessExpr(int pos, ENode obj, SymbolRef ident) {
+	public AccessExpr(int pos, ENode obj, SymbolRef<DNode> ident) {
 		this.pos = pos;
 		this.obj = obj;
 		this.ident = ident;
@@ -184,7 +184,7 @@ public final class IFldExpr extends LvalueExpr {
 
 	public IFldExpr() {}
 
-	public IFldExpr(int pos, ENode obj, SymbolRef ident, Field var) {
+	public IFldExpr(int pos, ENode obj, SymbolRef<DNode> ident, Field var) {
 		this.pos = pos;
 		this.obj = obj;
 		this.ident = ident;
@@ -195,21 +195,21 @@ public final class IFldExpr extends LvalueExpr {
 	public IFldExpr(int pos, ENode obj, Field var) {
 		this.pos = pos;
 		this.obj = obj;
-		this.ident = new SymbolRef(pos,var);
+		this.ident = new SymbolRef<DNode>(pos,var);
 		assert(obj != null && var != null);
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var, boolean direct_access) {
 		this.pos = pos;
 		this.obj = obj;
-		this.ident = new SymbolRef(pos,var);
+		this.ident = new SymbolRef<DNode>(pos,var);
 		assert(obj != null && var != null);
 		if (direct_access) setAsField(true);
 	}
 
 	public IFldExpr(ENode obj, String ident) {
 		this.obj = obj;
-		this.ident = new SymbolRef(0,ident);
+		this.ident = new SymbolRef<DNode>(0,ident);
 	}
 
 	public Operator getOp() { return Operator.Access; }
@@ -428,14 +428,14 @@ public final class LVarExpr extends LvalueExpr {
 	public LVarExpr() {}
 	public LVarExpr(int pos, Var var) {
 		this.pos = pos;
-		this.ident = new SymbolRef(pos, var);
+		this.ident = new SymbolRef<DNode>(pos, var);
 	}
 	public LVarExpr(int pos, String name) {
 		this.pos = pos;
-		this.ident = new SymbolRef(pos, name);
+		this.ident = new SymbolRef<DNode>(pos, name);
 	}
 	public LVarExpr(String name) {
-		this.ident = new SymbolRef(name);
+		this.ident = new SymbolRef<DNode>(name);
 	}
 
 	public Type getType() {
@@ -461,9 +461,9 @@ public final class LVarExpr extends LvalueExpr {
 	public void set(Token t) {
         pos = t.getPos();
 		if (t.image.startsWith("#id\""))
-			this.ident = new SymbolRef(pos, ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2)));
+			this.ident = new SymbolRef<DNode>(pos, ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2)));
 		else
-			this.ident = new SymbolRef(pos, t.image);
+			this.ident = new SymbolRef<DNode>(pos, t.image);
 	}
 	
 	public boolean preResolveIn() {
@@ -527,13 +527,13 @@ public final class SFldExpr extends LvalueExpr {
 	public SFldExpr(int pos, Field var) {
 		this.pos = pos;
 		this.obj = new TypeRef(pos,var.ctx_tdecl.xtype);
-		this.ident = new SymbolRef(pos,var);
+		this.ident = new SymbolRef<DNode>(pos,var);
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
 		this.pos = pos;
 		this.obj = new TypeRef(pos,var.ctx_tdecl.xtype);
-		this.ident = new SymbolRef(pos,var);
+		this.ident = new SymbolRef<DNode>(pos,var);
 		if (direct_access) setAsField(true);
 	}
 
@@ -646,7 +646,7 @@ public final class OuterThisAccessExpr extends ENode {
 	public OuterThisAccessExpr(int pos, Struct outer) {
 		this.pos = pos;
 		this.obj = new TypeRef(pos,outer.xtype);
-		this.ident = new SymbolRef(pos,nameThis);
+		this.ident = new SymbolRef<DNode>(pos,nameThis);
 		this.outer = outer;
 	}
 

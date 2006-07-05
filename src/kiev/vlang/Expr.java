@@ -188,7 +188,7 @@ public class AssignExpr extends ENode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = op;
-		this.ident = new SymbolRef(op.name, cm);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
 		this.lval = args[0];
 		this.value = args[1];
 	}
@@ -303,7 +303,7 @@ public class BinaryExpr extends ENode {
 	}
 
 	public BinaryExpr(CoreMethod cm, Operator op, ENode[] args) {
-		this.ident = new SymbolRef(op.name,cm);
+		this.ident = new SymbolRef<DNode>(op.name,cm);
 		this.op = op;
 		this.expr1 = args[0];
 		this.expr2 = args[1];
@@ -312,7 +312,7 @@ public class BinaryExpr extends ENode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = op;
-		this.ident = new SymbolRef(op.name, cm);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -331,7 +331,7 @@ public class BinaryExpr extends ENode {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			if (ident == null) ident = new SymbolRef(pos, op.name);
+			if (ident == null) ident = new SymbolRef<DNode>(pos, op.name);
 			ident.symbol = m;
 		}
 		Type ret = m.type.ret();
@@ -379,7 +379,7 @@ public class UnaryExpr extends ENode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = (Operator)op;
-		this.ident = new SymbolRef(op.name, cm);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
 		this.expr = args[0];
 	}
 	
@@ -397,7 +397,7 @@ public class UnaryExpr extends ENode {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			if (ident == null) ident = new SymbolRef(pos, op.name);
+			if (ident == null) ident = new SymbolRef<DNode>(pos, op.name);
 			ident.symbol = m;
 		}
 		Type ret = m.type.ret();
@@ -442,7 +442,7 @@ public class StringConcatExpr extends ENode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.Add);
-		this.ident = new SymbolRef(op.name, cm);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
 		ENode arg1 = args[0];
 		ENode arg2 = args[1];
 		if (arg1 instanceof StringConcatExpr)
@@ -660,7 +660,7 @@ public class IncrementExpr extends ENode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = (Operator)op;
-		this.ident = new SymbolRef(op.name, cm);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
 		this.lval = args[0];
 	}
 	

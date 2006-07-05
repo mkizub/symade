@@ -296,7 +296,7 @@ public final class SpaceCmd extends ASTNode {
 
 @node
 public class ParagraphLayout extends ASTNode {
-	@virtual typedef This  = ParagraphLayout;
+	@virtual typedef This  ≤ ParagraphLayout;
 
 	@att KString name;
 	@att int indent_text_size;
@@ -400,7 +400,7 @@ public final class SyntaxElemDecl extends DNode {
 
 @node
 public abstract class SyntaxElem extends ASTNode {
-	@virtual typedef This  = SyntaxElem;
+	@virtual typedef This  ≤ SyntaxElem;
 
 	public static final SyntaxElem[] emptyArray = new SyntaxElem[0];
 
@@ -475,7 +475,7 @@ public class SyntaxSpace extends SyntaxElem {
 
 @node
 public abstract class SyntaxToken extends SyntaxElem {
-	@virtual typedef This  = SyntaxToken;
+	@virtual typedef This  ≤ SyntaxToken;
 
 	@att public String text;
 
@@ -561,7 +561,7 @@ public class SyntaxList extends SyntaxElem {
 
 @node
 public class SyntaxSet extends SyntaxElem {
-	@virtual typedef This  = SyntaxSet;
+	@virtual typedef This  ≤ SyntaxSet;
 
 	@att public SyntaxElem[] elements;
 
@@ -579,7 +579,7 @@ public class SyntaxSet extends SyntaxElem {
 
 @node
 public class SyntaxAttr extends SyntaxElem {
-	@virtual typedef This  = SyntaxAttr;
+	@virtual typedef This  ≤ SyntaxAttr;
 
 	@att public String			name;
 	@att public FormatInfoHint	hint;

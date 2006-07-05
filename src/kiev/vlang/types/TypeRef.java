@@ -28,7 +28,7 @@ public class TypeRef extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = TypeRef;
+	@virtual typedef This  ≤ TypeRef;
 	@virtual typedef JView = JTypeRef;
 
 	@ref public Type	lnk;

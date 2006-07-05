@@ -330,8 +330,8 @@ public final class ConstStringExpr extends ConstExpr {
 @node
 public abstract class ConstExpr extends ENode {
 
-	@virtual typedef This  = ConstExpr;
-	@virtual typedef JView = JConstExpr;
+	@virtual typedef This  ≤ ConstExpr;
+	@virtual typedef JView ≤ JConstExpr;
 	@virtual typedef RView = RConstExpr;
 
 	public ConstExpr() {

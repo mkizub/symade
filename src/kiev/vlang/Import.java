@@ -29,7 +29,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 
 	@virtual typedef This  = Import;
 
-	@att public SymbolRef			name;
+	@att public SymbolRef<DNode>	name;
 	@att public ImportMode			mode = ImportMode.IMPORT_CLASS;
 	@att public boolean				star;
 	@att public TypeRef[]			args;
@@ -40,7 +40,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	public Import() {}
 
 	public Import(Struct node, boolean star) {
-		this.name = new SymbolRef(node.qname());
+		this.name = new SymbolRef<DNode>(node.qname());
 		this.resolved = node;
 		this.mode = mode;
 		this.star = star;

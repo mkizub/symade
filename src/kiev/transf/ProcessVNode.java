@@ -237,7 +237,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			s.members.add(ctor);
 			CallExpr ce = new CallExpr(f.pos,
 					new TypeRef(s.super_types[0].getType()),
-					new SymbolRef("super",s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpClass)),
+					new SymbolRef<Method>("super",s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpClass)),
 					null,
 					new ENode[]{
 						new LVarExpr(f.pos, ctor.params[0]),
@@ -450,7 +450,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			copyV.body = new Block(0);
 			Var v = new Var(0, "node",s.xtype,0);
 			copyV.block.stats.append(new ReturnStat(0,new CallExpr(0,new ThisExpr(),
-				new SymbolRef("copyTo"), null, new ENode[]{new NewExpr(0,s.xtype,ENode.emptyArray)})));
+				new SymbolRef<Method>("copyTo"), null, new ENode[]{new NewExpr(0,s.xtype,ENode.emptyArray)})));
 		}
 		// copyTo(Object)
 		if (hasMethod(s, "copyTo")) {
@@ -463,7 +463,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			Var v = new Var(0,"node",s.xtype,0);
 			if (isNodeKind(s.super_types[0].getStruct())) {
 				CallExpr cae = new CallExpr(0,new ThisExpr(true),
-					new SymbolRef("copyTo"),null,new ENode[]{new LVarExpr(0,copyV.params[0])});
+					new SymbolRef<Method>("copyTo"),null,new ENode[]{new LVarExpr(0,copyV.params[0])});
 				v.init = new CastExpr(0,s.xtype,cae);
 				copyV.block.addSymbol(v);
 			} else {
@@ -486,14 +486,14 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 					if (isArr) {
 						CallExpr cae = new CallExpr(0,
 							new IFldExpr(0,new LVarExpr(0,v),f),
-							new SymbolRef("copyFrom"),
+							new SymbolRef<Method>("copyFrom"),
 							null,
 							new ENode[]{new IFldExpr(0,new ThisExpr(),f)});
 						copyV.block.stats.append(new ExprStat(0,cae));
 					} else {
 						CallExpr cae = new CallExpr(0,
 							new IFldExpr(0, new ThisExpr(),f),
-							new SymbolRef("copy"),
+							new SymbolRef<Method>("copy"),
 							null,
 							ENode.emptyArray);
 						copyV.block.stats.append( 
@@ -549,7 +549,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				);
 			}
 			CallExpr cae = new CallExpr(0,new ThisExpr(true),
-				new SymbolRef("setFrom"),null,new ENode[]{new LVarExpr(0,v)});
+				new SymbolRef<Method>("setFrom"),null,new ENode[]{new LVarExpr(0,v)});
 			setF.block.stats.append(cae);
 		}
 		// setVal(String, Object)
@@ -564,8 +564,8 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			// check the node is not locked
 			if (s.xtype.isInstanceOf(tpNode)) {
 				setV.block.stats.add(new ExprStat(
-					new CallExpr(0,new TypeRef(Type.tpDebug), new SymbolRef("assert"),null,
-						new ENode[]{new BooleanNotExpr(0,new AccessExpr(0,new ThisExpr(),new SymbolRef("locked")))})
+					new CallExpr(0,new TypeRef(Type.tpDebug), new SymbolRef<Method>("assert"),null,
+						new ENode[]{new BooleanNotExpr(0,new AccessExpr(0,new ThisExpr(),new SymbolRef<DNode>("locked")))})
 				));
 			}
 			foreach (Field f; aflds; f.parent() == s) {
@@ -729,7 +729,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 						new ExprStat(0,
 							new CallExpr(0,
 								new IFldExpr(0,new ThisExpr(),f,true),
-								new SymbolRef("callbackDetached"),
+								new SymbolRef<Method>("callbackDetached"),
 								null,
 								ENode.emptyArray
 							)
@@ -747,7 +747,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					new ExprStat(0,
 						new CallExpr(0,
 							new LVarExpr(0, value),
-							new SymbolRef("callbackAttached"),
+							new SymbolRef<Method>("callbackAttached"),
 							null,
 							new ENode[] {
 								new ThisExpr(),
@@ -771,7 +771,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					new ExprStat(0,
 						new CallExpr(0,
 							new ThisExpr(),
-							new SymbolRef("callbackChildChanged"),
+							new SymbolRef<Method>("callbackChildChanged"),
 							null,
 							new ENode[] {
 								new SFldExpr(f.pos, fatt)
@@ -786,8 +786,8 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		// check the node is not locked
 		if (s.xtype.isInstanceOf(tpNode)) {
 			ENode p_st = new ExprStat(
-				new CallExpr(0,new TypeRef(Type.tpDebug), new SymbolRef("assert"),null,
-					new ENode[]{new BooleanNotExpr(0,new AccessExpr(0,new ThisExpr(),new SymbolRef("locked")))})
+				new CallExpr(0,new TypeRef(Type.tpDebug), new SymbolRef<Method>("assert"),null,
+					new ENode[]{new BooleanNotExpr(0,new AccessExpr(0,new ThisExpr(),new SymbolRef<DNode>("locked")))})
 			);
 			body.stats.insert(0,p_st);
 			Kiev.runProcessorsOn(p_st);

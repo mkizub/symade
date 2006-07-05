@@ -23,9 +23,9 @@ import syntax kiev.Syntax;
 @node
 public abstract class DNode extends ASTNode {
 
-	@virtual typedef This  = DNode;
-	@virtual typedef JView = JDNode;
-	@virtual typedef RView = RDNode;
+	@virtual typedef This  ≤ DNode;
+	@virtual typedef JView ≤ JDNode;
+	@virtual typedef RView ≤ RDNode;
 	
 	public static final DNode[] emptyArray = new DNode[0];
 	
@@ -299,9 +299,9 @@ public final class DummyDNode extends DNode {
 @node
 public abstract class LvalDNode extends DNode {
 
-	@virtual typedef This  = LvalDNode;
-	@virtual typedef JView = JLvalDNode;
-	@virtual typedef RView = RLvalDNode;
+	@virtual typedef This  ≤ LvalDNode;
+	@virtual typedef JView ≤ JLvalDNode;
+	@virtual typedef RView ≤ RLvalDNode;
 
 	// init wrapper
 	@getter public final boolean isInitWrapper() {
@@ -337,9 +337,9 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	@virtual typedef This  = TypeDecl;
-	@virtual typedef JView = JTypeDecl;
-	@virtual typedef RView = RTypeDecl;
+	@virtual typedef This  ≤ TypeDecl;
+	@virtual typedef JView ≤ JTypeDecl;
+	@virtual typedef RView ≤ RTypeDecl;
 
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	

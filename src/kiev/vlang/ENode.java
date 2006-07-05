@@ -23,11 +23,12 @@ public abstract class ENode extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 	
-	@virtual typedef This  = ENode;
-	@virtual typedef JView = JENode;
-	@virtual typedef RView = RENode;
+	@virtual typedef This  ≤ ENode;
+	@virtual typedef JView ≤ JENode;
+	@virtual typedef RView ≤ RENode;
+	@virtual typedef TypeOfIdent ≤ DNode;
 
-	@att public SymbolRef		ident;
+	@att public SymbolRef<TypeOfIdent>		ident;
 	
 	//
 	// Expr specific

@@ -17,9 +17,9 @@ import syntax kiev.Syntax;
 @node
 class Test extends ASTNode {
 	void foo() {
-		DNode@ pv;
-		DNode dn;
-		dn = pv;
+		MetaPacked mp;
+		IFldExpr ae;
+		ae.ident.symbol = mp.packer;
 	}
 }
 

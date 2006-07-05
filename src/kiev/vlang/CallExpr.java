@@ -32,6 +32,7 @@ public class CallExpr extends ENode {
 	@virtual typedef This  = CallExpr;
 	@virtual typedef JView = JCallExpr;
 	@virtual typedef RView = RCallExpr;
+	@virtual typedef TypeOfIdent = Method;
 
 	@att public ENode				obj;
 	@att public TypeRef[]			targs;
@@ -39,10 +40,7 @@ public class CallExpr extends ENode {
 
 	@getter public Method get$func() {
 		if (ident == null) return null;
-		DNode sym = ident.symbol;
-		if (sym instanceof Method)
-			return (Method)sym;
-		return null;
+		return (Method)ident.symbol;
 	}
 	@setter public void set$func(Method m) {
 		this.ident.symbol = m;
@@ -50,7 +48,7 @@ public class CallExpr extends ENode {
 
 	public CallExpr() {}
 
-	public CallExpr(int pos, ENode obj, SymbolRef ident, TypeRef[] targs, ENode[] args) {
+	public CallExpr(int pos, ENode obj, SymbolRef<Method> ident, TypeRef[] targs, ENode[] args) {
 		this.pos = pos;
 		this.ident = ident;
 		this.obj = obj;
@@ -59,11 +57,11 @@ public class CallExpr extends ENode {
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, TypeRef[] targs, ENode[] args) {
-		this(pos, obj, new SymbolRef(pos,func), targs, args);
+		this(pos, obj, new SymbolRef<Method>(pos,func), targs, args);
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
-		this(pos, obj, new SymbolRef(pos,func), null, args);
+		this(pos, obj, new SymbolRef<Method>(pos,func), null, args);
 	}
 
 	public ENode[] getArgs() {

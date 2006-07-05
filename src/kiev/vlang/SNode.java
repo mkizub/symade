@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 @node
 public class SNode extends ASTNode {
 
-	@virtual typedef This  = SNode;
+	@virtual typedef This  ≤ SNode;
 
 	@dflow(out="this:in") private static class DFI {}
 
@@ -34,7 +34,7 @@ public class SNode extends ASTNode {
 }
 
 @node(name="Comment")
-public class Comment extends SNode {
+public final class Comment extends SNode {
 
 	@virtual typedef This  = Comment;
 

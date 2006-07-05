@@ -19,7 +19,7 @@ public abstract class TypeDef extends TypeDecl {
 
 	public static final TypeDef[] emptyArray = new TypeDef[0];
 
-	@virtual typedef This  = TypeDef;
+	@virtual typedef This  ≤ TypeDef;
 
 	public ArgMetaType ameta_type;
 	
@@ -99,6 +99,30 @@ public final class TypeAssign extends TypeDef {
 		if (super_types.length > 0)
 			return super_types[0].getStruct();
 		return null;
+	}
+
+	public void preResolveOut() {
+		ANode parent = parent();
+		if (parent instanceof TypeDecl) {
+			foreach (TypeRef tr; parent.super_types) {
+				TypeDecl td = tr.getTypeDecl();
+				ASTNode@ node;
+				foreach (td.resolveNameR(node,new ResInfo(this,ResInfo.noForwards|ResInfo.noImports),id.sname)) {
+					ASTNode n = node;
+					if !(n instanceof TypeDef) {
+						Kiev.reportError(this,"Typedef extends non-typedef node");
+						continue;
+					}
+					if (n instanceof TypeAssign)
+						Kiev.reportWarning(this,"Typedef extends final typedef");
+					TypeConstr tc = (TypeConstr)n;
+					if (!tc.isTypeVirtual())
+						Kiev.reportWarning(this,"Typedef extends non-virtual typedef");
+					//if (!tc.isTypeAbstract())
+					//	Kiev.reportWarning(this,"Typedef extends non-abstract typedef");
+				}
+			}
+		}
 	}
 }
 

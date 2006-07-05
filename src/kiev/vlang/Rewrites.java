@@ -169,7 +169,7 @@ public final class RewriteNodeFactory extends ENode {
 	private Object fixup(AttrSlot attr, Object o) {
 		if (o instanceof ConstStringExpr) {
 			if (attr.clazz == SymbolRef.class)
-				o = new SymbolRef(o.value);
+				o = new SymbolRef<DNode>(o.value);
 			else if (attr.clazz == Symbol.class)
 				o = new Symbol(o.value);
 			else if (attr.clazz == Operator.class)

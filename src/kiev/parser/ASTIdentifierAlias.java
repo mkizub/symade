@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
 public abstract class ASTAlias extends ASTNode {
 	public static ASTAlias[]	emptyArray = new ASTAlias[0];
 	
-	@virtual typedef This  = ASTAlias;
+	@virtual typedef This  ≤ ASTAlias;
 
 	public ASTAlias() {}
 	

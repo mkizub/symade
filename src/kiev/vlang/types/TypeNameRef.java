@@ -17,28 +17,28 @@ public class TypeNameRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = TypeNameRef;
+	@virtual typedef This  ≤ TypeNameRef;
 
 	@att public TypeRef			outer;
 
 	public TypeNameRef() {}
 
 	public TypeNameRef(String nm) {
-		this.ident = new SymbolRef(nm);
+		this.ident = new SymbolRef<DNode>(nm);
 	}
 
-	public TypeNameRef(SymbolRef nm) {
+	public TypeNameRef(SymbolRef<DNode> nm) {
 		this.pos = pos;
 		this.ident = nm;
 	}
 
-	public TypeNameRef(SymbolRef nm, Type tp) {
+	public TypeNameRef(SymbolRef<DNode> nm, Type tp) {
 		this.pos = pos;
 		this.ident = nm;
 		this.lnk = tp;
 	}
 
-	public TypeNameRef(TypeRef outer, SymbolRef nm) {
+	public TypeNameRef(TypeRef outer, SymbolRef<DNode> nm) {
 		this.pos = pos;
 		this.outer = outer;
 		this.ident = nm;

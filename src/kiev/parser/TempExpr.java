@@ -19,7 +19,7 @@ import syntax kiev.Syntax;
 @node
 public abstract class UnresExpr extends ENode {
 
-	@virtual typedef This  = UnresExpr;
+	@virtual typedef This  ≤ UnresExpr;
 
 	@ref public Operator				op;
 
@@ -44,7 +44,7 @@ public abstract class UnresExpr extends ENode {
  * The owner will be changed when concrete, resolved unary expression is created.
  */
 @node
-public class UnresOpExpr extends UnresExpr {
+public final class UnresOpExpr extends UnresExpr {
 	
 	@virtual typedef This  = UnresOpExpr;
 
@@ -107,21 +107,21 @@ public class UnresOpExpr extends UnresExpr {
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
 @node
-public class UnresCallExpr extends UnresExpr {
+public final class UnresCallExpr extends UnresExpr {
 
 	@virtual typedef This  = UnresCallExpr;
 
 	@ref public ENode				obj;
-	@ref public SymbolRef			func;
+	@ref public SymbolRef<DNode>	func;
 	@ref public TypeRef[]			targs;
 	@ref public ENode[]				args;
 
 	public UnresCallExpr() {}
 
 	public UnresCallExpr(int pos, ENode obj, DNode func, TypeRef[] targs, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef(pos, func), targs, args, super_flag);
+		this(pos, obj, new SymbolRef<DNode>(pos, func), targs, args, super_flag);
 	}
-	public UnresCallExpr(int pos, ENode obj, SymbolRef func, TypeRef[] targs, ENode[] args, boolean super_flag) {
+	public UnresCallExpr(int pos, ENode obj, SymbolRef<DNode> func, TypeRef[] targs, ENode[] args, boolean super_flag) {
 		this.pos = pos;
 		this.obj = obj;
 		this.func = func;
@@ -151,7 +151,7 @@ public class UnresCallExpr extends UnresExpr {
 			args[i] = args[i].closeBuild().detach();
 		if (obj instanceof TypeRef) {
 			if (func.symbol instanceof Method) {
-				CallExpr ce = new CallExpr(pos, obj, ~func, targs, args);
+				CallExpr ce = new CallExpr(pos, obj, (SymbolRef<Method>)~func, targs, args);
 				return ce;
 			} else {
 				Field f = (Field)func.symbol;
@@ -159,7 +159,7 @@ public class UnresCallExpr extends UnresExpr {
 			}
 		} else {
 			if (func.symbol instanceof Method) {
-				CallExpr ce = new CallExpr(pos, obj, ~func, targs, args);
+				CallExpr ce = new CallExpr(pos, obj, (SymbolRef<Method>)~func, targs, args);
 				if (isSuperExpr())
 					ce.setSuperExpr(true);
 				ce.setCastCall(this.isCastCall());
@@ -176,7 +176,7 @@ public class UnresCallExpr extends UnresExpr {
  * Represents unresolved, temporary created access expression.
  */
 @node
-public class AccFldExpr extends UnresExpr {
+public final class AccFldExpr extends UnresExpr {
 
 	@virtual typedef This  = AccFldExpr;
 

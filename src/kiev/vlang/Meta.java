@@ -286,7 +286,7 @@ public class Meta extends ENode {
 				return values[i];
 			}
 		}
-		MetaValueScalar mv = new MetaValueScalar(new SymbolRef(name), new ConstBoolExpr(val));
+		MetaValueScalar mv = new MetaValueScalar(new SymbolRef<DNode>(name), new ConstBoolExpr(val));
 		values.append(mv);
 		return mv;
 	}
@@ -300,7 +300,7 @@ public class Meta extends ENode {
 				return values[i];
 			}
 		}
-		MetaValueScalar mv = new MetaValueScalar(new SymbolRef(name), new ConstIntExpr(val));
+		MetaValueScalar mv = new MetaValueScalar(new SymbolRef<DNode>(name), new ConstIntExpr(val));
 		values.append(mv);
 		return mv;
 	}
@@ -314,7 +314,7 @@ public class Meta extends ENode {
 				return values[i];
 			}
 		}
-		MetaValueScalar mv = new MetaValueScalar(new SymbolRef(name), new ConstStringExpr(val));
+		MetaValueScalar mv = new MetaValueScalar(new SymbolRef<DNode>(name), new ConstStringExpr(val));
 		values.append(mv);
 		return mv;
 	}
@@ -360,11 +360,11 @@ public class Meta extends ENode {
 public abstract class MetaValue extends ENode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
-	@virtual typedef This  = MetaValue;
+	@virtual typedef This  ≤ MetaValue;
 
 	public MetaValue() {}
 
-	public MetaValue(SymbolRef ident) {
+	public MetaValue(SymbolRef<DNode> ident) {
 		this.ident  = ident;
 	}
 
@@ -373,10 +373,10 @@ public abstract class MetaValue extends ENode {
 	public void verify() {
 		if (parent() instanceof Method && pslot().name == "body") {
 			Method m = (Method)parent();
-			ident = new SymbolRef(pos, m);
+			ident = new SymbolRef<DNode>(pos, m);
 		}
 		else if (ident == null) {
-			ident = new SymbolRef("value");
+			ident = new SymbolRef<DNode>("value");
 		}
 	}
 	
@@ -420,11 +420,11 @@ public final class MetaValueScalar extends MetaValue {
 
 	public MetaValueScalar() {}
 
-	public MetaValueScalar(SymbolRef ident) {
+	public MetaValueScalar(SymbolRef<DNode> ident) {
 		super(ident);
 	}
 
-	public MetaValueScalar(SymbolRef ident, ENode value) {
+	public MetaValueScalar(SymbolRef<DNode> ident, ENode value) {
 		super(ident);
 		this.value = value;
 	}
@@ -462,11 +462,11 @@ public final class MetaValueArray extends MetaValue {
 
 	public MetaValueArray() {}
 
-	public MetaValueArray(SymbolRef ident) {
+	public MetaValueArray(SymbolRef<DNode> ident) {
 		super(ident);
 	}
 
-	public MetaValueArray(SymbolRef ident, ENode[] values) {
+	public MetaValueArray(SymbolRef<DNode> ident, ENode[] values) {
 		super(ident);
 		this.values.addAll(values);
 	}

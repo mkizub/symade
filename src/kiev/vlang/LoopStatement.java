@@ -37,9 +37,9 @@ import syntax kiev.Syntax;
 
 @node
 public abstract class LoopStat extends ENode implements ContinueTarget {
-	@virtual typedef This  = LoopStat;
-	@virtual typedef JView = JLoopStat;
-	@virtual typedef RView = RLoopStat;
+	@virtual typedef This  ≤ LoopStat;
+	@virtual typedef JView ≤ JLoopStat;
+	@virtual typedef RView ≤ RLoopStat;
 
 	@att(copyable=false)	public Label		lblcnt;
 	@att(copyable=false)	public Label		lblbrk;

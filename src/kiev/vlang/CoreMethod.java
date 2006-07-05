@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class CoreMethod extends Method {
+public final class CoreMethod extends Method {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in")				Block			body;
@@ -228,7 +228,7 @@ abstract class BinaryFunc extends CoreFunc {
 		if (expr.getClass() == cls) {
 			if (expr.ident == null) {
 				expr.open();
-				expr.ident = new SymbolRef(expr.pos, op.name);
+				expr.ident = new SymbolRef<DNode>(expr.pos, op.name);
 			}
 			expr.ident.open();
 			expr.ident.symbol = core_method;
@@ -259,7 +259,7 @@ abstract class UnaryFunc extends CoreFunc {
 		if (expr.getClass() == cls) {
 			if (expr.ident == null) {
 				expr.open();
-				expr.ident = new SymbolRef(expr.pos, op.name);
+				expr.ident = new SymbolRef<DNode>(expr.pos, op.name);
 			}
 			expr.ident.open();
 			expr.ident.symbol = core_method;

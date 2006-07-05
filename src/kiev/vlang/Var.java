@@ -30,9 +30,9 @@ public class Var extends LvalDNode {
 	@dflow(in="this:in")	ENode			init;
 	}
 
-	@virtual typedef This  = Var;
-	@virtual typedef JView = JVar;
-	@virtual typedef RView = RVar;
+	@virtual typedef This  ≤ Var;
+	@virtual typedef JView ≤ JVar;
+	@virtual typedef RView ≤ RVar;
 
 	@att public TypeRef		vtype;
 	@att public ENode		init;
@@ -139,9 +139,11 @@ public class Var extends LvalDNode {
 }
 
 @node(name="Var")
-public class LocalRuleVar extends Var {
+public final class LocalRuleVar extends Var {
 	public static LocalRuleVar[]	emptyArray = new LocalRuleVar[0];
 	private static final LocalRuleVar dummyNode = new LocalRuleVar();
+
+	@virtual typedef This  = LocalRuleVar;
 
 	public LocalRuleVar() {}
 	public LocalRuleVar(Symbol id, TypeRef vtype, int flags)

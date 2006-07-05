@@ -108,7 +108,7 @@ public class Symbol extends ASTNode {
 }
 
 @node
-public class SymbolRef extends ASTNode {
+public class SymbolRef<D extends DNode> extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 
@@ -117,7 +117,7 @@ public class SymbolRef extends ASTNode {
 	public static final SymbolRef[] emptyArray = new SymbolRef[0];
 
 	@att public String		name; // unresolved name
-	@ref public DNode		symbol; // resolved symbol
+	@ref public D			symbol; // resolved symbol
 
 	public SymbolRef() {}
 
@@ -130,13 +130,13 @@ public class SymbolRef extends ASTNode {
 		this.name = name;
 	}
 
-	public SymbolRef(int pos, DNode symbol) {
+	public SymbolRef(int pos, D symbol) {
 		this.pos = pos;
 		this.name = symbol.id.sname;
 		this.symbol = symbol;
 	}
 
-	public SymbolRef(String name, DNode symbol) {
+	public SymbolRef(String name, D symbol) {
 		this.name = name;
 		this.symbol = symbol;
 	}

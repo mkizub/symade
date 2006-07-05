@@ -20,7 +20,7 @@ public abstract class MetaSpecial extends ASTNode {
 	
 	public final MetaAttrSlot attr;
 	
-	@virtual typedef This  = MetaSpecial;
+	@virtual typedef This  ≤ MetaSpecial;
 
 	public MetaSpecial(MetaAttrSlot attr) {
 		this.attr = attr;
@@ -31,15 +31,15 @@ public abstract class MetaSpecial extends ASTNode {
 }
 
 @node
-public class MetaPacked extends MetaSpecial {
+public final class MetaPacked extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.packed", MetaPacked.class);
 
 	@virtual typedef This  = MetaPacked;
 
-	@att public ENode			 size;
-	@att public ENode			 offset;
-	@att public SymbolRef		 fld;
-	@ref public Field			 packer;
+	@att public ENode				size;
+	@att public ENode				offset;
+	@att public SymbolRef<Field>	fld;
+	@ref public Field				packer;
 
 	public MetaPacked() { super(ATTR); }
 
@@ -64,18 +64,18 @@ public class MetaPacked extends MetaSpecial {
 	}
 	
 	public String getFld() {
-		SymbolRef fld = this.fld;
+		SymbolRef<DNode> fld = this.fld;
 		if (fld != null)
 			return fld.name;
 		return "";
 	}
 	public void setFld(String val) {
-		fld = new SymbolRef(val);
+		fld = new SymbolRef<DNode>(val);
 	}
 }
 
 @node
-public class MetaPacker extends MetaSpecial {
+public final class MetaPacker extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.packer", MetaPacker.class);
 
 	@virtual typedef This  = MetaPacker;
@@ -97,7 +97,7 @@ public class MetaPacker extends MetaSpecial {
 }
 
 @node
-public class MetaAlias extends MetaSpecial {
+public final class MetaAlias extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.alias", MetaAlias.class);
 
 	@virtual typedef This  = MetaAlias;
@@ -119,7 +119,7 @@ public class MetaAlias extends MetaSpecial {
 }
 
 @node
-public class MetaThrows extends MetaSpecial {
+public final class MetaThrows extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.throws", MetaThrows.class);
 
 	@virtual typedef This  = MetaThrows;
@@ -140,7 +140,7 @@ public class MetaThrows extends MetaSpecial {
 }
 
 @node
-public class MetaPizzaCase extends MetaSpecial {
+public final class MetaPizzaCase extends MetaSpecial {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.pcase", MetaPizzaCase.class);
 
 	@virtual typedef This  = MetaPizzaCase;
@@ -196,7 +196,7 @@ public abstract class MetaFlag extends MetaSpecial {
 
 @singleton
 @node
-public class MetaUnerasable extends MetaFlag {
+public final class MetaUnerasable extends MetaFlag {
 	public static final MetaAttrSlot ATTR = new MetaAttrSlot("kiev.stdlib.meta.unerasable", MetaUnerasable.class);
 
 	private MetaUnerasable() { super(ATTR); }

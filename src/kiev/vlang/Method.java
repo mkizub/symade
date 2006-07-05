@@ -38,9 +38,9 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	public static final AttrSlot ATTR_RET_VAR = new TmpAttrSlot("method ret var",true,false,Var.class);	
 	public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,Field.class);	
 
-	@virtual typedef This  = Method;
+	@virtual typedef This  ≤ Method;
 	@virtual typedef JView = JMethod;
-	@virtual typedef RView = RMethod;
+	@virtual typedef RView ≤ RMethod;
 
 		 public Access				acc;
 	@att public TypeDef[]			targs;
@@ -381,9 +381,9 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		if (expr.ident == null) {
 			Operator op = expr.getOp();
 			if (op != null)
-				expr.ident = new SymbolRef(op.name,this);
+				expr.ident = new SymbolRef<DNode>(op.name,this);
 			else
-				expr.ident = new SymbolRef(this.id.sname,this);
+				expr.ident = new SymbolRef<DNode>(this.id.sname,this);
 		} else {
 			expr.ident.symbol = this;
 		}
@@ -740,7 +740,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			Type t = tp;
 			if (t instanceof ArrayType) {
 				if (body instanceof MetaValueScalar) {
-					MetaValueArray mva = new MetaValueArray(new SymbolRef(body.pos, this));
+					MetaValueArray mva = new MetaValueArray(new SymbolRef<DNode>(body.pos, this));
 					mva.values.add(~((MetaValueScalar)body).value);
 					body = mva;
 				}
@@ -787,7 +787,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 }
 
 @node(name="Ctor")
-public class Constructor extends Method {
+public final class Constructor extends Method {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="true")	ENode[]			addstats;
@@ -809,7 +809,7 @@ public class Constructor extends Method {
 }
 
 @node(name="InitBlock")
-public class Initializer extends DNode implements PreScanneable {
+public final class Initializer extends DNode implements PreScanneable {
 	
 	@dflow(out="body") private static class DFI {
 	@dflow(in="this:in")		ENode		body;
@@ -847,7 +847,7 @@ public enum WBCType {
 }
 
 @node
-public class WBCCondition extends DNode {
+public final class WBCCondition extends DNode {
 	
 	@dflow(out="body") private static class DFI {
 	@dflow(in="this:in")			ENode		body;

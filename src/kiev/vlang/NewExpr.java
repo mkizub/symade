@@ -60,14 +60,14 @@ public final class NewExpr extends ENode {
 
 	public NewExpr(int pos, Type type, ENode[] args) {
 		this.pos = pos;
-		this.ident = new SymbolRef(nameInit);
+		this.ident = new SymbolRef<DNode>(nameInit);
 		this.type = new TypeRef(type);
 		foreach (ENode e; args) this.args.append(e);
 	}
 
 	public NewExpr(int pos, TypeRef type, ENode[] args) {
 		this.pos = pos;
-		this.ident = new SymbolRef(nameInit);
+		this.ident = new SymbolRef<DNode>(nameInit);
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
 	}

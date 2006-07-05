@@ -33,9 +33,9 @@ import syntax kiev.Syntax;
 @node
 public abstract class BoolExpr extends ENode {
 
-	@virtual typedef This  = BoolExpr;
-	@virtual typedef JView = JBoolExpr;
-	@virtual typedef RView = RBoolExpr;
+	@virtual typedef This  ≤ BoolExpr;
+	@virtual typedef JView ≤ JBoolExpr;
+	@virtual typedef RView ≤ RBoolExpr;
 
 	public BoolExpr() {}
 
@@ -103,7 +103,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.BooleanOr);
-		this.ident = new SymbolRef(op.name, cm);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -177,7 +177,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.BooleanAnd);
-		this.ident = new SymbolRef(op.name, cm);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -252,7 +252,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = op;
-		this.ident = new SymbolRef(op.name, cm);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -295,7 +295,7 @@ public class InstanceofExpr extends BoolExpr {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.InstanceOf);
-		this.ident = new SymbolRef(op.name, cm);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
 		this.expr = args[0];
 		this.type = (TypeRef)args[1];
 	}
@@ -373,7 +373,7 @@ public class BooleanNotExpr extends BoolExpr {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.BooleanNot);
-		this.ident = new SymbolRef(op.name, cm);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
 		this.expr = args[0];
 	}
 	

@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
 
 public abstract class ANode {
 
-	@virtual typedef This  = ANode;
+	@virtual typedef This  ≤ ANode;
 
 	private AttachInfo		p_info;
 	private AttachInfo[]	ext_data;
@@ -406,9 +406,9 @@ class ListAttachInfo extends AttachInfo {
 @node
 public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
-	@virtual typedef This  = ASTNode;
-	@virtual typedef JView = JNode;
-	@virtual typedef RView = RNode;
+	@virtual typedef This  ≤ ASTNode;
+	@virtual typedef JView ≤ JNode;
+	@virtual typedef RView ≤ RNode;
 	
 	public static ASTNode[] emptyArray = new ASTNode[0];
 	private static final class RefAttrSlot_flags extends RefAttrSlot {

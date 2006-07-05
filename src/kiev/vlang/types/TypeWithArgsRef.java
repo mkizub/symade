@@ -12,7 +12,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class TypeWithArgsRef extends TypeNameRef {
+public final class TypeWithArgsRef extends TypeNameRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
@@ -22,7 +22,7 @@ public class TypeWithArgsRef extends TypeNameRef {
 
 	public TypeWithArgsRef() {}
 
-	public TypeWithArgsRef(TypeRef outer, SymbolRef nm) {
+	public TypeWithArgsRef(TypeRef outer, SymbolRef<TypeDecl> nm) {
 		super(outer, nm);
 	}
 

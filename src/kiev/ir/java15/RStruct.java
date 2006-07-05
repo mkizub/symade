@@ -243,7 +243,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			
 			// and add super-constructor call
 			init.setNeedFieldInits(true);
-			CallExpr call_super = new CallExpr(pos, null, new SymbolRef(nameSuper), null, ENode.emptyArray);
+			CallExpr call_super = new CallExpr(pos, null, new SymbolRef<Method>(nameSuper), null, ENode.emptyArray);
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
 			init.block.stats.insert(0,new ExprStat(call_super));
@@ -1260,7 +1260,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				}
 				if( gen_def_constr ) {
 					m.setNeedFieldInits(true);
-					CallExpr call_super = new CallExpr(pos, null, new SymbolRef(pos, nameSuper), null, ENode.emptyArray);
+					CallExpr call_super = new CallExpr(pos, null, new SymbolRef<Method>(pos, nameSuper), null, ENode.emptyArray);
 					if( super_types.length > 0 && super_types[0].getStruct() == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;

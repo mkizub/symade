@@ -168,7 +168,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					if( tp.getStruct() != null && tp.getStruct().isHasCases() ) {
 						mode = SwitchStat.PIZZA_SWITCH;
 						sel = new CallExpr(pos,new LVarExpr(tmpvar.pos,tmpvar.getVar()),
-							new SymbolRef(pos, nameGetCaseTag),null,ENode.emptyArray);
+							new SymbolRef<Method>(pos, nameGetCaseTag),null,ENode.emptyArray);
 						Kiev.runProcessorsOn(sel);
 					} else {
 						mode = SwitchStat.TYPE_SWITCH;

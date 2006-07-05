@@ -222,7 +222,7 @@ object, if fails - returns null.
 public abstract class ASTRuleNode extends ENode {
 	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
-	@virtual typedef This  = ASTRuleNode;
+	@virtual typedef This  ≤ ASTRuleNode;
 
 	public JumpNodes			jn;
 	public int					base;
@@ -804,7 +804,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 @node
 public abstract class RuleExprBase extends ASTRuleNode {
 
-	@virtual typedef This  = RuleExprBase;
+	@virtual typedef This  ≤ RuleExprBase;
 
 	@att public ENode				expr;
 	@att public ENode				bt_expr;
