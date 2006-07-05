@@ -172,15 +172,15 @@ public abstract class AType implements StdTypes, TVSet {
 				continue next_my;
 			}
 			// bind virtual aliases
-			if (x.isAlias() && x.var.isVirtual()) {
-				for (int j=0; j < vs_size; j++) {
-					TVar y = vs_vars[j];
-					if (x.var ≡ y.var) {
-						sr.set(sr.tvars[i], y.unalias().result());
-						continue next_my;
-					}
-				}
-			}
+			//if (x.isAlias() && x.var.isVirtual()) {
+			//	for (int j=0; j < vs_size; j++) {
+			//		TVar y = vs_vars[j];
+			//		if (x.var ≡ y.var) {
+			//			sr.set(sr.tvars[i], y.unalias().result());
+			//			continue next_my;
+			//		}
+			//	}
+			//}
 		}
 		return sr.close();
 	}

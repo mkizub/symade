@@ -113,6 +113,13 @@ public abstract class Type extends AType {
 		if( this instanceof CallType && !(t instanceof CallType) && ((CallType)this).arity == 0 ) {
 			if( ((CallType)this).ret().isAutoCastableTo(t) ) return true;
 		}
+		if (t instanceof ArgType) {
+			TypeRef[] up = t.definer.super_types.getArray();
+			foreach (TypeRef tr; up) {
+				if (this.isAutoCastableTo(tr.getType()))
+					return true;
+			}
+		}
 		return false;
 	}
 
