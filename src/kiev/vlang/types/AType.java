@@ -60,13 +60,14 @@ public abstract class AType implements StdTypes, TVSet {
 			this.appls = TArg.emptyArray;
 		}
 
-		flags &= ~flAbstract;
-		foreach(TVar v; this.tvars; !v.isAlias()) {
-			Type r = v.result();
-			if (r.isAbstract() || r == v.var)
-				flags |= flAbstract;
-			if (v.var.isUnerasable())
-				flags |= flUnerasable;
+		flags &= ~(flAbstract|flValAppliable|flBindable);
+		foreach(TVar tv; this.tvars; !tv.isAlias()) {
+			Type r = tv.result();
+			ArgType v = tv.var;
+			if (tv.isFree()) flags |= flBindable;
+			if (r.isAbstract()) flags |= flAbstract;
+			if (v.isUnerasable()) flags |= flUnerasable;
+			if (v.isArgAppliable() && r.isValAppliable()) flags |= flValAppliable;
 		}
 	}
 	
@@ -172,7 +173,7 @@ public abstract class AType implements StdTypes, TVSet {
 				continue next_my;
 			}
 			// bind virtual aliases
-			if (x.isAlias() && x.var.isVirtual()) {
+			if (x.isAlias() && x.var.isVirtual() && x.unalias().isFree()) {
 				for (int j=0; j < vs_size; j++) {
 					TVar y = vs_vars[j];
 					if (x.var ≡ y.var) {
@@ -257,9 +258,9 @@ public abstract class AType implements StdTypes, TVSet {
 
 	next_my:
 		for(int i=0; i < my_size; i++) {
-			TVar x = my_vars[i];
-			Type bnd = x.unalias().val;
-			if (bnd == null || !bnd.isAbstract())
+			TVar x = my_vars[i].unalias();
+			Type bnd = x.val;
+			if (x.isFree() || !x.var.isArgAppliable())
 				continue;
 			if (bnd instanceof ArgType) {
 				for(int j=0; j < vs_size; j++) {

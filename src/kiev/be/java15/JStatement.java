@@ -64,8 +64,13 @@ public final view JReturnStat of ReturnStat extends JENode {
 		trace(Kiev.debugStatGen,"\tgenerating ReturnStat");
 		code.setLinePos(this);
 		try {
-			if( expr != null )
+			if( expr != null ) {
 				expr.generate(code,code.method.type.ret());
+				if( !expr.getType().getJType().isInstanceOf(code.method.type.ret().getJType()) ) {
+					trace( Kiev.debugNodeTypes, "Need checkcast for return");
+					code.addInstr(Instr.op_checkcast,code.method.type.ret());
+				}
+			}
 			generateReturn(code,this);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);

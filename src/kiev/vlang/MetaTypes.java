@@ -16,10 +16,8 @@ import syntax kiev.Syntax;
 
 @node
 class Test extends ASTNode {
-	void foo() {
-		MetaPacked mp;
-		IFldExpr ae;
-		ae.ident.symbol = mp.packer;
+	void foo(CallExpr ce, Method m) {
+		//foo(ce, ce.ident.symbol);
 	}
 }
 

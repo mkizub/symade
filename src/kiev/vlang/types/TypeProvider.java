@@ -47,7 +47,7 @@ public class MetaType implements Constants {
 		throw new RuntimeException("rebind() in DummyType");
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if (!t.isAbstract() || bindings.getTVars().length == 0) return t;
+		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
 		return new XType(this, t.bindings().applay_bld(bindings));
 	}
 
@@ -283,7 +283,7 @@ public final class CompaundMetaType extends MetaType {
 	}
 
 	public Type bind(Type t, TVSet bindings) {
-		if (!t.isAbstract()) return t;
+		if (!t.isBindable()) return t;
 		return new CompaundType(this, t.bindings().bind_bld(bindings));
 	}
 	
@@ -292,7 +292,7 @@ public final class CompaundMetaType extends MetaType {
 	}
 	
 	public Type applay(Type t, TVSet bindings) {
-		if (!t.isAbstract() || bindings.getTVars().length == 0) return t;
+		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
 		return new CompaundType(this, t.bindings().applay_bld(bindings));
 	}
 	
@@ -353,14 +353,14 @@ public final class ArrayMetaType extends MetaType {
 		return ArrayType.newArrayType(bindings.resolve(StdTypes.tpArrayArg));
 	}
 	public Type bind(Type t, TVSet bindings) {
-		if (!t.isAbstract()) return t;
+		if (!t.isBindable()) return t;
 		return ArrayType.newArrayType(t.bindings().bind_bld(bindings).resolve(StdTypes.tpArrayArg));
 	}
 	public Type rebind(Type t, TVSet bindings) {
 		return ArrayType.newArrayType(t.bindings().rebind_bld(bindings).resolve(StdTypes.tpArrayArg));
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if( !t.isAbstract() || bindings.getTVars().length == 0 ) return t;
+		if( !t.isValAppliable() || bindings.getTVars().length == 0 ) return t;
 		return ArrayType.newArrayType(((ArrayType)t).arg.applay(bindings));
 	}
 	
@@ -462,7 +462,7 @@ public class WrapperMetaType extends MetaType {
 		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().rebind(bindings));
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if (!t.isAbstract() || bindings.getTVars().length == 0) return t;
+		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
 		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().applay(bindings));
 	}
 
@@ -539,7 +539,7 @@ public class OuterMetaType extends MetaType {
 		return OuterType.newOuterType(clazz,((OuterType)t).outer.rebind(bindings));
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if (!t.isAbstract() || bindings.getTVars().length == 0) return t;
+		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
 		return OuterType.newOuterType(clazz,((OuterType)t).outer.applay(bindings));
 	}
 
@@ -574,21 +574,21 @@ public class CallMetaType extends MetaType {
 	}
 
 	public Type bind(Type t, TVSet bindings) {
-		if (!t.isAbstract() || bindings.getTVars().length == 0 || t.bindings().getTVars().length == 0) return t;
+		if (!t.isBindable() || bindings.getTVars().length == 0 || t.bindings().getTVars().length == 0) return t;
 		if!(t instanceof CallType) return t;
 		CallType mt = (CallType)t;
 		mt = new CallType(mt.bindings().bind_bld(bindings),mt.arity,mt.isReference());
 		return mt;
 	}
 	public Type rebind(Type t, TVSet bindings) {
-		if (!t.isAbstract() || bindings.getTVars().length == 0 || t.bindings().tvars.length == 0) return t;
+		if (bindings.getTVars().length == 0 || t.bindings().tvars.length == 0) return t;
 		if!(t instanceof CallType) return t;
 		CallType mt = (CallType)t;
 		mt = new CallType(mt.bindings().rebind_bld(bindings),mt.arity,mt.isReference());
 		return mt;
 	}
 	public Type applay(Type t, TVSet bindings) {
-		if( !t.isAbstract() || bindings.getTVars().length == 0 ) return t;
+		if( !t.isValAppliable() || bindings.getTVars().length == 0 ) return t;
 		CallType mt = (CallType)t;
 		mt = new CallType(mt.bindings().applay_bld(bindings),mt.arity,mt.isReference());
 		return mt;

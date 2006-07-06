@@ -214,6 +214,9 @@ public abstract class Type extends AType {
 	public final boolean isStatic()			{ return (flags & flStatic)			!= 0 ; }
 	public final boolean isForward()		{ return (flags & flForward)		!= 0 ; }
 	public final boolean isHidden()			{ return (flags & flHidden)			!= 0 ; }
+	public final boolean isArgAppliable()	{ return (flags & flArgAppliable)	!= 0 ; }
+	public final boolean isValAppliable()	{ return (flags & flValAppliable)	!= 0 ; }
+	public final boolean isBindable()		{ return (flags & flBindable)		!= 0 ; }
 
 	public Type getUnboxedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
 	public Type getEnclosedType()					{ throw new RuntimeException("Type "+this+" is not a box type"); }
@@ -477,9 +480,9 @@ public final class ArgType extends Type {
 	@getter public final TypeDef get$definer() { return (TypeDef)meta_type.tdecl; }
 
 	public ArgType(ArgMetaType meta_type) {
-		super(meta_type, flReference, TVar.emptyArray, TArg.emptyArray);
+		super(meta_type, flReference | flValAppliable, TVar.emptyArray, TArg.emptyArray);
 		this.name = meta_type.tdecl.id.uname;
-		if (definer.isTypeAbstract())   this.flags |= flAbstract;
+		if (definer.isTypeAbstract())   this.flags |= flAbstract | flArgAppliable;
 		if (definer.isTypeUnerasable()) this.flags |= flUnerasable;
 		if (definer.isTypeVirtual())    this.flags |= flVirtual;
 		if (definer.isTypeFinal())      this.flags |= flFinal;

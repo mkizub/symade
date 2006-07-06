@@ -35,6 +35,9 @@ public interface StdTypes {
 	public static final int flStatic			= 1 << 15;
 	public static final int flForward			= 1 << 16;
 	public static final int flHidden			= 1 << 17;
+	public static final int flArgAppliable		= 1 << 18;
+	public static final int flValAppliable		= 1 << 19;
+	public static final int flBindable			= 1 << 20;
 
 	public static final CompaundType tpEnv;
 	public static final CoreType tpAny;
@@ -147,12 +150,14 @@ public interface StdTypes {
 
 		
 		TypeDef tdWrapperArg = new TypeConstr("_boxed_", tpObject);
+		tdWrapperArg.setAbstract(true);
 		tpWrapperArg = tdWrapperArg.getAType();
-		tpWrapperArg.flags |= flHidden;
+		tpWrapperArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		
 		tdArrayArg = new TypeConstr("_elem_", tpAny);
+		tdArrayArg.setAbstract(true);
 		tpArrayArg = tdArrayArg.getAType();
-		tpArrayArg.flags |= flHidden;
+		tpArrayArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		tpArray					= ArrayType.newArrayType(Type.tpAny);
 		tpArray.flags			|= flResolved | flReference | flArray;
 
@@ -243,18 +248,21 @@ public interface StdTypes {
 
 
 		TypeDef tdCallRetArg = new TypeConstr("_ret_", tpAny);
+		tdCallRetArg.setAbstract(true);
 		tpCallRetArg = tdCallRetArg.getAType();
-		tpCallRetArg.flags |= flHidden;
+		tpCallRetArg.flags |= flHidden | flArgAppliable;
 		
 		TypeDef tdCallThisArg = new TypeConstr("_this_", tpAny);
+		tdCallThisArg.setAbstract(true);
 		tpCallThisArg = tdCallThisArg.getAType();
-		tpCallThisArg.flags |= flHidden;
+		tpCallThisArg.flags |= flHidden | flArgAppliable;
 		
 		tpCallParamArgs = new ArgType[128];
 		for (int i=0; i < tpCallParamArgs.length; i++) {
 			TypeDef tdCallParamArg = new TypeConstr("_"+Integer.toHexString(i)+"_", tpAny);
+			tdCallParamArg.setAbstract(true);
 			tpCallParamArgs[i] = tdCallParamArg.getAType();
-			tpCallParamArgs[i].flags |= flHidden;
+			tpCallParamArgs[i].flags |= flHidden | flArgAppliable;
 		}
 		
 		tpUnattachedArgs = new ArgType[128] ;
