@@ -41,7 +41,7 @@ public class Editor extends InfoView implements KeyListener {
 	/** Current item */
 	@ref public Drawable	cur_elem;
 	/** The object in clipboard */
-	@ref public ASTNode		in_clipboard;
+	@ref public ANode		in_clipboard;
 	
 	private Stack<Transaction>		changes = new Stack<Transaction>();
 	
@@ -65,7 +65,7 @@ public class Editor extends InfoView implements KeyListener {
 		super(window, syntax, view_canvas);
 	}
 	
-	public void setRoot(ASTNode root) {
+	public void setRoot(ANode root) {
 		super.setRoot(root);
 		cur_elem = view_root.getFirstLeaf();
 	}
@@ -81,7 +81,7 @@ public class Editor extends InfoView implements KeyListener {
 			super.formatAndPaint(full);
 		else
 			view_canvas.repaint();
-		ASTNode src = cur_elem!=null ? cur_elem.node : null;
+		ANode src = cur_elem!=null ? cur_elem.node : null;
 		parent_window.info_view.the_root = src;
 		parent_window.info_view.formatAndPaint(true);
 	}
@@ -112,34 +112,7 @@ public class Editor extends InfoView implements KeyListener {
 				evt.consume();
 				return;
 			}
-			if (code == KeyEvent.VK_E) {
-				if (cur_elem instanceof DrawNodeTerm) {
-					AttrPtr pattr = ((DrawNodeTerm)cur_elem).getAttrPtr();
-					Object obj = pattr.get();
-					if (obj instanceof Symbol) {
-						item_editor = new SymbolEditor((Symbol)obj, this);
-					}
-					else if (obj instanceof Integer) {
-						obj = pattr.node;
-						item_editor = new IntEditor(pattr, this);
-					}
-					else if (obj instanceof ConstIntExpr) {
-						item_editor = new IntEditor(obj.getAttrPtr("value"), this);
-					}
-					else if (Enum.class.isAssignableFrom(pattr.slot.clazz)) {
-						obj = pattr.node;
-						item_editor = new EnumEditor(pattr, cur_elem, this);
-					}
-
-					if (item_editor != null) {
-						changes.push(Transaction.open());
-						((ANode)obj).open();
-						view_canvas.repaint();
-					}
-				}
-				evt.consume(); 
-				return;
-			}
+			return;
 		}
 		else if (mask == KeyEvent.ALT_DOWN_MASK) {
 			switch (code) {
@@ -177,6 +150,44 @@ public class Editor extends InfoView implements KeyListener {
 					Transaction tr = changes.pop();
 					tr.rollback(false);
 					formatAndPaint(true);
+				}
+				break;
+			case KeyEvent.VK_C:
+				if (cur_elem instanceof DrawNodeTerm) {
+					AttrPtr pattr = ((DrawNodeTerm)cur_elem).getAttrPtr();
+					Object obj = pattr.get();
+					if (obj instanceof Symbol) {
+						in_clipboard = ((Symbol)obj).parent();
+						parent_window.clip_view.setRoot(in_clipboard);
+						parent_window.clip_view.formatAndPaint(true);
+					}
+				}
+				break;
+			case KeyEvent.VK_V:
+				if (in_clipboard != null) {
+					if (cur_elem instanceof DrawNodeTerm) {
+						if (in_clipboard instanceof DNode) {
+							AttrPtr pattr = ((DrawNodeTerm)cur_elem).getAttrPtr();
+							if (pattr.slot.clazz == SymbolRef.class) {
+								DNode dn = (DNode)in_clipboard;
+								changes.push(Transaction.open());
+								try {
+									SymbolRef obj = (SymbolRef)pattr.get();
+									if (obj != null) {
+										obj.open();
+										obj.name = dn.id.sname;
+										obj.symbol = dn;
+									} else {
+										pattr.node.open();
+										pattr.set(new SymbolRef<DNode>(0,dn));
+									}
+								} finally {
+									changes.peek().close();
+								}
+								this.formatAndPaint(true);
+							}
+						}
+					}
 				}
 				break;
 			}
@@ -583,6 +594,10 @@ final class ChooseItemEditor implements KeyHandler {
 			Object obj = pattr.get();
 			if (obj instanceof Symbol)
 				editor.startItemEditor((Symbol)obj, new SymbolEditor((Symbol)obj, editor));
+			else if (obj instanceof SymbolRef)
+				editor.startItemEditor((SymbolRef)obj, new SymRefEditor((SymbolRef)obj, editor));
+			else if (obj instanceof String || obj == null && pattr.slot.clazz == String.class)
+				editor.startItemEditor(pattr.node, new StrEditor(pattr, editor));
 			else if (obj instanceof Integer)
 				editor.startItemEditor(pattr.node, new IntEditor(pattr, editor));
 			else if (obj instanceof ConstIntExpr)
@@ -603,11 +618,11 @@ final class FolderTrigger implements KeyHandler {
 
 	public void process() {
 		Drawable dr = editor.cur_elem;
-		ASTNode n = dr.node;
-		if (n != null) {
+		ANode n = dr.node;
+		if (n instanceof ASTNode) {
 			n.setDrawFolded(!n.isDrawFolded());
+			editor.formatAndPaint(true);
 		}
-		editor.formatAndPaint(true);
 	}
 }
 
@@ -628,7 +643,7 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 	public void process() {
 		Drawable dr = editor.cur_elem;
 		if (mode == SETNEW_HERE) {
-			ASTNode n = dr.node;
+			ANode n = dr.node;
 			while (n == null) {
 				dr = (Drawable)dr.parent();
 				if (dr == null)
@@ -795,6 +810,41 @@ final class SymbolEditor extends TextEditor {
 	}
 	void setText(String text) {
 		symbol.sname = text;
+	}
+}
+
+final class SymRefEditor extends TextEditor {
+	
+	private final SymbolRef<DNode>		symref;
+
+	SymRefEditor(SymbolRef<DNode> symref, Editor editor) {
+		super(editor);
+		this.symref = symref;
+	}
+	
+	String getText() {
+		return symref.name;
+	}
+	void setText(String text) {
+		symref.name = text;
+		symref.symbol = null;
+	}
+}
+
+final class StrEditor extends TextEditor {
+	
+	private final AttrPtr	pattr;
+
+	StrEditor(AttrPtr pattr, Editor editor) {
+		super(editor);
+		this.pattr = pattr;
+	}
+	
+	String getText() {
+		return (String)pattr.get();
+	}
+	void setText(String text) {
+		pattr.set(text);
 	}
 }
 

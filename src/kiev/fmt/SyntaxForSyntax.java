@@ -49,7 +49,7 @@ public class SyntaxForSyntax extends TextSyntax {
 		seSpaceInfo = setl(lout_nl,kw("def-space"),id.ncopy(),attr("kind"),attr("text_size"),attr("pixel_size"));
 		seDrawColor = setl(lout_nl,kw("def-color"),id.ncopy(),attr("rgb_color"));
 		seDrawFont  = setl(lout_nl,kw("def-font"), id.ncopy(),attr("font_name"));
-		SyntaxAttr node_attr = attr("node");
+		SyntaxAttr node_attr = ident("node");
 		node_attr.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
 		SyntaxAttr elem_attr = attr("elem");
 		elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxKeyword",Env.newPackage("kiev.fmt"),0));
@@ -59,8 +59,8 @@ public class SyntaxForSyntax extends TextSyntax {
 			set(
 				attr("text"),
 				sep("<"),
-					kw("font"),oper("="),attr("font"),
-					kw("color"),oper("="),attr("color"),
+					kw("font"),oper("="),ident("font"),
+					kw("color"),oper("="),ident("color"),
 					kw("hidden"),oper("="),attr("is_hidden"),
 					kw("spaces"),oper("="),sep("{"),lst("spaces",node(),sep(","),new SpaceCmd[0]),sep("}"),
 				sep(">")
@@ -69,7 +69,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			);
 	}
 
-	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
+	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
 		switch (node) {
 		case FileUnit:  return seFileUnit;
 		case SpaceInfo: return seSpaceInfo;

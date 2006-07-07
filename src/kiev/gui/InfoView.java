@@ -49,11 +49,6 @@ public class InfoView extends UIView implements KeyListener {
 		view_canvas.addKeyListener(this);
 	}
 
-	public void setRoot(ASTNode root) {
-		this.the_root = root;
-		view_canvas.root = view_root = formatter.format(the_root);
-	}
-	
 	public void formatAndPaint(boolean full) {
 		view_canvas.root = null;
 		if (the_root != null && full)
@@ -79,7 +74,7 @@ public class InfoView extends UIView implements KeyListener {
 			switch (code) {
 			case KeyEvent.VK_S: {
 				evt.consume();
-				if (this.the_root == null)
+				if !(this.the_root instanceof ASTNode)
 					break;
 				JFileChooser jfc = new JFileChooser(".");
 				jfc.setFileFilter(new FileFilter() {
@@ -89,7 +84,7 @@ public class InfoView extends UIView implements KeyListener {
 				if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
 					break;
 				try {
-					Env.dumpTextFile(this.the_root, jfc.getSelectedFile(), new XmlDumpSyntax());
+					Env.dumpTextFile((ASTNode)this.the_root, jfc.getSelectedFile(), new XmlDumpSyntax());
 				} catch( IOException e ) {
 					System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 				}

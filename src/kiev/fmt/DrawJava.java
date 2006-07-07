@@ -15,7 +15,7 @@ import syntax kiev.Syntax;
 @node
 public class DrawJavaExpr extends DrawNonTermSet {
 	public DrawJavaExpr() {}
-	public DrawJavaExpr(ASTNode node, SyntaxJavaExpr syntax) {
+	public DrawJavaExpr(ANode node, SyntaxJavaExpr syntax) {
 		super(node, syntax);
 	}
 
@@ -50,7 +50,7 @@ public class DrawJavaAccess extends DrawTerm {
 	private String text;
 	
 	public DrawJavaAccess() {}
-	public DrawJavaAccess(ASTNode node, SyntaxJavaAccess syntax) {
+	public DrawJavaAccess(ANode node, SyntaxJavaAccess syntax) {
 		super(node, syntax);
 	}
 
@@ -115,7 +115,7 @@ public class DrawJavaType extends DrawTerm {
 	private String text;
 	
 	public DrawJavaType() {}
-	public DrawJavaType(ASTNode node, SyntaxJavaType syntax) {
+	public DrawJavaType(ANode node, SyntaxJavaType syntax) {
 		super(node, syntax);
 	}
 
@@ -155,7 +155,7 @@ public class DrawJavaEnumAlias extends DrawTerm {
 	private String text;
 	
 	public DrawJavaEnumAlias() {}
-	public DrawJavaEnumAlias(ASTNode node, SyntaxJavaEnumAlias syntax) {
+	public DrawJavaEnumAlias(ANode node, SyntaxJavaEnumAlias syntax) {
 		super(node, syntax);
 	}
 
@@ -179,7 +179,7 @@ public class DrawJavaPackedField extends DrawTerm {
 	private String text;
 	
 	public DrawJavaPackedField() {}
-	public DrawJavaPackedField(ASTNode node, SyntaxJavaPackedField syntax) {
+	public DrawJavaPackedField(ANode node, SyntaxJavaPackedField syntax) {
 		super(node, syntax);
 	}
 
@@ -201,7 +201,7 @@ public class DrawJavaComment extends DrawTerm {
 	public String[] lines;
 	
 	public DrawJavaComment() {}
-	public DrawJavaComment(ASTNode node, SyntaxJavaComment syntax) {
+	public DrawJavaComment(ANode node, SyntaxJavaComment syntax) {
 		super(node, syntax);
 	}
 

@@ -42,12 +42,12 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 		this.r_paren = r_paren;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
-		ASTNode n;
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		ANode n;
 		if (idx >= 0) {
 			n = ((ENode)node).getArgs()[idx];
 		} else {
-			n = (name == "this") ? node : (ASTNode)node.getVal(name);
+			n = (name == "this") ? node : (ANode)node.getVal(name);
 		}
 		Drawable dr = new DrawJavaExpr(n, this);
 		dr.init(fmt);
@@ -65,7 +65,7 @@ public class SyntaxJavaAccess extends SyntaxElem {
 		super(spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaAccess(node, this);
 		dr.init(fmt);
 		return dr;
@@ -85,7 +85,7 @@ public class SyntaxJavaType extends SyntaxElem {
 		this.hint = hint;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaType(node, this);
 		dr.init(fmt);
 		return dr;
@@ -101,7 +101,7 @@ public class SyntaxJavaEnumAlias extends SyntaxElem {
 		super(spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaEnumAlias(node, this);
 		dr.init(fmt);
 		return dr;
@@ -118,7 +118,7 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 		super(spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaPackedField(node, this);
 		dr.init(fmt);
 		return dr;
@@ -135,7 +135,7 @@ public class SyntaxJavaComment extends SyntaxElem {
 		super(spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaComment(node, this);
 		dr.init(fmt);
 		return dr;
@@ -152,7 +152,7 @@ public class CalcOptionJavaFlag implements CalcOption {
 		this.offs = offs;
 		this.val = val;
 	} 
-	public boolean calc(ASTNode node) {
+	public boolean calc(ANode node) {
 		if (node == null || !(node instanceof DNode)) return false;
 		int f = ((DNode)node).flags >>> offs;
 		f &= mask;
@@ -442,7 +442,7 @@ public class JavaSyntax extends TextSyntax {
 			seTypeConstrClassArg = setl(lout_empty, ident("id"),
 				opt("upper_bound",
 					new CalcOption() {
-						public boolean calc(ASTNode node) {
+						public boolean calc(ANode node) {
 							if !(node instanceof TypeConstr) return false;
 							TypeConstr tc = (TypeConstr)node;
 							if (tc.super_types.length == 0) return false;
@@ -489,7 +489,7 @@ public class JavaSyntax extends TextSyntax {
 				};
 			SyntaxElem struct_prefix = setl(lout_struct_hdr,
 					attr("meta"),
-					opt("singleton", new CalcOption() {public boolean calc(ASTNode node) {return ((Struct)node).isSingleton();}}, kw("@singleton"), null, lout_empty),
+					opt("singleton", new CalcOption() {public boolean calc(ANode node) {return ((Struct)node).isSingleton();}}, kw("@singleton"), null, lout_empty),
 //					jflag(1,12,1, "@synthetic"),
 					jflag(1,18,1, "@unerasable"),
 					jflag(1,3,1,  "static"),
@@ -513,7 +513,7 @@ public class JavaSyntax extends TextSyntax {
 				);
 			SyntaxList struct_members = lst("members",lout_empty);
 			struct_members.filter = new CalcOption() {
-				public boolean calc(ASTNode node) {
+				public boolean calc(ANode node) {
 					if (node instanceof DNode && node.isSynthetic())
 						return false;
 					return true;
@@ -590,7 +590,7 @@ public class JavaSyntax extends TextSyntax {
 				lout_empty
 				);
 			case_fields.filter = new CalcOption() {
-				public boolean calc(ASTNode node) { return node instanceof Field && !node.isSynthetic(); }
+				public boolean calc(ANode node) { return node instanceof Field && !node.isSynthetic(); }
 			};
 			seStructCase = setl(lout_nl_grp,
 					case_prefix,
@@ -600,7 +600,7 @@ public class JavaSyntax extends TextSyntax {
 					struct_args.ncopy(),
 					opt("singleton",
 						new CalcOption() {
-							public boolean calc(ASTNode node) { return !((Struct)node).isSingleton(); }
+							public boolean calc(ANode node) { return !((Struct)node).isSingleton(); }
 						},
 						set(
 							sep("("),
@@ -618,7 +618,7 @@ public class JavaSyntax extends TextSyntax {
 					attr("id"),
 					opt("alias",
 						new CalcOption() {
-							public boolean calc(ASTNode node) {
+							public boolean calc(ANode node) {
 								return ((Field)node).getMetaAlias() != null;
 							}
 						},
@@ -630,7 +630,7 @@ public class JavaSyntax extends TextSyntax {
 				sep_nl(","),
 				lout_empty);
 			enum_fields.filter = new CalcOption() {
-				public boolean calc(ASTNode node) {
+				public boolean calc(ANode node) {
 					if (node instanceof Field && node.isEnumField())
 						return true;
 					return false;
@@ -638,7 +638,7 @@ public class JavaSyntax extends TextSyntax {
 			};
 			SyntaxList enum_members = lst("members",lout_empty);
 			enum_members.filter = new CalcOption() {
-				public boolean calc(ASTNode node) {
+				public boolean calc(ANode node) {
 					if ((node instanceof DNode && node.isSynthetic()) || (node instanceof Field && node.isEnumField()))
 						return false;
 					return true;
@@ -690,7 +690,7 @@ public class JavaSyntax extends TextSyntax {
 					jflag(1,17,1, "@virtual"),
 					opt("packed",
 						new CalcOption() {
-							public boolean calc(ASTNode node) {return ((Field)node).isPackedField();}
+							public boolean calc(ANode node) {return ((Field)node).isPackedField();}
 						},
 						new SyntaxJavaPackedField(lout_empty),
 						null,
@@ -726,7 +726,7 @@ public class JavaSyntax extends TextSyntax {
 				attr("vtype"),
 				opt("stype",
 					new CalcOption() {
-						public boolean calc(ASTNode node) {
+						public boolean calc(ANode node) {
 							FormPar fp = (FormPar)node;
 							return fp.stype != null && fp.vtype.getType() ≉ fp.stype.getType();
 						}
@@ -765,7 +765,7 @@ public class JavaSyntax extends TextSyntax {
 					);
 			SyntaxList method_params = lst("params",node(),sep(","),lout_empty);
 			method_params.filter = new CalcOption() {
-				public boolean calc(ASTNode node) {
+				public boolean calc(ANode node) {
 					if (node instanceof DNode && node.isSynthetic())
 						return false;
 					return true;
@@ -1035,7 +1035,7 @@ public class JavaSyntax extends TextSyntax {
 		seContainerAccessExpr = set(expr("obj", Constants.opContainerElementPriority), sep("["), attr("index"), sep("]"));
 		seThisExpr = opt("super",
 						new CalcOption() {
-							public boolean calc(ASTNode node) { return !((ThisExpr)node).isSuperExpr(); }
+							public boolean calc(ANode node) { return !((ThisExpr)node).isSuperExpr(); }
 						},
 						kw("this"),
 						kw("super"),
@@ -1063,7 +1063,7 @@ public class JavaSyntax extends TextSyntax {
 		seCallConstr = set(
 				opt("this",
 					new CalcOption() {
-						public boolean calc(ASTNode node) { return ((ENode)node).isSuperExpr(); }
+						public boolean calc(ANode node) { return ((ENode)node).isSuperExpr(); }
 					},
 					kw("super"),
 					kw("this"),
@@ -1224,7 +1224,7 @@ public class JavaSyntax extends TextSyntax {
 		return "'"+Convert.escape(ch)+"'";
 	}
 
-	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
+	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
 		switch (node) {
 		case FileUnit: return seFileUnit;
 		case Import: return seImport;

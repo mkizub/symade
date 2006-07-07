@@ -58,7 +58,7 @@ public class TextSyntax {
 		return String.valueOf(ch);
 	}
 
-	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
+	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
 		return kw("?"+node.getClass().getName()+"?");
 	}
 	
@@ -338,23 +338,29 @@ public class ParagraphLayoutBlock extends ParagraphLayout {
 
 @node
 public final class DrawColor extends DNode {
+	@virtual typedef This  = DrawColor;
+
 	@att
 	public int rgb_color;
 
 	
 	public DrawColor() {}
 	public DrawColor(int rgb_color) {
+		this.id = new Symbol("color "+rgb_color);
 		this.rgb_color = rgb_color;
 	}
 }
 
 @node
 public final class DrawFont extends DNode {
+	@virtual typedef This  = DrawColor;
+
 	@att
 	public String font_name;
 
 	public DrawFont() {}
 	public DrawFont(String font_name) {
+		this.id = new Symbol(font_name);
 		this.font_name = font_name;
 	}
 }
@@ -404,21 +410,21 @@ public abstract class SyntaxElem extends ASTNode {
 
 	public static final SyntaxElem[] emptyArray = new SyntaxElem[0];
 
-	@att public SpaceCmd[]			spaces;
-	@ref public DrawColor			color;
-	@ref public DrawFont			font;
-	@att public boolean				is_hidden;
+	@att public SpaceCmd[]				spaces;
+	@att public SymbolRef<DrawColor>	color;
+	@att public SymbolRef<DrawFont>		font;
+	@att public boolean					is_hidden;
 
 	public:r,r,r,rw DrawLayout		lout;
 	
 	public SyntaxElem() {}
 	public SyntaxElem(SpaceCmd[] spaces) {
 		this.spaces.copyFrom(spaces);
-		this.color = new DrawColor();
-		this.font = new DrawFont();
+		this.color = new SymbolRef(0,new DrawColor(0));
+		this.font = new SymbolRef(0,new DrawFont("Dialog-PLAIN-12"));
 	}
 
-	public abstract Drawable makeDrawable(Formatter fmt, ASTNode node);
+	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
 	
 	@getter
 	public DrawLayout get$lout() {
@@ -433,9 +439,9 @@ public abstract class SyntaxElem extends ASTNode {
 		DrawLayout lout = this.lout;
 		lout.is_hidden = is_hidden;
 		if (color != null)
-			lout.color = new Color(color.rgb_color);
+			lout.color = new Color(color.symbol.rgb_color);
 		if (font != null)
-			lout.font = Font.decode(font.font_name);
+			lout.font = Font.decode(font.symbol.font_name);
 		lout.spaces = new LayoutSpace[spaces.length];
 		for (int i=0; i < lout.spaces.length; i++) {
 			SpaceCmd sc = spaces[i];
@@ -466,7 +472,7 @@ public class SyntaxSpace extends SyntaxElem {
 		super(spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawSpace(node, this);
 		dr.init(fmt);
 		return dr;
@@ -495,7 +501,7 @@ public class SyntaxKeyword extends SyntaxToken {
 		super(text, spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawKeyword(node, this);
 		dr.init(fmt);
 		return dr;
@@ -511,7 +517,7 @@ public class SyntaxOperator extends SyntaxToken {
 		super(text, spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawOperator(node, this);
 		dr.init(fmt);
 		return dr;
@@ -527,7 +533,7 @@ public class SyntaxSeparator extends SyntaxToken {
 		super(text, spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawSeparator(node, this);
 		dr.init(fmt);
 		return dr;
@@ -552,7 +558,7 @@ public class SyntaxList extends SyntaxElem {
 		this.separator = separator;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNonTermList(node, this);
 		dr.init(fmt);
 		return dr;
@@ -570,7 +576,7 @@ public class SyntaxSet extends SyntaxElem {
 		super(spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNonTermSet(node, this);
 		dr.init(fmt);
 		return dr;
@@ -596,12 +602,12 @@ public class SyntaxAttr extends SyntaxElem {
 		this.hint = hint;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		if (name.equals("this"))
 			return new DrawNodeTerm(node, this, "");
 		Object obj = node.getVal(name);
-		if (obj instanceof ASTNode)
-			return fmt.getDrawable((ASTNode)obj, hint);
+		if (obj instanceof ANode)
+			return fmt.getDrawable((ANode)obj, hint);
 		Drawable dr = new DrawNodeTerm(node, this, name);
 		dr.init(fmt);
 		return dr;
@@ -619,7 +625,7 @@ public class SyntaxNode extends SyntaxElem {
 		this.hint = hint;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		return fmt.getDrawable(node, hint);
 	}
 }
@@ -633,7 +639,7 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 		super(name,spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNodeTerm(node, this, name);
 		dr.init(fmt);
 		return dr;
@@ -649,7 +655,7 @@ public class SyntaxCharAttr extends SyntaxAttr {
 		super(name,spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawCharTerm(node, this, name);
 		dr.init(fmt);
 		return dr;
@@ -665,7 +671,7 @@ public class SyntaxStrAttr extends SyntaxAttr {
 		super(name,spaces);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawStrTerm(node, this, name);
 		dr.init(fmt);
 		return dr;
@@ -673,13 +679,13 @@ public class SyntaxStrAttr extends SyntaxAttr {
 }
 
 public interface CalcOption {
-	public boolean calc(ASTNode node);
+	public boolean calc(ANode node);
 }
 
 public class CalcOptionNotNull implements CalcOption {
 	private final String name;
 	public CalcOptionNotNull(String name) { this.name = name.intern(); } 
-	public boolean calc(ASTNode node) {
+	public boolean calc(ANode node) {
 		if (node == null)
 			return false;
 		Object obj = node.getVal(name);
@@ -694,12 +700,12 @@ public class CalcOptionNotNull implements CalcOption {
 public class CalcOptionNotEmpty implements CalcOption {
 	private final String name;
 	public CalcOptionNotEmpty(String name) { this.name = name.intern(); } 
-	public boolean calc(ASTNode node) {
+	public boolean calc(ANode node) {
 		if (node == null)
 			return false;
 		Object obj = node.getVal(name);
-		if (obj instanceof ASTNode[])
-			return ((ASTNode[])obj).length > 0;
+		if (obj instanceof ANode[])
+			return ((ANode[])obj).length > 0;
 		return false;
 	}
 }
@@ -707,7 +713,7 @@ public class CalcOptionNotEmpty implements CalcOption {
 public class CalcOptionTrue implements CalcOption {
 	private final String name;
 	public CalcOptionTrue(String name) { this.name = name.intern(); } 
-	public boolean calc(ASTNode node) {
+	public boolean calc(ANode node) {
 		if (node == null) return false;
 		Object val = node.getVal(name);
 		if (val == null || !(val instanceof Boolean)) return false;
@@ -734,7 +740,7 @@ public class SyntaxOptional extends SyntaxElem {
 		this.name = name.intern();
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawOptional(node, this);
 		dr.init(fmt);
 		return dr;
@@ -755,7 +761,7 @@ public class SyntaxFolder extends SyntaxElem {
 		this.unfolded = unfolded;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawFolded(node, this);
 		dr.init(fmt);
 		return dr;
@@ -775,7 +781,7 @@ public class SyntaxIntChoice extends SyntaxSet {
 		this.name = name.intern();
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawIntChoice(node, this);
 		dr.init(fmt);
 		return dr;
@@ -794,7 +800,7 @@ public class SyntaxEnumChoice extends SyntaxSet {
 		this.name = name.intern();
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawEnumChoice(node, this);
 		dr.init(fmt);
 		return dr;
@@ -815,7 +821,7 @@ public class SyntaxParagraphLayout extends SyntaxElem {
 		this.par = par;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ASTNode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawParagraph(node, this);
 		dr.init(fmt);
 		return dr;

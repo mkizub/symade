@@ -17,13 +17,13 @@ import syntax kiev.Syntax;
 import java.awt.Graphics2D;
 
 public interface Formatter {
-	public Drawable format(ASTNode node);
-	public Drawable getDrawable(ASTNode node, FormatInfoHint hint);
+	public Drawable format(ANode node);
+	public Drawable getDrawable(ANode node, FormatInfoHint hint);
 	public AttrSlot getAttr();
 	public String   escapeString(String str);
 	public String   escapeChar(char ch);
 	public void     setSyntax(TextSyntax stx);
-	public void     cleanup(ASTNode node);
+	public void     cleanup(ANode node);
 }
 
 @node
@@ -49,13 +49,13 @@ public abstract class AbstractFormatter implements Formatter {
 		this.ATTR = new TmpAttrSlot(name,false,false,Drawable.class);
 	}
 
-	public abstract Drawable format(ASTNode node);
+	public abstract Drawable format(ANode node);
 	
 	public void setSyntax(TextSyntax stx) {
 		this.syntax = stx;
 	}
 	
-	public void cleanup(ASTNode node) {
+	public void cleanup(ANode node) {
 		AttrSlot attr = this.getAttr();
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) { attr.clear(n); return true; }
@@ -69,7 +69,7 @@ public abstract class AbstractFormatter implements Formatter {
 		return syntax.escapeChar(ch);
 	}
 
-	public Drawable getDrawable(ASTNode node, FormatInfoHint hint) {
+	public Drawable getDrawable(ANode node, FormatInfoHint hint) {
 		if (node == null) {
 			SyntaxSpace ssp = new SyntaxSpace();
 			ssp.is_hidden = true;
@@ -97,7 +97,7 @@ public class TextFormatter extends AbstractFormatter {
 		super(syntax);
 	}
 
-	public Drawable format(ASTNode node) {
+	public Drawable format(ANode node) {
 		DrawContext ctx = new DrawContext(this,null);
 		ctx.width = 100;
 		Drawable root = getDrawable(node, null);
@@ -152,7 +152,7 @@ public class GfxFormatter extends AbstractFormatter {
 		this.gfx = gfx;
 	}
 
-	public Drawable format(ASTNode node) {
+	public Drawable format(ANode node) {
 		DrawContext ctx = new DrawContext(this,gfx);
 		ctx.width = 100;
 		Drawable root = getDrawable(node, null);

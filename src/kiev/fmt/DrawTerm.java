@@ -16,7 +16,7 @@ import syntax kiev.Syntax;
 public abstract class DrawTerm extends Drawable {
 	Formatter fmt;
 	public DrawTerm() {}
-	public DrawTerm(ASTNode node, SyntaxElem syntax) {
+	public DrawTerm(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
 	}
 	
@@ -48,7 +48,7 @@ public abstract class DrawTerm extends Drawable {
 public class DrawKeyword extends DrawTerm {
 
 	public DrawKeyword() {}
-	public DrawKeyword(ASTNode node, SyntaxKeyword syntax) {
+	public DrawKeyword(ANode node, SyntaxKeyword syntax) {
 		super(node, syntax);
 	}
 
@@ -58,7 +58,7 @@ public class DrawKeyword extends DrawTerm {
 @node
 public class DrawOperator extends DrawTerm {
 	public DrawOperator() {}
-	public DrawOperator(ASTNode node, SyntaxOperator syntax) {
+	public DrawOperator(ANode node, SyntaxOperator syntax) {
 		super(node, syntax);
 	}
 
@@ -68,7 +68,7 @@ public class DrawOperator extends DrawTerm {
 @node
 public class DrawSeparator extends DrawTerm {
 	public DrawSeparator() {}
-	public DrawSeparator(ASTNode node, SyntaxSeparator syntax) {
+	public DrawSeparator(ANode node, SyntaxSeparator syntax) {
 		super(node, syntax);
 	}
 
@@ -81,7 +81,7 @@ public class DrawNodeTerm extends DrawTerm {
 	String[] attrs;
 
 	public DrawNodeTerm() {}
-	public DrawNodeTerm(ASTNode node, SyntaxElem syntax, String attr) {
+	public DrawNodeTerm(ANode node, SyntaxElem syntax, String attr) {
 		super(node, syntax);
 		this.attrs = attr.split("\\.");
 		for (int i=0; i < this.attrs.length; i++)
@@ -93,9 +93,9 @@ public class DrawNodeTerm extends DrawTerm {
 	}
 	
 	public final AttrPtr getAttrPtr() {
-		ASTNode n = node;
+		ANode n = node;
 		for (int i=0; i < attrs.length-1; i++) {
-			n = (ASTNode)n.getVal(attrs[i]);
+			n = (ANode)n.getVal(attrs[i]);
 		}
 		String attr = attrs[attrs.length-1];
 		if (attr == "")
@@ -107,7 +107,7 @@ public class DrawNodeTerm extends DrawTerm {
 @node
 public class DrawCharTerm extends DrawNodeTerm {
 	public DrawCharTerm() {}
-	public DrawCharTerm(ASTNode node, SyntaxElem syntax, String attr) {
+	public DrawCharTerm(ANode node, SyntaxElem syntax, String attr) {
 		super(node, syntax, attr);
 	}
 
@@ -120,7 +120,7 @@ public class DrawCharTerm extends DrawNodeTerm {
 @node
 public class DrawStrTerm extends DrawNodeTerm {
 	public DrawStrTerm() {}
-	public DrawStrTerm(ASTNode node, SyntaxElem syntax, String attr) {
+	public DrawStrTerm(ANode node, SyntaxElem syntax, String attr) {
 		super(node, syntax, attr);
 	}
 

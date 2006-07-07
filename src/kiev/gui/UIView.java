@@ -22,7 +22,7 @@ import java.awt.Graphics2D;
  * @author Maxim Kizub
  */
 @node(copyable=false)
-public abstract class UIView extends ASTNode implements MouseListener, ComponentListener  {
+public abstract class UIView extends ANode implements MouseListener, ComponentListener  {
 
 	/** The workplace window */
 	protected Window		parent_window;
@@ -31,7 +31,7 @@ public abstract class UIView extends ASTNode implements MouseListener, Component
 	/** The formatter of the current view */
 	protected GfxFormatter	formatter;
 	/** The root node to display */
-	@ref public ASTNode		the_root;
+	@ref public ANode		the_root;
 	/** The root node of document we edit - the whole program */
 	@ref public Drawable	view_root;
 	/** The syntax in use */
@@ -53,6 +53,11 @@ public abstract class UIView extends ASTNode implements MouseListener, Component
 			formatter.cleanup(the_root);
 		formatter.setSyntax(syntax);
 		formatAndPaint(true);
+	}
+	
+	public void setRoot(ANode root) {
+		this.the_root = root;
+		view_canvas.root = view_root = formatter.format(the_root);
 	}
 	
 	public abstract void formatAndPaint(boolean full);

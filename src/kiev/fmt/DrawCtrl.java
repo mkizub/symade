@@ -17,7 +17,7 @@ public class DrawCtrl extends Drawable {
 	public Drawable arg;
 	
 	public DrawCtrl() {}
-	public DrawCtrl(ASTNode node, SyntaxElem syntax) {
+	public DrawCtrl(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
 	}
 
@@ -54,7 +54,7 @@ public class DrawCtrl extends Drawable {
 @node
 public class DrawSpace extends DrawCtrl {
 	public DrawSpace() {}
-	public DrawSpace(ASTNode node, SyntaxElem syntax) {
+	public DrawSpace(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
 	}
 }
@@ -66,7 +66,7 @@ public class DrawOptional extends DrawCtrl {
 	@ref Drawable dr_false;
 	
 	public DrawOptional() {}
-	public DrawOptional(ASTNode node, SyntaxOptional syntax) {
+	public DrawOptional(ANode node, SyntaxOptional syntax) {
 		super(node, syntax);
 	}
 
@@ -95,7 +95,7 @@ public class DrawFolded extends DrawCtrl {
 	@ref Drawable dr_unfolded;
 	
 	public DrawFolded() {}
-	public DrawFolded(ASTNode node, SyntaxFolder syntax) {
+	public DrawFolded(ANode node, SyntaxFolder syntax) {
 		super(node, syntax);
 	}
 
@@ -107,7 +107,8 @@ public class DrawFolded extends DrawCtrl {
 
 	public void preFormat(DrawContext cont) {
 		SyntaxFolder sc = (SyntaxFolder)syntax;
-		if (node.isDrawFolded())
+		ANode n = this.node;
+		if (n instanceof ASTNode && n.isDrawFolded())
 			arg = dr_folded;
 		else
 			arg = dr_unfolded;
@@ -121,7 +122,7 @@ public class DrawIntChoice extends DrawCtrl {
 	@ref Drawable[] args;
 
 	public DrawIntChoice() {}
-	public DrawIntChoice(ASTNode node, SyntaxIntChoice syntax) {
+	public DrawIntChoice(ANode node, SyntaxIntChoice syntax) {
 		super(node, syntax);
 	}
 
@@ -148,7 +149,7 @@ public class DrawEnumChoice extends DrawCtrl {
 	@ref Drawable[] args;
 
 	public DrawEnumChoice() {}
-	public DrawEnumChoice(ASTNode node, SyntaxEnumChoice syntax) {
+	public DrawEnumChoice(ANode node, SyntaxEnumChoice syntax) {
 		super(node, syntax);
 	}
 
@@ -175,7 +176,7 @@ public class DrawParagraph extends DrawCtrl {
 	boolean is_multiline;
 	
 	public DrawParagraph() {}
-	public DrawParagraph(ASTNode node, SyntaxParagraphLayout syntax) {
+	public DrawParagraph(ANode node, SyntaxParagraphLayout syntax) {
 		super(node, syntax);
 	}
 

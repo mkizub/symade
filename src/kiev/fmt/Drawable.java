@@ -19,7 +19,7 @@ public abstract class Drawable extends ANode {
 
 	// the node we draw
 	@ref
-	public ASTNode			node;
+	public ANode			node;
 	// can be text (line/pos) or graphics (pixel x,y,w,h,baseline info) and so on,
 	// filled/modified during preFormat/postFormat
 	public DrawGeometry		geometry;
@@ -32,7 +32,7 @@ public abstract class Drawable extends ANode {
 	public Drawable() {
 		this.geometry = new DrawGeometry();
 	}
-	public Drawable(ASTNode node, SyntaxElem syntax) {
+	public Drawable(ANode node, SyntaxElem syntax) {
 		this.node = node;
 		this.geometry = new DrawGeometry();
 		this.syntax = syntax;

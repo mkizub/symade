@@ -77,7 +77,7 @@ public class XmlDumpSyntax extends TextSyntax {
 	private SyntaxElem close0(String name) {
 		return new SyntaxKeyword("</"+name+">",lout_nl);
 	}
-	public SyntaxElem getSyntaxElem(ASTNode node, FormatInfoHint hint) {
+	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
 		if (node == null)
 			return seNull;
 		String nm = node.getClass().getName();

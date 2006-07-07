@@ -78,7 +78,7 @@ public class Window extends JFrame {
 		expl_view.formatAndPaint(true);
 	}
 	
-	public void setRoot(ASTNode root) {
+	public void setRoot(ANode root) {
 		editor_view.setRoot(root);
 		editor_view.formatAndPaint(true);
 //		expl_view.the_root = null;
