@@ -132,7 +132,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	{
 		syn @= members,
 		{
-			syn instanceof TypeDef && syn.hasName(name),
+			syn instanceof DNode && syn.hasName(name),
 			node ?= syn
 		;	syn instanceof Import && !((Import)syn).star,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
@@ -141,7 +141,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 			node ?= syn
 		}
 	;
-		pkg != null,
+		pkg != null && path.space_prev.pslot().name != "pkg",
 		trace( Kiev.debugResolve, "In file package: "+pkg),
 		((CompaundType)pkg.getType()).clazz.resolveNameR(node,path,name)
 	;
