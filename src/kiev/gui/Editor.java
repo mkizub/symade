@@ -190,6 +190,24 @@ public class Editor extends InfoView implements KeyListener {
 					}
 				}
 				break;
+			case KeyEvent.VK_X:
+				{
+					ANode node = cur_elem.node;
+					changes.push(Transaction.open());
+					in_clipboard = node;
+					node.detach();
+					changes.peek().close();
+					formatAndPaint(true);
+					parent_window.clip_view.setRoot(in_clipboard);
+					parent_window.clip_view.formatAndPaint(true);
+				}
+				break;
+			case KeyEvent.VK_R:
+				setSyntax(this.syntax);
+				cur_elem = view_root.getFirstLeaf();
+				view_canvas.root = view_root;
+				formatAndPaint(false);
+				break;
 			}
 		}
 /*		else if (mask == KeyEvent.CTRL_DOWN_MASK && !mode_edit) {
@@ -634,6 +652,7 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 
 	private final Editor	editor;
 	private final int		mode;
+	private       int		idx;
 
 	NewElemEditor(Editor editor, int mode) {
 		this.editor = editor;
@@ -667,20 +686,26 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 				}
 			}
 		} else {
-			while (dr != null && !(dr instanceof DrawNonTermList))
+			while (dr != null && !(dr.parent() instanceof DrawNonTermList))
 				dr = (Drawable)dr.parent();
-			if (dr instanceof DrawNonTermList && ((SyntaxList)dr.syntax).expected_types.length > 0) {
-				SyntaxList slst = (SyntaxList)dr.syntax;
+			if (dr != null && dr.parent() instanceof DrawNonTermList) {
+				DrawNonTermList lst = (DrawNonTermList)dr.parent();
+				SyntaxList slst = (SyntaxList)lst.syntax;
 				if (slst.expected_types.length > 0) {
-					JPopupMenu m = new JPopupMenu(mode==INSERT_HERE ? "Prepend new item" : "Append new item");
-					foreach (SymbolRef sr; slst.expected_types; sr.symbol instanceof Struct) {
-						m.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, dr.node, slst.name)));
+					this.idx = lst.args.indexOf(dr);
+					if (mode == INSERT_NEXT)
+						this.idx += 1;
+					if (slst.expected_types.length > 0) {
+						JPopupMenu m = new JPopupMenu(mode==INSERT_HERE ? "Prepend new item" : "Append new item");
+						foreach (SymbolRef sr; slst.expected_types; sr.symbol instanceof Struct) {
+							m.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, lst.node, slst.name)));
+						}
+						int x = dr.geometry.x;
+						int y = dr.geometry.y + dr.geometry.h;
+						m.addPopupMenuListener(this);
+						m.show(editor.view_canvas, x, y);
+						editor.startItemEditor(lst.node, this);
 					}
-					int x = dr.geometry.x;
-					int y = dr.geometry.y + dr.geometry.h;
-					m.addPopupMenuListener(this);
-					m.show(editor.view_canvas, x, y);
-					editor.startItemEditor(dr.node, this);
 				}
 			}
 		}
@@ -704,21 +729,10 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 		public void actionPerformed(ActionEvent e) {
 			ANode obj = (ANode)Class.forName(cls.qname()).newInstance();
 			foreach (AttrSlot a; node.values(); a.name == attr) {
-				switch (mode) {
-				case INSERT_HERE:
-				case SETNEW_HERE:
-					if (a.is_space)
-						((SpaceAttrSlot<ANode>)a).insert(node,0,obj);
-					else
-						a.set(node, obj);
-					break;
-				case INSERT_NEXT:
-					if (a.is_space)
-						((SpaceAttrSlot<ANode>)a).add(node,obj);
-					else
-						a.set(node, obj);
-					break;
-				}
+				if (a.is_space)
+					((SpaceAttrSlot<ANode>)a).insert(node,idx,obj);
+				else
+					a.set(node, obj);
 				editor.stopItemEditor(false);
 				return;
 			}
@@ -730,8 +744,9 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 
 abstract class TextEditor implements KeyListener {
 	
-	private final Editor	editor;
-	private       int		edit_offset;
+	protected final Editor		editor;
+	private         int			edit_offset;
+	protected       JPopupMenu	menu;
 
 	TextEditor(Editor editor) {
 		this.editor = editor;
@@ -779,10 +794,14 @@ abstract class TextEditor implements KeyListener {
 		case KeyEvent.VK_ENTER:
 			editor.view_canvas.cursor_offset = edit_offset = -1;
 			editor.stopItemEditor(false);
+			if (menu != null)
+				menu.setVisible(false);
 			return;
 		case KeyEvent.VK_ESCAPE:
 			editor.view_canvas.cursor_offset = edit_offset = -1;
 			editor.stopItemEditor(true);
+			if (menu != null)
+				menu.setVisible(false);
 			return;
 		default:
 			if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
@@ -823,7 +842,25 @@ final class SymRefEditor extends TextEditor {
 	}
 	
 	String getText() {
-		return symref.name;
+		String name = symref.name;
+		if (name == null || name.length() == 0)
+			return name;
+		DNode[] decls = symref.findForResolve(false);
+		if (decls == null)
+			return name;
+		if (menu == null) {
+			menu = new JPopupMenu();
+			menu.setFocusable(false);
+		} else {
+			menu.removeAll();
+		}
+		foreach (DNode dn; decls)
+			menu.add(dn.id.sname);
+		Drawable dr = editor.cur_elem;
+		int x = dr.geometry.x;
+		int y = dr.geometry.y + dr.geometry.h;
+		menu.show(editor.view_canvas, x, y);
+		return name;
 	}
 	void setText(String text) {
 		symref.name = text;

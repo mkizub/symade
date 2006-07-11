@@ -319,6 +319,26 @@ public abstract class ANode {
 		return node;
 	}
 	
+	public final This detach()
+		alias operator (210,fy,~)
+	{
+		if (!isAttached())
+			return this;
+		ANode parent = parent();
+		parent.open();
+		AttrSlot pslot = pslot();
+		if (pslot instanceof SpaceAttrSlot)
+			pslot.detach(parent, this);
+		else if (pslot.isExtData())
+			parent.delExtData(pslot);
+		else if (pslot.isTmpData())
+			parent.delTmpData(pslot);
+		else
+			pslot.set(parent,null);
+		assert(!isAttached());
+		return this;
+	}
+	
 	public final AttrPtr getAttrPtr(String name) {
 		foreach (AttrSlot attr; this.values(); attr.name == name)
 			return new AttrPtr(this, attr);
@@ -716,29 +736,9 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		}
 	}
 
-	public final This detach()
-		alias operator (210,fy,~)
-	{
-		if (!isAttached())
-			return this;
-		ANode parent = parent();
-		parent.open();
-		AttrSlot pslot = pslot();
-		if (pslot instanceof SpaceAttrSlot)
-			pslot.detach(parent, this);
-		else if (pslot.isExtData())
-			parent.delExtData(pslot);
-		else if (pslot.isTmpData())
-			parent.delTmpData(pslot);
-		else
-			pslot.set(parent,null);
-		assert(!isAttached());
-		return this;
-	}
-	
 	public abstract ASTNode getDummyNode();
 	
-	public boolean hasName(String name) {
+	public boolean hasName(String name, boolean by_equals) {
 		return false;
 	}
 	
@@ -758,6 +758,10 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public Object doRewrite(RewriteContext ctx) {
 		throw new CompilerException(this, "Node "+this.getClass().getName()+" is not a rewriter");
+	}
+
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		return null;
 	}
 }
 

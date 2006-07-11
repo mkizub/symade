@@ -117,23 +117,23 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		return st;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info)
 		Var@ var;
 		ASTNode@ n;
 	{
 		var @= pattern,
-		var.id.equals(name),
+		info.checkNodeName(var),
 		node ?= var
 	;
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		n.hasName(name),
+		info.checkNodeName(n),
 		node ?= n
 	;
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		n instanceof Var && ((Var)n).isForward() && ((Var)n).id.equals(name),
+		n instanceof Var && ((Var)n).isForward() && info.checkNodeName(n),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
-		n.getType().resolveNameAccessR(node,info,name)
+		n.getType().resolveNameAccessR(node,info)
 	}
 }
 
@@ -208,9 +208,10 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		return "catch( "+arg+" )";
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info)
 	{
-		node ?= arg, ((Var)node).id.equals(name)
+		node ?= arg,
+		info.checkNodeName(node)
 	}
 }
 

@@ -72,12 +72,12 @@ public abstract class Type extends AType {
 		super(meta_type, flags, tvars, appls);
 	}
 
-	public final rule resolveCallAccessR(Method@ node, ResInfo info, String name, CallType mt) {
-		meta_type.resolveCallAccessR(this,node,info,name,mt)
+	public final rule resolveCallAccessR(Method@ node, ResInfo info, CallType mt) {
+		meta_type.resolveCallAccessR(this,node,info,mt)
 	}
 
-	public final rule resolveNameAccessR(ASTNode@ node, ResInfo info, String name) {
-		meta_type.resolveNameAccessR(this,node,info,name)
+	public final rule resolveNameAccessR(ASTNode@ node, ResInfo info) {
+		meta_type.resolveNameAccessR(this,node,info)
 	}
 
 	public boolean isInstanceOf(Type t2) alias operator (60, xfx, ≥ ) {

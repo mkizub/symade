@@ -514,10 +514,10 @@ public static final view RCastExpr of CastExpr extends RENode {
 
 	public:no,no,no,rw final boolean tryOverloadedCast(Type et) {
 		Method@ v;
-		ResInfo info = new ResInfo(this,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 		v.$unbind();
 		CallType mt = new CallType(et,null,null,this.type.getType(),false);
-		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
+		if( PassInfo.resolveBestMethodR(et,v,info,mt) ) {
 			Method m = (Method)v;
 			TypeRef[] targs = new TypeRef[m.targs.length];
 			for (int i=0; i < targs.length; i++) {
@@ -532,9 +532,9 @@ public static final view RCastExpr of CastExpr extends RENode {
 			return true;
 		}
 		v.$unbind();
-		info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports);
+		info = new ResInfo(this,nameCastOp,ResInfo.noForwards|ResInfo.noImports);
 		mt = new CallType(null,null,new Type[]{expr.getType()},this.type.getType(),false);
-		if( PassInfo.resolveMethodR(this,v,info,nameCastOp,mt) ) {
+		if( PassInfo.resolveMethodR(this,v,info,mt) ) {
 			Method m = (Method)v;
 			TypeRef[] targs = new TypeRef[m.targs.length];
 			for (int i=0; i < targs.length; i++) {

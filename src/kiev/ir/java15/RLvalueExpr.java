@@ -53,9 +53,9 @@ public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 			DNode@ v;
 			ResInfo info;
 			if (!(obj instanceof TypeRef) &&
-				tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),ident.name) )
+				tp.resolveNameAccessR(v,info=new ResInfo(this,ident.name,ResInfo.noStatic|ResInfo.noImports)) )
 				res[si] = makeExpr(v,info,obj);
-			else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name))
+			else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this,ident.name)))
 				res[si] = makeExpr(v,info,tp.getStruct());
 		}
 		int cnt = 0;

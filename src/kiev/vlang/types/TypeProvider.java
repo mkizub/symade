@@ -69,89 +69,89 @@ public class MetaType implements Constants {
 		this.version = tdecl.type_decl_version;
 	}
 
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
 	{
-		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in "+tp),
+		trace(Kiev.debugResolve,"Type: Resolving name "+info.getName()+" in "+tp),
 		tdecl.checkResolved(),
 		{
 			trace(Kiev.debugResolve,"Type: resolving in "+tp),
-			resolveNameR_1(node,info,name),	// resolve in this class
+			resolveNameR_1(node,info),	// resolve in this class
 			$cut
 		;	info.isSuperAllowed(),
 			trace(Kiev.debugResolve,"Type: resolving in super-type of "+tp),
-			resolveNameR_3(tp,node,info,name),	// resolve in super-classes
+			resolveNameR_3(tp,node,info),	// resolve in super-classes
 			$cut
 		;	info.isForwardsAllowed(),
 			trace(Kiev.debugResolve,"Type: resolving in forwards of "+tp),
-			resolveNameR_4(tp,node,info,name),	// resolve in forwards
+			resolveNameR_4(tp,node,info),	// resolve in forwards
 			$cut
 		}
 	}
-	private rule resolveNameR_1(ASTNode@ node, ResInfo info, String name)
+	private rule resolveNameR_1(ASTNode@ node, ResInfo info)
 	{
 		node @= tdecl.members,
-		node instanceof Field && node.hasName(name) && info.check(node)
+		node instanceof Field && info.checkNodeName(node) && info.check(node)
 	}
-	private rule resolveNameR_3(Type tp, ASTNode@ node, ResInfo info, String name)
+	private rule resolveNameR_3(Type tp, ASTNode@ node, ResInfo info)
 		MetaType@ sup;
 		Type@ tmp;
 	{
 		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
 		sup @= tdecl.getAllSuperTypes(),
 		tmp ?= sup.make(tp.bindings()),
-		tmp.meta_type.resolveNameAccessR(tmp,node,info,name)
+		tmp.meta_type.resolveNameAccessR(tmp,node,info)
 	}
 
-	private rule resolveNameR_4(Type tp, ASTNode@ node, ResInfo info, String name)
+	private rule resolveNameR_4(Type tp, ASTNode@ node, ResInfo info)
 		ASTNode@ forw;
 		MetaType@ sup;
 	{
 		forw @= tdecl.members,
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
-		((Field)forw).type.applay(tp).resolveNameAccessR(node,info,name)
+		((Field)forw).type.applay(tp).resolveNameAccessR(node,info)
 	;	info.isSuperAllowed(),
 		sup @= tdecl.getAllSuperTypes(),
 		sup instanceof CompaundMetaType,
 		forw @= ((CompaundMetaType)sup).tdecl.members,
 		forw instanceof Field && ((Field)forw).isForward() && !((Field)forw).isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
-		((Field)forw).type.applay(tp).resolveNameAccessR(node,info,name)
+		((Field)forw).type.applay(tp).resolveNameAccessR(node,info)
 	}
 
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt)
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt)
 		ASTNode@ member;
 		MetaType@ sup;
 		Type@ tmp;
 		Field@ forw;
 	{
 		tp.checkResolved(),
-		trace(Kiev.debugResolve, "Resolving method "+name+" in "+this),
+		trace(Kiev.debugResolve, "Resolving method "+info.getName()+" in "+this),
 		{
 			member @= tdecl.members,
 			member instanceof Method,
 			info.check(member),
 			node ?= ((Method)member),
-			((Method)node).equalsByCast(name,mt,tp,info)
+			((Method)node).equalsByCast(info.getName(),mt,tp,info)
 		;
 			info.isSuperAllowed(),
 			info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
 			sup @= tdecl.getAllSuperTypes(),
 			tmp ?= sup.make(tp.bindings()),
-			tmp.meta_type.resolveCallAccessR(tmp,node,info,name,mt)
+			tmp.meta_type.resolveCallAccessR(tmp,node,info,mt)
 		;
 			info.isForwardsAllowed(),
 			member @= tdecl.members,
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
-			((Field)member).type.applay(tp).resolveCallAccessR(node,info,name,mt)
+			((Field)member).type.applay(tp).resolveCallAccessR(node,info,mt)
 		;
 			info.isForwardsAllowed(),
 			sup @= tdecl.getAllSuperTypes(),
 			member @= sup.tdecl.members,
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
-			((Field)member).type.applay(tp).resolveCallAccessR(node,info,name,mt)
+			((Field)member).type.applay(tp).resolveCallAccessR(node,info,mt)
 		}
 	}
 
@@ -246,20 +246,20 @@ public final class ASTNodeMetaType extends MetaType {
 		this.version = clazz.type_decl_version;
 	}
 
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
 		MetaType@ sup;
 		Type@ tmp;
 	{
 		node @= clazz.members,
-		node instanceof Field && node.hasName(name) && info.check(node)
+		node instanceof Field && info.checkNodeName(node) && info.check(node)
 	;
 		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
 		sup @= clazz.getAllSuperTypes(),
 		tmp ?= sup.make(tp.bindings()),
-		tmp.meta_type.resolveNameAccessR(tmp,node,info,name)
+		tmp.meta_type.resolveNameAccessR(tmp,node,info)
 	}
 
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt) { false }
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt) { false }
 
 }
 
@@ -408,20 +408,20 @@ public class ArgMetaType extends MetaType {
 		return t;
 	}
 
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
 		TypeRef@ sup;
 	{
 		sup @= tdecl.super_types,
-		sup.getType().resolveNameAccessR(node, info, name)
+		sup.getType().resolveNameAccessR(node, info)
 	}
 
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt)
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt)
 		TypeRef@ sup;
 	{
 		tdecl.super_types.length == 0, $cut,
-		StdTypes.tpObject.resolveCallAccessR(node, info, name, mt)
+		StdTypes.tpObject.resolveCallAccessR(node, info, mt)
 	;	sup @= tdecl.super_types,
-		sup.getType().resolveCallAccessR(node, info, name, mt)
+		sup.getType().resolveCallAccessR(node, info, mt)
 	}
 }
 
@@ -466,40 +466,40 @@ public class WrapperMetaType extends MetaType {
 		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().applay(bindings));
 	}
 
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name)
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
 	{
 		info.isForwardsAllowed(),$cut,
-		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in wrapper type "+tp),
+		trace(Kiev.debugResolve,"Type: Resolving name "+info.getName()+" in wrapper type "+tp),
 		tp.checkResolved(),
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
 		{
 			info.enterForward(field, 0) : info.leaveForward(field, 0),
-			((WrapperType)tp).getUnboxedType().resolveNameAccessR(node, info, name),
+			((WrapperType)tp).getUnboxedType().resolveNameAccessR(node, info),
 			$cut
 		;	info.enterSuper(10) : info.leaveSuper(10),
-			((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info, name)
+			((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info)
 		}
 	;
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
-		((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info, name)
+		((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info)
 	}
 
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt)
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt)
 	{
 		info.isForwardsAllowed(),$cut,
-		trace(Kiev.debugResolve, "Resolving method "+name+" in wrapper type "+this),
+		trace(Kiev.debugResolve, "Resolving method "+info.getName()+" in wrapper type "+this),
 		tp.checkResolved(),
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
 		{
 			info.enterForward(field, 0) : info.leaveForward(field, 0),
-			((WrapperType)tp).getUnboxedType().resolveCallAccessR(node, info, name, mt),
+			((WrapperType)tp).getUnboxedType().resolveCallAccessR(node, info, mt),
 			$cut
 		;	info.enterSuper(10) : info.leaveSuper(10),
-			((WrapperType)tp).getEnclosedType().resolveCallAccessR(node, info, name, mt)
+			((WrapperType)tp).getEnclosedType().resolveCallAccessR(node, info, mt)
 		}
 	;
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
-		((WrapperType)tp).getEnclosedType().resolveCallAccessR(node, info, name, mt)
+		((WrapperType)tp).getEnclosedType().resolveCallAccessR(node, info, mt)
 	}
 	
 }
@@ -543,11 +543,11 @@ public class OuterMetaType extends MetaType {
 		return OuterType.newOuterType(clazz,((OuterType)t).outer.applay(bindings));
 	}
 
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name) {
-		((OuterType)tp).outer.resolveNameAccessR(node,info,name)
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info) {
+		((OuterType)tp).outer.resolveNameAccessR(node,info)
 	}
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt) {
-		((OuterType)tp).outer.resolveCallAccessR(node,info,name,mt)
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt) {
+		((OuterType)tp).outer.resolveCallAccessR(node,info,mt)
 	}
 }
 
@@ -594,8 +594,8 @@ public class CallMetaType extends MetaType {
 		return mt;
 	}
 
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info, String name) { false }
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, String name, CallType mt) { false }
+	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info) { false }
+	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt) { false }
 
 }
 

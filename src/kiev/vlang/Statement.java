@@ -75,11 +75,11 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
-		redir.old_var.id.equals(name),
+		path.checkNodeName(redir.old_var),
 		$cut,
 		node ?= redir.new_var
 	}

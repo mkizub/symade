@@ -349,17 +349,19 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		return true;
 	}
 
-	public final rule resolveNameR(ASTNode@ node, ResInfo info, String name)
+	public final rule resolveNameR(ASTNode@ node, ResInfo info)
 	{
 		info.isStaticAllowed(),
 		{
-			super.resolveNameR(node, info, name), $cut
+			super.resolveNameR(node, info), $cut
 		;
 			isPackage(),
 			node @= sub_decls,
-			node.hasName(name)
+			info.checkNodeName(node)
 		;
-			tryLoad(node,name), $cut
+			isPackage(),
+			info.isCmpByEquals(),
+			tryLoad(node,info.getName()), $cut
 		}
 	}
 

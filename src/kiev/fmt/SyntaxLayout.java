@@ -468,7 +468,7 @@ public abstract class SyntaxElem extends ASTNode {
 		if (color.name == null)
 			color.name = "default-color";
 		DrawColor@ dc;
-		if (!PassInfo.resolveNameR(this,dc,new ResInfo(this),color.name)) {
+		if (!PassInfo.resolveNameR(this,dc,new ResInfo(this,color.name))) {
 			Kiev.reportError(this,"Cannot resolve color '"+color.name+"'");
 		} else {
 			color.symbol = dc;
@@ -479,12 +479,33 @@ public abstract class SyntaxElem extends ASTNode {
 		if (font.name == null)
 			font.name = "default-font";
 		DrawFont@ df;
-		if (!PassInfo.resolveNameR(this,df,new ResInfo(this),font.name)) {
+		if (!PassInfo.resolveNameR(this,df,new ResInfo(this,font.name))) {
 			Kiev.reportError(this,"Cannot resolve font '"+font.name+"'");
 		} else {
 			font.symbol = dc;
 		}
 	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "color") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<DrawColor> vect = new Vector<DrawColor>();
+			DNode@ dc;
+			foreach (PassInfo.resolveNameR(this,dc,info))
+				if (dc instanceof DrawColor) vect.append((DrawColor)dc);
+			return vect.toArray();
+		}
+		if (slot.name == "font") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<DrawFont> vect = new Vector<DrawFont>();
+			DNode@ df;
+			foreach (PassInfo.resolveNameR(this,df,info))
+				if (df instanceof DrawFont) vect.append((DrawFont)df);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
 }
 
 @node

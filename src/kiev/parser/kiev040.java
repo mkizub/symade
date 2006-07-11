@@ -3031,8 +3031,8 @@ public abstract class kiev040 implements kiev040Constants {
 
   final public TypeRef TypeWithArgs() throws ParseException {
   SymbolRef id; TypeNameRef res; TypeWithArgsRef tra;
-    id = QName();
-                       res = new TypeNameRef(id);
+    id = NameRef();
+                         res = new TypeNameRef(id);
     label_46:
     while (true) {
       if (jj_2_54(2)) {
@@ -8539,7 +8539,7 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final private boolean jj_3R_250() {
-    if (jj_3R_143()) return true;
+    if (jj_3R_125()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;

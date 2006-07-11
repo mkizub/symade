@@ -61,16 +61,16 @@ public static final view RNewExpr of NewExpr extends RENode {
 		Method@ m;
 		// First try overloaded 'new', than real 'new'
 		if( this.clazz == null && (ctx_method==null || !ctx_method.id.equals(nameNewOp)) ) {
-			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
-			if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
+			ResInfo info = new ResInfo(this,nameNewOp,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+			if (PassInfo.resolveBestMethodR(type,m,info,mt)) {
 				CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,((NewExpr)this).args.delToArray());
 				replaceWithNodeResolve(n);
 				return;
 			}
 		}
 		mt = (CallType)Type.getRealType(type,new CallType(type,null,ta,Type.tpVoid,false));
-		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
-		if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
+		ResInfo info = new ResInfo(this,nameInit,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+		if( PassInfo.resolveBestMethodR(type,m,info,mt) ) {
 			if (ident == null) {
 				this.open();
 				ident = new SymbolRef(nameInit);

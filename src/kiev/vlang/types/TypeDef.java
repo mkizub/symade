@@ -107,7 +107,7 @@ public final class TypeAssign extends TypeDef {
 			foreach (TypeRef tr; parent.super_types) {
 				TypeDecl td = tr.getTypeDecl();
 				ASTNode@ node;
-				foreach (td.resolveNameR(node,new ResInfo(this,ResInfo.noForwards|ResInfo.noImports),id.sname)) {
+				foreach (td.resolveNameR(node,new ResInfo(this,id.sname,ResInfo.noForwards|ResInfo.noImports))) {
 					ASTNode n = node;
 					if !(n instanceof TypeDef) {
 						Kiev.reportError(this,"Typedef extends non-typedef node");

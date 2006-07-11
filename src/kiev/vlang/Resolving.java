@@ -14,13 +14,15 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ResInfo {
+public final class ResInfo {
 	
 	public static final int noStatic   = 0x0001;
 	public static final int noImports  = 0x0002;
 	public static final int noForwards = 0x0004;
 	public static final int noSuper    = 0x0008;
+	public static final int noEquals   = 0x0010; // to compare as startsWith
 	
+	private String		name;
 	private int			flags;
 	private int[]		flags_stack;
 	private int			flags_p;
@@ -39,13 +41,15 @@ public class ResInfo {
 	public boolean isImportsAllowed()  { return (flags & noImports)  == 0; }
 	public boolean isForwardsAllowed() { return (flags & noForwards) == 0; }
 	public boolean isSuperAllowed()    { return (flags & noSuper)    == 0; }
+	public boolean isCmpByEquals()     { return (flags & noEquals)   == 0; }
 
 	private ResInfo() {}
 	
-	public ResInfo(ASTNode from) {
-		this(from, 0);
+	public ResInfo(ASTNode from, String nm) {
+		this(from, nm, 0);
 	}
-	public ResInfo(ASTNode from, int fl) {
+	public ResInfo(ASTNode from, String nm, int fl) {
+		name = nm.intern();
 		flags = fl;
 		flags_stack = new int[16];
 		forwards_stack = new Object[16];
@@ -54,6 +58,8 @@ public class ResInfo {
 		else
 			from_scope = from.ctx_tdecl;
 	}
+	
+	public String getName() { return name; }
 	
 	public void enterMode(int fl) {
 		flags_stack[flags_p++] = flags;
@@ -122,6 +128,14 @@ public class ResInfo {
 		trace(Kiev.debugResolve,"Leaving super, now "+this);
 	}
 	
+	public boolean checkName(String nm) {
+		if (!isCmpByEquals())
+			return nm.startsWith(name);
+		return nm == name;
+	}
+	public boolean checkNodeName(ASTNode dn) {
+		return dn.hasName(name, isCmpByEquals());
+	}
 	public boolean check(ASTNode n) {
 		if (n instanceof Var || n instanceof SNode) {
 			return true;
@@ -275,6 +289,7 @@ public class ResInfo {
 
 	public ResInfo copy() {
 		ResInfo ri = new ResInfo();
+		ri.name           = this.name;
 		ri.flags          = this.flags;
 		ri.flags_stack    = (int[])this.flags_stack.clone();
 		ri.flags_p        = this.flags_p;
@@ -289,6 +304,7 @@ public class ResInfo {
 	public void set(ResInfo ri)
 	{
 		if (this == ri) return;
+		this.name           = ri.name;
 		this.flags          = ri.flags;
 		this.flags_stack    = ri.flags_stack;
 		this.flags_p        = ri.flags_p;
@@ -322,10 +338,10 @@ public interface Scope {
 }
 
 public interface ScopeOfNames extends Scope {
-	public rule resolveNameR(ASTNode@ node, ResInfo path, String name);
+	public rule resolveNameR(ASTNode@ node, ResInfo path);
 }
 
 public interface ScopeOfMethods extends Scope {
-	public rule resolveMethodR(Method@ node, ResInfo path, String name, CallType mt);
+	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt);
 }
 

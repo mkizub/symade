@@ -181,8 +181,8 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			// Resolve overloaded access method
 			Method@ v;
 			CallType mt = new CallType(obj.getType(),null,new Type[]{index.getType()},Type.tpAny,false);
-			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayGetOp,mt) )
+			ResInfo info = new ResInfo((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayGetOp,mt));
 			obj.generate(code,null);
 			index.generate(code,null);
@@ -230,8 +230,8 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			ENode o = new LVarExpr(pos,new Var(pos,"",t,0));
 			Struct s = objType.getStruct();
 			CallType mt = new CallType(objType,null,new Type[]{index.getType(),o.getType()},Type.tpAny,false);
-			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArraySetOp,mt) )
+			ResInfo info = new ResInfo((ASTNode)this,nameArraySetOp,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+			if( !PassInfo.resolveBestMethodR(objType,v,info,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArraySetOp,mt)+" in "+objType);
 			Method func = (Method)v;
 			code.addInstr(Instr.op_call,(JMethod)func,false,objType);
@@ -257,8 +257,8 @@ public final view JContainerAccessExpr of ContainerAccessExpr extends JLvalueExp
 			ENode o = new LVarExpr(pos,new Var(pos,"",t,0));
 			Struct s = obj.getType().getStruct();
 			CallType mt = new CallType(obj.getType(),null,new Type[]{index.getType(),o.getType()},Type.tpAny,false);
-			ResInfo info = new ResInfo((ASTNode)this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArraySetOp,mt) )
+			ResInfo info = new ResInfo((ASTNode)this,nameArraySetOp,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArraySetOp,mt));
 			// The method must return the value to duplicate
 			Method func = (Method)v;

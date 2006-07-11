@@ -210,9 +210,9 @@ public class AssignExpr extends ENode {
 			Type ect1 = cae.obj.getType();
 			Type ect2 = cae.index.getType();
 			Method@ m;
-			ResInfo info = new ResInfo(this,ResInfo.noStatic | ResInfo.noImports);
+			ResInfo info = new ResInfo(this,nameArraySetOp,ResInfo.noStatic | ResInfo.noImports);
 			CallType mt = new CallType(null,null,new Type[]{ect2,et2},et2,false);
-			if (PassInfo.resolveBestMethodR(ect1,m,info,nameArraySetOp,mt)) {
+			if (PassInfo.resolveBestMethodR(ect1,m,info,mt)) {
 				Method rm = (Method)m;
 				if !(rm.isMacro() && rm.isNative()) {
 					ENode res = info.buildCall((ASTNode)this, cae.obj, m, null, new ENode[]{~cae.index,~value});
@@ -549,45 +549,45 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public void addSymbol(DNode sym) {
-		foreach(DNode n; stats; n.getName() != null) {
-			if (n.getName().equals(sym.getName()) ) {
-				Kiev.reportError((ASTNode)sym,"Symbol "+sym.getName()+" already declared in this scope");
+		foreach(DNode n; stats; n.id != null) {
+			if (n.id.equals(sym.id) ) {
+				Kiev.reportError((ASTNode)sym,"Symbol "+sym.id+" already declared in this scope");
 			}
 		}
 		stats.append((ASTNode)sym);
 	}
 
 	public void insertSymbol(DNode sym, int idx) {
-		foreach(DNode n; stats; n.getName() != null) {
-			if (n.getName().equals(sym.getName()) ) {
-				Kiev.reportError((ASTNode)sym,"Symbol "+sym.getName()+" already declared in this scope");
+		foreach(DNode n; stats; n.id != null) {
+			if (n.id.equals(sym.id) ) {
+				Kiev.reportError((ASTNode)sym,"Symbol "+sym.id+" already declared in this scope");
 			}
 		}
 		stats.insert(idx,(ASTNode)sym);
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
 	{
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		n.hasName(name),
+		info.checkNodeName(n),
 		node ?= n
 	;
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
 		n instanceof Var && ((Var)n).isForward(),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
-		n.getType().resolveNameAccessR(node,info,name)
+		n.getType().resolveNameAccessR(node,info)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
 		n instanceof Var && ((Var)n).isForward(),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
-		((Var)n).getType().resolveCallAccessR(node,info,name,mt)
+		((Var)n).getType().resolveCallAccessR(node,info,mt)
 	}
 
 	public int		getPriority() { return 255; }

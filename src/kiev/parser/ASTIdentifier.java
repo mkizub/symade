@@ -72,8 +72,8 @@ public class ASTIdentifier extends ENode {
 
 		// resolve in the path of scopes
 		ASTNode@ v;
-		ResInfo info = new ResInfo(this);
-		if( !PassInfo.resolveNameR((ASTNode)this,v,info,name) )
+		ResInfo info = new ResInfo(this,name);
+		if( !PassInfo.resolveNameR((ASTNode)this,v,info) )
 			throw new CompilerException(this,"Unresolved identifier "+name);
 		if( v instanceof Opdef ) {
 			ASTOperator op = new ASTOperator();
@@ -117,8 +117,8 @@ public class ASTIdentifier extends ENode {
 			name = Constants.nameResultVar;
 		}
 		DNode@ v;
-		ResInfo info = new ResInfo(this);
-		if( !PassInfo.resolveNameR(this,v,info,name) ) {
+		ResInfo info = new ResInfo(this,name);
+		if( !PassInfo.resolveNameR(this,v,info) ) {
 			if( name.startsWith(Constants.nameDEF) ) {
 				String prop = name.toString().substring(2);
 				String val = Env.getProperty(prop);

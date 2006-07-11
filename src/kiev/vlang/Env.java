@@ -289,7 +289,7 @@ public class Env extends Struct {
 	}
 	
 	private void addSpecialField(String name, Type tp, ENode init) {
-		foreach (Field f; members; f.hasName(name)) {
+		foreach (Field f; members; f.hasName(name,true)) {
 			f.init = init;
 			return;
 		}

@@ -2177,7 +2177,7 @@ TypeNameRef TypeQName() :
 TypeRef TypeWithArgs() :
 { SymbolRef id; TypeNameRef res; TypeWithArgsRef tra; }
 {
-	id = QName() { res = new TypeNameRef(id); }
+	id = NameRef() { res = new TypeNameRef(id); }
 	(	LOOKAHEAD(2)
 		(
 			"."

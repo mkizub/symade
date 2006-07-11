@@ -188,25 +188,25 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		this.pos = type_ref.pos;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info)
 		Var@ var;
 	{
 		var @= decls,
-		var.id.equals(name),
+		info.checkNodeName(var),
 		node ?= var
 	;	var @= decls,
 		var.isForward(),
 		info.enterForward(var) : info.leaveForward(var),
-		var.getType().resolveNameAccessR(node,info,name)
+		var.getType().resolveNameAccessR(node,info)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
 		Var@ var;
 	{
 		var @= decls,
 		var.isForward(),
 		info.enterForward(var) : info.leaveForward(var),
-		var.getType().resolveCallAccessR(node,info,name,mt)
+		var.getType().resolveCallAccessR(node,info,mt)
 	}
 }
 
@@ -241,17 +241,17 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		this.body = body;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path)
 	{
 		init instanceof ForInit,
-		((ForInit)init).resolveNameR(node,path,name)
+		((ForInit)init).resolveNameR(node,path)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
 		ASTNode@ n;
 	{
 		init instanceof ForInit,
-		((ForInit)init).resolveMethodR(node,info,name,mt)
+		((ForInit)init).resolveMethodR(node,info,mt)
 	}
 }
 
@@ -305,15 +305,15 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		this.body = body;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path)
 	{
 		{	node ?= var
 		;	node ?= iter
 		},
-		node.hasName(name)
+		path.checkNodeName(node)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
 		Var@ n;
 	{
 		{	n ?= var
@@ -321,7 +321,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		},
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		n.getType().resolveCallAccessR(node,info,name,mt)
+		n.getType().resolveCallAccessR(node,info,mt)
 	}
 }
 

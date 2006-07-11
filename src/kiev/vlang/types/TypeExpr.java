@@ -76,7 +76,7 @@ public class TypeExpr extends TypeRef {
 		}
 		else {
 			Type t;
-			if (!PassInfo.resolveNameR(((TypeExpr)this),v,new ResInfo(this),op)) {
+			if (!PassInfo.resolveNameR(((TypeExpr)this),v,new ResInfo(this,op))) {
 				if (op == opPVar) {
 					t = WrapperType.tpWrappedPrologVar;
 				}
@@ -112,7 +112,7 @@ public class TypeExpr extends TypeRef {
 		if (op == nameArrayTypeOp)
 			return null;
 		DNode@ v;
-		if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {
+		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,op))) {
 			if (op == opPVar)
 				return WrapperType.tpWrappedPrologVar.getStruct();
 			else if (op == opRef)
@@ -132,7 +132,7 @@ public class TypeExpr extends TypeRef {
 		if (op == nameArrayTypeOp)
 			return ArrayMetaType.instance.tdecl;
 		DNode@ v;
-		if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {
+		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,op))) {
 			if (op == opPVar)
 				return WrapperType.tpWrappedPrologVar.meta_type.tdecl;
 			else if (op == opRef)

@@ -304,29 +304,30 @@ public final class Operator implements Constants {
 	public Method resolveMethod(ENode expr) {
 		Method@ m;
 		ENode[] args = expr.getArgs();
-		ResInfo info = new ResInfo(expr, ResInfo.noStatic);
+		ResInfo info = new ResInfo(expr, this.name, ResInfo.noStatic);
 		Type[] tps = new Type[args.length-1];
 		for (int i=0; i < tps.length; i++)
 			tps[i] = args[i+1].getType();
 		CallType mt = new CallType(args[0].getType(), null, tps, null, false);
-		if (PassInfo.resolveBestMethodR(args[0].getType(),m,info,this.name,mt))
+		if (PassInfo.resolveBestMethodR(args[0].getType(),m,info,mt))
 			return (Method)m;
-		info = new ResInfo(expr, 0);
+		info = new ResInfo(expr, this.name, 0);
 		tps = new Type[args.length];
 		for (int i=0; i < tps.length; i++)
 			tps[i] = args[i].getType();
 		mt = new CallType(null, null, tps, null, false);
-		if (PassInfo.resolveBestMethodR(this,m,info,this.name,mt))
+		if (PassInfo.resolveBestMethodR(this,m,info,mt))
 			return (Method)m;
 		return null;
 	}
 
-	final public rule resolveOperatorMethodR(Method@ node, ResInfo info, String name, CallType mt)
+	final public rule resolveOperatorMethodR(Method@ node, ResInfo info, CallType mt)
 		Method@ m;
 	{
 		m @= this.methods,
+		info.checkNodeName(m),
 		info.check(m),
-		m.equalsByCast(name,mt,Type.tpVoid,info),
+		m.equalsByCast(info.getName(),mt,Type.tpVoid,info),
 		node ?= m
 	}
 }

@@ -73,7 +73,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			types[j] = args[i].getType();
 		Method@ v;
 		CallType mt = new CallType(null,null,types,Type.tpAny,false);
-		if( !PassInfo.resolveMethodR(this,v,null,name.name,mt) )
+		if( !PassInfo.resolveMethodR(this,v,new ResInfo(this,name.name),mt) )
 			throw new CompilerException(this,"Unresolved method "+Method.toString(name.name,mt));
 		DNode n = v;
 		if (mode != ImportMode.IMPORT_STATIC || !(n instanceof Method))
@@ -82,7 +82,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		return this;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		Struct@ s;
 		DNode@ sub;
 	{
@@ -93,8 +93,8 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		s ?= ((Struct)this.resolved),
 		!s.isPackage(),
 		{
-			s.qname() == name, node ?= s.$var
-		;	s.id.equals(name), node ?= s.$var
+			s.qname() == path.getName(), node ?= s.$var
+		;	path.checkNodeName(s), node ?= s.$var
 		}
 	;
 		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && star,
@@ -103,32 +103,32 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		{
 			!s.isPackage(),
 			sub @= s.sub_decls,
-			sub.id.equals(name),
+			path.checkNodeName(sub),
 			node ?= sub.$var
-		;	s.isPackage(), s.resolveNameR(node,path,name)
+		;	s.isPackage(), s.resolveNameR(node,path)
 		}
 	;
 		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
 		path.isStaticAllowed(),
 		((Struct)this.resolved).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		((Struct)this.resolved).resolveNameR(node,path,name),
+		((Struct)this.resolved).resolveNameR(node,path),
 		node instanceof Field && ((Field)node).isStatic() && ((Field)node).isPublic()
 	;
 		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
-		((Struct)this.resolved).resolveNameR(node,path,name)
+		((Struct)this.resolved).resolveNameR(node,path)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo path, String name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
 	{
 		mode == ImportMode.IMPORT_STATIC && !star && this.resolved instanceof Method,
-		((Method)this.resolved).equalsByCast(name,mt,null,path),
+		((Method)this.resolved).equalsByCast(path.getName(),mt,null,path),
 		node ?= ((Method)this.resolved)
 	;
 		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
 		((Struct)this.resolved).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		((Struct)this.resolved).resolveMethodR(node,path,name,mt),
+		((Struct)this.resolved).resolveMethodR(node,path,mt),
 		node instanceof Method && node.isStatic() && node.isPublic()
 	}
 }
@@ -158,9 +158,9 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 		return getType().getStruct();
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, String name) {
+	public rule resolveNameR(ASTNode@ node, ResInfo path) {
 		path.space_prev == this.type,
-		this.arg.id.equals(name),
+		path.checkNodeName(this.arg),
 		node ?= this.arg
 	}
 

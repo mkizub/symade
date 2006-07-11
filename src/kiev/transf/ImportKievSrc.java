@@ -117,8 +117,8 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				head = name;
 			}
 			DNode@ node;
-			if!(scope.resolveNameR(node,new ResInfo(astn,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports),head)) {
-				Kiev.reportError(astn,"Unresolved identifier "+name+" in "+scope);
+			if!(scope.resolveNameR(node,new ResInfo(astn,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports))) {
+				Kiev.reportError(astn,"Unresolved identifier "+head+" in "+scope);
 				return;
 			}
 			n = node;

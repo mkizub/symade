@@ -104,7 +104,7 @@ public class Opdef extends SNode {
 		return image;
 	}
 	
-	public boolean hasName(String name) {
+	public boolean hasName(String name, boolean by_equals) {
 		if (resolved == null) return false;
 		foreach (OpArg.OPER arg; resolved.args; arg.text == name)
 			return true;

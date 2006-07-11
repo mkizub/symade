@@ -273,11 +273,24 @@ public abstract class DNode extends ASTNode {
 	public int getFlags() { return flags; }
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 
-	public final Symbol getName() { return id; }
-
-	public boolean hasName(String name) {
+	public boolean hasName(String nm, boolean by_equals) {
 		if (id == null) return false;
-		return id.equals(name);
+		if (by_equals) {
+			if (id.sname == nm) return true;
+			if (id.uname == nm) return true;
+			if (id.aliases != null) {
+				foreach(String n; id.aliases; n == nm)
+					return true;
+			}
+		} else {
+			if (id.sname != null && id.sname.startsWith(nm)) return true;
+			if (id.uname != null && id.uname.startsWith(nm)) return true;
+			if (id.aliases != null) {
+				foreach(String n; id.aliases; n.startsWith(nm))
+					return true;
+			}
+		}
+		return false;
 	}
 
 }
@@ -582,68 +595,68 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 			args[i] = (Type)va_args[i];
 		CallType mt = new CallType(null,null,args,ret,false);
 		Method@ m;
-		if (!this.xtype.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
-			!this.resolveMethodR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
+		if (!this.xtype.resolveCallAccessR(m, new ResInfo(this,name,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), mt) &&
+			!this.resolveMethodR(m, new ResInfo(this,name,ResInfo.noForwards|ResInfo.noImports), mt))
 			throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
 		return (Method)m;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info)
 	{
 		info.isStaticAllowed(),
-		trace(Kiev.debugResolve,"TypeDecl: Resolving name "+name+" in "+this),
+		trace(Kiev.debugResolve,"TypeDecl: Resolving name "+info.getName()+" in "+this),
 		checkResolved(),
 		{
 			trace(Kiev.debugResolve,"TypeDecl: resolving in "+this),
-			resolveNameR_1(node,info,name), // resolve in this class
+			resolveNameR_1(node,info), // resolve in this class
 			$cut
 		;	info.isSuperAllowed(),
 			info.space_prev == null || (info.space_prev.pslot().name != "super_types"),
 			trace(Kiev.debugResolve,"TypeDecl: resolving in super-class of "+this),
-			resolveNameR_3(node,info,name), // resolve in super-classes
+			resolveNameR_3(node,info), // resolve in super-classes
 			$cut
 		}
 	}
-	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, String name)
+	protected rule resolveNameR_1(ASTNode@ node, ResInfo info)
 	{
-			this.id.equals(name),
+			info.checkNodeName(this),
 			node ?= this
 		;	node @= args,
-			node.hasName(name)
+			info.checkNodeName(node)
 		;	node @= members,
-			node.hasName(name),
+			info.checkNodeName(node),
 			info.check(node)
 	}
-	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, String name)
+	protected rule resolveNameR_3(ASTNode@ node, ResInfo info)
 		TypeRef@ sup_ref;
 	{
 		sup_ref @= super_types,
 		sup_ref.getTypeDecl() != null,
 		info.enterSuper() : info.leaveSuper(),
-		sup_ref.getTypeDecl().resolveNameR(node,info,name)
+		sup_ref.getTypeDecl().resolveNameR(node,info)
 	}
 
-	final public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
+	final public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
 		ASTNode@ member;
 		TypeRef@ supref;
 	{
 		info.isStaticAllowed(),
 		checkResolved(),
-		trace(Kiev.debugResolve, "Resolving "+name+" in "+this),
+		trace(Kiev.debugResolve, "Resolving "+info.getName()+" in "+this),
 		{
 			member @= members,
 			member instanceof Method,
 			info.check(member),
 			node ?= ((Method)member),
-			((Method)node).equalsByCast(name,mt,Type.tpVoid,info)
+			((Method)node).equalsByCast(info.getName(),mt,Type.tpVoid,info)
 		;	info.isImportsAllowed() && isPackage(),
 			member @= members, member instanceof Method,
 			node ?= ((Method)member),
-			((Method)node).equalsByCast(name,mt,Type.tpVoid,info)
+			((Method)node).equalsByCast(info.getName(),mt,Type.tpVoid,info)
 		;	info.isSuperAllowed(),
 			supref @= super_types,
 			info.enterSuper() : info.leaveSuper(),
-			supref.getType().meta_type.tdecl.resolveMethodR(node,info,name,mt)
+			supref.getType().meta_type.tdecl.resolveMethodR(node,info,mt)
 		}
 	}
 

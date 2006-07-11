@@ -183,8 +183,9 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		} else if( xtype.isInstanceOf( Type.tpJavaEnumeration) ) {
 			itype = xtype;
 			mode = ForEachStat.JENUM;
-		} else if( PassInfo.resolveBestMethodR(xtype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameElements,new CallType(xtype,null,null,Type.tpAny,false))
+		} else if( PassInfo.resolveBestMethodR(xtype,elems,
+				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noImports),
+				new CallType(xtype,null,null,Type.tpAny,false))
 		) {
 			itype = Type.getRealType(xtype,elems.type.ret());
 			mode = ForEachStat.ELEMS;
@@ -278,8 +279,10 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.JENUM:
 		case ForEachStat.ELEMS:
 			/* iter.hasMoreElements() */
-			if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameHasMoreElements,new CallType(itype,null,null,Type.tpAny,false)) )
+			if( !PassInfo.resolveBestMethodR(itype,moreelem,
+					new ResInfo(this,nameHasMoreElements,ResInfo.noStatic|ResInfo.noImports),
+					new CallType(itype,null,null,Type.tpAny,false))
+				)
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			iter_cond = new CallExpr(	iter.pos,
 					new LVarExpr(iter.pos,iter),
@@ -316,8 +319,10 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		case ForEachStat.JENUM:
 		case ForEachStat.ELEMS:
 			/* var = iter.nextElement() */
-			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-					nameNextElement,new CallType(itype,null,null,Type.tpAny,false)) )
+			if( !PassInfo.resolveBestMethodR(itype,nextelem,
+					new ResInfo(this,nameNextElement,ResInfo.noStatic|ResInfo.noImports),
+					new CallType(itype,null,null,Type.tpAny,false))
+				)
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			ce = new CallExpr(iter.pos,
 					new LVarExpr(iter.pos,iter),

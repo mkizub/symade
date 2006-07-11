@@ -71,7 +71,7 @@ public class RuleMethod extends Method {
 		return max_vars++;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		Var@ var;
 	{
 		isInlinedByDispatcherMethod() || path.space_prev.pslot().name == "targs",$cut,false
@@ -80,27 +80,27 @@ public class RuleMethod extends Method {
 		path.space_prev.pslot().name == "type_ref" ||
 		path.space_prev.pslot().name == "dtype_ref",$cut,
 		node @= targs,
-		node.hasName(name)
+		path.checkNodeName(node)
 	;
 		var @= localvars,
-		var.id.equals(name),
+		path.checkNodeName(var),
 		node ?= var
 	;
 		isInlinedByDispatcherMethod(),$cut,false
 	;
 		var @= params,
-		var.id.equals(name),
+		path.checkNodeName(var),
 		node ?= var
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_tdecl.xtype.resolveNameAccessR(node,path,name)
+		this.ctx_tdecl.xtype.resolveNameAccessR(node,path)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
-		var.type.resolveNameAccessR(node,path,name)
+		var.type.resolveNameAccessR(node,path)
 	}
 
     public ASTNode pass3() {
@@ -570,8 +570,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		} else if( xtype.isInstanceOf( Type.tpJavaEnumeration) ) {
 			itype = xtype;
 			mode = JENUM;
-		} else if( PassInfo.resolveBestMethodR(xtype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameElements,new CallType(xtype,null,null,Type.tpAny,false))
+		} else if( PassInfo.resolveBestMethodR(xtype,elems,
+				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noImports),
+				new CallType(xtype,null,null,Type.tpAny,false))
 		) {
 			itype = Type.getRealType(xtype,elems.type.ret());
 			mode = ELEMS;

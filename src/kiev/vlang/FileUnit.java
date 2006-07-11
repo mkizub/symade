@@ -127,44 +127,42 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		return true;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		ASTNode@ syn;
 	{
 		syn @= members,
 		{
-			syn instanceof DNode && syn.hasName(name),
+			syn instanceof DNode && path.checkNodeName(syn),
 			node ?= syn
 		;	syn instanceof Import && !((Import)syn).star,
-			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
-			((Import)syn).resolveNameR(node,path,name)
-		;	syn instanceof Opdef && ((Opdef)syn).hasName(name),
+			((Import)syn).resolveNameR(node,path)
+		;	syn instanceof Opdef && path.checkNodeName(syn),
 			node ?= syn
 		}
 	;
 		pkg != null && path.space_prev.pslot().name != "pkg",
 		trace( Kiev.debugResolve, "In file package: "+pkg),
-		((CompaundType)pkg.getType()).clazz.resolveNameR(node,path,name)
+		((CompaundType)pkg.getType()).clazz.resolveNameR(node,path)
 	;
 		syn @= members,
 		syn instanceof Import,
 		((Import)syn).star,
-		trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
-		((Import)syn).resolveNameR(node,path,name)
+		((Import)syn).resolveNameR(node,path)
 	;
 		trace( Kiev.debugResolve, "In root package"),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		Env.root.resolveNameR(node,path,name)
+		Env.root.resolveNameR(node,path)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo path, String name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
 		ASTNode@ syn;
 	{
 		pkg != null,
-		pkg.getStruct().resolveMethodR(node,path,name,mt)
+		pkg.getStruct().resolveMethodR(node,path,mt)
 	;	syn @= members,
 		syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_STATIC,
 		trace( Kiev.debugResolve, "In file syntax: "+syn),
-		((Import)syn).resolveMethodR(node,path,name,mt)
+		((Import)syn).resolveMethodR(node,path,mt)
 	}
 
 	public void cleanup() {

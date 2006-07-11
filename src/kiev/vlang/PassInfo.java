@@ -72,52 +72,26 @@ public class PassInfo {
 
 	public static boolean checkClassName(ASTNode from, String qname) {
 		DNode@ node;
-		if (!resolveNameR(from, node,new ResInfo(from),qname))
+		if (!resolveNameR(from, node,new ResInfo(from,qname)))
 			return false;
 		if (node instanceof TypeDecl)
 			return true;
 		return false;
 	}
 
-	public static rule resolveQualifiedNameR(ASTNode from, ASTNode@ node, ResInfo path, String name)
-		String@ qname_head;
-		String@ qname_tail;
+	public static rule resolveNameR(ASTNode from, ASTNode@ node, ResInfo path)
 		ASTNode@ p;
-		DNode@ sp;
 		ParentEnumerator pe;
 	{
-		trace( Kiev.debugResolve, "PassInfo: resolving name "+name),
-		name.indexOf('.') > 0, $cut,
-		trace( Kiev.debugResolve, "PassInfo: name '"+name+"' is qualified"),
-		qname_head ?= name.substring(0,name.lastIndexOf('.')).intern(),
-		qname_tail ?= name.substring(name.lastIndexOf('.')+1).intern(),
-		resolveQualifiedNameR(from,sp,path,qname_head),
-		sp instanceof TypeDecl,
-		path.space_prev = from,
-		((TypeDecl)sp).resolveNameR(node,path,qname_tail)
-	;
+		trace( Kiev.debugResolve, "PassInfo: resolving name "+path.getName()),
+		assert(path.getName().indexOf('.') < 0),
 		pe = new ParentEnumerator(from),
 		p @= pe,
 //		trace( Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),
 		p instanceof ScopeOfNames,
-		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
+		trace( Kiev.debugResolve, "PassInfo: resolving name '"+path.getName()+"' in scope '"+p+"'"),
 		path.space_prev = pe.n,
-		((ScopeOfNames)p).resolveNameR(node,path,name)
-	}
-
-	public static rule resolveNameR(ASTNode from, ASTNode@ node, ResInfo path, String name)
-		ASTNode@ p;
-		ParentEnumerator pe;
-	{
-		trace( Kiev.debugResolve, "PassInfo: resolving name "+name),
-		assert(name.indexOf('.') < 0),
-		pe = new ParentEnumerator(from),
-		p @= pe,
-//		trace( Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),
-		p instanceof ScopeOfNames,
-		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
-		path.space_prev = pe.n,
-		((ScopeOfNames)p).resolveNameR(node,path,name)
+		((ScopeOfNames)p).resolveNameR(node,path)
 	}
 
 	private static void addResolvedMethod(
@@ -147,31 +121,30 @@ public class PassInfo {
 		Object sc,
 		Method@ node,
 		ResInfo info,
-		String name,
 		CallType mt)
 	{
-		trace(Kiev.debugResolve,"Resolving best method "+Method.toString(name,mt)+" in "+sc);
+		trace(Kiev.debugResolve,"Resolving best method "+Method.toString(info.getName(),mt)+" in "+sc);
 		Vector<Method>  methods  = new Vector<Method>();
 		Vector<ResInfo> paths    = new Vector<ResInfo>();
 		Vector<CallType> types   = new Vector<CallType>();
 		if (sc instanceof ScopeOfMethods) {
 			ScopeOfMethods scm = (ScopeOfMethods)sc;
-			foreach( scm.resolveMethodR(node,info,name,mt) )
+			foreach( scm.resolveMethodR(node,info,mt) )
 				addResolvedMethod((Method)node,info,methods,paths,types);
 		}
 		else if (sc instanceof Type && info.isStaticAllowed()) {
 			Type tp = (Type)sc;
-			foreach( tp.meta_type.tdecl.resolveMethodR(node,info,name,mt) )
+			foreach( tp.meta_type.tdecl.resolveMethodR(node,info,mt) )
 				addResolvedMethod((Method)node,info,methods,paths,types);
 		}
 		else if (sc instanceof Type) {
 			Type tp = (Type)sc;
-			foreach( tp.resolveCallAccessR(node,info,name,mt) )
+			foreach( tp.resolveCallAccessR(node,info,mt) )
 				addResolvedMethod((Method)node,info,methods,paths,types);
 		}
 		else if (sc instanceof Operator) {
 			Operator op = (Operator)sc;
-			foreach( op.resolveOperatorMethodR(node,info,name,mt) )
+			foreach( op.resolveOperatorMethodR(node,info,mt) )
 				addResolvedMethod((Method)node,info,methods,paths,types);
 		}
 		else
@@ -186,7 +159,7 @@ public class PassInfo {
 			for(int i=0; i < methods.length; i++) {
 				msg.append("\t").append(methods[i].parent()).append('.').append(paths[i]).append(methods[i]).append('\n');
 			}
-			msg.append("while resolving ").append(Method.toString(name,mt));
+			msg.append("while resolving ").append(Method.toString(info.getName(),mt));
 			trace(Kiev.debugResolve,msg.toString());
 		}
 
@@ -209,7 +182,7 @@ public class PassInfo {
 				if (m1 == m2)
 					continue;
 				
-				trace(Kiev.debugResolve,"Compare "+m1+" and "+m2+" to be more specific for "+Method.toString(name,mt));
+				trace(Kiev.debugResolve,"Compare "+m1+" and "+m2+" to be more specific for "+Method.toString(info.getName(),mt));
 
 				Type b;
 				boolean m1_is_va = m1.isVarArgs();
@@ -270,7 +243,7 @@ public class PassInfo {
 					}
 				}
 			is_more_specific:;
-				trace(Kiev.debugResolve,"Methods "+m1+" is more specific then "+m2+" resolving for "+Method.toString(name,mt));
+				trace(Kiev.debugResolve,"Methods "+m1+" is more specific then "+m2+" resolving for "+Method.toString(info.getName(),mt));
 				methods.remove(j);
 				paths.remove(j);
 				types.remove(j);
@@ -290,20 +263,19 @@ public class PassInfo {
 			msg.append("\t").append(methods[i].parent()).append('.');
 			msg.append(paths[i]).append(methods[i]).append('\n');
 		}
-		msg.append("while resolving ").append(Method.toString(name,mt));
+		msg.append("while resolving ").append(Method.toString(info.getName(),mt));
 		throw new RuntimeException(msg.toString());
 	}
 
-	public static rule resolveMethodR(ASTNode from, Method@ node, ResInfo path, String name, CallType mt)
+	public static rule resolveMethodR(ASTNode from, Method@ node, ResInfo path, CallType mt)
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{
-		assert(name.indexOf('.') < 0),
 		pe = new ParentEnumerator(from),
 		p @= pe,
 		p instanceof ScopeOfMethods,
 		path.space_prev = pe.n,
-		resolveBestMethodR((ScopeOfMethods)p,node,path,name,mt),
+		resolveBestMethodR((ScopeOfMethods)p,node,path,mt),
 		trace(Kiev.debugResolve,"Best method is "+node+" with path/transform "+path+" found...")
 	}
 

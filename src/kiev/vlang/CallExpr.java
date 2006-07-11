@@ -115,8 +115,8 @@ public class CallExpr extends ENode {
 		// constructor call "this(args)"
 		if (ident.name == nameThis) {
 			mt = new CallType(tp,ata,ta,Type.tpVoid,false);
-			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if (!PassInfo.resolveBestMethodR(tp,m,info,ctx_method.id.uname,mt))
+			ResInfo info = new ResInfo(this,ctx_method.id.uname,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			if (!PassInfo.resolveBestMethodR(tp,m,info,mt))
 				throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
 			ident.symbol = (Method)m;
 			obj = new TypeRef(tp);
@@ -125,8 +125,8 @@ public class CallExpr extends ENode {
 		// constructor call "super(args)"
 		if (ident.name == nameSuper) {
 			mt = new CallType(tp,ata,ta,Type.tpVoid,false);
-			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if (!PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,ctx_method.id.uname,mt))
+			ResInfo info = new ResInfo(this,ctx_method.id.uname,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			if (!PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,mt))
 				throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
 			ident.symbol = (Method)m;
 			obj = new TypeRef(m.ctx_tdecl.xtype);
@@ -136,12 +136,12 @@ public class CallExpr extends ENode {
 		if (obj instanceof ThisExpr && obj.isSuperExpr()) {
 			Method@ m;
 			Type tp = ctx_tdecl.super_types[0].getType();
-			ResInfo info = new ResInfo(this);
+			ResInfo info = new ResInfo(this,ident.name);
 			info.enterForward(obj);
 			info.enterSuper();
 			mt = new CallType(tp,ata,ta,null,false);
 			try {
-				if( !PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt) )
+				if( !PassInfo.resolveBestMethodR(tp,m,info,mt) )
 					throw new CompilerException(obj,"Unresolved method "+Method.toString(ident.name,args,null));
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			info.leaveSuper();
@@ -176,15 +176,15 @@ public class CallExpr extends ENode {
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
 				Method@ m;
-				ResInfo info = new ResInfo(this, ResInfo.noStatic | ResInfo.noImports);
+				ResInfo info = new ResInfo(this, ident.name, ResInfo.noStatic | ResInfo.noImports);
 				mt = new CallType(tp,ata,ta,null,false);
 				if (obj == null) {
-					if (PassInfo.resolveMethodR((ASTNode)this,m,info,ident.name,mt)) {
+					if (PassInfo.resolveMethodR((ASTNode)this,m,info,mt)) {
 						res[si] = info.buildCall((ASTNode)this, obj, m, targs, args);
 						cnt += 1;
 					}
 				} else {
-					if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
+					if (PassInfo.resolveBestMethodR(tp,m,info,mt)) {
 						res[si] = info.buildCall((ASTNode)this, obj, m, targs, args);
 						cnt += 1;
 					}
@@ -197,9 +197,9 @@ public class CallExpr extends ENode {
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
 				DNode@ closure;
-				ResInfo info = new ResInfo(this, ResInfo.noStatic | ResInfo.noImports);
+				ResInfo info = new ResInfo(this, ident.name, ResInfo.noStatic | ResInfo.noImports);
 				if (obj == null) {
-					if (PassInfo.resolveNameR((ASTNode)this,closure,info,ident.name)) { 
+					if (PassInfo.resolveNameR((ASTNode)this,closure,info)) { 
 						if ((closure instanceof Var || closure instanceof Field)
 							&& Type.getRealType(tp,closure.getType()) instanceof CallType
 						) {
@@ -208,7 +208,7 @@ public class CallExpr extends ENode {
 						}
 					}
 				} else {
-					if (tp.resolveNameAccessR(closure,info,ident.name)) { 
+					if (tp.resolveNameAccessR(closure,info)) { 
 						if ((closure instanceof Var || closure instanceof Field)
 							&& Type.getRealType(tp,closure.getType()) instanceof CallType
 						) {
@@ -226,15 +226,15 @@ public class CallExpr extends ENode {
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
 				Method@ m;
-				ResInfo info = new ResInfo(this, 0);
+				ResInfo info = new ResInfo(this, ident.name);
 				mt = new CallType(null,ata,ta,null,false);
 				if (obj == null) {
-					if (PassInfo.resolveMethodR((ASTNode)this,m,info,ident.name,mt)) {
+					if (PassInfo.resolveMethodR((ASTNode)this,m,info,mt)) {
 						res[si] = info.buildCall((ASTNode)this, obj, m, targs, args);
 						cnt += 1;
 					}
 				} else {
-					if (PassInfo.resolveBestMethodR(tp,m,info,ident.name,mt)) {
+					if (PassInfo.resolveBestMethodR(tp,m,info,mt)) {
 						res[si] = info.buildCall((ASTNode)this, obj, m, targs, args);
 						cnt += 1;
 					}
@@ -247,9 +247,9 @@ public class CallExpr extends ENode {
 			for (int si=0; si < tps.length; si++) {
 				tp = tps[si];
 				DNode@ closure;
-				ResInfo info = new ResInfo(this, ResInfo.noImports);
+				ResInfo info = new ResInfo(this, ident.name, ResInfo.noImports);
 				if (obj == null) {
-					if (PassInfo.resolveNameR((ASTNode)this,closure,info,ident.name)) { 
+					if (PassInfo.resolveNameR((ASTNode)this,closure,info)) { 
 						if (closure instanceof Field
 							&& Type.getRealType(tp,closure.getType()) instanceof CallType
 						) {
@@ -258,7 +258,7 @@ public class CallExpr extends ENode {
 						}
 					}
 				} else {
-					if (tp.meta_type.tdecl.resolveNameR(closure,info,ident.name)) { 
+					if (tp.meta_type.tdecl.resolveNameR(closure,info)) { 
 						if (closure instanceof Field
 							&& Type.getRealType(tp,closure.getType()) instanceof CallType
 						) {

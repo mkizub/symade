@@ -163,6 +163,13 @@ public class SymbolRef<D extends DNode> extends ASTNode {
 	}
 	
 	public String toString() { return symbol == null ? name : symbol.id.toString(); }
+	
+	public DNode[] findForResolve(boolean by_equals) {
+		ANode parent = parent();
+		if (parent instanceof ASTNode)
+			return parent.findForResolve(name, pslot(), by_equals);
+		return null;
+	}
 }
 
 

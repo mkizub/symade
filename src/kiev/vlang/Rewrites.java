@@ -95,15 +95,15 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 
 	public RewriteCase() {}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo info)
 	{
-		var.id.equals(name),
+		info.checkNodeName(var),
 		node ?= var
 	;
 		info.isForwardsAllowed(),
 		var.isForward(),
 		info.enterForward(var) : info.leaveForward(var),
-		var.getType().resolveNameAccessR(node,info,name)
+		var.getType().resolveNameAccessR(node,info)
 	}
 
 	public Object doRewrite(RewriteContext ctx) {

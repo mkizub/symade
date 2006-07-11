@@ -116,13 +116,13 @@ public final class AccessExpr extends LvalueExpr {
 			Type tp = tps[si];
 			DNode@ v;
 			ResInfo info;
-			if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) ) {
+			if (tp.resolveNameAccessR(v,info=new ResInfo(this,ident.name,ResInfo.noStatic | ResInfo.noImports)) ) {
 				if (this.obj != null)
 					res[si] = makeExpr(v,info,this.obj);
 				else
 					res[si] = makeExpr(v,info,obj);
 			}
-			else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name))
+			else if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this,ident.name)))
 				res[si] = makeExpr(v,info,tp.getStruct());
 		}
 		int cnt = 0;
@@ -288,7 +288,7 @@ public final class IFldExpr extends LvalueExpr {
 			Type tp = obj.getType();
 			DNode@ v;
 			ResInfo info;
-			if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),f.id.sname) ) {
+			if (tp.resolveNameAccessR(v,info=new ResInfo(this,f.id.sname,ResInfo.noStatic | ResInfo.noImports)) ) {
 				if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).type != f.type) {
 					Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
 				} else {
@@ -340,8 +340,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			// Resolve overloaded access method
 			Method@ v;
 			CallType mt = new CallType(t,null,new Type[]{index.getType()},Type.tpAny,false);
-			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayGetOp,mt) )
+			ResInfo info = new ResInfo(this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+			if( !PassInfo.resolveBestMethodR(t,v,info,mt) )
 				return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
 			return Type.getRealType(t,((Method)v).type.ret());
 		} catch(Exception e) {
@@ -363,8 +363,8 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			return new Type[]{Type.getRealType(t,t.arg)};
 		Method@ v;
 		CallType mt = new CallType(t,null,new Type[]{index.getType()},Type.tpAny,false);
-		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-		if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayGetOp,mt) )
+		ResInfo info = new ResInfo(this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+		if( !PassInfo.resolveBestMethodR(t,v,info,mt) )
 			return Type.emptyArray; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayGetOp,mt)+" in "+t);
 		return new Type[]{Type.getRealType(t,((Method)v).type.ret())};
 	}
@@ -451,8 +451,8 @@ public final class LVarExpr extends LvalueExpr {
 		if (var != null)
 			return var;
 		Var@ v;
-		ResInfo info = new ResInfo(this);
-		if( !PassInfo.resolveNameR((ASTNode)this,v,info,ident.name) )
+		ResInfo info = new ResInfo(this,ident.name);
+		if( !PassInfo.resolveNameR((ASTNode)this,v,info) )
 			throw new CompilerException(this,"Unresolved var "+ident);
 		ident.symbol = v;
 		return (Var)v;
@@ -595,7 +595,7 @@ public final class SFldExpr extends LvalueExpr {
 		Type tp = this.obj.getType();
 		DNode@ v;
 		ResInfo info;
-		tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),ident.name);
+		tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this,ident.name));
 		DNode res = (DNode)v;
 		if (res == null)
 			throw new CompilerException(this, "Unresolved static field "+ident+" in "+tp);
@@ -611,7 +611,7 @@ public final class SFldExpr extends LvalueExpr {
 			Type tp = obj.getType();
 			DNode@ v;
 			ResInfo info;
-			if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this),f.id.sname)) {
+			if (tp.meta_type.tdecl.resolveNameR(v,info=new ResInfo(this,f.id.sname))) {
 				if (!info.isEmpty() || !(v instanceof Field) || ((Field)v).type != f.type) {
 					Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
 				} else {

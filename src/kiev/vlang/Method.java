@@ -627,7 +627,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		return;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, String name)
+	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		FormPar@ var;
 	{
 		isInlinedByDispatcherMethod() , $cut, false
@@ -638,42 +638,42 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		path.space_prev.pslot().name == "dtype_ref",
 		$cut,
 		node @= targs,
-		node.hasName(name)
+		path.checkNodeName(node)
 	;
 		var @= params,
-		var.id.equals(name),
+		path.checkNodeName(var),
 		node ?= var
 	;
-		name == nameResultVar,
+		path.getName() == nameResultVar,
 		node ?= (Var)ATTR_RET_VAR.get(this)
 	;
 		node @= targs,
-		node.hasName(name)
+		path.checkNodeName(node)
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_tdecl.xtype.resolveNameAccessR(node,path,name)
+		this.ctx_tdecl.xtype.resolveNameAccessR(node,path)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
-		var.type.resolveNameAccessR(node,path,name)
+		var.type.resolveNameAccessR(node,path)
 	}
 
-	public rule resolveMethodR(Method@ node, ResInfo info, String name, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
 		Var@ n;
 	{
 		info.isForwardsAllowed(),
 	{
 		!this.isStatic(),
 		info.enterForward(ThisExpr.thisPar) : info.leaveForward(ThisExpr.thisPar),
-		this.ctx_tdecl.xtype.resolveCallAccessR(node,info,name,mt)
+		this.ctx_tdecl.xtype.resolveCallAccessR(node,info,mt)
 	;
 		n @= params,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		n.getType().resolveCallAccessR(node,info,name,mt)
+		n.getType().resolveCallAccessR(node,info,mt)
 	}
 	}
 
