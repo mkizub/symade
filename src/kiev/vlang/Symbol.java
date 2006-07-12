@@ -162,7 +162,7 @@ public class SymbolRef<D extends DNode> extends ASTNode {
 		this.name = (value != null) ? value.intern() : null;
 	}
 	
-	public String toString() { return symbol == null ? name : symbol.id.toString(); }
+	public String toString() { return name; }
 	
 	public DNode[] findForResolve(boolean by_equals) {
 		ANode parent = parent();

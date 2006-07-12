@@ -14,11 +14,15 @@ import syntax kiev.Syntax;
 
 import java.util.EnumSet;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 
+import javax.swing.JComboBox;
+import javax.swing.ComboBoxEditor;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -650,9 +654,10 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 	static final int INSERT_NEXT = 1;
 	static final int SETNEW_HERE = 2;
 
-	private final Editor	editor;
-	private final int		mode;
-	private       int		idx;
+	private final Editor		editor;
+	private final int			mode;
+	private       int			idx;
+	private       JPopupMenu	menu;
 
 	NewElemEditor(Editor editor, int mode) {
 		this.editor = editor;
@@ -674,14 +679,14 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 			if (dr.syntax instanceof SyntaxAttr) {
 				SyntaxAttr satt = (SyntaxAttr)dr.syntax;
 				if (satt.expected_types.length > 0) {
-					JPopupMenu m = new JPopupMenu("Set new item");
+					menu = new JPopupMenu("Set new item");
 					foreach (SymbolRef sr; satt.expected_types; sr.symbol instanceof Struct) {
-						m.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, n, satt.name)));
+						menu.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, n, satt.name)));
 					}
 					int x = dr.geometry.x;
 					int y = dr.geometry.y + dr.geometry.h;
-					m.addPopupMenuListener(this);
-					m.show(editor.view_canvas, x, y);
+					menu.addPopupMenuListener(this);
+					menu.show(editor.view_canvas, x, y);
 					editor.startItemEditor(n, this);
 				}
 			}
@@ -696,14 +701,14 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 					if (mode == INSERT_NEXT)
 						this.idx += 1;
 					if (slst.expected_types.length > 0) {
-						JPopupMenu m = new JPopupMenu(mode==INSERT_HERE ? "Prepend new item" : "Append new item");
+						menu = new JPopupMenu(mode==INSERT_HERE ? "Prepend new item" : "Append new item");
 						foreach (SymbolRef sr; slst.expected_types; sr.symbol instanceof Struct) {
-							m.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, lst.node, slst.name)));
+							menu.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, lst.node, slst.name)));
 						}
 						int x = dr.geometry.x;
 						int y = dr.geometry.y + dr.geometry.h;
-						m.addPopupMenuListener(this);
-						m.show(editor.view_canvas, x, y);
+						menu.addPopupMenuListener(this);
+						menu.show(editor.view_canvas, x, y);
 						editor.startItemEditor(lst.node, this);
 					}
 				}
@@ -713,7 +718,11 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
 	public void keyPressed(KeyEvent evt) {}
-	public void popupMenuCanceled(PopupMenuEvent e) { editor.stopItemEditor(true); }
+	public void popupMenuCanceled(PopupMenuEvent e) {
+		if (menu != null)
+			editor.view_canvas.remove(menu);
+		editor.stopItemEditor(true);
+	}
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
 	class NewElemAction extends TextAction {
@@ -727,6 +736,8 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 			this.attr = attr;
 		}
 		public void actionPerformed(ActionEvent e) {
+			if (menu != null)
+				editor.view_canvas.remove(menu);
 			ANode obj = (ANode)Class.forName(cls.qname()).newInstance();
 			foreach (AttrSlot a; node.values(); a.name == attr) {
 				if (a.is_space)
@@ -746,7 +757,7 @@ abstract class TextEditor implements KeyListener {
 	
 	protected final Editor		editor;
 	private         int			edit_offset;
-	protected       JPopupMenu	menu;
+	protected       JComboBox	combo;
 
 	TextEditor(Editor editor) {
 		this.editor = editor;
@@ -794,14 +805,14 @@ abstract class TextEditor implements KeyListener {
 		case KeyEvent.VK_ENTER:
 			editor.view_canvas.cursor_offset = edit_offset = -1;
 			editor.stopItemEditor(false);
-			if (menu != null)
-				menu.setVisible(false);
+			if (combo != null)
+				editor.view_canvas.remove(combo);
 			return;
 		case KeyEvent.VK_ESCAPE:
 			editor.view_canvas.cursor_offset = edit_offset = -1;
 			editor.stopItemEditor(true);
-			if (menu != null)
-				menu.setVisible(false);
+			if (combo != null)
+				editor.view_canvas.remove(combo);
 			return;
 		default:
 			if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
@@ -832,39 +843,71 @@ final class SymbolEditor extends TextEditor {
 	}
 }
 
-final class SymRefEditor extends TextEditor {
+final class SymRefEditor extends TextEditor implements ComboBoxEditor {
 	
 	private final SymbolRef<DNode>		symref;
 
 	SymRefEditor(SymbolRef<DNode> symref, Editor editor) {
 		super(editor);
 		this.symref = symref;
+		showAutoComplete();
 	}
 	
 	String getText() {
 		String name = symref.name;
-		if (name == null || name.length() == 0)
-			return name;
-		DNode[] decls = symref.findForResolve(false);
-		if (decls == null)
-			return name;
-		if (menu == null) {
-			menu = new JPopupMenu();
-			menu.setFocusable(false);
-		} else {
-			menu.removeAll();
-		}
-		foreach (DNode dn; decls)
-			menu.add(dn.id.sname);
-		Drawable dr = editor.cur_elem;
-		int x = dr.geometry.x;
-		int y = dr.geometry.y + dr.geometry.h;
-		menu.show(editor.view_canvas, x, y);
 		return name;
 	}
 	void setText(String text) {
-		symref.name = text;
-		symref.symbol = null;
+		String name = symref.name;
+		if (name == null || !name.equals(text)) {
+			symref.name = text;
+			symref.symbol = null;
+			showAutoComplete();
+		}
+	}
+	
+	void showAutoComplete() {
+		String name = symref.name;
+		if (name == null || name.length() == 0)
+			return;
+		DNode[] decls = symref.findForResolve(false);
+		if (decls == null)
+			return;
+		if (combo == null) {
+			combo = new JComboBox();
+			combo.setEditable(true);
+			combo.setEditor(this);
+			combo.configureEditor(this, name);
+			combo.setMaximumRowCount(10);
+			editor.view_canvas.add(combo);
+		} else {
+			combo.removeAllItems();
+		}
+		Drawable dr = editor.cur_elem;
+		int x = dr.geometry.x;
+		int y = dr.geometry.y;
+		int w = dr.geometry.w;
+		int h = dr.geometry.h;
+		combo.setBounds(x, y, w+100, h);
+		combo.setPopupVisible(false);
+		boolean popup = false;
+		foreach (DNode dn; decls) {
+			combo.addItem(dn.id.sname);
+			popup = true;
+		}
+		combo.setPopupVisible(popup);
+	}
+	
+	public void addActionListener(ActionListener l) {}
+	public void removeActionListener(ActionListener l) {}
+	public Component getEditorComponent() { return null; }
+	public Object getItem() { return symref.name; }
+	public void selectAll() {}
+	public void setItem(Object text) {
+		if (text != null) {
+			setText((String)text);
+			editor.formatAndPaint(true);
+		}
 	}
 }
 
@@ -903,26 +946,30 @@ final class IntEditor extends TextEditor {
 }
 
 class EnumEditor implements KeyListener, PopupMenuListener {
-	private final Editor	editor;
-	private final AttrPtr	pattr;
+	private final Editor		editor;
+	private final AttrPtr		pattr;
+	private final JPopupMenu	menu;
 	EnumEditor(AttrPtr pattr, Drawable cur_elem, Editor editor) {
 		this.editor = editor;
 		this.pattr = pattr;
-		JPopupMenu m = new JPopupMenu();
+		menu = new JPopupMenu();
 		EnumSet ens = EnumSet.allOf(pattr.slot.clazz);
 		foreach (Enum e; ens.toArray())
-			m.add(new JMenuItem(new SetSyntaxAction(e)));
+			menu.add(new JMenuItem(new SetSyntaxAction(e)));
 		int x = cur_elem.geometry.x;
 		int y = cur_elem.geometry.y + cur_elem.geometry.h;
-		m.addPopupMenuListener(this);
-		m.show(editor.view_canvas, x, y);
+		menu.addPopupMenuListener(this);
+		menu.show(editor.view_canvas, x, y);
 	}
 
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
 	public void keyPressed(KeyEvent evt) {}
 	
-	public void popupMenuCanceled(PopupMenuEvent e) { editor.stopItemEditor(true); }
+	public void popupMenuCanceled(PopupMenuEvent e) {
+		editor.view_canvas.remove(menu);
+		editor.stopItemEditor(true);
+	}
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
 
@@ -933,6 +980,7 @@ class EnumEditor implements KeyListener, PopupMenuListener {
 			this.val = val;
 		}
 		public void actionPerformed(ActionEvent e) {
+			editor.view_canvas.remove(menu);
 			pattr.set(val);
 			editor.stopItemEditor(false);
 		}

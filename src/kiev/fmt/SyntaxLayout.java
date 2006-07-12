@@ -463,26 +463,32 @@ public abstract class SyntaxElem extends ASTNode {
 	}
 
 	public void preResolveOut() {
-		if (color == null)
-			color = new SymbolRef<DrawColor>(0,"default-color");
-		if (color.name == null)
-			color.name = "default-color";
-		DrawColor@ dc;
-		if (!PassInfo.resolveNameR(this,dc,new ResInfo(this,color.name))) {
-			Kiev.reportError(this,"Cannot resolve color '"+color.name+"'");
-		} else {
-			color.symbol = dc;
+		{
+			if (color == null)
+				color = new SymbolRef<DrawColor>(0,"default-color");
+			if (color.name == null)
+				color.name = "default-color";
+			DrawColor@ dc;
+			if (!PassInfo.resolveNameR(this,dc,new ResInfo(this,color.name)))
+				Kiev.reportError(this,"Cannot resolve color '"+color.name+"'");
+			else if !(dc instanceof DrawColor)
+				Kiev.reportError(this,"Resolved '"+color.name+"' is not a color");
+			else
+				color.symbol = dc;
 		}
 
-		if (font == null)
-			font = new SymbolRef<DrawFont>("default-font");
-		if (font.name == null)
-			font.name = "default-font";
-		DrawFont@ df;
-		if (!PassInfo.resolveNameR(this,df,new ResInfo(this,font.name))) {
-			Kiev.reportError(this,"Cannot resolve font '"+font.name+"'");
-		} else {
-			font.symbol = dc;
+		{
+			if (font == null)
+				font = new SymbolRef<DrawFont>("default-font");
+			if (font.name == null)
+				font.name = "default-font";
+			DrawFont@ df;
+			if (!PassInfo.resolveNameR(this,df,new ResInfo(this,font.name)))
+				Kiev.reportError(this,"Cannot resolve font '"+font.name+"'");
+			else if !(df instanceof DrawFont)
+				Kiev.reportError(this,"Resolved '"+font.name+"' is not a font");
+			else
+				font.symbol = df;
 		}
 	}
 	

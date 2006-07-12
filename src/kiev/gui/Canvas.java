@@ -50,6 +50,7 @@ public class Canvas extends JPanel implements DrawDevice {
 //	boolean		is_editable;
 	
 	Canvas() {
+		super(null,false);
 		setFocusable(true);
 	}
 	
