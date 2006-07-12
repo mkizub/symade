@@ -612,7 +612,6 @@ final class ChooseItemEditor implements KeyHandler {
 	public void process() {
 		Drawable dr = editor.cur_elem;
 		if (dr instanceof DrawNodeTerm) {
-			KeyListener item_editor = null;
 			AttrPtr pattr = dr.getAttrPtr();
 			Object obj = pattr.get();
 			if (obj instanceof Symbol)
@@ -627,6 +626,11 @@ final class ChooseItemEditor implements KeyHandler {
 				editor.startItemEditor((ConstIntExpr)obj, new IntEditor(obj.getAttrPtr("value"), editor));
 			else if (Enum.class.isAssignableFrom(pattr.slot.clazz))
 				editor.startItemEditor(pattr.node, new EnumEditor(pattr, dr, editor));
+		}
+		else if (dr.parent() instanceof DrawEnumChoice) {
+			DrawEnumChoice dec = (DrawEnumChoice)dr.parent();
+			SyntaxEnumChoice stx = (SyntaxEnumChoice)dec.syntax;
+			editor.startItemEditor(dec.node, new EnumEditor(dec.node.getAttrPtr(stx.name), dr, editor));
 		}
 	}
 }

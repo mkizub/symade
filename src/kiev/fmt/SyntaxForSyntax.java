@@ -30,10 +30,10 @@ public class SyntaxForSyntax extends TextSyntax {
 	public SyntaxForSyntax() {
 		SpaceCmd[] lout_empty = new SpaceCmd[0];
 		SpaceCmd[] lout_nl = new SpaceCmd[] {
-				new SpaceCmd(siNl,SP_ADD_AFTER,0)
+				new SpaceCmd(siNl, SP_NOP, SP_ADD, 0)
 			};
 		SpaceCmd[] lout_pkg = new SpaceCmd[] {
-				new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
+				new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
 			};
 		// file unit
 		SyntaxList fu_members = lst("members", lout_nl);
@@ -52,7 +52,12 @@ public class SyntaxForSyntax extends TextSyntax {
 		seDrawFont  = setl(lout_nl,kw("def-font"), id.ncopy(),attr("font_name"));
 		SyntaxAttr scmd_si = ident("si");
 		scmd_si.expected_types += new SymbolRef(0, Env.newStruct("SpaceInfo",Env.newPackage("kiev.fmt"),0));
-		seSpaceCmd = set(sep("["), scmd_si, attr("action"), attr("from_attempt"), sep("]"));
+		seSpaceCmd = set(sep("["),
+			alt_enum("action_before", oper("·"), oper("+"), oper("×")),
+			scmd_si,
+			alt_enum("action_after", oper("·"), oper("+"), oper("×")),
+			attr("from_attempt"),
+			sep("]"));
 		SyntaxAttr node_attr = ident("node");
 		node_attr.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
 		SyntaxAttr elem_attr = attr("elem");
@@ -65,10 +70,10 @@ public class SyntaxForSyntax extends TextSyntax {
 			set(
 				attr("text"),
 				sep("<"),
-					kw("font"),oper("="),ident("font"),
-					kw("color"),oper("="),ident("color"),
-					kw("hidden"),oper("="),attr("is_hidden"),
-					kw("spaces"),oper("="),sep("{"),slst,sep("}"),
+					ident("font"),
+					ident("color"),
+					attr("is_hidden"),
+					sep("{"),slst,sep("}"),
 				sep(">")
 				),
 			new SpaceCmd[0]

@@ -175,12 +175,12 @@ public class DrawContext implements Cloneable {
 	}
 	
 	private void processSpaceBeforeRequest(Drawable dr) {
-		foreach (LayoutSpace si; dr.syntax.lout.spaces; si.before)
+		foreach (LayoutSpace si; dr.syntax.lout.spaces_before)
 			addSpaceInfo(si);
 	}
 	
 	private void processSpaceAfterRequest(Drawable dr) {
-		foreach (LayoutSpace si; dr.syntax.lout.spaces; !si.before)
+		foreach (LayoutSpace si; dr.syntax.lout.spaces_after)
 			addSpaceInfo(si);
 	}
 	

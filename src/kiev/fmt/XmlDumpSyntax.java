@@ -28,11 +28,10 @@ public class XmlDumpSyntax extends TextSyntax {
 
 	public XmlDumpSyntax() {
 		lout_nl    = new SpaceCmd[] {
-				new SpaceCmd(siNl,SP_ADD_AFTER,0)
+				new SpaceCmd(siNl, SP_NOP, SP_ADD, 0)
 			};
 		lout_nl_ba = new SpaceCmd[] {
-				new SpaceCmd(siNl, SP_ADD_BEFORE, 0),
-				new SpaceCmd(siNl, SP_ADD_AFTER, 0)
+				new SpaceCmd(siNl, SP_ADD, SP_ADD, 0)
 			};
 		seAll = new Hashtable<String,SyntaxElem>();
 		seNull = new SyntaxSpace();

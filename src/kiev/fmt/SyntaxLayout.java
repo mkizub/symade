@@ -125,8 +125,8 @@ public class TextSyntax {
 	protected SyntaxIdentAttr ident(String slot)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
-				new SpaceCmd(siSpWORD, SP_ADD_AFTER, 0),
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
+				new SpaceCmd(siSpWORD, SP_NOP, SP_ADD, 0),
 			};
 		return new SyntaxIdentAttr(slot,lout);
 	}
@@ -134,8 +134,8 @@ public class TextSyntax {
 	protected SyntaxCharAttr charcter(String slot)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
-				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
+				new SpaceCmd(siSpSEPR, SP_NOP, SP_ADD, 0),
 			};
 		return new SyntaxCharAttr(slot,lout);
 	}
@@ -143,8 +143,7 @@ public class TextSyntax {
 	protected SyntaxStrAttr string(String slot)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
-				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_ADD, 0),
 			};
 		return new SyntaxStrAttr(slot,lout);
 	}
@@ -152,8 +151,8 @@ public class TextSyntax {
 	protected SyntaxKeyword kw(String kw)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
-				new SpaceCmd(siSpWORD, SP_ADD_AFTER, 0),
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
+				new SpaceCmd(siSpWORD, SP_NOP, SP_ADD, 0),
 			};
 		return new SyntaxKeyword(kw,lout);
 	}
@@ -161,9 +160,8 @@ public class TextSyntax {
 	protected SyntaxSeparator sep(String sep)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSpWORD, SP_EAT_BEFORE, 0),
-				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
-				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
+				new SpaceCmd(siSpWORD, SP_EAT, SP_NOP, 0),
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_ADD, 0),
 			};
 		return new SyntaxSeparator(sep,lout);
 	}
@@ -177,10 +175,9 @@ public class TextSyntax {
 	protected SyntaxSeparator sep_nl(String sep)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSpWORD, SP_EAT_BEFORE, 0),
-				new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
-				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
-				new SpaceCmd(siNl,     SP_ADD_AFTER, 0),
+				new SpaceCmd(siSpWORD, SP_EAT, SP_NOP, 0),
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_ADD, 0),
+				new SpaceCmd(siNl,     SP_NOP, SP_ADD, 0),
 			};
 		return new SyntaxSeparator(sep,lout);
 	}
@@ -193,8 +190,7 @@ public class TextSyntax {
 	protected SyntaxOperator oper(String op)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSpOPER, SP_ADD_BEFORE, 0),
-				new SpaceCmd(siSpOPER, SP_ADD_AFTER, 0),
+				new SpaceCmd(siSpOPER, SP_ADD, SP_ADD, 0)
 			};
 		return new SyntaxOperator(op.intern(),lout);
 	}
@@ -250,10 +246,9 @@ public enum SpaceKind {
 }
 
 public enum SpaceAction {
-	SP_ADD_BEFORE,
-	SP_EAT_BEFORE,
-	SP_ADD_AFTER,
-	SP_EAT_AFTER
+	SP_NOP,
+	SP_ADD,
+	SP_EAT
 }
 
 @node
@@ -280,17 +275,22 @@ public final class SpaceCmd extends ASTNode {
 	public static final SpaceCmd[] emptyArray = new SpaceCmd[0];
 
 	@att public SymbolRef<SpaceInfo>		si;
-	@att public SpaceAction					action;
+	@att public SpaceAction					action_before;
+	@att public SpaceAction					action_after;
 	@att public int							from_attempt;
 	
-	public SpaceCmd() {}
-	public SpaceCmd(SpaceInfo si, SpaceAction action) {
-		this(si, action, 0);
+	public SpaceCmd() {
+		action_before = SP_NOP;
+		action_after = SP_NOP;
 	}
-	public SpaceCmd(SpaceInfo si, SpaceAction action, int from_attempt) {
+	public SpaceCmd(SpaceInfo si, SpaceAction action_before, SpaceAction action_after) {
+		this(si, action_before, action_after, 0);
+	}
+	public SpaceCmd(SpaceInfo si, SpaceAction action_before, SpaceAction action_after, int from_attempt) {
 		this.si = new SymbolRef<SpaceInfo>(0,si);
 		this.from_attempt = from_attempt;
-		this.action = action;
+		this.action_before = action_before;
+		this.action_after = action_after;
 	}
 
 	public void preResolveOut() {
@@ -392,14 +392,19 @@ public final class DrawFont extends DNode {
 	}
 }
 
-public final class LayoutSpace {
+public final class LayoutSpace implements Cloneable {
+	static final LayoutSpace[] emptyArray = new LayoutSpace[0];
 	public String		name;
 	public int			from_attempt;
 	public boolean		new_line;
-	public boolean		before;
 	public boolean		eat;
 	public int			text_size;
 	public int			pixel_size;
+	LayoutSpace setEat() {
+		LayoutSpace ls = this.clone();
+		ls.eat = true;
+		return ls;
+	}
 }
 
 public final class DrawLayout {
@@ -410,12 +415,15 @@ public final class DrawLayout {
 	public boolean			is_hidden;
 	public Color 			color;
 	public Font				font;
-	public LayoutSpace[]	spaces;
+	public LayoutSpace[]	spaces_before;
+	public LayoutSpace[]	spaces_after;
 
 	public DrawLayout() {
 		this.count = 1;
 		this.color = Color.BLACK;
 		this.font = default_font;
+		this.spaces_before = LayoutSpace.emptyArray;
+		this.spaces_after = LayoutSpace.emptyArray;
 	}
 }
 
@@ -469,8 +477,7 @@ public abstract class SyntaxElem extends ASTNode {
 			lout.color = new Color(color.symbol.rgb_color);
 		if (font != null)
 			lout.font = Font.decode(font.symbol.font_name);
-		lout.spaces = new LayoutSpace[spaces.length];
-		for (int i=0; i < lout.spaces.length; i++) {
+		for (int i=0; i < this.spaces.length; i++) {
 			SpaceCmd sc = spaces[i];
 			LayoutSpace ls = new LayoutSpace();
 			if (sc.si.symbol != null) {
@@ -485,13 +492,16 @@ public abstract class SyntaxElem extends ASTNode {
 				ls.pixel_size = 4;
 			}
 			ls.from_attempt = sc.from_attempt;
-			switch (sc.action) {
-			case SP_ADD_BEFORE: ls.before = true;  ls.eat = false; break;
-			case SP_EAT_BEFORE: ls.before = true;  ls.eat = true;  break;
-			case SP_ADD_AFTER:  ls.before = false; ls.eat = false; break;
-			case SP_EAT_AFTER:  ls.before = false; ls.eat = true;  break;
+			switch (sc.action_before) {
+			case SP_NOP: break;
+			case SP_ADD: lout.spaces_before = (LayoutSpace[])Arrays.append(lout.spaces_before, ls); break;
+			case SP_EAT: lout.spaces_before = (LayoutSpace[])Arrays.append(lout.spaces_before, ls.setEat()); break;
 			}
-			lout.spaces[i] = ls;
+			switch (sc.action_after) {
+			case SP_NOP: break;
+			case SP_ADD: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls); break;
+			case SP_EAT: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls.setEat()); break;
+			}
 			lout.count = Math.max(lout.count, sc.from_attempt+1);
 		}
 	}

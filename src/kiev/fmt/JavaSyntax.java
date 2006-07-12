@@ -342,8 +342,8 @@ public class JavaSyntax extends TextSyntax {
 
 	protected SyntaxElem accs() {
 		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
-				new SpaceCmd(siSp, SP_ADD_AFTER, 0),
+				new SpaceCmd(siSp, SP_ADD, SP_NOP, 0),
+				new SpaceCmd(siSp, SP_NOP, SP_ADD, 0),
 			};
 		return new SyntaxJavaAccess(lout);
 	}
@@ -352,16 +352,15 @@ public class JavaSyntax extends TextSyntax {
 	{
 		if (sep == ";") {
 			SpaceCmd[] lout = new SpaceCmd[] {
-					new SpaceCmd(siSpWORD, SP_EAT_BEFORE, 0),
-					new SpaceCmd(siSpSEPR, SP_EAT_BEFORE, 0),
-					new SpaceCmd(siSp,     SP_ADD_AFTER, 0),
+					new SpaceCmd(siSpWORD, SP_EAT, SP_NOP, 0),
+					new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
+					new SpaceCmd(siSp,     SP_NOP, SP_ADD, 0),
 				};
 				return new SyntaxSeparator(sep,lout);
 		}
 		if (sep == "{" || sep == "}") {
 			SpaceCmd[] lout = new SpaceCmd[] {
-					new SpaceCmd(siSp, SP_ADD_AFTER, 0),
-					new SpaceCmd(siSp, SP_ADD_AFTER, 0),
+					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
 				};
 			return new SyntaxSeparator(sep,lout);
 		}
@@ -370,21 +369,20 @@ public class JavaSyntax extends TextSyntax {
 	
 	protected SyntaxJavaType type(FormatInfoHint hint) {
 		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSpWORD, SP_ADD_BEFORE, 0),
-				new SpaceCmd(siSpSEPR, SP_ADD_AFTER, 0),
-				new SpaceCmd(siSpWORD, SP_ADD_AFTER, 0),
+				new SpaceCmd(siSpWORD, SP_ADD, SP_ADD, 0),
+				new SpaceCmd(siSpSEPR, SP_NOP, SP_ADD, 0),
 			};
 		return new SyntaxJavaType(hint,lout);
 	}
 
 	public JavaSyntax() {
 		SpaceCmd[] lout_empty = new SpaceCmd[0];
-		SpaceCmd[] lout_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_ADD_AFTER,0)};
-		SpaceCmd[] lout_nl_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_ADD_BEFORE,0),new SpaceCmd(siNl,SP_ADD_AFTER,0)};
-		SpaceCmd[] lout_nl_grp = new SpaceCmd[] {new SpaceCmd(siNlGrp,SP_ADD_AFTER,0)};
+		SpaceCmd[] lout_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_NOP,SP_ADD,0)};
+		SpaceCmd[] lout_nl_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_ADD,SP_ADD,0)};
+		SpaceCmd[] lout_nl_grp = new SpaceCmd[] {new SpaceCmd(siNlGrp,SP_NOP,SP_ADD,0)};
 		{
 			SpaceCmd[] lout_pkg = new SpaceCmd[] {
-					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
+					new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
 				};
 			// file unit
 			seFileUnit = setl(lout_nl,
@@ -472,20 +470,19 @@ public class JavaSyntax extends TextSyntax {
 		}
 		{
 			SpaceCmd[] lout_struct = new SpaceCmd[] {
-					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
+					new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
 				};
 			SpaceCmd[] lout_struct_hdr = new SpaceCmd[] {
-					new SpaceCmd(siNlOrBlock, SP_ADD_AFTER, 0)
+					new SpaceCmd(siNlOrBlock, SP_NOP, SP_ADD, 0)
 				};
 			SpaceCmd[] lout_struct_block_start = new SpaceCmd[] {
-					new SpaceCmd(siNlOrBlock, SP_EAT_BEFORE, 0),
-					new SpaceCmd(siNl,        SP_ADD_AFTER,  0),
-					new SpaceCmd(siSp,        SP_ADD_BEFORE, 0),
+					new SpaceCmd(siNlOrBlock, SP_EAT, SP_NOP, 0),
+					new SpaceCmd(siNl,        SP_NOP, SP_ADD,  0),
+					new SpaceCmd(siSp,        SP_ADD, SP_NOP, 0),
 				};
 			SpaceCmd[] lout_struct_block_end = new SpaceCmd[] {
-					new SpaceCmd(siNl,        SP_ADD_BEFORE, 0),
-					new SpaceCmd(siNl,        SP_ADD_AFTER,  0),
-					new SpaceCmd(siSp,        SP_ADD_BEFORE, 0),
+					new SpaceCmd(siNl,        SP_ADD, SP_ADD, 0),
+					new SpaceCmd(siSp,        SP_ADD, SP_NOP, 0),
 				};
 			SyntaxElem struct_prefix = setl(lout_struct_hdr,
 					attr("meta"),
@@ -503,7 +500,7 @@ public class JavaSyntax extends TextSyntax {
 					lst("args", node(new FormatInfoHint("class-arg")), sep(","), lout_empty),
 					sep(">")
 				), null, lout_empty);
-			SpaceCmd[] lout_ext = new SpaceCmd[] {new SpaceCmd(siSp, SP_ADD_BEFORE, 0)};
+			SpaceCmd[] lout_ext = new SpaceCmd[] {new SpaceCmd(siSp, SP_ADD, SP_NOP, 0)};
 			SyntaxElem class_ext = opt("extends", new CalcOptionNotEmpty("super_types"),
 				set(
 					kw("extends"),
@@ -679,9 +676,8 @@ public class JavaSyntax extends TextSyntax {
 		}
 		{
 			SpaceCmd[] lout_field = new SpaceCmd[] {
-					new SpaceCmd(siFldGrpNl, SP_EAT_BEFORE,0),
-					new SpaceCmd(siFldGrpNl, SP_ADD_AFTER, 0),
-					new SpaceCmd(siNl,       SP_ADD_AFTER, 0),
+					new SpaceCmd(siFldGrpNl, SP_EAT, SP_ADD,0),
+					new SpaceCmd(siNl,       SP_NOP, SP_ADD, 0),
 				};
 			SyntaxElem field_prefix = setl(lout_empty,
 					attr("meta"),
@@ -740,10 +736,10 @@ public class JavaSyntax extends TextSyntax {
 		}
 		{
 			SpaceCmd[] lout_method_type_args = new SpaceCmd[] {
-					new SpaceCmd(siSp, SP_ADD_AFTER, 0)
+					new SpaceCmd(siSp, SP_NOP, SP_ADD, 0)
 				};
 			SpaceCmd[] lout_method = new SpaceCmd[] {
-					new SpaceCmd(siNlGrp, SP_ADD_AFTER, 0)
+					new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
 				};
 			SyntaxElem method_prefix = setl(lout_empty,
 //					jflag(1,6,1,  "@bridge"),
@@ -847,14 +843,12 @@ public class JavaSyntax extends TextSyntax {
 		}
 		{
 			SpaceCmd[] lout_code_block_start = new SpaceCmd[] {
-					new SpaceCmd(siNlOrBlock,     SP_EAT_BEFORE, 0),
-					new SpaceCmd(siNl,            SP_ADD_AFTER,  0),
-					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
-					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
+					new SpaceCmd(siNlOrBlock,     SP_EAT, SP_NOP, 0),
+					new SpaceCmd(siNl,            SP_NOP, SP_ADD,  0),
+					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
 				};
 			SpaceCmd[] lout_code_block_end = new SpaceCmd[] {
-					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
-					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
+					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
 				};
 			// block expression
 			seBlock = set(
@@ -864,9 +858,8 @@ public class JavaSyntax extends TextSyntax {
 					);
 			// rule block
 			SpaceCmd[] lout_rule_block_end = new SpaceCmd[] {
-					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
-					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
-					new SpaceCmd(siNl,            SP_ADD_BEFORE,  0),
+					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
+					new SpaceCmd(siNl,            SP_ADD, SP_NOP,  0),
 				};
 			seRuleBlock = set(
 					sep("{", lout_code_block_start),
@@ -875,10 +868,8 @@ public class JavaSyntax extends TextSyntax {
 					);
 			// rule OR block
 			SpaceCmd[] lout_rule_or = new SpaceCmd[] {
-					new SpaceCmd(siNl,            SP_ADD_BEFORE,  0),
-					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
-					new SpaceCmd(siNl,            SP_ADD_AFTER,  0),
-					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
+					new SpaceCmd(siNl,            SP_ADD, SP_ADD,  0),
+					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
 				};
 			SyntaxElem rule_or = new SyntaxSeparator(";",lout_rule_or);
 			seRuleOrExpr = set(
@@ -888,9 +879,8 @@ public class JavaSyntax extends TextSyntax {
 					);
 			// rule AND block
 			SpaceCmd[] lout_rule_and = new SpaceCmd[] {
-					new SpaceCmd(siSpSEPR,        SP_ADD_BEFORE, 0),
-					new SpaceCmd(siNl,            SP_ADD_AFTER,  0),
-					new SpaceCmd(siSpSEPR,        SP_ADD_AFTER,  0),
+					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
+					new SpaceCmd(siNl,            SP_NOP, SP_ADD,  0),
 				};
 			SyntaxElem rule_and = new SyntaxSeparator(",",lout_rule_and);
 			seRuleAndExpr = lst("rules", node(), rule_and, lout_nl);
@@ -907,9 +897,8 @@ public class JavaSyntax extends TextSyntax {
 
 		{
 			SpaceCmd[] lout_cond = new SpaceCmd[] {
-					new SpaceCmd(siNlOrBlock,   SP_ADD_AFTER,  0),
-					new SpaceCmd(siSp,          SP_ADD_BEFORE, 0),
-					new SpaceCmd(siSp,          SP_ADD_AFTER,  0),
+					new SpaceCmd(siNlOrBlock,   SP_NOP, SP_ADD,  0),
+					new SpaceCmd(siSp,          SP_ADD, SP_ADD, 0),
 				};
 			seIfElseStat = set(
 				kw("if"),
@@ -1141,7 +1130,7 @@ public class JavaSyntax extends TextSyntax {
 					par(plIndented, lst("stats",setl(lout_nl,node(new FormatInfoHint("stat"))),null,lout_nl))
 					);
 			SpaceCmd[] lout_pattern_args = new SpaceCmd[] {
-					new SpaceCmd(siSp, SP_ADD_AFTER, 0)
+					new SpaceCmd(siSp, SP_NOP, SP_ADD, 0)
 				};
 			seRewritePattern = set(
 					opt("meta"),
@@ -1189,30 +1178,25 @@ public class JavaSyntax extends TextSyntax {
 		seNopExpr.is_hidden = true;
 		
 		SpaceCmd[] lout_comment = new SpaceCmd[] {
-					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
-					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
+					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
 				};
 		seComment = new SyntaxJavaComment(lout_comment);
 
 		SpaceCmd[] lout_comment_nl = new SpaceCmd[] {
-					new SpaceCmd(siNl, SP_ADD_BEFORE, 0),
-					new SpaceCmd(siNl, SP_ADD_AFTER,  0),
-					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
-					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
+					new SpaceCmd(siNl, SP_ADD, SP_ADD, 0),
+					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
 				};
 		seCommentNl = new SyntaxJavaComment(lout_comment_nl);
 
 		SpaceCmd[] lout_comment_nl_before = new SpaceCmd[] {
-					new SpaceCmd(siNl, SP_ADD_BEFORE, 0),
-					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
-					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
+					new SpaceCmd(siNl, SP_ADD, SP_NOP, 0),
+					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
 				};
 		seCommentNlBefore = new SyntaxJavaComment(lout_comment_nl_before);
 
 		SpaceCmd[] lout_comment_nl_after = new SpaceCmd[] {
-					new SpaceCmd(siNl, SP_ADD_AFTER,  0),
-					new SpaceCmd(siSp, SP_ADD_BEFORE, 0),
-					new SpaceCmd(siSp, SP_ADD_AFTER,  0),
+					new SpaceCmd(siNl, SP_NOP, SP_ADD,  0),
+					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
 				};
 		seCommentNlAfter = new SyntaxJavaComment(lout_comment_nl_after);
 	}
