@@ -67,6 +67,7 @@ public class Editor extends InfoView implements KeyListener {
 	
 	public Editor(Window window, TextSyntax syntax, Canvas view_canvas) {
 		super(window, syntax, view_canvas);
+		this.formatter.setForEditor(true);
 	}
 	
 	public void setRoot(ANode root) {
@@ -740,10 +741,16 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 				editor.view_canvas.remove(menu);
 			ANode obj = (ANode)Class.forName(cls.qname()).newInstance();
 			foreach (AttrSlot a; node.values(); a.name == attr) {
-				if (a.is_space)
-					((SpaceAttrSlot<ANode>)a).insert(node,idx,obj);
-				else
+				if (a.is_space) {
+					SpaceAttrSlot<ANode> sas = (SpaceAttrSlot<ANode>)a;
+					if (idx < 0)
+						idx = 0;
+					else if (idx > sas.get(node).length)
+						idx = sas.get(node).length;
+					sas.insert(node,idx,obj);
+				} else {
 					a.set(node, obj);
+				}
 				editor.stopItemEditor(false);
 				return;
 			}

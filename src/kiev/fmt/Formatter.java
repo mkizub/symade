@@ -20,6 +20,8 @@ public interface Formatter {
 	public Drawable format(ANode node);
 	public Drawable getDrawable(ANode node, FormatInfoHint hint);
 	public AttrSlot getAttr();
+	public void     setForEditor(boolean val);
+	public boolean  isForEditor();
 	public String   escapeString(String str);
 	public String   escapeChar(char ch);
 	public void     setSyntax(TextSyntax stx);
@@ -40,7 +42,8 @@ public abstract class AbstractFormatter implements Formatter {
 	private static final int counter;
 
 	public TextSyntax syntax;
-	private AttrSlot ATTR;	
+	private boolean is_for_editor;
+	private AttrSlot ATTR;
 	
 	protected AbstractFormatter(TextSyntax syntax) {
 		this.syntax = syntax;
@@ -62,6 +65,12 @@ public abstract class AbstractFormatter implements Formatter {
 		});
 	}
 
+	public void setForEditor(boolean val) {
+		is_for_editor = val;
+	}
+	public boolean isForEditor() {
+		return is_for_editor;
+	}
 	public String escapeString(String str) {
 		return syntax.escapeString(str);
 	}

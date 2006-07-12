@@ -279,19 +279,46 @@ public final class SpaceCmd extends ASTNode {
 
 	public static final SpaceCmd[] emptyArray = new SpaceCmd[0];
 
-	@ref public SpaceInfo		si;
-	@att public int				from_attempt;
-	@att public SpaceAction		action;
+	@att public SymbolRef<SpaceInfo>		si;
+	@att public SpaceAction					action;
+	@att public int							from_attempt;
 	
 	public SpaceCmd() {}
 	public SpaceCmd(SpaceInfo si, SpaceAction action) {
 		this(si, action, 0);
 	}
 	public SpaceCmd(SpaceInfo si, SpaceAction action, int from_attempt) {
-		this.si = si;
+		this.si = new SymbolRef<SpaceInfo>(0,si);
 		this.from_attempt = from_attempt;
 		this.action = action;
 	}
+
+	public void preResolveOut() {
+		if (si == null)
+			si = new SymbolRef<SpaceInfo>(0,"sp");
+		if (si.name == null)
+			si.name = "sp";
+		SpaceInfo@ spi;
+		if (!PassInfo.resolveNameR(this,spi,new ResInfo(this,si.name)))
+			Kiev.reportError(this,"Cannot resolve color '"+si.name+"'");
+		else if !(spi instanceof SpaceInfo)
+			Kiev.reportError(this,"Resolved '"+si.name+"' is not a color");
+		else
+			si.symbol = spi;
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "si") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<SpaceInfo> vect = new Vector<SpaceInfo>();
+			DNode@ spi;
+			foreach (PassInfo.resolveNameR(this,spi,info))
+				if (spi instanceof SpaceInfo) vect.append((SpaceInfo)spi);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
 }
 
 @node
@@ -446,11 +473,18 @@ public abstract class SyntaxElem extends ASTNode {
 		for (int i=0; i < lout.spaces.length; i++) {
 			SpaceCmd sc = spaces[i];
 			LayoutSpace ls = new LayoutSpace();
-			ls.name = sc.si.id.uname;
+			if (sc.si.symbol != null) {
+				SpaceInfo si = (SpaceInfo)sc.si.symbol;
+				ls.name = si.id.uname;
+				if (si.kind == SP_NEW_LINE) ls.new_line = true;
+				ls.text_size = si.text_size;
+				ls.pixel_size = si.pixel_size;
+			} else {
+				ls.name = sc.si.name;
+				ls.text_size = 1;
+				ls.pixel_size = 4;
+			}
 			ls.from_attempt = sc.from_attempt;
-			if (sc.si.kind == SP_NEW_LINE) ls.new_line = true;
-			ls.text_size = sc.si.text_size;
-			ls.pixel_size = sc.si.pixel_size;
 			switch (sc.action) {
 			case SP_ADD_BEFORE: ls.before = true;  ls.eat = false; break;
 			case SP_EAT_BEFORE: ls.before = true;  ls.eat = true;  break;
@@ -544,6 +578,22 @@ public abstract class SyntaxToken extends SyntaxElem {
 }
 
 @node
+public class SyntaxEditSpace extends SyntaxToken {
+	@virtual typedef This  = SyntaxEditSpace;
+
+	public SyntaxEditSpace() {}
+	public SyntaxEditSpace(SpaceCmd[] spaces) {
+		super("",spaces);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawEditSpace(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
 public class SyntaxKeyword extends SyntaxToken {
 	@virtual typedef This  = SyntaxKeyword;
 
@@ -598,6 +648,7 @@ public class SyntaxList extends SyntaxElem {
 	@att public String		name;
 	@att public SyntaxElem	element;
 	@att public SyntaxElem	separator;
+	@att public SyntaxElem	empty;
 	@att public SymbolRef[]	expected_types;
 	     public CalcOption filter;
 
@@ -607,6 +658,7 @@ public class SyntaxList extends SyntaxElem {
 		this.name = name.intern();
 		this.element = element;
 		this.separator = separator;
+		this.empty = new SyntaxEditSpace(new SpaceCmd[0]);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {

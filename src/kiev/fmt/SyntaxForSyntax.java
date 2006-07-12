@@ -21,6 +21,7 @@ public class SyntaxForSyntax extends TextSyntax {
 
 	final SyntaxElem seFileUnit;
 	final SyntaxElem seSpaceInfo;
+	final SyntaxElem seSpaceCmd;
 	final SyntaxElem seDrawColor;
 	final SyntaxElem seDrawFont;
 	final SyntaxElem seSyntaxElemDecl;
@@ -49,11 +50,16 @@ public class SyntaxForSyntax extends TextSyntax {
 		seSpaceInfo = setl(lout_nl,kw("def-space"),id.ncopy(),attr("kind"),attr("text_size"),attr("pixel_size"));
 		seDrawColor = setl(lout_nl,kw("def-color"),id.ncopy(),attr("rgb_color"));
 		seDrawFont  = setl(lout_nl,kw("def-font"), id.ncopy(),attr("font_name"));
+		SyntaxAttr scmd_si = ident("si");
+		scmd_si.expected_types += new SymbolRef(0, Env.newStruct("SpaceInfo",Env.newPackage("kiev.fmt"),0));
+		seSpaceCmd = set(sep("["), scmd_si, attr("action"), attr("from_attempt"), sep("]"));
 		SyntaxAttr node_attr = ident("node");
 		node_attr.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
 		SyntaxAttr elem_attr = attr("elem");
 		elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxKeyword",Env.newPackage("kiev.fmt"),0));
 		seSyntaxElemDecl = setl(lout_nl,kw("def-syntax"), id.ncopy(), node_attr, elem_attr);
+		SyntaxList slst = lst("spaces",node(),sep(","),new SpaceCmd[0]);
+		slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
 		seSyntaxKeyword = folder(
 			attr("text"),
 			set(
@@ -62,7 +68,7 @@ public class SyntaxForSyntax extends TextSyntax {
 					kw("font"),oper("="),ident("font"),
 					kw("color"),oper("="),ident("color"),
 					kw("hidden"),oper("="),attr("is_hidden"),
-					kw("spaces"),oper("="),sep("{"),lst("spaces",node(),sep(","),new SpaceCmd[0]),sep("}"),
+					kw("spaces"),oper("="),sep("{"),slst,sep("}"),
 				sep(">")
 				),
 			new SpaceCmd[0]
@@ -71,12 +77,13 @@ public class SyntaxForSyntax extends TextSyntax {
 
 	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
 		switch (node) {
-		case FileUnit:  return seFileUnit;
-		case SpaceInfo: return seSpaceInfo;
-		case DrawColor: return seDrawColor;
-		case DrawFont:  return seDrawFont;
+		case FileUnit:       return seFileUnit;
+		case SpaceInfo:      return seSpaceInfo;
+		case SpaceCmd:       return seSpaceCmd;
+		case DrawColor:      return seDrawColor;
+		case DrawFont:       return seDrawFont;
 		case SyntaxElemDecl: return seSyntaxElemDecl;
-		case SyntaxKeyword: return seSyntaxKeyword;
+		case SyntaxKeyword:  return seSyntaxKeyword;
 		}
 		return super.getSyntaxElem(node,hint);
 	}

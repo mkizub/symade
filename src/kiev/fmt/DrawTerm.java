@@ -45,6 +45,17 @@ public abstract class DrawTerm extends Drawable {
 }
 
 @node
+public class DrawEditSpace extends DrawTerm {
+
+	public DrawEditSpace() {}
+	public DrawEditSpace(ANode node, SyntaxEditSpace syntax) {
+		super(node, syntax);
+	}
+
+	public String getText() { return " "; }
+}
+
+@node
 public class DrawKeyword extends DrawTerm {
 
 	public DrawKeyword() {}
