@@ -23,18 +23,18 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 
 	@att public int					idx;
 	@att public int					priority;
-	@att public SyntaxSeparator		l_paren;
-	@att public SyntaxSeparator		r_paren;
+	@att public SyntaxToken		l_paren;
+	@att public SyntaxToken		r_paren;
 
 	public SyntaxJavaExpr() {}
-	public SyntaxJavaExpr(String name, FormatInfoHint hint, SpaceCmd[] spaces, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
+	public SyntaxJavaExpr(String name, FormatInfoHint hint, SpaceCmd[] spaces, int priority, SyntaxToken l_paren, SyntaxToken r_paren) {
 		super(name,hint,spaces);
 		this.idx = -1;
 		this.priority = priority;
 		this.l_paren = l_paren;
 		this.r_paren = r_paren;
 	}
-	public SyntaxJavaExpr(int idx, FormatInfoHint hint, SpaceCmd[] spaces, int priority, SyntaxSeparator l_paren, SyntaxSeparator r_paren) {
+	public SyntaxJavaExpr(int idx, FormatInfoHint hint, SpaceCmd[] spaces, int priority, SyntaxToken l_paren, SyntaxToken r_paren) {
 		super("",hint,spaces);
 		this.idx = idx;
 		this.priority = priority;
@@ -348,7 +348,7 @@ public class JavaSyntax extends TextSyntax {
 		return new SyntaxJavaAccess(lout);
 	}
 	
-	protected SyntaxSeparator sep(String sep)
+	protected SyntaxToken sep(String sep)
 	{
 		if (sep == ";") {
 			SpaceCmd[] lout = new SpaceCmd[] {
@@ -356,13 +356,13 @@ public class JavaSyntax extends TextSyntax {
 					new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
 					new SpaceCmd(siSp,     SP_NOP, SP_ADD, 0),
 				};
-				return new SyntaxSeparator(sep,lout);
+				return new SyntaxToken(sep,lout);
 		}
 		if (sep == "{" || sep == "}") {
 			SpaceCmd[] lout = new SpaceCmd[] {
 					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
 				};
-			return new SyntaxSeparator(sep,lout);
+			return new SyntaxToken(sep,lout);
 		}
 		return super.sep(sep);
 	}
@@ -871,7 +871,7 @@ public class JavaSyntax extends TextSyntax {
 					new SpaceCmd(siNl,            SP_ADD, SP_ADD,  0),
 					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
 				};
-			SyntaxElem rule_or = new SyntaxSeparator(";",lout_rule_or);
+			SyntaxElem rule_or = new SyntaxToken(";",lout_rule_or);
 			seRuleOrExpr = set(
 					sep("{", lout_code_block_start),
 					lst("rules", par(plIndented, node()), rule_or, lout_nl),
@@ -882,7 +882,7 @@ public class JavaSyntax extends TextSyntax {
 					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
 					new SpaceCmd(siNl,            SP_NOP, SP_ADD,  0),
 				};
-			SyntaxElem rule_and = new SyntaxSeparator(",",lout_rule_and);
+			SyntaxElem rule_and = new SyntaxToken(",",lout_rule_and);
 			seRuleAndExpr = lst("rules", node(), rule_and, lout_nl);
 		}
 		seExprStat = set(opt("expr"), sep(";"));

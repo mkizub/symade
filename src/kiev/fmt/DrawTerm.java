@@ -45,45 +45,14 @@ public abstract class DrawTerm extends Drawable {
 }
 
 @node
-public class DrawEditSpace extends DrawTerm {
+public final class DrawToken extends DrawTerm {
 
-	public DrawEditSpace() {}
-	public DrawEditSpace(ANode node, SyntaxEditSpace syntax) {
+	public DrawToken() {}
+	public DrawToken(ANode node, SyntaxToken syntax) {
 		super(node, syntax);
 	}
 
-	public String getText() { return " "; }
-}
-
-@node
-public class DrawKeyword extends DrawTerm {
-
-	public DrawKeyword() {}
-	public DrawKeyword(ANode node, SyntaxKeyword syntax) {
-		super(node, syntax);
-	}
-
-	public String getText() { return ((SyntaxKeyword)this.syntax).text; }
-}
-
-@node
-public class DrawOperator extends DrawTerm {
-	public DrawOperator() {}
-	public DrawOperator(ANode node, SyntaxOperator syntax) {
-		super(node, syntax);
-	}
-
-	public String getText() { return ((SyntaxOperator)this.syntax).text; }
-}
-
-@node
-public class DrawSeparator extends DrawTerm {
-	public DrawSeparator() {}
-	public DrawSeparator(ANode node, SyntaxSeparator syntax) {
-		super(node, syntax);
-	}
-
-	public String getText() { return ((SyntaxSeparator)this.syntax).text; }
+	public String getText() { return ((SyntaxToken)this.syntax).text; }
 }
 
 @node

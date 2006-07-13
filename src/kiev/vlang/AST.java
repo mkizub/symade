@@ -471,6 +471,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public @packed:1,compileflags,21 boolean is_struct_bytecode;	// struct was loaded from bytecode
 	public @packed:1,compileflags,22 boolean is_struct_singleton;
 	public @packed:1,compileflags,23 boolean is_struct_pizza_case;
+	public @packed:1,compileflags,24 boolean is_struct_compiler_node;
 	
 	// Expression/statement flags
 	public @packed:1,compileflags,8  boolean is_expr_gen_void;

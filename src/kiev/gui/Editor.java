@@ -400,13 +400,15 @@ public class Editor extends InfoView implements KeyListener {
 		int x = e.getX();
 		int y = e.getY() + view_canvas.translated_y;
 		Drawable dr = view_canvas.first_visible;
-		for (; dr != null && dr != view_canvas.last_visible; dr = dr.getNextLeaf()) {
+		for (; dr != null; dr = dr.getNextLeaf()) {
 			if (dr.geometry.x < x && dr.geometry.y < y && dr.geometry.x+dr.geometry.w >= x && dr.geometry.y+dr.geometry.h >= y) {
 				cur_elem = dr;
 				cur_x = cur_elem.geometry.x;
 				formatAndPaint(false);
 				break;
 			}
+			if (dr == view_canvas.last_visible)
+				break;
 		}
 	}
 /*
@@ -784,7 +786,7 @@ abstract class TextEditor implements KeyListener {
 	public void keyPressed(KeyEvent evt) {
 		int code = evt.getKeyCode();
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-		if (mask != 0)
+		if (mask != 0 && mask != KeyEvent.SHIFT_DOWN_MASK)
 			return;
 		evt.consume();
 		String text = this.getText();

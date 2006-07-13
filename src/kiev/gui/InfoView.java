@@ -121,6 +121,16 @@ public class InfoView extends UIView implements KeyListener {
 				m.show(view_canvas, 0, 0);
 				break;
 				}
+			case KeyEvent.VK_F:
+				evt.consume();
+				// fold everything
+				if (this.the_root != null) {
+					this.the_root.walkTree(new TreeWalker() {
+						public boolean pre_exec(ANode n) { if (n instanceof ASTNode) n.setDrawFolded(true); return true; }
+					});
+					this.formatAndPaint(true);
+				}
+				break;
 			}
 		}
 	}

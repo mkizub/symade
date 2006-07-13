@@ -108,7 +108,9 @@ public class DrawNonTermList extends DrawNonTerm {
 		int sz = narr.length;
 		if (sz == 0) {
 			SyntaxElem empty = slst.empty;
-			if (!(empty instanceof SyntaxEditSpace) || fmt.isForEditor())
+			if (empty instanceof SyntaxToken && empty.text != " ")
+				args.append(empty.makeDrawable(fmt, node));
+			else if (fmt.isForEditor())
 				args.append(empty.makeDrawable(fmt, node));
 		} else {
 			boolean need_sep = false;

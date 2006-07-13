@@ -115,7 +115,6 @@ CLASS kiev.fmt.DrawCharTerm kiev/fmt/DrawCharTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawColor kiev/fmt/DrawColor kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawContext kiev/fmt/DrawContext kiev\fmt\DrawContext.java
 CLASS kiev.fmt.DrawCtrl kiev/fmt/DrawCtrl kiev\fmt\DrawCtrl.java
-CLASS kiev.fmt.DrawEditSpace kiev/fmt/DrawEditSpace kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawEnumChoice kiev/fmt/DrawEnumChoice kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawFolded kiev/fmt/DrawFolded kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawFont kiev/fmt/DrawFont kiev\fmt\SyntaxLayout.java
@@ -127,19 +126,17 @@ CLASS kiev.fmt.DrawJavaEnumAlias kiev/fmt/DrawJavaEnumAlias kiev\fmt\DrawJava.ja
 CLASS kiev.fmt.DrawJavaExpr kiev/fmt/DrawJavaExpr kiev\fmt\DrawJava.java
 CLASS kiev.fmt.DrawJavaPackedField kiev/fmt/DrawJavaPackedField kiev\fmt\DrawJava.java
 CLASS kiev.fmt.DrawJavaType kiev/fmt/DrawJavaType kiev\fmt\DrawJava.java
-CLASS kiev.fmt.DrawKeyword kiev/fmt/DrawKeyword kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawLayout kiev/fmt/DrawLayout kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawNodeTerm kiev/fmt/DrawNodeTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawNonTerm kiev/fmt/DrawNonTerm kiev\fmt\DrawNonTerm.java
 CLASS kiev.fmt.DrawNonTermList kiev/fmt/DrawNonTermList kiev\fmt\DrawNonTerm.java
 CLASS kiev.fmt.DrawNonTermSet kiev/fmt/DrawNonTermSet kiev\fmt\DrawNonTerm.java
-CLASS kiev.fmt.DrawOperator kiev/fmt/DrawOperator kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawOptional kiev/fmt/DrawOptional kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawParagraph kiev/fmt/DrawParagraph kiev\fmt\DrawCtrl.java
-CLASS kiev.fmt.DrawSeparator kiev/fmt/DrawSeparator kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawSpace kiev/fmt/DrawSpace kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawStrTerm kiev/fmt/DrawStrTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawTerm kiev/fmt/DrawTerm kiev\fmt\DrawTerm.java
+CLASS kiev.fmt.DrawToken kiev/fmt/DrawToken kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.Drawable kiev/fmt/Drawable kiev\fmt\Drawable.java
 CLASS kiev.fmt.FormatInfoHint kiev/fmt/FormatInfoHint kiev\fmt\Formatter.java
 CLASS kiev.fmt.GfxFormatter kiev/fmt/GfxFormatter kiev\fmt\Formatter.java
@@ -151,7 +148,6 @@ CLASS kiev.fmt.SpaceCmd kiev/fmt/SpaceCmd kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SpaceInfo kiev/fmt/SpaceInfo kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxAttr kiev/fmt/SyntaxAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxCharAttr kiev/fmt/SyntaxCharAttr kiev\fmt\SyntaxLayout.java
-CLASS kiev.fmt.SyntaxEditSpace kiev/fmt/SyntaxEditSpace kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxElem kiev/fmt/SyntaxElem kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxElemDecl kiev/fmt/SyntaxElemDecl kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxEnumChoice kiev/fmt/SyntaxEnumChoice kiev\fmt\SyntaxLayout.java
@@ -165,13 +161,10 @@ CLASS kiev.fmt.SyntaxJavaEnumAlias kiev/fmt/SyntaxJavaEnumAlias kiev\fmt\JavaSyn
 CLASS kiev.fmt.SyntaxJavaExpr kiev/fmt/SyntaxJavaExpr kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaPackedField kiev/fmt/SyntaxJavaPackedField kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaType kiev/fmt/SyntaxJavaType kiev\fmt\JavaSyntax.java
-CLASS kiev.fmt.SyntaxKeyword kiev/fmt/SyntaxKeyword kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxList kiev/fmt/SyntaxList kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxNode kiev/fmt/SyntaxNode kiev\fmt\SyntaxLayout.java
-CLASS kiev.fmt.SyntaxOperator kiev/fmt/SyntaxOperator kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxOptional kiev/fmt/SyntaxOptional kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxParagraphLayout kiev/fmt/SyntaxParagraphLayout kiev\fmt\SyntaxLayout.java
-CLASS kiev.fmt.SyntaxSeparator kiev/fmt/SyntaxSeparator kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxSet kiev/fmt/SyntaxSet kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxSpace kiev/fmt/SyntaxSpace kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxStrAttr kiev/fmt/SyntaxStrAttr kiev\fmt\SyntaxLayout.java
@@ -879,7 +872,6 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
-METATYPE kiev.fmt.DrawFormat kiev\fmt\SyntaxLayout.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad

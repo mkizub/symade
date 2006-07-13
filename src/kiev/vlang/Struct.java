@@ -107,6 +107,17 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
+	// a pizza case	
+	public final boolean isCompilerNode() {
+		return this.is_struct_compiler_node;
+	}
+	public final void setCompilerNode(boolean on) {
+		if (this.is_struct_compiler_node != on) {
+			assert(!locked);
+			this.is_struct_compiler_node = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
 	
 	/** Add information about new sub structure, this class (package) containes */
 	public Struct addSubStruct(Struct sub) {

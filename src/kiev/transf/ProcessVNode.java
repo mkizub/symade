@@ -100,6 +100,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 		foreach (Struct sub; s.sub_decls)
 			doProcess(sub);
 		if (isNodeKind(s)) {
+			s.setCompilerNode(true);
 			// add node name to global map of compiler nodes
 			if (s.meta.get(mnNode) != null) {
 				Meta m = s.meta.get(mnNode);

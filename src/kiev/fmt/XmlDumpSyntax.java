@@ -65,16 +65,16 @@ public class XmlDumpSyntax extends TextSyntax {
 	}
 	
 	private SyntaxElem open(String name) {
-		return new SyntaxKeyword("<"+name+">",lout_nl_ba);
+		return new SyntaxToken("<"+name+">",lout_nl_ba);
 	}
 	private SyntaxElem close(String name) {
-		return new SyntaxKeyword("</"+name+">",lout_nl_ba);
+		return new SyntaxToken("</"+name+">",lout_nl_ba);
 	}
 	private SyntaxElem open0(String name) {
-		return new SyntaxKeyword("<"+name+">",new SpaceCmd[0]);
+		return new SyntaxToken("<"+name+">",new SpaceCmd[0]);
 	}
 	private SyntaxElem close0(String name) {
-		return new SyntaxKeyword("</"+name+">",lout_nl);
+		return new SyntaxToken("</"+name+">",lout_nl);
 	}
 	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
 		if (node == null)
@@ -114,9 +114,9 @@ public class XmlDumpSyntax extends TextSyntax {
 		}
 		{
 			SyntaxSet sn = new SyntaxSet(lout_nl);
-			sn.elements += new SyntaxKeyword("<a-node class='"+nm+"'>",lout_nl_ba);
+			sn.elements += new SyntaxToken("<a-node class='"+nm+"'>",lout_nl_ba);
 			sn.elements += par(plIndented, ss);
-			sn.elements += new SyntaxKeyword("</a-node>",lout_nl_ba);
+			sn.elements += new SyntaxToken("</a-node>",lout_nl_ba);
 			se = sn;
 		}
 		seAll.put(nm,se);

@@ -148,56 +148,56 @@ public class TextSyntax {
 		return new SyntaxStrAttr(slot,lout);
 	}
 
-	protected SyntaxKeyword kw(String kw)
+	protected SyntaxToken kw(String kw)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
 				new SpaceCmd(siSpWORD, SP_NOP, SP_ADD, 0),
 			};
-		return new SyntaxKeyword(kw,lout);
+		return new SyntaxToken(kw,lout);
 	}
 
-	protected SyntaxSeparator sep(String sep)
+	protected SyntaxToken sep(String sep)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpWORD, SP_EAT, SP_NOP, 0),
 				new SpaceCmd(siSpSEPR, SP_EAT, SP_ADD, 0),
 			};
-		return new SyntaxSeparator(sep,lout);
+		return new SyntaxToken(sep,lout);
 	}
 
-	protected SyntaxSeparator sep0(String sep)
+	protected SyntaxToken sep0(String sep)
 	{
 		SpaceCmd[] lout = new SpaceCmd[0];
-		return new SyntaxSeparator(sep,lout);
+		return new SyntaxToken(sep,lout);
 	}
 
-	protected SyntaxSeparator sep_nl(String sep)
+	protected SyntaxToken sep_nl(String sep)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpWORD, SP_EAT, SP_NOP, 0),
 				new SpaceCmd(siSpSEPR, SP_EAT, SP_ADD, 0),
 				new SpaceCmd(siNl,     SP_NOP, SP_ADD, 0),
 			};
-		return new SyntaxSeparator(sep,lout);
+		return new SyntaxToken(sep,lout);
 	}
 
-	protected SyntaxOperator oper(Operator op)
+	protected SyntaxToken oper(Operator op)
 	{
 		return oper(op.toString());
 	}
 
-	protected SyntaxOperator oper(String op)
+	protected SyntaxToken oper(String op)
 	{
 		SpaceCmd[] lout = new SpaceCmd[] {
 				new SpaceCmd(siSpOPER, SP_ADD, SP_ADD, 0)
 			};
-		return new SyntaxOperator(op.intern(),lout);
+		return new SyntaxToken(op.intern(),lout);
 	}
 
-	protected SyntaxSeparator sep(String sep, SpaceCmd[] spaces)
+	protected SyntaxToken sep(String sep, SpaceCmd[] spaces)
 	{
-		return new SyntaxSeparator(sep,spaces);
+		return new SyntaxToken(sep,spaces);
 	}
 	
 	protected SyntaxOptional opt(String name)
@@ -357,7 +357,7 @@ public class ParagraphLayoutBlock extends ParagraphLayout {
 		if (dr == null)
 			return true;
 		DrawTerm t = dr.getFirstLeaf();
-		if (t instanceof DrawSeparator && ((SyntaxSeparator)t.syntax).text == "{")
+		if (t instanceof DrawToken && ((SyntaxToken)t.syntax).text == "{")
 			return false;
 		return true;
 	}
@@ -429,14 +429,41 @@ public final class DrawLayout {
 
 @node
 public final class SyntaxElemDecl extends DNode {
-	@att SymbolRef		node;
-	@att SyntaxElem		elem;
+	@att SymbolRef<Struct>		node;
+	@att SyntaxElem				elem;
 
 	public SyntaxElemDecl() {}
 	public SyntaxElemDecl(Struct cls, SyntaxElem elem) {
-		this.node = new SymbolRef(0,cls);
+		this.node = new SymbolRef<Struct>(0,cls);
 		this.elem = elem;
 	}
+
+	public void preResolveOut() {
+		if (node == null)
+			node = new SymbolRef<Struct>(0,Env.newStruct("ASTNode",Env.newPackage("kiev.vlang"),0));
+		if (node.name == null)
+			node.name = "ASTNode";
+		Struct@ s;
+		if (!PassInfo.resolveNameR(this,s,new ResInfo(this,node.name)))
+			Kiev.reportError(this,"Cannot resolve @node '"+node.name+"'");
+		else if (!(s instanceof Struct) || !((Struct)s).isCompilerNode())
+			Kiev.reportError(this,"Resolved '"+node.name+"' is not @node");
+		else
+			node.symbol = s;
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "node") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<Struct> vect = new Vector<Struct>();
+			Struct@ s;
+			foreach (PassInfo.resolveNameR(this,s,info))
+				if (s instanceof Struct && ((Struct)s).isCompilerNode()) vect.append((Struct)s);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
 }
 
 @node
@@ -446,8 +473,6 @@ public abstract class SyntaxElem extends ASTNode {
 	public static final SyntaxElem[] emptyArray = new SyntaxElem[0];
 
 	@att public SpaceCmd[]				spaces;
-	@att public SymbolRef<DrawColor>	color;
-	@att public SymbolRef<DrawFont>		font;
 	@att public boolean					is_hidden;
 
 	public:r,r,r,rw DrawLayout		lout;
@@ -455,8 +480,6 @@ public abstract class SyntaxElem extends ASTNode {
 	public SyntaxElem() {}
 	public SyntaxElem(SpaceCmd[] spaces) {
 		this.spaces.copyFrom(spaces);
-		this.color = new SymbolRef(0,new DrawColor(0));
-		this.font = new SymbolRef(0,new DrawFont("Dialog-PLAIN-12"));
 	}
 
 	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
@@ -470,13 +493,9 @@ public abstract class SyntaxElem extends ASTNode {
 		return lout;
 	}
 	
-	private void compile() {
+	protected void compile() {
 		DrawLayout lout = this.lout;
 		lout.is_hidden = is_hidden;
-		if (color != null)
-			lout.color = new Color(color.symbol.rgb_color);
-		if (font != null)
-			lout.font = Font.decode(font.symbol.font_name);
 		for (int i=0; i < this.spaces.length; i++) {
 			SpaceCmd sc = spaces[i];
 			LayoutSpace ls = new LayoutSpace();
@@ -504,6 +523,41 @@ public abstract class SyntaxElem extends ASTNode {
 			}
 			lout.count = Math.max(lout.count, sc.from_attempt+1);
 		}
+	}
+
+}
+
+@node
+public final class SyntaxToken extends SyntaxElem {
+	@virtual typedef This  = SyntaxToken;
+
+	@att public String					text;
+	@att public SymbolRef<DrawColor>	color;
+	@att public SymbolRef<DrawFont>		font;
+
+	public SyntaxToken() {
+		this.color = new SymbolRef(0,new DrawColor(0));
+		this.font = new SymbolRef(0,new DrawFont("Dialog-PLAIN-12"));
+	}
+	public SyntaxToken(String text, SpaceCmd[] spaces) {
+		super(spaces);
+		this.color = new SymbolRef(0,new DrawColor(0));
+		this.font = new SymbolRef(0,new DrawFont("Dialog-PLAIN-12"));
+		this.text = text.intern();
+	}
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawToken(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+
+	protected void compile() {
+		super.compile();
+		DrawLayout lout = this.lout;
+		if (color != null)
+			lout.color = new Color(color.symbol.rgb_color);
+		if (font != null)
+			lout.font = Font.decode(font.symbol.font_name);
 	}
 
 	public void preResolveOut() {
@@ -559,150 +613,12 @@ public abstract class SyntaxElem extends ASTNode {
 }
 
 @node
-public class SyntaxSpace extends SyntaxElem {
-	@virtual typedef This  = SyntaxSpace;
-
-	public SyntaxSpace() {}
-	public SyntaxSpace(SpaceCmd[] spaces) {
-		super(spaces);
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawSpace(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
-public abstract class SyntaxToken extends SyntaxElem {
-	@virtual typedef This  ≤ SyntaxToken;
-
-	@att public String text;
-
-	public SyntaxToken() {}
-	public SyntaxToken(String text, SpaceCmd[] spaces) {
-		super(spaces);
-		this.text = text.intern();
-	}
-}
-
-@node
-public class SyntaxEditSpace extends SyntaxToken {
-	@virtual typedef This  = SyntaxEditSpace;
-
-	public SyntaxEditSpace() {}
-	public SyntaxEditSpace(SpaceCmd[] spaces) {
-		super("",spaces);
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawEditSpace(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
-public class SyntaxKeyword extends SyntaxToken {
-	@virtual typedef This  = SyntaxKeyword;
-
-	public SyntaxKeyword() {}
-	public SyntaxKeyword(String text, SpaceCmd[] spaces) {
-		super(text, spaces);
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawKeyword(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
-public class SyntaxOperator extends SyntaxToken {
-	@virtual typedef This  = SyntaxOperator;
-
-	public SyntaxOperator() {}
-	public SyntaxOperator(String text, SpaceCmd[] spaces) {
-		super(text, spaces);
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawOperator(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
-public class SyntaxSeparator extends SyntaxToken {
-	@virtual typedef This  = SyntaxSeparator;
-
-	public SyntaxSeparator() {}
-	public SyntaxSeparator(String text, SpaceCmd[] spaces) {
-		super(text, spaces);
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawSeparator(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
-public class SyntaxList extends SyntaxElem {
-	@virtual typedef This  = SyntaxList;
-
-	@att public String		name;
-	@att public SyntaxElem	element;
-	@att public SyntaxElem	separator;
-	@att public SyntaxElem	empty;
-	@att public SymbolRef[]	expected_types;
-	     public CalcOption filter;
-
-	public SyntaxList() {}
-	public SyntaxList(String name, SyntaxElem element, SyntaxElem separator, SpaceCmd[] spaces) {
-		super(spaces);
-		this.name = name.intern();
-		this.element = element;
-		this.separator = separator;
-		this.empty = new SyntaxEditSpace(new SpaceCmd[0]);
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawNonTermList(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
-public class SyntaxSet extends SyntaxElem {
-	@virtual typedef This  ≤ SyntaxSet;
-
-	@att public SyntaxElem[] elements;
-
-	public SyntaxSet() {}
-	public SyntaxSet(SpaceCmd[] spaces) {
-		super(spaces);
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawNonTermSet(node, this);
-		dr.init(fmt);
-		return dr;
-	}
-}
-
-@node
 public class SyntaxAttr extends SyntaxElem {
 	@virtual typedef This  ≤ SyntaxAttr;
 
-	@att public String			name;
-	@att public FormatInfoHint	hint;
-	@att public SymbolRef[]		expected_types;
+	@att public String					name;
+	@att public FormatInfoHint			hint;
+	@att public SymbolRef[]				expected_types;
 
 	public SyntaxAttr() {}
 	public SyntaxAttr(String name, SpaceCmd[] spaces) {
@@ -725,21 +641,42 @@ public class SyntaxAttr extends SyntaxElem {
 		dr.init(fmt);
 		return dr;
 	}
+
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "expected_types") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<Struct> vect = new Vector<Struct>();
+			DNode@ s;
+			foreach (PassInfo.resolveNameR(this,s,info))
+				if (s instanceof Struct && ((Struct)s).isCompilerNode()) vect.append((Struct)s);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
 }
 
 @node
-public class SyntaxNode extends SyntaxElem {
-	@virtual typedef This  = SyntaxNode;
+public class SyntaxList extends SyntaxAttr {
+	@virtual typedef This  = SyntaxList;
 
-	@att public FormatInfoHint	hint;
+	@att public SyntaxElem	element;
+	@att public SyntaxElem	separator;
+	@att public SyntaxElem	empty;
+	     public CalcOption filter;
 
-	public SyntaxNode() {}
-	public SyntaxNode(FormatInfoHint hint) {
-		this.hint = hint;
+	public SyntaxList() {}
+	public SyntaxList(String name, SyntaxElem element, SyntaxElem separator, SpaceCmd[] spaces) {
+		super(name,spaces);
+		this.element = element;
+		this.separator = separator;
+		this.empty = new SyntaxToken(" ", new SpaceCmd[0]);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		return fmt.getDrawable(node, hint);
+		Drawable dr = new DrawNonTermList(node, this);
+		dr.init(fmt);
+		return dr;
 	}
 }
 
@@ -786,6 +723,56 @@ public class SyntaxStrAttr extends SyntaxAttr {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawStrTerm(node, this, name);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
+public class SyntaxSet extends SyntaxElem {
+	@virtual typedef This  ≤ SyntaxSet;
+
+	@att public SyntaxElem[] elements;
+
+	public SyntaxSet() {}
+	public SyntaxSet(SpaceCmd[] spaces) {
+		super(spaces);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawNonTermSet(node, this);
+		dr.init(fmt);
+		return dr;
+	}
+}
+
+@node
+public class SyntaxNode extends SyntaxElem {
+	@virtual typedef This  = SyntaxNode;
+
+	@att public FormatInfoHint	hint;
+
+	public SyntaxNode() {}
+	public SyntaxNode(FormatInfoHint hint) {
+		this.hint = hint;
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		return fmt.getDrawable(node, hint);
+	}
+}
+
+@node
+public class SyntaxSpace extends SyntaxElem {
+	@virtual typedef This  = SyntaxSpace;
+
+	public SyntaxSpace() {}
+	public SyntaxSpace(SpaceCmd[] spaces) {
+		super(spaces);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawSpace(node, this);
 		dr.init(fmt);
 		return dr;
 	}
