@@ -14,25 +14,32 @@ import syntax kiev.Syntax;
 
 @node
 public abstract class DrawTerm extends Drawable {
-	Formatter fmt;
+	protected String text;
+
 	public DrawTerm() {}
 	public DrawTerm(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
 	}
 	
-	public void init(Formatter fmt) {
-		super.init(fmt);
-		this.fmt = fmt;
-	}
-
 	public DrawTerm getFirstLeaf() { return isUnvisible() ? null : this; }
 	public DrawTerm getLastLeaf()  { return isUnvisible() ? null : this; }
 
-	public void preFormat(DrawContext cont) {
+	static int check_stack_overflow;
+	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
+			check_stack_overflow++;
+			if (check_stack_overflow > 1000)
+				throw new Error();
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			replaceWithNode(dr);
+			dr.preFormat(cont, expected_stx, expected_node);
+			check_stack_overflow--;
+		}
 		if (this.isUnvisible())
 			return;
 		this.geometry.x = 0;
 		this.geometry.y = 0;
+		this.text = makeText(cont.fmt);
 		cont.formatAsText(this);
 	}
 
@@ -41,7 +48,8 @@ public abstract class DrawTerm extends Drawable {
 		return cont.addLeaf(this);
 	}
 	
-	public abstract String getText();
+	abstract String makeText(Formatter fmt);
+	public final String getText() { return text; }
 }
 
 @node
@@ -52,7 +60,7 @@ public final class DrawToken extends DrawTerm {
 		super(node, syntax);
 	}
 
-	public String getText() { return ((SyntaxToken)this.syntax).text; }
+	String makeText(Formatter fmt) { return ((SyntaxToken)this.syntax).text; } 
 }
 
 @node
@@ -68,7 +76,7 @@ public class DrawNodeTerm extends DrawTerm {
 			this.attrs[i] = this.attrs[i].intern();
 	}
 
-	public String getText() {
+	String makeText(Formatter fmt) {
 		return String.valueOf(getAttrPtr().get());
 	}
 	
@@ -91,7 +99,7 @@ public class DrawCharTerm extends DrawNodeTerm {
 		super(node, syntax, attr);
 	}
 
-	public String getText() {
+	String makeText(Formatter fmt) {
 		Character ch = (Character)getAttrPtr().get();
 		return fmt.escapeChar(ch.charValue());
 	}
@@ -104,7 +112,7 @@ public class DrawStrTerm extends DrawNodeTerm {
 		super(node, syntax, attr);
 	}
 
-	public String getText() {
+	String makeText(Formatter fmt) {
 		String str = String.valueOf(getAttrPtr().get());
 		return fmt.escapeString(str);
 	}

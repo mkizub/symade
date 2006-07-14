@@ -40,7 +40,7 @@ public abstract class Drawable extends ANode {
 
 	public void init(Formatter fmt) {}
 
-	public abstract void preFormat(DrawContext cont);
+	public abstract void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node);
 	public abstract boolean postFormat(DrawContext cont, boolean last_layout);
 	public abstract DrawTerm getFirstLeaf();
 	public abstract DrawTerm getLastLeaf();

@@ -45,6 +45,20 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 		this.r_paren = r_paren;
 	}
 
+	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
+		if (this != current_stx)
+			return false;
+		ANode n;
+		if (idx >= 0) {
+			n = ((ENode)expected_node).getArgs()[idx];
+		} else {
+			n = (name == "this") ? expected_node : (ANode)expected_node.getVal(name);
+		}
+		if (n != current_node)
+			return false;
+		return true;
+	}
+	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		ANode n;
 		if (idx >= 0) {

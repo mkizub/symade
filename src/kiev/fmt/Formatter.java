@@ -17,13 +17,14 @@ import syntax kiev.Syntax;
 import java.awt.Graphics2D;
 
 public interface Formatter {
-	public Drawable format(ANode node, Drawable dr);
-	public Drawable getDrawable(ANode node, Drawable dr, FormatInfoHint hint);
-	public void     setForEditor(boolean val);
-	public boolean  isForEditor();
-	public String   escapeString(String str);
-	public String   escapeChar(char ch);
-	public void     setSyntax(TextSyntax stx);
+	public Drawable   format(ANode node, Drawable dr);
+	public Drawable   getDrawable(ANode node, Drawable dr, FormatInfoHint hint);
+	public void       setForEditor(boolean val);
+	public boolean    isForEditor();
+	public String     escapeString(String str);
+	public String     escapeChar(char ch);
+	public TextSyntax getSyntax();
+	public void       setSyntax(TextSyntax stx);
 }
 
 @node
@@ -49,6 +50,10 @@ public abstract class AbstractFormatter implements Formatter {
 	}
 
 	public abstract Drawable format(ANode node, Drawable dr);
+	
+	public TextSyntax getSyntax() {
+		return this.syntax;
+	}
 	
 	public void setSyntax(TextSyntax stx) {
 		this.syntax = stx;
@@ -95,7 +100,7 @@ public class TextFormatter extends AbstractFormatter {
 		DrawContext ctx = new DrawContext(this,null);
 		ctx.width = 100;
 		Drawable root = getDrawable(node, dr, null);
-		root.preFormat(ctx);
+		root.preFormat(ctx, root.syntax, node);
 		ctx = new DrawContext(this,null);
 		ctx.width = 100;
 		root.postFormat(ctx, true);
@@ -150,7 +155,7 @@ public class GfxFormatter extends AbstractFormatter {
 		DrawContext ctx = new DrawContext(this,gfx);
 		ctx.width = 100;
 		Drawable root = getDrawable(node, dr, null);
-		root.preFormat(ctx);
+		root.preFormat(ctx, root.syntax, node);
 		ctx = new DrawContext(this,gfx);
 		ctx.width = 100;
 		root.postFormat(ctx, true);

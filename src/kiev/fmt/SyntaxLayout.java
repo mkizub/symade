@@ -40,6 +40,8 @@ public class TextSyntax {
 	public static final int SYNTAX_ROLE_ARR_SEPARATOR      = 7;
 	public static final int SYNTAX_ROLE_ARR_SUFFIX         = 8;
 	
+	private Hashtable<String,SyntaxElem> badSyntax;
+	
 	public TextSyntax parent_syntax;
 	
 	public SpaceInfo siSp     = new SpaceInfo("sp",       SP_SPACE,    1, 4);
@@ -59,7 +61,15 @@ public class TextSyntax {
 	}
 
 	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
-		return kw("?"+node.getClass().getName()+"?");
+		if (badSyntax == null)
+			badSyntax = new Hashtable<Class,SyntaxElem>();
+		String cl_name = node.getClass().getName();
+		SyntaxElem se = badSyntax.get(cl_name);
+		if (se == null) {
+			se = kw("?"+cl_name+"?");
+			badSyntax.put(cl_name, se);
+		}
+		return se;
 	}
 	
 	protected SyntaxParagraphLayout par(ParagraphLayout par, SyntaxElem elem) {
@@ -493,6 +503,12 @@ public abstract class SyntaxElem extends ASTNode {
 		return lout;
 	}
 	
+	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
+		if (current_stx != this || expected_node != current_node)
+			return false;
+		return true;
+	}
+	
 	protected void compile() {
 		DrawLayout lout = this.lout;
 		lout.is_hidden = is_hidden;
@@ -631,6 +647,17 @@ public class SyntaxAttr extends SyntaxElem {
 		this.hint = hint;
 	}
 
+	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
+		if (name.equals("this"))
+			return super.check(cont, current_stx, expected_node, current_node);
+		Object obj = expected_node.getVal(name);
+		if (obj instanceof ANode) {
+			SyntaxElem se = cont.fmt.getSyntax().getSyntaxElem((ANode)obj, hint);
+			return se.check(cont, current_stx, (ANode)obj, current_node);
+		}
+		return super.check(cont, current_stx, expected_node, current_node);
+	}
+	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		if (name.equals("this"))
 			return new DrawNodeTerm(node, this, "");
@@ -673,6 +700,12 @@ public class SyntaxList extends SyntaxAttr {
 		this.empty = new SyntaxToken(" ", new SpaceCmd[0]);
 	}
 
+	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
+		if (current_stx != this || expected_node != current_node)
+			return false;
+		return true;
+	}
+	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNonTermList(node, this);
 		dr.init(fmt);
@@ -689,6 +722,12 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 		super(name,spaces);
 	}
 
+	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
+		if (current_stx != this || expected_node != current_node)
+			return false;
+		return true;
+	}
+	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNodeTerm(node, this, name);
 		dr.init(fmt);
@@ -705,6 +744,12 @@ public class SyntaxCharAttr extends SyntaxAttr {
 		super(name,spaces);
 	}
 
+	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
+		if (current_stx != this || expected_node != current_node)
+			return false;
+		return true;
+	}
+	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawCharTerm(node, this, name);
 		dr.init(fmt);
@@ -721,6 +766,12 @@ public class SyntaxStrAttr extends SyntaxAttr {
 		super(name,spaces);
 	}
 
+	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
+		if (current_stx != this || expected_node != current_node)
+			return false;
+		return true;
+	}
+	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawStrTerm(node, this, name);
 		dr.init(fmt);
@@ -757,6 +808,11 @@ public class SyntaxNode extends SyntaxElem {
 		this.hint = hint;
 	}
 
+	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
+		SyntaxElem se = cont.fmt.getSyntax().getSyntaxElem(expected_node, hint);
+		return se.check(cont, current_stx, expected_node, current_node);
+	}
+	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		return fmt.getDrawable(node, null, hint);
 	}

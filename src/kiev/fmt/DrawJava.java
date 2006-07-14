@@ -15,34 +15,43 @@ import syntax kiev.Syntax;
 @node
 public class DrawJavaExpr extends DrawNonTermSet {
 	
-	@ref Drawable expr;
-
 	public DrawJavaExpr() {}
 	public DrawJavaExpr(ANode node, SyntaxJavaExpr syntax) {
 		super(node, syntax);
 	}
 
-	public void init(Formatter fmt) {
-		SyntaxJavaExpr se = (SyntaxJavaExpr)this.syntax;
-		args.append(se.l_paren.makeDrawable(fmt, node));
-		args.append(se.expr.makeDrawable(fmt, node));
-		args.append(se.r_paren.makeDrawable(fmt, node));
-	}
-
-
-	public void preFormat(DrawContext cont) {
+	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			replaceWithNode(dr);
+			dr.preFormat(cont, expected_stx, expected_node);
+		}
 		if (this.isUnvisible())
 			return;
 		SyntaxJavaExpr se = (SyntaxJavaExpr)this.syntax;
-		args[0].geometry.is_hidden = true;
-		args[2].geometry.is_hidden = true;
-		if ((node instanceof ENode) && (((ENode)node).isPrimaryExpr() || ((ENode)node).getPriority() < se.priority)) {
-			args[0].geometry.is_hidden = false;
-			args[2].geometry.is_hidden = false;
+		boolean no_paren = (node instanceof ENode) && (((ENode)node).isPrimaryExpr() || ((ENode)node).getPriority() < se.priority);
+		if (args.length == 0)
+			args.append(se.expr.makeDrawable(cont.fmt, node));
+		if (args.length == 1) {
+			if (!no_paren) {
+				args.insert(0,se.l_paren.makeDrawable(cont.fmt, node));
+				args.insert(2,se.r_paren.makeDrawable(cont.fmt, node));
+			}
+		} else {
+			assert(args.length == 3);
+			if (no_paren) {
+				args.del(2);
+				args.del(0);
+			}
 		}
-		for (int i=0; i < args.length; i++) {
-			Drawable dr = args[i];
-			dr.preFormat(cont);
+		if (no_paren) {
+			assert(args.length == 1);
+			args[0].preFormat(cont,se.expr,node);
+		} else {
+			assert(args.length == 3);
+			args[0].preFormat(cont,se.l_paren,node);
+			args[1].preFormat(cont,se.expr,node);
+			args[2].preFormat(cont,se.r_paren,node);
 		}
 	}
 }
@@ -50,14 +59,12 @@ public class DrawJavaExpr extends DrawNonTermSet {
 @node
 public class DrawJavaAccess extends DrawTerm {
 
-	private String text;
-	
 	public DrawJavaAccess() {}
 	public DrawJavaAccess(ANode node, SyntaxJavaAccess syntax) {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
+	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
 		if (node instanceof DNode && node instanceof Accessable) {
 			if (Access.getFlags((DNode)node) == 0x0F)
 				this.geometry.is_hidden = true;
@@ -68,7 +75,12 @@ public class DrawJavaAccess extends DrawTerm {
 			this.geometry.is_hidden = true;
 		if (this.isUnvisible())
 			return;
+		super.preFormat(cont, expected_stx, expected_node);
+	}
+	
+	String makeText(Formatter fmt) {
 		DNode dn = (DNode)node;
+		String text;
 		if (dn.isPublic())
 			text = "public"+mkString(0xFF);
 		else if (dn.isProtected())
@@ -77,7 +89,7 @@ public class DrawJavaAccess extends DrawTerm {
 			text = "private"+mkString(0x03);
 		else
 			text = "@access"+mkString(0x0F);
-		super.preFormat(cont);
+		return text;
 	}
 
 	private String mkString(int expected) {
@@ -109,22 +121,20 @@ public class DrawJavaAccess extends DrawTerm {
 		return sb.toString();
 	}
 
-	public String getText() { return this.text; }
 }
 
 @node
 public class DrawJavaType extends DrawTerm {
-	
-	private String text;
 	
 	public DrawJavaType() {}
 	public DrawJavaType(ANode node, SyntaxJavaType syntax) {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
+	String makeText(Formatter fmt) {
 		SyntaxJavaType stx = (SyntaxJavaType)syntax;
 		TypeRef tr = (TypeRef)node;
+		String text;
 		if (stx.hint == null || stx.hint.text == null) {
 			text = String.valueOf(tr);
 		}
@@ -145,11 +155,9 @@ public class DrawJavaType extends DrawTerm {
 				text = text.substring(0,text.length()-2) + "...";
 			}
 		}
+		return text;
+	}
 
-		super.preFormat(cont);
-	}	
-	
-	public String getText() { return this.text; }
 }
 
 @node
@@ -162,18 +170,15 @@ public class DrawJavaEnumAlias extends DrawTerm {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
+	String makeText(Formatter fmt) {
 		Field f = (Field)node;
-		String str = f.id.sname;
+		String text = f.id.sname;
 		if (f.id.aliases != null) {
-			str = f.id.aliases[0];
-			str = str.substring(1,str.length()-1);
+			text = f.id.aliases[0];
+			text = text.substring(1,text.length()-1);
 		}
-		text = "\""+str+"\"";
-		super.preFormat(cont);
+		return "\""+text+"\"";
 	}	
-	
-	public String getText() { return this.text; }
 }
 
 @node
@@ -186,16 +191,14 @@ public class DrawJavaPackedField extends DrawTerm {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
+	String makeText(Formatter fmt) {
 		MetaPacked mp = ((Field)node).getMetaPacked();
-		text = "@packed("+mp.size;
+		String text = "@packed("+mp.size;
 		if (mp.fld != null)
 			text += ","+mp.fld+","+mp.offset;
 		text += ")";
-		super.preFormat(cont);
+		return text;
 	}
-
-	public String getText() { return this.text; }
 }
 
 @node
@@ -208,7 +211,7 @@ public class DrawJavaComment extends DrawTerm {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont) {
+	String makeText(Formatter fmt) {
 		Comment c = (Comment)node;
 		String text = c.text;
 		int nl = 0;
@@ -247,10 +250,8 @@ public class DrawJavaComment extends DrawTerm {
 				this.lines = new String[]{ "/* "+text + " */" };
 			}
 		}
-		super.preFormat(cont);
+		return "";
 	}
-
-	public String getText() { return ""; }
 }
 
 

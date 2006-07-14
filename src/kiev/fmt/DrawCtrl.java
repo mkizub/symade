@@ -32,12 +32,6 @@ public class DrawCtrl extends Drawable {
 		return arg.getLastLeaf();
 	}
 
-	public void preFormat(DrawContext cont) {
-		if (arg == null || this.isUnvisible())
-			return;
-		arg.preFormat(cont);
-	}
-
 	public boolean postFormat(DrawContext context, boolean parent_last_layout) {
 		context.pushDrawable(this);
 		try {
@@ -57,116 +51,155 @@ public class DrawSpace extends DrawCtrl {
 	public DrawSpace(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
 	}
+
+	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			replaceWithNode(dr);
+			dr.preFormat(cont, expected_stx, expected_node);
+		}
+	}
+
 }
 
 @node
 public class DrawOptional extends DrawCtrl {
 
-	@ref Drawable dr_true;
-	@ref Drawable dr_false;
+	boolean drawed_as_true;
 	
 	public DrawOptional() {}
 	public DrawOptional(ANode node, SyntaxOptional syntax) {
 		super(node, syntax);
 	}
 
-	public void init(Formatter fmt) {
+	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			replaceWithNode(dr);
+			dr.preFormat(cont, expected_stx, expected_node);
+		}
 		SyntaxOptional sc = (SyntaxOptional)syntax;
-		if (sc.opt_true != null)
-			dr_true = sc.opt_true.makeDrawable(fmt, node);
-		if (sc.opt_false != null)
-			dr_false = sc.opt_false.makeDrawable(fmt, node);
-	}
-
-	public void preFormat(DrawContext cont) {
-		SyntaxOptional sc = (SyntaxOptional)syntax;
-		if (sc.calculator.calc(node))
-			arg = dr_true;
-		else
-			arg = dr_false;
-		super.preFormat(cont);
+		if (sc.calculator.calc(node)) {
+			if (!drawed_as_true || arg == null) {
+				drawed_as_true = true;
+				if (sc.opt_true != null) {
+					arg = sc.opt_true.makeDrawable(cont.fmt, node);
+				} else {
+					arg = null;
+				}
+			}
+		} else {
+			if (drawed_as_true || arg == null) {
+				drawed_as_true = false;
+				if (sc.opt_false != null) {
+					arg = sc.opt_false.makeDrawable(cont.fmt, node);
+				} else {
+					arg = null;
+				}
+			}
+		}
+		if (arg != null) {
+			if (drawed_as_true)
+				arg.preFormat(cont,sc.opt_true,node);
+			else
+				arg.preFormat(cont,sc.opt_false,node);
+		}
 	}
 }
 
 @node
 public class DrawFolded extends DrawCtrl {
 
-	@ref Drawable dr_folded;
-	@ref Drawable dr_unfolded;
+	boolean drawed_as_folded;
 	
 	public DrawFolded() {}
 	public DrawFolded(ANode node, SyntaxFolder syntax) {
 		super(node, syntax);
 	}
 
-	public void init(Formatter fmt) {
+	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			replaceWithNode(dr);
+			dr.preFormat(cont, expected_stx, expected_node);
+		}
 		SyntaxFolder sc = (SyntaxFolder)syntax;
-		dr_folded = sc.folded.makeDrawable(fmt, node);
-		dr_unfolded = sc.unfolded.makeDrawable(fmt, node);
-	}
-
-	public void preFormat(DrawContext cont) {
-		SyntaxFolder sc = (SyntaxFolder)syntax;
-		ANode n = this.node;
-		if (n instanceof ASTNode && n.isDrawFolded())
-			arg = dr_folded;
+		if (node instanceof ASTNode && ((ASTNode)node).isDrawFolded()) {
+			if (!drawed_as_folded || arg == null) {
+				drawed_as_folded = true;
+				arg = sc.folded.makeDrawable(cont.fmt, node);
+			}
+		} else {
+			if (drawed_as_folded || arg == null) {
+				drawed_as_folded = false;
+				arg = sc.unfolded.makeDrawable(cont.fmt, node);
+			}
+		}
+		if (drawed_as_folded)
+			arg.preFormat(cont,sc.folded,node);
 		else
-			arg = dr_unfolded;
-		super.preFormat(cont);
+			arg.preFormat(cont,sc.unfolded,node);
 	}
 }
 
 @node
 public class DrawIntChoice extends DrawCtrl {
 
-	@ref Drawable[] args;
+	int drawed_idx;
 
 	public DrawIntChoice() {}
 	public DrawIntChoice(ANode node, SyntaxIntChoice syntax) {
 		super(node, syntax);
 	}
 
-	public void init(Formatter fmt) {
-		SyntaxIntChoice sset = (SyntaxIntChoice)this.syntax;
-		foreach (SyntaxElem se; sset.elements)
-			args.append(se.makeDrawable(fmt, node));
-	}
-
-	public void preFormat(DrawContext cont) {
+	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			replaceWithNode(dr);
+			dr.preFormat(cont, expected_stx, expected_node);
+		}
 		SyntaxIntChoice sc = (SyntaxIntChoice)syntax;
 		int idx = ((Integer)node.getVal(sc.name)).intValue();
-		if (idx >= 0 && idx < args.length)
-			arg = args[idx];
-		else
-			arg = null;
-		super.preFormat(cont);
+		if (arg == null || drawed_idx != idx) {
+			if (idx < 0 || idx >= sc.elements.length)
+				arg = null;
+			else
+				arg = sc.elements[idx].makeDrawable(cont.fmt, node);
+			drawed_idx = idx;
+		}
+		if (arg != null)
+			arg.preFormat(cont,sc.elements[idx],node);
+		
 	}
 }
 
 @node
 public class DrawEnumChoice extends DrawCtrl {
 
-	@ref Drawable[] args;
+	Enum drawed_en;
 
 	public DrawEnumChoice() {}
 	public DrawEnumChoice(ANode node, SyntaxEnumChoice syntax) {
 		super(node, syntax);
 	}
 
-	public void init(Formatter fmt) {
-		SyntaxEnumChoice sset = (SyntaxEnumChoice)this.syntax;
-		foreach (SyntaxElem se; sset.elements)
-			args.append(se.makeDrawable(fmt, node));
-	}
-
-	public void preFormat(DrawContext cont) {
-		SyntaxEnumChoice sc = (SyntaxEnumChoice)syntax;
-		java.lang.Enum en = (java.lang.Enum)node.getVal(sc.name);
-		if (en == null || en.ordinal() >= args.length)
-			arg = null;
-		else
-			arg = args[en.ordinal()];
-		super.preFormat(cont);
+	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			replaceWithNode(dr);
+			dr.preFormat(cont, expected_stx, expected_node);
+		}
+		SyntaxEnumChoice se = (SyntaxEnumChoice)syntax;
+		java.lang.Enum en = (java.lang.Enum)node.getVal(se.name);
+		if (arg == null || drawed_en != en) {
+			if (en.ordinal() >= se.elements.length)
+				arg = null;
+			else
+				arg = se.elements[en.ordinal()].makeDrawable(cont.fmt, node);
+			drawed_en = en;
+		}
+		if (arg != null)
+			arg.preFormat(cont,se.elements[en.ordinal()],node);
 	}
 }
 
@@ -180,14 +213,21 @@ public class DrawParagraph extends DrawCtrl {
 		super(node, syntax);
 	}
 
-	public void init(Formatter fmt) {
-		SyntaxParagraphLayout sc = (SyntaxParagraphLayout)syntax;
-		arg = sc.elem.makeDrawable(fmt, node);
+	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			replaceWithNode(dr);
+			dr.preFormat(cont, expected_stx, expected_node);
+		}
+		SyntaxParagraphLayout spl = (SyntaxParagraphLayout)syntax;
+		if (arg == null)
+			arg = spl.elem.makeDrawable(cont.fmt, node);
+		if (arg != null)
+			arg.preFormat(cont,spl.elem,node);
 	}
 
 	public ParagraphLayout getParLayout() {
 		return ((SyntaxParagraphLayout)syntax).par;
 	}
 }
-
 

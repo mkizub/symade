@@ -362,6 +362,41 @@ public abstract class ANode {
 	}
 	
 	public void open() {}
+
+	public final <N extends ANode> N replaceWithNode(N node) {
+		assert(isAttached());
+		ANode parent = parent();
+		parent.open();
+		AttrSlot pslot = pslot();
+		if (pslot instanceof SpaceAttrSlot) {
+			assert(node != null);
+			int idx = pslot.indexOf(parent, this);
+			assert(idx >= 0);
+			if (node instanceof ASTNode && this instanceof ASTNode && node.pos == 0)
+				((ASTNode)node).pos = ((ASTNode)this).pos;
+			pslot.set(parent, idx, node);
+		}
+		else if (pslot.isExtData()) {
+			assert(parent.getExtData(pslot) == this);
+			if (node instanceof ASTNode && this instanceof ASTNode && node.pos == 0)
+				((ASTNode)node).pos = ((ASTNode)this).pos;
+			pslot.set(parent, node);
+		}
+		else if (pslot.isTmpData()) {
+			assert(parent.getTmpData(pslot) == this);
+			if (node instanceof ASTNode && this instanceof ASTNode && node.pos == 0)
+				((ASTNode)node).pos = ((ASTNode)this).pos;
+			pslot.set(parent, node);
+		}
+		else {
+			assert(pslot.get(parent) == this);
+			if (node instanceof ASTNode && this instanceof ASTNode && node.pos == 0)
+				((ASTNode)node).pos = ((ASTNode)this).pos;
+			pslot.set(parent, node);
+		}
+		assert(node == null || node.isAttached());
+		return node;
+	}
 }
 
 public class TreeWalker {
@@ -590,36 +625,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		node = replaceWithNode(node);
 		Kiev.runProcessorsOn(node);
 		throw new ReWalkNodeException(node);
-	}
-	public final ASTNode replaceWithNode(ASTNode node) {
-		assert(isAttached());
-		ANode parent = parent();
-		parent.open();
-		AttrSlot pslot = pslot();
-		if (pslot instanceof SpaceAttrSlot) {
-			assert(node != null);
-			int idx = pslot.indexOf(parent, this);
-			assert(idx >= 0);
-			if (node.pos == 0) node.pos = this.pos;
-			pslot.set(parent, idx, node);
-		}
-		else if (pslot.isExtData()) {
-			assert(parent.getExtData(pslot) == this);
-			if (node != null && node.pos == 0) node.pos = this.pos;
-			pslot.set(parent, node);
-		}
-		else if (pslot.isTmpData()) {
-			assert(parent.getTmpData(pslot) == this);
-			if (node != null && node.pos == 0) node.pos = this.pos;
-			pslot.set(parent, node);
-		}
-		else {
-			assert(pslot.get(parent) == this);
-			if (node != null && node.pos == 0) node.pos = this.pos;
-			pslot.set(parent, node);
-		}
-		assert(node == null || node.isAttached());
-		return node;
 	}
 	public final void replaceWithReWalk(()->ASTNode fnode) {
 		ASTNode node = replaceWith(fnode);
