@@ -49,15 +49,14 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	public TextSyntax getSyntax() { return syntax; }
 	public void setSyntax(TextSyntax syntax) {
 		this.syntax = syntax;
-		if (the_root != null)
-			formatter.cleanup(the_root);
+		view_root = null;
 		formatter.setSyntax(syntax);
 		formatAndPaint(true);
 	}
 	
 	public void setRoot(ANode root) {
 		this.the_root = root;
-		view_canvas.root = view_root = formatter.format(the_root);
+		view_canvas.root = view_root = formatter.format(the_root, view_root);
 	}
 	
 	public abstract void formatAndPaint(boolean full);

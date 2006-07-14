@@ -21,24 +21,27 @@ import syntax kiev.Syntax;
 public class SyntaxJavaExpr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxJavaExpr;
 
-	@att public int					idx;
-	@att public int					priority;
+	@att public int				idx;
+	@att public int				priority;
 	@att public SyntaxToken		l_paren;
+	@att public SyntaxNode		expr;
 	@att public SyntaxToken		r_paren;
 
 	public SyntaxJavaExpr() {}
 	public SyntaxJavaExpr(String name, FormatInfoHint hint, SpaceCmd[] spaces, int priority, SyntaxToken l_paren, SyntaxToken r_paren) {
-		super(name,hint,spaces);
+		super(name,null,spaces);
 		this.idx = -1;
 		this.priority = priority;
 		this.l_paren = l_paren;
+		this.expr = new SyntaxNode(hint);
 		this.r_paren = r_paren;
 	}
 	public SyntaxJavaExpr(int idx, FormatInfoHint hint, SpaceCmd[] spaces, int priority, SyntaxToken l_paren, SyntaxToken r_paren) {
-		super("",hint,spaces);
+		super("",null,spaces);
 		this.idx = idx;
 		this.priority = priority;
 		this.l_paren = l_paren;
+		this.expr = new SyntaxNode(hint);
 		this.r_paren = r_paren;
 	}
 

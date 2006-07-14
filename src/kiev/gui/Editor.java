@@ -620,8 +620,12 @@ final class ChooseItemEditor implements KeyHandler {
 				editor.startItemEditor((Symbol)obj, new SymbolEditor((Symbol)obj, editor));
 			else if (obj instanceof SymbolRef)
 				editor.startItemEditor((SymbolRef)obj, new SymRefEditor((SymbolRef)obj, editor));
-			else if (obj instanceof String || obj == null && pattr.slot.clazz == String.class)
-				editor.startItemEditor(pattr.node, new StrEditor(pattr, editor));
+			else if (obj instanceof String || obj == null && pattr.slot.clazz == String.class) {
+				if (pattr.node instanceof SymbolRef)
+					editor.startItemEditor((SymbolRef)pattr.node, new SymRefEditor((SymbolRef)pattr.node, editor));
+				else
+					editor.startItemEditor(pattr.node, new StrEditor(pattr, editor));
+			}
 			else if (obj instanceof Integer)
 				editor.startItemEditor(pattr.node, new IntEditor(pattr, editor));
 			else if (obj instanceof ConstIntExpr)

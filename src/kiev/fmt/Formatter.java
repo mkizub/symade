@@ -17,15 +17,13 @@ import syntax kiev.Syntax;
 import java.awt.Graphics2D;
 
 public interface Formatter {
-	public Drawable format(ANode node);
-	public Drawable getDrawable(ANode node, FormatInfoHint hint);
-	public AttrSlot getAttr();
+	public Drawable format(ANode node, Drawable dr);
+	public Drawable getDrawable(ANode node, Drawable dr, FormatInfoHint hint);
 	public void     setForEditor(boolean val);
 	public boolean  isForEditor();
 	public String   escapeString(String str);
 	public String   escapeChar(char ch);
 	public void     setSyntax(TextSyntax stx);
-	public void     cleanup(ANode node);
 }
 
 @node
@@ -43,28 +41,19 @@ public abstract class AbstractFormatter implements Formatter {
 
 	public TextSyntax syntax;
 	private boolean is_for_editor;
-	private AttrSlot ATTR;
 	
 	protected AbstractFormatter(TextSyntax syntax) {
 		this.syntax = syntax;
 		String name = "fmt info "+Integer.toHexString(++counter);
 		name = name.intern();
-		this.ATTR = new TmpAttrSlot(name,false,false,Drawable.class);
 	}
 
-	public abstract Drawable format(ANode node);
+	public abstract Drawable format(ANode node, Drawable dr);
 	
 	public void setSyntax(TextSyntax stx) {
 		this.syntax = stx;
 	}
 	
-	public void cleanup(ANode node) {
-		AttrSlot attr = this.getAttr();
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { attr.clear(n); return true; }
-		});
-	}
-
 	public void setForEditor(boolean val) {
 		is_for_editor = val;
 	}
@@ -78,25 +67,21 @@ public abstract class AbstractFormatter implements Formatter {
 		return syntax.escapeChar(ch);
 	}
 
-	public Drawable getDrawable(ANode node, FormatInfoHint hint) {
+	public final Drawable getDrawable(ANode node, Drawable dr, FormatInfoHint hint) {
 		if (node == null) {
+			if (dr instanceof DrawSpace)
+				return dr;
 			SyntaxSpace ssp = new SyntaxSpace();
 			ssp.is_hidden = true;
-			return new DrawSpace(null, ssp);
+			dr = new DrawSpace(null, ssp);
+			return dr;
 		}
-		Drawable dr = (Drawable)ATTR.get(node);
-		if (dr != null)
+		if (dr != null && dr.node == node)
 			return dr;
 		SyntaxElem stx_elem = syntax.getSyntaxElem(node, hint);
 		dr = stx_elem.makeDrawable(this,node);
-		ATTR.set(node, dr);
 		return dr;
 	}
-
-	public final AttrSlot getAttr() {
-		return ATTR;
-	}
-
 }
 
 public class TextFormatter extends AbstractFormatter {
@@ -106,10 +91,10 @@ public class TextFormatter extends AbstractFormatter {
 		super(syntax);
 	}
 
-	public Drawable format(ANode node) {
+	public Drawable format(ANode node, Drawable dr) {
 		DrawContext ctx = new DrawContext(this,null);
 		ctx.width = 100;
-		Drawable root = getDrawable(node, null);
+		Drawable root = getDrawable(node, dr, null);
 		root.preFormat(ctx);
 		ctx = new DrawContext(this,null);
 		ctx.width = 100;
@@ -161,10 +146,10 @@ public class GfxFormatter extends AbstractFormatter {
 		this.gfx = gfx;
 	}
 
-	public Drawable format(ANode node) {
+	public Drawable format(ANode node, Drawable dr) {
 		DrawContext ctx = new DrawContext(this,gfx);
 		ctx.width = 100;
-		Drawable root = getDrawable(node, null);
+		Drawable root = getDrawable(node, dr, null);
 		root.preFormat(ctx);
 		ctx = new DrawContext(this,gfx);
 		ctx.width = 100;

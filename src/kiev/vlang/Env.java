@@ -451,13 +451,9 @@ public class Env extends Struct {
 	{
 		StringBuffer sb = new StringBuffer(1024);
 		TextFormatter tf = new TextFormatter(stx);
-		try {
-			Drawable dr = tf.format(node);
-			TextPrinter pr = new TextPrinter(sb);
-			pr.draw(dr);
-		} finally {
-			tf.cleanup(node);
-		}
+		Drawable dr = tf.format(node, null);
+		TextPrinter pr = new TextPrinter(sb);
+		pr.draw(dr);
 		make_output_dir(f);
 		FileOutputStream out = new FileOutputStream(f);
 		out.write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));

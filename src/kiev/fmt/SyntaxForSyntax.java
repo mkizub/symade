@@ -21,6 +21,7 @@ public class SyntaxForSyntax extends TextSyntax {
 
 	final SyntaxElem seFileUnit;
 	final SyntaxElem seImport;
+	final SyntaxElem seSymbolRef;
 	final SyntaxElem seSpaceInfo;
 	final SyntaxElem seSpaceCmd;
 	final SyntaxElem seDrawColor;
@@ -58,6 +59,7 @@ public class SyntaxForSyntax extends TextSyntax {
 				ident("name"),
 				opt("star",new CalcOptionTrue("star"), sep(".*"), null, lout_empty)
 				);
+			seSymbolRef = ident("name");
 		}
 		{
 			// space info, cmd, color, font
@@ -198,6 +200,7 @@ public class SyntaxForSyntax extends TextSyntax {
 		switch (node) {
 		case FileUnit:       return seFileUnit;
 		case Import:         return seImport;
+		case SymbolRef:      return seSymbolRef;
 		case SpaceInfo:      return seSpaceInfo;
 		case SpaceCmd:       return seSpaceCmd;
 		case DrawColor:      return seDrawColor;

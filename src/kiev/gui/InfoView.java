@@ -52,7 +52,7 @@ public class InfoView extends UIView implements KeyListener {
 	public void formatAndPaint(boolean full) {
 		view_canvas.root = null;
 		if (the_root != null && full)
-			view_canvas.root = view_root = formatter.format(the_root);
+			view_canvas.root = view_root = formatter.format(the_root, view_root);
 		view_canvas.repaint();
 	}
 

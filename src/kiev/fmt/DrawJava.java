@@ -14,6 +14,9 @@ import syntax kiev.Syntax;
 
 @node
 public class DrawJavaExpr extends DrawNonTermSet {
+	
+	@ref Drawable expr;
+
 	public DrawJavaExpr() {}
 	public DrawJavaExpr(ANode node, SyntaxJavaExpr syntax) {
 		super(node, syntax);
@@ -22,7 +25,7 @@ public class DrawJavaExpr extends DrawNonTermSet {
 	public void init(Formatter fmt) {
 		SyntaxJavaExpr se = (SyntaxJavaExpr)this.syntax;
 		args.append(se.l_paren.makeDrawable(fmt, node));
-		args.append(fmt.getDrawable(node, se.hint));
+		args.append(se.expr.makeDrawable(fmt, node));
 		args.append(se.r_paren.makeDrawable(fmt, node));
 	}
 

@@ -636,7 +636,7 @@ public class SyntaxAttr extends SyntaxElem {
 			return new DrawNodeTerm(node, this, "");
 		Object obj = node.getVal(name);
 		if (obj instanceof ANode)
-			return fmt.getDrawable((ANode)obj, hint);
+			return fmt.getDrawable((ANode)obj, null, hint);
 		Drawable dr = new DrawNodeTerm(node, this, name);
 		dr.init(fmt);
 		return dr;
@@ -758,7 +758,7 @@ public class SyntaxNode extends SyntaxElem {
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		return fmt.getDrawable(node, hint);
+		return fmt.getDrawable(node, null, hint);
 	}
 }
 
