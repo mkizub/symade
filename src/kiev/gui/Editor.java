@@ -751,17 +751,23 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 				editor.view_canvas.remove(menu);
 			ANode obj = (ANode)Class.forName(cls.qname()).newInstance();
 			foreach (AttrSlot a; node.values(); a.name == attr) {
-				if (a.is_space) {
-					SpaceAttrSlot<ANode> sas = (SpaceAttrSlot<ANode>)a;
-					if (idx < 0)
-						idx = 0;
-					else if (idx > sas.get(node).length)
-						idx = sas.get(node).length;
-					sas.insert(node,idx,obj);
-				} else {
-					a.set(node, obj);
+				try {
+					if (a.is_space) {
+						SpaceAttrSlot<ANode> sas = (SpaceAttrSlot<ANode>)a;
+						if (idx < 0)
+							idx = 0;
+						else if (idx > sas.get(node).length)
+							idx = sas.get(node).length;
+						sas.insert(node,idx,obj);
+					} else {
+						a.set(node, obj);
+					}
+				} catch (Throwable t) {
+					editor.stopItemEditor(true);
+					a = null;
 				}
-				editor.stopItemEditor(false);
+				if (a != null)
+					editor.stopItemEditor(false);
 				return;
 			}
 			editor.stopItemEditor(true);
@@ -998,8 +1004,14 @@ class EnumEditor implements KeyListener, PopupMenuListener {
 		}
 		public void actionPerformed(ActionEvent e) {
 			editor.view_canvas.remove(menu);
-			pattr.set(val);
-			editor.stopItemEditor(false);
+			try {
+				pattr.set(val);
+			} catch (Throwable t) {
+				editor.stopItemEditor(true);
+				e = null;
+			}
+			if (e != null)
+				editor.stopItemEditor(false);
 		}
 	}
 }

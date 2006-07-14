@@ -29,6 +29,7 @@ public class SyntaxForSyntax extends TextSyntax {
 	final SyntaxElem seSyntaxElemDecl;
 	final SyntaxElem seSyntaxToken;
 	final SyntaxElem seSyntaxAttr;
+	final SyntaxElem seSyntaxIdent;
 	final SyntaxElem seSyntaxList;
 	final SyntaxElem seSyntaxSet;
 	final SyntaxElem seSyntaxNode;
@@ -69,7 +70,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			seDrawColor = setl(lout_nl,kw("def-color"),id.ncopy(),attr("rgb_color"));
 			seDrawFont  = setl(lout_nl,kw("def-font"), id.ncopy(),attr("font_name"));
 			SyntaxAttr scmd_si = ident("si");
-			scmd_si.expected_types += new SymbolRef(0, Env.newStruct("SpaceInfo",Env.newPackage("kiev.fmt"),0));
+			scmd_si.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
 			seSpaceCmd = set(sep("["),
 				alt_enum("action_before", oper("·"), oper("+"), oper("×")),
 				scmd_si,
@@ -86,6 +87,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			SyntaxAttr elem_attr = attr("elem");
 			elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
 			elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxAttr",Env.newPackage("kiev.fmt"),0));
+			elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxIdentAttr",Env.newPackage("kiev.fmt"),0));
 			elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxList",Env.newPackage("kiev.fmt"),0));
 			elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
 			elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxNode",Env.newPackage("kiev.fmt"),0));
@@ -122,6 +124,26 @@ public class SyntaxForSyntax extends TextSyntax {
 				set(
 					sep("<"),
 					kw("attr:"),
+					set(oper("\""), attr("name"), oper("\"")),
+					kw("types:"),
+					sep("["),expected,sep("]"),
+					sep("{"),slst,sep("}"),
+					sep(">")
+					),
+				new SpaceCmd[0]
+				);
+		}
+		{
+			// ident
+			SyntaxElem expected = lst("expected_types", lout_empty);
+			expected.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
+			SyntaxList slst = lst("spaces",node(),sep(","),new SpaceCmd[0]);
+			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
+			seSyntaxIdent = folder(
+				set(oper("\""), attr("name"), oper("\"")),
+				set(
+					sep("<"),
+					kw("ident:"),
 					set(oper("\""), attr("name"), oper("\"")),
 					kw("types:"),
 					sep("["),expected,sep("]"),
@@ -172,6 +194,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			SyntaxList set_elems_attr = lst("elements", new SpaceCmd[0]);
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxAttr",Env.newPackage("kiev.fmt"),0));
+			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxIdentAttr",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxList",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSpace",Env.newPackage("kiev.fmt"),0));
@@ -207,6 +230,8 @@ public class SyntaxForSyntax extends TextSyntax {
 		case DrawFont:       return seDrawFont;
 		case SyntaxElemDecl: return seSyntaxElemDecl;
 		case SyntaxToken:    return seSyntaxToken;
+		case SyntaxAttr:     return seSyntaxAttr;
+		case SyntaxIdentAttr:return seSyntaxIdent;
 		case SyntaxList:     return seSyntaxList;
 		case SyntaxSet:      return seSyntaxSet;
 		case SyntaxNode:     return seSyntaxNode;
