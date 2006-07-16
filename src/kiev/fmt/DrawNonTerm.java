@@ -43,37 +43,33 @@ public abstract class DrawNonTerm extends Drawable {
 		return null;
 	}
 
-	public void fillLayout(int i) {
-		foreach (Drawable dr; args)
-			dr.curr_layout = i;
-	}
-
 	public final boolean postFormat(DrawContext context, boolean parent_last_layout) {
 		context.pushDrawable(this);
 		try {
-			context = context.pushState(); 
 			// for each possible layout. assign it to all sub-components
 			// and try to layout them;
 			final int layouts_size = syntax.lout.count;
 		next_layout:
 			for (int i=0; i < layouts_size; i++) {
-				boolean last = (i == layouts_size-1);
-				fillLayout(i);
-				context = context.popState(); 
-				boolean fits = (context.x < context.width);
-				for (int j=0; j < args.length; j++) {
-					Drawable dr = args[j];
-					if (dr.isUnvisible())
-						continue;
-					fits &= dr.postFormat(context, last && parent_last_layout);
-					if (!fits && !last) {
-						if (parent_last_layout)
+				context = context.pushState(i);
+				boolean save = false;
+				boolean fits = true;
+				try {
+					boolean last = (i == layouts_size-1);
+					fits = (context.x < context.width);
+					for (int j=0; j < args.length; j++) {
+						Drawable dr = args[j];
+						if (dr.isUnvisible())
+							continue;
+						fits &= dr.postFormat(context, last && parent_last_layout);
+						if (!fits && !last)
 							continue next_layout;
-						return false;
 					}
+					save = true;
+				} finally {
+					context = context.popState(save); 
 				}
-				if (fits)
-					return true;
+				return fits;
 			}
 		} finally {
 			context.popDrawable(this);

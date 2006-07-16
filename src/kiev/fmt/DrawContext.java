@@ -24,7 +24,7 @@ public class DrawContext implements Cloneable {
 	public Formatter				fmt;
 	public Graphics2D				gfx;
 	public int						width;
-	public int						x, y;
+	public int						x, y, cur_attempt;
 	public boolean					line_started;
 	public Vector<LayoutSpace>		space_infos;
 	public Stack<DrawParagraph>		paragraphs;
@@ -49,14 +49,24 @@ public class DrawContext implements Cloneable {
 		return dc;
 	}
 
-	public DrawContext pushState() {
+	public DrawContext pushState(int cur_attempt) {
 		DrawContext ctx = (DrawContext)this.clone();
 		ctx.prev_ctx = this;
+		ctx.cur_attempt = cur_attempt;
 		return ctx;
 	}
 	
-	public DrawContext popState() {
-		return prev_ctx;
+	public DrawContext popState(boolean save) {
+		DrawContext ctx = prev_ctx;
+		if (save) {
+			ctx.x = this.x;
+			ctx.y = this.y;
+			ctx.line_started = this.line_started;
+			ctx.space_infos = this.space_infos;
+			ctx.paragraphs = this.paragraphs;
+			ctx.last_term = this.last_term;
+		}
+		return ctx;
 	}
 
 	public void formatAsText(DrawTerm dr) {
@@ -175,12 +185,20 @@ public class DrawContext implements Cloneable {
 	}
 	
 	private void processSpaceBeforeRequest(Drawable dr) {
-		foreach (LayoutSpace si; dr.syntax.lout.spaces_before)
+		foreach (LayoutSpace si; dr.syntax.lout.spaces_before; si.from_attempt <= cur_attempt)
+			addSpaceInfo(si);
+		if (dr.attr_syntax == null)
+			return;
+		foreach (LayoutSpace si; dr.attr_syntax.lout.spaces_before; si.from_attempt <= cur_attempt)
 			addSpaceInfo(si);
 	}
 	
 	private void processSpaceAfterRequest(Drawable dr) {
-		foreach (LayoutSpace si; dr.syntax.lout.spaces_after)
+		foreach (LayoutSpace si; dr.syntax.lout.spaces_after; si.from_attempt <= cur_attempt)
+			addSpaceInfo(si);
+		if (dr.attr_syntax == null)
+			return;
+		foreach (LayoutSpace si; dr.attr_syntax.lout.spaces_after; si.from_attempt <= cur_attempt)
 			addSpaceInfo(si);
 	}
 	

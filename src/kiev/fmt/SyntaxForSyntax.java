@@ -43,6 +43,9 @@ public class SyntaxForSyntax extends TextSyntax {
 		SpaceCmd[] lout_pkg = new SpaceCmd[] {
 				new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
 			};
+		SpaceCmd[] lout_nl_x = new SpaceCmd[] {
+				new SpaceCmd(siNl, SP_ADD, SP_ADD, 1)
+			};
 		{
 			// file unit
 			SyntaxList fu_members = lst("members", lout_nl);
@@ -155,19 +158,19 @@ public class SyntaxForSyntax extends TextSyntax {
 		}
 		{
 			// list
-			SyntaxAttr lst_elem_attr = attr("element");
+			SyntaxAttr lst_elem_attr = attr("element", lout_nl_x);
 			lst_elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
 			lst_elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
 			lst_elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxNode",Env.newPackage("kiev.fmt"),0));
-			SyntaxAttr lst_sep_attr = attr("separator");
+			SyntaxAttr lst_sep_attr = attr("separator", lout_nl_x);
 			lst_sep_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
 			lst_sep_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
 			lst_sep_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSpace",Env.newPackage("kiev.fmt"),0));
-			SyntaxAttr lst_empty_attr = attr("empty");
+			SyntaxAttr lst_empty_attr = attr("empty", lout_nl_x);
 			lst_empty_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
-			SyntaxElem expected = lst("expected_types", lout_empty);
+			SyntaxElem expected = lst("expected_types", node(lout_nl_x), null, lout_nl_x);
 			expected.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
-			SyntaxList slst = lst("spaces",node(),sep(","),new SpaceCmd[0]);
+			SyntaxList slst = lst("spaces", node(lout_nl_x), null, lout_nl_x);
 			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
 			seSyntaxList = folder(
 				set(oper("["), attr("name"), oper("]")),
@@ -191,14 +194,14 @@ public class SyntaxForSyntax extends TextSyntax {
 		}
 		{
 			// syntax set
-			SyntaxList set_elems_attr = lst("elements", new SpaceCmd[0]);
+			SyntaxList set_elems_attr = lst("elements", node(lout_nl_x), null, lout_nl_x);
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxAttr",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxIdentAttr",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxList",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSpace",Env.newPackage("kiev.fmt"),0));
-			SyntaxList slst = lst("spaces",node(),sep(","),new SpaceCmd[0]);
+			SyntaxList slst = lst("spaces", node(lout_nl_x), null, lout_nl_x);
 			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
 			seSyntaxSet = folder(
 				set(oper("{"), set_elems_attr.ncopy(), oper("}")),

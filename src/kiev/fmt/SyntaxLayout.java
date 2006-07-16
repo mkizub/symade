@@ -115,6 +115,11 @@ public class TextSyntax {
 		return new SyntaxNode();
 	}
 
+	protected SyntaxNode node(SpaceCmd[] lout)
+	{
+		return new SyntaxNode(lout);
+	}
+
 	protected SyntaxNode node(FormatInfoHint hint)
 	{
 		return new SyntaxNode(hint);
@@ -123,6 +128,11 @@ public class TextSyntax {
 	protected SyntaxAttr attr(String slot)
 	{
 		SpaceCmd[] lout = new SpaceCmd[0];
+		return new SyntaxAttr(slot, lout);
+	}
+
+	protected SyntaxAttr attr(String slot, SpaceCmd[] lout)
+	{
 		return new SyntaxAttr(slot, lout);
 	}
 
@@ -563,7 +573,6 @@ public final class SyntaxToken extends SyntaxElem {
 	}
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawToken(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 
@@ -659,13 +668,17 @@ public class SyntaxAttr extends SyntaxElem {
 	}
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		if (name.equals("this"))
-			return new DrawNodeTerm(node, this, "");
-		Object obj = node.getVal(name);
-		if (obj instanceof ANode)
-			return fmt.getDrawable((ANode)obj, null, hint);
-		Drawable dr = new DrawNodeTerm(node, this, name);
-		dr.init(fmt);
+		Drawable dr;
+		if (name.equals("this")) {
+			dr = new DrawNodeTerm(node, this, "");
+		} else {
+			Object obj = node.getVal(name);
+			if (obj instanceof ANode)
+				dr = fmt.getDrawable((ANode)obj, null, hint);
+			else
+				dr = new DrawNodeTerm(node, this, name);
+		}
+		dr.attr_syntax = this;
 		return dr;
 	}
 
@@ -708,7 +721,6 @@ public class SyntaxList extends SyntaxAttr {
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNonTermList(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -730,7 +742,6 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNodeTerm(node, this, name);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -752,7 +763,6 @@ public class SyntaxCharAttr extends SyntaxAttr {
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawCharTerm(node, this, name);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -774,7 +784,6 @@ public class SyntaxStrAttr extends SyntaxAttr {
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawStrTerm(node, this, name);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -792,7 +801,6 @@ public class SyntaxSet extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNonTermSet(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -804,6 +812,9 @@ public class SyntaxNode extends SyntaxElem {
 	@att public FormatInfoHint	hint;
 
 	public SyntaxNode() {}
+	public SyntaxNode(SpaceCmd[] spaces) {
+		super(spaces);
+	}
 	public SyntaxNode(FormatInfoHint hint) {
 		this.hint = hint;
 	}
@@ -814,7 +825,9 @@ public class SyntaxNode extends SyntaxElem {
 	}
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		return fmt.getDrawable(node, null, hint);
+		Drawable dr = fmt.getDrawable(node, null, hint);
+		dr.attr_syntax = this;
+		return dr;
 	}
 }
 
@@ -829,7 +842,6 @@ public class SyntaxSpace extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawSpace(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -898,7 +910,6 @@ public class SyntaxOptional extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawOptional(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -919,7 +930,6 @@ public class SyntaxFolder extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawFolded(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -939,7 +949,6 @@ public class SyntaxIntChoice extends SyntaxSet {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawIntChoice(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -958,7 +967,6 @@ public class SyntaxEnumChoice extends SyntaxSet {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawEnumChoice(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -979,7 +987,6 @@ public class SyntaxParagraphLayout extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawParagraph(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }

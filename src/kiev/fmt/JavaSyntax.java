@@ -67,7 +67,6 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 			n = (name == "this") ? node : (ANode)node.getVal(name);
 		}
 		Drawable dr = new DrawJavaExpr(n, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -84,7 +83,6 @@ public class SyntaxJavaAccess extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaAccess(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -104,7 +102,6 @@ public class SyntaxJavaType extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaType(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -120,7 +117,6 @@ public class SyntaxJavaEnumAlias extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaEnumAlias(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -137,7 +133,6 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaPackedField(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }
@@ -154,7 +149,6 @@ public class SyntaxJavaComment extends SyntaxElem {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaComment(node, this);
-		dr.init(fmt);
 		return dr;
 	}
 }

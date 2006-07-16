@@ -26,8 +26,9 @@ public abstract class Drawable extends ANode {
 	// syntax kind & draw layout
 	@ref
 	public SyntaxElem		syntax;
-	// current (selected) layout
-	int						curr_layout;
+	// definer syntax (StntaxAttr or SyntaxNode, etc) 
+	@ref
+	public SyntaxElem		attr_syntax;
 	
 	public Drawable() {
 		this.geometry = new DrawGeometry();
@@ -37,8 +38,6 @@ public abstract class Drawable extends ANode {
 		this.geometry = new DrawGeometry();
 		this.syntax = syntax;
 	}
-
-	public void init(Formatter fmt) {}
 
 	public abstract void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node);
 	public abstract boolean postFormat(DrawContext cont, boolean last_layout);

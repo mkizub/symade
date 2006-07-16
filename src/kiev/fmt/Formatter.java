@@ -144,20 +144,29 @@ public class TextFormatter extends AbstractFormatter {
 
 public class GfxFormatter extends AbstractFormatter {
 
-	private Graphics2D gfx;
+	private Graphics2D	gfx;
+	private int			width;
 	
 	public GfxFormatter(TextSyntax syntax, Graphics2D gfx) {
 		super(syntax);
 		this.gfx = gfx;
+		this.width = 100;
+	}
+	
+	public void setWidth(int w) {
+		if (w < 100)
+			this.width = 100;
+		else
+			this.width = w;
 	}
 
 	public Drawable format(ANode node, Drawable dr) {
 		DrawContext ctx = new DrawContext(this,gfx);
-		ctx.width = 100;
+		ctx.width = this.width;
 		Drawable root = getDrawable(node, dr, null);
 		root.preFormat(ctx, root.syntax, node);
 		ctx = new DrawContext(this,gfx);
-		ctx.width = 100;
+		ctx.width = this.width;
 		root.postFormat(ctx, true);
 		
 		int lineno = 1;
