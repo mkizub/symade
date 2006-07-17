@@ -183,6 +183,7 @@ CLASS kiev.gui.IntEditor kiev/gui/IntEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.NavigateEditor kiev/gui/NavigateEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.NavigateView kiev/gui/NavigateView kiev\gui\InfoView.java bad
 CLASS kiev.gui.NewElemEditor kiev/gui/NewElemEditor kiev\gui\Editor.java bad
+CLASS kiev.gui.OptionalTrigger kiev/gui/OptionalTrigger kiev\gui\Editor.java bad
 CLASS kiev.gui.StrEditor kiev/gui/StrEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.SymRefEditor kiev/gui/SymRefEditor kiev\gui\Editor.java bad
 CLASS kiev.gui.SymbolEditor kiev/gui/SymbolEditor kiev\gui\Editor.java bad

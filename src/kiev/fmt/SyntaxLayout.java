@@ -253,9 +253,9 @@ public class TextSyntax {
 		return sc;
 	}
 
-	protected SyntaxFolder folder(SyntaxElem folded, SyntaxElem unfolded, SpaceCmd[] spaces)
+	protected SyntaxFolder folder(boolean folded_by_default, SyntaxElem folded, SyntaxElem unfolded, SpaceCmd[] spaces)
 	{
-		return new SyntaxFolder(folded,unfolded,spaces);
+		return new SyntaxFolder(folded_by_default,folded,unfolded,spaces);
 	}
 
 }
@@ -710,7 +710,8 @@ public class SyntaxList extends SyntaxAttr {
 		super(name,spaces);
 		this.element = element;
 		this.separator = separator;
-		this.empty = new SyntaxToken(" ", new SpaceCmd[0]);
+		this.empty = new SyntaxToken("<?"+name+"?>", new SpaceCmd[0]);
+		this.empty.is_hidden = true;
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
@@ -919,11 +920,14 @@ public class SyntaxOptional extends SyntaxElem {
 public class SyntaxFolder extends SyntaxElem {
 	@virtual typedef This  = SyntaxFolder;
 
+	@att public boolean folded_by_default;
 	@att public SyntaxElem folded;
 	@att public SyntaxElem unfolded;
 
 	public SyntaxFolder() {}
-	public SyntaxFolder(SyntaxElem folded, SyntaxElem unfolded, SpaceCmd[] spaces) {
+	public SyntaxFolder(boolean folded_by_default, SyntaxElem folded, SyntaxElem unfolded, SpaceCmd[] spaces) {
+		super(spaces);
+		this.folded_by_default = folded_by_default;
 		this.folded = folded;
 		this.unfolded = unfolded;
 	}

@@ -65,6 +65,7 @@ public class DrawSpace extends DrawCtrl {
 @node
 public class DrawOptional extends DrawCtrl {
 
+	@att public boolean draw_optional;
 	boolean drawed_as_true;
 	
 	public DrawOptional() {}
@@ -99,22 +100,28 @@ public class DrawOptional extends DrawCtrl {
 			}
 		}
 		if (arg != null) {
-			if (drawed_as_true)
+			if (drawed_as_true) {
 				arg.preFormat(cont,sc.opt_true,node);
-			else
+			} else {
+				if (sc.opt_false.is_hidden)
+					arg.geometry.is_hidden = !draw_optional;
 				arg.preFormat(cont,sc.opt_false,node);
+			}
 		}
 	}
 }
 
 @node
-public class DrawFolded extends DrawCtrl {
+public final class DrawFolded extends DrawCtrl {
 
+	@att public boolean draw_folded;
+	
 	boolean drawed_as_folded;
 	
 	public DrawFolded() {}
 	public DrawFolded(ANode node, SyntaxFolder syntax) {
 		super(node, syntax);
+		this.draw_folded = syntax.folded_by_default;
 	}
 
 	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
@@ -124,7 +131,7 @@ public class DrawFolded extends DrawCtrl {
 			dr.preFormat(cont, expected_stx, expected_node);
 		}
 		SyntaxFolder sc = (SyntaxFolder)syntax;
-		if (node instanceof ASTNode && ((ASTNode)node).isDrawFolded()) {
+		if (draw_folded) {
 			if (!drawed_as_folded || arg == null) {
 				drawed_as_folded = true;
 				arg = sc.folded.makeDrawable(cont.fmt, node);

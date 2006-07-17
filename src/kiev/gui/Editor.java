@@ -63,11 +63,11 @@ public class Editor extends InfoView implements KeyListener {
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_A),         new NewElemEditor(this,NewElemEditor.INSERT_NEXT));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_N),         new NewElemEditor(this,NewElemEditor.SETNEW_HERE));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_F),         new FolderTrigger(this));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_O),         new OptionalTrigger(this));
 	}
 	
 	public Editor(Window window, TextSyntax syntax, Canvas view_canvas) {
 		super(window, syntax, view_canvas);
-		this.formatter.setForEditor(true);
 	}
 	
 	public void setRoot(ANode root) {
@@ -650,14 +650,47 @@ final class FolderTrigger implements KeyHandler {
 	}
 
 	public void process() {
-		Drawable dr = editor.cur_elem;
-		ANode n = dr.node;
-		if (n instanceof ASTNode) {
-			n.setDrawFolded(!n.isDrawFolded());
-			editor.formatAndPaint(true);
+		for (Drawable dr = editor.cur_elem; dr != null; dr = (Drawable)dr.parent()) {
+			if (dr instanceof DrawFolded) {
+				dr.draw_folded = !dr.draw_folded;
+				editor.formatAndPaint(true);
+				return;
+			}
 		}
 	}
 }
+
+final class OptionalTrigger implements KeyHandler {
+
+	private final Editor	editor;
+
+	OptionalTrigger(Editor editor) {
+		this.editor = editor;
+	}
+
+	public void process() {
+		ANode n = editor.cur_elem;
+		while (n != null && !(n instanceof DrawNonTerm))
+			n = n.parent();
+		if (n == null)
+			return;
+		boolean repaint = false;
+		DrawNonTerm drnt = (DrawNonTerm)n;
+		foreach (Drawable dr; drnt.args) {
+			if (dr instanceof DrawOptional) {
+				dr.draw_optional = !dr.draw_optional;
+				repaint = true;
+			}
+			else if (dr instanceof DrawNonTermList) {
+				dr.draw_optional = !dr.draw_optional;
+				repaint = true;
+			}
+		}
+		if (repaint)
+			editor.formatAndPaint(true);
+	}
+}
+
 
 final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener {
 

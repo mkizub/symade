@@ -37,6 +37,7 @@ public abstract class Drawable extends ANode {
 		this.node = node;
 		this.geometry = new DrawGeometry();
 		this.syntax = syntax;
+		this.geometry.is_hidden = this.syntax.is_hidden;
 	}
 
 	public abstract void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node);

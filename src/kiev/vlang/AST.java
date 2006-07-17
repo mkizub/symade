@@ -544,7 +544,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public @packed:1,compileflags,18 boolean is_fld_packed;
 
 	// General flags
-	public @packed:1,compileflags,5 boolean is_draw_folded;
 	public @packed:1,compileflags,4 boolean is_accessed_from_inner;
 	public @packed:1,compileflags,3 boolean is_resolved;
 	public @packed:1,compileflags,1 boolean is_bad;
@@ -690,13 +689,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		}
 	}
 
-	// draw folded/unfolded
-	@getter public final boolean isDrawFolded() {
-		return this.is_draw_folded;
-	}
-	@setter public final void setDrawFolded(boolean on) {
-		this.is_draw_folded = on;
-	}
 	// the (private) field/method/struct is accessed from inner class (and needs proxy access)
 	@getter public final boolean isAccessedFromInner() {
 		return this.is_accessed_from_inner;

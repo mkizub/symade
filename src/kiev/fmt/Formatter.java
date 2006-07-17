@@ -19,8 +19,6 @@ import java.awt.Graphics2D;
 public interface Formatter {
 	public Drawable   format(ANode node, Drawable dr);
 	public Drawable   getDrawable(ANode node, Drawable dr, FormatInfoHint hint);
-	public void       setForEditor(boolean val);
-	public boolean    isForEditor();
 	public String     escapeString(String str);
 	public String     escapeChar(char ch);
 	public TextSyntax getSyntax();
@@ -41,7 +39,6 @@ public abstract class AbstractFormatter implements Formatter {
 	private static final int counter;
 
 	public TextSyntax syntax;
-	private boolean is_for_editor;
 	
 	protected AbstractFormatter(TextSyntax syntax) {
 		this.syntax = syntax;
@@ -59,12 +56,6 @@ public abstract class AbstractFormatter implements Formatter {
 		this.syntax = stx;
 	}
 	
-	public void setForEditor(boolean val) {
-		is_for_editor = val;
-	}
-	public boolean isForEditor() {
-		return is_for_editor;
-	}
 	public String escapeString(String str) {
 		return syntax.escapeString(str);
 	}
@@ -98,11 +89,11 @@ public class TextFormatter extends AbstractFormatter {
 
 	public Drawable format(ANode node, Drawable dr) {
 		DrawContext ctx = new DrawContext(this,null);
-		ctx.width = 100;
+		ctx.width = 1000;
 		Drawable root = getDrawable(node, dr, null);
 		root.preFormat(ctx, root.syntax, node);
 		ctx = new DrawContext(this,null);
-		ctx.width = 100;
+		ctx.width = 1000;
 		root.postFormat(ctx, true);
 		
 		int lineno = 1;

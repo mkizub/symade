@@ -82,6 +82,7 @@ public abstract class DrawNonTerm extends Drawable {
 @node
 public class DrawNonTermList extends DrawNonTerm {
 
+	@att public boolean draw_optional;
 	Object[] oarr;
 	
 	public DrawNonTermList() {}
@@ -104,11 +105,7 @@ public class DrawNonTermList extends DrawNonTerm {
 			if (sz == 0) {
 				if (args.length != 1) {
 					args.delAll();
-					SyntaxElem empty = slst.empty;
-					if (empty instanceof SyntaxToken && empty.text != " ")
-						args.append(empty.makeDrawable(cont.fmt, node));
-					else if (cont.fmt.isForEditor())
-						args.append(empty.makeDrawable(cont.fmt, node));
+					args.append(slst.empty.makeDrawable(cont.fmt, node));
 				}
 			} else {
 				Drawable[] old_args = args.delToArray();
@@ -136,8 +133,11 @@ public class DrawNonTermList extends DrawNonTerm {
 			return;
 		if (narr.length == 0) {
 			assert(args.length == 0 || args.length == 1);
-			if (args.length > 0)
+			if (args.length > 0) {
+				if (slst.empty.is_hidden)
+					args[0].geometry.is_hidden = !draw_optional;
 				args[0].preFormat(cont,slst.empty,this.node);
+			}
 		}
 		else if (slst.separator != null) {
 			for (int i=0; i < args.length; i++) {

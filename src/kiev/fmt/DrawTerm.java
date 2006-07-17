@@ -24,16 +24,11 @@ public abstract class DrawTerm extends Drawable {
 	public DrawTerm getFirstLeaf() { return isUnvisible() ? null : this; }
 	public DrawTerm getLastLeaf()  { return isUnvisible() ? null : this; }
 
-	static int check_stack_overflow;
 	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
 		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			check_stack_overflow++;
-			if (check_stack_overflow > 1000)
-				throw new Error();
 			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
 			replaceWithNode(dr);
 			dr.preFormat(cont, expected_stx, expected_node);
-			check_stack_overflow--;
 		}
 		if (this.isUnvisible())
 			return;

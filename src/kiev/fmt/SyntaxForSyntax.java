@@ -101,7 +101,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			// token
 			SyntaxList slst = lst("spaces",node(),sep(","),new SpaceCmd[0]);
 			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
-			seSyntaxToken = folder(
+			seSyntaxToken = folder(true,
 				set(oper("'"), attr("text"), oper("'")),
 				set(
 					sep("<"),
@@ -122,7 +122,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			expected.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
 			SyntaxList slst = lst("spaces",node(),sep(","),new SpaceCmd[0]);
 			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
-			seSyntaxAttr = folder(
+			seSyntaxAttr = folder(true,
 				set(oper("\""), attr("name"), oper("\"")),
 				set(
 					sep("<"),
@@ -142,7 +142,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			expected.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
 			SyntaxList slst = lst("spaces",node(),sep(","),new SpaceCmd[0]);
 			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
-			seSyntaxIdent = folder(
+			seSyntaxIdent = folder(true,
 				set(oper("\""), attr("name"), oper("\"")),
 				set(
 					sep("<"),
@@ -172,7 +172,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			expected.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
 			SyntaxList slst = lst("spaces", node(lout_nl_x), null, lout_nl_x);
 			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
-			seSyntaxList = folder(
+			seSyntaxList = folder(true,
 				set(oper("["), attr("name"), oper("]")),
 				set(
 					sep("<"),
@@ -203,7 +203,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSpace",Env.newPackage("kiev.fmt"),0));
 			SyntaxList slst = lst("spaces", node(lout_nl_x), null, lout_nl_x);
 			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
-			seSyntaxSet = folder(
+			seSyntaxSet = folder(true,
 				set(oper("{"), set_elems_attr.ncopy(), oper("}")),
 				set(
 					sep("<"),
