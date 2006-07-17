@@ -68,8 +68,9 @@ public abstract class DNode extends ASTNode {
 	public @packed:1,flags,18 boolean is_type_unerasable;	// typedecl, method/struct as parent of typedef
 
 	public @packed:1,flags,19 boolean is_macro;			// macro-declarations for fields, methods, etc
-	
-	public @packed:1,flags,20 boolean is_tdecl_loaded;		// TypeDecl was fully loaded (from src or bytecode) 
+	public @packed:1,flags,20 boolean is_struct_singleton;
+
+	public @packed:1,flags,21 boolean is_tdecl_loaded;		// TypeDecl was fully loaded (from src or bytecode) 
 	
 	public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
 	public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }

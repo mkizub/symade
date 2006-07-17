@@ -153,12 +153,16 @@ public class SyntaxJavaComment extends SyntaxElem {
 	}
 }
 
+@node
+public final class CalcOptionJavaFlag extends CalcOption {
+	@virtual typedef This  = CalcOptionJavaFlag;
 
-public class CalcOptionJavaFlag implements CalcOption {
 	private final int mask;
 	private final int offs;
 	private final int val;
-	public CalcOptionJavaFlag(int size, int offs, int val) {
+	public CalcOptionJavaFlag() {}
+	public CalcOptionJavaFlag(String name, int size, int offs, int val) {
+		super(name);
 		this.mask = (-1 << (32-size)) >>> (32-size);
 		this.offs = offs;
 		this.val = val;
@@ -171,6 +175,51 @@ public class CalcOptionJavaFlag implements CalcOption {
 	}
 }
 
+@node
+class CalcOptionUpperBound extends CalcOption {
+	CalcOptionUpperBound() {}
+	public boolean calc(ANode node) {
+		if !(node instanceof TypeConstr) return false;
+		TypeConstr tc = (TypeConstr)node;
+		if (tc.super_types.length == 0) return false;
+		if (tc.super_types.length == 1 && tc.super_types[0].getType() ≈ Type.tpObject) return false;
+		return true;
+	}
+}
+
+@node
+class CalcOptionMetaAlias extends CalcOption {
+	CalcOptionMetaAlias() {}
+	public boolean calc(ANode node) { return ((Field)node).getMetaAlias() != null; }
+}
+@node
+class CalcOptionEnumField extends CalcOption {
+	CalcOptionEnumField() {}
+	public boolean calc(ANode node) { return (node instanceof Field && node.isEnumField()); }
+}
+@node
+class CalcOptionEnumFilter extends CalcOption {
+	CalcOptionEnumFilter() {}
+	public boolean calc(ANode node) { return !((node instanceof DNode && node.isSynthetic()) || (node instanceof Field && node.isEnumField())); }
+}
+@node
+class CalcOptionPackedField extends CalcOption {
+	CalcOptionPackedField() {}
+	public boolean calc(ANode node) {return ((Field)node).isPackedField();}
+}
+@node
+class CalcOptionSType extends CalcOption {
+	CalcOptionSType() {}
+	public boolean calc(ANode node) {
+		FormPar fp = (FormPar)node;
+		return fp.stype != null && fp.vtype.getType() ≉ fp.stype.getType();
+	}
+}
+@node
+class CalcOptionNotSuper extends CalcOption {
+	CalcOptionNotSuper() {}
+	public boolean calc(ANode node) { return !((ENode)node).isSuperExpr(); }
+}
 
 public class JavaSyntax extends TextSyntax {
 
@@ -302,7 +351,7 @@ public class JavaSyntax extends TextSyntax {
 	protected SyntaxElem jflag(int size, int offs, int val, String name)
 	{
 		SpaceCmd[] lout = new SpaceCmd[0];
-		return new SyntaxOptional(name, new CalcOptionJavaFlag(size, offs, val), kw(name), null, lout);
+		return new SyntaxOptional(new CalcOptionJavaFlag(name,size, offs, val), kw(name), null, lout);
 	}
 
 	protected SyntaxJavaExpr expr(int idx, int priority)
@@ -414,7 +463,7 @@ public class JavaSyntax extends TextSyntax {
 					kw("syntax")
 					),
 				ident("name"),
-				opt("star",new CalcOptionTrue("star"), sep(".*"), null, lout_empty),
+				opt(new CalcOptionTrue("star"), sep(".*"), null, lout_empty),
 				sep(";"));
 			seOpdef = setl(lout_nl,
 				kw("operator"),
@@ -449,23 +498,14 @@ public class JavaSyntax extends TextSyntax {
 			seTypeAssign = setl(lout_nl, typedef_prefix.ncopy(), kw("typedef"), ident("id"), oper("="), attr("type_ref"), sep(";"));
 			
 			seTypeConstrClassArg = setl(lout_empty, ident("id"),
-				opt("upper_bound",
-					new CalcOption() {
-						public boolean calc(ANode node) {
-							if !(node instanceof TypeConstr) return false;
-							TypeConstr tc = (TypeConstr)node;
-							if (tc.super_types.length == 0) return false;
-							if (tc.super_types.length == 1 && tc.super_types[0].getType() ≈ Type.tpObject) return false;
-							return true;
-						}
-					},
+				opt(new CalcOptionUpperBound(),
 					set(
 						kw("extends"),
 						lst("super_types", node(), oper("&"), lout_empty)
 						),
 					null, lout_empty
 					),
-				opt("lower_bound", new CalcOptionNotEmpty("lower_bound"),
+				opt(new CalcOptionNotEmpty("lower_bound"),
 					set(
 						kw("super"),
 						lst("lower_bound", node(), sep("&"), lout_empty)
@@ -497,7 +537,7 @@ public class JavaSyntax extends TextSyntax {
 				};
 			SyntaxElem struct_prefix = setl(lout_struct_hdr,
 					attr("meta"),
-					opt("singleton", new CalcOption() {public boolean calc(ANode node) {return ((Struct)node).isSingleton();}}, kw("@singleton"), null, lout_empty),
+					jflag(1,20,1, "@singleton"),
 //					jflag(1,12,1, "@synthetic"),
 					jflag(1,18,1, "@unerasable"),
 					jflag(1,3,1,  "static"),
@@ -505,14 +545,14 @@ public class JavaSyntax extends TextSyntax {
 					jflag(1,10,1, "abstract"),
 					jflag(1,11,1, "strict")
 					);
-			SyntaxElem struct_args = opt("args", new CalcOptionNotEmpty("args"),
+			SyntaxElem struct_args = opt(new CalcOptionNotEmpty("args"),
 				set(
 					sep("<"),
 					lst("args", node(new FormatInfoHint("class-arg")), sep(","), lout_empty),
 					sep(">")
 				), null, lout_empty);
 			SpaceCmd[] lout_ext = new SpaceCmd[] {new SpaceCmd(siSp, SP_ADD, SP_NOP, 0)};
-			SyntaxElem class_ext = opt("extends", new CalcOptionNotEmpty("super_types"),
+			SyntaxElem class_ext = opt(new CalcOptionNotEmpty("super_types"),
 				set(
 					kw("extends"),
 					lst("super_types", node(), sep(","), lout_empty)
@@ -520,13 +560,13 @@ public class JavaSyntax extends TextSyntax {
 				null, lout_ext
 				);
 			SyntaxList struct_members = lst("members",lout_empty);
-			struct_members.filter = new CalcOption() {
-				public boolean calc(ANode node) {
-					if (node instanceof DNode && node.isSynthetic())
-						return false;
-					return true;
-				}
-			};
+//			struct_members.filter = new CalcOption() {
+//				public boolean calc(ANode node) {
+//					if (node instanceof DNode && node.isSynthetic())
+//						return false;
+//					return true;
+//				}
+//			};
 			// anonymouse struct
 			seStructBody = set(
 					sep("{", lout_struct_block_start),
@@ -597,19 +637,16 @@ public class JavaSyntax extends TextSyntax {
 				sep(","),
 				lout_empty
 				);
-			case_fields.filter = new CalcOption() {
-				public boolean calc(ANode node) { return node instanceof Field && !node.isSynthetic(); }
-			};
+//			case_fields.filter = new CalcOption() {
+//				public boolean calc(ANode node) { return node instanceof Field && !node.isSynthetic(); }
+//			};
 			seStructCase = setl(lout_nl_grp,
 					case_prefix,
 					accs(),
 					kw("case"),
 					ident("id"),
 					struct_args.ncopy(),
-					opt("singleton",
-						new CalcOption() {
-							public boolean calc(ANode node) { return !((Struct)node).isSingleton(); }
-						},
+					opt(new CalcOptionJavaFlag("singleton", 1, 20, 0),
 						set(
 							sep("("),
 							case_fields,
@@ -624,12 +661,7 @@ public class JavaSyntax extends TextSyntax {
 			SyntaxList enum_fields = lst("members",
 				set(
 					attr("id"),
-					opt("alias",
-						new CalcOption() {
-							public boolean calc(ANode node) {
-								return ((Field)node).getMetaAlias() != null;
-							}
-						},
+					opt(new CalcOptionMetaAlias(),
 						set(sep(":"), new SyntaxJavaEnumAlias(lout_empty)),
 						null,
 						lout_empty
@@ -637,21 +669,9 @@ public class JavaSyntax extends TextSyntax {
 					),
 				sep_nl(","),
 				lout_empty);
-			enum_fields.filter = new CalcOption() {
-				public boolean calc(ANode node) {
-					if (node instanceof Field && node.isEnumField())
-						return true;
-					return false;
-				}
-			};
+			enum_fields.filter = new CalcOptionEnumField();
 			SyntaxList enum_members = lst("members",lout_empty);
-			enum_members.filter = new CalcOption() {
-				public boolean calc(ANode node) {
-					if ((node instanceof DNode && node.isSynthetic()) || (node instanceof Field && node.isEnumField()))
-						return false;
-					return true;
-				}
-			};
+			enum_members.filter = new CalcOptionEnumFilter();
 			seStructEnum = set(
 					setl(lout_struct_hdr,
 						struct_prefix.ncopy(),
@@ -695,10 +715,7 @@ public class JavaSyntax extends TextSyntax {
 //					jflag(1,12,1, "@synthetic"),
 					jflag(1,16,1, "@forward"),
 					jflag(1,17,1, "@virtual"),
-					opt("packed",
-						new CalcOption() {
-							public boolean calc(ANode node) {return ((Field)node).isPackedField();}
-						},
+					opt(new CalcOptionPackedField(),
 						new SyntaxJavaPackedField(lout_empty),
 						null,
 						lout_empty
@@ -731,13 +748,7 @@ public class JavaSyntax extends TextSyntax {
 			seFormPar = set(opt("meta"),
 				var_prefix.ncopy(),
 				attr("vtype"),
-				opt("stype",
-					new CalcOption() {
-						public boolean calc(ANode node) {
-							FormPar fp = (FormPar)node;
-							return fp.stype != null && fp.vtype.getType() ≉ fp.stype.getType();
-						}
-					},
+				opt(new CalcOptionSType(),
 					set(sep0(":"), attr("stype")),
 					null,
 					lout_empty
@@ -771,14 +782,8 @@ public class JavaSyntax extends TextSyntax {
 					jflag(1,3,1,  "static")
 					);
 			SyntaxList method_params = lst("params",node(),sep(","),lout_empty);
-			method_params.filter = new CalcOption() {
-				public boolean calc(ANode node) {
-					if (node instanceof DNode && node.isSynthetic())
-						return false;
-					return true;
-				}
-			};
-			SyntaxElem method_type_args = opt("targs", new CalcOptionNotEmpty("targs"),
+			method_params.filter = new CalcOptionJavaFlag("synthetic", 1, 12, 1);
+			SyntaxElem method_type_args = opt(new CalcOptionNotEmpty("targs"),
 				set(
 					sep("<"),
 					lst("targs", node(new FormatInfoHint("class-arg")), sep(","), lout_empty),
@@ -808,7 +813,7 @@ public class JavaSyntax extends TextSyntax {
 					),
 				par(plIndented, lst("aliases", lout_empty)),
 				par(plIndented, lst("conditions", lout_empty)),
-				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty)
+				opt(new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty)
 				);
 			// logical rule method
 			seRuleMethod = setl(lout_method,
@@ -822,7 +827,7 @@ public class JavaSyntax extends TextSyntax {
 					),
 				par(plIndented, lst("aliases", lout_empty)),
 				par(plIndented, lst("localvars", setl(lout_nl, node(), sep(";")), null, lout_nl)),
-				opt("body", new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty)
+				opt(new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty)
 				);
 			seInitializer = setl(lout_method, opt("meta"), init_prefix, attr("body"));
 			
@@ -904,7 +909,7 @@ public class JavaSyntax extends TextSyntax {
 		seBreakStat = set(kw("break"), opt("ident", ident("ident")), sep(";"));
 		seContinueStat = set(kw("continue"), opt("ident", ident("ident")), sep(";"));
 		seGotoStat = set(kw("goto"), opt("ident", ident("ident")), sep(";"));
-		seGotoCaseStat = set(kw("goto"), opt("expr", new CalcOptionNotNull("expr"), set(kw("case"), attr("expr")), kw("default"), lout_empty), sep(";"));
+		seGotoCaseStat = set(kw("goto"), opt(new CalcOptionNotNull("expr"), set(kw("case"), attr("expr")), kw("default"), lout_empty), sep(";"));
 
 		{
 			SpaceCmd[] lout_cond = new SpaceCmd[] {
@@ -950,11 +955,11 @@ public class JavaSyntax extends TextSyntax {
 				);
 			
 			seCaseLabel = set(
-				opt("val", new CalcOptionNotNull("val"),
+				opt(new CalcOptionNotNull("val"),
 					set(
 						kw("case"),
 						attr("val"),
-						opt("pattern", new CalcOptionNotEmpty("pattern"),
+						opt(new CalcOptionNotEmpty("pattern"),
 							set(
 								sep("("),
 								lst("pattern",node(),sep(","),lout_empty),
@@ -1033,10 +1038,7 @@ public class JavaSyntax extends TextSyntax {
 		seAccessExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
 		seIFldExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
 		seContainerAccessExpr = set(expr("obj", Constants.opContainerElementPriority), sep("["), attr("index"), sep("]"));
-		seThisExpr = opt("super",
-						new CalcOption() {
-							public boolean calc(ANode node) { return !((ThisExpr)node).isSuperExpr(); }
-						},
+		seThisExpr = opt(new CalcOptionNotSuper(),
 						kw("this"),
 						kw("super"),
 						lout_empty
@@ -1061,12 +1063,9 @@ public class JavaSyntax extends TextSyntax {
 				sep(")")
 				);
 		seCallConstr = set(
-				opt("this",
-					new CalcOption() {
-						public boolean calc(ANode node) { return ((ENode)node).isSuperExpr(); }
-					},
-					kw("super"),
+				opt(new CalcOptionNotSuper(),
 					kw("this"),
+					kw("super"),
 					lout_empty
 					),
 				sep("("),
@@ -1148,7 +1147,7 @@ public class JavaSyntax extends TextSyntax {
 					jflag(1,16,1, "@forward"),
 					ident("vtype"),
 					ident("id"),
-					opt("vars", new CalcOptionNotEmpty("vars"),
+					opt(new CalcOptionNotEmpty("vars"),
 						set(
 							sep("("),
 							lst("vars", node(), sep(","), lout_empty),

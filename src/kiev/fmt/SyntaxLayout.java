@@ -223,18 +223,18 @@ public class TextSyntax {
 	protected SyntaxOptional opt(String name)
 	{
 		SpaceCmd[] lout = new SpaceCmd[0];
-		return opt(name,new CalcOptionNotNull(name),attr(name),null,lout);
+		return opt(new CalcOptionNotNull(name),attr(name),null,lout);
 	}
 	
 	protected SyntaxOptional opt(String name, SyntaxElem opt_true)
 	{
 		SpaceCmd[] lout = new SpaceCmd[0];
-		return opt(name,new CalcOptionNotNull(name),opt_true,null,lout);
+		return opt(new CalcOptionNotNull(name),opt_true,null,lout);
 	}
 
-	protected SyntaxOptional opt(String name, CalcOption calc, SyntaxElem opt_true, SyntaxElem opt_false, SpaceCmd[] spaces)
+	protected SyntaxOptional opt(CalcOption calc, SyntaxElem opt_true, SyntaxElem opt_false, SpaceCmd[] spaces)
 	{
-		return new SyntaxOptional(name,calc,opt_true,opt_false,spaces);
+		return new SyntaxOptional(calc,opt_true,opt_false,spaces);
 	}
 
 	protected SyntaxIntChoice alt_int(String name, SyntaxElem... options)
@@ -392,9 +392,8 @@ public final class DrawColor extends DNode {
 
 	
 	public DrawColor() {}
-	public DrawColor(int rgb_color) {
+	public DrawColor(String name) {
 		this.id = new Symbol("color "+rgb_color);
-		this.rgb_color = rgb_color;
 	}
 }
 
@@ -562,13 +561,13 @@ public final class SyntaxToken extends SyntaxElem {
 	@att public SymbolRef<DrawFont>		font;
 
 	public SyntaxToken() {
-		this.color = new SymbolRef(0,new DrawColor(0));
-		this.font = new SymbolRef(0,new DrawFont("Dialog-PLAIN-12"));
+		this.color = new SymbolRef(0,new DrawColor("default-color"));
+		this.font = new SymbolRef(0,new DrawFont("default-font"));
 	}
 	public SyntaxToken(String text, SpaceCmd[] spaces) {
 		super(spaces);
-		this.color = new SymbolRef(0,new DrawColor(0));
-		this.font = new SymbolRef(0,new DrawFont("Dialog-PLAIN-12"));
+		this.color = new SymbolRef(0,new DrawColor("default-color"));
+		this.font = new SymbolRef(0,new DrawFont("default-font"));
 		this.text = text.intern();
 	}
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
@@ -703,7 +702,7 @@ public class SyntaxList extends SyntaxAttr {
 	@att public SyntaxElem	element;
 	@att public SyntaxElem	separator;
 	@att public SyntaxElem	empty;
-	     public CalcOption filter;
+	@att public CalcOption filter;
 
 	public SyntaxList() {}
 	public SyntaxList(String name, SyntaxElem element, SyntaxElem separator, SpaceCmd[] spaces) {
@@ -847,13 +846,30 @@ public class SyntaxSpace extends SyntaxElem {
 	}
 }
 
-public interface CalcOption {
-	public boolean calc(ANode node);
+@node
+public abstract class CalcOption extends ANode {
+	@virtual typedef This  ≤ CalcOption;
+
+	@att String name;
+
+	public CalcOption() {}
+	public CalcOption(String name) {
+		if (name != null)
+			this.name = name.intern();
+	}
+	
+	public abstract boolean calc(ANode node);
 }
 
-public class CalcOptionNotNull implements CalcOption {
-	private final String name;
-	public CalcOptionNotNull(String name) { this.name = name.intern(); } 
+@node
+public final class CalcOptionNotNull extends CalcOption {
+	@virtual typedef This  = CalcOptionNotNull;
+
+	public CalcOptionNotNull() {}
+	public CalcOptionNotNull(String name) {
+		super(name);
+	}
+
 	public boolean calc(ANode node) {
 		if (node == null)
 			return false;
@@ -866,9 +882,15 @@ public class CalcOptionNotNull implements CalcOption {
 	}
 }
 
-public class CalcOptionNotEmpty implements CalcOption {
-	private final String name;
-	public CalcOptionNotEmpty(String name) { this.name = name.intern(); } 
+@node
+public final class CalcOptionNotEmpty implements CalcOption {
+	@virtual typedef This  = CalcOptionNotEmpty;
+
+	public CalcOptionNotEmpty() {}
+	public CalcOptionNotEmpty(String name) {
+		super(name);
+	}
+
 	public boolean calc(ANode node) {
 		if (node == null)
 			return false;
@@ -879,9 +901,15 @@ public class CalcOptionNotEmpty implements CalcOption {
 	}
 }
 
+@node
 public class CalcOptionTrue implements CalcOption {
-	private final String name;
-	public CalcOptionTrue(String name) { this.name = name.intern(); } 
+	@virtual typedef This  = CalcOptionTrue;
+
+	public CalcOptionTrue() {}
+	public CalcOptionTrue(String name) {
+		super(name);
+	}
+
 	public boolean calc(ANode node) {
 		if (node == null) return false;
 		Object val = node.getVal(name);
@@ -895,18 +923,16 @@ public class CalcOptionTrue implements CalcOption {
 public class SyntaxOptional extends SyntaxElem {
 	@virtual typedef This  = SyntaxOptional;
 
-	@ref public CalcOption calculator;
-	@att public SyntaxElem opt_true;
-	@att public SyntaxElem opt_false;
-	@att public String name;
+	@att public CalcOption	calculator;
+	@att public SyntaxElem	opt_true;
+	@att public SyntaxElem	opt_false;
 
 	public SyntaxOptional() {}
-	public SyntaxOptional(String name, CalcOption calculator, SyntaxElem opt_true, SyntaxElem opt_false, SpaceCmd[] spaces) {
+	public SyntaxOptional(CalcOption calculator, SyntaxElem opt_true, SyntaxElem opt_false, SpaceCmd[] spaces) {
 		super(spaces);
 		this.calculator = calculator;
 		this.opt_true = opt_true;
 		this.opt_false = opt_false;
-		this.name = name.intern();
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {

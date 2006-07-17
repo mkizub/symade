@@ -86,7 +86,7 @@ public class XmlDumpSyntax extends TextSyntax {
 		SyntaxSet ss = new SyntaxSet(lout_nl);
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
 			if (attr.is_space) {
-				ss.elements += opt(attr.name, new CalcOptionNotEmpty(attr.name),
+				ss.elements += opt(new CalcOptionNotEmpty(attr.name),
 						setl(lout_nl,
 							open(attr.name),
 							par(plIndented, new SyntaxList(attr.name, node(), null, lout_nl)),

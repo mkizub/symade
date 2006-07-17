@@ -36,6 +36,7 @@ public interface AccessFlags {
 	public static final int ACC_VIRTUAL			= 1 << 17; // temporary used with java flags
 	public static final int ACC_TYPE_UNERASABLE	= 1 << 18; // temporary used with java flags
 	public static final int ACC_MACRO				= 1 << 19; // macro field/method, metatypes
+	public static final int ACC_SINGLETON			= 1 << 20; // singleton class
 
 	// Struct specific
 	public static final int ACC_PACKAGE			= ACC_PRIVATE | ACC_PUBLIC;

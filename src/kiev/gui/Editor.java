@@ -628,6 +628,8 @@ final class ChooseItemEditor implements KeyHandler {
 			}
 			else if (obj instanceof Integer)
 				editor.startItemEditor(pattr.node, new IntEditor(pattr, editor));
+			else if (obj instanceof Boolean)
+				editor.startItemEditor(pattr.node, new BoolEditor(pattr, editor));
 			else if (obj instanceof ConstIntExpr)
 				editor.startItemEditor((ConstIntExpr)obj, new IntEditor(obj.getAttrPtr("value"), editor));
 			else if (Enum.class.isAssignableFrom(pattr.slot.clazz))
@@ -998,6 +1000,52 @@ final class IntEditor extends TextEditor {
 	}
 	void setText(String text) {
 		pattr.set(Integer.valueOf(text));
+	}
+}
+
+final class BoolEditor implements KeyListener {
+	
+	private final Editor	editor;
+	private final AttrPtr	pattr;
+
+	BoolEditor(AttrPtr pattr, Editor editor) {
+		this.editor = editor;
+		this.pattr = pattr;
+	}
+	
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
+	public void keyPressed(KeyEvent evt) {
+		int code = evt.getKeyCode();
+		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+		if (mask != 0)
+			return;
+		evt.consume();
+		switch (code) {
+		case KeyEvent.VK_SPACE:
+			Boolean val = (Boolean)pattr.get();
+			if (val.booleanValue())
+				pattr.set(Boolean.FALSE);
+			else
+				pattr.set(Boolean.TRUE);
+			editor.stopItemEditor(false);
+			break;
+		case KeyEvent.VK_T:
+			pattr.set(Boolean.TRUE);
+			editor.stopItemEditor(false);
+			break;
+		case KeyEvent.VK_F:
+			pattr.set(Boolean.FALSE);
+			editor.stopItemEditor(false);
+			break;
+		case KeyEvent.VK_ENTER:
+			editor.stopItemEditor(false);
+			return;
+		case KeyEvent.VK_ESCAPE:
+			editor.stopItemEditor(true);
+			return;
+		}
+		editor.formatAndPaint(true);
 	}
 }
 

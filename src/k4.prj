@@ -107,10 +107,18 @@ CLASS kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecod
 CLASS kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java
 CLASS kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
 CLASS kiev.fmt.AbstractFormatter kiev/fmt/AbstractFormatter kiev\fmt\Formatter.java
+CLASS kiev.fmt.CalcOption kiev/fmt/CalcOption kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.CalcOptionEnumField kiev/fmt/CalcOptionEnumField kiev\fmt\JavaSyntax.java
+CLASS kiev.fmt.CalcOptionEnumFilter kiev/fmt/CalcOptionEnumFilter kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionJavaFlag kiev/fmt/CalcOptionJavaFlag kiev\fmt\JavaSyntax.java
+CLASS kiev.fmt.CalcOptionMetaAlias kiev/fmt/CalcOptionMetaAlias kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionNotNull kiev/fmt/CalcOptionNotNull kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.CalcOptionNotSuper kiev/fmt/CalcOptionNotSuper kiev\fmt\JavaSyntax.java
+CLASS kiev.fmt.CalcOptionPackedField kiev/fmt/CalcOptionPackedField kiev\fmt\JavaSyntax.java
+CLASS kiev.fmt.CalcOptionSType kiev/fmt/CalcOptionSType kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionTrue kiev/fmt/CalcOptionTrue kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.CalcOptionUpperBound kiev/fmt/CalcOptionUpperBound kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.DrawCharTerm kiev/fmt/DrawCharTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawColor kiev/fmt/DrawColor kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawContext kiev/fmt/DrawContext kiev\fmt\DrawContext.java
@@ -173,6 +181,7 @@ CLASS kiev.fmt.TextFormatter kiev/fmt/TextFormatter kiev\fmt\Formatter.java
 CLASS kiev.fmt.TextPrinter kiev/fmt/TextPrinter kiev\fmt\DrawDevice.java
 CLASS kiev.fmt.TextSyntax kiev/fmt/TextSyntax kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.XmlDumpSyntax kiev/fmt/XmlDumpSyntax kiev\fmt\XmlDumpSyntax.java
+CLASS kiev.gui.BoolEditor kiev/gui/BoolEditor kiev\gui\Editor.java
 CLASS kiev.gui.Canvas kiev/gui/Canvas kiev\gui\Canvas.java
 CLASS kiev.gui.ChooseItemEditor kiev/gui/ChooseItemEditor kiev\gui\Editor.java
 CLASS kiev.gui.Editor kiev/gui/Editor kiev\gui\Editor.java
@@ -753,7 +762,6 @@ INTERFACE kiev.bytecode.ClasspathEntry kiev/bytecode/ClasspathEntry kiev\bytecod
 INTERFACE kiev.bytecode.ClazzSignatures kiev/bytecode/ClazzSignatures kiev\bytecode\Constants.java
 INTERFACE kiev.bytecode.JavaOpcodes kiev/bytecode/JavaOpcodes kiev\bytecode\Constants.java
 INTERFACE kiev.bytecode.NewArrayConstants kiev/bytecode/NewArrayConstants kiev\bytecode\Constants.java
-INTERFACE kiev.fmt.CalcOption kiev/fmt/CalcOption kiev\fmt\SyntaxLayout.java
 INTERFACE kiev.fmt.DrawDevice kiev/fmt/DrawDevice kiev\fmt\DrawDevice.java
 INTERFACE kiev.fmt.Formatter kiev/fmt/Formatter kiev\fmt\Formatter.java
 INTERFACE kiev.gui.KeyHandler kiev/gui/KeyHandler kiev\gui\Editor.java

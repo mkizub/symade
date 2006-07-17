@@ -34,6 +34,8 @@ public class SyntaxForSyntax extends TextSyntax {
 	final SyntaxElem seSyntaxSet;
 	final SyntaxElem seSyntaxNode;
 	final SyntaxElem seSyntaxSpace;
+	final SyntaxElem seSyntaxOptional;
+	final SyntaxElem seCalcOption;
 
 	public SyntaxForSyntax() {
 		SpaceCmd[] lout_empty = new SpaceCmd[0];
@@ -61,7 +63,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			seImport = setl(lout_nl,
 				kw("import"),
 				ident("name"),
-				opt("star",new CalcOptionTrue("star"), sep(".*"), null, lout_empty)
+				opt(new CalcOptionTrue("star"), sep(".*"), null, lout_empty)
 				);
 			seSymbolRef = ident("name");
 		}
@@ -201,6 +203,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxList",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
 			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSpace",Env.newPackage("kiev.fmt"),0));
+			set_elems_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxOptional",Env.newPackage("kiev.fmt"),0));
 			SyntaxList slst = lst("spaces", node(lout_nl_x), null, lout_nl_x);
 			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
 			seSyntaxSet = folder(true,
@@ -216,9 +219,70 @@ public class SyntaxForSyntax extends TextSyntax {
 				);
 		}
 		{
-			// syntax node, space
-			seSyntaxNode = kw("<node>");
-			seSyntaxSpace = kw("<sp>");
+			// syntax node
+			SyntaxList slst = lst("spaces", node(lout_nl_x), null, lout_nl_x);
+			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
+			seSyntaxNode = folder(true,
+				kw("<node>"),
+				set(
+					sep("<"),
+					kw("node:"),
+					sep("{"),slst,sep("}"),
+					sep(">")
+					),
+				new SpaceCmd[0]
+				);
+		}
+		{
+			// syntax space
+			SyntaxList slst = lst("spaces", node(lout_nl_x), null, lout_nl_x);
+			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
+			seSyntaxSpace = folder(true,
+				kw("<sp>"),
+				set(
+					sep("<"),
+					kw("space:"),
+					sep("{"),slst,sep("}"),
+					sep(">")
+					),
+				new SpaceCmd[0]
+				);
+		}
+		{
+			// optional
+			SyntaxAttr opt_true_attr = attr("opt_true", lout_nl_x);
+			opt_true_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
+			opt_true_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
+			opt_true_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxNode",Env.newPackage("kiev.fmt"),0));
+			SyntaxAttr opt_false_attr = attr("opt_false", lout_nl_x);
+			opt_false_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
+			opt_false_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
+			opt_false_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSpace",Env.newPackage("kiev.fmt"),0));
+			SyntaxAttr opt_calc_attr = attr("calculator", lout_nl_x);
+			opt_calc_attr.expected_types += new SymbolRef(0, Env.newStruct("CalcOptionNotNull",Env.newPackage("kiev.fmt"),0));
+			opt_calc_attr.expected_types += new SymbolRef(0, Env.newStruct("CalcOptionNotEmpty",Env.newPackage("kiev.fmt"),0));
+			opt_calc_attr.expected_types += new SymbolRef(0, Env.newStruct("CalcOptionTrue",Env.newPackage("kiev.fmt"),0));
+			SyntaxList slst = lst("spaces", node(lout_nl_x), null, lout_nl_x);
+			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
+			seSyntaxOptional = folder(true,
+				set(oper("?("), opt_calc_attr.ncopy(), oper(")?")),
+				set(
+					sep("<"),
+					kw("opt:"),
+					set(oper("?("), opt_calc_attr.ncopy(), oper(")?")),
+					kw("elem_true="),
+					opt_true_attr,
+					kw("elem_false="),
+					opt_false_attr,
+					sep("{"),slst,sep("}"),
+					sep(">")
+					),
+				new SpaceCmd[0]
+				);
+		}
+		{
+			// CalcOption-s
+			seCalcOption = ident("name");
 		}
 	}
 
@@ -239,6 +303,8 @@ public class SyntaxForSyntax extends TextSyntax {
 		case SyntaxSet:      return seSyntaxSet;
 		case SyntaxNode:     return seSyntaxNode;
 		case SyntaxSpace:    return seSyntaxSpace;
+		case SyntaxOptional: return seSyntaxOptional;
+		case CalcOption:     return seCalcOption;
 		}
 		return super.getSyntaxElem(node,hint);
 	}
