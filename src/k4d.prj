@@ -892,9 +892,7 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
-METATYPE kiev.vlang.DataAttrSlot kiev\vlang\Tree.java
 METATYPE kiev.vlang.Globals kiev\vlang\Globals.java bad
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
-METATYPE kiev.vlang.SpaceAttDataAttrSlot kiev\vlang\Tree.java
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java

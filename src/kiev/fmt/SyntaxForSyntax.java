@@ -19,25 +19,48 @@ import syntax kiev.Syntax;
 
 public class SyntaxForSyntax extends TextSyntax {
 
-	final SyntaxElem seFileUnit;
-	final SyntaxElem seImport;
-	final SyntaxElem seSymbolRef;
-	final SyntaxElem seSpaceInfo;
-	final SyntaxElem seSpaceCmd;
-	final SyntaxElem seDrawColor;
-	final SyntaxElem seDrawFont;
-	final SyntaxElem seSyntaxElemDecl;
-	final SyntaxElem seSyntaxToken;
-	final SyntaxElem seSyntaxAttr;
-	final SyntaxElem seSyntaxIdent;
-	final SyntaxElem seSyntaxList;
-	final SyntaxElem seSyntaxSet;
-	final SyntaxElem seSyntaxNode;
-	final SyntaxElem seSyntaxSpace;
-	final SyntaxElem seSyntaxOptional;
-	final SyntaxElem seCalcOption;
+	SyntaxElem seFileUnit;
+	SyntaxElem seImport;
+	SyntaxElem seSymbolRef;
+	SyntaxElem seSpaceInfo;
+	SyntaxElem seSpaceCmd;
+	SyntaxElem seDrawColor;
+	SyntaxElem seDrawFont;
+	SyntaxElem seSyntaxElemDecl;
+	SyntaxElem seSyntaxToken;
+	SyntaxElem seSyntaxAttr;
+	SyntaxElem seSyntaxIdent;
+	SyntaxElem seSyntaxList;
+	SyntaxElem seSyntaxSet;
+	SyntaxElem seSyntaxNode;
+	SyntaxElem seSyntaxSpace;
+	SyntaxElem seSyntaxOptional;
+	SyntaxElem seCalcOption;
 
 	public SyntaxForSyntax() {
+		init();
+	}
+	public void loadFrom(FileUnit fu) {
+		init();
+		if (fu != null) {
+			foreach(SyntaxElemDecl sed; fu.members; sed.elem != null) {
+				//if !(sed.node.symbol instanceof Struct)
+				//	continue;
+				//Struct s = (Struct)sed.node.symbol;
+				//if !(s.isCompilerNode())
+				//	continue;
+				String nn = sed.id.uname;
+				if      (nn == "stx-file-unit")			seFileUnit = sed.elem;
+				else if (nn == "stx-import")			seImport = sed.elem;
+				else if (nn == "stx-def-space-info")	seSpaceInfo = sed.elem;
+				else if (nn == "stx-def-space-cmd")	seSpaceCmd = sed.elem;
+				else if (nn == "stx-def-color")			seDrawColor = sed.elem;
+				else if (nn == "stx-def-font")			seDrawFont = sed.elem;
+			}
+		}
+	}
+
+	private void init() {
 		SpaceCmd[] lout_empty = new SpaceCmd[0];
 		SpaceCmd[] lout_nl = new SpaceCmd[] {
 				new SpaceCmd(siNl, SP_NOP, SP_ADD, 0)

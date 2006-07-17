@@ -59,6 +59,8 @@ public class TextSyntax {
 	public String escapeChar(char ch) {
 		return String.valueOf(ch);
 	}
+	
+	public void loadFrom(FileUnit fu) {}
 
 	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
 		if (badSyntax == null)
@@ -393,7 +395,7 @@ public final class DrawColor extends DNode {
 	
 	public DrawColor() {}
 	public DrawColor(String name) {
-		this.id = new Symbol("color "+rgb_color);
+		this.id = new Symbol(name);
 	}
 }
 
@@ -644,14 +646,19 @@ public class SyntaxAttr extends SyntaxElem {
 	@att public FormatInfoHint			hint;
 	@att public SymbolRef[]				expected_types;
 
+	@setter
+	public void set$name(String value) {
+		this.name = (value != null) ? value.intern() : null;
+	}
+	
 	public SyntaxAttr() {}
 	public SyntaxAttr(String name, SpaceCmd[] spaces) {
 		super(spaces);
-		this.name = name.intern();
+		this.name = name;
 	}
 	public SyntaxAttr(String name, FormatInfoHint hint, SpaceCmd[] spaces) {
 		super(spaces);
-		this.name = name.intern();
+		this.name = name;
 		this.hint = hint;
 	}
 
@@ -850,8 +857,13 @@ public class SyntaxSpace extends SyntaxElem {
 public abstract class CalcOption extends ANode {
 	@virtual typedef This  ≤ CalcOption;
 
-	@att String name;
+	@att public String name;
 
+	@setter
+	public void set$name(String value) {
+		this.name = (value != null) ? value.intern() : null;
+	}
+	
 	public CalcOption() {}
 	public CalcOption(String name) {
 		if (name != null)

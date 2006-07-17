@@ -119,6 +119,7 @@ public class InfoView extends UIView implements KeyListener {
 				m.add(new JMenuItem(new SetSyntaxAction("Java Syntax", JavaSyntax.class)));
 				m.add(new JMenuItem(new SetSyntaxAction("XML dump Syntax", XmlDumpSyntax.class)));
 				m.add(new JMenuItem(new SetSyntaxAction("Syntax for Syntax", SyntaxForSyntax.class)));
+				m.add(new JMenuItem(new LoadSyntaxAction("Load stx.xml", SyntaxForSyntax.class)));
 				m.show(view_canvas, 0, 0);
 				break;
 				}
@@ -144,6 +145,20 @@ public class InfoView extends UIView implements KeyListener {
 		}
 		public void actionPerformed(ActionEvent e) {
 			TextSyntax stx = (TextSyntax)clazz.newInstance();
+			InfoView.this.setSyntax(stx);
+		}
+	}
+	
+	class LoadSyntaxAction extends TextAction {
+		private Class clazz;
+		LoadSyntaxAction(String text, Class clazz) {
+			super(text);
+			this.clazz = clazz;
+		}
+		public void actionPerformed(ActionEvent e) {
+			TextSyntax stx = (TextSyntax)clazz.newInstance();
+			FileUnit fu = (FileUnit)Env.loadFromXmlFile(new File("stx.xml"));
+			stx.loadFrom(fu);
 			InfoView.this.setSyntax(stx);
 		}
 	}
