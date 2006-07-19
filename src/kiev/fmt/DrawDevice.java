@@ -42,8 +42,10 @@ public class TextPrinter implements DrawDevice {
 			
 			String text = leaf.getText();
 			
-			sb.append(text);
-			pos_x += text.length();
+			if (text != null) {
+				sb.append(text);
+				pos_x += text.length();
+			}
 
 			x += leaf.geometry.w;
 			while (pos_x < x) {

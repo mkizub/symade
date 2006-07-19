@@ -37,6 +37,7 @@ public class SyntaxForSyntax extends TextSyntax {
 	SyntaxElem seSyntaxOptional;
 	SyntaxElem seCalcOption;
 	SyntaxElem seSyntaxEnumChoice;
+	SyntaxElem seSyntaxFolder;
 
 	public SyntaxForSyntax() {
 		init();
@@ -57,6 +58,10 @@ public class SyntaxForSyntax extends TextSyntax {
 				else if (nn == "stx-def-space-cmd")	seSpaceCmd = sed.elem;
 				else if (nn == "stx-def-color")			seDrawColor = sed.elem;
 				else if (nn == "stx-def-font")			seDrawFont = sed.elem;
+				else if (nn == "stx-def-syntax")		seSyntaxElemDecl = sed.elem;
+				else if (nn == "stx-def-token")			seSyntaxToken = sed.elem;
+				else if (nn == "stx-def-attr")			seSyntaxSubAttr = sed.elem;
+				else if (nn == "stx-def-ident")			seSyntaxIdent = sed.elem;
 			}
 		}
 	}
@@ -121,6 +126,7 @@ public class SyntaxForSyntax extends TextSyntax {
 			elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
 			elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxNode",Env.newPackage("kiev.fmt"),0));
 			elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSpace",Env.newPackage("kiev.fmt"),0));
+			elem_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxFolder",Env.newPackage("kiev.fmt"),0));
 			seSyntaxElemDecl = setl(lout_nl,kw("def-syntax"), id.ncopy(), node_attr, elem_attr);
 		}
 		{
@@ -144,6 +150,8 @@ public class SyntaxForSyntax extends TextSyntax {
 		}
 		{
 			// attr
+			SyntaxAttr format = attr("format");
+			format.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
 			SyntaxElem expected = lst("expected_types", lout_empty);
 			expected.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
 			SyntaxList slst = lst("spaces",node(),sep(","),new SpaceCmd[0]);
@@ -154,6 +162,8 @@ public class SyntaxForSyntax extends TextSyntax {
 					sep("<"),
 					kw("attr:"),
 					set(oper("\""), attr("name"), oper("\"")),
+					kw("format:"),
+					format,
 					kw("types:"),
 					sep("["),expected,sep("]"),
 					sep("{"),slst,sep("}"),
@@ -164,6 +174,8 @@ public class SyntaxForSyntax extends TextSyntax {
 		}
 		{
 			// ident
+			SyntaxAttr format = attr("format");
+			format.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
 			SyntaxElem expected = lst("expected_types", lout_empty);
 			expected.expected_types += new SymbolRef(0, Env.newStruct("SymbolRef",Env.newPackage("kiev.vlang"),0));
 			SyntaxList slst = lst("spaces",node(),sep(","),new SpaceCmd[0]);
@@ -174,6 +186,8 @@ public class SyntaxForSyntax extends TextSyntax {
 					sep("<"),
 					kw("ident:"),
 					set(oper("\""), attr("name"), oper("\"")),
+					kw("format:"),
+					format,
 					kw("types:"),
 					sep("["),expected,sep("]"),
 					sep("{"),slst,sep("}"),
@@ -328,6 +342,34 @@ public class SyntaxForSyntax extends TextSyntax {
 				);
 		}
 		{
+			// folder
+			SyntaxAttr folded_attr = attr("folded", lout_nl_x);
+			folded_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
+			folded_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
+			folded_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxNode",Env.newPackage("kiev.fmt"),0));
+			SyntaxAttr unfoded_attr = attr("unfolded", lout_nl_x);
+			unfoded_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxToken",Env.newPackage("kiev.fmt"),0));
+			unfoded_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSet",Env.newPackage("kiev.fmt"),0));
+			unfoded_attr.expected_types += new SymbolRef(0, Env.newStruct("SyntaxSpace",Env.newPackage("kiev.fmt"),0));
+			SyntaxList slst = lst("spaces", node(lout_nl_x), null, lout_nl_x);
+			slst.expected_types += new SymbolRef(0, Env.newStruct("SpaceCmd",Env.newPackage("kiev.fmt"),0));
+			seSyntaxFolder = folder(true,
+				set(oper("("), folded_attr.ncopy(), oper("||"), unfoded_attr.ncopy(), oper(")")),
+				set(
+					sep("<"),
+					kw("folded:"),
+					folded_attr.ncopy(),
+					kw("unfolded:"),
+					unfoded_attr.ncopy(),
+					kw("folded_by_default="),
+					attr("folded_by_default"),
+					sep("{"),slst,sep("}"),
+					sep(">")
+					),
+				new SpaceCmd[0]
+				);
+		}
+		{
 			// CalcOption-s
 			seCalcOption = ident("name");
 		}
@@ -351,6 +393,7 @@ public class SyntaxForSyntax extends TextSyntax {
 		case SyntaxNode:     return seSyntaxNode;
 		case SyntaxSpace:    return seSyntaxSpace;
 		case SyntaxOptional: return seSyntaxOptional;
+		case SyntaxFolder:   return seSyntaxFolder;
 		case CalcOption:     return seCalcOption;
 		case SyntaxEnumChoice:     return seSyntaxEnumChoice;
 		}

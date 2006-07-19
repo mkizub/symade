@@ -645,6 +645,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	@att public String					name;
 	@att public FormatInfoHint			hint;
 	@att public SymbolRef[]				expected_types;
+	@att public SyntaxToken				format;
 
 	@setter
 	public void set$name(String value) {
@@ -663,6 +664,17 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	}
 
 	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
+
+	protected void compile() {
+		super.compile();
+		if (format != null) {
+			DrawLayout lout = this.lout;
+			if (format.color != null)
+				lout.color = new Color(format.color.symbol.rgb_color);
+			if (format.font != null)
+				lout.font = Font.decode(format.font.symbol.font_name);
+		}
+	}
 
 	public void preResolveOut() {
 		foreach (SymbolRef sr; expected_types) {

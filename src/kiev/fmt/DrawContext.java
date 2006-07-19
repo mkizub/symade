@@ -112,6 +112,7 @@ public class DrawContext implements Cloneable {
 					dg.b = 0;
 				}
 			} else {
+				if (text == null) text = "";
 				dg.w = text.length();
 				dg.h = 1;
 				dg.b = 0;
