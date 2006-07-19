@@ -207,24 +207,29 @@ public class Canvas extends JPanel implements DrawDevice {
 				}
 				cy += h;
 			}
-		} else {
+		}
+		else if (leaf == current && cursor_offset >= 0) {
 			String s = leaf.getText();
-			if (s == null) s = "<?>";
-			if (s.length() != 0) {
-				TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
-				tl.draw(g, x, y+b);
-				if (leaf == current && cursor_offset >= 0) {
-					g.translate(x, y+b);
-					Shape[] carets = tl.getCaretShapes(cursor_offset);
-					g.setColor(Color.RED);
-					g.draw(carets[0]);
-					if (carets[1] != null) {
-						g.setColor(Color.BLACK);
-						g.draw(carets[1]);
-					}
-					g.translate(-x, -(y+b));
-				}
+			if (s == null || s.length() == 0) s = " ";
+			TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
+			tl.draw(g, x, y+b);
+			g.translate(x, y+b);
+			Shape[] carets = tl.getCaretShapes(cursor_offset);
+			g.setColor(Color.RED);
+			g.draw(carets[0]);
+			if (carets[1] != null) {
+				g.setColor(Color.BLACK);
+				g.draw(carets[1]);
 			}
+			g.translate(-x, -(y+b));
+		}
+		else {
+			String s = leaf.getText();
+			if (s == null) s = "\u25d8"; // ◘
+			if (s.length() == 0)
+				return;
+			TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
+			tl.draw(g, x, y+b);
 		}
 	}
 	

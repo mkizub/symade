@@ -72,7 +72,10 @@ public class DrawNodeTerm extends DrawTerm {
 	}
 
 	String makeText(Formatter fmt) {
-		return String.valueOf(getAttrPtr().get());
+		Object o = getAttrPtr().get();
+		if (o == null)
+			return null;
+		return String.valueOf(o);
 	}
 	
 	public final AttrPtr getAttrPtr() {
@@ -108,7 +111,10 @@ public class DrawStrTerm extends DrawNodeTerm {
 	}
 
 	String makeText(Formatter fmt) {
-		String str = String.valueOf(getAttrPtr().get());
+		Object o = getAttrPtr().get();
+		if (o == null)
+			return null;
+		String str = String.valueOf(o);
 		return fmt.escapeString(str);
 	}
 }

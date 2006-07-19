@@ -130,18 +130,18 @@ public class TextSyntax {
 	protected SyntaxAttr attr(String slot)
 	{
 		SpaceCmd[] lout = new SpaceCmd[0];
-		return new SyntaxAttr(slot, lout);
+		return new SyntaxSubAttr(slot, lout);
 	}
 
 	protected SyntaxAttr attr(String slot, SpaceCmd[] lout)
 	{
-		return new SyntaxAttr(slot, lout);
+		return new SyntaxSubAttr(slot, lout);
 	}
 
 	protected SyntaxAttr attr(String slot, FormatInfoHint hint)
 	{
 		SpaceCmd[] lout = new SpaceCmd[0];
-		return new SyntaxAttr(slot, hint, lout);
+		return new SyntaxSubAttr(slot, hint, lout);
 	}
 
 	protected SyntaxIdentAttr ident(String slot)
@@ -639,7 +639,7 @@ public final class SyntaxToken extends SyntaxElem {
 }
 
 @node
-public class SyntaxAttr extends SyntaxElem {
+public abstract class SyntaxAttr extends SyntaxElem {
 	@virtual typedef This  ≤ SyntaxAttr;
 
 	@att public String					name;
@@ -660,6 +660,49 @@ public class SyntaxAttr extends SyntaxElem {
 		super(spaces);
 		this.name = name;
 		this.hint = hint;
+	}
+
+	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
+
+	public void preResolveOut() {
+		foreach (SymbolRef sr; expected_types) {
+			TypeDecl@ td;
+			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,sr.name,ResInfo.noForwards)) ) {
+				Kiev.reportError(sr,"Unresolved type "+sr);
+				continue;
+			}
+			if (!(td instanceof Struct) || !((Struct)td).isCompilerNode()) {
+				Kiev.reportError(sr,"Resolved type "+sr+" is not a compiler @node");
+				continue;
+			}
+			sr.symbol = td;
+		}
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "expected_types") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<Struct> vect = new Vector<Struct>();
+			DNode@ s;
+			foreach (PassInfo.resolveNameR(this,s,info))
+				if (s instanceof Struct && ((Struct)s).isCompilerNode()) vect.append((Struct)s);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
+}
+
+@node
+public class SyntaxSubAttr extends SyntaxAttr {
+	@virtual typedef This  = SyntaxSubAttr;
+
+	public SyntaxSubAttr() {}
+	public SyntaxSubAttr(String name, SpaceCmd[] spaces) {
+		super(name,spaces);
+	}
+	public SyntaxSubAttr(String name, FormatInfoHint hint, SpaceCmd[] spaces) {
+		super(name,hint,spaces);
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
@@ -687,19 +730,6 @@ public class SyntaxAttr extends SyntaxElem {
 		dr.attr_syntax = this;
 		return dr;
 	}
-
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "expected_types") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<Struct> vect = new Vector<Struct>();
-			DNode@ s;
-			foreach (PassInfo.resolveNameR(this,s,info))
-				if (s instanceof Struct && ((Struct)s).isCompilerNode()) vect.append((Struct)s);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
-	}
-
 }
 
 @node
@@ -720,12 +750,6 @@ public class SyntaxList extends SyntaxAttr {
 		this.empty.is_hidden = true;
 	}
 
-	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		if (current_stx != this || expected_node != current_node)
-			return false;
-		return true;
-	}
-	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNonTermList(node, this);
 		return dr;
@@ -741,12 +765,6 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 		super(name,spaces);
 	}
 
-	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		if (current_stx != this || expected_node != current_node)
-			return false;
-		return true;
-	}
-	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNodeTerm(node, this, name);
 		return dr;
@@ -762,12 +780,6 @@ public class SyntaxCharAttr extends SyntaxAttr {
 		super(name,spaces);
 	}
 
-	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		if (current_stx != this || expected_node != current_node)
-			return false;
-		return true;
-	}
-	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawCharTerm(node, this, name);
 		return dr;
@@ -783,12 +795,6 @@ public class SyntaxStrAttr extends SyntaxAttr {
 		super(name,spaces);
 	}
 
-	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		if (current_stx != this || expected_node != current_node)
-			return false;
-		return true;
-	}
-	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawStrTerm(node, this, name);
 		return dr;
@@ -978,15 +984,14 @@ public class SyntaxFolder extends SyntaxElem {
 
 
 @node
-public class SyntaxIntChoice extends SyntaxSet {
+public class SyntaxIntChoice extends SyntaxAttr {
 	@virtual typedef This  = SyntaxIntChoice;
 
-	@att public String name;
+	@att public SyntaxElem[] elements;
 
 	public SyntaxIntChoice() {}
 	public SyntaxIntChoice(String name, SpaceCmd[] spaces) {
-		super(spaces);
-		this.name = name.intern();
+		super(name,spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
@@ -996,15 +1001,14 @@ public class SyntaxIntChoice extends SyntaxSet {
 }
 
 @node
-public class SyntaxEnumChoice extends SyntaxSet {
+public class SyntaxEnumChoice extends SyntaxAttr {
 	@virtual typedef This  = SyntaxEnumChoice;
 
-	@att public String name;
+	@att public SyntaxElem[] elements;
 
 	public SyntaxEnumChoice() {}
 	public SyntaxEnumChoice(String name, SpaceCmd[] spaces) {
-		super(spaces);
-		this.name = name.intern();
+		super(name,spaces);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {

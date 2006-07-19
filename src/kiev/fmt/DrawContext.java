@@ -98,7 +98,7 @@ public class DrawContext implements Cloneable {
 		} else {
 			String text = dr.getText();
 			if (gfx != null) {
-				if (text == null) text = "<?>";
+				if (text == null) text = "\u25d8"; // ◘
 				if (text != null && text.length() != 0) {
 					Font  font  = dr.syntax.lout.font;
 					TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());

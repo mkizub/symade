@@ -157,6 +157,12 @@ public class Editor extends InfoView implements KeyListener {
 					formatAndPaint(true);
 				}
 				break;
+			case KeyEvent.VK_ESCAPE:
+				if (item_editor != null) {
+					stopItemEditor(true);
+					item_editor = null;
+				}
+				break;
 			case KeyEvent.VK_C:
 				if (cur_elem instanceof DrawNodeTerm) {
 					AttrPtr pattr = ((DrawNodeTerm)cur_elem).getAttrPtr();
@@ -784,9 +790,9 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null)
 				editor.view_canvas.remove(menu);
-			ANode obj = (ANode)Class.forName(cls.qname()).newInstance();
 			foreach (AttrSlot a; node.values(); a.name == attr) {
 				try {
+					ANode obj = (ANode)Class.forName(cls.qname()).newInstance();
 					if (a.is_space) {
 						SpaceAttrSlot<ANode> sas = (SpaceAttrSlot<ANode>)a;
 						if (idx < 0)
@@ -814,7 +820,7 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 abstract class TextEditor implements KeyListener {
 	
 	protected final Editor		editor;
-	private         int			edit_offset;
+	protected       int			edit_offset;
 	protected       JComboBox	combo;
 
 	TextEditor(Editor editor) {
@@ -839,6 +845,12 @@ abstract class TextEditor implements KeyListener {
 		if (edit_offset < 0) { editor.view_canvas.cursor_offset = edit_offset = 0; }
 		if (edit_offset > text.length()) { editor.view_canvas.cursor_offset = edit_offset = text.length(); }
 		switch (code) {
+		case KeyEvent.VK_HOME:
+			edit_offset = 0;
+			break;
+		case KeyEvent.VK_END:
+			edit_offset = text.length();
+			break;
 		case KeyEvent.VK_LEFT:
 			if (edit_offset > 0)
 				edit_offset--;
@@ -891,6 +903,11 @@ final class SymbolEditor extends TextEditor {
 	SymbolEditor(Symbol symbol, Editor editor) {
 		super(editor);
 		this.symbol = symbol;
+		String text = this.getText();
+		if (text != null) {
+			edit_offset = text.length();
+			editor.view_canvas.cursor_offset = edit_offset;
+		}
 	}
 	
 	String getText() {
@@ -908,6 +925,11 @@ final class SymRefEditor extends TextEditor implements ComboBoxEditor {
 	SymRefEditor(SymbolRef<DNode> symref, Editor editor) {
 		super(editor);
 		this.symref = symref;
+		String text = this.getText();
+		if (text != null) {
+			edit_offset = text.length();
+			editor.view_canvas.cursor_offset = edit_offset;
+		}
 		showAutoComplete();
 	}
 	
@@ -976,6 +998,11 @@ final class StrEditor extends TextEditor {
 	StrEditor(AttrPtr pattr, Editor editor) {
 		super(editor);
 		this.pattr = pattr;
+		String text = this.getText();
+		if (text != null) {
+			edit_offset = text.length();
+			editor.view_canvas.cursor_offset = edit_offset;
+		}
 	}
 	
 	String getText() {
@@ -993,10 +1020,18 @@ final class IntEditor extends TextEditor {
 	IntEditor(AttrPtr pattr, Editor editor) {
 		super(editor);
 		this.pattr = pattr;
+		String text = this.getText();
+		if (text != null) {
+			edit_offset = text.length();
+			editor.view_canvas.cursor_offset = edit_offset;
+		}
 	}
 	
 	String getText() {
-		return String.valueOf(pattr.get());
+		Object o = pattr.get();
+		if (o == null)
+			return null;
+		return String.valueOf(o);
 	}
 	void setText(String text) {
 		pattr.set(Integer.valueOf(text));
