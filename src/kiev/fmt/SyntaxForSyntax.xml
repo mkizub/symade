@@ -2,9 +2,18 @@
 <a-node class='kiev.vlang.FileUnit'>
     <pkg>
         <a-node class='kiev.vlang.types.TypeNameRef'>
+            <outer>
+                <a-node class='kiev.vlang.types.TypeNameRef'>
+                    <ident>
+                        <a-node class='kiev.vlang.SymbolRef'>
+                            <name>kiev</name>
+                        </a-node>
+                    </ident>
+                </a-node>
+            </outer>
             <ident>
                 <a-node class='kiev.vlang.SymbolRef'>
-                    <name>test</name>
+                    <name>fmt</name>
                 </a-node>
             </ident>
         </a-node>
@@ -3968,7 +3977,7 @@
     </members>
     <id>
         <a-node class='kiev.vlang.Symbol'>
-            <sname>stx.xml</sname>
+            <sname>kiev/fmt/SyntaxForSyntax.xml</sname>
         </a-node>
     </id>
 </a-node>

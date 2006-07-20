@@ -69,7 +69,9 @@ public class Symbol extends ASTNode {
 	}
 	
 	@setter
-	public void set$sname(String value) {
+	public void set$sname(String value)
+		alias operator(5, lfy, =)
+	{
 		if (value != null) {
 			this.sname = value.intern();
 			this.uname = this.sname;

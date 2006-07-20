@@ -732,7 +732,7 @@ public final class KievFE_SrcParse extends TransfProcessor {
 	}
 	
 	public void doProcess(FileUnit fu) {
-		if (fu.scanned_for_interface_only)
+		if (fu.scanned_for_interface_only || fu.bodies.length == 0)
 			return;
 		long curr_time = System.currentTimeMillis();
 		try {

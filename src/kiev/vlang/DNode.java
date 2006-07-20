@@ -263,7 +263,9 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 
-	public DNode() {}
+	public DNode() {
+		id = new Symbol();
+	}
 
 	public ASTNode getDummyNode() {
 		return DummyDNode.dummyNode;

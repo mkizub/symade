@@ -47,7 +47,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		this("", Env.root);
 	}
 	public FileUnit(String name, Struct pkg) {
-		this.id = new Symbol(name);
+		this.id = name;
 		this.pkg = new TypeNameRef(pkg.qname());
 		this.pkg.lnk = pkg.xtype;
 	}

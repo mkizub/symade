@@ -164,7 +164,7 @@ public final class CoreMetaType extends MetaType {
 	CoreMetaType(String name, Type super_type) {
 		TypeDecl tdecl = new TypeDecl();
 		this.tdecl = tdecl;
-		tdecl.id = new Symbol(name);
+		tdecl.id = name;
 		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
 		tdecl.flags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.setTypeDeclLoaded(true);
@@ -324,7 +324,7 @@ public final class ArrayMetaType extends MetaType {
 	static {
 		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpArrayArg, null).close());
 		TypeDecl tdecl = new TypeDecl();
-		tdecl.id = new Symbol("_array_");
+		tdecl.id = "_array_";
 		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
 		tdecl.flags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
@@ -556,7 +556,7 @@ public class CallMetaType extends MetaType {
 	public static final CallMetaType instance;
 	static {
 		TypeDecl tdecl = new TypeDecl();
-		tdecl.id = new Symbol("_call_type_");
+		tdecl.id = "_call_type_";
 		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
 		tdecl.flags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.setTypeDeclLoaded(true);

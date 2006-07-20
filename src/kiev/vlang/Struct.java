@@ -54,10 +54,12 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 	
 	private void resetNames() {
-		q_name = null;
-		b_name = null;
-		foreach (Struct s; sub_decls)
-			s.resetNames(); 
+		if (id.uname != null) { // initialized!
+			q_name = null;
+			b_name = null;
+			foreach (Struct s; sub_decls)
+				s.resetNames();
+		}
 	}
 	
 	public boolean isClazz() {
@@ -245,6 +247,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		this.id = new Symbol(null,"");
 		this.q_name = "";
 		this.b_name = KString.Empty;
+		this.meta = new MetaSet();
 	}
 	
 	public Struct(Symbol id, Struct outer, int flags) {

@@ -159,7 +159,7 @@ public class Env extends Struct {
 			outer.addSubStruct((Struct)cl);
 			return cl;
 		}
-		Symbol name;
+		Symbol name = new Symbol();
 		if (direct) {
 			name = new Symbol(sname);
 		}

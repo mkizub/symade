@@ -868,8 +868,7 @@ public final class WBCCondition extends DNode {
 
 	public WBCCondition(int pos, WBCType cond, String name, ENode body) {
 		this.pos = pos;
-		if (name != null)
-			this.id = new Symbol(name);
+		this.id = name;
 		this.cond = cond;
 		this.body = body;
 	}

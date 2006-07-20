@@ -60,7 +60,7 @@ public class Var extends LvalDNode {
 	{
 		this.pos = pos;
 		this.flags = flags;
-		this.id = new Symbol(name);
+		this.id = name;
 		this.vtype = new TypeRef(type);
 	}
 
@@ -76,7 +76,7 @@ public class Var extends LvalDNode {
 	public Var(String name, Type type)
 		require type != null;
 	{
-		this.id = new Symbol(name);
+		this.id = name;
 		this.vtype = new TypeRef(type);
 	}
 

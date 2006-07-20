@@ -283,7 +283,7 @@ public class SpaceInfo extends DNode {
 	
 	public SpaceInfo() {}
 	public SpaceInfo(String name, SpaceKind kind, int text_size, int pixel_size) {
-		this.id = new Symbol(name);
+		this.id = name;
 		this.kind = kind;
 		this.text_size = text_size;
 		this.pixel_size = pixel_size;
@@ -395,7 +395,7 @@ public final class DrawColor extends DNode {
 	
 	public DrawColor() {}
 	public DrawColor(String name) {
-		this.id = new Symbol(name);
+		this.id = name;
 	}
 }
 
@@ -408,7 +408,7 @@ public final class DrawFont extends DNode {
 
 	public DrawFont() {}
 	public DrawFont(String font_name) {
-		this.id = new Symbol(font_name);
+		this.id = font_name;
 		this.font_name = font_name;
 	}
 }
