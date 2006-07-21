@@ -38,8 +38,8 @@ public final class Comment extends SNode {
 
 	@virtual typedef This  = Comment;
 
-    public static final AttrSlot ATTR_BEFORE = new ExtAttrSlot("comment before", true, false, Comment.class);
-    public static final AttrSlot ATTR_AFTER  = new ExtAttrSlot("comment after",  true, false, Comment.class);
+    public static final AttrSlot ATTR_BEFORE = new ExtAttrSlot("comment before", true, false, TypeInfo.newTypeInfo(Comment.class,null));
+    public static final AttrSlot ATTR_AFTER  = new ExtAttrSlot("comment after",  true, false, TypeInfo.newTypeInfo(Comment.class,null));
 
 	@dflow(out="this:in") private static class DFI {}
 

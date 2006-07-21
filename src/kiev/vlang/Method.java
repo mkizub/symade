@@ -35,8 +35,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	@dflow(in="this:in")	WBCCondition[] 	conditions;
 	}
 
-	public static final AttrSlot ATTR_RET_VAR = new TmpAttrSlot("method ret var",true,false,Var.class);	
-	public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,Field.class);	
+	public static final AttrSlot ATTR_RET_VAR = new TmpAttrSlot("method ret var",true,false,TypeInfo.newTypeInfo(Var.class,null));	
+	public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));	
 
 	@virtual typedef This  ≤ Method;
 	@virtual typedef JView = JMethod;

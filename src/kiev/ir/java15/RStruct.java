@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
 @nodeview
 public final view RStruct of Struct extends RTypeDecl {
 
-	static final AttrSlot TI_ATTR = new TmpAttrSlot("rstruct ti field temp expr",true,false,TypeInfoExpr.class);	
+	static final AttrSlot TI_ATTR = new TmpAttrSlot("rstruct ti field temp expr",true,false,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
 
 	public:ro			Access					acc;
 	public:ro			WrapperMetaType			wmeta_type;
@@ -82,6 +82,8 @@ public final view RStruct of Struct extends RTypeDecl {
 	public ENode accessTypeInfoField(ASTNode from, Type t, boolean from_gen) {
 		while (t instanceof CTimeType)
 			t = t.getEnclosedType();
+		if (t.getStruct() != null && ((Struct)this) == t.getStruct().typeinfo_clazz && t.getStruct().xtype ≈ t)
+			return new ThisExpr(from.pos);
 		Method ctx_method = from.ctx_method;
 		if (t.isUnerasable()) {
 			if (ctx_method != null && ctx_method.isTypeUnerasable() && t instanceof ArgType) {
@@ -440,6 +442,25 @@ public final view RStruct of Struct extends RTypeDecl {
 					}
 				)
 			));
+		}
+		// create newInstance function
+		// public Object newInstance() {
+		// 	return new Xxx();
+		// }
+		{
+			boolean ctor_exists = false;
+			foreach(Constructor c; this.members; !c.isStatic() && c.isPublic() && c.type.arity==0) {
+				ctor_exists = true;
+				break;
+			}
+			if (ctor_exists) {
+				Method mni = new Method("newInstance", Type.tpObject, ACC_PUBLIC);
+				typeinfo_clazz.addMethod(mni);
+				mni.body = new Block(pos);
+				mni.block.stats.add(new ReturnStat(pos,
+					new NewExpr(pos,new TypeRef(this.xtype),ENode.emptyArray)
+				));
+			}
 		}
 		Kiev.runProcessorsOn(typeinfo_clazz)
 	}

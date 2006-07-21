@@ -15,7 +15,7 @@ import syntax kiev.Syntax;
 @nodeview
 public final view JNewExpr of NewExpr extends JENode {
 
-	static final AttrSlot ATTR = new TmpAttrSlot("jnew temp expr",true,false,ENode.class);	
+	static final AttrSlot ATTR = new TmpAttrSlot("jnew temp expr",true,false,TypeInfo.newTypeInfo(ENode.class,null));	
 
 	public:ro	JMethod			func;
 	public:ro	JENode[]		args;

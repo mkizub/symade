@@ -114,7 +114,7 @@ public class TypeInfoExpr extends ENode {
 	@virtual typedef RView = RTypeInfoExpr;
 
 	@att public TypeRef				type;
-	@att public TypeClassExpr		cl_expr;
+	@att public ENode				cl_expr;
 	@att public ENode[]				cl_args;
 
 	public TypeInfoExpr() {}

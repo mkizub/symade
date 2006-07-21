@@ -234,11 +234,11 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		{
 			Constructor ctor = new Constructor(0);
 			ctor.params.add(new FormPar(0, "name", Type.tpString, FormPar.PARAM_NORMAL, ACC_FINAL));
-			ctor.params.add(new FormPar(0, "clazz", Type.tpClass, FormPar.PARAM_NORMAL, ACC_FINAL));
+			ctor.params.add(new FormPar(0, "typeinfo", Type.tpTypeInfo, FormPar.PARAM_NORMAL, ACC_FINAL));
 			s.members.add(ctor);
 			CallExpr ce = new CallExpr(f.pos,
 					new TypeRef(s.super_types[0].getType()),
-					new SymbolRef<Method>("super",s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpClass)),
+					new SymbolRef<Method>("super",s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpTypeInfo)),
 					null,
 					new ENode[]{
 						new LVarExpr(f.pos, ctor.params[0]),
@@ -365,7 +365,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			}
 			Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
 			Type tpa = makeNodeAttrClass(s,f);
-			TypeClassExpr clz_expr = new TypeClassExpr(0, new TypeRef(clz_tp));
+			TypeInfoExpr clz_expr = new TypeInfoExpr(0, new TypeRef(clz_tp));
 			ENode e = new NewExpr(0, tpa, new ENode[]{
 					new ConstStringExpr(f.id.sname),
 					clz_expr

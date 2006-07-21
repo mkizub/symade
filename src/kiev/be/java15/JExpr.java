@@ -42,7 +42,7 @@ public final view JTypeClassExpr of TypeClassExpr extends JENode {
 @nodeview
 public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 	public:ro	Type				type;
-	public:ro	JTypeClassExpr		cl_expr;
+	public:ro	JENode				cl_expr;
 	public:ro	JENode[]			cl_args;
 
 	public void generate(Code code, Type reqType ) {
@@ -63,9 +63,11 @@ public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 		} else {
 			code.addNullConst();
 		}
-		Struct ti_clazz = type.getStruct().typeinfo_clazz;
-		if (ti_clazz == null)
+		Struct ti_clazz = type.getStruct();
+		if (ti_clazz == null || ti_clazz.typeinfo_clazz == null)
 			ti_clazz = Type.tpTypeInfo.clazz;
+		else
+			ti_clazz = ti_clazz.typeinfo_clazz;
 		Method func = ti_clazz.resolveMethod("newTypeInfo", ti_clazz.xtype, Type.tpClass, new ArrayType(Type.tpTypeInfo));
 		code.addInstr(op_call,(JMethod)func,false,ti_clazz.xtype);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);

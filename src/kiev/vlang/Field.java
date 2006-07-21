@@ -23,9 +23,9 @@ import syntax kiev.Syntax;
 public final class Field extends LvalDNode implements Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
-	public static final AttrSlot GETTER_ATTR = new ExtAttrSlot("getter method",false,false,Method.class);
-	public static final AttrSlot SETTER_ATTR = new ExtAttrSlot("setter method",false,false,Method.class);
-	public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,Method.class);	
+	public static final AttrSlot GETTER_ATTR = new ExtAttrSlot("getter method",false,false,TypeInfo.newTypeInfo(Method.class,null));
+	public static final AttrSlot SETTER_ATTR = new ExtAttrSlot("setter method",false,false,TypeInfo.newTypeInfo(Method.class,null));
+	public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,TypeInfo.newTypeInfo(Method.class,null));	
 
 	private static final Field dummyNode = new Field();
 	

@@ -98,11 +98,12 @@ public final class SpacePtr {
 public abstract class AttrSlot {
 	public static final AttrSlot[] emptyArray = new AttrSlot[0];
 	
-	public final String  name; // field (property) name
-	public final boolean is_attr; // @att or @ref
-	public final boolean is_space; // if Node[]
-	public final Class   clazz; // type of the fields
-	public final Object  defaultValue;
+	public final String   name; // field (property) name
+	public final boolean  is_attr; // @att or @ref
+	public final boolean  is_space; // if Node[]
+	public final Class    clazz; // type of the fields
+	public final TypeInfo typeinfo; // type of the fields
+	public final Object   defaultValue;
 	
 	public AttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
 		assert (name.intern() == name);
@@ -110,6 +111,26 @@ public abstract class AttrSlot {
 		this.is_attr = is_attr;
 		this.is_space = is_space;
 		this.clazz = clazz;
+		if (is_space) defaultValue = java.lang.reflect.Array.newInstance(clazz,0);
+		else if (clazz == Boolean.class) defaultValue = Boolean.FALSE;
+		else if (clazz == Character.class) defaultValue = new Character('\0');
+		else if (clazz == Byte.class) defaultValue = new Byte((byte)0);
+		else if (clazz == Short.class) defaultValue = new Short((short)0);
+		else if (clazz == Integer.class) defaultValue = new Integer(0);
+		else if (clazz == Long.class) defaultValue = new Long(0L);
+		else if (clazz == Float.class) defaultValue = new Float(0.f);
+		else if (clazz == Double.class) defaultValue = new Double(0.);
+		else if (clazz == String.class) defaultValue = "";
+		else defaultValue = null;
+	}
+	
+	public AttrSlot(String name, boolean is_attr, boolean is_space, TypeInfo typeinfo) {
+		assert (name.intern() == name);
+		this.name = name;
+		this.is_attr = is_attr;
+		this.is_space = is_space;
+		this.clazz = typeinfo.clazz;
+		this.typeinfo = typeinfo;
 		if (is_space) defaultValue = java.lang.reflect.Array.newInstance(clazz,0);
 		else if (clazz == Boolean.class) defaultValue = Boolean.FALSE;
 		else if (clazz == Character.class) defaultValue = new Character('\0');
@@ -133,8 +154,8 @@ public abstract class AttrSlot {
 }
 
 public class ExtAttrSlot extends AttrSlot {
-	public ExtAttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
-		super(name,is_attr,is_space,clazz);
+	public ExtAttrSlot(String name, boolean is_attr, boolean is_space, TypeInfo typeinfo) {
+		super(name,is_attr,is_space,typeinfo);
 	}
 	public boolean isExtData() { return true; }
 
@@ -150,8 +171,8 @@ public class ExtAttrSlot extends AttrSlot {
 }
 
 public class TmpAttrSlot extends AttrSlot {
-	public TmpAttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
-		super(name,is_attr,is_space,clazz);
+	public TmpAttrSlot(String name, boolean is_attr, boolean is_space, TypeInfo typeinfo) {
+		super(name,is_attr,is_space,typeinfo);
 	}
 	public boolean isTmpData() { return true; }
 
@@ -168,7 +189,7 @@ public class TmpAttrSlot extends AttrSlot {
 
 public class MetaAttrSlot extends ExtAttrSlot {
 	public MetaAttrSlot(String name, Class clazz) {
-		super(name,true,false,clazz);
+		super(name,true,false,TypeInfo.newTypeInfo(clazz,null));
 	}
 	public boolean isMeta() { return true; }
 }
@@ -177,7 +198,9 @@ public abstract class RefAttrSlot extends AttrSlot {
 	public RefAttrSlot(String name, Class clazz) {
 		super(name, false, false, clazz);
 	}
-
+	public RefAttrSlot(String name, TypeInfo typeinfo) {
+		super(name, false, false, typeinfo);
+	}
 	public abstract void set(ANode parent, Object value);
 	public abstract Object get(ANode parent);
 }
@@ -186,7 +209,9 @@ public abstract class AttAttrSlot extends AttrSlot {
 	public AttAttrSlot(String name, Class clazz) {
 		super(name, true, false, clazz);
 	}
-	
+	public AttAttrSlot(String name, TypeInfo typeinfo) {
+		super(name, true, false, typeinfo);
+	}
 	public abstract void set(ANode parent, Object value);
 	public abstract Object get(ANode parent);
 }
@@ -194,6 +219,9 @@ public abstract class AttAttrSlot extends AttrSlot {
 public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 	public SpaceAttrSlot(String name, boolean is_attr, Class clazz) {
 		super(name, is_attr, true, clazz);
+	}
+	public SpaceAttrSlot(String name, boolean is_attr, TypeInfo typeinfo) {
+		super(name, is_attr, true, typeinfo);
 	}
 	public abstract N[] get(ANode parent);
 	public abstract void set(ANode parent, Object narr);
@@ -249,6 +277,9 @@ public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 public class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N> {
 	public SpaceRefAttrSlot(String name, Class clazz) {
 		super(name, false, clazz);
+	}
+	public SpaceRefAttrSlot(String name, TypeInfo typeinfo) {
+		super(name, false, typeinfo);
 	}
 	
 	public final N set(ANode parent, int idx, N node) {
@@ -324,6 +355,9 @@ public class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N> {
 public class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N> {
 	public SpaceAttAttrSlot(String name, Class clazz) {
 		super(name, true, clazz);
+	}
+	public SpaceAttAttrSlot(String name, TypeInfo typeinfo) {
+		super(name, true, typeinfo);
 	}
 	
 	public final N set(ANode parent, int idx, N node) {
@@ -425,8 +459,8 @@ public class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N> {
 public class SpaceRefDataAttrSlot<N extends ANode> extends SpaceRefAttrSlot<N> {
 	private final boolean is_ext;
 	
-	public SpaceRefDataAttrSlot(String name, boolean is_ext, Class clazz) {
-		super(name, clazz);
+	public SpaceRefDataAttrSlot(String name, boolean is_ext, TypeInfo typeinfo) {
+		super(name, typeinfo);
 		this.is_ext = is_ext;
 	}
 	public boolean isExtData() { return is_ext; }

@@ -48,24 +48,34 @@ public final view RTypeClassExpr of TypeClassExpr extends RENode {
 @nodeview
 public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 	public		TypeRef				type;
-	public		TypeClassExpr		cl_expr;
+	public		ENode				cl_expr;
 	public:ro	ENode[]				cl_args;
 
 	public void resolve(Type reqType) {
 		if (isResolved())
 			return;
+		this.open();
 		Type type = this.type.getType();
 		Struct clazz = type.getStruct();
-		if (clazz.isTypeUnerasable()) {
-			if (clazz.typeinfo_clazz == null)
-				((RStruct)clazz).autoGenerateTypeinfoClazz();
+		if (clazz == null) {
+			if (type instanceof CoreType || type.isArray()) {
+				cl_expr = new TypeClassExpr(pos,new TypeRef(type));
+				cl_expr.resolve(Type.tpClass);
+			} else {
+				Kiev.reportError(this,"Cannot make typeinfo expression for type "+type);
+			}
+		} else {
+			if (clazz.isTypeUnerasable()) {
+				if (clazz.typeinfo_clazz == null)
+					((RStruct)clazz).autoGenerateTypeinfoClazz();
+			}
+			cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.xtype));
+			cl_expr.resolve(Type.tpClass);
+			foreach (ArgType at; ((RStruct)clazz).getTypeInfoArgs())
+				((TypeInfoExpr)this).cl_args.add(((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false));
+			foreach (ENode tie; cl_args)
+				tie.resolve(null);
 		}
-		cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.xtype));
-		cl_expr.resolve(Type.tpClass);
-		foreach (ArgType at; ((RStruct)clazz).getTypeInfoArgs())
-			((TypeInfoExpr)this).cl_args.add(((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false));
-		foreach (ENode tie; cl_args)
-			tie.resolve(null);
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);

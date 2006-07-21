@@ -179,7 +179,7 @@ public class Editor extends InfoView implements KeyListener {
 					if (cur_elem instanceof DrawNodeTerm) {
 						if (in_clipboard instanceof DNode) {
 							AttrPtr pattr = ((DrawNodeTerm)cur_elem).getAttrPtr();
-							if (pattr.slot.clazz == SymbolRef.class) {
+							if (pattr.slot.typeinfo.clazz == SymbolRef.class) {
 								DNode dn = (DNode)in_clipboard;
 								changes.push(Transaction.open());
 								try {
@@ -190,7 +190,9 @@ public class Editor extends InfoView implements KeyListener {
 										obj.symbol = dn;
 									} else {
 										pattr.node.open();
-										pattr.set(new SymbolRef<DNode>(0,dn));
+										obj = (SymbolRef)pattr.slot.typeinfo.newInstance();
+										obj.symbol = dn;
+										pattr.set(obj);
 									}
 								} finally {
 									changes.peek().close();
@@ -626,7 +628,7 @@ final class ChooseItemEditor implements KeyHandler {
 				editor.startItemEditor((Symbol)obj, new SymbolEditor((Symbol)obj, editor));
 			else if (obj instanceof SymbolRef)
 				editor.startItemEditor((SymbolRef)obj, new SymRefEditor((SymbolRef)obj, editor));
-			else if (obj instanceof String || obj == null && pattr.slot.clazz == String.class) {
+			else if (obj instanceof String || obj == null && pattr.slot.typeinfo.clazz == String.class) {
 				if (pattr.node instanceof SymbolRef)
 					editor.startItemEditor((SymbolRef)pattr.node, new SymRefEditor((SymbolRef)pattr.node, editor));
 				else
@@ -638,7 +640,7 @@ final class ChooseItemEditor implements KeyHandler {
 				editor.startItemEditor(pattr.node, new BoolEditor(pattr, editor));
 			else if (obj instanceof ConstIntExpr)
 				editor.startItemEditor((ConstIntExpr)obj, new IntEditor(obj.getAttrPtr("value"), editor));
-			else if (Enum.class.isAssignableFrom(pattr.slot.clazz))
+			else if (Enum.class.isAssignableFrom(pattr.slot.typeinfo.clazz))
 				editor.startItemEditor(pattr.node, new EnumEditor(pattr, dr, editor));
 		}
 		else if (dr.parent() instanceof DrawEnumChoice) {
@@ -1092,7 +1094,7 @@ class EnumEditor implements KeyListener, PopupMenuListener {
 		this.editor = editor;
 		this.pattr = pattr;
 		menu = new JPopupMenu();
-		EnumSet ens = EnumSet.allOf(pattr.slot.clazz);
+		EnumSet ens = EnumSet.allOf(pattr.slot.typeinfo.clazz);
 		foreach (Enum e; ens.toArray())
 			menu.add(new JMenuItem(new SetSyntaxAction(e)));
 		int x = cur_elem.geometry.x;
