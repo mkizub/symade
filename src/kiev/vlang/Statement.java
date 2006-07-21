@@ -333,7 +333,7 @@ public class BreakStat extends ENode {
 			dest.delLink((BreakStat)this);
 			dest = null;
 		}
-		if( ident == null ) {
+		if( ident.name == null ) {
 			for(p=(ASTNode)parent(); !(p instanceof Method || p.isBreakTarget()); p = (ASTNode)p.parent() );
 			if( p instanceof Method || p == null ) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
@@ -404,7 +404,7 @@ public class ContinueStat extends ENode {
 			dest.delLink((ContinueStat)this);
 			dest = null;
 		}
-		if( ident == null ) {
+		if( ident.name == null ) {
 			for(p=(ASTNode)parent(); !(p instanceof LoopStat || p instanceof Method); p = (ASTNode)p.parent() );
 			if( p instanceof Method || p == null ) {
 				Kiev.reportError(this,"Continue not within loop statement");

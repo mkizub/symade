@@ -110,6 +110,7 @@ public class Symbol extends ASTNode {
 }
 
 @node
+//@unerasable
 public class SymbolRef<D extends DNode> extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -151,6 +152,14 @@ public class SymbolRef<D extends DNode> extends ASTNode {
 		return false;
 	}
 
+	public void set(D symbol)
+		alias operator(5, lfy, =)
+	{
+		if (this.name == null && symbol != null)
+			this.name = symbol.id.sname;
+		this.symbol = (D)symbol;
+	}
+	
 	public void set(Token t) {
         pos = t.getPos();
 		if (t.image.startsWith("#id\""))

@@ -35,7 +35,7 @@ public class XmlDumpSyntax extends TextSyntax {
 			};
 		seAll = new Hashtable<String,SyntaxElem>();
 		seNull = new SyntaxSpace();
-		seNull.is_hidden = true;
+		seNull.fmt.is_hidden = true;
 	}
 
 	public String escapeString(String str) {

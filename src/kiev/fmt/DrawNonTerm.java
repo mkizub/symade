@@ -98,9 +98,13 @@ public class DrawNonTermList extends DrawNonTerm {
 		}
 		SyntaxList slst = (SyntaxList)this.syntax;
 		ANode[] narr = (ANode[])oarr;
-		if (narr != node.getVal(slst.name)) {
-			narr = (ANode[])node.getVal(slst.name);
-			oarr = narr;
+		try {
+			oarr = (ANode[])node.getVal(slst.name);
+		} catch (RuntimeException e) {
+			oarr = new ANode[0];
+		}
+		if (narr != oarr) {
+			narr = (ANode[])oarr;
 			int sz = narr.length;
 			if (sz == 0) {
 				if (args.length != 1) {
@@ -134,7 +138,7 @@ public class DrawNonTermList extends DrawNonTerm {
 		if (narr.length == 0) {
 			assert(args.length == 0 || args.length == 1);
 			if (args.length > 0) {
-				if (slst.empty.is_hidden)
+				if (slst.empty.fmt.is_hidden)
 					args[0].geometry.is_hidden = !draw_optional;
 				args[0].preFormat(cont,slst.empty,this.node);
 			}

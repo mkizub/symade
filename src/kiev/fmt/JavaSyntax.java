@@ -452,7 +452,7 @@ public class JavaSyntax extends TextSyntax {
 		}
 		{
 			SyntaxElem sp_hid = new SyntaxSpace(new SpaceCmd[0]);
-			sp_hid.is_hidden = true;
+			sp_hid.fmt.is_hidden = true;
 			// import
 			seImport = setl(lout_nl,
 				kw("import"),
@@ -1185,7 +1185,7 @@ public class JavaSyntax extends TextSyntax {
 		//	);
 		seCastExpr = set(sep("("), kw("$cast"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
 		seNopExpr = new SyntaxSpace(new SpaceCmd[0]);
-		seNopExpr.is_hidden = true;
+		seNopExpr.fmt.is_hidden = true;
 		
 		SpaceCmd[] lout_comment = new SpaceCmd[] {
 					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),

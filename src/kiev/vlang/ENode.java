@@ -187,7 +187,9 @@ public abstract class ENode extends ASTNode {
 	
 	public static final ENode[] emptyArray = new ENode[0];
 	
-	public ENode() {}
+	public ENode() {
+		this.ident = new SymbolRef<TypeOfIdent>();
+	}
 
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		throw new RuntimeException("Cannot init "+getClass()+" from "+node.getClass());

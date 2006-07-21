@@ -41,7 +41,10 @@ public final class MetaPacked extends MetaSpecial {
 	@att public SymbolRef<Field>	fld;
 	@ref public Field				packer;
 
-	public MetaPacked() { super(ATTR); }
+	public MetaPacked() {
+		super(ATTR);
+		this.fld = new SymbolRef<Field>();
+	}
 
 	public int getSize() {
 		ENode size = this.size;
@@ -64,13 +67,12 @@ public final class MetaPacked extends MetaSpecial {
 	}
 	
 	public String getFld() {
-		SymbolRef<DNode> fld = this.fld;
-		if (fld != null)
+		if (fld.name != null)
 			return fld.name;
 		return "";
 	}
 	public void setFld(String val) {
-		fld = new SymbolRef<DNode>(val);
+		fld.name = val;
 	}
 }
 

@@ -472,19 +472,31 @@ public class Env extends Struct {
 		SAXParser saxParser = factory.newSAXParser();
 		SAXHandler handler = new SAXHandler();
 		saxParser.parse(f, handler);
-		Kiev.runProcessorsOn(handler.root);
+		ANode root = handler.root;
+		if (root instanceof FileUnit) {
+			root.id = getRelativePath(f);
+		} else {
+			root = new FileUnit(getRelativePath(f), Env.root);
+			root.members += handler.root;
+		}
+		Kiev.runProcessorsOn((FileUnit)root);
 		return handler.root;
 	}
 	
 	final static class SAXHandler extends DefaultHandler {
 		ASTNode root;
 		boolean expect_attr;
+		int ignore_count;
 		Stack<ANode> nodes = new Stack<ANode>();
 		Stack<AttrSlot> attrs = new Stack<AttrSlot>();
 		String text;
 		public void startElement(String uri, String sName, String qName, Attributes attributes)
 			throws SAXException
 		{
+			if (ignore_count > 0) {
+				ignore_count++;
+				return;
+			}
 			if (root == null) {
 				assert (!expect_attr);
 				assert (qName.equals("a-node"));
@@ -498,7 +510,12 @@ public class Env extends Struct {
 			if (qName.equals("a-node")) {
 				assert (!expect_attr);
 				String cl_name = attributes.getValue("class");
-				ANode n = (ANode)Class.forName(cl_name).newInstance();
+				ANode n;
+				if (cl_name.equals("kiev.vlang.SymbolRef")) {
+					n = new SymbolRef<DNode>();
+				} else {
+					n = (ANode)Class.forName(cl_name).newInstance();
+				}
 				//System.out.println("push node "+nodes.length);
 				nodes.push(n);
 				expect_attr = true;
@@ -512,11 +529,17 @@ public class Env extends Struct {
 				expect_attr = false;
 				return;
 			}
-			throw new SAXException("Attribute '"+qName+"' not found in "+n.getClass());
+			//throw new SAXException("Attribute '"+qName+"' not found in "+n.getClass());
+			System.out.println("Attribute '"+qName+"' not found in "+n.getClass());
+			ignore_count = 1;
 		}
 		public void endElement(String uri, String sName, String qName)
 			throws SAXException
 		{
+			if (ignore_count > 0) {
+				ignore_count--;
+				return;
+			}
 			if (expect_attr) {
 				assert(qName.equals("a-node"));
 				ANode n = nodes.pop();
@@ -533,7 +556,10 @@ public class Env extends Struct {
 					sa.add(nodes.peek(),n);
 				} else {
 					//System.out.println("set node to "+attr.name);
-					attr.set(nodes.peek(),n);
+					if (n instanceof SymbolRef)
+						((SymbolRef)attr.get(nodes.peek())).name = n.name;
+					else
+						attr.set(nodes.peek(),n);
 				}
 				expect_attr = false;
 			} else {
@@ -562,14 +588,15 @@ public class Env extends Struct {
 					else if (Enum.class.isAssignableFrom(attr.clazz))
 						attr.set(nodes.peek(),Enum.valueOf(attr.clazz,text.trim()));
 					else
-						throw new SAXException("Attribute '"+attr.name+"' of "+nodes.peek().getClass()+" uses unsupported "+attr.clazz);
+						//throw new SAXException("Attribute '"+attr.name+"' of "+nodes.peek().getClass()+" uses unsupported "+attr.clazz);
+						System.out.println("Attribute '"+attr.name+"' of "+nodes.peek().getClass()+" uses unsupported "+attr.clazz);
 					text = null;
 				}
 				expect_attr = true;
 			}
 		}
 		public void characters(char[] ch, int start, int length) {
-			if (expect_attr || attrs.length <= 0)
+			if (ignore_count > 0 || expect_attr || attrs.length <= 0)
 				return;
 			AttrSlot attr = attrs.peek();
 			if (ANode.class.isAssignableFrom(attr.clazz))
@@ -579,6 +606,60 @@ public class Env extends Struct {
 			else
 				text += new String(ch, start, length);
 		}
+	}
+
+
+
+	private static Vector<String> getPathList(File f)
+		throws IOException
+	{
+		Vector<String> l = new Vector<String>();
+		File[] roots = File.listRoots();
+		File r;
+		r = f.getCanonicalFile();
+		while(r != null && !Arrays.contains(roots,r)) {
+			l.append(r.getName());
+			r = r.getParentFile();
+		}
+		return l;
+	}
+
+	private static String matchPathLists(Vector<String> r,Vector<String> f) {
+		// start at the beginning of the lists
+		// iterate while both lists are equal
+		String s = "";
+		int i = r.size()-1;
+		int j = f.size()-1;
+
+		// first eliminate common root
+		while (i >= 0 && j >= 0 && r[i].equals(f[j])) {
+			i--;
+			j--;
+		}
+		// for each remaining level in the home path, add a ..
+		for(; i >= 0; i--)
+			s += ".." + File.separator;
+		// for each level in the file path, add the path
+		for(; j>=1; j--)
+			s += f.get(j) + File.separator;
+		// file name
+		s += f[j];
+		return s;
+	}
+
+	public static String getRelativePath(File f, File home)
+		throws IOException
+	{
+		Vector<String> homelist = getPathList(home);
+		Vector<String> filelist = getPathList(f);
+		String s = matchPathLists(homelist,filelist);
+		return s;
+	}
+
+	public static String getRelativePath(File f)
+		throws IOException
+	{
+		return getRelativePath(f, new File("."));
 	}
 }
 

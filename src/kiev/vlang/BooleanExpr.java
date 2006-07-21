@@ -43,7 +43,7 @@ public abstract class BoolExpr extends ENode {
 
 	public void mainResolveOut() {
 		Method m;
-		if (ident == null || ident.symbol == null) {
+		if (ident.symbol == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());

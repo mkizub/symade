@@ -378,15 +378,14 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 
 	public void normilizeExpr(ENode expr) {
-		if (expr.ident == null) {
+		if (expr.ident.name == null) {
 			Operator op = expr.getOp();
 			if (op != null)
-				expr.ident = new SymbolRef<DNode>(op.name,this);
+				expr.ident.name = op.name;
 			else
-				expr.ident = new SymbolRef<DNode>(this.id.sname,this);
-		} else {
-			expr.ident.symbol = this;
+				expr.ident.name = this.id.sname;
 		}
+		expr.ident.symbol = this;
 		if (!isMacro())
 			return;
 		Meta m = this.meta.get("kiev.stdlib.meta.CompilerNode");

@@ -37,7 +37,9 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	@ref public boolean				of_method;
 	@ref public DNode				resolved;
 
-	public Import() {}
+	public Import() {
+		this.name = new SymbolRef<DNode>();
+	}
 
 	public Import(Struct node, boolean star) {
 		this.name = new SymbolRef<DNode>(node.qname());

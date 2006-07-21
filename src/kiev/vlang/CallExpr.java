@@ -39,7 +39,6 @@ public class CallExpr extends ENode {
 	@att public ENode[]				args;
 
 	@getter public Method get$func() {
-		if (ident == null) return null;
 		return (Method)ident.symbol;
 	}
 	@setter public void set$func(Method m) {

@@ -302,6 +302,7 @@ public final class SpaceCmd extends ASTNode {
 	@att public int							from_attempt;
 	
 	public SpaceCmd() {
+		si = new SymbolRef<SpaceInfo>();
 		action_before = SP_NOP;
 		action_after = SP_NOP;
 	}
@@ -316,8 +317,6 @@ public final class SpaceCmd extends ASTNode {
 	}
 
 	public void preResolveOut() {
-		if (si == null)
-			si = new SymbolRef<SpaceInfo>(0,"sp");
 		if (si.name == null)
 			si.name = "sp";
 		SpaceInfo@ spi;
@@ -453,7 +452,9 @@ public final class SyntaxElemDecl extends DNode {
 	@att SymbolRef<Struct>		node;
 	@att SyntaxElem				elem;
 
-	public SyntaxElemDecl() {}
+	public SyntaxElemDecl() {
+		this.node = new SymbolRef<Struct>();
+	}
 	public SyntaxElemDecl(Struct cls, SyntaxElem elem) {
 		this.node = new SymbolRef<Struct>(0,cls);
 		this.elem = elem;
@@ -484,106 +485,17 @@ public final class SyntaxElemDecl extends DNode {
 		}
 		return super.findForResolve(name,slot,by_equals);
 	}
-
 }
 
 @node
-public abstract class SyntaxElem extends ASTNode {
-	@virtual typedef This  ≤ SyntaxElem;
-
-	public static final SyntaxElem[] emptyArray = new SyntaxElem[0];
-
+public final class SyntaxElemFormatDecl extends DNode {
 	@att public SpaceCmd[]				spaces;
-	@att public boolean					is_hidden;
-
-	public:r,r,r,rw DrawLayout		lout;
-	
-	public SyntaxElem() {}
-	public SyntaxElem(SpaceCmd[] spaces) {
-		this.spaces.copyFrom(spaces);
-	}
-
-	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
-	
-	@getter
-	public DrawLayout get$lout() {
-		if (lout == null) {
-			lout = new DrawLayout();
-			compile();
-		}
-		return lout;
-	}
-	
-	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		if (current_stx != this || expected_node != current_node)
-			return false;
-		return true;
-	}
-	
-	protected void compile() {
-		DrawLayout lout = this.lout;
-		lout.is_hidden = is_hidden;
-		for (int i=0; i < this.spaces.length; i++) {
-			SpaceCmd sc = spaces[i];
-			LayoutSpace ls = new LayoutSpace();
-			if (sc.si.symbol != null) {
-				SpaceInfo si = (SpaceInfo)sc.si.symbol;
-				ls.name = si.id.uname;
-				if (si.kind == SP_NEW_LINE) ls.new_line = true;
-				ls.text_size = si.text_size;
-				ls.pixel_size = si.pixel_size;
-			} else {
-				ls.name = sc.si.name;
-				ls.text_size = 1;
-				ls.pixel_size = 4;
-			}
-			ls.from_attempt = sc.from_attempt;
-			switch (sc.action_before) {
-			case SP_NOP: break;
-			case SP_ADD: lout.spaces_before = (LayoutSpace[])Arrays.append(lout.spaces_before, ls); break;
-			case SP_EAT: lout.spaces_before = (LayoutSpace[])Arrays.append(lout.spaces_before, ls.setEat()); break;
-			}
-			switch (sc.action_after) {
-			case SP_NOP: break;
-			case SP_ADD: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls); break;
-			case SP_EAT: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls.setEat()); break;
-			}
-			lout.count = Math.max(lout.count, sc.from_attempt+1);
-		}
-	}
-
-}
-
-@node
-public final class SyntaxToken extends SyntaxElem {
-	@virtual typedef This  = SyntaxToken;
-
-	@att public String					text;
 	@att public SymbolRef<DrawColor>	color;
 	@att public SymbolRef<DrawFont>		font;
-
-	public SyntaxToken() {
-		this.color = new SymbolRef(0,new DrawColor("default-color"));
-		this.font = new SymbolRef(0,new DrawFont("default-font"));
-	}
-	public SyntaxToken(String text, SpaceCmd[] spaces) {
-		super(spaces);
-		this.color = new SymbolRef(0,new DrawColor("default-color"));
-		this.font = new SymbolRef(0,new DrawFont("default-font"));
-		this.text = text.intern();
-	}
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawToken(node, this);
-		return dr;
-	}
-
-	protected void compile() {
-		super.compile();
-		DrawLayout lout = this.lout;
-		if (color != null)
-			lout.color = new Color(color.symbol.rgb_color);
-		if (font != null)
-			lout.font = Font.decode(font.symbol.font_name);
+	
+	public SyntaxElemFormatDecl() {
+		this.color = new SymbolRef<DrawColor>(0,new DrawColor("default-color"));
+		this.font = new SymbolRef<DrawFont>(0,new DrawFont("default-font"));
 	}
 
 	public void preResolveOut() {
@@ -639,13 +551,251 @@ public final class SyntaxToken extends SyntaxElem {
 }
 
 @node
+public abstract class DrawElemFormat extends ASTNode {
+	@virtual typedef This  ≤ DrawElemFormat;
+
+	@att public boolean					is_hidden;
+
+	public DrawElemFormat() {}
+	
+	public abstract SpaceCmd[] getSpaces();
+	public abstract DrawColor  getColor();
+	public abstract DrawFont   getFont();
+}
+
+@node
+public final class SimpleElemFormat extends DrawElemFormat {
+	@virtual typedef This  = DrawElemFormat;
+
+	@att public SpaceCmd[]				spaces;
+
+	public SimpleElemFormat() {}
+	public SimpleElemFormat(SpaceCmd[] spaces) {
+		this.spaces.copyFrom(spaces);
+	}
+	
+	public SpaceCmd[] getSpaces() { return spaces; }
+	public DrawColor  getColor() { return null; }
+	public DrawFont   getFont() { return null; }
+}
+
+@node
+public final class FullElemFormat extends DrawElemFormat {
+	@virtual typedef This  = DrawElemFormat;
+
+	@att public SpaceCmd[]				spaces;
+	@att public SymbolRef<DrawColor>	color;
+	@att public SymbolRef<DrawFont>		font;
+
+	public FullElemFormat() {
+		this.color = new SymbolRef<DrawColor>(0,new DrawColor("default-color"));
+		this.font = new SymbolRef<DrawFont>(0,new DrawFont("default-font"));
+	}
+	public FullElemFormat(SpaceCmd[] spaces) {
+		this.spaces.copyFrom(spaces);
+		this.color = new SymbolRef<DrawColor>(0,new DrawColor("default-color"));
+		this.font = new SymbolRef<DrawFont>(0,new DrawFont("default-font"));
+	}
+	
+	public SpaceCmd[] getSpaces() { return spaces; }
+	public DrawColor  getColor() { return color.symbol; }
+	public DrawFont   getFont() { return font.symbol; }
+
+	public void preResolveOut() {
+		{
+			if (color == null)
+				color = new SymbolRef<DrawColor>(0,"default-color");
+			if (color.name == null)
+				color.name = "default-color";
+			DrawColor@ dc;
+			if (!PassInfo.resolveNameR(this,dc,new ResInfo(this,color.name)))
+				Kiev.reportError(this,"Cannot resolve color '"+color.name+"'");
+			else if !(dc instanceof DrawColor)
+				Kiev.reportError(this,"Resolved '"+color.name+"' is not a color");
+			else
+				color.symbol = dc;
+		}
+
+		{
+			if (font == null)
+				font = new SymbolRef<DrawFont>("default-font");
+			if (font.name == null)
+				font.name = "default-font";
+			DrawFont@ df;
+			if (!PassInfo.resolveNameR(this,df,new ResInfo(this,font.name)))
+				Kiev.reportError(this,"Cannot resolve font '"+font.name+"'");
+			else if !(df instanceof DrawFont)
+				Kiev.reportError(this,"Resolved '"+font.name+"' is not a font");
+			else
+				font.symbol = df;
+		}
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "color") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<DrawColor> vect = new Vector<DrawColor>();
+			DNode@ dc;
+			foreach (PassInfo.resolveNameR(this,dc,info))
+				if (dc instanceof DrawColor) vect.append((DrawColor)dc);
+			return vect.toArray();
+		}
+		if (slot.name == "font") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<DrawFont> vect = new Vector<DrawFont>();
+			DNode@ df;
+			foreach (PassInfo.resolveNameR(this,df,info))
+				if (df instanceof DrawFont) vect.append((DrawFont)df);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+}
+
+@node
+public final class RefElemFormat extends DrawElemFormat {
+	@virtual typedef This  = RefElemFormat;
+
+	@att public SymbolRef<SyntaxElemFormatDecl>	decl;
+
+	public RefElemFormat() {
+		decl = new SymbolRef<SyntaxElemFormatDecl>();
+	}
+	public RefElemFormat(SyntaxElemFormatDecl decl) {
+		decl = new SymbolRef<SyntaxElemFormatDecl>(0, decl);
+	}
+	
+	public SpaceCmd[] getSpaces() { return decl.symbol == null ? SpaceCmd.emptyArray : decl.symbol.spaces; }
+	public DrawColor  getColor() { return decl.symbol == null ? null : decl.symbol.color.symbol; }
+	public DrawFont   getFont() { return decl.symbol == null ? null : decl.symbol.font.symbol; }
+
+	public void preResolveOut() {
+		if (decl.name == null) {
+			Kiev.reportError(this,"Unspecified format declaration");
+			return;
+		}
+		SyntaxElemFormatDecl@ d;
+		if (!PassInfo.resolveNameR(this,d,new ResInfo(this,decl.name)))
+			Kiev.reportError(this,"Cannot resolve format declaration '"+decl.name+"'");
+		else if !(d instanceof SyntaxElemFormatDecl)
+			Kiev.reportError(this,"Resolved '"+decl.name+"' is not a format declaration");
+		else
+			decl.symbol = d;
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "decl") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<SyntaxElemFormatDecl> vect = new Vector<SyntaxElemFormatDecl>();
+			DNode@ dc;
+			foreach (PassInfo.resolveNameR(this,dc,info))
+				if (dc instanceof SyntaxElemFormatDecl) vect.append((SyntaxElemFormatDecl)dc);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
+}
+
+@node
+public abstract class SyntaxElem extends ASTNode {
+	@virtual typedef This  ≤ SyntaxElem;
+
+	public static final SyntaxElem[] emptyArray = new SyntaxElem[0];
+
+	@att public DrawElemFormat		fmt;
+
+	public:r,r,r,rw DrawLayout		lout;
+	
+	public SyntaxElem() {
+		this.fmt = new SimpleElemFormat();
+	}
+	public SyntaxElem(SpaceCmd[] spaces) {
+		this.fmt = new SimpleElemFormat(spaces);
+	}
+
+	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
+	
+	@getter
+	public DrawLayout get$lout() {
+		if (lout == null) {
+			lout = new DrawLayout();
+			compile();
+		}
+		return lout;
+	}
+	
+	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
+		if (current_stx != this || expected_node != current_node)
+			return false;
+		return true;
+	}
+	
+	private void compile() {
+		DrawLayout lout = this.lout;
+		lout.count = 1;
+		if (fmt == null)
+			return;
+		lout.is_hidden = fmt.is_hidden;
+		SpaceCmd[] spaces = fmt.getSpaces();
+		for (int i=0; i < spaces.length; i++) {
+			SpaceCmd sc = spaces[i];
+			LayoutSpace ls = new LayoutSpace();
+			if (sc.si.symbol != null) {
+				SpaceInfo si = (SpaceInfo)sc.si.symbol;
+				ls.name = si.id.uname;
+				if (si.kind == SP_NEW_LINE) ls.new_line = true;
+				ls.text_size = si.text_size;
+				ls.pixel_size = si.pixel_size;
+			} else {
+				ls.name = sc.si.name;
+				ls.text_size = 1;
+				ls.pixel_size = 4;
+			}
+			ls.from_attempt = sc.from_attempt;
+			switch (sc.action_before) {
+			case SP_NOP: break;
+			case SP_ADD: lout.spaces_before = (LayoutSpace[])Arrays.append(lout.spaces_before, ls); break;
+			case SP_EAT: lout.spaces_before = (LayoutSpace[])Arrays.append(lout.spaces_before, ls.setEat()); break;
+			}
+			switch (sc.action_after) {
+			case SP_NOP: break;
+			case SP_ADD: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls); break;
+			case SP_EAT: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls.setEat()); break;
+			}
+			lout.count = Math.max(lout.count, sc.from_attempt+1);
+		}
+		if (fmt.getColor() != null)
+			lout.color = new Color(fmt.getColor().rgb_color);
+		if (fmt.getFont() != null)
+			lout.font = Font.decode(fmt.getFont().font_name);
+	}
+}
+
+@node
+public final class SyntaxToken extends SyntaxElem {
+	@virtual typedef This  = SyntaxToken;
+
+	@att public String					text;
+
+	public SyntaxToken() {}
+	public SyntaxToken(String text, SpaceCmd[] spaces) {
+		super(spaces);
+		this.text = text.intern();
+	}
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawToken(node, this);
+		return dr;
+	}
+}
+
+@node
 public abstract class SyntaxAttr extends SyntaxElem {
 	@virtual typedef This  ≤ SyntaxAttr;
 
 	@att public String					name;
 	@att public FormatInfoHint			hint;
 	@att public SymbolRef[]				expected_types;
-	@att public SyntaxToken				format;
 
 	@setter
 	public void set$name(String value) {
@@ -665,19 +815,8 @@ public abstract class SyntaxAttr extends SyntaxElem {
 
 	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
 
-	protected void compile() {
-		super.compile();
-		if (format != null) {
-			DrawLayout lout = this.lout;
-			if (format.color != null)
-				lout.color = new Color(format.color.symbol.rgb_color);
-			if (format.font != null)
-				lout.font = Font.decode(format.font.symbol.font_name);
-		}
-	}
-
 	public void preResolveOut() {
-		foreach (SymbolRef sr; expected_types) {
+		foreach (SymbolRef sr; expected_types; sr.name != null) {
 			TypeDecl@ td;
 			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,sr.name,ResInfo.noForwards)) ) {
 				Kiev.reportError(sr,"Unresolved type "+sr);
@@ -720,7 +859,12 @@ public class SyntaxSubAttr extends SyntaxAttr {
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
 		if (name.equals("this"))
 			return super.check(cont, current_stx, expected_node, current_node);
-		Object obj = expected_node.getVal(name);
+		Object obj;
+		try {
+			obj = expected_node.getVal(name);
+		} catch (RuntimeException e) {
+			obj = "";
+		}
 		if (obj instanceof ANode) {
 			SyntaxElem se = cont.fmt.getSyntax().getSyntaxElem((ANode)obj, hint);
 			return se.check(cont, current_stx, (ANode)obj, current_node);
@@ -733,7 +877,12 @@ public class SyntaxSubAttr extends SyntaxAttr {
 		if (name.equals("this")) {
 			dr = new DrawNodeTerm(node, this, "");
 		} else {
-			Object obj = node.getVal(name);
+			Object obj;
+			try {
+				obj = node.getVal(name);
+			} catch (RuntimeException e) {
+				obj = "<?error:"+name+"?>";
+			}
 			if (obj instanceof ANode)
 				dr = fmt.getDrawable((ANode)obj, null, hint);
 			else
@@ -759,7 +908,7 @@ public class SyntaxList extends SyntaxAttr {
 		this.element = element;
 		this.separator = separator;
 		this.empty = new SyntaxToken("<?"+name+"?>", new SpaceCmd[0]);
-		this.empty.is_hidden = true;
+		this.empty.fmt.is_hidden = true;
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {

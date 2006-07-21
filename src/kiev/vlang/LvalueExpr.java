@@ -175,7 +175,6 @@ public final class IFldExpr extends LvalueExpr {
 	@ref public:ro Field		var;
 
 	@getter public Field get$var() {
-		if (ident == null) return null;
 		DNode sym = ident.symbol;
 		if (sym instanceof Field)
 			return (Field)sym;
@@ -418,7 +417,6 @@ public final class LVarExpr extends LvalueExpr {
 	@virtual typedef RView = RLVarExpr;
 
 	@getter public Var get$var() {
-		if (ident == null) return null;
 		DNode sym = ident.symbol;
 		if (sym instanceof Var)
 			return (Var)sym;
@@ -515,7 +513,6 @@ public final class SFldExpr extends LvalueExpr {
 	@att public ENode			obj;
 
 	@getter public Field get$var() {
-		if (ident == null) return null;
 		DNode sym = ident.symbol;
 		if (sym instanceof Field)
 			return (Field)sym;

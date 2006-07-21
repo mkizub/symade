@@ -71,10 +71,6 @@ public static final view RNewExpr of NewExpr extends RENode {
 		mt = (CallType)Type.getRealType(type,new CallType(type,null,ta,Type.tpVoid,false));
 		ResInfo info = new ResInfo(this,nameInit,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,m,info,mt) ) {
-			if (ident == null) {
-				this.open();
-				ident = new SymbolRef(nameInit);
-			}
 			ident.open();
 			ident.symbol = m;
 			m.makeArgs(args,type);

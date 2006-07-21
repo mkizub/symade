@@ -292,7 +292,7 @@ public final view JBreakStat of BreakStat extends JENode {
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
 	public:n,n,n,rw Object[] resolveBreakLabel(Code code) {
-		String name = ident==null ? null : ident.name;
+		String name = ident.name;
 		Object[] cl = new Object[0];
 		if( name == null || name == "" ) {
 			// Search for loop statements
@@ -369,7 +369,7 @@ public final view JContinueStat of ContinueStat extends JENode {
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
 	public:n,n,n,rw Object[] resolveContinueLabel(Code code) {
-		String name = ident==null ? null : ident.name;
+		String name = ident.name;
 		Object[] cl = new Object[0];
 		if( name == null || name == "" ) {
 			// Search for loop statements

@@ -103,7 +103,7 @@ public class DrawOptional extends DrawCtrl {
 			if (drawed_as_true) {
 				arg.preFormat(cont,sc.opt_true,node);
 			} else {
-				if (sc.opt_false.is_hidden)
+				if (sc.opt_false.fmt.is_hidden)
 					arg.geometry.is_hidden = !draw_optional;
 				arg.preFormat(cont,sc.opt_false,node);
 			}

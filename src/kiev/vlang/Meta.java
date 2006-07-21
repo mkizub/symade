@@ -375,8 +375,8 @@ public abstract class MetaValue extends ENode {
 			Method m = (Method)parent();
 			ident = new SymbolRef<DNode>(pos, m);
 		}
-		else if (ident == null) {
-			ident = new SymbolRef<DNode>("value");
+		else if (ident.name == null) {
+			ident.name = "value";
 		}
 	}
 	

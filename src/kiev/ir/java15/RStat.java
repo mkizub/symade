@@ -194,7 +194,7 @@ public final view RBreakStat of BreakStat extends RENode {
 			dest.delLink((BreakStat)this);
 			dest = null;
 		}
-		if( ident == null ) {
+		if( ident.name == null ) {
 			for(p=(ASTNode)parent(); !(p instanceof Method || p.isBreakTarget()); p = (ASTNode)p.parent() );
 			if( p instanceof Method || p == null ) {
 				Kiev.reportError(this,"Break not within loop/switch statement");

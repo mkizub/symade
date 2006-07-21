@@ -37,7 +37,7 @@ public abstract class Drawable extends ANode {
 		this.node = node;
 		this.geometry = new DrawGeometry();
 		this.syntax = syntax;
-		this.geometry.is_hidden = this.syntax.is_hidden;
+		this.geometry.is_hidden = this.syntax.fmt.is_hidden;
 	}
 
 	public abstract void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node);
@@ -49,7 +49,7 @@ public abstract class Drawable extends ANode {
 		if (geometry != null)
 			return geometry.is_hidden;
 		if (syntax != null)
-			return syntax.is_hidden;
+			return syntax.fmt.is_hidden;
 		return false;
 	}  
 

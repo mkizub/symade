@@ -222,7 +222,7 @@ public class AssignExpr extends ENode {
 			}
 		} else {
 			Method m;
-			if (ident == null || ident.symbol == null) {
+			if (ident.symbol == null) {
 				m = getOp().resolveMethod(this);
 				if (m == null) {
 					Kiev.reportError(this, "Unresolved method for operator "+getOp());
@@ -331,7 +331,6 @@ public class BinaryExpr extends ENode {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			if (ident == null) ident = new SymbolRef<DNode>(pos, op.name);
 			ident.symbol = m;
 		}
 		Type ret = m.type.ret();
@@ -341,7 +340,7 @@ public class BinaryExpr extends ENode {
 
 	public void mainResolveOut() {
 		Method m;
-		if (ident == null || ident.symbol == null) {
+		if (ident.symbol == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
@@ -397,7 +396,6 @@ public class UnaryExpr extends ENode {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			if (ident == null) ident = new SymbolRef<DNode>(pos, op.name);
 			ident.symbol = m;
 		}
 		Type ret = m.type.ret();
@@ -407,7 +405,7 @@ public class UnaryExpr extends ENode {
 
 	public void mainResolveOut() {
 		Method m;
-		if (ident == null || ident.symbol == null) {
+		if (ident.symbol == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());

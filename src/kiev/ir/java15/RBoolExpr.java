@@ -61,7 +61,7 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 		if( isResolved() ) return;
 
 		Method m;
-		if (ident == null || ident.symbol == null) {
+		if (ident.symbol == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
@@ -160,7 +160,7 @@ public view RBooleanNotExpr of BooleanNotExpr extends RBoolExpr {
 		if( isResolved() ) return;
 		
 		Method m;
-		if (ident == null || ident.symbol == null) {
+		if (ident.symbol == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());

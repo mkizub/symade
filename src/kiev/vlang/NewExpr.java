@@ -46,7 +46,6 @@ public final class NewExpr extends ENode {
 	@att public Struct				clazz; // if this new expression defines new class
 
 	@getter public Method get$func() {
-		if (ident == null) return null;
 		DNode sym = ident.symbol;
 		if (sym instanceof Method)
 			return (Method)sym;
