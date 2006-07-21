@@ -74,7 +74,7 @@ public abstract class ANode {
 		return this.getAttachInfo().get_ctx_root();
 	}
 	public void callbackChildChanged(AttrSlot attr) { /* do nothing */ }
-	public void callbackRootChanged() { /* do nothing */ }
+	public void callbackRootChanged() { if (this.p_info != null) this.p_info.p_ctx_root = null; }
 
 	public final ANode parent() { return this.p_info == null ? null : this.p_info.p_parent; }
 	public final AttrSlot pslot() { return this.p_info == null ? null : this.p_info.p_slot; }
@@ -412,7 +412,7 @@ class AttachInfo {
 	final   Object		p_data;
 	final   ANode		p_parent;
 	final   AttrSlot	p_slot;
-	private ANode		p_ctx_root;
+	        ANode		p_ctx_root;
 	AttachInfo(Object data, ANode parent, AttrSlot slot) {
 		this.p_data = data;
 		this.p_parent = parent;

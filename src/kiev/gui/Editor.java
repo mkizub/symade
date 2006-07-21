@@ -43,7 +43,7 @@ public class Editor extends InfoView implements KeyListener {
 	/** Current x position for scrolling up/down */
 	int						cur_x;
 	/** Current item */
-	@ref public Drawable	cur_elem;
+	public final CurElem	cur_elem;
 	/** The object in clipboard */
 	@ref public ANode		in_clipboard;
 	
@@ -68,25 +68,31 @@ public class Editor extends InfoView implements KeyListener {
 	
 	public Editor(Window window, TextSyntax syntax, Canvas view_canvas) {
 		super(window, syntax, view_canvas);
+		cur_elem = new CurElem();
 	}
 	
 	public void setRoot(ANode root) {
 		super.setRoot(root);
-		cur_elem = view_root.getFirstLeaf();
+		cur_elem.set(view_root.getFirstLeaf());
 	}
 	
 	public void setSyntax(TextSyntax syntax) {
-		cur_elem = null;
 		super.setSyntax(syntax);
+		cur_elem.restore();
 	}
 
 	public void formatAndPaint(boolean full) {
-		view_canvas.current = cur_elem;
-		if (full)
-			super.formatAndPaint(full);
-		else
-			view_canvas.repaint();
-		ANode src = cur_elem!=null ? cur_elem.node : null;
+		cur_elem.restore();
+		view_canvas.current = cur_elem.dr;
+		if (full) {
+			this.formatter.setWidth(view_canvas.getWidth());
+			view_canvas.root = null;
+			if (the_root != null && full)
+				view_canvas.root = view_root = formatter.format(the_root, view_root);
+			cur_elem.restore();
+		}
+		view_canvas.repaint();
+		ANode src = cur_elem.dr != null ? cur_elem.dr.node : null;
 		parent_window.info_view.the_root = src;
 		parent_window.info_view.formatAndPaint(true);
 	}
@@ -122,15 +128,15 @@ public class Editor extends InfoView implements KeyListener {
 		else if (mask == KeyEvent.ALT_DOWN_MASK) {
 			switch (code) {
 			case KeyEvent.VK_UP:
-				if (cur_elem.isAttached()) {
-					view_canvas.current = cur_elem = (Drawable)cur_elem.parent();
+				if (cur_elem.dr.isAttached()) {
+					cur_elem.set((Drawable)cur_elem.parent());
 					view_canvas.repaint();
 				}
 				evt.consume(); 
 				break;
 			case KeyEvent.VK_DOWN:
-				if (cur_elem instanceof DrawNonTerm) {
-					view_canvas.current = cur_elem = cur_elem.getFirstLeaf();
+				if (cur_elem.dr instanceof DrawNonTerm) {
+					cur_elem.set(cur_elem.dr.getFirstLeaf());
 					view_canvas.repaint();
 				}
 				evt.consume(); 
@@ -164,8 +170,8 @@ public class Editor extends InfoView implements KeyListener {
 				}
 				break;
 			case KeyEvent.VK_C:
-				if (cur_elem instanceof DrawNodeTerm) {
-					AttrPtr pattr = ((DrawNodeTerm)cur_elem).getAttrPtr();
+				if (cur_elem.dr instanceof DrawNodeTerm) {
+					AttrPtr pattr = ((DrawNodeTerm)cur_elem.dr).getAttrPtr();
 					Object obj = pattr.get();
 					if (obj instanceof Symbol) {
 						in_clipboard = ((Symbol)obj).parent();
@@ -176,9 +182,9 @@ public class Editor extends InfoView implements KeyListener {
 				break;
 			case KeyEvent.VK_V:
 				if (in_clipboard != null) {
-					if (cur_elem instanceof DrawNodeTerm) {
+					if (cur_elem.dr instanceof DrawNodeTerm) {
 						if (in_clipboard instanceof DNode) {
-							AttrPtr pattr = ((DrawNodeTerm)cur_elem).getAttrPtr();
+							AttrPtr pattr = ((DrawNodeTerm)cur_elem.dr).getAttrPtr();
 							if (pattr.slot.typeinfo.clazz == SymbolRef.class) {
 								DNode dn = (DNode)in_clipboard;
 								changes.push(Transaction.open());
@@ -204,8 +210,8 @@ public class Editor extends InfoView implements KeyListener {
 				}
 				break;
 			case KeyEvent.VK_X:
-				{
-					ANode node = cur_elem.node;
+				if (cur_elem.dr != null) {
+					ANode node = cur_elem.dr.node;
 					changes.push(Transaction.open());
 					in_clipboard = node;
 					node.detach();
@@ -217,7 +223,7 @@ public class Editor extends InfoView implements KeyListener {
 				break;
 			case KeyEvent.VK_R:
 				setSyntax(this.syntax);
-				cur_elem = view_root.getFirstLeaf();
+				cur_elem.set(view_root.getFirstLeaf());
 				view_canvas.root = view_root;
 				formatAndPaint(false);
 				break;
@@ -410,8 +416,8 @@ public class Editor extends InfoView implements KeyListener {
 		Drawable dr = view_canvas.first_visible;
 		for (; dr != null; dr = dr.getNextLeaf()) {
 			if (dr.geometry.x < x && dr.geometry.y < y && dr.geometry.x+dr.geometry.w >= x && dr.geometry.y+dr.geometry.h >= y) {
-				cur_elem = dr;
-				cur_x = cur_elem.geometry.x;
+				cur_elem.set(dr);
+				cur_x = cur_elem.dr.geometry.x;
 				formatAndPaint(false);
 				break;
 			}
@@ -437,6 +443,53 @@ public class Editor extends InfoView implements KeyListener {
 		}
 	}
 */
+
+	final class CurElem {
+		Drawable		dr;
+		int				x, y;
+		Drawable[]		path = Drawable.emptyArray;
+	
+		void set(Drawable dr) {
+			Editor.this.view_canvas.current = dr;
+			this.dr = dr;
+			if (dr != null) {
+				this.x = dr.geometry.x + dr.geometry.w / 2;
+				this.y = dr.geometry.y;
+				Vector<Drawable> v = new Vector<Drawable>();
+				while (dr != null) {
+					v.append(dr);
+					dr = (Drawable)dr.parent();
+				}
+				path = v.toArray();
+			} else {
+				path = Drawable.emptyArray;
+			}
+		}
+		void restore() {
+			Drawable dr = this.dr;
+			Drawable root = Editor.this.view_root;
+			if (dr == null) {
+				set(root);
+				return;
+			}
+			if (dr.ctx_root == root)
+				return;
+			if (root == null || path.length == 0) {
+				set(root);
+				return;
+			}
+			Drawable last = path[path.length-1];
+			Drawable bad = null;
+			for (int i=path.length-1; i >= 0 && bad == null; i--) {
+				if (path[i].ctx_root == root)
+					last = path[i];
+				else
+					bad = path[i];
+			}
+			set(last.getFirstLeaf());
+			return;
+		}
+	}
 }
 
 public interface KeyHandler {
@@ -464,9 +517,9 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 
 	private void navigatePrev(boolean repaint) {
 		final Editor uiv = (Editor)this.uiv;
-		DrawTerm prev = uiv.cur_elem.getFirstLeaf().getPrevLeaf();
+		DrawTerm prev = uiv.cur_elem.dr.getFirstLeaf().getPrevLeaf();
 		if (prev != null) {
-			uiv.view_canvas.current = uiv.cur_elem = prev;
+			uiv.cur_elem.set(prev);
 			uiv.cur_x = prev.geometry.x;
 		}
 		if (repaint) {
@@ -476,9 +529,9 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 	}
 	private void navigateNext(boolean repaint) {
 		final Editor uiv = (Editor)this.uiv;
-		DrawTerm next = uiv.cur_elem.getFirstLeaf().getNextLeaf();
+		DrawTerm next = uiv.cur_elem.dr.getFirstLeaf().getNextLeaf();
 		if (next != null) {
-			uiv.view_canvas.current = uiv.cur_elem = next;
+			uiv.cur_elem.set(next);
 			uiv.cur_x = next.geometry.x;
 		}
 		if (repaint) {
@@ -489,7 +542,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 	private void navigateUp(boolean repaint) {
 		final Editor uiv = (Editor)this.uiv;
 		DrawTerm n = null;
-		DrawTerm prev = uiv.cur_elem.getFirstLeaf();
+		DrawTerm prev = uiv.cur_elem.dr.getFirstLeaf();
 		if (prev != null)
 			prev = prev.getPrevLeaf();
 		while (prev != null) {
@@ -509,9 +562,8 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 				break;
 			n = prev;
 		}
-		if (n != null) {
-			uiv.view_canvas.current = uiv.cur_elem = n;
-		}
+		if (n != null)
+			uiv.cur_elem.set(n);
 		if (repaint) {
 			makeCurrentVisible();
 			uiv.formatAndPaint(false);
@@ -520,7 +572,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 	private void navigateDn(boolean repaint) {
 		final Editor uiv = (Editor)this.uiv;
 		DrawTerm n = null;
-		DrawTerm next = uiv.cur_elem.getFirstLeaf();
+		DrawTerm next = uiv.cur_elem.dr.getFirstLeaf();
 		while (next != null) {
 			if (next.geometry.do_newline > 0) {
 				n = next.getNextLeaf();
@@ -540,9 +592,8 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 				break;
 			n = next;
 		}
-		if (n != null) {
-			uiv.view_canvas.current = uiv.cur_elem = n;
-		}
+		if (n != null)
+			uiv.cur_elem.set(n);
 		if (repaint) {
 			makeCurrentVisible();
 			uiv.formatAndPaint(false);
@@ -550,29 +601,35 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 	}
 	private void navigateLineHome(boolean repaint) {
 		final Editor uiv = (Editor)this.uiv;
-		int lineno = uiv.cur_elem.getFirstLeaf().geometry.lineno;
+		int lineno = uiv.cur_elem.dr.getFirstLeaf().geometry.lineno;
+		DrawTerm res = uiv.cur_elem.dr;
 		for (;;) {
-			DrawTerm dr = uiv.cur_elem.getPrevLeaf();
+			DrawTerm dr = res.getPrevLeaf();
 			if (dr == null || dr.geometry.lineno != lineno)
 				break;
-			uiv.cur_elem = dr;
+			res = dr;
 		}
-		uiv.view_canvas.current = uiv.cur_elem;
-		uiv.cur_x = uiv.cur_elem.geometry.x;
+		if (res != uiv.cur_elem.dr) {
+			uiv.cur_elem.set(res);
+			uiv.cur_x = uiv.cur_elem.dr.geometry.x;
+		}
 		if (repaint)
 			uiv.formatAndPaint(false);
 	}
 	private void navigateLineEnd(boolean repaint) {
 		final Editor uiv = (Editor)this.uiv;
-		int lineno = uiv.cur_elem.getFirstLeaf().geometry.lineno;
+		int lineno = uiv.cur_elem.dr.getFirstLeaf().geometry.lineno;
+		DrawTerm res = uiv.cur_elem.dr;
 		for (;;) {
-			DrawTerm dr = uiv.cur_elem.getNextLeaf();
+			DrawTerm dr = res.getNextLeaf();
 			if (dr == null || dr.geometry.lineno != lineno)
 				break;
-			uiv.cur_elem = dr;
+			res = dr;
 		}
-		uiv.view_canvas.current = uiv.cur_elem;
-		uiv.cur_x = uiv.cur_elem.geometry.x;
+		if (res != uiv.cur_elem.dr) {
+			uiv.cur_elem.set(res);
+			uiv.cur_x = uiv.cur_elem.dr.geometry.x;
+		}
 		if (repaint)
 			uiv.formatAndPaint(false);
 	}
@@ -599,11 +656,11 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 		int bot_lineno = uiv.view_canvas.last_visible.geometry.lineno;
 		int height = bot_lineno - top_lineno;
 		
-		if (top_lineno > 0 && uiv.cur_elem.getFirstLeaf().geometry.lineno <= top_lineno) {
-			uiv.view_canvas.first_line = uiv.cur_elem.getFirstLeaf().geometry.lineno -1;
+		if (top_lineno > 0 && uiv.cur_elem.dr.getFirstLeaf().geometry.lineno <= top_lineno) {
+			uiv.view_canvas.first_line = uiv.cur_elem.dr.getFirstLeaf().geometry.lineno -1;
 		}
-		if (bot_lineno < uiv.view_canvas.num_lines && uiv.cur_elem.getFirstLeaf().geometry.lineno >= bot_lineno) {
-			uiv.view_canvas.first_line = uiv.cur_elem.getFirstLeaf().geometry.lineno - height + 1;
+		if (bot_lineno < uiv.view_canvas.num_lines && uiv.cur_elem.dr.getFirstLeaf().geometry.lineno >= bot_lineno) {
+			uiv.view_canvas.first_line = uiv.cur_elem.dr.getFirstLeaf().geometry.lineno - height + 1;
 		}
 		if (uiv.view_canvas.first_line < 0)
 			uiv.view_canvas.first_line = 0;
@@ -620,7 +677,7 @@ final class ChooseItemEditor implements KeyHandler {
 	}
 
 	public void process() {
-		Drawable dr = editor.cur_elem;
+		Drawable dr = editor.cur_elem.dr;
 		if (dr instanceof DrawNodeTerm) {
 			AttrPtr pattr = dr.getAttrPtr();
 			Object obj = pattr.get();
@@ -660,7 +717,7 @@ final class FolderTrigger implements KeyHandler {
 	}
 
 	public void process() {
-		for (Drawable dr = editor.cur_elem; dr != null; dr = (Drawable)dr.parent()) {
+		for (Drawable dr = editor.cur_elem.dr; dr != null; dr = (Drawable)dr.parent()) {
 			if (dr instanceof DrawFolded) {
 				dr.draw_folded = !dr.draw_folded;
 				editor.formatAndPaint(true);
@@ -679,7 +736,7 @@ final class OptionalTrigger implements KeyHandler {
 	}
 
 	public void process() {
-		ANode n = editor.cur_elem;
+		ANode n = editor.cur_elem.dr;
 		while (n != null && !(n instanceof DrawNonTerm))
 			n = n.parent();
 		if (n == null)
@@ -719,7 +776,7 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 	}
 
 	public void process() {
-		Drawable dr = editor.cur_elem;
+		Drawable dr = editor.cur_elem.dr;
 		if (mode == SETNEW_HERE) {
 			ANode n = dr.node;
 			while (n == null) {
@@ -965,7 +1022,7 @@ final class SymRefEditor extends TextEditor implements ComboBoxEditor {
 		} else {
 			combo.removeAllItems();
 		}
-		Drawable dr = editor.cur_elem;
+		Drawable dr = editor.cur_elem.dr;
 		int x = dr.geometry.x;
 		int y = dr.geometry.y;
 		int w = dr.geometry.w;
