@@ -29,12 +29,12 @@ public abstract class DNode extends ASTNode {
 	
 	public static final DNode[] emptyArray = new DNode[0];
 	
-	private static final int MASK_ACC_DEFAULT   = 0;
-	private static final int MASK_ACC_PUBLIC    = ACC_PUBLIC;
-	private static final int MASK_ACC_PRIVATE   = ACC_PRIVATE;
-	private static final int MASK_ACC_PROTECTED = ACC_PROTECTED;
-	private static final int MASK_ACC_NAMESPACE = ACC_PACKAGE;
-	private static final int MASK_ACC_SYNTAX    = ACC_SYNTAX;
+	public static final int MASK_ACC_DEFAULT   = 0;
+	public static final int MASK_ACC_PUBLIC    = ACC_PUBLIC;
+	public static final int MASK_ACC_PRIVATE   = ACC_PRIVATE;
+	public static final int MASK_ACC_PROTECTED = ACC_PROTECTED;
+	public static final int MASK_ACC_NAMESPACE = ACC_PACKAGE;
+	public static final int MASK_ACC_SYNTAX    = ACC_SYNTAX;
 	
 		 public		int			flags;
 	@att public		MetaSet		meta;
@@ -69,8 +69,12 @@ public abstract class DNode extends ASTNode {
 
 	public @packed:1,flags,19 boolean is_macro;			// macro-declarations for fields, methods, etc
 	public @packed:1,flags,20 boolean is_struct_singleton;
-
+	
 	public @packed:1,flags,21 boolean is_tdecl_loaded;		// TypeDecl was fully loaded (from src or bytecode) 
+
+	public @packed:1,flags,22 boolean is_has_aliases;
+	public @packed:1,flags,23 boolean is_has_throws;
+
 	
 	public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
 	public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }
@@ -99,31 +103,39 @@ public abstract class DNode extends ASTNode {
 	public final boolean isSyntax()				{ return this.is_access == MASK_ACC_SYNTAX; }
 
 	public void setPublic() {
-		if (this.is_access != MASK_ACC_PUBLIC) {
-			assert(!locked);
-			this.is_access = MASK_ACC_PUBLIC;
-			this.callbackChildChanged(nodeattr$flags);
+		MetaAccess ma = this.meta.get("kiev.stdlib.meta.access");
+		if (ma != null) {
+			ma.open();
+			ma.value = MetaAccess.AccessValue.Public;
+		} else {
+			this.meta.set(new MetaAccess(MetaAccess.AccessValue.Public));
 		}
 	}
 	public void setPrivate() {
-		if (this.is_access != MASK_ACC_PRIVATE) {
-			assert(!locked);
-			this.is_access = MASK_ACC_PRIVATE;
-			this.callbackChildChanged(nodeattr$flags);
+		MetaAccess ma = this.meta.get("kiev.stdlib.meta.access");
+		if (ma != null) {
+			ma.open();
+			ma.value = MetaAccess.AccessValue.Private;
+		} else {
+			this.meta.set(new MetaAccess(MetaAccess.AccessValue.Private));
 		}
 	}
 	public void setProtected() {
-		if (this.is_access != MASK_ACC_PROTECTED) {
-			assert(!locked);
-			this.is_access = MASK_ACC_PROTECTED;
-			this.callbackChildChanged(nodeattr$flags);
+		MetaAccess ma = this.meta.get("kiev.stdlib.meta.access");
+		if (ma != null) {
+			ma.open();
+			ma.value = MetaAccess.AccessValue.Protected;
+		} else {
+			this.meta.set(new MetaAccess(MetaAccess.AccessValue.Protected));
 		}
 	}
 	public void setPkgPrivate() {
-		if (this.is_access != MASK_ACC_DEFAULT) {
-			assert(!locked);
-			this.is_access = MASK_ACC_DEFAULT;
-			this.callbackChildChanged(nodeattr$flags);
+		MetaAccess ma = this.meta.get("kiev.stdlib.meta.access");
+		if (ma != null) {
+			ma.open();
+			ma.value = MetaAccess.AccessValue.Default;
+		} else {
+			this.meta.set(new MetaAccess(MetaAccess.AccessValue.Default));
 		}
 	}
 	public final void setPackage() {
@@ -142,60 +154,67 @@ public abstract class DNode extends ASTNode {
 	}
 
 	public void setStatic(boolean on) {
-		if (this.is_static != on) {
-			assert(!locked);
-			this.is_static = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.static");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaStatic());
 		}
 	}
 	public void setFinal(boolean on) {
-		if (this.is_final != on) {
-			assert(!locked);
-			this.is_final = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.final");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaFinal());
 		}
 	}
 	public void setSynchronized(boolean on) {
-		if (this.is_mth_synchronized != on) {
-			this.is_mth_synchronized = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	public void setVolatile(boolean on) {
-		if (this.is_fld_volatile != on) {
-			this.is_fld_volatile = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.synchronized");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaSynchronized());
 		}
 	}
 	public void setFieldVolatile(boolean on) {
-		if (this.is_fld_volatile != on) {
-			this.is_fld_volatile = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.volatile");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaVolatile());
 		}
 	}
 	public void setMethodBridge(boolean on) {
-		if (this.is_mth_bridge != on) {
-			this.is_mth_bridge = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.bridge");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaBridge());
 		}
 	}
 	public void setFieldTransient(boolean on) {
-		if (this.is_fld_transient != on) {
-			this.is_fld_transient = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.transient");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaTransient());
 		}
 	}
 	public void setMethodVarargs(boolean on) {
-		if (this.is_mth_varargs != on) {
-			assert(!locked);
-			this.is_mth_varargs = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.varargs");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaVarArgs());
 		}
 	}
 	public void setNative(boolean on) {
-		if (this.is_native != on) {
-			this.is_native = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.native");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaNative());
 		}
 	}
 	public void setInterface(boolean on) {
@@ -206,23 +225,28 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 	public void setAbstract(boolean on) {
-		if (this.is_abstract != on) {
-			assert(!locked);
-			this.is_abstract = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.abstract");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaAbstract());
 		}
 	}
 	public void setSynthetic(boolean on) {
-		if (this.is_synthetic != on) {
-			this.is_synthetic = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.synthetic");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaSynthetic());
 		}
 	}
 
 	public void setMacro(boolean on) {
-		if (this.is_macro != on) {
-			this.is_macro = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.macro");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaMacro());
 		}
 	}
 
@@ -234,10 +258,11 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 	public void setTypeUnerasable(boolean on) {
-		if (this.is_type_unerasable != on) {
-			assert(!locked);
-			this.is_type_unerasable = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.unerasable");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaUnerasable());
 		}
 	}
 
@@ -245,10 +270,11 @@ public abstract class DNode extends ASTNode {
 		return this.is_virtual;
 	}
 	public final void setVirtual(boolean on) {
-		if (this.is_virtual != on) {
-			assert(!locked);
-			this.is_virtual = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.virtual");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaVirtual());
 		}
 	}
 
@@ -256,15 +282,17 @@ public abstract class DNode extends ASTNode {
 		return this.is_forward;
 	}
 	@setter public final void setForward(boolean on) {
-		if (this.is_forward != on) {
-			assert(!locked);
-			this.is_forward = on;
-			this.callbackChildChanged(nodeattr$flags);
+		Meta m = this.meta.get("kiev.stdlib.meta.forward");
+		if (m != null) {
+			if!(on) this.meta.unset(m);
+		} else {
+			if (on) this.meta.set(new MetaForward());
 		}
 	}
 
 	public DNode() {
-		id = new Symbol();
+		this.meta = new MetaSet();
+		this.id = new Symbol();
 	}
 
 	public ASTNode getDummyNode() {

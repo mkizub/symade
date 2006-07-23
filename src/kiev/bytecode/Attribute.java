@@ -1193,12 +1193,14 @@ public abstract class Annotations extends Annotation {
 		}
 	}
 	public void write(ReadContext cont) {
+		int start = cont.offset;
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size()-6);
 		cont.writeShort(annotations.length);
 		for(int i=0; i < annotations.length; i++) {
 			annotations[i].write(cont);
 		}
+		assert(cont.offset-start == size());
 	}
 }
 public class RVAnnotations extends Annotations {
@@ -1211,10 +1213,10 @@ public abstract class ParAnnotations extends Annotation {
 	public annotation[][]	annotations;
 	
 	public int size() {
-		int sz = 6+1+2*annotations.length;
+		int sz = 6+1;
 		foreach (annotation[] aa; annotations) {
 			foreach (annotation a; aa) {
-				sz += a.size();
+				sz += 2+a.size();
 			}
 		}
 		return sz;
@@ -1235,6 +1237,7 @@ public abstract class ParAnnotations extends Annotation {
 		}
 	}
 	public void write(ReadContext cont) {
+		int start = cont.offset;
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size()-6);
 		cont.writeByte(annotations.length);
@@ -1244,6 +1247,7 @@ public abstract class ParAnnotations extends Annotation {
 				annotations[p][i].write(cont);
 			}
 		}
+		assert(cont.offset-start == size());
 	}
 }
 
@@ -1266,10 +1270,12 @@ public class AnnotationDefault extends Annotation {
 		value = element_value.Read(cont);
 	}
 	public void write(ReadContext cont) {
+		int start = cont.offset;
 		cont.writeShort(cp_name.idx);
 		cont.writeInt(size()-6);
 		cont.writeByte(value.tag);
 		value.write(cont);
+		assert(cont.offset-start == size());
 	}
 }
 

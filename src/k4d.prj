@@ -524,8 +524,10 @@ CLASS kiev.vlang.LvalDNode kiev/vlang/LvalDNode kiev\vlang\DNode.java
 CLASS kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaAbstract kiev/vlang/MetaAbstract kiev\vlang\MetaSpecial.java
+CLASS kiev.vlang.MetaAccess kiev/vlang/MetaAccess kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaAlias kiev/vlang/MetaAlias kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaAttrSlot kiev/vlang/MetaAttrSlot kiev\vlang\Tree.java
+CLASS kiev.vlang.MetaBridge kiev/vlang/MetaBridge kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaFinal kiev/vlang/MetaFinal kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaFlag kiev/vlang/MetaFlag kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaForward kiev/vlang/MetaForward kiev\vlang\MetaSpecial.java
@@ -534,20 +536,19 @@ CLASS kiev.vlang.MetaNative kiev/vlang/MetaNative kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaPizzaCase kiev/vlang/MetaPizzaCase kiev\vlang\MetaSpecial.java
-CLASS kiev.vlang.MetaPrivate kiev/vlang/MetaPrivate kiev\vlang\MetaSpecial.java
-CLASS kiev.vlang.MetaProtected kiev/vlang/MetaProtected kiev\vlang\MetaSpecial.java
-CLASS kiev.vlang.MetaPublic kiev/vlang/MetaPublic kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaSet kiev/vlang/MetaSet kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaSingleton kiev/vlang/MetaSingleton kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaSpecial kiev/vlang/MetaSpecial kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaStatic kiev/vlang/MetaStatic kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaSynchronized kiev/vlang/MetaSynchronized kiev\vlang\MetaSpecial.java
+CLASS kiev.vlang.MetaSynthetic kiev/vlang/MetaSynthetic kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaThrows kiev/vlang/MetaThrows kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaTransient kiev/vlang/MetaTransient kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaUnerasable kiev/vlang/MetaUnerasable kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaValue kiev/vlang/MetaValue kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaValueArray kiev/vlang/MetaValueArray kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaValueScalar kiev/vlang/MetaValueScalar kiev\vlang\Meta.java
+CLASS kiev.vlang.MetaVarArgs kiev/vlang/MetaVarArgs kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaVirtual kiev/vlang/MetaVirtual kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaVolatile kiev/vlang/MetaVolatile kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.Method kiev/vlang/Method kiev\vlang\Method.java
@@ -631,6 +632,7 @@ CLASS kiev.vlang.TypeInfoExpr kiev/vlang/TypeInfoExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.TypeOpDef kiev/vlang/TypeOpDef kiev\vlang\Import.java
 CLASS kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.UnaryFunc kiev/vlang/UnaryFunc kiev\vlang\CoreMethod.java
+CLASS kiev.vlang.UserMeta kiev/vlang/UserMeta kiev\vlang\Meta.java
 CLASS kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 CLASS kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
 CLASS kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
@@ -857,16 +859,26 @@ INTERFACE kiev.stdlib.Enumeration kiev/stdlib/Enumeration kiev\stdlib\Enumeratio
 INTERFACE kiev.stdlib.TypeInfoInterface kiev/stdlib/TypeInfoInterface kiev\stdlib\TypeInfo.java
 INTERFACE kiev.stdlib.TypeInfoXInterface kiev/stdlib/TypeInfoXInterface kiev\stdlib\TypeInfoX.java
 INTERFACE kiev.stdlib.meta.CompilerNode kiev/stdlib/meta/CompilerNode kiev\stdlib\meta\CompilerNode.java
+INTERFACE kiev.stdlib.meta.abstract kiev/stdlib/meta/abstract kiev\stdlib\meta\abstract.java
+INTERFACE kiev.stdlib.meta.access kiev/stdlib/meta/access kiev\stdlib\meta\access.java
 INTERFACE kiev.stdlib.meta.alias kiev/stdlib/meta/alias kiev\stdlib\meta\alias.java
+INTERFACE kiev.stdlib.meta.bridge kiev/stdlib/meta/bridge kiev\stdlib\meta\bridge.java
+INTERFACE kiev.stdlib.meta.final kiev/stdlib/meta/final kiev\stdlib\meta\final.java
 INTERFACE kiev.stdlib.meta.forward kiev/stdlib/meta/forward kiev\stdlib\meta\forward.java
 INTERFACE kiev.stdlib.meta.getter kiev/stdlib/meta/getter kiev\stdlib\meta\virtual.java
+INTERFACE kiev.stdlib.meta.macro kiev/stdlib/meta/macro kiev\stdlib\meta\macro.java
 INTERFACE kiev.stdlib.meta.packed kiev/stdlib/meta/packed kiev\stdlib\meta\packed.java
 INTERFACE kiev.stdlib.meta.packer kiev/stdlib/meta/packer kiev\stdlib\meta\packed.java
 INTERFACE kiev.stdlib.meta.pcase kiev/stdlib/meta/pcase kiev\stdlib\meta\pcase.java
 INTERFACE kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtual.java
 INTERFACE kiev.stdlib.meta.singleton kiev/stdlib/meta/singleton kiev\stdlib\meta\singleton.java
+INTERFACE kiev.stdlib.meta.static kiev/stdlib/meta/static kiev\stdlib\meta\static.java
+INTERFACE kiev.stdlib.meta.synchronized kiev/stdlib/meta/synchronized kiev\stdlib\meta\synchronized.java
+INTERFACE kiev.stdlib.meta.synthetic kiev/stdlib/meta/synthetic kiev\stdlib\meta\synthetic.java
 INTERFACE kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java
+INTERFACE kiev.stdlib.meta.transient kiev/stdlib/meta/transient kiev\stdlib\meta\transient.java
 INTERFACE kiev.stdlib.meta.unerasable kiev/stdlib/meta/unerasable kiev\stdlib\meta\unerasable.java
+INTERFACE kiev.stdlib.meta.varargs kiev/stdlib/meta/varargs kiev\stdlib\meta\varargs.java
 INTERFACE kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 INTERFACE kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
 INTERFACE kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
@@ -899,6 +911,9 @@ METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.vlang.Globals kiev\vlang\Globals.java bad
+METATYPE kiev.vlang.MetaPrivate kiev\vlang\MetaSpecial.java
+METATYPE kiev.vlang.MetaProtected kiev\vlang\MetaSpecial.java
+METATYPE kiev.vlang.MetaPublic kiev\vlang\MetaSpecial.java
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java

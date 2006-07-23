@@ -61,7 +61,7 @@ public final class PackedFldME_Verify extends TransfProcessor {
 				Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 				return;
 			}
-			mp.packer = p;
+			mp.fld.symbol = p;
 			assert( mp.getOffset() >= 0 && mp.getOffset()+mp.getSize() <= 32 );
 		}
 	}
@@ -95,30 +95,28 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
 			MetaPacked mp = f.getMetaPacked();
-			if( mp.packer == null ) {
+			if( mp.fld.symbol == null ) {
 				mp.open();
 				String mp_in = mp.getFld();
 				if( mp_in != null && mp_in.length() > 0 ) {
 					Field p = s.resolveField(mp_in,false);
 					if( p == null ) {
 						Kiev.reportError(f,"Packer field "+mp_in+" not found");
-						MetaPacked.ATTR.clear(f);
-						f.setPackedField(false);
+						f.meta.unset(mp);
 						continue;
 					}
 					if( p.type ≢ Type.tpInt ) {
 						Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
-						MetaPacked.ATTR.clear(f);
-						f.setPackedField(false);
+						f.meta.unset(mp);
 						continue;
 					}
-					mp.packer = p;
+					mp.fld.symbol = p;
 					assert( mp.getOffset() >= 0 && mp.getOffset()+mp.getSize() <= 32 );
 				}
 				else if( locatePackerField(packer,mp.getSize(),s) ) {
 					// Found
-					mp.packer = packer;
 					mp.setFld(packer.id.uname);
+					mp.fld.symbol = packer;
 					MetaPacker mpr = packer.getMetaPacker();
 					mp.setOffset(mpr.getSize());
 					mpr.setSize(mpr.getSize() + mp.getSize());
@@ -127,10 +125,9 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					Field p = new Field("$pack$"+countPackerFields(s),Type.tpInt,ACC_PUBLIC|ACC_SYNTHETIC);
 					p.pos = s.pos;
 					MetaPacker mpr = new MetaPacker();
-					MetaPacker.ATTR.set(p, mpr);
-					p.setPackerField(true);
+					p.meta.set(mpr);
 					s.addField(p);
-					mp.packer = p;
+					mp.fld.symbol = p;
 					mp.setFld(p.id.uname);
 					mp.setOffset(0);
 					mpr.setSize(mpr.getSize() + mp.getSize());
@@ -198,13 +195,13 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		if( !f.isPackedField() )
 			return;
 		MetaPacked mp = f.getMetaPacked();
-		if( mp == null || mp.packer == null ) {
+		if( mp == null || mp.fld.symbol == null ) {
 			Kiev.reportError(fa, "Internal error: packed field "+f+" has no packer");
 			return;
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.getSize()]);
 		IFldExpr ae = fa.ncopy();
-		ae.ident.symbol = mp.packer;
+		ae.ident.symbol = mp.fld.symbol;
 		ENode expr = ae;
 		if (mp.getOffset() > 0) {
 			ConstExpr sexpr = new ConstIntExpr(mp.getOffset());
@@ -249,7 +246,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		}
 		Var fval = new Var(0,"tmp$fldval",Type.tpInt,0);
 		MetaPacked mp = f.getMetaPacked();
-		fval.init = new IFldExpr(fa.pos, mkAccess(acc), mp.packer);
+		fval.init = new IFldExpr(fa.pos, mkAccess(acc), (Field)mp.fld.symbol);
 		be.addSymbol(fval);
 		Var tmp = new Var(0,"tmp$val",Type.tpInt,0);
 		be.addSymbol(tmp);
@@ -285,7 +282,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 			ENode expr_r = new BinaryExpr(fa.pos, Operator.BitAnd, mkAccess(fval), clear);
 			ENode expr = new BinaryExpr(fa.pos, Operator.BitOr, expr_r, expr_l);
 			expr = new AssignExpr(fa.pos, Operator.Assign,
-				new IFldExpr(fa.pos, mkAccess(acc), mp.packer),
+				new IFldExpr(fa.pos, mkAccess(acc), (Field)mp.fld.symbol),
 				expr);
 			be.stats.add(new ExprStat(fa.pos, expr));
 		}
@@ -330,7 +327,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 				acc = var;
 			}
 			Var fval = new Var(0,"tmp$fldval",Type.tpInt,0);
-			fval.init = new IFldExpr(fa.pos, mkAccess(acc), mp.packer);
+			fval.init = new IFldExpr(fa.pos, mkAccess(acc), (Field)mp.fld.symbol);
 			be.addSymbol(fval);
 			Var tmp = new Var(0,"tmp$val",Type.tpInt,0);
 			be.addSymbol(tmp);
@@ -371,7 +368,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 				ENode expr_r = new BinaryExpr(fa.pos, Operator.BitAnd, mkAccess(fval), clear);
 				ENode expr = new BinaryExpr(fa.pos, Operator.BitOr, expr_r, expr_l);
 				expr = new AssignExpr(fa.pos, Operator.Assign,
-					new IFldExpr(fa.pos, mkAccess(acc), mp.packer),
+					new IFldExpr(fa.pos, mkAccess(acc), (Field)mp.fld.symbol),
 					expr);
 				be.stats.add(new ExprStat(fa.pos, expr));
 			}

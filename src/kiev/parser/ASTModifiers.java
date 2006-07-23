@@ -19,17 +19,16 @@ public final class ASTModifiers extends ASTNode {
 	
 	@virtual typedef This  = ASTModifiers;
 
-	@att public Access 				acc;
-	@att public Meta[]				annotations;
-	@ref public MetaSpecial[]		specials;
+	@ref public Access 				acc;
+	@ref public Meta[]				annotations;
 
 	public ASTModifiers() {}
 	
-	public MetaSpecial add(MetaSpecial sa)
+	public Meta add(Meta m)
 		alias operator(5, lfy, +=)
 	{
-		this.specials += sa;
-		return sa;
+		this.annotations += m;
+		return m;
 	}
 }
 

@@ -58,19 +58,22 @@ public class Var extends LvalDNode {
 	public Var(int pos, String name, Type type, int flags)
 		require type != null;
 	{
-		this.pos = pos;
-		this.flags = flags;
-		this.id = name;
-		this.vtype = new TypeRef(type);
+		this(new Symbol(pos,name),new TypeRef(type),flags);
 	}
 
 	public Var(Symbol id, TypeRef vtype, int flags)
 		require vtype != null;
 	{
 		this.pos = id.pos;
-		this.flags = flags;
 		this.id = id;
 		this.vtype = vtype;
+		if (flags != 0) {
+			if ((flags & ACC_FINAL) == ACC_FINAL) meta.set(new MetaFinal());
+			if ((flags & ACC_FORWARD) == ACC_FORWARD) meta.set(new MetaForward());
+			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.set(new MetaSynthetic());
+			if ((flags & ACC_MACRO) == ACC_MACRO) meta.set(new MetaMacro());
+			this.flags = flags;
+		}
 	}
 
 	public Var(String name, Type type)
@@ -200,17 +203,13 @@ public final class FormPar extends Var {
 	public FormPar() {}
 
 	public FormPar(int pos, String name, Type type, int kind, int flags) {
-		super(name,type);
-		this.pos = pos;
-		this.flags = flags;
+		super(pos,name,type,flags);
 		this.kind = kind;
 		this.stype = new TypeRef(type);
 	}
 
 	public FormPar(Symbol id, TypeRef vtype, TypeRef stype, int kind, int flags) {
-		super(id,vtype);
-		this.pos = id.pos;
-		this.flags = flags;
+		super(id,vtype,flags);
 		this.kind = kind;
 		this.stype = stype == null ? vtype.ncopy() : stype;
 	}

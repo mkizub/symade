@@ -95,7 +95,6 @@ public static view RDNode of DNode extends RNode {
 	public final void setStatic(boolean on);
 	public final void setFinal(boolean on);
 	public final void setSynchronized(boolean on);
-	public final void setVolatile(boolean on);
 	public final void setFieldVolatile(boolean on);
 	public final void setMethodBridge(boolean on);
 	public final void setFieldTransient(boolean on);

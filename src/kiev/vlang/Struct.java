@@ -212,7 +212,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		}
 		MetaPizzaCase meta = cas.getMetaPizzaCase();
 		if (meta == null)
-			MetaPizzaCase.ATTR.set(cas, meta = new MetaPizzaCase());
+			cas.meta.set(meta = new MetaPizzaCase());
 		meta.setTag(caseno + 1);
 		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
 		return cas;
@@ -247,16 +247,26 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		this.id = new Symbol(null,"");
 		this.q_name = "";
 		this.b_name = KString.Empty;
-		this.meta = new MetaSet();
 	}
 	
 	public Struct(Symbol id, Struct outer, int flags) {
-		this.flags = flags;
 		this.id = id;
 		this.xmeta_type = new CompaundMetaType(this);
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
-		this.meta = new MetaSet();
 		this.package_clazz = outer;
+		if (flags != 0) {
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.set(new MetaAccess(MetaAccess.AccessValue.Public));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.set(new MetaAccess(MetaAccess.AccessValue.Protected));
+			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.set(new MetaAccess(MetaAccess.AccessValue.Private));
+			if ((flags & ACC_STATIC) == ACC_STATIC) meta.set(new MetaStatic());
+			if ((flags & ACC_FINAL) == ACC_FINAL) meta.set(new MetaFinal());
+			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.set(new MetaAbstract());
+			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.set(new MetaSynthetic());
+			if ((flags & ACC_MACRO) == ACC_MACRO) meta.set(new MetaMacro());
+			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) meta.set(new MetaUnerasable());
+			if ((flags & ACC_SINGLETON) == ACC_SINGLETON) meta.set(new MetaSingleton());
+			this.flags = flags;
+		}
 		trace(Kiev.debugCreation,"New clazz created: "+qname() +" as "+id.uname+", member of "+outer);
 	}
 
@@ -267,7 +277,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	public String toString() { return qname().toString(); }
 
 	public MetaPizzaCase getMetaPizzaCase() {
-		return (MetaPizzaCase)MetaPizzaCase.ATTR.get(this);
+		return (MetaPizzaCase)this.meta.get("kiev.stdlib.meta.pcase");
 	}
 
 	public Field[] getEnumFields() {

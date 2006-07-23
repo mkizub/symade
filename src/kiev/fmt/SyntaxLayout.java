@@ -462,7 +462,7 @@ public final class SyntaxElemDecl extends DNode {
 
 	public void preResolveOut() {
 		if (node == null)
-			node = new SymbolRef<Struct>(0,Env.newStruct("ASTNode",Env.newPackage("kiev.vlang"),0));
+			node = new SymbolRef<Struct>(0,Env.newStruct("ASTNode", Env.newPackage("kiev.vlang"), 0));
 		if (node.name == null)
 			node.name = "ASTNode";
 		Struct@ s;

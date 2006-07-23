@@ -49,7 +49,7 @@ public final class MetaSet extends ASTNode {
 	public Meta get(String name) {
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].type.getType().getStruct().qname() == name)
+			if (metas[i].qname() == name)
 				return metas[i];
 		}
 		return null;
@@ -57,11 +57,10 @@ public final class MetaSet extends ASTNode {
 	
 	public Meta set(Meta meta) alias add alias operator (5,lfy,+=)
 	{
-		if (meta == null)
-			throw new NullPointerException();
+		String qname = meta.qname();
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].type == meta.type) {
+			if (metas[i].qname() == qname) {
 				metas[i] = meta;
 				return meta;
 			}
@@ -72,15 +71,13 @@ public final class MetaSet extends ASTNode {
 
 	public Meta unset(Meta meta) alias del alias operator (5,lfy,-=)
 	{
-		return unset(meta.type.getType().getStruct().qname());
+		return unset(meta.qname());
 	}
-	public Meta unset(String name) alias del alias operator (5,lfy,-=)
+	public Meta unset(String qname) alias del alias operator (5,lfy,-=)
 	{
-		if (name == null)
-			throw new NullPointerException();
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (((CompaundType)metas[i].type.getType()).clazz.qname() == name) {
+			if (metas[i].qname() == qname) {
 				Meta m = metas[i];
 				metas.del(i);
 				return m;
@@ -111,12 +108,26 @@ public final class MetaSet extends ASTNode {
 }
 
 @node(name="Meta")
-public class Meta extends ENode {
+public abstract class Meta extends ENode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
-	public static final Meta dummyNode = new Meta();
+	@virtual typedef This  ≤ Meta;
+
+	public static final Meta dummyNode = new UserMeta();
 	
-	@virtual typedef This  = Meta;
+	public ASTNode getDummyNode() {
+		return Meta.dummyNode;
+	}
+	
+	public abstract String qname();
+	public abstract void verify();
+	public abstract TypeDecl getTypeDecl();
+	public abstract MetaValue get(String name);
+}
+
+@node(name="Meta")
+public class UserMeta extends Meta {
+	@virtual typedef This  = UserMeta;
 
 	@att public TypeRef					type;
 	@att public MetaValue[]				values;
@@ -130,23 +141,25 @@ public class Meta extends ENode {
 		}
 	}
 
-	public Meta() {}
+	public UserMeta() {}
 
-	public Meta(TypeRef type) {
+	public UserMeta(TypeRef type) {
 		this.type = type;
 	}
 	
-	public static Meta newMeta(String name)
-		alias operator(210,lfy,new)
-	{
-		return new Meta(new TypeNameRef(name));
+	public UserMeta(String name) {
+		this.type = new TypeNameRef(name);
 	}
 	
+	public String qname() {
+		if (this.type.lnk != null)
+			return getTypeDecl().qname();
+		return this.type.ident.name;
+	}
+
+	public TypeDecl getTypeDecl() { return type.getType().meta_type.tdecl; }
+
 	public Type getType() { return type.getType(); }
-	
-	public ASTNode getDummyNode() {
-		return Meta.dummyNode;
-	}
 	
 	public int size() alias length {
 		return values.length;
@@ -347,10 +360,10 @@ public class Meta extends ENode {
 	public Enumeration<MetaValue> elements() {
 		return new Enumeration<MetaValue>() {
 			int current;
-			public boolean hasMoreElements() { return current < Meta.this.size(); }
+			public boolean hasMoreElements() { return current < UserMeta.this.size(); }
 			public MetaValue nextElement() {
-				if ( current < Meta.this.size() ) return Meta.this.values[current++];
-				throw new NoSuchElementException(Integer.toString(Meta.this.size()));
+				if ( current < UserMeta.this.size() ) return UserMeta.this.values[current++];
+				throw new NoSuchElementException(Integer.toString(UserMeta.this.size()));
 			}
 		};
 	}

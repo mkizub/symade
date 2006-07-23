@@ -103,7 +103,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			s.setCompilerNode(true);
 			// add node name to global map of compiler nodes
 			if (s.meta.get(mnNode) != null) {
-				Meta m = s.meta.get(mnNode);
+				UserMeta m = (UserMeta)s.meta.get(mnNode);
 				String name = m.getS("name");
 				if (name != null && name.length() > 0)
 					TypeExpr.AllNodes.put(name,s);
@@ -439,7 +439,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			}
 		}
 		// copy()
-		if (s.meta.get(mnNode) != null && !s.meta.get(mnNode).getZ(nameCopyable) || s.isAbstract()) {
+		if (s.meta.get(mnNode) != null && !((UserMeta)s.meta.get(mnNode)).getZ(nameCopyable) || s.isAbstract()) {
 			// node is not copyable
 		}
 		else if (hasMethod(s, "copy")) {
@@ -475,9 +475,9 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				if (f.isPackedField() || f.isAbstract() || f.isStatic())
 					continue;
 				{	// check if we may not copy the field
-					Meta fmeta = f.meta.get(mnAtt);
+					UserMeta fmeta = (UserMeta)f.meta.get(mnAtt);
 					if (fmeta == null)
-						fmeta = f.meta.get(mnRef);
+						fmeta = (UserMeta)f.meta.get(mnRef);
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
@@ -574,9 +574,9 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				if (isArr || f.isFinal() || !Access.writeable(f))
 					continue;
 				{	// check if we may not copy the field
-					Meta fmeta = f.meta.get(mnAtt);
+					UserMeta fmeta = (UserMeta)f.meta.get(mnAtt);
 					if (fmeta == null)
-						fmeta = f.meta.get(mnRef);
+						fmeta = (UserMeta)f.meta.get(mnRef);
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
@@ -793,7 +793,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			body.stats.insert(0,p_st);
 			Kiev.runProcessorsOn(p_st);
 		}
-		set_var.meta.set(new Meta(VNode_Base.mnAtt)).resolve(null);
+		set_var.meta.set(new UserMeta(VNode_Base.mnAtt)).resolve(null);
 	}
 
 }

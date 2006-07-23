@@ -166,7 +166,7 @@ public final class CalcOptionJavaFlag extends CalcOption {
 		this.mask = (-1 << (32-size)) >>> (32-size);
 		this.offs = offs;
 		this.val = val;
-	} 
+	}
 	public boolean calc(ANode node) {
 		if (node == null || !(node instanceof DNode)) return false;
 		int f = ((DNode)node).flags >>> offs;

@@ -240,7 +240,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			else if (f.meta.get(VNode_Base.mnAtt) != null)
 				set_var.setFinal(true);
 			s.addMethod(set_var);
-			set_var.meta.set(new Meta(nameMetaSetter)).resolve(null);
+			set_var.meta.set(new UserMeta(nameMetaSetter)).resolve(null);
 			FormPar value;
 			if (f.isStatic()) {
 				value = new FormPar(f.pos,"value",f.type,FormPar.PARAM_NORMAL,0);
@@ -277,7 +277,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			if (f.meta.get(VNode_Base.mnAtt) != null)
 				get_var.setFinal(true);
 			s.addMethod(get_var);
-			get_var.meta.set(new Meta(nameMetaGetter)).resolve(null);
+			get_var.meta.set(new UserMeta(nameMetaGetter)).resolve(null);
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
 				get_var.open();

@@ -66,7 +66,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 			else if (attr.name == "conditions")
 				parent().callbackChildChanged(pslot());
 		}
-		if (attr.name == "params" || attr.name == "flags") {
+		if (attr.name == "params" || attr.name == "meta") {
 			type = null;
 			dtype = null;
 		}
@@ -88,7 +88,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 
 	public MetaThrows getMetaThrows() {
-		return (MetaThrows)MetaThrows.ATTR.get(this);
+		return (MetaThrows)meta.get("kiev.stdlib.meta.throws");
 	}
 
 	// virtual static method
@@ -262,13 +262,27 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	public Method(String name, TypeRef type_ret, int fl) {
 		this(new Symbol(name), type_ret, fl);
 	}
-	public Method(Symbol id, TypeRef type_ret, int fl) {
+	public Method(Symbol id, TypeRef type_ret, int flags) {
 		assert (!(id.equals(nameInit) || id.equals(nameClassInit)) || this instanceof Constructor);
-		this.flags = fl;
 		this.id = id;
 		this.type_ret = type_ret;
 		this.dtype_ret = type_ret.ncopy();
-		this.meta = new MetaSet();
+		if (flags != 0) {
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.set(new MetaAccess(MetaAccess.AccessValue.Public));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.set(new MetaAccess(MetaAccess.AccessValue.Protected));
+			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.set(new MetaAccess(MetaAccess.AccessValue.Private));
+			if ((flags & ACC_STATIC) == ACC_STATIC) meta.set(new MetaStatic());
+			if ((flags & ACC_FINAL) == ACC_FINAL) meta.set(new MetaFinal());
+			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.set(new MetaAbstract());
+			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.set(new MetaSynthetic());
+			if ((flags & ACC_MACRO) == ACC_MACRO) meta.set(new MetaMacro());
+			if ((flags & ACC_NATIVE) == ACC_NATIVE) meta.set(new MetaNative());
+			if ((flags & ACC_SYNCHRONIZED) == ACC_SYNCHRONIZED) meta.set(new MetaSynchronized());
+			if ((flags & ACC_BRIDGE) == ACC_BRIDGE) meta.set(new MetaBridge());
+			if ((flags & ACC_VARARGS) == ACC_VARARGS) meta.set(new MetaVarArgs());
+			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) meta.set(new MetaUnerasable());
+			this.flags = flags;
+		}
 	}
 
 	public Type	getType() { return type; }
@@ -388,7 +402,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		expr.ident.symbol = this;
 		if (!isMacro())
 			return;
-		Meta m = this.meta.get("kiev.stdlib.meta.CompilerNode");
+		UserMeta m = (UserMeta)this.meta.get("kiev.stdlib.meta.CompilerNode");
 		if (m == null)
 			return;
 		Struct s = TypeExpr.AllNodes.get(m.getS("value"));
@@ -802,8 +816,7 @@ public final class Constructor extends Method {
 	public Constructor() {}
 
 	public Constructor(int fl) {
-		super((fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid);
-		this.flags = fl;
+		super((fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid, fl);
 	}
 }
 
@@ -823,12 +836,6 @@ public final class Initializer extends DNode implements PreScanneable {
 	@getter public final Block get$block()	{ return (Block)this.body; }
 
 	public Initializer() {}
-
-	public Initializer(int pos, int flags) {
-		this();
-		this.pos = pos;
-		this.flags = flags;
-	}
 
 	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of initializer "+this);
