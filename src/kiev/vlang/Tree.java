@@ -117,18 +117,18 @@ public abstract class AttAttrSlot extends AttrSlot {
 	public abstract Object get(ANode parent);
 }
 
-public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
+public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 	public SpaceAttrSlot(String name, boolean is_attr, Class clazz) {
 		super(name, is_attr, true, clazz);
 	}
-	public N[] get(ANode parent) { return ((NArr<N>)parent.getVal(this.name)).$nodes; }
-	public void set(ANode parent, Object narr) { ((NArr<N>)parent.getVal(this.name)).$nodes = (N[])narr; }
+	public N[] get(ANode parent) { return ((NArr<ASTNode>)parent.getVal(this.name)).$nodes; }
+	public void set(ANode parent, Object narr) { ((NArr<ASTNode>)parent.getVal(this.name)).$nodes = (ASTNode[])narr; }
 
 	public final N[] getArray(ANode parent) {
 		return this.get(parent);
 	}
 
-	public final int indexOf(ANode parent, ASTNode node) {
+	public final int indexOf(ANode parent, ANode node) {
 		N[] narr = get(parent);
 		int sz = narr.length;
 		for (int i=0; i < sz; i++) {
@@ -138,7 +138,7 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 		return -1;
 	}
 
-	public final void detach(ANode parent, ASTNode old)
+	public final void detach(ANode parent, ANode old)
 	{
 		N[] narr = get(parent);
 		int sz = narr.length;
@@ -166,7 +166,7 @@ public abstract class SpaceAttrSlot<N extends ASTNode> extends AttrSlot {
 
 }
 
-public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
+public class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N> {
 	public SpaceRefAttrSlot(String name, Class clazz) {
 		super(name, false, clazz);
 	}
@@ -232,7 +232,7 @@ public class SpaceRefAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	}
 }
 
-public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
+public class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N> {
 	public SpaceAttAttrSlot(String name, Class clazz) {
 		super(name, true, clazz);
 	}
@@ -240,7 +240,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 	public N set(ANode parent, int idx, N node) {
 		assert(!node.isAttached());
 		N[] narr = get(parent);
-		ASTNode old = narr[idx];
+		ANode old = narr[idx];
 		old.callbackDetached();
 		narr[idx] = node;
 		ListAttachInfo prv = null;
@@ -269,7 +269,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 
 	public void del(ANode parent, int idx) {
 		N[] narr = get(parent);
-		ASTNode old = narr[idx];
+		ANode old = narr[idx];
 		old.callbackDetached();
 		int sz = narr.length-1;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz); //new N[sz];
@@ -303,7 +303,7 @@ public class SpaceAttAttrSlot<N extends ASTNode> extends SpaceAttrSlot<N> {
 
 	public void copyFrom(ANode parent, N[] arr) {
 		foreach (N n; arr)
-			add(parent, n.ncopy());
+			add(parent, ((ASTNode)n).ncopy());
 	}
 	
 	public void delAll(ANode parent) {
