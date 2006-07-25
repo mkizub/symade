@@ -38,7 +38,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 						MetaPizzaCase meta = cas.getMetaPizzaCase();
 						//val = new ConstIntExpr(case_attr.caseno);
 						this.open();
-						val = new ConstIntExpr(meta.getTag());
+						val = new ConstIntExpr(meta.tag);
 						if( pattern.length > 0 ) {
 							Field[] fields = meta.getFields();
 							if( pattern.length != fields.length )
@@ -305,8 +305,8 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 							foreach (Struct sub; tpclz.sub_decls) {
 								if( sub.isPizzaCase() ) {
 									MetaPizzaCase meta = sub.getMetaPizzaCase();
-									if( meta!=null && meta.getTag() > caseno )
-										caseno = meta.getTag();
+									if( meta!=null && meta.tag > caseno )
+										caseno = meta.tag;
 								}
 							}
 							if( caseno == cases.length ) setMethodAbrupted(true);

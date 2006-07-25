@@ -164,8 +164,7 @@ public abstract class kiev040 implements kiev040Constants {
 		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
 		TypeDecl tdecl = Env.newMetaType(name, pkg, true);
 		tdecl.setTypeDeclLoaded(true);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			tdecl.meta.set(m);
+		modifiers.moveToNode(tdecl);
 		Env.createProjectInfo(tdecl, String.valueOf(Kiev.curFile));
 		return tdecl;
 	}
@@ -202,8 +201,7 @@ public abstract class kiev040 implements kiev040Constants {
 		else
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclLoaded(true);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			clazz.meta.set(m);
+		modifiers.moveToNode(clazz);
 		if (modifiers.acc != null)
 			clazz.acc  = modifiers.acc;
 		if (parent instanceof FileUnit) {
@@ -221,27 +219,22 @@ public abstract class kiev040 implements kiev040Constants {
 
 	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers) {
 		TypeAssign arg = new TypeAssign(name);
-		if (modifiers != null) {
-			foreach (Meta m; modifiers.annotations.delToArray())
-				arg.meta.set(m);
-		}
+		if (modifiers != null)
+			modifiers.moveToNode(arg);
 		return arg;
 	}
 
 	private TypeConstr mkTypeConstr(Symbol name, ASTModifiers modifiers) {
 		TypeConstr arg = new TypeConstr(name);
-		if (modifiers != null) {
-			foreach (Meta m; modifiers.annotations.delToArray())
-				arg.meta.set(m);
-		}
+		if (modifiers != null)
+			modifiers.moveToNode(arg);
 		return arg;
 	}
 
 	private Constructor mkConstructor(Symbol id, ASTModifiers modifiers) {
 		Constructor meth = new Constructor(0);
 		meth.pos = id.pos;
-		foreach (Meta m; modifiers.annotations.delToArray())
-			meth.meta.set(m);
+		modifiers.moveToNode(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -249,8 +242,7 @@ public abstract class kiev040 implements kiev040Constants {
 	private Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
 		Method meth = new Method(id, ret, 0);
 		meth.pos = id.pos;
-		foreach (Meta m; modifiers.annotations.delToArray())
-			meth.meta.set(m);
+		modifiers.moveToNode(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -258,8 +250,7 @@ public abstract class kiev040 implements kiev040Constants {
 	private RuleMethod mkRuleMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
 		RuleMethod meth = new RuleMethod(id, 0);
 		meth.pos = id.pos;
-		foreach (Meta m; modifiers.annotations.delToArray())
-			meth.meta.set(m);
+		modifiers.moveToNode(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -269,8 +260,7 @@ public abstract class kiev040 implements kiev040Constants {
 			ret = ret.ncopy();
 		Field f = new Field(id,ret,0);
 		f.pos = id.pos;
-		foreach (Meta m; modifiers.annotations)
-			f.meta.set(m.ncopy());
+		modifiers.copyToNode(f);
 		if (first) {
 			if (modifiers.acc != null)
 				f.acc = modifiers.acc;
@@ -285,16 +275,14 @@ public abstract class kiev040 implements kiev040Constants {
 		Field f = new Field(id,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
 		f.pos = id.pos;
 		f.setEnumField(true);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			f.meta.set(m);
+		modifiers.moveToNode(f);
 		return f;
 	}
 
 	private Field mkCaseField(Symbol id, ASTModifiers modifiers, TypeRef tp) {
 		Field f = new Field(id,tp,0|ACC_PUBLIC);
 		f.pos = id.pos;
-		foreach (Meta m; modifiers.annotations.delToArray())
-			f.meta.set(m);
+		modifiers.moveToNode(f);
 		return f;
 	}
 	
@@ -302,8 +290,7 @@ public abstract class kiev040 implements kiev040Constants {
 		if (!first)
 			tp = tp.ncopy();
 		Var v = new Var(id, tp, 0);
-		foreach (Meta m; modifiers.annotations)
-			v.meta.set(m.ncopy());
+		modifiers.copyToNode(v);
 		return v;
 	}
 	
@@ -311,37 +298,32 @@ public abstract class kiev040 implements kiev040Constants {
 		if (!first)
 			tp = tp.ncopy();
 		LocalRuleVar v = new LocalRuleVar(id, tp, 0);
-		foreach (Meta m; modifiers.annotations)
-			v.meta.set(m.ncopy());
+		modifiers.copyToNode(v);
 		return v;
 	}
 	
 	private FormPar mkFormPar(Symbol id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
 		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, 0);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			v.meta.set(m);
+		modifiers.moveToNode(v);
 		return v;
 	}
 	
 	private FormPar mkVarargPar(Symbol id, ASTModifiers modifiers, TypeRef vt) {
 		FormPar v = new FormPar(id, vt, vt.ncopy(), FormPar.PARAM_VARARGS, ACC_FINAL);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			v.meta.set(m);
+		modifiers.moveToNode(v);
 		return v;
 	}
 	
 	private RewritePattern mkRewritePattern(Symbol id, ASTModifiers modifiers, TypeRef tp) {
 		RewritePattern v = new RewritePattern(id, tp);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			v.meta.set(m);
+		modifiers.moveToNode(v);
 		return v;
 	}
 	
 	private	Initializer mkInitializer(int pos, ASTModifiers modifiers) {
 		Initializer init = new Initializer();
 		init.pos = pos;
-		foreach (Meta m; modifiers.annotations.delToArray())
-			init.meta.set(m);
+		modifiers.moveToNode(init);
 		return init;
 	}
 
@@ -1244,8 +1226,8 @@ public abstract class kiev040 implements kiev040Constants {
                         text.value = "\""+text.value+"\"";
                         MetaAlias ma = f.getMetaAlias();
                         if (ma == null)
-                                f.meta.set(ma=new MetaAlias());
-                        ma.aliases.append(text);
+                                f.meta.setU(ma=new MetaAlias());
+                        ma.add(text);
       break;
     default:
       ;
@@ -1435,27 +1417,27 @@ public abstract class kiev040 implements kiev040Constants {
       break;
     case META_PUBLIC:
       jj_consume_token(META_PUBLIC);
-                                          modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Public);
+                                          modifiers += new MetaAccess(MetaAccess.AccessValue.Public);
       break;
     case PUBLIC:
       jj_consume_token(PUBLIC);
-                                          modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Public);
+                                          modifiers += new MetaAccess(MetaAccess.AccessValue.Public);
       break;
     case META_PROTECTED:
       jj_consume_token(META_PROTECTED);
-                                  modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Protected);
+                                  modifiers += new MetaAccess(MetaAccess.AccessValue.Protected);
       break;
     case PROTECTED:
       jj_consume_token(PROTECTED);
-                                          modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Protected);
+                                          modifiers += new MetaAccess(MetaAccess.AccessValue.Protected);
       break;
     case META_PRIVATE:
       jj_consume_token(META_PRIVATE);
-                                          modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Private);
+                                          modifiers += new MetaAccess(MetaAccess.AccessValue.Private);
       break;
     case PRIVATE:
       jj_consume_token(PRIVATE);
-                                          modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Private);
+                                          modifiers += new MetaAccess(MetaAccess.AccessValue.Private);
       break;
     default:
       jj_consume_token(-1);
@@ -1570,7 +1552,7 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final public void SpecialAnnotation(ASTModifiers modifiers) throws ParseException {
-  MetaPacked mp; MetaThrows mt; TypeNameRef thr;
+  MetaPacked mp; MetaThrows mt; TypeNameRef thr; ConstIntExpr ice; SymbolRef nr;
     switch (jj_nt.kind) {
     case META_SINGLETON:
       jj_consume_token(META_SINGLETON);
@@ -1657,13 +1639,16 @@ public abstract class kiev040 implements kiev040Constants {
         switch (jj_nt.kind) {
         case LPAREN:
           jj_consume_token(LPAREN);
-          mp.size   = IntConstExpression();
+          ice = IntConstExpression();
+                                                                             mp.size = ice.value;
           switch (jj_nt.kind) {
           case COMMA:
             jj_consume_token(COMMA);
-            mp.fld    = NameRef();
+            nr  = NameRef();
+                                                                  mp.setS("in", nr.name);
             jj_consume_token(COMMA);
-            mp.offset = IntConstExpression();
+            ice = IntConstExpression();
+                                                                             mp.offset = ice.value;
             break;
           default:
             ;
@@ -1672,13 +1657,16 @@ public abstract class kiev040 implements kiev040Constants {
           break;
         case COLON:
           jj_consume_token(COLON);
-          mp.size   = IntConstExpression();
+          ice = IntConstExpression();
+                                                             mp.size = ice.value;
           switch (jj_nt.kind) {
           case COMMA:
             jj_consume_token(COMMA);
-            mp.fld    = NameRef();
+            nr  = NameRef();
+                                                          mp.setS("in", nr.name);
             jj_consume_token(COMMA);
-            mp.offset = IntConstExpression();
+            ice = IntConstExpression();
+                                                                     mp.offset = ice.value;
             break;
           default:
             ;
@@ -2462,7 +2450,7 @@ public abstract class kiev040 implements kiev040Constants {
       switch (jj_nt.kind) {
       case THROWS:
         thr = Throws();
-                                  m.meta.set(thr);
+                                  m.meta.setU(thr);
         break;
       default:
         ;
@@ -2586,7 +2574,7 @@ public abstract class kiev040 implements kiev040Constants {
       switch (jj_nt.kind) {
       case THROWS:
         thr = Throws();
-                                  m.meta.set(thr);
+                                  m.meta.setU(thr);
         break;
       default:
         ;
@@ -5798,6 +5786,75 @@ public abstract class kiev040 implements kiev040Constants {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_112(); }
     catch(LookaheadSuccess ls) { return true; }
+  }
+
+  final private boolean jj_3R_510() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_524()) {
+    jj_scanpos = xsp;
+    if (jj_3R_525()) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_493() {
+    if (jj_3R_510()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_107() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_170()) {
+    jj_scanpos = xsp;
+    if (jj_3_19()) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3_17() {
+    if (jj_3R_106()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_168() {
+    if (jj_3R_228()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_167() {
+    if (jj_3R_227()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_515() {
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_330() {
+    if (jj_scan_token(SWITCH)) return true;
+    if (jj_scan_token(LPAREN)) return true;
+    if (jj_3R_106()) return true;
+    if (jj_scan_token(RPAREN)) return true;
+    if (jj_scan_token(LBRACE)) return true;
+    Token xsp;
+    if (jj_3R_493()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_493()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(RBRACE)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_93() {
+    if (jj_3R_106()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_515()) jj_scanpos = xsp;
+    return false;
   }
 
   final private boolean jj_3R_104() {
@@ -10489,75 +10546,6 @@ public abstract class kiev040 implements kiev040Constants {
   final private boolean jj_3_16() {
     if (jj_scan_token(OPERATOR_AT)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_510() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_524()) {
-    jj_scanpos = xsp;
-    if (jj_3R_525()) return true;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_493() {
-    if (jj_3R_510()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_107() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_170()) {
-    jj_scanpos = xsp;
-    if (jj_3_19()) return true;
-    }
-    return false;
-  }
-
-  final private boolean jj_3_17() {
-    if (jj_3R_106()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_168() {
-    if (jj_3R_228()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_167() {
-    if (jj_3R_227()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_515() {
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_330() {
-    if (jj_scan_token(SWITCH)) return true;
-    if (jj_scan_token(LPAREN)) return true;
-    if (jj_3R_106()) return true;
-    if (jj_scan_token(RPAREN)) return true;
-    if (jj_scan_token(LBRACE)) return true;
-    Token xsp;
-    if (jj_3R_493()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_493()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(RBRACE)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_93() {
-    if (jj_3R_106()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_515()) jj_scanpos = xsp;
     return false;
   }
 

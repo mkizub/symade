@@ -100,7 +100,7 @@ public class PizzaME_PreGenerate extends BackendProcessor {
 			Field ftag = clazz.addField(new Field(
 				nameCaseTag,Type.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
 			ftag.open();
-			ftag.init = new ConstIntExpr(meta.getTag());
+			ftag.init = new ConstIntExpr(meta.tag);
 
 			Method gettag = new Method(nameGetCaseTag,Type.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
 			gettag.body = new Block(gettag.pos);

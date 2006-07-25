@@ -1082,6 +1082,15 @@ public abstract class Annotation extends Attribute {
 		public void write(ReadContext cont) {
 			cont.writeShort(const_value_index);
 		}
+		public Object getValue(Clazz clazz) {
+			PoolConstant cp_value = clazz.pool[const_value_index];
+			if (cp_value instanceof NumberPoolConstant)
+				return ((NumberPoolConstant)cp_value).getValue();
+			else if (cp_value instanceof StringPoolConstant)
+				return ((StringPoolConstant)cp_value).ref.value;
+			else
+				throw new RuntimeException("Bad element_value_const: "+cp_value.getClass());
+		}
 	}
 	public static class element_value_enum_const extends element_value {
 		public int  type_name_index;
@@ -1095,6 +1104,12 @@ public abstract class Annotation extends Attribute {
 			cont.writeShort(type_name_index);
 			cont.writeShort(const_name_index);
 		}
+		public KString getSignature(Clazz clazz) {
+			return ((Utf8PoolConstant)clazz.pool[type_name_index]).value;
+		}
+		public KString getFieldName(Clazz clazz) {
+			return ((Utf8PoolConstant)clazz.pool[const_name_index]).value;
+		}
 	}
 	public static class element_value_class_info extends element_value {
 		public int  class_info_index;
@@ -1104,6 +1119,9 @@ public abstract class Annotation extends Attribute {
 		}
 		public void write(ReadContext cont) {
 			cont.writeShort(class_info_index);
+		}
+		public KString getSignature(Clazz clazz) {
+			return ((ClazzPoolConstant)clazz.pool[class_info_index]).ref.value;
 		}
 	}
 	public static class element_value_annotation extends element_value {
@@ -1167,6 +1185,12 @@ public abstract class Annotation extends Attribute {
 				cont.writeByte(values[i].tag);
 				values[i].write(cont);
 			}
+		}
+		public KString getSignature(Clazz clazz) {
+			return ((Utf8PoolConstant)clazz.pool[type_index]).value;
+		}
+		public KString getName(int i, Clazz clazz) {
+			return ((Utf8PoolConstant)clazz.pool[names[i]]).value;
 		}
 	}
 

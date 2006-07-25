@@ -103,40 +103,24 @@ public abstract class DNode extends ASTNode {
 	public final boolean isSyntax()				{ return this.is_access == MASK_ACC_SYNTAX; }
 
 	public void setPublic() {
-		MetaAccess ma = this.meta.get("kiev.stdlib.meta.access");
-		if (ma != null) {
-			ma.open();
-			ma.value = MetaAccess.AccessValue.Public;
-		} else {
-			this.meta.set(new MetaAccess(MetaAccess.AccessValue.Public));
-		}
+		MetaAccess m = (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
+		if (m == null || m.value != "public")
+			this.meta.setF(new MetaAccess(MetaAccess.AccessValue.Public));
 	}
 	public void setPrivate() {
-		MetaAccess ma = this.meta.get("kiev.stdlib.meta.access");
-		if (ma != null) {
-			ma.open();
-			ma.value = MetaAccess.AccessValue.Private;
-		} else {
-			this.meta.set(new MetaAccess(MetaAccess.AccessValue.Private));
-		}
+		MetaAccess m = (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
+		if (m == null || m.value != "private")
+			this.meta.setF(new MetaAccess(MetaAccess.AccessValue.Private));
 	}
 	public void setProtected() {
-		MetaAccess ma = this.meta.get("kiev.stdlib.meta.access");
-		if (ma != null) {
-			ma.open();
-			ma.value = MetaAccess.AccessValue.Protected;
-		} else {
-			this.meta.set(new MetaAccess(MetaAccess.AccessValue.Protected));
-		}
+		MetaAccess m = (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
+		if (m == null || m.value != "protected")
+			this.meta.setF(new MetaAccess(MetaAccess.AccessValue.Protected));
 	}
 	public void setPkgPrivate() {
-		MetaAccess ma = this.meta.get("kiev.stdlib.meta.access");
-		if (ma != null) {
-			ma.open();
-			ma.value = MetaAccess.AccessValue.Default;
-		} else {
-			this.meta.set(new MetaAccess(MetaAccess.AccessValue.Default));
-		}
+		MetaAccess m = (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
+		if (m != null)
+			m.detach();
 	}
 	public final void setPackage() {
 		if (this.is_access != MASK_ACC_NAMESPACE) {
@@ -154,67 +138,67 @@ public abstract class DNode extends ASTNode {
 	}
 
 	public void setStatic(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.static");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.static");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaStatic());
+			if (on) this.meta.setF(new MetaStatic());
 		}
 	}
 	public void setFinal(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.final");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.final");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaFinal());
+			if (on) this.meta.setF(new MetaFinal());
 		}
 	}
 	public void setSynchronized(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.synchronized");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.synchronized");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaSynchronized());
+			if (on) this.meta.setF(new MetaSynchronized());
 		}
 	}
 	public void setFieldVolatile(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.volatile");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.volatile");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaVolatile());
+			if (on) this.meta.setF(new MetaVolatile());
 		}
 	}
 	public void setMethodBridge(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.bridge");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.bridge");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaBridge());
+			if (on) this.meta.setF(new MetaBridge());
 		}
 	}
 	public void setFieldTransient(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.transient");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.transient");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaTransient());
+			if (on) this.meta.setF(new MetaTransient());
 		}
 	}
 	public void setMethodVarargs(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.varargs");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.varargs");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaVarArgs());
+			if (on) this.meta.setF(new MetaVarArgs());
 		}
 	}
 	public void setNative(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.native");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.native");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaNative());
+			if (on) this.meta.setF(new MetaNative());
 		}
 	}
 	public void setInterface(boolean on) {
@@ -225,28 +209,28 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 	public void setAbstract(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.abstract");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.abstract");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaAbstract());
+			if (on) this.meta.setF(new MetaAbstract());
 		}
 	}
 	public void setSynthetic(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.synthetic");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.synthetic");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaSynthetic());
+			if (on) this.meta.setF(new MetaSynthetic());
 		}
 	}
 
 	public void setMacro(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.macro");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.macro");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaMacro());
+			if (on) this.meta.setF(new MetaMacro());
 		}
 	}
 
@@ -258,11 +242,11 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 	public void setTypeUnerasable(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.unerasable");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.unerasable");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaUnerasable());
+			if (on) this.meta.setF(new MetaUnerasable());
 		}
 	}
 
@@ -270,11 +254,11 @@ public abstract class DNode extends ASTNode {
 		return this.is_virtual;
 	}
 	public final void setVirtual(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.virtual");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.virtual");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaVirtual());
+			if (on) this.meta.setF(new MetaVirtual());
 		}
 	}
 
@@ -282,11 +266,11 @@ public abstract class DNode extends ASTNode {
 		return this.is_forward;
 	}
 	@setter public final void setForward(boolean on) {
-		Meta m = this.meta.get("kiev.stdlib.meta.forward");
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.forward");
 		if (m != null) {
-			if!(on) this.meta.unset(m);
+			if!(on) m.detach();
 		} else {
-			if (on) this.meta.set(new MetaForward());
+			if (on) this.meta.setF(new MetaForward());
 		}
 	}
 

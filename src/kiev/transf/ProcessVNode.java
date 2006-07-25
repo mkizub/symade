@@ -51,10 +51,10 @@ abstract class VNode_Base extends TransfProcessor {
 	VNode_Base() { super(Kiev.Ext.VNode); }
 
 	final boolean isNodeImpl(Struct s) {
-		return s.meta.get(mnNode) != null || s.meta.get(mnNodeImpl) != null;
+		return s.meta.getU(mnNode) != null || s.meta.getU(mnNodeImpl) != null;
 	}
 	final boolean isNodeKind(Struct s) {
-		return s.meta.get(mnNode) != null || s.meta.get(mnNodeImpl) != null || s.meta.get(mnNodeSet) != null;
+		return s.meta.getU(mnNode) != null || s.meta.getU(mnNodeImpl) != null || s.meta.getU(mnNodeSet) != null;
 	}
 	final boolean isNodeKind(Type t) {
 		if (t != null && t.getStruct() != null)
@@ -102,8 +102,8 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 		if (isNodeKind(s)) {
 			s.setCompilerNode(true);
 			// add node name to global map of compiler nodes
-			if (s.meta.get(mnNode) != null) {
-				UserMeta m = (UserMeta)s.meta.get(mnNode);
+			if (s.meta.getU(mnNode) != null) {
+				UserMeta m = s.meta.getU(mnNode);
 				String name = m.getS("name");
 				if (name != null && name.length() > 0)
 					TypeExpr.AllNodes.put(name,s);
@@ -115,7 +115,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			return;
 		}
 		
-		if (s.meta.get(mnNodeView) == null) {
+		if (s.meta.getU(mnNodeView) == null) {
 			foreach (TypeRef st; s.super_types; isNodeKind(st.getType()))
 				Kiev.reportError(s,"Class "+s+" must be marked with @node: it extends @node");
 			return;
@@ -123,8 +123,8 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 
 		// Check fields to not have @att and @ref
 		foreach (Field f; s.members) {
-			Meta fmatt = f.meta.get(mnAtt);
-			Meta fmref = f.meta.get(mnRef);
+			UserMeta fmatt = f.meta.getU(mnAtt);
+			UserMeta fmref = f.meta.getU(mnRef);
 			if (fmatt != null || fmref != null) {
 				Kiev.reportError(f,"Field "+f+" of non-@node class "+f.parent()+" may not be @att or @ref");
 			}
@@ -132,8 +132,8 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 	}
 	
 	public void doProcess(Field:ASTNode f) {
-		Meta fmatt = f.meta.get(mnAtt);
-		Meta fmref = f.meta.get(mnRef);
+		UserMeta fmatt = f.meta.getU(mnAtt);
+		UserMeta fmref = f.meta.getU(mnRef);
 		//if (fmatt != null || fmref != null) {
 		//	System.out.println("process @node: field "+f+" has @att="+fmatt+" and @ref="+fmref);
 		if (fmatt != null && fmref != null) {
@@ -208,7 +208,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 	}
 	
 	private Type makeNodeAttrClass(Struct snode, Field f) {
-		boolean isAtt = (f.meta.get(mnAtt) != null);
+		boolean isAtt = (f.meta.getU(mnAtt) != null);
 		boolean isArr = f.getType().isInstanceOf(tpNArray);
 		Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
 		Struct s = Env.newStruct(("NodeAttr_"+f.id.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,true);
@@ -347,7 +347,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		if (isNodeImpl(s)) {
 			Struct ss = s;
 			while (ss != null && isNodeImpl(ss)) {
-				foreach (Field f; ss.members; !f.isStatic() && (f.meta.get(mnAtt) != null || f.meta.get(mnRef) != null)) {
+				foreach (Field f; ss.members; !f.isStatic() && (f.meta.getU(mnAtt) != null || f.meta.getU(mnRef) != null)) {
 					aflds.append(f);
 				}
 				ss = ss.super_types[0].getStruct();
@@ -356,7 +356,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		ENode[] vals_init = new ENode[aflds.size()];
 		for(int i=0; i < vals_init.length; i++) {
 			Field f = aflds[i];
-			boolean isAtt = (f.meta.get(mnAtt) != null);
+			boolean isAtt = (f.meta.getU(mnAtt) != null);
 			boolean isArr = f.getType().isInstanceOf(tpNArray);
 			String fname = "nodeattr$"+f.id.sname;
 			if (f.parent() != s) {
@@ -439,7 +439,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			}
 		}
 		// copy()
-		if (s.meta.get(mnNode) != null && !((UserMeta)s.meta.get(mnNode)).getZ(nameCopyable) || s.isAbstract()) {
+		if (s.meta.getU(mnNode) != null && !s.meta.getU(mnNode).getZ(nameCopyable) || s.isAbstract()) {
 			// node is not copyable
 		}
 		else if (hasMethod(s, "copy")) {
@@ -475,15 +475,15 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				if (f.isPackedField() || f.isAbstract() || f.isStatic())
 					continue;
 				{	// check if we may not copy the field
-					UserMeta fmeta = (UserMeta)f.meta.get(mnAtt);
+					UserMeta fmeta = f.meta.getU(mnAtt);
 					if (fmeta == null)
-						fmeta = (UserMeta)f.meta.get(mnRef);
+						fmeta = f.meta.getU(mnRef);
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
 				boolean isNode = (isNodeKind(f.getType()));
 				boolean isArr = f.getType().isInstanceOf(tpNArray);
-				if (f.meta.get(mnAtt) != null && (isNode || isArr)) {
+				if (f.meta.getU(mnAtt) != null && (isNode || isArr)) {
 					if (isArr) {
 						CallExpr cae = new CallExpr(0,
 							new IFldExpr(0,new LVarExpr(0,v),f),
@@ -574,9 +574,9 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				if (isArr || f.isFinal() || !Access.writeable(f))
 					continue;
 				{	// check if we may not copy the field
-					UserMeta fmeta = (UserMeta)f.meta.get(mnAtt);
+					UserMeta fmeta = f.meta.getU(mnAtt);
 					if (fmeta == null)
-						fmeta = (UserMeta)f.meta.get(mnRef);
+						fmeta = f.meta.getU(mnRef);
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
@@ -692,19 +692,19 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	}
 	
 	public void doProcess(Struct:ASTNode s) {
-		foreach(Field f; s.members; !f.isStatic() && f.isVirtual() && f.meta.get(VNode_Base.mnAtt) != null)
+		foreach(Field f; s.members; !f.isStatic() && f.isVirtual() && f.meta.getU(VNode_Base.mnAtt) != null)
 			fixSetterMethod(s, f);
 		foreach(Struct sub; s.sub_decls)
 			doProcess(sub);
 	}
 	
 	private void fixSetterMethod(Struct s, Field f) {
-		assert(f.meta.get(VNode_Base.mnAtt) != null);
+		assert(f.meta.getU(VNode_Base.mnAtt) != null);
 
 		Method set_var = (Method)Field.SETTER_ATTR.get(f);
 		if (set_var == null || set_var.isAbstract() || set_var.isStatic())
 			return;
-		if (set_var.meta.get(VNode_Base.mnAtt) != null)
+		if (set_var.meta.getU(VNode_Base.mnAtt) != null)
 			return; // already generated
 
 		FormPar value = null;
@@ -793,7 +793,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			body.stats.insert(0,p_st);
 			Kiev.runProcessorsOn(p_st);
 		}
-		set_var.meta.set(new UserMeta(VNode_Base.mnAtt)).resolve(null);
+		set_var.meta.setU(new UserMeta(VNode_Base.mnAtt)).resolve(null);
 	}
 
 }

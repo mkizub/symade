@@ -114,18 +114,18 @@ public final class Field extends LvalDNode implements Accessable {
 		this.id = name;
 		this.ftype = ftype;
 		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.set(new MetaAccess(MetaAccess.AccessValue.Public));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.set(new MetaAccess(MetaAccess.AccessValue.Protected));
-			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.set(new MetaAccess(MetaAccess.AccessValue.Private));
-			if ((flags & ACC_STATIC) == ACC_STATIC) meta.set(new MetaStatic());
-			if ((flags & ACC_FINAL) == ACC_FINAL) meta.set(new MetaFinal());
-			if ((flags & ACC_FORWARD) == ACC_FORWARD) meta.set(new MetaForward());
-			if ((flags & ACC_VOLATILE) == ACC_VOLATILE) meta.set(new MetaVolatile());
-			if ((flags & ACC_TRANSIENT) == ACC_TRANSIENT) meta.set(new MetaTransient());
-			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.set(new MetaAbstract());
-			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.set(new MetaSynthetic());
-			if ((flags & ACC_MACRO) == ACC_MACRO) meta.set(new MetaMacro());
-			if ((flags & ACC_NATIVE) == ACC_NATIVE) meta.set(new MetaNative());
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setF(new MetaAccess(MetaAccess.AccessValue.Public));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Protected));
+			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Private));
+			if ((flags & ACC_STATIC) == ACC_STATIC) meta.setF(new MetaStatic());
+			if ((flags & ACC_FINAL) == ACC_FINAL) meta.setF(new MetaFinal());
+			if ((flags & ACC_FORWARD) == ACC_FORWARD) meta.setF(new MetaForward());
+			if ((flags & ACC_VOLATILE) == ACC_VOLATILE) meta.setF(new MetaVolatile());
+			if ((flags & ACC_TRANSIENT) == ACC_TRANSIENT) meta.setF(new MetaTransient());
+			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.setF(new MetaAbstract());
+			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.setF(new MetaSynthetic());
+			if ((flags & ACC_MACRO) == ACC_MACRO) meta.setF(new MetaMacro());
+			if ((flags & ACC_NATIVE) == ACC_NATIVE) meta.setF(new MetaNative());
 			this.flags = flags;
 		}
 		trace(Kiev.debugCreation,"New field created: "+name+" with type "+ftype);
@@ -163,15 +163,15 @@ public final class Field extends LvalDNode implements Accessable {
 	}
 
 	public final MetaPacked getMetaPacked() {
-		return (MetaPacked)this.meta.get("kiev.stdlib.meta.packed");
+		return (MetaPacked)this.meta.getU("kiev.stdlib.meta.packed");
 	}
 
 	public final MetaPacker getMetaPacker() {
-		return (MetaPacker)this.meta.get("kiev.stdlib.meta.packer");
+		return (MetaPacker)this.meta.getU("kiev.stdlib.meta.packer");
 	}
 
 	public final MetaAlias getMetaAlias() {
-		return (MetaAlias)this.meta.get("kiev.stdlib.meta.alias");
+		return (MetaAlias)this.meta.getU("kiev.stdlib.meta.alias");
 	}
 
 	public boolean preResolveIn() {

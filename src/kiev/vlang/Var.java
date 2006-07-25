@@ -68,10 +68,10 @@ public class Var extends LvalDNode {
 		this.id = id;
 		this.vtype = vtype;
 		if (flags != 0) {
-			if ((flags & ACC_FINAL) == ACC_FINAL) meta.set(new MetaFinal());
-			if ((flags & ACC_FORWARD) == ACC_FORWARD) meta.set(new MetaForward());
-			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.set(new MetaSynthetic());
-			if ((flags & ACC_MACRO) == ACC_MACRO) meta.set(new MetaMacro());
+			if ((flags & ACC_FINAL) == ACC_FINAL) meta.setF(new MetaFinal());
+			if ((flags & ACC_FORWARD) == ACC_FORWARD) meta.setF(new MetaForward());
+			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.setF(new MetaSynthetic());
+			if ((flags & ACC_MACRO) == ACC_MACRO) meta.setF(new MetaMacro());
 			this.flags = flags;
 		}
 	}

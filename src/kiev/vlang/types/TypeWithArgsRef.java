@@ -22,7 +22,7 @@ public final class TypeWithArgsRef extends TypeNameRef {
 
 	public TypeWithArgsRef() {}
 
-	public TypeWithArgsRef(TypeRef outer, SymbolRef<TypeDecl> nm) {
+	public TypeWithArgsRef(TypeNameRef outer, SymbolRef<TypeDecl> nm) {
 		super(outer, nm);
 	}
 

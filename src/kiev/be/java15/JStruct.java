@@ -178,7 +178,10 @@ public final view JStruct of Struct extends JTypeDecl {
 			addAttr(a);
 		}
 
-		if (meta.size() > 0) this.addAttr(new RVMetaAttr(meta));
+		if (meta.hasRuntimeVisibles())
+			this.addAttr(new RVMetaAttr(meta));
+		if (meta.hasRuntimeInvisibles())
+			this.addAttr(new RIMetaAttr(meta));
 		
 		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
 		foreach (JField f; members) {
@@ -189,7 +192,10 @@ public final view JStruct of Struct extends JTypeDecl {
 				f.openForEdit();
 				((Field)f).setPkgPrivate();
 			}
-			if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
+			if (f.meta.hasRuntimeVisibles())
+				f.addAttr(new RVMetaAttr(f.meta));
+			if (f.meta.hasRuntimeInvisibles())
+				f.addAttr(new RIMetaAttr(f.meta));
 			if (f.isStatic() && f.init != null && f.init.isConstantExpr()) {
 				Object co = f.init.getConstValue();
 				if (co != null)
@@ -220,17 +226,28 @@ public final view JStruct of Struct extends JTypeDecl {
 					}
 				}
 
-				if (m.meta.size() > 0) m.addAttr(new RVMetaAttr(m.meta));
-				boolean has_pmeta = false;
+				if (m.meta.hasRuntimeVisibles())
+					m.addAttr(new RVMetaAttr(m.meta));
+				if (m.meta.hasRuntimeInvisibles())
+					m.addAttr(new RIMetaAttr(m.meta));
+				boolean has_vis_pmeta = false;
+				boolean has_invis_pmeta = false;
 				JVar[] params = m.params;
-				foreach (JVar p; params; p.meta != null && m.meta.size() > 0)
-					has_pmeta = true;
-				if (has_pmeta) {
+				foreach (JVar p; params; p.meta.hasRuntimeVisibles()) {
 					MetaSet[] mss;
 					mss = new MetaSet[params.length];
 					for (int i=0; i < mss.length; i++)
 						mss[i] = params[i].meta;
 					m.addAttr(new RVParMetaAttr(mss));
+					break;
+				}
+				foreach (JVar p; params; p.meta.hasRuntimeInvisibles()) {
+					MetaSet[] mss;
+					mss = new MetaSet[params.length];
+					for (int i=0; i < mss.length; i++)
+						mss[i] = params[i].meta;
+					m.addAttr(new RIParMetaAttr(mss));
+					break;
 				}
 				if (isAnnotation() && m.body instanceof MetaValue)
 					m.addAttr(new DefaultMetaAttr((MetaValue)m.body));

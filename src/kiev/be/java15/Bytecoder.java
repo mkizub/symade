@@ -78,12 +78,12 @@ public class Bytecoder implements JConstants {
 		}
 
 		for(int i=0; i < bcclazz.methods.length; i++) {
-			readMethod(null,i);
+			readMethod(i);
 		}
 
 		kiev.bytecode.Attribute[] attrs = bcclazz.attrs;
 		for(int i=0; i < attrs.length; i++) {
-			Attr at = readAttr(bcclazz.attrs[i],bcclazz);
+			Attr at = readAttr(bcclazz.attrs[i],bcclazz,cl);
 			if( at != null ) {
 				((JStruct)cl).addAttr(at);
 			}
@@ -104,8 +104,10 @@ public class Bytecoder implements JConstants {
 		Symbol nm = null;
 		int packer_size = -1;
 		Access acc = null;
+		Type ftype = Signature.getType(f_type);
+		f = new Field(f_name.toString(),ftype,f_flags);
 		for(int i=0; i < bcf.attrs.length; i++) {
-			Attr at = readAttr(bcf.attrs[i],bcclazz);
+			Attr at = readAttr(bcf.attrs[i],bcclazz,f);
 			if( at == null ) continue;
 			if( at.name.equals(attrConstantValue) && (f_flags & ACC_FINAL)!=0 ) {
 				ConstantValueAttr a = (ConstantValueAttr)at;
@@ -115,15 +117,13 @@ public class Bytecoder implements JConstants {
 					f_init = ConstExpr.fromConst(a.value);
 			}
 		}
-		Type ftype = Signature.getType(f_type);
-		f = new Field(f_name.toString(),ftype,f_flags);
 		if( acc != null ) f.acc = acc;
 		if( nm != null )
 			f.id.aliases = nm.aliases;
 		if( packer_size >= 0 ) {
 			MetaPacker mpr = new MetaPacker();
-			mpr.setSize(packer_size);
-			f.meta.set(mpr);
+			mpr.size = packer_size;
+			f.meta.setU(mpr);
 		}
 		f.init = f_init;
 		cl.members.append(f);
@@ -131,7 +131,7 @@ public class Bytecoder implements JConstants {
 		return f;
 	}
 
-	public Method readMethod(Method m, int index) {
+	public Method readMethod(int index) {
 		kiev.bytecode.Method bcm = bcclazz.methods[index];
 		int m_flags = bcm.flags;
 		KString m_name = bcm.getName(bcclazz);
@@ -139,17 +139,32 @@ public class Bytecoder implements JConstants {
 		KString m_type_java = bcm.getSignature(bcclazz);
 		KString m_type = m_type_java;
 		Attr[] attrs = Attr.emptyArray;
-		Symbol nm = null;
-		Operator op = null;
-		WBCCondition[] conditions = null;
+		CallType mtype = (CallType)Signature.getType(m_type);
+		CallType jtype = mtype;
+		Method m; 
+		if (m_name_s == nameInit || m_name_s == nameClassInit)
+			m = new Constructor(m_flags);
+		else
+			m = new Method(m_name_s,mtype.ret(),m_flags);
+		cl.members.append(m);
+		for (int i=0; i < mtype.arity; i++) {
+			if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
+				FormPar fp = new FormPar(new Symbol("va_arg"),
+					new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_VARARGS,ACC_FINAL);
+					m.params.add(fp);
+					mtype = m.etype;
+					break;
+			} else {
+				FormPar fp = new FormPar(new Symbol("arg"+i),
+					new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_NORMAL,0);
+					m.params.add(fp);
+			}
+		}
 		for(int i=0; i < bcm.attrs.length; i++) {
-			Attr at = readAttr(bcm.attrs[i],bcclazz);
+			Attr at = readAttr(bcm.attrs[i],bcclazz,m);
 			if( at == null ) continue;
 			if( at.name.equals(attrExceptions) ) {
-				if( m != null )
-					((JMethod)m).addAttr(at);
-				else
-					attrs = (Attr[])Arrays.append(attrs,at);
+				((JMethod)m).addAttr(at);
 			}
 			else if( at.name.equals(attrRequire) || at.name.equals(attrEnsure) ) {
 				WBCCondition wbc = new WBCCondition();
@@ -158,124 +173,13 @@ public class Bytecoder implements JConstants {
 				else
 					wbc.cond = WBCType.CondEnsure;
 				wbc.code_attr = (ContractAttr)at;
-				if( m == null ) {
-					if( conditions == null )
-						conditions = new WBCCondition[]{wbc};
-					else
-						conditions = (WBCCondition[])Arrays.appendUniq(conditions,wbc);
-				} else {
-					wbc.definer = m;
-					if (m.conditions.indexOf(wbc) < 0)
-						m.conditions.add(wbc);
-				}
+				wbc.definer = m;
+				if (m.conditions.indexOf(wbc) < 0)
+					m.conditions.add(wbc);
 			}
 		}
-		CallType mtype = (CallType)Signature.getType(m_type);
-		CallType jtype = mtype;
-		if( m == null ) {
-//			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
-//				mtype = new CallType(mtype.args,Type.tpRule);
-//				m = new RuleMethod(m_name_s,m_flags);
-//			}
-//			else
-			if (m_name_s == nameInit || m_name_s == nameClassInit)
-				m = new Constructor(m_flags);
-			else
-				m = new Method(m_name_s,mtype.ret(),m_flags);
-			cl.members.append(m);
-			for (int i=0; i < mtype.arity; i++) {
-				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
-					FormPar fp = new FormPar(new Symbol("va_arg"),
-						new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_VARARGS,ACC_FINAL);
-						m.params.add(fp);
-						mtype = m.etype;
-						break;
-				} else {
-					FormPar fp = new FormPar(new Symbol("arg"+i),
-						new TypeRef(mtype.arg(i)),new TypeRef(jtype.arg(i)),FormPar.PARAM_NORMAL,0);
-						m.params.add(fp);
-				}
-			}
-			trace(Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
-			if( conditions != null ) {
-				m.conditions.addAll(conditions);
-				for(int i=0; i < conditions.length; i++)
-					m.conditions[i].definer = m;
-			}
-			((JMethod)m).attrs = attrs;
-		} else {
-			trace(Kiev.debugBytecodeRead,"read2 method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
-		}
-		if( nm != null ) {
-			m.id.aliases = nm.aliases;
-			if( Kiev.verbose && m.id.equals(nameArrayGetOp)) {
-				System.out.println("Attached operator [] to method "+m);
-			}
-			else if( Kiev.verbose && m.id.equals(nameNewOp)) {
-				System.out.println("Attached operator new to method "+m);
-			}
-		}
-		if( op != null ) {
-/*			Type opret = m.type.ret();
-			Type oparg1, oparg2;
-			switch(op.mode) {
-			case Operator.LFY:
-				if( m.isStatic() )
-					throw new RuntimeException("Assign operator can't be static");
-				else if( !m.isStatic() && m.type.arity == 1 )
-					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(0); }
-				else
-					throw new RuntimeException("Method "+m+" must be virtual and have 1 argument");
-				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
-				m.id.addAlias(op.name);
-				op.addMethod(m);
-				break;
-			case Operator.XFX:
-			case Operator.YFX:
-			case Operator.XFY:
-			case Operator.YFY:
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 2 )
-					{ oparg1 = m.type.arg(0); oparg2 = m.type.arg(1); }
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 3 )
-					{ oparg1 = m.type.arg(1); oparg2 = m.type.arg(2); }
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
-					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(0); }
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
-					{ oparg1 = m.ctx_tdecl.xtype; oparg2 = m.type.arg(1); }
-				else
-					throw new RuntimeException("Method "+m+" must have 2 arguments");
-				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
-				m.id.addAlias(op.name);
-				op.addMethod(m);
-				break;
-			case Operator.FX:
-			case Operator.FY:
-			case Operator.XF:
-			case Operator.YF:
-				if( m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
-					oparg1 = m.type.arg(0);
-				else if( m.isStatic() && m instanceof RuleMethod && m.type.arity == 2 )
-					oparg1 = m.type.arg(1);
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 0 )
-					oparg1 = m.ctx_tdecl.xtype;
-				else if( !m.isStatic() && !(m instanceof RuleMethod) && m.type.arity == 1 )
-					oparg1 = m.type.arg(0);
-				else if( !m.isStatic() && m instanceof RuleMethod && m.type.arity == 1 )
-					oparg1 = m.ctx_tdecl.xtype;
-				else
-					throw new RuntimeException("Method "+m+" must have 1 argument");
-				if( Kiev.verbose ) System.out.println("Attached unary "+op+" to method "+m);
-				m.id.addAlias(op.name);
-				op.addMethod(m);
-				break;
-			case Operator.XFXFY:
-				throw new RuntimeException("Multioperators are not supported yet");
-			default:
-				throw new RuntimeException("Unknown operator mode "+op.mode);
-			}
-
-			m.setOperatorMethod(true);
-*/		}
+		((JMethod)m).attrs = attrs;
+		trace(Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 		if( m.isStatic()
 		 && !m.id.equals(nameClassInit)
 		 && cl.package_clazz.isInterface()
@@ -286,7 +190,7 @@ public class Bytecoder implements JConstants {
 		return m;
 	}
 
-	public Attr readAttr(kiev.bytecode.Attribute bca, kiev.bytecode.Clazz clazz) {
+	public Attr readAttr(kiev.bytecode.Attribute bca, kiev.bytecode.Clazz clazz, DNode dn) {
 		Attr a = null;
 		KString name = bca.getName(clazz);
 //		Debug.trace(true,"reading attr "+name);
@@ -491,12 +395,136 @@ public class Bytecoder implements JConstants {
 			ca.constants_pc = (int[])Arrays.cloneToSize(constants_pc,constants_top);
 			a = ca;
 		}
+		else if( name.equals(attrRVAnnotations) ) {
+			kiev.bytecode.RVAnnotations rva = (kiev.bytecode.RVAnnotations)bca;
+			foreach (kiev.bytecode.Annotation.annotation ann; rva.annotations)
+				dn.meta.setU(readAnnotation(clazz, ann));
+			a = null;
+		}
+		else if( name.equals(attrRIAnnotations) ) {
+			kiev.bytecode.RIAnnotations rva = (kiev.bytecode.RIAnnotations)bca;
+			foreach (kiev.bytecode.Annotation.annotation ann; rva.annotations)
+				dn.meta.setU(readAnnotation(clazz, ann));
+			a = null;
+		}
+		else if( name.equals(attrRVParAnnotations) ) {
+			kiev.bytecode.RVParAnnotations rva = (kiev.bytecode.RVParAnnotations)bca;
+			for (int i=0; i < rva.annotations.length; i++) {
+				foreach (kiev.bytecode.Annotation.annotation ann; rva.annotations[i])
+					((Method)dn).params[i].meta.setU(readAnnotation(clazz, ann));
+			}
+			a = null;
+		}
+		else if( name.equals(attrRIParAnnotations) ) {
+			kiev.bytecode.RIParAnnotations rva = (kiev.bytecode.RIParAnnotations)bca;
+			for (int i=0; i < rva.annotations.length; i++) {
+				foreach (kiev.bytecode.Annotation.annotation ann; rva.annotations[i])
+					((Method)dn).params[i].meta.setU(readAnnotation(clazz, ann));
+			}
+			a = null;
+		}
+		else if( name.equals(attrAnnotationDefault) ) {
+			kiev.bytecode.AnnotationDefault rva = (kiev.bytecode.AnnotationDefault)bca;
+			MetaValue mv = readAnnotationValue(clazz,rva.value,((Method)dn).id.uname);
+			((Method)dn).body = mv;
+			a = null;
+		}
 		else {
 			a = null; // new Attr(cl,name);
 		}
 		return a;
 	}
+	
+	UserMeta readAnnotation(kiev.bytecode.Clazz clazz, kiev.bytecode.Annotation.annotation ann) {
+		KString sign = ann.getSignature(clazz);
+		Type tp = Signature.getType(sign);
+		UserMeta um = new UserMeta(new TypeNameRef(tp));
+		for (int i=0; i < ann.names.length; i++) {
+			String nm = ann.getName(i,clazz).toString();
+			MetaValue val = readAnnotationValue(clazz,ann.values[i],nm);
+			um.set(val);
+		}
+		return um; 
+	}
 
+	MetaValue readAnnotationValue(kiev.bytecode.Clazz clazz, kiev.bytecode.Annotation.element_value eval, String nm) {
+		MetaValue mv = null;
+		switch (eval.tag) {
+		case 'B':
+			mv = new MetaValueScalar(
+				new SymbolRef(nm),
+				new ConstByteExpr((byte)((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).intValue())
+				);
+		case 'C':
+			mv = new MetaValueScalar(
+				new SymbolRef(nm),
+				new ConstCharExpr((char)((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).intValue())
+				);
+		case 'D':
+			mv = new MetaValueScalar(
+				new SymbolRef(nm),
+				new ConstDoubleExpr(((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).doubleValue())
+				);
+		case 'F':
+			mv = new MetaValueScalar(
+				new SymbolRef(nm),
+				new ConstFloatExpr(((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).floatValue())
+				);
+		case 'I':
+			mv = new MetaValueScalar(
+				new SymbolRef(nm),
+				new ConstIntExpr(((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).intValue())
+				);
+		case 'J':
+			mv = new MetaValueScalar(
+				new SymbolRef(nm),
+				new ConstLongExpr(((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).longValue())
+				);
+		case 'S':
+			mv = new MetaValueScalar(
+				new SymbolRef(nm),
+				new ConstShortExpr((short)((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).intValue())
+				);
+		case 'Z':
+			mv = new MetaValueScalar(
+				new SymbolRef(nm),
+				new ConstBoolExpr(((Number)((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz)).intValue() != 0)
+				);
+		case 's':
+			mv = new MetaValueScalar(
+				new SymbolRef(nm),
+				new ConstStringExpr(((kiev.bytecode.Annotation.element_value_const)eval).getValue(clazz).toString())
+				);
+			break;
+		case 'e': {
+			Type tp = Signature.getType(((kiev.bytecode.Annotation.element_value_enum_const)eval).getSignature(clazz));
+			tp.meta_type.tdecl.checkResolved();
+			KString fname = ((kiev.bytecode.Annotation.element_value_enum_const)eval).getFieldName(clazz);
+			Field f = tp.meta_type.tdecl.resolveField(fname.toString().intern());
+			mv = new MetaValueScalar(new SymbolRef(nm),new SFldExpr(0,f));
+			}
+			break;
+		case 'c': {
+			Type tp = Signature.getType(((kiev.bytecode.Annotation.element_value_class_info)eval).getSignature(clazz));
+			mv = new MetaValueScalar(new SymbolRef(nm),new TypeRef(tp));
+			}
+			break;
+		case '@': {
+			UserMeta um = readAnnotation(clazz,((kiev.bytecode.Annotation.element_value_annotation)eval).annotation_value);
+			mv = new MetaValueScalar(new SymbolRef(nm),um);
+			}
+			break;
+		case '[': {
+			mv = new MetaValueArray(new SymbolRef(nm));
+			foreach (kiev.bytecode.Annotation.element_value ev; ((kiev.bytecode.Annotation.element_value_array)eval).values)
+				mv.values += ~((MetaValueScalar)readAnnotationValue(clazz,ev,"")).value;
+			}
+			break;
+		default:
+			throw new ClassFormatError("unknow annotation value tag: "+(char)eval.tag);
+		}
+		return mv;
+	}
 
 	/** Write class
 	 */

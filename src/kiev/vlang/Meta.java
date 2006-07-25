@@ -18,7 +18,7 @@ public final class MetaSet extends ASTNode {
 	
 	@virtual typedef This  = MetaSet;
 
-	@att public Meta[]				metas;
+	@att public ANode[]				metas;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
@@ -28,6 +28,17 @@ public final class MetaSet extends ASTNode {
 
 	public MetaSet() {}
 	
+	public boolean hasRuntimeVisibles() {
+		foreach (UserMeta m; metas; m.isRuntimeVisible())
+			return true;
+		return false;
+	}
+	public boolean hasRuntimeInvisibles() {
+		foreach (UserMeta m; metas; m.isRuntimeInvisible())
+			return true;
+		return false;
+	}
+
 	public int size() alias length {
 		return metas.length;
 	}
@@ -36,7 +47,7 @@ public final class MetaSet extends ASTNode {
 	}
 	
 	public void verify() {
-		foreach (Meta m; metas) {
+		foreach (UserMeta m; metas) {
 			try {
 				m.verify();
 			} catch (CompilerException e) {
@@ -46,22 +57,21 @@ public final class MetaSet extends ASTNode {
 		}
 	}
 	
-	public Meta get(String name) {
+	public MetaFlag getF(String name) {
 		int sz = metas.length;
-		for (int i=0; i < sz; i++) {
-			if (metas[i].qname() == name)
-				return metas[i];
+		foreach (MetaFlag m; metas) {
+			if (m.qname() == name)
+				return m;
 		}
 		return null;
 	}
 	
-	public Meta set(Meta meta) alias add alias operator (5,lfy,+=)
-	{
+	public MetaFlag setF(MetaFlag meta) {
 		String qname = meta.qname();
-		int sz = metas.length;
-		for (int i=0; i < sz; i++) {
-			if (metas[i].qname() == qname) {
-				metas[i] = meta;
+		foreach (MetaFlag m; metas) {
+			if (m.qname() == qname) {
+				if (meta != m)
+					m.replaceWithNode(meta);
 				return meta;
 			}
 		}
@@ -69,36 +79,34 @@ public final class MetaSet extends ASTNode {
 		return meta;
 	}
 
-	public Meta unset(Meta meta) alias del alias operator (5,lfy,-=)
-	{
-		return unset(meta.qname());
-	}
-	public Meta unset(String qname) alias del alias operator (5,lfy,-=)
-	{
+	public UserMeta getU(String name) {
 		int sz = metas.length;
-		for (int i=0; i < sz; i++) {
-			if (metas[i].qname() == qname) {
-				Meta m = metas[i];
-				metas.del(i);
+		foreach (UserMeta m; metas) {
+			if (m.qname() == name)
 				return m;
-			}
 		}
 		return null;
 	}
-
-	public boolean contains(Meta meta) {
-		for (int i = 0 ; i >= 0 ; i--) {
-			if (metas[i].equals(meta))
-				return true;
+	
+	public UserMeta setU(UserMeta meta) alias add alias operator (5,lfy,+=)
+	{
+		String qname = meta.qname();
+		foreach (UserMeta m; metas) {
+			if (m.qname() == qname) {
+				if (meta != m)
+					m.replaceWithNode(meta);
+				return meta;
+			}
 		}
-		return false;
+		metas.append(meta);
+		return meta;
 	}
 
-	public Enumeration<Meta> elements() {
-		return new Enumeration<Meta>() {
+	public Enumeration<ANode> elements() {
+		return new Enumeration<ANode>() {
 			int current;
 			public boolean hasMoreElements() { return current < MetaSet.this.size(); }
-			public Meta nextElement() {
+			public ANode nextElement() {
 				if ( current < MetaSet.this.size() ) return MetaSet.this.metas[current++];
 				throw new NoSuchElementException(Integer.toString(MetaSet.this.size()));
 			}
@@ -107,29 +115,11 @@ public final class MetaSet extends ASTNode {
 	
 }
 
-@node(name="Meta")
-public abstract class Meta extends ENode {
-	public final static Meta[] emptyArray = new Meta[0];
-	
-	@virtual typedef This  ≤ Meta;
+@node(name="UserMeta")
+public class UserMeta extends ENode {
+	@virtual typedef This  ≤ UserMeta;
 
-	public static final Meta dummyNode = new UserMeta();
-	
-	public ASTNode getDummyNode() {
-		return Meta.dummyNode;
-	}
-	
-	public abstract String qname();
-	public abstract void verify();
-	public abstract TypeDecl getTypeDecl();
-	public abstract MetaValue get(String name);
-}
-
-@node(name="Meta")
-public class UserMeta extends Meta {
-	@virtual typedef This  = UserMeta;
-
-	@att public TypeRef					type;
+	@att public TypeNameRef				type;
 	@att public MetaValue[]				values;
 
 	public void callbackChildChanged(AttrSlot attr) {
@@ -143,7 +133,7 @@ public class UserMeta extends Meta {
 
 	public UserMeta() {}
 
-	public UserMeta(TypeRef type) {
+	public UserMeta(TypeNameRef type) {
 		this.type = type;
 	}
 	
@@ -152,12 +142,38 @@ public class UserMeta extends Meta {
 	}
 	
 	public String qname() {
-		if (this.type.lnk != null)
-			return getTypeDecl().qname();
-		return this.type.ident.name;
+		return this.type.qname();
 	}
 
 	public TypeDecl getTypeDecl() { return type.getType().meta_type.tdecl; }
+	
+	public boolean isRuntimeVisible() {
+		TypeDecl tdecl = getTypeDecl();
+		UserMeta retens = tdecl.meta.getU("java.lang.annotation.Retention");
+		if (retens == null)
+			return false;
+		MetaValue val = retens.get("value");
+		if (val instanceof MetaValueScalar && val.value instanceof SFldExpr) {
+			Field f = ((SFldExpr)val.value).var;
+			if (f.id.uname == "RUNTIME")
+				return true;
+		}
+		return false;
+	}
+
+	public boolean isRuntimeInvisible() {
+		TypeDecl tdecl = getTypeDecl();
+		UserMeta retens = tdecl.meta.getU("java.lang.annotation.Retention");
+		if (retens == null)
+			return true;
+		MetaValue val = retens.get("value");
+		if (val instanceof MetaValueScalar && val.value instanceof SFldExpr) {
+			Field f = ((SFldExpr)val.value).var;
+			if (f.id.uname == "CLASS")
+				return true;
+		}
+		return false;
+	}
 
 	public Type getType() { return type.getType(); }
 	
@@ -174,7 +190,7 @@ public class UserMeta extends Meta {
 			throw new CompilerException(this, "Annotation name expected");
 		}
 		String name = ((CompaundType)mt).clazz.qname();
-		Meta m = this;
+		UserMeta m = this;
 		if (m != this) {
 			this.replaceWithNode(m);
 			foreach (MetaValue v; values)
@@ -451,8 +467,8 @@ public final class MetaValueScalar extends MetaValue {
 
 	public void verify() {
 		super.verify();
-		if (value instanceof Meta)
-			((Meta)value).verify();
+		if (value instanceof UserMeta)
+			((UserMeta)value).verify();
 	}
 	
 	public void resolve(Type reqType) {
@@ -501,8 +517,8 @@ public final class MetaValueArray extends MetaValue {
 	public void verify() {
 		super.verify();
 		for (int i=0; i < values.length; i++) {
-			if (values[i] instanceof Meta)
-				((Meta)values[i]).verify();
+			if (values[i] instanceof UserMeta)
+				((UserMeta)values[i]).verify();
 		}
 	}
 	

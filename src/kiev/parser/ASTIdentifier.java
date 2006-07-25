@@ -165,7 +165,7 @@ public class ASTIdentifier extends ENode {
 //					}
 					MetaPizzaCase meta = s.getMetaPizzaCase();
 					if( meta != null ) {
-						replaceWithNodeResolve(reqType, new ConstIntExpr(meta.getTag()));
+						replaceWithNodeResolve(reqType, new ConstIntExpr(meta.tag));
 						return;
 					}
 				}

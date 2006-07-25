@@ -58,7 +58,7 @@ public abstract class Type extends AType {
 		return (JStruct)s;
 	}
 	public Struct getStruct() { return null; }
-	public Meta getMeta(String name) { return null; }
+	public UserMeta getMeta(String name) { return null; }
 
 	protected Type(MetaType meta_type, int flags, TVarBld bindings)
 		require { meta_type != null; }
@@ -273,7 +273,7 @@ public final class XType extends Type {
 	}
 
 	public Struct getStruct()					{ return null; }
-	public Meta getMeta(String name)			{ return null; }
+	public UserMeta getMeta(String name)		{ return null; }
 
 	public String toString() {
 		TypeDecl tdecl = meta_type.tdecl;
@@ -317,13 +317,13 @@ public final class CoreType extends Type {
 		((CoreMetaType)meta_type).tdecl.xtype = this;
 		this.name = name.intern();
 	}
-	public Meta getMeta(String name)	{ return null; }
-	public Type getErasedType()			{ return this; }
-	public boolean checkResolved()		{ return true; }
+	public UserMeta getMeta(String name)	{ return null; }
+	public Type getErasedType()				{ return this; }
+	public boolean checkResolved()			{ return true; }
 	public MetaType[] getAllSuperTypes()	{ return MetaType.emptyArray; }
-	public String toString()			{ return name.toString(); }
+	public String toString()				{ return name.toString(); }
 
-	public JType getJType()				{ return this.jtype; }
+	public JType getJType()					{ return this.jtype; }
 	
 	public Type getAutoCastTo(Type t)
 	{
@@ -454,7 +454,7 @@ public final class ASTNodeType extends Type {
 		super(meta_type, flResolved, bindings);
 	}
 
-	public Meta getMeta(String name)		{ return null; }
+	public UserMeta getMeta(String name)	{ return null; }
 	public Type getErasedType()				{ return this; }
 	public boolean checkResolved()			{ return true; }
 	public MetaType[] getAllSuperTypes()	{ return MetaType.emptyArray; }
@@ -496,7 +496,7 @@ public final class ArgType extends Type {
 		return jtype;
 	}
 
-	public Meta getMeta(String name)				{ return definer.meta == null ? null : definer.meta.get(name); }
+	public UserMeta getMeta(String name)			{ return definer.meta == null ? null : definer.meta.getU(name); }
 	public MetaType[] getAllSuperTypes()			{ return definer.getAllSuperTypes(); }
 	public Struct getStruct()						{ return definer.getStruct(); }
 	public boolean checkResolved()					{ return definer.checkResolved(); }
@@ -551,7 +551,7 @@ public final class CompaundType extends Type {
 	}
 
 	public Struct getStruct()					{ return clazz; }
-	public Meta getMeta(String name)			{ return clazz.meta.get(name); }
+	public UserMeta getMeta(String name)		{ return clazz.meta.getU(name); }
 	public Type getErasedType()					{ return clazz.xtype; }
 
 	public String toString() {
@@ -627,7 +627,7 @@ public final class ArrayType extends Type {
 		return jtype;
 	}
 
-	public Meta getMeta(String name)				{ return null; }
+	public UserMeta getMeta(String name)				{ return null; }
 	
 	public MetaType[] getAllSuperTypes() {
 		return new MetaType[] {
@@ -714,8 +714,8 @@ public final class WrapperType extends CTimeType {
 	
 	public final Type getUnboxedType()	{ return Type.getRealType(getEnclosedType(), wrapped_field.type); }
 	
-	public Struct getStruct()			{ return getEnclosedType().getStruct(); }
-	public Meta getMeta(String name)	{ return getEnclosedType().getMeta(name); }
+	public Struct getStruct()				{ return getEnclosedType().getStruct(); }
+	public UserMeta getMeta(String name)	{ return getEnclosedType().getMeta(name); }
 
 	public boolean checkResolved() {
 		return getEnclosedType().checkResolved() && getUnboxedType().checkResolved();
@@ -785,7 +785,7 @@ public final class OuterType extends CTimeType {
 		return jtype;
 	}
 
-	public Meta getMeta(String name)				{ return outer.getMeta(name); }
+	public UserMeta getMeta(String name)				{ return outer.getMeta(name); }
 	
 	public MetaType[] getAllSuperTypes() {
 		return outer.getAllSuperTypes();

@@ -457,8 +457,8 @@ public abstract class MetaAttr extends Attr {
 			constPool.addAsciiCP(s.xtype.getJType().java_signature);
 			constPool.addAsciiCP(f.id.uname);
 		}
-		else if (value instanceof Meta) {
-			Meta m = (Meta)value;
+		else if (value instanceof UserMeta) {
+			UserMeta m = (UserMeta)value;
 			TypeDecl tdecl = m.getTypeDecl();
 			constPool.addAsciiCP(tdecl.xtype.getJType().java_signature);
 			foreach (Method mm; tdecl.members) {
@@ -553,8 +553,8 @@ public abstract class MetaAttr extends Attr {
 			ev.const_name_index = constPool.getAsciiCP(f.id.uname).pos;
 			return ev;
 		}
-		else if (value instanceof Meta) {
-			Meta m = (Meta)value;
+		else if (value instanceof UserMeta) {
+			UserMeta m = (UserMeta)value;
 			kiev.bytecode.Annotation.element_value_annotation ev = new kiev.bytecode.Annotation.element_value_annotation(); 
 			ev.tag = (byte)'@';
 			ev.annotation_value = new kiev.bytecode.Annotation.annotation();
@@ -564,7 +564,7 @@ public abstract class MetaAttr extends Attr {
 		throw new RuntimeException("value is: "+(value==null?"null":String.valueOf(value.getClass())));
 	}
 
-	public void write_annotation(ConstPool constPool, Meta m, kiev.bytecode.Annotation.annotation a) {
+	public void write_annotation(ConstPool constPool, UserMeta m, kiev.bytecode.Annotation.annotation a) {
 		TypeDecl tdecl = m.getTypeDecl();
 		a.type_index = constPool.getAsciiCP(tdecl.xtype.getJType().java_signature).pos;
 		int n = 0;
@@ -587,33 +587,27 @@ public abstract class MetaAttr extends Attr {
 	}
 }
 
-public abstract class RMetaAttr extends MetaAttr {
+public class RVMetaAttr extends MetaAttr {
 	public MetaSet      ms;
-	
-	public RMetaAttr(KString name, MetaSet ms) {
-		super(name);
-		this.ms = ms;
+	public RVMetaAttr(MetaSet metas) {
+		super(JConstants.attrRVAnnotations);
+		this.ms = metas;
 	}
-
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
-		foreach (Meta m; ms) {
+		foreach (UserMeta m; ms; m.isRuntimeVisible()) {
 			generateValue(constPool, m);
 		}
 	}
-	
-}
-
-public class RVMetaAttr extends RMetaAttr {
-	public RVMetaAttr(MetaSet metas) {
-		super(JConstants.attrRVAnnotations, metas);
-	}
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
+		int size = 0;
+		foreach (UserMeta m; ms; m.isRuntimeVisible())
+			size++;
 		kiev.bytecode.RVAnnotations a = new kiev.bytecode.RVAnnotations();
-		a.annotations = new kiev.bytecode.Annotation.annotation[ms.size()];
+		a.annotations = new kiev.bytecode.Annotation.annotation[size];
 		a.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
 		int n = 0;
-		foreach (Meta m; ms) {
+		foreach (UserMeta m; ms; m.isRuntimeVisible()) {
 			a.annotations[n] = new kiev.bytecode.Annotation.annotation();
 			write_annotation(constPool, m, a.annotations[n]);
 			n++;
@@ -622,35 +616,48 @@ public class RVMetaAttr extends RMetaAttr {
 	}
 }
 
-public class RIMetaAttr extends RMetaAttr {
+public class RIMetaAttr extends MetaAttr {
+	public MetaSet      ms;
 	public RIMetaAttr(MetaSet metas) {
-		super(JConstants.attrRIAnnotations, metas);
+		super(JConstants.attrRIAnnotations);
+		this.ms = metas;
+	}
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
+		foreach (UserMeta m; ms; m.isRuntimeInvisible()) {
+			generateValue(constPool, m);
+		}
+	}
+	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
+		int size = 0;
+		foreach (UserMeta m; ms; m.isRuntimeInvisible())
+			size++;
+		kiev.bytecode.RIAnnotations a = new kiev.bytecode.RIAnnotations();
+		a.annotations = new kiev.bytecode.Annotation.annotation[size];
+		a.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
+		int n = 0;
+		foreach (UserMeta m; ms; m.isRuntimeInvisible()) {
+			a.annotations[n] = new kiev.bytecode.Annotation.annotation();
+			write_annotation(constPool, m, a.annotations[n]);
+			n++;
+		}
+		return a;
 	}
 }
 
-
-public abstract class ParMetaAttr extends MetaAttr {
+public class RVParMetaAttr extends MetaAttr {
 	public MetaSet[]      mss;
-	
-	public ParMetaAttr(KString name, MetaSet[] mss) {
-		super(name);
+	public RVParMetaAttr(MetaSet[] metas) {
+		super(JConstants.attrRVParAnnotations);
 		this.mss = mss;
 	}
-
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
 		foreach (MetaSet ms; mss; ms != null) {
-			foreach (Meta m; ms) {
+			foreach (UserMeta m; ms; m.isRuntimeVisible()) {
 				generateValue(constPool, m);
 			}
 		}
-	}
-
-}
-
-public class RVParMetaAttr extends ParMetaAttr {
-	public RVParMetaAttr(MetaSet[] metas) {
-		super(JConstants.attrRVParAnnotations, metas);
 	}
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		kiev.bytecode.RVParAnnotations a = new kiev.bytecode.RVParAnnotations();
@@ -659,9 +666,50 @@ public class RVParMetaAttr extends ParMetaAttr {
 		for (int i=0; i < mss.length; i++) {
 			MetaSet ms = mss[i];
 			if (ms != null) {
+				int size = 0;
+				foreach (UserMeta m; ms; m.isRuntimeVisible())
+					size++;
 				int n = 0;
-				a.annotations[i] = new kiev.bytecode.Annotation.annotation[ms.size()];
-				foreach (Meta m; ms) {
+				a.annotations[i] = new kiev.bytecode.Annotation.annotation[size];
+				foreach (UserMeta m; ms; m.isRuntimeVisible()) {
+					a.annotations[i][n] = new kiev.bytecode.Annotation.annotation();
+					write_annotation(constPool, m, a.annotations[i][n]);
+					n++;
+				}
+			}
+		}
+		return a;
+	}
+}
+
+
+public class RIParMetaAttr extends MetaAttr {
+	public MetaSet[]      mss;
+	public RIParMetaAttr(MetaSet[] metas) {
+		super(JConstants.attrRIParAnnotations);
+		this.mss = mss;
+	}
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
+		foreach (MetaSet ms; mss; ms != null) {
+			foreach (UserMeta m; ms; m.isRuntimeInvisible()) {
+				generateValue(constPool, m);
+			}
+		}
+	}
+	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
+		kiev.bytecode.RIParAnnotations a = new kiev.bytecode.RIParAnnotations();
+		a.annotations = new kiev.bytecode.Annotation.annotation[mss.length][];
+		a.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
+		for (int i=0; i < mss.length; i++) {
+			MetaSet ms = mss[i];
+			if (ms != null) {
+				int size = 0;
+				foreach (UserMeta m; ms; m.isRuntimeInvisible())
+					size++;
+				int n = 0;
+				a.annotations[i] = new kiev.bytecode.Annotation.annotation[size];
+				foreach (UserMeta m; ms; m.isRuntimeInvisible()) {
 					a.annotations[i][n] = new kiev.bytecode.Annotation.annotation();
 					write_annotation(constPool, m, a.annotations[i][n]);
 					n++;

@@ -20,15 +20,36 @@ public final class ASTModifiers extends ASTNode {
 	@virtual typedef This  = ASTModifiers;
 
 	@ref public Access 				acc;
-	@ref public Meta[]				annotations;
+	@ref public ANode[]				annotations;
 
 	public ASTModifiers() {}
 	
-	public Meta add(Meta m)
+	public UserMeta add(UserMeta m)
 		alias operator(5, lfy, +=)
 	{
 		this.annotations += m;
 		return m;
+	}
+	public MetaFlag add(MetaFlag m)
+		alias operator(5, lfy, +=)
+	{
+		this.annotations += m;
+		return m;
+	}
+	
+	public void moveToNode(DNode dn) {
+		ANode[] annotations = this.annotations.delToArray();
+		foreach (UserMeta m; annotations)
+			dn.meta.setU(m);
+		foreach (MetaFlag m; annotations)
+			dn.meta.setF(m);
+	}
+	public void copyToNode(DNode dn) {
+		ANode[] annotations = this.annotations;
+		foreach (UserMeta m; annotations)
+			dn.meta.setU(m.ncopy());
+		foreach (MetaFlag m; annotations)
+			dn.meta.setF(m.ncopy());
 	}
 }
 

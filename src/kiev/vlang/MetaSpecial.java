@@ -13,34 +13,14 @@ import syntax kiev.Syntax;
  */
 
 @node
-public abstract class MetaSpecial extends Meta {
-	
-	@virtual typedef This  ≤ MetaSpecial;
-
-	public TypeDecl getTypeDecl() {
-		return Env.loadStruct(qname(),true);
-	}
-
-	public MetaValue get(String name) {
-		throw new RuntimeException("Value "+name+" not found in "+qname()+" annotation");
-	}
-
-	public void verify() {}
-
-	public void resolve(Type reqType) {
-		getTypeDecl().checkResolved();
-	}
-}
-
-@node
-public final class MetaPacked extends MetaSpecial {
+public final class MetaPacked extends UserMeta {
 	@virtual typedef This  = MetaPacked;
 
-	@att public ENode				size;
-	@att public ENode				offset;
-	@att public SymbolRef<Field>	fld = new SymbolRef<Field>();
+	@att public int		size;
+	@att public int		offset;
+	@ref public Field	fld;
 
-	public String qname() { return "kiev.stdlib.meta.packed"; }
+	public MetaPacked() { super("kiev.stdlib.meta.packed"); }
 
 	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
 	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
@@ -49,53 +29,33 @@ public final class MetaPacked extends MetaSpecial {
 		if (p instanceof Field) p.is_fld_packed = on;
 	}
 
-	public MetaValue get(String name) {
-		if (name == "size")
-			return new MetaValueScalar(new SymbolRef("size"),size.ncopy());
-		if (name == "offset")
-			return new MetaValueScalar(new SymbolRef("offset"),offset.ncopy());
-		if (name == "in")
-			return new MetaValueScalar(new SymbolRef("in"),new ConstStringExpr(fld.symbol.id.uname));
-		return super.get(name);
+	@setter public void set$size(int val) {
+		this.open();
+		size = val;
+		super.setI("size",val);
 	}
 	
-	public int getSize() {
-		ENode size = this.size;
-		if (size instanceof ConstIntExpr)
-			return size.value;
-		return 0;
-	}
-	public void setSize(int val) {
-		size = new ConstIntExpr(val);
+	@setter public void set$offset(int val) {
+		this.open();
+		offset = val;
+		super.setI("offset", val);
 	}
 	
-	public int getOffset() {
-		ENode offset = this.offset;
-		if (offset instanceof ConstIntExpr)
-			return offset.value;
-		return 0;
-	}
-	public void setOffset(int val) {
-		offset = new ConstIntExpr(val);
-	}
-	
-	public String getFld() {
-		if (fld.name != null)
-			return fld.name;
-		return "";
-	}
-	public void setFld(String val) {
-		fld.name = val;
+	@setter public void set$fld(Field val) {
+		this.open();
+		fld = val;
+		if (val != null)
+			super.setS("in", val.id.sname);
 	}
 }
 
 @node
-public final class MetaPacker extends MetaSpecial {
+public final class MetaPacker extends UserMeta {
 	@virtual typedef This  = MetaPacker;
 
-	@att public ENode			 size;
+	@att public int		 size = -1;
 
-	public String qname() { return "kiev.stdlib.meta.packer"; }
+	public MetaPacker() { super("kiev.stdlib.meta.packer"); }
 
 	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
 	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
@@ -104,30 +64,20 @@ public final class MetaPacker extends MetaSpecial {
 		if (p instanceof Field) p.is_fld_packer = on;
 	}
 
-	public MetaValue get(String name) {
-		if (name == "size")
-			return new MetaValueScalar(new SymbolRef("size"),size.ncopy());
-		return super.get(name);
-	}
-	
-	public int getSize() {
-		ENode size = this.size;
-		if (size instanceof ConstIntExpr)
-			return size.value;
-		return 0;
-	}
-	public void setSize(int val) {
-		size = new ConstIntExpr(val);
+	@setter public void set$size(int val) {
+		this.open();
+		size = val;
+		super.setI("size",val);
 	}
 }
 
 @node
-public final class MetaAlias extends MetaSpecial {
+public final class MetaAlias extends UserMeta {
 	@virtual typedef This  = MetaAlias;
 
-	@att public ENode[]			 aliases;
+	@ref public ENode[]			 aliases;
 
-	public String qname() { return "kiev.stdlib.meta.alias"; }
+	public MetaAlias() { super("kiev.stdlib.meta.alias"); }
 
 	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
 	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
@@ -136,28 +86,28 @@ public final class MetaAlias extends MetaSpecial {
 		if (p instanceof DNode) p.is_has_aliases = on;
 	}
 
-	public MetaValue get(String name) {
-		if (name == "value") {
-			ENode[] values = new ENode[aliases.length];
-			for (int i=0; i < values.length; i++)
-				values[i] = aliases[i].ncopy();
-			return new MetaValueArray(new SymbolRef("value"),values);
-		}
-		return super.get(name);
+	public void add(ConstStringExpr cse) {
+		this.open();
+		aliases += cse;
+		if (values.length == 0)
+			values += new MetaValueArray(new SymbolRef("value"));
+		MetaValueArray mva = (MetaValueArray)values[0];
+		assert (mva.ident.name == "value");
+		mva.values += cse;
 	}
-
+	
 	public ENode[] getAliases() {
 		return aliases;
 	}
 }
 
 @node
-public final class MetaThrows extends MetaSpecial {
+public final class MetaThrows extends UserMeta {
 	@virtual typedef This  = MetaThrows;
 
-	@att public TypeRef[]		 exceptions;
+	@ref public TypeRef[]		 exceptions;
 
-	public String qname() { return "kiev.stdlib.meta.throws"; }
+	public MetaThrows() { super("kiev.stdlib.meta.throws"); }
 
 	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
 	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
@@ -166,18 +116,14 @@ public final class MetaThrows extends MetaSpecial {
 		if (p instanceof Method) p.is_has_throws = on;
 	}
 
-	public MetaValue get(String name) {
-		if (name == "value") {
-			ENode[] values = new ENode[exceptions.length];
-			for (int i=0; i < values.length; i++)
-				values[i] = exceptions[i].ncopy();
-			return new MetaValueArray(new SymbolRef("value"),values);
-		}
-		return super.get(name);
-	}
-	
 	public void add(TypeRef thr) {
+		this.open();
 		exceptions += thr;
+		if (values.length == 0)
+			values += new MetaValueArray(new SymbolRef("value"));
+		MetaValueArray mva = (MetaValueArray)values[0];
+		assert (mva.ident.name == "value");
+		mva.values += thr;
 	}
 	
 	public TypeRef[] getThrowns() {
@@ -186,13 +132,13 @@ public final class MetaThrows extends MetaSpecial {
 }
 
 @node
-public final class MetaPizzaCase extends MetaSpecial {
+public final class MetaPizzaCase extends UserMeta {
 	@virtual typedef This  = MetaPizzaCase;
 
 	@ref public Field[]			 fields;
 	@att public int				 tag;
 
-	public String qname() { return "kiev.stdlib.meta.pcase"; }
+	public MetaPizzaCase() { super("kiev.stdlib.meta.pcase"); }
 
 	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
 	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
@@ -201,32 +147,49 @@ public final class MetaPizzaCase extends MetaSpecial {
 		if (p instanceof TypeDecl) p.is_struct_pizza_case = on;
 	}
 
-	public MetaValue get(String name) {
-		if (name == "fields") {
-			ENode[] values = new ENode[fields.length];
-			for (int i=0; i < values.length; i++)
-				values[i] = new ConstStringExpr(fields[i].id.uname);
-			return new MetaValueArray(new SymbolRef("fields"),values);
-		}
-		if (name == "tag")
-			return new MetaValueScalar(new SymbolRef("tag"),new ConstIntExpr(tag));
-		return super.get(name);
-	}
-	
 	public void add(Field f) {
+		this.open();
 		fields += f;
+		MetaValueArray mva;
+		if (values.length > 0 && values[0] instanceof MetaValueArray)
+			mva = values[0];
+		else if (values.length > 1 && values[1] instanceof MetaValueArray)
+			mva = values[1];
+		else
+			values += (mva = new MetaValueArray(new SymbolRef("fields")));
+		assert (mva.ident.name == "fields");
+		mva.values += new ConstStringExpr(f.id.sname);
 	}
 	
 	public Field[] getFields() {
 		return fields;
 	}
-	
-	public int getTag() { return this.tag; }
-	public void setTag(int tag) { this.tag = tag; }
+
+	@setter public void set$tag(int val) {
+		this.open();
+		this.tag = val;
+		super.setI("tag",val);
+	}
 }
 
 @node
-public final class MetaAccess extends MetaSpecial {
+public abstract class MetaFlag extends ANode {
+	@virtual typedef This  ≤ MetaFlag;
+
+	public abstract String qname();
+
+	public final void callbackAttached() { setFlag(getDNode(), true); super.callbackAttached(); }
+	public final void callbackDetached() { setFlag(getDNode(), false); super.callbackDetached(); }
+	private DNode getDNode() {
+		ANode p = ((MetaSet)parent()).parent();
+		if (p instanceof DNode) return (DNode)p;
+		return null;
+	}
+	abstract void setFlag(DNode dn, boolean on);
+}
+
+@node
+public final class MetaAccess extends MetaFlag {
 	@virtual typedef This  = MetaAccess;
 
 	public static enum AccessValue {
@@ -236,212 +199,127 @@ public final class MetaAccess extends MetaSpecial {
 		Private					: "private"
 	}
 	
-	@att public AccessValue			 value;
+	public final String		value;
 	
-	public MetaAccess() { value = AccessValue.Default; }
-	public MetaAccess(AccessValue av) { value = av; }
-	public MetaAccess(int pos, AccessValue av) { this.pos = pos; value = av; }
+	public MetaAccess() { value = "default"; }
+	public MetaAccess(AccessValue av) { value = av.toString(); }
 
 	public String qname() { return "kiev.stdlib.meta.access"; }
 
-	public void callbackAttached() { setAccess(this.value); super.callbackAttached(); }
-	public void callbackDetached() { setAccess(AccessValue.Default); super.callbackDetached(); }
-
-	public void callbackChildChanged(AttrSlot attr) {
-		if (attr.name == "value")
-			setAccess(this.value);
-	}
-
-	public MetaValue get(String name) {
-		if (name == "value")
-			return new MetaValueScalar(new SymbolRef("value"),new ConstStringExpr(value.toString()));
-		return super.get(name);
-	}
-	
-	private void setAccess(AccessValue value) {
-		ANode p = parent();
-		if (p instanceof MetaSet) {
-			p = p.parent();
-			if (p instanceof DNode) {
-				switch (value) {
-				case AccessValue.Public:	p.is_access = DNode.MASK_ACC_PUBLIC; break;
-				case AccessValue.Protected:	p.is_access = DNode.MASK_ACC_PROTECTED; break;
-				case AccessValue.Private:	p.is_access = DNode.MASK_ACC_PRIVATE; break;
-				default:
-				case AccessValue.Default:	p.is_access = DNode.MASK_ACC_DEFAULT; break;
-				}
-			}
+	void setFlag(DNode dn, boolean on) {
+		if (dn == null)
+			return;
+		if (on) {
+			if (value == "public")		{ dn.is_access = DNode.MASK_ACC_PUBLIC; return; }
+			if (value == "protected")	{ dn.is_access = DNode.MASK_ACC_PROTECTED; return; }
+			if (value == "private")		{ dn.is_access = DNode.MASK_ACC_PRIVATE; return; }
 		}
+		dn.is_access = DNode.MASK_ACC_DEFAULT;
 	}
-}
-
-@node
-public abstract class MetaFlag extends MetaSpecial {
-	@virtual typedef This  ≤ MetaFlag;
 }
 
 @node
 public final class MetaUnerasable extends MetaFlag {
+	@virtual typedef This  = MetaUnerasable;
 	public String qname() { return "kiev.stdlib.meta.unerasable"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) p.is_type_unerasable = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_type_unerasable = on; }
 }
 
 @node
 public final class MetaSingleton extends MetaFlag {
+	@virtual typedef This  = MetaSingleton;
 	public String qname() { return "kiev.stdlib.meta.singleton"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof TypeDecl) p.is_struct_singleton = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn instanceof TypeDecl) dn.is_struct_singleton = on; }
 }
 
 @node
 public final class MetaForward extends MetaFlag {
+	@virtual typedef This  = MetaForward;
 	public String qname() { return "kiev.stdlib.meta.forward"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) p.is_forward = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_forward = on; }
 }
 
 @node
 public final class MetaVirtual extends MetaFlag {
+	@virtual typedef This  = MetaVirtual;
 	public String qname() { return "kiev.stdlib.meta.virtual"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) p.is_virtual = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_virtual = on; }
 }
 
 @node
 public final class MetaMacro extends MetaFlag {
+	@virtual typedef This  = MetaMacro;
 	public String qname() { return "kiev.stdlib.meta.macro"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) p.is_macro = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_macro = on; }
 }
 
 @node
 public final class MetaStatic extends MetaFlag {
+	@virtual typedef This  = MetaStatic;
 	public String qname() { return "kiev.stdlib.meta.static"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) p.is_static = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_static = on; }
 }
 
 @node
 public final class MetaAbstract extends MetaFlag {
+	@virtual typedef This  = MetaAbstract;
 	public String qname() { return "kiev.stdlib.meta.abstract"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) p.is_abstract = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_abstract = on; }
 }
 
 @node
 public final class MetaFinal extends MetaFlag {
+	@virtual typedef This  = MetaFinal;
 	public String qname() { return "kiev.stdlib.meta.final"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) p.is_final = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_final = on; }
 }
 
 @node
 public final class MetaNative extends MetaFlag {
+	@virtual typedef This  = MetaNative;
 	public String qname() { return "kiev.stdlib.meta.native"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) p.is_native = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_native = on; }
 }
 
 @node
 public final class MetaSynchronized extends MetaFlag {
+	@virtual typedef This  = MetaSynchronized;
 	public String qname() { return "kiev.stdlib.meta.synchronized"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof Method) p.is_mth_synchronized = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.is_mth_synchronized = on; }
 }
 
 @node
 public final class MetaTransient extends MetaFlag {
+	@virtual typedef This  = MetaTransient;
 	public String qname() { return "kiev.stdlib.meta.transient"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof Field) p.is_fld_transient = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Field) dn.is_fld_transient = on; }
 }
 
 @node
 public final class MetaVolatile extends MetaFlag {
+	@virtual typedef This  = MetaVolatile;
 	public String qname() { return "kiev.stdlib.meta.volatile"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof Field) p.is_fld_volatile = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Field) dn.is_fld_volatile = on; }
 }
 
 @node
 public final class MetaBridge extends MetaFlag {
+	@virtual typedef This  = MetaBridge;
 	public String qname() { return "kiev.stdlib.meta.bridge"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof Method) p.is_mth_bridge = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.is_mth_bridge = on; }
 }
 
 @node
 public final class MetaVarArgs extends MetaFlag {
+	@virtual typedef This  = MetaVarArgs;
 	public String qname() { return "kiev.stdlib.meta.varargs"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof Method) p.is_mth_varargs = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn instanceof Method) dn.is_mth_varargs = on; }
 }
 
 @node
 public final class MetaSynthetic extends MetaFlag {
+	@virtual typedef This  = MetaSynthetic;
 	public String qname() { return "kiev.stdlib.meta.synthetic"; }
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) p.is_synthetic = on;
-	}
+	void setFlag(DNode dn, boolean on) { if (dn != null) dn.is_synthetic = on; }
 }
 

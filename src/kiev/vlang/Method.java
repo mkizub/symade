@@ -88,7 +88,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	}
 
 	public MetaThrows getMetaThrows() {
-		return (MetaThrows)meta.get("kiev.stdlib.meta.throws");
+		return (MetaThrows)meta.getU("kiev.stdlib.meta.throws");
 	}
 
 	// virtual static method
@@ -268,19 +268,19 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		this.type_ret = type_ret;
 		this.dtype_ret = type_ret.ncopy();
 		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.set(new MetaAccess(MetaAccess.AccessValue.Public));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.set(new MetaAccess(MetaAccess.AccessValue.Protected));
-			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.set(new MetaAccess(MetaAccess.AccessValue.Private));
-			if ((flags & ACC_STATIC) == ACC_STATIC) meta.set(new MetaStatic());
-			if ((flags & ACC_FINAL) == ACC_FINAL) meta.set(new MetaFinal());
-			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.set(new MetaAbstract());
-			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.set(new MetaSynthetic());
-			if ((flags & ACC_MACRO) == ACC_MACRO) meta.set(new MetaMacro());
-			if ((flags & ACC_NATIVE) == ACC_NATIVE) meta.set(new MetaNative());
-			if ((flags & ACC_SYNCHRONIZED) == ACC_SYNCHRONIZED) meta.set(new MetaSynchronized());
-			if ((flags & ACC_BRIDGE) == ACC_BRIDGE) meta.set(new MetaBridge());
-			if ((flags & ACC_VARARGS) == ACC_VARARGS) meta.set(new MetaVarArgs());
-			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) meta.set(new MetaUnerasable());
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setF(new MetaAccess(MetaAccess.AccessValue.Public));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Protected));
+			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Private));
+			if ((flags & ACC_STATIC) == ACC_STATIC) meta.setF(new MetaStatic());
+			if ((flags & ACC_FINAL) == ACC_FINAL) meta.setF(new MetaFinal());
+			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.setF(new MetaAbstract());
+			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.setF(new MetaSynthetic());
+			if ((flags & ACC_MACRO) == ACC_MACRO) meta.setF(new MetaMacro());
+			if ((flags & ACC_NATIVE) == ACC_NATIVE) meta.setF(new MetaNative());
+			if ((flags & ACC_SYNCHRONIZED) == ACC_SYNCHRONIZED) meta.setF(new MetaSynchronized());
+			if ((flags & ACC_BRIDGE) == ACC_BRIDGE) meta.setF(new MetaBridge());
+			if ((flags & ACC_VARARGS) == ACC_VARARGS) meta.setF(new MetaVarArgs());
+			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) meta.setF(new MetaUnerasable());
 			this.flags = flags;
 		}
 	}
@@ -402,7 +402,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		expr.ident.symbol = this;
 		if (!isMacro())
 			return;
-		UserMeta m = (UserMeta)this.meta.get("kiev.stdlib.meta.CompilerNode");
+		UserMeta m = (UserMeta)this.meta.getU("kiev.stdlib.meta.CompilerNode");
 		if (m == null)
 			return;
 		Struct s = TypeExpr.AllNodes.get(m.getS("value"));

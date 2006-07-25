@@ -52,11 +52,10 @@ CLASS kiev.be.java15.MethodCP kiev/be/java15/MethodCP kiev\be\java15\ConstPool.j
 CLASS kiev.be.java15.NameTypeCP kiev/be/java15/NameTypeCP kiev\be\java15\ConstPool.java
 CLASS kiev.be.java15.NodeCP kiev/be/java15/NodeCP kiev\be\java15\ConstPool.java
 CLASS kiev.be.java15.NumberCP kiev/be/java15/NumberCP kiev\be\java15\ConstPool.java
-CLASS kiev.be.java15.ParMetaAttr kiev/be/java15/ParMetaAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.PostIncrFunc kiev/be/java15/PostIncrFunc kiev\be\java15\CoreFunc.java
 CLASS kiev.be.java15.PreIncrFunc kiev/be/java15/PreIncrFunc kiev\be\java15\CoreFunc.java
 CLASS kiev.be.java15.RIMetaAttr kiev/be/java15/RIMetaAttr kiev\be\java15\Attr.java
-CLASS kiev.be.java15.RMetaAttr kiev/be/java15/RMetaAttr kiev\be\java15\Attr.java
+CLASS kiev.be.java15.RIParMetaAttr kiev/be/java15/RIParMetaAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.RVMetaAttr kiev/be/java15/RVMetaAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.RVParMetaAttr kiev/be/java15/RVParMetaAttr kiev\be\java15\Attr.java
 CLASS kiev.be.java15.Signature kiev/be/java15/Signature kiev\be\java15\Signature.java
@@ -292,8 +291,8 @@ CLASS kiev.transf.KievFE_SrcParse kiev/transf/KievFE_SrcParse kiev\transf\Import
 CLASS kiev.transf.KievFE_Verify kiev/transf/KievFE_Verify kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievME_PreGenartion kiev/transf/KievME_PreGenartion kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.PackedFldBE_Rewrite kiev/transf/PackedFldBE_Rewrite kiev\transf\ProcessPackedFld.java
+CLASS kiev.transf.PackedFldFE_Verify kiev/transf/PackedFldFE_Verify kiev\transf\ProcessPackedFld.java
 CLASS kiev.transf.PackedFldME_PreGenerate kiev/transf/PackedFldME_PreGenerate kiev\transf\ProcessPackedFld.java
-CLASS kiev.transf.PackedFldME_Verify kiev/transf/PackedFldME_Verify kiev\transf\ProcessPackedFld.java
 CLASS kiev.transf.PizzaFE_Pass3 kiev/transf/PizzaFE_Pass3 kiev\transf\ProcessPizzaCase.java
 CLASS kiev.transf.PizzaME_PreGenerate kiev/transf/PizzaME_PreGenerate kiev\transf\ProcessPizzaCase.java
 CLASS kiev.transf.RewriteME_PreGenerate kiev/transf/RewriteME_PreGenerate kiev\transf\ProcessRewrite.java
@@ -522,7 +521,6 @@ CLASS kiev.vlang.LongUShift kiev/vlang/LongUShift kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.LvalDNode kiev/vlang/LvalDNode kiev\vlang\DNode.java
 CLASS kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\LvalueExpr.java
-CLASS kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaAbstract kiev/vlang/MetaAbstract kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaAccess kiev/vlang/MetaAccess kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaAlias kiev/vlang/MetaAlias kiev\vlang\MetaSpecial.java
@@ -538,7 +536,6 @@ CLASS kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaPizzaCase kiev/vlang/MetaPizzaCase kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaSet kiev/vlang/MetaSet kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaSingleton kiev/vlang/MetaSingleton kiev\vlang\MetaSpecial.java
-CLASS kiev.vlang.MetaSpecial kiev/vlang/MetaSpecial kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaStatic kiev/vlang/MetaStatic kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaSynchronized kiev/vlang/MetaSynchronized kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaSynthetic kiev/vlang/MetaSynthetic kiev\vlang\MetaSpecial.java
@@ -899,6 +896,8 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
+METATYPE kiev.be.java15.ParMetaAttr kiev\be\java15\Attr.java bad
+METATYPE kiev.be.java15.RMetaAttr kiev\be\java15\Attr.java bad
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad
@@ -910,10 +909,13 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.transf.PackedFldME_Verify kiev\transf\ProcessPackedFld.java bad
 METATYPE kiev.vlang.Globals kiev\vlang\Globals.java bad
+METATYPE kiev.vlang.Meta kiev\vlang\Meta.java
 METATYPE kiev.vlang.MetaPrivate kiev\vlang\MetaSpecial.java
 METATYPE kiev.vlang.MetaProtected kiev\vlang\MetaSpecial.java
 METATYPE kiev.vlang.MetaPublic kiev\vlang\MetaSpecial.java
+METATYPE kiev.vlang.MetaSpecial kiev\vlang\MetaSpecial.java
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java

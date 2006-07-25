@@ -19,7 +19,7 @@ public class TypeNameRef extends TypeRef {
 
 	@virtual typedef This  ≤ TypeNameRef;
 
-	@att public TypeRef			outer;
+	@att public TypeNameRef			outer;
 
 	public TypeNameRef() {}
 
@@ -45,7 +45,18 @@ public class TypeNameRef extends TypeRef {
 		this.lnk = tp;
 	}
 
-	public TypeNameRef(TypeRef outer, SymbolRef<DNode> nm) {
+	public TypeNameRef(Type tp) {
+		String nm = tp.toString();
+		if (nm.indexOf('.') >= 0) {
+			outer = new TypeNameRef(nm.substring(0,nm.indexOf('.')));
+			this.ident = new SymbolRef<DNode>(nm.substring(nm.indexOf('.')+1));
+		} else {
+			this.ident = new SymbolRef<DNode>(nm);
+		}
+		this.lnk = tp;
+	}
+
+	public TypeNameRef(TypeNameRef outer, SymbolRef<DNode> nm) {
 		assert (nm.name.indexOf('.') < 0);
 		this.pos = pos;
 		this.outer = outer;
@@ -59,6 +70,14 @@ public class TypeNameRef extends TypeRef {
 		this.ident = ~tnr.ident;
 	}
 
+	public String qname() {
+		if (lnk != null)
+			return this.lnk.meta_type.tdecl.qname();
+		if (outer == null)
+			return ident.name;
+		return (outer.qname() + '.' + ident.name).intern();
+	}
+	
 	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;

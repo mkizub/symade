@@ -568,7 +568,7 @@ public final class Kiev {
 			processors.append(KievFE_PreResolve);
 			processors.append(KievFE_MainResolve);
 			processors.append(KievFE_Verify);
-			processors.append(PackedFldME_Verify);
+			processors.append(PackedFldFE_Verify);
 			processors.append(KievFE_Lock);
 			feProcessors = processors.toArray();
 		}
@@ -744,7 +744,7 @@ public final class Kiev {
 	public static void runFrontEndProcessorsOn(ASTNode node) {
 		for (int i=fe_pass_no; i < feProcessors.length; i++) {
 			TransfProcessor tp = feProcessors[i];
-			if (tp.isEnabled())
+			if (tp.isEnabled() && !(tp instanceof KievFE_Lock))
 				tp.process(node,Transaction.get());
 		}
 	}

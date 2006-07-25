@@ -25,6 +25,8 @@ public abstract class ANode {
 
 	@virtual typedef This  ≤ ANode;
 
+	public static ANode[] emptyArray = new ANode[0];
+
 	private AttachInfo		p_info;
 	private AttachInfo[]	ext_data;
 	private AttachInfo[]	tmp_data;

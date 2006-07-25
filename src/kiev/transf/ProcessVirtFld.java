@@ -89,7 +89,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		f.setVirtual(true);
 		Field.SETTER_ATTR.set(f, m);
-		if (m.meta.get(nameMetaSetter) == null) {
+		if (m.meta.getU(nameMetaSetter) == null) {
 			Kiev.reportWarning(m,"Method looks to be a setter, but @setter is not specified");
 		}
 		if( m.isPublic() ) {
@@ -136,7 +136,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		f.setVirtual(true);
 		Field.GETTER_ATTR.set(f, m);
-		if (m.meta.get(nameMetaGetter) == null) {
+		if (m.meta.getU(nameMetaGetter) == null) {
 			Kiev.reportWarning(m,"Method looks to be a getter, but @getter is not specified");
 		}
 		if( m.isPublic() ) {
@@ -237,10 +237,10 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			Method set_var = new Method(set_name,Type.tpVoid,f.getJavaFlags() | ACC_SYNTHETIC);
 			if (s.isInterface())
 				set_var.setFinal(false);
-			else if (f.meta.get(VNode_Base.mnAtt) != null)
+			else if (f.meta.getU(VNode_Base.mnAtt) != null)
 				set_var.setFinal(true);
 			s.addMethod(set_var);
-			set_var.meta.set(new UserMeta(nameMetaSetter)).resolve(null);
+			set_var.meta.setU(new UserMeta(nameMetaSetter)).resolve(null);
 			FormPar value;
 			if (f.isStatic()) {
 				value = new FormPar(f.pos,"value",f.type,FormPar.PARAM_NORMAL,0);
@@ -274,10 +274,10 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			Method get_var = new Method(get_name,f.type,f.getJavaFlags() | ACC_SYNTHETIC);
 			if (s.isInterface())
 				get_var.setFinal(false);
-			if (f.meta.get(VNode_Base.mnAtt) != null)
+			if (f.meta.getU(VNode_Base.mnAtt) != null)
 				get_var.setFinal(true);
 			s.addMethod(get_var);
-			get_var.meta.set(new UserMeta(nameMetaGetter)).resolve(null);
+			get_var.meta.setU(new UserMeta(nameMetaGetter)).resolve(null);
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
 				get_var.open();

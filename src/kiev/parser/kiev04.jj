@@ -178,8 +178,7 @@ public abstract class kiev040 {
 		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
 		TypeDecl tdecl = Env.newMetaType(name, pkg, true);
 		tdecl.setTypeDeclLoaded(true);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			tdecl.meta.set(m);
+		modifiers.moveToNode(tdecl);
 		Env.createProjectInfo(tdecl, String.valueOf(Kiev.curFile));
 		return tdecl;
 	}
@@ -216,8 +215,7 @@ public abstract class kiev040 {
 		else
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclLoaded(true);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			clazz.meta.set(m);
+		modifiers.moveToNode(clazz);
 		if (modifiers.acc != null)
 			clazz.acc  = modifiers.acc;
 		if (parent instanceof FileUnit) {
@@ -235,27 +233,22 @@ public abstract class kiev040 {
 
 	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers) {
 		TypeAssign arg = new TypeAssign(name);
-		if (modifiers != null) {
-			foreach (Meta m; modifiers.annotations.delToArray())
-				arg.meta.set(m);
-		}
+		if (modifiers != null)
+			modifiers.moveToNode(arg);
 		return arg;
 	}
 
 	private TypeConstr mkTypeConstr(Symbol name, ASTModifiers modifiers) {
 		TypeConstr arg = new TypeConstr(name);
-		if (modifiers != null) {
-			foreach (Meta m; modifiers.annotations.delToArray())
-				arg.meta.set(m);
-		}
+		if (modifiers != null)
+			modifiers.moveToNode(arg);
 		return arg;
 	}
 
 	private Constructor mkConstructor(Symbol id, ASTModifiers modifiers) {
 		Constructor meth = new Constructor(0);
 		meth.pos = id.pos;
-		foreach (Meta m; modifiers.annotations.delToArray())
-			meth.meta.set(m);
+		modifiers.moveToNode(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -263,8 +256,7 @@ public abstract class kiev040 {
 	private Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
 		Method meth = new Method(id, ret, 0);
 		meth.pos = id.pos;
-		foreach (Meta m; modifiers.annotations.delToArray())
-			meth.meta.set(m);
+		modifiers.moveToNode(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -272,8 +264,7 @@ public abstract class kiev040 {
 	private RuleMethod mkRuleMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
 		RuleMethod meth = new RuleMethod(id, 0);
 		meth.pos = id.pos;
-		foreach (Meta m; modifiers.annotations.delToArray())
-			meth.meta.set(m);
+		modifiers.moveToNode(meth);
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -283,8 +274,7 @@ public abstract class kiev040 {
 			ret = ret.ncopy();
 		Field f = new Field(id,ret,0);
 		f.pos = id.pos;
-		foreach (Meta m; modifiers.annotations)
-			f.meta.set(m.ncopy());
+		modifiers.copyToNode(f);
 		if (first) {
 			if (modifiers.acc != null)
 				f.acc = modifiers.acc;
@@ -299,16 +289,14 @@ public abstract class kiev040 {
 		Field f = new Field(id,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
 		f.pos = id.pos;
 		f.setEnumField(true);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			f.meta.set(m);
+		modifiers.moveToNode(f);
 		return f;
 	}
 
 	private Field mkCaseField(Symbol id, ASTModifiers modifiers, TypeRef tp) {
 		Field f = new Field(id,tp,0|ACC_PUBLIC);
 		f.pos = id.pos;
-		foreach (Meta m; modifiers.annotations.delToArray())
-			f.meta.set(m);
+		modifiers.moveToNode(f);
 		return f;
 	}
 	
@@ -316,8 +304,7 @@ public abstract class kiev040 {
 		if (!first)
 			tp = tp.ncopy();
 		Var v = new Var(id, tp, 0);
-		foreach (Meta m; modifiers.annotations)
-			v.meta.set(m.ncopy());
+		modifiers.copyToNode(v);
 		return v;
 	}
 	
@@ -325,37 +312,32 @@ public abstract class kiev040 {
 		if (!first)
 			tp = tp.ncopy();
 		LocalRuleVar v = new LocalRuleVar(id, tp, 0);
-		foreach (Meta m; modifiers.annotations)
-			v.meta.set(m.ncopy());
+		modifiers.copyToNode(v);
 		return v;
 	}
 	
 	private FormPar mkFormPar(Symbol id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
 		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, 0);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			v.meta.set(m);
+		modifiers.moveToNode(v);
 		return v;
 	}
 	
 	private FormPar mkVarargPar(Symbol id, ASTModifiers modifiers, TypeRef vt) {
 		FormPar v = new FormPar(id, vt, vt.ncopy(), FormPar.PARAM_VARARGS, ACC_FINAL);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			v.meta.set(m);
+		modifiers.moveToNode(v);
 		return v;
 	}
 	
 	private RewritePattern mkRewritePattern(Symbol id, ASTModifiers modifiers, TypeRef tp) {
 		RewritePattern v = new RewritePattern(id, tp);
-		foreach (Meta m; modifiers.annotations.delToArray())
-			v.meta.set(m);
+		modifiers.moveToNode(v);
 		return v;
 	}
 	
 	private	Initializer mkInitializer(int pos, ASTModifiers modifiers) {
 		Initializer init = new Initializer();
 		init.pos = pos;
-		foreach (Meta m; modifiers.annotations.delToArray())
-			init.meta.set(m);
+		modifiers.moveToNode(init);
 		return init;
 	}
 
@@ -1256,8 +1238,8 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 			text.value = "\""+text.value+"\"";
 			MetaAlias ma = f.getMetaAlias();
 			if (ma == null)
-				f.meta.set(ma=new MetaAlias());
-			ma.aliases.append(text);
+				f.meta.setU(ma=new MetaAlias());
+			ma.add(text);
 		}
 	]
 	{ return f; }
@@ -1356,12 +1338,12 @@ void Access(ASTModifiers modifiers) :
 {
 	(
 		"@access"
-	|	"@public"		{ modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Public); }
-	|	"public"		{ modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Public); }
-	|	"@protected"	{ modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Protected); }
-	|	"protected"		{ modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Protected); }
-	|	"@private"		{ modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Private); }
-	|	"private"		{ modifiers += new MetaAccess(getToken(0).getPos(),MetaAccess.AccessValue.Private); }
+	|	"@public"		{ modifiers += new MetaAccess(MetaAccess.AccessValue.Public); }
+	|	"public"		{ modifiers += new MetaAccess(MetaAccess.AccessValue.Public); }
+	|	"@protected"	{ modifiers += new MetaAccess(MetaAccess.AccessValue.Protected); }
+	|	"protected"		{ modifiers += new MetaAccess(MetaAccess.AccessValue.Protected); }
+	|	"@private"		{ modifiers += new MetaAccess(MetaAccess.AccessValue.Private); }
+	|	"private"		{ modifiers += new MetaAccess(MetaAccess.AccessValue.Private); }
 	)
 	(
 		<COLON1> // ":"
@@ -1392,7 +1374,7 @@ int AccessSpec() :
 }
 
 void SpecialAnnotation(ASTModifiers modifiers) :
-{ MetaPacked mp; MetaThrows mt; TypeNameRef thr; }
+{ MetaPacked mp; MetaThrows mt; TypeNameRef thr; ConstIntExpr ice; SymbolRef nr; }
 {
 	  "@singleton"		{ modifiers += new MetaSingleton(); }
 
@@ -1426,16 +1408,16 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 		{ mp = new MetaPacked(); }
 		(
 			"("
-						mp.size   = IntConstExpression()
-			[	","		mp.fld    = NameRef()
-				","		mp.offset = IntConstExpression()
+						ice = IntConstExpression() { mp.size = ice.value; }
+			[	","		nr  = NameRef() { mp.setS("in", nr.name); }
+				","		ice = IntConstExpression() { mp.offset = ice.value; }
 			]
 			")"
 		|
-			":" 	mp.size   = IntConstExpression()
+			":" 	ice = IntConstExpression() { mp.size = ice.value; }
 			[
-			","		mp.fld    = NameRef()
-			","		mp.offset = IntConstExpression()
+			","		nr  = NameRef() { mp.setS("in", nr.name); }
+			","		ice = IntConstExpression() { mp.offset = ice.value; }
 			]
 		)?
 		{ modifiers += mp; }
@@ -1858,7 +1840,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 	(
 		m.aliases += Alias()
 	)*
-	[	thr = Throws()	{ m.meta.set(thr); } ]
+	[	thr = Throws()	{ m.meta.setU(thr); } ]
 	(
 		m.conditions += RequareDeclaration()
 	|	m.conditions += EnsureDeclaration()
@@ -1912,7 +1894,7 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 	(
 		m.aliases += Alias()
 	)*
-	[	thr = Throws()	{ m.meta.set(thr); } ]
+	[	thr = Throws()	{ m.meta.setU(thr); } ]
 	(
 		m.conditions += RequareDeclaration()
 	|	m.conditions += EnsureDeclaration()

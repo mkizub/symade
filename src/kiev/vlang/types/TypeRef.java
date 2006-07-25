@@ -107,7 +107,7 @@ public class TypeRef extends ENode {
 			if (meta.getFields().length != 0)
 				throw new CompilerException(this,"Empty constructor for pizza case "+tp+" not found");
 			if (reqType.isInteger()) {
-				ENode expr = new ConstIntExpr(meta.getTag());
+				ENode expr = new ConstIntExpr(meta.tag);
 				if( reqType ≢ Type.tpInt )
 					expr = new CastExpr(pos,reqType,expr);
 				replaceWithNodeResolve(reqType, expr);

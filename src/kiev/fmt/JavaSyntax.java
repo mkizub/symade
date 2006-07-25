@@ -1229,7 +1229,7 @@ public class JavaSyntax extends TextSyntax {
 				return seTypeConstrClassArg;
 			return seTypeConstr;
 		case MetaSet: return seMetaSet;
-		case Meta: return seMeta;
+		case UserMeta: return seMeta;
 		case MetaValueScalar: return seMetaValueScalar;
 		case MetaValueArray: return seMetaValueArray;
 		case Struct: {

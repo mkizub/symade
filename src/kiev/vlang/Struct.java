@@ -207,14 +207,14 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		int caseno = 0;
 		foreach (Struct s; members; s.isPizzaCase()) {
 			MetaPizzaCase meta = s.getMetaPizzaCase();
-			if (meta != null && meta.getTag() > caseno)
-				caseno = meta.getTag();
+			if (meta != null && meta.tag > caseno)
+				caseno = meta.tag;
 		}
 		MetaPizzaCase meta = cas.getMetaPizzaCase();
 		if (meta == null)
-			cas.meta.set(meta = new MetaPizzaCase());
-		meta.setTag(caseno + 1);
-		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
+			cas.meta.setU(meta = new MetaPizzaCase());
+		meta.tag = caseno + 1;
+		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.tag);
 		return cas;
 	}
 		
@@ -255,16 +255,16 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
 		this.package_clazz = outer;
 		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.set(new MetaAccess(MetaAccess.AccessValue.Public));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.set(new MetaAccess(MetaAccess.AccessValue.Protected));
-			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.set(new MetaAccess(MetaAccess.AccessValue.Private));
-			if ((flags & ACC_STATIC) == ACC_STATIC) meta.set(new MetaStatic());
-			if ((flags & ACC_FINAL) == ACC_FINAL) meta.set(new MetaFinal());
-			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.set(new MetaAbstract());
-			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.set(new MetaSynthetic());
-			if ((flags & ACC_MACRO) == ACC_MACRO) meta.set(new MetaMacro());
-			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) meta.set(new MetaUnerasable());
-			if ((flags & ACC_SINGLETON) == ACC_SINGLETON) meta.set(new MetaSingleton());
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setF(new MetaAccess(MetaAccess.AccessValue.Public));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Protected));
+			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Private));
+			if ((flags & ACC_STATIC) == ACC_STATIC) meta.setF(new MetaStatic());
+			if ((flags & ACC_FINAL) == ACC_FINAL) meta.setF(new MetaFinal());
+			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.setF(new MetaAbstract());
+			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) meta.setF(new MetaSynthetic());
+			if ((flags & ACC_MACRO) == ACC_MACRO) meta.setF(new MetaMacro());
+			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) meta.setF(new MetaUnerasable());
+			if ((flags & ACC_SINGLETON) == ACC_SINGLETON) meta.setF(new MetaSingleton());
 			this.flags = flags;
 		}
 		trace(Kiev.debugCreation,"New clazz created: "+qname() +" as "+id.uname+", member of "+outer);
@@ -277,7 +277,7 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	public String toString() { return qname().toString(); }
 
 	public MetaPizzaCase getMetaPizzaCase() {
-		return (MetaPizzaCase)this.meta.get("kiev.stdlib.meta.pcase");
+		return (MetaPizzaCase)this.meta.getU("kiev.stdlib.meta.pcase");
 	}
 
 	public Field[] getEnumFields() {
@@ -593,18 +593,18 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	}
 
 	public void resolveMetaValues() {
-		foreach (Meta m; meta)
+		foreach (UserMeta m; meta)
 			m.resolve(null);
 		foreach(DNode dn; members) {
 			if (dn.meta != null) {
-				foreach (Meta m; dn.meta)
+				foreach (UserMeta m; dn.meta)
 					m.resolve(null);
 			}
 			if (dn instanceof Method) {
 				Method meth = (Method)dn;
 				foreach (Var p; meth.params) {
 					if (p.meta != null) {
-						foreach (Meta m; p.meta)
+						foreach (UserMeta m; p.meta)
 							m.resolve(null);
 					}
 				}

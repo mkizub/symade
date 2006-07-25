@@ -8,6 +8,6 @@ import syntax kiev.stdlib.Syntax;
 @Target({ElementType.TYPE})
 public @interface pcase {
 	public int tag();
-	public String[] fields();
+	public String[] fields() default {} ;
 }
 
