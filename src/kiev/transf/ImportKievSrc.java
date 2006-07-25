@@ -199,12 +199,12 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					foreach (Field f; me.members; f.id.equals(fldName))
 						found = true;
 					if (!found) {
-						TypeDef td = new TypeAssign(
+						TypeAssign td = new TypeAssign(
 							new Symbol(me.pos,"outer$"+n+"$type"),
 							new TypeRef(pkg.xtype));
 						td.setSynthetic(true);
 						me.members.append(td);
-						OuterMetaType.instance(me,td);
+						me.ometa_tdef = td;
 						Field f = new Field(fldName,td.getAType(),ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC);
 						f.pos = me.pos;
 						me.members.append(f);
@@ -329,18 +329,14 @@ public final class KievFE_Pass2 extends TransfProcessor {
 			else if (tdecl.isEnum()) {
 				clazz.setStatic(true);
 				clazz.super_types.insert(0, new TypeRef(Type.tpEnum));
-				// assign type of enum fields
-				if (clazz.isEnum()) {
-					foreach (Field f; clazz.members; f.isEnumField())
-						f.ftype = new TypeRef(clazz.xtype);
-				}
 			}
 			else if (clazz.isPizzaCase()) {
 				clazz.setStatic(true);
 				Struct p = clazz.ctx_tdecl;
 				p.addCase(clazz);
 				getStructType(p, path);
-				TypeWithArgsRef sup_ref = new TypeWithArgsRef(null, new SymbolRef<TypeDecl>(clazz.pos,p));
+				TypeNameRef sup_ref = new TypeNameRef(p.qname());
+				sup_ref.ident.symbol = p;
 			next_case_arg:
 				for(int i=0; i < p.args.length; i++) {
 					for(int j=0; j < clazz.args.length; j++) {

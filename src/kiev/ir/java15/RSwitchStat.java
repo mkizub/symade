@@ -199,7 +199,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					CaseLabel c = (CaseLabel)cases[i];
 					if( c.type == null || !c.type.isReference() )
 						throw new CompilerException(c,"Mixed switch and typeswitch cases");
-					typenames = (TypeRef[])Arrays.append(typenames,new TypeRef(c.val == null? c.pos : c.val.pos,c.type));
+					typenames = (TypeRef[])Arrays.append(typenames,new TypeRef(c.type));
 					if( c.val != null )
 						c.val = new ConstIntExpr(i);
 					else

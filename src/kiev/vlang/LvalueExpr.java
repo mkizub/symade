@@ -523,13 +523,13 @@ public final class SFldExpr extends LvalueExpr {
 
 	public SFldExpr(int pos, Field var) {
 		this.pos = pos;
-		this.obj = new TypeRef(pos,var.ctx_tdecl.xtype);
+		this.obj = new TypeRef(var.ctx_tdecl.xtype);
 		this.ident = new SymbolRef<DNode>(pos,var);
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
 		this.pos = pos;
-		this.obj = new TypeRef(pos,var.ctx_tdecl.xtype);
+		this.obj = new TypeRef(var.ctx_tdecl.xtype);
 		this.ident = new SymbolRef<DNode>(pos,var);
 		if (direct_access) setAsField(true);
 	}
@@ -583,7 +583,7 @@ public final class SFldExpr extends LvalueExpr {
 			if (!var.isStatic())
 				throw new CompilerException(this, "Field "+var+" is not static");
 			if (obj == null)
-				obj = new TypeRef(pos,var.ctx_tdecl.xtype);
+				obj = new TypeRef(var.ctx_tdecl.xtype);
 			return;
 		}
 		
@@ -642,7 +642,7 @@ public final class OuterThisAccessExpr extends ENode {
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
 		this.pos = pos;
-		this.obj = new TypeRef(pos,outer.xtype);
+		this.obj = new TypeRef(outer.xtype);
 		this.ident = new SymbolRef<DNode>(pos,nameThis);
 		this.outer = outer;
 	}

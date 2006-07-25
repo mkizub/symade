@@ -754,61 +754,6 @@ public final class WrapperType extends CTimeType {
 
 }
 
-public final class OuterType extends CTimeType {
-
-	public static OuterType newOuterType(Struct of_clazz, Type type)
-		alias operator(240,lfy,new)
-	{
-		return new OuterType(of_clazz.ometa_type, type);
-	}
-	
-	private OuterType(OuterMetaType meta_type, Type outer) {
-		super(meta_type, flReference, meta_type.tdef.getAType(), outer);
-	}
-
-	@getter
-	public Type get$outer()			{ return this.tvars[0].unalias().result(); }
-	
-	public Type getUnboxedType()	{ return outer; }
-
-	public final ENode makeUnboxedExpr(ENode from) {
-		return new ReinterpExpr(from.pos, outer, ~from);
-	} 
-	public final ENode makeInitExpr(LvalDNode dn, ENode init) {
-		assert( init == null);
-		return null;
-	}
-
-	public JType getJType() {
-		if (jtype == null)
-			jtype = outer.getJType();
-		return jtype;
-	}
-
-	public UserMeta getMeta(String name)				{ return outer.getMeta(name); }
-	
-	public MetaType[] getAllSuperTypes() {
-		return outer.getAllSuperTypes();
-	}
-
-	public Type getErasedType() { return outer.getErasedType(); }
-	public boolean checkResolved() { return outer.checkResolved(); }
-	public String toString() { return outer.toString(); }
-
-	public boolean isCastableTo(Type t) {
-		if( this ≈ t ) return true;
-		return outer.isCastableTo(t);
-	}
-
-	public boolean isInstanceOf(Type t) {
-		if (this ≡ t || t ≡ tpAny) return true;
-		if (t instanceof OuterType && t.meta_type == this.meta_type)
-			t = t.outer;
-		return outer.isInstanceOf(t);
-	}
-
-}
-
 public final class CallType extends Type {
 	public  final int		arity;
 

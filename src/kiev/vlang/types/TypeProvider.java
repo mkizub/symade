@@ -504,53 +504,6 @@ public class WrapperMetaType extends MetaType {
 	
 }
 
-public class OuterMetaType extends MetaType {
-
-	private TVarSet			templ_bindings;
-	public final Struct		clazz;
-	public final TypeDef	tdef;
-	public static OuterMetaType instance(Struct clazz, TypeDef tdef) {
-		if (clazz.ometa_type == null)
-			clazz.ometa_type = new OuterMetaType(clazz, tdef);
-		return clazz.ometa_type;
-	}
-	private OuterMetaType() {}
-	private OuterMetaType(Struct clazz, TypeDef tdef) {
-		super(clazz);
-		this.clazz = clazz;
-		this.tdef = tdef;
-		this.templ_bindings = new TVarSet(new TVarBld(tdef.getAType(), null).close());
-	}
-
-	public Type[] getMetaSupers(Type tp) {
-		OuterType ot = (OuterType)tp;
-		return new Type[]{ot.outer};
-	}
-	public TVarSet getTemplBindings() { return templ_bindings; }
-
-
-	public Type make(TVSet bindings) {
-		return OuterType.newOuterType(clazz,bindings.resolve(tdef.getAType()));
-	}
-	public Type bind(Type t, TVSet bindings) {
-		return OuterType.newOuterType(clazz,((OuterType)t).outer.bind(bindings));
-	}
-	public Type rebind(Type t, TVSet bindings) {
-		return OuterType.newOuterType(clazz,((OuterType)t).outer.rebind(bindings));
-	}
-	public Type applay(Type t, TVSet bindings) {
-		if (!t.isValAppliable() || bindings.getTVars().length == 0) return t;
-		return OuterType.newOuterType(clazz,((OuterType)t).outer.applay(bindings));
-	}
-
-	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info) {
-		((OuterType)tp).outer.resolveNameAccessR(node,info)
-	}
-	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt) {
-		((OuterType)tp).outer.resolveCallAccessR(node,info,mt)
-	}
-}
-
 public class CallMetaType extends MetaType {
 
 	public static final CallMetaType instance;

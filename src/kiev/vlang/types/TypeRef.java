@@ -30,21 +30,42 @@ public class TypeRef extends ENode {
 
 	@virtual typedef This  ≤ TypeRef;
 	@virtual typedef JView = JTypeRef;
+	@virtual typedef TypeOfIdent = TypeDecl;
 
 	@ref public Type	lnk;
 
 	public TypeRef() {}
 	
-	public TypeRef(Type tp) {
+	private TypeRef(CoreType tp) {
+		this.ident.name = tp.name;
+		this.ident.symbol = tp.meta_type.tdecl;
 		this.lnk = tp;
-		
 	}
-	public TypeRef(int pos) {
-		this.pos = pos;
-	}
-	public TypeRef(int pos, Type tp) {
-		this.pos = pos;
+	
+	private TypeRef(ArgType tp) {
+		this.ident.name = tp.name;
+		this.ident.symbol = tp.meta_type.tdecl;
 		this.lnk = tp;
+	}
+	
+	public static TypeRef newTypeRef(Type tp)
+		alias operator(240,lfy,new)
+	{
+		if (tp instanceof CoreType)
+			return new TypeRef((CoreType)tp);
+		if (tp instanceof ASTNodeType)
+			return new TypeExpr(newTypeRef(tp.getStruct().xtype), TypeExpr.opAST);
+		if (tp instanceof ArgType)
+			return new TypeRef((ArgType)tp);
+		if (tp instanceof ArrayType)
+			return new TypeExpr(newTypeRef(tp.arg), nameArrayTypeOp);
+		if (tp instanceof WrapperType)
+			return new TypeExpr(newTypeRef(tp.getEnclosedType()), TypeExpr.opWraper);
+		if (tp instanceof CompaundType || tp instanceof XType)
+			return new TypeNameRef(tp);
+		if (tp instanceof CallType)
+			return new TypeClosureRef((CallType)tp);
+		throw new RuntimeException("Unknow type for TypeRef: "+tp.getClass());
 	}
 	
 	public ASTNode getDummyNode() {

@@ -729,7 +729,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
 			if (fp.stype == null)
-				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType());
+				fp.stype = new TypeRef(fp.vtype.getType());
 			if (fp.meta != null)
 				fp.meta.verify();
 		}

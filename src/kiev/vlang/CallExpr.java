@@ -95,7 +95,7 @@ public class CallExpr extends ENode {
 		if (func != null) {
 			if (obj == null) {
 				assert (func.isStatic() || func instanceof Constructor);
-				obj = new TypeRef(pos, func.ctx_tdecl.xtype);
+				obj = new TypeRef(func.ctx_tdecl.xtype);
 			}
 			return;
 		}
@@ -309,7 +309,7 @@ public class CallExpr extends ENode {
 	// verify resolved call
 	public boolean preVerify() {
 		if (func.isStatic() && !func.isVirtualStatic() && !(obj instanceof TypeRef))
-			obj = new TypeRef(obj.pos,func.ctx_tdecl.xtype);
+			obj = new TypeRef(func.ctx_tdecl.xtype);
 		return true;
 	}
 

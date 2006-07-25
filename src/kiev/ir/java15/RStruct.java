@@ -21,7 +21,6 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	public:ro			Access					acc;
 	public:ro			WrapperMetaType			wmeta_type;
-	public:ro			OuterMetaType			ometa_type;
 	public:ro			TypeRef					view_of;
 	public:ro			Struct					package_clazz;
 	public				Struct					typeinfo_clazz;

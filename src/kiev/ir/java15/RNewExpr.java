@@ -40,7 +40,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		Struct s = type.getStruct();
 		if (s == null)
 			Kiev.reportWarning(this,"Instantiation of non-concrete type "+this.type+" ???");
-		if (outer == null && s.ometa_type != null) {
+		if (outer == null && s.ometa_tdef != null) {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
 			this.open();
@@ -48,7 +48,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		}
 		if( outer != null ) {
 			outer.resolve(null);
-			type = type.bind(new TVarBld(s.ometa_type.tdef.getAType(), outer.getType()));
+			type = type.bind(new TVarBld(s.ometa_tdef.getAType(), outer.getType()));
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);

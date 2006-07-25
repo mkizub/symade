@@ -285,8 +285,8 @@ public abstract class kiev040 {
 		return f;
 	}
 
-	private Field mkEnumField(Symbol id, ASTModifiers modifiers) {
-		Field f = new Field(id,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
+	private Field mkEnumField(Symbol id, ASTModifiers modifiers, TypeDecl clazz) {
+		Field f = new Field(id,new TypeRef(clazz.xtype),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
 		f.pos = id.pos;
 		f.setEnumField(true);
 		modifiers.moveToNode(f);
@@ -1190,10 +1190,10 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 	(
 		LOOKAHEAD({ clazz.isEnum() })
 		modifiers = Modifiers()
-		clazz.members += EnumFieldDeclaration(modifiers)
+		clazz.members += EnumFieldDeclaration(modifiers,clazz)
 		(	","
 			modifiers = Modifiers()
-			clazz.members += EnumFieldDeclaration(modifiers)
+			clazz.members += EnumFieldDeclaration(modifiers,clazz)
 		)*
 		[ ";" ]
 	)?
@@ -1224,12 +1224,12 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 	"}"
 }
 
-Field EnumFieldDeclaration(ASTModifiers modifiers) :
+Field EnumFieldDeclaration(ASTModifiers modifiers, TypeDecl clazz) :
 { Symbol id; Field f; ConstStringExpr text; }
 {
 	id = Name()
 	{
-		f = mkEnumField(id, modifiers);
+		f = mkEnumField(id, modifiers, clazz);
 	}
 	[
 		":"
@@ -1473,7 +1473,7 @@ UserMeta Annotation() :
 		id = NameRef()
 	|	id = KeywordAsNameRef()
 	)
-	{	n.pos = id.pos;	n.type = new TypeNameRef(id); }
+	{	n.pos = id.pos;	n.type = new TypeNameRef(id.name); }
 	[
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
@@ -1654,7 +1654,7 @@ Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
 {
 	(
 		LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals("_")) })
-		id = Name() { tp = new TypeRef(id.pos, Type.tpVoid); }
+		id = Name() { tp = new TypeRef(Type.tpVoid); tp.pos = id.pos; }
 	|
 		tp = Type()
 		id = Name()
@@ -1684,12 +1684,11 @@ FormPar MethodVarargsParameter(ASTModifiers modifiers) :
 	t = "..."
 	[ id = Name() ]
 	{
-		if (tp == null) {
-			tp = new TypeRef(t.getPos(),new ArrayType(Type.tpObject));
-		} else {
+		if (tp == null)
+			tp = new TypeRef(new ArrayType(Type.tpObject));
+		else
 			tp = new TypeExpr(tp, Constants.nameArrayTypeOp);
-			tp.pos = t.getPos();
-		}
+		tp.pos = t.getPos();
 		if (id == null) {
 			id = new Symbol(t.getPos(), Constants.nameVarArgs);
 		}
@@ -2066,26 +2065,25 @@ TypeRef TypeExpr() :
 TypeNameRef TypeQName() :
 { SymbolRef id; TypeNameRef res; }
 {
-	id = NameRef() { res = new TypeNameRef(id); }
+	id = NameRef() { res = new TypeNameRef(id.name); res.pos = id.pos; }
 	(
 		"."
-		id = NameRef()  { res = new TypeNameRef(res, id); }
+		id = NameRef()  { res = new TypeNameRef(res, id.name); res.pos = id.pos; }
 	)*
 	{ return res; }
 }
 
 TypeRef TypeWithArgs() :
-{ SymbolRef id; TypeNameRef res; TypeWithArgsRef tra; }
+{ SymbolRef id; TypeNameRef res; }
 {
-	id = NameRef() { res = new TypeNameRef(id); }
+	id = NameRef() { res = new TypeNameRef(id.name); res.pos = id.pos; }
 	(	LOOKAHEAD(2)
 		(
 			"."
-			id = NameRef()  { res = new TypeNameRef(res, id); }
+			id = NameRef()  { res = new TypeNameRef(res, id.name); res.pos = id.pos; }
 		|	"<"
-				{ res = tra = new TypeWithArgsRef(res); }
-				tra.args += Type()
-				( "," tra.args += Type() )*
+				res.args += Type()
+				( "," res.args += Type() )*
 			">"
 		)
 	)*
@@ -2125,22 +2123,26 @@ TypeRef ClosureType() :
 }
 
 TypeRef PrimitiveType() :
-{ Token t; TypeRef tp = new TypeRef(); }
+{ Token t; Type tp = null; }
 {
 	(
-	  t="boolean"	{ tp.lnk = Type.tpBoolean; }
-	| t="char"		{ tp.lnk = Type.tpChar; }
-	| t="byte"		{ tp.lnk = Type.tpByte; }
-	| t="short"		{ tp.lnk = Type.tpShort; }
-	| t="int"		{ tp.lnk = Type.tpInt; }
-	| t="long"		{ tp.lnk = Type.tpLong; }
-	| t="float"		{ tp.lnk = Type.tpFloat; }
-	| t="double"	{ tp.lnk = Type.tpDouble; }
-	| t="void"		{ tp.lnk = Type.tpVoid; }
-	| t="rule"		{ tp.lnk = Type.tpRule; }
-	| t="any"		{ tp.lnk = Type.tpAny; }
+	  t="boolean"	{ tp = Type.tpBoolean; }
+	| t="char"		{ tp = Type.tpChar; }
+	| t="byte"		{ tp = Type.tpByte; }
+	| t="short"		{ tp = Type.tpShort; }
+	| t="int"		{ tp = Type.tpInt; }
+	| t="long"		{ tp = Type.tpLong; }
+	| t="float"		{ tp = Type.tpFloat; }
+	| t="double"	{ tp = Type.tpDouble; }
+	| t="void"		{ tp = Type.tpVoid; }
+	| t="rule"		{ tp = Type.tpRule; }
+	| t="any"		{ tp = Type.tpAny; }
 	)
-	{ tp.pos = t.getPos(); return tp; }
+	{
+		TypeRef tr = new TypeRef(tp);
+		tr.pos = t.getPos();
+		return tr;
+	}
 }
 
 TypeRef ReparseType() :

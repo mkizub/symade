@@ -649,8 +649,6 @@ CLASS kiev.vlang.types.CompaundType kiev/vlang/types/CompaundType kiev\vlang\typ
 CLASS kiev.vlang.types.CoreMetaType kiev/vlang/types/CoreMetaType kiev\vlang\types\TypeProvider.java
 CLASS kiev.vlang.types.CoreType kiev/vlang/types/CoreType kiev\vlang\types\Type.java
 CLASS kiev.vlang.types.MetaType kiev/vlang/types/MetaType kiev\vlang\types\TypeProvider.java
-CLASS kiev.vlang.types.OuterMetaType kiev/vlang/types/OuterMetaType kiev\vlang\types\TypeProvider.java
-CLASS kiev.vlang.types.OuterType kiev/vlang/types/OuterType kiev\vlang\types\Type.java
 CLASS kiev.vlang.types.TArg kiev/vlang/types/TArg kiev\vlang\types\AType.java
 CLASS kiev.vlang.types.TVar kiev/vlang/types/TVar kiev\vlang\types\AType.java
 CLASS kiev.vlang.types.TVarBld kiev/vlang/types/TVarBld kiev\vlang\types\TVarBld.java
@@ -663,7 +661,6 @@ CLASS kiev.vlang.types.TypeDef kiev/vlang/types/TypeDef kiev\vlang\types\TypeDef
 CLASS kiev.vlang.types.TypeExpr kiev/vlang/types/TypeExpr kiev\vlang\types\TypeExpr.java
 CLASS kiev.vlang.types.TypeNameRef kiev/vlang/types/TypeNameRef kiev\vlang\types\TypeNameRef.java
 CLASS kiev.vlang.types.TypeRef kiev/vlang/types/TypeRef kiev\vlang\types\TypeRef.java
-CLASS kiev.vlang.types.TypeWithArgsRef kiev/vlang/types/TypeWithArgsRef kiev\vlang\types\TypeWithArgsRef.java
 CLASS kiev.vlang.types.WrapperMetaType kiev/vlang/types/WrapperMetaType kiev\vlang\types\TypeProvider.java
 CLASS kiev.vlang.types.WrapperType kiev/vlang/types/WrapperType kiev\vlang\types\Type.java
 CLASS kiev.vlang.types.XType kiev/vlang/types/XType kiev\vlang\types\Type.java
@@ -902,5 +899,7 @@ METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
+METATYPE kiev.vlang.types.OuterMetaType kiev\vlang\types\TypeProvider.java
+METATYPE kiev.vlang.types.OuterType kiev\vlang\types\Type.java
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java

@@ -36,8 +36,8 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		 public Access						acc;
 		 public KString						b_name;	// bytecode name
 		 public WrapperMetaType				wmeta_type;
-		 public OuterMetaType				ometa_type;
 		 public ASTNodeMetaType				ameta_type;
+	@ref public TypeAssign					ometa_tdef;
 	@att public TypeRef						view_of;
 	@ref public Struct						typeinfo_clazz;
 	@ref public Struct						iface_impl;

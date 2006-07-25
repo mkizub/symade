@@ -13,61 +13,51 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class TypeNameRef extends TypeRef {
+public final class TypeNameRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	@virtual typedef This  ≤ TypeNameRef;
+	@virtual typedef This  = TypeNameRef;
 
 	@att public TypeNameRef			outer;
+	@att public TypeRef[]			args;
 
 	public TypeNameRef() {}
 
 	public TypeNameRef(String nm) {
-		if (nm.indexOf('.') >= 0) {
-			outer = new TypeNameRef(nm.substring(0,nm.indexOf('.')));
-			this.ident = new SymbolRef<DNode>(nm.substring(nm.indexOf('.')+1));
+		int li = nm.lastIndexOf('.');
+		if (li >= 0) {
+			outer = new TypeNameRef(nm.substring(0,li));
+			this.ident = new SymbolRef<DNode>(nm.substring(li+1));
 		} else {
 			this.ident = new SymbolRef<DNode>(nm);
 		}
 	}
 
-	public TypeNameRef(SymbolRef<DNode> nm) {
-		assert (nm.name.indexOf('.') < 0);
+	public TypeNameRef(String nm, Type tp) {
+		assert (nm.indexOf('.') < 0);
 		this.pos = pos;
-		this.ident = nm;
-	}
-
-	public TypeNameRef(SymbolRef<DNode> nm, Type tp) {
-		assert (nm.name.indexOf('.') < 0);
-		this.pos = pos;
-		this.ident = nm;
+		this.ident.name = nm;
 		this.lnk = tp;
 	}
 
 	public TypeNameRef(Type tp) {
-		String nm = tp.toString();
-		if (nm.indexOf('.') >= 0) {
-			outer = new TypeNameRef(nm.substring(0,nm.indexOf('.')));
-			this.ident = new SymbolRef<DNode>(nm.substring(nm.indexOf('.')+1));
+		String nm = tp.meta_type.tdecl.qname();
+		int li = nm.lastIndexOf('.');
+		if (li >= 0) {
+			outer = new TypeNameRef(nm.substring(0,li));
+			this.ident = new SymbolRef<TypeDecl>(nm.substring(li+1));
 		} else {
-			this.ident = new SymbolRef<DNode>(nm);
+			this.ident = new SymbolRef<TypeDecl>(nm);
 		}
 		this.lnk = tp;
 	}
 
-	public TypeNameRef(TypeNameRef outer, SymbolRef<DNode> nm) {
-		assert (nm.name.indexOf('.') < 0);
+	public TypeNameRef(TypeNameRef outer, String nm) {
+		assert (nm.indexOf('.') < 0);
 		this.pos = pos;
 		this.outer = outer;
-		this.ident = nm;
-	}
-
-	public TypeNameRef(TypeNameRef tnr) {
-		this.pos = tnr.pos;
-		if (tnr.outer != null)
-			this.outer = ~tnr.outer;
-		this.ident = ~tnr.ident;
+		this.ident.name = nm;
 	}
 
 	public String qname() {
@@ -104,6 +94,25 @@ public class TypeNameRef extends TypeRef {
 			ident.symbol = td;
 			td.checkResolved();
 			tp = td.getType();
+		}
+		if (args.length > 0) {
+			TVarSet tpset = tp.meta_type.getTemplBindings();
+			TVarBld set = new TVarBld();
+			int a = 0;
+			for(int b=0; a < args.length && b < tpset.tvars.length; b++) {
+				if (tpset.tvars[b].unalias().val != null)
+					continue;
+				Type bound = args[a].getType();
+				if (bound == null)
+					throw new CompilerException(this,"Type "+args[a]+" is not found");
+				if!(bound.isInstanceOf(tpset.tvars[b].var))
+					throw new CompilerException(this,"Type "+bound+" is not applayable to "+tpset.tvars[b].var);
+				set.append(tpset.tvars[b].var, bound);
+				a++;
+			}
+			if (a < args.length)
+				Kiev.reportError(this,"Type "+tp+" has only "+a+" unbound type parameters");
+			tp = tp.meta_type.make(set);
 		}
 		this.lnk = tp;
 		return this.lnk;
@@ -148,9 +157,19 @@ public class TypeNameRef extends TypeRef {
 	}
 
 	public String toString() {
-		if (outer == null)
+		if (outer == null && args.length == 0)
 			return ident.toString();
-		return outer+"."+ident.toString();
+		StringBuffer sb = new StringBuffer();
+		sb.append(outer).append('.').append(ident);
+		if (args.length > 0) {
+			sb.append('<');
+			for (int i=0; i < args.length; i++) {
+				sb.append(args[i]);
+				if (i < args.length-1) sb.append(',');
+			}
+			sb.append('>');
+		}
+		return sb.toString();
 	}
 }
 

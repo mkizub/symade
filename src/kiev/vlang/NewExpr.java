@@ -88,15 +88,15 @@ public final class NewExpr extends ENode {
 			return this.clazz.xtype;
 		Type type = this.type.getType();
 		Struct clazz = type.getStruct();
-		if (outer == null && type.getStruct() != null && type.getStruct().ometa_type != null) {
+		if (outer == null && type.getStruct() != null && type.getStruct().ometa_tdef != null) {
 			if (ctx_method != null || !ctx_method.isStatic())
 				outer = new ThisExpr(pos);
 		}
 		if (outer == null)
 			return type;
 		TVarBld vset = new TVarBld(
-			type.getStruct().ometa_type.tdef.getAType(),
-			new OuterType(type.getStruct(),outer.getType()) );
+			type.getStruct().ometa_tdef.getAType(),
+			outer.getType() );
 		return type.rebind(vset);
 	}
 
