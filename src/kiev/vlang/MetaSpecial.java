@@ -216,6 +216,8 @@ public final class MetaAccess extends MetaFlag {
 		}
 		dn.is_access = DNode.MASK_ACC_DEFAULT;
 	}
+	
+	public String toString() { return value; }
 }
 
 @node

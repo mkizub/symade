@@ -890,8 +890,6 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
-METATYPE kiev.be.java15.ParMetaAttr kiev\be\java15\Attr.java
-METATYPE kiev.be.java15.RMetaAttr kiev\be\java15\Attr.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad
@@ -903,12 +901,6 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
-METATYPE kiev.transf.PackedFldME_Verify kiev\transf\ProcessPackedFld.java
-METATYPE kiev.vlang.Meta kiev\vlang\Meta.java
-METATYPE kiev.vlang.MetaPrivate kiev\vlang\MetaSpecial.java
-METATYPE kiev.vlang.MetaProtected kiev\vlang\MetaSpecial.java
-METATYPE kiev.vlang.MetaPublic kiev\vlang\MetaSpecial.java
-METATYPE kiev.vlang.MetaSpecial kiev\vlang\MetaSpecial.java
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java
