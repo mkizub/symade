@@ -853,16 +853,16 @@ public final view RStruct of Struct extends RTypeDecl {
 					mmm.params.add(new FormPar(fp.pos,fp.id.uname,fp.stype.getType(),fp.kind,fp.flags));
 				((Struct)self).members.add(mmm);
 			}
-			CallType type1 = mmm.type;
+			CallType type1 = mmm.type.getErasedType(); // erase type, like X... -> X[]
 			CallType dtype1 = mmm.dtype;
 			CallType etype1 = mmm.etype;
-			((Struct)self).members.detach(mmm);
+			mmm.detach();
 			Method mm = null;
 			trace(Kiev.debugMultiMethod,"Generating dispatch method for "+m+" with dispatch type "+etype1);
 			// find all methods with the same java type
 			ListBuffer<Method> mlistb = new ListBuffer<Method>();
 			foreach (Method mj; members; !mj.isMethodBridge() && mj.isStatic() == m.isStatic()) {
-				CallType type2 = mj.type;
+				CallType type2 = mj.type.getErasedType(); // erase type, like X... -> X[]
 				CallType dtype2 = mj.dtype;
 				CallType etype2 = mj.etype;
 				if( mj.id.uname != m.id.uname || etype2.arity != etype1.arity )
@@ -873,7 +873,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						if (type1.equals(type2))
 							mm = mj;
 					} else {
-						if (mm.type.greater(type2))
+						if (((CallType)mm.type.getErasedType()).greater(type2))
 							mm = mj;
 					}
 					mlistb.append(mj);

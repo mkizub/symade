@@ -20,42 +20,44 @@ public class TypeExpr extends TypeRef {
 
 	public static final Hashtable<String,Struct>	AllNodes = new Hashtable<String,Struct>(256);
 
-	static String opPVar   = "T @";
-	static String opRef    = "T &";
-	static String opAST    = "T #";
-	static String opWraper = "T \u229b"; // ⊛
-	
 	@virtual typedef This  = TypeExpr;
 
-	@att public TypeRef					arg;
-	@att public String					op;
+	@att public TypeRef			arg;
+	@ref public Operator		op;
 
-	@setter
-	public void set$op(String value) {
-		this.op = (value != null) ? value.intern() : null;
-	}
-	
 	public TypeExpr() {}
 
-	public TypeExpr(TypeRef arg, String op) {
+	public TypeExpr(TypeRef arg, Operator op) {
 		this.pos = arg.pos;
 		this.arg = arg;
-		this.op = op;
+		this.ident.name = op.name;
 	}
 
 	public TypeExpr(TypeRef arg, Token op) {
 		this.arg = arg;
-		if (op.kind == ParserConstants.OPERATOR_LRBRACKETS)
-			this.op = nameArrayTypeOp;
-		else
-			this.op = ("T "+op.image).intern();
+		if (op.kind == ParserConstants.OPERATOR_LRBRACKETS) {
+			this.op = Operator.PostTypeArray;
+			this.ident.name = this.op.name;
+		} else {
+			this.ident.name = ("T "+op.image).intern();
+		}
 		this.pos = op.getPos();
 	}
+
+	public Operator getOp() { return op; }
+
+	public ENode[] getArgs() { return new ENode[]{arg}; }
 
 	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
-		if (op == opAST) {
+		if (this.op == null) {
+			Operator op = Operator.getOperator(ident.name);
+			if (op == null)
+				throw new CompilerException(this, "Cannot find type operator: "+ident.name);
+			this.op = op;
+		}
+		if (op == Operator.PostTypeAST) {
 			Struct s = AllNodes.get(arg.toString());
 			if (s != null) {
 				arg.lnk = s.xtype;
@@ -65,38 +67,41 @@ public class TypeExpr extends TypeRef {
 		}
 		Type tp = arg.getType();
 		DNode@ v;
-		if (op == nameArrayTypeOp) {
+		if (op == Operator.PostTypeArray) {
 			tp = new ArrayType(tp);
 		}
-		else if (op == opWraper) {
+		else if (op == Operator.PostTypeWrapper) {
 			tp = new WrapperType((CompaundType)tp);
 		}
-		else if (op == opAST) {
+		else if (op == Operator.PostTypeAST) {
 			tp = new ASTNodeType(tp.getStruct());
 		}
 		else {
 			Type t;
-			if (!PassInfo.resolveNameR(((TypeExpr)this),v,new ResInfo(this,op))) {
-				if (op == opPVar) {
+			if (!PassInfo.resolveNameR(((TypeExpr)this),v,new ResInfo(this,ident.name))) {
+				if (op == Operator.PostTypePVar) {
 					t = WrapperType.tpWrappedPrologVar;
 				}
-				else if (op == opRef) {
+				else if (op == Operator.PostTypeVararg) {
+					t = StdTypes.tpVararg;
+				}
+				else if (op == Operator.PostTypeRef) {
 					Kiev.reportWarning(this, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpRefProxy);
 					t = WrapperType.tpWrappedRefProxy;
 				}
 				else
-					throw new CompilerException(this,"Typedef for type operator "+op+" not found");
+					throw new CompilerException(this,"Typedef for type operator "+ident+" not found");
 			} else {
 				if (v instanceof TypeDecl)
 					t = ((TypeDecl)v).getType();
 				else
-					throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
+					throw new CompilerException(this,"Expected to find type for "+ident+", but found "+v);
 			}
 			t.checkResolved();
 			TVarBld set = new TVarBld();
-			if (t.getStruct().args.length != 1)
-				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
-			set.append(t.getStruct().args[0].getAType(), tp);
+			if (t.meta_type.tdecl.args.length != 1)
+				throw new CompilerException(this,"Type '"+t+"' of type operator "+ident+" must have 1 argument");
+			set.append(t.meta_type.tdecl.args[0].getAType(), tp);
 			tp = t.applay(set);
 		}
 		this.lnk = tp;
@@ -109,48 +114,52 @@ public class TypeExpr extends TypeRef {
 	public Struct getStruct() {
 		if (this.lnk != null)
 			return this.lnk.getStruct();
-		if (op == nameArrayTypeOp)
+		if (ident.name == Operator.PostTypeArray.name || ident.name == Operator.PostTypeVararg.name)
 			return null;
 		DNode@ v;
-		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,op))) {
-			if (op == opPVar)
+		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,ident.name))) {
+			if (op == Operator.PostTypePVar)
 				return WrapperType.tpWrappedPrologVar.getStruct();
-			else if (op == opRef)
+			else if (op == Operator.PostTypeRef)
 				return WrapperType.tpWrappedRefProxy.getStruct();
-			else if (op == opAST)
+			else if (op == Operator.PostTypeAST)
 				return arg.getStruct();
 			else
-				throw new CompilerException(this,"Typedef for type operator "+op+" not found");
+				throw new CompilerException(this,"Typedef for type operator "+ident+" not found");
 		}
 		if (v instanceof TypeDecl)
 			return ((TypeDecl)v).getStruct();
-		throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
+		throw new CompilerException(this,"Expected to find type for "+ident+", but found "+v);
 	}
 	public TypeDecl getTypeDecl() {
 		if (this.lnk != null)
 			return this.lnk.meta_type.tdecl;
-		if (op == nameArrayTypeOp)
+		if (ident.name == Operator.PostTypeArray.name)
 			return ArrayMetaType.instance.tdecl;
+		if (ident.name == Operator.PostTypeVararg.name)
+			return (TypeDecl)Env.resolveStruct("kiev.stdlib._Vararg_");
 		DNode@ v;
-		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,op))) {
-			if (op == opPVar)
+		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,ident.name))) {
+			if (op == Operator.PostTypePVar)
 				return WrapperType.tpWrappedPrologVar.meta_type.tdecl;
-			else if (op == opRef)
+			else if (op == Operator.PostTypeRef)
 				return WrapperType.tpWrappedRefProxy.meta_type.tdecl;
-			else if (op == opAST)
+			else if (op == Operator.PostTypeAST)
 				return ASTNodeMetaType.instance(arg.getStruct()).tdecl;
 			else
-				throw new CompilerException(this,"Typedef for type operator "+op+" not found");
+				throw new CompilerException(this,"Typedef for type operator "+ident+" not found");
 		}
 		if (v instanceof TypeDecl)
 			return (TypeDecl)v;
-		throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
+		throw new CompilerException(this,"Expected to find type for "+ident+", but found "+v);
 	}
 
 	public String toString() {
 		if (this.lnk != null)
 			return this.lnk.toString();
-		return String.valueOf(arg)+op;
+		if (op != null)
+			return op.toString(arg);
+		return String.valueOf(arg)+ident.name.substring(2);
 	}
 }
 

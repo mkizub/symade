@@ -2183,9 +2183,9 @@ public abstract class kiev040 implements kiev040Constants {
       ;
     }
                 if (tp == null)
-                        tp = new TypeRef(new ArrayType(Type.tpObject));
+                        tp = new TypeExpr(new TypeRef(Type.tpObject), t);
                 else
-                        tp = new TypeExpr(tp, Constants.nameArrayTypeOp);
+                        tp = new TypeExpr(tp, t);
                 tp.pos = t.getPos();
                 if (id == null) {
                         id = new Symbol(t.getPos(), Constants.nameVarArgs);
@@ -3054,7 +3054,7 @@ public abstract class kiev040 implements kiev040Constants {
     t= jj_consume_token(LPAREN);
                 n.pos = t.getPos();
     if (jj_2_56(1)) {
-      n.types += Type();
+      n.args += Type();
       label_49:
       while (true) {
         switch (jj_nt.kind) {
@@ -3065,14 +3065,14 @@ public abstract class kiev040 implements kiev040Constants {
           break label_49;
         }
         jj_consume_token(COMMA);
-        n.types += Type();
+        n.args += Type();
       }
     } else {
       ;
     }
     jj_consume_token(RPAREN);
     jj_consume_token(ARROW);
-    n.types += Type();
+    n.ret = Type();
           {if (true) return n;}
     throw new Error("Missing return statement in function");
   }

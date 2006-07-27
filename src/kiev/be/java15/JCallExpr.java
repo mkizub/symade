@@ -118,13 +118,13 @@ public final view JCallExpr of CallExpr extends JENode {
 			int N = func.params.length-1;
 			for(; i < N; i++)
 				args[i].generate(code,null);
-			if (args.length == func.params.length && args[N].getType().isInstanceOf(func.params[N].type)) {
+			Type varg_tp = func.params[N].type.tvars[0].unalias().result();
+			if (args.length == func.params.length && args[N].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
 				args[i].generate(code,null);
 			} else {
-				ArrayType type = (ArrayType)func.etype.arg(N);
 				code.addConst(args.length-N);
-				code.addInstr(Instr.op_newarray,type.arg);
+				code.addInstr(Instr.op_newarray,varg_tp);
 				for(int j=0; i < args.length; i++, j++) {
 					code.addInstr(Instr.op_dup);
 					code.addConst(j);

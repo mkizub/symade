@@ -57,16 +57,16 @@ public final view RCallExpr of CallExpr extends RENode {
 			tmp_expr =  null;
 		}
 		if (func.isVarArgs()) {
+			Type varg_tp = func.getVarArgParam().type.tvars[0].unalias().result();
 			int i=0;
-			for(; i < func.type.arity; i++)
+			for(; i < func.type.arity-1; i++)
 				args[i].resolve(Type.getRealType(obj.getType(),func.type.arg(i)));
-			if (args.length == i+1 && args[i].getType().isInstanceOf(func.getVarArgParam().type)) {
+			if (args.length == i+1 && args[i].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
 				args[i].resolve(func.getVarArgParam().type);
 			} else {
-				ArrayType varg_tp = (ArrayType)Type.getRealType(obj.getType(),func.getVarArgParam().type);
 				for(; i < args.length; i++)
-					args[i].resolve(varg_tp.arg);
+					args[i].resolve(varg_tp);
 			}
 		} else {
 			for (int i=0; i < args.length; i++)

@@ -52,7 +52,7 @@ public final view JNewExpr of NewExpr extends JENode {
 				}
 				int i;
 				for(i=0; i < ((Struct)code.clazz).args.length; i++)
-					if (type ≈ ((Struct)code.clazz).args[i]) break;
+					if (type ≈ ((Struct)code.clazz).args[i].getAType()) break;
 				if( i >= ((Struct)code.clazz).args.length )
 					throw new CompilerException(this,"Can't create an instance of argument type "+type);
 				ENode tie = new IFldExpr(pos,new ThisExpr(pos),((Struct)code.clazz).resolveField(nameTypeInfo));

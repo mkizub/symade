@@ -110,7 +110,7 @@ public abstract class AType implements StdTypes, TVSet {
 		return true;
 	}
 
-	public final boolean equals(Object to) alias operator (60, xfx, ≈ ) {
+	public final boolean equals(Object to) {
 		if (to instanceof AType) return AType.type_equals(this,(AType)to);
 		return false;
 	}

@@ -19,7 +19,8 @@ public class TypeClosureRef extends TypeRef {
 
 	@virtual typedef This  = TypeClosureRef;
 
-	@att public TypeRef[]		types;
+	@att public TypeRef[]		args;
+	@att public TypeRef			ret;
 
 	public TypeClosureRef() {}
 	
@@ -31,12 +32,12 @@ public class TypeClosureRef extends TypeRef {
 	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
-		Type[] tps = new Type[types.length-1];
-		for(int i=0; i < tps.length; i++) {
-			tps[i] = types[i].getType();
+		Type[] args = new Type[this.args.length];
+		for(int i=0; i < args.length; i++) {
+			args[i] = this.args[i].getType();
 		}
-		Type ret = types[types.length-1].getType();
-		this.lnk = new CallType(null,null,tps,ret,true);
+		Type ret = this.ret.getType();
+		this.lnk = new CallType(null,null,args,ret,true);
 		return this.lnk;
 	}
 	

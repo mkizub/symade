@@ -84,7 +84,7 @@ public class PassInfo {
 		ParentEnumerator pe;
 	{
 		trace( Kiev.debugResolve, "PassInfo: resolving name "+path.getName()),
-		assert(path.getName().indexOf('.') < 0),
+		//assert(path.getName().indexOf('.') < 0),
 		pe = new ParentEnumerator(from),
 		p @= pe,
 //		trace( Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),

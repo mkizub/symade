@@ -91,6 +91,9 @@ public interface StdTypes {
 	public static final ArrayType  tpArray;
 	public static final TypeConstr tdArrayArg;
 	public static final ArgType    tpArrayArg;
+	public static final XType      tpVararg;
+	public static final TypeConstr tdVarargArg;
+	public static final ArgType    tpVarargArg;
 
 	public static final ArgType   tpWrapperArg;
 	public static final ArgType   tpCallRetArg;
@@ -160,6 +163,20 @@ public interface StdTypes {
 		tpArrayArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		tpArray					= ArrayType.newArrayType(Type.tpAny);
 		tpArray.flags			|= flResolved | flReference | flArray;
+
+		TypeDecl tdVararg = Env.newMetaType(new Symbol("_Vararg_"),kiev_stdlib,false);
+		tdVararg.setPublic();
+		tdVararg.setMacro(true);
+		tdVararg.setFinal(true);
+		tdVararg.setTypeDeclLoaded(true);
+		tdVarargArg = new TypeConstr("_elem_", tpObject);
+		tdVarargArg.setAbstract(true);
+		tdVararg.args += tdVarargArg;
+		tpVarargArg = tdVarargArg.getAType();
+		tpArrayArg.flags |= flHidden | flArgAppliable | flValAppliable;
+		tdVararg.super_types += new TypeRef(ArrayType.newArrayType(tpVarargArg));
+		tpVararg				= (XType)tdVararg.xtype;
+		tpVararg.flags			|= flResolved | flReference | flArray;
 
 		Struct tpBooleanRefClazz = Env.newStruct("Boolean",java_lang,ACC_PUBLIC);
 		tpBooleanRef			= (CompaundType)tpBooleanRefClazz.xtype;

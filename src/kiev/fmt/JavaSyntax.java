@@ -284,7 +284,9 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seRuleOrExpr;
 	final SyntaxElem seRuleAndExpr;
 	final SyntaxElem seTypeRef;
+	final SyntaxElem seTypeNameRef;
 	final SyntaxElem seStructRef;
+	final SyntaxElem seTypeClosureRef;
 	final SyntaxElem seConstExpr;
 	final SyntaxElem seConstExprTrue;
 	final SyntaxElem seConstExprFalse;
@@ -404,7 +406,7 @@ public class JavaSyntax extends TextSyntax {
 				earg++;
 				continue;
 			case OpArg.TYPE():
-				elems[i] = type(null);
+				elems[i] = expr(earg,255);
 				earg++;
 				continue;
 			case OpArg.OPER(String text):
@@ -443,13 +445,13 @@ public class JavaSyntax extends TextSyntax {
 		return super.sep(sep);
 	}
 	
-	protected SyntaxJavaType type(FormatInfoHint hint) {
-		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSpWORD, SP_ADD, SP_ADD, 0),
-				new SpaceCmd(siSpSEPR, SP_NOP, SP_ADD, 0),
-			};
-		return new SyntaxJavaType(hint,lout);
-	}
+//	protected SyntaxJavaType type(FormatInfoHint hint) {
+//		SpaceCmd[] lout = new SpaceCmd[] {
+//				new SpaceCmd(siSpWORD, SP_ADD, SP_ADD, 0),
+//				new SpaceCmd(siSpSEPR, SP_NOP, SP_ADD, 0),
+//			};
+//		return new SyntaxJavaType(hint,lout);
+//	}
 
 	public JavaSyntax() {
 		SpaceCmd[] lout_empty = new SpaceCmd[0];
@@ -625,7 +627,7 @@ public class JavaSyntax extends TextSyntax {
 
 			// case
 			SyntaxList case_fields = lst("members",
-				set(attr("meta"), ident("ftype"), ident("id")),
+				set(attr("meta"), attr("ftype"), ident("id")),
 				sep(","),
 				lout_empty
 				);
@@ -692,7 +694,7 @@ public class JavaSyntax extends TextSyntax {
 				};
 			seUserMeta = setl(lout_meta,
 						new SyntaxToken("@",lout_at),
-						ident("type"),
+						attr("type"),
 						opt(new CalcOptionNotEmpty("values"),
 							set(
 								sep("("),
@@ -738,14 +740,14 @@ public class JavaSyntax extends TextSyntax {
 			seFieldDecl = setl(lout_field,
 				attr("meta"),
 				accs(),
-				ident("ftype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
+				attr("ftype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
 				);
 			// vars
 			seVarDecl = set(attr("meta"),
-				ident("vtype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))),
+				attr("vtype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))),
 				sep(";"));
 			seVar = set(attr("meta"),
-				ident("vtype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority)))
+				attr("vtype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority)))
 				);
 			seVarNoType = set(ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))));
 			// formal parameter
@@ -1003,8 +1005,30 @@ public class JavaSyntax extends TextSyntax {
 		seConstExprNull = kw("null");
 		seConstExprChar = charcter("value");
 		seConstExprStr = string("value");
-		seTypeRef = type(null);
-		seStructRef = type(new FormatInfoHint("no-args"));
+		//seTypeRef = type(null);
+		//seStructRef = type(new FormatInfoHint("no-args"));
+		seTypeRef = ident("ident");
+		seTypeNameRef = set(
+				opt("outer", set(attr("outer"),sep("."))),
+				ident("ident"),
+				opt(new CalcOptionNotEmpty("args"),
+					set(
+						sep("<"),
+						lst("args", node(), sep(","), lout_empty),
+						sep(">")
+					), null, lout_empty
+				)
+			);
+		seStructRef = set(
+				opt("outer", set(attr("outer"),sep("."))),
+				ident("ident")
+			);
+		seTypeClosureRef = set(
+			sep("("),
+			lst("args", node(), sep(","), lout_empty),
+			sep(")->"),
+			attr("ret")
+			);
 
 		seRuleIstheExpr = set(ident("var"), oper("?="), expr("expr", Constants.opAssignPriority));
 		seRuleIsoneofExpr = set(ident("var"), oper("@="), expr("expr", Constants.opAssignPriority));
@@ -1077,7 +1101,7 @@ public class JavaSyntax extends TextSyntax {
 		seNewExpr = set(
 				opt("outer", set(expr("outer", Constants.opAccessPriority), oper("."))),
 				kw("new"),
-				ident("type"),
+				attr("type"),
 				sep("("),
 				lst("args",node(),sep(","),lout_empty),
 				sep(")"),
@@ -1085,7 +1109,7 @@ public class JavaSyntax extends TextSyntax {
 				);
 		seNewArrayExpr = set(
 				kw("new"),
-				ident("type"),
+				attr("type"),
 				lst("args",
 					set(
 						sep("["),
@@ -1098,7 +1122,7 @@ public class JavaSyntax extends TextSyntax {
 				);
 		seNewInitializedArrayExpr = set(
 				kw("new"),
-				ident("arrtype"),
+				attr("type"),
 				sep("{"),
 				lst("args",node(),sep(","),lout_empty),
 				sep("}")
@@ -1129,7 +1153,7 @@ public class JavaSyntax extends TextSyntax {
 				};
 			seRewritePattern = set(
 					attr("meta"),
-					ident("vtype"),
+					attr("vtype"),
 					ident("id"),
 					opt(new CalcOptionNotEmpty("vars"),
 						set(
@@ -1157,8 +1181,8 @@ public class JavaSyntax extends TextSyntax {
 
 
 		seShadow = attr("node");
-		seTypeClassExpr = set(ident("type"), sep("."), kw("class"));
-		seTypeInfoExpr = set(ident("type"), sep("."), kw("type"));
+		seTypeClassExpr = set(attr("type"), sep("."), kw("class"));
+		seTypeInfoExpr = set(attr("type"), sep("."), kw("type"));
 		seAssertEnabledExpr = kw("$assertionsEnabled");
 		//seConditionalExpr = set(
 		//	expr("cond", Operator.opConditionalPriority+1),
@@ -1283,12 +1307,14 @@ public class JavaSyntax extends TextSyntax {
 			return seConstExprStr;
 		case ConstExpr:
 			return seConstExpr;
-		case TypeRef:
-			if (hint != null) {
-				if ("call-accessor".equals(hint.text))
+
+		case TypeRef: return seTypeRef;
+		case TypeNameRef:
+			if (hint != null && ("call-accessor".equals(hint.text)))
 				return seStructRef;
-			}
-			return seTypeRef;
+			return seTypeNameRef;
+		case TypeClosureRef: return seTypeClosureRef;
+
 		case Shadow: return seShadow;
 
 		case RuleIstheExpr: return seRuleIstheExpr;
@@ -1369,6 +1395,17 @@ public class JavaSyntax extends TextSyntax {
 			return seComment;
 		}
 
+		case TypeExpr:
+		{
+			TypeExpr e = (TypeExpr)node;
+			Operator op = e.getOp();
+			SyntaxElem se = exprs.get(op);
+			if (se == null) {
+				se = expr(op);
+				exprs.put(op, se);
+			}
+			return se;
+		}
 		case ENode:
 		{
 			ENode e = (ENode)node;

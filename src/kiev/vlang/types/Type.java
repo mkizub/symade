@@ -268,7 +268,7 @@ public final class XType extends Type {
 	}
 	public Type getErasedType() {
 		foreach (Type t; getMetaSupers(); t != null && t != Type.tpVoid)
-			return t;
+			return t.getErasedType();
 		return Type.tpVoid;
 	}
 

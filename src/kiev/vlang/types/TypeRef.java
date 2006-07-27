@@ -30,7 +30,7 @@ public class TypeRef extends ENode {
 
 	@virtual typedef This  ≤ TypeRef;
 	@virtual typedef JView = JTypeRef;
-	@virtual typedef TypeOfIdent = TypeDecl;
+	//@virtual typedef TypeOfIdent = TypeDecl;
 
 	@ref public Type	lnk;
 
@@ -54,13 +54,13 @@ public class TypeRef extends ENode {
 		if (tp instanceof CoreType)
 			return new TypeRef((CoreType)tp);
 		if (tp instanceof ASTNodeType)
-			return new TypeExpr(newTypeRef(tp.getStruct().xtype), TypeExpr.opAST);
+			return new TypeExpr(newTypeRef(tp.getStruct().xtype),Operator.PostTypeAST);
 		if (tp instanceof ArgType)
 			return new TypeRef((ArgType)tp);
 		if (tp instanceof ArrayType)
-			return new TypeExpr(newTypeRef(tp.arg), nameArrayTypeOp);
+			return new TypeExpr(newTypeRef(tp.arg), Operator.PostTypeArray);
 		if (tp instanceof WrapperType)
-			return new TypeExpr(newTypeRef(tp.getEnclosedType()), TypeExpr.opWraper);
+			return new TypeExpr(newTypeRef(tp.getEnclosedType()), Operator.PostTypeWrapper);
 		if (tp instanceof CompaundType || tp instanceof XType)
 			return new TypeNameRef(tp);
 		if (tp instanceof CallType)

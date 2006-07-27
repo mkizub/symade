@@ -219,7 +219,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				break;
 			case FormPar.PARAM_VARARGS:
 				//assert(fp.isFinal());
-				assert(fp.type instanceof ArrayType);
+				assert(fp.type.isArray());
+				args.append(fp.type);
 				dargs.append(fp.type);
 				break;
 			case FormPar.PARAM_LVAR_PROXY:
@@ -355,7 +356,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		StringBuffer sb = new StringBuffer(id+"(");
 		int n = params.length;
 		boolean comma = false;
-		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_NORMAL) {
+		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_NORMAL || fp.kind == FormPar.PARAM_VARARGS) {
 			if (comma) sb.append(",");
 			sb.append(fp.vtype.toString());
 			comma = true;
@@ -441,19 +442,19 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		//assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
 			int i=0;
-			for(; i < mt.arity; i++) {
+			for(; i < mt.arity-1; i++) {
 				Type ptp = Type.getRealType(t,mt.arg(i));
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}
-			if (args.length == i+1 && args[i].getType().isInstanceOf(getVarArgParam().type)) {
+			Type varg_tp = Type.getRealType(t,getVarArgParam().type).tvars[0].unalias().result();
+			if (args.length == i+1 && args[i].getType().isInstanceOf(new ArrayType(varg_tp))) {
 				// array as va_arg
 			} else {
-				ArrayType varg_tp = (ArrayType)Type.getRealType(t,getVarArgParam().type);
 				for(; i < args.length; i++) {
-					if !(args[i].getType().isInstanceOf(varg_tp.arg)) {
+					if !(args[i].getType().isInstanceOf(varg_tp)) {
 						CastExpr.autoCastToReference(args[i]);
-						CastExpr.autoCast(args[i],varg_tp.arg);
+						CastExpr.autoCast(args[i],varg_tp);
 					}
 				}
 			}

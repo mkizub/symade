@@ -108,6 +108,13 @@ public final class Operator implements Constants {
 	// Unary postfix operators
 	public static final Operator PostIncr;
 	public static final Operator PostDecr;
+	
+	public static final Operator PostTypePVar;
+	public static final Operator PostTypeRef;
+	public static final Operator PostTypeAST;
+	public static final Operator PostTypeWrapper;
+	public static final Operator PostTypeArray;
+	public static final Operator PostTypeVararg;
 
 	// Multi operators
 	public static final Operator Conditional;
@@ -174,6 +181,13 @@ public final class Operator implements Constants {
 		// Unary postfix operators
 		PostIncr = newOperator(opIncrPriority, "X ++");
 		PostDecr = newOperator(opIncrPriority, "X --");
+
+		PostTypePVar    = newOperator(opIncrPriority, "T @");
+		PostTypeRef     = newOperator(opIncrPriority, "T &");
+		PostTypeAST     = newOperator(opIncrPriority, "T #");
+		PostTypeWrapper = newOperator(opIncrPriority, "T \u229b"); // ⊛
+		PostTypeArray   = newOperator(opIncrPriority, "T []");
+		PostTypeVararg  = newOperator(opIncrPriority, "T ...");
 
 		// Multi operators
 		Conditional = newOperator(opConditionalPriority, "X ? X : Y");
