@@ -16,7 +16,7 @@ import static kiev.fmt.SpaceKind.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-
+@node
 public class XmlDumpSyntax extends TextSyntax {
 
 	final Hashtable<String,SyntaxElem> seAll;
@@ -76,7 +76,7 @@ public class XmlDumpSyntax extends TextSyntax {
 	private SyntaxElem close0(String name) {
 		return new SyntaxToken("</"+name+">",lout_nl);
 	}
-	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
+	public SyntaxElem getSyntaxElem(ANode node) {
 		if (node == null)
 			return seNull;
 		String nm = node.getClass().getName();

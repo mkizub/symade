@@ -102,7 +102,7 @@ public final class AccessExpr extends LvalueExpr {
 			tps = new Type[]{ ((TypeRef)obj).getType() };
 			res = new ENode[1];
 			if( ident.name.equals(nameThis) )
-				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+				this.replaceWithNodeReWalk(new OuterThisAccessExpr(pos,(TypeRef)~obj));
 		}
 		else {
 			ENode e = obj;
@@ -634,17 +634,15 @@ public final class OuterThisAccessExpr extends ENode {
 	@virtual typedef JView = JOuterThisAccessExpr;
 	@virtual typedef RView = ROuterThisAccessExpr;
 
-	@att public ENode			obj;
-	@ref public Struct			outer;
+	@att public TypeRef			outer;
 	@ref public Field[]			outer_refs;
 
 	public OuterThisAccessExpr() {}
 
-	public OuterThisAccessExpr(int pos, Struct outer) {
+	public OuterThisAccessExpr(int pos, TypeRef outer) {
 		this.pos = pos;
-		this.obj = new TypeRef(outer.xtype);
-		this.ident = new SymbolRef<DNode>(pos,nameThis);
 		this.outer = outer;
+		this.ident = new SymbolRef<DNode>(pos,nameThis);
 	}
 
 	public Operator getOp() { return Operator.Access; }
@@ -652,20 +650,20 @@ public final class OuterThisAccessExpr extends ENode {
 	public Type getType() {
 		try {
 			if (ctx_tdecl == null || outer_refs.length == 0)
-				return outer.xtype;
+				return outer.getType();
 			Type tp = ctx_tdecl.xtype;
 			foreach (Field f; outer_refs)
 				tp = f.type.applay(tp);
 			return tp;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
-			return outer.xtype;
+			return outer.getType();
 		}
 	}
 
-	public String toString() { return outer.qname().toString()+".this"; }
+	public String toString() { return getType().meta_type.tdecl.qname().toString()+".this"; }
 
-	public static Field outerOf(Struct clazz) {
+	public static Field outerOf(TypeDecl clazz) {
 		foreach (Field f; clazz.members) {
 			if( f.id.uname.startsWith(nameThisDollar) ) {
 				trace(Kiev.debugResolve,"Name of field "+f+" starts with this$");
@@ -682,10 +680,10 @@ public final class OuterThisAccessExpr extends ENode {
 			throw new CompilerException(this, "Outer 'this' reference in non-inner or static inner class "+ctx_tdecl);
 		do {
 			outer_refs.append(ou_ref);
-			if( ou_ref.type.isInstanceOf(outer.xtype) ) break;
+			if( ou_ref.type.isInstanceOf(outer.getType()) ) break;
 			ou_ref = OuterThisAccessExpr.outerOf(ou_ref.type.getStruct());
 		} while( ou_ref!=null );
-		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.xtype) )
+		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.getType()) )
 			throw new CompilerException(this, "Outer class "+outer+" not found for inner class "+ctx_tdecl);
 		if( ctx_method.isStatic() && !ctx_method.isVirtualStatic() )
 			throw new CompilerException(this, "Access to 'this' in static method "+ctx_method);

@@ -18,20 +18,11 @@ import java.awt.Graphics2D;
 
 public interface Formatter {
 	public Drawable   format(ANode node, Drawable dr);
-	public Drawable   getDrawable(ANode node, Drawable dr, FormatInfoHint hint);
+	public Drawable   getDrawable(ANode node, Drawable dr, TextSyntax syntax);
 	public String     escapeString(String str);
 	public String     escapeChar(char ch);
 	public TextSyntax getSyntax();
 	public void       setSyntax(TextSyntax stx);
-}
-
-@node
-public class FormatInfoHint extends ASTNode {
-	@virtual typedef This  = FormatInfoHint;
-
-	@att public String text;
-	public FormatInfoHint() {}
-	public FormatInfoHint(String text) { this.text = text; }
 }
 
 public abstract class AbstractFormatter implements Formatter {
@@ -63,7 +54,7 @@ public abstract class AbstractFormatter implements Formatter {
 		return syntax.escapeChar(ch);
 	}
 
-	public final Drawable getDrawable(ANode node, Drawable dr, FormatInfoHint hint) {
+	public final Drawable getDrawable(ANode node, Drawable dr, TextSyntax syntax) {
 		if (node == null) {
 			if (dr instanceof DrawSpace)
 				return dr;
@@ -74,7 +65,10 @@ public abstract class AbstractFormatter implements Formatter {
 		}
 		if (dr != null && dr.node == node)
 			return dr;
-		SyntaxElem stx_elem = syntax.getSyntaxElem(node, hint);
+		SyntaxElem stx_elem;
+		if (syntax == null)
+			syntax = this.syntax;
+		stx_elem = syntax.getSyntaxElem(node);
 		dr = stx_elem.makeDrawable(this,node);
 		return dr;
 	}

@@ -541,7 +541,6 @@ public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 
 @nodeview
 public final view JOuterThisAccessExpr of OuterThisAccessExpr extends JENode {
-	public:ro	Struct			outer;
 	public:ro	JField[]		outer_refs;
 
 	public void generate(Code code, Type reqType) {

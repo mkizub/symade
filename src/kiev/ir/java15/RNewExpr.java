@@ -219,7 +219,7 @@ public final view RNewClosure of NewClosure extends RENode {
 		Struct clz = (Struct)this.ctx_tdecl;
 		body.walkTree(new TreeWalker() {
 			public void post_exec(ANode n) {
-				if (n instanceof ThisExpr) n.replaceWithNode(new OuterThisAccessExpr(n.pos, clz));
+				if (n instanceof ThisExpr) n.replaceWithNode(new OuterThisAccessExpr(n.pos, new TypeRef(clz.xtype)));
 			}
 		});
 

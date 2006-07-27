@@ -152,11 +152,16 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		// Check we already have this method
 		members.append(m);
 		trace(Kiev.debugMembers,"Method "+m+" added to class "+this);
-		foreach (Method mm; members; mm != m) {
-			if( mm.equals(m) )
-				Kiev.reportError(m,"Method "+m+" already exists in class "+this);
-			if (mm.id.equals(m.id) && mm.type.equals(m.type))
-				Kiev.reportError(m,"Method "+m+" already exists in class "+this);
+		if (m instanceof Constructor) {
+			foreach (Constructor mm; members; mm != m) {
+				if (mm.type.equals(m.type))
+					Kiev.reportError(m,"Constructor "+m+" already exists in class "+this);
+			}
+		} else {
+			foreach (Method mm; members; mm != m) {
+				if (mm.id.equals(m.id) && mm.type.equals(m.type))
+					Kiev.reportError(m,"Method "+m+" already exists in class "+this);
+			}
 		}
 		return m;
 	}

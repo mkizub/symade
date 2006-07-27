@@ -234,7 +234,7 @@ public class DrawParagraph extends DrawCtrl {
 	}
 
 	public ParagraphLayout getParLayout() {
-		return ((SyntaxParagraphLayout)syntax).par;
+		return (ParagraphLayout)((SyntaxParagraphLayout)syntax).par.symbol;
 	}
 }
 

@@ -819,6 +819,17 @@ public final class Constructor extends Method {
 	public Constructor(int fl) {
 		super((fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid, fl);
 	}
+	
+	public void callbackAttached() {
+		if (!isStatic() && parent() instanceof TypeDecl) {
+			TypeDecl td = (TypeDecl)parent();
+			if (id.sname != td.id.sname) {
+				id.open();
+				id.sname = ((TypeDecl)parent()).id.sname;
+				id.uname = nameInit;
+			}
+		}
+	}
 }
 
 @node(name="InitBlock")

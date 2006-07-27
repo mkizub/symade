@@ -28,20 +28,20 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 	@att public SyntaxToken		r_paren;
 
 	public SyntaxJavaExpr() {}
-	public SyntaxJavaExpr(String name, FormatInfoHint hint, SpaceCmd[] spaces, int priority, SyntaxToken l_paren, SyntaxToken r_paren) {
-		super(name,null,spaces);
+	public SyntaxJavaExpr(String name, SpaceCmd[] spaces, int priority, SyntaxToken l_paren, SyntaxToken r_paren) {
+		super(name,spaces);
 		this.idx = -1;
 		this.priority = priority;
 		this.l_paren = l_paren;
-		this.expr = new SyntaxNode(hint);
+		this.expr = new SyntaxNode();
 		this.r_paren = r_paren;
 	}
-	public SyntaxJavaExpr(int idx, FormatInfoHint hint, SpaceCmd[] spaces, int priority, SyntaxToken l_paren, SyntaxToken r_paren) {
-		super("",null,spaces);
+	public SyntaxJavaExpr(int idx, SpaceCmd[] spaces, int priority, SyntaxToken l_paren, SyntaxToken r_paren) {
+		super("",spaces);
 		this.idx = idx;
 		this.priority = priority;
 		this.l_paren = l_paren;
-		this.expr = new SyntaxNode(hint);
+		this.expr = new SyntaxNode();
 		this.r_paren = r_paren;
 	}
 
@@ -87,24 +87,6 @@ public class SyntaxJavaAccess extends SyntaxElem {
 	}
 }
 
-
-@node
-public class SyntaxJavaType extends SyntaxElem {
-	@virtual typedef This  = SyntaxJavaType;
-
-	@att public FormatInfoHint hint;
-	
-	public SyntaxJavaType() {}
-	public SyntaxJavaType(FormatInfoHint hint, SpaceCmd[] spaces) {
-		super(spaces);
-		this.hint = hint;
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawJavaType(node, this);
-		return dr;
-	}
-}
 
 @node
 public class SyntaxJavaEnumAlias extends SyntaxElem {
@@ -221,6 +203,7 @@ class CalcOptionNotSuper extends CalcOption {
 	public boolean calc(ANode node) { return !((ENode)node).isSuperExpr(); }
 }
 
+@node
 public class JavaSyntax extends TextSyntax {
 
 	final SyntaxElem seFileUnit;
@@ -259,6 +242,7 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seThrowStat;
 	final SyntaxElem seIfElseStat;
 	final SyntaxElem seCondStat;
+	final SyntaxElem seLabel;
 	final SyntaxElem seLabeledStat;
 	final SyntaxElem seBreakStat;
 	final SyntaxElem seContinueStat;
@@ -285,7 +269,6 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seRuleAndExpr;
 	final SyntaxElem seTypeRef;
 	final SyntaxElem seTypeNameRef;
-	final SyntaxElem seStructRef;
 	final SyntaxElem seTypeClosureRef;
 	final SyntaxElem seConstExpr;
 	final SyntaxElem seConstExprTrue;
@@ -376,21 +359,14 @@ public class JavaSyntax extends TextSyntax {
 	protected SyntaxJavaExpr expr(int idx, int priority)
 	{
 		SpaceCmd[] lout = new SpaceCmd[0];
-		SyntaxJavaExpr se = new SyntaxJavaExpr(idx, null, lout, priority, sep("("), sep(")"));
+		SyntaxJavaExpr se = new SyntaxJavaExpr(idx, lout, priority, sep("("), sep(")"));
 		return se;
 	}
 
 	protected SyntaxJavaExpr expr(String expr, int priority)
 	{
 		SpaceCmd[] lout = new SpaceCmd[0];
-		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, null, lout, priority, sep("("), sep(")"));
-		return se;
-	}
-
-	protected SyntaxJavaExpr expr(String expr, FormatInfoHint hint, int priority)
-	{
-		SpaceCmd[] lout = new SpaceCmd[0];
-		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, hint, lout, priority, sep("("), sep(")"));
+		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, lout, priority, sep("("), sep(")"));
 		return se;
 	}
 
@@ -445,14 +421,6 @@ public class JavaSyntax extends TextSyntax {
 		return super.sep(sep);
 	}
 	
-//	protected SyntaxJavaType type(FormatInfoHint hint) {
-//		SpaceCmd[] lout = new SpaceCmd[] {
-//				new SpaceCmd(siSpWORD, SP_ADD, SP_ADD, 0),
-//				new SpaceCmd(siSpSEPR, SP_NOP, SP_ADD, 0),
-//			};
-//		return new SyntaxJavaType(hint,lout);
-//	}
-
 	public JavaSyntax() {
 		SpaceCmd[] lout_empty = new SpaceCmd[0];
 		SpaceCmd[] lout_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_NOP,SP_ADD,0)};
@@ -464,7 +432,7 @@ public class JavaSyntax extends TextSyntax {
 				};
 			// file unit
 			seFileUnit = setl(lout_nl,
-					opt("pkg", setl(lout_pkg, kw("package"), ident("pkg"), sep(";"))),
+					opt("pkg", setl(lout_pkg, kw("package"), attr("pkg"), sep(";"))),
 					lst("members", lout_nl)
 				);
 		}
@@ -485,7 +453,7 @@ public class JavaSyntax extends TextSyntax {
 				sep(";"));
 			seOpdef = setl(lout_nl,
 				kw("operator"),
-				ident("image"),
+				attr("image"),
 				sep(","),
 				alt_int("opmode",
 					kw("lfy"),
@@ -500,7 +468,7 @@ public class JavaSyntax extends TextSyntax {
 					kw("xfxfy")
 					),
 				sep(","),
-				ident("prior"),
+				attr("prior"),
 				sep(";")
 				);
 			seTypeAssign = setl(lout_nl, attr("meta"), kw("typedef"), ident("id"), oper("="), attr("type_ref"), sep(";"));
@@ -546,7 +514,7 @@ public class JavaSyntax extends TextSyntax {
 			SyntaxElem struct_args = opt(new CalcOptionNotEmpty("args"),
 				set(
 					sep("<"),
-					lst("args", node(new FormatInfoHint("class-arg")), sep(","), lout_empty),
+					lst("args", node(/*new FormatInfoHint("class-arg")*/), sep(","), lout_empty),
 					sep(">")
 				), null, lout_empty);
 			SpaceCmd[] lout_ext = new SpaceCmd[] {new SpaceCmd(siSp, SP_ADD, SP_NOP, 0)};
@@ -602,7 +570,7 @@ public class JavaSyntax extends TextSyntax {
 						ident("id"),
 						struct_args.ncopy(),
 						kw("of"),
-						ident("view_of"),
+						attr("view_of"),
 						class_ext.ncopy()),
 					seStructBody.ncopy()
 				);
@@ -773,13 +741,13 @@ public class JavaSyntax extends TextSyntax {
 			SyntaxElem method_type_args = opt(new CalcOptionNotEmpty("targs"),
 				set(
 					sep("<"),
-					lst("targs", node(new FormatInfoHint("class-arg")), sep(","), lout_empty),
+					lst("targs", node(/*new FormatInfoHint("class-arg")*/), sep(","), lout_empty),
 					sep(">")
 				), null, lout_method_type_args);
 			// constructor
 			seConstructor = setl(lout_method,
 				setl(lout_empty, attr("meta"), accs(),
-					ident("parent.id"),
+					ident("id"),
 					set(sep("("),
 						method_params.ncopy(),
 						sep(")")
@@ -792,7 +760,7 @@ public class JavaSyntax extends TextSyntax {
 			seMethod = setl(lout_method,
 				setl(lout_empty, attr("meta"), accs(),
 					method_type_args.ncopy(),
-					ident("type_ret"), ident("id"),
+					attr("type_ret"), ident("id"),
 					set(sep("("),
 						method_params.ncopy(),
 						sep(")")
@@ -818,7 +786,7 @@ public class JavaSyntax extends TextSyntax {
 				);
 			seInitializer = setl(lout_method, attr("meta"), attr("body"));
 			
-			seMethodAlias = setl(lout_nl_nl, kw("alias"), ident("name"));
+			seMethodAlias = setl(lout_nl_nl, kw("alias"), attr("name"));
 			seOperatorAlias = setl(lout_nl_nl,
 				kw("alias"),
 				alt_int("opmode",
@@ -834,7 +802,7 @@ public class JavaSyntax extends TextSyntax {
 					kw("xfxfy")
 					),
 				kw("operator"),
-				ident("image")
+				attr("image")
 				);
 			
 			seWBCCondition = opt("body",
@@ -856,7 +824,7 @@ public class JavaSyntax extends TextSyntax {
 			// block expression
 			seBlock = set(
 					sep("{", lout_code_block_start),
-					par(plIndented, lst("stats", setl(lout_nl,node(new FormatInfoHint("stat"))),null,lout_empty)),
+					par(plIndented, lst("stats", setl(lout_nl,node(/*new FormatInfoHint("stat")*/)),null,lout_empty)),
 					sep("}", lout_code_block_end)
 					);
 			// rule block
@@ -892,7 +860,8 @@ public class JavaSyntax extends TextSyntax {
 		seReturnStat = set(kw("return"), opt("expr"), sep(";"));
 		seThrowStat = set(kw("throw"), attr("expr"), sep(";"));
 		seCondStat = set(attr("cond"), opt("message", set(sep(":"), attr("message"))), sep(";"));
-		seLabeledStat = set(ident("lbl.id"), sep(":"), attr("stat"));
+		seLabel = ident("id");
+		seLabeledStat = set(attr("lbl"), sep(":"), attr("stat"));
 		seBreakStat = set(kw("break"), opt("ident", ident("ident")), sep(";"));
 		seContinueStat = set(kw("continue"), opt("ident", ident("ident")), sep(";"));
 		seGotoStat = set(kw("goto"), opt("ident", ident("ident")), sep(";"));
@@ -927,8 +896,8 @@ public class JavaSyntax extends TextSyntax {
 				sep(";")
 				);
 			seForInit = set(
-				ident("type_ref"),
-				lst("decls",node(new FormatInfoHint("no-type")),sep(","),lout_empty)
+				attr("type_ref"),
+				lst("decls",node(/*new FormatInfoHint("no-type")*/),sep(","),lout_empty)
 				);
 			seForStat = set(
 				kw("for"),
@@ -960,7 +929,7 @@ public class JavaSyntax extends TextSyntax {
 					lout_empty
 					),
 				sep(":", lout_nl),
-				par(plIndented, lst("stats",setl(lout_nl,node(new FormatInfoHint("stat"))),null,lout_nl))
+				par(plIndented, lst("stats",setl(lout_nl,node(/*new FormatInfoHint("stat")*/)),null,lout_nl))
 				);
 			seSwitchStat = set(
 				kw("switch"),
@@ -999,14 +968,12 @@ public class JavaSyntax extends TextSyntax {
 		}
 	
 		exprs = new Hashtable<Operator, SyntaxElem>();
-		seConstExpr = attr("this");
+		seConstExpr = attr("value");
 		seConstExprTrue = kw("true");
 		seConstExprFalse = kw("false");
 		seConstExprNull = kw("null");
 		seConstExprChar = charcter("value");
 		seConstExprStr = string("value");
-		//seTypeRef = type(null);
-		//seStructRef = type(new FormatInfoHint("no-args"));
 		seTypeRef = ident("ident");
 		seTypeNameRef = set(
 				opt("outer", set(attr("outer"),sep("."))),
@@ -1019,10 +986,6 @@ public class JavaSyntax extends TextSyntax {
 					), null, lout_empty
 				)
 			);
-		seStructRef = set(
-				opt("outer", set(attr("outer"),sep("."))),
-				ident("ident")
-			);
 		seTypeClosureRef = set(
 			sep("("),
 			lst("args", node(), sep(","), lout_empty),
@@ -1030,13 +993,13 @@ public class JavaSyntax extends TextSyntax {
 			attr("ret")
 			);
 
-		seRuleIstheExpr = set(ident("var"), oper("?="), expr("expr", Constants.opAssignPriority));
-		seRuleIsoneofExpr = set(ident("var"), oper("@="), expr("expr", Constants.opAssignPriority));
+		seRuleIstheExpr = set(attr("var"), oper("?="), expr("expr", Constants.opAssignPriority));
+		seRuleIsoneofExpr = set(attr("var"), oper("@="), expr("expr", Constants.opAssignPriority));
 		seRuleCutExpr = kw("$cut");
 		seRuleCallExpr = set(
 				expr("obj", Constants.opAccessPriority),
 				sep("."),
-				ident("func"),
+				ident("ident"),
 				sep("("),
 				lst("args",node(),sep(","),lout_empty),
 				sep(")")
@@ -1054,17 +1017,17 @@ public class JavaSyntax extends TextSyntax {
 						);
 		seLVarExpr = ident("ident");
 		seSFldExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
-		seOuterThisAccessExpr = set(ident("outer"), sep("."), kw("this"));
+		seOuterThisAccessExpr = set(attr("outer"), sep("."), kw("this"));
 		seReinterpExpr = set(sep("("), kw("$reinterp"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
 		
 		seInstanceofExpr = //expr("expr", Operator.InstanceOf, "type");
 			set(
 			expr("expr", Constants.opInstanceOfPriority),
 			kw("instanceof"),
-			attr("type", new FormatInfoHint("no-args"))
+			attr("type")
 			);
 		seCallExpr = set(
-				expr("obj", new FormatInfoHint("call-accessor"), Constants.opAccessPriority),
+				expr("obj", Constants.opAccessPriority),
 				sep("."),
 				ident("ident"),
 				sep("("),
@@ -1105,7 +1068,7 @@ public class JavaSyntax extends TextSyntax {
 				sep("("),
 				lst("args",node(),sep(","),lout_empty),
 				sep(")"),
-				opt("clazz", attr("clazz", new FormatInfoHint("anonymouse")))
+				opt("clazz", attr("clazz"/*, new FormatInfoHint("anonymouse")*/))
 				);
 		seNewArrayExpr = set(
 				kw("new"),
@@ -1133,7 +1096,7 @@ public class JavaSyntax extends TextSyntax {
 				lst("params",node(),sep(","),lout_empty),
 				sep(")"),
 				sep("->"),
-				ident("type_ret"),
+				attr("type_ret"),
 				attr("body")
 				);
 		{
@@ -1146,7 +1109,7 @@ public class JavaSyntax extends TextSyntax {
 					kw("case"),
 					attr("var"),
 					sep(":", lout_nl),
-					par(plIndented, lst("stats",setl(lout_nl,node(new FormatInfoHint("stat"))),null,lout_nl))
+					par(plIndented, lst("stats",setl(lout_nl,node(/*new FormatInfoHint("stat")*/)),null,lout_nl))
 					);
 			SpaceCmd[] lout_pattern_args = new SpaceCmd[] {
 					new SpaceCmd(siSp, SP_NOP, SP_ADD, 0)
@@ -1166,7 +1129,7 @@ public class JavaSyntax extends TextSyntax {
 			seRewriteNodeFactory = set(
 					kw("new"),
 					oper("#"),
-					ident("node_class"),
+					attr("type"),
 					sep("("),
 					lst("args",node(),sep(","),lout_empty),
 					sep(")")
@@ -1226,15 +1189,15 @@ public class JavaSyntax extends TextSyntax {
 		return "'"+Convert.escape(ch)+"'";
 	}
 
-	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
+	public SyntaxElem getSyntaxElem(ANode node) {
 		switch (node) {
 		case FileUnit: return seFileUnit;
 		case Import: return seImport;
 		case Opdef: return seOpdef;
 		case TypeAssign: return seTypeAssign;
 		case TypeConstr:
-			if (hint != null && "class-arg".equals(hint.text))
-				return seTypeConstrClassArg;
+			//if (hint != null && "class-arg".equals(hint.text))
+			//	return seTypeConstrClassArg;
 			return seTypeConstr;
 		case MetaSet: return seMetaSet;
 		case UserMeta: return seUserMeta;
@@ -1271,19 +1234,19 @@ public class JavaSyntax extends TextSyntax {
 				return seStructAnnotation;
 			if (s.isInterface())
 				return seStructInterface;
-			if (hint != null && "anonymouse".equals(hint.text))
-				return seStructBody;
+			//if (hint != null && "anonymouse".equals(hint.text))
+			//	return seStructBody;
 			return seStructClass;
 		}
 		case Field: return seFieldDecl;
 		case FormPar: return seFormPar;
 		case Var:
-			if (hint != null) {
-				if ("no-type".equals(hint.text))
-					return seVarNoType;
-				if ("stat".equals(hint.text))
-					return seVarDecl;
-			}
+			//if (hint != null) {
+			//	if ("no-type".equals(hint.text))
+			//		return seVarNoType;
+			//	if ("stat".equals(hint.text))
+			//		return seVarDecl;
+			//}
 			return seVar;
 		case RuleMethod: return seRuleMethod;
 		case Constructor: return seConstructor;
@@ -1309,10 +1272,7 @@ public class JavaSyntax extends TextSyntax {
 			return seConstExpr;
 
 		case TypeRef: return seTypeRef;
-		case TypeNameRef:
-			if (hint != null && ("call-accessor".equals(hint.text)))
-				return seStructRef;
-			return seTypeNameRef;
+		case TypeNameRef: return seTypeNameRef;
 		case TypeClosureRef: return seTypeClosureRef;
 
 		case Shadow: return seShadow;
@@ -1329,6 +1289,7 @@ public class JavaSyntax extends TextSyntax {
 		case ThrowStat: return seThrowStat;
 		case IfElseStat: return seIfElseStat;
 		case CondStat: return seCondStat;
+		case Label: return seLabel;
 		case LabeledStat: return seLabeledStat;
 		case BreakStat: return seBreakStat;
 		case ContinueStat: return seContinueStat;
@@ -1418,7 +1379,7 @@ public class JavaSyntax extends TextSyntax {
 			return se;
 		}
 		}
-		return super.getSyntaxElem(node, hint);
+		return super.getSyntaxElem(node);
 	}
 }
 

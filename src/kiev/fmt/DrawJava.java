@@ -124,43 +124,6 @@ public class DrawJavaAccess extends DrawTerm {
 }
 
 @node
-public class DrawJavaType extends DrawTerm {
-	
-	public DrawJavaType() {}
-	public DrawJavaType(ANode node, SyntaxJavaType syntax) {
-		super(node, syntax);
-	}
-
-	String makeText(Formatter fmt) {
-		SyntaxJavaType stx = (SyntaxJavaType)syntax;
-		TypeRef tr = (TypeRef)node;
-		String text;
-		if (stx.hint == null || stx.hint.text == null) {
-			text = String.valueOf(tr);
-		}
-		else if ("no-args".equals(stx.hint.text) || "call-accessor".equals(stx.hint.text)) {
-			Struct s = tr.getStruct();
-			if (s != null)
-				text = s.qname().toString();
-			else
-				text = String.valueOf(tr);
-		}
-		else {
-			text = String.valueOf(tr);
-		}
-
-		if (node.parent() instanceof FormPar) {
-			FormPar fp = (FormPar)node.parent();
-			if (fp.kind == FormPar.PARAM_VARARGS && tr.getType().isArray() && text.endsWith("[]")) {
-				text = text.substring(0,text.length()-2) + "...";
-			}
-		}
-		return text;
-	}
-
-}
-
-@node
 public class DrawJavaEnumAlias extends DrawTerm {
 	
 	private String text;

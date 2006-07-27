@@ -118,8 +118,8 @@ public class InfoView extends UIView implements KeyListener {
 				JPopupMenu m = new JPopupMenu();
 				m.add(new JMenuItem(new SetSyntaxAction("Java Syntax", JavaSyntax.class)));
 				m.add(new JMenuItem(new SetSyntaxAction("XML dump Syntax", XmlDumpSyntax.class)));
-				m.add(new JMenuItem(new LoadSyntaxAction("Syntax for Syntax (std)", "kiev/fmt/SyntaxForSyntax.xml", SyntaxForSyntax.class)));
-				m.add(new JMenuItem(new LoadSyntaxAction("Syntax for Syntax (stx.xml)", "stx.xml", SyntaxForSyntax.class)));
+				m.add(new JMenuItem(new LoadSyntaxAction("Syntax for Syntax (std)", "kiev/fmt/SyntaxForSyntax.xml", "SyntaxForSyntax")));
+				m.add(new JMenuItem(new LoadSyntaxAction("Syntax for Syntax (stx.xml)", "stx.xml", "SyntaxForSyntax")));
 				m.show(view_canvas, 0, 0);
 				break;
 				}
@@ -150,18 +150,19 @@ public class InfoView extends UIView implements KeyListener {
 	}
 	
 	class LoadSyntaxAction extends TextAction {
-		private Class clazz;
 		private String file;
-		LoadSyntaxAction(String text, String file, Class clazz) {
+		private String name;
+		LoadSyntaxAction(String text, String file, String name) {
 			super(text);
-			this.clazz = clazz;
 			this.file = file.replace('/',File.separatorChar);
+			this.name = name.intern();
 		}
 		public void actionPerformed(ActionEvent e) {
-			TextSyntax stx = (TextSyntax)clazz.newInstance();
 			FileUnit fu = (FileUnit)Env.loadFromXmlFile(new File(this.file));
-			stx.loadFrom(fu);
-			InfoView.this.setSyntax(stx);
+			foreach (TextSyntax stx; fu.members; stx.id.uname == name) {
+				InfoView.this.setSyntax(stx);
+				return;
+			}
 		}
 	}
 }

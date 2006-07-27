@@ -19,7 +19,8 @@ import syntax kiev.Syntax;
 import java.awt.Color;
 import java.awt.Font;
 
-public class TextSyntax {
+@node
+public class TextSyntax extends DNode implements ScopeOfNames {
 	public static final int SYNTAX_KIND_SPACE   = 1;
 	public static final int SYNTAX_KIND_TOKEN   = 2;
 	public static final int SYNTAX_KIND_INDEX   = 3;
@@ -40,9 +41,11 @@ public class TextSyntax {
 	public static final int SYNTAX_ROLE_ARR_SEPARATOR      = 7;
 	public static final int SYNTAX_ROLE_ARR_SUFFIX         = 8;
 	
-	private Hashtable<String,SyntaxElem> badSyntax;
+	private Hashtable<String,SyntaxElem>		badSyntax = new Hashtable<Class,SyntaxElem>();
+	private Hashtable<String,SyntaxElemDecl>	allSyntax = new Hashtable<String,SyntaxElemDecl>();
 	
-	public TextSyntax parent_syntax;
+	@att public SymbolRef<TextSyntax>	parent_syntax;
+	@att public ASTNode[]				members;
 	
 	public SpaceInfo siSp     = new SpaceInfo("sp",       SP_SPACE,    1, 4);
 	public SpaceInfo siSpSEPR = new SpaceInfo("sp-sepr",  SP_SPACE,    1, 4);
@@ -53,6 +56,57 @@ public class TextSyntax {
 	
 	public ParagraphLayout plIndented = new ParagraphLayout("par-indented", 4, 20);
 	
+	public TextSyntax() {
+		id.sname = "<text-syntax>";
+		parent_syntax = new SymbolRef<TextSyntax>();
+	}
+
+	public rule resolveNameR(ASTNode@ node, ResInfo path)
+		ASTNode@ syn;
+	{
+		node @= members,
+		node instanceof DNode && path.checkNodeName(node)
+	}
+
+	public boolean preResolveIn() {
+		if (parent_syntax.name != null && parent_syntax.name != "") {
+			TextSyntax@ ts;
+			if (!PassInfo.resolveNameR(this,ts,new ResInfo(this,parent_syntax.name)))
+				Kiev.reportError(this,"Cannot resolve syntax '"+parent_syntax.name+"'");
+			else if !(ts instanceof TextSyntax)
+				Kiev.reportError(this,"Resolved '"+parent_syntax.name+"' is not a syntax");
+			else
+				parent_syntax.symbol = ts;
+		}
+		return true;
+	}
+	
+	public void mainResolveOut() {
+		foreach(SyntaxElemDecl sed; this.members; sed.elem != null) {
+			if !(sed.node.symbol instanceof Struct)
+				continue;
+			if (sed.elem == null)
+				continue;
+			Struct s = (Struct)sed.node.symbol;
+			if !(s.isCompilerNode())
+				continue;
+			allSyntax.put(s.qname(), sed);
+		}
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "parent_syntax") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<TextSyntax> vect = new Vector<TextSyntax>();
+			DNode@ ts;
+			foreach (PassInfo.resolveNameR(this,ts,info))
+				if (ts instanceof TextSyntax) vect.append((TextSyntax)ts);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
+
 	public String escapeString(String str) {
 		return str;
 	}
@@ -60,9 +114,17 @@ public class TextSyntax {
 		return String.valueOf(ch);
 	}
 	
-	public void loadFrom(FileUnit fu) {}
-
-	public SyntaxElem getSyntaxElem(ANode node, FormatInfoHint hint) {
+	public SyntaxElem getSyntaxElem(ANode node) {
+		if (node != null) {
+			String cl_name = node.getClass().getName();
+			SyntaxElemDecl sed = allSyntax.get(cl_name);
+			if (sed != null)
+				return sed.elem;
+		}
+		if (parent_syntax.symbol != null)
+			return ((TextSyntax)parent_syntax.symbol).getSyntaxElem(node);
+		if (parent() instanceof TextSyntax)
+			return ((TextSyntax)parent()).getSyntaxElem(node);
 		if (badSyntax == null)
 			badSyntax = new Hashtable<Class,SyntaxElem>();
 		String cl_name = node.getClass().getName();
@@ -122,9 +184,9 @@ public class TextSyntax {
 		return new SyntaxNode(lout);
 	}
 
-	protected SyntaxNode node(FormatInfoHint hint)
+	protected SyntaxNode node(TextSyntax stx)
 	{
-		return new SyntaxNode(hint);
+		return new SyntaxNode(stx);
 	}
 
 	protected SyntaxAttr attr(String slot)
@@ -138,10 +200,10 @@ public class TextSyntax {
 		return new SyntaxSubAttr(slot, lout);
 	}
 
-	protected SyntaxAttr attr(String slot, FormatInfoHint hint)
+	protected SyntaxAttr attr(String slot, TextSyntax stx)
 	{
 		SpaceCmd[] lout = new SpaceCmd[0];
-		return new SyntaxSubAttr(slot, hint, lout);
+		return new SyntaxSubAttr(slot, stx, lout);
 	}
 
 	protected SyntaxIdentAttr ident(String slot)
@@ -343,10 +405,9 @@ public final class SpaceCmd extends ASTNode {
 }
 
 @node
-public class ParagraphLayout extends ASTNode {
+public class ParagraphLayout extends DNode {
 	@virtual typedef This  ≤ ParagraphLayout;
 
-	@att KString name;
 	@att int indent_text_size;
 	@att int indent_pixel_size;
 	@att int indent_first_line_text_size;
@@ -357,7 +418,7 @@ public class ParagraphLayout extends ASTNode {
 	
 	public ParagraphLayout() {}
 	public ParagraphLayout(String name, int ind_txt, int ind_pix) {
-		this.name = KString.from("name");
+		this.id.sname = name;
 		this.indent_text_size = ind_txt;
 		this.indent_pixel_size = ind_pix;
 	}
@@ -794,7 +855,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	@virtual typedef This  ≤ SyntaxAttr;
 
 	@att public String					name;
-	@att public FormatInfoHint			hint;
+	@att public SymbolRef<TextSyntax>	in_syntax;
 	@att public SymbolRef[]				expected_types;
 
 	@setter
@@ -802,15 +863,18 @@ public abstract class SyntaxAttr extends SyntaxElem {
 		this.name = (value != null) ? value.intern() : null;
 	}
 	
-	public SyntaxAttr() {}
+	public SyntaxAttr() {
+		this.in_syntax = new SymbolRef<TextSyntax>();
+	}
 	public SyntaxAttr(String name, SpaceCmd[] spaces) {
 		super(spaces);
 		this.name = name;
+		this.in_syntax = new SymbolRef<TextSyntax>();
 	}
-	public SyntaxAttr(String name, FormatInfoHint hint, SpaceCmd[] spaces) {
+	public SyntaxAttr(String name, TextSyntax stx, SpaceCmd[] spaces) {
 		super(spaces);
 		this.name = name;
-		this.hint = hint;
+		this.in_syntax = new SymbolRef<TextSyntax>(0,stx);
 	}
 
 	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
@@ -852,13 +916,11 @@ public class SyntaxSubAttr extends SyntaxAttr {
 	public SyntaxSubAttr(String name, SpaceCmd[] spaces) {
 		super(name,spaces);
 	}
-	public SyntaxSubAttr(String name, FormatInfoHint hint, SpaceCmd[] spaces) {
-		super(name,hint,spaces);
+	public SyntaxSubAttr(String name, TextSyntax stx, SpaceCmd[] spaces) {
+		super(name,stx,spaces);
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		if (name.equals("this"))
-			return super.check(cont, current_stx, expected_node, current_node);
 		Object obj;
 		try {
 			obj = expected_node.getVal(name);
@@ -866,7 +928,11 @@ public class SyntaxSubAttr extends SyntaxAttr {
 			obj = "";
 		}
 		if (obj instanceof ANode) {
-			SyntaxElem se = cont.fmt.getSyntax().getSyntaxElem((ANode)obj, hint);
+			SyntaxElem se;
+			if (in_syntax.symbol != null)
+				se = ((TextSyntax)in_syntax.symbol).getSyntaxElem((ANode)obj);
+			else
+				se = cont.fmt.getSyntax().getSyntaxElem((ANode)obj);
 			return se.check(cont, current_stx, (ANode)obj, current_node);
 		}
 		return super.check(cont, current_stx, expected_node, current_node);
@@ -874,20 +940,16 @@ public class SyntaxSubAttr extends SyntaxAttr {
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr;
-		if (name.equals("this")) {
-			dr = new DrawNodeTerm(node, this, "");
-		} else {
-			Object obj;
-			try {
-				obj = node.getVal(name);
-			} catch (RuntimeException e) {
-				obj = "<?error:"+name+"?>";
-			}
-			if (obj instanceof ANode)
-				dr = fmt.getDrawable((ANode)obj, null, hint);
-			else
-				dr = new DrawNodeTerm(node, this, name);
+		Object obj;
+		try {
+			obj = node.getVal(name);
+		} catch (RuntimeException e) {
+			obj = "<?error:"+name+"?>";
 		}
+		if (obj instanceof ANode)
+			dr = fmt.getDrawable((ANode)obj, null, (TextSyntax)in_syntax.symbol);
+		else
+			dr = new DrawNodeTerm(node, this, name);
 		dr.attr_syntax = this;
 		return dr;
 	}
@@ -983,23 +1045,30 @@ public class SyntaxSet extends SyntaxElem {
 public class SyntaxNode extends SyntaxElem {
 	@virtual typedef This  = SyntaxNode;
 
-	@att public FormatInfoHint	hint;
+	@att public SymbolRef<TextSyntax>	in_syntax;
 
-	public SyntaxNode() {}
+	public SyntaxNode() {
+		this.in_syntax = new SymbolRef<TextSyntax>();
+	}
 	public SyntaxNode(SpaceCmd[] spaces) {
 		super(spaces);
+		this.in_syntax = new SymbolRef<TextSyntax>();
 	}
-	public SyntaxNode(FormatInfoHint hint) {
-		this.hint = hint;
+	public SyntaxNode(TextSyntax stx) {
+		this.in_syntax = new SymbolRef<TextSyntax>(0,stx);
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		SyntaxElem se = cont.fmt.getSyntax().getSyntaxElem(expected_node, hint);
+		SyntaxElem se;
+		if (in_syntax.symbol != null)
+			se = ((TextSyntax)in_syntax.symbol).getSyntaxElem(expected_node);
+		else
+			se = cont.fmt.getSyntax().getSyntaxElem(expected_node);
 		return se.check(cont, current_stx, expected_node, current_node);
 	}
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = fmt.getDrawable(node, null, hint);
+		Drawable dr = fmt.getDrawable(node, null, (TextSyntax)in_syntax.symbol);
 		dr.attr_syntax = this;
 		return dr;
 	}
@@ -1182,20 +1251,49 @@ public class SyntaxEnumChoice extends SyntaxAttr {
 public class SyntaxParagraphLayout extends SyntaxElem {
 	@virtual typedef This  = SyntaxParagraphLayout;
 
-	@att public SyntaxElem			elem;
-	@ref public ParagraphLayout		par;
+	@att public SyntaxElem						elem;
+	@att public SymbolRef<ParagraphLayout>		par;
 
-	public SyntaxParagraphLayout() {}
+	public SyntaxParagraphLayout() {
+		par = new SymbolRef<ParagraphLayout>();
+	}
 	public SyntaxParagraphLayout(SyntaxElem elem, ParagraphLayout par, SpaceCmd[] spaces) {
 		super(spaces);
 		this.elem = elem;
-		this.par = par;
+		this.par = new SymbolRef<ParagraphLayout>(0,par);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawParagraph(node, this);
 		return dr;
 	}
+
+	public void preResolveOut() {
+		if (par.name == null) {
+			Kiev.reportError(this,"Unspecified paragraph declaration");
+			return;
+		}
+		ParagraphLayout@ d;
+		if (!PassInfo.resolveNameR(this,d,new ResInfo(this,par.name)))
+			Kiev.reportError(this,"Cannot resolve paragraph declaration '"+par.name+"'");
+		else if !(d instanceof ParagraphLayout)
+			Kiev.reportError(this,"Resolved '"+par.name+"' is not a paragraph declaration");
+		else
+			par.symbol = d;
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "par") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<ParagraphLayout> vect = new Vector<ParagraphLayout>();
+			DNode@ dc;
+			foreach (PassInfo.resolveNameR(this,dc,info))
+				if (dc instanceof ParagraphLayout) vect.append((ParagraphLayout)dc);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
 }
 
 

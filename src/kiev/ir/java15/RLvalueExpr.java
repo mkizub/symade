@@ -38,7 +38,7 @@ public static final view RAccessExpr of AccessExpr extends RLvalueExpr {
 			tps = new Type[]{ ((TypeRef)obj).getType() };
 			res = new ENode[1];
 			if( ident.name.equals(nameThis) )
-				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+				this.replaceWithNodeResolve(reqType,new OuterThisAccessExpr(pos,(TypeRef)~obj));
 		}
 		else {
 			ENode e = obj;
@@ -234,8 +234,7 @@ public static final view RSFldExpr of SFldExpr extends RLvalueExpr {
 
 @nodeview
 public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends RENode {
-	public		ENode			obj;
-	public		Struct			outer;
+	public		TypeRef			outer;
 	public:ro	Field[]			outer_refs;
 
 	public void setupOuterFields();

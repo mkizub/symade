@@ -124,22 +124,19 @@ public final class RewriteNodeFactory extends ENode {
 	
 	@virtual typedef This  = RewriteNodeFactory;
 
-	@ref public Class					node_class;
+	@att public TypeRef					type;
 	@att public RewriteNodeArg[]		args;
+	     private Class					node_class;
 
 	public RewriteNodeFactory() {}
-	public RewriteNodeFactory(Class node_class) {
-		this.node_class = node_class;
-	}
-	public RewriteNodeFactory(Class node_class, RewriteNodeArg[] args) {
-		this.node_class = node_class;
-		this.args.addAll(args);
-	}
 	public RewriteNodeFactory(String class_name) {
-		if (class_name.indexOf(".") > 0)
+		if (class_name.indexOf(".") > 0) {
 			node_class = Class.forName(class_name);
-		else
+			type = new TypeNameRef(class_name);
+		} else {
 			node_class = Class.forName("kiev.vlang."+class_name);
+			type = new TypeNameRef("kiev.vlang."+class_name);
+		}
 	}
 
 	public Object doRewrite(RewriteContext ctx) {
