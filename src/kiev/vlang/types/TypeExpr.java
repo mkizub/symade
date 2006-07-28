@@ -158,7 +158,7 @@ public class TypeExpr extends TypeRef {
 		if (this.lnk != null)
 			return this.lnk.toString();
 		if (op != null)
-			return op.toString(arg);
+			return op.toString(this);
 		return String.valueOf(arg)+ident.name.substring(2);
 	}
 }

@@ -92,8 +92,6 @@ public interface StdTypes {
 	public static final TypeConstr tdArrayArg;
 	public static final ArgType    tpArrayArg;
 	public static final XType      tpVararg;
-	public static final TypeConstr tdVarargArg;
-	public static final ArgType    tpVarargArg;
 
 	public static final ArgType   tpWrapperArg;
 	public static final ArgType   tpCallRetArg;
@@ -169,14 +167,14 @@ public interface StdTypes {
 		tdVararg.setMacro(true);
 		tdVararg.setFinal(true);
 		tdVararg.setTypeDeclLoaded(true);
-		tdVarargArg = new TypeConstr("_elem_", tpObject);
+		TypeConstr tdVarargArg = new TypeConstr("_elem_", tpObject);
 		tdVarargArg.setAbstract(true);
 		tdVararg.args += tdVarargArg;
-		tpVarargArg = tdVarargArg.getAType();
+		ArgType tpVarargArg = tdVarargArg.getAType();
 		tpArrayArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		tdVararg.super_types += new TypeRef(ArrayType.newArrayType(tpVarargArg));
 		tpVararg				= (XType)tdVararg.xtype;
-		tpVararg.flags			|= flResolved | flReference | flArray;
+		//tpVararg.flags			|= flResolved | flReference | flArray;
 
 		Struct tpBooleanRefClazz = Env.newStruct("Boolean",java_lang,ACC_PUBLIC);
 		tpBooleanRef			= (CompaundType)tpBooleanRefClazz.xtype;

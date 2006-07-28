@@ -219,7 +219,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 				break;
 			case FormPar.PARAM_VARARGS:
 				//assert(fp.isFinal());
-				assert(fp.type.isArray());
+				assert(fp.type.isInstanceOf(Type.tpArray));
 				args.append(fp.type);
 				dargs.append(fp.type);
 				break;

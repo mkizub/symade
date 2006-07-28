@@ -36,18 +36,22 @@ public abstract class Type extends AType {
 
 	// construct new type from this one
 	public final Type make(TVSet bindings) {
+		bindings(); // update this type, if outdated
 		return meta_type.make(bindings);
 	}
 	// accessor.field
 	public final Type applay(TVSet bindings) {
+		bindings(); // update this type, if outdated
 		return meta_type.applay(this,bindings);
 	}
 	// instantiate new type
 	public final Type bind(TVSet bindings) {
+		bindings(); // update this type, if outdated
 		return meta_type.bind(this,bindings);
 	}
 	// rebind with lower bound or outer type, etc
 	public final Type rebind(TVSet bindings) {
+		bindings(); // update this type, if outdated
 		return meta_type.rebind(this,bindings);
 	}
 	

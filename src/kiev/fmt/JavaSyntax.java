@@ -350,11 +350,214 @@ public class JavaSyntax extends TextSyntax {
 	
 	final Hashtable<Operator, SyntaxElem> exprs;
 	
+	public SpaceInfo siSp     = new SpaceInfo("sp",       SP_SPACE,    1, 4);
+	public SpaceInfo siSpSEPR = new SpaceInfo("sp-sepr",  SP_SPACE,    1, 4);
+	public SpaceInfo siSpWORD = new SpaceInfo("sp-word",  SP_SPACE,    1, 4);
+	public SpaceInfo siSpOPER = new SpaceInfo("sp-oper",  SP_SPACE,    1, 4);
+	public SpaceInfo siNl     = new SpaceInfo("nl",       SP_NEW_LINE, 1,  1);
+	public SpaceInfo siNlGrp  = new SpaceInfo("nl-group", SP_NEW_LINE, 2, 20);
 	public SpaceInfo siNlOrBlock = new SpaceInfo("nl-block",       SP_NEW_LINE, 1,  1);
-
 	public SpaceInfo siFldGrpNl  = new SpaceInfo("indent-block",   SP_NEW_LINE, 2, 20);
 	
+	public ParagraphLayout plIndented = new ParagraphLayout("par-indented", 4, 20);
 	public ParagraphLayout plStatIndented = new ParagraphLayoutBlock("stat-indented", 4, 20);
+
+	protected SyntaxParagraphLayout par(ParagraphLayout par, SyntaxElem elem) {
+		SyntaxParagraphLayout spl = new SyntaxParagraphLayout(elem, par, new SpaceCmd[0]);
+		return spl;
+	}
+	
+	protected SyntaxSet set(SyntaxElem... elems) {
+		SyntaxSet set = new SyntaxSet(new SpaceCmd[0], elems);
+		return set;
+	}
+	
+	protected SyntaxSet setl(SpaceCmd[] spaces, SyntaxElem... elems) {
+		SyntaxSet set = new SyntaxSet(spaces, elems);
+		return set;
+	}
+
+	protected SyntaxList lst(
+			String name,
+			SyntaxElem element,
+			SyntaxElem separator,
+			SpaceCmd[] spaces
+	)
+	{
+		SyntaxList lst = new SyntaxList(name.intern(), element, separator, spaces);
+		return lst;
+	}
+
+	protected SyntaxList lst(
+			String name,
+			SpaceCmd[] spaces
+	)
+	{
+		SyntaxList lst = new SyntaxList(name.intern(), node(), null, spaces);
+		return lst;
+	}
+
+	protected SyntaxNode node()
+	{
+		return new SyntaxNode();
+	}
+
+	protected SyntaxNode node(SpaceCmd[] lout)
+	{
+		return new SyntaxNode(lout);
+	}
+
+	protected SyntaxNode node(TextSyntax stx)
+	{
+		return new SyntaxNode(stx);
+	}
+
+	protected SyntaxAttr attr(String slot)
+	{
+		SpaceCmd[] lout = new SpaceCmd[0];
+		return new SyntaxSubAttr(slot, lout);
+	}
+
+	protected SyntaxAttr attr(String slot, SpaceCmd[] lout)
+	{
+		return new SyntaxSubAttr(slot, lout);
+	}
+
+	protected SyntaxAttr attr(String slot, TextSyntax stx)
+	{
+		SpaceCmd[] lout = new SpaceCmd[0];
+		return new SyntaxSubAttr(slot, stx, lout);
+	}
+
+	protected SyntaxIdentAttr ident(String slot)
+	{
+		SpaceCmd[] lout = new SpaceCmd[] {
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
+				new SpaceCmd(siSpWORD, SP_NOP, SP_ADD, 0),
+			};
+		return new SyntaxIdentAttr(slot,lout);
+	}
+
+	protected SyntaxCharAttr charcter(String slot)
+	{
+		SpaceCmd[] lout = new SpaceCmd[] {
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
+				new SpaceCmd(siSpSEPR, SP_NOP, SP_ADD, 0),
+			};
+		return new SyntaxCharAttr(slot,lout);
+	}
+
+	protected SyntaxStrAttr string(String slot)
+	{
+		SpaceCmd[] lout = new SpaceCmd[] {
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_ADD, 0),
+			};
+		return new SyntaxStrAttr(slot,lout);
+	}
+
+	protected SyntaxToken kw(String kw)
+	{
+		SpaceCmd[] lout = new SpaceCmd[] {
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
+				new SpaceCmd(siSpWORD, SP_NOP, SP_ADD, 0),
+			};
+		return new SyntaxToken(kw,lout);
+	}
+
+	protected SyntaxToken sep(String sep)
+	{
+		if (sep == ";") {
+			SpaceCmd[] lout = new SpaceCmd[] {
+					new SpaceCmd(siSpWORD, SP_EAT, SP_NOP, 0),
+					new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
+					new SpaceCmd(siSp,     SP_NOP, SP_ADD, 0),
+				};
+				return new SyntaxToken(sep,lout);
+		}
+		if (sep == "{" || sep == "}") {
+			SpaceCmd[] lout = new SpaceCmd[] {
+					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
+				};
+			return new SyntaxToken(sep,lout);
+		}
+		SpaceCmd[] lout = new SpaceCmd[] {
+				new SpaceCmd(siSpWORD, SP_EAT, SP_NOP, 0),
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_ADD, 0),
+			};
+		return new SyntaxToken(sep,lout);
+	}
+
+	protected SyntaxToken sep0(String sep)
+	{
+		SpaceCmd[] lout = new SpaceCmd[0];
+		return new SyntaxToken(sep,lout);
+	}
+
+	protected SyntaxToken sep_nl(String sep)
+	{
+		SpaceCmd[] lout = new SpaceCmd[] {
+				new SpaceCmd(siSpWORD, SP_EAT, SP_NOP, 0),
+				new SpaceCmd(siSpSEPR, SP_EAT, SP_ADD, 0),
+				new SpaceCmd(siNl,     SP_NOP, SP_ADD, 0),
+			};
+		return new SyntaxToken(sep,lout);
+	}
+
+	protected SyntaxToken sep(String sep, SpaceCmd[] spaces)
+	{
+		return new SyntaxToken(sep,spaces);
+	}
+	
+	protected SyntaxToken oper(Operator op)
+	{
+		return oper(op.toString());
+	}
+
+	protected SyntaxToken oper(String op)
+	{
+		SpaceCmd[] lout = new SpaceCmd[] {
+				new SpaceCmd(siSpOPER, SP_ADD, SP_ADD, 0)
+			};
+		return new SyntaxToken(op.intern(),lout);
+	}
+
+	protected SyntaxOptional opt(String name)
+	{
+		SpaceCmd[] lout = new SpaceCmd[0];
+		return opt(new CalcOptionNotNull(name),attr(name),null,lout);
+	}
+	
+	protected SyntaxOptional opt(String name, SyntaxElem opt_true)
+	{
+		SpaceCmd[] lout = new SpaceCmd[0];
+		return opt(new CalcOptionNotNull(name),opt_true,null,lout);
+	}
+
+	protected SyntaxOptional opt(CalcOption calc, SyntaxElem opt_true, SyntaxElem opt_false, SpaceCmd[] spaces)
+	{
+		return new SyntaxOptional(calc,opt_true,opt_false,spaces);
+	}
+
+	protected SyntaxIntChoice alt_int(String name, SyntaxElem... options)
+	{
+		SpaceCmd[] lout = new SpaceCmd[0];
+		SyntaxIntChoice sc = new SyntaxIntChoice(name,lout);
+		sc.elements.addAll(options);
+		return sc;
+	}
+
+	protected SyntaxEnumChoice alt_enum(String name, SyntaxElem... options)
+	{
+		SpaceCmd[] lout = new SpaceCmd[0];
+		SyntaxEnumChoice sc = new SyntaxEnumChoice(name,lout);
+		sc.elements.addAll(options);
+		return sc;
+	}
+
+	protected SyntaxFolder folder(boolean folded_by_default, SyntaxElem folded, SyntaxElem unfolded, SpaceCmd[] spaces)
+	{
+		return new SyntaxFolder(folded_by_default,folded,unfolded,spaces);
+	}
 
 	protected SyntaxJavaExpr expr(int idx, int priority)
 	{
@@ -400,25 +603,6 @@ public class JavaSyntax extends TextSyntax {
 				new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
 			};
 		return new SyntaxJavaAccess(lout);
-	}
-	
-	protected SyntaxToken sep(String sep)
-	{
-		if (sep == ";") {
-			SpaceCmd[] lout = new SpaceCmd[] {
-					new SpaceCmd(siSpWORD, SP_EAT, SP_NOP, 0),
-					new SpaceCmd(siSpSEPR, SP_EAT, SP_NOP, 0),
-					new SpaceCmd(siSp,     SP_NOP, SP_ADD, 0),
-				};
-				return new SyntaxToken(sep,lout);
-		}
-		if (sep == "{" || sep == "}") {
-			SpaceCmd[] lout = new SpaceCmd[] {
-					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
-				};
-			return new SyntaxToken(sep,lout);
-		}
-		return super.sep(sep);
 	}
 	
 	public JavaSyntax() {
@@ -1190,6 +1374,12 @@ public class JavaSyntax extends TextSyntax {
 	}
 
 	public SyntaxElem getSyntaxElem(ANode node) {
+		if (node != null) {
+			String cl_name = node.getClass().getName();
+			SyntaxElemDecl sed = allSyntax.get(cl_name);
+			if (sed != null)
+				return sed.elem;
+		}
 		switch (node) {
 		case FileUnit: return seFileUnit;
 		case Import: return seImport;

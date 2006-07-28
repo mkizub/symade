@@ -117,6 +117,7 @@ public class InfoView extends UIView implements KeyListener {
 				// build a menu of types to instantiate
 				JPopupMenu m = new JPopupMenu();
 				m.add(new JMenuItem(new SetSyntaxAction("Java Syntax", JavaSyntax.class)));
+				m.add(new JMenuItem(new LoadSyntaxAction("Java Syntax (java.xml)", "java.xml", "JavaSyntax")));
 				m.add(new JMenuItem(new SetSyntaxAction("XML dump Syntax", XmlDumpSyntax.class)));
 				m.add(new JMenuItem(new LoadSyntaxAction("Syntax for Syntax (std)", "kiev/fmt/SyntaxForSyntax.xml", "SyntaxForSyntax")));
 				m.add(new JMenuItem(new LoadSyntaxAction("Syntax for Syntax (stx.xml)", "stx.xml", "SyntaxForSyntax")));

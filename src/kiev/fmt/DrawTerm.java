@@ -61,14 +61,12 @@ public final class DrawToken extends DrawTerm {
 @node
 public class DrawNodeTerm extends DrawTerm {
 
-	String[] attrs;
+	String attr;
 
 	public DrawNodeTerm() {}
 	public DrawNodeTerm(ANode node, SyntaxElem syntax, String attr) {
 		super(node, syntax);
-		this.attrs = attr.split("\\.");
-		for (int i=0; i < this.attrs.length; i++)
-			this.attrs[i] = this.attrs[i].intern();
+		this.attr = attr.intern();
 	}
 
 	String makeText(Formatter fmt) {
@@ -79,14 +77,7 @@ public class DrawNodeTerm extends DrawTerm {
 	}
 	
 	public final AttrPtr getAttrPtr() {
-		ANode n = node;
-		for (int i=0; i < attrs.length-1; i++) {
-			n = (ANode)n.getVal(attrs[i]);
-		}
-		String attr = attrs[attrs.length-1];
-		if (attr == "")
-			return new AttrPtr(n.parent(), n.pslot());
-		return n.getAttrPtr(attr);
+		return node.getAttrPtr(attr);
 	}
 }
 
