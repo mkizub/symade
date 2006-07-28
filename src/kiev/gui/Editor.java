@@ -21,6 +21,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 
+import java.awt.datatransfer.*;
+
 import javax.swing.JComboBox;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JMenu;
@@ -45,7 +47,7 @@ public class Editor extends InfoView implements KeyListener {
 	/** Current item */
 	public final CurElem	cur_elem;
 	/** The object in clipboard */
-	@ref public ANode		in_clipboard;
+	public final Clipboard	clipboard = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
 	
 	private Stack<Transaction>		changes = new Stack<Transaction>();
 	
@@ -169,56 +171,66 @@ public class Editor extends InfoView implements KeyListener {
 					item_editor = null;
 				}
 				break;
-			case KeyEvent.VK_C:
-				if (cur_elem.dr instanceof DrawNodeTerm) {
-					AttrPtr pattr = ((DrawNodeTerm)cur_elem.dr).getAttrPtr();
-					Object obj = pattr.get();
-					if (obj instanceof Symbol) {
-						in_clipboard = ((Symbol)obj).parent();
-						parent_window.clip_view.setRoot(in_clipboard);
-						parent_window.clip_view.formatAndPaint(true);
-					}
-				}
-				break;
-			case KeyEvent.VK_V:
-				if (in_clipboard != null) {
-					if (cur_elem.dr instanceof DrawNodeTerm) {
-						if (in_clipboard instanceof DNode) {
-							AttrPtr pattr = ((DrawNodeTerm)cur_elem.dr).getAttrPtr();
-							if (pattr.slot.typeinfo.clazz == SymbolRef.class) {
-								DNode dn = (DNode)in_clipboard;
-								changes.push(Transaction.open());
-								try {
-									SymbolRef obj = (SymbolRef)pattr.get();
-									if (obj != null) {
-										obj.open();
-										obj.name = dn.id.sname;
-										obj.symbol = dn;
-									} else {
-										pattr.node.open();
-										obj = (SymbolRef)pattr.slot.typeinfo.newInstance();
-										obj.symbol = dn;
-										pattr.set(obj);
-									}
-								} finally {
-									changes.peek().close();
-								}
-								this.formatAndPaint(true);
-							}
-						}
-					}
-				}
-				break;
 			case KeyEvent.VK_X:
 				if (cur_elem.dr != null) {
 					ANode node = cur_elem.dr.node;
 					changes.push(Transaction.open());
-					in_clipboard = node;
 					node.detach();
 					changes.peek().close();
+					TransferableANode tr = new TransferableANode(node);
+					clipboard.setContents(tr, tr);
 					formatAndPaint(true);
-					parent_window.clip_view.setRoot(in_clipboard);
-					parent_window.clip_view.formatAndPaint(true);
+				}
+				break;
+			case KeyEvent.VK_C:
+				if (cur_elem.dr instanceof DrawNodeTerm) {
+					AttrPtr pattr = ((DrawNodeTerm)cur_elem.dr).getAttrPtr();
+					Object obj = pattr.get();
+					Transferable tr = null;
+					if (obj instanceof ANode)
+						tr = new TransferableANode((ANode)obj);
+					else
+						tr = new StringSelection(String.valueOf(obj));
+					clipboard.setContents(tr, (ClipboardOwner)tr);
+				}
+				break;
+			case KeyEvent.VK_V:
+				{
+					Transferable content = clipboard.getContents(null);
+					if (content.isDataFlavorSupported(TransferableANode.transferableANodeFlavor)) {
+						ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+						if (cur_elem.dr instanceof DrawNodeTerm) {
+							AttrPtr pattr;
+							if (cur_elem.dr.node instanceof SymbolRef)
+								pattr = new AttrPtr(cur_elem.dr.node.parent(),cur_elem.dr.node.pslot());
+							else
+								pattr = ((DrawNodeTerm)cur_elem.dr).getAttrPtr();
+							if (pattr.slot.typeinfo.clazz == SymbolRef.class) {
+								if (node instanceof Symbol)
+									node = (DNode)node.parent();
+								if (node instanceof DNode) {
+									DNode dn = (DNode)node;
+									changes.push(Transaction.open());
+									try {
+										SymbolRef obj = (SymbolRef)pattr.get();
+										if (obj != null) {
+											obj.open();
+											obj.name = dn.id.sname;
+											obj.symbol = dn;
+										} else {
+											pattr.node.open();
+											obj = (SymbolRef)pattr.slot.typeinfo.newInstance();
+											obj.symbol = dn;
+											pattr.set(obj);
+										}
+									} finally {
+										changes.peek().close();
+									}
+									this.formatAndPaint(true);
+								}
+							}
+						}
+					}
 				}
 				break;
 			case KeyEvent.VK_R:
@@ -491,6 +503,36 @@ public class Editor extends InfoView implements KeyListener {
 		}
 	}
 }
+
+public class TransferableANode implements Transferable, ClipboardOwner {
+	static DataFlavor transferableANodeFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+";class=kiev.vlang.ANode");
+	public final ANode node;
+	public TransferableANode(ANode node) {
+		this.node = node;
+	}
+    public DataFlavor[] getTransferDataFlavors() {
+		return new DataFlavor[] {
+			DataFlavor.stringFlavor,
+			transferableANodeFlavor
+		};
+	}
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+		foreach (DataFlavor df; getTransferDataFlavors(); df.equals(flavor))
+			return true;
+		return false;
+	}
+    public Object getTransferData(DataFlavor flavor)
+		throws UnsupportedFlavorException
+	{
+		if (transferableANodeFlavor.equals(flavor))
+			return node;
+		if (DataFlavor.stringFlavor.equals(flavor))
+			return String.valueOf(node);
+		throw new UnsupportedFlavorException(flavor);
+	}
+	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
+}
+
 
 public interface KeyHandler {
 	public void process();
