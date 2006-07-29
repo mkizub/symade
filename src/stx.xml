@@ -3376,6 +3376,9 @@
              <name>SyntaxSet</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxNode</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxParagraphLayout</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
@@ -3495,6 +3498,9 @@
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxSet</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxNode</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxSpace</name>

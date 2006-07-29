@@ -155,7 +155,7 @@ public class DrawJavaPackedField extends DrawTerm {
 	}
 
 	String makeText(Formatter fmt) {
-		MetaPacked mp = ((Field)node).getMetaPacked();
+		MetaPacked mp = (MetaPacked)node;
 		String text = "@packed("+mp.size;
 		if (mp.fld != null)
 			text += ","+mp.fld+","+mp.offset;

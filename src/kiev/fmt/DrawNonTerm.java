@@ -83,7 +83,7 @@ public abstract class DrawNonTerm extends Drawable {
 public class DrawNonTermList extends DrawNonTerm {
 
 	@att public boolean draw_optional;
-	Object[] oarr;
+	ANode[] oarr;
 	
 	public DrawNonTermList() {}
 	public DrawNonTermList(ANode node, SyntaxList syntax) {
@@ -155,6 +155,25 @@ public class DrawNonTermList extends DrawNonTerm {
 			for (int i=0; i < args.length; i++)
 				args[i].preFormat(cont,slst.element,args[i].node);
 		}
+	}
+	
+	public int getInsertIndex(Drawable dr) {
+		assert (dr.parent() == this);
+		if (oarr.length == 0)
+			return 0;
+		SyntaxList slst = (SyntaxList)this.syntax;
+		if (slst.separator != null) {
+			for (int i=0; i < args.length; i++) {
+				if (args[i] == dr)
+					return (1+i)/2;
+			}
+			return oarr.length;
+		}
+		for (int i=0; i < args.length; i++) {
+			if (args[i] == dr)
+				return i;
+		}
+		return oarr.length;
 	}
 }
 

@@ -61,9 +61,8 @@ public class Editor extends InfoView implements KeyListener {
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_UP),   new NavigateEditor(this,NavigateView.PAGE_UP));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_DOWN), new NavigateEditor(this,NavigateView.PAGE_DOWN));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_E),         new ChooseItemEditor(this));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_P),         new NewElemEditor(this,NewElemEditor.INSERT_HERE));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_A),         new NewElemEditor(this,NewElemEditor.INSERT_NEXT));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_N),         new NewElemEditor(this,NewElemEditor.SETNEW_HERE));
+		this.naviMap.put(Integer.valueOf(KeyEvent.VK_A),         new NewElemEditor(this,NewElemEditor.INSERT_NEXT));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_F),         new FolderTrigger(this));
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_O),         new OptionalTrigger(this));
 	}
@@ -192,6 +191,41 @@ public class Editor extends InfoView implements KeyListener {
 					else
 						tr = new StringSelection(String.valueOf(obj));
 					clipboard.setContents(tr, (ClipboardOwner)tr);
+				} else {
+					Transferable tr = new TransferableANode(cur_elem.dr.node);
+					clipboard.setContents(tr, (ClipboardOwner)tr);
+				}
+				break;
+			case KeyEvent.VK_A:
+				{
+					Transferable content = clipboard.getContents(null);
+					if (content.isDataFlavorSupported(TransferableANode.transferableANodeFlavor)) {
+						ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+						Drawable dr = cur_elem.dr;
+						while (dr != null && !(dr.parent() instanceof DrawNonTermList))
+							dr = (Drawable)dr.parent();
+						if (dr != null && dr.parent() instanceof DrawNonTermList) {
+							DrawNonTermList lst = (DrawNonTermList)dr.parent();
+							SyntaxList slst = (SyntaxList)lst.syntax;
+							if (node.isAttached())
+								node = node.ncopy();
+							SpacePtr sptr = lst.node.getSpacePtr(slst.name);
+							if (sptr.slot.typeinfo.$instanceof(node)) {
+								int idx = lst.getInsertIndex(dr) + 1;
+								if (idx < 0)
+									idx = 0;
+								else if (idx > sptr.length)
+									idx = sptr.length;
+								changes.push(Transaction.open());
+								try {
+									sptr.slot.insert(lst.node,idx,node);
+								} finally {
+									changes.peek().close();
+								}
+								this.formatAndPaint(true);
+							}
+						}
+					}
 				}
 				break;
 			case KeyEvent.VK_V:
@@ -199,17 +233,20 @@ public class Editor extends InfoView implements KeyListener {
 					Transferable content = clipboard.getContents(null);
 					if (content.isDataFlavorSupported(TransferableANode.transferableANodeFlavor)) {
 						ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
-						if (cur_elem.dr instanceof DrawNodeTerm) {
+						Drawable dr = cur_elem.dr;
+						if (dr instanceof DrawNodeTerm) {
 							AttrPtr pattr;
-							if (cur_elem.dr.node instanceof SymbolRef)
-								pattr = new AttrPtr(cur_elem.dr.node.parent(),cur_elem.dr.node.pslot());
+							if (dr.node instanceof SymbolRef)
+								pattr = new AttrPtr(dr.node.parent(),dr.node.pslot());
 							else
-								pattr = ((DrawNodeTerm)cur_elem.dr).getAttrPtr();
+								pattr = ((DrawNodeTerm)dr).getAttrPtr();
 							if (pattr.slot.typeinfo.clazz == SymbolRef.class) {
+								DNode dn = null;
 								if (node instanceof Symbol)
-									node = (DNode)node.parent();
-								if (node instanceof DNode) {
-									DNode dn = (DNode)node;
+									dn = (DNode)node.parent();
+								else if (node instanceof DNode)
+									dn = (DNode)node;
+								if (dn != null) {
 									changes.push(Transaction.open());
 									try {
 										SymbolRef obj = (SymbolRef)pattr.get();
@@ -227,7 +264,31 @@ public class Editor extends InfoView implements KeyListener {
 										changes.peek().close();
 									}
 									this.formatAndPaint(true);
+									return;
 								}
+							}
+						}
+						while (dr != null && !(dr.parent() instanceof DrawNonTermList))
+							dr = (Drawable)dr.parent();
+						if (dr != null && dr.parent() instanceof DrawNonTermList) {
+							if (node.isAttached())
+								node = node.ncopy();
+							DrawNonTermList lst = (DrawNonTermList)dr.parent();
+							SyntaxList slst = (SyntaxList)lst.syntax;
+							SpacePtr sptr = lst.node.getSpacePtr(slst.name);
+							if (sptr.slot.typeinfo.$instanceof(node)) {
+								int idx = lst.getInsertIndex(dr);
+								if (idx < 0)
+									idx = 0;
+								else if (idx > sptr.length)
+									idx = sptr.length;
+								changes.push(Transaction.open());
+								try {
+									sptr.slot.insert(lst.node,idx,node);
+								} finally {
+									changes.peek().close();
+								}
+								this.formatAndPaint(true);
 							}
 						}
 					}
@@ -803,9 +864,8 @@ final class OptionalTrigger implements KeyHandler {
 
 final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener {
 
-	static final int INSERT_HERE = 0;
+	static final int SETNEW_HERE = 0;
 	static final int INSERT_NEXT = 1;
-	static final int SETNEW_HERE = 2;
 
 	private final Editor		editor;
 	private final int			mode;
@@ -820,16 +880,12 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 	public void process() {
 		Drawable dr = editor.cur_elem.dr;
 		if (mode == SETNEW_HERE) {
-			ANode n = dr.node;
-			while (n == null) {
-				dr = (Drawable)dr.parent();
-				if (dr == null)
-					break;
-				n = dr.node;
-			}
-			if (n == null)
-				return;
-			if (dr.syntax instanceof SyntaxAttr) {
+			if (dr instanceof DrawNodeTerm && (dr.node == null || dr.getAttrPtr().get() == null)) {
+				ANode n = dr.node;
+				while (n == null) {
+					dr = (Drawable)dr.parent();
+					n = dr.node;
+				}
 				SyntaxAttr satt = (SyntaxAttr)dr.syntax;
 				if (satt.expected_types.length > 0) {
 					menu = new JPopupMenu("Set new item");
@@ -842,19 +898,40 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 					menu.show(editor.view_canvas, x, y);
 					editor.startItemEditor(n, this);
 				}
+				return;
 			}
-		} else {
+			while (dr != null && !(dr.parent() instanceof DrawNonTermList))
+				dr = (Drawable)dr.parent();
+			if (dr.parent() instanceof DrawNonTermList) {
+				DrawNonTermList lst = (DrawNonTermList)dr.parent();
+				SyntaxList slst = (SyntaxList)lst.syntax;
+				if (slst.expected_types.length > 0) {
+					this.idx = lst.getInsertIndex(dr);
+					if (slst.expected_types.length > 0) {
+						menu = new JPopupMenu("Insert new item");
+						foreach (SymbolRef sr; slst.expected_types; sr.symbol instanceof Struct) {
+							menu.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, lst.node, slst.name)));
+						}
+						int x = dr.geometry.x;
+						int y = dr.geometry.y + dr.geometry.h;
+						menu.addPopupMenuListener(this);
+						menu.show(editor.view_canvas, x, y);
+						editor.startItemEditor(lst.node, this);
+					}
+				}
+				return;
+			}
+		}
+		else if (mode == INSERT_NEXT) {
 			while (dr != null && !(dr.parent() instanceof DrawNonTermList))
 				dr = (Drawable)dr.parent();
 			if (dr != null && dr.parent() instanceof DrawNonTermList) {
 				DrawNonTermList lst = (DrawNonTermList)dr.parent();
 				SyntaxList slst = (SyntaxList)lst.syntax;
 				if (slst.expected_types.length > 0) {
-					this.idx = lst.args.indexOf(dr);
-					if (mode == INSERT_NEXT)
-						this.idx += 1;
+					this.idx = lst.getInsertIndex(dr) + 1;
 					if (slst.expected_types.length > 0) {
-						menu = new JPopupMenu(mode==INSERT_HERE ? "Prepend new item" : "Append new item");
+						menu = new JPopupMenu("Append new item");
 						foreach (SymbolRef sr; slst.expected_types; sr.symbol instanceof Struct) {
 							menu.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, lst.node, slst.name)));
 						}
