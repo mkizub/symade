@@ -215,16 +215,6 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seStructSyntax;
 	final SyntaxElem seStructView;
 	final SyntaxElem seStructBody;
-	final SyntaxElem seImport;
-	final SyntaxElem seOpdef;
-	final SyntaxElem seMetaSet;
-	final SyntaxElem seUserMeta;
-	final SyntaxElem seMetaValueScalar;
-	final SyntaxElem seMetaValueArray;
-	final SyntaxElem seTypeAssign;
-	final SyntaxElem seTypeConstr;
-	final SyntaxElem seTypeConstrClassArg;
-	final SyntaxElem seFieldDecl;
 	final SyntaxElem seVarDecl;
 	final SyntaxElem seVar;
 	final SyntaxElem seVarNoType;
@@ -324,28 +314,6 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seCommentNl;
 	final SyntaxElem seCommentNlBefore;
 	final SyntaxElem seCommentNlAfter;
-	
-	final SyntaxElem seMetaPacked;
-	final SyntaxElem seMetaPacker;
-	final SyntaxElem seMetaAlias;
-	final SyntaxElem seMetaThrows;
-	final SyntaxElem seMetaPizzaCase;
-	final SyntaxElem seMetaAccess;
-	final SyntaxElem seMetaUnerasable;
-	final SyntaxElem seMetaSingleton;
-	final SyntaxElem seMetaForward;
-	final SyntaxElem seMetaVirtual;
-	final SyntaxElem seMetaMacro;
-	final SyntaxElem seMetaStatic;
-	final SyntaxElem seMetaAbstract;
-	final SyntaxElem seMetaFinal;
-	final SyntaxElem seMetaNative;
-	final SyntaxElem seMetaSynchronized;
-	final SyntaxElem seMetaTransient;
-	final SyntaxElem seMetaVolatile;
-	final SyntaxElem seMetaBridge;
-	final SyntaxElem seMetaVarArgs;
-	final SyntaxElem seMetaSynthetic;
 	
 	
 	final Hashtable<Operator, SyntaxElem> exprs;
@@ -614,65 +582,6 @@ public class JavaSyntax extends TextSyntax {
 				);
 		}
 		{
-			SyntaxElem sp_hid = new SyntaxSpace(new SpaceCmd[0]);
-			sp_hid.fmt.is_hidden = true;
-			// import
-			seImport = setl(lout_nl,
-				kw("import"),
-				alt_enum("mode",
-					sp_hid.ncopy(),
-					kw("static"),
-					kw("package"),
-					kw("syntax")
-					),
-				ident("name"),
-				opt(new CalcOptionTrue("star"), sep(".*"), null, lout_empty),
-				sep(";"));
-			seOpdef = setl(lout_nl,
-				kw("operator"),
-				attr("image"),
-				sep(","),
-				alt_int("opmode",
-					kw("lfy"),
-					kw("xfx"),
-					kw("xfy"),
-					kw("yfx"),
-					kw("yfy"),
-					kw("xf"),
-					kw("yf"),
-					kw("fx"),
-					kw("fy"),
-					kw("xfxfy")
-					),
-				sep(","),
-				attr("prior"),
-				sep(";")
-				);
-			seTypeAssign = setl(lout_nl, attr("meta"), kw("typedef"), ident("id"), oper("="), attr("type_ref"), sep(";"));
-			
-			seTypeConstrClassArg = setl(lout_empty, ident("id"),
-				opt(new CalcOptionUpperBound(),
-					set(
-						kw("extends"),
-						lst("super_types", node(), oper("&"), lout_empty)
-						),
-					null, lout_empty
-					),
-				opt(new CalcOptionNotEmpty("lower_bound"),
-					set(
-						kw("super"),
-						lst("lower_bound", node(), sep("&"), lout_empty)
-						),
-					null, lout_empty
-					)
-				);
-			seTypeConstr = setl(lout_nl, attr("meta"), kw("typedef"), ident("id"), 
-				lst("super_types", set(oper("\u2264"), node()), null, lout_empty),
-				lst("lower_bound", set(oper("\u2265"), node()), null, lout_empty),
-				sep(";")
-				);
-		}
-		{
 			SpaceCmd[] lout_struct = new SpaceCmd[] {
 					new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
 				};
@@ -821,64 +730,6 @@ public class JavaSyntax extends TextSyntax {
 				);
 		}
 		{
-			seMetaSet = lst("metas", lout_empty);
-			SpaceCmd[] lout_at = new SpaceCmd[] {
-					new SpaceCmd(siSpOPER, SP_ADD, SP_NOP, 0),
-					new SpaceCmd(siSpWORD, SP_ADD, SP_EAT, 0),
-				};
-			SpaceCmd[] lout_meta = new SpaceCmd[] {
-					new SpaceCmd(siSpWORD, SP_NOP, SP_ADD, 0),
-					new SpaceCmd(siNl,     SP_ADD, SP_ADD, 1),
-				};
-			seUserMeta = setl(lout_meta,
-						new SyntaxToken("@",lout_at),
-						attr("type"),
-						opt(new CalcOptionNotEmpty("values"),
-							set(
-								sep("("),
-								lst("values",node(),sep(","),lout_empty),
-								sep(")")
-								),
-							null,
-							new SpaceCmd[0]
-							)
-						);
-			seMetaValueScalar = set(ident("ident"), oper("="), attr("value"));
-			seMetaValueArray = set(ident("ident"), oper("="),
-						set(sep("{"),
-							lst("values",node(),sep(","),lout_empty),
-							sep("}")
-							)
-						);
-			seMetaPacked = new SyntaxJavaPackedField();
-			seMetaAccess = kw("@access...");
-			seMetaAccess.fmt.is_hidden = true;
-			seMetaUnerasable = kw("@unerasable");
-			seMetaSingleton = kw("@singleton");
-			seMetaForward = kw("@forward");
-			seMetaVirtual = kw("@virtual");
-			seMetaMacro = kw("@macro");
-			seMetaStatic = kw("static");
-			seMetaAbstract = kw("abstract");
-			seMetaFinal = kw("final");
-			seMetaNative = kw("native");
-			seMetaSynchronized = kw("synchrtonized");
-			seMetaTransient = kw("transient");
-			seMetaVolatile = kw("volatile");
-			seMetaBridge = kw("@bridge");
-			seMetaVarArgs = kw("@varargs");
-			seMetaSynthetic = kw("@synthetic");
-		}
-		{
-			SpaceCmd[] lout_field = new SpaceCmd[] {
-					new SpaceCmd(siFldGrpNl, SP_EAT, SP_ADD,0),
-					new SpaceCmd(siNl,       SP_NOP, SP_ADD, 0),
-				};
-			// field
-			seFieldDecl = setl(lout_field,
-				attr("meta"),
-				attr("ftype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
-				);
 			// vars
 			seVarDecl = set(attr("meta"),
 				attr("vtype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))),
@@ -1367,34 +1218,6 @@ public class JavaSyntax extends TextSyntax {
 		}
 		switch (node) {
 		case FileUnit: return seFileUnit;
-		case Import: return seImport;
-		case Opdef: return seOpdef;
-		case TypeAssign: return seTypeAssign;
-		case TypeConstr:
-			//if (hint != null && "class-arg".equals(hint.text))
-			//	return seTypeConstrClassArg;
-			return seTypeConstr;
-		case MetaSet: return seMetaSet;
-		case UserMeta: return seUserMeta;
-		case MetaPacked: return seMetaPacked;
-		case MetaAccess: return seMetaAccess;
-		case MetaUnerasable: return seMetaUnerasable;
-		case MetaSingleton: return seMetaSingleton;
-		case MetaForward: return seMetaForward;
-		case MetaVirtual: return seMetaVirtual;
-		case MetaMacro: return seMetaMacro;
-		case MetaStatic: return seMetaStatic;
-		case MetaAbstract: return seMetaAbstract;
-		case MetaFinal: return seMetaFinal;
-		case MetaNative: return seMetaNative;
-		case MetaSynchronized: return seMetaSynchronized;
-		case MetaTransient: return seMetaTransient;
-		case MetaVolatile: return seMetaVolatile;
-		case MetaBridge: return seMetaBridge;
-		case MetaVarArgs: return seMetaVarArgs;
-		case MetaSynthetic: return seMetaSynthetic;
-		case MetaValueScalar: return seMetaValueScalar;
-		case MetaValueArray: return seMetaValueArray;
 		case Struct: {
 			Struct s = (Struct)node;
 			if (s.isEnum())
@@ -1413,7 +1236,6 @@ public class JavaSyntax extends TextSyntax {
 			//	return seStructBody;
 			return seStructClass;
 		}
-		case Field: return seFieldDecl;
 		case FormPar: return seFormPar;
 		case Var:
 			//if (hint != null) {

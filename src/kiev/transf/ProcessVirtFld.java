@@ -82,12 +82,12 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (setter != null && setter != m)
 				return;
 			acc = f.getMetaAccess();
-			if (acc == null) f.meta += (acc = new MetaAccess());
+			if (acc == null) f.meta.setF(acc = new MetaAccess());
 			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
 		} else {
 			s.addField(f=new Field(name,m.type.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
 			acc = f.getMetaAccess();
-			if (acc == null) f.meta += (acc = new MetaAccess());
+			if (acc == null) f.meta.setF(acc = new MetaAccess());
 			acc.setFlags(0);
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
@@ -132,12 +132,12 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (getter != null && getter != m)
 				return;
 			acc = f.getMetaAccess();
-			if (acc == null) f.meta += (acc = new MetaAccess());
+			if (acc == null) f.meta.setF(acc = new MetaAccess());
 			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
 		} else {
 			s.addField(f=new Field(name,m.type.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
 			acc = f.getMetaAccess();
-			if (acc == null) f.meta += (acc = new MetaAccess());
+			if (acc == null) f.meta.setF(acc = new MetaAccess());
 			acc.setFlags(0);
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}

@@ -40,9 +40,9 @@ public class Bytecoder implements JConstants {
 
 		// Clean some structure flags
 		if (bcclazz.flags != 0) {
-			if ((bcclazz.flags & ACC_PUBLIC) == ACC_PUBLIC) cl.meta.setU(new MetaAccess("public"));
-			if ((bcclazz.flags & ACC_PROTECTED) == ACC_PROTECTED) cl.meta.setU(new MetaAccess("protected"));
-			if ((bcclazz.flags & ACC_PRIVATE) == ACC_PRIVATE) cl.meta.setU(new MetaAccess("private"));
+			if ((bcclazz.flags & ACC_PUBLIC) == ACC_PUBLIC) cl.meta.setF(new MetaAccess("public"));
+			if ((bcclazz.flags & ACC_PROTECTED) == ACC_PROTECTED) cl.meta.setF(new MetaAccess("protected"));
+			if ((bcclazz.flags & ACC_PRIVATE) == ACC_PRIVATE) cl.meta.setF(new MetaAccess("private"));
 			if ((bcclazz.flags & ACC_STATIC) == ACC_STATIC) cl.meta.setF(new MetaStatic());
 			if ((bcclazz.flags & ACC_FINAL) == ACC_FINAL) cl.meta.setF(new MetaFinal());
 			if ((bcclazz.flags & ACC_ABSTRACT) == ACC_ABSTRACT) cl.meta.setF(new MetaAbstract());

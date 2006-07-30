@@ -677,6 +677,15 @@ public abstract class SyntaxAttr extends SyntaxElem {
 			}
 			sr.symbol = td;
 		}
+		if (in_syntax.name != null && in_syntax.name != "") {
+			DNode@ s;
+			if (!PassInfo.resolveNameR(this,s,new ResInfo(this,in_syntax.name,ResInfo.noForwards)))
+				Kiev.reportError(in_syntax,"Unresolved syntax "+in_syntax);
+			else if !(s instanceof TextSyntax)
+				Kiev.reportError(in_syntax,"Resolved type "+in_syntax+" is not a text syntax");
+			else
+				in_syntax.symbol = s;
+		}
 	}
 	
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
@@ -686,6 +695,14 @@ public abstract class SyntaxAttr extends SyntaxElem {
 			DNode@ s;
 			foreach (PassInfo.resolveNameR(this,s,info))
 				if (s instanceof Struct && ((Struct)s).isCompilerNode()) vect.append((Struct)s);
+			return vect.toArray();
+		}
+		if (slot.name == "in_syntax") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<TextSyntax> vect = new Vector<TextSyntax>();
+			DNode@ s;
+			foreach (PassInfo.resolveNameR(this,s,info))
+				if (s instanceof TextSyntax) vect.append((TextSyntax)s);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);

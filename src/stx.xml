@@ -2601,6 +2601,18 @@
            <text>fmt:</text>
            <fmt>
             <a-node class='kiev.fmt.SimpleElemFormat'>
+             <spaces>
+              <a-node class='kiev.fmt.SpaceCmd'>
+               <si>
+                <a-node class='kiev.vlang.SymbolRef'>
+                 <name>sp</name>
+                </a-node>
+               </si>
+               <action_before>SP_ADD</action_before>
+               <action_after>SP_ADD</action_after>
+               <from_attempt>0</from_attempt>
+              </a-node>
+             </spaces>
              <is_hidden>false</is_hidden>
             </a-node>
            </fmt>
@@ -2642,9 +2654,54 @@
            </fmt>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
+           <text>in:</text>
+           <fmt>
+            <a-node class='kiev.fmt.SimpleElemFormat'>
+             <spaces>
+              <a-node class='kiev.fmt.SpaceCmd'>
+               <si>
+                <a-node class='kiev.vlang.SymbolRef'>
+                 <name>sp</name>
+                </a-node>
+               </si>
+               <action_before>SP_ADD</action_before>
+               <action_after>SP_ADD</action_after>
+               <from_attempt>0</from_attempt>
+              </a-node>
+             </spaces>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>in_syntax</name>
+           <in_syntax>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name></name>
+            </a-node>
+           </in_syntax>
+           <fmt>
+            <a-node class='kiev.fmt.SimpleElemFormat'>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
            <text>types:</text>
            <fmt>
             <a-node class='kiev.fmt.SimpleElemFormat'>
+             <spaces>
+              <a-node class='kiev.fmt.SpaceCmd'>
+               <si>
+                <a-node class='kiev.vlang.SymbolRef'>
+                 <name>sp</name>
+                </a-node>
+               </si>
+               <action_before>SP_ADD</action_before>
+               <action_after>SP_NOP</action_after>
+               <from_attempt>0</from_attempt>
+              </a-node>
+             </spaces>
              <is_hidden>false</is_hidden>
             </a-node>
            </fmt>

@@ -77,7 +77,7 @@ public abstract class DNode extends ASTNode {
 
 	
 	public final MetaAccess getMetaAccess() {
-		return (MetaAccess)this.meta.getU("kiev.stdlib.meta.access");
+		return (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
 	}
 
 	public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
@@ -109,14 +109,14 @@ public abstract class DNode extends ASTNode {
 	public void setPublic() {
 		MetaAccess m = getMetaAccess();
 		if (m == null)
-			this.meta.setU(new MetaAccess("public"));
+			this.meta.setF(new MetaAccess("public"));
 		else
 			m.setSimple("public");
 	}
 	public void setPrivate() {
 		MetaAccess m = getMetaAccess();
 		if (m == null)
-			this.meta.setU(new MetaAccess("private"));
+			this.meta.setF(new MetaAccess("private"));
 		else
 			m.setSimple("private");
 	}
@@ -124,7 +124,7 @@ public abstract class DNode extends ASTNode {
 		MetaAccess m = (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
 		MetaAccess m = getMetaAccess();
 		if (m == null)
-			this.meta.setU(new MetaAccess("protected"));
+			this.meta.setF(new MetaAccess("protected"));
 		else
 			m.setSimple("protected");
 	}

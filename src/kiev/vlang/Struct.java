@@ -256,9 +256,9 @@ public class Struct extends TypeDecl implements PreScanneable {
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
 		this.package_clazz = outer;
 		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setU(new MetaAccess("public"));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setU(new MetaAccess("protected"));
-			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) meta.setU(new MetaAccess("private"));
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setF(new MetaAccess("public"));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setF(new MetaAccess("protected"));
+			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) meta.setF(new MetaAccess("private"));
 			if ((flags & ACC_STATIC) == ACC_STATIC) meta.setF(new MetaStatic());
 			if ((flags & ACC_FINAL) == ACC_FINAL) meta.setF(new MetaFinal());
 			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.setF(new MetaAbstract());

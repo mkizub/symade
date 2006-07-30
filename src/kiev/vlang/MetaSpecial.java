@@ -174,7 +174,23 @@ public final class MetaPizzaCase extends UserMeta {
 }
 
 @node
-public final class MetaAccess extends UserMeta {
+public abstract class MetaFlag extends ANode {
+	@virtual typedef This  ≤ MetaFlag;
+
+	public abstract String qname();
+
+	public final void callbackAttached() { setFlag(getDNode(), true); super.callbackAttached(); }
+	public final void callbackDetached() { setFlag(getDNode(), false); super.callbackDetached(); }
+	private DNode getDNode() {
+		ANode p = ((MetaSet)parent()).parent();
+		if (p instanceof DNode) return (DNode)p;
+		return null;
+	}
+	abstract void setFlag(DNode dn, boolean on);
+}
+
+@node
+public final class MetaAccess extends MetaFlag {
 	@virtual typedef This  = MetaAccess;
 
 	public String		simple;
@@ -190,30 +206,23 @@ public final class MetaAccess extends UserMeta {
 	public @packed:1,flags,0 boolean	w_private;
 
 	public MetaAccess() {
-		super("kiev.stdlib.meta.access");
 		this.simple = "";
 		this.flags  = -1;
 	}
 	public MetaAccess(String simple) {
-		super("kiev.stdlib.meta.access");
 		this.simple = simple.intern();
 		this.flags  = -1;
 	}
 	public MetaAccess(String simple, int flags) {
-		super("kiev.stdlib.meta.access");
 		this.simple = simple.intern();
 		this.flags = flags;
 	}
 
 	public String qname() { return "kiev.stdlib.meta.access"; }
 
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if!(p instanceof DNode)
+	void setFlag(DNode dn, boolean on) {
+		if (dn == null)
 			return;
-		DNode dn = (DNode)p;
 		if (on) {
 			if (simple == "public")		{ dn.is_access = DNode.MASK_ACC_PUBLIC; return; }
 			if (simple == "protected")	{ dn.is_access = DNode.MASK_ACC_PROTECTED; return; }
@@ -223,15 +232,14 @@ public final class MetaAccess extends UserMeta {
 	}
 	
 	@setter public void setSimple(String val) {
-		this.open();
 		this.simple = val.intern();
-		super.setS("simple", val);
+		ANode p = ((MetaSet)parent()).parent();
+		if (p instanceof DNode)
+			setFlag((DNode)p, true);
 	}
 
 	@setter public void setFlags(int val) {
-		this.open();
 		this.flags = val;
-		super.setI("flags",val);
 	}
 
 	public static boolean readable(DNode dn) {
@@ -444,22 +452,6 @@ public final class MetaAccess extends UserMeta {
 		sb.append("\n\tfrom class ").append(getStructOf(from));
 		Kiev.reportError(from,new RuntimeException(sb.toString()));
 	}
-}
-
-@node
-public abstract class MetaFlag extends ANode {
-	@virtual typedef This  ≤ MetaFlag;
-
-	public abstract String qname();
-
-	public final void callbackAttached() { setFlag(getDNode(), true); super.callbackAttached(); }
-	public final void callbackDetached() { setFlag(getDNode(), false); super.callbackDetached(); }
-	private DNode getDNode() {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) return (DNode)p;
-		return null;
-	}
-	abstract void setFlag(DNode dn, boolean on);
 }
 
 @node

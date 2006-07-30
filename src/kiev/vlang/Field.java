@@ -109,9 +109,9 @@ public final class Field extends LvalDNode {
 		this.id = name;
 		this.ftype = ftype;
 		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setU(new MetaAccess("public"));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setU(new MetaAccess("protected"));
-			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) meta.setU(new MetaAccess("private"));
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setF(new MetaAccess("public"));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setF(new MetaAccess("protected"));
+			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) meta.setF(new MetaAccess("private"));
 			if ((flags & ACC_STATIC) == ACC_STATIC) meta.setF(new MetaStatic());
 			if ((flags & ACC_FINAL) == ACC_FINAL) meta.setF(new MetaFinal());
 			if ((flags & ACC_FORWARD) == ACC_FORWARD) meta.setF(new MetaForward());
