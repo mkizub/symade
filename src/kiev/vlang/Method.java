@@ -28,7 +28,7 @@ import syntax kiev.Syntax;
  */
 
 @node(name="Method")
-public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessable,PreScanneable {
+public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in")	Block		body;
@@ -42,7 +42,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 	@virtual typedef JView = JMethod;
 	@virtual typedef RView ≤ RMethod;
 
-		 public Access				acc;
 	@att public TypeDef[]			targs;
 	@att public TypeRef				type_ret;
 	@att public TypeRef				dtype_ret;
@@ -248,9 +247,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 
 	public static Method[]	emptyArray = new Method[0];
 
-	@getter public Access			get$acc()			{ return this.acc; }
-	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
-	
 	public Method() {}
 
 	public Method(String name, Type ret) {
@@ -269,9 +265,9 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,Accessa
 		this.type_ret = type_ret;
 		this.dtype_ret = type_ret.ncopy();
 		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setF(new MetaAccess(MetaAccess.AccessValue.Public));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Protected));
-			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Private));
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setU(new MetaAccess("public"));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setU(new MetaAccess("protected"));
+			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) meta.setU(new MetaAccess("private"));
 			if ((flags & ACC_STATIC) == ACC_STATIC) meta.setF(new MetaStatic());
 			if ((flags & ACC_FINAL) == ACC_FINAL) meta.setF(new MetaFinal());
 			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.setF(new MetaAbstract());

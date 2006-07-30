@@ -19,7 +19,6 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	static final AttrSlot TI_ATTR = new TmpAttrSlot("rstruct ti field temp expr",true,false,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
 
-	public:ro			Access					acc;
 	public:ro			WrapperMetaType			wmeta_type;
 	public:ro			TypeRef					view_of;
 	public:ro			Struct					package_clazz;
@@ -1393,18 +1392,18 @@ public final view RStruct of Struct extends RTypeDecl {
 				try {
 					f.type.checkResolved();
 					if (f.type.getStruct()!=null)
-						Access.verifyReadWrite((Struct)this,f.type.getStruct());
+						MetaAccess.verifyReadWrite((Struct)this,f.type.getStruct());
 				} catch(Exception e ) { Kiev.reportError(f,e); }
 			}
 			foreach(Method m; members) {
 				try {
 					m.type.ret().checkResolved();
 					if (m.type.ret().getStruct()!=null)
-						Access.verifyReadWrite((Struct)this,m.type.ret().getStruct());
+						MetaAccess.verifyReadWrite((Struct)this,m.type.ret().getStruct());
 					foreach(Type t; m.type.params()) {
 						t.checkResolved();
 						if (t.getStruct()!=null)
-							Access.verifyReadWrite((Struct)this,t.getStruct());
+							MetaAccess.verifyReadWrite((Struct)this,t.getStruct());
 					}
 				} catch(Exception e ) { Kiev.reportError(m,e); }
 			}

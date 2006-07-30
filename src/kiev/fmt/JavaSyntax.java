@@ -598,13 +598,6 @@ public class JavaSyntax extends TextSyntax {
 		return set;
 	}
 
-	protected SyntaxElem accs() {
-		SpaceCmd[] lout = new SpaceCmd[] {
-				new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
-			};
-		return new SyntaxJavaAccess(lout);
-	}
-	
 	public JavaSyntax() {
 		SpaceCmd[] lout_empty = new SpaceCmd[0];
 		SpaceCmd[] lout_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_NOP,SP_ADD,0)};
@@ -727,7 +720,6 @@ public class JavaSyntax extends TextSyntax {
 			seStructClass = set(
 					setl(lout_struct_hdr,
 						attr("meta"),
-						accs(),
 						kw("class"),
 						ident("id"),
 						struct_args.ncopy(),
@@ -738,7 +730,6 @@ public class JavaSyntax extends TextSyntax {
 			seStructInterface = set(
 					setl(lout_struct_hdr,
 						attr("meta"),
-						accs(),
 						kw("interface"),
 						ident("id"),
 						struct_args.ncopy(),
@@ -749,7 +740,6 @@ public class JavaSyntax extends TextSyntax {
 			seStructView = set(
 					setl(lout_struct_hdr,
 						attr("meta"),
-						accs(),
 						kw("view"),
 						ident("id"),
 						struct_args.ncopy(),
@@ -762,7 +752,6 @@ public class JavaSyntax extends TextSyntax {
 			seStructAnnotation = set(
 					setl(lout_struct_hdr,
 						attr("meta"),
-						accs(),
 						kw("@interface"),
 						ident("id")),
 					seStructBody.ncopy()
@@ -771,7 +760,6 @@ public class JavaSyntax extends TextSyntax {
 			seStructSyntax = set(
 					setl(lout_struct_hdr,
 						attr("meta"),
-						accs(),
 						kw("syntax"),
 						ident("id")),
 					seStructBody.ncopy()
@@ -788,7 +776,6 @@ public class JavaSyntax extends TextSyntax {
 //			};
 			seStructCase = setl(lout_nl_grp,
 					attr("meta"),
-					accs(),
 					kw("case"),
 					ident("id"),
 					struct_args.ncopy(),
@@ -821,7 +808,6 @@ public class JavaSyntax extends TextSyntax {
 			seStructEnum = set(
 					setl(lout_struct_hdr,
 						attr("meta"),
-						accs(),
 						kw("enum"),
 						ident("id")),
 					set(
@@ -891,7 +877,6 @@ public class JavaSyntax extends TextSyntax {
 			// field
 			seFieldDecl = setl(lout_field,
 				attr("meta"),
-				accs(),
 				attr("ftype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))), sep(";")
 				);
 			// vars
@@ -930,7 +915,7 @@ public class JavaSyntax extends TextSyntax {
 				), null, lout_method_type_args);
 			// constructor
 			seConstructor = setl(lout_method,
-				setl(lout_empty, attr("meta"), accs(),
+				setl(lout_empty, attr("meta"),
 					ident("id"),
 					set(sep("("),
 						method_params.ncopy(),
@@ -942,7 +927,7 @@ public class JavaSyntax extends TextSyntax {
 				);
 			// method
 			seMethod = setl(lout_method,
-				setl(lout_empty, attr("meta"), accs(),
+				setl(lout_empty, attr("meta"),
 					method_type_args.ncopy(),
 					attr("type_ret"), ident("id"),
 					set(sep("("),
@@ -956,7 +941,7 @@ public class JavaSyntax extends TextSyntax {
 				);
 			// logical rule method
 			seRuleMethod = setl(lout_method,
-				setl(lout_nl, attr("meta"), accs(),
+				setl(lout_nl, attr("meta"),
 					method_type_args.ncopy(),
 					kw("rule"), ident("id"),
 					set(sep("("),

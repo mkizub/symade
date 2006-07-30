@@ -236,7 +236,7 @@ public final class IFldExpr extends LvalueExpr {
 		return false;
 	}
 	public Object	getConstValue() {
-		Access.verifyRead(this,var);
+		MetaAccess.verifyRead(this,var);
 		if( var.isFinal() ) {
 			if (var.init != null && var.init.isConstantExpr())
 				return var.init.getConstValue();
@@ -555,7 +555,7 @@ public final class SFldExpr extends LvalueExpr {
 		return false;
 	}
 	public Object	getConstValue() {
-		Access.verifyRead((ASTNode)this,var);
+		MetaAccess.verifyRead((ASTNode)this,var);
 		if( var.isFinal() ) {
 			if (var.init != null && var.init.isConstantExpr())
 				return var.init.getConstValue();

@@ -307,7 +307,6 @@ CLASS kiev.transf.VirtFldME_PreGenerate kiev/transf/VirtFldME_PreGenerate kiev\t
 CLASS kiev.vlang.ANode kiev/vlang/ANode kiev\vlang\AST.java
 CLASS kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java
 CLASS kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
-CLASS kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
 CLASS kiev.vlang.AccessExpr kiev/vlang/AccessExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.AnyInstanceOf kiev/vlang/AnyInstanceOf kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.AssertEnabledExpr kiev/vlang/AssertEnabledExpr kiev\vlang\Expr.java
@@ -866,7 +865,6 @@ INTERFACE kiev.stdlib.meta.unerasable kiev/stdlib/meta/unerasable kiev\stdlib\me
 INTERFACE kiev.stdlib.meta.varargs kiev/stdlib/meta/varargs kiev\stdlib\meta\varargs.java
 INTERFACE kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 INTERFACE kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
-INTERFACE kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
 INTERFACE kiev.vlang.BreakTarget kiev/vlang/BreakTarget kiev\vlang\PassInfo.java
 INTERFACE kiev.vlang.Constants kiev/vlang/Constants kiev\vlang\Constants.java
 INTERFACE kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java

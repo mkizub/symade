@@ -216,8 +216,6 @@ public abstract class kiev040 {
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclLoaded(true);
 		modifiers.moveToNode(clazz);
-		if (modifiers.acc != null)
-			clazz.acc  = modifiers.acc;
 		if (parent instanceof FileUnit) {
 			clazz.setLocal(false);
 			clazz.setStatic(true);
@@ -249,7 +247,6 @@ public abstract class kiev040 {
 		Constructor meth = new Constructor(0);
 		meth.pos = id.pos;
 		modifiers.moveToNode(meth);
-		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
 	
@@ -257,7 +254,6 @@ public abstract class kiev040 {
 		Method meth = new Method(id, ret, 0);
 		meth.pos = id.pos;
 		modifiers.moveToNode(meth);
-		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
 	
@@ -265,7 +261,6 @@ public abstract class kiev040 {
 		RuleMethod meth = new RuleMethod(id, 0);
 		meth.pos = id.pos;
 		modifiers.moveToNode(meth);
-		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
 	
@@ -275,13 +270,6 @@ public abstract class kiev040 {
 		Field f = new Field(id,ret,0);
 		f.pos = id.pos;
 		modifiers.copyToNode(f);
-		if (first) {
-			if (modifiers.acc != null)
-				f.acc = modifiers.acc;
-		} else {
-			if (modifiers.acc != null)
-				f.acc = new Access(modifiers.acc.flags);
-		}
 		return f;
 	}
 
@@ -1334,17 +1322,18 @@ TypeConstr ArgumentDeclaration() :
 }
 
 void Access(ASTModifiers modifiers) :
-{ int acc; 	int accflags = 0; int offset = 6; }
+{ int acc; 	int accflags = 0; int offset = 6; MetaAccess ma; }
 {
 	(
-		"@access"
-	|	"@public"		{ modifiers += new MetaAccess(MetaAccess.AccessValue.Public); }
-	|	"public"		{ modifiers += new MetaAccess(MetaAccess.AccessValue.Public); }
-	|	"@protected"	{ modifiers += new MetaAccess(MetaAccess.AccessValue.Protected); }
-	|	"protected"		{ modifiers += new MetaAccess(MetaAccess.AccessValue.Protected); }
-	|	"@private"		{ modifiers += new MetaAccess(MetaAccess.AccessValue.Private); }
-	|	"private"		{ modifiers += new MetaAccess(MetaAccess.AccessValue.Private); }
+		"@access"		{ ma = new MetaAccess(); }
+	|	"@public"		{ ma = new MetaAccess("public"); }
+	|	"public"		{ ma = new MetaAccess("public"); }
+	|	"@protected"	{ ma = new MetaAccess("protected"); }
+	|	"protected"		{ ma = new MetaAccess("protected"); }
+	|	"@private"		{ ma = new MetaAccess("private"); }
+	|	"private"		{ ma = new MetaAccess("private"); }
 	)
+	{ modifiers += ma; }
 	(
 		<COLON1> // ":"
 		acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
@@ -1352,7 +1341,7 @@ void Access(ASTModifiers modifiers) :
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		]]]
-		{ modifiers.acc = new Access(accflags); }
+		{ ma.setFlags(accflags); }
 	|	<OPEN_ACCESS> // "("
 		acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
@@ -1360,7 +1349,7 @@ void Access(ASTModifiers modifiers) :
 		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 		]]]
 		<CLOSE_ACCESS> // ")"
-		{ modifiers.acc = new Access(accflags); }
+		{ ma.setFlags(accflags); }
 	)?
 }
 

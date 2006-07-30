@@ -311,6 +311,7 @@ public class UserMeta extends ENode {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].ident.name == name) {
+				values[i].open();
 				((MetaValueScalar)values[i]).value = new ConstBoolExpr(val);
 				return values[i];
 			}
@@ -325,6 +326,7 @@ public class UserMeta extends ENode {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].ident.name == name) {
+				values[i].open();
 				((MetaValueScalar)values[i]).value = new ConstIntExpr(val);
 				return values[i];
 			}
@@ -339,6 +341,7 @@ public class UserMeta extends ENode {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].ident.name == name) {
+				values[i].open();
 				((MetaValueScalar)values[i]).value = new ConstStringExpr(val);
 				return values[i];
 			}

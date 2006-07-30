@@ -19,7 +19,6 @@ public final class ASTModifiers extends ASTNode {
 	
 	@virtual typedef This  = ASTModifiers;
 
-	@ref public Access 				acc;
 	@ref public ANode[]				annotations;
 
 	public ASTModifiers() {}

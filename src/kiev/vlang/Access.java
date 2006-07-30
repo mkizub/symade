@@ -91,9 +91,7 @@ public class Access implements Constants {
 	}
 	
 	private void verifyAccessDecl(DNode n) {
-		flags &= 0xFFFF0000;
-		flags |= (flags >>> 16);
-		if( flags == 0 ) {
+		if( flags == -1 ) {
 			if( n.isPublic() ) flags = 0xFF;
 			else if( n.isProtected() ) flags = 0x3F;
 			else if( n.isPrivate() ) flags = 0x3;

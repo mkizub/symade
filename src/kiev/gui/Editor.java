@@ -867,10 +867,10 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 	static final int SETNEW_HERE = 0;
 	static final int INSERT_NEXT = 1;
 
-	private final Editor		editor;
-	private final int			mode;
-	private       int			idx;
-	private       JPopupMenu	menu;
+	final Editor		editor;
+	final int			mode;
+	      int			idx;
+	      JPopupMenu	menu;
 
 	NewElemEditor(Editor editor, int mode) {
 		this.editor = editor;

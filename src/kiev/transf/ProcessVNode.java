@@ -290,7 +290,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				setVal.params.add(new FormPar(0, "val", Type.tpObject, FormPar.PARAM_NORMAL, ACC_FINAL));
 				s.addMethod(setVal);
 				setVal.body = new Block(0);
-				if (!f.isFinal() && Access.writeable(f)) {
+				if (!f.isFinal() && MetaAccess.writeable(f)) {
 					ENode lval = new IFldExpr(f.pos, new CastExpr(f.pos, snode.xtype, new LVarExpr(0, setVal.params[0]) ), f);
 					ENode val = new LVarExpr(0, setVal.params[1]);
 					Type ftp = f.getType();
@@ -571,7 +571,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			}
 			foreach (Field f; aflds; f.parent() == s) {
 				boolean isArr = f.getType().isInstanceOf(tpNArray);
-				if (isArr || f.isFinal() || !Access.writeable(f))
+				if (isArr || f.isFinal() || !MetaAccess.writeable(f))
 					continue;
 				{	// check if we may not copy the field
 					UserMeta fmeta = f.meta.getU(mnAtt);

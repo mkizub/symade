@@ -76,6 +76,10 @@ public abstract class DNode extends ASTNode {
 	public @packed:1,flags,23 boolean is_has_throws;
 
 	
+	public final MetaAccess getMetaAccess() {
+		return (MetaAccess)this.meta.getU("kiev.stdlib.meta.access");
+	}
+
 	public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
 	public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }
 	public final boolean isProtected()			{ return this.is_access == MASK_ACC_PROTECTED; }
@@ -103,24 +107,36 @@ public abstract class DNode extends ASTNode {
 	public final boolean isSyntax()				{ return this.is_access == MASK_ACC_SYNTAX; }
 
 	public void setPublic() {
-		MetaAccess m = (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
-		if (m == null || m.value != "public")
-			this.meta.setF(new MetaAccess(MetaAccess.AccessValue.Public));
+		MetaAccess m = getMetaAccess();
+		if (m == null)
+			this.meta.setU(new MetaAccess("public"));
+		else
+			m.setSimple("public");
 	}
 	public void setPrivate() {
-		MetaAccess m = (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
-		if (m == null || m.value != "private")
-			this.meta.setF(new MetaAccess(MetaAccess.AccessValue.Private));
+		MetaAccess m = getMetaAccess();
+		if (m == null)
+			this.meta.setU(new MetaAccess("private"));
+		else
+			m.setSimple("private");
 	}
 	public void setProtected() {
 		MetaAccess m = (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
-		if (m == null || m.value != "protected")
-			this.meta.setF(new MetaAccess(MetaAccess.AccessValue.Protected));
+		MetaAccess m = getMetaAccess();
+		if (m == null)
+			this.meta.setU(new MetaAccess("protected"));
+		else
+			m.setSimple("protected");
 	}
 	public void setPkgPrivate() {
 		MetaAccess m = (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
-		if (m != null)
-			m.detach();
+		MetaAccess m = getMetaAccess();
+		if (m != null) {
+			if (m.flags != -1 || m.flags != 0xF)
+				m.setSimple("");
+			else
+				m.detach();
+		}
 	}
 	public final void setPackage() {
 		if (this.is_access != MASK_ACC_NAMESPACE) {

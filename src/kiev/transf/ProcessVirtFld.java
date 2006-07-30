@@ -73,6 +73,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	private void addSetterForAbstractField(Struct s, String name, Method m) {
 		name = name.intern();
 		Field f = s.resolveField( name, false );
+		MetaAccess acc;
 		if( f != null ) {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
 			if (f.parent() != m.parent())
@@ -80,11 +81,14 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			Method setter = (Method)Field.SETTER_ATTR.get(f);
 			if (setter != null && setter != m)
 				return;
-			if (f.acc == null) f.acc = new Access(0);
+			acc = f.getMetaAccess();
+			if (acc == null) f.meta += (acc = new MetaAccess());
+			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
 		} else {
 			s.addField(f=new Field(name,m.type.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
-			f.acc = new Access(0);
-			f.acc.flags = 0;
+			acc = f.getMetaAccess();
+			if (acc == null) f.meta += (acc = new MetaAccess());
+			acc.setFlags(0);
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
 		f.setVirtual(true);
@@ -93,33 +97,33 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			Kiev.reportWarning(m,"Method looks to be a setter, but @setter is not specified");
 		}
 		if( m.isPublic() ) {
-			f.acc.w_public = true;
-			f.acc.w_protected = true;
-			f.acc.w_default = true;
-			f.acc.w_private = true;
+			acc.w_public = true;
+			acc.w_protected = true;
+			acc.w_default = true;
+			acc.w_private = true;
 		}
 		else if( m.isPrivate() ) {
-			f.acc.w_public = false;
-			f.acc.w_protected = false;
-			f.acc.w_default = false;
-			f.acc.w_private = true;
+			acc.w_public = false;
+			acc.w_protected = false;
+			acc.w_default = false;
+			acc.w_private = true;
 		}
 		else if( m.isProtected() ) {
-			f.acc.w_public = false;
-			f.acc.w_private = true;
+			acc.w_public = false;
+			acc.w_private = true;
 		}
 		else {
-			f.acc.w_public = false;
-			f.acc.w_default = true;
-			f.acc.w_private = true;
+			acc.w_public = false;
+			acc.w_default = true;
+			acc.w_private = true;
 		}
-		f.acc.flags |= f.acc.flags << 16;
-		Access.verifyDecl(f);
+		MetaAccess.verifyDecl(f);
 	}
 	
 	private void addGetterForAbstractField(Struct s, String name, Method m) {
 		name = name.intern();
 		Field f = s.resolveField( name, false );
+		MetaAccess acc;
 		if( f != null ) {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
 			if (f.parent() != m.parent())
@@ -127,11 +131,14 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			Method getter = (Method)Field.GETTER_ATTR.get(f);
 			if (getter != null && getter != m)
 				return;
-			if (f.acc == null) f.acc = new Access(0);
+			acc = f.getMetaAccess();
+			if (acc == null) f.meta += (acc = new MetaAccess());
+			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
 		} else {
 			s.addField(f=new Field(name,m.type.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
-			f.acc = new Access(0);
-			f.acc.flags = 0;
+			acc = f.getMetaAccess();
+			if (acc == null) f.meta += (acc = new MetaAccess());
+			acc.setFlags(0);
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
 		f.setVirtual(true);
@@ -140,28 +147,27 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			Kiev.reportWarning(m,"Method looks to be a getter, but @getter is not specified");
 		}
 		if( m.isPublic() ) {
-			f.acc.r_public = true;
-			f.acc.r_protected = true;
-			f.acc.r_default = true;
-			f.acc.r_private = true;
+			acc.r_public = true;
+			acc.r_protected = true;
+			acc.r_default = true;
+			acc.r_private = true;
 		}
 		else if( m.isPrivate() ) {
-			f.acc.r_public = false;
-			f.acc.r_protected = false;
-			f.acc.r_default = false;
-			f.acc.r_private = true;
+			acc.r_public = false;
+			acc.r_protected = false;
+			acc.r_default = false;
+			acc.r_private = true;
 		}
 		else if( m.isProtected() ) {
-			f.acc.r_public = false;
-			f.acc.r_private = true;
+			acc.r_public = false;
+			acc.r_private = true;
 		}
 		else {
-			f.acc.r_public = false;
-			f.acc.r_default = true;
-			f.acc.r_private = true;
+			acc.r_public = false;
+			acc.r_default = true;
+			acc.r_private = true;
 		}
-		f.acc.flags |= f.acc.flags << 16;
-		Access.verifyDecl(f);
+		MetaAccess.verifyDecl(f);
 	}
 }
 
@@ -233,7 +239,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				if( set_found ) break;
 			}
 		}
-		if( !set_found && Access.writeable(f) ) {
+		if( !set_found && MetaAccess.writeable(f) ) {
 			Method set_var = new Method(set_name,Type.tpVoid,f.getJavaFlags() | ACC_SYNTHETIC);
 			if (s.isInterface())
 				set_var.setFinal(false);
@@ -264,13 +270,13 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			}
 			Field.SETTER_ATTR.set(f, set_var);
 		}
-		else if( set_found && !Access.writeable(f) ) {
+		else if( set_found && !MetaAccess.writeable(f) ) {
 			Kiev.reportError(f,"Virtual set$ method for non-writeable field "+f);
 		}
 
 		if (!f.isVirtual())
 			return;		// no need to generate getter
-		if( !get_found && Access.readable(f)) {
+		if( !get_found && MetaAccess.readable(f)) {
 			Method get_var = new Method(get_name,f.type,f.getJavaFlags() | ACC_SYNTHETIC);
 			if (s.isInterface())
 				get_var.setFinal(false);
@@ -286,7 +292,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			}
 			Field.GETTER_ATTR.set(f, get_var);
 		}
-		else if( get_found && !Access.readable(f) ) {
+		else if( get_found && !MetaAccess.readable(f) ) {
 			Kiev.reportError(f,"Virtual get$ method for non-readable field "+f);
 		}
 	}

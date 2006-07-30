@@ -65,27 +65,19 @@ public class DrawJavaAccess extends DrawTerm {
 	}
 
 	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (node instanceof DNode && node instanceof Accessable) {
-			if (Access.getFlags((DNode)node) == 0x0F)
-				this.geometry.is_hidden = true;
-			else
-				this.geometry.is_hidden = false;
-		}
-		else
-			this.geometry.is_hidden = true;
 		if (this.isUnvisible())
 			return;
 		super.preFormat(cont, expected_stx, expected_node);
 	}
 	
 	String makeText(Formatter fmt) {
-		DNode dn = (DNode)node;
+		MetaAccess acc = (MetaAccess)node;
 		String text;
-		if (dn.isPublic())
+		if (acc.simple == "public")
 			text = "public"+mkString(0xFF);
-		else if (dn.isProtected())
+		else if (acc.simple == "protected")
 			text = "protected"+mkString(0x3F);
-		else if (dn.isPrivate())
+		else if (acc.simple == "private")
 			text = "private"+mkString(0x03);
 		else
 			text = "@access"+mkString(0x0F);
@@ -93,9 +85,9 @@ public class DrawJavaAccess extends DrawTerm {
 	}
 
 	private String mkString(int expected) {
-		if (Access.getFlags((DNode)node) == expected)
+		MetaAccess acc = (MetaAccess)node;
+		if (acc.flags == -1 || acc.flags == expected)
 			return "";
-		Access acc = ((Accessable)node).acc;
 		StringBuffer sb = new StringBuffer(":");
 
 		if( acc.r_public && acc.w_public ) sb.append("rw,");

@@ -19,7 +19,6 @@ import syntax kiev.Syntax;
 @nodeview
 public view RMethod of Method extends RDNode {
 
-	public				Access				acc;
 	public:ro			TypeDef[]			targs;
 	public				TypeRef				type_ret;
 	public				TypeRef				dtype_ret;

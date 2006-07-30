@@ -2283,6 +2283,9 @@
            <name>SyntaxNode</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
+           <name>SyntaxJavaAccess</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
            <name>SyntaxSpace</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
@@ -4044,6 +4047,100 @@
      <id>
       <a-node class='kiev.vlang.Symbol'>
        <sname>stx-def-space</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>SyntaxJavaAccess</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxFolder'>
+       <folded_by_default>true</folded_by_default>
+       <folded>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>@access</text>
+         <fmt>
+          <a-node class='kiev.fmt.RefElemFormat'>
+           <decl>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-of-kw</name>
+            </a-node>
+           </decl>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+       </folded>
+       <unfolded>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&lt;</text>
+           <fmt>
+            <a-node class='kiev.fmt.SimpleElemFormat'>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>@access:</text>
+           <fmt>
+            <a-node class='kiev.fmt.SimpleElemFormat'>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>fmt</name>
+           <in_syntax>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name></name>
+            </a-node>
+           </in_syntax>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SimpleElemFormat</name>
+            </a-node>
+           </expected_types>
+           <fmt>
+            <a-node class='kiev.fmt.SimpleElemFormat'>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&gt;</text>
+           <fmt>
+            <a-node class='kiev.fmt.SimpleElemFormat'>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+         </elements>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+       </unfolded>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-def-java-access</sname>
       </a-node>
      </id>
     </a-node>

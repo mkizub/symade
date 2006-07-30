@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
  */
 
 @node(name="Field")
-public final class Field extends LvalDNode implements Accessable {
+public final class Field extends LvalDNode {
 	public static Field[]	emptyArray = new Field[0];
 
 	public static final AttrSlot GETTER_ATTR = new ExtAttrSlot("getter method",false,false,TypeInfo.newTypeInfo(Method.class,null));
@@ -37,8 +37,6 @@ public final class Field extends LvalDNode implements Accessable {
 	@virtual typedef JView = JField;
 	@virtual typedef RView = RField;
 
-	/** Field' access */
-		 public Access				acc;
 	/** Type of the field */
 	@att public TypeRef				ftype;
 	/** Initial value of this field */
@@ -101,9 +99,6 @@ public final class Field extends LvalDNode implements Accessable {
 		}
 	}
 
-	@setter public final void		set$acc(Access val)	{ this.acc = val; Access.verifyDecl(this); }
-	@getter public final Access		get$acc()			{ return this.acc; }
-
 	public Field() {}
 	
     /** Constructor for new field
@@ -114,9 +109,9 @@ public final class Field extends LvalDNode implements Accessable {
 		this.id = name;
 		this.ftype = ftype;
 		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setF(new MetaAccess(MetaAccess.AccessValue.Public));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Protected));
-			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Private));
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setU(new MetaAccess("public"));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setU(new MetaAccess("protected"));
+			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) meta.setU(new MetaAccess("private"));
 			if ((flags & ACC_STATIC) == ACC_STATIC) meta.setF(new MetaStatic());
 			if ((flags & ACC_FINAL) == ACC_FINAL) meta.setF(new MetaFinal());
 			if ((flags & ACC_FORWARD) == ACC_FORWARD) meta.setF(new MetaForward());

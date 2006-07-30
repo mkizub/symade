@@ -332,7 +332,7 @@ public final class ArrayMetaType extends MetaType {
 		tdecl.setTypeDeclLoaded(true);
 		tdecl.package_clazz.sub_decls.add(tdecl);
 		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
-		length.acc = new Access(0xAA); //public:ro
+		length.meta += new MetaAccess("public",0xAA); //public:ro
 		tdecl.members.add(length);
 		Method get = new Method("get", StdTypes.tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
 		get.params.add(new FormPar(0,"idx",StdTypes.tpInt,FormPar.PARAM_NORMAL,0));

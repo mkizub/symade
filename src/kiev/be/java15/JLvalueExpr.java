@@ -70,7 +70,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		Access.verifyRead(this,var);
+		MetaAccess.verifyRead(this,var);
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
 		if (var.isNative()) {
@@ -96,7 +96,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		Access.verifyRead(this,var);
+		MetaAccess.verifyRead(this,var);
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
 		code.addInstr(op_dup);
@@ -132,7 +132,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		Access.verifyWrite(this,var);
+		MetaAccess.verifyWrite(this,var);
 		if (var.isNative()) {
 			assert(var.isMacro());
 			Kiev.reportError(this, "IFldExpr: Unknown native macro field "+var);
@@ -150,7 +150,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		Access.verifyWrite(this,var);
+		MetaAccess.verifyWrite(this,var);
 		code.addInstr(op_dup_x);
 		if (var.isNative()) {
 			assert(var.isMacro());
@@ -507,14 +507,14 @@ public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
 		code.setLinePos(this);
-		Access.verifyRead(this,var);
+		MetaAccess.verifyRead(this,var);
 		code.addInstr(op_getstatic,var,code.clazz.xtype);
 	}
 
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load & dup: "+this);
 		code.setLinePos(this);
-		Access.verifyRead(this,var);
+		MetaAccess.verifyRead(this,var);
 		code.addInstr(op_getstatic,var,code.clazz.xtype);
 	}
 
@@ -525,14 +525,14 @@ public final view JSFldExpr of SFldExpr extends JLvalueExpr {
 	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store only: "+this);
 		code.setLinePos(this);
-		Access.verifyWrite(this,var);
+		MetaAccess.verifyWrite(this,var);
 		code.addInstr(op_putstatic,var,code.clazz.xtype);
 	}
 
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store & dup: "+this);
 		code.setLinePos(this);
-		Access.verifyWrite(this,var);
+		MetaAccess.verifyWrite(this,var);
 		code.addInstr(op_dup);
 		code.addInstr(op_putstatic,var,code.clazz.xtype);
 	}

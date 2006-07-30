@@ -23,7 +23,6 @@ import syntax kiev.Syntax;
 @nodeview
 public final view JStruct of Struct extends JTypeDecl {
 
-	public:ro	Access				acc;
 	public		KString				b_name;
 	public:ro	JStruct				package_clazz;
 	public:ro	JStruct				iface_impl;

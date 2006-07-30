@@ -39,8 +39,17 @@ public class Bytecoder implements JConstants {
 		}
 
 		// Clean some structure flags
-		cl.flags = bcclazz.flags;
-		Access.verifyDecl(cl);
+		if (bcclazz.flags != 0) {
+			if ((bcclazz.flags & ACC_PUBLIC) == ACC_PUBLIC) cl.meta.setU(new MetaAccess("public"));
+			if ((bcclazz.flags & ACC_PROTECTED) == ACC_PROTECTED) cl.meta.setU(new MetaAccess("protected"));
+			if ((bcclazz.flags & ACC_PRIVATE) == ACC_PRIVATE) cl.meta.setU(new MetaAccess("private"));
+			if ((bcclazz.flags & ACC_STATIC) == ACC_STATIC) cl.meta.setF(new MetaStatic());
+			if ((bcclazz.flags & ACC_FINAL) == ACC_FINAL) cl.meta.setF(new MetaFinal());
+			if ((bcclazz.flags & ACC_ABSTRACT) == ACC_ABSTRACT) cl.meta.setF(new MetaAbstract());
+			if ((bcclazz.flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) cl.meta.setF(new MetaSynthetic());
+			cl.flags = bcclazz.flags;
+		}
+		MetaAccess.verifyDecl(cl);
 
 		cl.setTypeDeclLoaded(true);
 		cl.setMembersGenerated(true);
@@ -103,7 +112,6 @@ public class Bytecoder implements JConstants {
 		ENode f_init = null;
 		Symbol nm = null;
 		int packer_size = -1;
-		Access acc = null;
 		Type ftype = Signature.getType(f_type);
 		f = new Field(f_name.toString(),ftype,f_flags);
 		for(int i=0; i < bcf.attrs.length; i++) {
@@ -117,7 +125,6 @@ public class Bytecoder implements JConstants {
 					f_init = ConstExpr.fromConst(a.value);
 			}
 		}
-		if( acc != null ) f.acc = acc;
 		if( nm != null )
 			f.id.aliases = nm.aliases;
 		if( packer_size >= 0 ) {

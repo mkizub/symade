@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
 
 
 @node
-public class Struct extends TypeDecl implements PreScanneable, Accessable {
+public class Struct extends TypeDecl implements PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -33,7 +33,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 	@virtual typedef JView = JStruct;
 	@virtual typedef RView = RStruct;
 
-		 public Access						acc;
 		 public KString						b_name;	// bytecode name
 		 public WrapperMetaType				wmeta_type;
 		 public ASTNodeMetaType				ameta_type;
@@ -234,9 +233,6 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		return class_init;
 	}
 
-	@getter public Access			get$acc()			{ return this.acc; }
-	@setter public void set$acc(Access val)			{ this.acc = val; Access.verifyDecl(this); }
-
 	public final String qname() {
 		if (q_name != null)
 			return q_name;
@@ -260,9 +256,9 @@ public class Struct extends TypeDecl implements PreScanneable, Accessable {
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
 		this.package_clazz = outer;
 		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setF(new MetaAccess(MetaAccess.AccessValue.Public));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Protected));
-			if ((flags & ACC_PRIVATE) == ACC_PROTECTED) meta.setF(new MetaAccess(MetaAccess.AccessValue.Private));
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) meta.setU(new MetaAccess("public"));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) meta.setU(new MetaAccess("protected"));
+			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) meta.setU(new MetaAccess("private"));
 			if ((flags & ACC_STATIC) == ACC_STATIC) meta.setF(new MetaStatic());
 			if ((flags & ACC_FINAL) == ACC_FINAL) meta.setF(new MetaFinal());
 			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) meta.setF(new MetaAbstract());

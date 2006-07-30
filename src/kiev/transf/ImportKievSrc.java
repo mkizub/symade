@@ -234,9 +234,13 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				cm.pos = me.pos;
 				cm.compileflags = me.compileflags;
 				cm.flags = me.flags;
-				if (me.meta != null) cm.meta = ~me.meta;
+				foreach (ASTNode n; me.meta.metas.delToArray()) {
+					if (n instanceof UserMeta)
+						cm.meta.setU((UserMeta)n);
+					else if (n instanceof MetaFlag)
+						cm.meta.setF((MetaFlag)n);
+				}
 				cm.id = ~me.id;
-				cm.acc = me.acc;
 				cm.targs.addAll(me.targs.delToArray());
 				if (me.type_ret != null) cm.type_ret = ~me.type_ret;
 				if (me.dtype_ret != null) cm.dtype_ret = ~me.dtype_ret;
@@ -467,7 +471,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				CoreMethod cm = (CoreMethod)members[i];
 				cm.pass3();
 				cm.attachToCompiler();
-				Access.verifyDecl(cm);
+				MetaAccess.verifyDecl(cm);
 			}
 			else if( members[i] instanceof RuleMethod ) {
 				RuleMethod m = (RuleMethod)members[i];
@@ -476,7 +480,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				if( m.isPrivate() ) m.setFinal(true);
 				if( me.isClazz() && me.isFinal() ) m.setFinal(true);
 				else if( me.isInterface() ) 	m.setPublic();
-				Access.verifyDecl(m);
+				MetaAccess.verifyDecl(m);
 			}
 			else if( members[i] instanceof Method ) {
 				Method m = (Method)members[i];
@@ -498,7 +502,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 					m.setSynchronized(false);
 					m.setFinal(false);
 				}
-				Access.verifyDecl(m);
+				MetaAccess.verifyDecl(m);
 			}
 			else if (members[i] instanceof Field && ((Field)members[i]).isEnumField()) {
 				Field f = (Field)members[i];
@@ -542,7 +546,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 					}
 					f.setPublic();
 				}
-				Access.verifyDecl(f); // recheck access
+				MetaAccess.verifyDecl(f); // recheck access
 				Type ftype = fdecl.type;
 				MetaPacked pack = f.getMetaPacked();
 				if( pack != null ) {

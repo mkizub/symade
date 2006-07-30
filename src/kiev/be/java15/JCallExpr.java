@@ -53,7 +53,7 @@ public final view JCallExpr of CallExpr extends JENode {
 			m.bend_func.generate(code,reqType,this);
 			return;
 		}
-		Access.verifyRead(this,func);
+		MetaAccess.verifyRead(this,func);
 		CodeLabel null_cast_label = null;
 		if !(obj instanceof JTypeRef) {
 			obj.generate(code,null);

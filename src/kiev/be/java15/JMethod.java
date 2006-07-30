@@ -18,7 +18,6 @@ import syntax kiev.Syntax;
 @nodeview
 public final view JMethod of Method extends JDNode {
 
-	public:ro	Access					acc;
 	public:ro	JVar[]					params;
 	public:ro	JENode					body;
 	public		Attr[]					attrs;

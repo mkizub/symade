@@ -165,6 +165,34 @@
       </a-node>
      </id>
     </a-node>
+    <a-node class='kiev.fmt.SpaceInfo'>
+     <kind>SP_NEW_LINE</kind>
+     <text_size>2</text_size>
+     <pixel_size>20</pixel_size>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>nl-import-group</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SpaceInfo'>
+     <kind>SP_NEW_LINE</kind>
+     <text_size>2</text_size>
+     <pixel_size>20</pixel_size>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>nl-field-group</sname>
+      </a-node>
+     </id>
+    </a-node>
     <a-node class='kiev.fmt.ParagraphLayout'>
      <indent_text_size>2</indent_text_size>
      <indent_pixel_size>20</indent_pixel_size>
@@ -906,7 +934,7 @@
           <a-node class='kiev.fmt.SpaceCmd'>
            <si>
             <a-node class='kiev.vlang.SymbolRef'>
-             <name>nl-group</name>
+             <name>nl-import-group</name>
             </a-node>
            </si>
            <action_before>SP_EAT</action_before>
@@ -1418,6 +1446,1148 @@
      <id>
       <a-node class='kiev.vlang.Symbol'>
        <sname>stx-type-constr</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaSet</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxList'>
+       <element>
+        <a-node class='kiev.fmt.SyntaxNode'>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name></name>
+          </a-node>
+         </in_syntax>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+       </element>
+       <empty>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>&lt;?metas?&gt;</text>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>true</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+       </empty>
+       <name>metas</name>
+       <in_syntax>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name></name>
+        </a-node>
+       </in_syntax>
+       <expected_types>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>UserMeta</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaUnerasable</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaSingleton</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaForward</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaVirtual</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaMacro</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaStatic</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaAbstract</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaFinal</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaBridge</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaVolatile</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaNative</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaSynchronized</name>
+        </a-node>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaTransient</name>
+        </a-node>
+       </expected_types>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-set</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaAccess</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxJavaAccess'>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-access</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaUnerasable</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@unerasable</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-unerasable</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaSingleton</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@singleton</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-singleton</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaForward</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@forward</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-forward</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaVirtual</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@virtual</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-virtual</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaMacro</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@macro</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-macro</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaStatic</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@static</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-static</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaAbstract</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@abstract</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-abstract</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaFinal</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@final</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-final</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaNative</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@native</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-native</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaSynchronized</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@synchronized</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-synchronized</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaTransient</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@transient</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-transient</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaVolatile</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@volatile</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-volatile</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaBridge</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@bridge</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-bridge</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaVarArgs</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@varargs</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-varargs</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaSynthetic</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>@synthetic</text>
+       <fmt>
+        <a-node class='kiev.fmt.RefElemFormat'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </decl>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-synthetic</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>UserMeta</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>@</text>
+         <fmt>
+          <a-node class='kiev.fmt.FullElemFormat'>
+           <spaces>
+            <a-node class='kiev.fmt.SpaceCmd'>
+             <si>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name>sp-oper</name>
+              </a-node>
+             </si>
+             <action_before>SP_ADD</action_before>
+             <action_after>SP_NOP</action_after>
+             <from_attempt>0</from_attempt>
+            </a-node>
+            <a-node class='kiev.fmt.SpaceCmd'>
+             <si>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name>sp-word</name>
+              </a-node>
+             </si>
+             <action_before>SP_NOP</action_before>
+             <action_after>SP_EAT</action_after>
+             <from_attempt>0</from_attempt>
+            </a-node>
+           </spaces>
+           <color>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>color-black</name>
+            </a-node>
+           </color>
+           <font>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>font-bold</name>
+            </a-node>
+           </font>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>type</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name></name>
+          </a-node>
+         </in_syntax>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxOptional'>
+         <calculator>
+          <a-node class='kiev.fmt.CalcOptionNotEmpty'>
+           <name>values</name>
+          </a-node>
+         </calculator>
+         <opt_true>
+          <a-node class='kiev.fmt.SyntaxSet'>
+           <elements>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>(</text>
+             <fmt>
+              <a-node class='kiev.fmt.RefElemFormat'>
+               <decl>
+                <a-node class='kiev.vlang.SymbolRef'>
+                 <name>fmt-separator</name>
+                </a-node>
+               </decl>
+               <is_hidden>false</is_hidden>
+              </a-node>
+             </fmt>
+            </a-node>
+            <a-node class='kiev.fmt.SyntaxList'>
+             <element>
+              <a-node class='kiev.fmt.SyntaxNode'>
+               <in_syntax>
+                <a-node class='kiev.vlang.SymbolRef'>
+                 <name></name>
+                </a-node>
+               </in_syntax>
+               <fmt>
+                <a-node class='kiev.fmt.SimpleElemFormat'>
+                 <is_hidden>false</is_hidden>
+                </a-node>
+               </fmt>
+              </a-node>
+             </element>
+             <separator>
+              <a-node class='kiev.fmt.SyntaxToken'>
+               <text>,</text>
+               <fmt>
+                <a-node class='kiev.fmt.RefElemFormat'>
+                 <decl>
+                  <a-node class='kiev.vlang.SymbolRef'>
+                   <name>fmt-separator</name>
+                  </a-node>
+                 </decl>
+                 <is_hidden>false</is_hidden>
+                </a-node>
+               </fmt>
+              </a-node>
+             </separator>
+             <empty>
+              <a-node class='kiev.fmt.SyntaxToken'>
+               <text>&lt;?values?&gt;</text>
+               <fmt>
+                <a-node class='kiev.fmt.SimpleElemFormat'>
+                 <is_hidden>false</is_hidden>
+                </a-node>
+               </fmt>
+              </a-node>
+             </empty>
+             <name>values</name>
+             <in_syntax>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name></name>
+              </a-node>
+             </in_syntax>
+             <expected_types>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name>MetaValueScalar</name>
+              </a-node>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name>MetaValueArray</name>
+              </a-node>
+             </expected_types>
+             <fmt>
+              <a-node class='kiev.fmt.SimpleElemFormat'>
+               <is_hidden>false</is_hidden>
+              </a-node>
+             </fmt>
+            </a-node>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>)</text>
+             <fmt>
+              <a-node class='kiev.fmt.RefElemFormat'>
+               <decl>
+                <a-node class='kiev.vlang.SymbolRef'>
+                 <name>fmt-separator</name>
+                </a-node>
+               </decl>
+               <is_hidden>false</is_hidden>
+              </a-node>
+             </fmt>
+            </a-node>
+           </elements>
+           <fmt>
+            <a-node class='kiev.fmt.SimpleElemFormat'>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+         </opt_true>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+       </elements>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <spaces>
+          <a-node class='kiev.fmt.SpaceCmd'>
+           <si>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>nl</name>
+            </a-node>
+           </si>
+           <action_before>SP_ADD</action_before>
+           <action_after>SP_ADD</action_after>
+           <from_attempt>0</from_attempt>
+          </a-node>
+         </spaces>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-user-def</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaValueScalar</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <name>ident</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name></name>
+          </a-node>
+         </in_syntax>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>=</text>
+         <fmt>
+          <a-node class='kiev.fmt.RefElemFormat'>
+           <decl>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-operator</name>
+            </a-node>
+           </decl>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>value</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name></name>
+          </a-node>
+         </in_syntax>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+       </elements>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-scalar-value</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaValueArray</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <name>ident</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name></name>
+          </a-node>
+         </in_syntax>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>=</text>
+         <fmt>
+          <a-node class='kiev.fmt.RefElemFormat'>
+           <decl>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-operator</name>
+            </a-node>
+           </decl>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>{</text>
+         <fmt>
+          <a-node class='kiev.fmt.RefElemFormat'>
+           <decl>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-separator</name>
+            </a-node>
+           </decl>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxList'>
+         <element>
+          <a-node class='kiev.fmt.SyntaxNode'>
+           <in_syntax>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name></name>
+            </a-node>
+           </in_syntax>
+           <fmt>
+            <a-node class='kiev.fmt.SimpleElemFormat'>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+         </element>
+         <separator>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>,</text>
+           <fmt>
+            <a-node class='kiev.fmt.RefElemFormat'>
+             <decl>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name>fmt-separator</name>
+              </a-node>
+             </decl>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+         </separator>
+         <empty>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&lt;?values?&gt;</text>
+           <fmt>
+            <a-node class='kiev.fmt.SimpleElemFormat'>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+         </empty>
+         <name>values</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name></name>
+          </a-node>
+         </in_syntax>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>}</text>
+         <fmt>
+          <a-node class='kiev.fmt.RefElemFormat'>
+           <decl>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-separator</name>
+            </a-node>
+           </decl>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+       </elements>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-meta-array-value</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>Field</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>meta</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name></name>
+          </a-node>
+         </in_syntax>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>ftype</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name></name>
+          </a-node>
+         </in_syntax>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <name>id</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name></name>
+          </a-node>
+         </in_syntax>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxOptional'>
+         <calculator>
+          <a-node class='kiev.fmt.CalcOptionNotNull'>
+           <name>init</name>
+          </a-node>
+         </calculator>
+         <opt_true>
+          <a-node class='kiev.fmt.SyntaxSet'>
+           <elements>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>=</text>
+             <fmt>
+              <a-node class='kiev.fmt.RefElemFormat'>
+               <decl>
+                <a-node class='kiev.vlang.SymbolRef'>
+                 <name>fmt-operator</name>
+                </a-node>
+               </decl>
+               <is_hidden>false</is_hidden>
+              </a-node>
+             </fmt>
+            </a-node>
+            <a-node class='kiev.fmt.SyntaxSubAttr'>
+             <name>init</name>
+             <in_syntax>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name></name>
+              </a-node>
+             </in_syntax>
+             <fmt>
+              <a-node class='kiev.fmt.SimpleElemFormat'>
+               <is_hidden>false</is_hidden>
+              </a-node>
+             </fmt>
+            </a-node>
+           </elements>
+           <fmt>
+            <a-node class='kiev.fmt.SimpleElemFormat'>
+             <is_hidden>false</is_hidden>
+            </a-node>
+           </fmt>
+          </a-node>
+         </opt_true>
+         <fmt>
+          <a-node class='kiev.fmt.SimpleElemFormat'>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>;</text>
+         <fmt>
+          <a-node class='kiev.fmt.RefElemFormat'>
+           <decl>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-separator</name>
+            </a-node>
+           </decl>
+           <is_hidden>false</is_hidden>
+          </a-node>
+         </fmt>
+        </a-node>
+       </elements>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <spaces>
+          <a-node class='kiev.fmt.SpaceCmd'>
+           <si>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>nl</name>
+            </a-node>
+           </si>
+           <action_before>SP_ADD</action_before>
+           <action_after>SP_ADD</action_after>
+           <from_attempt>0</from_attempt>
+          </a-node>
+          <a-node class='kiev.fmt.SpaceCmd'>
+           <si>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>nl-field-group</name>
+            </a-node>
+           </si>
+           <action_before>SP_EAT</action_before>
+           <action_after>SP_ADD</action_after>
+           <from_attempt>0</from_attempt>
+          </a-node>
+         </spaces>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-field-decl</sname>
       </a-node>
      </id>
     </a-node>
