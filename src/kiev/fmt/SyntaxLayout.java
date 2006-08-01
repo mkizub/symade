@@ -218,7 +218,7 @@ public class ParagraphLayout extends DNode {
 public class ParagraphLayoutBlock extends ParagraphLayout {
 	@virtual typedef This  = ParagraphLayoutBlock;
 
-	@att String token_text;
+	@att public String token_text;
 	private String[] tokens;
 
 	@setter

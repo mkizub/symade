@@ -195,20 +195,7 @@ public class Canvas extends JPanel implements DrawDevice {
 		else
 			g.setColor(color);
 		g.setFont(font);
-		if (leaf instanceof DrawJavaComment) {
-			String[] lines = ((DrawJavaComment)leaf).lines;
-			int cy = y;
-			foreach (String s; lines) {
-				if (s.length() != 0) {
-					TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
-					int h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
-					int b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
-					tl.draw(g, x, cy+b);
-				}
-				cy += h;
-			}
-		}
-		else if (leaf == current && cursor_offset >= 0) {
+		if (leaf == current && cursor_offset >= 0) {
 			String s = leaf.getText();
 			if (s == null || s.length() == 0) s = " ";
 			TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());

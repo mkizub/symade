@@ -74,51 +74,28 @@ public class DrawContext implements Cloneable {
 		dg.x = 0;
 		dg.y = 0;
 		dg.h = 0;
-		if (dr instanceof DrawJavaComment) {
-			String[] lines = ((DrawJavaComment)dr).lines;
-			foreach(String text; lines) {
-				if (gfx != null) {
-					if (text.length() != 0) {
-						Font  font  = dr.syntax.lout.font;
-						TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
-						Rectangle2D rect = tl.getBounds();
-						dg.w = (int)Math.max(dg.w, Math.ceil(tl.getAdvance()));
-						dg.h+= (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
-					} else {
-						dg.w = 0;
-						dg.h+= 10;
-					}
-					dg.b = 0;
-				} else {
-					dg.w = text.length();
-					dg.h = 1;
-					dg.b = 0;
-				}
-			}
-		} else {
-			String text = dr.getText();
-			if (gfx != null) {
-				if (text == null) text = "\u25d8"; // ◘
-				if (text != null && text.length() != 0) {
-					Font  font  = dr.syntax.lout.font;
-					TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
-					Rectangle2D rect = tl.getBounds();
-					dg.w = (int)Math.ceil(tl.getAdvance());
-					dg.h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
-					dg.b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
-				} else {
-					dg.w = 0;
-					dg.h = 10;
-					dg.b = 0;
-				}
+		String text = dr.getText();
+		if (gfx != null) {
+			if (text == null) text = "\u25d8"; // ◘
+			if (text != null && text.length() != 0) {
+				Font  font  = dr.syntax.lout.font;
+				TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
+				Rectangle2D rect = tl.getBounds();
+				dg.w = (int)Math.ceil(tl.getAdvance());
+				dg.h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
+				dg.b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
 			} else {
-				if (text == null) text = "";
-				dg.w = text.length();
-				dg.h = 1;
+				dg.w = 0;
+				dg.h = 10;
 				dg.b = 0;
 			}
-			this.x += dg.w;
+		} else {
+			if (text == null) text = "";
+			dg.w = text.length();
+			dg.h = 1;
+			dg.b = 0;
 		}
+		this.x += dg.w;
 	}
 
 	public void pushDrawable(Drawable dr) {

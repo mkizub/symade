@@ -114,7 +114,6 @@ CLASS kiev.fmt.CalcOptionJavaFlag kiev/fmt/CalcOptionJavaFlag kiev\fmt\JavaSynta
 CLASS kiev.fmt.CalcOptionMetaAlias kiev/fmt/CalcOptionMetaAlias kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionNotNull kiev/fmt/CalcOptionNotNull kiev\fmt\SyntaxLayout.java
-CLASS kiev.fmt.CalcOptionNotSuper kiev/fmt/CalcOptionNotSuper kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionTrue kiev/fmt/CalcOptionTrue kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawCharTerm kiev/fmt/DrawCharTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawColor kiev/fmt/DrawColor kiev\fmt\SyntaxLayout.java
@@ -145,6 +144,7 @@ CLASS kiev.fmt.DrawToken kiev/fmt/DrawToken kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.Drawable kiev/fmt/Drawable kiev\fmt\Drawable.java
 CLASS kiev.fmt.FullElemFormat kiev/fmt/FullElemFormat kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.GfxFormatter kiev/fmt/GfxFormatter kiev\fmt\Formatter.java
+CLASS kiev.fmt.JavaComment kiev/fmt/JavaComment kiev\fmt\DrawJava.java
 CLASS kiev.fmt.JavaSyntax kiev/fmt/JavaSyntax kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.LayoutSpace kiev/fmt/LayoutSpace kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.ParagraphLayout kiev/fmt/ParagraphLayout kiev\fmt\SyntaxLayout.java
@@ -165,6 +165,7 @@ CLASS kiev.fmt.SyntaxIdentAttr kiev/fmt/SyntaxIdentAttr kiev\fmt\SyntaxLayout.ja
 CLASS kiev.fmt.SyntaxIntChoice kiev/fmt/SyntaxIntChoice kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxJavaAccess kiev/fmt/SyntaxJavaAccess kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaComment kiev/fmt/SyntaxJavaComment kiev\fmt\JavaSyntax.java
+CLASS kiev.fmt.SyntaxJavaCommentTemplate kiev/fmt/SyntaxJavaCommentTemplate kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaEnumAlias kiev/fmt/SyntaxJavaEnumAlias kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaExpr kiev/fmt/SyntaxJavaExpr kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaExprTemplate kiev/fmt/SyntaxJavaExprTemplate kiev\fmt\JavaSyntax.java
@@ -888,6 +889,7 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
+METATYPE kiev.fmt.CalcOptionNotSuper kiev\fmt\JavaSyntax.java
 METATYPE kiev.fmt.CalcOptionPackedField kiev\fmt\JavaSyntax.java
 METATYPE kiev.fmt.CalcOptionSType kiev\fmt\JavaSyntax.java
 METATYPE kiev.fmt.CalcOptionUpperBound kiev\fmt\JavaSyntax.java

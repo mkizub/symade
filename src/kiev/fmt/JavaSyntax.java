@@ -32,6 +32,19 @@ public class SyntaxJavaExprTemplate extends AbstractSyntaxElemDecl {
 }
 
 @node
+public class SyntaxJavaCommentTemplate extends AbstractSyntaxElemDecl {
+	@virtual typedef This  = SyntaxJavaCommentTemplate;
+
+	@att public SyntaxElem		newline;
+	@att public SyntaxElem		lin_beg;
+	@att public SyntaxElem		doc_beg;
+	@att public SyntaxElem		cmt_beg;
+	@att public SyntaxElem		cmt_end;
+
+	public SyntaxJavaCommentTemplate() {}
+}
+
+@node
 public class SyntaxJavaExpr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxJavaExpr;
 
@@ -159,14 +172,39 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 public class SyntaxJavaComment extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaComment;
 
-	public SyntaxJavaComment() {}
-	public SyntaxJavaComment(SpaceCmd[] spaces) {
-		super(spaces);
+	@att public SymbolRef<SyntaxJavaCommentTemplate>	template;
+
+	public SyntaxJavaComment() {
+		this.template = new SymbolRef<SyntaxJavaCommentTemplate>();
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawJavaComment(node, this);
 		return dr;
+	}
+
+	public void preResolveOut() {
+		if (template.name != null && template.name != "") {
+			DNode@ d;
+			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
+				Kiev.reportError(template,"Unresolved java expression template "+template);
+			else if !(d instanceof SyntaxJavaCommentTemplate)
+				Kiev.reportError(template,"Resolved "+template+" is not a java comment template");
+			else
+				template.symbol = d;
+		}
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "template") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<SyntaxJavaCommentTemplate> vect = new Vector<SyntaxJavaCommentTemplate>();
+			DNode@ d;
+			foreach (PassInfo.resolveNameR(this,d,info))
+				if (d instanceof SyntaxJavaCommentTemplate) vect.append((SyntaxJavaCommentTemplate)d);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
 	}
 }
 
@@ -222,12 +260,6 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seStructView;
 	final SyntaxElem seStructBody;
 
-	final SyntaxElem seComment;
-	final SyntaxElem seCommentNl;
-	final SyntaxElem seCommentNlBefore;
-	final SyntaxElem seCommentNlAfter;
-	
-	
 	final Hashtable<Operator, SyntaxElem> exprs;
 	
 	public SpaceInfo siSp     = new SpaceInfo("sp",       SP_SPACE,    1, 4);
@@ -634,29 +666,6 @@ public class JavaSyntax extends TextSyntax {
 		}
 
 		exprs = new Hashtable<Operator, SyntaxElem>();
-
-		SpaceCmd[] lout_comment = new SpaceCmd[] {
-					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
-				};
-		seComment = new SyntaxJavaComment(lout_comment);
-
-		SpaceCmd[] lout_comment_nl = new SpaceCmd[] {
-					new SpaceCmd(siNl, SP_ADD, SP_ADD, 0),
-					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
-				};
-		seCommentNl = new SyntaxJavaComment(lout_comment_nl);
-
-		SpaceCmd[] lout_comment_nl_before = new SpaceCmd[] {
-					new SpaceCmd(siNl, SP_ADD, SP_NOP, 0),
-					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
-				};
-		seCommentNlBefore = new SyntaxJavaComment(lout_comment_nl_before);
-
-		SpaceCmd[] lout_comment_nl_after = new SpaceCmd[] {
-					new SpaceCmd(siNl, SP_NOP, SP_ADD,  0),
-					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
-				};
-		seCommentNlAfter = new SyntaxJavaComment(lout_comment_nl_after);
 	}
 
 	public String escapeString(String str) {
@@ -691,15 +700,6 @@ public class JavaSyntax extends TextSyntax {
 			//if (hint != null && "anonymouse".equals(hint.text))
 			//	return seStructBody;
 			return seStructClass;
-		}
-
-		case Comment: {
-			Comment c = (Comment)node;
-			if (c.doc_form || c.multiline) return seCommentNl;
-			if (c.nl_before && c.nl_after) return seCommentNl;
-			if (c.eol_form || c.nl_after) return seCommentNlAfter;
-			if (c.nl_before) return seCommentNlBefore;
-			return seComment;
 		}
 
 		case TypeExpr:

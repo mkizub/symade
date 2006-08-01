@@ -144,6 +144,7 @@ CLASS kiev.fmt.DrawToken kiev/fmt/DrawToken kiev\fmt\DrawTerm.java bad
 CLASS kiev.fmt.Drawable kiev/fmt/Drawable kiev\fmt\Drawable.java bad
 CLASS kiev.fmt.FullElemFormat kiev/fmt/FullElemFormat kiev\fmt\SyntaxLayout.java bad
 CLASS kiev.fmt.GfxFormatter kiev/fmt/GfxFormatter kiev\fmt\Formatter.java bad
+CLASS kiev.fmt.JavaComment kiev/fmt/JavaComment kiev\fmt\DrawJava.java bad
 CLASS kiev.fmt.JavaSyntax kiev/fmt/JavaSyntax kiev\fmt\JavaSyntax.java bad
 CLASS kiev.fmt.LayoutSpace kiev/fmt/LayoutSpace kiev\fmt\SyntaxLayout.java bad
 CLASS kiev.fmt.ParagraphLayout kiev/fmt/ParagraphLayout kiev\fmt\SyntaxLayout.java bad
@@ -164,6 +165,7 @@ CLASS kiev.fmt.SyntaxIdentAttr kiev/fmt/SyntaxIdentAttr kiev\fmt\SyntaxLayout.ja
 CLASS kiev.fmt.SyntaxIntChoice kiev/fmt/SyntaxIntChoice kiev\fmt\SyntaxLayout.java bad
 CLASS kiev.fmt.SyntaxJavaAccess kiev/fmt/SyntaxJavaAccess kiev\fmt\JavaSyntax.java bad
 CLASS kiev.fmt.SyntaxJavaComment kiev/fmt/SyntaxJavaComment kiev\fmt\JavaSyntax.java bad
+CLASS kiev.fmt.SyntaxJavaCommentTemplate kiev/fmt/SyntaxJavaCommentTemplate kiev\fmt\JavaSyntax.java bad
 CLASS kiev.fmt.SyntaxJavaEnumAlias kiev/fmt/SyntaxJavaEnumAlias kiev\fmt\JavaSyntax.java bad
 CLASS kiev.fmt.SyntaxJavaExpr kiev/fmt/SyntaxJavaExpr kiev\fmt\JavaSyntax.java bad
 CLASS kiev.fmt.SyntaxJavaExprTemplate kiev/fmt/SyntaxJavaExprTemplate kiev\fmt\JavaSyntax.java bad

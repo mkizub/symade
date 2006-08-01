@@ -206,7 +206,7 @@ public class DrawNonTermList extends DrawNonTerm {
 			if (slst.prefix != null) {
 				for (int i=0; i < args.length; i++) {
 					if (args[i] == dr)
-						return 1 + i/2;
+						return i/2;
 				}
 			} else {
 				for (int i=0; i < args.length; i++) {

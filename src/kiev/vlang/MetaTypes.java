@@ -16,8 +16,25 @@ import syntax kiev.Syntax;
 
 @node
 class Test extends ASTNode {
-	void foo(CallExpr ce, ...) {
+		/* test one line */ /* test second line */
+		/* test
+		 * multi
+		 * line */
 		//foo(ce, ce.ident.symbol);
+		
+		// test
+		// multi
+		// line
+	void foo(CallExpr ce, ...) {
+		/* test one line */ /* test second line */
+		/* test
+		 * multi
+		 * line */
+		//foo(ce, ce.ident.symbol);
+		
+		// test
+		// multi
+		// line
 	}
 }
 

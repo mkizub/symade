@@ -164,56 +164,82 @@ public class DrawJavaPackedField extends DrawTerm {
 }
 
 @node
-public class DrawJavaComment extends DrawTerm {
+public final class JavaComment extends ANode {
+	@ref public String text;
+	public JavaComment() {
+		this.text = "";
+	}
+	public JavaComment(String text) {
+		this.text = text;
+	}
+}
 
-	public String[] lines;
+@node
+public class DrawJavaComment extends DrawNonTermSet {
+
+	public String old_text;
 	
 	public DrawJavaComment() {}
 	public DrawJavaComment(ANode node, SyntaxJavaComment syntax) {
 		super(node, syntax);
 	}
 
-	String makeText(Formatter fmt) {
+	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			replaceWithNode(dr);
+			dr.preFormat(cont, expected_stx, expected_node);
+		}
+		if (this.isUnvisible())
+			return;
+		SyntaxJavaComment se = (SyntaxJavaComment)this.syntax;
+		SyntaxJavaCommentTemplate st = (SyntaxJavaCommentTemplate)se.template.symbol;
 		Comment c = (Comment)node;
 		String text = c.text;
-		int nl = 0;
 		if (text == null) text = "";
+		if (text == old_text)
+			return;
+		old_text = text;
+		
+		args.delAll();
+				
 		if (c.eol_form) {
 			if (c.multiline) {
-				this.lines = text.split("\n");
-				for (int i=0; i < lines.length; i++)
-					lines[i] = "// "+lines[i];
-			} else {
-				this.lines = new String[]{ "// "+text };
-			}
-		}
-		else if (c.doc_form) {
-			if (c.multiline) {
-				this.lines = text.split("\n");
-				for (int i=0; i < lines.length; i++)
-					lines[i] = " * "+lines[i];
-				this.lines = (String[])Arrays.insert(this.lines, "/**", 0);
-				this.lines = (String[])Arrays.append(this.lines, "*/");
-			} else {
-				this.lines = new String[]{ "/** "+text + " */" };
-			}
-		}
-		else {
-			if (c.multiline) {
-				this.lines = text.split("\n");
+				String[] lines = text.split("\n");
+				append(cont, st.newline, node);
 				for (int i=0; i < lines.length; i++) {
-					if (i == 0)
-						lines[i] = "/* "+lines[i];
-					else
-						lines[i] = " * "+lines[i];
+					append(cont, st.lin_beg, node);
+					append(cont, st.elem, new JavaComment(lines[i]));
 				}
-				lines[lines.length-1] = lines[lines.length-1] + " */";
 			} else {
-				this.lines = new String[]{ "/* "+text + " */" };
+				if (c.nl_before)
+					append(cont, st.newline, node);
+				append(cont, st.lin_beg, node);
+				append(cont, st.elem, new JavaComment(text));
 			}
+		} else {
+			if (c.nl_before)
+				append(cont, st.newline, node);
+			if (c.doc_form)
+				append(cont, st.doc_beg, node);
+			else
+				append(cont, st.cmt_beg, node);
+			if (c.multiline) {
+				String[] lines = text.split("\n");
+				for (int i=0; i < lines.length; i++)
+					append(cont, st.elem, new JavaComment(lines[i]));
+			} else {
+				append(cont, st.elem, new JavaComment(text));
+			}
+			append(cont, st.cmt_end, node);
+			if (c.nl_after)
+				append(cont, st.newline, node);
 		}
-		return "";
+	}
+	private void append(DrawContext cont, SyntaxElem se, ANode node) {
+		Drawable dr = se.makeDrawable(cont.fmt, node);
+		args.append(dr);
+		dr.preFormat(cont, se, node);
 	}
 }
-
 
