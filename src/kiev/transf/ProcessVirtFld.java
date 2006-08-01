@@ -403,7 +403,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			else {
 				Block be = new Block(ae.pos);
 				Object acc;
-				if (fa.obj instanceof ThisExpr) {
+				if (fa.obj instanceof ThisExpr || fa.obj instanceof SuperExpr) {
 					acc = ~fa.obj;
 				}
 				else if (fa.obj instanceof LVarExpr) {
@@ -480,7 +480,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			else {
 				Block be = new Block(ie.pos);
 				Object acc;
-				if (fa.obj instanceof ThisExpr) {
+				if (fa.obj instanceof ThisExpr || fa.obj instanceof SuperExpr) {
 					acc = fa.obj;
 				}
 				else if (fa.obj instanceof LVarExpr) {
@@ -525,6 +525,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 		if (o instanceof Var) return new LVarExpr(0,(Var)o);
 		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVar());
 		if (o instanceof ThisExpr) return new ThisExpr(0);
+		if (o instanceof SuperExpr) return new SuperExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);
 	}
 

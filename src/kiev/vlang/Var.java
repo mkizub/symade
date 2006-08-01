@@ -205,19 +205,24 @@ public final class FormPar extends Var {
 	public FormPar(int pos, String name, Type type, int kind, int flags) {
 		super(pos,name,type,flags);
 		this.kind = kind;
-		this.stype = new TypeRef(type);
 	}
 
 	public FormPar(Symbol id, TypeRef vtype, TypeRef stype, int kind, int flags) {
 		super(id,vtype,flags);
 		this.kind = kind;
-		this.stype = stype == null ? vtype.ncopy() : stype;
+		this.stype = stype;
 	}
 	
 	public ASTNode getDummyNode() {
 		return FormPar.dummyNode;
 	}
 	
+	public Type	getSType() {
+		if (stype == null)
+			return getType();
+		return stype.getType();
+	}
+
 }
 
 public class DFState {

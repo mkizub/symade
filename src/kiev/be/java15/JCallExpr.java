@@ -83,34 +83,6 @@ public final view JCallExpr of CallExpr extends JENode {
 			else
 				code.addNullConst();
 		}
-		else {
-			if( func.id.equals(nameInit) && func.getOuterThisParam() != null) {
-				JVar fp = code.method.getOuterThisParam();
-				if (fp == null) {
-					Kiev.reportError(this, "Cannot find outer this parameter");
-					code.addNullConst();
-				} else {
-					code.addInstr(Instr.op_load,fp);
-				}
-			}
-			if( func.id.equals(nameInit) && func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
-				JMethod jmm = jctx_method;
-				Type tp;
-				if (!jmm.jctx_tdecl.equals(func.jctx_tdecl))
-					tp = ((TypeDecl)jctx_tdecl).super_types[0].getType();
-				else
-					tp = ((TypeDecl)jctx_tdecl).xtype;
-				assert(jmm.id.equals(nameInit));
-				assert(tp.getStruct().isTypeUnerasable());
-				// Insert our-generated typeinfo, or from childs class?
-				if (jmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
-					tmp_expr = (JENode)new LVarExpr(pos,(Var)jmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
-				else
-					tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
-				tmp_expr.generate(code,null);
-				tmp_expr = null;
-			}
-		}
 		if !(func.isVarArgs()) {
 			for(; i < args.length; i++)
 				args[i].generate(code,null);
@@ -158,6 +130,107 @@ public final view JCallExpr of CallExpr extends JENode {
 			 && (!func.etype.ret().isInstanceOf(getType().getErasedType()) || null_cast_label != null) )
 				code.addInstr(op_checkcast,getType());
 		}
+	}
+
+}
+
+
+@nodeview
+public final view JCtorCallExpr of CtorCallExpr extends JENode {
+
+	static final AttrSlot ATTR = new TmpAttrSlot("jcall temp expr",true,false,TypeInfo.newTypeInfo(ENode.class,null));	
+
+	public:ro	JMethod			func;
+	public:ro	JENode[]		args;
+	abstract
+	public 		JENode			tmp_expr;
+
+	public final CallType getCallType();
+
+	@getter public final JENode get$tmp_expr() {
+		return (JENode)(ENode)ATTR.get((ENode)this);
+	}
+	@setter public final void set$tmp_expr(JENode e) {
+		if (e != null)
+			ATTR.set(this, (ENode)e);
+		else
+			ATTR.clear(this);
+	}
+
+	public void generate(Code code, Type reqType) {
+		trace(Kiev.debugStatGen,"\t\tgenerating CtorCallExpr: "+this);
+		code.setLinePos(this);
+		JMethod func = this.func;
+		if (((Method)func) instanceof CoreMethod) {
+			CoreMethod m = (CoreMethod)(Method)func;
+			m.bend_func.generate(code,reqType,this);
+			return;
+		}
+		MetaAccess.verifyRead(this,func);
+		// load this/super
+		code.addInstrLoadThis();
+		JENode[] args = this.args;
+		int i = 0;
+		if (func.getOuterThisParam() != null) {
+			JVar fp = code.method.getOuterThisParam();
+			if (fp == null) {
+				Kiev.reportError(this, "Cannot find outer this parameter");
+				code.addNullConst();
+			} else {
+				code.addInstr(Instr.op_load,fp);
+			}
+		}
+		if (func.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
+			JMethod jmm = jctx_method;
+			Type tp;
+			if (!jmm.jctx_tdecl.equals(func.jctx_tdecl))
+				tp = ((TypeDecl)jctx_tdecl).super_types[0].getType();
+			else
+				tp = ((TypeDecl)jctx_tdecl).xtype;
+			assert(jmm.id.equals(nameInit));
+			assert(tp.getStruct().isTypeUnerasable());
+			// Insert our-generated typeinfo, or from childs class?
+			if (jmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
+				tmp_expr = (JENode)new LVarExpr(pos,(Var)jmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
+			else
+				tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
+			tmp_expr.generate(code,null);
+			tmp_expr = null;
+		}
+		if !(func.isVarArgs()) {
+			for(; i < args.length; i++)
+				args[i].generate(code,null);
+		} else {
+			int N = func.params.length-1;
+			for(; i < N; i++)
+				args[i].generate(code,null);
+			Type varg_tp = func.params[N].type.tvars[0].unalias().result();
+			if (args.length == func.params.length && args[N].getType().isInstanceOf(new ArrayType(varg_tp))) {
+				// array as va_arg
+				args[i].generate(code,null);
+			} else {
+				code.addConst(args.length-N);
+				code.addInstr(Instr.op_newarray,varg_tp);
+				for(int j=0; i < args.length; i++, j++) {
+					code.addInstr(Instr.op_dup);
+					code.addConst(j);
+					args[i].generate(code,null);
+					code.addInstr(Instr.op_arr_store);
+				}
+			}
+		}
+		if (func.isTypeUnerasable()) {
+			CallType mt = this.getCallType();
+			foreach (TypeDef td; ((Method)func).targs) {
+				Type tp = mt.resolve(td.getAType());
+				tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
+				tmp_expr.generate(code,null);
+				tmp_expr = null;
+			}
+		}
+
+		// Now, do the call instruction 		
+		code.addInstr(op_call,func,true,Type.tpVoid);
 	}
 
 }

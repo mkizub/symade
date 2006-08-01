@@ -10,6 +10,8 @@ import kiev.be.java15.JNode;
 import kiev.be.java15.JENode;
 import kiev.ir.java15.RCallExpr;
 import kiev.be.java15.JCallExpr;
+import kiev.ir.java15.RCtorCallExpr;
+import kiev.be.java15.JCtorCallExpr;
 import kiev.ir.java15.RClosureCallExpr;
 import kiev.be.java15.JClosureCallExpr;
 
@@ -100,6 +102,15 @@ public class CallExpr extends ENode {
 			return;
 		}
 		
+		// constructor call "this(args)" or "super(args)"
+		if (ident.name == nameThis || ident.name == nameSuper) {
+			CtorCallExpr cce = new CtorCallExpr(pos, new SymbolRef<Constructor>(ident.pos,ident.name), args.delToArray());
+			if (isPrimaryExpr())
+				cce.setPrimaryExpr(true);
+			this.replaceWithNodeReWalk(cce);
+			return;
+		}
+
 		Method@ m;
 		Type tp = ctx_tdecl.xtype;
 		CallType mt = null;
@@ -111,28 +122,8 @@ public class CallExpr extends ENode {
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();
 
-		// constructor call "this(args)"
-		if (ident.name == nameThis) {
-			mt = new CallType(tp,ata,ta,Type.tpVoid,false);
-			ResInfo info = new ResInfo(this,ctx_method.id.uname,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if (!PassInfo.resolveBestMethodR(tp,m,info,mt))
-				throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
-			ident.symbol = (Method)m;
-			obj = new TypeRef(tp);
-			return;
-		}
-		// constructor call "super(args)"
-		if (ident.name == nameSuper) {
-			mt = new CallType(tp,ata,ta,Type.tpVoid,false);
-			ResInfo info = new ResInfo(this,ctx_method.id.uname,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if (!PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,mt))
-				throw new CompilerException(this,"Method "+Method.toString(ident.name,args)+" unresolved");
-			ident.symbol = (Method)m;
-			obj = new TypeRef(m.ctx_tdecl.xtype);
-			return;
-		}
 		// super-call "super.func(args)"
-		if (obj instanceof ThisExpr && obj.isSuperExpr()) {
+		if (obj instanceof SuperExpr) {
 			Method@ m;
 			Type tp = ctx_tdecl.super_types[0].getType();
 			ResInfo info = new ResInfo(this,ident.name);
@@ -321,6 +312,113 @@ public class CallExpr extends ENode {
 			else
 				sb.append(obj).append('.');
 		}
+		sb.append(ident).append('(');
+		for(int i=0; i < args.length; i++) {
+			sb.append(args[i]);
+			if( i < args.length-1 )
+				sb.append(',');
+		}
+		sb.append(')');
+		return sb.toString();
+	}
+	public Object doRewrite(RewriteContext ctx) {
+		if (func == null || func.body == null || !func.isMacro())
+			super.doRewrite(ctx);
+		int idx = -1;
+		Object[] args = new Object[this.args.length];
+		foreach(FormPar fp; func.params; fp.kind == FormPar.PARAM_NORMAL) {
+			idx++;
+			if (fp.type instanceof ASTNodeType)
+				args[idx] = this.args[idx].doRewrite(ctx);
+			else
+				args[idx] = this.args[idx];
+		}
+		return func.body.doRewrite(new RewriteContext(this, args));
+	}
+}
+
+@node(name="CtorCall")
+public class CtorCallExpr extends ENode {
+	
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in", seq="true")		ENode[]		args;
+	}
+	
+	@virtual typedef This  = CtorCallExpr;
+	@virtual typedef JView = JCtorCallExpr;
+	@virtual typedef RView = RCtorCallExpr;
+	@virtual typedef TypeOfIdent = Constructor;
+
+	@att public ENode[]				args;
+
+	@getter public Method get$func() {
+		return (Method)ident.symbol;
+	}
+	@setter public void set$func(Method m) {
+		this.ident.symbol = m;
+	}
+
+	public CtorCallExpr() {}
+
+	public CtorCallExpr(int pos, SymbolRef<Constructor> ident, ENode[] args) {
+		this.pos = pos;
+		this.ident = ident;
+		this.args.addAll(args);
+	}
+
+	public ENode[] getArgs() {
+		return this.args;
+	}
+
+	public int getPriority() { return Constants.opCallPriority; }
+
+	public Type getType() {
+		return Type.tpVoid;
+	}
+
+	public CallType getCallType() {
+		Type[] ta = new Type[args.length];
+		for (int i=0; i < ta.length; i++)
+			ta[i] = args[i].getType();
+		return new CallType(ctx_tdecl.xtype,null,ta,Type.tpVoid,false);
+	}
+
+	public void mainResolveOut() {
+		if (func != null) {
+			assert (func instanceof Constructor);
+			return;
+		}
+		
+		Method@ m;
+		Type tp = ctx_tdecl.xtype;
+
+		Type[] ta = new Type[args.length];
+		for (int i=0; i < ta.length; i++)
+			ta[i] = args[i].getType();
+		CallType mt = new CallType(tp,null,ta,Type.tpVoid,false);
+
+		// constructor call "this(args)"
+		if (ident.name == nameThis) {
+			ResInfo info = new ResInfo(this,nameInit,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			if (!PassInfo.resolveBestMethodR(tp,m,info,mt))
+				throw new CompilerException(this,"Constructor "+Method.toString(ident.name,args)+" unresolved");
+			ident.symbol = (Constructor)m;
+			return;
+		}
+		// constructor call "super(args)"
+		if (ident.name == nameSuper) {
+			mt = new CallType(tp,null,ta,Type.tpVoid,false);
+			ResInfo info = new ResInfo(this,nameInit,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			if (!PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,mt))
+				throw new CompilerException(this,"Constructor "+Method.toString(ident.name,args)+" unresolved");
+			ident.symbol = (Constructor)m;
+			return;
+		}
+		throw new CompilerException(this, "Constructor call may only be 'super' or 'this'");
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
 		sb.append(ident).append('(');
 		for(int i=0; i < args.length; i++) {
 			sb.append(args[i]);

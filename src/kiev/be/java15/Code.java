@@ -578,14 +578,11 @@ public final class Code implements JConstants {
 			add_code_byte(0);
 			trace(Kiev.debugInstrGen,"call has "+mtype.jargs.length+" params");
 		}
-		else if(
-			m.id.equals(Constants.nameInit)
-		 || super_flag
-		 || m.isPrivate()
-		 ) {
+		else if(super_flag || m.isPrivate()) {
 			add_opcode_and_CP(opc_invokespecial,cpm);
 		}
 		else {
+			assert (m.id.uname != Constants.nameInit);
 			add_opcode_and_CP(opc_invokevirtual,cpm);
 		}
 		for(int i=0; i < mtype.jargs.length; i++) stack_pop();

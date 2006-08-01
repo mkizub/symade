@@ -243,7 +243,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			
 			// and add super-constructor call
 			init.setNeedFieldInits(true);
-			CallExpr call_super = new CallExpr(pos, null, new SymbolRef<Method>(nameSuper), null, ENode.emptyArray);
+			CtorCallExpr call_super = new CtorCallExpr(pos, new SymbolRef<Constructor>(nameSuper), ENode.emptyArray);
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
 			init.block.stats.insert(0,new ExprStat(call_super));
@@ -640,8 +640,8 @@ public final view RStruct of Struct extends RTypeDecl {
 		root.params.copyFrom(found.params);
 		root.pos = found.pos;
 		foreach (FormPar fp; root.params) {
-			fp.stype = new TypeRef(fp.stype.getType().getErasedType());
-			fp.vtype = new TypeRef(fp.stype.getType().getErasedType());
+			fp.stype = new TypeRef(fp.getSType().getErasedType());
+			fp.vtype = new TypeRef(fp.getSType().getErasedType());
 		}
 		members.append(root);
 		// check if we already have this method in this class
@@ -849,7 +849,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				mmm.id.aliases = m.id.aliases;
 				mmm.targs.copyFrom(m.targs);
 				foreach (FormPar fp; m.params)
-					mmm.params.add(new FormPar(fp.pos,fp.id.uname,fp.stype.getType(),fp.kind,fp.flags));
+					mmm.params.add(new FormPar(fp.pos,fp.id.uname,fp.getSType(),fp.kind,fp.flags));
 				((Struct)self).members.add(mmm);
 			}
 			CallType type1 = mmm.type.getErasedType(); // erase type, like X... -> X[]
@@ -925,7 +925,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				for(int k=0; k < vae.length; k++) {
 					vae[k] = new CastExpr(0,mm.type.arg(k), new LVarExpr(0,mm.params[k]));
 				}
-				CallExpr ce = new CallExpr(0,new ThisExpr(true),overwr,null,vae);
+				CallExpr ce = new CallExpr(0,new SuperExpr(),overwr,null,vae);
 				ce.setSuperExpr(true);
 				if( m.type.ret() ≢ Type.tpVoid ) {
 					if( overwr.type.ret() ≡ Type.tpVoid )
@@ -1037,8 +1037,12 @@ public final view RStruct of Struct extends RTypeDecl {
 	private static ENode makeDispatchCall(@forward RStruct self, int pos, Method dispatcher, Method dispatched) {
 		//return new InlineMethodStat(pos,dispatched,dispatcher)
 		ENode obj = null;
-		if (!dispatched.isStatic() && !dispatcher.isStatic())
-			obj = new ThisExpr(pos);
+		if (!dispatched.isStatic() && !dispatcher.isStatic()) {
+			if (self.getStruct() != dispatched.ctx_tdecl)
+				obj = new SuperExpr(pos);
+			else
+				obj = new ThisExpr(pos);
+		}
 		CallExpr ce = new CallExpr(pos, obj, dispatched, null, ENode.emptyArray);
 		if (self.getStruct() != dispatched.ctx_tdecl)
 			ce.setSuperExpr(true);
@@ -1262,7 +1266,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					if (initbody.stats[0] instanceof ExprStat) {
 						ExprStat es = (ExprStat)initbody.stats[0];
 						ENode ce = es.expr;
-						if (ce instanceof CallExpr && ce.func instanceof Constructor) {
+						if (ce instanceof CtorCallExpr) {
 							String nm = ce.ident.name;
 							if (nm == nameThis)
 								; // this(args)
@@ -1279,7 +1283,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				}
 				if( gen_def_constr ) {
 					m.setNeedFieldInits(true);
-					CallExpr call_super = new CallExpr(pos, null, new SymbolRef<Method>(pos, nameSuper), null, ENode.emptyArray);
+					CtorCallExpr call_super = new CtorCallExpr(pos, new SymbolRef<Constructor>(pos, nameSuper), ENode.emptyArray);
 					if( super_types.length > 0 && super_types[0].getStruct() == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;

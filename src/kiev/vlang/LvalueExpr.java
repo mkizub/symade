@@ -19,6 +19,8 @@ import kiev.ir.java15.RContainerAccessExpr;
 import kiev.be.java15.JContainerAccessExpr;
 import kiev.ir.java15.RThisExpr;
 import kiev.be.java15.JThisExpr;
+import kiev.ir.java15.RSuperExpr;
+import kiev.be.java15.JSuperExpr;
 import kiev.ir.java15.RLVarExpr;
 import kiev.be.java15.JLVarExpr;
 import kiev.ir.java15.RSFldExpr;
@@ -384,10 +386,6 @@ public final class ThisExpr extends LvalueExpr {
 	public ThisExpr(int pos) {
 		this.pos = pos;
 	}
-	public ThisExpr(boolean super_flag) {
-		if (super_flag)
-			this.setSuperExpr(true);
-	}
 
 	public Type getType() {
 		try {
@@ -395,8 +393,6 @@ public final class ThisExpr extends LvalueExpr {
 				return Type.tpVoid;
 			if (ctx_tdecl.id.uname == nameIFaceImpl)
 				return ctx_tdecl.package_clazz.xtype;
-			if (isSuperExpr())
-				ctx_tdecl.super_types[0].getType();
 			return ctx_tdecl.xtype;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
@@ -404,7 +400,38 @@ public final class ThisExpr extends LvalueExpr {
 		}
 	}
 
-	public String toString() { return isSuperExpr() ? "super" : "this"; }
+	public String toString() { return "this"; }
+}
+
+@node(name="Super")
+public final class SuperExpr extends ENode {
+	
+	@dflow(out="this:in") private static class DFI {}
+
+	@virtual typedef This  = SuperExpr;
+	@virtual typedef JView = JSuperExpr;
+	@virtual typedef RView = RSuperExpr;
+
+	public SuperExpr() {
+		setSuperExpr(true);
+	}
+	public SuperExpr(int pos) {
+		this.pos = pos;
+		setSuperExpr(true);
+	}
+
+	public Type getType() {
+		try {
+			if (ctx_tdecl == null)
+				return Type.tpVoid;
+			return ctx_tdecl.super_types[0].getType();
+		} catch(Exception e) {
+			Kiev.reportError(this,e);
+			return Type.tpVoid;
+		}
+	}
+
+	public String toString() { return "super"; }
 }
 
 @node(name="LVar")

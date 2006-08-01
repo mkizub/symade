@@ -162,7 +162,7 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 		JENode[] args = this.args;
 		code.addInstr(op_new,clazzStringBuffer.xtype);
 		code.addInstr(op_dup);
-		code.addInstr(op_call,(JMethod)clazzStringBufferInit,false);
+		code.addInstr(op_call,(JMethod)clazzStringBufferInit,true);
 		for(int i=0; i < args.length; i++) {
 			args[i].generate(code,null);
 			code.addInstr(op_call,getMethodFor(args[i]),false);

@@ -115,10 +115,7 @@ CLASS kiev.fmt.CalcOptionMetaAlias kiev/fmt/CalcOptionMetaAlias kiev\fmt\JavaSyn
 CLASS kiev.fmt.CalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionNotNull kiev/fmt/CalcOptionNotNull kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionNotSuper kiev/fmt/CalcOptionNotSuper kiev\fmt\JavaSyntax.java
-CLASS kiev.fmt.CalcOptionPackedField kiev/fmt/CalcOptionPackedField kiev\fmt\JavaSyntax.java
-CLASS kiev.fmt.CalcOptionSType kiev/fmt/CalcOptionSType kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionTrue kiev/fmt/CalcOptionTrue kiev\fmt\SyntaxLayout.java
-CLASS kiev.fmt.CalcOptionUpperBound kiev/fmt/CalcOptionUpperBound kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.DrawCharTerm kiev/fmt/DrawCharTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawColor kiev/fmt/DrawColor kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawContext kiev/fmt/DrawContext kiev\fmt\DrawContext.java
@@ -369,6 +366,7 @@ CLASS kiev.vlang.ContainerAccessExpr kiev/vlang/ContainerAccessExpr kiev\vlang\L
 CLASS kiev.vlang.ContinueStat kiev/vlang/ContinueStat kiev\vlang\Statement.java
 CLASS kiev.vlang.CoreFunc kiev/vlang/CoreFunc kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.CoreMethod kiev/vlang/CoreMethod kiev\vlang\CoreMethod.java
+CLASS kiev.vlang.CtorCallExpr kiev/vlang/CtorCallExpr kiev\vlang\CallExpr.java
 CLASS kiev.vlang.DFFunc kiev/vlang/DFFunc kiev\vlang\Var.java
 CLASS kiev.vlang.DFLoopException kiev/vlang/DFLoopException kiev\vlang\Var.java
 CLASS kiev.vlang.DFSocket kiev/vlang/DFSocket kiev\vlang\Var.java
@@ -610,6 +608,7 @@ CLASS kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.ja
 CLASS kiev.vlang.StringConcatSA kiev/vlang/StringConcatSA kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.StringConcatSS kiev/vlang/StringConcatSS kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
+CLASS kiev.vlang.SuperExpr kiev/vlang/SuperExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
 CLASS kiev.vlang.Symbol kiev/vlang/Symbol kiev\vlang\Symbol.java
 CLASS kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java
@@ -704,6 +703,7 @@ INTERFACE kiev.be.java15.JConstStringExpr kiev/be/java15/JConstStringExpr kiev\b
 INTERFACE kiev.be.java15.JConstants kiev/be/java15/JConstants kiev\be\java15\JConstants.java
 INTERFACE kiev.be.java15.JContainerAccessExpr kiev/be/java15/JContainerAccessExpr kiev\be\java15\JLvalueExpr.java
 INTERFACE kiev.be.java15.JContinueStat kiev/be/java15/JContinueStat kiev\be\java15\JStatement.java
+INTERFACE kiev.be.java15.JCtorCallExpr kiev/be/java15/JCtorCallExpr kiev\be\java15\JCallExpr.java
 INTERFACE kiev.be.java15.JDNode kiev/be/java15/JDNode kiev\be\java15\JNode.java
 INTERFACE kiev.be.java15.JDoWhileStat kiev/be/java15/JDoWhileStat kiev\be\java15\JLoopStat.java
 INTERFACE kiev.be.java15.JENode kiev/be/java15/JENode kiev\be\java15\JNode.java
@@ -741,6 +741,7 @@ INTERFACE kiev.be.java15.JSFldExpr kiev/be/java15/JSFldExpr kiev\be\java15\JLval
 INTERFACE kiev.be.java15.JShadow kiev/be/java15/JShadow kiev\be\java15\JExpr.java
 INTERFACE kiev.be.java15.JStringConcatExpr kiev/be/java15/JStringConcatExpr kiev\be\java15\JExpr.java
 INTERFACE kiev.be.java15.JStruct kiev/be/java15/JStruct kiev\be\java15\JStruct.java
+INTERFACE kiev.be.java15.JSuperExpr kiev/be/java15/JSuperExpr kiev\be\java15\JLvalueExpr.java
 INTERFACE kiev.be.java15.JSwitchStat kiev/be/java15/JSwitchStat kiev\be\java15\JComplexStat.java
 INTERFACE kiev.be.java15.JSynchronizedStat kiev/be/java15/JSynchronizedStat kiev\be\java15\JComplexStat.java
 INTERFACE kiev.be.java15.JThisExpr kiev/be/java15/JThisExpr kiev\be\java15\JLvalueExpr.java
@@ -790,6 +791,7 @@ INTERFACE kiev.ir.java15.RConstructor kiev/ir/java15/RConstructor kiev\ir\java15
 INTERFACE kiev.ir.java15.RContainerAccessExpr kiev/ir/java15/RContainerAccessExpr kiev\ir\java15\RLvalueExpr.java
 INTERFACE kiev.ir.java15.RContinueStat kiev/ir/java15/RContinueStat kiev\ir\java15\RStat.java
 INTERFACE kiev.ir.java15.RCoreMethod kiev/ir/java15/RCoreMethod kiev\ir\java15\RMethod.java
+INTERFACE kiev.ir.java15.RCtorCallExpr kiev/ir/java15/RCtorCallExpr kiev\ir\java15\RCallExpr.java
 INTERFACE kiev.ir.java15.RDNode kiev/ir/java15/RDNode kiev\ir\java15\RNode.java
 INTERFACE kiev.ir.java15.RDoWhileStat kiev/ir/java15/RDoWhileStat kiev\ir\java15\RLoopStat.java
 INTERFACE kiev.ir.java15.RENode kiev/ir/java15/RENode kiev\ir\java15\RNode.java
@@ -831,6 +833,7 @@ INTERFACE kiev.ir.java15.RSFldExpr kiev/ir/java15/RSFldExpr kiev\ir\java15\RLval
 INTERFACE kiev.ir.java15.RShadow kiev/ir/java15/RShadow kiev\ir\java15\RExpr.java
 INTERFACE kiev.ir.java15.RStringConcatExpr kiev/ir/java15/RStringConcatExpr kiev\ir\java15\RExpr.java
 INTERFACE kiev.ir.java15.RStruct kiev/ir/java15/RStruct kiev\ir\java15\RStruct.java
+INTERFACE kiev.ir.java15.RSuperExpr kiev/ir/java15/RSuperExpr kiev\ir\java15\RLvalueExpr.java
 INTERFACE kiev.ir.java15.RSwitchStat kiev/ir/java15/RSwitchStat kiev\ir\java15\RSwitchStat.java
 INTERFACE kiev.ir.java15.RSynchronizedStat kiev/ir/java15/RSynchronizedStat kiev\ir\java15\RBlockStat.java
 INTERFACE kiev.ir.java15.RThisExpr kiev/ir/java15/RThisExpr kiev\ir\java15\RLvalueExpr.java
@@ -885,6 +888,9 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
+METATYPE kiev.fmt.CalcOptionPackedField kiev\fmt\JavaSyntax.java
+METATYPE kiev.fmt.CalcOptionSType kiev\fmt\JavaSyntax.java
+METATYPE kiev.fmt.CalcOptionUpperBound kiev\fmt\JavaSyntax.java
 METATYPE kiev.fmt.DrawJavaType kiev\fmt\DrawJava.java
 METATYPE kiev.fmt.FormatInfoHint kiev\fmt\Formatter.java
 METATYPE kiev.fmt.SyntaxJavaType kiev\fmt\JavaSyntax.java

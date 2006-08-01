@@ -139,7 +139,7 @@ public final view JMethod of Method extends JDNode {
 					constPool.addStringCP(msg);
 					code.addConst(msg);
 					JMethod func = Type.tpError.getJStruct().resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
-					code.addInstr(Instr.op_call,func,false);
+					code.addInstr(Instr.op_call,func,true);
 					code.addInstr(Instr.op_throw);
 				}
 				code.removeVars(params);

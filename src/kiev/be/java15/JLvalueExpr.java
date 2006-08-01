@@ -337,6 +337,23 @@ public final view JThisExpr of ThisExpr extends JLvalueExpr {
 }
 
 @nodeview
+public final view JSuperExpr of SuperExpr extends JENode {
+
+	public void generate(Code code, Type reqType) {
+		trace(Kiev.debugStatGen,"\t\tgenerating SuperExpr");
+		code.setLinePos(this);
+		if (!code.method.isStatic())
+			code.addInstrLoadThis();
+		else if (code.method.isStatic() && code.method.isVirtualStatic())
+			code.addInstr(op_load,code.method.params[0]);
+		else {
+			Kiev.reportError(this,"Access '"+toString()+"' in static context");
+			code.addNullConst();
+		}
+	}
+}
+
+@nodeview
 public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 	public:ro	JVar		var;
 

@@ -193,18 +193,6 @@ public final class CalcOptionJavaFlag extends CalcOption {
 }
 
 @node
-class CalcOptionUpperBound extends CalcOption {
-	CalcOptionUpperBound() {}
-	public boolean calc(ANode node) {
-		if !(node instanceof TypeConstr) return false;
-		TypeConstr tc = (TypeConstr)node;
-		if (tc.super_types.length == 0) return false;
-		if (tc.super_types.length == 1 && tc.super_types[0].getType() ≈ Type.tpObject) return false;
-		return true;
-	}
-}
-
-@node
 class CalcOptionMetaAlias extends CalcOption {
 	CalcOptionMetaAlias() {}
 	public boolean calc(ANode node) { return ((Field)node).getMetaAlias() != null; }
@@ -219,31 +207,12 @@ class CalcOptionEnumFilter extends CalcOption {
 	CalcOptionEnumFilter() {}
 	public boolean calc(ANode node) { return !((node instanceof DNode && node.isSynthetic()) || (node instanceof Field && node.isEnumField())); }
 }
-@node
-class CalcOptionPackedField extends CalcOption {
-	CalcOptionPackedField() {}
-	public boolean calc(ANode node) {return ((Field)node).isPackedField();}
-}
-@node
-class CalcOptionSType extends CalcOption {
-	CalcOptionSType() {}
-	public boolean calc(ANode node) {
-		FormPar fp = (FormPar)node;
-		return fp.stype != null && fp.vtype.getType() ≉ fp.stype.getType();
-	}
-}
-@node
-class CalcOptionNotSuper extends CalcOption {
-	CalcOptionNotSuper() {}
-	public boolean calc(ANode node) { return !((ENode)node).isSuperExpr(); }
-}
 
 @node
 public class JavaSyntax extends TextSyntax {
 
 	final SyntaxJavaExprTemplate seExprTemplate;
 	
-	final SyntaxElem seFileUnit;
 	final SyntaxElem seStructClass;
 	final SyntaxElem seStructInterface;
 	final SyntaxElem seStructAnnotation;
@@ -252,46 +221,6 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seStructSyntax;
 	final SyntaxElem seStructView;
 	final SyntaxElem seStructBody;
-	final SyntaxElem seVarDecl;
-	final SyntaxElem seVar;
-	final SyntaxElem seVarNoType;
-	final SyntaxElem seFormPar;
-	final SyntaxElem seConstructor;
-	final SyntaxElem seMethod;
-	final SyntaxElem seInitializer;
-	final SyntaxElem seRuleMethod;
-	final SyntaxElem seMethodAlias;
-	final SyntaxElem seOperatorAlias;
-	final SyntaxElem seWBCCondition;
-
-	final SyntaxElem seTypeRef;
-	final SyntaxElem seTypeNameRef;
-	final SyntaxElem seTypeClosureRef;
-	// lvalues
-	final SyntaxElem seThisExpr;
-	final SyntaxElem seOuterThisAccessExpr;
-	final SyntaxElem seReinterpExpr;
-	// boolean exprs
-	final SyntaxElem seInstanceofExpr;
-	final SyntaxElem seCallConstr;
-	// new expr
-	final SyntaxElem seNewArrayExpr;
-	final SyntaxElem seNewInitializedArrayExpr;
-	final SyntaxElem seNewClosure;
-	// rewrites
-	final SyntaxElem seRewriteMatch;
-	final SyntaxElem seRewritePattern;
-	final SyntaxElem seRewriteCase;
-	final SyntaxElem seRewriteNodeFactory;
-	final SyntaxElem seRewriteNodeArg;
-	final SyntaxElem seRewriteNodeArgArray;
-	// others exprs
-	final SyntaxElem seShadow;
-	final SyntaxElem seTypeClassExpr;
-	final SyntaxElem seTypeInfoExpr;
-	final SyntaxElem seAssertEnabledExpr;
-	final SyntaxElem seCastExpr;
-	final SyntaxElem seNopExpr;
 
 	final SyntaxElem seComment;
 	final SyntaxElem seCommentNl;
@@ -556,16 +485,6 @@ public class JavaSyntax extends TextSyntax {
 		seExprTemplate = new SyntaxJavaExprTemplate();
 		
 		{
-			SpaceCmd[] lout_pkg = new SpaceCmd[] {
-					new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
-				};
-			// file unit
-			seFileUnit = setl(lout_nl,
-					opt("pkg", setl(lout_pkg, kw("package"), attr("pkg"), sep(";"))),
-					lst("members", lout_nl)
-				);
-		}
-		{
 			SpaceCmd[] lout_struct = new SpaceCmd[] {
 					new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
 				};
@@ -713,236 +632,9 @@ public class JavaSyntax extends TextSyntax {
 					)
 				);
 		}
-		{
-			// vars
-			seVarDecl = set(attr("meta"),
-				attr("vtype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))),
-				sep(";"));
-			seVar = set(attr("meta"),
-				attr("vtype"), ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority)))
-				);
-			seVarNoType = set(ident("id"), opt("init", set(oper("="), expr("init", Constants.opAssignPriority))));
-			// formal parameter
-			seFormPar = set(attr("meta"),
-				attr("vtype"),
-				opt(new CalcOptionSType(),
-					set(sep0(":"), attr("stype")),
-					null,
-					lout_empty
-					),
-				ident("id")
-				);
-		}
-		{
-			SpaceCmd[] lout_method_type_args = new SpaceCmd[] {
-					new SpaceCmd(siSp, SP_NOP, SP_ADD, 0)
-				};
-			SpaceCmd[] lout_method = new SpaceCmd[] {
-					new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
-				};
-			SyntaxList method_params = lst("params",node(),sep(","),lout_empty);
-			method_params.filter = new CalcOptionJavaFlag("synthetic", 1, 12, 1);
-			SyntaxElem method_type_args = opt(new CalcOptionNotEmpty("targs"),
-				set(
-					sep("<"),
-					lst("targs", node(/*new FormatInfoHint("class-arg")*/), sep(","), lout_empty),
-					sep(">")
-				), null, lout_method_type_args);
-			// constructor
-			seConstructor = setl(lout_method,
-				setl(lout_empty, attr("meta"),
-					ident("id"),
-					set(sep("("),
-						method_params.ncopy(),
-						sep(")")
-						)
-					),
-				par(plIndented, lst("conditions", lout_empty)),
-				attr("body")
-				);
-			// method
-			seMethod = setl(lout_method,
-				setl(lout_empty, attr("meta"),
-					method_type_args.ncopy(),
-					attr("type_ret"), ident("id"),
-					set(sep("("),
-						method_params.ncopy(),
-						sep(")")
-						)
-					),
-				par(plIndented, lst("aliases", lout_empty)),
-				par(plIndented, lst("conditions", lout_empty)),
-				opt(new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty)
-				);
-			// logical rule method
-			seRuleMethod = setl(lout_method,
-				setl(lout_nl, attr("meta"),
-					method_type_args.ncopy(),
-					kw("rule"), ident("id"),
-					set(sep("("),
-						method_params.ncopy(),
-						sep(")")
-						)
-					),
-				par(plIndented, lst("aliases", lout_empty)),
-				par(plIndented, lst("localvars", setl(lout_nl, node(), sep(";")), null, lout_nl)),
-				opt(new CalcOptionNotNull("body"), attr("body"), sep(";"), lout_empty)
-				);
-			seInitializer = setl(lout_method, attr("meta"), attr("body"));
-			
-			seMethodAlias = setl(lout_nl_nl, kw("alias"), attr("name"));
-			seOperatorAlias = setl(lout_nl_nl,
-				kw("alias"),
-				alt_int("opmode",
-					kw("lfy"),
-					kw("xfx"),
-					kw("xfy"),
-					kw("yfx"),
-					kw("yfy"),
-					kw("xf"),
-					kw("yf"),
-					kw("fx"),
-					kw("fy"),
-					kw("xfxfy")
-					),
-				kw("operator"),
-				attr("image")
-				);
-			
-			seWBCCondition = opt("body",
-				setl(lout_nl_nl,
-					alt_enum("cond", kw("error"), kw("require"), kw("ensure"), kw("invariant")),
-					opt("id", set(sep("["), ident("id"), sep("]"))),
-					attr("body")
-				));
-		}
 
 		exprs = new Hashtable<Operator, SyntaxElem>();
-		seTypeRef = ident("ident");
-		seTypeNameRef = set(
-				opt("outer", set(attr("outer"),sep("."))),
-				ident("ident"),
-				opt(new CalcOptionNotEmpty("args"),
-					set(
-						sep("<"),
-						lst("args", node(), sep(","), lout_empty),
-						sep(">")
-					), null, lout_empty
-				)
-			);
-		seTypeClosureRef = set(
-			sep("("),
-			lst("args", node(), sep(","), lout_empty),
-			sep(")->"),
-			attr("ret")
-			);
 
-		seThisExpr = opt(new CalcOptionNotSuper(),
-						kw("this"),
-						kw("super"),
-						lout_empty
-						);
-		seOuterThisAccessExpr = set(attr("outer"), sep("."), kw("this"));
-		seReinterpExpr = set(sep("("), kw("$reinterp"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
-		
-		seInstanceofExpr = //expr("expr", Operator.InstanceOf, "type");
-			set(
-			expr("expr", Constants.opInstanceOfPriority),
-			kw("instanceof"),
-			attr("type")
-			);
-		seCallConstr = set(
-				opt(new CalcOptionNotSuper(),
-					kw("this"),
-					kw("super"),
-					lout_empty
-					),
-				sep("("),
-				lst("args",node(),sep(","),lout_empty),
-				sep(")")
-				);
-
-		seNewArrayExpr = set(
-				kw("new"),
-				attr("type"),
-				lst("args",
-					set(
-						sep("["),
-						node(),
-						sep("]")
-					),
-					null,
-					lout_empty
-					)
-				);
-		seNewInitializedArrayExpr = set(
-				kw("new"),
-				attr("type"),
-				sep("{"),
-				lst("args",node(),sep(","),lout_empty),
-				sep("}")
-				);
-		seNewClosure = set(
-				kw("fun"),
-				sep("("),
-				lst("params",node(),sep(","),lout_empty),
-				sep(")"),
-				sep("->"),
-				attr("type_ret"),
-				attr("body")
-				);
-		{
-			seRewriteMatch = set(
-					sep("{", lout_nl),
-					par(plIndented, lst("cases",setl(lout_nl,node()),null,lout_nl)),
-					sep("}")
-					);
-			seRewriteCase = set(
-					kw("case"),
-					attr("var"),
-					sep(":", lout_nl),
-					par(plIndented, lst("stats",setl(lout_nl,node(/*new FormatInfoHint("stat")*/)),null,lout_nl))
-					);
-			SpaceCmd[] lout_pattern_args = new SpaceCmd[] {
-					new SpaceCmd(siSp, SP_NOP, SP_ADD, 0)
-				};
-			seRewritePattern = set(
-					attr("meta"),
-					attr("vtype"),
-					ident("id"),
-					opt(new CalcOptionNotEmpty("vars"),
-						set(
-							sep("("),
-							lst("vars", node(), sep(","), lout_empty),
-							sep(")")
-						), null, lout_pattern_args
-					)
-				);
-			seRewriteNodeFactory = set(
-					kw("new"),
-					oper("#"),
-					attr("type"),
-					sep("("),
-					lst("args",node(),sep(","),lout_empty),
-					sep(")")
-					);
-			seRewriteNodeArg = set(ident("attr"), oper("="), attr("node"));
-			seRewriteNodeArgArray = set(
-				sep("{"),
-				lst("args",node(),sep(","),lout_empty),
-				sep("}")
-				);
-		}
-
-
-		seShadow = attr("node");
-		seTypeClassExpr = set(attr("type"), sep("."), kw("class"));
-		seTypeInfoExpr = set(attr("type"), sep("."), kw("type"));
-		seAssertEnabledExpr = kw("$assertionsEnabled");
-		seCastExpr = set(sep("("), kw("$cast"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
-		seNopExpr = new SyntaxSpace(new SpaceCmd[0]);
-		seNopExpr.fmt.is_hidden = true;
-		
 		SpaceCmd[] lout_comment = new SpaceCmd[] {
 					new SpaceCmd(siSp, SP_ADD, SP_ADD, 0),
 				};
@@ -982,7 +674,6 @@ public class JavaSyntax extends TextSyntax {
 				return sed.elem;
 		}
 		switch (node) {
-		case FileUnit: return seFileUnit;
 		case Struct: {
 			Struct s = (Struct)node;
 			if (s.isEnum())
@@ -1001,55 +692,6 @@ public class JavaSyntax extends TextSyntax {
 			//	return seStructBody;
 			return seStructClass;
 		}
-		case FormPar: return seFormPar;
-		case Var:
-			//if (hint != null) {
-			//	if ("no-type".equals(hint.text))
-			//		return seVarNoType;
-			//	if ("stat".equals(hint.text))
-			//		return seVarDecl;
-			//}
-			return seVar;
-		case RuleMethod: return seRuleMethod;
-		case Constructor: return seConstructor;
-		case Method: return seMethod;
-		case Initializer: return seInitializer;
-		case ASTIdentifierAlias: return seMethodAlias;
-		case ASTOperatorAlias: return seOperatorAlias;
-		case WBCCondition: return seWBCCondition;
-
-		case TypeRef: return seTypeRef;
-		case TypeNameRef: return seTypeNameRef;
-		case TypeClosureRef: return seTypeClosureRef;
-
-		case Shadow: return seShadow;
-
-		case ThisExpr: return seThisExpr;
-		case OuterThisAccessExpr: return seOuterThisAccessExpr;
-		case ReinterpExpr: return seReinterpExpr;
-		
-		case InstanceofExpr: return seInstanceofExpr;
-//		case CallExpr:
-//			if (((CallExpr)node).func instanceof Constructor)
-//				return seCallConstr;
-//			return seCallExpr;
-		case TypeClassExpr: return seTypeClassExpr;
-		case TypeInfoExpr: return seTypeInfoExpr;
-		case AssertEnabledExpr: return 	seAssertEnabledExpr;
-
-		case CastExpr: return seCastExpr;
-		case NopExpr: return seNopExpr;
-
-		case NewArrayExpr: return seNewArrayExpr;
-		case NewInitializedArrayExpr: return seNewInitializedArrayExpr;
-		case NewClosure: return seNewClosure;
-		
-		case RewriteMatch: return seRewriteMatch;
-		case RewriteCase: return seRewriteCase;
-		case RewritePattern: return seRewritePattern;
-		case RewriteNodeFactory: return seRewriteNodeFactory;
-		case RewriteNodeArg: return seRewriteNodeArg;
-		case RewriteNodeArgArray: return seRewriteNodeArgArray;
 
 		case Comment: {
 			Comment c = (Comment)node;

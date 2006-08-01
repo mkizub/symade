@@ -213,7 +213,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 			case FormPar.PARAM_TYPEINFO:
 				assert(this instanceof Constructor || (this.isStatic() && this.id.equals(nameNewOp)));
 				assert(fp.isFinal());
-				assert(fp.stype == null || fp.stype.getType() ≈ fp.vtype.getType());
+				assert(fp.stype == null || fp.getSType() ≈ fp.getType());
 				dargs.append(fp.type);
 				break;
 			case FormPar.PARAM_VARARGS:
@@ -725,8 +725,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 		// push the method, because formal parameters may refer method's type args
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
-			if (fp.stype == null)
-				fp.stype = new TypeRef(fp.vtype.getType());
+			if (fp.stype != null)
+				fp.stype.getType(); // resolve
 			if (fp.meta != null)
 				fp.meta.verify();
 		}

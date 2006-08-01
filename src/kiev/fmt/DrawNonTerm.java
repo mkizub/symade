@@ -109,11 +109,20 @@ public class DrawNonTermList extends DrawNonTerm {
 			if (sz == 0) {
 				if (args.length != 1) {
 					args.delAll();
-					args.append(slst.empty.makeDrawable(cont.fmt, node));
+					if (slst.empty != null) {
+						args.append(slst.empty.makeDrawable(cont.fmt, node));
+					} else {
+						if (slst.prefix != null)
+							args.append(slst.prefix.makeDrawable(cont.fmt, node));
+						if (slst.sufix != null)
+							args.append(slst.sufix.makeDrawable(cont.fmt, node));
+					}
 				}
 			} else {
 				Drawable[] old_args = args.delToArray();
 				boolean need_sep = false;
+				if (slst.prefix != null)
+					args.append(slst.prefix.makeDrawable(cont.fmt, node));
 			next_node:
 				for (int i=0; i < sz; i++) {
 					ANode n = narr[i];
@@ -131,29 +140,60 @@ public class DrawNonTermList extends DrawNonTerm {
 					args.append(slst.element.makeDrawable(cont.fmt, n));
 					need_sep = true;
 				}
+				if (slst.sufix != null)
+					args.append(slst.sufix.makeDrawable(cont.fmt, node));
 			}
 		}
 		if (this.isUnvisible())
 			return;
+		int x = 0;
 		if (narr.length == 0) {
-			assert(args.length == 0 || args.length == 1);
 			if (args.length > 0) {
-				if (slst.empty.fmt.is_hidden)
-					args[0].geometry.is_hidden = !draw_optional;
-				args[0].preFormat(cont,slst.empty,this.node);
+				if (slst.empty != null) {
+					if (slst.empty.fmt.is_hidden)
+						args[x].geometry.is_hidden = !draw_optional;
+					args[x].preFormat(cont,slst.empty,this.node);
+				} else {
+					if (slst.prefix != null)
+						args[x++].preFormat(cont,slst.prefix,this.node);
+					if (slst.sufix != null)
+						args[x++].preFormat(cont,slst.sufix,this.node);
+				}
 			}
 		}
 		else if (slst.separator != null) {
-			for (int i=0; i < args.length; i++) {
-				if ((i & 1) == 0)
-					args[i].preFormat(cont,slst.element,args[i].node);
-				else
-					args[i].preFormat(cont,slst.separator,this.node);
+			int n = args.length;
+			if (slst.sufix != null)
+				n--;
+			if (slst.prefix != null) {
+				args[x++].preFormat(cont,slst.prefix,this.node);
+				for (; x < n; x++) {
+					if ((x & 1) == 1)
+						args[x].preFormat(cont,slst.element,args[x].node);
+					else
+						args[x].preFormat(cont,slst.separator,this.node);
+				}
+			} else {
+				for (; x < n; x++) {
+					if ((x & 1) == 0)
+						args[x].preFormat(cont,slst.element,args[x].node);
+					else
+						args[x].preFormat(cont,slst.separator,this.node);
+				}
 			}
+			if (slst.sufix != null)
+				args[x].preFormat(cont,slst.sufix,this.node);
 		}
 		else {
-			for (int i=0; i < args.length; i++)
-				args[i].preFormat(cont,slst.element,args[i].node);
+			int n = args.length;
+			if (slst.sufix != null)
+				n--;
+			if (slst.prefix != null)
+				args[x++].preFormat(cont,slst.prefix,this.node);
+			for (; x < n; x++)
+				args[x].preFormat(cont,slst.element,args[x].node);
+			if (slst.sufix != null)
+				args[x].preFormat(cont,slst.sufix,this.node);
 		}
 	}
 	
@@ -163,15 +203,32 @@ public class DrawNonTermList extends DrawNonTerm {
 			return 0;
 		SyntaxList slst = (SyntaxList)this.syntax;
 		if (slst.separator != null) {
-			for (int i=0; i < args.length; i++) {
-				if (args[i] == dr)
-					return (1+i)/2;
+			if (slst.prefix != null) {
+				for (int i=0; i < args.length; i++) {
+					if (args[i] == dr)
+						return 1 + i/2;
+				}
+			} else {
+				for (int i=0; i < args.length; i++) {
+					if (args[i] == dr)
+						return (1+i)/2;
+				}
 			}
 			return oarr.length;
-		}
-		for (int i=0; i < args.length; i++) {
-			if (args[i] == dr)
-				return i;
+		} else {
+			if (slst.prefix != null) {
+				if (args[0] == dr)
+					return 0;
+				for (int i=1; i < args.length; i++) {
+					if (args[i] == dr)
+						return i-1;
+				}
+			} else {
+				for (int i=0; i < args.length; i++) {
+					if (args[i] == dr)
+						return i;
+				}
+			}
 		}
 		return oarr.length;
 	}

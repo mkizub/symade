@@ -162,6 +162,23 @@ public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 }
 
 @nodeview
+public static final view RSuperExpr of SuperExpr extends RENode {
+
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return;
+		ANode p = parent();
+		while !(p instanceof Method || p instanceof Initializer || p instanceof Field)
+			p = p.parent();
+		DNode decl = (DNode)p;
+		if (decl.isStatic() && ctx_tdecl.id.uname != nameIFaceImpl)
+			Kiev.reportError(this,"Access '"+parent()+"' in static context");
+		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
+	}
+}
+
+@nodeview
 public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 
 	static final String namePEnv = "$env";

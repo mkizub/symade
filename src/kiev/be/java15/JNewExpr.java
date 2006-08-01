@@ -90,7 +90,7 @@ public final view JNewExpr of NewExpr extends JENode {
 				code.addInstr(Instr.op_load,v);
 			}
 		}
-		code.addInstr(op_call,func,false,type);
+		code.addInstr(op_call,func,true,type);
 	}
 }
 
@@ -184,7 +184,7 @@ public final view JNewClosure of NewClosure extends JENode {
 			code.addInstr(Instr.op_load,v);
 		}
 		JMethod func = clazz.resolveMethod(nameInit,KString.from("(I)V"));
-		code.addInstr(op_call,func,false);
+		code.addInstr(op_call,func,true);
 	}
 }
 

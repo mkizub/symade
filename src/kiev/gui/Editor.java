@@ -738,6 +738,10 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 	}
 	private void navigatePageUp() {
 		final Editor uiv = (Editor)this.uiv;
+		if (uiv.view_canvas.first_visible == null) {
+			uiv.view_canvas.first_line = 0;
+			return;
+		}
 		int offs = uiv.view_canvas.last_visible.geometry.lineno - uiv.view_canvas.first_visible.geometry.lineno -1;
 		uiv.view_canvas.first_line -= offs;
 		for (int i=offs; i >= 0; i--)
@@ -746,6 +750,10 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 	}
 	private void navigatePageDn() {
 		final Editor uiv = (Editor)this.uiv;
+		if (uiv.view_canvas.first_visible == null) {
+			uiv.view_canvas.first_line = 0;
+			return;
+		}
 		int offs = uiv.view_canvas.last_visible.geometry.lineno - uiv.view_canvas.first_visible.geometry.lineno -1;
 		uiv.view_canvas.first_line += offs;
 		for (int i=offs; i >= 0; i--)

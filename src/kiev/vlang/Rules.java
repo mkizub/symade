@@ -120,8 +120,8 @@ public class RuleMethod extends Method {
 		// push the method, because formal parameters may refer method's type args
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
-			if (fp.stype == null)
-				fp.stype = new TypeRef(fp.vtype.getType());
+			if (fp.stype != null)
+				fp.stype.getType(); // resolve
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
@@ -794,7 +794,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		sb.append("($env.$rc$frame$").append(env_var).append("=");
 		if( obj != null ) {
 			if (this.isSuperExpr()) {
-				assert (obj instanceof ThisExpr);
+				assert (obj instanceof SuperExpr);
 				sb.append("super.");
 			} else {
 				sb.append(Kiev.reparseExpr(obj,true)).append('.');

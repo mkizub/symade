@@ -236,16 +236,14 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			ctor.params.add(new FormPar(0, "name", Type.tpString, FormPar.PARAM_NORMAL, ACC_FINAL));
 			ctor.params.add(new FormPar(0, "typeinfo", Type.tpTypeInfo, FormPar.PARAM_NORMAL, ACC_FINAL));
 			s.members.add(ctor);
-			CallExpr ce = new CallExpr(f.pos,
-					new TypeRef(s.super_types[0].getType()),
-					new SymbolRef<Method>("super",s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpTypeInfo)),
-					null,
+			Constructor sctor = (Constructor)s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpTypeInfo);
+			CtorCallExpr ce = new CtorCallExpr(f.pos,
+					new SymbolRef<Constructor>(nameSuper,sctor),
 					new ENode[]{
 						new LVarExpr(f.pos, ctor.params[0]),
 						new LVarExpr(f.pos, ctor.params[1])
 					}
 				);
-			ce.setSuperExpr(true);
 			ctor.body = new Block(0);
 			ctor.block.stats.add(new ExprStat(ce));
 		}
@@ -421,7 +419,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			Struct sup = s.super_types[0].getStruct();
 			if (isNodeKind(sup)) {
 				CallExpr ce = new CallExpr(0,
-						new ThisExpr(true),
+						new SuperExpr(),
 						sup.resolveMethod("getVal",Type.tpObject,Type.tpString),
 						null,
 						new ENode[]{new LVarExpr(0, getV.params[0])}
@@ -463,7 +461,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			copyV.body = new Block();
 			Var v = new Var(0,"node",s.xtype,0);
 			if (isNodeKind(s.super_types[0].getStruct())) {
-				CallExpr cae = new CallExpr(0,new ThisExpr(true),
+				CallExpr cae = new CallExpr(0,new SuperExpr(),
 					new SymbolRef<Method>("copyTo"),null,new ENode[]{new LVarExpr(0,copyV.params[0])});
 				v.init = new CastExpr(0,s.xtype,cae);
 				copyV.block.addSymbol(v);
@@ -549,7 +547,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 					)
 				);
 			}
-			CallExpr cae = new CallExpr(0,new ThisExpr(true),
+			CallExpr cae = new CallExpr(0,new SuperExpr(),
 				new SymbolRef<Method>("setFrom"),null,new ENode[]{new LVarExpr(0,v)});
 			setF.block.stats.append(cae);
 		}
@@ -610,7 +608,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			Struct sup = s.super_types[0].getStruct();
 			if (isNodeKind(sup)) {
 				CallExpr ce = new CallExpr(0,
-					new ThisExpr(true),
+					new SuperExpr(),
 					sup.resolveMethod("setVal",Type.tpVoid,Type.tpString,Type.tpObject),
 					null,
 					new ENode[]{new LVarExpr(0, setV.params[0]),new LVarExpr(0, setV.params[1])}

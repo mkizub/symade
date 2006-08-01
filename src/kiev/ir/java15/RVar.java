@@ -61,6 +61,7 @@ public static final view RFormPar of FormPar extends RVar {
 	public int			kind;
 
 	@getter public final Type get$dtype();
+	public Type	getSType();
 
 	public void resolveDecl() {
 		Type tp = this.type;

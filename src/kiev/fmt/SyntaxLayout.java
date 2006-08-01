@@ -849,6 +849,8 @@ public class SyntaxList extends SyntaxAttr {
 	@att public SyntaxElem	element;
 	@att public SyntaxElem	separator;
 	@att public SyntaxElem	empty;
+	@att public SyntaxElem	prefix;
+	@att public SyntaxElem	sufix;
 	@att public CalcOption filter;
 
 	public SyntaxList() {}

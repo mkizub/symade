@@ -59,14 +59,11 @@ public class ASTIdentifier extends ENode {
 	
 	public boolean preResolveIn() {
 		if( name == Constants.nameThis ) {
-			ThisExpr te = new ThisExpr(pos);
-			replaceWithNode(te);
+			replaceWithNode(new ThisExpr(pos));
 			return false;
 		}
 		else if( name == Constants.nameSuper ) {
-			ThisExpr te = new ThisExpr(pos);
-			te.setSuperExpr(true);
-			replaceWithNode(te);
+			replaceWithNode(new SuperExpr(pos));
 			return false;
 		}
 
