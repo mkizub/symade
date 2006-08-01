@@ -106,6 +106,7 @@ CLASS kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecod
 CLASS kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java
 CLASS kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
 CLASS kiev.fmt.AbstractFormatter kiev/fmt/AbstractFormatter kiev\fmt\Formatter.java
+CLASS kiev.fmt.AbstractSyntaxElemDecl kiev/fmt/AbstractSyntaxElemDecl kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOption kiev/fmt/CalcOption kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionEnumField kiev/fmt/CalcOptionEnumField kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionEnumFilter kiev/fmt/CalcOptionEnumFilter kiev\fmt\JavaSyntax.java
@@ -160,6 +161,7 @@ CLASS kiev.fmt.SyntaxCharAttr kiev/fmt/SyntaxCharAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxElem kiev/fmt/SyntaxElem kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxElemDecl kiev/fmt/SyntaxElemDecl kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxElemFormatDecl kiev/fmt/SyntaxElemFormatDecl kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.SyntaxElemRef kiev/fmt/SyntaxElemRef kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxEnumChoice kiev/fmt/SyntaxEnumChoice kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxFolder kiev/fmt/SyntaxFolder kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxIdentAttr kiev/fmt/SyntaxIdentAttr kiev\fmt\SyntaxLayout.java
@@ -168,6 +170,7 @@ CLASS kiev.fmt.SyntaxJavaAccess kiev/fmt/SyntaxJavaAccess kiev\fmt\JavaSyntax.ja
 CLASS kiev.fmt.SyntaxJavaComment kiev/fmt/SyntaxJavaComment kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaEnumAlias kiev/fmt/SyntaxJavaEnumAlias kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaExpr kiev/fmt/SyntaxJavaExpr kiev\fmt\JavaSyntax.java
+CLASS kiev.fmt.SyntaxJavaExprTemplate kiev/fmt/SyntaxJavaExprTemplate kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaPackedField kiev/fmt/SyntaxJavaPackedField kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxList kiev/fmt/SyntaxList kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxNode kiev/fmt/SyntaxNode kiev\fmt\SyntaxLayout.java

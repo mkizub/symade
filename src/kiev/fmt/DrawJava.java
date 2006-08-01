@@ -29,13 +29,20 @@ public class DrawJavaExpr extends DrawNonTermSet {
 		if (this.isUnvisible())
 			return;
 		SyntaxJavaExpr se = (SyntaxJavaExpr)this.syntax;
-		boolean no_paren = (node instanceof ENode) && (((ENode)node).isPrimaryExpr() || ((ENode)node).getPriority() < se.priority);
+		SyntaxJavaExprTemplate st = (SyntaxJavaExprTemplate)se.template.symbol;
+		boolean no_paren = true;
+		if (node instanceof ENode) {
+			if (((ENode)node).isPrimaryExpr())
+				no_paren = false;
+			else if (((ENode)node).getPriority() < se.priority)
+				no_paren = false;
+		}
 		if (args.length == 0)
-			args.append(se.expr.makeDrawable(cont.fmt, node));
+			args.append(st.elem.makeDrawable(cont.fmt, node));
 		if (args.length == 1) {
 			if (!no_paren) {
-				args.insert(0,se.l_paren.makeDrawable(cont.fmt, node));
-				args.insert(2,se.r_paren.makeDrawable(cont.fmt, node));
+				args.insert(0,st.l_paren.makeDrawable(cont.fmt, node));
+				args.insert(2,st.r_paren.makeDrawable(cont.fmt, node));
 			}
 		} else {
 			assert(args.length == 3);
@@ -46,12 +53,12 @@ public class DrawJavaExpr extends DrawNonTermSet {
 		}
 		if (no_paren) {
 			assert(args.length == 1);
-			args[0].preFormat(cont,se.expr,node);
+			args[0].preFormat(cont,st.elem,node);
 		} else {
 			assert(args.length == 3);
-			args[0].preFormat(cont,se.l_paren,node);
-			args[1].preFormat(cont,se.expr,node);
-			args[2].preFormat(cont,se.r_paren,node);
+			args[0].preFormat(cont,st.l_paren,node);
+			args[1].preFormat(cont,st.elem,node);
+			args[2].preFormat(cont,st.r_paren,node);
 		}
 	}
 }

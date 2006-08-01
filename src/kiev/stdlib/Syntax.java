@@ -39,6 +39,9 @@ operator  *          , yfx, 150;
 operator  /          , yfx, 150;
 operator  %          , yfx, 150;
 
+//operator  ?=         , xfx, 5;
+//operator  @=         , xfx, 5;
+
 // prefix operators
 operator  +  ,  fy, 200;
 operator  -  ,  fy, 200;

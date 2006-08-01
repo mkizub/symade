@@ -96,6 +96,8 @@ public final class Operator implements Constants {
 
 	public static final Operator Access;
 	public static final Operator Comma;
+	public static final Operator RuleIsThe;
+	public static final Operator RuleIsOneOf;
 	
 	// Unary prefix operators
 	public static final Operator Pos;
@@ -167,6 +169,9 @@ public final class Operator implements Constants {
 
 		Access = newOperator(opAccessPriority, "Y . I");
 		Comma = newOperator(1, "Y , X");
+
+		RuleIsThe = newOperator(opAssignPriority, "X ?= X");
+		RuleIsOneOf = newOperator(opAssignPriority, "X @= X");
 
 		// Unary prefix operators
 		Pos = newOperator(opNegPriority, "+ Y");

@@ -476,7 +476,19 @@ public final class RuleIstheExpr extends ASTRuleNode {
 		this.var = var;
 		this.expr = expr;
 	}
+	
+	public Operator getOp() { return Operator.RuleIsThe; }
 
+	public ENode[] getArgs() { return new ENode[]{var,expr}; }
+
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+		this.pos = node.pos;
+		assert (op == Operator.RuleIsThe);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
+		this.var = (LVarExpr)args[0];
+		this.expr = args[1];
+	}
+	
     public void rnResolve() {
 		//var.resolve(null);
 		//expr.resolve(((CTimeType)var.var.type).getUnboxedType());
@@ -545,6 +557,18 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		this.expr = expr;
 	}
 
+	public Operator getOp() { return Operator.RuleIsOneOf; }
+
+	public ENode[] getArgs() { return new ENode[]{var,expr}; }
+
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+		this.pos = node.pos;
+		assert (op == Operator.RuleIsOneOf);
+		this.ident = new SymbolRef<DNode>(op.name, cm);
+		this.var = (LVarExpr)args[0];
+		this.expr = args[1];
+	}
+	
     public void rnResolve() {
 		//var.resolve(null);
 		//expr.resolve(null);

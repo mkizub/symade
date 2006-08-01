@@ -36,6 +36,9 @@ public class TextSyntax extends DNode implements ScopeOfNames {
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		ASTNode@ syn;
 	{
+		path.checkNodeName(this),
+		node ?= this
+	;
 		node @= members,
 		node instanceof DNode && path.checkNodeName(node)
 	}
@@ -215,17 +218,37 @@ public class ParagraphLayout extends DNode {
 public class ParagraphLayoutBlock extends ParagraphLayout {
 	@virtual typedef This  = ParagraphLayoutBlock;
 
+	@att String token_text;
+	private String[] tokens;
+
+	@setter
+	public void set$token_text(String value) {
+		if (value == null) {
+			this.token_text = null;
+			this.tokens = new String[0];
+		} else {
+			this.token_text = value.intern();
+			this.tokens = value.split("\\s+");
+			for (int i=0; i < this.tokens.length; i++)
+				this.tokens[i] = this.tokens[i].intern();
+		}
+	}
+	
 	public ParagraphLayoutBlock() {}
 	public ParagraphLayoutBlock(String name, int ind_txt, int ind_pix) {
 		super(name, ind_txt, ind_pix);
+		token_text = "{";
 	}
 	
 	public boolean enabled(DrawParagraph dr) {
 		if (dr == null)
 			return true;
 		DrawTerm t = dr.getFirstLeaf();
-		if (t instanceof DrawToken && ((SyntaxToken)t.syntax).text == "{")
-			return false;
+		if (t instanceof DrawToken) {
+			String str = ((SyntaxToken)t.syntax).text;
+			foreach (String s; this.tokens; s == str)
+				return false;
+		}
 		return true;
 	}
 }
@@ -294,16 +317,29 @@ public final class DrawLayout {
 }
 
 @node
-public final class SyntaxElemDecl extends DNode {
-	@att SymbolRef<Struct>		node;
+public abstract class AbstractSyntaxElemDecl extends DNode {
+	@virtual typedef This  ≤ AbstractSyntaxElemDecl;
+
 	@att SyntaxElem				elem;
+
+	public AbstractSyntaxElemDecl() {}
+	public AbstractSyntaxElemDecl(SyntaxElem elem) {
+		this.elem = elem;
+	}
+}
+
+@node
+public class SyntaxElemDecl extends AbstractSyntaxElemDecl {
+	@virtual typedef This  = SyntaxElemDecl;
+
+	@att SymbolRef<Struct>		node;
 
 	public SyntaxElemDecl() {
 		this.node = new SymbolRef<Struct>();
 	}
 	public SyntaxElemDecl(Struct cls, SyntaxElem elem) {
+		super(elem);
 		this.node = new SymbolRef<Struct>(0,cls);
-		this.elem = elem;
 	}
 
 	public void preResolveOut() {
@@ -335,6 +371,8 @@ public final class SyntaxElemDecl extends DNode {
 
 @node
 public final class SyntaxElemFormatDecl extends DNode {
+	@virtual typedef This  = SyntaxElemFormatDecl;
+
 	@att public SpaceCmd[]				spaces;
 	@att public SymbolRef<DrawColor>	color;
 	@att public SymbolRef<DrawFont>		font;
@@ -619,15 +657,62 @@ public abstract class SyntaxElem extends ASTNode {
 }
 
 @node
+public final class SyntaxElemRef extends SyntaxElem {
+	@virtual typedef This  = SyntaxToken;
+
+	@att public SymbolRef<SyntaxElemDecl>		decl;
+
+	public SyntaxElemRef() {
+		this.decl = new SymbolRef<SyntaxElemDecl>();
+	}
+	public SyntaxElemRef(SyntaxElemDecl decl) {
+		this.decl = new SymbolRef<SyntaxElemDecl>(0,decl);
+	}
+	
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		return ((SyntaxElemDecl)decl.symbol).elem.makeDrawable(fmt,node);
+	}
+
+	public void preResolveOut() {
+		if (decl.name != null && decl.name != "") {
+			DNode@ d;
+			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,decl.name,ResInfo.noForwards)))
+				Kiev.reportError(decl,"Unresolved syntax element decl "+decl);
+			else if !(d instanceof SyntaxElemDecl)
+				Kiev.reportError(decl,"Resolved "+decl+" is not a syntax element decl");
+			else
+				decl.symbol = d;
+		}
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "decl") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<SyntaxElemDecl> vect = new Vector<SyntaxElemDecl>();
+			DNode@ d;
+			foreach (PassInfo.resolveNameR(this,d,info))
+				if (d instanceof SyntaxElemDecl) vect.append((SyntaxElemDecl)d);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+}
+
+@node
 public final class SyntaxToken extends SyntaxElem {
 	@virtual typedef This  = SyntaxToken;
 
 	@att public String					text;
 
+	@setter
+	public void set$text(String value) {
+		this.text = (value != null) ? value.intern() : null;
+	}
+	
 	public SyntaxToken() {}
 	public SyntaxToken(String text, SpaceCmd[] spaces) {
 		super(spaces);
-		this.text = text.intern();
+		this.text = text;
 	}
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawToken(node, this);
@@ -848,20 +933,18 @@ public class SyntaxSet extends SyntaxElem {
 }
 
 @node
-public class SyntaxNode extends SyntaxElem {
+public class SyntaxNode extends SyntaxAttr {
 	@virtual typedef This  = SyntaxNode;
 
-	@att public SymbolRef<TextSyntax>	in_syntax;
 
-	public SyntaxNode() {
-		this.in_syntax = new SymbolRef<TextSyntax>();
-	}
+	public SyntaxNode() {}
 	public SyntaxNode(SpaceCmd[] spaces) {
-		super(spaces);
-		this.in_syntax = new SymbolRef<TextSyntax>();
+		super("",spaces);
 	}
 	public SyntaxNode(TextSyntax stx) {
-		this.in_syntax = new SymbolRef<TextSyntax>(0,stx);
+		super("",new SpaceCmd[0]);
+		this.in_syntax.name = stx.id.sname;
+		this.in_syntax.symbol = stx;
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {

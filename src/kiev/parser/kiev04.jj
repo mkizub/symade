@@ -2409,7 +2409,12 @@ ASTOperator Operator() :
 			t=<GT>
 			{ image = image+t.image; }
 		)*
-	|	LOOKAHEAD({ !Kiev.javaMode })
+	|
+		t="?=" { image = t.image; }
+	|
+		t="@=" { image = t.image; }
+	|
+		LOOKAHEAD({ !Kiev.javaMode })
 		"operator" t=<IDENTIFIER>
 		{ image = t.image; }
 	)

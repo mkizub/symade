@@ -18,36 +18,47 @@ import syntax kiev.Syntax;
 
 
 @node
+public class SyntaxJavaExprTemplate extends AbstractSyntaxElemDecl {
+	@virtual typedef This  = SyntaxJavaExprTemplate;
+
+	@att public SyntaxToken		l_paren;
+	@att public SyntaxToken		r_paren;
+
+	public SyntaxJavaExprTemplate() {
+		super(new SyntaxNode());
+		this.l_paren = new SyntaxToken("(",new SpaceCmd[0]);
+		this.r_paren = new SyntaxToken(")",new SpaceCmd[0]);
+	}
+}
+
+@node
 public class SyntaxJavaExpr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxJavaExpr;
 
-	@att public int				idx;
-	@att public int				priority;
-	@att public SyntaxToken		l_paren;
-	@att public SyntaxNode		expr;
-	@att public SyntaxToken		r_paren;
+	@att public int									idx;
+	@att public int									priority;
+	@att public SymbolRef<SyntaxJavaExprTemplate>	template;
 
-	public SyntaxJavaExpr() {}
-	public SyntaxJavaExpr(String name, SpaceCmd[] spaces, int priority, SyntaxToken l_paren, SyntaxToken r_paren) {
-		super(name,spaces);
+	public SyntaxJavaExpr() {
+		this.idx = -1;
+		this.template = new SymbolRef<SyntaxJavaExprTemplate>(0,"java-expr-template");
+	}
+	public SyntaxJavaExpr(String name, int priority, SyntaxJavaExprTemplate template) {
+		super(name,new SpaceCmd[0]);
 		this.idx = -1;
 		this.priority = priority;
-		this.l_paren = l_paren;
-		this.expr = new SyntaxNode();
-		this.r_paren = r_paren;
+		this.template = new SymbolRef<SyntaxJavaExprTemplate>(0,template);
 	}
-	public SyntaxJavaExpr(int idx, SpaceCmd[] spaces, int priority, SyntaxToken l_paren, SyntaxToken r_paren) {
-		super("",spaces);
+	public SyntaxJavaExpr(int idx, int priority, SyntaxJavaExprTemplate template) {
+		super("",new SpaceCmd[0]);
 		this.idx = idx;
 		this.priority = priority;
-		this.l_paren = l_paren;
-		this.expr = new SyntaxNode();
-		this.r_paren = r_paren;
+		this.template = new SymbolRef<SyntaxJavaExprTemplate>(0,template);
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		if (this != current_stx)
-			return false;
+		//if (this != current_stx)
+		//	return false;
 		ANode n;
 		if (idx >= 0) {
 			n = ((ENode)expected_node).getArgs()[idx];
@@ -68,6 +79,30 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 		}
 		Drawable dr = new DrawJavaExpr(n, this);
 		return dr;
+	}
+
+	public void preResolveOut() {
+		if (template.name != null && template.name != "") {
+			DNode@ d;
+			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
+				Kiev.reportError(template,"Unresolved java expression template "+template);
+			else if !(d instanceof SyntaxJavaExprTemplate)
+				Kiev.reportError(template,"Resolved "+template+" is not a java expression template");
+			else
+				template.symbol = d;
+		}
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "template") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<SyntaxJavaExprTemplate> vect = new Vector<SyntaxJavaExprTemplate>();
+			DNode@ d;
+			foreach (PassInfo.resolveNameR(this,d,info))
+				if (d instanceof SyntaxJavaExprTemplate) vect.append((SyntaxJavaExprTemplate)d);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
 	}
 }
 
@@ -206,6 +241,8 @@ class CalcOptionNotSuper extends CalcOption {
 @node
 public class JavaSyntax extends TextSyntax {
 
+	final SyntaxJavaExprTemplate seExprTemplate;
+	
 	final SyntaxElem seFileUnit;
 	final SyntaxElem seStructClass;
 	final SyntaxElem seStructInterface;
@@ -227,68 +264,17 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seOperatorAlias;
 	final SyntaxElem seWBCCondition;
 
-	final SyntaxElem seExprStat;
-	final SyntaxElem seReturnStat;
-	final SyntaxElem seThrowStat;
-	final SyntaxElem seIfElseStat;
-	final SyntaxElem seCondStat;
-	final SyntaxElem seLabel;
-	final SyntaxElem seLabeledStat;
-	final SyntaxElem seBreakStat;
-	final SyntaxElem seContinueStat;
-	final SyntaxElem seGotoStat;
-	final SyntaxElem seGotoCaseStat;
-
-	final SyntaxElem seWhileStat;
-	final SyntaxElem seDoWhileStat;
-	final SyntaxElem seForInit;
-	final SyntaxElem seForStat;
-	final SyntaxElem seForEachStat;
-	
-	final SyntaxElem seCaseLabel;
-	final SyntaxElem seSwitchStat;
-	final SyntaxElem seCatchInfo;
-	final SyntaxElem seFinallyInfo;
-	final SyntaxElem seTryStat;
-	final SyntaxElem seSynchronizedStat;
-	final SyntaxElem seWithStat;
-	
-	final SyntaxElem seBlock;
-	final SyntaxElem seRuleBlock;
-	final SyntaxElem seRuleOrExpr;
-	final SyntaxElem seRuleAndExpr;
 	final SyntaxElem seTypeRef;
 	final SyntaxElem seTypeNameRef;
 	final SyntaxElem seTypeClosureRef;
-	final SyntaxElem seConstExpr;
-	final SyntaxElem seConstExprTrue;
-	final SyntaxElem seConstExprFalse;
-	final SyntaxElem seConstExprNull;
-	final SyntaxElem seConstExprChar;
-	final SyntaxElem seConstExprStr;
-	// rule nodes
-	final SyntaxElem seRuleIstheExpr;
-	final SyntaxElem seRuleIsoneofExpr;
-	final SyntaxElem seRuleCutExpr;
-	final SyntaxElem seRuleCallExpr;
-	final SyntaxElem seRuleWhileExpr;
-	final SyntaxElem seRuleExpr;
 	// lvalues
-	final SyntaxElem seAccessExpr;
-	final SyntaxElem seIFldExpr;
-	final SyntaxElem seContainerAccessExpr;
 	final SyntaxElem seThisExpr;
-	final SyntaxElem seLVarExpr;
-	final SyntaxElem seSFldExpr;
 	final SyntaxElem seOuterThisAccessExpr;
 	final SyntaxElem seReinterpExpr;
 	// boolean exprs
 	final SyntaxElem seInstanceofExpr;
-	final SyntaxElem seCallExpr;
 	final SyntaxElem seCallConstr;
-	final SyntaxElem seClosureCallExpr;
 	// new expr
-	final SyntaxElem seNewExpr;
 	final SyntaxElem seNewArrayExpr;
 	final SyntaxElem seNewInitializedArrayExpr;
 	final SyntaxElem seNewClosure;
@@ -304,9 +290,6 @@ public class JavaSyntax extends TextSyntax {
 	final SyntaxElem seTypeClassExpr;
 	final SyntaxElem seTypeInfoExpr;
 	final SyntaxElem seAssertEnabledExpr;
-	final SyntaxElem seStringConcatExpr;
-	final SyntaxElem seCommaExpr;
-	//final SyntaxElem seConditionalExpr;
 	final SyntaxElem seCastExpr;
 	final SyntaxElem seNopExpr;
 
@@ -529,15 +512,13 @@ public class JavaSyntax extends TextSyntax {
 
 	protected SyntaxJavaExpr expr(int idx, int priority)
 	{
-		SpaceCmd[] lout = new SpaceCmd[0];
-		SyntaxJavaExpr se = new SyntaxJavaExpr(idx, lout, priority, sep("("), sep(")"));
+		SyntaxJavaExpr se = new SyntaxJavaExpr(idx, priority, seExprTemplate);
 		return se;
 	}
 
 	protected SyntaxJavaExpr expr(String expr, int priority)
 	{
-		SpaceCmd[] lout = new SpaceCmd[0];
-		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, lout, priority, sep("("), sep(")"));
+		SyntaxJavaExpr se = new SyntaxJavaExpr(expr, priority, seExprTemplate);
 		return se;
 	}
 
@@ -571,6 +552,9 @@ public class JavaSyntax extends TextSyntax {
 		SpaceCmd[] lout_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_NOP,SP_ADD,0)};
 		SpaceCmd[] lout_nl_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_ADD,SP_ADD,0)};
 		SpaceCmd[] lout_nl_grp = new SpaceCmd[] {new SpaceCmd(siNlGrp,SP_NOP,SP_ADD,0)};
+		
+		seExprTemplate = new SyntaxJavaExprTemplate();
+		
 		{
 			SpaceCmd[] lout_pkg = new SpaceCmd[] {
 					new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
@@ -832,168 +816,8 @@ public class JavaSyntax extends TextSyntax {
 					attr("body")
 				));
 		}
-		{
-			SpaceCmd[] lout_code_block_start = new SpaceCmd[] {
-					new SpaceCmd(siNlOrBlock,     SP_EAT, SP_NOP, 0),
-					new SpaceCmd(siNl,            SP_NOP, SP_ADD,  0),
-					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
-				};
-			SpaceCmd[] lout_code_block_end = new SpaceCmd[] {
-					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
-				};
-			// block expression
-			seBlock = set(
-					sep("{", lout_code_block_start),
-					par(plIndented, lst("stats", setl(lout_nl,node(/*new FormatInfoHint("stat")*/)),null,lout_empty)),
-					sep("}", lout_code_block_end)
-					);
-			// rule block
-			SpaceCmd[] lout_rule_block_end = new SpaceCmd[] {
-					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
-					new SpaceCmd(siNl,            SP_ADD, SP_NOP,  0),
-				};
-			seRuleBlock = set(
-					sep("{", lout_code_block_start),
-					par(plIndented, attr("node")),
-					sep("}", lout_rule_block_end)
-					);
-			// rule OR block
-			SpaceCmd[] lout_rule_or = new SpaceCmd[] {
-					new SpaceCmd(siNl,            SP_ADD, SP_ADD,  0),
-					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
-				};
-			SyntaxElem rule_or = new SyntaxToken(";",lout_rule_or);
-			seRuleOrExpr = set(
-					sep("{", lout_code_block_start),
-					lst("rules", par(plIndented, node()), rule_or, lout_nl),
-					sep("}", lout_code_block_end)
-					);
-			// rule AND block
-			SpaceCmd[] lout_rule_and = new SpaceCmd[] {
-					new SpaceCmd(siSpSEPR,        SP_ADD, SP_ADD, 0),
-					new SpaceCmd(siNl,            SP_NOP, SP_ADD,  0),
-				};
-			SyntaxElem rule_and = new SyntaxToken(",",lout_rule_and);
-			seRuleAndExpr = lst("rules", node(), rule_and, lout_nl);
-		}
-		seExprStat = set(opt("expr"), sep(";"));
-		seReturnStat = set(kw("return"), opt("expr"), sep(";"));
-		seThrowStat = set(kw("throw"), attr("expr"), sep(";"));
-		seCondStat = set(attr("cond"), opt("message", set(sep(":"), attr("message"))), sep(";"));
-		seLabel = ident("id");
-		seLabeledStat = set(attr("lbl"), sep(":"), attr("stat"));
-		seBreakStat = set(kw("break"), opt("ident", ident("ident")), sep(";"));
-		seContinueStat = set(kw("continue"), opt("ident", ident("ident")), sep(";"));
-		seGotoStat = set(kw("goto"), opt("ident", ident("ident")), sep(";"));
-		seGotoCaseStat = set(kw("goto"), opt(new CalcOptionNotNull("expr"), set(kw("case"), attr("expr")), kw("default"), lout_empty), sep(";"));
 
-		{
-			SpaceCmd[] lout_cond = new SpaceCmd[] {
-					new SpaceCmd(siNlOrBlock,   SP_NOP, SP_ADD,  0),
-					new SpaceCmd(siSp,          SP_ADD, SP_ADD, 0),
-				};
-			seIfElseStat = set(
-				kw("if"),
-				setl(lout_cond, sep("("), attr("cond"), sep(")")),
-				par(plStatIndented, attr("thenSt")),
-				opt("elseSt",
-					set(
-						setl(lout_cond, new SyntaxSpace(lout_nl), kw("else")),
-						par(plStatIndented, attr("elseSt"))
-						)
-					)
-				);
-			seWhileStat = set(
-				kw("while"),
-				setl(lout_cond, sep("("), attr("cond"), sep(")")),
-				par(plStatIndented, attr("body"))
-				);
-			seDoWhileStat = set(
-				kw("do"),
-				par(plStatIndented, attr("body")),
-				kw("while"),
-				setl(lout_cond, sep("("), attr("cond"), sep(")")),
-				sep(";")
-				);
-			seForInit = set(
-				attr("type_ref"),
-				lst("decls",node(/*new FormatInfoHint("no-type")*/),sep(","),lout_empty)
-				);
-			seForStat = set(
-				kw("for"),
-				setl(lout_cond, sep("("), opt("init"), sep(";"), opt("cond"), sep(";"), opt("iter"), sep(")")),
-				par(plStatIndented, attr("body"))
-				);
-			seForEachStat = set(
-				kw("foreach"),
-				setl(lout_cond, sep("("), opt("var", set(attr("var"), sep(";"))), attr("container"), opt("cond", set(sep(";"), attr("cond"))), sep(")")),
-				par(plStatIndented, attr("body"))
-				);
-			
-			seCaseLabel = set(
-				opt(new CalcOptionNotNull("val"),
-					set(
-						kw("case"),
-						attr("val"),
-						opt(new CalcOptionNotEmpty("pattern"),
-							set(
-								sep("("),
-								lst("pattern",node(),sep(","),lout_empty),
-								sep(")")
-								),
-							null,
-							lout_empty
-							)
-						),
-					kw("default"),
-					lout_empty
-					),
-				sep(":", lout_nl),
-				par(plIndented, lst("stats",setl(lout_nl,node(/*new FormatInfoHint("stat")*/)),null,lout_nl))
-				);
-			seSwitchStat = set(
-				kw("switch"),
-				setl(lout_cond, sep("("), attr("sel"), sep(")")),
-				set(
-					sep("{", lout_nl),
-					lst("cases",setl(lout_nl,node()),null,lout_nl),
-					sep("}")
-					)
-				);
-			seCatchInfo = set(
-				kw("catch"),
-				setl(lout_cond, sep("("), attr("arg"), sep(")")),
-				par(plStatIndented, attr("body"))
-				);
-			seFinallyInfo = set(
-				kw("finally"),
-				par(plStatIndented, attr("body"))
-				);
-			seTryStat = set(
-				kw("try"),
-				par(plStatIndented, attr("body")),
-				lst("catchers",lout_empty),
-				opt("finally_catcher", attr("finally_catcher"))
-				);
-			seSynchronizedStat = set(
-				kw("synchronized"),
-				setl(lout_cond, sep("("), attr("expr"), sep(")")),
-				par(plStatIndented, attr("body"))
-				);
-			seWithStat = set(
-				kw("with"),
-				setl(lout_cond, sep("("), attr("expr"), sep(")")),
-				par(plStatIndented, attr("body"))
-				);
-		}
-	
 		exprs = new Hashtable<Operator, SyntaxElem>();
-		seConstExpr = attr("value");
-		seConstExprTrue = kw("true");
-		seConstExprFalse = kw("false");
-		seConstExprNull = kw("null");
-		seConstExprChar = charcter("value");
-		seConstExprStr = string("value");
 		seTypeRef = ident("ident");
 		seTypeNameRef = set(
 				opt("outer", set(attr("outer"),sep("."))),
@@ -1013,30 +837,11 @@ public class JavaSyntax extends TextSyntax {
 			attr("ret")
 			);
 
-		seRuleIstheExpr = set(attr("var"), oper("?="), expr("expr", Constants.opAssignPriority));
-		seRuleIsoneofExpr = set(attr("var"), oper("@="), expr("expr", Constants.opAssignPriority));
-		seRuleCutExpr = kw("$cut");
-		seRuleCallExpr = set(
-				expr("obj", Constants.opAccessPriority),
-				sep("."),
-				ident("ident"),
-				sep("("),
-				lst("args",node(),sep(","),lout_empty),
-				sep(")")
-				);
-		seRuleWhileExpr = set(kw("while"), expr("expr", 1), opt("bt_expr", set(oper(":"), expr("bt_expr", 1))));
-		seRuleExpr = set(expr("expr", 1), opt("bt_expr", set(oper(":"), expr("bt_expr", 1))));
-
-		seAccessExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
-		seIFldExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
-		seContainerAccessExpr = set(expr("obj", Constants.opContainerElementPriority), sep("["), attr("index"), sep("]"));
 		seThisExpr = opt(new CalcOptionNotSuper(),
 						kw("this"),
 						kw("super"),
 						lout_empty
 						);
-		seLVarExpr = ident("ident");
-		seSFldExpr = set(expr("obj", Constants.opAccessPriority), sep("."), ident("ident"));
 		seOuterThisAccessExpr = set(attr("outer"), sep("."), kw("this"));
 		seReinterpExpr = set(sep("("), kw("$reinterp"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
 		
@@ -1046,14 +851,6 @@ public class JavaSyntax extends TextSyntax {
 			kw("instanceof"),
 			attr("type")
 			);
-		seCallExpr = set(
-				expr("obj", Constants.opAccessPriority),
-				sep("."),
-				ident("ident"),
-				sep("("),
-				lst("args",node(),sep(","),lout_empty),
-				sep(")")
-				);
 		seCallConstr = set(
 				opt(new CalcOptionNotSuper(),
 					kw("this"),
@@ -1064,32 +861,7 @@ public class JavaSyntax extends TextSyntax {
 				lst("args",node(),sep(","),lout_empty),
 				sep(")")
 				);
-		seClosureCallExpr = set(
-				expr("expr", Constants.opCallPriority),
-				sep("("),
-				lst("args",node(),sep(","),lout_empty),
-				sep(")")
-				);
-		seStringConcatExpr = lst("args",
-				expr("this", Operator.Add.priority),
-				oper("+"),
-				lout_empty
-			);
-		seCommaExpr = lst("exprs",
-				expr("this", Operator.Comma.priority),
-				oper(","),
-				lout_empty
-			);
 
-		seNewExpr = set(
-				opt("outer", set(expr("outer", Constants.opAccessPriority), oper("."))),
-				kw("new"),
-				attr("type"),
-				sep("("),
-				lst("args",node(),sep(","),lout_empty),
-				sep(")"),
-				opt("clazz", attr("clazz"/*, new FormatInfoHint("anonymouse")*/))
-				);
 		seNewArrayExpr = set(
 				kw("new"),
 				attr("type"),
@@ -1167,13 +939,6 @@ public class JavaSyntax extends TextSyntax {
 		seTypeClassExpr = set(attr("type"), sep("."), kw("class"));
 		seTypeInfoExpr = set(attr("type"), sep("."), kw("type"));
 		seAssertEnabledExpr = kw("$assertionsEnabled");
-		//seConditionalExpr = set(
-		//	expr("cond", Operator.opConditionalPriority+1),
-		//	oper("?"),
-		//	expr("expr1", Operator.opConditionalPriority+1),
-		//	oper(":"),
-		//	expr("expr2", Operator.opConditionalPriority)
-		//	);
 		seCastExpr = set(sep("("), kw("$cast"), attr("type"), sep(")"), expr("expr", Constants.opCastPriority));
 		seNopExpr = new SyntaxSpace(new SpaceCmd[0]);
 		seNopExpr.fmt.is_hidden = true;
@@ -1252,21 +1017,6 @@ public class JavaSyntax extends TextSyntax {
 		case ASTIdentifierAlias: return seMethodAlias;
 		case ASTOperatorAlias: return seOperatorAlias;
 		case WBCCondition: return seWBCCondition;
-		case Block: return seBlock;
-		case RuleBlock: return seRuleBlock;
-		case RuleOrExpr: return seRuleOrExpr;
-		case RuleAndExpr: return seRuleAndExpr;
-
-		case ConstBoolExpr:
-			return ((ConstBoolExpr)node).value ? seConstExprTrue : seConstExprFalse;
-		case ConstNullExpr:
-			return seConstExprNull;
-		case ConstCharExpr:
-			return seConstExprChar;
-		case ConstStringExpr:
-			return seConstExprStr;
-		case ConstExpr:
-			return seConstExpr;
 
 		case TypeRef: return seTypeRef;
 		case TypeNameRef: return seTypeNameRef;
@@ -1274,65 +1024,22 @@ public class JavaSyntax extends TextSyntax {
 
 		case Shadow: return seShadow;
 
-		case RuleIstheExpr: return seRuleIstheExpr;
-		case RuleIsoneofExpr: return seRuleIsoneofExpr;
-		case RuleCutExpr: return seRuleCutExpr;
-		case RuleCallExpr: return seRuleCallExpr;
-		case RuleWhileExpr: return seRuleWhileExpr;
-		case RuleExpr: return seRuleExpr;
-		
-		case ExprStat: return seExprStat;
-		case ReturnStat: return seReturnStat;
-		case ThrowStat: return seThrowStat;
-		case IfElseStat: return seIfElseStat;
-		case CondStat: return seCondStat;
-		case Label: return seLabel;
-		case LabeledStat: return seLabeledStat;
-		case BreakStat: return seBreakStat;
-		case ContinueStat: return seContinueStat;
-		case GotoStat: return seGotoStat;
-		case GotoCaseStat: return seGotoCaseStat;
-
-		case WhileStat: return seWhileStat;
-		case DoWhileStat: return seDoWhileStat;
-		case ForInit: return seForInit;
-		case ForStat: return seForStat;
-		case ForEachStat: return seForEachStat;
-
-		case CaseLabel: return seCaseLabel;
-		case SwitchStat: return seSwitchStat;
-		case CatchInfo: return seCatchInfo;
-		case FinallyInfo: return seFinallyInfo;
-		case TryStat: return seTryStat;
-		case SynchronizedStat: return seSynchronizedStat;
-		case WithStat: return seWithStat;
-
-		case AccessExpr: return seAccessExpr;
-		case IFldExpr: return seIFldExpr;
-		case ContainerAccessExpr: return seContainerAccessExpr;
 		case ThisExpr: return seThisExpr;
-		case LVarExpr: return seLVarExpr;
-		case SFldExpr: return seSFldExpr;
 		case OuterThisAccessExpr: return seOuterThisAccessExpr;
 		case ReinterpExpr: return seReinterpExpr;
 		
 		case InstanceofExpr: return seInstanceofExpr;
-		case CallExpr:
-			if (((CallExpr)node).func instanceof Constructor)
-				return seCallConstr;
-			return seCallExpr;
-		case ClosureCallExpr: return seClosureCallExpr;
-		case StringConcatExpr: return seStringConcatExpr;
-		case CommaExpr: return seCommaExpr;
+//		case CallExpr:
+//			if (((CallExpr)node).func instanceof Constructor)
+//				return seCallConstr;
+//			return seCallExpr;
 		case TypeClassExpr: return seTypeClassExpr;
 		case TypeInfoExpr: return seTypeInfoExpr;
 		case AssertEnabledExpr: return 	seAssertEnabledExpr;
 
-		//case ConditionalExpr: return seConditionalExpr;
 		case CastExpr: return seCastExpr;
 		case NopExpr: return seNopExpr;
 
-		case NewExpr: return seNewExpr;
 		case NewArrayExpr: return seNewArrayExpr;
 		case NewInitializedArrayExpr: return seNewInitializedArrayExpr;
 		case NewClosure: return seNewClosure;
@@ -1368,6 +1075,8 @@ public class JavaSyntax extends TextSyntax {
 		{
 			ENode e = (ENode)node;
 			Operator op = e.getOp();
+			if (op == null)
+				break;
 			SyntaxElem se = exprs.get(op);
 			if (se == null) {
 				se = expr(op);

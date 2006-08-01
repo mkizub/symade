@@ -53,5 +53,11 @@ public metatype Globals extends any {
 			new #CallExpr(obj=self.lval,ident="$bind",args={self.value})
 	}
 
+	@macro @CompilerNode("RuleIstheExpr")
+	public static boolean ref_pvar_is_the(Object@ lval, Object val) alias xfx operator ?= ;
+
+	@macro @CompilerNode("RuleIsoneofExpr")
+	public static boolean ref_pvar_is_one_of(Object@ lval, Object val) alias xfx operator @= ;
+
 }
 
