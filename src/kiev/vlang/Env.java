@@ -127,11 +127,11 @@ public class Env extends Struct {
 		return null;
 	}
 	
-	public static Struct newStruct(String sname, Struct outer, int acces) {
-		return newStruct(sname,true,outer,acces,false);
+	public static Struct newStruct(String sname, Struct outer, int acces, TypeDeclVariant variant) {
+		return newStruct(sname,true,outer,acces,variant,false);
 	}
 
-	public static Struct newStruct(String sname, boolean direct, Struct outer, int acces, boolean cleanup)
+	public static Struct newStruct(String sname, boolean direct, Struct outer, int acces, TypeDeclVariant variant, boolean cleanup)
 	{
 		assert(outer != null);
 		Struct bcl = null;
@@ -146,6 +146,7 @@ public class Env extends Struct {
 			if( cleanup ) {
 				cl.type_decl_version = 0;
 				cl.flags = acces;
+				cl.variant = variant;
 				cl.package_clazz = outer;
 				cl.typeinfo_clazz = null;
 				cl.view_of = null;
@@ -173,7 +174,7 @@ public class Env extends Struct {
 			String uniq_name = String.valueOf(outer.countAnonymouseInnerStructs());
 			name = new Symbol(uniq_name, uniq_name);
 		}
-		Struct cl = new Struct(name,outer,acces);
+		Struct cl = new Struct(name,outer,acces,variant);
 		outer.addSubStruct(cl);
 		return cl;
 	}
@@ -195,7 +196,7 @@ public class Env extends Struct {
 			break;
 		}
 		if (cl == null)
-			cl = newStruct(sname,outer,0);
+			cl = newStruct(sname,outer,0,new JavaPackage());
 		cl.setPackage();
 		cl.setTypeDeclLoaded(true);
 		return cl;

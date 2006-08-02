@@ -344,7 +344,7 @@ public class SyntaxElemDecl extends AbstractSyntaxElemDecl {
 
 	public void preResolveOut() {
 		if (node == null)
-			node = new SymbolRef<Struct>(0,Env.newStruct("ASTNode", Env.newPackage("kiev.vlang"), 0));
+			node = new SymbolRef<Struct>(0,Env.newStruct("ASTNode", Env.newPackage("kiev.vlang"), 0, null));
 		if (node.name == null)
 			node.name = "ASTNode";
 		Struct@ s;
@@ -658,7 +658,7 @@ public abstract class SyntaxElem extends ASTNode {
 
 @node
 public final class SyntaxElemRef extends SyntaxElem {
-	@virtual typedef This  = SyntaxToken;
+	@virtual typedef This  = SyntaxElemRef;
 
 	@att public SymbolRef<SyntaxElemDecl>		decl;
 
@@ -701,6 +701,8 @@ public final class SyntaxElemRef extends SyntaxElem {
 @node
 public final class SyntaxToken extends SyntaxElem {
 	@virtual typedef This  = SyntaxToken;
+
+	public static final SyntaxToken[] emptyArray = new SyntaxToken[0];
 
 	@att public String					text;
 

@@ -139,7 +139,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			return;
 		
 		// generate implementation
-		Struct impl = Env.newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_SYNTHETIC|ACC_FORWARD,true);
+		Struct impl = Env.newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true);
 		impl.pos = clazz.pos;
 		impl.setTypeDeclLoaded(true);
 		if (clazz.isAbstract()) {

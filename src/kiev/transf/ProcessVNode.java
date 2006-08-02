@@ -211,7 +211,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		boolean isAtt = (f.meta.getU(mnAtt) != null);
 		boolean isArr = f.getType().isInstanceOf(tpNArray);
 		Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
-		Struct s = Env.newStruct(("NodeAttr_"+f.id.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,true);
+		Struct s = Env.newStruct(("NodeAttr_"+f.id.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true);
 		s.setTypeDeclLoaded(true);
 		snode.members.add(s);
 		if (isArr) {

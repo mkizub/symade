@@ -347,7 +347,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 		this.b_name = KString.Empty;
 	}
 	
-	public Struct(Symbol id, Struct outer, int flags) {
+	public Struct(Symbol id, Struct outer, int flags, TypeDeclVariant variant) {
 		this.id = id;
 		this.xmeta_type = new CompaundMetaType(this);
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
@@ -365,6 +365,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 			if ((flags & ACC_SINGLETON) == ACC_SINGLETON) meta.setF(new MetaSingleton());
 			this.flags = flags;
 		}
+		this.variant = variant;
 		trace(Kiev.debugCreation,"New clazz created: "+qname() +" as "+id.uname+", member of "+outer);
 	}
 

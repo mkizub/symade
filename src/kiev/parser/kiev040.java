@@ -195,9 +195,7 @@ public abstract class kiev040 implements kiev040Constants {
 			outer = curClazz;
 			direct = false;
 		}
-		Struct clazz = Env.newStruct(nm,direct,(Struct)curClazz,flags,true);
-		if (variant != null)
-			clazz.variant = variant;
+		Struct clazz = Env.newStruct(nm,direct,(Struct)curClazz,flags,variant,true);
 		if (name != null)
 			clazz.pos  = name.pos;
 		else
