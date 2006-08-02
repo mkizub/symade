@@ -23,6 +23,46 @@ import syntax kiev.Syntax;
 
 
 @node
+public class TypeDeclVariant extends ASTNode {
+}
+
+@node
+public final class JavaPackage extends TypeDeclVariant {
+}
+
+@node
+public final class KievSyntax extends TypeDeclVariant {
+}
+
+@node
+public final class JavaClass extends TypeDeclVariant {
+}
+
+@node
+public final class JavaAnonymouseClass extends TypeDeclVariant {
+}
+
+@node
+public final class JavaInterface extends TypeDeclVariant {
+}
+
+@node
+public final class KievView extends TypeDeclVariant {
+}
+
+@node
+public final class JavaAnnotation extends TypeDeclVariant {
+}
+
+@node
+public final class PizzaCase extends TypeDeclVariant {
+}
+
+@node
+public final class JavaEnum extends TypeDeclVariant {
+}
+
+@node
 public class Struct extends TypeDecl implements PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
@@ -33,6 +73,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 	@virtual typedef JView = JStruct;
 	@virtual typedef RView = RStruct;
 
+	@att public TypeDeclVariant				variant;
 		 public KString						b_name;	// bytecode name
 		 public WrapperMetaType				wmeta_type;
 		 public ASTNodeMetaType				ameta_type;
@@ -61,6 +102,69 @@ public class Struct extends TypeDecl implements PreScanneable {
 		}
 	}
 	
+	public final void setPackage() {
+		assert (variant == null || variant instanceof JavaPackage);
+		if (this.is_access != MASK_ACC_NAMESPACE) {
+			assert(!locked);
+			this.is_access = MASK_ACC_NAMESPACE;
+		}
+		if !(variant instanceof JavaPackage) variant = new JavaPackage();
+	}
+	public final void setSyntax() {
+		assert (variant == null || variant instanceof KievSyntax);
+		if (this.is_access != MASK_ACC_SYNTAX) {
+			assert(!locked);
+			this.is_access = MASK_ACC_SYNTAX;
+		}
+		if !(variant instanceof KievSyntax) variant = new KievSyntax();
+	}
+	public void setInterface() {
+		assert (variant == null || variant instanceof JavaInterface || variant instanceof KievView);
+		if (!this.is_struct_interface) {
+			assert(!locked);
+			this.is_struct_interface = true;
+		}
+		if !(variant instanceof JavaInterface) {
+			if (variant instanceof KievView) {
+				; // temporary do nothing
+			} else {
+				variant = new JavaInterface();
+			}
+		}
+	}
+	public void setStructView() {
+		assert (variant == null || variant instanceof KievView);
+		if (!this.is_virtual) {
+			assert(!locked);
+			this.is_virtual = true;
+		}
+		if !(variant instanceof KievView) variant = new KievView();
+	}
+	public final void setPizzaCase() {
+		assert (variant == null || variant instanceof PizzaCase);
+		if (!this.is_struct_pizza_case) {
+			assert(!locked);
+			this.is_struct_pizza_case = true;
+		}
+		if !(variant instanceof PizzaCase) variant = new PizzaCase();
+	}
+	public final void setAnnotation() {
+		assert (variant == null || variant instanceof JavaAnnotation);
+		if (!this.is_struct_annotation) {
+			this.is_struct_annotation = true;
+			this.is_struct_interface = true;
+		}
+		if !(variant instanceof JavaAnnotation) variant = new JavaAnnotation();
+	}
+	public final void setEnum() {
+		assert (variant == null || variant instanceof JavaEnum);
+		if (!this.is_struct_enum) {
+			assert(!locked);
+			this.is_struct_enum = true;
+		}
+		if !(variant instanceof JavaEnum) variant = new JavaEnum();
+	}
+
 	public boolean isClazz() {
 		return !isPackage() && !isInterface() && !isSyntax();
 	}
@@ -68,13 +172,6 @@ public class Struct extends TypeDecl implements PreScanneable {
 	// a pizza case	
 	public final boolean isPizzaCase() {
 		return this.is_struct_pizza_case;
-	}
-	public final void setPizzaCase(boolean on) {
-		if (this.is_struct_pizza_case != on) {
-			assert(!locked);
-			this.is_struct_pizza_case = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
 	}
 	// has pizza cases
 	public final boolean isHasCases() {

@@ -183,7 +183,7 @@ public abstract class kiev040 {
 		return tdecl;
 	}
 
-	private Struct mkStruct(Symbol name, int flags, ASTModifiers modifiers, ASTNode parent) {
+	private Struct mkStruct(Symbol name, TypeDeclVariant variant, int flags, ASTModifiers modifiers, ASTNode parent) {
 		String nm;
 		TypeDecl outer;
 		boolean direct;
@@ -210,6 +210,8 @@ public abstract class kiev040 {
 			direct = false;
 		}
 		Struct clazz = Env.newStruct(nm,direct,(Struct)curClazz,flags,true);
+		if (variant != null)
+			clazz.variant = variant;
 		if (name != null)
 			clazz.pos  = name.pos;
 		else
@@ -1048,7 +1050,7 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	<IDENTIFIER>	// "syntax"
 	name = Name()
 	{
-		clazz = mkStruct(name, ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
+		clazz = mkStruct(name, new KievSyntax(), ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
 	}
 	[
 		"extends"
@@ -1110,7 +1112,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		"class"
 		name = Name()
 		{
-			clazz = mkStruct(name, 0, modifiers, parent);
+			clazz = mkStruct(name, new JavaClass(), 0, modifiers, parent);
 		}
 		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
@@ -1125,7 +1127,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	|	"interface"
 		name = Name()
 		{
-			clazz = mkStruct(name, ACC_INTERFACE, modifiers, parent);
+			clazz = mkStruct(name, new JavaInterface(), ACC_INTERFACE, modifiers, parent);
 		}
 		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
@@ -1138,17 +1140,17 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		|	name = KeywordAsName()
 		)
 		{
-			clazz = mkStruct(name, ACC_INTERFACE|ACC_ANNOTATION, modifiers, parent);
+			clazz = mkStruct(name, new JavaAnnotation(), ACC_INTERFACE|ACC_ANNOTATION, modifiers, parent);
 		}
 	|	"enum"
 		name = Name()
 		{
-			clazz = mkStruct(name, ACC_ENUM|ACC_STATIC, modifiers, parent);
+			clazz = mkStruct(name, new JavaEnum(), ACC_ENUM|ACC_STATIC, modifiers, parent);
 		}
 	|	"view"
 		name = Name()
 		{
-			clazz = mkStruct(name, ACC_VIRTUAL, modifiers, parent);
+			clazz = mkStruct(name, new KievView(), ACC_VIRTUAL, modifiers, parent);
 		}
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of") })
 		<IDENTIFIER> // "of"
@@ -1239,9 +1241,9 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 	"case"
 	name = Name()
 	{
-		clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
+		clazz = mkStruct(name, new PizzaCase(), ACC_STATIC|ACC_FINAL, modifiers, parent);
 		//clazz.super_types.insert(0, new TypeRef(parent.xtype));
-		clazz.setPizzaCase(true);
+		clazz.setPizzaCase();
 		clazz.setSingleton(true);
 	}
 	args = ClazzArguments() { clazz.args.addAll(args); }
@@ -2755,7 +2757,7 @@ NewExpr NewExpression() :
 		{
 			old_mode = interface_only;
 			interface_only = false;
-			ne.clazz = clazz = mkStruct(null, ACC_FINAL, modifiers, ne);
+			ne.clazz = clazz = mkStruct(null, new JavaAnonymouseClass(), ACC_FINAL, modifiers, ne);
 			oldClazz = curClazz;
 			curClazz = clazz;
 		}

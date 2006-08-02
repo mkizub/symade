@@ -30,7 +30,6 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	// a pizza case	
 	public final boolean isPizzaCase();
-	public final void setPizzaCase(boolean on);
 	// a structure with the only one instance (singleton)	
 	public final boolean isSingleton();
 	public final void setSingleton(boolean on);
@@ -57,7 +56,6 @@ public final view RStruct of Struct extends RTypeDecl {
 	public final void setArgsResolved(boolean on);
 	// kiev annotation
 	public final boolean isAnnotation();
-	public final void setAnnotation(boolean on);
 	// java enum
 	public final boolean isEnum();
 	// structure was loaded from bytecode

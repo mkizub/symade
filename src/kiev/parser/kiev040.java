@@ -169,7 +169,7 @@ public abstract class kiev040 implements kiev040Constants {
 		return tdecl;
 	}
 
-	private Struct mkStruct(Symbol name, int flags, ASTModifiers modifiers, ASTNode parent) {
+	private Struct mkStruct(Symbol name, TypeDeclVariant variant, int flags, ASTModifiers modifiers, ASTNode parent) {
 		String nm;
 		TypeDecl outer;
 		boolean direct;
@@ -196,6 +196,8 @@ public abstract class kiev040 implements kiev040Constants {
 			direct = false;
 		}
 		Struct clazz = Env.newStruct(nm,direct,(Struct)curClazz,flags,true);
+		if (variant != null)
+			clazz.variant = variant;
 		if (name != null)
 			clazz.pos  = name.pos;
 		else
@@ -836,7 +838,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(IDENTIFIER);
     // "syntax"
             name = Name();
-                clazz = mkStruct(name, ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
+                clazz = mkStruct(name, new KievSyntax(), ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
     switch (jj_nt.kind) {
     case EXTENDS:
       jj_consume_token(EXTENDS);
@@ -973,7 +975,7 @@ public abstract class kiev040 implements kiev040Constants {
     case CLASS:
       jj_consume_token(CLASS);
       name = Name();
-                        clazz = mkStruct(name, 0, modifiers, parent);
+                        clazz = mkStruct(name, new JavaClass(), 0, modifiers, parent);
       args = ClazzArguments();
                                           clazz.args.addAll(args);
       switch (jj_nt.kind) {
@@ -1008,7 +1010,7 @@ public abstract class kiev040 implements kiev040Constants {
     case INTERFACE:
       jj_consume_token(INTERFACE);
       name = Name();
-                        clazz = mkStruct(name, ACC_INTERFACE, modifiers, parent);
+                        clazz = mkStruct(name, new JavaInterface(), ACC_INTERFACE, modifiers, parent);
       args = ClazzArguments();
                                           clazz.args.addAll(args);
       switch (jj_nt.kind) {
@@ -1046,17 +1048,17 @@ public abstract class kiev040 implements kiev040Constants {
         jj_consume_token(-1);
         throw new ParseException();
       }
-                        clazz = mkStruct(name, ACC_INTERFACE|ACC_ANNOTATION, modifiers, parent);
+                        clazz = mkStruct(name, new JavaAnnotation(), ACC_INTERFACE|ACC_ANNOTATION, modifiers, parent);
       break;
     case ENUM:
       jj_consume_token(ENUM);
       name = Name();
-                        clazz = mkStruct(name, ACC_ENUM|ACC_STATIC, modifiers, parent);
+                        clazz = mkStruct(name, new JavaEnum(), ACC_ENUM|ACC_STATIC, modifiers, parent);
       break;
     case VIEW:
       jj_consume_token(VIEW);
       name = Name();
-                        clazz = mkStruct(name, ACC_VIRTUAL, modifiers, parent);
+                        clazz = mkStruct(name, new KievView(), ACC_VIRTUAL, modifiers, parent);
       if (getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of")) {
 
       } else {
@@ -1228,9 +1230,9 @@ public abstract class kiev040 implements kiev040Constants {
   Symbol name; Struct clazz; TypeConstr[] args;
     jj_consume_token(CASE);
     name = Name();
-                clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
+                clazz = mkStruct(name, new PizzaCase(), ACC_STATIC|ACC_FINAL, modifiers, parent);
                 //clazz.super_types.insert(0, new TypeRef(parent.xtype));
-                clazz.setPizzaCase(true);
+                clazz.setPizzaCase();
                 clazz.setSingleton(true);
     args = ClazzArguments();
                                   clazz.args.addAll(args);
@@ -4146,7 +4148,7 @@ public abstract class kiev040 implements kiev040Constants {
     if (jj_2_83(2147483647)) {
                         old_mode = interface_only;
                         interface_only = false;
-                        ne.clazz = clazz = mkStruct(null, ACC_FINAL, modifiers, ne);
+                        ne.clazz = clazz = mkStruct(null, new JavaAnonymouseClass(), ACC_FINAL, modifiers, ne);
                         oldClazz = curClazz;
                         curClazz = clazz;
       try {

@@ -474,7 +474,15 @@ CLASS kiev.vlang.IntPreINCR kiev/vlang/IntPreINCR kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.IntRShift kiev/vlang/IntRShift kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.IntSUB kiev/vlang/IntSUB kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.IntUShift kiev/vlang/IntUShift kiev\vlang\CoreMethod.java
+CLASS kiev.vlang.JavaAnnotation kiev/vlang/JavaAnnotation kiev\vlang\Struct.java
+CLASS kiev.vlang.JavaAnonymouseClass kiev/vlang/JavaAnonymouseClass kiev\vlang\Struct.java
+CLASS kiev.vlang.JavaClass kiev/vlang/JavaClass kiev\vlang\Struct.java
+CLASS kiev.vlang.JavaEnum kiev/vlang/JavaEnum kiev\vlang\Struct.java
+CLASS kiev.vlang.JavaInterface kiev/vlang/JavaInterface kiev\vlang\Struct.java
+CLASS kiev.vlang.JavaPackage kiev/vlang/JavaPackage kiev\vlang\Struct.java
 CLASS kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
+CLASS kiev.vlang.KievSyntax kiev/vlang/KievSyntax kiev\vlang\Struct.java
+CLASS kiev.vlang.KievView kiev/vlang/KievView kiev\vlang\Struct.java
 CLASS kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.Label kiev/vlang/Label kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java
@@ -563,6 +571,7 @@ CLASS kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java
 CLASS kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.ParentEnumerator kiev/vlang/ParentEnumerator kiev\vlang\PassInfo.java
 CLASS kiev.vlang.PassInfo kiev/vlang/PassInfo kiev\vlang\PassInfo.java
+CLASS kiev.vlang.PizzaCase kiev/vlang/PizzaCase kiev\vlang\Struct.java
 CLASS kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java
 CLASS kiev.vlang.ReWalkNodeException kiev/vlang/ReWalkNodeException kiev\vlang\AST.java
 CLASS kiev.vlang.RefAttrSlot kiev/vlang/RefAttrSlot kiev\vlang\Tree.java
@@ -624,6 +633,7 @@ CLASS kiev.vlang.TreeWalker kiev/vlang/TreeWalker kiev\vlang\AST.java
 CLASS kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 CLASS kiev.vlang.TypeClassExpr kiev/vlang/TypeClassExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.TypeDecl kiev/vlang/TypeDecl kiev\vlang\DNode.java
+CLASS kiev.vlang.TypeDeclVariant kiev/vlang/TypeDeclVariant kiev\vlang\Struct.java
 CLASS kiev.vlang.TypeInfoExpr kiev/vlang/TypeInfoExpr kiev\vlang\Expr.java
 CLASS kiev.vlang.TypeOpDef kiev/vlang/TypeOpDef kiev\vlang\Import.java
 CLASS kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java

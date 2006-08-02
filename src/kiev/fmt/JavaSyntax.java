@@ -251,15 +251,6 @@ public class JavaSyntax extends TextSyntax {
 
 	final SyntaxJavaExprTemplate seExprTemplate;
 	
-	final SyntaxElem seStructClass;
-	final SyntaxElem seStructInterface;
-	final SyntaxElem seStructAnnotation;
-	final SyntaxElem seStructEnum;
-	final SyntaxElem seStructCase;
-	final SyntaxElem seStructSyntax;
-	final SyntaxElem seStructView;
-	final SyntaxElem seStructBody;
-
 	final Hashtable<Operator, SyntaxElem> exprs;
 	
 	public SpaceInfo siSp     = new SpaceInfo("sp",       SP_SPACE,    1, 4);
@@ -509,13 +500,15 @@ public class JavaSyntax extends TextSyntax {
 	}
 
 	public JavaSyntax() {
-		SpaceCmd[] lout_empty = new SpaceCmd[0];
-		SpaceCmd[] lout_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_NOP,SP_ADD,0)};
-		SpaceCmd[] lout_nl_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_ADD,SP_ADD,0)};
-		SpaceCmd[] lout_nl_grp = new SpaceCmd[] {new SpaceCmd(siNlGrp,SP_NOP,SP_ADD,0)};
+//		SpaceCmd[] lout_empty = new SpaceCmd[0];
+//		SpaceCmd[] lout_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_NOP,SP_ADD,0)};
+//		SpaceCmd[] lout_nl_nl = new SpaceCmd[] {new SpaceCmd(siNl,SP_ADD,SP_ADD,0)};
+//		SpaceCmd[] lout_nl_grp = new SpaceCmd[] {new SpaceCmd(siNlGrp,SP_NOP,SP_ADD,0)};
 		
 		seExprTemplate = new SyntaxJavaExprTemplate();
-		
+		exprs = new Hashtable<Operator, SyntaxElem>();
+
+/*		
 		{
 			SpaceCmd[] lout_struct = new SpaceCmd[] {
 					new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
@@ -535,7 +528,7 @@ public class JavaSyntax extends TextSyntax {
 			SyntaxElem struct_args = opt(new CalcOptionNotEmpty("args"),
 				set(
 					sep("<"),
-					lst("args", node(/*new FormatInfoHint("class-arg")*/), sep(","), lout_empty),
+					lst("args", node(/ *new FormatInfoHint("class-arg")* /), sep(","), lout_empty),
 					sep(">")
 				), null, lout_empty);
 			SpaceCmd[] lout_ext = new SpaceCmd[] {new SpaceCmd(siSp, SP_ADD, SP_NOP, 0)};
@@ -664,8 +657,7 @@ public class JavaSyntax extends TextSyntax {
 					)
 				);
 		}
-
-		exprs = new Hashtable<Operator, SyntaxElem>();
+*/
 	}
 
 	public String escapeString(String str) {
@@ -683,24 +675,24 @@ public class JavaSyntax extends TextSyntax {
 				return sed.elem;
 		}
 		switch (node) {
-		case Struct: {
-			Struct s = (Struct)node;
-			if (s.isEnum())
-				return seStructEnum;
-			if (s.isPizzaCase())
-				return seStructCase;
-			if (s.isSyntax())
-				return seStructSyntax;
-			if (s.isStructView())
-				return seStructView;
-			if (s.isAnnotation())
-				return seStructAnnotation;
-			if (s.isInterface())
-				return seStructInterface;
-			//if (hint != null && "anonymouse".equals(hint.text))
-			//	return seStructBody;
-			return seStructClass;
-		}
+//		case Struct: {
+//			Struct s = (Struct)node;
+//			if (s.isEnum())
+//				return seStructEnum;
+//			if (s.isPizzaCase())
+//				return seStructCase;
+//			if (s.isSyntax())
+//				return seStructSyntax;
+//			if (s.isStructView())
+//				return seStructView;
+//			if (s.isAnnotation())
+//				return seStructAnnotation;
+//			if (s.isInterface())
+//				return seStructInterface;
+//			//if (hint != null && "anonymouse".equals(hint.text))
+//			//	return seStructBody;
+//			return seStructClass;
+//		}
 
 		case TypeExpr:
 		{

@@ -138,20 +138,6 @@ public abstract class DNode extends ASTNode {
 				m.detach();
 		}
 	}
-	public final void setPackage() {
-		if (this.is_access != MASK_ACC_NAMESPACE) {
-			assert(!locked);
-			this.is_access = MASK_ACC_NAMESPACE;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	public final void setSyntax() {
-		if (this.is_access != MASK_ACC_SYNTAX) {
-			assert(!locked);
-			this.is_access = MASK_ACC_SYNTAX;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
 
 	public void setStatic(boolean on) {
 		MetaFlag m = this.meta.getF("kiev.stdlib.meta.static");
@@ -217,13 +203,6 @@ public abstract class DNode extends ASTNode {
 			if (on) this.meta.setF(new MetaNative());
 		}
 	}
-	public void setInterface(boolean on) {
-		if (this.is_struct_interface != on) {
-			assert(!locked);
-			this.is_struct_interface = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
 	public void setAbstract(boolean on) {
 		MetaFlag m = this.meta.getF("kiev.stdlib.meta.abstract");
 		if (m != null) {
@@ -250,13 +229,6 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 
-	public void setStructView() {
-		if (!this.is_virtual) {
-			assert(!locked);
-			this.is_virtual = true;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
 	public void setTypeUnerasable(boolean on) {
 		MetaFlag m = this.meta.getF("kiev.stdlib.meta.unerasable");
 		if (m != null) {
@@ -450,24 +422,9 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 	public final boolean isAnnotation() {
 		return this.is_struct_annotation;
 	}
-	public final void setAnnotation(boolean on) {
-		assert(!on || (!isPackage() && !isSyntax()));
-		if (this.is_struct_annotation != on) {
-			this.is_struct_annotation = on;
-			if (on) this.setInterface(true);
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
 	// java enum
 	public final boolean isEnum() {
 		return this.is_struct_enum;
-	}
-	public final void setEnum(boolean on) {
-		if (this.is_struct_enum != on) {
-			assert(!locked);
-			this.is_struct_enum = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
 	}
 	// structure was loaded from bytecode
 	public final boolean isLoadedFromBytecode() {

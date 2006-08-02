@@ -90,8 +90,6 @@ public static view RDNode of DNode extends RNode {
 	public final void setPrivate();
 	public final void setProtected();
 	public final void setPkgPrivate();
-	public final void setPackage();
-	public final void setSyntax();
 	public final void setStatic(boolean on);
 	public final void setFinal(boolean on);
 	public final void setSynchronized(boolean on);
@@ -100,9 +98,7 @@ public static view RDNode of DNode extends RNode {
 	public final void setFieldTransient(boolean on);
 	public final void setMethodVarargs(boolean on);
 	public final void setNative(boolean on);
-	public final void setInterface(boolean on);
 	public final void setAbstract(boolean on);
-	public final void setStructView();
 	public final void setTypeUnerasable(boolean on);
 	public final boolean isVirtual();
 	public final void setVirtual(boolean on);

@@ -54,7 +54,7 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		if (clazz.isForward() || getViewImpl(clazz) != null)
 			return;
 		
-		clazz.setInterface(true);
+		clazz.setInterface();
 		
 		// add a cast from clazz.view_of to this view
 		boolean cast_found = false;
