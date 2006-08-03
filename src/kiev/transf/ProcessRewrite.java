@@ -36,7 +36,7 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 	}	
 
 	boolean rewrite(AssignExpr:ANode ae) {
-		Method m = (Method)ae.ident.symbol;
+		Method m = (Method)ae.ident.dnode;
 		if (m != null && m.isMacro() && !m.isNative()) {
 			if (m.body != null)
 				doRewrite(m.body, ae, ae.getArgs());

@@ -29,7 +29,7 @@ public class DrawJavaExpr extends DrawNonTermSet {
 		if (this.isUnvisible())
 			return;
 		SyntaxJavaExpr se = (SyntaxJavaExpr)this.syntax;
-		SyntaxJavaExprTemplate st = (SyntaxJavaExprTemplate)se.template.symbol;
+		SyntaxJavaExprTemplate st = (SyntaxJavaExprTemplate)se.template.dnode;
 		boolean no_paren = true;
 		if (node instanceof ENode) {
 			if (((ENode)node).isPrimaryExpr())
@@ -193,7 +193,7 @@ public class DrawJavaComment extends DrawNonTermSet {
 		if (this.isUnvisible())
 			return;
 		SyntaxJavaComment se = (SyntaxJavaComment)this.syntax;
-		SyntaxJavaCommentTemplate st = (SyntaxJavaCommentTemplate)se.template.symbol;
+		SyntaxJavaCommentTemplate st = (SyntaxJavaCommentTemplate)se.template.dnode;
 		Comment c = (Comment)node;
 		String text = c.text;
 		if (text == null) text = "";

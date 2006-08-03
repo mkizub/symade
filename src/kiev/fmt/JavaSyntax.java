@@ -62,13 +62,13 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 		super(name,new SpaceCmd[0]);
 		this.idx = -1;
 		this.priority = priority;
-		this.template = new SymbolRef<SyntaxJavaExprTemplate>(0,template);
+		this.template = new SymbolRef<SyntaxJavaExprTemplate>((Symbol<SyntaxJavaExprTemplate>)template.id);
 	}
 	public SyntaxJavaExpr(int idx, int priority, SyntaxJavaExprTemplate template) {
 		super("",new SpaceCmd[0]);
 		this.idx = idx;
 		this.priority = priority;
-		this.template = new SymbolRef<SyntaxJavaExprTemplate>(0,template);
+		this.template = new SymbolRef<SyntaxJavaExprTemplate>((Symbol<SyntaxJavaExprTemplate>)template.id);
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
@@ -104,7 +104,7 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 			else if !(d instanceof SyntaxJavaExprTemplate)
 				Kiev.reportError(template,"Resolved "+template+" is not a java expression template");
 			else
-				template.symbol = d;
+				template.symbol = d.id;
 		}
 	}
 	
@@ -193,7 +193,7 @@ public class SyntaxJavaComment extends SyntaxElem {
 			else if !(d instanceof SyntaxJavaCommentTemplate)
 				Kiev.reportError(template,"Resolved "+template+" is not a java comment template");
 			else
-				template.symbol = d;
+				template.symbol = d.id;
 		}
 	}
 	
@@ -469,7 +469,7 @@ public class JavaSyntax extends TextSyntax {
 						return se;
 					se = exprs.get(op);
 					if (se == null) {
-						se = expr(op,(SyntaxJavaExprTemplate)((SyntaxJavaExpr)sed.elem).template.symbol);
+						se = expr(op,(SyntaxJavaExprTemplate)((SyntaxJavaExpr)sed.elem).template.dnode);
 						exprs.put(op, se);
 					}
 				}

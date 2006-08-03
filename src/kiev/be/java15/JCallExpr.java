@@ -141,6 +141,7 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 	static final AttrSlot ATTR = new TmpAttrSlot("jcall temp expr",true,false,TypeInfo.newTypeInfo(ENode.class,null));	
 
 	public:ro	JMethod			func;
+	public:ro	JENode			obj;
 	public:ro	JENode[]		args;
 	abstract
 	public 		JENode			tmp_expr;
@@ -168,7 +169,7 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 		}
 		MetaAccess.verifyRead(this,func);
 		// load this/super
-		code.addInstrLoadThis();
+		obj.generate(code,null);
 		JENode[] args = this.args;
 		int i = 0;
 		if (func.getOuterThisParam() != null) {

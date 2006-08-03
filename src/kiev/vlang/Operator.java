@@ -214,10 +214,10 @@ public final class Operator implements Constants {
 		return new Operator(args,pr,nm);
 	}
 
-	public				OpArg[]		args;
-	public				int			priority;
-	public				String		name;
-	public				Method[]	methods;
+	public final		OpArg[]		args;
+	public final		int			priority;
+	public final		String		name;
+	private				Method[]	methods;
 
 	private Operator(OpArg[] args, int pr, String nm) {
 		this.args = args;
@@ -235,6 +235,7 @@ public final class Operator implements Constants {
 	}
 
 	public void addMethod(Method m) {
+		assert (m.hasName(this.name,true));
 		for(int i=0; i < methods.length; i++)
 			if (methods[i] == m)
 				return;
@@ -256,6 +257,15 @@ public final class Operator implements Constants {
 				}
 			}
 		}
+	}
+
+	public static Operator lookupOperatorForMethod(Method m) {
+		foreach (Operator o; Operator.allOperatorsHash) {
+			foreach (Method x; o.methods; x == m) {
+				return o;
+			}
+		}
+		return null;
 	}
 
 	public String toString() { return name; }

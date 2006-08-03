@@ -31,7 +31,7 @@ public abstract class TypeDef extends TypeDecl {
 
 	public TypeDef(String name) {
 		this.u_name = name;
-		this.id = name;
+		this.id = new Symbol<TypeDef>(name);
 	}
 
 	public TypeDef(Symbol id) {

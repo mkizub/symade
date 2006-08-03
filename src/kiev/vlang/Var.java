@@ -85,7 +85,7 @@ public class Var extends LvalDNode {
 		require type != null;
 	{
 		this.u_name = name;
-		this.id = name;
+		this.id = new Symbol<Var>(name);
 		this.vtype = new TypeRef(type);
 	}
 

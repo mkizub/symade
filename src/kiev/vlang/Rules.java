@@ -482,7 +482,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.RuleIsThe);
-		this.ident = new SymbolRef<DNode>(op.name, cm);
+		this.ident = new SymbolRef<Method>(cm.getSymbol(op.name));
 		this.var = (LVarExpr)args[0];
 		this.expr = args[1];
 	}
@@ -562,7 +562,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.RuleIsOneOf);
-		this.ident = new SymbolRef<DNode>(op.name, cm);
+		this.ident = new SymbolRef<Method>(cm.getSymbol(op.name));
 		this.var = (LVarExpr)args[0];
 		this.expr = args[1];
 	}

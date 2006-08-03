@@ -61,14 +61,14 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 		if( isResolved() ) return;
 
 		Method m;
-		if (ident.symbol == null) {
+		if (ident.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
 		} else {
-			m = (Method)ident.symbol;
+			m = (Method)ident.dnode;
 		}
 		m.normilizeExpr(this);
 		if (m.isStatic()) {
@@ -160,14 +160,14 @@ public view RBooleanNotExpr of BooleanNotExpr extends RBoolExpr {
 		if( isResolved() ) return;
 		
 		Method m;
-		if (ident.symbol == null) {
+		if (ident.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
 		} else {
-			m = (Method)ident.symbol;
+			m = (Method)ident.dnode;
 		}
 		m.normilizeExpr(this);
 		if (m.isStatic()) {

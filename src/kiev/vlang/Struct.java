@@ -342,7 +342,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 	}
 
 	public Struct() {
-		this.id = new Symbol(null);
+		this.id = new Symbol<Struct>(null);
 		this.u_name = "";
 		this.q_name = "";
 		this.b_name = KString.Empty;

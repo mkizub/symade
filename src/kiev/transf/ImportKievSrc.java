@@ -340,7 +340,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				p.addCase(clazz);
 				getStructType(p, path);
 				TypeNameRef sup_ref = new TypeNameRef(p.qname());
-				sup_ref.ident.symbol = p;
+				sup_ref.ident.symbol = p.id;
 			next_case_arg:
 				for(int i=0; i < p.args.length; i++) {
 					for(int j=0; j < clazz.args.length; j++) {

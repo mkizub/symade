@@ -136,14 +136,14 @@ public static final view RAssignExpr of AssignExpr extends RENode {
 		}
 
 		Method m;
-		if (ident.symbol == null) {
+		if (ident.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
 		} else {
-			m = (Method)ident.symbol;
+			m = (Method)ident.dnode;
 		}
 		m.normilizeExpr(this);
 		CallType ct = m.makeType(null,getArgs());
@@ -233,14 +233,14 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 		}
 		
 		Method m;
-		if (ident.symbol == null) {
+		if (ident.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
 		} else {
-			m = (Method)ident.symbol;
+			m = (Method)ident.dnode;
 		}
 		m.normilizeExpr(this);
 		CallType ct = m.makeType(null,getArgs());
@@ -288,14 +288,14 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 		}
 		
 		Method m;
-		if (ident.symbol == null) {
+		if (ident.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
 		} else {
-			m = (Method)ident.symbol;
+			m = (Method)ident.dnode;
 		}
 		m.normilizeExpr(this);
 		CallType ct = m.makeType(null,getArgs());
@@ -416,14 +416,14 @@ public static final view RIncrementExpr of IncrementExpr extends RENode {
 		}
 		
 		Method m;
-		if (ident.symbol == null) {
+		if (ident.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
 		} else {
-			m = (Method)ident.symbol;
+			m = (Method)ident.dnode;
 		}
 		m.normilizeExpr(this);
 		if (m.isStatic()) {

@@ -300,6 +300,15 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 		}
 		return false;
 	}
+
+	public Symbol<Method> getSymbol(String nm) {
+		if (id.sname == nm) return (Symbol<Method>)id;
+		foreach(Symbol s; aliases; s.sname == nm)
+			return (Symbol<Method>)s;
+		assert (false, "Symbol "+nm+" not found in "+this);
+		return null;
+	}
+
 	public Type	getType() { return type; }
 
 	public FormPar getOuterThisParam() {
@@ -414,7 +423,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 			else
 				expr.ident.name = this.id.sname;
 		}
-		expr.ident.symbol = this;
+		expr.ident.symbol = this.id;
 		if (!isMacro())
 			return;
 		UserMeta m = (UserMeta)this.meta.getU("kiev.stdlib.meta.CompilerNode");
@@ -437,15 +446,8 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 		foreach (ENode e; args)
 			e.detach();
 		Operator op = expr.getOp();
-		if (op == null && this.isOperatorMethod()) {
-	lookup_op:
-			foreach (Operator o; Operator.allOperatorsHash) {
-				foreach (Method x; o.methods; x == this) {
-					op = o;
-					break lookup_op;
-				}
-			}
-		}
+		if (op == null && this.isOperatorMethod())
+			op = Operator.lookupOperatorForMethod(this);
 		en.initFrom(expr, op, this, args);
 		expr.replaceWithNodeReWalk(en);
 		
@@ -766,7 +768,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 			Type t = tp;
 			if (t instanceof ArrayType) {
 				if (body instanceof MetaValueScalar) {
-					MetaValueArray mva = new MetaValueArray(new SymbolRef<DNode>(body.pos, this));
+					MetaValueArray mva = new MetaValueArray(new SymbolRef<DNode>(body.pos, this.id));
 					mva.values.add(~((MetaValueScalar)body).value);
 					body = mva;
 				}
@@ -915,7 +917,7 @@ public final class WBCCondition extends DNode {
 
 	public WBCCondition(int pos, WBCType cond, String name, ENode body) {
 		this.pos = pos;
-		this.id = name;
+		this.id = new Symbol<WBCCondition>(name);
 		this.cond = cond;
 		this.body = body;
 	}

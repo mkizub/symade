@@ -199,7 +199,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 		IFldExpr ae = fa.ncopy();
-		ae.ident.symbol = mp.fld;
+		ae.ident.symbol = mp.fld.id;
 		ENode expr = ae;
 		if (mp.offset > 0) {
 			ConstExpr sexpr = new ConstIntExpr(mp.offset);

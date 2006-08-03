@@ -83,12 +83,12 @@ public view JAssignExpr of AssignExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
-		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+		if (ident == null || !(ident.dnode instanceof CoreMethod)) {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
 		code.setLinePos(this);
-		CoreMethod m = (CoreMethod)ident.symbol;
+		CoreMethod m = (CoreMethod)ident.dnode;
 		m.bend_func.generate(code,reqType,this);
 	}
 }
@@ -101,12 +101,12 @@ public view JBinaryExpr of BinaryExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BinaryExpr: "+this);
-		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+		if (ident == null || !(ident.dnode instanceof CoreMethod)) {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
 		code.setLinePos(this);
-		CoreMethod m = (CoreMethod)ident.symbol;
+		CoreMethod m = (CoreMethod)ident.dnode;
 		m.bend_func.generate(code,reqType,this);
 	}
 
@@ -119,12 +119,12 @@ public view JUnaryExpr of UnaryExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnaryExpr: "+this);
-		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+		if (ident == null || !(ident.dnode instanceof CoreMethod)) {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
 		code.setLinePos(this);
-		CoreMethod m = (CoreMethod)ident.symbol;
+		CoreMethod m = (CoreMethod)ident.dnode;
 		m.bend_func.generate(code,reqType,this);
 	}
 
@@ -239,12 +239,12 @@ public final view JIncrementExpr of IncrementExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: "+this);
-		if (ident == null || !(ident.symbol instanceof CoreMethod)) {
+		if (ident == null || !(ident.dnode instanceof CoreMethod)) {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
 		code.setLinePos(this);
-		CoreMethod m = (CoreMethod)ident.symbol;
+		CoreMethod m = (CoreMethod)ident.dnode;
 		m.bend_func.generate(code,reqType,this);
 	}
 }

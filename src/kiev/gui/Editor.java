@@ -253,11 +253,11 @@ public class Editor extends InfoView implements KeyListener {
 										if (obj != null) {
 											obj.open();
 											obj.name = dn.id.sname;
-											obj.symbol = dn;
+											obj.symbol = dn.id;
 										} else {
 											pattr.node.open();
 											obj = (SymbolRef)pattr.slot.typeinfo.newInstance();
-											obj.symbol = dn;
+											obj.symbol = dn.id;
 											pattr.set(obj);
 										}
 									} finally {
@@ -897,8 +897,8 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 				SyntaxAttr satt = (SyntaxAttr)dr.syntax;
 				if (satt.expected_types.length > 0) {
 					menu = new JPopupMenu("Set new item");
-					foreach (SymbolRef sr; satt.expected_types; sr.symbol instanceof Struct) {
-						menu.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, n, satt.name)));
+					foreach (SymbolRef sr; satt.expected_types; sr.dnode instanceof Struct) {
+						menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, n, satt.name)));
 					}
 					int x = dr.geometry.x;
 					int y = dr.geometry.y + dr.geometry.h;
@@ -917,8 +917,8 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 					this.idx = lst.getInsertIndex(dr);
 					if (slst.expected_types.length > 0) {
 						menu = new JPopupMenu("Insert new item");
-						foreach (SymbolRef sr; slst.expected_types; sr.symbol instanceof Struct) {
-							menu.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, lst.node, slst.name)));
+						foreach (SymbolRef sr; slst.expected_types; sr.dnode instanceof Struct) {
+							menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, lst.node, slst.name)));
 						}
 						int x = dr.geometry.x;
 						int y = dr.geometry.y + dr.geometry.h;
@@ -940,8 +940,8 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 					this.idx = lst.getInsertIndex(dr) + 1;
 					if (slst.expected_types.length > 0) {
 						menu = new JPopupMenu("Append new item");
-						foreach (SymbolRef sr; slst.expected_types; sr.symbol instanceof Struct) {
-							menu.add(new JMenuItem(new NewElemAction((Struct)sr.symbol, lst.node, slst.name)));
+						foreach (SymbolRef sr; slst.expected_types; sr.dnode instanceof Struct) {
+							menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, lst.node, slst.name)));
 						}
 						int x = dr.geometry.x;
 						int y = dr.geometry.y + dr.geometry.h;

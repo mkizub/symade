@@ -177,7 +177,7 @@ public final class IFldExpr extends LvalueExpr {
 	@ref public:ro Field		var;
 
 	@getter public Field get$var() {
-		DNode sym = ident.symbol;
+		DNode sym = ident.dnode;
 		if (sym instanceof Field)
 			return (Field)sym;
 		return null;
@@ -189,21 +189,21 @@ public final class IFldExpr extends LvalueExpr {
 		this.pos = pos;
 		this.obj = obj;
 		this.ident = ident;
-		this.ident.symbol = var;
+		this.ident.symbol = var.id;
 		assert(obj != null && var != null);
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var) {
 		this.pos = pos;
 		this.obj = obj;
-		this.ident = new SymbolRef<DNode>(pos,var);
+		this.ident = new SymbolRef<DNode>(pos,var.id);
 		assert(obj != null && var != null);
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var, boolean direct_access) {
 		this.pos = pos;
 		this.obj = obj;
-		this.ident = new SymbolRef<DNode>(pos,var);
+		this.ident = new SymbolRef<DNode>(pos,var.id);
 		assert(obj != null && var != null);
 		if (direct_access) setAsField(true);
 	}
@@ -294,7 +294,7 @@ public final class IFldExpr extends LvalueExpr {
 					Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
 				} else {
 					f = (Field)v;
-					ident.symbol = f;
+					ident.symbol = f.id;
 				}
 			} else {
 				Kiev.reportError(this, "Error resolving "+f+" in "+tp);
@@ -444,7 +444,7 @@ public final class LVarExpr extends LvalueExpr {
 	@virtual typedef RView = RLVarExpr;
 
 	@getter public Var get$var() {
-		DNode sym = ident.symbol;
+		DNode sym = ident.dnode;
 		if (sym instanceof Var)
 			return (Var)sym;
 		return null;
@@ -453,7 +453,7 @@ public final class LVarExpr extends LvalueExpr {
 	public LVarExpr() {}
 	public LVarExpr(int pos, Var var) {
 		this.pos = pos;
-		this.ident = new SymbolRef<DNode>(pos, var);
+		this.ident = new SymbolRef<DNode>(pos, var.id);
 	}
 	public LVarExpr(int pos, String name) {
 		this.pos = pos;
@@ -479,7 +479,7 @@ public final class LVarExpr extends LvalueExpr {
 		ResInfo info = new ResInfo(this,ident.name);
 		if( !PassInfo.resolveNameR((ASTNode)this,v,info) )
 			throw new CompilerException(this,"Unresolved var "+ident);
-		ident.symbol = v;
+		ident.symbol = v.id;
 		return (Var)v;
 	}
 
@@ -540,7 +540,7 @@ public final class SFldExpr extends LvalueExpr {
 	@att public ENode			obj;
 
 	@getter public Field get$var() {
-		DNode sym = ident.symbol;
+		DNode sym = ident.dnode;
 		if (sym instanceof Field)
 			return (Field)sym;
 		return null;
@@ -551,13 +551,13 @@ public final class SFldExpr extends LvalueExpr {
 	public SFldExpr(int pos, Field var) {
 		this.pos = pos;
 		this.obj = new TypeRef(var.ctx_tdecl.xtype);
-		this.ident = new SymbolRef<DNode>(pos,var);
+		this.ident = new SymbolRef<DNode>(pos,var.id);
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
 		this.pos = pos;
 		this.obj = new TypeRef(var.ctx_tdecl.xtype);
-		this.ident = new SymbolRef<DNode>(pos,var);
+		this.ident = new SymbolRef<DNode>(pos,var.id);
 		if (direct_access) setAsField(true);
 	}
 
@@ -625,7 +625,7 @@ public final class SFldExpr extends LvalueExpr {
 			throw new CompilerException(this, "Unresolved static field "+ident+" in "+tp);
 		if !(res instanceof Field || !res.isStatic())
 			throw new CompilerException(this, "Resolved "+ident+" in "+tp+" is not a static field");
-		ident.symbol = res;
+		ident.symbol = res.id;
 	}
 
 	// verify resolved tree
@@ -640,7 +640,7 @@ public final class SFldExpr extends LvalueExpr {
 					Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
 				} else {
 					f = (Field)v;
-					ident.symbol = f;
+					ident.symbol = f.id;
 				}
 			} else {
 				Kiev.reportError(this, "Error resolving "+f+" in "+tp);

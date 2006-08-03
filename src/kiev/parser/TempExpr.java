@@ -119,7 +119,7 @@ public final class UnresCallExpr extends UnresExpr {
 	public UnresCallExpr() {}
 
 	public UnresCallExpr(int pos, ENode obj, DNode func, TypeRef[] targs, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef<DNode>(pos, func), targs, args, super_flag);
+		this(pos, obj, new SymbolRef<DNode>(pos, func.id), targs, args, super_flag);
 	}
 	public UnresCallExpr(int pos, ENode obj, SymbolRef<DNode> func, TypeRef[] targs, ENode[] args, boolean super_flag) {
 		this.pos = pos;
@@ -150,15 +150,15 @@ public final class UnresCallExpr extends UnresExpr {
 		for (int i=0; i < args.length; i++)
 			args[i] = args[i].closeBuild().detach();
 		if (obj instanceof TypeRef) {
-			if (func.symbol instanceof Method) {
+			if (func.dnode instanceof Method) {
 				CallExpr ce = new CallExpr(pos, obj, (SymbolRef<Method>)~func, targs, args);
 				return ce;
 			} else {
-				Field f = (Field)func.symbol;
+				Field f = (Field)func.dnode;
 				return new ClosureCallExpr(pos, new SFldExpr(pos, f), args);
 			}
 		} else {
-			if (func.symbol instanceof Method) {
+			if (func.dnode instanceof Method) {
 				CallExpr ce = new CallExpr(pos, obj, (SymbolRef<Method>)~func, targs, args);
 				if (isSuperExpr())
 					ce.setSuperExpr(true);

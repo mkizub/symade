@@ -72,7 +72,7 @@ public final view RCallExpr of CallExpr extends RENode {
 			ANode n = func.parent();
 			while !(n instanceof Method) n = n.parent();
 			assert (n.parent() instanceof TypeDecl);
-			this.ident.symbol = (Method)n;
+			this.ident.symbol = ((Method)n).id;
 		}
 		setResolved(true);
 		if (isAutoReturnable())
@@ -86,6 +86,7 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 	static final AttrSlot ATTR = new TmpAttrSlot("rcall temp expr",true,false,TypeInfo.newTypeInfo(ENode.class,null));	
 
 	public:ro	Method			func;
+	public:ro	ENode			obj;
 	public:ro	ENode[]			args;
 	abstract
 	public 		ENode			tmp_expr;
@@ -146,9 +147,9 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 		}
 		if !(func.parent() instanceof TypeDecl) {
 			ANode n = func.parent();
-			while !(n instanceof Method) n = n.parent();
+			while !(n instanceof Constructor) n = n.parent();
 			assert (n.parent() instanceof TypeDecl);
-			this.ident.symbol = (Method)n;
+			this.ident.symbol = ((Constructor)n).id;
 		}
 		setResolved(true);
 		if (isAutoReturnable())

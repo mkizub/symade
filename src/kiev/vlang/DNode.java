@@ -36,10 +36,10 @@ public abstract class DNode extends ASTNode {
 	public static final int MASK_ACC_NAMESPACE = ACC_PACKAGE;
 	public static final int MASK_ACC_SYNTAX    = ACC_SYNTAX;
 	
-		 public					int			flags;
-	@att public					MetaSet		meta;
-	@att public					Symbol		id; // short and unique names
-	     public:ro,rw,ro,rw		String		u_name; // unique name in scope, never null, usually equals to name
+		 public					int				flags;
+	@att public					MetaSet			meta;
+	@att public					Symbol<This>	id; // short and unique names
+	     public:ro,rw,ro,rw		String			u_name; // unique name in scope, never null, usually equals to name
 
 //	public @packed:1,flags, 0 boolean is_acc_public;
 //	public @packed:1,flags, 1 boolean is_acc_private;

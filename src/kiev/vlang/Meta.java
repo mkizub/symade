@@ -216,7 +216,7 @@ public class UserMeta extends ENode {
 			}
 			if (m == null)
 				throw new CompilerException(v, "Unresolved method "+v.ident+" in class "+s);
-			v.ident.symbol = m;
+			v.ident.symbol = m.id;
 			Type t = m.type.ret();
 			if (t instanceof ArrayType) {
 				if (v instanceof MetaValueScalar) {
@@ -405,7 +405,7 @@ public abstract class MetaValue extends ENode {
 	public void verify() {
 		if (parent() instanceof Method && pslot().name == "body") {
 			Method m = (Method)parent();
-			ident = new SymbolRef<DNode>(pos, m);
+			ident = new SymbolRef<DNode>(pos, m.id);
 		}
 		else if (ident.name == null) {
 			ident.name = "value";

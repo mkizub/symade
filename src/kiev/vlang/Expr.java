@@ -188,7 +188,7 @@ public class AssignExpr extends ENode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = op;
-		this.ident = new SymbolRef<DNode>(op.name, cm);
+		this.ident = new SymbolRef<Method>(cm.getSymbol(op.name));
 		this.lval = args[0];
 		this.value = args[1];
 	}
@@ -222,14 +222,14 @@ public class AssignExpr extends ENode {
 			}
 		} else {
 			Method m;
-			if (ident.symbol == null) {
+			if (ident.dnode == null) {
 				m = getOp().resolveMethod(this);
 				if (m == null) {
 					Kiev.reportError(this, "Unresolved method for operator "+getOp());
 					return;
 				}
 			} else {
-				m = (Method)ident.symbol;
+				m = (Method)ident.dnode;
 			}
 			m.normilizeExpr(this);
 		}
@@ -303,7 +303,7 @@ public class BinaryExpr extends ENode {
 	}
 
 	public BinaryExpr(CoreMethod cm, Operator op, ENode[] args) {
-		this.ident = new SymbolRef<DNode>(op.name,cm);
+		this.ident = new SymbolRef<Method>(cm.getSymbol(op.name));
 		this.op = op;
 		this.expr1 = args[0];
 		this.expr2 = args[1];
@@ -312,7 +312,7 @@ public class BinaryExpr extends ENode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = op;
-		this.ident = new SymbolRef<DNode>(op.name, cm);
+		this.ident = new SymbolRef<Method>(cm.getSymbol(op.name));
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -325,13 +325,13 @@ public class BinaryExpr extends ENode {
 
 	public Type getType() {
 		Method m;
-		if (ident != null && ident.symbol != null) {
-			m = (Method)ident.symbol;
+		if (ident != null && ident.dnode != null) {
+			m = (Method)ident.dnode;
 		} else {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			ident.symbol = m;
+			ident.symbol = m.id;
 		}
 		Type ret = m.type.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
@@ -340,14 +340,14 @@ public class BinaryExpr extends ENode {
 
 	public void mainResolveOut() {
 		Method m;
-		if (ident.symbol == null) {
+		if (ident.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
 		} else {
-			m = (Method)ident.symbol;
+			m = (Method)ident.dnode;
 		}
 		m.normilizeExpr(this);
 	}
@@ -378,7 +378,7 @@ public class UnaryExpr extends ENode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = (Operator)op;
-		this.ident = new SymbolRef<DNode>(op.name, cm);
+		this.ident = new SymbolRef<Method>(cm.getSymbol(op.name));
 		this.expr = args[0];
 	}
 	
@@ -390,13 +390,13 @@ public class UnaryExpr extends ENode {
 
 	public Type getType() {
 		Method m;
-		if (ident != null && ident.symbol != null) {
-			m = (Method)ident.symbol;
+		if (ident != null && ident.dnode != null) {
+			m = (Method)ident.dnode;
 		} else {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			ident.symbol = m;
+			ident.symbol = m.id;
 		}
 		Type ret = m.type.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
@@ -405,14 +405,14 @@ public class UnaryExpr extends ENode {
 
 	public void mainResolveOut() {
 		Method m;
-		if (ident.symbol == null) {
+		if (ident.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
 				Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
 		} else {
-			m = (Method)ident.symbol;
+			m = (Method)ident.dnode;
 		}
 		m.normilizeExpr(this);
 	}
@@ -440,7 +440,7 @@ public class StringConcatExpr extends ENode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		assert (op == Operator.Add);
-		this.ident = new SymbolRef<DNode>(op.name, cm);
+		this.ident = new SymbolRef<Method>(cm.getSymbol(op.name));
 		ENode arg1 = args[0];
 		ENode arg2 = args[1];
 		if (arg1 instanceof StringConcatExpr)
@@ -658,7 +658,7 @@ public class IncrementExpr extends ENode {
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
 		this.pos = node.pos;
 		this.op = (Operator)op;
-		this.ident = new SymbolRef<DNode>(op.name, cm);
+		this.ident = new SymbolRef<Method>(cm.getSymbol(op.name));
 		this.lval = args[0];
 	}
 	

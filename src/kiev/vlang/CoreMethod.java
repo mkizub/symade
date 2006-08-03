@@ -229,7 +229,7 @@ abstract class BinaryFunc extends CoreFunc {
 			expr.open();
 			if (expr.ident.name == null)
 				expr.ident = new SymbolRef<DNode>(expr.pos, op.name);
-			expr.ident.symbol = core_method;
+			expr.ident.symbol = core_method.id;
 			return;
 		}
 		ENode[] args = expr.getArgs();
@@ -258,7 +258,7 @@ abstract class UnaryFunc extends CoreFunc {
 			expr.open();
 			if (expr.ident.name == null)
 				expr.ident = new SymbolRef<DNode>(expr.pos, op.name);
-			expr.ident.symbol = core_method;
+			expr.ident.symbol = core_method.id;
 			return;
 		}
 		ENode[] args = expr.getArgs();

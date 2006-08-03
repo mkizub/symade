@@ -241,7 +241,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			
 			// and add super-constructor call
 			init.setNeedFieldInits(true);
-			CtorCallExpr call_super = new CtorCallExpr(pos, new SymbolRef<Constructor>(nameSuper), ENode.emptyArray);
+			CtorCallExpr call_super = new CtorCallExpr(pos, new SuperExpr(), ENode.emptyArray);
 			call_super.args.add(new LVarExpr(pos,init.params[0]));
 			call_super.args.add(new LVarExpr(pos,init.params[1]));
 			init.block.stats.insert(0,new ExprStat(call_super));
@@ -1265,10 +1265,9 @@ public final view RStruct of Struct extends RTypeDecl {
 						ExprStat es = (ExprStat)initbody.stats[0];
 						ENode ce = es.expr;
 						if (ce instanceof CtorCallExpr) {
-							String nm = ce.ident.name;
-							if (nm == nameThis)
+							if (ce.obj instanceof ThisExpr)
 								; // this(args)
-							else if (nm == nameSuper)
+							else if (ce.obj instanceof SuperExpr)
 								m.setNeedFieldInits(true);
 							else
 								throw new CompilerException(ce,"Expected one of this() or super() constructor call");
@@ -1281,7 +1280,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				}
 				if( gen_def_constr ) {
 					m.setNeedFieldInits(true);
-					CtorCallExpr call_super = new CtorCallExpr(pos, new SymbolRef<Constructor>(pos, nameSuper), ENode.emptyArray);
+					CtorCallExpr call_super = new CtorCallExpr(pos, new SuperExpr(), ENode.emptyArray);
 					if( super_types.length > 0 && super_types[0].getStruct() == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;

@@ -238,12 +238,13 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			s.members.add(ctor);
 			Constructor sctor = (Constructor)s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpTypeInfo);
 			CtorCallExpr ce = new CtorCallExpr(f.pos,
-					new SymbolRef<Constructor>(nameSuper,sctor),
+					new SuperExpr(),
 					new ENode[]{
 						new LVarExpr(f.pos, ctor.params[0]),
 						new LVarExpr(f.pos, ctor.params[1])
 					}
 				);
+			ce.ident.symbol = sctor.id;
 			ctor.body = new Block(0);
 			ctor.block.stats.add(new ExprStat(ce));
 		}

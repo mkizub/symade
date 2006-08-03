@@ -23,23 +23,33 @@ public class Symbol<D extends DNode> extends ASTNode {
 	public static final Symbol[] emptyArray = new Symbol[0];
 
 	@att
-	public String		sname; // source code name, may be null for anonymouse symbols
+	public				String		sname; // source code name, may be null for anonymouse symbols
 	
-	@ref
-	public D			dnode;
+	@access:n,n,r,rw	D			dnode;
+	private				SymbolRef	refs;
 	
-	@ref
-	public SymbolRef	refs;
-	
+	public Object copyTo(Object to$node)
+	{
+		Symbol node = (Symbol)super.copyTo(to$node);
+		node.sname = this.sname;
+		node.dnode = this.dnode;
+		//node.refs = refs; // don't copy!
+		return node;
+	}
+
 	public void callbackAttached() {
 		ANode p = parent();
 		if (p instanceof D)
 			dnode = (D)p;
+		for (SymbolRef sr = refs; sr != null; sr = sr.next)
+			sr.callbackSymbolChanged();
 		super.callbackAttached();
 	}
 
 	public void callbackDetached() {
 		dnode = null;
+		for (SymbolRef sr = refs; sr != null; sr = sr.next)
+			sr.callbackSymbolChanged();
 		super.callbackDetached();
 	}
 
@@ -55,8 +65,11 @@ public class Symbol<D extends DNode> extends ASTNode {
 	
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
-			if (attr.name == "sname")
+			if (attr.name == "sname") {
 				parent().callbackChildChanged(pslot());
+				for (SymbolRef sr = refs; sr != null; sr = sr.next)
+					sr.callbackSymbolChanged();
+			}
 		}
 	}
 
@@ -69,9 +82,7 @@ public class Symbol<D extends DNode> extends ASTNode {
 	}
 	
 	@setter
-	public void set$sname(String value)
-		alias operator(5, lfy, =)
-	{
+	public void set$sname(String value) {
 		this.sname = (value == null) ? null : value.intern();
 	}
 	
@@ -92,11 +103,35 @@ public class Symbol<D extends DNode> extends ASTNode {
 	public String toString() {
 		return sname;
 	}
+	
+	void link(SymbolRef sr) {
+		assert (sr.symbol == null && sr.next == null);
+		if (this.refs == null) {
+			this.refs = sr;
+		} else {
+			sr.next = this.refs;
+			this.refs = sr;
+		}
+	}
+	void unlink(SymbolRef sr) {
+		assert (sr.symbol == this);
+		if (this.refs == sr) {
+			this.refs = sr.next;
+			sr.next = null;
+			return;
+		}
+		SymbolRef prev = refs;
+		while (prev != null && prev.next != sr)
+			prev = prev.next;
+		assert (prev != null && prev.next == sr);
+		prev.next = sr.next;
+		sr.next = null;
+	}
 }
 
 @node
 //@unerasable
-public class SymbolRef<D extends DNode> extends ASTNode {
+public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 
@@ -104,9 +139,20 @@ public class SymbolRef<D extends DNode> extends ASTNode {
 
 	public static final SymbolRef[] emptyArray = new SymbolRef[0];
 
-	@att public String		name; // unresolved name
-	@ref public D			symbol; // resolved symbol
-	@ref public SymbolRef	next; // next SymbolRef which refers the same Symbol
+	@att public				String		name; // unresolved name
+	@ref public				Symbol<D>	symbol; // resolved symbol
+	     public:r,r,rw,rw	D			dnode; // resolved dnode (symbol.parent())
+	     public:r,r,rw,rw	SymbolRef	next; // next SymbolRef which refers the same Symbol
+		 
+	public Object copyTo(Object to$node)
+	{
+		SymbolRef<D> node = (SymbolRef<D>)super.copyTo(to$node);
+		node.name = this.name;
+		node.symbol = this.symbol;
+		//node.dnode = this.dnode; // don't copy!
+		//node.next = next; // don't copy!
+		return node;
+	}
 
 	public SymbolRef() {}
 
@@ -119,14 +165,14 @@ public class SymbolRef<D extends DNode> extends ASTNode {
 		this.name = name;
 	}
 
-	public SymbolRef(int pos, D symbol) {
+	public SymbolRef(int pos, Symbol<D> symbol) {
 		this.pos = pos;
-		this.name = symbol.id.sname;
+		this.name = symbol.sname;
 		this.symbol = symbol;
 	}
 
-	public SymbolRef(String name, D symbol) {
-		this.name = name;
+	public SymbolRef(Symbol<D> symbol) {
+		this.name = symbol.sname;
 		this.symbol = symbol;
 	}
 
@@ -138,14 +184,6 @@ public class SymbolRef<D extends DNode> extends ASTNode {
 		return false;
 	}
 
-	public void set(D symbol)
-		alias operator(5, lfy, =)
-	{
-		if (this.name == null && symbol != null)
-			this.name = symbol.id.sname;
-		this.symbol = (D)symbol;
-	}
-	
 	public void set(Token t) {
         pos = t.getPos();
 		if (t.image.startsWith("#id\""))
@@ -157,9 +195,45 @@ public class SymbolRef<D extends DNode> extends ASTNode {
 	@setter
 	public void set$name(String value) {
 		this.name = (value != null) ? value.intern() : null;
+		if (this.symbol != null && this.symbol.sname != value)
+			this.symbol = null;
+	}
+	
+	@setter
+	public void set$symbol(Symbol<D> value) {
+		if (value == null) {
+			if (this.symbol != null) {
+				this.dnode = null;
+				this.symbol.unlink(this);
+				assert (next == null);
+				this.symbol = null;
+			}
+		}
+		else if (this.symbol != value) {
+			if (this.symbol != null) {
+				this.dnode = null;
+				this.symbol.unlink(this);
+				assert (next == null);
+				this.symbol = null;
+			}
+			value.link(this);
+			this.symbol = value;
+			this.dnode = value.dnode;
+		}
 	}
 	
 	public String toString() { return name; }
+
+	public void callbackDetached() {
+		this.symbol = null;
+		super.callbackDetached();
+	}
+
+	void callbackSymbolChanged() {
+		this.dnode = this.symbol.dnode;
+		if (this.name != this.symbol.sname)
+			this.name = this.symbol.sname;
+	}
 	
 	public DNode[] findForResolve(boolean by_equals) {
 		ANode parent = parent();

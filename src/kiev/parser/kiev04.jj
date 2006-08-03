@@ -1829,7 +1829,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 		LOOKAHEAD("{")
 		{ presc = m; }
 		m.body = MaybeSkipBlock() [ ";" ]
-	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m)) ] ";"
+	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id)) ] ";"
 	)
 	} finally { curMethod = oldMethod; }
 	{ return m; }

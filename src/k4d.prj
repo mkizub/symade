@@ -901,15 +901,6 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
-METATYPE kiev.fmt.CalcOptionNotSuper kiev\fmt\JavaSyntax.java bad
-METATYPE kiev.fmt.CalcOptionPackedField kiev\fmt\JavaSyntax.java bad
-METATYPE kiev.fmt.CalcOptionSType kiev\fmt\JavaSyntax.java bad
-METATYPE kiev.fmt.CalcOptionUpperBound kiev\fmt\JavaSyntax.java bad
-METATYPE kiev.fmt.DrawJavaEnumAlias kiev\fmt\DrawJava.java bad
-METATYPE kiev.fmt.DrawJavaType kiev\fmt\DrawJava.java bad
-METATYPE kiev.fmt.FormatInfoHint kiev\fmt\Formatter.java bad
-METATYPE kiev.fmt.SyntaxJavaEnumAlias kiev\fmt\JavaSyntax.java bad
-METATYPE kiev.fmt.SyntaxJavaType kiev\fmt\JavaSyntax.java bad
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad
@@ -924,8 +915,5 @@ METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.vlang.Globals kiev\vlang\Globals.java bad
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
-METATYPE kiev.vlang.null kiev\vlang\Globals.java bad
-METATYPE kiev.vlang.types.OuterMetaType kiev\vlang\types\TypeProvider.java
-METATYPE kiev.vlang.types.OuterType kiev\vlang\types\Type.java
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java

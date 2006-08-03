@@ -2474,7 +2474,7 @@ public abstract class kiev040 implements kiev040Constants {
           switch (jj_nt.kind) {
           case _DEFAULT:
             jj_consume_token(_DEFAULT);
-            m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m));
+            m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id));
             break;
           default:
             ;

@@ -41,10 +41,10 @@ public class CallExpr extends ENode {
 	@att public ENode[]				args;
 
 	@getter public Method get$func() {
-		return (Method)ident.symbol;
+		return (Method)ident.dnode;
 	}
 	@setter public void set$func(Method m) {
-		this.ident.symbol = m;
+		this.ident.symbol = m.id;
 	}
 
 	public CallExpr() {}
@@ -58,11 +58,11 @@ public class CallExpr extends ENode {
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, TypeRef[] targs, ENode[] args) {
-		this(pos, obj, new SymbolRef<Method>(pos,func), targs, args);
+		this(pos, obj, new SymbolRef<Method>(pos,(Symbol<Method>)func.id), targs, args);
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
-		this(pos, obj, new SymbolRef<Method>(pos,func), null, args);
+		this(pos, obj, new SymbolRef<Method>(pos,(Symbol<Method>)func.id), null, args);
 	}
 
 	public ENode[] getArgs() {
@@ -104,7 +104,11 @@ public class CallExpr extends ENode {
 		
 		// constructor call "this(args)" or "super(args)"
 		if (ident.name == nameThis || ident.name == nameSuper) {
-			CtorCallExpr cce = new CtorCallExpr(pos, new SymbolRef<Constructor>(ident.pos,ident.name), args.delToArray());
+			CtorCallExpr cce;
+			if (ident.name == nameThis)
+				cce = new CtorCallExpr(pos, new ThisExpr(), args.delToArray());
+			else
+				cce = new CtorCallExpr(pos, new SuperExpr(), args.delToArray());
 			if (isPrimaryExpr())
 				cce.setPrimaryExpr(true);
 			this.replaceWithNodeReWalk(cce);
@@ -137,7 +141,7 @@ public class CallExpr extends ENode {
 			info.leaveSuper();
 			info.leaveForward(obj);
 			if( info.isEmpty() ) {
-				this.ident.symbol = m;
+				this.ident.symbol = m.id;
 				this.setSuperExpr(true);
 				return;
 			}
@@ -341,7 +345,8 @@ public class CallExpr extends ENode {
 public class CtorCallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in", seq="true")		ENode[]		args;
+	@dflow(in="this:in")				ENode		obj;
+	@dflow(in="obj", seq="true")		ENode[]		args;
 	}
 	
 	@virtual typedef This  = CtorCallExpr;
@@ -349,20 +354,21 @@ public class CtorCallExpr extends ENode {
 	@virtual typedef RView = RCtorCallExpr;
 	@virtual typedef TypeOfIdent = Constructor;
 
+	@att public ENode				obj;
 	@att public ENode[]				args;
 
 	@getter public Method get$func() {
-		return (Method)ident.symbol;
+		return (Method)ident.dnode;
 	}
 	@setter public void set$func(Method m) {
-		this.ident.symbol = m;
+		this.ident.symbol = m.id;
 	}
 
 	public CtorCallExpr() {}
 
-	public CtorCallExpr(int pos, SymbolRef<Constructor> ident, ENode[] args) {
+	public CtorCallExpr(int pos, ENode obj, ENode[] args) {
 		this.pos = pos;
-		this.ident = ident;
+		this.obj = obj;
 		this.args.addAll(args);
 	}
 
@@ -398,20 +404,20 @@ public class CtorCallExpr extends ENode {
 		CallType mt = new CallType(tp,null,ta,Type.tpVoid,false);
 
 		// constructor call "this(args)"
-		if (ident.name == nameThis) {
+		if (obj instanceof ThisExpr) {
 			ResInfo info = new ResInfo(this,nameInit,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if (!PassInfo.resolveBestMethodR(tp,m,info,mt))
-				throw new CompilerException(this,"Constructor "+Method.toString(ident.name,args)+" unresolved");
-			ident.symbol = (Constructor)m;
+				throw new CompilerException(this,"Constructor "+Method.toString(nameInit,args)+" unresolved");
+			ident.symbol = ((Constructor)m).id;
 			return;
 		}
 		// constructor call "super(args)"
-		if (ident.name == nameSuper) {
+		if (obj instanceof SuperExpr) {
 			mt = new CallType(tp,null,ta,Type.tpVoid,false);
 			ResInfo info = new ResInfo(this,nameInit,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if (!PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,mt))
-				throw new CompilerException(this,"Constructor "+Method.toString(ident.name,args)+" unresolved");
-			ident.symbol = (Constructor)m;
+				throw new CompilerException(this,"Constructor "+Method.toString(nameInit,args)+" unresolved");
+			ident.symbol = ((Constructor)m).id;
 			return;
 		}
 		throw new CompilerException(this, "Constructor call may only be 'super' or 'this'");
@@ -419,7 +425,7 @@ public class CtorCallExpr extends ENode {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(ident).append('(');
+		sb.append(obj).append('(');
 		for(int i=0; i < args.length; i++) {
 			sb.append(args[i]);
 			if( i < args.length-1 )

@@ -51,18 +51,18 @@ public class TextSyntax extends DNode implements ScopeOfNames {
 			else if !(ts instanceof TextSyntax)
 				Kiev.reportError(this,"Resolved '"+parent_syntax.name+"' is not a syntax");
 			else
-				parent_syntax.symbol = ts;
+				parent_syntax.symbol = ts.id;
 		}
 		return true;
 	}
 	
 	public void mainResolveOut() {
 		foreach(SyntaxElemDecl sed; this.members; sed.elem != null) {
-			if !(sed.node.symbol instanceof Struct)
+			if !(sed.node.dnode instanceof Struct)
 				continue;
 			if (sed.elem == null)
 				continue;
-			Struct s = (Struct)sed.node.symbol;
+			Struct s = (Struct)sed.node.dnode;
 			if !(s.isCompilerNode())
 				continue;
 			allSyntax.put(s.qname(), sed);
@@ -96,8 +96,8 @@ public class TextSyntax extends DNode implements ScopeOfNames {
 			if (sed != null)
 				return sed.elem;
 		}
-		if (parent_syntax.symbol != null)
-			return ((TextSyntax)parent_syntax.symbol).getSyntaxElem(node);
+		if (parent_syntax.dnode != null)
+			return ((TextSyntax)parent_syntax.dnode).getSyntaxElem(node);
 		if (parent() instanceof TextSyntax)
 			return ((TextSyntax)parent()).getSyntaxElem(node);
 		if (badSyntax == null)
@@ -133,7 +133,7 @@ public class SpaceInfo extends DNode {
 	
 	public SpaceInfo() {}
 	public SpaceInfo(String name, SpaceKind kind, int text_size, int pixel_size) {
-		this.id = name;
+		this.id = new Symbol<SpaceInfo>(name);
 		this.kind = kind;
 		this.text_size = text_size;
 		this.pixel_size = pixel_size;
@@ -160,7 +160,7 @@ public final class SpaceCmd extends ASTNode {
 		this(si, action_before, action_after, 0);
 	}
 	public SpaceCmd(SpaceInfo si, SpaceAction action_before, SpaceAction action_after, int from_attempt) {
-		this.si = new SymbolRef<SpaceInfo>(0,si);
+		this.si = new SymbolRef<SpaceInfo>((Symbol<SpaceInfo>)si.id);
 		this.from_attempt = from_attempt;
 		this.action_before = action_before;
 		this.action_after = action_after;
@@ -175,7 +175,7 @@ public final class SpaceCmd extends ASTNode {
 		else if !(spi instanceof SpaceInfo)
 			Kiev.reportError(this,"Resolved '"+si.name+"' is not a color");
 		else
-			si.symbol = spi;
+			si.symbol = spi.id;
 	}
 	
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
@@ -263,20 +263,20 @@ public final class DrawColor extends DNode {
 	
 	public DrawColor() {}
 	public DrawColor(String name) {
-		this.id = name;
+		this.id = new Symbol<DrawColor>(name);
 	}
 }
 
 @node
 public final class DrawFont extends DNode {
-	@virtual typedef This  = DrawColor;
+	@virtual typedef This  = DrawFont;
 
 	@att
 	public String font_name;
 
 	public DrawFont() {}
 	public DrawFont(String font_name) {
-		this.id = font_name;
+		this.id = new Symbol<DrawFont>(font_name);
 		this.font_name = font_name;
 	}
 }
@@ -339,12 +339,12 @@ public class SyntaxElemDecl extends AbstractSyntaxElemDecl {
 	}
 	public SyntaxElemDecl(Struct cls, SyntaxElem elem) {
 		super(elem);
-		this.node = new SymbolRef<Struct>(0,cls);
+		this.node = new SymbolRef<Struct>((Symbol<Struct>)cls.id);
 	}
 
 	public void preResolveOut() {
 		if (node == null)
-			node = new SymbolRef<Struct>(0,Env.newStruct("ASTNode", Env.newPackage("kiev.vlang"), 0, null));
+			node = new SymbolRef<Struct>(0,(Symbol<Struct>)Env.newStruct("ASTNode", Env.newPackage("kiev.vlang"), 0, null).id);
 		if (node.name == null)
 			node.name = "ASTNode";
 		Struct@ s;
@@ -353,7 +353,7 @@ public class SyntaxElemDecl extends AbstractSyntaxElemDecl {
 		else if (!(s instanceof Struct) || !((Struct)s).isCompilerNode())
 			Kiev.reportError(this,"Resolved '"+node.name+"' is not @node");
 		else
-			node.symbol = s;
+			node.symbol = s.id;
 	}
 	
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
@@ -378,8 +378,8 @@ public final class SyntaxElemFormatDecl extends DNode {
 	@att public SymbolRef<DrawFont>		font;
 	
 	public SyntaxElemFormatDecl() {
-		this.color = new SymbolRef<DrawColor>(0,new DrawColor("default-color"));
-		this.font = new SymbolRef<DrawFont>(0,new DrawFont("default-font"));
+		this.color = new SymbolRef<DrawColor>((Symbol<DrawColor>)new DrawColor("default-color").id);
+		this.font = new SymbolRef<DrawFont>((Symbol<DrawFont>)new DrawFont("default-font").id);
 	}
 
 	public void preResolveOut() {
@@ -394,7 +394,7 @@ public final class SyntaxElemFormatDecl extends DNode {
 			else if !(dc instanceof DrawColor)
 				Kiev.reportError(this,"Resolved '"+color.name+"' is not a color");
 			else
-				color.symbol = dc;
+				color.symbol = dc.id;
 		}
 
 		{
@@ -408,7 +408,7 @@ public final class SyntaxElemFormatDecl extends DNode {
 			else if !(df instanceof DrawFont)
 				Kiev.reportError(this,"Resolved '"+font.name+"' is not a font");
 			else
-				font.symbol = df;
+				font.symbol = df.id;
 		}
 	}
 	
@@ -472,18 +472,18 @@ public final class FullElemFormat extends DrawElemFormat {
 	@att public SymbolRef<DrawFont>		font;
 
 	public FullElemFormat() {
-		this.color = new SymbolRef<DrawColor>(0,new DrawColor("default-color"));
-		this.font = new SymbolRef<DrawFont>(0,new DrawFont("default-font"));
+		this.color = new SymbolRef<DrawColor>((Symbol<DrawColor>)new DrawColor("default-color").id);
+		this.font = new SymbolRef<DrawFont>((Symbol<DrawFont>)new DrawFont("default-font").id);
 	}
 	public FullElemFormat(SpaceCmd[] spaces) {
 		this.spaces.copyFrom(spaces);
-		this.color = new SymbolRef<DrawColor>(0,new DrawColor("default-color"));
-		this.font = new SymbolRef<DrawFont>(0,new DrawFont("default-font"));
+		this.color = new SymbolRef<DrawColor>((Symbol<DrawColor>)new DrawColor("default-color").id);
+		this.font = new SymbolRef<DrawFont>((Symbol<DrawFont>)new DrawFont("default-font").id);
 	}
 	
 	public SpaceCmd[] getSpaces() { return spaces; }
-	public DrawColor  getColor() { return color.symbol; }
-	public DrawFont   getFont() { return font.symbol; }
+	public DrawColor  getColor() { return color.dnode; }
+	public DrawFont   getFont() { return font.dnode; }
 
 	public void preResolveOut() {
 		{
@@ -497,7 +497,7 @@ public final class FullElemFormat extends DrawElemFormat {
 			else if !(dc instanceof DrawColor)
 				Kiev.reportError(this,"Resolved '"+color.name+"' is not a color");
 			else
-				color.symbol = dc;
+				color.symbol = dc.id;
 		}
 
 		{
@@ -511,7 +511,7 @@ public final class FullElemFormat extends DrawElemFormat {
 			else if !(df instanceof DrawFont)
 				Kiev.reportError(this,"Resolved '"+font.name+"' is not a font");
 			else
-				font.symbol = df;
+				font.symbol = df.id;
 		}
 	}
 	
@@ -546,12 +546,12 @@ public final class RefElemFormat extends DrawElemFormat {
 		decl = new SymbolRef<SyntaxElemFormatDecl>();
 	}
 	public RefElemFormat(SyntaxElemFormatDecl decl) {
-		decl = new SymbolRef<SyntaxElemFormatDecl>(0, decl);
+		decl = new SymbolRef<SyntaxElemFormatDecl>((Symbol<SyntaxElemFormatDecl>)decl.id);
 	}
 	
-	public SpaceCmd[] getSpaces() { return decl.symbol == null ? SpaceCmd.emptyArray : decl.symbol.spaces; }
-	public DrawColor  getColor() { return decl.symbol == null ? null : decl.symbol.color.symbol; }
-	public DrawFont   getFont() { return decl.symbol == null ? null : decl.symbol.font.symbol; }
+	public SpaceCmd[] getSpaces() { return decl.dnode == null ? SpaceCmd.emptyArray : decl.dnode.spaces; }
+	public DrawColor  getColor() { return decl.dnode == null ? null : decl.dnode.color.dnode; }
+	public DrawFont   getFont() { return decl.dnode == null ? null : decl.dnode.font.dnode; }
 
 	public void preResolveOut() {
 		if (decl.name == null) {
@@ -564,7 +564,7 @@ public final class RefElemFormat extends DrawElemFormat {
 		else if !(d instanceof SyntaxElemFormatDecl)
 			Kiev.reportError(this,"Resolved '"+decl.name+"' is not a format declaration");
 		else
-			decl.symbol = d;
+			decl.symbol = d.id;
 	}
 	
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
@@ -625,8 +625,8 @@ public abstract class SyntaxElem extends ASTNode {
 		for (int i=0; i < spaces.length; i++) {
 			SpaceCmd sc = spaces[i];
 			LayoutSpace ls = new LayoutSpace();
-			if (sc.si.symbol != null) {
-				SpaceInfo si = (SpaceInfo)sc.si.symbol;
+			if (sc.si.dnode != null) {
+				SpaceInfo si = (SpaceInfo)sc.si.dnode;
 				ls.name = si.u_name;
 				if (si.kind == SP_NEW_LINE) ls.new_line = true;
 				ls.text_size = si.text_size;
@@ -666,11 +666,11 @@ public final class SyntaxElemRef extends SyntaxElem {
 		this.decl = new SymbolRef<SyntaxElemDecl>();
 	}
 	public SyntaxElemRef(SyntaxElemDecl decl) {
-		this.decl = new SymbolRef<SyntaxElemDecl>(0,decl);
+		this.decl = new SymbolRef<SyntaxElemDecl>((Symbol<SyntaxElemDecl>)decl.id);
 	}
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		return ((SyntaxElemDecl)decl.symbol).elem.makeDrawable(fmt,node);
+		return ((SyntaxElemDecl)decl.dnode).elem.makeDrawable(fmt,node);
 	}
 
 	public void preResolveOut() {
@@ -681,7 +681,7 @@ public final class SyntaxElemRef extends SyntaxElem {
 			else if !(d instanceof SyntaxElemDecl)
 				Kiev.reportError(decl,"Resolved "+decl+" is not a syntax element decl");
 			else
-				decl.symbol = d;
+				decl.symbol = d.id;
 		}
 	}
 	
@@ -746,7 +746,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	public SyntaxAttr(String name, TextSyntax stx, SpaceCmd[] spaces) {
 		super(spaces);
 		this.name = name;
-		this.in_syntax = new SymbolRef<TextSyntax>(0,stx);
+		this.in_syntax = new SymbolRef<TextSyntax>((Symbol<TextSyntax>)stx.id);
 	}
 
 	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
@@ -762,7 +762,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 				Kiev.reportError(sr,"Resolved type "+sr+" is not a compiler @node");
 				continue;
 			}
-			sr.symbol = td;
+			sr.symbol = td.id;
 		}
 		if (in_syntax.name != null && in_syntax.name != "") {
 			DNode@ s;
@@ -771,7 +771,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 			else if !(s instanceof TextSyntax)
 				Kiev.reportError(in_syntax,"Resolved type "+in_syntax+" is not a text syntax");
 			else
-				in_syntax.symbol = s;
+				in_syntax.symbol = s.id;
 		}
 	}
 	
@@ -818,8 +818,8 @@ public class SyntaxSubAttr extends SyntaxAttr {
 		}
 		if (obj instanceof ANode) {
 			SyntaxElem se;
-			if (in_syntax.symbol != null)
-				se = ((TextSyntax)in_syntax.symbol).getSyntaxElem((ANode)obj);
+			if (in_syntax.dnode != null)
+				se = ((TextSyntax)in_syntax.dnode).getSyntaxElem((ANode)obj);
 			else
 				se = cont.fmt.getSyntax().getSyntaxElem((ANode)obj);
 			return se.check(cont, current_stx, (ANode)obj, current_node);
@@ -836,7 +836,7 @@ public class SyntaxSubAttr extends SyntaxAttr {
 			obj = "<?error:"+name+"?>";
 		}
 		if (obj instanceof ANode)
-			dr = fmt.getDrawable((ANode)obj, null, (TextSyntax)in_syntax.symbol);
+			dr = fmt.getDrawable((ANode)obj, null, (TextSyntax)in_syntax.dnode);
 		else
 			dr = new DrawNodeTerm(node, this, name);
 		dr.attr_syntax = this;
@@ -948,20 +948,20 @@ public class SyntaxNode extends SyntaxAttr {
 	public SyntaxNode(TextSyntax stx) {
 		super("",new SpaceCmd[0]);
 		this.in_syntax.name = stx.id.sname;
-		this.in_syntax.symbol = stx;
+		this.in_syntax.symbol = stx.id;
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
 		SyntaxElem se;
-		if (in_syntax.symbol != null)
-			se = ((TextSyntax)in_syntax.symbol).getSyntaxElem(expected_node);
+		if (in_syntax.dnode != null)
+			se = ((TextSyntax)in_syntax.dnode).getSyntaxElem(expected_node);
 		else
 			se = cont.fmt.getSyntax().getSyntaxElem(expected_node);
 		return se.check(cont, current_stx, expected_node, current_node);
 	}
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = fmt.getDrawable(node, null, (TextSyntax)in_syntax.symbol);
+		Drawable dr = fmt.getDrawable(node, null, (TextSyntax)in_syntax.dnode);
 		dr.attr_syntax = this;
 		return dr;
 	}
@@ -1153,7 +1153,7 @@ public class SyntaxParagraphLayout extends SyntaxElem {
 	public SyntaxParagraphLayout(SyntaxElem elem, ParagraphLayout par, SpaceCmd[] spaces) {
 		super(spaces);
 		this.elem = elem;
-		this.par = new SymbolRef<ParagraphLayout>(0,par);
+		this.par = new SymbolRef<ParagraphLayout>((Symbol<ParagraphLayout>)par.id);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
@@ -1172,7 +1172,7 @@ public class SyntaxParagraphLayout extends SyntaxElem {
 		else if !(d instanceof ParagraphLayout)
 			Kiev.reportError(this,"Resolved '"+par.name+"' is not a paragraph declaration");
 		else
-			par.symbol = d;
+			par.symbol = d.id;
 	}
 	
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
