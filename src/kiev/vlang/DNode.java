@@ -36,9 +36,10 @@ public abstract class DNode extends ASTNode {
 	public static final int MASK_ACC_NAMESPACE = ACC_PACKAGE;
 	public static final int MASK_ACC_SYNTAX    = ACC_SYNTAX;
 	
-		 public		int			flags;
-	@att public		MetaSet		meta;
-	@att public		Symbol		id; // short and unique names
+		 public					int			flags;
+	@att public					MetaSet		meta;
+	@att public					Symbol		id; // short and unique names
+	     public:ro,rw,ro,rw		String		u_name; // unique name in scope, never null, usually equals to name
 
 //	public @packed:1,flags, 0 boolean is_acc_public;
 //	public @packed:1,flags, 1 boolean is_acc_private;
@@ -80,6 +81,11 @@ public abstract class DNode extends ASTNode {
 		return (MetaAccess)this.meta.getF("kiev.stdlib.meta.access");
 	}
 
+	@setter
+	public void set$u_name(String value) {
+		this.u_name = (value == null) ? null : value.intern();
+	}
+	
 	public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
 	public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }
 	public final boolean isProtected()			{ return this.is_access == MASK_ACC_PROTECTED; }
@@ -271,27 +277,25 @@ public abstract class DNode extends ASTNode {
 		return DummyDNode.dummyNode;
 	}
 	
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "id")
+			this.u_name = id.sname;
+	}
+
+	public String toString() { return u_name; }
+
 	public final void resolveDecl() { ((RView)this).resolveDecl(); }
 
 	public int getFlags() { return flags; }
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 
 	public boolean hasName(String nm, boolean by_equals) {
-		if (id == null) return false;
 		if (by_equals) {
+			if (this.u_name == nm) return true;
 			if (id.sname == nm) return true;
-			if (id.uname == nm) return true;
-			if (id.aliases != null) {
-				foreach(String n; id.aliases; n == nm)
-					return true;
-			}
 		} else {
+			if (this.u_name != null && this.u_name.startsWith(nm)) return true;
 			if (id.sname != null && id.sname.startsWith(nm)) return true;
-			if (id.uname != null && id.uname.startsWith(nm)) return true;
-			if (id.aliases != null) {
-				foreach(String n; id.aliases; n.startsWith(nm))
-					return true;
-			}
 		}
 		return false;
 	}
@@ -500,6 +504,8 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 	public void callbackChildChanged(AttrSlot attr) {
 		if (attr.name == "args" || attr.name == "super_types") {
 			this.callbackSuperTypeChanged(this);
+		} else {
+			super.callbackChildChanged(attr);
 		}
 	}
 
@@ -521,11 +527,11 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 		Struct pkg = package_clazz;
 		if (pkg == null)
 			return null;
-		q_name = (pkg.qname()+"."+id.uname).intern();
+		q_name = (pkg.qname()+"."+u_name).intern();
 		return q_name;
 	}
 
-	public String toString() { return package_clazz==null ? id.uname : qname(); }
+	public String toString() { return package_clazz==null ? u_name : qname(); }
 
 	public boolean preVerify() {
 		setFrontEndPassed();

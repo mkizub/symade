@@ -210,7 +210,7 @@ public final view RBreakStat of BreakStat extends RENode {
 		} else {
 	label_found:
 			for(p=(ASTNode)parent(); !(p instanceof Method) ; p=(ASTNode)p.parent() ) {
-				if (p instanceof LabeledStat && p.lbl.id.uname.equals(ident.name))
+				if (p instanceof LabeledStat && p.lbl.u_name.equals(ident.name))
 					throw new RuntimeException("Label "+ident+" does not refer to break target");
 				if (!p.isBreakTarget()) continue;
 				ASTNode pp = p;

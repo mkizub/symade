@@ -26,7 +26,7 @@ public view RMethod of Method extends RDNode {
 	public:ro			CallType			dtype;
 	public:ro			CallType			etype;
 	public:ro			FormPar[]			params;
-	public:ro			ASTAlias[]			aliases;
+	public:ro			Symbol[]			aliases;
 	public				ENode				body;
 	public:ro			WBCCondition[]		conditions;
 

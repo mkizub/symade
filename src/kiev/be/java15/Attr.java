@@ -161,7 +161,7 @@ public class LocalVarTableAttr extends Attr {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < vars.length; i++) {
 			JVar v = vars[i].var;
-			constPool.addAsciiCP(v.id.uname);
+			constPool.addAsciiCP(v.u_name);
 			constPool.addAsciiCP(v.jtype.java_signature);
 		}
 	}
@@ -178,7 +178,7 @@ public class LocalVarTableAttr extends Attr {
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();
 			lvta.vars[i].start_pc = vars[i].start_pc;
 			lvta.vars[i].length_pc = vars[i].end_pc-vars[i].start_pc;
-			lvta.vars[i].cp_varname = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(v.id.uname).pos];
+			lvta.vars[i].cp_varname = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(v.u_name).pos];
 			lvta.vars[i].cp_signature = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(sign).pos];
 			lvta.vars[i].slot = vars[i].stack_pos;
 		}
@@ -455,14 +455,14 @@ public abstract class MetaAttr extends Attr {
 			Field f = ae.var;
 			Struct s = (Struct)f.ctx_tdecl;
 			constPool.addAsciiCP(s.xtype.getJType().java_signature);
-			constPool.addAsciiCP(f.id.uname);
+			constPool.addAsciiCP(f.u_name);
 		}
 		else if (value instanceof UserMeta) {
 			UserMeta m = (UserMeta)value;
 			TypeDecl tdecl = m.getTypeDecl();
 			constPool.addAsciiCP(tdecl.xtype.getJType().java_signature);
 			foreach (Method mm; tdecl.members) {
-				MetaValue v = m.get(mm.id.uname); 
+				MetaValue v = m.get(mm.u_name); 
 				generateValue(constPool,v);
 			}
 		}
@@ -550,7 +550,7 @@ public abstract class MetaAttr extends Attr {
 			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
 			ev.tag = (byte)'e';
 			ev.type_name_index = constPool.getAsciiCP(s.xtype.getJType().java_signature).pos;
-			ev.const_name_index = constPool.getAsciiCP(f.id.uname).pos;
+			ev.const_name_index = constPool.getAsciiCP(f.u_name).pos;
 			return ev;
 		}
 		else if (value instanceof UserMeta) {
@@ -574,7 +574,7 @@ public abstract class MetaAttr extends Attr {
 		a.values = new kiev.bytecode.Annotation.element_value[n];
 		n = 0;
 		foreach (Method mm; tdecl.members) {
-			MetaValue v = m.get(mm.id.uname); 
+			MetaValue v = m.get(mm.u_name); 
 			a.names[n] = constPool.addAsciiCP(v.ident.name).pos;
 			if (v instanceof MetaValueScalar) {
 				a.values[n] = write_value(constPool, ((MetaValueScalar)v).value);

@@ -54,6 +54,10 @@ public final class Field extends LvalDNode {
 				parent().callbackChildChanged(pslot());
 			else if (attr.name == "meta")
 				parent().callbackChildChanged(pslot());
+			else
+				super.callbackChildChanged(attr);
+		} else {
+			super.callbackChildChanged(attr);
 		}
 	}
 
@@ -106,6 +110,8 @@ public final class Field extends LvalDNode {
 	    but via factory method newField(...) of Clazz
      */
 	public Field(Symbol name, TypeRef ftype, int flags) {
+		this.pos = name.pos;
+		this.u_name = id.sname;
 		this.id = name;
 		this.ftype = ftype;
 		if (flags != 0) {

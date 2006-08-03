@@ -127,7 +127,7 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 				s.checkResolved();
 				if (s instanceof Struct) {
 					Struct ss = (Struct)s;
-					foreach(Method m; ss.members; m.id.equals(nameArrayGetOp))
+					foreach(Method m; ss.members; m.hasName(nameArrayGetOp,true))
 						break lookup_op;
 				}
 				if( s.super_types.length > 0 ) {
@@ -153,7 +153,7 @@ public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 		while !(p instanceof Method || p instanceof Initializer || p instanceof Field)
 			p = p.parent();
 		DNode decl = (DNode)p;
-		if (decl.isStatic() && ctx_tdecl.id.uname != nameIFaceImpl)
+		if (decl.isStatic() && ctx_tdecl.u_name != nameIFaceImpl)
 			Kiev.reportError(this,"Access '"+parent()+"' in static context");
 		setResolved(true);
 		if (isAutoReturnable())
@@ -170,7 +170,7 @@ public static final view RSuperExpr of SuperExpr extends RENode {
 		while !(p instanceof Method || p instanceof Initializer || p instanceof Field)
 			p = p.parent();
 		DNode decl = (DNode)p;
-		if (decl.isStatic() && ctx_tdecl.id.uname != nameIFaceImpl)
+		if (decl.isStatic() && ctx_tdecl.u_name != nameIFaceImpl)
 			Kiev.reportError(this,"Access '"+parent()+"' in static context");
 		setResolved(true);
 		if (isAutoReturnable())

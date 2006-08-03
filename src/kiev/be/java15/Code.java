@@ -561,9 +561,9 @@ public final class Code implements JConstants {
 		sign = m.etype.getJType().java_signature;
 		CP cpm;
 		if( m.jctx_tdecl.isInterface() )
-			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,KString.from(m.id.uname),sign);
+			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,KString.from(m.u_name),sign);
 		else
-			cpm = constPool.addMethodCP(ttt.java_signature,KString.from(m.id.uname),sign);
+			cpm = constPool.addMethodCP(ttt.java_signature,KString.from(m.u_name),sign);
 		if( call_static ) {
 			add_opcode_and_CP(opc_invokestatic,cpm);
 		}
@@ -582,7 +582,7 @@ public final class Code implements JConstants {
 			add_opcode_and_CP(opc_invokespecial,cpm);
 		}
 		else {
-			assert (m.id.uname != Constants.nameInit);
+			assert (m.u_name != Constants.nameInit);
 			add_opcode_and_CP(opc_invokevirtual,cpm);
 		}
 		for(int i=0; i < mtype.jargs.length; i++) stack_pop();
@@ -933,7 +933,7 @@ public final class Code implements JConstants {
 		JType t = v.type.getJType();
 		if( t==JType.tpLong || t==JType.tpDouble ) cur_locals++;
 		if( cur_locals > max_locals ) max_locals = cur_locals;
-		if( v.id.uname != "") {
+		if( v.u_name != "") {
 			lvta.addVar(vars[pos]);
 		}
 		trace(Kiev.debugInstrGen,"Code var "+v+" added to bc pos "+pos+" "+vars[pos]);
@@ -945,7 +945,7 @@ public final class Code implements JConstants {
 	public void removeVar(JVar v) {
 		trace(Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.bcpos+" "+vars[v.bcpos]);
 		JType t = v.type.getJType();
-		if( v.id.uname != "" ) {
+		if( v.u_name != "" ) {
 			lvta.vars[vars[v.bcpos].index].end_pc = pc-1;
 		}
 		if( t==JType.tpLong || t==JType.tpDouble ) {
@@ -1212,7 +1212,7 @@ public final class Code implements JConstants {
 		JType ttt = Type.getRealType(tp.getErasedType(),f.jctx_tdecl.xtype).getJType();
 		KString struct_sig = ttt.java_signature;
 		KString field_sig = Type.getRealType(f.jctx_tdecl.xtype,f.type).getJType().java_signature;
-		FieldCP cpf = constPool.addFieldCP(struct_sig,KString.from(f.id.uname),field_sig);
+		FieldCP cpf = constPool.addFieldCP(struct_sig,KString.from(f.u_name),field_sig);
 	    switch(i) {
         case op_getstatic:
 			add_opcode_and_CP(opc_getstatic,cpf);

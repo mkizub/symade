@@ -155,7 +155,7 @@ public class UserMeta extends ENode {
 		MetaValue val = retens.get("value");
 		if (val instanceof MetaValueScalar && val.value instanceof SFldExpr) {
 			Field f = ((SFldExpr)val.value).var;
-			if (f.id.uname == "RUNTIME")
+			if (f.u_name == "RUNTIME")
 				return true;
 		}
 		return false;
@@ -169,7 +169,7 @@ public class UserMeta extends ENode {
 		MetaValue val = retens.get("value");
 		if (val instanceof MetaValueScalar && val.value instanceof SFldExpr) {
 			Field f = ((SFldExpr)val.value).var;
-			if (f.id.uname == "CLASS")
+			if (f.u_name == "CLASS")
 				return true;
 		}
 		return false;
@@ -209,7 +209,7 @@ public class UserMeta extends ENode {
 			MetaValue v = values[n];
 			Method m = null;
 			foreach (Method sm; s.members) {
-				if( sm.id.equals(v.ident.name)) {
+				if( sm.hasName(v.ident.name,true)) {
 					m = sm;
 					break;
 				}
@@ -256,7 +256,7 @@ public class UserMeta extends ENode {
 			}
 		}
 		TypeDecl td = getType().meta_type.tdecl;
-		foreach (Method m; td.members; m.id.equals(name))
+		foreach (Method m; td.members; m.hasName(name,true))
 			return (MetaValue)m.body;
 		throw new RuntimeException("Value "+name+" not found in "+type+" annotation");
 	}

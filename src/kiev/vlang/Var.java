@@ -46,6 +46,10 @@ public class Var extends LvalDNode {
 				parent().callbackChildChanged(pslot());
 			else if (attr.name == "meta")
 				parent().callbackChildChanged(pslot());
+			else
+				super.callbackChildChanged(attr);
+		} else {
+			super.callbackChildChanged(attr);
 		}
 	}	
 
@@ -65,6 +69,7 @@ public class Var extends LvalDNode {
 		require vtype != null;
 	{
 		this.pos = id.pos;
+		this.u_name = id.sname;
 		this.id = id;
 		this.vtype = vtype;
 		if (flags != 0) {
@@ -79,6 +84,7 @@ public class Var extends LvalDNode {
 	public Var(String name, Type type)
 		require type != null;
 	{
+		this.u_name = name;
 		this.id = name;
 		this.vtype = new TypeRef(type);
 	}
@@ -86,6 +92,8 @@ public class Var extends LvalDNode {
 	public Var(Symbol id, TypeRef vtype)
 		require vtype != null;
 	{
+		this.pos = id.pos;
+		this.u_name = id.sname;
 		this.id = id;
 		this.vtype = vtype;
 	}
@@ -182,6 +190,8 @@ public final class FormPar extends Var {
 				parent().callbackChildChanged(pslot());
 			else
 				super.callbackChildChanged(attr);
+		} else {
+			super.callbackChildChanged(attr);
 		}
 	}
 

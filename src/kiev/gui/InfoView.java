@@ -160,7 +160,7 @@ public class InfoView extends UIView implements KeyListener {
 		}
 		public void actionPerformed(ActionEvent e) {
 			FileUnit fu = (FileUnit)Env.loadFromXmlFile(new File(this.file));
-			foreach (TextSyntax stx; fu.members; stx.id.uname == name) {
+			foreach (TextSyntax stx; fu.members; stx.u_name == name) {
 				InfoView.this.setSyntax(stx);
 				return;
 			}

@@ -50,22 +50,16 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a setter");
 			if (m.id.sname.startsWith(nameSet))
 				addSetterForAbstractField(s, m.id.sname.substring(nameSet.length()), m);
-			if (m.id.aliases != null) {
-				foreach (String name; m.id.aliases) {
-					//trace(Kiev.debugCreation,"check "+name+" to be a setter");
-					if (name.startsWith(nameSet))
-						addSetterForAbstractField(s, name.substring(nameSet.length()), m);
-				}
+			foreach (Symbol a; m.aliases; a.sname.startsWith(nameSet)) {
+				//trace(Kiev.debugCreation,"check "+name+" to be a setter");
+				addSetterForAbstractField(s, a.sname.substring(nameSet.length()), m);
 			}
 			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a getter");
 			if (m.id.sname.startsWith(nameGet))
 				addGetterForAbstractField(s, m.id.sname.substring(nameGet.length()), m);
-			if (m.id.aliases != null) {
-				foreach (String name; m.id.aliases) {
-					//trace(Kiev.debugCreation,"check "+name+" to be a getter");
-					if (name.startsWith(nameGet))
-						addGetterForAbstractField(s, name.substring(nameGet.length()), m);
-				}
+			foreach (Symbol a; m.aliases; a.sname.startsWith(nameGet)) {
+				//trace(Kiev.debugCreation,"check "+name+" to be a getter");
+				addGetterForAbstractField(s, a.sname.substring(nameGet.length()), m);
 			}
 		}
 	}
@@ -230,11 +224,11 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 		String get_name = (nameGet+f.id.sname).intern();
 
 		foreach(Method m; s.members) {
-			if( m.id.equals(set_name) ) {
+			if( m.hasName(set_name,true) ) {
 				set_found = true;
 				if( get_found ) break;
 			}
-			else if( m.id.equals(get_name) ) {
+			else if( m.hasName(get_name,true) ) {
 				get_found = true;
 				if( set_found ) break;
 			}
@@ -338,7 +332,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			return true;
 		String get_name = (nameGet+f.id.sname).intern();
 
-		if (fa.ctx_method != null && fa.ctx_method.id.equals(get_name) && fa.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
+		if (fa.ctx_method != null && fa.ctx_method.hasName(get_name,true) && fa.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
 			fa.setAsField(true);
 			return true;
 		}
@@ -364,7 +358,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				return true;
 			String set_name = (nameSet+f.id.sname).intern();
 	
-			if (ae.ctx_method != null && ae.ctx_method.id.equals(set_name) && ae.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
+			if (ae.ctx_method != null && ae.ctx_method.hasName(set_name,true) && ae.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
 				fa.setAsField(true);
 				return true;
 			}
@@ -447,7 +441,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			String get_name = (nameGet+f.id.sname).intern();
 	
 			if (ie.ctx_method != null
-			&& (ie.ctx_method.id.equals(set_name) || ie.ctx_method.id.equals(get_name))
+			&& (ie.ctx_method.hasName(set_name,true) || ie.ctx_method.hasName(get_name,true))
 			&& ie.ctx_tdecl.instanceOf(f.ctx_tdecl) )
 			{
 				fa.setAsField(true);

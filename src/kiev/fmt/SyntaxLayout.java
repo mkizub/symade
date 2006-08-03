@@ -627,7 +627,7 @@ public abstract class SyntaxElem extends ASTNode {
 			LayoutSpace ls = new LayoutSpace();
 			if (sc.si.symbol != null) {
 				SpaceInfo si = (SpaceInfo)sc.si.symbol;
-				ls.name = si.id.uname;
+				ls.name = si.u_name;
 				if (si.kind == SP_NEW_LINE) ls.new_line = true;
 				ls.text_size = si.text_size;
 				ls.pixel_size = si.pixel_size;

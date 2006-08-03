@@ -70,7 +70,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 		// Cast from int
 		{
 			Method tome = new Method("fromInt",clazz.xtype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
-			tome.id.addAlias(nameCastOp);
+			tome.aliases += new Symbol(nameCastOp);
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt, FormPar.PARAM_NORMAL,0));
 			tome.body = new Block(pos);
@@ -99,7 +99,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 		// toString
 		{
 			Method tostr = new Method("toString",Type.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
-			tostr.id.addAlias(nameCastOp);
+			tostr.aliases += new Symbol(nameCastOp);
 			tostr.pos = pos;
 			tostr.body = new Block(pos);
 			SwitchStat sw = new SwitchStat(pos,
@@ -111,9 +111,12 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
 				String str = f.id.sname;
-				if (f.id.aliases != null) {
-					str = f.id.aliases[0];
-					str = str.substring(1,str.length()-1);
+				MetaAlias al = f.getMetaAlias();
+				if (al != null) {
+					foreach (ConstStringExpr n; al.getAliases()) {
+						str = n.value;
+						break;
+					}
 				}
 				cases[i] = new CaseLabel(pos,new ConstIntExpr(i)	,
 					new ENode[]{
@@ -133,8 +136,8 @@ public class EnumFE_GenMembers extends TransfProcessor {
 		// fromString
 		{
 			Method fromstr = new Method("valueOf",clazz.xtype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
-			fromstr.id.addAlias(nameCastOp);
-			fromstr.id.addAlias("fromString");
+			fromstr.aliases += new Symbol(nameCastOp);
+			fromstr.aliases += new Symbol("fromString");
 			fromstr.pos = pos;
 			fromstr.params.add(new FormPar(pos,"val",Type.tpString, FormPar.PARAM_NORMAL,0));
 			fromstr.body = new Block(pos);
@@ -157,10 +160,10 @@ public class EnumFE_GenMembers extends TransfProcessor {
 					null
 					);
 				fromstr.block.stats.add(ifst);
-				if (f.id.aliases != null) {
-					str = f.id.aliases[0];
-					if (str.charAt(0) == '\"') {
-						str = str.substring(1,str.length()-1);
+				MetaAlias al = f.getMetaAlias();
+				if (al != null) {
+					foreach (ConstStringExpr n; al.getAliases()) {
+						str = n.value;
 						if (str != f.id.sname) {
 							ifst = new IfElseStat(pos,
 								new BinaryBoolExpr(pos,Operator.Equals,

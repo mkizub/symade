@@ -14,16 +14,34 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Symbol extends ASTNode {
+public class Symbol<D extends DNode> extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	@virtual typedef This  = Symbol;
+	@virtual typedef This  ≤ Symbol;
+
+	public static final Symbol[] emptyArray = new Symbol[0];
 
 	@att
 	public String		sname; // source code name, may be null for anonymouse symbols
-	public String		uname; // unique name in scope, never null, usually equals to name
-	public String[]		aliases;
+	
+	@ref
+	public D			dnode;
+	
+	@ref
+	public SymbolRef	refs;
+	
+	public void callbackAttached() {
+		ANode p = parent();
+		if (p instanceof D)
+			dnode = (D)p;
+		super.callbackAttached();
+	}
+
+	public void callbackDetached() {
+		dnode = null;
+		super.callbackDetached();
+	}
 
 	public Symbol() {}
 	public Symbol(int pos, String sname) {
@@ -35,28 +53,10 @@ public class Symbol extends ASTNode {
 		this.sname = sname;
 	}
 	
-	public Symbol(String sname, String uname) {
-		this.sname = sname;
-		this.uname = uname.intern();
-	}
-	
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
 			if (attr.name == "sname")
 				parent().callbackChildChanged(pslot());
-		}
-	}
-
-	public void addAlias(String al) {
-		if (al == null || al == sname || al == uname)
-			return;
-		// Check we do not have this alias already
-		if (aliases == null) {
-			aliases = new String[]{ al };
-		} else {
-			foreach(String n; aliases; n == al)
-				return;
-			aliases = (String[])Arrays.append(aliases, al);
 		}
 	}
 
@@ -72,12 +72,7 @@ public class Symbol extends ASTNode {
 	public void set$sname(String value)
 		alias operator(5, lfy, =)
 	{
-		if (value != null) {
-			this.sname = value.intern();
-			this.uname = this.sname;
-		} else {
-			this.sname = null;
-		}
+		this.sname = (value == null) ? null : value.intern();
 	}
 	
 	public boolean equals(Object:Object nm) {
@@ -86,26 +81,16 @@ public class Symbol extends ASTNode {
 
 	public boolean equals(Symbol:Object nm) {
 		if (this.equals(nm.sname)) return true;
-		if (this.equals(nm.uname)) return true;
-		if (nm.aliases != null) {
-			foreach(String n; nm.aliases; this.equals(n))
-				return true;
-		}
 		return false;
 	}
 
 	public boolean equals(String:Object nm) {
 		if (sname == nm) return true;
-		if (uname == nm) return true;
-		if (aliases != null) {
-			foreach(String n; aliases; n == nm)
-				return true;
-		}
 		return false;
 	}
 
 	public String toString() {
-		return (sname != null) ? sname : uname;
+		return sname;
 	}
 }
 
@@ -121,6 +106,7 @@ public class SymbolRef<D extends DNode> extends ASTNode {
 
 	@att public String		name; // unresolved name
 	@ref public D			symbol; // resolved symbol
+	@ref public SymbolRef	next; // next SymbolRef which refers the same Symbol
 
 	public SymbolRef() {}
 
@@ -148,7 +134,7 @@ public class SymbolRef<D extends DNode> extends ASTNode {
 		if (nm instanceof Symbol) return nm.equals(this.name);
 		if (nm instanceof SymbolRef) return nm.name == this.name;
 		if (nm instanceof String) return nm == this.name;
-		if (nm instanceof DNode) return nm.id.equals(this.name);
+		if (nm instanceof DNode) return nm.hasName(this.name,true);
 		return false;
 	}
 

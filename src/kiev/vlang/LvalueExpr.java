@@ -391,7 +391,7 @@ public final class ThisExpr extends LvalueExpr {
 		try {
 			if (ctx_tdecl == null)
 				return Type.tpVoid;
-			if (ctx_tdecl.id.uname == nameIFaceImpl)
+			if (ctx_tdecl.u_name == nameIFaceImpl)
 				return ctx_tdecl.package_clazz.xtype;
 			return ctx_tdecl.xtype;
 		} catch(Exception e) {
@@ -692,7 +692,7 @@ public final class OuterThisAccessExpr extends ENode {
 
 	public static Field outerOf(TypeDecl clazz) {
 		foreach (Field f; clazz.members) {
-			if( f.id.uname.startsWith(nameThisDollar) ) {
+			if( f.u_name.startsWith(nameThisDollar) ) {
 				trace(Kiev.debugResolve,"Name of field "+f+" starts with this$");
 				return f;
 			}

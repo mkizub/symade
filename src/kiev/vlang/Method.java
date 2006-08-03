@@ -46,7 +46,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 	@att public TypeRef				type_ret;
 	@att public TypeRef				dtype_ret;
 	@att public FormPar[]			params;
-	@att public ASTAlias[]			aliases;
+	@att public Symbol[]			aliases;
 	@att public ENode				body;
 	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 	@att public WBCCondition[]	 	conditions;
@@ -59,11 +59,14 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
-			if      (attr.name == "params") {
+			if      (attr.name == "params")
 				parent().callbackChildChanged(pslot());
-			}
 			else if (attr.name == "conditions")
 				parent().callbackChildChanged(pslot());
+			else
+				super.callbackChildChanged(attr);
+		} else {
+			super.callbackChildChanged(attr);
 		}
 		if (attr.name == "params" || attr.name == "meta") {
 			type = null;
@@ -198,7 +201,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 				assert(!this.isStatic());
 				assert(fp.isForward());
 				assert(fp.isFinal());
-				assert(fp.id.uname == nameThisDollar);
+				assert(fp.u_name == nameThisDollar);
 				assert(fp.type ≈ this.ctx_tdecl.package_clazz.xtype);
 				dargs.append(this.ctx_tdecl.package_clazz.xtype);
 				break;
@@ -207,11 +210,11 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 				assert(fp.isForward());
 				assert(fp.isFinal());
 				assert(fp.type ≡ Type.tpRule);
-				assert(fp.id.uname == namePEnv);
+				assert(fp.u_name == namePEnv);
 				dargs.append(Type.tpRule);
 				break;
 			case FormPar.PARAM_TYPEINFO:
-				assert(this instanceof Constructor || (this.isStatic() && this.id.equals(nameNewOp)));
+				assert(this instanceof Constructor || (this.isStatic() && this.hasName(nameNewOp,true)));
 				assert(fp.isFinal());
 				assert(fp.stype == null || fp.getSType() ≈ fp.getType());
 				dargs.append(fp.type);
@@ -261,6 +264,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 	}
 	public Method(Symbol id, TypeRef type_ret, int flags) {
 		assert (!(id.equals(nameInit) || id.equals(nameClassInit)) || this instanceof Constructor);
+		this.u_name = id.sname;
 		this.id = id;
 		this.type_ret = type_ret;
 		this.dtype_ret = type_ret.ncopy();
@@ -282,6 +286,20 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 		}
 	}
 
+	public boolean hasName(String nm, boolean by_equals) {
+		if (by_equals) {
+			if (this.u_name == nm) return true;
+			if (id.sname == nm) return true;
+			foreach(Symbol s; aliases; s.sname == nm)
+				return true;
+		} else {
+			if (this.u_name != null && this.u_name.startsWith(nm)) return true;
+			if (id.sname != null && id.sname.startsWith(nm)) return true;
+			foreach(Symbol s; aliases; s.sname.startsWith(nm))
+				return true;
+		}
+		return false;
+	}
 	public Type	getType() { return type; }
 
 	public FormPar getOuterThisParam() {
@@ -464,7 +482,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 	}
 
 	public boolean equalsByCast(String name, CallType mt, Type tp, ResInfo info) {
-		if (!this.id.equals(name)) return false;
+		if (!this.hasName(name,true)) return false;
 		int type_len = this.type.arity;
 		int args_len = mt.arity;
 		if( type_len != args_len ) {
@@ -687,7 +705,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 	}
 	}
 
-    public ASTNode pass3() {
+    public void pass3() {
 		if !( this.parent() instanceof TypeDecl )
 			throw new CompilerException(this,"Method must be declared on class level only");
 		TypeDecl clazz = this.ctx_tdecl;
@@ -717,7 +735,7 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 			int i = 0;
 			foreach (TypeDef td; targs) {
 				td.setTypeUnerasable(true);
-				FormPar v = new FormPar(td.pos,nameTypeInfo+"$"+td.id.uname, Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
+				FormPar v = new FormPar(td.pos,nameTypeInfo+"$"+td.u_name, Type.tpTypeInfo, FormPar.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
 				params.add(v);
 			}
 		}
@@ -736,13 +754,11 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 		meta.verify();
 		if (body instanceof MetaValue)
 			((MetaValue)body).verify();
-		foreach(ASTAlias al; aliases) al.attach(this);
+		foreach(ASTOperatorAlias al; aliases) al.pass3();
 
 		foreach(WBCCondition cond; conditions)
 			cond.definer = this;
-
-        return this;
-    }
+	}
 
 	public void resolveMetaDefaults() {
 		if (body instanceof MetaValue) {
@@ -814,15 +830,32 @@ public final class Constructor extends Method {
 
 	public Constructor(int fl) {
 		super((fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid, fl);
+		if (isStatic())
+			this.u_name = nameClassInit;
+		else
+			this.u_name = nameInit;
 	}
 	
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "id") {
+			if (parent() instanceof TypeDecl) {
+				TypeDecl td = (TypeDecl)parent();
+				if (id != null && id.sname != td.id.sname) {
+					id.open();
+					id.sname = td.id.sname;
+				}
+			}
+		} else {
+			super.callbackChildChanged(attr);
+		}
+	}
+
 	public void callbackAttached() {
 		if (!isStatic() && parent() instanceof TypeDecl) {
 			TypeDecl td = (TypeDecl)parent();
-			if (id.sname != td.id.sname) {
+			if (id != null && id.sname != td.id.sname) {
 				id.open();
 				id.sname = ((TypeDecl)parent()).id.sname;
-				id.uname = nameInit;
 			}
 		}
 	}

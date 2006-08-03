@@ -59,14 +59,14 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		// add a cast from clazz.view_of to this view
 		boolean cast_found = false;
 		foreach (Method dn; clazz.view_of.getStruct().members) {
-			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.xtype) {
+			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ clazz.xtype) {
 				cast_found = true;
 				break;
 			}
 		}
 		if (!cast_found) {
 			Method cast = new Method("$cast", clazz.xtype, ACC_PUBLIC|ACC_SYNTHETIC);
-			cast.id.addAlias(nameCastOp);
+			cast.aliases += new Symbol(nameCastOp);
 			if (clazz.isAbstract()) {
 				cast.setAbstract(true);
 			} else {
@@ -78,14 +78,14 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		// add a cast from this view to the clazz
 		cast_found = false;
 		foreach (Method dn; clazz.members) {
-			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
+			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ clazz.view_of.getType()) {
 				cast_found = true;
 				break;
 			}
 		}
 		if (!cast_found) {
 			Method cast = new Method("$cast", clazz.view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
-			cast.id.addAlias(nameCastOp);
+			cast.aliases += new Symbol(nameCastOp);
 			clazz.addMethod(cast);
 		}
 	}
@@ -220,7 +220,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			CallType ct = m.type;
 			Method vm;
 			try {
-				vm = clazz.view_of.getStruct().resolveMethod(m.id.uname, ct.ret(), ct.params());
+				vm = clazz.view_of.getStruct().resolveMethod(m.u_name, ct.ret(), ct.params());
 			} catch (CompilerException e) {
 				Kiev.reportError(m, e.getMessage());
 				m.setAbstract(true);
@@ -294,7 +294,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		
 		// add a cast from clazz.view_of to this view
 		foreach (Method dn; clazz.view_of.getStruct().members) {
-			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.xtype) {
+			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ clazz.xtype) {
 				if (!dn.isAbstract() && dn.isSynthetic()) {
 					dn.block.stats[0] = new ReturnStat(0, new NewExpr(0, impl.xtype, new ENode[]{new ThisExpr()}));
 				}
@@ -304,7 +304,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		// add a cast from this view to the clazz
 		boolean cast_found = false;
 		foreach (Method dn; impl.members) {
-			if (dn.id.equals(nameCastOp) && dn.type.ret() ≈ clazz.view_of.getType()) {
+			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ clazz.view_of.getType()) {
 				if (dn.isSynthetic()) {
 					dn.setAbstract(false);
 					dn.open();

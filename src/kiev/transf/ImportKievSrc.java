@@ -344,7 +344,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 			next_case_arg:
 				for(int i=0; i < p.args.length; i++) {
 					for(int j=0; j < clazz.args.length; j++) {
-						if (p.args[i].id.uname == clazz.args[j].id.uname) {
+						if (p.args[i].u_name == clazz.args[j].u_name) {
 							sup_ref.args.add(new TypeRef(clazz.args[j].getAType()));
 							continue next_case_arg;
 						}
@@ -497,7 +497,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 					m.setFinal(false);
 					m.setAbstract(true);
 				}
-				if( m.id.equals(nameInit) ) {
+				if( m.u_name == nameInit ) {
 					m.setAbstract(false);
 					m.setSynchronized(false);
 					m.setFinal(false);
@@ -506,18 +506,14 @@ public final class KievFE_Pass3 extends TransfProcessor {
 			}
 			else if (members[i] instanceof Field && ((Field)members[i]).isEnumField()) {
 				Field f = (Field)members[i];
-				String text = f.id.sname;
-				MetaAlias al = f.getMetaAlias();
-				if (al != null) {
-					foreach (ConstStringExpr n; al.getAliases()) {
-						String nm = n.value;
-						if (nm.length() > 2 && nm.charAt(0) == '\"') {
-							f.id.addAlias(nm.intern());
-							text = nm.substring(1,nm.length()-1).toString();
-							break;
-						}
-					}
-				}
+				//String text = f.id.sname;
+				//MetaAlias al = f.getMetaAlias();
+				//if (al != null) {
+				//	foreach (ConstStringExpr n; al.getAliases()) {
+				//		text = n.value;
+				//		break;
+				//	}
+				//}
 				f.init = new NewExpr(f.pos,me.xtype,new ENode[]{
 							new ConstStringExpr(f.id.sname),
 							new ConstIntExpr(next_enum_val)
@@ -592,7 +588,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				WBCCondition inv = (WBCCondition)members[i];
 				assert(inv.cond == WBCType.CondInvariant);
 				// TODO: check flags for fields
-				Method m = new Method(inv.id.uname,Type.tpVoid,inv.flags);
+				Method m = new Method(inv.u_name,Type.tpVoid,inv.flags);
 				m.setInvariantMethod(true);
 				m.body = new Block();
 				inv.replaceWithNode(m);

@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public final class ASTOperatorAlias extends ASTAlias {
+public final class ASTOperatorAlias extends Symbol<Method> {
 
 	@virtual typedef This  = ASTOperatorAlias;
 
@@ -26,7 +26,9 @@ public final class ASTOperatorAlias extends ASTAlias {
 	@att public int					opmode;
 	@att public String				image;
 
-	public ASTOperatorAlias() {}
+	public ASTOperatorAlias() {
+		super("operator ???");
+	}
 	
 	public void setImage(ASTNode n) {
 		this.pos = n.pos;
@@ -71,11 +73,16 @@ public final class ASTOperatorAlias extends ASTAlias {
     	if( pkg == null || pkg == Env.root ) return;
     	foreach(ASTNode n; pkg.members; n == m ) return;
     }
+	
+	private void setAliasName(String s) {
+		if (sname != s) {
+			this.open();
+			sname = s;
+		}
+	}
 
-	public void attach(ASTNode n) {
-		if( !(n instanceof Method) )
-			throw new CompilerException(this,"Node of type "+n.getClass()+" cannot be aliased with operator");
-		Method m = (Method)n;
+	public void pass3() {
+		Method m = (Method)parent();
 
 		switch(opmode) {
 		case Opdef.LFY:
@@ -88,7 +95,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 2 arguments");
 					if( m.type.ret() ≉ m.type.arg(1) )
 						throw new CompilerException(this,"Method "+m+" must return "+m.type.arg(1));
-					m.id.addAlias(nameArraySetOp);
+					setAliasName(nameArraySetOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
 				}
@@ -97,7 +104,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"'new' operator must be static");
 					if( m.type.ret() ≉ m.ctx_tdecl.xtype )
 						throw new CompilerException(this,"Method "+m+" must return "+m.ctx_tdecl.xtype);
-					m.id.addAlias(nameNewOp);
+					setAliasName(nameNewOp);
 					if( Kiev.verbose ) System.out.println("Attached operator new to method "+m);
 					return;
 				}
@@ -110,7 +117,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 				Operator op = Operator.getOperator("V "+image+" V");
 				if (op == null)
 					throw new CompilerException(this,"Assign operator "+image+" not found");
-				m.id.addAlias(op.name);
+				setAliasName(op.name);
 				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
 			}
@@ -128,7 +135,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 1 argument");
 					if( m.type.ret() ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
-					m.id.addAlias(nameArrayGetOp);
+					setAliasName(nameArrayGetOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
 				}
@@ -139,7 +146,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 					op = Operator.getOperator("V "+image+" T");
 				if (op == null)
 					throw new CompilerException(this,"Binary operator "+image+" not found");
-				m.id.addAlias(op.name);
+				setAliasName(op.name);
 				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
 			}
@@ -155,7 +162,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Virtual scast method "+m+" must have no arguments");
 					if( m.type.ret() ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
-					m.id.addAlias(nameCastOp);
+					setAliasName(nameCastOp);
 					return;
 				}
 
@@ -163,7 +170,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 				Operator op = Operator.getOperator(image+" V");
 				if (op == null)
 					throw new CompilerException(this,"Prefix operator "+image+" not found");
-				m.id.addAlias(op.name);
+				setAliasName(op.name);
 				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached prefix "+op+" to method "+m);
 			}
@@ -175,7 +182,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 				Operator op = Operator.getOperator("V "+image);
 				if (op == null)
 					throw new CompilerException(this,"Postfix operator "+image+" not found");
-				m.id.addAlias(op.name);
+				setAliasName(op.name);
 				op.addMethod(m);
 				if( Kiev.verbose ) System.out.println("Attached postfix "+op+" to method "+m);
 			}

@@ -1223,7 +1223,6 @@ Field EnumFieldDeclaration(ASTModifiers modifiers, TypeDecl clazz) :
 		":"
 		text = StringConstExpression()
 		{
-			text.value = "\""+text.value+"\"";
 			MetaAlias ma = f.getMetaAlias();
 			if (ma == null)
 				f.meta.setU(ma=new MetaAlias());
@@ -1707,22 +1706,15 @@ MetaThrows Throws() :
 }
 
 
-ASTAlias Alias() :
-{ Token t; ASTAlias a; }
+Symbol Alias() :
+{ Token t; Symbol a; }
 {
 	"alias"
 	(
 		LOOKAHEAD(2)
 		a = OperatorAlias()
-	|	a = IdentifierAlias()
+	|	a = Name()
 	)
-	{ return a; }
-}
-
-ASTIdentifierAlias IdentifierAlias() :
-{ ASTIdentifierAlias a = new ASTIdentifierAlias(); Symbol s; }
-{
-	s = Name() {a.name = s.sname; a.pos = s.pos; }
 	{ return a; }
 }
 
@@ -1850,8 +1842,6 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 	{
 		if( !id.sname.equals(curClazz.id.sname) )
 			Kiev.reportError(id,"Return type missed or bad constructor name "+id);
-		else
-			id.uname = Constants.nameInit;
 		m = mkConstructor(id,modifiers); 
 		oldMethod = curMethod;
 		curMethod = m;

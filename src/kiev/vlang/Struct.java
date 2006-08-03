@@ -94,7 +94,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 	}
 	
 	private void resetNames() {
-		if (id.uname != null) { // initialized!
+		if (u_name != null) { // initialized!
 			q_name = null;
 			b_name = null;
 			foreach (Struct s; sub_decls)
@@ -255,7 +255,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 			}
 		} else {
 			foreach (Method mm; members; mm != m) {
-				if (mm.id.equals(m.id) && mm.type.equals(m.type))
+				if (mm.u_name == m.u_name && mm.type.equals(m.type))
 					Kiev.reportError(m,"Method "+m+" already exists in class "+this);
 			}
 		}
@@ -320,7 +320,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 	}
 		
 	public Constructor getClazzInitMethod() {
-		foreach(Constructor n; members; n.id.equals(nameClassInit) )
+		foreach(Constructor n; members; n.u_name == nameClassInit)
 			return n;
 		Constructor class_init = new Constructor(ACC_STATIC);
 		class_init.pos = pos;
@@ -335,20 +335,22 @@ public class Struct extends TypeDecl implements PreScanneable {
 			return q_name;
 		Struct pkg = package_clazz;
 		if (pkg == null || pkg == Env.root)
-			q_name = id.uname;
+			q_name = u_name;
 		else
-			q_name = (pkg.qname()+"."+id.uname).intern();
+			q_name = (pkg.qname()+"."+u_name).intern();
 		return q_name;
 	}
 
 	public Struct() {
-		this.id = new Symbol(null,"");
+		this.id = new Symbol(null);
+		this.u_name = "";
 		this.q_name = "";
 		this.b_name = KString.Empty;
 	}
 	
-	public Struct(Symbol id, Struct outer, int flags, TypeDeclVariant variant) {
+	public Struct(Symbol id, String u_name, Struct outer, int flags, TypeDeclVariant variant) {
 		this.id = id;
+		this.u_name = u_name;
 		this.xmeta_type = new CompaundMetaType(this);
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
 		this.package_clazz = outer;
@@ -366,7 +368,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 			this.flags = flags;
 		}
 		this.variant = variant;
-		trace(Kiev.debugCreation,"New clazz created: "+qname() +" as "+id.uname+", member of "+outer);
+		trace(Kiev.debugCreation,"New clazz created: "+qname() +" as "+u_name+", member of "+outer);
 	}
 
 	public Struct getStruct() { return this; }
@@ -559,26 +561,13 @@ public class Struct extends TypeDecl implements PreScanneable {
 				// Default <init> method, if no one is declared
 				boolean init_found = false;
 				// Add outer hidden parameter to constructors for inner and non-static classes
-				int i = -1;
-				foreach (DNode n; members; ) {
-					i++;
-					if !(n instanceof Method)
-						continue;
-					Method m = (Method)n;
-					if( !(m.id.equals(nameInit) || m.id.equals(nameNewOp)) ) continue;
-					if( m.id.equals(nameInit) )
-						init_found = true;
-					boolean retype = false;
+				foreach (Constructor m; members; m.u_name == nameInit) {
+					init_found = true;
 					package_clazz.checkResolved();
-					if( package_clazz.isClazz() && !isStatic() ) {
-						// Add formal parameter
+					if (!isInterface() && isTypeUnerasable())
+						m.params.insert(0,new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.xtype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
+					if (package_clazz.isClazz() && !isStatic())
 						m.params.insert(0,new FormPar(m.pos,nameThisDollar,package_clazz.xtype,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
-						retype = true;
-					}
-					if (!isInterface() && isTypeUnerasable()) {
-						m.params.insert((retype?1:0),new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.xtype,FormPar.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
-						retype = true;
-					}
 				}
 				if( !init_found ) {
 					trace(Kiev.debugResolve,nameInit+" not found in class "+this);
@@ -635,8 +624,8 @@ public class Struct extends TypeDecl implements PreScanneable {
 		if( mmret == null && mm != null ) mmret = mm;
 		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+"."+m+" in "+this);
 		foreach (Method mi; members) {
-			if( mi.isStatic() || mi.isPrivate() || mi.id.equals(nameInit) ) continue;
-			if( mi.id.uname != m.id.uname || mi.type.arity != m.type.arity ) {
+			if( mi.isStatic() || mi.isPrivate() || mi.u_name == nameInit ) continue;
+			if( mi.u_name != m.u_name || mi.type.arity != m.type.arity ) {
 //				trace(Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
 				continue;
 			}

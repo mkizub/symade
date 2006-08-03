@@ -191,8 +191,8 @@ public final view JCondStat of CondStat extends JENode {
 
 	public:n,n,n,rw void generateAssertName(Code code) {
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
-		if (wbc.id == null || wbc.id.uname == null) return;
-		code.addConst(KString.from(wbc.id.uname));
+		if (wbc.u_name == null) return;
+		code.addConst(KString.from(wbc.u_name));
 	}
 
 	public:n,n,n,rw JMethod getAssertMethod() {
@@ -205,7 +205,7 @@ public final view JCondStat of CondStat extends JENode {
 		default: fname = nameAssertMethod;
 		}
 		Method func;
-		if (wbc.id == null || wbc.id.uname == null)
+		if (wbc.id == null || wbc.u_name == null)
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString);
 		else
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);

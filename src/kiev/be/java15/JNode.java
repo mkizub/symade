@@ -70,6 +70,9 @@ public view JDNode of DNode extends JNode {
 	public		int			flags;
 	public:ro	MetaSet		meta;
 	public:ro	Symbol		id;
+	public:ro	String		u_name;
+
+	public boolean hasName(String nm, boolean by_equals);
 
 	public final boolean isPublic()				{ return (flags & ACC_PUBLIC) != 0; }
 	public final boolean isPrivate()			{ return (flags & ACC_PRIVATE) != 0; }

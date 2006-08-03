@@ -187,7 +187,7 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 				tp = ((TypeDecl)jctx_tdecl).super_types[0].getType();
 			else
 				tp = ((TypeDecl)jctx_tdecl).xtype;
-			assert(jmm.id.equals(nameInit));
+			assert(jmm.u_name == nameInit);
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?
 			if (jmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)

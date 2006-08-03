@@ -205,9 +205,9 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 			iter = new Var(pos,"$env",itype,0);
 		}
 		else if( var != null ) {
-			iter = new Var(var.pos,var.id.uname+"$iter",itype,0);
+			iter = new Var(var.pos,var.u_name+"$iter",itype,0);
 			if (mode == ForEachStat.ARRAY) {
-				iter_array = new Var(container.pos,var.id.uname+"$arr",container.getType(),0);
+				iter_array = new Var(container.pos,var.u_name+"$arr",container.getType(),0);
 			}
 		}
 		else {

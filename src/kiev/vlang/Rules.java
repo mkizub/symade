@@ -103,7 +103,7 @@ public class RuleMethod extends Method {
 		var.type.resolveNameAccessR(node,path)
 	}
 
-    public ASTNode pass3() {
+    public void pass3() {
 		if !( parent() instanceof Struct )
 			throw new CompilerException(this,"Method must be declared on class level only");
 		Struct clazz = this.ctx_tdecl;
@@ -126,12 +126,10 @@ public class RuleMethod extends Method {
 				fp.meta.verify();
 		}
 		trace(Kiev.debugMultiMethod,"Rule "+this+" has erased type "+this.etype);
-		foreach(ASTAlias al; aliases) al.attach(this);
+		foreach(ASTOperatorAlias al; aliases) al.pass3();
 
 		foreach(WBCCondition cond; conditions)
 			cond.definer = this;
-
-		return this;
     }
 
 	static class RuleMethodDFFunc extends DFFunc {

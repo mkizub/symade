@@ -203,7 +203,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 	
 	private boolean hasMethod(Struct s, String name) {
 		s.checkResolved();
-		foreach (Method m; s.members; m.id.equals(name)) return true;
+		foreach (Method m; s.members; m.hasName(name,true)) return true;
 		return false;
 	}
 	

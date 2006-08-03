@@ -27,7 +27,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 	public boolean preGenerate() {
 		this.open();
 		Var penv = params[0];
-		assert(penv.id.uname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
+		assert(penv.u_name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 		if( body instanceof RuleBlock ) {
 			body.preGenerate();
 			Kiev.runProcessorsOn(body);
@@ -40,7 +40,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
 		try {
 			Var penv = params[0];
-			assert(penv.id.uname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
+			assert(penv.u_name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			if( body != null ) {
 				if( type.ret() ≡ Type.tpVoid ) body.setAutoReturnable(true);
 				body.resolve(Type.tpVoid);
@@ -83,7 +83,7 @@ public final view RRuleBlock of RuleBlock extends RENode {
 		// Local variables
 		foreach(Var v; rule_method.localvars) {
 			String tp = Kiev.reparseType(v.type);
-			sb.append(tp+' '+v.id.uname+";\n");
+			sb.append(tp+' '+v.u_name+";\n");
 		}
 		// tmp variables inserted here
 		sb.append(fields_buf.toString());

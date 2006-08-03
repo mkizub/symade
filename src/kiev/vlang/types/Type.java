@@ -485,7 +485,7 @@ public final class ArgType extends Type {
 
 	public ArgType(ArgMetaType meta_type) {
 		super(meta_type, flReference | flValAppliable, TVar.emptyArray, TArg.emptyArray);
-		this.name = meta_type.tdecl.id.uname;
+		this.name = meta_type.tdecl.u_name;
 		if (definer.isTypeAbstract())   this.flags |= flAbstract | flArgAppliable;
 		if (definer.isTypeUnerasable()) this.flags |= flUnerasable;
 		if (definer.isTypeVirtual())    this.flags |= flVirtual;

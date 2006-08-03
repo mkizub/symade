@@ -41,11 +41,11 @@ public final view JStruct of Struct extends JTypeDecl {
 			return b_name;
 		JStruct pkg = package_clazz;
 		if (pkg == null || ((Struct)pkg) == Env.root)
-			b_name = KString.from(id.uname);
+			b_name = KString.from(u_name);
 		else if (pkg.isPackage())
-			b_name = KString.from(pkg.bname()+"/"+id.uname);
+			b_name = KString.from(pkg.bname()+"/"+u_name);
 		else
-			b_name = KString.from(pkg.bname()+"$"+id.uname);
+			b_name = KString.from(pkg.bname()+"$"+u_name);
 		return b_name;
 	}
 
@@ -104,14 +104,14 @@ public final view JStruct of Struct extends JTypeDecl {
 	private static JMethod resolveMethod(@forward JStruct self, String name, KString sign, JStruct where, boolean fatal) {
 		self.checkResolved();
 		foreach (JMethod m; members) {
-			if( m.id.equals(name) && m.type.getJType().java_signature.equals(sign))
+			if( m.hasName(name,true) && m.type.getJType().java_signature.equals(sign))
 				return m;
 		}
 		if( isInterface() ) {
 			JStruct defaults = self.iface_impl;
 			if( defaults != null ) {
 				foreach (JMethod m; defaults.members) {
-					if( m.id.equals(name) && m.type.getJType().java_signature.equals(sign))
+					if( m.hasName(name,true) && m.type.getJType().java_signature.equals(sign))
 						return m;
 				}
 			}
@@ -184,7 +184,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		
 		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
 		foreach (JField f; members) {
-			constPool.addAsciiCP(f.id.uname);
+			constPool.addAsciiCP(f.u_name);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
 			if( f.isAccessedFromInner()) {
@@ -205,7 +205,7 @@ public final view JStruct of Struct extends JTypeDecl {
 				a.generate(constPool);
 		}
 		foreach (JMethod m; members) {
-			constPool.addAsciiCP(m.id.uname);
+			constPool.addAsciiCP(m.u_name);
 			constPool.addAsciiCP(m.type.getJType().java_signature);
 			if( m.etype != null )
 				constPool.addAsciiCP(m.etype.getJType().java_signature);

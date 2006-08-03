@@ -161,20 +161,22 @@ public class Env extends Struct {
 			return cl;
 		}
 		Symbol name = new Symbol();
+		String uniq_name;
 		if (direct) {
 			name = new Symbol(sname);
+			uniq_name = sname;
 		}
 		else if (sname != null) {
 			// Construct name of local class
-			String uniq_name = outer.countAnonymouseInnerStructs()+"$"+sname;
-			name = new Symbol(sname, uniq_name);
+			uniq_name = outer.countAnonymouseInnerStructs()+"$"+sname;
+			name = new Symbol(sname);
 		}
 		else {
 			// Local anonymouse class
-			String uniq_name = String.valueOf(outer.countAnonymouseInnerStructs());
-			name = new Symbol(uniq_name, uniq_name);
+			uniq_name = String.valueOf(outer.countAnonymouseInnerStructs());
+			name = new Symbol(uniq_name);
 		}
-		Struct cl = new Struct(name,outer,acces,variant);
+		Struct cl = new Struct(name,uniq_name,outer,acces,variant);
 		outer.addSubStruct(cl);
 		return cl;
 	}
@@ -213,6 +215,7 @@ public class Env extends Struct {
 		}
 		if (tdecl == null) {
 			tdecl = new TypeDecl();
+			tdecl.u_name = id.sname;
 			tdecl.id = id;
 			tdecl.package_clazz = pkg;
 			tdecl.flags = ACC_MACRO;

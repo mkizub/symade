@@ -132,7 +132,7 @@ public interface StdTypes {
 		tpNull		= new CoreType(Constants.nameNull,    tpObject, flReference);
 
 //		tpRule		= new CoreType(Constants.nameRule,    flReference);
-		Struct tpRuleClazz = new Struct(new Symbol("rule"),Env.root,ACC_PUBLIC,new JavaClass());
+		Struct tpRuleClazz = new Struct(new Symbol("rule"),"rule",Env.root,ACC_PUBLIC,new JavaClass());
 		tpRule				= (CompaundType)tpRuleClazz.xtype;
 		tpRuleClazz.setTypeDeclLoaded(true);
 		tpRule.flags		= flResolved | flReference;

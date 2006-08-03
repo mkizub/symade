@@ -137,7 +137,7 @@ public class SyntaxJavaAccess extends SyntaxElem {
 	}
 }
 
-
+/*
 @node
 public class SyntaxJavaEnumAlias extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaEnumAlias;
@@ -152,7 +152,7 @@ public class SyntaxJavaEnumAlias extends SyntaxElem {
 		return dr;
 	}
 }
-
+*/
 
 @node
 public class SyntaxJavaPackedField extends SyntaxElem {

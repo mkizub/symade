@@ -121,7 +121,7 @@ public class DrawJavaAccess extends DrawTerm {
 	}
 
 }
-
+/*
 @node
 public class DrawJavaEnumAlias extends DrawTerm {
 	
@@ -142,7 +142,7 @@ public class DrawJavaEnumAlias extends DrawTerm {
 		return "\""+text+"\"";
 	}	
 }
-
+*/
 @node
 public class DrawJavaPackedField extends DrawTerm {
 

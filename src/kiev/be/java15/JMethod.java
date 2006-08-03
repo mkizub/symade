@@ -92,7 +92,7 @@ public final view JMethod of Method extends JDNode {
 							code.importCode(cond.code_attr);
 						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							assert( cond.jparent instanceof JMethod && ((JMethod)cond.jparent).isInvariantMethod() );
-							if( !id.equals(nameInit) && !id.equals(nameClassInit) ) {
+							if( u_name != nameInit && u_name != nameClassInit ) {
 								if( !((JDNode)cond.jparent).isStatic() )
 									code.addInstrLoadThis();
 								code.addInstr(Instr.op_call,cond.jctx_method,false);
