@@ -477,38 +477,6 @@ public class Editor extends InfoView implements KeyListener {
 		this.formatAndPaint(true);
 	}
 	
-/*	private JPopupMenu buildTypeSelectPopupMenu(Type tp, List lst, int idx) {
-		// build a menu of types to instantiate
-		JPopupMenu m = new JPopupMenu();
-		m.add(new JMenuItem(new AddNewNodeToListAction((MType)tp.representation_node, lst, idx)));
-		m.addSeparator();
-		Type[] children = tp.getDirectChildren();
-		for (int i=0; i < children.length; i++) {
-			Type ch = children[i];
-			if (ch.getDirectChildren().length == 0)
-				m.add(new JMenuItem(new AddNewNodeToListAction((MType)ch.representation_node, lst, idx)));
-			else
-				m.add(buildTypeSelectSubMenu(ch, lst, idx));
-		}
-		return m;
-	}
-	private JMenu buildTypeSelectSubMenu(Type tp, List lst, int idx) {
-		// build a menu of types to instantiate
-		JMenu m = new JMenu(((MType)tp.representation_node).text);
-		m.add(new JMenuItem(new AddNewNodeToListAction((MType)tp.representation_node, lst, idx)));
-		m.addSeparator();
-		Type[] children = tp.getDirectChildren();
-		for (int i=0; i < children.length; i++) {
-			Type ch = children[i];
-			if (ch.getDirectChildren().length == 0)
-				m.add(new JMenuItem(new AddNewNodeToListAction((MType)ch.representation_node, lst, idx)));
-			else
-				m.add(buildTypeSelectSubMenu(ch, lst, idx));
-		}
-		return m;
-	}
-*/
-	
 	public void mousePressed(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY() + view_canvas.translated_y;
@@ -524,24 +492,6 @@ public class Editor extends InfoView implements KeyListener {
 				break;
 		}
 	}
-/*
-	class AddNewNodeToListAction extends TextAction {
-		private final Class				cls;
-		private final ASTNode[]			lst;
-		private final int				index;
-		AddNewNodeToListAction(Class cls, ASTNode[] lst, int index) {
-			super(cls.getName());
-			this.cls   = cls;
-			this.lst   = lst;
-			this.index = index;
-		}
-		public void actionPerformed(ActionEvent e) {
-			ASTNode node = cls.newInstance();
-			lst.insert(node, index);
-			formatAndPaint(true);
-		}
-	}
-*/
 
 	final class CurElem {
 		Drawable		dr;
@@ -926,8 +876,8 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 					foreach (SymbolRef sr; satt.expected_types; sr.dnode instanceof Struct) {
 						menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, n, satt.name)));
 					}
-					int x = dr.geometry.x;
-					int y = dr.geometry.y + dr.geometry.h;
+					int x = editor.cur_elem.dr.geometry.x;
+					int y = editor.cur_elem.dr.geometry.y + editor.cur_elem.dr.geometry.h - editor.view_canvas.translated_y;
 					menu.addPopupMenuListener(this);
 					menu.show(editor.view_canvas, x, y);
 					editor.startItemEditor(n, this);
@@ -946,8 +896,8 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 						foreach (SymbolRef sr; slst.expected_types; sr.dnode instanceof Struct) {
 							menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, lst.node, slst.name)));
 						}
-						int x = dr.geometry.x;
-						int y = dr.geometry.y + dr.geometry.h;
+						int x = editor.cur_elem.dr.geometry.x;
+						int y = editor.cur_elem.dr.geometry.y + editor.cur_elem.dr.geometry.h - editor.view_canvas.translated_y;
 						menu.addPopupMenuListener(this);
 						menu.show(editor.view_canvas, x, y);
 						editor.startItemEditor(lst.node, this);
@@ -969,8 +919,8 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 						foreach (SymbolRef sr; slst.expected_types; sr.dnode instanceof Struct) {
 							menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, lst.node, slst.name)));
 						}
-						int x = dr.geometry.x;
-						int y = dr.geometry.y + dr.geometry.h;
+						int x = editor.cur_elem.dr.geometry.x;
+						int y = editor.cur_elem.dr.geometry.y + editor.cur_elem.dr.geometry.h - editor.view_canvas.translated_y;
 						menu.addPopupMenuListener(this);
 						menu.show(editor.view_canvas, x, y);
 						editor.startItemEditor(lst.node, this);
@@ -1239,17 +1189,17 @@ final class SymRefEditor extends TextEditor implements ComboBoxEditor {
 			combo.setEditor(this);
 			combo.configureEditor(this, name);
 			combo.setMaximumRowCount(10);
+			combo.setPopupVisible(false);
 			editor.view_canvas.add(combo);
 		} else {
 			combo.removeAllItems();
 		}
-		Drawable dr = editor.cur_elem.dr;
-		int x = dr.geometry.x;
-		int y = dr.geometry.y;
-		int w = dr.geometry.w;
-		int h = dr.geometry.h;
-		combo.setBounds(x, y, w+100, h);
 		combo.setPopupVisible(false);
+		int x = dr_term.geometry.x;
+		int y = dr_term.geometry.y - editor.view_canvas.translated_y;
+		int w = dr_term.geometry.w;
+		int h = dr_term.geometry.h;
+		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
 		foreach (DNode dn; decls) {
 			combo.addItem(dn.id.sname);
@@ -1382,7 +1332,7 @@ class EnumEditor implements KeyListener, PopupMenuListener {
 		foreach (Enum e; ens.toArray())
 			menu.add(new JMenuItem(new SetSyntaxAction(e)));
 		int x = cur_elem.geometry.x;
-		int y = cur_elem.geometry.y + cur_elem.geometry.h;
+		int y = cur_elem.geometry.y + cur_elem.geometry.h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
 	}
