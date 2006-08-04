@@ -1,6 +1,7 @@
 package kiev.gui;
 
 import kiev.Kiev;
+import kiev.Compiler;
 import kiev.CError;
 import kiev.stdlib.*;
 import kiev.vlang.*;
@@ -144,13 +145,32 @@ public class Editor extends InfoView implements KeyListener {
 				break;
 			case KeyEvent.VK_C:
 				evt.consume();
-				kiev.Compiler.runBackEnd(null);
-				foreach (FileUnit fu; kiev.Kiev.files) {
+				System.out.println("Running backend compiler...");
+				try {
+					Kiev.errCount = 0;
+					Compiler.runBackEnd(null);
+				} catch (Throwable t) { t.printStackTrace(); }
+				System.out.println("Backend compiler completed with "+Kiev.errCount+" error(s)");
+				foreach (FileUnit fu; Kiev.files) {
 					walkTree(new TreeWalker() {
 						public boolean pre_exec(ANode n) { if (n instanceof ASTNode) { n.compileflags &= 0xFFFF0000; } return true; }
 					});
 				}
 				formatAndPaint(true);
+				break;
+			case KeyEvent.VK_V:
+				evt.consume();
+				if (the_root instanceof ASTNode) {
+					System.out.println("Running frontend compiler...");
+					changes.push(Transaction.open());
+					try {
+						Kiev.errCount = 0;
+						Kiev.runProcessorsOn((ASTNode)the_root);
+					} catch (Throwable t) { t.printStackTrace(); }
+					System.out.println("Frontend compiler completed with "+Kiev.errCount+" error(s)");
+					changes.peek().close();
+					formatAndPaint(true);
+				}
 				break;
 			}
 		}
@@ -1007,6 +1027,7 @@ abstract class TextEditor implements KeyListener {
 	
 	protected final Editor		editor;
 	protected       int			edit_offset;
+	protected       boolean		in_combo;
 	protected       JComboBox	combo;
 
 	TextEditor(Editor editor) {
@@ -1031,6 +1052,46 @@ abstract class TextEditor implements KeyListener {
 		if (edit_offset < 0) { editor.view_canvas.cursor_offset = edit_offset = 0; }
 		if (edit_offset > text.length()) { editor.view_canvas.cursor_offset = edit_offset = text.length(); }
 		switch (code) {
+		case KeyEvent.VK_DOWN:
+			if (in_combo) {
+				int count = combo.getItemCount();
+				if (count == 0) {
+					in_combo = false;
+					break;
+				}
+				int idx = combo.getSelectedIndex();
+				idx++;
+				if (idx >= count)
+					idx = 0;
+				combo.setSelectedIndex(idx);
+				break;
+			}
+			else if (combo != null && combo.getItemCount() > 0) {
+				in_combo = true;
+				if (combo.getSelectedIndex() < 0)
+					combo.setSelectedIndex(0);
+			}
+			break;
+		case KeyEvent.VK_UP:
+			if (in_combo) {
+				int count = combo.getItemCount();
+				if (count == 0) {
+					in_combo = false;
+					break;
+				}
+				int idx = combo.getSelectedIndex();
+				idx--;
+				if (idx < 0)
+					idx = count-1;
+				combo.setSelectedIndex(idx);
+				break;
+			}
+			else if (combo != null && combo.getItemCount() > 0) {
+				in_combo = true;
+				if (combo.getSelectedIndex() < 0)
+					combo.setSelectedIndex(combo.getItemCount()-1);
+			}
+			break;
 		case KeyEvent.VK_HOME:
 			edit_offset = 0;
 			break;
@@ -1059,17 +1120,35 @@ abstract class TextEditor implements KeyListener {
 			}
 			break;
 		case KeyEvent.VK_ENTER:
-			editor.view_canvas.cursor_offset = edit_offset = -1;
-			editor.stopItemEditor(false);
-			if (combo != null)
-				editor.view_canvas.remove(combo);
-			return;
+			if (in_combo) {
+				in_combo = false;
+				String text = (String)combo.getSelectedItem();
+				this.setText(text);
+				edit_offset = text.length();
+				combo.setPopupVisible(false);
+				break;
+			} else {
+				editor.view_canvas.cursor_offset = edit_offset = -1;
+				editor.stopItemEditor(false);
+				if (combo != null)
+					editor.view_canvas.remove(combo);
+				return;
+			}
 		case KeyEvent.VK_ESCAPE:
-			editor.view_canvas.cursor_offset = edit_offset = -1;
-			editor.stopItemEditor(true);
-			if (combo != null)
-				editor.view_canvas.remove(combo);
-			return;
+			if (in_combo) {
+				in_combo = false;
+				combo.setSelectedIndex(-1);
+				combo.setPopupVisible(false);
+				if (combo.getItemCount() > 0)
+					combo.setPopupVisible(true);
+				break;
+			} else {
+				editor.view_canvas.cursor_offset = edit_offset = -1;
+				editor.stopItemEditor(true);
+				if (combo != null)
+					editor.view_canvas.remove(combo);
+				return;
+			}
 		default:
 			if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
 				text = text.substring(0, edit_offset)+evt.getKeyChar()+text.substring(edit_offset);
@@ -1161,7 +1240,13 @@ final class SymRefEditor extends TextEditor implements ComboBoxEditor {
 			combo.addItem(dn.id.sname);
 			popup = true;
 		}
-		combo.setPopupVisible(popup);
+		if (popup) {
+			if (!in_combo)
+				combo.setSelectedIndex(-1);
+			combo.setPopupVisible(true);
+		} else {
+			in_combo = false;
+		}
 	}
 	
 	public void addActionListener(ActionListener l) {}

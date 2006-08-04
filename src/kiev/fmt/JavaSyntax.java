@@ -112,9 +112,9 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 		if (slot.name == "template") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<SyntaxJavaExprTemplate> vect = new Vector<SyntaxJavaExprTemplate>();
-			DNode@ d;
+			SyntaxJavaExprTemplate@ d;
 			foreach (PassInfo.resolveNameR(this,d,info))
-				if (d instanceof SyntaxJavaExprTemplate) vect.append((SyntaxJavaExprTemplate)d);
+				if (d instanceof SyntaxJavaExprTemplate && !vect.contains(d)) vect.append(d);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
@@ -201,9 +201,9 @@ public class SyntaxJavaComment extends SyntaxElem {
 		if (slot.name == "template") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<SyntaxJavaCommentTemplate> vect = new Vector<SyntaxJavaCommentTemplate>();
-			DNode@ d;
+			SyntaxJavaCommentTemplate@ d;
 			foreach (PassInfo.resolveNameR(this,d,info))
-				if (d instanceof SyntaxJavaCommentTemplate) vect.append((SyntaxJavaCommentTemplate)d);
+				if (d instanceof SyntaxJavaCommentTemplate && !vect.contains(d)) vect.append(d);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);

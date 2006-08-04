@@ -73,9 +73,9 @@ public class TextSyntax extends DNode implements ScopeOfNames {
 		if (slot.name == "parent_syntax") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<TextSyntax> vect = new Vector<TextSyntax>();
-			DNode@ ts;
+			TextSyntax@ ts;
 			foreach (PassInfo.resolveNameR(this,ts,info))
-				if (ts instanceof TextSyntax) vect.append((TextSyntax)ts);
+				if (ts instanceof TextSyntax && !vect.contains(ts)) vect.append(ts);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
@@ -182,9 +182,9 @@ public final class SpaceCmd extends ASTNode {
 		if (slot.name == "si") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<SpaceInfo> vect = new Vector<SpaceInfo>();
-			DNode@ spi;
+			SpaceInfo@ spi;
 			foreach (PassInfo.resolveNameR(this,spi,info))
-				if (spi instanceof SpaceInfo) vect.append((SpaceInfo)spi);
+				if (spi instanceof SpaceInfo && !vect.contains(spi)) vect.append(spi);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
@@ -362,7 +362,7 @@ public class SyntaxElemDecl extends AbstractSyntaxElemDecl {
 			Vector<Struct> vect = new Vector<Struct>();
 			Struct@ s;
 			foreach (PassInfo.resolveNameR(this,s,info))
-				if (s instanceof Struct && ((Struct)s).isCompilerNode()) vect.append((Struct)s);
+				if (s instanceof Struct && s.isCompilerNode() && !vect.contains(s)) vect.append(s);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
@@ -416,17 +416,17 @@ public final class SyntaxElemFormatDecl extends DNode {
 		if (slot.name == "color") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<DrawColor> vect = new Vector<DrawColor>();
-			DNode@ dc;
+			DrawColor@ dc;
 			foreach (PassInfo.resolveNameR(this,dc,info))
-				if (dc instanceof DrawColor) vect.append((DrawColor)dc);
+				if (dc instanceof DrawColor && !vect.contains(dc)) vect.append(dc);
 			return vect.toArray();
 		}
 		if (slot.name == "font") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<DrawFont> vect = new Vector<DrawFont>();
-			DNode@ df;
+			DrawFont@ df;
 			foreach (PassInfo.resolveNameR(this,df,info))
-				if (df instanceof DrawFont) vect.append((DrawFont)df);
+				if (df instanceof DrawFont && !vect.contains(df)) vect.append(df);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
@@ -519,17 +519,17 @@ public final class FullElemFormat extends DrawElemFormat {
 		if (slot.name == "color") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<DrawColor> vect = new Vector<DrawColor>();
-			DNode@ dc;
+			DrawColor@ dc;
 			foreach (PassInfo.resolveNameR(this,dc,info))
-				if (dc instanceof DrawColor) vect.append((DrawColor)dc);
+				if (dc instanceof DrawColor && !vect.contains(dc)) vect.append(dc);
 			return vect.toArray();
 		}
 		if (slot.name == "font") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<DrawFont> vect = new Vector<DrawFont>();
-			DNode@ df;
+			DrawFont@ df;
 			foreach (PassInfo.resolveNameR(this,df,info))
-				if (df instanceof DrawFont) vect.append((DrawFont)df);
+				if (df instanceof DrawFont && !vect.contains(df)) vect.append(df);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
@@ -571,9 +571,9 @@ public final class RefElemFormat extends DrawElemFormat {
 		if (slot.name == "decl") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<SyntaxElemFormatDecl> vect = new Vector<SyntaxElemFormatDecl>();
-			DNode@ dc;
+			SyntaxElemFormatDecl@ dc;
 			foreach (PassInfo.resolveNameR(this,dc,info))
-				if (dc instanceof SyntaxElemFormatDecl) vect.append((SyntaxElemFormatDecl)dc);
+				if (dc instanceof SyntaxElemFormatDecl && !vect.contains(dc)) vect.append(dc);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
@@ -689,9 +689,9 @@ public final class SyntaxElemRef extends SyntaxElem {
 		if (slot.name == "decl") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<SyntaxElemDecl> vect = new Vector<SyntaxElemDecl>();
-			DNode@ d;
+			SyntaxElemDecl@ d;
 			foreach (PassInfo.resolveNameR(this,d,info))
-				if (d instanceof SyntaxElemDecl) vect.append((SyntaxElemDecl)d);
+				if (d instanceof SyntaxElemDecl && !vect.contains(d)) vect.append(d);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
@@ -779,17 +779,17 @@ public abstract class SyntaxAttr extends SyntaxElem {
 		if (slot.name == "expected_types") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<Struct> vect = new Vector<Struct>();
-			DNode@ s;
+			Struct@ s;
 			foreach (PassInfo.resolveNameR(this,s,info))
-				if (s instanceof Struct && ((Struct)s).isCompilerNode()) vect.append((Struct)s);
+				if (s instanceof Struct && s.isCompilerNode() && !vect.contains(s)) vect.append(s);
 			return vect.toArray();
 		}
 		if (slot.name == "in_syntax") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<TextSyntax> vect = new Vector<TextSyntax>();
-			DNode@ s;
+			TextSyntax@ s;
 			foreach (PassInfo.resolveNameR(this,s,info))
-				if (s instanceof TextSyntax) vect.append((TextSyntax)s);
+				if (s instanceof TextSyntax && !vect.contains(s)) vect.append(s);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
@@ -1179,9 +1179,9 @@ public class SyntaxParagraphLayout extends SyntaxElem {
 		if (slot.name == "par") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<ParagraphLayout> vect = new Vector<ParagraphLayout>();
-			DNode@ dc;
+			ParagraphLayout@ dc;
 			foreach (PassInfo.resolveNameR(this,dc,info))
-				if (dc instanceof ParagraphLayout) vect.append((ParagraphLayout)dc);
+				if (dc instanceof ParagraphLayout && !vect.contains(dc)) vect.append(dc);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
