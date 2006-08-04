@@ -331,7 +331,6 @@ public abstract class LvalDNode extends DNode {
 		if (this.is_init_wrapper != on) {
 			assert(!locked);
 			this.is_init_wrapper = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// need a proxy access 
@@ -341,7 +340,6 @@ public abstract class LvalDNode extends DNode {
 	@setter public final void setNeedProxy(boolean on) {
 		if (this.is_need_proxy != on) {
 			this.is_need_proxy = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 
@@ -386,7 +384,6 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 	@setter public final void setTypeDeclLoaded(boolean on) {
 		if (this.is_tdecl_loaded != on) {
 			this.is_tdecl_loaded = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// a structure with the only one instance (singleton)	
@@ -397,7 +394,6 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 		if (this.is_struct_singleton != on) {
 			assert(!locked);
 			this.is_struct_singleton = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// a local (in method) class	
@@ -408,7 +404,6 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 		if (this.is_struct_local != on) {
 			assert(!locked);
 			this.is_struct_local = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// an anonymouse (unnamed) class	
@@ -419,7 +414,6 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 		if (this.is_struct_anomymouse != on) {
 			assert(!locked);
 			this.is_struct_anomymouse = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// kiev annotation
@@ -448,7 +442,6 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 		if (this.is_struct_type_resolved != on) {
 			assert(!locked);
 			this.is_struct_type_resolved = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// indicates that type arguments of the structure were resolved
@@ -460,7 +453,6 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
 		if (this.is_struct_args_resolved != on) {
 			assert(!locked);
 			this.is_struct_args_resolved = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	public final void setFrontEndPassed() {

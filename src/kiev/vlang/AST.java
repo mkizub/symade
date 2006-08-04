@@ -468,12 +468,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	@virtual typedef RView ≤ RNode;
 	
 	public static ASTNode[] emptyArray = new ASTNode[0];
-	private static final class RefAttrSlot_flags extends RefAttrSlot {
-		RefAttrSlot_flags(String name, Class clazz) { super(name, clazz); }
-		public final void set(ANode parent, Object value) { throw new RuntimeException("@ref flags is not writeable"); }
-		public final Object get(ANode parent) { return new Integer(((ASTNode)parent).compileflags); }
-	}
-	public static final RefAttrSlot_flags nodeattr$flags = new RefAttrSlot_flags("flags", Integer.TYPE);
 
 	private static final class RefAttrSlot_parent extends RefAttrSlot {
 		RefAttrSlot_parent(String name, Class clazz) { super(name, clazz); }
@@ -482,7 +476,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public static final RefAttrSlot_parent nodeattr$parent = new RefAttrSlot_parent("parent", ANode.class);
 
-	private static final AttrSlot[] $values = {nodeattr$parent, nodeattr$flags};
+	private static final AttrSlot[] $values = {nodeattr$parent};
 
 	public int				pos;
 	public int				compileflags;
@@ -686,7 +680,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		if (this.is_stat_break_target != on) {
 			assert(!locked);
 			this.is_stat_break_target = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 

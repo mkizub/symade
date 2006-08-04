@@ -181,7 +181,6 @@ public class Struct extends TypeDecl implements PreScanneable {
 		if (this.is_struct_has_pizza_cases != on) {
 			assert(!locked);
 			this.is_struct_has_pizza_cases = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// indicates that structure members were generated
@@ -192,7 +191,6 @@ public class Struct extends TypeDecl implements PreScanneable {
 		assert (!this.is_struct_fe_passed);
 		if (this.is_struct_members_generated != on) {
 			this.is_struct_members_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// indicates that structure members were pre-generated
@@ -202,7 +200,6 @@ public class Struct extends TypeDecl implements PreScanneable {
 	public final void setMembersPreGenerated(boolean on) {
 		if (this.is_struct_pre_generated != on) {
 			this.is_struct_pre_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// a pizza case	
@@ -213,7 +210,6 @@ public class Struct extends TypeDecl implements PreScanneable {
 		if (this.is_struct_compiler_node != on) {
 			assert(!locked);
 			this.is_struct_compiler_node = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	

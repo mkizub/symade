@@ -41,7 +41,6 @@ public abstract class ENode extends ASTNode {
 	public final void setAsField(boolean on) {
 		if (this.is_expr_as_field != on) {
 			this.is_expr_as_field = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// expression will generate void value
@@ -51,7 +50,6 @@ public abstract class ENode extends ASTNode {
 	public final void setGenVoidExpr(boolean on) {
 		if (this.is_expr_gen_void != on) {
 			this.is_expr_gen_void = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// used bt for()
@@ -61,7 +59,6 @@ public abstract class ENode extends ASTNode {
 	public final void setForWrapper(boolean on) {
 		if (this.is_expr_for_wrapper != on) {
 			this.is_expr_for_wrapper = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// used for primary expressions, i.e. (a+b)
@@ -72,7 +69,6 @@ public abstract class ENode extends ASTNode {
 		if (this.is_expr_primary != on) {
 			assert(!locked);
 			this.is_expr_primary = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// used for super-expressions, i.e. (super.foo or super.foo())
@@ -83,7 +79,6 @@ public abstract class ENode extends ASTNode {
 		if (this.is_expr_super != on) {
 			assert(!locked);
 			this.is_expr_super = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// used for cast calls (to check for null)
@@ -94,7 +89,6 @@ public abstract class ENode extends ASTNode {
 		if (this.is_expr_cast_call != on) {
 			assert(!locked);
 			this.is_expr_cast_call = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 
@@ -110,7 +104,6 @@ public abstract class ENode extends ASTNode {
 	public final void setAbrupted(boolean on) {
 		if (this.is_stat_abrupted != on) {
 			this.is_stat_abrupted = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// breaked
@@ -120,7 +113,6 @@ public abstract class ENode extends ASTNode {
 	public final void setBreaked(boolean on) {
 		if (this.is_stat_breaked != on) {
 			this.is_stat_breaked = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// method-abrupted
@@ -131,7 +123,6 @@ public abstract class ENode extends ASTNode {
 		if (this.is_stat_method_abrupted != on) {
 			this.is_stat_method_abrupted = on;
 			if (on) this.is_stat_abrupted = true;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// auto-returnable
@@ -141,7 +132,6 @@ public abstract class ENode extends ASTNode {
 	public final void setAutoReturnable(boolean on) {
 		if (this.is_stat_auto_returnable != on) {
 			this.is_stat_auto_returnable = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 

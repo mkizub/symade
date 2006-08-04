@@ -102,7 +102,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 			assert(!locked);
 			this.is_mth_virtual_static = on;
 			if (!isStatic()) this.setStatic(true);
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// method with variable number of arguments	
@@ -113,7 +112,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 		if (this.is_mth_varargs != on) {
 			assert(!locked);
 			this.is_mth_varargs = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// logic rule method
@@ -128,7 +126,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 		if (this.is_mth_operator != on) {
 			assert(!locked);
 			this.is_mth_operator = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// need fields initialization	
@@ -138,7 +135,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 	public final void setNeedFieldInits(boolean on) {
 		if (this.is_mth_need_fields_init != on) {
 			this.is_mth_need_fields_init = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// a method generated as invariant	
@@ -149,7 +145,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 		if (this.is_mth_invariant != on) {
 			assert(!locked);
 			this.is_mth_invariant = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// a dispatcher (for multimethods)	
@@ -160,7 +155,6 @@ public class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScan
 		if (this.is_mth_dispatcher != on) {
 			assert(!locked);
 			this.is_mth_dispatcher = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// a methood inlined bt dispatcher (for multimethods)	

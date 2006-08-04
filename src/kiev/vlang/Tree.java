@@ -187,13 +187,6 @@ public class TmpAttrSlot extends AttrSlot {
 	}
 }
 
-public class MetaAttrSlot extends ExtAttrSlot {
-	public MetaAttrSlot(String name, Class clazz) {
-		super(name,true,false,TypeInfo.newTypeInfo(clazz,null));
-	}
-	public boolean isMeta() { return true; }
-}
-
 public abstract class RefAttrSlot extends AttrSlot {
 	public RefAttrSlot(String name, Class clazz) {
 		super(name, false, false, clazz);

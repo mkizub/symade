@@ -15,6 +15,7 @@ import syntax kiev.Syntax;
 import java.awt.BorderLayout;
 
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
@@ -29,20 +30,20 @@ public class Window extends JFrame {
 	JTabbedPane infos;
 	JSplitPane  split_left;
 	JSplitPane  split_bottom;
-	Editor editor_view;
-	UIView info_view;
-	UIView clip_view;
-	UIView expl_view;
-	UIView export_view;
-	Canvas expl_canvas;
-	Canvas edit_canvas;
-	Canvas info_canvas;
-	Canvas clip_canvas;
-	Canvas export_canvas;
+	Editor		editor_view;
+	UIView		info_view;
+	UIView		clip_view;
+	UIView		expl_view;
+	UIView		export_view;
+	ANodeTree	expl_tree;
+	Canvas		edit_canvas;
+	Canvas		info_canvas;
+	Canvas		clip_canvas;
+	Canvas		export_canvas;
 
 	public Window() {
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		expl_canvas = new Canvas();
+		expl_tree   = new ANodeTree();
 		edit_canvas = new Canvas();
 		info_canvas = new Canvas();
 		clip_canvas = new Canvas();
@@ -58,7 +59,7 @@ public class Window extends JFrame {
 				explorers, split_bottom);
 		split_left.setResizeWeight(0.25);
 		split_left.setOneTouchExpandable(true);
-		explorers.addTab("Explorer", expl_canvas);
+		explorers.addTab("Explorer", new JScrollPane(expl_tree));
 		editors.addTab("Meta", edit_canvas);
 		editors.addTab("Export", export_canvas);
 		infos.addTab("Info", info_canvas);
@@ -70,19 +71,19 @@ public class Window extends JFrame {
 		editor_view = new Editor  (this, new JavaSyntax(), edit_canvas);
 		info_view   = new InfoView(this, new JavaSyntax(), info_canvas);
 		clip_view   = new InfoView(this, new JavaSyntax(), clip_canvas);
-		expl_view   = new InfoView(this, new JavaSyntax(), expl_canvas);
+		expl_view   = new TreeView(this, expl_tree);
 		export_view = new InfoView(this, new XmlDumpSyntax(), export_canvas);
 		editor_view.setRoot(null);
 		editor_view.formatAndPaint(true);
-		expl_view.the_root = null;
+		expl_view.setRoot(null);
 		expl_view.formatAndPaint(true);
 	}
 	
 	public void setRoot(ANode root) {
 		editor_view.setRoot(root);
 		editor_view.formatAndPaint(true);
-//		expl_view.the_root = null;
-//		expl_view.formatAndPaint(true);
+		expl_view.setRoot(root);
+		//expl_view.formatAndPaint(true);
 		export_view.the_root = root;
 		export_view.formatAndPaint(true);
 	}

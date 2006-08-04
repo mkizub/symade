@@ -68,7 +68,6 @@ public final class Field extends LvalDNode {
 	public final void setEnumField(boolean on) {
 		if (this.is_fld_enum != on) {
 			this.is_fld_enum = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// packer field (auto-generated for packed fields)
@@ -79,7 +78,6 @@ public final class Field extends LvalDNode {
 		if (this.is_fld_packer != on) {
 			assert(!locked);
 			this.is_fld_packer = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// packed field
@@ -90,7 +88,6 @@ public final class Field extends LvalDNode {
 		if (this.is_fld_packed != on) {
 			assert(!locked);
 			this.is_fld_packed = on;
-			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
 	// field's initializer was already added to class initializer

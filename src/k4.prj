@@ -183,6 +183,8 @@ CLASS kiev.fmt.TextFormatter kiev/fmt/TextFormatter kiev\fmt\Formatter.java
 CLASS kiev.fmt.TextPrinter kiev/fmt/TextPrinter kiev\fmt\DrawDevice.java
 CLASS kiev.fmt.TextSyntax kiev/fmt/TextSyntax kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.XmlDumpSyntax kiev/fmt/XmlDumpSyntax kiev\fmt\XmlDumpSyntax.java
+CLASS kiev.gui.ANodeTree kiev/gui/ANodeTree kiev\gui\TreeView.java
+CLASS kiev.gui.ATreeNode kiev/gui/ATreeNode kiev\gui\TreeView.java
 CLASS kiev.gui.BoolEditor kiev/gui/BoolEditor kiev\gui\Editor.java
 CLASS kiev.gui.Canvas kiev/gui/Canvas kiev\gui\Canvas.java
 CLASS kiev.gui.ChooseItemEditor kiev/gui/ChooseItemEditor kiev\gui\Editor.java
@@ -194,14 +196,18 @@ CLASS kiev.gui.IntEditor kiev/gui/IntEditor kiev\gui\Editor.java
 CLASS kiev.gui.NavigateEditor kiev/gui/NavigateEditor kiev\gui\Editor.java
 CLASS kiev.gui.NavigateView kiev/gui/NavigateView kiev\gui\InfoView.java
 CLASS kiev.gui.NewElemEditor kiev/gui/NewElemEditor kiev\gui\Editor.java
+CLASS kiev.gui.OTreeNode kiev/gui/OTreeNode kiev\gui\TreeView.java
 CLASS kiev.gui.OptionalTrigger kiev/gui/OptionalTrigger kiev\gui\Editor.java
+CLASS kiev.gui.SpaceTreeNode kiev/gui/SpaceTreeNode kiev\gui\TreeView.java
 CLASS kiev.gui.StrEditor kiev/gui/StrEditor kiev\gui\Editor.java
 CLASS kiev.gui.SymRefEditor kiev/gui/SymRefEditor kiev\gui\Editor.java
 CLASS kiev.gui.SymbolEditor kiev/gui/SymbolEditor kiev\gui\Editor.java
 CLASS kiev.gui.TextEditor kiev/gui/TextEditor kiev\gui\Editor.java
 CLASS kiev.gui.TransferableANode kiev/gui/TransferableANode kiev\gui\Editor.java
+CLASS kiev.gui.TreeView kiev/gui/TreeView kiev\gui\TreeView.java
 CLASS kiev.gui.UIView kiev/gui/UIView kiev\gui\UIView.java
 CLASS kiev.gui.Window kiev/gui/Window kiev\gui\Window.java
+CLASS kiev.gui.XTreeNode kiev/gui/XTreeNode kiev\gui\TreeView.java
 CLASS kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
 CLASS kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.java
 CLASS kiev.parser.ASTModifiers kiev/parser/ASTModifiers kiev\parser\ASTModifiers.java
@@ -528,7 +534,6 @@ CLASS kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.MetaAbstract kiev/vlang/MetaAbstract kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaAccess kiev/vlang/MetaAccess kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaAlias kiev/vlang/MetaAlias kiev\vlang\MetaSpecial.java
-CLASS kiev.vlang.MetaAttrSlot kiev/vlang/MetaAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.MetaBridge kiev/vlang/MetaBridge kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaFinal kiev/vlang/MetaFinal kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaFlag kiev/vlang/MetaFlag kiev\vlang\MetaSpecial.java

@@ -40,10 +40,12 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	public UIView(Window window, TextSyntax syntax, Canvas view_canvas) {
 		this.parent_window = window;
 		this.syntax        = syntax;
-		this.view_canvas   = view_canvas;
-		this.formatter     = new GfxFormatter(syntax, (Graphics2D)view_canvas.getGraphics());
-		view_canvas.addMouseListener(this);
-		view_canvas.addComponentListener(this);
+		if (view_canvas != null) {
+			this.view_canvas   = view_canvas;
+			this.formatter     = new GfxFormatter(syntax, (Graphics2D)view_canvas.getGraphics());
+			view_canvas.addMouseListener(this);
+			view_canvas.addComponentListener(this);
+		}
 	}
 	
 	public TextSyntax getSyntax() { return syntax; }
