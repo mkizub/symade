@@ -162,13 +162,19 @@ public class Editor extends InfoView implements KeyListener {
 				evt.consume();
 				if (the_root instanceof ASTNode) {
 					System.out.println("Running frontend compiler...");
-					changes.push(Transaction.open());
+					Transaction tr = Transaction.open();
+					changes.push(tr);
 					try {
 						Kiev.errCount = 0;
 						Kiev.runProcessorsOn((ASTNode)the_root);
 					} catch (Throwable t) { t.printStackTrace(); }
 					System.out.println("Frontend compiler completed with "+Kiev.errCount+" error(s)");
-					changes.peek().close();
+					if (tr.isEmpty()) {
+						tr.close();
+						changes.pop();
+					} else {
+						tr.close();
+					}
 					formatAndPaint(true);
 				}
 				break;
@@ -813,21 +819,21 @@ final class ChooseItemEditor implements KeyHandler {
 			AttrPtr pattr = dr.getAttrPtr();
 			Object obj = pattr.get();
 			if (obj instanceof Symbol)
-				editor.startItemEditor((Symbol)obj, new SymbolEditor((Symbol)obj, editor));
+				editor.startItemEditor((Symbol)obj, new SymbolEditor((Symbol)obj, editor, (DrawNodeTerm)dr));
 			else if (obj instanceof SymbolRef)
-				editor.startItemEditor((SymbolRef)obj, new SymRefEditor((SymbolRef)obj, editor));
+				editor.startItemEditor((SymbolRef)obj, new SymRefEditor((SymbolRef)obj, editor, (DrawNodeTerm)dr));
 			else if (obj instanceof String || obj == null && pattr.slot.typeinfo.clazz == String.class) {
 				if (pattr.node instanceof SymbolRef)
-					editor.startItemEditor((SymbolRef)pattr.node, new SymRefEditor((SymbolRef)pattr.node, editor));
+					editor.startItemEditor((SymbolRef)pattr.node, new SymRefEditor((SymbolRef)pattr.node, editor, (DrawNodeTerm)dr));
 				else
-					editor.startItemEditor(pattr.node, new StrEditor(pattr, editor));
+					editor.startItemEditor(pattr.node, new StrEditor(pattr, editor, (DrawNodeTerm)dr));
 			}
 			else if (obj instanceof Integer)
-				editor.startItemEditor(pattr.node, new IntEditor(pattr, editor));
+				editor.startItemEditor(pattr.node, new IntEditor(pattr, editor, (DrawNodeTerm)dr));
 			else if (obj instanceof Boolean)
 				editor.startItemEditor(pattr.node, new BoolEditor(pattr, editor));
 			else if (obj instanceof ConstIntExpr)
-				editor.startItemEditor((ConstIntExpr)obj, new IntEditor(obj.getAttrPtr("value"), editor));
+				editor.startItemEditor((ConstIntExpr)obj, new IntEditor(obj.getAttrPtr("value"), editor, (DrawNodeTerm)dr));
 			else if (Enum.class.isAssignableFrom(pattr.slot.typeinfo.clazz))
 				editor.startItemEditor(pattr.node, new EnumEditor(pattr, dr, editor));
 		}
@@ -1026,12 +1032,14 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 abstract class TextEditor implements KeyListener {
 	
 	protected final Editor		editor;
+	protected final DrawTerm	dr_term;
 	protected       int			edit_offset;
 	protected       boolean		in_combo;
 	protected       JComboBox	combo;
 
-	TextEditor(Editor editor) {
+	TextEditor(Editor editor, DrawTerm dr_term) {
 		this.editor = editor;
+		this.dr_term = dr_term;
 		this.editor.view_canvas.cursor_offset = edit_offset;
 	}
 
@@ -1049,8 +1057,15 @@ abstract class TextEditor implements KeyListener {
 		evt.consume();
 		String text = this.getText();
 		if (text == null) { text = ""; }
-		if (edit_offset < 0) { editor.view_canvas.cursor_offset = edit_offset = 0; }
-		if (edit_offset > text.length()) { editor.view_canvas.cursor_offset = edit_offset = text.length(); }
+		int prefix_offset = dr_term.getPrefix().length();
+		if (edit_offset < 0) {
+			edit_offset = 0;
+			editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
+		}
+		if (edit_offset > text.length()) {
+			edit_offset = text.length();
+			editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
+		}
 		switch (code) {
 		case KeyEvent.VK_DOWN:
 			if (in_combo) {
@@ -1156,7 +1171,7 @@ abstract class TextEditor implements KeyListener {
 				this.setText(text);
 			}
 		}
-		editor.view_canvas.cursor_offset = edit_offset;
+		editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
 		editor.formatAndPaint(true);
 	}
 }
@@ -1165,13 +1180,13 @@ final class SymbolEditor extends TextEditor {
 	
 	private final Symbol	symbol;
 
-	SymbolEditor(Symbol symbol, Editor editor) {
-		super(editor);
+	SymbolEditor(Symbol symbol, Editor editor, DrawTerm dr_term) {
+		super(editor, dr_term);
 		this.symbol = symbol;
 		String text = this.getText();
 		if (text != null) {
 			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset;
+			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
 		}
 	}
 	
@@ -1187,13 +1202,13 @@ final class SymRefEditor extends TextEditor implements ComboBoxEditor {
 	
 	private final SymbolRef<DNode>		symref;
 
-	SymRefEditor(SymbolRef<DNode> symref, Editor editor) {
-		super(editor);
+	SymRefEditor(SymbolRef<DNode> symref, Editor editor, DrawTerm dr_term) {
+		super(editor, dr_term);
 		this.symref = symref;
 		String text = this.getText();
 		if (text != null) {
 			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset;
+			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
 		}
 		showAutoComplete();
 	}
@@ -1266,13 +1281,13 @@ final class StrEditor extends TextEditor {
 	
 	private final AttrPtr	pattr;
 
-	StrEditor(AttrPtr pattr, Editor editor) {
-		super(editor);
+	StrEditor(AttrPtr pattr, Editor editor, DrawTerm dr_term) {
+		super(editor, dr_term);
 		this.pattr = pattr;
 		String text = this.getText();
 		if (text != null) {
 			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset;
+			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
 		}
 	}
 	
@@ -1288,13 +1303,13 @@ final class IntEditor extends TextEditor {
 	
 	private final AttrPtr	pattr;
 
-	IntEditor(AttrPtr pattr, Editor editor) {
-		super(editor);
+	IntEditor(AttrPtr pattr, Editor editor, DrawTerm dr_term) {
+		super(editor, dr_term);
 		this.pattr = pattr;
 		String text = this.getText();
 		if (text != null) {
 			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset;
+			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
 		}
 	}
 	

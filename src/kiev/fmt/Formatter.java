@@ -19,8 +19,6 @@ import java.awt.Graphics2D;
 public interface Formatter {
 	public Drawable   format(ANode node, Drawable dr);
 	public Drawable   getDrawable(ANode node, Drawable dr, TextSyntax syntax);
-	public String     escapeString(String str);
-	public String     escapeChar(char ch);
 	public TextSyntax getSyntax();
 	public void       setSyntax(TextSyntax stx);
 }
@@ -47,13 +45,6 @@ public abstract class AbstractFormatter implements Formatter {
 		this.syntax = stx;
 	}
 	
-	public String escapeString(String str) {
-		return syntax.escapeString(str);
-	}
-	public String escapeChar(char ch) {
-		return syntax.escapeChar(ch);
-	}
-
 	public final Drawable getDrawable(ANode node, Drawable dr, TextSyntax syntax) {
 		if (node == null) {
 			if (dr instanceof DrawSpace)

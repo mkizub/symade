@@ -17,38 +17,27 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 @node
+public class SyntaxXmlStrAttr extends SyntaxAttr {
+	@virtual typedef This  = SyntaxXmlStrAttr;
+
+	public SyntaxXmlStrAttr() {}
+	public SyntaxXmlStrAttr(String name, SpaceCmd[] spaces) {
+		super(name,spaces);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawXmlStrTerm(node, this, name);
+		return dr;
+	}
+}
+
+@node
 public class XmlDumpSyntax extends TextSyntax {
 
 	private final SpaceInfo siNl = new SpaceInfo("nl", SP_NEW_LINE, 1,  1);
 
 	public XmlDumpSyntax() {}
 
-	public String escapeString(String str) {
-		StringBuffer sb = new StringBuffer(str);
-		boolean changed = false;
-		for(int i=0; i < sb.length(); i++) {
-			switch (sb.charAt(i)) {
-			case '&':  sb.setCharAt(i, '&'); sb.insert(i+1,"amp;");  i += 4; changed = true; continue;
-			case '<':  sb.setCharAt(i, '&'); sb.insert(i+1,"lt;");   i += 3; changed = true; continue;
-			case '>':  sb.setCharAt(i, '&'); sb.insert(i+1,"gt;");   i += 3; changed = true; continue;
-			case '\"': sb.setCharAt(i, '&'); sb.insert(i+1,"quot;"); i += 5; changed = true; continue;
-			case '\'': sb.setCharAt(i, '&'); sb.insert(i+1,"apos;"); i += 5; changed = true; continue;
-			}
-		}
-		if (changed) return sb.toString();
-		return str;
-	}
-	public String escapeChar(char ch) {
-		switch (ch) {
-		case '&':  return "&amp;";
-		case '<':  return "&lt;";
-		case '>':  return "&gt;";
-		case '\"': return "&quot;";
-		case '\'': return "&apos;";
-		default: return String.valueOf(ch);
-		}
-	}
-	
 	private SyntaxElem open(String name) {
 		SpaceCmd[] lout_nl_ba = new SpaceCmd[] { new SpaceCmd(siNl, SP_ADD, SP_ADD, 0) };
 		return new SyntaxToken("<"+name+">",lout_nl_ba);
@@ -118,7 +107,7 @@ public class XmlDumpSyntax extends TextSyntax {
 			else if (Enum.class.isAssignableFrom(attr.clazz))
 				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
 			else if (attr.clazz == String.class)
-				ss.elements += set(open0(attr.name), new SyntaxStrAttr(attr.name,new SpaceCmd[0]), close0(attr.name));
+				ss.elements += set(open0(attr.name), new SyntaxXmlStrAttr(attr.name,new SpaceCmd[0]), close0(attr.name));
 			else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
 				attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
 				attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE

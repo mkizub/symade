@@ -42,7 +42,9 @@ public abstract class DrawTerm extends Drawable {
 		this.geometry.do_newline = 0;
 		return cont.addLeaf(this);
 	}
-	
+
+	public String getPrefix() { return ""; }	
+	public String getSuffix() { return ""; }	
 	abstract String makeText(Formatter fmt);
 	public final String getText() { return text; }
 }
@@ -88,9 +90,11 @@ public class DrawCharTerm extends DrawNodeTerm {
 		super(node, syntax, attr);
 	}
 
+	public String getPrefix() { return "'"; }	
+	public String getSuffix() { return "'"; }	
 	String makeText(Formatter fmt) {
 		Character ch = (Character)getAttrPtr().get();
-		return fmt.escapeChar(ch.charValue());
+		return "'"+Convert.escape(ch.charValue())+"'";
 	}
 }
 
@@ -101,12 +105,46 @@ public class DrawStrTerm extends DrawNodeTerm {
 		super(node, syntax, attr);
 	}
 
+	public String getPrefix() { return "\""; }	
+	public String getSuffix() { return "\""; }	
 	String makeText(Formatter fmt) {
 		Object o = getAttrPtr().get();
 		if (o == null)
 			return null;
 		String str = String.valueOf(o);
-		return fmt.escapeString(str);
+		return '\"'+new String(Convert.string2source(str), 0)+'\"';
+	}
+}
+
+@node
+public class DrawXmlStrTerm extends DrawNodeTerm {
+	public DrawXmlStrTerm() {}
+	public DrawXmlStrTerm(ANode node, SyntaxElem syntax, String attr) {
+		super(node, syntax, attr);
+	}
+
+	private String escapeString(String str) {
+		StringBuffer sb = new StringBuffer(str);
+		boolean changed = false;
+		for(int i=0; i < sb.length(); i++) {
+			switch (sb.charAt(i)) {
+			case '&':  sb.setCharAt(i, '&'); sb.insert(i+1,"amp;");  i += 4; changed = true; continue;
+			case '<':  sb.setCharAt(i, '&'); sb.insert(i+1,"lt;");   i += 3; changed = true; continue;
+			case '>':  sb.setCharAt(i, '&'); sb.insert(i+1,"gt;");   i += 3; changed = true; continue;
+			case '\"': sb.setCharAt(i, '&'); sb.insert(i+1,"quot;"); i += 5; changed = true; continue;
+			case '\'': sb.setCharAt(i, '&'); sb.insert(i+1,"apos;"); i += 5; changed = true; continue;
+			}
+		}
+		if (changed) return sb.toString();
+		return str;
+	}
+
+	String makeText(Formatter fmt) {
+		Object o = getAttrPtr().get();
+		if (o == null)
+			return "";
+		String str = String.valueOf(o);
+		return escapeString(str);
 	}
 }
 

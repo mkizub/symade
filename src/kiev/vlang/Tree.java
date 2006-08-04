@@ -534,6 +534,10 @@ public final class Transaction {
 		if (currentTransaction == this)
 			currentTransaction = null;
 	}
+	
+	public boolean isEmpty() {
+		return size == 0;
+	}
 
 	public int version;
 	private int recursion_counter;

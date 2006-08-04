@@ -140,6 +140,7 @@ CLASS kiev.fmt.DrawSpace kiev/fmt/DrawSpace kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawStrTerm kiev/fmt/DrawStrTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawTerm kiev/fmt/DrawTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawToken kiev/fmt/DrawToken kiev\fmt\DrawTerm.java
+CLASS kiev.fmt.DrawXmlStrTerm kiev/fmt/DrawXmlStrTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.Drawable kiev/fmt/Drawable kiev\fmt\Drawable.java
 CLASS kiev.fmt.FullElemFormat kiev/fmt/FullElemFormat kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.GfxFormatter kiev/fmt/GfxFormatter kiev\fmt\Formatter.java
@@ -177,6 +178,7 @@ CLASS kiev.fmt.SyntaxSpace kiev/fmt/SyntaxSpace kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxStrAttr kiev/fmt/SyntaxStrAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxSubAttr kiev/fmt/SyntaxSubAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxToken kiev/fmt/SyntaxToken kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.SyntaxXmlStrAttr kiev/fmt/SyntaxXmlStrAttr kiev\fmt\XmlDumpSyntax.java
 CLASS kiev.fmt.TextFormatter kiev/fmt/TextFormatter kiev\fmt\Formatter.java
 CLASS kiev.fmt.TextPrinter kiev/fmt/TextPrinter kiev\fmt\DrawDevice.java
 CLASS kiev.fmt.TextSyntax kiev/fmt/TextSyntax kiev\fmt\SyntaxLayout.java

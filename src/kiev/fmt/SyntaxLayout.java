@@ -82,13 +82,6 @@ public class TextSyntax extends DNode implements ScopeOfNames {
 	}
 
 
-	public String escapeString(String str) {
-		return str;
-	}
-	public String escapeChar(char ch) {
-		return String.valueOf(ch);
-	}
-	
 	public SyntaxElem getSyntaxElem(ANode node) {
 		if (node != null) {
 			String cl_name = node.getClass().getName();

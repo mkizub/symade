@@ -449,13 +449,6 @@ public class JavaSyntax extends TextSyntax {
 */
 	}
 
-	public String escapeString(String str) {
-		return '\"'+new String(Convert.string2source(str), 0)+'\"';
-	}
-	public String escapeChar(char ch) {
-		return "'"+Convert.escape(ch)+"'";
-	}
-
 	public SyntaxElem getSyntaxElem(ANode node) {
 		if (node != null) {
 			String cl_name = node.getClass().getName();
