@@ -163,7 +163,7 @@ public class List<A>
 	}
     
 //	public A[] toArray()
-////		alias operator(210,fy,$cast)
+////		alias fy operator $cast
 //	{
 //		A[] arr = new A[length()];
 //		for(int i=0; this != List.Nil; i++) {
@@ -421,7 +421,7 @@ public class List<A>
 /** the elements of array `elems' as a list
  */
 	public static List<A> fromArray(A[] elems)
-		alias operator(240,lfy,new)
+		alias lfy operator new
 	{
 		List<A> l = Nil;
 		int i = elems.length;
@@ -456,19 +456,19 @@ public class List<A>
 /** list's consisting of given (0-10) elements
  */
 	public static List<A> newList()
-		alias operator(210,lfy,new)
+		alias lfy operator new
 	{
 		return Nil;
 	}
 
 	public static List<A> newList(A hd)
-		alias operator(210,lfy,new)
+		alias lfy operator new
 	{
 		return new Cons<A>(hd,Nil);
 	}
 
 	public static List<A> newList(A hd, ...)
-		alias operator(210,lfy,new)
+		alias lfy operator new
 	{
 		List<A> nl = Nil;
 		for(int i=va_args.length-1; i >= 0; i--) {

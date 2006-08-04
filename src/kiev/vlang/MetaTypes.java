@@ -83,7 +83,7 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 
 	@macro
 	public <R extends N> R set(int idx, R node)
-		alias operator(210,lfy,[])
+		alias lfy operator []
 	{
 		case @forward CallExpr# self(IFldExpr# obj):
 			new#CallExpr(obj=getAttr(obj.var),ident="set",args={obj.obj, idx, node})
@@ -92,7 +92,7 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 	@macro
 	public N add(N node)
 		alias append
-		alias operator(5, lfy, +=)
+		alias lfy operator +=
 	{
 		case @forward CallExpr# self(IFldExpr# obj):
 			new#CallExpr(obj=getAttr(obj.var),ident="add",args={obj.obj, node})

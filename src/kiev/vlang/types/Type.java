@@ -84,7 +84,7 @@ public abstract class Type extends AType {
 		meta_type.resolveNameAccessR(this,node,info)
 	}
 
-	public boolean isInstanceOf(Type t2) alias operator (60, xfx, ≥ ) {
+	public boolean isInstanceOf(Type t2) alias xfx operator ≥ {
 		Type t1 = this;
 		if( t1 ≡ t2 || t2 ≡ Type.tpAny ) return true;
 		if( t1.isReference() && t2 ≈ Type.tpObject ) return true;
@@ -432,13 +432,13 @@ public final class CoreType extends Type {
 
 public final class ASTNodeType extends Type {
 	public static ASTNodeType newASTNodeType(Struct of_clazz)
-		alias operator(240,lfy,new)
+		alias lfy operator new
 	{
 		return new ASTNodeType(ASTNodeMetaType.instance(of_clazz), TVarBld.emptySet);
 	}
 
 	public static ASTNodeType newASTNodeType(RewritePattern rp)
-		alias operator(240,lfy,new)
+		alias lfy operator new
 	{
 		Struct of_clazz = rp.vtype.getStruct();
 		ASTNodeMetaType meta_type = ASTNodeMetaType.instance(of_clazz);
@@ -615,7 +615,7 @@ public final class ArrayType extends Type {
 	@getter public Type get$arg() { return this.tvars[0].unalias().result(); }
 	
 	public static ArrayType newArrayType(Type type)
-		alias operator(240,lfy,new)
+		alias lfy operator new
 	{
 		return new ArrayType(type);
 	}
@@ -770,7 +770,7 @@ public final class CallType extends Type {
 	}
 	
 	public static CallType createCallType(Type accessor, Type[] targs, Type[] args, Type ret, boolean is_closure)
-		alias operator(210,lfy,new)
+		alias lfy operator new
 	{
 		targs = (targs != null && targs.length > 0) ? targs : Type.emptyArray;
 		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
@@ -786,7 +786,7 @@ public final class CallType extends Type {
 		return new CallType(vs.close(),args.length,is_closure);
 	}
 	public static CallType createCallType(TVarBld mvs, Type[] args, Type ret, boolean is_closure)
-		alias operator(210,lfy,new)
+		alias lfy operator new
 	{
 		args  = (args != null && args.length > 0) ? args : Type.emptyArray;
 		ret   = (ret  == null) ? Type.tpAny : ret;

@@ -193,7 +193,7 @@ public class JBaseType extends JType {
 	}
 	
 	public static JBaseType newJBaseType(Struct clazz)
-		alias operator(240,lfy,new)
+		alias lfy operator new
 	{
 		if (clazz.xtype ≡ Type.tpRule) {
 			if (JType.tpRule == null)
@@ -248,7 +248,7 @@ public class JArrayType extends JType {
 	}
 
 	public static JArrayType newJArrayType(JType jarg)
-		alias operator(240,lfy,new)
+		alias lfy operator new
 	{
 		KString signature = KString.from("["+jarg.java_signature);
 		JArrayType jat = (JArrayType)jtypeHash.get(signature);
@@ -291,7 +291,7 @@ public class JMethodType extends JType {
 	}
 
 	public static JMethodType newJMethodType(JType[] jargs, JType jret)
-		alias operator(240,lfy,new)
+		alias lfy operator new
 	{
 		KStringBuffer ksb = new KStringBuffer(64);
 		ksb.append('(');

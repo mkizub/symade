@@ -65,6 +65,11 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 		return;
 	}
 
+	public void setName(ConstStringExpr n) {
+		this.pos = n.pos;
+		this.sname = n.value;
+	}
+	
     private void checkPublicAccess(Method m) {
     	if( !m.isStatic() ) return;
     	if( m.isPrivate() || m.isProtected() ) return;
@@ -84,6 +89,14 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 	public void pass3() {
 		Method m = (Method)parent();
 
+		if (this.sname != null && this.sname != "" && this.sname != "operator ???") {
+			Operator op = Operator.getOperatorByName(sname);
+			if (op == null)
+				throw new CompilerException(this,"Operator "+sname+" not found");
+			op.addMethod(m);
+			return;
+		}
+		
 		switch(opmode) {
 		case Opdef.LFY:
 			{
@@ -114,7 +127,7 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 					prior = Constants.opAssignPriority;
 				if( prior != Constants.opAssignPriority )
 					throw new CompilerException(this,"Assign operator must have priority "+Constants.opAssignPriority);
-				Operator op = Operator.getOperator("V "+image+" V");
+				Operator op = Operator.getOperatorByName("V "+image+" V");
 				if (op == null)
 					throw new CompilerException(this,"Assign operator "+image+" not found");
 				setAliasName(op.name);
@@ -141,9 +154,9 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 				}
 
 				Type opret = m.type.ret();
-				Operator op = Operator.getOperator("V "+image+" V");
+				Operator op = Operator.getOperatorByName("V "+image+" V");
 				if (op == null)
-					op = Operator.getOperator("V "+image+" T");
+					op = Operator.getOperatorByName("V "+image+" T");
 				if (op == null)
 					throw new CompilerException(this,"Binary operator "+image+" not found");
 				setAliasName(op.name);
@@ -167,7 +180,7 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 				}
 
 				Type opret = m.type.ret();
-				Operator op = Operator.getOperator(image+" V");
+				Operator op = Operator.getOperatorByName(image+" V");
 				if (op == null)
 					throw new CompilerException(this,"Prefix operator "+image+" not found");
 				setAliasName(op.name);
@@ -179,7 +192,7 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 		case Opdef.YF:
 			{
 				Type opret = m.type.ret();
-				Operator op = Operator.getOperator("V "+image);
+				Operator op = Operator.getOperatorByName("V "+image);
 				if (op == null)
 					throw new CompilerException(this,"Postfix operator "+image+" not found");
 				setAliasName(op.name);

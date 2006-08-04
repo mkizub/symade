@@ -88,7 +88,7 @@ public final class MetaSet extends ASTNode {
 		return null;
 	}
 	
-	public UserMeta setU(UserMeta meta) alias add alias operator (5,lfy,+=)
+	public UserMeta setU(UserMeta meta) alias add alias lfy operator +=
 	{
 		String qname = meta.qname();
 		foreach (UserMeta m; metas) {
@@ -351,11 +351,11 @@ public class UserMeta extends ENode {
 		return mv;
 	}
 
-	public MetaValue unset(MetaValue value) alias del alias operator (5,lfy,-=)
+	public MetaValue unset(MetaValue value) alias del alias lfy operator -=
 	{
 		return unset(value.ident.name);
 	}
-	public MetaValue unset(String name) alias del alias operator (5,lfy,-=)
+	public MetaValue unset(String name) alias del alias lfy operator -=
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {

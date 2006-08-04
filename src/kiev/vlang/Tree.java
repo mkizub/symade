@@ -76,20 +76,20 @@ public final class SpacePtr {
 	}
 
 	public ANode get(int idx)
-		alias operator(210,xfy,[])
+		alias xfy operator []
 	{
 		return slot.get(node, idx);
 	}
 
 	public ANode set(int idx, ANode val)
-		alias operator(210,lfy,[])
+		alias lfy operator []
 	{
 		return slot.set(node, idx, val);
 	}
 
 	public ANode add(ANode val)
 		alias append
-		alias operator(5, lfy, +=)
+		alias lfy operator +=
 	{
 		return slot.add(node, val);
 	}
@@ -582,17 +582,17 @@ public final class NArr<N extends ANode> {
 
 	public final N get(int idx)
 		alias at
-		alias operator(210,xfy,[])
+		alias xfy operator []
 	{ return null; }
 	
 	public N set(int idx, N node)
-		alias operator(210,lfy,[])
+		alias lfy operator []
 		require { node != null; }
 	{ return null; }
 
 	public N add(N node)
 		alias append
-		alias operator(5, lfy, +=)
+		alias lfy operator +=
 		require { node != null; }
 	{ return null; }
 
@@ -633,9 +633,9 @@ public final class NArr<N extends ANode> {
 
 	public N[] delToArray() { return null; }
 
-	public Type[] toTypeArray() alias operator(210,fy,$cast) { return null; }
+	public Type[] toTypeArray() alias fy operator $cast { return null; }
 
-	public JType[] toJTypeArray() alias operator(210,fy,$cast) { return null; }
+	public JType[] toJTypeArray() alias fy operator $cast { return null; }
 
 	public Enumeration<N> elements() {
 		return new Enumeration<N>() {

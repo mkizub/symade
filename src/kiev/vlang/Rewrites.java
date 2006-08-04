@@ -169,8 +169,12 @@ public final class RewriteNodeFactory extends ENode {
 				o = new SymbolRef<DNode>(o.value);
 			else if (attr.clazz == Symbol.class)
 				o = new Symbol(o.value);
-			else if (attr.clazz == Operator.class)
-				o = Operator.getOperator(o.value);
+			else if (attr.clazz == Operator.class) {
+				Operator op = Operator.getOperatorByName(o.value);
+				if (op == null)
+					op = Operator.getOperatorByDecl(o.value);
+				o = op;
+			}
 		}
 		else if (o instanceof TypeDecl) {
 			if (attr.clazz == TypeRef.class)

@@ -49,7 +49,7 @@ public class TypeRef extends ENode {
 	}
 	
 	public static TypeRef newTypeRef(Type tp)
-		alias operator(240,lfy,new)
+		alias lfy operator new
 	{
 		if (tp instanceof CoreType)
 			return new TypeRef((CoreType)tp);
@@ -73,7 +73,7 @@ public class TypeRef extends ENode {
 	}
 
 	public Type getType()
-		alias operator(210,fy,$cast)
+		alias fy operator $cast
 	{
 		return lnk;
 	}

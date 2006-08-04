@@ -55,7 +55,8 @@ public abstract class OpArg {
 
 public final class Operator implements Constants {
 
-	public static Hashtable<String,Operator>	allOperatorsHash = new Hashtable<String,Operator>();
+	public static Hashtable<String,Operator>	allOperatorNamesHash = new Hashtable<String,Operator>();
+	public static Hashtable<String,Operator>	allOperatorDeclsHash = new Hashtable<String,Operator>();
 
 	// Assign (binary) operators
 	public static final Operator Assign;
@@ -202,29 +203,33 @@ public final class Operator implements Constants {
 		Reinterp = newOperator(opCastPriority, "( $reinterp T ) Y");
 	}
 
-	public static Operator newOperator(int pr, String nm) {
-		OpArg[] args = OpArg.fromOpString(pr, nm);
-		nm = OpArg.toOpName(args);
-		Operator op = allOperatorsHash.get(nm);
-		if( op != null ) {
-			if (pr == 0)
-				pr = op.priority;
+	public static Operator newOperator(int pr, String decl) {
+		decl = decl.intern();
+		Operator op = allOperatorDeclsHash.get(decl);
+		if( op != null )
 			return op;
-		}
-		return new Operator(args,pr,nm);
+		OpArg[] args = OpArg.fromOpString(pr, decl);
+		String name = OpArg.toOpName(args).intern();
+		op = allOperatorNamesHash.get(name);
+		if( op != null )
+			throw new RuntimeException("Redeclaration of an operator from "+op.decl+" to "+decl);
+		return new Operator(args,pr,name,decl);
 	}
 
 	public final		OpArg[]		args;
 	public final		int			priority;
 	public final		String		name;
+	public final		String		decl;
 	private				Method[]	methods;
 
-	private Operator(OpArg[] args, int pr, String nm) {
+	private Operator(OpArg[] args, int pr, String name, String decl) {
 		this.args = args;
 		this.priority = pr;
-		this.name = nm.intern();
+		this.name = name.intern();
+		this.decl = decl.intern();
 		this.methods = new Method[0];
-		allOperatorsHash.put(nm,this);
+		allOperatorNamesHash.put(name,this);
+		allOperatorDeclsHash.put(decl,this);
 	}
 
 	public boolean equals(Object o) {
@@ -243,7 +248,7 @@ public final class Operator implements Constants {
 	}
 
 	public static void cleanupMethod(Method m) {
-		foreach( Operator op; allOperatorsHash ) {
+		foreach( Operator op; allOperatorDeclsHash ) {
 			Method[] methods = op.methods;
 			for(int i=0; i < methods.length; i++) {
 				if (methods[i] == m) {
@@ -260,7 +265,7 @@ public final class Operator implements Constants {
 	}
 
 	public static Operator lookupOperatorForMethod(Method m) {
-		foreach (Operator o; Operator.allOperatorsHash) {
+		foreach (Operator o; Operator.allOperatorDeclsHash) {
 			foreach (Method x; o.methods; x == m) {
 				return o;
 			}
@@ -326,8 +331,11 @@ public final class Operator implements Constants {
 		return 255;
 	}
 
-	public static Operator getOperator(String nm) {
-		return allOperatorsHash.get(nm);
+	public static Operator getOperatorByName(String nm) {
+		return allOperatorNamesHash.get(nm);
+	}
+	public static Operator getOperatorByDecl(String nm) {
+		return allOperatorDeclsHash.get(nm);
 	}
 
 	public Method resolveMethod(ENode expr) {

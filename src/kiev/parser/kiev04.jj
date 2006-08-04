@@ -1025,18 +1025,24 @@ TypeDecl Typedef(ASTModifiers modifiers) :
 }
 
 Opdef Opdef(ASTModifiers modifiers) :
-{ SymbolRef id; ASTOperator op; ConstIntExpr ce; Opdef opd = new Opdef(); }
+{ SymbolRef id; ASTOperator op; ConstIntExpr ce; ConstStringExpr cs; Opdef opd = new Opdef(); }
 {
-	"operator"
+	"operator"							{ opd.pos = getToken(0).getPos(); }
 	(
-		op = Operator()            { opd.setImage(op); }
-	|	id = NameRef()             { opd.setImage(id); }
+		(
+			op = Operator()            { opd.setImage(op); }
+		|	id = NameRef()             { opd.setImage(id); }
+		)
+		","
+		// FX,FY,XF,YF,XFX,YFX,XFY,YFY
+		id = NameRef()                 { opd.setMode(id); }
+		","
+		ce = IntConstExpression()		{ opd.setPriority(ce); }
+	|
+		cs = StringConstExpression()	{ opd.decl = cs.value; }
+		[ "," ]
+		ce = IntConstExpression()		{ opd.setPriority(ce); }
 	)
-	","
-	// FX,FY,XF,YF,XFX,YFX,XFY,YFY
-	id = NameRef()                 { opd.setMode(id); }
-	","
-	ce = IntConstExpression()		{ opd.setPriority(ce); }
 	";"
 	{ return opd; }
 }
@@ -1707,45 +1713,30 @@ MetaThrows Throws() :
 
 
 Symbol Alias() :
-{ Token t; Symbol a; }
+{ Token t; Symbol a; SymbolRef id; ASTOperator op; ConstIntExpr ce; ConstStringExpr cs; }
 {
-	"alias"
 	(
-		LOOKAHEAD(2)
-		a = OperatorAlias()
-	|	a = Name()
-	)
-	{ return a; }
-}
-
-ASTOperatorAlias OperatorAlias() :
-{ Token t = null; SymbolRef id; ASTOperator op; ConstIntExpr ce; ASTOperatorAlias a = new ASTOperatorAlias(); }
-{
-	(	// temporary, for backward compatibility
-		"operator"
-		"("
-		ce = IntConstExpression()		{ a.setPriority(ce); }
-		","
-		id = NameRef()					{ a.setMode(id); }
-		","
+		"alias"
 		(
-			op = Operator()				{ a.setImage(op); }
-		|	id = NameRef()				{ a.setImage(id); }
-		|	<OPERATOR_LRBRACKETS>		{ a.image = "[]"; }
-		|	"new"						{ a.image = "new"; }
-		|	"$cast"						{ a.image = "$cast"; }
+			LOOKAHEAD(2)
+			id = NameRef()
+			"operator"
+			{ a = new ASTOperatorAlias(); a.setMode(id); }
+			(
+				op = Operator()				{ a.setImage(op); }
+			|	id = NameRef()				{ a.setImage(id); }
+			|	<OPERATOR_LRBRACKETS>		{ a.image = "[]"; }
+			|	"new"						{ a.image = "new"; }
+			|	"$cast"						{ a.image = "$cast"; }
+			)
+		|	"operator"
+			cs = StringConstExpression()
+			{ a = new ASTOperatorAlias(); a.setName(cs); }
+		|	a = Name()
 		)
-		")"
-	|
-		id = NameRef()					{ a.setMode(id); }
-		"operator"
-		(
-			op = Operator()				{ a.setImage(op); }
-		|	id = NameRef()				{ a.setImage(id); }
-		|	<OPERATOR_LRBRACKETS>		{ a.image = "[]"; }
-		|	"new"						{ a.image = "new"; }
-		|	"$cast"						{ a.image = "$cast"; }
-		)
+	|	"operator"
+		cs = StringConstExpression()
+		{ a = new ASTOperatorAlias(); a.setName(cs); }
 	)
 	{ return a; }
 }

@@ -56,6 +56,7 @@ public class Opdef extends SNode {
 	@att public int					prior;
 	@att public int					opmode;
 	@att public String				image;
+	@att public String				decl;
 	@ref public Operator			resolved;
 
 	@setter

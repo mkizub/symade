@@ -47,7 +47,7 @@ public final class PVar<A>
 	@getter
 	public A get$$var()
 		alias $get_var
-		alias operator(210,fy,$cast)
+		alias fy operator $cast
 	{
 		if ($_pvar_ != null)
 			return $_pvar_.$get_var();

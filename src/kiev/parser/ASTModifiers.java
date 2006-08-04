@@ -24,13 +24,13 @@ public final class ASTModifiers extends ASTNode {
 	public ASTModifiers() {}
 	
 	public UserMeta add(UserMeta m)
-		alias operator(5, lfy, +=)
+		alias lfy operator +=
 	{
 		this.annotations += m;
 		return m;
 	}
 	public MetaFlag add(MetaFlag m)
-		alias operator(5, lfy, +=)
+		alias lfy operator +=
 	{
 		this.annotations += m;
 		return m;

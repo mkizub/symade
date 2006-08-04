@@ -96,7 +96,7 @@ public class ASTExpression extends ENode {
 		trace( Kiev.debugOperators, "resolveExpr: 0 restLength "+restLength()+" priority "+priority),
 
 		restLength() > 1,
-		op @= Operator.allOperatorsHash,
+		op @= Operator.allOperatorNamesHash,
 		matchOpStart(op, priority),
 		trace( Kiev.debugOperators, "resolveExpr: 2 for "+op),
 		opArgs = makeOpArgs(op) : popRes(),
@@ -118,7 +118,7 @@ public class ASTExpression extends ENode {
 	{
 		trace( Kiev.debugOperators, "resolveExprNext: 0 restLength "+restLength()+" priority "+priority+" prev: "+prev),
 		restLength() > 1,
-		op @= Operator.allOperatorsHash,
+		op @= Operator.allOperatorNamesHash,
 		matchOpStart(op,prev,priority),
 		trace( Kiev.debugOperators, "resolveExprNext: 1 for "+prev+" "+op),
 		opArgs = makeOpArgs(op,prev) : popRes(),

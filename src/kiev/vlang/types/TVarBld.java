@@ -73,7 +73,7 @@ public final class TVarBld implements TVSet {
 
 	public TVar get(int idx)
 		alias at
-		alias operator(210,xfy,[])
+		alias xfy operator []
 	{
 		return tvars[idx];
 	}

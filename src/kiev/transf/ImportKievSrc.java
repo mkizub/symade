@@ -144,7 +144,20 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		int prior = astn.prior;
 		int opmode = astn.opmode;
 		String image = astn.image;
-		String decl = null;
+		String decl = astn.decl;
+		if (decl != null) {
+			Operator op = Operator.getOperatorByDecl(decl);
+			if (op != null) {
+				if (prior != op.priority)
+					throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
+				astn.resolved = op;
+				return;
+			}
+			op = Operator.newOperator(prior, decl);
+			if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
+			astn.resolved = op;
+			return;
+		}
 		switch(opmode) {
 		case Opdef.LFY:	decl = "X "+image+" Y";	break;
 		case Opdef.XFX:
@@ -166,16 +179,18 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			throw new CompilerException(astn,"Unknown operator mode "+opmode);
 		}
 		String name = OpArg.toOpName(OpArg.fromOpString(prior,decl));
-		Operator op = Operator.getOperator(name);
-		if (op != null) {
-			if (prior != op.priority)
-				throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
+		{
+			Operator op = Operator.getOperatorByName(name);
+			if (op != null) {
+				if (prior != op.priority)
+					throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
+				astn.resolved = op;
+				return;
+			}
+			op = Operator.newOperator(prior, decl);
+			if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
 			astn.resolved = op;
-			return;
 		}
-		op = Operator.newOperator(prior, decl);
-		if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
-		astn.resolved = op;
 		return;
 	}
 

@@ -478,7 +478,7 @@ public class Env extends Struct {
 		saxParser.parse(f, handler);
 		ANode root = handler.root;
 		if (root instanceof FileUnit) {
-			root.id = getRelativePath(f);
+			root.id.sname = getRelativePath(f);
 		} else {
 			root = new FileUnit(getRelativePath(f), Env.root);
 			root.members += handler.root;

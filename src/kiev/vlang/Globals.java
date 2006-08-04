@@ -9,6 +9,9 @@ import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+operator "X ?= X" , 5;
+operator "X @= X" , 5;
+
 /**
  * @author Maxim Kizub
  *
@@ -16,18 +19,21 @@ import syntax kiev.Syntax;
 
 public metatype Globals extends any {
 
+	@CompilerNode("Set")
 	@macro @native
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R ref_assign(L lval, R val) alias lfy operator = ;
+	public static <L extends Object, R extends L> R ref_assign(L lval, R val) operator "V = V";
 
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R ref_assign2(L lval, R val) alias lfy operator := ;
+	@CompilerNode("Set")
+	@macro @native
+	public static <L extends Object, R extends L> R ref_assign2(L lval, R val) operator "V := V";
 
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R@ ref_pvar_init(L@ lval, R@ val) alias lfy operator := ;
+	@CompilerNode("Set")
+	@macro @native
+	public static <L extends Object, R extends L> R@ ref_pvar_init(L@ lval, R@ val) operator "V := V";
 
-	@macro @CompilerNode("Set")
-	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) alias lfy operator =
+	@CompilerNode("Set")
+	@macro
+	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) operator "V = V"
 	{
 		case AssignExpr# self():
 			new #AssignExpr(lval=self.lval,op=self.op,value=new #CallExpr(obj=self.value,ident="get$$var"))
@@ -35,8 +41,9 @@ public metatype Globals extends any {
 			new #AssignExpr(lval=lval,op="V = V",value=new #CallExpr(obj=val,ident="get$$var"))
 	}
 
-	@macro @CompilerNode("Set")
-	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R val) alias lfy operator =
+	@CompilerNode("Set")
+	@macro
+	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R val) operator "V = V"
 	{
 		case CallExpr# self():
 			new #CallExpr(obj=lval,ident="$bind",args={val})
@@ -44,8 +51,9 @@ public metatype Globals extends any {
 			new #CallExpr(obj=self.lval,ident="$bind",args={self.value})
 	}
 
-	@macro @CompilerNode("Set")
-	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R@ val) alias lfy operator =
+	@CompilerNode("Set")
+	@macro
+	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R@ val) operator "V = V"
 	{
 		case CallExpr# self():
 			new #CallExpr(obj=lval,ident="$bind",args={val})
@@ -53,11 +61,13 @@ public metatype Globals extends any {
 			new #CallExpr(obj=self.lval,ident="$bind",args={self.value})
 	}
 
-	@macro @CompilerNode("RuleIstheExpr")
-	public static boolean ref_pvar_is_the(Object@ lval, Object val) alias xfx operator ?= ;
+	@CompilerNode("RuleIstheExpr")
+	@macro
+	public static boolean ref_pvar_is_the(Object@ lval, Object val) operator "V ?= V" ;
 
-	@macro @CompilerNode("RuleIsoneofExpr")
-	public static boolean ref_pvar_is_one_of(Object@ lval, Object val) alias xfx operator @= ;
+	@CompilerNode("RuleIsoneofExpr")
+	@macro
+	public static boolean ref_pvar_is_one_of(Object@ lval, Object val) operator "V @= V" ;
 
 }
 

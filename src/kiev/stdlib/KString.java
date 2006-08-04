@@ -171,7 +171,7 @@ public final class KString {
 	}
 	
 	public static KString from(String s)
-		alias operator (210,fy,~)
+		alias fy operator ~
 	{
 		byte[] name = Convert.string2ascii(s);
 		return from(name,0,name.length);

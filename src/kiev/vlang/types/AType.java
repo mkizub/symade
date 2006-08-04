@@ -79,20 +79,20 @@ public abstract class AType implements StdTypes, TVSet {
 		return this;
 	}
 	
-	public static boolean identity(AType t1, AType t2) alias operator (60, xfx, ≡ ) {
+	public static boolean identity(AType t1, AType t2) alias xfx operator ≡ {
 		return t1 == t2;
 	}
 
-	public static boolean not_identity(AType t1, AType t2) alias operator (60, xfx, ≢ ) {
+	public static boolean not_identity(AType t1, AType t2) alias xfx operator ≢ {
 		return t1 != t2;
 	}
 
-	public static boolean type_not_equals(AType t1, AType t2) alias operator (60, xfx, ≉ ) {
+	public static boolean type_not_equals(AType t1, AType t2) alias xfx operator ≉ {
 		if (t1 == null || t2 == null) return true;
 		return !(t1 ≈ t2);
 	}
 	
-	public static boolean type_equals(AType t1, AType t2) alias operator (60, xfx, ≈ ) {
+	public static boolean type_equals(AType t1, AType t2) alias xfx operator ≈ {
 		if (t1 == null || t2 == null) return false;
 		if (t1 == t2) return true;
 		if (t1.meta_type != t2.meta_type) return false;

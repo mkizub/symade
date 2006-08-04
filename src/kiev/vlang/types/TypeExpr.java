@@ -52,7 +52,9 @@ public class TypeExpr extends TypeRef {
 		if (this.lnk != null)
 			return this.lnk;
 		if (this.op == null) {
-			Operator op = Operator.getOperator(ident.name);
+			Operator op = Operator.getOperatorByName(ident.name);
+			if (op == null)
+				op = Operator.getOperatorByDecl(ident.name);
 			if (op == null)
 				throw new CompilerException(this, "Cannot find type operator: "+ident.name);
 			this.op = op;

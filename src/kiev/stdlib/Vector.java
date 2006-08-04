@@ -62,7 +62,7 @@ public class Vector<A> implements Cloneable
 
 	public synchronized A[] copyIntoArray()
 		alias toArray
-		alias operator(210,fy,$cast)
+		alias fy operator $cast
 	{
 		A[] anArray = new A[count];
 		System.arraycopy(data,0,anArray,0,count);
@@ -159,7 +159,7 @@ public class Vector<A> implements Cloneable
 	public A elementAt(int index)
 		alias at
 		alias get
-		alias operator(210,xfy,[])
+		alias xfy operator []
 	{
 		if( index >= count )
 			throw new ArrayIndexOutOfBoundsException(index+" >= "+count);
@@ -182,7 +182,7 @@ public class Vector<A> implements Cloneable
 
 	public A setElementAt(int index, A obj)
 		alias set
-		alias operator(210,lfy,[])
+		alias lfy operator []
 	{
 		if (index >= count)
 			throw new ArrayIndexOutOfBoundsException(index+" >= "+count);

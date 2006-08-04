@@ -322,7 +322,7 @@ public abstract class ANode {
 	}
 	
 	public final This detach()
-		alias operator (210,fy,~)
+		alias fy operator ~
 	{
 		if (!isAttached())
 			return this;

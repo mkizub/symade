@@ -16,7 +16,7 @@ public view JNode of ASTNode implements JConstants {
 
 	@unerasable
 	public static <J extends JNode> J[] toJArray(NodeSpace<ASTNode> narr)
-		alias operator(210,fy,$cast)
+		alias fy operator $cast
 	{
 		int sz = narr.length;
 		J[] jarr = new J[sz];
@@ -27,7 +27,7 @@ public view JNode of ASTNode implements JConstants {
 
 	@unerasable
 	public static JType[] toJTypeArray(NodeSpace<ASTNode> narr)
-		alias operator(210,fy,$cast)
+		alias fy operator $cast
 	{
 		int sz = narr.length;
 		JType[] jarr = new JType[sz];

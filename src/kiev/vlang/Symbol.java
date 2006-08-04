@@ -231,8 +231,10 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	void callbackSymbolChanged() {
 		this.dnode = this.symbol.dnode;
-		if (this.name != this.symbol.sname)
+		if (this.name != this.symbol.sname) {
+			this.open();
 			this.name = this.symbol.sname;
+		}
 	}
 	
 	public DNode[] findForResolve(boolean by_equals) {
