@@ -71,21 +71,17 @@ public class Window extends JFrame {
 		editor_view = new Editor  (this, new JavaSyntax(), edit_canvas);
 		info_view   = new InfoView(this, new JavaSyntax(), info_canvas);
 		clip_view   = new InfoView(this, new JavaSyntax(), clip_canvas);
-		expl_view   = new TreeView(this, expl_tree);
+		expl_view   = new TreeView(this, new TreeSyntax(), expl_tree);
 		export_view = new InfoView(this, new XmlDumpSyntax(), export_canvas);
 		editor_view.setRoot(null);
 		editor_view.formatAndPaint(true);
-		expl_view.setRoot(null);
+		expl_view.setRoot(Env.root);
 		expl_view.formatAndPaint(true);
 	}
 	
 	public void setRoot(ANode root) {
 		editor_view.setRoot(root);
 		editor_view.formatAndPaint(true);
-		expl_view.setRoot(root);
-		//expl_view.formatAndPaint(true);
-		export_view.the_root = root;
-		export_view.formatAndPaint(true);
 	}
 
 }

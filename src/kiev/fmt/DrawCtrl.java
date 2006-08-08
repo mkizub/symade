@@ -11,14 +11,19 @@ import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-@node
+@node(copyable=false)
 public class DrawCtrl extends Drawable {
 	@att
 	public Drawable arg;
 	
-	public DrawCtrl() {}
 	public DrawCtrl(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
+	}
+
+	public String getText() {
+		if (arg != null)
+			return arg.getText();
+		return "???";
 	}
 
 	public DrawTerm getFirstLeaf() {
@@ -45,9 +50,9 @@ public class DrawCtrl extends Drawable {
 
 }
 
-@node
+@node(copyable=false)
 public class DrawSpace extends DrawCtrl {
-	public DrawSpace() {}
+
 	public DrawSpace(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
 	}
@@ -62,13 +67,12 @@ public class DrawSpace extends DrawCtrl {
 
 }
 
-@node
+@node(copyable=false)
 public class DrawOptional extends DrawCtrl {
 
 	@att public boolean draw_optional;
 	boolean drawed_as_true;
 	
-	public DrawOptional() {}
 	public DrawOptional(ANode node, SyntaxOptional syntax) {
 		super(node, syntax);
 	}
@@ -111,14 +115,13 @@ public class DrawOptional extends DrawCtrl {
 	}
 }
 
-@node
+@node(copyable=false)
 public final class DrawFolded extends DrawCtrl {
 
 	@att public boolean draw_folded;
 	
 	boolean drawed_as_folded;
 	
-	public DrawFolded() {}
 	public DrawFolded(ANode node, SyntaxFolder syntax) {
 		super(node, syntax);
 		this.draw_folded = syntax.folded_by_default;
@@ -149,12 +152,11 @@ public final class DrawFolded extends DrawCtrl {
 	}
 }
 
-@node
+@node(copyable=false)
 public class DrawIntChoice extends DrawCtrl {
 
 	int drawed_idx;
 
-	public DrawIntChoice() {}
 	public DrawIntChoice(ANode node, SyntaxIntChoice syntax) {
 		super(node, syntax);
 	}
@@ -180,12 +182,11 @@ public class DrawIntChoice extends DrawCtrl {
 	}
 }
 
-@node
+@node(copyable=false)
 public class DrawEnumChoice extends DrawCtrl {
 
 	Enum drawed_en;
 
-	public DrawEnumChoice() {}
 	public DrawEnumChoice(ANode node, SyntaxEnumChoice syntax) {
 		super(node, syntax);
 	}
@@ -210,12 +211,11 @@ public class DrawEnumChoice extends DrawCtrl {
 	}
 }
 
-@node
+@node(copyable=false)
 public class DrawParagraph extends DrawCtrl {
 
 	boolean is_multiline;
 	
-	public DrawParagraph() {}
 	public DrawParagraph(ANode node, SyntaxParagraphLayout syntax) {
 		super(node, syntax);
 	}

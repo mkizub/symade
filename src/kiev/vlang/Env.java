@@ -40,6 +40,7 @@ public enum ProjectFileType {
 	PACKAGE,
 	METATYPE
 }
+
 @node
 public final class ProjectFile extends ASTNode {
 
@@ -76,6 +77,8 @@ public class Env extends Struct {
 	
 	/** Backend environment */
 	public static JEnv			jenv;
+
+	@att public FileUnit[]		files;
 
 	/** Private class constructor -
 		really there may be no instances of this class

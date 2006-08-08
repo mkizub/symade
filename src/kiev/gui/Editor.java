@@ -151,7 +151,7 @@ public class Editor extends InfoView implements KeyListener {
 					Compiler.runBackEnd(null);
 				} catch (Throwable t) { t.printStackTrace(); }
 				System.out.println("Backend compiler completed with "+Kiev.errCount+" error(s)");
-				foreach (FileUnit fu; Kiev.files) {
+				foreach (FileUnit fu; Env.root.files) {
 					walkTree(new TreeWalker() {
 						public boolean pre_exec(ANode n) { if (n instanceof ASTNode) { n.compileflags &= 0xFFFF0000; } return true; }
 					});

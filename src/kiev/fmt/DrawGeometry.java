@@ -14,6 +14,7 @@ import syntax kiev.Syntax;
 
 public class DrawGeometry {
 	public boolean is_hidden; // don't draw/print
+	public boolean is_tree_open;
 	public int     do_newline; // used by formatter to mark actual new-lines after a DrawTerm
 	public int     lineno; // line number for text-kind draw/print formatters
 	public int     x, y, w, h, b;

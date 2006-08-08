@@ -188,7 +188,7 @@ public final class JEnv {
 			if( Kiev.verbose ) Kiev.reportInfo("Scanned file   "+filename,diff_time);
 			System.gc();
 			try {
-				Kiev.files.append(fu);
+				Env.root.files += fu;
 				Kiev.runProcessorsOn(fu);
 				fu = null;
 			} catch(Exception e ) {

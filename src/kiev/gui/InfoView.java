@@ -16,6 +16,9 @@ import syntax kiev.Syntax;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.Graphics2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,6 +35,9 @@ import javax.swing.filechooser.FileFilter;
 @node(copyable=false)
 public class InfoView extends UIView implements KeyListener {
 
+	/** The canvas to show definition of current node */
+	protected Canvas		view_canvas;
+
 	protected final Hashtable<Integer,KeyHandler> naviMap;
 
 	{
@@ -44,11 +50,20 @@ public class InfoView extends UIView implements KeyListener {
 		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_DOWN), new NavigateView(this,NavigateView.PAGE_DOWN));
 	}
 	
-	public InfoView(Window window, TextSyntax syntax, Canvas info_canvas) {
-		super(window, syntax, info_canvas);
+	public InfoView(Window window, TextSyntax syntax, Canvas view_canvas) {
+		super(window, syntax);
+		this.view_canvas = view_canvas;
+		this.formatter = new GfxFormatter(syntax, (Graphics2D)view_canvas.getGraphics());
+		view_canvas.addMouseListener(this);
+		view_canvas.addComponentListener(this);
 		view_canvas.addKeyListener(this);
 	}
 
+	public void setRoot(ANode root) {
+		this.the_root = root;
+		view_canvas.root = view_root = formatter.format(the_root, view_root);
+	}
+	
 	public void formatAndPaint(boolean full) {
 		this.formatter.setWidth(view_canvas.getWidth());
 		view_canvas.root = null;
@@ -57,6 +72,9 @@ public class InfoView extends UIView implements KeyListener {
 		view_canvas.repaint();
 	}
 
+	public void mouseClicked(MouseEvent e) {
+		view_canvas.requestFocus();
+	}
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
 	

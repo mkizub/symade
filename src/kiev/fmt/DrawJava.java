@@ -12,10 +12,9 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 
-@node
-public class DrawJavaExpr extends DrawNonTermSet {
+@node(copyable=false)
+public class DrawJavaExpr extends DrawNonTerm {
 	
-	public DrawJavaExpr() {}
 	public DrawJavaExpr(ANode node, SyntaxJavaExpr syntax) {
 		super(node, syntax);
 	}
@@ -63,10 +62,9 @@ public class DrawJavaExpr extends DrawNonTermSet {
 	}
 }
 
-@node
+@node(copyable=false)
 public class DrawJavaAccess extends DrawTerm {
 
-	public DrawJavaAccess() {}
 	public DrawJavaAccess(ANode node, SyntaxJavaAccess syntax) {
 		super(node, syntax);
 	}
@@ -121,34 +119,12 @@ public class DrawJavaAccess extends DrawTerm {
 	}
 
 }
-/*
-@node
-public class DrawJavaEnumAlias extends DrawTerm {
-	
-	private String text;
-	
-	public DrawJavaEnumAlias() {}
-	public DrawJavaEnumAlias(ANode node, SyntaxJavaEnumAlias syntax) {
-		super(node, syntax);
-	}
 
-	String makeText(Formatter fmt) {
-		Field f = (Field)node;
-		String text = f.id.sname;
-		if (f.id.aliases != null) {
-			text = f.id.aliases[0];
-			text = text.substring(1,text.length()-1);
-		}
-		return "\""+text+"\"";
-	}	
-}
-*/
-@node
+@node(copyable=false)
 public class DrawJavaPackedField extends DrawTerm {
 
 	private String text;
 	
-	public DrawJavaPackedField() {}
 	public DrawJavaPackedField(ANode node, SyntaxJavaPackedField syntax) {
 		super(node, syntax);
 	}
@@ -163,23 +139,20 @@ public class DrawJavaPackedField extends DrawTerm {
 	}
 }
 
-@node
+@node(copyable=false)
 public final class JavaComment extends ANode {
 	@ref public String text;
-	public JavaComment() {
-		this.text = "";
-	}
+
 	public JavaComment(String text) {
 		this.text = text;
 	}
 }
 
-@node
-public class DrawJavaComment extends DrawNonTermSet {
+@node(copyable=false)
+public class DrawJavaComment extends DrawNonTerm {
 
 	public String old_text;
 	
-	public DrawJavaComment() {}
 	public DrawJavaComment(ANode node, SyntaxJavaComment syntax) {
 		super(node, syntax);
 	}

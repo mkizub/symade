@@ -12,7 +12,7 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 
-@node
+@node(copyable=false)
 public abstract class Drawable extends ANode {
 
 	public static final Drawable[] emptyArray = new Drawable[0];
@@ -30,15 +30,14 @@ public abstract class Drawable extends ANode {
 	@ref
 	public SyntaxElem		attr_syntax;
 	
-	public Drawable() {
-		this.geometry = new DrawGeometry();
-	}
 	public Drawable(ANode node, SyntaxElem syntax) {
 		this.node = node;
 		this.geometry = new DrawGeometry();
 		this.syntax = syntax;
 		this.geometry.is_hidden = this.syntax.fmt.is_hidden;
 	}
+	
+	public abstract String getText();
 
 	public abstract void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node);
 	public abstract boolean postFormat(DrawContext cont, boolean last_layout);

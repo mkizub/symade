@@ -30,6 +30,8 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	@virtual typedef JView = JFileUnit;
 	@virtual typedef RView = RFileUnit;
 
+	public static final FileUnit[] emptyArray = new FileUnit[0];
+
 	@att public TypeNameRef		pkg;
 	@att public ASTNode[]		members;
 	

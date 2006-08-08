@@ -12,14 +12,23 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 
-@node
+@node(copyable=false)
 public abstract class DrawNonTerm extends Drawable {
-	@att
-	public Drawable[] args;
-	
-	public DrawNonTerm() {}
+	@att public Drawable	folded;
+	@att public Drawable[]	args;
+	@att public boolean		draw_folded;
+
 	public DrawNonTerm(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
+	}
+	
+	public String getText() {
+		if (folded != null)
+			return folded.getText();
+		StringBuffer sb = new StringBuffer();
+		foreach (Drawable arg; args)
+			sb.append(arg.getText());
+		return sb.toString();
 	}
 
 	public DrawTerm getFirstLeaf() {
@@ -79,15 +88,15 @@ public abstract class DrawNonTerm extends Drawable {
 
 }
 
-@node
-public class DrawNonTermList extends DrawNonTerm {
+@node(copyable=false)
+public final class DrawNonTermList extends DrawNonTerm {
 
 	@att public boolean draw_optional;
 	ANode[] oarr;
 	
-	public DrawNonTermList() {}
 	public DrawNonTermList(ANode node, SyntaxList syntax) {
 		super(node, syntax);
+		this.draw_folded = syntax.folded_by_default;
 	}
 
 	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
@@ -97,6 +106,15 @@ public class DrawNonTermList extends DrawNonTerm {
 			dr.preFormat(cont, expected_stx, expected_node);
 		}
 		SyntaxList slst = (SyntaxList)this.syntax;
+		
+		if (folded == null && slst.folded != null) {
+			folded = slst.folded.makeDrawable(cont.fmt, node);
+			if (draw_folded) {
+				folded.preFormat(cont,slst.folded,this.node);
+				return;
+			}
+		}
+		
 		ANode[] narr = (ANode[])oarr;
 		try {
 			oarr = (ANode[])node.getVal(slst.name);
@@ -146,6 +164,7 @@ public class DrawNonTermList extends DrawNonTerm {
 		}
 		if (this.isUnvisible())
 			return;
+
 		int x = 0;
 		if (narr.length == 0) {
 			if (args.length > 0) {
@@ -234,12 +253,12 @@ public class DrawNonTermList extends DrawNonTerm {
 	}
 }
 
-@node
-public class DrawNonTermSet extends DrawNonTerm {
+@node(copyable=false)
+public final class DrawNonTermSet extends DrawNonTerm {
 
-	public DrawNonTermSet() {}
-	public DrawNonTermSet(ANode node, SyntaxElem syntax) {
+	public DrawNonTermSet(ANode node, SyntaxSet syntax) {
 		super(node, syntax);
+		this.draw_folded = syntax.folded_by_default;
 	}
 
 	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
@@ -251,14 +270,22 @@ public class DrawNonTermSet extends DrawNonTerm {
 		if (this.isUnvisible())
 			return;
 		SyntaxSet sset = (SyntaxSet)this.syntax;
-		if (args.length != sset.elements.length) {
-			args.delAll();
-			foreach (SyntaxElem se; sset.elements)
-				args.append(se.makeDrawable(cont.fmt, this.node));
-		}
-		for (int i=0; i < args.length; i++) {
-			Drawable dr = args[i];
-			dr.preFormat(cont,sset.elements[i],this.node);
+
+		if (folded == null && sset.folded != null)
+			folded = sset.folded.makeDrawable(cont.fmt, node);
+		if (folded != null)
+			folded.preFormat(cont,sset.folded,this.node);
+			
+		if (!draw_folded || folded == null) {
+			if (args.length != sset.elements.length) {
+				args.delAll();
+				foreach (SyntaxElem se; sset.elements)
+					args.append(se.makeDrawable(cont.fmt, this.node));
+			}
+			for (int i=0; i < args.length; i++) {
+				Drawable dr = args[i];
+				dr.preFormat(cont,sset.elements[i],this.node);
+			}
 		}
 	}
 }

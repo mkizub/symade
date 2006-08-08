@@ -251,8 +251,6 @@ class CalcOptionEnumFilter extends CalcOption {
 @node
 public class JavaSyntax extends TextSyntax {
 
-	final SyntaxJavaExprTemplate seExprTemplate;
-	
 	final Hashtable<Operator, SyntaxElem> exprs;
 	
 	private SyntaxSet expr(Operator op, SyntaxJavaExprTemplate template)
@@ -289,164 +287,13 @@ public class JavaSyntax extends TextSyntax {
 				continue;
 			}
 		}
-		SyntaxSet set = new SyntaxSet(new SpaceCmd[0]);
+		SyntaxSet set = new SyntaxSet();
 		set.elements.addAll(elems);
 		return set;
 	}
 
 	public JavaSyntax() {
 		exprs = new Hashtable<Operator, SyntaxElem>();
-
-/*		
-		{
-			SpaceCmd[] lout_struct = new SpaceCmd[] {
-					new SpaceCmd(siNlGrp, SP_NOP, SP_ADD, 0)
-				};
-			SpaceCmd[] lout_struct_hdr = new SpaceCmd[] {
-					new SpaceCmd(siNlOrBlock, SP_NOP, SP_ADD, 0)
-				};
-			SpaceCmd[] lout_struct_block_start = new SpaceCmd[] {
-					new SpaceCmd(siNlOrBlock, SP_EAT, SP_NOP, 0),
-					new SpaceCmd(siNl,        SP_NOP, SP_ADD,  0),
-					new SpaceCmd(siSp,        SP_ADD, SP_NOP, 0),
-				};
-			SpaceCmd[] lout_struct_block_end = new SpaceCmd[] {
-					new SpaceCmd(siNl,        SP_ADD, SP_ADD, 0),
-					new SpaceCmd(siSp,        SP_ADD, SP_NOP, 0),
-				};
-			SyntaxElem struct_args = opt(new CalcOptionNotEmpty("args"),
-				set(
-					sep("<"),
-					lst("args", node(/ *new FormatInfoHint("class-arg")* /), sep(","), lout_empty),
-					sep(">")
-				), null, lout_empty);
-			SpaceCmd[] lout_ext = new SpaceCmd[] {new SpaceCmd(siSp, SP_ADD, SP_NOP, 0)};
-			SyntaxElem class_ext = opt(new CalcOptionNotEmpty("super_types"),
-				set(
-					kw("extends"),
-					lst("super_types", node(), sep(","), lout_empty)
-					),
-				null, lout_ext
-				);
-			SyntaxList struct_members = lst("members",lout_empty);
-//			struct_members.filter = new CalcOption() {
-//				public boolean calc(ANode node) {
-//					if (node instanceof DNode && node.isSynthetic())
-//						return false;
-//					return true;
-//				}
-//			};
-			// anonymouse struct
-			seStructBody = set(
-					sep("{", lout_struct_block_start),
-					par(plIndented, struct_members),
-					sep("}", lout_struct_block_end)
-					);
-			// class
-			seStructClass = set(
-					setl(lout_struct_hdr,
-						attr("meta"),
-						kw("class"),
-						ident("id"),
-						struct_args.ncopy(),
-						class_ext.ncopy()),
-					seStructBody.ncopy()
-				);
-			// interface
-			seStructInterface = set(
-					setl(lout_struct_hdr,
-						attr("meta"),
-						kw("interface"),
-						ident("id"),
-						struct_args.ncopy(),
-						class_ext),
-					seStructBody.ncopy()
-				);
-			// view
-			seStructView = set(
-					setl(lout_struct_hdr,
-						attr("meta"),
-						kw("view"),
-						ident("id"),
-						struct_args.ncopy(),
-						kw("of"),
-						attr("view_of"),
-						class_ext.ncopy()),
-					seStructBody.ncopy()
-				);
-			// annotation
-			seStructAnnotation = set(
-					setl(lout_struct_hdr,
-						attr("meta"),
-						kw("@interface"),
-						ident("id")),
-					seStructBody.ncopy()
-				);
-			// syntax
-			seStructSyntax = set(
-					setl(lout_struct_hdr,
-						attr("meta"),
-						kw("syntax"),
-						ident("id")),
-					seStructBody.ncopy()
-				);
-
-			// case
-			SyntaxList case_fields = lst("members",
-				set(attr("meta"), attr("ftype"), ident("id")),
-				sep(","),
-				lout_empty
-				);
-//			case_fields.filter = new CalcOption() {
-//				public boolean calc(ANode node) { return node instanceof Field && !node.isSynthetic(); }
-//			};
-			seStructCase = setl(lout_nl_grp,
-					attr("meta"),
-					kw("case"),
-					ident("id"),
-					struct_args.ncopy(),
-					opt(new CalcOptionJavaFlag("singleton", 1, 20, 0),
-						set(
-							sep("("),
-							case_fields,
-							sep(")")
-							),
-						null,
-						lout_empty
-						),
-					sep(";")
-				);
-			// enum
-			SyntaxList enum_fields = lst("members",
-				set(
-					attr("id"),
-					opt(new CalcOptionMetaAlias(),
-						set(sep(":"), new SyntaxJavaEnumAlias(lout_empty)),
-						null,
-						lout_empty
-						)
-					),
-				sep_nl(","),
-				lout_empty);
-			enum_fields.filter = new CalcOptionEnumField();
-			SyntaxList enum_members = lst("members",lout_empty);
-			enum_members.filter = new CalcOptionEnumFilter();
-			seStructEnum = set(
-					setl(lout_struct_hdr,
-						attr("meta"),
-						kw("enum"),
-						ident("id")),
-					set(
-						sep("{", lout_struct_block_start),
-						par(plIndented, enum_fields),
-						sep(";"),
-						new SyntaxSpace(lout_nl_grp),
-						par(plIndented, enum_members),
-						sep("}", lout_struct_block_end)
-					)
-				);
-		}
-*/
 	}
 
 	public SyntaxElem getSyntaxElem(ANode node) {

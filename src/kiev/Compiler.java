@@ -475,7 +475,7 @@ public class Compiler {
 
 
 			Kiev.resetFrontEndPass();
-			Kiev.files.cleanup();
+			Env.root.files.delAll();
 			
 			Kiev.k = new Parser(new StringReader(""));
 			for(int i=0; i < args.length; i++) {
@@ -506,7 +506,7 @@ public class Compiler {
 					diff_time = curr_time = System.currentTimeMillis();
 					Kiev.k.ReInit(bis);
 					FileUnit fu = Kiev.k.FileUnit(args[i]);
-					Kiev.files.append(fu);
+					Env.root.files += fu;
 					diff_time = System.currentTimeMillis() - curr_time;
 					bis.close();
 					runGC();
@@ -547,9 +547,9 @@ public class Compiler {
 			///////////////////////////////////////////////////////////////////////
 			///////////////////////    Back-end    ////////////////////////////////
 			///////////////////////////////////////////////////////////////////////
-			if (Kiev.run_gui && Kiev.files.length > 0) {
+			if (Kiev.run_gui && Env.root.files.length > 0) {
 				kiev.gui.Window wnd = new kiev.gui.Window();
-				wnd.setRoot(Kiev.files[0]);
+				wnd.setRoot(Env.root.files[0]);
 				for(;;) Thread.sleep(10*1000);
 			} else {
 				runBackEnd(Kiev.useBackend);
@@ -600,9 +600,9 @@ stop:;
 			
 			tr_me.close();
 
-			for(int i=0; i < Kiev.files.length; i++) {
+			for(int i=0; i < Env.root.files.length; i++) {
 				final int errCount = Kiev.errCount;
-				final FileUnit fu = Kiev.files[i];
+				final FileUnit fu = Env.root.files[i];
 				Transaction tr = Transaction.open();
 				try {
 					Kiev.resetBackEndPass();

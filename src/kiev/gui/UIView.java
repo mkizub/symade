@@ -26,8 +26,6 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 
 	/** The workplace window */
 	protected Window		parent_window;
-	/** The canvas to show definition of current node */
-	protected Canvas		view_canvas;
 	/** The formatter of the current view */
 	protected GfxFormatter	formatter;
 	/** The root node to display */
@@ -37,18 +35,13 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	/** The syntax in use */
 	@ref public TextSyntax	syntax;
 
-	public UIView(Window window, TextSyntax syntax, Canvas view_canvas) {
+	public UIView(Window window, TextSyntax syntax) {
 		this.parent_window = window;
 		this.syntax        = syntax;
-		if (view_canvas != null) {
-			this.view_canvas   = view_canvas;
-			this.formatter     = new GfxFormatter(syntax, (Graphics2D)view_canvas.getGraphics());
-			view_canvas.addMouseListener(this);
-			view_canvas.addComponentListener(this);
-		}
 	}
 	
 	public TextSyntax getSyntax() { return syntax; }
+
 	public void setSyntax(TextSyntax syntax) {
 		this.syntax = syntax;
 		view_root = null;
@@ -56,16 +49,11 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 		formatAndPaint(true);
 	}
 	
-	public void setRoot(ANode root) {
-		this.the_root = root;
-		view_canvas.root = view_root = formatter.format(the_root, view_root);
-	}
+	public abstract void setRoot(ANode root) {}
 	
 	public abstract void formatAndPaint(boolean full);
 
-	public void mouseClicked(MouseEvent e) {
-		view_canvas.requestFocus();
-	}
+	public void mouseClicked(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
 	public void mousePressed(MouseEvent e) {}

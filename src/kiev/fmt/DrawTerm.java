@@ -12,11 +12,10 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 
-@node
+@node(copyable=false)
 public abstract class DrawTerm extends Drawable {
 	protected String text;
 
-	public DrawTerm() {}
 	public DrawTerm(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
 	}
@@ -49,10 +48,9 @@ public abstract class DrawTerm extends Drawable {
 	public final String getText() { return text; }
 }
 
-@node
+@node(copyable=false)
 public final class DrawToken extends DrawTerm {
 
-	public DrawToken() {}
 	public DrawToken(ANode node, SyntaxToken syntax) {
 		super(node, syntax);
 	}
@@ -60,12 +58,11 @@ public final class DrawToken extends DrawTerm {
 	String makeText(Formatter fmt) { return ((SyntaxToken)this.syntax).text; } 
 }
 
-@node
+@node(copyable=false)
 public class DrawNodeTerm extends DrawTerm {
 
 	String attr;
 
-	public DrawNodeTerm() {}
 	public DrawNodeTerm(ANode node, SyntaxElem syntax, String attr) {
 		super(node, syntax);
 		this.attr = attr.intern();
@@ -83,9 +80,9 @@ public class DrawNodeTerm extends DrawTerm {
 	}
 }
 
-@node
+@node(copyable=false)
 public class DrawCharTerm extends DrawNodeTerm {
-	public DrawCharTerm() {}
+
 	public DrawCharTerm(ANode node, SyntaxElem syntax, String attr) {
 		super(node, syntax, attr);
 	}
@@ -98,9 +95,9 @@ public class DrawCharTerm extends DrawNodeTerm {
 	}
 }
 
-@node
+@node(copyable=false)
 public class DrawStrTerm extends DrawNodeTerm {
-	public DrawStrTerm() {}
+
 	public DrawStrTerm(ANode node, SyntaxElem syntax, String attr) {
 		super(node, syntax, attr);
 	}
@@ -116,9 +113,9 @@ public class DrawStrTerm extends DrawNodeTerm {
 	}
 }
 
-@node
+@node(copyable=false)
 public class DrawXmlStrTerm extends DrawNodeTerm {
-	public DrawXmlStrTerm() {}
+
 	public DrawXmlStrTerm(ANode node, SyntaxElem syntax, String attr) {
 		super(node, syntax, attr);
 	}

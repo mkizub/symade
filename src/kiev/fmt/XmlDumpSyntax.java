@@ -56,16 +56,13 @@ public class XmlDumpSyntax extends TextSyntax {
 	protected SyntaxAttr attr(String slot) {
 		return new SyntaxSubAttr(slot, new SpaceCmd[0]);
 	}
-	protected SyntaxNode node() {
-		return new SyntaxNode();
-	}
 	protected SyntaxParagraphLayout par(SyntaxElem elem) {
 		ParagraphLayout plIndented = new ParagraphLayout("par-indented", 1, 10);
 		SyntaxParagraphLayout spl = new SyntaxParagraphLayout(elem, plIndented, new SpaceCmd[0]);
 		return spl;
 	}
 	protected SyntaxSet set(SyntaxElem... elems) {
-		SyntaxSet set = new SyntaxSet(new SpaceCmd[0]);
+		SyntaxSet set = new SyntaxSet();
 		set.elements.addAll(elems);
 		return set;
 	}
@@ -92,7 +89,7 @@ public class XmlDumpSyntax extends TextSyntax {
 				ss.elements += opt(new CalcOptionNotEmpty(attr.name),
 						setl(lout_nl,
 							open(attr.name),
-							par(new SyntaxList(attr.name, node(), null, lout_nl)),
+							par(new SyntaxList(attr.name, lout_nl)),
 							close(attr.name)
 							),
 						null,new SpaceCmd[0]

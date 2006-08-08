@@ -108,12 +108,18 @@ CLASS kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytec
 CLASS kiev.fmt.AbstractFormatter kiev/fmt/AbstractFormatter kiev\fmt\Formatter.java
 CLASS kiev.fmt.AbstractSyntaxElemDecl kiev/fmt/AbstractSyntaxElemDecl kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOption kiev/fmt/CalcOption kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.CalcOptionAnd kiev/fmt/CalcOptionAnd kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.CalcOptionClass kiev/fmt/CalcOptionClass kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionEnumField kiev/fmt/CalcOptionEnumField kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionEnumFilter kiev/fmt/CalcOptionEnumFilter kiev\fmt\JavaSyntax.java
+CLASS kiev.fmt.CalcOptionHasMetaFlag kiev/fmt/CalcOptionHasMetaFlag kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.CalcOptionHasUserMeta kiev/fmt/CalcOptionHasUserMeta kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionJavaFlag kiev/fmt/CalcOptionJavaFlag kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionMetaAlias kiev/fmt/CalcOptionMetaAlias kiev\fmt\JavaSyntax.java
+CLASS kiev.fmt.CalcOptionNot kiev/fmt/CalcOptionNot kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionNotNull kiev/fmt/CalcOptionNotNull kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.CalcOptionOr kiev/fmt/CalcOptionOr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionTrue kiev/fmt/CalcOptionTrue kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawCharTerm kiev/fmt/DrawCharTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawColor kiev/fmt/DrawColor kiev\fmt\SyntaxLayout.java
@@ -182,12 +188,14 @@ CLASS kiev.fmt.SyntaxXmlStrAttr kiev/fmt/SyntaxXmlStrAttr kiev\fmt\XmlDumpSyntax
 CLASS kiev.fmt.TextFormatter kiev/fmt/TextFormatter kiev\fmt\Formatter.java
 CLASS kiev.fmt.TextPrinter kiev/fmt/TextPrinter kiev\fmt\DrawDevice.java
 CLASS kiev.fmt.TextSyntax kiev/fmt/TextSyntax kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.TreeSyntax kiev/fmt/TreeSyntax kiev\fmt\TreeSyntax.java
 CLASS kiev.fmt.XmlDumpSyntax kiev/fmt/XmlDumpSyntax kiev\fmt\XmlDumpSyntax.java
 CLASS kiev.gui.ANodeTree kiev/gui/ANodeTree kiev\gui\TreeView.java
-CLASS kiev.gui.ATreeNode kiev/gui/ATreeNode kiev\gui\TreeView.java
+CLASS kiev.gui.ANodeTreeModel kiev/gui/ANodeTreeModel kiev\gui\TreeView.java
 CLASS kiev.gui.BoolEditor kiev/gui/BoolEditor kiev\gui\Editor.java
 CLASS kiev.gui.Canvas kiev/gui/Canvas kiev\gui\Canvas.java
 CLASS kiev.gui.ChooseItemEditor kiev/gui/ChooseItemEditor kiev\gui\Editor.java
+CLASS kiev.gui.DrawableTreeCellRenderer kiev/gui/DrawableTreeCellRenderer kiev\gui\TreeView.java
 CLASS kiev.gui.Editor kiev/gui/Editor kiev\gui\Editor.java
 CLASS kiev.gui.EnumEditor kiev/gui/EnumEditor kiev\gui\Editor.java
 CLASS kiev.gui.FolderTrigger kiev/gui/FolderTrigger kiev\gui\Editor.java
@@ -196,9 +204,7 @@ CLASS kiev.gui.IntEditor kiev/gui/IntEditor kiev\gui\Editor.java
 CLASS kiev.gui.NavigateEditor kiev/gui/NavigateEditor kiev\gui\Editor.java
 CLASS kiev.gui.NavigateView kiev/gui/NavigateView kiev\gui\InfoView.java
 CLASS kiev.gui.NewElemEditor kiev/gui/NewElemEditor kiev\gui\Editor.java
-CLASS kiev.gui.OTreeNode kiev/gui/OTreeNode kiev\gui\TreeView.java
 CLASS kiev.gui.OptionalTrigger kiev/gui/OptionalTrigger kiev\gui\Editor.java
-CLASS kiev.gui.SpaceTreeNode kiev/gui/SpaceTreeNode kiev\gui\TreeView.java
 CLASS kiev.gui.StrEditor kiev/gui/StrEditor kiev\gui\Editor.java
 CLASS kiev.gui.SymRefEditor kiev/gui/SymRefEditor kiev\gui\Editor.java
 CLASS kiev.gui.SymbolEditor kiev/gui/SymbolEditor kiev\gui\Editor.java
@@ -207,7 +213,6 @@ CLASS kiev.gui.TransferableANode kiev/gui/TransferableANode kiev\gui\Editor.java
 CLASS kiev.gui.TreeView kiev/gui/TreeView kiev\gui\TreeView.java
 CLASS kiev.gui.UIView kiev/gui/UIView kiev\gui\UIView.java
 CLASS kiev.gui.Window kiev/gui/Window kiev\gui\Window.java
-CLASS kiev.gui.XTreeNode kiev/gui/XTreeNode kiev\gui\TreeView.java
 CLASS kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
 CLASS kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.java
 CLASS kiev.parser.ASTModifiers kiev/parser/ASTModifiers kiev\parser\ASTModifiers.java
@@ -902,6 +907,10 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
+METATYPE kiev.gui.ATreeNode kiev\gui\TreeView.java
+METATYPE kiev.gui.OTreeNode kiev\gui\TreeView.java
+METATYPE kiev.gui.SpaceTreeNode kiev\gui\TreeView.java
+METATYPE kiev.gui.XTreeNode kiev\gui\TreeView.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad

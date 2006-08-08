@@ -381,7 +381,6 @@ public final class Kiev {
 
 	// Scanning & parsing
 	public static Parser				k;
-	public static Vector<FileUnit>		files = new Vector<FileUnit>();
 
 	public static Hashtable<String,Object> parserAddresses = new Hashtable<String,Object>();
 	private static int		parserAddrIdx;
@@ -469,17 +468,19 @@ public final class Kiev {
 				Kiev.k.curClazz = null;
 				Kiev.k.curMethod = null;
 				// callect parents of this block
-				List<ASTNode> pl = List.Nil;
-				ASTNode n = (ASTNode)b;
+				List<ANode> pl = List.Nil;
+				ANode n = (ANode)b;
 				while( n != null ) {
-					pl = new List.Cons<ASTNode>(n,pl);
-					n = (ASTNode)n.parent();
+					pl = new List.Cons<ANode>(n,pl);
+					if (n instanceof FileUnit)
+						break;
+					n = n.parent();
 				}
 				if( pl.head() != f ) {
 					reportError(b,"Prescanned body highest parent is "+pl.head()+" but "+b.expected_parent+" is expected in file "+f);
 					continue;
 				}
-				foreach(ASTNode nn; pl) {
+				foreach(ANode nn; pl) {
 					if (nn instanceof FileUnit)
 						Kiev.k.curFileUnit = (FileUnit)nn;
 					else if (nn instanceof TypeDecl)
@@ -674,7 +675,7 @@ public final class Kiev {
 		TransfProcessor tp = feProcessors[fe_pass_no];
 		if (!tp.isEnabled())
 			return null;
-		foreach (FileUnit fu; Kiev.files) {
+		foreach (FileUnit fu; Env.root.files) {
 			String curr_file = Kiev.curFile;
 			Kiev.curFile = fu.id.sname;
 			boolean[] exts = Kiev.getExtSet();
@@ -699,7 +700,7 @@ public final class Kiev {
 		BackendProcessor bp = meProcessors[me_pass_no];
 		if (!bp.isEnabled())
 			return null;
-		foreach (FileUnit fu; Kiev.files) {
+		foreach (FileUnit fu; Env.root.files) {
 			String curr_file = Kiev.curFile;
 			Kiev.curFile = fu.id.sname;
 			boolean[] exts = Kiev.getExtSet();
