@@ -12,11 +12,14 @@ import kiev.fmt.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import java.io.File;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.Graphics2D;
+import javax.swing.text.TextAction;
 
 /**
  * @author Maxim Kizub
@@ -64,5 +67,44 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	public void componentShown(ComponentEvent e) {}
 	public void componentResized(ComponentEvent e) {
 		formatAndPaint(true);
+	}
+
+	protected class SetSyntaxAction extends TextAction {
+		private Class clazz;
+		private String qname;
+		SetSyntaxAction(String text, Class clazz) {
+			super(text);
+			this.clazz = clazz;
+		}
+		SetSyntaxAction(String text, String qname) {
+			super(text);
+			this.qname = qname;
+		}
+		public void actionPerformed(ActionEvent e) {
+			if (clazz != null) {
+				TextSyntax stx = (TextSyntax)clazz.newInstance();
+				UIView.this.setSyntax(stx);
+				return;
+			}
+			TextSyntax stx = Env.resolveGlobalDNode(qname);
+			UIView.this.setSyntax(stx);
+		}
+	}
+	
+	protected class LoadSyntaxAction extends TextAction {
+		private String file;
+		private String name;
+		LoadSyntaxAction(String text, String file, String name) {
+			super(text);
+			this.file = file.replace('/',File.separatorChar);
+			this.name = name.intern();
+		}
+		public void actionPerformed(ActionEvent e) {
+			FileUnit fu = (FileUnit)Env.loadFromXmlFile(new File(this.file));
+			foreach (TextSyntax stx; fu.members; stx.u_name == name) {
+				UIView.this.setSyntax(stx);
+				return;
+			}
+		}
 	}
 }

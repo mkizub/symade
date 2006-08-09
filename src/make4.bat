@@ -1,1 +1,2 @@
+if not exist classes4\stx-fmt mkdir classes4\stx-fmt
 c:\java\jdk1.5.0\bin\java -ea -verify -Xms320M -Xmx320M -Xfuture -Xnoclassgc -classpath classes3 kiev.Main -classpath classes4 -d classes4 -verify -enable vnode -p k4d.prj -g %*

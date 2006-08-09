@@ -8,7 +8,7 @@ import kiev.parser.*;
 import java.io.*;
 
 import kiev.be.java15.JFileUnit;
-import kiev.fmt.JavaSyntax;
+import kiev.fmt.KievTextSyntax;
 import kiev.fmt.TextFormatter;
 import kiev.fmt.TextPrinter;
 import kiev.fmt.Drawable;
@@ -989,7 +989,7 @@ public final class ExportBE_Generate extends BackendProcessor {
 		try {
 			String out_file = fu.id.toString();
 			File f = new File(output_dir,out_file);
-			Env.dumpTextFile(fu, f, new JavaSyntax());
+			Env.dumpTextFile(fu, f, new KievTextSyntax());
 		} catch( IOException e ) {
 			System.out.println("Create/write error while Kiev-to-Src exporting: "+e);
 		}

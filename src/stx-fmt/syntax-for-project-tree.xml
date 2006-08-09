@@ -4,7 +4,7 @@
   <a-node class='kiev.vlang.types.TypeNameRef'>
    <ident>
     <a-node class='kiev.vlang.SymbolRef'>
-     <name>test</name>
+     <name>stx-fmt</name>
     </a-node>
    </ident>
   </a-node>

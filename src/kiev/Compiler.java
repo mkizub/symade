@@ -5,6 +5,7 @@ import kiev.vlang.*;
 import kiev.vlang.types.*;
 import kiev.transf.*;
 import kiev.parser.*;
+import kiev.fmt.TextSyntax;
 
 import java.io.*;
 import java.net.*;
@@ -481,34 +482,41 @@ public class Compiler {
 			for(int i=0; i < args.length; i++) {
 				try {
 					Kiev.curFile = args[i].intern();
-					java.io.InputStreamReader file_reader = null;
-					char[] file_chars = new char[8196];
-					int file_sz = 0;
-					try {
-						file_reader = new InputStreamReader(new FileInputStream(args[i]), "UTF-8");
-						for (;;) {
-							int r = file_reader.read(file_chars, file_sz, file_chars.length-file_sz);
-							if (r < 0)
-								break;
-							file_sz += r;
-							if (file_sz >= file_chars.length) {
-								char[] tmp = new char[file_chars.length + 8196];
-								System.arraycopy(file_chars, 0, tmp, 0, file_chars.length);
-								file_chars = tmp;
+					if (Kiev.curFile.toLowerCase().endsWith(".xml")) {
+						FileUnit fu = Env.loadFromXmlFile(new File(Kiev.curFile));
+						Env.root.files += fu;
+						foreach (TextSyntax ts; fu.members)
+							Env.createProjectInfo(ts,Kiev.curFile);
+					} else {
+						java.io.InputStreamReader file_reader = null;
+						char[] file_chars = new char[8196];
+						int file_sz = 0;
+						try {
+							file_reader = new InputStreamReader(new FileInputStream(args[i]), "UTF-8");
+							for (;;) {
+								int r = file_reader.read(file_chars, file_sz, file_chars.length-file_sz);
+								if (r < 0)
+									break;
+								file_sz += r;
+								if (file_sz >= file_chars.length) {
+									char[] tmp = new char[file_chars.length + 8196];
+									System.arraycopy(file_chars, 0, tmp, 0, file_chars.length);
+									file_chars = tmp;
+								}
 							}
+						} finally {
+							if (file_reader != null) file_reader.close();
 						}
-					} finally {
-						if (file_reader != null) file_reader.close();
+						java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
+						Kiev.k.interface_only = true;
+						runGC();
+						diff_time = curr_time = System.currentTimeMillis();
+						Kiev.k.ReInit(bis);
+						FileUnit fu = Kiev.k.FileUnit(args[i]);
+						Env.root.files += fu;
+						diff_time = System.currentTimeMillis() - curr_time;
+						bis.close();
 					}
-					java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
-					Kiev.k.interface_only = true;
-					runGC();
-					diff_time = curr_time = System.currentTimeMillis();
-					Kiev.k.ReInit(bis);
-					FileUnit fu = Kiev.k.FileUnit(args[i]);
-					Env.root.files += fu;
-					diff_time = System.currentTimeMillis() - curr_time;
-					bis.close();
 					runGC();
 					Kiev.curFile = "";
 					if( Kiev.verbose )
@@ -796,6 +804,14 @@ stop:;
 			try {
 				String key = e.nextElement();
 				ProjectFile value = Env.projectHash.get(key);
+				if (value.type == ProjectFileType.FORMAT) {
+					String nm = value.file.toString();
+					if( !Arrays.contains(args,nm) ) {
+						if( Kiev.verbose ) System.out.println("File "+nm+" - format");
+						args = (String[])Arrays.append(args,nm);
+					}
+					continue;
+				}
 				if (value.type == ProjectFileType.METATYPE) {
 					String nm = value.file.toString();
 					if( !Arrays.contains(args,nm) ) {

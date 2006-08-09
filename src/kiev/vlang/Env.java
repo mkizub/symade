@@ -38,7 +38,8 @@ public enum ProjectFileType {
 	ENUM,
 	SYNTAX,
 	PACKAGE,
-	METATYPE
+	METATYPE,
+	FORMAT
 }
 
 @node
@@ -107,7 +108,7 @@ public class Env extends Struct {
 		return "<root>";
 	}
 
-	public static DNode resolveStruct(String qname) {
+	public static DNode resolveGlobalDNode(String qname) {
 		Struct pkg = Env.root;
 		int start = 0;
 		int end = qname.indexOf('.', start);
@@ -272,6 +273,7 @@ public class Env extends Struct {
 						pf.file = new File(args[idx++]);
 						break;
 					case METATYPE:
+					case FORMAT:
 						pf.qname = args[idx++].intern();
 						pf.file = new File(args[idx++]);
 						break;
@@ -313,7 +315,7 @@ public class Env extends Struct {
 			for(Enumeration<String> e=projectHash.keys(); e.hasMoreElements();) {
 				String key = e.nextElement();
 				ProjectFile pf = projectHash.get(key);
-				DNode cl = resolveStruct(pf.qname);
+				DNode cl = resolveGlobalDNode(pf.qname);
 				if (cl != null && cl.isBad()) pf.bad = true;
 				if (cl instanceof Struct) {
 					if      (cl.isSyntax())		pf.type = SYNTAX;
@@ -322,8 +324,13 @@ public class Env extends Struct {
 					else if (cl.isEnum())		pf.type = ENUM;
 					else						pf.type = CLASS;
 					strs.append(pf.type+" "+pf.qname+" "+pf.bname+" "+pf.file+(pf.bad?" bad":""));
-				} else {
+				}
+				else if (cl instanceof TypeDecl) {
 					pf.type = METATYPE;
+					strs.append(pf.type+" "+pf.qname+" "+pf.file+(pf.bad?" bad":""));
+				}
+				else if (cl instanceof TextSyntax) {
+					pf.type = FORMAT;
 					strs.append(pf.type+" "+pf.qname+" "+pf.file+(pf.bad?" bad":""));
 				}
 			}
@@ -335,8 +342,8 @@ public class Env extends Struct {
 		}
 	}
 
-	public static void createProjectInfo(TypeDecl tdecl, String f) {
-		String qname = tdecl.qname();
+	public static void createProjectInfo(GlobalDNode dn, String f) {
+		String qname = dn.qname();
 		if (qname == null || qname == "")
 			return;
 		ProjectFile pf = projectHash.get(qname);
@@ -350,23 +357,27 @@ public class Env extends Struct {
 			if( !pf.file.getName().equals(f) )
 				pf.file = new File(f);
 		}
-		setProjectInfo(tdecl, false);
+		setProjectInfo(dn, false);
 	}
 
-	public static void setProjectInfo(TypeDecl tdecl, boolean good) {
-		ProjectFile pf = projectHash.get(tdecl.qname());
+	public static void setProjectInfo(GlobalDNode dn, boolean good) {
+		ProjectFile pf = projectHash.get(dn.qname());
 		if (pf != null) {
-			if (tdecl instanceof Struct)
-				pf.bname = ((JStruct)(Struct)tdecl).bname();
+			if (dn instanceof Struct)
+				pf.bname = ((JStruct)(Struct)dn).bname();
 			pf.bad = !good;
-			if (tdecl instanceof Struct) {
-				if      (tdecl.isSyntax())		pf.type = SYNTAX;
-				else if (tdecl.isPackage())		pf.type = PACKAGE;
-				else if (tdecl.isInterface())	pf.type = INTERFACE;
-				else if (tdecl.isEnum())		pf.type = ENUM;
-				else							pf.type = CLASS;
-			} else {
+			if (dn instanceof Struct) {
+				if      (dn.isSyntax())		pf.type = SYNTAX;
+				else if (dn.isPackage())	pf.type = PACKAGE;
+				else if (dn.isInterface())	pf.type = INTERFACE;
+				else if (dn.isEnum())		pf.type = ENUM;
+				else						pf.type = CLASS;
+			}
+			else if (dn instanceof TypeDecl) {
 				pf.type = METATYPE;
+			}
+			else if (dn instanceof TextSyntax) {
+				pf.type = FORMAT;
 			}
 		}
 	}
@@ -416,7 +427,7 @@ public class Env extends Struct {
 		if (qname == "") return true;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return false;
-		Struct cl = resolveStruct(qname);
+		Struct cl = (Struct)resolveGlobalDNode(qname);
 		if (cl != null)
 			return true;
 		// Check if not loaded
@@ -434,7 +445,7 @@ public class Env extends Struct {
 		if (qname == "") return Env.root;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
-		Struct cl = resolveStruct(qname);
+		Struct cl = (Struct)resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
 		if (cl == null)
 			cl = jenv.loadClazz(qname);
@@ -474,7 +485,7 @@ public class Env extends Struct {
 		if( !dir.exists() || !dir.isDirectory() ) throw new IOException("Can't create output dir "+dir);
 	}
 	
-	public static ASTNode loadFromXmlFile(File f) {
+	public static FileUnit loadFromXmlFile(File f) {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
 		SAXHandler handler = new SAXHandler();
@@ -487,7 +498,7 @@ public class Env extends Struct {
 			root.members += handler.root;
 		}
 		Kiev.runProcessorsOn((FileUnit)root);
-		return handler.root;
+		return (FileUnit)root;
 	}
 	
 	final static class SAXHandler extends DefaultHandler {

@@ -33,7 +33,7 @@ public final class JEnv {
 		// Check class is already loaded
 		String qname = name.name.toString().intern();
 		if (Env.classHashOfFails.get(qname) != null ) return null;
-		Struct cl = Env.resolveStruct(qname);
+		Struct cl = (Struct)Env.resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
 		if( cl == null )
 			cl = loadClazz(name);
@@ -108,7 +108,7 @@ public final class JEnv {
 		diff_time = curr_time = System.currentTimeMillis();
 		kiev.bytecode.Clazz clazz = stdClassLoader.loadClazz(name.bytecode_name.toString());
 		if( clazz != null ) {
-			Struct cl = Env.resolveStruct(name.name.toString().intern());
+			Struct cl = (Struct)Env.resolveGlobalDNode(name.name.toString().intern());
 			if( cl == null || !cl.isTypeDeclLoaded() || cl.package_clazz==null ) {
 				// Ensure the parent package/outer class is loaded
 				Struct pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
@@ -203,7 +203,7 @@ public final class JEnv {
 			k.interface_only = Kiev.interface_only;
 			Kiev.curFile = cur_file;
 		}
-		Struct cl = Env.resolveStruct(name.name.toString().intern());
+		Struct cl = (Struct)Env.resolveGlobalDNode(name.name.toString().intern());
 		return cl;
 	}
 

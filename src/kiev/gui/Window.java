@@ -30,24 +30,19 @@ public class Window extends JFrame {
 	JTabbedPane infos;
 	JSplitPane  split_left;
 	JSplitPane  split_bottom;
-	Editor		editor_view;
+	Editor[]	editor_views;
 	UIView		info_view;
 	UIView		clip_view;
 	UIView		expl_view;
-	UIView		export_view;
 	ANodeTree	expl_tree;
-	Canvas		edit_canvas;
 	Canvas		info_canvas;
 	Canvas		clip_canvas;
-	Canvas		export_canvas;
 
 	public Window() {
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		expl_tree   = new ANodeTree();
-		edit_canvas = new Canvas();
 		info_canvas = new Canvas();
 		clip_canvas = new Canvas();
-		export_canvas = new Canvas();
 		explorers = new JTabbedPane();
 		editors   = new JTabbedPane();
 		infos     = new JTabbedPane();
@@ -60,29 +55,54 @@ public class Window extends JFrame {
 		split_left.setResizeWeight(0.25);
 		split_left.setOneTouchExpandable(true);
 		explorers.addTab("Explorer", new JScrollPane(expl_tree));
-		editors.addTab("Meta", edit_canvas);
-		editors.addTab("Export", export_canvas);
 		infos.addTab("Info", info_canvas);
 		infos.addTab("Clipboard", clip_canvas);
 		this.getContentPane().add(split_left, BorderLayout.CENTER);
 		this.setSize(950, 650);
 		this.show();
-		edit_canvas.requestFocus();
-		editor_view = new Editor  (this, new JavaSyntax(), edit_canvas);
-		info_view   = new InfoView(this, new JavaSyntax(), info_canvas);
-		clip_view   = new InfoView(this, new JavaSyntax(), clip_canvas);
-		expl_view   = new TreeView(this, new TreeSyntax(), expl_tree);
-		export_view = new InfoView(this, new XmlDumpSyntax(), export_canvas);
-		editor_view.setRoot(null);
-		editor_view.formatAndPaint(true);
+		editor_views = new Editor[0];
+		info_view   = new InfoView(this, (TextSyntax)Env.resolveGlobalDNode("stx-fmt.syntax-for-java"), info_canvas);
+		clip_view   = new InfoView(this, (TextSyntax)Env.resolveGlobalDNode("stx-fmt.syntax-for-java"), clip_canvas);
+		expl_view   = new TreeView(this, (TreeSyntax)Env.resolveGlobalDNode("stx-fmt.syntax-for-project-tree"), expl_tree);
 		expl_view.setRoot(Env.root);
 		expl_view.formatAndPaint(true);
+		expl_tree.requestFocus();
 	}
 	
-	public void setRoot(ANode root) {
-		editor_view.setRoot(root);
+	public void setRoot(FileUnit fu) {
+		openEditor(fu, new ANode[0]);
+	}
+	
+	public void openEditor(FileUnit fu, ANode[] path) {
+		foreach (Editor e; editor_views) {
+			if (e.the_root == fu || e.the_root.ctx_file_unit == fu) {
+				e.goToPath(path);
+				editors.setSelectedComponent(e.view_canvas);
+				e.view_canvas.requestFocus();
+				return;
+			}
+		}
+		Canvas edit_canvas = new Canvas();
+		editors.addTab(fu.id.sname, edit_canvas);
+		editors.setSelectedComponent(edit_canvas);
+		Editor editor_view = new Editor  (this, (TextSyntax)Env.resolveGlobalDNode("stx-fmt.syntax-for-java"), edit_canvas);
+		editor_views = (Editor[])Arrays.append(editor_views, editor_view);
+		editor_view.setRoot(fu);
 		editor_view.formatAndPaint(true);
+		editor_view.goToPath(path);
+		edit_canvas.requestFocus();
 	}
 
+	public void closeEditor(Editor ed) {
+		Vector<Editor> v = new Vector<Editor>();
+		foreach (Editor e; editor_views) {
+			if (e != ed) {
+				v.append(e);
+				continue;
+			}
+			editors.remove(e.view_canvas);
+		}
+		editor_views = v.toArray();
+	}
 }
 

@@ -151,7 +151,7 @@ CLASS kiev.fmt.Drawable kiev/fmt/Drawable kiev\fmt\Drawable.java
 CLASS kiev.fmt.FullElemFormat kiev/fmt/FullElemFormat kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.GfxFormatter kiev/fmt/GfxFormatter kiev\fmt\Formatter.java
 CLASS kiev.fmt.JavaComment kiev/fmt/JavaComment kiev\fmt\DrawJava.java
-CLASS kiev.fmt.JavaSyntax kiev/fmt/JavaSyntax kiev\fmt\JavaSyntax.java
+CLASS kiev.fmt.KievTextSyntax kiev/fmt/KievTextSyntax kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.LayoutSpace kiev/fmt/LayoutSpace kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.ParagraphLayout kiev/fmt/ParagraphLayout kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.ParagraphLayoutBlock kiev/fmt/ParagraphLayoutBlock kiev\fmt\SyntaxLayout.java
@@ -894,6 +894,7 @@ INTERFACE kiev.vlang.BreakTarget kiev/vlang/BreakTarget kiev\vlang\PassInfo.java
 INTERFACE kiev.vlang.Constants kiev/vlang/Constants kiev\vlang\Constants.java
 INTERFACE kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java
 INTERFACE kiev.vlang.DataFlowSlots kiev/vlang/DataFlowSlots kiev\vlang\Var.java
+INTERFACE kiev.vlang.GlobalDNode kiev/vlang/GlobalDNode kiev\vlang\DNode.java
 INTERFACE kiev.vlang.PreScanneable kiev/vlang/PreScanneable kiev\vlang\AST.java
 INTERFACE kiev.vlang.Scope kiev/vlang/Scope kiev\vlang\Resolving.java
 INTERFACE kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java
@@ -907,10 +908,7 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
-METATYPE kiev.gui.ATreeNode kiev\gui\TreeView.java
-METATYPE kiev.gui.OTreeNode kiev\gui\TreeView.java
-METATYPE kiev.gui.SpaceTreeNode kiev\gui\TreeView.java
-METATYPE kiev.gui.XTreeNode kiev\gui\TreeView.java
+METATYPE kiev.fmt.KievSyntax kiev\fmt\JavaSyntax.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad

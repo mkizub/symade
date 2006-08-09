@@ -249,7 +249,7 @@ class CalcOptionEnumFilter extends CalcOption {
 }
 
 @node
-public class JavaSyntax extends TextSyntax {
+public class KievTextSyntax extends TextSyntax {
 
 	final Hashtable<Operator, SyntaxElem> exprs;
 	
@@ -292,7 +292,7 @@ public class JavaSyntax extends TextSyntax {
 		return set;
 	}
 
-	public JavaSyntax() {
+	public KievTextSyntax() {
 		exprs = new Hashtable<Operator, SyntaxElem>();
 	}
 

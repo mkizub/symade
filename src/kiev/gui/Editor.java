@@ -190,11 +190,12 @@ public class Editor extends InfoView implements KeyListener {
 					formatAndPaint(true);
 				}
 				break;
-			case KeyEvent.VK_ESCAPE:
+			case KeyEvent.VK_W:
 				if (item_editor != null) {
 					stopItemEditor(true);
 					item_editor = null;
 				}
+				parent_window.closeEditor(this);
 				break;
 			case KeyEvent.VK_X:
 				if (cur_elem.dr != null) {
@@ -492,6 +493,45 @@ public class Editor extends InfoView implements KeyListener {
 				break;
 		}
 	}
+	
+	public void goToPath(ANode[] path) {
+		if (view_root == null)
+			return;
+		try {
+			foreach (ANode node; path) {
+				view_root.walkTree(new TreeWalker() {
+					public boolean pre_exec(ANode n) {
+						if (n instanceof Drawable) {
+							if (n instanceof DrawNodeTerm && n.getAttrPtr().get() == node || n.node == node) {
+								Drawable dr = n.getFirstLeaf();
+								cur_elem.set(dr);
+								cur_x = cur_elem.dr.geometry.x;
+								makeCurrentVisible();
+								formatAndPaint(false);
+								throw new RuntimeException();
+							}
+						}
+						return true; 
+					}
+				});
+			}
+		} catch (Throwable t) {}
+	}
+
+	void makeCurrentVisible() {
+		int top_lineno = view_canvas.first_visible.geometry.lineno;
+		int bot_lineno = view_canvas.last_visible.geometry.lineno;
+		int height = bot_lineno - top_lineno;
+		
+		if (top_lineno > 0 && cur_elem.dr.getFirstLeaf().geometry.lineno <= top_lineno) {
+			view_canvas.first_line = cur_elem.dr.getFirstLeaf().geometry.lineno -1;
+		}
+		if (bot_lineno < view_canvas.num_lines && cur_elem.dr.getFirstLeaf().geometry.lineno >= bot_lineno) {
+			view_canvas.first_line = cur_elem.dr.getFirstLeaf().geometry.lineno - height + 1;
+		}
+		if (view_canvas.first_line < 0)
+			view_canvas.first_line = 0;
+	}
 
 	final class CurElem {
 		Drawable		dr;
@@ -602,7 +642,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 			uiv.cur_x = prev.geometry.x;
 		}
 		if (repaint) {
-			makeCurrentVisible();
+			uiv.makeCurrentVisible();
 			uiv.formatAndPaint(false);
 		}
 	}
@@ -614,7 +654,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 			uiv.cur_x = next.geometry.x;
 		}
 		if (repaint) {
-			makeCurrentVisible();
+			uiv.makeCurrentVisible();
 			uiv.formatAndPaint(false);
 		}
 	}
@@ -644,7 +684,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 		if (n != null)
 			uiv.cur_elem.set(n);
 		if (repaint) {
-			makeCurrentVisible();
+			uiv.makeCurrentVisible();
 			uiv.formatAndPaint(false);
 		}
 	}
@@ -674,7 +714,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 		if (n != null)
 			uiv.cur_elem.set(n);
 		if (repaint) {
-			makeCurrentVisible();
+			uiv.makeCurrentVisible();
 			uiv.formatAndPaint(false);
 		}
 	}
@@ -735,22 +775,6 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 		for (int i=offs; i >= 0; i--)
 			navigateDn(i==0);
 		return;
-	}
-
-	private void makeCurrentVisible() {
-		final Editor uiv = (Editor)this.uiv;
-		int top_lineno = uiv.view_canvas.first_visible.geometry.lineno;
-		int bot_lineno = uiv.view_canvas.last_visible.geometry.lineno;
-		int height = bot_lineno - top_lineno;
-		
-		if (top_lineno > 0 && uiv.cur_elem.dr.getFirstLeaf().geometry.lineno <= top_lineno) {
-			uiv.view_canvas.first_line = uiv.cur_elem.dr.getFirstLeaf().geometry.lineno -1;
-		}
-		if (bot_lineno < uiv.view_canvas.num_lines && uiv.cur_elem.dr.getFirstLeaf().geometry.lineno >= bot_lineno) {
-			uiv.view_canvas.first_line = uiv.cur_elem.dr.getFirstLeaf().geometry.lineno - height + 1;
-		}
-		if (uiv.view_canvas.first_line < 0)
-			uiv.view_canvas.first_line = 0;
 	}
 
 }

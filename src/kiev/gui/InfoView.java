@@ -134,11 +134,11 @@ public class InfoView extends UIView implements KeyListener {
 				evt.consume();
 				// build a menu of types to instantiate
 				JPopupMenu m = new JPopupMenu();
-				m.add(new JMenuItem(new SetSyntaxAction("Java Syntax", JavaSyntax.class)));
-				m.add(new JMenuItem(new LoadSyntaxAction("Java Syntax (java.xml)", "java.xml", "JavaSyntax")));
+				m.add(new JMenuItem(new SetSyntaxAction("Kiev Syntax", "stx-fmt.syntax-for-java")));
+				m.add(new JMenuItem(new LoadSyntaxAction("Kiev Syntax (java.xml)", "java.xml", "test.syntax-for-java")));
 				m.add(new JMenuItem(new SetSyntaxAction("XML dump Syntax", XmlDumpSyntax.class)));
-				m.add(new JMenuItem(new LoadSyntaxAction("Syntax for Syntax (std)", "kiev/fmt/SyntaxForSyntax.xml", "SyntaxForSyntax")));
-				m.add(new JMenuItem(new LoadSyntaxAction("Syntax for Syntax (stx.xml)", "stx.xml", "SyntaxForSyntax")));
+				m.add(new JMenuItem(new SetSyntaxAction("Syntax for Syntax", "stx-fmt.syntax-for-syntax")));
+				m.add(new JMenuItem(new LoadSyntaxAction("Syntax for Syntax (stx.xml)", "stx.xml", "test.syntax-for-syntax")));
 				m.show(view_canvas, 0, 0);
 				break;
 				}
@@ -152,35 +152,6 @@ public class InfoView extends UIView implements KeyListener {
 					this.formatAndPaint(true);
 				}
 				break;
-			}
-		}
-	}
-	
-	class SetSyntaxAction extends TextAction {
-		private Class clazz;
-		SetSyntaxAction(String text, Class clazz) {
-			super(text);
-			this.clazz = clazz;
-		}
-		public void actionPerformed(ActionEvent e) {
-			TextSyntax stx = (TextSyntax)clazz.newInstance();
-			InfoView.this.setSyntax(stx);
-		}
-	}
-	
-	class LoadSyntaxAction extends TextAction {
-		private String file;
-		private String name;
-		LoadSyntaxAction(String text, String file, String name) {
-			super(text);
-			this.file = file.replace('/',File.separatorChar);
-			this.name = name.intern();
-		}
-		public void actionPerformed(ActionEvent e) {
-			FileUnit fu = (FileUnit)Env.loadFromXmlFile(new File(this.file));
-			foreach (TextSyntax stx; fu.members; stx.u_name == name) {
-				InfoView.this.setSyntax(stx);
-				return;
 			}
 		}
 	}

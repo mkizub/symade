@@ -139,7 +139,7 @@ public class TypeExpr extends TypeRef {
 		if (ident.name == Operator.PostTypeArray.name)
 			return ArrayMetaType.instance.tdecl;
 		if (ident.name == Operator.PostTypeVararg.name)
-			return (TypeDecl)Env.resolveStruct("kiev.stdlib._Vararg_");
+			return (TypeDecl)Env.resolveGlobalDNode("kiev.stdlib._Vararg_");
 		DNode@ v;
 		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,ident.name))) {
 			if (op == Operator.PostTypePVar)

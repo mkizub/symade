@@ -151,7 +151,7 @@ CLASS kiev.fmt.Drawable kiev/fmt/Drawable kiev\fmt\Drawable.java bad
 CLASS kiev.fmt.FullElemFormat kiev/fmt/FullElemFormat kiev\fmt\SyntaxLayout.java bad
 CLASS kiev.fmt.GfxFormatter kiev/fmt/GfxFormatter kiev\fmt\Formatter.java bad
 CLASS kiev.fmt.JavaComment kiev/fmt/JavaComment kiev\fmt\DrawJava.java bad
-CLASS kiev.fmt.JavaSyntax kiev/fmt/JavaSyntax kiev\fmt\JavaSyntax.java bad
+CLASS kiev.fmt.KievTextSyntax kiev/fmt/KievTextSyntax kiev\fmt\JavaSyntax.java bad
 CLASS kiev.fmt.LayoutSpace kiev/fmt/LayoutSpace kiev\fmt\SyntaxLayout.java bad
 CLASS kiev.fmt.ParagraphLayout kiev/fmt/ParagraphLayout kiev\fmt\SyntaxLayout.java bad
 CLASS kiev.fmt.ParagraphLayoutBlock kiev/fmt/ParagraphLayoutBlock kiev\fmt\SyntaxLayout.java bad
@@ -689,6 +689,9 @@ ENUM kiev.fmt.SpaceKind kiev/fmt/SpaceKind kiev\fmt\SyntaxLayout.java bad
 ENUM kiev.vlang.IntRadix kiev/vlang/IntRadix kiev\vlang\ConstExpr.java bad
 ENUM kiev.vlang.ProjectFileType kiev/vlang/ProjectFileType kiev\vlang\Env.java bad
 ENUM kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java bad
+FORMAT stx-fmt.syntax-for-java stx-fmt\syntax-for-java.xml bad
+FORMAT stx-fmt.syntax-for-project-tree stx-fmt\syntax-for-project-tree.xml bad
+FORMAT stx-fmt.syntax-for-syntax stx-fmt\syntax-for-syntax.xml bad
 INTERFACE kiev.be.java15.IBoolExpr kiev/be/java15/IBoolExpr kiev\be\java15\JBoolExpr.java bad
 INTERFACE kiev.be.java15.JAccessExpr kiev/be/java15/JAccessExpr kiev\be\java15\JLvalueExpr.java bad
 INTERFACE kiev.be.java15.JAssignExpr kiev/be/java15/JAssignExpr kiev\be\java15\JExpr.java bad
@@ -900,6 +903,7 @@ INTERFACE kiev.vlang.BreakTarget kiev/vlang/BreakTarget kiev\vlang\PassInfo.java
 INTERFACE kiev.vlang.Constants kiev/vlang/Constants kiev\vlang\Constants.java bad
 INTERFACE kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java bad
 INTERFACE kiev.vlang.DataFlowSlots kiev/vlang/DataFlowSlots kiev\vlang\Var.java bad
+INTERFACE kiev.vlang.GlobalDNode kiev/vlang/GlobalDNode kiev\vlang\DNode.java bad
 INTERFACE kiev.vlang.PreScanneable kiev/vlang/PreScanneable kiev\vlang\AST.java bad
 INTERFACE kiev.vlang.Scope kiev/vlang/Scope kiev\vlang\Resolving.java bad
 INTERFACE kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java bad
@@ -913,10 +917,6 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java bad
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java bad
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java bad
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java bad
-METATYPE kiev.gui.ATreeNode kiev\gui\TreeView.java
-METATYPE kiev.gui.OTreeNode kiev\gui\TreeView.java
-METATYPE kiev.gui.SpaceTreeNode kiev\gui\TreeView.java
-METATYPE kiev.gui.XTreeNode kiev\gui\TreeView.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad

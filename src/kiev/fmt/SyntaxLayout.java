@@ -20,19 +20,69 @@ import java.awt.Color;
 import java.awt.Font;
 
 @node
-public class TextSyntax extends DNode implements ScopeOfNames {
+public class TextSyntax extends DNode implements ScopeOfNames, GlobalDNode {
 	
 	protected Hashtable<String,SyntaxElem>		badSyntax = new Hashtable<Class,SyntaxElem>();
 	protected Hashtable<String,SyntaxElemDecl>	allSyntax = new Hashtable<String,SyntaxElemDecl>();
 	
 	@att public SymbolRef<TextSyntax>	parent_syntax;
 	@att public ASTNode[]				members;
-	
+		 public String					q_name;	// qualified name
+
 	public TextSyntax() {
-		id.sname = "<text-syntax>";
-		parent_syntax = new SymbolRef<TextSyntax>();
+		this.id.sname = "<text-syntax>";
+		this.parent_syntax = new SymbolRef<TextSyntax>();
 	}
 
+	public String qname() {
+		if (q_name != null)
+			return q_name;
+		ANode p = parent();
+		if (p instanceof TextSyntax)
+			q_name = (p.qname()+"."+u_name).intern();
+		else if (p instanceof FileUnit)
+			q_name = (p.pkg.qname()+"."+u_name).intern();
+		else
+			q_name = u_name;
+		return q_name;
+	}
+
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "id")
+			resetNames();
+		else
+			super.callbackChildChanged(attr);
+	}
+	public void callbackAttached() {
+		resetNames();
+		if (parent() instanceof FileUnit) {
+			FileUnit fu = (FileUnit)parent();
+			int idx = fu.pkg.getStruct().sub_decls.indexOf(this);
+			if (idx < 0)
+				fu.pkg.getStruct().sub_decls.add(this);
+		}
+		super.callbackAttached();
+	}
+	public void callbackDetached() {
+		resetNames();
+		if (parent() instanceof FileUnit) {
+			FileUnit fu = (FileUnit)parent();
+			int idx = fu.pkg.getStruct().sub_decls.indexOf(this);
+			if (idx >= 0)
+				fu.pkg.getStruct().sub_decls.del(idx);
+		}
+		super.callbackDetached();
+	}
+
+	private void resetNames() {
+		u_name = id.sname;
+		q_name = null;
+		if (members != null) {
+			foreach (TextSyntax s; members)
+				s.resetNames();
+		}
+	}
+	
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		ASTNode@ syn;
 	{

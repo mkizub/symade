@@ -311,6 +311,9 @@ public final class DummyDNode extends DNode {
 	private DummyDNode() {}
 }
 
+public interface GlobalDNode {
+	public String qname();
+}
 
 
 /**
@@ -349,7 +352,7 @@ public abstract class LvalDNode extends DNode {
 
 
 @node
-public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods {
+public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, GlobalDNode {
 
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;

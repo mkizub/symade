@@ -13,13 +13,13 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import javax.swing.text.TextAction;
 import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
@@ -44,6 +44,7 @@ public class TreeView extends UIView implements KeyListener {
 		this.formatter = new GfxFormatter(syntax, (Graphics2D)the_tree.getGraphics());
 		this.the_tree.tree_view = this;
 		this.the_tree.addKeyListener(this);
+		this.the_tree.addMouseListener(this);
 		this.setRoot(null);
 	}
 
@@ -55,6 +56,28 @@ public class TreeView extends UIView implements KeyListener {
 	public void formatAndPaint(boolean full) {
 		the_tree.format();
 		the_tree.repaint();
+	}
+
+	public void mouseClicked(MouseEvent e) {
+		if (e.getClickCount() >= 2) {
+			TreePath sel = the_tree.getPathForLocation(e.getX(), e.getY());
+			if (sel == null || !(sel.getLastPathComponent() instanceof Drawable))
+				return;
+			Drawable dr = (Drawable)sel.getLastPathComponent();
+			Vector<ANode> v = new Vector<ANode>();
+			ANode n = dr.node;
+			if (n instanceof DNode)
+				n = n.id;
+			v.append(n);
+			while (n != null && !(n instanceof FileUnit)) {
+				n = n.parent();
+				v.append(n);
+			}
+			if !(n instanceof FileUnit)
+				return;
+			parent_window.openEditor((FileUnit)n, v.toArray());
+			e.consume();
+		}
 	}
 
 	public void keyReleased(KeyEvent evt) {}
@@ -69,27 +92,11 @@ public class TreeView extends UIView implements KeyListener {
 				evt.consume();
 				// build a menu of types to instantiate
 				JPopupMenu m = new JPopupMenu();
-				m.add(new JMenuItem(new LoadSyntaxAction("Java Tree Syntax (java-tree.xml)", "java-tree.xml", "JavaTreeSyntax")));
+				m.add(new JMenuItem(new SetSyntaxAction("Project Tree Syntax", "stx-fmt.syntax-for-project-tree")));
+				m.add(new JMenuItem(new LoadSyntaxAction("Project Tree Syntax (java-tree.xml)", "java-tree.xml", "test.syntax-for-project-tree")));
 				m.show(the_tree, 0, 0);
 				break;
 				}
-			}
-		}
-	}
-
-	class LoadSyntaxAction extends TextAction {
-		private String file;
-		private String name;
-		LoadSyntaxAction(String text, String file, String name) {
-			super(text);
-			this.file = file.replace('/',File.separatorChar);
-			this.name = name.intern();
-		}
-		public void actionPerformed(ActionEvent e) {
-			FileUnit fu = (FileUnit)Env.loadFromXmlFile(new File(this.file));
-			foreach (TextSyntax stx; fu.members; stx.u_name == name) {
-				TreeView.this.setSyntax(stx);
-				return;
 			}
 		}
 	}
