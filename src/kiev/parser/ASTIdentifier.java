@@ -28,10 +28,20 @@ public class ASTIdentifier extends ENode {
 	@virtual typedef VView = VASTIdentifier;
 
 	@att public String name;
+	@ref @virtual public abstract SymbolRef ident;
 
 	@setter
 	public void set$name(String value) {
 		this.name = (value != null) ? value.intern() : null;
+	}
+	
+	@getter
+	public SymbolRef get$ident() {
+		return new SymbolRef(this.pos, this.name);
+	}
+	@setter
+	public void set$ident(SymbolRef value) {
+		this.name = (value != null) ? value.name : null;
 	}
 	
 	@nodeview

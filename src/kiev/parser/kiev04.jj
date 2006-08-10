@@ -2650,7 +2650,7 @@ ENode AccessExpression() :
 		LOOKAHEAD(2)
 		e = Identifier()
 	|
-		LOOKAHEAD("new" "#" <IDENTIFIER> "(" )
+		LOOKAHEAD("new" "#" )
 		e = RewriteFactoryCall()
 	|
 		LOOKAHEAD("new" NArrType() (<OPERATOR_LRBRACKETS>)+ "{" )
@@ -3468,10 +3468,11 @@ RewritePattern RewriteCasePattern() :
 
 
 RewriteNodeFactory RewriteFactoryCall() :
-{ RewriteNodeFactory rn; Token t; }
+{ RewriteNodeFactory rn; SymbolRef id; }
 {
 	"new" "#"
-	t=<IDENTIFIER>		{ rn = new RewriteNodeFactory(t.image); }
+	id = QName()
+	{ rn = new RewriteNodeFactory(id.name); }
 	RewriteNodeArgs(rn)
 	{ return rn; }
 }
