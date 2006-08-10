@@ -208,17 +208,19 @@ public view JBlock of Block extends JENode {
 					else
 						st.generate(code,reqType);
 				}
-				else if (st instanceof JVar) {
+				else if (st instanceof JVar || st instanceof JDeclGroup) {
 					st.generate(code,Type.tpVoid);
 				}
 			} catch(Exception e ) {
 				Kiev.reportError(stats[i],e);
 			}
 		}
-		Vector<JVar> vars = new Vector<JVar>();
-		foreach (JVar n; stats)
-			vars.append(n);
-		code.removeVars(vars.toArray());
+		for(int i=stats.length-1; i >= 0; i--) {
+			if (stats[i] instanceof JDNode) {
+				JDNode dn = (JDNode)stats[i];
+				dn.removeVars(code);
+			}
+		}
 		JNode p = this.jparent;
 		if( p instanceof JMethod && Kiev.debugOutputC && code.need_to_gen_post_cond && p.type.ret() ≢ Type.tpVoid)
 			code.stack_push(p.etype.ret().getJType());

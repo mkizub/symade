@@ -48,6 +48,12 @@ public final class Field extends LvalDNode {
 
 	@getter public final Type	get$type() { return this.ftype.getType(); }
 
+	public void callbackAttached() {
+		ANode p = parent();
+		if (p instanceof DeclGroup)
+			this.group = (DeclGroup)p;
+		super.callbackAttached();
+	}
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
 			if      (attr.name == "ftype")

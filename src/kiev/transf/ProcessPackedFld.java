@@ -31,7 +31,7 @@ public final class PackedFldFE_Verify extends TransfProcessor {
 	}
 	
 	public void doProcess(Struct:ASTNode s) {
-		foreach (Field n; s.members)
+		foreach (Field n; s.getAllFields())
 			doProcess(n);
 		foreach (Struct sub; s.sub_decls)
 			doProcess(sub);
@@ -91,7 +91,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 	
 	public void doProcess(Struct:ASTNode s) {
 		// Setup packed/packer fields
-		foreach(Field f; s.members; f.isPackedField() ) {
+		foreach(Field f; s.getAllFields(); f.isPackedField() ) {
 			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
 			MetaPacked mp = f.getMetaPacked();
@@ -138,7 +138,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 
 	private int countPackerFields(Struct s) {
 		int i = 0;
-		foreach (Field f; s.members; f.isPackerField()) i++;
+		foreach (Field f; s.getAllFields(); f.isPackerField()) i++;
 		return i;
 	}
 

@@ -17,8 +17,6 @@ import kiev.ir.java15.RWhileStat;
 import kiev.be.java15.JWhileStat;
 import kiev.ir.java15.RDoWhileStat;
 import kiev.be.java15.JDoWhileStat;
-import kiev.ir.java15.RForInit;
-import kiev.be.java15.JForInit;
 import kiev.ir.java15.RForStat;
 import kiev.be.java15.JForStat;
 import kiev.ir.java15.RForEachStat;
@@ -167,54 +165,11 @@ public class DoWhileStat extends LoopStat {
 	}
 }
 
-@node
-public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
-	
-	@dflow(out="decls") private static class DFI {
-	@dflow(in="", seq="true")	Var[]		decls;
-	}
-
-	@virtual typedef This  = ForInit;
-	@virtual typedef JView = JForInit;
-	@virtual typedef RView = RForInit;
-
-	@att public TypeRef		type_ref;
-	@att public Var[]		decls;
-
-	public ForInit() {}
-
-	public ForInit(TypeRef type_ref) {
-		this.type_ref = type_ref;
-		this.pos = type_ref.pos;
-	}
-
-	public rule resolveNameR(ASTNode@ node, ResInfo info)
-		Var@ var;
-	{
-		var @= decls,
-		info.checkNodeName(var),
-		node ?= var
-	;	var @= decls,
-		var.isForward(),
-		info.enterForward(var) : info.leaveForward(var),
-		var.getType().resolveNameAccessR(node,info)
-	}
-
-	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
-		Var@ var;
-	{
-		var @= decls,
-		var.isForward(),
-		info.enterForward(var) : info.leaveForward(var),
-		var.getType().resolveCallAccessR(node,info,mt)
-	}
-}
-
 @node(name="For")
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {
-	@dflow(in="this:in")				ENode		init;
+	@dflow(in="this:in")				ASTNode		init;
 	@dflow(in="init", links="iter")		ENode		cond;
 	@dflow(in="cond:true")				ENode		body;
 	@dflow(in="body")					Label		lblcnt;
@@ -226,14 +181,14 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	@virtual typedef JView = JForStat;
 	@virtual typedef RView = RForStat;
 
-	@att public ENode		init;
+	@att public ASTNode		init;
 	@att public ENode		cond;
 	@att public ENode		body;
 	@att public ENode		iter;
 
 	public ForStat() {}
 	
-	public ForStat(int pos, ENode init, ENode cond, ENode iter, ENode body) {
+	public ForStat(int pos, ASTNode init, ENode cond, ENode iter, ENode body) {
 		this.pos = pos;
 		this.init = init;
 		this.cond = cond;
@@ -241,17 +196,30 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		this.body = body;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	public rule resolveNameR(ASTNode@ node, ResInfo info)
+		DNode@ dn;
 	{
-		init instanceof ForInit,
-		((ForInit)init).resolveNameR(node,path)
+		init instanceof DeclGroup,
+		dn @= ((DeclGroup)init).decls,
+		info.checkNodeName(dn),
+		info.check(dn),
+		node ?= dn
+	;	init instanceof Var,
+		info.checkNodeName(init),
+		info.check(init),
+		node ?= init
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
 		ASTNode@ n;
 	{
-		init instanceof ForInit,
-		((ForInit)init).resolveMethodR(node,info,mt)
+		init instanceof DeclGroup,
+		((DeclGroup)init).resolveMethodR(node,info,mt)
+	;	init instanceof Var,
+		info.checkNodeName(init),
+		((Var)init).isForward(),
+		info.enterForward(init) : info.leaveForward(init),
+		init.getType().resolveCallAccessR(node,info,mt)
 	}
 }
 

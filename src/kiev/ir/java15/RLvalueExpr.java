@@ -192,17 +192,27 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 			RuleMethod rm = (RuleMethod)ctx_method;
 			assert(rm.params[0].type ≡ Type.tpRule);
 			Var pEnv = null;
-			foreach (Var vd; rm.block.stats) {
-				if (vd.id.equals(namePEnv)) {
-					assert(vd.type.isInstanceOf(Type.tpRule));
-					pEnv = vd;
-					break;
+		lookup_penv:
+			foreach (DNode dn; rm.block.stats) {
+				if (dn instanceof DeclGroup) {
+					foreach (Var vd; dn.decls; vd.id.sname == namePEnv) {
+						pEnv = vd;
+						break lookup_penv;
+					}
+				}
+				else if (dn instanceof Var) {
+					Var vd = (Var)dn;
+					if (vd.id.sname == namePEnv) {
+						pEnv = vd;
+						break lookup_penv;
+					}
 				}
 			}
 			if (pEnv == null) {
 				Kiev.reportError(this, "Cannot find "+namePEnv);
 				return false;
 			}
+			assert(pEnv.type.isInstanceOf(Type.tpRule));
 			Struct s = (Struct)rm.block.stats[0];
 			Field f = s.resolveField(ident.name);
 			replaceWithNode(new IFldExpr(pos, new LVarExpr(pos, pEnv), ~ident, f));

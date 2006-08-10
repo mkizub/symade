@@ -40,7 +40,7 @@ public class PizzaFE_Pass3 extends TransfProcessor {
 			return;
 		MetaPizzaCase meta = clazz.getMetaPizzaCase();
 		Field[] flds = Field.emptyArray;
-		foreach (Field f; clazz.members) {
+		foreach (Field f; clazz.getAllFields()) {
 			flds = (Field[])Arrays.append(flds,f);
 			meta.add(f);
 		}

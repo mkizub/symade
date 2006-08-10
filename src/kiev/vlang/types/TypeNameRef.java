@@ -118,10 +118,6 @@ public final class TypeNameRef extends TypeRef {
 		return this.lnk;
 	}
 
-	public boolean isBound() {
-		return true;
-	}
-
 	public Struct getStruct() {
 		if (this.lnk != null) return this.lnk.getStruct();
 		if (this.outer != null) {

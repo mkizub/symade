@@ -3,6 +3,7 @@ package kiev.vlang.types;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.parser.*;
 
 import kiev.be.java15.JBaseMetaType;
 import kiev.be.java15.JStruct;
@@ -88,9 +89,20 @@ public class MetaType implements Constants {
 		}
 	}
 	private rule resolveNameR_1(ASTNode@ node, ResInfo info)
+		ASTNode@ n;
+		DNode@ dn;
 	{
-		node @= tdecl.members,
-		node instanceof Field && info.checkNodeName(node) && info.check(node)
+		n @= tdecl.members,
+		{
+			n instanceof DeclGroup,
+			dn @= ((DeclGroup)n).decls,
+			info.checkNodeName(dn),
+			info.check(dn),
+			node ?= dn
+		;
+			n instanceof Field && info.checkNodeName(n) && info.check(n),
+			node ?= n
+		}
 	}
 	private rule resolveNameR_3(Type tp, ASTNode@ node, ResInfo info)
 		MetaType@ sup;
@@ -338,7 +350,7 @@ public final class ArrayMetaType extends MetaType {
 		tdecl.members.add(length);
 		Method get = new Method("get", StdTypes.tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
 		get.params.add(new FormPar(0,"idx",StdTypes.tpInt,FormPar.PARAM_NORMAL,0));
-		get.aliases += new Symbol(Constants.nameArrayGetOp);
+		get.aliases += new ASTOperatorAlias(Constants.nameArrayGetOp);
 		tdecl.members.add(get);
 		
 		instance = new ArrayMetaType(tdecl);

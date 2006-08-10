@@ -110,7 +110,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			}
 
 			// Check fields of the @node
-			foreach (Field n; s.members)
+			foreach (Field n; s.getAllFields())
 				doProcess(n);
 			return;
 		}
@@ -122,11 +122,11 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 		}
 
 		// Check fields to not have @att and @ref
-		foreach (Field f; s.members) {
+		foreach (Field f; s.getAllFields()) {
 			UserMeta fmatt = f.meta.getU(mnAtt);
 			UserMeta fmref = f.meta.getU(mnRef);
 			if (fmatt != null || fmref != null) {
-				Kiev.reportError(f,"Field "+f+" of non-@node class "+f.parent()+" may not be @att or @ref");
+				Kiev.reportError(f,"Field "+f+" of non-@node class "+f.ctx_tdecl+" may not be @att or @ref");
 			}
 		}
 	}
@@ -137,11 +137,11 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 		//if (fmatt != null || fmref != null) {
 		//	System.out.println("process @node: field "+f+" has @att="+fmatt+" and @ref="+fmref);
 		if (fmatt != null && fmref != null) {
-			Kiev.reportError(f,"Field "+f.parent()+"."+f+" marked both @att and @ref");
+			Kiev.reportError(f,"Field "+f.ctx_tdecl+"."+f+" marked both @att and @ref");
 		}
 		if (fmatt != null || fmref != null) {
 			if (f.isStatic())
-				Kiev.reportError(f,"Field "+f.parent()+"."+f+" is static and cannot have @att or @ref");
+				Kiev.reportError(f,"Field "+f.ctx_tdecl+"."+f+" is static and cannot have @att or @ref");
 			boolean isArr = false;
 			{
 				Type ft = f.type;
@@ -157,14 +157,14 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
 			if (fmatt != null) {
 				if (isArr && f.init != null) {
-					Kiev.reportError(f,"Field "+f.parent()+"."+f+" may not have initializer");
+					Kiev.reportError(f,"Field "+f.ctx_tdecl+"."+f+" may not have initializer");
 				}
 				if (!isArr)
 					f.setVirtual(true);
 			}
 			else if (fmref != null) {
 				if (isArr && f.init != null)
-					Kiev.reportError(f,"Field "+f.parent()+"."+f+" may not have initializer");
+					Kiev.reportError(f,"Field "+f.ctx_tdecl+"."+f+" may not have initializer");
 			}
 			Struct fts = f.type.getStruct();
 			if (fts != null) {
@@ -172,7 +172,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 					new Symbol(f.pos,"attr$"+f.id+"$type"),
 					new TypeRef(new ASTNodeType(f.type.getStruct())));
 				td.setSynthetic(true);
-				Struct clazz = (Struct)f.parent();
+				Struct clazz = (Struct)f.ctx_tdecl;
 				clazz.members.append(td);
 				if (clazz.ameta_type != null)
 					clazz.ameta_type.version++;
@@ -180,9 +180,9 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 		}
 		else if !(f.isStatic()) {
 			if (f.type.isInstanceOf(tpNArray))
-				Kiev.reportWarning(f,"Field "+f.parent()+"."+f+" must be marked with @att or @ref");
+				Kiev.reportWarning(f,"Field "+f.ctx_tdecl+"."+f+" must be marked with @att or @ref");
 			else if (isNodeKind(f.type))
-				Kiev.reportWarning(f,"Field "+f.parent()+"."+f+" must be marked with @att or @ref");
+				Kiev.reportWarning(f,"Field "+f.ctx_tdecl+"."+f+" must be marked with @att or @ref");
 		}
 	}
 }
@@ -197,7 +197,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 
 	private boolean hasField(Struct s, String name) {
 		s.checkResolved();
-		foreach (Field f; s.members; f.id.equals(name)) return true;
+		foreach (Field f; s.getAllFields(); f.id.equals(name)) return true;
 		return false;
 	}
 	
@@ -346,7 +346,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		if (isNodeImpl(s)) {
 			Struct ss = s;
 			while (ss != null && isNodeImpl(ss)) {
-				foreach (Field f; ss.members; !f.isStatic() && (f.meta.getU(mnAtt) != null || f.meta.getU(mnRef) != null)) {
+				foreach (Field f; ss.getAllFields(); !f.isStatic() && (f.meta.getU(mnAtt) != null || f.meta.getU(mnRef) != null)) {
 					aflds.append(f);
 				}
 				ss = ss.super_types[0].getStruct();
@@ -358,7 +358,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			boolean isAtt = (f.meta.getU(mnAtt) != null);
 			boolean isArr = f.getType().isInstanceOf(tpNArray);
 			String fname = "nodeattr$"+f.id.sname;
-			if (f.parent() != s) {
+			if (f.ctx_tdecl != s) {
 				vals_init[i] = new SFldExpr(f.pos, s.resolveField(fname.intern(), true));
 				continue;
 			}
@@ -375,7 +375,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			if (isArr && !f.isAbstract()) {
 				TypeDecl N = f.getType().resolve(StdTypes.tpArrayArg).meta_type.tdecl;
 				Field emptyArray = N.resolveField("emptyArray", false);
-				if (emptyArray == null || emptyArray.parent() != N)
+				if (emptyArray == null || emptyArray.ctx_tdecl != N)
 					Kiev.reportError(f, "Cannot find 'emptyArray' field in "+N);
 				else
 					f.init = new ReinterpExpr(f.pos, f.getType(), new SFldExpr(f.pos, emptyArray));
@@ -402,7 +402,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			getV.params.add(new FormPar(0, "name", Type.tpString, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(getV);
 			getV.body = new Block(0);
-			foreach (Field f; aflds; f.parent() == s) {
+			foreach (Field f; aflds; f.ctx_tdecl == s) {
 				ENode ee = new IFldExpr(0,new ThisExpr(),f);
 				getV.block.stats.add(
 					new IfElseStat(0,
@@ -470,7 +470,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				v.init = new CastExpr(0,s.xtype,new ASTIdentifier(0,"to$node"));
 				copyV.block.addSymbol(v);
 			}
-			foreach (Field f; s.members) {
+			foreach (Field f; s.getAllFields()) {
 				if (f.isPackedField() || f.isAbstract() || f.isStatic())
 					continue;
 				{	// check if we may not copy the field
@@ -536,7 +536,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			Var v = new Var(0,"node",s.xtype,0);
 			v.init = new CastExpr(0,s.xtype,new ASTIdentifier(0,"from$node"));
 			setF.block.addSymbol(v);
-			foreach (Field f; s.members) {
+			foreach (Field f; s.getAllFields()) {
 				if (f.isPackedField() || f.isAbstract() || f.isStatic())
 					continue;
 				setF.block.stats.append( 
@@ -568,7 +568,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 						new ENode[]{new BooleanNotExpr(0,new AccessExpr(0,new ThisExpr(),new SymbolRef<DNode>("locked")))})
 				));
 			}
-			foreach (Field f; aflds; f.parent() == s) {
+			foreach (Field f; aflds; f.ctx_tdecl == s) {
 				boolean isArr = f.getType().isInstanceOf(tpNArray);
 				if (isArr || f.isFinal() || !MetaAccess.writeable(f))
 					continue;
@@ -691,7 +691,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	}
 	
 	public void doProcess(Struct:ASTNode s) {
-		foreach(Field f; s.members; !f.isStatic() && f.isVirtual() && f.meta.getU(VNode_Base.mnAtt) != null)
+		foreach(Field f; s.getAllFields(); !f.isStatic() && f.isVirtual() && f.meta.getU(VNode_Base.mnAtt) != null)
 			fixSetterMethod(s, f);
 		foreach(Struct sub; s.sub_decls)
 			doProcess(sub);

@@ -264,10 +264,10 @@ public abstract class kiev040 {
 		return meth;
 	}
 	
-	private Field mkField(Symbol id, ASTModifiers modifiers, TypeRef ret, boolean first) {
-		if (!first)
-			ret = ret.ncopy();
-		Field f = new Field(id,ret,0);
+	private Field mkField(Symbol id, TypeRef tp, ASTModifiers modifiers) {
+		if (tp == null)
+			tp = new TypeDeclRef();
+		Field f = new Field(id, tp, 0);
 		f.pos = id.pos;
 		modifiers.copyToNode(f);
 		return f;
@@ -288,9 +288,9 @@ public abstract class kiev040 {
 		return f;
 	}
 	
-	private Var mkVar(Symbol id, ASTModifiers modifiers, TypeRef tp, boolean first) {
-		if (!first)
-			tp = tp.ncopy();
+	private Var mkVar(Symbol id, ASTModifiers modifiers, TypeRef tp) {
+		if (tp == null)
+			tp = new TypeDeclRef();
 		Var v = new Var(id, tp, 0);
 		modifiers.copyToNode(v);
 		return v;
@@ -1211,7 +1211,7 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 			clazz.members += MethodDeclaration(modifiers)
 		|
 			LOOKAHEAD( Type() <IDENTIFIER> (<OPERATOR_LRBRACKETS>)* ("{" | "=" | "," | ";") )
-			FieldDecls(modifiers, clazz_members)
+			clazz_members += FieldDecls(modifiers)
 		)
 	)*
 	{ comments_alone(clazz_members); }
@@ -1538,25 +1538,34 @@ MetaValueArray AnnotationValueValueArrayInitializer(SymbolRef id) :
 }
 
 
-void FieldDecls(ASTModifiers modifiers, SpacePtr clazz_members) :
-{ boolean old_declMode; TypeRef type; }
+DNode FieldDecls(ASTModifiers modifiers) :
+{ boolean old_declMode; TypeRef type; Field f; DeclGroup decl; DNode ret; }
 {
+	type = Type()
 	{ old_declMode = declMode; declMode = false; }
 	try {
-		type = Type()
-		clazz_members += FieldDecl(modifiers, type, true)
-		(	","
-			clazz_members += FieldDecl(modifiers, type, false)
-		)*
+		(
+			LOOKAHEAD(<IDENTIFIER> (<OPERATOR_LRBRACKETS>)* ("=" VariableInitializer())? ";")
+			ret = FieldDecl(modifiers, type)
+		|
+			{ decl = new DeclGroup(); modifiers.copyToNode(decl); decl.dtype = type; ret = decl; }
+			modifiers = Modifiers()
+			decl.decls += FieldDecl(modifiers, null)
+			(	","
+				modifiers = Modifiers()
+				decl.decls += FieldDecl(modifiers, null)
+			)*
+		)
+		";"
 	} finally { declMode = old_declMode; }
-	";"
+	{ return ret; }
 }
 
-Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
+Field FieldDecl(ASTModifiers modifiers, TypeRef type) :
 { Token t; Symbol id; Field f; Symbol func; ENode body; }
 {
 	id = Name()
-	{ f = mkField(id, modifiers, type, first); }
+	{ f = mkField(id, type, modifiers); }
 	( t=<OPERATOR_LRBRACKETS> { f.ftype = new TypeExpr(~f.ftype,t); } )*
 	[
 		(
@@ -1592,11 +1601,32 @@ LocalRuleVar RuleVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 	{ return lv; }
 }
 
-Var VarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
+DNode VarDecls(ASTModifiers modifiers) :
+{ boolean old_declMode; TypeRef type; DeclGroup decl; }
+{
+	{
+		old_declMode = declMode;
+		declMode = false;
+		decl = new DeclGroup();
+		modifiers.copyToNode(decl);
+	}
+	try {
+		decl.dtype = Type()
+		modifiers = Modifiers()
+		decl.decls += VarDecl(modifiers)
+		(	","
+			modifiers = Modifiers()
+			decl.decls += VarDecl(modifiers)
+		)*
+	} finally { declMode = old_declMode; }
+	{ return decl; }
+}
+
+Var VarDecl(ASTModifiers modifiers) :
 { Token t; Symbol id; Var lv; }
 {
 	id = Name()
-	{ lv = mkVar(id, modifiers, type, first); }
+	{ lv = mkVar(id, modifiers, null); }
 	( t=<OPERATOR_LRBRACKETS> { lv.vtype = new TypeExpr(~lv.vtype,t); } )*
 	[
 		"="
@@ -1654,7 +1684,7 @@ Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
 		id = Name()
 		( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); } )*
 	)
-	{ return mkVar(id, modifiers, tp, true); }
+	{ return mkVar(id, modifiers, tp); }
 }
 
 FormPar MethodFormalParameter(ASTModifiers modifiers) :
@@ -2180,19 +2210,6 @@ ASTIdentifier Identifier() :
 	}
 }
 
-ASTIdentifier QIdentifier() :
-{ ASTIdentifier id; ASTIdentifier id2; }
-{
-	id = Identifier()
-	(
-		LOOKAHEAD(2)
-		"."
-		id2 = Identifier()
-		{ id.name = id.name+'.'+id2.name; }
-	)*
-	{ return id; }
-}
-
 /*
  * Expression syntax follows.
  */
@@ -2401,7 +2418,7 @@ ASTOperator Operator() :
 	)
 	{
 		op.pos = t.getPos();
-		op.image = image;
+		op.ident.name = image;
 		return op;
 	}
 }
@@ -2555,7 +2572,7 @@ ENode AccessExpression() :
 		LOOKAHEAD(2)
 		e = Identifier()
 	|
-		LOOKAHEAD("new" "#" <IDENTIFIER> "(" )
+		LOOKAHEAD("new" "#")
 		e = RewriteFactoryCall()
 	|
 		LOOKAHEAD("new" NArrType() (<OPERATOR_LRBRACKETS>)+ "{" )
@@ -2962,14 +2979,7 @@ void BlockStatement(SpacePtr stats) :
 		/* local vars declaration */
 		LOOKAHEAD( Modifiers() Type() Name() )
 		modifiers = Modifiers()
-		tp = Type()
-		var = VarDecl(modifiers, tp, true)
-		{ stats += var; }
-		(
-			","
-			var = VarDecl(modifiers, tp, false)
-			{ stats += var; }
-		)*
+		stats += VarDecls(modifiers)
 		";"
 	|
 		/* other statements */
@@ -3140,7 +3150,7 @@ ForStat ForStatement() :
 	"for"
 	{ st.pos = getToken(0).getPos(); }
 	"("
-		st.init = ForInit()
+		st.init = ForInitDecl()
 	/*";"*/
 	[
 		st.cond = ExpressionNT(null)
@@ -3177,21 +3187,14 @@ ForEachStat ForEachStatement() :
 	{ return st; }
 }
 
-ENode ForInit() :
-{ ASTModifiers modifiers; ENode n; ASTModifiers modifiers; TypeRef tp; ForInit fi; }
+ASTNode ForInitDecl() :
+{ ASTModifiers modifiers; ASTNode n; ASTModifiers modifiers; TypeRef tp; }
 {
 	(
 		LOOKAHEAD( Modifiers() Type() QName() (<OPERATOR_LRBRACKETS>)* ("=" | "," | ";") )
 		modifiers = Modifiers()
-		tp = Type()
-		{ fi = new ForInit(tp); }
-		fi.decls += VarDecl(modifiers, tp, false)
-		(
-			","
-			fi.decls += VarDecl(modifiers, tp, false)
-		)*
+		n = VarDecls(modifiers)
 		";"
-		{ n = fi; }
 	|
 		n = CommaExpression() ";"
 	|
@@ -3373,10 +3376,11 @@ RewritePattern RewriteCasePattern() :
 
 
 RewriteNodeFactory RewriteFactoryCall() :
-{ RewriteNodeFactory rn; Token t; }
+{ RewriteNodeFactory rn; SymbolRef id; }
 {
 	"new" "#"
-	t=<IDENTIFIER>		{ rn = new RewriteNodeFactory(t.image); }
+	id = QName()
+	{ rn = new RewriteNodeFactory(id.name); }
 	RewriteNodeArgs(rn)
 	{ return rn; }
 }

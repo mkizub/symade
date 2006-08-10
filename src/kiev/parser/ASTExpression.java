@@ -152,7 +152,7 @@ public class ASTExpression extends ENode {
 	;
 		op.args[pos] instanceof OpArg.OPER,
 		nodes[cur_pos] instanceof ASTOperator,
-		((OpArg.OPER)op.args[pos]).text == ((ASTOperator)nodes[cur_pos]).image,
+		((OpArg.OPER)op.args[pos]).text == ((ASTOperator)nodes[cur_pos]).ident.name,
 		trace( Kiev.debugOperators, "resolveOpArg: 4 added "+nodes[cur_pos]),
 		pushRes(result,pos) : popRes(),
 		resolveOpArg(ret, op, pos+1, result)
@@ -162,14 +162,14 @@ public class ASTExpression extends ENode {
 		if (op.priority < priority) return false;
 		if (restLength() < op.args.length) return false;
 		ENode en = nodes[cur_pos];
-		if (op.args[0] instanceof OpArg.OPER) return (en instanceof ASTOperator && en.image == ((OpArg.OPER)op.args[0]).text);
+		if (op.args[0] instanceof OpArg.OPER) return (en instanceof ASTOperator && en.ident.name == ((OpArg.OPER)op.args[0]).text);
 		if (op.args[0] instanceof OpArg.TYPE) return (en instanceof TypeRef);
 		if (op.args[0] instanceof OpArg.EXPR) {
 			if (en instanceof ASTOperator) return false;
 			if (en.getPriority() < ((OpArg.EXPR)op.args[0]).priority) return false;
 			if (op.args.length > 1 && op.args[1] instanceof OpArg.OPER) {
 				en = nodes[cur_pos+1];
-				if !(en instanceof ASTOperator && en.image == ((OpArg.OPER)op.args[1]).text)
+				if !(en instanceof ASTOperator && en.ident.name == ((OpArg.OPER)op.args[1]).text)
 					return false;
 			}
 			return true;
@@ -182,7 +182,7 @@ public class ASTExpression extends ENode {
 		ENode en = nodes[cur_pos];
 		if!(op.args[0] instanceof OpArg.EXPR) return false;
 		if (((OpArg.EXPR)op.args[0]).priority > prev.getPriority()) return false;
-		if (op.args[1] instanceof OpArg.OPER) return (en instanceof ASTOperator && en.image == ((OpArg.OPER)op.args[1]).text);
+		if (op.args[1] instanceof OpArg.OPER) return (en instanceof ASTOperator && en.ident.name == ((OpArg.OPER)op.args[1]).text);
 		if (op.args[1] instanceof OpArg.TYPE) return (en instanceof TypeRef);
 		if (op.args[1] instanceof OpArg.EXPR) return !(en instanceof ASTOperator) && en.getPriority() >= ((OpArg.EXPR)op.args[1]).priority;
 		return false;

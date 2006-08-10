@@ -94,7 +94,7 @@ public final view RAssertEnabledExpr of AssertEnabledExpr extends RENode {
 		TypeDecl clazz = ctx_tdecl;
 		while !(clazz.package_clazz.isPackage() || clazz.package_clazz.isInterface()) clazz = clazz.package_clazz;
 		// find $assertionsEnabled
-		foreach (Field f; clazz.members; f.id.equals("$assertionsEnabled")) {
+		foreach (Field f; clazz.getAllFields(); f.id.equals("$assertionsEnabled")) {
 			replaceWithNodeResolve(reqType, new SFldExpr(pos,f));
 			return;
 		}

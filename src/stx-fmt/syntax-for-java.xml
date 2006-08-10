@@ -2450,6 +2450,16 @@
              </fmt>
             </a-node>
            </empty>
+           <filter>
+            <a-node class='kiev.fmt.CalcOptionNot'>
+             <opt>
+              <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+               <name>kiev.stdlib.meta.synthetic</name>
+              </a-node>
+             </opt>
+             <name></name>
+            </a-node>
+           </filter>
            <folded_by_default>false</folded_by_default>
            <name>members</name>
            <fmt>
@@ -2679,6 +2689,16 @@
                </fmt>
               </a-node>
              </empty>
+             <filter>
+              <a-node class='kiev.fmt.CalcOptionNot'>
+               <opt>
+                <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+                 <name>kiev.stdlib.meta.synthetic</name>
+                </a-node>
+               </opt>
+               <name></name>
+              </a-node>
+             </filter>
              <folded_by_default>false</folded_by_default>
              <name>members</name>
              <fmt>
@@ -2983,6 +3003,16 @@
                </fmt>
               </a-node>
              </empty>
+             <filter>
+              <a-node class='kiev.fmt.CalcOptionNot'>
+               <opt>
+                <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+                 <name>kiev.stdlib.meta.synthetic</name>
+                </a-node>
+               </opt>
+               <name></name>
+              </a-node>
+             </filter>
              <folded_by_default>false</folded_by_default>
              <name>members</name>
              <fmt>
@@ -3197,6 +3227,16 @@
                </fmt>
               </a-node>
              </empty>
+             <filter>
+              <a-node class='kiev.fmt.CalcOptionNot'>
+               <opt>
+                <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+                 <name>kiev.stdlib.meta.synthetic</name>
+                </a-node>
+               </opt>
+               <name></name>
+              </a-node>
+             </filter>
              <folded_by_default>false</folded_by_default>
              <name>members</name>
              <fmt>
@@ -3603,6 +3643,16 @@
                </fmt>
               </a-node>
              </empty>
+             <filter>
+              <a-node class='kiev.fmt.CalcOptionNot'>
+               <opt>
+                <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+                 <name>kiev.stdlib.meta.synthetic</name>
+                </a-node>
+               </opt>
+               <name></name>
+              </a-node>
+             </filter>
              <folded_by_default>false</folded_by_default>
              <name>members</name>
              <fmt>
@@ -3817,6 +3867,16 @@
                </fmt>
               </a-node>
              </empty>
+             <filter>
+              <a-node class='kiev.fmt.CalcOptionNot'>
+               <opt>
+                <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+                 <name>kiev.stdlib.meta.synthetic</name>
+                </a-node>
+               </opt>
+               <name></name>
+              </a-node>
+             </filter>
              <folded_by_default>false</folded_by_default>
              <name>members</name>
              <fmt>
@@ -4202,6 +4262,16 @@
                </fmt>
               </a-node>
              </empty>
+             <filter>
+              <a-node class='kiev.fmt.CalcOptionNot'>
+               <opt>
+                <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+                 <name>kiev.stdlib.meta.synthetic</name>
+                </a-node>
+               </opt>
+               <name></name>
+              </a-node>
+             </filter>
              <folded_by_default>false</folded_by_default>
              <name>members</name>
              <fmt>
@@ -4587,6 +4657,16 @@
                </fmt>
               </a-node>
              </empty>
+             <filter>
+              <a-node class='kiev.fmt.CalcOptionNot'>
+               <opt>
+                <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+                 <name>kiev.stdlib.meta.synthetic</name>
+                </a-node>
+               </opt>
+               <name></name>
+              </a-node>
+             </filter>
              <folded_by_default>false</folded_by_default>
              <name>members</name>
              <fmt>
@@ -4767,6 +4847,16 @@
                </fmt>
               </a-node>
              </empty>
+             <filter>
+              <a-node class='kiev.fmt.CalcOptionNot'>
+               <opt>
+                <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+                 <name>kiev.stdlib.meta.synthetic</name>
+                </a-node>
+               </opt>
+               <name></name>
+              </a-node>
+             </filter>
              <folded_by_default>false</folded_by_default>
              <name>members</name>
              <fmt>
@@ -11044,6 +11134,138 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <node>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>BooleanNotExpr</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxJavaExpr'>
+       <idx>-1</idx>
+       <priority>0</priority>
+       <template>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>java-expr-template</name>
+        </a-node>
+       </template>
+       <name></name>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-expr-bool-not</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>BinaryBoolExpr</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxJavaExpr'>
+       <idx>-1</idx>
+       <priority>0</priority>
+       <template>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>java-expr-template</name>
+        </a-node>
+       </template>
+       <name></name>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-expr-bool-binary</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>BinaryBooleanAndExpr</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxJavaExpr'>
+       <idx>-1</idx>
+       <priority>0</priority>
+       <template>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>java-expr-template</name>
+        </a-node>
+       </template>
+       <name></name>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-expr-bool-and</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>BinaryBooleanOrExpr</name>
+      </a-node>
+     </node>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxJavaExpr'>
+       <idx>-1</idx>
+       <priority>0</priority>
+       <template>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>java-expr-template</name>
+        </a-node>
+       </template>
+       <name></name>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-expr-bool-or</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <node>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>InstanceofExpr</name>
       </a-node>
      </node>
@@ -12903,136 +13125,6 @@
        <id>
         <a-node class='kiev.vlang.Symbol'>
          <sname>stx-stat-do-while</sname>
-        </a-node>
-       </id>
-      </a-node>
-      <a-node class='kiev.fmt.SyntaxElemDecl'>
-       <node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>ForInit</name>
-        </a-node>
-       </node>
-       <elem>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxSubAttr'>
-           <name>type_ref</name>
-           <fmt>
-            <a-node class='kiev.fmt.SimpleElemFormat'>
-             <is_hidden>false</is_hidden>
-            </a-node>
-           </fmt>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxList'>
-           <element>
-            <a-node class='kiev.fmt.SyntaxSet'>
-             <elements>
-              <a-node class='kiev.fmt.SyntaxIdentAttr'>
-               <name>meta</name>
-               <fmt>
-                <a-node class='kiev.fmt.SimpleElemFormat'>
-                 <is_hidden>false</is_hidden>
-                </a-node>
-               </fmt>
-              </a-node>
-              <a-node class='kiev.fmt.SyntaxIdentAttr'>
-               <name>id</name>
-               <fmt>
-                <a-node class='kiev.fmt.RefElemFormat'>
-                 <decl>
-                  <a-node class='kiev.vlang.SymbolRef'>
-                   <name>fmt-symbol</name>
-                  </a-node>
-                 </decl>
-                 <is_hidden>false</is_hidden>
-                </a-node>
-               </fmt>
-              </a-node>
-              <a-node class='kiev.fmt.SyntaxOptional'>
-               <calculator>
-                <a-node class='kiev.fmt.CalcOptionNotNull'>
-                 <name>init</name>
-                </a-node>
-               </calculator>
-               <opt_true>
-                <a-node class='kiev.fmt.SyntaxSubAttr'>
-                 <name>init</name>
-                 <fmt>
-                  <a-node class='kiev.fmt.SimpleElemFormat'>
-                   <is_hidden>false</is_hidden>
-                  </a-node>
-                 </fmt>
-                </a-node>
-               </opt_true>
-               <fmt>
-                <a-node class='kiev.fmt.SimpleElemFormat'>
-                 <is_hidden>false</is_hidden>
-                </a-node>
-               </fmt>
-              </a-node>
-             </elements>
-             <folded_by_default>false</folded_by_default>
-             <fmt>
-              <a-node class='kiev.fmt.SimpleElemFormat'>
-               <is_hidden>false</is_hidden>
-              </a-node>
-             </fmt>
-            </a-node>
-           </element>
-           <separator>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>,</text>
-             <fmt>
-              <a-node class='kiev.fmt.RefElemFormat'>
-               <decl>
-                <a-node class='kiev.vlang.SymbolRef'>
-                 <name>fmt-separator</name>
-                </a-node>
-               </decl>
-               <is_hidden>false</is_hidden>
-              </a-node>
-             </fmt>
-            </a-node>
-           </separator>
-           <empty>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>&lt;?vars?&gt;</text>
-             <fmt>
-              <a-node class='kiev.fmt.SimpleElemFormat'>
-               <is_hidden>false</is_hidden>
-              </a-node>
-             </fmt>
-            </a-node>
-           </empty>
-           <folded_by_default>false</folded_by_default>
-           <name>decls</name>
-           <expected_types>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>Var</name>
-            </a-node>
-           </expected_types>
-           <fmt>
-            <a-node class='kiev.fmt.SimpleElemFormat'>
-             <is_hidden>false</is_hidden>
-            </a-node>
-           </fmt>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-         <fmt>
-          <a-node class='kiev.fmt.SimpleElemFormat'>
-           <is_hidden>false</is_hidden>
-          </a-node>
-         </fmt>
-        </a-node>
-       </elem>
-       <meta>
-        <a-node class='kiev.vlang.MetaSet'>
-        </a-node>
-       </meta>
-       <id>
-        <a-node class='kiev.vlang.Symbol'>
-         <sname>stx-stat-for-init</sname>
         </a-node>
        </id>
       </a-node>
@@ -14923,7 +15015,7 @@
  </meta>
  <id>
   <a-node class='kiev.vlang.Symbol'>
-   <sname>java.xml</sname>
+   <sname>stx-fmt\syntax-for-java.xml</sname>
   </a-node>
  </id>
 </a-node>

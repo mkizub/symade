@@ -24,27 +24,20 @@ public class ASTIdentifier extends ENode {
 
 	@virtual typedef This  = ASTIdentifier;
 
-	@att public String name;
-
-	@setter
-	public void set$name(String value) {
-		this.name = (value != null) ? value.intern() : null;
-	}
-	
 	public ASTIdentifier() {}
 
 	public ASTIdentifier(String name) {
-		this.name = name;
+		this.ident.name = name;
 	}
 
 	public ASTIdentifier(Token t) {
 		this.pos = t.getPos();
-		this.name = t.image;
+		this.ident.name = t.image;
 	}
 
 	public ASTIdentifier(int pos, String name) {
 		this.pos = pos;
-		this.name = name;
+		this.ident.name = name;
 	}
 
 	public int getPriority() { return 256; }
@@ -52,12 +45,13 @@ public class ASTIdentifier extends ENode {
 	public void set(Token t) {
         pos = t.getPos();
 		if (t.image.startsWith("#id\""))
-			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
+			this.ident.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
 		else
-			this.name = t.image;
+			this.ident.name = t.image;
 	}
 	
 	public boolean preResolveIn() {
+		String name = this.ident.name;
 		if( name == Constants.nameThis ) {
 			replaceWithNode(new ThisExpr(pos));
 			return false;
@@ -75,7 +69,7 @@ public class ASTIdentifier extends ENode {
 		if( v instanceof Opdef ) {
 			ASTOperator op = new ASTOperator();
 			op.pos = pos;
-			op.image = name;
+			op.ident.name = name;
 			replaceWithNode(op);
 		}
 		else if( v instanceof TypeDecl ) {
@@ -90,6 +84,7 @@ public class ASTIdentifier extends ENode {
 	}
 
 	public void resolve(Type reqType) {
+		String name = this.ident.name;
 		if( name == Constants.nameFILE ) {
 			replaceWithNode(new ConstStringExpr(Kiev.curFile));
 			return;
@@ -180,11 +175,11 @@ public class ASTIdentifier extends ENode {
 	}
 
 	public String toString() {
-		return name;
+		return ident.name;
 	}
 
 	public Object doRewrite(RewriteContext ctx) {
-		return ctx.root.getVal(name);
+		return ctx.root.getVal(ident.name);
 	}
 }
 

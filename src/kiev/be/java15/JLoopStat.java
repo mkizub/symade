@@ -104,13 +104,8 @@ public final view JDoWhileStat of DoWhileStat extends JLoopStat {
 }
 
 @nodeview
-public final view JForInit of ForInit extends JENode {
-	public:ro	JVar[]	decls;
-}
-
-@nodeview
 public final view JForStat of ForStat extends JLoopStat {
-	public:ro	JENode		init;
+	public:ro	JNode		init;
 	public:ro	JENode		cond;
 	public:ro	JENode		body;
 	public:ro	JENode		iter;
@@ -124,16 +119,10 @@ public final view JForStat of ForStat extends JLoopStat {
 
 		code.setLinePos(this);
 		try {
-			if( init != null ) {
-				if( init instanceof JForInit ) {
-					JForInit fi = (JForInit)init;
-					foreach (JVar var; fi.decls) {
-						var.generate(code,Type.tpVoid);
-					}
-				} else {
-					init.generate(code,Type.tpVoid);
-				}
-			}
+			if( init instanceof JVar || init instanceof JDeclGroup )
+				((JDNode)init).generate(code,Type.tpVoid);
+			else if (init instanceof JENode)
+				((JENode)init).generate(code,Type.tpVoid);
 
 			if( cond != null ) {
 				code.addInstr(Instr.op_goto,check_label);
@@ -159,12 +148,9 @@ public final view JForStat of ForStat extends JLoopStat {
 			}
 			lblbrk.generate(code,Type.tpVoid);
 
-			if( init != null && init instanceof JForInit ) {
-				JForInit fi = (JForInit)init;
-				JVar[] decls = fi.decls;
-				for(int i=decls.length-1; i >= 0; i--) {
-					code.removeVar(decls[i]);
-				}
+			if( init instanceof JDNode ) {
+				JDNode dn = (JDNode)init;
+				dn.removeVars(code);
 			}
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);

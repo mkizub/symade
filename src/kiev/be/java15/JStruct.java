@@ -80,7 +80,7 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	public JField resolveField(String name, boolean fatal) {
 		checkResolved();
-		foreach (JField f; this.members; f.id.equals(name))
+		foreach (JField f; this.getAllFields(); f.id.equals(name))
 			return f;
 		foreach (JType jt; this.super_types) {
 			JField f = jt.getJStruct().resolveField(name, false);
@@ -183,7 +183,7 @@ public final view JStruct of Struct extends JTypeDecl {
 			this.addAttr(new RIMetaAttr(meta));
 		
 		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
-		foreach (JField f; members) {
+		foreach (JField f; getAllFields()) {
 			constPool.addAsciiCP(f.u_name);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 

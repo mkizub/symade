@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  */
 
 @node(name="Case")
-public class CaseLabel extends ENode implements ScopeOfNames {
+public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(in="this:in()", out="stats") private static class DFI {
 	@dflow(in="this:in", seq="true") Var[]		pattern;
@@ -118,23 +118,52 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
-		Var@ var;
 		ASTNode@ n;
+		DNode@ dn;
 	{
-		var @= pattern,
-		info.checkNodeName(var),
-		node ?= var
-	;
 		n @= new SymbolIterator(this.stats, info.space_prev),
+		{
+			n instanceof DeclGroup,
+			dn @= ((DeclGroup)n).decls,
+			info.checkNodeName(dn),
+			info.check(dn),
+			node ?= dn
+		;
+			info.checkNodeName(n),
+			node ?= n
+		;
+			info.isForwardsAllowed(),
+			n instanceof Var && ((Var)n).isForward() && info.checkNodeName(n),
+			info.enterForward((Var)n) : info.leaveForward((Var)n),
+			n.getType().resolveNameAccessR(node,info)
+		}
+	;
+		n @= pattern,
 		info.checkNodeName(n),
 		node ?= n
-	;
+	}
+
+	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+		ASTNode@ n;
+	{
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		n instanceof Var && ((Var)n).isForward() && info.checkNodeName(n),
+		{
+			n instanceof DeclGroup,
+			((DeclGroup)n).resolveMethodR(node, info, mt)
+		;
+			n instanceof Var && ((Var)n).isForward(),
+			info.enterForward((Var)n) : info.leaveForward((Var)n),
+			((Var)n).getType().resolveCallAccessR(node,info,mt)
+		}
+	;
+		info.isForwardsAllowed(),
+		n @= pattern,
+		n instanceof Var && ((Var)n).isForward(),
 		info.enterForward((Var)n) : info.leaveForward((Var)n),
-		n.getType().resolveNameAccessR(node,info)
+		((Var)n).getType().resolveCallAccessR(node,info,mt)
 	}
+
 }
 
 @node(name="Switch")

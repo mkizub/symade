@@ -84,7 +84,7 @@ public final view JNewExpr of NewExpr extends JENode {
 			args[i].generate(code,null);
 		if( type.getStruct() != null && type.getStruct().isLocal() ) {
 			JStruct cl = (JStruct)((CompaundType)type).clazz;
-			foreach (JField f; cl.members) {
+			foreach (JField f; cl.getAllFields()) {
 				if( !f.isNeedProxy() ) continue;
 				JVar v = ((JLVarExpr)f.init).var;
 				code.addInstr(Instr.op_load,v);
@@ -178,7 +178,7 @@ public final view JNewClosure of NewClosure extends JENode {
 			code.addInstrLoadThis();
 		code.addConst(xtype.arity);
 		// Now, fill proxyed fields (vars)
-		foreach (JField f; cl.members) {
+		foreach (JField f; cl.getAllFields()) {
 			if( !f.isNeedProxy() ) continue;
 			JVar v = ((JLVarExpr)f.init).var;
 			code.addInstr(Instr.op_load,v);

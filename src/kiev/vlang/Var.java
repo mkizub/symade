@@ -40,6 +40,12 @@ public class Var extends LvalDNode {
 
 	@getter public Type get$type() { return this.vtype.getType(); }
 	
+	public void callbackAttached() {
+		ANode p = parent();
+		if (p instanceof DeclGroup)
+			this.group = (DeclGroup)p;
+		super.callbackAttached();
+	}
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
 			if      (attr.name == "vtype")

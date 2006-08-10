@@ -48,5 +48,8 @@ public final view JVar of Var extends JLvalDNode {
 		}
 	}
 
+	public void removeVars(Code code) {
+		code.removeVar(this);
+	}
 }
 

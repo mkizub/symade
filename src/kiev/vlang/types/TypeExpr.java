@@ -110,9 +110,6 @@ public class TypeExpr extends TypeRef {
 		return tp;
 	}
 
-	public boolean isBound() {
-		return true;
-	}
 	public Struct getStruct() {
 		if (this.lnk != null)
 			return this.lnk.getStruct();

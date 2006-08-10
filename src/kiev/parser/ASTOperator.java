@@ -22,17 +22,10 @@ public final class ASTOperator extends ENode {
 
 	@virtual typedef This  = ASTOperator;
 
-	@att public String		image;
-
-	@setter
-	public void set$image(String value) {
-		this.image = (value != null) ? value.intern() : null;
-	}
-	
 	ASTOperator() {}
 	ASTOperator(Token t) {
 		this.pos = t.getPos();
-		this.image = t.image;
+		this.ident.name = t.image;
 	}
 	
 	public void resolve(Type reqType) {
@@ -40,7 +33,7 @@ public final class ASTOperator extends ENode {
 	}
 
 	public String toString() {
-		return image.toString();
+		return this.ident.name;
 	}
 }
 

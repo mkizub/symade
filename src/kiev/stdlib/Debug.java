@@ -102,9 +102,9 @@ public class Debug {
 	{
 		case CallExpr# self():
 			if ($GenTraces)
-				new #CallExpr(obj=self.obj,ident="trace_force",args={msg})
+				new # CallExpr(obj=self.obj,ident="trace_force",args={msg})
 			else
-				new #NopExpr()
+				new # NopExpr()
 	}
 
 	/**

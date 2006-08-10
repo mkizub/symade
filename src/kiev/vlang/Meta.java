@@ -18,7 +18,12 @@ public final class MetaSet extends ASTNode {
 	
 	@virtual typedef This  = MetaSet;
 
-	@att public ANode[]				metas;
+	@att public ANode[]		metas;
+
+	@getter
+	public DeclGroup get$group() {
+		return ((DNode)parent()).group;
+	}
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
@@ -31,21 +36,30 @@ public final class MetaSet extends ASTNode {
 	public boolean hasRuntimeVisibles() {
 		foreach (UserMeta m; metas; m.isRuntimeVisible())
 			return true;
+		if (group != null) {
+			foreach (UserMeta m; group.meta.metas; m.isRuntimeVisible())
+				return true;
+		}
 		return false;
 	}
 	public boolean hasRuntimeInvisibles() {
 		foreach (UserMeta m; metas; m.isRuntimeInvisible())
 			return true;
+		if (group != null) {
+			foreach (UserMeta m; group.meta.metas; m.isRuntimeInvisible())
+				return true;
+		}
 		return false;
 	}
 
-	public int size() alias length {
-		return metas.length;
+	public void resolve() {
+		if (group != null)
+			foreach (UserMeta m; group.meta.metas)
+				m.resolve(null);
+		foreach (UserMeta m; metas)
+			m.resolve(null);
 	}
-	public boolean isEmpty() {
-		return metas.length == 0;
-	}
-	
+
 	public void verify() {
 		foreach (UserMeta m; metas) {
 			try {
@@ -62,6 +76,12 @@ public final class MetaSet extends ASTNode {
 		foreach (MetaFlag m; metas) {
 			if (m.qname() == name)
 				return m;
+		}
+		if (group != null) {
+			foreach (MetaFlag m; group.meta.metas) {
+				if (m.qname() == name)
+					return m;
+			}
 		}
 		return null;
 	}
@@ -85,6 +105,12 @@ public final class MetaSet extends ASTNode {
 			if (m.qname() == name)
 				return m;
 		}
+		if (group != null) {
+			foreach (UserMeta m; group.meta.metas) {
+				if (m.qname() == name)
+					return m;
+			}
+		}
 		return null;
 	}
 	
@@ -101,18 +127,6 @@ public final class MetaSet extends ASTNode {
 		metas.append(meta);
 		return meta;
 	}
-
-	public Enumeration<ANode> elements() {
-		return new Enumeration<ANode>() {
-			int current;
-			public boolean hasMoreElements() { return current < MetaSet.this.size(); }
-			public ANode nextElement() {
-				if ( current < MetaSet.this.size() ) return MetaSet.this.metas[current++];
-				throw new NoSuchElementException(Integer.toString(MetaSet.this.size()));
-			}
-		};
-	}
-	
 }
 
 @node(name="UserMeta")

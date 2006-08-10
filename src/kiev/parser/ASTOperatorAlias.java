@@ -29,15 +29,18 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 	public ASTOperatorAlias() {
 		super("operator ???");
 	}
+	public ASTOperatorAlias(String opname) {
+		super(opname);
+	}
 	
 	public void setImage(ASTNode n) {
 		this.pos = n.pos;
 		if( n instanceof ASTOperator ) {
-			image = ((ASTOperator)n).image;
+			image = ((ASTOperator)n).ident.name;
 			return;
 		}
 		else if( n instanceof ASTIdentifier ) {
-			image = ((ASTIdentifier)n).name;
+			image = ((ASTIdentifier)n).ident.name;
 			return;
 		}
 		throw new CompilerException(n,"Bad operator definition");

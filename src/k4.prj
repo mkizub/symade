@@ -387,6 +387,7 @@ CLASS kiev.vlang.DFSocketSpaceUnknown kiev/vlang/DFSocketSpaceUnknown kiev\vlang
 CLASS kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 CLASS kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\DNode.java
 CLASS kiev.vlang.DataFlowInfo kiev/vlang/DataFlowInfo kiev\vlang\Var.java
+CLASS kiev.vlang.DeclGroup kiev/vlang/DeclGroup kiev\vlang\DNode.java
 CLASS kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.DoubleADD kiev/vlang/DoubleADD kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.DoubleAssign kiev/vlang/DoubleAssign kiev\vlang\CoreMethod.java
@@ -435,7 +436,6 @@ CLASS kiev.vlang.FloatNEG kiev/vlang/FloatNEG kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.FloatPOS kiev/vlang/FloatPOS kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.FloatSUB kiev/vlang/FloatSUB kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.ForEachStat kiev/vlang/ForEachStat kiev\vlang\LoopStatement.java
-CLASS kiev.vlang.ForInit kiev/vlang/ForInit kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.ForStat kiev/vlang/ForStat kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.FormPar kiev/vlang/FormPar kiev\vlang\Var.java
 CLASS kiev.vlang.GotoCaseStat kiev/vlang/GotoCaseStat kiev\vlang\Statement.java
@@ -674,6 +674,7 @@ CLASS kiev.vlang.types.Type kiev/vlang/types/Type kiev\vlang\types\Type.java
 CLASS kiev.vlang.types.TypeAssign kiev/vlang/types/TypeAssign kiev\vlang\types\TypeDef.java
 CLASS kiev.vlang.types.TypeClosureRef kiev/vlang/types/TypeClosureRef kiev\vlang\types\TypeClosure.java
 CLASS kiev.vlang.types.TypeConstr kiev/vlang/types/TypeConstr kiev\vlang\types\TypeDef.java
+CLASS kiev.vlang.types.TypeDeclRef kiev/vlang/types/TypeDeclRef kiev\vlang\types\TypeRef.java
 CLASS kiev.vlang.types.TypeDef kiev/vlang/types/TypeDef kiev\vlang\types\TypeDef.java
 CLASS kiev.vlang.types.TypeExpr kiev/vlang/types/TypeExpr kiev\vlang\types\TypeExpr.java
 CLASS kiev.vlang.types.TypeNameRef kiev/vlang/types/TypeNameRef kiev\vlang\types\TypeNameRef.java
@@ -724,6 +725,7 @@ INTERFACE kiev.be.java15.JContainerAccessExpr kiev/be/java15/JContainerAccessExp
 INTERFACE kiev.be.java15.JContinueStat kiev/be/java15/JContinueStat kiev\be\java15\JStatement.java
 INTERFACE kiev.be.java15.JCtorCallExpr kiev/be/java15/JCtorCallExpr kiev\be\java15\JCallExpr.java
 INTERFACE kiev.be.java15.JDNode kiev/be/java15/JDNode kiev\be\java15\JNode.java
+INTERFACE kiev.be.java15.JDeclGroup kiev/be/java15/JDeclGroup kiev\be\java15\JNode.java
 INTERFACE kiev.be.java15.JDoWhileStat kiev/be/java15/JDoWhileStat kiev\be\java15\JLoopStat.java
 INTERFACE kiev.be.java15.JENode kiev/be/java15/JENode kiev\be\java15\JNode.java
 INTERFACE kiev.be.java15.JExprStat kiev/be/java15/JExprStat kiev\be\java15\JStatement.java
@@ -731,7 +733,6 @@ INTERFACE kiev.be.java15.JField kiev/be/java15/JField kiev\be\java15\JFieldView.
 INTERFACE kiev.be.java15.JFileUnit kiev/be/java15/JFileUnit kiev\be\java15\JFileUnit.java
 INTERFACE kiev.be.java15.JFinallyInfo kiev/be/java15/JFinallyInfo kiev\be\java15\JComplexStat.java
 INTERFACE kiev.be.java15.JForEachStat kiev/be/java15/JForEachStat kiev\be\java15\JLoopStat.java
-INTERFACE kiev.be.java15.JForInit kiev/be/java15/JForInit kiev\be\java15\JLoopStat.java
 INTERFACE kiev.be.java15.JForStat kiev/be/java15/JForStat kiev\be\java15\JLoopStat.java
 INTERFACE kiev.be.java15.JGotoCaseStat kiev/be/java15/JGotoCaseStat kiev\be\java15\JStatement.java
 INTERFACE kiev.be.java15.JGotoStat kiev/be/java15/JGotoStat kiev\be\java15\JStatement.java
@@ -812,6 +813,7 @@ INTERFACE kiev.ir.java15.RContinueStat kiev/ir/java15/RContinueStat kiev\ir\java
 INTERFACE kiev.ir.java15.RCoreMethod kiev/ir/java15/RCoreMethod kiev\ir\java15\RMethod.java
 INTERFACE kiev.ir.java15.RCtorCallExpr kiev/ir/java15/RCtorCallExpr kiev\ir\java15\RCallExpr.java
 INTERFACE kiev.ir.java15.RDNode kiev/ir/java15/RDNode kiev\ir\java15\RNode.java
+INTERFACE kiev.ir.java15.RDeclGroup kiev/ir/java15/RDeclGroup kiev\ir\java15\RNode.java
 INTERFACE kiev.ir.java15.RDoWhileStat kiev/ir/java15/RDoWhileStat kiev\ir\java15\RLoopStat.java
 INTERFACE kiev.ir.java15.RENode kiev/ir/java15/RENode kiev\ir\java15\RNode.java
 INTERFACE kiev.ir.java15.RExprStat kiev/ir/java15/RExprStat kiev\ir\java15\RStat.java
@@ -819,7 +821,6 @@ INTERFACE kiev.ir.java15.RField kiev/ir/java15/RField kiev\ir\java15\RField.java
 INTERFACE kiev.ir.java15.RFileUnit kiev/ir/java15/RFileUnit kiev\ir\java15\RFileUnit.java
 INTERFACE kiev.ir.java15.RFinallyInfo kiev/ir/java15/RFinallyInfo kiev\ir\java15\RTryStat.java
 INTERFACE kiev.ir.java15.RForEachStat kiev/ir/java15/RForEachStat kiev\ir\java15\RLoopStat.java
-INTERFACE kiev.ir.java15.RForInit kiev/ir/java15/RForInit kiev\ir\java15\RLoopStat.java
 INTERFACE kiev.ir.java15.RForStat kiev/ir/java15/RForStat kiev\ir\java15\RLoopStat.java
 INTERFACE kiev.ir.java15.RFormPar kiev/ir/java15/RFormPar kiev\ir\java15\RVar.java
 INTERFACE kiev.ir.java15.RGotoCaseStat kiev/ir/java15/RGotoCaseStat kiev\ir\java15\RStat.java
@@ -908,7 +909,6 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
-METATYPE kiev.fmt.KievSyntax kiev\fmt\JavaSyntax.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad

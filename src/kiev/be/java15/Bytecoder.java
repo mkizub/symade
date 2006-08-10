@@ -568,7 +568,7 @@ public class Bytecoder implements JConstants {
 
 		{
 			Vector<kiev.bytecode.Field> flds = new Vector<kiev.bytecode.Field>(); 
-			foreach (Field f; cl.members) {
+			foreach (Field f; cl.getAllFields()) {
 				if( f.isPackedField() ) continue;
 				if (/*!kievmode &&*/ f.isAbstract()) continue;
 				flds.append(writeField(f));

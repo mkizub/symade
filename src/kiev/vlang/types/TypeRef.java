@@ -78,10 +78,6 @@ public class TypeRef extends ENode {
 		return lnk;
 	}
 	
-	public boolean isBound() {
-		return lnk != null;
-	}
-	
 	public boolean isArray() { return getType().isArray(); }
 	public boolean checkResolved() { return getType().checkResolved(); } 
 	public Struct getStruct() { if (lnk == null) return null; return lnk.getStruct(); }
@@ -153,4 +149,32 @@ public class TypeRef extends ENode {
 	}
 }
 
+@node
+public class TypeDeclRef extends TypeRef {
+	@virtual typedef This  = TypeDeclRef;
+	
+	public TypeDeclRef() {}
+
+	public Type getType()
+		alias fy operator $cast
+	{
+		if (this.lnk != null)
+			return this.lnk;
+		for (ANode p = parent(); p!= null; p = p.parent()) {
+			if (p instanceof DeclGroup) {
+				this.lnk = p.getType();
+				return this.lnk;
+			}
+		}
+		return Type.tpVoid;
+	}
+
+	public String toString() {
+		return String.valueOf(getType());
+	}
+	
+	public Object doRewrite(RewriteContext ctx) {
+		return this;
+	}
+}
 

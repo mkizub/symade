@@ -275,7 +275,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 	/** Add information about new field that belongs to this class */
 	public Field addField(Field f) {
 		// Check we already have this field
-		foreach (Field ff; members) {
+		foreach (Field ff; getAllFields()) {
 			if( ff.equals(f) ) {
 				throw new RuntimeException("Field "+f+" already exists in class "+this);
 			}
@@ -381,11 +381,11 @@ public class Struct extends TypeDecl implements PreScanneable {
 		if( !isEnum() )
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
 		int idx = 0;
-		foreach (Field n; this.members; n.isEnumField())
+		foreach (Field n; this.getAllFields(); n.isEnumField())
 			idx++;
 		Field[] eflds = new Field[idx];
 		idx = 0;
-		foreach (Field n; this.members; n.isEnumField()) {
+		foreach (Field n; this.getAllFields(); n.isEnumField()) {
 			eflds[idx] = n;
 			idx ++;
 		}
@@ -396,7 +396,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 		if( !isEnum() )
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
 		int idx = 0;
-		foreach (Field n; this.members; n.isEnumField()) {
+		foreach (Field n; this.getAllFields(); n.isEnumField()) {
 			if (f == n)
 				return idx;
 			idx++;
@@ -412,13 +412,13 @@ public class Struct extends TypeDecl implements PreScanneable {
 
 	public int countPackedFields() {
 		int i = 0;
-		foreach (Field n; members; n.isPackedField()) i++;
+		foreach (Field n; getAllFields(); n.isPackedField()) i++;
 		return i;
 	}
 
 	public int countAbstractFields() {
 		int i = 0;
-		foreach (Field n; members; n.isAbstract()) i++;
+		foreach (Field n; getAllFields(); n.isAbstract()) i++;
 		return i;
 	}
 
@@ -467,7 +467,41 @@ public class Struct extends TypeDecl implements PreScanneable {
 			if (i.getStruct().isFinal())
 				Kiev.reportError(this, "Struct "+this+" extends final struct "+i);
 		}
+		if (isInterface() && !isStructView()) {
+			foreach (DNode n; members; n instanceof Field || n instanceof Initializer || n instanceof DeclGroup) {
+				if (n instanceof DeclGroup) {
+					foreach (Field f; n.decls; !f.isAbstract())
+						verifyFieldInIface(f);
+				}
+				else if (n instanceof Field && !n.isAbstract()) {
+					verifyFieldInIface((Field)n);
+				}
+				else if (n instanceof Initializer) {
+					verifyInitializerInIface((Initializer)n);
+				}
+			}
+		}
 		return true;
+	}
+	
+	private void verifyFieldInIface(Field n) {
+		if (!n.isStatic()) {
+			Kiev.reportError(n,"Non-static field "+n+" in interface "+this);
+			n.open();
+			n.setStatic(true);
+		}
+		if (!n.isFinal()) {
+			Kiev.reportError(n,"Non-final field "+n+" in interface "+this);
+			n.open();
+			n.setFinal(true);
+		}
+	}
+	private void verifyInitializerInIface(Initializer n) {
+		if (!n.isStatic()) {
+			Kiev.reportError(n,"Non-static initializer in interface "+this);
+			n.open();
+			n.setStatic(true);
+		}
 	}
 
 	public final rule resolveNameR(ASTNode@ node, ResInfo info)
@@ -513,7 +547,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 				return wf;
 		}
 		Field wf = null;
-		foreach(Field n; members; n.isForward()) {
+		foreach(Field n; getAllFields(); n.isForward()) {
 			if (wf == null)
 				wf = (Field)n;
 			else
@@ -677,22 +711,15 @@ public class Struct extends TypeDecl implements PreScanneable {
 	}
 
 	public void resolveMetaValues() {
-		foreach (UserMeta m; meta)
-			m.resolve(null);
+		this.meta.resolve();
 		foreach(DNode dn; members) {
-			if (dn.meta != null) {
-				foreach (UserMeta m; dn.meta)
-					m.resolve(null);
-			}
-			if (dn instanceof Method) {
-				Method meth = (Method)dn;
-				foreach (Var p; meth.params) {
-					if (p.meta != null) {
-						foreach (UserMeta m; p.meta)
-							m.resolve(null);
-					}
-				}
-			}
+			dn.meta.resolve();
+			if (dn instanceof DeclGroup)
+				foreach (DNode d; dn.decls)
+					d.meta.resolve();
+			if (dn instanceof Method)
+				foreach (Var p; dn.params)
+					p.meta.resolve();
 		}
 		
 		if( !isPackage() ) {

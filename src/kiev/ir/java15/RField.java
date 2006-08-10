@@ -36,8 +36,7 @@ public static final view RField of Field extends RLvalDNode {
 	public final void setAddedToInit(boolean on);
 
 	public void resolveDecl() {
-		foreach (UserMeta m; meta)
-			m.resolve(null);
+		meta.resolve();
 		Type tp = this.type;
 		if (init instanceof TypeRef)
 			((TypeRef)init).toExpr(type);

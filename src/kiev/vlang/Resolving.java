@@ -153,9 +153,10 @@ public final class ResInfo {
 			if (d.isPrivate()) {
 				// check visibility of this or inner classes
 				TypeDecl s = from_scope;
-				while (s != null && s != n.parent() && s.package_clazz.isClazz())
+				TypeDecl p = n.ctx_tdecl;
+				while (s != null && s != p && s.package_clazz.isClazz())
 					s = s.package_clazz;
-				if (s == null || s != n.parent())
+				if (s == null || s != p)
 					return false;
 			}
 			return true;

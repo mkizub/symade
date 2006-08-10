@@ -70,7 +70,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 		// Cast from int
 		{
 			Method tome = new Method("fromInt",clazz.xtype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
-			tome.aliases += new Symbol(nameCastOp);
+			tome.aliases += new ASTOperatorAlias(nameCastOp);
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt, FormPar.PARAM_NORMAL,0));
 			tome.body = new Block(pos);
@@ -99,7 +99,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 		// toString
 		{
 			Method tostr = new Method("toString",Type.tpString,ACC_PUBLIC | ACC_SYNTHETIC);
-			tostr.aliases += new Symbol(nameCastOp);
+			tostr.aliases += new ASTOperatorAlias(nameCastOp);
 			tostr.pos = pos;
 			tostr.body = new Block(pos);
 			SwitchStat sw = new SwitchStat(pos,
@@ -136,7 +136,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 		// fromString
 		{
 			Method fromstr = new Method("valueOf",clazz.xtype,ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC);
-			fromstr.aliases += new Symbol(nameCastOp);
+			fromstr.aliases += new ASTOperatorAlias(nameCastOp);
 			fromstr.aliases += new Symbol("fromString");
 			fromstr.pos = pos;
 			fromstr.params.add(new FormPar(pos,"val",Type.tpString, FormPar.PARAM_NORMAL,0));

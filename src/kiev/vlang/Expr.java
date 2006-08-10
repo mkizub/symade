@@ -566,16 +566,24 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
+		DNode@ dn;
 	{
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		info.checkNodeName(n),
-		node ?= n
-	;
-		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this.stats, info.space_prev),
-		n instanceof Var && ((Var)n).isForward(),
-		info.enterForward((Var)n) : info.leaveForward((Var)n),
-		n.getType().resolveNameAccessR(node,info)
+		{
+			n instanceof DeclGroup,
+			dn @= ((DeclGroup)n).decls,
+			info.checkNodeName(dn),
+			info.check(dn),
+			node ?= dn
+		;
+			info.checkNodeName(n),
+			node ?= n
+		;
+			info.isForwardsAllowed(),
+			n instanceof Var && ((Var)n).isForward(),
+			info.enterForward((Var)n) : info.leaveForward((Var)n),
+			n.getType().resolveNameAccessR(node,info)
+		}
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
@@ -583,9 +591,14 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	{
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this.stats, info.space_prev),
-		n instanceof Var && ((Var)n).isForward(),
-		info.enterForward((Var)n) : info.leaveForward((Var)n),
-		((Var)n).getType().resolveCallAccessR(node,info,mt)
+		{
+			n instanceof DeclGroup,
+			((DeclGroup)n).resolveMethodR(node, info, mt)
+		;
+			n instanceof Var && ((Var)n).isForward(),
+			info.enterForward((Var)n) : info.leaveForward((Var)n),
+			((Var)n).getType().resolveCallAccessR(node,info,mt)
+		}
 	}
 
 	public int		getPriority() { return 255; }
@@ -608,7 +621,16 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 			if (res != null) return res;
 			Block node = (Block)dfi.node_impl;
 			Vector<Var> vars = new Vector<Var>();
-			foreach (Var n; node.stats) vars.append(n);
+			foreach (DNode dn; node.stats) {
+				if (dn instanceof Var) {
+					vars.append((Var)dn);
+					continue;
+				}
+				if (dn instanceof DeclGroup) {
+					foreach (Var v; ((DeclGroup)dn).decls)
+						vars.append(v);
+				}
+			}
 			if (vars.length > 0)
 				res = DFFunc.calc(f, dfi).cleanInfoForVars(vars.toArray());
 			else

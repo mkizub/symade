@@ -74,27 +74,31 @@ public view JDNode of DNode extends JNode {
 
 	public boolean hasName(String nm, boolean by_equals);
 
-	public final boolean isPublic()				{ return (flags & ACC_PUBLIC) != 0; }
-	public final boolean isPrivate()			{ return (flags & ACC_PRIVATE) != 0; }
-	public final boolean isProtected()			{ return (flags & ACC_PROTECTED) != 0; }
-	public final boolean isPackageVisable()	{ return (flags & (ACC_PROTECTED|ACC_PUBLIC|ACC_PROTECTED)) == 0; }
-	public final boolean isStatic()				{ return (flags & ACC_STATIC) != 0; }
-	public final boolean isFinal()				{ return (flags & ACC_FINAL) != 0; }
-	public final boolean isSynchronized()		{ return (flags & ACC_SYNCHRONIZED) != 0; }
-	public final boolean isVolatile()			{ return (flags & ACC_VOLATILE) != 0; }
-	public final boolean isTransient()			{ return (flags & ACC_TRANSIENT) != 0; }
-	public final boolean isNative()				{ return (flags & ACC_NATIVE) != 0; }
-	public final boolean isInterface()			{ return (flags & ACC_INTERFACE) != 0; }
-	public final boolean isAbstract()			{ return (flags & ACC_ABSTRACT) != 0; }
-	public final boolean isSuper()				{ return (flags & ACC_SUPER) != 0; }
+	public final boolean isPublic()	;
+	public final boolean isPrivate();
+	public final boolean isProtected();
+	public final boolean isPkgPrivate();
+	public final boolean isStatic();
+	public final boolean isFinal();
+	public final boolean isSynchronized();
+	public final boolean isFieldTransient();
+	public final boolean isNative();
+	public final boolean isInterface();
+	public final boolean isAbstract();
 
 	public final boolean isMacro();
 
-	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
+	public short getJavaFlags();
 
 	public void setPrivate();
 
 	public boolean isTypeUnerasable();
+	
+	public void removeVars(Code code) {}
+
+	public void generate(Code code, Type reqType) {
+		throw new CompilerException(this,"Unresolved node ("+((ENode)this).getClass()+") generation");
+	}
 }
 
 @nodeview
@@ -102,6 +106,29 @@ public view JLvalDNode of LvalDNode extends JDNode {
 	public final boolean isForward();
 	public final boolean isInitWrapper();
 	public final boolean isNeedProxy();
+}
+
+@nodeview
+public final view JDeclGroup of DeclGroup extends JDNode {
+	public:ro	JDNode[]	decls;
+
+	public void generate(Code code, Type reqType) {
+		trace(Kiev.debugStatGen,"\tgenerating DeclGroup");
+		code.setLinePos(this);
+		try {
+			foreach (JDNode dn; decls)
+				dn.generate(code,Type.tpVoid);
+		} catch(Exception e ) {
+			Kiev.reportError(this,e);
+		}
+	}
+	public void removeVars(Code code) {
+		JDNode[] decls = decls;
+		for(int i=decls.length-1; i >= 0; i--) {
+			if (decls[i] instanceof JVar)
+				code.removeVar((JVar)decls[i]);
+		}
+	}
 }
 
 @nodeview
@@ -172,6 +199,13 @@ public view JTypeDecl of TypeDecl extends JDNode {
 		return false;
 	}
 
+	public final JField[] getAllFields() {
+		Field[] flds = ((TypeDecl)this).getAllFields();
+		JField[] jflds = new JField[flds.length];
+		for (int i=0; i < flds.length; i++)
+			jflds[i] = (JField)flds[i];
+		return jflds;
+	}
 }
 
 @nodeview

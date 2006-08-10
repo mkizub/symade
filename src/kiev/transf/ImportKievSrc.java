@@ -211,7 +211,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					for(Struct p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz) n++;
 					String fldName = (nameThis+"$"+n).intern();
 					boolean found = false;
-					foreach (Field f; me.members; f.id.equals(fldName))
+					foreach (Field f; me.getAllFields(); f.id.equals(fldName))
 						found = true;
 					if (!found) {
 						TypeAssign td = new TypeAssign(

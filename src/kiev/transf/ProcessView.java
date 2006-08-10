@@ -66,7 +66,7 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		}
 		if (!cast_found) {
 			Method cast = new Method("$cast", clazz.xtype, ACC_PUBLIC|ACC_SYNTHETIC);
-			cast.aliases += new Symbol(nameCastOp);
+			cast.aliases += new ASTOperatorAlias(nameCastOp);
 			if (clazz.isAbstract()) {
 				cast.setAbstract(true);
 			} else {
@@ -85,7 +85,7 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		}
 		if (!cast_found) {
 			Method cast = new Method("$cast", clazz.view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
-			cast.aliases += new Symbol(nameCastOp);
+			cast.aliases += new ASTOperatorAlias(nameCastOp);
 			clazz.addMethod(cast);
 		}
 	}
@@ -181,22 +181,33 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 					cm.body = b;
 				continue;
 			}
+			else if (dn instanceof DeclGroup && !(dn.isStatic() && dn.isFinal())) {
+				DeclGroup dg = dn;
+				if (!dg.isPublic()) {
+					Kiev.reportWarning(dg, "Fields in "+clazz+" must be public");
+					dg.setPublic();
+				}
+				DeclGroup d = dg.ncopy();
+				foreach (Field f; d.decls)
+					f.init = null;
+				d.setPublic();
+				d.setAbstract(true);
+				impl.members.add(~dg);
+				clazz.members.add(d);
+				continue;
+			}
 			else if (dn instanceof Field && !(dn.isStatic() && dn.isFinal())) {
 				Field cf = dn;
 				if (!cf.isPublic()) {
 					Kiev.reportWarning(cf, "Field "+clazz+'.'+cf+" must be public");
 					cf.setPublic();
 				}
-				ENode b = cf.init;
-				if (b != null)
-					~b;
 				Field f = cf.ncopy();
+				f.init = null;
 				f.setPublic();
 				f.setAbstract(true);
 				impl.members.add(~cf);
 				clazz.addField(f);
-				if (b != null)
-					cf.init = b;
 				continue;
 			}
 			if (dn instanceof Struct)
@@ -242,7 +253,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		}
 		
 		// generate getter/setter methods
-		foreach (Field f; impl.members) {
+		foreach (Field f; impl.getAllFields()) {
 			Method mv_set = (Method)Field.SETTER_ATTR.get(f);
 			if (mv_set != null && mv_set.isSynthetic()) {
 				Method set_var = mv_set;

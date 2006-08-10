@@ -69,7 +69,6 @@ public static view RDNode of DNode extends RNode {
 	public final boolean isStatic();
 	public final boolean isFinal();
 	public final boolean isSynchronized();
-	public final boolean isVolatile();
 	public final boolean isFieldVolatile();
 	public final boolean isMethodBridge();
 	public final boolean isFieldTransient();
@@ -119,6 +118,19 @@ public abstract view RLvalDNode of LvalDNode extends RDNode {
 	// need a proxy access 
 	public final boolean isNeedProxy();
 	public final void setNeedProxy(boolean on);
+}
+
+@nodeview
+public static final view RDeclGroup of DeclGroup extends RDNode {
+	public:ro	DNode[]		decls;
+
+	public void resolveDecl() {
+		if( isResolved() ) return;
+		foreach (DNode dn; decls)
+			dn.resolveDecl();
+		getDFlow().out();
+		setResolved(true);
+	}
 }
 
 @nodeview
@@ -204,6 +216,7 @@ public view RTypeDecl of TypeDecl extends RDNode {
 	public MetaType[] getAllSuperTypes();
 	public final String qname();
 	public boolean isClazz();
+	public final Field[] getAllFields();
 }
 
 

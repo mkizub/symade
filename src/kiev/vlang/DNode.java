@@ -10,6 +10,8 @@ import kiev.ir.java15.RDNode;
 import kiev.be.java15.JDNode;
 import kiev.ir.java15.RLvalDNode;
 import kiev.be.java15.JLvalDNode;
+import kiev.ir.java15.RDeclGroup;
+import kiev.be.java15.JDeclGroup;
 import kiev.be.java15.JTypeDecl;
 import kiev.ir.java15.RTypeDecl;
 
@@ -39,6 +41,7 @@ public abstract class DNode extends ASTNode {
 		 public					int				flags;
 	@att public					MetaSet			meta;
 	@att public					Symbol<This>	id; // short and unique names
+	@ref public					DeclGroup		group;
 	     public:ro,rw,ro,rw		String			u_name; // unique name in scope, never null, usually equals to name
 
 //	public @packed:1,flags, 0 boolean is_acc_public;
@@ -86,26 +89,27 @@ public abstract class DNode extends ASTNode {
 		this.u_name = (value == null) ? null : value.intern();
 	}
 	
-	public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC; }
-	public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE; }
-	public final boolean isProtected()			{ return this.is_access == MASK_ACC_PROTECTED; }
-	public final boolean isPkgPrivate()		{ return this.is_access == MASK_ACC_DEFAULT; }
-	public final boolean isStatic()				{ return this.is_static; }
-	public final boolean isFinal()				{ return this.is_final; }
+	public final boolean isPublic()				{ return this.is_access == MASK_ACC_PUBLIC || group != null && group.isPublic(); }
+	public final boolean isPrivate()			{ return this.is_access == MASK_ACC_PRIVATE || group != null && group.isPrivate(); }
+	public final boolean isProtected()			{ return this.is_access == MASK_ACC_PROTECTED || group != null && group.isProtected(); }
+	public final boolean isPkgPrivate()		{ return this.is_access == MASK_ACC_DEFAULT || group != null && group.isPkgPrivate(); }
+	public final boolean isStatic()				{ return this.is_static || group != null && group.is_static; }
+	public final boolean isFinal()				{ return this.is_final || group != null && group.is_final; }
 	public final boolean isSynchronized()		{ return this.is_mth_synchronized; }
-	public final boolean isVolatile()			{ return this.is_fld_volatile; }
-	public final boolean isFieldVolatile()		{ return this.is_fld_volatile; }
+	public final boolean isFieldVolatile()		{ return this.is_fld_volatile || group != null && group.is_fld_volatile; }
 	public final boolean isMethodBridge()		{ return this.is_mth_bridge; }
-	public final boolean isFieldTransient()	{ return this.is_fld_transient; }
+	public final boolean isFieldTransient()	{ return this.is_fld_transient || group != null && group.is_fld_transient; }
 	public final boolean isMethodVarargs()		{ return this.is_mth_varargs; }
 	public final boolean isStructBcLoaded()	{ return this.is_struct_bytecode; }
-	public final boolean isNative()				{ return this.is_native; }
+	public final boolean isNative()				{ return this.is_native || group != null && group.is_native; }
 	public final boolean isInterface()			{ return this.is_struct_interface; }
-	public final boolean isAbstract()			{ return this.is_abstract; }
-	public final boolean isMathStrict()		{ return this.is_math_strict; }
-	public final boolean isSynthetic()			{ return this.is_synthetic; }
+	public final boolean isAbstract()			{ return this.is_abstract || group != null && group.is_abstract; }
+	public final boolean isMathStrict()		{ return this.is_math_strict || group != null && group.is_math_strict; }
+	public final boolean isSynthetic()			{ return this.is_synthetic || group != null && group.is_synthetic; }
 
-	public final boolean isMacro()				{ return this.is_macro; }
+	public final boolean isMacro()				{ return this.is_macro || group != null && group.is_macro; }
+	public final boolean isVirtual()			{ return this.is_virtual || group != null && group.is_virtual; }
+	public final boolean isForward()			{ return this.is_forward || group != null && group.is_forward; }
 	
 	public final boolean isStructView()		{ return this.is_virtual; }
 	public final boolean isTypeUnerasable()	{ return this.is_type_unerasable; }
@@ -244,9 +248,6 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 
-	public final boolean isVirtual() {
-		return this.is_virtual;
-	}
 	public final void setVirtual(boolean on) {
 		MetaFlag m = this.meta.getF("kiev.stdlib.meta.virtual");
 		if (m != null) {
@@ -256,10 +257,7 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 
-	@getter public final boolean isForward() {
-		return this.is_forward;
-	}
-	@setter public final void setForward(boolean on) {
+	public final void setForward(boolean on) {
 		MetaFlag m = this.meta.getF("kiev.stdlib.meta.forward");
 		if (m != null) {
 			if!(on) m.detach();
@@ -277,6 +275,10 @@ public abstract class DNode extends ASTNode {
 		return DummyDNode.dummyNode;
 	}
 	
+	public void callbackDetached() {
+		this.group = null;
+		super.callbackDetached();
+	}
 	public void callbackChildChanged(AttrSlot attr) {
 		if (attr.name == "id")
 			this.u_name = id.sname;
@@ -286,8 +288,15 @@ public abstract class DNode extends ASTNode {
 
 	public final void resolveDecl() { ((RView)this).resolveDecl(); }
 
-	public int getFlags() { return flags; }
-	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
+	public int getFlags() {
+		int flags = this.flags;
+		if (group != null)
+			flags |= group.flags;
+		return flags;
+	}
+	public short getJavaFlags() {
+		return (short)(getFlags() & JAVA_ACC_MASK);
+	}
 
 	public boolean hasName(String nm, boolean by_equals) {
 		if (by_equals) {
@@ -350,6 +359,59 @@ public abstract class LvalDNode extends DNode {
 
 }
 
+
+@node
+public class DeclGroup extends DNode implements ScopeOfNames, ScopeOfMethods {
+	
+	@dflow(out="decls") private static class DFI {
+	@dflow(in="", seq="true")	DNode[]		decls;
+	}
+
+	@virtual typedef This  = DeclGroup;
+	@virtual typedef JView = JDeclGroup;
+	@virtual typedef RView = RDeclGroup;
+
+	@att public TypeRef		dtype;
+	@att public DNode[]		decls;
+
+	@getter public final Type	get$type() { return this.dtype.getType(); }
+
+	public DeclGroup() {
+		this.id = new Symbol("");
+	}
+
+	public DeclGroup(TypeRef dtype) {
+		this.id = new Symbol("");
+		this.dtype = dtype;
+		this.pos = dtype.pos;
+	}
+
+	public Type	getType() { return type; }
+
+	public rule resolveNameR(ASTNode@ node, ResInfo info)
+		ASTNode@ n;
+	{
+		n @= new SymbolIterator(this.decls, info.space_prev),
+		{
+			info.checkNodeName(n),
+			node ?= n
+		;	info.isForwardsAllowed(),
+			((DNode)n).isForward(),
+			info.enterForward(n) : info.leaveForward(n),
+			n.getType().resolveNameAccessR(node,info)
+		}
+	}
+
+	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+		DNode@ dn;
+	{
+		info.isForwardsAllowed(),
+		dn @= decls,
+		dn.isForward(),
+		info.enterForward(dn) : info.leaveForward(dn),
+		dn.getType().resolveCallAccessR(node,info,mt)
+	}
+}
 
 @node
 public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, GlobalDNode {
@@ -566,7 +628,7 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Glo
 
 	public Field resolveField(String name, boolean fatal) {
 		checkResolved();
-		foreach (Field f; this.members; f.id.equals(name))
+		foreach (Field f; this.getAllFields(); f.id.equals(name))
 			return f;
 		foreach (TypeRef tr; this.super_types; tr.getTypeDecl() != null) {
 			Field f = tr.getTypeDecl().resolveField(name, false);
@@ -607,14 +669,25 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Glo
 		}
 	}
 	protected rule resolveNameR_1(ASTNode@ node, ResInfo info)
+		ASTNode@ n;
+		DNode@ dn;
 	{
 			info.checkNodeName(this),
 			node ?= this
 		;	node @= args,
 			info.checkNodeName(node)
-		;	node @= members,
-			info.checkNodeName(node),
-			info.check(node)
+		;	n @= members,
+			{
+				n instanceof DeclGroup,
+				dn @= ((DeclGroup)n).decls,
+				info.checkNodeName(dn),
+				info.check(dn),
+				node ?= dn
+			;
+				info.checkNodeName(n),
+				info.check(n),
+				node ?= n
+			}
 	}
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info)
 		TypeRef@ sup_ref;
@@ -647,6 +720,20 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Glo
 			info.enterSuper() : info.leaveSuper(),
 			supref.getType().meta_type.tdecl.resolveMethodR(node,info,mt)
 		}
+	}
+	
+	public final Field[] getAllFields() {
+		Vector<Field> v = new Vector<Field>();
+		foreach (DNode dn; members) {
+			if (dn instanceof Field) {
+				v.append((Field)dn);
+			}
+			else if (dn instanceof DeclGroup) {
+				foreach (Field f; dn.decls)
+					v.append(f);
+			}
+		}
+		return v.toArray();
 	}
 
 }

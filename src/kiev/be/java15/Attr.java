@@ -595,22 +595,34 @@ public class RVMetaAttr extends MetaAttr {
 	}
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
-		foreach (UserMeta m; ms; m.isRuntimeVisible()) {
+		foreach (UserMeta m; ms.metas; m.isRuntimeVisible())
 			generateValue(constPool, m);
-		}
+		if (ms.group != null)
+			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeVisible())
+				generateValue(constPool, m);
 	}
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		int size = 0;
-		foreach (UserMeta m; ms; m.isRuntimeVisible())
+		foreach (UserMeta m; ms.metas; m.isRuntimeVisible())
 			size++;
+		if (ms.group != null)
+			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeVisible())
+				size++;
 		kiev.bytecode.RVAnnotations a = new kiev.bytecode.RVAnnotations();
 		a.annotations = new kiev.bytecode.Annotation.annotation[size];
 		a.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
 		int n = 0;
-		foreach (UserMeta m; ms; m.isRuntimeVisible()) {
+		foreach (UserMeta m; ms.metas; m.isRuntimeVisible()) {
 			a.annotations[n] = new kiev.bytecode.Annotation.annotation();
 			write_annotation(constPool, m, a.annotations[n]);
 			n++;
+		}
+		if (ms.group != null) {
+			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeVisible()) {
+				a.annotations[n] = new kiev.bytecode.Annotation.annotation();
+				write_annotation(constPool, m, a.annotations[n]);
+				n++;
+			}
 		}
 		return a;
 	}
@@ -624,22 +636,34 @@ public class RIMetaAttr extends MetaAttr {
 	}
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
-		foreach (UserMeta m; ms; m.isRuntimeInvisible()) {
+		foreach (UserMeta m; ms.metas; m.isRuntimeInvisible())
 			generateValue(constPool, m);
-		}
+		if (ms.group != null)
+			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeInvisible())
+				generateValue(constPool, m);
 	}
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		int size = 0;
-		foreach (UserMeta m; ms; m.isRuntimeInvisible())
+		foreach (UserMeta m; ms.metas; m.isRuntimeInvisible())
 			size++;
+		if (ms.group != null)
+			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeInvisible())
+				size++;
 		kiev.bytecode.RIAnnotations a = new kiev.bytecode.RIAnnotations();
 		a.annotations = new kiev.bytecode.Annotation.annotation[size];
 		a.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(name).pos];
 		int n = 0;
-		foreach (UserMeta m; ms; m.isRuntimeInvisible()) {
+		foreach (UserMeta m; ms.metas; m.isRuntimeInvisible()) {
 			a.annotations[n] = new kiev.bytecode.Annotation.annotation();
 			write_annotation(constPool, m, a.annotations[n]);
 			n++;
+		}
+		if (ms.group != null) {
+			foreach (UserMeta m; ms.group.meta.metas; m.isRuntimeInvisible()) {
+				a.annotations[n] = new kiev.bytecode.Annotation.annotation();
+				write_annotation(constPool, m, a.annotations[n]);
+				n++;
+			}
 		}
 		return a;
 	}
@@ -654,7 +678,7 @@ public class RVParMetaAttr extends MetaAttr {
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
 		foreach (MetaSet ms; mss; ms != null) {
-			foreach (UserMeta m; ms; m.isRuntimeVisible()) {
+			foreach (UserMeta m; ms.metas; m.isRuntimeVisible()) {
 				generateValue(constPool, m);
 			}
 		}
@@ -667,11 +691,11 @@ public class RVParMetaAttr extends MetaAttr {
 			MetaSet ms = mss[i];
 			if (ms != null) {
 				int size = 0;
-				foreach (UserMeta m; ms; m.isRuntimeVisible())
+				foreach (UserMeta m; ms.metas; m.isRuntimeVisible())
 					size++;
 				int n = 0;
 				a.annotations[i] = new kiev.bytecode.Annotation.annotation[size];
-				foreach (UserMeta m; ms; m.isRuntimeVisible()) {
+				foreach (UserMeta m; ms.metas; m.isRuntimeVisible()) {
 					a.annotations[i][n] = new kiev.bytecode.Annotation.annotation();
 					write_annotation(constPool, m, a.annotations[i][n]);
 					n++;
@@ -692,7 +716,7 @@ public class RIParMetaAttr extends MetaAttr {
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
 		foreach (MetaSet ms; mss; ms != null) {
-			foreach (UserMeta m; ms; m.isRuntimeInvisible()) {
+			foreach (UserMeta m; ms.metas; m.isRuntimeInvisible()) {
 				generateValue(constPool, m);
 			}
 		}
@@ -705,11 +729,11 @@ public class RIParMetaAttr extends MetaAttr {
 			MetaSet ms = mss[i];
 			if (ms != null) {
 				int size = 0;
-				foreach (UserMeta m; ms; m.isRuntimeInvisible())
+				foreach (UserMeta m; ms.metas; m.isRuntimeInvisible())
 					size++;
 				int n = 0;
 				a.annotations[i] = new kiev.bytecode.Annotation.annotation[size];
-				foreach (UserMeta m; ms; m.isRuntimeInvisible()) {
+				foreach (UserMeta m; ms.metas; m.isRuntimeInvisible()) {
 					a.annotations[i][n] = new kiev.bytecode.Annotation.annotation();
 					write_annotation(constPool, m, a.annotations[i][n]);
 					n++;

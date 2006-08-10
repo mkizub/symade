@@ -56,7 +56,7 @@ public final view JCaseLabel of CaseLabel extends JENode {
 				JNode st = stats[i];
 				if (st instanceof JENode)
 					st.generate(code,Type.tpVoid);
-				else if (st instanceof JVar)
+				else if (st instanceof JVar || st instanceof JDeclGroup)
 					st.generate(code,Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(stats[i],e);
@@ -139,12 +139,15 @@ public view JSwitchStat of SwitchStat extends JENode implements BreakTarget {
 					cases[i].setAutoReturnable(true);
 				cases[i].generate(code,Type.tpVoid);
 			}
-			Vector<JVar> vars = new Vector<JVar>();
-			for(int i=0; i < cases.length; i++) {
-				foreach (JVar n; cases[i].stats)
-					vars.append(n);
+			for(int i=cases.length-1; i >= 0; i--) {
+				JCaseLabel c = cases[i];
+				for(int j=c.stats.length-1; j >= 0; j--) {
+					if (c.stats[j] instanceof JDNode) {
+						JDNode dn = (JDNode)c.stats[j];
+						dn.removeVars(code);
+					}
+				}
 			}
-			code.removeVars(vars.toArray());
 
 			lblbrk.generate(code,null);
 			code.addInstr(Instr.switch_close,cosw);

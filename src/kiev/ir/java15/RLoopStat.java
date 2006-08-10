@@ -70,18 +70,8 @@ public static view RDoWhileStat of DoWhileStat extends RLoopStat {
 }
 
 @nodeview
-public static final view RForInit of ForInit extends RENode {
-	public:ro	Var[]		decls;
-
-	public void resolve(Type reqType) {
-		foreach (Var v; decls)
-			v.resolveDecl();
-	}
-}
-
-@nodeview
 public static final view RForStat of ForStat extends RLoopStat {
-	public ENode		init;
+	public ASTNode		init;
 	public ENode		cond;
 	public ENode		body;
 	public ENode		iter;
@@ -89,8 +79,13 @@ public static final view RForStat of ForStat extends RLoopStat {
 	public void resolve(Type reqType) {
 		if( init != null ) {
 			try {
-				init.resolve(Type.tpVoid);
-				init.setGenVoidExpr(true);
+				if (init instanceof DNode) {
+					((DNode)init).resolveDecl();
+				}
+				else if (init instanceof ENode) {
+					((ENode)init).resolve(Type.tpVoid);
+					((ENode)init).setGenVoidExpr(true);
+				}
 			} catch(Exception e ) {
 				Kiev.reportError(init,e);
 			}
