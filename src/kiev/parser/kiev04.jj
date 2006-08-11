@@ -1177,12 +1177,12 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 void TypeBodyDeclaration(TypeDecl clazz) :
-{ ASTModifiers modifiers; DeclGroupEnums enums; SpacePtr clazz_members = clazz.getSpacePtr("members"); }
+{ ASTModifiers modifiers; DeclGroupEnumFields enums; SpacePtr clazz_members = clazz.getSpacePtr("members"); }
 {
 	"{"
 	(
 		LOOKAHEAD({ clazz.isEnum() })
-		{ enums = new DeclGroupEnums(); }
+		{ enums = new DeclGroupEnumFields(); }
 		modifiers = Modifiers()
 		enums.decls += EnumFieldDeclaration(modifiers)
 		(	","
@@ -1232,7 +1232,7 @@ FieldEnum EnumFieldDeclaration(ASTModifiers modifiers) :
 }
 
 Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
-{ Symbol name; Struct clazz; TypeConstr[] args; }
+{ Symbol name; Struct clazz; TypeConstr[] args; DeclGroupCaseFields cases; }
 {
 	"case"
 	name = Name()
@@ -1241,17 +1241,19 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 		//clazz.super_types.insert(0, new TypeRef(parent.xtype));
 		clazz.setPizzaCase();
 		clazz.setSingleton(true);
+		cases = new DeclGroupCaseFields();
+		clazz.members.insert(0, cases);
 	}
 	args = ClazzArguments() { clazz.args.addAll(args); }
 	[
 	"(" { clazz.setSingleton(false); }
 		[
 			modifiers = Modifiers()
-			clazz.members += CaseTypeField(modifiers)
+			cases.decls += CaseTypeField(modifiers)
 			(
 				","
 				modifiers = Modifiers()
-				clazz.members += CaseTypeField(modifiers)
+				cases.decls += CaseTypeField(modifiers)
 			)*
 		]
 	")"

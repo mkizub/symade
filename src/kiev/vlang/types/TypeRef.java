@@ -115,16 +115,14 @@ public class TypeRef extends ENode {
 		Struct s = st.getStruct();
 		if (s != null && s.isPizzaCase()) {
 			// Pizza case may be casted to int or to itself or super-class
-			MetaPizzaCase meta = s.getMetaPizzaCase();
-			if (meta == null)
-				throw new RuntimeException("Internal error - can't find pizza case meta attr");
+			PizzaCase pcase = (PizzaCase)s.variant;
 			Type tp = Type.getRealType(reqType,st);
 			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
 				throw new CompilerException(this,"Pizza case "+tp+" cannot be casted to type "+reqType);
-			if (meta.getFields().length != 0)
+			if (pcase.group.decls.length != 0)
 				throw new CompilerException(this,"Empty constructor for pizza case "+tp+" not found");
 			if (reqType.isInteger()) {
-				ENode expr = new ConstIntExpr(meta.tag);
+				ENode expr = new ConstIntExpr(pcase.tag);
 				if( reqType ≢ Type.tpInt )
 					expr = new CastExpr(pos,reqType,expr);
 				replaceWithNodeResolve(reqType, expr);

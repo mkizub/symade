@@ -79,8 +79,10 @@ public class Bytecoder implements JConstants {
 
 		cl.members.delAll();
 
-		if (cl.isEnum())
-			cl.members.insert(0,new DeclGroupEnums());
+		if (cl.isEnum()) {
+			cl.variant = new JavaEnum();
+			cl.members.insert(0,new DeclGroupEnumFields());
+		}
 		
 		for(int i=0; i < bcclazz.fields.length; i++) {
 			readField(null,i);
@@ -131,7 +133,7 @@ public class Bytecoder implements JConstants {
 		}
 		f.init = f_init;
 		if ((f_flags & ACC_ENUM)!=0)
-			((DeclGroupEnums)cl.members[0]).decls.append(f);
+			((DeclGroupEnumFields)cl.members[0]).decls.append(f);
 		else
 			cl.members.append(f);
 		return f;

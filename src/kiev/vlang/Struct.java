@@ -56,10 +56,13 @@ public final class JavaAnnotation extends TypeDeclVariant {
 
 @node
 public final class PizzaCase extends TypeDeclVariant {
+	public int tag;
+	@ref public DeclGroupCaseFields		group;
 }
 
 @node
 public final class JavaEnum extends TypeDeclVariant {
+	@ref public DeclGroupEnumFields		group;
 }
 
 @node
@@ -303,15 +306,12 @@ public class Struct extends TypeDecl implements PreScanneable {
 		setHasCases(true);
 		int caseno = 0;
 		foreach (Struct s; members; s.isPizzaCase()) {
-			MetaPizzaCase meta = s.getMetaPizzaCase();
-			if (meta != null && meta.tag > caseno)
-				caseno = meta.tag;
+			PizzaCase pcase = (PizzaCase)s.variant;
+			if (pcase.tag > caseno)
+				caseno = pcase.tag;
 		}
-		MetaPizzaCase meta = cas.getMetaPizzaCase();
-		if (meta == null)
-			cas.meta.setU(meta = new MetaPizzaCase());
-		meta.tag = caseno + 1;
-		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.tag);
+		((PizzaCase)cas.variant).tag = caseno + 1;
+		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+(caseno+1));
 		return cas;
 	}
 		
@@ -373,14 +373,10 @@ public class Struct extends TypeDecl implements PreScanneable {
 
 	public String toString() { return qname().toString(); }
 
-	public MetaPizzaCase getMetaPizzaCase() {
-		return (MetaPizzaCase)this.meta.getU("kiev.stdlib.meta.pcase");
-	}
-
 	public FieldEnum[] getEnumFields() {
-		if (!isEnum() || members.length == 0 || !(members[0] instanceof DeclGroupEnums))
+		if (!isEnum() || !(variant instanceof JavaEnum))
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
-		DeclGroupEnums enums = (DeclGroupEnums)members[0];
+		DeclGroupEnumFields enums = ((JavaEnum)variant).group;
 		FieldEnum[] eflds = new FieldEnum[enums.decls.length];
 		for (int i=0; i < eflds.length; i++)
 			eflds[i] = (FieldEnum)enums.decls[i];
@@ -388,14 +384,24 @@ public class Struct extends TypeDecl implements PreScanneable {
 	}
 
 	public int getIndexOfEnumField(FieldEnum f) {
-		if (!isEnum() || members.length == 0 || !(members[0] instanceof DeclGroupEnums))
+		if (!isEnum() || !(variant instanceof JavaEnum))
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
-		DeclGroup enums = (DeclGroup)members[0];
+		DeclGroupEnumFields enums = ((JavaEnum)variant).group;
 		for (int i=0; i < enums.decls.length; i++) {
 			if (f == enums.decls[i])
 				return i;
 		}
 		throw new RuntimeException("Enum value for field "+f+" not found in "+this);
+	}
+
+	public Field[] getCaseFields() {
+		if (!isEnum() || !(variant instanceof PizzaCase))
+			throw new RuntimeException("Request for case fields in non-case structure "+this);
+		DeclGroupCaseFields cases = ((PizzaCase)variant).group;
+		Field[] cflds = new Field[cases.decls.length];
+		for (int i=0; i < cflds.length; i++)
+			cflds[i] = (Field)cases.decls[i];
+		return cflds;
 	}
 
 	public int countAnonymouseInnerStructs() {

@@ -34,20 +34,18 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 					if( cas.isPizzaCase() ) {
 						if( sw.mode != SwitchStat.PIZZA_SWITCH )
 							throw new CompilerException(this,"Pizza case type in non-pizza switch");
-						//PizzaCaseAttr case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
-						MetaPizzaCase meta = cas.getMetaPizzaCase();
-						//val = new ConstIntExpr(case_attr.caseno);
+						PizzaCase pcase = (PizzaCase)cas.variant;
 						this.open();
-						val = new ConstIntExpr(meta.tag);
+						val = new ConstIntExpr(pcase.tag);
 						if( pattern.length > 0 ) {
-							Field[] fields = meta.getFields();
-							if( pattern.length != fields.length )
-								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+fields.length+" fields");
+							PizzaCase pcase = (PizzaCase)cas.variant;
+							if( pattern.length != pcase.group.decls.length )
+								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+pcase.group.decls.length+" fields");
 							for(int i=0, j=0; i < pattern.length; i++) {
 								Var p = pattern[i];
 								if( p.type == Type.tpVoid || p.id.sname == nameUnderscore)
 									continue;
-								Field f = fields[i];
+								Field f = (Field)pcase.group.decls[i];
 								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
 								if( !p.type.isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
 									throw new RuntimeException("Pattern variable "+p.id+" has type "+p.type+" but type "+tp+" is expected");
@@ -304,9 +302,9 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 							Struct tpclz = tp.getStruct();
 							foreach (Struct sub; tpclz.sub_decls) {
 								if( sub.isPizzaCase() ) {
-									MetaPizzaCase meta = sub.getMetaPizzaCase();
-									if( meta!=null && meta.tag > caseno )
-										caseno = meta.tag;
+									PizzaCase pcase = (PizzaCase)sub.variant;
+									if (pcase.tag > caseno)
+										caseno = pcase.tag;
 								}
 							}
 							if( caseno == cases.length ) setMethodAbrupted(true);

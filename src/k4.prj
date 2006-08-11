@@ -385,7 +385,8 @@ CLASS kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 CLASS kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\DNode.java
 CLASS kiev.vlang.DataFlowInfo kiev/vlang/DataFlowInfo kiev\vlang\Var.java
 CLASS kiev.vlang.DeclGroup kiev/vlang/DeclGroup kiev\vlang\DNode.java
-CLASS kiev.vlang.DeclGroupEnums kiev/vlang/DeclGroupEnums kiev\vlang\DNode.java
+CLASS kiev.vlang.DeclGroupCaseFields kiev/vlang/DeclGroupCaseFields kiev\vlang\DNode.java
+CLASS kiev.vlang.DeclGroupEnumFields kiev/vlang/DeclGroupEnumFields kiev\vlang\DNode.java
 CLASS kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.DoubleADD kiev/vlang/DoubleADD kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.DoubleAssign kiev/vlang/DoubleAssign kiev\vlang\CoreMethod.java
@@ -545,7 +546,6 @@ CLASS kiev.vlang.MetaMacro kiev/vlang/MetaMacro kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaNative kiev/vlang/MetaNative kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java
-CLASS kiev.vlang.MetaPizzaCase kiev/vlang/MetaPizzaCase kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaSet kiev/vlang/MetaSet kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaSingleton kiev/vlang/MetaSingleton kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaStatic kiev/vlang/MetaStatic kiev\vlang\MetaSpecial.java
@@ -907,9 +907,6 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
-METATYPE kiev.fmt.CalcOptionEnumField kiev\fmt\JavaSyntax.java
-METATYPE kiev.fmt.CalcOptionEnumFilter kiev\fmt\JavaSyntax.java
-METATYPE kiev.fmt.CalcOptionMetaAlias kiev\fmt\JavaSyntax.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad
@@ -921,7 +918,6 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
-METATYPE kiev.vlang.MetaAlias kiev\vlang\MetaSpecial.java
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java

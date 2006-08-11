@@ -38,19 +38,14 @@ public class PizzaFE_Pass3 extends TransfProcessor {
 		}
 		if (clazz.isSingleton())
 			return;
-		MetaPizzaCase meta = clazz.getMetaPizzaCase();
-		Field[] flds = Field.emptyArray;
-		foreach (Field f; clazz.getAllFields()) {
-			flds = (Field[])Arrays.append(flds,f);
-			meta.add(f);
-		}
+		PizzaCase pcase = (PizzaCase)clazz.variant;
 		// Create constructor for pizza case
 		Constructor init = new Constructor(ACC_PUBLIC);
-		foreach (Field f; flds)
+		foreach (Field f; pcase.group.decls)
 			init.params.add(new FormPar(f.pos,f.id.sname,f.type,FormPar.PARAM_NORMAL,0));
 		init.body = new Block(clazz.pos);
 		int p = 0;
-		foreach (Field f; flds) {
+		foreach (Field f; pcase.group.decls) {
 			Var v = null;
 			foreach (FormPar fp; init.params; fp.u_name == f.u_name) {
 				init.block.stats.insert(
@@ -95,12 +90,11 @@ public class PizzaME_PreGenerate extends BackendProcessor {
 		foreach (Struct dn; clazz.members)
 			this.doProcess(dn);
 		if( clazz.isPizzaCase() ) {
-			MetaPizzaCase meta = clazz.getMetaPizzaCase();
-			//PizzaCaseAttr case_attr = (PizzaCaseAttr)clazz.getAttr(attrPizzaCase);
+			PizzaCase pcase = (PizzaCase)clazz.variant;
 			Field ftag = clazz.addField(new Field(
 				nameCaseTag,Type.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
 			ftag.open();
-			ftag.init = new ConstIntExpr(meta.tag);
+			ftag.init = new ConstIntExpr(pcase.tag);
 
 			Method gettag = new Method(nameGetCaseTag,Type.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
 			gettag.body = new Block(gettag.pos);

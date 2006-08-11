@@ -103,47 +103,6 @@ public final class MetaThrows extends UserMeta {
 }
 
 @node
-public final class MetaPizzaCase extends UserMeta {
-	@virtual typedef This  = MetaPizzaCase;
-
-	@ref public Field[]			 fields;
-	@att public int				 tag;
-
-	public MetaPizzaCase() { super("kiev.stdlib.meta.pcase"); }
-
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof TypeDecl) p.is_struct_pizza_case = on;
-	}
-
-	public void add(Field f) {
-		this.open();
-		fields += f;
-		MetaValueArray mva;
-		if (values.length > 0 && values[0] instanceof MetaValueArray)
-			mva = values[0];
-		else if (values.length > 1 && values[1] instanceof MetaValueArray)
-			mva = values[1];
-		else
-			values += (mva = new MetaValueArray(new SymbolRef("fields")));
-		assert (mva.ident.name == "fields");
-		mva.values += new ConstStringExpr(f.id.sname);
-	}
-	
-	public Field[] getFields() {
-		return fields;
-	}
-
-	@setter public void set$tag(int val) {
-		this.open();
-		this.tag = val;
-		super.setI("tag",val);
-	}
-}
-
-@node
 public abstract class MetaFlag extends ANode {
 	@virtual typedef This  ≤ MetaFlag;
 

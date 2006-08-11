@@ -413,11 +413,11 @@ public class DeclGroup extends DNode implements ScopeOfNames, ScopeOfMethods {
 }
 
 @node
-public class DeclGroupEnums extends DeclGroup {
+public class DeclGroupEnumFields extends DeclGroup {
 	
-	@virtual typedef This  = DeclGroupEnums;
+	@virtual typedef This  = DeclGroupEnumFields;
 
-	public DeclGroupEnums() {
+	public DeclGroupEnumFields() {
 		this.is_enum = true;
 		setPublic();
 		setStatic(true);
@@ -426,8 +426,24 @@ public class DeclGroupEnums extends DeclGroup {
 
 	public void callbackAttached() {
 		ANode p = parent();
-		if (p instanceof Struct)
+		if (p instanceof Struct) {
 			this.dtype = new TypeRef(p.xtype);
+			((JavaEnum)p.variant).group = this;
+		}
+	}
+}
+
+@node
+public class DeclGroupCaseFields extends DeclGroup {
+	
+	@virtual typedef This  = DeclGroupCaseFields;
+
+	public DeclGroupCaseFields() {}
+
+	public void callbackAttached() {
+		ANode p = parent();
+		if (p instanceof Struct)
+			((PizzaCase)p.variant).group = this;
 	}
 }
 
@@ -474,9 +490,11 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Glo
 		return this.is_struct_singleton;
 	}
 	public final void setSingleton(boolean on) {
-		if (this.is_struct_singleton != on) {
-			assert(!locked);
-			this.is_struct_singleton = on;
+		MetaFlag m = this.meta.getF("kiev.stdlib.meta.singleton");
+		if (m != null) {
+			if!(on) m.detach();
+		} else {
+			if (on) this.meta.setF(new MetaSingleton());
 		}
 	}
 	// a local (in method) class	

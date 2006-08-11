@@ -5727,6 +5727,15 @@
            <name>calculator</name>
            <expected_types>
             <a-node class='kiev.vlang.SymbolRef'>
+             <name>CalcOptionNot</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>CalcOptionAnd</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>CalcOptionOr</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
              <name>CalcOptionNotNull</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
@@ -5734,6 +5743,15 @@
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>CalcOptionTrue</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>CalcOptionClass</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>CalcOptionHasMetaFlag</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>CalcOptionHasMetaFlag</name>
             </a-node>
            </expected_types>
            <fmt>
@@ -6868,7 +6886,7 @@
  </meta>
  <id>
   <a-node class='kiev.vlang.Symbol'>
-   <sname>stx.xml</sname>
+   <sname>stx-fmt\syntax-for-syntax.xml</sname>
   </a-node>
  </id>
 </a-node>
