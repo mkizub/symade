@@ -386,7 +386,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				f.setVirtual(true);
 		}
 		Field vals = s.addField(new Field(nameEnumValuesFld, new ArrayType(tpAttrSlot), ACC_PRIVATE|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
-		vals.init = new NewInitializedArrayExpr(0, new TypeRef(tpAttrSlot), 1, vals_init);
+		vals.init = new NewInitializedArrayExpr(0, new TypeExpr(tpAttrSlot,Operator.PostTypeArray), 1, vals_init);
 		// AttrSlot[] values() { return $values; }
 		if (hasMethod(s, nameEnumValues)) {
 			Kiev.reportWarning(s,"Method "+s+"."+nameEnumValues+sigValues+" already exists, @node member is not generated");

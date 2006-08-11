@@ -22,9 +22,6 @@ public static final view RField of Field extends RLvalDNode {
 	
 	@getter public final Type	get$type();
 	
-	// is a field of enum
-	public final boolean isEnumField();
-	public final void setEnumField(boolean on);
 	// packer field (auto-generated for packed fields)
 	public final boolean isPackerField();
 	public final void setPackerField(boolean on);

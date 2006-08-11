@@ -73,36 +73,6 @@ public final class MetaPacker extends UserMeta {
 }
 
 @node
-public final class MetaAlias extends UserMeta {
-	@virtual typedef This  = MetaAlias;
-
-	@ref public ENode[]			 aliases;
-
-	public MetaAlias() { super("kiev.stdlib.meta.alias"); }
-
-	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
-	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
-	private void setFlag(boolean on) {
-		ANode p = ((MetaSet)parent()).parent();
-		if (p instanceof DNode) p.is_has_aliases = on;
-	}
-
-	public void add(ConstStringExpr cse) {
-		this.open();
-		aliases += cse;
-		if (values.length == 0)
-			values += new MetaValueArray(new SymbolRef("value"));
-		MetaValueArray mva = (MetaValueArray)values[0];
-		assert (mva.ident.name == "value");
-		mva.values += cse;
-	}
-	
-	public ENode[] getAliases() {
-		return aliases;
-	}
-}
-
-@node
 public final class MetaThrows extends UserMeta {
 	@virtual typedef This  = MetaThrows;
 
@@ -253,8 +223,11 @@ public final class MetaAccess extends MetaFlag {
 	
 	public static final int getFlags(DNode dn) {
 		MetaAccess acc = dn.getMetaAccess();
-		if (acc == null)
+		if (acc == null) {
+			if (dn.parent() instanceof DeclGroup)
+				return getFlags((DeclGroup)dn.parent());
 			return 0x0F;
+		}
 		if (acc.flags != -1)
 			return acc.flags;
 		else if (acc.simple == "public")

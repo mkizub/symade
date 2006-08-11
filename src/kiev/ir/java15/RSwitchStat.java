@@ -84,7 +84,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
 						this.open();
 						if (et.getStruct() != null && et.getStruct().isEnum())
-							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField(f.var));
+							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField((FieldEnum)f.var));
 						else
 							val = f.var.init.ncopy();
 					}
@@ -217,7 +217,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 				types[j] = new TypeClassExpr(typenames[j].pos,typenames[j]);
 			if( defindex < 0 ) defindex = types.length;
 			typehash.init = new NewExpr(ctx_tdecl.pos,Type.tpTypeSwitchHash,
-				new ENode[]{ new NewInitializedArrayExpr(ctx_tdecl.pos,new TypeRef(Type.tpClass),1,types),
+				new ENode[]{ new NewInitializedArrayExpr(ctx_tdecl.pos,new TypeExpr(Type.tpClass,Operator.PostTypeArray),1,types),
 					new ConstIntExpr(defindex)
 				});
 			Constructor clinit = ((Struct)ctx_tdecl).getClazzInitMethod();
@@ -271,7 +271,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					}
 					if( !has_unabrupted_case ) {
 						Type tp = sel.getType();
-						Field[] eflds = tp.getStruct().getEnumFields();
+						FieldEnum[] eflds = tp.getStruct().getEnumFields();
 						if (eflds.length == cases.length)
 							setMethodAbrupted(true);
 					}

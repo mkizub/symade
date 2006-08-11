@@ -38,7 +38,6 @@ public class Bytecoder implements JConstants {
 				+" but class "+bcclazz.getClazzName()+" found");
 		}
 
-		// Clean some structure flags
 		if (bcclazz.flags != 0) {
 			if ((bcclazz.flags & ACC_PUBLIC) == ACC_PUBLIC) cl.meta.setF(new MetaAccess("public"));
 			if ((bcclazz.flags & ACC_PROTECTED) == ACC_PROTECTED) cl.meta.setF(new MetaAccess("protected"));
@@ -79,8 +78,9 @@ public class Bytecoder implements JConstants {
 		}
 
 		cl.members.delAll();
-//		jclazz = new JStruct(cl);
-//		jclazz.setLoadedFromBytecode(true);
+
+		if (cl.isEnum())
+			cl.members.insert(0,new DeclGroupEnums());
 		
 		for(int i=0; i < bcclazz.fields.length; i++) {
 			readField(null,i);
@@ -97,9 +97,6 @@ public class Bytecoder implements JConstants {
 				((JStruct)cl).addAttr(at);
 			}
 		}
-		//ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
-		//if (tp != null)
-		//	tp.addAbstractFields(cl);
 		return cl;
 	}
 
@@ -112,7 +109,10 @@ public class Bytecoder implements JConstants {
 		ENode f_init = null;
 		int packer_size = -1;
 		Type ftype = Signature.getType(f_type);
-		f = new Field(f_name.toString(),ftype,f_flags);
+		if ((f_flags & ACC_ENUM)!=0)
+			f = new FieldEnum(new Symbol(f_name.toString()));
+		else
+			f = new Field(f_name.toString(),ftype,f_flags);
 		for(int i=0; i < bcf.attrs.length; i++) {
 			Attr at = readAttr(bcf.attrs[i],bcclazz,f);
 			if( at == null ) continue;
@@ -130,8 +130,10 @@ public class Bytecoder implements JConstants {
 			f.meta.setU(mpr);
 		}
 		f.init = f_init;
-		cl.members.append(f);
-//		jclazz.addMember(new JField(f));
+		if ((f_flags & ACC_ENUM)!=0)
+			((DeclGroupEnums)cl.members[0]).decls.append(f);
+		else
+			cl.members.append(f);
 		return f;
 	}
 

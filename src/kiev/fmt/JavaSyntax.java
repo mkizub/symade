@@ -233,22 +233,6 @@ public final class CalcOptionJavaFlag extends CalcOption {
 }
 
 @node
-class CalcOptionMetaAlias extends CalcOption {
-	CalcOptionMetaAlias() {}
-	public boolean calc(ANode node) { return ((Field)node).getMetaAlias() != null; }
-}
-@node
-class CalcOptionEnumField extends CalcOption {
-	CalcOptionEnumField() {}
-	public boolean calc(ANode node) { return (node instanceof Field && node.isEnumField()); }
-}
-@node
-class CalcOptionEnumFilter extends CalcOption {
-	CalcOptionEnumFilter() {}
-	public boolean calc(ANode node) { return !((node instanceof DNode && node.isSynthetic()) || (node instanceof Field && node.isEnumField())); }
-}
-
-@node
 public class KievTextSyntax extends TextSyntax {
 
 	final Hashtable<Operator, SyntaxElem> exprs;
@@ -294,6 +278,11 @@ public class KievTextSyntax extends TextSyntax {
 
 	public KievTextSyntax() {
 		exprs = new Hashtable<Operator, SyntaxElem>();
+	}
+
+	protected void cleanup() {
+		exprs.clear();
+		super.cleanup();
 	}
 
 	public SyntaxElem getSyntaxElem(ANode node) {

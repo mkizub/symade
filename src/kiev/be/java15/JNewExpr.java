@@ -131,7 +131,6 @@ public final view JNewInitializedArrayExpr of NewInitializedArrayExpr extends JE
 	public:ro	JENode[]			args;
 	public:ro	int					dim;
 	public:ro	int[]				dims;
-	public:ro	Type				arrtype;
 
 	@getter public final int	get$dim()	{ return this.dims.length; }
 	
@@ -141,12 +140,13 @@ public final view JNewInitializedArrayExpr of NewInitializedArrayExpr extends JE
 		JENode[] args = this.args;
 		code.setLinePos(this);
 		if( dim == 1 ) {
+			type = ((ArrayType)type).arg;
 			code.addConst(args.length);
 			code.addInstr(Instr.op_newarray,type);
 		} else {
 			for(int i=0; i < dim; i++)
 				code.addConst(dims[i]);
-			code.addInstr(Instr.op_multianewarray,arrtype,dim);
+			code.addInstr(Instr.op_multianewarray,type,dim);
 		}
 		for(int i=0; i < args.length; i++) {
 			code.addInstr(Instr.op_dup);

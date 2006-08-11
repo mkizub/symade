@@ -389,17 +389,6 @@ public class UserMeta extends ENode {
 		}
 		return false;
 	}
-
-	public Enumeration<MetaValue> elements() {
-		return new Enumeration<MetaValue>() {
-			int current;
-			public boolean hasMoreElements() { return current < UserMeta.this.size(); }
-			public MetaValue nextElement() {
-				if ( current < UserMeta.this.size() ) return UserMeta.this.values[current++];
-				throw new NoSuchElementException(Integer.toString(UserMeta.this.size()));
-			}
-		};
-	}
 }
 
 @node

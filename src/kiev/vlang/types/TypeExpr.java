@@ -27,6 +27,10 @@ public class TypeExpr extends TypeRef {
 
 	public TypeExpr() {}
 
+	public TypeExpr(Type arg, Operator op) {
+		this(new TypeRef(arg), op);
+	}
+
 	public TypeExpr(TypeRef arg, Operator op) {
 		this.pos = arg.pos;
 		this.arg = arg;

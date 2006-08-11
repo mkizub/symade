@@ -158,9 +158,9 @@ public class Struct extends TypeDecl implements PreScanneable {
 	}
 	public final void setEnum() {
 		assert (variant == null || variant instanceof JavaEnum);
-		if (!this.is_struct_enum) {
+		if (!this.is_enum) {
 			assert(!locked);
-			this.is_struct_enum = true;
+			this.is_enum = true;
 		}
 		if !(variant instanceof JavaEnum) variant = new JavaEnum();
 	}
@@ -377,29 +377,23 @@ public class Struct extends TypeDecl implements PreScanneable {
 		return (MetaPizzaCase)this.meta.getU("kiev.stdlib.meta.pcase");
 	}
 
-	public Field[] getEnumFields() {
-		if( !isEnum() )
+	public FieldEnum[] getEnumFields() {
+		if (!isEnum() || members.length == 0 || !(members[0] instanceof DeclGroupEnums))
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
-		int idx = 0;
-		foreach (Field n; this.getAllFields(); n.isEnumField())
-			idx++;
-		Field[] eflds = new Field[idx];
-		idx = 0;
-		foreach (Field n; this.getAllFields(); n.isEnumField()) {
-			eflds[idx] = n;
-			idx ++;
-		}
+		DeclGroupEnums enums = (DeclGroupEnums)members[0];
+		FieldEnum[] eflds = new FieldEnum[enums.decls.length];
+		for (int i=0; i < eflds.length; i++)
+			eflds[i] = (FieldEnum)enums.decls[i];
 		return eflds;
 	}
 
-	public int getIndexOfEnumField(Field f) {
-		if( !isEnum() )
+	public int getIndexOfEnumField(FieldEnum f) {
+		if (!isEnum() || members.length == 0 || !(members[0] instanceof DeclGroupEnums))
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
-		int idx = 0;
-		foreach (Field n; this.getAllFields(); n.isEnumField()) {
-			if (f == n)
-				return idx;
-			idx++;
+		DeclGroup enums = (DeclGroup)members[0];
+		for (int i=0; i < enums.decls.length; i++) {
+			if (f == enums.decls[i])
+				return i;
 		}
 		throw new RuntimeException("Enum value for field "+f+" not found in "+this);
 	}

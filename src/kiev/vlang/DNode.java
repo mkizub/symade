@@ -63,8 +63,7 @@ public abstract class DNode extends ASTNode {
 	public @packed:1,flags,11 boolean is_math_strict;		// strict math
 	public @packed:1,flags,12 boolean is_synthetic;		// any decl that was generated (not in sources)
 	public @packed:1,flags,13 boolean is_struct_annotation;
-	public @packed:1,flags,14 boolean is_struct_enum;		// struct
-	public @packed:1,flags,14 boolean is_fld_enum;			// field
+	public @packed:1,flags,14 boolean is_enum;				// struct/decl group/fields
 		
 	// Flags temporary used with java flags
 	public @packed:1,flags,16 boolean is_forward;			// var/field/method, type is wrapper
@@ -367,7 +366,7 @@ public class DeclGroup extends DNode implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="", seq="true")	DNode[]		decls;
 	}
 
-	@virtual typedef This  = DeclGroup;
+	@virtual typedef This  ≤ DeclGroup;
 	@virtual typedef JView = JDeclGroup;
 	@virtual typedef RView = RDeclGroup;
 
@@ -410,6 +409,25 @@ public class DeclGroup extends DNode implements ScopeOfNames, ScopeOfMethods {
 		dn.isForward(),
 		info.enterForward(dn) : info.leaveForward(dn),
 		dn.getType().resolveCallAccessR(node,info,mt)
+	}
+}
+
+@node
+public class DeclGroupEnums extends DeclGroup {
+	
+	@virtual typedef This  = DeclGroupEnums;
+
+	public DeclGroupEnums() {
+		this.is_enum = true;
+		setPublic();
+		setStatic(true);
+		setFinal(true);
+	}
+
+	public void callbackAttached() {
+		ANode p = parent();
+		if (p instanceof Struct)
+			this.dtype = new TypeRef(p.xtype);
 	}
 }
 
@@ -487,7 +505,7 @@ public class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, Glo
 	}
 	// java enum
 	public final boolean isEnum() {
-		return this.is_struct_enum;
+		return this.is_enum;
 	}
 	// structure was loaded from bytecode
 	public final boolean isLoadedFromBytecode() {

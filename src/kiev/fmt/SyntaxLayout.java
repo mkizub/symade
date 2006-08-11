@@ -92,6 +92,11 @@ public class TextSyntax extends DNode implements ScopeOfNames, GlobalDNode {
 		node @= members,
 		node instanceof DNode && path.checkNodeName(node)
 	}
+	
+	protected void cleanup() {
+		allSyntax.clear();
+		badSyntax.clear();
+	}
 
 	public boolean preResolveIn() {
 		if (parent_syntax.name != null && parent_syntax.name != "") {
@@ -107,6 +112,7 @@ public class TextSyntax extends DNode implements ScopeOfNames, GlobalDNode {
 	}
 	
 	public void mainResolveOut() {
+		this.cleanup();
 		foreach(SyntaxElemDecl sed; this.members; sed.elem != null) {
 			if !(sed.node.dnode instanceof Struct)
 				continue;
@@ -642,6 +648,10 @@ public abstract class SyntaxElem extends ASTNode {
 	}
 
 	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
+	
+	public void postVerify() {
+		lout = null;
+	}
 	
 	@getter
 	public DrawLayout get$lout() {

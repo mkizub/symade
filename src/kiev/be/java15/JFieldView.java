@@ -26,7 +26,6 @@ public final view JField of Field extends JLvalDNode {
 	@getter public final Type	get$type()	{ return ((Field)this).ftype.getType(); }
 	
 	public final boolean isVirtual();
-	public final boolean isEnumField();
 	public final boolean isPackerField();
 	public final boolean isPackedField();
 

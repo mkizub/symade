@@ -469,7 +469,6 @@ public final class KievFE_Pass3 extends TransfProcessor {
 	public void doProcess(TypeDecl:ASTNode astn) {
 		int pos = astn.pos;
 		TypeDecl me = astn;
-		int next_enum_val = 0;
 		trace(Kiev.debugResolve,"Pass 3 for class "+me);
 		if (me.isSyntax()) {
 			return;
@@ -519,22 +518,34 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				}
 				MetaAccess.verifyDecl(m);
 			}
-			else if (members[i] instanceof Field && ((Field)members[i]).isEnumField()) {
-				Field f = (Field)members[i];
-				//String text = f.id.sname;
-				//MetaAlias al = f.getMetaAlias();
-				//if (al != null) {
-				//	foreach (ConstStringExpr n; al.getAliases()) {
-				//		text = n.value;
-				//		break;
-				//	}
-				//}
-				f.init = new NewExpr(f.pos,me.xtype,new ENode[]{
-							new ConstStringExpr(f.id.sname),
-							new ConstIntExpr(next_enum_val)
-							//new ConstStringExpr(text)
-				});
-				next_enum_val++;
+			else if (members[i] instanceof DeclGroup) {
+				DeclGroup dg = (DeclGroup)members[i];
+				dg.meta.verify();
+				if( me.isStructView() && !dg.isStatic()) {
+					dg.setFinal(true);
+					dg.setAbstract(true);
+					dg.setVirtual(true);
+				}
+				if( me.isInterface() ) {
+					if (dg.isVirtual()) {
+						dg.setAbstract(true);
+					} else {
+						dg.setStatic(true);
+						dg.setFinal(true);
+					}
+					dg.setPublic();
+				}
+				int next_enum_val = 0;
+				foreach (Field f; dg.decls) {
+					f.meta.verify();
+					if (f.isEnumField()) {
+						f.init = new NewExpr(f.pos,me.xtype,new ENode[]{
+									new ConstStringExpr(f.id.sname),
+									new ConstIntExpr(next_enum_val)
+									});
+						next_enum_val++;
+					}
+				}
 			}
 			else if( members[i] instanceof Field ) {
 				Field fdecl = (Field)members[i];

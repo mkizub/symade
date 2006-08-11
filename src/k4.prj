@@ -110,12 +110,9 @@ CLASS kiev.fmt.AbstractSyntaxElemDecl kiev/fmt/AbstractSyntaxElemDecl kiev\fmt\S
 CLASS kiev.fmt.CalcOption kiev/fmt/CalcOption kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionAnd kiev/fmt/CalcOptionAnd kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionClass kiev/fmt/CalcOptionClass kiev\fmt\SyntaxLayout.java
-CLASS kiev.fmt.CalcOptionEnumField kiev/fmt/CalcOptionEnumField kiev\fmt\JavaSyntax.java
-CLASS kiev.fmt.CalcOptionEnumFilter kiev/fmt/CalcOptionEnumFilter kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionHasMetaFlag kiev/fmt/CalcOptionHasMetaFlag kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionHasUserMeta kiev/fmt/CalcOptionHasUserMeta kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionJavaFlag kiev/fmt/CalcOptionJavaFlag kiev\fmt\JavaSyntax.java
-CLASS kiev.fmt.CalcOptionMetaAlias kiev/fmt/CalcOptionMetaAlias kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.CalcOptionNot kiev/fmt/CalcOptionNot kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionNotNull kiev/fmt/CalcOptionNotNull kiev\fmt\SyntaxLayout.java
@@ -388,6 +385,7 @@ CLASS kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 CLASS kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\DNode.java
 CLASS kiev.vlang.DataFlowInfo kiev/vlang/DataFlowInfo kiev\vlang\Var.java
 CLASS kiev.vlang.DeclGroup kiev/vlang/DeclGroup kiev\vlang\DNode.java
+CLASS kiev.vlang.DeclGroupEnums kiev/vlang/DeclGroupEnums kiev\vlang\DNode.java
 CLASS kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 CLASS kiev.vlang.DoubleADD kiev/vlang/DoubleADD kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.DoubleAssign kiev/vlang/DoubleAssign kiev\vlang\CoreMethod.java
@@ -414,6 +412,7 @@ CLASS kiev.vlang.Env kiev/vlang/Env kiev\vlang\Env.java
 CLASS kiev.vlang.ExprStat kiev/vlang/ExprStat kiev\vlang\Statement.java
 CLASS kiev.vlang.ExtAttrSlot kiev/vlang/ExtAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.Field kiev/vlang/Field kiev\vlang\Field.java
+CLASS kiev.vlang.FieldEnum kiev/vlang/FieldEnum kiev\vlang\Field.java
 CLASS kiev.vlang.FileUnit kiev/vlang/FileUnit kiev\vlang\FileUnit.java
 CLASS kiev.vlang.FinallyInfo kiev/vlang/FinallyInfo kiev\vlang\ComplexStatement.java
 CLASS kiev.vlang.FloatADD kiev/vlang/FloatADD kiev\vlang\CoreMethod.java
@@ -538,7 +537,6 @@ CLASS kiev.vlang.LvalDNode kiev/vlang/LvalDNode kiev\vlang\DNode.java
 CLASS kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.MetaAbstract kiev/vlang/MetaAbstract kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaAccess kiev/vlang/MetaAccess kiev\vlang\MetaSpecial.java
-CLASS kiev.vlang.MetaAlias kiev/vlang/MetaAlias kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaBridge kiev/vlang/MetaBridge kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaFinal kiev/vlang/MetaFinal kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaFlag kiev/vlang/MetaFlag kiev\vlang\MetaSpecial.java
@@ -909,6 +907,9 @@ INTERFACE kiev.vlang.nodeview kiev/vlang/nodeview kiev\vlang\Tree.java
 INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
+METATYPE kiev.fmt.CalcOptionEnumField kiev\fmt\JavaSyntax.java
+METATYPE kiev.fmt.CalcOptionEnumFilter kiev\fmt\JavaSyntax.java
+METATYPE kiev.fmt.CalcOptionMetaAlias kiev\fmt\JavaSyntax.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad
@@ -920,6 +921,7 @@ METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.vlang.MetaAlias kiev\vlang\MetaSpecial.java
 METATYPE kiev.vlang.NodeSpace kiev\vlang\MetaTypes.java bad
 SYNTAX kiev.Syntax kiev/Syntax kiev\Syntax.java
 SYNTAX kiev.stdlib.Syntax kiev/stdlib/Syntax kiev\stdlib\Syntax.java

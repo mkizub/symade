@@ -64,6 +64,11 @@ public class TreeSyntax extends TextSyntax {
 		exprs = new Hashtable<Operator, SyntaxElem>();
 	}
 
+	protected void cleanup() {
+		exprs.clear();
+		super.cleanup();
+	}
+
 	public SyntaxElem getSyntaxElem(ANode node) {
 		String cl_name = node.getClass().getName();
 		SyntaxElemDecl sed = allSyntax.get(cl_name);

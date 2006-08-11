@@ -215,47 +215,41 @@ public final class NewInitializedArrayExpr extends ENode {
 	@virtual typedef JView = JNewInitializedArrayExpr;
 	@virtual typedef RView = RNewInitializedArrayExpr;
 
-	@att public TypeRef				type;
+	@att public TypeExpr			type;
 	@att public ENode[]				args;
 	@ref public int[]				dims;
-	@ref public ArrayType			arrtype;
 
 	public NewInitializedArrayExpr() {}
 
-	public NewInitializedArrayExpr(int pos, TypeRef type, int dim, ENode[] args) {
+	public NewInitializedArrayExpr(int pos, TypeExpr type, int dim, ENode[] args) {
 		this.pos = pos;
 		this.type = type;
-		dims = new int[dim];
-		dims[0] = args.length;
-		this.args.addAll(args);
+		this.dims = new int[dim];
+		if (args != null) {
+			this.dims[0] = args.length;
+			this.args.addAll(args);
+		}
 	}
-		
-	@getter public final int	get$dim()	{ return this.dims.length; }
 
-	@getter
-	public ArrayType get$arrtype() {
-		ArrayType art = this.arrtype;
-		if (art != null)
-			return art;
-		art = new ArrayType(type.getType());
-		for(int i=1; i < dim; i++) art = new ArrayType(art);
-		this.arrtype = art;
-		return art;
-	}
+	@getter public final int	get$dim()	{ return this.dims.length; }
 
 	public int		getPriority() { return Constants.opAccessPriority; }
 
-	public Type getType() { return arrtype; }
+	public Type getType() { return type.getType(); }
 
 	public void setType(ArrayType reqType) {
 		assert (this.type == null);
-		this.arrtype = (ArrayType)reqType;
 		Type art = reqType;
 		int dim = 0;
 		while (art instanceof ArrayType) { dim++; art = art.arg; }
-		this.type = new TypeRef(art);
 		this.dims = new int[dim];
 		this.dims[0] = args.length;
+		{
+			TypeRef tp = new TypeRef(art);
+			for (int i=0; i < dim; i++)
+				tp = new TypeExpr(tp, Operator.PostTypeArray);
+			this.type = (TypeExpr)tp;
+		}
 
 		foreach (NewInitializedArrayExpr arg; args; arg.type == null) {
 			Type tp = reqType.arg;
@@ -284,8 +278,7 @@ public final class NewInitializedArrayExpr extends ENode {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append("new ").append(type.toString());
-		for(int i=0; i < dim; i++) sb.append("[]");
+		sb.append("new ").append(type);
 		sb.append('{');
 		for(int i=0; i < args.length; i++) {
 			sb.append(args[i]+",");

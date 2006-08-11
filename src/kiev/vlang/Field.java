@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
  */
 
 @node(name="Field")
-public final class Field extends LvalDNode {
+public class Field extends LvalDNode {
 	public static Field[]	emptyArray = new Field[0];
 
 	public static final AttrSlot GETTER_ATTR = new ExtAttrSlot("getter method",false,false,TypeInfo.newTypeInfo(Method.class,null));
@@ -33,7 +33,7 @@ public final class Field extends LvalDNode {
 	@dflow(in="this:in")	ENode			init;
 	}
 
-	@virtual typedef This  = Field;
+	@virtual typedef This  ≤ Field;
 	@virtual typedef JView = JField;
 	@virtual typedef RView = RField;
 
@@ -69,12 +69,7 @@ public final class Field extends LvalDNode {
 
 	// is a field of enum
 	public final boolean isEnumField() {
-		return this.is_fld_enum;
-	}
-	public final void setEnumField(boolean on) {
-		if (this.is_fld_enum != on) {
-			this.is_fld_enum = on;
-		}
+		return this instanceof FieldEnum;
 	}
 	// packer field (auto-generated for packed fields)
 	public final boolean isPackerField() {
@@ -174,10 +169,6 @@ public final class Field extends LvalDNode {
 		return (MetaPacker)this.meta.getU("kiev.stdlib.meta.packer");
 	}
 
-	public final MetaAlias getMetaAlias() {
-		return (MetaAlias)this.meta.getU("kiev.stdlib.meta.alias");
-	}
-
 	public boolean preResolveIn() {
 		ENode init = this.init;
 		if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
@@ -191,5 +182,20 @@ public final class Field extends LvalDNode {
 	}
 
 	public String toString() { return id.toString(); }
+}
+
+@node(name="EnumValue")
+public final class FieldEnum extends Field {
+
+	@virtual typedef This  = FieldEnum;
+
+	/** Alternative name the field */
+	@att public ConstStringExpr			alt_id;
+
+	public FieldEnum() {}
+	
+	public FieldEnum(Symbol name) {
+		super(name,new TypeDeclRef(),0);
+	}
 }
 

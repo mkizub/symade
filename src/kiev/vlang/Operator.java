@@ -188,12 +188,12 @@ public final class Operator implements Constants {
 		PostIncr = newOperator(opIncrPriority, "X ++");
 		PostDecr = newOperator(opIncrPriority, "X --");
 
-		PostTypePVar    = newOperator(opIncrPriority, "T @");
-		PostTypeRef     = newOperator(opIncrPriority, "T &");
-		PostTypeAST     = newOperator(opIncrPriority, "T #");
-		PostTypeWrapper = newOperator(opIncrPriority, "T \u229b"); // ⊛
-		PostTypeArray   = newOperator(opIncrPriority, "T []");
-		PostTypeVararg  = newOperator(opIncrPriority, "T ...");
+		PostTypePVar    = newOperator(255, "T @");
+		PostTypeRef     = newOperator(255, "T &");
+		PostTypeAST     = newOperator(255, "T #");
+		PostTypeWrapper = newOperator(255, "T \u229b"); // ⊛
+		PostTypeArray   = newOperator(255, "T []");
+		PostTypeVararg  = newOperator(255, "T ...");
 
 		// Multi operators
 		Conditional = newOperator(opConditionalPriority, "X ? X : Y");
@@ -321,14 +321,14 @@ public final class Operator implements Constants {
 				eidx++;
 				continue;
 			case TYPE():
-				if (eidx == idx) return 255;
+				if (eidx == idx) return this.priority+1;
 				eidx++;
 				continue;
 			case OPER(String text):
 				continue;
 			}
 		}
-		return 255;
+		return 256;
 	}
 
 	public static Operator getOperatorByName(String nm) {

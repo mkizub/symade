@@ -273,10 +273,9 @@ public abstract class kiev040 {
 		return f;
 	}
 
-	private Field mkEnumField(Symbol id, ASTModifiers modifiers, TypeDecl clazz) {
-		Field f = new Field(id,new TypeRef(clazz.xtype),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
+	private FieldEnum mkEnumField(Symbol id, ASTModifiers modifiers) {
+		FieldEnum f = new FieldEnum(id);
 		f.pos = id.pos;
-		f.setEnumField(true);
 		modifiers.moveToNode(f);
 		return f;
 	}
@@ -311,7 +310,7 @@ public abstract class kiev040 {
 	}
 	
 	private FormPar mkVarargPar(Symbol id, ASTModifiers modifiers, TypeRef vt) {
-		FormPar v = new FormPar(id, vt, vt.ncopy(), FormPar.PARAM_VARARGS, ACC_FINAL);
+		FormPar v = new FormPar(id, vt, null, FormPar.PARAM_VARARGS, ACC_FINAL);
 		modifiers.moveToNode(v);
 		return v;
 	}
@@ -1178,17 +1177,19 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 void TypeBodyDeclaration(TypeDecl clazz) :
-{ ASTModifiers modifiers; SpacePtr clazz_members = clazz.getSpacePtr("members"); }
+{ ASTModifiers modifiers; DeclGroupEnums enums; SpacePtr clazz_members = clazz.getSpacePtr("members"); }
 {
 	"{"
 	(
 		LOOKAHEAD({ clazz.isEnum() })
+		{ enums = new DeclGroupEnums(); }
 		modifiers = Modifiers()
-		clazz.members += EnumFieldDeclaration(modifiers,clazz)
+		enums.decls += EnumFieldDeclaration(modifiers)
 		(	","
 			modifiers = Modifiers()
-			clazz.members += EnumFieldDeclaration(modifiers,clazz)
+			enums.decls += EnumFieldDeclaration(modifiers)
 		)*
+		{ clazz.members.insert(0,enums); }
 		[ ";" ]
 	)?
 	(
@@ -1218,22 +1219,14 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 	"}"
 }
 
-Field EnumFieldDeclaration(ASTModifiers modifiers, TypeDecl clazz) :
-{ Symbol id; Field f; ConstStringExpr text; }
+FieldEnum EnumFieldDeclaration(ASTModifiers modifiers) :
+{ Symbol id; FieldEnum f; ConstStringExpr text; }
 {
 	id = Name()
-	{
-		f = mkEnumField(id, modifiers, clazz);
-	}
+	{ f = mkEnumField(id, modifiers); }
 	[
 		":"
-		text = StringConstExpression()
-		{
-			MetaAlias ma = f.getMetaAlias();
-			if (ma == null)
-				f.meta.setU(ma=new MetaAlias());
-			ma.add(text);
-		}
+		f.alt_id = StringConstExpression()
 	]
 	{ return f; }
 }
@@ -2788,14 +2781,15 @@ NewArrayExpr NewArrayExpression() :
 }
 
 NewInitializedArrayExpr NewInitializedArrayExpression() :
-{ int dim=0; NewInitializedArrayExpr ne = new NewInitializedArrayExpr(); ne.pos = getToken(1).getPos(); }
+{ int dim=0; NewInitializedArrayExpr ne; TypeRef tr; Token tn, t; }
 {
-	"new"
-	ne.type = NArrType()
+	tn="new"
+	tr = NArrType()
 	(
-		<OPERATOR_LRBRACKETS> 
-		{ dim += 1; }
+		t=<OPERATOR_LRBRACKETS> 
+		{ dim += 1; tr = new TypeExpr(tr,t); }
 	)+
+	{ ne = new NewInitializedArrayExpr(tn.getPos(), (TypeExpr)tr, dim, null); }
 	"{"
 	[
 		ne.args += VariableInitializer()
@@ -2807,7 +2801,6 @@ NewInitializedArrayExpr NewInitializedArrayExpression() :
 	]
 	"}"
 	{
-		ne.dims = new int[dim];
 		ne.dims[0] = ne.args.length;
 		return ne;
 	}

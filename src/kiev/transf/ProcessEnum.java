@@ -39,7 +39,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			return;
 		}
 		
-		Field[] eflds = clazz.getEnumFields();
+		FieldEnum[] eflds = clazz.getEnumFields();
 		int pos = clazz.pos;
 		
 		{
@@ -47,7 +47,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				clazz.super_types.insert(0, new TypeRef(Type.tpEnum));
 			Field vals = clazz.addField(new Field(nameEnumValuesFld,
 				new ArrayType(clazz.xtype), ACC_SYNTHETIC|ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
-			vals.init = new NewInitializedArrayExpr(pos, new TypeRef(clazz.xtype), 1, ENode.emptyArray);
+			vals.init = new NewInitializedArrayExpr(pos, new TypeExpr(clazz.xtype,Operator.PostTypeArray), 1, ENode.emptyArray);
 			for(int i=0; i < eflds.length; i++) {
 				ENode e = new SFldExpr(eflds[i].pos,eflds[i]);
 				((NewInitializedArrayExpr)vals.init).args.append(e);
@@ -109,16 +109,9 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				CaseLabel.emptyArray);
 			CaseLabel[] cases = new CaseLabel[eflds.length+1];
 			for(int i=0; i < eflds.length; i++) {
-				Field f = eflds[i];
-				String str = f.id.sname;
-				MetaAlias al = f.getMetaAlias();
-				if (al != null) {
-					foreach (ConstStringExpr n; al.getAliases()) {
-						str = n.value;
-						break;
-					}
-				}
-				cases[i] = new CaseLabel(pos,new ConstIntExpr(i)	,
+				FieldEnum f = eflds[i];
+				String str = (f.alt_id != null) ? f.alt_id.value : f.id.sname;
+				cases[i] = new CaseLabel(pos,new ConstIntExpr(i),
 					new ENode[]{
 						new ReturnStat(pos,new ConstStringExpr(str))
 					});
@@ -150,7 +143,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				));
 			fromstr.block.stats.add(new ExprStat(pos,ae));
 			for(int i=0; i < eflds.length; i++) {
-				Field f = eflds[i];
+				FieldEnum f = eflds[i];
 				String str = f.id.sname;
 				IfElseStat ifst = new IfElseStat(pos,
 					new BinaryBoolExpr(pos,Operator.Equals,
@@ -160,20 +153,17 @@ public class EnumFE_GenMembers extends TransfProcessor {
 					null
 					);
 				fromstr.block.stats.add(ifst);
-				MetaAlias al = f.getMetaAlias();
-				if (al != null) {
-					foreach (ConstStringExpr n; al.getAliases()) {
-						str = n.value;
-						if (str != f.id.sname) {
-							ifst = new IfElseStat(pos,
-								new BinaryBoolExpr(pos,Operator.Equals,
-									new LVarExpr(pos,fromstr.params[0]),
-									new ConstStringExpr(str)),
-									new ReturnStat(pos,new SFldExpr(pos,f)),
-									null
-									);
-							fromstr.block.stats.add(ifst);
-						}
+				if (f.alt_id != null) {
+					str = f.alt_id.value;
+					if (str != f.id.sname) {
+						ifst = new IfElseStat(pos,
+							new BinaryBoolExpr(pos,Operator.Equals,
+								new LVarExpr(pos,fromstr.params[0]),
+								new ConstStringExpr(str)),
+								new ReturnStat(pos,new SFldExpr(pos,f)),
+								null
+								);
+						fromstr.block.stats.add(ifst);
 					}
 				}
 			}

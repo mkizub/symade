@@ -124,7 +124,7 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 					new CallExpr(pos,ti,
 						Type.tpTypeInfo.clazz.resolveMethod("newArray",Type.tpObject,new ArrayType(Type.tpInt)),
 						new ENode[]{
-							new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,((NewArrayExpr)this).args.delToArray())
+							new NewInitializedArrayExpr(pos,new TypeExpr(Type.tpInt,Operator.PostTypeArray),1,((NewArrayExpr)this).args.delToArray())
 						}
 					)));
 				return;
@@ -141,11 +141,8 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr ext
 	public		TypeRef				type;
 	public:ro	ENode[]				args;
 	public		int[]				dims;
-	public		ArrayType			arrtype;
 	
 	@getter public final int	get$dim();
-
-	@getter public final Type	get$arrtype();
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) {
@@ -159,22 +156,24 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr ext
 				throw new CompilerException(this,"Type "+reqType+" is not an array type");
 			this.open();
 			type = reqType;
-			this.arrtype = (ArrayType)reqType;
 			Type art = reqType;
 			int dim = 0;
 			while (art instanceof ArrayType) { dim++; art = art.arg; }
-			this.type = new TypeRef(art);
 			this.dims = new int[dim];
 			this.dims[0] = args.length;
+			{
+				TypeRef tp = new TypeRef(art);
+				for (int i=0; i < dim; i++)
+					tp = new TypeExpr(tp, Operator.PostTypeArray);
+				this.type = (TypeExpr)tp;
+			}
 		} else {
-			type = this.type.getType();
-			for (int dim = this.dim; dim > 0; dim--)
-				type = new ArrayType(type);
+			type = this.getType();
 		}
 		if( !type.isArray() )
 			throw new CompilerException(this,"Type "+type+" is not an array type");
 		for(int i=0; i < args.length; i++)
-			args[i].resolve(arrtype.arg);
+			args[i].resolve(((ArrayType)type).arg);
 		for(int i=1; i < dims.length; i++) {
 			int n;
 			for(int j=0; j < args.length; j++) {
