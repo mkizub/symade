@@ -680,8 +680,6 @@ CLASS kiev.vlang.types.TypeRef kiev/vlang/types/TypeRef kiev\vlang\types\TypeRef
 CLASS kiev.vlang.types.WrapperMetaType kiev/vlang/types/WrapperMetaType kiev\vlang\types\TypeProvider.java
 CLASS kiev.vlang.types.WrapperType kiev/vlang/types/WrapperType kiev\vlang\types\Type.java
 CLASS kiev.vlang.types.XType kiev/vlang/types/XType kiev\vlang\types\Type.java
-CLASS test.s_syntax.Foo test/s_syntax/Foo test\s_syntax\Test.java
-CLASS test.s_syntax.Test test/s_syntax/Test test\s_syntax\Test.java
 ENUM kiev.CError kiev/CError kiev\Errors.java
 ENUM kiev.SeverError kiev/SeverError kiev\Errors.java
 ENUM kiev.be.java15.Instr kiev/be/java15/Instr kiev\be\java15\Instr.java
@@ -690,8 +688,6 @@ ENUM kiev.fmt.SpaceKind kiev/fmt/SpaceKind kiev\fmt\SyntaxLayout.java
 ENUM kiev.vlang.IntRadix kiev/vlang/IntRadix kiev\vlang\ConstExpr.java
 ENUM kiev.vlang.ProjectFileType kiev/vlang/ProjectFileType kiev\vlang\Env.java
 ENUM kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
-ENUM test.s_syntax.Animals test/s_syntax/Animals test\s_syntax\Test.java
-ENUM test.s_syntax.Colors test/s_syntax/Colors test\s_syntax\Test.java
 FORMAT stx-fmt.syntax-for-java stx-fmt\syntax-for-java.xml bad
 FORMAT stx-fmt.syntax-for-project-tree stx-fmt\syntax-for-project-tree.xml bad
 FORMAT stx-fmt.syntax-for-syntax stx-fmt\syntax-for-syntax.xml bad

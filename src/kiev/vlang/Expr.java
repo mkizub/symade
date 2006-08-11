@@ -415,6 +415,12 @@ public class UnaryExpr extends ENode {
 			m = (Method)ident.dnode;
 		}
 		m.normilizeExpr(this);
+		// Check if expression is a constant
+		if (m instanceof CoreMethod && expr.isConstantExpr()) {
+			ConstExpr ce = ((CoreMethod)m).calc(this);
+			replaceWithNodeReWalk(ce);
+			return;
+		}
 	}
 }
 

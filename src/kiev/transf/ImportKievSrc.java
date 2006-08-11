@@ -8,7 +8,8 @@ import kiev.parser.*;
 import java.io.*;
 
 import kiev.be.java15.JFileUnit;
-import kiev.fmt.KievTextSyntax;
+import kiev.fmt.XmlDumpSyntax;
+import kiev.fmt.TextSyntax;
 import kiev.fmt.TextFormatter;
 import kiev.fmt.TextPrinter;
 import kiev.fmt.Drawable;
@@ -184,12 +185,12 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			if (op != null) {
 				if (prior != op.priority)
 					throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
-				astn.resolved = op;
-				return;
+			} else {
+				op = Operator.newOperator(prior, decl);
+				if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
 			}
-			op = Operator.newOperator(prior, decl);
-			if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
 			astn.resolved = op;
+			astn.decl = op.decl;
 		}
 		return;
 	}
@@ -1000,7 +1001,12 @@ public final class ExportBE_Generate extends BackendProcessor {
 		try {
 			String out_file = fu.id.toString();
 			File f = new File(output_dir,out_file);
-			Env.dumpTextFile(fu, f, new KievTextSyntax());
+			TextSyntax stx;
+			if (fu.id.sname.toLowerCase().endsWith(".xml"))
+				stx = new XmlDumpSyntax();
+			else
+				stx = (TextSyntax)Env.resolveGlobalDNode("stx-fmt.syntax-for-java");
+			Env.dumpTextFile(fu, f, stx);
 		} catch( IOException e ) {
 			System.out.println("Create/write error while Kiev-to-Src exporting: "+e);
 		}

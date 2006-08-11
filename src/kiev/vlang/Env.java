@@ -474,7 +474,8 @@ public class Env extends Struct {
 		pr.draw(dr);
 		make_output_dir(f);
 		FileOutputStream out = new FileOutputStream(f);
-		out.write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
+		if (stx instanceof XmlDumpSyntax)
+			out.write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
 		out.write(sb.toString().getBytes("UTF-8"));
 		out.close();
 	}

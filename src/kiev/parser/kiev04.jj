@@ -1121,6 +1121,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		[
 			"extends"
 			clazz.super_types += Type()
+			( "," clazz.super_types += Type()	)*
 		]
 		[
 			"implements"
@@ -1162,6 +1163,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		[
 			"extends"
 			clazz.super_types += Type()
+			( "," clazz.super_types += Type()	)*
 		]
 		[
 			"implements"
@@ -1398,14 +1400,14 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 		(
 			"("
 						ice = IntConstExpression() { mp.size = ice.value; }
-			[	","		nr  = NameRef() { mp.setS("in", nr.name); }
+			[	","		nr  = NameRef() { mp.fld = nr; }
 				","		ice = IntConstExpression() { mp.offset = ice.value; }
 			]
 			")"
 		|
 			":" 	ice = IntConstExpression() { mp.size = ice.value; }
 			[
-			","		nr  = NameRef() { mp.setS("in", nr.name); }
+			","		nr  = NameRef() { mp.fld = nr; }
 			","		ice = IntConstExpression() { mp.offset = ice.value; }
 			]
 		)?
@@ -1417,7 +1419,7 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 			thr = TypeQName() { mt.add(thr); }
 			( "," thr = TypeQName() { mt.add(thr); } )*
 		|
-			"(" ["{"]
+			"(" [ LOOKAHEAD(2) <IDENTIFIER> "="] ["{"]
 			thr = TypeQName() { mt.add(thr); }
 			( "," thr = TypeQName() { mt.add(thr); } )*
 			 ["}"] ")"
@@ -1743,21 +1745,21 @@ Symbol Alias() :
 	(
 		"alias"
 		(
-			LOOKAHEAD(2)
-			id = NameRef()
-			"operator"
-			{ a = new ASTOperatorAlias(); a.setMode(id); }
-			(
-				op = Operator()				{ a.setImage(op); }
-			|	id = NameRef()				{ a.setImage(id); }
-			|	<OPERATOR_LRBRACKETS>		{ a.image = "[]"; }
-			|	"new"						{ a.image = "new"; }
-			|	"$cast"						{ a.image = "$cast"; }
-			)
+			a = Name()
+			[
+				"operator"
+				{ String opmode = a.sname; a = new ASTOperatorAlias(); a.setMode(opmode); }
+				(
+					op = Operator()				{ a.setImage(op); }
+				|	id = NameRef()				{ a.setImage(id); }
+				|	<OPERATOR_LRBRACKETS>		{ a.image = "[]"; }
+				|	"new"						{ a.image = "new"; }
+				|	"$cast"						{ a.image = "$cast"; }
+				)
+			]
 		|	"operator"
 			cs = StringConstExpression()
 			{ a = new ASTOperatorAlias(); a.setName(cs); }
-		|	a = Name()
 		)
 	|	"operator"
 		cs = StringConstExpression()

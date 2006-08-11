@@ -69,10 +69,14 @@ public class DrawNodeTerm extends DrawTerm {
 	}
 
 	String makeText(Formatter fmt) {
-		Object o = getAttrPtr().get();
-		if (o == null)
-			return null;
-		return String.valueOf(o);
+		if (node instanceof ConstExpr && attr == "value") {
+			return String.valueOf(node);
+		} else {
+			Object o = getAttrPtr().get();
+			if (o == null)
+				return null;
+			return String.valueOf(o);
+		}
 	}
 	
 	public final AttrPtr getAttrPtr() {

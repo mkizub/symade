@@ -61,7 +61,7 @@ public final class PackedFldFE_Verify extends TransfProcessor {
 				Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 				return;
 			}
-			mp.fld = p;
+			mp.fld = new SymbolRef<Field>((Symbol<Field>)p.id);
 			assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 		}
 	}
@@ -95,7 +95,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
 			MetaPacked mp = f.getMetaPacked();
-			if( mp.fld == null ) {
+			if( mp.fld.dnode == null ) {
 				mp.open();
 				String mp_in = mp.getS("in");
 				if( mp_in != null && mp_in.length() > 0 ) {
@@ -110,12 +110,12 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 						~mp;
 						continue;
 					}
-					mp.fld = p;
+					mp.fld = new SymbolRef<Field>((Symbol<Field>)p.id);
 					assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 				}
 				else if( locatePackerField(packer,mp.size,s) ) {
 					// Found
-					mp.fld = packer;
+					mp.fld = new SymbolRef<Field>((Symbol<Field>)packer.id);
 					MetaPacker mpr = packer.getMetaPacker();
 					mp.offset = mpr.size;
 					mpr.size += mpr.size;
@@ -126,7 +126,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					MetaPacker mpr = new MetaPacker();
 					p.meta.setU(mpr);
 					s.addField(p);
-					mp.fld = p;
+					mp.fld = new SymbolRef<Field>((Symbol<Field>)p.id);
 					mp.offset = 0;
 					mpr.size += mp.size;
 				}
@@ -193,13 +193,13 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		if( !f.isPackedField() )
 			return;
 		MetaPacked mp = f.getMetaPacked();
-		if( mp == null || mp.fld == null ) {
+		if( mp == null || mp.fld.dnode == null ) {
 			Kiev.reportError(fa, "Internal error: packed field "+f+" has no packer");
 			return;
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 		IFldExpr ae = fa.ncopy();
-		ae.ident.symbol = mp.fld.id;
+		ae.ident.symbol = mp.fld.symbol;
 		ENode expr = ae;
 		if (mp.offset > 0) {
 			ConstExpr sexpr = new ConstIntExpr(mp.offset);
@@ -244,7 +244,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		}
 		Var fval = new Var(0,"tmp$fldval",Type.tpInt,0);
 		MetaPacked mp = f.getMetaPacked();
-		fval.init = new IFldExpr(fa.pos, mkAccess(acc), mp.fld);
+		fval.init = new IFldExpr(fa.pos, mkAccess(acc), (Field)mp.fld.dnode);
 		be.addSymbol(fval);
 		Var tmp = new Var(0,"tmp$val",Type.tpInt,0);
 		be.addSymbol(tmp);
@@ -280,7 +280,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 			ENode expr_r = new BinaryExpr(fa.pos, Operator.BitAnd, mkAccess(fval), clear);
 			ENode expr = new BinaryExpr(fa.pos, Operator.BitOr, expr_r, expr_l);
 			expr = new AssignExpr(fa.pos, Operator.Assign,
-				new IFldExpr(fa.pos, mkAccess(acc), mp.fld),
+				new IFldExpr(fa.pos, mkAccess(acc), (Field)mp.fld.dnode),
 				expr);
 			be.stats.add(new ExprStat(fa.pos, expr));
 		}
@@ -325,7 +325,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 				acc = var;
 			}
 			Var fval = new Var(0,"tmp$fldval",Type.tpInt,0);
-			fval.init = new IFldExpr(fa.pos, mkAccess(acc), mp.fld);
+			fval.init = new IFldExpr(fa.pos, mkAccess(acc), (Field)mp.fld.dnode);
 			be.addSymbol(fval);
 			Var tmp = new Var(0,"tmp$val",Type.tpInt,0);
 			be.addSymbol(tmp);
@@ -366,7 +366,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 				ENode expr_r = new BinaryExpr(fa.pos, Operator.BitAnd, mkAccess(fval), clear);
 				ENode expr = new BinaryExpr(fa.pos, Operator.BitOr, expr_r, expr_l);
 				expr = new AssignExpr(fa.pos, Operator.Assign,
-					new IFldExpr(fa.pos, mkAccess(acc), mp.fld),
+					new IFldExpr(fa.pos, mkAccess(acc), (Field)mp.fld.dnode),
 					expr);
 				be.stats.add(new ExprStat(fa.pos, expr));
 			}

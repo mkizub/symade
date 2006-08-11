@@ -17,11 +17,11 @@ import syntax kiev.Syntax;
 public final class MetaPacked extends UserMeta {
 	@virtual typedef This  = MetaPacked;
 
-	@att public int		size;
-	@att public int		offset;
-	@ref public Field	fld;
+	@att public int					size;
+	@att public SymbolRef<Field>	fld;
+	@att public int					offset;
 
-	public MetaPacked() { super("kiev.stdlib.meta.packed"); }
+	public MetaPacked() { super("kiev.stdlib.meta.packed"); fld = new SymbolRef<Field>(); }
 
 	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
 	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
@@ -42,11 +42,21 @@ public final class MetaPacked extends UserMeta {
 		super.setI("offset", val);
 	}
 	
-	@setter public void set$fld(Field val) {
-		this.open();
-		fld = val;
-		if (val != null)
-			super.setS("in", val.id.sname);
+	@setter public void set$fld(SymbolRef<Field> val) {
+		if (fld == null) {
+			fld = val;
+		}
+		else if (val == null || val.name == null) {
+			this.open();
+			this.fld.open();
+			fld.name = null;
+			super.unset("in");
+		}
+		else {
+			this.open();
+			fld = val;
+			super.setS("in", fld.name);
+		}
 	}
 }
 

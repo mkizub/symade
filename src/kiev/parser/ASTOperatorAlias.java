@@ -46,9 +46,8 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 		throw new CompilerException(n,"Bad operator definition");
 	}
 	
-	public void setMode(SymbolRef n) {
+	public void setMode(String optype) {
 		opmode = -1;
-		String optype = n.name;
 		for(int i=0; i < Opdef.orderAndArityNames.length; i++) {
 			if( Opdef.orderAndArityNames[i].equals(optype) ) {
 				opmode = i;
@@ -56,7 +55,7 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 			}
 		}
 		if( opmode < 0 )
-			throw new CompilerException(n,"Operator mode must be one of "+Arrays.toString(Opdef.orderAndArityNames));
+			throw new CompilerException(this,"Operator mode must be one of "+Arrays.toString(Opdef.orderAndArityNames));
 		return;
 	}
 	
@@ -92,7 +91,9 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 	public void pass3() {
 		Method m = (Method)parent();
 
-		if (this.sname != null && this.sname != "" && this.sname != "operator ???") {
+		if (sname != null && sname != "" && sname != "operator ???") {
+			if (sname == "V [ V ] = V" || sname == "new T" || sname == "V [ V ]")
+				return;
 			Operator op = Operator.getOperatorByName(sname);
 			if (op == null)
 				throw new CompilerException(this,"Operator "+sname+" not found");
