@@ -147,9 +147,14 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 				Type ft = f.type;
 				if (ft.isInstanceOf(tpNArray)) {
 					if !(ft.isInstanceOf(tpNodeSpace)) {
-						ArgType arg = tpNodeSpace.bindings().tvars[0].var;
-						Type bnd = ft.resolve(StdTypes.tpArrayArg);
-						f.ftype = new TypeRef(tpNodeSpace.applay(new TVarBld(arg, bnd)));
+						TypeExpr te = (TypeExpr)f.ftype;
+						te.op = Operator.PostTypeSpace;
+						te.ident.name = Operator.PostTypeSpace.name;
+						te.lnk = null;
+						te.getType();
+						//ArgType arg = tpNodeSpace.bindings().tvars[0].var;
+						//Type bnd = ft.resolve(StdTypes.tpArrayArg);
+						//f.ftype = new TypeRef(tpNodeSpace.applay(new TVarBld(arg, bnd)));
 					}
 					isArr = true;
 				}

@@ -118,6 +118,7 @@ public final class Operator implements Constants {
 	public static final Operator PostTypeWrapper;
 	public static final Operator PostTypeArray;
 	public static final Operator PostTypeVararg;
+	public static final Operator PostTypeSpace;
 
 	// Multi operators
 	public static final Operator Conditional;
@@ -194,6 +195,7 @@ public final class Operator implements Constants {
 		PostTypeWrapper = newOperator(255, "T \u229b"); // ⊛
 		PostTypeArray   = newOperator(255, "T []");
 		PostTypeVararg  = newOperator(255, "T ...");
+		PostTypeSpace   = newOperator(255, "T \u2205"); // ∅
 
 		// Multi operators
 		Conditional = newOperator(opConditionalPriority, "X ? X : Y");

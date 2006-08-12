@@ -250,7 +250,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				cm.pos = me.pos;
 				cm.compileflags = me.compileflags;
 				cm.flags = me.flags;
-				foreach (ASTNode n; me.meta.metas.delToArray()) {
+				foreach (ANode n; me.meta.metas.delToArray()) {
 					if (n instanceof UserMeta)
 						cm.meta.setU((UserMeta)n);
 					else if (n instanceof MetaFlag)

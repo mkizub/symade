@@ -514,8 +514,8 @@ public final class Kiev {
 	public static boolean javaMode			= false;
 		//System.getProperties().get("java.ext.version") != null;
 	static public enum Ext {
-		Rewrite					: "rewrite"			,
 		JavaOnly				: "java only"		,
+		Rewrite					: "rewrite"			,
 		GotoCase				: "goto case"		,
 		Goto					: "goto"			,
 		With					: "with"			,

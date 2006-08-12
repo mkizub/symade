@@ -91,6 +91,9 @@ public class TypeExpr extends TypeRef {
 				else if (op == Operator.PostTypeVararg) {
 					t = StdTypes.tpVararg;
 				}
+				else if (op == Operator.PostTypeSpace) {
+					t = ((TypeDecl)Env.resolveGlobalDNode("kiev.vlang.NodeSpace")).xtype;
+				}
 				else if (op == Operator.PostTypeRef) {
 					Kiev.reportWarning(this, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpRefProxy);
 					t = WrapperType.tpWrappedRefProxy;

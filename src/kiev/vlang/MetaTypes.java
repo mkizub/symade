@@ -35,6 +35,10 @@ class Test extends ASTNode {
 		// test
 		// multi
 		// line
+		
+		try { ce = null; }
+		catch (Exception e) { ce = null; }
+		finally { ce = null; }
 	}
 }
 
