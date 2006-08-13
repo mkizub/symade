@@ -91,20 +91,16 @@ public abstract class DrawNonTerm extends Drawable {
 @node(copyable=false)
 public final class DrawNonTermList extends DrawNonTerm {
 
-	@att public boolean draw_optional;
-	ANode[] oarr;
+	@att
+	public	boolean draw_optional;
+	private	ANode[] oarr;
 	
 	public DrawNonTermList(ANode node, SyntaxList syntax) {
 		super(node, syntax);
 		this.draw_folded = syntax.folded_by_default;
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
+	public void preFormat(DrawContext cont) {
 		SyntaxList slst = (SyntaxList)this.syntax;
 		
 		if (folded == null && slst.folded != null) {
@@ -128,7 +124,10 @@ public final class DrawNonTermList extends DrawNonTerm {
 				if (args.length != 1) {
 					args.delAll();
 					if (slst.empty != null) {
-						args.append(slst.empty.makeDrawable(cont.fmt, node));
+						if (slst.empty.fmt.is_hidden && !draw_optional)
+							;
+						else
+							args.append(slst.empty.makeDrawable(cont.fmt, node));
 					} else {
 						if (slst.prefix != null)
 							args.append(slst.prefix.makeDrawable(cont.fmt, node));
@@ -169,8 +168,6 @@ public final class DrawNonTermList extends DrawNonTerm {
 		if (narr.length == 0) {
 			if (args.length > 0) {
 				if (slst.empty != null) {
-					if (slst.empty.fmt.is_hidden)
-						args[x].geometry.is_hidden = !draw_optional;
 					args[x].preFormat(cont,slst.empty,this.node);
 				} else {
 					if (slst.prefix != null)
@@ -261,14 +258,7 @@ public final class DrawNonTermSet extends DrawNonTerm {
 		this.draw_folded = syntax.folded_by_default;
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
-		if (this.isUnvisible())
-			return;
+	public void preFormat(DrawContext cont) {
 		SyntaxSet sset = (SyntaxSet)this.syntax;
 
 		if (folded == null && sset.folded != null)

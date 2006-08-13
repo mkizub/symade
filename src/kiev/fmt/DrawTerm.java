@@ -14,7 +14,20 @@ import syntax kiev.Syntax;
 
 @node(copyable=false)
 public abstract class DrawTerm extends Drawable {
-	protected String text;
+	public		int     x;
+	public		int     y;
+	public		int     lineno; // line number for text-kind draw/print formatters
+	public		int		_metric;
+	@packed:12,_metric,0
+	public		int		w;
+	@packed:8,_metric,12
+	public		int		h;
+	@packed:8,_metric,20
+	public		int		b;
+	@packed:4,_metric,28
+	public		int		do_newline; // used by formatter to mark actual new-lines after a DrawTerm
+	
+	private		String	text;
 
 	public DrawTerm(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
@@ -23,22 +36,15 @@ public abstract class DrawTerm extends Drawable {
 	public DrawTerm getFirstLeaf() { return isUnvisible() ? null : this; }
 	public DrawTerm getLastLeaf()  { return isUnvisible() ? null : this; }
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
-		if (this.isUnvisible())
-			return;
-		this.geometry.x = 0;
-		this.geometry.y = 0;
+	public final void preFormat(DrawContext cont) {
+		this.x = 0;
+		this.y = 0;
 		this.text = makeText(cont.fmt);
 		cont.formatAsText(this);
 	}
 
 	public final boolean postFormat(DrawContext cont, boolean last_layout) {
-		this.geometry.do_newline = 0;
+		this.do_newline = 0;
 		return cont.addLeaf(this);
 	}
 

@@ -70,10 +70,9 @@ public class DrawContext implements Cloneable {
 	}
 
 	public void formatAsText(DrawTerm dr) {
-		DrawGeometry dg = dr.geometry;
-		dg.x = 0;
-		dg.y = 0;
-		dg.h = 0;
+		dr.x = 0;
+		dr.y = 0;
+		dr.h = 0;
 		String text = dr.getText();
 		if (gfx != null) {
 			if (text == null) text = "\u25d8"; // ◘
@@ -81,21 +80,21 @@ public class DrawContext implements Cloneable {
 				Font  font  = dr.syntax.lout.font;
 				TextLayout tl = new TextLayout(text, font, gfx.getFontRenderContext());
 				Rectangle2D rect = tl.getBounds();
-				dg.w = (int)Math.ceil(tl.getAdvance());
-				dg.h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
-				dg.b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
+				dr.w = (int)Math.ceil(tl.getAdvance());
+				dr.h = (int)Math.ceil(tl.getAscent()+tl.getDescent()+tl.getLeading());
+				dr.b = (int)Math.ceil(tl.getAscent()+tl.getLeading());
 			} else {
-				dg.w = 0;
-				dg.h = 10;
-				dg.b = 0;
+				dr.w = 0;
+				dr.h = 10;
+				dr.b = 0;
 			}
 		} else {
 			if (text == null) text = "";
-			dg.w = text.length();
-			dg.h = 1;
-			dg.b = 0;
+			dr.w = text.length();
+			dr.h = 1;
+			dr.b = 0;
 		}
-		this.x += dg.w;
+		this.x += dr.w;
 	}
 
 	public void pushDrawable(Drawable dr) {
@@ -115,8 +114,8 @@ public class DrawContext implements Cloneable {
 	public boolean addLeaf(DrawTerm leaf) {
 		processSpaceBeforeRequest(leaf);
 		flushSpaceRequests();
-		leaf.geometry.x = x;
-		x += leaf.geometry.w;
+		leaf.x = x;
+		x += leaf.w;
 		line_started = false;
 		last_term = leaf;
 		processSpaceAfterRequest(leaf);
@@ -132,16 +131,18 @@ public class DrawContext implements Cloneable {
 			else
 				max_space = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_space);
 		}
-		if (line_started)
+		if (this.line_started)
 			this.x = getIndent();
 		else
 			this.x += max_space;
 
 		if (max_nl > 0) {
 			if (last_term != null)
-				last_term.geometry.do_newline = max_nl;
-			this.line_started = true;
-			this.x = getIndent();
+				last_term.do_newline = max_nl;
+			if (!this.line_started) {
+				this.line_started = true;
+				this.x = getIndent();
+			}
 		}
 		space_infos.removeAllElements();
 	}
@@ -187,8 +188,10 @@ public class DrawContext implements Cloneable {
 			if (!pl.enabled(dp))
 				continue;
 			indent += gfx==null ? pl.indent_text_size : pl.indent_pixel_size;
-			if (dp.is_multiline)
+			if (!dp.is_multiline) {
 				indent += gfx==null ? pl.indent_first_line_text_size : pl.indent_first_line_pixel_size;
+				dp.is_multiline = true;
+			}
 		}
 		return indent;
 	}

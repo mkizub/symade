@@ -68,14 +68,13 @@ public class ASTIdentifier extends ENode {
 			throw new CompilerException(this,"Unresolved identifier "+name);
 		if( v instanceof Opdef ) {
 			ASTOperator op = new ASTOperator();
-			op.pos = pos;
 			op.ident.name = name;
 			replaceWithNode(op);
 		}
 		else if( v instanceof TypeDecl ) {
 			TypeDecl td = (TypeDecl)v;
 			td.checkResolved();
-			replaceWithNode(new TypeRef(td.getType()));
+			replaceWithNode(new TypeNameRef(name, td.getType()));
 		}
 		else {
 			replaceWithNode(info.buildAccess((ASTNode)this, null, v).closeBuild());

@@ -88,30 +88,30 @@ public class TextFormatter extends AbstractFormatter {
 		DrawTerm first = root.getFirstLeaf();
 		DrawTerm line_start = first;
 		for (DrawTerm dr=first; dr != null; dr = dr.getNextLeaf()) {
-			dr.geometry.y = y;
+			dr.y = y;
 			if (dr.isUnvisible()) {
-				dr.geometry.w = 0;
-				dr.geometry.h = 1;
+				dr.w = 0;
+				dr.h = 1;
 				continue;
 			}
-			if (dr.geometry.do_newline > 0) {
+			if (dr.do_newline > 0) {
 				for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
-					l.geometry.lineno = lineno;
-					l.geometry.y = y;
-					l.geometry.h = 1;
+					l.lineno = lineno;
+					l.y = y;
+					l.h = 1;
 					if (l == dr)
 						break;
 				}
-				y += dr.geometry.do_newline;
+				y += dr.do_newline;
 				line_start = dr.getNextLeaf();
 				lineno++;
 			}
 		}
 		// fill the rest
 		for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
-			l.geometry.lineno = lineno;
-			l.geometry.y = y;
-			l.geometry.h = 1;
+			l.lineno = lineno;
+			l.y = y;
+			l.h = 1;
 		}
 		
 		return root;
@@ -154,24 +154,24 @@ public class GfxFormatter extends AbstractFormatter {
 		DrawTerm first = root.getFirstLeaf();
 		DrawTerm line_start = first;
 		for (DrawTerm dr=first; dr != null; dr = dr.getNextLeaf()) {
-			dr.geometry.y = y;
+			dr.y = y;
 			if (dr.isUnvisible()) {
-				dr.geometry.w = 0;
-				dr.geometry.h = max_h;
+				dr.w = 0;
+				dr.h = max_h;
 				continue;
 			}
-			max_h = Math.max(max_h, dr.geometry.h);
-			max_b = Math.max(max_b, dr.geometry.b);
-			if (dr.geometry.do_newline > 0) {
+			max_h = Math.max(max_h, dr.h);
+			max_b = Math.max(max_b, dr.b);
+			if (dr.do_newline > 0) {
 				for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
-					l.geometry.lineno = lineno;
-					l.geometry.y = y;
-					l.geometry.h = max_h;
-					l.geometry.b = max_b;
+					l.lineno = lineno;
+					l.y = y;
+					l.h = max_h;
+					l.b = max_b;
 					if (l == dr)
 						break;
 				}
-				y += max_h + dr.geometry.do_newline;
+				y += max_h + dr.do_newline;
 				max_h = 10;
 				max_b = 0;
 				line_start = dr.getNextLeaf();
@@ -180,10 +180,10 @@ public class GfxFormatter extends AbstractFormatter {
 		}
 		// fill the rest
 		for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
-			l.geometry.lineno = lineno;
-			l.geometry.y = y;
-			l.geometry.h = max_h;
-			l.geometry.b = max_b;
+			l.lineno = lineno;
+			l.y = y;
+			l.h = max_h;
+			l.b = max_b;
 		}
 		
 		return root;

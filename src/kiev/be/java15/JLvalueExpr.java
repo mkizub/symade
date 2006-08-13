@@ -515,7 +515,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 
 @nodeview
 public final view JSFldExpr of SFldExpr extends JLvalueExpr {
-	public:ro JENode		obj;
+	public:ro JTypeRef		obj;
 	public:ro JField		var;
 	
 	public boolean	isConstantExpr() { return var.isConstantExpr(); }

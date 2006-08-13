@@ -84,6 +84,8 @@ public class Editor extends InfoView implements KeyListener {
 	}
 
 	public void formatAndPaint(boolean full) {
+		if (cur_elem == null)
+			return;
 		cur_elem.restore();
 		view_canvas.current = cur_elem.dr;
 		if (full) {
@@ -129,13 +131,13 @@ public class Editor extends InfoView implements KeyListener {
 		}
 		else if (mask == KeyEvent.ALT_DOWN_MASK) {
 			switch (code) {
-			case KeyEvent.VK_UP:
-				if (cur_elem.dr.isAttached()) {
-					cur_elem.set((Drawable)cur_elem.parent());
-					view_canvas.repaint();
-				}
-				evt.consume(); 
-				break;
+			//case KeyEvent.VK_UP:
+			//	if (cur_elem.dr.isAttached()) {
+			//		cur_elem.set((Drawable)cur_elem.parent());
+			//		view_canvas.repaint();
+			//	}
+			//	evt.consume(); 
+			//	break;
 			case KeyEvent.VK_DOWN:
 				if (cur_elem.dr instanceof DrawNonTerm) {
 					cur_elem.set(cur_elem.dr.getFirstLeaf());
@@ -481,11 +483,11 @@ public class Editor extends InfoView implements KeyListener {
 	public void mousePressed(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY() + view_canvas.translated_y;
-		Drawable dr = view_canvas.first_visible;
+		DrawTerm dr = view_canvas.first_visible;
 		for (; dr != null; dr = dr.getNextLeaf()) {
-			if (dr.geometry.x < x && dr.geometry.y < y && dr.geometry.x+dr.geometry.w >= x && dr.geometry.y+dr.geometry.h >= y) {
+			if (dr.x < x && dr.y < y && dr.x+dr.w >= x && dr.y+dr.h >= y) {
 				cur_elem.set(dr);
-				cur_x = cur_elem.dr.geometry.x;
+				cur_x = cur_elem.dr.x;
 				formatAndPaint(false);
 				break;
 			}
@@ -503,9 +505,9 @@ public class Editor extends InfoView implements KeyListener {
 					public boolean pre_exec(ANode n) {
 						if (n instanceof Drawable) {
 							if (n instanceof DrawNodeTerm && n.getAttrPtr().get() == node || n.node == node) {
-								Drawable dr = n.getFirstLeaf();
+								DrawTerm dr = n.getFirstLeaf();
 								cur_elem.set(dr);
-								cur_x = cur_elem.dr.geometry.x;
+								cur_x = cur_elem.dr.x;
 								makeCurrentVisible();
 								formatAndPaint(false);
 								throw new RuntimeException();
@@ -519,31 +521,31 @@ public class Editor extends InfoView implements KeyListener {
 	}
 
 	void makeCurrentVisible() {
-		int top_lineno = view_canvas.first_visible.geometry.lineno;
-		int bot_lineno = view_canvas.last_visible.geometry.lineno;
+		int top_lineno = view_canvas.first_visible.lineno;
+		int bot_lineno = view_canvas.last_visible.lineno;
 		int height = bot_lineno - top_lineno;
 		
-		if (top_lineno > 0 && cur_elem.dr.getFirstLeaf().geometry.lineno <= top_lineno) {
-			view_canvas.first_line = cur_elem.dr.getFirstLeaf().geometry.lineno -1;
+		if (top_lineno > 0 && cur_elem.dr.getFirstLeaf().lineno <= top_lineno) {
+			view_canvas.first_line = cur_elem.dr.getFirstLeaf().lineno -1;
 		}
-		if (bot_lineno < view_canvas.num_lines && cur_elem.dr.getFirstLeaf().geometry.lineno >= bot_lineno) {
-			view_canvas.first_line = cur_elem.dr.getFirstLeaf().geometry.lineno - height + 1;
+		if (bot_lineno < view_canvas.num_lines && cur_elem.dr.getFirstLeaf().lineno >= bot_lineno) {
+			view_canvas.first_line = cur_elem.dr.getFirstLeaf().lineno - height + 1;
 		}
 		if (view_canvas.first_line < 0)
 			view_canvas.first_line = 0;
 	}
 
 	final class CurElem {
-		Drawable		dr;
+		DrawTerm		dr;
 		int				x, y;
 		Drawable[]		path = Drawable.emptyArray;
 	
-		void set(Drawable dr) {
+		void set(DrawTerm dr) {
 			Editor.this.view_canvas.current = dr;
 			this.dr = dr;
 			if (dr != null) {
-				this.x = dr.geometry.x + dr.geometry.w / 2;
-				this.y = dr.geometry.y;
+				this.x = dr.x + dr.w / 2;
+				this.y = dr.y;
 				Vector<Drawable> v = new Vector<Drawable>();
 				while (dr != null) {
 					v.append(dr);
@@ -557,14 +559,18 @@ public class Editor extends InfoView implements KeyListener {
 		void restore() {
 			Drawable dr = this.dr;
 			Drawable root = Editor.this.view_root;
+			if (root == null) {
+				set(null);
+				return;
+			}
 			if (dr == null) {
-				set(root);
+				set(root.getFirstLeaf());
 				return;
 			}
 			if (dr.ctx_root == root)
 				return;
-			if (root == null || path.length == 0) {
-				set(root);
+			if (path.length == 0) {
+				set(root.getFirstLeaf());
 				return;
 			}
 			Drawable last = path[path.length-1];
@@ -639,7 +645,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 		DrawTerm prev = uiv.cur_elem.dr.getFirstLeaf().getPrevLeaf();
 		if (prev != null) {
 			uiv.cur_elem.set(prev);
-			uiv.cur_x = prev.geometry.x;
+			uiv.cur_x = prev.x;
 		}
 		if (repaint) {
 			uiv.makeCurrentVisible();
@@ -651,7 +657,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 		DrawTerm next = uiv.cur_elem.dr.getFirstLeaf().getNextLeaf();
 		if (next != null) {
 			uiv.cur_elem.set(next);
-			uiv.cur_x = next.geometry.x;
+			uiv.cur_x = next.x;
 		}
 		if (repaint) {
 			uiv.makeCurrentVisible();
@@ -665,19 +671,19 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 		if (prev != null)
 			prev = prev.getPrevLeaf();
 		while (prev != null) {
-			if (prev.geometry.do_newline > 0) {
+			if (prev.do_newline > 0) {
 				n = prev;
 				break;
 			}
 			prev = prev.getPrevLeaf();
 		}
 		while (n != null) {
-			if (n.geometry.x <= uiv.cur_x && n.geometry.x+n.geometry.w >= uiv.cur_x)
+			if (n.x <= uiv.cur_x && n.x+n.w >= uiv.cur_x)
 				break;
 			prev = n.getPrevLeaf();
-			if (prev == null || prev.geometry.do_newline > 0)
+			if (prev == null || prev.do_newline > 0)
 				break;
-			if (prev.geometry.x+prev.geometry.w < uiv.cur_x)
+			if (prev.x+prev.w < uiv.cur_x)
 				break;
 			n = prev;
 		}
@@ -693,21 +699,21 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 		DrawTerm n = null;
 		DrawTerm next = uiv.cur_elem.dr.getFirstLeaf();
 		while (next != null) {
-			if (next.geometry.do_newline > 0) {
+			if (next.do_newline > 0) {
 				n = next.getNextLeaf();
 				break;
 			}
 			next = next.getNextLeaf();
 		}
 		while (n != null) {
-			if (n.geometry.x <= uiv.cur_x && n.geometry.x+n.geometry.w >= uiv.cur_x)
+			if (n.x <= uiv.cur_x && n.x+n.w >= uiv.cur_x)
 				break;
 			next = n.getNextLeaf();
 			if (next == null)
 				break;
-			if (next.geometry.x > uiv.cur_x)
+			if (next.x > uiv.cur_x)
 				break;
-			if (next.geometry.do_newline > 0)
+			if (next.do_newline > 0)
 				break;
 			n = next;
 		}
@@ -720,34 +726,34 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 	}
 	private void navigateLineHome(boolean repaint) {
 		final Editor uiv = (Editor)this.uiv;
-		int lineno = uiv.cur_elem.dr.getFirstLeaf().geometry.lineno;
+		int lineno = uiv.cur_elem.dr.getFirstLeaf().lineno;
 		DrawTerm res = uiv.cur_elem.dr;
 		for (;;) {
 			DrawTerm dr = res.getPrevLeaf();
-			if (dr == null || dr.geometry.lineno != lineno)
+			if (dr == null || dr.lineno != lineno)
 				break;
 			res = dr;
 		}
 		if (res != uiv.cur_elem.dr) {
 			uiv.cur_elem.set(res);
-			uiv.cur_x = uiv.cur_elem.dr.geometry.x;
+			uiv.cur_x = uiv.cur_elem.dr.x;
 		}
 		if (repaint)
 			uiv.formatAndPaint(false);
 	}
 	private void navigateLineEnd(boolean repaint) {
 		final Editor uiv = (Editor)this.uiv;
-		int lineno = uiv.cur_elem.dr.getFirstLeaf().geometry.lineno;
+		int lineno = uiv.cur_elem.dr.getFirstLeaf().lineno;
 		DrawTerm res = uiv.cur_elem.dr;
 		for (;;) {
 			DrawTerm dr = res.getNextLeaf();
-			if (dr == null || dr.geometry.lineno != lineno)
+			if (dr == null || dr.lineno != lineno)
 				break;
 			res = dr;
 		}
 		if (res != uiv.cur_elem.dr) {
 			uiv.cur_elem.set(res);
-			uiv.cur_x = uiv.cur_elem.dr.geometry.x;
+			uiv.cur_x = uiv.cur_elem.dr.x;
 		}
 		if (repaint)
 			uiv.formatAndPaint(false);
@@ -758,7 +764,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 			uiv.view_canvas.first_line = 0;
 			return;
 		}
-		int offs = uiv.view_canvas.last_visible.geometry.lineno - uiv.view_canvas.first_visible.geometry.lineno -1;
+		int offs = uiv.view_canvas.last_visible.lineno - uiv.view_canvas.first_visible.lineno -1;
 		uiv.view_canvas.first_line -= offs;
 		for (int i=offs; i >= 0; i--)
 			navigateUp(i==0);
@@ -770,7 +776,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 			uiv.view_canvas.first_line = 0;
 			return;
 		}
-		int offs = uiv.view_canvas.last_visible.geometry.lineno - uiv.view_canvas.first_visible.geometry.lineno -1;
+		int offs = uiv.view_canvas.last_visible.lineno - uiv.view_canvas.first_visible.lineno -1;
 		uiv.view_canvas.first_line += offs;
 		for (int i=offs; i >= 0; i--)
 			navigateDn(i==0);
@@ -790,31 +796,32 @@ final class ChooseItemEditor implements KeyHandler {
 	public void process() {
 		Drawable dr = editor.cur_elem.dr;
 		if (dr instanceof DrawNodeTerm) {
-			AttrPtr pattr = dr.getAttrPtr();
+			DrawNodeTerm dt = (DrawNodeTerm)dr;
+			AttrPtr pattr = dt.getAttrPtr();
 			Object obj = pattr.get();
 			if (obj instanceof Symbol)
-				editor.startItemEditor((Symbol)obj, new SymbolEditor((Symbol)obj, editor, (DrawNodeTerm)dr));
+				editor.startItemEditor((Symbol)obj, new SymbolEditor((Symbol)obj, editor, dt));
 			else if (obj instanceof SymbolRef)
-				editor.startItemEditor((SymbolRef)obj, new SymRefEditor((SymbolRef)obj, editor, (DrawNodeTerm)dr));
+				editor.startItemEditor((SymbolRef)obj, new SymRefEditor((SymbolRef)obj, editor, dt));
 			else if (obj instanceof String || obj == null && pattr.slot.typeinfo.clazz == String.class) {
 				if (pattr.node instanceof SymbolRef)
-					editor.startItemEditor((SymbolRef)pattr.node, new SymRefEditor((SymbolRef)pattr.node, editor, (DrawNodeTerm)dr));
+					editor.startItemEditor((SymbolRef)pattr.node, new SymRefEditor((SymbolRef)pattr.node, editor, dt));
 				else
-					editor.startItemEditor(pattr.node, new StrEditor(pattr, editor, (DrawNodeTerm)dr));
+					editor.startItemEditor(pattr.node, new StrEditor(pattr, editor, dt));
 			}
 			else if (obj instanceof Integer)
-				editor.startItemEditor(pattr.node, new IntEditor(pattr, editor, (DrawNodeTerm)dr));
+				editor.startItemEditor(pattr.node, new IntEditor(pattr, editor, dt));
 			else if (obj instanceof Boolean)
 				editor.startItemEditor(pattr.node, new BoolEditor(pattr, editor));
 			else if (obj instanceof ConstIntExpr)
-				editor.startItemEditor((ConstIntExpr)obj, new IntEditor(obj.getAttrPtr("value"), editor, (DrawNodeTerm)dr));
+				editor.startItemEditor((ConstIntExpr)obj, new IntEditor(obj.getAttrPtr("value"), editor, dt));
 			else if (Enum.class.isAssignableFrom(pattr.slot.typeinfo.clazz))
-				editor.startItemEditor(pattr.node, new EnumEditor(pattr, dr, editor));
+				editor.startItemEditor(pattr.node, new EnumEditor(pattr, dt, editor));
 		}
 		else if (dr.parent() instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr.parent();
 			SyntaxEnumChoice stx = (SyntaxEnumChoice)dec.syntax;
-			editor.startItemEditor(dec.node, new EnumEditor(dec.node.getAttrPtr(stx.name), dr, editor));
+			editor.startItemEditor(dec.node, new EnumEditor(dec.node.getAttrPtr(stx.name), dr.getFirstLeaf(), editor));
 		}
 	}
 }
@@ -900,8 +907,8 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 					foreach (SymbolRef sr; satt.expected_types; sr.dnode instanceof Struct) {
 						menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, n, satt.name)));
 					}
-					int x = editor.cur_elem.dr.geometry.x;
-					int y = editor.cur_elem.dr.geometry.y + editor.cur_elem.dr.geometry.h - editor.view_canvas.translated_y;
+					int x = editor.cur_elem.dr.x;
+					int y = editor.cur_elem.dr.y + editor.cur_elem.dr.h - editor.view_canvas.translated_y;
 					menu.addPopupMenuListener(this);
 					menu.show(editor.view_canvas, x, y);
 					editor.startItemEditor(n, this);
@@ -920,8 +927,8 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 						foreach (SymbolRef sr; slst.expected_types; sr.dnode instanceof Struct) {
 							menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, lst.node, slst.name)));
 						}
-						int x = editor.cur_elem.dr.geometry.x;
-						int y = editor.cur_elem.dr.geometry.y + editor.cur_elem.dr.geometry.h - editor.view_canvas.translated_y;
+						int x = editor.cur_elem.dr.x;
+						int y = editor.cur_elem.dr.y + editor.cur_elem.dr.h - editor.view_canvas.translated_y;
 						menu.addPopupMenuListener(this);
 						menu.show(editor.view_canvas, x, y);
 						editor.startItemEditor(lst.node, this);
@@ -943,8 +950,8 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 						foreach (SymbolRef sr; slst.expected_types; sr.dnode instanceof Struct) {
 							menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, lst.node, slst.name)));
 						}
-						int x = editor.cur_elem.dr.geometry.x;
-						int y = editor.cur_elem.dr.geometry.y + editor.cur_elem.dr.geometry.h - editor.view_canvas.translated_y;
+						int x = editor.cur_elem.dr.x;
+						int y = editor.cur_elem.dr.y + editor.cur_elem.dr.h - editor.view_canvas.translated_y;
 						menu.addPopupMenuListener(this);
 						menu.show(editor.view_canvas, x, y);
 						editor.startItemEditor(lst.node, this);
@@ -1219,10 +1226,10 @@ final class SymRefEditor extends TextEditor implements ComboBoxEditor {
 			combo.removeAllItems();
 		}
 		combo.setPopupVisible(false);
-		int x = dr_term.geometry.x;
-		int y = dr_term.geometry.y - editor.view_canvas.translated_y;
-		int w = dr_term.geometry.w;
-		int h = dr_term.geometry.h;
+		int x = dr_term.x;
+		int y = dr_term.y - editor.view_canvas.translated_y;
+		int w = dr_term.w;
+		int h = dr_term.h;
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
 		foreach (DNode dn; decls) {
@@ -1348,15 +1355,15 @@ class EnumEditor implements KeyListener, PopupMenuListener {
 	private final Editor		editor;
 	private final AttrPtr		pattr;
 	private final JPopupMenu	menu;
-	EnumEditor(AttrPtr pattr, Drawable cur_elem, Editor editor) {
+	EnumEditor(AttrPtr pattr, DrawTerm cur_elem, Editor editor) {
 		this.editor = editor;
 		this.pattr = pattr;
 		menu = new JPopupMenu();
 		EnumSet ens = EnumSet.allOf(pattr.slot.typeinfo.clazz);
 		foreach (Enum e; ens.toArray())
 			menu.add(new JMenuItem(new SetSyntaxAction(e)));
-		int x = cur_elem.geometry.x;
-		int y = cur_elem.geometry.y + cur_elem.geometry.h - editor.view_canvas.translated_y;
+		int x = cur_elem.x;
+		int y = cur_elem.y + cur_elem.h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
 		menu.show(editor.view_canvas, x, y);
 	}

@@ -245,7 +245,7 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 
 @nodeview
 public static final view RSFldExpr of SFldExpr extends RLvalueExpr {
-	public		ENode		obj;
+	public		TypeRef		obj;
 	public:ro	Field		var;
 
 	public void resolve(Type reqType) throws RuntimeException {

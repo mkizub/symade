@@ -20,9 +20,6 @@ public abstract class Drawable extends ANode {
 	// the node we draw
 	@ref
 	public ANode			node;
-	// can be text (line/pos) or graphics (pixel x,y,w,h,baseline info) and so on,
-	// filled/modified during preFormat/postFormat
-	public DrawGeometry		geometry;
 	// syntax kind & draw layout
 	@ref
 	public SyntaxElem		syntax;
@@ -32,24 +29,30 @@ public abstract class Drawable extends ANode {
 	
 	public Drawable(ANode node, SyntaxElem syntax) {
 		this.node = node;
-		this.geometry = new DrawGeometry();
 		this.syntax = syntax;
-		this.geometry.is_hidden = this.syntax.fmt.is_hidden;
 	}
 	
 	public abstract String getText();
 
-	public abstract void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node);
+	public abstract void preFormat(DrawContext cont);
 	public abstract boolean postFormat(DrawContext cont, boolean last_layout);
 	public abstract DrawTerm getFirstLeaf();
 	public abstract DrawTerm getLastLeaf();
 
+	public final void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
+		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			replaceWithNode(dr);
+			dr.preFormat(cont, expected_stx, expected_node);
+			return;
+		}
+		if (this.isUnvisible())
+			return;
+		this.preFormat(cont);
+	}
+
 	public final boolean isUnvisible() {
-		if (geometry != null)
-			return geometry.is_hidden;
-		if (syntax != null)
-			return syntax.fmt.is_hidden;
-		return false;
+		return syntax.fmt.is_hidden;
 	}  
 
 	public final DrawTerm getNextLeaf() {

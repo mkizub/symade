@@ -253,13 +253,16 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				Block body = new Block(f.pos);
 				set_var.open();
 				set_var.body = body;
+				ENode fa;
+				if (f.isStatic())
+					fa = new SFldExpr(f.pos,f);
+				else
+					fa = new IFldExpr(f.pos,new ThisExpr(0),f);
+				fa.setAsField(true);
 				ENode ass_st = new ExprStat(f.pos,
-					new AssignExpr(f.pos,Operator.Assign,
-						f.isStatic()? new SFldExpr(f.pos,f,true)
-									: new IFldExpr(f.pos,new ThisExpr(0),f,true),
-						new LVarExpr(f.pos,value)
-					)
+					new AssignExpr(f.pos,Operator.Assign,fa,new LVarExpr(f.pos,value))
 				);
+
 				body.stats.append(ass_st);
 			}
 			Field.SETTER_ATTR.set(f, set_var);

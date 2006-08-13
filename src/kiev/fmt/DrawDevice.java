@@ -27,8 +27,8 @@ public class TextPrinter implements DrawDevice {
 	public void draw(Drawable root) {
 		DrawTerm leaf = root.getFirstLeaf();
 		for (; leaf != null; leaf= leaf.getNextLeaf()) {
-			int x = leaf.geometry.x;
-			int y = leaf.geometry.y;
+			int x = leaf.x;
+			int y = leaf.y;
 
 			while (pos_y < y) {
 				sb.append('\n');
@@ -47,7 +47,7 @@ public class TextPrinter implements DrawDevice {
 				pos_x += text.length();
 			}
 
-			x += leaf.geometry.w;
+			x += leaf.w;
 			while (pos_x < x) {
 				sb.append(' ');
 				pos_x++;

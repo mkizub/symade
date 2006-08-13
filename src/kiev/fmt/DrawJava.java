@@ -19,14 +19,7 @@ public class DrawJavaExpr extends DrawNonTerm {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
-		if (this.isUnvisible())
-			return;
+	public void preFormat(DrawContext cont) {
 		SyntaxJavaExpr se = (SyntaxJavaExpr)this.syntax;
 		SyntaxJavaExprTemplate st = (SyntaxJavaExprTemplate)se.template.dnode;
 		boolean no_paren = true;
@@ -69,12 +62,6 @@ public class DrawJavaAccess extends DrawTerm {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (this.isUnvisible())
-			return;
-		super.preFormat(cont, expected_stx, expected_node);
-	}
-	
 	String makeText(Formatter fmt) {
 		MetaAccess acc = (MetaAccess)node;
 		String text;
@@ -157,14 +144,7 @@ public class DrawJavaComment extends DrawNonTerm {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
-		if (this.isUnvisible())
-			return;
+	public void preFormat(DrawContext cont) {
 		SyntaxJavaComment se = (SyntaxJavaComment)this.syntax;
 		SyntaxJavaCommentTemplate st = (SyntaxJavaCommentTemplate)se.template.dnode;
 		Comment c = (Comment)node;

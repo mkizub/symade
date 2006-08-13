@@ -1400,7 +1400,7 @@
             </a-node>
            </si>
            <action_before>SP_ADD</action_before>
-           <action_after>SP_ADD</action_after>
+           <action_after>SP_NOP</action_after>
            <from_attempt>0</from_attempt>
           </a-node>
          </spaces>
@@ -6510,11 +6510,6 @@
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
            <name></name>
-           <in_syntax>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name></name>
-            </a-node>
-           </in_syntax>
            <fmt>
             <a-node class='kiev.fmt.SimpleElemFormat'>
              <is_hidden>false</is_hidden>

@@ -201,7 +201,7 @@ class NavigateView implements KeyHandler {
 	private void navigatePageUp() {
 		Canvas view_canvas = uiv.view_canvas;
 		if (view_canvas.first_line > 0) {
-			view_canvas.first_line -= view_canvas.last_visible.geometry.lineno - view_canvas.first_visible.geometry.lineno - 1;
+			view_canvas.first_line -= view_canvas.last_visible.lineno - view_canvas.first_visible.lineno - 1;
 			if (view_canvas.first_line < 0)
 				view_canvas.first_line = 0;
 			view_canvas.repaint();
@@ -210,7 +210,7 @@ class NavigateView implements KeyHandler {
 	private void navigatePageDn() {
 		Canvas view_canvas = uiv.view_canvas;
 		if (view_canvas.first_line < view_canvas.num_lines) {
-			view_canvas.first_line += view_canvas.last_visible.geometry.lineno - view_canvas.first_visible.geometry.lineno -1;
+			view_canvas.first_line += view_canvas.last_visible.lineno - view_canvas.first_visible.lineno -1;
 			if (view_canvas.first_line >= view_canvas.num_lines)
 				view_canvas.first_line = view_canvas.num_lines-1;
 			view_canvas.repaint();

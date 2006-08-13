@@ -57,12 +57,7 @@ public class DrawSpace extends DrawCtrl {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
+	public void preFormat(DrawContext cont) {
 	}
 
 }
@@ -70,19 +65,15 @@ public class DrawSpace extends DrawCtrl {
 @node(copyable=false)
 public class DrawOptional extends DrawCtrl {
 
-	@att public boolean draw_optional;
-	boolean drawed_as_true;
+	@att
+	public	boolean draw_optional;
+	private	boolean drawed_as_true;
 	
 	public DrawOptional(ANode node, SyntaxOptional syntax) {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
+	public void preFormat(DrawContext cont) {
 		SyntaxOptional sc = (SyntaxOptional)syntax;
 		if (sc.calculator.calc(node)) {
 			if (!drawed_as_true || arg == null) {
@@ -107,9 +98,10 @@ public class DrawOptional extends DrawCtrl {
 			if (drawed_as_true) {
 				arg.preFormat(cont,sc.opt_true,node);
 			} else {
-				if (sc.opt_false.fmt.is_hidden)
-					arg.geometry.is_hidden = !draw_optional;
-				arg.preFormat(cont,sc.opt_false,node);
+				if (sc.opt_false.fmt.is_hidden && !draw_optional)
+					arg = null;
+				else
+					arg.preFormat(cont,sc.opt_false,node);
 			}
 		}
 	}
@@ -118,21 +110,16 @@ public class DrawOptional extends DrawCtrl {
 @node(copyable=false)
 public final class DrawFolded extends DrawCtrl {
 
-	@att public boolean draw_folded;
-	
-	boolean drawed_as_folded;
+	@att
+	public	boolean draw_folded;
+	private	boolean drawed_as_folded;
 	
 	public DrawFolded(ANode node, SyntaxFolder syntax) {
 		super(node, syntax);
 		this.draw_folded = syntax.folded_by_default;
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
+	public void preFormat(DrawContext cont) {
 		SyntaxFolder sc = (SyntaxFolder)syntax;
 		if (draw_folded) {
 			if (!drawed_as_folded || arg == null) {
@@ -155,18 +142,13 @@ public final class DrawFolded extends DrawCtrl {
 @node(copyable=false)
 public class DrawIntChoice extends DrawCtrl {
 
-	int drawed_idx;
+	private int drawed_idx;
 
 	public DrawIntChoice(ANode node, SyntaxIntChoice syntax) {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
+	public void preFormat(DrawContext cont) {
 		SyntaxIntChoice sc = (SyntaxIntChoice)syntax;
 		int idx = ((Integer)node.getVal(sc.name)).intValue();
 		if (arg == null || drawed_idx != idx) {
@@ -185,18 +167,13 @@ public class DrawIntChoice extends DrawCtrl {
 @node(copyable=false)
 public class DrawEnumChoice extends DrawCtrl {
 
-	Enum drawed_en;
+	private Enum drawed_en;
 
 	public DrawEnumChoice(ANode node, SyntaxEnumChoice syntax) {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
+	public void preFormat(DrawContext cont) {
 		SyntaxEnumChoice se = (SyntaxEnumChoice)syntax;
 		java.lang.Enum en = (java.lang.Enum)node.getVal(se.name);
 		if (arg == null || drawed_en != en) {
@@ -220,12 +197,7 @@ public class DrawParagraph extends DrawCtrl {
 		super(node, syntax);
 	}
 
-	public void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
-		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
-			replaceWithNode(dr);
-			dr.preFormat(cont, expected_stx, expected_node);
-		}
+	public void preFormat(DrawContext cont) {
 		SyntaxParagraphLayout spl = (SyntaxParagraphLayout)syntax;
 		if (arg == null)
 			arg = spl.elem.makeDrawable(cont.fmt, node);
