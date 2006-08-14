@@ -129,6 +129,7 @@ CLASS kiev.fmt.DrawFolded kiev/fmt/DrawFolded kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawFont kiev/fmt/DrawFont kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawIntChoice kiev/fmt/DrawIntChoice kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawJavaAccess kiev/fmt/DrawJavaAccess kiev\fmt\DrawJava.java
+CLASS kiev.fmt.DrawJavaAccessExpr kiev/fmt/DrawJavaAccessExpr kiev\fmt\DrawJava.java
 CLASS kiev.fmt.DrawJavaComment kiev/fmt/DrawJavaComment kiev\fmt\DrawJava.java
 CLASS kiev.fmt.DrawJavaExpr kiev/fmt/DrawJavaExpr kiev\fmt\DrawJava.java
 CLASS kiev.fmt.DrawJavaPackedField kiev/fmt/DrawJavaPackedField kiev\fmt\DrawJava.java
@@ -167,6 +168,7 @@ CLASS kiev.fmt.SyntaxFolder kiev/fmt/SyntaxFolder kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxIdentAttr kiev/fmt/SyntaxIdentAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxIntChoice kiev/fmt/SyntaxIntChoice kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxJavaAccess kiev/fmt/SyntaxJavaAccess kiev\fmt\JavaSyntax.java
+CLASS kiev.fmt.SyntaxJavaAccessExpr kiev/fmt/SyntaxJavaAccessExpr kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaComment kiev/fmt/SyntaxJavaComment kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaCommentTemplate kiev/fmt/SyntaxJavaCommentTemplate kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaExpr kiev/fmt/SyntaxJavaExpr kiev\fmt\JavaSyntax.java
@@ -582,7 +584,7 @@ CLASS kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java
 CLASS kiev.vlang.ReWalkNodeException kiev/vlang/ReWalkNodeException kiev\vlang\AST.java
 CLASS kiev.vlang.RefAttrSlot kiev/vlang/RefAttrSlot kiev\vlang\Tree.java
 CLASS kiev.vlang.ReinterpExpr kiev/vlang/ReinterpExpr kiev\vlang\LvalueExpr.java
-CLASS kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java bad
+CLASS kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
 CLASS kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java
 CLASS kiev.vlang.RewriteCase kiev/vlang/RewriteCase kiev\vlang\Rewrites.java
 CLASS kiev.vlang.RewriteContext kiev/vlang/RewriteContext kiev\vlang\Rewrites.java
@@ -895,9 +897,9 @@ INTERFACE kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInf
 INTERFACE kiev.vlang.DataFlowSlots kiev/vlang/DataFlowSlots kiev\vlang\Var.java
 INTERFACE kiev.vlang.GlobalDNode kiev/vlang/GlobalDNode kiev\vlang\DNode.java
 INTERFACE kiev.vlang.PreScanneable kiev/vlang/PreScanneable kiev\vlang\AST.java
-INTERFACE kiev.vlang.Scope kiev/vlang/Scope kiev\vlang\Resolving.java bad
-INTERFACE kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java bad
-INTERFACE kiev.vlang.ScopeOfNames kiev/vlang/ScopeOfNames kiev\vlang\Resolving.java bad
+INTERFACE kiev.vlang.Scope kiev/vlang/Scope kiev\vlang\Resolving.java
+INTERFACE kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java
+INTERFACE kiev.vlang.ScopeOfNames kiev/vlang/ScopeOfNames kiev\vlang\Resolving.java
 INTERFACE kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
 INTERFACE kiev.vlang.dflow kiev/vlang/dflow kiev\vlang\Tree.java
 INTERFACE kiev.vlang.node kiev/vlang/node kiev\vlang\Tree.java

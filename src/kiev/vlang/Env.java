@@ -149,6 +149,7 @@ public class Env extends Struct {
 			Struct cl = (Struct)bcl;
 			if( cleanup ) {
 				cl.type_decl_version = 0;
+				cl.meta.metas.delAll();
 				cl.flags = acces;
 				cl.variant = variant;
 				cl.package_clazz = outer;

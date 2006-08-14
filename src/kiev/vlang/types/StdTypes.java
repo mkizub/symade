@@ -140,7 +140,7 @@ public interface StdTypes {
 		Struct tpDebugClazz = Env.newStruct("Debug",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpDebug				= (CompaundType)tpDebugClazz.xtype;
 
-		Struct tpTypeInfoClazz = Env.newStruct("TypeInfo",kiev_stdlib,ACC_PUBLIC|ACC_FINAL,new JavaClass());
+		Struct tpTypeInfoClazz = Env.newStruct("TypeInfo",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpTypeInfo				= (CompaundType)tpTypeInfoClazz.xtype;
 
 		Struct tpTypeInfoInterfaceClazz = Env.newStruct("TypeInfoInterface",kiev_stdlib,ACC_PUBLIC|ACC_INTERFACE,new JavaInterface());

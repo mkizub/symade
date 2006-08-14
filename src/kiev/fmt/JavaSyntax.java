@@ -121,6 +121,21 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 	}
 }
 
+@node
+public class SyntaxJavaAccessExpr extends SyntaxElem {
+	@virtual typedef This  = SyntaxJavaAccessExpr;
+
+	@att public SyntaxElem			obj_elem;
+	@att public SyntaxToken			separator;
+	@att public SyntaxElem			fld_elem;
+
+	public SyntaxJavaAccessExpr() {}
+
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawJavaAccessExpr(node, this);
+		return dr;
+	}
+}
 
 @node
 public class SyntaxJavaAccess extends SyntaxElem {
@@ -136,23 +151,6 @@ public class SyntaxJavaAccess extends SyntaxElem {
 		return dr;
 	}
 }
-
-/*
-@node
-public class SyntaxJavaEnumAlias extends SyntaxElem {
-	@virtual typedef This  = SyntaxJavaEnumAlias;
-
-	public SyntaxJavaEnumAlias() {}
-	public SyntaxJavaEnumAlias(SpaceCmd[] spaces) {
-		super(spaces);
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawJavaEnumAlias(node, this);
-		return dr;
-	}
-}
-*/
 
 @node
 public class SyntaxJavaPackedField extends SyntaxElem {

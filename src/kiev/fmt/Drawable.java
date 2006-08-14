@@ -46,12 +46,10 @@ public abstract class Drawable extends ANode {
 			dr.preFormat(cont, expected_stx, expected_node);
 			return;
 		}
-		if (this.isUnvisible())
-			return;
 		this.preFormat(cont);
 	}
 
-	public final boolean isUnvisible() {
+	public boolean isUnvisible() {
 		return syntax.fmt.is_hidden;
 	}  
 

@@ -74,6 +74,7 @@ public class DrawOptional extends DrawCtrl {
 	}
 
 	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
 		SyntaxOptional sc = (SyntaxOptional)syntax;
 		if (sc.calculator.calc(node)) {
 			if (!drawed_as_true || arg == null) {
@@ -120,6 +121,7 @@ public final class DrawFolded extends DrawCtrl {
 	}
 
 	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
 		SyntaxFolder sc = (SyntaxFolder)syntax;
 		if (draw_folded) {
 			if (!drawed_as_folded || arg == null) {
@@ -149,6 +151,7 @@ public class DrawIntChoice extends DrawCtrl {
 	}
 
 	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
 		SyntaxIntChoice sc = (SyntaxIntChoice)syntax;
 		int idx = ((Integer)node.getVal(sc.name)).intValue();
 		if (arg == null || drawed_idx != idx) {
@@ -174,6 +177,7 @@ public class DrawEnumChoice extends DrawCtrl {
 	}
 
 	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
 		SyntaxEnumChoice se = (SyntaxEnumChoice)syntax;
 		java.lang.Enum en = (java.lang.Enum)node.getVal(se.name);
 		if (arg == null || drawed_en != en) {
@@ -198,6 +202,7 @@ public class DrawParagraph extends DrawCtrl {
 	}
 
 	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
 		SyntaxParagraphLayout spl = (SyntaxParagraphLayout)syntax;
 		if (arg == null)
 			arg = spl.elem.makeDrawable(cont.fmt, node);

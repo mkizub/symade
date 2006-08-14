@@ -37,6 +37,8 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	@ref public Drawable	view_root;
 	/** The syntax in use */
 	@ref public TextSyntax	syntax;
+	/** A flag to show auto-generated nodes */
+	@att public boolean		show_auto_generated;
 
 	public UIView(Window window, TextSyntax syntax) {
 		this.parent_window = window;

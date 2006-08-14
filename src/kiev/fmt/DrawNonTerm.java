@@ -101,6 +101,7 @@ public final class DrawNonTermList extends DrawNonTerm {
 	}
 
 	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
 		SyntaxList slst = (SyntaxList)this.syntax;
 		
 		if (folded == null && slst.folded != null) {
@@ -259,6 +260,7 @@ public final class DrawNonTermSet extends DrawNonTerm {
 	}
 
 	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
 		SyntaxSet sset = (SyntaxSet)this.syntax;
 
 		if (folded == null && sset.folded != null)
