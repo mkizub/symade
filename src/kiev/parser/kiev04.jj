@@ -1804,14 +1804,9 @@ ENode MaybeSkipBlock() :
 	{ return bl; }
 }
 
-Method MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; Method m, oldMethod; TypeRef ret; Symbol id; MetaThrows thr; TypeConstr[] args; }
+void MethodParams(Method m) :
+{ ASTModifiers modifiers; }
 {
-	args = ClazzArguments()
-	ret = Type()
-	id = Name()
-	{ m = mkMethod(id,modifiers,ret); m.targs.addAll(args); oldMethod = curMethod; curMethod = m; }
-	try {
 	"("
 		(
 			LOOKAHEAD( Modifiers() [Type()] "...")
@@ -1834,6 +1829,17 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 			)*
 		)?
 	")"
+}
+
+Method MethodDeclaration(ASTModifiers modifiers) :
+{ Token t; Method m, oldMethod; TypeRef ret; Symbol id; MetaThrows thr; TypeConstr[] args; }
+{
+	args = ClazzArguments()
+	ret = Type()
+	id = Name()
+	{ m = mkMethod(id,modifiers,ret); m.targs.addAll(args); oldMethod = curMethod; curMethod = m; }
+	try {
+	MethodParams(m)
 	(	t=<OPERATOR_LRBRACKETS> { m.type_ret = new TypeExpr(m.type_ret,t); } )*
 	(
 		m.aliases += Alias()
@@ -1847,7 +1853,15 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 		LOOKAHEAD("{")
 		{ presc = m; }
 		m.body = MaybeSkipBlock() [ ";" ]
-	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id)) ] ";"
+	|
+		(
+			"default"
+			m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id))
+		|	"case"
+			MethodParams(m)
+			
+		)?
+		";"
 	)
 	} finally { curMethod = oldMethod; }
 	{ return m; }

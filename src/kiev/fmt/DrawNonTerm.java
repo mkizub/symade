@@ -17,6 +17,7 @@ public abstract class DrawNonTerm extends Drawable {
 	@att public Drawable	folded;
 	@att public Drawable[]	args;
 	@att public boolean		draw_folded;
+	     public int			max_layout;
 
 	public DrawNonTerm(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
@@ -52,38 +53,58 @@ public abstract class DrawNonTerm extends Drawable {
 		return null;
 	}
 
-	public final boolean postFormat(DrawContext context, boolean parent_last_layout) {
+	public final int getMaxLayout() { return max_layout; }
+
+	protected final void calcMaxLayout() {
+		max_layout = syntax.lout.count;
+		if (attr_syntax != null)
+			max_layout = Math.max(max_layout, attr_syntax.lout.count);
+		foreach (Drawable dr; args; !dr.isUnvisible())
+			max_layout = Math.max(max_layout, dr.getMaxLayout());
+	}
+
+	public final boolean postFormat(DrawContext context) {
 		context.pushDrawable(this);
 		try {
-			// for each possible layout. assign it to all sub-components
-			// and try to layout them;
-			final int layouts_size = syntax.lout.count;
-		next_layout:
-			for (int i=0; i < layouts_size; i++) {
-				context = context.pushState(i);
-				boolean save = false;
+			if (max_layout <= 0 || context.new_lines_first_parent) {
 				boolean fits = true;
-				try {
-					boolean last = (i == layouts_size-1);
-					fits = (context.x < context.width);
-					for (int j=0; j < args.length; j++) {
-						Drawable dr = args[j];
-						if (dr.isUnvisible())
-							continue;
-						fits &= dr.postFormat(context, last && parent_last_layout);
-						if (!fits && !last)
-							continue next_layout;
-					}
-					save = true;
-				} finally {
-					context = context.popState(save); 
+				for (int j=0; j < args.length; j++) {
+					Drawable dr = args[j];
+					if (dr.isUnvisible())
+						continue;
+					fits &= dr.postFormat(context);
 				}
 				return fits;
+			} else {
+				// for each possible layout. assign it to all sub-components
+				// and try to layout them;
+			next_layout:
+				for (int i=0; i <= this.max_layout; i++) {
+					context = context.pushState(i, this.max_layout);
+					boolean save = false;
+					boolean fits = true;
+					try {
+						boolean last = (i == this.max_layout);
+						fits = (context.x < context.width);
+						for (int j=0; j < args.length; j++) {
+							Drawable dr = args[j];
+							if (dr.isUnvisible())
+								continue;
+							fits &= dr.postFormat(context);
+							if (!fits && !last)
+								continue next_layout;
+						}
+						save = true;
+					} finally {
+						context = context.popState(save); 
+					}
+					return fits;
+				}
 			}
 		} finally {
 			context.popDrawable(this);
 		}
-		return false;
+		return true;
 	}
 
 }
@@ -91,8 +112,6 @@ public abstract class DrawNonTerm extends Drawable {
 @node(copyable=false)
 public final class DrawNonTermList extends DrawNonTerm {
 
-	@att
-	public	boolean draw_optional;
 	private	ANode[] oarr;
 	
 	public DrawNonTermList(ANode node, SyntaxList syntax) {
@@ -125,10 +144,7 @@ public final class DrawNonTermList extends DrawNonTerm {
 				if (args.length != 1) {
 					args.delAll();
 					if (slst.empty != null) {
-						if (slst.empty.fmt.is_hidden && !draw_optional)
-							;
-						else
-							args.append(slst.empty.makeDrawable(cont.fmt, node));
+						args.append(slst.empty.makeDrawable(cont.fmt, node));
 					} else {
 						if (slst.prefix != null)
 							args.append(slst.prefix.makeDrawable(cont.fmt, node));
@@ -212,6 +228,7 @@ public final class DrawNonTermList extends DrawNonTerm {
 			if (slst.sufix != null)
 				args[x].preFormat(cont,slst.sufix,this.node);
 		}
+		calcMaxLayout();
 	}
 	
 	public int getInsertIndex(Drawable dr) {
@@ -279,6 +296,7 @@ public final class DrawNonTermSet extends DrawNonTerm {
 				dr.preFormat(cont,sset.elements[i],this.node);
 			}
 		}
+		calcMaxLayout();
 	}
 }
 

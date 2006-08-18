@@ -247,11 +247,10 @@ public class ParagraphLayout extends DNode {
 
 	@att int indent_text_size;
 	@att int indent_pixel_size;
-	@att int indent_first_line_text_size;
-	@att int indent_first_line_pixel_size;
 	@att boolean indent_from_current_position;
 	@att boolean align_right;
 	@att boolean align_rest_of_lines_right;
+	@att boolean new_lines_first_parent;
 	
 	public ParagraphLayout() {}
 	public ParagraphLayout(String name, int ind_txt, int ind_pix) {
@@ -357,7 +356,7 @@ public final class DrawLayout {
 	public LayoutSpace[]	spaces_after;
 
 	public DrawLayout() {
-		this.count = 1;
+		this.count = 0;
 		this.color = Color.BLACK;
 		this.font = default_font;
 		this.spaces_before = LayoutSpace.emptyArray;
@@ -670,7 +669,7 @@ public abstract class SyntaxElem extends ASTNode {
 	
 	private void compile() {
 		DrawLayout lout = this.lout;
-		lout.count = 1;
+		lout.count = 0;
 		if (fmt == null)
 			return;
 		lout.is_hidden = fmt.is_hidden;
@@ -700,7 +699,7 @@ public abstract class SyntaxElem extends ASTNode {
 			case SP_ADD: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls); break;
 			case SP_EAT: lout.spaces_after = (LayoutSpace[])Arrays.append(lout.spaces_after, ls.setEat()); break;
 			}
-			lout.count = Math.max(lout.count, sc.from_attempt+1);
+			lout.count = Math.max(lout.count, sc.from_attempt);
 		}
 		if (fmt.getColor() != null)
 			lout.color = new Color(fmt.getColor().rgb_color);

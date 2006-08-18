@@ -37,11 +37,20 @@ public class DrawCtrl extends Drawable {
 		return arg.getLastLeaf();
 	}
 
-	public boolean postFormat(DrawContext context, boolean parent_last_layout) {
+	public final int getMaxLayout() {
+		int max_layout = syntax.lout.count;
+		if (attr_syntax != null)
+			max_layout = Math.max(max_layout, attr_syntax.lout.count);
+		if (arg != null)
+			max_layout = Math.max(max_layout, arg.getMaxLayout());
+		return max_layout;
+	}
+
+	public boolean postFormat(DrawContext context) {
 		context.pushDrawable(this);
 		try {
 			if (arg != null)
-				return arg.postFormat(context, parent_last_layout);
+				return arg.postFormat(context);
 			return true;
 		} finally {
 			context.popDrawable(this);
@@ -193,10 +202,8 @@ public class DrawEnumChoice extends DrawCtrl {
 }
 
 @node(copyable=false)
-public class DrawParagraph extends DrawCtrl {
+public final class DrawParagraph extends DrawCtrl {
 
-	boolean is_multiline;
-	
 	public DrawParagraph(ANode node, SyntaxParagraphLayout syntax) {
 		super(node, syntax);
 	}
@@ -208,6 +215,21 @@ public class DrawParagraph extends DrawCtrl {
 			arg = spl.elem.makeDrawable(cont.fmt, node);
 		if (arg != null)
 			arg.preFormat(cont,spl.elem,node);
+	}
+
+	public boolean postFormat(DrawContext context) {
+		boolean fits = true;
+		DrawContext context = context.pushParagraph(this);
+		try {
+			if (arg != null) {
+				fits = arg.postFormat(context);
+				if (!context.new_lines_first_parent)
+					fits = true;
+			}
+		} finally {
+			context.popParagraph(this, fits);
+		}
+		return fits;
 	}
 
 	public ParagraphLayout getParLayout() {

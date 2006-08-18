@@ -23,7 +23,7 @@ public abstract class Drawable extends ANode {
 	// syntax kind & draw layout
 	@ref
 	public SyntaxElem		syntax;
-	// definer syntax (StntaxAttr or SyntaxNode, etc) 
+	// definer syntax (SyntaxAttr or SyntaxNode, etc) 
 	@ref
 	public SyntaxElem		attr_syntax;
 	
@@ -35,9 +35,10 @@ public abstract class Drawable extends ANode {
 	public abstract String getText();
 
 	public abstract void preFormat(DrawContext cont);
-	public abstract boolean postFormat(DrawContext cont, boolean last_layout);
+	public abstract boolean postFormat(DrawContext cont);
 	public abstract DrawTerm getFirstLeaf();
 	public abstract DrawTerm getLastLeaf();
+	public abstract int getMaxLayout();
 
 	public final void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
 		if (!expected_stx.check(cont, syntax, expected_node, this.node)) {

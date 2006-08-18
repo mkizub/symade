@@ -872,10 +872,6 @@ final class OptionalTrigger implements KeyHandler {
 				dr.draw_optional = !dr.draw_optional;
 				repaint = true;
 			}
-			else if (dr instanceof DrawNonTermList) {
-				dr.draw_optional = !dr.draw_optional;
-				repaint = true;
-			}
 		}
 		if (repaint)
 			editor.formatAndPaint(true);

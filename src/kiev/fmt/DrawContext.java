@@ -24,10 +24,12 @@ public class DrawContext implements Cloneable {
 	public Formatter				fmt;
 	public Graphics2D				gfx;
 	public int						width;
-	public int						x, y, cur_attempt;
+	public int						x, y;
+	public int						cur_attempt, max_attempt;
+	public boolean					new_lines_first_parent;
 	public boolean					line_started;
 	public Vector<LayoutSpace>		space_infos;
-	public Stack<DrawParagraph>		paragraphs;
+	public int						indent;
 	private DrawTerm				last_term;
 	private DrawContext				prev_ctx;
 	private Font					default_font;
@@ -37,7 +39,6 @@ public class DrawContext implements Cloneable {
 		this.gfx = gfx;
 		line_started = true;
 		space_infos = new Vector<LayoutSpace>();
-		paragraphs = new Stack<DrawParagraph>();
 		if (gfx != null)
 			default_font = new Font("Dialog", Font.PLAIN, 12);
 	}
@@ -45,14 +46,14 @@ public class DrawContext implements Cloneable {
 	public Object clone() {
 		DrawContext dc = (DrawContext)super.clone();
 		dc.space_infos = (Vector<LayoutSpace>)this.space_infos.clone();
-		dc.paragraphs = (Stack<DrawParagraph>)this.paragraphs.clone();
 		return dc;
 	}
 
-	public DrawContext pushState(int cur_attempt) {
+	public DrawContext pushState(int cur_attempt, int max_attempt) {
 		DrawContext ctx = (DrawContext)this.clone();
 		ctx.prev_ctx = this;
 		ctx.cur_attempt = cur_attempt;
+		ctx.max_attempt = max_attempt;
 		return ctx;
 	}
 	
@@ -63,7 +64,6 @@ public class DrawContext implements Cloneable {
 			ctx.y = this.y;
 			ctx.line_started = this.line_started;
 			ctx.space_infos = this.space_infos;
-			ctx.paragraphs = this.paragraphs;
 			ctx.last_term = this.last_term;
 		}
 		return ctx;
@@ -98,17 +98,34 @@ public class DrawContext implements Cloneable {
 	}
 
 	public void pushDrawable(Drawable dr) {
-		if (dr instanceof DrawParagraph) {
-			DrawParagraph dp = (DrawParagraph)dr;
-			dp.is_multiline = false;
-			paragraphs.push(dp);
-		}
 		processSpaceBeforeRequest(dr);
 	}
 	public void popDrawable(Drawable dr) {
-		if (dr instanceof DrawParagraph)
-			paragraphs.pop();
 		processSpaceAfterRequest(dr);
+	}
+	
+	public DrawContext pushParagraph(DrawParagraph dp) {
+		ParagraphLayout pl = dp.getParLayout();
+		DrawContext ctx;
+		if (pl.new_lines_first_parent)
+			ctx = pushState(0,0);
+		else
+			ctx = pushState(cur_attempt,max_attempt);
+		if (pl.enabled(dp)) {
+			int indent = gfx==null ? pl.indent_text_size : pl.indent_pixel_size;
+			if (pl.indent_from_current_position && last_term != null)
+				indent += last_term.x + last_term.w;
+			else
+				indent += this.indent;
+			ctx.indent = indent;
+			ctx.new_lines_first_parent = pl.new_lines_first_parent;
+		}
+		processSpaceBeforeRequest(dp);
+		return ctx;
+	}
+	public void popParagraph(DrawParagraph dp, boolean save) {
+		processSpaceAfterRequest(dp);
+		popState(save);
 	}
 	
 	public boolean addLeaf(DrawTerm leaf) {
@@ -132,7 +149,7 @@ public class DrawContext implements Cloneable {
 				max_space = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_space);
 		}
 		if (this.line_started)
-			this.x = getIndent();
+			this.x = indent;
 		else
 			this.x += max_space;
 
@@ -141,7 +158,7 @@ public class DrawContext implements Cloneable {
 				last_term.do_newline = max_nl;
 			if (!this.line_started) {
 				this.line_started = true;
-				this.x = getIndent();
+				this.x = indent;
 			}
 		}
 		space_infos.removeAllElements();
@@ -179,21 +196,6 @@ public class DrawContext implements Cloneable {
 			return;
 		foreach (LayoutSpace si; dr.attr_syntax.lout.spaces_after; si.from_attempt <= cur_attempt)
 			addSpaceInfo(si);
-	}
-	
-	private int getIndent() {
-		int indent = 0;
-		foreach (DrawParagraph dp; paragraphs; dp.getParLayout().enabled(dp)) {
-			ParagraphLayout pl = dp.getParLayout();
-			if (!pl.enabled(dp))
-				continue;
-			indent += gfx==null ? pl.indent_text_size : pl.indent_pixel_size;
-			if (!dp.is_multiline) {
-				indent += gfx==null ? pl.indent_first_line_text_size : pl.indent_first_line_pixel_size;
-				dp.is_multiline = true;
-			}
-		}
-		return indent;
 	}
 }
 

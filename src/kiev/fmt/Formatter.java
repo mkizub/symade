@@ -92,7 +92,7 @@ public class TextFormatter extends AbstractFormatter {
 		root.preFormat(ctx, root.syntax, node);
 		ctx = new DrawContext(this,null);
 		ctx.width = 1000;
-		root.postFormat(ctx, true);
+		root.postFormat(ctx);
 		
 		int lineno = 1;
 		int line_indent = 0;
@@ -156,7 +156,7 @@ public class GfxFormatter extends AbstractFormatter {
 		root.preFormat(ctx, root.syntax, node);
 		ctx = new DrawContext(this,gfx);
 		ctx.width = this.width;
-		root.postFormat(ctx, true);
+		root.postFormat(ctx);
 		
 		int lineno = 1;
 		int max_h = 10;

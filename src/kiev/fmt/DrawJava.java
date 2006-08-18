@@ -53,6 +53,7 @@ public class DrawJavaExpr extends DrawNonTerm {
 			args[1].preFormat(cont,st.elem,node);
 			args[2].preFormat(cont,st.r_paren,node);
 		}
+		calcMaxLayout();
 	}
 }
 
@@ -97,6 +98,7 @@ public class DrawJavaAccessExpr extends DrawNonTerm {
 					break;
 			}
 		}
+		calcMaxLayout();
 	}
 }
 
@@ -234,6 +236,7 @@ public class DrawJavaComment extends DrawNonTerm {
 			if (c.nl_after)
 				append(cont, st.newline, node);
 		}
+		calcMaxLayout();
 	}
 	private void append(DrawContext cont, SyntaxElem se, ANode node) {
 		Drawable dr = se.makeDrawable(cont.fmt, node);
