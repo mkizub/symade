@@ -112,6 +112,32 @@ public class DrawNodeTerm extends DrawTerm {
 }
 
 @node(copyable=false)
+public class DrawIdent extends DrawNodeTerm {
+
+	private boolean escaped;
+
+	public DrawIdent(ANode node, SyntaxIdentAttr syntax, String attr) {
+		super(node, syntax, attr);
+	}
+
+	String makeText(Formatter fmt) {
+		String text = super.makeText(fmt);
+		escaped = false;
+		if (text == null)
+			return null;
+		text = text.intern();
+		SyntaxIdentAttr si = (SyntaxIdentAttr)this.syntax;
+		if (si.isOk(text))
+			return text;
+		escaped = true;
+		return getPrefix()+text+getSuffix();
+	}
+	
+	public String getPrefix() { if (escaped) return ((SyntaxIdentAttr)this.syntax).getPrefix(); return ""; }
+	public String getSuffix() { if (escaped) return ((SyntaxIdentAttr)this.syntax).getSuffix(); return ""; }
+}
+
+@node(copyable=false)
 public class DrawCharTerm extends DrawNodeTerm {
 
 	public DrawCharTerm(ANode node, SyntaxElem syntax, String attr) {

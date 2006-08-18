@@ -18,6 +18,8 @@ import syntax kiev.Syntax;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 @node
 public class TextSyntax extends DNode implements ScopeOfNames, GlobalDNode {
@@ -925,17 +927,109 @@ public class SyntaxList extends SyntaxAttr {
 }
 
 @node
+public class SyntaxIdentTemplate extends AbstractSyntaxElemDecl {
+	@virtual typedef This  = SyntaxJavaExprTemplate;
+
+	@att public String				regexp_ok;
+	@att public String				esc_prefix;
+	@att public String				esc_suffix;
+	@att public ConstStringExpr[]	keywords;
+	
+	Pattern	pattern;
+
+	@setter
+	public void set$esc_prefix(String value) {
+		this.esc_prefix = (value != null) ? value.intern() : null;
+	}
+	@setter
+	public void set$esc_suffix(String value) {
+		this.esc_suffix = (value != null) ? value.intern() : null;
+	}
+
+	public SyntaxIdentTemplate() {
+		super(new SyntaxNode());
+	}
+
+	public void preResolveOut() {
+		if (regexp_ok == null)
+			regexp_ok = ".*";
+		try {
+			pattern = Pattern.compile(regexp_ok);
+		} catch (PatternSyntaxException e) {
+			pattern = null;
+			Kiev.reportError(this,"Syntax error in ident template pattern: "+regexp_ok);
+		}
+		foreach (ConstStringExpr cs; keywords; cs.value != null)
+			cs.value = cs.value.intern();
+	}
+}
+
+@node
 public class SyntaxIdentAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxIdentAttr;
 
-	public SyntaxIdentAttr() {}
+	@att public SymbolRef<SyntaxIdentTemplate>		decl;
+
+	public SyntaxIdentAttr() {
+		this.decl = new SymbolRef<SyntaxIdentTemplate>(0,"ident-template");
+	}
 	public SyntaxIdentAttr(String name, SpaceCmd[] spaces) {
 		super(name,spaces);
+		this.decl = new SymbolRef<SyntaxIdentTemplate>(0,"ident-template");
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawNodeTerm(node, this, name);
+		Drawable dr = new DrawIdent(node, this, name);
 		return dr;
+	}
+
+	public boolean isOk(String text) {
+		SyntaxIdentTemplate t = getTemplate();
+		if (t == null) return true;
+		if (t.pattern != null && !t.pattern.matcher(text).matches())
+			return false;
+		foreach (ConstStringExpr cs; t.keywords; cs.value == text)
+			return false;
+		return true;
+	}
+	
+	public SyntaxIdentTemplate getTemplate() {
+		return (SyntaxIdentTemplate)decl.dnode;
+	}
+	
+	public String getPrefix() {
+		SyntaxIdentTemplate t = getTemplate();
+		if (t == null || t.esc_prefix == null) return "";
+		return t.esc_prefix;
+	}	
+	public String getSuffix() {
+		SyntaxIdentTemplate t = getTemplate();
+		if (t == null || t.esc_suffix == null) return "";
+		return t.esc_suffix;
+	}	
+
+	public void preResolveOut() {
+		if (decl.name != null && decl.name != "") {
+			DNode@ d;
+			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,decl.name,ResInfo.noForwards)))
+				Kiev.reportWarning(decl,"Unresolved ident template "+decl);
+			else if !(d instanceof SyntaxIdentTemplate)
+				Kiev.reportWarning(decl,"Resolved "+decl+" is not an ident template");
+			else
+				decl.symbol = d.id;
+		}
+	}
+	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "decl") {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<SyntaxIdentTemplate> vect = new Vector<SyntaxIdentTemplate>();
+			SyntaxIdentTemplate@ d;
+			foreach (PassInfo.resolveNameR(this,d,info))
+				if (d instanceof SyntaxIdentTemplate && !vect.contains(d)) vect.append(d);
+			return vect.toArray();
+		}
+		return super.findForResolve(name,slot,by_equals);
 	}
 }
 

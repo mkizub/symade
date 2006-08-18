@@ -127,6 +127,7 @@ CLASS kiev.fmt.DrawElemFormat kiev/fmt/DrawElemFormat kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawEnumChoice kiev/fmt/DrawEnumChoice kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawFolded kiev/fmt/DrawFolded kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawFont kiev/fmt/DrawFont kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.DrawIdent kiev/fmt/DrawIdent kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawIntChoice kiev/fmt/DrawIntChoice kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawJavaAccess kiev/fmt/DrawJavaAccess kiev\fmt\DrawJava.java
 CLASS kiev.fmt.DrawJavaAccessExpr kiev/fmt/DrawJavaAccessExpr kiev\fmt\DrawJava.java
@@ -166,6 +167,7 @@ CLASS kiev.fmt.SyntaxElemRef kiev/fmt/SyntaxElemRef kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxEnumChoice kiev/fmt/SyntaxEnumChoice kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxFolder kiev/fmt/SyntaxFolder kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxIdentAttr kiev/fmt/SyntaxIdentAttr kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.SyntaxIdentTemplate kiev/fmt/SyntaxIdentTemplate kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxIntChoice kiev/fmt/SyntaxIntChoice kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxJavaAccess kiev/fmt/SyntaxJavaAccess kiev\fmt\JavaSyntax.java
 CLASS kiev.fmt.SyntaxJavaAccessExpr kiev/fmt/SyntaxJavaAccessExpr kiev\fmt\JavaSyntax.java

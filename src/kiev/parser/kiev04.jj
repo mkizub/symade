@@ -931,16 +931,15 @@ ASTModifiers Modifiers() :
 }
 
 TypeNameRef Package() :
-{ SymbolRef qn; TypeNameRef tr = new TypeNameRef(); }
+{ SymbolRef qn; }
 {
-	{ comments_before(tr); }
 	"package"
 	qn = QName()
 	";"
 	{
-		tr.ident = qn;
-		tr.pos = qn.pos;
 		Struct pkg = Env.newPackage(qn.name);
+		TypeNameRef tr = new TypeNameRef(qn.name);
+		tr.pos = qn.pos;
 		tr.lnk = pkg.xtype;
 		return tr;
 	}
@@ -1804,9 +1803,14 @@ ENode MaybeSkipBlock() :
 	{ return bl; }
 }
 
-void MethodParams(Method m) :
-{ ASTModifiers modifiers; }
+Method MethodDeclaration(ASTModifiers modifiers) :
+{ Token t; Method m, oldMethod; TypeRef ret; Symbol id; MetaThrows thr; TypeConstr[] args; }
 {
+	args = ClazzArguments()
+	ret = Type()
+	id = Name()
+	{ m = mkMethod(id,modifiers,ret); m.targs.addAll(args); oldMethod = curMethod; curMethod = m; }
+	try {
 	"("
 		(
 			LOOKAHEAD( Modifiers() [Type()] "...")
@@ -1829,17 +1833,6 @@ void MethodParams(Method m) :
 			)*
 		)?
 	")"
-}
-
-Method MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; Method m, oldMethod; TypeRef ret; Symbol id; MetaThrows thr; TypeConstr[] args; }
-{
-	args = ClazzArguments()
-	ret = Type()
-	id = Name()
-	{ m = mkMethod(id,modifiers,ret); m.targs.addAll(args); oldMethod = curMethod; curMethod = m; }
-	try {
-	MethodParams(m)
 	(	t=<OPERATOR_LRBRACKETS> { m.type_ret = new TypeExpr(m.type_ret,t); } )*
 	(
 		m.aliases += Alias()
@@ -1853,15 +1846,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 		LOOKAHEAD("{")
 		{ presc = m; }
 		m.body = MaybeSkipBlock() [ ";" ]
-	|
-		(
-			"default"
-			m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id))
-		|	"case"
-			MethodParams(m)
-			
-		)?
-		";"
+	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id)) ] ";"
 	)
 	} finally { curMethod = oldMethod; }
 	{ return m; }

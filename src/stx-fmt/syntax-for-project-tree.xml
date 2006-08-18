@@ -48,6 +48,30 @@
   </a-node>
   <a-node class='kiev.fmt.TreeSyntax'>
    <members>
+    <a-node class='kiev.fmt.SyntaxIdentTemplate'>
+     <regexp_ok>.*</regexp_ok>
+     <esc_prefix></esc_prefix>
+     <esc_suffix></esc_suffix>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxNode'>
+       <name></name>
+       <fmt>
+        <a-node class='kiev.fmt.SimpleElemFormat'>
+         <is_hidden>false</is_hidden>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>ident-template</sname>
+      </a-node>
+     </id>
+    </a-node>
     <a-node class='kiev.fmt.SyntaxJavaExprTemplate'>
      <l_paren>
       <a-node class='kiev.fmt.SyntaxToken'>
@@ -166,6 +190,11 @@
            </fmt>
           </a-node>
           <a-node class='kiev.fmt.SyntaxIdentAttr'>
+           <decl>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>ident-template</name>
+            </a-node>
+           </decl>
            <name>id</name>
            <fmt>
             <a-node class='kiev.fmt.SimpleElemFormat'>
@@ -236,6 +265,11 @@
            </fmt>
           </a-node>
           <a-node class='kiev.fmt.SyntaxIdentAttr'>
+           <decl>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>ident-template</name>
+            </a-node>
+           </decl>
            <name>id</name>
            <fmt>
             <a-node class='kiev.fmt.SimpleElemFormat'>
@@ -309,6 +343,11 @@
          </fmt>
         </a-node>
         <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>ident-template</name>
+          </a-node>
+         </decl>
          <name>id</name>
          <fmt>
           <a-node class='kiev.fmt.SimpleElemFormat'>
@@ -369,6 +408,11 @@
          </fmt>
         </a-node>
         <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>ident-template</name>
+          </a-node>
+         </decl>
          <name>id</name>
          <fmt>
           <a-node class='kiev.fmt.SimpleElemFormat'>
@@ -467,6 +511,11 @@
          </fmt>
         </a-node>
         <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>ident-template</name>
+          </a-node>
+         </decl>
          <name>id</name>
          <fmt>
           <a-node class='kiev.fmt.SimpleElemFormat'>
@@ -573,6 +622,11 @@
          </fmt>
         </a-node>
         <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>ident-template</name>
+          </a-node>
+         </decl>
          <name>id</name>
          <fmt>
           <a-node class='kiev.fmt.SimpleElemFormat'>
@@ -671,6 +725,11 @@
          </fmt>
         </a-node>
         <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>ident-template</name>
+          </a-node>
+         </decl>
          <name>id</name>
          <fmt>
           <a-node class='kiev.fmt.SimpleElemFormat'>
@@ -705,6 +764,11 @@
      </node>
      <elem>
       <a-node class='kiev.fmt.SyntaxIdentAttr'>
+       <decl>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>ident-template</name>
+        </a-node>
+       </decl>
        <name>ident</name>
        <fmt>
         <a-node class='kiev.fmt.SimpleElemFormat'>
@@ -731,6 +795,11 @@
      </node>
      <elem>
       <a-node class='kiev.fmt.SyntaxIdentAttr'>
+       <decl>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>ident-template</name>
+        </a-node>
+       </decl>
        <name>ident</name>
        <fmt>
         <a-node class='kiev.fmt.SimpleElemFormat'>
@@ -839,7 +908,7 @@
  </meta>
  <id>
   <a-node class='kiev.vlang.Symbol'>
-   <sname>java-tree.xml</sname>
+   <sname>stx-fmt\syntax-for-project-tree.xml</sname>
   </a-node>
  </id>
 </a-node>
