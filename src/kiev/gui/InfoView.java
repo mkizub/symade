@@ -65,7 +65,7 @@ public class InfoView extends UIView implements KeyListener {
 	}
 	
 	public void formatAndPaint(boolean full) {
-		this.formatter.setWidth(view_canvas.getWidth());
+		this.formatter.setWidth(view_canvas.imgWidth);
 		view_canvas.root = null;
 		if (the_root != null && full)
 			view_canvas.root = view_root = formatter.format(the_root, view_root);
@@ -186,35 +186,19 @@ class NavigateView implements KeyHandler {
 
 	private void navigateUp() {
 		Canvas view_canvas = uiv.view_canvas;
-		if (view_canvas.first_line > 0) {
-			--view_canvas.first_line;
-			view_canvas.repaint();
-		}
+		view_canvas.incrFirstLine(-1);
 	}
 	private void navigateDn() {
 		Canvas view_canvas = uiv.view_canvas;
-		if (view_canvas.first_line < view_canvas.num_lines) {
-			++view_canvas.first_line;
-			view_canvas.repaint();
-		}
+		view_canvas.incrFirstLine(+1);
 	}
 	private void navigatePageUp() {
 		Canvas view_canvas = uiv.view_canvas;
-		if (view_canvas.first_line > 0) {
-			view_canvas.first_line -= view_canvas.last_visible.lineno - view_canvas.first_visible.lineno - 1;
-			if (view_canvas.first_line < 0)
-				view_canvas.first_line = 0;
-			view_canvas.repaint();
-		}
+		view_canvas.incrFirstLine(-view_canvas.last_visible.lineno + view_canvas.first_visible.lineno + 1);
 	}
 	private void navigatePageDn() {
 		Canvas view_canvas = uiv.view_canvas;
-		if (view_canvas.first_line < view_canvas.num_lines) {
-			view_canvas.first_line += view_canvas.last_visible.lineno - view_canvas.first_visible.lineno -1;
-			if (view_canvas.first_line >= view_canvas.num_lines)
-				view_canvas.first_line = view_canvas.num_lines-1;
-			view_canvas.repaint();
-		}
+		view_canvas.incrFirstLine(view_canvas.last_visible.lineno - view_canvas.first_visible.lineno - 1);
 	}
 }
 

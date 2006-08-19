@@ -13,6 +13,8 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 
+import java.awt.event.AdjustmentListener;
+import java.awt.event.AdjustmentEvent;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -22,15 +24,20 @@ import java.awt.font.TextLayout;
 import java.awt.image.VolatileImage;
 
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 
 /**
  * @author mkizub
  */
-public class Canvas extends JPanel implements DrawDevice {
+public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 
 	static final Color defaultTextColor = Color.BLACK;
 	static final Color autoGenTextColor = Color.GRAY;
 	static final Font defaultTextFont = new Font("Dialog", Font.PLAIN, 12);
+	
+	JScrollBar	verticalScrollBar;
+	int			imgWidth;
+	int			imgHeight;
 	
 	Drawable	root;
 	DrawTerm	current;
@@ -52,7 +59,39 @@ public class Canvas extends JPanel implements DrawDevice {
 	
 	Canvas() {
 		super(null,false);
-		setFocusable(true);
+		this.setFocusable(true);
+		this.verticalScrollBar = new JScrollBar(JScrollBar.VERTICAL);
+		this.verticalScrollBar.addAdjustmentListener(this);
+		this.add(this.verticalScrollBar);
+		this.imgWidth = 100;
+		this.imgHeight = 100;
+	}
+	
+	public void setBounds(int x, int y, int width, int height) {
+		int pw = verticalScrollBar.getPreferredSize().width;
+		imgWidth = width - pw;
+		imgHeight = height;
+		verticalScrollBar.setBounds(imgWidth,0,pw,height);
+		super.setBounds(x, y, width, height);
+	}
+	
+	public void setFirstLine(int val) {
+		verticalScrollBar.setValue(val);
+	}
+	
+	public void incrFirstLine(int val) {
+		verticalScrollBar.setValue(first_line+val);
+	}
+	
+	public void adjustmentValueChanged(AdjustmentEvent e) {
+		if (e.getAdjustable() == verticalScrollBar) {
+			first_line = e.getValue();
+			if (first_line >= num_lines)
+				first_line = num_lines-1;
+			if (first_line < 0)
+				first_line = 0;
+			this.repaint();
+		}
 	}
 	
 	public void draw(Drawable root) {
@@ -64,20 +103,16 @@ public class Canvas extends JPanel implements DrawDevice {
 		return super.createVolatileImage(w, h);
 	}
 	
-	public void update(Graphics gScreen) {
-		paint(gScreen);
-	}
-	
-	public void paint(Graphics gScreen) {
+	public void paintComponent(Graphics gScreen) {
 		// copying from the image (here, gScreen is the Graphics
 		// object for the onscreen window)
 		do {
-			if (vImg == null || vImg.getWidth() != getWidth() || vImg.getHeight() != getHeight())
-				vImg = createVolatileImage(getWidth(), getHeight());
+			if (vImg == null || vImg.getWidth() != imgWidth || vImg.getHeight() != imgHeight)
+				vImg = createVolatileImage(imgWidth, imgHeight);
 			int returnCode = vImg.validate(getGraphicsConfiguration());
 			if (returnCode == VolatileImage.IMAGE_INCOMPATIBLE) {
 				// old vImg doesn't work with new GraphicsConfig; re-create it
-				vImg = createVolatileImage(getWidth(), getHeight());
+				vImg = createVolatileImage(imgWidth, imgHeight);
 			}
 			renderOffscreen();
 			gScreen.drawImage(vImg, 0, 0, this);
@@ -105,7 +140,11 @@ public class Canvas extends JPanel implements DrawDevice {
 				selected = false;
 				//is_editable = true;
 				paint(g, root);
-				num_lines = lineno-1;
+				num_lines = lineno;
+				if (verticalScrollBar.getMaximum() != num_lines) {
+					verticalScrollBar.setMaximum(num_lines);
+					verticalScrollBar.setVisibleAmount(last_visible.lineno-first_visible.lineno);
+				}
 			}
 		    g.dispose();
 		} while (vImg.contentsLost());

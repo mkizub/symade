@@ -12,7 +12,9 @@ import kiev.fmt.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import java.awt.Dimension;
 import java.awt.BorderLayout;
+import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -58,7 +60,8 @@ public class Window extends JFrame {
 		infos.addTab("Info", info_canvas);
 		infos.addTab("Clipboard", clip_canvas);
 		this.getContentPane().add(split_left, BorderLayout.CENTER);
-		this.setSize(950, 650);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		this.setSize(screenSize.width, (screenSize.height*3)/4);
 		this.show();
 		editor_views = new Editor[0];
 		info_view   = new InfoView(this, (TextSyntax)Env.resolveGlobalDNode("stx-fmt.syntax-for-java"), info_canvas);
