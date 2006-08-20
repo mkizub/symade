@@ -110,6 +110,8 @@ public final view JCallExpr of CallExpr extends JENode {
 			foreach (TypeDef td; ((Method)func).targs) {
 				Type tp = mt.resolve(td.getAType());
 				tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
+				if (!((ENode)tmp_expr).isResolved())
+					((ENode)tmp_expr).resolve(null);
 				tmp_expr.generate(code,null);
 				tmp_expr = null;
 			}
@@ -191,10 +193,13 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 			assert(jmm.u_name == nameInit);
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?
-			if (jmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null)
+			if (jmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO) != null) {
 				tmp_expr = (JENode)new LVarExpr(pos,(Var)jmm.getTypeInfoParam(FormPar.PARAM_TYPEINFO));
-			else
+			} else {
 				tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
+				if (!((ENode)tmp_expr).isResolved())
+					((ENode)tmp_expr).resolve(null);
+			}
 			tmp_expr.generate(code,null);
 			tmp_expr = null;
 		}
@@ -225,6 +230,8 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 			foreach (TypeDef td; ((Method)func).targs) {
 				Type tp = mt.resolve(td.getAType());
 				tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
+				if (!((ENode)tmp_expr).isResolved())
+					((ENode)tmp_expr).resolve(null);
 				tmp_expr.generate(code,null);
 				tmp_expr = null;
 			}

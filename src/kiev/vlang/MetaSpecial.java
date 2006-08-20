@@ -338,11 +338,15 @@ public final class MetaAccess extends MetaFlag {
 		int flags = getFlags((DNode)n);
 
 		// Quick check for public access
-		if( ((flags>>>6) & acc) == acc ) return;
+		if( ((flags>>>6) & acc) == acc ) {
+			checkFinalWrite(from,n,acc);
+			return;
+		}
 
 		// Check for private access
 		if( getStructOf(from) == getStructOf(n) ) {
 			if( (flags & acc) != acc ) throwAccessError(from,n,acc,"private");
+			checkFinalWrite(from,n,acc);
 			return;
 		}
 
@@ -357,6 +361,7 @@ public final class MetaAccess extends MetaFlag {
 			if (outer1 == outer2) {
 				if( (flags & acc) == acc ) {
 					n.setAccessedFromInner(true);
+					checkFinalWrite(from,n,acc);
 					return;
 				}
 				throwAccessError(from,n,acc,"private");
@@ -366,17 +371,39 @@ public final class MetaAccess extends MetaFlag {
 		// Check for default access
 		if( getPackageOf(from) == getPackageOf(n) ) {
 			if( ((flags>>>2) & acc) != acc ) throwAccessError(from,n,acc,"default");
+			checkFinalWrite(from,n,acc);
 			return;
 		}
 
 		// Check for protected access
 		if( getStructOf(from).instanceOf(getStructOf(n)) ) {
 			if( ((flags>>>4) & acc) != acc ) throwAccessError(from,n,acc,"protected");
+			checkFinalWrite(from,n,acc);
 			return;
 		}
 
 		// Public was already checked, just throw an error
 		throwAccessError(from,n,acc,"public");
+	}
+
+	private static void checkFinalWrite(ASTNode from, ASTNode n, int acc) {
+		if ((acc & 1) == 0)
+			return; // read access
+		if (n instanceof DNode && !n.isFinal())
+			return; // not final
+		if (n instanceof Var) {
+			// final var, may be initialized only by initializer
+			throwFinalWriteError(from,n);
+		}
+		if (n instanceof Field) {
+			// final var, may be initialized only in constructor
+			Method m = from.ctx_method;
+			if (m instanceof Constructor && m.ctx_tdecl == n.ctx_tdecl)
+				return;
+			if (m == null && from.ctx_tdecl == n.ctx_tdecl)
+				return;
+			throwFinalWriteError(from,n);
+		}
 	}
 
 	private static void throwAccessError(ASTNode from, ASTNode n, int acc, String astr) {
@@ -390,8 +417,23 @@ public final class MetaAccess extends MetaFlag {
 		else if( n instanceof Method ) sb.append("method ");
 		else if( n instanceof Struct ) sb.append("class ");
 		if( n instanceof Struct ) sb.append(n);
-		else sb.append(n.parent()).append('.').append(n);
+		else sb.append(n.ctx_tdecl).append('.').append(n);
 		sb.append("\n\tfrom class ").append(getStructOf(from));
+		Kiev.reportError(from,new RuntimeException(sb.toString()));
+	}
+
+	private static void throwFinalWriteError(ASTNode from, ASTNode n) {
+		StringBuffer sb = new StringBuffer();
+		sb.append("Write for final value is denied to ");
+		if (n instanceof Field)
+			sb.append("field ").append(n.ctx_tdecl).append('.').append(n);
+		else if (n instanceof Var)
+			sb.append("var ").append(n);
+		else
+			sb.append(n);
+		Method m = from.ctx_method;
+		if (m != null)
+			sb.append("\n\tin method ").append(m.ctx_tdecl).append('.').append(m);
 		Kiev.reportError(from,new RuntimeException(sb.toString()));
 	}
 }

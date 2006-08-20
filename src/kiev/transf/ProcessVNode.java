@@ -458,7 +458,10 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 				new SymbolRef<Method>("copyTo"), null, new ENode[]{new NewExpr(0,s.xtype,ENode.emptyArray)})));
 		}
 		// copyTo(Object)
-		if (hasMethod(s, "copyTo")) {
+		if (s.meta.getU(mnNode) != null && !s.meta.getU(mnNode).getZ(nameCopyable)) {
+			// node is not copyable
+		}
+		else if (hasMethod(s, "copyTo")) {
 			Kiev.reportWarning(s,"Method "+s+"."+"copyTo"+sigCopyTo+" already exists, @node member is not generated");
 		} else {
 			Method copyV = new Method("copyTo",Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
@@ -518,14 +521,29 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 						);
 					}
 				} else {
-					copyV.block.stats.append( 
-						new ExprStat(0,
-							new AssignExpr(0,Operator.Assign,
-								new IFldExpr(0,new LVarExpr(0,v),f),
-								new IFldExpr(0,new ThisExpr(),f)
+					if (f.isFinal()) {
+						if (isNode) {
+							copyV.block.stats.append( 
+								new ExprStat(0,
+									new CallExpr(0,
+										new IFldExpr(0,new ThisExpr(),f),
+										new SymbolRef<Method>("copyTo"),
+										null,
+										new ENode[]{new IFldExpr(0,new LVarExpr(0,v),f)}
+									)
+								)
+							);
+						}
+					} else {
+						copyV.block.stats.append( 
+							new ExprStat(0,
+								new AssignExpr(0,Operator.Assign,
+									new IFldExpr(0,new LVarExpr(0,v),f),
+									new IFldExpr(0,new ThisExpr(),f)
+								)
 							)
-						)
-					);
+						);
+					}
 				}
 			}
 			copyV.block.stats.append(new ReturnStat(0,new LVarExpr(0,v)));
@@ -542,7 +560,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			v.init = new CastExpr(0,s.xtype,new ASTIdentifier(0,"from$node"));
 			setF.block.addSymbol(v);
 			foreach (Field f; s.getAllFields()) {
-				if (f.isPackedField() || f.isAbstract() || f.isStatic())
+				if (f.isPackedField() || f.isAbstract() || f.isStatic() || f.isFinal())
 					continue;
 				setF.block.stats.append( 
 					new ExprStat(0,
