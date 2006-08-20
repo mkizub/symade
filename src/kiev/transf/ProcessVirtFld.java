@@ -80,6 +80,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
 		} else {
 			s.addField(f=new Field(name,m.type.arg(0),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
+			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
 			if (acc == null) f.meta.setF(acc = new MetaAccess());
 			acc.setFlags(0);
@@ -130,6 +131,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			if (acc.flags == -1) acc.setFlags(MetaAccess.getFlags(f));
 		} else {
 			s.addField(f=new Field(name,m.type.ret(),m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT | ACC_SYNTHETIC));
+			if (f.isFinal()) f.setFinal(false);
 			acc = f.getMetaAccess();
 			if (acc == null) f.meta.setF(acc = new MetaAccess());
 			acc.setFlags(0);
@@ -233,7 +235,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				if( set_found ) break;
 			}
 		}
-		if( !set_found && MetaAccess.writeable(f) ) {
+		if( !set_found && !f.isFinal() && MetaAccess.writeable(f) ) {
 			Method set_var = new Method(set_name,Type.tpVoid,f.getJavaFlags() | ACC_SYNTHETIC);
 			if (s.isInterface())
 				set_var.setFinal(false);
@@ -267,7 +269,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			}
 			Field.SETTER_ATTR.set(f, set_var);
 		}
-		else if( set_found && !MetaAccess.writeable(f) ) {
+		else if( set_found && (f.isFinal() || !MetaAccess.writeable(f)) ) {
 			Kiev.reportError(f,"Virtual set$ method for non-writeable field "+f);
 		}
 
@@ -369,12 +371,12 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			Method getter = (Method)Field.GETTER_ATTR.get(f);
 			Method setter = (Method)Field.SETTER_ATTR.get(f);
 			if (setter == null) {
-				Kiev.reportError(fa, "Setter method for virtual field "+f+" not found");
+				Kiev.reportWarning(fa, "Setter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}
 			if (getter == null && (!ae.isGenVoidExpr() || !(ae.op == Operator.Assign || ae.op == Operator.Assign2))) {
-				Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
+				Kiev.reportWarning(fa, "Getter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}

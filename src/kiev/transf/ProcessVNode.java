@@ -498,6 +498,20 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 							null,
 							new ENode[]{new IFldExpr(0,new ThisExpr(),f)});
 						copyV.block.stats.append(new ExprStat(0,cae));
+					}
+					else if (f.isFinal()) {
+						if (isNode) {
+							copyV.block.stats.append( 
+								new ExprStat(0,
+									new CallExpr(0,
+										new IFldExpr(0,new ThisExpr(),f),
+										new SymbolRef<Method>("copyTo"),
+										null,
+										new ENode[]{new IFldExpr(0,new LVarExpr(0,v),f)}
+									)
+								)
+							);
+						}
 					} else {
 						CallExpr cae = new CallExpr(0,
 							new IFldExpr(0, new ThisExpr(),f),
@@ -521,20 +535,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 						);
 					}
 				} else {
-					if (f.isFinal()) {
-						if (isNode) {
-							copyV.block.stats.append( 
-								new ExprStat(0,
-									new CallExpr(0,
-										new IFldExpr(0,new ThisExpr(),f),
-										new SymbolRef<Method>("copyTo"),
-										null,
-										new ENode[]{new IFldExpr(0,new LVarExpr(0,v),f)}
-									)
-								)
-							);
-						}
-					} else {
+					if (!f.isFinal()) {
 						copyV.block.stats.append( 
 							new ExprStat(0,
 								new AssignExpr(0,Operator.Assign,
@@ -713,13 +714,56 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			this.doProcess(dn);
 	}
 	
+	final boolean isNodeImpl(Struct s) {
+		return s.meta.getU(VNode_Base.mnNode) != null || s.meta.getU(VNode_Base.mnNodeImpl) != null;
+	}
+
 	public void doProcess(Struct:ASTNode s) {
-		foreach(Field f; s.getAllFields(); !f.isStatic() && f.isVirtual() && f.meta.getU(VNode_Base.mnAtt) != null)
-			fixSetterMethod(s, f);
+		if (isNodeImpl(s)) {
+			foreach(Field f; s.getAllFields(); !f.isStatic() && f.isVirtual() && f.meta.getU(VNode_Base.mnAtt) != null)
+				fixSetterMethod(s, f);
+			foreach(Constructor ctor; s.members; !ctor.isStatic())
+				fixFinalFieldsInit(s, ctor);
+		}
 		foreach(Struct sub; s.sub_decls)
 			doProcess(sub);
 	}
 	
+	private void fixFinalFieldsInit(Struct s, Constructor ctor) {
+		for (int i=0; i < ctor.block.stats.length; i++) {
+			ANode stat = ctor.block.stats[i];
+			if (stat instanceof ExprStat) stat = stat.expr;
+			if (stat instanceof AssignExpr && stat.lval instanceof IFldExpr) {
+				IFldExpr fe = ((AssignExpr)stat).lval;
+				if (fe.obj instanceof ThisExpr && fe.var.isFinal() && fe.var.meta.getU(VNode_Base.mnAtt) != null) {
+					Field f = fe.var;
+					fe.setAsField(true);
+					Field fatt = f.ctx_tdecl.resolveField(("nodeattr$"+f.id.sname).intern());
+					ENode p_st = new IfElseStat(0,
+							new BinaryBoolExpr(0, Operator.NotEquals,
+								new IFldExpr(0, new ThisExpr(), f),
+								new ConstNullExpr()
+							),
+							new ExprStat(0,
+								new CallExpr(0,
+									new IFldExpr(0, new ThisExpr(), f),
+									new SymbolRef<Method>("callbackAttached"),
+									null,
+									new ENode[] {
+										new ThisExpr(),
+										new SFldExpr(fe.pos, fatt)
+									}
+								)
+							),
+							null
+						);
+					ctor.block.stats.insert(i+1, p_st);
+					Kiev.runProcessorsOn(p_st);
+				}
+			}
+		}
+	}
+
 	private void fixSetterMethod(Struct s, Field f) {
 		assert(f.meta.getU(VNode_Base.mnAtt) != null);
 

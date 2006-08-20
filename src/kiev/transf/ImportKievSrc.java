@@ -523,7 +523,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				DeclGroup dg = (DeclGroup)members[i];
 				dg.meta.verify();
 				if( me.isStructView() && !dg.isStatic()) {
-					dg.setFinal(true);
+					//dg.setFinal(true);
 					dg.setAbstract(true);
 					dg.setVirtual(true);
 				}
@@ -556,7 +556,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				if( me.isPackage() )
 					f.setStatic(true);
 				if( me.isStructView() && !f.isStatic()) {
-					f.setFinal(true);
+					//f.setFinal(true);
 					f.setAbstract(true);
 					f.setVirtual(true);
 				}
