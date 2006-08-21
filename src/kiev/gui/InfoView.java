@@ -18,22 +18,28 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.Graphics2D;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import javax.swing.text.TextAction;
+
 import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JScrollBar;
+
+import javax.swing.text.TextAction;
 import javax.swing.filechooser.FileFilter;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 
 /**
  * @author Maxim Kizub
  */
 @node(copyable=false)
-public class InfoView extends UIView implements KeyListener {
+public class InfoView extends UIView implements KeyListener, MouseWheelListener {
 
 	/** The canvas to show definition of current node */
 	protected Canvas		view_canvas;
@@ -57,6 +63,7 @@ public class InfoView extends UIView implements KeyListener {
 		view_canvas.addMouseListener(this);
 		view_canvas.addComponentListener(this);
 		view_canvas.addKeyListener(this);
+		view_canvas.addMouseWheelListener(this);
 	}
 
 	public void setRoot(ANode root) {
@@ -75,6 +82,75 @@ public class InfoView extends UIView implements KeyListener {
 	public void mouseClicked(MouseEvent e) {
 		view_canvas.requestFocus();
 	}
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		if (e.getScrollAmount() != 0) {
+			JScrollBar toScroll = view_canvas.verticalScrollBar;
+			int direction = 0;
+			// find which scrollbar to scroll, or return if none
+			if (toScroll == null || !toScroll.isVisible()) { 
+				//toScroll = scrollpane.getHorizontalScrollBar();
+				//if (toScroll == null || !toScroll.isVisible()) { 
+				//	return;
+				//}
+				return;
+			}
+			direction = e.getWheelRotation() < 0 ? -1 : 1;
+			if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL)
+				scrollByUnits(toScroll, direction, e.getScrollAmount());
+			else if (e.getScrollType() == MouseWheelEvent.WHEEL_BLOCK_SCROLL)
+				scrollByBlock(toScroll, direction);
+		}
+	}
+    static void scrollByBlock(JScrollBar scrollbar, int direction) {
+        // This method is called from BasicScrollPaneUI to implement wheel
+        // scrolling, and also from scrollByBlock().
+	    int oldValue = scrollbar.getValue();
+	    int blockIncrement = scrollbar.getBlockIncrement(direction);
+	    int delta = blockIncrement * ((direction > 0) ? +1 : -1);
+	    int newValue = oldValue + delta;
+	    
+	    // Check for overflow.
+	    if (delta > 0 && newValue < oldValue) {
+		newValue = scrollbar.getMaximum();
+	    }
+	    else if (delta < 0 && newValue > oldValue) {
+		newValue = scrollbar.getMinimum();
+	    }
+
+	    scrollbar.setValue(newValue);			
+    }
+    static void scrollByUnits(JScrollBar scrollbar, int direction,
+                                   int units) {
+        // This method is called from BasicScrollPaneUI to implement wheel
+        // scrolling, as well as from scrollByUnit().
+        int delta;
+
+	for (int i=0; i<units; i++) {
+	    if (direction > 0) {
+		delta = scrollbar.getUnitIncrement(direction);
+	    }
+	    else {
+		delta = -scrollbar.getUnitIncrement(direction);
+	    }
+
+	    int oldValue = scrollbar.getValue();
+	    int newValue = oldValue + delta;
+	    
+	    // Check for overflow.
+	    if (delta > 0 && newValue < oldValue) {
+		newValue = scrollbar.getMaximum();
+	    }
+	    else if (delta < 0 && newValue > oldValue) {
+		newValue = scrollbar.getMinimum();
+	    }
+	    if (oldValue == newValue) {
+		break;
+	    }
+	    scrollbar.setValue(newValue);
+	}
+    }
+	
+	
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
 	

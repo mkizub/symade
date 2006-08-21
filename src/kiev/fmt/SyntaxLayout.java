@@ -959,8 +959,13 @@ public class SyntaxIdentTemplate extends AbstractSyntaxElemDecl {
 			pattern = null;
 			Kiev.reportError(this,"Syntax error in ident template pattern: "+regexp_ok);
 		}
-		foreach (ConstStringExpr cs; keywords; cs.value != null)
-			cs.value = cs.value.intern();
+		foreach (ConstStringExpr cs; keywords; cs.value != null) {
+			String interned = cs.value.intern();
+			if (interned != cs.value) {
+				cs.open();
+				cs.value = interned;
+			}
+		}
 	}
 }
 

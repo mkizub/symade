@@ -103,6 +103,8 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		return super.createVolatileImage(w, h);
 	}
 	
+	public void update(Graphics gScreen) { paint(gScreen); }
+
 	public void paintComponent(Graphics gScreen) {
 		// copying from the image (here, gScreen is the Graphics
 		// object for the onscreen window)

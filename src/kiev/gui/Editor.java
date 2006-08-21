@@ -21,6 +21,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.Graphics;
 
 import java.awt.datatransfer.*;
 
@@ -29,6 +30,7 @@ import javax.swing.ComboBoxEditor;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.text.TextAction;
@@ -1094,6 +1096,7 @@ final class SymRefEditor extends TextEditor implements ComboBoxEditor {
 			return;
 		if (combo == null) {
 			combo = new JComboBox();
+			combo.setOpaque(false);
 			combo.setEditable(true);
 			combo.setEditor(this);
 			combo.configureEditor(this, name);
