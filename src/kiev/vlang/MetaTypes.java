@@ -1,0 +1,121 @@
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.vlang;
+
+import kiev.Kiev;
+import kiev.stdlib.*;
+import kiev.vlang.*;
+import kiev.vlang.types.*;
+import kiev.parser.*;
+
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
+/**
+ * @author Maxim Kizub
+ *
+ */
+
+public metatype NodeSpace<N extends ANode> extends N[] {
+	
+	@macro
+	public N getVers(int idx) alias xfy operator []
+	{
+		case CallExpr# self():
+			ANode.getVersion( this, idx )
+		case ContainerAccessExpr# self():
+			ANode.getVersion( self.obj, self.index )
+	}
+
+	@macro
+	private static ENode# getAttr(Field# f) {
+		case CallExpr# self():
+			(f.parent).#id"nodeattr$'f'"#	//new #SFldExpr(obj=f.parent, ident="nodeattr$'f'")
+	}
+	
+	@macro
+	public N[] delToArray()
+	{
+		case CallExpr# self(IFldExpr# obj):
+			getAttr(self.obj.var).delToArray(self.obj.obj)
+	}
+
+	@macro
+	public void delAll()
+	{
+		case CallExpr# self(IFldExpr# obj):
+			getAttr(self.obj.var).delAll(self.obj.obj)
+	}
+
+	@macro
+	public void addAll(N[] arr)
+	{
+		case CallExpr# self(IFldExpr# obj):
+			getAttr(self.obj.var).addAll(self.obj.obj, arr)
+	}
+
+	@macro
+	public void copyFrom(N[] arr)
+	{
+		case CallExpr# self(IFldExpr# obj):
+			getAttr(self.obj.var).copyFrom(self.obj.obj, arr)
+	}
+
+	@macro
+	public int indexOf(N node)
+	{
+		case CallExpr# self(IFldExpr# obj):
+			getAttr(self.obj.var).indexOf(self.obj.obj, node)
+	}
+
+	@macro
+	public <R extends N> R set(int idx, R node)
+		alias lfy operator []
+	{
+		case CallExpr# self(IFldExpr# obj):
+			getAttr(self.obj.var).set(self.obj.obj, idx, node)
+	}
+
+	@macro
+	public N add(N node)
+		alias append
+		alias lfy operator +=
+	{
+		case CallExpr# self(IFldExpr# obj):
+			getAttr(self.obj.var).add(self.obj.obj, node)
+		case AssignExpr# self(IFldExpr# lval):
+			getAttr(self.lval.var).add(self.lval.obj, self.value)
+	}
+
+	@macro
+	public void del(int idx)
+	{
+		case CallExpr# self(IFldExpr# obj):
+			getAttr(self.obj.var).del(self.obj.obj, idx)
+	}
+
+	@macro
+	public void detach(N node)
+	{
+		case CallExpr# self(IFldExpr# obj):
+			getAttr(self.obj.var).detach(self.obj.obj, node)
+	}
+
+	@macro
+	public void insert(int idx, N node)
+	{
+		case CallExpr# self(IFldExpr# obj):
+			getAttr(self.obj.var).insert(self.obj.obj, idx, node)
+	}
+
+}
+
+

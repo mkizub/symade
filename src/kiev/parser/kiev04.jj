@@ -1,0 +1,3455 @@
+options {
+//  DEBUG_PARSER = true;
+//  DEBUG_LOOKAHEAD = true;
+//  DEBUG_TOKEN_MANAGER = true;
+//  BUILD_PARSER = false;
+//  JAVA_UNICODE_ESCAPE = true;
+//  UNICODE_INPUT = true;
+//  USER_CHAR_STREAM = true;
+  STATIC = false;
+  ERROR_REPORTING = false;
+  CACHE_TOKENS = true;
+}
+
+PARSER_BEGIN(kiev040)
+/*******************************************************************************
+ * Copyright (c) 2005-2007 UAB "MAKSINETA".
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Common Public License Version 1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/cpl-v10.html
+ *
+ * Contributors:
+ *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+ *******************************************************************************/
+package kiev.parser;
+
+import kiev.Kiev;
+import kiev.KievExt;
+import kiev.vlang.*;
+import kiev.vlang.types.*;
+import java.io.Reader;
+
+/*{
+
+import static kiev.vlang.AccessFlags.*;
+import syntax kiev.Syntax;
+
+}*/ 
+
+public final class Parser extends kiev040 {
+	public Parser(Reader r) {
+		super(r,1,1);
+	}
+}
+
+public interface ParserConstants extends kiev040Constants {
+}
+
+public abstract class kiev040 {
+
+	public FileUnit			curFileUnit;
+	public TypeDecl			curClazz;
+	public Method			curMethod;
+	public boolean			interface_only = false;
+	public boolean			reparse_body = false;
+	public int				reparse_pos = 0;
+	public PreScanneable	presc = null;
+
+	public boolean			declMode = true;
+
+	public kiev040(java.io.Reader stream, int line, int pos) {
+		jj_input_stream = new SimpleCharStream(stream, line, pos);
+		token_source = new kiev040TokenManager(jj_input_stream, this);
+		token = new Token();
+		token.next = jj_nt = token_source.getNextToken();
+	}
+
+	/** Report Parser Error (Exception) */
+	private void rpe(String msg, ParseError e) {
+		int pos;
+		if( token==null ) pos = 0;
+		else if( token.next==null ) pos = token.getPos();
+		else pos = token.next.getPos();
+		if( kiev.Kiev.debug ) {
+			kiev.Kiev.reportParserError(pos, msg, e);
+		} else {
+			kiev.Kiev.reportParserError(pos, msg);
+		}
+	}
+
+    /** Report other Error (Exception) */
+	private void rperr(Throwable e) throws Throwable {
+		int pos;
+		if( token==null ) pos = 0;
+		else if( token.next==null ) pos = token.getPos();
+		else pos = token.next.getPos();
+		if( kiev.Kiev.debug ) {
+			kiev.Kiev.reportParserError(pos, "Internal error:\n"+e, e);
+		} else {
+			kiev.Kiev.reportParserError(pos, "Internal error");
+		}
+		throw e;
+	}
+
+	private boolean checkNoSpace(Token t1, Token t2) {
+		return t1.endLine == t2.beginLine && t1.endColumn+1 == t2.beginColumn;
+	}
+
+	private static final int[] noColonTokenSet = new int[]{COLON};
+	private static final int[] noCommaTokenSet = new int[]{COMMA};
+
+	private int[] no_tokens;
+
+	private boolean notAToken(Token t) {
+		if( no_tokens == null ) return true;
+		for(int i=0; i < no_tokens.length; i++) {
+			if( t.kind == no_tokens[i] ) return false;
+		}
+		return true;
+	}
+
+	private boolean operatorLA(int tk) {
+		switch( getToken(tk).kind ) {
+		case ASSIGN:
+		case ASSIGN2:
+		case LT:
+		case GT:
+		case COLON:
+		case QUESTION:
+		case ARROW:
+		case BANG:
+		case TILDE:
+		case EQ:
+		case LE:
+		case GE:
+		case NE:
+		case SC_OR:
+		case SC_AND:
+		case INCR:
+		case DECR:
+		case PLUS:
+		case MINUS:
+		case STAR:
+		case SLASH:
+		case BIT_AND:
+		case BIT_OR:
+		case XOR:
+		case REM:
+		case LSHIFT:
+		case PLUSASSIGN:
+		case MINUSASSIGN:
+		case STARASSIGN:
+		case SLASHASSIGN:
+		case ANDASSIGN:
+		case ORASSIGN:
+		case XORASSIGN:
+		case REMASSIGN:
+		case LSHIFTASSIGN:
+		case RSIGNEDSHIFTASSIGN:
+		case RUNSIGNEDSHIFTASSIGN:
+		case OPERATOR_AT:
+		case OPERATOR_SHARP:
+		case OPERATOR_UPPER_BOUND:
+		case OPERATOR_LOWER_BOUND:
+		case OPERATOR:
+			return notAToken(getToken(tk));
+		case OPERATOR_ID:
+			return true;
+		}
+		return false;
+	}
+
+	private boolean maybeCastLA_Start() {
+		int i = 1;
+		Token t = getToken(i);
+		if (t.kind == IDENTIFIER) {
+			String qname = t.image;
+			while( getToken(i+1).kind == DOT && getToken(i+2).kind == IDENTIFIER) {
+				i += 2;
+				qname = qname + "." + getToken(i).image;
+			}
+			switch (getToken(i+1).kind) {
+			case RPAREN:
+			case LT:
+			case OPERATOR_LRBRACKETS:
+				break;
+			default:
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/*{
+	private TypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, FileUnit fu) {
+		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
+		TypeDecl tdecl = Env.newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true);
+		tdecl.setTypeDeclLoaded(true);
+		modifiers.moveToNode(tdecl.meta);
+		Env.createProjectInfo(tdecl, String.valueOf(Kiev.getCurFile()));
+		return tdecl;
+	}
+
+	private Struct mkStruct(Symbol name, TypeDeclVariant variant, int flags, ASTModifiers modifiers, ASTNode parent) {
+		String nm;
+		TypeDecl outer;
+		boolean direct;
+		if (parent instanceof FileUnit) {
+			nm = name.sname;
+			outer = ((FileUnit)parent).pkg.getStruct();
+			direct = true;
+		}
+		else if (parent instanceof Struct) {
+			nm = name.sname;
+			outer = curClazz;
+			direct = true;
+		}
+		else if (name != null) {
+			// Construct name of local class
+			nm = name.sname;
+			outer = curClazz;
+			direct = false;
+		}
+		else {
+			// Local anonymouse class
+			nm = null;
+			outer = curClazz;
+			direct = false;
+		}
+		Struct clazz = Env.newStruct(nm,direct,(Struct)curClazz,flags,variant,true);
+		if (name != null)
+			clazz.pos  = name.pos;
+		else
+			clazz.pos  = parent.pos;
+		clazz.setTypeDeclLoaded(true);
+		modifiers.moveToNode(clazz.meta);
+		if (parent instanceof FileUnit) {
+			clazz.setLocal(false);
+			clazz.setStatic(true);
+			Env.createProjectInfo(clazz, String.valueOf(Kiev.getCurFile()));
+		}
+		else if (parent instanceof Struct)
+			clazz.setLocal(parent.isLocal());
+		else
+			clazz.setLocal(true);
+		
+		return clazz;
+	}
+
+	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers) {
+		TypeAssign arg = new TypeAssign(new Symbol<TypeAssign>(name.pos,name.sname));
+		if (modifiers != null)
+			modifiers.moveToNode(arg.meta);
+		return arg;
+	}
+
+	private TypeConstr mkTypeConstr(Symbol name, ASTModifiers modifiers) {
+		TypeConstr arg = new TypeConstr(new Symbol<TypeConstr>(name.pos,name.sname));
+		if (modifiers != null)
+			modifiers.moveToNode(arg.meta);
+		return arg;
+	}
+
+	private Constructor mkConstructor(Symbol id, ASTModifiers modifiers) {
+		Constructor meth = new Constructor(0);
+		meth.pos = id.pos;
+		modifiers.moveToNode(meth.meta);
+		return meth;
+	}
+	
+	private Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
+		Method meth = new MethodImpl(new Symbol<MethodImpl>(id.pos,id.sname), ret, 0);
+		meth.pos = id.pos;
+		modifiers.moveToNode(meth.meta);
+		return meth;
+	}
+	
+	private RuleMethod mkRuleMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
+		RuleMethod meth = new RuleMethod(new Symbol<RuleMethod>(id.pos,id.sname), 0);
+		meth.pos = id.pos;
+		modifiers.moveToNode(meth.meta);
+		return meth;
+	}
+	
+	private Field mkField(Symbol id, TypeRef tp, ASTModifiers modifiers) {
+		if (tp == null)
+			tp = new TypeDeclRef();
+		Field f = new Field(new Symbol<Field>(id.pos,id.sname), tp, 0);
+		f.pos = id.pos;
+		modifiers.copyToNode(f.meta);
+		return f;
+	}
+
+	private Field mkEnumField(Symbol id, ASTModifiers modifiers) {
+		Field f = new Field(new Symbol<Field>(id.pos,id.sname),new TypeDeclRef(),0);
+		f.kind = Var.VAL_ENUM;
+		f.pos = id.pos;
+		modifiers.moveToNode(f.meta);
+		return f;
+	}
+
+	private Field mkCaseField(Symbol id, ASTModifiers modifiers, TypeRef tp) {
+		Field f = new Field(new Symbol<Field>(id.pos,id.sname),tp,0|ACC_PUBLIC);
+		f.pos = id.pos;
+		modifiers.moveToNode(f.meta);
+		return f;
+	}
+	
+	private LVar mkVar(Symbol id, ASTModifiers modifiers, TypeRef tp) {
+		if (tp == null)
+			tp = new TypeDeclRef();
+		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_LOCAL, 0);
+		modifiers.copyToNode(v.meta);
+		return v;
+	}
+	
+	private LVar mkRuleVar(Symbol id, ASTModifiers modifiers, TypeRef tp, boolean first) {
+		if (!first)
+			tp = tp.ncopy();
+		LVar v = new LVar(id.pos, id.sname, tp, Var.VAR_RULE, 0);
+		modifiers.copyToNode(v.meta);
+		return v;
+	}
+	
+	private LVar mkFormPar(Symbol id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
+		LVar v = new LVar(id.pos, id.sname, vt, LVar.PARAM_NORMAL, 0);
+		if (st != null)
+			v.stype = st;
+		modifiers.moveToNode(v.meta);
+		return v;
+	}
+	
+	private LVar mkVarargPar(Symbol id, ASTModifiers modifiers, TypeRef vt) {
+		LVar v = new LVar(id.pos, id.sname, vt, LVar.PARAM_VARARGS, ACC_FINAL);
+		modifiers.moveToNode(v.meta);
+		return v;
+	}
+	
+	private RewritePattern mkRewritePattern(Symbol id, ASTModifiers modifiers, TypeRef tp) {
+		RewritePattern v = new RewritePattern(new Symbol<RewritePattern>(id.pos,id.sname), tp);
+		modifiers.moveToNode(v.meta);
+		return v;
+	}
+	
+	private	Initializer mkInitializer(int pos, ASTModifiers modifiers) {
+		Initializer init = new Initializer();
+		init.pos = pos;
+		modifiers.moveToNode(init.meta);
+		return init;
+	}
+
+	
+	private ENode mkNotExpr(ASTOperator not, ENode cond) {
+		cond.setPrimaryExpr(true);
+		ASTExpression e = new ASTExpression();
+		e.pos = cond.pos;
+		e.nodes.append(not);
+		e.nodes.append(~cond);
+		return e;
+	}
+
+
+	}*/
+
+	void comments_alone(SpacePtr arr) {
+		Comment[] comments = get_comments();
+		if (comments == null || comments.length == 0)
+			return;
+		for (int i=0; i < comments.length; i++)
+			arr += comments[i];
+	}
+	void comments_before(ASTNode node) {
+		Comment[] comments = get_comments();
+		if (comments == null || comments.length == 0)
+			return;
+		for (int i=0; i < comments.length; i++)
+			Comment.ATTR_BEFORE.set(node, comments[i]);
+	}
+
+	Comment[] get_comments() {
+		Token t0 = getToken(0);
+		Token t1 = getToken(1);
+		Token st = t1.specialToken;
+		if (st == null)
+			return null;
+		Comment[] comments = new Comment[0];
+		t1.specialToken = null;
+		while (st.specialToken != null)
+			st = st.specialToken;
+		for (; st != null; st = st.next) {
+			if (st.kind == SINGLE_LINE_COMMENT) {
+				String text = st.image.substring(2);
+				text = text.trim();
+				if (comments.length > 0 && comments[comments.length-1].eol_form) {
+					Comment c = comments[comments.length-1];
+					c.text = new StringBuffer(c.text.length()+1+text.length()).append(c.text).append('\n').append(text).toString();
+					c.multiline = true;
+				} else {
+					Comment c = new Comment();
+					c.text = text;
+					c.eol_form = true;
+					c.nl_after = true;
+					if (st.specialToken != null) {
+						if (st.beginLine > st.specialToken.endLine)
+							c.nl_before = true;
+					} else {
+						if (st.beginLine < t0.endLine)
+							c.nl_before = true;
+					}
+					comments = (Comment[])Arrays.append(comments, c);
+				}
+			}
+			else if (st.kind == FORMAL_COMMENT || st.kind == MULTI_LINE_COMMENT) {
+				String text = (st.kind == FORMAL_COMMENT) ?
+						st.image.substring(3, st.image.length()-5)
+					:	st.image.substring(2, st.image.length()-4);
+				String[] lines = text.trim().split("\n");
+				for (int i=0; i < lines.length; i++) {
+					String l = lines[i].trim();
+					if (l.length() >= 1 && l.charAt(0) == '*') {
+						l = l.substring(1);
+						l = l.trim();
+					}
+					lines[i] = l;
+				}
+				Comment c = new Comment();
+				c.doc_form = (st.kind == FORMAL_COMMENT);
+				if (lines.length > 1) {
+					c.multiline = true;
+					c.text = "";
+					for (int i=0; i < lines.length; i++) {
+						String txt = lines[i].trim();
+						c.text = new StringBuffer(c.text.length()+1+txt.length()).append(c.text).append('\n').append(txt).toString();
+					}
+				} else {
+					c.text = lines[0];
+				}
+				
+				if (st.specialToken != null) {
+					if (st.beginLine > st.specialToken.endLine)
+						c.nl_before = true;
+				} else {
+					if (st.beginLine < t0.endLine)
+						c.nl_before = true;
+				}
+				
+				if (st.next != null) {
+					if (st.endLine < st.next.beginLine)
+						c.nl_after = true;
+				} else {
+					if (st.endLine < t1.beginLine)
+						c.nl_after = true;
+				}
+				comments = (Comment[])Arrays.append(comments, c);
+			}
+		}
+		return comments;
+	}
+
+}
+
+PARSER_END(kiev040)
+
+
+TOKEN_MGR_DECLS :
+{
+	final kiev040 parser;
+	public kiev040TokenManager(SimpleCharStream stream, kiev040 parser)
+	{
+		if (SimpleCharStream.staticFlag)
+			throw new Error("ERROR: Cannot use a static CharStream class with a non-static lexical analyzer.");
+		this.parser = parser;
+		this.input_stream = stream;
+	}
+}
+
+<DEFAULT,IN_PRAGMA>
+SKIP : /* WHITE SPACE */
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+| "/*{"
+| "}*/"
+}
+
+/* COMMENTS */
+
+<DEFAULT>
+MORE :
+{
+  "//" : IN_SINGLE_LINE_COMMENT
+|
+  <"/**" ~["/"]> { input_stream.backup(1); } : IN_FORMAL_COMMENT
+|
+  "/*" : IN_MULTI_LINE_COMMENT
+}
+
+<IN_SINGLE_LINE_COMMENT>
+SPECIAL_TOKEN :
+{
+  <SINGLE_LINE_COMMENT: "\n" | "\r" | "\r\n" > : DEFAULT
+}
+
+<IN_FORMAL_COMMENT>
+SPECIAL_TOKEN :
+{
+  <FORMAL_COMMENT: "*/" > : DEFAULT
+}
+
+<IN_MULTI_LINE_COMMENT>
+SPECIAL_TOKEN :
+{
+  <MULTI_LINE_COMMENT: "*/" > : DEFAULT
+}
+
+<IN_SINGLE_LINE_COMMENT,IN_FORMAL_COMMENT,IN_MULTI_LINE_COMMENT>
+MORE :
+{
+  < ~[] >
+}
+
+<DEFAULT>
+TOKEN : /* RESERVED WORDS AND LITERALS */
+{
+  < ABSTRACT: "abstract" >
+| < ANY: "any" >
+| < BOOLEAN: "boolean" >
+| < BREAK: "break" >
+| < BYTE: "byte" >
+| < CASE: "case" >
+| < CATCH: "catch" >
+| < CHAR: "char" >
+| < CLASS: "class" >
+| < CONTINUE: "continue" >
+| < _DEFAULT: "default" >
+| < DO: "do" >
+| < DOUBLE: "double" >
+| < ELSE: "else" >
+| < EXTENDS: "extends" >
+| < FALSE: "false" >
+| < FINAL: "final" >
+| < FINALLY: "finally" >
+| < FLOAT: "float" >
+| < FOR: "for" >
+| < FOREACH: "foreach" >
+| < GOTO: "goto" >
+| < IF: "if" >
+| < IF_REWR: "if#" >
+| < IMPLEMENTS: "implements" >
+| < IMPORT: "import" >
+//| < INSTANCEOF: "instanceof" >
+| < INT: "int" >
+| < INTERFACE: "interface" >
+| < METATYPE: "metatype" >
+| < LONG: "long" >
+| < NATIVE: "native" >
+| < NEW: "new" >
+| < NULL: "null" >
+| < PACKAGE: "package">
+| < RETURN: "return" >
+| < SHORT: "short" >
+| < STATIC: "static" >
+// | < SUPER: "super" >
+| < SWITCH: "switch" >
+| < SYNCHRONIZED: "synchronized" >
+| < WITH: "with" >
+// | < THIS: "this" >
+| < THROW: "throw" >
+| < THROWS: "throws" >
+| < TRANSIENT: "transient" >
+| < TRUE: "true" >
+| < TRY: "try" >
+| < VOID: "void" >
+| < VOLATILE: "volatile" >
+| < VIEW: "view" >
+| < WHILE: "while" >
+| < ARROW: "->" >
+| < FUNCTION: "fun" >
+| < VARARGS: "..." >
+| < RULE: "rule" >
+| < PCUT: "$cut" >
+| < CAST: "$cast" >
+| < REINTERP: "$reinterp" >
+| < ALIAS: "alias" >
+| < OPERATOR_ID: "operator" >
+| < TYPEDEF: "typedef" >
+| < ENUM: "enum" >
+
+| < REQUIRE: "require" >
+| < ENSURE: "ensure" >
+| < INVARIANT: "invariant" >
+
+| < META_INTERFACE:    "@interface"    >
+| < META_SINGLETON:    "@singleton"    >
+| < META_FORWARD:      "@forward"      >
+| < META_UNERASABLE:   "@unerasable"   >
+| < META_VIRTUAL:      "@virtual"      >
+| < META_PACKED:       "@packed"       >
+| < META_MACRO:        "@macro"        >
+| < META_STATIC:       "@static"       >
+| < META_ABSTRACT:     "@abstract"     >
+| < META_FINAL:        "@final"        >
+| < META_NATIVE:       "@native"       >
+| < META_SYNCHRONIZED: "@synchronized" >
+| < META_TRANSIENT:    "@transient"    >
+| < META_VOLATILE:     "@volatile"     >
+| < META_THROWS:       "@throws"       >
+
+}
+
+TOKEN : /* RESERVED WORDS AND LITERALS */
+{
+  < META_ACCESS1:   "@access"    > : IN_ACCESS
+| < META_PUBLIC:    "@public"    > : IN_ACCESS
+| < PUBLIC:         "public"     > : IN_ACCESS
+| < META_PROTECTED: "@protected" > : IN_ACCESS
+| < PROTECTED:      "protected"  > : IN_ACCESS
+| < META_PRIVATE:   "@private"   > : IN_ACCESS
+| < PRIVATE:        "private"    > : IN_ACCESS
+}
+
+<IN_ACCESS>
+TOKEN :
+{
+   < READ_ONLY: "ro" | "r" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+ | < WRITE_ONLY: "wo" | "w"> { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+ | < READ_WRITE: "rw" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+ | < NO_READ_WRITE: "n" | "no" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+ | < COMMA1: "," >
+ | < COLON1: ":" >
+ | < OPEN_ACCESS: "(" >
+ | < CLOSE_ACCESS: ")" > : DEFAULT
+}
+<IN_ACCESS>
+SKIP :
+{
+   " " : DEFAULT
+ | "\t" : DEFAULT
+ | "\n" : DEFAULT
+ | "\r" : DEFAULT
+ | "\f" : DEFAULT
+}
+
+
+TOKEN :
+{
+< PRAGMA: "pragma" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_PRAGMA
+}
+<IN_PRAGMA>
+TOKEN :
+{
+   < PRAGMA_ENABLE:  "enable" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : DEFAULT
+ | < PRAGMA_DISABLE: "disable"> { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : DEFAULT
+}
+
+
+<DEFAULT>
+TOKEN : /* LITERALS */
+{
+  < INTEGER_LITERAL:
+        <DECIMAL_LITERAL>
+      | <HEX_LITERAL>
+      | <OCTAL_LITERAL>
+  >
+|
+  < LONG_INTEGER_LITERAL:
+        <DECIMAL_LITERAL> ["l","L"]
+      | <HEX_LITERAL> ["l","L"]
+      | <OCTAL_LITERAL> ["l","L"]
+  >
+|
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+|
+  < #HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+|
+  < #OCTAL_LITERAL: "0" (["0"-"7"])* >
+|
+  < FLOATING_POINT_LITERAL:
+        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F"])?
+      | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F"])?
+      | (["0"-"9"])+ <EXPONENT> (["f","F"])?
+      | (["0"-"9"])+ (<EXPONENT>)? ["f","F"]
+  >
+|
+  < DOUBLE_POINT_LITERAL:
+        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? ["d","D"]
+      | "." (["0"-"9"])+ (<EXPONENT>)? ["d","D"]
+      | (["0"-"9"])+ <EXPONENT> ["d","D"]
+      | (["0"-"9"])+ (<EXPONENT>)? ["d","D"]
+  >
+|
+  < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+|
+  < REPARSE_EXPRESSION:
+      "#expr"
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+	   "#"
+  >
+|
+  < REPARSE_STATEMENT:
+      "#stat"
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+	   "#"
+  >
+|
+  < REPARSE_TYPE:
+      "#type"
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+	   "#"
+  >
+}
+
+<DEFAULT>
+TOKEN : /* LITERALS */
+{
+  < CHARACTER_LITERAL:
+      "'"
+      (   (~["'","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            | ["u","U"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
+            )
+          )
+      )
+      "'"
+  >
+|
+  < STRING_LITERAL:
+      "\""
+      (   (~["\"","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            | ["u","U"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
+            )
+          )
+      )*
+      "\""
+  >
+}
+
+<DEFAULT>
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: ( <LETTER> (<LETTER>|<DIGIT>)* | "#id" <ID_STRING_LITERAL> "#" ) >
+|
+  < #LETTER:
+      [
+       "\u0024",
+       "\u0041"-"\u005a",
+       "\u005f",
+       "\u0061"-"\u007a",
+       "\u00c0"-"\u00d6",
+       "\u00d8"-"\u00f6",
+       "\u00f8"-"\u00ff",
+       "\u0100"-"\u1fff",
+       "\u3040"-"\u318f",
+       "\u3300"-"\u337f",
+       "\u3400"-"\u3d2d",
+       "\u4e00"-"\u9fff",
+       "\uf900"-"\ufaff"
+      ]
+  >
+|
+  < #DIGIT:
+      [
+       "\u0030"-"\u0039",
+       "\u0660"-"\u0669",
+       "\u06f0"-"\u06f9",
+       "\u0966"-"\u096f",
+       "\u09e6"-"\u09ef",
+       "\u0a66"-"\u0a6f",
+       "\u0ae6"-"\u0aef",
+       "\u0b66"-"\u0b6f",
+       "\u0be7"-"\u0bef",
+       "\u0c66"-"\u0c6f",
+       "\u0ce6"-"\u0cef",
+       "\u0d66"-"\u0d6f",
+       "\u0e50"-"\u0e59",
+       "\u0ed0"-"\u0ed9",
+       "\u1040"-"\u1049"
+      ]
+  >
+ |
+  < #ID_STRING_LITERAL:
+      "\""
+      (   (~["\"","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            | ["u","U"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
+            )
+          )
+      )*
+      "\""
+  >
+}
+
+<DEFAULT>
+TOKEN : /* SEPARATORS */
+{
+  < LPAREN: "(" >
+| < RPAREN: ")" >
+| < LBRACE: "{" >
+| < RBRACE: "}" >
+| < LBRACKET: "[" >
+| < RBRACKET: "]" >
+| < SEMICOLON: ";" >
+| < COMMA: "," >
+| < DOT: "." >
+| < COLON: ":" >
+| < QUESTION: "?" >
+}
+
+<DEFAULT>
+TOKEN : /* Special Operators */
+{
+  < LT: "<" >
+| < GT: ">" >
+}
+
+<DEFAULT>
+TOKEN : /* OPERATORS */
+{
+  < ASSIGN: "=" >
+| < ASSIGN2: ":=" >
+//| < GT: ">" >
+//| < LT: "<" >
+| < BANG: "!" >
+| < TILDE: "~" >
+//| < HOOK: "?" >
+//| < COLON: ":" >
+| < EQ: "==" >
+| < LE: "<=" >
+| < GE: ">=" >
+| < NE: "!=" >
+| < SC_OR: "||" >
+| < SC_AND: "&&" >
+| < INCR: "++" >
+| < DECR: "--" >
+| < PLUS: "+" >
+| < MINUS: "-" >
+| < STAR: "*" >
+| < SLASH: "/" >
+| < BIT_AND: "&" >
+| < BIT_OR: "|" >
+| < XOR: "^" >
+| < REM: "%" >
+| < LSHIFT: "<<" >
+//| < RSIGNEDSHIFT: ">>" >
+//| < RUNSIGNEDSHIFT: ">>>" >
+| < PLUSASSIGN: "+=" >
+| < MINUSASSIGN: "-=" >
+| < STARASSIGN: "*=" >
+| < SLASHASSIGN: "/=" >
+| < ANDASSIGN: "&=" >
+| < ORASSIGN: "|=" >
+| < XORASSIGN: "^=" >
+| < REMASSIGN: "%=" >
+| < LSHIFTASSIGN: "<<=" >
+| < RSIGNEDSHIFTASSIGN: ">>=" >
+| < RUNSIGNEDSHIFTASSIGN: ">>>=" >
+
+| < IS_THE: "?=" >
+| < IS_ONE_OF: "@=" >
+
+| < OPERATOR_AT:    "@" >
+| < OPERATOR_SHARP:	"#" >
+| < OPERATOR_LRBRACKETS: "[" ( " " )* "]" >
+
+| < OPERATOR_UPPER_BOUND:    "\u2264" > // ≤
+| < OPERATOR_LOWER_BOUND:    "\u2265" > // ≥
+
+| < OPERATOR:	    ["\u2200"-"\u22F1"] >
+}
+
+/*****************************************
+ * THE JAVA LANGUAGE GRAMMAR STARTS HERE *
+ *****************************************/
+
+/*
+ * Program structuring syntax follows.
+ */
+
+FileUnit FileUnit(String filename) :
+{ FileUnit oldFileUnit; TypeDecl oldClazz; }
+{
+	{
+		oldFileUnit = curFileUnit;
+		FileUnit fu = new FileUnit();
+		curFileUnit = fu;
+		fu.name = filename;
+		fu.pos = 0;
+		declMode = true;
+		ASTModifiers modifiers;
+		oldClazz = curClazz;
+		curClazz = Env.root;
+		SpacePtr fu_members = fu.getSpacePtr("members");
+	}
+	try {
+		(
+			Pragma(fu)
+		)*
+		[
+			fu.pkg = Package()
+			{ curClazz = fu.pkg.getStruct(); }
+		]
+		(
+			{ comments_alone(fu_members); }
+			modifiers = Modifiers()
+			(
+				fu.members += Import(modifiers)
+			|	fu.members += Typedef(modifiers)
+			|	fu.members += Opdef(modifiers)
+			|	fu.members += MetaTypeDeclaration(modifiers, fu) [ ";" ]
+			|	fu.members += TypeDeclaration(modifiers, fu) [ ";" ]
+			|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+				fu.members += SyntaxDeclaration(modifiers, fu) [ ";" ]
+			)
+		)*
+		{ comments_alone(fu_members); }
+		<EOF>
+	}
+	catch(ParseError e) { rpe("Bad modifiers",e); }
+	catch(Throwable e) { rperr(e); }
+	finally {
+		curClazz = oldClazz;
+		curFileUnit = oldFileUnit;
+		declMode = true;
+		return fu;
+	}
+}
+
+ASTModifiers Modifiers() :
+{}
+{	{ ASTModifiers n = new ASTModifiers(); }
+	(
+		n.annotations	+= Annotation()
+	|	SpecialAnnotation(n)
+	|	Access(n)			// TODO: remove, use @access and views
+	)*
+	{ return n; }
+}
+
+TypeNameRef Package() :
+{ SymbolRef qn; }
+{
+	"package"
+	qn = QName()
+	";"
+	{
+		Struct pkg = Env.newPackage(qn.name);
+		TypeNameRef tr = new TypeNameRef(qn.name);
+		tr.pos = qn.pos;
+		tr.lnk = pkg.xtype;
+		return tr;
+	}
+}
+
+void Pragma(FileUnit fu) :
+{ ASTPragma p = new ASTPragma(); }
+{
+	{ comments_before(p); }
+	"pragma"
+	(
+		<PRAGMA_ENABLE>		{ p.enable = true; }
+	|	<PRAGMA_DISABLE>	{ p.enable = false; }
+	)
+	( p.options += StringConstExpression() )+
+	";"
+	{ fu.setPragma(p); }
+}
+
+Import Import(ASTModifiers modifiers) :
+{ Import imp = new Import(); }
+{
+	"import"
+	(	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+		<IDENTIFIER>{ imp.mode = Import.ImportMode.IMPORT_SYNTAX; }
+		imp.name = QName()
+	|
+		"package"	{ imp.mode = Import.ImportMode.IMPORT_PACKAGE; }
+		imp.name = QName()
+	|
+		"static"	{ imp.mode = Import.ImportMode.IMPORT_STATIC; }
+		imp.name = QName()
+		[	"." "*" { imp.star = true; }
+		|	"("		{ imp.of_method = true; }
+			imp.args += Type()
+			(
+				","
+				imp.args += Type()
+			)*
+			")"
+		]
+	|
+		imp.name = QName()
+		[	"." "*" { imp.star = true; }
+		|	"("		{ imp.of_method = true; }
+			imp.args += Type()
+			(
+				","
+				imp.args += Type()
+			)*
+			")"
+		]
+	)
+	";"
+	{ return imp; }
+}
+
+TypeDecl Typedef(ASTModifiers modifiers) :
+{ Symbol id; TypeDecl n; TypeRef tr; }
+{
+	"typedef"
+	(
+		LOOKAHEAD(3, <IDENTIFIER> "=" <IDENTIFIER>)
+		{ n = new TypeOpDef(); }
+		id = Name()
+		"="
+		tr = Type()
+		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
+	|
+		LOOKAHEAD(3, <IDENTIFIER> TypeOperatorChar() <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
+		{ n = new TypeOpDef(); }
+		id     = Name()		{ n.arg = mkTypeAssign(id, new ASTModifiers()); }
+		n.op   = Operator()
+		n.type = Type()
+	|
+		tr = Type()
+		id = Name()
+		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
+	) ";"
+	{ return n; }
+}
+
+Opdef Opdef(ASTModifiers modifiers) :
+{ SymbolRef id; ASTOperator op; ConstIntExpr ce; ConstStringExpr cs; Opdef opd = new Opdef(); }
+{
+	"operator"							{ opd.pos = getToken(0).getPos(); }
+	(
+		(
+			op = Operator()            { opd.setImage(op); }
+		|	id = NameRef()             { opd.setImage(id); }
+		)
+		","
+		// FX,FY,XF,YF,XFX,YFX,XFY,YFY
+		id = NameRef()                 { opd.setMode(id); }
+		","
+		ce = IntConstExpression()		{ opd.setPriority(ce); }
+	|
+		cs = StringConstExpression()	{ opd.decl = cs.value; }
+		[ "," ]
+		ce = IntConstExpression()		{ opd.setPriority(ce); }
+	)
+	";"
+	{ return opd; }
+}
+
+Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
+{ Struct clazz; Symbol name; TypeDecl oldClazz; }
+{
+	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+	<IDENTIFIER>	// "syntax"
+	name = Name()
+	{
+		clazz = mkStruct(name, new KievSyntax(), ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
+	}
+	[
+		"extends"
+		clazz.super_types += Type()
+		( "," clazz.super_types += Type()	)*
+	]
+	{ oldClazz = curClazz; curClazz = clazz; }
+	try {
+		"{"
+		(
+			modifiers = Modifiers()
+			(
+				clazz.members += Typedef(modifiers)
+			|	clazz.members += Opdef(modifiers)
+			)
+		)*
+		"}"
+	} finally { curClazz = oldClazz; }
+	{ return clazz; }
+}
+
+TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
+{ TypeDecl tdecl; Symbol name; TypeRef tp; TypeDecl oldClazz; TypeConstr[] args; }
+{
+	"metatype"
+	(
+		name = Name()
+		{
+			tdecl = mkMetaType(name, modifiers, (FileUnit)parent);	
+		}
+		args = ClazzArguments() { tdecl.args.addAll(args); }
+	|
+		tp   = PrimitiveType()
+		{
+			name = new Symbol( tp.pos, ((CoreType)tp.getType()).name );
+			tdecl = mkMetaType(name, modifiers, (FileUnit)parent);	
+		}
+	)
+	[
+		"extends"
+		tdecl.super_types += Type()
+	]
+//	[
+//		"implements"
+//		tdecl.super_types += NArrType()
+//		( "," tdecl.super_types += NArrType()	)*
+//	]
+	{ oldClazz = curClazz; curClazz = null; }
+	try {
+		TypeBodyDeclaration(tdecl)
+	} finally { curClazz = oldClazz; }
+	{ return tdecl; }
+}
+
+Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
+{ Struct clazz; Symbol name; TypeDecl oldClazz; TypeConstr[] args; }
+{
+	(
+		"class"
+		name = Name()
+		{
+			clazz = mkStruct(name, new JavaClass(), 0, modifiers, parent);
+		}
+		args = ClazzArguments() { clazz.args.addAll(args); }
+		[
+			"extends"
+			clazz.super_types += Type()
+			( "," clazz.super_types += Type()	)*
+		]
+		[
+			"implements"
+			clazz.super_types += Type()
+			( "," clazz.super_types += Type()	)*
+		]
+	|	"interface"
+		name = Name()
+		{
+			clazz = mkStruct(name, new JavaInterface(), ACC_INTERFACE, modifiers, parent);
+		}
+		args = ClazzArguments() { clazz.args.addAll(args); }
+		[
+			"extends"
+			clazz.super_types += Type()
+			( "," clazz.super_types += Type()	)*
+		]
+	|	"@interface"
+		(	name = Name()
+		|	name = KeywordAsName()
+		)
+		{
+			clazz = mkStruct(name, new JavaAnnotation(), ACC_INTERFACE|ACC_ANNOTATION, modifiers, parent);
+		}
+	|	"enum"
+		name = Name()
+		{
+			clazz = mkStruct(name, new JavaEnum(), ACC_ENUM|ACC_STATIC, modifiers, parent);
+		}
+	|	"view"
+		name = Name()
+		{
+			clazz = mkStruct(name, new KievView(), ACC_VIRTUAL, modifiers, parent);
+		}
+		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of") })
+		<IDENTIFIER> // "of"
+		clazz.view_of = NArrType()
+		args = ClazzArguments() { clazz.args.addAll(args); }
+		[
+			"extends"
+			clazz.super_types += Type()
+			( "," clazz.super_types += Type()	)*
+		]
+		[
+			"implements"
+			clazz.super_types += Type()
+			( "," clazz.super_types += Type()	)*
+		]
+	)
+	{ oldClazz = curClazz; curClazz = clazz; }
+	try {
+		TypeBodyDeclaration(clazz)
+	} finally { curClazz = oldClazz; }
+	{ return clazz; }
+}
+
+void TypeBodyDeclaration(TypeDecl clazz) :
+{ ASTModifiers modifiers; DeclGroupEnumFields enums; SpacePtr clazz_members = clazz.getSpacePtr("members"); }
+{
+	"{"
+	(
+		LOOKAHEAD({ clazz.isEnum() })
+		{ enums = new DeclGroupEnumFields(); }
+		modifiers = Modifiers()
+		enums.decls += EnumFieldDeclaration(modifiers)
+		(	","
+			modifiers = Modifiers()
+			enums.decls += EnumFieldDeclaration(modifiers)
+		)*
+		{ clazz.members.insert(0,enums); }
+		[ ";" ]
+	)?
+	(
+		{ comments_alone(clazz_members); }
+		modifiers = Modifiers()
+		(
+			clazz.members += Initializer(modifiers)
+		|	clazz.members += InvariantDeclaration(modifiers) [ ";" ]
+		|	clazz.members += TypeDeclaration(modifiers, clazz) [ ";" ]
+		|	clazz.members += MemberArgDecl(modifiers)
+		|	clazz.members += CaseTypeDeclaration(modifiers, (Struct)clazz)
+		|
+			LOOKAHEAD( "rule" <IDENTIFIER> "(" )
+			clazz.members += RuleDeclaration(modifiers)
+		|
+			LOOKAHEAD( <IDENTIFIER> "(" )
+			clazz.members += ConstructorDeclaration(modifiers)
+		|
+			LOOKAHEAD( ClazzArguments() Type() <IDENTIFIER> "(" )
+			clazz.members += MethodDeclaration(modifiers)
+		|
+			LOOKAHEAD( Type() <IDENTIFIER> (<OPERATOR_LRBRACKETS>)* ("{" | "=" | "," | ";") )
+			clazz_members += FieldDecls(modifiers)
+		)
+	)*
+	{ comments_alone(clazz_members); }
+	"}"
+}
+
+Field EnumFieldDeclaration(ASTModifiers modifiers) :
+{ Symbol id; Field f; ConstStringExpr text; }
+{
+	id = Name()
+	{ f = mkEnumField(id, modifiers); }
+	[
+		":"
+		text = StringConstExpression() { Field.ALT_ENUM_ID_ATTR.set(f, text); }
+	]
+	{ return f; }
+}
+
+Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
+{ Symbol name; Struct clazz; TypeConstr[] args; DeclGroupCaseFields cases; }
+{
+	"case"
+	name = Name()
+	{
+		clazz = mkStruct(name, new PizzaCase(), ACC_STATIC|ACC_FINAL, modifiers, parent);
+		//clazz.super_types.insert(0, new TypeRef(parent.xtype));
+		clazz.setPizzaCase();
+		clazz.setSingleton(true);
+		cases = new DeclGroupCaseFields();
+		clazz.members.insert(0, cases);
+	}
+	args = ClazzArguments() { clazz.args.addAll(args); }
+	[
+	"(" { clazz.setSingleton(false); }
+		[
+			modifiers = Modifiers()
+			cases.decls += CaseTypeField(modifiers)
+			(
+				","
+				modifiers = Modifiers()
+				cases.decls += CaseTypeField(modifiers)
+			)*
+		]
+	")"
+	]
+	";"
+	{ return clazz; }
+}
+
+
+TypeConstr[] ClazzArguments() :
+{ TypeConstr[] args = new TypeConstr[0]; TypeConstr arg; }
+{
+	[
+		"<"
+			arg = ArgumentDeclaration()
+			{ args = (TypeConstr[])Arrays.append(args,arg); }
+			(	","
+				arg = ArgumentDeclaration()
+				{ args = (TypeConstr[])Arrays.append(args,arg); }
+			)*
+		">"
+	]
+	{ return args; }
+}
+
+TypeDef MemberArgDecl(ASTModifiers modifiers) :
+{ Symbol name; TypeDef arg; TypeRef t; }
+{
+	"typedef"
+	
+	(
+		name      = Name()
+		(
+			"="
+			{ arg = mkTypeAssign(name,modifiers); }
+			t = Type() { arg.super_types += t; }
+			";"
+		|
+			{ arg = mkTypeConstr(name,modifiers); }
+			(
+				<OPERATOR_UPPER_BOUND> t = Type() { arg.super_types.add(t);}
+			|	<OPERATOR_LOWER_BOUND> t = Type() { arg.lower_bound.add(t);}
+			)+
+			";"
+		)
+	)
+	{ return arg; }
+}
+
+TypeConstr ArgumentDeclaration() :
+{ Symbol name; TypeConstr arg; TypeRef tr; }
+{
+	name      = Name()
+	{ arg = mkTypeConstr(name,null); arg.setAbstract(true); }
+	[
+		"extends"
+		tr = Type() { arg.super_types.add(tr); }
+		( "&" tr = Type() { arg.super_types.add(tr); } )*
+	]
+	[
+		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("super") }) //"super"
+		tr = Type() { arg.lower_bound.add(tr); }
+		( "&" tr = Type() { arg.lower_bound.add(tr); } )*
+	]
+	{ return arg; }
+}
+
+void Access(ASTModifiers modifiers) :
+{ int acc; 	int accflags = 0; int offset = 6; MetaAccess ma; }
+{
+	(
+		"@access"		{ ma = new MetaAccess(); }
+	|	"@public"		{ ma = new MetaAccess("public"); }
+	|	"public"		{ ma = new MetaAccess("public"); }
+	|	"@protected"	{ ma = new MetaAccess("protected"); }
+	|	"protected"		{ ma = new MetaAccess("protected"); }
+	|	"@private"		{ ma = new MetaAccess("private"); }
+	|	"private"		{ ma = new MetaAccess("private"); }
+	)
+	{ modifiers += ma; }
+	(
+		<COLON1> // ":"
+		acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		]]]
+		{ ma.setFlags(accflags); }
+	|	<OPEN_ACCESS> // "("
+		acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		]]]
+		<CLOSE_ACCESS> // ")"
+		{ ma.setFlags(accflags); }
+	)?
+}
+
+int AccessSpec() :
+{}
+{
+	<READ_ONLY>		{ return 2; }
+|	<WRITE_ONLY>	{ return 1; }
+|	<READ_WRITE>	{ return 3; }
+|	<NO_READ_WRITE>	{ return 0; }
+}
+
+void SpecialAnnotation(ASTModifiers modifiers) :
+{ MetaPacked mp; MetaThrows mt; TypeNameRef thr; ConstIntExpr ice; SymbolRef nr; }
+{
+	  "@singleton"		{ modifiers += new MetaSingleton(); }
+
+	| "@forward"		{ modifiers += new MetaForward(); }
+	| "@unerasable"		{ modifiers += new MetaUnerasable(); }
+	| "@virtual"		{ modifiers += new MetaVirtual(); }
+	| "@macro"			{ modifiers += new MetaMacro(); }
+	
+	| "static"			{ modifiers += new MetaStatic(); }
+	| "@static"			{ modifiers += new MetaStatic(); }
+	
+	| "abstract"		{ modifiers += new MetaAbstract(); }
+	| "@abstract"		{ modifiers += new MetaAbstract(); }
+
+	| "final"			{ modifiers += new MetaFinal(); }
+	| "@final"			{ modifiers += new MetaFinal(); }
+	
+	| "native"			{ modifiers += new MetaNative(); }
+	| "@native"			{ modifiers += new MetaNative(); }
+	
+	| "synchronized"	{ modifiers += new MetaSynchronized(); }
+	| "@synchronized"	{ modifiers += new MetaSynchronized(); }
+
+	| "transient"		{ modifiers += new MetaTransient(); }
+	| "@transient"		{ modifiers += new MetaTransient(); }
+
+	| "volatile"		{ modifiers += new MetaVolatile(); }
+	| "@volatile"		{ modifiers += new MetaVolatile(); }
+	
+	| "@packed"
+		{ mp = new MetaPacked(); }
+		(
+			"("
+						ice = IntConstExpression() { mp.size = ice.value; }
+			[	","		nr  = NameRef() { mp.fld = nr; }
+				","		ice = IntConstExpression() { mp.offset = ice.value; }
+			]
+			")"
+		|
+			":" 	ice = IntConstExpression() { mp.size = ice.value; }
+			[
+			","		nr  = NameRef() { mp.fld = nr; }
+			","		ice = IntConstExpression() { mp.offset = ice.value; }
+			]
+		)?
+		{ modifiers += mp; }
+
+	| "@throws"
+		{ mt = new MetaThrows(); }
+		(
+			thr = TypeQName() { mt.add(thr); }
+			( "," thr = TypeQName() { mt.add(thr); } )*
+		|
+			"(" [ LOOKAHEAD(2) <IDENTIFIER> "="] ["{"]
+			thr = TypeQName() { mt.add(thr); }
+			( "," thr = TypeQName() { mt.add(thr); } )*
+			 ["}"] ")"
+		)
+		{ modifiers += mt; }
+}
+
+SymbolRef KeywordAsNameRef() :
+{ Token t; SymbolRef id; }
+{
+	(
+		t="alias"
+	|	t="throws"
+	)
+	{
+		id = new SymbolRef();
+		id.set(t);
+		return id;
+	}
+}
+
+Symbol KeywordAsName() :
+{ Token t; Symbol id; }
+{
+	(
+		t="alias"
+	|	t="throws"
+	)
+	{
+		id = new Symbol();
+		id.set(t);
+		return id;
+	}
+}
+
+UserMeta Annotation() :
+{ SymbolRef id; MetaValue v; }
+{
+	{ UserMeta n = new UserMeta(); }
+	"@"
+	(
+		id = NameRef()
+	|	id = KeywordAsNameRef()
+	)
+	{	n.pos = id.pos;	n.type = new TypeNameRef(id.name); }
+	[
+		"("
+		[	LOOKAHEAD( <IDENTIFIER> "=" )
+			AnnotationValues(n)
+		|	v = AnnotationValueAny(new SymbolRef("value")) { n.set(v); }
+		]
+		")"
+	]
+	{ return n; }
+}
+
+void AnnotationValues(UserMeta m) :
+{ SymbolRef id; MetaValue v; }
+{
+	id = NameRef()
+	"="
+	v = AnnotationValueAny(id)
+	{ m.set(v); }
+	(
+		","
+		id = NameRef()
+		"="
+		v = AnnotationValueAny(id)
+		{ v.ident = id.name; v.pos = id.pos; m.set(v); }
+	)*
+}
+
+MetaValue AnnotationValueAny(SymbolRef id) :
+{ ENode n; MetaValue v; }
+{
+	(
+		LOOKAHEAD( "@" <IDENTIFIER> )
+		n = Annotation()
+		{ v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n; }
+	|	v = AnnotationValueValueArrayInitializer(id)
+	|	n = ExpressionNT(null)
+		{ v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n; }
+	)
+	{ return v; }
+}
+
+MetaValueScalar AnnotationValueScalar(SymbolRef id) :
+{ ENode n; MetaValueScalar v; }
+{
+	(
+		LOOKAHEAD( "@" <IDENTIFIER> )
+		n = Annotation()
+		{ v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n; }
+	|	n = ExpressionNT(null)
+		{ v = new MetaValueScalar(id); ((MetaValueScalar)v).value = n; }
+	)
+	{ return v; }
+}
+
+MetaValueArray AnnotationValueValueArrayInitializer(SymbolRef id) :
+{ MetaValueScalar n; MetaValueArray v; }
+{
+	{ v = new MetaValueArray(id); }
+	"{"
+	[
+		n = AnnotationValueScalar(null) { v.values.add(~n.value); }
+		(	","
+			n = AnnotationValueScalar(null) { v.values.add(~n.value); }
+		)*
+	]
+	"}"
+	{ return v; }
+}
+
+
+ASTNode FieldDecls(ASTModifiers modifiers) :
+{ boolean old_declMode; TypeRef type; Field f; DeclGroupFields decl; DNode ret; }
+{
+	type = Type()
+	{ old_declMode = declMode; declMode = false; }
+	try {
+		(
+			LOOKAHEAD(<IDENTIFIER> (<OPERATOR_LRBRACKETS>)* ("=" VariableInitializer())? ";")
+			ret = FieldDecl(modifiers, type)
+		|
+			{ decl = new DeclGroupFields(); modifiers.copyToNode(decl.meta); decl.dtype = type; ret = decl; }
+			modifiers = Modifiers()
+			decl.decls += FieldDecl(modifiers, null)
+			(	","
+				modifiers = Modifiers()
+				decl.decls += FieldDecl(modifiers, null)
+			)*
+		)
+		";"
+	} finally { declMode = old_declMode; }
+	{ return ret; }
+}
+
+Field FieldDecl(ASTModifiers modifiers, TypeRef type) :
+{ Token t; Symbol id; Field f; Symbol func; ENode body; }
+{
+	id = Name()
+	{ f = mkField(id, type, modifiers); }
+	( t=<OPERATOR_LRBRACKETS> { f.vtype = new TypeExpr(~f.vtype,t); } )*
+	[
+		(
+			"="
+			f.init = VariableInitializer()
+		|
+			f.init = RewriteMatch()
+		)
+	]
+	{ return f; }
+}
+
+void LocalVarDecls(ASTModifiers modifiers, RuleMethod meth) :
+{ TypeRef type; }
+{
+	type = Type()
+	meth.localvars += RuleVarDecl(modifiers, type, true)
+	(	","
+		meth.localvars += RuleVarDecl(modifiers, type, false)
+	)*
+	";"
+}
+
+LVar RuleVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
+{ Token t; Symbol id; LVar lv; }
+{
+	id = Name()
+	{ lv = mkRuleVar(id, modifiers, type, first); }
+	[
+		"="
+		lv.init = VariableInitializer()
+	]
+	{ return lv; }
+}
+
+ASTNode VarDecls(ASTModifiers modifiers) :
+{ boolean old_declMode; TypeRef type; DeclGroupVars decl; }
+{
+	{
+		old_declMode = declMode;
+		declMode = false;
+		decl = new DeclGroupVars();
+		modifiers.copyToNode(decl.meta);
+	}
+	try {
+		decl.dtype = Type()
+		modifiers = Modifiers()
+		decl.decls += VarDecl(modifiers)
+		(	","
+			modifiers = Modifiers()
+			decl.decls += VarDecl(modifiers)
+		)*
+	} finally { declMode = old_declMode; }
+	{ return decl; }
+}
+
+Var VarDecl(ASTModifiers modifiers) :
+{ Token t; Symbol id; Var lv; }
+{
+	id = Name()
+	{ lv = mkVar(id, modifiers, null); }
+	( t=<OPERATOR_LRBRACKETS> { lv.vtype = new TypeExpr(~lv.vtype,t); } )*
+	[
+		"="
+		lv.init = VariableInitializer()
+	]
+	{ return lv; }
+}
+
+ENode VariableInitializer() :
+{ ENode e; }
+{
+	(
+		e = ArrayInitializer()
+	|
+		e = Expression()
+	)
+	{ return e; }
+}
+
+ENode ArrayInitializer() :
+{ NewInitializedArrayExpr e = new NewInitializedArrayExpr(); e.pos = getToken(1).getPos(); }
+{
+	"{"
+	[	LOOKAHEAD(2)
+		e.args += VariableInitializer()
+		(	LOOKAHEAD(2)
+			","
+			e.args += VariableInitializer()
+		)*
+		[ "," ]
+	]
+	"}"
+	{ return e; }
+}
+
+Field CaseTypeField(ASTModifiers modifiers) :
+{ Token t; TypeRef tp; Symbol id; }
+{
+	tp = Type()
+	id = Name()
+	( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); } )*
+	{
+		return mkCaseField(id, modifiers, tp);
+	}
+}
+
+Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
+{ Token t; TypeRef tp; Symbol id; }
+{
+	(
+		LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals("_")) })
+		id = Name() { tp = new TypeRef(Type.tpVoid); tp.pos = id.pos; }
+	|
+		tp = Type()
+		id = Name()
+		( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); } )*
+	)
+	{ return mkVar(id, modifiers, tp); }
+}
+
+LVar MethodFormalParameter(ASTModifiers modifiers) :
+{ Token t; TypeRef tp; TypeRef st=null; Symbol id; }
+{
+	tp = Type()
+	(
+		LOOKAHEAD({ !Kiev.javaMode && getToken(1).kind == COLON })
+		":"
+		st = Type()
+	)?
+	id = Name()
+	( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); if (st!= null) st = new TypeExpr(st,t); } )*
+	{ return mkFormPar(id, modifiers, tp, st); }
+}
+
+LVar MethodVarargsParameter(ASTModifiers modifiers) :
+{ Token t; TypeRef tp = null; Symbol id = null; }
+{
+	[ tp = Type() ]
+	t = "..."
+	[ id = Name() ]
+	{
+		if (tp == null)
+			tp = new TypeExpr(new TypeRef(Type.tpObject), t);
+		else
+			tp = new TypeExpr(tp, t);
+		tp.pos = t.getPos();
+		if (id == null) {
+			id = new Symbol(t.getPos(), Constants.nameVarArgs);
+		}
+		return mkVarargPar(id, modifiers, tp);
+	}
+}
+
+LVar FormalParameter(ASTModifiers modifiers) :
+{ Token t; TypeRef tp; Symbol id; }
+{
+	tp = Type()
+	id = Name()
+	( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); } )*
+	{ return mkFormPar(id, modifiers, tp, null); }
+}
+
+MetaThrows Throws() :
+{ MetaThrows n = new MetaThrows(); TypeNameRef thr; }
+{
+	"throws"
+	thr = TypeQName() { n.add(thr); }
+	(
+		","
+		thr = TypeQName() { n.add(thr); }
+	)*
+	{ return n; }
+}
+
+
+Symbol Alias() :
+{ Token t; Symbol a; SymbolRef id; ASTOperator op; ConstIntExpr ce; ConstStringExpr cs; }
+{
+	(
+		"alias"
+		(
+			a = Name()
+			[
+				"operator"
+				{ String opmode = a.sname; a = new ASTOperatorAlias(); a.setMode(opmode); }
+				(
+					op = Operator()				{ a.setImage(op); }
+				|	id = NameRef()				{ a.setImage(id); }
+				|	<OPERATOR_LRBRACKETS>		{ a.image = "[]"; }
+				|	"new"						{ a.image = "new"; }
+				|	"$cast"						{ a.image = "$cast"; }
+				)
+			]
+		|	"operator"
+			cs = StringConstExpression()
+			{ a = new ASTOperatorAlias(); a.setName(cs); }
+		)
+	|	"operator"
+		cs = StringConstExpression()
+		{ a = new ASTOperatorAlias(); a.setName(cs); }
+	)
+	{ return a; }
+}
+
+ENode MaybeSkipBlock() :
+{ boolean old_declMode; ENode bl = null; }
+{
+	(
+		LOOKAHEAD({ interface_only })
+		"{"
+		{
+			Token tk = getToken(0);
+			PrescannedBody pbody = new PrescannedBody((ASTNode)presc, tk.beginLine, tk.beginColumn);
+			curFileUnit.addPrescannedBody(pbody);
+			int depth = 1;
+			do {
+				tk = getNextToken();
+				if( tk.kind == LBRACE ) depth++;
+				else if( tk.kind == RBRACE ) depth--;
+			} while( depth > 0 );
+			if (presc instanceof RuleMethod)
+				pbody.mode = PrescannedBody.RuleBlockMode;
+			else if (presc instanceof Method && ((Method)presc).isMacro())
+				pbody.mode = PrescannedBody.RewriteMatchMode;
+			else
+				pbody.mode = PrescannedBody.BlockMode;
+			bl = pbody;
+		}
+	|
+		LOOKAHEAD({ presc instanceof RuleMethod })
+		bl = RuleBlock()
+	|
+		LOOKAHEAD({ presc instanceof Method && ((Method)presc).isMacro() })
+		bl = RewriteMatch()
+	|
+		bl = Block()
+	)
+	{ return bl; }
+}
+
+Method MethodDeclaration(ASTModifiers modifiers) :
+{ Token t; Method m, oldMethod; TypeRef ret; Symbol id; MetaThrows thr; TypeConstr[] args; }
+{
+	args = ClazzArguments()
+	ret = Type()
+	id = Name()
+	{ m = mkMethod(id,modifiers,ret); m.targs.addAll(args); oldMethod = curMethod; curMethod = m; }
+	try {
+	"("
+		(
+			LOOKAHEAD( Modifiers() [Type()] "...")
+			modifiers = Modifiers()
+			m.params += MethodVarargsParameter(modifiers)
+			{ m.setVarArgs(true); }
+		|
+			modifiers = Modifiers()
+			m.params += MethodFormalParameter(modifiers)
+			(	LOOKAHEAD(1, ",", { !m.isVarArgs() })
+				","
+				modifiers = Modifiers()
+				(
+					LOOKAHEAD( [Type()] "...")
+					m.params += MethodVarargsParameter(modifiers)
+					{ m.setVarArgs(true); }
+				|
+					m.params += MethodFormalParameter(modifiers)
+				)
+			)*
+		)?
+	")"
+	(	t=<OPERATOR_LRBRACKETS> { m.type_ret = new TypeExpr(m.type_ret,t); } )*
+	(
+		m.aliases += Alias()
+	)*
+	[	thr = Throws()	{ m.setMeta(thr); } ]
+	(
+		m.conditions += RequareDeclaration()
+	|	m.conditions += EnsureDeclaration()
+	)*
+	(
+		LOOKAHEAD("{")
+		{ presc = m; }
+		m.body = MaybeSkipBlock() [ ";" ]
+	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id)) ] ";"
+	)
+	} finally { curMethod = oldMethod; }
+	{ return m; }
+}
+
+Constructor ConstructorDeclaration(ASTModifiers modifiers) :
+{ Token t; Constructor m; Symbol id; MetaThrows thr; Method oldMethod; }
+{
+	id = Name()
+	{
+		if( !id.sname.equals(curClazz.id.sname) )
+			Kiev.reportError(id,"Return type missed or bad constructor name "+id);
+		m = mkConstructor(id,modifiers); 
+		oldMethod = curMethod;
+		curMethod = m;
+	}
+	try {
+	"("
+		(
+			LOOKAHEAD( Modifiers() [Type()] "...")
+			modifiers = Modifiers()
+			m.params += MethodVarargsParameter(modifiers)
+			{ m.setVarArgs(true); }
+		|
+			modifiers = Modifiers()
+			m.params += MethodFormalParameter(modifiers)
+			(	LOOKAHEAD(1, ",", { !m.isVarArgs() })
+				","
+				modifiers = Modifiers()
+				(
+					LOOKAHEAD( [Type()] "...")
+					m.params += MethodVarargsParameter(modifiers)
+					{ m.setVarArgs(true); }
+				|
+					m.params += MethodFormalParameter(modifiers)
+				)
+			)*
+		)?
+	")"
+	(
+		m.aliases += Alias()
+	)*
+	[	thr = Throws()	{ m.setMeta(thr); } ]
+	(
+		m.conditions += RequareDeclaration()
+	|	m.conditions += EnsureDeclaration()
+	)*
+	(
+		LOOKAHEAD("{")
+		{ presc = m; }
+		m.body = MaybeSkipBlock() [ ";" ]
+	|	";"
+	)
+	} finally { curMethod = oldMethod; }
+	{ return m; }
+}
+
+WBCCondition RequareDeclaration() :
+{ Symbol id; }
+{
+	{
+		WBCCondition n = new WBCCondition();
+		//n.modifiers = modifiers;
+		n.cond = WBCType.CondRequire;
+	}
+	"require"
+	(
+		LOOKAHEAD("[" <IDENTIFIER> "]" )
+		"[" id = Name() { n.id.sname = id.sname; } "]"
+		n.body = CondBlock()
+	|
+		LOOKAHEAD(<IDENTIFIER> "{")
+		id     = Name() { n.id.sname = id.sname; }
+		n.body = CondBlock()
+	|
+		n.body = CondBlock()
+	)
+	{ return n; }
+}
+
+
+WBCCondition EnsureDeclaration() :
+{ Symbol id; }
+{
+	{
+		WBCCondition n = new WBCCondition();
+		//n.modifiers = modifiers;
+		n.cond = WBCType.CondEnsure;
+	}
+	"ensure"
+	(
+		LOOKAHEAD("[" <IDENTIFIER> "]" )
+		"[" id = Name() { n.id.sname = id.sname; } "]"
+		n.body = CondBlock()
+	|
+		LOOKAHEAD(<IDENTIFIER> "{")
+		id     = Name() { n.id.sname = id.sname; }
+		n.body = CondBlock()
+	|
+		n.body = CondBlock()
+	)
+	{ return n; }
+}
+
+WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
+{ Symbol id; }
+{
+	{
+		WBCCondition n = new WBCCondition();
+		//n.modifiers = modifiers;
+		n.cond = WBCType.CondInvariant;
+	}
+	"invariant"
+	(
+		LOOKAHEAD("[" <IDENTIFIER> "]" )
+		"[" id = Name() { n.id.sname = id.sname; } "]"
+		n.body = CondBlock()
+	|	LOOKAHEAD(<IDENTIFIER> "{")
+		id     = Name() { n.id.sname = id.sname; }
+		n.body = CondBlock()
+	)
+	{ return n; }
+	
+}
+
+RuleMethod RuleDeclaration(ASTModifiers modifiers) :
+{ RuleBlock bl; RuleMethod m; Symbol id; Method oldMethod; }
+{
+	"rule"
+	id = Name()
+	{ m = mkRuleMethod(id, modifiers, new TypeRef(Type.tpRule)); oldMethod = curMethod; curMethod = m; }
+	try {
+	"("
+		[
+			modifiers = Modifiers()
+			m.params += FormalParameter(modifiers)
+			(
+				","
+				modifiers = Modifiers()
+				m.params += FormalParameter(modifiers)
+			)*
+		]
+	")"
+	(
+		m.aliases += Alias()
+	)*
+	(
+		modifiers = Modifiers()
+		LocalVarDecls(modifiers,m)
+	)*
+	(
+		m.conditions += RequareDeclaration()
+	|	m.conditions += EnsureDeclaration()
+	)*
+	(
+		LOOKAHEAD("{")
+		{ presc = m; }
+		m.body = MaybeSkipBlock() [ ";" ]
+	|	";"
+	)
+	} finally { curMethod = oldMethod; }
+	{ return m; }
+}
+
+Initializer Initializer(ASTModifiers modifiers) :
+{
+	Initializer n = mkInitializer(getToken(0).getPos(),modifiers);
+}
+{
+	{ presc = n; }
+	n.body = MaybeSkipBlock()
+	[ ";" ]
+	
+	{ return n; }
+}
+
+
+
+/*
+ * Type, name and expression syntax follows.
+ */
+
+
+TypeRef Type() :
+{ TypeRef res; }
+{
+	(
+		res = TypeExpr()
+	|	LOOKAHEAD({Kiev.enabled(KievExt.With)})
+		res = ClosureType()
+	)
+	{ return res; }
+}
+
+TypeRef TypeExpr() :
+{ TypeRef res; Token t; }
+{
+	(
+		res = ReparseType()
+	|	res = PrimitiveType()
+	|	res = TypeWithArgs()
+	)
+	(
+		(	t = TypeOperatorChar()
+		|	t = <OPERATOR_LRBRACKETS>
+		)
+		{ res = new TypeExpr(res,t); }
+	)*
+	{ return res; }
+}
+
+TypeNameRef TypeQName() :
+{ SymbolRef id; TypeNameRef res; }
+{
+	id = NameRef() { res = new TypeNameRef(id.name); res.pos = id.pos; }
+	(
+		"."
+		id = NameRef()  { res = new TypeNameRef(res, id.name); res.pos = id.pos; }
+	)*
+	{ return res; }
+}
+
+TypeRef TypeWithArgs() :
+{ SymbolRef id; TypeNameRef res; }
+{
+	id = NameRef() { res = new TypeNameRef(id.name); res.pos = id.pos; }
+	(	LOOKAHEAD(2)
+		(
+			"."
+			id = NameRef()  { res = new TypeNameRef(res, id.name); res.pos = id.pos; }
+		|	"<"
+				res.args += Type()
+				( "," res.args += Type() )*
+			">"
+		)
+	)*
+	{ return res; }
+}
+
+TypeRef NArrType() :
+{ TypeRef res; Token t; }
+{
+	(
+		res = ReparseType()
+	|	res = PrimitiveType()
+	|	res = TypeWithArgs()
+	)
+	(	LOOKAHEAD(2)
+		(
+			t = TypeOperatorChar()			{ res = new TypeExpr(res,t); }
+		|
+			t = <OPERATOR_LRBRACKETS>		{ res = new TypeExpr(res,t); }
+			t = TypeOperatorChar()			{ res = new TypeExpr(res,t); }
+		)
+		{ res = new TypeExpr(res,t); }
+	)*
+	{ return res; }
+}
+
+TypeRef ClosureType() :
+{ Token t; TypeClosureRef n = new TypeClosureRef(); }
+{
+	t="(" { n.pos = t.getPos(); }
+	[
+		n.args += Type()
+		( "," n.args += Type() )*
+	]
+	")" "->" n.ret = Type()
+	{ return n; }
+}
+
+TypeRef PrimitiveType() :
+{ Token t; Type tp = null; }
+{
+	(
+	  t="boolean"	{ tp = Type.tpBoolean; }
+	| t="char"		{ tp = Type.tpChar; }
+	| t="byte"		{ tp = Type.tpByte; }
+	| t="short"		{ tp = Type.tpShort; }
+	| t="int"		{ tp = Type.tpInt; }
+	| t="long"		{ tp = Type.tpLong; }
+	| t="float"		{ tp = Type.tpFloat; }
+	| t="double"	{ tp = Type.tpDouble; }
+	| t="void"		{ tp = Type.tpVoid; }
+	| t="rule"		{ tp = Type.tpRule; }
+	| t="any"		{ tp = Type.tpAny; }
+	)
+	{
+		TypeRef tr = new TypeRef(tp);
+		tr.pos = t.getPos();
+		return tr;
+	}
+}
+
+TypeRef ReparseType() :
+{ Token t; }
+{
+	t=<REPARSE_TYPE>
+	{
+		Type tp = (Type)Kiev.parserAddresses.get(t.image.substring(5,5+8));
+		return new TypeRef(tp);
+	}
+}
+
+LVarExpr Var() :
+{ Token t; }
+{
+	t=<IDENTIFIER>
+	{
+		LVarExpr id = new LVarExpr();
+		id.set(t);
+		return id;
+	}
+}
+
+Symbol Name() :
+{ Token t; }
+{
+	t=<IDENTIFIER>
+	{
+		Symbol id = new Symbol();
+		id.set(t);
+		return id;
+	}
+}
+
+SymbolRef NameRef() :
+{ Token t; }
+{
+	t=<IDENTIFIER>
+	{
+		SymbolRef id = new SymbolRef();
+		id.set(t);
+		return id;
+	}
+}
+
+SymbolRef QName() :
+{ SymbolRef id; SymbolRef id2; }
+{
+	id = NameRef()
+	(
+		LOOKAHEAD(2)
+		"."
+		id2 = NameRef()
+		{ id.name = id.name+'.'+id2.name; }
+	)*
+	{ return id; }
+}
+
+ASTIdentifier Identifier() :
+{ Token t; }
+{
+	t=<IDENTIFIER>
+	{
+		return new ASTIdentifier(t);
+	}
+}
+
+/*
+ * Expression syntax follows.
+ */
+
+ENode CommaExpression() :
+{ ENode e; CommaExpr ce = null; }
+{
+	e = Expression()
+	(
+		","
+		{ if (ce==null) ce = new CommaExpr(e); }
+		ce.exprs += Expression()
+	)*
+	{ return ce == null ? e : ce; }
+}
+
+ASTRuleNode RuleOrExpression() :
+{ ASTRuleNode e; RuleOrExpr r = null; }
+{
+	e = RuleAndExpression()
+	(
+		";"
+		{ if (r==null) { r = new RuleOrExpr(e); r.pos = getToken(0).getPos();} }
+		r.rules += RuleAndExpression()
+	)*
+	{ return r == null ? e : r; }
+}
+
+ASTRuleNode RuleAndExpression() :
+{ ASTRuleNode e; RuleAndExpr r = null; }
+{
+	e = RuleExpression()
+	(
+		","
+		{ if (r==null) { r = new RuleAndExpr(e); r.pos = getToken(0).getPos();} }
+		r.rules += RuleExpression()
+	)*
+	{ return r == null ? e : r; }
+}
+
+ASTRuleNode RuleExpression() :
+{ ASTRuleNode r; }
+{
+	(
+		LOOKAHEAD( {
+			getToken(1).kind == IDENTIFIER
+		 && getToken(2).kind == IS_THE
+		})
+		r = RuleIstheExpression()
+	|
+		LOOKAHEAD( {
+			getToken(1).kind == IDENTIFIER
+		 && getToken(2).kind == IS_ONE_OF
+		})
+		r = RuleIsoneofExpression()
+	|
+		LOOKAHEAD({getToken(1).kind == PCUT})
+		r = RuleCutExpression()
+	|
+		LOOKAHEAD({getToken(1).kind == LBRACE})
+		"{" r = RuleOrExpression() "}"
+	|
+		LOOKAHEAD({getToken(1).kind == WHILE})
+		"while"
+		{ r = new RuleWhileExpr(); }
+		r.expr = Expression() 
+		[
+			":"
+			r.bt_expr = ExpressionNT(noColonTokenSet)
+		]
+	|
+		LOOKAHEAD(0)
+		{ r = new RuleExpr(); }
+		r.expr = ExpressionNT(noColonTokenSet)
+		[
+			":"
+			r.bt_expr = ExpressionNT(noColonTokenSet)
+		]
+	)
+	{ return r; }
+}
+
+RuleIstheExpr RuleIstheExpression() :
+{ Token t; RuleIstheExpr r = new RuleIstheExpr(); }
+{
+	r.var = Var()
+	t = "?=" { r.pos = t.getPos(); }
+	r.expr = ExpressionNT(noCommaTokenSet) //AccessExpression()
+	{ return r; }
+}
+
+RuleIsoneofExpr RuleIsoneofExpression() :
+{ Token t; RuleIsoneofExpr r = new RuleIsoneofExpr(); }
+{
+	r.var = Var()
+	t = "@=" { r.pos = t.getPos(); }
+	r.expr = ExpressionNT(noCommaTokenSet) //AccessExpression()
+	{ return r; }
+}
+
+RuleCutExpr RuleCutExpression() :
+{ RuleCutExpr r = new RuleCutExpr(); }
+{
+	"$cut"
+	{
+		r.pos = getToken(0).getPos();
+		return r;
+	}
+}
+
+Token TypeOperatorChar() :
+{ Token t; }
+{
+	(
+		t=<QUESTION>
+	|	t=<BANG>
+	|	t=<TILDE>
+	|	t=<PLUS>
+	|	t=<MINUS>
+	|	t=<STAR>
+	|	t=<SLASH>
+	|	t=<BIT_AND>
+	|	t=<BIT_OR>
+	|	t=<XOR>
+	|	t=<REM>
+	|	t=<OPERATOR_AT>
+	|	t=<OPERATOR_SHARP>
+	|	t=<OPERATOR>
+	)
+	{ return t; }
+}
+
+Token OperatorChar() :
+{ Token t; }
+{
+	(
+		t=<ASSIGN>
+	|	t=<ASSIGN2>
+	|	t=<LT>
+	|	t=<GT>
+	|	t=<COLON>
+	|	t=<QUESTION>
+	|	t=<ARROW>
+	|	t=<BANG>
+	|	t=<TILDE>
+	|	t=<EQ>
+	|	t=<LE>
+	|	t=<GE>
+	|	t=<NE>
+	|	t=<SC_OR>
+	|	t=<SC_AND>
+	|	t=<INCR>
+	|	t=<DECR>
+	|	t=<PLUS>
+	|	t=<MINUS>
+	|	t=<STAR>
+	|	t=<SLASH>
+	|	t=<BIT_AND>
+	|	t=<BIT_OR>
+	|	t=<XOR>
+	|	t=<REM>
+	|	t=<LSHIFT>
+	|	t=<PLUSASSIGN>
+	|	t=<MINUSASSIGN>
+	|	t=<STARASSIGN>
+	|	t=<SLASHASSIGN>
+	|	t=<ANDASSIGN>
+	|	t=<ORASSIGN>
+	|	t=<XORASSIGN>
+	|	t=<REMASSIGN>
+	|	t=<LSHIFTASSIGN>
+	|	t=<RSIGNEDSHIFTASSIGN>
+	|	t=<RUNSIGNEDSHIFTASSIGN>
+	|	t=<OPERATOR_AT>
+	|	t=<OPERATOR_SHARP>
+	|	t=<OPERATOR_UPPER_BOUND>
+	|	t=<OPERATOR_LOWER_BOUND>
+	|	t=<OPERATOR>
+	)
+	{ return t; }
+}
+
+ASTOperator Operator() :
+{ Token t; String image; ASTOperator op = new ASTOperator(); }
+{
+	(
+		t=OperatorChar()
+		{ image = t.image; }
+		(
+			LOOKAHEAD({ !Kiev.javaMode && operatorLA(1) && checkNoSpace(getToken(0),getToken(1)) })
+			t=OperatorChar()
+			{ image = image+t.image; }
+		|
+			LOOKAHEAD({ Kiev.javaMode && getToken(1).kind==GT && checkNoSpace(getToken(0),getToken(1)) })
+			t=<GT>
+			{ image = image+t.image; }
+		)*
+	|
+		t="?=" { image = t.image; }
+	|
+		t="@=" { image = t.image; }
+	|
+		LOOKAHEAD({ !Kiev.javaMode })
+		"operator" t=<IDENTIFIER>
+		{ image = t.image; }
+	)
+	{
+		op.pos = t.getPos();
+		op.ident = image;
+		return op;
+	}
+}
+
+void SureCastOperatorLA() :
+{}
+{
+	"("
+	(
+		<CAST>
+	|	<REINTERP>
+	|	PrimitiveType()
+	)
+}
+
+void MaybeCastOperatorLA() :
+{}
+{
+	"("
+	(	LOOKAHEAD(0,{ maybeCastLA_Start() })
+		Type() ")"
+		(
+			<IDENTIFIER>
+		|	"("
+		|	ConstExpression()
+		|	"new"
+		|	Operator()
+		|	ReparseExpression()
+		|	"fun"
+		)
+	)
+}
+
+void CastOperator(ASTExpression e) :
+{ Token t; }
+{
+	t="(" { e.nodes += new ASTOperator(t); }
+	[
+		t="$cast"		{ e.nodes += new ASTOperator(t); }
+	|	t="$reinterp"	{ e.nodes += new ASTOperator(t); }
+	]
+	e.nodes += Type()
+	t=")" { e.nodes += new ASTOperator(t); }
+}
+
+ENode ExpressionNT(int[] nt_new) :
+{ int[] nt_old = no_tokens; no_tokens = nt_new; ENode e; }
+{
+	try {
+		e = Expression()
+	} finally { no_tokens = nt_old; }
+	{ return e; }
+}
+
+ENode Expression() :
+{ ASTExpression e = new ASTExpression(); }
+{
+	(
+		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("instanceof") })
+		e.nodes += Identifier()
+		e.nodes += Type()
+	|	LOOKAHEAD({ operatorLA(1) })
+		e.nodes += Operator()
+	|	LOOKAHEAD( SureCastOperatorLA() )
+		CastOperator(e)
+	|	LOOKAHEAD( MaybeCastOperatorLA() )
+		CastOperator(e)
+	|	LOOKAHEAD(2)
+		e.nodes += AccessExpression()
+	)+
+	{
+		if (e.nodes.length == 1 && e.nodes[0] instanceof ENode) {
+			ENode en = ~e.nodes[0];
+			if (e.isPrimaryExpr())
+				en.setPrimaryExpr(true);
+			return en;
+		}
+		e.pos = e.nodes[0].pos; 
+		return e;
+	}
+}
+
+ENode ReparseExpression() :
+{ Token t; }
+{
+	t=<REPARSE_EXPRESSION>
+	{
+		return (ENode)Kiev.parserAddresses.get(t.image.substring(5,5+8));
+	}
+}
+
+ENode CallExpression() :
+{ SymbolRef id; CallExpr e = new CallExpr(); }
+{
+	id = NameRef() { e.pos = id.pos; e.ident = id.name; }
+	[
+		"<"
+			e.targs += Type()
+			( ","  e.targs += Type() )*
+		">"
+	]
+	"("
+	[	e.args += ExpressionNT(null)
+		(	","  e.args += ExpressionNT(null)	)*
+	]
+	")"
+	{ return e; }
+}
+
+ENode CallAccessExpression(ENode obj) :
+{ SymbolRef id; CallExpr e = new CallExpr(); e.obj = obj; }
+{
+	id = NameRef() { e.pos = id.pos; e.ident = id.name; }
+	[
+		"<"
+			e.targs += Type()
+			( ","  e.targs += Type() )*
+		">"
+	]
+	"("
+	[	e.args += ExpressionNT(null)
+		(	","  e.args += ExpressionNT(null)	)*
+	]
+	")"
+	{ return e; }
+}
+
+ENode TypeClassExpression() :
+{ TypeClassExpr e = new TypeClassExpr(); }
+{
+	e.type = Type() "." "class" { e.pos = getToken(0).getPos(); }
+	{
+		e.pos = getToken(0).getPos();
+		return e;
+	}
+}
+
+ENode AccessExpression() :
+{ Token t; SymbolRef id; ENode e = null; }
+{
+	(
+		LOOKAHEAD( Type() "." "class" )
+		e = TypeClassExpression()
+	|
+		LOOKAHEAD(2)
+		e = ConstExpression()
+	|
+		LOOKAHEAD( <IDENTIFIER> ["<" Type() ("," Type())* ">"] "(" )
+		e = CallExpression()
+	|
+		LOOKAHEAD(2)
+		e = Identifier()
+	|
+		LOOKAHEAD("new" "#")
+		e = RewriteFactoryCall()
+	|
+		LOOKAHEAD("new" NArrType() (<OPERATOR_LRBRACKETS>)+ "{" )
+		e = NewInitializedArrayExpression()
+	|
+		LOOKAHEAD("new" NArrType() "[" )
+		e = NewArrayExpression()
+	|
+		LOOKAHEAD("new" Modifiers() NArrType() ( "(" ) )
+		e = NewExpression()
+	|
+		e = ReparseExpression()
+	|
+		"("
+		e = ExpressionNT(null)
+		")"
+		{ e.setPrimaryExpr(true); }
+	|   LOOKAHEAD("fun" "(")
+		e = AnonymouseClosure()
+	)
+	(
+		LOOKAHEAD( "." <IDENTIFIER> ["<" Type() ("," Type())* ">"] "(" )
+		"."
+		e = CallAccessExpression(e)
+	|
+		LOOKAHEAD(3)
+		t="."
+		{ AccessExpr ae = new AccessExpr(); ae.obj = e; ae.pos = t.getPos(); }
+		id = NameRef() { ae.ident = id.name; }
+        { e = ae; }
+	|	LOOKAHEAD(2)
+		t="["
+		{ ContainerAccessExpr ae = new ContainerAccessExpr(); ae.obj = e; ae.pos = t.getPos(); }
+		ae.index = ExpressionNT(null)
+		"]"
+        { e = ae; }
+	|
+		LOOKAHEAD("." "new" NArrType() ( "(" ) )
+		t="."
+		{ ENode acc = e; }
+		e = NewExpression()
+        { e.outer = acc; }
+	)*
+	{ return e; }
+}
+
+NewClosure AnonymouseClosure() :
+{ ASTModifiers modifiers; NewClosure nc = new NewClosure(getToken(1).getPos()); }
+{
+	"fun" "("
+	[
+		modifiers = Modifiers()
+		nc.params += FormalParameter(modifiers)
+		(
+			","
+			modifiers = Modifiers()
+			nc.params += FormalParameter(modifiers)
+		)*
+	]
+	")" "->"
+    (
+		LOOKAHEAD( { getToken(1).kind == RULE } )
+		nc.type_ret = Type()
+		nc.body = RuleBlock()
+	|
+		nc.type_ret = Type()
+		nc.body = Block()
+	)
+	{ return nc; }
+}
+
+ConstExpr ConstExpression() :
+{ ConstExpr ce; }
+{
+	(
+		ce = BooleanConstExpression()
+	|	ce = IntConstExpression()
+	|	ce = LongConstExpression()
+	|	ce = FloatConstExpression()
+	|	ce = DoubleConstExpression()
+	|	ce = CharConstExpression()
+	|	ce = NullConstExpression()
+	|	ce = StringConstExpression()
+	)
+	{ return ce; }
+}
+
+ConstBoolExpr BooleanConstExpression() :
+{ Token t; }
+{
+	(
+		t="true"
+	|	t="false"
+	)
+	{ return (ConstBoolExpr)ConstExpr.fromSource(t); }
+}
+
+ConstIntExpr IntConstExpression() :
+{ Token t; }
+{
+ 	t=<INTEGER_LITERAL>
+	{ return (ConstIntExpr)ConstExpr.fromSource(t); }
+}
+
+ConstLongExpr LongConstExpression() :
+{ Token t; }
+{
+	t=<LONG_INTEGER_LITERAL>
+	{ return (ConstLongExpr)ConstExpr.fromSource(t); }
+}
+
+ConstFloatExpr FloatConstExpression() :
+{ Token t; }
+{
+	t=<FLOATING_POINT_LITERAL>
+	{ return (ConstFloatExpr)ConstExpr.fromSource(t); }
+}
+
+ConstDoubleExpr DoubleConstExpression() :
+{ Token t; }
+{
+	t=<DOUBLE_POINT_LITERAL>
+	{ return (ConstDoubleExpr)ConstExpr.fromSource(t); }
+}
+
+ConstCharExpr CharConstExpression() :
+{ Token t; }
+{
+	t=<CHARACTER_LITERAL>
+	{ return (ConstCharExpr)ConstExpr.fromSource(t); }
+}
+
+ConstNullExpr NullConstExpression() :
+{ Token t; }
+{
+	t="null"
+	{ return (ConstNullExpr)ConstExpr.fromSource(t); }
+}
+
+ConstStringExpr StringConstExpression() :
+{ Token t, t1; }
+{
+	t=<STRING_LITERAL>
+	(
+		LOOKAHEAD({
+			getToken(1).kind==PLUS
+		 && getToken(2).kind==STRING_LITERAL
+		})
+		"+" t1=<STRING_LITERAL>
+		{
+			t.image = t.image.substring(0,t.image.length()-1)+t1.image.substring(1);
+			t.endLine = t1.endLine;
+			t.endColumn = t1.endColumn;
+		}
+	)*
+	{ return (ConstStringExpr)ConstExpr.fromSource(t); }
+}
+
+NewExpr NewExpression() :
+{
+	boolean old_mode;
+	ASTModifiers modifiers;
+	Struct clazz;
+	TypeDecl oldClazz;
+	NewExpr ne = new NewExpr();
+	ne.pos = getToken(1).getPos();
+}
+{
+	"new"
+	modifiers = Modifiers()
+    ne.type = NArrType() "("
+	[	ne.args += ExpressionNT(null)
+		(	"," ne.args += ExpressionNT(null)	)*
+	]
+	")"
+	[
+		LOOKAHEAD("{")
+		{
+			old_mode = interface_only;
+			interface_only = false;
+			ne.clazz = clazz = mkStruct(null, new JavaAnonymouseClass(), ACC_FINAL, modifiers, ne);
+			oldClazz = curClazz;
+			curClazz = clazz;
+		}
+		try {
+			TypeBodyDeclaration(clazz)
+		} finally {
+			interface_only = old_mode;
+			curClazz = oldClazz;
+		}
+	]
+	{ return ne; }
+}
+
+NewArrayExpr NewArrayExpression() :
+{ NewArrayExpr ne = new NewArrayExpr(); ne.pos = getToken(1).getPos(); }
+{
+	"new"
+	ne.type = NArrType()
+	(
+		LOOKAHEAD(2)
+		"["
+		ne.args += ExpressionNT(null)
+		"]"
+	)+
+	(
+		<OPERATOR_LRBRACKETS>
+		{ ne.args += new NopExpr(); }
+	)*
+	{
+		return ne;
+	}
+}
+
+NewInitializedArrayExpr NewInitializedArrayExpression() :
+{ int dim=0; NewInitializedArrayExpr ne; TypeRef tr; Token tn, t; }
+{
+	tn="new"
+	tr = NArrType()
+	(
+		t=<OPERATOR_LRBRACKETS> 
+		{ dim += 1; tr = new TypeExpr(tr,t); }
+	)+
+	{ ne = new NewInitializedArrayExpr(tn.getPos(), (TypeExpr)tr, dim, null); }
+	"{"
+	[
+		ne.args += VariableInitializer()
+		(	LOOKAHEAD(2)
+			","
+			ne.args += VariableInitializer()
+		)*
+		[ "," ]
+	]
+	"}"
+	{
+		ne.dims[0] = ne.args.length;
+		return ne;
+	}
+}
+
+
+/*
+ * Statement syntax follows.
+ */
+
+ENode Statement() :
+{ ENode st; }
+{
+	(
+	  LOOKAHEAD(2, <IDENTIFIER> ":")
+	  st = LabeledStatement()
+	| st = Block()
+	| st = SwitchStatement()
+	| st = IfStatement()
+	| st = WhileStatement()
+	| st = DoStatement()
+	| st = ForStatement()
+	| st = ForEachStatement()
+	| st = BreakStatement()
+	| st = ContinueStatement()
+	| st = ReturnStatement()
+	| st = ThrowStatement()
+	| st = SynchronizedStatement()
+	| st = WithStatement()
+	| st = TryStatement()
+	| st = GotoStatement()
+	| st = ReparseStatement()
+	| st = IfRewr()
+	| LOOKAHEAD(0)
+	  st = StatementExpression()
+	)
+	{ return st; }
+}
+
+ENode ReparseStatement() :
+{ Token t; }
+{
+	t=<REPARSE_STATEMENT>
+	{
+		return (ENode)Kiev.parserAddresses.get(t.image.substring(5,5+8));
+	}
+}
+
+ENode LabeledStatement() :
+{ LabeledStat st = new LabeledStat(); Symbol id; }
+{
+	id = Name() { st.lbl.id.sname = id.sname; st.pos = id.pos; }
+	":"
+	st.stat = Statement()
+	{ return st; }
+}
+
+
+ENode PrescannedBlock(PrescannedBody b) :
+{
+	Token t;
+	// Skip to the start of prescanned body
+	Token tk;
+	for(;;) {
+		tk = getToken(1);
+		if( tk.beginLine==b.lineno && tk.beginColumn==b.columnno )
+			break;
+		if( tk.kind == EOF ) {
+			throw new CompilerException(b,
+				"Expected to find start of block after scanning. Have you changed the file?"
+			);
+		}
+		getNextToken();
+	}
+	ENode bl = null;
+}
+{
+	(
+		LOOKAHEAD({b.mode == PrescannedBody.BlockMode})
+		bl=Block()
+	|
+		LOOKAHEAD({b.mode == PrescannedBody.RuleBlockMode})
+		bl=RuleBlock()
+	|
+		LOOKAHEAD({b.mode == PrescannedBody.CondBlockMode})
+		bl=CondBlock()
+	|
+		LOOKAHEAD({b.mode == PrescannedBody.RewriteMatchMode})
+		bl=RewriteMatch()
+	)
+	{ return bl; }
+}
+
+Block Block() :
+{ boolean old_declMode; }
+{
+	"{"
+	{
+		Block bl = new Block();
+		bl.pos = getToken(1).getPos();
+		old_declMode = declMode;
+		declMode = false;
+	}
+	try {
+    	(
+			BlockStatement(bl.getSpacePtr("stats"))
+		)*
+	} finally { declMode = old_declMode; }
+    "}"
+	{ return bl; }
+}
+
+RuleBlock RuleBlock() :
+{ boolean old_declMode; }
+{
+	"{"
+	{
+		RuleBlock bl = new RuleBlock();
+		bl.pos = getToken(1).getPos();
+		old_declMode = declMode;
+		declMode = false;
+	}
+	try {
+		bl.rnode = RuleOrExpression()
+	} finally { declMode = old_declMode; }
+	"}"
+	{ return bl; }
+}
+
+Block CondBlock() :
+{}
+{
+	{
+		Block bl = new Block();
+		bl.pos = getToken(1).getPos();
+	}
+	(
+		"{"
+			(
+				bl.stats += CondStatement()
+			)+
+		"}"
+	|
+		bl.stats += CondStatement()
+	)
+	{ return bl; }
+}
+
+void BlockStatement(SpacePtr stats) :
+{ boolean old_declMode; ASTModifiers modifiers; TypeRef tp; Struct clazz; Var var; }
+{
+	{ comments_alone(stats); }
+	(
+		/* class declaration */
+		LOOKAHEAD( Modifiers() ("class" | "interface" | "@interface") )
+		{
+			old_declMode = declMode;
+			declMode = true;
+		}
+		try {
+			modifiers = Modifiers()
+			clazz = TypeDeclaration(modifiers, (ASTNode)stats.node)
+			{ stats += clazz; }
+			[ ";" ]
+		} finally {
+			declMode = old_declMode;
+		}
+	|
+		/* local vars declaration */
+		LOOKAHEAD( Modifiers() Type() Name() )
+		modifiers = Modifiers()
+		stats += VarDecls(modifiers)
+		";"
+	|
+		/* other statements */
+		LOOKAHEAD(0)
+		stats += Statement()
+	)
+}
+
+CondStat CondStatement() :
+{ Token t = getToken(1); CondStat st = new CondStat(); }
+{
+	st.cond = ExpressionNT(noColonTokenSet)
+	[
+		":"
+		{ t = null; }
+		st.message = Expression()
+	]
+	{
+		if( t != null ) {
+			int pos = t.getPos();
+			StringBuffer sb = new StringBuffer();
+			while( t != null && t != getToken(1) ) {
+				sb.append(t.image).append(' ');
+				t = t.next;
+			}
+			ConstStringExpr e = new ConstStringExpr(sb.toString());
+			e.pos = pos;
+			st.message = e;
+		}
+	}
+	";"
+	{ return st; }
+}
+
+ENode StatementExpression() :
+{ ENode st; }
+{
+	(
+		";" { st = new ExprStat(getToken(0).getPos(), null); } 
+	|	st = ExpressionNT(null)
+		[ ";" { st = new ExprStat(st.pos, st); } ]
+	)
+	{ return st; }
+}
+
+SwitchStat SwitchStatement() :
+{ SwitchStat st = new SwitchStat(); }
+{
+	"switch"
+	{ st.pos = getToken(0).getPos(); }
+	"(" st.sel = ExpressionNT(null) ")"
+	"{"
+	(	st.cases += CaseStatements()	)+
+	"}"
+	{ return st; }
+}
+
+CaseLabel CaseStatements() :
+{ CaseLabel st; }
+{
+	(
+		LOOKAHEAD("case" QName() "(" )
+		st = PizzaCase()
+	|
+		st = NormalCase()
+	)
+	{ return st; }
+}
+
+CaseLabel NormalCase() :
+{ CaseLabel c = new CaseLabel(); }
+{
+	(
+		"case"	{ c.pos = getToken(0).getPos(); }
+		c.val = ExpressionNT(noColonTokenSet)
+		":"
+	|
+		"default"	{ c.pos = getToken(0).getPos(); }
+		":"
+	)
+	(
+		BlockStatement(c.getSpacePtr("stats"))
+	)*
+	{ return c; }
+}
+
+CaseLabel PizzaCase() :
+{ Token t; ASTModifiers modifiers; CaseLabel c = new CaseLabel(); }
+{
+	"case"		{ c.pos = getToken(0).getPos(); }
+	c.val = TypeWithArgs()
+	"("
+	[
+		modifiers = Modifiers()
+		c.pattern += PizzaCaseFormalParameter(modifiers)
+		(
+			","
+			modifiers = Modifiers()
+			c.pattern += PizzaCaseFormalParameter(modifiers)
+		)*
+	]
+	")" ":"
+	(
+		BlockStatement(c.getSpacePtr("stats"))
+	)*
+	{ return c; }
+}
+
+IfElseStat IfStatement() :
+{ IfElseStat st = new IfElseStat(); ASTOperator not = null; }
+{
+	"if"
+	{ st.pos = getToken(0).getPos(); }
+	[
+		LOOKAHEAD("!")
+		not = Operator()
+	]
+    "("
+		st.cond = ExpressionNT(null)
+		{ if (not != null) st.cond = mkNotExpr(not,st.cond); }
+	")"
+	st.thenSt = Statement()
+	[	LOOKAHEAD(1)
+		"else"
+		st.elseSt = Statement()
+	]
+	{ return st; }
+}
+
+WhileStat WhileStatement() :
+{ WhileStat st = new WhileStat(); ASTOperator not = null; }
+{
+	"while"
+	{ st.pos = getToken(0).getPos(); }
+	[
+		LOOKAHEAD("!")
+		not = Operator()
+	]
+    "("
+		st.cond = ExpressionNT(null)
+		{ if (not != null) st.cond = mkNotExpr(not,st.cond); }
+	")"
+    st.body = Statement()
+	{ return st; }
+}
+
+DoWhileStat DoStatement() :
+{ DoWhileStat st = new DoWhileStat(); ASTOperator not = null; }
+{
+	"do"
+	{ st.pos = getToken(0).getPos(); }
+    st.body = Statement()
+    "while"
+	[
+		LOOKAHEAD("!")
+		not = Operator()
+	]
+    "("
+		st.cond = ExpressionNT(null)
+		{ if (not != null) st.cond = mkNotExpr(not,st.cond); }
+	")" ";"
+	{ return st; }
+}
+
+ForStat ForStatement() :
+{ ForStat st = new ForStat(); }
+{
+	"for"
+	{ st.pos = getToken(0).getPos(); }
+	"("
+		st.init = ForInitDecl()
+	/*";"*/
+	[
+		st.cond = ExpressionNT(null)
+	]
+	";"
+	[
+		st.iter = CommaExpression()
+	]
+	")"
+	st.body = Statement()
+	{ return st; }
+}
+
+ForEachStat ForEachStatement() :
+{ ASTModifiers modifiers; ForEachStat st = new ForEachStat(); }
+{
+	"foreach"
+	{ st.pos = getToken(0).getPos(); }
+	"("
+	[	LOOKAHEAD( Modifiers() FormalParameter() )
+		modifiers = Modifiers()
+		st.var = PizzaCaseFormalParameter(modifiers)
+		";"
+	]
+	st.container = ExpressionNT(null)
+	[
+		";"
+		[
+			st.cond = ExpressionNT(null)
+		]
+	]
+	")"
+	st.body = Statement()
+	{ return st; }
+}
+
+ASTNode ForInitDecl() :
+{ ASTModifiers modifiers; ASTNode n; ASTModifiers modifiers; TypeRef tp; }
+{
+	(
+		LOOKAHEAD( Modifiers() Type() QName() (<OPERATOR_LRBRACKETS>)* ("=" | "," | ";") )
+		modifiers = Modifiers()
+		n = VarDecls(modifiers)
+		";"
+	|
+		n = CommaExpression() ";"
+	|
+		";" { n = null; }
+ 	)
+	{ return n; }
+}
+
+ENode GotoStatement() :
+{ ENode st; ENode expr; SymbolRef id; }
+{
+	"goto"
+	(
+		"case"
+		{
+			st = new GotoCaseStat();
+			st.pos = getToken(0).getPos();
+		}
+		expr = ExpressionNT(null)
+		{ ((GotoCaseStat)st).expr = expr; }
+	|
+		"default"
+		{
+			st = new GotoCaseStat();
+			st.pos = getToken(0).getPos();
+		}
+	|
+		{
+			st = new GotoStat();
+			st.pos = getToken(0).getPos();
+		}
+    	id = NameRef()
+		{ ((GotoStat)st).ident = id.name; }
+    )
+    ";"
+	{ return st; }
+}
+
+BreakStat BreakStatement() :
+{ SymbolRef id; BreakStat st = new BreakStat(); }
+{
+	"break"
+	{ st.pos = getToken(0).getPos(); }
+    [ id = NameRef() { st.ident = id.name; } ] ";"
+	{ return st; }
+}
+
+ContinueStat ContinueStatement() :
+{ SymbolRef id; ContinueStat st = new ContinueStat(); }
+{
+	"continue"
+	{ st.pos = getToken(0).getPos(); }
+    [ id = NameRef() { st.ident = id.name; } ] ";"
+	{ return st; }
+}
+
+ReturnStat ReturnStatement() :
+{ ReturnStat st = new ReturnStat(); }
+{
+	"return"
+	{ st.pos = getToken(0).getPos(); }
+    [ st.expr = ExpressionNT(null) ] ";"
+	{ return st; }
+}
+
+ThrowStat ThrowStatement() :
+{ ThrowStat st = new ThrowStat(); }
+{
+	"throw"
+	{ st.pos = getToken(0).getPos(); }
+    st.expr = ExpressionNT(null) ";"
+	{ return st; }
+}
+
+SynchronizedStat SynchronizedStatement() :
+{ SynchronizedStat st = new SynchronizedStat(); }
+{
+	"synchronized"
+	{ st.pos = getToken(0).getPos(); }
+	"(" st.expr = ExpressionNT(null) ")"
+	st.body = Block()
+	{ return st; }
+}
+
+WithStat WithStatement() :
+{ WithStat st = new WithStat(); }
+{
+	"with"
+	{ st.pos = getToken(0).getPos(); }
+	"(" st.expr = ExpressionNT(null) ")"
+	st.body = Block()
+	{ return st; }
+}
+
+TryStat TryStatement() :
+{ ASTModifiers modifiers; TryStat st = new TryStat(); }
+{
+	"try"
+	{ st.pos = getToken(0).getPos(); }
+    st.body = Block()
+	(
+		st.catchers += CatchInfo()
+	)*
+	[
+		st.finally_catcher = FinallyInfo()
+	]
+	{ return st; }
+}
+
+CatchInfo CatchInfo() :
+{ ASTModifiers modifiers; CatchInfo st = new CatchInfo(); }
+{
+	"catch"
+	{ st.pos = getToken(0).getPos(); }
+	"("
+		modifiers = Modifiers()
+		st.arg = PizzaCaseFormalParameter(modifiers)
+	")"
+	st.body = Block()
+	{ return st; }
+}
+
+FinallyInfo FinallyInfo() :
+{ Token t; FinallyInfo st = new FinallyInfo(); }
+{
+	"finally"
+	{ st.pos = getToken(0).getPos(); }
+	st.body = Block()
+	{ return st; }
+}
+
+
+
+RewriteMatch RewriteMatch() :
+{ TypeRef tp; Symbol id; RewriteMatch rm = new RewriteMatch(); }
+{
+	"{"
+	(
+		rm.cases += RewriteCase()
+	)+
+	"}"
+	{ return rm; }
+}
+
+RewriteCase RewriteCase() :
+{ RewriteCase c = new RewriteCase(); }
+{
+	"case"		{ c.pos = getToken(0).getPos(); }
+	c.var = RewriteCasePattern()
+	":"
+	(
+		BlockStatement(c.getSpacePtr("stats"))
+	)+
+	{ return c; }
+}
+
+RewritePattern RewriteCasePattern() :
+{ ASTModifiers modifiers; TypeRef tp; Symbol id; RewritePattern p; }
+{
+	modifiers = Modifiers()
+	tp = Type()
+	id = Name()
+	{ p = mkRewritePattern(id, modifiers, tp); }
+	[
+	"("
+		[
+			p.vars += RewriteCasePattern()
+			(
+				","
+				p.vars += RewriteCasePattern()
+			)*
+		]
+	")"
+	]
+	{ return p; }
+}
+
+
+
+
+RewriteNodeFactory RewriteFactoryCall() :
+{ RewriteNodeFactory rn; SymbolRef id; }
+{
+	"new" "#"
+	id = QName()
+	{ rn = new RewriteNodeFactory(id.name); }
+	RewriteNodeArgs(rn)
+	{ return rn; }
+}
+
+void RewriteNodeArgs(RewriteNodeFactory nf) :
+{}
+{
+	"("
+	[
+		nf.args += RewriteNodeArg()
+		( "," nf.args += RewriteNodeArg() )*
+	]
+	")"
+}
+
+RewriteNodeArg RewriteNodeArg() :
+{ Token t; ENode rn; }
+{
+	t = <IDENTIFIER>
+	"="
+	(
+		rn = RewriteNodeArgArrayInit()
+	|
+		rn = ExpressionNT(noCommaTokenSet)
+	)
+	{ return new RewriteNodeArg(t.image, rn); }
+}
+
+RewriteNodeArgArray RewriteNodeArgArrayInit() :
+{ RewriteNodeArgArray rn = new RewriteNodeArgArray(); }
+{
+	"{" { rn.pos = getToken(0).getPos(); }
+	[	LOOKAHEAD(2)
+		rn.args += ExpressionNT(noCommaTokenSet)
+		(	LOOKAHEAD(2)
+			","
+			rn.args += VariableInitializer()
+		)*
+		[ "," ]
+	]
+	"}"
+	{ return rn; }
+}
+
+IfElseRewr IfRewr() :
+{ IfElseRewr st = new IfElseRewr(); ASTOperator not = null; }
+{
+	"if#"
+	{ st.pos = getToken(0).getPos(); }
+	[
+		LOOKAHEAD("!")
+		not = Operator()
+	]
+    "("
+		st.cond = ExpressionNT(null)
+		{ if (not != null) st.cond = mkNotExpr(not,st.cond); }
+	")"
+	st.thenSt = Statement()
+	"else"
+	st.elseSt = Statement()
+	{ return st; }
+}
+

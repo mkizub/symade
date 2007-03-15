@@ -1,0 +1,892 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2005-2007 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+--><a-node class="kiev.vlang.FileUnit">
+ <name>stx-fmt\syntax-for-project-tree.xml</name>
+ <pkg>
+  <a-node class="kiev.vlang.types.TypeNameRef">
+   <ident>stx-fmt</ident>
+  </a-node>
+ </pkg>
+ <members>
+  <a-node class="kiev.vlang.Import">
+   <name>
+    <a-node class="kiev.vlang.SymbolRef">
+     <name>kiev.vlang</name>
+    </a-node>
+   </name>
+   <mode>IMPORT_CLASS</mode>
+   <star>true</star>
+  </a-node>
+  <a-node class="kiev.vlang.Import">
+   <name>
+    <a-node class="kiev.vlang.SymbolRef">
+     <name>kiev.vlang.types</name>
+    </a-node>
+   </name>
+   <mode>IMPORT_CLASS</mode>
+   <star>true</star>
+  </a-node>
+  <a-node class="kiev.vlang.Import">
+   <name>
+    <a-node class="kiev.vlang.SymbolRef">
+     <name>kiev.parser</name>
+    </a-node>
+   </name>
+   <mode>IMPORT_CLASS</mode>
+   <star>true</star>
+  </a-node>
+  <a-node class="kiev.vlang.Import">
+   <name>
+    <a-node class="kiev.vlang.SymbolRef">
+     <name>kiev.fmt</name>
+    </a-node>
+   </name>
+   <mode>IMPORT_CLASS</mode>
+   <star>true</star>
+  </a-node>
+  <a-node class="kiev.fmt.TreeSyntax">
+   <members>
+    <a-node class="kiev.fmt.SpaceInfo">
+     <kind>SP_SPACE</kind>
+     <text_size>2</text_size>
+     <pixel_size>4</pixel_size>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>sp</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.DrawColor">
+     <rgb_color>0</rgb_color>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>color-default</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.DrawFont">
+     <font_name>Dialog-PLAIN-12</font_name>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>font-default</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemFormatDecl">
+     <spaces>
+      <a-node class="kiev.fmt.SpaceCmd">
+       <si>
+        <a-node class="kiev.vlang.SymbolRef">
+         <name>sp</name>
+        </a-node>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+     </spaces>
+     <color>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>color-default</name>
+      </a-node>
+     </color>
+     <font>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>font-default</name>
+      </a-node>
+     </font>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>fmt-default</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxIdentTemplate">
+     <regexp_ok>.*</regexp_ok>
+     <esc_prefix/>
+     <esc_suffix/>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxNode">
+       <name/>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>ident-template</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxJavaExprTemplate">
+     <l_paren>
+      <a-node class="kiev.fmt.SyntaxToken">
+       <text>(</text>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </l_paren>
+     <r_paren>
+      <a-node class="kiev.fmt.SyntaxToken">
+       <text>)</text>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </r_paren>
+     <operators>
+      <a-node class="kiev.fmt.SyntaxToken">
+       <text>DEFAULT</text>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </operators>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxNode">
+       <name/>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>java-expr-template</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>Env</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxList">
+       <folded>
+        <a-node class="kiev.fmt.SyntaxToken">
+         <text>Project</text>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </folded>
+       <element>
+        <a-node class="kiev.fmt.SyntaxNode">
+         <name/>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </element>
+       <folded_by_default>true</folded_by_default>
+       <name>files</name>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-env</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>FileUnit</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxList">
+       <folded>
+        <a-node class="kiev.fmt.SyntaxSet">
+         <elements>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>File: </text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+          <a-node class="kiev.fmt.SyntaxIdentAttr">
+           <decl>
+            <a-node class="kiev.vlang.SymbolRef">
+             <name>ident-template</name>
+            </a-node>
+           </decl>
+           <name>name</name>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </folded>
+       <element>
+        <a-node class="kiev.fmt.SyntaxNode">
+         <name/>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </element>
+       <filter>
+        <a-node class="kiev.fmt.CalcOptionClass">
+         <name>kiev.vlang.DNode</name>
+        </a-node>
+       </filter>
+       <folded_by_default>true</folded_by_default>
+       <name>members</name>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-file</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>Struct</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxList">
+       <folded>
+        <a-node class="kiev.fmt.SyntaxSet">
+         <elements>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>S: </text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+          <a-node class="kiev.fmt.SyntaxIdentAttr">
+           <decl>
+            <a-node class="kiev.vlang.SymbolRef">
+             <name>ident-template</name>
+            </a-node>
+           </decl>
+           <name>id</name>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </folded>
+       <element>
+        <a-node class="kiev.fmt.SyntaxNode">
+         <name/>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </element>
+       <filter>
+        <a-node class="kiev.fmt.CalcOptionNot">
+         <opt>
+          <a-node class="kiev.fmt.CalcOptionHasMetaFlag">
+           <name>kiev.stdlib.meta.synthetic</name>
+          </a-node>
+         </opt>
+         <name/>
+        </a-node>
+       </filter>
+       <folded_by_default>true</folded_by_default>
+       <name>members</name>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-struct</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>Field</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxSet">
+       <elements>
+        <a-node class="kiev.fmt.SyntaxToken">
+         <text>fld: </text>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxIdentAttr">
+         <decl>
+          <a-node class="kiev.vlang.SymbolRef">
+           <name>ident-template</name>
+          </a-node>
+         </decl>
+         <name>id</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxToken">
+         <text> : </text>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxSubAttr">
+         <name>ftype</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-field</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>Constructor</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxSet">
+       <elements>
+        <a-node class="kiev.fmt.SyntaxToken">
+         <text>ctor: </text>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxIdentAttr">
+         <decl>
+          <a-node class="kiev.vlang.SymbolRef">
+           <name>ident-template</name>
+          </a-node>
+         </decl>
+         <name>id</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxList">
+         <element>
+          <a-node class="kiev.fmt.SyntaxNode">
+           <name/>
+           <in_syntax>
+            <a-node class="kiev.vlang.SymbolRef">
+             <name>syntax-form-par</name>
+            </a-node>
+           </in_syntax>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </element>
+         <separator>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>,</text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </separator>
+         <prefix>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>(</text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </prefix>
+         <sufix>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>)</text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </sufix>
+         <folded_by_default>false</folded_by_default>
+         <name>params</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-ctor</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>MethodImpl</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxSet">
+       <elements>
+        <a-node class="kiev.fmt.SyntaxToken">
+         <text>meth: </text>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxIdentAttr">
+         <decl>
+          <a-node class="kiev.vlang.SymbolRef">
+           <name>ident-template</name>
+          </a-node>
+         </decl>
+         <name>id</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxList">
+         <element>
+          <a-node class="kiev.fmt.SyntaxNode">
+           <name/>
+           <in_syntax>
+            <a-node class="kiev.vlang.SymbolRef">
+             <name>syntax-form-par</name>
+            </a-node>
+           </in_syntax>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </element>
+         <separator>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>,</text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </separator>
+         <prefix>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>(</text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </prefix>
+         <sufix>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>)-&gt;</text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </sufix>
+         <folded_by_default>false</folded_by_default>
+         <name>params</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxSubAttr">
+         <name>type_ret</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-method</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>RuleMethod</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxSet">
+       <elements>
+        <a-node class="kiev.fmt.SyntaxToken">
+         <text>rule: </text>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxIdentAttr">
+         <decl>
+          <a-node class="kiev.vlang.SymbolRef">
+           <name>ident-template</name>
+          </a-node>
+         </decl>
+         <name>id</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxList">
+         <element>
+          <a-node class="kiev.fmt.SyntaxNode">
+           <name/>
+           <in_syntax>
+            <a-node class="kiev.vlang.SymbolRef">
+             <name>syntax-form-par</name>
+            </a-node>
+           </in_syntax>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </element>
+         <separator>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>,</text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </separator>
+         <prefix>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>(</text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </prefix>
+         <sufix>
+          <a-node class="kiev.fmt.SyntaxToken">
+           <text>)-&gt;rule</text>
+           <fmt>
+            
+           </fmt>
+          </a-node>
+         </sufix>
+         <folded_by_default>false</folded_by_default>
+         <name>params</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-rule</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>TypeAssign</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxSet">
+       <elements>
+        <a-node class="kiev.fmt.SyntaxToken">
+         <text>type: </text>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+        <a-node class="kiev.fmt.SyntaxIdentAttr">
+         <decl>
+          <a-node class="kiev.vlang.SymbolRef">
+           <name>ident-template</name>
+          </a-node>
+         </decl>
+         <name>id</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-type-assign</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>TypeRef</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxIdentAttr">
+       <decl>
+        <a-node class="kiev.vlang.SymbolRef">
+         <name>ident-template</name>
+        </a-node>
+       </decl>
+       <name>ident</name>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-type-ref</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>TypeNameRef</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxIdentAttr">
+       <decl>
+        <a-node class="kiev.vlang.SymbolRef">
+         <name>ident-template</name>
+        </a-node>
+       </decl>
+       <name>ident</name>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-type-nam</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.SyntaxElemDecl">
+     <rnode>
+      <a-node class="kiev.vlang.SymbolRef">
+       <name>TypeExpr</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class="kiev.fmt.SyntaxJavaExpr">
+       <idx>-1</idx>
+       <priority>0</priority>
+       <template>
+        <a-node class="kiev.vlang.SymbolRef">
+         <name>java-expr-template</name>
+        </a-node>
+       </template>
+       <name/>
+       <fmt>
+        
+       </fmt>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>stx-type-expr</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class="kiev.fmt.TextSyntax">
+     <members>
+      <a-node class="kiev.fmt.SyntaxElemDecl">
+       <rnode>
+        <a-node class="kiev.vlang.SymbolRef">
+         <name>LVar</name>
+        </a-node>
+       </rnode>
+       <elem>
+        <a-node class="kiev.fmt.SyntaxSubAttr">
+         <name>vtype</name>
+         <fmt>
+          
+         </fmt>
+        </a-node>
+       </elem>
+       <meta>
+        <a-node class="kiev.vlang.MetaSet">
+         <mflags>0</mflags>
+        </a-node>
+       </meta>
+       <id>
+        <a-node class="kiev.vlang.Symbol">
+         <sname>stx-form-par</sname>
+        </a-node>
+       </id>
+      </a-node>
+     </members>
+     <meta>
+      <a-node class="kiev.vlang.MetaSet">
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class="kiev.vlang.Symbol">
+       <sname>syntax-form-par</sname>
+      </a-node>
+     </id>
+    </a-node>
+   </members>
+   <meta>
+    <a-node class="kiev.vlang.MetaSet">
+     <mflags>0</mflags>
+    </a-node>
+   </meta>
+   <id>
+    <a-node class="kiev.vlang.Symbol">
+     <sname>syntax-for-project-tree</sname>
+    </a-node>
+   </id>
+  </a-node>
+ </members>
+</a-node>

@@ -1,0 +1,1 @@
+c:\java\jdk1.6.0\bin\java -Xmx256M -classpath classes -verify kiev.Main %*
