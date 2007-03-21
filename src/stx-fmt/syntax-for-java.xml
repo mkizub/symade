@@ -192,6 +192,21 @@
     </a-node>
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_NEW_LINE</kind>
+     <text_size>1</text_size>
+     <pixel_size>1</pixel_size>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>nl-else</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SpaceInfo'>
+     <kind>SP_NEW_LINE</kind>
      <text_size>2</text_size>
      <pixel_size>20</pixel_size>
      <meta>
@@ -1000,6 +1015,16 @@
       <a-node class='kiev.fmt.SpaceCmd'>
        <si>
         <a-node class='kiev.vlang.SymbolRef'>
+         <name>nl-else</name>
+        </a-node>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_NOP</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
          <name>nl</name>
         </a-node>
        </si>
@@ -1049,6 +1074,16 @@
        </si>
        <action_before>SP_ADD</action_before>
        <action_after>SP_ADD</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>nl-else</name>
+        </a-node>
+       </si>
+       <action_before>SP_NOP</action_before>
+       <action_after>SP_EAT</action_after>
        <from_attempt>0</from_attempt>
       </a-node>
      </spaces>
@@ -1606,6 +1641,30 @@
       <a-node class='kiev.fmt.SpaceCmd'>
        <si>
         <a-node class='kiev.vlang.SymbolRef'>
+         <name>nl</name>
+        </a-node>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+     </spaces>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>fmt-space-nl++</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
+     <spaces>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
          <name>sp</name>
         </a-node>
        </si>
@@ -1670,6 +1729,94 @@
      <id>
       <a-node class='kiev.vlang.Symbol'>
        <sname>fmt-space-nl++1</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
+     <spaces>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>sp-word</name>
+        </a-node>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>nl-else</name>
+        </a-node>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_NOP</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+     </spaces>
+     <color>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>color-blue-dark</name>
+      </a-node>
+     </color>
+     <font>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>font-bold</name>
+      </a-node>
+     </font>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>fmt-keyword-if</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
+     <spaces>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>sp-word</name>
+        </a-node>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>nl-else</name>
+        </a-node>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_NOP</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+     </spaces>
+     <color>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>color-blue-dark</name>
+      </a-node>
+     </color>
+     <font>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>font-bold</name>
+      </a-node>
+     </font>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>fmt-keyword-else</sname>
       </a-node>
      </id>
     </a-node>
@@ -2232,6 +2379,16 @@
          <name>Constructor</name>
         </a-node>
        </expected_types>
+       <empty>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>{}</text>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-type-block-end</name>
+          </a-node>
+         </fmt>
+        </a-node>
+       </empty>
       </a-node>
      </elem>
      <meta>
@@ -7331,7 +7488,7 @@
          <name></name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>fmt-space-nl++1</name>
+           <name>fmt-space-nl++</name>
           </a-node>
          </fmt>
         </a-node>
@@ -9566,28 +9723,29 @@
           </a-node>
          </fmt>
         </a-node>
-        <a-node class='kiev.fmt.SyntaxParagraphLayout'>
-         <elem>
-          <a-node class='kiev.fmt.SyntaxList'>
-           <element>
-            <a-node class='kiev.fmt.SyntaxNode'>
-             <name></name>
+        <a-node class='kiev.fmt.SyntaxList'>
+         <element>
+          <a-node class='kiev.fmt.SyntaxNode'>
+           <name></name>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-space-nl++</name>
             </a-node>
-           </element>
-           <folded_by_default>false</folded_by_default>
-           <name>stats</name>
-           <empty>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text> </text>
-            </a-node>
-           </empty>
+           </fmt>
           </a-node>
-         </elem>
-         <par>
+         </element>
+         <elpar>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>par-indented</name>
           </a-node>
-         </par>
+         </elpar>
+         <folded_by_default>false</folded_by_default>
+         <name>stats</name>
+         <empty>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text> </text>
+          </a-node>
+         </empty>
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
@@ -10888,13 +11046,11 @@
      <elem>
       <a-node class='kiev.fmt.SyntaxSet'>
        <elements>
-        <a-node class='kiev.fmt.SyntaxSpace'>
-        </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>if</text>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>fmt-keyword</name>
+           <name>fmt-keyword-if</name>
           </a-node>
          </fmt>
         </a-node>
@@ -10938,13 +11094,11 @@
          <opt_true>
           <a-node class='kiev.fmt.SyntaxSet'>
            <elements>
-            <a-node class='kiev.fmt.SyntaxSpace'>
-            </a-node>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>else</text>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
-               <name>fmt-keyword</name>
+               <name>fmt-keyword-else</name>
               </a-node>
              </fmt>
             </a-node>
@@ -10989,13 +11143,11 @@
      <elem>
       <a-node class='kiev.fmt.SyntaxSet'>
        <elements>
-        <a-node class='kiev.fmt.SyntaxSpace'>
-        </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>if#</text>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>fmt-keyword</name>
+           <name>fmt-keyword-if</name>
           </a-node>
          </fmt>
         </a-node>
@@ -11039,13 +11191,11 @@
          <opt_true>
           <a-node class='kiev.fmt.SyntaxSet'>
            <elements>
-            <a-node class='kiev.fmt.SyntaxSpace'>
-            </a-node>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>else</text>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
-               <name>fmt-keyword</name>
+               <name>fmt-keyword-else</name>
               </a-node>
              </fmt>
             </a-node>
@@ -11477,7 +11627,7 @@
          <text>{</text>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>fmt-separator</name>
+           <name>fmt-code-block-start</name>
           </a-node>
          </fmt>
         </a-node>
@@ -11494,17 +11644,12 @@
            <name>CaseLabel</name>
           </a-node>
          </expected_types>
-         <empty>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;?cases?&gt;</text>
-          </a-node>
-         </empty>
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>}</text>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>fmt-separator</name>
+           <name>fmt-code-block-end</name>
           </a-node>
          </fmt>
         </a-node>
