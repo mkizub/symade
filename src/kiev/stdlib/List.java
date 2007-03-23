@@ -16,7 +16,7 @@ import syntax kiev.stdlib.Syntax;
  * @see		ListBuffer
  * @author Martin Odersky
  * @author Maxim Kizub
- * @version $Revision: 703 $
+ * @version $Revision$
  */
 
 public class List<A>

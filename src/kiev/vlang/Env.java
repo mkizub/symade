@@ -38,7 +38,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 706 $
+ * @version $Revision$
  *
  */
 

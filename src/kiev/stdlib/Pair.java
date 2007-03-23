@@ -15,7 +15,7 @@ import syntax kiev.stdlib.Syntax;
 /** a class for pairs
  * @author      Martin Odersky
  * @author      Maxim Kizub
- * @version $Revision: 703 $
+ * @version $Revision$
  *
  */
 
