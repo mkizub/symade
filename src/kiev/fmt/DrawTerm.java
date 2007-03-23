@@ -46,7 +46,7 @@ public abstract class DrawTerm extends Drawable {
 	}
 	
 	public boolean isUnvisible() {
-		return /*syntax.fmt != null && syntax.fmt.is_hidden ||*/ hidden_as_auto_generated;
+		return hidden_as_auto_generated;
 	}  
 
 	public DrawTerm getFirstLeaf() { return isUnvisible() ? null : this; }
@@ -98,6 +98,22 @@ public final class DrawToken extends DrawTerm {
 	}
 
 	String makeText(Formatter fmt) { return ((SyntaxToken)this.syntax).text; } 
+}
+
+@node(copyable=false)
+public final class DrawPlaceHolder extends DrawTerm {
+
+	public DrawPlaceHolder(ANode node, SyntaxPlaceHolder syntax) {
+		super(node, syntax);
+		//this.hidden_as_auto_generated = true;
+	}
+
+	String makeText(Formatter fmt) {
+		if (fmt instanceof GfxFormatter)
+			return ((SyntaxPlaceHolder)this.syntax).text;
+		return "";
+	} 
+
 }
 
 @node(copyable=false)

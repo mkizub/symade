@@ -739,13 +739,21 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 final class ChooseItemEditor implements KeyHandler {
 
 	private final Editor	editor;
+	private final Drawable	drawable;
 
 	ChooseItemEditor(Editor editor) {
 		this.editor = editor;
 	}
 
+	ChooseItemEditor(Editor editor, Drawable drawable) {
+		this.editor = editor;
+		this.drawable = drawable;
+	}
+
 	public void process() {
-		Drawable dr = editor.cur_elem.dr;
+		Drawable dr = this.drawable;
+		if (dr == null)
+			dr = editor.cur_elem.dr;
 		if (dr instanceof DrawNodeTerm) {
 			DrawNodeTerm dt = (DrawNodeTerm)dr;
 			AttrPtr pattr = dt.getAttrPtr();
@@ -763,11 +771,38 @@ final class ChooseItemEditor implements KeyHandler {
 			else if (obj instanceof Integer)
 				editor.startItemEditor(pattr.node, new IntEditor(pattr, editor, dt));
 			else if (obj instanceof Boolean)
-				editor.startItemEditor(pattr.node, new BoolEditor(pattr, editor));
+				editor.startItemEditor(pattr.node, new BoolEditor(pattr, dt, editor));
 			else if (obj instanceof ConstIntExpr)
 				editor.startItemEditor((ConstIntExpr)obj, new IntEditor(obj.getAttrPtr("value"), editor, dt));
 			else if (Enum.class.isAssignableFrom(pattr.slot.typeinfo.clazz))
 				editor.startItemEditor(pattr.node, new EnumEditor(pattr, dt, editor));
+		}
+		else if (dr instanceof DrawEnumChoice) {
+			DrawEnumChoice dec = (DrawEnumChoice)dr;
+			SyntaxEnumChoice stx = (SyntaxEnumChoice)dec.syntax;
+			DrawTerm dt = dr.getFirstLeaf();
+			if (dt == null) {
+				dt = editor.cur_elem.dr.getFirstLeaf();
+				if (dt == null)
+					dt = editor.cur_elem.dr.getNextLeaf();
+			}
+			editor.startItemEditor(dec.drnode, new EnumEditor(dec.drnode.getAttrPtr(stx.name), dt, editor));
+		}
+		else if (dr instanceof DrawBoolChoice) {
+			DrawBoolChoice dec = (DrawBoolChoice)dr;
+			SyntaxBoolChoice stx = (SyntaxBoolChoice)dec.syntax;
+			DrawTerm dt = dr.getFirstLeaf();
+			if (dt == null) {
+				dt = editor.cur_elem.dr.getFirstLeaf();
+				if (dt == null)
+					dt = editor.cur_elem.dr.getNextLeaf();
+			}
+			editor.startItemEditor(dec.drnode, new BoolEditor(dec.drnode.getAttrPtr(stx.name), dt, editor));
+		}
+		else if (dr.parent() instanceof DrawBoolChoice) {
+			DrawBoolChoice dec = (DrawBoolChoice)dr.parent();
+			SyntaxBoolChoice stx = (SyntaxBoolChoice)dec.syntax;
+			editor.startItemEditor(dec.drnode, new BoolEditor(dec.drnode.getAttrPtr(stx.name), dr.getFirstLeaf(), editor));
 		}
 		else if (dr.parent() instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr.parent();
@@ -873,6 +908,16 @@ final class FunctionExecuter implements KeyHandler {
 							addMenu(new NewElemAction(sf.title, dr.drnode, satr));
 					}
 				}
+				else if (sf.act == SyntaxFuncActions.FuncEditElem) {
+					if (dr.syntax instanceof SyntaxAttr) {
+						SyntaxAttr satr = (SyntaxAttr)dr.syntax;
+						addMenu(new EditElemAction(sf.title, dr));
+					}
+					else if (dr.attr_syntax instanceof SyntaxAttr) {
+						SyntaxAttr satr = (SyntaxAttr)dr.attr_syntax;
+						addMenu(new EditElemAction(sf.title, dr));
+					}
+				}
 			} catch (Throwable t) {}
 		}
 
@@ -931,6 +976,23 @@ final class FunctionExecuter implements KeyHandler {
 			new NewElemEditor(editor,NewElemEditor.SETNEW_HERE).makeMenu(text, node, stx);
 		}
 	}
+
+	class EditElemAction extends TextAction {
+		private String		text;
+		private Drawable	dr;
+		EditElemAction(String text, Drawable dr) {
+			super(text);
+			this.text = text;
+			this.dr = dr;
+		}
+		public void actionPerformed(ActionEvent e) {
+			if (menu != null) {
+				editor.view_canvas.remove(menu);
+				menu = null;
+			}
+			new ChooseItemEditor(editor, dr).process();
+		}
+	}
 }
 
 final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener {
@@ -970,6 +1032,12 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 	public void process() {
 		if (mode == SETNEW_HERE) {
 			Drawable dr = editor.cur_elem.dr;
+			if (dr instanceof DrawPlaceHolder && ((SyntaxPlaceHolder)dr.syntax).parent instanceof SyntaxAttr) {
+				ANode n = dr.drnode;
+				SyntaxAttr satt = (SyntaxAttr)((SyntaxPlaceHolder)dr.syntax).parent;
+				makeMenu("Set new item", n, satt);
+				return;
+			}
 			if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
 				ANode n = dr.drnode;
 				while (n == null) {
@@ -1350,20 +1418,35 @@ final class IntEditor extends TextEditor {
 	}
 }
 
-final class BoolEditor implements KeyListener {
+final class BoolEditor implements KeyListener, PopupMenuListener {
 	
-	private final Editor	editor;
-	private final AttrPtr	pattr;
+	private final Editor		editor;
+	private final AttrPtr		pattr;
+	private final JPopupMenu	menu;
 
-	BoolEditor(AttrPtr pattr, Editor editor) {
+	BoolEditor(AttrPtr pattr, DrawTerm cur_elem, Editor editor) {
 		this.editor = editor;
 		this.pattr = pattr;
+		menu = new JPopupMenu();
+		menu.add(new JMenuItem(new SetSyntaxAction(Boolean.FALSE)));
+		menu.add(new JMenuItem(new SetSyntaxAction(Boolean.TRUE)));
+		int x = cur_elem.x;
+		int y = cur_elem.y + cur_elem.h - editor.view_canvas.translated_y;
+		menu.addPopupMenuListener(this);
+		menu.show(editor.view_canvas, x, y);
 	}
 	
+	public void popupMenuCanceled(PopupMenuEvent e) {
+		editor.view_canvas.remove(menu);
+		editor.stopItemEditor(true);
+	}
+	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
 	public void keyPressed(KeyEvent evt) {
-		int code = evt.getKeyCode();
+/*		int code = evt.getKeyCode();
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
 		if (mask != 0)
 			return;
@@ -1393,6 +1476,25 @@ final class BoolEditor implements KeyListener {
 			return;
 		}
 		editor.formatAndPaint(true);
+*/	}
+
+	class SetSyntaxAction extends TextAction {
+		private Boolean val;
+		SetSyntaxAction(Boolean val) {
+			super(val.toString());
+			this.val = val;
+		}
+		public void actionPerformed(ActionEvent e) {
+			editor.view_canvas.remove(menu);
+			try {
+				pattr.set(val);
+			} catch (Throwable t) {
+				editor.stopItemEditor(true);
+				e = null;
+			}
+			if (e != null)
+				editor.stopItemEditor(false);
+		}
 	}
 }
 

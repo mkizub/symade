@@ -116,14 +116,10 @@ public class DrawOptional extends DrawCtrl {
 			}
 		}
 		if (arg != null) {
-			if (drawed_as_true) {
+			if (drawed_as_true)
 				arg.preFormat(cont,sc.opt_true,node);
-			} else {
-				//if (/*sc.opt_false.fmt != null && sc.opt_false.fmt.is_hidden &&*/ !draw_optional)
-				//	arg = null;
-				//else
-					arg.preFormat(cont,sc.opt_false,node);
-			}
+			else
+				arg.preFormat(cont,sc.opt_false,node);
 		}
 	}
 }
@@ -191,6 +187,51 @@ public class DrawIntChoice extends DrawCtrl {
 		}
 		if (arg != null)
 			arg.preFormat(cont,sc.elements[idx],node);
+		
+	}
+}
+
+@node(copyable=false)
+public class DrawBoolChoice extends DrawCtrl {
+
+	private Boolean drawed_bool;
+	private AttrSlot attr;
+
+	public DrawBoolChoice(ANode node, SyntaxBoolChoice syntax) {
+		super(node, syntax);
+		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
+			attr = a;
+			break;
+		}
+	}
+
+	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
+		SyntaxBoolChoice sb = (SyntaxBoolChoice)syntax;
+		ANode node = this.drnode;
+		Boolean val = (Boolean)attr.get(node);
+		if (val != null) {
+			if (val.booleanValue())
+				val = Boolean.TRUE;
+			else
+				val = Boolean.FALSE;
+		}
+		SyntaxElem se = null;
+		if (val == null)
+			se = sb.empty;
+		else if (val.booleanValue())
+			se = sb.elem_true;
+		else
+			se = sb.elem_false;
+		if (arg == null || drawed_bool != val) {
+			if (se != null)
+				arg = se.makeDrawable(cont.fmt, node);
+			else
+				arg = null;
+			drawed_bool = val;
+		}
+		if (arg != null)
+			arg.preFormat(cont,se,node);
 		
 	}
 }

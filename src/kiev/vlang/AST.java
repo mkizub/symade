@@ -718,7 +718,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	@ref @abstract
 	public:ro ANode					parent;
 	
-	@getter public final ANode get$parent() { return parent(); }
+	@getter @ref public final ANode get$parent() { return parent(); }
 
 	// Structures	
 	public @packed:1,compileflags,8  boolean is_struct_type_resolved; // KievFE_Pass2

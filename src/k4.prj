@@ -123,6 +123,7 @@ CLASS kiev.fmt.CalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev\fmt\SyntaxLay
 CLASS kiev.fmt.CalcOptionNotNull kiev/fmt/CalcOptionNotNull kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionOr kiev/fmt/CalcOptionOr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionTrue kiev/fmt/CalcOptionTrue kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.DrawBoolChoice kiev/fmt/DrawBoolChoice kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawCharTerm kiev/fmt/DrawCharTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawColor kiev/fmt/DrawColor kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.DrawContext kiev/fmt/DrawContext kiev\fmt\DrawContext.java
@@ -144,6 +145,7 @@ CLASS kiev.fmt.DrawNonTermList kiev/fmt/DrawNonTermList kiev\fmt\DrawNonTerm.jav
 CLASS kiev.fmt.DrawNonTermSet kiev/fmt/DrawNonTermSet kiev\fmt\DrawNonTerm.java
 CLASS kiev.fmt.DrawOptional kiev/fmt/DrawOptional kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawParagraph kiev/fmt/DrawParagraph kiev\fmt\DrawCtrl.java
+CLASS kiev.fmt.DrawPlaceHolder kiev/fmt/DrawPlaceHolder kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawSpace kiev/fmt/DrawSpace kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawStrTerm kiev/fmt/DrawStrTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawTerm kiev/fmt/DrawTerm kiev\fmt\DrawTerm.java
@@ -161,6 +163,7 @@ CLASS kiev.fmt.PartialSyntaxElemDecl kiev/fmt/PartialSyntaxElemDecl kiev\fmt\Syn
 CLASS kiev.fmt.SpaceCmd kiev/fmt/SpaceCmd kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SpaceInfo kiev/fmt/SpaceInfo kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxAttr kiev/fmt/SyntaxAttr kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.SyntaxBoolChoice kiev/fmt/SyntaxBoolChoice kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxCharAttr kiev/fmt/SyntaxCharAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxElem kiev/fmt/SyntaxElem kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxElemDecl kiev/fmt/SyntaxElemDecl kiev\fmt\SyntaxLayout.java
@@ -185,6 +188,7 @@ CLASS kiev.fmt.SyntaxList kiev/fmt/SyntaxList kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxNode kiev/fmt/SyntaxNode kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxOptional kiev/fmt/SyntaxOptional kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxParagraphLayout kiev/fmt/SyntaxParagraphLayout kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.SyntaxPlaceHolder kiev/fmt/SyntaxPlaceHolder kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxSet kiev/fmt/SyntaxSet kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxSpace kiev/fmt/SyntaxSpace kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxStrAttr kiev/fmt/SyntaxStrAttr kiev\fmt\SyntaxLayout.java
@@ -707,9 +711,6 @@ ENUM kiev.fmt.SyntaxFuncActions kiev/fmt/SyntaxFuncActions kiev\fmt\SyntaxLayout
 ENUM kiev.vlang.IntRadix kiev/vlang/IntRadix kiev\vlang\ConstExpr.java
 ENUM kiev.vlang.ProjectFileType kiev/vlang/ProjectFileType kiev\vlang\Env.java
 ENUM kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
-FORMAT stx-fmt.syntax-for-java stx-fmt\syntax-for-java.xml bad
-FORMAT stx-fmt.syntax-for-project-tree stx-fmt\syntax-for-project-tree.xml bad
-FORMAT stx-fmt.syntax-for-syntax stx-fmt\syntax-for-syntax.xml bad
 INTERFACE kiev.be.java15.IBoolExpr kiev/be/java15/IBoolExpr kiev\be\java15\JBoolExpr.java
 INTERFACE kiev.be.java15.JAccessExpr kiev/be/java15/JAccessExpr kiev\be\java15\JLvalueExpr.java
 INTERFACE kiev.be.java15.JAssignExpr kiev/be/java15/JAssignExpr kiev\be\java15\JExpr.java

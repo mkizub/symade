@@ -2045,10 +2045,103 @@
         <a-node class='kiev.fmt.SyntaxSet'>
          <elements>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;</text>
+           <text>&lt;token:</text>
+           <funcs>
+            <a-node class='kiev.fmt.SyntaxFunctions'>
+             <funcs>
+              <a-node class='kiev.fmt.SyntaxFunction'>
+               <title>Add functions</title>
+               <act>FuncNewElemOfNull</act>
+               <attr>funcs</attr>
+              </a-node>
+             </funcs>
+            </a-node>
+           </funcs>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>token:</text>
+           <text>&apos;</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>text</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSet</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&apos;</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>fmt:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>fmt</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SymbolRef</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>funcs</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxFunctions</name>
+            </a-node>
+           </expected_types>
+           <empty>
+            <a-node class='kiev.fmt.SyntaxSpace'>
+            </a-node>
+           </empty>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&gt;</text>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+        </a-node>
+       </unfolded>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-def-token</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>SyntaxPlaceHolder</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxFolder'>
+       <folded_by_default>true</folded_by_default>
+       <folded>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>text</name>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+        </a-node>
+       </folded>
+       <unfolded>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&lt;placeholder:</text>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>&apos;</text>
@@ -2094,7 +2187,7 @@
      </meta>
      <id>
       <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-token</sname>
+       <sname>stx-def-placeholder</sname>
       </a-node>
      </id>
     </a-node>
@@ -2169,7 +2262,13 @@
            <name>empty</name>
            <expected_types>
             <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxPlaceHolder</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSpace</name>
             </a-node>
            </expected_types>
           </a-node>
@@ -2663,6 +2762,9 @@
              <name>empty</name>
              <expected_types>
               <a-node class='kiev.vlang.SymbolRef'>
+               <name>SyntaxPlaceHolder</name>
+              </a-node>
+              <a-node class='kiev.vlang.SymbolRef'>
                <name>SyntaxToken</name>
               </a-node>
               <a-node class='kiev.vlang.SymbolRef'>
@@ -2897,6 +2999,9 @@
              <name>SyntaxOptional</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxBoolChoice</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxEnumChoice</name>
             </a-node>
            </expected_types>
@@ -2983,6 +3088,9 @@
              <name>SyntaxOptional</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxBoolChoice</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxEnumChoice</name>
             </a-node>
            </expected_types>
@@ -3049,6 +3157,144 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>SyntaxBoolChoice</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxFolder'>
+       <folded_by_default>true</folded_by_default>
+       <folded>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>(</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>elem_false</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSpace</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>||</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>elem_true</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSpace</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>)</text>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+        </a-node>
+       </folded>
+       <unfolded>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&lt;bool:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>name</name>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>(</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>false:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>elem_false</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSpace</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>||</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>true:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>elem_true</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSpace</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>||</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>empty:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>empty</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSpace</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>)</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>fmt:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>fmt</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SymbolRef</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+        </a-node>
+       </unfolded>
+      </a-node>
+     </elem>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+       <mflags>0</mflags>
+      </a-node>
+     </meta>
+     <id>
+      <a-node class='kiev.vlang.Symbol'>
+       <sname>stx-def-bool</sname>
+      </a-node>
+     </id>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>SyntaxEnumChoice</name>
       </a-node>
      </rnode>
@@ -3105,10 +3351,7 @@
         <a-node class='kiev.fmt.SyntaxSet'>
          <elements>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;</text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>enum:</text>
+           <text>&lt;enum:</text>
           </a-node>
           <a-node class='kiev.fmt.SyntaxSubAttr'>
            <name>name</name>
@@ -4796,6 +5039,9 @@
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>NewOfNull</text>
           </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>EditElem</text>
+          </a-node>
          </elements>
          <name>act</name>
         </a-node>
@@ -4840,7 +5086,7 @@
        </element>
        <prefix>
         <a-node class='kiev.fmt.SyntaxToken'>
-         <text>{</text>
+         <text>funcs: {</text>
         </a-node>
        </prefix>
        <sufix>

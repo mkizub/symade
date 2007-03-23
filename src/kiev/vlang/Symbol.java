@@ -151,7 +151,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			this.name = t.image;
 	}
 	
-	@getter
+	@getter @att
 	public String get$name() {
 		if (this.symbol != null)
 			return this.symbol.sname;

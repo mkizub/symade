@@ -65,9 +65,7 @@ public abstract class Drawable extends ANode {
 	}
 
 	public boolean isUnvisible() {
-		if (syntax.fmt == null)
-			return false;
-		return false; //return syntax.fmt.is_hidden;
+		return false;
 	}  
 
 	public final DrawTerm getNextLeaf() {

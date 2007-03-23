@@ -184,8 +184,9 @@ public abstract class kiev040 implements kiev040Constants {
 		TypeDecl outer;
 		boolean direct;
 		if (parent instanceof FileUnit) {
+			FileUnit fu = (FileUnit)parent;
 			nm = name.sname;
-			outer = ((FileUnit)parent).pkg.getStruct();
+			outer = fu.pkg == null ? null : fu.pkg.getStruct();
 			direct = true;
 		}
 		else if (parent instanceof Struct) {

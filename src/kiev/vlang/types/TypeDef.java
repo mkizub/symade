@@ -70,12 +70,19 @@ public final class TypeAssign extends TypeDef {
 	@virtual typedef This  = TypeAssign;
 
 	@abstract @virtual
-	@ref public:ro TypeRef type_ref;
+	@ref public TypeRef type_ref;
 	
-	@getter public TypeRef get$type_ref() {
+	@getter @ref public TypeRef get$type_ref() {
 		if (super_types.length == 0)
 			return null;
-		return getVersion(super_types[0]);
+		return ANode.getVersion(super_types[0]);
+	}
+	
+	@setter public void set$type_ref(TypeRef tr) {
+		if (super_types.length == 0)
+			super_types.add(tr);
+		else
+			super_types[0] = tr;
 	}
 	
 	public TypeRef[] getLowerBounds() { return super_types; }

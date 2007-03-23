@@ -73,8 +73,6 @@ public abstract class AbstractFormatter implements Formatter {
 			if (dr instanceof DrawSpace)
 				return dr;
 			SyntaxSpace ssp = new SyntaxSpace();
-			//ssp.fmt = new RefElemFormat("fmt-default");
-			//ssp.fmt.is_hidden = true;
 			dr = new DrawSpace(null, ssp);
 			return dr;
 		}

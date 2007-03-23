@@ -155,7 +155,10 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 				num_lines = lineno;
 				if (verticalScrollBar.getMaximum() != num_lines) {
 					verticalScrollBar.setMaximum(num_lines);
-					verticalScrollBar.setVisibleAmount(last_visible.lineno-first_visible.lineno);
+					if (first_visible != null && last_visible != null)
+						verticalScrollBar.setVisibleAmount(last_visible.lineno-first_visible.lineno);
+					else
+						verticalScrollBar.setVisibleAmount(0);
 				}
 			}
 		    g.dispose();

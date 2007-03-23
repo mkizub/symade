@@ -519,7 +519,7 @@ public class Env extends Struct {
 		if (root instanceof FileUnit) {
 			root.name = getRelativePath(f);
 		} else {
-			root = new FileUnit(getRelativePath(f), Env.root);
+			root = new FileUnit(getRelativePath(f), null);
 			root.members += handler.root;
 		}
 		Kiev.runProcessorsOn((FileUnit)root);

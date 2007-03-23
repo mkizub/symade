@@ -1836,6 +1836,21 @@
            <name>syntax-file-package</name>
           </a-node>
          </in_syntax>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>TypeNameRef</name>
+          </a-node>
+         </expected_types>
+         <empty>
+          <a-node class='kiev.fmt.SyntaxPlaceHolder'>
+           <text>&lt;package&gt;</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-space-nl-group</name>
+            </a-node>
+           </fmt>
+          </a-node>
+         </empty>
         </a-node>
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
@@ -1871,8 +1886,8 @@
           </a-node>
          </expected_types>
          <empty>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;?members?&gt;</text>
+          <a-node class='kiev.fmt.SyntaxPlaceHolder'>
+           <text>&lt;declarations&gt;</text>
           </a-node>
          </empty>
         </a-node>
@@ -2418,6 +2433,22 @@
            <name>fmt-keyword</name>
           </a-node>
          </fmt>
+         <funcs>
+          <a-node class='kiev.fmt.SyntaxFunctions'>
+           <funcs>
+            <a-node class='kiev.fmt.SyntaxFunction'>
+             <title>Change import kind</title>
+             <act>FuncEditElem</act>
+             <attr>mode</attr>
+            </a-node>
+            <a-node class='kiev.fmt.SyntaxFunction'>
+             <title>Import All</title>
+             <act>FuncEditElem</act>
+             <attr>star</attr>
+            </a-node>
+           </funcs>
+          </a-node>
+         </funcs>
         </a-node>
         <a-node class='kiev.fmt.SyntaxEnumChoice'>
          <elements>
@@ -2458,17 +2489,22 @@
          </decl>
          <name>name</name>
         </a-node>
-        <a-node class='kiev.fmt.SyntaxOptional'>
-         <calculator>
-          <a-node class='kiev.fmt.CalcOptionTrue'>
-           <name>star</name>
-          </a-node>
-         </calculator>
-         <opt_true>
+        <a-node class='kiev.fmt.SyntaxBoolChoice'>
+         <elem_true>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>.*</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-keyword</name>
+            </a-node>
+           </fmt>
           </a-node>
-         </opt_true>
+         </elem_true>
+         <elem_false>
+          <a-node class='kiev.fmt.SyntaxSpace'>
+          </a-node>
+         </elem_false>
+         <name>star</name>
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>;</text>
@@ -2600,6 +2636,17 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxSubAttr'>
          <name>type_ref</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>TypeRef</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>TypeNameRef</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>TypeExpr</name>
+          </a-node>
+         </expected_types>
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>;</text>

@@ -58,12 +58,14 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 	@getter public Method get$child_ctx_method() { return null; }
 
 	public FileUnit() {
-		this("", Env.root);
+		this("", null);
 	}
 	public FileUnit(String name, Struct pkg) {
 		this.name = name;
-		this.pkg = new TypeNameRef(pkg.qname());
-		this.pkg.lnk = pkg.xtype;
+		if (pkg != null) {
+			this.pkg = new TypeNameRef(pkg.qname());
+			this.pkg.lnk = pkg.xtype;
+		}
 	}
 
 	public void addPrescannedBody(PrescannedBody b) {

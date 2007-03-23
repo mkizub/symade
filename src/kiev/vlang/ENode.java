@@ -43,7 +43,7 @@ public abstract class ENode extends ASTNode {
 	@ref @abstract public Symbol<DNode>	symbol;
 	@ref @abstract public:ro DNode			dnode;
 	
-	@getter public final String get$ident() {
+	@getter @att public final String get$ident() {
 		if (ident_or_symbol instanceof String)
 			return (String)ident_or_symbol;
 		if (ident_or_symbol instanceof Symbol)
@@ -51,13 +51,13 @@ public abstract class ENode extends ASTNode {
 		return null;
 	}
 	
-	@getter public final Symbol<DNode> get$symbol() {
+	@getter @ref public final Symbol<DNode> get$symbol() {
 		if (ident_or_symbol instanceof Symbol)
 			return ANode.getVersion((Symbol<DNode>)ident_or_symbol);
 		return null;
 	}
 	
-	@getter public final DNode get$dnode() {
+	@getter @ref public final DNode get$dnode() {
 		if (ident_or_symbol instanceof Symbol)
 			return ANode.getVersion(((Symbol)ident_or_symbol).dnode);
 		return null;

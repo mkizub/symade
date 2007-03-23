@@ -377,7 +377,6 @@ public final class DrawLayout {
 	private static final Font default_font = Font.decode("Dialog-PLAIN-12");
 	
 	public int				count;
-	public boolean			is_hidden;
 	public Color 			color;
 	public Font				font;
 	public LayoutSpace[]	spaces_before;
@@ -601,7 +600,8 @@ public final class SyntaxElemFormatDecl extends DNode {
 public enum SyntaxFuncActions {
 	FuncNop,
 	FuncNewElemOfEmptyList,
-	FuncNewElemOfNull
+	FuncNewElemOfNull,
+	FuncEditElem
 }
 
 @node
@@ -803,6 +803,24 @@ public final class SyntaxToken extends SyntaxElem {
 	}
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawToken(node, this);
+		return dr;
+	}
+}
+
+@node
+public final class SyntaxPlaceHolder extends SyntaxElem {
+	@virtual typedef This  = SyntaxPlaceHolder;
+
+	@att public String					text;
+
+	@setter
+	public void set$text(String value) {
+		this.text = (value != null) ? value.intern() : null;
+	}
+	
+	public SyntaxPlaceHolder() {}
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawPlaceHolder(node, this);
 		return dr;
 	}
 }
@@ -1425,6 +1443,24 @@ public class SyntaxFolder extends SyntaxElem {
 	}
 }
 
+
+@node
+public class SyntaxBoolChoice extends SyntaxAttr {
+	@virtual typedef This  = SyntaxBoolChoice;
+
+	@att public SyntaxElem elem_true;
+	@att public SyntaxElem elem_false;
+
+	public SyntaxBoolChoice() {}
+	public SyntaxBoolChoice(String name) {
+		super(name);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawBoolChoice(node, this);
+		return dr;
+	}
+}
 
 @node
 public class SyntaxIntChoice extends SyntaxAttr {

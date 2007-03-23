@@ -211,7 +211,7 @@ public final class IFldExpr extends LvalueExpr {
 	@abstract
 	@ref public:ro Field		var;
 
-	@getter public Field get$var() {
+	@getter @ref public Field get$var() {
 		DNode sym = this.dnode;
 		if (sym instanceof Field)
 			return (Field)sym;
