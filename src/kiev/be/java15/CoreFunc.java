@@ -174,7 +174,7 @@ public abstract class BEndFunc {
 	}
 
 	public static void attachToBackend(CoreMethod cm) {
-		String name = ((TypeDecl)cm.parent()).qname()+":"+cm.id;
+		String name = ((TypeDecl)cm.parent()).qname()+":"+cm.sname;
 		BEndFunc cf = coreFuncs.get(name);
 		if (cf == null) {
 			cf = UnimplementedFunc; //Kiev.reportWarning(cm,"Backend function "+name+" not found");

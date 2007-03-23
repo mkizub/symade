@@ -222,7 +222,7 @@ public abstract class CoreFunc {
 	}
 	
 	static void attachToCompiler(CoreMethod cm) {
-		String name = ((TypeDecl)cm.parent()).qname()+":"+cm.id;
+		String name = ((TypeDecl)cm.parent()).qname()+":"+cm.sname;
 		CoreFunc cf = coreFuncs.get(name);
 		if (cf == null) {
 			Kiev.reportWarning(cm,"Core function "+name+" not found");
@@ -242,7 +242,7 @@ abstract class BinaryFunc extends CoreFunc {
 	public void normilizeExpr(ENode expr, Class cls, Operator op) {
 		if (expr.getClass() == cls) {
 			expr.open();
-			expr.symbol = core_method.id;
+			expr.symbol = core_method;
 			return;
 		}
 		ENode[] args = expr.getArgs();
@@ -269,7 +269,7 @@ abstract class UnaryFunc extends CoreFunc {
 	public void normilizeExpr(ENode expr, Class cls, Operator op) {
 		if (expr.getClass() == cls) {
 			expr.open();
-			expr.symbol = core_method.id;
+			expr.symbol = core_method;
 			return;
 		}
 		ENode[] args = expr.getArgs();

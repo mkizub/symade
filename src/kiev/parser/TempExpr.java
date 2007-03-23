@@ -126,7 +126,7 @@ public final class UnresCallExpr extends UnresExpr {
 	public UnresCallExpr() {}
 
 	public UnresCallExpr(int pos, ENode obj, DNode func, TypeRef[] targs, ENode[] args, boolean super_flag) {
-		this(pos, obj, new SymbolRef<DNode>(pos, func.id), targs, args, super_flag);
+		this(pos, obj, new SymbolRef<DNode>(pos, func), targs, args, super_flag);
 	}
 	public UnresCallExpr(int pos, ENode obj, SymbolRef<DNode> func, TypeRef[] targs, ENode[] args, boolean super_flag) {
 		this.pos = pos;
@@ -202,9 +202,9 @@ public final class AccFldExpr extends UnresExpr {
 	
 	public String toString() {
 		if (fld.isStatic())
-			return fld.parent()+ "."+fld.id;
+			return fld.parent()+ "."+fld.sname;
 		else
-			return obj+ "."+fld.id;
+			return obj+ "."+fld.sname;
 	}
 	
 	public ENode closeBuild() {

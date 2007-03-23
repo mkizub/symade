@@ -314,8 +314,8 @@ public class BinaryExpr extends ENode {
 	}
 
 	public BinaryExpr(CoreMethod cm, Operator op, ENode[] args) {
-		this.ident = new SymbolRef<Method>(cm.getSymbol(op.name));
 		this.op = op;
+		this.symbol = cm.getSymbol(op.name);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -343,7 +343,7 @@ public class BinaryExpr extends ENode {
 			if (m == null)
 				return Type.tpVoid;
 			this.open();
-			this.symbol = m.id;
+			this.symbol = m;
 		}
 		Type ret = m.type.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
@@ -410,7 +410,7 @@ public class UnaryExpr extends ENode {
 			if (m == null)
 				return Type.tpVoid;
 			this.open();
-			this.symbol = m.id;
+			this.symbol = m;
 		}
 		Type ret = m.type.ret();
 		if (!(ret instanceof ArgType) && !ret.isAbstract()) return ret;
@@ -554,14 +554,14 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public void addSymbol(DNode sym) {
-		foreach(ASTNode n; stats; n.hasName(sym.id.sname,true))
-			Kiev.reportError((ASTNode)sym,"Symbol "+sym.id+" already declared in this scope");
+		foreach(ASTNode n; stats; n.hasName(sym.sname,true))
+			Kiev.reportError((ASTNode)sym,"Symbol "+sym.sname+" already declared in this scope");
 		stats.append((ASTNode)sym);
 	}
 
 	public void insertSymbol(DNode sym, int idx) {
-		foreach(ASTNode n; stats; n.hasName(sym.id.sname,true))
-			Kiev.reportError((ASTNode)sym,"Symbol "+sym.id+" already declared in this scope");
+		foreach(ASTNode n; stats; n.hasName(sym.sname,true))
+			Kiev.reportError((ASTNode)sym,"Symbol "+sym.sname+" already declared in this scope");
 		stats.insert(idx,(ASTNode)sym);
 	}
 

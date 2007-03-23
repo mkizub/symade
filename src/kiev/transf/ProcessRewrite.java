@@ -76,7 +76,7 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 				int idx = 0;
 				Hashtable<String,Object> args = new Hashtable<String,Object>();
 				foreach (Var fp; m.params; fp.kind == Var.PARAM_NORMAL)
-					args.put(fp.id.sname, ce.args[idx++]);
+					args.put(fp.sname, ce.args[idx++]);
 				doRewrite(ce, ce, args);
 			}
 		}

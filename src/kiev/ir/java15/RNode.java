@@ -83,7 +83,7 @@ public static final view RDeclGroup of DeclGroup extends RSNode {
 public static view RDNode of DNode extends RNode {
 
 	public:ro MetaSet	meta;
-	public:ro Symbol	id;
+	public:ro String	sname;
 
 	public final boolean isPublic()	;
 	public final boolean isPrivate();
@@ -136,7 +136,7 @@ public static view RDNode of DNode extends RNode {
 public static view RENode of ENode extends RNode {
 
 	public		String			ident;
-	public		Symbol<DNode>	symbol;
+	public		ISymbol			symbol;
 	public:ro	DNode			dnode;
 	
 	//

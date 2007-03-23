@@ -81,7 +81,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		ResInfo info = new ResInfo(this,nameInit,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,m,info,mt) ) {
 			this.open();
-			this.symbol = m.id;
+			this.symbol = m;
 			m.makeArgs(args,type);
 			for(int i=0; i < args.length; i++)
 				args[i].resolve(mt.arg(i));

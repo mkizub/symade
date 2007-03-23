@@ -74,7 +74,7 @@ public final class PackedFldFE_Verify extends TransfProcessor {
 				return;
 			}
 			mp.fld.open();
-			mp.fld.symbol = (Symbol<Field>)p.id;
+			mp.fld.symbol = p;
 			assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 		}
 	}
@@ -124,13 +124,13 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 						continue;
 					}
 					mp.fld.open();
-					mp.fld.symbol = (Symbol<Field>)p.id;
+					mp.fld.symbol = p;
 					assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 				}
 				else if( locatePackerField(packer,mp.size,s) ) {
 					// Found
 					mp.fld.open();
-					mp.fld.symbol = (Symbol<Field>)packer.id;
+					mp.fld.symbol = packer;
 					MetaPacker mpr = packer.getMetaPacker();
 					mp.offset = mpr.size;
 					mpr.size += mpr.size;
@@ -142,7 +142,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					p.setMeta(mpr);
 					s.addField(p);
 					mp.fld.open();
-					mp.fld.symbol = (Symbol<Field>)p.id;
+					mp.fld.symbol = p;
 					mp.offset = 0;
 					mpr.size += mp.size;
 				}

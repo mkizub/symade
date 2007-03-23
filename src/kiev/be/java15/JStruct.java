@@ -90,7 +90,7 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	public JField resolveField(String name, boolean fatal) {
 		checkResolved();
-		foreach (JField f; this.getAllFields(); f.id.equals(name))
+		foreach (JField f; this.getAllFields(); f.sname == name)
 			return f;
 		foreach (JType jt; this.super_types) {
 			JField f = jt.getJStruct().resolveField(name, false);
@@ -291,7 +291,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
 		String out_file;
 		if( Kiev.javaMode && output_dir == null )
-			out_file = this.id.toString();
+			out_file = this.sname;
 		else if( this.isPackage() )
 			out_file = (this.bname()+"/package").replace('/',File.separatorChar);
 		else

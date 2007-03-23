@@ -41,106 +41,43 @@
      <kind>SP_SPACE</kind>
      <text_size>2</text_size>
      <pixel_size>4</pixel_size>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>sp</sname>
-      </a-node>
-     </id>
+     <sname>sp</sname>
     </a-node>
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_SPACE</kind>
      <text_size>4</text_size>
      <pixel_size>8</pixel_size>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>space</sname>
-      </a-node>
-     </id>
+     <sname>space</sname>
     </a-node>
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_NEW_LINE</kind>
      <text_size>1</text_size>
      <pixel_size>1</pixel_size>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>nl</sname>
-      </a-node>
-     </id>
+     <sname>nl</sname>
     </a-node>
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_NEW_LINE</kind>
      <text_size>2</text_size>
      <pixel_size>30</pixel_size>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>nl2</sname>
-      </a-node>
-     </id>
+     <sname>nl2</sname>
     </a-node>
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_NEW_LINE</kind>
      <text_size>2</text_size>
      <pixel_size>30</pixel_size>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>nl_import</sname>
-      </a-node>
-     </id>
+     <sname>nl_import</sname>
     </a-node>
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_NEW_LINE</kind>
      <text_size>2</text_size>
      <pixel_size>30</pixel_size>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>nl_space</sname>
-      </a-node>
-     </id>
+     <sname>nl_space</sname>
     </a-node>
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_NEW_LINE</kind>
      <text_size>2</text_size>
      <pixel_size>30</pixel_size>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>nl_fmt</sname>
-      </a-node>
-     </id>
+     <sname>nl_fmt</sname>
     </a-node>
     <a-node class='kiev.fmt.ParagraphLayout'>
      <indent_text_size>4</indent_text_size>
@@ -149,16 +86,7 @@
      <align_right>false</align_right>
      <align_rest_of_lines_right>false</align_rest_of_lines_right>
      <new_lines_first_parent>false</new_lines_first_parent>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>par-indent</sname>
-      </a-node>
-     </id>
+     <sname>par-indent</sname>
     </a-node>
     <a-node class='kiev.fmt.ParagraphLayout'>
      <indent_text_size>4</indent_text_size>
@@ -167,16 +95,7 @@
      <align_right>false</align_right>
      <align_rest_of_lines_right>false</align_rest_of_lines_right>
      <new_lines_first_parent>false</new_lines_first_parent>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>par-syntax-body</sname>
-      </a-node>
-     </id>
+     <sname>par-syntax-body</sname>
     </a-node>
     <a-node class='kiev.fmt.ParagraphLayout'>
      <indent_text_size>4</indent_text_size>
@@ -185,146 +104,47 @@
      <align_right>false</align_right>
      <align_rest_of_lines_right>false</align_rest_of_lines_right>
      <new_lines_first_parent>false</new_lines_first_parent>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>par-list-body</sname>
-      </a-node>
-     </id>
+     <sname>par-list-body</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawColor'>
      <rgb_color>16711680</rgb_color>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>red</sname>
-      </a-node>
-     </id>
+     <sname>red</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawColor'>
      <rgb_color>255</rgb_color>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>blue</sname>
-      </a-node>
-     </id>
+     <sname>blue</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawColor'>
      <rgb_color>65280</rgb_color>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>green</sname>
-      </a-node>
-     </id>
+     <sname>green</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawColor'>
      <rgb_color>32768</rgb_color>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>color-green-dark</sname>
-      </a-node>
-     </id>
+     <sname>color-green-dark</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawColor'>
      <rgb_color>0</rgb_color>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>black</sname>
-      </a-node>
-     </id>
+     <sname>black</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawColor'>
      <rgb_color>0</rgb_color>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>color-default</sname>
-      </a-node>
-     </id>
+     <sname>color-default</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawFont'>
      <font_name>Dialog-PLAIN-12</font_name>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>font-default</sname>
-      </a-node>
-     </id>
+     <sname>font-default</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawFont'>
      <font_name>Dialog-BOLD-12</font_name>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>bold-font</sname>
-      </a-node>
-     </id>
+     <sname>bold-font</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawFont'>
      <font_name>Dialog-ITALIC-12</font_name>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>italic-font</sname>
-      </a-node>
-     </id>
+     <sname>italic-font</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawFont'>
      <font_name>Dialog-BOLDITALIC-12</font_name>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>bold-italic-font</sname>
-      </a-node>
-     </id>
+     <sname>bold-italic-font</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -349,16 +169,7 @@
        <name>font-default</name>
       </a-node>
      </font>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-default</sname>
-      </a-node>
-     </id>
+     <sname>fmt-default</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -383,16 +194,7 @@
        <name>bold-font</name>
       </a-node>
      </font>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-of-def</sname>
-      </a-node>
-     </id>
+     <sname>fmt-of-def</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -417,16 +219,7 @@
        <name>bold-font</name>
       </a-node>
      </font>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-of-symbol</sname>
-      </a-node>
-     </id>
+     <sname>fmt-of-symbol</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -451,16 +244,7 @@
        <name>bold-font</name>
       </a-node>
      </font>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-of-anode</sname>
-      </a-node>
-     </id>
+     <sname>fmt-of-anode</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -485,16 +269,7 @@
        <name>bold-font</name>
       </a-node>
      </font>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-of-stxref</sname>
-      </a-node>
-     </id>
+     <sname>fmt-of-stxref</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -519,16 +294,7 @@
        <name>italic-font</name>
       </a-node>
      </font>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-of-subattr</sname>
-      </a-node>
-     </id>
+     <sname>fmt-of-subattr</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -553,16 +319,7 @@
        <name>bold-font</name>
       </a-node>
      </font>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-of-kw</sname>
-      </a-node>
-     </id>
+     <sname>fmt-of-kw</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -587,16 +344,7 @@
        <name>bold-font</name>
       </a-node>
      </font>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-of-string</sname>
-      </a-node>
-     </id>
+     <sname>fmt-of-string</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -611,16 +359,7 @@
        <from_attempt>0</from_attempt>
       </a-node>
      </spaces>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-nl</sname>
-      </a-node>
-     </id>
+     <sname>fmt-nl</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -635,16 +374,7 @@
        <from_attempt>0</from_attempt>
       </a-node>
      </spaces>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-nl2</sname>
-      </a-node>
-     </id>
+     <sname>fmt-nl2</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -669,16 +399,7 @@
        <from_attempt>0</from_attempt>
       </a-node>
      </spaces>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-nl-import</sname>
-      </a-node>
-     </id>
+     <sname>fmt-nl-import</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -693,16 +414,7 @@
        <from_attempt>0</from_attempt>
       </a-node>
      </spaces>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-nl-space</sname>
-      </a-node>
-     </id>
+     <sname>fmt-nl-space</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -717,16 +429,7 @@
        <from_attempt>0</from_attempt>
       </a-node>
      </spaces>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-nl-format</sname>
-      </a-node>
-     </id>
+     <sname>fmt-nl-format</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -741,16 +444,7 @@
        <from_attempt>1</from_attempt>
       </a-node>
      </spaces>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-nl-1-+</sname>
-      </a-node>
-     </id>
+     <sname>fmt-nl-1-+</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
      <spaces>
@@ -765,16 +459,7 @@
        <from_attempt>1</from_attempt>
       </a-node>
      </spaces>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>fmt-nl-1++</sname>
-      </a-node>
-     </id>
+     <sname>fmt-nl-1++</sname>
     </a-node>
     <a-node class='kiev.fmt.PartialSyntaxElemDecl'>
      <elem>
@@ -856,16 +541,7 @@
        </expected_types>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-syntax-members</sname>
-      </a-node>
-     </id>
+     <sname>stx-syntax-members</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -936,16 +612,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-file-unit</sname>
-      </a-node>
-     </id>
+     <sname>stx-file-unit</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -970,7 +637,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -1017,16 +684,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-syntax-decl</sname>
-      </a-node>
-     </id>
+     <sname>stx-syntax-decl</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1051,7 +709,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -1098,16 +756,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-syntax-decl-java</sname>
-      </a-node>
-     </id>
+     <sname>stx-syntax-decl-java</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1132,7 +781,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -1179,16 +828,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-syntax-decl-tree</sname>
-      </a-node>
-     </id>
+     <sname>stx-syntax-decl-tree</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1236,16 +876,7 @@
        </fmt>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-import</sname>
-      </a-node>
-     </id>
+     <sname>stx-import</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1270,7 +901,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <expected_types>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>Symbol</name>
@@ -1308,16 +939,7 @@
        </fmt>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-space-info</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-space-info</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1342,7 +964,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -1370,16 +992,7 @@
        </fmt>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-paragraph</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-paragraph</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1404,7 +1017,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -1432,16 +1045,7 @@
        </fmt>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-paragraph-block</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-paragraph-block</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1466,7 +1070,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <expected_types>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>Symbol</name>
@@ -1490,16 +1094,7 @@
        </fmt>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-color</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-color</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1524,7 +1119,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -1549,16 +1144,7 @@
        </fmt>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-font</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-font</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1623,16 +1209,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-space-cmd</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-space-cmd</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1650,16 +1227,7 @@
        <name>name</name>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-symbol-ref</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-symbol-ref</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1684,7 +1252,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -1749,16 +1317,7 @@
        </fmt>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-format</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-format</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1783,7 +1342,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <expected_types>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>Symbol</name>
@@ -1846,16 +1405,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-partial</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-partial</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -1880,7 +1430,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <expected_types>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>Symbol</name>
@@ -1964,16 +1514,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-syntax</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-syntax</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxIdentTemplate'>
      <regexp_ok>.*</regexp_ok>
@@ -1984,16 +1525,7 @@
        <name></name>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>ident-template</sname>
-      </a-node>
-     </id>
+     <sname>ident-template</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -2011,16 +1543,7 @@
        </fmt>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-const-str</sname>
-      </a-node>
-     </id>
+     <sname>stx-const-str</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -2107,16 +1630,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-token</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-token</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -2180,16 +1694,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-placeholder</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-placeholder</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -2310,16 +1815,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-attr</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-attr</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -2434,16 +1930,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-ident</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-ident</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -2518,16 +2005,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-attr-char</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-attr-char</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -2602,16 +2080,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-attr-str</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-attr-str</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -2897,16 +2366,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>std-def-list</sname>
-      </a-node>
-     </id>
+     <sname>std-def-list</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3143,16 +2603,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-set</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-set</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3281,16 +2732,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-bool</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-bool</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3415,16 +2857,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-enum</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-enum</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3482,16 +2915,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-node</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-node</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3544,16 +2968,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-stxref</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-stxref</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3600,16 +3015,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-space</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-space</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3634,7 +3040,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -3705,16 +3111,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-ident-template</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-ident-template</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3739,7 +3136,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -3784,16 +3181,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-expected-template</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-expected-template</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3840,16 +3228,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-java-access</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-java-access</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3874,7 +3253,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -3913,16 +3292,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-java-expr-template</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-java-expr-template</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -3947,7 +3317,7 @@
            <name>ident-template</name>
           </a-node>
          </decl>
-         <name>id</name>
+         <name>sname</name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-of-symbol</name>
@@ -4006,16 +3376,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-java-comment-template</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-java-comment-template</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4083,16 +3444,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-java-expr</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-java-expr</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4137,16 +3489,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-java-expr-access</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-java-expr-access</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4172,16 +3515,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-java-comment</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-java-comment</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4342,16 +3676,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-opt</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-opt</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4484,16 +3809,7 @@
        </unfolded>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-folder</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-folder</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4537,16 +3853,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-def-in-paragraph</sname>
-      </a-node>
-     </id>
+     <sname>stx-def-in-paragraph</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxExpectedTemplate'>
      <expected_types>
@@ -4586,16 +3893,7 @@
        <name></name>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-types-CalcOptions</sname>
-      </a-node>
-     </id>
+     <sname>stx-types-CalcOptions</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4616,16 +3914,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-calc-option-hidden</sname>
-      </a-node>
-     </id>
+     <sname>stx-calc-option-hidden</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4675,16 +3964,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-calc-option-not</sname>
-      </a-node>
-     </id>
+     <sname>stx-calc-option-not</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4750,16 +4030,7 @@
        </expected_types>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-calc-option-or</sname>
-      </a-node>
-     </id>
+     <sname>stx-calc-option-or</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4825,16 +4096,7 @@
        </expected_types>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-calc-option-and</sname>
-      </a-node>
-     </id>
+     <sname>stx-calc-option-and</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4855,16 +4117,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-calc-option-class</sname>
-      </a-node>
-     </id>
+     <sname>stx-calc-option-class</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4885,16 +4138,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-calc-option-has-meta-flag</sname>
-      </a-node>
-     </id>
+     <sname>stx-calc-option-has-meta-flag</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4915,16 +4159,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-calc-option-has-meta-user</sname>
-      </a-node>
-     </id>
+     <sname>stx-calc-option-has-meta-user</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4945,16 +4180,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-calc-option-not-null</sname>
-      </a-node>
-     </id>
+     <sname>stx-calc-option-not-null</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4975,16 +4201,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-calc-option-not-empty</sname>
-      </a-node>
-     </id>
+     <sname>stx-calc-option-not-empty</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -4997,16 +4214,7 @@
        <name>name</name>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-calc-option-is-true</sname>
-      </a-node>
-     </id>
+     <sname>stx-calc-option-is-true</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -5055,16 +4263,7 @@
        <folded_by_default>false</folded_by_default>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-func</sname>
-      </a-node>
-     </id>
+     <sname>stx-func</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -5108,28 +4307,10 @@
        </expected_types>
       </a-node>
      </elem>
-     <meta>
-      <a-node class='kiev.vlang.MetaSet'>
-       <mflags>0</mflags>
-      </a-node>
-     </meta>
-     <id>
-      <a-node class='kiev.vlang.Symbol'>
-       <sname>stx-funcs</sname>
-      </a-node>
-     </id>
+     <sname>stx-funcs</sname>
     </a-node>
    </members>
-   <meta>
-    <a-node class='kiev.vlang.MetaSet'>
-     <mflags>0</mflags>
-    </a-node>
-   </meta>
-   <id>
-    <a-node class='kiev.vlang.Symbol'>
-     <sname>syntax-for-syntax</sname>
-    </a-node>
-   </id>
+   <sname>syntax-for-syntax</sname>
   </a-node>
  </members>
 </a-node>

@@ -77,7 +77,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			mvals.block.stats.add(
 				new ReturnStat(pos,
 					new SFldExpr(pos,clazz.resolveField(nameEnumValuesFld)) ) );
-			foreach (Method m; clazz.members; m.id.sname == mvals.id.sname) {
+			foreach (Method m; clazz.members; m.sname == mvals.sname) {
 				m.replaceWithNode(mvals);
 				break;
 			}
@@ -111,7 +111,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
 			tome.block.stats.add(sw);
-			foreach (Method m; clazz.members; m.id.sname == tome.id.sname) {
+			foreach (Method m; clazz.members; m.sname == tome.sname) {
 				m.replaceWithNode(tome);
 				break;
 			}
@@ -134,7 +134,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
 				ConstStringExpr alt_id = (ConstStringExpr)Field.ALT_ENUM_ID_ATTR.get(f);
-				String str = (alt_id != null) ? alt_id.value : f.id.sname;
+				String str = (alt_id != null) ? alt_id.value : f.sname;
 				cases[i] = new CaseLabel(pos,new ConstIntExpr(i),
 					new ENode[]{
 						new ReturnStat(pos,new ConstStringExpr(str))
@@ -147,7 +147,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
 			tostr.block.stats.add(sw);
-			foreach (Method m; clazz.members; m.id.sname == tostr.id.sname) {
+			foreach (Method m; clazz.members; m.sname == tostr.sname) {
 				m.replaceWithNode(tostr);
 				break;
 			}
@@ -173,7 +173,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			fromstr.block.stats.add(new ExprStat(pos,ae));
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
-				String str = f.id.sname;
+				String str = f.sname;
 				IfElseStat ifst = new IfElseStat(pos,
 					new BinaryBoolExpr(pos,Operator.Equals,
 						new LVarExpr(pos,fromstr.params[0]),
@@ -185,7 +185,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				ConstStringExpr alt_id = (ConstStringExpr)Field.ALT_ENUM_ID_ATTR.get(f);
 				if (alt_id != null) {
 					str = alt_id.value;
-					if (str != f.id.sname) {
+					if (str != f.sname) {
 						ifst = new IfElseStat(pos,
 							new BinaryBoolExpr(pos,Operator.Equals,
 								new LVarExpr(pos,fromstr.params[0]),
@@ -200,7 +200,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			fromstr.block.stats.add(
 				new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,ENode.emptyArray))
 				);
-			foreach (Method m; clazz.members; m.id.sname == fromstr.id.sname) {
+			foreach (Method m; clazz.members; m.sname == fromstr.sname) {
 				m.replaceWithNode(fromstr);
 				break;
 			}

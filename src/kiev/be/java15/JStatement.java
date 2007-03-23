@@ -209,7 +209,7 @@ public final view JCondStat of CondStat extends JENode {
 		default: fname = nameAssertMethod;
 		}
 		Method func;
-		if (wbc.id == null || wbc.u_name == null)
+		if (wbc.sname == null || wbc.u_name == null)
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString);
 		else
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);
@@ -330,7 +330,7 @@ public final view JBreakStat of BreakStat extends JENode {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
 				if( node instanceof JMethod ) break;
-				if( node instanceof JLabeledStat && ((JLabeledStat)node).lbl.id.equals(name) ) {
+				if( node instanceof JLabeledStat && ((JLabeledStat)node).lbl.sname == name ) {
 					JENode st = ((JLabeledStat)node).stat;
 					if( st instanceof BreakTarget )
 						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
@@ -398,7 +398,7 @@ public final view JContinueStat of ContinueStat extends JENode {
 					cl = (Object[])Arrays.append(cl,node.expr_var);
 				}
 				if( node instanceof JMethod ) break;
-				if( node instanceof JLabeledStat && ((JLabeledStat)node).lbl.id.equals(name) ) {
+				if( node instanceof JLabeledStat && ((JLabeledStat)node).lbl.sname == name ) {
 					JENode st = ((JLabeledStat)node).stat;
 					if( st instanceof ContinueTarget )
 						return (Object[])Arrays.append(cl,st.getCntLabel().getCodeLabel(code));

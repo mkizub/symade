@@ -256,7 +256,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 	public Method(Symbol<This> id, TypeRef type_ret, int flags) {
 		super(id);
-		assert (!(id.equals(nameInit) || id.equals(nameClassInit)) || this instanceof Constructor);
+		assert (!(sname == nameInit || sname == nameClassInit) || this instanceof Constructor);
 		this.u_name = id.sname;
 		this.type_ret = type_ret;
 		this.dtype_ret = type_ret.ncopy();
@@ -281,22 +281,22 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public boolean hasName(String nm, boolean by_equals) {
 		if (by_equals) {
 			if (this.u_name == nm) return true;
-			if (id.sname == nm) return true;
+			if (this.sname == nm) return true;
 			foreach(Symbol s; aliases; s.sname == nm)
 				return true;
 		} else {
 			if (this.u_name != null && this.u_name.startsWith(nm)) return true;
-			if (id.sname != null && id.sname.startsWith(nm)) return true;
+			if (this.sname != null && this.sname.startsWith(nm)) return true;
 			foreach(Symbol s; aliases; s.sname.startsWith(nm))
 				return true;
 		}
 		return false;
 	}
 
-	public Symbol<Method> getSymbol(String nm) {
-		if (id.sname == nm) return this.id;
+	public ISymbol getSymbol(String nm) {
+		if (sname == nm) return this;
 		foreach(Symbol s; aliases; s.sname == nm)
-			return (Symbol<Method>)s;
+			return s;
 		assert (false, "Symbol "+nm+" not found in "+this);
 		return null;
 	}
@@ -368,7 +368,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public String toString() {
-		StringBuffer sb = new StringBuffer(id+"(");
+		StringBuffer sb = new StringBuffer(sname+"(");
 		int n = params.length;
 		boolean comma = false;
 		foreach (Var fp; params; fp.kind == Var.PARAM_NORMAL || fp.kind == Var.PARAM_VARARGS) {
@@ -414,9 +414,9 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if (op != null)
 				expr.ident = op.name;
 			else
-				expr.ident = this.id.sname;
+				expr.ident = this.sname;
 		}
-		expr.symbol = this.id;
+		expr.symbol = this;
 		if (!isMacro())
 			return;
 		UserMeta m = (UserMeta)this.getMeta("kiev.stdlib.meta.CompilerNode");
@@ -771,7 +771,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			Type t = tp;
 			if (t instanceof ArrayType) {
 				if (body instanceof MetaValueScalar) {
-					MetaValueArray mva = new MetaValueArray(new SymbolRef<DNode>(body.pos, this.id));
+					MetaValueArray mva = new MetaValueArray(new SymbolRef<DNode>(body.pos, this));
 					mva.values.add(~((MetaValueScalar)body).value);
 					body = mva;
 				}
@@ -868,12 +868,12 @@ public final class Constructor extends Method {
 	}
 	
 	public void callbackChildChanged(AttrSlot attr) {
-		if (attr.name == "id") {
+		if (attr.name == "sname") {
 			if (parent() instanceof TypeDecl) {
 				TypeDecl td = (TypeDecl)parent();
-				if (id != null && id.sname != td.id.sname) {
-					id.open();
-					id.sname = td.id.sname;
+				if (sname != td.sname) {
+					this = this.open();
+					this.sname = td.sname;
 				}
 			}
 		} else {
@@ -884,9 +884,9 @@ public final class Constructor extends Method {
 	public void callbackAttached() {
 		if (!isStatic() && parent() instanceof TypeDecl) {
 			TypeDecl td = (TypeDecl)parent();
-			if (id != null && id.sname != td.id.sname) {
-				id.open();
-				id.sname = ((TypeDecl)parent()).id.sname;
+			if (sname != td.sname) {
+				this = this.open();
+				this.sname = ((TypeDecl)parent()).sname;
 			}
 		}
 	}

@@ -61,7 +61,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	}
 
 	public void callbackChildChanged(AttrSlot attr) {
-		if (attr.name == "id")
+		if (attr.name == "sname")
 			resetNames();
 		else
 			super.callbackChildChanged(attr);
@@ -89,7 +89,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	}
 
 	private void resetNames() {
-		u_name = id.sname;
+		u_name = sname;
 		q_name = null;
 		if (members != null) {
 			foreach (ATextSyntax s; members)
@@ -117,9 +117,9 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 			ATextSyntax@ ts;
 			if (!PassInfo.resolveNameR(this,ts,new ResInfo(this,parent_syntax.name)))
 				Kiev.reportError(this,"Cannot resolve syntax '"+parent_syntax.name+"'");
-			else if (parent_syntax.symbol != ts.id) {
+			else if (parent_syntax.symbol != ts) {
 				parent_syntax.open();
-				parent_syntax.symbol = ts.id;
+				parent_syntax.symbol = ts;
 			}
 		}
 		return true;
@@ -232,7 +232,7 @@ public final class SpaceCmd extends ASTNode {
 		this(si, action_before, action_after, 0);
 	}
 	public SpaceCmd(SpaceInfo si, SpaceAction action_before, SpaceAction action_after, int from_attempt) {
-		this.si = new SymbolRef<SpaceInfo>((Symbol<SpaceInfo>)si.id);
+		this.si = new SymbolRef<SpaceInfo>(si);
 		this.from_attempt = from_attempt;
 		this.action_before = action_before;
 		this.action_after = action_after;
@@ -244,9 +244,9 @@ public final class SpaceCmd extends ASTNode {
 		SpaceInfo@ spi;
 		if (!PassInfo.resolveNameR(this,spi,new ResInfo(this,si.name)))
 			Kiev.reportError(this,"Cannot resolve color '"+si.name+"'");
-		else if (si.symbol != spi.id) {
+		else if (si.symbol != spi) {
 			si.open();
-			si.symbol = spi.id;
+			si.symbol = spi;
 		}
 	}
 	
@@ -425,12 +425,12 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 	}
 	public SyntaxElemDecl(Struct cls, SyntaxElem elem) {
 		super(new Symbol<This>(), elem);
-		this.rnode = new SymbolRef<Struct>((Symbol<Struct>)cls.id);
+		this.rnode = new SymbolRef<Struct>((Symbol<Struct>)cls);
 	}
 
 	public void preResolveOut() {
 		if (rnode == null)
-			rnode = new SymbolRef<Struct>(0,(Symbol<Struct>)Env.newStruct("ASTNode", Env.newPackage("kiev.vlang"), 0, null).id);
+			rnode = new SymbolRef<Struct>(Env.newStruct("ASTNode", Env.newPackage("kiev.vlang"), 0, null));
 		if (rnode.name == null)
 			rnode.name = "ASTNode";
 		Struct@ s;
@@ -438,9 +438,9 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 			Kiev.reportError(this,"Cannot resolve @node '"+rnode.name+"'");
 		else if (!s.isCompilerNode())
 			Kiev.reportError(this,"Resolved '"+rnode.name+"' is not @node");
-		else if (rnode.symbol != s.id) {
+		else if (rnode.symbol != s) {
 			rnode.open();
-			rnode.symbol = s.id;
+			rnode.symbol = s;
 		}
 	}
 	
@@ -517,9 +517,9 @@ public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 				Kiev.reportError(this,"Cannot resolve @node '"+sr.name+"'");
 			else if !(dn instanceof Struct && ((Struct)dn).isCompilerNode() || dn instanceof SyntaxExpectedTemplate)
 				Kiev.reportError(this,"Resolved '"+sr.name+"' is not a @node or SyntaxExpectedTemplate");
-			else if (sr.symbol != dn.id) {
+			else if (sr.symbol != dn) {
 				sr.open();
-				sr.symbol = dn.id;
+				sr.symbol = dn;
 			}
 		}
 	}
@@ -558,9 +558,9 @@ public final class SyntaxElemFormatDecl extends DNode {
 			DrawColor@ dc;
 			if (!PassInfo.resolveNameR(this,dc,new ResInfo(this,color.name)))
 				Kiev.reportError(this,"Cannot resolve color '"+color.name+"'");
-			else if (color.symbol != dc.id) {
+			else if (color.symbol != dc) {
 				color.open();
-				color.symbol = dc.id;
+				color.symbol = dc;
 			}
 		}
 
@@ -568,9 +568,9 @@ public final class SyntaxElemFormatDecl extends DNode {
 			DrawFont@ df;
 			if (!PassInfo.resolveNameR(this,df,new ResInfo(this,font.name)))
 				Kiev.reportError(this,"Cannot resolve font '"+font.name+"'");
-			else if (font.symbol != df.id) {
+			else if (font.symbol != df) {
 				font.open();
-				font.symbol = df.id;
+				font.symbol = df;
 			}
 		}
 	}
@@ -651,9 +651,9 @@ public abstract class SyntaxElem extends ASTNode {
 			SyntaxElemFormatDecl@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,fmt.name)))
 				Kiev.reportError(this,"Cannot resolve format declaration '"+fmt.name+"'");
-			else if (fmt.symbol != d.id) {
+			else if (fmt.symbol != d) {
 				fmt.open();
-				fmt.symbol = d.id;
+				fmt.symbol = d;
 			}
 		}
 	}
@@ -747,7 +747,7 @@ public final class SyntaxElemRef extends SyntaxElem {
 		this.decl = new SymbolRef<ASyntaxElemDecl>();
 	}
 	public SyntaxElemRef(ASyntaxElemDecl decl) {
-		this.decl = new SymbolRef<ASyntaxElemDecl>((Symbol<ASyntaxElemDecl>)decl.id);
+		this.decl = new SymbolRef<ASyntaxElemDecl>(decl);
 	}
 	
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
@@ -764,9 +764,9 @@ public final class SyntaxElemRef extends SyntaxElem {
 			DNode@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,decl.name,ResInfo.noForwards)))
 				Kiev.reportError(decl,"Unresolved syntax element decl "+decl);
-			else if (decl.symbol != d.id) {
+			else if (decl.symbol != d) {
 				decl.open();
-				decl.symbol = d.id;
+				decl.symbol = d;
 			}
 		}
 	}
@@ -851,7 +851,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	}
 	public SyntaxAttr(String name, ATextSyntax stx) {
 		this.name = name;
-		this.in_syntax = new SymbolRef<ATextSyntax>((Symbol<ATextSyntax>)stx.id);
+		this.in_syntax = new SymbolRef<ATextSyntax>(stx);
 		this.par = new SymbolRef<AParagraphLayout>();
 	}
 
@@ -869,27 +869,27 @@ public abstract class SyntaxAttr extends SyntaxElem {
 				Kiev.reportError(sr,"Resolved type "+sr+" is not a compiler @node or SyntaxExpectedTemplate");
 				continue;
 			}
-			if (sr.symbol != dn.id) {
+			if (sr.symbol != dn) {
 				sr = sr.open();
-				sr.symbol = dn.id;
+				sr.symbol = dn;
 			}
 		}
 		if (in_syntax.name != null && in_syntax.name != "") {
 			ATextSyntax@ s;
 			if (!PassInfo.resolveNameR(this,s,new ResInfo(this,in_syntax.name,ResInfo.noForwards)))
 				Kiev.reportError(in_syntax,"Unresolved syntax "+in_syntax);
-			else if (in_syntax.symbol != s.id) {
+			else if (in_syntax.symbol != s) {
 				in_syntax.open();
-				in_syntax.symbol = s.id;
+				in_syntax.symbol = s;
 			}
 		}
 		if (par.name != null && par.name != "") {
 			AParagraphLayout@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,par.name)))
 				Kiev.reportError(this,"Cannot resolve paragraph declaration '"+par.name+"'");
-			else if (par.symbol != d.id) {
+			else if (par.symbol != d) {
 				par.open();
-				par.symbol = d.id;
+				par.symbol = d;
 			}
 		}
 	}
@@ -1015,9 +1015,9 @@ public class SyntaxList extends SyntaxAttr {
 			AParagraphLayout@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,elpar.name)))
 				Kiev.reportError(this,"Cannot resolve paragraph declaration '"+elpar.name+"'");
-			else if (elpar.symbol != d.id) {
+			else if (elpar.symbol != d) {
 				elpar.open();
-				elpar.symbol = d.id;
+				elpar.symbol = d;
 			}
 		}
 	}
@@ -1074,9 +1074,9 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 			SyntaxIdentTemplate@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,decl.name,ResInfo.noForwards)))
 				Kiev.reportWarning(decl,"Unresolved ident template "+decl);
-			if (decl.symbol != d.id) {
+			if (decl.symbol != d) {
 				decl.open();
-				decl.symbol = d.id;
+				decl.symbol = d;
 			}
 		}
 	}
@@ -1148,8 +1148,8 @@ public class SyntaxNode extends SyntaxAttr {
 	public SyntaxNode() {}
 	public SyntaxNode(ATextSyntax stx) {
 		super("");
-		this.in_syntax.name = stx.id.sname;
-		this.in_syntax.symbol = stx.id;
+		this.in_syntax.name = stx.sname;
+		this.in_syntax.symbol = stx;
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
@@ -1399,6 +1399,28 @@ public class CalcOptionIsHidden implements CalcOption {
 	}
 }
 
+@node
+public class CalcOptionIncludeInDump implements CalcOption {
+	@virtual typedef This  = CalcOptionIncludeInDump;
+
+	public CalcOptionIncludeInDump() {}
+	public CalcOptionIncludeInDump(String name) {
+		super(name);
+	}
+
+	public boolean calc(ANode node) {
+		if (node == null)
+			return false;
+		Object val = node;
+		if (name == null || name == "" || name == "this")
+			return true;
+		Object val = node.getVal(name);
+		if (val == null)
+			return false;
+		return node.includeInDump(name, val);
+	}
+}
+
 
 @node
 public class SyntaxOptional extends SyntaxElem {
@@ -1508,7 +1530,7 @@ public class SyntaxParagraphLayout extends SyntaxElem {
 	}
 	public SyntaxParagraphLayout(SyntaxElem elem, AParagraphLayout par) {
 		this.elem = elem;
-		this.par = new SymbolRef<AParagraphLayout>(par.id);
+		this.par = new SymbolRef<AParagraphLayout>(par);
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
@@ -1525,9 +1547,9 @@ public class SyntaxParagraphLayout extends SyntaxElem {
 		AParagraphLayout@ d;
 		if (!PassInfo.resolveNameR(this,d,new ResInfo(this,par.name)))
 			Kiev.reportError(this,"Cannot resolve paragraph declaration '"+par.name+"'");
-		else if (par.symbol != d.id) {
+		else if (par.symbol != d) {
 			par.open();
-			par.symbol = d.id;
+			par.symbol = d;
 		}
 	}
 	

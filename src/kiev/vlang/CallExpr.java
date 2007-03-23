@@ -54,7 +54,7 @@ public class CallExpr extends ENode {
 	}
 	@setter public void set$func(Method m) {
 		this = this.open();
-		this.symbol = m.id;
+		this.symbol = m;
 	}
 
 	public CallExpr() {}
@@ -71,11 +71,11 @@ public class CallExpr extends ENode {
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, TypeRef[] targs, ENode[] args) {
-		this(pos, obj, new SymbolRef<Method>(pos,(Symbol<Method>)func.id), targs, args);
+		this(pos, obj, new SymbolRef<Method>(pos,func), targs, args);
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
-		this(pos, obj, new SymbolRef<Method>(pos,(Symbol<Method>)func.id), null, args);
+		this(pos, obj, new SymbolRef<Method>(pos,func), null, args);
 	}
 
 	public ENode[] getArgs() {
@@ -155,7 +155,7 @@ public class CallExpr extends ENode {
 			info.leaveForward(obj);
 			if( info.isEmpty() ) {
 				this = this.open();
-				this.symbol = m.id;
+				this.symbol = m;
 				this.setSuperExpr(true);
 				return;
 			}
@@ -352,9 +352,9 @@ public class CallExpr extends ENode {
 		Hashtable<String,Object> args = new Hashtable<String,Object>();
 		foreach (Var fp; func.params; fp.kind == Var.PARAM_NORMAL) {
 			if (fp.type instanceof ASTNodeType)
-				args.put(fp.id.sname, this.args[idx++].doRewrite(ctx));
+				args.put(fp.sname, this.args[idx++].doRewrite(ctx));
 			else
-				args.put(fp.id.sname, this.args[idx++]);
+				args.put(fp.sname, this.args[idx++]);
 		}
 		ASTNode rewriter = func.body;
 		if (rewriter instanceof RewriteMatch)
@@ -384,7 +384,7 @@ public class CtorCallExpr extends ENode {
 	}
 	@setter public void set$func(Method m) {
 		this = this.open();
-		this.symbol = m.id;
+		this.symbol = m;
 	}
 
 	public CtorCallExpr() {}
@@ -432,7 +432,7 @@ public class CtorCallExpr extends ENode {
 			if (!PassInfo.resolveBestMethodR(tp,m,info,mt))
 				throw new CompilerException(this,"Constructor "+Method.toString(nameInit,args)+" unresolved");
 			this = this.open();
-			this.symbol = ((Constructor)m).id;
+			this.symbol = (Constructor)m;
 			return;
 		}
 		// constructor call "super(args)"
@@ -442,7 +442,7 @@ public class CtorCallExpr extends ENode {
 			if (!PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,mt))
 				throw new CompilerException(this,"Constructor "+Method.toString(nameInit,args)+" unresolved");
 			this = this.open();
-			this.symbol = ((Constructor)m).id;
+			this.symbol = (Constructor)m;
 			return;
 		}
 		throw new CompilerException(this, "Constructor call may only be 'super' or 'this'");

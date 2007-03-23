@@ -107,7 +107,7 @@ public view RMethod of Method extends RDNode {
 				foreach(Method inv; invs; ctx_tdecl.instanceOf(inv.ctx_tdecl) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
-					if( !(id.sname.startsWith(nameSet) || id.sname.startsWith(nameGet)) ) {
+					if( !(sname.startsWith(nameSet) || sname.startsWith(nameGet)) ) {
 						if (((Method)self).conditions.indexOf(inv.conditions[0]) < 0)
 							((Method)self).conditions.add(inv.conditions[0]);
 					}

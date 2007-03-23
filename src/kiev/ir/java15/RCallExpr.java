@@ -82,7 +82,7 @@ public final view RCallExpr of CallExpr extends RENode {
 			while !(n instanceof Method) n = n.parent();
 			assert (n.parent() instanceof TypeDecl);
 			this.open();
-			this.symbol = ((Method)n).id;
+			this.symbol = (Method)n;
 		}
 		setResolved(true);
 		if (isAutoReturnable())
@@ -159,7 +159,7 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 			while !(n instanceof Constructor) n = n.parent();
 			assert (n.parent() instanceof TypeDecl);
 			this.open();
-			this.symbol = ((Constructor)n).id;
+			this.symbol = (Constructor)n;
 		}
 		setResolved(true);
 		if (isAutoReturnable())

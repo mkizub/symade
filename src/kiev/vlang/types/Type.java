@@ -455,7 +455,7 @@ public final class ASTNodeType extends Type {
 		TVarBld tvb = new TVarBld();
 		foreach (RewritePattern var; rp.vars) {
 			ASTNodeType ast = newASTNodeType(var);
-			String name = ("attr$"+var.id+"$type").intern();
+			String name = ("attr$"+var.sname+"$type").intern();
 			foreach (TVar tv; meta_type.getTemplBindings().tvars; tv.var.name == name) {
 				tvb.append(tv.var, ast);
 				break;
@@ -522,7 +522,7 @@ public final class ArgType extends Type {
 	}
 
 	public String toString() {
-		return String.valueOf(definer.id);
+		return String.valueOf(definer.sname);
 	}
 
 	public boolean isCastableTo(Type t) {

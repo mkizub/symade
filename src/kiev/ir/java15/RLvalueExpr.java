@@ -194,14 +194,14 @@ public final view RLVarExpr of LVarExpr extends RLvalueExpr {
 		lookup_penv:
 			foreach (ASTNode dn; rm.block.stats) {
 				if (dn instanceof DeclGroup) {
-					foreach (Var vd; dn.decls; vd.id.sname == namePEnv) {
+					foreach (Var vd; dn.decls; vd.sname == namePEnv) {
 						pEnv = vd;
 						break lookup_penv;
 					}
 				}
 				else if (dn instanceof Var) {
 					Var vd = (Var)dn;
-					if (vd.id.sname == namePEnv) {
+					if (vd.sname == namePEnv) {
 						pEnv = vd;
 						break lookup_penv;
 					}
@@ -269,7 +269,7 @@ public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends REN
 		if( Kiev.debug && Kiev.debugResolve ) {
 			StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");
 			for(int i=0; i < outer_refs.length; i++)
-				sb.append("->").append(outer_refs[i].id);
+				sb.append("->").append(outer_refs[i].sname);
 			System.out.println(sb.toString());
 		}
 		setResolved(true);

@@ -175,6 +175,15 @@ public abstract class ANode implements INode {
 	public AttrSlot[] values() {
 		return AttrSlot.emptyArray;
 	}
+	
+	public boolean includeInDump(String name, Object val) {
+		if (name == "parent")
+			return false;
+		if (val instanceof SymbolRef && val.name == null)
+			return false;
+		return true;
+	}
+
 	public Object getVal(String name) {
 		foreach (AttrSlot a; this.values(); a.name == name)
 			return a.get(this);

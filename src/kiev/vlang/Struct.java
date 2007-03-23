@@ -100,7 +100,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 	public void callbackChildChanged(AttrSlot attr) {
 		if (attr.name == "package_clazz")
 			this.callbackSuperTypeChanged(this);
-		else if (attr.name == "id")
+		else if (attr.name == "sname")
 			resetNames();
 		else
 			super.callbackChildChanged(attr);
@@ -245,7 +245,7 @@ public class Struct extends TypeDecl implements PreScanneable {
 		sub_decls.append(sub);
 
 		trace(Kiev.debug && Kiev.debugMembers,"Sub-class "+sub+" added to class "+this);
-		if (sub.id.sname == nameClTypeInfo) {
+		if (sub.sname == nameClTypeInfo) {
 			typeinfo_clazz = sub;
 			trace(Kiev.debug && Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+this);
 		}

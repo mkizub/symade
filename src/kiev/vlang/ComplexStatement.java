@@ -112,7 +112,7 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 			StringBuffer sb = new StringBuffer();
 			sb.append("case ").append(val).append('(');
 			for(int i=0; i < pattern.length; i++) {
-				sb.append(pattern[i].vtype).append(' ').append(pattern[i].id);
+				sb.append(pattern[i].vtype).append(' ').append(pattern[i].sname);
 				if( i < pattern.length-1 ) sb.append(',');
 			}
 			sb.append("):");

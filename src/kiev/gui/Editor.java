@@ -312,12 +312,12 @@ public class Editor extends InfoView implements KeyListener {
 										SymbolRef obj = (SymbolRef)pattr.get();
 										if (obj != null) {
 											obj=obj.open();
-											obj.name = dn.id.sname;
-											obj.symbol = dn.id;
+											obj.name = dn.sname;
+											obj.symbol = dn;
 										} else {
 											pattr.node.open();
 											obj = (SymbolRef)pattr.slot.typeinfo.newInstance();
-											obj.symbol = dn.id;
+											obj.symbol = dn;
 											pattr.set(obj);
 										}
 									} finally {
@@ -1084,7 +1084,7 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 		private ANode	node;
 		private String	attr;
 		NewElemAction(Struct cls, ANode node, String attr) {
-			super(cls.id.sname);
+			super(cls.sname);
 			this.cls = cls;
 			this.node = node;
 			this.attr = attr;
@@ -1346,7 +1346,7 @@ final class SymRefEditor extends TextEditor implements ComboBoxEditor {
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
 		foreach (DNode dn; decls) {
-			combo.addItem(dn.id.sname);
+			combo.addItem(dn.sname);
 			popup = true;
 		}
 		if (popup) {

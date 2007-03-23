@@ -1342,7 +1342,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				if (isForward() && package_clazz.isStructView()) {
 					Field fview = this.resolveField(nameImpl);
 					if (fview.parent() == (Struct)this) {
-						foreach (Var fp; m.params; fp.id.equals(nameImpl)) {
+						foreach (Var fp; m.params; fp.sname == nameImpl) {
 							initbody.stats.insert(p,
 								new ExprStat(pos,
 									new AssignExpr(pos,Operator.Assign,
@@ -1458,7 +1458,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					foreach(Constructor m; members; m.u_name == nameInit) {
 						for(int j=0; j < proxy_fields.length; j++) {
 							int par = m.params.length;
-							String nm = proxy_fields[j].id.sname;
+							String nm = proxy_fields[j].sname;
 							m.params.append(new LVar(m.pos,nm,proxy_fields[j].type,Var.PARAM_LVAR_PROXY,ACC_FINAL|ACC_SYNTHETIC));
 							m.block.stats.insert(
 								1,

@@ -53,12 +53,12 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+pcase.group.decls.length+" fields");
 							for(int i=0, j=0; i < pattern.length; i++) {
 								Var p = pattern[i];
-								if( p.type == Type.tpVoid || p.id.sname == nameUnderscore)
+								if( p.type == Type.tpVoid || p.sname == nameUnderscore)
 									continue;
 								Field f = (Field)pcase.group.decls[i];
 								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
 								if( !p.type.isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
-									throw new RuntimeException("Pattern variable "+p.id+" has type "+p.type+" but type "+tp+" is expected");
+									throw new RuntimeException("Pattern variable "+p.sname+" has type "+p.type+" but type "+tp+" is expected");
 								p.open();
 								p.init = new IFldExpr(p.pos,
 										new CastExpr(p.pos,

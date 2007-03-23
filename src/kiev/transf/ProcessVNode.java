@@ -186,7 +186,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			Struct fts = f.type.getStruct();
 			if (fts != null) {
 				TypeDef td = new TypeAssign(
-					new Symbol<TypeAssign>(f.pos,"attr$"+f.id+"$type"),
+					new Symbol<TypeAssign>(f.pos,"attr$"+f.sname+"$type"),
 					new TypeRef(new ASTNodeType(f.type.getStruct())));
 				td.setSynthetic(true);
 				Struct clazz = (Struct)f.ctx_tdecl;
@@ -214,7 +214,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 
 	private boolean hasField(Struct s, String name) {
 		s.checkResolved();
-		foreach (Field f; s.getAllFields(); f.id.equals(name)) return true;
+		foreach (Field f; s.getAllFields(); f.sname == name) return true;
 		return false;
 	}
 	
@@ -231,7 +231,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		boolean isArr = f.getType().isInstanceOf(tpNArray);
 		boolean isExtData = isAtt ? fmatt.getZ(nameExtData) : fmref.getZ(nameExtData);
 		Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
-		Struct s = Env.newStruct(("NodeAttr_"+f.id.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true);
+		Struct s = Env.newStruct(("NodeAttr_"+f.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true);
 		s.setTypeDeclLoaded(true);
 		snode.members.add(s);
 		if (isArr) {
@@ -272,7 +272,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 					}
 				);
 			ce.open();
-			ce.symbol = sctor.id;
+			ce.symbol = sctor;
 			ctor.body = new Block(0);
 			ctor.block.stats.add(new ExprStat(ce));
 		}
@@ -332,7 +332,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 						if!(ftp.isReference())
 							CastExpr.autoCastToPrimitive(val);
 					} else {
-						ConstStringExpr msg = new ConstStringExpr((isAtt ? "@att " : "@ref ")+f.id+" is not writeable");
+						ConstStringExpr msg = new ConstStringExpr((isAtt ? "@att " : "@ref ")+f.sname+" is not writeable");
 						setVal.block.stats.add(
 							new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 						);
@@ -387,7 +387,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			Field f = aflds[i];
 			boolean isAtt = (f.getMeta(mnAtt) != null);
 			boolean isArr = f.getType().isInstanceOf(tpNArray);
-			String fname = "nodeattr$"+f.id.sname;
+			String fname = "nodeattr$"+f.sname;
 			if (f.ctx_tdecl != s) {
 				vals_init[i] = new SFldExpr(f.pos, s.resolveField(fname.intern(), true));
 				continue;
@@ -396,7 +396,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			Type tpa = makeNodeAttrClass(s,f);
 			TypeInfoExpr clz_expr = new TypeInfoExpr(0, new TypeRef(clz_tp));
 			ENode e = new NewExpr(0, tpa, new ENode[]{
-					new ConstStringExpr(f.id.sname),
+					new ConstStringExpr(f.sname),
 					clz_expr
 				});
 			Field af = s.addField(new Field(fname, e.getType(), ACC_PUBLIC|ACC_STATIC|ACC_FINAL|ACC_SYNTHETIC));
@@ -661,7 +661,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				if (fe.obj instanceof ThisExpr && fe.var.isFinal() && fe.var.getMeta(VNode_Base.mnAtt) != null) {
 					Field f = fe.var;
 					fe.setAsField(true);
-					Field fatt = f.ctx_tdecl.resolveField(("nodeattr$"+f.id.sname).intern());
+					Field fatt = f.ctx_tdecl.resolveField(("nodeattr$"+f.sname).intern());
 					ENode p_st = new IfElseStat(0,
 							new BinaryBoolExpr(0, Operator.NotEquals,
 								new IFldExpr(0, new ThisExpr(), f),
@@ -698,7 +698,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		if (get_var.isAbstract()) {
 			if (isAtt && !fmatt.getZ(VNode_Base.nameExtData) || !isAtt && !fmref.getZ(VNode_Base.nameExtData))
 				return;
-			String fname = ("nodeattr$"+f.id.sname).intern();
+			String fname = ("nodeattr$"+f.sname).intern();
 			Field fatt = f.ctx_tdecl.resolveField(fname);
 			get_var.setAbstract(false);
 			Block body = new Block();
@@ -753,7 +753,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			return;
 		}
 
-		String fname = ("nodeattr$"+f.id.sname).intern();
+		String fname = ("nodeattr$"+f.sname).intern();
 		Field fatt = f.ctx_tdecl.resolveField(fname);
 
 		if (set_var.isAbstract()) {

@@ -225,7 +225,7 @@ public final view RBreakStat of BreakStat extends RENode {
 				if (!p.isBreakTarget()) continue;
 				ASTNode pp = p;
 				for(p=(ASTNode)p.parent(); p instanceof LabeledStat; p = (ASTNode)p.parent()) {
-					if (p.lbl.id.equals(this.ident)) {
+					if (p.lbl.sname == this.ident) {
 						p = pp;
 						break label_found;
 					}

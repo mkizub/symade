@@ -40,26 +40,28 @@ public abstract class ENode extends ASTNode {
 	private Object	ident_or_symbol;
 	
 	@att @abstract public String			ident;
-	@ref @abstract public Symbol<DNode>	symbol;
+	@ref @abstract public ISymbol			symbol;
 	@ref @abstract public:ro DNode			dnode;
 	
 	@getter @att public final String get$ident() {
 		if (ident_or_symbol instanceof String)
 			return (String)ident_or_symbol;
-		if (ident_or_symbol instanceof Symbol)
-			return ((Symbol)ident_or_symbol).sname;
+		if (ident_or_symbol instanceof ISymbol)
+			return ((ISymbol)ident_or_symbol).sname;
 		return null;
 	}
 	
-	@getter @ref public final Symbol<DNode> get$symbol() {
-		if (ident_or_symbol instanceof Symbol)
-			return ANode.getVersion((Symbol<DNode>)ident_or_symbol);
+	@getter @ref public final ISymbol get$symbol() {
+		if (ident_or_symbol instanceof ISymbol)
+			return (ISymbol)ANode.getVersion((ANode)ident_or_symbol);
 		return null;
 	}
 	
 	@getter @ref public final DNode get$dnode() {
-		if (ident_or_symbol instanceof Symbol)
-			return ANode.getVersion(((Symbol)ident_or_symbol).dnode);
+		if (ident_or_symbol instanceof DNode)
+			return ANode.getVersion((DNode)ident_or_symbol);
+		if (ident_or_symbol instanceof ISymbol)
+			return ANode.getVersion(((ISymbol)ident_or_symbol).dnode);
 		return null;
 	}
 	
@@ -68,7 +70,7 @@ public abstract class ENode extends ASTNode {
 		ident_or_symbol = val;
 	}
 	
-	@setter public final void set$symbol(Symbol<DNode> val) {
+	@setter public final void set$symbol(ISymbol val) {
 		ident_or_symbol = val;
 	}
 	

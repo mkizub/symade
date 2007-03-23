@@ -1860,7 +1860,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 		LOOKAHEAD("{")
 		{ presc = m; }
 		m.body = MaybeSkipBlock() [ ";" ]
-	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id)) ] ";"
+	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m)) ] ";"
 	)
 	} finally { curMethod = oldMethod; }
 	{ return m; }
@@ -1871,7 +1871,7 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 {
 	id = Name()
 	{
-		if( !id.sname.equals(curClazz.id.sname) )
+		if( !id.sname.equals(curClazz.sname) )
 			Kiev.reportError(id,"Return type missed or bad constructor name "+id);
 		m = mkConstructor(id,modifiers); 
 		oldMethod = curMethod;
@@ -1929,11 +1929,11 @@ WBCCondition RequareDeclaration() :
 	"require"
 	(
 		LOOKAHEAD("[" <IDENTIFIER> "]" )
-		"[" id = Name() { n.id.sname = id.sname; } "]"
+		"[" id = Name() { n.sname = id.sname; } "]"
 		n.body = CondBlock()
 	|
 		LOOKAHEAD(<IDENTIFIER> "{")
-		id     = Name() { n.id.sname = id.sname; }
+		id     = Name() { n.sname = id.sname; }
 		n.body = CondBlock()
 	|
 		n.body = CondBlock()
@@ -1953,11 +1953,11 @@ WBCCondition EnsureDeclaration() :
 	"ensure"
 	(
 		LOOKAHEAD("[" <IDENTIFIER> "]" )
-		"[" id = Name() { n.id.sname = id.sname; } "]"
+		"[" id = Name() { n.sname = id.sname; } "]"
 		n.body = CondBlock()
 	|
 		LOOKAHEAD(<IDENTIFIER> "{")
-		id     = Name() { n.id.sname = id.sname; }
+		id     = Name() { n.sname = id.sname; }
 		n.body = CondBlock()
 	|
 		n.body = CondBlock()
@@ -1976,10 +1976,10 @@ WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
 	"invariant"
 	(
 		LOOKAHEAD("[" <IDENTIFIER> "]" )
-		"[" id = Name() { n.id.sname = id.sname; } "]"
+		"[" id = Name() { n.sname = id.sname; } "]"
 		n.body = CondBlock()
 	|	LOOKAHEAD(<IDENTIFIER> "{")
-		id     = Name() { n.id.sname = id.sname; }
+		id     = Name() { n.sname = id.sname; }
 		n.body = CondBlock()
 	)
 	{ return n; }
@@ -2869,7 +2869,7 @@ ENode ReparseStatement() :
 ENode LabeledStatement() :
 { LabeledStat st = new LabeledStat(); Symbol id; }
 {
-	id = Name() { st.lbl.id.sname = id.sname; st.pos = id.pos; }
+	id = Name() { st.lbl.sname = id.sname; st.pos = id.pos; }
 	":"
 	st.stat = Statement()
 	{ return st; }

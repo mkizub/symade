@@ -24,8 +24,16 @@ import syntax kiev.Syntax;
  */
 
 @node
+public interface ISymbol extends INode {
+	@virtual typedef This  ≤ ISymbol;
+
+	@getter public String	get$sname(); // source code name, may be null for anonymouse symbols
+	@getter public DNode	get$dnode();
+}
+
+@node
 @unerasable
-public class Symbol<D extends DNode> extends ASTNode {
+public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 
 	@dflow(out="this:in") private static class DFI {}
 
@@ -33,10 +41,9 @@ public class Symbol<D extends DNode> extends ASTNode {
 
 	public static final Symbol[] emptyArray = new Symbol[0];
 
-	@att
-	public	String				sname; // source code name, may be null for anonymouse symbols
+	@att public	String		sname; // source code name, may be null for anonymouse symbols
 	
-	@getter D get$dnode() {
+	@getter public D get$dnode() {
 		ANode p = parent();
 		if (p instanceof D)
 			return (D)p;
@@ -69,8 +76,10 @@ public class Symbol<D extends DNode> extends ASTNode {
 			this.sname = t.image;
 	}
 	
-	@setter
-	public void set$sname(String value) {
+	@getter @att public String get$sname() {
+		return sname;
+	}
+	@setter public void set$sname(String value) {
 		this.sname = (value == null) ? null : value.intern();
 	}
 	
@@ -80,6 +89,11 @@ public class Symbol<D extends DNode> extends ASTNode {
 
 	public boolean equals(Symbol:Object nm) {
 		if (this.equals(nm.sname)) return true;
+		return false;
+	}
+
+	public boolean equals(DNode:Object nm) {
+		if (nm.hasName(this.sname,true)) return true;
 		return false;
 	}
 
@@ -104,7 +118,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	public static final SymbolRef[] emptyArray = new SymbolRef[0];
 
 	@att public				String		name; // unresolved name
-	@ref public				Symbol<D>	symbol; // resolved symbol
+	@ref public				ISymbol		symbol; // resolved symbol
 	@abstract public:ro		D			dnode; // resolved dnode (symbol.parent())
 		 
 	public SymbolRef() {}
@@ -124,7 +138,18 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		this.symbol = symbol;
 	}
 
+	public SymbolRef(int pos, D symbol) {
+		this.pos = pos;
+		this.name = symbol.sname;
+		this.symbol = symbol;
+	}
+
 	public SymbolRef(Symbol<D> symbol) {
+		this.name = symbol.sname;
+		this.symbol = symbol;
+	}
+
+	public SymbolRef(D symbol) {
 		this.name = symbol.sname;
 		this.symbol = symbol;
 	}
@@ -136,10 +161,10 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 	
 	public boolean equals(Object nm) {
+		if (nm instanceof DNode) return nm.hasName(this.name,true);
 		if (nm instanceof Symbol) return nm.equals(this.name);
 		if (nm instanceof SymbolRef) return nm.name == this.name;
 		if (nm instanceof String) return nm == this.name;
-		if (nm instanceof DNode) return nm.hasName(this.name,true);
 		return false;
 	}
 
@@ -167,7 +192,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 	
 	@setter
-	public void set$symbol(Symbol<D> value) {
+	public void set$symbol(ISymbol value) {
 		if (value == null) {
 			if (this.symbol != null) {
 				if (this.symbol.sname != this.name)

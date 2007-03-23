@@ -29,7 +29,7 @@ import syntax kiev.Syntax;
  * A node that is a declaration: class, formal parameters and vars, methods, fields, etc.
  */
 @node
-public abstract class DNode extends ASTNode {
+public abstract class DNode extends ASTNode implements ISymbol {
 
 	@virtual typedef This  ≤ DNode;
 	@virtual typedef JView ≤ JDNode;
@@ -45,7 +45,7 @@ public abstract class DNode extends ASTNode {
 	public static final int MASK_ACC_SYNTAX    = ACC_SYNTAX;
 
 	@att public final			MetaSet			meta;
-	@att public final			Symbol<This>	id; // short and unique names
+	@att public					String			sname; // source code name, may be null for anonymouse symbols
 	@ref public					DeclGroup		group;
 	     public:ro,rw,ro,rw		String			u_name; // unique name in scope, never null, usually equals to name
 
@@ -53,8 +53,15 @@ public abstract class DNode extends ASTNode {
 		return (MetaAccess)this.getMeta("kiev.stdlib.meta.access");
 	}
 
-	@setter
-	public void set$u_name(String value) {
+	@getter public DNode get$dnode() { return ANode.getVersion(this); }
+
+	@getter @att public String get$sname() {
+		return sname;
+	}
+	@setter public void set$sname(String value) {
+		this.sname = (value == null) ? null : value.intern();
+	}
+	@setter public void set$u_name(String value) {
 		this.u_name = (value == null) ? null : value.intern();
 	}
 	
@@ -237,7 +244,10 @@ public abstract class DNode extends ASTNode {
 
 	public DNode(Symbol<This> id) {
 		this.meta = new MetaSet();
-		this.id = id;
+		if (id != null) {
+			this.pos = id.pos;
+			this.sname = id.sname; //this.id = id;
+		}
 	}
 
 	public ASTNode getDummyNode() {
@@ -250,10 +260,10 @@ public abstract class DNode extends ASTNode {
 		super.callbackDetached();
 	}
 	public void callbackChildChanged(AttrSlot attr) {
-		if (attr.name == "id") {
-			if (this.u_name != id.sname) {
+		if (attr.name == "sname") {
+			if (this.u_name != this.sname) {
 				this = this.open();
-				this.u_name = id.sname;
+				this.u_name = this.sname;
 			}
 		}
 	}
@@ -275,12 +285,18 @@ public abstract class DNode extends ASTNode {
 	public boolean hasName(String nm, boolean by_equals) {
 		if (by_equals) {
 			if (this.u_name == nm) return true;
-			if (id.sname == nm) return true;
+			if (this.sname == nm) return true;
 		} else {
 			if (this.u_name != null && this.u_name.startsWith(nm)) return true;
-			if (id.sname != null && id.sname.startsWith(nm)) return true;
+			if (this.sname != null && this.sname.startsWith(nm)) return true;
 		}
 		return false;
+	}
+
+	public boolean includeInDump(String name, Object val) {
+		if (name == "meta")
+			return false;
+		return super.includeInDump(name, val);
 	}
 
 	public final MNode getMeta(String name) {
@@ -525,7 +541,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public Field resolveField(String name, boolean fatal) {
 		checkResolved();
-		foreach (Field f; this.getAllFields(); f.id.equals(name))
+		foreach (Field f; this.getAllFields(); f.sname == name)
 			return f;
 		foreach (TypeRef tr; this.super_types; tr.getTypeDecl() != null) {
 			Field f = tr.getTypeDecl().resolveField(name, false);

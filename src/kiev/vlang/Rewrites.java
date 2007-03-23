@@ -161,7 +161,7 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 	}
 
 	public ANode doRewrite(RewriteContext ctx) {
-		ctx.args.put(var.id.sname, ctx.root);
+		ctx.args.put(var.sname, ctx.root);
 		ANode res = null;
 		foreach (ASTNode stat; stats)
 			res = stat.doRewrite(ctx);

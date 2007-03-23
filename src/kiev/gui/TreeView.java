@@ -76,8 +76,8 @@ public class TreeView extends UIView implements KeyListener {
 			Drawable dr = (Drawable)sel.getLastPathComponent();
 			Vector<ANode> v = new Vector<ANode>();
 			ANode n = dr.drnode;
-			if (n instanceof DNode)
-				n = n.id;
+			//if (n instanceof DNode)
+			//	n = n.id;
 			v.append(n);
 			while (n != null && !(n instanceof FileUnit)) {
 				n = n.parent();

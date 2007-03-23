@@ -227,7 +227,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					for(Struct p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz) n++;
 					String fldName = (nameThis+"$"+n).intern();
 					boolean found = false;
-					foreach (Field f; me.getAllFields(); f.id.equals(fldName))
+					foreach (Field f; me.getAllFields(); f.sname == fldName)
 						found = true;
 					if (!found) {
 						TypeAssign td = new TypeAssign(
@@ -271,7 +271,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					else if (n instanceof MetaFlag)
 						cm.setMeta((MetaFlag)n);
 				}
-				cm.id.sname = me.id.sname;
+				cm.sname = me.sname;
 				cm.targs.addAll(me.targs.delToArray());
 				if (me.type_ret != null) cm.type_ret = ~me.type_ret;
 				if (me.dtype_ret != null) cm.dtype_ret = ~me.dtype_ret;
@@ -377,7 +377,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				p.addCase(clazz);
 				getStructType(p, path);
 				TypeNameRef sup_ref = new TypeNameRef(p.qname());
-				sup_ref.symbol = p.id;
+				sup_ref.symbol = p;
 			next_case_arg:
 				for(int i=0; i < p.args.length; i++) {
 					for(int j=0; j < clazz.args.length; j++) {
@@ -562,7 +562,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 					if (f.isEnumField()) {
 						f = f.open();
 						f.init = new NewExpr(f.pos,me.xtype,new ENode[]{
-									new ConstStringExpr(f.id.sname),
+									new ConstStringExpr(f.sname),
 									new ConstIntExpr(next_enum_val)
 									});
 						next_enum_val++;

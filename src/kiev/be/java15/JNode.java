@@ -80,7 +80,7 @@ public view JNode of ASTNode implements JConstants {
 public view JDNode of DNode extends JNode {
 
 	public:ro	MetaSet		meta;
-	public:ro	Symbol		id;
+	public:ro	String		sname;
 	public:ro	String		u_name;
 
 	public boolean hasName(String nm, boolean by_equals);
@@ -134,7 +134,7 @@ public final view JDeclGroup of DeclGroup extends JSNode {
 public view JENode of ENode extends JNode {
 	
 	public:ro	String			ident;
-	public:ro	Symbol<DNode>	symbol;
+	public:ro	ISymbol			symbol;
 	public:ro	DNode			dnode;
 
 	//

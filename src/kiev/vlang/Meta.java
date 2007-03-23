@@ -28,8 +28,8 @@ public final class MetaSet extends ASTNode {
 	
 	@virtual typedef This  = MetaSet;
 
-	@att public int			mflags;
 	@att public MNode[]		metas;
+	@ref public int			mflags;
 
 	public @packed:3,mflags, 0 int     is_access;
 
@@ -79,6 +79,12 @@ public final class MetaSet extends ASTNode {
 
 	public MetaSet() {}
 	
+	public boolean includeInDump(String name, Object val) {
+		if (name == "mflags")
+			return false;
+		return super.includeInDump(name, val);
+	}
+
 	public boolean hasRuntimeVisibles() {
 		foreach (MNode m; metas; m.isRuntimeVisible())
 			return true;
@@ -263,7 +269,7 @@ public class UserMeta extends MNode {
 			if (m == null)
 				throw new CompilerException(v, "Unresolved method "+v.ident+" in class "+s);
 			v.open();
-			v.symbol = m.id;
+			v.symbol = m;
 			Type t = m.type.ret();
 			if (t instanceof ArrayType) {
 				if (v instanceof MetaValueScalar) {
@@ -290,7 +296,7 @@ public class UserMeta extends MNode {
 			}
 			// value not specified - does the method has a default meta-value?
 			if !(m.body instanceof MetaValue)
-				Kiev.reportError(this, "Annotation value "+m.id+" is not specified");
+				Kiev.reportError(this, "Annotation value "+m.sname+" is not specified");
 		}
 	}
 	
@@ -446,7 +452,7 @@ public abstract class MetaValue extends ENode {
 			Method m = (Method)parent();
 			if (this.dnode != m) {
 				this = this.open();
-				this.symbol = m.id;
+				this.symbol = m;
 			}
 		}
 		else if (ident == null) {

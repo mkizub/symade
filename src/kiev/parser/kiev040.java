@@ -2583,7 +2583,7 @@ public abstract class kiev040 implements kiev040Constants {
           switch (jj_nt.kind) {
           case _DEFAULT:
             jj_consume_token(_DEFAULT);
-            m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m.id));
+            m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m));
             break;
           default:
             ;
@@ -2605,7 +2605,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public Constructor ConstructorDeclaration(ASTModifiers modifiers) throws ParseException {
   Token t; Constructor m; Symbol id; MetaThrows thr; Method oldMethod;
     id = Name();
-                if( !id.sname.equals(curClazz.id.sname) )
+                if( !id.sname.equals(curClazz.sname) )
                         Kiev.reportError(id,"Return type missed or bad constructor name "+id);
                 m = mkConstructor(id,modifiers);
                 oldMethod = curMethod;
@@ -2725,12 +2725,12 @@ public abstract class kiev040 implements kiev040Constants {
     if (jj_2_44(2147483647)) {
       jj_consume_token(LBRACKET);
       id = Name();
-                                  n.id.sname = id.sname;
+                                  n.sname = id.sname;
       jj_consume_token(RBRACKET);
       n.body = CondBlock();
     } else if (jj_2_45(2147483647)) {
       id     = Name();
-                                  n.id.sname = id.sname;
+                                  n.sname = id.sname;
       n.body = CondBlock();
     } else if (jj_2_46(1)) {
       n.body = CondBlock();
@@ -2751,12 +2751,12 @@ public abstract class kiev040 implements kiev040Constants {
     if (jj_2_47(2147483647)) {
       jj_consume_token(LBRACKET);
       id = Name();
-                                  n.id.sname = id.sname;
+                                  n.sname = id.sname;
       jj_consume_token(RBRACKET);
       n.body = CondBlock();
     } else if (jj_2_48(2147483647)) {
       id     = Name();
-                                  n.id.sname = id.sname;
+                                  n.sname = id.sname;
       n.body = CondBlock();
     } else if (jj_2_49(1)) {
       n.body = CondBlock();
@@ -2777,12 +2777,12 @@ public abstract class kiev040 implements kiev040Constants {
     if (jj_2_50(2147483647)) {
       jj_consume_token(LBRACKET);
       id = Name();
-                                  n.id.sname = id.sname;
+                                  n.sname = id.sname;
       jj_consume_token(RBRACKET);
       n.body = CondBlock();
     } else if (jj_2_51(2147483647)) {
       id     = Name();
-                                  n.id.sname = id.sname;
+                                  n.sname = id.sname;
       n.body = CondBlock();
     } else {
       jj_consume_token(-1);
@@ -4409,7 +4409,7 @@ public abstract class kiev040 implements kiev040Constants {
   final public ENode LabeledStatement() throws ParseException {
   LabeledStat st = new LabeledStat(); Symbol id;
     id = Name();
-                      st.lbl.id.sname = id.sname; st.pos = id.pos;
+                      st.lbl.sname = id.sname; st.pos = id.pos;
     jj_consume_token(COLON);
     st.stat = Statement();
           {if (true) return st;}

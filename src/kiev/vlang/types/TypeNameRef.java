@@ -101,7 +101,7 @@ public final class TypeNameRef extends TypeRef {
 			if!(outer.meta_type.tdecl.resolveNameR(td,info))
 				throw new CompilerException(this,"Unresolved type "+ident+" in "+outer);
 			this = this.open();
-			this.symbol = td.id;
+			this.symbol = td;
 			td.checkResolved();
 			try {
 				tp = td.getType().bind(outer.bindings());
@@ -114,7 +114,7 @@ public final class TypeNameRef extends TypeRef {
 			if( !PassInfo.resolveNameR(((TypeNameRef)this),td,new ResInfo(this,this.ident,ResInfo.noForwards)) )
 				throw new CompilerException(this,"Unresolved type "+ident);
 			this = this.open();
-			this.symbol = td.id;
+			this.symbol = td;
 			td.checkResolved();
 			tp = td.getType();
 		}

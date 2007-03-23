@@ -348,12 +348,12 @@ public class BreakStat extends ENode {
 		} else {
 	label_found:
 			for(p=(ASTNode)parent(); !(p instanceof Method) ; p=(ASTNode)p.parent() ) {
-				if (p instanceof LabeledStat && p.lbl.id.equals(this.ident))
+				if (p instanceof LabeledStat && p.lbl.sname == this.ident)
 					throw new RuntimeException("Label "+ident+" does not refer to break target");
 				if (!p.isBreakTarget()) continue;
 				ASTNode pp = p;
 				for(p=(ASTNode)p.parent(); p instanceof LabeledStat; p = (ASTNode)p.parent()) {
-					if (p.lbl.id.equals(this.ident)) {
+					if (p.lbl.sname == this.ident) {
 						p = pp;
 						break label_found;
 					}
@@ -421,12 +421,12 @@ public class ContinueStat extends ENode {
 		} else {
 	label_found:
 			for(p=(ASTNode)parent(); !(p instanceof Method) ; p=(ASTNode)p.parent() ) {
-				if( p instanceof LabeledStat && p.lbl.id.equals(this.ident) )
+				if( p instanceof LabeledStat && p.lbl.sname == this.ident )
 					throw new RuntimeException("Label "+ident+" does not refer to continue target");
 				if !(p instanceof LoopStat) continue;
 				ASTNode pp = p;
 				for(p=(ASTNode)p.parent(); p instanceof LabeledStat; p = (ASTNode)p.parent()) {
-					if( p.lbl.id.equals(this.ident) ) {
+					if( p.lbl.sname == this.ident ) {
 						p = pp;
 						break label_found;
 					}
@@ -561,7 +561,7 @@ public class GotoStat extends ENode {
 		case LabeledStat:
 		{
 			LabeledStat lst = (LabeledStat)st;
-			if( lst.lbl.id.equals(name) ) {
+			if( lst.lbl.sname == name ) {
 				stats = (LabeledStat[])Arrays.appendUniq(stats,lst);
 			}
 			stats = resolveStat(name,lst.stat,stats);

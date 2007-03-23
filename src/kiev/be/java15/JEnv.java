@@ -61,7 +61,7 @@ public final class JEnv {
 		while (end > 0) {
 			String nm = bc_name.substr(start, end).toString().intern();
 			Struct ss = null;
-			foreach (Struct s; pkg.sub_decls; s.id.equals(nm)) {
+			foreach (Struct s; pkg.sub_decls; s.sname == nm) {
 				ss = s;
 				break;
 			}
@@ -76,7 +76,7 @@ public final class JEnv {
 			String nm = bc_name.substr(start, end).toString().intern();
 			assert (!Character.isDigit(nm.charAt(0)));
 			Struct ss = null;
-			foreach (Struct s; pkg.sub_decls; s.id.equals(nm)) {
+			foreach (Struct s; pkg.sub_decls; s.sname == nm) {
 				ss = s;
 				break;
 			}
@@ -88,7 +88,7 @@ public final class JEnv {
 		}
 		String nm = bc_name.substr(start).toString().intern();
 		//assert (!Character.isDigit((char)nm.byteAt(0)));
-		foreach (Struct s; pkg.sub_decls; s.id.equals(nm))
+		foreach (Struct s; pkg.sub_decls; s.sname == nm)
 			return s;
 		return Env.newStruct(nm, true, pkg, 0, null, cleanup);
 	}

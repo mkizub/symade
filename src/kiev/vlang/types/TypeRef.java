@@ -47,13 +47,13 @@ public class TypeRef extends ENode {
 	
 	private TypeRef(CoreType tp) {
 		this.ident = tp.name;
-		this.symbol = tp.meta_type.tdecl.id;
+		this.symbol = tp.meta_type.tdecl;
 		this.lnk = tp;
 	}
 	
 	private TypeRef(ArgType tp) {
 		this.ident = tp.name;
-		this.symbol = tp.meta_type.tdecl.id;
+		this.symbol = tp.meta_type.tdecl;
 		this.lnk = tp;
 	}
 	

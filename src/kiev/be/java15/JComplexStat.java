@@ -54,7 +54,7 @@ public final view JCaseLabel of CaseLabel extends JENode {
 		Vector<JVar> vars = null;
 		if (pattern.length > 0) {
 			vars = new Vector<JVar>();
-			foreach (JVar p; pattern; p.vtype != null && p.id.sname != nameUnderscore) {
+			foreach (JVar p; pattern; p.vtype != null && p.sname != nameUnderscore) {
 				vars.append(p);
 				p.generate(code,Type.tpVoid);
 			}

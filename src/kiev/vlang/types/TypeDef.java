@@ -58,7 +58,7 @@ public abstract class TypeDef extends TypeDecl {
 	public abstract Struct getStruct();
 	
 	public String toString() {
-		return String.valueOf(id);
+		return sname;
 	}
 }
 
@@ -119,7 +119,7 @@ public final class TypeAssign extends TypeDef {
 			foreach (TypeRef tr; parent.super_types) {
 				TypeDecl td = tr.getTypeDecl();
 				ASTNode@ node;
-				foreach (td.resolveNameR(node,new ResInfo(this,id.sname,ResInfo.noForwards|ResInfo.noImports))) {
+				foreach (td.resolveNameR(node,new ResInfo(this,this.sname,ResInfo.noForwards|ResInfo.noImports))) {
 					ASTNode n = node;
 					if !(n instanceof TypeDef) {
 						Kiev.reportError(this,"Typedef extends non-typedef node");

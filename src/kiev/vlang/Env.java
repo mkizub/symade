@@ -125,7 +125,7 @@ public class Env extends Struct {
 		while (end > 0) {
 			String nm = qname.substring(start, end).intern();
 			Struct ss = null;
-			foreach (Struct s; pkg.sub_decls; s.id.equals(nm)) {
+			foreach (Struct s; pkg.sub_decls; s.sname == nm) {
 				ss = s;
 				break;
 			}
@@ -136,7 +136,7 @@ public class Env extends Struct {
 			end = qname.indexOf('.', start);
 		}
 		String nm = qname.substring(start).intern();
-		foreach (DNode dn; pkg.sub_decls; dn.id.equals(nm))
+		foreach (DNode dn; pkg.sub_decls; dn.sname == nm)
 			return dn;
 		return null;
 	}
@@ -150,7 +150,7 @@ public class Env extends Struct {
 		assert(outer != null);
 		Struct bcl = null;
 		if (direct && sname != null) {
-			foreach (Struct s; outer.sub_decls; s.id.equals(sname)) {
+			foreach (Struct s; outer.sub_decls; s.sname == sname) {
 				bcl = s;
 				break;
 			}
@@ -209,7 +209,7 @@ public class Env extends Struct {
 
 	public static Struct newPackage(String sname, Struct outer) {
 		Struct cl = null;
-		foreach (Struct s; outer.sub_decls; s.id.equals(sname)) {
+		foreach (Struct s; outer.sub_decls; s.sname == sname) {
 			cl = s;
 			break;
 		}
@@ -225,7 +225,7 @@ public class Env extends Struct {
 			pkg = Env.root;
 		assert (pkg.isPackage());
 		MetaTypeDecl tdecl = null;
-		foreach (MetaTypeDecl pmt; pkg.sub_decls; pmt.id.equals(id)) {
+		foreach (MetaTypeDecl pmt; pkg.sub_decls; pmt.sname == id.sname) {
 			tdecl = pmt;
 			break;
 		}
@@ -233,7 +233,7 @@ public class Env extends Struct {
 			tdecl = new MetaTypeDecl();
 			tdecl.pos = id.pos;
 			tdecl.u_name = id.sname;
-			tdecl.id.sname = id.sname;
+			tdecl.sname = id.sname;
 			tdecl.package_clazz = pkg;
 			tdecl.meta.mflags = ACC_MACRO;
 			tdecl.type_decl_version = 1;

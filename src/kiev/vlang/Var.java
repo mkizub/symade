@@ -166,11 +166,11 @@ public abstract class Var extends DNode {
 	}
 
 	public String toString() {
-		return id.toString();
+		return sname;
 	}
 
 	public int hashCode() {
-		return id.hashCode();
+		return sname.hashCode();
 	}
 
 	public Type	getType() { return type; }
@@ -332,7 +332,7 @@ public final class Field extends Var {
 			if ((flags & ACC_NATIVE) == ACC_NATIVE) setMeta(new MetaNative());
 			this.meta.mflags = flags;
 		}
-		trace(Kiev.debug && Kiev.debugCreation,"New field created: "+id+" with type "+vtype);
+		trace(Kiev.debug && Kiev.debugCreation,"New field created: "+sname+" with type "+vtype);
 	}
 
 	public ASTNode getDummyNode() {

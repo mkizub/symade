@@ -228,7 +228,7 @@ public class JBaseType extends JType {
 	}
 
 	public String toString() {
-		return clazz.id.toString();
+		return clazz.sname;
 	}
 	
 	public JType getSuperType() {

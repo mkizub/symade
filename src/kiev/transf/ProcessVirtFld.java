@@ -60,15 +60,15 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	public void addAbstractFields(Struct s) {
 		foreach(Method m; s.members) {
 			//trace(Kiev.debug && Kiev.debugCreation,"check "+m.name.name+" to be a setter");
-			if (m.id.sname.startsWith(nameSet))
-				addSetterForAbstractField(s, m.id.sname.substring(nameSet.length()), m);
+			if (m.sname.startsWith(nameSet))
+				addSetterForAbstractField(s, m.sname.substring(nameSet.length()), m);
 			foreach (Symbol a; m.aliases; a.sname.startsWith(nameSet)) {
 				//trace(Kiev.debug && Kiev.debugCreation,"check "+name+" to be a setter");
 				addSetterForAbstractField(s, a.sname.substring(nameSet.length()), m);
 			}
 			//trace(Kiev.debug && Kiev.debugCreation,"check "+m.name.name+" to be a getter");
-			if (m.id.sname.startsWith(nameGet))
-				addGetterForAbstractField(s, m.id.sname.substring(nameGet.length()), m);
+			if (m.sname.startsWith(nameGet))
+				addGetterForAbstractField(s, m.sname.substring(nameGet.length()), m);
 			foreach (Symbol a; m.aliases; a.sname.startsWith(nameGet)) {
 				//trace(Kiev.debug && Kiev.debugCreation,"check "+name+" to be a getter");
 				addGetterForAbstractField(s, a.sname.substring(nameGet.length()), m);
@@ -234,8 +234,8 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 		boolean set_found = false;
 		boolean get_found = false;
 
-		String set_name = (nameSet+f.id.sname).intern();
-		String get_name = (nameGet+f.id.sname).intern();
+		String set_name = (nameSet+f.sname).intern();
+		String get_name = (nameGet+f.sname).intern();
 
 		foreach(Method m; s.members) {
 			if( m.hasName(set_name,true) ) {
@@ -347,7 +347,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 		Field f = fa.var;
 		if( !f.isVirtual() || fa.isAsField() )
 			return true;
-		String get_name = (nameGet+f.id.sname).intern();
+		String get_name = (nameGet+f.sname).intern();
 
 		if (fa.ctx_method != null && fa.ctx_method.hasName(get_name,true) && fa.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
 			fa.setAsField(true);
@@ -373,7 +373,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			Field f = fa.var;
 			if( !f.isVirtual() || fa.isAsField() )
 				return true;
-			String set_name = (nameSet+f.id.sname).intern();
+			String set_name = (nameSet+f.sname).intern();
 	
 			if (ae.ctx_method != null && ae.ctx_method.hasName(set_name,true) && ae.ctx_tdecl.instanceOf(f.ctx_tdecl)) {
 				fa.setAsField(true);
@@ -454,8 +454,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			Field f = fa.var;
 			if( !f.isVirtual() || fa.isAsField() )
 				return true;
-			String set_name = (nameSet+f.id.sname).intern();
-			String get_name = (nameGet+f.id.sname).intern();
+			String set_name = (nameSet+f.sname).intern();
+			String get_name = (nameGet+f.sname).intern();
 	
 			if (ie.ctx_method != null
 			&& (ie.ctx_method.hasName(set_name,true) || ie.ctx_method.hasName(get_name,true))

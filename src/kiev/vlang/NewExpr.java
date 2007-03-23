@@ -63,7 +63,7 @@ public final class NewExpr extends ENode {
 	}
 	@setter public void set$func(Method m) {
 		this.open();
-		this.symbol = m.id;
+		this.symbol = m;
 	}
 
 	public NewExpr() {}
@@ -342,7 +342,7 @@ public final class NewClosure extends ENode implements ScopeOfNames {
 		sb.append("fun (");
 		for (int i=0; i < params.length; i++) {
 			if (i > 0) sb.append(",");
-			sb.append(params[i].vtype).append(' ').append(params[i].id);
+			sb.append(params[i].vtype).append(' ').append(params[i].sname);
 		}
 		sb.append(")->").append(type_ret).append(" {...}");
 		return sb.toString();

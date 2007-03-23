@@ -117,6 +117,7 @@ CLASS kiev.fmt.CalcOptionAnd kiev/fmt/CalcOptionAnd kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionClass kiev/fmt/CalcOptionClass kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionHasMetaFlag kiev/fmt/CalcOptionHasMetaFlag kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionHasUserMeta kiev/fmt/CalcOptionHasUserMeta kiev\fmt\SyntaxLayout.java
+CLASS kiev.fmt.CalcOptionIncludeInDump kiev/fmt/CalcOptionIncludeInDump kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionIsHidden kiev/fmt/CalcOptionIsHidden kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionNot kiev/fmt/CalcOptionNot kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.CalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev\fmt\SyntaxLayout.java
@@ -922,6 +923,7 @@ INTERFACE kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInf
 INTERFACE kiev.vlang.DataFlowSlots kiev/vlang/DataFlowSlots kiev\vlang\DataFlow.java
 INTERFACE kiev.vlang.GlobalDNode kiev/vlang/GlobalDNode kiev\vlang\DNode.java
 INTERFACE kiev.vlang.INode kiev/vlang/INode kiev\vlang\AST.java
+INTERFACE kiev.vlang.ISymbol kiev/vlang/ISymbol kiev\vlang\Symbol.java
 INTERFACE kiev.vlang.PreScanneable kiev/vlang/PreScanneable kiev\vlang\AST.java
 INTERFACE kiev.vlang.Scope kiev/vlang/Scope kiev\vlang\Resolving.java
 INTERFACE kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java

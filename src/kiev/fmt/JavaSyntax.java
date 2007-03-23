@@ -72,13 +72,13 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 		super(name);
 		this.idx = -1;
 		this.priority = priority;
-		this.template = new SymbolRef<SyntaxJavaExprTemplate>((Symbol<SyntaxJavaExprTemplate>)template.id);
+		this.template = new SymbolRef<SyntaxJavaExprTemplate>(template);
 	}
 	public SyntaxJavaExpr(int idx, int priority, SyntaxJavaExprTemplate template) {
 		super("");
 		this.idx = idx;
 		this.priority = priority;
-		this.template = new SymbolRef<SyntaxJavaExprTemplate>((Symbol<SyntaxJavaExprTemplate>)template.id);
+		this.template = new SymbolRef<SyntaxJavaExprTemplate>(template);
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
@@ -111,9 +111,9 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 			SyntaxJavaExprTemplate@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
 				Kiev.reportError(template,"Unresolved java expression template "+template);
-			else if (template.symbol != d.id) {
+			else if (template.symbol != d) {
 				template.open();
-				template.symbol = d.id;
+				template.symbol = d;
 			}
 		}
 	}
@@ -192,9 +192,9 @@ public class SyntaxJavaComment extends SyntaxElem {
 			SyntaxJavaCommentTemplate@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
 				Kiev.reportError(template,"Unresolved java expression template "+template);
-			else if (template.symbol != d.id) {
+			else if (template.symbol != d) {
 				template.open();
-				template.symbol = d.id;
+				template.symbol = d;
 			}
 		}
 	}
