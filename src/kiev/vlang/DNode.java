@@ -53,15 +53,15 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		return (MetaAccess)this.getMeta("kiev.stdlib.meta.access");
 	}
 
-	@getter public DNode get$dnode() { return ANode.getVersion(this); }
+	@getter final public DNode get$dnode() { return ANode.getVersion(this); }
 
-	@getter @att public String get$sname() {
+	@getter @att final public String get$sname() {
 		return sname;
 	}
-	@setter public void set$sname(String value) {
+	@setter final public void set$sname(String value) {
 		this.sname = (value == null) ? null : value.intern();
 	}
-	@setter public void set$u_name(String value) {
+	@setter final public void set$u_name(String value) {
 		this.u_name = (value == null) ? null : value.intern();
 	}
 	

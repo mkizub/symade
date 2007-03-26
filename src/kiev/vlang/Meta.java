@@ -28,8 +28,11 @@ public final class MetaSet extends ASTNode {
 	
 	@virtual typedef This  = MetaSet;
 
-	@att public MNode[]		metas;
-	@ref public int			mflags;
+	@att
+	public MNode[]		metas;
+
+	// public just because of bit-mapped fields implementation
+	public int			mflags;
 
 	public @packed:3,mflags, 0 int     is_access;
 
@@ -268,7 +271,7 @@ public class UserMeta extends MNode {
 			}
 			if (m == null)
 				throw new CompilerException(v, "Unresolved method "+v.ident+" in class "+s);
-			v.open();
+			v = v.open();
 			v.symbol = m;
 			Type t = m.type.ret();
 			if (t instanceof ArrayType) {

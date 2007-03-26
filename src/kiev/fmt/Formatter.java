@@ -99,6 +99,17 @@ public class TextFormatter extends AbstractFormatter {
 		ctx.width = 1000;
 		Drawable root = getDrawable(node, dr, null);
 		root.preFormat(ctx, root.syntax, node);
+		try {
+			// link nodes
+			ctx = new DrawContext(this,null);
+			ctx.width = 1000;
+			root.lnkFormat(ctx);
+			DrawTerm first = root.getFirstLeaf();
+			if (first != null)
+				DrawTerm.lnkVerify(first);
+			else
+				assert(root.getLastLeaf() == null);
+		} catch (Throwable t) { t.printStackTrace(); }
 		ctx = new DrawContext(this,null);
 		ctx.width = 1000;
 		root.postFormat(ctx);
@@ -116,7 +127,7 @@ public class TextFormatter extends AbstractFormatter {
 				dr.h = 1;
 				continue;
 			}
-			if (dr.do_newline > 0) {
+			if (dr.do_newline) {
 				for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
 					l.lineno = lineno;
 					l.y = y;
@@ -124,7 +135,7 @@ public class TextFormatter extends AbstractFormatter {
 					if (l == dr)
 						break;
 				}
-				y += dr.do_newline;
+				y += dr.lnk_next.size;
 				line_start = dr.getNextLeaf();
 				lineno++;
 			}
@@ -163,6 +174,17 @@ public class GfxFormatter extends AbstractFormatter {
 		ctx.width = this.width;
 		Drawable root = getDrawable(node, dr, null);
 		root.preFormat(ctx, root.syntax, node);
+		try {
+			// link nodes
+			ctx = new DrawContext(this,gfx);
+			ctx.width = this.width;
+			root.lnkFormat(ctx);
+			DrawTerm first = root.getFirstLeaf();
+			if (first != null)
+				DrawTerm.lnkVerify(first);
+			else
+				assert(root.getLastLeaf() == null);
+		} catch (Throwable t) { t.printStackTrace(); }
 		ctx = new DrawContext(this,gfx);
 		ctx.width = this.width;
 		root.postFormat(ctx);
@@ -184,7 +206,7 @@ public class GfxFormatter extends AbstractFormatter {
 			}
 			max_h = Math.max(max_h, dr.h);
 			max_b = Math.max(max_b, dr.b);
-			if (dr.do_newline > 0) {
+			if (dr.do_newline) {
 				for (DrawTerm l=line_start; l != null; l=l.getNextLeaf()) {
 					l.lineno = lineno;
 					l.y = y;
@@ -193,7 +215,7 @@ public class GfxFormatter extends AbstractFormatter {
 					if (l == dr)
 						break;
 				}
-				y += max_h + dr.do_newline;
+				y += max_h + dr.lnk_next.size;
 				max_h = 10;
 				max_b = 0;
 				line_start = dr.getNextLeaf();

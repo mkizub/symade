@@ -62,7 +62,7 @@ public final class NewExpr extends ENode {
 		return null;
 	}
 	@setter public void set$func(Method m) {
-		this.open();
+		this = this.open();
 		this.symbol = m;
 	}
 

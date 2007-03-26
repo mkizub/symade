@@ -73,6 +73,15 @@ public abstract class DrawNonTerm extends Drawable {
 			max_layout = Math.max(max_layout, dr.getMaxLayout());
 	}
 
+	public final void lnkFormat(DrawContext cont) {
+		if (this.isUnvisible())
+			return;
+		cont.processSpaceBefore(this);
+		foreach (Drawable arg; args)
+			arg.lnkFormat(cont);
+		cont.processSpaceAfter(this);
+	}
+
 	public final boolean postFormat(DrawContext context) {
 		AParagraphLayout pl = null;
 		if (this.syntax instanceof SyntaxList) {

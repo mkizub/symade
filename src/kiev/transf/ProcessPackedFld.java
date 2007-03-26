@@ -215,7 +215,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 		IFldExpr ae = fa.ncopy();
-		ae.open();
+		ae = ae.open();
 		ae.symbol = mp.fld.symbol;
 		ENode expr = ae;
 		if (mp.offset > 0) {
@@ -243,8 +243,8 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		Field f = fa.var;
 		if( !f.isPackedField() )
 			return;
-		ae.open();
-		fa.open();
+		ae = ae.open();
+		fa = fa.open();
 		Block be = new Block(ae.pos);
 		Object acc;
 		if (fa.obj instanceof ThisExpr || fa.obj instanceof SuperExpr) {
@@ -315,7 +315,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		Field f = fa.var;
 		if( !f.isPackedField() )
 			return;
-		ie.open();
+		ie = ie.open();
 		MetaPacked mp = f.getMetaPacked();
 		ENode expr;
 		if (ie.isGenVoidExpr()) {

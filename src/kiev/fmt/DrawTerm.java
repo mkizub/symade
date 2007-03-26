@@ -21,9 +21,28 @@ import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+// links to DrawTerm-s and holds space information
+public class DrawTermLink {
+	public final DrawTerm prev;
+	public final DrawTerm next;
+	public int space_size_0;
+	public int newline_size_0;
+	public int space_size_1;
+	public int newline_size_1;
+
+	public int size; // active newline or spacesize
+
+	DrawTermLink(DrawTerm prev, DrawTerm next) {
+		this.prev = prev;
+		this.next = next;
+		this.size = -1;
+	}
+}
 
 @node(copyable=false)
 public abstract class DrawTerm extends Drawable {
+	private static String _uninitialized_ = "uninitialized yet";
+
 	public		int     x;
 	public		int     y;
 	public		int     lineno; // line number for text-kind draw/print formatters
@@ -34,15 +53,18 @@ public abstract class DrawTerm extends Drawable {
 	public		int		h;
 	@packed:8,_metric,20
 	public		int		b;
-	@packed:3,_metric,28
-	public		int		do_newline; // used by formatter to mark actual new-lines after a DrawTerm
+	@packed:1,_metric,30
+	public		boolean	do_newline; // used by formatter to mark actual new-lines after a DrawTerm
 	@packed:1,_metric,31
 	public		boolean	hidden_as_auto_generated;
 	
-	private		String	text;
+	private				String			text;
+	public:r,r,r,rw		DrawTermLink	lnk_prev;
+	public:r,r,r,rw		DrawTermLink	lnk_next;
 
 	public DrawTerm(ANode node, SyntaxElem syntax) {
 		super(node, syntax);
+		text = _uninitialized_;
 	}
 	
 	public boolean isUnvisible() {
@@ -59,6 +81,13 @@ public abstract class DrawTerm extends Drawable {
 		return max_layout;
 	}
 
+	private boolean textIsUpToDate(String txt) {
+		if (text == _uninitialized_)
+			return false;
+		if (text == null)
+			return txt == null;
+		return text.equals(txt);
+	}
 
 	public final void preFormat(DrawContext cont) {
 		this.x = 0;
@@ -71,16 +100,97 @@ public abstract class DrawTerm extends Drawable {
 				this.hidden_as_auto_generated = true;
 		}
 		if (this.isUnvisible()) return;
+		String tmp = "???";
 		try {
-			this.text = makeText(cont.fmt);
-		} catch (Throwable t) {
-			this.text = "???";
+			tmp = makeText(cont.fmt);
+		} catch (Throwable t) {}
+		if (!textIsUpToDate(tmp)) {
+			this.text = tmp;
+			cont.formatAsText(this);
 		}
-		cont.formatAsText(this);
 	}
 
+	private void link(DrawTerm next) {
+		assert(next != null && next.lnk_prev == null);
+		assert(this != null && this.lnk_next == null);
+		DrawTermLink lnk = new DrawTermLink(this,next);
+		this.lnk_next = lnk;
+		next.lnk_prev = lnk;
+	}
+	private void unlink(DrawTermLink lnk) {
+		assert(lnk.prev != null && lnk.prev.lnk_next == lnk);
+		assert(lnk.next != null && lnk.next.lnk_prev == lnk);
+		lnk.prev.lnk_next = null;
+		lnk.next.lnk_prev = null;
+	}
+	public final void lnkFormat(DrawContext cont) {
+		if (this.isUnvisible())
+			return;
+		DrawTermLink plnk = this.lnk_prev;
+		{
+			DrawTerm prev = getPrevLeaf();
+			if (prev == null) {
+				// first leaf
+				if (plnk != null)
+					unlink(plnk);
+			} else {
+				// check we are linked correctly
+				assert(plnk != null && plnk.prev == prev && plnk.next == this);
+				// fill spaces if it's a new link
+				if (plnk.size < 0) {
+					cont.processSpaceBefore(this);
+					cont.flushSpace(lnk_prev);
+				}
+			}
+		}
+		// ensure correct link to the next term
+		plnk = this.lnk_next;
+		{
+			DrawTerm next = getNextLeaf();
+			if (next == null) {
+				if (plnk != null)
+					unlink(plnk);
+			}
+			else if (plnk != null) {
+				assert (plnk.prev == this);
+				if (plnk.next != next) {
+					unlink(plnk);
+					plnk = next.lnk_prev;
+					if (plnk != null)
+						unlink(plnk);
+					link(next);
+				}
+			} else {
+				plnk = next.lnk_prev;
+				if (plnk != null)
+					unlink(plnk);
+				link(next);
+			}
+		}
+		plnk = this.lnk_next;
+		// fill spaces if it's a new link
+		if (plnk != null && plnk.size < 0) {
+			cont.update_spaces = true;
+			cont.processSpaceAfter(this);
+		}
+	}
+	public static void lnkVerify(DrawTerm dt) {
+/*		assert(dt.getPrevLeaf() == null);
+		assert(dt.lnk_prev == null);
+		while (dt.getNextLeaf()!=null) {
+			assert(dt.lnk_next != null);
+			assert(dt.lnk_next.next != null);
+			assert(dt.lnk_next.next.lnk_prev == dt.lnk_next);
+			assert(dt.lnk_next.next.lnk_prev.prev == dt);
+			assert(dt.getNextLeaf() == dt.lnk_next.next);
+			assert(dt.lnk_next.next.getPrevLeaf() == dt);
+			dt = dt.getNextLeaf();
+		}
+		assert(dt.lnk_next == null);
+*/	}
+
 	public final boolean postFormat(DrawContext cont) {
-		this.do_newline = 0;
+		this.do_newline = false;
 		return cont.addLeaf(this);
 	}
 
@@ -157,7 +267,7 @@ public class DrawIdent extends DrawNodeTerm {
 		escaped = false;
 		if (text == null)
 			return null;
-		text = text.intern();
+		//text = text.intern();
 		SyntaxIdentAttr si = (SyntaxIdentAttr)this.syntax;
 		if (si.isOk(text))
 			return text;

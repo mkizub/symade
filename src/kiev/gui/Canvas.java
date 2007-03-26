@@ -153,12 +153,15 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 				//is_editable = true;
 				paint(g, root);
 				num_lines = lineno;
+				int visa = 0;
+				if (first_visible != null && last_visible != null) {
+					visa = last_visible.lineno-first_visible.lineno;
+					if (verticalScrollBar.getVisibleAmount() != visa)
+						verticalScrollBar.setVisibleAmount(visa);
+				}
 				if (verticalScrollBar.getMaximum() != num_lines) {
 					verticalScrollBar.setMaximum(num_lines);
-					if (first_visible != null && last_visible != null)
-						verticalScrollBar.setVisibleAmount(last_visible.lineno-first_visible.lineno);
-					else
-						verticalScrollBar.setVisibleAmount(0);
+					verticalScrollBar.setVisibleAmount(visa);
 				}
 			}
 		    g.dispose();
@@ -197,11 +200,11 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		if (leaf == null || leaf.isUnvisible())
 			return;
 		if (lineno < first_line) {
-			if (leaf.do_newline > 0)
+			if (leaf.do_newline)
 				lineno++;
 			return;
 		}
-		if (leaf.do_newline > 0)
+		if (leaf.do_newline)
 			lineno++;
 		if (first_visible == null)
 			first_visible = leaf;

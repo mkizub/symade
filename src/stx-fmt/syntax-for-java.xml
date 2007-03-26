@@ -3637,8 +3637,21 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxOptional'>
          <calculator>
-          <a-node class='kiev.fmt.CalcOptionNotNull'>
-           <name>init</name>
+          <a-node class='kiev.fmt.CalcOptionAnd'>
+           <opts>
+            <a-node class='kiev.fmt.CalcOptionNotNull'>
+             <name>init</name>
+            </a-node>
+            <a-node class='kiev.fmt.CalcOptionNot'>
+             <opt>
+              <a-node class='kiev.fmt.CalcOptionIsHidden'>
+               <name>init</name>
+              </a-node>
+             </opt>
+             <name></name>
+            </a-node>
+           </opts>
+           <name></name>
           </a-node>
          </calculator>
          <opt_true>

@@ -184,6 +184,23 @@ public abstract class ANode implements INode {
 		return true;
 	}
 
+	public Object getValOrNull(String name) {
+		foreach (AttrSlot a; this.values(); a.name == name)
+			return a.get(this);
+		if (ext_data != null) {
+			foreach (DataAttachInfo ai; ext_data; ai.p_slot.name == name) {
+				Object obj = ai.p_data;
+				if (obj instanceof ANode)
+					return ANode.getVersion((ANode)obj);
+				return obj;
+			}
+		}
+		if (tmp_data != null) {
+			foreach (DataAttachInfo ai; tmp_data; ai.p_slot.name == name)
+				return ai.p_data;
+		}
+		return null;
+	}
 	public Object getVal(String name) {
 		foreach (AttrSlot a; this.values(); a.name == name)
 			return a.get(this);

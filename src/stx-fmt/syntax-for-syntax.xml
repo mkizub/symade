@@ -58,25 +58,25 @@
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_NEW_LINE</kind>
      <text_size>2</text_size>
-     <pixel_size>30</pixel_size>
+     <pixel_size>10</pixel_size>
      <sname>nl2</sname>
     </a-node>
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_NEW_LINE</kind>
      <text_size>2</text_size>
-     <pixel_size>30</pixel_size>
+     <pixel_size>10</pixel_size>
      <sname>nl_import</sname>
     </a-node>
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_NEW_LINE</kind>
      <text_size>2</text_size>
-     <pixel_size>30</pixel_size>
+     <pixel_size>10</pixel_size>
      <sname>nl_space</sname>
     </a-node>
     <a-node class='kiev.fmt.SpaceInfo'>
      <kind>SP_NEW_LINE</kind>
      <text_size>2</text_size>
-     <pixel_size>30</pixel_size>
+     <pixel_size>10</pixel_size>
      <sname>nl_fmt</sname>
     </a-node>
     <a-node class='kiev.fmt.ParagraphLayout'>

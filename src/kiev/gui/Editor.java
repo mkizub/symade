@@ -622,7 +622,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 		if (prev != null)
 			prev = prev.getPrevLeaf();
 		while (prev != null) {
-			if (prev.do_newline > 0) {
+			if (prev.do_newline) {
 				n = prev;
 				break;
 			}
@@ -632,7 +632,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 			if (n.x <= uiv.cur_x && n.x+n.w >= uiv.cur_x)
 				break;
 			prev = n.getPrevLeaf();
-			if (prev == null || prev.do_newline > 0)
+			if (prev == null || prev.do_newline)
 				break;
 			if (prev.x+prev.w < uiv.cur_x)
 				break;
@@ -650,7 +650,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 		DrawTerm n = null;
 		DrawTerm next = uiv.cur_elem.dr.getFirstLeaf();
 		while (next != null) {
-			if (next.do_newline > 0) {
+			if (next.do_newline) {
 				n = next.getNextLeaf();
 				break;
 			}
@@ -664,7 +664,7 @@ final class NavigateEditor extends NavigateView implements KeyHandler {
 				break;
 			if (next.x > uiv.cur_x)
 				break;
-			if (next.do_newline > 0)
+			if (next.do_newline)
 				break;
 			n = next;
 		}

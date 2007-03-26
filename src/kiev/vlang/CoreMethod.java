@@ -241,7 +241,7 @@ public abstract class CoreFunc {
 abstract class BinaryFunc extends CoreFunc {
 	public void normilizeExpr(ENode expr, Class cls, Operator op) {
 		if (expr.getClass() == cls) {
-			expr.open();
+			expr = expr.open();
 			expr.symbol = core_method;
 			return;
 		}
@@ -268,7 +268,7 @@ abstract class BinaryFunc extends CoreFunc {
 abstract class UnaryFunc extends CoreFunc {
 	public void normilizeExpr(ENode expr, Class cls, Operator op) {
 		if (expr.getClass() == cls) {
-			expr.open();
+			expr = expr.open();
 			expr.symbol = core_method;
 			return;
 		}

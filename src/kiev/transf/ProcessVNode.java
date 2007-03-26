@@ -271,7 +271,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 						new LVarExpr(f.pos, ctor.params[1])
 					}
 				);
-			ce.open();
+			ce = ce.open();
 			ce.symbol = sctor;
 			ctor.body = new Block(0);
 			ctor.block.stats.add(new ExprStat(ce));

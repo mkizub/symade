@@ -150,6 +150,7 @@ CLASS kiev.fmt.DrawPlaceHolder kiev/fmt/DrawPlaceHolder kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawSpace kiev/fmt/DrawSpace kiev\fmt\DrawCtrl.java
 CLASS kiev.fmt.DrawStrTerm kiev/fmt/DrawStrTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawTerm kiev/fmt/DrawTerm kiev\fmt\DrawTerm.java
+CLASS kiev.fmt.DrawTermLink kiev/fmt/DrawTermLink kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawToken kiev/fmt/DrawToken kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawWrapList kiev/fmt/DrawWrapList kiev\fmt\DrawNonTerm.java
 CLASS kiev.fmt.DrawXmlStrTerm kiev/fmt/DrawXmlStrTerm kiev\fmt\DrawTerm.java

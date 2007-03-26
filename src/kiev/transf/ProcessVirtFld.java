@@ -265,7 +265,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			}
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
-				set_var.open();
+				set_var= set_var.open();
 				set_var.body = body;
 				ENode fa;
 				if (f.isStatic())
@@ -297,7 +297,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			get_var.setMeta(new UserMeta(nameMetaGetter)).resolve(null);
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
-				get_var.open();
+				get_var = get_var.open();
 				get_var.body = body;
 				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 			}
@@ -360,7 +360,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			fa.setAsField(true);
 			return true;
 		}
-		fa.open();
+		fa = fa.open();
 		ENode ce = new CallExpr(fa.pos, ~fa.obj, getter, ENode.emptyArray);
 		fa.replaceWithNodeReWalk(ce);
 		throw new Error();
@@ -392,8 +392,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				fa.setAsField(true);
 				return true;
 			}
-			ae.open();
-			fa.open();
+			ae = ae.open();
+			fa = fa.open();
 			Type ae_tp = ae.isGenVoidExpr() ? Type.tpVoid : ae.getType();
 			Operator op = null;
 			if      (ae.op == Operator.AssignAdd)                  op = Operator.Add;
@@ -478,8 +478,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				return true;
 			}
 			ENode expr;
-			ie.open();
-			fa.open();
+			ie = ie.open();
+			fa = fa.open();
 			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
 			if (ie.isGenVoidExpr()) {
 				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {

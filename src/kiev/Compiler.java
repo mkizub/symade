@@ -47,6 +47,7 @@ public abstract class WorkerThread extends Thread {
 	public long		programm_mem;
 	public int		errCount;
 	public int		warnCount;
+	public boolean	reportTotals;
 	public String	curFile = "";
 
 	private boolean			busy;
@@ -198,9 +199,9 @@ stop:;
 		if (this.errCount > 0) {
 			run_be = false;
 			this.root = null;
-			if (Kiev.verbose)
-				reportTotals();
 		}
+		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
+			reportTotals("Frontend");
 	}
 
 	private void runFrontEnd(ANode root) {
@@ -238,11 +239,10 @@ stop:;
 stop:;
 		Kiev.lockNodeTree(root);
 		Env.dumpProjectFile();
-		if (this.errCount > 0) {
+		if (this.errCount > 0)
 			run_be = false;
-			if (Kiev.verbose)
-				reportTotals();
-		}
+		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
+			reportTotals("Frontend");
 	}
 
 	private void runBackEnd() {
@@ -304,22 +304,22 @@ stop:;
 			tr_me.rollback(false);
 		}
 		Env.dumpProjectFile();
-		if( Kiev.verbose || this.errCount > 0  || this.warnCount > 0)
-			reportTotals();
+		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
+			reportTotals("Backend");
 	}
 
-	public void reportTotals() {
+	public void reportTotals(String src) {
 		if( errCount > 0 )
 			System.out.println(errCount+" errors");
 		if( warnCount > 0 )
 			System.out.println(warnCount+" warnings");
 		programm_end = System.currentTimeMillis();
-		System.out.println("total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb");
+		System.out.println(src+": total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb\007\007");
 		if (Kiev.testError != null) {
 			System.out.println("FAILED: there was no expected error "+Kiev.testError+" at "+Kiev.testErrorLine+":"+Kiev.testErrorOffs);
 			System.exit(1);
 		}
-		System.out.println("\007\007");
+		this.reportTotals = true;
 	}
 
 }

@@ -49,6 +49,7 @@ public abstract class Drawable extends ANode {
 	public abstract String getText();
 
 	public abstract void preFormat(DrawContext cont);
+	public abstract void lnkFormat(DrawContext cont);
 	public abstract boolean postFormat(DrawContext cont);
 	public abstract DrawTerm getFirstLeaf();
 	public abstract DrawTerm getLastLeaf();

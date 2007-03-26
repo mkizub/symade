@@ -252,7 +252,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				m.setAbstract(true);
 				continue;
 			}
-			m.open();
+			m = m.open();
 			m.body = new Block(m.pos);
 			CallExpr ce = new CallExpr(m.pos,
 				new CastExpr(m.pos, clazz.view_of.getType(),
@@ -273,7 +273,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			if (mv_set != null && mv_set.isSynthetic()) {
 				Method set_var = mv_set;
 				Block body = new Block(f.pos);
-				set_var.open();
+				set_var = set_var.open();
 				set_var.setFinal(true);
 				set_var.body = body;
 				Field view_fld = clazz.view_of.getType().getStruct().resolveField(f.sname);
@@ -303,7 +303,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			if (mv_get != null && mv_get.isSynthetic()) {
 				Method get_var = mv_get;
 				Block body = new Block(f.pos);
-				get_var.open();
+				get_var = get_var.open();
 				get_var.setFinal(true);
 				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,
@@ -337,8 +337,8 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		foreach (Method dn; impl.members) {
 			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ clazz.view_of.getType()) {
 				if (dn.isSynthetic()) {
+					dn = dn.open();
 					dn.setAbstract(false);
-					dn.open();
 					dn.body = new Block();
 					dn.block.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
 				}

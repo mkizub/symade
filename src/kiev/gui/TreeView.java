@@ -168,7 +168,11 @@ final class ANodeTreeModel implements TreeModel {
 		DrawNonTerm nt = (DrawNonTerm)parent;
 		if (nt.draw_folded) {
 			nt.draw_folded = false;
-			tree_view.formatter.format(nt.drnode, nt);
+			//tree_view.formatter.format(nt.drnode, nt);
+			DrawContext ctx = new DrawContext(tree_view.formatter,null);
+			ctx.width = 1000;
+			Drawable root = tree_view.formatter.getDrawable(nt.drnode, nt, null);
+			root.preFormat(ctx, root.syntax, nt.drnode);
 		}
 		return nt.args.length;
 	}

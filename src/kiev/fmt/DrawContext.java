@@ -29,7 +29,7 @@ import java.awt.Font;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
-public class DrawContext implements Cloneable {
+public final class DrawContext implements Cloneable {
 	
 	public Formatter				fmt;
 	public Graphics2D				gfx;
@@ -38,7 +38,9 @@ public class DrawContext implements Cloneable {
 	public int						cur_attempt, max_attempt;
 	public boolean					new_lines_first_parent;
 	public boolean					line_started;
+	public boolean					update_spaces;
 	public Vector<LayoutSpace>		space_infos;
+	public Vector<LayoutSpace>		space_infos_1;
 	public int						indent;
 	private DrawTerm				last_term;
 	private DrawContext				prev_ctx;
@@ -48,15 +50,12 @@ public class DrawContext implements Cloneable {
 		this.fmt = fmt;
 		this.gfx = gfx;
 		line_started = true;
-		space_infos = new Vector<LayoutSpace>();
 		if (gfx != null)
 			default_font = new Font("Dialog", Font.PLAIN, 12);
 	}
 	
 	public Object clone() {
-		DrawContext dc = (DrawContext)super.clone();
-		dc.space_infos = (Vector<LayoutSpace>)this.space_infos.clone();
-		return dc;
+		return super.clone();
 	}
 
 	public DrawContext pushState(int cur_attempt, int max_attempt) {
@@ -73,7 +72,6 @@ public class DrawContext implements Cloneable {
 			ctx.x = this.x;
 			ctx.y = this.y;
 			ctx.line_started = this.line_started;
-			ctx.space_infos = this.space_infos;
 			ctx.last_term = this.last_term;
 		}
 		return ctx;
@@ -108,10 +106,8 @@ public class DrawContext implements Cloneable {
 	}
 
 	public void pushDrawable(Drawable dr) {
-		processSpaceBeforeRequest(dr);
 	}
 	public void popDrawable(Drawable dr) {
-		processSpaceAfterRequest(dr);
 	}
 	
 	public DrawContext pushParagraph(Drawable dp, AParagraphLayout pl) {
@@ -129,26 +125,66 @@ public class DrawContext implements Cloneable {
 			ctx.indent = indent;
 			ctx.new_lines_first_parent = pl.new_lines_first_parent;
 		}
-		processSpaceBeforeRequest(dp);
 		return ctx;
 	}
 	public DrawContext popParagraph(Drawable dp, boolean save) {
-		processSpaceAfterRequest(dp);
 		return popState(save);
 	}
 	
 	public boolean addLeaf(DrawTerm leaf) {
-		processSpaceBeforeRequest(leaf);
-		flushSpaceRequests();
+		flushSpaceRequests(leaf);
 		leaf.x = x;
 		x += leaf.w;
 		line_started = false;
 		last_term = leaf;
-		processSpaceAfterRequest(leaf);
 		return (x < width);
 	}
 	
-	private void flushSpaceRequests() {
+	private void flushSpaceRequests(DrawTerm leaf) {
+		DrawTermLink lnk = leaf.lnk_prev;
+		if (lnk == null) {
+			this.x = indent;
+			return;
+		}
+		
+		int max_space;
+		int max_nl;
+		if (cur_attempt == 0) {
+			max_space = lnk.space_size_0;
+			max_nl = lnk.newline_size_0;
+		} else {
+			max_space = lnk.space_size_1;
+			max_nl = lnk.newline_size_1;
+		}
+		if (this.line_started)
+			this.x = indent;
+		else
+			this.x += max_space;
+		if (max_nl > 0) {
+			lnk.size = max_nl;
+			if (last_term != null) {
+				last_term.do_newline = true;
+			}
+			if (!this.line_started) {
+				this.line_started = true;
+				this.x = indent;
+			}
+		} else {
+			lnk.size = max_space;
+		}
+	}
+	
+	// 
+	// calculate the space for DrawTermLink
+	//
+	
+	public void flushSpace(DrawTermLink lnk) {
+		update_spaces = false;
+		if (lnk == null) {
+			space_infos.removeAllElements();
+			space_infos_1.removeAllElements();
+			return;
+		}
 		int max_space = 0;
 		int max_nl = 0;
 		foreach (LayoutSpace csi; space_infos; !csi.eat) {
@@ -157,23 +193,24 @@ public class DrawContext implements Cloneable {
 			else
 				max_space = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_space);
 		}
-		if (this.line_started)
-			this.x = indent;
-		else
-			this.x += max_space;
-
-		if (max_nl > 0) {
-			if (last_term != null)
-				last_term.do_newline = max_nl;
-			if (!this.line_started) {
-				this.line_started = true;
-				this.x = indent;
-			}
-		}
+		lnk.space_size_0 = max_space;
+		lnk.newline_size_0 = max_nl;
 		space_infos.removeAllElements();
+
+		max_space = 0;
+		max_nl = 0;
+		foreach (LayoutSpace csi; space_infos_1; !csi.eat) {
+			if (csi.new_line)
+				max_nl = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_nl);
+			else
+				max_space = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_space);
+		}
+		lnk.space_size_1 = max_space;
+		lnk.newline_size_1 = max_nl;
+		space_infos_1.removeAllElements();
 	}
-	
-	private void addSpaceInfo(LayoutSpace sc) {
+
+	private void collectSpaceInfo(LayoutSpace sc, Vector<LayoutSpace> space_infos) {
 		String name = sc.name;
 		for (int i=0; i < space_infos.size(); i++) {
 			LayoutSpace csi = space_infos[i];
@@ -189,23 +226,46 @@ public class DrawContext implements Cloneable {
 		space_infos.append(sc);
 	}
 	
-	private void processSpaceBeforeRequest(Drawable dr) {
-		foreach (LayoutSpace si; dr.syntax.lout.spaces_before; si.from_attempt <= cur_attempt)
-			addSpaceInfo(si);
+	public void processSpaceBefore(Drawable dr) {
+		if (space_infos == null ) space_infos = new Vector<LayoutSpace>();
+		if (space_infos_1 == null ) space_infos_1 = new Vector<LayoutSpace>();
+		if (!update_spaces)
+			return;
+		foreach (LayoutSpace si; dr.syntax.lout.spaces_before) {
+			if (si.from_attempt <= 0)
+				collectSpaceInfo(si,space_infos);
+			if (si.from_attempt <= 1)
+				collectSpaceInfo(si,space_infos_1);
+		}
 		if (dr.attr_syntax == null)
 			return;
-		foreach (LayoutSpace si; dr.attr_syntax.lout.spaces_before; si.from_attempt <= cur_attempt)
-			addSpaceInfo(si);
+		foreach (LayoutSpace si; dr.attr_syntax.lout.spaces_before) {
+			if (si.from_attempt <= 0)
+				collectSpaceInfo(si,space_infos);
+			if (si.from_attempt <= 1)
+				collectSpaceInfo(si,space_infos_1);
+		}
 	}
 	
-	private void processSpaceAfterRequest(Drawable dr) {
-		foreach (LayoutSpace si; dr.syntax.lout.spaces_after; si.from_attempt <= cur_attempt)
-			addSpaceInfo(si);
+	public void processSpaceAfter(Drawable dr) {
+		if (!update_spaces)
+			return;
+		foreach (LayoutSpace si; dr.syntax.lout.spaces_after) {
+			if (si.from_attempt <= 0)
+				collectSpaceInfo(si,space_infos);
+			if (si.from_attempt <= 1)
+				collectSpaceInfo(si,space_infos_1);
+		}
 		if (dr.attr_syntax == null)
 			return;
-		foreach (LayoutSpace si; dr.attr_syntax.lout.spaces_after; si.from_attempt <= cur_attempt)
-			addSpaceInfo(si);
+		foreach (LayoutSpace si; dr.attr_syntax.lout.spaces_after) {
+			if (si.from_attempt <= 0)
+				collectSpaceInfo(si,space_infos);
+			if (si.from_attempt <= 1)
+				collectSpaceInfo(si,space_infos_1);
+		}
 	}
+	
 }
 
 

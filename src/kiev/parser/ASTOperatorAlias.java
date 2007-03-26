@@ -92,7 +92,7 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 	
 	private void setAliasName(String s) {
 		if (sname != s) {
-			this.open();
+			this = this.open();
 			sname = s;
 		}
 	}

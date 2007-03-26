@@ -527,7 +527,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				if( me.isClazz() && me.isFinal() ) {
 					m.setFinal(true);
 				}
-				else if( me.isInterface() ) {
+				else if( me.isInterface() && !me.isStructView() ) {
 					m.setPublic();
 					m.setFinal(false);
 					m.setAbstract(true);

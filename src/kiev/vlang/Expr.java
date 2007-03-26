@@ -342,7 +342,7 @@ public class BinaryExpr extends ENode {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			this.open();
+			this = this.open();
 			this.symbol = m;
 		}
 		Type ret = m.type.ret();
@@ -409,7 +409,7 @@ public class UnaryExpr extends ENode {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			this.open();
+			this = this.open();
 			this.symbol = m;
 		}
 		Type ret = m.type.ret();

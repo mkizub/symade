@@ -112,7 +112,7 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
 				Kiev.reportError(template,"Unresolved java expression template "+template);
 			else if (template.symbol != d) {
-				template.open();
+				template = template.open();
 				template.symbol = d;
 			}
 		}

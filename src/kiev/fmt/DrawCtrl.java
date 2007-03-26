@@ -56,6 +56,15 @@ public class DrawCtrl extends Drawable {
 		return max_layout;
 	}
 
+	public void lnkFormat(DrawContext cont) {
+		if (this.isUnvisible())
+			return;
+		cont.processSpaceBefore(this);
+		if (arg != null)
+			arg.lnkFormat(cont);
+		cont.processSpaceAfter(this);
+	}
+
 	public boolean postFormat(DrawContext context) {
 		context.pushDrawable(this);
 		try {

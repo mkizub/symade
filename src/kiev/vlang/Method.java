@@ -408,7 +408,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public void normilizeExpr(ENode expr) {
-		expr.open();
+		expr = expr.open();
 		if (expr.ident == null) {
 			Operator op = expr.getOp();
 			if (op != null)

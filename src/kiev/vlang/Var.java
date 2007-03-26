@@ -38,8 +38,6 @@ public abstract class Var extends DNode {
 	@virtual typedef JView ≤ JVar;
 	@virtual typedef RView ≤ RVar;
 
-	public static final AttrSlot FORM_PAR_SUPER_TYPE = new ExtAttrSlot("stype",true,false,TypeInfo.newTypeInfo(TypeRef.class,null));
-
 	public static final int VAR_LOCAL          = 0;
 	public static final int VAR_RULE           = 1;
 	public static final int FIELD_NORMAL       = 2;
@@ -59,21 +57,15 @@ public abstract class Var extends DNode {
 	public @packed:8,varflags,0  int			kind;
 	public @packed:24,varflags,8 int			bcpos;
 
-	@att public TypeRef		vtype;
-	@att public ENode		init;
+	@att
+	public TypeRef		vtype;
+	@att(ext_data=true)
+	public TypeRef		stype;
+	@att
+	public ENode		init;
 
 	@getter public Type get$type() { return this.vtype.getType(); }
 
-	@getter public final TypeRef get$stype() {
-		return ANode.getVersion((TypeRef)FORM_PAR_SUPER_TYPE.get(this));
-	}
-	@setter public final void set$stype(TypeRef val) {
-		if (val == null)
-			FORM_PAR_SUPER_TYPE.clear(this);
-		else
-			FORM_PAR_SUPER_TYPE.set(this, val);
-	}
-		
 	// init wrapper
 	@getter public final boolean isInitWrapper() {
 		return this.is_init_wrapper;
