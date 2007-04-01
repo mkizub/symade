@@ -236,10 +236,11 @@ public final class DrawWrapList extends DrawNonTerm {
 		calcMaxLayout();
 	}
 	
-	public int getInsertIndex(Drawable dr) {
+	public int getInsertIndex(Drawable dr, boolean next) {
 		assert (dr.parent() == this);
 		SyntaxList slst = (SyntaxList)this.syntax;
-		if (slst.prefix != null && args[0] == dr)
+		boolean first = (slst.prefix != null && args[0] == dr);
+		if (first && !next)
 			return 0;
 		try {
 			return ((ANode[])slst_attr.get(this.drnode)).length;
@@ -324,23 +325,23 @@ public final class DrawNonTermList extends DrawNonTerm {
 		calcMaxLayout();
 	}
 	
-	public int getInsertIndex(Drawable dr) {
+	public int getInsertIndex(Drawable dr, boolean next) {
 		assert (dr.parent() == this);
-		for (int i=0; i < oarr.length; i++) {
-			if (ANode.getVersion(oarr[i]) == dr.drnode)
-				return i;
-		}
 		SyntaxList slst = (SyntaxList)this.syntax;
 		if (slst.separator != null) {
 			for (int i=0; i < args.length; i++) {
 				if (args[i] == dr)
-					return (1+i)/2;
+					return next ? (i+2)/2 : (i+1)/2;
 			}
 		} else {
 			for (int i=0; i < args.length; i++) {
 				if (args[i] == dr)
-					return i;
+					return next ? (i+1) : (i) ;
 			}
+		}
+		for (int i=0; i < oarr.length; i++) {
+			if (ANode.getVersion(oarr[i]) == dr.drnode)
+				return next ? (i+1) : (i) ;
 		}
 		return oarr.length;
 	}

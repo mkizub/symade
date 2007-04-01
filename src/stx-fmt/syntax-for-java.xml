@@ -1718,7 +1718,7 @@
        <filter>
         <a-node class='kiev.fmt.CalcOptionNot'>
          <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+          <a-node class='kiev.fmt.CalcOptionHasMeta'>
            <name>kiev.stdlib.meta.synthetic</name>
           </a-node>
          </opt>
@@ -1781,12 +1781,12 @@
            <funcs>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Change import kind</title>
-             <act>FuncEditElem</act>
+             <act>kiev.gui.ChooseItemEditor</act>
              <attr>mode</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Import All</title>
-             <act>FuncEditElem</act>
+             <act>kiev.gui.ChooseItemEditor</act>
              <attr>star</attr>
             </a-node>
            </funcs>
@@ -1832,8 +1832,10 @@
          </decl>
          <name>name</name>
         </a-node>
-        <a-node class='kiev.fmt.SyntaxBoolChoice'>
-         <elem_true>
+        <a-node class='kiev.fmt.SyntaxEnumChoice'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxSpace'>
+          </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>.*</text>
            <fmt>
@@ -1842,11 +1844,7 @@
             </a-node>
            </fmt>
           </a-node>
-         </elem_true>
-         <elem_false>
-          <a-node class='kiev.fmt.SyntaxSpace'>
-          </a-node>
-         </elem_false>
+         </elements>
          <name>star</name>
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
@@ -2024,17 +2022,17 @@
            <funcs>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add metadata</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>meta.metas</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add type: extends</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>super_types</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add type: super</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>lower_bound</attr>
             </a-node>
            </funcs>
@@ -2169,12 +2167,12 @@
              <funcs>
               <a-node class='kiev.fmt.SyntaxFunction'>
                <title>Add types: extends</title>
-               <act>FuncNewElemOfEmptyList</act>
+               <act>kiev.gui.FuncNewElemOfEmptyList</act>
                <attr>super_types</attr>
               </a-node>
               <a-node class='kiev.fmt.SyntaxFunction'>
                <title>Add types: super</title>
-               <act>FuncNewElemOfEmptyList</act>
+               <act>kiev.gui.FuncNewElemOfEmptyList</act>
                <attr>lower_bound</attr>
               </a-node>
              </funcs>
@@ -2337,7 +2335,7 @@
            <funcs>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add arguments</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>args</attr>
             </a-node>
            </funcs>
@@ -2636,7 +2634,7 @@
              <filter>
               <a-node class='kiev.fmt.CalcOptionNot'>
                <opt>
-                <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+                <a-node class='kiev.fmt.CalcOptionHasMeta'>
                  <name>kiev.stdlib.meta.synthetic</name>
                 </a-node>
                </opt>
@@ -2732,7 +2730,7 @@
              <funcs>
               <a-node class='kiev.fmt.SyntaxFunction'>
                <title>Add arguments</title>
-               <act>FuncNewElemOfEmptyList</act>
+               <act>kiev.gui.FuncNewElemOfEmptyList</act>
                <attr>args</attr>
               </a-node>
              </funcs>
@@ -2802,7 +2800,7 @@
            <calculator>
             <a-node class='kiev.fmt.CalcOptionNot'>
              <opt>
-              <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+              <a-node class='kiev.fmt.CalcOptionHasMeta'>
                <name>kiev.stdlib.meta.singleton</name>
               </a-node>
              </opt>
@@ -3075,7 +3073,7 @@
              <funcs>
               <a-node class='kiev.fmt.SyntaxFunction'>
                <title>Add arguments</title>
-               <act>FuncNewElemOfEmptyList</act>
+               <act>kiev.gui.FuncNewElemOfEmptyList</act>
                <attr>args</attr>
               </a-node>
              </funcs>
@@ -3310,7 +3308,7 @@
              <funcs>
               <a-node class='kiev.fmt.SyntaxFunction'>
                <title>Add arguments</title>
-               <act>FuncNewElemOfEmptyList</act>
+               <act>kiev.gui.FuncNewElemOfEmptyList</act>
                <attr>args</attr>
               </a-node>
              </funcs>
@@ -3464,7 +3462,7 @@
              <funcs>
               <a-node class='kiev.fmt.SyntaxFunction'>
                <title>Add arguments</title>
-               <act>FuncNewElemOfEmptyList</act>
+               <act>kiev.gui.FuncNewElemOfEmptyList</act>
                <attr>args</attr>
               </a-node>
              </funcs>
@@ -3628,7 +3626,7 @@
            <funcs>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add metadata</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>meta.metas</attr>
             </a-node>
            </funcs>
@@ -3763,7 +3761,7 @@
              <funcs>
               <a-node class='kiev.fmt.SyntaxFunction'>
                <title>Add metadata</title>
-               <act>FuncNewElemOfEmptyList</act>
+               <act>kiev.gui.FuncNewElemOfEmptyList</act>
                <attr>meta.metas</attr>
               </a-node>
              </funcs>
@@ -3894,27 +3892,27 @@
            <funcs>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add metadata</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>meta.metas</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add type decls</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>targs</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add aliases</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>aliases</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add condition</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>conditions</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add body</title>
-             <act>FuncNewElemOfNull</act>
+             <act>kiev.gui.FuncNewElemOfNull</act>
              <attr>body</attr>
             </a-node>
            </funcs>
@@ -3965,7 +3963,7 @@
          <filter>
           <a-node class='kiev.fmt.CalcOptionNot'>
            <opt>
-            <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+            <a-node class='kiev.fmt.CalcOptionHasMeta'>
              <name>kiev.stdlib.meta.synthetic</name>
             </a-node>
            </opt>
@@ -4181,22 +4179,22 @@
            <funcs>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add metadata</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>meta.metas</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add type decls</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>targs</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add aliases</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>aliases</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add body</title>
-             <act>FuncNewElemOfNull</act>
+             <act>kiev.gui.FuncNewElemOfNull</act>
              <attr>body</attr>
             </a-node>
            </funcs>
@@ -4419,32 +4417,32 @@
            <funcs>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add metadata</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>meta.metas</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add type decls</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>targs</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add aliases</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>aliases</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add local var</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>localvars</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add condition</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>conditions</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add body</title>
-             <act>FuncNewElemOfNull</act>
+             <act>kiev.gui.FuncNewElemOfNull</act>
              <attr>body</attr>
             </a-node>
            </funcs>
@@ -4495,7 +4493,7 @@
          <filter>
           <a-node class='kiev.fmt.CalcOptionNot'>
            <opt>
-            <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+            <a-node class='kiev.fmt.CalcOptionHasMeta'>
              <name>kiev.stdlib.meta.synthetic</name>
             </a-node>
            </opt>
@@ -4727,22 +4725,22 @@
            <funcs>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add metadata</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>meta.metas</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add type decls</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>targs</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add condition</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>conditions</attr>
             </a-node>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add body</title>
-             <act>FuncNewElemOfNull</act>
+             <act>kiev.gui.FuncNewElemOfNull</act>
              <attr>body</attr>
             </a-node>
            </funcs>
@@ -4793,7 +4791,7 @@
          <filter>
           <a-node class='kiev.fmt.CalcOptionNot'>
            <opt>
-            <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+            <a-node class='kiev.fmt.CalcOptionHasMeta'>
              <name>kiev.stdlib.meta.synthetic</name>
             </a-node>
            </opt>
@@ -5960,7 +5958,7 @@
            <funcs>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add type argument</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>args</attr>
             </a-node>
            </funcs>
@@ -8204,7 +8202,7 @@
            <funcs>
             <a-node class='kiev.fmt.SyntaxFunction'>
              <title>Add metadata</title>
-             <act>FuncNewElemOfEmptyList</act>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>meta.metas</attr>
             </a-node>
            </funcs>
@@ -8289,7 +8287,7 @@
              <funcs>
               <a-node class='kiev.fmt.SyntaxFunction'>
                <title>Add metadata</title>
-               <act>FuncNewElemOfEmptyList</act>
+               <act>kiev.gui.FuncNewElemOfEmptyList</act>
                <attr>meta.metas</attr>
               </a-node>
              </funcs>

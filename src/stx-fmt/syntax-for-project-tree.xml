@@ -228,7 +228,7 @@
        <filter>
         <a-node class='kiev.fmt.CalcOptionNot'>
          <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+          <a-node class='kiev.fmt.CalcOptionHasMeta'>
            <name>kiev.stdlib.meta.synthetic</name>
           </a-node>
          </opt>
@@ -275,7 +275,7 @@
        <filter>
         <a-node class='kiev.fmt.CalcOptionNot'>
          <opt>
-          <a-node class='kiev.fmt.CalcOptionHasMetaFlag'>
+          <a-node class='kiev.fmt.CalcOptionHasMeta'>
            <name>kiev.stdlib.meta.synthetic</name>
           </a-node>
          </opt>

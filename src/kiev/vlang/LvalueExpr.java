@@ -166,7 +166,7 @@ public final class AccessExpr extends LvalueExpr {
 			throw new CompilerException(this, msg.toString());
 		}
 		if (cnt == 0) {
-			if (ctx_method.isMacro())
+			if (ctx_method != null && ctx_method.isMacro())
 				return;
 			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
 			for(int si=0; si < res.length; si++) {

@@ -56,7 +56,7 @@ public abstract class BoolExpr extends ENode {
 		if (this.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
-				if (!ctx_method.isMacro())
+				if (ctx_method == null || !ctx_method.isMacro())
 					Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}

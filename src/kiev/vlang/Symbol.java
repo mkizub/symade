@@ -214,11 +214,14 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		super.callbackDetached();
 	}
 
-	public DNode[] findForResolve(boolean by_equals) {
-		ANode parent = parent();
-		if (parent instanceof ASTNode)
-			return parent.findForResolve(name, pslot(), by_equals);
-		return null;
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "name") {
+			ANode parent = parent();
+			if (parent instanceof ASTNode)
+				return parent.findForResolve(name, pslot(), by_equals);
+			return null;
+		}
+		return super.findForResolve(name,slot,by_equals);
 	}
 }
 

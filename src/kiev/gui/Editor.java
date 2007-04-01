@@ -60,7 +60,7 @@ public class Editor extends InfoView implements KeyListener {
 	/** Symbols used by editor */
 	
 	/** Current editor mode */
-	private KeyListener		item_editor;
+	protected KeyListener	item_editor;
 	/** Current x position for scrolling up/down */
 	int						cur_x;
 	/** Current item */
@@ -68,23 +68,52 @@ public class Editor extends InfoView implements KeyListener {
 	/** The object in clipboard */
 	public final Clipboard	clipboard = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
 	
-	private Stack<Transaction>		changes = new Stack<Transaction>();
+	protected Stack<Transaction>		changes = new Stack<Transaction>();
 	
+	protected final Hashtable<InputEventInfo,String[]> keyActionMap;
+
 	{
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_LEFT),      new NavigateEditor(this,NavigateView.LEFT));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_RIGHT),     new NavigateEditor(this,NavigateView.RIGHT));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_UP),        new NavigateEditor(this,NavigateView.LINE_UP));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_DOWN),      new NavigateEditor(this,NavigateView.LINE_DOWN));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_HOME),      new NavigateEditor(this,NavigateView.LINE_HOME));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_END),       new NavigateEditor(this,NavigateView.LINE_END));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_UP),   new NavigateEditor(this,NavigateView.PAGE_UP));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_PAGE_DOWN), new NavigateEditor(this,NavigateView.PAGE_DOWN));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_E),         new ChooseItemEditor(this));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_N),         new NewElemEditor(this,NewElemEditor.SETNEW_HERE));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_A),         new NewElemEditor(this,NewElemEditor.INSERT_NEXT));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_F),         new FolderTrigger(this));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_O),         new OptionalTrigger(this));
-		this.naviMap.put(Integer.valueOf(KeyEvent.VK_X),         new FunctionExecuter(this));
+		final int SHIFT = KeyEvent.SHIFT_DOWN_MASK;
+		final int CTRL  = KeyEvent.CTRL_DOWN_MASK;
+		final int ALT   = KeyEvent.ALT_DOWN_MASK;
+
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_UP),			new NavigateView.LineUp());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_DOWN),			new NavigateView.LineDn());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_PAGE_UP),		new NavigateView.PageUp());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_PAGE_DOWN),		new NavigateView.PageDn());
+
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_LEFT),			new NavigateEditor.GoPrev());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_RIGHT),			new NavigateEditor.GoNext());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_UP),			new NavigateEditor.GoLineUp());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DOWN),			new NavigateEditor.GoLineDn());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_HOME),			new NavigateEditor.GoLineHome());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_END),			new NavigateEditor.GoLineEnd());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_PAGE_UP),		new NavigateEditor.GoPageUp());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_PAGE_DOWN),		new NavigateEditor.GoPageDn());
+
+//		this.naviMap.put(new InputEventInfo(ALT,				KeyEvent.VK_C),				new FileActions.RunBackendAll());
+//		this.naviMap.put(new InputEventInfo(ALT,				KeyEvent.VK_V),				new FileActions.RunFrontend());
+//		this.naviMap.put(new InputEventInfo(CTRL+ALT,			KeyEvent.VK_V),				new FileActions.RunFrontendAll());
+//		this.naviMap.put(new InputEventInfo(CTRL+ALT,			KeyEvent.VK_M),				new FileActions.MergeTreeAll());
+
+//		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_W),				new EditActions.CloseWindow());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_Z),				new EditActions.Undo());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_C),				new EditActions.Copy());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_X),				new EditActions.Cut());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DELETE),		new EditActions.Del());
+
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_F),				new FunctionExecuter.Factory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_O),				new FolderTrigger.Factory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_N),				new NewElemHere.Factory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_A),				new NewElemNext.Factory());
+		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_E),				new ChooseItemEditor());
+		
+		this.keyActionMap = new Hashtable<InputEventInfo,String[]>();
+		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_E), new String[]{"kiev.gui.TextEditor.Factory","kiev.gui.ChooseItemEditor"});
+		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_F), new String[]{"kiev.gui.FunctionExecuter.Factory"});
+		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_O), new String[]{"kiev.gui.FolderTrigger.Factory"});
+		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_N), new String[]{"kiev.gui.NewElemHere.Factory"});
+		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_A), new String[]{"kiev.gui.NewElemNext.Factory"});
 	}
 	
 	public Editor(Window window, ATextSyntax syntax, Canvas view_canvas) {
@@ -121,14 +150,14 @@ public class Editor extends InfoView implements KeyListener {
 		parent_window.info_view.formatAndPaint(true);
 	}
 	
-	public ActionPoint getActionPoint() {
+	public ActionPoint getActionPoint(boolean next) {
 		Drawable dr = cur_elem.dr;
 		while (dr != null) {
 			Drawable p = (Drawable)dr.parent();
 			if (p instanceof DrawNonTermList)
-				return new ActionPoint(p,p.slst_attr,p.getInsertIndex(dr));
+				return new ActionPoint(p,p.slst_attr,p.getInsertIndex(dr, next));
 			if (p instanceof DrawWrapList)
-				return new ActionPoint(p,p.slst_attr,p.getInsertIndex(dr));
+				return new ActionPoint(p,p.slst_attr,p.getInsertIndex(dr, next));
 			dr = p;
 		}
 		return null;
@@ -153,65 +182,39 @@ public class Editor extends InfoView implements KeyListener {
 		//System.out.println(evt);
 		int code = evt.getKeyCode();
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-		if (mask == 0) {
-			KeyHandler kh = naviMap.get(Integer.valueOf(code));
-			if (kh != null) {
-				kh.process();
+		{
+			UIActionFactory af = naviMap.get(new InputEventInfo(mask, code));
+			Runnable r = (af == null) ? null : af.getAction(new UIActionViewContext(this));
+			if (r != null) {
 				evt.consume();
+				r.run();
 				return;
 			}
-			return;
-		}
-		else if (mask == KeyEvent.ALT_DOWN_MASK) {
-			switch (code) {
-			//case KeyEvent.VK_UP:
-			//	if (cur_elem.dr.isAttached()) {
-			//		cur_elem.set((Drawable)cur_elem.parent());
-			//		view_canvas.repaint();
-			//	}
-			//	evt.consume(); 
-			//	break;
-			case KeyEvent.VK_H:
-				evt.consume(); 
-				this.show_auto_generated = !this.show_auto_generated;
-				formatAndPaint(true);
-				break;
-			case KeyEvent.VK_DOWN:
-				evt.consume(); 
-				if (cur_elem.dr instanceof DrawNonTerm) {
-					cur_elem.set(cur_elem.dr.getFirstLeaf());
-					view_canvas.repaint();
+			String[] actions = keyActionMap.get(new InputEventInfo(mask, code));
+			if (actions != null && cur_elem.dr != null && cur_elem.dr.syntax.funcs != null) {
+				Drawable dr = cur_elem.dr;
+				foreach (SyntaxFunction f; dr.syntax.funcs.funcs; f.attr == null) {
+					foreach (String act; actions; act != null && act.equals(f.act)) {
+						try {
+							Class c = Class.forName(f.act);
+							UIActionFactory af = (UIActionFactory)c.newInstance();
+							Runnable r = af.getAction(new UIActionViewContext(this));
+							if (r != null) {
+								evt.consume();
+								r.run();
+								return;
+							}
+						} catch (Throwable t) {}
+					}
 				}
-				break;
-			case KeyEvent.VK_C:
-				evt.consume();
-				System.out.println("Running backend compiler...");
-				CompilerThread thr = CompilerThread;
-				thr.errCount = 0;
-				thr.warnCount = 0;
-				Compiler.runBackEnd(thr, Env.root, null, false);
-				break;
-			case KeyEvent.VK_V:
-				evt.consume();
-				runFrontEndCompiler(the_root);
-				break;
+			}
+			if (mask == 0) {
+				if !(code==KeyEvent.VK_SHIFT || code==KeyEvent.VK_ALT || code==KeyEvent.VK_ALT_GRAPH || code==KeyEvent.VK_CONTROL || code==KeyEvent.VK_CAPS_LOCK)
+					java.awt.Toolkit.getDefaultToolkit().beep();
+				return;
 			}
 		}
-		else if (mask == (KeyEvent.CTRL_DOWN_MASK|KeyEvent.ALT_DOWN_MASK)) {
-			switch (code) {
-			case KeyEvent.VK_V:
-				evt.consume();
-				runFrontEndCompiler(Env.root);
-				break;
-			case KeyEvent.VK_M:
-				evt.consume();
-				getVersion(Env.root).mergeTree();
-				formatAndPaint(true);
-				System.out.println("Tree merged to the editor version.");
-				break;
-			}
-		}
-		else if (mask == KeyEvent.CTRL_DOWN_MASK) {
+/*		else if (mask == KeyEvent.CTRL_DOWN_MASK) {
 			evt.consume(); 
 			switch (code) {
 			case KeyEvent.VK_F:
@@ -221,46 +224,6 @@ public class Editor extends InfoView implements KeyListener {
 					FindDialog fd = new FindDialog(parent_window,this);
 					fd.pack();
 					fd.setVisible(true);
-				}
-				break;
-			case KeyEvent.VK_Z:
-				if (changes.length > 0) {
-					Transaction tr = changes.pop();
-					tr.rollback(false);
-					formatAndPaint(true);
-				}
-				break;
-			case KeyEvent.VK_W:
-				if (item_editor != null) {
-					stopItemEditor(true);
-					item_editor = null;
-				}
-				parent_window.closeEditor(this);
-				break;
-			case KeyEvent.VK_X:
-				if (cur_elem.dr != null) {
-					ANode node = cur_elem.dr.drnode;
-					changes.push(Transaction.open());
-					node.detach();
-					changes.peek().close();
-					TransferableANode tr = new TransferableANode(node);
-					clipboard.setContents(tr, tr);
-					formatAndPaint(true);
-				}
-				break;
-			case KeyEvent.VK_C:
-				if (cur_elem.dr instanceof DrawNodeTerm) {
-					AttrPtr pattr = ((DrawNodeTerm)cur_elem.dr).getAttrPtr();
-					Object obj = pattr.get();
-					Transferable tr = null;
-					if (obj instanceof ANode)
-						tr = new TransferableANode((ANode)obj);
-					else
-						tr = new StringSelection(String.valueOf(obj));
-					clipboard.setContents(tr, (ClipboardOwner)tr);
-				} else {
-					Transferable tr = new TransferableANode(cur_elem.dr.drnode);
-					clipboard.setContents(tr, (ClipboardOwner)tr);
 				}
 				break;
 			case KeyEvent.VK_A:
@@ -345,36 +308,10 @@ public class Editor extends InfoView implements KeyListener {
 					}
 				}
 				break;
-			case KeyEvent.VK_R:
-				setSyntax(this.syntax);
-				cur_elem.set(view_root.getFirstLeaf());
-				view_canvas.root = view_root;
-				formatAndPaint(false);
-				break;
 			}
 		}
 		super.keyPressed(evt);
-	}
-	
-	private void runFrontEndCompiler(ANode root) {
-		System.out.println("Running frontend compiler...");
-		Transaction tr = Transaction.open();
-		changes.push(tr);
-		EditorThread thr = EditorThread;
-		try {
-			thr.errCount = 0;
-			thr.warnCount = 0;
-			Compiler.runFrontEnd(thr,null,root,true);
-		} catch (Throwable t) { t.printStackTrace(); }
-		System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
-		if (tr.isEmpty()) {
-			tr.close();
-			changes.pop();
-		} else {
-			tr.close();
-		}
-		formatAndPaint(true);
-	}
+*/	}
 	
 	public void startItemEditor(ANode obj, KeyListener item_editor) {
 		assert (this.item_editor == null);
@@ -494,7 +431,7 @@ public class Editor extends InfoView implements KeyListener {
 			Drawable last = path[path.length-1];
 			Drawable bad = null;
 			for (int i=path.length-1; i >= 0 && bad == null; i--) {
-				if (path[i].ctx_root == root)
+				if (path[i].ctx_root == root && path[i].getFirstLeaf() != null)
 					last = path[i];
 				else
 					bad = path[i];
@@ -526,10 +463,10 @@ public class ActionPoint {
 		this.dr = dr;
 		this.node = dr.drnode;
 		this.slot = slot;
+		this.length = ((ANode[])slot.get(node)).length;
 		if (idx <= 0) {
 			this.index = 0;
 		} else {
-			this.length = ((ANode[])slot.get(node)).length;
 			if (idx >= this.length)
 				this.index = this.length;
 			else
@@ -572,210 +509,29 @@ public interface KeyHandler {
 	public void process();
 }
 
-final class NavigateEditor extends NavigateView implements KeyHandler {
+final class ChooseItemEditor implements UIActionFactory {
 
-	NavigateEditor(Editor uiv, int cmd) {
-		super(uiv,cmd);
-	}
-
-	public void process() {
-		switch (cmd) {
-		case LEFT:       navigatePrev(true); return;
-		case RIGHT:      navigateNext(true); return;
-		case LINE_UP:    navigateUp(true);   return;
-		case LINE_DOWN:  navigateDn(true); return;
-		case LINE_HOME:  navigateLineHome(true); return;
-		case LINE_END:   navigateLineEnd(true);  return;
-		case PAGE_UP:    navigatePageUp();  return;
-		case PAGE_DOWN:  navigatePageDn();  return;
-		}
-	}
-
-	private void navigatePrev(boolean repaint) {
-		final Editor uiv = (Editor)this.uiv;
-		DrawTerm prev = uiv.cur_elem.dr.getFirstLeaf().getPrevLeaf();
-		if (prev != null) {
-			uiv.cur_elem.set(prev);
-			uiv.cur_x = prev.x;
-		}
-		if (repaint) {
-			uiv.makeCurrentVisible();
-			uiv.formatAndPaint(false);
-		}
-	}
-	private void navigateNext(boolean repaint) {
-		final Editor uiv = (Editor)this.uiv;
-		DrawTerm next = uiv.cur_elem.dr.getFirstLeaf().getNextLeaf();
-		if (next != null) {
-			uiv.cur_elem.set(next);
-			uiv.cur_x = next.x;
-		}
-		if (repaint) {
-			uiv.makeCurrentVisible();
-			uiv.formatAndPaint(false);
-		}
-	}
-	private void navigateUp(boolean repaint) {
-		final Editor uiv = (Editor)this.uiv;
-		DrawTerm n = null;
-		DrawTerm prev = uiv.cur_elem.dr.getFirstLeaf();
-		if (prev != null)
-			prev = prev.getPrevLeaf();
-		while (prev != null) {
-			if (prev.do_newline) {
-				n = prev;
-				break;
-			}
-			prev = prev.getPrevLeaf();
-		}
-		while (n != null) {
-			if (n.x <= uiv.cur_x && n.x+n.w >= uiv.cur_x)
-				break;
-			prev = n.getPrevLeaf();
-			if (prev == null || prev.do_newline)
-				break;
-			if (prev.x+prev.w < uiv.cur_x)
-				break;
-			n = prev;
-		}
-		if (n != null)
-			uiv.cur_elem.set(n);
-		if (repaint) {
-			uiv.makeCurrentVisible();
-			uiv.formatAndPaint(false);
-		}
-	}
-	private void navigateDn(boolean repaint) {
-		final Editor uiv = (Editor)this.uiv;
-		DrawTerm n = null;
-		DrawTerm next = uiv.cur_elem.dr.getFirstLeaf();
-		while (next != null) {
-			if (next.do_newline) {
-				n = next.getNextLeaf();
-				break;
-			}
-			next = next.getNextLeaf();
-		}
-		while (n != null) {
-			if (n.x <= uiv.cur_x && n.x+n.w >= uiv.cur_x)
-				break;
-			next = n.getNextLeaf();
-			if (next == null)
-				break;
-			if (next.x > uiv.cur_x)
-				break;
-			if (next.do_newline)
-				break;
-			n = next;
-		}
-		if (n != null)
-			uiv.cur_elem.set(n);
-		if (repaint) {
-			uiv.makeCurrentVisible();
-			uiv.formatAndPaint(false);
-		}
-	}
-	private void navigateLineHome(boolean repaint) {
-		final Editor uiv = (Editor)this.uiv;
-		int lineno = uiv.cur_elem.dr.getFirstLeaf().lineno;
-		DrawTerm res = uiv.cur_elem.dr;
-		for (;;) {
-			DrawTerm dr = res.getPrevLeaf();
-			if (dr == null || dr.lineno != lineno)
-				break;
-			res = dr;
-		}
-		if (res != uiv.cur_elem.dr) {
-			uiv.cur_elem.set(res);
-			uiv.cur_x = uiv.cur_elem.dr.x;
-		}
-		if (repaint)
-			uiv.formatAndPaint(false);
-	}
-	private void navigateLineEnd(boolean repaint) {
-		final Editor uiv = (Editor)this.uiv;
-		int lineno = uiv.cur_elem.dr.getFirstLeaf().lineno;
-		DrawTerm res = uiv.cur_elem.dr;
-		for (;;) {
-			DrawTerm dr = res.getNextLeaf();
-			if (dr == null || dr.lineno != lineno)
-				break;
-			res = dr;
-		}
-		if (res != uiv.cur_elem.dr) {
-			uiv.cur_elem.set(res);
-			uiv.cur_x = uiv.cur_elem.dr.x;
-		}
-		if (repaint)
-			uiv.formatAndPaint(false);
-	}
-	private void navigatePageUp() {
-		final Editor uiv = (Editor)this.uiv;
-		if (uiv.view_canvas.first_visible == null) {
-			uiv.view_canvas.setFirstLine(0);
-			return;
-		}
-		int offs = uiv.view_canvas.last_visible.lineno - uiv.view_canvas.first_visible.lineno -1;
-		uiv.view_canvas.incrFirstLine(-offs);
-		for (int i=offs; i >= 0; i--)
-			navigateUp(i==0);
-		return;
-	}
-	private void navigatePageDn() {
-		final Editor uiv = (Editor)this.uiv;
-		if (uiv.view_canvas.first_visible == null) {
-			uiv.view_canvas.setFirstLine(0);
-			return;
-		}
-		int offs = uiv.view_canvas.last_visible.lineno - uiv.view_canvas.first_visible.lineno -1;
-		uiv.view_canvas.incrFirstLine(+offs);
-		for (int i=offs; i >= 0; i--)
-			navigateDn(i==0);
-		return;
-	}
-
-}
-
-final class ChooseItemEditor implements KeyHandler {
-
-	private final Editor	editor;
-	private final Drawable	drawable;
-
-	ChooseItemEditor(Editor editor) {
-		this.editor = editor;
-	}
-
-	ChooseItemEditor(Editor editor, Drawable drawable) {
-		this.editor = editor;
-		this.drawable = drawable;
-	}
-
-	public void process() {
-		Drawable dr = this.drawable;
-		if (dr == null)
-			dr = editor.cur_elem.dr;
+	public String getDescr() { "Edit current element" }
+	
+	public Runnable getAction(UIActionViewContext context) {
+		if (context.editor == null)
+			return null;
+		Editor editor = context.editor;
+		Drawable dr = context.dr;
 		if (dr instanceof DrawNodeTerm) {
 			DrawNodeTerm dt = (DrawNodeTerm)dr;
 			AttrPtr pattr = dt.getAttrPtr();
 			Object obj = pattr.get();
-			if (obj instanceof Symbol)
-				editor.startItemEditor((Symbol)obj, new SymbolEditor((Symbol)obj, editor, dt));
-			else if (obj instanceof SymbolRef)
-				editor.startItemEditor((SymbolRef)obj, new SymRefEditor((SymbolRef)obj, editor, dt));
-			else if (obj instanceof String || obj == null && pattr.slot.typeinfo.clazz == String.class) {
-				if (pattr.node instanceof SymbolRef)
-					editor.startItemEditor((SymbolRef)pattr.node, new SymRefEditor((SymbolRef)pattr.node, editor, dt));
-				else
-					editor.startItemEditor(pattr.node, new StrEditor(pattr, editor, dt));
-			}
+			if (obj instanceof SymbolRef)
+				return new TextEditor(editor, dt, ((SymbolRef)obj).getAttrPtr("name"));
+			else if (obj instanceof String || obj == null && pattr.slot.typeinfo.clazz == String.class)
+				return new TextEditor(editor, dt, pattr);
 			else if (obj instanceof Integer)
-				editor.startItemEditor(pattr.node, new IntEditor(pattr, editor, dt));
-			else if (obj instanceof Boolean)
-				editor.startItemEditor(pattr.node, new BoolEditor(pattr, dt, editor));
+				return new IntEditor(editor, dt, pattr);
 			else if (obj instanceof ConstIntExpr)
-				editor.startItemEditor((ConstIntExpr)obj, new IntEditor(obj.getAttrPtr("value"), editor, dt));
-			else if (Enum.class.isAssignableFrom(pattr.slot.typeinfo.clazz))
-				editor.startItemEditor(pattr.node, new EnumEditor(pattr, dt, editor));
+				return new IntEditor(editor, dt, obj.getAttrPtr("value"));
+			else if (obj instanceof Boolean || Enum.class.isAssignableFrom(pattr.slot.typeinfo.clazz))
+				return new EnumEditor(editor, dt, pattr);
 		}
 		else if (dr instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr;
@@ -786,178 +542,152 @@ final class ChooseItemEditor implements KeyHandler {
 				if (dt == null)
 					dt = editor.cur_elem.dr.getNextLeaf();
 			}
-			editor.startItemEditor(dec.drnode, new EnumEditor(dec.drnode.getAttrPtr(stx.name), dt, editor));
-		}
-		else if (dr instanceof DrawBoolChoice) {
-			DrawBoolChoice dec = (DrawBoolChoice)dr;
-			SyntaxBoolChoice stx = (SyntaxBoolChoice)dec.syntax;
-			DrawTerm dt = dr.getFirstLeaf();
-			if (dt == null) {
-				dt = editor.cur_elem.dr.getFirstLeaf();
-				if (dt == null)
-					dt = editor.cur_elem.dr.getNextLeaf();
-			}
-			editor.startItemEditor(dec.drnode, new BoolEditor(dec.drnode.getAttrPtr(stx.name), dt, editor));
-		}
-		else if (dr.parent() instanceof DrawBoolChoice) {
-			DrawBoolChoice dec = (DrawBoolChoice)dr.parent();
-			SyntaxBoolChoice stx = (SyntaxBoolChoice)dec.syntax;
-			editor.startItemEditor(dec.drnode, new BoolEditor(dec.drnode.getAttrPtr(stx.name), dr.getFirstLeaf(), editor));
+			return new EnumEditor(editor, dt, dec.drnode.getAttrPtr(stx.name));
 		}
 		else if (dr.parent() instanceof DrawEnumChoice) {
 			DrawEnumChoice dec = (DrawEnumChoice)dr.parent();
 			SyntaxEnumChoice stx = (SyntaxEnumChoice)dec.syntax;
-			editor.startItemEditor(dec.drnode, new EnumEditor(dec.drnode.getAttrPtr(stx.name), dr.getFirstLeaf(), editor));
+			return new EnumEditor(editor, dr.getFirstLeaf(), dec.drnode.getAttrPtr(stx.name));
 		}
+		return null;
 	}
 }
 
-final class FolderTrigger implements KeyHandler {
-
-	private final Editor	editor;
-
-	FolderTrigger(Editor editor) {
+final class FolderTrigger implements Runnable {
+	private final Editor editor;
+	private final DrawFolded df;
+	FolderTrigger(Editor editor, DrawFolded df) {
 		this.editor = editor;
+		this.df = df;
+	}
+	public void run() {
+		df.draw_folded = !df.draw_folded;
+		editor.formatAndPaint(true);
 	}
 
-	public void process() {
-		for (Drawable dr = editor.cur_elem.dr; dr != null; dr = (Drawable)dr.parent()) {
-			if (dr instanceof DrawFolded) {
-				dr.draw_folded = !dr.draw_folded;
-				editor.formatAndPaint(true);
-				return;
-			}
-		}
-	}
-}
-
-final class OptionalTrigger implements KeyHandler {
-
-	private final Editor	editor;
-
-	OptionalTrigger(Editor editor) {
-		this.editor = editor;
-	}
-
-	public void process() {
-		ANode n = editor.cur_elem.dr;
-		while (n != null && !(n instanceof DrawNonTerm))
-			n = n.parent();
-		if (n == null)
-			return;
-		boolean repaint = false;
-		DrawNonTerm drnt = (DrawNonTerm)n;
-		foreach (Drawable dr; drnt.args) {
-			if (dr instanceof DrawOptional) {
-				dr.draw_optional = !dr.draw_optional;
-				repaint = true;
-			}
-		}
-		if (repaint)
-			editor.formatAndPaint(true);
-	}
-}
-
-final class FunctionExecuter implements KeyHandler {
-
-	public final Editor		editor;
-	public JPopupMenu		menu;
-
-	FunctionExecuter(Editor editor) {
-		this.editor = editor;
-	}
-
-	public void process() {
-		if (menu != null) {
-			editor.view_canvas.remove(menu);
-			menu = null;
-		}
-		Drawable dr = editor.cur_elem.dr;
-		if (dr == null)
-			return;
-		SyntaxFunctions sfs = dr.syntax.funcs;
-		if (sfs == null || sfs.funcs.length == 0)
-			return;
-		next_func:
-		foreach (SyntaxFunction sf; sfs.funcs) {
-			try {
-				dr = getTarget(sf);
-				if (dr == null)
-					continue;
-				if (sf.act == SyntaxFuncActions.FuncNewElemOfEmptyList) {
-					if (dr.syntax instanceof SyntaxList) {
-						SyntaxList slst = (SyntaxList)dr.syntax;
-						if (((Object[])dr.drnode.getVal(slst.name)).length == 0)
-							addMenu(new NewElemAction(sf.title, dr.drnode, slst));
-					}
-					else if (dr.attr_syntax instanceof SyntaxList) {
-						SyntaxList slst = (SyntaxList)dr.attr_syntax;
-						if (((Object[])dr.drnode.getVal(slst.name)).length == 0)
-							addMenu(new NewElemAction(sf.title, dr.drnode, slst));
-					}
-				}
-				else if (sf.act == SyntaxFuncActions.FuncNewElemOfNull) {
-					if (dr.syntax instanceof SyntaxAttr) {
-						SyntaxAttr satr = (SyntaxAttr)dr.syntax;
-						if (dr.drnode.getVal(satr.name) == null)
-							addMenu(new NewElemAction(sf.title, dr.drnode, satr));
-					}
-					else if (dr.attr_syntax instanceof SyntaxAttr) {
-						SyntaxAttr satr = (SyntaxAttr)dr.attr_syntax;
-						if (dr.drnode.getVal(satr.name) == null)
-							addMenu(new NewElemAction(sf.title, dr.drnode, satr));
-					}
-				}
-				else if (sf.act == SyntaxFuncActions.FuncEditElem) {
-					if (dr.syntax instanceof SyntaxAttr) {
-						SyntaxAttr satr = (SyntaxAttr)dr.syntax;
-						addMenu(new EditElemAction(sf.title, dr));
-					}
-					else if (dr.attr_syntax instanceof SyntaxAttr) {
-						SyntaxAttr satr = (SyntaxAttr)dr.attr_syntax;
-						addMenu(new EditElemAction(sf.title, dr));
-					}
-				}
-			} catch (Throwable t) {}
-		}
-
-		if (menu != null) {
-			int x = editor.cur_elem.dr.x;
-			int y = editor.cur_elem.dr.y + editor.cur_elem.dr.h - editor.view_canvas.translated_y;
-			menu.show(editor.view_canvas, x, y);
-		}
-	}
-	
-	private Drawable getTarget(SyntaxFunction sf) {
-		Drawable dr = editor.cur_elem.dr;
-		String[] attrs = sf.attr.split("\\.");
-		next_attr:
-		foreach(String attr; attrs) {
-			while (dr.parent() instanceof DrawCtrl)
-				dr = (Drawable)dr.parent();
-			if !(dr.parent() instanceof DrawNonTerm)
+	final static class Factory implements UIActionFactory {
+		public String getDescr() { "Toggle folding" }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor == null)
 				return null;
-			foreach (Drawable d; ((DrawNonTerm)dr.parent()).args) {
-				if (d.syntax instanceof SyntaxAttr && attr.equals(((SyntaxAttr)d.syntax).name)) {
-					dr = d;
-					continue next_attr;
-				}
-				if (d.attr_syntax instanceof SyntaxAttr && attr.equals(((SyntaxAttr)d.attr_syntax).name)) {
-					dr = d;
-					continue next_attr;
-				}
+			Editor editor = context.editor;
+			for (Drawable dr = editor.cur_elem.dr; dr != null; dr = (Drawable)dr.parent()) {
+				if (dr instanceof DrawFolded)
+					return new FolderTrigger(editor, (DrawFolded)dr);
 			}
 			return null;
 		}
-		return dr;
+	}
+}
+
+final class FunctionExecuter implements Runnable {
+
+	public JPopupMenu			menu;
+	final Vector<TextAction>	actions;
+
+	private final Editor editor;
+	FunctionExecuter(Editor editor) {
+		this.editor = editor;
+		actions = new Vector<TextAction>();
+	}
+	
+	public void run() {
+		menu = new JPopupMenu();
+		foreach (TextAction act; actions)
+			menu.add(new JMenuItem(act));
+		int x = editor.cur_elem.dr.x;
+		int y = editor.cur_elem.dr.y + editor.cur_elem.dr.h - editor.view_canvas.translated_y;
+		menu.show(editor.view_canvas, x, y);
 	}
 
-	private void addMenu(TextAction action) {
-		if (menu == null)
-			menu = new JPopupMenu();
-		menu.add(new JMenuItem(action));
-	}
 
+	final static class Factory implements UIActionFactory {
+		public String getDescr() { "Popup list of functions for a current element" }
+
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor == null)
+				return null;
+			Editor editor = context.editor;
+			Drawable dr = context.dr;
+			if (dr == null)
+				return null;
+			SyntaxFunctions sfs = dr.syntax.funcs;
+			if (sfs == null || sfs.funcs.length == 0)
+				return null;
+			FunctionExecuter fe = new FunctionExecuter(editor);
+		next_func:
+			foreach (SyntaxFunction sf; sfs.funcs) {
+				try {
+					dr = getTarget(editor,sf);
+					if (dr == null)
+						continue;
+					if ("kiev.gui.FuncNewElemOfEmptyList".equals(sf.act)) {
+						if (dr.syntax instanceof SyntaxList) {
+							SyntaxList slst = (SyntaxList)dr.syntax;
+							if (((Object[])dr.drnode.getVal(slst.name)).length == 0)
+								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, slst));
+						}
+						else if (dr.attr_syntax instanceof SyntaxList) {
+							SyntaxList slst = (SyntaxList)dr.attr_syntax;
+							if (((Object[])dr.drnode.getVal(slst.name)).length == 0)
+								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, slst));
+						}
+					}
+					else if ("kiev.gui.FuncNewElemOfNull".equals(sf.act)) {
+						if (dr.syntax instanceof SyntaxAttr) {
+							SyntaxAttr satr = (SyntaxAttr)dr.syntax;
+							if (dr.drnode.getVal(satr.name) == null)
+								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, satr));
+						}
+						else if (dr.attr_syntax instanceof SyntaxAttr) {
+							SyntaxAttr satr = (SyntaxAttr)dr.attr_syntax;
+							if (dr.drnode.getVal(satr.name) == null)
+								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, satr));
+						}
+					}
+					else if ("kiev.gui.ChooseItemEditor".equals(sf.act)) {
+						if (dr.syntax instanceof SyntaxAttr) {
+							SyntaxAttr satr = (SyntaxAttr)dr.syntax;
+							fe.actions.append(fe.new EditElemAction(sf.title, dr));
+						}
+						else if (dr.attr_syntax instanceof SyntaxAttr) {
+							SyntaxAttr satr = (SyntaxAttr)dr.attr_syntax;
+							fe.actions.append(fe.new EditElemAction(sf.title, dr));
+						}
+					}
+				} catch (Throwable t) {}
+			}
+			if (fe.actions.size() > 0)
+				return fe;
+			return null;
+		}
+		private Drawable getTarget(Editor editor, SyntaxFunction sf) {
+			Drawable dr = editor.cur_elem.dr;
+			if (sf.attr == null)
+				return dr;
+			String[] attrs = sf.attr.split("\\.");
+			next_attr:
+			foreach(String attr; attrs) {
+				while (dr.parent() instanceof DrawCtrl)
+					dr = (Drawable)dr.parent();
+				if !(dr.parent() instanceof DrawNonTerm)
+					return null;
+				foreach (Drawable d; ((DrawNonTerm)dr.parent()).args) {
+					if (d.syntax instanceof SyntaxAttr && attr.equals(((SyntaxAttr)d.syntax).name)) {
+						dr = d;
+						continue next_attr;
+					}
+					if (d.attr_syntax instanceof SyntaxAttr && attr.equals(((SyntaxAttr)d.attr_syntax).name)) {
+						dr = d;
+						continue next_attr;
+					}
+				}
+				return null;
+			}
+			return dr;
+		}
+	}
+	
 	class NewElemAction extends TextAction {
 		private String		text;
 		private ANode		node;
@@ -973,7 +703,9 @@ final class FunctionExecuter implements KeyHandler {
 				editor.view_canvas.remove(menu);
 				menu = null;
 			}
-			new NewElemEditor(editor,NewElemEditor.SETNEW_HERE).makeMenu(text, node, stx);
+			NewElemHere neh = new NewElemHere(editor);
+			neh.makeMenu(text, node, stx);
+			neh.run();
 		}
 	}
 
@@ -990,26 +722,23 @@ final class FunctionExecuter implements KeyHandler {
 				editor.view_canvas.remove(menu);
 				menu = null;
 			}
-			new ChooseItemEditor(editor, dr).process();
+			Runnable r = new ChooseItemEditor().getAction(new UIActionViewContext(editor, dr));
+			if (r != null)
+				r.run();
 		}
 	}
 }
 
-final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener {
+abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 
-	static final int SETNEW_HERE = 0;
-	static final int INSERT_NEXT = 1;
-
-	final Editor		editor;
-	final int			mode;
-	      int			idx;
-	      JPopupMenu	menu;
-
-	NewElemEditor(Editor editor, int mode) {
-		this.editor = editor;
-		this.mode = mode;
-	}
+	Editor		editor;
+	int			idx;
+	JPopupMenu	menu;
 	
+	NewElemEditor(Editor editor) {
+		this.editor = editor;
+	}
+
 	private void assItems(JPopupMenu menu, SymbolRef[] expected_types, ANode n, String name) {
 		foreach (SymbolRef sr; expected_types) {
 			if (sr.dnode instanceof Struct)
@@ -1029,46 +758,6 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 		editor.startItemEditor(n, this);
 	}
 
-	public void process() {
-		if (mode == SETNEW_HERE) {
-			Drawable dr = editor.cur_elem.dr;
-			if (dr instanceof DrawPlaceHolder && ((SyntaxPlaceHolder)dr.syntax).parent instanceof SyntaxAttr) {
-				ANode n = dr.drnode;
-				SyntaxAttr satt = (SyntaxAttr)((SyntaxPlaceHolder)dr.syntax).parent;
-				makeMenu("Set new item", n, satt);
-				return;
-			}
-			if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
-				ANode n = dr.drnode;
-				while (n == null) {
-					dr = (Drawable)dr.parent();
-					n = dr.drnode;
-				}
-				SyntaxAttr satt = (SyntaxAttr)dr.syntax;
-				makeMenu("Set new item", n, satt);
-				return;
-			}
-			ActionPoint ap = editor.getActionPoint();
-			if (ap != null && ap.length >= 0) {
-				SyntaxList slst = (SyntaxList)ap.dr.syntax;
-				this.idx = ap.index;
-				makeMenu("Insert new item", ap.node, slst);
-				return;
-			}
-		}
-		else if (mode == INSERT_NEXT) {
-			ActionPoint ap = editor.getActionPoint();
-			if (ap != null && ap.length >= 0) {
-				SyntaxList slst = (SyntaxList)ap.dr.syntax;
-				this.idx = ap.index+1;
-				if (this.idx > ap.length)
-					this.idx = ap.length;
-				makeMenu("Append new item", ap.node, slst);
-				return;
-			}
-		}
-	}
-	
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
 	public void keyPressed(KeyEvent evt) {}
@@ -1079,6 +768,7 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 	}
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+
 	class NewElemAction extends TextAction {
 		private Struct	cls;
 		private ANode	node;
@@ -1121,22 +811,138 @@ final class NewElemEditor implements KeyHandler, KeyListener, PopupMenuListener 
 	}
 }
 
-abstract class TextEditor implements KeyListener {
+final class NewElemHere extends NewElemEditor implements Runnable {
+	NewElemHere(Editor editor) { super(editor); }
+	public void run() {
+		Drawable dr = editor.cur_elem.dr;
+		if (dr instanceof DrawPlaceHolder && ((SyntaxPlaceHolder)dr.syntax).parent instanceof SyntaxAttr) {
+			ANode n = dr.drnode;
+			SyntaxAttr satt = (SyntaxAttr)((SyntaxPlaceHolder)dr.syntax).parent;
+			makeMenu("Set new item", n, satt);
+			return;
+		}
+		if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
+			ANode n = dr.drnode;
+			while (n == null) {
+				dr = (Drawable)dr.parent();
+				n = dr.drnode;
+			}
+			SyntaxAttr satt = (SyntaxAttr)dr.syntax;
+			makeMenu("Set new item", n, satt);
+			return;
+		}
+		ActionPoint ap = editor.getActionPoint(false);
+		if (ap != null && ap.length >= 0) {
+			SyntaxList slst = (SyntaxList)ap.dr.syntax;
+			this.idx = ap.index;
+			makeMenu("Insert new item", ap.node, slst);
+			return;
+		}
+	}
+	final static class Factory implements UIActionFactory {
+		public String getDescr() { "Create a new element at this position" }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor == null)
+				return null;
+			Editor editor = context.editor;
+			Drawable dr = context.dr;
+			if (dr instanceof DrawPlaceHolder && ((SyntaxPlaceHolder)dr.syntax).parent instanceof SyntaxAttr) {
+				return new NewElemHere(editor);
+			}
+			if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
+				return new NewElemHere(editor);
+			}
+			ActionPoint ap = editor.getActionPoint(false);
+			if (ap != null && ap.length >= 0) {
+				return new NewElemHere(editor);
+			}
+			return null;
+		}
+	}
+}
+
+final class NewElemNext extends NewElemEditor implements Runnable {
+	NewElemNext(Editor editor) { super(editor); }
+	public void run() {
+		ActionPoint ap = editor.getActionPoint(true);
+		if (ap != null && ap.length >= 0) {
+			SyntaxList slst = (SyntaxList)ap.dr.syntax;
+			this.idx = ap.index;
+			makeMenu("Append new item", ap.node, slst);
+			return;
+		}
+	}
+	final static class Factory implements UIActionFactory {
+		public String getDescr() { "Create a new element at next position" }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor == null)
+				return null;
+			Editor editor = context.editor;
+			Drawable dr = context.dr;
+			if (dr instanceof DrawPlaceHolder && ((SyntaxPlaceHolder)dr.syntax).parent instanceof SyntaxAttr) {
+				return new NewElemHere(editor);
+			}
+			if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
+				return new NewElemHere(editor);
+			}
+			ActionPoint ap = editor.getActionPoint(true);
+			if (ap != null && ap.length >= 0) {
+				return new NewElemNext(editor);
+			}
+			return null;
+		}
+	}
+}
+
+class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 	
 	protected final Editor		editor;
 	protected final DrawTerm	dr_term;
+	protected final AttrPtr		pattr;
 	protected       int			edit_offset;
 	protected       boolean		in_combo;
 	protected       JComboBox	combo;
 
-	TextEditor(Editor editor, DrawTerm dr_term) {
-		this.editor = editor;
-		this.dr_term = dr_term;
-		this.editor.view_canvas.cursor_offset = edit_offset;
+	final static class Factory implements UIActionFactory {
+		public String getDescr() { "Edit the attribute as a text" }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor == null)
+				return null;
+			Editor editor = context.editor;
+			DrawTerm dt = context.dt;
+			if !(dt.syntax instanceof SyntaxAttr)
+				return null;
+			AttrPtr pattr = dt.drnode.getAttrPtr(((SyntaxAttr)dt.syntax).name);
+			return new TextEditor(editor, dt, pattr);
+		}
 	}
 
-	abstract String getText();
-	abstract void setText(String text);
+	public void run() {
+		editor.startItemEditor(pattr.node, this);
+		this.editor.view_canvas.cursor_offset = edit_offset;
+		String text = this.getText();
+		if (text != null) {
+			edit_offset = text.length();
+			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
+		}
+		showAutoComplete();
+	}
+
+	TextEditor(Editor editor, DrawTerm dr_term, AttrPtr pattr) {
+		this.editor = editor;
+		this.dr_term = dr_term;
+		this.pattr = pattr;
+	}
+
+	String getText() {
+		return (String)pattr.get();
+	}
+	void setText(String text) {
+		if (text != null && !text.equals(getText())) {
+			pattr.set(text);
+			showAutoComplete();
+		}
+	}
 
 	public void keyReleased(KeyEvent evt) {}
 	public void keyTyped(KeyEvent evt) {}
@@ -1266,64 +1072,26 @@ abstract class TextEditor implements KeyListener {
 		editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
 		editor.formatAndPaint(true);
 	}
-}
 
-final class SymbolEditor extends TextEditor {
-	
-	private final Symbol	symbol;
-
-	SymbolEditor(Symbol symbol, Editor editor, DrawTerm dr_term) {
-		super(editor, dr_term);
-		this.symbol = symbol;
-		String text = this.getText();
+	public void addActionListener(ActionListener l) {}
+	public void removeActionListener(ActionListener l) {}
+	public Component getEditorComponent() { return null; }
+	public Object getItem() { return pattr.get(); }
+	public void selectAll() {}
+	public void setItem(Object text) {
 		if (text != null) {
-			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
+			setText((String)text);
+			editor.formatAndPaint(true);
 		}
 	}
-	
-	String getText() {
-		return ANode.getVersion(symbol).sname;
-	}
-	void setText(String text) {
-		ANode.getVersion(symbol).sname = text;
-	}
-}
 
-final class SymRefEditor extends TextEditor implements ComboBoxEditor {
-	
-	private final SymbolRef<DNode>		symref;
-
-	SymRefEditor(SymbolRef<DNode> symref, Editor editor, DrawTerm dr_term) {
-		super(editor, dr_term);
-		this.symref = symref;
-		String text = this.getText();
-		if (text != null) {
-			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
-		}
-		showAutoComplete();
-	}
-	
-	String getText() {
-		return ANode.getVersion(symref).name;
-	}
-	void setText(String text) {
-		SymbolRef<DNode> symref = ANode.getVersion(this.symref);
-		String name = symref.name;
-		if (name == null || !name.equals(text)) {
-			symref.name = text;
-			symref.symbol = null;
-			showAutoComplete();
-		}
-	}
-	
 	void showAutoComplete() {
-		SymbolRef<DNode> symref = ANode.getVersion(this.symref);
-		String name = symref.name;
+		if !(pattr.node instanceof ASTNode)
+			return;
+		String name = getText();
 		if (name == null || name.length() == 0)
 			return;
-		DNode[] decls = symref.findForResolve(false);
+		DNode[] decls = ((ASTNode)pattr.node).findForResolve(name,pattr.slot,false);
 		if (decls == null)
 			return;
 		if (combo == null) {
@@ -1358,55 +1126,38 @@ final class SymRefEditor extends TextEditor implements ComboBoxEditor {
 		}
 	}
 	
-	public void addActionListener(ActionListener l) {}
-	public void removeActionListener(ActionListener l) {}
-	public Component getEditorComponent() { return null; }
-	public Object getItem() { return ANode.getVersion(this.symref).name; }
-	public void selectAll() {}
-	public void setItem(Object text) {
-		if (text != null) {
-			setText((String)text);
-			editor.formatAndPaint(true);
-		}
-	}
-}
-
-final class StrEditor extends TextEditor {
-	
-	private final AttrPtr	pattr;
-
-	StrEditor(AttrPtr pattr, Editor editor, DrawTerm dr_term) {
-		super(editor, dr_term);
-		this.pattr = pattr;
-		String text = this.getText();
-		if (text != null) {
-			edit_offset = text.length();
-			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
-		}
-	}
-	
-	String getText() {
-		return (String)pattr.get();
-	}
-	void setText(String text) {
-		pattr.set(text);
-	}
 }
 
 final class IntEditor extends TextEditor {
 	
-	private final AttrPtr	pattr;
+	IntEditor(Editor editor, DrawTerm dr_term, AttrPtr pattr) {
+		super(editor, dr_term, pattr);
+	}
+	
+	final static class Factory implements UIActionFactory {
+		public String getDescr() { "Edit the attribute as an integer" }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor == null)
+				return null;
+			Editor editor = context.editor;
+			DrawTerm dt = context.dt;
+			if !(dt.syntax instanceof SyntaxAttr)
+				return null;
+			AttrPtr pattr = dt.drnode.getAttrPtr(((SyntaxAttr)dt.syntax).name);
+			return new IntEditor(editor, dt, pattr);
+		}
+	}
 
-	IntEditor(AttrPtr pattr, Editor editor, DrawTerm dr_term) {
-		super(editor, dr_term);
-		this.pattr = pattr;
+	public void run() {
+		editor.startItemEditor(pattr.node, this);
+		this.editor.view_canvas.cursor_offset = edit_offset;
 		String text = this.getText();
 		if (text != null) {
 			edit_offset = text.length();
 			editor.view_canvas.cursor_offset = edit_offset + dr_term.getPrefix().length();
 		}
 	}
-	
+
 	String getText() {
 		Object o = pattr.get();
 		if (o == null)
@@ -1418,97 +1169,42 @@ final class IntEditor extends TextEditor {
 	}
 }
 
-final class BoolEditor implements KeyListener, PopupMenuListener {
-	
+class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 	private final Editor		editor;
+	private final DrawTerm		cur_elem;
 	private final AttrPtr		pattr;
 	private final JPopupMenu	menu;
-
-	BoolEditor(AttrPtr pattr, DrawTerm cur_elem, Editor editor) {
+	EnumEditor(Editor editor, DrawTerm cur_elem, AttrPtr pattr) {
 		this.editor = editor;
+		this.cur_elem = cur_elem;
 		this.pattr = pattr;
-		menu = new JPopupMenu();
-		menu.add(new JMenuItem(new SetSyntaxAction(Boolean.FALSE)));
-		menu.add(new JMenuItem(new SetSyntaxAction(Boolean.TRUE)));
-		int x = cur_elem.x;
-		int y = cur_elem.y + cur_elem.h - editor.view_canvas.translated_y;
-		menu.addPopupMenuListener(this);
-		menu.show(editor.view_canvas, x, y);
+		this.menu = new JPopupMenu();
 	}
 	
-	public void popupMenuCanceled(PopupMenuEvent e) {
-		editor.view_canvas.remove(menu);
-		editor.stopItemEditor(true);
-	}
-	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
-
-	public void keyReleased(KeyEvent evt) {}
-	public void keyTyped(KeyEvent evt) {}
-	public void keyPressed(KeyEvent evt) {
-/*		int code = evt.getKeyCode();
-		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
-		if (mask != 0)
-			return;
-		evt.consume();
-		switch (code) {
-		case KeyEvent.VK_SPACE:
-			Boolean val = (Boolean)pattr.get();
-			if (val.booleanValue())
-				pattr.set(Boolean.FALSE);
-			else
-				pattr.set(Boolean.TRUE);
-			editor.stopItemEditor(false);
-			break;
-		case KeyEvent.VK_T:
-			pattr.set(Boolean.TRUE);
-			editor.stopItemEditor(false);
-			break;
-		case KeyEvent.VK_F:
-			pattr.set(Boolean.FALSE);
-			editor.stopItemEditor(false);
-			break;
-		case KeyEvent.VK_ENTER:
-			editor.stopItemEditor(false);
-			return;
-		case KeyEvent.VK_ESCAPE:
-			editor.stopItemEditor(true);
-			return;
-		}
-		editor.formatAndPaint(true);
-*/	}
-
-	class SetSyntaxAction extends TextAction {
-		private Boolean val;
-		SetSyntaxAction(Boolean val) {
-			super(val.toString());
-			this.val = val;
-		}
-		public void actionPerformed(ActionEvent e) {
-			editor.view_canvas.remove(menu);
-			try {
-				pattr.set(val);
-			} catch (Throwable t) {
-				editor.stopItemEditor(true);
-				e = null;
-			}
-			if (e != null)
-				editor.stopItemEditor(false);
+	final static class Factory implements UIActionFactory {
+		public String getDescr() { "Edit the attribute as an enumerated value" }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor == null)
+				return null;
+			Editor editor = context.editor;
+			DrawTerm dt = context.dt;
+			if !(dt.syntax instanceof SyntaxAttr)
+				return null;
+			AttrPtr pattr = dt.drnode.getAttrPtr(((SyntaxAttr)dt.syntax).name);
+			return new EnumEditor(editor, dt, pattr);
 		}
 	}
-}
 
-class EnumEditor implements KeyListener, PopupMenuListener {
-	private final Editor		editor;
-	private final AttrPtr		pattr;
-	private final JPopupMenu	menu;
-	EnumEditor(AttrPtr pattr, DrawTerm cur_elem, Editor editor) {
-		this.editor = editor;
-		this.pattr = pattr;
-		menu = new JPopupMenu();
-		EnumSet ens = EnumSet.allOf(pattr.slot.typeinfo.clazz);
-		foreach (Enum e; ens.toArray())
-			menu.add(new JMenuItem(new SetSyntaxAction(e)));
+	public void run() {
+		editor.startItemEditor(pattr.node, this);
+		if (pattr.slot.typeinfo.clazz == Boolean.class || pattr.slot.typeinfo.clazz == boolean.class) {
+			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.FALSE)));
+			menu.add(new JMenuItem(new SetSyntaxAction(Boolean.TRUE)));
+		} else {
+			EnumSet ens = EnumSet.allOf(pattr.slot.typeinfo.clazz);
+			foreach (Enum e; ens.toArray())
+				menu.add(new JMenuItem(new SetSyntaxAction(e)));
+		}
 		int x = cur_elem.x;
 		int y = cur_elem.y + cur_elem.h - editor.view_canvas.translated_y;
 		menu.addPopupMenuListener(this);
@@ -1527,9 +1223,9 @@ class EnumEditor implements KeyListener, PopupMenuListener {
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
 
 	class SetSyntaxAction extends TextAction {
-		private Enum val;
-		SetSyntaxAction(Enum val) {
-			super(val.toString());
+		private Object val; // Enum or Boolean
+		SetSyntaxAction(Object val) {
+			super(String.valueOf(val));
 			this.val = val;
 		}
 		public void actionPerformed(ActionEvent e) {

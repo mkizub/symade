@@ -93,8 +93,6 @@ public class DrawSpace extends DrawCtrl {
 @node(copyable=false)
 public class DrawOptional extends DrawCtrl {
 
-	@att
-	public	boolean draw_optional;
 	private	boolean drawed_as_true;
 	
 	public DrawOptional(ANode node, SyntaxOptional syntax) {
@@ -134,6 +132,44 @@ public class DrawOptional extends DrawCtrl {
 }
 
 @node(copyable=false)
+public class DrawEnumChoice extends DrawCtrl {
+
+	private Object drawed_en;
+	private AttrSlot attr;
+
+	public DrawEnumChoice(ANode node, SyntaxEnumChoice syntax) {
+		super(node, syntax);
+		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
+			attr = a;
+			break;
+		}
+	}
+
+	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
+		SyntaxEnumChoice se = (SyntaxEnumChoice)syntax;
+		ANode node = this.drnode;
+		Object en = attr.get(node);
+		int ord = -1;
+		if (en instanceof Boolean)
+			ord = en.booleanValue() ? 1 : 0;
+		else if (en instanceof Enum)
+			ord = en.ordinal();
+		else
+			arg = null;
+		if (arg == null || drawed_en != en) {
+			if (ord < 0 || ord >= se.elements.length)
+				arg = null;
+			else
+				arg = se.elements[ord].makeDrawable(cont.fmt, node);
+			drawed_en = en;
+		}
+		if (arg != null)
+			arg.preFormat(cont,se.elements[ord],node);
+	}
+}
+
+@node(copyable=false)
 public final class DrawFolded extends DrawCtrl {
 
 	@att
@@ -164,116 +200,6 @@ public final class DrawFolded extends DrawCtrl {
 			arg.preFormat(cont,sc.folded,node);
 		else
 			arg.preFormat(cont,sc.unfolded,node);
-	}
-}
-
-@node(copyable=false)
-public class DrawIntChoice extends DrawCtrl {
-
-	private int drawed_idx;
-	private AttrSlot attr;
-
-	public DrawIntChoice(ANode node, SyntaxIntChoice syntax) {
-		super(node, syntax);
-		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
-			attr = a;
-			break;
-		}
-		int idx = ((Integer)attr.get(node)).intValue();
-	}
-
-	public void preFormat(DrawContext cont) {
-		if (this.isUnvisible()) return;
-		SyntaxIntChoice sc = (SyntaxIntChoice)syntax;
-		ANode node = this.drnode;
-		int idx = ((Integer)attr.get(node)).intValue();
-		if (arg == null || drawed_idx != idx) {
-			if (idx < 0 || idx >= sc.elements.length)
-				arg = null;
-			else
-				arg = sc.elements[idx].makeDrawable(cont.fmt, node);
-			drawed_idx = idx;
-		}
-		if (arg != null)
-			arg.preFormat(cont,sc.elements[idx],node);
-		
-	}
-}
-
-@node(copyable=false)
-public class DrawBoolChoice extends DrawCtrl {
-
-	private Boolean drawed_bool;
-	private AttrSlot attr;
-
-	public DrawBoolChoice(ANode node, SyntaxBoolChoice syntax) {
-		super(node, syntax);
-		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
-			attr = a;
-			break;
-		}
-	}
-
-	public void preFormat(DrawContext cont) {
-		if (this.isUnvisible()) return;
-		SyntaxBoolChoice sb = (SyntaxBoolChoice)syntax;
-		ANode node = this.drnode;
-		Boolean val = (Boolean)attr.get(node);
-		if (val != null) {
-			if (val.booleanValue())
-				val = Boolean.TRUE;
-			else
-				val = Boolean.FALSE;
-		}
-		SyntaxElem se = null;
-		if (val == null)
-			se = sb.empty;
-		else if (val.booleanValue())
-			se = sb.elem_true;
-		else
-			se = sb.elem_false;
-		if (arg == null || drawed_bool != val) {
-			if (se != null)
-				arg = se.makeDrawable(cont.fmt, node);
-			else
-				arg = null;
-			drawed_bool = val;
-		}
-		if (arg != null)
-			arg.preFormat(cont,se,node);
-		
-	}
-}
-
-@node(copyable=false)
-public class DrawEnumChoice extends DrawCtrl {
-
-	private Enum drawed_en;
-	private AttrSlot attr;
-
-	public DrawEnumChoice(ANode node, SyntaxEnumChoice syntax) {
-		super(node, syntax);
-		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
-			attr = a;
-			break;
-		}
-		java.lang.Enum en = (java.lang.Enum)attr.get(node);
-	}
-
-	public void preFormat(DrawContext cont) {
-		if (this.isUnvisible()) return;
-		SyntaxEnumChoice se = (SyntaxEnumChoice)syntax;
-		ANode node = this.drnode;
-		java.lang.Enum en = (java.lang.Enum)attr.get(node);
-		if (arg == null || drawed_en != en) {
-			if (en.ordinal() >= se.elements.length)
-				arg = null;
-			else
-				arg = se.elements[en.ordinal()].makeDrawable(cont.fmt, node);
-			drawed_en = en;
-		}
-		if (arg != null)
-			arg.preFormat(cont,se.elements[en.ordinal()],node);
 	}
 }
 

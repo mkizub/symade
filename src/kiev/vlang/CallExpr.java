@@ -290,7 +290,7 @@ public class CallExpr extends ENode {
 			throw new CompilerException(this, msg.toString());
 		}
 		else if (cnt == 0) {
-			if (ctx_method.isMacro())
+			if (ctx_method != null && ctx_method.isMacro())
 				return;
 			StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(this.ident,args)+"' in:\n");
 			for(int si=0; si < res.length; si++) {
@@ -321,7 +321,7 @@ public class CallExpr extends ENode {
 	// verify resolved call
 	public boolean preVerify() {
 		Method func = this.func;
-		if (func == null && ctx_method.isMacro())
+		if (func == null && ctx_method != null && ctx_method.isMacro())
 			return true;
 		if (func.isStatic() && !func.isVirtualStatic() && !(obj instanceof TypeRef))
 			obj = new TypeRef(func.ctx_tdecl.xtype);

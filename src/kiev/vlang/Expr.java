@@ -235,7 +235,7 @@ public class AssignExpr extends ENode {
 			if (this.dnode == null) {
 				m = getOp().resolveMethod(this);
 				if (m == null) {
-					if (!ctx_method.isMacro())
+					if (ctx_method == null || !ctx_method.isMacro())
 						Kiev.reportError(this, "Unresolved method for operator "+getOp());
 					return;
 				}
@@ -355,7 +355,7 @@ public class BinaryExpr extends ENode {
 		if (this.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
-				if (!ctx_method.isMacro())
+				if (ctx_method == null || !ctx_method.isMacro())
 					Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
@@ -422,7 +422,7 @@ public class UnaryExpr extends ENode {
 		if (this.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
-				if (!ctx_method.isMacro())
+				if (ctx_method == null || !ctx_method.isMacro())
 					Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
@@ -698,7 +698,7 @@ public class IncrementExpr extends ENode {
 	public void mainResolveOut() {
 		Method m = op.resolveMethod(this);
 		if (m == null) {
-			if (!ctx_method.isMacro())
+			if (ctx_method == null || !ctx_method.isMacro())
 				Kiev.reportWarning(this, "Unresolved method for operator "+op);
 			return;
 		}

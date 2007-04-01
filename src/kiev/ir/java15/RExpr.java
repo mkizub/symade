@@ -144,7 +144,7 @@ public static final view RAssignExpr of AssignExpr extends RENode {
 		if (this.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
-				if (!ctx_method.isMacro())
+				if (ctx_method == null || !ctx_method.isMacro())
 					Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
@@ -239,7 +239,7 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 		if (this.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
-				if (!ctx_method.isMacro())
+				if (ctx_method == null || !ctx_method.isMacro())
 					Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
@@ -294,7 +294,7 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 		if (this.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
-				if (!ctx_method.isMacro())
+				if (ctx_method == null || !ctx_method.isMacro())
 					Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}
@@ -422,7 +422,7 @@ public static final view RIncrementExpr of IncrementExpr extends RENode {
 		if (this.dnode == null) {
 			m = getOp().resolveMethod(this);
 			if (m == null) {
-				if (!ctx_method.isMacro())
+				if (ctx_method == null || !ctx_method.isMacro())
 					Kiev.reportError(this, "Unresolved method for operator "+getOp());
 				return;
 			}

@@ -506,8 +506,10 @@ public class Env extends Struct {
 
 	private static void make_output_dir(File f) throws IOException {
 		File dir = f.getParentFile();
-		dir.mkdirs();
-		if( !dir.exists() || !dir.isDirectory() ) throw new IOException("Can't create output dir "+dir);
+		if (dir != null) {
+			dir.mkdirs();
+			if( !dir.exists() || !dir.isDirectory() ) throw new IOException("Can't create output dir "+dir);
+		}
 	}
 	
 	public static FileUnit loadFromXmlFile(File f) {
