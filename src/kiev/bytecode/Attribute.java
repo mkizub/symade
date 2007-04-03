@@ -1078,6 +1078,8 @@ public abstract class Annotation extends Attribute {
 				return ((NumberPoolConstant)cp_value).getValue();
 			else if (cp_value instanceof StringPoolConstant)
 				return ((StringPoolConstant)cp_value).ref.value;
+			else if (cp_value instanceof Utf8PoolConstant)
+				return ((Utf8PoolConstant)cp_value).value;
 			else
 				throw new RuntimeException("Bad element_value_const: "+cp_value.getClass());
 		}
@@ -1111,7 +1113,13 @@ public abstract class Annotation extends Attribute {
 			cont.writeShort(class_info_index);
 		}
 		public KString getSignature(Clazz clazz) {
-			return ((ClazzPoolConstant)clazz.pool[class_info_index]).ref.value;
+			PoolConstant cp_value = clazz.pool[class_info_index];
+			if (cp_value instanceof ClazzPoolConstant)
+				return ((ClazzPoolConstant)cp_value).ref.value;
+			else if (cp_value instanceof Utf8PoolConstant)
+				return ((Utf8PoolConstant)cp_value).value;
+			else
+				throw new RuntimeException("Bad element_value_class_info: "+cp_value.getClass());
 		}
 	}
 	public static class element_value_annotation extends element_value {

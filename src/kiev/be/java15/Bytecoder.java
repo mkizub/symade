@@ -290,6 +290,7 @@ public class Bytecoder implements JConstants {
 			a = new ConstantValueAttr(ca.getValue(bcclazz));
 		}
 		else if( name.equals(attrRequire) || name.equals(attrEnsure) ) {
+			ConstPool constPool = new ConstPool();
 			kiev.bytecode.KievContractAttribute kca = (kiev.bytecode.KievContractAttribute)bca;
 			ContractAttr ca = new ContractAttr(
 				(name.equals(attrEnsure) ? WBCType.CondEnsure : WBCType.CondRequire ),

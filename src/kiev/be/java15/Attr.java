@@ -458,7 +458,7 @@ public abstract class MetaAttr extends Attr {
 			else if( v instanceof String )			constPool.addAsciiCP((String)v);
 		}
 		else if (value instanceof TypeRef) {
-			constPool.addClazzCP(((TypeRef)value).getType().getJType().java_signature);
+			constPool.addAsciiCP(((TypeRef)value).getType().getJType().java_signature);
 		}
 		else if (value instanceof SFldExpr) {
 			SFldExpr ae = (SFldExpr)value;
@@ -550,7 +550,7 @@ public abstract class MetaAttr extends Attr {
 		else if (value instanceof TypeRef) {
 			kiev.bytecode.Annotation.element_value_class_info ev = new kiev.bytecode.Annotation.element_value_class_info(); 
 			ev.tag = (byte)'c';
-			ev.class_info_index = constPool.getClazzCP(((TypeRef)value).getType().getJType().java_signature).pos;
+			ev.class_info_index = constPool.getAsciiCP(((TypeRef)value).getType().getJType().java_signature).pos;
 			return ev;
 		}
 		else if (value instanceof SFldExpr) {
