@@ -565,7 +565,11 @@ public class Env extends Struct {
 						if (n == null)
 							n = (ANode)attr.typeinfo.newInstance();
 					}
-				} else {
+				}
+				else if (cl_name.equals("kiev.parser.ASTOperatorAlias")) {
+					n = new kiev.parser.ASTOperatorAlias();
+				}
+				else {
 					n = (ANode)Class.forName(cl_name).newInstance();
 				}
 				//System.out.println("push node "+nodes.length);
@@ -622,13 +626,13 @@ public class Env extends Struct {
 					else if (attr.clazz == Boolean.TYPE)
 						attr.set(nodes.peek(),Boolean.valueOf(text.trim()));
 					else if (attr.clazz == Integer.TYPE)
-						attr.set(nodes.peek(),Integer.valueOf(text.trim()));
+						attr.set(nodes.peek(),Integer.valueOf((int)parseLong(text)));
 					else if (attr.clazz == Byte.TYPE)
-						attr.set(nodes.peek(),Byte.valueOf(text.trim()));
+						attr.set(nodes.peek(),Byte.valueOf((byte)parseLong(text)));
 					else if (attr.clazz == Short.TYPE)
-						attr.set(nodes.peek(),Short.valueOf(text.trim()));
+						attr.set(nodes.peek(),Short.valueOf((short)parseLong(text)));
 					else if (attr.clazz == Long.TYPE)
-						attr.set(nodes.peek(),Long.valueOf(text.trim()));
+						attr.set(nodes.peek(),Long.valueOf(parseLong(text)));
 					else if (attr.clazz == Float.TYPE)
 						attr.set(nodes.peek(),Float.valueOf(text.trim()));
 					else if (attr.clazz == Double.TYPE)
@@ -644,6 +648,15 @@ public class Env extends Struct {
 				}
 				expect_attr = true;
 			}
+		}
+		private long parseLong(String text) {
+			text = text.trim();
+			int radix;
+			if( text.startsWith("0x") || text.startsWith("0X") ) { text = text.substring(2); radix = 16; }
+			else if( text.startsWith("0") && text.length() > 1 ) { text = text.substring(1); radix = 8; }
+			else { radix = 10; }
+			long l = ConstExpr.parseLong(text,radix);
+			return l;
 		}
 		public void characters(char[] ch, int start, int length) {
 			if (ignore_count > 0 || expect_attr || attrs.length <= 0)

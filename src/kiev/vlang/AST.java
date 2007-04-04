@@ -66,7 +66,7 @@ public abstract class ANode implements INode {
 
 	@virtual typedef This  ≤ ANode;
 
-	public static ANode[] emptyArray = new ANode[0];
+	public static final ANode[] emptyArray = new ANode[0];
 
 	public:ro @virtual ANode		ctx_root;
 	public:ro @virtual FileUnit		ctx_file_unit;
@@ -83,6 +83,14 @@ public abstract class ANode implements INode {
 
 	public static <V extends ANode> V getVersion(V[] arr, int idx) {
 		return ANode.getVersion(arr[idx]);
+	}
+
+	public static <I extends INode> I getVersion(I node) {
+		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
+			return node;
+		if (node == null || ((ANode)node).version_info == null)
+			return node;
+		return (I) ((ANode)node).version_info.cur_info.editor_node;
 	}
 
 	public static <V extends ANode> V getVersion(V node) {
@@ -176,12 +184,14 @@ public abstract class ANode implements INode {
 		return AttrSlot.emptyArray;
 	}
 	
-	public boolean includeInDump(String name, Object val) {
-		if (name == "parent")
-			return false;
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (val instanceof SymbolRef && val.name == null)
 			return false;
-		return true;
+		if (attr.is_attr)
+			return true;
+		if (attr.name == "this")
+			return pslot().is_attr;
+		return false;
 	}
 
 	public Object getValOrNull(String name) {
@@ -728,7 +738,14 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	@virtual typedef JView ≤ JNode;
 	@virtual typedef RView ≤ RNode;
 	
-	public static ASTNode[] emptyArray = new ASTNode[0];
+	public static final ASTNode[] emptyArray = new ASTNode[0];
+
+	private static final class RefAttrSlot_this extends RefAttrSlot {
+		RefAttrSlot_this(String name, TypeInfo typeinfo) { super(name, typeinfo); }
+		public final void set(ANode parent, Object value) { throw new RuntimeException("@ref thisis not writeable"); }
+		public final Object get(ANode parent) { return parent; }
+	}
+	public static final RefAttrSlot_this nodeattr$this = new RefAttrSlot_this("this", TypeInfo.newTypeInfo(ANode.class,null));
 
 	private static final class RefAttrSlot_parent extends RefAttrSlot {
 		RefAttrSlot_parent(String name, TypeInfo typeinfo) { super(name, typeinfo); }
@@ -737,13 +754,14 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public static final RefAttrSlot_parent nodeattr$parent = new RefAttrSlot_parent("parent", TypeInfo.newTypeInfo(ANode.class,null));
 
-	private static final AttrSlot[] $values = {nodeattr$parent};
+	private static final AttrSlot[] $values = {nodeattr$this,nodeattr$parent};
 
 	public int						pos;
 	public int						compileflags;
 	@ref @abstract
 	public:ro ANode					parent;
 	
+	@getter @ref public final ANode get$this()   { return this; }
 	@getter @ref public final ANode get$parent() { return parent(); }
 
 	// Structures	

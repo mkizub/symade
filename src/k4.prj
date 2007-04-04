@@ -218,6 +218,8 @@ CLASS kiev.gui.NavigateView kiev/gui/NavigateView kiev\gui\Actions.java
 CLASS kiev.gui.NewElemEditor kiev/gui/NewElemEditor kiev\gui\Editor.java
 CLASS kiev.gui.NewElemHere kiev/gui/NewElemHere kiev\gui\Editor.java
 CLASS kiev.gui.NewElemNext kiev/gui/NewElemNext kiev\gui\Editor.java
+CLASS kiev.gui.PasteElemHere kiev/gui/PasteElemHere kiev\gui\Editor.java
+CLASS kiev.gui.PasteElemNext kiev/gui/PasteElemNext kiev\gui\Editor.java
 CLASS kiev.gui.RenderActions kiev/gui/RenderActions kiev\gui\Actions.java
 CLASS kiev.gui.TextEditor kiev/gui/TextEditor kiev\gui\Editor.java
 CLASS kiev.gui.TransferableANode kiev/gui/TransferableANode kiev\gui\Editor.java

@@ -1003,7 +1003,7 @@ public final class ExportBE_Generate extends BackendProcessor {
 			File f = new File(output_dir,out_file);
 			ATextSyntax stx;
 			if (fu.name.toLowerCase().endsWith(".xml"))
-				stx = new XmlDumpSyntax();
+				stx = new XmlDumpSyntax("full");
 			else
 				stx = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt.syntax-for-java");
 			Env.dumpTextFile(fu, f, stx);

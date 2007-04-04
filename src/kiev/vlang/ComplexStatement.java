@@ -230,7 +230,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	@dflow(in="arg")		ENode			body;
 	}
 	
-	static CatchInfo[] emptyArray = new CatchInfo[0];
+	public static final CatchInfo[] emptyArray = new CatchInfo[0];
 
 	@virtual typedef This  = CatchInfo;
 	@virtual typedef JView = JCatchInfo;

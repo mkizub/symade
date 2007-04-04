@@ -706,7 +706,7 @@ public class DFSocketSpaceUnknown extends DFSocketSpace {
 
 public abstract class DFFunc implements DataFlowSlots {
 	
-	private static DFFunc[] emptyArray = new DFFunc[0];
+	private static final DFFunc[] emptyArray = new DFFunc[0];
 	
 	public case DFFuncThisIn();
 	public case DFFuncThisOut();

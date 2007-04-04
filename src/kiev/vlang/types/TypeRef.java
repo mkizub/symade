@@ -77,6 +77,12 @@ public class TypeRef extends ENode {
 		throw new RuntimeException("Unknow type for TypeRef: "+tp.getClass());
 	}
 	
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (dump == "api" && attr.name == "lnk")
+			return lnk != null;
+		return super.includeInDump(dump, attr, val);
+	}
+
 	public ASTNode getDummyNode() {
 		return TypeRef.dummyNode;
 	}

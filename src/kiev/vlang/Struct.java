@@ -87,6 +87,8 @@ public class Struct extends TypeDecl implements PreScanneable {
 	@virtual typedef RView = RStruct;
 
 	@att public TypeDeclVariant				variant;
+	@abstract
+	@att public String						uniq_name;
 		 public KString						b_name;	// bytecode name
 		 public WrapperMetaType				wmeta_type;
 		 public ASTNodeMetaType				ameta_type;
@@ -96,6 +98,9 @@ public class Struct extends TypeDecl implements PreScanneable {
 	@ref public Struct						iface_impl;
 	@ref public DNode[]						sub_decls;
 	public kiev.be.java15.Attr[]			attrs = kiev.be.java15.Attr.emptyArray;
+
+	@getter public final String get$uniq_name() { return u_name; }
+	@setter public final void set$uniq_name(String val) { this.u_name = val; }
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (attr.name == "package_clazz")

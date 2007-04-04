@@ -58,6 +58,12 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		this.star = star;
 	}
 
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		//if (dump == "api" && attr.name == "this")
+		//	return false;
+		return super.includeInDump(dump, attr, val);
+	}
+
 	public boolean mainResolveIn() { return false; }
 
 	public String toString() {
@@ -160,6 +166,12 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 	
 	public Type getType() { return type.getType(); }
 	
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (dump == "api" && attr.name == "this")
+			return false;
+		return super.includeInDump(dump, attr, val);
+	}
+
 	public boolean mainResolveIn() { return false; }
 
 	public boolean checkResolved() {

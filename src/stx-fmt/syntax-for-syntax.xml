@@ -466,7 +466,6 @@
       <a-node class='kiev.fmt.SyntaxList'>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
-         <name></name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-nl</name>
@@ -563,7 +562,6 @@
           <a-node class='kiev.fmt.SyntaxFunction'>
            <title>Edit symbol</title>
            <act>kiev.gui.TextEditor</act>
-           <attr></attr>
           </a-node>
          </funcs>
         </a-node>
@@ -612,7 +610,6 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
-           <name></name>
           </a-node>
          </element>
          <folded_by_default>false</folded_by_default>
@@ -1306,7 +1303,6 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
-           <name></name>
           </a-node>
          </element>
          <prefix>
@@ -1537,11 +1533,8 @@
     </a-node>
     <a-node class='kiev.fmt.SyntaxIdentTemplate'>
      <regexp_ok>.*</regexp_ok>
-     <esc_prefix></esc_prefix>
-     <esc_suffix></esc_suffix>
      <elem>
       <a-node class='kiev.fmt.SyntaxNode'>
-       <name></name>
       </a-node>
      </elem>
      <sname>ident-template</sname>
@@ -1796,7 +1789,6 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
-             <name></name>
             </a-node>
            </element>
            <separator>
@@ -1920,7 +1912,6 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
-             <name></name>
             </a-node>
            </element>
            <separator>
@@ -2178,31 +2169,7 @@
              <name>filter</name>
              <expected_types>
               <a-node class='kiev.vlang.SymbolRef'>
-               <name>CalcOptionNot</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>CalcOptionIsHidden</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>CalcOptionAnd</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>CalcOptionOr</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>CalcOptionNotNull</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>CalcOptionNotEmpty</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>CalcOptionTrue</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>CalcOptionClass</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>CalcOptionHasMeta</name>
+               <name>stx-types-CalcOptions</name>
               </a-node>
              </expected_types>
             </a-node>
@@ -2334,7 +2301,6 @@
             <a-node class='kiev.fmt.SyntaxList'>
              <element>
               <a-node class='kiev.fmt.SyntaxNode'>
-               <name></name>
                <fmt>
                 <a-node class='kiev.vlang.SymbolRef'>
                  <name>fmt-nl-1++</name>
@@ -2410,7 +2376,6 @@
            </folded>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
-             <name></name>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-nl-1++</name>
@@ -2501,7 +2466,6 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
-             <name></name>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-nl-1++</name>
@@ -2639,7 +2603,6 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
-             <name></name>
             </a-node>
            </element>
            <separator>
@@ -2691,7 +2654,6 @@
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
             <a-node class='kiev.fmt.SyntaxNode'>
-             <name></name>
             </a-node>
            </element>
            <separator>
@@ -2953,7 +2915,6 @@
             <a-node class='kiev.fmt.SyntaxList'>
              <element>
               <a-node class='kiev.fmt.SyntaxNode'>
-               <name></name>
               </a-node>
              </element>
              <separator>
@@ -3033,7 +2994,6 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
-           <name></name>
           </a-node>
          </element>
          <separator>
@@ -3159,7 +3119,6 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
-           <name></name>
           </a-node>
          </element>
          <folded_by_default>false</folded_by_default>
@@ -3769,12 +3728,14 @@
        <name>CalcOptionHasMeta</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>CalcOptionIncludeInDump</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>CalcOptionIsHidden</name>
       </a-node>
      </expected_types>
      <elem>
       <a-node class='kiev.fmt.SyntaxNode'>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-types-CalcOptions</sname>
@@ -3816,28 +3777,7 @@
          <name>opt</name>
          <expected_types>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>CalcOptionIsHidden</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>CalcOptionAnd</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>CalcOptionOr</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>CalcOptionNotNull</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>CalcOptionNotEmpty</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>CalcOptionTrue</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>CalcOptionClass</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>CalcOptionHasMeta</name>
+           <name>stx-types-CalcOptions</name>
           </a-node>
          </expected_types>
         </a-node>
@@ -3857,7 +3797,6 @@
       <a-node class='kiev.fmt.SyntaxList'>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
-         <name></name>
         </a-node>
        </element>
        <separator>
@@ -3879,31 +3818,7 @@
        <name>opts</name>
        <expected_types>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionNot</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionIsHidden</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionAnd</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionOr</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionNotNull</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionNotEmpty</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionTrue</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionClass</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionHasMeta</name>
+         <name>stx-types-CalcOptions</name>
         </a-node>
        </expected_types>
       </a-node>
@@ -3920,7 +3835,6 @@
       <a-node class='kiev.fmt.SyntaxList'>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
-         <name></name>
         </a-node>
        </element>
        <separator>
@@ -3942,31 +3856,7 @@
        <name>opts</name>
        <expected_types>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionNot</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionIsHidden</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionAnd</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionOr</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionNotNull</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionNotEmpty</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionTrue</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionClass</name>
-        </a-node>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>CalcOptionHasMeta</name>
+         <name>stx-types-CalcOptions</name>
         </a-node>
        </expected_types>
       </a-node>
@@ -3997,6 +3887,27 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>CalcOptionIncludeInDump</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>api:</text>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>name</name>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+      </a-node>
+     </elem>
+     <sname>stx-calc-option-api</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>CalcOptionHasMeta</name>
       </a-node>
      </rnode>
@@ -4004,7 +3915,7 @@
       <a-node class='kiev.fmt.SyntaxSet'>
        <elements>
         <a-node class='kiev.fmt.SyntaxToken'>
-         <text>hasF</text>
+         <text>has</text>
         </a-node>
         <a-node class='kiev.fmt.SyntaxSubAttr'>
          <name>name</name>
@@ -4025,7 +3936,7 @@
       <a-node class='kiev.fmt.SyntaxSet'>
        <elements>
         <a-node class='kiev.fmt.SyntaxToken'>
-         <text>hasU</text>
+         <text>has</text>
         </a-node>
         <a-node class='kiev.fmt.SyntaxSubAttr'>
          <name>name</name>
@@ -4139,7 +4050,6 @@
       <a-node class='kiev.fmt.SyntaxList'>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
-         <name></name>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-nl-1++</name>

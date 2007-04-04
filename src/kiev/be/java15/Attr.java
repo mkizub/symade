@@ -25,7 +25,7 @@ import syntax kiev.Syntax;
  */
 
 public class Attr implements JConstants {
-	public static Attr[] emptyArray = new Attr[0];
+	public static final Attr[] emptyArray = new Attr[0];
 
 	/** Name of the attribute */
 	public KString		name;

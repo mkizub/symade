@@ -29,7 +29,8 @@ abstract class VNode_Base extends TransfProcessor {
 	public static final String mnNode					= "kiev.vlang.node"; 
 	public static final String mnAtt					= "kiev.vlang.att"; 
 	public static final String mnRef					= "kiev.vlang.ref"; 
-	public static final String nameANode				= "kiev.vlang.ANode"; 
+	public static final String nameINode				= "kiev.vlang.INode";
+	public static final String nameANode				= "kiev.vlang.ANode";
 	public static final String nameNode				= "kiev.vlang.ASTNode"; 
 	public static final String nameNodeSpace			= "kiev.vlang.NodeSpace"; 
 	public static final String nameAttrSlot			= "kiev.vlang.AttrSlot"; 
@@ -49,6 +50,7 @@ abstract class VNode_Base extends TransfProcessor {
 	static final String sigCopy				= "()Ljava/lang/Object;";
 	static final String sigCopyTo			= "(Ljava/lang/Object;)Ljava/lang/Object;";
 	
+	static Type tpINode;
 	static Type tpANode;
 	static Type tpNode;
 	static Type tpNArray;
@@ -94,7 +96,8 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 	}
 	
 	public void doProcess(FileUnit:ASTNode fu) {
-		if (tpANode == null) {
+		if (tpINode == null) {
+			tpINode = Env.loadStruct(nameINode, true).xtype;
 			tpANode = Env.loadStruct(nameANode, true).xtype;
 			tpNode = Env.loadStruct(nameNode, true).xtype;
 			tpNArray = new ArrayType(tpANode);
@@ -599,6 +602,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	public static final String nameMetaGetter	= VirtFldFE_GenMembers.nameMetaGetter; 
 	public static final String nameMetaSetter	= VirtFldFE_GenMembers.nameMetaSetter; 
 
+	Type tpINode;
 	Type tpANode;
 	Type tpNode;
 	Type tpSpaceAttrSlot;
@@ -622,7 +626,8 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	}
 	
 	public void doProcess(FileUnit:ASTNode fu) {
-		if (tpANode == null) {
+		if (tpINode == null) {
+			tpINode = VNode_Base.tpINode;
 			tpANode = VNode_Base.tpANode;
 			tpNode = VNode_Base.tpNode;
 			tpSpaceAttrSlot = VNode_Base.tpSpaceAttrSlot;
@@ -722,7 +727,8 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			Kiev.reportWarning(get_var,"Cannot fixup getter method with getVersion()");
 			return;
 		}
-		if (!fe.var.getType().isInstanceOf(tpANode))
+		
+		if !(fe.var.getType().isInstanceOf(tpANode) || fe.var.getType().isInstanceOf(tpINode))
 			return;
 		((ReturnStat)stat).expr = new CallExpr(0,new TypeRef(tpANode),new SymbolRef<Method>("getVersion"),null,new ENode[]{~fe});
 		if (isAtt)

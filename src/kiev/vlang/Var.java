@@ -107,7 +107,7 @@ public abstract class Var extends DNode {
 
 	@getter public final Type get$type() { return this.vtype.getType(); }
 		
-	public static Var[]	emptyArray = new Var[0];
+	public static final Var[]	emptyArray = new Var[0];
 
 	public Var(Symbol<This> id, int kind) {
 		super(id);
@@ -225,7 +225,7 @@ public class LVar extends Var {
 
 @node(name="Field")
 public final class Field extends Var {
-	public static Field[]	emptyArray = new Field[0];
+	public static final Field[]	emptyArray = new Field[0];
 	static final Field dummyNode = new Field();
 
 	@dflow(out="init") private static class DFI {
@@ -364,6 +364,19 @@ public final class Field extends Var {
 				Kiev.reportError(this,"Scalar field is initialized by array");
 			else
 				init.setType((ArrayType)tp);
+		}
+		return true;
+	}
+
+	public boolean preVerify() {
+		if (this.init != null) {
+			if (isConstantExpr()) {
+				ConstExpr ce = ConstExpr.fromConst(getConstValue());
+				if (!ce.valueEquals(this.const_value)) {
+					this = this.open();
+					this.const_value = ce;
+				}
+			}
 		}
 		return true;
 	}

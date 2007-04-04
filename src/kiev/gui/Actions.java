@@ -383,9 +383,23 @@ public final class FileActions implements Runnable {
 			if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
 				return;
 			try {
-				Env.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax());
+				Env.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("full"));
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
+			}
+		}
+		else if (action == "save-as-api") {
+			JFileChooser jfc = new JFileChooser(".");
+			jfc.setFileFilter(new FileFilter() {
+				public boolean accept(File f) { f.isDirectory() || f.getName().toLowerCase().endsWith(".xml") }
+				public String getDescription() { "XML file for node tree dump" }
+			});
+			if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
+				return;
+			try {
+				Env.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api"));
+			} catch( IOException e ) {
+				System.out.println("Create/write error while Kiev-to-Xml API exporting: "+e);
 			}
 		}
 		else if (action == "save") {
@@ -395,12 +409,12 @@ public final class FileActions implements Runnable {
 			else
 				fu = (FileUnit)uiv.the_root.ctx_file_unit;
 			try {
-				Env.dumpTextFile(fu, new File(fu.name), new XmlDumpSyntax());
+				Env.dumpTextFile(fu, new File(fu.name), new XmlDumpSyntax("full"));
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 			}
 		}
-		else if (action == "loas-as") {
+		else if (action == "load-as") {
 			JFileChooser jfc = new JFileChooser(".");
 			jfc.setFileFilter(new FileFilter() {
 				public boolean accept(File f) { f.isDirectory() || f.getName().toLowerCase().endsWith(".xml") }
@@ -463,6 +477,15 @@ public final class FileActions implements Runnable {
 			if !(context.uiv != null && context.uiv.the_root instanceof ASTNode)
 				return null;
 			return new FileActions(context.uiv, "save-as");
+		}
+	}
+
+	final static class SaveFileAsApi implements UIActionFactory {
+		public String getDescr() { "Save the file as a new API file" }
+		public Runnable getAction(UIActionViewContext context) {
+			if !(context.uiv != null && context.uiv.the_root instanceof ASTNode)
+				return null;
+			return new FileActions(context.uiv, "save-as-api");
 		}
 	}
 
@@ -628,10 +651,12 @@ public final class RenderActions implements Runnable {
 			// build a menu of types to instantiate
 			JPopupMenu m = new JPopupMenu();
 			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Kiev Syntax", "stx-fmt.syntax-for-java")));
-			m.add(new JMenuItem(new LoadSyntaxAction(uiv,"Kiev Syntax (java.xml)", "java.xml", "test.syntax-for-java")));
-			m.add(new JMenuItem(new SetSyntaxAction(uiv,"XML dump Syntax", XmlDumpSyntax.class)));
+//			m.add(new JMenuItem(new LoadSyntaxAction(uiv,"Kiev Syntax (java.xml)", "java.xml", "test.syntax-for-java")));
+			m.add(new JMenuItem(new SetSyntaxAction(uiv,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
+			m.add(new JMenuItem(new SetSyntaxAction(uiv,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
+			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Syntax for API", "stx-fmt.syntax-for-api")));
 			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Syntax for Syntax", "stx-fmt.syntax-for-syntax")));
-			m.add(new JMenuItem(new LoadSyntaxAction(uiv,"Syntax for Syntax (stx.xml)", "stx.xml", "test.syntax-for-syntax")));
+//			m.add(new JMenuItem(new LoadSyntaxAction(uiv,"Syntax for Syntax (stx.xml)", "stx.xml", "test.syntax-for-syntax")));
 			m.show(uiv.view_canvas, 0, 0);
 		}
 		else if (action == "unfold-all") {
@@ -663,10 +688,11 @@ public final class RenderActions implements Runnable {
 		private UIView uiv;
 		private Class clazz;
 		private String qname;
-		SetSyntaxAction(UIView uiv, String text, Class clazz) {
+		SetSyntaxAction(UIView uiv, String text, Class clazz, String name) {
 			super(text);
 			this.uiv = uiv;
 			this.clazz = clazz;
+			this.qname = name;
 		}
 		SetSyntaxAction(UIView uiv, String text, String qname) {
 			super(text);
@@ -676,6 +702,8 @@ public final class RenderActions implements Runnable {
 		public void actionPerformed(ActionEvent e) {
 			if (clazz != null) {
 				ATextSyntax stx = (ATextSyntax)clazz.newInstance();
+				if (stx instanceof XmlDumpSyntax)
+					stx.dump = qname;
 				this.uiv.setSyntax(stx);
 				return;
 			}

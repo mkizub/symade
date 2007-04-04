@@ -358,7 +358,7 @@ public final class DrawFont extends DNode {
 }
 
 public final class LayoutSpace implements Cloneable {
-	static final LayoutSpace[] emptyArray = new LayoutSpace[0];
+	public static final LayoutSpace[] emptyArray = new LayoutSpace[0];
 	public String		name;
 	public int			from_attempt;
 	public boolean		new_line;
@@ -1377,24 +1377,39 @@ public class CalcOptionIsHidden implements CalcOption {
 public class CalcOptionIncludeInDump implements CalcOption {
 	@virtual typedef This  = CalcOptionIncludeInDump;
 
+	@att public String dump;
+
+	@setter
+	public void set$dump(String value) {
+		this.dump = (value != null) ? value.intern() : null;
+	}
+	
 	public CalcOptionIncludeInDump() {}
-	public CalcOptionIncludeInDump(String name) {
+	public CalcOptionIncludeInDump(String dump, String name) {
 		super(name);
+		this.dump = dump;
 	}
 
 	public boolean calc(ANode node) {
 		if (node == null)
 			return false;
-		Object val = node;
-		if (name == null || name == "" || name == "this")
-			return true;
-		Object val = node.getVal(name);
+		String name = this.name;
+		if (name == null || name == "" || name == "this") {
+			return node.includeInDump(dump, ASTNode.nodeattr$this, node);
+		}
+		AttrSlot attr = null;
+		foreach (AttrSlot a; node.values(); a.name == name) {
+			attr = a;
+			break;
+		}
+		if (attr == null)
+			return false;
+		Object val = attr.get(node);
 		if (val == null)
 			return false;
-		return node.includeInDump(name, val);
+		return node.includeInDump(dump, attr, val);
 	}
 }
-
 
 @node
 public class SyntaxOptional extends SyntaxElem {

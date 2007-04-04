@@ -106,6 +106,8 @@ public class Editor extends InfoView implements KeyListener {
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_O),				new FolderTrigger.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_N),				new NewElemHere.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_A),				new NewElemNext.Factory());
+		this.naviMap.put(new InputEventInfo(CTRL+ALT,			KeyEvent.VK_N),				new PasteElemHere.Factory());
+		this.naviMap.put(new InputEventInfo(CTRL+ALT,			KeyEvent.VK_A),				new PasteElemNext.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_E),				new ChooseItemEditor());
 		
 		this.keyActionMap = new Hashtable<InputEventInfo,String[]>();
@@ -890,6 +892,84 @@ final class NewElemNext extends NewElemEditor implements Runnable {
 				return new NewElemNext(editor);
 			}
 			return null;
+		}
+	}
+}
+
+final class PasteElemHere implements Runnable {
+	final Editor editor;
+	PasteElemHere(Editor editor) {
+		this.editor = editor;
+	}
+	public void run() {
+		Transferable content = editor.clipboard.getContents(null);
+		ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+		ActionPoint ap = editor.getActionPoint(false);
+		if (node.isAttached())
+			node = node.ncopy();
+		editor.changes.push(Transaction.open());
+		try {
+			((SpaceAttrSlot)ap.slot).insert(ap.node,ap.index,node);
+		} finally {
+			editor.changes.peek().close();
+		}
+		editor.formatAndPaint(true);
+	}
+	final static class Factory implements UIActionFactory {
+		public String getDescr() { "Paste an element at this position" }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor == null)
+				return null;
+			Editor editor = context.editor;
+			Transferable content = editor.clipboard.getContents(null);
+			if (!content.isDataFlavorSupported(TransferableANode.transferableANodeFlavor))
+				return null;
+			ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+			ActionPoint ap = editor.getActionPoint(false);
+			if (ap == null || ap.length == 0)
+				return null;
+			if (!ap.slot.typeinfo.$instanceof(node))
+				return null;
+			return new PasteElemHere(editor);
+		}
+	}
+}
+
+final class PasteElemNext implements Runnable {
+	final Editor editor;
+	PasteElemNext(Editor editor) {
+		this.editor = editor;
+	}
+	public void run() {
+		Transferable content = editor.clipboard.getContents(null);
+		ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+		ActionPoint ap = editor.getActionPoint(true);
+		if (node.isAttached())
+			node = node.ncopy();
+		editor.changes.push(Transaction.open());
+		try {
+			((SpaceAttrSlot)ap.slot).insert(ap.node,ap.index,node);
+		} finally {
+			editor.changes.peek().close();
+		}
+		editor.formatAndPaint(true);
+	}
+	final static class Factory implements UIActionFactory {
+		public String getDescr() { "Paste an element at next position" }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor == null)
+				return null;
+			Editor editor = context.editor;
+			Transferable content = editor.clipboard.getContents(null);
+			if (!content.isDataFlavorSupported(TransferableANode.transferableANodeFlavor))
+				return null;
+			ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
+			ActionPoint ap = editor.getActionPoint(true);
+			if (ap == null || ap.length == 0)
+				return null;
+			if (!ap.slot.typeinfo.$instanceof(node))
+				return null;
+			return new PasteElemNext(editor);
 		}
 	}
 }

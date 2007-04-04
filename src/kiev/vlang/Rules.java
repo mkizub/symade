@@ -228,7 +228,7 @@ object, if fails - returns null.
 
 @node
 public abstract class ASTRuleNode extends ENode {
-	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
+	public static final ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
 	@virtual typedef This  ≤ ASTRuleNode;
 

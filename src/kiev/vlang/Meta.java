@@ -82,12 +82,6 @@ public final class MetaSet extends ASTNode {
 
 	public MetaSet() {}
 	
-	public boolean includeInDump(String name, Object val) {
-		if (name == "mflags")
-			return false;
-		return super.includeInDump(name, val);
-	}
-
 	public boolean hasRuntimeVisibles() {
 		foreach (MNode m; metas; m.isRuntimeVisible())
 			return true;
@@ -160,7 +154,7 @@ public final class MetaSet extends ASTNode {
 public abstract class MNode extends ASTNode {
 	@virtual typedef This  ≤ MNode;
 	
-	public static MNode[] emptyArray = new MNode[0];
+	public static final MNode[] emptyArray = new MNode[0];
 
 	public abstract String qname();
 	public abstract TypeDecl getTypeDecl();
@@ -435,7 +429,7 @@ public class UserMeta extends MNode {
 
 @node
 public abstract class MetaValue extends ENode {
-	public final static MetaValue[] emptyArray = new MetaValue[0];
+	public static final MetaValue[] emptyArray = new MetaValue[0];
 
 	@virtual typedef This  ≤ MetaValue;
 

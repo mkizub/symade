@@ -218,6 +218,8 @@ CLASS kiev.gui.NavigateView kiev/gui/NavigateView kiev\gui\Actions.java
 CLASS kiev.gui.NewElemEditor kiev/gui/NewElemEditor kiev\gui\Editor.java
 CLASS kiev.gui.NewElemHere kiev/gui/NewElemHere kiev\gui\Editor.java
 CLASS kiev.gui.NewElemNext kiev/gui/NewElemNext kiev\gui\Editor.java
+CLASS kiev.gui.PasteElemHere kiev/gui/PasteElemHere kiev\gui\Editor.java
+CLASS kiev.gui.PasteElemNext kiev/gui/PasteElemNext kiev\gui\Editor.java
 CLASS kiev.gui.RenderActions kiev/gui/RenderActions kiev\gui\Actions.java
 CLASS kiev.gui.TextEditor kiev/gui/TextEditor kiev\gui\Editor.java
 CLASS kiev.gui.TransferableANode kiev/gui/TransferableANode kiev\gui\Editor.java
@@ -710,6 +712,7 @@ ENUM kiev.fmt.SpaceKind kiev/fmt/SpaceKind kiev\fmt\SyntaxLayout.java
 ENUM kiev.vlang.IntRadix kiev/vlang/IntRadix kiev\vlang\ConstExpr.java
 ENUM kiev.vlang.ProjectFileType kiev/vlang/ProjectFileType kiev\vlang\Env.java
 ENUM kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
+FORMAT stx-fmt.syntax-for-api stx-fmt\syntax-for-api.xml bad
 FORMAT stx-fmt.syntax-for-java stx-fmt\syntax-for-java.xml bad
 FORMAT stx-fmt.syntax-for-project-tree stx-fmt\syntax-for-project-tree.xml bad
 FORMAT stx-fmt.syntax-for-syntax stx-fmt\syntax-for-syntax.xml bad

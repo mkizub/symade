@@ -50,6 +50,13 @@ public class XmlDumpSyntax extends ATextSyntax {
 	@ref SyntaxElemFormatDecl sefdNlNl = new SyntaxElemFormatDecl("fmt-nl-nl");
 	@ref SyntaxElemFormatDecl sefdNoNl = new SyntaxElemFormatDecl("fmt-no-nl");
 
+	@att public String dump;
+
+	@setter
+	public void set$dump(String value) {
+		this.dump = (value != null) ? value.intern() : null;
+	}
+	
 	public XmlDumpSyntax() {
 		super(new Symbol<This>());
 		sefdNlNl.spaces += new SpaceCmd(siNl, SP_ADD, SP_ADD, 0);
@@ -58,6 +65,10 @@ public class XmlDumpSyntax extends ATextSyntax {
 		this.members += sefdNoNo;
 		this.members += sefdNlNl;
 		this.members += sefdNoNl;
+	}
+	public XmlDumpSyntax(String dump) {
+		this();
+		this.dump = dump;
 	}
 
 	private SyntaxElem open(String name) {
@@ -119,9 +130,10 @@ public class XmlDumpSyntax extends ATextSyntax {
 		SyntaxSet ss = new SyntaxSet();
 		//ss.fmt = new RefElemFormat(sefdNoNl);
 		ss.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
-		foreach (AttrSlot attr; node.values(); attr.is_attr) {
+		foreach (AttrSlot attr; node.values(); attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
 			if (attr.is_space) {
 				SyntaxList sl = new SyntaxList(attr.name);
+				sl.filter = new CalcOptionIncludeInDump(this.dump,"this");
 				//sl.fmt = new RefElemFormat(sefdNoNl);
 				sl.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
 				ss.elements += opt(new CalcOptionNotEmpty(attr.name),
@@ -130,25 +142,29 @@ public class XmlDumpSyntax extends ATextSyntax {
 							par(sl),
 							close(attr.name)
 							));
-			}
-			else if (ANode.class.isAssignableFrom(attr.clazz)) {
-				ss.elements += opt(new CalcOptionIncludeInDump(attr.name),
-					setl(sefdNoNl, open(attr.name), par(attr(attr.name)), close(attr.name)));
-			}
-			else if (Enum.class.isAssignableFrom(attr.clazz))
-				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
-			else if (attr.clazz == String.class)
-				ss.elements += set(open0(attr.name), new SyntaxXmlStrAttr(attr.name), close0(attr.name));
-			else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
-				attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
-				attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
-				)
-				ss.elements += set(open0(attr.name), attr(attr.name), close0(attr.name));
-			else {
-				SyntaxToken st = new SyntaxToken("<error attr='"+attr.name+"'"+" class='"+cl_name+"' />");
-				//st.fmt = new RefElemFormat(sefdNlNl);
-				st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
-				ss.elements += st;
+			} else {
+				SyntaxElem se = null;
+				if (ANode.class.isAssignableFrom(attr.clazz))
+					se = setl(sefdNoNl, open(attr.name), par(attr(attr.name)), close(attr.name));
+				else if (Enum.class.isAssignableFrom(attr.clazz))
+					se = set(open0(attr.name), attr(attr.name), close0(attr.name));
+				else if (attr.clazz == String.class)
+					se = set(open0(attr.name), new SyntaxXmlStrAttr(attr.name), close0(attr.name));
+				else if (Type.class.isAssignableFrom(attr.clazz) || attr.clazz == Operator.class)
+					se = set(open0(attr.name), new SyntaxXmlStrAttr(attr.name), close0(attr.name));
+				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
+					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
+					attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE
+					)
+					se = set(open0(attr.name), attr(attr.name), close0(attr.name));
+				else if (attr.is_attr) {
+					SyntaxToken st = new SyntaxToken("<error attr='"+attr.name+"'"+" class='"+cl_name+"' />");
+					//st.fmt = new RefElemFormat(sefdNlNl);
+					st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
+					se = st;
+				}
+				if (se != null)
+					ss.elements += opt(new CalcOptionIncludeInDump(this.dump,attr.name),se);
 			}
 		}
 		{

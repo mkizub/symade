@@ -144,8 +144,8 @@ public abstract class MetaFlag extends MNode {
 public final class MetaAccess extends MetaFlag {
 	@virtual typedef This  = MetaAccess;
 
-	public String		simple;
-	public int			flags;
+	@att public String		simple;
+	@att public int			flags;
 
 	public @packed:1,flags,7 boolean	r_public;
 	public @packed:1,flags,6 boolean	w_public;
@@ -170,6 +170,12 @@ public final class MetaAccess extends MetaFlag {
 	}
 
 	public String qname() { return "kiev.stdlib.meta.access"; }
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "flags")
+			return this.flags != -1;
+		return super.includeInDump(dump, attr, val);
+	}
 
 	void setFlag(MetaSet dn, boolean on) {
 		if (dn == null)

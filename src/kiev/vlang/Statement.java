@@ -289,7 +289,7 @@ public class LabeledStat extends ENode {
 	@dflow(in="lbl")		ENode			stat;
 	}
 
-	public static LabeledStat[]	emptyArray = new LabeledStat[0];
+	public static final LabeledStat[]	emptyArray = new LabeledStat[0];
 
 	@virtual typedef This  = LabeledStat;
 	@virtual typedef JView = JLabeledStat;

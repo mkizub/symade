@@ -30,7 +30,7 @@ public final class PrescannedBody extends ENode {
 	public static final int CondBlockMode		= 2;
 	public static final int RewriteMatchMode	= 3;
 
-	public static PrescannedBody[] emptyArray = new PrescannedBody[0];
+	public static final PrescannedBody[] emptyArray = new PrescannedBody[0];
 
 	@virtual typedef This  = PrescannedBody;
 

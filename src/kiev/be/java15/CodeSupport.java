@@ -41,7 +41,7 @@ public class CodeVar {
 }
 
 public class CodeLabel implements JConstants {
-	public static CodeLabel[] emptyArray = new CodeLabel[0];
+	public static final CodeLabel[] emptyArray = new CodeLabel[0];
 
 	public final Code	code;
 	
@@ -280,7 +280,7 @@ public class CodeLookupSwitch extends CodeSwitch {
 }
 
 public class CodeCatchInfo {
-	public static CodeCatchInfo[] emptyArray = new CodeCatchInfo[0];
+	public static final CodeCatchInfo[] emptyArray = new CodeCatchInfo[0];
 
 	public int			start_pc;
 	public int			end_pc;

@@ -96,11 +96,8 @@
     </a-node>
     <a-node class='kiev.fmt.SyntaxIdentTemplate'>
      <regexp_ok>.*</regexp_ok>
-     <esc_prefix></esc_prefix>
-     <esc_suffix></esc_suffix>
      <elem>
       <a-node class='kiev.fmt.SyntaxNode'>
-       <name></name>
       </a-node>
      </elem>
      <sname>ident-template</sname>
@@ -123,7 +120,6 @@
      </operators>
      <elem>
       <a-node class='kiev.fmt.SyntaxNode'>
-       <name></name>
       </a-node>
      </elem>
      <sname>java-expr-template</sname>
@@ -143,7 +139,6 @@
        </folded>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
-         <name></name>
         </a-node>
        </element>
        <folded_by_default>true</folded_by_default>
@@ -180,7 +175,6 @@
        </folded>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
-         <name></name>
         </a-node>
        </element>
        <filter>
@@ -222,7 +216,6 @@
        </folded>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
-         <name></name>
         </a-node>
        </element>
        <filter>
@@ -232,7 +225,6 @@
            <name>kiev.stdlib.meta.synthetic</name>
           </a-node>
          </opt>
-         <name></name>
         </a-node>
        </filter>
        <folded_by_default>true</folded_by_default>
@@ -269,7 +261,6 @@
        </folded>
        <element>
         <a-node class='kiev.fmt.SyntaxNode'>
-         <name></name>
         </a-node>
        </element>
        <filter>
@@ -279,7 +270,6 @@
            <name>kiev.stdlib.meta.synthetic</name>
           </a-node>
          </opt>
-         <name></name>
         </a-node>
        </filter>
        <folded_by_default>true</folded_by_default>
@@ -343,7 +333,6 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
-           <name></name>
            <in_syntax>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>syntax-form-par</name>
@@ -398,7 +387,6 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
-           <name></name>
            <in_syntax>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>syntax-form-par</name>
@@ -456,7 +444,6 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
-           <name></name>
            <in_syntax>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>syntax-form-par</name>
@@ -511,7 +498,6 @@
         <a-node class='kiev.fmt.SyntaxList'>
          <element>
           <a-node class='kiev.fmt.SyntaxNode'>
-           <name></name>
            <in_syntax>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>syntax-form-par</name>

@@ -249,7 +249,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	@getter public Method get$child_ctx_method() { return (Method)this; }
 
-	public static Method[]	emptyArray = new Method[0];
+	public static final Method[]	emptyArray = new Method[0];
 
 	public Method(Symbol<This> id) {
 		super(id);
@@ -276,6 +276,15 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) setMeta(new MetaUnerasable());
 			this.meta.mflags = flags;
 		}
+	}
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (dump == "api" && attr.name == "body") {
+			if (this.body instanceof MetaValue)
+				return true;
+			return false;
+		}
+		return super.includeInDump(dump, attr, val);
 	}
 
 	public boolean hasName(String nm, boolean by_equals) {
@@ -909,6 +918,12 @@ public final class Initializer extends DNode implements PreScanneable {
 
 	public Initializer() { super(new Symbol<This>()); }
 
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (dump == "api" && attr.name == "this")
+			return false;
+		return super.includeInDump(dump, attr, val);
+	}
+
 	public boolean setBody(ENode body) {
 		trace(Kiev.debug && Kiev.debugMultiMethod,"Setting body of initializer "+this);
 		this.body = body;
@@ -931,7 +946,7 @@ public final class WBCCondition extends DNode {
 	@dflow(in="this:in")			ENode		body;
 	}
 	
-	public static WBCCondition[]	emptyArray = new WBCCondition[0];
+	public static final WBCCondition[]	emptyArray = new WBCCondition[0];
 
 	@virtual typedef This  = WBCCondition;
 	@virtual typedef JView = JWBCCondition;

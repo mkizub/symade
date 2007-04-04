@@ -1068,7 +1068,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	}
 
 	static class MMTree {
-		static MMTree[] emptyArray = new MMTree[0];
+		static final MMTree[] emptyArray = new MMTree[0];
 		Method m;
 		MMTree[] uppers = MMTree.emptyArray;
 		MMTree(Method m) { this.m = m; }
