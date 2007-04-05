@@ -870,34 +870,22 @@ public final class Constructor extends Method {
 
 	public Constructor(int fl) {
 		super(new Symbol<This>((fl&ACC_STATIC)==0 ? nameInit:nameClassInit), new TypeRef(Type.tpVoid), fl);
-		if (isStatic())
-			this.u_name = nameClassInit;
-		else
-			this.u_name = nameInit;
 	}
 	
-	public void callbackChildChanged(AttrSlot attr) {
-		if (attr.name == "sname") {
-			if (parent() instanceof TypeDecl) {
-				TypeDecl td = (TypeDecl)parent();
-				if (sname != td.sname) {
-					this = this.open();
-					this.sname = td.sname;
-				}
-			}
-		} else {
-			super.callbackChildChanged(attr);
-		}
+	@getter @att public String get$sname() {
+		ANode p = parent();
+		if (p instanceof TypeDecl)
+			return p.sname;
+		return "<ctor>";
 	}
-
-	public void callbackAttached() {
-		if (!isStatic() && parent() instanceof TypeDecl) {
-			TypeDecl td = (TypeDecl)parent();
-			if (sname != td.sname) {
-				this = this.open();
-				this.sname = ((TypeDecl)parent()).sname;
-			}
-		}
+	@setter public void set$sname(String value) {
+		// do nothing, constructors are anonymouse
+	}
+	@getter public String get$u_name() {
+		return isStatic() ? nameClassInit : nameInit;
+	}
+	@setter public void set$u_name(String value) {
+		// do nothing, constructors are anonymouse
 	}
 }
 

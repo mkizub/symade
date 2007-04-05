@@ -131,19 +131,14 @@ public class XmlDumpSyntax extends ATextSyntax {
 		//ss.fmt = new RefElemFormat(sefdNoNl);
 		ss.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
 		foreach (AttrSlot attr; node.values(); attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
+			SyntaxElem se = null;
 			if (attr.is_space) {
 				SyntaxList sl = new SyntaxList(attr.name);
 				sl.filter = new CalcOptionIncludeInDump(this.dump,"this");
 				//sl.fmt = new RefElemFormat(sefdNoNl);
 				sl.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
-				ss.elements += opt(new CalcOptionNotEmpty(attr.name),
-						setl(sefdNoNl,
-							open(attr.name),
-							par(sl),
-							close(attr.name)
-							));
+				se = setl(sefdNoNl, open(attr.name), par(sl), close(attr.name));
 			} else {
-				SyntaxElem se = null;
 				if (ANode.class.isAssignableFrom(attr.clazz))
 					se = setl(sefdNoNl, open(attr.name), par(attr(attr.name)), close(attr.name));
 				else if (Enum.class.isAssignableFrom(attr.clazz))
@@ -163,9 +158,9 @@ public class XmlDumpSyntax extends ATextSyntax {
 					st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
 					se = st;
 				}
-				if (se != null)
-					ss.elements += opt(new CalcOptionIncludeInDump(this.dump,attr.name),se);
 			}
+			if (se != null)
+				ss.elements += opt(new CalcOptionIncludeInDump(this.dump,attr.name),se);
 		}
 		{
 			SyntaxToken st;

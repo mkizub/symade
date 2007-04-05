@@ -54,6 +54,7 @@ public abstract class Var extends DNode {
 
 	public int varflags;
 
+	@att
 	public @packed:8,varflags,0  int			kind;
 	public @packed:24,varflags,8 int			bcpos;
 
@@ -145,6 +146,12 @@ public abstract class Var extends DNode {
 		return LVar.dummyNode;
 	}
 	
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (dump == "api" && attr.name == "init")
+			return false;
+		return super.includeInDump(dump,attr,val);
+	}
+
 	public boolean preResolveIn() {
 		ENode init = this.init;
 		if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
@@ -331,6 +338,12 @@ public final class Field extends Var {
 		return Field.dummyNode;
 	}
 
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (dump == "api" && attr.name == "const_value")
+			return isFinal() && const_value != null;
+		return super.includeInDump(dump,attr,val);
+	}
+
 	public boolean	isConstantExpr() {
 		if( this.isFinal() ) {
 			if (this.init != null && this.init.isConstantExpr())
@@ -377,6 +390,9 @@ public final class Field extends Var {
 					this.const_value = ce;
 				}
 			}
+		} else {
+			if (this.const_value != null)
+				this.init = this.const_value;
 		}
 		return true;
 	}

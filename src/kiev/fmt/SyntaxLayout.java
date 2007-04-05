@@ -1407,6 +1407,8 @@ public class CalcOptionIncludeInDump implements CalcOption {
 		Object val = attr.get(node);
 		if (val == null)
 			return false;
+		if (attr.is_space && ((Object[])val).length == 0)
+			return false;
 		return node.includeInDump(dump, attr, val);
 	}
 }

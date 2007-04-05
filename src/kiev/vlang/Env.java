@@ -599,6 +599,15 @@ public class Env extends Struct {
 			if (expect_attr) {
 				assert(qName.equals("a-node"));
 				ANode n = nodes.pop();
+				if (n instanceof TypeDecl) {
+					n.setTypeDeclLoaded(true);
+					if (n instanceof Struct) {
+						Struct s = (Struct)n;
+						s.xmeta_type = new CompaundMetaType(s);
+						s.xtype = new CompaundType((CompaundMetaType)s.xmeta_type, TVarBld.emptySet);
+						//s.package_clazz = outer;
+					}
+				}
 				if (n == root) {
 					//System.out.println("pop  root");
 					expect_attr = false;
@@ -641,6 +650,8 @@ public class Env extends Struct {
 						attr.set(nodes.peek(),Character.valueOf(text.trim().charAt(0)));
 					else if (Enum.class.isAssignableFrom(attr.clazz))
 						attr.set(nodes.peek(),Enum.valueOf(attr.clazz,text.trim()));
+					else if (attr.clazz == Operator.class)
+						attr.set(nodes.peek(),Operator.getOperatorByName(text.trim()));
 					else
 						//throw new SAXException("Attribute '"+attr.name+"' of "+nodes.peek().getClass()+" uses unsupported "+attr.clazz);
 						System.out.println("Attribute '"+attr.name+"' of "+nodes.peek().getClass()+" uses unsupported "+attr.clazz);

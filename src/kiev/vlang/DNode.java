@@ -47,6 +47,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	@att public final			MetaSet			meta;
 	@att public					String			sname; // source code name, may be null for anonymouse symbols
 	@ref public					DeclGroup		group;
+	@virtual
 	     public:ro,rw,ro,rw		String			u_name; // unique name in scope, never null, usually equals to name
 
 	public final MetaAccess getMetaAccess() {
@@ -55,13 +56,16 @@ public abstract class DNode extends ASTNode implements ISymbol {
 
 	@getter final public DNode get$dnode() { return ANode.getVersion(this); }
 
-	@getter @att final public String get$sname() {
+	@getter @att public String get$sname() {
 		return sname;
 	}
-	@setter final public void set$sname(String value) {
+	@setter public void set$sname(String value) {
 		this.sname = (value == null) ? null : value.intern();
 	}
-	@setter final public void set$u_name(String value) {
+	@getter public String get$u_name() {
+		return u_name;
+	}
+	@setter public void set$u_name(String value) {
 		this.u_name = (value == null) ? null : value.intern();
 	}
 	
@@ -479,6 +483,33 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		} else {
 			super.callbackChildChanged(attr);
 		}
+	}
+
+	public void callbackAttached() {
+		this = ANode.getVersion(this).open();
+		try {
+			Struct pkg = null;
+			TypeDecl td = ctx_tdecl;
+			if (td instanceof Struct)
+				pkg = (Struct)td;
+			else
+				pkg = ctx_file_unit.pkg.getStruct();
+			int idx = pkg.sub_decls.indexOf(this);
+			if (idx < 0)
+				pkg.sub_decls.append(this);
+			this.package_clazz = pkg;
+		} catch (NullPointerException e) {}
+		super.callbackAttached();
+	}
+	public void callbackDetached() {
+		this = ANode.getVersion(this).open();
+		if (package_clazz != null) {
+			int idx = package_clazz.sub_decls.indexOf(this);
+			if (idx >= 0)
+				package_clazz.sub_decls.del(idx);
+			package_clazz = null;
+		}
+		super.callbackDetached();
 	}
 
 	public TypeDecl(Symbol<This> id) { super(id); }

@@ -422,14 +422,16 @@ public final class FileActions implements Runnable {
 			});
 			if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
 				return;
+			FileUnit fu = null;
+			Transaction tr = Transaction.enter(Transaction.get());
 			try {
-				FileUnit fu = Env.loadFromXmlFile(jfc.getSelectedFile());
+				fu = Env.loadFromXmlFile(jfc.getSelectedFile());
 				Kiev.lockNodeTree(fu);
-				uiv.setRoot(fu);
 			} catch( IOException e ) {
 				System.out.println("Read error while Xml-to-Kiev importing: "+e);
-			}
-			uiv.formatAndPaint(true);
+			} finally { tr.leave(); }
+			if (fu != null)
+				uiv.parent_window.openEditor(fu);
 		}
 		else if (action == "merge-all") {
 			ANode.getVersion(Env.root).mergeTree();
@@ -723,8 +725,12 @@ public final class RenderActions implements Runnable {
 			this.name = name.intern();
 		}
 		public void actionPerformed(ActionEvent e) {
-			FileUnit fu = (FileUnit)Env.loadFromXmlFile(new File(this.file));
-			Kiev.lockNodeTree(fu);
+			Transaction tr = Transaction.enter(Transaction.get());
+			FileUnit fu = null;
+			try {
+				fu = Env.loadFromXmlFile(new File(this.file));
+				Kiev.lockNodeTree(fu);
+			} finally { tr.leave(); }
 			foreach (ATextSyntax stx; fu.members; stx.u_name == name) {
 				this.uiv.setSyntax(stx);
 				return;

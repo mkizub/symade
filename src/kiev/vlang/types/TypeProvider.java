@@ -55,7 +55,8 @@ public class MetaType implements Constants {
 		return new XType(this, getTemplBindings().bind_bld(bindings));
 	}
 	public Type bind(Type t, TVSet bindings) {
-		throw new RuntimeException("bind() in DummyType");
+		if (!t.isBindable()) return t;
+		return new XType(this, t.bindings().bind_bld(bindings));
 	}
 	public Type rebind(Type t, TVSet bindings) {
 		throw new RuntimeException("rebind() in DummyType");

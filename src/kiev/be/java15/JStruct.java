@@ -171,20 +171,30 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 		
 		if( !isPackage() && sub_decls.length > 0 ) {
-			InnerClassesAttr a = new InnerClassesAttr();
-			JStruct[] inner = new JStruct[sub_decls.length];
-			JStruct[] outer = new JStruct[sub_decls.length];
-			short[] inner_access = new short[sub_decls.length];
+			int count = 0;
 			for(int j=0; j < sub_decls.length; j++) {
-				inner[j] = (JStruct)sub_decls[j];
-				outer[j] = this;
-				inner_access[j] = sub_decls[j].getJavaFlags();
-				constPool.addClazzCP(inner[j].xtype.getJType().java_signature);
+				if (sub_decls[j] instanceof JStruct)
+					count ++;
 			}
-			a.inner = inner;
-			a.outer = outer;
-			a.acc = inner_access;
-			addAttr(a);
+			if (count > 0) {
+				InnerClassesAttr a = new InnerClassesAttr();
+				JStruct[] inner = new JStruct[count];
+				JStruct[] outer = new JStruct[count];
+				short[] inner_access = new short[count];
+				for(int i=0, j=0; j < sub_decls.length; j++) {
+					if (sub_decls[j] instanceof JStruct) {
+						inner[i] = (JStruct)sub_decls[j];
+						outer[i] = this;
+						inner_access[i] = sub_decls[j].getJavaFlags();
+						constPool.addClazzCP(inner[i].xtype.getJType().java_signature);
+						i++;
+					}
+				}
+				a.inner = inner;
+				a.outer = outer;
+				a.acc = inner_access;
+				addAttr(a);
+			}
 		}
 
 		if (meta.hasRuntimeVisibles())

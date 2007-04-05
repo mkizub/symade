@@ -336,6 +336,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				foreach (DNode d; dn.decls)
 					d.meta.verify();
 			}
+			td = ANode.getVersion(td);
 			getStructType(td, new Stack<TypeDecl>());
 			foreach (TypeDecl s; td.members)
 				doProcess(s);
@@ -355,7 +356,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 		
 		if (tdecl instanceof Struct) {
 			for (Struct p = tdecl.package_clazz; p != null; p = p.package_clazz)
-				getStructType(p, path);
+				getStructType(ANode.getVersion(p), path);
 		}
 
 		if (tdecl.parent() instanceof FileUnit)
