@@ -253,7 +253,7 @@ public abstract class Type extends AType {
 
 	public static CompaundType getProxyType(Type tp) {
 		TVarBld set = new TVarBld();
-		set.append(tpRefProxy.clazz.args[0].getAType(), tp);
+		set.append(tpRefProxy.tdecl.args[0].getAType(), tp);
 		return (CompaundType)((CompaundMetaType)tpRefProxy.meta_type).make(set);
 	}
 
@@ -262,9 +262,12 @@ public abstract class Type extends AType {
 
 public final class XType extends Type {
 
+	@getter
+	public final TypeDecl get$tdecl() { return ANode.getVersion(meta_type.tdecl); }
+
 	public XType(MetaType meta_type, TVarBld bindings) {
 		super(meta_type, 0, bindings);
-		foreach (MetaType mt; meta_type.tdecl.getAllSuperTypes()) {
+		foreach (MetaType mt; tdecl.getAllSuperTypes()) {
 			if (mt instanceof CompaundMetaType) flags |= flReference;
 			if (mt instanceof ArrayMetaType) flags |= flArray;
 		}
@@ -290,7 +293,7 @@ public final class XType extends Type {
 	public MNode getMeta(String name)			{ return null; }
 
 	public String toString() {
-		TypeDecl tdecl = meta_type.tdecl;
+		TypeDecl tdecl = this.tdecl;
 		StringBuffer str = new StringBuffer();
 		str.append(tdecl.qname());
 		int n = tdecl.args.length;
@@ -319,7 +322,7 @@ public final class XType extends Type {
 	}
 
 	public final MetaType[] getAllSuperTypes() {
-		return meta_type.tdecl.getAllSuperTypes();
+		return tdecl.getAllSuperTypes();
 	}
 }
 
@@ -552,7 +555,7 @@ public final class ArgType extends Type {
 
 public final class CompaundType extends Type {
 	@getter
-	public final Struct get$clazz() { return (Struct)ANode.getVersion(meta_type.tdecl); }
+	public final TypeDecl get$tdecl() { return ANode.getVersion(meta_type.tdecl); }
 
 	public CompaundType(CompaundMetaType meta_type, TVarBld bindings) {
 		super(meta_type, flReference, bindings);
@@ -560,22 +563,22 @@ public final class CompaundType extends Type {
 	
 	public final JType getJType() {
 		if (jtype == null)
-			jtype = new JBaseType(clazz);
+			jtype = new JBaseType((Struct)tdecl);
 		return jtype;
 	}
 
-	public Struct getStruct()					{ return clazz; }
-	public MNode getMeta(String name)			{ return clazz.getMeta(name); }
-	public Type getErasedType()					{ return clazz.xtype; }
+	public Struct getStruct()					{ return (Struct)tdecl; }
+	public MNode getMeta(String name)			{ return tdecl.getMeta(name); }
+	public Type getErasedType()					{ return tdecl.xtype; }
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
-		str.append(clazz.qname());
-		int n = clazz.args.length;
+		str.append(tdecl.qname());
+		int n = tdecl.args.length;
 		if (n > 0) {
 			str.append('<');
 			for(int i=0; i < n; i++) {
-				str.append(resolve(clazz.args[i].getAType()));
+				str.append(resolve(tdecl.args[i].getAType()));
 				if( i < n-1)
 					str.append(',');
 			}
@@ -585,7 +588,7 @@ public final class CompaundType extends Type {
 	}
 
 	public boolean checkResolved() {
-		return clazz.checkResolved();
+		return tdecl.checkResolved();
 	}
 
 	public Type getAutoCastTo(Type t)
@@ -593,7 +596,7 @@ public final class CompaundType extends Type {
 		if( t ≡ tpVoid ) return t;
 		if( t ≡ tpAny ) return t;
 		if( isInstanceOf(t) ) return this;
-		if( this.clazz.isStructView() && this.clazz.view_of.getType().getAutoCastTo(t) != null ) return t;
+		if( this.tdecl.isStructView() && ((KievView)((Struct)this.tdecl).variant).view_of.getType().getAutoCastTo(t) != null ) return t;
 		if( t instanceof CoreType && !t.isReference() ) {
 			if( t.getRefTypeForPrimitive() ≈ this )
 				return t;
@@ -616,7 +619,7 @@ public final class CompaundType extends Type {
 	}
 
 	public final MetaType[] getAllSuperTypes() {
-		return clazz.getAllSuperTypes();
+		return tdecl.getAllSuperTypes();
 	}
 }
 

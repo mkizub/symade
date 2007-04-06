@@ -29,7 +29,6 @@ public final view RStruct of Struct extends RTypeDecl {
 	static final AttrSlot TI_ATTR = new TmpAttrSlot("rstruct ti field temp expr",true,false,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
 
 	public:ro			WrapperMetaType			wmeta_type;
-	public:ro			TypeRef					view_of;
 	public:ro			Struct					package_clazz;
 	public				Struct					typeinfo_clazz;
 	public				Struct					iface_impl;
@@ -73,12 +72,10 @@ public final view RStruct of Struct extends RTypeDecl {
 
 	public Struct addSubStruct(Struct sub);
 	public Method addMethod(Method m);
-	public void removeMethod(Method m);
 	public Field addField(Field f);
-	public void removeField(Field f);
 	public Struct addCase(Struct cas);
 
-	public boolean instanceOf(Struct cl);
+	public boolean instanceOf(TypeDecl cl);
 	public Field resolveField(String name);
 	public Field resolveField(String name, boolean fatal);
 	public Method resolveMethod(String name, Type ret, ...);
@@ -99,7 +96,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					i++;
 				}
 			}
-			if (this.instanceOf(Type.tpTypeInfo.clazz) && ctx_method != null && ctx_method.u_name == nameInit) {
+			if (this.instanceOf(Type.tpTypeInfo.tdecl) && ctx_method != null && ctx_method.u_name == nameInit) {
 				if (t instanceof ArgType)
 					return new ASTIdentifier(from.pos,t.name.toString());
 			}
@@ -288,13 +285,13 @@ public final view RStruct of Struct extends RTypeDecl {
 			init.body = new Block(pos);
 			Var h = new LVar(pos,"hash",Type.tpInt,Var.VAR_LOCAL,ACC_FINAL);
 			Var v = new LVar(pos,"ti",typeinfo_clazz.xtype,Var.VAR_LOCAL,0);
-			Method mhash = Type.tpTypeInfo.clazz.resolveMethod("hashCode",Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
+			Method mhash = Type.tpTypeInfo.tdecl.resolveMethod("hashCode",Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
 			h.init = new CallExpr(pos,null,mhash,new ENode[]{
 				new LVarExpr(pos,init.params[0]),
 				new LVarExpr(pos,init.params[1])
 			});
 			init.block.addSymbol(h);
-			Method mget = Type.tpTypeInfo.clazz.resolveMethod("get",Type.tpTypeInfo,Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
+			Method mget = Type.tpTypeInfo.tdecl.resolveMethod("get",Type.tpTypeInfo,Type.tpInt,Type.tpClass,new ArrayType(Type.tpTypeInfo));
 			v.init = new CallExpr(pos,null,mget,new ENode[]{
 				new LVarExpr(pos,h),
 				new LVarExpr(pos,init.params[0]),
@@ -372,7 +369,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				new BooleanNotExpr(pos,
 					new CallExpr(pos,
 						new IFldExpr(pos,new ThisExpr(), typeinfo_clazz.resolveField("clazz")),
-						Type.tpClass.clazz.resolveMethod("isAssignableFrom",Type.tpBoolean,Type.tpClass),
+						Type.tpClass.tdecl.resolveMethod("isAssignableFrom",Type.tpBoolean,Type.tpClass),
 						new ENode[]{
 							new IFldExpr(pos,new LVarExpr(pos,misa.params[0]), typeinfo_clazz.resolveField("clazz"))
 						}
@@ -393,7 +390,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					new BooleanNotExpr(pos,
 						new CallExpr(pos,
 							new IFldExpr(pos,new ThisExpr(), f),
-							Type.tpTypeInfo.clazz.resolveMethod("$assignableFrom",Type.tpBoolean,Type.tpTypeInfo),
+							Type.tpTypeInfo.tdecl.resolveMethod("$assignableFrom",Type.tpBoolean,Type.tpTypeInfo),
 							new ENode[]{
 								new IFldExpr(pos,new LVarExpr(pos,misa.params[0]), f)
 							}
@@ -428,7 +425,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				new BooleanNotExpr(pos,
 					new CallExpr(pos,
 						new IFldExpr(pos,new ThisExpr(pos), typeinfo_clazz.resolveField("clazz")),
-						Type.tpClass.clazz.resolveMethod("isInstance",Type.tpBoolean,Type.tpObject),
+						Type.tpClass.tdecl.resolveMethod("isInstance",Type.tpBoolean,Type.tpObject),
 						new ENode[]{new LVarExpr(pos,misa.params[0])}
 						)
 					),
@@ -895,7 +892,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			Method overwr = null;
 
 			if (super_types.length > 0)
-				overwr = super_types[0].getStruct().getOverwrittenMethod(self.xtype,m);
+				overwr = getOverwrittenMethod(super_types[0].getStruct(),self.xtype,m);
 
 			// nothing to do, if no methods to combine
 			if (mlistb.length() == 1 && mm != null) {
@@ -973,6 +970,39 @@ public final view RStruct of Struct extends RTypeDecl {
 		}
 	}
 
+	private static Method getOverwrittenMethod(Struct clazz, Type base, Method m) {
+		Method mm = null, mmret = null;
+		if (!clazz.isInterface()) {
+			foreach (TypeRef st; clazz.super_types; st.getStruct() != null) {
+				mm = getOverwrittenMethod(st.getStruct(),base,m);
+				if (mm != null)
+					break;
+			}
+		}
+		if( mmret == null && mm != null ) mmret = mm;
+		trace(Kiev.debug && Kiev.debugMultiMethod,"lookup overwritten methods for "+base+"."+m+" in "+clazz);
+		foreach (Method mi; clazz.members) {
+			if( mi.isStatic() || mi.isPrivate() || mi.u_name == nameInit ) continue;
+			if( mi.u_name != m.u_name || mi.type.arity != m.type.arity ) {
+//				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
+				continue;
+			}
+			CallType mit = (CallType)Type.getRealType(base,mi.etype);
+			if( m.etype.equals(mit) ) {
+				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" overrides "+mi+" of type "+mit+" in class "+clazz);
+				mm = mi;
+				// Append constraints to m from mm
+				foreach(WBCCondition cond; mm.conditions; m.conditions.indexOf(cond) < 0)
+					m.conditions.add(cond);
+				if( mmret == null && mm != null ) mmret = mm;
+				break;
+			} else {
+				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" does not overrides "+mi+" of type "+mit+" in class "+clazz);
+			}
+		}
+		return mmret;
+	}
+
 	private static IfElseStat makeDispatchStat(@forward RStruct self, Method mm, MMTree mmt) {
 		IfElseStat dsp = null;
 		ENode cond = null;
@@ -991,12 +1021,12 @@ public final view RStruct of Struct extends RTypeDecl {
 				}
 				while (t instanceof CTimeType)
 					t = t.getEnclosedType();
-				if (t instanceof CompaundType && ((CompaundType)t).clazz.isTypeUnerasable()) {
+				if (t instanceof CompaundType && ((CompaundType)t).tdecl.isTypeUnerasable()) {
 					if (t.getStruct().typeinfo_clazz == null)
 						((RStruct)t.getStruct()).autoGenerateTypeinfoClazz();
 					ENode tibe = new CallExpr(pos,
 						accessTypeInfoField(mmt.m,t,false),
-						Type.tpTypeInfo.clazz.resolveMethod("$instanceof",Type.tpBoolean,Type.tpObject),
+						Type.tpTypeInfo.tdecl.resolveMethod("$instanceof",Type.tpBoolean,Type.tpObject),
 						new ENode[]{ new LVarExpr(pos,mm.params[j]) }
 						);
 					if( be == null )
@@ -1269,7 +1299,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		
 		// Generate super(...) constructor calls, if they are not
 		// specified as first statements of a constructor
-		if (qname() != Type.tpObject.clazz.qname()) {
+		if (qname() != Type.tpObject.tdecl.qname()) {
 			foreach (Constructor m; members) {
 				if( m.isStatic() ) continue;
 

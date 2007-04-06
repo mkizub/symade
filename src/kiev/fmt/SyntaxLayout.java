@@ -42,8 +42,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	@att public ASTNode[]				members;
 		 public String					q_name;	// qualified name
 
-	public ATextSyntax(Symbol<This> id) {
-		super(id);
+	public ATextSyntax() {
 		this.parent_syntax = new SymbolRef<ATextSyntax>();
 	}
 
@@ -179,7 +178,7 @@ public final class TextSyntax extends ATextSyntax {
 	@virtual typedef This  = TextSyntax;
 	
 	public TextSyntax() {
-		super(new Symbol<This>("<text-syntax>"));
+		this.sname = "<text-syntax>";
 	}
 
 }
@@ -203,9 +202,9 @@ public class SpaceInfo extends DNode {
 	@att int			text_size;
 	@att int			pixel_size;
 	
-	public SpaceInfo() { super(new Symbol<This>()); }
+	public SpaceInfo() {}
 	public SpaceInfo(String name, SpaceKind kind, int text_size, int pixel_size) {
-		super(new Symbol<This>(name));
+		this.sname = name;
 		this.kind = kind;
 		this.text_size = text_size;
 		this.pixel_size = pixel_size;
@@ -275,7 +274,7 @@ public abstract class AParagraphLayout extends DNode {
 	@att boolean align_rest_of_lines_right;
 	@att boolean new_lines_first_parent;
 	
-	public AParagraphLayout(Symbol<This> id) { super(id); }
+	public AParagraphLayout() {}
 
 	public boolean enabled(Drawable dr) { return true; }
 }
@@ -284,9 +283,9 @@ public abstract class AParagraphLayout extends DNode {
 public final class ParagraphLayout extends AParagraphLayout {
 	@virtual typedef This  = ParagraphLayout;
 
-	public ParagraphLayout() { super(new Symbol<ParagraphLayout>()); }
+	public ParagraphLayout() {}
 	public ParagraphLayout(String name, int ind_txt, int ind_pix) {
-		super(new Symbol<ParagraphLayout>(name));
+		this.sname = name;
 		this.indent_text_size = ind_txt;
 		this.indent_pixel_size = ind_pix;
 	}
@@ -312,10 +311,6 @@ public class ParagraphLayoutBlock extends AParagraphLayout {
 		}
 	}
 	
-	public ParagraphLayoutBlock() {
-		super(new Symbol<ParagraphLayoutBlock>());
-	}
-	
 	public boolean enabled(Drawable dr) {
 		if (dr == null)
 			return true;
@@ -337,9 +332,9 @@ public final class DrawColor extends DNode {
 	public int rgb_color;
 
 	
-	public DrawColor() { super(new Symbol<This>()); }
+	public DrawColor() {}
 	public DrawColor(String name) {
-		super(new Symbol<This>(name));
+		this.sname = name;
 	}
 }
 
@@ -350,9 +345,9 @@ public final class DrawFont extends DNode {
 	@att
 	public String font_name;
 
-	public DrawFont() { super(new Symbol<This>()); }
+	public DrawFont() {}
 	public DrawFont(String font_name) {
-		super(new Symbol<This>(font_name));
+		this.sname = font_name;
 		this.font_name = font_name;
 	}
 }
@@ -397,9 +392,8 @@ public abstract class ASyntaxElemDecl extends DNode {
 
 	@att public SyntaxElem				elem;
 
-	public ASyntaxElemDecl(Symbol<This> id) { super(id); }
-	public ASyntaxElemDecl(Symbol<This> id, SyntaxElem elem) {
-		super(id);
+	public ASyntaxElemDecl() {}
+	public ASyntaxElemDecl(SyntaxElem elem) {
 		this.elem = elem;
 	}
 }
@@ -407,10 +401,6 @@ public abstract class ASyntaxElemDecl extends DNode {
 @node
 public final class PartialSyntaxElemDecl extends ASyntaxElemDecl {
 	@virtual typedef This  = PartialSyntaxElemDecl;
-
-	public PartialSyntaxElemDecl() {
-		super(new Symbol<This>());
-	}
 }
 
 @node
@@ -420,11 +410,10 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 	@att public SymbolRef<Struct>		rnode;
 
 	public SyntaxElemDecl() {
-		super(new Symbol<This>());
 		this.rnode = new SymbolRef<Struct>();
 	}
 	public SyntaxElemDecl(Struct cls, SyntaxElem elem) {
-		super(new Symbol<This>(), elem);
+		super(elem);
 		this.rnode = new SymbolRef<Struct>((Symbol<Struct>)cls);
 	}
 
@@ -478,7 +467,7 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 	}
 
 	public SyntaxIdentTemplate() {
-		super(new Symbol<This>(), new SyntaxNode());
+		super(new SyntaxNode());
 	}
 
 	public void preResolveOut() {
@@ -507,7 +496,7 @@ public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 	@att public SymbolRef[]		expected_types; // ASTNode-s or SyntaxIdentTemplate-s 
 
 	public SyntaxExpectedTemplate() {
-		super(new Symbol<This>(), new SyntaxNode());
+		super(new SyntaxNode());
 	}
 
 	public void preResolveOut() {
@@ -547,10 +536,10 @@ public final class SyntaxElemFormatDecl extends DNode {
 	@att public SymbolRef<DrawFont>		font;
 	
 	public SyntaxElemFormatDecl() {
-		super(new Symbol<This>("fmt-"));
+		this.sname = "fmt-";
 	}
 	public SyntaxElemFormatDecl(String name) {
-		super(new Symbol<This>(name));
+		this.sname = name;
 	}
 
 	public void preResolveOut() {

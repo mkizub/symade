@@ -58,6 +58,7 @@ public final class JavaInterface extends TypeDeclVariant {
 
 @node
 public final class KievView extends TypeDeclVariant {
+	@att public TypeRef						view_of;
 }
 
 @node
@@ -68,15 +69,40 @@ public final class JavaAnnotation extends TypeDeclVariant {
 public final class PizzaCase extends TypeDeclVariant {
 	public int tag;
 	@ref public DeclGroupCaseFields		group;
+
+	public Field[] getCaseFields() {
+		DeclGroupCaseFields cases = this.group;
+		Field[] cflds = new Field[cases.decls.length];
+		for (int i=0; i < cflds.length; i++)
+			cflds[i] = (Field)cases.decls[i];
+		return cflds;
+	}
 }
 
 @node
 public final class JavaEnum extends TypeDeclVariant {
 	@ref public DeclGroupEnumFields		group;
+	public Field[] getEnumFields() {
+		DeclGroupEnumFields enums = this.group;
+		Field[] eflds = new Field[enums.decls.length];
+		for (int i=0; i < eflds.length; i++)
+			eflds[i] = (Field)enums.decls[i];
+		return eflds;
+	}
+
+	public int getIndexOfEnumField(Field f) {
+		DeclGroupEnumFields enums = this.group;
+		for (int i=0; i < enums.decls.length; i++) {
+			if (f == enums.decls[i])
+				return i;
+		}
+		throw new RuntimeException("Enum value for field "+f+" not found in "+this);
+	}
+
 }
 
 @node
-public class Struct extends TypeDecl implements PreScanneable {
+public class Struct extends TypeDecl {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -89,16 +115,15 @@ public class Struct extends TypeDecl implements PreScanneable {
 	@att public TypeDeclVariant				variant;
 	@abstract
 	@att public String						uniq_name;
-		 public KString						b_name;	// bytecode name
-		 public WrapperMetaType				wmeta_type;
-		 public ASTNodeMetaType				ameta_type;
-	@ref public TypeAssign					ometa_tdef;
-	@att public TypeRef						view_of;
-	@ref public Struct						typeinfo_clazz;
-	@ref public Struct						iface_impl;
 	@ref public DNode[]						sub_decls;
-	public kiev.be.java15.Attr[]			attrs = kiev.be.java15.Attr.emptyArray;
 
+	@ref(ext_data=true) public Struct				typeinfo_clazz;
+	@ref(ext_data=true) public Struct				iface_impl;
+	@ref(ext_data=true) public WrapperMetaType		wmeta_type;
+	@ref(ext_data=true) public ASTNodeMetaType		ameta_type;
+	@ref(ext_data=true) public TypeAssign			ometa_tdef;
+
+	@att
 	@getter public final String get$uniq_name() { return u_name; }
 	@setter public final void set$uniq_name(String val) { this.u_name = val; }
 
@@ -276,20 +301,6 @@ public class Struct extends TypeDecl implements PreScanneable {
 		return m;
 	}
 
-	/** Remove information about new method that belongs to this class */
-	public void removeMethod(Method m) {
-		// Check we already have this method
-		int i = 0;
-		for(i=0; i < members.length; i++) {
-			if( members[i].equals(m) ) {
-				members.del(i);
-				trace(Kiev.debug && Kiev.debugMembers,"Method "+m+" removed from class "+this);
-				return;
-			}
-		}
-		throw new RuntimeException("Method "+m+" do not exists in class "+this);
-	}
-
 	/** Add information about new field that belongs to this class */
 	public Field addField(Field f) {
 		// Check we already have this field
@@ -301,19 +312,6 @@ public class Struct extends TypeDecl implements PreScanneable {
 		members.append(f);
 		trace(Kiev.debug && Kiev.debugMembers,"Field "+f+" added to class "+this);
 		return f;
-	}
-
-	/** Remove information about a field that belongs to this class */
-	public void removeField(Field f) {
-		// Check we already have this method
-		for(int i=0; i < members.length; i++) {
-			if( members[i].equals(f) ) {
-				members.del(i);
-				trace(Kiev.debug && Kiev.debugMembers,"Field "+f+" removed from class "+this);
-				return;
-			}
-		}
-		throw new RuntimeException("Field "+f+" do not exists in class "+this);
 	}
 
 	/** Add information about new pizza case of this class */
@@ -353,14 +351,14 @@ public class Struct extends TypeDecl implements PreScanneable {
 	}
 
 	public Struct() {
-		super(new Symbol<This>());
+		super("");
 		this.u_name = "";
 		this.q_name = "";
 		this.b_name = KString.Empty;
 	}
 	
-	public Struct(Symbol<This> id, String u_name, Struct outer, int flags, TypeDeclVariant variant) {
-		super(id);
+	public Struct(String name, String u_name, Struct outer, int flags, TypeDeclVariant variant) {
+		super(name);
 		this.u_name = u_name;
 		this.xmeta_type = new CompaundMetaType(this);
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
@@ -384,73 +382,12 @@ public class Struct extends TypeDecl implements PreScanneable {
 
 	public Struct getStruct() { return this; }
 
-	public Type getType() { return this.xtype; }
-
-	public String toString() { return qname().toString(); }
-
-	public Field[] getEnumFields() {
-		if (!isEnum() || !(variant instanceof JavaEnum))
-			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
-		DeclGroupEnumFields enums = ((JavaEnum)variant).group;
-		Field[] eflds = new Field[enums.decls.length];
-		for (int i=0; i < eflds.length; i++)
-			eflds[i] = (Field)enums.decls[i];
-		return eflds;
-	}
-
-	public int getIndexOfEnumField(Field f) {
-		if (!isEnum() || !(variant instanceof JavaEnum))
-			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
-		DeclGroupEnumFields enums = ((JavaEnum)variant).group;
-		for (int i=0; i < enums.decls.length; i++) {
-			if (f == enums.decls[i])
-				return i;
-		}
-		throw new RuntimeException("Enum value for field "+f+" not found in "+this);
-	}
-
-	public Field[] getCaseFields() {
-		if (!isEnum() || !(variant instanceof PizzaCase))
-			throw new RuntimeException("Request for case fields in non-case structure "+this);
-		DeclGroupCaseFields cases = ((PizzaCase)variant).group;
-		Field[] cflds = new Field[cases.decls.length];
-		for (int i=0; i < cflds.length; i++)
-			cflds[i] = (Field)cases.decls[i];
-		return cflds;
-	}
-
 	public int countAnonymouseInnerStructs() {
 		int i=0;
 		foreach(Struct s; sub_decls; s.isAnonymouse() || s.isLocal()) i++;
 		return i;
 	}
 
-	public int countPackedFields() {
-		int i = 0;
-		foreach (Field n; getAllFields(); n.isPackedField()) i++;
-		return i;
-	}
-
-	public int countAbstractFields() {
-		int i = 0;
-		foreach (Field n; getAllFields(); n.isAbstract()) i++;
-		return i;
-	}
-
-	public final boolean checkResolved() {
-		if( !isTypeDeclLoaded() ) {
-			if (!Env.loadStruct(this).isTypeDeclLoaded()) {
-				if (isPackage())
-					setTypeDeclLoaded(true);
-				else
-					throw new RuntimeException("Class "+this+" not found");
-			}
-			if (!isTypeDeclLoaded())
-				throw new RuntimeException("Class "+this+" unresolved");
-		}
-		return true;
-	}
-	
 	public boolean preResolveIn() {
 		if (this.isLoadedFromBytecode())
 			return false;
@@ -465,10 +402,6 @@ public class Struct extends TypeDecl implements PreScanneable {
 			Kiev.runProcessorsOn(this);
 		} finally { this.setLoadedFromBytecode(false); }
 		return true;
-	}
-
-	public final boolean mainResolveIn() {
-		return true; //!isLocal();
 	}
 
 	public void mainResolveOut() {
@@ -538,45 +471,23 @@ public class Struct extends TypeDecl implements PreScanneable {
 	public boolean tryLoad(ASTNode@ node, String name) {
 		if( isPackage() ) {
 			trace(Kiev.debug && Kiev.debugResolve,"Struct: trying to load in package "+this);
-			Struct cl;
+			TypeDecl cl;
 			String qn = name;
 			if (this.equals(Env.root))
-				cl = Env.loadStruct(qn);
+				cl = Env.loadTypeDecl(qn);
 			else
-				cl = Env.loadStruct(qn=(this.qname()+"."+name).intern());
+				cl = Env.loadTypeDecl(qn=(this.qname()+"."+name).intern());
 			if( cl != null ) {
-				trace(Kiev.debug && Kiev.debugResolve,"Struct "+cl+" found in "+this);
+				trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+cl+" found in "+this);
 				node = cl;
 				return true;
 			} else {
-				trace(Kiev.debug && Kiev.debugResolve,"Class "+qn+" not found in "+this);
+				trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+qn+" not found in "+this);
 			}
 		}
 		return false;
 	}
 
-	public Field getWrappedField(boolean required) {
-		foreach (TypeRef st; super_types; st.getStruct() != null) {
-			Field wf = st.getStruct().getWrappedField(false);
-			if (wf != null)
-				return wf;
-		}
-		Field wf = null;
-		foreach(Field n; getAllFields(); n.isForward()) {
-			if (wf == null)
-				wf = (Field)n;
-			else
-				throw new CompilerException(n,"Wrapper class with multiple forward fields");
-		}
-		if ( wf == null ) {
-			if (required)
-				throw new CompilerException(this,"Wrapper class "+this+" has no forward field");
-			return null;
-		}
-		if( Kiev.verbose ) System.out.println("Class "+this+" is a wrapper for field "+wf);
-		return wf;
-	}
-	
 	public void autoGenerateMembers() {
 		checkResolved();
 		if( isMembersGenerated() ) return;
@@ -638,7 +549,8 @@ public class Struct extends TypeDecl implements PreScanneable {
 							//init.params.append(new LVar(pos,"text",Type.tpString,Var.PARAM_NORMAL,ACC_SYNTHETIC));
 						}
 						if (isStructView()) {
-							init.params.append(new LVar(pos,nameImpl,view_of.getType(),Var.PARAM_NORMAL,ACC_FINAL|ACC_SYNTHETIC));
+							KievView kview = (KievView)this.variant;
+							init.params.append(new LVar(pos,nameImpl,kview.view_of.getType(),Var.PARAM_NORMAL,ACC_FINAL|ACC_SYNTHETIC));
 						}
 					}
 					init.pos = pos;
@@ -657,39 +569,6 @@ public class Struct extends TypeDecl implements PreScanneable {
 			s.autoGenerateMembers();
 	}
 
-	public Method getOverwrittenMethod(Type base, Method m) {
-		Method mm = null, mmret = null;
-		if (!isInterface()) {
-			foreach (TypeRef st; super_types; st.getStruct() != null) {
-				mm = st.getStruct().getOverwrittenMethod(base,m);
-				if (mm != null)
-					break;
-			}
-		}
-		if( mmret == null && mm != null ) mmret = mm;
-		trace(Kiev.debug && Kiev.debugMultiMethod,"lookup overwritten methods for "+base+"."+m+" in "+this);
-		foreach (Method mi; members) {
-			if( mi.isStatic() || mi.isPrivate() || mi.u_name == nameInit ) continue;
-			if( mi.u_name != m.u_name || mi.type.arity != m.type.arity ) {
-//				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
-				continue;
-			}
-			CallType mit = (CallType)Type.getRealType(base,mi.etype);
-			if( m.etype.equals(mit) ) {
-				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" overrides "+mi+" of type "+mit+" in class "+this);
-				mm = mi;
-				// Append constraints to m from mm
-				foreach(WBCCondition cond; mm.conditions; m.conditions.indexOf(cond) < 0)
-					m.conditions.add(cond);
-				if( mmret == null && mm != null ) mmret = mm;
-				break;
-			} else {
-				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" does not overrides "+mi+" of type "+mit+" in class "+this);
-			}
-		}
-		return mmret;
-	}
-
 	static class StructDFFunc extends DFFunc {
 		final int res_idx;
 		StructDFFunc(DataFlowInfo dfi) {
@@ -705,59 +584,6 @@ public class Struct extends TypeDecl implements PreScanneable {
 	}
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
 		return new StructDFFunc(dfi);
-	}
-
-	public void resolveMetaDefaults() {
-		if (isAnnotation()) {
-			foreach(Method m; members) {
-				try {
-					m.resolveMetaDefaults();
-				} catch(Exception e) {
-					Kiev.reportError(m,e);
-				}
-			}
-		}
-		if( !isPackage() ) {
-			foreach (Struct sub; sub_decls) {
-				if (!sub.isAnonymouse())
-					sub.resolveMetaDefaults();
-			}
-		}
-	}
-
-	public void resolveMetaValues() {
-		this.meta.resolve();
-		foreach(ASTNode n; members) {
-			if (n instanceof DNode) {
-				DNode dn = (DNode)n;
-				dn.meta.resolve();
-				if (dn instanceof Method)
-					foreach (Var p; dn.params)
-						p.meta.resolve();
-			}
-			if (n instanceof DeclGroup) {
-				DeclGroup dn = (DeclGroup)n;
-				dn.meta.resolve();
-				foreach (DNode d; dn.decls)
-					d.meta.resolve();
-			}
-		}
-		
-		if( !isPackage() ) {
-			foreach (Struct sub; sub_decls) {
-				sub.resolveMetaValues();
-			}
-		}
-	}
-	
-	public boolean setBody(ENode body) {
-		if( !isPizzaCase() ) return false;
-		Method init = (Method)members[0];
-		if (init.body instanceof Block)
-			init.block.stats.add(body);
-		else
-			init.setBody(body);
-		return true;
 	}
 }
 

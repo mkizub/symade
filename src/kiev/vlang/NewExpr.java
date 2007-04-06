@@ -124,7 +124,7 @@ public final class NewExpr extends ENode {
 		clazz.setStatic(ctx_method==null || ctx_method.isStatic());
 		clazz.super_types.delAll();
 		TypeRef sup_tr = this.type.ncopy();
-		if( sup.clazz.isInterface() ) {
+		if( sup.tdecl.isInterface() ) {
 			clazz.super_types.insert(0, new TypeRef(Type.tpObject));
 			clazz.super_types.add(sup_tr);
 		} else {

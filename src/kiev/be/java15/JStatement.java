@@ -210,9 +210,9 @@ public final view JCondStat of CondStat extends JENode {
 		}
 		Method func;
 		if (wbc.sname == null || wbc.u_name == null)
-			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString);
+			func = Type.tpDebug.tdecl.resolveMethod(fname,Type.tpVoid,Type.tpString);
 		else
-			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);
+			func = Type.tpDebug.tdecl.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);
 		return (JMethod)func;
 	}
 	

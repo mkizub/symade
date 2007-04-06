@@ -113,12 +113,12 @@ public final class RewritePattern extends Var {
 
 	@att public RewritePattern[]		vars;
 
-	public RewritePattern() { super(new Symbol<This>(),REWRITE_PATTERN); }
-	public RewritePattern(Symbol<This> id, TypeRef tp) {
-		super(id, tp, REWRITE_PATTERN, 0);
+	public RewritePattern() { super(REWRITE_PATTERN); }
+	public RewritePattern(String name, TypeRef tp) {
+		super(name, tp, REWRITE_PATTERN, 0);
 	}
-	public RewritePattern(String id, ASTNodeType tp) {
-		super(new Symbol<This>(id), new TypeRef(tp), REWRITE_PATTERN, 0);
+	public RewritePattern(String name, ASTNodeType tp) {
+		super(name, new TypeRef(tp), REWRITE_PATTERN, 0);
 	}
 
 	@getter public Type get$type() { return new ASTNodeType(this); }

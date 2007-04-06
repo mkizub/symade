@@ -165,7 +165,7 @@ public class Env extends Struct {
 				cl.variant = variant;
 				cl.package_clazz = outer;
 				cl.typeinfo_clazz = null;
-				cl.view_of = null;
+				//cl.view_of = null;
 				cl.super_types.delAll();
 				cl.args.delAll();
 				cl.sub_decls.delAll();
@@ -176,21 +176,21 @@ public class Env extends Struct {
 			outer.addSubStruct((Struct)cl);
 			return cl;
 		}
-		Symbol<Struct> name = new Symbol<Struct>();
 		String uniq_name;
+		String name;
 		if (direct) {
-			name = new Symbol<Struct>(sname);
 			uniq_name = sname;
+			name = sname;
 		}
 		else if (sname != null) {
 			// Construct name of local class
 			uniq_name = outer.countAnonymouseInnerStructs()+"$"+sname;
-			name = new Symbol<Struct>(sname);
+			name = sname;
 		}
 		else {
 			// Local anonymouse class
 			uniq_name = String.valueOf(outer.countAnonymouseInnerStructs());
-			name = new Symbol<Struct>(uniq_name);
+			name = uniq_name;
 		}
 		Struct cl = new Struct(name,uniq_name,outer,acces,variant);
 		outer.addSubStruct(cl);
@@ -447,33 +447,33 @@ public class Env extends Struct {
 		return jenv.existsClazz(qname);
 	}
 
-	public static Struct loadStruct(String qname, boolean fatal) {
-		Struct s = loadStruct(qname);
+	public static TypeDecl loadTypeDecl(String qname, boolean fatal) {
+		TypeDecl s = loadTypeDecl(qname);
 		if (fatal && s == null)
-			throw new RuntimeException("Cannot find class "+qname);
+			throw new RuntimeException("Cannot find TypeDecl "+qname);
 		return s;
 	}
 
-	public static Struct loadStruct(String qname) {
+	public static TypeDecl loadTypeDecl(String qname) {
 		if (qname == "") return Env.root;
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
-		Struct cl = (Struct)resolveGlobalDNode(qname);
+		TypeDecl cl = (TypeDecl)resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
 		if (cl == null)
 			cl = jenv.loadClazz(qname);
-		else if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse())
-			cl = jenv.loadClazz(cl);
+		else if (!cl.isTypeDeclLoaded() && cl instanceof Struct && !cl.isAnonymouse())
+			cl = jenv.loadClazz((Struct)cl);
 		if (cl == null)
 			classHashOfFails.put(qname);
 		return cl;
 	}
 
-	public static Struct loadStruct(Struct cl) {
+	public static TypeDecl loadTypeDecl(TypeDecl cl) {
 		if (cl == Env.root) return Env.root;
 		// Load if not loaded or not resolved
-		if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse())
-			jenv.loadClazz(cl);
+		if (!cl.isTypeDeclLoaded() && cl instanceof Struct && !cl.isAnonymouse())
+			jenv.loadClazz((Struct)cl);
 		return cl;
 	}
 	

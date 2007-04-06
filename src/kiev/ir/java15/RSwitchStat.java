@@ -92,7 +92,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
 						this.open();
 						if (et.getStruct() != null && et.getStruct().isEnum())
-							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField((Field)f.var));
+							val = new ConstIntExpr(((JavaEnum)et.getStruct().variant).getIndexOfEnumField((Field)f.var));
 						else
 							val = f.var.init.ncopy();
 					}
@@ -187,7 +187,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 						ctx_tdecl.members.add(typehash);
 						CallExpr cae = new CallExpr(pos,
 							new SFldExpr(pos,typehash),
-							Type.tpTypeSwitchHash.clazz.resolveMethod("index",Type.tpInt, Type.tpObject),
+							Type.tpTypeSwitchHash.tdecl.resolveMethod("index",Type.tpInt, Type.tpObject),
 							new ENode[]{new LVarExpr(pos,tmpvar.getVar())}
 							);
 						sel = cae;
@@ -281,7 +281,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					}
 					if( !has_unabrupted_case ) {
 						Type tp = sel.getType();
-						Field[] eflds = tp.getStruct().getEnumFields();
+						Field[] eflds = ((JavaEnum)tp.getStruct().variant).getEnumFields();
 						if (eflds.length == cases.length)
 							setMethodAbrupted(true);
 					}

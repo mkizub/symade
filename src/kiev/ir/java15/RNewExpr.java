@@ -123,14 +123,14 @@ public static final view RNewArrayExpr of NewArrayExpr extends RENode {
 			if( args.length == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
-						Type.tpTypeInfo.clazz.resolveMethod("newArray",Type.tpObject,Type.tpInt),
+						Type.tpTypeInfo.tdecl.resolveMethod("newArray",Type.tpObject,Type.tpInt),
 						new ENode[]{~args[0]}
 					)));
 				return;
 			} else {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,ti,
-						Type.tpTypeInfo.clazz.resolveMethod("newArray",Type.tpObject,new ArrayType(Type.tpInt)),
+						Type.tpTypeInfo.tdecl.resolveMethod("newArray",Type.tpObject,new ArrayType(Type.tpInt)),
 						new ENode[]{
 							new NewInitializedArrayExpr(pos,new TypeExpr(Type.tpInt,Operator.PostTypeArray),1,((NewArrayExpr)this).args.delToArray())
 						}
@@ -214,7 +214,7 @@ public final view RNewClosure of NewClosure extends RENode {
 		clazz.setAnonymouse(true);
 		if (ctx_method==null || ctx_method.isStatic())
 			clazz.setStatic(true);
-		if (!Env.loadStruct(Type.tpClosureClazz).isTypeDeclLoaded())
+		if (!Env.loadTypeDecl(Type.tpClosureClazz).isTypeDeclLoaded())
 			throw new RuntimeException("Core class "+Type.tpClosureClazz+" not found");
 		clazz.super_types.insert(0, new TypeRef(Type.tpClosureClazz.xtype));
 		Kiev.runProcessorsOn(clazz);

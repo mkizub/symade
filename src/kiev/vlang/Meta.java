@@ -238,7 +238,7 @@ public class UserMeta extends MNode {
 		if (mt == null || mt.getStruct() == null || !mt.getStruct().isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
-		String name = ((CompaundType)mt).clazz.qname();
+		String name = ((CompaundType)mt).tdecl.qname();
 		UserMeta m = this;
 		if (m != this) {
 			this.replaceWithNode(m);

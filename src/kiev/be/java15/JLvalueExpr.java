@@ -369,7 +369,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 
 	public JField resolveVarVal() {
 		CompaundType prt = Type.getProxyType(var.type);
-		JField var_valf = ((JStruct)prt.clazz).resolveField(nameCellVal);
+		JField var_valf = ((JStruct)(Struct)prt.tdecl).resolveField(nameCellVal);
 		return var_valf;
 	}
 

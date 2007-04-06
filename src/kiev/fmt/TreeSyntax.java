@@ -72,7 +72,6 @@ public class TreeSyntax extends ATextSyntax {
 	}
 
 	public TreeSyntax() {
-		super(new Symbol<This>());
 		exprs = new Hashtable<Operator, SyntaxElem>();
 	}
 

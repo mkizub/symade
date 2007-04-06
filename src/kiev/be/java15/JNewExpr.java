@@ -67,7 +67,7 @@ public final view JNewExpr of NewExpr extends JENode {
 				ENode tie = new IFldExpr(pos,new ThisExpr(pos),((Struct)code.clazz).resolveField(nameTypeInfo));
 				ENode e = new CastExpr(pos,type,
 					new CallExpr(pos,tie,
-						Type.tpTypeInfo.clazz.resolveMethod("newInstance",Type.tpObject,Type.tpInt),
+						Type.tpTypeInfo.tdecl.resolveMethod("newInstance",Type.tpObject,Type.tpInt),
 						new ENode[]{new ConstIntExpr(i)}
 					)
 				);
@@ -94,7 +94,7 @@ public final view JNewExpr of NewExpr extends JENode {
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);
 		if( type.getStruct() != null && type.getStruct().isLocal() ) {
-			JStruct cl = (JStruct)((CompaundType)type).clazz;
+			JStruct cl = (JStruct)(Struct)((CompaundType)type).tdecl;
 			foreach (JField f; cl.getAllFields()) {
 				if( !f.isNeedProxy() ) continue;
 				JVar v = ((JLVarExpr)f.init).var;

@@ -52,7 +52,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	@att public Var[]				params;
 	@att public Symbol[]			aliases;
 	@att public ENode				body;
-	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 	@att public WBCCondition[]	 	conditions;
 	@att(ext_data=true) public Var	ret_var;
 
@@ -251,13 +250,11 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	public static final Method[]	emptyArray = new Method[0];
 
-	public Method(Symbol<This> id) {
-		super(id);
-	}
-	public Method(Symbol<This> id, TypeRef type_ret, int flags) {
-		super(id);
+	public Method() {}
+	public Method(String name, TypeRef type_ret, int flags) {
+		this.sname = name;
 		assert (!(sname == nameInit || sname == nameClassInit) || this instanceof Constructor);
-		this.u_name = id.sname;
+		this.u_name = name;
 		this.type_ret = type_ret;
 		this.dtype_ret = type_ret.ncopy();
 		if (flags != 0) {
@@ -836,19 +833,16 @@ public final class MethodImpl extends Method {
 	@virtual typedef This  = MethodImpl;
 	@virtual typedef RView = RMethod;
 
-	public MethodImpl() { super(new Symbol<This>()); }
+	public MethodImpl() {}
 
 	public MethodImpl(String name, Type ret) {
-		this(new Symbol<This>(name),new TypeRef(ret),0);
+		this(name, new TypeRef(ret),0);
 	}
 	public MethodImpl(String name, Type ret, int fl) {
-		this(new Symbol<This>(name),new TypeRef(ret),fl);
+		this(name, new TypeRef(ret),fl);
 	}
 	public MethodImpl(String name, TypeRef type_ret, int fl) {
-		this(new Symbol<This>(name), type_ret, fl);
-	}
-	public MethodImpl(Symbol<This> id, TypeRef type_ret, int flags) {
-		super(id, type_ret, flags);
+		super(name, type_ret, fl);
 	}
 }
 
@@ -866,10 +860,10 @@ public final class Constructor extends Method {
 
 	@att public ENode[]				addstats;
 
-	public Constructor() { super(new Symbol<This>()); }
+	public Constructor() {}
 
 	public Constructor(int fl) {
-		super(new Symbol<This>((fl&ACC_STATIC)==0 ? nameInit:nameClassInit), new TypeRef(Type.tpVoid), fl);
+		super( ((fl & ACC_STATIC)==0 ? nameInit:nameClassInit), new TypeRef(Type.tpVoid), fl);
 	}
 	
 	@getter @att public String get$sname() {
@@ -903,8 +897,6 @@ public final class Initializer extends DNode implements PreScanneable {
 	@att public ENode				body;
 
 	@getter public final Block get$block()	{ return (Block)this.body; }
-
-	public Initializer() { super(new Symbol<This>()); }
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "this")
@@ -945,11 +937,11 @@ public final class WBCCondition extends DNode {
 	@ref public Method				definer;
 	@att public CodeAttr			code_attr;
 
-	public WBCCondition() { super(new Symbol<This>()); }
+	public WBCCondition() {}
 
 	public WBCCondition(int pos, WBCType cond, String name, ENode body) {
-		super(new Symbol<This>(pos,name));
 		this.pos = pos;
+		this.sname = name;
 		this.cond = cond;
 		this.body = body;
 	}

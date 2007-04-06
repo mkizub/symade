@@ -94,8 +94,6 @@ public final class Label extends DNode {
 		links = links.diff(lnk);
 	}
 
-	public Label() { super(new Symbol<This>()); }
-
 	static class LabelDFFunc extends DFFunc {
 		final int res_idx;
 		LabelDFFunc(DataFlowInfo dfi) {

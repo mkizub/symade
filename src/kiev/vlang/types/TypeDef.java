@@ -37,10 +37,13 @@ public abstract class TypeDef extends TypeDecl {
 
 	public abstract TypeRef[] getLowerBounds();
 
-	public TypeDef(Symbol<This> id) {
-		super(id);
-		this.pos = id.pos;
-		this.u_name = id.sname;
+	public TypeDef(String name) {
+		super(name);
+		this.u_name = name;
+	}
+
+	public boolean checkResolved() {
+		return true;
 	}
 
 	public Type getType() {
@@ -87,23 +90,18 @@ public final class TypeAssign extends TypeDef {
 	
 	public TypeRef[] getLowerBounds() { return super_types; }
 
-	public TypeAssign() { super(new Symbol<This>()); }
-
-	public TypeAssign(String nm) {
-		super(new Symbol<This>(nm));
+	public TypeAssign() {
+		super(null);
 	}
-
-	public TypeAssign(Symbol<This> id) {
-		super(id);
+	public TypeAssign(String name) {
+		super(name);
 	}
-
-	public TypeAssign(Symbol<This> id, TypeRef sup) {
-		super(id);
+	public TypeAssign(String name, TypeRef sup) {
+		super(name);
 		this.super_types.add(sup);
 	}
-
-	public TypeAssign(String nm, Type sup) {
-		super(new Symbol<This>(nm));
+	public TypeAssign(String name, Type sup) {
+		super(name);
 		this.super_types.add(new TypeRef(sup));
 	}
 	
@@ -151,23 +149,18 @@ public final class TypeConstr extends TypeDef {
 
 	public TypeRef[] getLowerBounds() { return lower_bound; }
 
-	public TypeConstr() { super(new Symbol<This>()); }
-
-	public TypeConstr(String nm) {
-		super(new Symbol<This>(nm));
+	public TypeConstr() {
+		super(null);
 	}
-
-	public TypeConstr(Symbol<This> id) {
-		super(id);
+	public TypeConstr(String name) {
+		super(name);
 	}
-
-	public TypeConstr(Symbol<This> id, TypeRef sup) {
-		super(id);
+	public TypeConstr(String name, TypeRef sup) {
+		super(name);
 		this.super_types.add(sup);
 	}
-
-	public TypeConstr(String nm, Type sup) {
-		super(new Symbol<This>(nm));
+	public TypeConstr(String name, Type sup) {
+		super(name);
 		this.super_types.add(new TypeRef(sup));
 	}
 	

@@ -29,7 +29,6 @@ public final view JMethod of Method extends JDNode {
 
 	public:ro	JVar[]					params;
 	public:ro	JENode					body;
-	public		Attr[]					attrs;
 	public:ro	JWBCCondition[]			conditions;
 
 	public:ro	CallType				type;
@@ -58,25 +57,6 @@ public final view JMethod of Method extends JDNode {
 	
 	public CodeLabel getBreakLabel() {
 		return block.getBreakLabel();
-	}
-
-	/** Add information about new attribute that belongs to this class */
-	public Attr addAttr(Attr a) {
-		for(int i=0; i < attrs.length; i++) {
-			if(attrs[i].name == a.name) {
-				attrs[i] = a;
-				return a;
-			}
-		}
-		attrs = (Attr[])Arrays.append(attrs,a);
-		return a;
-	}
-
-	public Attr getAttr(KString name) {
-		for(int i=0; i < attrs.length; i++)
-			if( attrs[i].name.equals(name) )
-				return attrs[i];
-		return null;
 	}
 
 	public void generate(ConstPool constPool) {

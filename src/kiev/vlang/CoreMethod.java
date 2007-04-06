@@ -41,11 +41,9 @@ public final class CoreMethod extends Method {
 	public CoreFunc core_func;
 	public BEndFunc bend_func;
 	
-	public CoreMethod() {
-		super(new Symbol<This>());
-	}
+	public CoreMethod() {}
 	public CoreMethod(String name, Type ret, int flags) {
-		super(new Symbol<This>(name), new TypeRef(ret), flags);
+		super(name, new TypeRef(ret), flags);
 	}
 	
 	public void attachToCompiler() {

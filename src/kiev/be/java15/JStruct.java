@@ -36,7 +36,6 @@ public final view JStruct of Struct extends JTypeDecl {
 	public:ro	JStruct				package_clazz;
 	public:ro	JStruct				iface_impl;
 	public:ro	JDNode[]			sub_decls;
-	public		Attr[]				attrs;
 
 	public final boolean isPizzaCase();
 	public final boolean isHasCases();
@@ -56,27 +55,6 @@ public final view JStruct of Struct extends JTypeDecl {
 		else
 			b_name = KString.from(pkg.bname()+"$"+u_name);
 		return b_name;
-	}
-
-	/** Add information about new attribute that belongs to this class */
-	public Attr addAttr(Attr a) {
-		// Check we already have this attribute
-		for(int i=0; i < attrs.length; i++) {
-			if(attrs[i].name == a.name) {
-				attrs[i] = a;
-				return a;
-			}
-		}
-		attrs = (Attr[])Arrays.append(attrs,a);
-		return a;
-	}
-
-	public Attr getAttr(KString name) {
-		if( attrs != null )
-			for(int i=0; i < attrs.length; i++)
-				if( attrs[i].name.equals(name) )
-					return attrs[i];
-		return null;
 	}
 
 	public JENode accessTypeInfoField(JNode from, Type t, boolean from_gen) {
@@ -202,7 +180,8 @@ public final view JStruct of Struct extends JTypeDecl {
 		if (meta.hasRuntimeInvisibles())
 			this.addAttr(new RIMetaAttr(meta));
 		
-		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
+		for(int i=0; jattrs!=null && i < jattrs.length; i++)
+			jattrs[i].generate(constPool);
 		foreach (JField f; getAllFields()) {
 			constPool.addAsciiCP(f.u_name);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
@@ -221,8 +200,10 @@ public final view JStruct of Struct extends JTypeDecl {
 					f.addAttr(new ConstantValueAttr(co));
 			}
 
-			foreach (Attr a; f.attrs)
-				a.generate(constPool);
+			if (f.jattrs != null) {
+				foreach (Attr a; f.jattrs)
+					a.generate(constPool);
+			}
 		}
 		foreach (JMethod m; members) {
 			constPool.addAsciiCP(m.u_name);
@@ -271,13 +252,17 @@ public final view JStruct of Struct extends JTypeDecl {
 				if (isAnnotation() && m.body instanceof MetaValue)
 					m.addAttr(new DefaultMetaAttr((MetaValue)m.body));
 
-				foreach (Attr a; m.attrs)
-					a.generate(constPool);
+				if (m.jattrs != null) {
+					foreach (Attr a; m.jattrs)
+						a.generate(constPool);
+				}
 			} catch(Exception e ) {
 				Kiev.reportError(m,"Compilation error: "+e);
 				m.generate(constPool);
-				foreach (Attr a; m.attrs)
-					a.generate(constPool);
+				if (m.jattrs != null) {
+					foreach (Attr a; m.jattrs)
+						a.generate(constPool);
+				}
 			}
 			if( Kiev.safe && isBad() ) return;
 		}
@@ -333,13 +318,9 @@ public final view JStruct of Struct extends JTypeDecl {
 				sub.cleanup();
 		}
 
-		foreach (JDNode n; this.members) {
-			if (n instanceof JField)
-				n.attrs = Attr.emptyArray;
-			else if (n instanceof JMethod)
-				n.attrs = Attr.emptyArray;
-		}
-		this.attrs = Attr.emptyArray;
+		foreach (JDNode n; this.members)
+			n.jattrs = null;
+		this.jattrs = null;
 	}
 
 }

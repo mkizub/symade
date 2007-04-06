@@ -36,7 +36,7 @@ public class SyntaxJavaExprTemplate extends ASyntaxElemDecl {
 	@att public SyntaxToken[]	operators;
 
 	public SyntaxJavaExprTemplate() {
-		super(new Symbol<This>(), new SyntaxNode());
+		super(new SyntaxNode());
 		this.l_paren = new SyntaxToken("(");
 		this.r_paren = new SyntaxToken(")");
 	}
@@ -52,7 +52,6 @@ public class SyntaxJavaCommentTemplate extends ASyntaxElemDecl {
 	@att public SyntaxElem		cmt_beg;
 	@att public SyntaxElem		cmt_end;
 
-	public SyntaxJavaCommentTemplate() { super(new Symbol<This>()); }
 }
 
 @node
@@ -258,7 +257,6 @@ public class KievTextSyntax extends ATextSyntax {
 	}
 
 	public KievTextSyntax() {
-		super(new Symbol<This>()); 
 		exprs = new Hashtable<Operator, SyntaxElem>();
 	}
 

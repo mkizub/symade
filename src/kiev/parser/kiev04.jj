@@ -240,14 +240,16 @@ public abstract class kiev040 {
 	}
 
 	private TypeAssign mkTypeAssign(Symbol name, ASTModifiers modifiers) {
-		TypeAssign arg = new TypeAssign(new Symbol<TypeAssign>(name.pos,name.sname));
+		TypeAssign arg = new TypeAssign(name.sname);
+		arg.pos = name.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg.meta);
 		return arg;
 	}
 
 	private TypeConstr mkTypeConstr(Symbol name, ASTModifiers modifiers) {
-		TypeConstr arg = new TypeConstr(new Symbol<TypeConstr>(name.pos,name.sname));
+		TypeConstr arg = new TypeConstr(name.sname);
+		arg.pos = name.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg.meta);
 		return arg;
@@ -261,14 +263,14 @@ public abstract class kiev040 {
 	}
 	
 	private Method mkMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
-		Method meth = new MethodImpl(new Symbol<MethodImpl>(id.pos,id.sname), ret, 0);
+		Method meth = new MethodImpl(id.sname, ret, 0);
 		meth.pos = id.pos;
 		modifiers.moveToNode(meth.meta);
 		return meth;
 	}
 	
 	private RuleMethod mkRuleMethod(Symbol id, ASTModifiers modifiers, TypeRef ret) {
-		RuleMethod meth = new RuleMethod(new Symbol<RuleMethod>(id.pos,id.sname), 0);
+		RuleMethod meth = new RuleMethod(id.sname, 0);
 		meth.pos = id.pos;
 		modifiers.moveToNode(meth.meta);
 		return meth;
@@ -277,14 +279,14 @@ public abstract class kiev040 {
 	private Field mkField(Symbol id, TypeRef tp, ASTModifiers modifiers) {
 		if (tp == null)
 			tp = new TypeDeclRef();
-		Field f = new Field(new Symbol<Field>(id.pos,id.sname), tp, 0);
+		Field f = new Field(id.sname, tp, 0);
 		f.pos = id.pos;
 		modifiers.copyToNode(f.meta);
 		return f;
 	}
 
 	private Field mkEnumField(Symbol id, ASTModifiers modifiers) {
-		Field f = new Field(new Symbol<Field>(id.pos,id.sname),new TypeDeclRef(),0);
+		Field f = new Field(id.sname,new TypeDeclRef(),0);
 		f.kind = Var.VAL_ENUM;
 		f.pos = id.pos;
 		modifiers.moveToNode(f.meta);
@@ -292,7 +294,7 @@ public abstract class kiev040 {
 	}
 
 	private Field mkCaseField(Symbol id, ASTModifiers modifiers, TypeRef tp) {
-		Field f = new Field(new Symbol<Field>(id.pos,id.sname),tp,0|ACC_PUBLIC);
+		Field f = new Field(id.sname,tp,0|ACC_PUBLIC);
 		f.pos = id.pos;
 		modifiers.moveToNode(f.meta);
 		return f;
@@ -329,7 +331,8 @@ public abstract class kiev040 {
 	}
 	
 	private RewritePattern mkRewritePattern(Symbol id, ASTModifiers modifiers, TypeRef tp) {
-		RewritePattern v = new RewritePattern(new Symbol<RewritePattern>(id.pos,id.sname), tp);
+		RewritePattern v = new RewritePattern(id.sname, tp);
+		v.pos = id.pos;
 		modifiers.moveToNode(v.meta);
 		return v;
 	}
@@ -1168,10 +1171,11 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		name = Name()
 		{
 			clazz = mkStruct(name, new KievView(), ACC_VIRTUAL, modifiers, parent);
+			KievView kview = (KievView)clazz.variant;
 		}
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of") })
 		<IDENTIFIER> // "of"
-		clazz.view_of = NArrType()
+		kview.view_of = NArrType()
 		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
 			"extends"

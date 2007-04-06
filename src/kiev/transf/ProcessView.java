@@ -68,9 +68,12 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		
 		clazz.setInterface();
 		
+		KievView kview = (KievView)clazz.variant;
+		TypeRef view_of = kview.view_of;
+
 		// add a cast from clazz.view_of to this view
 		boolean cast_found = false;
-		foreach (Method dn; clazz.view_of.getStruct().members) {
+		foreach (Method dn; view_of.getStruct().members) {
 			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ clazz.xtype) {
 				cast_found = true;
 				break;
@@ -85,18 +88,18 @@ public class ViewFE_GenMembers extends TransfProcessor {
 				cast.body = new Block();
 				cast.block.stats.add(new ReturnStat(0, new ConstBoolExpr()));
 			}
-			clazz.view_of.getStruct().addMethod(cast);
+			view_of.getStruct().addMethod(cast);
 		}
 		// add a cast from this view to the clazz
 		cast_found = false;
 		foreach (Method dn; clazz.members) {
-			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ clazz.view_of.getType()) {
+			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ view_of.getType()) {
 				cast_found = true;
 				break;
 			}
 		}
 		if (!cast_found) {
-			Method cast = new MethodImpl("$cast", clazz.view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
+			Method cast = new MethodImpl("$cast", view_of.getType(), ACC_PUBLIC|ACC_SYNTHETIC|ACC_ABSTRACT);
 			cast.aliases += new ASTOperatorAlias(nameCastOp);
 			clazz.addMethod(cast);
 		}
@@ -152,6 +155,9 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		
 		clazz = clazz.open();
 		
+		KievView kview = (KievView)clazz.variant;
+		TypeRef view_of = kview.view_of;
+
 		// generate implementation
 		Struct impl = Env.newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true);
 		impl = impl.open();
@@ -237,7 +243,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		// generate a field for the object this view represents
 		Field fview = impl.resolveField(nameImpl, false);
 		if (fview == null)
-			fview = impl.addField(new Field(nameImpl,clazz.view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
+			fview = impl.addField(new Field(nameImpl,view_of.getType(), ACC_PUBLIC|ACC_FINAL|ACC_SYNTHETIC));
 
 		// generate bridge methods
 		foreach (Method m; impl.members) {
@@ -246,7 +252,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			CallType ct = m.type;
 			Method vm;
 			try {
-				vm = clazz.view_of.getStruct().resolveMethod(m.u_name, ct.ret(), ct.params());
+				vm = view_of.getStruct().resolveMethod(m.u_name, ct.ret(), ct.params());
 			} catch (CompilerException e) {
 				Kiev.reportError(m, e.getMessage());
 				m.setAbstract(true);
@@ -255,7 +261,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			m = m.open();
 			m.body = new Block(m.pos);
 			CallExpr ce = new CallExpr(m.pos,
-				new CastExpr(m.pos, clazz.view_of.getType(),
+				new CastExpr(m.pos, view_of.getType(),
 					new IFldExpr(m.pos, new ThisExpr(m.pos), fview)
 					),
 				vm, ENode.emptyArray);
@@ -276,13 +282,13 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				set_var = set_var.open();
 				set_var.setFinal(true);
 				set_var.body = body;
-				Field view_fld = clazz.view_of.getType().getStruct().resolveField(f.sname);
+				Field view_fld = view_of.getType().getStruct().resolveField(f.sname);
 				ENode val = new LVarExpr(f.pos,set_var.params[0]);
 				ENode ass_st = new ExprStat(f.pos,
 					new AssignExpr(f.pos,Operator.Assign,
 						new IFldExpr(f.pos,
 							new CastExpr(f.pos,
-								clazz.view_of.getType(),
+								view_of.getType(),
 								new IFldExpr(f.pos,
 									new ThisExpr(f.pos),
 									fview
@@ -308,10 +314,10 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,
 					new CastExpr(f.pos,
-						clazz.view_of.getType(),
+						view_of.getType(),
 						new IFldExpr(f.pos,new ThisExpr(f.pos),fview)
 					),
-					clazz.view_of.getType().getStruct().resolveField(f.sname)
+					view_of.getType().getStruct().resolveField(f.sname)
 				);
 				body.stats.add(new ReturnStat(f.pos,val));
 				if (val.getType().getAutoCastTo(f.getType()) == null)
@@ -321,8 +327,8 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		}
 		
 		// add a cast from clazz.view_of to this view
-		assert (!clazz.view_of.getStruct().isResolved());
-		foreach (Method dn; clazz.view_of.getStruct().members) {
+		assert (!view_of.getStruct().isResolved());
+		foreach (Method dn; view_of.getStruct().members) {
 			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ clazz.xtype) {
 				if (!dn.isAbstract() && dn.isSynthetic()) {
 					ReturnStat rst = new ReturnStat(0, new NewExpr(0, impl.xtype, new ENode[]{new ThisExpr()}));
@@ -335,12 +341,12 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		// add a cast from this view to the clazz
 		boolean cast_found = false;
 		foreach (Method dn; impl.members) {
-			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ clazz.view_of.getType()) {
+			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ view_of.getType()) {
 				if (dn.isSynthetic()) {
 					dn = dn.open();
 					dn.setAbstract(false);
 					dn.body = new Block();
-					dn.block.stats.add(new ReturnStat(0, new CastExpr(0, clazz.view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
+					dn.block.stats.add(new ReturnStat(0, new CastExpr(0, view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));
 				}
 				break;
 			}

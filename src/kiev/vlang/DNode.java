@@ -49,6 +49,12 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	@ref public					DeclGroup		group;
 	@virtual
 	     public:ro,rw,ro,rw		String			u_name; // unique name in scope, never null, usually equals to name
+	
+
+	@ref(ext_data=true)
+	public KString								b_name;	// java bytecode name
+	@ref(ext_data=true)
+	public kiev.be.java15.Attr[]				jattrs; // array of java class attributes of this node
 
 	public final MetaAccess getMetaAccess() {
 		return (MetaAccess)this.getMeta("kiev.stdlib.meta.access");
@@ -246,12 +252,8 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		}
 	}
 
-	public DNode(Symbol<This> id) {
+	public DNode() {
 		this.meta = new MetaSet();
-		if (id != null) {
-			this.pos = id.pos;
-			this.sname = id.sname; //this.id = id;
-		}
 	}
 
 	public ASTNode getDummyNode() {
@@ -321,7 +323,7 @@ public final class DummyDNode extends DNode {
 	@virtual typedef This  = DummyDNode;
 
 	private DummyDNode() {
-		super(new Symbol<This>("<dummy>"));
+		this.sname = "<dummy>";
 	}
 }
 
@@ -512,10 +514,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		super.callbackDetached();
 	}
 
-	public TypeDecl(Symbol<This> id) { super(id); }
+	public TypeDecl(String name) {
+		this.sname = name;
+	}
 
 	public Type getType() { return this.xtype == null ? Type.tpVoid : this.xtype; }
-	public boolean checkResolved() { return true; }
 	public Struct getStruct() { return null; }
 
 	public final boolean isTypeAbstract()		{ return this.isAbstract(); }
@@ -535,6 +538,63 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	}
 
 	public String toString() { return package_clazz==null ? u_name : qname(); }
+
+	public boolean checkResolved() {
+		if( !isTypeDeclLoaded() ) {
+			if (!Env.loadTypeDecl(this).isTypeDeclLoaded()) {
+				if (isPackage())
+					setTypeDeclLoaded(true);
+				else
+					throw new RuntimeException("TypeDecl "+this+" not found");
+			}
+			if (!isTypeDeclLoaded())
+				throw new RuntimeException("TypeDecl "+this+" unresolved");
+		}
+		return true;
+	}
+	
+	public void resolveMetaDefaults() {
+		if (isAnnotation()) {
+			foreach(Method m; members) {
+				try {
+					m.resolveMetaDefaults();
+				} catch(Exception e) {
+					Kiev.reportError(m,e);
+				}
+			}
+		}
+		if( this instanceof Struct && !isPackage() ) {
+			foreach (TypeDecl sub; ((Struct)this).sub_decls) {
+				if (!sub.isAnonymouse())
+					sub.resolveMetaDefaults();
+			}
+		}
+	}
+
+	public void resolveMetaValues() {
+		this.meta.resolve();
+		foreach(ASTNode n; members) {
+			if (n instanceof DNode) {
+				DNode dn = (DNode)n;
+				dn.meta.resolve();
+				if (dn instanceof Method)
+					foreach (Var p; dn.params)
+						p.meta.resolve();
+			}
+			if (n instanceof DeclGroup) {
+				DeclGroup dn = (DeclGroup)n;
+				dn.meta.resolve();
+				foreach (DNode d; dn.decls)
+					d.meta.resolve();
+			}
+		}
+		
+		if( this instanceof Struct && !isPackage() ) {
+			foreach (TypeDecl sub; ((Struct)this).sub_decls) {
+				sub.resolveMetaValues();
+			}
+		}
+	}
 
 	public boolean preVerify() {
 		setFrontEndPassed();
@@ -692,7 +752,5 @@ public final class MetaTypeDecl extends TypeDecl {
 
 	@virtual typedef This  = MetaTypeDecl;
 	
-	public MetaTypeDecl() {
-		super(new Symbol<This>());
-	}
+	public MetaTypeDecl() { super(null); }
 }

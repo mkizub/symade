@@ -97,19 +97,19 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 	
 	public void doProcess(FileUnit:ASTNode fu) {
 		if (tpINode == null) {
-			tpINode = Env.loadStruct(nameINode, true).xtype;
-			tpANode = Env.loadStruct(nameANode, true).xtype;
-			tpNode = Env.loadStruct(nameNode, true).xtype;
+			tpINode = Env.loadTypeDecl(nameINode, true).xtype;
+			tpANode = Env.loadTypeDecl(nameANode, true).xtype;
+			tpNode = Env.loadTypeDecl(nameNode, true).xtype;
 			tpNArray = new ArrayType(tpANode);
 			tpNodeSpace = Env.newMetaType(new Symbol<MetaTypeDecl>("NodeSpace"), Env.newPackage("kiev.vlang"), false).xtype;
-			tpAttrSlot = Env.loadStruct(nameAttrSlot, true).xtype;
-			tpRefAttrSlot = Env.loadStruct(nameRefAttrSlot, true).xtype;
-			tpAttAttrSlot = Env.loadStruct(nameAttAttrSlot, true).xtype;
-			tpExtRefAttrSlot = Env.loadStruct(nameExtRefAttrSlot, true).xtype;
-			tpExtAttAttrSlot = Env.loadStruct(nameExtAttAttrSlot, true).xtype;
-			tpSpaceAttrSlot = Env.loadStruct(nameSpaceAttrSlot, true).xtype;
-			tpSpaceRefAttrSlot = Env.loadStruct(nameSpaceRefAttrSlot, true).xtype;
-			tpSpaceAttAttrSlot = Env.loadStruct(nameSpaceAttAttrSlot, true).xtype;
+			tpAttrSlot = Env.loadTypeDecl(nameAttrSlot, true).xtype;
+			tpRefAttrSlot = Env.loadTypeDecl(nameRefAttrSlot, true).xtype;
+			tpAttAttrSlot = Env.loadTypeDecl(nameAttAttrSlot, true).xtype;
+			tpExtRefAttrSlot = Env.loadTypeDecl(nameExtRefAttrSlot, true).xtype;
+			tpExtAttAttrSlot = Env.loadTypeDecl(nameExtAttAttrSlot, true).xtype;
+			tpSpaceAttrSlot = Env.loadTypeDecl(nameSpaceAttrSlot, true).xtype;
+			tpSpaceRefAttrSlot = Env.loadTypeDecl(nameSpaceRefAttrSlot, true).xtype;
+			tpSpaceAttAttrSlot = Env.loadTypeDecl(nameSpaceAttAttrSlot, true).xtype;
 		}
 		foreach (Struct n; fu.members)
 			doProcess(n);
@@ -189,7 +189,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			Struct fts = f.type.getStruct();
 			if (fts != null) {
 				TypeDef td = new TypeAssign(
-					new Symbol<TypeAssign>(f.pos,"attr$"+f.sname+"$type"),
+					"attr$"+f.sname+"$type",
 					new TypeRef(new ASTNodeType(f.type.getStruct())));
 				td.setSynthetic(true);
 				Struct clazz = (Struct)f.ctx_tdecl;

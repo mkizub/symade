@@ -82,6 +82,7 @@ public view JDNode of DNode extends JNode {
 	public:ro	MetaSet		meta;
 	public:ro	String		sname;
 	public:ro	String		u_name;
+	public		Attr[]		jattrs;
 
 	public boolean hasName(String nm, boolean by_equals);
 
@@ -104,6 +105,35 @@ public view JDNode of DNode extends JNode {
 	public void setPrivate();
 
 	public boolean isTypeUnerasable();
+
+	/** Add information about new attribute that belongs to this class */
+	public Attr addAttr(Attr a) {
+		// Check we already have this attribute
+		Attr[] jattrs = this.jattrs;
+		if (jattrs != null) {
+			for(int i=0; i < jattrs.length; i++) {
+				if(jattrs[i].name == a.name) {
+					jattrs[i] = a;
+					return a;
+				}
+			}
+			this.jattrs = (Attr[])Arrays.append(jattrs,a);
+		} else {
+			this.jattrs = new Attr[]{a};
+		}
+		return a;
+	}
+
+	public Attr getAttr(KString name) {
+		Attr[] jattrs = this.jattrs;
+		if (jattrs != null) {
+			for(int i=0; i < jattrs.length; i++)
+				if( jattrs[i].name.equals(name) )
+					return jattrs[i];
+		}
+		return null;
+	}
+
 }
 
 public view JSNode of SNode extends JNode {

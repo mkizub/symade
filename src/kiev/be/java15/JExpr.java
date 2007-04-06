@@ -72,7 +72,7 @@ public final view JTypeInfoExpr of TypeInfoExpr extends JENode {
 		}
 		Struct ti_clazz = type.getStruct();
 		if (ti_clazz == null || ti_clazz.typeinfo_clazz == null)
-			ti_clazz = Type.tpTypeInfo.clazz;
+			ti_clazz = (Struct)Type.tpTypeInfo.tdecl;
 		else
 			ti_clazz = ti_clazz.typeinfo_clazz;
 		Method func = ti_clazz.resolveMethod("newTypeInfo", ti_clazz.xtype, Type.tpClass, new ArrayType(Type.tpTypeInfo));
@@ -143,7 +143,7 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 
 	static {
 		try {
-		clazzStringBuffer = Env.loadStruct("java.lang.StringBuffer");
+		clazzStringBuffer = (Struct)Env.loadTypeDecl("java.lang.StringBuffer");
 		if( clazzStringBuffer == null )
 			throw new RuntimeException("Core class java.lang.StringBuffer not found");
 		clazzStringBufferToString = clazzStringBuffer.resolveMethod("toString",Type.tpString);

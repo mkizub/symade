@@ -25,7 +25,5 @@ public final class ASTPragma extends DNode {
 	@att public boolean					enable;
 	@att public ConstStringExpr[]		options;
 
-	public ASTPragma() { super(new Symbol<This>()); }
-	
 	public void resolve(Type reqType) {}
 }

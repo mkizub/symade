@@ -470,7 +470,7 @@ public class WrapperMetaType extends MetaType {
 	private WrapperMetaType(Struct clazz) {
 		super(clazz);
 		this.clazz = clazz;
-		this.field = clazz.getWrappedField(true);
+		this.field = getWrappedField(clazz,true);
 	}
 
 	public Type[] getMetaSupers(Type tp) {
@@ -494,6 +494,28 @@ public class WrapperMetaType extends MetaType {
 		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().applay(bindings));
 	}
 
+	private static Field getWrappedField(Struct clazz, boolean required) {
+		foreach (TypeRef st; clazz.super_types; st.getStruct() != null) {
+			Field wf = getWrappedField(st.getStruct(), false);
+			if (wf != null)
+				return wf;
+		}
+		Field wf = null;
+		foreach(Field n; clazz.getAllFields(); n.isForward()) {
+			if (wf == null)
+				wf = (Field)n;
+			else
+				throw new CompilerException(n,"Wrapper class with multiple forward fields");
+		}
+		if ( wf == null ) {
+			if (required)
+				throw new CompilerException(clazz,"Wrapper class "+clazz+" has no forward field");
+			return null;
+		}
+		if( Kiev.verbose ) System.out.println("Class "+clazz+" is a wrapper for field "+wf);
+		return wf;
+	}
+	
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
 	{
 		info.isForwardsAllowed(),$cut,

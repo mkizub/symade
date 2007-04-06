@@ -230,9 +230,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					foreach (Field f; me.getAllFields(); f.sname == fldName)
 						found = true;
 					if (!found) {
-						TypeAssign td = new TypeAssign(
-							new Symbol<TypeAssign>(me.pos,"outer$"+n+"$type"),
-							new TypeRef(pkg.xtype));
+						TypeAssign td = new TypeAssign(	"outer$"+n+"$type", new TypeRef(pkg.xtype));
 						td.setSynthetic(true);
 						me.members.append(td);
 						me.ometa_tdef = td;
@@ -418,15 +416,18 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				}
 			}
 			else {
-				if (clazz.view_of != null)
-					clazz.view_of.getType();
+				if (clazz.isStructView()) {
+					KievView kview = (KievView)clazz.variant;
+					if (kview.view_of != null)
+						kview.view_of.getType();
+				}
 				foreach(TypeRef tr; clazz.super_types) {
 					Struct s = tr.getType().getStruct();
 					if (s != null)
 						getStructType(s, path);
 				}
 				if (clazz.super_types.length == 0) {
-					if (clazz != Type.tpObject.clazz)
+					if (clazz != Type.tpObject.tdecl)
 						clazz.super_types.insert(0, new TypeRef(Type.tpObject));
 				}
 				else if (clazz.super_types[0].getStruct().isInterface())
@@ -453,7 +454,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 					foreach (TypeDef a; clazz.args)
 						a.setTypeUnerasable(true);
 				}
-				if (!clazz.instanceOf(Type.tpTypeInfoInterface.clazz))
+				if (!clazz.instanceOf(Type.tpTypeInfoInterface.tdecl))
 					clazz.super_types.append(new TypeRef(Type.tpTypeInfoInterface));
 			}
 		}
@@ -732,7 +733,7 @@ public final class KievFE_MetaDefaults extends TransfProcessor {
 		foreach(Struct n; fu.members)
 			doProcess(n);
 	}
-	public void doProcess(Struct:ASTNode clazz) {
+	public void doProcess(TypeDecl:ASTNode clazz) {
 		clazz.resolveMetaDefaults();
 	}
 }
@@ -756,7 +757,7 @@ public final class KievFE_MetaValues extends TransfProcessor {
 		foreach(Struct n; fu.members)
 			doProcess(n);
 	}
-	public void doProcess(Struct:ASTNode clazz) {
+	public void doProcess(TypeDecl:ASTNode clazz) {
 		clazz.resolveMetaValues();
 	}
 }

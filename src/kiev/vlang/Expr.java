@@ -845,35 +845,35 @@ public class CastExpr extends ENode {
 		if( !tp.isReference() ) return;
 		if( tp ≈ Type.tpBooleanRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpBooleanRef.clazz.resolveMethod("booleanValue",Type.tpBoolean),ENode.emptyArray
+				Type.tpBooleanRef.tdecl.resolveMethod("booleanValue",Type.tpBoolean),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpByteRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpByteRef.clazz.resolveMethod("byteValue",Type.tpByte),ENode.emptyArray
+				Type.tpByteRef.tdecl.resolveMethod("byteValue",Type.tpByte),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpShortRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpShortRef.clazz.resolveMethod("shortValue",Type.tpShort),ENode.emptyArray
+				Type.tpShortRef.tdecl.resolveMethod("shortValue",Type.tpShort),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpIntRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpIntRef.clazz.resolveMethod("intValue",Type.tpInt),ENode.emptyArray
+				Type.tpIntRef.tdecl.resolveMethod("intValue",Type.tpInt),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpLongRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpLongRef.clazz.resolveMethod("longValue",Type.tpLong),ENode.emptyArray
+				Type.tpLongRef.tdecl.resolveMethod("longValue",Type.tpLong),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpFloatRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpFloatRef.clazz.resolveMethod("floatValue",Type.tpFloat),ENode.emptyArray
+				Type.tpFloatRef.tdecl.resolveMethod("floatValue",Type.tpFloat),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpDoubleRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpDoubleRef.clazz.resolveMethod("doubleValue",Type.tpDouble),ENode.emptyArray
+				Type.tpDoubleRef.tdecl.resolveMethod("doubleValue",Type.tpDouble),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpCharRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
-				Type.tpCharRef.clazz.resolveMethod("charValue",Type.tpChar),ENode.emptyArray
+				Type.tpCharRef.tdecl.resolveMethod("charValue",Type.tpChar),ENode.emptyArray
 			);});
 		else
 			throw new RuntimeException("Type "+tp+" is not a reflection of primitive type");

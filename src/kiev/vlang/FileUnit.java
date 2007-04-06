@@ -158,7 +158,7 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 	;
 		pkg != null && path.space_prev.pslot().name != "pkg",
 		trace( Kiev.debug && Kiev.debugResolve, "In file package: "+pkg),
-		((CompaundType)pkg.getType()).clazz.resolveNameR(node,path)
+		((CompaundType)pkg.getType()).tdecl.resolveNameR(node,path)
 	;
 		syn @= members,
 		syn instanceof Import,

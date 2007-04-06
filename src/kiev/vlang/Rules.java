@@ -47,14 +47,10 @@ public class RuleMethod extends Method {
 	     public int					max_vars;
 	     public int					index;		// index counter for RuleNode.idx
 
-	public RuleMethod() { super(new Symbol<This>()); }
+	public RuleMethod() {}
 
-	public RuleMethod(Symbol<This> id, int fl) {
-		super(id, new TypeRef(Type.tpRule), fl);
-		this.pos = id.pos;
-	}
 	public RuleMethod(String name, int fl) {
-		super(new Symbol<This>(name), new TypeRef(Type.tpRule), fl);
+		super(name, new TypeRef(Type.tpRule), fl);
 	}
 
 	public int allocNewBase(int n) {
@@ -592,7 +588,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		Method@ elems;
 		if( xtype.isInstanceOf(Type.tpArray) ) {
 			TVarBld set = new TVarBld();
-			set.append(Type.tpArrayEnumerator.clazz.args[0].getAType(), xtype.resolve(Type.tpArray.meta_type.tdecl.args[0].getAType()));
+			set.append(Type.tpArrayEnumerator.tdecl.args[0].getAType(), xtype.resolve(Type.tpArray.meta_type.tdecl.args[0].getAType()));
 			itype = Type.tpArrayEnumerator.meta_type.make(set);
 			mode = ARRAY;
 		} else if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {

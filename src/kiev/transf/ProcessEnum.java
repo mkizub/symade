@@ -52,11 +52,11 @@ public class EnumFE_GenMembers extends TransfProcessor {
 		
 		clazz = clazz.open();
 		
-		Field[] eflds = clazz.getEnumFields();
+		Field[] eflds = ((JavaEnum)clazz.variant).getEnumFields();
 		int pos = clazz.pos;
 		
 		{
-			if (!clazz.instanceOf(Type.tpEnum.clazz))
+			if (!clazz.instanceOf(Type.tpEnum.tdecl))
 				clazz.super_types.insert(0, new TypeRef(Type.tpEnum));
 			Field vals = clazz.addField(new Field(nameEnumValuesFld,
 				new ArrayType(clazz.xtype), ACC_SYNTHETIC|ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
@@ -127,7 +127,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			tostr.body = new Block(pos);
 			SwitchStat sw = new SwitchStat(pos,
 				new CallExpr(pos,	new ThisExpr(),
-					Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, Type.tpInt),
+					Type.tpEnum.tdecl.resolveMethod(nameEnumOrdinal, Type.tpInt),
 					ENode.emptyArray),
 				CaseLabel.emptyArray);
 			CaseLabel[] cases = new CaseLabel[eflds.length+1];
@@ -167,7 +167,7 @@ public class EnumFE_GenMembers extends TransfProcessor {
 				new LVarExpr(pos,fromstr.params[0]),
 				new CallExpr(pos,
 					new LVarExpr(pos,fromstr.params[0]),
-					Type.tpString.clazz.resolveMethod("intern",Type.tpString),
+					Type.tpString.tdecl.resolveMethod("intern",Type.tpString),
 					ENode.emptyArray
 				));
 			fromstr.block.stats.add(new ExprStat(pos,ae));

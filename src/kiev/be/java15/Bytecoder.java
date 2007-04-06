@@ -71,8 +71,8 @@ public class Bytecoder implements JConstants {
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
 			CompaundType st = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
 		    cl.super_types.append(new TypeRef(st));
-			if (!Env.loadStruct(st.clazz).isTypeDeclLoaded())
-				throw new RuntimeException("Class "+st.clazz.qname()+" not found");
+			if (!Env.loadTypeDecl(st.tdecl).isTypeDeclLoaded())
+				throw new RuntimeException("Class "+st.tdecl.qname()+" not found");
 		}
 
 		// Read interfaces
@@ -80,9 +80,9 @@ public class Bytecoder implements JConstants {
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
 			CompaundType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
-			if (!Env.loadStruct(interf.clazz).isTypeDeclLoaded())
+			if (!Env.loadTypeDecl(interf.tdecl).isTypeDeclLoaded())
 				throw new RuntimeException("Class "+interf+" not found");
-			if (!interf.clazz.isInterface())
+			if (!interf.tdecl.isInterface())
 				throw new RuntimeException("Class "+interf+" is not an interface");
 			cl.super_types.append(new TypeRef(interf));
 		}
@@ -117,7 +117,6 @@ public class Bytecoder implements JConstants {
 		int f_flags = bcf.flags;
 		KString f_name = bcf.getName(bcclazz);
 		KString f_type = bcf.getSignature(bcclazz);
-		Attr[] attrs = Attr.emptyArray;
 		ENode f_init = null;
 		int packer_size = -1;
 		Type ftype = Signature.getType(f_type);
@@ -158,7 +157,6 @@ public class Bytecoder implements JConstants {
 		String m_name_s = m_name.toString().intern();
 		KString m_type_java = bcm.getSignature(bcclazz);
 		KString m_type = m_type_java;
-		Attr[] attrs = Attr.emptyArray;
 		CallType mtype = (CallType)Signature.getType(m_type);
 		CallType jtype = mtype;
 		Method m; 
@@ -200,7 +198,6 @@ public class Bytecoder implements JConstants {
 					m.conditions.add(wbc);
 			}
 		}
-		((JMethod)m).attrs = attrs;
 		trace(Kiev.debug && Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 		if( m.isStatic()
 		 && m.u_name != nameClassInit
@@ -603,13 +600,15 @@ public class Bytecoder implements JConstants {
 		}
 
 	    // Number of class attributes
-		JStruct jcl = (JStruct)cl;
-		int len = 0;
-		foreach(Attr a; jcl.attrs; !a.isKiev) len++;
-		bcclazz.attrs = new kiev.bytecode.Attribute[len];
-		for(int i=0, j=0; i < jcl.attrs.length; i++) {
-			if( jcl.attrs[i].isKiev ) continue;
-			bcclazz.attrs[j++] = writeAttr(jcl.attrs[i]);
+		Attr[] jattrs = cl.jattrs;
+		if (jattrs != null) {
+			int len = 0;
+			foreach(Attr a; jattrs; !a.isKiev) len++;
+			bcclazz.attrs = new kiev.bytecode.Attribute[len];
+			for(int i=0, j=0; i < jattrs.length; i++) {
+				if( jattrs[i].isKiev ) continue;
+				bcclazz.attrs[j++] = writeAttr(jattrs[i]);
+			}
 		}
 		return bcclazz.writeClazz();
 	}
@@ -720,10 +719,12 @@ public class Bytecoder implements JConstants {
 		bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-		JField jf = (JField)f;
-		bcf.attrs = new kiev.bytecode.Attribute[jf.attrs.length];
-		for(int i=0; i < jf.attrs.length; i++)
-			bcf.attrs[i] = writeAttr(jf.attrs[i]);
+		Attr[] jattrs = f.jattrs;
+		if (jattrs != null) {
+			bcf.attrs = new kiev.bytecode.Attribute[jattrs.length];
+			for(int i=0; i < jattrs.length; i++)
+				bcf.attrs[i] = writeAttr(jattrs[i]);
+		}
 		return bcf;
 	}
 
@@ -735,10 +736,12 @@ public class Bytecoder implements JConstants {
 		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.etype.getJType().java_signature).pos];
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-		JMethod jm = (JMethod)m;
-		bcm.attrs = new kiev.bytecode.Attribute[jm.attrs.length];
-		for(int i=0; i < jm.attrs.length; i++)
-			bcm.attrs[i] = writeAttr(jm.attrs[i]);
+		Attr[] jattrs = m.jattrs;
+		if (jattrs != null) {
+			bcm.attrs = new kiev.bytecode.Attribute[jattrs.length];
+			for(int i=0; i < jattrs.length; i++)
+				bcm.attrs[i] = writeAttr(jattrs[i]);
+		}
 		return bcm;
     }
 

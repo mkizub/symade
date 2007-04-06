@@ -58,7 +58,6 @@ public class XmlDumpSyntax extends ATextSyntax {
 	}
 	
 	public XmlDumpSyntax() {
-		super(new Symbol<This>());
 		sefdNlNl.spaces += new SpaceCmd(siNl, SP_ADD, SP_ADD, 0);
 		sefdNoNl.spaces += new SpaceCmd(siNl, SP_NOP, SP_ADD, 0);
 		this.members += siNl;

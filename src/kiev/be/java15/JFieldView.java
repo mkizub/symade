@@ -28,31 +28,10 @@ import syntax kiev.Syntax;
 public final view JField of Field extends JVar {
 
 	public:ro	JConstExpr			const_value;
-	public		Attr[]				attrs;
 	
 	public final boolean isVirtual();
 	public final boolean isPackerField();
 	public final boolean isPackedField();
-
-	public Attr addAttr(Attr a) {
-		// Check we already have this attribute
-		for(int i=0; i < attrs.length; i++) {
-			if(attrs[i].name == a.name) {
-				attrs[i] = a;
-				return a;
-			}
-		}
-		attrs = (Attr[])Arrays.append(attrs,a);
-		return a;
-	}
-
-	public Attr getAttr(KString name) {
-		Attr[] attrs = this.attrs;
-		for(int i=0; i < attrs.length; i++)
-			if( attrs[i].name.equals(name) )
-				return attrs[i];
-		return null;
-	}
 
 	public boolean	isConstantExpr() {
 		if( this.isFinal() ) {

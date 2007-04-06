@@ -43,7 +43,7 @@ public final view RTypeClassExpr of TypeClassExpr extends RENode {
 		Type tp = type.getType();
 		if (!tp.isReference()) {
 			Type rt = ((CoreType)tp).getRefTypeForPrimitive();
-			Field f = rt.clazz.resolveField("TYPE");
+			Field f = rt.tdecl.resolveField("TYPE");
 			replaceWithNodeResolve(reqType,new SFldExpr(pos,f));
 			return;
 		}
@@ -108,7 +108,7 @@ public final view RAssertEnabledExpr of AssertEnabledExpr extends RENode {
 		clazz.members.add(f);
 		f.init = new CallExpr(0,
 			new TypeClassExpr(0,new TypeRef(clazz.xtype)),
-			Type.tpClass.clazz.resolveMethod("desiredAssertionStatus", Type.tpBoolean),
+			Type.tpClass.tdecl.resolveMethod("desiredAssertionStatus", Type.tpBoolean),
 			ENode.emptyArray
 			);
 		f.resolveDecl();
@@ -507,7 +507,9 @@ public static final view RCastExpr of CastExpr extends RENode {
 			resolve(reqType);
 			return;
 		}
-		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView() && extp.getStruct().view_of.getType().getAutoCastTo(type) != null) {
+		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView()
+				&& ((KievView)extp.getStruct().variant).view_of.getType().getAutoCastTo(type) != null)
+		{
 			if( tryOverloadedCast(extp) )
 				return;
 			this.resolve2(type);
@@ -568,7 +570,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 				new ReinterpExpr(pos,tp,
 					new CallExpr(pos,
 						((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CastExpr)this,tp,false),
-						Type.tpTypeInfo.clazz.resolveMethod("$checkcast",Type.tpObject,Type.tpObject),
+						Type.tpTypeInfo.tdecl.resolveMethod("$checkcast",Type.tpObject,Type.tpObject),
 						new ENode[]{~expr}
 					)
 				)
@@ -612,14 +614,14 @@ public static final view RCastExpr of CastExpr extends RENode {
 		if( !Kiev.javaMode && type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
 			if (type.isIntegerInCode())
 				return;
-			Method cm = ((CompaundType)type).clazz.resolveMethod(nameCastOp,type,Type.tpInt);
+			Method cm = ((CompaundType)type).tdecl.resolveMethod(nameCastOp,type,Type.tpInt);
 			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{~expr}));
 			return;
 		}
 		if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
 			if (et.isIntegerInCode())
 				return;
-			Method cf = Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, Type.tpInt);
+			Method cf = Type.tpEnum.tdecl.resolveMethod(nameEnumOrdinal, Type.tpInt);
 			replaceWithNodeResolve(reqType, new CallExpr(pos,~expr,cf,ENode.emptyArray));
 			return;
 		}

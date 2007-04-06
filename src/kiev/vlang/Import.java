@@ -162,7 +162,7 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 	@att public TypeRef			type;
 	@att public TypeDef			arg;
 
-	public TypeOpDef() { super(new Symbol<This>()); }
+	public TypeOpDef() { super(null); }
 	
 	public Type getType() { return type.getType(); }
 	

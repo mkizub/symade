@@ -110,18 +110,16 @@ public abstract class Var extends DNode {
 		
 	public static final Var[]	emptyArray = new Var[0];
 
-	public Var(Symbol<This> id, int kind) {
-		super(id);
+	public Var(int kind) {
 		this.kind = kind;
 	}
 
-	public Var(Symbol<This> id, TypeRef vtype, int kind, int flags)
+	public Var(String name, TypeRef vtype, int kind, int flags)
 		require vtype != null;
 	{
-		super(id);
+		this.sname = name;
 		this.kind = kind;
-		this.pos = id.pos;
-		this.u_name = id.sname;
+		this.u_name = name;
 		this.vtype = vtype;
 		if (flags != 0) {
 			if ((flags & ACC_FINAL) == ACC_FINAL) setMeta(new MetaFinal());
@@ -132,13 +130,12 @@ public abstract class Var extends DNode {
 		}
 	}
 
-	public Var(Symbol<This> id, TypeRef vtype, int kind)
+	public Var(String name, TypeRef vtype, int kind)
 		require vtype != null;
 	{
-		super(id);
+		this.sname = name;
 		this.kind = kind;
-		this.pos = id.pos;
-		this.u_name = id.sname;
+		this.u_name = name;
 		this.vtype = vtype;
 	}
 
@@ -209,24 +206,26 @@ public class LVar extends Var {
 
 	static final Var dummyNode = new LVar();
 
-	public LVar() { super(new Symbol<This>(), VAR_LOCAL); }
+	public LVar() { super(VAR_LOCAL); }
 
 	public LVar(int pos, String name, Type type, int kind, int flags)
 		require type != null;
 	{
-		super(new Symbol<This>(pos,name),new TypeRef(type),kind,flags);
+		super(name,new TypeRef(type),kind,flags);
+		this.pos = pos;
 	}
 
 	public LVar(int pos, String name, TypeRef vtype, int kind, int flags)
 		require vtype != null;
 	{
-		super(new Symbol<This>(pos,name),vtype,kind,flags);
+		super(name,vtype,kind,flags);
+		this.pos = pos;
 	}
 
 	public LVar(String name, Type type)
 		require type != null;
 	{
-		super(new Symbol<This>(0,name),new TypeRef(type),VAR_LOCAL,0);
+		super(name,new TypeRef(type),VAR_LOCAL,0);
 	}
 }
 
@@ -250,8 +249,6 @@ public final class Field extends Var {
 
 	/** Constant value of this field */
 	@ref public ConstExpr			const_value;
-	/** Array of attributes of this field */
-	public kiev.be.java15.Attr[]		attrs = kiev.be.java15.Attr.emptyArray;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
@@ -300,22 +297,18 @@ public final class Field extends Var {
 		}
 	}
               
-	public Field() { super(new Symbol<This>(), FIELD_NORMAL); }
-	
-	public Field(String name, TypeRef vtype, int flags) {
-		this(new Symbol<This>(name),vtype,flags);
-	}
+	public Field() { super(FIELD_NORMAL); }
 	
 	public Field(String name, Type type, int flags) {
-		this(new Symbol<This>(name),new TypeRef(type),flags);
+		this(name,new TypeRef(type),flags);
 	}
 	
     /** Constructor for new field
 	    This constructor must not be called directly,
 	    but via factory method newField(...) of Clazz
      */
-	public Field(Symbol<This> id, TypeRef vtype, int flags) {
-		super(id, vtype, FIELD_NORMAL);
+	public Field(String name, TypeRef vtype, int flags) {
+		super(name, vtype, FIELD_NORMAL);
 		if (flags != 0) {
 			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
 			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
