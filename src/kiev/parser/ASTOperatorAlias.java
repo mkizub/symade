@@ -101,7 +101,7 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 		Method m = (Method)parent();
 
 		if (sname != null && sname != "" && sname != "operator ???") {
-			if (sname == "V [ V ] = V" || sname == "new T" || sname == "V [ V ]")
+			if (sname == "new T")
 				return;
 			Operator op = Operator.getOperatorByName(sname);
 			if (op == null)

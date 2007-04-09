@@ -14,12 +14,20 @@ import kiev.vlang.NewExpr;
 import kiev.vlang.CallExpr;
 import syntax kiev.stdlib.Syntax;
 
+
+// UUID name-based generated as:
+// URL is http://www.symade.com/ and UUID is generated as:
+// java -jar jug-lgpl-2.0.0.jar --name http://www.symade.com/ --namespace URL name-based => 6189bf45-88e8-3a27-8ebf-0a14795e29a7
+// UUID for names in this package were geberated using this UUID as a base, for instance:
+// java -jar jug-lgpl-2.0.0.jar --name kiev.stdlib.any --namespace 6189bf45-88e8-3a27-8ebf-0a14795e29a7 name-based
+
 /**
  * @author Maxim Kizub
  * @version $Revision$
  *
  */
 
+@uuid("be8bba7f-b4f9-3991-8834-6552dcb237a0")
 public metatype any {
 	@macro @native @CompilerNode("InstanceOf")
 	public static boolean _instanceof_(any val, any type) alias xfx operator operator instanceof ;
@@ -32,8 +40,13 @@ public metatype any {
 
 }
 
+@uuid("ec98468f-75f6-3811-ab77-6b0a8458b3ad")
 public metatype void {}
 
+@uuid("6c8cef01-5c38-36c3-aab0-bd16c23e817d")
+public metatype #id"null"# extends Object {}
+
+@uuid("9c517365-318e-307c-acdf-6682cf309b3f")
 public metatype boolean extends any {
 	@macro @native @CompilerNode("Set")
 	public boolean assign(boolean val) alias lfy operator = ;
@@ -102,6 +115,7 @@ public metatype boolean extends any {
 	}
 }
 
+@uuid("7713311e-809c-30f7-964a-3d28beb7aab3")
 public metatype char extends any {
 	@macro @native @CompilerNode("Set")
 	public char assign(char val) alias lfy operator = ;
@@ -137,6 +151,7 @@ public metatype char extends any {
 	}
 }
 
+@uuid("89ed44f6-f9a6-3ef7-b396-d2248d5f69db")
 public metatype byte extends any {
 	@macro @native @CompilerNode("Set")
 	public byte assign(byte val) alias lfy operator = ;
@@ -178,6 +193,7 @@ public metatype byte extends any {
 	}
 }
 
+@uuid("f9bb2439-c397-3930-b36c-5b1565ec7841")
 public metatype short extends any {
 	@macro @native @CompilerNode("Set")
 	public short assign(short val) alias lfy operator = ;
@@ -219,6 +235,7 @@ public metatype short extends any {
 	}
 }
 
+@uuid("d50f9a1a-2e09-3313-8a64-6b58b300579e")
 public metatype int extends any {
 	@macro @native @CompilerNode("Set")
 	public int assign(int val) alias lfy operator = ;
@@ -359,6 +376,7 @@ public metatype int extends any {
 	}
 }
 
+@uuid("2d6eef81-2c5e-36e4-ab9d-136dfec1dc6b")
 public metatype long extends any {
 	@macro @native @CompilerNode("Set")
 	public long assign(long val) alias lfy operator = ;
@@ -499,6 +517,7 @@ public metatype long extends any {
 	}
 }
 
+@uuid("a02d23b3-8055-3c87-b331-2b242964a7f1")
 public metatype float extends any {
 	@macro @native @CompilerNode("Set")
 	public float assign(float val) alias lfy operator = ;
@@ -588,6 +607,7 @@ public metatype float extends any {
 	}
 }
 
+@uuid("d741575d-769c-3108-810e-6c0e57a4b03e")
 public metatype double extends any {
 	@macro @native @CompilerNode("Set")
 	public double assign(double val) alias lfy operator = ;
@@ -676,22 +696,7 @@ public metatype double extends any {
 		case CallExpr# self(): new Double(this).hashCode()
 	}
 }
-/*
-public metatype _array_<_elem_ extends any> extends Object {
-	@macro @native
-	public:ro final int length;
 
-	@macro @native
-	public lvalue element(int idx) alias xfy operator []
-	{
-		@macro @native @getter
-		public _elem_ get$element(int idx);
-
-		@macro @native @setter
-		public <R extends _elem_> R set$element(int idx, R val);
-	}
-}
-*/
 public metatype GString extends java.lang.String {
 
 	@macro @native @CompilerNode("StrConcat")

@@ -151,6 +151,7 @@ CLASS kiev.fmt.DrawTermLink kiev/fmt/DrawTermLink kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawToken kiev/fmt/DrawToken kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.DrawWrapList kiev/fmt/DrawWrapList kiev\fmt\DrawNonTerm.java
 CLASS kiev.fmt.DrawXmlStrTerm kiev/fmt/DrawXmlStrTerm kiev\fmt\DrawTerm.java
+CLASS kiev.fmt.DrawXmlTypeTerm kiev/fmt/DrawXmlTypeTerm kiev\fmt\DrawTerm.java
 CLASS kiev.fmt.Drawable kiev/fmt/Drawable kiev\fmt\Drawable.java
 CLASS kiev.fmt.GfxFormatter kiev/fmt/GfxFormatter kiev\fmt\Formatter.java
 CLASS kiev.fmt.JavaComment kiev/fmt/JavaComment kiev\fmt\DrawJava.java
@@ -192,6 +193,7 @@ CLASS kiev.fmt.SyntaxStrAttr kiev/fmt/SyntaxStrAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxSubAttr kiev/fmt/SyntaxSubAttr kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxToken kiev/fmt/SyntaxToken kiev\fmt\SyntaxLayout.java
 CLASS kiev.fmt.SyntaxXmlStrAttr kiev/fmt/SyntaxXmlStrAttr kiev\fmt\XmlDumpSyntax.java
+CLASS kiev.fmt.SyntaxXmlTypeAttr kiev/fmt/SyntaxXmlTypeAttr kiev\fmt\XmlDumpSyntax.java
 CLASS kiev.fmt.TextFormatter kiev/fmt/TextFormatter kiev\fmt\Formatter.java
 CLASS kiev.fmt.TextPrinter kiev/fmt/TextPrinter kiev\fmt\DrawDevice.java
 CLASS kiev.fmt.TextSyntax kiev/fmt/TextSyntax kiev\fmt\SyntaxLayout.java
@@ -575,6 +577,7 @@ CLASS kiev.vlang.MetaSynthetic kiev/vlang/MetaSynthetic kiev\vlang\MetaSpecial.j
 CLASS kiev.vlang.MetaThrows kiev/vlang/MetaThrows kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaTransient kiev/vlang/MetaTransient kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaTypeDecl kiev/vlang/MetaTypeDecl kiev\vlang\DNode.java
+CLASS kiev.vlang.MetaUUID kiev/vlang/MetaUUID kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaUnerasable kiev/vlang/MetaUnerasable kiev\vlang\MetaSpecial.java
 CLASS kiev.vlang.MetaValue kiev/vlang/MetaValue kiev\vlang\Meta.java
 CLASS kiev.vlang.MetaValueArray kiev/vlang/MetaValueArray kiev\vlang\Meta.java
@@ -919,6 +922,7 @@ INTERFACE kiev.stdlib.meta.synthetic kiev/stdlib/meta/synthetic kiev\stdlib\meta
 INTERFACE kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java
 INTERFACE kiev.stdlib.meta.transient kiev/stdlib/meta/transient kiev\stdlib\meta\transient.java
 INTERFACE kiev.stdlib.meta.unerasable kiev/stdlib/meta/unerasable kiev\stdlib\meta\unerasable.java
+INTERFACE kiev.stdlib.meta.uuid kiev/stdlib/meta/uuid kiev\stdlib\meta\uuid.java
 INTERFACE kiev.stdlib.meta.varargs kiev/stdlib/meta/varargs kiev\stdlib\meta\varargs.java
 INTERFACE kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 INTERFACE kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
@@ -943,6 +947,10 @@ INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypesInternal.java bad
+METATYPE kiev.stdlib._call_type_ kiev\stdlib\MetaTypesInternal.java bad
+METATYPE kiev.stdlib._vararg_ kiev\stdlib\MetaTypesInternal.java bad
+METATYPE kiev.stdlib._wrapper_ kiev\stdlib\MetaTypesInternal.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.byte kiev\stdlib\MetaTypes.java bad
@@ -951,6 +959,7 @@ METATYPE kiev.stdlib.double kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.float kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.int kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.long kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib.null kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.short kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.void kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.vlang.Globals kiev\vlang\Globals.java bad

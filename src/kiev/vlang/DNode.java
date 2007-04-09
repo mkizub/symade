@@ -96,6 +96,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public final boolean isMacro()				{ return this.meta.is_macro || group != null && group.meta.is_macro; }
 	public final boolean isVirtual()			{ return this.meta.is_virtual || group != null && group.meta.is_virtual; }
 	public final boolean isForward()			{ return this.meta.is_forward || group != null && group.meta.is_forward; }
+	public final boolean hasUUID()				{ return this.meta.is_has_uuid; }
 	
 	public final boolean isStructView()		{ return this.meta.is_virtual || group != null && group.meta.is_virtual; }
 	public final boolean isTypeUnerasable()	{ return this.meta.is_type_unerasable || group != null && group.meta.is_type_unerasable; }
@@ -297,6 +298,18 @@ public abstract class DNode extends ASTNode implements ISymbol {
 			if (this.sname != null && this.sname.startsWith(nm)) return true;
 		}
 		return false;
+	}
+
+	public void setUUID(String uuid) {
+		MetaUUID m = new MetaUUID();
+		m.value = uuid;
+		this.setMeta(m);
+	}
+
+	public String getUUID() {
+		foreach (MetaUUID m; meta.metas)
+			return m.value;
+		return null;
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
@@ -741,7 +754,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		}
 		return v.toArray();
 	}
-
+	
 }
 
 @node

@@ -81,7 +81,7 @@ public final class JEnv {
 				break;
 			}
 			if (ss == null)
-				ss = Env.newStruct(nm, true, pkg, 0, null, false);
+				ss = Env.newStruct(nm, true, pkg, 0, null, false, null);
 			pkg = ss;
 			start = end+1;
 			end = bc_name.indexOf('$', start);
@@ -90,7 +90,7 @@ public final class JEnv {
 		//assert (!Character.isDigit((char)nm.byteAt(0)));
 		foreach (Struct s; pkg.sub_decls; s.sname == nm)
 			return s;
-		return Env.newStruct(nm, true, pkg, 0, null, cleanup);
+		return Env.newStruct(nm, true, pkg, 0, null, cleanup, null);
 	}
 
 	public boolean existsClazz(String qname) {

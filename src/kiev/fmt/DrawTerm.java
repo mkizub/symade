@@ -319,7 +319,7 @@ public class DrawXmlStrTerm extends DrawNodeTerm {
 		super(node, syntax, attr);
 	}
 
-	private String escapeString(String str) {
+	final String escapeString(String str) {
 		StringBuffer sb = new StringBuffer(str);
 		boolean changed = false;
 		for(int i=0; i < sb.length(); i++) {
@@ -344,3 +344,18 @@ public class DrawXmlStrTerm extends DrawNodeTerm {
 	}
 }
 
+@node(copyable=false)
+public class DrawXmlTypeTerm extends DrawXmlStrTerm {
+
+	public DrawXmlTypeTerm(ANode node, SyntaxElem syntax, String attr) {
+		super(node, syntax, attr);
+	}
+
+	String makeText(Formatter fmt) {
+		Type t = (Type)getAttrPtr().get();
+		if (t == null)
+			return "";
+		String str = t.meta_type.tdecl.qname();
+		return escapeString(str);
+	}
+}

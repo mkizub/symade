@@ -78,8 +78,14 @@ public class TypeRef extends ENode {
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (dump == "api" && attr.name == "lnk")
-			return lnk != null;
+		if (dump == "api" && attr.name == "lnk") {
+			Type t = lnk;
+			if (lnk == null)
+				return false;
+			if (lnk instanceof ArgType)
+				return false;
+			return true;
+		}
 		return super.includeInDump(dump, attr, val);
 	}
 

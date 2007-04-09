@@ -24,6 +24,61 @@ import syntax kiev.Syntax;
  */
 
 @node
+public final class MetaUUID extends UserMeta {
+	@virtual typedef This  = MetaUUID;
+
+	private static final Hashtable<String,DNode> registeredNodes = new Hashtable<String,DNode>();
+	
+	@att public String				value;
+
+	public MetaUUID() { super("kiev.stdlib.meta.uuid"); }
+
+	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
+	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
+	private void setFlag(boolean on) {
+		MetaSet ms = (MetaSet)parent();
+		ANode p = null;
+		if (ms != null)
+			p = ms.parent();
+		if (p instanceof DNode) {
+			if (on) {
+				p.meta.is_has_uuid = true;
+				if (value != null)
+					registeredNodes.put(value,(DNode)p);
+			} else {
+				p.meta.is_has_uuid = false;
+				if (value != null)
+					registeredNodes.remove(value);
+			}
+		}
+	}
+
+	@setter public void set$value(String val) {
+		MetaSet ms = (MetaSet)parent();
+		ANode p = null;
+		if (ms != null)
+			p = ms.parent();
+		if (p instanceof DNode) {
+			if (value != null)
+				registeredNodes.remove(value);
+		}
+		this = this.open();
+		if (val != null)
+			val = val.intern();
+		value = val;
+		super.setS("value",val);
+		if (p instanceof DNode) {
+			if (value != null)
+				registeredNodes.put(value, (DNode)p);
+		}
+	}
+	
+	public static DNode getRegisteredNode(String uuid) {
+		return registeredNodes.get(uuid);
+	}
+}
+
+@node
 public final class MetaPacked extends UserMeta {
 	@virtual typedef This  = MetaPacked;
 

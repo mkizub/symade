@@ -142,10 +142,10 @@ public class Env extends Struct {
 	}
 	
 	public static Struct newStruct(String sname, Struct outer, int acces, TypeDeclVariant variant) {
-		return newStruct(sname,true,outer,acces,variant,false);
+		return newStruct(sname,true,outer,acces,variant,false,null);
 	}
 
-	public static Struct newStruct(String sname, boolean direct, Struct outer, int acces, TypeDeclVariant variant, boolean cleanup)
+	public static Struct newStruct(String sname, boolean direct, Struct outer, int acces, TypeDeclVariant variant, boolean cleanup, String uuid)
 	{
 		assert(outer != null);
 		Struct bcl = null;
@@ -158,6 +158,8 @@ public class Env extends Struct {
 		if( bcl != null ) {
 			Struct cl = (Struct)bcl;
 			if( cleanup ) {
+				if (cl.hasUUID() && cl.getUUID() != uuid)
+					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.getUUID()+" != "+uuid);
 				cl.type_decl_version = 0;
 				cl.compileflags &= 1;
 				cl.meta.metas.delAll();
@@ -220,7 +222,7 @@ public class Env extends Struct {
 		return cl;
 	}
 
-	public static MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, Struct pkg, boolean cleanup) {
+	public static MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, Struct pkg, boolean cleanup, String uuid) {
 		if (pkg == null)
 			pkg = Env.root;
 		assert (pkg.isPackage());
@@ -242,11 +244,13 @@ public class Env extends Struct {
 			pkg.sub_decls.add(tdecl);
 		}
 		else if( cleanup ) {
+			if (tdecl.hasUUID() && tdecl.getUUID() != uuid)
+				Kiev.reportWarning(id,"Replacing class "+id+" with different UUID: "+tdecl.getUUID()+" != "+uuid);
 			tdecl.type_decl_version++;
 			tdecl.meta.mflags = ACC_MACRO;
 			tdecl.package_clazz = pkg;
 			tdecl.super_types.delAll();
-			//tdecl.args.delAll();
+			tdecl.args.delAll();
 			tdecl.members.delAll();
 		}
 

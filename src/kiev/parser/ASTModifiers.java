@@ -54,5 +54,11 @@ public final class ASTModifiers extends ASTNode {
 		foreach (MNode m; annotations)
 			dn.setMeta(m.ncopy());
 	}
+	
+	public String getUUID() {
+		foreach (MetaUUID m; annotations)
+			return m.value;
+		return null;
+	}
 }
 

@@ -42,6 +42,21 @@ public class SyntaxXmlStrAttr extends SyntaxAttr {
 }
 
 @node
+public class SyntaxXmlTypeAttr extends SyntaxAttr {
+	@virtual typedef This  = SyntaxXmlTypeAttr;
+
+	public SyntaxXmlTypeAttr() {}
+	public SyntaxXmlTypeAttr(String name) {
+		super(name);
+	}
+
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawXmlTypeTerm(node, this, name);
+		return dr;
+	}
+}
+
+@node
 public class XmlDumpSyntax extends ATextSyntax {
 	@virtual typedef This  = XmlDumpSyntax;
 
@@ -144,8 +159,10 @@ public class XmlDumpSyntax extends ATextSyntax {
 					se = set(open0(attr.name), attr(attr.name), close0(attr.name));
 				else if (attr.clazz == String.class)
 					se = set(open0(attr.name), new SyntaxXmlStrAttr(attr.name), close0(attr.name));
-				else if (Type.class.isAssignableFrom(attr.clazz) || attr.clazz == Operator.class)
+				else if (attr.clazz == Operator.class)
 					se = set(open0(attr.name), new SyntaxXmlStrAttr(attr.name), close0(attr.name));
+				else if (Type.class.isAssignableFrom(attr.clazz))
+					se = set(open0(attr.name), new SyntaxXmlTypeAttr(attr.name), close0(attr.name));
 				else if (attr.clazz == Integer.TYPE || attr.clazz == Boolean.TYPE ||
 					attr.clazz == Byte.TYPE || attr.clazz == Short.TYPE || attr.clazz == Long.TYPE ||
 					attr.clazz == Character.TYPE || attr.clazz == Float.TYPE || attr.clazz == Double.TYPE

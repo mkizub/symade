@@ -350,22 +350,26 @@ public final class ArrayMetaType extends MetaType {
 	public static final ArrayMetaType instance;
 	static {
 		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpArrayArg, null).close());
-		MetaTypeDecl tdecl = new MetaTypeDecl();
-		tdecl.u_name = "_array_";
-		tdecl.sname = "_array_";
-		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
-		tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-		tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
-		tdecl.args.add(StdTypes.tdArrayArg);
-		tdecl.setTypeDeclLoaded(true);
-		tdecl.package_clazz.sub_decls.add(tdecl);
-		Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
-		length.setMeta(new MetaAccess("public",0xAA)); //public:ro
-		tdecl.members.add(length);
-		CoreMethod get = new CoreMethod("get", StdTypes.tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
-		get.params.add(new LVar(0,"idx",StdTypes.tpInt,Var.PARAM_NORMAL,0));
-		get.aliases += new ASTOperatorAlias(Constants.nameArrayGetOp);
-		tdecl.members.add(get);
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev.stdlib._array_");
+		if (tdecl == null) {
+			tdecl = new MetaTypeDecl();
+			tdecl.u_name = "_array_";
+			tdecl.sname = "_array_";
+			tdecl.package_clazz = Env.newPackage("kiev.stdlib");
+			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
+			tdecl.args.add(StdTypes.tdArrayArg);
+			tdecl.setTypeDeclLoaded(true);
+			tdecl.package_clazz.sub_decls.add(tdecl);
+			tdecl.setUUID("bbf03b4b-62d4-3e29-8f0d-acd6c47b9a04");
+			Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
+			length.setMeta(new MetaAccess("public",0xAA)); //public:ro
+			tdecl.members.add(length);
+			CoreMethod get = new CoreMethod("get", StdTypes.tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
+			get.params.add(new LVar(0,"idx",StdTypes.tpInt,Var.PARAM_NORMAL,0));
+			get.aliases += new ASTOperatorAlias(Constants.nameArrayGetOp);
+			tdecl.members.add(get);
+		}
 		
 		instance = new ArrayMetaType(tdecl);
 		tdecl.xmeta_type = instance;
@@ -456,8 +460,22 @@ public class ArgMetaType extends MetaType {
 public class WrapperMetaType extends MetaType {
 
 	private static TVarSet			templ_bindings;
+	public static final ArrayMetaType instance;
 	static {
 		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpWrapperArg, null).close());
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev.stdlib._wrapper_");
+		if (tdecl == null) {
+			tdecl = new MetaTypeDecl();
+			tdecl.u_name = "_wrapper_";
+			tdecl.sname = "_wrapper_";
+			tdecl.package_clazz = Env.newPackage("kiev.stdlib");
+			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
+			tdecl.args.add(StdTypes.tdWrapperArg);
+			tdecl.setTypeDeclLoaded(true);
+			tdecl.package_clazz.sub_decls.add(tdecl);
+			tdecl.setUUID("67544053-836d-3bac-b94d-0c4b14ae9c55");
+		}
 	}
 	public final Struct		clazz;
 	public final Field		field;
@@ -558,12 +576,16 @@ public class CallMetaType extends MetaType {
 
 	public static final CallMetaType instance;
 	static {
-		MetaTypeDecl tdecl = new MetaTypeDecl();
-		tdecl.u_name = "_call_type_";
-		tdecl.sname = "_call_type_";
-		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
-		tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-		tdecl.setTypeDeclLoaded(true);
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev.stdlib._call_type_");
+		if (tdecl == null) {
+			tdecl = new MetaTypeDecl();
+			tdecl.u_name = "_call_type_";
+			tdecl.sname = "_call_type_";
+			tdecl.package_clazz = Env.newPackage("kiev.stdlib");
+			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
+			tdecl.setTypeDeclLoaded(true);
+			tdecl.setUUID("25395a72-2b16-317a-85b2-5490309bdffc");
+		}
 		instance = new CallMetaType(tdecl);
 	}
 	private CallMetaType(TypeDecl tdecl) {

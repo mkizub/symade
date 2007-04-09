@@ -53,8 +53,8 @@ public interface StdTypes {
 	public static final CoreType tpAny;
 	public static final CoreType tpVoid;
 	public static final CoreType tpBoolean;
-	public static final CoreType tpByte;
 	public static final CoreType tpChar;
+	public static final CoreType tpByte;
 	public static final CoreType tpShort;
 	public static final CoreType tpInt;
 	public static final CoreType tpLong;
@@ -103,11 +103,12 @@ public interface StdTypes {
 	public static final ArgType    tpArrayArg;
 	public static final XType      tpVararg;
 
-	public static final ArgType   tpWrapperArg;
-	public static final ArgType   tpCallRetArg;
-	public static final ArgType   tpCallThisArg;
-	public static final ArgType[] tpCallParamArgs;
-	public static final ArgType[] tpUnattachedArgs;
+	public static final ArgType    tpWrapperArg;
+	public static final TypeConstr tdWrapperArg;
+	public static final ArgType    tpCallRetArg;
+	public static final ArgType    tpCallThisArg;
+	public static final ArgType[]  tpCallParamArgs;
+	public static final ArgType[]  tpUnattachedArgs;
 
 	static {
 
@@ -119,8 +120,8 @@ public interface StdTypes {
 		tpAny		= new CoreType(Constants.nameAny,     null,  0);
 		tpVoid		= new CoreType(Constants.nameVoid,    null,  0);
 		tpBoolean	= new CoreType(Constants.nameBoolean, tpAny, flBoolean | flIntegerInCode);
-		tpByte		= new CoreType(Constants.nameByte,    tpAny, flInteger | flIntegerInCode);
 		tpChar		= new CoreType(Constants.nameChar,    tpAny, flInteger | flIntegerInCode);
+		tpByte		= new CoreType(Constants.nameByte,    tpAny, flInteger | flIntegerInCode);
 		tpShort		= new CoreType(Constants.nameShort,   tpAny, flInteger | flIntegerInCode);
 		tpInt		= new CoreType(Constants.nameInt,     tpAny, flInteger | flIntegerInCode);
 		tpLong		= new CoreType(Constants.nameLong,    tpAny, flInteger | flDoubleSize);
@@ -161,7 +162,7 @@ public interface StdTypes {
 		tpCloneable				= (CompaundType)tpCloneableClazz.xtype;
 
 		
-		TypeDef tdWrapperArg = new TypeConstr("_boxed_", tpObject);
+		tdWrapperArg = new TypeConstr("_boxed_", tpObject);
 		tdWrapperArg.setAbstract(true);
 		tpWrapperArg = tdWrapperArg.getAType();
 		tpWrapperArg.flags |= flHidden | flArgAppliable | flValAppliable;
@@ -173,7 +174,7 @@ public interface StdTypes {
 		tpArray					= ArrayType.newArrayType(Type.tpAny);
 		tpArray.flags			|= flResolved | flReference | flArray;
 
-		TypeDecl tdVararg = Env.newMetaType(new Symbol<MetaTypeDecl>("_Vararg_"),kiev_stdlib,false);
+		TypeDecl tdVararg = Env.newMetaType(new Symbol<MetaTypeDecl>("_vararg_"),kiev_stdlib,false,"8aa32751-ac53-343e-b456-6f8521b01647");
 		tdVararg.setPublic();
 		tdVararg.setMacro(true);
 		tdVararg.setFinal(true);
@@ -297,6 +298,23 @@ public interface StdTypes {
 			tpUnattachedArgs[i] = tdUnattachedArg.getAType();
 			//tpUnattachedArgs[i].flags |= flHidden;
 		}
+		
+		tpAny.meta_type.tdecl.setUUID(				"be8bba7f-b4f9-3991-8834-6552dcb237a0");
+		tpVoid.meta_type.tdecl.setUUID(				"ec98468f-75f6-3811-ab77-6b0a8458b3ad");
+		tpBoolean.meta_type.tdecl.setUUID(			"9c517365-318e-307c-acdf-6682cf309b3f");
+		tpChar.meta_type.tdecl.setUUID(				"7713311e-809c-30f7-964a-3d28beb7aab3");
+		tpByte.meta_type.tdecl.setUUID(				"89ed44f6-f9a6-3ef7-b396-d2248d5f69db");
+		tpShort.meta_type.tdecl.setUUID(			"f9bb2439-c397-3930-b36c-5b1565ec7841");
+		tpInt.meta_type.tdecl.setUUID(				"d50f9a1a-2e09-3313-8a64-6b58b300579e");
+		tpLong.meta_type.tdecl.setUUID(				"2d6eef81-2c5e-36e4-ab9d-136dfec1dc6b");
+		tpFloat.meta_type.tdecl.setUUID(			"a02d23b3-8055-3c87-b331-2b242964a7f1");
+		tpDouble.meta_type.tdecl.setUUID(			"d741575d-769c-3108-810e-6c0e57a4b03e");
+		tpNull.meta_type.tdecl.setUUID(				"6c8cef01-5c38-36c3-aab0-bd16c23e817d");
+
+		tpArrayArg.meta_type.tdecl.setUUID(		"74843bf1-3c28-374b-ad11-006af8a31a71");
+		tpWrapperArg.meta_type.tdecl.setUUID(		"400f213e-a4bb-3ee2-b870-9ec1951fd955");
+		tdVararg.setUUID(							"8aa32751-ac53-343e-b456-6f8521b01647");
+		tpVarargArg.meta_type.tdecl.setUUID(		"924f219a-37cf-3654-b761-7cb5e26ceef0");
 	}
 }
 

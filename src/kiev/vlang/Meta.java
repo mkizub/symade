@@ -64,6 +64,7 @@ public final class MetaSet extends ASTNode {
 
 	public @packed:1,mflags,22 boolean is_has_aliases;
 	public @packed:1,mflags,23 boolean is_has_throws;
+	public @packed:1,mflags,24 boolean is_has_uuid;
 
 	
 	@getter

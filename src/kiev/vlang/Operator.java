@@ -45,6 +45,7 @@ public abstract class OpArg {
 			String s = names[i];
 			if (s.equals("X")) { args[i] = new EXPR(pr+1); continue; }
 			if (s.equals("Y")) { args[i] = new EXPR(pr); continue; }
+			if (s.equals("Z")) { args[i] = new EXPR(0); continue; }
 			if (s.equals("T")) { args[i] = new TYPE(); continue; }
 			args[i] = new OPER(s.intern());
 		}
@@ -82,6 +83,7 @@ public final class Operator implements Constants {
 	public static final Operator AssignMul;
 	public static final Operator AssignDiv;
 	public static final Operator AssignMod;
+	public static final Operator AssignElem;
 
 	// Binary operators
 	public static final Operator BooleanOr;
@@ -107,6 +109,7 @@ public final class Operator implements Constants {
 
 	public static final Operator Access;
 	public static final Operator Comma;
+	public static final Operator ElemAccess;
 	public static final Operator RuleIsThe;
 	public static final Operator RuleIsOneOf;
 	
@@ -152,6 +155,7 @@ public final class Operator implements Constants {
 		AssignMul					= newOperator(opAssignPriority, "X *= Y");
 		AssignDiv					= newOperator(opAssignPriority, "X /= Y");
 		AssignMod					= newOperator(opAssignPriority, "X %= Y");
+		AssignElem					= newOperator(opAssignPriority, "X [ Z ] = Y");
 
 		// Binary operators
 		BooleanOr = newOperator(opBooleanOrPriority, "Y || X");
@@ -181,6 +185,7 @@ public final class Operator implements Constants {
 
 		Access = newOperator(opAccessPriority, "Y . I");
 		Comma = newOperator(1, "Y , X");
+		ElemAccess = newOperator(opAccessPriority, "Y [ Z ]");
 
 		RuleIsThe = newOperator(opAssignPriority, "X ?= X");
 		RuleIsOneOf = newOperator(opAssignPriority, "X @= X");

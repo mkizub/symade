@@ -185,7 +185,8 @@ public abstract class kiev040 {
 	/*{
 	private TypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, FileUnit fu) {
 		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
-		TypeDecl tdecl = Env.newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true);
+		String uuid = modifiers == null ? null : modifiers.getUUID();
+		TypeDecl tdecl = Env.newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
 		tdecl.setTypeDeclLoaded(true);
 		modifiers.moveToNode(tdecl.meta);
 		Env.createProjectInfo(tdecl, String.valueOf(Kiev.getCurFile()));
@@ -219,7 +220,8 @@ public abstract class kiev040 {
 			outer = curClazz;
 			direct = false;
 		}
-		Struct clazz = Env.newStruct(nm,direct,(Struct)curClazz,flags,variant,true);
+		String uuid = modifiers == null ? null : modifiers.getUUID();
+		Struct clazz = Env.newStruct(nm,direct,(Struct)curClazz,flags,variant,true,uuid);
 		if (name != null)
 			clazz.pos  = name.pos;
 		else
@@ -248,7 +250,20 @@ public abstract class kiev040 {
 	}
 
 	private TypeConstr mkTypeConstr(Symbol name, ASTModifiers modifiers) {
-		TypeConstr arg = new TypeConstr(name.sname);
+		TypeConstr arg = null;
+		String uuid = modifiers == null ? null : modifiers.getUUID();
+		if (uuid != null) {
+			DNode dn = MetaUUID.getRegisteredNode(uuid);
+			if (dn instanceof TypeConstr) {
+				arg = (TypeConstr)dn;
+				arg.sname = name.sname;
+				arg.meta.metas.delAll();
+				arg.super_types.delAll();
+				arg.lower_bound.delAll();
+			}
+		}
+		if (arg == null)
+			arg = new TypeConstr(name.sname);
 		arg.pos = name.pos;
 		if (modifiers != null)
 			modifiers.moveToNode(arg.meta);
@@ -603,6 +618,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < META_TRANSIENT:    "@transient"    >
 | < META_VOLATILE:     "@volatile"     >
 | < META_THROWS:       "@throws"       >
+| < META_UUID:         "@uuid"         >
 
 }
 
@@ -1111,6 +1127,7 @@ TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	[
 		"extends"
 		tdecl.super_types += Type()
+		( "," tdecl.super_types += Type()	)*
 	]
 //	[
 //		"implements"
@@ -1323,10 +1340,11 @@ TypeDef MemberArgDecl(ASTModifiers modifiers) :
 }
 
 TypeConstr ArgumentDeclaration() :
-{ Symbol name; TypeConstr arg; TypeRef tr; }
+{ ASTModifiers modifiers; Symbol name; TypeConstr arg; TypeRef tr; }
 {
+	modifiers = Modifiers()
 	name      = Name()
-	{ arg = mkTypeConstr(name,null); arg.setAbstract(true); }
+	{ arg = mkTypeConstr(name,modifiers); arg.setAbstract(true); }
 	[
 		"extends"
 		tr = Type() { arg.super_types.add(tr); }
@@ -1382,7 +1400,7 @@ int AccessSpec() :
 }
 
 void SpecialAnnotation(ASTModifiers modifiers) :
-{ MetaPacked mp; MetaThrows mt; TypeNameRef thr; ConstIntExpr ice; SymbolRef nr; }
+{ MetaPacked mp; MetaThrows mt; TypeNameRef thr; ConstIntExpr ice; ConstStringExpr cs; SymbolRef nr; }
 {
 	  "@singleton"		{ modifiers += new MetaSingleton(); }
 
@@ -1442,6 +1460,13 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 			 ["}"] ")"
 		)
 		{ modifiers += mt; }
+
+	| "@uuid"
+		{ mt = new MetaUUID(); }
+		"("
+		cs = StringConstExpression()
+		")"
+		{ mt.value = cs.value; modifiers += mt; }
 }
 
 SymbolRef KeywordAsNameRef() :

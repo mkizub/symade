@@ -1580,6 +1580,9 @@
       <a-node class='kiev.vlang.ConstStringExpr'>
        <value>synchronized</value>
       </a-node>
+      <a-node class='kiev.vlang.ConstStringExpr'>
+       <value>null</value>
+      </a-node>
      </keywords>
      <elem>
       <a-node class='kiev.fmt.SyntaxNode'>
@@ -2132,6 +2135,9 @@
        <elem>
         <a-node class='kiev.fmt.SyntaxSet'>
          <elements>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>meta</name>
+          </a-node>
           <a-node class='kiev.fmt.SyntaxIdentAttr'>
            <decl>
             <a-node class='kiev.vlang.SymbolRef'>
@@ -3126,7 +3132,12 @@
            </fmt>
           </a-node>
           <a-node class='kiev.fmt.SyntaxSubAttr'>
-           <name>view_of</name>
+           <name>variant</name>
+           <in_syntax>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>syntax-java-view</name>
+            </a-node>
+           </in_syntax>
           </a-node>
           <a-node class='kiev.fmt.SyntaxElemRef'>
            <decl>
@@ -3149,6 +3160,24 @@
         </a-node>
        </elem>
        <sname>stx-decl-struct</sname>
+      </a-node>
+      <a-node class='kiev.fmt.SyntaxElemDecl'>
+       <rnode>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>KievView</name>
+        </a-node>
+       </rnode>
+       <elem>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>view_of</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>syntax-java-view</name>
+          </a-node>
+         </in_syntax>
+        </a-node>
+       </elem>
+       <sname>stx-decl-variant-view</sname>
       </a-node>
      </members>
      <sname>syntax-java-view</sname>
@@ -5594,6 +5623,53 @@
         </a-node>
        </elem>
        <sname>stx-meta-packed</sname>
+      </a-node>
+      <a-node class='kiev.fmt.SyntaxElemDecl'>
+       <rnode>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>MetaUUID</name>
+        </a-node>
+       </rnode>
+       <elem>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>@uuid</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-meta</name>
+            </a-node>
+           </fmt>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>(</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-separator-eat-all</name>
+            </a-node>
+           </fmt>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxStrAttr'>
+           <name>value</name>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-symbol</name>
+            </a-node>
+           </fmt>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>)</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-separator-eat-left</name>
+            </a-node>
+           </fmt>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+        </a-node>
+       </elem>
+       <sname>stx-meta-uuid</sname>
       </a-node>
       <a-node class='kiev.fmt.SyntaxElemDecl'>
        <rnode>

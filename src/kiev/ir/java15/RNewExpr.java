@@ -208,7 +208,7 @@ public final view RNewClosure of NewClosure extends RENode {
 		if (clazz != null)                                                    
 			return true;
 		this.open();
-		clazz = Env.newStruct(null,false,(Struct)ctx_tdecl,0,new JavaAnonymouseClass(),true);
+		clazz = Env.newStruct(null,false,(Struct)ctx_tdecl,0,new JavaAnonymouseClass(),true,null);
 		clazz.setTypeDeclLoaded(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);

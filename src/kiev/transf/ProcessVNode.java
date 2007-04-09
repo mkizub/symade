@@ -101,7 +101,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpANode = Env.loadTypeDecl(nameANode, true).xtype;
 			tpNode = Env.loadTypeDecl(nameNode, true).xtype;
 			tpNArray = new ArrayType(tpANode);
-			tpNodeSpace = Env.newMetaType(new Symbol<MetaTypeDecl>("NodeSpace"), Env.newPackage("kiev.vlang"), false).xtype;
+			tpNodeSpace = Env.newMetaType(new Symbol<MetaTypeDecl>("NodeSpace"), Env.newPackage("kiev.vlang"), false, null).xtype;
 			tpAttrSlot = Env.loadTypeDecl(nameAttrSlot, true).xtype;
 			tpRefAttrSlot = Env.loadTypeDecl(nameRefAttrSlot, true).xtype;
 			tpAttAttrSlot = Env.loadTypeDecl(nameAttAttrSlot, true).xtype;
@@ -234,7 +234,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 		boolean isArr = f.getType().isInstanceOf(tpNArray);
 		boolean isExtData = isAtt ? fmatt.getZ(nameExtData) : fmref.getZ(nameExtData);
 		Type clz_tp = isArr ? f.getType().bindings().tvars[0].unalias().result() : f.getType();
-		Struct s = Env.newStruct(("NodeAttr_"+f.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true);
+		Struct s = Env.newStruct(("NodeAttr_"+f.sname).intern(),true,snode,ACC_FINAL|ACC_STATIC|ACC_SYNTHETIC,new JavaClass(),true,null);
 		s.setTypeDeclLoaded(true);
 		snode.members.add(s);
 		if (isArr) {
