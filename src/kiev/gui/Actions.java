@@ -65,12 +65,14 @@ public final class InputEventInfo {
 }
 
 public class UIActionViewContext {
+	public final Window wnd;
 	public final UIView ui;
 	public final InfoView uiv;
 	public final Editor editor;
 	public final DrawTerm dt;
 	public Drawable dr;
-	public UIActionViewContext(UIView ui) {
+	public UIActionViewContext(Window wnd, UIView ui) {
+		this.wnd = wnd;
 		this.ui = ui;
 		if (ui instanceof InfoView) {
 			this.uiv = (InfoView)ui;
@@ -81,7 +83,8 @@ public class UIActionViewContext {
 			this.dr = dt;
 		}
 	}
-	public UIActionViewContext(Editor editor, Drawable dr) {
+	public UIActionViewContext(Window wnd, Editor editor, Drawable dr) {
+		this.wnd = wnd;
 		this.ui = editor;
 		this.uiv = editor;
 		this.editor = editor;
@@ -365,10 +368,17 @@ public class NavigateEditor implements Runnable {
 
 public final class FileActions implements Runnable {
 	
+	final Window wnd;
 	final InfoView uiv;
 	final String action;
 	
+	FileActions(Window wnd, String action) {
+		this.wnd = wnd;
+		this.action = action;
+	}
+	
 	FileActions(InfoView uiv, String action) {
+		this.wnd = uiv.parent_window;
 		this.uiv = uiv;
 		this.action = action;
 	}
@@ -431,7 +441,7 @@ public final class FileActions implements Runnable {
 				System.out.println("Read error while Xml-to-Kiev importing: "+e);
 			} finally { tr.leave(); }
 			if (fu != null)
-				uiv.parent_window.openEditor(fu);
+				wnd.openEditor(fu);
 		}
 		else if (action == "merge-all") {
 			ANode.getVersion(Env.root).mergeTree();
@@ -503,21 +513,23 @@ public final class FileActions implements Runnable {
 	final static class LoadFileAs implements UIActionFactory {
 		public String getDescr() { "Load a file into current view as a file with specified syntax" }
 		public Runnable getAction(UIActionViewContext context) {
-			return new FileActions(context.uiv, "load-as");
+			return new FileActions(context.wnd, "load-as");
 		}
 	}
 
 	final static class MergeTreeAll implements UIActionFactory {
 		public String getDescr() { "Merge editor's changes into working tree for the whole project" }
 		public Runnable getAction(UIActionViewContext context) {
-			return new FileActions(null, "merge-all");
+			return new FileActions(context.wnd, "merge-all");
 		}
 	}
 
 	final static class RunBackendAll implements UIActionFactory {
 		public String getDescr() { "Run back-end compilation for the whole project" }
 		public Runnable getAction(UIActionViewContext context) {
-			return new FileActions(context.uiv, "run-backend");
+			if (context.uiv != null)
+				return new FileActions(context.uiv, "run-backend");
+			return null;
 		}
 	}
 

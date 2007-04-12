@@ -26,11 +26,11 @@ public interface DrawDevice {
 }
 
 public class TextPrinter implements DrawDevice {
-	StringBuffer sb = new StringBuffer(1024);
+	StringBuilder sb;
 	int pos_x = 0;
 	int pos_y = 0;
 	
-	public TextPrinter(StringBuffer sb) {
+	public TextPrinter(StringBuilder sb) {
 		this.sb = sb;
 	}
 	

@@ -459,7 +459,7 @@
         </a-node>
        </si>
        <action_before>SP_EAT</action_before>
-       <action_after>SP_NOP</action_after>
+       <action_after>SP_ADD</action_after>
        <from_attempt>0</from_attempt>
       </a-node>
      </spaces>
@@ -503,7 +503,7 @@
          <name>sp-sepr</name>
         </a-node>
        </si>
-       <action_before>SP_NOP</action_before>
+       <action_before>SP_ADD</action_before>
        <action_after>SP_EAT</action_after>
        <from_attempt>0</from_attempt>
       </a-node>
@@ -5552,18 +5552,33 @@
              <text>,</text>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
-               <name>fmt-separator</name>
+               <name>fmt-separator-eat-all</name>
               </a-node>
              </fmt>
             </a-node>
            </separator>
+           <prefix>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>(</text>
+             <fmt>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name>fmt-separator-eat-all</name>
+              </a-node>
+             </fmt>
+            </a-node>
+           </prefix>
+           <sufix>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>)</text>
+             <fmt>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name>fmt-separator-eat-left</name>
+              </a-node>
+             </fmt>
+            </a-node>
+           </sufix>
            <folded_by_default>false</folded_by_default>
            <name>exceptions</name>
-           <empty>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>&lt;?values?&gt;</text>
-            </a-node>
-           </empty>
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
@@ -5688,13 +5703,18 @@
             </a-node>
            </fmt>
           </a-node>
-          <a-node class='kiev.fmt.SyntaxSubAttr'>
-           <name>type</name>
-           <in_syntax>
+          <a-node class='kiev.fmt.SyntaxIdentAttr'>
+           <decl>
             <a-node class='kiev.vlang.SymbolRef'>
-             <name>syntax-java-meta</name>
+             <name>ident-template</name>
             </a-node>
-           </in_syntax>
+           </decl>
+           <name>decl</name>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-meta</name>
+            </a-node>
+           </fmt>
           </a-node>
           <a-node class='kiev.fmt.SyntaxOptional'>
            <calculator>
@@ -5769,34 +5789,6 @@
         </a-node>
        </elem>
        <sname>stx-meta-user-def</sname>
-      </a-node>
-      <a-node class='kiev.fmt.SyntaxElemDecl'>
-       <rnode>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>TypeNameRef</name>
-        </a-node>
-       </rnode>
-       <elem>
-        <a-node class='kiev.fmt.SyntaxSet'>
-         <elements>
-          <a-node class='kiev.fmt.SyntaxIdentAttr'>
-           <decl>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>ident-template</name>
-            </a-node>
-           </decl>
-           <name>ident</name>
-           <fmt>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>fmt-meta</name>
-            </a-node>
-           </fmt>
-          </a-node>
-         </elements>
-         <folded_by_default>false</folded_by_default>
-        </a-node>
-       </elem>
-       <sname>stx-type-name-ref</sname>
       </a-node>
      </members>
      <sname>syntax-java-meta</sname>

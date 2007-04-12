@@ -182,53 +182,53 @@ public class List<A>
 
 /** concatenate all element lists of `xss'
  */ 
-//    public static <A> List<A> concatenate(List<List<A>> xss) {
-//	switch (xss) {
-//	case Nil:
-//	    return Nil;
-//	case Cons(List<A> xs, List<List<A>> xss1):
-//	    return xs.concat(concatenate(xss1));
-//	}
-//    }
+	public static <A> List<A> concatenate(List<List<A>> xss) {
+		switch (xss) {
+		case Nil:
+			return Nil;
+		case Cons(List<A> xs, List<List<A>> xss1):
+			return xs.concat(concatenate(xss1));
+		}
+	}
 
 /** apply `f' to each element of this list
  */
-//    public <B> void forall((A)->B f) {
-//	List<A> xs = this;
-//	while (true) {
-//	    switch (xs) {
-//	    case Nil:
-//		return;
-//	    case Cons(A x, List<A> xs1):
-//		f(x);
-//	        xs = xs1;
-//	    }
-//	}
-//    }
+	public <B> void forall((A)->B f) {
+		List<A> xs = this;
+		while (true) {
+			switch (xs) {
+			case Nil:
+				return;
+			case Cons(A x, List<A> xs1):
+				f(x);
+				xs = xs1;
+			}
+		}
+	}
 
 /** apply `f' to each element of this list and collect the results in a
  *  new list 
  */
-//    public <B> List<B> map((A)->B f) {
-//	switch (this) {
-//	case Nil:
-//	    return Nil;
-//	case Cons(A x, List<A> xs):
-//	    return new Cons<A>(f(x), xs.map(f));
-//	}
-//    }
+	public <B> List<B> map((A)->B f) {
+		switch (this) {
+		case Nil:
+			return Nil;
+		case Cons(A x, List<A> xs):
+			return new Cons<A>(f(x), xs.map(f));
+		}
+	}
 
 /** apply `f' to each element of this list and concatenate the (list-valued)
  *  results in a new list 
  */
-//    public <B> List<B> bind((A)->List<B> f) {
-//	switch (this) {
-//	case Nil:
-//	    return Nil;
-//	case Cons(A x, List<A> xs):
-//	    return f(x).concat(xs.bind(f));
-//	}
-//    }
+	public <B> List<B> bind((A)->List<B> f) {
+		switch (this) {
+		case Nil:
+			return Nil;
+		case Cons(A x, List<A> xs):
+			return f(x).concat(xs.bind(f));
+		}
+	}
     
 /** all elements for which predicate`p' is true
  */
@@ -254,32 +254,32 @@ public class List<A>
  *  @law List.cons(x1,...,xN).foldl(OP, z) = (...(z OP x1) OP ... ) OP xN
  *
  */
-//    public <B> B foldl((B,A)->B f, B z) {
-//	List<A> xs = this;
-//	while (true) {
-//	    switch (xs) {
-//	    case Nil:
-//		return z;
-//	    case Cons(A x, List<A> xs1):
-//		z = f(z, x);
-//	        xs = xs1;
-//	    }
-//	}
-//    }
+	public <B> B foldl((B,A)->B f, B z) {
+		List<A> xs = this;
+		while (true) {
+			switch (xs) {
+			case Nil:
+				return z;
+			case Cons(A x, List<A> xs1):
+				z = f(z, x);
+				xs = xs1;
+			}
+		}
+	}
 
 /** fold right:
  *
  *  @law List.cons(x1,...,xN).foldr(OP, z) = x1 OP (... OP (xN OP z)...)
  *
  */
-//    public <B> B foldr((A,B)->B f, B z) {
-//	switch (this) {
-//	case Nil:
-//	    return z;
-//	case Cons(A x, List<A> xs):
-//	    return f(x, xs.foldr(f, z));
-//	}
-//    }
+	public <B> B foldr((A,B)->B f, B z) {
+		switch (this) {
+		case Nil:
+			return z;
+		case Cons(A x, List<A> xs):
+			return f(x, xs.foldr(f, z));
+		}
+	}
 
 /** does this list contain element `y'?
  */
@@ -457,7 +457,7 @@ public class List<A>
 		return new Cons<A>(hd,Nil);
 	}
 
-	public static List<A> newList(A hd, ...)
+	public static List<A> newList(A hd, A ... va_args)
 		alias lfy operator new
 	{
 		List<A> nl = Nil;

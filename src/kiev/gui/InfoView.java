@@ -181,7 +181,7 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 		int code = evt.getKeyCode();
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
 		UIActionFactory af = naviMap.get(new InputEventInfo(mask, code));
-		Runnable r = (af == null) ? null : af.getAction(new UIActionViewContext(this));
+		Runnable r = (af == null) ? null : af.getAction(new UIActionViewContext(this.parent_window, this));
 		if (r != null) {
 			evt.consume();
 			r.run();

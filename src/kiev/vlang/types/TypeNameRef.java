@@ -111,7 +111,7 @@ public final class TypeNameRef extends TypeRef {
 			}
 		} else {
 			TypeDecl@ td;
-			if( !PassInfo.resolveNameR(((TypeNameRef)this),td,new ResInfo(this,this.ident,ResInfo.noForwards)) )
+			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,this.ident,ResInfo.noForwards)) )
 				throw new CompilerException(this,"Unresolved type "+ident);
 			this = this.open();
 			this.symbol = td;

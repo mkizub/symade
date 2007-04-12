@@ -216,7 +216,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 		Object src = e.getSource();
 		if (src instanceof UIActionMenuItem) {
 			UIActionMenuItem m = (UIActionMenuItem)src;
-			Runnable r = m.factory.getAction(new UIActionViewContext(getCurrentView()));
+			Runnable r = m.factory.getAction(new UIActionViewContext(this, getCurrentView()));
 			if (r != null)
 				r.run();
 		}
@@ -304,13 +304,13 @@ public class UIActionMenuItem extends JMenuItem {
 	}
 	public boolean isEnabled() {
 		if (factory == null || !super.isEnabled()) return false;
-		return factory.getAction(new UIActionViewContext(wnd.getCurrentView())) != null;
+		return factory.getAction(new UIActionViewContext(wnd, wnd.getCurrentView())) != null;
 	}
 	class UIActionButtonModel extends javax.swing.DefaultButtonModel {
 		public boolean isEnabled() {
 			try {
 				if (factory == null || !super.isEnabled()) return false;
-				return factory.getAction(new UIActionViewContext(wnd.getCurrentView())) != null;
+				return factory.getAction(new UIActionViewContext(wnd, wnd.getCurrentView())) != null;
 			} catch (NullPointerException e) { return false; }
 		}
 	}

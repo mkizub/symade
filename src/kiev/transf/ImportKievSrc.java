@@ -908,6 +908,51 @@ public final class KievBE_CheckLock extends BackendProcessor {
 */
 
 ////////////////////////////////////////////////////
+//	   PASS - midend dump API as XML files        //
+////////////////////////////////////////////////////
+
+@singleton
+public final class KievME_DumpAPI extends BackendProcessor {
+
+	private ATextSyntax stx = new XmlDumpSyntax("api");
+
+	private KievME_DumpAPI() { super(KievBackend.Generic); }
+	public String getDescr() { "Dump API files" }
+
+	public boolean isEnabled() {
+		return Kiev.enabled(KievExt.DumpAPI);
+	}
+
+	public void process(ASTNode node, Transaction tr) {
+		if!(node instanceof FileUnit)
+			return;
+		if (this.stx == null)
+			this.stx = new XmlDumpSyntax("api");
+		try {
+			dumpSrc((FileUnit)node);
+		} catch (Exception rte) { Kiev.reportError(rte); }
+	}
+
+	public void dumpSrc(FileUnit fu) {
+		String output_dir = Kiev.output_dir;
+		if( output_dir==null ) output_dir = "classes";
+		if( Kiev.verbose ) System.out.println("Dumping API of source file "+fu+" into '"+output_dir+"' dir");
+
+		try {
+			String out_file = fu.name;
+			int p = out_file.lastIndexOf('.');
+			if (p > 0)
+				out_file = out_file.substring(0,p);
+			out_file += ".xml";
+			File f = new File(output_dir,out_file);
+			Env.dumpTextFile(fu, f, stx);
+		} catch (IOException e) {
+			System.out.println("Create/write error while API dump: "+e);
+		}
+	}
+}
+
+////////////////////////////////////////////////////
 //	   PASS - backend pre-generation              //
 ////////////////////////////////////////////////////
 
@@ -985,16 +1030,6 @@ public final class ExportBE_Generate extends BackendProcessor {
 		} catch (Exception rte) { Kiev.reportError(rte); }
 	}
 
-	private void cleanFormatting(ASTNode node, AttrSlot attr) {
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) {
-				if (n instanceof ASTNode)
-					attr.clear(n);
-				return true;
-			}
-		});
-	}
-	
 	public void dumpSrc(FileUnit fu) {
 		String output_dir = Kiev.output_dir;
 		if( output_dir==null ) output_dir = "classes";
@@ -1009,7 +1044,7 @@ public final class ExportBE_Generate extends BackendProcessor {
 			else
 				stx = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt.syntax-for-java");
 			Env.dumpTextFile(fu, f, stx);
-		} catch( IOException e ) {
+		} catch (IOException e) {
 			System.out.println("Create/write error while Kiev-to-Src exporting: "+e);
 		}
 	}

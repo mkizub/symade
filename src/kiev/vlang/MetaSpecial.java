@@ -175,6 +175,17 @@ public final class MetaThrows extends UserMeta {
 	public TypeRef[] getThrowns() {
 		return exceptions;
 	}
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (dump == "api") {
+			if (attr.name == "exceptions")
+				return true;
+			if (attr.name == "values")
+				return false;
+		}
+		return super.includeInDump(dump, attr, val);
+	}
+
 }
 
 @node
@@ -243,14 +254,16 @@ public final class MetaAccess extends MetaFlag {
 		dn.is_access = DNode.MASK_ACC_DEFAULT;
 	}
 	
-	@setter public void setSimple(String val) {
+	public final void setSimple(String val) { this.simple = val; }
+	@setter public final void set$simple(String val) {
 		this.simple = val.intern();
 		ANode p = parent();
 		if (p instanceof MetaSet)
 			setFlag((MetaSet)p, true);
 	}
 
-	@setter public void setFlags(int val) {
+	public final void setFlags(int val) { this.flags = val; }
+	@setter public void set$flags(int val) {
 		this.flags = val;
 	}
 

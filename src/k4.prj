@@ -311,6 +311,7 @@ CLASS kiev.transf.KievFE_Pass3 kiev/transf/KievFE_Pass3 kiev\transf\ImportKievSr
 CLASS kiev.transf.KievFE_PreResolve kiev/transf/KievFE_PreResolve kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_SrcParse kiev/transf/KievFE_SrcParse kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_Verify kiev/transf/KievFE_Verify kiev\transf\ImportKievSrc.java
+CLASS kiev.transf.KievME_DumpAPI kiev/transf/KievME_DumpAPI kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievME_PreGenartion kiev/transf/KievME_PreGenartion kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.PackedFldBE_Rewrite kiev/transf/PackedFldBE_Rewrite kiev\transf\ProcessPackedFld.java
 CLASS kiev.transf.PackedFldFE_Verify kiev/transf/PackedFldFE_Verify kiev\transf\ProcessPackedFld.java

@@ -238,9 +238,6 @@ public class Env extends Struct {
 			tdecl.sname = id.sname;
 			tdecl.package_clazz = pkg;
 			tdecl.meta.mflags = ACC_MACRO;
-			tdecl.type_decl_version = 1;
-			tdecl.xmeta_type = new MetaType(tdecl);
-			tdecl.xtype = tdecl.xmeta_type.make(TVarBld.emptySet);
 			pkg.sub_decls.add(tdecl);
 		}
 		else if( cleanup ) {
@@ -484,7 +481,7 @@ public class Env extends Struct {
 	public static void dumpTextFile(ASTNode node, File f, ATextSyntax stx)
 		throws IOException
 	{
-		StringBuffer sb = new StringBuffer(1024);
+		StringBuilder sb = new StringBuilder(1024);
 		TextFormatter tf = new TextFormatter(stx);
 		Drawable dr = tf.format(node, null);
 		TextPrinter pr = new TextPrinter(sb);
@@ -656,6 +653,8 @@ public class Env extends Struct {
 						attr.set(nodes.peek(),Enum.valueOf(attr.clazz,text.trim()));
 					else if (attr.clazz == Operator.class)
 						attr.set(nodes.peek(),Operator.getOperatorByName(text.trim()));
+					else if (Type.class.isAssignableFrom(attr.clazz))
+						attr.set(nodes.peek(),AType.fromSignature(text.trim()));
 					else
 						//throw new SAXException("Attribute '"+attr.name+"' of "+nodes.peek().getClass()+" uses unsupported "+attr.clazz);
 						System.out.println("Attribute '"+attr.name+"' of "+nodes.peek().getClass()+" uses unsupported "+attr.clazz);

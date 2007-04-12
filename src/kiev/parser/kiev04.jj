@@ -1503,10 +1503,10 @@ UserMeta Annotation() :
 	{ UserMeta n = new UserMeta(); }
 	"@"
 	(
-		id = NameRef()
+		id = QName()
 	|	id = KeywordAsNameRef()
 	)
-	{	n.pos = id.pos;	n.type = new TypeNameRef(id.name); }
+	{	n.pos = id.pos;	 n.decl.name = id.name; }
 	[
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )

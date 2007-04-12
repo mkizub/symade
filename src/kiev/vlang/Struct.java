@@ -355,6 +355,10 @@ public class Struct extends TypeDecl {
 		this.u_name = "";
 		this.q_name = "";
 		this.b_name = KString.Empty;
+		if !(this instanceof Env) {
+			this.xmeta_type = new CompaundMetaType(this);
+			this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
+		}
 	}
 	
 	public Struct(String name, String u_name, Struct outer, int flags, TypeDeclVariant variant) {

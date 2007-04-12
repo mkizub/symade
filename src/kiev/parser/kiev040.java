@@ -1889,7 +1889,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(OPERATOR_AT);
     switch (jj_nt.kind) {
     case IDENTIFIER:
-      id = NameRef();
+      id = QName();
       break;
     case THROWS:
     case ALIAS:
@@ -1899,7 +1899,7 @@ public abstract class kiev040 implements kiev040Constants {
       jj_consume_token(-1);
       throw new ParseException();
     }
-                n.pos = id.pos; n.type = new TypeNameRef(id.name);
+                n.pos = id.pos;  n.decl.name = id.name;
     switch (jj_nt.kind) {
     case LPAREN:
       jj_consume_token(LPAREN);
@@ -5960,7 +5960,7 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final private boolean jj_3R_331() {
-    if (jj_3R_127()) return true;
+    if (jj_3R_145()) return true;
     return false;
   }
 

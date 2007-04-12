@@ -21,6 +21,8 @@ import kiev.be.java15.JArrayType;
 import kiev.be.java15.JMethodType;
 import kiev.be.java15.JStruct;
 
+import java.util.StringTokenizer;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -329,6 +331,75 @@ public abstract class AType implements StdTypes, TVSet {
 		sb.append("}");
 		return sb.toString();
 	}
+
+	// used by MetaType.make() to restore the type,
+	// so it's a reverse of bind_bld()
+	public String makeSignature() {
+		StringBuffer str = new StringBuffer();
+		str.append(meta_type.tdecl.qname());
+		boolean hasArgs = false;
+		TVarSet templ = meta_type.getTemplBindings();
+		AType self = this.bindings();
+		for(int i=0; i < self.tvars.length; i++) {
+			TVar t = templ.tvars[i];
+			TVar x = self.tvars[i];
+			if (!t.isFree())
+				continue;
+			if (x.var == x.val)
+				continue; // self-bound
+			if (!hasArgs) {
+				str.append('(');
+				hasArgs = true;
+			} else {
+				str.append(',');
+			}
+			str.append(x.var.name);
+			str.append('=');
+			str.append(x.val.makeSignature());
+		}
+		if (hasArgs)
+			str.append(')');
+		return str.toString();
+	}
+	
+	public static Type fromSignature(String sign) {
+		StringTokenizer st = new StringTokenizer(sign,"=,()",true);
+		String[] sep = {""};
+		return fromSignature(st,sep);
+	}
+	private static Type fromSignature(StringTokenizer st, String[] sep) {
+		String name = st.nextToken();
+		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode(name);
+		if (tdecl == null) {
+			System.out.println("Error: Cannot find TypeDecl "+name);
+			tdecl = StdTypes.tpVoid.meta_type.tdecl;
+		}
+		if (!st.hasMoreElements())
+			return tdecl.xtype;
+		sep[0] = st.nextToken();
+		if (!sep[0].equals("(")) {
+			assert (sep[0].equals(",")||sep[0].equals(")"));
+			return tdecl.xtype;
+		}
+		TVarBld set = new TVarBld();
+		while (!sep[0].equals(")")) {
+			String aname = st.nextToken();
+			sep[0] = st.nextToken();
+			assert (sep[0].equals("="));
+			Type tp = fromSignature(st,sep);
+			ArgType a = null;
+			foreach (TVar t; tdecl.xtype.bindings().tvars; t.var.name.equals(aname)) {
+				a = t.var;
+				break;
+			}
+			if (a != null)
+				set.append(a, tp);
+			else
+				System.out.println("Error: Cannot find var "+aname+" in type "+tdecl);
+			assert (sep[0].equals(",")||sep[0].equals(")"));
+		}
+		return tdecl.xmeta_type.make(set);
+	}
 }
 
 public final class TVarSet extends AType {
@@ -410,11 +481,11 @@ public final class TVar {
 
 	public String toString() {
 		if (isFree())
-			return idx+": free  "+var.definer.parent()+"."+var.definer+"."+var.name;
+			return idx+": free  "+var.definer.parent()+"."+var.definer;
 		else if (isAlias())
-			return idx+": alias "+var.definer.parent()+"."+var.definer+"."+var.name+" > "+set.getTVars()[this.ref];
+			return idx+": alias "+var.definer.parent()+"."+var.definer+" > "+set.getTVars()[this.ref];
 		else
-			return idx+": bound "+var.definer.parent()+"."+var.definer+"."+var.name+" = "+val;
+			return idx+": bound "+var.definer.parent()+"."+var.definer+" = "+val;
 	}
 }
 

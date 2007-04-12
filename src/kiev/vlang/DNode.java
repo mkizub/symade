@@ -765,5 +765,17 @@ public final class MetaTypeDecl extends TypeDecl {
 
 	@virtual typedef This  = MetaTypeDecl;
 	
-	public MetaTypeDecl() { super(null); }
+	public MetaTypeDecl() {
+		super(null);
+		this.type_decl_version = 1;
+		this.xmeta_type = new MetaType(this);
+		this.xtype = this.xmeta_type.make(TVarBld.emptySet);
+	}
+	public MetaTypeDecl(MetaType meta_type) {
+		super(null);
+		if (meta_type != null) {
+			this.xmeta_type = meta_type;
+			this.xtype = meta_type.make(TVarBld.emptySet);
+		}
+	}
 }

@@ -169,33 +169,74 @@ public abstract class MNode extends ASTNode {
 public class UserMeta extends MNode {
 	@virtual typedef This  ≤ UserMeta;
 
-	@att public TypeNameRef				type;
+	@att public SymbolRef<Struct>		decl;
 	@att public MetaValue[]				values;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
-			if      (attr.name == "type")
+			if      (attr.name == "decl")
 				parent().callbackChildChanged(pslot());
 			else if (attr.name == "values")
 				parent().callbackChildChanged(pslot());
 		}
 	}
 
-	public UserMeta() {}
+	public UserMeta() {
+		this.decl = new SymbolRef<Struct>("");
+	}
 
-	public UserMeta(TypeNameRef type) {
-		this.type = type;
+	public UserMeta(Struct decl) {
+		this.decl = new SymbolRef<Struct>(decl);
 	}
 	
 	public UserMeta(String name) {
-		this.type = new TypeNameRef(name);
+		this.decl = new SymbolRef<Struct>(name);
 	}
 	
 	public String qname() {
-		return this.type.qname();
+		TypeDecl s = decl.dnode;
+		if (s != null)
+			return s.qname();
+		return decl.name;
 	}
 
-	public final TypeDecl getTypeDecl() { return type.getType().meta_type.tdecl; }
+	public final TypeDecl getTypeDecl() {
+		TypeDecl td = decl.dnode;
+		if (td != null)
+			return td;
+		String name = decl.name;
+		if (name.indexOf('.') < 0) {
+			Struct@ node;
+			if( !PassInfo.resolveNameR(this,node,new ResInfo(this,name,ResInfo.noForwards)) )
+				Kiev.reportError(this,"Unresolved annotation name "+name);
+			this.decl.open();
+			this.decl.symbol = (Struct)node;
+			node.checkResolved();
+			return (Struct)node;
+		}
+		Struct scope = Env.root;
+		int dot;
+		do {
+			dot = name.indexOf('.');
+			String head;
+			if (dot > 0) {
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1).intern();
+			} else {
+				head = name;
+			}
+			Struct@ node;
+			if!(scope.resolveNameR(node,new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports))) {
+				Kiev.reportError(this,"Unresolved identifier "+head+" in "+scope);
+				return null;
+			}
+			scope = (Struct)node;
+		} while (dot > 0);
+		this.decl.open();
+		this.decl.symbol = scope;
+		scope.checkResolved();
+		return scope;
+	}
 	
 	public boolean isRuntimeVisible() {
 		TypeDecl tdecl = getTypeDecl();
@@ -225,7 +266,12 @@ public class UserMeta extends MNode {
 		return false;
 	}
 
-	public Type getType() { return type.getType(); }
+	public Type getType() {
+		TypeDecl td = getTypeDecl();
+		if (td == null)
+			return Type.tpVoid;
+		return td.xtype;
+	}
 	
 	public int size() alias length {
 		return values.length;
@@ -235,37 +281,37 @@ public class UserMeta extends MNode {
 	}
 	
 	public void verify() {
-		Type mt = type.getType();
-		if (mt == null || mt.getStruct() == null || !mt.getStruct().isAnnotation()) {
+		TypeDecl tdecl = getTypeDecl();
+		if (tdecl == null || !tdecl.isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
-		String name = ((CompaundType)mt).tdecl.qname();
-		UserMeta m = this;
-		if (m != this) {
-			this.replaceWithNode(m);
-			foreach (MetaValue v; values)
-				m.set(v.ncopy());
-			m.verify();
-		}
+//		String name = this.qname();
+//		UserMeta m = this;
+//		if (m != this) {
+//			this.replaceWithNode(m);
+//			foreach (MetaValue v; values)
+//				m.set(v.ncopy());
+//			m.verify();
+//		}
 		foreach (MetaValue v; values)
 			v.verify();
 		return;
 	}
 	
 	public void resolve(Type reqType) {
-		Struct s = type.getType().getStruct();
-		s.checkResolved();
+		TypeDecl tdecl = getTypeDecl();
+		tdecl.checkResolved();
 		for (int n=0; n < values.length; n++) {
 			MetaValue v = values[n];
 			Method m = null;
-			foreach (Method sm; s.members) {
+			foreach (Method sm; tdecl.members) {
 				if( sm.hasName(v.ident,true)) {
 					m = sm;
 					break;
 				}
 			}
 			if (m == null)
-				throw new CompilerException(v, "Unresolved method "+v.ident+" in class "+s);
+				throw new CompilerException(v, "Unresolved method "+v.ident+" in class "+tdecl);
 			v = v.open();
 			v.symbol = m;
 			Type t = m.type.ret();
@@ -287,7 +333,7 @@ public class UserMeta extends MNode {
 		}
 		// check that all non-default values are specified, and add default values
 	next_method:
-		foreach (Method m; s.members) {
+		foreach (Method m; tdecl.members) {
 			for(int j=0; j < values.length; j++) {
 				if (values[j].symbol != null)
 					continue next_method;
@@ -306,10 +352,10 @@ public class UserMeta extends MNode {
 				return v;
 			}
 		}
-		TypeDecl td = getType().meta_type.tdecl;
+		TypeDecl td = getTypeDecl();
 		foreach (Method m; td.members; m.hasName(name,true))
 			return (MetaValue)m.body;
-		throw new RuntimeException("Value "+name+" not found in "+type+" annotation");
+		throw new RuntimeException("Value "+name+" not found in "+decl+" annotation");
 	}
 	
 	public boolean getZ(String name) {
@@ -319,7 +365,7 @@ public class UserMeta extends MNode {
 			return false;
 		if (v instanceof ConstBoolExpr)
 			return ((ConstBoolExpr)v).value;
-		throw new RuntimeException("Value "+name+" in annotation "+type+" is not a boolean constant, but "+v);
+		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not a boolean constant, but "+v);
 	}
 	
 	public int getI(String name) {
@@ -329,7 +375,7 @@ public class UserMeta extends MNode {
 			return 0;
 		if (v instanceof ConstIntExpr)
 			return ((ConstIntExpr)v).value;
-		throw new RuntimeException("Value "+name+" in annotation "+type+" is not an int constant, but "+v);
+		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not an int constant, but "+v);
 	}
 	
 	public String getS(String name) {
@@ -339,7 +385,7 @@ public class UserMeta extends MNode {
 			return null;
 		if (v instanceof ConstStringExpr)
 			return ((ConstStringExpr)v).value;
-		throw new RuntimeException("Value "+name+" in annotation "+type+" is not a String constant, but "+v);
+		throw new RuntimeException("Value "+name+" in annotation "+decl+" is not a String constant, but "+v);
 	}
 	
 	public MetaValue set(MetaValue value)

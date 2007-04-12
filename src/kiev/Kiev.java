@@ -36,6 +36,7 @@ static public enum KievBackend {
 
 static public enum KievExt {
 	JavaOnly				: "java only"		,
+	DumpAPI					: "dump-api"		,
 	Rewrite					: "rewrite"			,
 	GotoCase				: "goto case"		,
 	Goto					: "goto"			,
@@ -567,6 +568,7 @@ public final class Kiev {
 		
 		{
 			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
+			processors.append(KievME_DumpAPI);
 			processors.append(RewriteME_PreGenerate);
 			processors.append(KievME_PreGenartion);
 			processors.append(VirtFldME_PreGenerate);

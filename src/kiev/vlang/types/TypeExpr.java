@@ -95,9 +95,11 @@ public class TypeExpr extends TypeRef {
 		}
 		else {
 			Type t;
+			ArgType a = null;
 			if (!PassInfo.resolveNameR(((TypeExpr)this),v,new ResInfo(this,this.ident))) {
 				if (op == Operator.PostTypePVar) {
 					t = WrapperType.tpWrappedPrologVar;
+					a = StdTypes.tpPrologVar.meta_type.tdecl.args[0].getAType();
 				}
 				else if (op == Operator.PostTypeVararg) {
 					t = StdTypes.tpVararg;
@@ -108,6 +110,7 @@ public class TypeExpr extends TypeRef {
 				else if (op == Operator.PostTypeRef) {
 					Kiev.reportWarning(this, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpRefProxy);
 					t = WrapperType.tpWrappedRefProxy;
+					a = StdTypes.tpRefProxy.meta_type.tdecl.args[0].getAType();
 				}
 				else
 					throw new CompilerException(this,"Typedef for type operator "+ident+" not found");
@@ -119,9 +122,12 @@ public class TypeExpr extends TypeRef {
 			}
 			t.checkResolved();
 			TVarBld set = new TVarBld();
-			if (t.meta_type.tdecl.args.length != 1)
-				throw new CompilerException(this,"Type '"+t+"' of type operator "+ident+" must have 1 argument");
-			set.append(t.meta_type.tdecl.args[0].getAType(), tp);
+			if (a == null) {
+				if (t.meta_type.tdecl.args.length != 1)
+					throw new CompilerException(this,"Type '"+t+"' of type operator "+ident+" must have 1 argument");
+				a = t.meta_type.tdecl.args[0].getAType();
+			}
+			set.append(a, tp);
 			tp = t.applay(set);
 		}
 		this.lnk = tp;
@@ -154,7 +160,7 @@ public class TypeExpr extends TypeRef {
 		if (this.ident == Operator.PostTypeArray.name)
 			return ArrayMetaType.instance.tdecl;
 		if (this.ident == Operator.PostTypeVararg.name)
-			return (TypeDecl)Env.resolveGlobalDNode("kiev.stdlib._Vararg_");
+			return StdTypes.tpVararg.meta_type.tdecl;
 		DNode@ v;
 		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,this.ident))) {
 			if (op == Operator.PostTypePVar)

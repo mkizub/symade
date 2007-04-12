@@ -186,7 +186,7 @@ public class Editor extends InfoView implements KeyListener {
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
 		{
 			UIActionFactory af = naviMap.get(new InputEventInfo(mask, code));
-			Runnable r = (af == null) ? null : af.getAction(new UIActionViewContext(this));
+			Runnable r = (af == null) ? null : af.getAction(new UIActionViewContext(this.parent_window, this));
 			if (r != null) {
 				evt.consume();
 				r.run();
@@ -200,7 +200,7 @@ public class Editor extends InfoView implements KeyListener {
 						try {
 							Class c = Class.forName(f.act);
 							UIActionFactory af = (UIActionFactory)c.newInstance();
-							Runnable r = af.getAction(new UIActionViewContext(this));
+							Runnable r = af.getAction(new UIActionViewContext(this.parent_window, this));
 							if (r != null) {
 								evt.consume();
 								r.run();
@@ -724,7 +724,7 @@ final class FunctionExecuter implements Runnable {
 				editor.view_canvas.remove(menu);
 				menu = null;
 			}
-			Runnable r = new ChooseItemEditor().getAction(new UIActionViewContext(editor, dr));
+			Runnable r = new ChooseItemEditor().getAction(new UIActionViewContext(editor.parent_window, editor, dr));
 			if (r != null)
 				r.run();
 		}

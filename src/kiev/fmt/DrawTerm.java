@@ -103,7 +103,9 @@ public abstract class DrawTerm extends Drawable {
 		String tmp = "???";
 		try {
 			tmp = makeText(cont.fmt);
-		} catch (Throwable t) {}
+		} catch (Throwable t) {
+			//t.printStackTrace();
+		}
 		if (!textIsUpToDate(tmp)) {
 			this.text = tmp;
 			cont.formatAsText(this);
@@ -355,7 +357,7 @@ public class DrawXmlTypeTerm extends DrawXmlStrTerm {
 		Type t = (Type)getAttrPtr().get();
 		if (t == null)
 			return "";
-		String str = t.meta_type.tdecl.qname();
+		String str = t.makeSignature();
 		return escapeString(str);
 	}
 }

@@ -458,7 +458,7 @@ public class Bytecoder implements JConstants {
 	UserMeta readAnnotation(kiev.bytecode.Clazz clazz, kiev.bytecode.Annotation.annotation ann) {
 		KString sign = ann.getSignature(clazz);
 		Type tp = Signature.getType(sign);
-		UserMeta um = new UserMeta(new TypeNameRef(tp));
+		UserMeta um = new UserMeta((Struct)tp.meta_type.tdecl);
 		for (int i=0; i < ann.names.length; i++) {
 			String nm = ann.getName(i,clazz).toString();
 			MetaValue val = readAnnotationValue(clazz,ann.values[i],nm);
