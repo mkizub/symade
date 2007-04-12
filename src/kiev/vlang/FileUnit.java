@@ -181,10 +181,10 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 		((Import)syn).resolveMethodR(node,path,mt)
 	}
 
-	public void cleanup() {
+	public boolean backendCleanup() {
         Kiev.parserAddresses.clear();
 		Kiev.k.presc = null;
-		foreach(Struct n; members) ((JStruct)n).cleanup();
+		return true;
 	}
 }
 

@@ -1050,3 +1050,21 @@ public final class ExportBE_Generate extends BackendProcessor {
 	}
 }
 
+////////////////////////////////////////////////////
+//	   PASS - cleanup after backend               //
+////////////////////////////////////////////////////
+
+@singleton
+public final class KievBE_Cleanup extends BackendProcessor {
+	private KievBE_Cleanup() { super(KievBackend.Generic); }
+	public String getDescr() { "Kiev cleanup after backend" }
+
+	public void process(ASTNode node, Transaction tr) {
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) { return n.backendCleanup(); }
+			public void post_exec(ANode n) {}
+		});
+		return;
+	}
+}
+

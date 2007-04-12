@@ -565,6 +565,11 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		stats.insert(idx,(ASTNode)sym);
 	}
 
+	public boolean backendCleanup() {
+		this.break_label = null;
+		return true;
+	}
+
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
 		DNode@ dn;

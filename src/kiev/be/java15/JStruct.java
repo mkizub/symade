@@ -311,17 +311,5 @@ public final view JStruct of Struct extends JTypeDecl {
 			System.out.println("Create/write error while Kiev-to-JavaBytecode exporting: "+e);
 		}
 	}
-
-	public void cleanup() {
-		if( !isPackage() ) {
-			foreach (JStruct sub; this.sub_decls)
-				sub.cleanup();
-		}
-
-		foreach (JDNode n; this.members)
-			n.jattrs = null;
-		this.jattrs = null;
-	}
-
 }
 

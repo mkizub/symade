@@ -586,6 +586,7 @@ public final class Kiev {
 			processors.append(PackedFldBE_Rewrite);
 			processors.append(KievBE_Generate);
 			processors.append(ExportBE_Generate);
+			processors.append(KievBE_Cleanup);
 			beProcessors = processors.toArray();
 		}
 	}

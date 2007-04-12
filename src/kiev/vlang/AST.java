@@ -654,6 +654,8 @@ public abstract class ANode implements INode {
 		}
 		return rn;
 	}
+	
+	public boolean backendCleanup() { return true; }
 
 }
 

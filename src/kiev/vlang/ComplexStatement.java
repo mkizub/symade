@@ -127,6 +127,11 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 		return st;
 	}
 
+	public boolean backendCleanup() {
+		this.case_label = null;
+		return true;
+	}
+
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
 		DNode@ dn;
@@ -220,6 +225,11 @@ public class SwitchStat extends ENode {
 	}
 
 	public String toString() { return "switch("+sel+")"; }
+
+	public boolean backendCleanup() {
+		this.cosw = null;
+		return true;
+	}
 }
 
 @node(name="Catch")
@@ -252,6 +262,12 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		node ?= arg,
 		info.checkNodeName(node)
 	}
+
+	public boolean backendCleanup() {
+		this.handler = null;
+		this.code_catcher = null;
+		return true;
+	}
 }
 
 @node(name="Finally")
@@ -274,6 +290,13 @@ public class FinallyInfo extends ENode {
 	public FinallyInfo() {}
 
 	public String toString() { return "finally"; }
+
+	public boolean backendCleanup() {
+		this.subr_label = null;
+		this.handler = null;
+		this.code_catcher = null;
+		return true;
+	}
 }
 
 @node(name="Try")
@@ -295,6 +318,11 @@ public class TryStat extends ENode {
 	     public CodeLabel			end_label;
 
 	public TryStat() {}
+
+	public boolean backendCleanup() {
+		this.end_label = null;
+		return true;
+	}
 }
 
 @node(name="Synchronized")
@@ -317,6 +345,13 @@ public class SynchronizedStat extends ENode {
 	     public CodeLabel		end_label;
 
 	public SynchronizedStat() {}
+
+	public boolean backendCleanup() {
+		this.handler = null;
+		this.code_catcher = null;
+		this.end_label = null;
+		return true;
+	}
 }
 
 @node(name="With")
@@ -337,5 +372,10 @@ public class WithStat extends ENode {
 	     public CodeLabel	end_label;
 
 	public WithStat() {}
+
+	public boolean backendCleanup() {
+		this.end_label = null;
+		return true;
+	}
 }
 

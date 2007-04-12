@@ -298,6 +298,7 @@ CLASS kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
 CLASS kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\BackendProcessor.java
 CLASS kiev.transf.EnumFE_GenMembers kiev/transf/EnumFE_GenMembers kiev\transf\ProcessEnum.java
 CLASS kiev.transf.ExportBE_Generate kiev/transf/ExportBE_Generate kiev\transf\ImportKievSrc.java
+CLASS kiev.transf.KievBE_Cleanup kiev/transf/KievBE_Cleanup kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievBE_Generate kiev/transf/KievBE_Generate kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievBE_Resolve kiev/transf/KievBE_Resolve kiev\transf\ImportKievSrc.java
 CLASS kiev.transf.KievFE_GenMembers kiev/transf/KievFE_GenMembers kiev\transf\ImportKievSrc.java

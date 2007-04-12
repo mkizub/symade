@@ -94,6 +94,11 @@ public final class Label extends DNode {
 		links = links.diff(lnk);
 	}
 
+	public boolean backendCleanup() {
+		this.label = null;
+		return true;
+	}
+
 	static class LabelDFFunc extends DFFunc {
 		final int res_idx;
 		LabelDFFunc(DataFlowInfo dfi) {

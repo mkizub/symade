@@ -327,6 +327,11 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	{
 		return this.meta.setMeta(meta);
 	}
+
+	public boolean backendCleanup() {
+		this.jattrs = null;
+		return true;
+	}
 }
 
 @node

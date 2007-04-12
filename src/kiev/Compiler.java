@@ -224,6 +224,7 @@ stop:;
 			do {
 				diff_time = curr_time = System.currentTimeMillis();
 				String msg = Kiev.runCurrentFrontEndProcessor(root);
+				Compiler.runGC(this);
 				diff_time = System.currentTimeMillis() - curr_time;
 				if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
 				if( this.errCount > 0 ) goto stop;
@@ -239,6 +240,7 @@ stop:;
 stop:;
 		Kiev.lockNodeTree(root);
 		Env.dumpProjectFile();
+		Compiler.runGC(this);
 		if (this.errCount > 0)
 			run_be = false;
 		if( Kiev.verbose || this.reportTotals || this.errCount > 0  || this.warnCount > 0)
@@ -291,7 +293,6 @@ stop:;
 						diff_time = System.currentTimeMillis() - curr_time;
 						if( Kiev.verbose && msg != null) Kiev.reportInfo(msg,diff_time);
 					} while (Kiev.nextBackEndPass() && this.errCount == errCount);
-					fu.cleanup();
 					Kiev.closeBackEndFileUnit();
 				} finally { tr.rollback(false); }
 				Compiler.runGC(this);
