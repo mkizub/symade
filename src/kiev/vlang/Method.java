@@ -203,8 +203,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				assert(fp.isForward());
 				assert(fp.isFinal());
 				assert(fp.u_name == nameThisDollar);
-				assert(fp.type ≈ this.ctx_tdecl.package_clazz.xtype);
-				dargs.append(this.ctx_tdecl.package_clazz.xtype);
+				assert(fp.type ≈ this.ctx_tdecl.package_clazz.dnode.xtype);
+				dargs.append(this.ctx_tdecl.package_clazz.dnode.xtype);
 				break;
 			case Var.PARAM_RULE_ENV:
 				assert(this instanceof RuleMethod);
@@ -277,6 +277,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "body") {
+			if (this.isMacro())
+				return true;
 			if (this.body instanceof MetaValue)
 				return true;
 			return false;
@@ -371,6 +373,12 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			}
 		}
 		return true;
+	}
+
+	public boolean backendCleanup() {
+		if (Method.ATTR_VIOLATED_FIELDS.get(this) != null)
+			Method.ATTR_VIOLATED_FIELDS.clear(this);
+		return super.backendCleanup();
 	}
 
 	public String toString() {

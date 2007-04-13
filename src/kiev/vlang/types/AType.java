@@ -355,6 +355,8 @@ public abstract class AType implements StdTypes, TVSet {
 			}
 			str.append(x.var.name);
 			str.append('=');
+			String val = x.val.makeSignature();
+			assert (val != null && !"null".equals(val));
 			str.append(x.val.makeSignature());
 		}
 		if (hasArgs)

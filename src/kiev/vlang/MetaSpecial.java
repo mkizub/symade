@@ -417,7 +417,7 @@ public final class MetaAccess extends MetaFlag {
 
 	private static Struct getPackageOf(ASTNode n) {
 		TypeDecl pkg = getStructOf(n);
-		while( !pkg.isPackage() ) pkg = pkg.package_clazz;
+		while( !pkg.isPackage() ) pkg = pkg.package_clazz.dnode;
 		return (Struct)pkg;
 	}
 
@@ -441,10 +441,10 @@ public final class MetaAccess extends MetaFlag {
 		if (((DNode)n).isPrivate()) {
 			TypeDecl outer1 = getStructOf(from);
 			TypeDecl outer2 = getStructOf(n);
-			while (!outer1.package_clazz.isPackage())
-				outer1 = outer1.package_clazz;
-			while (!outer2.package_clazz.isPackage())
-				outer2 = outer2.package_clazz;
+			while (!outer1.package_clazz.dnode.isPackage())
+				outer1 = outer1.package_clazz.dnode;
+			while (!outer2.package_clazz.dnode.isPackage())
+				outer2 = outer2.package_clazz.dnode;
 			if (outer1 == outer2) {
 				if( (flags & acc) == acc ) {
 					n.setAccessedFromInner(true);

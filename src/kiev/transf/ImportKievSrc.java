@@ -221,10 +221,10 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		}
 		else if!(me.parent() instanceof FileUnit) {
 			if (!me.isStatic()) {
-				Struct pkg = me.package_clazz;
+				TypeDecl pkg = me.package_clazz.dnode;
 				if (me.isClazz() && pkg.isClazz()) {
 					int n = 0;
-					for(Struct p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz) n++;
+					for(TypeDecl p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz.dnode) n++;
 					String fldName = (nameThis+"$"+n).intern();
 					boolean found = false;
 					foreach (Field f; me.getAllFields(); f.sname == fldName)
@@ -343,8 +343,8 @@ public final class KievFE_Pass2 extends TransfProcessor {
 	
 	private Type getStructType(TypeDecl tdecl, Stack<TypeDecl> path) {
 		if (tdecl.isTypeResolved()) {
-			if (!tdecl.isArgsResolved())
-				throw new CompilerException(tdecl, "Recursive type declaration for class "+tdecl+" via "+path);
+			//if (!tdecl.isArgsResolved())
+			//	throw new CompilerException(tdecl, "Recursive type declaration for class "+tdecl+" via "+path);
 			return tdecl.xtype;
 		}
 		path.push(tdecl);
@@ -352,10 +352,8 @@ public final class KievFE_Pass2 extends TransfProcessor {
 		tdecl = tdecl.open();
 		tdecl.setTypeResolved(true);
 		
-		if (tdecl instanceof Struct) {
-			for (Struct p = tdecl.package_clazz; p != null; p = p.package_clazz)
-				getStructType(ANode.getVersion(p), path);
-		}
+		for (TypeDecl p = tdecl.package_clazz.dnode; p != null; p = p.package_clazz.dnode)
+			getStructType(ANode.getVersion(p), path);
 
 		if (tdecl.parent() instanceof FileUnit)
 			tdecl.setStatic(true);
@@ -938,16 +936,14 @@ public final class KievME_DumpAPI extends BackendProcessor {
 		if( output_dir==null ) output_dir = "classes";
 		if( Kiev.verbose ) System.out.println("Dumping API of source file "+fu+" into '"+output_dir+"' dir");
 
-		try {
-			String out_file = fu.name;
-			int p = out_file.lastIndexOf('.');
-			if (p > 0)
-				out_file = out_file.substring(0,p);
-			out_file += ".xml";
-			File f = new File(output_dir,out_file);
-			Env.dumpTextFile(fu, f, stx);
-		} catch (IOException e) {
-			System.out.println("Create/write error while API dump: "+e);
+		foreach (TypeDecl td; fu.members; !td.isPrivate() && !(td instanceof TypeDef)) {
+			try {
+				String out_file = td.qname().replace('.',File.separatorChar)+".xml";
+				File f = new File(output_dir,out_file);
+				Env.dumpTextFile(td, f, stx);
+			} catch (IOException e) {
+				System.out.println("Create/write error while API dump: "+e);
+			}
 		}
 	}
 }

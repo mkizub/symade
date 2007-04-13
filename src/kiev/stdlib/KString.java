@@ -307,69 +307,6 @@ public final class KString {
 		return from(newbuf,0,newbuf.length);
 	}
 
-	/** KString class test/debug */
-	/*
-	public static void main(String[] args) {
-		KString aaa = KString.from("aaa");
-		System.out.println("Create name "+aaa);
-		aaa.dumpKString();
-		System.out.println("aaa.equals(aaa)="+aaa.equals(aaa));
-		KString bbb = KString.from("bbb");
-		bbb.dumpKString();
-		System.out.println("Create name "+bbb);
-		System.out.println("bbb.equals(bbb)="+bbb.equals(bbb));
-		System.out.println("aaa.equals(bbb)="+aaa.equals(bbb));
-		System.out.println("bbb.equals(aaa)="+bbb.equals(aaa));
-		KString aaa1 = KString.from("aaa");
-		aaa1.dumpKString();
-		System.out.println("Create another name "+aaa1);
-		System.out.println("aaa.equals(aaa')="+aaa.equals(aaa1));
-		System.out.println("bbb.equals(aaa')="+bbb.equals(aaa1));
-		
-		KString t1 = KString.from("@");
-		KString t2 = KString.from("()S");
-		System.out.println("'@'=='()S' = "+t1.equals(t2));
-		System.out.println("(Object)'@'==(Object)'()S' = "+((Object)t1).equals((Object)t2));
-		t1.dumpKString();
-		t2.dumpKString();
-
-		KString xxx = KString.from("---/---/---/---/-");
-		System.out.println("Index of '/' in "+xxx+" is "+xxx.indexOf('/'));
-		System.out.println("Index of '/' in "+xxx+" from offset 4 is "+xxx.indexOf('/',4));
-		System.out.println("Index of '/' in "+xxx+" from offset 5 is "+xxx.indexOf('/',5));
-		System.out.println("Last Index of '/' in "+xxx+" is "+xxx.lastIndexOf('/'));
-		System.out.println("Substring from offset 3 of "+xxx+" is "+xxx.substr(3));
-		System.out.println("Substring from offset 3 to 7 of "+xxx+" is "+xxx.substr(3,7));
-		System.out.println("Replace of '/' into '.' in "+xxx+" is "+xxx.replace('/','.'));
-
-		KString yyy = KString.from("1/22/333/4444/-");
-		KStringTokenizer yyyt = new KStringTokenizer(yyy,'/');
-		System.out.println("Tokens in "+yyy+" containce "+yyyt.countTokens()+" tokens separated by '/', tokens are:");
-		while( yyyt.hasMoreTokens() ) 
-			System.out.println("\t"+yyyt.nextToken());
-
-		KStringBuffer ksb = new KStringBuffer();
-		System.out.println("Test KStringBuffer");
-		System.out.println("\""+ksb+"\""+".append('a')="+ksb.append('a'));
-		System.out.println("\""+ksb+"\""+".append(\" hello \")="+ksb.append(" hello "));
-		System.out.println("\""+ksb+"\""+".append(ksb.toKString())="+ksb.append(ksb.toKString()));
-		
-		KString kfs = KString.fromSource("abcd");
-		System.out.println("KString.fromSource(\"abcd\") = "+kfs);
-		kfs = KString.fromSource("a\\tbcd");
-		System.out.println("KString.fromSource(\"a\\tbcd\") = "+kfs);
-		kfs = KString.fromSource("a\\u0033tbcd");
-		System.out.println("KString.fromSource(\"a\\u0033tbcd\") = "+kfs);
-		kfs = KString.fromSource("a\\088tbcd");
-		System.out.println("KString.fromSource(\"a\\088tbcd\") = "+kfs);
-	}
-
-	private void dumpKString() {
-		System.out.println("KString '"+toString()+"' has index "+index+", length "+len+", offset "+offset);
-	}
-	*/
-
-
 	public static class KStringScanner {
 	
 		public KString	str;

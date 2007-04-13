@@ -51,6 +51,12 @@ public class TypeClosureRef extends TypeRef {
 		return this.lnk;
 	}
 	
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (dump == "api" && attr.name == "lnk")
+			return false;
+		return super.includeInDump(dump, attr, val);
+	}
+
 	public Struct getStruct() {
 		return null;
 	}

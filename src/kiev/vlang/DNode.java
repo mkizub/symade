@@ -51,7 +51,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	     public:ro,rw,ro,rw		String			u_name; // unique name in scope, never null, usually equals to name
 	
 
-	@ref(ext_data=true)
+	@ref
 	public KString								b_name;	// java bytecode name
 	@ref(ext_data=true)
 	public kiev.be.java15.Attr[]				jattrs; // array of java class attributes of this node
@@ -363,10 +363,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 	public static final TypeDecl[] emptyArray = new TypeDecl[0];
 	
-	@ref public Struct						package_clazz;
+	@ref public SymbolRef<TypeDecl>			package_clazz;
 	@att public TypeConstr[]				args;
 	@att public TypeRef[]					super_types;
 	@att public ASTNode[]					members;
+	@ref public DNode[]						sub_decls;
 		 private MetaType[]					super_meta_types;
 	@ref private TypeDecl[]					direct_extenders;
 		 public int							type_decl_version;
@@ -517,22 +518,23 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			int idx = pkg.sub_decls.indexOf(this);
 			if (idx < 0)
 				pkg.sub_decls.append(this);
-			this.package_clazz = pkg;
+			this.package_clazz.symbol = pkg;
 		} catch (NullPointerException e) {}
 		super.callbackAttached();
 	}
 	public void callbackDetached() {
 		this = ANode.getVersion(this).open();
-		if (package_clazz != null) {
-			int idx = package_clazz.sub_decls.indexOf(this);
+		if (package_clazz.dnode != null) {
+			int idx = package_clazz.dnode.sub_decls.indexOf(this);
 			if (idx >= 0)
-				package_clazz.sub_decls.del(idx);
-			package_clazz = null;
+				package_clazz.dnode.sub_decls.del(idx);
+			package_clazz.symbol = null;
 		}
 		super.callbackDetached();
 	}
 
 	public TypeDecl(String name) {
+		package_clazz = new SymbolRef<TypeDecl>();
 		this.sname = name;
 	}
 
@@ -548,14 +550,20 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public String qname() {
 		if (q_name != null)
 			return q_name;
-		Struct pkg = package_clazz;
+		TypeDecl pkg = package_clazz.dnode;
 		if (pkg == null)
 			return null;
 		q_name = (pkg.qname()+"."+u_name).intern();
 		return q_name;
 	}
 
-	public String toString() { return package_clazz==null ? u_name : qname(); }
+	public String toString() { return package_clazz.dnode==null ? u_name : qname(); }
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		//if (dump == "api" && attr.name == "package_clazz")
+		//	return true;
+		return super.includeInDump(dump, attr, val);
+	}
 
 	public boolean checkResolved() {
 		if( !isTypeDeclLoaded() ) {

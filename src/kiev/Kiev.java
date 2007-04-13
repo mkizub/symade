@@ -661,8 +661,9 @@ public final class Kiev {
 		if (!tp.isEnabled())
 			return null;
 		if (root == Env.root) {
-			foreach (FileUnit fu; Env.root.files)
-				runCurrentFEP(tp, fu);
+			// files can be loaded on demand, cannot use 'foreach'
+			for (int i=0; i < Env.root.files.length; i++)
+				runCurrentFEP(tp, Env.root.files[i]);
 		} else {
 			if !(root instanceof FileUnit)
 				root = root.ctx_file_unit;
@@ -694,7 +695,9 @@ public final class Kiev {
 		BackendProcessor bp = meProcessors[me_pass_no];
 		if (!bp.isEnabled())
 			return null;
-		foreach (FileUnit fu; Env.root.files) {
+		// files can be loaded on demand, cannot use 'foreach'
+		for (int i=0; i < Env.root.files.length; i++) {
+			FileUnit fu = Env.root.files[i];
 			String curr_file = Kiev.getCurFile();
 			Kiev.setCurFile(fu.name);
 			boolean[] exts = Kiev.getExtSet();

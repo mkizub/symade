@@ -276,7 +276,6 @@ CLASS kiev.stdlib.Hashtable kiev/stdlib/Hashtable kiev\stdlib\Hashtable.java
 CLASS kiev.stdlib.InvariantFailedException kiev/stdlib/InvariantFailedException kiev\stdlib\Debug.java
 CLASS kiev.stdlib.KString kiev/stdlib/KString kiev\stdlib\KString.java
 CLASS kiev.stdlib.KStringBuffer kiev/stdlib/KStringBuffer kiev\stdlib\KStringBuffer.java
-CLASS kiev.stdlib.KStringTokenizer kiev/stdlib/KStringTokenizer kiev\stdlib\KStringTokenizer.java
 CLASS kiev.stdlib.List kiev/stdlib/List kiev\stdlib\List.java
 CLASS kiev.stdlib.ListBuffer kiev/stdlib/ListBuffer kiev\stdlib\ListBuffer.java
 CLASS kiev.stdlib.MatchError kiev/stdlib/MatchError kiev\stdlib\MatchError.java

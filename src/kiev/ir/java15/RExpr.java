@@ -98,7 +98,7 @@ public final view RAssertEnabledExpr of AssertEnabledExpr extends RENode {
 		}
 		// get top-level class
 		TypeDecl clazz = ctx_tdecl;
-		while !(clazz.package_clazz.isPackage() || clazz.package_clazz.isInterface()) clazz = clazz.package_clazz;
+		while !(clazz.package_clazz.dnode.isPackage() || clazz.package_clazz.dnode.isInterface()) clazz = clazz.package_clazz.dnode;
 		// find $assertionsEnabled
 		foreach (Field f; clazz.getAllFields(); f.sname == "$assertionsEnabled") {
 			replaceWithNodeResolve(reqType, new SFldExpr(pos,f));
@@ -648,9 +648,9 @@ public static final view RCastExpr of CastExpr extends RENode {
 			return;
 		}
 		if( et.isReference() && type.isReference() && et.getStruct() != null
-		 && et.getStruct().package_clazz.isClazz()
+		 && et.getStruct().package_clazz.dnode.isClazz()
 		 && !(et instanceof ArgType)
-		 && !et.getStruct().isStatic() && et.getStruct().package_clazz.xtype.getAutoCastTo(type) != null
+		 && !et.getStruct().isStatic() && et.getStruct().package_clazz.dnode.xtype.getAutoCastTo(type) != null
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,

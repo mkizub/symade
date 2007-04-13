@@ -33,7 +33,7 @@ import syntax kiev.Syntax;
 public final view JStruct of Struct extends JTypeDecl {
 
 	public		KString				b_name;
-	public:ro	JStruct				package_clazz;
+	public:ro	SymbolRef<Struct>	package_clazz;
 	public:ro	JStruct				iface_impl;
 	public:ro	JDNode[]			sub_decls;
 
@@ -47,7 +47,7 @@ public final view JStruct of Struct extends JTypeDecl {
 	public final KString bname() {
 		if (b_name != null)
 			return b_name;
-		JStruct pkg = package_clazz;
+		JStruct pkg = (JStruct)package_clazz.dnode;
 		if (pkg == null || ((Struct)pkg) == Env.root)
 			b_name = KString.from(u_name);
 		else if (pkg.isPackage())

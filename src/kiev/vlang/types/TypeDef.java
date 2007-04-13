@@ -42,6 +42,10 @@ public abstract class TypeDef extends TypeDecl {
 		this.u_name = name;
 	}
 
+	public String qname() {
+		return sname;
+	}
+
 	public boolean checkResolved() {
 		return true;
 	}

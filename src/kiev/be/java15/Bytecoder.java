@@ -201,7 +201,7 @@ public class Bytecoder implements JConstants {
 		trace(Kiev.debug && Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 		if( m.isStatic()
 		 && m.u_name != nameClassInit
-		 && cl.package_clazz.isInterface()
+		 && cl.package_clazz.dnode.isInterface()
 		 && cl.u_name == nameIFaceImpl
 		)
 			m.setVirtualStatic(true);

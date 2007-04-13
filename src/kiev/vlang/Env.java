@@ -165,7 +165,7 @@ public class Env extends Struct {
 				cl.meta.metas.delAll();
 				cl.meta.mflags = acces;
 				cl.variant = variant;
-				cl.package_clazz = outer;
+				cl.package_clazz.symbol = outer;
 				cl.typeinfo_clazz = null;
 				//cl.view_of = null;
 				cl.super_types.delAll();
@@ -236,7 +236,7 @@ public class Env extends Struct {
 			tdecl.pos = id.pos;
 			tdecl.u_name = id.sname;
 			tdecl.sname = id.sname;
-			tdecl.package_clazz = pkg;
+			tdecl.package_clazz.symbol = pkg;
 			tdecl.meta.mflags = ACC_MACRO;
 			pkg.sub_decls.add(tdecl);
 		}
@@ -245,7 +245,7 @@ public class Env extends Struct {
 				Kiev.reportWarning(id,"Replacing class "+id+" with different UUID: "+tdecl.getUUID()+" != "+uuid);
 			tdecl.type_decl_version++;
 			tdecl.meta.mflags = ACC_MACRO;
-			tdecl.package_clazz = pkg;
+			tdecl.package_clazz.symbol = pkg;
 			tdecl.super_types.delAll();
 			tdecl.args.delAll();
 			tdecl.members.delAll();
@@ -444,6 +444,9 @@ public class Env extends Struct {
 		Struct cl = (Struct)resolveGlobalDNode(qname);
 		if (cl != null)
 			return true;
+		// check class in the project
+		if (Env.projectHash.get(qname) != null)
+			return true;
 		// Check if not loaded
 		return jenv.existsClazz(qname);
 	}
@@ -460,6 +463,11 @@ public class Env extends Struct {
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
 		TypeDecl cl = (TypeDecl)resolveGlobalDNode(qname);
+		// Try to load from project file (scan sources) or from .xml API dump
+		if (cl == null && Env.projectHash.get(qname) != null)
+			cl = loadTypeDeclFromProject(qname);
+		//if (cl == null)
+		//	cl = loadTypeDeclFromAPIDump(qname);
 		// Load if not loaded or not resolved
 		if (cl == null)
 			cl = jenv.loadClazz(qname);
@@ -471,13 +479,80 @@ public class Env extends Struct {
 	}
 
 	public static TypeDecl loadTypeDecl(TypeDecl cl) {
-		if (cl == Env.root) return Env.root;
+		if (cl.isTypeDeclLoaded())
+			return cl;
+		if (cl == Env.root)
+			return Env.root;
+		// Try to load from project file (scan sources) or from .xml API dump
+		if (Env.projectHash.get(cl.qname()) != null)
+			loadTypeDeclFromProject(cl.qname());
 		// Load if not loaded or not resolved
 		if (!cl.isTypeDeclLoaded() && cl instanceof Struct && !cl.isAnonymouse())
 			jenv.loadClazz((Struct)cl);
 		return cl;
 	}
 	
+	private static TypeDecl loadTypeDeclFromProject(String qname) {
+		ProjectFile pf = Env.projectHash.get(qname);
+		if (pf == null || pf.file == null)
+			return null;
+		File file = pf.file;
+		if (!file.exists() || !file.canRead())
+			return null;
+		String filename = file.toString();
+		String cur_file = Kiev.getCurFile();
+		Kiev.setCurFile(filename);
+		Parser k = Kiev.k;
+		long curr_time = 0L, diff_time = 0L;
+		try {
+			diff_time = curr_time = System.currentTimeMillis();
+			java.io.InputStreamReader file_reader = null;
+			char[] file_chars = new char[8196];
+			int file_sz = 0;
+			try {
+				file_reader = new InputStreamReader(new FileInputStream(filename), "UTF-8");
+				for (;;) {
+					int r = file_reader.read(file_chars, file_sz, file_chars.length-file_sz);
+					if (r < 0)
+						break;
+					file_sz += r;
+					if (file_sz >= file_chars.length) {
+						char[] tmp = new char[file_chars.length + 8196];
+						System.arraycopy(file_chars, 0, tmp, 0, file_chars.length);
+						file_chars = tmp;
+					}
+				}
+			} finally {
+				if (file_reader != null) file_reader.close();
+			}
+			java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
+			Kiev.k.interface_only = true;
+			diff_time = curr_time = System.currentTimeMillis();
+			Kiev.k.ReInit(bis);
+			FileUnit fu = Kiev.k.FileUnit(filename);
+			Env.root.files += fu;
+			diff_time = System.currentTimeMillis() - curr_time;
+			bis.close();
+			if( Kiev.verbose )
+				Kiev.reportInfo("Scanned file   "+filename,diff_time);
+			try {
+				Kiev.runProcessorsOn(fu);
+				//Kiev.lockNodeTree(fu);
+			} catch(Exception e ) {
+				Kiev.reportError(e);
+			}
+		} catch ( ParseException e ) {
+			Kiev.reportError(e);
+		} catch ( ParseError e ) {
+			System.out.println("Error while scanning input file:"+filename+":"+e);
+		} finally {
+			k.interface_only = Kiev.interface_only;
+			Kiev.setCurFile(cur_file);
+		}
+		TypeDecl td = (TypeDecl)Env.resolveGlobalDNode(qname);
+		return td;
+	}
+
 	public static void dumpTextFile(ASTNode node, File f, ATextSyntax stx)
 		throws IOException
 	{
@@ -606,7 +681,7 @@ public class Env extends Struct {
 						Struct s = (Struct)n;
 						s.xmeta_type = new CompaundMetaType(s);
 						s.xtype = new CompaundType((CompaundMetaType)s.xmeta_type, TVarBld.emptySet);
-						//s.package_clazz = outer;
+						//s.package_clazz.symbol = outer;
 					}
 				}
 				if (n == root) {

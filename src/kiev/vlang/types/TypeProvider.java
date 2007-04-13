@@ -192,11 +192,11 @@ public final class CoreMetaType extends MetaType {
 		this.tdecl = tdecl;
 		tdecl.u_name = name;
 		tdecl.sname = name;
-		tdecl.package_clazz = Env.newPackage("kiev.stdlib");
+		tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
 		tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		tdecl.setTypeDeclLoaded(true);
 		tdecl.xmeta_type = this;
-		tdecl.package_clazz.sub_decls.add(tdecl);
+		tdecl.package_clazz.dnode.sub_decls.add(tdecl);
 		if (super_type != null)
 			tdecl.super_types.add(new TypeRef(super_type));
 	}
@@ -355,12 +355,12 @@ public final class ArrayMetaType extends MetaType {
 			tdecl = new MetaTypeDecl(null);
 			tdecl.u_name = "_array_";
 			tdecl.sname = "_array_";
-			tdecl.package_clazz = Env.newPackage("kiev.stdlib");
+			tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdArrayArg);
 			tdecl.setTypeDeclLoaded(true);
-			tdecl.package_clazz.sub_decls.add(tdecl);
+			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
 			tdecl.setUUID("bbf03b4b-62d4-3e29-8f0d-acd6c47b9a04");
 			Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
 			length.setMeta(new MetaAccess("public",0xAA)); //public:ro
@@ -468,12 +468,12 @@ public class WrapperMetaType extends MetaType {
 			tdecl = new MetaTypeDecl();
 			tdecl.u_name = "_wrapper_";
 			tdecl.sname = "_wrapper_";
-			tdecl.package_clazz = Env.newPackage("kiev.stdlib");
+			tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdWrapperArg);
 			tdecl.setTypeDeclLoaded(true);
-			tdecl.package_clazz.sub_decls.add(tdecl);
+			tdecl.package_clazz.dnode.sub_decls.add(tdecl);
 			tdecl.setUUID("67544053-836d-3bac-b94d-0c4b14ae9c55");
 		}
 		wrapper_tdecl = tdecl;
@@ -489,6 +489,7 @@ public class WrapperMetaType extends MetaType {
 	private WrapperMetaType(Struct clazz) {
 		super(wrapper_tdecl);
 		this.clazz = clazz;
+		clazz.checkResolved();
 		this.field = getWrappedField(clazz,true);
 	}
 
@@ -582,7 +583,7 @@ public class CallMetaType extends MetaType {
 			tdecl = new MetaTypeDecl();
 			tdecl.u_name = "_call_type_";
 			tdecl.sname = "_call_type_";
-			tdecl.package_clazz = Env.newPackage("kiev.stdlib");
+			tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.setTypeDeclLoaded(true);
 			tdecl.setUUID("25395a72-2b16-317a-85b2-5490309bdffc");

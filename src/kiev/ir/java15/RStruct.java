@@ -29,7 +29,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	static final AttrSlot TI_ATTR = new TmpAttrSlot("rstruct ti field temp expr",true,false,TypeInfo.newTypeInfo(TypeInfoExpr.class,null));	
 
 	public:ro			WrapperMetaType			wmeta_type;
-	public:ro			Struct					package_clazz;
+	public:ro			SymbolRef<TypeDecl>		package_clazz;
 	public				Struct					typeinfo_clazz;
 	public				Struct					iface_impl;
 	public:ro			DNode[]					sub_decls;
@@ -1333,7 +1333,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						ASTIdentifier max_args = new ASTIdentifier(nameClosureMaxArgs);
 						call_super.args.add(max_args);
 					}
-					else if( package_clazz.isClazz() && isAnonymouse() ) {
+					else if( package_clazz.dnode.isClazz() && isAnonymouse() ) {
 						int skip_args = 0;
 						if( !isStatic() ) skip_args++;
 						if( this.isTypeUnerasable() && super_types[0].getStruct().isTypeUnerasable() ) skip_args++;
@@ -1348,7 +1348,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						call_super.args.add(new ASTIdentifier(pos, nameEnumOrdinal));
 						//call_super.args.add(new ASTIdentifier(pos, "text"));
 					}
-					else if( isForward() && package_clazz.isStructView() && super_types[0].getStruct().package_clazz.isStructView() ) {
+					else if( isForward() && package_clazz.dnode.isStructView() && super_types[0].getStruct().package_clazz.dnode.isStructView() ) {
 						call_super.args.add(new ASTIdentifier(pos, nameImpl));
 					}
 					initbody.stats.insert(0,new ExprStat(call_super));
@@ -1356,7 +1356,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					RStruct.runResolveOn(initbody.stats[0]);
 				}
 				int p = 1;
-				if( package_clazz.isClazz() && !isStatic() ) {
+				if( package_clazz.dnode.isClazz() && !isStatic() ) {
 					initbody.stats.insert(p,
 						new ExprStat(pos,
 							new AssignExpr(pos,Operator.Assign,
@@ -1369,7 +1369,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					RStruct.runResolveOn(initbody.stats[p]);
 					p++;
 				}
-				if (isForward() && package_clazz.isStructView()) {
+				if (isForward() && package_clazz.dnode.isStructView()) {
 					Field fview = this.resolveField(nameImpl);
 					if (fview.parent() == (Struct)this) {
 						foreach (Var fp; m.params; fp.sname == nameImpl) {

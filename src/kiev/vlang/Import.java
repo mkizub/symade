@@ -59,8 +59,8 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		//if (dump == "api" && attr.name == "this")
-		//	return false;
+		if (dump == "api" && attr.name == "this")
+			return false;
 		return super.includeInDump(dump, attr, val);
 	}
 

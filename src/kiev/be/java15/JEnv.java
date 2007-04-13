@@ -117,9 +117,10 @@ public final class JEnv {
 		long curr_time = 0L, diff_time = 0L;
 		diff_time = curr_time = System.currentTimeMillis();
 		kiev.bytecode.Clazz clazz = stdClassLoader.loadClazz(name.bytecode_name.toString());
+		Struct cl = null;
 		if( clazz != null ) {
-			Struct cl = (Struct)Env.resolveGlobalDNode(name.name.toString().intern());
-			if( cl == null || !cl.isTypeDeclLoaded() || cl.package_clazz==null ) {
+			cl = (Struct)Env.resolveGlobalDNode(name.name.toString().intern());
+			if( cl == null || !cl.isTypeDeclLoaded() || cl.package_clazz.dnode==null ) {
 				// Ensure the parent package/outer class is loaded
 				Struct pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 				if( pkg == null ) {
@@ -129,7 +130,6 @@ public final class JEnv {
 				}
 				if( !pkg.isTypeDeclLoaded() ) {
 					pkg = loadStruct(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
-					//pkg = loadClazz(pkg.name);
 				}
 				if( cl == null ) {
 					cl = makeStruct(name.bytecode_name,false);
@@ -146,76 +146,7 @@ public final class JEnv {
 					cl.isInterface()?"interface ":
 					                 "class     "
 					)+name,diff_time);
-			return cl;
 		}
-		// CLASSPATH is scanned, try project file
-		ProjectFile pf = Env.projectHash.get(name.name.toString().intern());
-		File file = null;
-		String filename = null;
-		String cur_file = null;
-		if( pf != null && pf.file != null) {
-			File file = pf.file;
-			if( file.exists() && file.canRead() ) {
-				filename = file.toString();
-				cur_file = Kiev.getCurFile();
-				Kiev.setCurFile(filename);
-			}
-		}
-		if (file == null) {
-			// Not found in project - lookup in CLASSPATH .java or .kiev file
-			file = stdClassLoader.findSourceFile(name.bytecode_name.toString());
-			if( file != null && file.exists() && file.canRead() ) {
-				filename = file.toString();
-				cur_file = Kiev.getCurFile();
-				Kiev.setCurFile(filename);
-				if( Kiev.verbose ) Kiev.reportInfo("Found non-project source file "+file,0L);
-			}
-		}
-		if (file == null)
-			return null;
-		Parser k = Kiev.k;
-		try {
-			diff_time = curr_time = System.currentTimeMillis();
-			FileInputStream fin;
-			try {
-				fin = new FileInputStream(file);
-			} catch( java.io.FileNotFoundException e ) {
-				System.gc();
-				System.runFinalization();
-				System.gc();
-				System.runFinalization();
-				fin = new FileInputStream(file);
-			}
-			k.interface_only = true;
-			k.ReInit(fin);
-			FileUnit fu = k.FileUnit(Kiev.getCurFile());
-			fu.scanned_for_interface_only = true;
-			try {
-				fin.close();
-			} catch (IOException ioe) {
-				Kiev.reportError(ioe);
-			}
-			diff_time = System.currentTimeMillis() - curr_time;
-			if( Kiev.verbose ) Kiev.reportInfo("Scanned file   "+filename,diff_time);
-			System.gc();
-			try {
-				Env.root.files += fu;
-				Kiev.runProcessorsOn(fu);
-				//Kiev.lockNodeTree(fu);
-				fu = null;
-			} catch(Exception e ) {
-				Kiev.reportError(e);
-			}
-			System.gc();
-		} catch ( ParseException e ) {
-			Kiev.reportError(e);
-		} catch ( ParseError e ) {
-			System.out.println("Error while scanning input file:"+filename+":"+e);
-		} finally {
-			k.interface_only = Kiev.interface_only;
-			Kiev.setCurFile(cur_file);
-		}
-		Struct cl = (Struct)Env.resolveGlobalDNode(name.name.toString().intern());
 		return cl;
 	}
 

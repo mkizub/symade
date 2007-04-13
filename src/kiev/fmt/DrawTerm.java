@@ -104,7 +104,7 @@ public abstract class DrawTerm extends Drawable {
 		try {
 			tmp = makeText(cont.fmt);
 		} catch (Throwable t) {
-			//t.printStackTrace();
+			t.printStackTrace();
 		}
 		if (!textIsUpToDate(tmp)) {
 			this.text = tmp;

@@ -184,7 +184,7 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 	public boolean backendCleanup() {
         Kiev.parserAddresses.clear();
 		Kiev.k.presc = null;
-		return true;
+		return super.backendCleanup();
 	}
 }
 

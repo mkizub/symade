@@ -166,8 +166,8 @@ public final class ResInfo {
 				// check visibility of this or inner classes
 				TypeDecl s = from_scope;
 				TypeDecl p = n.ctx_tdecl;
-				while (s != null && s != p && s.package_clazz.isClazz())
-					s = s.package_clazz;
+				while (s != null && s != p && s.package_clazz.dnode != null && s.package_clazz.dnode.isClazz())
+					s = s.package_clazz.dnode;
 				if (s == null || s != p)
 					return false;
 			}

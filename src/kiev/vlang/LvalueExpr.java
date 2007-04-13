@@ -431,7 +431,7 @@ public final class ThisExpr extends LvalueExpr {
 			if (ctx_tdecl == null)
 				return Type.tpVoid;
 			if (ctx_tdecl.u_name == nameIFaceImpl)
-				return ctx_tdecl.package_clazz.xtype;
+				return ctx_tdecl.package_clazz.dnode.xtype;
 			return ctx_tdecl.xtype;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
