@@ -30,15 +30,7 @@ import syntax kiev.Syntax;
 
 public final class JEnv {
 
-	/** StandardClassLoader */
-	private final kiev.bytecode.StandardClassLoader		stdClassLoader;
-
-	public JEnv(String path) {
-		if( path == null ) path = System.getProperty("java.class.path");
-		stdClassLoader = new kiev.bytecode.StandardClassLoader(path);
-	}
-
-	Struct loadStruct(ClazzName name) throws RuntimeException {
+	Struct loadStruct(ClazzName name) {
 		if (name.name == KString.Empty) return Env.root;
 		// Check class is already loaded
 		String qname = name.name.toString().intern();
@@ -46,15 +38,15 @@ public final class JEnv {
 		Struct cl = (Struct)Env.resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
 		if( cl == null )
-			cl = loadClazz(name);
+			cl = (Struct)loadClazz(name);
 		else if( !cl.isTypeDeclLoaded() && !cl.isAnonymouse() )
-			cl = loadClazz(name);
+			cl = (Struct)loadClazz(name);
 		if( cl == null )
 			Env.classHashOfFails.put(qname);
 		return cl;
 	}
 
-	public Struct makeStruct(KString bc_name, boolean cleanup) {
+	Struct makeStruct(KString bc_name, boolean cleanup) {
 		Struct pkg = Env.root;
 		int start = 0;
 		int end = bc_name.indexOf('/', start);
@@ -93,62 +85,76 @@ public final class JEnv {
 		return Env.newStruct(nm, true, pkg, 0, null, cleanup, null);
 	}
 
-	public boolean existsClazz(String qname) {
-		return stdClassLoader.existsClazz(ClazzName.fromToplevelName(KString.from(qname)).bytecode_name.toString());
+	/** Actually load class from specified file and dir */
+	public TypeDecl loadClazz(String qname) {
+		return loadClazz(ClazzName.fromToplevelName(KString.from(qname)));
 	}
 
 	/** Actually load class from specified file and dir */
-	public Struct loadClazz(String qname) throws RuntimeException {
-		return loadClazz(ClazzName.fromToplevelName(KString.from(qname)),false);
+	public TypeDecl loadClazz(Struct cl) {
+		return loadClazz(ClazzName.fromBytecodeName(((JStruct)cl).bname()));
 	}
 
 	/** Actually load class from specified file and dir */
-	public Struct loadClazz(Struct cl) throws RuntimeException {
-		return loadClazz(ClazzName.fromBytecodeName(((JStruct)cl).bname()),false);
-	}
+	public TypeDecl loadClazz(ClazzName name) {
+		// Ensure the parent package/outer class is loaded
+		Struct pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
+		if (pkg == null)
+			pkg = Env.newPackage(name.package_name().toString().intern());
+		if (!pkg.isTypeDeclLoaded())
+			pkg = loadStruct(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
 
-	/** Actually load class from specified file and dir */
-	public Struct loadClazz(ClazzName name) throws RuntimeException {
-		return loadClazz(name,false);
-	}
-
-	/** Actually load class from specified file and dir */
-	public Struct loadClazz(ClazzName name, boolean force) throws RuntimeException {
 		long curr_time = 0L, diff_time = 0L;
 		diff_time = curr_time = System.currentTimeMillis();
-		kiev.bytecode.Clazz clazz = stdClassLoader.loadClazz(name.bytecode_name.toString());
-		Struct cl = null;
-		if( clazz != null ) {
-			cl = (Struct)Env.resolveGlobalDNode(name.name.toString().intern());
-			if( cl == null || !cl.isTypeDeclLoaded() || cl.package_clazz.dnode==null ) {
-				// Ensure the parent package/outer class is loaded
-				Struct pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
-				if( pkg == null ) {
-					pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
-					if( pkg == null )
-						pkg = Env.newPackage(name.package_name().toString().intern());
-				}
-				if( !pkg.isTypeDeclLoaded() ) {
-					pkg = loadStruct(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
-				}
-				if( cl == null ) {
-					cl = makeStruct(name.bytecode_name,false);
-					new FileUnit(name.src_name+".class", pkg).members.add(cl);
+		byte[] data = loadClazzFromClasspath(name.bytecode_name.toString());
+		if (data == null)
+			return null;
+		TypeDecl td = null;
+		kiev.bytecode.Clazz clazz = null;
+		if (data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
+			trace(kiev.bytecode.Clazz.traceRules,"Parsing XML data for clazz "+name);
+			td = (TypeDecl)Env.loadFromXmlData(data, name.src_name.toString(), pkg);
+		}
+		else if (data.length > 4 && (data[0]&0xFF) == 0xCA && (data[1]&0xFF) == 0xFE && (data[2]&0xFF) == 0xBA && (data[3]&0xFF) == 0xBE) {
+			trace(kiev.bytecode.Clazz.traceRules,"Parsing .class data for clazz "+name);
+			clazz = new kiev.bytecode.Clazz();
+			clazz.readClazz(data);                                                                                    
+		}
+		if ((td == null || !td.isTypeDeclLoaded()) && clazz != null) {
+			if (td == null) {
+				td = (Struct)Env.resolveGlobalDNode(name.name.toString());
+				if (td == null)
+					td = makeStruct(name.bytecode_name,false);
+				if (!td.isAttached()) {
+					FileUnit fu = new FileUnit(name.src_name+".class", pkg);
+					fu.members.add(td);
 				}
 			}
-			cl = new Bytecoder(cl,clazz,null).readClazz();
-			//Kiev.lockNodeTree(cl);
+			td = new Bytecoder((Struct)td,clazz,null).readClazz();
+		}
+		if (td != null) {
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose )
 				Kiev.reportInfo("Loaded "+(
-					cl.isPackage()?  "package   ":
-					cl.isSyntax   ()?"syntax    ":
-					cl.isInterface()?"interface ":
-					                 "class     "
+					td.isPackage()?   "package   ":
+					td.isSyntax()?    "syntax    ":
+					td.isInterface()? "interface ":
+					                  "class     "
 					)+name,diff_time);
 		}
-		return cl;
+		return td;
 	}
 
+	private synchronized byte[] loadClazzFromClasspath(String name) {
+		trace(kiev.bytecode.Clazz.traceRules,"Loading data for clazz "+name);
+
+		byte data[] = Env.classpath.read(name);
+		trace(kiev.bytecode.Clazz.traceRules && data != null ,"Data for clazz "+name+" loaded");
+
+		if( data == null || data.length == 0 )
+			trace(kiev.bytecode.Clazz.traceRules,"Data for clazz "+name+" not found");
+
+		return data;
+	}
 }
 

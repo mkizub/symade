@@ -68,10 +68,10 @@ public abstract class ANode implements INode {
 
 	public static final ANode[] emptyArray = new ANode[0];
 
-	public:ro @virtual ANode		ctx_root;
-	public:ro @virtual FileUnit		ctx_file_unit;
-	public:ro @virtual TypeDecl		ctx_tdecl;
-	public:ro @virtual Method		ctx_method;
+	public:ro @virtual @abstract ANode			ctx_root;
+	public:ro @virtual @abstract FileUnit		ctx_file_unit;
+	public:ro @virtual @abstract TypeDecl		ctx_tdecl;
+	public:ro @virtual @abstract Method		ctx_method;
 
 	private VersionInfo<This>		version_info;
 	private AttachInfo				p_info;

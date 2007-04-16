@@ -124,12 +124,12 @@ public final class MetaSet extends ASTNode {
 	public MNode getMeta(String name) {
 		int sz = metas.length;
 		foreach (MNode m; metas) {
-			if (m.qname() == name)
+			if (m.qname == name)
 				return m;
 		}
 		if (group != null) {
 			foreach (MNode m; group.meta.metas) {
-				if (m.qname() == name)
+				if (m.qname == name)
 					return m;
 			}
 		}
@@ -138,9 +138,9 @@ public final class MetaSet extends ASTNode {
 	
 	public MNode setMeta(MNode meta)  alias add alias lfy operator +=
 	{
-		String qname = meta.qname();
+		String qname = meta.qname;
 		foreach (MNode m; metas) {
-			if (m.qname() == qname) {
+			if (m.qname == qname) {
 				if (meta != m)
 					m.replaceWithNode(meta);
 				return meta;
@@ -157,7 +157,8 @@ public abstract class MNode extends ASTNode {
 	
 	public static final MNode[] emptyArray = new MNode[0];
 
-	public abstract String qname();
+	@getter
+	public abstract String get$qname();
 	public abstract TypeDecl getTypeDecl();
 	public void resolve(Type reqType) {}
 	public void verify() {}
@@ -169,8 +170,20 @@ public abstract class MNode extends ASTNode {
 public class UserMeta extends MNode {
 	@virtual typedef This  ≤ UserMeta;
 
+	@abstract
+	@att public String					qname;
 	@att public SymbolRef<Struct>		decl;
 	@att public MetaValue[]				values;
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (dump == "api") {
+			if (attr.name == "decl")
+				return false;
+			if (attr.name == "qname")
+				return true;
+		}
+		return super.includeInDump(dump, attr, val);
+	}
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
@@ -193,11 +206,17 @@ public class UserMeta extends MNode {
 		this.decl = new SymbolRef<Struct>(name);
 	}
 	
-	public String qname() {
+	@getter @att
+	public String get$qname() {
 		TypeDecl s = decl.dnode;
 		if (s != null)
 			return s.qname();
 		return decl.name;
+	}
+
+	@setter
+	public void set$qname(String val) {
+		decl.name = val;
 	}
 
 	public final TypeDecl getTypeDecl() {

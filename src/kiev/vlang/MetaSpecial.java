@@ -73,6 +73,12 @@ public final class MetaUUID extends UserMeta {
 		}
 	}
 	
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (dump == "api" && attr.name == "values")
+			return false;
+		return super.includeInDump(dump, attr, val);
+	}
+
 	public static DNode getRegisteredNode(String uuid) {
 		return registeredNodes.get(uuid);
 	}
@@ -151,7 +157,7 @@ public final class MetaPacker extends UserMeta {
 public final class MetaThrows extends UserMeta {
 	@virtual typedef This  = MetaThrows;
 
-	@ref public TypeRef[]		 exceptions;
+	@ref @abstract public ASTNode[]		 exceptions;
 
 	public MetaThrows() { super("kiev.stdlib.meta.throws"); }
 
@@ -172,29 +178,29 @@ public final class MetaThrows extends UserMeta {
 		mva.values += thr;
 	}
 	
-	public TypeRef[] getThrowns() {
-		return exceptions;
+	@getter @ref
+	public ASTNode[] get$exceptions() {
+		return getThrowns();
 	}
-
-	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (dump == "api") {
-			if (attr.name == "exceptions")
-				return true;
-			if (attr.name == "values")
-				return false;
-		}
-		return super.includeInDump(dump, attr, val);
+	@setter @ref
+	public void set$exceptions(ASTNode[] val) {
 	}
-
+	public ASTNode[] getThrowns() {
+		if (values.length == 0)
+			return ASTNode.emptyArray;
+		MetaValueArray mva = (MetaValueArray)values[0];
+		assert (mva.ident == "value");
+		return mva.values;
+	}
 }
 
 @node
 public abstract class MetaFlag extends MNode {
 	@virtual typedef This  ≤ MetaFlag;
 
-	public abstract String qname();
+	@getter public abstract String get$qname();
 
-	public final TypeDecl getTypeDecl() { return (TypeDecl)Env.resolveGlobalDNode(qname()); }
+	public final TypeDecl getTypeDecl() { return (TypeDecl)Env.resolveGlobalDNode(this.qname); }
 
 	public final void callbackAttached() { setFlag(getMetaSet(), true); super.callbackAttached(); }
 	public final void callbackDetached() { setFlag(getMetaSet(), false); super.callbackDetached(); }
@@ -235,7 +241,7 @@ public final class MetaAccess extends MetaFlag {
 		this.flags = flags;
 	}
 
-	public String qname() { return "kiev.stdlib.meta.access"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.access"; }
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (attr.name == "flags")
@@ -528,105 +534,105 @@ public final class MetaAccess extends MetaFlag {
 @node
 public final class MetaUnerasable extends MetaFlag {
 	@virtual typedef This  = MetaUnerasable;
-	public String qname() { return "kiev.stdlib.meta.unerasable"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.unerasable"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_type_unerasable = on; }
 }
 
 @node
 public final class MetaSingleton extends MetaFlag {
 	@virtual typedef This  = MetaSingleton;
-	public String qname() { return "kiev.stdlib.meta.singleton"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.singleton"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_struct_singleton = on; }
 }
 
 @node
 public final class MetaForward extends MetaFlag {
 	@virtual typedef This  = MetaForward;
-	public String qname() { return "kiev.stdlib.meta.forward"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.forward"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_forward = on; }
 }
 
 @node
 public final class MetaVirtual extends MetaFlag {
 	@virtual typedef This  = MetaVirtual;
-	public String qname() { return "kiev.stdlib.meta.virtual"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.virtual"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_virtual = on; }
 }
 
 @node
 public final class MetaMacro extends MetaFlag {
 	@virtual typedef This  = MetaMacro;
-	public String qname() { return "kiev.stdlib.meta.macro"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.macro"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_macro = on; }
 }
 
 @node
 public final class MetaStatic extends MetaFlag {
 	@virtual typedef This  = MetaStatic;
-	public String qname() { return "kiev.stdlib.meta.static"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.static"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_static = on; }
 }
 
 @node
 public final class MetaAbstract extends MetaFlag {
 	@virtual typedef This  = MetaAbstract;
-	public String qname() { return "kiev.stdlib.meta.abstract"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.abstract"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_abstract = on; }
 }
 
 @node
 public final class MetaFinal extends MetaFlag {
 	@virtual typedef This  = MetaFinal;
-	public String qname() { return "kiev.stdlib.meta.final"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.final"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_final = on; }
 }
 
 @node
 public final class MetaNative extends MetaFlag {
 	@virtual typedef This  = MetaNative;
-	public String qname() { return "kiev.stdlib.meta.native"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.native"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_native = on; }
 }
 
 @node
 public final class MetaSynchronized extends MetaFlag {
 	@virtual typedef This  = MetaSynchronized;
-	public String qname() { return "kiev.stdlib.meta.synchronized"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.synchronized"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Method) dn.is_mth_synchronized = on; }
 }
 
 @node
 public final class MetaTransient extends MetaFlag {
 	@virtual typedef This  = MetaTransient;
-	public String qname() { return "kiev.stdlib.meta.transient"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.transient"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Field) dn.is_fld_transient = on; }
 }
 
 @node
 public final class MetaVolatile extends MetaFlag {
 	@virtual typedef This  = MetaVolatile;
-	public String qname() { return "kiev.stdlib.meta.volatile"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.volatile"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Field) dn.is_fld_volatile = on; }
 }
 
 @node
 public final class MetaBridge extends MetaFlag {
 	@virtual typedef This  = MetaBridge;
-	public String qname() { return "kiev.stdlib.meta.bridge"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.bridge"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Method) dn.is_mth_bridge = on; }
 }
 
 @node
 public final class MetaVarArgs extends MetaFlag {
 	@virtual typedef This  = MetaVarArgs;
-	public String qname() { return "kiev.stdlib.meta.varargs"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.varargs"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn.parent() instanceof Method) dn.is_mth_varargs = on; }
 }
 
 @node
 public final class MetaSynthetic extends MetaFlag {
 	@virtual typedef This  = MetaSynthetic;
-	public String qname() { return "kiev.stdlib.meta.synthetic"; }
+	@getter public String get$qname() { return "kiev.stdlib.meta.synthetic"; }
 	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_synthetic = on; }
 }
 

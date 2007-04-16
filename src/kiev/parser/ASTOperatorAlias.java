@@ -104,8 +104,11 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 			if (sname == "new T")
 				return;
 			Operator op = Operator.getOperatorByName(sname);
-			if (op == null)
-				throw new CompilerException(this,"Operator "+sname+" not found");
+			if (op == null) {
+				//throw new CompilerException(this,"Operator "+sname+" not found");
+				Kiev.reportWarning(this,"Operator "+sname+" not found");
+				return;
+			}
 			op.addMethod(m);
 			return;
 		}

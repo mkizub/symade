@@ -98,7 +98,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public final boolean isForward()			{ return this.meta.is_forward || group != null && group.meta.is_forward; }
 	public final boolean hasUUID()				{ return this.meta.is_has_uuid; }
 	
-	public final boolean isStructView()		{ return this.meta.is_virtual || group != null && group.meta.is_virtual; }
+	public final boolean isStructView()		{ return this.meta.is_virtual; }
 	public final boolean isTypeUnerasable()	{ return this.meta.is_type_unerasable || group != null && group.meta.is_type_unerasable; }
 	public final boolean isPackage()			{ return this.meta.is_access == MASK_ACC_NAMESPACE; }
 	public final boolean isSyntax()				{ return this.meta.is_access == MASK_ACC_SYNTAX; }
@@ -536,6 +536,26 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public TypeDecl(String name) {
 		package_clazz = new SymbolRef<TypeDecl>();
 		this.sname = name;
+	}
+	
+	public void cleanupOnReload() {
+		this.type_decl_version++;
+		this.meta.mflags = 0;
+		if (this.package_clazz.dnode != null) {
+			int idx = this.package_clazz.dnode.sub_decls.indexOf(this);
+			if (idx >= 0)
+				this.package_clazz.dnode.sub_decls.del(idx);
+			this.package_clazz.symbol = null;
+		}
+		this.super_types.delAll();
+		this.args.delAll();
+		foreach(Method m; this.members; m.isOperatorMethod() )
+			Operator.cleanupMethod(m);
+		this.members.delAll();
+		this.sub_decls.delAll();
+		this.meta.metas.delAll();
+		this.meta.mflags = 0;
+		this.compileflags &= 1;
 	}
 
 	public Type getType() { return this.xtype == null ? Type.tpVoid : this.xtype; }

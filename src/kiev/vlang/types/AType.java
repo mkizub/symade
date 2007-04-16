@@ -373,8 +373,12 @@ public abstract class AType implements StdTypes, TVSet {
 		String name = st.nextToken();
 		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode(name);
 		if (tdecl == null) {
-			System.out.println("Error: Cannot find TypeDecl "+name);
-			tdecl = StdTypes.tpVoid.meta_type.tdecl;
+			if (Env.existsStruct(name))
+				tdecl = Env.loadTypeDecl(name,false);
+			if (tdecl == null) {
+				System.out.println("Warning: Cannot find TypeDecl "+name);
+				tdecl = StdTypes.tpVoid.meta_type.tdecl;
+			}
 		}
 		if (!st.hasMoreElements())
 			return tdecl.xtype;
@@ -397,7 +401,7 @@ public abstract class AType implements StdTypes, TVSet {
 			if (a != null)
 				set.append(a, tp);
 			else
-				System.out.println("Error: Cannot find var "+aname+" in type "+tdecl);
+				System.out.println("Warning: Cannot find var "+aname+" in type "+tdecl);
 			assert (sep[0].equals(",")||sep[0].equals(")"));
 		}
 		return tdecl.xmeta_type.make(set);

@@ -35,15 +35,15 @@ static public enum KievBackend {
 }
 
 static public enum KievExt {
-	JavaOnly				: "java only"		,
+	JavaOnly				: "java-only"		,
 	DumpAPI					: "dump-api"		,
 	Rewrite					: "rewrite"			,
-	GotoCase				: "goto case"		,
+	GotoCase				: "goto-case"		,
 	Goto					: "goto"			,
 	With					: "with"			,
 	Closures				: "closures"		,
-	VirtualFields			: "virtual fields"	,
-	PackedFields			: "packed fields"	,
+	VirtualFields			: "virtual-fields"	,
+	PackedFields			: "packed-fields"	,
 	VarArgs					: "varargs"			,
 	Forward					: "forward"			,
 	Logic					: "logic"			,
@@ -52,7 +52,7 @@ static public enum KievExt {
 	Typedef					: "typedef"			,
 	Enum					: "enum"			,
 	View					: "view"			,
-	PizzaCase				: "pizza case"		,
+	PizzaCase				: "pizza-case"		,
 	Contract				: "contract"		,
 	Generics				: "generics"		,
 	Templates				: "templates"		,

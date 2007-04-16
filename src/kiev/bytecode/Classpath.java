@@ -64,14 +64,6 @@ public class Classpath implements BytecodeFileConstants {
 		}
 	}
 
-	public File findSourceFile(String name) {
-		foreach(ClasspathEntry cpe; entries; cpe != null) {
-			File f = cpe.findSourceFile(name);
-			if( f != null ) return f;
-		}
-		return null;
-	}
-
 	public boolean exists(String clazz_name) {
 		foreach(ClasspathEntry cpe; entries; cpe != null) {
 			if ( cpe.exists(clazz_name) )
@@ -92,22 +84,28 @@ public class Classpath implements BytecodeFileConstants {
 		return null;
 	}
 
-	public static byte[] createPlainPackage(KString clazz_name) {
-		Clazz cl = new Clazz();
-		cl.flags = ACC_PUBLIC | ACC_PRIVATE;
-		PoolConstant[] pool = new PoolConstant[3];
-		pool[2] = new Utf8PoolConstant(2,clazz_name);
-		pool[1] = new ClazzPoolConstant(1, (Utf8PoolConstant)pool[2]);
-		pool[0] = new VoidPoolConstant(0);
-		cl.pool = pool;
-		cl.cp_clazz = (ClazzPoolConstant)pool[1];
-		cl.cp_super_clazz = null;
-		cl.cp_interfaces = new ClazzPoolConstant[0];
-		cl.fields = new Field[0];
-		cl.methods = new Method[0];
-		cl.attrs = new Attribute[0];
-		byte[] data = cl.writeClazz();
-		return data;
+	public static byte[] createPlainPackage(KString _clazz_name) {
+		String clazz_name = _clazz_name.toString();
+		String name, pkg;
+		int p = clazz_name.lastIndexOf('/');
+		if (p > 0) {
+			name = clazz_name.substring(p+1);
+			pkg = clazz_name.substring(0,p);
+		} else {
+			name = clazz_name;
+			pkg = "";
+		}
+		String data =
+		"<?xml version='1.0' encoding='UTF-8'?>\n"+
+		"<a-node class='kiev.vlang.Struct'>\n"+
+		" <variant>\n"+
+		"  <a-node class='kiev.vlang.JavaPackage'/>\n"+
+		" </variant>\n"+
+		//" <package_clazz>"+pkg+"</package_clazz>\n"+
+		" <sname>"+name+"</sname>\n"+
+		" <uniq_name>"+name+"</uniq_name>\n"+
+		"</a-node>";
+		return data.getBytes("UTF-8");
 	}
 
 	public static void readFully(InputStream in, byte[] data) {
@@ -124,7 +122,6 @@ public class Classpath implements BytecodeFileConstants {
 public interface ClasspathEntry {
 	public boolean	exists(String clazz_name);
 	public byte[]	read(KString clazz_name);
-	public File		findSourceFile(String name);
 }
 
 public class DirClasspathEntry implements ClasspathEntry {
@@ -134,43 +131,17 @@ public class DirClasspathEntry implements ClasspathEntry {
 		this.dir = dir;
 	}
 
-	public File findSourceFile(String name) {
-		if( File.separatorChar != '/' )
-			name = name.replace('/',File.separatorChar);
-		File f;
-		if( (f=new File(dir,name)).exists() && f.canRead() && f.isDirectory()
-		 && ( (File.separatorChar!='/'||true) && f.getCanonicalPath().endsWith(name) )
-		) {
-			if( (f=new File(dir,name+File.separatorChar+"package.kiev")).exists() && f.canRead()
-			 || (f=new File(dir,name+File.separatorChar+"package.java")).exists() && f.canRead() )
-				return f;
-		}
-		else if( (f=new File(dir,name+".kiev")).exists() && f.canRead() && f.isFile()
-		 && ( (File.separatorChar!='/'||true) && f.getCanonicalPath().endsWith(name+".kiev") )
-		)
-			return f;
-		else if( (f=new File(dir,name+".java")).exists() && f.canRead() && f.isFile()
-		 && ( (File.separatorChar!='/'||true) && f.getCanonicalPath().endsWith(name+".java") )
-		)
-			return f;
-		return null;
-	}
-
 	public boolean exists(String clazz_name) {
 		String name = clazz_name;
 		if( File.separatorChar != '/' )
 			name = name.replace('/',File.separatorChar);
 		File f;
-		if( (f=new File(dir,name)).exists() && f.canRead() && f.isDirectory()
-		 && ( (File.separatorChar!='/'||true) && f.getCanonicalPath().endsWith(name) )
-		) {
+		if ((f=new File(dir,name)).exists() && f.canRead() && f.isDirectory() && f.getCanonicalPath().endsWith(name))
 			return true;
-		}
-		else if( (f=new File(dir,name+".class")).exists() && f.canRead() && f.isFile()
-		 && ( (File.separatorChar!='/'||true) && f.getCanonicalPath().endsWith(name+".class") )
-		) {
+		else if ((f=new File(dir,name+".xml")).exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(name+".xml"))
 			return true;
-		}
+		else if ((f=new File(dir,name+".class")).exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(name+".class"))
+			return true;
 		return false;
 	}
 
@@ -179,9 +150,7 @@ public class DirClasspathEntry implements ClasspathEntry {
 		if( File.separatorChar != '/' )
 			name = name.replace('/',File.separatorChar);
 		File f;
-		if( (f=new File(dir,name)).exists() && f.canRead() && f.isDirectory()
-		 && ( (File.separatorChar!='/'||true) && f.getCanonicalPath().endsWith(name) )
-		) {
+		if ((f=new File(dir,name)).exists() && f.canRead() && f.isDirectory() && f.getCanonicalPath().endsWith(name)) {
 			if( (f=new File(dir,name+File.separatorChar+"package.class")).exists() && f.canRead() ) {
 				byte[] data = new byte[(int)f.length()];
 				FileInputStream fis = new FileInputStream(f);
@@ -192,9 +161,14 @@ public class DirClasspathEntry implements ClasspathEntry {
 				return Classpath.createPlainPackage(clazz_name);
 			}
 		}
-		else if( (f=new File(dir,name+".class")).exists() && f.canRead() && f.isFile()
-		 && ( (File.separatorChar!='/'||true) && f.getCanonicalPath().endsWith(name+".class") )
-		) {
+		else if ((f=new File(dir,name+".xml")).exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(name+".xml")) {
+			byte[] data = new byte[(int)f.length()];
+			FileInputStream fis = new FileInputStream(f);
+			Classpath.readFully(fis,data);
+			fis.close();
+			return data;
+		}
+		else if ((f=new File(dir,name+".class")).exists() && f.canRead() && f.isFile() && f.getCanonicalPath().endsWith(name+".class")) {
 			byte[] data = new byte[(int)f.length()];
 			FileInputStream fis = new FileInputStream(f);
 			Classpath.readFully(fis,data);
@@ -234,10 +208,6 @@ public class ZipClasspathEntry implements ClasspathEntry {
 		//System.out.println("DirEntry "+nm);
 		direntries.put(nm,nm);
 		addDirEntries(nm.substring(0,p))
-	}
-
-	public File findSourceFile(String name) {
-		return null;
 	}
 
 	public boolean exists(String clazz_name) {

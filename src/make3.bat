@@ -1,2 +1,2 @@
 @if not exist classes3\stx-fmt mkdir classes3\stx-fmt
-c:\java\jdk1.6.0\bin\java -ea -classpath classes2 -Xnoclassgc -verify -Xms256M -Xmx256M kiev.Main -classpath classes3 -d classes3 -verify -enable vnode -p k4x.prj -g -makeall %*
+c:\java\jdk1.6.0\bin\java -ea -classpath classes2 -Xnoclassgc -verify -Xms256M -Xmx256M kiev.Main -classpath classes3 -d classes3 -verify -enable vnode -enable view -p k4x.prj -g -makeall %*

@@ -144,6 +144,25 @@ public class Struct extends TypeDecl {
 		}
 	}
 	
+	@setter
+	public final void set$variant(TypeDeclVariant var) {
+		this.variant = var;
+		if (var instanceof JavaPackage && this.meta.is_access != MASK_ACC_NAMESPACE)
+			setPackage();
+		else if (var instanceof KievSyntax && this.meta.is_access != MASK_ACC_SYNTAX)
+			setSyntax();
+		else if (var instanceof KievView && !this.isStructView())
+			setStructView();
+		else if (var instanceof JavaAnnotation && !this.isAnnotation())
+			setAnnotation();
+		else if (var instanceof PizzaCase && !this.isPizzaCase())
+			setPizzaCase();
+		else if (var instanceof JavaInterface && !this.isInterface())
+			setInterface();
+		else if (var instanceof JavaEnum && !this.isEnum())
+			setEnum();
+	}
+	
 	public final void setPackage() {
 		assert (variant == null || variant instanceof JavaPackage);
 		if (this.meta.is_access != MASK_ACC_NAMESPACE) {
@@ -384,6 +403,15 @@ public class Struct extends TypeDecl {
 	}
 
 	public Struct getStruct() { return this; }
+
+	public void cleanupOnReload() {
+		this.meta.metas.delAll();
+		this.meta.mflags = 0;
+		this.variant = null;
+		this.typeinfo_clazz = null;
+		//this.view_of = null;
+		super.cleanupOnReload();
+	}
 
 	public int countAnonymouseInnerStructs() {
 		int i=0;

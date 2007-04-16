@@ -385,7 +385,8 @@ public class Compiler {
 
 	private static boolean[] command_line_disabled_extensions	= new boolean[KievExt.values().length];
 
-	{
+	static {
+		Compiler.setExtension(false, "view");
 		Compiler.setExtension(false, "vnode");
 		Compiler.setExtension(false, "dflow");
 	}

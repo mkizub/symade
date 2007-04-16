@@ -102,7 +102,6 @@ CLASS kiev.bytecode.RVParAnnotations kiev/bytecode/RVParAnnotations kiev\bytecod
 CLASS kiev.bytecode.ReadContext kiev/bytecode/ReadContext kiev\bytecode\Clazz.java
 CLASS kiev.bytecode.RefPoolConstant kiev/bytecode/RefPoolConstant kiev\bytecode\PoolConstant.java
 CLASS kiev.bytecode.SourceFileAttribute kiev/bytecode/SourceFileAttribute kiev\bytecode\Attribute.java
-CLASS kiev.bytecode.StandardClassLoader kiev/bytecode/StandardClassLoader kiev\bytecode\StandardClassLoader.java
 CLASS kiev.bytecode.StringPoolConstant kiev/bytecode/StringPoolConstant kiev\bytecode\PoolConstant.java
 CLASS kiev.bytecode.UnicodePoolConstant kiev/bytecode/UnicodePoolConstant kiev\bytecode\PoolConstant.java
 CLASS kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\PoolConstant.java

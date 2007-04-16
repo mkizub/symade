@@ -75,21 +75,24 @@ public final class ProjectFile extends ASTNode {
 public class Env extends Struct {
 
 	/** Hashtable of all defined and loaded classes */
-	public static Hash<String>				classHashOfFails	= new Hash<String>();
+	public static Hash<String>						classHashOfFails	= new Hash<String>();
 
 	/** Hashtable for project file (class name + file name) */
 	public static Hashtable<String,ProjectFile>	projectHash = new Hashtable<String,ProjectFile>();
 
 	/** Root of package hierarchy */
-	public static Env			root = new Env();
+	public static Env								root = new Env();
 
 	/** Compiler properties */
-	public static Properties	props = System.getProperties();
+	public static Properties						props = System.getProperties();
 	
-	/** Backend environment */
-	public static JEnv			jenv;
+	/** Class/library path */
+	public static kiev.bytecode.Classpath			classpath;
 
-	@att public FileUnit[]		files;
+	/** Backend environment */
+	public static JEnv								jenv;
+
+	@att public FileUnit[]							files;
 
 	/** Private class constructor -
 		really there may be no instances of this class
@@ -160,20 +163,11 @@ public class Env extends Struct {
 			if( cleanup ) {
 				if (cl.hasUUID() && cl.getUUID() != uuid)
 					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.getUUID()+" != "+uuid);
-				cl.type_decl_version = 0;
-				cl.compileflags &= 1;
-				cl.meta.metas.delAll();
+				cl.cleanupOnReload();
 				cl.meta.mflags = acces;
 				cl.variant = variant;
 				cl.package_clazz.symbol = outer;
-				cl.typeinfo_clazz = null;
-				//cl.view_of = null;
-				cl.super_types.delAll();
-				cl.args.delAll();
-				cl.sub_decls.delAll();
-				foreach(Method m; cl.members; m.isOperatorMethod() )
-					Operator.cleanupMethod(m);
-				cl.members.delAll();
+				outer.sub_decls += cl;
 			}
 			outer.addSubStruct((Struct)cl);
 			return cl;
@@ -243,12 +237,10 @@ public class Env extends Struct {
 		else if( cleanup ) {
 			if (tdecl.hasUUID() && tdecl.getUUID() != uuid)
 				Kiev.reportWarning(id,"Replacing class "+id+" with different UUID: "+tdecl.getUUID()+" != "+uuid);
-			tdecl.type_decl_version++;
+			tdecl.cleanupOnReload();
 			tdecl.meta.mflags = ACC_MACRO;
 			tdecl.package_clazz.symbol = pkg;
-			tdecl.super_types.delAll();
-			tdecl.args.delAll();
-			tdecl.members.delAll();
+			pkg.sub_decls.add(tdecl);
 		}
 
 		return tdecl;
@@ -263,7 +255,9 @@ public class Env extends Struct {
 		for the compiling classes
 	 */
 	public static void InitializeEnv(String path) {
-		jenv = new JEnv(path);
+		if (path == null) path = System.getProperty("java.class.path");
+		classpath = new kiev.bytecode.Classpath(path);
+		jenv = new JEnv();
 		if( Kiev.project_file != null && Kiev.project_file.exists() ) {
 			try {
 				BufferedReader in = new BufferedReader(new FileReader(Kiev.project_file));
@@ -349,7 +343,7 @@ public class Env extends Struct {
 				}
 			}
 			String[] sarr = (String[])strs;
-			sortStrings(sarr);
+			java.util.Arrays.sort(sarr);
 			foreach(String s; sarr) out.println(s);
 		} catch (IOException e) {
 			Kiev.reportWarning("Error while project file writing: "+e);
@@ -396,47 +390,6 @@ public class Env extends Struct {
 		}
 	}
 
-	public static void sortStrings(String[] a) {
-		String aux[] = (String[])a.clone();
-		mergeSortStrings(aux, a, 0, a.length);
-	}
-
-	private static void mergeSortStrings(String src[], String dest[], int low, int high) {
-		int length = high - low;
-
-		// Insertion sort on smallest arrays
-		if (length < 7) {
-			for (int i=low; i<high; i++)
-			for (int j=i; j > low && dest[j-1].compareTo(dest[j]) > 0 ; j--) {
-//				swapStrings(dest, j, j-1);
-				String tmp = dest[j];
-				dest[j] = dest[j-1];
-				dest[j-1] = tmp;
-			}
-			return;
-		}
-
-		// Recursively sort halves of dest into src
-		int mid = (low + high)/2;
-		mergeSortStrings(dest, src, low, mid);
-		mergeSortStrings(dest, src, mid, high);
-
-		// If list is already sorted, just copy from src to dest.  This is an
-		// optimization that results in faster sorts for nearly ordered lists.
-		if( src[mid-1].compareTo(src[mid]) <= 0 ) {
-			System.arraycopy(src, low, dest, low, length);
-			return;
-		}
-
-		// Merge sorted halves (now in src) into dest
-		for(int i = low, p = low, q = mid; i < high; i++) {
-			if (q>=high || p<mid && src[p].compareTo(src[q])<=0 )
-				dest[i] = src[p++];
-			else
-				dest[i] = src[q++];
-		}
-	}
-
 	public static boolean existsStruct(String qname) {
 		if (qname == "") return true;
 		// Check class is already loaded
@@ -448,7 +401,8 @@ public class Env extends Struct {
 		if (Env.projectHash.get(qname) != null)
 			return true;
 		// Check if not loaded
-		return jenv.existsClazz(qname);
+		return Env.classpath.exists(qname.replace('.','/'));
+
 	}
 
 	public static TypeDecl loadTypeDecl(String qname, boolean fatal) {
@@ -604,8 +558,26 @@ public class Env extends Struct {
 		return (FileUnit)root;
 	}
 	
+	public static TypeDecl loadFromXmlData(byte[] data, String tdname, TypeDecl pkg) {
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParser saxParser = factory.newSAXParser();
+		SAXHandler handler = new SAXHandler();
+		handler.tdname = tdname;
+		handler.pkg = pkg;
+		saxParser.parse(new ByteArrayInputStream(data), handler);
+		TypeDecl root = (TypeDecl)handler.root;
+		if (!root.isAttached()) {
+			FileUnit fu = new FileUnit(root.qname()+".xml", null);
+			fu.members += root;
+		}
+		Kiev.runProcessorsOn(root);
+		return root;
+	}
+	
 	final static class SAXHandler extends DefaultHandler {
 		ASTNode root;
+		TypeDecl pkg;
+		String tdname;
 		boolean expect_attr;
 		int ignore_count;
 		Stack<ANode> nodes = new Stack<ANode>();
@@ -622,7 +594,27 @@ public class Env extends Struct {
 				assert (!expect_attr);
 				assert (qName.equals("a-node"));
 				String cl_name = attributes.getValue("class");
-				root = (ASTNode)Class.forName(cl_name).newInstance();
+				if (pkg != null) {
+					String qname;
+					if (pkg == Env.root)
+						qname = tdname;
+					else
+						qname = pkg.qname() + '.' + tdname;
+					TypeDecl td = (TypeDecl)Env.resolveGlobalDNode(qname);
+					if (td != null) {
+						assert(td.getClass().getName().equals(cl_name));
+						td.cleanupOnReload();
+					} else {
+						td = (TypeDecl)Class.forName(cl_name).newInstance();
+					}
+					root = td;
+					td.sname = tdname;
+					td.u_name = tdname;
+					td.package_clazz.symbol = pkg;
+					pkg.sub_decls += td;
+				} else {
+					root = (ASTNode)Class.forName(cl_name).newInstance();
+				}
 				nodes.push(root);
 				expect_attr = true;
 				//System.out.println("push root");
