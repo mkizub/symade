@@ -890,7 +890,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(IDENTIFIER);
     // "syntax"
             name = Name();
-                clazz = mkStruct(name, new KievSyntax(), ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
+                clazz = mkStruct(name, new KievSyntax(), ACC_SYNTAX, modifiers, parent);
     switch (jj_nt.kind) {
     case EXTENDS:
       jj_consume_token(EXTENDS);

@@ -30,13 +30,13 @@ import syntax kiev.stdlib.Syntax;
 @uuid("be8bba7f-b4f9-3991-8834-6552dcb237a0")
 public metatype any {
 	@macro @native @CompilerNode("InstanceOf")
-	public static boolean _instanceof_(any val, any type) alias xfx operator operator instanceof ;
+	public static boolean _instanceof_(any val, any type) operator "V instanceof T" ;
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean ref_eq(Object o1, Object o2) alias xfx operator == ;
+	public static boolean ref_eq(Object o1, Object o2) operator "V == V" ;
 
 	@macro @native @CompilerNode("Cmp")
-	public static boolean ref_neq(Object o1, Object o2) alias xfx operator != ;
+	public static boolean ref_neq(Object o1, Object o2) operator "V != V" ;
 
 }
 

@@ -386,9 +386,11 @@ public class Struct extends TypeDecl {
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
 		this.package_clazz.symbol = outer;
 		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
-			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) setMeta(new MetaAccess("private"));
+			if !((flags & ACC_SYNTAX) == ACC_SYNTAX || (flags & ACC_PACKAGE) == ACC_PACKAGE) {
+				if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
+				if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
+				if ((flags & ACC_PRIVATE) == ACC_PRIVATE) setMeta(new MetaAccess("private"));
+			}
 			if ((flags & ACC_STATIC) == ACC_STATIC) setMeta(new MetaStatic());
 			if ((flags & ACC_FINAL) == ACC_FINAL) setMeta(new MetaFinal());
 			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) setMeta(new MetaAbstract());

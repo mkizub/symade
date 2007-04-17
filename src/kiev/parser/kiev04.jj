@@ -1085,7 +1085,7 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	<IDENTIFIER>	// "syntax"
 	name = Name()
 	{
-		clazz = mkStruct(name, new KievSyntax(), ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
+		clazz = mkStruct(name, new KievSyntax(), ACC_SYNTAX, modifiers, parent);
 	}
 	[
 		"extends"

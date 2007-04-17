@@ -23,26 +23,24 @@ operator "X ?= X" , 5;
 operator "X @= X" , 5;
 
 /**
+ * TODO: to be removed
+ *
  * @author Maxim Kizub
  *
  */
 
 public metatype Globals extends any {
 
-	@CompilerNode("Set")
-	@macro @native
+	@macro @native @CompilerNode("Set")
 	public static <L extends Object, R extends L> R ref_assign(L lval, R val) operator "V = V";
 
-	@CompilerNode("Set")
-	@macro @native
+	@macro @native @CompilerNode("Set")
 	public static <L extends Object, R extends L> R ref_assign2(L lval, R val) operator "V := V";
 
-	@CompilerNode("Set")
-	@macro @native
+	@macro @native @CompilerNode("Set")
 	public static <L extends Object, R extends L> R@ ref_pvar_init(L@ lval, R@ val) operator "V := V";
 
-	@CompilerNode("Set")
-	@macro
+	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) operator "V = V"
 	{
 		case AssignExpr# self():
@@ -51,8 +49,7 @@ public metatype Globals extends any {
 			lval = (val).get$$var()
 	}
 
-	@CompilerNode("Set")
-	@macro
+	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R val) operator "V = V"
 	{
 		case CallExpr# self():
@@ -61,8 +58,7 @@ public metatype Globals extends any {
 			(self.lval).$bind(self.value)
 	}
 
-	@CompilerNode("Set")
-	@macro
+	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R@ val) operator "V = V"
 	{
 		case CallExpr# self():
@@ -71,12 +67,10 @@ public metatype Globals extends any {
 			(self.lval).$bind(self.value)
 	}
 
-	@CompilerNode("RuleIstheExpr")
-	@macro
+	@macro @CompilerNode("RuleIstheExpr")
 	public static boolean ref_pvar_is_the(Object@ lval, Object val) operator "V ?= V" ;
 
-	@CompilerNode("RuleIsoneofExpr")
-	@macro
+	@macro @CompilerNode("RuleIsoneofExpr")
 	public static boolean ref_pvar_is_one_of(Object@ lval, Object val) operator "V @= V" ;
 
 }
