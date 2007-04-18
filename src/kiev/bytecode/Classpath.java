@@ -15,7 +15,6 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**

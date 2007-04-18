@@ -10,10 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.vlang.types.*;
-
-import static kiev.stdlib.Debug.*;
 import kiev.vlang.OpArg.EXPR;
 import kiev.vlang.OpArg.TYPE;
 import kiev.vlang.OpArg.OPER;

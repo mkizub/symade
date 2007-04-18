@@ -12,13 +12,12 @@ package kiev;
 
 syntax Syntax extends kiev.stdlib.Syntax {
 
-//import kiev.Kiev;
-//import kiev.CError;
-//import kiev.stdlib.*;
-//import kiev.vlang.*;
-//import kiev.transf.*;
-//import kiev.parser.*;
-//import static kiev.stdlib.Debug.*;
+import kiev.*;
+import kiev.vlang.*;
+import kiev.vlang.types.*;
+import kiev.transf.*;
+import kiev.parser.*;
+import static kiev.stdlib.Debug.*;
 
 //typedef type@ kiev.stdlib.PVar<type>;
 //typedef type& kiev.stdlib.Ref<type>;
@@ -26,6 +25,9 @@ syntax Syntax extends kiev.stdlib.Syntax {
 
 //typedef ()->kiev.vlang.ASTNode FN;
 //typedef ()->kiev.vlang.ENode FE;
+
+operator "X ?= X" , 5;
+operator "X @= X" , 5;
 
 operator ≡ , xfx, 60;	// == equiv
 operator ≢ , xfx, 60;	// !=

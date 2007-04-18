@@ -10,17 +10,7 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.parser.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
-
-operator "X ?= X" , 5;
-operator "X @= X" , 5;
 
 /**
  * TODO: to be removed

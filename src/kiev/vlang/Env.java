@@ -10,13 +10,7 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.parser.Parser;
-import kiev.parser.ParseException;
-import kiev.parser.ParseError;
-import kiev.transf.*;
 import kiev.fmt.*;
-import kiev.vlang.types.*;
 
 import java.io.*;
 import java.util.Properties;
@@ -33,7 +27,7 @@ import kiev.be.java15.JStruct;
 import kiev.be.java15.JEnv;
 
 import static kiev.vlang.ProjectFileType.*;
-import static kiev.stdlib.Debug.*;
+
 import syntax kiev.Syntax;
 
 /**

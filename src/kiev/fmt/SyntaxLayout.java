@@ -10,20 +10,9 @@
  *******************************************************************************/
 package kiev.fmt;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
-
-import kiev.vlang.Operator;
-
 import static kiev.fmt.SpaceAction.*;
 import static kiev.fmt.SpaceKind.*;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 import java.awt.Color;

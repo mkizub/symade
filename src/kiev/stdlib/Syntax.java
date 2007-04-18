@@ -12,6 +12,10 @@ package kiev.stdlib;
 
 syntax Syntax {
 
+import kiev.stdlib.*;
+import kiev.stdlib.meta.*;
+import java.lang.*;
+
 // assign operators
 operator  =    , lfy,   5;
 operator  :=   , lfy,   5;

@@ -10,18 +10,13 @@
  *******************************************************************************/
 package kiev;
 
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
+import kiev.stdlib.Arrays;
 import kiev.fmt.ATextSyntax;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -1047,9 +1042,8 @@ public class Compiler {
 	/** add all files from project file if need to rebuild
 	*/
 	static String[] addRequaredToMake(String[] args) {
-		for(Enumeration<String> e=Env.projectHash.keys(); e.hasMoreElements();) {
+		foreach (String key; Env.projectHash.keys()) {
 			try {
-				String key = e.nextElement();
 				ProjectFile value = Env.projectHash.get(key);
 				if (value.type == ProjectFileType.FORMAT) {
 					String nm = value.file.toString();

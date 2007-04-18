@@ -10,10 +10,6 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.*;
-
-import kiev.vlang.Constants;
-
 import syntax kiev.Syntax;
 
 public interface JConstants extends Constants {

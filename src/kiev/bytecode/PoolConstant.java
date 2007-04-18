@@ -10,7 +10,6 @@
  *******************************************************************************/
 package kiev.bytecode;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**

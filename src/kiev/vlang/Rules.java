@@ -10,16 +10,9 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.KievExt;
-import kiev.stdlib.*;
-import kiev.vlang.types.*;
-import kiev.parser.*;
-
 import kiev.ir.java15.RRuleMethod;
 import kiev.ir.java15.RRuleBlock;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**

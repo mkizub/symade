@@ -10,13 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.vlang.Operator.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JENode;
 import kiev.ir.java15.RNewExpr;
@@ -27,9 +20,6 @@ import kiev.ir.java15.RNewInitializedArrayExpr;
 import kiev.be.java15.JNewInitializedArrayExpr;
 import kiev.be.java15.JNewClosure;
 import kiev.ir.java15.RNewClosure;
-
-import static kiev.stdlib.Debug.*;
-import static kiev.be.java15.Instr.*;
 
 import syntax kiev.Syntax;
 

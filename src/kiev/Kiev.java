@@ -10,12 +10,8 @@
  *******************************************************************************/
 package kiev;
 
-import kiev.stdlib.*;
 import java.io.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.parser.*;
-import kiev.transf.*;
+
 import kiev.be.java15.Code;
 import kiev.be.java15.JNode;
 

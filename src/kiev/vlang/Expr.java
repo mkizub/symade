@@ -10,12 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JENode;
 import kiev.be.java15.JLvalueExpr;
@@ -47,8 +41,6 @@ import kiev.be.java15.JCastExpr;
 
 import kiev.be.java15.CodeLabel;
 
-import static kiev.stdlib.Debug.*;
-import static kiev.be.java15.Instr.*;
 import syntax kiev.Syntax;
 
 /**

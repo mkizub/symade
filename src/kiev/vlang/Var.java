@@ -10,11 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.*;
-import kiev.stdlib.*;
-import kiev.vlang.types.*;
-import kiev.parser.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JDNode;
 import kiev.ir.java15.RVar;
@@ -22,7 +17,6 @@ import kiev.be.java15.JVar;
 import kiev.ir.java15.RField;
 import kiev.be.java15.JField;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**

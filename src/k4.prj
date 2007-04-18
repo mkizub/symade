@@ -715,6 +715,10 @@ ENUM kiev.fmt.SpaceKind kiev/fmt/SpaceKind kiev\fmt\SyntaxLayout.java
 ENUM kiev.vlang.IntRadix kiev/vlang/IntRadix kiev\vlang\ConstExpr.java
 ENUM kiev.vlang.ProjectFileType kiev/vlang/ProjectFileType kiev\vlang\Env.java
 ENUM kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
+FORMAT stx-fmt.syntax-for-api stx-fmt\syntax-for-api.xml bad
+FORMAT stx-fmt.syntax-for-java stx-fmt\syntax-for-java.xml bad
+FORMAT stx-fmt.syntax-for-project-tree stx-fmt\syntax-for-project-tree.xml bad
+FORMAT stx-fmt.syntax-for-syntax stx-fmt\syntax-for-syntax.xml bad
 INTERFACE kiev.be.java15.IBoolExpr kiev/be/java15/IBoolExpr kiev\be\java15\JBoolExpr.java
 INTERFACE kiev.be.java15.JAccessExpr kiev/be/java15/JAccessExpr kiev\be\java15\JLvalueExpr.java
 INTERFACE kiev.be.java15.JAssignExpr kiev/be/java15/JAssignExpr kiev\be\java15\JExpr.java
@@ -943,7 +947,10 @@ INTERFACE kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
 INTERFACE kiev.vlang.types.StdTypes kiev/vlang/types/StdTypes kiev\vlang\types\StdTypes.java
 INTERFACE kiev.vlang.types.TVSet kiev/vlang/types/TVSet kiev\vlang\types\TVarBld.java
 METATYPE kiev.stdlib.GString kiev\stdlib\MetaTypes.java bad
-METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypes.java bad
+METATYPE kiev.stdlib._array_ kiev\stdlib\MetaTypesInternal.java bad
+METATYPE kiev.stdlib._call_type_ kiev\stdlib\MetaTypesInternal.java bad
+METATYPE kiev.stdlib._vararg_ kiev\stdlib\MetaTypesInternal.java bad
+METATYPE kiev.stdlib._wrapper_ kiev\stdlib\MetaTypesInternal.java bad
 METATYPE kiev.stdlib.any kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.boolean kiev\stdlib\MetaTypes.java bad
 METATYPE kiev.stdlib.byte kiev\stdlib\MetaTypes.java bad

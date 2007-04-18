@@ -10,11 +10,6 @@
  *******************************************************************************/
 package kiev.parser;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**

@@ -10,19 +10,11 @@
  *******************************************************************************/
 package kiev.vlang.types;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.parser.*;
-import kiev.transf.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JENode;
 import kiev.be.java15.JTypeRef;
 import kiev.be.java15.JType;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
