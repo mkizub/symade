@@ -26,12 +26,13 @@ import syntax kiev.Syntax;
 
 public final class ResInfo {
 	
-	public static final int noStatic   = 0x0001;
-	public static final int noImports  = 0x0002;
-	public static final int noForwards = 0x0004;
-	public static final int noSuper    = 0x0008;
-	public static final int noEquals   = 0x0010; // to compare as startsWith
-	
+	public static final int noStatic     = 0x0001;
+	public static final int noImports    = 0x0002;
+	public static final int noForwards   = 0x0004;
+	public static final int noSuper      = 0x0008;
+	public static final int noEquals     = 0x0010; // to compare as startsWith
+	public static final int doImportStar = 0x0020; // to lookup in specific imports, then in the package, then in import with star
+
 	private String		name;
 	private int			flags;
 	private int[]		flags_stack;
@@ -47,11 +48,12 @@ public final class ResInfo {
 	
 	ASTNode				space_prev;
 	
-	public boolean isStaticAllowed()   { return (flags & noStatic)   == 0; }
-	public boolean isImportsAllowed()  { return (flags & noImports)  == 0; }
-	public boolean isForwardsAllowed() { return (flags & noForwards) == 0; }
-	public boolean isSuperAllowed()    { return (flags & noSuper)    == 0; }
-	public boolean isCmpByEquals()     { return (flags & noEquals)   == 0; }
+	public boolean isStaticAllowed()   { return (flags & noStatic)     == 0; }
+	public boolean isImportsAllowed()  { return (flags & noImports)    == 0; }
+	public boolean isForwardsAllowed() { return (flags & noForwards)   == 0; }
+	public boolean isSuperAllowed()    { return (flags & noSuper)      == 0; }
+	public boolean isCmpByEquals()     { return (flags & noEquals)     == 0; }
+	public boolean doImportStar()      { return (flags & doImportStar) != 0; }
 
 	private ResInfo() {}
 	

@@ -750,7 +750,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		sup_ref.getTypeDecl().resolveNameR(node,info)
 	}
 
-	final public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
+	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
 		ASTNode@ member;
 		TypeRef@ supref;
 	{

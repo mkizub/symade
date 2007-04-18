@@ -1100,6 +1100,7 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			(
 				clazz.members += Typedef(modifiers)
 			|	clazz.members += Opdef(modifiers)
+			|	clazz.members += Import(modifiers)
 			)
 		)*
 		"}"

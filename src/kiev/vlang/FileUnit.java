@@ -150,7 +150,8 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 		{
 			syn instanceof DNode && path.checkNodeName(syn),
 			node ?= syn
-		;	syn instanceof Import && !((Import)syn).star,
+		;	syn instanceof Import,
+			trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
 			((Import)syn).resolveNameR(node,path)
 		;	syn instanceof Opdef && path.checkNodeName(syn),
 			node ?= syn
@@ -160,9 +161,10 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 		trace( Kiev.debug && Kiev.debugResolve, "In file package: "+pkg),
 		((CompaundType)pkg.getType()).tdecl.resolveNameR(node,path)
 	;
+		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
 		syn @= members,
 		syn instanceof Import,
-		((Import)syn).star,
+		trace( Kiev.debug && Kiev.debugResolve, "In import (with star): "+syn),
 		((Import)syn).resolveNameR(node,path)
 	;
 		trace( Kiev.debug && Kiev.debugResolve, "In root package"),
@@ -173,11 +175,17 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
 		ASTNode@ syn;
 	{
-		pkg != null,
+		syn @= members,
+		syn instanceof Import,
+		trace( Kiev.debug && Kiev.debugResolve, "In import (no star): "+syn),
+		((Import)syn).resolveMethodR(node,path,mt)
+	;	pkg != null,
 		pkg.getStruct().resolveMethodR(node,path,mt)
-	;	syn @= members,
-		syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_STATIC,
-		trace( Kiev.debug && Kiev.debugResolve, "In file syntax: "+syn),
+	;
+		path.enterMode(ResInfo.doImportStar) : path.leaveMode(),
+		syn @= members,
+		syn instanceof Import,
+		trace( Kiev.debug && Kiev.debugResolve, "In import (with star): "+syn),
 		((Import)syn).resolveMethodR(node,path,mt)
 	}
 

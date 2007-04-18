@@ -92,7 +92,6 @@ public final class KievFE_Pass1 extends TransfProcessor {
 					else if( n.mode == Import.ImportMode.IMPORT_SYNTAX)
 						any_syntax = true;
 				}
-				trace(Kiev.debug && Kiev.debugResolve,"Add "+n);
 			} catch(Exception e ) {
 				Kiev.reportError(n,e);
 			}
@@ -126,6 +125,8 @@ public final class KievFE_Pass1 extends TransfProcessor {
 	}
 
 	public void processSyntax(Import:ASTNode astn) {
+		if (astn.of_method)
+			return;
 		String name = astn.name.name;
 		Struct scope = Env.root;
 		DNode n;
