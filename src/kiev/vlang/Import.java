@@ -77,8 +77,27 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		return str.toString();
 	}
 
-	public ASTNode resolveImports() {
-		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
+	public void resolveImports() {
+		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star))
+			return;
+		String name = this.name.name;
+		TypeDecl scope = null;
+		int dot = name.indexOf('.');
+		while (dot > 0) {
+			String head;
+			head = name.substring(0,dot).intern();
+			name = name.substring(dot+1).intern();
+			if (scope == null)
+				scope = Env.root;
+			TypeDecl@ node;
+			if!(scope.resolveNameR(node,new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports))) {
+				Kiev.reportError(this,"Unresolved identifier "+head+" in "+scope);
+				return;
+			}
+			scope = (TypeDecl)node;
+			dot = name.indexOf('.');
+		}
+		
 		int i = 0;
 		Type[] types;
 		if( args.length > 0 && args[0].getType() ≡ Type.tpRule) {
@@ -91,13 +110,11 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			types[j] = args[i].getType();
 		Method@ v;
 		CallType mt = new CallType(null,null,types,Type.tpAny,false);
-		if( !PassInfo.resolveMethodR(this,v,new ResInfo(this,name.name),mt) )
-			throw new CompilerException(this,"Unresolved method "+Method.toString(name.name,mt));
-		DNode n = v;
-		if (mode != ImportMode.IMPORT_STATIC || !(n instanceof Method))
-			throw new CompilerException(this,"Identifier "+name+" is not a method");
-		resolved = n;
-		return this;
+		if( !scope.resolveMethodR(v,new ResInfo(this,name),mt) ) {
+			Kiev.reportError(this,"Unresolved method "+Method.toString(name,mt)+" in "+scope);
+			return;
+		}
+		resolved = (Method)v;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
@@ -106,7 +123,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	{
 		this.resolved instanceof Method, $cut, false
 	;
-		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && !star,
+		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && !star && !path.doImportStar(),
 		((Struct)this.resolved).checkResolved(),
 		s ?= ((Struct)this.resolved),
 		!s.isPackage(),
@@ -115,7 +132,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		;	path.checkNodeName(s), node ?= s.$var
 		}
 	;
-		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && star,
+		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && star && path.doImportStar(),
 		((Struct)this.resolved).checkResolved(),
 		s ?= ((Struct)this.resolved),
 		{
@@ -126,11 +143,11 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		;	s.isPackage(), s.resolveNameR(node,path)
 		}
 	;
-		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
+		mode == ImportMode.IMPORT_STATIC && star && path.doImportStar() && this.resolved instanceof TypeDecl,
 		path.isStaticAllowed(),
-		((Struct)this.resolved).checkResolved(),
+		((TypeDecl)this.resolved).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		((Struct)this.resolved).resolveNameR(node,path),
+		((TypeDecl)this.resolved).resolveNameR(node,path),
 		node instanceof Field && ((Field)node).isStatic() && ((Field)node).isPublic()
 	;
 		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
@@ -139,13 +156,17 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 
 	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
 	{
-		mode == ImportMode.IMPORT_STATIC && !star && this.resolved instanceof Method,
-		((Method)this.resolved).equalsByCast(path.getName(),mt,null,path),
+		mode == ImportMode.IMPORT_STATIC && !star && !path.doImportStar() && this.resolved instanceof Method,
+		((Method)this.resolved).equalsByCast(path.getName(),mt,Type.tpVoid,path),
 		node ?= ((Method)this.resolved)
 	;
-		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
-		((Struct)this.resolved).checkResolved(),
+		mode == ImportMode.IMPORT_STATIC && star && path.doImportStar() && this.resolved instanceof TypeDecl,
+		((TypeDecl)this.resolved).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
+		((TypeDecl)this.resolved).resolveMethodR(node,path,mt),
+		node instanceof Method && node.isStatic() && node.isPublic()
+	;
+		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
 		((Struct)this.resolved).resolveMethodR(node,path,mt),
 		node instanceof Method && node.isStatic() && node.isPublic()
 	}
