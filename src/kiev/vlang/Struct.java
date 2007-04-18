@@ -490,9 +490,6 @@ public class Struct extends TypeDecl {
 		{
 			super.resolveNameR(node, info), $cut
 		;
-			isSyntax(),
-			resolveNameR_Syntax(node,info)
-		;
 			isPackage(),
 			node @= sub_decls,
 			info.checkNodeName(node)
@@ -501,33 +498,6 @@ public class Struct extends TypeDecl {
 			info.isCmpByEquals(),
 			tryLoad(node,info.getName()), $cut
 		}
-	}
-
-	protected rule resolveNameR_Syntax(ASTNode@ node, ResInfo info)
-		ASTNode@ syn;
-	{
-		syn @= members,
-		syn instanceof Import,
-		((Import)syn).resolveNameR(node,info)
-	}
-
-	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
-	{
-		info.isStaticAllowed(),
-		{
-			super.resolveMethodR(node, info, mt), $cut
-		;
-			isSyntax(),
-			resolveMethodR_Syntax(node, info, mt)
-		}
-	}
-
-	protected rule resolveMethodR_Syntax(Method@ node, ResInfo info, CallType mt)
-		ASTNode@ syn;
-	{
-		syn @= members,
-		syn instanceof Import,
-		((Import)syn).resolveMethodR(node,info,mt)
 	}
 
 	public boolean tryLoad(ASTNode@ node, String name) {
