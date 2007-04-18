@@ -713,7 +713,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			trace(Kiev.debug && Kiev.debugResolve,"TypeDecl: resolving in "+this),
 			resolveNameR_1(node,info), // resolve in this class
 			$cut
-		;	info.isSuperAllowed(),
+		;
+			isSyntax(),
+			resolveNameR_Syntax(node,info)
+		;
+			info.isSuperAllowed(),
 			info.space_prev == null || (info.space_prev.pslot().name != "super_types"),
 			trace(Kiev.debug && Kiev.debugResolve,"TypeDecl: resolving in super-class of "+this),
 			resolveNameR_3(node,info), // resolve in super-classes
@@ -741,6 +745,13 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 				node ?= n
 			}
 	}
+	protected rule resolveNameR_Syntax(ASTNode@ node, ResInfo info)
+		ASTNode@ syn;
+	{
+		syn @= members,
+		syn instanceof Import,
+		((Import)syn).resolveNameR(node,info)
+	}
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info)
 		TypeRef@ sup_ref;
 	{
@@ -764,9 +775,14 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			node ?= ((Method)member),
 			((Method)node).equalsByCast(info.getName(),mt,Type.tpVoid,info)
 		;	info.isImportsAllowed() && isPackage(),
-			member @= members, member instanceof Method,
+			member @= members,
+			member instanceof Method,
 			node ?= ((Method)member),
 			((Method)node).equalsByCast(info.getName(),mt,Type.tpVoid,info)
+		;	isSyntax(),
+			member @= members,
+			member instanceof Import,
+			((Import)member).resolveMethodR(node,info,mt)
 		;	info.isSuperAllowed(),
 			supref @= super_types,
 			info.enterSuper() : info.leaveSuper(),

@@ -143,36 +143,40 @@ public final class TypeNameRef extends TypeRef {
 
 	public Struct getStruct() {
 		if (this.lnk != null) return this.lnk.getStruct();
+		TypeDecl@ td;
 		if (this.outer != null) {
 			Struct outer = this.outer.getStruct();
 			ResInfo info = new ResInfo(this,this.ident,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
-			TypeDecl@ td;
 			if!(outer.resolveNameR(td,info))
 				throw new CompilerException(this,"Unresolved type "+ident+" in "+outer);
-			return td.getStruct();
 		} else {
-			TypeDecl@ td;
 			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,this.ident,ResInfo.noForwards)) )
 				throw new CompilerException(this,"Unresolved type "+ident);
-			return td.getStruct();
 		}
+		if (td.isPackage() || td.isSyntax() || td.isEnum()) {
+			this = this.open();
+			this.lnk = td.xtype;
+		}
+		return td.getStruct();
 	}
 
 	public TypeDecl getTypeDecl() {
 		if (this.lnk != null) return this.lnk.meta_type.tdecl;
+		TypeDecl@ td;
 		if (this.outer != null) {
 			TypeDecl outer = this.outer.getTypeDecl();
 			ResInfo info = new ResInfo(this,this.ident,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
-			TypeDecl@ td;
 			if!(outer.resolveNameR(td,info))
 				throw new CompilerException(this,"Unresolved type "+ident+" in "+outer);
-			return (TypeDecl)td;
 		} else {
-			TypeDecl@ td;
 			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,this.ident,ResInfo.noForwards)) )
 				throw new CompilerException(this,"Unresolved type "+ident);
-			return (TypeDecl)td.getStruct();
 		}
+		if (td.isPackage() || td.isSyntax() || td.isEnum()) {
+			this = this.open();
+			this.lnk = td.xtype;
+		}
+		return (TypeDecl)td;
 	}
 
 	public String toString() {
