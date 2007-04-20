@@ -15,7 +15,7 @@ import static kiev.be.java15.Instr.*;
 import syntax kiev.Syntax;
 
 public abstract class BEndFunc {
-	private static Hashtable<String,BEndFunc> coreFuncs;
+	public static Hashtable<String,BEndFunc> coreFuncs;
 	static {
 		coreFuncs = new Hashtable<String,BEndFunc>(1024);
 
@@ -164,19 +164,6 @@ public abstract class BEndFunc {
 		coreFuncs.put("kiev.stdlib.double:positive",        new UnaryOpFunc(Instr.op_nop));
 		coreFuncs.put("kiev.stdlib.double:negative",        new UnaryOpFunc(Instr.op_dneg));
 	}
-
-	public static void attachToBackend(CoreMethod cm) {
-		String name = ((TypeDecl)cm.parent()).qname()+":"+cm.sname;
-		BEndFunc cf = coreFuncs.get(name);
-		if (cf == null) {
-			cf = UnimplementedFunc; //Kiev.reportWarning(cm,"Backend function "+name+" not found");
-			return;
-		}
-		cf.core_method = cm;
-		cm.bend_func = cf;
-	}
-
-	public CoreMethod core_method;
 
 	public abstract void generate(Code code, Type reqType, JENode expr);
 	

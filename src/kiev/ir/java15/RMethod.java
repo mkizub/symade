@@ -127,13 +127,6 @@ public final view RConstructor of Constructor extends RMethod {
 	}
 }
 
-public final view RCoreMethod of CoreMethod extends RMethod {
-
-	public void resolveDecl() {
-		RMethod.resolveMethod(this); // super.resolveDecl()
-	}
-}
-
 public final view RInitializer of Initializer extends RDNode {
 	public:ro ENode			body;
 	public:ro Block			block;

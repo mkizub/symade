@@ -225,35 +225,6 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		foreach (ASTNode dn; astn.members)
 			processSyntax(dn);
 	}
-
-	public void processSyntax(Method:ASTNode astn) {
-		Method me = astn;
-		if (me.isMacro() && me.isNative()) {
-			if !(me instanceof CoreMethod) {
-				CoreMethod cm = new CoreMethod();
-				cm.pos = me.pos;
-				cm.compileflags = me.compileflags;
-				cm.meta.mflags = me.meta.mflags;
-				foreach (ANode n; me.meta.metas.delToArray()) {
-					if (n instanceof UserMeta)
-						cm.setMeta((UserMeta)n);
-					else if (n instanceof MetaFlag)
-						cm.setMeta((MetaFlag)n);
-				}
-				cm.sname = me.sname;
-				cm.targs.addAll(me.targs.delToArray());
-				if (me.type_ret != null) cm.type_ret = ~me.type_ret;
-				if (me.dtype_ret != null) cm.dtype_ret = ~me.dtype_ret;
-				cm.params.addAll(me.params.delToArray());
-				cm.aliases.addAll(me.aliases.delToArray());
-				if (me.body != null) cm.body = ~me.body;
-				cm.conditions.addAll(me.conditions.delToArray());
-				me.replaceWithNode(cm);
-				return; 
-			}
-		}
-	}
-
 }
 
 /////////////////////////////////////////////////////
@@ -472,12 +443,6 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				Initializer init = (Initializer)me.members[i];
 				// TODO: check flags for initialzer
 				if( me.isPackage() ) init.setStatic(true);
-			}
-			else if (me.members[i] instanceof CoreMethod) {
-				CoreMethod cm = (CoreMethod)me.members[i];
-				cm.pass3();
-				cm.attachToCompiler();
-				MetaAccess.verifyDecl(cm);
 			}
 			else if( me.members[i] instanceof RuleMethod ) {
 				RuleMethod m = (RuleMethod)me.members[i];

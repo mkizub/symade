@@ -1848,7 +1848,7 @@ ENode MaybeSkipBlock() :
 }
 
 Method MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; Method m, oldMethod; TypeRef ret; Symbol id; MetaThrows thr; TypeConstr[] args; }
+{ Token t; Method m, oldMethod; TypeRef ret; Symbol id; ConstStringExpr cor; MetaThrows thr; TypeConstr[] args; }
 {
 	args = ClazzArguments()
 	ret = Type()
@@ -1891,6 +1891,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 		{ presc = m; }
 		m.body = MaybeSkipBlock() [ ";" ]
 	|	[ "default" m.body = AnnotationValueAny(new SymbolRef(getToken(0).getPos(),m)) ] ";"
+	|	[ "continue" cor = StringConstExpression() { m.body = CoreExpr.makeInstance(cor.pos, cor.value); } ] ";"
 	)
 	} finally { curMethod = oldMethod; }
 	{ return m; }

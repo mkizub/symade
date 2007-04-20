@@ -478,63 +478,6 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
-       <name>CoreMethod</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSet'>
-       <elements>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>core: </text>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxIdentAttr'>
-         <decl>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>ident-template</name>
-          </a-node>
-         </decl>
-         <name>sname</name>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxList'>
-         <element>
-          <a-node class='kiev.fmt.SyntaxNode'>
-           <in_syntax>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>syntax-form-par</name>
-            </a-node>
-           </in_syntax>
-          </a-node>
-         </element>
-         <separator>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>,</text>
-          </a-node>
-         </separator>
-         <prefix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>(</text>
-          </a-node>
-         </prefix>
-         <sufix>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>)-&gt;</text>
-          </a-node>
-         </sufix>
-         <folded_by_default>false</folded_by_default>
-         <name>params</name>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxSubAttr'>
-         <name>type_ret</name>
-        </a-node>
-       </elements>
-       <folded_by_default>false</folded_by_default>
-      </a-node>
-     </elem>
-     <sname>stx-method</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
        <name>TypeConstr</name>
       </a-node>
      </rnode>

@@ -80,7 +80,7 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 			expr1.resolve(((TypeDecl)m.parent()).xtype);
 			expr2.resolve(m.params[0].getType());
 		}
-		if !(m instanceof CoreMethod) {
+		if !(m.body instanceof CoreExpr) {
 			// Not a standard operator
 			if( m.isStatic() )
 				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~expr1,~expr2}));
@@ -90,7 +90,7 @@ public view RBinaryBoolExpr of BinaryBoolExpr extends RBoolExpr {
 		}
 		// Check if both expressions are constant
 		if( expr1.isConstantExpr() && expr2.isConstantExpr() ) {
-			ConstExpr ce = ((CoreMethod)m).calc(this);
+			ConstExpr ce = ((CoreExpr)m.body).calc(this);
 			replaceWithNodeResolve(reqType, ce);
 			return;
 		}
@@ -173,7 +173,7 @@ public view RBooleanNotExpr of BooleanNotExpr extends RBoolExpr {
 			m.makeArgs(ENode.emptyArray,reqType);
 			expr.resolve(((TypeDecl)m.parent()).xtype);
 		}
-		if !(m instanceof CoreMethod) {
+		if !(m.body instanceof CoreExpr) {
 			// Not a standard operator
 			if( m.isStatic() )
 				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~expr}));
@@ -184,7 +184,7 @@ public view RBooleanNotExpr of BooleanNotExpr extends RBoolExpr {
 		BoolExpr.checkBool(expr);
 		// Check if expression is a constant
 		if (expr.isConstantExpr()) {
-			ConstExpr ce = ((CoreMethod)m).calc(this);
+			ConstExpr ce = ((CoreExpr)m.body).calc(this);
 			replaceWithNodeResolve(reqType, ce);
 			return;
 		}

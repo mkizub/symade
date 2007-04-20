@@ -359,9 +359,10 @@ public final class ArrayMetaType extends MetaType {
 			Field length = new Field("length", StdTypes.tpInt, ACC_PUBLIC|ACC_FINAL|ACC_MACRO|ACC_NATIVE);
 			length.setMeta(new MetaAccess("public",0xAA)); //public:ro
 			tdecl.members.add(length);
-			CoreMethod get = new CoreMethod("get", StdTypes.tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
+			Method get = new MethodImpl("get", StdTypes.tpArrayArg, ACC_PUBLIC|ACC_MACRO|ACC_NATIVE);
 			get.params.add(new LVar(0,"idx",StdTypes.tpInt,Var.PARAM_NORMAL,0));
 			get.aliases += new ASTOperatorAlias(Constants.nameArrayGetOp);
+			//get.body = CoreExpr.makeInstance("");
 			tdecl.members.add(get);
 		}
 		

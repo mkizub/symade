@@ -412,7 +412,7 @@ public class Env extends Struct {
 		if (classHashOfFails.get(qname) != null) return null;
 		TypeDecl cl = (TypeDecl)resolveGlobalDNode(qname);
 		// Try to load from project file (scan sources) or from .xml API dump
-		if (cl == null && Env.projectHash.get(qname) != null)
+		if (cl == null && !Compiler.makeall_project && Env.projectHash.get(qname) != null)
 			cl = loadTypeDeclFromProject(qname);
 		//if (cl == null)
 		//	cl = loadTypeDeclFromAPIDump(qname);
@@ -432,7 +432,7 @@ public class Env extends Struct {
 		if (cl == Env.root)
 			return Env.root;
 		// Try to load from project file (scan sources) or from .xml API dump
-		if (Env.projectHash.get(cl.qname()) != null)
+		if (!Compiler.makeall_project && Env.projectHash.get(cl.qname()) != null)
 			loadTypeDeclFromProject(cl.qname());
 		// Load if not loaded or not resolved
 		if (!cl.isTypeDeclLoaded() && cl instanceof Struct && !cl.isAnonymouse())
