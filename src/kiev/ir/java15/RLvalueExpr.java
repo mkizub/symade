@@ -132,7 +132,7 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 		ResInfo info = new ResInfo((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 		if( !PassInfo.resolveBestMethodR(obj.getType(),m,info,mt) )
 			throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayGetOp,mt));
-		if !(m instanceof CoreMethod) {
+		if !(m.body instanceof CoreExpr) {
 			// Not a standard operator
 			if( m.isStatic() )
 				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~obj,~index}));

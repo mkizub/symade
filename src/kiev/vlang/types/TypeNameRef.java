@@ -128,8 +128,10 @@ public final class TypeNameRef extends TypeRef {
 				Type bound = args[a].getType();
 				if (bound == null)
 					throw new CompilerException(this,"Type "+args[a]+" is not found");
-				if!(bound.isInstanceOf(tpset.tvars[b].var))
-					throw new CompilerException(this,"Type "+bound+" is not applayable to "+tpset.tvars[b].var);
+				if!(bound.isInstanceOf(tpset.tvars[b].var)) {
+					if (!(bound instanceof ArgType) || ((ArgType)bound).definer.super_types.length > 0)
+						throw new CompilerException(this,"Type "+bound+" is not applayable to "+tpset.tvars[b].var);
+				}
 				set.append(tpset.tvars[b].var, bound);
 				a++;
 			}

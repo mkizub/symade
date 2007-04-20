@@ -24,6 +24,13 @@ import syntax kiev.Syntax;
  *
  */
 
+public final view RCoreExpr of CoreExpr extends RENode {
+
+	public void resolve(Type reqType) {
+		setResolved(true);
+	}
+}
+
 public final view RShadow of Shadow extends RENode {
 	public ASTNode		rnode;
 
@@ -169,7 +176,7 @@ public static final view RAssignExpr of AssignExpr extends RENode {
 			for (int i=1; i < args.length; i++)
 				args[i].resolve(ct.arg(i-1));
 		}
-		if !(m instanceof CoreMethod) {
+		if !(m.body instanceof CoreExpr) {
 			// Not a standard operator
 			if( m.isStatic() )
 				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~lval,~value}));
@@ -181,7 +188,7 @@ public static final view RAssignExpr of AssignExpr extends RENode {
 		Type t1 = lval.getType();
 		Type t2 = value.getType();
 		if( !t2.isInstanceOf(t1) ) {
-			if (t2 ≡ StdTypes.tpNull && t1.isReference() || m instanceof CoreMethod)
+			if (t2 ≡ StdTypes.tpNull && t1.isReference() || m.body instanceof CoreExpr)
 				;
 			else if (t2.getErasedType().isInstanceOf(t1.getErasedType()))
 				;
@@ -257,7 +264,7 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 			expr1.resolve(((TypeDecl)m.parent()).xtype);
 			expr2.resolve(ct.arg(0));
 		}
-		if !(m instanceof CoreMethod) {
+		if !(m.body instanceof CoreExpr) {
 			// Not a standard operator
 			if( m.isStatic() )
 				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~expr1,~expr2}));
@@ -267,7 +274,7 @@ public static final view RBinaryExpr of BinaryExpr extends RENode {
 		}
 		// Check if both expressions are constant
 		if( expr1.isConstantExpr() && expr2.isConstantExpr() ) {
-			ConstExpr ce = ((CoreMethod)m).calc(this);
+			ConstExpr ce = ((CoreExpr)m.body).calc(this);
 			replaceWithNodeResolve(reqType, ce);
 			return;
 		}
@@ -310,7 +317,7 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 			m.makeArgs(ENode.emptyArray,reqType);
 			expr.resolve(((TypeDecl)m.parent()).xtype);
 		}
-		if !(m instanceof CoreMethod) {
+		if !(m.body instanceof CoreExpr) {
 			// Not a standard operator
 			if( m.isStatic() )
 				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~expr}));
@@ -320,7 +327,7 @@ public static view RUnaryExpr of UnaryExpr extends RENode {
 		}
 		// Check if expression is a constant
 		if (expr.isConstantExpr()) {
-			ConstExpr ce = ((CoreMethod)m).calc(this);
+			ConstExpr ce = ((CoreExpr)m.body).calc(this);
 			replaceWithNodeResolve(reqType, ce);
 			return;
 		}
@@ -437,7 +444,7 @@ public static final view RIncrementExpr of IncrementExpr extends RENode {
 			m.makeArgs(ENode.emptyArray,reqType);
 			lval.resolve(((TypeDecl)m.parent()).xtype);
 		}
-		if !(m instanceof CoreMethod) {
+		if !(m.body instanceof CoreExpr) {
 			// Not a standard operator
 			if( m.isStatic() )
 				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~lval}));

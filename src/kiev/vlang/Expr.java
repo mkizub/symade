@@ -313,9 +313,9 @@ public class BinaryExpr extends ENode {
 		this.expr2 = expr2;
 	}
 
-	public BinaryExpr(CoreMethod cm, Operator op, ENode[] args) {
+	public BinaryExpr(CoreExpr cm, Operator op, ENode[] args) {
 		this.op = op;
-		this.symbol = cm.getSymbol(op.name);
+		this.symbol = cm.getMethod().getSymbol(op.name);
 		this.expr1 = args[0];
 		this.expr2 = args[1];
 	}
@@ -431,8 +431,8 @@ public class UnaryExpr extends ENode {
 		}
 		m.normilizeExpr(this);
 		// Check if expression is a constant
-		if (m instanceof CoreMethod && expr.isConstantExpr()) {
-			ConstExpr ce = ((CoreMethod)m).calc(this);
+		if (m.body instanceof CoreExpr && expr.isConstantExpr()) {
+			ConstExpr ce = ((CoreExpr)m.body).calc(this);
 			replaceWithNodeReWalk(ce);
 			return;
 		}

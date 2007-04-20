@@ -21,7 +21,6 @@ import kiev.be.java15.JDNode;
 import kiev.ir.java15.RMethod;
 import kiev.be.java15.JMethod;
 import kiev.ir.java15.RConstructor;
-import kiev.ir.java15.RCoreMethod;
 import kiev.ir.java15.RInitializer;
 import kiev.be.java15.JInitializer;
 import kiev.ir.java15.RWBCCondition;
@@ -422,6 +421,10 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public void normilizeExpr(ENode expr) {
+		if (body instanceof CoreExpr && ((CoreExpr)body).core_func != null) {
+			((CoreExpr)body).core_func.normilizeExpr(this,expr);
+			return;
+		}
 		expr = expr.open();
 		if (expr.ident == null) {
 			Operator op = expr.getOp();
@@ -776,6 +779,11 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				cond = cond.open();
 				cond.definer = this;
 			}
+		}
+
+		if (isMacro() && isNative() && body == null) {
+			String name = clazz.qname()+":"+sname;
+			body = CoreExpr.makeInstance(pos,name);
 		}
 	}
 

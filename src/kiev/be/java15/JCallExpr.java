@@ -57,8 +57,8 @@ public final view JCallExpr of CallExpr extends JENode {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating CallExpr: "+this);
 		code.setLinePos(this);
 		JMethod func = this.func;
-		if (((Method)func) instanceof CoreMethod) {
-			CoreMethod m = (CoreMethod)(Method)func;
+		if (((Method)func).body instanceof CoreExpr) {
+			CoreExpr m = (CoreExpr)((Method)func).body;
 			m.bend_func.generate(code,reqType,this);
 			return;
 		}
@@ -172,8 +172,8 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating CtorCallExpr: "+this);
 		code.setLinePos(this);
 		JMethod func = this.func;
-		if (((Method)func) instanceof CoreMethod) {
-			CoreMethod m = (CoreMethod)(Method)func;
+		if (((Method)func).body instanceof CoreExpr) {
+			CoreExpr m = (CoreExpr)((Method)func).body;
 			m.bend_func.generate(code,reqType,this);
 			return;
 		}

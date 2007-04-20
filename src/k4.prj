@@ -389,8 +389,8 @@ CLASS kiev.vlang.ConstStringExpr kiev/vlang/ConstStringExpr kiev\vlang\ConstExpr
 CLASS kiev.vlang.Constructor kiev/vlang/Constructor kiev\vlang\Method.java
 CLASS kiev.vlang.ContainerAccessExpr kiev/vlang/ContainerAccessExpr kiev\vlang\LvalueExpr.java
 CLASS kiev.vlang.ContinueStat kiev/vlang/ContinueStat kiev\vlang\Statement.java
+CLASS kiev.vlang.CoreExpr kiev/vlang/CoreExpr kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.CoreFunc kiev/vlang/CoreFunc kiev\vlang\CoreMethod.java
-CLASS kiev.vlang.CoreMethod kiev/vlang/CoreMethod kiev\vlang\CoreMethod.java
 CLASS kiev.vlang.CtorCallExpr kiev/vlang/CtorCallExpr kiev\vlang\CallExpr.java
 CLASS kiev.vlang.CurrentVersionInfo kiev/vlang/CurrentVersionInfo kiev\vlang\AST.java
 CLASS kiev.vlang.DFFunc kiev/vlang/DFFunc kiev\vlang\DataFlow.java
@@ -836,7 +836,7 @@ INTERFACE kiev.ir.java15.RConstExpr kiev/ir/java15/RConstExpr kiev\ir\java15\RCo
 INTERFACE kiev.ir.java15.RConstructor kiev/ir/java15/RConstructor kiev\ir\java15\RMethod.java
 INTERFACE kiev.ir.java15.RContainerAccessExpr kiev/ir/java15/RContainerAccessExpr kiev\ir\java15\RLvalueExpr.java
 INTERFACE kiev.ir.java15.RContinueStat kiev/ir/java15/RContinueStat kiev\ir\java15\RStat.java
-INTERFACE kiev.ir.java15.RCoreMethod kiev/ir/java15/RCoreMethod kiev\ir\java15\RMethod.java
+INTERFACE kiev.ir.java15.RCoreExpr kiev/ir/java15/RCoreExpr kiev\ir\java15\RExpr.java
 INTERFACE kiev.ir.java15.RCtorCallExpr kiev/ir/java15/RCtorCallExpr kiev\ir\java15\RCallExpr.java
 INTERFACE kiev.ir.java15.RDNode kiev/ir/java15/RDNode kiev\ir\java15\RNode.java
 INTERFACE kiev.ir.java15.RDeclGroup kiev/ir/java15/RDeclGroup kiev\ir\java15\RNode.java

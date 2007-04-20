@@ -89,12 +89,13 @@ public view JAssignExpr of AssignExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
-		if !(this.dnode instanceof CoreMethod) {
+		DNode d = this.dnode;
+		if !(d instanceof Method && d.body instanceof CoreExpr) {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
 		code.setLinePos(this);
-		CoreMethod m = (CoreMethod)this.dnode;
+		CoreExpr m = (CoreExpr)((Method)d).body;
 		m.bend_func.generate(code,reqType,this);
 	}
 }
@@ -106,12 +107,13 @@ public view JBinaryExpr of BinaryExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating BinaryExpr: "+this);
-		if !(this.dnode instanceof CoreMethod) {
+		DNode d = this.dnode;
+		if !(d instanceof Method && d.body instanceof CoreExpr) {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
 		code.setLinePos(this);
-		CoreMethod m = (CoreMethod)this.dnode;
+		CoreExpr m = (CoreExpr)((Method)d).body;
 		m.bend_func.generate(code,reqType,this);
 	}
 
@@ -123,12 +125,13 @@ public view JUnaryExpr of UnaryExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating UnaryExpr: "+this);
-		if !(this.dnode instanceof CoreMethod) {
+		DNode d = this.dnode;
+		if !(d instanceof Method && d.body instanceof CoreExpr) {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
 		code.setLinePos(this);
-		CoreMethod m = (CoreMethod)this.dnode;
+		CoreExpr m = (CoreExpr)((Method)d).body;
 		m.bend_func.generate(code,reqType,this);
 	}
 
@@ -242,12 +245,13 @@ public final view JIncrementExpr of IncrementExpr extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating IncrementExpr: "+this);
-		if !(this.dnode instanceof CoreMethod) {
+		DNode d = this.dnode;
+		if !(d instanceof Method && d.body instanceof CoreExpr) {
 			Kiev.reportError(this, "Unresolved core operation "+op+" at generatioin phase");
 			return;
 		}
 		code.setLinePos(this);
-		CoreMethod m = (CoreMethod)this.dnode;
+		CoreExpr m = (CoreExpr)((Method)d).body;
 		m.bend_func.generate(code,reqType,this);
 	}
 }
