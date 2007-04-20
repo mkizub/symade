@@ -181,7 +181,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			if (fts != null) {
 				TypeDef td = new TypeAssign(
 					"attr$"+f.sname+"$type",
-					new TypeRef(new ASTNodeType(f.type.getStruct())));
+					new TypeRef(new ASTNodeType(f.type)));
 				td.setSynthetic(true);
 				Struct clazz = (Struct)f.ctx_tdecl;
 				clazz.members.append(td);

@@ -37,8 +37,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	@att public ImportMode			mode = ImportMode.IMPORT_CLASS;
 	@att public boolean				star;
 	@att public TypeRef[]			args;
-	
-	@ref public boolean				of_method;
+	@att public boolean				of_method;
 	@ref public DNode				resolved;
 
 	public Import() {
@@ -53,8 +52,12 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (dump == "api" && attr.name == "this")
+		if (dump == "api" && attr.name == "this") {
+			ANode p = parent();
+			if (p instanceof Struct && p.isSyntax())
+				return true;
 			return false;
+		}
 		return super.includeInDump(dump, attr, val);
 	}
 
@@ -197,6 +200,13 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 		return getType().getStruct();
 	}
 
+	public boolean hasName(String nm, boolean by_equals) {
+		if (by_equals && op != null && op.ident != null && op.ident != "") {
+			return ("T "+op.ident).equals(nm);
+		}
+		return false;
+	}
+
 	public rule resolveNameR(ASTNode@ node, ResInfo path) {
 		path.space_prev == this.type,
 		path.checkNodeName(this.arg),
@@ -204,7 +214,7 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 	}
 
 	public String toString() {
-		return "typedef "+arg+op+" "+type+"<"+arg+">;";
+		return "typedef "+arg+op+" "+type+";";
 	}
 }
 

@@ -16,6 +16,9 @@ import kiev.stdlib.*;
 import kiev.stdlib.meta.*;
 import java.lang.*;
 
+typedef type[] kiev.stdlib._array_<type>;
+typedef type... kiev.stdlib._vararg_<type>;
+
 // assign operators
 operator  =    , lfy,   5;
 operator  :=   , lfy,   5;
@@ -68,5 +71,9 @@ operator  !  ,  fy, 210;
 operator  ++ ,  xf, 210; // lf
 operator  -- ,  xf, 210; // lf
 
+import static kiev.stdlib.GString.str_concat_ss(String, String); // string concatenation String + String
+import static kiev.stdlib.GString.str_concat_as(any, String); // string concatenation any + String
+import static kiev.stdlib.GString.str_concat_sa(String, any); // string concatenation String + any
+import static kiev.stdlib.GString.str_assign_add(String, any); // string concatenation String += any
 }
 

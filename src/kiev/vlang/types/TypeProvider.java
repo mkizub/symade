@@ -215,18 +215,18 @@ public final class ASTNodeMetaType extends MetaType {
 
 	private TVarSet			templ_bindings;
 
-	public static ASTNodeMetaType instance(Struct clazz) {
-		if (clazz.ameta_type == null)
-			clazz.ameta_type = new ASTNodeMetaType(clazz);
-		return clazz.ameta_type;
+	public static ASTNodeMetaType instance(Type tp) {
+		TypeDecl td = tp.meta_type.tdecl;
+		if (td.ameta_type == null)
+			td.ameta_type = new ASTNodeMetaType(td);
+		return td.ameta_type;
 	}
 
 	@getter
-	public final Struct get$clazz() { return (Struct)this.tdecl; }
+	public final TypeDecl get$clazz() { return this.tdecl; }
 
-	ASTNodeMetaType() {}
-	ASTNodeMetaType(Struct clazz) {
-		super(clazz);
+	ASTNodeMetaType(TypeDecl td) {
+		super(td);
 		this.templ_bindings = TVarSet.emptySet;
 	}
 
@@ -471,20 +471,22 @@ public class WrapperMetaType extends MetaType {
 			tdecl.setUUID("67544053-836d-3bac-b94d-0c4b14ae9c55");
 		}
 		wrapper_tdecl = tdecl;
+		tdecl.xmeta_type = WrapperMetaType.instance(StdTypes.tpWrapperArg);
+		tdecl.xtype = WrapperType.newWrapperType(StdTypes.tpWrapperArg);
 	}
-	public final Struct		clazz;
+	public final TypeDecl	clazz;
 	public final Field		field;
-	public static WrapperMetaType instance(Struct clazz) {
-		if (clazz.wmeta_type == null)
-			clazz.wmeta_type = new WrapperMetaType(clazz);
-		return clazz.wmeta_type;
+	public static WrapperMetaType instance(Type tp) {
+		TypeDecl td = tp.meta_type.tdecl;
+		if (td.wmeta_type == null)
+			td.wmeta_type = new WrapperMetaType(td);
+		return td.wmeta_type;
 	}
-	private WrapperMetaType() {}
-	private WrapperMetaType(Struct clazz) {
+	private WrapperMetaType(TypeDecl td) {
 		super(wrapper_tdecl);
-		this.clazz = clazz;
+		this.clazz = td;
 		clazz.checkResolved();
-		this.field = getWrappedField(clazz,true);
+		this.field = getWrappedField(td,false);
 	}
 
 	public Type[] getMetaSupers(Type tp) {
@@ -508,14 +510,14 @@ public class WrapperMetaType extends MetaType {
 		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().applay(bindings));
 	}
 
-	private static Field getWrappedField(Struct clazz, boolean required) {
-		foreach (TypeRef st; clazz.super_types; st.getStruct() != null) {
-			Field wf = getWrappedField(st.getStruct(), false);
+	private static Field getWrappedField(TypeDecl td, boolean required) {
+		foreach (TypeRef st; td.super_types; st.getTypeDecl() != null) {
+			Field wf = getWrappedField(st.getTypeDecl(), false);
 			if (wf != null)
 				return wf;
 		}
 		Field wf = null;
-		foreach(Field n; clazz.getAllFields(); n.isForward()) {
+		foreach(Field n; td.getAllFields(); n.isForward()) {
 			if (wf == null)
 				wf = (Field)n;
 			else
@@ -523,10 +525,10 @@ public class WrapperMetaType extends MetaType {
 		}
 		if ( wf == null ) {
 			if (required)
-				throw new CompilerException(clazz,"Wrapper class "+clazz+" has no forward field");
+				throw new CompilerException(td,"Wrapper class "+td+" has no forward field");
 			return null;
 		}
-		if( Kiev.verbose ) System.out.println("Class "+clazz+" is a wrapper for field "+wf);
+		if( Kiev.verbose ) System.out.println("Class "+td+" is a wrapper for field "+wf);
 		return wf;
 	}
 	

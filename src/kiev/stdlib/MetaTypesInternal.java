@@ -48,3 +48,7 @@ public metatype _call_type_ extends any {
 public metatype _vararg_< @uuid("924f219a-37cf-3654-b761-7cb5e26ceef0") _elem_ extends Object > extends _array_<_elem_> {
 }
 
+@uuid("3e32f9c7-9846-393e-8c6e-11512191ec94")
+public metatype _astnode_< @uuid("f23d4ec5-7fc2-3bbb-9b8f-46a309fc5f24") _node_ extends Object > extends any {
+}
+

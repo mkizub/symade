@@ -110,9 +110,6 @@ public class Struct extends TypeDecl {
 
 	@ref(ext_data=true) public Struct				typeinfo_clazz;
 	@ref(ext_data=true) public Struct				iface_impl;
-	@ref(ext_data=true) public WrapperMetaType		wmeta_type;
-	@ref(ext_data=true) public ASTNodeMetaType		ameta_type;
-	@ref(ext_data=true) public TypeAssign			ometa_tdef;
 
 	@att
 	@getter public final String get$uniq_name() { return u_name; }

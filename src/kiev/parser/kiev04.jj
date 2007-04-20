@@ -1028,7 +1028,7 @@ Import Import(ASTModifiers modifiers) :
 }
 
 TypeDecl Typedef(ASTModifiers modifiers) :
-{ Symbol id; TypeDecl n; TypeRef tr; }
+{ Symbol id; TypeDecl n; TypeRef tr; Token t; }
 {
 	"typedef"
 	(
@@ -1039,10 +1039,13 @@ TypeDecl Typedef(ASTModifiers modifiers) :
 		tr = Type()
 		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
 	|
-		LOOKAHEAD(3, <IDENTIFIER> TypeOperatorChar() <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
+		LOOKAHEAD(3, <IDENTIFIER> (TypeOperatorChar()|<OPERATOR_LRBRACKETS>|"...") <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
 		{ n = new TypeOpDef(); }
 		id     = Name()		{ n.arg = mkTypeAssign(id, new ASTModifiers()); }
-		n.op   = Operator()
+		(	n.op = Operator()
+		|	t    = <OPERATOR_LRBRACKETS> { n.op = new ASTOperator(t); }
+		|	t    = "..."                 { n.op = new ASTOperator(t); }
+		)
 		n.type = Type()
 	|
 		tr = Type()

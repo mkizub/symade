@@ -895,10 +895,13 @@ public final class KievME_DumpAPI extends BackendProcessor {
 	public void process(ASTNode node, Transaction tr) {
 		if!(node instanceof FileUnit)
 			return;
+		FileUnit fu = (FileUnit)node;
+		if (fu.scanned_for_interface_only)
+			return;
 		if (this.stx == null)
 			this.stx = new XmlDumpSyntax("api");
 		try {
-			dumpSrc((FileUnit)node);
+			dumpSrc(fu);
 		} catch (Exception rte) { Kiev.reportError(rte); }
 	}
 

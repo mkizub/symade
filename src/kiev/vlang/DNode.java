@@ -367,6 +367,10 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		 public MetaType					xmeta_type;
 		 public Type						xtype;
 
+	@ref(ext_data=true) public WrapperMetaType		wmeta_type;
+	@ref(ext_data=true) public ASTNodeMetaType		ameta_type;
+	@ref(ext_data=true) public TypeAssign			ometa_tdef;
+
 	@getter public TypeDecl get$child_ctx_tdecl()	{ return this; }
 
 	public boolean isClazz() {

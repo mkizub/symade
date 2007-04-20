@@ -438,17 +438,16 @@ public final class CoreType extends Type {
 }
 
 public final class ASTNodeType extends Type {
-	public static ASTNodeType newASTNodeType(Struct of_clazz)
+	public static ASTNodeType newASTNodeType(Type tp)
 		alias lfy operator new
 	{
-		return new ASTNodeType(ASTNodeMetaType.instance(of_clazz), TVarBld.emptySet);
+		return new ASTNodeType(ASTNodeMetaType.instance(tp), TVarBld.emptySet);
 	}
 
 	public static ASTNodeType newASTNodeType(RewritePattern rp)
 		alias lfy operator new
 	{
-		Struct of_clazz = rp.vtype.getStruct();
-		ASTNodeMetaType meta_type = ASTNodeMetaType.instance(of_clazz);
+		ASTNodeMetaType meta_type = ASTNodeMetaType.instance(rp.vtype.getType());
 		TVarBld tvb = new TVarBld();
 		foreach (RewritePattern var; rp.vars) {
 			ASTNodeType ast = newASTNodeType(var);
@@ -473,7 +472,12 @@ public final class ASTNodeType extends Type {
 
 	public JType getJType()					{ throw new RuntimeException("ASTNodeType.getJType()"); }
 	
-	public Struct getStruct() { return ANode.getVersion(((ASTNodeMetaType)meta_type).clazz); }
+	public Struct getStruct() {
+		TypeDecl td = ANode.getVersion(((ASTNodeMetaType)meta_type).clazz);
+		if (td instanceof Struct)
+			return (Struct)td;
+		return null;
+	}
 
 	public boolean isCastableTo(Type t) {
 		if( this ≡ t) return true;
@@ -683,15 +687,12 @@ public abstract class CTimeType extends Type {
 
 public final class WrapperType extends CTimeType {
 	
-	public static final Type tpWrappedPrologVar = newWrapperType(tpPrologVar);
-	public static final Type tpWrappedRefProxy  = newWrapperType(tpRefProxy);
-	
 	public static Type newWrapperType(Type type) {
-		return new WrapperType((CompaundType)type);
+		return new WrapperType(type);
 	}
 	
-	public WrapperType(CompaundType unwrapped_type) {
-		super(WrapperMetaType.instance(unwrapped_type.getStruct()), flReference | flWrapper, tpWrapperArg, unwrapped_type);
+	public WrapperType(Type unwrapped_type) {
+		super(WrapperMetaType.instance(unwrapped_type), flReference | flWrapper, tpWrapperArg, unwrapped_type);
 	}
 
 	@getter
@@ -704,7 +705,10 @@ public final class WrapperType extends CTimeType {
 	}
 
 	public final ENode makeUnboxedExpr(ENode from) {
-		return new IFldExpr(from.pos, ~from, wrapped_field);
+		Field wf = wrapped_field;
+		if (wf == null)
+			return from;
+		return new IFldExpr(from.pos, ~from, wf);
 	} 
 	public final ENode makeInitExpr(Var dn, ENode init) {
 		if (dn.isInitWrapper())
@@ -723,7 +727,12 @@ public final class WrapperType extends CTimeType {
 		return e;
 	}
 	
-	public final Type getUnboxedType()	{ return Type.getRealType(getEnclosedType(), wrapped_field.type); }
+	public final Type getUnboxedType()	{
+		Field wf = wrapped_field;
+		if (wf == null)
+			return getEnclosedType();
+		return Type.getRealType(getEnclosedType(), wf.type);
+	}
 	
 	public Struct getStruct()				{ return getEnclosedType().getStruct(); }
 	public MNode getMeta(String name)		{ return getEnclosedType().getMeta(name); }

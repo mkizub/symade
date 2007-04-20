@@ -247,7 +247,7 @@ public final class IFldExpr extends LvalueExpr {
 			foreach (TVar tv; ot.bindings().tvars; tv.var.name == name) {
 				return ot.resolve(tv.var);
 			}
-			return new ASTNodeType(var.type.getStruct());
+			return new ASTNodeType(var.type);
 		} else {
 			return Type.getRealType(ot,var.type);
 		}

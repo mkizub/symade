@@ -19,12 +19,11 @@ import kiev.transf.*;
 import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 
-//typedef type@ kiev.stdlib.PVar<type>;
-//typedef type& kiev.stdlib.Ref<type>;
+typedef type⊛ kiev.stdlib._wrapper_<type>;
+typedef type@ kiev.stdlib.PVar<type>⊛;
+typedef type& kiev.stdlib.Ref<type>;
 //typedef type| kiev.stdlib.List<type>;
-
-//typedef ()->kiev.vlang.ASTNode FN;
-//typedef ()->kiev.vlang.ENode FE;
+typedef type∅ kiev.vlang.NodeSpace<type>;
 
 operator "X ?= X" , 5;
 operator "X @= X" , 5;

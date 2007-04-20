@@ -478,6 +478,7 @@ public class Env extends Struct {
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.k.ReInit(bis);
 			FileUnit fu = Kiev.k.FileUnit(filename);
+			fu.scanned_for_interface_only = true;
 			Env.root.files += fu;
 			diff_time = System.currentTimeMillis() - curr_time;
 			bis.close();
@@ -562,7 +563,9 @@ public class Env extends Struct {
 		TypeDecl root = (TypeDecl)handler.root;
 		if (!root.isAttached()) {
 			FileUnit fu = new FileUnit(root.qname()+".xml", null);
+			fu.scanned_for_interface_only = true;
 			fu.members += root;
+			Env.root.files += fu;
 		}
 		Kiev.runProcessorsOn(root);
 		return root;
