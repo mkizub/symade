@@ -19,14 +19,7 @@ import kiev.transf.*;
 import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 
-typedef type⊛ kiev.stdlib._wrapper_<type>;
-typedef type@ kiev.stdlib.PVar<type>⊛;
-typedef type& kiev.stdlib.Ref<type>;
-//typedef type| kiev.stdlib.List<type>;
 typedef type∅ kiev.vlang.NodeSpace<type>;
-
-operator "X ?= X" , 5;
-operator "X @= X" , 5;
 
 operator ≡ , xfx, 60;	// == equiv
 operator ≢ , xfx, 60;	// !=

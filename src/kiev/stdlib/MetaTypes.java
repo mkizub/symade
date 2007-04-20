@@ -38,6 +38,21 @@ public metatype any {
 	@macro @native @CompilerNode("Cmp")
 	public static boolean ref_neq(Object o1, Object o2) operator "V != V" ;
 
+	@macro @native @CompilerNode("Set")
+	public static <L extends Object, R extends L> R ref_assign(L lval, R val) operator "V = V" continue "kiev.vlang.Globals:ref_assign";
+
+	@macro @native @CompilerNode("Set")
+	public static <L extends Object, R extends L> R ref_assign2(L lval, R val) operator "V := V" continue "kiev.vlang.Globals:ref_assign2";
+
+	@macro @native @CompilerNode("Set")
+	public static <L extends Object, R extends L> R@ ref_pvar_init(L@ lval, R@ val) operator "V := V" continue "kiev.vlang.Globals:ref_pvar_init";
+
+	@macro @CompilerNode("RuleIstheExpr")
+	public static boolean ref_pvar_is_the(Object@ lval, Object val) operator "V ?= V" continue "kiev.vlang.Globals:ref_pvar_is_the";
+
+	@macro @CompilerNode("RuleIsoneofExpr")
+	public static boolean ref_pvar_is_one_of(Object@ lval, Object val) operator "V @= V" continue "kiev.vlang.Globals:ref_pvar_is_one_of";
+
 }
 
 @uuid("ec98468f-75f6-3811-ab77-6b0a8458b3ad")
@@ -83,7 +98,7 @@ public metatype boolean extends any {
 
 	@macro @native @CompilerNode("Not")
 	public static boolean bool_not(boolean b1) alias fy operator ! ;
-
+/*
 	@macro @CompilerNode("Cmp")
 	public boolean equals(boolean val)
 	{
@@ -113,6 +128,7 @@ public metatype boolean extends any {
 	{
 		case CallExpr# self(): new Boolean(this).hashCode()
 	}
+*/
 }
 
 @uuid("7713311e-809c-30f7-964a-3d28beb7aab3")

@@ -21,15 +21,6 @@ import syntax kiev.Syntax;
 
 public metatype Globals extends any {
 
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R ref_assign(L lval, R val) operator "V = V";
-
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R ref_assign2(L lval, R val) operator "V := V";
-
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R@ ref_pvar_init(L@ lval, R@ val) operator "V := V";
-
 	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) operator "V = V"
 	{
@@ -56,12 +47,6 @@ public metatype Globals extends any {
 		case AssignExpr# self():
 			(self.lval).$bind(self.value)
 	}
-
-	@macro @CompilerNode("RuleIstheExpr")
-	public static boolean ref_pvar_is_the(Object@ lval, Object val) operator "V ?= V" ;
-
-	@macro @CompilerNode("RuleIsoneofExpr")
-	public static boolean ref_pvar_is_one_of(Object@ lval, Object val) operator "V @= V" ;
 
 }
 

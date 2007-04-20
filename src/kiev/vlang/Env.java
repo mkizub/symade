@@ -419,8 +419,12 @@ public class Env extends Struct {
 		// Load if not loaded or not resolved
 		if (cl == null)
 			cl = jenv.loadClazz(qname);
-		else if (!cl.isTypeDeclLoaded() && cl instanceof Struct && !cl.isAnonymouse())
-			cl = jenv.loadClazz((Struct)cl);
+		else if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse()) {
+			if (cl instanceof Struct)
+				cl = jenv.loadClazz((Struct)cl);
+			else
+				cl = jenv.loadClazz(cl.qname());
+		}
 		if (cl == null)
 			classHashOfFails.put(qname);
 		return cl;
@@ -435,8 +439,12 @@ public class Env extends Struct {
 		if (!Compiler.makeall_project && Env.projectHash.get(cl.qname()) != null)
 			loadTypeDeclFromProject(cl.qname());
 		// Load if not loaded or not resolved
-		if (!cl.isTypeDeclLoaded() && cl instanceof Struct && !cl.isAnonymouse())
-			jenv.loadClazz((Struct)cl);
+		if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse()) {
+			if (cl instanceof Struct)
+				jenv.loadClazz((Struct)cl);
+			else
+				jenv.loadClazz(cl.qname());
+		}
 		return cl;
 	}
 	

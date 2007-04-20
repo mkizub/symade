@@ -115,8 +115,14 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			if (s.getMeta(mnNode) != null) {
 				UserMeta m = s.getMeta(mnNode);
 				String name = m.getS("name");
-				if (name != null && name.length() > 0)
-					TypeExpr.AllNodes.put(name,s);
+				if (name != null && name.length() > 0) {
+					TypeExpr.NodeSpec ns = TypeExpr.AllNodes.get(name);
+					if (ns == null)
+						ns = new TypeExpr.NodeSpec(null,s);
+					else
+						ns = new TypeExpr.NodeSpec(ns.c,s);
+					TypeExpr.AllNodes.put(name,ns);
+				}
 			}
 
 			// Check fields of the @node

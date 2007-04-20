@@ -1297,6 +1297,9 @@ public final view RStruct of Struct extends RTypeDecl {
 				if( m.isStatic() ) continue;
 
 				Block initbody = m.body;
+				
+				if (initbody == null)
+					continue; // API class loaded?
 
 				boolean gen_def_constr = false;
 				if (initbody.stats.length == 0) {

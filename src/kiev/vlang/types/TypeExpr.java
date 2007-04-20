@@ -22,7 +22,29 @@ public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	public static final Hashtable<String,Struct>	AllNodes = new Hashtable<String,Struct>(256);
+	public static class NodeSpec {
+		public final Class	c;
+		public final Struct	s;
+		public NodeSpec(Class c, Struct s) {
+			this.c = c;
+			this.s = s;
+		}
+	}
+	public static final Hashtable<String,NodeSpec>	AllNodes;
+	static {
+		AllNodes = new Hashtable<String,NodeSpec>(256);
+		AllNodes.put("StrConcat",			new NodeSpec(StringConcatExpr.class,null));
+		AllNodes.put("Set",					new NodeSpec(AssignExpr.class,null));
+		AllNodes.put("InstanceOf",			new NodeSpec(InstanceofExpr.class,null));
+		AllNodes.put("RuleIstheExpr",		new NodeSpec(RuleIstheExpr.class,null));
+		AllNodes.put("RuleIsoneofExpr",		new NodeSpec(RuleIsoneofExpr.class,null));
+		AllNodes.put("UnaryOp",				new NodeSpec(UnaryExpr.class,null));
+		AllNodes.put("BinOp",				new NodeSpec(BinaryExpr.class,null));
+		AllNodes.put("Cmp",					new NodeSpec(BinaryBoolExpr.class,null));
+		AllNodes.put("Or",					new NodeSpec(BinaryBooleanOrExpr.class,null));
+		AllNodes.put("And",					new NodeSpec(BinaryBooleanAndExpr.class,null));
+		AllNodes.put("Not",					new NodeSpec(BooleanNotExpr.class,null));
+	}
 
 	@virtual typedef This  = TypeExpr;
 
@@ -69,10 +91,10 @@ public class TypeExpr extends TypeRef {
 			this.op = op;
 		}
 		if (op == Operator.PostTypeAST) {
-			Struct s = AllNodes.get(arg.toString());
-			if (s != null) {
-				arg.lnk = s.xtype;
-				this.lnk = new ASTNodeType(s.xtype);
+			NodeSpec ns = AllNodes.get(arg.toString());
+			if (ns != null && ns.s != null) {
+				arg.lnk = ns.s.xtype;
+				this.lnk = new ASTNodeType(ns.s.xtype);
 				return this.lnk;
 			}
 			Type tp = new ASTNodeType(arg.getType());

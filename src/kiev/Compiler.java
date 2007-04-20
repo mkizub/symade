@@ -278,6 +278,8 @@ stop:;
 			for(int i=0; i < Env.root.files.length; i++) {
 				final int errCount = this.errCount;
 				final FileUnit fu = Env.root.files[i];
+				if (fu.scanned_for_interface_only)
+					continue; // don't run back-end on interface (API) files
 				Transaction tr = Transaction.open();
 				try {
 					Kiev.resetBackEndPass();

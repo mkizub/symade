@@ -31,6 +31,19 @@ public final class CoreExpr extends ENode {
 	
 	public CoreExpr() {}
 	
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "ident") {
+			String id = this.ident;
+			if (id != null) {
+				this.core_func = CoreFunc.coreFuncs.get(id);
+				this.bend_func = BEndFunc.coreFuncs.get(id);
+			} else {
+				this.core_func = null;
+				this.bend_func = null;
+			}
+		}
+	}
+
 	public Method getMethod() {
 		ANode p = parent();
 		if (p instanceof Method)
@@ -38,11 +51,6 @@ public final class CoreExpr extends ENode {
 		return null;
 	}
 	
-//	public void attachToCompiler() {
-//		CoreFunc.attachToCompiler(this);
-//		BEndFunc.attachToBackend(this);
-//	}
-
 	public ConstExpr calc(ENode expr) {
 		return core_func.calc(expr);
 	}
@@ -51,8 +59,6 @@ public final class CoreExpr extends ENode {
 		CoreExpr ce = new CoreExpr();
 		ce.pos = pos;
 		ce.ident = name;
-		ce.core_func = CoreFunc.coreFuncs.get(name);
-		ce.bend_func = BEndFunc.coreFuncs.get(name);
 		return ce;
 	}
 }

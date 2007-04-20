@@ -940,10 +940,13 @@ public final class KievBE_Generate extends BackendProcessor {
 
 	public void process(ASTNode node, Transaction tr) {
 		if (node instanceof FileUnit) {
+			FileUnit fu = (FileUnit)node;
+			if (fu.scanned_for_interface_only)
+				return;
 			tr = Transaction.enter(tr);
 			try {
 				try {
-					((JFileUnit)(FileUnit)node).generate();
+					((JFileUnit)fu).generate();
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			} finally { tr.leave(); }
 		}
@@ -960,9 +963,14 @@ public final class ExportBE_Generate extends BackendProcessor {
 	public String getDescr() { "Source generation" }
 
 	public void process(ASTNode node, Transaction tr) {
-		try {
-			dumpSrc((FileUnit)node);
-		} catch (Exception rte) { Kiev.reportError(rte); }
+		if (node instanceof FileUnit) {
+			FileUnit fu = (FileUnit)node;
+			if (fu.scanned_for_interface_only)
+				return;
+			try {
+				dumpSrc(fu);
+			} catch (Exception rte) { Kiev.reportError(rte); }
+		}
 	}
 
 	public void dumpSrc(FileUnit fu) {

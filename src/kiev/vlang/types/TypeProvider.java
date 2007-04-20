@@ -188,7 +188,7 @@ public final class CoreMetaType extends MetaType {
 		tdecl.sname = name;
 		tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
 		tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-		tdecl.setTypeDeclLoaded(true);
+		//tdecl.setTypeDeclLoaded(true);
 		tdecl.xmeta_type = this;
 		tdecl.package_clazz.dnode.sub_decls.add(tdecl);
 		if (super_type != null)
