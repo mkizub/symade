@@ -57,6 +57,7 @@ public abstract class ANode implements INode {
 	@virtual typedef This  ≤ ANode;
 
 	public static final ANode[] emptyArray = new ANode[0];
+	private static final AttrSlot[] $values = AttrSlot.emptyArray;
 
 	public:ro @virtual @abstract ANode			ctx_root;
 	public:ro @virtual @abstract FileUnit		ctx_file_unit;
@@ -171,7 +172,7 @@ public abstract class ANode implements INode {
 	@getter public Method get$child_ctx_method() { return this.parent().get$child_ctx_method(); }
 
 	public AttrSlot[] values() {
-		return AttrSlot.emptyArray;
+		return ANode.$values;
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
@@ -746,7 +747,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public static final RefAttrSlot_parent nodeattr$parent = new RefAttrSlot_parent("parent", TypeInfo.newTypeInfo(ANode.class,null));
 
-	private static final AttrSlot[] $values = {nodeattr$this,nodeattr$parent};
+	private static final AttrSlot[] $values = {/*nodeattr$this,*/nodeattr$parent};
 
 	public int						pos;
 	public int						compileflags;

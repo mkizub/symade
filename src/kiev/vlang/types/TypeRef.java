@@ -49,19 +49,30 @@ public class TypeRef extends ENode {
 		this.lnk = tp;
 	}
 	
+	private TypeRef(ASTNodeType tp) {
+		this.ident = tp.toString();
+		//this.symbol = tp.meta_type.tdecl;
+		this.lnk = tp;
+	}
+	
 	public static TypeRef newTypeRef(Type tp)
 		alias lfy operator new
 	{
 		if (tp instanceof CoreType)
 			return new TypeRef((CoreType)tp);
-		if (tp instanceof ASTNodeType)
-			return new TypeExpr(newTypeRef(tp.getStruct().xtype),Operator.PostTypeAST);
+		if (tp instanceof ASTNodeType) {
+			String name = ((ASTNodeMetaType)tp.meta_type).name;
+			if (name != null)
+				return new TypeExpr(new TypeNameRef(name),Operator.PostTypeAST,tp);
+			return new TypeRef((ASTNodeType)tp);
+			//return new TypeExpr(newTypeRef(tp.getStruct().xtype),Operator.PostTypeAST);
+		}
 		if (tp instanceof ArgType)
 			return new TypeRef((ArgType)tp);
 		if (tp instanceof ArrayType)
-			return new TypeExpr(newTypeRef(tp.arg), Operator.PostTypeArray);
+			return new TypeExpr(newTypeRef(tp.arg), Operator.PostTypeArray, tp);
 		if (tp instanceof WrapperType)
-			return new TypeExpr(newTypeRef(tp.getEnclosedType()), Operator.PostTypeWrapper);
+			return new TypeExpr(newTypeRef(tp.getEnclosedType()), Operator.PostTypeWrapper, tp);
 		if (tp instanceof CompaundType || tp instanceof XType)
 			return new TypeNameRef(tp);
 		if (tp instanceof CallType)
@@ -75,6 +86,8 @@ public class TypeRef extends ENode {
 			if (lnk == null)
 				return false;
 			if (lnk instanceof ArgType)
+				return false;
+			if (lnk instanceof ASTNodeType)
 				return false;
 			return true;
 		}

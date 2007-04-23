@@ -99,8 +99,7 @@ public interface StdTypes {
 	public static final ArgType    tpArrayArg;
 	public static final XType      tpVararg;
 	public static final ArgType		tpVarargArg;
-	public static final ASTNodeType	tpASTNodeType;
-	public static final ArgType		tpASTNodeTypeArg;
+	public static final TypeDecl	tdASTNodeType;
 
 	public static final ArgType    tpWrapperArg;
 	public static final TypeConstr tdWrapperArg;
@@ -187,7 +186,7 @@ public interface StdTypes {
 		tpVararg				= (XType)tdVararg.xtype;
 		//tpVararg.flags			|= flResolved | flReference | flArray;
 
-		TypeDecl tdASTNodeType = Env.newMetaType(new Symbol<MetaTypeDecl>("_astnode_"),kiev_stdlib,false,"3e32f9c7-9846-393e-8c6e-11512191ec94");
+		tdASTNodeType = Env.newMetaType(new Symbol<MetaTypeDecl>("_astnode_"),kiev_stdlib,false,"3e32f9c7-9846-393e-8c6e-11512191ec94");
 		tdASTNodeType.setPublic();
 		tdASTNodeType.setMacro(true);
 		tdASTNodeType.setFinal(true);
@@ -195,12 +194,10 @@ public interface StdTypes {
 		TypeConstr tdASTNodeTypeArg = new TypeConstr("_node_", tpObject);
 		tdASTNodeTypeArg.setAbstract(true);
 		tdASTNodeType.args += tdASTNodeTypeArg;
+		ArgType tpASTNodeTypeArg;
 		tpASTNodeTypeArg = tdASTNodeTypeArg.getAType();
 		tpASTNodeTypeArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		tdASTNodeType.super_types += new TypeRef(StdTypes.tpAny);
-		tdASTNodeType.xmeta_type = new ASTNodeMetaType(tdASTNodeType);
-		tdASTNodeType.xtype = new ASTNodeType(tpASTNodeTypeArg);
-		tpASTNodeType = (ASTNodeType)tdASTNodeType.xtype;
 
 		Struct tpBooleanRefClazz = Env.newStruct("Boolean",java_lang,ACC_PUBLIC,new JavaClass());
 		tpBooleanRef			= (CompaundType)tpBooleanRefClazz.xtype;

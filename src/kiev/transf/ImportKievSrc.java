@@ -106,8 +106,8 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				return;
 			}
 			n = node;
-			if (node instanceof Struct)
-				scope = (Struct)node;
+			if (n instanceof Struct)
+				scope = (Struct)n;
 		} while (dot > 0);
 		if		(astn.mode == Import.ImportMode.IMPORT_CLASS && !(n instanceof Struct))
 			Kiev.reportError(astn,"Identifier "+name+" is not a class or package");

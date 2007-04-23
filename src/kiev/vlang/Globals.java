@@ -24,27 +24,27 @@ public metatype Globals extends any {
 	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) operator "V = V"
 	{
-		case AssignExpr# self():
+		case Set# self():
 			self.lval = (self.value).get$$var()
-		case CallExpr# self():
+		case Call# self():
 			lval = (val).get$$var()
 	}
 
 	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R val) operator "V = V"
 	{
-		case CallExpr# self():
+		case Call# self():
 			(lval).$bind(val)
-		case AssignExpr# self():
+		case Set# self():
 			(self.lval).$bind(self.value)
 	}
 
 	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R@ val) operator "V = V"
 	{
-		case CallExpr# self():
+		case Call# self():
 			(lval).$bind(val)
-		case AssignExpr# self():
+		case Set# self():
 			(self.lval).$bind(self.value)
 	}
 

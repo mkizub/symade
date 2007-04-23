@@ -432,19 +432,19 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		UserMeta m = (UserMeta)this.getMeta("kiev.stdlib.meta.CompilerNode");
 		if (m == null)
 			return;
-		TypeExpr.NodeSpec ns = TypeExpr.AllNodes.get(m.getS("value"));
-		if (ns == null || ns.c == null) {
+		Class cls = ASTNodeMetaType.allNodes.get(m.getS("value"));
+		if (cls == null) {
 			Kiev.reportWarning(expr,"Compiler node '"+m.getS("value")+"' does not exists");
 			return;
 		}
-		if (expr.getClass() == ns.c)
+		if (expr.getClass() == cls)
 			return;
 		ENode[] args = expr.getArgs();
 		if (args == null) {
-			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+ns.c);
+			Kiev.reportError(expr, "Don't know how to normalize "+expr.getClass()+" into "+cls);
 			return;
 		}
-		ENode en = (ENode)ns.c.newInstance();
+		ENode en = (ENode)cls.newInstance();
 		foreach (ENode e; args)
 			e.detach();
 		Operator op = expr.getOp();
@@ -593,6 +593,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				ArgType arg = this.targs[a].getAType();
 				set.append(arg, bound);
 				a++;
+				if (a >= targs.length)
+					break;
 			}
 			if (a > 0)
 				rt = (CallType)rt.rebind(set);

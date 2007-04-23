@@ -1004,22 +1004,26 @@ Import Import(ASTModifiers modifiers) :
 		imp.name = QName()
 		[	"." "*" { imp.star = true; }
 		|	"("		{ imp.of_method = true; }
-			imp.args += Type()
-			(
-				","
+			[
 				imp.args += Type()
-			)*
+				(
+					","
+					imp.args += Type()
+				)*
+			]
 			")"
 		]
 	|
 		imp.name = QName()
 		[	"." "*" { imp.star = true; }
 		|	"("		{ imp.of_method = true; }
-			imp.args += Type()
-			(
-				","
+			[
 				imp.args += Type()
-			)*
+				(
+					","
+					imp.args += Type()
+				)*
+			]
 			")"
 		]
 	)
@@ -1039,7 +1043,7 @@ TypeDecl Typedef(ASTModifiers modifiers) :
 		tr = Type()
 		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
 	|
-		LOOKAHEAD(3, <IDENTIFIER> (TypeOperatorChar()|<OPERATOR_LRBRACKETS>|"...") <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
+		LOOKAHEAD(3, <IDENTIFIER> (TypeOperatorChar()|<OPERATOR_LRBRACKETS>|"...") <IDENTIFIER>)
 		{ n = new TypeOpDef(); }
 		id     = Name()		{ n.arg = mkTypeAssign(id, new ASTModifiers()); }
 		(	n.op = Operator()

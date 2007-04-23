@@ -111,19 +111,6 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			doProcess(sub);
 		if (isNodeKind(s)) {
 			s.setCompilerNode(true);
-			// add node name to global map of compiler nodes
-			if (s.getMeta(mnNode) != null) {
-				UserMeta m = s.getMeta(mnNode);
-				String name = m.getS("name");
-				if (name != null && name.length() > 0) {
-					TypeExpr.NodeSpec ns = TypeExpr.AllNodes.get(name);
-					if (ns == null)
-						ns = new TypeExpr.NodeSpec(null,s);
-					else
-						ns = new TypeExpr.NodeSpec(ns.c,s);
-					TypeExpr.AllNodes.put(name,ns);
-				}
-			}
 
 			// Check fields of the @node
 			foreach (Field n; s.getAllFields())
@@ -182,17 +169,6 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 					Kiev.reportError(f,"Field "+f.ctx_tdecl+"."+f+" may not have initializer");
 				if (!isArr)
 					f.setVirtual(true);
-			}
-			Struct fts = f.type.getStruct();
-			if (fts != null) {
-				TypeDef td = new TypeAssign(
-					"attr$"+f.sname+"$type",
-					new TypeRef(new ASTNodeType(f.type)));
-				td.setSynthetic(true);
-				Struct clazz = (Struct)f.ctx_tdecl;
-				clazz.members.append(td);
-				if (clazz.ameta_type != null)
-					clazz.ameta_type.version++;
 			}
 		}
 		else if !(f.isStatic()) {

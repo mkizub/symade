@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.stdlib;
 
-import kiev.vlang.NewExpr;
-import kiev.vlang.CallExpr;
 import syntax kiev.stdlib.Syntax;
 
 
@@ -98,37 +96,36 @@ public metatype boolean extends any {
 
 	@macro @native @CompilerNode("Not")
 	public static boolean bool_not(boolean b1) alias fy operator ! ;
-/*
+
 	@macro @CompilerNode("Cmp")
 	public boolean equals(boolean val)
 	{
-		case CallExpr# self(): this == val
+		case Call# self(): this == val
 	}
 
 	@macro
 	public Class getClass()
 	{
-		case CallExpr# self(): Boolean.TYPE
+		case Call# self(): Boolean.TYPE
 	}
 
 	@macro
 	public boolean clone()
 	{
-		case CallExpr# self(): this
+		case Call# self(): this
 	}
 
 	@macro
 	public String toString()
 	{
-		case CallExpr# self(): String.valueOf(this)
+		case Call# self(): String.valueOf(this)
 	}
 
 	@macro
 	public int hashCode()
 	{
-		case CallExpr# self(): new Boolean(this).hashCode()
+		case Call# self(): new Boolean(this).hashCode()
 	}
-*/
 }
 
 @uuid("7713311e-809c-30f7-964a-3d28beb7aab3")
@@ -139,31 +136,31 @@ public metatype char extends any {
 	@macro @CompilerNode("Cmp")
 	public boolean equals(char val)
 	{
-		case CallExpr# self(): this == val
+		case Call# self(): this == val
 	}
 
 	@macro
 	public Class getClass()
 	{
-		case CallExpr# self(): Character.TYPE
+		case Call# self(): Character.TYPE
 	}
 
 	@macro
 	public char clone()
 	{
-		case CallExpr# self(): this
+		case Call# self(): this
 	}
 
 	@macro
 	public String toString()
 	{
-		case CallExpr# self(): String.valueOf(this)
+		case Call# self(): String.valueOf(this)
 	}
 
 	@macro
 	public int hashCode()
 	{
-		case CallExpr# self(): new Character(this).hashCode()
+		case Call# self(): new Character(this).hashCode()
 	}
 }
 
@@ -181,31 +178,31 @@ public metatype byte extends any {
 	@macro @CompilerNode("Cmp")
 	public boolean equals(byte val)
 	{
-		case CallExpr# self(): this == val
+		case Call# self(): this == val
 	}
 
 	@macro
 	public Class getClass()
 	{
-		case CallExpr# self(): Byte.TYPE
+		case Call# self(): Byte.TYPE
 	}
 
 	@macro
 	public byte clone()
 	{
-		case CallExpr# self(): this
+		case Call# self(): this
 	}
 
 	@macro
 	public String toString()
 	{
-		case CallExpr# self(): String.valueOf(this)
+		case Call# self(): String.valueOf(this)
 	}
 
 	@macro
 	public int hashCode()
 	{
-		case CallExpr# self(): new Byte(this).hashCode()
+		case Call# self(): new Byte(this).hashCode()
 	}
 }
 
@@ -223,31 +220,31 @@ public metatype short extends any {
 	@macro @CompilerNode("Cmp")
 	public boolean equals(short val)
 	{
-		case CallExpr# self(): this == val
+		case Call# self(): this == val
 	}
 
 	@macro
 	public Class getClass()
 	{
-		case CallExpr# self(): Short.TYPE
+		case Call# self(): Short.TYPE
 	}
 
 	@macro
 	public short clone()
 	{
-		case CallExpr# self(): this
+		case Call# self(): this
 	}
 
 	@macro
 	public String toString()
 	{
-		case CallExpr# self(): String.valueOf(this)
+		case Call# self(): String.valueOf(this)
 	}
 
 	@macro
 	public int hashCode()
 	{
-		case CallExpr# self(): new Short(this).hashCode()
+		case Call# self(): new Short(this).hashCode()
 	}
 }
 
@@ -364,31 +361,31 @@ public metatype int extends any {
 	@macro @CompilerNode("Cmp")
 	public boolean equals(int val)
 	{
-		case CallExpr# self(): this == val
+		case Call# self(): this == val
 	}
 
 	@macro
 	public Class getClass()
 	{
-		case CallExpr# self(): Integer.TYPE
+		case Call# self(): Integer.TYPE
 	}
 
 	@macro
 	public int clone()
 	{
-		case CallExpr# self(): this
+		case Call# self(): this
 	}
 
 	@macro
 	public String toString()
 	{
-		case CallExpr# self(): String.valueOf(this)
+		case Call# self(): String.valueOf(this)
 	}
 
 	@macro
 	public int hashCode()
 	{
-		case CallExpr# self(): new Integer(this).hashCode()
+		case Call# self(): new Integer(this).hashCode()
 	}
 }
 
@@ -407,13 +404,13 @@ public metatype long extends any {
 	public long assign_bit_xor(long val) alias lfy operator ^= ;
 
 	@macro @native @CompilerNode("Set")
-	public long assign_left_shift(long val) alias lfy operator <<= ;
+	public long assign_left_shift(int val) alias lfy operator <<= ;
 
 	@macro @native @CompilerNode("Set")
-	public long assign_right_shift(long val) alias lfy operator >>= ;
+	public long assign_right_shift(int val) alias lfy operator >>= ;
 
 	@macro @native @CompilerNode("Set")
-	public long assign_unsigned_right_shift(long val) alias lfy operator >>>= ;
+	public long assign_unsigned_right_shift(int val) alias lfy operator >>>= ;
 
 	@macro @native @CompilerNode("Set")
 	public long assign_add(long val) alias lfy operator += ;
@@ -505,31 +502,31 @@ public metatype long extends any {
 	@macro @CompilerNode("Cmp")
 	public boolean equals(long val)
 	{
-		case CallExpr# self(): this == val
+		case Call# self(): this == val
 	}
 
 	@macro
 	public Class getClass()
 	{
-		case CallExpr# self(): Long.TYPE
+		case Call# self(): Long.TYPE
 	}
 
 	@macro
 	public long clone()
 	{
-		case CallExpr# self(): this
+		case Call# self(): this
 	}
 
 	@macro
 	public String toString()
 	{
-		case CallExpr# self(): String.valueOf(this)
+		case Call# self(): String.valueOf(this)
 	}
 
 	@macro
 	public int hashCode()
 	{
-		case CallExpr# self(): new Long(this).hashCode()
+		case Call# self(): new Long(this).hashCode()
 	}
 }
 
@@ -595,31 +592,31 @@ public metatype float extends any {
 	@macro @CompilerNode("Cmp")
 	public boolean equals(float val)
 	{
-		case CallExpr# self(): this == val
+		case Call# self(): this == val
 	}
 
 	@macro
 	public Class getClass()
 	{
-		case CallExpr# self(): Float.TYPE
+		case Call# self(): Float.TYPE
 	}
 
 	@macro
 	public float clone()
 	{
-		case CallExpr# self(): this
+		case Call# self(): this
 	}
 
 	@macro
 	public String toString()
 	{
-		case CallExpr# self(): String.valueOf(this)
+		case Call# self(): String.valueOf(this)
 	}
 
 	@macro
 	public int hashCode()
 	{
-		case CallExpr# self(): new Float(this).hashCode()
+		case Call# self(): new Float(this).hashCode()
 	}
 }
 
@@ -685,31 +682,31 @@ public metatype double extends any {
 	@macro @CompilerNode("Cmp")
 	public boolean equals(double val)
 	{
-		case CallExpr# self(): this == val
+		case Call# self(): this == val
 	}
 
 	@macro
 	public Class getClass()
 	{
-		case CallExpr# self(): Double.TYPE
+		case Call# self(): Double.TYPE
 	}
 
 	@macro
 	public double clone()
 	{
-		case CallExpr# self(): this
+		case Call# self(): this
 	}
 
 	@macro
 	public String toString()
 	{
-		case CallExpr# self(): String.valueOf(this)
+		case Call# self(): String.valueOf(this)
 	}
 
 	@macro
 	public int hashCode()
 	{
-		case CallExpr# self(): new Double(this).hashCode()
+		case Call# self(): new Double(this).hashCode()
 	}
 }
 

@@ -213,21 +213,55 @@ public final class CoreMetaType extends MetaType {
 
 public final class ASTNodeMetaType extends MetaType {
 
-	private TVarSet			templ_bindings;
-
-	public static ASTNodeMetaType instance(Type tp) {
-		TypeDecl td = tp.meta_type.tdecl;
-		if (td.ameta_type == null)
-			td.ameta_type = new ASTNodeMetaType(td);
-		return td.ameta_type;
+	public static Hashtable<Class,ASTNodeMetaType> allASTNodeMetaTypes;
+	public static final Hashtable<String,Class>	allNodes;
+	static {
+		allASTNodeMetaTypes = new Hashtable<Class,ASTNodeMetaType>();
+		allNodes = new Hashtable<String,Class>(256);
+		allNodes.put("Field",				Field.class);
+		allNodes.put("StrConcat",			StringConcatExpr.class);
+		allNodes.put("Set",					AssignExpr.class);
+		allNodes.put("SetAccess",			ContainerAccessExpr.class);
+		allNodes.put("InstanceOf",			InstanceofExpr.class);
+		allNodes.put("RuleIstheExpr",		RuleIstheExpr.class);
+		allNodes.put("RuleIsoneofExpr",		RuleIsoneofExpr.class);
+		allNodes.put("UnaryOp",				UnaryExpr.class);
+		allNodes.put("BinOp",				BinaryExpr.class);
+		allNodes.put("Cmp",					BinaryBoolExpr.class);
+		allNodes.put("Or",					BinaryBooleanOrExpr.class);
+		allNodes.put("And",					BinaryBooleanAndExpr.class);
+		allNodes.put("Not",					BooleanNotExpr.class);
+		allNodes.put("Call",				CallExpr.class);
+		allNodes.put("ENode",				ENode.class);
+		allNodes.put("IFld",				IFldExpr.class);
 	}
 
-	@getter
-	public final TypeDecl get$clazz() { return this.tdecl; }
 
-	ASTNodeMetaType(TypeDecl td) {
-		super(td);
+	final public Class			clazz;
+	final public String			name;
+
+	private AttrSlot[]		values;
+	private TypeAssign[]	types;
+	private Field[]			fields;
+	private TVarSet			templ_bindings;
+
+	public static ASTNodeMetaType instance(Class clazz) {
+		ASTNodeMetaType mt = allASTNodeMetaTypes.get(clazz);
+		if (mt != null)
+			return mt;
+		mt = new ASTNodeMetaType(clazz);
+		return mt;
+	}
+
+	ASTNodeMetaType(Class clazz) {
+		super(StdTypes.tdASTNodeType);
 		this.templ_bindings = TVarSet.emptySet;
+		this.clazz = clazz;
+		allASTNodeMetaTypes.put(clazz,this);
+		foreach (String key; allNodes.keys(); clazz.equals(allNodes.get(key))) {
+			this.name = key;
+			break;
+		}
 	}
 
 	public Type[] getMetaSupers(Type tp) {
@@ -235,7 +269,7 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 
 	public boolean checkTypeVersion(int version) {
-		return this.version == version && clazz.type_decl_version == version;
+		return this.version == version;
 	}
 	
 	public Type make(TVSet bindings) {
@@ -252,32 +286,54 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 
 	public TVarSet getTemplBindings() {
-		if (this.version != clazz.type_decl_version)
+		if (this.version != 1)
 			makeTemplBindings();
 		return templ_bindings;
 	}
 
 	private void makeTemplBindings() {
+		if (ANode.class.isAssignableFrom(clazz)) {
+			Class sup = clazz.getSuperclass();
+			ASTNodeMetaType ast_sup;
+			if (sup != null)
+				ast_sup = ASTNodeMetaType.instance(sup);
+			else
+				ast_sup = ASTNodeMetaType.instance(Object.class);
+			ast_sup.getTemplBindings();
+			java.lang.reflect.Field rf = clazz.getDeclaredField("$values");
+			rf.setAccessible(true);
+			this.values = (AttrSlot[])rf.get(null);
+			this.types = new TypeAssign[values.length];
+			this.fields = new Field[values.length];
+			int n = values.length - ast_sup.values.length;
+			for (int i=0; i < values.length; i++) {
+				if (i < n ) {
+					AttrSlot a = values[i];
+					types[i] = new TypeAssign("attr$"+a.name+"$type", new ASTNodeType(a.clazz));
+					fields[i] = new Field(a.name,new ASTNodeType(a.clazz),ACC_PUBLIC);
+				} else {
+					assert(values[i] == ast_sup.values[i-n]);
+					types[i] = ast_sup.types[i-n];
+					fields[i] = ast_sup.fields[i-n];
+				}
+			}
+		} else {
+			values = AttrSlot.emptyArray;
+			types = new TypeAssign[0];
+			fields = new Field[0];
+		}
 		TVarBld vs = new TVarBld();
-		foreach (TypeAssign ta; clazz.members; ta.sname.matches("attr\\$.*\\$type"))
+		foreach (TypeAssign ta; this.types /*; ta.sname.matches("attr\\$.*\\$type")*/)
 			vs.append(ta.getAType(), null);
-		foreach (TypeRef st; clazz.super_types; st.getType() ≢ null)
-			vs.append(st.getType().bindings());
 		templ_bindings = new TVarSet(vs.close());
-		this.version = clazz.type_decl_version;
+		this.version = 1;
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
-		MetaType@ sup;
-		Type@ tmp;
 	{
-		node @= clazz.members,
+		getTemplBindings(),
+		node @= this.fields,
 		node instanceof Field && info.checkNodeName(node) && info.check(node)
-	;
-		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
-		sup @= clazz.getAllSuperTypes(),
-		tmp ?= sup.make(tp.bindings()),
-		tmp.meta_type.resolveNameAccessR(tmp,node,info)
 	}
 
 	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt) { false }

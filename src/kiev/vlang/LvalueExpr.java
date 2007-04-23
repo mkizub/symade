@@ -176,7 +176,7 @@ public final class AccessExpr extends LvalueExpr {
 
 	public ANode doRewrite(RewriteContext ctx) {
 		Type ot = obj.getType();
-		if (ot instanceof ASTNodeType) {
+		if (ot.getErasedType() instanceof ASTNodeType) {
 			boolean prim = obj.isPrimaryExpr();
 			ANode o = this.obj.doRewrite(ctx);
 			if (!prim)
@@ -242,11 +242,13 @@ public final class IFldExpr extends LvalueExpr {
 
 	public Type getType() {
 		Type ot = obj.getType();
-		if (ot instanceof ASTNodeType) {
+		if (ot.getErasedType() instanceof ASTNodeType) {
 			String name = ("attr$"+var.sname+"$type").intern();
 			foreach (TVar tv; ot.bindings().tvars; tv.var.name == name) {
 				return ot.resolve(tv.var);
 			}
+			if (var.type.getErasedType() instanceof ASTNodeType)
+				return var.type;
 			return new ASTNodeType(var.type);
 		} else {
 			return Type.getRealType(ot,var.type);
@@ -304,7 +306,7 @@ public final class IFldExpr extends LvalueExpr {
 
 	public ANode doRewrite(RewriteContext ctx) {
 		Type ot = obj.getType();
-		if (ot instanceof ASTNodeType) {
+		if (ot.getErasedType() instanceof ASTNodeType) {
 			ANode obj = this.obj.doRewrite(ctx);
 			return (ANode)obj.getVal(this.ident);
 		}

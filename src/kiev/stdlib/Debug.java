@@ -10,7 +10,6 @@
  *******************************************************************************/
 package kiev.stdlib;
 
-import kiev.vlang.CallExpr;
 import syntax kiev.stdlib.Syntax;
 
 /**
@@ -81,7 +80,7 @@ public class Debug {
 	/**
 	 *  trace is a generic tracing/logging method.
 	 *  It uses "log" stream to trace/log program
-	 *  execution.
+	 *  execution.           
 	 *  The message is printed by log.println(String)
 	 *
 	 *  @param	msg		the message to log
@@ -90,7 +89,7 @@ public class Debug {
 	@macro
 	public static void trace(String msg)
 	{
-		case CallExpr# self():
+		case Call# self():
 			if# ($GenTraces)
 				Debug.trace_force(msg)
 			else
@@ -113,7 +112,7 @@ public class Debug {
 	@macro
 	public static void trace(boolean cond, String msg)
 	{
-		case CallExpr# self():
+		case Call# self():
 			if# ($GenTraces)
 				{ if (cond) Debug.trace_force(msg) }
 			else
@@ -253,7 +252,7 @@ public class Debug {
 	@macro
 	public static void assert(boolean cond)
 	{
-		case CallExpr# self():
+		case Call# self():
 			if# ($GenAsserts)
 				{ if (new #AssertEnabledExpr() && ! cond) Debug.assert(); }
 			else
@@ -270,7 +269,7 @@ public class Debug {
 	@macro
 	public static void assert(boolean cond, String msg)
 	{
-		case CallExpr# self():
+		case Call# self():
 			if# ($GenAsserts)
 				{ if (new #AssertEnabledExpr() && ! cond) Debug.assert(msg); }
 			else
@@ -288,7 +287,7 @@ public class Debug {
 	@macro
 	public static void assert(boolean cond, Throwable t)
 	{
-		case CallExpr# self():
+		case Call# self():
 			if# ($GenAsserts)
 				{ if (new #AssertEnabledExpr() && ! cond) Debug.assert(t); }
 			else

@@ -356,8 +356,10 @@ public final class Operator implements Constants {
 		ENode[] args = expr.getArgs();
 		ResInfo info = new ResInfo(expr, this.name, ResInfo.noStatic);
 		Type[] tps = new Type[args.length-1];
-		for (int i=0; i < tps.length; i++)
+		for (int i=0; i < tps.length; i++) {
 			tps[i] = args[i+1].getType();
+			tps[i].checkResolved();
+		}
 		CallType mt = new CallType(args[0].getType(), null, tps, null, false);
 		if (PassInfo.resolveBestMethodR(args[0].getType(),m,info,mt))
 			return (Method)m;

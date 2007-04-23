@@ -368,7 +368,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		 public Type						xtype;
 
 	@ref(ext_data=true) public WrapperMetaType		wmeta_type;
-	@ref(ext_data=true) public ASTNodeMetaType		ameta_type;
 	@ref(ext_data=true) public TypeAssign			ometa_tdef;
 
 	@getter public TypeDecl get$child_ctx_tdecl()	{ return this; }
@@ -746,6 +745,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	{
 		syn @= members,
 		syn instanceof Import,
+		trace( Kiev.debug && Kiev.debugResolve, "In import ("+(info.doImportStar() ? "with star" : "no star" )+"): "+syn),
 		((Import)syn).resolveNameR(node,info)
 	}
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info)

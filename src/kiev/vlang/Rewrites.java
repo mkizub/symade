@@ -118,7 +118,7 @@ public final class RewritePattern extends Var {
 	public Type	getType() { return new ASTNodeType(this); }
 
 	public boolean match(ASTNode node) {
-		if ( ((ASTNodeMetaType)((ASTNodeType)getType()).meta_type).clazz.qname().equals(node.getClass().getName()) )
+		if ( ((ASTNodeMetaType)((ASTNodeType)getType()).meta_type).clazz.equals(node.getClass()) )
 			return true;
 		return false;
 	}

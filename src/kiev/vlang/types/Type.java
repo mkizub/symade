@@ -303,9 +303,7 @@ public final class XType extends Type {
 		return str.toString();
 	}
 
-	public boolean checkResolved() {
-		return true;
-	}
+	public boolean checkResolved() { return meta_type.tdecl.checkResolved(); }
 
 	public boolean isCastableTo(Type t) {
 		if( this ≈ t ) return true;
@@ -330,7 +328,7 @@ public final class CoreType extends Type {
 	}
 	public MNode getMeta(String name)		{ return null; }
 	public Type getErasedType()				{ return this; }
-	public boolean checkResolved()			{ return true; }
+	public boolean checkResolved()			{ return meta_type.tdecl.checkResolved(); }
 	public MetaType[] getAllSuperTypes()	{ return MetaType.emptyArray; }
 	public String toString()				{ return name.toString(); }
 
@@ -438,16 +436,34 @@ public final class CoreType extends Type {
 }
 
 public final class ASTNodeType extends Type {
+	public static ASTNodeType newASTNodeType(Class clazz)
+		alias lfy operator new
+	{
+		return new ASTNodeType(ASTNodeMetaType.instance(clazz), TVarBld.emptySet);
+	}
+
 	public static ASTNodeType newASTNodeType(Type tp)
 		alias lfy operator new
 	{
-		return new ASTNodeType(ASTNodeMetaType.instance(tp), TVarBld.emptySet);
+		Class clazz = null;
+		if      (tp == StdTypes.tpBoolean)   clazz = Boolean.TYPE;
+		else if (tp == StdTypes.tpChar)      clazz = Character.TYPE;
+		else if (tp == StdTypes.tpByte)      clazz = Byte.TYPE;
+		else if (tp == StdTypes.tpShort)     clazz = Short.TYPE;
+		else if (tp == StdTypes.tpInt)       clazz = Integer.TYPE;
+		else if (tp == StdTypes.tpLong)      clazz = Long.TYPE;
+		else if (tp == StdTypes.tpFloat)     clazz = Float.TYPE;
+		else if (tp == StdTypes.tpDouble)    clazz = Double.TYPE;
+		else if (tp instanceof CompaundType) clazz = Class.forName(tp.getJType().toClassForNameString());
+		else
+			throw new RuntimeException("Can't make ASTNodeType for type "+tp);
+		return new ASTNodeType(ASTNodeMetaType.instance(clazz), TVarBld.emptySet);
 	}
 
 	public static ASTNodeType newASTNodeType(RewritePattern rp)
 		alias lfy operator new
 	{
-		ASTNodeMetaType meta_type = ASTNodeMetaType.instance(rp.vtype.getType());
+		ASTNodeMetaType meta_type = (ASTNodeMetaType)rp.vtype.getType().meta_type;
 		TVarBld tvb = new TVarBld();
 		foreach (RewritePattern var; rp.vars) {
 			ASTNodeType ast = newASTNodeType(var);
@@ -466,16 +482,13 @@ public final class ASTNodeType extends Type {
 
 	public MNode getMeta(String name)		{ return null; }
 	public Type getErasedType()				{ return this; }
-	public boolean checkResolved()			{ return true; }
+	public boolean checkResolved()			{ return meta_type.getTemplBindings() != null; }
 	public MetaType[] getAllSuperTypes()	{ return MetaType.emptyArray; }
-	public String toString()				{ return ((ASTNodeMetaType)meta_type).clazz.qname()+"#"; }
+	public String toString()				{ return ((ASTNodeMetaType)meta_type).clazz.getName()+"#"; }
 
 	public JType getJType()					{ throw new RuntimeException("ASTNodeType.getJType()"); }
 	
 	public Struct getStruct() {
-		TypeDecl td = ANode.getVersion(((ASTNodeMetaType)meta_type).clazz);
-		if (td instanceof Struct)
-			return (Struct)td;
 		return null;
 	}
 
@@ -623,6 +636,8 @@ public final class CompaundType extends Type {
 
 public final class ArrayType extends Type {
 
+	private static MetaType[] allSuperTypes = new MetaType[] { tpObject.meta_type, tpCloneable.meta_type };
+	
 	@getter public Type get$arg() { return this.tvars[0].unalias().result(); }
 	
 	public static ArrayType newArrayType(Type type)
@@ -645,10 +660,7 @@ public final class ArrayType extends Type {
 	public MNode getMeta(String name)				{ return null; }
 	
 	public MetaType[] getAllSuperTypes() {
-		return new MetaType[] {
-			tpObject.meta_type,
-			tpCloneable.meta_type
-		};
+		return allSuperTypes;
 	}
 
 	public Type getErasedType() {
@@ -775,6 +787,8 @@ public final class WrapperType extends CTimeType {
 }
 
 public final class CallType extends Type {
+	private static MetaType[] allClosureSuperTypes = new MetaType[] { tpClosure.meta_type };
+
 	public  final int		arity;
 
 	CallType(TVarBld bld, int arity, boolean is_closure)
@@ -886,6 +900,8 @@ public final class CallType extends Type {
 			if( !this.ret().isInstanceOf(ct.ret()) ) return false;
 			return true;
 		}
+		if (this.isReference())
+			return super.isInstanceOf(t);
 		return false;
 	}
 
@@ -945,10 +961,16 @@ public final class CallType extends Type {
 	}
 
 	public boolean checkResolved() {
+		if (this.isReference())
+			return Type.tpClosure.checkResolved();
 		return true;
 	}
 	
-	public MetaType[] getAllSuperTypes() { return MetaType.emptyArray; }
+	public MetaType[] getAllSuperTypes() {
+		if (this.isReference())
+			return allClosureSuperTypes;
+		return MetaType.emptyArray;
+	}
 
 	public Type getErasedType() {
 		if (this.isReference())

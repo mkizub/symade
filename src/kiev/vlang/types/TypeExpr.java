@@ -22,30 +22,6 @@ public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	public static class NodeSpec {
-		public final Class	c;
-		public final Struct	s;
-		public NodeSpec(Class c, Struct s) {
-			this.c = c;
-			this.s = s;
-		}
-	}
-	public static final Hashtable<String,NodeSpec>	AllNodes;
-	static {
-		AllNodes = new Hashtable<String,NodeSpec>(256);
-		AllNodes.put("StrConcat",			new NodeSpec(StringConcatExpr.class,null));
-		AllNodes.put("Set",					new NodeSpec(AssignExpr.class,null));
-		AllNodes.put("InstanceOf",			new NodeSpec(InstanceofExpr.class,null));
-		AllNodes.put("RuleIstheExpr",		new NodeSpec(RuleIstheExpr.class,null));
-		AllNodes.put("RuleIsoneofExpr",		new NodeSpec(RuleIsoneofExpr.class,null));
-		AllNodes.put("UnaryOp",				new NodeSpec(UnaryExpr.class,null));
-		AllNodes.put("BinOp",				new NodeSpec(BinaryExpr.class,null));
-		AllNodes.put("Cmp",					new NodeSpec(BinaryBoolExpr.class,null));
-		AllNodes.put("Or",					new NodeSpec(BinaryBooleanOrExpr.class,null));
-		AllNodes.put("And",					new NodeSpec(BinaryBooleanAndExpr.class,null));
-		AllNodes.put("Not",					new NodeSpec(BooleanNotExpr.class,null));
-	}
-
 	@virtual typedef This  = TypeExpr;
 
 	@att public TypeRef			arg;
@@ -60,7 +36,16 @@ public class TypeExpr extends TypeRef {
 	public TypeExpr(TypeRef arg, Operator op) {
 		this.pos = arg.pos;
 		this.arg = arg;
+		this.op = op;
 		this.ident = op.name;
+	}
+
+	public TypeExpr(TypeRef arg, Operator op, Type lnk) {
+		this.pos = arg.pos;
+		this.arg = arg;
+		this.op = op;
+		this.ident = op.name;
+		this.lnk = lnk;
 	}
 
 	public TypeExpr(TypeRef arg, Token op) {
@@ -91,15 +76,12 @@ public class TypeExpr extends TypeRef {
 			this.op = op;
 		}
 		if (op == Operator.PostTypeAST) {
-			NodeSpec ns = AllNodes.get(arg.toString());
-			if (ns != null && ns.s != null) {
-				arg.lnk = ns.s.xtype;
-				this.lnk = new ASTNodeType(ns.s.xtype);
+			Class cls = ASTNodeMetaType.allNodes.get(arg.toString());
+			if (cls != null) {
+				this.lnk = new ASTNodeType(cls);
 				return this.lnk;
 			}
-			Type tp = new ASTNodeType(arg.getType());
-			this.lnk = tp;
-			return tp;
+			throw new CompilerException(this, "Cannot find ASTNodeType for name: "+arg.toString());
 		}
 		TypeOpDef@ tod;
 		Type t;
@@ -151,7 +133,7 @@ public class TypeExpr extends TypeRef {
 		DNode@ v;
 		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,this.ident))) {
 			if (op == Operator.PostTypeAST)
-				return StdTypes.tpASTNodeType.meta_type.tdecl;
+				return StdTypes.tdASTNodeType;
 			else
 				throw new CompilerException(this,"Typedef for type operator "+ident+" not found");
 		}

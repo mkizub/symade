@@ -120,32 +120,41 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	{
 		this.resolved instanceof Method, $cut, false
 	;
-		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && !star && !path.doImportStar(),
-		((Struct)this.resolved).checkResolved(),
-		s ?= ((Struct)this.resolved),
-		!s.isPackage(),
+		mode == ImportMode.IMPORT_CLASS, this.resolved instanceof Struct,
 		{
-			s.qname() == path.getName(), node ?= s.$var
-		;	path.checkNodeName(s), node ?= s.$var
-		}
-	;
-		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && star && path.doImportStar(),
-		((Struct)this.resolved).checkResolved(),
-		s ?= ((Struct)this.resolved),
-		{
+			!star && !path.doImportStar(),
+			//((Struct)this.resolved).checkResolved(),
+			s ?= ((Struct)this.resolved),
 			!s.isPackage(),
-			sub @= s.sub_decls,
-			path.checkNodeName(sub),
-			node ?= sub.$var
-		;	s.isPackage(), s.resolveNameR(node,path)
+			path.checkNodeName(s), node ?= s.$var
+		;
+			star && path.doImportStar(),
+			((Struct)this.resolved).checkResolved(),
+			s ?= ((Struct)this.resolved),
+			{
+				!s.isPackage(),
+				sub @= s.sub_decls,
+				path.checkNodeName(sub),
+				node ?= sub.$var
+			;	s.isPackage(), s.resolveNameR(node,path)
+			}
 		}
 	;
-		mode == ImportMode.IMPORT_STATIC && star && path.doImportStar() && this.resolved instanceof TypeDecl,
-		path.isStaticAllowed(),
-		((TypeDecl)this.resolved).checkResolved(),
-		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		((TypeDecl)this.resolved).resolveNameR(node,path),
-		node instanceof Field && ((Field)node).isStatic() && ((Field)node).isPublic()
+		mode == ImportMode.IMPORT_STATIC,
+		{
+			!(this.resolved instanceof TypeDecl),
+			!star && !path.doImportStar(),
+			node ?= this.resolved,
+			path.checkNodeName(node)
+		;
+			this.resolved instanceof TypeDecl,
+			star && path.doImportStar(),
+			path.isStaticAllowed(),
+			((TypeDecl)this.resolved).checkResolved(),
+			path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
+			((TypeDecl)this.resolved).resolveNameR(node,path),
+			node instanceof Field && ((Field)node).isStatic() && !((Field)node).isPrivate()
+		}
 	;
 		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
 		((Struct)this.resolved).resolveNameR(node,path)
@@ -161,11 +170,11 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		((TypeDecl)this.resolved).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
 		((TypeDecl)this.resolved).resolveMethodR(node,path,mt),
-		node instanceof Method && node.isStatic() && node.isPublic()
+		node instanceof Method && node.isStatic() && !node.isPrivate()
 	;
 		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
 		((Struct)this.resolved).resolveMethodR(node,path,mt),
-		node instanceof Method && node.isStatic() && node.isPublic()
+		node instanceof Method && node.isStatic() && !node.isPrivate()
 	}
 }
 

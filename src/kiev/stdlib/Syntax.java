@@ -77,10 +77,6 @@ operator  ++ ,  xf, 210; // lf
 operator  -- ,  xf, 210; // lf
 
 import static kiev.stdlib.#id"any"#._instanceof_(any, any);
-import static kiev.stdlib.#id"boolean"#.bool_not(boolean);
 import static kiev.stdlib.GString.str_concat_ss(String, String); // string concatenation String + String
-import static kiev.stdlib.GString.str_concat_as(any, String); // string concatenation any + String
-import static kiev.stdlib.GString.str_concat_sa(String, any); // string concatenation String + any
-import static kiev.stdlib.GString.str_assign_add(String, any); // string concatenation String += any
 }
 
