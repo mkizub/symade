@@ -197,11 +197,6 @@ public class JBaseType extends JType {
 	public static JBaseType newJBaseType(Struct clazz)
 		alias lfy operator new
 	{
-		if (clazz.xtype ≡ Type.tpRule) {
-			if (JType.tpRule == null)
-				return new JBaseType(JConstants.jsigRule,clazz);
-			return JType.tpRule;
-		}
 		KString signature = KString.from("L"+((JStruct)clazz).bname()+";");
 		JBaseType jbt = (JBaseType)jtypeHash.get(signature);
 		if (jbt != null)

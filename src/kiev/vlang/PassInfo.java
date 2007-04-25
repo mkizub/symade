@@ -74,15 +74,6 @@ public class PassInfo {
 	// No instances
 	private PassInfo() {}
 
-	public static boolean checkClassName(ASTNode from, String qname) {
-		DNode@ node;
-		if (!resolveNameR(from, node,new ResInfo(from,qname)))
-			return false;
-		if (node instanceof TypeDecl)
-			return true;
-		return false;
-	}
-
 	public static rule resolveNameR(ASTNode from, ASTNode@ node, ResInfo path)
 		ASTNode@ p;
 		ParentEnumerator pe;

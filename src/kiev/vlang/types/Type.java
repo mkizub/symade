@@ -289,7 +289,7 @@ public final class XType extends Type {
 	public String toString() {
 		TypeDecl tdecl = this.tdecl;
 		StringBuffer str = new StringBuffer();
-		str.append(tdecl.qname());
+		str.append(tdecl.qname().replace('\u001f','.'));
 		int n = tdecl.args.length;
 		if (n > 0) {
 			str.append('<');
@@ -584,7 +584,7 @@ public final class CompaundType extends Type {
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
-		str.append(tdecl.qname());
+		str.append(tdecl.qname().replace('\u001f','.'));
 		int n = tdecl.args.length;
 		if (n > 0) {
 			str.append('<');

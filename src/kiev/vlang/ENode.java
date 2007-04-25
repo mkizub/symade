@@ -32,17 +32,21 @@ public abstract class ENode extends ASTNode {
 	private Object	ident_or_symbol;
 	
 	@att @abstract public String			ident;
+	@att @abstract public boolean			qualified; // stored ident may be qualified name
 	@ref @abstract public ISymbol			symbol;
 	@ref @abstract public:ro DNode			dnode;
 	
 	@getter @att public final String get$ident() {
 		if (ident_or_symbol instanceof String)
 			return (String)ident_or_symbol;
-		if (ident_or_symbol instanceof ISymbol)
+		if (ident_or_symbol instanceof ISymbol) {
+			if (qualified)
+				return ((ISymbol)ident_or_symbol).qname;
 			return ((ISymbol)ident_or_symbol).sname;
+		}
 		return null;
 	}
-	
+
 	@getter @ref public final ISymbol get$symbol() {
 		if (ident_or_symbol instanceof ISymbol)
 			return (ISymbol)ANode.getVersion((ANode)ident_or_symbol);
@@ -66,6 +70,20 @@ public abstract class ENode extends ASTNode {
 		ident_or_symbol = val;
 	}
 	
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "qualified")
+			return this.qualified; // do not dump <qualified>false</qualified>
+		return super.includeInDump(dump, attr, val);
+	}
+
+	@getter @att public final boolean get$qualified() {
+		return is_qualified;
+	}
+
+	@setter public final void set$qualified(boolean val) {
+		is_qualified = val;
+	}
+
 	//
 	// Expr specific
 	//

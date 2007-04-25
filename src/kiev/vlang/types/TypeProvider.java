@@ -186,7 +186,7 @@ public final class CoreMetaType extends MetaType {
 		this.tdecl = tdecl;
 		tdecl.u_name = name;
 		tdecl.sname = name;
-		tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
+		tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 		tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 		//tdecl.setTypeDeclLoaded(true);
 		tdecl.xmeta_type = this;
@@ -400,12 +400,12 @@ public final class ArrayMetaType extends MetaType {
 	public static final ArrayMetaType		instance;
 	static {
 		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpArrayArg, null).close());
-		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev.stdlib._array_");
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_array_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl(null);
 			tdecl.u_name = "_array_";
 			tdecl.sname = "_array_";
-			tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
+			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdArrayArg);
@@ -514,12 +514,12 @@ public class WrapperMetaType extends MetaType {
 	private static final MetaTypeDecl		wrapper_tdecl;
 	static {
 		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpWrapperArg, null).close());
-		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev.stdlib._wrapper_");
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_wrapper_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
 			tdecl.u_name = "_wrapper_";
 			tdecl.sname = "_wrapper_";
-			tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
+			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdWrapperArg);
@@ -631,12 +631,12 @@ public class CallMetaType extends MetaType {
 
 	public static final CallMetaType instance;
 	static {
-		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev.stdlib._call_type_");
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_call_type_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
 			tdecl.u_name = "_call_type_";
 			tdecl.sname = "_call_type_";
-			tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
+			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.setTypeDeclLoaded(true);
 			tdecl.setUUID("25395a72-2b16-317a-85b2-5490309bdffc");

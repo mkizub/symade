@@ -17,21 +17,21 @@ import syntax kiev.Syntax;
  *
  */
 abstract class VNode_Base extends TransfProcessor {
-	public static final String mnNode					= "kiev.vlang.node"; 
-	public static final String mnAtt					= "kiev.vlang.att"; 
-	public static final String mnRef					= "kiev.vlang.ref"; 
-	public static final String nameINode				= "kiev.vlang.INode";
-	public static final String nameANode				= "kiev.vlang.ANode";
-	public static final String nameNode				= "kiev.vlang.ASTNode"; 
-	public static final String nameNodeSpace			= "kiev.vlang.NodeSpace"; 
-	public static final String nameAttrSlot			= "kiev.vlang.AttrSlot"; 
-	public static final String nameRefAttrSlot			= "kiev.vlang.RefAttrSlot"; 
-	public static final String nameAttAttrSlot			= "kiev.vlang.AttAttrSlot"; 
-	public static final String nameExtRefAttrSlot		= "kiev.vlang.ExtRefAttrSlot"; 
-	public static final String nameExtAttAttrSlot		= "kiev.vlang.ExtAttAttrSlot"; 
-	public static final String nameSpaceAttrSlot		= "kiev.vlang.SpaceAttrSlot"; 
-	public static final String nameSpaceRefAttrSlot	= "kiev.vlang.SpaceRefAttrSlot"; 
-	public static final String nameSpaceAttAttrSlot	= "kiev.vlang.SpaceAttAttrSlot"; 
+	public static final String mnNode					= "kiev\u001fvlang\u001fnode"; 
+	public static final String mnAtt					= "kiev\u001fvlang\u001fatt"; 
+	public static final String mnRef					= "kiev\u001fvlang\u001fref"; 
+	public static final String nameINode				= "kiev\u001fvlang\u001fINode";
+	public static final String nameANode				= "kiev\u001fvlang\u001fANode";
+	public static final String nameNode				= "kiev\u001fvlang\u001fASTNode"; 
+	public static final String nameNodeSpace			= "kiev\u001fvlang\u001fNodeSpace"; 
+	public static final String nameAttrSlot			= "kiev\u001fvlang\u001fAttrSlot"; 
+	public static final String nameRefAttrSlot			= "kiev\u001fvlang\u001fRefAttrSlot"; 
+	public static final String nameAttAttrSlot			= "kiev\u001fvlang\u001fAttAttrSlot"; 
+	public static final String nameExtRefAttrSlot		= "kiev\u001fvlang\u001fExtRefAttrSlot"; 
+	public static final String nameExtAttAttrSlot		= "kiev\u001fvlang\u001fExtAttAttrSlot"; 
+	public static final String nameSpaceAttrSlot		= "kiev\u001fvlang\u001fSpaceAttrSlot"; 
+	public static final String nameSpaceRefAttrSlot	= "kiev\u001fvlang\u001fSpaceRefAttrSlot"; 
+	public static final String nameSpaceAttAttrSlot	= "kiev\u001fvlang\u001fSpaceAttAttrSlot"; 
 	public static final String nameCopyable			= "copyable";
 	public static final String nameExtData				= "ext_data";
 	
@@ -92,7 +92,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpANode = Env.loadTypeDecl(nameANode, true).xtype;
 			tpNode = Env.loadTypeDecl(nameNode, true).xtype;
 			tpNArray = new ArrayType(tpANode);
-			tpNodeSpace = Env.newMetaType(new Symbol<MetaTypeDecl>("NodeSpace"), Env.newPackage("kiev.vlang"), false, null).xtype;
+			tpNodeSpace = Env.newMetaType(new Symbol<MetaTypeDecl>("NodeSpace"), Env.newPackage("kiev\u001fvlang"), false, null).xtype;
 			tpAttrSlot = Env.loadTypeDecl(nameAttrSlot, true).xtype;
 			tpRefAttrSlot = Env.loadTypeDecl(nameRefAttrSlot, true).xtype;
 			tpAttAttrSlot = Env.loadTypeDecl(nameAttAttrSlot, true).xtype;

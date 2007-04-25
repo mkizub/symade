@@ -30,7 +30,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScanneable {
+public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScanneable,GlobalDNode {
 	@virtual typedef This  ≤ Method;
 	@virtual typedef JView = JMethod;
 	@virtual typedef RView ≤ RMethod;
@@ -76,6 +76,17 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	@getter public final Block					get$block()	{ return (Block)this.body; }
 
+	public String qname() {
+		ANode p = parent();
+		while (p instanceof DeclGroup)
+			p = p.parent();
+		if (p == null || p == Env.root)
+			return sname;
+		if (p instanceof GlobalDNode)
+			return (((GlobalDNode)p).qname()+'\u001f'+sname);
+		return sname;
+	}
+
 	public Var getRetVar() {
 		Var retvar = this.ret_var; //(Var)ATTR_RET_VAR.get(this);
 		if( retvar == null ) {
@@ -86,7 +97,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public MetaThrows getMetaThrows() {
-		return (MetaThrows)getMeta("kiev.stdlib.meta.throws");
+		return (MetaThrows)getMeta("kiev\u001fstdlib\u001fmeta\u001fthrows");
 	}
 
 	// virtual static method
@@ -429,7 +440,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		expr.symbol = this;
 		if (!isMacro())
 			return;
-		UserMeta m = (UserMeta)this.getMeta("kiev.stdlib.meta.CompilerNode");
+		UserMeta m = (UserMeta)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fCompilerNode");
 		if (m == null)
 			return;
 		Class cls = ASTNodeMetaType.allNodes.get(m.getS("value"));
@@ -776,7 +787,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 
 		if (isMacro() && isNative() && body == null) {
-			String name = clazz.qname()+":"+sname;
+			String name = clazz.qname().replace('\u001f','.')+":"+sname;
 			body = CoreExpr.makeInstance(pos,name);
 		}
 	}

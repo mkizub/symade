@@ -787,7 +787,7 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 			node = ANode.getVersion(node).open();
 			foreach (AttrSlot a; node.values(); a.name == attr) {
 				try {
-					ANode obj = (ANode)Class.forName(cls.qname()).newInstance();
+					ANode obj = (ANode)Class.forName(cls.qname().replace('\u001f','.')).newInstance();
 					if (a.is_space) {
 						SpaceAttrSlot<ANode> sas = (SpaceAttrSlot<ANode>)a;
 						if (idx < 0)

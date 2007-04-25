@@ -126,11 +126,11 @@ public interface StdTypes {
 		tpFloat		= new CoreType(Constants.nameFloat,   tpAny, flFloat);
 		tpDouble	= new CoreType(Constants.nameDouble,  tpAny, flFloat   | flDoubleSize);
 
-		Struct java_lang = Env.newPackage("java.lang");
-		Struct java_lang_annotation = Env.newPackage("java.lang.annotation");
-		Struct java_util = Env.newPackage("java.util");
-		Struct kiev_stdlib = Env.newPackage("kiev.stdlib");
-		Struct kiev_stdlib_meta = Env.newPackage("kiev.stdlib.meta");
+		Struct java_lang = Env.newPackage("java\u001flang");
+		Struct java_lang_annotation = Env.newPackage("java\u001flang\u001fannotation");
+		Struct java_util = Env.newPackage("java\u001futil");
+		Struct kiev_stdlib = Env.newPackage("kiev\u001fstdlib");
+		Struct kiev_stdlib_meta = Env.newPackage("kiev\u001fstdlib\u001fmeta");
 
 		Struct tpObjectClazz = Env.newStruct("Object",java_lang,ACC_PUBLIC,new JavaClass());
 		tpObject				= (CompaundType)tpObjectClazz.xtype;
@@ -141,9 +141,9 @@ public interface StdTypes {
 		tpNull		= new CoreType(Constants.nameNull,    tpObject, flReference);
 
 //		tpRule		= new CoreType(Constants.nameRule,    flReference);
-		Struct tpRuleClazz = new Struct("rule","rule",kiev_stdlib,ACC_PUBLIC,new JavaClass());
+		Struct tpRuleClazz = new Struct("rule","rule",kiev_stdlib,ACC_PUBLIC|ACC_ABSTRACT,new JavaClass());
 		tpRule				= (CompaundType)tpRuleClazz.xtype;
-		tpRuleClazz.setTypeDeclLoaded(true);
+//		tpRuleClazz.setTypeDeclLoaded(true);
 		tpRule.flags		= flResolved | flReference;
 		kiev_stdlib.sub_decls += tpRuleClazz;
 

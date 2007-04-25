@@ -178,12 +178,12 @@ public final class RewriteNodeFactory extends ENode {
 
 	public RewriteNodeFactory() {}
 	public RewriteNodeFactory(String class_name) {
-		if (class_name.indexOf(".") > 0) {
-			node_class = Class.forName(class_name);
+		if (class_name.indexOf('\u001f') > 0) {
+			node_class = Class.forName(class_name.replace('\u001f','.'));
 			type = new TypeNameRef(class_name);
 		} else {
 			node_class = Class.forName("kiev.vlang."+class_name);
-			type = new TypeNameRef("kiev.vlang."+class_name);
+			type = new TypeNameRef("kiev\u001fvlang\u001f"+class_name);
 		}
 	}
 

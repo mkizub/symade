@@ -19,8 +19,8 @@ import syntax kiev.Syntax;
 @singleton
 public final class VirtFldFE_GenMembers extends TransfProcessor {
 
-	public static final String nameMetaGetter = "kiev.stdlib.meta.getter"; 
-	public static final String nameMetaSetter = "kiev.stdlib.meta.setter"; 
+	public static final String nameMetaGetter = "kiev\u001fstdlib\u001fmeta\u001fgetter"; 
+	public static final String nameMetaSetter = "kiev\u001fstdlib\u001fmeta\u001fsetter"; 
 	
 	private VirtFldFE_GenMembers() { super(KievExt.VirtualFields); }
 	public String getDescr() { "Virtual fields members generation" }

@@ -12,6 +12,30 @@ package kiev.stdlib;
 
 import syntax kiev.stdlib.Syntax;
 
+/**
+ Base classe of rule frames, for
+ java-compatible (unoptimized) mode
+ of bytecode generation
+*/
+
+public abstract class #id"rule"# extends Object {
+	public static boolean contains(Enumeration<Object> e, Object value) {
+		foreach(Object val; e; val!=null && (val==value || val.equals(value)) )
+			return true;
+		return false;
+	}
+
+	public static boolean jcontains(java.util.Enumeration e, Object value) {
+		foreach(Object val; e; val!=null && (val==value || val.equals(value)) )
+			return true;
+		return false;
+	}
+}
+
+/**
+ The wrapper for prolog values
+*/
+
 @unerasable
 public final class PVar<A> implements TypeInfoInterface
 {

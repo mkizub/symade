@@ -1292,7 +1292,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		
 		// Generate super(...) constructor calls, if they are not
 		// specified as first statements of a constructor
-		if (qname() != Type.tpObject.tdecl.qname()) {
+		if (((Struct)this) != Type.tpObject.tdecl) {
 			foreach (Constructor m; members) {
 				if( m.isStatic() ) continue;
 

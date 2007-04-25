@@ -729,7 +729,7 @@ public final class OuterThisAccessExpr extends ENode {
 		}
 	}
 
-	public String toString() { return getType().meta_type.tdecl.qname().toString()+".this"; }
+	public String toString() { return getType().meta_type.tdecl.qname().replace('\u001f','.')+".this"; }
 
 	public static Field outerOf(TypeDecl clazz) {
 		foreach (Field f; clazz.getAllFields()) {

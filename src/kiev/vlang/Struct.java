@@ -353,7 +353,7 @@ public class Struct extends TypeDecl {
 		if (pkg == null || pkg == Env.root)
 			q_name = u_name;
 		else
-			q_name = (pkg.qname()+"."+u_name).intern();
+			q_name = (pkg.qname()+"\u001f"+u_name).intern();
 		return q_name;
 	}
 
@@ -505,7 +505,7 @@ public class Struct extends TypeDecl {
 			if (this.equals(Env.root))
 				cl = Env.loadTypeDecl(qn);
 			else
-				cl = Env.loadTypeDecl(qn=(this.qname()+"."+name).intern());
+				cl = Env.loadTypeDecl(qn=(this.qname()+"\u001f"+name).intern());
 			if( cl != null ) {
 				trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+cl+" found in "+this);
 				node = cl;

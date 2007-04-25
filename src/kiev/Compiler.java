@@ -632,10 +632,6 @@ public class Compiler {
 					String dbg = args[++a];
 					args[a] = null;
 					System.out.println("Tracing: "+onoff);
-					if( dbg.indexOf("rules",0) >= 0 ) {
-						System.out.println("\tprolog rules");
-						kiev.stdlib.PEnv.debug = onoff;
-					}
 					Compiler.debug = onoff;
 					continue;
 				}

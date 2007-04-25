@@ -664,12 +664,12 @@ public final class RenderActions implements Runnable {
 		if (action == "select-syntax") {
 			// build a menu of types to instantiate
 			JPopupMenu m = new JPopupMenu();
-			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Kiev Syntax", "stx-fmt.syntax-for-java")));
-//			m.add(new JMenuItem(new LoadSyntaxAction(uiv,"Kiev Syntax (java.xml)", "java.xml", "test.syntax-for-java")));
+			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Kiev Syntax", "stx-fmt\u001fsyntax-for-java")));
+//			m.add(new JMenuItem(new LoadSyntaxAction(uiv,"Kiev Syntax (java.xml)", "java.xml", "test\u001fsyntax-for-java")));
 			m.add(new JMenuItem(new SetSyntaxAction(uiv,"XML dump Syntax (full)", XmlDumpSyntax.class, "full")));
 			m.add(new JMenuItem(new SetSyntaxAction(uiv,"XML dump Syntax (api)", XmlDumpSyntax.class, "api")));
-			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Syntax for API", "stx-fmt.syntax-for-api")));
-			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Syntax for Syntax", "stx-fmt.syntax-for-syntax")));
+			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Syntax for API", "stx-fmt\u001fsyntax-for-api")));
+			m.add(new JMenuItem(new SetSyntaxAction(uiv,"Syntax for Syntax", "stx-fmt\u001fsyntax-for-syntax")));
 //			m.add(new JMenuItem(new LoadSyntaxAction(uiv,"Syntax for Syntax (stx.xml)", "stx.xml", "test.syntax-for-syntax")));
 			m.show(uiv.view_canvas, 0, 0);
 		}

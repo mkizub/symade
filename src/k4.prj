@@ -278,6 +278,7 @@ CLASS kiev.stdlib.TypeSwitchHash kiev/stdlib/TypeSwitchHash kiev\stdlib\TypeSwit
 CLASS kiev.stdlib.TypeSwitchHashEntry kiev/stdlib/TypeSwitchHashEntry kiev\stdlib\TypeSwitchHash.java
 CLASS kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
 CLASS kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
+CLASS kiev.stdlib.rule kiev/stdlib/rule kiev\stdlib\PVar.java
 CLASS kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\BackendProcessor.java
 CLASS kiev.transf.EnumFE_GenMembers kiev/transf/EnumFE_GenMembers kiev\transf\ProcessEnum.java
 CLASS kiev.transf.ExportBE_Generate kiev/transf/ExportBE_Generate kiev\transf\ImportKievSrc.java

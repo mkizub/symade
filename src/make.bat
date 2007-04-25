@@ -1,2 +1,2 @@
 @if not exist classes\stx-fmt mkdir classes\stx-fmt
-c:\java\jdk1.6.0\bin\java -ea -verify -Xms320M -Xmx320M -Xfuture -Xnoclassgc -classpath ..\..\symade\src\classes4 kiev.Main -classpath classes -verify -enable vnode -enable view -p k4.prj -g -makeall %*
+c:\java\jdk1.6.0\bin\java -ea -verify -Xms320M -Xmx320M -Xfuture -Xnoclassgc -classpath ..\..\symade\src\classes4;..\bin\piccolo.jar kiev.Main -classpath classes -verify -enable vnode -enable view -p k4.prj -g -makeall %*

@@ -249,7 +249,7 @@ public class Bytecoder implements JConstants {
 								break;
 							}
 						}
-						if (anon || cn.package_name() != KString.from(cl.qname())) {
+						if (anon || cn.package_name() != KString.from(cl.qname().replace('\u001f','.'))) {
 							inner[i] == null;
 						} else {
 							Struct inn = Env.jenv.loadStruct(cn);

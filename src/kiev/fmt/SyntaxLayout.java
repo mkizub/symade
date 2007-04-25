@@ -40,9 +40,9 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 			return q_name;
 		ANode p = parent();
 		if (p instanceof ATextSyntax)
-			q_name = (p.qname()+"."+u_name).intern();
+			q_name = (p.qname()+"\u001f"+u_name).intern();
 		else if (p instanceof FileUnit)
-			q_name = (p.pkg.qname()+"."+u_name).intern();
+			q_name = (p.pkg.qname()+"\u001f"+u_name).intern();
 		else
 			q_name = u_name;
 		return q_name;
@@ -123,7 +123,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 			Struct s = (Struct)sed.rnode.dnode;
 			if !(s.isCompilerNode())
 				continue;
-			allSyntax.put(s.qname(), sed);
+			allSyntax.put(s.qname().replace('\u001f','.'), sed);
 		}
 	}
 	
@@ -408,7 +408,7 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 
 	public void preResolveOut() {
 		if (rnode == null)
-			rnode = new SymbolRef<Struct>(Env.newStruct("ASTNode", Env.newPackage("kiev.vlang"), 0, null));
+			rnode = new SymbolRef<Struct>(Env.newStruct("ASTNode", Env.newPackage("kiev\u001fvlang"), 0, null));
 		if (rnode.name == null)
 			rnode.name = "ASTNode";
 		Struct@ s;
@@ -1317,6 +1317,13 @@ public class CalcOptionHasMeta implements CalcOption {
 		super(name);
 	}
 
+	@setter
+	public void set$name(String value) {
+		if (value != null && value.indexOf('.') >= 0)
+			value = value.replace('.','\u001f');
+		this.name = (value != null) ? value.intern() : null;
+	}
+	
 	public boolean calc(ANode node) {
 		if (node instanceof DNode) {
 			DNode dn = (DNode)node;
