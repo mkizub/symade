@@ -1,1 +1,1 @@
-c:\java\jdk1.6.0\bin\java -Xmx256M -classpath classes -verify kiev.Main %*
+c:\java\jdk1.6.0\bin\java -ea -Xmx256M -classpath classes4;..\bin\piccolo.jar -verify kiev.Main %*

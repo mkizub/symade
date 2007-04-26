@@ -10,16 +10,12 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.*;
-
-import kiev.vlang.Constants;
-
 import syntax kiev.Syntax;
 
 public interface JConstants extends Constants {
 
 	
-	public final static KString jsigRule		= KString.from("Lkiev/stdlib/RuleFrame;");
+	public final static KString jsigRule		= KString.from("Lkiev/stdlib/rule;");
 
 	
 	/** Java bytecode constants */

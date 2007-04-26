@@ -10,13 +10,6 @@
  *******************************************************************************/
 package kiev.ir.java15;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**

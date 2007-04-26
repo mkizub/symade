@@ -1,6 +1,7 @@
 package test.f_syntax;
 
-import syntax_002;
+import syntax test.f_syntax.syntax_002;
+import syntax kiev.stdlib.Syntax;
 
 public class test_003 {
 	public static void main(String[] args) {

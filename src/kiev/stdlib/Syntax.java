@@ -12,6 +12,17 @@ package kiev.stdlib;
 
 syntax Syntax {
 
+import kiev.stdlib.*;
+import kiev.stdlib.meta.*;
+import java.lang.*;
+
+typedef type[] kiev.stdlib._array_<type>;
+typedef type... kiev.stdlib._vararg_<type>;
+typedef type⊛ kiev.stdlib._wrapper_<type>;
+typedef type@ kiev.stdlib.PVar<type>⊛;
+typedef type& kiev.stdlib.Ref<type>;
+//typedef type| kiev.stdlib.List<type>;
+
 // assign operators
 operator  =    , lfy,   5;
 operator  :=   , lfy,   5;
@@ -26,6 +37,10 @@ operator  -=   , lfy,   5;
 operator  *=   , lfy,   5;
 operator  /=   , lfy,   5;
 operator  %=   , lfy,   5;
+
+// bind/iterate rule operators
+operator "X ?= X" , 5;
+operator "X @= X" , 5;
 
 // infix operators
 operator  ||         , yfx,  10;
@@ -49,9 +64,6 @@ operator  *          , yfx, 150;
 operator  /          , yfx, 150;
 operator  %          , yfx, 150;
 
-//operator  ?=         , xfx, 5;
-//operator  @=         , xfx, 5;
-
 // prefix operators
 operator  +  ,  fy, 200;
 operator  -  ,  fy, 200;
@@ -64,5 +76,7 @@ operator  !  ,  fy, 210;
 operator  ++ ,  xf, 210; // lf
 operator  -- ,  xf, 210; // lf
 
+import static kiev.stdlib.#id"any"#._instanceof_(any, any);
+import static kiev.stdlib.GString.str_concat_ss(String, String); // string concatenation String + String
 }
 

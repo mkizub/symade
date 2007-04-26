@@ -10,16 +10,9 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-
 import kiev.ir.java15.RENode;
 import kiev.be.java15.JENode;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -125,7 +118,7 @@ public final class RewritePattern extends Var {
 	public Type	getType() { return new ASTNodeType(this); }
 
 	public boolean match(ASTNode node) {
-		if ( ((ASTNodeMetaType)((ASTNodeType)getType()).meta_type).clazz.qname().equals(node.getClass().getName()) )
+		if ( ((ASTNodeMetaType)((ASTNodeType)getType()).meta_type).clazz.equals(node.getClass()) )
 			return true;
 		return false;
 	}
@@ -185,12 +178,12 @@ public final class RewriteNodeFactory extends ENode {
 
 	public RewriteNodeFactory() {}
 	public RewriteNodeFactory(String class_name) {
-		if (class_name.indexOf(".") > 0) {
-			node_class = Class.forName(class_name);
+		if (class_name.indexOf('\u001f') > 0) {
+			node_class = Class.forName(class_name.replace('\u001f','.'));
 			type = new TypeNameRef(class_name);
 		} else {
 			node_class = Class.forName("kiev.vlang."+class_name);
-			type = new TypeNameRef("kiev.vlang."+class_name);
+			type = new TypeNameRef("kiev\u001fvlang\u001f"+class_name);
 		}
 	}
 

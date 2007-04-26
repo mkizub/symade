@@ -10,14 +10,8 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.parser.*;
-import kiev.stdlib.*;
-import kiev.transf.*;
-import kiev.vlang.types.*;
 import java.io.*;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -43,24 +37,27 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	@att public ImportMode			mode = ImportMode.IMPORT_CLASS;
 	@att public boolean				star;
 	@att public TypeRef[]			args;
-	
-	@ref public boolean				of_method;
-	@ref public DNode				resolved;
+	@att public boolean				of_method;
 
 	public Import() {
 		this.name = new SymbolRef<DNode>();
+		this.name.qualified = true;
 	}
 
 	public Import(Struct node, boolean star) {
-		this.name = new SymbolRef<DNode>(node.qname());
-		this.resolved = node;
+		this.name = new SymbolRef<DNode>(node);
+		this.name.qualified = true;
 		this.mode = mode;
 		this.star = star;
 	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (dump == "api" && attr.name == "this")
+		if (dump == "api" && attr.name == "this") {
+			ANode p = parent();
+			if (p instanceof Struct && p.isSyntax())
+				return true;
 			return false;
+		}
 		return super.includeInDump(dump, attr, val);
 	}
 
@@ -71,8 +68,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		if (mode == ImportMode.IMPORT_STATIC)  str.append("static ");
 		if (mode == ImportMode.IMPORT_PACKAGE) str.append("package ");
 		if (mode == ImportMode.IMPORT_SYNTAX)  str.append("syntax ");
-		if (resolved instanceof Field)  str.append(resolved.getType()).append('.');
-		str.append(resolved);
+		str.append(name);
 		if (star) str.append(".*");
 		return str.toString();
 	}
@@ -82,7 +78,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			return;
 		String name = this.name.name;
 		TypeDecl scope = null;
-		int dot = name.indexOf('.');
+		int dot = name.indexOf('\u001f');
 		while (dot > 0) {
 			String head;
 			head = name.substring(0,dot).intern();
@@ -95,7 +91,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 				return;
 			}
 			scope = (TypeDecl)node;
-			dot = name.indexOf('.');
+			dot = name.indexOf('\u001f');
 		}
 		
 		int i = 0;
@@ -114,61 +110,71 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			Kiev.reportError(this,"Unresolved method "+Method.toString(name,mt)+" in "+scope);
 			return;
 		}
-		resolved = (Method)v;
+		this.name.open();
+		this.name.symbol = (Method)v;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
 		Struct@ s;
 		DNode@ sub;
 	{
-		this.resolved instanceof Method, $cut, false
+		this.name.dnode instanceof Method, $cut, false
 	;
-		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && !star && !path.doImportStar(),
-		((Struct)this.resolved).checkResolved(),
-		s ?= ((Struct)this.resolved),
-		!s.isPackage(),
+		mode == ImportMode.IMPORT_CLASS, this.name.dnode instanceof Struct,
 		{
-			s.qname() == path.getName(), node ?= s.$var
-		;	path.checkNodeName(s), node ?= s.$var
-		}
-	;
-		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && star && path.doImportStar(),
-		((Struct)this.resolved).checkResolved(),
-		s ?= ((Struct)this.resolved),
-		{
+			!star && !path.doImportStar(),
+			//((Struct)this.name.dnode).checkResolved(),
+			s ?= ((Struct)this.name.dnode),
 			!s.isPackage(),
-			sub @= s.sub_decls,
-			path.checkNodeName(sub),
-			node ?= sub.$var
-		;	s.isPackage(), s.resolveNameR(node,path)
+			path.checkNodeName(s), node ?= s.$var
+		;
+			star && path.doImportStar(),
+			((Struct)this.name.dnode).checkResolved(),
+			s ?= ((Struct)this.name.dnode),
+			{
+				!s.isPackage(),
+				sub @= s.sub_decls,
+				path.checkNodeName(sub),
+				node ?= sub.$var
+			;	s.isPackage(), s.resolveNameR(node,path)
+			}
 		}
 	;
-		mode == ImportMode.IMPORT_STATIC && star && path.doImportStar() && this.resolved instanceof TypeDecl,
-		path.isStaticAllowed(),
-		((TypeDecl)this.resolved).checkResolved(),
-		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		((TypeDecl)this.resolved).resolveNameR(node,path),
-		node instanceof Field && ((Field)node).isStatic() && ((Field)node).isPublic()
+		mode == ImportMode.IMPORT_STATIC,
+		{
+			!(this.name.dnode instanceof TypeDecl),
+			!star && !path.doImportStar(),
+			node ?= this.name.dnode,
+			path.checkNodeName(node)
+		;
+			this.name.dnode instanceof TypeDecl,
+			star && path.doImportStar(),
+			path.isStaticAllowed(),
+			((TypeDecl)this.name.dnode).checkResolved(),
+			path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
+			((TypeDecl)this.name.dnode).resolveNameR(node,path),
+			node instanceof Field && ((Field)node).isStatic() && !((Field)node).isPrivate()
+		}
 	;
-		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
-		((Struct)this.resolved).resolveNameR(node,path)
+		mode == ImportMode.IMPORT_SYNTAX && this.name.dnode instanceof Struct,
+		((Struct)this.name.dnode).resolveNameR(node,path)
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)
 	{
-		mode == ImportMode.IMPORT_STATIC && !star && !path.doImportStar() && this.resolved instanceof Method,
-		((Method)this.resolved).equalsByCast(path.getName(),mt,Type.tpVoid,path),
-		node ?= ((Method)this.resolved)
+		mode == ImportMode.IMPORT_STATIC && !star && !path.doImportStar() && this.name.dnode instanceof Method,
+		((Method)this.name.dnode).equalsByCast(path.getName(),mt,Type.tpVoid,path),
+		node ?= ((Method)this.name.dnode)
 	;
-		mode == ImportMode.IMPORT_STATIC && star && path.doImportStar() && this.resolved instanceof TypeDecl,
-		((TypeDecl)this.resolved).checkResolved(),
+		mode == ImportMode.IMPORT_STATIC && star && path.doImportStar() && this.name.dnode instanceof TypeDecl,
+		((TypeDecl)this.name.dnode).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		((TypeDecl)this.resolved).resolveMethodR(node,path,mt),
-		node instanceof Method && node.isStatic() && node.isPublic()
+		((TypeDecl)this.name.dnode).resolveMethodR(node,path,mt),
+		node instanceof Method && node.isStatic() && !node.isPrivate()
 	;
-		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
-		((Struct)this.resolved).resolveMethodR(node,path,mt),
-		node instanceof Method && node.isStatic() && node.isPublic()
+		mode == ImportMode.IMPORT_SYNTAX && this.name.dnode instanceof Struct,
+		((Struct)this.name.dnode).resolveMethodR(node,path,mt),
+		node instanceof Method && node.isStatic() && !node.isPrivate()
 	}
 }
 
@@ -203,6 +209,13 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 		return getType().getStruct();
 	}
 
+	public boolean hasName(String nm, boolean by_equals) {
+		if (by_equals && op != null && op.ident != null && op.ident != "") {
+			return ("T "+op.ident).equals(nm);
+		}
+		return false;
+	}
+
 	public rule resolveNameR(ASTNode@ node, ResInfo path) {
 		path.space_prev == this.type,
 		path.checkNodeName(this.arg),
@@ -210,7 +223,7 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 	}
 
 	public String toString() {
-		return "typedef "+arg+op+" "+type+"<"+arg+">;";
+		return "typedef "+arg+op+" "+type+";";
 	}
 }
 

@@ -10,15 +10,8 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.Kiev;
-import kiev.transf.*;
-import kiev.parser.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-
-import static kiev.stdlib.Debug.*;
 import static kiev.be.java15.Instr.*;
-import static kiev.vlang.Operator.*;
+
 import syntax kiev.Syntax;
 
 /**
@@ -256,7 +249,7 @@ public class Bytecoder implements JConstants {
 								break;
 							}
 						}
-						if (anon || cn.package_name() != KString.from(cl.qname())) {
+						if (anon || cn.package_name() != KString.from(cl.qname().replace('\u001f','.'))) {
 							inner[i] == null;
 						} else {
 							Struct inn = Env.jenv.loadStruct(cn);

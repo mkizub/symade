@@ -10,16 +10,6 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.Kiev;
-import kiev.KievExt;
-import kiev.parser.*;
-import kiev.stdlib.*;
-import kiev.transf.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import java.io.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -33,7 +23,7 @@ public final class JEnv {
 	Struct loadStruct(ClazzName name) {
 		if (name.name == KString.Empty) return Env.root;
 		// Check class is already loaded
-		String qname = name.name.toString().intern();
+		String qname = name.name.toString().replace('.','\u001f');
 		if (Env.classHashOfFails.get(qname) != null ) return null;
 		Struct cl = (Struct)Env.resolveGlobalDNode(qname);
 		// Load if not loaded or not resolved
@@ -87,7 +77,7 @@ public final class JEnv {
 
 	/** Actually load class from specified file and dir */
 	public TypeDecl loadClazz(String qname) {
-		return loadClazz(ClazzName.fromToplevelName(KString.from(qname)));
+		return loadClazz(ClazzName.fromToplevelName(KString.from(qname.replace('\u001f','.'))));
 	}
 
 	/** Actually load class from specified file and dir */
@@ -100,7 +90,7 @@ public final class JEnv {
 		// Ensure the parent package/outer class is loaded
 		Struct pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 		if (pkg == null)
-			pkg = Env.newPackage(name.package_name().toString().intern());
+			pkg = Env.newPackage(name.package_name().toString().replace('.','\u001f'));
 		if (!pkg.isTypeDeclLoaded())
 			pkg = loadStruct(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
 
@@ -122,7 +112,7 @@ public final class JEnv {
 		}
 		if ((td == null || !td.isTypeDeclLoaded()) && clazz != null) {
 			if (td == null) {
-				td = (Struct)Env.resolveGlobalDNode(name.name.toString());
+				td = (Struct)Env.resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
 				if (td == null)
 					td = makeStruct(name.bytecode_name,false);
 				if (!td.isAttached()) {

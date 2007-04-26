@@ -10,16 +10,8 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
-
 import static kiev.be.java15.Instr.*;
-import static kiev.stdlib.Debug.*;
+
 import syntax kiev.Syntax;
 
 public final view JShadow of Shadow extends JENode {
@@ -146,7 +138,7 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 
 	static {
 		try {
-		clazzStringBuffer = (Struct)Env.loadTypeDecl("java.lang.StringBuffer");
+		clazzStringBuffer = (Struct)Env.loadTypeDecl("java\u001flang\u001fStringBuffer");
 		if( clazzStringBuffer == null )
 			throw new RuntimeException("Core class java.lang.StringBuffer not found");
 		clazzStringBufferToString = clazzStringBuffer.resolveMethod("toString",Type.tpString);

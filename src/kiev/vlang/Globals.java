@@ -10,17 +10,7 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.parser.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
-
-operator "X ?= X" , 5;
-operator "X @= X" , 5;
 
 /**
  * TODO: to be removed
@@ -31,47 +21,32 @@ operator "X @= X" , 5;
 
 public metatype Globals extends any {
 
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R ref_assign(L lval, R val) operator "V = V";
-
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R ref_assign2(L lval, R val) operator "V := V";
-
-	@macro @native @CompilerNode("Set")
-	public static <L extends Object, R extends L> R@ ref_pvar_init(L@ lval, R@ val) operator "V := V";
-
 	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) operator "V = V"
 	{
-		case AssignExpr# self():
+		case Set# self():
 			self.lval = (self.value).get$$var()
-		case CallExpr# self():
+		case Call# self():
 			lval = (val).get$$var()
 	}
 
 	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R val) operator "V = V"
 	{
-		case CallExpr# self():
+		case Call# self():
 			(lval).$bind(val)
-		case AssignExpr# self():
+		case Set# self():
 			(self.lval).$bind(self.value)
 	}
 
 	@macro @CompilerNode("Set")
 	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R@ val) operator "V = V"
 	{
-		case CallExpr# self():
+		case Call# self():
 			(lval).$bind(val)
-		case AssignExpr# self():
+		case Set# self():
 			(self.lval).$bind(self.value)
 	}
-
-	@macro @CompilerNode("RuleIstheExpr")
-	public static boolean ref_pvar_is_the(Object@ lval, Object val) operator "V ?= V" ;
-
-	@macro @CompilerNode("RuleIsoneofExpr")
-	public static boolean ref_pvar_is_one_of(Object@ lval, Object val) operator "V @= V" ;
 
 }
 

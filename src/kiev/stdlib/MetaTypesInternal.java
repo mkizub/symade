@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.stdlib;
 
-import kiev.vlang.NewExpr;
-import kiev.vlang.CallExpr;
 import syntax kiev.stdlib.Syntax;
 
 
@@ -32,7 +30,7 @@ public metatype _array_< @uuid("74843bf1-3c28-374b-ad11-006af8a31a71") _elem_ ex
 	@macro @native
 	public:ro final int length;
 
-	@macro @native
+	@macro @native @CompilerNode("SetAccess")
 	public _elem_ get(int idx) alias operator "V [ V ]" ;
 }
 
@@ -46,5 +44,9 @@ public metatype _call_type_ extends any {
 
 @uuid("8aa32751-ac53-343e-b456-6f8521b01647")
 public metatype _vararg_< @uuid("924f219a-37cf-3654-b761-7cb5e26ceef0") _elem_ extends Object > extends _array_<_elem_> {
+}
+
+@uuid("3e32f9c7-9846-393e-8c6e-11512191ec94")
+public metatype _astnode_< @uuid("f23d4ec5-7fc2-3bbb-9b8f-46a309fc5f24") _node_ extends Object > extends any {
 }
 

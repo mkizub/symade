@@ -10,12 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.transf.*;
-import kiev.vlang.types.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JDNode;
 import kiev.ir.java15.RMethod;
@@ -28,7 +22,6 @@ import kiev.be.java15.JWBCCondition;
 
 import kiev.be.java15.CodeAttr;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -37,7 +30,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScanneable {
+public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScanneable,GlobalDNode {
 	@virtual typedef This  ≤ Method;
 	@virtual typedef JView = JMethod;
 	@virtual typedef RView ≤ RMethod;
@@ -83,6 +76,17 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	@getter public final Block					get$block()	{ return (Block)this.body; }
 
+	public String qname() {
+		ANode p = parent();
+		while (p instanceof DeclGroup)
+			p = p.parent();
+		if (p == null || p == Env.root)
+			return sname;
+		if (p instanceof GlobalDNode)
+			return (((GlobalDNode)p).qname()+'\u001f'+sname);
+		return sname;
+	}
+
 	public Var getRetVar() {
 		Var retvar = this.ret_var; //(Var)ATTR_RET_VAR.get(this);
 		if( retvar == null ) {
@@ -93,7 +97,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public MetaThrows getMetaThrows() {
-		return (MetaThrows)getMeta("kiev.stdlib.meta.throws");
+		return (MetaThrows)getMeta("kiev\u001fstdlib\u001fmeta\u001fthrows");
 	}
 
 	// virtual static method
@@ -436,15 +440,14 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		expr.symbol = this;
 		if (!isMacro())
 			return;
-		UserMeta m = (UserMeta)this.getMeta("kiev.stdlib.meta.CompilerNode");
+		UserMeta m = (UserMeta)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fCompilerNode");
 		if (m == null)
 			return;
-		Struct s = TypeExpr.AllNodes.get(m.getS("value"));
-		if (s == null) {
+		Class cls = ASTNodeMetaType.allNodes.get(m.getS("value"));
+		if (cls == null) {
 			Kiev.reportWarning(expr,"Compiler node '"+m.getS("value")+"' does not exists");
 			return;
 		}
-		Class cls = Class.forName(s.qname());
 		if (expr.getClass() == cls)
 			return;
 		ENode[] args = expr.getArgs();
@@ -601,6 +604,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				ArgType arg = this.targs[a].getAType();
 				set.append(arg, bound);
 				a++;
+				if (a >= targs.length)
+					break;
 			}
 			if (a > 0)
 				rt = (CallType)rt.rebind(set);
@@ -782,7 +787,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 
 		if (isMacro() && isNative() && body == null) {
-			String name = clazz.qname()+":"+sname;
+			String name = clazz.qname().replace('\u001f','.')+":"+sname;
 			body = CoreExpr.makeInstance(pos,name);
 		}
 	}

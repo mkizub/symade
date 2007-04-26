@@ -10,13 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.transf.*;
-import kiev.parser.*;
-import kiev.vlang.Operator.*;
-import kiev.vlang.types.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JENode;
 import kiev.ir.java15.RLvalueExpr;
@@ -40,8 +33,6 @@ import kiev.be.java15.JOuterThisAccessExpr;
 import kiev.ir.java15.RReinterpExpr;
 import kiev.be.java15.JReinterpExpr;
 
-import static kiev.stdlib.Debug.*;
-import static kiev.be.java15.Instr.*;
 import syntax kiev.Syntax;
 
 /**
@@ -185,7 +176,7 @@ public final class AccessExpr extends LvalueExpr {
 
 	public ANode doRewrite(RewriteContext ctx) {
 		Type ot = obj.getType();
-		if (ot instanceof ASTNodeType) {
+		if (ot.getErasedType() instanceof ASTNodeType) {
 			boolean prim = obj.isPrimaryExpr();
 			ANode o = this.obj.doRewrite(ctx);
 			if (!prim)
@@ -251,12 +242,14 @@ public final class IFldExpr extends LvalueExpr {
 
 	public Type getType() {
 		Type ot = obj.getType();
-		if (ot instanceof ASTNodeType) {
+		if (ot.getErasedType() instanceof ASTNodeType) {
 			String name = ("attr$"+var.sname+"$type").intern();
 			foreach (TVar tv; ot.bindings().tvars; tv.var.name == name) {
 				return ot.resolve(tv.var);
 			}
-			return new ASTNodeType(var.type.getStruct());
+			if (var.type.getErasedType() instanceof ASTNodeType)
+				return var.type;
+			return new ASTNodeType(var.type);
 		} else {
 			return Type.getRealType(ot,var.type);
 		}
@@ -313,7 +306,7 @@ public final class IFldExpr extends LvalueExpr {
 
 	public ANode doRewrite(RewriteContext ctx) {
 		Type ot = obj.getType();
-		if (ot instanceof ASTNodeType) {
+		if (ot.getErasedType() instanceof ASTNodeType) {
 			ANode obj = this.obj.doRewrite(ctx);
 			return (ANode)obj.getVal(this.ident);
 		}
@@ -736,7 +729,7 @@ public final class OuterThisAccessExpr extends ENode {
 		}
 	}
 
-	public String toString() { return getType().meta_type.tdecl.qname().toString()+".this"; }
+	public String toString() { return getType().meta_type.tdecl.qname().replace('\u001f','.')+".this"; }
 
 	public static Field outerOf(TypeDecl clazz) {
 		foreach (Field f; clazz.getAllFields()) {

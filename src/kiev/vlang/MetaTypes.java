@@ -10,13 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.parser.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -29,50 +22,50 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 	@macro
 	public N getVers(int idx) alias xfy operator []
 	{
-		case CallExpr# self():
+		case Call# self():
 			ANode.getVersion( this, idx )
-		case ContainerAccessExpr# self():
+		case SetAccess# self():
 			ANode.getVersion( self.obj, self.index )
 	}
 
 	@macro
 	private static ENode# getAttr(Field# f) {
-		case CallExpr# self():
+		case Call# self():
 			(f.parent).#id"nodeattr$'f'"#	//new #SFldExpr(obj=f.parent, ident="nodeattr$'f'")
 	}
 	
 	@macro
 	public N[] delToArray()
 	{
-		case CallExpr# self(IFldExpr# obj):
+		case Call# self(IFld# obj):
 			getAttr(self.obj.var).delToArray(self.obj.obj)
 	}
 
 	@macro
 	public void delAll()
 	{
-		case CallExpr# self(IFldExpr# obj):
+		case Call# self(IFld# obj):
 			getAttr(self.obj.var).delAll(self.obj.obj)
 	}
 
 	@macro
 	public void addAll(N[] arr)
 	{
-		case CallExpr# self(IFldExpr# obj):
+		case Call# self(IFld# obj):
 			getAttr(self.obj.var).addAll(self.obj.obj, arr)
 	}
 
 	@macro
 	public void copyFrom(N[] arr)
 	{
-		case CallExpr# self(IFldExpr# obj):
+		case Call# self(IFld# obj):
 			getAttr(self.obj.var).copyFrom(self.obj.obj, arr)
 	}
 
 	@macro
 	public int indexOf(N node)
 	{
-		case CallExpr# self(IFldExpr# obj):
+		case Call# self(IFld# obj):
 			getAttr(self.obj.var).indexOf(self.obj.obj, node)
 	}
 
@@ -80,7 +73,7 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 	public <R extends N> R set(int idx, R node)
 		alias lfy operator []
 	{
-		case CallExpr# self(IFldExpr# obj):
+		case Call# self(IFld# obj):
 			getAttr(self.obj.var).set(self.obj.obj, idx, node)
 	}
 
@@ -89,30 +82,30 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 		alias append
 		alias lfy operator +=
 	{
-		case CallExpr# self(IFldExpr# obj):
+		case Call# self(IFld# obj):
 			getAttr(self.obj.var).add(self.obj.obj, node)
-		case AssignExpr# self(IFldExpr# lval):
+		case Set# self(IFld# lval):
 			getAttr(self.lval.var).add(self.lval.obj, self.value)
 	}
 
 	@macro
 	public void del(int idx)
 	{
-		case CallExpr# self(IFldExpr# obj):
+		case Call# self(IFld# obj):
 			getAttr(self.obj.var).del(self.obj.obj, idx)
 	}
 
 	@macro
 	public void detach(N node)
 	{
-		case CallExpr# self(IFldExpr# obj):
+		case Call# self(IFld# obj):
 			getAttr(self.obj.var).detach(self.obj.obj, node)
 	}
 
 	@macro
 	public void insert(int idx, N node)
 	{
-		case CallExpr# self(IFldExpr# obj):
+		case Call# self(IFld# obj):
 			getAttr(self.obj.var).insert(self.obj.obj, idx, node)
 	}
 

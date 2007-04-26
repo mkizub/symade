@@ -10,11 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.types.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -224,7 +219,7 @@ public class UserMeta extends MNode {
 		if (td != null)
 			return td;
 		String name = decl.name;
-		if (name.indexOf('.') < 0) {
+		if (name.indexOf('\u001f') < 0) {
 			Struct@ node;
 			if( !PassInfo.resolveNameR(this,node,new ResInfo(this,name,ResInfo.noForwards)) )
 				Kiev.reportError(this,"Unresolved annotation name "+name);
@@ -236,7 +231,7 @@ public class UserMeta extends MNode {
 		Struct scope = Env.root;
 		int dot;
 		do {
-			dot = name.indexOf('.');
+			dot = name.indexOf('\u001f');
 			String head;
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
@@ -259,7 +254,7 @@ public class UserMeta extends MNode {
 	
 	public boolean isRuntimeVisible() {
 		TypeDecl tdecl = getTypeDecl();
-		UserMeta retens = tdecl.getMeta("java.lang.annotation.Retention");
+		UserMeta retens = tdecl.getMeta("java\u001flang\u001fannotation\u001fRetention");
 		if (retens == null)
 			return false;
 		MetaValue val = retens.get("value");
@@ -273,7 +268,7 @@ public class UserMeta extends MNode {
 
 	public boolean isRuntimeInvisible() {
 		TypeDecl tdecl = getTypeDecl();
-		UserMeta retens = tdecl.getMeta("java.lang.annotation.Retention");
+		UserMeta retens = tdecl.getMeta("java\u001flang\u001fannotation\u001fRetention");
 		if (retens == null)
 			return true;
 		MetaValue val = retens.get("value");

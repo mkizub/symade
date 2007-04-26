@@ -10,11 +10,6 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -102,7 +97,7 @@ class ClazzName implements Constants {
 			assert(!isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
 			if (outer.qname() != "") {
 				bytecode_name = KString.from(((JStruct)outer).bname()+delim+short_name);
-				name = KString.from(outer.qname()+"."+short_name);
+				name = KString.from(outer.qname().replace('\u001f','.')+"."+short_name);
 			} else {
 				bytecode_name = short_name;
 				name = short_name;
@@ -110,7 +105,7 @@ class ClazzName implements Constants {
 		} else {
 			assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
 			bytecode_name = KString.from(((JStruct)outer).bname()+delim+short_name);
-			name = KString.from(outer.qname()+"."+short_name);
+			name = KString.from(outer.qname().replace('\u001f','.')+"."+short_name);
 		}
 		return new ClazzName(name,short_name,bytecode_name,short_name);
 	}
@@ -125,7 +120,7 @@ class ClazzName implements Constants {
 		while(sc.hasMoreChars()) {
 			char ch = sc.nextChar();
 			if( ch == '$' ) {
-				String tmp = str.substr(0,sc.pos-1).toString().intern();
+				String tmp = str.substr(0,sc.pos-1).toString().replace('.','\u001f');
 				byte b = (byte)(Env.existsStruct(tmp)?'.':'$');
 				sb.append_fast(b);
 			} else {

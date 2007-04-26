@@ -10,16 +10,9 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.transf.*;
-import kiev.vlang.types.*;
-
 import kiev.ir.java15.RCoreExpr;
 import kiev.be.java15.BEndFunc;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -38,6 +31,19 @@ public final class CoreExpr extends ENode {
 	
 	public CoreExpr() {}
 	
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "ident") {
+			String id = this.ident;
+			if (id != null) {
+				this.core_func = CoreFunc.coreFuncs.get(id);
+				this.bend_func = BEndFunc.coreFuncs.get(id);
+			} else {
+				this.core_func = null;
+				this.bend_func = null;
+			}
+		}
+	}
+
 	public Method getMethod() {
 		ANode p = parent();
 		if (p instanceof Method)
@@ -45,11 +51,6 @@ public final class CoreExpr extends ENode {
 		return null;
 	}
 	
-//	public void attachToCompiler() {
-//		CoreFunc.attachToCompiler(this);
-//		BEndFunc.attachToBackend(this);
-//	}
-
 	public ConstExpr calc(ENode expr) {
 		return core_func.calc(expr);
 	}
@@ -58,8 +59,6 @@ public final class CoreExpr extends ENode {
 		CoreExpr ce = new CoreExpr();
 		ce.pos = pos;
 		ce.ident = name;
-		ce.core_func = CoreFunc.coreFuncs.get(name);
-		ce.bend_func = BEndFunc.coreFuncs.get(name);
 		return ce;
 	}
 }
@@ -219,19 +218,6 @@ public abstract class CoreFunc {
 		coreFuncs.put("kiev.stdlib.GString:str_concat_sa",  StringConcatSA);
 		coreFuncs.put("kiev.stdlib.GString:str_assign_add", StringAssignADD);
 	}
-	
-//	static void attachToCompiler(CoreMethod cm) {
-//		String name = ((TypeDecl)cm.parent()).qname()+":"+cm.sname;
-//		CoreFunc cf = coreFuncs.get(name);
-//		if (cf == null) {
-//			Kiev.reportWarning(cm,"Core function "+name+" not found");
-//			return;
-//		}
-//		cf.core_method = cm;
-//		cm.core_func = cf;
-//	}
-	
-	//public CoreMethod core_method;
 	
 	public abstract void normilizeExpr(Method core_method, ENode expr);
 	public abstract ConstExpr calc(ENode expr);

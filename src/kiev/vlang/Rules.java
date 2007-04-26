@@ -10,16 +10,9 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.KievExt;
-import kiev.stdlib.*;
-import kiev.vlang.types.*;
-import kiev.parser.*;
-
 import kiev.ir.java15.RRuleMethod;
 import kiev.ir.java15.RRuleBlock;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -665,9 +658,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		case ARRAY:
 			return "kiev.stdlib.ArrayEnumerator.contains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
 		case KENUM:
-			return "kiev.stdlib.PEnv.contains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
+			return "kiev.stdlib.rule.contains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
 		case JENUM:
-			return "kiev.stdlib.PEnv.jcontains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
+			return "kiev.stdlib.rule.jcontains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
 		case ELEMS:
 			return Kiev.reparseExpr(expr,true)+".contains("+var.ident+".$var)";
 		default:

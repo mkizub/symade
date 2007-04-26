@@ -10,12 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.vlang.Operator.*;
-import kiev.vlang.types.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JENode;
 import kiev.ir.java15.RCallExpr;
@@ -25,8 +19,6 @@ import kiev.be.java15.JCtorCallExpr;
 import kiev.ir.java15.RClosureCallExpr;
 import kiev.be.java15.JClosureCallExpr;
 
-import static kiev.stdlib.Debug.*;
-import static kiev.be.java15.Instr.*;
 import syntax kiev.Syntax;
 
 /**
@@ -351,7 +343,7 @@ public class CallExpr extends ENode {
 		int idx = 0;
 		Hashtable<String,Object> args = new Hashtable<String,Object>();
 		foreach (Var fp; func.params; fp.kind == Var.PARAM_NORMAL) {
-			if (fp.type instanceof ASTNodeType)
+			if (fp.type.getErasedType() instanceof ASTNodeType)
 				args.put(fp.sname, this.args[idx++].doRewrite(ctx));
 			else
 				args.put(fp.sname, this.args[idx++]);

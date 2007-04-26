@@ -10,9 +10,6 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.Kiev;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**

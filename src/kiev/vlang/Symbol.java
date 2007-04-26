@@ -10,11 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.Token;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -28,6 +23,7 @@ public interface ISymbol extends INode {
 	@virtual typedef This  ≤ ISymbol;
 
 	@getter public String	get$sname(); // source code name, may be null for anonymouse symbols
+	@getter public String	get$qname(); // quilifies source code name, default is sname
 	@getter public DNode	get$dnode();
 }
 
@@ -83,6 +79,20 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 		this.sname = (value == null) ? null : value.intern();
 	}
 	
+	@getter @att public String get$qname() {
+		ANode p = parent();
+		if (p instanceof GlobalDNode) {
+			String qn = ((GlobalDNode)p).qname();
+			if (qn == null)
+				return sname;
+			int dot = qn.lastIndexOf('\u001f');
+			if (dot < 0)
+				return sname;
+			return qn.substring(0,dot+1) + sname;
+		}
+		return sname;
+	}
+
 	public boolean equals(Object:Object nm) {
 		return false;
 	}
@@ -118,6 +128,8 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	public static final SymbolRef[] emptyArray = new SymbolRef[0];
 
 	@att public				String		name; // unresolved name
+	@abstract
+	@att public				boolean		qualified; // stored name may be qualified name
 	@ref public				ISymbol		symbol; // resolved symbol
 	@abstract public:ro		D			dnode; // resolved dnode (symbol.parent())
 		 
@@ -154,12 +166,20 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		this.symbol = symbol;
 	}
 
+	@getter @att public final boolean get$qualified() {
+		return is_qualified;
+	}
+
+	@setter public final void set$qualified(boolean val) {
+		is_qualified = val;
+	}
+
 	@getter public final D get$dnode() {
 		if (symbol != null)
 			return symbol.dnode;
 		return null;
 	}
-	
+
 	public boolean equals(Object nm) {
 		if (nm instanceof DNode) return nm.hasName(this.name,true);
 		if (nm instanceof Symbol) return nm.equals(this.name);
@@ -175,11 +195,14 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		else
 			this.name = t.image;
 	}
-	
+
 	@getter @att
 	public String get$name() {
-		if (this.symbol != null)
+		if (this.symbol != null) {
+			if (qualified)
+				return this.symbol.qname;
 			return this.symbol.sname;
+		}
 		return name;
 	}
 	
@@ -207,6 +230,12 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 	}
 	
 	public String toString() { return name; }
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "qualified")
+			return this.qualified; // do not dump <qualified>false</qualified>
+		return super.includeInDump(dump, attr, val);
+	}
 
 	public void callbackDetached() {
 		this = ANode.getVersion(this).open();

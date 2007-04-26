@@ -10,18 +10,13 @@
  *******************************************************************************/
 package kiev;
 
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
+import kiev.stdlib.Arrays;
 import kiev.fmt.ATextSyntax;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -283,6 +278,8 @@ stop:;
 			for(int i=0; i < Env.root.files.length; i++) {
 				final int errCount = this.errCount;
 				final FileUnit fu = Env.root.files[i];
+				if (fu.scanned_for_interface_only)
+					continue; // don't run back-end on interface (API) files
 				Transaction tr = Transaction.open();
 				try {
 					Kiev.resetBackEndPass();
@@ -635,10 +632,6 @@ public class Compiler {
 					String dbg = args[++a];
 					args[a] = null;
 					System.out.println("Tracing: "+onoff);
-					if( dbg.indexOf("rules",0) >= 0 ) {
-						System.out.println("\tprolog rules");
-						kiev.stdlib.PEnv.debug = onoff;
-					}
 					Compiler.debug = onoff;
 					continue;
 				}
@@ -1047,9 +1040,8 @@ public class Compiler {
 	/** add all files from project file if need to rebuild
 	*/
 	static String[] addRequaredToMake(String[] args) {
-		for(Enumeration<String> e=Env.projectHash.keys(); e.hasMoreElements();) {
+		foreach (String key; Env.projectHash.keys()) {
 			try {
-				String key = e.nextElement();
 				ProjectFile value = Env.projectHash.get(key);
 				if (value.type == ProjectFileType.FORMAT) {
 					String nm = value.file.toString();

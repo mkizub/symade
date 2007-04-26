@@ -10,16 +10,9 @@
  *******************************************************************************/
 package kiev.parser;
 
-import kiev.Kiev;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.stdlib.*;
-import kiev.transf.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-typedef kiev.stdlib.List<kiev.vlang.ENode>		ListAN;
+typedef kiev.stdlib.List<kiev.vlang.ENode>			ListAN;
 typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
 
 /**

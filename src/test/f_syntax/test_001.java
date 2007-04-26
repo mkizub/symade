@@ -1,12 +1,13 @@
 package test.f_syntax;
 
-import syntax_001;
+import syntax test.f_syntax.syntax_001;
+import syntax kiev.stdlib.Syntax;
 
 syntax syntax_001 {
 	
-	import test_001_A;
-	import test_001_B.gf_b;
-	import test_001_B.gm_b();
+	import static test.f_syntax.test_001_A.*;
+	import static test.f_syntax.test_001_B.gf_b;
+	import static test.f_syntax.test_001_B.gm_b();
 
 }
 

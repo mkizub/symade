@@ -1,14 +1,15 @@
 package test.f_syntax;
 
-import syntax_002;
+import syntax test.f_syntax.syntax_002;
+import syntax kiev.stdlib.Syntax;
 
 syntax syntax_002 {
-	import test_002_1;
-	import test_002_2.a2;
-	import test_002_2.foo2();
+	import static test.f_syntax.test_002_1.*;
+	import static test.f_syntax.test_002_2.a2;
+	import static test.f_syntax.test_002_2.foo2();
 	
-	import test_002_3.a3;
-	import test_002_3.bar(int);
+	import static test.f_syntax.test_002_3.a3;
+	import static test.f_syntax.test_002_3.bar(int);
 }
 
 public class test_002 {

@@ -10,11 +10,6 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.Main;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-
 import syntax kiev.Syntax;
 
 /**
@@ -191,7 +186,7 @@ final class Signature {
 		}
 		if( sc.peekChar() == 'R' ) {
 			sc.nextChar();
-			return ksb.append("Lkiev/stdlib/RuleFrame;").toKString();
+			return ksb.append("Lkiev/stdlib/rule;").toKString();
 		}
 		if( sc.peekChar() != 'L' )
 			return ksb.append(sc.nextChar()).toKString();

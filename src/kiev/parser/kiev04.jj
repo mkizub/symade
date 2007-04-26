@@ -25,9 +25,6 @@ PARSER_BEGIN(kiev040)
 package kiev.parser;
 
 import kiev.Kiev;
-import kiev.KievExt;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
 import java.io.Reader;
 
 /*{
@@ -536,24 +533,24 @@ MORE :
 TOKEN : /* RESERVED WORDS AND LITERALS */
 {
   < ABSTRACT: "abstract" >
-| < ANY: "any" >
-| < BOOLEAN: "boolean" >
+//| < ANY: "any" >
+//| < BOOLEAN: "boolean" >
 | < BREAK: "break" >
-| < BYTE: "byte" >
+//| < BYTE: "byte" >
 | < CASE: "case" >
 | < CATCH: "catch" >
-| < CHAR: "char" >
+//| < CHAR: "char" >
 | < CLASS: "class" >
 | < CONTINUE: "continue" >
 | < _DEFAULT: "default" >
 | < DO: "do" >
-| < DOUBLE: "double" >
+//| < DOUBLE: "double" >
 | < ELSE: "else" >
 | < EXTENDS: "extends" >
 | < FALSE: "false" >
 | < FINAL: "final" >
 | < FINALLY: "finally" >
-| < FLOAT: "float" >
+//| < FLOAT: "float" >
 | < FOR: "for" >
 | < FOREACH: "foreach" >
 | < GOTO: "goto" >
@@ -562,16 +559,16 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < IMPLEMENTS: "implements" >
 | < IMPORT: "import" >
 //| < INSTANCEOF: "instanceof" >
-| < INT: "int" >
+//| < INT: "int" >
 | < INTERFACE: "interface" >
 | < METATYPE: "metatype" >
-| < LONG: "long" >
+//| < LONG: "long" >
 | < NATIVE: "native" >
 | < NEW: "new" >
 | < NULL: "null" >
 | < PACKAGE: "package">
 | < RETURN: "return" >
-| < SHORT: "short" >
+//| < SHORT: "short" >
 | < STATIC: "static" >
 // | < SUPER: "super" >
 | < SWITCH: "switch" >
@@ -583,14 +580,14 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < TRANSIENT: "transient" >
 | < TRUE: "true" >
 | < TRY: "try" >
-| < VOID: "void" >
+//| < VOID: "void" >
 | < VOLATILE: "volatile" >
 | < VIEW: "view" >
 | < WHILE: "while" >
 | < ARROW: "->" >
 | < FUNCTION: "fun" >
 | < VARARGS: "..." >
-| < RULE: "rule" >
+//| < RULE: "rule" >
 | < PCUT: "$cut" >
 | < CAST: "$cast" >
 | < REINTERP: "$reinterp" >
@@ -970,8 +967,9 @@ TypeNameRef Package() :
 	qn = QName()
 	";"
 	{
-		Struct pkg = Env.newPackage(qn.name);
-		TypeNameRef tr = new TypeNameRef(qn.name);
+		String qname = qn.name;
+		Struct pkg = Env.newPackage(qname);
+		TypeNameRef tr = new TypeNameRef(qname);
 		tr.pos = qn.pos;
 		tr.lnk = pkg.xtype;
 		return tr;
@@ -1000,29 +998,30 @@ Import Import(ASTModifiers modifiers) :
 		<IDENTIFIER>{ imp.mode = Import.ImportMode.IMPORT_SYNTAX; }
 		imp.name = QName()
 	|
-		"package"	{ imp.mode = Import.ImportMode.IMPORT_PACKAGE; }
-		imp.name = QName()
-	|
 		"static"	{ imp.mode = Import.ImportMode.IMPORT_STATIC; }
 		imp.name = QName()
 		[	"." "*" { imp.star = true; }
 		|	"("		{ imp.of_method = true; }
-			imp.args += Type()
-			(
-				","
+			[
 				imp.args += Type()
-			)*
+				(
+					","
+					imp.args += Type()
+				)*
+			]
 			")"
 		]
 	|
 		imp.name = QName()
 		[	"." "*" { imp.star = true; }
 		|	"("		{ imp.of_method = true; }
-			imp.args += Type()
-			(
-				","
+			[
 				imp.args += Type()
-			)*
+				(
+					","
+					imp.args += Type()
+				)*
+			]
 			")"
 		]
 	)
@@ -1042,7 +1041,7 @@ TypeDecl Typedef(ASTModifiers modifiers) :
 		tr = Type()
 		{ n = mkTypeAssign(id, modifiers); n.super_types += tr; }
 	|
-		LOOKAHEAD(3, <IDENTIFIER> (TypeOperatorChar()|<OPERATOR_LRBRACKETS>|"...") <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
+		LOOKAHEAD(3, <IDENTIFIER> (TypeOperatorChar()|<OPERATOR_LRBRACKETS>|"...") <IDENTIFIER>)
 		{ n = new TypeOpDef(); }
 		id     = Name()		{ n.arg = mkTypeAssign(id, new ASTModifiers()); }
 		(	n.op = Operator()
@@ -1115,19 +1114,19 @@ TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 { TypeDecl tdecl; Symbol name; TypeRef tp; TypeDecl oldClazz; TypeConstr[] args; }
 {
 	"metatype"
-	(
+//	(
 		name = Name()
 		{
 			tdecl = mkMetaType(name, modifiers, (FileUnit)parent);	
 		}
 		args = ClazzArguments() { tdecl.args.addAll(args); }
-	|
-		tp   = PrimitiveType()
-		{
-			name = new Symbol( tp.pos, ((CoreType)tp.getType()).name );
-			tdecl = mkMetaType(name, modifiers, (FileUnit)parent);	
-		}
-	)
+//	|
+//		tp   = PrimitiveType()
+//		{
+//			name = new Symbol( tp.pos, ((CoreType)tp.getType()).name );
+//			tdecl = mkMetaType(name, modifiers, (FileUnit)parent);	
+//		}
+//	)
 	[
 		"extends"
 		tdecl.super_types += Type()
@@ -1242,7 +1241,8 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 		|	clazz.members += MemberArgDecl(modifiers)
 		|	clazz.members += CaseTypeDeclaration(modifiers, (Struct)clazz)
 		|
-			LOOKAHEAD( "rule" <IDENTIFIER> "(" )
+			//LOOKAHEAD( "rule" <IDENTIFIER> "(" )
+			LOOKAHEAD(3, <IDENTIFIER> <IDENTIFIER> "(", { getToken(1).image.equals("rule") })
 			clazz.members += RuleDeclaration(modifiers)
 		|
 			LOOKAHEAD( <IDENTIFIER> "(" )
@@ -2023,7 +2023,7 @@ WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
 RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 { RuleBlock bl; RuleMethod m; Symbol id; Method oldMethod; }
 {
-	"rule"
+	<IDENTIFIER> // "rule"
 	id = Name()
 	{ m = mkRuleMethod(id, modifiers, new TypeRef(Type.tpRule)); oldMethod = curMethod; curMethod = m; }
 	try {
@@ -2094,7 +2094,7 @@ TypeRef TypeExpr() :
 {
 	(
 		res = ReparseType()
-	|	res = PrimitiveType()
+//	|	res = PrimitiveType()
 	|	res = TypeWithArgs()
 	)
 	(
@@ -2110,27 +2110,27 @@ TypeNameRef TypeQName() :
 { SymbolRef id; TypeNameRef res; }
 {
 	id = NameRef() { res = new TypeNameRef(id.name); res.pos = id.pos; }
-	(
+	(	LOOKAHEAD("." <IDENTIFIER>)
 		"."
-		id = NameRef()  { res = new TypeNameRef(res, id.name); res.pos = id.pos; }
+		id = NameRef()  { res.ident = res.ident + '\u001f' + id.name; res.qualified = true; }
 	)*
 	{ return res; }
 }
 
-TypeRef TypeWithArgs() :
-{ SymbolRef id; TypeNameRef res; }
+TypeNameRef TypeWithArgs() :
+{ TypeNameRef res, sub; }
 {
-	id = NameRef() { res = new TypeNameRef(id.name); res.pos = id.pos; }
-	(	LOOKAHEAD(2)
-		(
+	res = TypeQName()
+	[
+		"<"
+			res.args += Type()
+			( "," res.args += Type() )*
+		">"
+		[	LOOKAHEAD("." <IDENTIFIER>)
 			"."
-			id = NameRef()  { res = new TypeNameRef(res, id.name); res.pos = id.pos; }
-		|	"<"
-				res.args += Type()
-				( "," res.args += Type() )*
-			">"
-		)
-	)*
+			sub = TypeWithArgs() { sub.outer = res; res = sub; }
+		]
+	]
 	{ return res; }
 }
 
@@ -2139,7 +2139,7 @@ TypeRef NArrType() :
 {
 	(
 		res = ReparseType()
-	|	res = PrimitiveType()
+//	|	res = PrimitiveType()
 	|	res = TypeWithArgs()
 	)
 	(	LOOKAHEAD(2)
@@ -2165,7 +2165,7 @@ TypeRef ClosureType() :
 	")" "->" n.ret = Type()
 	{ return n; }
 }
-
+/*
 TypeRef PrimitiveType() :
 { Token t; Type tp = null; }
 {
@@ -2188,7 +2188,7 @@ TypeRef PrimitiveType() :
 		return tr;
 	}
 }
-
+*/
 TypeRef ReparseType() :
 { Token t; }
 {
@@ -2240,9 +2240,12 @@ SymbolRef QName() :
 		LOOKAHEAD(2)
 		"."
 		id2 = NameRef()
-		{ id.name = id.name+'.'+id2.name; }
+		{ id.name = id.name+'\u001f'+id2.name; }
 	)*
-	{ return id; }
+	{
+		id.qualified = true;
+		return id;
+	}
 }
 
 ASTIdentifier Identifier() :
@@ -2474,7 +2477,7 @@ void SureCastOperatorLA() :
 	(
 		<CAST>
 	|	<REINTERP>
-	|	PrimitiveType()
+//	|	PrimitiveType()
 	)
 }
 
@@ -2678,7 +2681,7 @@ NewClosure AnonymouseClosure() :
 	]
 	")" "->"
     (
-		LOOKAHEAD( { getToken(1).kind == RULE } )
+		LOOKAHEAD( { getToken(1).kind == IDENTIFIER && getToken(1).image.equals("rule") } )
 		nc.type_ret = Type()
 		nc.body = RuleBlock()
 	|

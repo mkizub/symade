@@ -10,13 +10,7 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.parser.Parser;
-import kiev.parser.ParseException;
-import kiev.parser.ParseError;
-import kiev.transf.*;
 import kiev.fmt.*;
-import kiev.vlang.types.*;
 
 import java.io.*;
 import java.util.Properties;
@@ -33,7 +27,7 @@ import kiev.be.java15.JStruct;
 import kiev.be.java15.JEnv;
 
 import static kiev.vlang.ProjectFileType.*;
-import static kiev.stdlib.Debug.*;
+
 import syntax kiev.Syntax;
 
 /**
@@ -122,9 +116,10 @@ public class Env extends Struct {
 	}
 
 	public static DNode resolveGlobalDNode(String qname) {
+		assert(qname.indexOf('.') < 0);
 		Struct pkg = Env.root;
 		int start = 0;
-		int end = qname.indexOf('.', start);
+		int end = qname.indexOf('\u001f', start);
 		while (end > 0) {
 			String nm = qname.substring(start, end).intern();
 			Struct ss = null;
@@ -136,7 +131,7 @@ public class Env extends Struct {
 				return null;
 			pkg = ss;
 			start = end+1;
-			end = qname.indexOf('.', start);
+			end = qname.indexOf('\u001f', start);
 		}
 		String nm = qname.substring(start).intern();
 		foreach (DNode dn; pkg.sub_decls; dn.sname == nm)
@@ -196,7 +191,8 @@ public class Env extends Struct {
 	public static Struct newPackage(String qname) {
 		if (qname == "")
 			return Env.root;
-		int end = qname.lastIndexOf('.');
+		assert(qname.indexOf('.') < 0);
+		int end = qname.lastIndexOf('\u001f');
 		if (end < 0)
 			return newPackage(qname,Env.root);
 		else
@@ -278,12 +274,12 @@ public class Env extends Struct {
 					case PACKAGE:
 						pf.qname = args[idx++].intern();
 						pf.bname = KString.from(args[idx++]);
-						pf.file = new File(args[idx++]);
+						pf.file = new File(args[idx++].replace('/',File.separatorChar));
 						break;
 					case METATYPE:
 					case FORMAT:
 						pf.qname = args[idx++].intern();
-						pf.file = new File(args[idx++]);
+						pf.file = new File(args[idx++].replace('/',File.separatorChar));
 						break;
 					}
 					for (int i=idx; i < args.length; i++) {
@@ -331,15 +327,15 @@ public class Env extends Struct {
 					else if (cl.isInterface())	pf.type = INTERFACE;
 					else if (cl.isEnum())		pf.type = ENUM;
 					else						pf.type = CLASS;
-					strs.append(pf.type+" "+pf.qname+" "+pf.bname+" "+pf.file+(pf.bad?" bad":""));
+					strs.append(pf.type+" "+pf.qname+" "+pf.bname+" "+pf.file.getPath().replace(File.separatorChar,'/')+(pf.bad?" bad":""));
 				}
 				else if (cl instanceof TypeDecl) {
 					pf.type = METATYPE;
-					strs.append(pf.type+" "+pf.qname+" "+pf.file+(pf.bad?" bad":""));
+					strs.append(pf.type+" "+pf.qname+" "+pf.file.getPath().replace(File.separatorChar,'/')+(pf.bad?" bad":""));
 				}
 				else if (cl instanceof ATextSyntax) {
 					pf.type = FORMAT;
-					strs.append(pf.type+" "+pf.qname+" "+pf.file+(pf.bad?" bad":""));
+					strs.append(pf.type+" "+pf.qname+" "+pf.file.getPath().replace(File.separatorChar,'/')+(pf.bad?" bad":""));
 				}
 			}
 			String[] sarr = (String[])strs;
@@ -401,7 +397,7 @@ public class Env extends Struct {
 		if (Env.projectHash.get(qname) != null)
 			return true;
 		// Check if not loaded
-		return Env.classpath.exists(qname.replace('.','/'));
+		return Env.classpath.exists(qname.replace('\u001f','/'));
 
 	}
 
@@ -418,15 +414,19 @@ public class Env extends Struct {
 		if (classHashOfFails.get(qname) != null) return null;
 		TypeDecl cl = (TypeDecl)resolveGlobalDNode(qname);
 		// Try to load from project file (scan sources) or from .xml API dump
-		if (cl == null && Env.projectHash.get(qname) != null)
+		if (cl == null && !Compiler.makeall_project && Env.projectHash.get(qname) != null)
 			cl = loadTypeDeclFromProject(qname);
 		//if (cl == null)
 		//	cl = loadTypeDeclFromAPIDump(qname);
 		// Load if not loaded or not resolved
 		if (cl == null)
 			cl = jenv.loadClazz(qname);
-		else if (!cl.isTypeDeclLoaded() && cl instanceof Struct && !cl.isAnonymouse())
-			cl = jenv.loadClazz((Struct)cl);
+		else if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse()) {
+			if (cl instanceof Struct)
+				cl = jenv.loadClazz((Struct)cl);
+			else
+				cl = jenv.loadClazz(cl.qname());
+		}
 		if (cl == null)
 			classHashOfFails.put(qname);
 		return cl;
@@ -438,11 +438,15 @@ public class Env extends Struct {
 		if (cl == Env.root)
 			return Env.root;
 		// Try to load from project file (scan sources) or from .xml API dump
-		if (Env.projectHash.get(cl.qname()) != null)
+		if (!Compiler.makeall_project && Env.projectHash.get(cl.qname()) != null)
 			loadTypeDeclFromProject(cl.qname());
 		// Load if not loaded or not resolved
-		if (!cl.isTypeDeclLoaded() && cl instanceof Struct && !cl.isAnonymouse())
-			jenv.loadClazz((Struct)cl);
+		if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse()) {
+			if (cl instanceof Struct)
+				jenv.loadClazz((Struct)cl);
+			else
+				jenv.loadClazz(cl.qname());
+		}
 		return cl;
 	}
 	
@@ -484,6 +488,7 @@ public class Env extends Struct {
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.k.ReInit(bis);
 			FileUnit fu = Kiev.k.FileUnit(filename);
+			fu.scanned_for_interface_only = true;
 			Env.root.files += fu;
 			diff_time = System.currentTimeMillis() - curr_time;
 			bis.close();
@@ -518,7 +523,7 @@ public class Env extends Struct {
 		make_output_dir(f);
 		FileOutputStream out = new FileOutputStream(f);
 		if (stx instanceof XmlDumpSyntax) {
-			out.write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
+			out.write("<?xml version='1.1' encoding='UTF-8' standalone='yes'?>\n".getBytes("UTF-8"));
 			out.write("<!--\n".getBytes("UTF-8"));
 			out.write(" Copyright (c) 2005-2007 UAB \"MAKSINETA\".\n".getBytes("UTF-8"));
 			out.write(" All rights reserved. This program and the accompanying materials\n".getBytes("UTF-8"));
@@ -567,8 +572,10 @@ public class Env extends Struct {
 		saxParser.parse(new ByteArrayInputStream(data), handler);
 		TypeDecl root = (TypeDecl)handler.root;
 		if (!root.isAttached()) {
-			FileUnit fu = new FileUnit(root.qname()+".xml", null);
+			FileUnit fu = new FileUnit(root.qname().replace('\u001f','/')+".xml", null);
+			fu.scanned_for_interface_only = true;
 			fu.members += root;
+			Env.root.files += fu;
 		}
 		Kiev.runProcessorsOn(root);
 		return root;
@@ -599,7 +606,7 @@ public class Env extends Struct {
 					if (pkg == Env.root)
 						qname = tdname;
 					else
-						qname = pkg.qname() + '.' + tdname;
+						qname = pkg.qname() + '\u001f' + tdname;
 					TypeDecl td = (TypeDecl)Env.resolveGlobalDNode(qname);
 					if (td != null) {
 						assert(td.getClass().getName().equals(cl_name));
@@ -638,7 +645,12 @@ public class Env extends Struct {
 					n = new kiev.parser.ASTOperatorAlias();
 				}
 				else {
-					n = (ANode)Class.forName(cl_name).newInstance();
+					try {
+						n = (ANode)Class.forName(cl_name).newInstance();
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+						n = null;
+					}
 				}
 				//System.out.println("push node "+nodes.length);
 				nodes.push(n);

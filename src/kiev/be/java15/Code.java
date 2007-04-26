@@ -10,13 +10,8 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.*;
-
-import kiev.vlang.types.Type;
-import kiev.vlang.types.CallType;
-
-import static kiev.stdlib.Debug.*;
 import static kiev.be.java15.Instr.*;
+
 import syntax kiev.Syntax;
 
 /**

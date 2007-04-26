@@ -10,15 +10,6 @@
  *******************************************************************************/
 package kiev.fmt;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 // links to DrawTerm-s and holds space information
@@ -271,10 +262,27 @@ public class DrawIdent extends DrawNodeTerm {
 			return null;
 		//text = text.intern();
 		SyntaxIdentAttr si = (SyntaxIdentAttr)this.syntax;
-		if (si.isOk(text))
-			return text;
-		escaped = true;
-		return getPrefix()+text+getSuffix();
+		if (text.indexOf('\u001f') >= 0) {
+			String[] idents = text.split("\u001f");
+			StringBuilder sb = new StringBuilder(text.length());
+			foreach (String id; idents) {
+				if (sb.length() > 0)
+					sb.append('.');
+				if (si.isOk(id)) {
+					sb.append(id);
+				} else {
+					sb.append(si.getPrefix());
+					sb.append(id);
+					sb.append(si.getSuffix());
+				}
+			}
+			return sb.toString();
+		} else {
+			if (si.isOk(text))
+				return text;
+			escaped = true;
+			return getPrefix()+text+getSuffix();
+		}
 	}
 	
 	public String getPrefix() { if (escaped) return ((SyntaxIdentAttr)this.syntax).getPrefix(); return ""; }
@@ -322,15 +330,24 @@ public class DrawXmlStrTerm extends DrawNodeTerm {
 	}
 
 	final String escapeString(String str) {
-		StringBuffer sb = new StringBuffer(str);
+		StringBuilder sb = new StringBuilder(str);
 		boolean changed = false;
 		for(int i=0; i < sb.length(); i++) {
+			char ch = sb.charAt(i);
 			switch (sb.charAt(i)) {
 			case '&':  sb.setCharAt(i, '&'); sb.insert(i+1,"amp;");  i += 4; changed = true; continue;
 			case '<':  sb.setCharAt(i, '&'); sb.insert(i+1,"lt;");   i += 3; changed = true; continue;
 			case '>':  sb.setCharAt(i, '&'); sb.insert(i+1,"gt;");   i += 3; changed = true; continue;
 			case '\"': sb.setCharAt(i, '&'); sb.insert(i+1,"quot;"); i += 5; changed = true; continue;
 			case '\'': sb.setCharAt(i, '&'); sb.insert(i+1,"apos;"); i += 5; changed = true; continue;
+			}
+			if (ch < ' ') {
+				String s = "#"+Integer.toString((int)ch)+";";
+				sb.setCharAt(i, '&');
+				sb.insert(i+1,s);
+				i += s.length();
+				changed = true;
+				continue;
 			}
 		}
 		if (changed) return sb.toString();

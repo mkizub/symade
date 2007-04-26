@@ -10,13 +10,6 @@
  *******************************************************************************/
 package kiev.ir.java15;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -1299,11 +1292,14 @@ public final view RStruct of Struct extends RTypeDecl {
 		
 		// Generate super(...) constructor calls, if they are not
 		// specified as first statements of a constructor
-		if (qname() != Type.tpObject.tdecl.qname()) {
+		if (((Struct)this) != Type.tpObject.tdecl) {
 			foreach (Constructor m; members) {
 				if( m.isStatic() ) continue;
 
 				Block initbody = m.body;
+				
+				if (initbody == null)
+					continue; // API class loaded?
 
 				boolean gen_def_constr = false;
 				if (initbody.stats.length == 0) {

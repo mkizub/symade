@@ -10,15 +10,6 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 public view JNode of ASTNode implements JConstants {

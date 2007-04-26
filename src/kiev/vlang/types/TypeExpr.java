@@ -10,12 +10,6 @@
  *******************************************************************************/
 package kiev.vlang.types;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-
 import syntax kiev.Syntax;
 
 /**
@@ -27,8 +21,6 @@ import syntax kiev.Syntax;
 public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
-
-	public static final Hashtable<String,Struct>	AllNodes = new Hashtable<String,Struct>(256);
 
 	@virtual typedef This  = TypeExpr;
 
@@ -44,7 +36,16 @@ public class TypeExpr extends TypeRef {
 	public TypeExpr(TypeRef arg, Operator op) {
 		this.pos = arg.pos;
 		this.arg = arg;
+		this.op = op;
 		this.ident = op.name;
+	}
+
+	public TypeExpr(TypeRef arg, Operator op, Type lnk) {
+		this.pos = arg.pos;
+		this.arg = arg;
+		this.op = op;
+		this.ident = op.name;
+		this.lnk = lnk;
 	}
 
 	public TypeExpr(TypeRef arg, Token op) {
@@ -75,61 +76,33 @@ public class TypeExpr extends TypeRef {
 			this.op = op;
 		}
 		if (op == Operator.PostTypeAST) {
-			Struct s = AllNodes.get(arg.toString());
-			if (s != null) {
-				arg.lnk = s.xtype;
-				this.lnk = new ASTNodeType(s);
+			Class cls = ASTNodeMetaType.allNodes.get(arg.toString());
+			if (cls != null) {
+				this.lnk = new ASTNodeType(cls);
 				return this.lnk;
 			}
+			throw new CompilerException(this, "Cannot find ASTNodeType for name: "+arg.toString());
 		}
-		Type tp = arg.getType();
-		DNode@ v;
-		if (op == Operator.PostTypeArray) {
-			tp = new ArrayType(tp);
+		TypeOpDef@ tod;
+		Type t;
+		ArgType a;
+		if (PassInfo.resolveNameR(((TypeExpr)this),tod,new ResInfo(this,this.ident))) {
+			t = tod.type.getType();
+			a = tod.arg.getAType();
 		}
-		else if (op == Operator.PostTypeWrapper) {
-			tp = new WrapperType((CompaundType)tp);
+		else if (op == Operator.PostTypeArray) {
+			t = StdTypes.tpArray;
+			a = StdTypes.tpArrayArg;
 		}
-		else if (op == Operator.PostTypeAST) {
-			tp = new ASTNodeType(tp.getStruct());
+		else if (op == Operator.PostTypeVararg) {
+			t = StdTypes.tpVararg;
+			a = StdTypes.tpVarargArg;
 		}
-		else {
-			Type t;
-			ArgType a = null;
-			if (!PassInfo.resolveNameR(((TypeExpr)this),v,new ResInfo(this,this.ident))) {
-				if (op == Operator.PostTypePVar) {
-					t = WrapperType.tpWrappedPrologVar;
-					a = StdTypes.tpPrologVar.meta_type.tdecl.args[0].getAType();
-				}
-				else if (op == Operator.PostTypeVararg) {
-					t = StdTypes.tpVararg;
-				}
-				else if (op == Operator.PostTypeSpace) {
-					t = ((TypeDecl)Env.resolveGlobalDNode("kiev.vlang.NodeSpace")).xtype;
-				}
-				else if (op == Operator.PostTypeRef) {
-					Kiev.reportWarning(this, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpRefProxy);
-					t = WrapperType.tpWrappedRefProxy;
-					a = StdTypes.tpRefProxy.meta_type.tdecl.args[0].getAType();
-				}
-				else
-					throw new CompilerException(this,"Typedef for type operator "+ident+" not found");
-			} else {
-				if (v instanceof TypeDecl)
-					t = ((TypeDecl)v).getType();
-				else
-					throw new CompilerException(this,"Expected to find type for "+ident+", but found "+v);
-			}
-			t.checkResolved();
-			TVarBld set = new TVarBld();
-			if (a == null) {
-				if (t.meta_type.tdecl.args.length != 1)
-					throw new CompilerException(this,"Type '"+t+"' of type operator "+ident+" must have 1 argument");
-				a = t.meta_type.tdecl.args[0].getAType();
-			}
-			set.append(a, tp);
-			tp = t.applay(set);
-		}
+		else
+			throw new CompilerException(this,"Typedef for type operator '"+ident+"' not found");
+		t.checkResolved();
+		TVarBld set = new TVarBld(a, arg.getType());
+		Type tp = t.applay(set);
 		this.lnk = tp;
 		return tp;
 	}
@@ -141,11 +114,7 @@ public class TypeExpr extends TypeRef {
 			return null;
 		DNode@ v;
 		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,this.ident))) {
-			if (op == Operator.PostTypePVar)
-				return WrapperType.tpWrappedPrologVar.getStruct();
-			else if (op == Operator.PostTypeRef)
-				return WrapperType.tpWrappedRefProxy.getStruct();
-			else if (op == Operator.PostTypeAST)
+			if (op == Operator.PostTypeAST)
 				return arg.getStruct();
 			else
 				throw new CompilerException(this,"Typedef for type operator "+ident+" not found");
@@ -163,12 +132,8 @@ public class TypeExpr extends TypeRef {
 			return StdTypes.tpVararg.meta_type.tdecl;
 		DNode@ v;
 		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,this.ident))) {
-			if (op == Operator.PostTypePVar)
-				return WrapperType.tpWrappedPrologVar.meta_type.tdecl;
-			else if (op == Operator.PostTypeRef)
-				return WrapperType.tpWrappedRefProxy.meta_type.tdecl;
-			else if (op == Operator.PostTypeAST)
-				return ASTNodeMetaType.instance(arg.getStruct()).tdecl;
+			if (op == Operator.PostTypeAST)
+				return StdTypes.tdASTNodeType;
 			else
 				throw new CompilerException(this,"Typedef for type operator "+ident+" not found");
 		}

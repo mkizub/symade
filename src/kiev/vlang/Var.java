@@ -10,11 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.*;
-import kiev.stdlib.*;
-import kiev.vlang.types.*;
-import kiev.parser.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JDNode;
 import kiev.ir.java15.RVar;
@@ -22,7 +17,6 @@ import kiev.be.java15.JVar;
 import kiev.ir.java15.RField;
 import kiev.be.java15.JField;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -230,7 +224,7 @@ public class LVar extends Var {
 }
 
 @node(name="Field")
-public final class Field extends Var {
+public final class Field extends Var implements GlobalDNode {
 	public static final Field[]	emptyArray = new Field[0];
 	static final Field dummyNode = new Field();
 
@@ -261,6 +255,17 @@ public final class Field extends Var {
 		} else {
 			super.callbackChildChanged(attr);
 		}
+	}
+	
+	public String qname() {
+		ANode p = parent();
+		while (p instanceof DeclGroup)
+			p = p.parent();
+		if (p == null || p == Env.root)
+			return sname;
+		if (p instanceof GlobalDNode)
+			return (((GlobalDNode)p).qname()+'\u001f'+sname);
+		return sname;
 	}
 
 	// is a field of enum
@@ -355,11 +360,11 @@ public final class Field extends Var {
 	}
 
 	public final MetaPacked getMetaPacked() {
-		return (MetaPacked)this.getMeta("kiev.stdlib.meta.packed");
+		return (MetaPacked)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fpacked");
 	}
 
 	public final MetaPacker getMetaPacker() {
-		return (MetaPacker)this.getMeta("kiev.stdlib.meta.packer");
+		return (MetaPacker)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fpacker");
 	}
 
 	public boolean preResolveIn() {

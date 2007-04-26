@@ -102,7 +102,7 @@ public class TreeView extends UIView implements KeyListener {
 				evt.consume();
 				// build a menu of types to instantiate
 				JPopupMenu m = new JPopupMenu();
-				m.add(new JMenuItem(new RenderActions.SetSyntaxAction(this,"Project Tree Syntax", "stx-fmt.syntax-for-project-tree")));
+				m.add(new JMenuItem(new RenderActions.SetSyntaxAction(this,"Project Tree Syntax", "stx-fmt\u001fsyntax-for-project-tree")));
 				m.add(new JMenuItem(new RenderActions.LoadSyntaxAction(this,"Project Tree Syntax (java-tree.xml)", "java-tree.xml", "test.syntax-for-project-tree")));
 				m.show(the_tree, 0, 0);
 				break;

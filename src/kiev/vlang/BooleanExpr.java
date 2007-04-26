@@ -10,10 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.types.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JENode;
 import kiev.ir.java15.RBoolExpr;
@@ -29,10 +25,6 @@ import kiev.be.java15.JInstanceofExpr;
 import kiev.ir.java15.RBooleanNotExpr;
 import kiev.be.java15.JBooleanNotExpr;
 
-import kiev.be.java15.Code;
-
-import static kiev.stdlib.Debug.*;
-import static kiev.be.java15.Instr.*;
 import syntax kiev.Syntax;
 
 /**

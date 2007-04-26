@@ -25,6 +25,7 @@
    </name>
    <mode>IMPORT_CLASS</mode>
    <star>true</star>
+   <of_method>false</of_method>
   </a-node>
   <a-node class='kiev.vlang.Import'>
    <name>
@@ -34,6 +35,7 @@
    </name>
    <mode>IMPORT_CLASS</mode>
    <star>true</star>
+   <of_method>false</of_method>
   </a-node>
   <a-node class='kiev.vlang.Import'>
    <name>
@@ -43,6 +45,7 @@
    </name>
    <mode>IMPORT_CLASS</mode>
    <star>true</star>
+   <of_method>false</of_method>
   </a-node>
   <a-node class='kiev.vlang.Import'>
    <name>
@@ -52,6 +55,7 @@
    </name>
    <mode>IMPORT_CLASS</mode>
    <star>true</star>
+   <of_method>false</of_method>
   </a-node>
   <a-node class='kiev.fmt.KievTextSyntax'>
    <members>
@@ -1823,6 +1827,36 @@
          <elements>
           <a-node class='kiev.fmt.SyntaxSpace'>
           </a-node>
+          <a-node class='kiev.fmt.SyntaxList'>
+           <element>
+            <a-node class='kiev.fmt.SyntaxNode'>
+            </a-node>
+           </element>
+           <separator>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>,</text>
+            </a-node>
+           </separator>
+           <prefix>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>(</text>
+            </a-node>
+           </prefix>
+           <sufix>
+            <a-node class='kiev.fmt.SyntaxToken'>
+             <text>)</text>
+            </a-node>
+           </sufix>
+           <folded_by_default>false</folded_by_default>
+           <name>args</name>
+          </a-node>
+         </elements>
+         <name>of_method</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxEnumChoice'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxSpace'>
+          </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>.*</text>
            <fmt>
@@ -1902,6 +1936,51 @@
       </a-node>
      </elem>
      <sname>stx-opdef</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>TypeOpDef</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>typedef</text>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>arg</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>syntax-type-args</name>
+          </a-node>
+         </in_syntax>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>op</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>syntax-type-args</name>
+          </a-node>
+         </in_syntax>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>type</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>;</text>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+      </a-node>
+     </elem>
+     <sname>stx-type-op-def</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -2126,6 +2205,47 @@
     </a-node>
     <a-node class='kiev.fmt.TextSyntax'>
      <members>
+      <a-node class='kiev.fmt.SyntaxElemDecl'>
+       <rnode>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>ASTOperator</name>
+        </a-node>
+       </rnode>
+       <elem>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>ident</name>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-operator-type</name>
+          </a-node>
+         </fmt>
+        </a-node>
+       </elem>
+       <sname>std-ast-operator</sname>
+      </a-node>
+      <a-node class='kiev.fmt.SyntaxElemDecl'>
+       <rnode>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>TypeAssign</name>
+        </a-node>
+       </rnode>
+       <elem>
+        <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>ident-template</name>
+          </a-node>
+         </decl>
+         <name>sname</name>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-symbol</name>
+          </a-node>
+         </fmt>
+        </a-node>
+       </elem>
+       <sname>stx-type-assign</sname>
+      </a-node>
       <a-node class='kiev.fmt.SyntaxElemDecl'>
        <rnode>
         <a-node class='kiev.vlang.SymbolRef'>
@@ -4614,6 +4734,40 @@
     </a-node>
     <a-node class='kiev.fmt.TextSyntax'>
      <members>
+      <a-node class='kiev.fmt.SyntaxElemDecl'>
+       <rnode>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>CoreExpr</name>
+        </a-node>
+       </rnode>
+       <elem>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>continue</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-keyword</name>
+            </a-node>
+           </fmt>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxStrAttr'>
+           <name>ident</name>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>;</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-separator-eat-all</name>
+            </a-node>
+           </fmt>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+        </a-node>
+       </elem>
+       <sname>stx-core-expr</sname>
+      </a-node>
       <a-node class='kiev.fmt.SyntaxElemDecl'>
        <rnode>
         <a-node class='kiev.vlang.SymbolRef'>

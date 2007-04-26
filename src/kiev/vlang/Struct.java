@@ -10,20 +10,12 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.transf.*;
-import kiev.vlang.types.*;
-import java.io.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JDNode;
 import kiev.be.java15.JTypeDecl;
 import kiev.be.java15.JStruct;
 import kiev.ir.java15.RStruct;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -118,9 +110,6 @@ public class Struct extends TypeDecl {
 
 	@ref(ext_data=true) public Struct				typeinfo_clazz;
 	@ref(ext_data=true) public Struct				iface_impl;
-	@ref(ext_data=true) public WrapperMetaType		wmeta_type;
-	@ref(ext_data=true) public ASTNodeMetaType		ameta_type;
-	@ref(ext_data=true) public TypeAssign			ometa_tdef;
 
 	@att
 	@getter public final String get$uniq_name() { return u_name; }
@@ -364,7 +353,7 @@ public class Struct extends TypeDecl {
 		if (pkg == null || pkg == Env.root)
 			q_name = u_name;
 		else
-			q_name = (pkg.qname()+"."+u_name).intern();
+			q_name = (pkg.qname()+"\u001f"+u_name).intern();
 		return q_name;
 	}
 
@@ -516,7 +505,7 @@ public class Struct extends TypeDecl {
 			if (this.equals(Env.root))
 				cl = Env.loadTypeDecl(qn);
 			else
-				cl = Env.loadTypeDecl(qn=(this.qname()+"."+name).intern());
+				cl = Env.loadTypeDecl(qn=(this.qname()+"\u001f"+name).intern());
 			if( cl != null ) {
 				trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+cl+" found in "+this);
 				node = cl;

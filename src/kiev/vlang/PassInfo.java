@@ -10,14 +10,8 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.types.*;
-import java.io.*;
-
 import kiev.be.java15.JLabel;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -79,15 +73,6 @@ public class PassInfo {
 
 	// No instances
 	private PassInfo() {}
-
-	public static boolean checkClassName(ASTNode from, String qname) {
-		DNode@ node;
-		if (!resolveNameR(from, node,new ResInfo(from,qname)))
-			return false;
-		if (node instanceof TypeDecl)
-			return true;
-		return false;
-	}
 
 	public static rule resolveNameR(ASTNode from, ASTNode@ node, ResInfo path)
 		ASTNode@ p;

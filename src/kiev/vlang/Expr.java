@@ -10,12 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-
 import kiev.be.java15.JNode;
 import kiev.be.java15.JENode;
 import kiev.be.java15.JLvalueExpr;
@@ -47,8 +41,6 @@ import kiev.be.java15.JCastExpr;
 
 import kiev.be.java15.CodeLabel;
 
-import static kiev.stdlib.Debug.*;
-import static kiev.be.java15.Instr.*;
 import syntax kiev.Syntax;
 
 /**
@@ -311,13 +303,6 @@ public class BinaryExpr extends ENode {
 		this.op = op;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
-	}
-
-	public BinaryExpr(CoreExpr cm, Operator op, ENode[] args) {
-		this.op = op;
-		this.symbol = cm.getMethod().getSymbol(op.name);
-		this.expr1 = args[0];
-		this.expr2 = args[1];
 	}
 
 	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {

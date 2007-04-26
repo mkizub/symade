@@ -10,12 +10,8 @@
  *******************************************************************************/
 package kiev.vlang.types;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-
 import static kiev.vlang.AccessFlags.*;
-import static kiev.stdlib.Debug.*;
+
 import syntax kiev.Syntax;
 
 /**
@@ -102,6 +98,8 @@ public interface StdTypes {
 	public static final TypeConstr tdArrayArg;
 	public static final ArgType    tpArrayArg;
 	public static final XType      tpVararg;
+	public static final ArgType		tpVarargArg;
+	public static final TypeDecl	tdASTNodeType;
 
 	public static final ArgType    tpWrapperArg;
 	public static final TypeConstr tdWrapperArg;
@@ -128,11 +126,11 @@ public interface StdTypes {
 		tpFloat		= new CoreType(Constants.nameFloat,   tpAny, flFloat);
 		tpDouble	= new CoreType(Constants.nameDouble,  tpAny, flFloat   | flDoubleSize);
 
-		Struct java_lang = Env.newPackage("java.lang");
-		Struct java_lang_annotation = Env.newPackage("java.lang.annotation");
-		Struct java_util = Env.newPackage("java.util");
-		Struct kiev_stdlib = Env.newPackage("kiev.stdlib");
-		Struct kiev_stdlib_meta = Env.newPackage("kiev.stdlib.meta");
+		Struct java_lang = Env.newPackage("java\u001flang");
+		Struct java_lang_annotation = Env.newPackage("java\u001flang\u001fannotation");
+		Struct java_util = Env.newPackage("java\u001futil");
+		Struct kiev_stdlib = Env.newPackage("kiev\u001fstdlib");
+		Struct kiev_stdlib_meta = Env.newPackage("kiev\u001fstdlib\u001fmeta");
 
 		Struct tpObjectClazz = Env.newStruct("Object",java_lang,ACC_PUBLIC,new JavaClass());
 		tpObject				= (CompaundType)tpObjectClazz.xtype;
@@ -143,9 +141,9 @@ public interface StdTypes {
 		tpNull		= new CoreType(Constants.nameNull,    tpObject, flReference);
 
 //		tpRule		= new CoreType(Constants.nameRule,    flReference);
-		Struct tpRuleClazz = new Struct("rule","rule",kiev_stdlib,ACC_PUBLIC,new JavaClass());
+		Struct tpRuleClazz = new Struct("rule","rule",kiev_stdlib,ACC_PUBLIC|ACC_ABSTRACT,new JavaClass());
 		tpRule				= (CompaundType)tpRuleClazz.xtype;
-		tpRuleClazz.setTypeDeclLoaded(true);
+//		tpRuleClazz.setTypeDeclLoaded(true);
 		tpRule.flags		= flResolved | flReference;
 		kiev_stdlib.sub_decls += tpRuleClazz;
 
@@ -171,7 +169,7 @@ public interface StdTypes {
 		tdArrayArg.setAbstract(true);
 		tpArrayArg = tdArrayArg.getAType();
 		tpArrayArg.flags |= flHidden | flArgAppliable | flValAppliable;
-		tpArray					= ArrayType.newArrayType(Type.tpAny);
+		tpArray					= ArrayType.newArrayType(tpArrayArg);
 		tpArray.flags			|= flResolved | flReference | flArray;
 
 		TypeDecl tdVararg = Env.newMetaType(new Symbol<MetaTypeDecl>("_vararg_"),kiev_stdlib,false,"8aa32751-ac53-343e-b456-6f8521b01647");
@@ -182,11 +180,24 @@ public interface StdTypes {
 		TypeConstr tdVarargArg = new TypeConstr("_elem_", tpObject);
 		tdVarargArg.setAbstract(true);
 		tdVararg.args += tdVarargArg;
-		ArgType tpVarargArg = tdVarargArg.getAType();
-		tpArrayArg.flags |= flHidden | flArgAppliable | flValAppliable;
+		tpVarargArg = tdVarargArg.getAType();
+		tpVarargArg.flags |= flHidden | flArgAppliable | flValAppliable;
 		tdVararg.super_types += new TypeRef(ArrayType.newArrayType(tpVarargArg));
 		tpVararg				= (XType)tdVararg.xtype;
 		//tpVararg.flags			|= flResolved | flReference | flArray;
+
+		tdASTNodeType = Env.newMetaType(new Symbol<MetaTypeDecl>("_astnode_"),kiev_stdlib,false,"3e32f9c7-9846-393e-8c6e-11512191ec94");
+		tdASTNodeType.setPublic();
+		tdASTNodeType.setMacro(true);
+		tdASTNodeType.setFinal(true);
+		tdASTNodeType.setTypeDeclLoaded(true);
+		TypeConstr tdASTNodeTypeArg = new TypeConstr("_node_", tpObject);
+		tdASTNodeTypeArg.setAbstract(true);
+		tdASTNodeType.args += tdASTNodeTypeArg;
+		ArgType tpASTNodeTypeArg;
+		tpASTNodeTypeArg = tdASTNodeTypeArg.getAType();
+		tpASTNodeTypeArg.flags |= flHidden | flArgAppliable | flValAppliable;
+		tdASTNodeType.super_types += new TypeRef(StdTypes.tpAny);
 
 		Struct tpBooleanRefClazz = Env.newStruct("Boolean",java_lang,ACC_PUBLIC,new JavaClass());
 		tpBooleanRef			= (CompaundType)tpBooleanRefClazz.xtype;
@@ -273,6 +284,7 @@ public interface StdTypes {
 		tpRefProxyClazz.args.add(new TypeConstr("A"));
 		tpRefProxy	= (CompaundType)tpRefProxyClazz.xtype;
 
+		WrapperMetaType.instance(tpWrapperArg); // kick static initializer
 
 		TypeDef tdCallRetArg = new TypeConstr("_ret_", tpAny);
 		tdCallRetArg.setAbstract(true);
@@ -311,10 +323,12 @@ public interface StdTypes {
 		tpDouble.meta_type.tdecl.setUUID(			"d741575d-769c-3108-810e-6c0e57a4b03e");
 		tpNull.meta_type.tdecl.setUUID(				"6c8cef01-5c38-36c3-aab0-bd16c23e817d");
 
-		tpArrayArg.meta_type.tdecl.setUUID(		"74843bf1-3c28-374b-ad11-006af8a31a71");
-		tpWrapperArg.meta_type.tdecl.setUUID(		"400f213e-a4bb-3ee2-b870-9ec1951fd955");
+		tdArrayArg.setUUID(							"74843bf1-3c28-374b-ad11-006af8a31a71");
+		tdWrapperArg.setUUID(						"400f213e-a4bb-3ee2-b870-9ec1951fd955");
 		tdVararg.setUUID(							"8aa32751-ac53-343e-b456-6f8521b01647");
-		tpVarargArg.meta_type.tdecl.setUUID(		"924f219a-37cf-3654-b761-7cb5e26ceef0");
+		tdVarargArg.setUUID(						"924f219a-37cf-3654-b761-7cb5e26ceef0");
+		tdASTNodeType.setUUID(						"3e32f9c7-9846-393e-8c6e-11512191ec94");
+		tdASTNodeTypeArg.setUUID(					"f23d4ec5-7fc2-3bbb-9b8f-46a309fc5f24");
 	}
 }
 

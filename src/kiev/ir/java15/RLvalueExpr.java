@@ -10,14 +10,6 @@
  *******************************************************************************/
 package kiev.ir.java15;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.transf.*;
-import kiev.parser.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -132,7 +124,7 @@ public static final view RContainerAccessExpr of ContainerAccessExpr extends RLv
 		ResInfo info = new ResInfo((ASTNode)this,nameArrayGetOp,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 		if( !PassInfo.resolveBestMethodR(obj.getType(),m,info,mt) )
 			throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayGetOp,mt));
-		if !(m.body instanceof CoreExpr) {
+		if !(m.isMacro() && m.isNative()) {
 			// Not a standard operator
 			if( m.isStatic() )
 				replaceWithNodeResolve(reqType, new CallExpr(pos,null,m,new ENode[]{~obj,~index}));

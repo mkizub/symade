@@ -18,172 +18,161 @@ public interface kiev040Constants {
   int FORMAL_COMMENT = 12;
   int MULTI_LINE_COMMENT = 13;
   int ABSTRACT = 15;
-  int ANY = 16;
-  int BOOLEAN = 17;
-  int BREAK = 18;
-  int BYTE = 19;
-  int CASE = 20;
-  int CATCH = 21;
-  int CHAR = 22;
-  int CLASS = 23;
-  int CONTINUE = 24;
-  int _DEFAULT = 25;
-  int DO = 26;
-  int DOUBLE = 27;
-  int ELSE = 28;
-  int EXTENDS = 29;
-  int FALSE = 30;
-  int FINAL = 31;
-  int FINALLY = 32;
-  int FLOAT = 33;
-  int FOR = 34;
-  int FOREACH = 35;
-  int GOTO = 36;
-  int IF = 37;
-  int IF_REWR = 38;
-  int IMPLEMENTS = 39;
-  int IMPORT = 40;
-  int INT = 41;
-  int INTERFACE = 42;
-  int METATYPE = 43;
-  int LONG = 44;
-  int NATIVE = 45;
-  int NEW = 46;
-  int NULL = 47;
-  int PACKAGE = 48;
-  int RETURN = 49;
-  int SHORT = 50;
-  int STATIC = 51;
-  int SWITCH = 52;
-  int SYNCHRONIZED = 53;
-  int WITH = 54;
-  int THROW = 55;
-  int THROWS = 56;
-  int TRANSIENT = 57;
-  int TRUE = 58;
-  int TRY = 59;
-  int VOID = 60;
-  int VOLATILE = 61;
-  int VIEW = 62;
-  int WHILE = 63;
-  int ARROW = 64;
-  int FUNCTION = 65;
-  int VARARGS = 66;
-  int RULE = 67;
-  int PCUT = 68;
-  int CAST = 69;
-  int REINTERP = 70;
-  int ALIAS = 71;
-  int OPERATOR_ID = 72;
-  int TYPEDEF = 73;
-  int ENUM = 74;
-  int REQUIRE = 75;
-  int ENSURE = 76;
-  int INVARIANT = 77;
-  int META_INTERFACE = 78;
-  int META_SINGLETON = 79;
-  int META_FORWARD = 80;
-  int META_UNERASABLE = 81;
-  int META_VIRTUAL = 82;
-  int META_PACKED = 83;
-  int META_MACRO = 84;
-  int META_STATIC = 85;
-  int META_ABSTRACT = 86;
-  int META_FINAL = 87;
-  int META_NATIVE = 88;
-  int META_SYNCHRONIZED = 89;
-  int META_TRANSIENT = 90;
-  int META_VOLATILE = 91;
-  int META_THROWS = 92;
-  int META_UUID = 93;
-  int META_ACCESS1 = 94;
-  int META_PUBLIC = 95;
-  int PUBLIC = 96;
-  int META_PROTECTED = 97;
-  int PROTECTED = 98;
-  int META_PRIVATE = 99;
-  int PRIVATE = 100;
-  int READ_ONLY = 101;
-  int WRITE_ONLY = 102;
-  int READ_WRITE = 103;
-  int NO_READ_WRITE = 104;
-  int COMMA1 = 105;
-  int COLON1 = 106;
-  int OPEN_ACCESS = 107;
-  int CLOSE_ACCESS = 108;
-  int PRAGMA = 114;
-  int PRAGMA_ENABLE = 115;
-  int PRAGMA_DISABLE = 116;
-  int INTEGER_LITERAL = 117;
-  int LONG_INTEGER_LITERAL = 118;
-  int DECIMAL_LITERAL = 119;
-  int HEX_LITERAL = 120;
-  int OCTAL_LITERAL = 121;
-  int FLOATING_POINT_LITERAL = 122;
-  int DOUBLE_POINT_LITERAL = 123;
-  int EXPONENT = 124;
-  int REPARSE_EXPRESSION = 125;
-  int REPARSE_STATEMENT = 126;
-  int REPARSE_TYPE = 127;
-  int CHARACTER_LITERAL = 128;
-  int STRING_LITERAL = 129;
-  int IDENTIFIER = 130;
-  int LETTER = 131;
-  int DIGIT = 132;
-  int ID_STRING_LITERAL = 133;
-  int LPAREN = 134;
-  int RPAREN = 135;
-  int LBRACE = 136;
-  int RBRACE = 137;
-  int LBRACKET = 138;
-  int RBRACKET = 139;
-  int SEMICOLON = 140;
-  int COMMA = 141;
-  int DOT = 142;
-  int COLON = 143;
-  int QUESTION = 144;
-  int LT = 145;
-  int GT = 146;
-  int ASSIGN = 147;
-  int ASSIGN2 = 148;
-  int BANG = 149;
-  int TILDE = 150;
-  int EQ = 151;
-  int LE = 152;
-  int GE = 153;
-  int NE = 154;
-  int SC_OR = 155;
-  int SC_AND = 156;
-  int INCR = 157;
-  int DECR = 158;
-  int PLUS = 159;
-  int MINUS = 160;
-  int STAR = 161;
-  int SLASH = 162;
-  int BIT_AND = 163;
-  int BIT_OR = 164;
-  int XOR = 165;
-  int REM = 166;
-  int LSHIFT = 167;
-  int PLUSASSIGN = 168;
-  int MINUSASSIGN = 169;
-  int STARASSIGN = 170;
-  int SLASHASSIGN = 171;
-  int ANDASSIGN = 172;
-  int ORASSIGN = 173;
-  int XORASSIGN = 174;
-  int REMASSIGN = 175;
-  int LSHIFTASSIGN = 176;
-  int RSIGNEDSHIFTASSIGN = 177;
-  int RUNSIGNEDSHIFTASSIGN = 178;
-  int IS_THE = 179;
-  int IS_ONE_OF = 180;
-  int OPERATOR_AT = 181;
-  int OPERATOR_SHARP = 182;
-  int OPERATOR_LRBRACKETS = 183;
-  int OPERATOR_UPPER_BOUND = 184;
-  int OPERATOR_LOWER_BOUND = 185;
-  int OPERATOR = 186;
+  int BREAK = 16;
+  int CASE = 17;
+  int CATCH = 18;
+  int CLASS = 19;
+  int CONTINUE = 20;
+  int _DEFAULT = 21;
+  int DO = 22;
+  int ELSE = 23;
+  int EXTENDS = 24;
+  int FALSE = 25;
+  int FINAL = 26;
+  int FINALLY = 27;
+  int FOR = 28;
+  int FOREACH = 29;
+  int GOTO = 30;
+  int IF = 31;
+  int IF_REWR = 32;
+  int IMPLEMENTS = 33;
+  int IMPORT = 34;
+  int INTERFACE = 35;
+  int METATYPE = 36;
+  int NATIVE = 37;
+  int NEW = 38;
+  int NULL = 39;
+  int PACKAGE = 40;
+  int RETURN = 41;
+  int STATIC = 42;
+  int SWITCH = 43;
+  int SYNCHRONIZED = 44;
+  int WITH = 45;
+  int THROW = 46;
+  int THROWS = 47;
+  int TRANSIENT = 48;
+  int TRUE = 49;
+  int TRY = 50;
+  int VOLATILE = 51;
+  int VIEW = 52;
+  int WHILE = 53;
+  int ARROW = 54;
+  int FUNCTION = 55;
+  int VARARGS = 56;
+  int PCUT = 57;
+  int CAST = 58;
+  int REINTERP = 59;
+  int ALIAS = 60;
+  int OPERATOR_ID = 61;
+  int TYPEDEF = 62;
+  int ENUM = 63;
+  int REQUIRE = 64;
+  int ENSURE = 65;
+  int INVARIANT = 66;
+  int META_INTERFACE = 67;
+  int META_SINGLETON = 68;
+  int META_FORWARD = 69;
+  int META_UNERASABLE = 70;
+  int META_VIRTUAL = 71;
+  int META_PACKED = 72;
+  int META_MACRO = 73;
+  int META_STATIC = 74;
+  int META_ABSTRACT = 75;
+  int META_FINAL = 76;
+  int META_NATIVE = 77;
+  int META_SYNCHRONIZED = 78;
+  int META_TRANSIENT = 79;
+  int META_VOLATILE = 80;
+  int META_THROWS = 81;
+  int META_UUID = 82;
+  int META_ACCESS1 = 83;
+  int META_PUBLIC = 84;
+  int PUBLIC = 85;
+  int META_PROTECTED = 86;
+  int PROTECTED = 87;
+  int META_PRIVATE = 88;
+  int PRIVATE = 89;
+  int READ_ONLY = 90;
+  int WRITE_ONLY = 91;
+  int READ_WRITE = 92;
+  int NO_READ_WRITE = 93;
+  int COMMA1 = 94;
+  int COLON1 = 95;
+  int OPEN_ACCESS = 96;
+  int CLOSE_ACCESS = 97;
+  int PRAGMA = 103;
+  int PRAGMA_ENABLE = 104;
+  int PRAGMA_DISABLE = 105;
+  int INTEGER_LITERAL = 106;
+  int LONG_INTEGER_LITERAL = 107;
+  int DECIMAL_LITERAL = 108;
+  int HEX_LITERAL = 109;
+  int OCTAL_LITERAL = 110;
+  int FLOATING_POINT_LITERAL = 111;
+  int DOUBLE_POINT_LITERAL = 112;
+  int EXPONENT = 113;
+  int REPARSE_EXPRESSION = 114;
+  int REPARSE_STATEMENT = 115;
+  int REPARSE_TYPE = 116;
+  int CHARACTER_LITERAL = 117;
+  int STRING_LITERAL = 118;
+  int IDENTIFIER = 119;
+  int LETTER = 120;
+  int DIGIT = 121;
+  int ID_STRING_LITERAL = 122;
+  int LPAREN = 123;
+  int RPAREN = 124;
+  int LBRACE = 125;
+  int RBRACE = 126;
+  int LBRACKET = 127;
+  int RBRACKET = 128;
+  int SEMICOLON = 129;
+  int COMMA = 130;
+  int DOT = 131;
+  int COLON = 132;
+  int QUESTION = 133;
+  int LT = 134;
+  int GT = 135;
+  int ASSIGN = 136;
+  int ASSIGN2 = 137;
+  int BANG = 138;
+  int TILDE = 139;
+  int EQ = 140;
+  int LE = 141;
+  int GE = 142;
+  int NE = 143;
+  int SC_OR = 144;
+  int SC_AND = 145;
+  int INCR = 146;
+  int DECR = 147;
+  int PLUS = 148;
+  int MINUS = 149;
+  int STAR = 150;
+  int SLASH = 151;
+  int BIT_AND = 152;
+  int BIT_OR = 153;
+  int XOR = 154;
+  int REM = 155;
+  int LSHIFT = 156;
+  int PLUSASSIGN = 157;
+  int MINUSASSIGN = 158;
+  int STARASSIGN = 159;
+  int SLASHASSIGN = 160;
+  int ANDASSIGN = 161;
+  int ORASSIGN = 162;
+  int XORASSIGN = 163;
+  int REMASSIGN = 164;
+  int LSHIFTASSIGN = 165;
+  int RSIGNEDSHIFTASSIGN = 166;
+  int RUNSIGNEDSHIFTASSIGN = 167;
+  int IS_THE = 168;
+  int IS_ONE_OF = 169;
+  int OPERATOR_AT = 170;
+  int OPERATOR_SHARP = 171;
+  int OPERATOR_LRBRACKETS = 172;
+  int OPERATOR_UPPER_BOUND = 173;
+  int OPERATOR_LOWER_BOUND = 174;
+  int OPERATOR = 175;
 
   int DEFAULT = 0;
   int IN_PRAGMA = 1;
@@ -209,24 +198,18 @@ public interface kiev040Constants {
     "\"*/\"",
     "<token of kind 14>",
     "\"abstract\"",
-    "\"any\"",
-    "\"boolean\"",
     "\"break\"",
-    "\"byte\"",
     "\"case\"",
     "\"catch\"",
-    "\"char\"",
     "\"class\"",
     "\"continue\"",
     "\"default\"",
     "\"do\"",
-    "\"double\"",
     "\"else\"",
     "\"extends\"",
     "\"false\"",
     "\"final\"",
     "\"finally\"",
-    "\"float\"",
     "\"for\"",
     "\"foreach\"",
     "\"goto\"",
@@ -234,16 +217,13 @@ public interface kiev040Constants {
     "\"if#\"",
     "\"implements\"",
     "\"import\"",
-    "\"int\"",
     "\"interface\"",
     "\"metatype\"",
-    "\"long\"",
     "\"native\"",
     "\"new\"",
     "\"null\"",
     "\"package\"",
     "\"return\"",
-    "\"short\"",
     "\"static\"",
     "\"switch\"",
     "\"synchronized\"",
@@ -253,14 +233,12 @@ public interface kiev040Constants {
     "\"transient\"",
     "\"true\"",
     "\"try\"",
-    "\"void\"",
     "\"volatile\"",
     "\"view\"",
     "\"while\"",
     "\"->\"",
     "\"fun\"",
     "\"...\"",
-    "\"rule\"",
     "\"$cut\"",
     "\"$cast\"",
     "\"$reinterp\"",

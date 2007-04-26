@@ -94,7 +94,7 @@ public class Token implements kiev040Constants {
 		switch(ofKind) {
 //		case UNDERSCORE:
 		case FUNCTION:
-		case RULE:
+//		case RULE:
 		case PCUT:
 		case CAST:
 		case OPERATOR_ID:

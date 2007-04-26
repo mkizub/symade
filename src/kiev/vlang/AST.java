@@ -10,20 +10,10 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.CompilerThread;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
-
 import kiev.be.java15.JType;
 import kiev.ir.java15.RNode;
 import kiev.be.java15.JNode;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -67,6 +57,7 @@ public abstract class ANode implements INode {
 	@virtual typedef This  ≤ ANode;
 
 	public static final ANode[] emptyArray = new ANode[0];
+	private static final AttrSlot[] $values = AttrSlot.emptyArray;
 
 	public:ro @virtual @abstract ANode			ctx_root;
 	public:ro @virtual @abstract FileUnit		ctx_file_unit;
@@ -181,7 +172,7 @@ public abstract class ANode implements INode {
 	@getter public Method get$child_ctx_method() { return this.parent().get$child_ctx_method(); }
 
 	public AttrSlot[] values() {
-		return AttrSlot.emptyArray;
+		return ANode.$values;
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
@@ -756,7 +747,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public static final RefAttrSlot_parent nodeattr$parent = new RefAttrSlot_parent("parent", TypeInfo.newTypeInfo(ANode.class,null));
 
-	private static final AttrSlot[] $values = {nodeattr$this,nodeattr$parent};
+	private static final AttrSlot[] $values = {/*nodeattr$this,*/nodeattr$parent};
 
 	public int						pos;
 	public int						compileflags;
@@ -766,6 +757,9 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	@getter @ref public final ANode get$this()   { return this; }
 	@getter @ref public final ANode get$parent() { return parent(); }
 
+	// SymbolRef/ENode/ISymRef
+	public @packed:1,compileflags,24  boolean is_qualified; // qualified or simple name, names are separated by ASCII US (Unit Separator, 037, 0x1F)
+	
 	// Structures	
 	public @packed:1,compileflags,8  boolean is_struct_type_resolved; // KievFE_Pass2
 	public @packed:1,compileflags,9  boolean is_struct_args_resolved; // KievFE_Pass2

@@ -10,15 +10,9 @@
  *******************************************************************************/
 package kiev.vlang.types;
 
-import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.parser.*;
-
 import kiev.be.java15.JBaseMetaType;
 import kiev.be.java15.JStruct;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 public class MetaType implements Constants {
@@ -192,9 +186,9 @@ public final class CoreMetaType extends MetaType {
 		this.tdecl = tdecl;
 		tdecl.u_name = name;
 		tdecl.sname = name;
-		tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
+		tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 		tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-		tdecl.setTypeDeclLoaded(true);
+		//tdecl.setTypeDeclLoaded(true);
 		tdecl.xmeta_type = this;
 		tdecl.package_clazz.dnode.sub_decls.add(tdecl);
 		if (super_type != null)
@@ -219,21 +213,55 @@ public final class CoreMetaType extends MetaType {
 
 public final class ASTNodeMetaType extends MetaType {
 
-	private TVarSet			templ_bindings;
-
-	public static ASTNodeMetaType instance(Struct clazz) {
-		if (clazz.ameta_type == null)
-			clazz.ameta_type = new ASTNodeMetaType(clazz);
-		return clazz.ameta_type;
+	public static Hashtable<Class,ASTNodeMetaType> allASTNodeMetaTypes;
+	public static final Hashtable<String,Class>	allNodes;
+	static {
+		allASTNodeMetaTypes = new Hashtable<Class,ASTNodeMetaType>();
+		allNodes = new Hashtable<String,Class>(256);
+		allNodes.put("Field",				Field.class);
+		allNodes.put("StrConcat",			StringConcatExpr.class);
+		allNodes.put("Set",					AssignExpr.class);
+		allNodes.put("SetAccess",			ContainerAccessExpr.class);
+		allNodes.put("InstanceOf",			InstanceofExpr.class);
+		allNodes.put("RuleIstheExpr",		RuleIstheExpr.class);
+		allNodes.put("RuleIsoneofExpr",		RuleIsoneofExpr.class);
+		allNodes.put("UnaryOp",				UnaryExpr.class);
+		allNodes.put("BinOp",				BinaryExpr.class);
+		allNodes.put("Cmp",					BinaryBoolExpr.class);
+		allNodes.put("Or",					BinaryBooleanOrExpr.class);
+		allNodes.put("And",					BinaryBooleanAndExpr.class);
+		allNodes.put("Not",					BooleanNotExpr.class);
+		allNodes.put("Call",				CallExpr.class);
+		allNodes.put("ENode",				ENode.class);
+		allNodes.put("IFld",				IFldExpr.class);
 	}
 
-	@getter
-	public final Struct get$clazz() { return (Struct)this.tdecl; }
 
-	ASTNodeMetaType() {}
-	ASTNodeMetaType(Struct clazz) {
-		super(clazz);
+	final public Class			clazz;
+	final public String			name;
+
+	private AttrSlot[]		values;
+	private TypeAssign[]	types;
+	private Field[]			fields;
+	private TVarSet			templ_bindings;
+
+	public static ASTNodeMetaType instance(Class clazz) {
+		ASTNodeMetaType mt = allASTNodeMetaTypes.get(clazz);
+		if (mt != null)
+			return mt;
+		mt = new ASTNodeMetaType(clazz);
+		return mt;
+	}
+
+	ASTNodeMetaType(Class clazz) {
+		super(StdTypes.tdASTNodeType);
 		this.templ_bindings = TVarSet.emptySet;
+		this.clazz = clazz;
+		allASTNodeMetaTypes.put(clazz,this);
+		foreach (String key; allNodes.keys(); clazz.equals(allNodes.get(key))) {
+			this.name = key;
+			break;
+		}
 	}
 
 	public Type[] getMetaSupers(Type tp) {
@@ -241,7 +269,7 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 
 	public boolean checkTypeVersion(int version) {
-		return this.version == version && clazz.type_decl_version == version;
+		return this.version == version;
 	}
 	
 	public Type make(TVSet bindings) {
@@ -258,32 +286,54 @@ public final class ASTNodeMetaType extends MetaType {
 	}
 
 	public TVarSet getTemplBindings() {
-		if (this.version != clazz.type_decl_version)
+		if (this.version != 1)
 			makeTemplBindings();
 		return templ_bindings;
 	}
 
 	private void makeTemplBindings() {
+		if (ANode.class.isAssignableFrom(clazz)) {
+			Class sup = clazz.getSuperclass();
+			ASTNodeMetaType ast_sup;
+			if (sup != null)
+				ast_sup = ASTNodeMetaType.instance(sup);
+			else
+				ast_sup = ASTNodeMetaType.instance(Object.class);
+			ast_sup.getTemplBindings();
+			java.lang.reflect.Field rf = clazz.getDeclaredField("$values");
+			rf.setAccessible(true);
+			this.values = (AttrSlot[])rf.get(null);
+			this.types = new TypeAssign[values.length];
+			this.fields = new Field[values.length];
+			int n = values.length - ast_sup.values.length;
+			for (int i=0; i < values.length; i++) {
+				if (i < n ) {
+					AttrSlot a = values[i];
+					types[i] = new TypeAssign("attr$"+a.name+"$type", new ASTNodeType(a.clazz));
+					fields[i] = new Field(a.name,new ASTNodeType(a.clazz),ACC_PUBLIC);
+				} else {
+					assert(values[i] == ast_sup.values[i-n]);
+					types[i] = ast_sup.types[i-n];
+					fields[i] = ast_sup.fields[i-n];
+				}
+			}
+		} else {
+			values = AttrSlot.emptyArray;
+			types = new TypeAssign[0];
+			fields = new Field[0];
+		}
 		TVarBld vs = new TVarBld();
-		foreach (TypeAssign ta; clazz.members; ta.sname.matches("attr\\$.*\\$type"))
+		foreach (TypeAssign ta; this.types /*; ta.sname.matches("attr\\$.*\\$type")*/)
 			vs.append(ta.getAType(), null);
-		foreach (TypeRef st; clazz.super_types; st.getType() ≢ null)
-			vs.append(st.getType().bindings());
 		templ_bindings = new TVarSet(vs.close());
-		this.version = clazz.type_decl_version;
+		this.version = 1;
 	}
 
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
-		MetaType@ sup;
-		Type@ tmp;
 	{
-		node @= clazz.members,
+		getTemplBindings(),
+		node @= this.fields,
 		node instanceof Field && info.checkNodeName(node) && info.check(node)
-	;
-		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
-		sup @= clazz.getAllSuperTypes(),
-		tmp ?= sup.make(tp.bindings()),
-		tmp.meta_type.resolveNameAccessR(tmp,node,info)
 	}
 
 	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt) { false }
@@ -350,12 +400,12 @@ public final class ArrayMetaType extends MetaType {
 	public static final ArrayMetaType		instance;
 	static {
 		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpArrayArg, null).close());
-		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev.stdlib._array_");
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_array_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl(null);
 			tdecl.u_name = "_array_";
 			tdecl.sname = "_array_";
-			tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
+			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdArrayArg);
@@ -464,12 +514,12 @@ public class WrapperMetaType extends MetaType {
 	private static final MetaTypeDecl		wrapper_tdecl;
 	static {
 		templ_bindings = new TVarSet(new TVarBld(StdTypes.tpWrapperArg, null).close());
-		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev.stdlib._wrapper_");
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_wrapper_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
 			tdecl.u_name = "_wrapper_";
 			tdecl.sname = "_wrapper_";
-			tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
+			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.super_types.insert(0, new TypeRef(StdTypes.tpObject));
 			tdecl.args.add(StdTypes.tdWrapperArg);
@@ -478,20 +528,22 @@ public class WrapperMetaType extends MetaType {
 			tdecl.setUUID("67544053-836d-3bac-b94d-0c4b14ae9c55");
 		}
 		wrapper_tdecl = tdecl;
+		tdecl.xmeta_type = WrapperMetaType.instance(StdTypes.tpWrapperArg);
+		tdecl.xtype = WrapperType.newWrapperType(StdTypes.tpWrapperArg);
 	}
-	public final Struct		clazz;
+	public final TypeDecl	clazz;
 	public final Field		field;
-	public static WrapperMetaType instance(Struct clazz) {
-		if (clazz.wmeta_type == null)
-			clazz.wmeta_type = new WrapperMetaType(clazz);
-		return clazz.wmeta_type;
+	public static WrapperMetaType instance(Type tp) {
+		TypeDecl td = tp.meta_type.tdecl;
+		if (td.wmeta_type == null)
+			td.wmeta_type = new WrapperMetaType(td);
+		return td.wmeta_type;
 	}
-	private WrapperMetaType() {}
-	private WrapperMetaType(Struct clazz) {
+	private WrapperMetaType(TypeDecl td) {
 		super(wrapper_tdecl);
-		this.clazz = clazz;
+		this.clazz = td;
 		clazz.checkResolved();
-		this.field = getWrappedField(clazz,true);
+		this.field = getWrappedField(td,false);
 	}
 
 	public Type[] getMetaSupers(Type tp) {
@@ -515,14 +567,14 @@ public class WrapperMetaType extends MetaType {
 		return WrapperType.newWrapperType(((WrapperType)t).getEnclosedType().applay(bindings));
 	}
 
-	private static Field getWrappedField(Struct clazz, boolean required) {
-		foreach (TypeRef st; clazz.super_types; st.getStruct() != null) {
-			Field wf = getWrappedField(st.getStruct(), false);
+	private static Field getWrappedField(TypeDecl td, boolean required) {
+		foreach (TypeRef st; td.super_types; st.getTypeDecl() != null) {
+			Field wf = getWrappedField(st.getTypeDecl(), false);
 			if (wf != null)
 				return wf;
 		}
 		Field wf = null;
-		foreach(Field n; clazz.getAllFields(); n.isForward()) {
+		foreach(Field n; td.getAllFields(); n.isForward()) {
 			if (wf == null)
 				wf = (Field)n;
 			else
@@ -530,10 +582,10 @@ public class WrapperMetaType extends MetaType {
 		}
 		if ( wf == null ) {
 			if (required)
-				throw new CompilerException(clazz,"Wrapper class "+clazz+" has no forward field");
+				throw new CompilerException(td,"Wrapper class "+td+" has no forward field");
 			return null;
 		}
-		if( Kiev.verbose ) System.out.println("Class "+clazz+" is a wrapper for field "+wf);
+		if( Kiev.verbose ) System.out.println("Class "+td+" is a wrapper for field "+wf);
 		return wf;
 	}
 	
@@ -579,12 +631,12 @@ public class CallMetaType extends MetaType {
 
 	public static final CallMetaType instance;
 	static {
-		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev.stdlib._call_type_");
+		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_call_type_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
 			tdecl.u_name = "_call_type_";
 			tdecl.sname = "_call_type_";
-			tdecl.package_clazz.symbol = Env.newPackage("kiev.stdlib");
+			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
 			tdecl.setTypeDeclLoaded(true);
 			tdecl.setUUID("25395a72-2b16-317a-85b2-5490309bdffc");

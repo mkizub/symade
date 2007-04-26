@@ -10,20 +10,11 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.Kiev;
-import kiev.CError;
-import kiev.stdlib.*;
-import kiev.vlang.*;
-import kiev.vlang.types.*;
-import kiev.transf.*;
-import kiev.parser.*;
-
 import kiev.ir.java15.RSNode;
 import kiev.be.java15.JSNode;
 import kiev.ir.java15.RDeclGroup;
 import kiev.be.java15.JDeclGroup;
 
-import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -90,7 +81,7 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 	public Type	getType() { return type; }
 
 	public final MetaAccess getMetaAccess() {
-		return (MetaAccess)this.getMeta("kiev.stdlib.meta.access");
+		return (MetaAccess)this.getMeta("kiev\u001fstdlib\u001fmeta\u001faccess");
 	}
 
 	public final MNode getMeta(String name) {
@@ -133,7 +124,7 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 			m.setSimple("public");
 	}
 	public void setStatic(boolean on) {
-		MetaFlag m = this.getMeta("kiev.stdlib.meta.static");
+		MetaFlag m = this.getMeta("kiev\u001fstdlib\u001fmeta\u001fstatic");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -141,7 +132,7 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 		}
 	}
 	public void setFinal(boolean on) {
-		MetaFlag m = this.getMeta("kiev.stdlib.meta.final");
+		MetaFlag m = this.getMeta("kiev\u001fstdlib\u001fmeta\u001ffinal");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -149,7 +140,7 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 		}
 	}
 	public void setAbstract(boolean on) {
-		MetaFlag m = this.getMeta("kiev.stdlib.meta.abstract");
+		MetaFlag m = this.getMeta("kiev\u001fstdlib\u001fmeta\u001fabstract");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
@@ -157,7 +148,7 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 		}
 	}
 	public final void setVirtual(boolean on) {
-		MetaFlag m = this.getMeta("kiev.stdlib.meta.virtual");
+		MetaFlag m = this.getMeta("kiev\u001fstdlib\u001fmeta\u001fvirtual");
 		if (m != null) {
 			if!(on) m.detach();
 		} else {
