@@ -184,6 +184,17 @@ public view JENode of ENode extends JNode {
 	public Object	getConstValue();
 }
 
+public static final view JNopExpr of NopExpr extends JENode {
+	public void generate(Code code, Type reqType) {
+		// nothing to generate - noop
+		if (Kiev.debugOutputA || Kiev.debugOutputT) {
+			trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating NopExpr: "+this);
+			code.setLinePos(this);
+			code.addInstr(Instr.op_nop);
+		}
+	}
+}
+
 public view JTypeDecl of TypeDecl extends JDNode {
 	public:ro	JType[]				super_types;
 	public:ro	JNode[]				members;

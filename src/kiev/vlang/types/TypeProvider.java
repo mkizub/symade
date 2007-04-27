@@ -233,6 +233,8 @@ public final class ASTNodeMetaType extends MetaType {
 		allNodes.put("Not",					BooleanNotExpr.class);
 		allNodes.put("Call",				CallExpr.class);
 		allNodes.put("ENode",				ENode.class);
+		allNodes.put("NoOp",				NopExpr.class);
+		allNodes.put("AssertEnabled",		AssertEnabledExpr.class);
 		allNodes.put("IFld",				IFldExpr.class);
 	}
 

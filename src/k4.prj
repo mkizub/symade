@@ -768,6 +768,7 @@ INTERFACE kievbejava15JNewClosure kiev/be/java15/JNewClosure kiev/be/java15/J
 INTERFACE kievbejava15JNewExpr kiev/be/java15/JNewExpr kiev/be/java15/JNewExpr.java
 INTERFACE kievbejava15JNewInitializedArrayExpr kiev/be/java15/JNewInitializedArrayExpr kiev/be/java15/JNewExpr.java
 INTERFACE kievbejava15JNode kiev/be/java15/JNode kiev/be/java15/JNode.java
+INTERFACE kievbejava15JNopExpr kiev/be/java15/JNopExpr kiev/be/java15/JNode.java
 INTERFACE kievbejava15JOuterThisAccessExpr kiev/be/java15/JOuterThisAccessExpr kiev/be/java15/JLvalueExpr.java
 INTERFACE kievbejava15JReinterpExpr kiev/be/java15/JReinterpExpr kiev/be/java15/JLvalueExpr.java
 INTERFACE kievbejava15JReturnStat kiev/be/java15/JReturnStat kiev/be/java15/JStatement.java

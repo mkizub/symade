@@ -55,7 +55,7 @@ public final class PackedFldFE_Verify extends TransfProcessor {
 		Struct s = f.ctx_tdecl;
 		String mp_in = mp.getS("in");
 		if( mp_in != null && mp_in.length() > 0 ) {
-			Field p = s.resolveField(mp_in,false);
+			Field p = s.resolveField(mp_in.intern(),false);
 			if( p == null ) {
 				Kiev.reportError(f,"Packer field "+mp_in+" not found");
 				return;

@@ -165,11 +165,36 @@ public abstract class ANode implements INode {
 		return null;
 	}
 	
-	@getter public FileUnit get$ctx_file_unit() { return this.parent().get$ctx_file_unit(); }
-	@getter public TypeDecl get$ctx_tdecl() { return this.parent().child_ctx_tdecl; }
-	@getter public TypeDecl get$child_ctx_tdecl() { return this.parent().get$child_ctx_tdecl(); }
-	@getter public Method get$ctx_method() { return this.parent().child_ctx_method; }
-	@getter public Method get$child_ctx_method() { return this.parent().get$child_ctx_method(); }
+	@getter public FileUnit get$ctx_file_unit() {
+		ANode p = this.parent();
+		if (p == null)
+			return null;
+		return p.get$ctx_file_unit();
+	}
+	@getter public TypeDecl get$ctx_tdecl() {
+		ANode p = this.parent();
+		if (p == null)
+			return null;
+		return p.child_ctx_tdecl;
+	}
+	@getter public TypeDecl get$child_ctx_tdecl() {
+		ANode p = this.parent();
+		if (p == null)
+			return null;
+		return p.get$child_ctx_tdecl();
+	}
+	@getter public Method get$ctx_method() {
+		ANode p = this.parent();
+		if (p == null)
+			return null;
+		return p.child_ctx_method;
+	}
+	@getter public Method get$child_ctx_method() {
+		ANode p = this.parent();
+		if (p == null)
+			return null;
+		return p.get$child_ctx_method();
+	}
 
 	public AttrSlot[] values() {
 		return ANode.$values;

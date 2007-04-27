@@ -111,8 +111,7 @@ public final class AccessExpr extends LvalueExpr {
 				this.replaceWithNodeReWalk(new OuterThisAccessExpr(pos,(TypeRef)~obj));
 		}
 		else {
-			ENode e = obj;
-			tps = e.getAccessTypes();
+			tps = obj.getAccessTypes();
 			res = new ENode[tps.length];
 			// fall down
 		}
@@ -302,6 +301,59 @@ public final class IFldExpr extends LvalueExpr {
 			return (Var[])Arrays.append(path, var);
 		}
 		return null;
+	}
+
+	public void mainResolveOut() {
+		if (this.var != null)
+			return;
+
+		ENode obj = this.obj;
+		// pre-resolve result
+		Type[] tps = obj.getAccessTypes();
+		int len = tps.length;
+		Field[] res = new Field[len];
+		for (int si=0; si < len; si++) {
+			if (res[si] != null)
+				continue;
+			Type tp = tps[si];
+			Field@ v;
+			ResInfo info;
+			if (tp.resolveNameAccessR(v,info=new ResInfo(this,this.ident,ResInfo.noStatic | ResInfo.noImports | ResInfo.noForwards)) ) {
+				res[si] = v;
+			}
+		}
+		int cnt = 0;
+		int idx = -1;
+		for (int si=0; si < len; si++) {
+			if (res[si] != null) {
+				cnt ++;
+				if (idx < 0) idx = si;
+			}
+		}
+		if (cnt > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous access:\n");
+			for(int si=0; si < len; si++) {
+				if (res[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('.').append(res[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(this, msg.toString());
+		}
+		if (cnt == 0) {
+			if (ctx_method != null && ctx_method.isMacro())
+				return;
+			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+			for(int si=0; si < len; si++) {
+				if (tps[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(this, msg.toString());
+		}
+		this = this.open();
+		this.symbol = res[idx];
 	}
 
 	public ANode doRewrite(RewriteContext ctx) {
@@ -653,8 +705,11 @@ public final class SFldExpr extends LvalueExpr {
 			return;
 		}
 		
-		if !(obj instanceof TypeRef)
-			throw new CompilerException(this, "Static field access requires type as accessor");
+		if (this.obj == null) {
+			this = this.open();
+			this.obj = new TypeRef(Env.root.xtype);
+		}
+		
 		Type tp = this.obj.getType();
 		DNode@ v;
 		ResInfo info;

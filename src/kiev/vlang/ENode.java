@@ -13,6 +13,7 @@ package kiev.vlang;
 import kiev.ir.java15.RENode;
 import kiev.be.java15.JENode;
 import kiev.ir.java15.RNopExpr;
+import kiev.be.java15.JNopExpr;
 
 import syntax kiev.Syntax;
 
@@ -281,6 +282,7 @@ public final class NopExpr extends ENode {
 
 	@virtual typedef This  = NopExpr;
 	@virtual typedef RView = RNopExpr;
+	@virtual typedef JView = JNopExpr;
 
 	public NopExpr() {}
 	

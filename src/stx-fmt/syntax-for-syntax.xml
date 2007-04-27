@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.1' encoding='UTF-8' standalone='yes'?>
 <!--
  Copyright (c) 2005-2007 UAB "MAKSINETA".
  All rights reserved. This program and the accompanying materials
@@ -20,7 +20,8 @@
   <a-node class='kiev.vlang.Import'>
    <name>
     <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev.vlang</name>
+     <name>kiev&#31;vlang</name>
+     <qualified>true</qualified>
     </a-node>
    </name>
    <mode>IMPORT_CLASS</mode>
@@ -30,7 +31,8 @@
   <a-node class='kiev.vlang.Import'>
    <name>
     <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev.fmt</name>
+     <name>kiev&#31;fmt</name>
+     <qualified>true</qualified>
     </a-node>
    </name>
    <mode>IMPORT_CLASS</mode>

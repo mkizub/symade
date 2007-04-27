@@ -172,18 +172,37 @@ public final class RewriteNodeFactory extends ENode {
 	
 	@virtual typedef This  = RewriteNodeFactory;
 
-	@att public TypeRef					type;
 	@att public RewriteNodeArg[]		args;
 	     private Class					node_class;
 
 	public RewriteNodeFactory() {}
-	public RewriteNodeFactory(String class_name) {
-		if (class_name.indexOf('\u001f') > 0) {
-			node_class = Class.forName(class_name.replace('\u001f','.'));
-			type = new TypeNameRef(class_name);
-		} else {
-			node_class = Class.forName("kiev.vlang."+class_name);
-			type = new TypeNameRef("kiev\u001fvlang\u001f"+class_name);
+	public RewriteNodeFactory(String ident) {
+		this.ident = ident;
+		setupClass();
+	}
+	
+	private void setupClass() {
+		node_class = ASTNodeMetaType.allNodes.get(ident);
+		if (node_class != null)
+			return;
+		try {
+			Class clazz = Class.forName("kiev.vlang."+ident);
+			if (clazz != null) {
+				Hashtable<String,Class> allNodes = ASTNodeMetaType.allNodes;
+				foreach (String key; allNodes.keys(); clazz.equals(allNodes.get(key))) {
+					this = this.open();
+					this.ident = key;
+					return;
+				}
+			}
+		} catch (Throwable t) {}
+	}
+
+	public void preResolveOut() {
+		if (node_class == null && ident != null) {
+			setupClass();
+			if (node_class == null)
+				Kiev.reportError(this,"Compiler node '"+this.ident+"' does not exists");
 		}
 	}
 

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.1' encoding='UTF-8' standalone='yes'?>
 <!--
  Copyright (c) 2005-2007 UAB "MAKSINETA".
  All rights reserved. This program and the accompanying materials
@@ -20,38 +20,46 @@
   <a-node class='kiev.vlang.Import'>
    <name>
     <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev.vlang</name>
+     <name>kiev&#31;vlang</name>
+     <qualified>true</qualified>
     </a-node>
    </name>
    <mode>IMPORT_CLASS</mode>
    <star>true</star>
+   <of_method>false</of_method>
   </a-node>
   <a-node class='kiev.vlang.Import'>
    <name>
     <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev.vlang.types</name>
+     <name>kiev&#31;vlang&#31;types</name>
+     <qualified>true</qualified>
     </a-node>
    </name>
    <mode>IMPORT_CLASS</mode>
    <star>true</star>
+   <of_method>false</of_method>
   </a-node>
   <a-node class='kiev.vlang.Import'>
    <name>
     <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev.parser</name>
+     <name>kiev&#31;parser</name>
+     <qualified>true</qualified>
     </a-node>
    </name>
    <mode>IMPORT_CLASS</mode>
    <star>true</star>
+   <of_method>false</of_method>
   </a-node>
   <a-node class='kiev.vlang.Import'>
    <name>
     <a-node class='kiev.vlang.SymbolRef'>
-     <name>kiev.fmt</name>
+     <name>kiev&#31;fmt</name>
+     <qualified>true</qualified>
     </a-node>
    </name>
    <mode>IMPORT_CLASS</mode>
    <star>true</star>
+   <of_method>false</of_method>
   </a-node>
   <a-node class='kiev.fmt.KievTextSyntax'>
    <members>
@@ -2501,7 +2509,7 @@
               <a-node class='kiev.fmt.CalcOptionNot'>
                <opt>
                 <a-node class='kiev.fmt.CalcOptionHasMeta'>
-                 <name>kiev.stdlib.meta.synthetic</name>
+                 <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
                 </a-node>
                </opt>
               </a-node>
@@ -2665,7 +2673,7 @@
             <a-node class='kiev.fmt.CalcOptionNot'>
              <opt>
               <a-node class='kiev.fmt.CalcOptionHasMeta'>
-               <name>kiev.stdlib.meta.singleton</name>
+               <name>kiev&#31;stdlib&#31;meta&#31;singleton</name>
               </a-node>
              </opt>
             </a-node>
@@ -3588,7 +3596,7 @@
           <a-node class='kiev.fmt.CalcOptionNot'>
            <opt>
             <a-node class='kiev.fmt.CalcOptionHasMeta'>
-             <name>kiev.stdlib.meta.synthetic</name>
+             <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
             </a-node>
            </opt>
           </a-node>
@@ -3868,7 +3876,7 @@
           <a-node class='kiev.fmt.CalcOptionNot'>
            <opt>
             <a-node class='kiev.fmt.CalcOptionHasMeta'>
-             <name>kiev.stdlib.meta.synthetic</name>
+             <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
             </a-node>
            </opt>
           </a-node>
@@ -4083,7 +4091,7 @@
           <a-node class='kiev.fmt.CalcOptionNot'>
            <opt>
             <a-node class='kiev.fmt.CalcOptionHasMeta'>
-             <name>kiev.stdlib.meta.synthetic</name>
+             <name>kiev&#31;stdlib&#31;meta&#31;synthetic</name>
             </a-node>
            </opt>
           </a-node>
@@ -5655,7 +5663,7 @@
              <name>const_value</name>
             </a-node>
             <a-node class='kiev.fmt.CalcOptionHasMeta'>
-             <name>kiev.stdlib.meta.final</name>
+             <name>kiev&#31;stdlib&#31;meta&#31;final</name>
             </a-node>
             <a-node class='kiev.fmt.CalcOptionIncludeInDump'>
              <name>const_value</name>
