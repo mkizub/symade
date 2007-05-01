@@ -177,7 +177,7 @@ public abstract class kiev040 implements kiev040Constants {
 		return tdecl;
 	}
 
-	private Struct mkStruct(Symbol name, TypeDeclVariant variant, int flags, ASTModifiers modifiers, ASTNode parent) {
+	private Struct mkStruct(Symbol name, Struct variant, int flags, ASTModifiers modifiers, ASTNode parent) {
 		String nm;
 		TypeDecl outer;
 		boolean direct;
@@ -907,7 +907,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(IDENTIFIER);
     // "syntax"
             name = Name();
-                clazz = mkStruct(name, new KievSyntax(), ACC_SYNTAX, modifiers, parent);
+                clazz = mkStruct(name, new KievSyntax(), 0, modifiers, parent);
     switch (jj_nt.kind) {
     case EXTENDS:
       jj_consume_token(EXTENDS);
@@ -1136,7 +1136,7 @@ public abstract class kiev040 implements kiev040Constants {
       jj_consume_token(VIEW);
       name = Name();
                         clazz = mkStruct(name, new KievView(), ACC_VIRTUAL, modifiers, parent);
-                        KievView kview = (KievView)clazz.variant;
+                        KievView kview = (KievView)clazz;
       if (getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of")) {
 
       } else {
@@ -1320,7 +1320,7 @@ public abstract class kiev040 implements kiev040Constants {
     name = Name();
                 clazz = mkStruct(name, new PizzaCase(), ACC_STATIC|ACC_FINAL, modifiers, parent);
                 //clazz.super_types.insert(0, new TypeRef(parent.xtype));
-                clazz.setPizzaCase();
+                //clazz.setPizzaCase();
                 clazz.setSingleton(true);
                 cases = new DeclGroupCaseFields();
                 clazz.members.insert(0, cases);

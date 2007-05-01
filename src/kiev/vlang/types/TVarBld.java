@@ -17,6 +17,7 @@ import syntax kiev.Syntax;
 
 interface TVSet {
 	public TVar[] getTVars();
+	public TArg[] getTArgs();
 	public Type resolve(ArgType arg);
 }
 
@@ -27,7 +28,7 @@ public final class TVarBld implements TVSet {
 	public static final TVarBld emptySet = new TVarBld().close();
 
 	public:ro,rw,ro,rw	TVar[]		tvars;
-	public:ro,ro,ro,rw	TArg[]		appls;
+	private				TArg[]		appls;
 	private				boolean		closed;
 
 	public TVarBld() {
@@ -47,18 +48,18 @@ public final class TVarBld implements TVSet {
 			for (int i=0; i < n; i++)
 				this.tvars[i] = vset.tvars[i].copy(this);
 		}
-		if (vset.appls != null && vset.appls.length > 0) {
-			n = vset.appls.length;
-			this.appls = new TArg[n];
-			for (int i=0; i < n; i++)
-				this.appls[i] = vset.appls[i].copy(this);
-		}
+		//if (vset.appls != null && vset.appls.length > 0) {
+		//	n = vset.appls.length;
+		//	this.appls = new TArg[n];
+		//	for (int i=0; i < n; i++)
+		//		this.appls[i] = vset.appls[i].copy(this);
+		//}
 	}
 	
 	public TVarBld close() {
 		if (!closed) {
-			this.buildApplayables();
-			if (ASSERT_MORE) this.checkIntegrity(true);
+			//this.buildApplayables();
+			//if (ASSERT_MORE) this.checkIntegrity(true);
 			closed = true;
 		}
 		return this;
@@ -66,6 +67,12 @@ public final class TVarBld implements TVSet {
 	
 	public TVar[] getTVars() {
 		return this.tvars;
+	}
+	
+	public TArg[] getTArgs() {
+		if (this.appls == null)
+			buildApplayables();
+		return this.appls;
 	}
 	
 	@getter
@@ -171,7 +178,7 @@ public final class TVarBld implements TVSet {
 		if (t instanceof ArgType) {
 			addApplayable((ArgType)t);
 		} else {
-			TArg[] tappls = t.bindings().appls;
+			TArg[] tappls = t.bindings().getTArgs();
 			for (int i=0; i < tappls.length; i++)
 				addApplayable(tappls[i].var);
 		}
@@ -234,7 +241,7 @@ public final class TVarBld implements TVSet {
 						assert (j < this.appls.length);
 					}
 					else {
-						foreach (TArg at; v.val.bindings().appls) {
+						foreach (TArg at; v.val.bindings().getTArgs()) {
 							int j=0;
 							for (; j < this.appls.length; j++) {
 								if (this.appls[j].var ≡ at.var)
@@ -264,7 +271,7 @@ public final class TVarBld implements TVSet {
 								break next_tvar;
 						}
 						else {
-							TArg[] tappls = tv.val.bindings().appls;
+							TArg[] tappls = tv.val.bindings().getTArgs();
 							for (int k=0; k < tappls.length; k++) {
 								if (at.var ≡ tappls[k].var)
 									break next_tvar;

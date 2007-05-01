@@ -33,24 +33,36 @@ public class Bytecoder implements JConstants {
 
 	/** Reads class from DataInputStream
 	 */
-	public Struct readClazz() {
-		trace(Kiev.debug && Kiev.debugBytecodeRead,"Loading class "+cl);
+	public Struct readClazz(ClazzName clname, Struct outer) {
+		trace(Kiev.debug && Kiev.debugBytecodeRead,"Loading class "+clname.name);
 
-		if( !bcclazz.getClazzName().startsWith(((JStruct)cl).bname()) ) {
-			throw new RuntimeException("Expected to load class "+((JStruct)cl).bname()
-				+" but class "+bcclazz.getClazzName()+" found");
+		if (bcclazz.getClazzName() != clname.bytecode_name)
+			throw new RuntimeException("Expected to load class "+clname.bytecode_name+" but class "+bcclazz.getClazzName()+" found");
+
+		Struct variant = new JavaClass();
+		if ((bcclazz.flags & ACC_ANNOTATION) == ACC_ANNOTATION)
+			variant = new JavaAnnotation();
+		else if ((bcclazz.flags & ACC_ENUM) == ACC_ENUM)
+			variant = new JavaEnum();
+		else if ((bcclazz.flags & ACC_INTERFACE) == ACC_INTERFACE)
+			variant = new JavaInterface();
+		else if (!outer.isPackage()) {
+			// anonymouse classes are classed with bytecode name in form "$[0-9]+"
+			String tail = clname.bytecode_name.substr(outer.qname().length()).toString();
+			if (tail.length() > 1 && tail.charAt(0) >= '0' && tail.charAt(0) >= '9')
+				variant = new JavaAnonymouseClass();
+		}
+		if (cl != null)
+			assert (cl.getClass() == variant.getClass());
+		else
+			cl = variant;
+		cl.initStruct(clname.src_name.toString(), clname.unq_name.toString(), outer, bcclazz.flags);
+
+		if (!cl.isAttached()) {
+			FileUnit fu = new FileUnit(clname.src_name+".class", outer);
+			fu.members.add(cl);
 		}
 
-		if (bcclazz.flags != 0) {
-			if ((bcclazz.flags & ACC_PUBLIC) == ACC_PUBLIC) cl.setMeta(new MetaAccess("public"));
-			if ((bcclazz.flags & ACC_PROTECTED) == ACC_PROTECTED) cl.setMeta(new MetaAccess("protected"));
-			if ((bcclazz.flags & ACC_PRIVATE) == ACC_PRIVATE) cl.setMeta(new MetaAccess("private"));
-			if ((bcclazz.flags & ACC_STATIC) == ACC_STATIC) cl.setMeta(new MetaStatic());
-			if ((bcclazz.flags & ACC_FINAL) == ACC_FINAL) cl.setMeta(new MetaFinal());
-			if ((bcclazz.flags & ACC_ABSTRACT) == ACC_ABSTRACT) cl.setMeta(new MetaAbstract());
-			if ((bcclazz.flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) cl.setMeta(new MetaSynthetic());
-			cl.meta.mflags = bcclazz.flags;
-		}
 		MetaAccess.verifyDecl(cl);
 
 		cl.setTypeDeclLoaded(true);
@@ -83,7 +95,7 @@ public class Bytecoder implements JConstants {
 		cl.members.delAll();
 
 		if (cl.isEnum()) {
-			cl.variant = new JavaEnum();
+			//cl.variant = new JavaEnum();
 			cl.members.insert(0,new DeclGroupEnumFields());
 		}
 		
@@ -145,32 +157,33 @@ public class Bytecoder implements JConstants {
 
 	public Method readMethod(int index) {
 		kiev.bytecode.Method bcm = bcclazz.methods[index];
-		int m_flags = bcm.flags;
-		KString m_name = bcm.getName(bcclazz);
-		String m_name_s = m_name.toString().intern();
-		KString m_type_java = bcm.getSignature(bcclazz);
-		KString m_type = m_type_java;
-		CallType mtype = (CallType)Signature.getType(m_type);
-		CallType jtype = mtype;
-		Method m; 
-		if (m_name_s == nameInit || m_name_s == nameClassInit)
-			m = new Constructor(m_flags);
-		else
-			m = new MethodImpl(m_name_s,mtype.ret(),m_flags);
-		cl.members.append(m);
-		for (int i=0; i < mtype.arity; i++) {
-			if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
-				LVar fp = new LVar(0,"va_arg",mtype.arg(i),Var.PARAM_VARARGS,ACC_FINAL);
-				if (mtype.arg(i) ≉ jtype.arg(i))
-					fp.stype = new TypeRef(jtype.arg(i));
-				m.params.add(fp);
-				mtype = m.etype;
-				break;
-			} else {
-				LVar fp = new LVar(0,"arg"+i,mtype.arg(i),Var.PARAM_NORMAL,0);
-				if (mtype.arg(i) ≉ jtype.arg(i))
-					fp.stype = new TypeRef(jtype.arg(i));
-				m.params.add(fp);
+		Method m;
+		{
+			int m_flags = bcm.flags;
+			KString m_name = bcm.getName(bcclazz);
+			String m_name_s = m_name.toString().intern();
+			KString m_type_java = bcm.getSignature(bcclazz);
+			KString m_type = m_type_java;
+			CallType mtype = (CallType)Signature.getType(m_type);
+			//CallType jtype = mtype;
+			if (m_name_s == nameInit || m_name_s == nameClassInit)
+				m = new Constructor(m_flags);
+			else
+				m = new MethodImpl(m_name_s,mtype.ret(),m_flags);
+			cl.members.append(m);
+			for (int i=0; i < mtype.arity; i++) {
+				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
+					LVar fp = new LVar(0,"va_arg",mtype.arg(i),Var.PARAM_VARARGS,ACC_FINAL);
+					//if (mtype.arg(i) ≉ jtype.arg(i))
+					//	fp.stype = new TypeRef(jtype.arg(i));
+					m.params.add(fp);
+					break;
+				} else {
+					LVar fp = new LVar(0,"arg"+i,mtype.arg(i),Var.PARAM_NORMAL,0);
+					//if (mtype.arg(i) ≉ jtype.arg(i))
+					//	fp.stype = new TypeRef(jtype.arg(i));
+					m.params.add(fp);
+				}
 			}
 		}
 		for(int i=0; i < bcm.attrs.length; i++) {
@@ -211,10 +224,9 @@ public class Bytecoder implements JConstants {
 		}
 		else if( name.equals(attrExceptions) ) {
 			kiev.bytecode.ExceptionsAttribute ea = (kiev.bytecode.ExceptionsAttribute)bca;
-			JStruct[] exceptions = new JStruct[ea.cp_exceptions.length];
-			for(int i=0; i < exceptions.length; i++) {
-				exceptions[i] = (JStruct)Env.jenv.makeStruct(ea.getException(i,clazz),false);
-			}
+			KString[] exceptions = new KString[ea.cp_exceptions.length];
+			for(int i=0; i < exceptions.length; i++)
+				exceptions[i] = ea.getException(i,clazz);
 			a = new ExceptionsAttr();
 			((ExceptionsAttr)a).exceptions = exceptions;
 		}
@@ -450,8 +462,10 @@ public class Bytecoder implements JConstants {
 	
 	UserMeta readAnnotation(kiev.bytecode.Clazz clazz, kiev.bytecode.Annotation.annotation ann) {
 		KString sign = ann.getSignature(clazz);
-		Type tp = Signature.getType(sign);
-		UserMeta um = new UserMeta((Struct)tp.meta_type.tdecl);
+		assert (sign.byteAt(0) == 'L' && sign.byteAt(sign.len-1) == ';');
+		String nm = sign.toString();
+		nm = nm.substring(1,nm.length()-1).replace('/','\u001f');
+		UserMeta um = new UserMeta(nm);
 		for (int i=0; i < ann.names.length; i++) {
 			String nm = ann.getName(i,clazz).toString();
 			MetaValue val = readAnnotationValue(clazz,ann.values[i],nm);

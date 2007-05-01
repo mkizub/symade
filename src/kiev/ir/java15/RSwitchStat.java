@@ -37,11 +37,11 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 					if( cas.isPizzaCase() ) {
 						if( sw.mode != SwitchStat.PIZZA_SWITCH )
 							throw new CompilerException(this,"Pizza case type in non-pizza switch");
-						PizzaCase pcase = (PizzaCase)cas.variant;
+						PizzaCase pcase = (PizzaCase)cas;
 						this.open();
 						val = new ConstIntExpr(pcase.tag);
 						if( pattern.length > 0 ) {
-							PizzaCase pcase = (PizzaCase)cas.variant;
+							PizzaCase pcase = (PizzaCase)cas;
 							if( pattern.length != pcase.group.decls.length )
 								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+pcase.group.decls.length+" fields");
 							for(int i=0, j=0; i < pattern.length; i++) {
@@ -85,7 +85,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
 						this.open();
 						if (et.getStruct() != null && et.getStruct().isEnum())
-							val = new ConstIntExpr(((JavaEnum)et.getStruct().variant).getIndexOfEnumField((Field)f.var));
+							val = new ConstIntExpr(((JavaEnum)et.getStruct()).getIndexOfEnumField((Field)f.var));
 						else
 							val = f.var.init.ncopy();
 					}
@@ -274,7 +274,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 					}
 					if( !has_unabrupted_case ) {
 						Type tp = sel.getType();
-						Field[] eflds = ((JavaEnum)tp.getStruct().variant).getEnumFields();
+						Field[] eflds = ((JavaEnum)tp.getStruct()).getEnumFields();
 						if (eflds.length == cases.length)
 							setMethodAbrupted(true);
 					}
@@ -307,7 +307,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 							Struct tpclz = tp.getStruct();
 							foreach (Struct sub; tpclz.sub_decls) {
 								if( sub.isPizzaCase() ) {
-									PizzaCase pcase = (PizzaCase)sub.variant;
+									PizzaCase pcase = (PizzaCase)sub;
 									if (pcase.tag > caseno)
 										caseno = pcase.tag;
 								}

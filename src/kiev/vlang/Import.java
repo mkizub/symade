@@ -44,13 +44,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		this.name.qualified = true;
 	}
 
-	public Import(Struct node, boolean star) {
-		this.name = new SymbolRef<DNode>(node);
-		this.name.qualified = true;
-		this.mode = mode;
-		this.star = star;
-	}
-
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "this") {
 			ANode p = parent();

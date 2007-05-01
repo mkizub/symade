@@ -41,7 +41,7 @@ public class PizzaFE_Pass3 extends TransfProcessor {
 		}
 		if (clazz.isSingleton())
 			return;
-		PizzaCase pcase = (PizzaCase)clazz.variant;
+		PizzaCase pcase = (PizzaCase)clazz;
 		// Create constructor for pizza case
 		Constructor init = new Constructor(ACC_PUBLIC|ACC_SYNTHETIC);
 		foreach (Field f; pcase.group.decls)
@@ -98,7 +98,7 @@ public class PizzaME_PreGenerate extends BackendProcessor {
 			this.doProcess(dn);
 		if( clazz.isPizzaCase() ) {
 			clazz = clazz.open();
-			PizzaCase pcase = (PizzaCase)clazz.variant;
+			PizzaCase pcase = (PizzaCase)clazz;
 			Field ftag = clazz.addField(new Field(
 				nameCaseTag,Type.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
 			ftag.init = new ConstIntExpr(pcase.tag);

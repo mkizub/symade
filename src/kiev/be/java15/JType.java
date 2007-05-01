@@ -16,6 +16,7 @@ public class JPrimitiveMetaType extends MetaType {
 
 	static final JPrimitiveMetaType instance = new JPrimitiveMetaType();
 	JPrimitiveMetaType() {
+		super("<JPrimitiveMetaType>");
 	}
 }
 
@@ -23,14 +24,15 @@ public class JFakeMetaType extends MetaType {
 
 	static final JFakeMetaType instance = new JFakeMetaType();
 	JFakeMetaType() {
+		super("<JFakeMetaType>");
 	}
 }
 
 public class JBaseMetaType extends MetaType {
 
 	public final Struct clazz;
-	JBaseMetaType() {}
 	JBaseMetaType(Struct clazz) {
+		super(clazz);
 		this.clazz = clazz;
 	}
 }

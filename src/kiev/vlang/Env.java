@@ -66,7 +66,7 @@ public final class ProjectFile extends ASTNode {
  */
 
 @node
-public class Env extends Struct {
+public class Env extends KievPackage {
 
 	/** Hashtable of all defined and loaded classes */
 	public static Hash<String>						classHashOfFails	= new Hash<String>();
@@ -92,9 +92,8 @@ public class Env extends Struct {
 		really there may be no instances of this class
 	 */
 	private Env() {
-		super();
 		root = this;
-		setPackage();
+		//setPackage();
 		setTypeDeclLoaded(true);
 		new CompaundMetaType(this);
 	}
@@ -139,11 +138,11 @@ public class Env extends Struct {
 		return null;
 	}
 	
-	public static Struct newStruct(String sname, Struct outer, int acces, TypeDeclVariant variant) {
+	public static Struct newStruct(String sname, Struct outer, int acces, Struct variant) {
 		return newStruct(sname,true,outer,acces,variant,false,null);
 	}
 
-	public static Struct newStruct(String sname, boolean direct, Struct outer, int acces, TypeDeclVariant variant, boolean cleanup, String uuid)
+	public static Struct newStruct(String sname, boolean direct, Struct outer, int acces, Struct variant, boolean cleanup, String uuid)
 	{
 		assert(outer != null);
 		Struct bcl = null;
@@ -160,7 +159,7 @@ public class Env extends Struct {
 					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.getUUID()+" != "+uuid);
 				cl.cleanupOnReload();
 				cl.meta.mflags = acces;
-				cl.variant = variant;
+				assert (cl.getClass() == variant.getClass()); //cl.variant = variant;
 				cl.package_clazz.symbol = outer;
 				outer.sub_decls += cl;
 			}
@@ -183,7 +182,8 @@ public class Env extends Struct {
 			uniq_name = String.valueOf(outer.countAnonymouseInnerStructs());
 			name = uniq_name;
 		}
-		Struct cl = new Struct(name,uniq_name,outer,acces,variant);
+		Struct cl = variant;
+		cl.initStruct(name,uniq_name,outer,acces);
 		outer.addSubStruct(cl);
 		return cl;
 	}
@@ -206,8 +206,8 @@ public class Env extends Struct {
 			break;
 		}
 		if (cl == null)
-			cl = newStruct(sname,outer,0,new JavaPackage());
-		cl.setPackage();
+			cl = newStruct(sname,outer,0,new KievPackage());
+		//cl.setPackage();
 		cl.setTypeDeclLoaded(true);
 		return cl;
 	}
@@ -296,7 +296,7 @@ public class Env extends Struct {
 			}
 		}
 
-		root.setPackage();
+		//root.setPackage();
 		root.addSpecialField("$GenAsserts", Type.tpBoolean, new ConstBoolExpr(Kiev.debugOutputA));
 		root.addSpecialField("$GenTraces",  Type.tpBoolean, new ConstBoolExpr(Kiev.debugOutputT));
 	}

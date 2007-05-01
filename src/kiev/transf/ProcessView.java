@@ -57,9 +57,9 @@ public class ViewFE_GenMembers extends TransfProcessor {
 		if (clazz.isForward() || getViewImpl(clazz) != null)
 			return;
 		
-		clazz.setInterface();
+		clazz.meta.is_struct_interface = true; //clazz.setInterface();
 		
-		KievView kview = (KievView)clazz.variant;
+		KievView kview = (KievView)clazz;
 		TypeRef view_of = kview.view_of;
 
 		// add a cast from clazz.view_of to this view
@@ -146,7 +146,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		
 		clazz = clazz.open();
 		
-		KievView kview = (KievView)clazz.variant;
+		KievView kview = (KievView)clazz;
 		TypeRef view_of = kview.view_of;
 
 		// generate implementation

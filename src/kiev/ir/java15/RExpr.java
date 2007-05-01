@@ -508,7 +508,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 			return;
 		}
 		else if (!extp.isInstanceOf(type) && extp.getStruct() != null && extp.getStruct().isStructView()
-				&& ((KievView)extp.getStruct().variant).view_of.getType().getAutoCastTo(type) != null)
+				&& ((KievView)extp.getStruct()).view_of.getType().getAutoCastTo(type) != null)
 		{
 			if( tryOverloadedCast(extp) )
 				return;

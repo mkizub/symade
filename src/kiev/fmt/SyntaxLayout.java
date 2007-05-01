@@ -408,7 +408,7 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 
 	public void preResolveOut() {
 		if (rnode == null)
-			rnode = new SymbolRef<Struct>(Env.newStruct("ASTNode", Env.newPackage("kiev\u001fvlang"), 0, null));
+			rnode = new SymbolRef<Struct>();
 		if (rnode.name == null)
 			rnode.name = "ASTNode";
 		Struct@ s;

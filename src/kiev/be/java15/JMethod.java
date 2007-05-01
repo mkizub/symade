@@ -133,9 +133,9 @@ public final view JMethod of Method extends JDNode {
 		MetaThrows throwns = getMetaThrows();
         if( throwns != null ) {
 			ASTNode[] mthrs = throwns.getThrowns();
-        	JStruct[] thrs = new JStruct[mthrs.length];
+        	KString[] thrs = new KString[mthrs.length];
 			for (int i=0; i < mthrs.length; i++)
-				thrs[i] = (JStruct)mthrs[i].getType().getStruct();
+				thrs[i] = mthrs[i].getType().getJType().java_signature;
         	ExceptionsAttr athr = new ExceptionsAttr();
         	athr.exceptions = thrs;
 			this.addAttr(athr);

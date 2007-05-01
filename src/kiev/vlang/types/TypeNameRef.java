@@ -43,7 +43,7 @@ public final class TypeNameRef extends TypeRef {
 	}
 
 	public TypeNameRef(Type tp) {
-		String nm = tp.meta_type.tdecl.qname();
+		String nm = tp.meta_type.qname();
 		this.ident = nm;
 		if (nm.indexOf('\u001f') >= 0)
 			qualified = true;
@@ -59,7 +59,7 @@ public final class TypeNameRef extends TypeRef {
 
 	public String qname() {
 		if (lnk != null)
-			return this.lnk.meta_type.tdecl.qname();
+			return this.lnk.meta_type.qname();
 		if (outer == null)
 			return ident;
 		return (outer.qname() + '\u001f' + ident);

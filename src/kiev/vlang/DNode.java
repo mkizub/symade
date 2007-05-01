@@ -33,8 +33,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public static final int MASK_ACC_PUBLIC    = ACC_PUBLIC;
 	public static final int MASK_ACC_PRIVATE   = ACC_PRIVATE;
 	public static final int MASK_ACC_PROTECTED = ACC_PROTECTED;
-	public static final int MASK_ACC_NAMESPACE = ACC_PACKAGE;
-	public static final int MASK_ACC_SYNTAX    = ACC_SYNTAX;
 
 	@att public final			MetaSet			meta;
 	@att public					String			sname; // source code name, may be null for anonymouse symbols
@@ -97,8 +95,8 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	
 	public final boolean isStructView()		{ return this.meta.is_virtual; }
 	public final boolean isTypeUnerasable()	{ return this.meta.is_type_unerasable || group != null && group.meta.is_type_unerasable; }
-	public final boolean isPackage()			{ return this.meta.is_access == MASK_ACC_NAMESPACE; }
-	public final boolean isSyntax()				{ return this.meta.is_access == MASK_ACC_SYNTAX; }
+	public final boolean isPackage()			{ return this instanceof KievPackage; }
+	public final boolean isSyntax()				{ return this instanceof KievSyntax; }
 
 	public void setPublic() {
 		MetaAccess m = getMetaAccess();
@@ -541,7 +539,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	
 	public void cleanupOnReload() {
 		this.type_decl_version++;
-		this.meta.mflags = 0;
 		if (this.package_clazz.dnode != null) {
 			int idx = this.package_clazz.dnode.sub_decls.indexOf(this);
 			if (idx >= 0)

@@ -141,7 +141,7 @@ public class TypeRef extends ENode {
 		Struct s = st.getStruct();
 		if (s != null && s.isPizzaCase()) {
 			// Pizza case may be casted to int or to itself or super-class
-			PizzaCase pcase = (PizzaCase)s.variant;
+			PizzaCase pcase = (PizzaCase)s;
 			Type tp = Type.getRealType(reqType,st);
 			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
 				throw new CompilerException(this,"Pizza case "+tp+" cannot be casted to type "+reqType);

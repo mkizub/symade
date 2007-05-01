@@ -497,8 +497,8 @@ CLASS kievvlangJavaAnonymouseClass kiev/vlang/JavaAnonymouseClass kiev/vlang/S
 CLASS kievvlangJavaClass kiev/vlang/JavaClass kiev/vlang/Struct.java
 CLASS kievvlangJavaEnum kiev/vlang/JavaEnum kiev/vlang/Struct.java
 CLASS kievvlangJavaInterface kiev/vlang/JavaInterface kiev/vlang/Struct.java
-CLASS kievvlangJavaPackage kiev/vlang/JavaPackage kiev/vlang/Struct.java
 CLASS kievvlangJumpNodes kiev/vlang/JumpNodes kiev/vlang/Rules.java
+CLASS kievvlangKievPackage kiev/vlang/KievPackage kiev/vlang/Struct.java
 CLASS kievvlangKievSyntax kiev/vlang/KievSyntax kiev/vlang/Struct.java
 CLASS kievvlangKievView kiev/vlang/KievView kiev/vlang/Struct.java
 CLASS kievvlangLVar kiev/vlang/LVar kiev/vlang/Var.java
@@ -649,7 +649,6 @@ CLASS kievvlangTreeWalker kiev/vlang/TreeWalker kiev/vlang/AST.java
 CLASS kievvlangTryStat kiev/vlang/TryStat kiev/vlang/ComplexStatement.java
 CLASS kievvlangTypeClassExpr kiev/vlang/TypeClassExpr kiev/vlang/Expr.java
 CLASS kievvlangTypeDecl kiev/vlang/TypeDecl kiev/vlang/DNode.java
-CLASS kievvlangTypeDeclVariant kiev/vlang/TypeDeclVariant kiev/vlang/Struct.java
 CLASS kievvlangTypeInfoExpr kiev/vlang/TypeInfoExpr kiev/vlang/Expr.java
 CLASS kievvlangTypeOpDef kiev/vlang/TypeOpDef kiev/vlang/Import.java
 CLASS kievvlangUnaryExpr kiev/vlang/UnaryExpr kiev/vlang/Expr.java
@@ -701,7 +700,6 @@ ENUM kievfmtSpaceKind kiev/fmt/SpaceKind kiev/fmt/SyntaxLayout.java
 ENUM kievvlangIntRadix kiev/vlang/IntRadix kiev/vlang/ConstExpr.java
 ENUM kievvlangProjectFileType kiev/vlang/ProjectFileType kiev/vlang/Env.java
 ENUM kievvlangWBCType kiev/vlang/WBCType kiev/vlang/Method.java
-FORMAT stx-fmtsyntax-for-api stx-fmt/syntax-for-api.xml bad
 FORMAT stx-fmtsyntax-for-java stx-fmt/syntax-for-java.xml bad
 FORMAT stx-fmtsyntax-for-project-tree stx-fmt/syntax-for-project-tree.xml bad
 FORMAT stx-fmtsyntax-for-syntax stx-fmt/syntax-for-syntax.xml bad

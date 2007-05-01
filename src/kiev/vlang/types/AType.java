@@ -29,7 +29,7 @@ public abstract class AType implements StdTypes, TVSet {
 	
 	public final			MetaType	meta_type;
 	public:ro,ro,ro,rw		TVar[]		tvars;
-	public:ro,ro,ro,rw		TArg[]		appls;
+	private					TArg[]		appls;
 	public					int			flags;
 	private					int			version;
 	
@@ -57,14 +57,14 @@ public abstract class AType implements StdTypes, TVSet {
 		} else {
 			this.tvars = TVar.emptyArray;
 		}
-		if (bld.appls != null && bld.appls.length > 0) {
-			n = bld.appls.length;
-			this.appls = new TArg[n];
-			for (int i=0; i < n; i++)
-				this.appls[i] = bld.appls[i].copy(this);
-		} else {
-			this.appls = TArg.emptyArray;
-		}
+//		if (bld.appls != null && bld.appls.length > 0) {
+//			n = bld.appls.length;
+//			this.appls = new TArg[n];
+//			for (int i=0; i < n; i++)
+//				this.appls[i] = bld.appls[i].copy(this);
+//		} else {
+//			this.appls = TArg.emptyArray;
+//		}
 
 		flags &= ~(flAbstract|flValAppliable|flBindable);
 		foreach(TVar tv; this.tvars; !tv.isAlias()) {
@@ -123,6 +123,12 @@ public abstract class AType implements StdTypes, TVSet {
 
 	public TVar[] getTVars() {
 		return this.tvars;
+	}
+
+	public TArg[] getTArgs() {
+		if (this.appls == null)
+			buildApplayables();
+		return this.appls;
 	}
 
 	// find bound value for an abstract type
@@ -289,7 +295,8 @@ public abstract class AType implements StdTypes, TVSet {
 	}
 	
 	private boolean hasApplayables(TVSet vs) {
-		final int my_size = this.appls.length;
+		final TArg[] appls = this.getTArgs();
+		final int my_size = appls.length;
 		if (my_size == 0)
 			return false;
 		TVar[] vs_vars = vs.getTVars();
@@ -298,7 +305,7 @@ public abstract class AType implements StdTypes, TVSet {
 			return false;
 		for (int i=0; i < my_size; i++) {
 			for (int j=0; j < tp_size; j++) {
-				if (this.appls[i].var ≡ vs_vars[j].var)
+				if (appls[i].var ≡ vs_vars[j].var)
 					return true;
 			}
 		}
@@ -306,16 +313,45 @@ public abstract class AType implements StdTypes, TVSet {
 	}
 	
 	public boolean hasApplayable(ArgType at) {
-		final int my_size = this.appls.length;
+		final TArg[] appls = this.getTArgs();
+		final int my_size = appls.length;
 		if (my_size == 0)
 			return false;
 		for (int i=0; i < my_size; i++) {
-			if (this.appls[i].var ≡ at)
+			if (appls[i].var ≡ at)
 				return true;
 		}
 		return false;
 	}
 	
+	private void buildApplayables() {
+		this.appls = TArg.emptyArray;
+		foreach (TVar tv; tvars; !tv.isAlias())
+			addApplayables(tv.result());
+	}
+	
+	private void addApplayables(Type t) {
+		if (t instanceof ArgType) {
+			addApplayable((ArgType)t);
+		} else {
+			TArg[] tappls = t.bindings().getTArgs();
+			for (int i=0; i < tappls.length; i++)
+				addApplayable(tappls[i].var);
+		}
+	}
+	private void addApplayable(ArgType at) {
+		int sz = this.appls.length;
+		for (int i=0; i < sz; i++) {
+			if (this.appls[i].var ≡ at)
+				return;
+		}
+		TArg[] tmp = new TArg[sz+1];
+		for (int i=0; i < sz; i++)
+			tmp[i] = this.appls[i];
+		tmp[sz] = new TArg(this,sz,at);
+		this.appls = tmp;
+	}
+
 	public String toDump() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(this.getClass());

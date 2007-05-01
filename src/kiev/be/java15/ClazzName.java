@@ -88,13 +88,12 @@ class ClazzName implements Constants {
 		return new ClazzName(name,short_name,bytecode_name,short_name);
 	}
 
-	public static ClazzName fromOuterAndName(Struct outer, KString short_name, boolean isInn) {
+	public static ClazzName fromOuterAndName(Struct outer, KString short_name) {
 		if(short_name.equals(KString.Empty)) return Empty;
-		String delim = isInn ? "$" : "/" ;
+		String delim = outer.isPackage() ? "/" : "$" ;
 		KString bytecode_name;
 		KString name;
 		if( outer.isPackage() ) {
-			assert(!isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
 			if (outer.qname() != "") {
 				bytecode_name = KString.from(((JStruct)outer).bname()+delim+short_name);
 				name = KString.from(outer.qname().replace('\u001f','.')+"."+short_name);
@@ -103,7 +102,6 @@ class ClazzName implements Constants {
 				name = short_name;
 			}
 		} else {
-			assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isInn+")");
 			bytecode_name = KString.from(((JStruct)outer).bname()+delim+short_name);
 			name = KString.from(outer.qname().replace('\u001f','.')+"."+short_name);
 		}

@@ -219,19 +219,19 @@ public class LinenoTableAttr extends Attr {
 
 public class ExceptionsAttr extends Attr {
 
-	/** Line number table (see Code class for format description) */
-	public JStruct[]		exceptions;
+	/** Java signatures of exception types */
+	public KString[]		exceptions;
 
 	/** Constructor for bytecode reader and raw field creation */
 	public ExceptionsAttr() {
 		super(attrExceptions);
-		exceptions = new JStruct[0];
+		exceptions = new KString[0];
 	}
 
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < exceptions.length; i++)
-			constPool.addClazzCP(exceptions[i].jtype.java_signature);
+			constPool.addClazzCP(exceptions[i]);
 	}
 
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
@@ -240,7 +240,7 @@ public class ExceptionsAttr extends Attr {
 		ea.cp_exceptions = new kiev.bytecode.ClazzPoolConstant[exceptions.length];
 		for(int i=0; i < exceptions.length; i++)
 			ea.cp_exceptions[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[
-				constPool.getClazzCP(exceptions[i].jtype.java_signature).pos];
+				constPool.getClazzCP(exceptions[i]).pos];
 		return ea;
 	}
 }

@@ -140,12 +140,8 @@ public interface StdTypes {
 
 		tpNull		= new CoreType(Constants.nameNull,    tpObject, flReference);
 
-//		tpRule		= new CoreType(Constants.nameRule,    flReference);
-		Struct tpRuleClazz = new Struct("rule","rule",kiev_stdlib,ACC_PUBLIC|ACC_ABSTRACT,new JavaClass());
-		tpRule				= (CompaundType)tpRuleClazz.xtype;
-//		tpRuleClazz.setTypeDeclLoaded(true);
-		tpRule.flags		= flResolved | flReference;
-		kiev_stdlib.sub_decls += tpRuleClazz;
+		Struct tpRuleClazz = Env.newStruct("rule",kiev_stdlib,ACC_PUBLIC|ACC_ABSTRACT,new JavaClass());
+		tpRule					= (CompaundType)tpRuleClazz.xtype;
 
 		Struct tpDebugClazz = Env.newStruct("Debug",kiev_stdlib,ACC_PUBLIC,new JavaClass());
 		tpDebug				= (CompaundType)tpDebugClazz.xtype;

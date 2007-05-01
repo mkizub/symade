@@ -150,7 +150,7 @@ public class ASTIdentifier extends ENode {
 			s.checkResolved();
 			if( reqType != null && reqType.equals(Type.tpInt) ) {
 				if( s.isPizzaCase() ) {
-					PizzaCase pcase = (PizzaCase)s.variant;
+					PizzaCase pcase = (PizzaCase)s;
 					replaceWithNodeResolve(reqType, new ConstIntExpr(pcase.tag));
 					return;
 				}

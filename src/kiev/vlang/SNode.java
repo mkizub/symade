@@ -199,7 +199,7 @@ public final class DeclGroupEnumFields extends DeclGroup {
 		ANode p = parent();
 		if (p instanceof Struct) {
 			this.dtype = new TypeRef(p.xtype);
-			((JavaEnum)p.variant).group = this;
+			((JavaEnum)p).group = this;
 		}
 	}
 }
@@ -218,7 +218,7 @@ public final class DeclGroupCaseFields extends DeclGroup {
 	public void callbackAttached() {
 		ANode p = parent();
 		if (p instanceof Struct)
-			((PizzaCase)p.variant).group = this;
+			((PizzaCase)p).group = this;
 	}
 }
 

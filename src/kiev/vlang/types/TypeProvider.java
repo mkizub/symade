@@ -18,18 +18,33 @@ import syntax kiev.Syntax;
 public class MetaType implements Constants {
 
 	public final static MetaType[] emptyArray = new MetaType[0];
-	static final MetaType dummy = new MetaType();
+	static final MetaType dummy = new MetaType("<dummy>");
 
-	public TypeDecl			tdecl;
+	Object					descr; // type description, TypeDecl for loaded types, String for names of not loaded yet types
 	public int				version;
 	private TVarSet			templ_bindings;
 
 	@getter
-	public final TypeDecl get$tdecl() { return ANode.getVersion(this.tdecl); }
+	public final TypeDecl get$tdecl() {
+		if (descr instanceof String) {
+			TypeDecl td = Env.loadTypeDecl((String)descr, true);
+			if (td != null)
+				descr = td;
+		}
+		return ANode.getVersion((TypeDecl)this.descr);
+	}
 	
-	public MetaType() {}
+	public String qname() {
+		if (descr instanceof String)
+			return (String)descr;
+		return ((TypeDecl)descr).qname();
+	}
+	
+	public MetaType(String name) {
+		this.descr = name;
+	}
 	public MetaType(TypeDecl tdecl) {
-		this.tdecl = tdecl;
+		this.descr = tdecl;
 	}
 
 	public Type[] getMetaSupers(Type tp) {
@@ -182,13 +197,13 @@ public final class CoreMetaType extends MetaType {
 	CoreType core_type;
 	
 	CoreMetaType(String name, Type super_type) {
+		super("kiev\u001fstdlib\u001f"+name);
 		MetaTypeDecl tdecl = new MetaTypeDecl(this);
-		this.tdecl = tdecl;
+		this.descr = tdecl;
 		tdecl.u_name = name;
 		tdecl.sname = name;
 		tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 		tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
-		//tdecl.setTypeDeclLoaded(true);
 		tdecl.xmeta_type = this;
 		tdecl.package_clazz.dnode.sub_decls.add(tdecl);
 		if (super_type != null)
@@ -344,10 +359,38 @@ public final class ASTNodeMetaType extends MetaType {
 
 public final class CompaundMetaType extends MetaType {
 
+	private static Hashtable<String,CompaundMetaType> compaundMetaTypes = new Hashtable<String,CompaundMetaType>();
+	
 	private TVarSet			templ_bindings;
 	
-	public CompaundMetaType() {}
-	public CompaundMetaType(Struct clazz) {
+	public static CompaundMetaType newCompaundMetaType(String clazz_name) alias lfy operator new {
+		TypeDecl td = Env.resolveGlobalDNode(clazz_name);
+		if (td != null)
+			return (CompaundMetaType)td.xmeta_type;
+		CompaundMetaType mt = compaundMetaTypes.get(clazz_name);
+		if (mt != null)
+			return mt;
+		mt = new CompaundMetaType(clazz_name);
+		compaundMetaTypes.put(clazz_name,mt);
+		return mt;
+	}
+	
+	public static CompaundMetaType newCompaundMetaType(Struct clazz) alias lfy operator new {
+		if (clazz.xmeta_type != null)
+			return (CompaundMetaType)clazz.xmeta_type;
+		CompaundMetaType mt = compaundMetaTypes.get(clazz.qname());
+		if (mt != null)
+			return mt;
+		mt = new CompaundMetaType(clazz);
+		return mt;
+	}
+	
+	private CompaundMetaType(String clazz_name) {
+		super(clazz_name);
+		this.templ_bindings = TVarSet.emptySet;
+	}
+	
+	private CompaundMetaType(Struct clazz) {
 		super(clazz);
 		if (this.tdecl == Env.root) Env.root.xmeta_type = this;
 		this.templ_bindings = TVarSet.emptySet;

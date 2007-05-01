@@ -36,48 +36,14 @@ public final class JEnv {
 		return cl;
 	}
 
-	Struct makeStruct(KString bc_name, boolean cleanup) {
-		Struct pkg = Env.root;
-		int start = 0;
-		int end = bc_name.indexOf('/', start);
-		while (end > 0) {
-			String nm = bc_name.substr(start, end).toString().intern();
-			Struct ss = null;
-			foreach (Struct s; pkg.sub_decls; s.sname == nm) {
-				ss = s;
-				break;
-			}
-			if (ss == null)
-				ss = Env.newPackage(nm, pkg);
-			pkg = ss;
-			start = end+1;
-			end = bc_name.indexOf('/', start);
-		}
-		end = bc_name.indexOf('$', start);
-		while (end > 0) {
-			String nm = bc_name.substr(start, end).toString().intern();
-			assert (!Character.isDigit(nm.charAt(0)));
-			Struct ss = null;
-			foreach (Struct s; pkg.sub_decls; s.sname == nm) {
-				ss = s;
-				break;
-			}
-			if (ss == null)
-				ss = Env.newStruct(nm, true, pkg, 0, null, false, null);
-			pkg = ss;
-			start = end+1;
-			end = bc_name.indexOf('$', start);
-		}
-		String nm = bc_name.substr(start).toString().intern();
-		//assert (!Character.isDigit((char)nm.byteAt(0)));
-		foreach (Struct s; pkg.sub_decls; s.sname == nm)
-			return s;
-		return Env.newStruct(nm, true, pkg, 0, null, cleanup, null);
-	}
-
 	/** Actually load class from specified file and dir */
 	public TypeDecl loadClazz(String qname) {
-		return loadClazz(ClazzName.fromToplevelName(KString.from(qname.replace('\u001f','.'))));
+		int p = qname.lastIndexOf('\u001f');
+		if (p < 0)
+			return loadClazz(ClazzName.fromToplevelName(KString.from(qname)));
+		String pname = qname.substring(0,p);
+		TypeDecl td = Env.loadTypeDecl(pname,true);
+		return loadClazz(ClazzName.fromOuterAndName((Struct)td, KString.from(qname.substring(p+1))));
 	}
 
 	/** Actually load class from specified file and dir */
@@ -111,16 +77,9 @@ public final class JEnv {
 			clazz.readClazz(data);                                                                                    
 		}
 		if ((td == null || !td.isTypeDeclLoaded()) && clazz != null) {
-			if (td == null) {
+			if (td == null)
 				td = (Struct)Env.resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
-				if (td == null)
-					td = makeStruct(name.bytecode_name,false);
-				if (!td.isAttached()) {
-					FileUnit fu = new FileUnit(name.src_name+".class", pkg);
-					fu.members.add(td);
-				}
-			}
-			td = new Bytecoder((Struct)td,clazz,null).readClazz();
+			td = new Bytecoder((Struct)td,clazz,null).readClazz(name, pkg);
 		}
 		if (td != null) {
 			diff_time = System.currentTimeMillis() - curr_time;

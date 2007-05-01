@@ -59,7 +59,7 @@ final class Signature {
 		case 'J':		return Type.tpLong;
 		case 'F':		return Type.tpFloat;
 		case 'D':		return Type.tpDouble;
-		case 'R':		return Type.tpRule;
+		//case 'R':		return Type.tpRule;
 		}
 
 		// Check if this signature is a method signature
@@ -73,43 +73,35 @@ final class Signature {
 			ret = getType(sc);
 			return new CallType(null,null,args,ret,false);
 		}
-		if (ch == '&') {
-			// Closure signature
-			ch = sc.peekChar();
-			if( ch != '(' )
-				throw new RuntimeException("Bad closure "+sc+" at pos "+sc.pos+" - '(' expected");
-			args = new Type[0];
-			while( sc.hasMoreChars() && sc.peekChar() != ')' )
-				args = (Type[])Arrays.append(args,getType(sc));
-			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
-				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
-			ret = getType(sc);
-			return new CallType(null,null,args,ret,true);
-		}
+//		if (ch == '&') {
+//			// Closure signature
+//			ch = sc.peekChar();
+//			if( ch != '(' )
+//				throw new RuntimeException("Bad closure "+sc+" at pos "+sc.pos+" - '(' expected");
+//			args = new Type[0];
+//			while( sc.hasMoreChars() && sc.peekChar() != ')' )
+//				args = (Type[])Arrays.append(args,getType(sc));
+//			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
+//				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
+//			ret = getType(sc);
+//			return new CallType(null,null,args,ret,true);
+//		}
 
 		// Normal reference type
 		if( ch == '[' ) return new ArrayType(getType(sc));
 
-		boolean isArgument = false;
-		if( ch == 'A' ) isArgument = true;
-		else if( ch != 'L')
+//		boolean isArgument = false;
+//		if( ch == 'A' ) isArgument = true;
+//		else
+		if( ch != 'L')
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - 'A' or 'L' or 'E' expected");
 		int pos = sc.pos;
 		while( sc.hasMoreChars() && (ch=sc.nextChar()) != ';' );
 		if( ch != ';' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ';' expected");
-		if( isArgument ) {
-			KString bcn = sc.str.substr(pos,sc.pos-1);
-			//cname = ClazzName.fromBytecodeName(bcn);
-			clazz = null;
-		} else {
-			//cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
-			clazz = Env.jenv.makeStruct(sc.str.substr(pos,sc.pos-1),false);
-		}
-
-		if (isArgument)
-			throw new RuntimeException("not implemented"); //return new ArgType(cname,null);
-		return new CompaundType((CompaundMetaType)clazz.xmeta_type, TVarBld.emptySet);
+		ClazzName cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
+		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','\u001f'));
+		return new CompaundType(cmt, TVarBld.emptySet);
 	}
 
 	public static Type getTypeOfClazzCP(KString.KStringScanner sc) {
@@ -123,21 +115,9 @@ final class Signature {
 		// Normal reference type
 		if( ch == '[' ) return new ArrayType(getType(sc));
 
-		int pos = sc.pos;
-
-		// RuleType
-		if( ch == 'R' ) {
-			sc.nextChar();
-			if( !sc.hasMoreChars() )
-				return Type.tpRule;
-		}
-
-		while( sc.hasMoreChars() && (ch=sc.peekChar()) != '<' ) sc.nextChar();
-		if( sc.hasMoreChars() && ch != '<' )
-			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '<' expected");
-		clazz = Env.jenv.makeStruct(sc.str.substr(pos,sc.pos), false);
-
-		return new CompaundType((CompaundMetaType)clazz.xmeta_type, TVarBld.emptySet);
+		ClazzName cname = ClazzName.fromBytecodeName(sc.str.substr(sc.pos));
+		CompaundMetaType cmt = new CompaundMetaType(cname.name.toString().replace('.','\u001f'));
+		return new CompaundType(cmt, TVarBld.emptySet);
 	}
 
 	public static KString getJavaSignature(KString sig) {

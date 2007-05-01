@@ -45,7 +45,7 @@ public abstract class Type extends AType {
 	}
 	// accessor.field
 	public final Type applay(TVSet bindings) {
-		bindings(); // update this type, if outdated
+		//bindings(); // update this type, if outdated
 		return meta_type.applay(this,bindings);
 	}
 	// instantiate new type
@@ -607,7 +607,7 @@ public final class CompaundType extends Type {
 		if( t ≡ tpVoid ) return t;
 		if( t ≡ tpAny ) return t;
 		if( isInstanceOf(t) ) return this;
-		if( this.tdecl.isStructView() && ((KievView)((Struct)this.tdecl).variant).view_of.getType().getAutoCastTo(t) != null ) return t;
+		if( this.tdecl.isStructView() && ((KievView)this.tdecl).view_of.getType().getAutoCastTo(t) != null ) return t;
 		if( t instanceof CoreType && !t.isReference() ) {
 			if( t.getRefTypeForPrimitive() ≈ this )
 				return t;

@@ -96,11 +96,7 @@ public class Classpath implements BytecodeFileConstants {
 		}
 		String data =
 		"<?xml version='1.1' encoding='UTF-8' standalone='yes'?>\n"+
-		"<a-node class='kiev.vlang.Struct'>\n"+
-		" <variant>\n"+
-		"  <a-node class='kiev.vlang.JavaPackage'/>\n"+
-		" </variant>\n"+
-		//" <package_clazz>"+pkg+"</package_clazz>\n"+
+		"<a-node class='kiev.vlang.KievPackage'>\n"+
 		" <sname>"+name+"</sname>\n"+
 		" <uniq_name>"+name+"</uniq_name>\n"+
 		"</a-node>";

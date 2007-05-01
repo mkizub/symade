@@ -25,40 +25,63 @@ import syntax kiev.Syntax;
 
 
 @node
-public class TypeDeclVariant extends ASTNode {
+public class KievPackage extends Struct {
 }
 
 @node
-public final class JavaPackage extends TypeDeclVariant {
+public final class KievSyntax extends Struct {
 }
 
 @node
-public final class KievSyntax extends TypeDeclVariant {
+public class JavaClass extends Struct {
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="false")	DNode[]		members;
+	}
 }
 
 @node
-public final class JavaClass extends TypeDeclVariant {
+public final class JavaAnonymouseClass extends JavaClass {
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="false")	DNode[]		members;
+	}
 }
 
 @node
-public final class JavaAnonymouseClass extends TypeDeclVariant {
+public class JavaInterface extends Struct {
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="false")	DNode[]		members;
+	}
+	public JavaInterface() {
+		this.meta.is_struct_interface = true;
+	}
 }
 
 @node
-public final class JavaInterface extends TypeDeclVariant {
-}
+public final class KievView extends Struct {
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="false")	DNode[]		members;
+	}
 
-@node
-public final class KievView extends TypeDeclVariant {
 	@att public TypeRef						view_of;
+
+	public KievView() {
+		this.meta.is_virtual = true;
+	}
 }
 
 @node
-public final class JavaAnnotation extends TypeDeclVariant {
+public final class JavaAnnotation extends JavaInterface {
+	public JavaAnnotation() {
+		this.meta.is_struct_annotation = true;
+	}
 }
 
 @node
-public final class PizzaCase extends TypeDeclVariant {
+public final class PizzaCase extends Struct {
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="false")	DNode[]		members;
+	}
+
 	public int tag;
 	@ref public DeclGroupCaseFields		group;
 
@@ -72,8 +95,16 @@ public final class PizzaCase extends TypeDeclVariant {
 }
 
 @node
-public final class JavaEnum extends TypeDeclVariant {
+public final class JavaEnum extends JavaClass {
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="false")	DNode[]		members;
+	}
+
 	@ref public DeclGroupEnumFields		group;
+
+	public JavaEnum() {
+		this.meta.is_enum = true;
+	}
 	public Field[] getEnumFields() {
 		DeclGroupEnumFields enums = this.group;
 		Field[] eflds = new Field[enums.decls.length];
@@ -94,17 +125,12 @@ public final class JavaEnum extends TypeDeclVariant {
 }
 
 @node
-public class Struct extends TypeDecl {
+public abstract class Struct extends TypeDecl {
 	
-	@dflow(in="root()") private static class DFI {
-	@dflow(in="this:in", seq="false")	DNode[]		members;
-	}
-
 	@virtual typedef This  = Struct;
 	@virtual typedef JView = JStruct;
 	@virtual typedef RView = RStruct;
 
-	@att public TypeDeclVariant				variant;
 	@abstract
 	@att public String						uniq_name;
 
@@ -133,87 +159,87 @@ public class Struct extends TypeDecl {
 		}
 	}
 	
-	@setter
-	public final void set$variant(TypeDeclVariant var) {
-		this.variant = var;
-		if (var instanceof JavaPackage && this.meta.is_access != MASK_ACC_NAMESPACE)
-			setPackage();
-		else if (var instanceof KievSyntax && this.meta.is_access != MASK_ACC_SYNTAX)
-			setSyntax();
-		else if (var instanceof KievView && !this.isStructView())
-			setStructView();
-		else if (var instanceof JavaAnnotation && !this.isAnnotation())
-			setAnnotation();
-		else if (var instanceof PizzaCase && !this.isPizzaCase())
-			setPizzaCase();
-		else if (var instanceof JavaInterface && !this.isInterface())
-			setInterface();
-		else if (var instanceof JavaEnum && !this.isEnum())
-			setEnum();
-	}
+//	@setter
+//	public final void set$variant(TypeDeclVariant var) {
+//		this.variant = var;
+//		if (var instanceof KievPackage && this.meta.is_access != MASK_ACC_NAMESPACE)
+//			setPackage();
+//		else if (var instanceof KievSyntax && this.meta.is_access != MASK_ACC_SYNTAX)
+//			setSyntax();
+//		else if (var instanceof KievView && !this.isStructView())
+//			setStructView();
+//		else if (var instanceof JavaAnnotation && !this.isAnnotation())
+//			setAnnotation();
+//		else if (var instanceof PizzaCase && !this.isPizzaCase())
+//			setPizzaCase();
+//		else if (var instanceof JavaInterface && !this.isInterface())
+//			setInterface();
+//		else if (var instanceof JavaEnum && !this.isEnum())
+//			setEnum();
+//	}
 	
-	public final void setPackage() {
-		assert (variant == null || variant instanceof JavaPackage);
-		if (this.meta.is_access != MASK_ACC_NAMESPACE) {
-			assert(!locked);
-			this.meta.is_access = MASK_ACC_NAMESPACE;
-		}
-		if !(variant instanceof JavaPackage) variant = new JavaPackage();
-	}
-	public final void setSyntax() {
-		assert (variant == null || variant instanceof KievSyntax);
-		if (this.meta.is_access != MASK_ACC_SYNTAX) {
-			assert(!locked);
-			this.meta.is_access = MASK_ACC_SYNTAX;
-		}
-		if !(variant instanceof KievSyntax) variant = new KievSyntax();
-	}
-	public void setInterface() {
-		assert (variant == null || variant instanceof JavaInterface || variant instanceof KievView);
-		if (!this.meta.is_struct_interface) {
-			assert(!locked);
-			this.meta.is_struct_interface = true;
-		}
-		if !(variant instanceof JavaInterface) {
-			if (variant instanceof KievView) {
-				; // temporary do nothing
-			} else {
-				variant = new JavaInterface();
-			}
-		}
-	}
-	public void setStructView() {
-		assert (variant == null || variant instanceof KievView);
-		if (!this.meta.is_virtual) {
-			assert(!locked);
-			this.meta.is_virtual = true;
-		}
-		if !(variant instanceof KievView) variant = new KievView();
-	}
-	public final void setPizzaCase() {
-		assert (variant == null || variant instanceof PizzaCase);
-		if (!this.is_struct_pizza_case) {
-			assert(!locked);
-			this.is_struct_pizza_case = true;
-		}
-		if !(variant instanceof PizzaCase) variant = new PizzaCase();
-	}
-	public final void setAnnotation() {
-		assert (variant == null || variant instanceof JavaAnnotation);
-		if (!this.meta.is_struct_annotation) {
-			this.meta.is_struct_annotation = true;
-			this.meta.is_struct_interface = true;
-		}
-		if !(variant instanceof JavaAnnotation) variant = new JavaAnnotation();
-	}
-	public final void setEnum() {
-		assert (variant == null || variant instanceof JavaEnum);
-		if (!this.meta.is_enum) {
-			assert(!locked);
-			this.meta.is_enum = true;
-		}
-		if !(variant instanceof JavaEnum) variant = new JavaEnum();
-	}
+//	public final void setPackage() {
+//		assert (variant == null || variant instanceof KievPackage);
+//		if (this.meta.is_access != MASK_ACC_NAMESPACE) {
+//			assert(!locked);
+//			this.meta.is_access = MASK_ACC_NAMESPACE;
+//		}
+//		if !(variant instanceof KievPackage) variant = new KievPackage();
+//	}
+//	public final void setSyntax() {
+//		assert (variant == null || variant instanceof KievSyntax);
+//		if (this.meta.is_access != MASK_ACC_SYNTAX) {
+//			assert(!locked);
+//			this.meta.is_access = MASK_ACC_SYNTAX;
+//		}
+//		if !(variant instanceof KievSyntax) variant = new KievSyntax();
+//	}
+//	public void setInterface() {
+//		assert (variant == null || variant instanceof JavaInterface || variant instanceof KievView);
+//		if (!this.meta.is_struct_interface) {
+//			assert(!locked);
+//			this.meta.is_struct_interface = true;
+//		}
+//		if !(variant instanceof JavaInterface) {
+//			if (variant instanceof KievView) {
+//				; // temporary do nothing
+//			} else {
+//				variant = new JavaInterface();
+//			}
+//		}
+//	}
+//	public void setStructView() {
+//		assert (variant == null || variant instanceof KievView);
+//		if (!this.meta.is_virtual) {
+//			assert(!locked);
+//			this.meta.is_virtual = true;
+//		}
+//		if !(variant instanceof KievView) variant = new KievView();
+//	}
+//	public final void setPizzaCase() {
+//		assert (variant == null || variant instanceof PizzaCase);
+//		if (!this.is_struct_pizza_case) {
+//			assert(!locked);
+//			this.is_struct_pizza_case = true;
+//		}
+//		if !(variant instanceof PizzaCase) variant = new PizzaCase();
+//	}
+//	public final void setAnnotation() {
+//		assert (variant == null || variant instanceof JavaAnnotation);
+//		if (!this.meta.is_struct_annotation) {
+//			this.meta.is_struct_annotation = true;
+//			this.meta.is_struct_interface = true;
+//		}
+//		if !(variant instanceof JavaAnnotation) variant = new JavaAnnotation();
+//	}
+//	public final void setEnum() {
+//		assert (variant == null || variant instanceof JavaEnum);
+//		if (!this.meta.is_enum) {
+//			assert(!locked);
+//			this.meta.is_enum = true;
+//		}
+//		if !(variant instanceof JavaEnum) variant = new JavaEnum();
+//	}
 
 	public boolean isClazz() {
 		return !isPackage() && !isInterface() && !isSyntax();
@@ -221,7 +247,7 @@ public class Struct extends TypeDecl {
 	
 	// a pizza case	
 	public final boolean isPizzaCase() {
-		return this.is_struct_pizza_case;
+		return this instanceof PizzaCase;
 	}
 	// has pizza cases
 	public final boolean isHasCases() {
@@ -326,11 +352,11 @@ public class Struct extends TypeDecl {
 		setHasCases(true);
 		int caseno = 0;
 		foreach (Struct s; members; s.isPizzaCase()) {
-			PizzaCase pcase = (PizzaCase)s.variant;
+			PizzaCase pcase = (PizzaCase)s;
 			if (pcase.tag > caseno)
 				caseno = pcase.tag;
 		}
-		((PizzaCase)cas.variant).tag = caseno + 1;
+		((PizzaCase)cas).tag = caseno + 1;
 		trace(Kiev.debug && Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+(caseno+1));
 		return cas;
 	}
@@ -368,14 +394,14 @@ public class Struct extends TypeDecl {
 		}
 	}
 	
-	public Struct(String name, String u_name, TypeDecl outer, int flags, TypeDeclVariant variant) {
-		super(name);
+	public void initStruct(String name, String u_name, TypeDecl outer, int flags) {
+		this.sname = name;
 		this.u_name = u_name;
+		this.package_clazz.symbol = outer;
 		this.xmeta_type = new CompaundMetaType(this);
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
-		this.package_clazz.symbol = outer;
 		if (flags != 0) {
-			if !((flags & ACC_SYNTAX) == ACC_SYNTAX || (flags & ACC_PACKAGE) == ACC_PACKAGE) {
+			if!(this instanceof KievSyntax || this instanceof KievPackage) {
 				if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
 				if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
 				if ((flags & ACC_PRIVATE) == ACC_PRIVATE) setMeta(new MetaAccess("private"));
@@ -389,7 +415,7 @@ public class Struct extends TypeDecl {
 			if ((flags & ACC_SINGLETON) == ACC_SINGLETON) setMeta(new MetaSingleton());
 			this.meta.mflags = flags;
 		}
-		this.variant = variant;
+		//this.variant = variant;
 		trace(Kiev.debug && Kiev.debugCreation,"New clazz created: "+qname() +" as "+u_name+", member of "+outer);
 	}
 
@@ -398,7 +424,7 @@ public class Struct extends TypeDecl {
 	public void cleanupOnReload() {
 		this.meta.metas.delAll();
 		this.meta.mflags = 0;
-		this.variant = null;
+		//this.variant = null;
 		this.typeinfo_clazz = null;
 		//this.view_of = null;
 		super.cleanupOnReload();
@@ -579,7 +605,7 @@ public class Struct extends TypeDecl {
 							//init.params.append(new LVar(pos,"text",Type.tpString,Var.PARAM_NORMAL,ACC_SYNTHETIC));
 						}
 						if (isStructView()) {
-							KievView kview = (KievView)this.variant;
+							KievView kview = (KievView)this;
 							init.params.append(new LVar(pos,nameImpl,kview.view_of.getType(),Var.PARAM_NORMAL,ACC_FINAL|ACC_SYNTHETIC));
 						}
 					}
