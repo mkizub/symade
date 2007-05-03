@@ -20,8 +20,9 @@ import syntax kiev.Syntax;
 public static final view RNewExpr of NewExpr extends RENode {
 	public:ro	Method				func;
 	public		TypeRef				type;
-	public:ro	ENode[]				args;
 	public		ENode				outer;
+	public:ro	ENode[]				args;
+	public		ENode				tpinfo;
 	public		Struct				clazz;
 
 	public void resolve(Type reqType) {
@@ -48,14 +49,21 @@ public static final view RNewExpr of NewExpr extends RENode {
 			this.open();
 			outer = new ThisExpr(pos);
 		}
-		if( outer != null ) {
+		if (outer != null) {
 			outer.resolve(null);
 			type = type.bind(new TVarBld(s.ometa_tdef.getAType(), outer.getType()));
 		}
+		if (s.isTypeUnerasable()) {
+			this.open();
+			tpinfo = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewExpr)this,type,false); // Create static field for this type typeinfo
+			tpinfo.resolve(null);
+		}
+		else if (tpinfo != null) {
+			this.open();
+			tpinfo = null;
+		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
-		if (s.isTypeUnerasable() )
-			((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewExpr)this,type,false); // Create static field for this type typeinfo
 		Type[] ta = new Type[args.length];
 		for (int i=0; i < ta.length; i++)
 			ta[i] = args[i].getType();

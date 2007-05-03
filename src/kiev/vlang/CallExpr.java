@@ -37,9 +37,10 @@ public class CallExpr extends ENode {
 	@virtual typedef JView = JCallExpr;
 	@virtual typedef RView = RCallExpr;
 
-	@att public ENode				obj;
-	@att public TypeRef[]			targs;
-	@att public ENode[]				args;
+	@att				public ENode				obj;
+	@att				public TypeRef[]			targs;
+	@att				public ENode[]				args;
+	@att(ext_data=true)	public ENode[]				eargs;
 
 	@getter public Method get$func() {
 		return (Method)this.dnode;
@@ -361,15 +362,19 @@ public class CtorCallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
 	@dflow(in="this:in")				ENode		obj;
-	@dflow(in="obj", seq="true")		ENode[]		args;
+	@dflow(in="obj")					ENode		tpinfo;
+	@dflow(in="tpinfo", seq="true")		ENode[]		args;
+	@dflow(in="args", seq="true")		ENode[]		eargs;
 	}
 	
 	@virtual typedef This  = CtorCallExpr;
 	@virtual typedef JView = JCtorCallExpr;
 	@virtual typedef RView = RCtorCallExpr;
 
-	@att public ENode				obj;
-	@att public ENode[]				args;
+	@att				public ENode				obj;
+	@att(ext_data=true)	public ENode				tpinfo;
+	@att				public ENode[]				args;
+	@att(ext_data=true)	public ENode[]				eargs;
 
 	@getter public Method get$func() {
 		return (Method)this.dnode;

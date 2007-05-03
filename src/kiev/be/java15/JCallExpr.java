@@ -16,25 +16,12 @@ import syntax kiev.Syntax;
 
 public final view JCallExpr of CallExpr extends JENode {
 
-	static final AttrSlot ATTR = new TmpAttrSlot("jcall temp expr",true,false,TypeInfo.newTypeInfo(ENode.class,null));	
-
 	public:ro	JMethod			func;
 	public:ro	JENode			obj;
 	public:ro	JENode[]		args;
-	abstract
-	public 		JENode			tmp_expr;
+	public:ro	JENode[]		eargs;
 
 	public final CallType getCallType();
-
-	@getter public final JENode get$tmp_expr() {
-		return (JENode)(ENode)ATTR.get((ENode)this);
-	}
-	@setter public final void set$tmp_expr(JENode e) {
-		if (e != null)
-			ATTR.set(this, (ENode)e);
-		else
-			ATTR.clear(this);
-	}
 
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
@@ -107,15 +94,8 @@ public final view JCallExpr of CallExpr extends JENode {
 			}
 		}
 		if (func.isTypeUnerasable()) {
-			CallType mt = this.getCallType();
-			foreach (TypeDef td; ((Method)func).targs) {
-				Type tp = mt.resolve(td.getAType());
-				tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
-				if (!((ENode)tmp_expr).isResolved())
-					((ENode)tmp_expr).resolve(null);
-				tmp_expr.generate(code,null);
-				tmp_expr = null;
-			}
+			foreach (JENode earg; eargs)
+				earg.generate(code,null);
 		}
 
 		// Now, do the call instruction 		
@@ -140,25 +120,13 @@ public final view JCallExpr of CallExpr extends JENode {
 
 public final view JCtorCallExpr of CtorCallExpr extends JENode {
 
-	static final AttrSlot ATTR = new TmpAttrSlot("jcall temp expr",true,false,TypeInfo.newTypeInfo(ENode.class,null));	
-
 	public:ro	JMethod			func;
 	public:ro	JENode			obj;
+	public:ro	JENode			tpinfo;
 	public:ro	JENode[]		args;
-	abstract
-	public 		JENode			tmp_expr;
+	public:ro	JENode[]		eargs;
 
 	public final CallType getCallType();
-
-	@getter public final JENode get$tmp_expr() {
-		return (JENode)(ENode)ATTR.get((ENode)this);
-	}
-	@setter public final void set$tmp_expr(JENode e) {
-		if (e != null)
-			ATTR.set(this, (ENode)e);
-		else
-			ATTR.clear(this);
-	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\t\tgenerating CtorCallExpr: "+this);
@@ -193,15 +161,7 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 			assert(jmm.u_name == nameInit);
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?
-			if (jmm.getTypeInfoParam(Var.PARAM_TYPEINFO) != null) {
-				tmp_expr = (JENode)new LVarExpr(pos,(Var)jmm.getTypeInfoParam(Var.PARAM_TYPEINFO));
-			} else {
-				tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
-				if (!((ENode)tmp_expr).isResolved())
-					((ENode)tmp_expr).resolve(null);
-			}
-			tmp_expr.generate(code,null);
-			tmp_expr = null;
+			tpinfo.generate(code,null);
 		}
 		if !(func.isVarArgs()) {
 			for(; i < args.length; i++)
@@ -227,14 +187,8 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 		}
 		if (func.isTypeUnerasable()) {
 			CallType mt = this.getCallType();
-			foreach (TypeDef td; ((Method)func).targs) {
-				Type tp = mt.resolve(td.getAType());
-				tmp_expr = ((JStruct)jctx_tdecl).accessTypeInfoField(this,tp,true);
-				if (!((ENode)tmp_expr).isResolved())
-					((ENode)tmp_expr).resolve(null);
-				tmp_expr.generate(code,null);
-				tmp_expr = null;
-			}
+			foreach (JENode earg; eargs)
+				earg.generate(code,null);
 		}
 
 		// Now, do the call instruction 		

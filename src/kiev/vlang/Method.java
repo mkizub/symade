@@ -35,8 +35,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	@virtual typedef JView = JMethod;
 	@virtual typedef RView ≤ RMethod;
 	
-	//public static final AttrSlot ATTR_RET_VAR = new TmpAttrSlot("method ret var",true,false,TypeInfo.newTypeInfo(Var.class,null));	
-	public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));	
+	//public static final SpaceRefDataAttrSlot<Field> ATTR_VIOLATED_FIELDS = new SpaceRefDataAttrSlot<Field>("violated fields",false,TypeInfo.newTypeInfo(Field.class,null));	
 
 	@att public TypeConstr[]		targs;
 	@att public TypeRef				type_ret;
@@ -88,10 +87,10 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public Var getRetVar() {
-		Var retvar = this.ret_var; //(Var)ATTR_RET_VAR.get(this);
+		Var retvar = this.ret_var;
 		if( retvar == null ) {
 			retvar = new LVar(pos,nameResultVar,type_ret.getType(),Var.VAR_LOCAL,ACC_FINAL);
-			this.ret_var = retvar; //ATTR_RET_VAR.set(this, retvar);
+			this.ret_var = retvar;
 		}
 		return retvar;
 	}
@@ -336,7 +335,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 	
 	public void addViolatedField(Field f) {
-		if (!this.ctx_tdecl.instanceOf(f.ctx_tdecl))
+/*		if (!this.ctx_tdecl.instanceOf(f.ctx_tdecl))
 			return;
 		Field[] violated_fields = Method.ATTR_VIOLATED_FIELDS.get((Method)this);
 		if( isInvariantMethod() ) {
@@ -350,7 +349,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if (Method.ATTR_VIOLATED_FIELDS.indexOf(this,f) < 0)
 				Method.ATTR_VIOLATED_FIELDS.add(this,f);
 		}
-	}
+*/	}
 
 	public boolean preResolveIn() {
 		Type t = this.type; // rebuildTypes()
@@ -379,8 +378,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public boolean backendCleanup() {
-		if (Method.ATTR_VIOLATED_FIELDS.get(this) != null)
-			Method.ATTR_VIOLATED_FIELDS.clear(this);
+		//if (Method.ATTR_VIOLATED_FIELDS.get(this) != null)
+		//	Method.ATTR_VIOLATED_FIELDS.clear(this);
 		return super.backendCleanup();
 	}
 
@@ -690,7 +689,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		node ?= var
 	;
 		path.getName() == nameResultVar,
-		node ?= ret_var //(Var)ATTR_RET_VAR.get(this)
+		node ?= ret_var
 	;
 		node @= targs,
 		path.checkNodeName(node)

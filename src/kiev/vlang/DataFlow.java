@@ -410,8 +410,7 @@ public interface DataFlowSlots {
 }
 
 public final class DataFlowInfo extends ANode implements DataFlowSlots {
-	public static final AttrSlot ATTR = new TmpAttrSlot("data flow info",false,false,TypeInfo.newTypeInfo(DataFlowInfo.class,null));	
-	
+
 	private static final Hashtable<Class, DataFlowInfo> data_flows = new Hashtable<Class, DataFlowInfo>(128);
 
 	final ASTNode node_impl;
@@ -433,6 +432,17 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 	final DFFunc func_tru;
 	final DFFunc func_fls;
 	final DFFunc func_jmp;
+
+	// build data flow for this node
+	public static DataFlowInfo getDFlow(ASTNode n) {
+		WorkerThread wt = (WorkerThread)Thread.currentThread();
+		DataFlowInfo df = wt.dataFlowInfos.get(n);
+		if (df == null) {
+			df = newDataFlowInfo(n);
+			wt.dataFlowInfos.put(n,df);
+		}
+		return df;
+	}
 
 	private static DataFlowInfo getTemplate(Class cls) {
 		DataFlowInfo template = data_flows.get(cls);
@@ -549,10 +559,10 @@ public final class DataFlowInfo extends ANode implements DataFlowSlots {
 		case IN:
 			if (func_in != null)
 				return func_in.calc(this);
-			DataFlowInfo parent_dfi = ((ASTNode)node_impl.parent()).getDFlow();
+			DataFlowInfo parent_dfi = DataFlowInfo.getDFlow((ASTNode)node_impl.parent());
 			DFSocket parent_dfs = parent_dfi.getSocket(node_impl.pslot().name);
 			if (parent_dfs.isSeqSpace() && ANode.getPrevNode(node_impl) != null)
-				return ((ASTNode)ANode.getPrevNode(node_impl)).getDFlow().calc(OUT);
+				return DataFlowInfo.getDFlow((ASTNode)ANode.getPrevNode(node_impl)).calc(OUT);
 			return DFFunc.calc(parent_dfs.func_in, parent_dfi);
 		case OUT:
 			return func_out.calc(this);
@@ -676,7 +686,7 @@ public class DFSocketChild extends DFSocket {
 	public final DataFlowInfo getAttached(DataFlowInfo owner_dfi) {
 		Object obj = owner_dfi.node_impl.getVal(pslot_name);
 		if (obj instanceof ASTNode)
-			return obj.getDFlow();
+			return DataFlowInfo.getDFlow((ASTNode)obj);
 		return null;
 	}
 }
@@ -742,10 +752,10 @@ public abstract class DFFunc implements DataFlowSlots {
 			if (dfi.func_in != null) {
 				f = dfi.func_in;
 			} else {
-				DataFlowInfo parent_dfi = ((ASTNode)dfi.node_impl.parent()).getDFlow();
+				DataFlowInfo parent_dfi = DataFlowInfo.getDFlow((ASTNode)dfi.node_impl.parent());
 				DFSocket parent_dfs = parent_dfi.getSocket(dfi.node_impl.pslot().name);
 				if (parent_dfs.isSeqSpace() && ANode.getPrevNode(dfi.node_impl) != null) {
-					dfi = ((ASTNode)ANode.getPrevNode(dfi.node_impl)).getDFlow();
+					dfi = DataFlowInfo.getDFlow((ASTNode)ANode.getPrevNode(dfi.node_impl));
 					f = dfi.func_out;
 				} else {
 					f = parent_dfs.func_in;
@@ -784,7 +794,7 @@ public abstract class DFFunc implements DataFlowSlots {
 				if (arr.length == 0) {
 					f = dfs.func_in;
 				} else {
-					dfi = arr[arr.length-1].getDFlow();
+					dfi = DataFlowInfo.getDFlow(arr[arr.length-1]);
 					f = dfi.func_out;
 				}
 			}

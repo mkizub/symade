@@ -13,6 +13,7 @@ package kiev;
 import kiev.stdlib.Arrays;
 import kiev.fmt.ATextSyntax;
 
+import java.util.Hashtable;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -44,6 +45,8 @@ public abstract class WorkerThread extends Thread {
 	public int		warnCount;
 	public boolean	reportTotals;
 	public String	curFile = "";
+
+	public Hashtable		dataFlowInfos = new Hashtable();
 
 	private boolean			busy;
 	private boolean			run_fe;

@@ -197,7 +197,7 @@ public static final view RAssignExpr of AssignExpr extends RENode {
 				Kiev.reportError(this, "Value of type "+t2+" can't be assigned to "+lval);
 			}
 		}
-		getDFlow().out();
+		DataFlowInfo.getDFlow((AssignExpr)this).out();
 
 		// Set violation of the field
 		if( lval instanceof SFldExpr

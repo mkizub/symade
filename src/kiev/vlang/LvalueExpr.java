@@ -602,7 +602,7 @@ public final class LVarExpr extends LvalueExpr {
 	}
 
 	public Type[] getAccessTypes() {
-		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new Var[]{getVar()});
+		ScopeNodeInfo sni = DataFlowInfo.getDFlow(this).out().getNodeInfo(new Var[]{getVar()});
 		if( sni == null || sni.getTypes().length == 0 )
 			return new Type[]{var.type};
 		return (Type[])sni.getTypes().clone();
@@ -686,7 +686,7 @@ public final class SFldExpr extends LvalueExpr {
 
 	public Type[] getAccessTypes() {
 		Type[] types;
-		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new Var[]{var});
+		ScopeNodeInfo sni = DataFlowInfo.getDFlow(this).out().getNodeInfo(new Var[]{var});
 		if( sni == null || sni.getTypes().length == 0 )
 			types = new Type[]{var.type};
 		else

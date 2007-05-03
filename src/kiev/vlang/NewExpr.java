@@ -33,17 +33,20 @@ import syntax kiev.Syntax;
 public final class NewExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
-	@dflow(in="this:in", seq="true")	ENode[]		args;
+	@dflow(in="this:in")			ENode		outer;
+	@dflow(in="outer")				ENode		tpinfo;
+	@dflow(in="tpinfo", seq="true")	ENode[]		args;
 	}
 
 	@virtual typedef This  = NewExpr;
 	@virtual typedef JView = JNewExpr;
 	@virtual typedef RView = RNewExpr;
 
-	@att public TypeRef				type;
-	@att public ENode[]				args;
-	@att public ENode				outer;
-	@att public Struct				clazz; // if this new expression defines new class
+	@att				public TypeRef				type;
+	@att				public ENode				outer;
+	@att(ext_data=true)	public ENode				tpinfo;
+	@att				public ENode[]				args;
+	@att				public Struct				clazz; // if this new expression defines new class
 
 	@getter public Method get$func() {
 		DNode sym = this.dnode;

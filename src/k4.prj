@@ -627,7 +627,6 @@ CLASS kievvlangSpaceAttAttrSlot kiev/vlang/SpaceAttAttrSlot kiev/vlang/Tree.ja
 CLASS kievvlangSpaceAttrSlot kiev/vlang/SpaceAttrSlot kiev/vlang/Tree.java
 CLASS kievvlangSpacePtr kiev/vlang/SpacePtr kiev/vlang/Tree.java
 CLASS kievvlangSpaceRefAttrSlot kiev/vlang/SpaceRefAttrSlot kiev/vlang/Tree.java
-CLASS kievvlangSpaceRefDataAttrSlot kiev/vlang/SpaceRefDataAttrSlot kiev/vlang/Tree.java
 CLASS kievvlangStringAssignADD kiev/vlang/StringAssignADD kiev/vlang/CoreMethod.java
 CLASS kievvlangStringConcat kiev/vlang/StringConcat kiev/vlang/CoreMethod.java
 CLASS kievvlangStringConcatAS kiev/vlang/StringConcatAS kiev/vlang/CoreMethod.java
@@ -643,7 +642,6 @@ CLASS kievvlangSymbolRef kiev/vlang/SymbolRef kiev/vlang/Symbol.java
 CLASS kievvlangSynchronizedStat kiev/vlang/SynchronizedStat kiev/vlang/ComplexStatement.java
 CLASS kievvlangThisExpr kiev/vlang/ThisExpr kiev/vlang/LvalueExpr.java
 CLASS kievvlangThrowStat kiev/vlang/ThrowStat kiev/vlang/Statement.java
-CLASS kievvlangTmpAttrSlot kiev/vlang/TmpAttrSlot kiev/vlang/Tree.java
 CLASS kievvlangTransaction kiev/vlang/Transaction kiev/vlang/Tree.java
 CLASS kievvlangTreeWalker kiev/vlang/TreeWalker kiev/vlang/AST.java
 CLASS kievvlangTryStat kiev/vlang/TryStat kiev/vlang/ComplexStatement.java

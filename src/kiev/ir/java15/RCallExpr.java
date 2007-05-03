@@ -19,26 +19,13 @@ import syntax kiev.Syntax;
 
 public final view RCallExpr of CallExpr extends RENode {
 
-	static final AttrSlot ATTR = new TmpAttrSlot("rcall temp expr",true,false,TypeInfo.newTypeInfo(ENode.class,null));	
-
 	public:ro	Method			func;
 	public		ENode			obj;
 	public:ro	TypeRef[]		targs;
 	public:ro	ENode[]			args;
-	abstract
-	public 		ENode			tmp_expr;
+	public:ro	ENode[]			eargs;
 	
 	public final CallType getCallType();
-
-	@getter public final ENode get$tmp_expr() {
-		return (ENode)ATTR.get((ENode)this);
-	}
-	@setter public final void set$tmp_expr(ENode e) {
-		if (e != null)
-			ATTR.set((ENode)this, e);
-		else
-			ATTR.clear((ENode)this);
-	}
 
 	public void resolve(Type reqType) {
 		obj.resolve(null);
@@ -63,11 +50,12 @@ public final view RCallExpr of CallExpr extends RENode {
 				args[i].resolve(Type.getRealType(obj.getType(),func.type.arg(i)));
 		}
 		if (func.isTypeUnerasable()) {
+			((CallExpr)this).eargs.delAll();
 			foreach (TypeDef td; func.targs) {
 				Type tp = mt.resolve(td.getAType());
-				tmp_expr = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
-				tmp_expr.resolve(null);
-				tmp_expr = null;
+				ENode earg = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
+				((CallExpr)this).eargs += earg;
+				earg.resolve(null);
 			}
 		}
 		if !(func.parent() instanceof TypeDecl) {
@@ -85,25 +73,13 @@ public final view RCallExpr of CallExpr extends RENode {
 
 public final view RCtorCallExpr of CtorCallExpr extends RENode {
 
-	static final AttrSlot ATTR = new TmpAttrSlot("rcall temp expr",true,false,TypeInfo.newTypeInfo(ENode.class,null));	
-
 	public:ro	Method			func;
 	public:ro	ENode			obj;
+	public		ENode			tpinfo;
 	public:ro	ENode[]			args;
-	abstract
-	public 		ENode			tmp_expr;
+	public:ro	ENode[]			eargs;
 	
 	public final CallType getCallType();
-
-	@getter public final ENode get$tmp_expr() {
-		return (ENode)ATTR.get((ENode)this);
-	}
-	@setter public final void set$tmp_expr(ENode e) {
-		if (e != null)
-			ATTR.set((ENode)this, e);
-		else
-			ATTR.clear((ENode)this);
-	}
 
 	public void resolve(Type reqType) {
 		Method func = func;
@@ -116,12 +92,12 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 			assert(ctx_method.u_name == nameInit);
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?
+			this.open();
 			if (mmm.getTypeInfoParam(Var.PARAM_TYPEINFO) != null)
-				tmp_expr = new LVarExpr(pos,mmm.getTypeInfoParam(Var.PARAM_TYPEINFO));
+				tpinfo = new LVarExpr(pos,mmm.getTypeInfoParam(Var.PARAM_TYPEINFO));
 			else
-				tmp_expr = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
-			tmp_expr.resolve(null);
-			tmp_expr =  null;
+				tpinfo = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
+			tpinfo.resolve(null);
 		}
 		if (func.isVarArgs()) {
 			Type varg_tp = func.getVarArgParam().type.tvars[0].unalias().result();
@@ -142,9 +118,9 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 		if (func.isTypeUnerasable()) {
 			foreach (TypeDef td; func.targs) {
 				Type tp = mt.resolve(td.getAType());
-				tmp_expr = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
-				tmp_expr.resolve(null);
-				tmp_expr = null;
+				ENode earg = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
+				((CtorCallExpr)this).eargs += earg;
+				earg.resolve(null);
 			}
 		}
 		if !(func.parent() instanceof TypeDecl) {

@@ -79,10 +79,10 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 			if (cl.parent() instanceof SwitchStat) {
 				ENode sel = ((SwitchStat)cl.parent()).sel;
 				if (sel != null)
-					res = sel.getDFlow().out();
+					res = DataFlowInfo.getDFlow(sel).out();
 			}
 			if (ANode.getPrevNode(cl) != null) {
-				DFState prev = ((ASTNode)ANode.getPrevNode(cl)).getDFlow().out();
+				DFState prev = DataFlowInfo.getDFlow((ASTNode)ANode.getPrevNode(cl)).out();
 				if (res != null)
 					res = DFState.join(res,prev);
 				else

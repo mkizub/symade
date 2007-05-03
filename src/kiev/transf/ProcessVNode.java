@@ -315,6 +315,46 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 					}
 				}
 			}
+		} else {
+			if (isArr) {
+				// add public N[] get(ASTNode parent)
+				{
+					Method getArr = new MethodImpl("get",new ArrayType(clz_tp),ACC_PUBLIC | ACC_SYNTHETIC);
+					getArr.params.add(new LVar(0, "parent", tpANode, Var.PARAM_NORMAL, ACC_FINAL));
+					s.addMethod(getArr);
+					getArr.body = new Block(0);
+					LVar value = new LVar(0, "value", Type.tpObject, Var.PARAM_NORMAL, ACC_FINAL);
+					value.init = new CallExpr(0, new LVarExpr(0,"parent"), new SymbolRef<Method>("getExtData"), null, new ENode[]{new ThisExpr()});
+					getArr.block.stats.add(value);
+					ENode ifnull = new IfElseStat(0,
+						new BinaryBoolExpr(0, Operator.Equals, new LVarExpr(0,value), new ConstNullExpr()),
+						new ReturnStat(0, new CastExpr(new ArrayType(clz_tp), new AccessExpr(0, new ThisExpr(), new SymbolRef<DNode>("defaultValue")))),
+						null
+						);
+					getArr.block.stats.add(ifnull);
+					ENode ret = new ReturnStat(0, new CastExpr(new ArrayType(clz_tp), new LVarExpr(0,value)));
+					getArr.block.stats.add(ret);
+				}
+				// add public void set(ASTNode parent, N[]:Object narr)
+				{
+					Method setArr = new MethodImpl("set",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+					setArr.params.add(new LVar(0, "parent", tpANode, Var.PARAM_NORMAL, ACC_FINAL));
+					setArr.params.add(new LVar(0, "narr", Type.tpObject /*new ArrayType(tpANode)*/, Var.PARAM_NORMAL, ACC_FINAL));
+					s.addMethod(setArr);
+					setArr.body = new Block(0);
+					ENode call = new CallExpr(0, new LVarExpr(0,"parent"), new SymbolRef<Method>("setExtData"), null, new ENode[]{new LVarExpr(0,"narr"), new ThisExpr()});
+					setArr.block.stats.add(new ExprStat(call));
+				}
+				// add public void clear(ASTNode parent)
+				{
+					Method clrArr = new MethodImpl("clear",Type.tpVoid,ACC_PUBLIC | ACC_SYNTHETIC);
+					clrArr.params.add(new LVar(0, "parent", tpANode, Var.PARAM_NORMAL, ACC_FINAL));
+					s.addMethod(clrArr);
+					clrArr.body = new Block(0);
+					ENode call = new CallExpr(0, new LVarExpr(0,"parent"), new SymbolRef<Method>("delExtData"), null, new ENode[]{new ThisExpr()});
+					clrArr.block.stats.add(new ExprStat(call));
+				}
+			}
 		}
 
 		Kiev.runProcessorsOn(s);

@@ -60,7 +60,7 @@ public static view RVar of Var extends RDNode {
 				Kiev.reportError(this,e);
 			}
 		}
-		getDFlow().out();
+		DataFlowInfo.getDFlow((Var)this).out();
 		setResolved(true);
 	}
 }

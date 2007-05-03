@@ -29,7 +29,7 @@ public final view RBinaryBooleanOrExpr of BinaryBooleanOrExpr extends RBoolExpr 
 		BoolExpr.checkBool(expr1);
 		expr2.resolve(Type.tpBoolean);
 		BoolExpr.checkBool(expr2);
-		getDFlow().out();
+		DataFlowInfo.getDFlow((BinaryBooleanOrExpr)this).out();
 		setResolved(true);
 		if (isAutoReturnable())
 			ReturnStat.autoReturn(reqType, this);

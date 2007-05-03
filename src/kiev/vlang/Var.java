@@ -232,10 +232,10 @@ public final class Field extends Var implements GlobalDNode {
 	@dflow(in="this:in")	ENode			init;
 	}
 
-	public static final AttrSlot GETTER_ATTR = new ExtAttrSlot("getter method",false,false,TypeInfo.newTypeInfo(Method.class,null));
-	public static final AttrSlot SETTER_ATTR = new ExtAttrSlot("setter method",false,false,TypeInfo.newTypeInfo(Method.class,null));
-	public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,TypeInfo.newTypeInfo(Method.class,null));	
-	public static final AttrSlot ALT_ENUM_ID_ATTR = new ExtAttrSlot("alt enum id",true,false,TypeInfo.newTypeInfo(ConstStringExpr.class,null));
+	public static final AttrSlot GETTER_ATTR = new ExtAttrSlot("getter method",false,false,true,TypeInfo.newTypeInfo(Method.class,null));
+	public static final AttrSlot SETTER_ATTR = new ExtAttrSlot("setter method",false,false,true,TypeInfo.newTypeInfo(Method.class,null));
+	//public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,TypeInfo.newTypeInfo(Method.class,null));	
+	public static final AttrSlot ALT_ENUM_ID_ATTR = new ExtAttrSlot("alt enum id",true,false,true,TypeInfo.newTypeInfo(ConstStringExpr.class,null));
 
 	@virtual typedef This  = Field;
 	@virtual typedef JView = JField;

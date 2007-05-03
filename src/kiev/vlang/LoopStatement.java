@@ -103,12 +103,12 @@ public final class Label extends DNode {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
 			Label node = (Label)dfi.node_impl;
-			DFState tmp = node.getDFlow().in();
+			DFState tmp = DataFlowInfo.getDFlow(node).in();
 			dfi.locks |= 1;
 			try {
 				foreach (ASTNode lnk; node.links) {
 					try {
-						DFState s = lnk.getDFlow().jmp();
+						DFState s = DataFlowInfo.getDFlow(lnk).jmp();
 						tmp = DFState.join(s,tmp);
 					} catch (DFLoopException e) {
 						if (e.label != this) throw e;

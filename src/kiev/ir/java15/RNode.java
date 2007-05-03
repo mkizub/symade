@@ -33,7 +33,6 @@ public view RNode of ASTNode implements Constants {
 	public final ANode parent();
 	public AttrSlot[] values();
 	public final void callbackChildChanged(AttrSlot attr);
-	public final DataFlowInfo getDFlow();
 	public final <N extends ANode> N replaceWithNode(N node);
 	public final ASTNode replaceWith(()->ASTNode fnode);
 	public final boolean isAttached();
@@ -67,7 +66,7 @@ public static final view RDeclGroup of DeclGroup extends RSNode {
 		if( isResolved() ) return;
 		foreach (DNode dn; decls)
 			dn.resolveDecl();
-		getDFlow().out();
+		DataFlowInfo.getDFlow((DeclGroup)this).out();
 		setResolved(true);
 	}
 }

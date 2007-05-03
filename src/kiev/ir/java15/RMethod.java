@@ -66,7 +66,7 @@ public view RMethod of Method extends RDNode {
 		if( isResolved() ) return;
 		trace(Kiev.debug && Kiev.debugResolve,"Resolving method "+self);
 		assert( ctx_tdecl == parent() || isInlinedByDispatcherMethod() );
-		Method.ATTR_VIOLATED_FIELDS.clear((Method)self);
+		//Method.ATTR_VIOLATED_FIELDS.clear((Method)self);
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
@@ -94,7 +94,7 @@ public view RMethod of Method extends RDNode {
 
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
-			Field[] violated_fields = Method.ATTR_VIOLATED_FIELDS.get((Method)self);
+/*			Field[] violated_fields = Method.ATTR_VIOLATED_FIELDS.get((Method)self);
 			foreach(Field f; violated_fields; ctx_tdecl.instanceOf(f.ctx_tdecl) ) {
 				Method[] invs = Field.ATTR_INVARIANT_CHECKERS.get(f);
 				foreach(Method inv; invs; ctx_tdecl.instanceOf(inv.ctx_tdecl) ) {
@@ -107,7 +107,7 @@ public view RMethod of Method extends RDNode {
 				}
 			}
 			Method.ATTR_VIOLATED_FIELDS.clear((Method)self);
-		}
+*/		}
 		
 		setResolved(true);
 	}
