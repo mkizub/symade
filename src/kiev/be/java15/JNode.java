@@ -236,7 +236,7 @@ public view JTypeDecl of TypeDecl extends JDNode {
 }
 
 public static final view JTypeRef of TypeRef extends JENode {
-	public:ro Type	lnk;
+	public:ro Type	type_lnk;
 
 	public void generate(Code code, Type reqType) {
 		// don't generate here

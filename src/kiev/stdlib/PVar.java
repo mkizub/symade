@@ -85,12 +85,12 @@ public final class PVar<A> implements TypeInfoInterface
 			return "???";
 	}
 
-	public boolean equals(A value) {
+	public boolean equals(Object:Object value) {
 		A v = $var;
 		return (v==null && value==null) || v.equals(value);
 	}
 
-	public boolean equals(PVar<A> value) {
+	public boolean equals(PVar<A>:Object value) {
 		A v1 = $var;
 		A v2 = value.$var;
 		return (v1==null && v2==null) || v1.equals(v2);

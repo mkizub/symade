@@ -35,6 +35,7 @@ public final class ResInfo {
 	
 	private int			transforms;
 	private TypeDecl	from_scope;
+	private ASTNode		from;
 	
 	// a real type of the method in Method.compare() call
 	public CallType	mt;
@@ -54,10 +55,11 @@ public final class ResInfo {
 		this(from, nm, 0);
 	}
 	public ResInfo(ASTNode from, String nm, int fl) {
-		name = nm.intern();
-		flags = fl;
-		flags_stack = new int[16];
-		forwards_stack = new Object[16];
+		this.name = nm.intern();
+		this.flags = fl;
+		this.flags_stack = new int[16];
+		this.forwards_stack = new Object[16];
+		this.from = from;
 		try {
 			if (from instanceof TypeDecl)
 				from_scope = (TypeDecl)from;
@@ -67,6 +69,7 @@ public final class ResInfo {
 	}
 	
 	public String getName() { return name; }
+	public ASTNode getFrom() { return from; }
 	
 	public void enterMode(int fl) {
 		flags_stack[flags_p++] = flags;
@@ -327,6 +330,7 @@ public final class ResInfo {
 		ri.transforms     = this.transforms;
 		ri.mt             = this.mt;
 		ri.from_scope     = this.from_scope;
+		ri.from           = this.from;
 		return ri;
 	}
 
@@ -342,6 +346,7 @@ public final class ResInfo {
 		this.transforms     = ri.transforms;
 		this.mt             = ri.mt;
 		this.from_scope     = ri.from_scope;
+		this.from           = ri.from;
 	}
 
 	public String toString() {

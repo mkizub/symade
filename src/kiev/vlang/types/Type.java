@@ -231,13 +231,13 @@ public abstract class Type extends AType {
 	public ENode makeUnboxedExpr(ENode from)		{ throw new RuntimeException("Type "+this+" is not a box type"); } 
 	
 	public static Type getRealType(Type t1, TypeRef t2) {
-		return Type.getRealType(t1, t2.lnk);
+		return Type.getRealType(t1, t2.type_lnk);
 	}
 	public static Type getRealType(TypeRef t1, Type t2) {
-		return Type.getRealType(t1.lnk, t2);
+		return Type.getRealType(t1.type_lnk, t2);
 	}
 	public static Type getRealType(TypeRef t1, TypeRef t2) {
-		return Type.getRealType(t1.lnk, t2.lnk);
+		return Type.getRealType(t1.type_lnk, t2.type_lnk);
 	}
 	public static Type getRealType(Type t1, Type t2) {
 		trace(Kiev.debug && Kiev.debugResolve,"Get real type of "+t2+" in "+t1);

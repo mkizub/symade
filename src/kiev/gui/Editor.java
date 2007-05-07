@@ -103,6 +103,7 @@ public class Editor extends InfoView implements KeyListener {
 		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_DELETE),		new EditActions.Del());
 
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_F),				new FunctionExecuter.Factory());
+		this.naviMap.put(new InputEventInfo(0,					KeyEvent.VK_F),				new FunctionExecuter.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_O),				new FolderTrigger.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_N),				new NewElemHere.Factory());
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_A),				new NewElemNext.Factory());
@@ -111,11 +112,11 @@ public class Editor extends InfoView implements KeyListener {
 		this.naviMap.put(new InputEventInfo(CTRL,				KeyEvent.VK_E),				new ChooseItemEditor());
 		
 		this.keyActionMap = new Hashtable<InputEventInfo,String[]>();
-		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_E), new String[]{"kiev.gui.TextEditor.Factory","kiev.gui.ChooseItemEditor"});
-		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_F), new String[]{"kiev.gui.FunctionExecuter.Factory"});
-		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_O), new String[]{"kiev.gui.FolderTrigger.Factory"});
-		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_N), new String[]{"kiev.gui.NewElemHere.Factory"});
-		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_A), new String[]{"kiev.gui.NewElemNext.Factory"});
+		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_E), new String[]{"kiev.gui.TextEditor$Factory","kiev.gui.ChooseItemEditor"});
+		//this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_F), new String[]{"kiev.gui.FunctionExecuter$Factory"});
+		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_O), new String[]{"kiev.gui.FolderTrigger$Factory"});
+		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_N), new String[]{"kiev.gui.NewElemHere$Factory"});
+		this.keyActionMap.put(new InputEventInfo(0,KeyEvent.VK_A), new String[]{"kiev.gui.NewElemNext$Factory"});
 	}
 	
 	public Editor(Window window, ATextSyntax syntax, Canvas view_canvas) {
@@ -194,13 +195,13 @@ public class Editor extends InfoView implements KeyListener {
 			}
 			String[] actions = keyActionMap.get(new InputEventInfo(mask, code));
 			if (actions != null && cur_elem.dr != null && cur_elem.dr.syntax.funcs != null) {
-				Drawable dr = cur_elem.dr;
-				foreach (SyntaxFunction f; dr.syntax.funcs.funcs; f.attr == null) {
+				Drawable dr;
+				foreach (SyntaxFunction f; cur_elem.dr.syntax.funcs.funcs; (dr=getFunctionTarget(f)) != null) {
 					foreach (String act; actions; act != null && act.equals(f.act)) {
 						try {
 							Class c = Class.forName(f.act);
 							UIActionFactory af = (UIActionFactory)c.newInstance();
-							Runnable r = af.getAction(new UIActionViewContext(this.parent_window, this));
+							Runnable r = af.getAction(new UIActionViewContext(this.parent_window, this, dr));
 							if (r != null) {
 								evt.consume();
 								r.run();
@@ -315,6 +316,32 @@ public class Editor extends InfoView implements KeyListener {
 		super.keyPressed(evt);
 */	}
 	
+	public Drawable getFunctionTarget(SyntaxFunction sf) {
+		Drawable dr = this.cur_elem.dr;
+		if (sf.attr == null)
+			return dr;
+		String[] attrs = sf.attr.split("\\.");
+		next_attr:
+		foreach(String attr; attrs) {
+			while (dr.parent() instanceof DrawCtrl)
+				dr = (Drawable)dr.parent();
+			if !(dr.parent() instanceof DrawNonTerm)
+				return null;
+			foreach (Drawable d; ((DrawNonTerm)dr.parent()).args) {
+				if (d.syntax instanceof SyntaxAttr && attr.equals(((SyntaxAttr)d.syntax).name)) {
+					dr = d;
+					continue next_attr;
+				}
+				if (d.attr_syntax instanceof SyntaxAttr && attr.equals(((SyntaxAttr)d.attr_syntax).name)) {
+					dr = d;
+					continue next_attr;
+				}
+			}
+			return null;
+		}
+		return dr;
+	}
+
 	public void startItemEditor(ANode obj, KeyListener item_editor) {
 		assert (this.item_editor == null);
 		this.item_editor = item_editor;
@@ -343,13 +370,38 @@ public class Editor extends InfoView implements KeyListener {
 		DrawTerm dr = view_canvas.first_visible;
 		for (; dr != null; dr = dr.getNextLeaf()) {
 			if (dr.x < x && dr.y < y && dr.x+dr.w >= x && dr.y+dr.h >= y) {
-				cur_elem.set(dr);
-				cur_x = cur_elem.dr.x;
-				formatAndPaint(false);
 				break;
 			}
 			if (dr == view_canvas.last_visible)
+				return;
+		}
+		if (dr == null)
+			return;
+		e.consume();
+		cur_elem.set(dr);
+		cur_x = cur_elem.dr.x;
+		formatAndPaint(false);
+	}
+	
+	public void mouseClicked(MouseEvent e) {
+		int x = e.getX();
+		int y = e.getY() + view_canvas.translated_y;
+		DrawTerm dr = view_canvas.first_visible;
+		for (; dr != null; dr = dr.getNextLeaf()) {
+			if (dr.x < x && dr.y < y && dr.x+dr.w >= x && dr.y+dr.h >= y) {
 				break;
+			}
+			if (dr == view_canvas.last_visible)
+				return;
+		}
+		if (dr == null)
+			return;
+		if (e.getButton() == MouseEvent.BUTTON3) {
+			UIActionFactory af = new FunctionExecuter.Factory();
+			Runnable r = af.getAction(new UIActionViewContext(this.parent_window, this));
+			if (r != null)
+				r.run();
+			return;
 		}
 	}
 	
@@ -514,7 +566,7 @@ public interface KeyHandler {
 final class ChooseItemEditor implements UIActionFactory {
 
 	public String getDescr() { "Edit current element" }
-	
+	public boolean isForPopupMenu() { false }
 	public Runnable getAction(UIActionViewContext context) {
 		if (context.editor == null)
 			return null;
@@ -569,6 +621,7 @@ final class FolderTrigger implements Runnable {
 
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { "Toggle folding" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -605,7 +658,7 @@ final class FunctionExecuter implements Runnable {
 
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { "Popup list of functions for a current element" }
-
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -617,10 +670,9 @@ final class FunctionExecuter implements Runnable {
 			if (sfs == null || sfs.funcs.length == 0)
 				return null;
 			FunctionExecuter fe = new FunctionExecuter(editor);
-		next_func:
-			foreach (SyntaxFunction sf; sfs.funcs) {
+			foreach (SyntaxFunction sf; sfs.funcs; sf.act != null) {
 				try {
-					dr = getTarget(editor,sf);
+					dr = editor.getFunctionTarget(sf);
 					if (dr == null)
 						continue;
 					if ("kiev.gui.FuncNewElemOfEmptyList".equals(sf.act)) {
@@ -657,36 +709,29 @@ final class FunctionExecuter implements Runnable {
 							fe.actions.append(fe.new EditElemAction(sf.title, dr));
 						}
 					}
+					else {
+						try {
+							Class c = Class.forName(sf.act);
+							UIActionFactory af = (UIActionFactory)c.newInstance();
+							if (!af.isForPopupMenu())
+								continue;
+							Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, editor, dr));
+							if (r != null)
+								fe.actions.append(fe.new RunFuncAction(sf.title, r));
+						} catch (Throwable t) {}
+					}
+				} catch (Throwable t) {}
+			}
+			foreach (UIActionFactory af; editor.naviMap; af.isForPopupMenu()) {
+				try {
+					Runnable r = af.getAction(new UIActionViewContext(editor.parent_window, editor, dr));
+					if (r != null)
+						fe.actions.append(fe.new RunFuncAction(af.getDescr(), r));
 				} catch (Throwable t) {}
 			}
 			if (fe.actions.size() > 0)
 				return fe;
 			return null;
-		}
-		private Drawable getTarget(Editor editor, SyntaxFunction sf) {
-			Drawable dr = editor.cur_elem.dr;
-			if (sf.attr == null)
-				return dr;
-			String[] attrs = sf.attr.split("\\.");
-			next_attr:
-			foreach(String attr; attrs) {
-				while (dr.parent() instanceof DrawCtrl)
-					dr = (Drawable)dr.parent();
-				if !(dr.parent() instanceof DrawNonTerm)
-					return null;
-				foreach (Drawable d; ((DrawNonTerm)dr.parent()).args) {
-					if (d.syntax instanceof SyntaxAttr && attr.equals(((SyntaxAttr)d.syntax).name)) {
-						dr = d;
-						continue next_attr;
-					}
-					if (d.attr_syntax instanceof SyntaxAttr && attr.equals(((SyntaxAttr)d.attr_syntax).name)) {
-						dr = d;
-						continue next_attr;
-					}
-				}
-				return null;
-			}
-			return dr;
 		}
 	}
 	
@@ -707,7 +752,7 @@ final class FunctionExecuter implements Runnable {
 			}
 			NewElemHere neh = new NewElemHere(editor);
 			neh.makeMenu(text, node, stx);
-			neh.run();
+			//neh.run();
 		}
 	}
 
@@ -729,6 +774,23 @@ final class FunctionExecuter implements Runnable {
 				r.run();
 		}
 	}
+
+	class RunFuncAction extends TextAction {
+		private String		text;
+		private Runnable	r;
+		RunFuncAction(String text, Runnable r) {
+			super(text);
+			this.text = text;
+			this.r = r;
+		}
+		public void actionPerformed(ActionEvent e) {
+			if (menu != null) {
+				editor.view_canvas.remove(menu);
+				menu = null;
+			}
+			r.run();
+		}
+	}
 }
 
 abstract class NewElemEditor implements KeyListener, PopupMenuListener {
@@ -741,18 +803,18 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		this.editor = editor;
 	}
 
-	private void assItems(JPopupMenu menu, SymbolRef[] expected_types, ANode n, String name) {
+	private void addItems(JPopupMenu menu, SymbolRef[] expected_types, ANode n, String name) {
 		foreach (SymbolRef sr; expected_types) {
 			if (sr.dnode instanceof Struct)
 				menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, n, name)));
 			else if (sr.dnode instanceof SyntaxExpectedTemplate)
-				assItems(menu, ((SyntaxExpectedTemplate)sr.dnode).expected_types, n, name);
+				addItems(menu, ((SyntaxExpectedTemplate)sr.dnode).expected_types, n, name);
 		}
 	}
 
 	public void makeMenu(String title, ANode n, SyntaxAttr satt) {
 		menu = new JPopupMenu(title);
-		assItems(menu, satt.expected_types, n, satt.name);
+		addItems(menu, satt.expected_types, n, satt.name);
 		menu.addPopupMenuListener(this);
 		int x = editor.cur_elem.dr.x;
 		int y = editor.cur_elem.dr.y + editor.cur_elem.dr.h - editor.view_canvas.translated_y;
@@ -843,22 +905,37 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 	}
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { "Create a new element at this position" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
 			Editor editor = context.editor;
 			Drawable dr = context.dr;
 			if (dr instanceof DrawPlaceHolder && ((SyntaxPlaceHolder)dr.syntax).parent instanceof SyntaxAttr) {
+				ANode n = dr.drnode;
+				SyntaxAttr satt = (SyntaxAttr)((SyntaxPlaceHolder)dr.syntax).parent;
+				if (satt.expected_types.length == 0)
+					return null;
 				return new NewElemHere(editor);
 			}
 			if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
+				ANode n = dr.drnode;
+				while (n == null) {
+					dr = (Drawable)dr.parent();
+					n = dr.drnode;
+				}
+				SyntaxAttr satt = (SyntaxAttr)dr.syntax;
+				if (satt.expected_types.length == 0)
+					return null;
 				return new NewElemHere(editor);
 			}
 			ActionPoint ap = editor.getActionPoint(false);
-			if (ap != null && ap.length >= 0) {
-				return new NewElemHere(editor);
-			}
-			return null;
+			if (ap == null || ap.length == 0)
+				return null;
+			SyntaxList slst = (SyntaxList)ap.dr.syntax;
+			if (slst.expected_types.length == 0)
+				return null;
+			return new NewElemHere(editor);
 		}
 	}
 }
@@ -876,22 +953,18 @@ final class NewElemNext extends NewElemEditor implements Runnable {
 	}
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { "Create a new element at next position" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
 			Editor editor = context.editor;
-			Drawable dr = context.dr;
-			if (dr instanceof DrawPlaceHolder && ((SyntaxPlaceHolder)dr.syntax).parent instanceof SyntaxAttr) {
-				return new NewElemHere(editor);
-			}
-			if (dr instanceof DrawNodeTerm && (dr.drnode == null || dr.getAttrPtr().get() == null)) {
-				return new NewElemHere(editor);
-			}
 			ActionPoint ap = editor.getActionPoint(true);
-			if (ap != null && ap.length >= 0) {
-				return new NewElemNext(editor);
-			}
-			return null;
+			if (ap == null || ap.length == 0)
+				return null;
+			SyntaxList slst = (SyntaxList)ap.dr.syntax;
+			if (slst.expected_types.length == 0)
+				return null;
+			return new NewElemNext(editor);
 		}
 	}
 }
@@ -917,6 +990,7 @@ final class PasteElemHere implements Runnable {
 	}
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { "Paste an element at this position" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -956,6 +1030,7 @@ final class PasteElemNext implements Runnable {
 	}
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { "Paste an element at next position" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -985,6 +1060,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { "Edit the attribute as a text" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -1019,7 +1095,10 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 	}
 	void setText(String text) {
 		if (text != null && !text.equals(getText())) {
-			pattr.set(text);
+			if (dr_term instanceof DrawIdent)
+				pattr.set(text.replace('.','\u001f'));
+			else
+				pattr.set(text);
 			showAutoComplete();
 		}
 	}
@@ -1144,7 +1223,10 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 			}
 		default:
 			if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
-				text = text.substring(0, edit_offset)+evt.getKeyChar()+text.substring(edit_offset);
+				char ch = evt.getKeyChar();
+				if (ch == '.' && dr_term instanceof DrawIdent)
+					ch = '\u001f';
+				text = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
 				edit_offset++;
 				this.setText(text);
 			}
@@ -1171,6 +1253,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 		String name = getText();
 		if (name == null || name.length() == 0)
 			return;
+		boolean qualified = name.indexOf('\u001f') > 0;
 		DNode[] decls = ((ASTNode)pattr.node).findForResolve(name,pattr.slot,false);
 		if (decls == null)
 			return;
@@ -1194,7 +1277,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 		combo.setBounds(x, y, w+100, h);
 		boolean popup = false;
 		foreach (DNode dn; decls) {
-			combo.addItem(dn.sname);
+			combo.addItem(qualified ? dn.qname.replace('\u001f','.') : dn.sname);
 			popup = true;
 		}
 		if (popup) {
@@ -1216,6 +1299,7 @@ final class IntEditor extends TextEditor {
 	
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { "Edit the attribute as an integer" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;
@@ -1263,6 +1347,7 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 	
 	final static class Factory implements UIActionFactory {
 		public String getDescr() { "Edit the attribute as an enumerated value" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor == null)
 				return null;

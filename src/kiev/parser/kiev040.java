@@ -659,7 +659,7 @@ public abstract class kiev040 implements kiev040Constants {
                 Struct pkg = Env.newPackage(qname);
                 TypeNameRef tr = new TypeNameRef(qname);
                 tr.pos = qn.pos;
-                tr.lnk = pkg.xtype;
+                tr.type_lnk = pkg.xtype;
                 {if (true) return tr;}
     throw new Error("Missing return statement in function");
   }

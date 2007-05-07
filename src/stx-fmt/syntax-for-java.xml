@@ -1317,6 +1317,17 @@
              <name>fmt-space-nl-group</name>
             </a-node>
            </fmt>
+           <funcs>
+            <a-node class='kiev.fmt.SyntaxFunctions'>
+             <funcs>
+              <a-node class='kiev.fmt.SyntaxFunction'>
+               <title>Add package</title>
+               <act>kiev.gui.NewElemHere$Factory</act>
+               <attr>pkg</attr>
+              </a-node>
+             </funcs>
+            </a-node>
+           </funcs>
           </a-node>
          </empty>
         </a-node>

@@ -99,16 +99,13 @@ public class MetaType implements Constants {
 		tdecl.checkResolved(),
 		{
 			trace(Kiev.debug && Kiev.debugResolve,"Type: resolving in "+tp),
-			resolveNameR_1(node,info),	// resolve in this class
-			$cut
+			resolveNameR_1(node,info)	// resolve in this class
 		;	info.isSuperAllowed(),
 			trace(Kiev.debug && Kiev.debugResolve,"Type: resolving in super-type of "+tp),
-			resolveNameR_3(tp,node,info),	// resolve in super-classes
-			$cut
+			resolveNameR_3(tp,node,info)	// resolve in super-classes
 		;	info.isForwardsAllowed(),
 			trace(Kiev.debug && Kiev.debugResolve,"Type: resolving in forwards of "+tp),
-			resolveNameR_4(tp,node,info),	// resolve in forwards
-			$cut
+			resolveNameR_4(tp,node,info)	// resolve in forwards
 		}
 	}
 	private rule resolveNameR_1(ASTNode@ node, ResInfo info)
@@ -546,7 +543,7 @@ public class ArgMetaType extends MetaType {
 	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt)
 		TypeRef@ sup;
 	{
-		tdecl.super_types.length == 0, $cut,
+		tdecl.super_types.length == 0,
 		StdTypes.tpObject.resolveCallAccessR(node, info, mt)
 	;	sup @= tdecl.super_types,
 		sup.getType().resolveCallAccessR(node, info, mt)
@@ -636,14 +633,13 @@ public class WrapperMetaType extends MetaType {
 	
 	public rule resolveNameAccessR(Type tp, ASTNode@ node, ResInfo info)
 	{
-		info.isForwardsAllowed(),$cut,
+		info.isForwardsAllowed(),
 		trace(Kiev.debug && Kiev.debugResolve,"Type: Resolving name "+info.getName()+" in wrapper type "+tp),
 		tp.checkResolved(),
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
 		{
 			info.enterForward(field, 0) : info.leaveForward(field, 0),
-			((WrapperType)tp).getUnboxedType().resolveNameAccessR(node, info),
-			$cut
+			((WrapperType)tp).getUnboxedType().resolveNameAccessR(node, info)
 		;	info.enterSuper(10) : info.leaveSuper(10),
 			((WrapperType)tp).getEnclosedType().resolveNameAccessR(node, info)
 		}
@@ -654,14 +650,13 @@ public class WrapperMetaType extends MetaType {
 
 	public rule resolveCallAccessR(Type tp, Method@ node, ResInfo info, CallType mt)
 	{
-		info.isForwardsAllowed(),$cut,
+		info.isForwardsAllowed(),
 		trace(Kiev.debug && Kiev.debugResolve, "Resolving method "+info.getName()+" in wrapper type "+this),
 		tp.checkResolved(),
 		info.enterReinterp(((WrapperType)tp).getEnclosedType()) : info.leaveReinterp(),
 		{
 			info.enterForward(field, 0) : info.leaveForward(field, 0),
-			((WrapperType)tp).getUnboxedType().resolveCallAccessR(node, info, mt),
-			$cut
+			((WrapperType)tp).getUnboxedType().resolveCallAccessR(node, info, mt)
 		;	info.enterSuper(10) : info.leaveSuper(10),
 			((WrapperType)tp).getEnclosedType().resolveCallAccessR(node, info, mt)
 		}

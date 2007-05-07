@@ -33,26 +33,18 @@ public class TypeRef extends ENode {
 	@virtual typedef This  ≤ TypeRef;
 	@virtual typedef JView = JTypeRef;
 
-	@ref public Type	lnk;
-
 	public TypeRef() {}
 	
 	private TypeRef(CoreType tp) {
-		this.ident = tp.name;
-		this.symbol = tp.meta_type.tdecl;
-		this.lnk = tp;
+		this.type_lnk = tp;
 	}
 	
 	private TypeRef(ArgType tp) {
-		this.ident = tp.name;
-		this.symbol = tp.meta_type.tdecl;
-		this.lnk = tp;
+		this.type_lnk = tp;
 	}
 	
 	private TypeRef(ASTNodeType tp) {
-		this.ident = tp.toString();
-		//this.symbol = tp.meta_type.tdecl;
-		this.lnk = tp;
+		this.type_lnk = tp;
 	}
 	
 	public static TypeRef newTypeRef(Type tp)
@@ -81,13 +73,13 @@ public class TypeRef extends ENode {
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (dump == "api" && attr.name == "lnk") {
-			Type t = lnk;
-			if (lnk == null)
+		if (dump == "api" && attr.name == "type_lnk") {
+			Type t = type_lnk;
+			if (t == null)
 				return false;
-			if (lnk instanceof ArgType)
+			if (t instanceof ArgType)
 				return false;
-			if (lnk instanceof ASTNodeType)
+			if (t instanceof ASTNodeType)
 				return false;
 			return true;
 		}
@@ -101,13 +93,13 @@ public class TypeRef extends ENode {
 	public Type getType()
 		alias fy operator $cast
 	{
-		return lnk;
+		return type_lnk;
 	}
 	
 	public boolean isArray() { return getType().isArray(); }
 	public boolean checkResolved() { return getType().checkResolved(); } 
-	public Struct getStruct() { if (lnk == null) return null; return lnk.getStruct(); }
-	public TypeDecl getTypeDecl() { if (lnk == null) return null; return lnk.meta_type.tdecl; }
+	public Struct getStruct() { if (type_lnk == null) return null; return type_lnk.getStruct(); }
+	public TypeDecl getTypeDecl() { if (type_lnk == null) return null; return type_lnk.meta_type.tdecl; }
 	public JType getJType() { return getType().getJType(); }
 
 	public boolean preResolveIn() {
@@ -128,12 +120,12 @@ public class TypeRef extends ENode {
 	}
 	
 	public boolean equals(Object o) {
-		if (o instanceof Type) return this.lnk ≡ (Type)o;
+		if (o instanceof Type) return this.type_lnk ≡ (Type)o;
 		return this == o;
 	}
 	
 	public String toString() {
-		return String.valueOf(lnk);
+		return String.valueOf(type_lnk);
 	}
 	
 	public void toExpr(Type reqType) {
@@ -178,12 +170,12 @@ public class TypeDeclRef extends TypeRef {
 	public Type getType()
 		alias fy operator $cast
 	{
-		if (this.lnk != null)
-			return this.lnk;
+		if (this.type_lnk != null)
+			return this.type_lnk;
 		for (ANode p = parent(); p!= null; p = p.parent()) {
 			if (p instanceof DeclGroup) {
-				this.lnk = p.getType();
-				return this.lnk;
+				this.type_lnk = p.getType();
+				return this.type_lnk;
 			}
 		}
 		return Type.tpVoid;

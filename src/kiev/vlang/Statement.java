@@ -83,7 +83,6 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	{
 		redir @= params_redir,
 		path.checkNodeName(redir.old_var),
-		$cut,
 		node ?= redir.new_var
 	}
 

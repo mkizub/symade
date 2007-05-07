@@ -77,15 +77,14 @@ public class RuleMethod extends Method {
 	;
 		path.space_prev.pslot().name == "params" ||
 		path.space_prev.pslot().name == "type_ref" ||
-		path.space_prev.pslot().name == "dtype_ref",$cut,
+		path.space_prev.pslot().name == "dtype_ref",
+		$cut,
 		node @= targs,
 		path.checkNodeName(node)
 	;
 		var @= localvars,
 		path.checkNodeName(var),
 		node ?= var
-	;
-		isInlinedByDispatcherMethod(),$cut,false
 	;
 		var @= params,
 		path.checkNodeName(var),

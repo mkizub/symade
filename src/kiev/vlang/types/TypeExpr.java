@@ -24,8 +24,11 @@ public class TypeExpr extends TypeRef {
 
 	@virtual typedef This  = TypeExpr;
 
-	@att public TypeRef			arg;
-	@att public Operator		op;
+	private Object op_or_name;
+	
+	@att           public TypeRef		arg;
+	@att @abstract public Operator		op;
+	@att @abstract public String		op_name;
 
 	public TypeExpr() {}
 
@@ -37,26 +40,51 @@ public class TypeExpr extends TypeRef {
 		this.pos = arg.pos;
 		this.arg = arg;
 		this.op = op;
-		this.ident = op.name;
 	}
 
-	public TypeExpr(TypeRef arg, Operator op, Type lnk) {
+	public TypeExpr(TypeRef arg, Operator op, Type tp) {
 		this.pos = arg.pos;
 		this.arg = arg;
 		this.op = op;
-		this.ident = op.name;
-		this.lnk = lnk;
+		this.type_lnk = tp;
 	}
 
 	public TypeExpr(TypeRef arg, Token op) {
 		this.arg = arg;
 		if (op.kind == ParserConstants.OPERATOR_LRBRACKETS) {
 			this.op = Operator.PostTypeArray;
-			this.ident = this.op.name;
 		} else {
-			this.ident = ("T "+op.image).intern();
+			this.op_name = ("T "+op.image).intern();
 		}
 		this.pos = op.getPos();
+	}
+	
+	@getter @att public Operator get$op() {
+		if (op_or_name instanceof Operator)
+			return (Operator)op_or_name;
+		return null;
+	}
+
+	@getter @att public String get$op_name() {
+		if (op_or_name instanceof Operator)
+			return ((Operator)op_or_name).name;
+		return (String)op_or_name;
+	}
+
+	@setter public void set$op(Operator val) {
+		op_or_name = val;
+	}
+
+	@setter public void set$op_name(String val) {
+		if (val != null)
+			val = val.intern();
+		op_or_name = val;
+	}
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "op")
+			return false;
+		return super.includeInDump(dump, attr, val);
 	}
 
 	public Operator getOp() { return op; }
@@ -64,29 +92,29 @@ public class TypeExpr extends TypeRef {
 	public ENode[] getArgs() { return new ENode[]{arg}; }
 
 	public Type getType() {
-		if (this.lnk != null)
-			return this.lnk;
+		if (this.type_lnk != null)
+			return this.type_lnk;
 		this = this.open();
 		if (this.op == null) {
-			Operator op = Operator.getOperatorByName(this.ident);
+			Operator op = Operator.getOperatorByName(this.op_name);
 			if (op == null)
-				op = Operator.getOperatorByDecl(this.ident);
+				op = Operator.getOperatorByDecl(this.op_name);
 			if (op == null)
-				throw new CompilerException(this, "Cannot find type operator: "+this.ident);
+				throw new CompilerException(this, "Cannot find type operator: "+this.op_name);
 			this.op = op;
 		}
 		if (op == Operator.PostTypeAST) {
 			Class cls = ASTNodeMetaType.allNodes.get(arg.toString());
 			if (cls != null) {
-				this.lnk = new ASTNodeType(cls);
-				return this.lnk;
+				this.type_lnk = new ASTNodeType(cls);
+				return this.type_lnk;
 			}
 			throw new CompilerException(this, "Cannot find ASTNodeType for name: "+arg.toString());
 		}
 		TypeOpDef@ tod;
 		Type t;
 		ArgType a;
-		if (PassInfo.resolveNameR(((TypeExpr)this),tod,new ResInfo(this,this.ident))) {
+		if (PassInfo.resolveNameR(((TypeExpr)this),tod,new ResInfo(this,this.op_name))) {
 			t = tod.type.getType();
 			a = tod.arg.getAType();
 		}
@@ -99,55 +127,55 @@ public class TypeExpr extends TypeRef {
 			a = StdTypes.tpVarargArg;
 		}
 		else
-			throw new CompilerException(this,"Typedef for type operator '"+ident+"' not found");
+			throw new CompilerException(this,"Typedef for type operator '"+op_name+"' not found");
 		t.checkResolved();
 		TVarBld set = new TVarBld(a, arg.getType());
 		Type tp = t.applay(set);
-		this.lnk = tp;
+		this.type_lnk = tp;
 		return tp;
 	}
 
 	public Struct getStruct() {
-		if (this.lnk != null)
-			return this.lnk.getStruct();
-		if (this.ident == Operator.PostTypeArray.name || this.ident == Operator.PostTypeVararg.name)
+		if (this.type_lnk != null)
+			return this.type_lnk.getStruct();
+		if (this.op_name == Operator.PostTypeArray.name || this.op_name == Operator.PostTypeVararg.name)
 			return null;
 		DNode@ v;
-		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,this.ident))) {
+		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,this.op_name))) {
 			if (op == Operator.PostTypeAST)
 				return arg.getStruct();
 			else
-				throw new CompilerException(this,"Typedef for type operator "+ident+" not found");
+				throw new CompilerException(this,"Typedef for type operator "+op_name+" not found");
 		}
 		if (v instanceof TypeDecl)
 			return ((TypeDecl)v).getStruct();
-		throw new CompilerException(this,"Expected to find type for "+ident+", but found "+v);
+		throw new CompilerException(this,"Expected to find type for "+op_name+", but found "+v);
 	}
 	public TypeDecl getTypeDecl() {
-		if (this.lnk != null)
-			return this.lnk.meta_type.tdecl;
-		if (this.ident == Operator.PostTypeArray.name)
+		if (this.type_lnk != null)
+			return this.type_lnk.meta_type.tdecl;
+		if (this.op_name == Operator.PostTypeArray.name)
 			return ArrayMetaType.instance.tdecl;
-		if (this.ident == Operator.PostTypeVararg.name)
+		if (this.op_name == Operator.PostTypeVararg.name)
 			return StdTypes.tpVararg.meta_type.tdecl;
 		DNode@ v;
-		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,this.ident))) {
+		if (!PassInfo.resolveNameR(this,v,new ResInfo(this,this.op_name))) {
 			if (op == Operator.PostTypeAST)
 				return StdTypes.tdASTNodeType;
 			else
-				throw new CompilerException(this,"Typedef for type operator "+ident+" not found");
+				throw new CompilerException(this,"Typedef for type operator "+op_name+" not found");
 		}
 		if (v instanceof TypeDecl)
 			return (TypeDecl)v;
-		throw new CompilerException(this,"Expected to find type for "+ident+", but found "+v);
+		throw new CompilerException(this,"Expected to find type for "+op_name+", but found "+v);
 	}
 
 	public String toString() {
-		if (this.lnk != null)
-			return this.lnk.toString();
+		if (this.type_lnk != null)
+			return this.type_lnk.toString();
 		if (op != null)
 			return op.toString(this);
-		return String.valueOf(arg)+this.ident.substring(2);
+		return String.valueOf(arg)+this.op_name.substring(2);
 	}
 }
 

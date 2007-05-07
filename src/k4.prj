@@ -265,12 +265,10 @@ CLASS kievstdlibList kiev/stdlib/List kiev/stdlib/List.java
 CLASS kievstdlibListBuffer kiev/stdlib/ListBuffer kiev/stdlib/ListBuffer.java
 CLASS kievstdlibMatchError kiev/stdlib/MatchError kiev/stdlib/MatchError.java
 CLASS kievstdlibNoSuchElementException kiev/stdlib/NoSuchElementException kiev/stdlib/NoSuchElementException.java
-CLASS kievstdlibPEnv kiev/stdlib/PEnv kiev/stdlib/PEnv.java
 CLASS kievstdlibPVar kiev/stdlib/PVar kiev/stdlib/PVar.java
 CLASS kievstdlibPair kiev/stdlib/Pair kiev/stdlib/Pair.java
 CLASS kievstdlibRef kiev/stdlib/Ref kiev/stdlib/Ref.java
 CLASS kievstdlibRequireFailedException kiev/stdlib/RequireFailedException kiev/stdlib/Debug.java
-CLASS kievstdlibRuleFrame kiev/stdlib/RuleFrame kiev/stdlib/RuleFrame.java
 CLASS kievstdlibStack kiev/stdlib/Stack kiev/stdlib/Stack.java
 CLASS kievstdlibTTYAssertionHandler kiev/stdlib/TTYAssertionHandler kiev/stdlib/Debug.java
 CLASS kievstdlibTypeInfo kiev/stdlib/TypeInfo kiev/stdlib/TypeInfo.java
@@ -698,6 +696,7 @@ ENUM kievfmtSpaceKind kiev/fmt/SpaceKind kiev/fmt/SyntaxLayout.java
 ENUM kievvlangIntRadix kiev/vlang/IntRadix kiev/vlang/ConstExpr.java
 ENUM kievvlangProjectFileType kiev/vlang/ProjectFileType kiev/vlang/Env.java
 ENUM kievvlangWBCType kiev/vlang/WBCType kiev/vlang/Method.java
+FORMAT stx-fmtsyntax-for-api stx-fmt/syntax-for-api.xml bad
 FORMAT stx-fmtsyntax-for-java stx-fmt/syntax-for-java.xml bad
 FORMAT stx-fmtsyntax-for-project-tree stx-fmt/syntax-for-project-tree.xml bad
 FORMAT stx-fmtsyntax-for-syntax stx-fmt/syntax-for-syntax.xml bad

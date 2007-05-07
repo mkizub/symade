@@ -102,14 +102,14 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		MetaAccess m = getMetaAccess();
 		if (m == null)
 			this.setMeta(new MetaAccess("public"));
-		else
+		else if (m.simple != "public")
 			m.setSimple("public");
 	}
 	public void setPrivate() {
 		MetaAccess m = getMetaAccess();
 		if (m == null)
 			this.setMeta(new MetaAccess("private"));
-		else
+		else if (m.simple != "private")
 			m.setSimple("private");
 	}
 	public void setProtected() {
@@ -117,7 +117,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		MetaAccess m = getMetaAccess();
 		if (m == null)
 			this.setMeta(new MetaAccess("protected"));
-		else
+		else if (m.simple != "protected")
 			m.setSimple("protected");
 	}
 	public void setPkgPrivate() {
@@ -709,8 +709,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		checkResolved(),
 		{
 			trace(Kiev.debug && Kiev.debugResolve,"TypeDecl: resolving in "+this),
-			resolveNameR_1(node,info), // resolve in this class
-			$cut
+			resolveNameR_1(node,info) // resolve in this class
 		;
 			isSyntax(),
 			resolveNameR_Syntax(node,info)
@@ -718,8 +717,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			info.isSuperAllowed(),
 			info.space_prev == null || (info.space_prev.pslot().name != "super_types"),
 			trace(Kiev.debug && Kiev.debugResolve,"TypeDecl: resolving in super-class of "+this),
-			resolveNameR_3(node,info), // resolve in super-classes
-			$cut
+			resolveNameR_3(node,info) // resolve in super-classes
 		}
 	}
 	protected rule resolveNameR_1(ASTNode@ node, ResInfo info)

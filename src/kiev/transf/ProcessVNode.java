@@ -147,7 +147,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 						TypeExpr te = (TypeExpr)f.vtype;
 						te.op = Operator.PostTypeSpace;
 						te.ident = Operator.PostTypeSpace.name;
-						te.lnk = null;
+						te.type_lnk = null;
 						te.getType();
 						//ArgType arg = tpNodeSpace.bindings().tvars[0].var;
 						//Type bnd = ft.resolve(StdTypes.tpArrayArg);

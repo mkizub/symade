@@ -169,6 +169,44 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 		((Struct)this.name.dnode).resolveMethodR(node,path,mt),
 		node instanceof Method && node.isStatic() && !node.isPrivate()
 	}
+
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "name") {
+			TypeDecl scope = Env.root;
+			int dot;
+			do {
+				dot = name.indexOf('\u001f');
+				String head;
+				if (dot > 0) {
+					head = name.substring(0,dot).intern();
+					name = name.substring(dot+1);
+					DNode@ node;
+					ResInfo info = new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+					if !(scope.resolveNameR(node,info))
+						return new DNode[0];
+					if (node instanceof TypeDecl)
+						scope = (TypeDecl)node;
+					else
+						return new DNode[0];
+				} else {
+					head = name.intern();
+					Vector<DNode> vect = new Vector<DNode>();
+					DNode@ node;
+					int flags = ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports;
+					if (!by_equals)
+						flags |= ResInfo.noEquals;
+					ResInfo info = new ResInfo(this,head,flags);
+					foreach (scope.resolveNameR(node,info)) {
+						if (!vect.contains(node))
+							vect.append(node);
+					}
+					return vect.toArray();
+				}
+			} while (dot > 0);
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
 }
 
 @node

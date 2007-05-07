@@ -95,6 +95,7 @@ public class UIActionViewContext {
 
 public interface UIActionFactory {
 	public String getDescr();
+	public boolean isForPopupMenu();
 	public Runnable getAction(UIActionViewContext context);
 }
 
@@ -114,18 +115,21 @@ public final class NavigateView implements Runnable {
 
 	final static class LineUp implements UIActionFactory {
 		public String getDescr() { "Scroll the view one line up" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			return new NavigateView(context.uiv, -1);
 		}
 	}
 	final static class LineDn implements UIActionFactory {
 		public String getDescr() { "Scroll the view one line down" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			return new NavigateView(context.uiv, +1);
 		}
 	}
 	final static class PageUp implements UIActionFactory {
 		public String getDescr() { "Scroll the view one page up" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
 			return new NavigateView(uiv, -uiv.view_canvas.last_visible.lineno + uiv.view_canvas.first_visible.lineno + 1);
@@ -133,6 +137,7 @@ public final class NavigateView implements Runnable {
 	}
 	final static class PageDn implements UIActionFactory {
 		public String getDescr() { "Scroll the view one page down" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			InfoView uiv = context.uiv;
 			return new NavigateView(uiv, +uiv.view_canvas.last_visible.lineno - uiv.view_canvas.first_visible.lineno - 1);
@@ -165,6 +170,7 @@ public class NavigateEditor implements Runnable {
 	
 	final static class GoPrev implements UIActionFactory {
 		public String getDescr() { "Go to the previous element" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,-1);
@@ -173,6 +179,7 @@ public class NavigateEditor implements Runnable {
 	}
 	final static class GoNext implements UIActionFactory {
 		public String getDescr() { "Go to the next element" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,+1);
@@ -181,6 +188,7 @@ public class NavigateEditor implements Runnable {
 	}
 	final static class GoLineUp implements UIActionFactory {
 		public String getDescr() { "Go to an element above" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,-2);
@@ -189,6 +197,7 @@ public class NavigateEditor implements Runnable {
 	}
 	final static class GoLineDn implements UIActionFactory {
 		public String getDescr() { "Go to an element below" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,+2);
@@ -197,6 +206,7 @@ public class NavigateEditor implements Runnable {
 	}
 	final static class GoLineHome implements UIActionFactory {
 		public String getDescr() { "Go to the first element on the line" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,-3);
@@ -205,6 +215,7 @@ public class NavigateEditor implements Runnable {
 	}
 	final static class GoLineEnd implements UIActionFactory {
 		public String getDescr() { "Go to the last element on the line" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,+3);
@@ -213,6 +224,7 @@ public class NavigateEditor implements Runnable {
 	}
 	final static class GoPageUp implements UIActionFactory {
 		public String getDescr() { "Go to an element one screen above" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,-4);
@@ -221,6 +233,7 @@ public class NavigateEditor implements Runnable {
 	}
 	final static class GoPageDn implements UIActionFactory {
 		public String getDescr() { "Go to an element one screen below" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new NavigateEditor(context.editor,+4);
@@ -485,6 +498,7 @@ public final class FileActions implements Runnable {
 
 	final static class SaveFileAs implements UIActionFactory {
 		public String getDescr() { "Save the file as a new file" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if !(context.uiv != null && context.uiv.the_root instanceof ASTNode)
 				return null;
@@ -494,6 +508,7 @@ public final class FileActions implements Runnable {
 
 	final static class SaveFileAsApi implements UIActionFactory {
 		public String getDescr() { "Save the file as a new API file" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if !(context.uiv != null && context.uiv.the_root instanceof ASTNode)
 				return null;
@@ -503,6 +518,7 @@ public final class FileActions implements Runnable {
 
 	final static class SaveFile implements UIActionFactory {
 		public String getDescr() { "Save the file" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if !(context.uiv != null && context.uiv.the_root instanceof ASTNode)
 				return null;
@@ -512,6 +528,7 @@ public final class FileActions implements Runnable {
 
 	final static class LoadFileAs implements UIActionFactory {
 		public String getDescr() { "Load a file into current view as a file with specified syntax" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			return new FileActions(context.wnd, "load-as");
 		}
@@ -519,6 +536,7 @@ public final class FileActions implements Runnable {
 
 	final static class MergeTreeAll implements UIActionFactory {
 		public String getDescr() { "Merge editor's changes into working tree for the whole project" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			return new FileActions(context.wnd, "merge-all");
 		}
@@ -526,6 +544,7 @@ public final class FileActions implements Runnable {
 
 	final static class RunBackendAll implements UIActionFactory {
 		public String getDescr() { "Run back-end compilation for the whole project" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.uiv != null)
 				return new FileActions(context.uiv, "run-backend");
@@ -535,6 +554,7 @@ public final class FileActions implements Runnable {
 
 	final static class RunFrontendAll implements UIActionFactory {
 		public String getDescr() { "Run front-end compilation for the whole project" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new FileActions(context.editor, "run-frontend-all");
@@ -544,6 +564,7 @@ public final class FileActions implements Runnable {
 
 	final static class RunFrontend implements UIActionFactory {
 		public String getDescr() { "Run front-end compilation for the current compilation unit" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new FileActions(context.editor, "run-frontend");
@@ -605,6 +626,7 @@ public final class EditActions implements Runnable {
 
 	final static class CloseWindow implements UIActionFactory {
 		public String getDescr() { "Close the editor window" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null)
 				return new EditActions(context.editor, "close");
@@ -614,6 +636,7 @@ public final class EditActions implements Runnable {
 
 	final static class Undo implements UIActionFactory {
 		public String getDescr() { "Undo last change" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null && context.editor.changes.length > 0)
 				return new EditActions(context.editor, "undo");
@@ -623,6 +646,7 @@ public final class EditActions implements Runnable {
 	
 	final static class Cut implements UIActionFactory {
 		public String getDescr() { "Cut current node" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null && context.editor.cur_elem.dr != null)
 				return new EditActions(context.editor, "cut");
@@ -632,6 +656,7 @@ public final class EditActions implements Runnable {
 	
 	final static class Del implements UIActionFactory {
 		public String getDescr() { "Delete current node" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null && context.editor.cur_elem.dr != null)
 				return new EditActions(context.editor, "del");
@@ -641,6 +666,7 @@ public final class EditActions implements Runnable {
 	
 	final static class Copy implements UIActionFactory {
 		public String getDescr() { "Copy current node" }
+		public boolean isForPopupMenu() { true }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.editor != null && context.editor.cur_elem.dr != null)
 				return new EditActions(context.editor, "copy");
@@ -752,6 +778,7 @@ public final class RenderActions implements Runnable {
 
 	final static class SyntaxFileAs implements UIActionFactory {
 		public String getDescr() { "Set the syntax of the curret view" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			return new RenderActions(context.uiv, "select-syntax");
 		}
@@ -759,6 +786,7 @@ public final class RenderActions implements Runnable {
 
 	final static class OpenFoldedAll implements UIActionFactory {
 		public String getDescr() { "Open (unfold) all folded elements" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.uiv == null || context.uiv.view_root == null)
 				return null;
@@ -768,6 +796,7 @@ public final class RenderActions implements Runnable {
 
 	final static class CloseFoldedAll implements UIActionFactory {
 		public String getDescr() { "Close (fold) all foldable elements" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			if (context.uiv == null || context.uiv.view_root == null)
 				return null;
@@ -777,6 +806,7 @@ public final class RenderActions implements Runnable {
 
 	final static class ToggleShowAutoGenerated implements UIActionFactory {
 		public String getDescr() { "Toggle show of auto-generated code" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			return new RenderActions(context.uiv, "toggle-autogen");
 		}
@@ -784,6 +814,7 @@ public final class RenderActions implements Runnable {
 
 	final static class Redraw implements UIActionFactory {
 		public String getDescr() { "Redraw the window" }
+		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			return new RenderActions(context.uiv, "redraw");
 		}

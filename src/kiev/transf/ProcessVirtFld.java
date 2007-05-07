@@ -95,25 +95,40 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			Kiev.reportWarning(m,"Method looks to be a setter, but @setter is not specified");
 		}
 		if( m.isPublic() ) {
-			acc.w_public = true;
-			acc.w_protected = true;
-			acc.w_default = true;
-			acc.w_private = true;
+			if !(acc.w_public & acc.w_protected & acc.w_default & acc.w_private) {
+				acc = acc.open();
+				acc.w_public = true;
+				acc.w_protected = true;
+				acc.w_default = true;
+				acc.w_private = true;
+			}
 		}
 		else if( m.isPrivate() ) {
-			acc.w_public = false;
-			acc.w_protected = false;
-			acc.w_default = false;
-			acc.w_private = true;
+			if !(!acc.w_public & !acc.w_protected & !acc.w_default & acc.w_private) {
+				acc = acc.open();
+				acc.w_public = false;
+				acc.w_protected = false;
+				acc.w_default = false;
+				acc.w_private = true;
+			}
 		}
 		else if( m.isProtected() ) {
-			acc.w_public = false;
-			acc.w_private = true;
+			if !(!acc.w_public & acc.w_protected & acc.w_default & acc.w_private) {
+				acc = acc.open();
+				acc.w_public = false;
+				acc.w_protected = true;
+				acc.w_default = true;
+				acc.w_private = true;
+			}
 		}
 		else {
-			acc.w_public = false;
-			acc.w_default = true;
-			acc.w_private = true;
+			if !(!acc.w_public & !acc.w_protected & acc.w_default & acc.w_private) {
+				acc = acc.open();
+				acc.w_public = false;
+				acc.w_protected = false;
+				acc.w_default = true;
+				acc.w_private = true;
+			}
 		}
 		MetaAccess.verifyDecl(f);
 	}
@@ -146,25 +161,40 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			Kiev.reportWarning(m,"Method looks to be a getter, but @getter is not specified");
 		}
 		if( m.isPublic() ) {
-			acc.r_public = true;
-			acc.r_protected = true;
-			acc.r_default = true;
-			acc.r_private = true;
+			if !(acc.r_public & acc.r_protected & acc.r_default & acc.r_private) {
+				acc = acc.open();
+				acc.r_public = true;
+				acc.r_protected = true;
+				acc.r_default = true;
+				acc.r_private = true;
+			}
 		}
 		else if( m.isPrivate() ) {
-			acc.r_public = false;
-			acc.r_protected = false;
-			acc.r_default = false;
-			acc.r_private = true;
+			if !(!acc.r_public & !acc.r_protected & !acc.r_default & acc.r_private) {
+				acc = acc.open();
+				acc.r_public = false;
+				acc.r_protected = false;
+				acc.r_default = false;
+				acc.r_private = true;
+			}
 		}
 		else if( m.isProtected() ) {
-			acc.r_public = false;
-			acc.r_private = true;
+			if !(!acc.r_public & acc.r_protected & acc.r_default & acc.r_private) {
+				acc = acc.open();
+				acc.r_public = false;
+				acc.r_protected = true;
+				acc.r_default = true;
+				acc.r_private = true;
+			}
 		}
 		else {
-			acc.r_public = false;
-			acc.r_default = true;
-			acc.r_private = true;
+			if !(!acc.r_public & !acc.r_protected & acc.r_default & acc.r_private) {
+				acc = acc.open();
+				acc.r_public = false;
+				acc.r_protected = false;
+				acc.r_default = true;
+				acc.r_private = true;
+			}
 		}
 		MetaAccess.verifyDecl(f);
 	}

@@ -971,7 +971,7 @@ TypeNameRef Package() :
 		Struct pkg = Env.newPackage(qname);
 		TypeNameRef tr = new TypeNameRef(qname);
 		tr.pos = qn.pos;
-		tr.lnk = pkg.xtype;
+		tr.type_lnk = pkg.xtype;
 		return tr;
 	}
 }

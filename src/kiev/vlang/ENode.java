@@ -30,45 +30,69 @@ public abstract class ENode extends ASTNode {
 	@virtual typedef JView ≤ JENode;
 	@virtual typedef RView ≤ RENode;
 
-	private Object	ident_or_symbol;
+	private Object	ident_or_symbol_or_type;
 	
 	@att @abstract public String			ident;
 	@att @abstract public boolean			qualified; // stored ident may be qualified name
 	@ref @abstract public ISymbol			symbol;
+	@ref @abstract public Type				type_lnk;
 	@ref @abstract public:ro DNode			dnode;
 	
 	@getter @att public final String get$ident() {
-		if (ident_or_symbol instanceof String)
-			return (String)ident_or_symbol;
-		if (ident_or_symbol instanceof ISymbol) {
+		if (ident_or_symbol_or_type instanceof String)
+			return (String)ident_or_symbol_or_type;
+		if (ident_or_symbol_or_type instanceof ISymbol) {
 			if (qualified)
-				return ((ISymbol)ident_or_symbol).qname;
-			return ((ISymbol)ident_or_symbol).sname;
+				return ((ISymbol)ident_or_symbol_or_type).qname;
+			return ((ISymbol)ident_or_symbol_or_type).sname;
+		}
+		if (ident_or_symbol_or_type instanceof Type) {
+			if (qualified)
+				return ((Type)ident_or_symbol_or_type).meta_type.tdecl.qname;
+			return ((Type)ident_or_symbol_or_type).meta_type.tdecl.sname;
 		}
 		return null;
 	}
 
 	@getter @ref public final ISymbol get$symbol() {
-		if (ident_or_symbol instanceof ISymbol)
-			return (ISymbol)ANode.getVersion((ANode)ident_or_symbol);
+		if (ident_or_symbol_or_type instanceof ISymbol)
+			return (ISymbol)ANode.getVersion((ANode)ident_or_symbol_or_type);
+		if (ident_or_symbol_or_type instanceof Type)
+			return ((Type)ident_or_symbol_or_type).meta_type.tdecl;
 		return null;
 	}
 	
 	@getter @ref public final DNode get$dnode() {
-		if (ident_or_symbol instanceof DNode)
-			return ANode.getVersion((DNode)ident_or_symbol);
-		if (ident_or_symbol instanceof ISymbol)
-			return ANode.getVersion(((ISymbol)ident_or_symbol).dnode);
+		if (ident_or_symbol_or_type instanceof DNode)
+			return ANode.getVersion((DNode)ident_or_symbol_or_type);
+		if (ident_or_symbol_or_type instanceof ISymbol)
+			return ANode.getVersion(((ISymbol)ident_or_symbol_or_type).dnode);
+		if (ident_or_symbol_or_type instanceof Type)
+			return ((Type)ident_or_symbol_or_type).meta_type.tdecl;
+		return null;
+	}
+	
+	@getter @ref public Type get$type_lnk() {
+		if (ident_or_symbol_or_type instanceof Type)
+			return (Type)ident_or_symbol_or_type;
 		return null;
 	}
 	
 	@setter public final void set$ident(String val) {
-		if (val != null) val = val.intern();
-		ident_or_symbol = val;
+		if (val != null) {
+			val = val.intern();
+			if (val.indexOf('\u001f') >= 0)
+				qualified = true;
+		}
+		ident_or_symbol_or_type = val;
 	}
 	
 	@setter public final void set$symbol(ISymbol val) {
-		ident_or_symbol = val;
+		ident_or_symbol_or_type = val;
+	}
+	
+	@setter public final void set$type_lnk(Type val) {
+		ident_or_symbol_or_type = val;
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {

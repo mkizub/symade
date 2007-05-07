@@ -27,9 +27,9 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 		Type[] types = new Type[params_redir.length];
 		for (int i=0; i < params_redir.length; i++) {
 			types[i] = params_redir[i].new_var.type;
-			if (params_redir[i].new_var.vtype.lnk != method.params[i].type) {
+			if (params_redir[i].new_var.vtype.type_lnk != method.params[i].type) {
 				params_redir[i].new_var.vtype.open();
-				params_redir[i].new_var.vtype.lnk = method.params[i].type;
+				params_redir[i].new_var.vtype.type_lnk = method.params[i].type;
 			}
 		}
 		try {
@@ -38,9 +38,9 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 			if( method.body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} finally {
 			for (int i=0; i < params_redir.length; i++) {
-				if (params_redir[i].new_var.vtype.lnk != types[i]) {
+				if (params_redir[i].new_var.vtype.type_lnk != types[i]) {
 					params_redir[i].new_var.vtype.open();
-					params_redir[i].new_var.vtype.lnk = types[i];
+					params_redir[i].new_var.vtype.type_lnk = types[i];
 				}
 			}
 		}

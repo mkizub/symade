@@ -30,24 +30,24 @@ public class TypeClosureRef extends TypeRef {
 	public TypeClosureRef() {}
 	
 	public TypeClosureRef(CallType tp) {
-		this.lnk = tp;
+		this.type_lnk = tp;
 		assert (tp.isReference());
 	}
 
 	public Type getType() {
-		if (this.lnk != null)
-			return this.lnk;
+		if (this.type_lnk != null)
+			return this.type_lnk;
 		Type[] args = new Type[this.args.length];
 		for(int i=0; i < args.length; i++) {
 			args[i] = this.args[i].getType();
 		}
 		Type ret = this.ret.getType();
-		this.lnk = new CallType(null,null,args,ret,true);
-		return this.lnk;
+		this.type_lnk = new CallType(null,null,args,ret,true);
+		return this.type_lnk;
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
-		if (dump == "api" && attr.name == "lnk")
+		if (dump == "api" && attr.name == "type_lnk")
 			return false;
 		return super.includeInDump(dump, attr, val);
 	}

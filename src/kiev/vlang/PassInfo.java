@@ -79,10 +79,8 @@ public class PassInfo {
 		ParentEnumerator pe;
 	{
 		trace( Kiev.debug && Kiev.debugResolve, "PassInfo: resolving name "+path.getName()),
-		//assert(path.getName().indexOf('.') < 0),
 		pe = new ParentEnumerator(from),
 		p @= pe,
-//		trace( Kiev.debug && Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),
 		p instanceof ScopeOfNames,
 		trace( Kiev.debug && Kiev.debugResolve, "PassInfo: resolving name '"+path.getName()+"' in scope '"+p+"'"),
 		path.space_prev = pe.n,
@@ -259,7 +257,7 @@ public class PassInfo {
 			msg.append(paths[i]).append(methods[i]).append('\n');
 		}
 		msg.append("while resolving ").append(Method.toString(info.getName(),mt));
-		throw new RuntimeException(msg.toString());
+		throw new CompilerException(info.getFrom(), msg.toString());
 	}
 
 	public static rule resolveMethodR(ASTNode from, Method@ node, ResInfo path, CallType mt)

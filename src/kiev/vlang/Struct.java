@@ -511,7 +511,7 @@ public abstract class Struct extends TypeDecl {
 	{
 		info.isStaticAllowed(),
 		{
-			super.resolveNameR(node, info), $cut
+			super.resolveNameR(node, info)
 		;
 			isPackage(),
 			node @= sub_decls,
@@ -519,28 +519,22 @@ public abstract class Struct extends TypeDecl {
 		;
 			isPackage(),
 			info.isCmpByEquals(),
-			tryLoad(node,info.getName()), $cut
+			node ?= tryLoad(info.getName())
 		}
 	}
 
-	public boolean tryLoad(ASTNode@ node, String name) {
-		if( isPackage() ) {
-			trace(Kiev.debug && Kiev.debugResolve,"Struct: trying to load in package "+this);
-			TypeDecl cl;
-			String qn = name;
-			if (this.equals(Env.root))
-				cl = Env.loadTypeDecl(qn);
-			else
-				cl = Env.loadTypeDecl(qn=(this.qname()+"\u001f"+name).intern());
-			if( cl != null ) {
-				trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+cl+" found in "+this);
-				node = cl;
-				return true;
-			} else {
-				trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+qn+" not found in "+this);
-			}
-		}
-		return false;
+	public TypeDecl tryLoad(String name) {
+		if (!isPackage())
+			return null;
+		trace(Kiev.debug && Kiev.debugResolve,"Struct: trying to load in package "+this);
+		TypeDecl cl;
+		String qn = name;
+		if (this.equals(Env.root))
+			cl = Env.loadTypeDecl(qn);
+		else
+			cl = Env.loadTypeDecl(qn=(this.qname()+"\u001f"+name).intern());
+		trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+(cl != null ? cl+" found " : qn+" not found")+" in "+this);
+		return cl;
 	}
 
 	public void autoGenerateMembers() {

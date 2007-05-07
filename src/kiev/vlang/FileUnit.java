@@ -56,7 +56,7 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 		this.name = name;
 		if (pkg != null) {
 			this.pkg = new TypeNameRef(pkg.qname());
-			this.pkg.lnk = pkg.xtype;
+			this.pkg.type_lnk = pkg.xtype;
 		}
 	}
 
