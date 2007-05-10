@@ -379,12 +379,12 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		return false;
 	}
 	// resolved
-	@getter public final boolean isTypeDeclLoaded() {
-		return this.meta.is_tdecl_loaded;
+	@getter public final boolean isTypeDeclNotLoaded() {
+		return this.meta.is_tdecl_not_loaded;
 	}
-	@setter public final void setTypeDeclLoaded(boolean on) {
-		if (this.meta.is_tdecl_loaded != on) {
-			this.meta.is_tdecl_loaded = on;
+	@setter public final void setTypeDeclNotLoaded(boolean on) {
+		if (this.meta.is_tdecl_not_loaded != on) {
+			this.meta.is_tdecl_not_loaded = on;
 		}
 	}
 	// a structure with the only one instance (singleton)	
@@ -584,14 +584,14 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	}
 
 	public boolean checkResolved() {
-		if( !isTypeDeclLoaded() ) {
-			if (!Env.loadTypeDecl(this).isTypeDeclLoaded()) {
+		if( isTypeDeclNotLoaded() ) {
+			if (Env.loadTypeDecl(this).isTypeDeclNotLoaded()) {
 				if (isPackage())
-					setTypeDeclLoaded(true);
+					setTypeDeclNotLoaded(false);
 				else
 					throw new RuntimeException("TypeDecl "+this+" not found");
 			}
-			if (!isTypeDeclLoaded())
+			if (isTypeDeclNotLoaded())
 				throw new RuntimeException("TypeDecl "+this+" unresolved");
 		}
 		return true;

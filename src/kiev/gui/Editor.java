@@ -850,6 +850,7 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 			foreach (AttrSlot a; node.values(); a.name == attr) {
 				try {
 					ANode obj = (ANode)Class.forName(cls.qname().replace('\u001f','.')).newInstance();
+					obj.initForEditor();
 					if (a.is_space) {
 						SpaceAttrSlot<ANode> sas = (SpaceAttrSlot<ANode>)a;
 						if (idx < 0)
@@ -930,7 +931,7 @@ final class NewElemHere extends NewElemEditor implements Runnable {
 				return new NewElemHere(editor);
 			}
 			ActionPoint ap = editor.getActionPoint(false);
-			if (ap == null || ap.length == 0)
+			if (ap == null || ap.length < 0)
 				return null;
 			SyntaxList slst = (SyntaxList)ap.dr.syntax;
 			if (slst.expected_types.length == 0)
@@ -959,7 +960,7 @@ final class NewElemNext extends NewElemEditor implements Runnable {
 				return null;
 			Editor editor = context.editor;
 			ActionPoint ap = editor.getActionPoint(true);
-			if (ap == null || ap.length == 0)
+			if (ap == null || ap.length < 0)
 				return null;
 			SyntaxList slst = (SyntaxList)ap.dr.syntax;
 			if (slst.expected_types.length == 0)
@@ -1000,7 +1001,7 @@ final class PasteElemHere implements Runnable {
 				return null;
 			ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
 			ActionPoint ap = editor.getActionPoint(false);
-			if (ap == null || ap.length == 0)
+			if (ap == null || ap.length < 0)
 				return null;
 			if (!ap.slot.typeinfo.$instanceof(node))
 				return null;
@@ -1040,7 +1041,7 @@ final class PasteElemNext implements Runnable {
 				return null;
 			ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
 			ActionPoint ap = editor.getActionPoint(true);
-			if (ap == null || ap.length == 0)
+			if (ap == null || ap.length < 0)
 				return null;
 			if (!ap.slot.typeinfo.$instanceof(node))
 				return null;
@@ -1254,7 +1255,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 		if (name == null || name.length() == 0)
 			return;
 		boolean qualified = name.indexOf('\u001f') > 0;
-		DNode[] decls = ((ASTNode)pattr.node).findForResolve(name,pattr.slot,false);
+		DNode[] decls = ANode.getVersion((ASTNode)pattr.node).findForResolve(name,pattr.slot,false);
 		if (decls == null)
 			return;
 		if (combo == null) {

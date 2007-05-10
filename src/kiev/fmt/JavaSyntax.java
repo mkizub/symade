@@ -21,12 +21,14 @@ public class SyntaxJavaExprTemplate extends ASyntaxElemDecl {
 	@virtual typedef This  = SyntaxJavaExprTemplate;
 
 	@att public SyntaxToken		l_paren;
+	@att public SyntaxToken		bad_op;
 	@att public SyntaxToken		r_paren;
 	@att public SyntaxToken[]	operators;
 
 	public SyntaxJavaExprTemplate() {
 		super(new SyntaxNode());
 		this.l_paren = new SyntaxToken("(");
+		this.bad_op = new SyntaxToken("\u25d9");
 		this.r_paren = new SyntaxToken(")");
 	}
 }
@@ -70,24 +72,31 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 	}
 
 	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		//if (this != current_stx)
-		//	return false;
-		ANode n;
-		if (idx >= 0) {
-			n = ((ENode)expected_node).getArgs()[idx];
-		} else {
-			n = (name == "this") ? expected_node : (ANode)expected_node.getVal(name);
+		if (idx >= 0)
+			return (((ENode)expected_node).getArgs()[idx] == current_node);
+		String name = this.name;
+		if (name == "") {
+			if (expected_node != current_node)
+				return false;
+			if (((ENode)current_node).getOp() != null)
+				return false;
+			return true;
 		}
-		if (n != current_node)
-			return false;
-		return true;
+		if (name == "this")
+			return (expected_node == current_node);
+		return (expected_node.getVal(name) == current_node);
 	}
 	
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		ANode n;
 		if (idx >= 0) {
 			n = ((ENode)node).getArgs()[idx];
-		} else {
+		}
+		else if (name == "") {
+			Drawable dr = new DrawJavaExprNoOp(node, this);
+			return dr;
+		}
+		else {
 			n = (name == "this") ? node : (ANode)node.getVal(name);
 		}
 		Drawable dr = new DrawJavaExpr(n, this);

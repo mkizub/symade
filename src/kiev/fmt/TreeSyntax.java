@@ -70,6 +70,8 @@ public class TreeSyntax extends ATextSyntax {
 	}
 
 	public SyntaxElem getSyntaxElem(ANode node) {
+		if (node == null)
+			return super.getSyntaxElem(node);
 		String cl_name = node.getClass().getName();
 		SyntaxElemDecl sed = allSyntax.get(cl_name);
 		if (sed != null) {

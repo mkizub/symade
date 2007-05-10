@@ -53,6 +53,7 @@ public class XmlDumpSyntax extends ATextSyntax {
 	@ref SyntaxElemFormatDecl sefdNoNo = new SyntaxElemFormatDecl("fmt-default");
 	@ref SyntaxElemFormatDecl sefdNlNl = new SyntaxElemFormatDecl("fmt-nl-nl");
 	@ref SyntaxElemFormatDecl sefdNoNl = new SyntaxElemFormatDecl("fmt-no-nl");
+	@ref ParagraphLayout plIndented = new ParagraphLayout("par-indented", 1, 10);
 
 	@att public String dump;
 
@@ -68,6 +69,7 @@ public class XmlDumpSyntax extends ATextSyntax {
 		this.members += sefdNoNo;
 		this.members += sefdNlNl;
 		this.members += sefdNoNl;
+		this.members += plIndented;
 	}
 	public XmlDumpSyntax(String dump) {
 		this();
@@ -102,7 +104,6 @@ public class XmlDumpSyntax extends ATextSyntax {
 		return new SyntaxSubAttr(slot);
 	}
 	protected SyntaxParagraphLayout par(SyntaxElem elem) {
-		ParagraphLayout plIndented = new ParagraphLayout("par-indented", 1, 10);
 		SyntaxParagraphLayout spl = new SyntaxParagraphLayout(elem, plIndented);
 		return spl;
 	}
@@ -140,7 +141,8 @@ public class XmlDumpSyntax extends ATextSyntax {
 				sl.filter = new CalcOptionIncludeInDump(this.dump,"this");
 				//sl.fmt = new RefElemFormat(sefdNoNl);
 				sl.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
-				se = setl(sefdNoNl, open(attr.name), par(sl), close(attr.name));
+				sl.elpar.symbol = plIndented;
+				se = setl(sefdNoNl, open(attr.name), sl, close(attr.name));
 			} else {
 				if (ANode.class.isAssignableFrom(attr.clazz))
 					se = setl(sefdNoNl, open(attr.name), par(attr(attr.name)), close(attr.name));

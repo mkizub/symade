@@ -60,13 +60,6 @@ public abstract class AbstractFormatter implements Formatter {
 	}
 
 	public final Drawable getDrawable(ANode node, Drawable dr, ATextSyntax syntax) {
-		if (node == null) {
-			if (dr instanceof DrawSpace)
-				return dr;
-			SyntaxSpace ssp = new SyntaxSpace();
-			dr = new DrawSpace(null, ssp);
-			return dr;
-		}
 		if (dr != null && dr.drnode == node)
 			return dr;
 		SyntaxElem stx_elem;

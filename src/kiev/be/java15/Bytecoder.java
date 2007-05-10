@@ -65,7 +65,7 @@ public class Bytecoder implements JConstants {
 
 		MetaAccess.verifyDecl(cl);
 
-		cl.setTypeDeclLoaded(true);
+		cl.setTypeDeclNotLoaded(false);
 		cl.setMembersGenerated(true);
 
 		trace(Kiev.debug && Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
@@ -76,7 +76,7 @@ public class Bytecoder implements JConstants {
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
 			CompaundType st = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
 		    cl.super_types.append(new TypeRef(st));
-			if (!Env.loadTypeDecl(st.tdecl).isTypeDeclLoaded())
+			if (Env.loadTypeDecl(st.tdecl).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+st.tdecl.qname()+" not found");
 		}
 
@@ -85,7 +85,7 @@ public class Bytecoder implements JConstants {
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
 			CompaundType interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
-			if (!Env.loadTypeDecl(interf.tdecl).isTypeDeclLoaded())
+			if (Env.loadTypeDecl(interf.tdecl).isTypeDeclNotLoaded())
 				throw new RuntimeException("Class "+interf+" not found");
 			if (!interf.tdecl.isInterface())
 				throw new RuntimeException("Class "+interf+" is not an interface");

@@ -93,8 +93,6 @@ public class Env extends KievPackage {
 	 */
 	private Env() {
 		root = this;
-		//setPackage();
-		setTypeDeclLoaded(true);
 		new CompaundMetaType(this);
 	}
 
@@ -207,8 +205,7 @@ public class Env extends KievPackage {
 		}
 		if (cl == null)
 			cl = newStruct(sname,outer,0,new KievPackage());
-		//cl.setPackage();
-		cl.setTypeDeclLoaded(true);
+		cl.setTypeDeclNotLoaded(false);
 		return cl;
 	}
 
@@ -421,7 +418,7 @@ public class Env extends KievPackage {
 		// Load if not loaded or not resolved
 		if (cl == null)
 			cl = jenv.loadClazz(qname);
-		else if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse()) {
+		else if (cl.isTypeDeclNotLoaded() && !cl.isAnonymouse()) {
 			if (cl instanceof Struct)
 				cl = jenv.loadClazz((Struct)cl);
 			else
@@ -433,7 +430,7 @@ public class Env extends KievPackage {
 	}
 
 	public static TypeDecl loadTypeDecl(TypeDecl cl) {
-		if (cl.isTypeDeclLoaded())
+		if (!cl.isTypeDeclNotLoaded())
 			return cl;
 		if (cl == Env.root)
 			return Env.root;
@@ -441,7 +438,7 @@ public class Env extends KievPackage {
 		if (!Compiler.makeall_project && Env.projectHash.get(cl.qname()) != null)
 			loadTypeDeclFromProject(cl.qname());
 		// Load if not loaded or not resolved
-		if (!cl.isTypeDeclLoaded() && !cl.isAnonymouse()) {
+		if (cl.isTypeDeclNotLoaded() && !cl.isAnonymouse()) {
 			if (cl instanceof Struct)
 				jenv.loadClazz((Struct)cl);
 			else
@@ -680,7 +677,7 @@ public class Env extends KievPackage {
 				assert(qName.equals("a-node"));
 				ANode n = nodes.pop();
 				if (n instanceof TypeDecl) {
-					n.setTypeDeclLoaded(true);
+					n.setTypeDeclNotLoaded(false);
 					if (n instanceof Struct) {
 						Struct s = (Struct)n;
 						s.xmeta_type = new CompaundMetaType(s);

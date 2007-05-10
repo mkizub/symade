@@ -50,6 +50,7 @@ public interface INode {
 	public This open();
 	public void rollback(boolean save_next);
 	public <N extends ANode> N replaceWithNode(N node);
+	public void initForEditor();
 }
 
 public abstract class ANode implements INode {
@@ -548,6 +549,7 @@ public abstract class ANode implements INode {
 	
 	public boolean backendCleanup() { return true; }
 
+	public void initForEditor() { /* by default do nothing */ }
 }
 
 public class TreeWalker {

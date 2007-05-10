@@ -244,8 +244,17 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
 			}
 		}
-		this.type = new CallType(type_set, args.toArray(), type_ret.getType(), false);
-		this.dtype = new CallType(dtype_set, dargs.toArray(), dtype_ret.getType(), false);
+		Type tp_ret, dtp_ret;
+		if (type_ret == null)
+			tp_ret = Type.tpVoid;
+		else
+			tp_ret = type_ret.getType();
+		this.type = new CallType(type_set, args.toArray(), tp_ret, false);
+		if (dtype_ret == null)
+			dtp_ret = tp_ret;
+		else
+			dtp_ret = dtype_ret.getType();
+		this.dtype = new CallType(dtype_set, dargs.toArray(), dtp_ret, false);
 	}
 
 	@getter public Method get$child_ctx_method() { return (Method)this; }
@@ -769,6 +778,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				fp.stype.getType(); // resolve
 			if (fp.meta != null)
 				fp.meta.verify();
+			if (fp.kind == Var.VAR_LOCAL)
+				fp.open().kind = Var.PARAM_NORMAL;
 		}
 
 		Type t = this.type; // rebuildTypes()

@@ -1357,10 +1357,28 @@
            <name>TypeConstr</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>TypeDecl</name>
+           <name>MetaTypeDecl</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>Struct</name>
+           <name>KievSyntax</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>KievView</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>PizzaCase</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>JavaAnnotation</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>JavaEnum</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>JavaInterface</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>JavaClass</name>
           </a-node>
          </expected_types>
          <empty>
@@ -1676,6 +1694,11 @@
        </prefix>
        <folded_by_default>false</folded_by_default>
        <name>super_types</name>
+       <expected_types>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>stx-types-TypeRef</name>
+        </a-node>
+       </expected_types>
        <empty>
         <a-node class='kiev.fmt.SyntaxElemRef'>
          <decl>
@@ -3379,6 +3402,11 @@
              <title>Add arguments</title>
              <act>kiev.gui.FuncNewElemOfEmptyList</act>
              <attr>args</attr>
+            </a-node>
+            <a-node class='kiev.fmt.SyntaxFunction'>
+             <title>Add super-type</title>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
+             <attr>super_types</attr>
             </a-node>
            </funcs>
           </a-node>

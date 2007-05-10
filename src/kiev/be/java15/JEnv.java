@@ -29,7 +29,7 @@ public final class JEnv {
 		// Load if not loaded or not resolved
 		if( cl == null )
 			cl = (Struct)loadClazz(name);
-		else if( !cl.isTypeDeclLoaded() && !cl.isAnonymouse() )
+		else if( cl.isTypeDeclNotLoaded() && !cl.isAnonymouse() )
 			cl = (Struct)loadClazz(name);
 		if( cl == null )
 			Env.classHashOfFails.put(qname);
@@ -57,7 +57,7 @@ public final class JEnv {
 		Struct pkg = loadStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 		if (pkg == null)
 			pkg = Env.newPackage(name.package_name().toString().replace('.','\u001f'));
-		if (!pkg.isTypeDeclLoaded())
+		if (pkg.isTypeDeclNotLoaded())
 			pkg = loadStruct(ClazzName.fromBytecodeName(((JStruct)pkg).bname()));
 
 		long curr_time = 0L, diff_time = 0L;
@@ -76,7 +76,7 @@ public final class JEnv {
 			clazz = new kiev.bytecode.Clazz();
 			clazz.readClazz(data);                                                                                    
 		}
-		if ((td == null || !td.isTypeDeclLoaded()) && clazz != null) {
+		if ((td == null || td.isTypeDeclNotLoaded()) && clazz != null) {
 			if (td == null)
 				td = (Struct)Env.resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
 			td = new Bytecoder((Struct)td,clazz,null).readClazz(name, pkg);

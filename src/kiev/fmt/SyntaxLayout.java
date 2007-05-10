@@ -153,11 +153,20 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 			return ((ATextSyntax)parent()).getSyntaxElem(node);
 		if (badSyntax == null)
 			badSyntax = new Hashtable<Class,SyntaxElem>();
-		String cl_name = node.getClass().getName();
-		SyntaxElem se = badSyntax.get(cl_name);
-		if (se == null) {
-			se = new SyntaxToken("(?"+cl_name+"?)");
-			badSyntax.put(cl_name, se);
+		SyntaxElem se;
+		if (node == null) {
+			se = badSyntax.get("<null>");
+			if (se == null) {
+				se = new SyntaxSpace();
+				badSyntax.put("<null>", se);
+			}
+		} else {
+			String cl_name = node.getClass().getName();
+			se = badSyntax.get(cl_name);
+			if (se == null) {
+				se = new SyntaxToken("(?"+cl_name+"?)");
+				badSyntax.put(cl_name, se);
+			}
 		}
 		return se;
 	}
@@ -980,7 +989,7 @@ public class SyntaxList extends SyntaxAttr {
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr;
-		if (fmt.getSyntax() instanceof TreeSyntax)
+		if (fmt.getSyntax() instanceof TreeSyntax || prefix == null && sufix == null && empty == null)
 			dr = new DrawNonTermList(node, this);
 		else
 			dr = new DrawWrapList(node, this);

@@ -578,12 +578,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		expr.resolve(null);
 		Type xtype = expr.getType();
 		Method@ elems;
-		if( xtype.isInstanceOf(Type.tpArray) ) {
-			TVarBld set = new TVarBld();
-			set.append(Type.tpArrayEnumerator.tdecl.args[0].getAType(), xtype.resolve(Type.tpArray.meta_type.tdecl.args[0].getAType()));
-			itype = Type.tpArrayEnumerator.meta_type.make(set);
-			mode = ARRAY;
-		} else if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {
+		if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {
 			itype = xtype;
 			mode = KENUM;
 		} else if( xtype.isInstanceOf( Type.tpJavaEnumeration) ) {
@@ -595,6 +590,11 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		) {
 			itype = Type.getRealType(xtype,elems.type.ret());
 			mode = ELEMS;
+		} else if( xtype.isInstanceOf(Type.tpArray) ) {
+			TVarBld set = new TVarBld();
+			set.append(Type.tpArrayEnumerator.tdecl.args[0].getAType(), xtype.resolve(Type.tpArray.meta_type.tdecl.args[0].getAType()));
+			itype = Type.tpArrayEnumerator.meta_type.make(set);
+			mode = ARRAY;
 		} else {
 			throw new CompilerException(expr,"Container must be an array or an Enumeration "+
 				"or a class that implements 'Enumeration elements()' method, but "+xtype+" found");

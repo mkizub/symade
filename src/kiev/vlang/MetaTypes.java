@@ -108,7 +108,46 @@ public metatype NodeSpace<N extends ANode> extends N[] {
 		case Call# self(IFld# obj):
 			getAttr(self.obj.var).insert(self.obj.obj, idx, node)
 	}
+	
+	@macro
+	public NodeSpaceEnumerator<N> elements()
+	{
+		case Call# self():
+			new NodeSpaceEnumerator(this)
+	}
 
+	@macro
+	public boolean contains(ANode val) {
+		case Call# self():
+			NodeSpaceEnumerator.contains(this, val)
+	}
 }
 
+
+public class NodeSpaceEnumerator<N extends ANode> implements Enumeration<N>
+{
+
+	private N[]		arr;
+	private int		top;
+	
+	public NodeSpaceEnumerator(NodeSpace<N> arr) {
+		this.arr = arr;
+	}
+	
+	public boolean hasMoreElements() {
+		return arr != null && top < arr.length;
+	}
+	public N nextElement() {
+		int idx = top++;
+		return ANode.getVersion(arr, idx);
+	}
+	public static boolean contains(ANode[] ar, ANode val) {
+		if (val == null)
+			return false;
+		val = ANode.getVersion(val);
+		foreach (N n; ar; val == ANode.getVersion(n))
+			return true;
+		return false;
+	}
+}
 

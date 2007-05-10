@@ -14,6 +14,37 @@ import syntax kiev.Syntax;
 
 
 @node(copyable=false)
+public class DrawJavaExprNoOp extends DrawNonTerm {
+	
+	public DrawJavaExprNoOp(ANode node, SyntaxJavaExpr syntax) {
+		super(node, syntax);
+	}
+
+	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
+		SyntaxJavaExpr se = (SyntaxJavaExpr)this.syntax;
+		SyntaxJavaExprTemplate st = (SyntaxJavaExprTemplate)se.template.dnode;
+		ENode node = (ENode)this.drnode;
+		ENode[] eargs = node.getArgs();
+		if (args.length != eargs.length + 3) {
+			args.delAll();
+			args.append(st.l_paren.makeDrawable(cont.fmt, node));
+			args.append(st.bad_op.makeDrawable(cont.fmt, node));
+			foreach (ENode ea; eargs)
+				args.append(st.elem.makeDrawable(cont.fmt, ea));
+			args.append(st.l_paren.makeDrawable(cont.fmt, node));
+		}
+		int n = 0;
+		args[n++].preFormat(cont,st.l_paren,node);
+		args[n++].preFormat(cont,st.bad_op,node);
+		foreach (ENode ea; eargs)
+			args[n++].preFormat(cont,st.elem,ea);
+		args[n++].preFormat(cont,st.r_paren,node);
+		calcMaxLayout();
+	}
+}
+
+@node(copyable=false)
 public class DrawJavaExpr extends DrawNonTerm {
 	
 	public DrawJavaExpr(ANode node, SyntaxJavaExpr syntax) {

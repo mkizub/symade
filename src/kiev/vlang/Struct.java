@@ -450,7 +450,6 @@ public abstract class Struct extends TypeDecl {
 			return true;
 		if (ctx_method==null || ctx_method.isStatic())
 			this.setStatic(true);
-		this.setTypeDeclLoaded(true);
 		this.setLocal(true);
 		this.setLoadedFromBytecode(true);
 		try {

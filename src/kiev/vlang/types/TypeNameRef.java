@@ -92,7 +92,7 @@ public final class TypeNameRef extends TypeRef {
 				Kiev.reportError(this,"Type "+tp+" has only "+a+" unbound type parameters");
 			tp = tp.meta_type.make(set);
 		}
-		getVersion(this).type_lnk = tp;
+		getVersion(this).open().type_lnk = tp;
 		return tp;
 	}
 

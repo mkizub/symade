@@ -55,7 +55,7 @@ public final class MetaSet extends ASTNode {
 	public @packed:1,mflags,19 boolean is_macro;			// macro-declarations for fields, methods, etc
 	public @packed:1,mflags,20 boolean is_struct_singleton;
 	
-	public @packed:1,mflags,21 boolean is_tdecl_loaded;		// TypeDecl was fully loaded (from src or bytecode) 
+	public @packed:1,mflags,21 boolean is_tdecl_not_loaded;		// TypeDecl was fully loaded (from src or bytecode) 
 
 	public @packed:1,mflags,22 boolean is_has_aliases;
 	public @packed:1,mflags,23 boolean is_has_throws;

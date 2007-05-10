@@ -204,7 +204,6 @@ public final view RStruct of Struct extends RTypeDecl {
 		typeinfo_clazz = Env.newStruct(nameClTypeInfo,true,this.getStruct(),flags,new JavaClass(),true,null);
 		((Struct)this).members.add(typeinfo_clazz);
 		typeinfo_clazz.setPublic();
-		typeinfo_clazz.setTypeDeclLoaded(true);
 		if (super_types.length > 0 && super_types[0].getStruct().typeinfo_clazz != null)
 			typeinfo_clazz.super_types.insert(0, new TypeRef(super_types[0].getStruct().typeinfo_clazz.xtype));
 		else
@@ -796,7 +795,6 @@ public final view RStruct of Struct extends RTypeDecl {
 						new JavaClass(), true, null
 					);
 					((Struct)self).members.add(defaults);
-					defaults.setTypeDeclLoaded(true);
 					iface_impl = defaults;
 					Kiev.runProcessorsOn(defaults);
 				}

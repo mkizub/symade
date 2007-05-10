@@ -171,7 +171,7 @@ public abstract class kiev040 implements kiev040Constants {
 		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		TypeDecl tdecl = Env.newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
-		tdecl.setTypeDeclLoaded(true);
+		tdecl.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(tdecl.meta);
 		Env.createProjectInfo(tdecl, String.valueOf(Kiev.getCurFile()));
 		return tdecl;
@@ -210,7 +210,7 @@ public abstract class kiev040 implements kiev040Constants {
 			clazz.pos  = name.pos;
 		else
 			clazz.pos  = parent.pos;
-		clazz.setTypeDeclLoaded(true);
+		clazz.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(clazz.meta);
 		if (parent instanceof FileUnit) {
 			clazz.setLocal(false);
