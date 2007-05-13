@@ -715,6 +715,10 @@ public final class RenderActions implements Runnable {
 			uiv.show_auto_generated = !uiv.show_auto_generated;
 			uiv.formatAndPaint(true);
 		}
+		else if (action == "toggle-escape") {
+			uiv.show_hint_escapes = !uiv.show_hint_escapes;
+			uiv.formatAndPaint(true);
+		}
 		else if (action == "redraw") {
 			uiv.setSyntax(uiv.syntax);
 			if (uiv instanceof Editor)
@@ -809,6 +813,14 @@ public final class RenderActions implements Runnable {
 		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			return new RenderActions(context.uiv, "toggle-autogen");
+		}
+	}
+
+	final static class ToggleHintEscaped implements UIActionFactory {
+		public String getDescr() { "Toggle idents and strings escaping" }
+		public boolean isForPopupMenu() { false }
+		public Runnable getAction(UIActionViewContext context) {
+			return new RenderActions(context.uiv, "toggle-escape");
 		}
 	}
 

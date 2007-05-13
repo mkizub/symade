@@ -152,6 +152,10 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
+			mi = new UIActionMenuItem(this, "HintEscaped", KeyEvent.VK_E, new RenderActions.ToggleHintEscaped());
+			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
+			menu.add(mi);
+
 			mi = new UIActionMenuItem(this, "Redraw", KeyEvent.VK_R, new RenderActions.Redraw());
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.ALT_MASK|ActionEvent.CTRL_MASK));
 			menu.add(mi);

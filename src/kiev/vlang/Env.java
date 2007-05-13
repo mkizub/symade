@@ -514,6 +514,7 @@ public class Env extends KievPackage {
 	{
 		StringBuilder sb = new StringBuilder(1024);
 		TextFormatter tf = new TextFormatter(stx);
+		tf.setHintEscapes(true);
 		Drawable dr = tf.format(node, null);
 		TextPrinter pr = new TextPrinter(sb);
 		pr.draw(dr);

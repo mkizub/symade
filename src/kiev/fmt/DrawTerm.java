@@ -268,7 +268,7 @@ public class DrawIdent extends DrawNodeTerm {
 			foreach (String id; idents) {
 				if (sb.length() > 0)
 					sb.append('.');
-				if (si.isOk(id)) {
+				if (!fmt.getHintEscapes() || si.isOk(id)) {
 					sb.append(id);
 				} else {
 					sb.append(si.getPrefix());
@@ -278,7 +278,7 @@ public class DrawIdent extends DrawNodeTerm {
 			}
 			return sb.toString();
 		} else {
-			if (si.isOk(text))
+			if (!fmt.getHintEscapes() || si.isOk(text))
 				return text;
 			escaped = true;
 			return getPrefix()+text+getSuffix();
@@ -300,6 +300,8 @@ public class DrawCharTerm extends DrawNodeTerm {
 	public String getSuffix() { return "'"; }	
 	String makeText(Formatter fmt) {
 		Character ch = (Character)getAttrPtr().get();
+		if (!fmt.getHintEscapes())
+			return "'"+ch+"'";
 		return "'"+Convert.escape(ch.charValue())+"'";
 	}
 }
@@ -318,6 +320,8 @@ public class DrawStrTerm extends DrawNodeTerm {
 		if (o == null)
 			return null;
 		String str = String.valueOf(o);
+		if (!fmt.getHintEscapes())
+			return '\"'+str+'\"';
 		return '\"'+new String(Convert.string2source(str), 0)+'\"';
 	}
 }
