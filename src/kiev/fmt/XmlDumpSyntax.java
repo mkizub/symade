@@ -78,34 +78,30 @@ public class XmlDumpSyntax extends ATextSyntax {
 
 	private SyntaxElem open(String name) {
 		SyntaxToken st = new SyntaxToken("<"+name+">");
-		//st.fmt = new RefElemFormat(sefdNlNl);
 		st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
 		return st;
 	}
 	private SyntaxElem close(String name) {
 		SyntaxToken st = new SyntaxToken("</"+name+">");
-		//st.fmt = new RefElemFormat(sefdNlNl);
 		st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
 		return st;
 	}
 	private SyntaxElem open0(String name) {
 		SyntaxToken st = new SyntaxToken("<"+name+">");
-		//st.fmt = new RefElemFormat(sefdNoNo);
 		st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNo);
 		return st;
 	}
 	private SyntaxElem close0(String name) {
 		SyntaxToken st = new SyntaxToken("</"+name+">");
-		//st.fmt = new RefElemFormat(sefdNoNl);
 		st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
 		return st;
 	}
 	protected SyntaxAttr attr(String slot) {
 		return new SyntaxSubAttr(slot);
 	}
-	protected SyntaxParagraphLayout par(SyntaxElem elem) {
-		SyntaxParagraphLayout spl = new SyntaxParagraphLayout(elem, plIndented);
-		return spl;
+	protected SyntaxElem par(SyntaxElem elem) {
+		elem.par = new SymbolRef<AParagraphLayout>(plIndented);
+		return elem;
 	}
 	protected SyntaxSet set(SyntaxElem... elems) {
 		SyntaxSet set = new SyntaxSet();
@@ -114,7 +110,6 @@ public class XmlDumpSyntax extends ATextSyntax {
 	}
 	protected SyntaxSet setl(SyntaxElemFormatDecl sefd, SyntaxElem... elems) {
 		SyntaxSet set = new SyntaxSet();
-		//set.fmt = new RefElemFormat(sefd);
 		set.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefd);
 		set.elements.addAll(elems);
 		return set;
@@ -132,16 +127,14 @@ public class XmlDumpSyntax extends ATextSyntax {
 		SpaceCmd[] lout_nl = new SpaceCmd[] { new SpaceCmd(siNl, SP_NOP, SP_ADD, 0) };
 		SpaceCmd[] lout_nl_ba = new SpaceCmd[] { new SpaceCmd(siNl, SP_ADD, SP_ADD, 0) };
 		SyntaxSet ss = new SyntaxSet();
-		//ss.fmt = new RefElemFormat(sefdNoNl);
 		ss.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
 		foreach (AttrSlot attr; node.values(); attr != ASTNode.nodeattr$this && attr != ASTNode.nodeattr$parent) {
 			SyntaxElem se = null;
 			if (attr.is_space) {
 				SyntaxList sl = new SyntaxList(attr.name);
 				sl.filter = new CalcOptionIncludeInDump(this.dump,"this");
-				//sl.fmt = new RefElemFormat(sefdNoNl);
 				sl.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
-				sl.elpar.symbol = plIndented;
+				sl.elpar = new SymbolRef<AParagraphLayout>(plIndented);
 				se = setl(sefdNoNl, open(attr.name), sl, close(attr.name));
 			} else {
 				if (ANode.class.isAssignableFrom(attr.clazz))
@@ -161,7 +154,6 @@ public class XmlDumpSyntax extends ATextSyntax {
 					se = set(open0(attr.name), attr(attr.name), close0(attr.name));
 				else if (attr.is_attr) {
 					SyntaxToken st = new SyntaxToken("<error attr='"+attr.name+"'"+" class='"+cl_name+"' />");
-					//st.fmt = new RefElemFormat(sefdNlNl);
 					st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
 					se = st;
 				}
@@ -172,15 +164,12 @@ public class XmlDumpSyntax extends ATextSyntax {
 		{
 			SyntaxToken st;
 			SyntaxSet sn = new SyntaxSet();
-			//ss.fmt = new RefElemFormat(sefdNoNl);
 			ss.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNoNl);
 			st = new SyntaxToken("<a-node class='"+cl_name+"'>");
-			//st.fmt = new RefElemFormat(sefdNlNl);
 			st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
 			sn.elements += st;
 			sn.elements += par(ss);
 			st = new SyntaxToken("</a-node>");
-			//st.fmt = new RefElemFormat(sefdNlNl);
 			st.fmt = new SymbolRef<SyntaxElemFormatDecl>(sefdNlNl);
 			sn.elements += st;
 			ss = sn;

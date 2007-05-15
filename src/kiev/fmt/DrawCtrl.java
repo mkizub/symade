@@ -57,14 +57,15 @@ public class DrawCtrl extends Drawable {
 	}
 
 	public boolean postFormat(DrawContext context) {
-		context.pushDrawable(this);
+		context = context.pushDrawable(this);
+		boolean fits = true;
 		try {
 			if (arg != null)
-				return arg.postFormat(context);
-			return true;
+				fits = arg.postFormat(context);
 		} finally {
-			context.popDrawable(this);
+			context.popDrawable(this, fits);
 		}
+		return fits;
 	}
 
 }
@@ -191,43 +192,6 @@ public final class DrawFolded extends DrawCtrl {
 			arg.preFormat(cont,sc.folded,node);
 		else
 			arg.preFormat(cont,sc.unfolded,node);
-	}
-}
-
-@node(copyable=false)
-public final class DrawParagraph extends DrawCtrl {
-
-	public DrawParagraph(ANode node, SyntaxParagraphLayout syntax) {
-		super(node, syntax);
-	}
-
-	public void preFormat(DrawContext cont) {
-		if (this.isUnvisible()) return;
-		SyntaxParagraphLayout spl = (SyntaxParagraphLayout)syntax;
-		ANode node = this.drnode;
-		if (arg == null)
-			arg = spl.elem.makeDrawable(cont.fmt, node);
-		if (arg != null)
-			arg.preFormat(cont,spl.elem,node);
-	}
-
-	public boolean postFormat(DrawContext context) {
-		boolean fits = true;
-		context = context.pushParagraph(this, this.getParLayout());
-		try {
-			if (arg != null) {
-				fits = arg.postFormat(context);
-				if (!context.new_lines_first_parent)
-					fits = true;
-			}
-		} finally {
-			context.popParagraph(this, fits);
-		}
-		return fits;
-	}
-
-	public AParagraphLayout getParLayout() {
-		return ((SyntaxParagraphLayout)syntax).par.dnode;
 	}
 }
 

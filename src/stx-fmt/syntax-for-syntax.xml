@@ -1764,6 +1764,17 @@
          <elements>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>&lt;attr:</text>
+           <funcs>
+            <a-node class='kiev.fmt.SyntaxFunctions'>
+             <funcs>
+              <a-node class='kiev.fmt.SyntaxFunction'>
+               <title>Add functions</title>
+               <act>kiev.gui.FuncNewElemOfNull</act>
+               <attr>funcs</attr>
+              </a-node>
+             </funcs>
+            </a-node>
+           </funcs>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>&quot;</text>
@@ -1812,6 +1823,24 @@
              <name>SyntaxSpace</name>
             </a-node>
            </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>funcs</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxFunctions</name>
+            </a-node>
+           </expected_types>
+           <empty>
+            <a-node class='kiev.fmt.SyntaxSpace'>
+            </a-node>
+           </empty>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>par:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>par</name>
           </a-node>
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
@@ -2137,246 +2166,216 @@
        <folded>
         <a-node class='kiev.fmt.SyntaxSet'>
          <elements>
-          <a-node class='kiev.fmt.SyntaxOptional'>
-           <calculator>
-            <a-node class='kiev.fmt.CalcOptionNotNull'>
-             <name>prefix</name>
-            </a-node>
-           </calculator>
-           <opt_true>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>prefix</name>
-            </a-node>
-           </opt_true>
-           <opt_false>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>prefix</name>
+           <empty>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>[</text>
             </a-node>
-           </opt_false>
+           </empty>
           </a-node>
           <a-node class='kiev.fmt.SyntaxSubAttr'>
            <name>name</name>
           </a-node>
-          <a-node class='kiev.fmt.SyntaxOptional'>
-           <calculator>
-            <a-node class='kiev.fmt.CalcOptionNotNull'>
-             <name>sufix</name>
-            </a-node>
-           </calculator>
-           <opt_true>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>sufix</name>
-            </a-node>
-           </opt_true>
-           <opt_false>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>sufix</name>
+           <empty>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>]</text>
             </a-node>
-           </opt_false>
+           </empty>
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
         </a-node>
        </folded>
        <unfolded>
-        <a-node class='kiev.fmt.SyntaxParagraphLayout'>
-         <elem>
-          <a-node class='kiev.fmt.SyntaxSet'>
-           <elements>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&lt;list:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>name</name>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>filter=</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>filter</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>stx-types-CalcOptions</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>el=</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>element</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSet</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSubAttr</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxNode</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxJavaExpr</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>sep=</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>separator</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSpace</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>emp=</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>empty</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxPlaceHolder</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxElemRef</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>pr=</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>prefix</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxElemRef</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>su=</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>sufix</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxElemRef</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>fold=</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>folded</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSet</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSubAttr</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxIdentAttr</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>par=</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>par</name>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>elpar=</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>elpar</name>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>folded_by_default</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxToken</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxList'>
+           <element>
+            <a-node class='kiev.fmt.SyntaxNode'>
+             <fmt>
+              <a-node class='kiev.vlang.SymbolRef'>
+               <name>fmt-nl-1++</name>
+              </a-node>
+             </fmt>
+            </a-node>
+           </element>
+           <separator>
             <a-node class='kiev.fmt.SyntaxToken'>
-             <text>&lt;list:</text>
+             <text>,</text>
             </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>name</name>
-            </a-node>
+           </separator>
+           <prefix>
             <a-node class='kiev.fmt.SyntaxToken'>
-             <text>filter=</text>
+             <text>[</text>
             </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>filter</name>
-             <expected_types>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>stx-types-CalcOptions</name>
-              </a-node>
-             </expected_types>
-            </a-node>
+           </prefix>
+           <sufix>
             <a-node class='kiev.fmt.SyntaxToken'>
-             <text>el=</text>
+             <text>]</text>
             </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>element</name>
-             <expected_types>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxToken</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxSet</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxParagraphLayout</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxSubAttr</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxNode</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxJavaExpr</name>
-              </a-node>
-             </expected_types>
+           </sufix>
+           <elpar>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>par-indent</name>
             </a-node>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>sep=</text>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>separator</name>
-             <expected_types>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxToken</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxSpace</name>
-              </a-node>
-             </expected_types>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>emp=</text>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>empty</name>
-             <expected_types>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxPlaceHolder</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxToken</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxElemRef</name>
-              </a-node>
-             </expected_types>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>pr=</text>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>prefix</name>
-             <expected_types>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxToken</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxElemRef</name>
-              </a-node>
-             </expected_types>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>su=</text>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>sufix</name>
-             <expected_types>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxToken</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxElemRef</name>
-              </a-node>
-             </expected_types>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>fold=</text>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>folded</name>
-             <expected_types>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxToken</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxSet</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxSubAttr</name>
-              </a-node>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxIdentAttr</name>
-              </a-node>
-             </expected_types>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>par=</text>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>par</name>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>elpar=</text>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>elpar</name>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxSubAttr'>
-             <name>folded_by_default</name>
-             <expected_types>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SyntaxToken</name>
-              </a-node>
-             </expected_types>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxList'>
-             <element>
-              <a-node class='kiev.fmt.SyntaxNode'>
-               <fmt>
-                <a-node class='kiev.vlang.SymbolRef'>
-                 <name>fmt-nl-1++</name>
-                </a-node>
-               </fmt>
-              </a-node>
-             </element>
-             <separator>
-              <a-node class='kiev.fmt.SyntaxToken'>
-               <text>,</text>
-              </a-node>
-             </separator>
-             <prefix>
-              <a-node class='kiev.fmt.SyntaxToken'>
-               <text>[</text>
-              </a-node>
-             </prefix>
-             <sufix>
-              <a-node class='kiev.fmt.SyntaxToken'>
-               <text>]</text>
-              </a-node>
-             </sufix>
-             <elpar>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>par-indent</name>
-              </a-node>
-             </elpar>
-             <folded_by_default>false</folded_by_default>
-             <name>expected_types</name>
-             <expected_types>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>SymbolRef</name>
-              </a-node>
-             </expected_types>
-             <par>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>par-indent</name>
-              </a-node>
-             </par>
-            </a-node>
-           </elements>
+           </elpar>
            <folded_by_default>false</folded_by_default>
+           <name>expected_types</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SymbolRef</name>
+            </a-node>
+           </expected_types>
+           <par>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>par-indent</name>
+            </a-node>
+           </par>
           </a-node>
-         </elem>
-         <par>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>par-list-body</name>
-          </a-node>
-         </par>
+         </elements>
+         <folded_by_default>false</folded_by_default>
         </a-node>
        </unfolded>
       </a-node>
@@ -2464,9 +2463,6 @@
              <name>SyntaxJavaExpr</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
-             <name>SyntaxParagraphLayout</name>
-            </a-node>
-            <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxSpace</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
@@ -2485,10 +2481,7 @@
         <a-node class='kiev.fmt.SyntaxSet'>
          <elements>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;</text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>set:</text>
+           <text>&lt;set:</text>
           </a-node>
           <a-node class='kiev.fmt.SyntaxList'>
            <element>
@@ -2550,9 +2543,6 @@
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxSpace</name>
-            </a-node>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>SyntaxParagraphLayout</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxOptional</name>
@@ -2772,6 +2762,12 @@
            </expected_types>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
+           <text>par:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>par</name>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
            <text>in:</text>
           </a-node>
           <a-node class='kiev.fmt.SyntaxSubAttr'>
@@ -2932,55 +2928,41 @@
         <a-node class='kiev.fmt.SyntaxStrAttr'>
          <name>esc_suffix</name>
         </a-node>
-        <a-node class='kiev.fmt.SyntaxParagraphLayout'>
-         <elem>
-          <a-node class='kiev.fmt.SyntaxSet'>
-           <elements>
-            <a-node class='kiev.fmt.SyntaxToken'>
-             <text>keywords:</text>
-            </a-node>
-            <a-node class='kiev.fmt.SyntaxList'>
-             <element>
-              <a-node class='kiev.fmt.SyntaxNode'>
-              </a-node>
-             </element>
-             <separator>
-              <a-node class='kiev.fmt.SyntaxToken'>
-               <text>,</text>
-              </a-node>
-             </separator>
-             <prefix>
-              <a-node class='kiev.fmt.SyntaxToken'>
-               <text>{</text>
-              </a-node>
-             </prefix>
-             <sufix>
-              <a-node class='kiev.fmt.SyntaxToken'>
-               <text>}</text>
-              </a-node>
-             </sufix>
-             <elpar>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>par-indent</name>
-              </a-node>
-             </elpar>
-             <folded_by_default>false</folded_by_default>
-             <name>keywords</name>
-             <expected_types>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>ConstStringExpr</name>
-              </a-node>
-             </expected_types>
-            </a-node>
-           </elements>
-           <folded_by_default>false</folded_by_default>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>keywords:</text>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxList'>
+         <element>
+          <a-node class='kiev.fmt.SyntaxNode'>
           </a-node>
-         </elem>
-         <par>
+         </element>
+         <separator>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>,</text>
+          </a-node>
+         </separator>
+         <prefix>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>{</text>
+          </a-node>
+         </prefix>
+         <sufix>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>}</text>
+          </a-node>
+         </sufix>
+         <elpar>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>par-indent</name>
           </a-node>
-         </par>
+         </elpar>
+         <folded_by_default>false</folded_by_default>
+         <name>keywords</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>ConstStringExpr</name>
+          </a-node>
+         </expected_types>
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
@@ -3575,13 +3557,15 @@
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxSet</name>
             </a-node>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>SyntaxParagraphLayout</name>
-            </a-node>
            </expected_types>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>||</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-nl-1-+</name>
+            </a-node>
+           </fmt>
           </a-node>
           <a-node class='kiev.fmt.SyntaxSubAttr'>
            <name>unfolded</name>
@@ -3591,9 +3575,6 @@
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxSet</name>
-            </a-node>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>SyntaxParagraphLayout</name>
             </a-node>
            </expected_types>
           </a-node>
@@ -3608,7 +3589,7 @@
         <a-node class='kiev.fmt.SyntaxSet'>
          <elements>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;</text>
+           <text>&lt;folder:</text>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>folded=</text>
@@ -3621,9 +3602,6 @@
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxSet</name>
-            </a-node>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>SyntaxParagraphLayout</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxSubAttr</name>
@@ -3644,9 +3622,6 @@
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxList</name>
-            </a-node>
-            <a-node class='kiev.vlang.SymbolRef'>
-             <name>SyntaxParagraphLayout</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxSubAttr</name>
@@ -3683,50 +3658,6 @@
       </a-node>
      </elem>
      <sname>stx-def-folder</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>SyntaxParagraphLayout</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxSet'>
-       <elements>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>&lt;{</text>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxSubAttr'>
-         <name>elem</name>
-         <expected_types>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>SyntaxList</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>SyntaxSet</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>SyntaxNode</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>SyntaxSubAttr</name>
-          </a-node>
-         </expected_types>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>%%</text>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxSubAttr'>
-         <name>par</name>
-        </a-node>
-        <a-node class='kiev.fmt.SyntaxToken'>
-         <text>}&gt;</text>
-        </a-node>
-       </elements>
-       <folded_by_default>false</folded_by_default>
-      </a-node>
-     </elem>
-     <sname>stx-def-in-paragraph</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxExpectedTemplate'>
      <expected_types>

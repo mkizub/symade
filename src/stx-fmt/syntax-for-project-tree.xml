@@ -116,6 +116,11 @@
        <text>(</text>
       </a-node>
      </l_paren>
+     <bad_op>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>◙</text>
+      </a-node>
+     </bad_op>
      <r_paren>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>)</text>

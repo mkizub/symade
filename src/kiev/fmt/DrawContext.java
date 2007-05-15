@@ -96,12 +96,50 @@ public final class DrawContext implements Cloneable {
 		this.x += dr.w;
 	}
 
-	public void pushDrawable(Drawable dr) {
+	public DrawContext pushDrawable(Drawable dr) {
+		SymbolRef<AParagraphLayout> pl = null;
+		if (dr.attr_syntax != null) {
+			pl = dr.attr_syntax.par;
+			if (pl != null && pl.dnode != null)
+				this = pushParagraph(dr, pl.dnode);
+		}
+		if (dr.syntax != null) {
+			if (dr.syntax instanceof SyntaxList) {
+				if (dr instanceof DrawWrapList)
+					pl = dr.syntax.par;
+				else
+					pl = ((SyntaxList)dr.syntax).elpar;
+			} else {
+				pl = dr.syntax.par;
+			}
+			if (pl != null && pl.dnode != null)
+				this = pushParagraph(dr, pl.dnode);
+		}
+		return this;
 	}
-	public void popDrawable(Drawable dr) {
+	public DrawContext popDrawable(Drawable dr, boolean save) {
+		SymbolRef<AParagraphLayout> pl = null;
+		if (dr.syntax != null) {
+			if (dr.syntax instanceof SyntaxList) {
+				if (dr instanceof DrawWrapList)
+					pl = dr.syntax.par;
+				else
+					pl = ((SyntaxList)dr.syntax).elpar;
+			} else {
+				pl = dr.syntax.par;
+			}
+			if (pl != null && pl.dnode != null)
+				this = popParagraph(dr, pl.dnode, save);
+		}
+		if (dr.attr_syntax != null) {
+			pl = dr.attr_syntax.par;
+			if (pl != null && pl.dnode != null)
+				this = popParagraph(dr, pl.dnode, save);
+		}
+		return this;
 	}
 	
-	public DrawContext pushParagraph(Drawable dp, AParagraphLayout pl) {
+	private DrawContext pushParagraph(Drawable dp, AParagraphLayout pl) {
 		DrawContext ctx;
 		if (pl.new_lines_first_parent)
 			ctx = pushState(0,0);
@@ -118,7 +156,7 @@ public final class DrawContext implements Cloneable {
 		}
 		return ctx;
 	}
-	public DrawContext popParagraph(Drawable dp, boolean save) {
+	private DrawContext popParagraph(Drawable dp, AParagraphLayout pl, boolean save) {
 		return popState(save);
 	}
 	

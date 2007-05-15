@@ -74,17 +74,7 @@ public abstract class DrawNonTerm extends Drawable {
 	}
 
 	public final boolean postFormat(DrawContext context) {
-		AParagraphLayout pl = null;
-		if (this.syntax instanceof SyntaxList) {
-			if (this instanceof DrawWrapList)
-				pl = ((SyntaxList)this.syntax).par.dnode;
-			else
-				pl = ((SyntaxList)this.syntax).elpar.dnode;
-		}
-		if (pl != null)
-			context = context.pushParagraph(this, pl);
-		else
-			context.pushDrawable(this);
+		context = context.pushDrawable(this);
 		boolean fits = true;
 		try {
 			if (max_layout <= 0 || context.new_lines_first_parent) {
@@ -122,10 +112,7 @@ public abstract class DrawNonTerm extends Drawable {
 				}
 			}
 		} finally {
-			if (pl != null)
-				context.popParagraph(this, fits);
-			else
-				context.popDrawable(this);
+			context.popDrawable(this, fits);
 		}
 		return true;
 	}

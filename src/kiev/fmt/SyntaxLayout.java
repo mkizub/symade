@@ -157,7 +157,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		if (node == null) {
 			se = badSyntax.get("<null>");
 			if (se == null) {
-				se = new SyntaxSpace();
+				se = new SyntaxToken("(?null?)");
 				badSyntax.put("<null>", se);
 			}
 		} else {
@@ -623,6 +623,8 @@ public abstract class SyntaxElem extends ASTNode {
 
 	@att
 	public SymbolRef<SyntaxElemFormatDecl>		fmt;
+	@att
+	public SymbolRef<AParagraphLayout>			par;
 	@att(ext_data=true)
 	public SyntaxFunctions						funcs;
 	
@@ -643,13 +645,30 @@ public abstract class SyntaxElem extends ASTNode {
 				fmt.symbol = d;
 			}
 		}
+		if (par != null && par.name != null && par.name != "") {
+			AParagraphLayout@ d;
+			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,par.name)))
+				Kiev.reportError(this,"Cannot resolve paragraph declaration '"+par.name+"'");
+			else if (par.symbol != d) {
+				par.open();
+				par.symbol = d;
+			}
+		}
 	}
-	
+
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
 		if (slot.name == "fmt") {
 			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
 			Vector<SyntaxElemFormatDecl> vect = new Vector<SyntaxElemFormatDecl>();
 			SyntaxElemFormatDecl@ dc;
+			foreach (PassInfo.resolveNameR(this,dc,info))
+				if (!vect.contains(dc)) vect.append(dc);
+			return vect.toArray();
+		}
+		if (slot.name == "par" || slot.name == "elpar" ) {
+			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
+			Vector<AParagraphLayout> vect = new Vector<AParagraphLayout>();
+			AParagraphLayout@ dc;
 			foreach (PassInfo.resolveNameR(this,dc,info))
 				if (!vect.contains(dc)) vect.append(dc);
 			return vect.toArray();
@@ -819,7 +838,6 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	@att public String							name;
 	@att public SymbolRef<ATextSyntax>			in_syntax;
 	@att public SymbolRef[]						expected_types;
-	@att public SymbolRef<AParagraphLayout>	par;
 	@att public SyntaxElem						empty;
 
 	@setter
@@ -829,17 +847,14 @@ public abstract class SyntaxAttr extends SyntaxElem {
 	
 	public SyntaxAttr() {
 		this.in_syntax = new SymbolRef<ATextSyntax>();
-		this.par = new SymbolRef<AParagraphLayout>();
 	}
 	public SyntaxAttr(String name) {
 		this.name = name;
 		this.in_syntax = new SymbolRef<ATextSyntax>();
-		this.par = new SymbolRef<AParagraphLayout>();
 	}
 	public SyntaxAttr(String name, ATextSyntax stx) {
 		this.name = name;
 		this.in_syntax = new SymbolRef<ATextSyntax>(stx);
-		this.par = new SymbolRef<AParagraphLayout>();
 	}
 
 	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
@@ -870,15 +885,6 @@ public abstract class SyntaxAttr extends SyntaxElem {
 				in_syntax.symbol = s;
 			}
 		}
-		if (par.name != null && par.name != "") {
-			AParagraphLayout@ d;
-			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,par.name)))
-				Kiev.reportError(this,"Cannot resolve paragraph declaration '"+par.name+"'");
-			else if (par.symbol != d) {
-				par.open();
-				par.symbol = d;
-			}
-		}
 	}
 	
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
@@ -897,14 +903,6 @@ public abstract class SyntaxAttr extends SyntaxElem {
 			ATextSyntax@ s;
 			foreach (PassInfo.resolveNameR(this,s,info))
 				if (!vect.contains(s)) vect.append(s);
-			return vect.toArray();
-		}
-		if (slot.name == "par" || slot.name == "elpar" ) {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<AParagraphLayout> vect = new Vector<AParagraphLayout>();
-			AParagraphLayout@ dc;
-			foreach (PassInfo.resolveNameR(this,dc,info))
-				if (!vect.contains(dc)) vect.append(dc);
 			return vect.toArray();
 		}
 		return super.findForResolve(name,slot,by_equals);
@@ -977,14 +975,11 @@ public class SyntaxList extends SyntaxAttr {
 	@att public SymbolRef<AParagraphLayout>	elpar;
 	@att public boolean							folded_by_default;
 
-	public SyntaxList() {
-		this.elpar = new SymbolRef<AParagraphLayout>();
-	}
+	public SyntaxList() {}
 	public SyntaxList(String name) {
 		super(name);
 		this.element = new SyntaxNode();
 		this.folded = new SyntaxToken("{?"+name+"?}");
-		this.elpar = new SymbolRef<AParagraphLayout>();
 	}
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
@@ -998,7 +993,7 @@ public class SyntaxList extends SyntaxAttr {
 
 	public void preResolveOut() {
 		super.preResolveOut();
-		if (elpar.name != null && elpar.name != "") {
+		if (elpar != null && elpar.name != null && elpar.name != "") {
 			AParagraphLayout@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,elpar.name)))
 				Kiev.reportError(this,"Cannot resolve paragraph declaration '"+elpar.name+"'");
@@ -1007,8 +1002,7 @@ public class SyntaxList extends SyntaxAttr {
 				elpar.symbol = d;
 			}
 		}
-	}
-	
+	}	
 }
 
 @node
@@ -1465,54 +1459,4 @@ public class SyntaxFolder extends SyntaxElem {
 		return dr;
 	}
 }
-
-@node
-public class SyntaxParagraphLayout extends SyntaxElem {
-	@virtual typedef This  = SyntaxParagraphLayout;
-
-	@att public SyntaxElem						elem;
-	@att public SymbolRef<AParagraphLayout>	par;
-
-	public SyntaxParagraphLayout() {
-		par = new SymbolRef<AParagraphLayout>();
-	}
-	public SyntaxParagraphLayout(SyntaxElem elem, AParagraphLayout par) {
-		this.elem = elem;
-		this.par = new SymbolRef<AParagraphLayout>(par);
-	}
-
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawParagraph(node, this);
-		return dr;
-	}
-
-	public void preResolveOut() {
-		super.preResolveOut();
-		if (par.name == null) {
-			Kiev.reportError(this,"Unspecified paragraph declaration");
-			return;
-		}
-		AParagraphLayout@ d;
-		if (!PassInfo.resolveNameR(this,d,new ResInfo(this,par.name)))
-			Kiev.reportError(this,"Cannot resolve paragraph declaration '"+par.name+"'");
-		else if (par.symbol != d) {
-			par.open();
-			par.symbol = d;
-		}
-	}
-	
-	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
-		if (slot.name == "par") {
-			ResInfo info = new ResInfo(this, name, by_equals ? 0 : ResInfo.noEquals);
-			Vector<AParagraphLayout> vect = new Vector<AParagraphLayout>();
-			AParagraphLayout@ dc;
-			foreach (PassInfo.resolveNameR(this,dc,info))
-				if (!vect.contains(dc)) vect.append(dc);
-			return vect.toArray();
-		}
-		return super.findForResolve(name,slot,by_equals);
-	}
-
-}
-
 

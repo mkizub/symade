@@ -285,6 +285,14 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			this.meta.mflags = flags;
 		}
 	}
+	
+	public void initForEditor() {
+		if (sname == null)
+			sname = "<name>";
+		if (type_ret == null)
+			type_ret = new TypeRef(Type.tpVoid);
+		super.initForEditor();
+	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "body") {
@@ -928,6 +936,12 @@ public final class Initializer extends DNode implements PreScanneable {
 	@att public ENode				body;
 
 	@getter public final Block get$block()	{ return (Block)this.body; }
+
+	public void initForEditor() {
+		if (body == null)
+			body = new Block();
+		super.initForEditor();
+	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api" && attr.name == "this")

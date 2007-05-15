@@ -182,9 +182,16 @@ public abstract class DrawTerm extends Drawable {
 		assert(dt.lnk_next == null);
 */	}
 
-	public final boolean postFormat(DrawContext cont) {
+	public final boolean postFormat(DrawContext context) {
 		this.do_newline = false;
-		return cont.addLeaf(this);
+		context = context.pushDrawable(this);
+		boolean fits = true;
+		try {
+			context.addLeaf(this);
+		} finally {
+			context.popDrawable(this, fits);
+		}
+		return fits;
 	}
 
 	public String getPrefix() { return ""; }	

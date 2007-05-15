@@ -537,6 +537,12 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		this.sname = name;
 	}
 	
+	public void initForEditor() {
+		if (sname == null)
+			sname = "<name>";
+		super.initForEditor();
+	}
+
 	public void cleanupOnReload() {
 		this.type_decl_version++;
 		if (this.package_clazz.dnode != null) {

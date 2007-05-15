@@ -233,7 +233,10 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		boolean set_white = false;
 		if ((selected || leaf == current) && cursor_offset < 0) {
 			g.setColor(Color.BLACK);
-			g.fillRect(x, y, w, h);
+			if (w > 0)
+				g.fillRect(x, y, w, h);
+			else
+				g.fillRect(x-1, y, 2, h);
 			set_white = true;
 		}
 //		else if (is_editable) {
