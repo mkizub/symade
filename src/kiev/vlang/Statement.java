@@ -315,7 +315,9 @@ public class BreakStat extends ENode {
 		return super.preVerify();
 	}
 
-	public BreakStat() {}
+	public BreakStat() {
+		this.ident = "";
+	}
 
 	public boolean mainResolveIn() {
 		ASTNode p;
@@ -324,7 +326,7 @@ public class BreakStat extends ENode {
 			dest.delLink((BreakStat)this);
 			dest = null;
 		}
-		if( ident == null ) {
+		if (ident == null || ident == "") {
 			for(p=(ASTNode)parent(); !(p instanceof Method || p.isBreakTarget()); p = (ASTNode)p.parent() );
 			if( p instanceof Method || p == null ) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
@@ -388,7 +390,9 @@ public class ContinueStat extends ENode {
 		return super.preVerify();
 	}
 
-	public ContinueStat() {}
+	public ContinueStat() {
+		this.ident = "";
+	}
 
 	public boolean mainResolveIn() {
 		ASTNode p;
@@ -397,7 +401,7 @@ public class ContinueStat extends ENode {
 			dest.delLink((ContinueStat)this);
 			dest = null;
 		}
-		if( this.ident == null ) {
+		if (this.ident == null || this.ident == "") {
 			for(p=(ASTNode)parent(); !(p instanceof LoopStat || p instanceof Method); p = (ASTNode)p.parent() );
 			if( p instanceof Method || p == null ) {
 				Kiev.reportError(this,"Continue not within loop statement");
@@ -461,7 +465,9 @@ public class GotoStat extends ENode {
 		return super.preVerify();
 	}
 
-	public GotoStat() {}
+	public GotoStat() {
+		this.ident = "";
+	}
 	
 	public boolean mainResolveIn() {
 		this = this.open();

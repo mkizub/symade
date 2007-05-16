@@ -149,6 +149,18 @@ public class WhileStat extends LoopStat {
 		this.cond = cond;
 		this.body = body;
 	}
+
+	public void initForEditor() {
+		if (body == null) {
+			body = new Block();
+			body.initForEditor();
+		}
+		if (cond == null) {
+			cond = new ConstBoolExpr(false);
+			cond.initForEditor();
+		}
+		super.initForEditor();
+	}
 }
 
 @node(name="DoWhile")
@@ -174,6 +186,18 @@ public class DoWhileStat extends LoopStat {
 		this.pos = pos;
 		this.cond = cond;
 		this.body = body;
+	}
+
+	public void initForEditor() {
+		if (body == null) {
+			body = new Block();
+			body.initForEditor();
+		}
+		if (cond == null) {
+			cond = new ConstBoolExpr(false);
+			cond.initForEditor();
+		}
+		super.initForEditor();
 	}
 }
 
@@ -206,6 +230,18 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		this.cond = cond;
 		this.iter = iter;
 		this.body = body;
+	}
+
+	public void initForEditor() {
+		if (body == null) {
+			body = new Block();
+			body.initForEditor();
+		}
+		if (cond == null) {
+			cond = new ConstBoolExpr(false);
+			cond.initForEditor();
+		}
+		super.initForEditor();
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
@@ -283,6 +319,14 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		this.container = container;
 		this.cond = cond;
 		this.body = body;
+	}
+
+	public void initForEditor() {
+		if (body == null) {
+			body = new Block();
+			body.initForEditor();
+		}
+		super.initForEditor();
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
