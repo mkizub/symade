@@ -122,6 +122,8 @@ CLASS kievfmtCalcOptionNotEmpty kiev/fmt/CalcOptionNotEmpty kiev/fmt/SyntaxLay
 CLASS kievfmtCalcOptionNotNull kiev/fmt/CalcOptionNotNull kiev/fmt/SyntaxLayout.java
 CLASS kievfmtCalcOptionOr kiev/fmt/CalcOptionOr kiev/fmt/SyntaxLayout.java
 CLASS kievfmtCalcOptionTrue kiev/fmt/CalcOptionTrue kiev/fmt/SyntaxLayout.java
+CLASS kievfmtChangeRootException kiev/fmt/ChangeRootException kiev/fmt/Formatter.java
+CLASS kievfmtDrawAutoParenth kiev/fmt/DrawAutoParenth kiev/fmt/DrawExpr.java
 CLASS kievfmtDrawCharTerm kiev/fmt/DrawCharTerm kiev/fmt/DrawTerm.java
 CLASS kievfmtDrawColor kiev/fmt/DrawColor kiev/fmt/SyntaxLayout.java
 CLASS kievfmtDrawContext kiev/fmt/DrawContext kiev/fmt/DrawContext.java
@@ -134,9 +136,10 @@ CLASS kievfmtDrawJavaAccess kiev/fmt/DrawJavaAccess kiev/fmt/DrawJava.java
 CLASS kievfmtDrawJavaAccessExpr kiev/fmt/DrawJavaAccessExpr kiev/fmt/DrawJava.java
 CLASS kievfmtDrawJavaComment kiev/fmt/DrawJavaComment kiev/fmt/DrawJava.java
 CLASS kievfmtDrawJavaExpr kiev/fmt/DrawJavaExpr kiev/fmt/DrawJava.java
-CLASS kievfmtDrawJavaExprNoOp kiev/fmt/DrawJavaExprNoOp kiev/fmt/DrawJava.java
+CLASS kievfmtDrawJavaLispExpr kiev/fmt/DrawJavaLispExpr kiev/fmt/DrawJava.java
 CLASS kievfmtDrawJavaPackedField kiev/fmt/DrawJavaPackedField kiev/fmt/DrawJava.java
 CLASS kievfmtDrawLayout kiev/fmt/DrawLayout kiev/fmt/SyntaxLayout.java
+CLASS kievfmtDrawLispExpr kiev/fmt/DrawLispExpr kiev/fmt/DrawExpr.java
 CLASS kievfmtDrawNodeTerm kiev/fmt/DrawNodeTerm kiev/fmt/DrawTerm.java
 CLASS kievfmtDrawNonTerm kiev/fmt/DrawNonTerm kiev/fmt/DrawNonTerm.java
 CLASS kievfmtDrawNonTermList kiev/fmt/DrawNonTermList kiev/fmt/DrawNonTerm.java
@@ -162,6 +165,7 @@ CLASS kievfmtPartialSyntaxElemDecl kiev/fmt/PartialSyntaxElemDecl kiev/fmt/Syn
 CLASS kievfmtSpaceCmd kiev/fmt/SpaceCmd kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSpaceInfo kiev/fmt/SpaceInfo kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxAttr kiev/fmt/SyntaxAttr kiev/fmt/SyntaxLayout.java
+CLASS kievfmtSyntaxAutoParenth kiev/fmt/SyntaxAutoParenth kiev/fmt/ExprSyntax.java
 CLASS kievfmtSyntaxCharAttr kiev/fmt/SyntaxCharAttr kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxElem kiev/fmt/SyntaxElem kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxElemDecl kiev/fmt/SyntaxElemDecl kiev/fmt/SyntaxLayout.java
@@ -169,6 +173,8 @@ CLASS kievfmtSyntaxElemFormatDecl kiev/fmt/SyntaxElemFormatDecl kiev/fmt/Synta
 CLASS kievfmtSyntaxElemRef kiev/fmt/SyntaxElemRef kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxEnumChoice kiev/fmt/SyntaxEnumChoice kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxExpectedTemplate kiev/fmt/SyntaxExpectedTemplate kiev/fmt/SyntaxLayout.java
+CLASS kievfmtSyntaxExpr kiev/fmt/SyntaxExpr kiev/fmt/ExprSyntax.java
+CLASS kievfmtSyntaxExprTemplate kiev/fmt/SyntaxExprTemplate kiev/fmt/ExprSyntax.java
 CLASS kievfmtSyntaxFolder kiev/fmt/SyntaxFolder kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxFunction kiev/fmt/SyntaxFunction kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxFunctions kiev/fmt/SyntaxFunctions kiev/fmt/SyntaxLayout.java
@@ -218,6 +224,7 @@ CLASS kievguiNavigateView kiev/gui/NavigateView kiev/gui/Actions.java
 CLASS kievguiNewElemEditor kiev/gui/NewElemEditor kiev/gui/Editor.java
 CLASS kievguiNewElemHere kiev/gui/NewElemHere kiev/gui/Editor.java
 CLASS kievguiNewElemNext kiev/gui/NewElemNext kiev/gui/Editor.java
+CLASS kievguiOperatorEditor kiev/gui/OperatorEditor kiev/gui/Editor.java
 CLASS kievguiPasteElemHere kiev/gui/PasteElemHere kiev/gui/Editor.java
 CLASS kievguiPasteElemNext kiev/gui/PasteElemNext kiev/gui/Editor.java
 CLASS kievguiRenderActions kiev/gui/RenderActions kiev/gui/Actions.java

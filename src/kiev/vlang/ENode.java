@@ -271,6 +271,8 @@ public abstract class ENode extends ASTNode {
 	}
 
 	public Operator getOp() { return null; }
+	public void setOp(Operator op) { throw new RuntimeException("Cannot set operator "+op+" in ENode "+getClass()); }
+	
 	
 	public ENode[] getArgs() { return null; }
 

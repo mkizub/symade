@@ -88,6 +88,13 @@ public class TypeExpr extends TypeRef {
 	}
 
 	public Operator getOp() { return op; }
+	public void setOp(Operator op) {
+		if (!op.name.startsWith("T "))
+			throw new RuntimeException("Cannot set operator "+op+" in ENode "+getClass());
+		this = this.open();
+		this.type_lnk = null;
+		this.op = op;
+	}
 
 	public ENode[] getArgs() { return new ENode[]{arg}; }
 

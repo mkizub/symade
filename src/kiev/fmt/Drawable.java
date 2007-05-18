@@ -49,6 +49,8 @@ public abstract class Drawable extends ANode {
 	public final void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
 		if (!expected_stx.check(cont, syntax, expected_node, this.drnode)) {
 			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node);
+			if (!this.isAttached())
+				throw new ChangeRootException(dr);
 			replaceWithNode(dr);
 			dr.preFormat(cont, expected_stx, expected_node);
 			return;

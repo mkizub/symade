@@ -604,6 +604,9 @@ final class ChooseItemEditor implements UIActionFactory {
 			SyntaxEnumChoice stx = (SyntaxEnumChoice)dec.syntax;
 			return new EnumEditor(editor, dr.getFirstLeaf(), dec.drnode.getAttrPtr(stx.name));
 		}
+		else if (dr instanceof DrawToken && dr.drnode instanceof ENode && ((SyntaxToken)dr.syntax).kind == SyntaxToken.TokenKind.OPERATOR) {
+			return new OperatorEditor(editor, (DrawToken)dr);
+		}
 		return null;
 	}
 }
@@ -698,6 +701,12 @@ final class FunctionExecuter implements Runnable {
 							SyntaxAttr satr = (SyntaxAttr)dr.attr_syntax;
 							if (dr.drnode.getVal(satr.name) == null)
 								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, satr));
+						}
+					}
+					else if ("kiev.gui.FuncChooseOperator".equals(sf.act)) {
+						if (dr.syntax instanceof SyntaxToken) {
+							if (dr.drnode instanceof ENode)
+								fe.actions.append(fe.new EditElemAction(sf.title, dr));
 						}
 					}
 					else if ("kiev.gui.ChooseItemEditor".equals(sf.act)) {
@@ -1408,6 +1417,82 @@ class EnumEditor implements KeyListener, PopupMenuListener, Runnable {
 		}
 	}
 }
+
+class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
+	private final Editor		editor;
+	private final DrawTerm		cur_elem;
+	private final ENode			expr;
+	private final JPopupMenu	menu;
+	OperatorEditor(Editor editor, DrawTerm cur_elem) {
+		this.editor = editor;
+		this.cur_elem = cur_elem;
+		this.expr = (ENode)cur_elem.drnode;
+		this.menu = new JPopupMenu();
+	}
+	
+	final static class Factory implements UIActionFactory {
+		public String getDescr() { "Edit the operator of an expression" }
+		public boolean isForPopupMenu() { true }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor == null)
+				return null;
+			Editor editor = context.editor;
+			DrawTerm dt = context.dt;
+			if !(dt instanceof DrawToken && dt.drnode instanceof ENode && ((SyntaxToken)dt.syntax).kind == SyntaxToken.TokenKind.OPERATOR)
+				return null;
+			return new OperatorEditor(editor, dt);
+		}
+	}
+
+	public void run() {
+		editor.startItemEditor(expr, this);
+		if (expr instanceof TypeExpr) {
+			// show all postfix type operators
+			foreach (Operator op; Operator.allOperatorNamesHash; op.name.startsWith("T "))
+				menu.add(new JMenuItem(new SetSyntaxAction(op)));
+		} else {
+			int arity = expr.getArgs().length;
+			foreach (Operator op; Operator.allOperatorNamesHash; op.arity == arity && !op.name.startsWith("T "))
+				menu.add(new JMenuItem(new SetSyntaxAction(op)));
+		}
+		int x = cur_elem.x;
+		int y = cur_elem.y + cur_elem.h - editor.view_canvas.translated_y;
+		menu.addPopupMenuListener(this);
+		menu.show(editor.view_canvas, x, y);
+	}
+
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
+	public void keyPressed(KeyEvent evt) {}
+	
+	public void popupMenuCanceled(PopupMenuEvent e) {
+		editor.view_canvas.remove(menu);
+		editor.stopItemEditor(true);
+	}
+	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+
+	class SetSyntaxAction extends TextAction {
+		private Operator op; // Enum or Boolean
+		SetSyntaxAction(Operator op) {
+			super(String.valueOf(op));
+			this.op = op;
+		}
+		public void actionPerformed(ActionEvent e) {
+			editor.view_canvas.remove(menu);
+			try {
+				ENode expr = ANode.getVersion(expr);
+				expr.setOp(op);
+			} catch (Throwable t) {
+				editor.stopItemEditor(true);
+				e = null;
+			}
+			if (e != null)
+				editor.stopItemEditor(false);
+		}
+	}
+}
+
 
 final class FindDialog extends JDialog implements ActionListener {
 	private Editor the_view;

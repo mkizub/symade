@@ -521,7 +521,7 @@
          <name>SyntaxJavaCommentTemplate</name>
         </a-node>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>SyntaxJavaExprTemplate</name>
+         <name>SyntaxExprTemplate</name>
         </a-node>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>DrawColor</name>
@@ -1510,7 +1510,7 @@
            <name>SyntaxCharAttr</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>SyntaxJavaExpr</name>
+           <name>SyntaxExpr</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>SyntaxJavaAccessExpr</name>
@@ -1624,6 +1624,12 @@
              <name>SymbolRef</name>
             </a-node>
            </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>kind:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>kind</name>
           </a-node>
           <a-node class='kiev.fmt.SyntaxSubAttr'>
            <name>funcs</name>
@@ -3148,6 +3154,113 @@
       </a-node>
      </elem>
      <sname>stx-def-java-expr-template</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>SyntaxExprTemplate</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>def-stx-expr-template</text>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-of-kw</name>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>ident-template</name>
+          </a-node>
+         </decl>
+         <name>sname</name>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-of-symbol</name>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>l_paren</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>elem</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>bad_op</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>r_paren</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxList'>
+         <element>
+          <a-node class='kiev.fmt.SyntaxNode'>
+          </a-node>
+         </element>
+         <folded_by_default>false</folded_by_default>
+         <name>operators</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>SyntaxToken</name>
+          </a-node>
+         </expected_types>
+         <empty>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&lt;?operators?&gt;</text>
+          </a-node>
+         </empty>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+      </a-node>
+     </elem>
+     <sname>stx-def-expr-template</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>SyntaxExpr</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxList'>
+         <element>
+          <a-node class='kiev.fmt.SyntaxNode'>
+          </a-node>
+         </element>
+         <folded_by_default>false</folded_by_default>
+         <name>attrs</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>SyntaxSubAttr</name>
+          </a-node>
+         </expected_types>
+         <empty>
+          <a-node class='kiev.fmt.SyntaxPlaceHolder'>
+           <text>&lt;attrs&gt;</text>
+          </a-node>
+         </empty>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>ident-template</name>
+          </a-node>
+         </decl>
+         <name>template</name>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+      </a-node>
+     </elem>
+     <sname>stx-def-expr</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>

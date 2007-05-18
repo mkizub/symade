@@ -1438,6 +1438,83 @@
      </members>
      <sname>syntax-file-package</sname>
     </a-node>
+    <a-node class='kiev.fmt.SyntaxExprTemplate'>
+     <l_paren>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>(</text>
+       <kind>SEPARATOR</kind>
+      </a-node>
+     </l_paren>
+     <bad_op>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>◙</text>
+       <kind>OPERATOR</kind>
+      </a-node>
+     </bad_op>
+     <r_paren>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>)</text>
+       <kind>SEPARATOR</kind>
+      </a-node>
+     </r_paren>
+     <operators>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>(</text>
+       <kind>SEPARATOR</kind>
+       <fmt>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>fmt-separator-eat-right</name>
+        </a-node>
+       </fmt>
+      </a-node>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>)</text>
+       <kind>SEPARATOR</kind>
+       <fmt>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>fmt-separator-eat-left</name>
+        </a-node>
+       </fmt>
+      </a-node>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>instanceof</text>
+       <fmt>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>fmt-keyword</name>
+        </a-node>
+       </fmt>
+      </a-node>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>$cast</text>
+       <fmt>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>fmt-keyword</name>
+        </a-node>
+       </fmt>
+      </a-node>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>$reinterp</text>
+       <fmt>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>fmt-keyword</name>
+        </a-node>
+       </fmt>
+      </a-node>
+      <a-node class='kiev.fmt.SyntaxToken'>
+       <text>DEFAULT</text>
+       <fmt>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>fmt-operator</name>
+        </a-node>
+       </fmt>
+      </a-node>
+     </operators>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxNode'>
+      </a-node>
+     </elem>
+     <sname>expr-template</sname>
+    </a-node>
     <a-node class='kiev.fmt.SyntaxJavaExprTemplate'>
      <l_paren>
       <a-node class='kiev.fmt.SyntaxToken'>
@@ -1520,30 +1597,21 @@
      </elem>
      <sname>java-expr-template</sname>
     </a-node>
-    <a-node class='kiev.fmt.SyntaxJavaExprTemplate'>
+    <a-node class='kiev.fmt.SyntaxExprTemplate'>
      <l_paren>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>(</text>
-       <fmt>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>fmt-separator-eat-right</name>
-        </a-node>
-       </fmt>
       </a-node>
      </l_paren>
      <bad_op>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>◙</text>
+       <kind>OPERATOR</kind>
       </a-node>
      </bad_op>
      <r_paren>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>)</text>
-       <fmt>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>fmt-separator-eat-left</name>
-        </a-node>
-       </fmt>
       </a-node>
      </r_paren>
      <operators>
@@ -1560,7 +1628,7 @@
       <a-node class='kiev.fmt.SyntaxNode'>
       </a-node>
      </elem>
-     <sname>java-type-expr-template</sname>
+     <sname>type-expr-template</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxJavaCommentTemplate'>
      <newline>
@@ -5838,15 +5906,22 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>arg</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-TypeRef</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-type-expr-template</name>
+         <name>type-expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-type-expr</sname>
@@ -5872,10 +5947,28 @@
        <name>BinaryExpr</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>InstanceofExpr</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>CastExpr</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>ConditionalExpr</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>ConstBoolExpr</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
        <name>ConstNullExpr</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>ConstStringExpr</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>ConstIntExpr</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>ConstDoubleExpr</name>
       </a-node>
      </expected_types>
      <elem>
@@ -6204,15 +6297,20 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>var</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr</name>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-rule-is-one-of</sname>
@@ -6224,15 +6322,20 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>var</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr</name>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-rule-is-the</sname>
@@ -7426,15 +7529,22 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>lval</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-incr</sname>
@@ -7446,15 +7556,22 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-unary</sname>
@@ -7466,15 +7583,30 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr1</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr2</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-binary</sname>
@@ -7486,15 +7618,30 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>lval</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>value</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-assign</sname>
@@ -7506,15 +7653,22 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-bool-not</sname>
@@ -7526,15 +7680,30 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr1</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr2</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-bool-binary</sname>
@@ -7546,15 +7715,30 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr1</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr2</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-bool-and</sname>
@@ -7566,15 +7750,30 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr1</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr2</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-bool-or</sname>
@@ -7586,15 +7785,30 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>type</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-TypeRef</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-instanceof</sname>
@@ -7606,15 +7820,30 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>type</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-TypeRef</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-cast</sname>
@@ -7626,15 +7855,30 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>type</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-TypeRef</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-reinterp</sname>
@@ -7646,15 +7890,38 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>cond</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr1</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr2</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-expr-conditional</sname>

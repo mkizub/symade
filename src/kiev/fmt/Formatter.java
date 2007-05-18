@@ -28,6 +28,13 @@ public interface Formatter {
 	public void       setHintEscapes(boolean show);
 }
 
+public class ChangeRootException extends RuntimeException {
+	public final Drawable dr;
+	public ChangeRootException(Drawable dr) {
+		this.dr = dr;
+	}
+}
+
 public abstract class AbstractFormatter implements Formatter {
 
 	private static final int counter;
@@ -92,7 +99,12 @@ public class TextFormatter extends AbstractFormatter {
 		DrawContext ctx = new DrawContext(this,null);
 		ctx.width = 1000;
 		Drawable root = getDrawable(node, dr, null);
-		root.preFormat(ctx, root.syntax, node);
+		try {
+			root.preFormat(ctx, root.syntax, node);
+		} catch (ChangeRootException e) {
+			root = e.dr;
+			root.preFormat(ctx, root.syntax, node);
+		}
 		try {
 			// link nodes
 			ctx = new DrawContext(this,null);
@@ -167,7 +179,12 @@ public class GfxFormatter extends AbstractFormatter {
 		DrawContext ctx = new DrawContext(this,gfx);
 		ctx.width = this.width;
 		Drawable root = getDrawable(node, dr, null);
-		root.preFormat(ctx, root.syntax, node);
+		try {
+			root.preFormat(ctx, root.syntax, node);
+		} catch (ChangeRootException e) {
+			root = e.dr;
+			root.preFormat(ctx, root.syntax, node);
+		}
 		try {
 			// link nodes
 			ctx = new DrawContext(this,gfx);

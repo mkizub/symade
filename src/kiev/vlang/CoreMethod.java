@@ -236,10 +236,10 @@ abstract class BinaryFunc extends CoreFunc {
 			return;
 		}
 		ENode en = (ENode)cls.newInstance();
-		foreach (ENode e; args)
-			e.detach();
+		for (int i=0; i < args.length; i++)
+			args[i] = args[i].detach();
 		en.initFrom(expr, op, core_method, args);
-		expr.replaceWithNodeReWalk(en);
+		ANode.getVersion(expr).replaceWithNodeReWalk(en);
 	}
 	public ConstExpr calc(ENode expr) {
 		ENode[] args = expr.getArgs();
@@ -263,10 +263,10 @@ abstract class UnaryFunc extends CoreFunc {
 			return;
 		}
 		ENode en = (ENode)cls.newInstance();
-		foreach (ENode e; args)
-			e.detach();
+		for (int i=0; i < args.length; i++)
+			args[i] = args[i].detach();
 		en.initFrom(expr, op, core_method, args);
-		expr.replaceWithNodeReWalk(en);
+		ANode.getVersion(expr).replaceWithNodeReWalk(en);
 	}
 	public ConstExpr calc(ENode expr) {
 		ENode[] args = expr.getArgs();

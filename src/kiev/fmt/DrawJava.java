@@ -14,9 +14,9 @@ import syntax kiev.Syntax;
 
 
 @node(copyable=false)
-public class DrawJavaExprNoOp extends DrawNonTerm {
+public class DrawJavaLispExpr extends DrawNonTerm {
 	
-	public DrawJavaExprNoOp(ANode node, SyntaxJavaExpr syntax) {
+	public DrawJavaLispExpr(ANode node, SyntaxJavaExpr syntax) {
 		super(node, syntax);
 	}
 

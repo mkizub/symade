@@ -583,14 +583,7 @@ public final class SyntaxElemFormatDecl extends DNode {
 	}
 
 }
-/*
-public enum SyntaxFuncActions {
-	FuncNop,
-	FuncNewElemOfEmptyList,
-	FuncNewElemOfNull,
-	FuncEditElem
-}
-*/
+
 @node
 public final class SyntaxFunction extends ASTNode {
 	@virtual typedef This  = SyntaxFunction;
@@ -794,22 +787,35 @@ public final class SyntaxElemRef extends SyntaxElem {
 public final class SyntaxToken extends SyntaxElem {
 	@virtual typedef This  = SyntaxToken;
 
+	public static enum TokenKind {
+		UNKNOWN, KEYWORD, OPERATOR, SEPARATOR
+	}
+
 	public static final SyntaxToken[] emptyArray = new SyntaxToken[0];
 
 	@att public String					text;
+	@att public TokenKind				kind;
 
 	@setter
 	public void set$text(String value) {
 		this.text = (value != null) ? value.intern() : null;
 	}
 	
-	public SyntaxToken() {}
+	public SyntaxToken() {
+		this.kind = TokenKind.UNKNOWN;
+	}
 	public SyntaxToken(String text) {
 		this.text = text;
+		this.kind = TokenKind.UNKNOWN;
 	}
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawToken(node, this);
 		return dr;
+	}
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "kind" && kind == TokenKind.UNKNOWN)
+			return false;
+		return super.includeInDump(dump, attr, val);
 	}
 }
 
@@ -834,6 +840,8 @@ public final class SyntaxPlaceHolder extends SyntaxElem {
 @node
 public abstract class SyntaxAttr extends SyntaxElem {
 	@virtual typedef This  ≤ SyntaxAttr;
+
+	public static final SyntaxAttr[] emptyArray = new SyntaxAttr[0];
 
 	@att public String							name;
 	@att public SymbolRef<ATextSyntax>			in_syntax;

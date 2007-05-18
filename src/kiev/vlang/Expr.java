@@ -314,7 +314,12 @@ public class BinaryExpr extends ENode {
 	}
 	
 	public Operator getOp() { return op; }
-	
+	public void setOp(Operator op) {
+		this = this.open();
+		this.symbol = null;
+		this.op = op;
+	}
+
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
 	public String toString() { return getOp().toString(this); }
@@ -381,6 +386,11 @@ public class UnaryExpr extends ENode {
 	}
 	
 	public Operator getOp() { return op; }
+	public void setOp(Operator op) {
+		this = this.open();
+		this.symbol = null;
+		this.op = op;
+	}
 
 	public ENode[] getArgs() { return new ENode[]{expr}; }
 

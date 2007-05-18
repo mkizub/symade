@@ -316,6 +316,7 @@ public abstract class ANode implements INode {
 							getVersion(vals[i]).walkTree(walker);
 						} catch (ReWalkNodeException e) {
 							i--;
+							this = ANode.getVersion(this);
 							val = attr.get(this);
 							vals = (ANode[])val;
 						}
@@ -326,6 +327,7 @@ public abstract class ANode implements INode {
 					try {
 						val.walkTree(walker);
 					} catch (ReWalkNodeException e) {
+						this = ANode.getVersion(this);
 						val = attr.get(this);
 						if (val != null)
 							goto re_walk_node;

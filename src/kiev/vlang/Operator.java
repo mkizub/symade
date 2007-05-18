@@ -226,18 +226,28 @@ public final class Operator implements Constants {
 		op = allOperatorNamesHash.get(name);
 		if( op != null )
 			throw new RuntimeException("Redeclaration of an operator from "+op.decl+" to "+decl);
-		return new Operator(args,pr,name,decl);
+		int ar = 0;
+		foreach (OpArg a; args) {
+			switch (a) {
+			case EXPR(_)	: ar++; break;
+			case TYPE()		: ar++; break;
+			case OPER(_)	: break;
+			}
+		}
+		return new Operator(args,pr,ar,name,decl);
 	}
 
 	public final		OpArg[]		args;
 	public final		int			priority;
+	public final		int			arity;
 	public final		String		name;
 	public final		String		decl;
 	private				Method[]	methods;
 
-	private Operator(OpArg[] args, int pr, String name, String decl) {
+	private Operator(OpArg[] args, int pr, int ar, String name, String decl) {
 		this.args = args;
 		this.priority = pr;
+		this.arity = ar;
 		this.name = name.intern();
 		this.decl = decl.intern();
 		this.methods = new Method[0];

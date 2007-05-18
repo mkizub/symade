@@ -93,7 +93,7 @@ public class SyntaxJavaExpr extends SyntaxAttr {
 			n = ((ENode)node).getArgs()[idx];
 		}
 		else if (name == "") {
-			Drawable dr = new DrawJavaExprNoOp(node, this);
+			Drawable dr = new DrawJavaLispExpr(node, this);
 			return dr;
 		}
 		else {
@@ -213,8 +213,50 @@ public class SyntaxJavaComment extends SyntaxElem {
 public class KievTextSyntax extends ATextSyntax {
 	@virtual typedef This  = KievTextSyntax;
 
-	final Hashtable<Operator, SyntaxElem> exprs;
+	final Hashtable<Pair<Operator,Class>, SyntaxElem> exprs;
 	
+	private SyntaxSet expr(Operator op, SyntaxExpr sexpr)
+	{
+		SyntaxElem[] elems = new SyntaxElem[op.args.length];
+		int earg = 0;
+		for (int i=0; i < elems.length; i++) {
+			OpArg arg = op.args[i];
+			switch (arg) {
+			case OpArg.EXPR(int priority):
+				elems[i] = new SyntaxAutoParenth(sexpr.attrs[earg], priority, sexpr.template.dnode);
+				earg++;
+				continue;
+			case OpArg.TYPE():
+				elems[i] = new SyntaxAutoParenth(sexpr.attrs[earg], 255, sexpr.template.dnode);
+				earg++;
+				continue;
+			case OpArg.OPER(String text):
+				if (sexpr.template.dnode != null) {
+					foreach (SyntaxToken t; sexpr.template.dnode.operators) {
+						if (t.text == text) {
+							elems[i] = t.ncopy();
+							break;
+						}
+						if (t.text == "DEFAULT") {
+							SyntaxToken st = t.ncopy();
+							st.text = text;
+							elems[i] = st;
+						}
+					}
+				}
+				if (elems[i] == null) {
+					SyntaxToken st = new SyntaxToken(text);
+					st.kind = SyntaxToken.TokenKind.OPERATOR;
+					elems[i] = st;
+				}
+				continue;
+			}
+		}
+		SyntaxSet set = new SyntaxSet();
+		set.elements.addAll(elems);
+		return set;
+	}
+
 	private SyntaxSet expr(Operator op, SyntaxJavaExprTemplate template)
 	{
 		SyntaxElem[] elems = new SyntaxElem[op.args.length];
@@ -255,7 +297,7 @@ public class KievTextSyntax extends ATextSyntax {
 	}
 
 	public KievTextSyntax() {
-		exprs = new Hashtable<Operator, SyntaxElem>();
+		exprs = new Hashtable<Pair<Operator,Class>, SyntaxElem>();
 	}
 
 	protected void cleanup() {
@@ -269,15 +311,27 @@ public class KievTextSyntax extends ATextSyntax {
 			SyntaxElemDecl sed = allSyntax.get(cl_name);
 			if (sed != null) {
 				SyntaxElem se = sed.elem;
+				if (node instanceof ENode && se instanceof SyntaxExpr) {
+					ENode e = (ENode)node;
+					Operator op = e.getOp();
+					if (op == null)
+						return se;
+					se = exprs.get(new Pair<Operator,Class>(op,node.getClass()));
+					if (se == null) {
+						se = expr(op, (SyntaxExpr)sed.elem);
+						exprs.put(new Pair<Operator,Class>(op,node.getClass()), se);
+					}
+					return se;
+				}
 				if (node instanceof ENode && se instanceof SyntaxJavaExpr && se.name == "") {
 					ENode e = (ENode)node;
 					Operator op = e.getOp();
 					if (op == null)
 						return se;
-					se = exprs.get(op);
+					se = exprs.get(new Pair<Operator,Class>(op,node.getClass()));
 					if (se == null) {
 						se = expr(op,(SyntaxJavaExprTemplate)((SyntaxJavaExpr)sed.elem).template.dnode);
-						exprs.put(op, se);
+						exprs.put(new Pair<Operator,Class>(op,node.getClass()), se);
 					}
 				}
 				return se;
