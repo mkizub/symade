@@ -805,30 +805,79 @@ final class FunctionExecuter implements Runnable {
 
 abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 
+	static class Menu {
+		String			title;
+		Menu[]			menus;
+		NewElemAction[]	actions;
+		Menu(String title) {
+			this.title = title;
+			this.menus = new Menu[0];
+			this.actions = new NewElemAction[0];
+		}
+	}
+	
 	Editor		editor;
 	int			idx;
 	JPopupMenu	menu;
-	
+
 	NewElemEditor(Editor editor) {
 		this.editor = editor;
 	}
 
-	private void addItems(JPopupMenu menu, SymbolRef[] expected_types, ANode n, String name) {
+	private void addItems(Menu menu, SymbolRef[] expected_types, ANode n, String name) {
 		foreach (SymbolRef sr; expected_types) {
-			if (sr.dnode instanceof Struct)
-				menu.add(new JMenuItem(new NewElemAction((Struct)sr.dnode, n, name)));
-			else if (sr.dnode instanceof SyntaxExpectedTemplate)
-				addItems(menu, ((SyntaxExpectedTemplate)sr.dnode).expected_types, n, name);
+			if (sr.dnode instanceof Struct) {
+				menu.actions = (NewElemAction[])Arrays.append(menu.actions, new NewElemAction((Struct)sr.dnode, n, name));
+			} else if (sr.dnode instanceof SyntaxExpectedTemplate) {
+				SyntaxExpectedTemplate et = (SyntaxExpectedTemplate)sr.dnode;
+				if (et.title == null || et.title.length() == 0) {
+					addItems(menu, et.expected_types, n, name);
+				} else {
+					Menu sub_menu = new Menu(et.title);
+					menu.menus = (Menu[])Arrays.append(menu.menus, sub_menu);
+					addItems(sub_menu, et.expected_types, n, name);
+				}
+			}
 		}
+	}
+	
+	private JMenu makeSubMenu(Menu m) {
+		JMenu jm = new JMenu(m.title);
+		foreach (Menu sub; m.menus) {
+			while (sub.actions.length == 0 && sub.menus.length == 1)
+				sub = sub.menus[0];
+			if (sub.actions.length == 0 && sub.menus.length == 0)
+				continue;
+			jm.add(makeSubMenu(sub));
+		}
+		foreach (NewElemAction a; m.actions)
+			jm.add(a);
+		return jm;
+	}
+	private JPopupMenu makePopupMenu(Menu m) {
+		while (m.actions.length == 0 && m.menus.length == 1)
+			m = m.menus[0];
+		JPopupMenu jp = new JPopupMenu(m.title);
+		foreach (Menu sub; m.menus) {
+			while (sub.actions.length == 0 && sub.menus.length == 1)
+				sub = sub.menus[0];
+			if (sub.actions.length == 0 && sub.menus.length == 0)
+				continue;
+			jp.add(makeSubMenu(sub));
+		}
+		foreach (NewElemAction a; m.actions)
+			jp.add(a);
+		return jp;
 	}
 
 	public void makeMenu(String title, ANode n, SyntaxAttr satt) {
-		menu = new JPopupMenu(title);
-		addItems(menu, satt.expected_types, n, satt.name);
-		menu.addPopupMenuListener(this);
+		Menu m = new Menu(title);
+		addItems(m, satt.expected_types, n, satt.name);
+		this.menu = makePopupMenu(m);
+		this.menu.addPopupMenuListener(this);
 		int x = editor.cur_elem.dr.x;
 		int y = editor.cur_elem.dr.y + editor.cur_elem.dr.h - editor.view_canvas.translated_y;
-		menu.show(editor.view_canvas, x, y);
+		this.menu.show(editor.view_canvas, x, y);
 		editor.startItemEditor(n, this);
 	}
 

@@ -19,55 +19,7 @@ import syntax kiev.Syntax;
 public class TreeSyntax extends ATextSyntax {
 	@virtual typedef This  = TreeSyntax;
 
-	final Hashtable<Operator, SyntaxElem> exprs;
-	
-	private SyntaxSet expr(Operator op, SyntaxJavaExprTemplate template)
-	{
-		SyntaxElem[] elems = new SyntaxElem[op.args.length];
-		int earg = 0;
-		for (int i=0; i < elems.length; i++) {
-			OpArg arg = op.args[i];
-			switch (arg) {
-			case OpArg.EXPR(int priority):
-				elems[i] = new SyntaxJavaExpr(earg, priority, template);
-				earg++;
-				continue;
-			case OpArg.TYPE():
-				elems[i] = new SyntaxJavaExpr(earg, 255, template);
-				earg++;
-				continue;
-			case OpArg.OPER(String text):
-				if (template != null) {
-					foreach (SyntaxToken t; template.operators) {
-						if (t.text == text) {
-							elems[i] = t.ncopy();
-							break;
-						}
-						if (t.text == "DEFAULT") {
-							SyntaxToken st = t.ncopy();
-							st.text = text;
-							elems[i] = st;
-						}
-					}
-				}
-				if (elems[i] == null)
-					elems[i] = new SyntaxToken(text);
-				continue;
-			}
-		}
-		SyntaxSet set = new SyntaxSet();
-		set.elements.addAll(elems);
-		return set;
-	}
-
-	public TreeSyntax() {
-		exprs = new Hashtable<Operator, SyntaxElem>();
-	}
-
-	protected void cleanup() {
-		exprs.clear();
-		super.cleanup();
-	}
+	public TreeSyntax() {}
 
 	public SyntaxElem getSyntaxElem(ANode node) {
 		if (node == null)
@@ -76,15 +28,15 @@ public class TreeSyntax extends ATextSyntax {
 		SyntaxElemDecl sed = allSyntax.get(cl_name);
 		if (sed != null) {
 			SyntaxElem se = sed.elem;
-			if (node instanceof ENode && se instanceof SyntaxJavaExpr && se.name == "") {
+			if (node instanceof ENode && se instanceof SyntaxExpr) {
 				ENode e = (ENode)node;
 				Operator op = e.getOp();
 				if (op == null)
 					return se;
-				se = exprs.get(op);
+				se = exprs.get(new Pair<Operator,Class>(op,node.getClass()));
 				if (se == null) {
-					se = expr(op,(SyntaxJavaExprTemplate)((SyntaxJavaExpr)sed.elem).template.dnode);
-					exprs.put(op, se);
+					se = expr(op, (SyntaxExpr)sed.elem);
+					exprs.put(new Pair<Operator,Class>(op,node.getClass()), se);
 				}
 			}
 			return se;

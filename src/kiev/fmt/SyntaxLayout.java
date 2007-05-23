@@ -26,7 +26,8 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	
 	protected Hashtable<String,SyntaxElem>		badSyntax = new Hashtable<Class,SyntaxElem>();
 	protected Hashtable<String,SyntaxElemDecl>	allSyntax = new Hashtable<String,SyntaxElemDecl>();
-	
+	protected Hashtable<Pair<Operator,Class>, SyntaxElem> exprs = new Hashtable<Pair<Operator,Class>, SyntaxElem>();
+
 	@att public SymbolRef<ATextSyntax>	parent_syntax;
 	@att public ASTNode[]				members;
 		 public String					q_name;	// qualified name
@@ -98,6 +99,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	protected void cleanup() {
 		allSyntax.clear();
 		badSyntax.clear();
+		exprs.clear();
 	}
 
 	public boolean preResolveIn() {
@@ -139,6 +141,48 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		return super.findForResolve(name,slot,by_equals);
 	}
 
+
+	protected SyntaxSet expr(Operator op, SyntaxExpr sexpr)
+	{
+		SyntaxElem[] elems = new SyntaxElem[op.args.length];
+		int earg = 0;
+		for (int i=0; i < elems.length; i++) {
+			OpArg arg = op.args[i];
+			switch (arg) {
+			case OpArg.EXPR(int priority):
+				elems[i] = new SyntaxAutoParenth(sexpr.attrs[earg].ncopy(), priority, sexpr.template.dnode);
+				earg++;
+				continue;
+			case OpArg.TYPE():
+				elems[i] = new SyntaxAutoParenth(sexpr.attrs[earg].ncopy(), 255, sexpr.template.dnode);
+				earg++;
+				continue;
+			case OpArg.OPER(String text):
+				if (sexpr.template.dnode != null) {
+					foreach (SyntaxToken t; sexpr.template.dnode.operators) {
+						if (t.text == text) {
+							elems[i] = t.ncopy();
+							break;
+						}
+						if (t.text == "DEFAULT") {
+							SyntaxToken st = t.ncopy();
+							st.text = text;
+							elems[i] = st;
+						}
+					}
+				}
+				if (elems[i] == null) {
+					SyntaxToken st = new SyntaxToken(text);
+					st.kind = SyntaxToken.TokenKind.OPERATOR;
+					elems[i] = st;
+				}
+				continue;
+			}
+		}
+		SyntaxSet set = new SyntaxSet();
+		set.elements.addAll(elems);
+		return set;
+	}
 
 	public SyntaxElem getSyntaxElem(ANode node) {
 		if (node != null) {
@@ -491,7 +535,8 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 	@virtual typedef This  = SyntaxExpectedTemplate;
 
-	@att public SymbolRef[]		expected_types; // ASTNode-s or SyntaxIdentTemplate-s 
+	@att public String			title;
+	@att public SymbolRef[]		expected_types; // ASTNode-s or SyntaxExpectedTemplate-s 
 
 	public SyntaxExpectedTemplate() {
 		super(new SyntaxNode());

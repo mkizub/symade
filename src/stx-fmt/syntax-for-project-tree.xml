@@ -110,7 +110,7 @@
      </elem>
      <sname>ident-template</sname>
     </a-node>
-    <a-node class='kiev.fmt.SyntaxJavaExprTemplate'>
+    <a-node class='kiev.fmt.SyntaxExprTemplate'>
      <l_paren>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>(</text>
@@ -119,6 +119,7 @@
      <bad_op>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>◙</text>
+       <kind>OPERATOR</kind>
       </a-node>
      </bad_op>
      <r_paren>
@@ -135,7 +136,7 @@
       <a-node class='kiev.fmt.SyntaxNode'>
       </a-node>
      </elem>
-     <sname>java-expr-template</sname>
+     <sname>type-expr-template</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -864,15 +865,17 @@
       </a-node>
      </rnode>
      <elem>
-      <a-node class='kiev.fmt.SyntaxJavaExpr'>
-       <idx>-1</idx>
-       <priority>0</priority>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>arg</name>
+        </a-node>
+       </attrs>
        <template>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>java-expr-template</name>
+         <name>type-expr-template</name>
         </a-node>
        </template>
-       <name></name>
       </a-node>
      </elem>
      <sname>stx-type-expr</sname>

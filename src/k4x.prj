@@ -135,8 +135,6 @@ CLASS kievfmtDrawIdent kiev/fmt/DrawIdent kiev/fmt/DrawTerm.java
 CLASS kievfmtDrawJavaAccess kiev/fmt/DrawJavaAccess kiev/fmt/DrawJava.java
 CLASS kievfmtDrawJavaAccessExpr kiev/fmt/DrawJavaAccessExpr kiev/fmt/DrawJava.java
 CLASS kievfmtDrawJavaComment kiev/fmt/DrawJavaComment kiev/fmt/DrawJava.java
-CLASS kievfmtDrawJavaExpr kiev/fmt/DrawJavaExpr kiev/fmt/DrawJava.java
-CLASS kievfmtDrawJavaLispExpr kiev/fmt/DrawJavaLispExpr kiev/fmt/DrawJava.java
 CLASS kievfmtDrawJavaPackedField kiev/fmt/DrawJavaPackedField kiev/fmt/DrawJava.java
 CLASS kievfmtDrawLayout kiev/fmt/DrawLayout kiev/fmt/SyntaxLayout.java
 CLASS kievfmtDrawLispExpr kiev/fmt/DrawLispExpr kiev/fmt/DrawExpr.java
@@ -184,8 +182,6 @@ CLASS kievfmtSyntaxJavaAccess kiev/fmt/SyntaxJavaAccess kiev/fmt/JavaSyntax.ja
 CLASS kievfmtSyntaxJavaAccessExpr kiev/fmt/SyntaxJavaAccessExpr kiev/fmt/JavaSyntax.java
 CLASS kievfmtSyntaxJavaComment kiev/fmt/SyntaxJavaComment kiev/fmt/JavaSyntax.java
 CLASS kievfmtSyntaxJavaCommentTemplate kiev/fmt/SyntaxJavaCommentTemplate kiev/fmt/JavaSyntax.java
-CLASS kievfmtSyntaxJavaExpr kiev/fmt/SyntaxJavaExpr kiev/fmt/JavaSyntax.java
-CLASS kievfmtSyntaxJavaExprTemplate kiev/fmt/SyntaxJavaExprTemplate kiev/fmt/JavaSyntax.java
 CLASS kievfmtSyntaxJavaPackedField kiev/fmt/SyntaxJavaPackedField kiev/fmt/JavaSyntax.java
 CLASS kievfmtSyntaxList kiev/fmt/SyntaxList kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxNode kiev/fmt/SyntaxNode kiev/fmt/SyntaxLayout.java
