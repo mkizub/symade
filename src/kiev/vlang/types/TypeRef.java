@@ -174,6 +174,7 @@ public class TypeDeclRef extends TypeRef {
 			return this.type_lnk;
 		for (ANode p = parent(); p!= null; p = p.parent()) {
 			if (p instanceof DeclGroup) {
+				this = this.open();
 				this.type_lnk = p.getType();
 				return this.type_lnk;
 			}

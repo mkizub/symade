@@ -120,14 +120,14 @@ public final class TypeAssign extends TypeDef {
 				foreach (td.resolveNameR(node,info)) {
 					ASTNode n = node;
 					if !(n instanceof TypeDef) {
-						Kiev.reportError(this,"Typedef extends non-typedef node");
+						Kiev.reportError(this,"Typedef "+parent+"."+sname+" extends non-typedef node");
 						continue;
 					}
 					if (n instanceof TypeAssign)
-						Kiev.reportWarning(this,"Typedef extends final typedef");
+						Kiev.reportWarning(this,"Typedef "+parent+"."+sname+" extends final typedef");
 					TypeConstr tc = (TypeConstr)n;
 					if (!tc.isTypeVirtual())
-						Kiev.reportWarning(this,"Typedef extends non-virtual typedef");
+						Kiev.reportWarning(this,"Typedef "+parent+"."+sname+" extends non-virtual typedef");
 					//if (!tc.isTypeAbstract())
 					//	Kiev.reportWarning(this,"Typedef extends non-abstract typedef");
 				}

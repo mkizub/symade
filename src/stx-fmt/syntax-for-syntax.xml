@@ -10,7 +10,6 @@
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
 <a-node class='kiev.vlang.FileUnit'>
- <name>stx-fmt\syntax-for-syntax.xml</name>
  <pkg>
   <a-node class='kiev.vlang.types.TypeNameRef'>
    <ident>stx-fmt</ident>

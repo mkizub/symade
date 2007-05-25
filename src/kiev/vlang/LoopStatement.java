@@ -62,29 +62,27 @@ public final class Label extends DNode {
 	@virtual typedef JView = JLabel;
 	@virtual typedef RView = RLabel;
 
-	@ref(copyable=false)	public List<ASTNode>	links = List.Nil;
+	@ref(copyable=false)	public ASTNode[]		links;
 							public CodeLabel		label;
 
 	public boolean preVerify() {
 		ASTNode root = this.ctx_root;
-		List<ASTNode> tmp = links.filter(fun (ASTNode n)->boolean { return n.ctx_root == root; });
-		if (this.links != tmp) {
+		foreach (ASTNode lnk; links; lnk.ctx_root != root) {
 			this = this.open();
-			this.links = tmp;
+			links.detach(lnk);
 		}
 		return super.preVerify();
 	}	
 
 	public void addLink(ASTNode lnk) {
-		if (links.contains(lnk))
+		foreach (ASTNode l; links; l == lnk)
 			return;
 		this = this.open();
-		links = new List.Cons<ASTNode>(lnk, links);
+		links += lnk;
 	}
 
 	public void delLink(ASTNode lnk) {
-		this = this.open();
-		links = links.diff(lnk);
+		links.detach(lnk);
 	}
 
 	public boolean backendCleanup() {

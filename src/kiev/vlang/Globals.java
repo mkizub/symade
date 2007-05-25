@@ -21,32 +21,5 @@ import syntax kiev.Syntax;
 
 public metatype Globals extends any {
 
-	@macro @CompilerNode("Set")
-	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) operator "V = V"
-	{
-		case Set# self():
-			self.lval = (self.value).get$$var()
-		case Call# self():
-			lval = (val).get$$var()
-	}
-
-	@macro @CompilerNode("Set")
-	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R val) operator "V = V"
-	{
-		case Call# self():
-			(lval).$bind(val)
-		case Set# self():
-			(self.lval).$bind(self.value)
-	}
-
-	@macro @CompilerNode("Set")
-	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R@ val) operator "V = V"
-	{
-		case Call# self():
-			(lval).$bind(val)
-		case Set# self():
-			(self.lval).$bind(self.value)
-	}
-
 }
 

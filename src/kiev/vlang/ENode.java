@@ -48,7 +48,7 @@ public abstract class ENode extends ASTNode {
 		}
 		if (ident_or_symbol_or_type instanceof Type) {
 			if (qualified)
-				return ((Type)ident_or_symbol_or_type).meta_type.tdecl.qname;
+				return ((Type)ident_or_symbol_or_type).meta_type.qname();
 			return ((Type)ident_or_symbol_or_type).meta_type.tdecl.sname;
 		}
 		return null;

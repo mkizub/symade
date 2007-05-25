@@ -905,10 +905,8 @@ FileUnit FileUnit(String filename) :
 {
 	{
 		oldFileUnit = curFileUnit;
-		FileUnit fu = new FileUnit();
+		FileUnit fu = FileUnit.makeFile(filename, null);
 		curFileUnit = fu;
-		fu.name = filename;
-		fu.pos = 0;
 		declMode = true;
 		ASTModifiers modifiers;
 		oldClazz = curClazz;

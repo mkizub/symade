@@ -432,7 +432,7 @@ public final class FileActions implements Runnable {
 			else
 				fu = (FileUnit)uiv.the_root.ctx_file_unit;
 			try {
-				Env.dumpTextFile(fu, new File(fu.name), new XmlDumpSyntax("full"));
+				Env.dumpTextFile(fu, new File(fu.pname()), new XmlDumpSyntax("full"));
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 			}

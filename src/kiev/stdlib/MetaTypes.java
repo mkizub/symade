@@ -51,6 +51,33 @@ public metatype any {
 	@macro @CompilerNode("RuleIsoneofExpr")
 	public static boolean ref_pvar_is_one_of(Object@ lval, Object val) operator "V @= V" continue "kiev.vlang.Globals:ref_pvar_is_one_of";
 
+	@macro @CompilerNode("Set")
+	public static <L extends Object, R extends L> R ref_assign_pvar(L lval, R@ val) operator "V = V"
+	{
+		case Set# self():
+			self.lval = (self.value).get$$var()
+		case Call# self():
+			lval = (val).get$$var()
+	}
+
+	@macro @CompilerNode("Set")
+	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R val) operator "V = V"
+	{
+		case Call# self():
+			(lval).$bind(val)
+		case Set# self():
+			(self.lval).$bind(self.value)
+	}
+
+	@macro @CompilerNode("Set")
+	public static <L extends Object, R extends L> void ref_pvar_bind(L@ lval, R@ val) operator "V = V"
+	{
+		case Call# self():
+			(lval).$bind(val)
+		case Set# self():
+			(self.lval).$bind(self.value)
+	}
+
 }
 
 @uuid("ec98468f-75f6-3811-ab77-6b0a8458b3ad")

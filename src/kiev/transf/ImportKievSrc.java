@@ -980,10 +980,10 @@ public final class ExportBE_Generate extends BackendProcessor {
 		if( Kiev.verbose ) System.out.println("Dumping to source file "+fu+" into '"+output_dir+"' dir");
 
 		try {
-			String out_file = fu.name;
+			String out_file = fu.pname();
 			File f = new File(output_dir,out_file);
 			ATextSyntax stx;
-			if (fu.name.toLowerCase().endsWith(".xml"))
+			if (fu.fname.toLowerCase().endsWith(".xml"))
 				stx = new XmlDumpSyntax("full");
 			else
 				stx = (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java");

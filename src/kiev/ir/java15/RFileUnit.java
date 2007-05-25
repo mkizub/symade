@@ -18,16 +18,18 @@ import syntax kiev.Syntax;
  */
 
 public static final view RFileUnit of FileUnit extends RSNode {
-	public		String					name;
+	public:ro	String					fname;
 	public		TypeNameRef				pkg;
 	public:ro	ASTNode[]				members;
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 
+	public String pname();
+
 	public void resolveDecl() {
-		trace(Kiev.debug && Kiev.debugResolve,"Resolving file "+name);
+		trace(Kiev.debug && Kiev.debugResolve,"Resolving file "+fname);
 		String curr_file = Kiev.getCurFile();
-		Kiev.setCurFile(name);
+		Kiev.setCurFile(pname());
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);

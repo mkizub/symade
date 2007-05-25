@@ -21,18 +21,20 @@ import syntax kiev.Syntax;
  */
 
 public final view JFileUnit of FileUnit extends JSNode {
-	public		String					name;
+	public:ro	String					fname;
 	public		TypeNameRef				pkg;
 	public:ro	JNode[]					members;
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 
 	@getter public JFileUnit get$jctx_file_unit() { return this; }
+	
+	public String pname();
 
 	public void generate() {
 		long curr_time = 0L, diff_time = 0L;
 		String cur_file = Kiev.getCurFile();
-		Kiev.setCurFile(name);
+		Kiev.setCurFile(pname());
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);

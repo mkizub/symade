@@ -553,7 +553,7 @@ public abstract class Struct extends TypeDecl {
 			while( fu != null && !(fu instanceof FileUnit))
 				fu = fu.parent();
 			if( fu != null ) {
-				Kiev.setCurFile(((FileUnit)fu).name);
+				Kiev.setCurFile(((FileUnit)fu).pname());
 				Kiev.setExtSet(((FileUnit)fu).disabled_extensions);
 			}
 		}

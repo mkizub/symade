@@ -366,6 +366,7 @@ public class Editor extends InfoView implements KeyListener {
 	}
 	
 	public void mousePressed(MouseEvent e) {
+		view_canvas.requestFocus();
 		int x = e.getX();
 		int y = e.getY() + view_canvas.translated_y;
 		DrawTerm dr = view_canvas.first_visible;
@@ -385,6 +386,7 @@ public class Editor extends InfoView implements KeyListener {
 	}
 	
 	public void mouseClicked(MouseEvent e) {
+		view_canvas.requestFocus();
 		int x = e.getX();
 		int y = e.getY() + view_canvas.translated_y;
 		DrawTerm dr = view_canvas.first_visible;

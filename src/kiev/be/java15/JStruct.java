@@ -40,12 +40,14 @@ public final view JStruct of Struct extends JTypeDecl {
 		if (b_name != null)
 			return b_name;
 		JStruct pkg = (JStruct)package_clazz.dnode;
+		Struct s = (Struct)this;
+		s = s.open();
 		if (pkg == null || ((Struct)pkg) == Env.root)
-			b_name = KString.from(u_name);
+			s.b_name = KString.from(u_name);
 		else if (pkg.isPackage())
-			b_name = KString.from(pkg.bname()+"/"+u_name);
+			s.b_name = KString.from(pkg.bname()+"/"+u_name);
 		else
-			b_name = KString.from(pkg.bname()+"$"+u_name);
+			s.b_name = KString.from(pkg.bname()+"$"+u_name);
 		return b_name;
 	}
 
@@ -131,11 +133,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		}
 		
 		if( !isPackage() ) {
-			String fu = jctx_file_unit.name;
-			int p = fu.lastIndexOf('/');
-			if (p >= 0) fu = fu.substring(p+1);
-			p = fu.lastIndexOf('\\');
-			if (p >= 0) fu = fu.substring(p+1);
+			String fu = jctx_file_unit.fname;
 			SourceFileAttr sfa = new SourceFileAttr(KString.from(fu));
 			this.addAttr(sfa);
 		}

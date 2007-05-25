@@ -461,10 +461,8 @@ public abstract class kiev040 implements kiev040Constants {
   final public FileUnit FileUnit(String filename) throws ParseException {
   FileUnit oldFileUnit; TypeDecl oldClazz;
                 oldFileUnit = curFileUnit;
-                FileUnit fu = new FileUnit();
+                FileUnit fu = FileUnit.makeFile(filename, null);
                 curFileUnit = fu;
-                fu.name = filename;
-                fu.pos = 0;
                 declMode = true;
                 ASTModifiers modifiers;
                 oldClazz = curClazz;

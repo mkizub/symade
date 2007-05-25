@@ -395,6 +395,7 @@ CLASS kievvlangDeclGroupCaseFields kiev/vlang/DeclGroupCaseFields kiev/vlang/S
 CLASS kievvlangDeclGroupEnumFields kiev/vlang/DeclGroupEnumFields kiev/vlang/SNode.java
 CLASS kievvlangDeclGroupFields kiev/vlang/DeclGroupFields kiev/vlang/SNode.java
 CLASS kievvlangDeclGroupVars kiev/vlang/DeclGroupVars kiev/vlang/SNode.java
+CLASS kievvlangDirUnit kiev/vlang/DirUnit kiev/vlang/FileUnit.java
 CLASS kievvlangDoWhileStat kiev/vlang/DoWhileStat kiev/vlang/LoopStatement.java
 CLASS kievvlangDoubleADD kiev/vlang/DoubleADD kiev/vlang/CoreMethod.java
 CLASS kievvlangDoubleAssign kiev/vlang/DoubleAssign kiev/vlang/CoreMethod.java

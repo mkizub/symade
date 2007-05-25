@@ -10,7 +10,6 @@
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
 <a-node class='kiev.vlang.FileUnit'>
- <name>stx-fmt\syntax-for-project-tree.xml</name>
  <pkg>
   <a-node class='kiev.vlang.types.TypeNameRef'>
    <ident>stx-fmt</ident>
@@ -164,6 +163,42 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>DirUnit</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxList'>
+       <folded>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxIdentAttr'>
+           <decl>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>ident-template</name>
+            </a-node>
+           </decl>
+           <name>name</name>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>/</text>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+        </a-node>
+       </folded>
+       <element>
+        <a-node class='kiev.fmt.SyntaxNode'>
+        </a-node>
+       </element>
+       <folded_by_default>true</folded_by_default>
+       <name>members</name>
+      </a-node>
+     </elem>
+     <sname>stx-dir</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>FileUnit</name>
       </a-node>
      </rnode>
@@ -172,16 +207,13 @@
        <folded>
         <a-node class='kiev.fmt.SyntaxSet'>
          <elements>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>File: </text>
-          </a-node>
           <a-node class='kiev.fmt.SyntaxIdentAttr'>
            <decl>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>ident-template</name>
             </a-node>
            </decl>
-           <name>name</name>
+           <name>fname</name>
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
