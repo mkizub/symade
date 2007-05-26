@@ -36,6 +36,7 @@ import javax.swing.JScrollBar;
 
 import javax.swing.text.TextAction;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -381,6 +382,25 @@ public class NavigateEditor implements Runnable {
 
 public final class FileActions implements Runnable {
 	
+	static class DumpFileFilter extends FileFilter {
+		final String syntax_qname;
+		final String description;
+		final String extension;
+		DumpFileFilter(String syntax_qname, String description, String extension) {
+			this.syntax_qname = syntax_qname;
+			this.description = description;
+			this.extension = extension;
+		}
+		public String getDescription() { description }
+		public boolean accept(File f) { f.isDirectory() || f.getName().toLowerCase().endsWith("."+extension) }
+	}
+	
+	static DumpFileFilter[] dumpFileFilters = {
+		new DumpFileFilter("stx-fmt\u001fsyntax-for-java",  "Kiev source files", "java"),
+		new DumpFileFilter("stx-fmt\u001fsyntax-dump-full", "Kiev XML full dump", "xml"),
+		//new DumpFileFilter("stx-fmt\u001fsyntax-dump-api",  "Kiev XML API dump", "xml"),
+	};
+	
 	final Window wnd;
 	final InfoView uiv;
 	final String action;
@@ -398,26 +418,39 @@ public final class FileActions implements Runnable {
 	
 	public void run() {
 		if (action == "save-as") {
+			FileUnit fu;
+			if (uiv.the_root instanceof FileUnit)
+				fu = (FileUnit)uiv.the_root;
+			else
+				fu = (FileUnit)uiv.the_root.ctx_file_unit;
 			JFileChooser jfc = new JFileChooser(".");
-			jfc.setFileFilter(new FileFilter() {
-				public boolean accept(File f) { f.isDirectory() || f.getName().toLowerCase().endsWith(".xml") }
-				public String getDescription() { "XML file for node tree dump" }
-			});
-			if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
+			jfc.setDialogType(JFileChooser.SAVE_DIALOG);
+			File f = new File(fu.pname());
+			if (f.getParentFile() != null)
+				jfc.setCurrentDirectory(f.getParentFile());
+			jfc.setSelectedFile(f);
+			jfc.setAcceptAllFileFilterUsed(false);
+			foreach (DumpFileFilter dff; dumpFileFilters)
+				jfc.addChoosableFileFilter(dff);
+			foreach (DumpFileFilter dff; dumpFileFilters; fu.current_syntax == dff.syntax_qname)
+				jfc.setFileFilter(dff);
+			if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null, "Save"))
 				return;
+			DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
 			try {
-				Env.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("full"));
+				ATextSyntax stx = (ATextSyntax)Env.resolveGlobalDNode(dff.syntax_qname);
+				Env.dumpTextFile(fu, jfc.getSelectedFile(), stx.ncopy());
+				fu.current_syntax = stx.qname();
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 			}
 		}
 		else if (action == "save-as-api") {
 			JFileChooser jfc = new JFileChooser(".");
-			jfc.setFileFilter(new FileFilter() {
-				public boolean accept(File f) { f.isDirectory() || f.getName().toLowerCase().endsWith(".xml") }
-				public String getDescription() { "XML file for node tree dump" }
-			});
-			if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
+			jfc.setDialogType(JFileChooser.SAVE_DIALOG);
+			jfc.setAcceptAllFileFilterUsed(false);
+			jfc.setFileFilter(new DumpFileFilter("stx-fmt\u001fsyntax-dump-api",  "Kiev XML API dump", "xml"));
+			if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null, "Save"))
 				return;
 			try {
 				Env.dumpTextFile((ASTNode)uiv.the_root, jfc.getSelectedFile(), new XmlDumpSyntax("api"));
@@ -431,8 +464,34 @@ public final class FileActions implements Runnable {
 				fu = (FileUnit)uiv.the_root;
 			else
 				fu = (FileUnit)uiv.the_root.ctx_file_unit;
+			ATextSyntax stx = null;
+			if (fu.current_syntax != null) {
+				DNode d = Env.resolveGlobalDNode(fu.current_syntax);
+				if (d instanceof ATextSyntax)
+					stx = (ATextSyntax)d;
+			}
+			File f = new File(fu.pname());
+			if (stx == null || stx != uiv.syntax) {
+				JFileChooser jfc = new JFileChooser(".");
+				jfc.setDialogType(JFileChooser.SAVE_DIALOG);
+				File f = new File(fu.pname());
+				if (f.getParentFile() != null)
+					jfc.setCurrentDirectory(f.getParentFile());
+				jfc.setSelectedFile(f);
+				jfc.setAcceptAllFileFilterUsed(false);
+				foreach (DumpFileFilter dff; dumpFileFilters)
+					jfc.addChoosableFileFilter(dff);
+				foreach (DumpFileFilter dff; dumpFileFilters; fu.current_syntax == dff.syntax_qname)
+					jfc.setFileFilter(dff);
+				if (JFileChooser.APPROVE_OPTION != jfc.showDialog(null,"Save"))
+					return;
+				DumpFileFilter dff = (DumpFileFilter)jfc.getFileFilter();
+				stx = (ATextSyntax)Env.resolveGlobalDNode(dff.syntax_qname);
+				f = jfc.getSelectedFile();
+			}
 			try {
-				Env.dumpTextFile(fu, new File(fu.pname()), new XmlDumpSyntax("full"));
+				Env.dumpTextFile(fu, f, stx.ncopy());
+				fu.current_syntax = stx.qname();
 			} catch( IOException e ) {
 				System.out.println("Create/write error while Kiev-to-Xml exporting: "+e);
 			}

@@ -1,0 +1,74 @@
+<?xml version='1.1' encoding='UTF-8' standalone='yes'?>
+<!--
+ Copyright (c) 2005-2007 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+<a-node class='kiev.vlang.FileUnit'>
+ <pkg>
+  <a-node class='kiev.vlang.types.TypeNameRef'>
+   <ident>stx-fmt</ident>
+  </a-node>
+ </pkg>
+ <members>
+  <a-node class='kiev.fmt.XmlDumpSyntax'>
+   <dump>api</dump>
+   <members>
+    <a-node class='kiev.fmt.SpaceInfo'>
+     <kind>SP_NEW_LINE</kind>
+     <text_size>1</text_size>
+     <pixel_size>1</pixel_size>
+     <sname>nl</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
+     <sname>fmt-default</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
+     <spaces>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>nl</name>
+        </a-node>
+       </si>
+       <action_before>SP_ADD</action_before>
+       <action_after>SP_ADD</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+     </spaces>
+     <sname>fmt-nl-nl</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
+     <spaces>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>nl</name>
+        </a-node>
+       </si>
+       <action_before>SP_NOP</action_before>
+       <action_after>SP_ADD</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+     </spaces>
+     <sname>fmt-no-nl</sname>
+    </a-node>
+    <a-node class='kiev.fmt.ParagraphLayout'>
+     <indent_text_size>1</indent_text_size>
+     <indent_pixel_size>10</indent_pixel_size>
+     <indent_from_current_position>false</indent_from_current_position>
+     <align_right>false</align_right>
+     <align_rest_of_lines_right>false</align_rest_of_lines_right>
+     <new_lines_first_parent>false</new_lines_first_parent>
+     <sname>par-indented</sname>
+    </a-node>
+   </members>
+   <sname>syntax-dump-api</sname>
+  </a-node>
+ </members>
+</a-node>

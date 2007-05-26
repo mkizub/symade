@@ -640,11 +640,12 @@ public final class Kiev {
 		if (Kiev.run_batch)
 			return;
 		node.walkTree(new TreeWalker() {
-			java.util.Hashtable dftbl = ((WorkerThread)Thread.currentThread()).dataFlowInfos;
+			java.util.Hashtable dftbl = (Thread.currentThread() instanceof WorkerThread) ? ((WorkerThread)Thread.currentThread()).dataFlowInfos : null;
 			public boolean pre_exec(ANode n) {
 				if (n instanceof ASTNode) {
 					ASTNode astn = (ASTNode)n;
-					dftbl.remove(astn);
+					if (dftbl != null)
+						dftbl.remove(astn);
 					astn.compileflags &= 0xFFFF0001;
 					astn.locked = true;
 				}

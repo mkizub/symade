@@ -10,6 +10,8 @@
  *******************************************************************************/
 package kiev.vlang;
 
+import kiev.fmt.ATextSyntax;
+
 import java.io.*;
 
 import kiev.be.java15.JNode;
@@ -169,13 +171,15 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 
 	public static final FileUnit[] emptyArray = new FileUnit[0];
 
-	@att public String			fname;
-	@att public TypeNameRef		pkg;
-	@att public ASTNode[]		members;
+	@att public String						fname;
+	@att public TypeNameRef					pkg;
+	@att public ASTNode[]					members;
 	
-	@ref public PrescannedBody[]	bodies;
-		 public final boolean[]		disabled_extensions = Compiler.getCmdLineExtSet();
-	@ref public boolean				scanned_for_interface_only;
+	@ref public PrescannedBody[]			bodies;
+	@ref public boolean						scanned_for_interface_only;
+
+	public final boolean[]					disabled_extensions = Compiler.getCmdLineExtSet();
+	public String							current_syntax;
 
 	@getter public FileUnit get$ctx_file_unit() { return (FileUnit)this; }
 	@getter public TypeDecl get$ctx_tdecl() { return null; }

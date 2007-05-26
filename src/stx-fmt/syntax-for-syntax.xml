@@ -875,6 +875,17 @@
            <name>fmt-of-def</name>
           </a-node>
          </fmt>
+         <funcs>
+          <a-node class='kiev.fmt.SyntaxFunctions'>
+           <funcs>
+            <a-node class='kiev.fmt.SyntaxFunction'>
+             <title>Import All</title>
+             <act>kiev.gui.ChooseItemEditor</act>
+             <attr>star</attr>
+            </a-node>
+           </funcs>
+          </a-node>
+         </funcs>
         </a-node>
         <a-node class='kiev.fmt.SyntaxIdentAttr'>
          <decl>
@@ -884,17 +895,20 @@
          </decl>
          <name>name</name>
         </a-node>
-        <a-node class='kiev.fmt.SyntaxOptional'>
-         <calculator>
-          <a-node class='kiev.fmt.CalcOptionTrue'>
-           <name>star</name>
+        <a-node class='kiev.fmt.SyntaxEnumChoice'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxSpace'>
           </a-node>
-         </calculator>
-         <opt_true>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>.*</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-of-kw</name>
+            </a-node>
+           </fmt>
           </a-node>
-         </opt_true>
+         </elements>
+         <name>star</name>
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>

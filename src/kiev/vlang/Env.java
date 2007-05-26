@@ -489,6 +489,7 @@ public class Env extends KievPackage {
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.k.ReInit(bis);
 			FileUnit fu = Kiev.k.FileUnit(filename);
+			fu.current_syntax = "stx-fmt\u001fsyntax-for-java";
 			fu.scanned_for_interface_only = true;
 			diff_time = System.currentTimeMillis() - curr_time;
 			bis.close();
@@ -557,6 +558,7 @@ public class Env extends KievPackage {
 		ANode root = handler.root;
 		if!(root instanceof FileUnit) {
 			root = FileUnit.makeFile(getRelativePath(f), null);
+			root.current_syntax = "stx-fmt\u001fsyntax-dump-full";
 			root.members += handler.root;
 		}
 		Kiev.runProcessorsOn((FileUnit)root);
@@ -622,7 +624,10 @@ public class Env extends KievPackage {
 					pkg.sub_decls += td;
 				}
 				else if (cl_name.equals("kiev.vlang.FileUnit")) {
-					root = FileUnit.makeFile(getRelativePath(file), null);
+					FileUnit fu = FileUnit.makeFile(getRelativePath(file), null);
+					fu = fu.open();
+					root = fu;
+					fu.current_syntax = "stx-fmt\u001fsyntax-dump-full";
 				}
 				else {
 					root = (ASTNode)Class.forName(cl_name).newInstance();

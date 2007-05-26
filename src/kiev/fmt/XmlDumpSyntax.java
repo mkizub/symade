@@ -70,6 +70,7 @@ public class XmlDumpSyntax extends ATextSyntax {
 		this.members += sefdNlNl;
 		this.members += sefdNoNl;
 		this.members += plIndented;
+		this.dump = "full";
 	}
 	public XmlDumpSyntax(String dump) {
 		this();

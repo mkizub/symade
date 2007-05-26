@@ -169,6 +169,7 @@ public abstract class WorkerThread extends Thread {
 						diff_time = curr_time = System.currentTimeMillis();
 						Kiev.k.ReInit(bis);
 						FileUnit fu = Kiev.k.FileUnit(args[i]);
+						fu.current_syntax = "stx-fmt\u001fsyntax-for-java";
 						diff_time = System.currentTimeMillis() - curr_time;
 						bis.close();
 					}

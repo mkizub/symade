@@ -59,9 +59,11 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		resetNames();
 		if (parent() instanceof FileUnit) {
 			FileUnit fu = (FileUnit)parent();
-			int idx = fu.pkg.getStruct().sub_decls.indexOf(this);
-			if (idx < 0)
-				fu.pkg.getStruct().sub_decls.add(this);
+			if (fu.pkg != null) {
+				int idx = fu.pkg.getStruct().sub_decls.indexOf(this);
+				if (idx < 0)
+					fu.pkg.getStruct().sub_decls.add(this);
+			}
 		}
 		super.callbackAttached();
 	}
