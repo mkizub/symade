@@ -798,7 +798,8 @@ public class Compiler {
 			String[] args1 = new String[0];
 			for(int i=0; i < args.length; i++) {
 				if( args[i] == null ) continue;
-				args1 = (String[])Arrays.appendUniq(args1,args[i]);
+				String fn = args[i].replace('/', File.separatorChar).replace('\\', File.separatorChar);
+				args1 = (String[])Arrays.appendUniq(args1,fn);
 			}
 			args = args1;
 		} catch( ArrayIndexOutOfBoundsException e) {
@@ -1018,7 +1019,7 @@ public class Compiler {
 	/** add all files matching pattern string s to buffer expargs.
 	*/
 	static String[] addExpansion(String[] args, int pos) throws IOException {
-		String s = args[pos];
+		String s = args[pos].replace('/', File.separatorChar).replace('\\', File.separatorChar);
 		File f = new File(s);
 		String path = f.getParent();
 		String name = f.getName();
@@ -1046,32 +1047,33 @@ public class Compiler {
 			try {
 				ProjectFile value = Env.projectHash.get(key);
 				if (value.type == ProjectFileType.FORMAT) {
-					String nm = value.file.toString();
+					String nm = value.file.toString().replace('/', File.separatorChar);
 					if( !Arrays.contains(args,nm) ) {
 						if( Kiev.verbose ) System.out.println("File "+nm+" - format");
-						args = (String[])Arrays.append(args,nm);
+						args = (String[])Arrays.appendUniq(args,nm);
 					}
 					continue;
 				}
 				if (value.type == ProjectFileType.METATYPE) {
-					String nm = value.file.toString();
+					String nm = value.file.toString().replace('/', File.separatorChar);
 					if( !Arrays.contains(args,nm) ) {
 						if( Kiev.verbose ) System.out.println("File "+nm+" - metatype");
-						args = (String[])Arrays.append(args,nm);
+						args = (String[])Arrays.appendUniq(args,nm);
 					}
 					continue;
 				}
-				File fclass = new File(Kiev.output_dir,value.bname.toString());
+				String vbn = value.bname.toString().replace('/', File.separatorChar);
+				File fclass = new File(Kiev.output_dir,vbn);
 				if( fclass.exists() && fclass.isDirectory() ) {
-					fclass = new File(Kiev.output_dir,value.bname+"/package.class");
+					fclass = new File(Kiev.output_dir,vbn+File.separatorChar+"package.class");
 				} else {
-					fclass = new File(Kiev.output_dir,value.bname+".class");
+					fclass = new File(Kiev.output_dir,vbn+".class");
 				}
 				File fjava = value.file;
 				if( !fjava.exists() ) continue;
 				if( value.bad || !fclass.exists() ) {
 					String nm = fjava.toString();
-					if( Kiev.verbose ) System.out.println("File "+nm+" - "+value.bname+" "+(value.bad?"is bad":"does not exists"));
+					if( Kiev.verbose ) System.out.println("File "+nm+" - "+vbn+" "+(value.bad?"is bad":"does not exists"));
 					args = (String[])Arrays.appendUniq(args,nm);
 					continue;
 				}
@@ -1081,7 +1083,7 @@ public class Compiler {
 					String nm = fjava.toString();
 					if( !Arrays.contains(args,nm) ) {
 						if( Kiev.verbose ) System.out.println("File "+nm+" - outdated");
-						args = (String[])Arrays.append(args,nm);
+						args = (String[])Arrays.appendUniq(args,nm);
 					}
 				}
 			} catch ( IOException exc ) {
