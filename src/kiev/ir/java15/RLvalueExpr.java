@@ -251,7 +251,7 @@ public static final view RSFldExpr of SFldExpr extends RLvalueExpr {
 
 public static final view ROuterThisAccessExpr of OuterThisAccessExpr extends RENode {
 	public		TypeRef			outer;
-	public:ro	Field[]			outer_refs;
+	public:ro	Var[]			outer_refs;
 
 	public void setupOuterFields();
 	

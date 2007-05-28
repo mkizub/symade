@@ -286,7 +286,7 @@ public abstract class kiev040 implements kiev040Constants {
 
 	private Field mkEnumField(Symbol id, ASTModifiers modifiers) {
 		Field f = new Field(id.sname,new TypeDeclRef(),0);
-		f.kind = Var.VAL_ENUM;
+		f.meta.is_enum = true;
 		f.pos = id.pos;
 		modifiers.moveToNode(f.meta);
 		return f;

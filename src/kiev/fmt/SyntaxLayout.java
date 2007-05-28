@@ -89,13 +89,20 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	}
 	
 	public rule resolveNameR(ASTNode@ node, ResInfo path)
-		ASTNode@ syn;
+		ATextSyntax@ syn;
 	{
 		path.checkNodeName(this),
 		node ?= this
 	;
 		node @= members,
 		path.checkNodeName(node)
+	;
+		path.isSuperAllowed(),
+		parent_syntax != null && parent_syntax.dnode != null,
+		path.space_prev == null || (path.space_prev.pslot().name != "parent_syntax"),
+		syn ?= parent_syntax.dnode,
+		path.enterSuper() : path.leaveSuper(),
+		syn.resolveNameR(node,path)
 	}
 	
 	protected void cleanup() {

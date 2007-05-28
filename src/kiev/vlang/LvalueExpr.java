@@ -758,7 +758,7 @@ public final class OuterThisAccessExpr extends ENode {
 	@virtual typedef RView = ROuterThisAccessExpr;
 
 	@att public TypeRef			outer;
-	@ref public Field[]			outer_refs;
+	@ref public Var[]			outer_refs;
 
 	public OuterThisAccessExpr() {}
 

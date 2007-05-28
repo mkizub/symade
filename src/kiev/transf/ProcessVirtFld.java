@@ -50,18 +50,14 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	
 	public void addAbstractFields(Struct s) {
 		foreach(Method m; s.members) {
-			//trace(Kiev.debug && Kiev.debugCreation,"check "+m.name.name+" to be a setter");
 			if (m.sname.startsWith(nameSet))
 				addSetterForAbstractField(s, m.sname.substring(nameSet.length()), m);
 			foreach (Symbol a; m.aliases; a.sname.startsWith(nameSet)) {
-				//trace(Kiev.debug && Kiev.debugCreation,"check "+name+" to be a setter");
 				addSetterForAbstractField(s, a.sname.substring(nameSet.length()), m);
 			}
-			//trace(Kiev.debug && Kiev.debugCreation,"check "+m.name.name+" to be a getter");
 			if (m.sname.startsWith(nameGet))
 				addGetterForAbstractField(s, m.sname.substring(nameGet.length()), m);
 			foreach (Symbol a; m.aliases; a.sname.startsWith(nameGet)) {
-				//trace(Kiev.debug && Kiev.debugCreation,"check "+name+" to be a getter");
 				addGetterForAbstractField(s, a.sname.substring(nameGet.length()), m);
 			}
 		}
@@ -72,7 +68,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		Field f = s.resolveField( name, false );
 		MetaAccess acc;
 		if( f != null ) {
-			trace(Kiev.debug && Kiev.debugCreation,"method "+m+" has field "+f);
 			if (f.parent() != m.parent())
 				return;
 			Method setter = (Method)Field.SETTER_ATTR.get(f);
@@ -87,7 +82,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			acc = f.getMetaAccess();
 			if (acc == null) f.setMeta(acc = new MetaAccess());
 			acc.setFlags(0);
-			trace(Kiev.debug && Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
 		f.setVirtual(true);
 		Field.SETTER_ATTR.set(f, m);
@@ -138,7 +132,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		Field f = s.resolveField( name, false );
 		MetaAccess acc;
 		if( f != null ) {
-			trace(Kiev.debug && Kiev.debugCreation,"method "+m+" has field "+f);
 			if (f.parent() != m.parent())
 				return;
 			Method getter = (Method)Field.GETTER_ATTR.get(f);
@@ -153,7 +146,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			acc = f.getMetaAccess();
 			if (acc == null) f.setMeta(acc = new MetaAccess());
 			acc.setFlags(0);
-			trace(Kiev.debug && Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
 		f.setVirtual(true);
 		Field.GETTER_ATTR.set(f, m);

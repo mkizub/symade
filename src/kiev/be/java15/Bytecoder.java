@@ -103,7 +103,6 @@ public class Bytecoder implements JConstants {
 		cl.members.delAll();
 
 		if (cl.isEnum()) {
-			//cl.variant = new JavaEnum();
 			cl.members.insert(0,new DeclGroupEnumFields());
 		}
 		
@@ -135,7 +134,7 @@ public class Bytecoder implements JConstants {
 		Type ftype = Signature.getType(f_type);
 		if ((f_flags & ACC_ENUM)!=0) {
 			f = new Field(f_name.toString(),new TypeDeclRef(),0);
-			f.kind = Var.VAL_ENUM;
+			f.meta.is_enum = true;
 		} else {
 			f = new Field(f_name.toString(),ftype,f_flags);
 		}

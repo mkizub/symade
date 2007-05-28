@@ -157,7 +157,7 @@ public class Env extends KievPackage {
 					Kiev.reportWarning(cl,"Replacing class "+sname+" with different UUID: "+cl.getUUID()+" != "+uuid);
 				cl.cleanupOnReload();
 				cl.meta.mflags = acces;
-				assert (cl.getClass() == variant.getClass()); //cl.variant = variant;
+				assert (cl.getClass() == variant.getClass());
 				cl.package_clazz.symbol = outer;
 				outer.sub_decls += cl;
 			}

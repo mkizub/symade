@@ -358,6 +358,68 @@ public class UserMeta extends MNode {
 		}
 	}
 	
+	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
+		if (slot.name == "decl") {
+			TypeDecl scope;
+			String head;
+			int dot = name.indexOf('\u001f');
+			if (dot > 0) {
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1);
+			} else {
+				head = name;
+				name = "";
+			}
+			if (dot < 0) {
+				int flags = ResInfo.noForwards;
+				if (!by_equals)
+					flags |= ResInfo.noEquals;
+				Vector<TypeDecl> vect = new Vector<TypeDecl>();
+				TypeDecl@ td;
+				ResInfo info = new ResInfo(this,head,flags);
+				foreach (PassInfo.resolveNameR(this,td,info)) {
+					if ((td instanceof KievPackage || td instanceof JavaAnnotation) && !vect.contains(td))
+						vect.append(td);
+				}
+				return vect.toArray();
+			} else {
+				TypeDecl@ td;
+				if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
+					return new TypeDecl[0];
+				scope = (TypeDecl)td;
+			}
+			while (dot >= 0) {
+				dot = name.indexOf('\u001f');
+				if (dot > 0) {
+					head = name.substring(0,dot).intern();
+					name = name.substring(dot+1);
+				} else {
+					head = name.intern();
+					name = "";
+				}
+				if (dot < 0) {
+					int flags = ResInfo.noForwards;
+					if (!by_equals)
+						flags |= ResInfo.noEquals;
+					Vector<TypeDecl> vect = new Vector<TypeDecl>();
+					TypeDecl@ td;
+					ResInfo info = new ResInfo(this,head,flags);
+					foreach (scope.resolveNameR(td,info)) {
+						if ((td instanceof KievPackage || td instanceof JavaAnnotation) && !vect.contains(td))
+							vect.append(td);
+					}
+					return vect.toArray();
+				} else {
+					TypeDecl@ td;
+					if!(scope.resolveNameR(td,new ResInfo(this,head,ResInfo.noForwards)))
+						return new TypeDecl[0];
+					scope = td;
+				}
+			}
+		}
+		return super.findForResolve(name,slot,by_equals);
+	}
+
 	public MetaValue get(String name) {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {

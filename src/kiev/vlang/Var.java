@@ -26,7 +26,7 @@ import syntax kiev.Syntax;
  */
 
 @node(name="Var")
-public abstract class Var extends DNode {
+public abstract class Var extends DNode implements GlobalDNode {
 	
 	@virtual typedef This  ≤ Var;
 	@virtual typedef JView ≤ JVar;
@@ -35,7 +35,7 @@ public abstract class Var extends DNode {
 	public static final int VAR_LOCAL          = 0;
 	public static final int VAR_RULE           = 1;
 	public static final int FIELD_NORMAL       = 2;
-	public static final int VAL_ENUM           = 3;
+	public static final int FIELD_NODE_ATTR    = 3;
 	public static final int REWRITE_PATTERN    = 4;
 	public static final int PARAM_NORMAL       = 5;
 	public static final int PARAM_THIS         = 6;
@@ -80,6 +80,47 @@ public abstract class Var extends DNode {
 			this.is_need_proxy = on;
 		}
 	}
+	// is a field of enum
+	public final boolean isEnumField() {
+		return this.meta.is_enum || group != null && group.meta.is_enum;
+	}
+	// packer field (auto-generated for packed fields)
+	public final boolean isPackerField() {
+		return this.is_fld_packer;
+	}
+	public final void setPackerField(boolean on) {
+		if (this.is_fld_packer != on) {
+			assert(!locked);
+			this.is_fld_packer = on;
+		}
+	}
+	// packed field
+	public final boolean isPackedField() {
+		return this.is_fld_packed;
+	}
+	public final void setPackedField(boolean on) {
+		if (this.is_fld_packed != on) {
+			assert(!locked);
+			this.is_fld_packed = on;
+		}
+	}
+	// field's initializer was already added to class initializer
+	public final boolean isAddedToInit() {
+		return this.is_fld_added_to_init;
+	}
+	public final void setAddedToInit(boolean on) {
+		if (this.is_fld_added_to_init != on) {
+			this.is_fld_added_to_init = on;
+		}
+	}
+              
+	public final MetaPacked getMetaPacked() {
+		return (MetaPacked)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fpacked");
+	}
+
+	public final MetaPacker getMetaPacker() {
+		return (MetaPacker)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fpacker");
+	}
 
 	public void callbackAttached() {
 		ANode p = parent();
@@ -120,6 +161,14 @@ public abstract class Var extends DNode {
 			if ((flags & ACC_FORWARD) == ACC_FORWARD) setMeta(new MetaForward());
 			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) setMeta(new MetaSynthetic());
 			if ((flags & ACC_MACRO) == ACC_MACRO) setMeta(new MetaMacro());
+			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
+			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
+			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) setMeta(new MetaAccess("private"));
+			if ((flags & ACC_STATIC) == ACC_STATIC) setMeta(new MetaStatic());
+			if ((flags & ACC_VOLATILE) == ACC_VOLATILE) setMeta(new MetaVolatile());
+			if ((flags & ACC_TRANSIENT) == ACC_TRANSIENT) setMeta(new MetaTransient());
+			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) setMeta(new MetaAbstract());
+			if ((flags & ACC_NATIVE) == ACC_NATIVE) setMeta(new MetaNative());
 			this.meta.mflags = flags;
 		}
 	}
@@ -224,7 +273,7 @@ public class LVar extends Var {
 }
 
 @node(name="Field")
-public final class Field extends Var implements GlobalDNode {
+public final class Field extends Var {
 	public static final Field[]	emptyArray = new Field[0];
 	static final Field dummyNode = new Field();
 
@@ -244,92 +293,14 @@ public final class Field extends Var implements GlobalDNode {
 	/** Constant value of this field */
 	@ref public ConstExpr			const_value;
 
-	public void callbackChildChanged(AttrSlot attr) {
-		if (isAttached()) {
-			if      (attr.name == "vtype")
-				parent().callbackChildChanged(pslot());
-			else if (attr.name == "meta")
-				parent().callbackChildChanged(pslot());
-			else
-				super.callbackChildChanged(attr);
-		} else {
-			super.callbackChildChanged(attr);
-		}
-	}
-	
-	public String qname() {
-		ANode p = parent();
-		while (p instanceof DeclGroup)
-			p = p.parent();
-		if (p == null || p == Env.root)
-			return sname;
-		if (p instanceof GlobalDNode)
-			return (((GlobalDNode)p).qname()+'\u001f'+sname);
-		return sname;
-	}
-
-	// is a field of enum
-	public final boolean isEnumField() {
-		return this.kind == VAL_ENUM;
-	}
-	// packer field (auto-generated for packed fields)
-	public final boolean isPackerField() {
-		return this.is_fld_packer;
-	}
-	public final void setPackerField(boolean on) {
-		if (this.is_fld_packer != on) {
-			assert(!locked);
-			this.is_fld_packer = on;
-		}
-	}
-	// packed field
-	public final boolean isPackedField() {
-		return this.is_fld_packed;
-	}
-	public final void setPackedField(boolean on) {
-		if (this.is_fld_packed != on) {
-			assert(!locked);
-			this.is_fld_packed = on;
-		}
-	}
-	// field's initializer was already added to class initializer
-	public final boolean isAddedToInit() {
-		return this.is_fld_added_to_init;
-	}
-	public final void setAddedToInit(boolean on) {
-		if (this.is_fld_added_to_init != on) {
-			this.is_fld_added_to_init = on;
-		}
-	}
-              
 	public Field() { super(FIELD_NORMAL); }
 	
 	public Field(String name, Type type, int flags) {
-		this(name,new TypeRef(type),flags);
+		super(name, new TypeRef(type), FIELD_NORMAL, flags);
 	}
-	
-    /** Constructor for new field
-	    This constructor must not be called directly,
-	    but via factory method newField(...) of Clazz
-     */
-	public Field(String name, TypeRef vtype, int flags) {
-		super(name, vtype, FIELD_NORMAL);
-		if (flags != 0) {
-			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
-			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
-			if ((flags & ACC_PRIVATE) == ACC_PRIVATE) setMeta(new MetaAccess("private"));
-			if ((flags & ACC_STATIC) == ACC_STATIC) setMeta(new MetaStatic());
-			if ((flags & ACC_FINAL) == ACC_FINAL) setMeta(new MetaFinal());
-			if ((flags & ACC_FORWARD) == ACC_FORWARD) setMeta(new MetaForward());
-			if ((flags & ACC_VOLATILE) == ACC_VOLATILE) setMeta(new MetaVolatile());
-			if ((flags & ACC_TRANSIENT) == ACC_TRANSIENT) setMeta(new MetaTransient());
-			if ((flags & ACC_ABSTRACT) == ACC_ABSTRACT) setMeta(new MetaAbstract());
-			if ((flags & ACC_SYNTHETIC) == ACC_SYNTHETIC) setMeta(new MetaSynthetic());
-			if ((flags & ACC_MACRO) == ACC_MACRO) setMeta(new MetaMacro());
-			if ((flags & ACC_NATIVE) == ACC_NATIVE) setMeta(new MetaNative());
-			this.meta.mflags = flags;
-		}
-		trace(Kiev.debug && Kiev.debugCreation,"New field created: "+sname+" with type "+vtype);
+
+	public Field(String name, TypeRef type, int flags) {
+		super(name, type, FIELD_NORMAL, flags);
 	}
 
 	public ASTNode getDummyNode() {
@@ -357,26 +328,6 @@ public final class Field extends Var implements GlobalDNode {
 		else if (this.const_value != null)
 			return this.const_value.getConstValue();
 		throw new RuntimeException("Request for constant value of non-constant expression");
-	}
-
-	public final MetaPacked getMetaPacked() {
-		return (MetaPacked)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fpacked");
-	}
-
-	public final MetaPacker getMetaPacker() {
-		return (MetaPacker)this.getMeta("kiev\u001fstdlib\u001fmeta\u001fpacker");
-	}
-
-	public boolean preResolveIn() {
-		ENode init = this.init;
-		if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
-			Type tp = getType();
-			if!(tp instanceof ArrayType)
-				Kiev.reportError(this,"Scalar field is initialized by array");
-			else
-				init.setType((ArrayType)tp);
-		}
-		return true;
 	}
 
 	public boolean preVerify() {

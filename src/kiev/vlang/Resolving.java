@@ -40,7 +40,7 @@ public final class ResInfo {
 	// a real type of the method in Method.compare() call
 	public CallType	mt;
 	
-	ASTNode				space_prev;
+	public ASTNode		space_prev;
 	
 	public boolean isStaticAllowed()   { return (flags & noStatic)     == 0; }
 	public boolean isImportsAllowed()  { return (flags & noImports)    == 0; }

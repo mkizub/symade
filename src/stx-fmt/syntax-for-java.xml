@@ -604,6 +604,21 @@
       <a-node class='kiev.fmt.SpaceCmd'>
        <si>
         <a-node class='kiev.vlang.SymbolRef'>
+         <name>nl-import-group</name>
+        </a-node>
+       </si>
+       <action_before>SP_EAT</action_before>
+       <action_after>SP_ADD</action_after>
+       <from_attempt>0</from_attempt>
+      </a-node>
+     </spaces>
+     <sname>fmt-import</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemFormatDecl'>
+     <spaces>
+      <a-node class='kiev.fmt.SpaceCmd'>
+       <si>
+        <a-node class='kiev.vlang.SymbolRef'>
          <name>nl</name>
         </a-node>
        </si>
@@ -2001,6 +2016,11 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <fmt>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>fmt-import</name>
+        </a-node>
+       </fmt>
       </a-node>
      </elem>
      <sname>stx-import</sname>
@@ -5549,11 +5569,27 @@
             </a-node>
            </decl>
            <name>decl</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SymbolRef</name>
+            </a-node>
+           </expected_types>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-meta</name>
             </a-node>
            </fmt>
+           <funcs>
+            <a-node class='kiev.fmt.SyntaxFunctions'>
+             <funcs>
+              <a-node class='kiev.fmt.SyntaxFunction'>
+               <title>Edit name</title>
+               <act>kiev.gui.ChooseItemEditor</act>
+               <attr>decl</attr>
+              </a-node>
+             </funcs>
+            </a-node>
+           </funcs>
           </a-node>
           <a-node class='kiev.fmt.SyntaxOptional'>
            <calculator>
@@ -5995,7 +6031,7 @@
        <name>BinaryExpr</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
-       <name>IFldExpr</name>
+       <name>AccessExpr</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
        <name>InstanceofExpr</name>
@@ -6765,6 +6801,9 @@
            <expected_types>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>stx-types-Expr</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>stx-types-TypeRef</name>
             </a-node>
            </expected_types>
           </a-node>

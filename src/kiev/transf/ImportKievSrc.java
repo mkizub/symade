@@ -356,7 +356,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 						getStructType(s, path);
 				}
 			}
-			else {
+			else if( clazz.isStructView() || clazz.isClazz() || clazz instanceof MetaTypeDecl) {
 				if (clazz.isStructView()) {
 					KievView kview = (KievView)clazz;
 					if (kview.view_of != null)
