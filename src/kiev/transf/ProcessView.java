@@ -265,7 +265,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		
 		// generate getter/setter methods
 		foreach (Field f; impl.getAllFields()) {
-			Method mv_set = (Method)Field.SETTER_ATTR.get(f);
+			Method mv_set = f.setter;
 			if (mv_set != null && mv_set.isSynthetic()) {
 				Method set_var = mv_set;
 				Block body = new Block(f.pos);
@@ -295,7 +295,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,view_fld.getType(),~val); });
 				set_var.setAbstract(false);
 			}
-			Method mv_get = (Method)Field.GETTER_ATTR.get(f);
+			Method mv_get = f.getter;
 			if (mv_get != null && mv_get.isSynthetic()) {
 				Method get_var = mv_get;
 				Block body = new Block(f.pos);

@@ -199,10 +199,10 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 		String name;
 		int end = qname.lastIndexOf('/');
 		if (end < 0) {
-			dir = Env.root.rdir;
+			dir = Env.getRoot().rdir;
 			name = qname;
 		} else {
-			dir = Env.root.rdir.makeDir(qname.substring(0,end));
+			dir = Env.getRoot().rdir.makeDir(qname.substring(0,end));
 			name = qname.substring(end+1);
 		}
 		foreach (FileUnit fu; dir.members; name.equals(fu.fname))
@@ -327,7 +327,7 @@ public final class FileUnit extends SNode implements Constants, ScopeOfNames, Sc
 	;
 		trace( Kiev.debug && Kiev.debugResolve, "In root package"),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		Env.root.resolveNameR(node,path)
+		Env.getRoot().resolveNameR(node,path)
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo path, CallType mt)

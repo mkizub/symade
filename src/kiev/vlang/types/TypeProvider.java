@@ -389,7 +389,7 @@ public final class CompaundMetaType extends MetaType {
 	
 	private CompaundMetaType(Struct clazz) {
 		super(clazz);
-		if (this.tdecl == Env.root) Env.root.xmeta_type = this;
+		if (this.tdecl == Env.getRoot()) Env.getRoot().xmeta_type = this;
 		this.templ_bindings = TVarSet.emptySet;
 	}
 	

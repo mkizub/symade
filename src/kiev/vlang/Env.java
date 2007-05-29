@@ -75,7 +75,7 @@ public class Env extends KievPackage {
 	public static Hashtable<String,ProjectFile>	projectHash = new Hashtable<String,ProjectFile>();
 
 	/** Root of package hierarchy */
-	public static Env								root = new Env();
+	private static Env								root = new Env();
 
 	/** Compiler properties */
 	public static Properties						props = System.getProperties();
@@ -87,7 +87,9 @@ public class Env extends KievPackage {
 	public static JEnv								jenv;
 
 	@att public DirUnit								rdir;
-
+	
+	public static Env getRoot() { return ANode.getVersion(root); }
+	
 	/** Private class constructor -
 		really there may be no instances of this class
 	 */
@@ -114,7 +116,7 @@ public class Env extends KievPackage {
 
 	public static DNode resolveGlobalDNode(String qname) {
 		assert(qname.indexOf('.') < 0);
-		Struct pkg = Env.root;
+		Struct pkg = Env.getRoot();
 		int start = 0;
 		int end = qname.indexOf('\u001f', start);
 		while (end > 0) {
@@ -188,11 +190,11 @@ public class Env extends KievPackage {
 
 	public static Struct newPackage(String qname) {
 		if (qname == "")
-			return Env.root;
+			return Env.getRoot();
 		assert(qname.indexOf('.') < 0);
 		int end = qname.lastIndexOf('\u001f');
 		if (end < 0)
-			return newPackage(qname,Env.root);
+			return newPackage(qname,Env.getRoot());
 		else
 			return newPackage(qname.substring(end+1).intern(),newPackage(qname.substring(0,end).intern()));
 	}
@@ -211,7 +213,7 @@ public class Env extends KievPackage {
 
 	public static MetaTypeDecl newMetaType(Symbol<MetaTypeDecl> id, Struct pkg, boolean cleanup, String uuid) {
 		if (pkg == null)
-			pkg = Env.root;
+			pkg = Env.getRoot();
 		assert (pkg.isPackage());
 		MetaTypeDecl tdecl = null;
 		foreach (MetaTypeDecl pmt; pkg.sub_decls; pmt.sname == id.sname) {
@@ -241,8 +243,8 @@ public class Env extends KievPackage {
 
 	/** Default environment initialization */
 	public static void InitializeEnv() {
-		if (Env.root.rdir == null)
-			Env.root.rdir = DirUnit.makeRootDir();
+		if (Env.getRoot().rdir == null)
+			Env.getRoot().rdir = DirUnit.makeRootDir();
 	    InitializeEnv(System.getProperty("java.class.path"));
 	}
 
@@ -250,8 +252,8 @@ public class Env extends KievPackage {
 		for the compiling classes
 	 */
 	public static void InitializeEnv(String path) {
-		if (Env.root.rdir == null)
-			Env.root.rdir = DirUnit.makeRootDir();
+		if (Env.getRoot().rdir == null)
+			Env.getRoot().rdir = DirUnit.makeRootDir();
 		if (path == null) path = System.getProperty("java.class.path");
 		classpath = new kiev.bytecode.Classpath(path);
 		jenv = new JEnv();
@@ -410,7 +412,7 @@ public class Env extends KievPackage {
 	}
 
 	public static TypeDecl loadTypeDecl(String qname) {
-		if (qname == "") return Env.root;
+		if (qname == "") return Env.getRoot();
 		// Check class is already loaded
 		if (classHashOfFails.get(qname) != null) return null;
 		TypeDecl cl = (TypeDecl)resolveGlobalDNode(qname);
@@ -436,8 +438,8 @@ public class Env extends KievPackage {
 	public static TypeDecl loadTypeDecl(TypeDecl cl) {
 		if (!cl.isTypeDeclNotLoaded())
 			return cl;
-		if (cl == Env.root)
-			return Env.root;
+		if (cl instanceof Env)
+			return Env.getRoot();
 		// Try to load from project file (scan sources) or from .xml API dump
 		if (!Compiler.makeall_project && Env.projectHash.get(cl.qname()) != null)
 			loadTypeDeclFromProject(cl.qname());
@@ -561,7 +563,6 @@ public class Env extends KievPackage {
 			root.current_syntax = "stx-fmt\u001fsyntax-dump-full";
 			root.members += handler.root;
 		}
-		Kiev.runProcessorsOn((FileUnit)root);
 		return (FileUnit)root;
 	}
 	
@@ -607,7 +608,7 @@ public class Env extends KievPackage {
 				String cl_name = attributes.getValue("class");
 				if (pkg != null) {
 					String qname;
-					if (pkg == Env.root)
+					if (pkg instanceof Env)
 						qname = tdname;
 					else
 						qname = pkg.qname() + '\u001f' + tdname;

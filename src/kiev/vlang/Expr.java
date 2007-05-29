@@ -219,7 +219,7 @@ public class AssignExpr extends ENode {
 				if !(rm.isMacro() && rm.isNative()) {
 					ENode res = info.buildCall((ASTNode)this, cae.obj, m, null, new ENode[]{~cae.index,~value});
 					res = res.closeBuild();
-					this.replaceWithNodeReWalk(res);
+					ANode.getVersion(this).replaceWithNodeReWalk(res);
 				}
 			}
 		} else {

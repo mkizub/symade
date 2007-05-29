@@ -6972,6 +6972,29 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>ASTIdentifier</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxIdentAttr'>
+       <decl>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>ident-template</name>
+        </a-node>
+       </decl>
+       <name>ident</name>
+       <fmt>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>fmt-symref</name>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <sname>stx-expr-ident</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>ContainerAccessExpr</name>
       </a-node>
      </rnode>

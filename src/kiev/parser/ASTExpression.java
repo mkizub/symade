@@ -48,7 +48,7 @@ public class ASTExpression extends ENode {
 			e = e.closeBuild();
 			if (isPrimaryExpr())
 				e.setPrimaryExpr(true);
-			this.replaceWithNode(~e);
+			ANode.getVersion(this).replaceWithNode(~e);
 		}
 	}
 

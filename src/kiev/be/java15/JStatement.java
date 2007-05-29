@@ -33,7 +33,7 @@ public final view JInlineMethodStat of InlineMethodStat extends JENode {
 	public void generateArgumentCheck(Code code) {
 		for(int i=0; i < params_redir.length; i++) {
 			ParamRedir redir = params_redir[i];
-			if( !redir.new_var.type.equals(method.params[i].type) ) {
+			if( !redir.new_var.getType().equals(method.params[i].type) ) {
 				code.addInstr(Instr.op_load,(JVar)redir.new_var);
 				code.addInstr(Instr.op_checkcast,method.params[i].type);
 				code.addInstr(Instr.op_store,(JVar)redir.new_var);

@@ -26,7 +26,7 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 	public void resolve(Type reqType) {
 		Type[] types = new Type[params_redir.length];
 		for (int i=0; i < params_redir.length; i++) {
-			types[i] = params_redir[i].new_var.type;
+			types[i] = params_redir[i].new_var.getType();
 			if (params_redir[i].new_var.vtype.type_lnk != method.params[i].type) {
 				params_redir[i].new_var.vtype.open();
 				params_redir[i].new_var.vtype.type_lnk = method.params[i].type;

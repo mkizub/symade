@@ -79,7 +79,7 @@ public final class ASTOperatorAlias extends Symbol<Method> {
     	if( m.isPrivate() || m.isProtected() ) return;
     	TypeDecl pkg = m.ctx_tdecl;
     	while( pkg != null && !pkg.isPackage() ) pkg = pkg.package_clazz.dnode;
-    	if( pkg == null || pkg == Env.root ) return;
+    	if( pkg == null || pkg instanceof Env ) return;
     	foreach(ASTNode n; pkg.members; n == m ) return;
     }
 	

@@ -228,7 +228,7 @@ public class UserMeta extends MNode {
 			node.checkResolved();
 			return (Struct)node;
 		}
-		Struct scope = Env.root;
+		Struct scope = Env.getRoot();
 		int dot;
 		do {
 			dot = name.indexOf('\u001f');

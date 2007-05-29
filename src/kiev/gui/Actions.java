@@ -506,18 +506,25 @@ public final class FileActions implements Runnable {
 			if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
 				return;
 			FileUnit fu = null;
-			Transaction tr = Transaction.enter(Transaction.get());
+			Transaction tr = Transaction.open();
 			try {
+				EditorThread thr = EditorThread;
 				fu = Env.loadFromXmlFile(jfc.getSelectedFile());
+				try {
+					thr.errCount = 0;
+					thr.warnCount = 0;
+					Compiler.runFrontEnd(thr,null,fu,true);
+				} catch (Throwable t) { t.printStackTrace(); }
+				System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
 				Kiev.lockNodeTree(fu);
 			} catch( IOException e ) {
 				System.out.println("Read error while Xml-to-Kiev importing: "+e);
-			} finally { tr.leave(); }
+			} finally { tr.close(); }
 			if (fu != null)
 				wnd.openEditor(fu);
 		}
 		else if (action == "merge-all") {
-			ANode.getVersion(Env.root).mergeTree();
+			Env.getRoot().mergeTree();
 			System.out.println("Tree merged to the editor version.");
 		}
 		else if (action == "run-backend") {
@@ -525,10 +532,10 @@ public final class FileActions implements Runnable {
 			CompilerThread thr = CompilerThread;
 			thr.errCount = 0;
 			thr.warnCount = 0;
-			Compiler.runBackEnd(thr, Env.root, null, false);
+			Compiler.runBackEnd(thr, Env.getRoot(), null, false);
 		}
 		else if (action == "run-frontend-all") {
-			runFrontEndCompiler((Editor)uiv, Env.root);
+			runFrontEndCompiler((Editor)uiv, Env.getRoot());
 		}
 		else if (action == "run-frontend") {
 			runFrontEndCompiler((Editor)uiv, uiv.the_root);
@@ -828,12 +835,22 @@ public final class RenderActions implements Runnable {
 			this.name = name.intern();
 		}
 		public void actionPerformed(ActionEvent e) {
-			Transaction tr = Transaction.enter(Transaction.get());
 			FileUnit fu = null;
+			Transaction tr = Transaction.open();
 			try {
+				EditorThread thr = EditorThread;
 				fu = Env.loadFromXmlFile(new File(this.file));
+				try {
+					thr.errCount = 0;
+					thr.warnCount = 0;
+					Compiler.runFrontEnd(thr,null,fu,true);
+				} catch (Throwable t) { t.printStackTrace(); }
+				System.out.println("Frontend compiler completed with "+thr.errCount+" error(s)");
 				Kiev.lockNodeTree(fu);
-			} finally { tr.leave(); }
+			} catch( IOException e ) {
+				System.out.println("Read error while syntax importing: "+e);
+			} finally { tr.close(); }
+
 			foreach (ATextSyntax stx; fu.members; stx.u_name == name) {
 				this.uiv.setSyntax(stx);
 				return;

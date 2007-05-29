@@ -276,7 +276,7 @@ public class ScopeVarInfo extends ScopeNodeInfo {
 	}
 
 	public Type getDeclType() {
-		return var.type;
+		return var.getType();
 	}
 	
 	public String toString() {

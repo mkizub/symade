@@ -79,7 +79,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		ANode p = parent();
 		while (p instanceof DeclGroup)
 			p = p.parent();
-		if (p == null || p == Env.root)
+		if (p == null || p instanceof Env)
 			return sname;
 		if (p instanceof GlobalDNode)
 			return (((GlobalDNode)p).qname()+'\u001f'+sname);
@@ -719,7 +719,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
-		var.type.resolveNameAccessR(node,path)
+		var.getType().resolveNameAccessR(node,path)
 	}
 
 	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)

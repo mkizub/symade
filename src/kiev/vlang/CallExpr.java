@@ -306,7 +306,7 @@ public class CallExpr extends ENode {
 				e = e.closeBuild();
 				if (isPrimaryExpr())
 					e.setPrimaryExpr(true);
-				this.replaceWithNodeReWalk(e);
+				ANode.getVersion(this).replaceWithNodeReWalk(e);
 			}
 		}
 	}

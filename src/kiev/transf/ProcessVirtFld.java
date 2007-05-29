@@ -70,7 +70,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		if( f != null ) {
 			if (f.parent() != m.parent())
 				return;
-			Method setter = (Method)Field.SETTER_ATTR.get(f);
+			Method setter = f.setter;
 			if (setter != null && setter != m)
 				return;
 			acc = f.getMetaAccess();
@@ -84,7 +84,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			acc.setFlags(0);
 		}
 		f.setVirtual(true);
-		Field.SETTER_ATTR.set(f, m);
+		f.setter = m;
 		if (m.getMeta(nameMetaSetter) == null) {
 			Kiev.reportWarning(m,"Method looks to be a setter, but @setter is not specified");
 		}
@@ -134,7 +134,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		if( f != null ) {
 			if (f.parent() != m.parent())
 				return;
-			Method getter = (Method)Field.GETTER_ATTR.get(f);
+			Method getter = f.getter;
 			if (getter != null && getter != m)
 				return;
 			acc = f.getMetaAccess();
@@ -148,7 +148,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 			acc.setFlags(0);
 		}
 		f.setVirtual(true);
-		Field.GETTER_ATTR.set(f, m);
+		f.getter = m;
 		if (m.getMeta(nameMetaGetter) == null) {
 			Kiev.reportWarning(m,"Method looks to be a getter, but @getter is not specified");
 		}
@@ -292,7 +292,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 
 				body.stats.append(ass_st);
 			}
-			Field.SETTER_ATTR.set(f, set_var);
+			f.setter = set_var;
 		}
 		else if( set_found && (f.isFinal() || !MetaAccess.writeable(f)) ) {
 			Kiev.reportError(f,"Virtual set$ method for non-writeable field "+f);
@@ -314,7 +314,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				get_var.body = body;
 				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 			}
-			Field.GETTER_ATTR.set(f, get_var);
+			f.getter = get_var;
 		}
 		else if( get_found && !MetaAccess.readable(f) ) {
 			Kiev.reportError(f,"Virtual get$ method for non-readable field "+f);
@@ -367,7 +367,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			return true;
 		}
 		// We rewrite by get$ method. set$ method is rewritten by AssignExpr
-		Method getter = (Method)Field.GETTER_ATTR.get(f);
+		Method getter = f.getter;
 		if (getter == null) {
 			Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
 			fa.setAsField(true);
@@ -393,8 +393,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				return true;
 			}
 			// Rewrite by set$ method
-			Method getter = (Method)Field.GETTER_ATTR.get(f);
-			Method setter = (Method)Field.SETTER_ATTR.get(f);
+			Method getter = f.getter;
+			Method setter = f.setter;
 			if (setter == null) {
 				Kiev.reportWarning(fa, "Setter method for virtual field "+f+" not found");
 				fa.setAsField(true);
@@ -478,8 +478,8 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				return true;
 			}
 			// Rewrite by set$ method
-			Method getter = (Method)Field.GETTER_ATTR.get(f);
-			Method setter = (Method)Field.SETTER_ATTR.get(f);
+			Method getter = f.getter;
+			Method setter = f.setter;
 			if (setter == null) {
 				Kiev.reportError(fa, "Setter method for virtual field "+f+" not found");
 				fa.setAsField(true);

@@ -699,7 +699,7 @@ public final class Code implements JConstants {
 	private void generateLoadVar(int vv) {
 		CodeVar v = vars[vv];
 		int[] opcodes;
-		JType t = v.var.type.getJType();
+		JType t = v.var.getType().getJType();
 		if( t == JType.tpVoid )
 			throw new RuntimeException("Can't load variable of type "+t);
 		else if( t == JType.tpLong )	opcodes = lload_ops;
@@ -733,7 +733,7 @@ public final class Code implements JConstants {
 	private void generateStoreVar(int vv) {
 		CodeVar v = vars[vv];
 		int[] opcodes;
-		JType t = v.var.type.getJType();
+		JType t = v.var.getType().getJType();
 		if( t == JType.tpVoid )
 			throw new RuntimeException("Can't store variable of type "+t);
 		else if( t == JType.tpLong )	opcodes = lstore_ops;

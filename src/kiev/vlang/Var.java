@@ -58,6 +58,13 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public TypeRef		stype;
 	@att
 	public ENode		init;
+	@ref(ext_data=true)
+	public Method		getter;
+	@ref(ext_data=true)
+	public Method		setter;
+	@ref(ext_data=true)
+	public ConstExpr	const_value;
+
 
 	@getter public Type get$type() { return this.vtype.getType(); }
 
@@ -141,8 +148,6 @@ public abstract class Var extends DNode implements GlobalDNode {
 		}
 	}	
 
-	@getter public final Type get$type() { return this.vtype.getType(); }
-		
 	public static final Var[]	emptyArray = new Var[0];
 
 	public Var(int kind) {
@@ -204,6 +209,40 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return true;
 	}
 
+	public boolean	isConstantExpr() {
+		if (this.isFinal()) {
+			if (this.init != null && this.init.isConstantExpr())
+				return true;
+			else if (this.const_value != null)
+				return true;
+		}
+		return false;
+	}
+
+	public Object	getConstValue() {
+		if (this.init != null && this.init.isConstantExpr())
+			return this.init.getConstValue();
+		else if (this.const_value != null)
+			return this.const_value.getConstValue();
+		throw new RuntimeException("Request for constant value of non-constant expression");
+	}
+
+	public boolean preVerify() {
+		if (this.init != null) {
+			if (isConstantExpr()) {
+				ConstExpr ce = ConstExpr.fromConst(getConstValue());
+				if (!ce.valueEquals(this.const_value)) {
+					this = this.open();
+					this.const_value = ce;
+				}
+			}
+		} else {
+			if (this.const_value != null)
+				this.init = this.const_value;
+		}
+		return true;
+	}
+
 	public String toString() {
 		return sname;
 	}
@@ -239,7 +278,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 }
 
-@node(name="Var")
+@node(name="LVar")
 public class LVar extends Var {
 	@dflow(out="this:out()") private static class DFI {
 	@dflow(in="this:in")	ENode			init;
@@ -273,7 +312,7 @@ public class LVar extends Var {
 }
 
 @node(name="Field")
-public final class Field extends Var {
+public class Field extends Var {
 	public static final Field[]	emptyArray = new Field[0];
 	static final Field dummyNode = new Field();
 
@@ -281,19 +320,16 @@ public final class Field extends Var {
 	@dflow(in="this:in")	ENode			init;
 	}
 
-	public static final AttrSlot GETTER_ATTR = new ExtAttrSlot("getter method",false,false,true,TypeInfo.newTypeInfo(Method.class,null));
-	public static final AttrSlot SETTER_ATTR = new ExtAttrSlot("setter method",false,false,true,TypeInfo.newTypeInfo(Method.class,null));
 	//public static final SpaceRefDataAttrSlot<Method> ATTR_INVARIANT_CHECKERS = new SpaceRefDataAttrSlot<Field>("invariant checkers",false,TypeInfo.newTypeInfo(Method.class,null));	
 	public static final AttrSlot ALT_ENUM_ID_ATTR = new ExtAttrSlot("alt enum id",true,false,true,TypeInfo.newTypeInfo(ConstStringExpr.class,null));
 
-	@virtual typedef This  = Field;
+	@virtual typedef This  ≤ Field;
 	@virtual typedef JView = JField;
 	@virtual typedef RView = RField;
 
-	/** Constant value of this field */
-	@ref public ConstExpr			const_value;
-
 	public Field() { super(FIELD_NORMAL); }
+	
+	public Field(int kind) { super(kind); }
 	
 	public Field(String name, Type type, int flags) {
 		super(name, new TypeRef(type), FIELD_NORMAL, flags);
@@ -311,38 +347,5 @@ public final class Field extends Var {
 		if (dump == "api" && attr.name == "const_value")
 			return isFinal() && const_value != null;
 		return super.includeInDump(dump,attr,val);
-	}
-
-	public boolean	isConstantExpr() {
-		if( this.isFinal() ) {
-			if (this.init != null && this.init.isConstantExpr())
-				return true;
-			else if (this.const_value != null)
-				return true;
-		}
-		return false;
-	}
-	public Object	getConstValue() {
-		if (this.init != null && this.init.isConstantExpr())
-			return this.init.getConstValue();
-		else if (this.const_value != null)
-			return this.const_value.getConstValue();
-		throw new RuntimeException("Request for constant value of non-constant expression");
-	}
-
-	public boolean preVerify() {
-		if (this.init != null) {
-			if (isConstantExpr()) {
-				ConstExpr ce = ConstExpr.fromConst(getConstValue());
-				if (!ce.valueEquals(this.const_value)) {
-					this = this.open();
-					this.const_value = ce;
-				}
-			}
-		} else {
-			if (this.const_value != null)
-				this.init = this.const_value;
-		}
-		return true;
 	}
 }

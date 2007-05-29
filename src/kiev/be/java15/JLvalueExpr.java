@@ -83,7 +83,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 			}
 		} else {
 			code.addInstr(op_getfield,var,obj.getType());
-			if( Kiev.verify && var.type instanceof ArgType && getType().isReference() )
+			if( Kiev.verify && var.getType() instanceof ArgType && getType().isReference() )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -110,7 +110,7 @@ public final view JIFldExpr of IFldExpr extends JLvalueExpr {
 			}
 		} else {
 			code.addInstr(op_getfield,var,obj.getType());
-			if( Kiev.verify && var.type instanceof ArgType && getType().isReference() )
+			if( Kiev.verify && var.getType() instanceof ArgType && getType().isReference() )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -360,7 +360,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 	}
 
 	public JField resolveVarVal() {
-		CompaundType prt = Type.getProxyType(var.type);
+		CompaundType prt = Type.getProxyType(var.getType());
 		JField var_valf = ((JStruct)(Struct)prt.tdecl).resolveField(nameCellVal);
 		return var_valf;
 	}
@@ -377,7 +377,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 				for(int i=0; i < code.method.params.length; i++) {
 					JVar v = code.method.params[i];
 					if (v.u_name != var.u_name) continue;
-					assert( var.type.equals(v.type), "Type of vars in overriden methods missmatch" );
+					assert( var.getType().equals(v.type), "Type of vars in overriden methods missmatch" );
 					var = v;
 					break;
 				}
@@ -390,7 +390,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 
 	public void generateVerifyCheckCast(Code code) {
 		if( !Kiev.verify ) return;
-		if( !var.type.isReference() || var.type.isArray() ) return;
+		if( !var.getType().isReference() || var.getType().isArray() ) return;
 		Type chtp = null;
 		if( var.jparent instanceof JMethod ) {
 			JMethod m = (JMethod)var.jparent;
@@ -403,9 +403,9 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 			}
 		}
 		if( chtp == null )
-			chtp = var.type.getErasedType();
-		if( !var.type.getJType().isInstanceOf(chtp.getJType()) ) {
-			code.addInstr(op_checkcast,var.type);
+			chtp = var.getType().getErasedType();
+		if( !var.getType().getJType().isInstanceOf(chtp.getJType()) ) {
+			code.addInstr(op_checkcast,var.getType());
 			return;
 		}
 	}

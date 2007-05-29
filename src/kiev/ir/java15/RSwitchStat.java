@@ -81,8 +81,8 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 							throw new CompilerException(this,"Wrong case in enum switch");
 						SFldExpr f = (SFldExpr)val;
 						Type et = sw.sel.getType();
-						if( f.var.type ≢ et )
-							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
+						if( f.var.getType() ≢ et )
+							throw new CompilerException(this,"Case of type "+f.var.getType()+" do not match switch expression of type "+et);
 						this.open();
 						if (et.getStruct() != null && et.getStruct().isEnum())
 							val = new ConstIntExpr(((JavaEnum)et.getStruct()).getIndexOfEnumField((Field)f.var));

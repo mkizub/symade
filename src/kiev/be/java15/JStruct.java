@@ -42,7 +42,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		JStruct pkg = (JStruct)package_clazz.dnode;
 		Struct s = (Struct)this;
 		s = s.open();
-		if (pkg == null || ((Struct)pkg) == Env.root)
+		if (pkg == null || ((Struct)pkg) == Env.getRoot())
 			s.b_name = KString.from(u_name);
 		else if (pkg.isPackage())
 			s.b_name = KString.from(pkg.bname()+"/"+u_name);

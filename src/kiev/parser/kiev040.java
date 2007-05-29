@@ -466,7 +466,7 @@ public abstract class kiev040 implements kiev040Constants {
                 declMode = true;
                 ASTModifiers modifiers;
                 oldClazz = curClazz;
-                curClazz = Env.root;
+                curClazz = Env.getRoot();
                 SpacePtr fu_members = fu.getSpacePtr("members");
     try {
       label_1:

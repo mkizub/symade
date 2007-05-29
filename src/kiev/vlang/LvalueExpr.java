@@ -170,7 +170,7 @@ public final class AccessExpr extends LvalueExpr {
 		ENode e = res[idx].closeBuild();
 		if (isPrimaryExpr())
 			e.setPrimaryExpr(true);
-		this.replaceWithNodeReWalk(e);
+		ANode.getVersion(this).replaceWithNodeReWalk(e);
 	}
 
 	public ANode doRewrite(RewriteContext ctx) {
@@ -246,11 +246,11 @@ public final class IFldExpr extends LvalueExpr {
 			foreach (TVar tv; ot.bindings().tvars; tv.var.name == name) {
 				return ot.resolve(tv.var);
 			}
-			if (var.type.getErasedType() instanceof ASTNodeType)
-				return var.type;
-			return new ASTNodeType(var.type);
+			if (var.getType().getErasedType() instanceof ASTNodeType)
+				return var.getType();
+			return new ASTNodeType(var.getType());
 		} else {
-			return Type.getRealType(ot,var.type);
+			return Type.getRealType(ot,var.getType());
 		}
 	}
 
@@ -560,7 +560,7 @@ public final class LVarExpr extends LvalueExpr {
 
 	public Type getType() {
 		try {
-			return var.type;
+			return var.getType();
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
 			return Type.tpVoid;
@@ -604,7 +604,7 @@ public final class LVarExpr extends LvalueExpr {
 	public Type[] getAccessTypes() {
 		ScopeNodeInfo sni = DataFlowInfo.getDFlow(this).out().getNodeInfo(new Var[]{getVar()});
 		if( sni == null || sni.getTypes().length == 0 )
-			return new Type[]{var.type};
+			return new Type[]{var.getType()};
 		return (Type[])sni.getTypes().clone();
 	}
 	
@@ -654,7 +654,7 @@ public final class SFldExpr extends LvalueExpr {
 
 	public Type getType() {
 		try {
-			return var.type;
+			return var.getType();
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
 			return Type.tpVoid;
@@ -688,7 +688,7 @@ public final class SFldExpr extends LvalueExpr {
 		Type[] types;
 		ScopeNodeInfo sni = DataFlowInfo.getDFlow(this).out().getNodeInfo(new Var[]{var});
 		if( sni == null || sni.getTypes().length == 0 )
-			types = new Type[]{var.type};
+			types = new Type[]{var.getType()};
 		else
 			types = (Type[])sni.getTypes().clone();
 		return types;
@@ -707,7 +707,7 @@ public final class SFldExpr extends LvalueExpr {
 		
 		if (this.obj == null) {
 			this = this.open();
-			this.obj = new TypeRef(Env.root.xtype);
+			this.obj = new TypeRef(Env.getRoot().xtype);
 		}
 		
 		Type tp = this.obj.getType();

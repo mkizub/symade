@@ -77,7 +77,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			head = name.substring(0,dot).intern();
 			name = name.substring(dot+1).intern();
 			if (scope == null)
-				scope = Env.root;
+				scope = Env.getRoot();
 			TypeDecl@ node;
 			if!(scope.resolveNameR(node,new ResInfo(this,head,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports))) {
 				Kiev.reportError(this,"Unresolved identifier "+head+" in "+scope);
@@ -172,7 +172,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
 		if (slot.name == "name") {
-			TypeDecl scope = Env.root;
+			TypeDecl scope = Env.getRoot();
 			int dot;
 			do {
 				dot = name.indexOf('\u001f');

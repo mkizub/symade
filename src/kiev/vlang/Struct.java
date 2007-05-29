@@ -294,7 +294,7 @@ public abstract class Struct extends TypeDecl {
 		if (q_name != null)
 			return q_name;
 		TypeDecl pkg = package_clazz.dnode;
-		if (pkg == null || pkg == Env.root)
+		if (pkg == null || pkg instanceof Env)
 			q_name = u_name;
 		else
 			q_name = (pkg.qname()+"\u001f"+u_name).intern();
@@ -442,7 +442,7 @@ public abstract class Struct extends TypeDecl {
 		trace(Kiev.debug && Kiev.debugResolve,"Struct: trying to load in package "+this);
 		TypeDecl cl;
 		String qn = name;
-		if (this.equals(Env.root))
+		if (this instanceof Env)
 			cl = Env.loadTypeDecl(qn);
 		else
 			cl = Env.loadTypeDecl(qn=(this.qname()+"\u001f"+name).intern());

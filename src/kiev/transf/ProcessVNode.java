@@ -713,7 +713,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	private void fixGetterMethod(Struct s, Field f, UserMeta fmatt, UserMeta fmref) {
 		boolean isAtt = (fmatt != null);
 
-		Method get_var = (Method)Field.GETTER_ATTR.get(f);
+		Method get_var = f.getter;
 		if (get_var == null || get_var.isStatic())
 			return;
 		if (get_var.getMeta(VNode_Base.mnAtt) != null || get_var.getMeta(VNode_Base.mnRef) != null)
@@ -761,7 +761,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	private void fixSetterMethod(Struct s, Field f, UserMeta fmatt, UserMeta fmref) {
 		boolean isAtt = (fmatt != null);
 
-		Method set_var = (Method)Field.SETTER_ATTR.get(f);
+		Method set_var = f.setter;
 		if (set_var == null || set_var.isStatic())
 			return;
 		if (set_var.getMeta(VNode_Base.mnAtt) != null || set_var.getMeta(VNode_Base.mnRef) != null)

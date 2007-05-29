@@ -89,7 +89,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 		if (astn.of_method)
 			return;
 		String name = astn.name.name.replace('.','\u001f');
-		Struct scope = Env.root;
+		Struct scope = Env.getRoot();
 		DNode n;
 		int dot;
 		do {

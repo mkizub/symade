@@ -21,7 +21,7 @@ import syntax kiev.Syntax;
 public final class JEnv {
 
 	Struct loadStruct(ClazzName name) {
-		if (name.name == KString.Empty) return Env.root;
+		if (name.name == KString.Empty) return Env.getRoot();
 		// Check class is already loaded
 		String qname = name.name.toString().replace('.','\u001f');
 		if (Env.classHashOfFails.get(qname) != null ) return null;

@@ -98,7 +98,7 @@ public class RuleMethod extends Method {
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
-		var.type.resolveNameAccessR(node,path)
+		var.getType().resolveNameAccessR(node,path)
 	}
 
     public void pass3() {
@@ -487,7 +487,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	
     public void rnResolve() {
 		//var.resolve(null);
-		//expr.resolve(((CTimeType)var.var.type).getUnboxedType());
+		//expr.resolve(((CTimeType)var.var.getType()).getUnboxedType());
     }
 
 	public void resolve1(JumpNodes jn) {
