@@ -2312,6 +2312,9 @@
              <name>SyntaxToken</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxSpace</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxElemRef</name>
             </a-node>
            </expected_types>
@@ -3136,10 +3139,18 @@
         <a-node class='kiev.fmt.SyntaxSet'>
          <elements>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;</text>
-          </a-node>
-          <a-node class='kiev.fmt.SyntaxToken'>
-           <text>@access:</text>
+           <text>&lt;@access:</text>
+           <funcs>
+            <a-node class='kiev.fmt.SyntaxFunctions'>
+             <funcs>
+              <a-node class='kiev.fmt.SyntaxFunction'>
+               <title>Add functions</title>
+               <act>kiev.gui.FuncNewElemOfNull</act>
+               <attr>funcs</attr>
+              </a-node>
+             </funcs>
+            </a-node>
+           </funcs>
           </a-node>
           <a-node class='kiev.fmt.SyntaxSubAttr'>
            <name>fmt</name>
@@ -3148,6 +3159,18 @@
              <name>SymbolRef</name>
             </a-node>
            </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>funcs</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxFunctions</name>
+            </a-node>
+           </expected_types>
+           <empty>
+            <a-node class='kiev.fmt.SyntaxSpace'>
+            </a-node>
+           </empty>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>&gt;</text>

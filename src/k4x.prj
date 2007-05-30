@@ -201,6 +201,7 @@ CLASS kievfmtTreeSyntax kiev/fmt/TreeSyntax kiev/fmt/TreeSyntax.java
 CLASS kievfmtXmlDumpSyntax kiev/fmt/XmlDumpSyntax kiev/fmt/XmlDumpSyntax.java
 CLASS kievguiANodeTree kiev/gui/ANodeTree kiev/gui/TreeView.java
 CLASS kievguiANodeTreeModel kiev/gui/ANodeTreeModel kiev/gui/TreeView.java
+CLASS kievguiAccessEditor kiev/gui/AccessEditor kiev/gui/Editor.java
 CLASS kievguiActionPoint kiev/gui/ActionPoint kiev/gui/Editor.java
 CLASS kievguiCanvas kiev/gui/Canvas kiev/gui/Canvas.java
 CLASS kievguiChooseItemEditor kiev/gui/ChooseItemEditor kiev/gui/Editor.java

@@ -49,6 +49,8 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	@ref public ATextSyntax	syntax;
 	/** A flag to show auto-generated nodes */
 	@att public boolean		show_auto_generated;
+	/** A hint to show placeholders */
+	@att public boolean		show_placeholders;
 	/** A hint to show escaped idents and strings */
 	@att public boolean		show_hint_escapes;
 

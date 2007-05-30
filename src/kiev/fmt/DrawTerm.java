@@ -90,6 +90,12 @@ public abstract class DrawTerm extends Drawable {
 			else
 				this.hidden_as_auto_generated = true;
 		}
+		if (this instanceof DrawPlaceHolder) {
+			if (cont.fmt.getShowPlaceholders())
+				this.hidden_as_auto_generated = false;
+			else
+				this.hidden_as_auto_generated = true;
+		}
 		if (this.isUnvisible()) return;
 		String tmp = "???";
 		try {
@@ -215,7 +221,6 @@ public final class DrawPlaceHolder extends DrawTerm {
 
 	public DrawPlaceHolder(ANode node, SyntaxPlaceHolder syntax) {
 		super(node, syntax);
-		//this.hidden_as_auto_generated = true;
 	}
 
 	String makeText(Formatter fmt) {

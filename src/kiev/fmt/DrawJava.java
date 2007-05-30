@@ -67,6 +67,10 @@ public class DrawJavaAccess extends DrawTerm {
 	}
 
 	String makeText(Formatter fmt) {
+		return buildText();
+	}
+
+	public String buildText() {
 		MetaAccess acc = (MetaAccess)drnode;
 		String text;
 		if (acc.simple == "public")

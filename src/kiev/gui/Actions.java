@@ -783,6 +783,10 @@ public final class RenderActions implements Runnable {
 			uiv.show_auto_generated = !uiv.show_auto_generated;
 			uiv.formatAndPaint(true);
 		}
+		else if (action == "toggle-placeholder") {
+			uiv.show_placeholders = !uiv.show_placeholders;
+			uiv.formatAndPaint(true);
+		}
 		else if (action == "toggle-escape") {
 			uiv.show_hint_escapes = !uiv.show_hint_escapes;
 			uiv.formatAndPaint(true);
@@ -891,6 +895,14 @@ public final class RenderActions implements Runnable {
 		public boolean isForPopupMenu() { false }
 		public Runnable getAction(UIActionViewContext context) {
 			return new RenderActions(context.uiv, "toggle-autogen");
+		}
+	}
+
+	final static class ToggleShowPlaceholders implements UIActionFactory {
+		public String getDescr() { "Toggle show of editor placeholders" }
+		public boolean isForPopupMenu() { false }
+		public Runnable getAction(UIActionViewContext context) {
+			return new RenderActions(context.uiv, "toggle-placeholder");
 		}
 	}
 
