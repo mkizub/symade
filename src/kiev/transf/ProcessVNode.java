@@ -102,8 +102,13 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpSpaceRefAttrSlot = Env.loadTypeDecl(nameSpaceRefAttrSlot, true).xtype;
 			tpSpaceAttAttrSlot = Env.loadTypeDecl(nameSpaceAttAttrSlot, true).xtype;
 		}
-		foreach (Struct n; fu.members)
+		foreach (ASTNode n; fu.members)
 			doProcess(n);
+	}
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
 	}
 	
 	public void doProcess(Struct:ASTNode s) {
@@ -369,7 +374,12 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 	}
 	
 	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (Struct dn; fu.members)
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
 			this.doProcess(dn);
 	}
 	
@@ -642,7 +652,12 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			tpNArray = VNode_Base.tpNArray;
 			tpSpaceAttrSlot = VNode_Base.tpSpaceAttrSlot;
 		}
-		foreach (Struct dn; fu.members)
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
 			this.doProcess(dn);
 	}
 	

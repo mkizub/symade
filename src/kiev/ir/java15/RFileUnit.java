@@ -17,10 +17,8 @@ import syntax kiev.Syntax;
  *
  */
 
-public static final view RFileUnit of FileUnit extends RSNode {
+public static final view RFileUnit of FileUnit extends RNameSpace {
 	public:ro	String					fname;
-	public		TypeNameRef				pkg;
-	public:ro	ASTNode[]				members;
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 
@@ -33,14 +31,35 @@ public static final view RFileUnit of FileUnit extends RSNode {
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			foreach (DNode n; members; !n.isMacro()) {
+			foreach (ASTNode n; members) {
 				try {
-					n.resolveDecl();
+					if (n instanceof DNode && !n.isMacro())
+						n.resolveDecl();
+					else if (n instanceof SNode)
+						n.resolveDecl();
 				} catch(Exception e) {
 					Kiev.reportError(n,e);
 				}
 			}
 		} finally { Kiev.setCurFile(curr_file); Kiev.setExtSet(exts); }
+	}
+}
+
+public static view RNameSpace of NameSpace extends RSNode {
+	public		SymbolRef<KievPackage>	srpkg;
+	public:ro	ASTNode[]				members;
+
+	public void resolveDecl() {
+		foreach (ASTNode n; members) {
+			try {
+				if (n instanceof DNode && !n.isMacro())
+					n.resolveDecl();
+				else if (n instanceof SNode)
+					n.resolveDecl();
+			} catch(Exception e) {
+				Kiev.reportError(n,e);
+			}
+		}
 	}
 }
 

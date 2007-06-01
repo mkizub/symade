@@ -29,8 +29,13 @@ public final class PackedFldFE_Verify extends TransfProcessor {
 	}
 	
 	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (Struct n; fu.members)
-			doProcess(n);
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
 	}
 	
 	public void doProcess(Struct:ASTNode s) {
@@ -89,7 +94,12 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 	}
 	
 	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (Struct dn; fu.members)
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
 			this.doProcess(dn);
 	}
 	

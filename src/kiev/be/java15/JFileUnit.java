@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.be.java15;
 
-import java.io.*;
-
 import syntax kiev.Syntax;
 
 /**
@@ -20,10 +18,8 @@ import syntax kiev.Syntax;
  *
  */
 
-public final view JFileUnit of FileUnit extends JSNode {
+public final view JFileUnit of FileUnit extends JNameSpace {
 	public:ro	String					fname;
-	public		TypeNameRef				pkg;
-	public:ro	JNode[]					members;
 	public:ro	boolean[]				disabled_extensions;
 	public		boolean					scanned_for_interface_only;
 
@@ -38,22 +34,42 @@ public final view JFileUnit of FileUnit extends JSNode {
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			foreach (JStruct dn; members) {
-				diff_time = curr_time = System.currentTimeMillis();
-				dn.generate();
-				diff_time = System.currentTimeMillis() - curr_time;
-				if( Kiev.verbose )
-					Kiev.reportInfo("Generated clas "+dn,diff_time);
+			foreach (JNode n; members) {
+				if (n instanceof JNameSpace) {
+					n.generate();
+				}
+				else if (n instanceof JStruct) {
+					diff_time = curr_time = System.currentTimeMillis();
+					n.generate();
+					diff_time = System.currentTimeMillis() - curr_time;
+					if( Kiev.verbose )
+						Kiev.reportInfo("Generated clas "+n,diff_time);
+				}
 			}
 		} finally { Kiev.setCurFile(cur_file); Kiev.setExtSet(exts); }
 	}
+}
 
-	static void make_output_dir(String top_dir, String filename) throws IOException {
-		File dir;
-		dir = new File(top_dir,filename);
-		dir = new File(dir.getParent());
-		dir.mkdirs();
-		if( !dir.exists() || !dir.isDirectory() ) throw new RuntimeException("Can't create output dir "+dir);
+public view JNameSpace of NameSpace extends JSNode {
+	public		SymbolRef<KievPackage>	srpkg;
+	public:ro	JNode[]					members;
+
+	@getter public JNameSpace get$jctx_name_space() { return this; }
+	
+	public void generate() {
+		long curr_time = 0L, diff_time = 0L;
+		foreach (JNode n; members) {
+			if (n instanceof JNameSpace) {
+				n.generate();
+			}
+			else if (n instanceof JStruct) {
+				diff_time = curr_time = System.currentTimeMillis();
+				n.generate();
+				diff_time = System.currentTimeMillis() - curr_time;
+				if( Kiev.verbose )
+					Kiev.reportInfo("Generated clas "+n,diff_time);
+			}
+		}
 	}
 }
 

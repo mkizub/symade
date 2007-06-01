@@ -173,9 +173,8 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
 		if (slot.name == "name") {
 			TypeDecl scope = Env.getRoot();
-			int dot;
+			int dot = name.indexOf('\u001f');
 			do {
-				dot = name.indexOf('\u001f');
 				String head;
 				if (dot > 0) {
 					head = name.substring(0,dot).intern();
@@ -188,7 +187,9 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 						scope = (TypeDecl)node;
 					else
 						return new DNode[0];
-				} else {
+					dot = name.indexOf('\u001f');
+				}
+				if (dot < 0) {
 					head = name.intern();
 					Vector<DNode> vect = new Vector<DNode>();
 					DNode@ node;

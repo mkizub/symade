@@ -726,7 +726,7 @@ public abstract class DFFunc implements DataFlowSlots {
 	
 	static boolean checkNode(ANode _node, Vector<ASTNode> lst) {
 		ASTNode node = (ASTNode)_node;
-		if (node instanceof FileUnit || node instanceof Method)
+		if (node instanceof NameSpace || node instanceof Method)
 			return true;
 		if (lst == null) lst = new Vector<ASTNode>();
 		assert(!lst.contains(node));

@@ -360,7 +360,7 @@ public abstract class Struct extends TypeDecl {
 				Kiev.reportError(imp,e);
 			}
 		}
-		if (parent() instanceof Struct || parent() instanceof FileUnit)
+		if (parent() instanceof Struct || parent() instanceof NameSpace)
 			return true;
 		if (ctx_method==null || ctx_method.isStatic())
 			this.setStatic(true);

@@ -180,8 +180,8 @@ public abstract class kiev040 {
 	}
 
 	/*{
-	private TypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, FileUnit fu) {
-		Struct pkg = fu.pkg == null ? null : fu.pkg.getStruct();
+	private TypeDecl mkMetaType(Symbol name, ASTModifiers modifiers, NameSpace fu) {
+		Struct pkg = fu.getPackage();
 		String uuid = modifiers == null ? null : modifiers.getUUID();
 		TypeDecl tdecl = Env.newMetaType(new Symbol<MetaTypeDecl>(name.pos,name.sname), pkg, true, uuid);
 		tdecl.setTypeDeclNotLoaded(false);
@@ -194,10 +194,10 @@ public abstract class kiev040 {
 		String nm;
 		TypeDecl outer;
 		boolean direct;
-		if (parent instanceof FileUnit) {
-			FileUnit fu = (FileUnit)parent;
+		if (parent instanceof NameSpace) {
+			NameSpace ns = (NameSpace)parent;
 			nm = name.sname;
-			outer = fu.pkg == null ? null : fu.pkg.getStruct();
+			outer = ns.getPackage();
 			direct = true;
 		}
 		else if (parent instanceof Struct) {
@@ -225,7 +225,7 @@ public abstract class kiev040 {
 			clazz.pos  = parent.pos;
 		clazz.setTypeDeclNotLoaded(false);
 		modifiers.moveToNode(clazz.meta);
-		if (parent instanceof FileUnit) {
+		if (parent instanceof NameSpace) {
 			clazz.setLocal(false);
 			clazz.setStatic(true);
 			Env.createProjectInfo(clazz, String.valueOf(Kiev.getCurFile()));
@@ -905,36 +905,22 @@ FileUnit FileUnit(String filename) :
 {
 	{
 		oldFileUnit = curFileUnit;
-		FileUnit fu = FileUnit.makeFile(filename, null);
+		FileUnit fu = FileUnit.makeFile(filename);
 		curFileUnit = fu;
 		declMode = true;
 		ASTModifiers modifiers;
 		oldClazz = curClazz;
-		curClazz = Env.root;
-		SpacePtr fu_members = fu.getSpacePtr("members");
+		curClazz = Env.getRoot();
 	}
 	try {
 		(
 			Pragma(fu)
 		)*
 		[
-			fu.pkg = Package()
-			{ curClazz = fu.pkg.getStruct(); }
+			fu.srpkg = Package()
+			{ curClazz = fu.getPackage(); }
 		]
-		(
-			{ comments_alone(fu_members); }
-			modifiers = Modifiers()
-			(
-				fu.members += Import(modifiers)
-			|	fu.members += Typedef(modifiers)
-			|	fu.members += Opdef(modifiers)
-			|	fu.members += MetaTypeDeclaration(modifiers, fu) [ ";" ]
-			|	fu.members += TypeDeclaration(modifiers, fu) [ ";" ]
-			|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-				fu.members += SyntaxDeclaration(modifiers, fu) [ ";" ]
-			)
-		)*
-		{ comments_alone(fu_members); }
+		TopLevelDeclarations(fu)
 		<EOF>
 	}
 	catch(ParseError e) { rpe("Bad modifiers",e); }
@@ -945,6 +931,52 @@ FileUnit FileUnit(String filename) :
 		declMode = true;
 		return fu;
 	}
+}
+
+NameSpace NameSpaceDeclaration(ASTModifiers modifiers, NameSpace parent) :
+{ TypeDecl oldClazz = curClazz; NameSpace ns = new NameSpace(); }
+{
+	{ declMode = true; }
+	try {
+		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("namespace") })
+		<IDENTIFIER>	// "namespace"
+		(	LOOKAHEAD({ parent.getPackage() instanceof Env })
+			ns.srpkg = QName()
+		|	ns.srpkg = NameRef()
+		)
+		{ parent.members += ns; curClazz = ns.getPackage(); }
+		"{"
+		TopLevelDeclarations(ns)
+		"}"
+	}
+	catch(ParseError e) { rpe("Bad modifiers",e); }
+	catch(Throwable e) { rperr(e); }
+	finally {
+		curClazz = oldClazz;
+		declMode = true;
+		return ns;
+	}
+}
+
+void TopLevelDeclarations(NameSpace ns) :
+{ ASTModifiers modifiers; SpacePtr ns_members = ns.getSpacePtr("members"); }
+{
+	(
+		{ comments_alone(ns_members); }
+		modifiers = Modifiers()
+		(
+			ns.members += Import(modifiers)
+		|	ns.members += Typedef(modifiers)
+		|	ns.members += Opdef(modifiers)
+		|	ns.members += MetaTypeDeclaration(modifiers, ns) [ ";" ]
+		|	ns.members += TypeDeclaration(modifiers, ns) [ ";" ]
+		|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+			SyntaxDeclaration(modifiers, ns) [ ";" ]
+		|	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("namespace") })
+			NameSpaceDeclaration(modifiers, ns) [ ";" ]
+		)
+	)*
+	{ comments_alone(ns_members); }
 }
 
 ASTModifiers Modifiers() :
@@ -958,19 +990,15 @@ ASTModifiers Modifiers() :
 	{ return n; }
 }
 
-TypeNameRef Package() :
+SymbolRef Package() :
 { SymbolRef qn; }
 {
 	"package"
 	qn = QName()
 	";"
 	{
-		String qname = qn.name;
-		Struct pkg = Env.newPackage(qname);
-		TypeNameRef tr = new TypeNameRef(qname);
-		tr.pos = qn.pos;
-		tr.type_lnk = pkg.xtype;
-		return tr;
+		qn.symbol = Env.newPackage(qn.name);
+		return qn;
 	}
 }
 
@@ -1078,34 +1106,34 @@ Opdef Opdef(ASTModifiers modifiers) :
 	{ return opd; }
 }
 
-Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; Symbol name; TypeDecl oldClazz; }
+KievSyntax SyntaxDeclaration(ASTModifiers modifiers, NameSpace parent) :
+{ KievSyntax stx; Symbol name; TypeDecl oldClazz; }
 {
 	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 	<IDENTIFIER>	// "syntax"
 	name = Name()
 	{
-		clazz = mkStruct(name, new KievSyntax(), 0, modifiers, parent);
+		stx = (KievSyntax)mkStruct(name, new KievSyntax(), 0, modifiers, parent);
 	}
 	[
 		"extends"
-		clazz.super_types += Type()
-		( "," clazz.super_types += Type()	)*
+		stx.super_types += Type()
+		( "," stx.super_types += Type()	)*
 	]
-	{ oldClazz = curClazz; curClazz = clazz; }
+	{ parent.members += stx; oldClazz = curClazz; curClazz = stx; }
 	try {
 		"{"
 		(
 			modifiers = Modifiers()
 			(
-				clazz.members += Typedef(modifiers)
-			|	clazz.members += Opdef(modifiers)
-			|	clazz.members += Import(modifiers)
+				stx.members += Typedef(modifiers)
+			|	stx.members += Opdef(modifiers)
+			|	stx.members += Import(modifiers)
 			)
 		)*
 		"}"
 	} finally { curClazz = oldClazz; }
-	{ return clazz; }
+	{ return stx; }
 }
 
 TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
@@ -1115,14 +1143,14 @@ TypeDecl MetaTypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 //	(
 		name = Name()
 		{
-			tdecl = mkMetaType(name, modifiers, (FileUnit)parent);	
+			tdecl = mkMetaType(name, modifiers, (NameSpace)parent);	
 		}
 		args = ClazzArguments() { tdecl.args.addAll(args); }
 //	|
 //		tp   = PrimitiveType()
 //		{
 //			name = new Symbol( tp.pos, ((CoreType)tp.getType()).name );
-//			tdecl = mkMetaType(name, modifiers, (FileUnit)parent);	
+//			tdecl = mkMetaType(name, modifiers, (NameSpace)parent);	
 //		}
 //	)
 	[

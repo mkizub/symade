@@ -28,6 +28,7 @@ public interface INode {
 
 	public:ro @virtual ANode		ctx_root;
 	public:ro @virtual FileUnit		ctx_file_unit;
+	public:ro @virtual NameSpace	ctx_name_space;
 	public:ro @virtual TypeDecl		ctx_tdecl;
 	public:ro @virtual Method		ctx_method;
 
@@ -62,6 +63,7 @@ public abstract class ANode implements INode {
 
 	public:ro @virtual @abstract ANode			ctx_root;
 	public:ro @virtual @abstract FileUnit		ctx_file_unit;
+	public:ro @virtual @abstract NameSpace		ctx_name_space;
 	public:ro @virtual @abstract TypeDecl		ctx_tdecl;
 	public:ro @virtual @abstract Method		ctx_method;
 
@@ -170,6 +172,12 @@ public abstract class ANode implements INode {
 		if (p == null)
 			return null;
 		return p.get$ctx_file_unit();
+	}
+	@getter public NameSpace get$ctx_name_space() {
+		ANode p = this.parent();
+		if (p == null)
+			return null;
+		return p.get$ctx_name_space();
 	}
 	@getter public TypeDecl get$ctx_tdecl() {
 		ANode p = this.parent();

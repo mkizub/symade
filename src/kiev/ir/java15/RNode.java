@@ -25,10 +25,9 @@ public view RNode of ASTNode implements Constants {
 	
 	@getter public final ANode get$ctx_root();
 	@getter public final FileUnit get$ctx_file_unit();
+	@getter public final NameSpace get$ctx_name_space();
 	@getter public final TypeDecl get$ctx_tdecl();
-	@getter public final TypeDecl get$child_ctx_tdecl();
 	@getter public final Method get$ctx_method();
-	@getter public final Method get$child_ctx_method();
 
 	public final ANode parent();
 	public AttrSlot[] values();

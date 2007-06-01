@@ -69,7 +69,8 @@ public final class JEnv {
 		kiev.bytecode.Clazz clazz = null;
 		if (data.length > 7 && new String(data,0,7,"UTF-8").startsWith("<?xml")) {
 			trace(kiev.bytecode.Clazz.traceRules,"Parsing XML data for clazz "+name);
-			td = (TypeDecl)Env.loadFromXmlData(data, name.src_name.toString(), pkg);
+			Env.loadFromXmlData(data, name.src_name.toString(), pkg);
+			td = (TypeDecl)Env.resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
 		}
 		else if (data.length > 4 && (data[0]&0xFF) == 0xCA && (data[1]&0xFF) == 0xFE && (data[2]&0xFF) == 0xBA && (data[3]&0xFF) == 0xBE) {
 			trace(kiev.bytecode.Clazz.traceRules,"Parsing .class data for clazz "+name);

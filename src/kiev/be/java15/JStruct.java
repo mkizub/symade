@@ -271,6 +271,14 @@ public final view JStruct of Struct extends JTypeDecl {
 		Env.setProjectInfo((Struct)this, true);
 	}
 
+	static void make_output_dir(String top_dir, String filename) throws IOException {
+		File dir;
+		dir = new File(top_dir,filename);
+		dir = new File(dir.getParent());
+		dir.mkdirs();
+		if( !dir.exists() || !dir.isDirectory() ) throw new RuntimeException("Can't create output dir "+dir);
+	}
+
 	public void toBytecode(ConstPool constPool) {
 		String output_dir = Kiev.output_dir;
 		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
@@ -283,7 +291,7 @@ public final view JStruct of Struct extends JTypeDecl {
 			out_file = this.bname().replace('/',File.separatorChar).toString();
 		try {
 			DataOutputStream out;
-			JFileUnit.make_output_dir(output_dir,out_file);
+			JStruct.make_output_dir(output_dir,out_file);
 			try {
 				out = new DataOutputStream(new FileOutputStream(new File(output_dir,out_file+".class")));
 			} catch( java.io.FileNotFoundException e ) {

@@ -127,11 +127,12 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	public static final SymbolRef[] emptyArray = new SymbolRef[0];
 
-	@att public				String		name; // unresolved name
-	@abstract
-	@att public				boolean		qualified; // stored name may be qualified name
-	@ref public				ISymbol		symbol; // resolved symbol
-	@abstract public:ro		D			dnode; // resolved dnode (symbol.parent())
+	private Object	ident_or_symbol_or_type;
+	
+	@abstract @att public		String		name; // unresolved name
+	@abstract @att public		boolean		qualified; // stored name may be qualified name
+	@abstract @ref public		ISymbol		symbol; // resolved symbol
+	@abstract      public:ro	D			dnode; // resolved dnode (symbol.parent())
 		 
 	public SymbolRef() {}
 
@@ -146,23 +147,19 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	public SymbolRef(int pos, Symbol<D> symbol) {
 		this.pos = pos;
-		this.name = symbol.sname;
 		this.symbol = symbol;
 	}
 
 	public SymbolRef(int pos, D symbol) {
 		this.pos = pos;
-		this.name = symbol.sname;
 		this.symbol = symbol;
 	}
 
 	public SymbolRef(Symbol<D> symbol) {
-		this.name = symbol.sname;
 		this.symbol = symbol;
 	}
 
 	public SymbolRef(D symbol) {
-		this.name = symbol.sname;
 		this.symbol = symbol;
 	}
 
@@ -172,12 +169,6 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	@setter public final void set$qualified(boolean val) {
 		is_qualified = val;
-	}
-
-	@getter public final D get$dnode() {
-		if (symbol != null)
-			return symbol.dnode;
-		return null;
 	}
 
 	public boolean equals(Object nm) {
@@ -196,37 +187,51 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			this.name = t.image;
 	}
 
-	@getter @att
-	public String get$name() {
-		if (this.symbol != null) {
+	@getter @att public final String get$name() {
+		if (ident_or_symbol_or_type instanceof String)
+			return (String)ident_or_symbol_or_type;
+		if (ident_or_symbol_or_type instanceof ISymbol) {
 			if (qualified)
-				return this.symbol.qname;
-			return this.symbol.sname;
+				return ((ISymbol)ident_or_symbol_or_type).qname;
+			return ((ISymbol)ident_or_symbol_or_type).sname;
 		}
-		return name;
+		if (ident_or_symbol_or_type instanceof Type) {
+			if (qualified)
+				return ((Type)ident_or_symbol_or_type).meta_type.qname();
+			return ((Type)ident_or_symbol_or_type).meta_type.tdecl.sname;
+		}
+		return null;
+	}
+
+	@getter @ref public final ISymbol get$symbol() {
+		if (ident_or_symbol_or_type instanceof ISymbol)
+			return (ISymbol)ANode.getVersion((ANode)ident_or_symbol_or_type);
+		if (ident_or_symbol_or_type instanceof Type)
+			return ((Type)ident_or_symbol_or_type).meta_type.tdecl;
+		return null;
 	}
 	
-	@setter
-	public void set$name(String value) {
-		this.name = (value != null) ? value.intern() : null;
-		if (this.symbol != null && this.symbol.sname != value) {
-			this.symbol = null;
-		}
+	@getter @ref public final D get$dnode() {
+		if (ident_or_symbol_or_type instanceof DNode)
+			return ANode.getVersion((DNode)ident_or_symbol_or_type);
+		if (ident_or_symbol_or_type instanceof ISymbol)
+			return ANode.getVersion(((ISymbol)ident_or_symbol_or_type).dnode);
+		if (ident_or_symbol_or_type instanceof Type)
+			return ((Type)ident_or_symbol_or_type).meta_type.tdecl;
+		return null;
 	}
 	
-	@setter
-	public void set$symbol(ISymbol value) {
-		if (value == null) {
-			if (this.symbol != null) {
-				if (this.symbol.sname != this.name)
-					this.name = this.symbol.sname;
-				this.symbol = null;
-			}
+	@setter public final void set$name(String val) {
+		if (val != null) {
+			val = val.intern();
+			if (val.indexOf('\u001f') >= 0)
+				qualified = true;
 		}
-		else if (this.symbol != value) {
-			this.symbol = value;
-			this.name = value.sname;
-		}
+		ident_or_symbol_or_type = val;
+	}
+	
+	@setter public final void set$symbol(ISymbol val) {
+		ident_or_symbol_or_type = val;
 	}
 	
 	public String toString() { return name; }
@@ -235,12 +240,6 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		if (attr.name == "qualified")
 			return this.qualified; // do not dump <qualified>false</qualified>
 		return super.includeInDump(dump, attr, val);
-	}
-
-	public void callbackDetached() {
-		this = ANode.getVersion(this).open();
-		this.symbol = null;
-		super.callbackDetached();
 	}
 
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {

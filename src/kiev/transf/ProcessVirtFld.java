@@ -38,7 +38,12 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	}
 	
 	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (Struct dn; fu.members)
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
 			this.doProcess(dn);
 	}
 	
@@ -217,7 +222,12 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 	}
 	
 	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (Struct dn; fu.members)
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
 			this.doProcess(dn);
 	}
 	

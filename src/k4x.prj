@@ -575,6 +575,7 @@ CLASS kievvlangMetaVirtual kiev/vlang/MetaVirtual kiev/vlang/MetaSpecial.java
 CLASS kievvlangMetaVolatile kiev/vlang/MetaVolatile kiev/vlang/MetaSpecial.java
 CLASS kievvlangMethod kiev/vlang/Method kiev/vlang/Method.java
 CLASS kievvlangMethodImpl kiev/vlang/MethodImpl kiev/vlang/Method.java
+CLASS kievvlangNameSpace kiev/vlang/NameSpace kiev/vlang/FileUnit.java
 CLASS kievvlangNewArrayExpr kiev/vlang/NewArrayExpr kiev/vlang/NewExpr.java
 CLASS kievvlangNewClosure kiev/vlang/NewClosure kiev/vlang/NewExpr.java
 CLASS kievvlangNewExpr kiev/vlang/NewExpr kiev/vlang/NewExpr.java
@@ -764,6 +765,7 @@ INTERFACE kievbejava15JLabeledStat kiev/be/java15/JLabeledStat kiev/be/java15
 INTERFACE kievbejava15JLoopStat kiev/be/java15/JLoopStat kiev/be/java15/JLoopStat.java
 INTERFACE kievbejava15JLvalueExpr kiev/be/java15/JLvalueExpr kiev/be/java15/JLvalueExpr.java
 INTERFACE kievbejava15JMethod kiev/be/java15/JMethod kiev/be/java15/JMethod.java
+INTERFACE kievbejava15JNameSpace kiev/be/java15/JNameSpace kiev/be/java15/JFileUnit.java
 INTERFACE kievbejava15JNewArrayExpr kiev/be/java15/JNewArrayExpr kiev/be/java15/JNewExpr.java
 INTERFACE kievbejava15JNewClosure kiev/be/java15/JNewClosure kiev/be/java15/JNewExpr.java
 INTERFACE kievbejava15JNewExpr kiev/be/java15/JNewExpr kiev/be/java15/JNewExpr.java
@@ -854,6 +856,7 @@ INTERFACE kievirjava15RLabeledStat kiev/ir/java15/RLabeledStat kiev/ir/java15
 INTERFACE kievirjava15RLoopStat kiev/ir/java15/RLoopStat kiev/ir/java15/RLoopStat.java
 INTERFACE kievirjava15RLvalueExpr kiev/ir/java15/RLvalueExpr kiev/ir/java15/RLvalueExpr.java
 INTERFACE kievirjava15RMethod kiev/ir/java15/RMethod kiev/ir/java15/RMethod.java
+INTERFACE kievirjava15RNameSpace kiev/ir/java15/RNameSpace kiev/ir/java15/RFileUnit.java
 INTERFACE kievirjava15RNewArrayExpr kiev/ir/java15/RNewArrayExpr kiev/ir/java15/RNewExpr.java
 INTERFACE kievirjava15RNewClosure kiev/ir/java15/RNewClosure kiev/ir/java15/RNewExpr.java
 INTERFACE kievirjava15RNewExpr kiev/ir/java15/RNewExpr kiev/ir/java15/RNewExpr.java

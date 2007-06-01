@@ -29,10 +29,15 @@ public class PizzaFE_Pass3 extends TransfProcessor {
 	}
 
 	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (ASTNode n; fu.members)
-			doProcess(n);
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
 	}
-
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
 	public void doProcess(Struct:ASTNode clazz) {
 		if !(clazz.isPizzaCase()) {
 			foreach (Struct dn; clazz.members)
@@ -89,7 +94,12 @@ public class PizzaME_PreGenerate extends BackendProcessor {
 	}
 	
 	public void doProcess(FileUnit:ASTNode fu) {
-		foreach (Struct dn; fu.members)
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
 			this.doProcess(dn);
 	}
 	

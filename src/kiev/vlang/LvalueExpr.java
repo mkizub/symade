@@ -630,6 +630,14 @@ public final class SFldExpr extends LvalueExpr {
 		DNode sym = this.dnode;
 		if (sym instanceof Field)
 			return (Field)sym;
+		if (obj != null) {
+			Field f = obj.getType().meta_type.tdecl.resolveField(ident, false);
+			if (f != null && f.isStatic()) {
+				this = this.open();
+				this.symbol = f;
+				return f;
+			}
+		}
 		return null;
 	}
 

@@ -10,11 +10,11 @@
      "Maxim Kizub" mkizub@symade.com - initial design and implementation
 -->
 <a-node class='kiev.vlang.FileUnit'>
- <pkg>
-  <a-node class='kiev.vlang.types.TypeNameRef'>
-   <ident>stx-fmt</ident>
+ <srpkg>
+  <a-node class='kiev.vlang.SymbolRef'>
+   <name>stx-fmt</name>
   </a-node>
- </pkg>
+ </srpkg>
  <members>
   <a-node class='kiev.vlang.Import'>
    <name>

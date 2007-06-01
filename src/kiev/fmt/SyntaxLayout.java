@@ -42,8 +42,8 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		ANode p = parent();
 		if (p instanceof ATextSyntax)
 			q_name = (p.qname()+"\u001f"+u_name).intern();
-		else if (p instanceof FileUnit)
-			q_name = (p.pkg.qname()+"\u001f"+u_name).intern();
+		else if (p instanceof NameSpace)
+			q_name = (p.srpkg.name+"\u001f"+u_name).intern();
 		else
 			q_name = u_name;
 		return q_name;
@@ -57,24 +57,22 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	}
 	public void callbackAttached() {
 		resetNames();
-		if (parent() instanceof FileUnit) {
-			FileUnit fu = (FileUnit)parent();
-			if (fu.pkg != null) {
-				int idx = fu.pkg.getStruct().sub_decls.indexOf(this);
-				if (idx < 0)
-					fu.pkg.getStruct().sub_decls.add(this);
-			}
+		if (parent() instanceof NameSpace) {
+			NameSpace fu = (NameSpace)parent();
+			int idx = fu.getPackage().sub_decls.indexOf(this);
+			if (idx < 0)
+				fu.getPackage().sub_decls.add(this);
 		}
 		super.callbackAttached();
 	}
 	public void callbackDetached() {
 		this = ANode.getVersion(this).open();
 		resetNames();
-		if (parent() instanceof FileUnit) {
-			FileUnit fu = (FileUnit)parent();
-			int idx = fu.pkg.getStruct().sub_decls.indexOf(this);
+		if (parent() instanceof NameSpace) {
+			NameSpace fu = (NameSpace)parent();
+			int idx = fu.getPackage().sub_decls.indexOf(this);
 			if (idx >= 0)
-				fu.pkg.getStruct().sub_decls.del(idx);
+				fu.getPackage().sub_decls.del(idx);
 		}
 		super.callbackDetached();
 	}

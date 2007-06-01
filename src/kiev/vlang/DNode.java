@@ -508,11 +508,11 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		this = ANode.getVersion(this).open();
 		Struct pkg = null;
 		TypeDecl td = ctx_tdecl;
-		FileUnit fu;
+		NameSpace ns;
 		if (td instanceof Struct)
 			pkg = (Struct)td;
-		else if ((fu=ctx_file_unit) != null && fu.pkg != null)
-			pkg = fu.pkg.getStruct();
+		else if ((ns=ctx_name_space) != null)
+			pkg = ns.getPackage();
 		if (pkg != null) {
 			int idx = pkg.sub_decls.indexOf(this);
 			if (idx < 0)

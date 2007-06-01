@@ -49,6 +49,7 @@ public view JNode of ASTNode implements JConstants {
 	
 	@getter public final JNode get$jparent() { return (JNode)(ASTNode)((ASTNode)this).parent(); }
 	@getter public JFileUnit get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
+	@getter public JNameSpace get$jctx_name_space() { return this.jparent.get$jctx_name_space(); }
 	@getter public JTypeDecl get$jctx_tdecl() { return this.jparent.child_jctx_tdecl; }
 	@getter public JTypeDecl get$child_jctx_tdecl() { return this.jparent.get$child_jctx_tdecl(); }
 	@getter public JMethod get$jctx_method() { return this.jparent.child_jctx_method; }
