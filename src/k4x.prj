@@ -65,6 +65,7 @@ CLASS kievbejava15RVParMetaAttr kiev/be/java15/RVParMetaAttr kiev/be/java15/A
 CLASS kievbejava15Signature kiev/be/java15/Signature kiev/be/java15/Signature.java
 CLASS kievbejava15SourceFileAttr kiev/be/java15/SourceFileAttr kiev/be/java15/Attr.java
 CLASS kievbejava15StringCP kiev/be/java15/StringCP kiev/be/java15/ConstPool.java
+CLASS kievbejava15SwitchInfo kiev/be/java15/SwitchInfo kiev/be/java15/JComplexStat.java
 CLASS kievbejava15UnaryOpFunc kiev/be/java15/UnaryOpFunc kiev/be/java15/CoreFunc.java
 CLASS kievbejava15UnimplementedFunc kiev/be/java15/UnimplementedFunc kiev/be/java15/CoreFunc.java
 CLASS kievbytecodeAnnotation kiev/bytecode/Annotation kiev/bytecode/Attribute.java
@@ -548,6 +549,7 @@ CLASS kievvlangLongUShift kiev/vlang/LongUShift kiev/vlang/CoreMethod.java
 CLASS kievvlangLoopStat kiev/vlang/LoopStat kiev/vlang/LoopStatement.java
 CLASS kievvlangLvalueExpr kiev/vlang/LvalueExpr kiev/vlang/LvalueExpr.java
 CLASS kievvlangMNode kiev/vlang/MNode kiev/vlang/Meta.java
+CLASS kievvlangMatchStat kiev/vlang/MatchStat kiev/vlang/ComplexStatement.java
 CLASS kievvlangMetaAbstract kiev/vlang/MetaAbstract kiev/vlang/MetaSpecial.java
 CLASS kievvlangMetaAccess kiev/vlang/MetaAccess kiev/vlang/MetaSpecial.java
 CLASS kievvlangMetaBridge kiev/vlang/MetaBridge kiev/vlang/MetaSpecial.java
@@ -640,7 +642,9 @@ CLASS kievvlangStringConcatSA kiev/vlang/StringConcatSA kiev/vlang/CoreMethod.
 CLASS kievvlangStringConcatSS kiev/vlang/StringConcatSS kiev/vlang/CoreMethod.java
 CLASS kievvlangStruct kiev/vlang/Struct kiev/vlang/Struct.java
 CLASS kievvlangSuperExpr kiev/vlang/SuperExpr kiev/vlang/LvalueExpr.java
+CLASS kievvlangSwitchEnumStat kiev/vlang/SwitchEnumStat kiev/vlang/ComplexStatement.java
 CLASS kievvlangSwitchStat kiev/vlang/SwitchStat kiev/vlang/ComplexStatement.java
+CLASS kievvlangSwitchTypeStat kiev/vlang/SwitchTypeStat kiev/vlang/ComplexStatement.java
 CLASS kievvlangSymbol kiev/vlang/Symbol kiev/vlang/Symbol.java
 CLASS kievvlangSymbolIterator kiev/vlang/SymbolIterator kiev/vlang/PassInfo.java
 CLASS kievvlangSymbolRef kiev/vlang/SymbolRef kiev/vlang/Symbol.java
@@ -765,6 +769,7 @@ INTERFACE kievbejava15JLabel kiev/be/java15/JLabel kiev/be/java15/JLoopStat.j
 INTERFACE kievbejava15JLabeledStat kiev/be/java15/JLabeledStat kiev/be/java15/JStatement.java
 INTERFACE kievbejava15JLoopStat kiev/be/java15/JLoopStat kiev/be/java15/JLoopStat.java
 INTERFACE kievbejava15JLvalueExpr kiev/be/java15/JLvalueExpr kiev/be/java15/JLvalueExpr.java
+INTERFACE kievbejava15JMatchStat kiev/be/java15/JMatchStat kiev/be/java15/JComplexStat.java
 INTERFACE kievbejava15JMethod kiev/be/java15/JMethod kiev/be/java15/JMethod.java
 INTERFACE kievbejava15JNameSpace kiev/be/java15/JNameSpace kiev/be/java15/JFileUnit.java
 INTERFACE kievbejava15JNewArrayExpr kiev/be/java15/JNewArrayExpr kiev/be/java15/JNewExpr.java
@@ -782,7 +787,9 @@ INTERFACE kievbejava15JShadow kiev/be/java15/JShadow kiev/be/java15/JExpr.jav
 INTERFACE kievbejava15JStringConcatExpr kiev/be/java15/JStringConcatExpr kiev/be/java15/JExpr.java
 INTERFACE kievbejava15JStruct kiev/be/java15/JStruct kiev/be/java15/JStruct.java
 INTERFACE kievbejava15JSuperExpr kiev/be/java15/JSuperExpr kiev/be/java15/JLvalueExpr.java
+INTERFACE kievbejava15JSwitchEnumStat kiev/be/java15/JSwitchEnumStat kiev/be/java15/JComplexStat.java
 INTERFACE kievbejava15JSwitchStat kiev/be/java15/JSwitchStat kiev/be/java15/JComplexStat.java
+INTERFACE kievbejava15JSwitchTypeStat kiev/be/java15/JSwitchTypeStat kiev/be/java15/JComplexStat.java
 INTERFACE kievbejava15JSynchronizedStat kiev/be/java15/JSynchronizedStat kiev/be/java15/JComplexStat.java
 INTERFACE kievbejava15JThisExpr kiev/be/java15/JThisExpr kiev/be/java15/JLvalueExpr.java
 INTERFACE kievbejava15JThrowStat kiev/be/java15/JThrowStat kiev/be/java15/JStatement.java
@@ -856,6 +863,7 @@ INTERFACE kievirjava15RLabel kiev/ir/java15/RLabel kiev/ir/java15/RLoopStat.j
 INTERFACE kievirjava15RLabeledStat kiev/ir/java15/RLabeledStat kiev/ir/java15/RStat.java
 INTERFACE kievirjava15RLoopStat kiev/ir/java15/RLoopStat kiev/ir/java15/RLoopStat.java
 INTERFACE kievirjava15RLvalueExpr kiev/ir/java15/RLvalueExpr kiev/ir/java15/RLvalueExpr.java
+INTERFACE kievirjava15RMatchStat kiev/ir/java15/RMatchStat kiev/ir/java15/RSwitchStat.java
 INTERFACE kievirjava15RMethod kiev/ir/java15/RMethod kiev/ir/java15/RMethod.java
 INTERFACE kievirjava15RNameSpace kiev/ir/java15/RNameSpace kiev/ir/java15/RFileUnit.java
 INTERFACE kievirjava15RNewArrayExpr kiev/ir/java15/RNewArrayExpr kiev/ir/java15/RNewExpr.java
@@ -875,7 +883,9 @@ INTERFACE kievirjava15RShadow kiev/ir/java15/RShadow kiev/ir/java15/RExpr.jav
 INTERFACE kievirjava15RStringConcatExpr kiev/ir/java15/RStringConcatExpr kiev/ir/java15/RExpr.java
 INTERFACE kievirjava15RStruct kiev/ir/java15/RStruct kiev/ir/java15/RStruct.java
 INTERFACE kievirjava15RSuperExpr kiev/ir/java15/RSuperExpr kiev/ir/java15/RLvalueExpr.java
+INTERFACE kievirjava15RSwitchEnumStat kiev/ir/java15/RSwitchEnumStat kiev/ir/java15/RSwitchStat.java
 INTERFACE kievirjava15RSwitchStat kiev/ir/java15/RSwitchStat kiev/ir/java15/RSwitchStat.java
+INTERFACE kievirjava15RSwitchTypeStat kiev/ir/java15/RSwitchTypeStat kiev/ir/java15/RSwitchStat.java
 INTERFACE kievirjava15RSynchronizedStat kiev/ir/java15/RSynchronizedStat kiev/ir/java15/RBlockStat.java
 INTERFACE kievirjava15RThisExpr kiev/ir/java15/RThisExpr kiev/ir/java15/RLvalueExpr.java
 INTERFACE kievirjava15RThrowStat kiev/ir/java15/RThrowStat kiev/ir/java15/RStat.java

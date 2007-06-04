@@ -366,7 +366,11 @@ public abstract class AType implements StdTypes, TVSet {
 	// so it's a reverse of bind_bld()
 	public String makeSignature() {
 		StringBuffer str = new StringBuffer();
-		str.append(meta_type.tdecl.qname());
+		TypeDecl tdecl = meta_type.tdecl;
+		str.append(tdecl.qname());
+		String uuid = tdecl.getUUID();
+		if (uuid != null)
+			str.append('@').append(uuid);
 		boolean hasArgs = false;
 		TVarSet templ = meta_type.getTemplBindings();
 		AType self = this.bindings();
@@ -401,7 +405,21 @@ public abstract class AType implements StdTypes, TVSet {
 	}
 	private static Type fromSignature(StringTokenizer st, String[] sep) {
 		String name = st.nextToken();
-		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode(name);
+		String uuid = null;
+		int p = name.indexOf('@');
+		if (p > 0) {
+			uuid = name.substring(p+1);
+			name = name.substring(0, p);
+		}
+		TypeDecl tdecl = null;
+		if (uuid != null) {
+			tdecl = (TypeDecl)MetaUUID.getRegisteredNode(uuid);
+			if (tdecl != null)
+				assert (tdecl.qname().equals(name));
+		}
+		if (tdecl == null) {
+			tdecl = (TypeDecl)Env.resolveGlobalDNode(name);
+		}
 		if (tdecl == null) {
 			if (Env.existsStruct(name))
 				tdecl = Env.loadTypeDecl(name,false);

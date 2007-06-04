@@ -2,6 +2,8 @@ package kiev;
 
 import java.io.*;
 
+import syntax kiev.Syntax;
+
 public class SOPTest {
     public static void main(String[] args) {
         String start=".";

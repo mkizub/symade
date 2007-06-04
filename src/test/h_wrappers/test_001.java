@@ -4,9 +4,9 @@ package test.h_wrappers;
 
 class test_001 {
 
-	virtual int f1;
+	@virtual int f1;
 	
-	abstract virtual int f2;
+	abstract @virtual int f2;
 	
 	public static void main(String[] args) {
 		System.out.println("Testing first class");

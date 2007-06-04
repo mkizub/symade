@@ -18,7 +18,6 @@ public final view JCaseLabel of CaseLabel extends JENode {
 	public:ro	JENode			val;
 	public:ro	Type			type;
 	public:ro	JVar[]			pattern;
-	public:ro	JNode[]			stats;
 	public		CodeLabel		case_label;
 
 	public CodeLabel getLabel(Code code) {
@@ -30,133 +29,114 @@ public final view JCaseLabel of CaseLabel extends JENode {
 		code.setLinePos(this);
 		case_label = getLabel(code);
 		CodeSwitch cosw = ((JSwitchStat)this.jparent).cosw;
-		try {
-			code.addInstr(Instr.set_label,case_label);
-			if( val == null ) cosw.addDefault(case_label);
-			else {
-				Object v = val.getConstValue();
-				if( v instanceof Number )
-					cosw.addCase( ((Number)v).intValue(), case_label);
-				else if( v instanceof java.lang.Character )
-					cosw.addCase( (int)((java.lang.Character)v).charValue(), case_label);
-				else
-					throw new RuntimeException("Case label "+v+" must be of integer type");
-			}
-		} catch(Exception e ) { Kiev.reportError(this,e); }
-		Vector<JVar> vars = null;
-		if (pattern.length > 0) {
-			vars = new Vector<JVar>();
-			foreach (JVar p; pattern; p.vtype != null && p.sname != nameUnderscore) {
-				vars.append(p);
+		code.addInstr(Instr.set_label,case_label);
+		if( val == null ) cosw.addDefault(case_label);
+		else {
+			Object v = val.getConstValue();
+			if( v instanceof Number )
+				cosw.addCase( ((Number)v).intValue(), case_label);
+			else if( v instanceof java.lang.Character )
+				cosw.addCase( (int)((java.lang.Character)v).charValue(), case_label);
+			else
+				throw new RuntimeException("Case label "+v+" must be of integer type");
+		}
+		if (this.jparent instanceof JMatchStat) {
+			foreach (JVar p; pattern; p.vtype != null && p.sname != nameUnderscore)
 				p.generate(code,Type.tpVoid);
-			}
 		}
-		JNode[] stats = this.stats;
-		for(int i=0; i < stats.length; i++) {
-			try {
-				JNode st = stats[i];
-				if (st instanceof JENode)
-					st.generate(code,Type.tpVoid);
-				else if (st instanceof JVar || st instanceof JDeclGroup)
-					st.generate(code,Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(stats[i],e);
-			}
-		}
-		if (vars != null)
+	}
+	public void removeVars(Code code) {
+		if (pattern.length > 0) {
+			Vector<JVar> vars = new Vector<JVar>();
+			foreach (JVar p; pattern; p.vtype != null && p.sname != nameUnderscore)
+				vars.append(p);
 			code.removeVars(vars.toArray());
+		}
 	}
 }
 
-public view JSwitchStat of SwitchStat extends JENode implements BreakTarget {
-	public:ro	int					mode;
+class SwitchInfo {
+	int[] tags;
+	boolean tabswitch;
+	int lo = Integer.MAX_VALUE;
+	int hi = Integer.MIN_VALUE;
+}
+
+public view JSwitchStat of SwitchStat extends JBlock implements BreakTarget {
 	public:ro	JENode				sel;
 	public:ro	JCaseLabel[]		cases;
-	public:ro	JLVarExpr			tmpvar;
 	public:ro	JCaseLabel			defCase;
-	public:ro	JField				typehash; // needed for re-resolving
+	public:ro	JENode				sel_to_int;
 	public:ro	JLabel				lblcnt;
-	public:ro	JLabel				lblbrk;
 	public		CodeSwitch			cosw;
 
-	public JLabel getCntLabel() { return lblcnt; }
-	public JLabel getBrkLabel() { return lblbrk; }
+	public JLabel getCntLabel() {
+		if( lblcnt == null )
+			((SwitchStat)this).lblcnt = new Label();
+		return lblcnt;
+	}
 
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
 
-		int lo = Integer.MAX_VALUE;
-		int hi = Integer.MIN_VALUE;
-
-		JCaseLabel[] cases = this.cases;
+		SwitchInfo si = makeSwitchInfo(this);
 		
-		int ntags = defCase==null? cases.length : cases.length-1;
-		int[] tags = new int[ntags];
-
-		for (int i=0, j=0; i < cases.length; i++) {
-			if (cases[i].val != null) {
-				int val;
-				Object v = cases[i].val.getConstValue();
-				if( v instanceof Number )
-					val = ((Number)v).intValue();
-				else if( v instanceof java.lang.Character )
-					val = (int)((java.lang.Character)v).charValue();
-				else
-					throw new RuntimeException("Case label "+v+" must be of integer type");
-				tags[j++] = val;
-				if (val < lo) lo = val;
-				if (hi < val) hi = val;
-			}
-		}
-
-		long table_space_cost = (long)4 + (hi - lo + 1); // words
-		long table_time_cost = 3; // comparisons
-		long lookup_space_cost = (long)3 + 2 * ntags;
-		long lookup_time_cost = ntags;
-		boolean tabswitch =
-			table_space_cost + 3 * table_time_cost <=
-			lookup_space_cost + 3 * lookup_time_cost;
-
 		try {
-			if( mode == SwitchStat.TYPE_SWITCH ) {
-				lblcnt.generate(code,null);
-				sel.generate(code,null);
-			} else {
-				sel.generate(code,null);
-				lblcnt.generate(code,null);
-			}
-			if( tabswitch ) {
-				cosw = code.newTableSwitch(lo,hi);
+			sel.generate(code,null);
+			getCntLabel().generate(code,null);
+
+			if( si.tabswitch ) {
+				cosw = code.newTableSwitch(si.lo,si.hi);
 				code.addInstr(Instr.op_tableswitch,cosw);
 			} else {
-				qsort(tags,0,tags.length-1);
-				cosw = code.newLookupSwitch(tags);
+				cosw = code.newLookupSwitch(si.tags);
 				code.addInstr(Instr.op_lookupswitch,cosw);
 			}
-			
-			for(int i=0; i < cases.length; i++) {
-				if( isAutoReturnable() )
-					cases[i].setAutoReturnable(true);
-				cases[i].generate(code,Type.tpVoid);
-			}
-			for(int i=cases.length-1; i >= 0; i--) {
-				JCaseLabel c = cases[i];
-				for(int j=c.stats.length-1; j >= 0; j--) {
-					JNode n = c.stats[j];
-					if (n instanceof JVar)
-						((JVar)n).removeVar(code);
-					else if (n instanceof JDeclGroup)
-						((JDeclGroup)n).removeVars(code);
-				}
-			}
 
-			lblbrk.generate(code,null);
+			generateStats(code,Type.tpVoid);
+
+			getBrkLabel().generate(code,null);
 			code.addInstr(Instr.switch_close,cosw);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}
 	}
 
+	static SwitchInfo makeSwitchInfo(JSwitchStat sw) {
+		SwitchInfo si = new SwitchInfo();
+
+		int ntags = sw.defCase==null? sw.cases.length : sw.cases.length-1;
+		si.tags = new int[ntags];
+
+		for (int i=0, j=0; i < sw.cases.length; i++) {
+			if (sw.cases[i].val != null) {
+				int val;
+				Object v = sw.cases[i].val.getConstValue();
+				if( v instanceof Number )
+					val = ((Number)v).intValue();
+				else if( v instanceof java.lang.Character )
+					val = (int)((java.lang.Character)v).charValue();
+				else
+					throw new RuntimeException("Case label "+v+" must be of integer type");
+				si.tags[j++] = val;
+				if (val < si.lo) si.lo = val;
+				if (val > si.hi) si.hi = val;
+			}
+		}
+		long table_space_cost = (long)4 + (si.hi - si.lo + 1); // words
+		long table_time_cost = 3; // comparisons
+		long lookup_space_cost = (long)3 + 2 * ntags;
+		long lookup_time_cost = ntags;
+		si.tabswitch =
+			table_space_cost + 3 * table_time_cost <=
+			lookup_space_cost + 3 * lookup_time_cost;
+
+		if (!si.tabswitch)
+			qsort(si.tags,0,si.tags.length-1);
+
+		return si;
+	}
+	
 	/** sort (int) arrays of keys and values
 	 */
 	static void qsort(int[] keys, int lo, int hi) {
@@ -179,6 +159,93 @@ public view JSwitchStat of SwitchStat extends JENode implements BreakTarget {
 	}
 }
 
+public view JSwitchEnumStat of SwitchEnumStat extends JSwitchStat {
+
+	public void generate(Code code, Type reqType) {
+		code.setLinePos(this);
+
+		SwitchInfo si = makeSwitchInfo(this);
+		
+		sel.generate(code,null);
+		getCntLabel().generate(code,null);
+		sel_to_int.generate(code,null);
+
+		if( si.tabswitch ) {
+			cosw = code.newTableSwitch(si.lo,si.hi);
+			code.addInstr(Instr.op_tableswitch,cosw);
+		} else {
+			cosw = code.newLookupSwitch(si.tags);
+			code.addInstr(Instr.op_lookupswitch,cosw);
+		}
+
+		generateStats(code,Type.tpVoid);
+
+		getBrkLabel().generate(code,null);
+		code.addInstr(Instr.switch_close,cosw);
+	}
+}
+
+public view JSwitchTypeStat of SwitchTypeStat extends JSwitchStat {
+
+	public void generate(Code code, Type reqType) {
+		code.setLinePos(this);
+
+		SwitchInfo si = makeSwitchInfo(this);
+		
+		try {
+			sel.generate(code,null);
+			getCntLabel().generate(code,null);
+			sel_to_int.generate(code,null);
+
+			cosw = code.newTableSwitch(si.lo,si.hi);
+			code.addInstr(Instr.op_tableswitch,cosw);
+
+			generateStats(code,Type.tpVoid);
+
+			getBrkLabel().generate(code,null);
+			code.addInstr(Instr.switch_close,cosw);
+		} catch(Exception e ) {
+			Kiev.reportError(this,e);
+		}
+	}
+}
+
+public view JMatchStat of MatchStat extends JSwitchStat {
+
+	public:ro	JVar				tmp_var;
+
+	public void generate(Code code, Type reqType) {
+		code.setLinePos(this);
+
+		SwitchInfo si = makeSwitchInfo(this);
+		
+		try {
+			sel.generate(code,null);
+			getCntLabel().generate(code,null);
+			code.addInstr(Instr.op_dup);
+			code.addVar(tmp_var);
+			code.addInstr(Instr.op_store,tmp_var);
+			sel_to_int.generate(code,null);
+
+			if( si.tabswitch ) {
+				cosw = code.newTableSwitch(si.lo,si.hi);
+				code.addInstr(Instr.op_tableswitch,cosw);
+			} else {
+				cosw = code.newLookupSwitch(si.tags);
+				code.addInstr(Instr.op_lookupswitch,cosw);
+			}
+
+			generateStats(code,Type.tpVoid);
+
+			getBrkLabel().generate(code,null);
+			code.addInstr(Instr.switch_close,cosw);
+			code.removeVar(tmp_var);
+		} catch(Exception e ) {
+			Kiev.reportError(this,e);
+		}
+	}
+}
+
 
 public view JCatchInfo of CatchInfo extends JENode {
 	public:ro	JVar			arg;
@@ -195,7 +262,7 @@ public view JCatchInfo of CatchInfo extends JENode {
 			code.addInstr(Instr.enter_catch_handler,code_catcher);
 			code.addInstr(Instr.op_store,arg);
 			body.generate(code,Type.tpVoid);
-			if( !body.isMethodAbrupted() ) {
+			if( !body.isAbrupted() ) {
 				if( tr.finally_catcher != null ) {
 					code.addInstr(Instr.op_jsr, tr.finally_catcher.subr_label);
 				}

@@ -21,7 +21,6 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 	public		ENode			val;
 	public		Type			type;
 	public:ro	Var[]			pattern;
-	public:ro	ASTNode[]		stats;
 
 	public void resolve(Type reqType) {
 		boolean pizza_case = false;
@@ -31,11 +30,11 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 				val.resolve(null);
 				if( val instanceof TypeRef ) {
 					this.open();
-					this.type = Type.getRealType(sw.tmpvar.getType(),val.getType());
+					this.type = Type.getRealType(sw.sel.getType(),val.getType());
 					pizza_case = true;
 					Struct cas = this.type.getStruct();
-					if( cas.isPizzaCase() ) {
-						if( sw.mode != SwitchStat.PIZZA_SWITCH )
+					if (cas.isPizzaCase()) {
+						if!(sw instanceof MatchStat)
 							throw new CompilerException(this,"Pizza case type in non-pizza switch");
 						PizzaCase pcase = (PizzaCase)cas;
 						this.open();
@@ -49,34 +48,34 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 								if( p.type == Type.tpVoid || p.sname == nameUnderscore)
 									continue;
 								Field f = (Field)pcase.group.decls[i];
-								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
+								Type tp = Type.getRealType(sw.sel.getType(),f.type);
 								if( !p.type.isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
 									throw new RuntimeException("Pattern variable "+p.sname+" has type "+p.type+" but type "+tp+" is expected");
 								p.open();
 								p.init = new IFldExpr(p.pos,
 										new CastExpr(p.pos,
-											Type.getRealType(sw.tmpvar.getType(),cas.xtype),
-											new LVarExpr(p.pos,sw.tmpvar.getVar())
+											Type.getRealType(sw.sel.getType(),cas.xtype),
+											new LVarExpr(p.pos,((MatchStat)sw).tmp_var)
 										),
 										f
 									);
-//									addSymbol(j++,p);
 								p.resolveDecl();
 							}
 						}
 					} else {
-						if( sw.mode != SwitchStat.TYPE_SWITCH )
+						if!(sw instanceof SwitchTypeStat)
 							throw new CompilerException(this,"Type case in non-type switch");
 						this.open();
 						if( val.getType() ≈ Type.tpObject ) {
 							val = null;
+							assert (sw.cases.indexOf(this) >= 0);
 							sw.defCase = (CaseLabel)this;
 						} else {
 							val = new ConstIntExpr(0);
 						}
 					}
 				} else {
-					if( sw.mode == SwitchStat.ENUM_SWITCH ) {
+					if (sw instanceof SwitchEnumStat) {
 						if( !(val instanceof SFldExpr) )
 							throw new CompilerException(this,"Wrong case in enum switch");
 						SFldExpr f = (SFldExpr)val;
@@ -89,22 +88,21 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 						else
 							val = f.var.init.ncopy();
 					}
-					else if( sw.mode != SwitchStat.NORMAL_SWITCH )
+					else if (sw.getClass() != SwitchStat.class)
 						throw new CompilerException(this,"Wrong case in normal switch");
 				}
 			} else {
 				if (sw.defCase != this) {
+					assert (sw.cases.indexOf(this) >= 0);
 					sw.open();
 					sw.defCase = (CaseLabel)this;
 				}
-				if( sw.mode == SwitchStat.TYPE_SWITCH && this.type ≉ Type.tpObject) {
+				if ((sw instanceof SwitchTypeStat) && this.type ≉ Type.tpObject) {
 					this.open();
 					this.type = Type.tpObject;
 				}
 			}
 		} catch(Exception e ) { Kiev.reportError(this,e); }
-
-		RBlock.resolveStats(Type.tpVoid, getSpacePtr("stats"));
 
 		if( val != null ) {
 			if( !val.isConstantExpr() )
@@ -115,13 +113,11 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 	}
 }
 
-public static final view RSwitchStat of SwitchStat extends RENode {
-	public		int						mode;
+public static view RSwitchStat of SwitchStat extends RBlock {
 	public		ENode					sel;
 	public:ro	CaseLabel[]				cases;
-	public		LVarExpr				tmpvar;
 	public		CaseLabel				defCase;
-	public		Field					typehash; // needed for re-resolving
+	public		ENode					sel_to_int;
 	public:ro	Label					lblcnt;
 	public:ro	Label					lblbrk;
 
@@ -134,7 +130,9 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 		else if( cases.length == 1 && cases[0].pattern.length == 0) {
 			cases[0].resolve(Type.tpVoid);
 			CaseLabel cas = (CaseLabel)cases[0];
-			Block bl = new Block(cas.pos, cas.stats.delToArray());
+			Block bl = new Block(cas.pos);
+			foreach (ASTNode n; ((SwitchStat)this).stats.delToArray(); !(n instanceof CaseLabel))
+				bl.stats += n;
 			bl.setBreakTarget(true);
 			if( ((CaseLabel)cas).val == null ) {
 				bl.stats.insert(0,new ExprStat(sel.pos,~sel));
@@ -151,87 +149,149 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 				return;
 			}
 		}
-		if( tmpvar == null ) {
-			Block me = null;
-			try {
-				sel.resolve(Type.tpInt);
-				Type tp = sel.getType();
-				if( tp.getStruct() != null && tp.getStruct().isEnum() ) {
-					mode = SwitchStat.ENUM_SWITCH;
-				}
-				else if( tp.isReference() ) {
-					this.open();
-					tmpvar = new LVarExpr(sel.pos, new LVar(sel.pos,"tmp$sel$"+Integer.toHexString(sel.hashCode()),tp,Var.VAR_LOCAL,0));
-					me = new Block(pos);
-					this.replaceWithNode(me);
-					ENode old_sel = ~this.sel;
-					tmpvar.getVar().init = old_sel;
-					me.addSymbol(tmpvar.getVar());
-					me.stats.add((ENode)this);
-					if( tp.getStruct() != null && tp.getStruct().isHasCases() ) {
-						mode = SwitchStat.PIZZA_SWITCH;
-						sel = new CallExpr(pos,new LVarExpr(tmpvar.pos,tmpvar.getVar()),
-							new SymbolRef<Method>(pos, nameGetCaseTag),null,ENode.emptyArray);
-						Kiev.runProcessorsOn(sel);
-					} else {
-						mode = SwitchStat.TYPE_SWITCH;
-						typehash = new Field("fld$sel$"+Integer.toHexString(old_sel.hashCode()),
-							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
-						ctx_tdecl.members.add(typehash);
-						CallExpr cae = new CallExpr(pos,
-							new SFldExpr(pos,typehash),
-							Type.tpTypeSwitchHash.tdecl.resolveMethod("index",Type.tpInt, Type.tpObject),
-							new ENode[]{new LVarExpr(pos,tmpvar.getVar())}
-							);
-						sel = cae;
-					}
-				}
-			} catch(Exception e ) { Kiev.reportError(sel,e); }
-			if( me != null ) {
-				me.resolve(reqType);
-				return;
-			}
-		}
+		if (defCase == null)
+			setBreaked(true);
 		sel.resolve(Type.tpInt);
 		TypeRef[] typenames = new TypeRef[0];
+		RBlock.resolveStats(Type.tpVoid, getSpacePtr("stats"));
+		RSwitchStat.getThrowForMethodAbrupted((SwitchStat)this);
+		setResolved(true);
+	}
+
+	static void getThrowForMethodAbrupted(SwitchStat sw) {	
+		if (sw.isMethodAbrupted() && sw.defCase==null) {
+			CaseLabel dflt = new CaseLabel(sw.pos,null);
+			sw.stats.insert(0,dflt);
+			sw.cases.insert(0,dflt);
+			sw.defCase = dflt;
+			ThrowStat thrw = new ThrowStat(sw.pos,new NewExpr(sw.pos,Type.tpError,ENode.emptyArray));
+			sw.stats.insert(1,thrw);
+			dflt.resolve(Type.tpVoid);
+			thrw.resolve(Type.tpVoid);
+		}
+	}
+	
+}
+
+public static final view RSwitchEnumStat of SwitchEnumStat extends RSwitchStat {
+
+	public void resolve(Type reqType) {
+		if( isResolved() ) return;
+		sel.resolve(Type.tpEnum);
+		Type tp = sel.getType();
+		if (!tp.isReference() || !tp.getStruct().isEnum())
+			throw new CompilerException(this, "Enum switch selector must be the enum type");
+		this.open();
+		this.sel_to_int = new CallExpr(pos,
+				new NopExpr(),
+				Type.tpEnum.tdecl.resolveMethod("ordinal", Type.tpInt),
+				ENode.emptyArray
+				);
+		JavaEnum jen = (JavaEnum)tp.getStruct();
+		if (defCase == null && jen.getEnumFields().length > cases.length)
+			setBreaked(true);
+		RBlock.resolveStats(Type.tpVoid, getSpacePtr("stats"));
+		for(int i=0; i < cases.length; i++) {
+			for(int j=0; j < i; j++) {
+				ENode vi = cases[i].val;
+				ENode vj = cases[j].val;
+				if( i != j &&  vi != null && vj != null
+				 && vi.getConstValue().equals(vj.getConstValue()) )
+					throw new RuntimeException("Duplicate value "+vi+" and "+vj+" in switch statement");
+			}
+		}
+		// Check if abrupted
+		if (!isBreaked() && defCase == null)
+			setMethodAbrupted(true);
+		RSwitchStat.getThrowForMethodAbrupted((SwitchStat)this);
+		setResolved(true);
+	}
+}
+
+public static final view RSwitchTypeStat of SwitchTypeStat extends RSwitchStat {
+
+	public void resolve(Type reqType) {
+		if( isResolved() ) return;
+		sel.resolve(Type.tpObject);
+		Type tp = sel.getType();
+		if (!tp.isReference())
+			throw new CompilerException(this, "Type switch selector must be the reference type");
+		this.open();
+		Field typehash = new Field("fld$sel$"+Integer.toHexString(sel.hashCode()),
+			Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
+		ctx_tdecl.members.add(typehash);
+		this.sel_to_int = new CallExpr(pos,
+				new TypeRef(Type.tpTypeSwitchHash),
+				Type.tpTypeSwitchHash.tdecl.resolveMethod("index",Type.tpInt, Type.tpObject, Type.tpTypeSwitchHash),
+				new ENode[]{new NopExpr(), new SFldExpr(pos,typehash)}
+				);
+		if (defCase == null)
+			setBreaked(true);
+		sel.resolve(Type.tpInt);
+		TypeRef[] typenames = new TypeRef[0];
+		RBlock.resolveStats(Type.tpVoid, getSpacePtr("stats"));
+		foreach (CaseLabel cl; cases; cl.isDirectFlowReachable())
+			Kiev.reportWarning(cl, "Fall through to switch case");
 		int defindex = -1;
 		for(int i=0; i < cases.length; i++) {
-			try {
-				cases[i].resolve(Type.tpVoid);
-				if( typehash != null ) {
-					CaseLabel c = (CaseLabel)cases[i];
-					if( c.type == null || !c.type.isReference() )
-						throw new CompilerException(c,"Mixed switch and typeswitch cases");
-					typenames = (TypeRef[])Arrays.append(typenames,new TypeRef(c.type));
-					if( c.val != null )
-						c.val = new ConstIntExpr(i);
-					else
-						defindex = i;
-				}
-			}
-			catch(Exception e ) { Kiev.reportError(cases[i],e); }
-			if( tmpvar!=null && i < cases.length-1 && !cases[i].isAbrupted() ) {
-				Kiev.reportWarning(cases[i+1], "Fall through to switch case");
+			CaseLabel c = cases[i];
+			if( c.type == null || !c.type.isReference() )
+				throw new CompilerException(c,"Mixed switch and switch-type cases");
+			typenames = (TypeRef[])Arrays.append(typenames,new TypeRef(c.type));
+			if( c.val != null )
+				c.val = new ConstIntExpr(i);
+			else
+				defindex = i;
+		}
+		TypeClassExpr[] types = new TypeClassExpr[typenames.length];
+		for(int j=0; j < types.length; j++)
+			types[j] = new TypeClassExpr(typenames[j].pos,typenames[j]);
+		if( defindex < 0 ) defindex = types.length;
+		typehash.init = new NewExpr(ctx_tdecl.pos,Type.tpTypeSwitchHash,
+			new ENode[]{ new NewInitializedArrayExpr(ctx_tdecl.pos,new TypeExpr(Type.tpClass,Operator.PostTypeArray),1,types),
+				new ConstIntExpr(defindex)
+			});
+		Constructor clinit = ((Struct)ctx_tdecl).getClazzInitMethod();
+		clinit.block.stats.add(
+			new ExprStat(typehash.init.pos,
+				new AssignExpr(typehash.init.pos,Operator.Assign
+					,new SFldExpr(typehash.pos,typehash),typehash.init.ncopy())
+			)
+		);
+		for(int i=0; i < cases.length; i++) {
+			for(int j=0; j < i; j++) {
+				ENode vi = cases[i].val;
+				ENode vj = cases[j].val;
+				if( i != j &&  vi != null && vj != null
+				 && vi.getConstValue().equals(vj.getConstValue()) )
+					throw new RuntimeException("Duplicate value "+vi+" and "+vj+" in switch statement");
 			}
 		}
-		if( mode == SwitchStat.TYPE_SWITCH ) {
-			TypeClassExpr[] types = new TypeClassExpr[typenames.length];
-			for(int j=0; j < types.length; j++)
-				types[j] = new TypeClassExpr(typenames[j].pos,typenames[j]);
-			if( defindex < 0 ) defindex = types.length;
-			typehash.init = new NewExpr(ctx_tdecl.pos,Type.tpTypeSwitchHash,
-				new ENode[]{ new NewInitializedArrayExpr(ctx_tdecl.pos,new TypeExpr(Type.tpClass,Operator.PostTypeArray),1,types),
-					new ConstIntExpr(defindex)
-				});
-			Constructor clinit = ((Struct)ctx_tdecl).getClazzInitMethod();
-			clinit.block.stats.add(
-				new ExprStat(typehash.init.pos,
-					new AssignExpr(typehash.init.pos,Operator.Assign
-						,new SFldExpr(typehash.pos,typehash),typehash.init.ncopy())
-				)
-			);
-			//typehash.resolveDecl();
-		}
+		RSwitchStat.getThrowForMethodAbrupted((SwitchStat)this);
+		setResolved(true);
+	}
+}
+
+public static final view RMatchStat of MatchStat extends RSwitchStat {
+
+	public Var					tmp_var;
+
+	public void resolve(Type reqType) {
+		if( isResolved() ) return;
+		this.open();
+		sel.resolve(Type.tpObject);
+		Type tp = sel.getType();
+		if (!tp.isReference() || !tp.getStruct().isHasCases())
+			throw new CompilerException(this, "Pattern-match switch selector must be the type with cases");
+		this.open();
+		this.sel_to_int = new CallExpr(pos,
+				new NopExpr(),
+				tp.meta_type.tdecl.resolveMethod(nameGetCaseTag, Type.tpInt),
+				ENode.emptyArray
+				);
+		tmp_var = new LVar(pos,"$tmp",sel.getType(),Var.VAR_LOCAL,0);
+		int defindex = -1;
+		RBlock.resolveStats(Type.tpVoid, getSpacePtr("stats"));
 		for(int i=0; i < cases.length; i++) {
 			for(int j=0; j < i; j++) {
 				ENode vi = cases[i].val;
@@ -243,78 +303,39 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 		}
 		// Check if abrupted
 		if( !isBreaked() ) {
-			boolean has_default_case = false;
-			for(int i=0; i < cases.length; i++) {
-				if( ((CaseLabel)cases[i]).val == null ) {
-					has_default_case = true;
-					break;
-				}
-			}
 			boolean has_unabrupted_case = false;
-			if( !has_default_case ) {
-				// Check if it's an enum-type switch and all cases are
-				// abrupted and all enum values cases present
-				// Check if all cases are abrupted
-				if( mode == SwitchStat.ENUM_SWITCH ) {
-					for(int i=0; i < cases.length; i++) {
-						if( !cases[i].isMethodAbrupted() && cases[i].isAbrupted() ) {
-							has_unabrupted_case = true;
-							break;
-						}
-						else if( !cases[i].isAbrupted() ) {
-							for(int j = i+1; j < cases.length; j++) {
-								if( cases[j].isAbrupted()  ) {
-									if( !cases[j].isMethodAbrupted() ) {
-										has_unabrupted_case = true;
-										break;
-									}
-								}
-							}
-						}
-					}
-					if( !has_unabrupted_case ) {
-						Type tp = sel.getType();
-						Field[] eflds = ((JavaEnum)tp.getStruct()).getEnumFields();
-						if (eflds.length == cases.length)
-							setMethodAbrupted(true);
-					}
-				}
+			if (defCase == null) {
 				// Check if it's a pizza-type switch and all cases are
 				// abrupted and all class's cases present
 				// Check if all cases are abrupted
-				else if( mode == SwitchStat.PIZZA_SWITCH ) {
-					for(int i=0; i < cases.length; i++) {
-						if( !cases[i].isMethodAbrupted() && cases[i].isAbrupted() ) {
-							has_unabrupted_case = true;
-							break;
-						}
-						else if( !cases[i].isAbrupted() ) {
-							for(int j = i+1; j < cases.length; j++) {
-								if( cases[j].isAbrupted()  ) {
-									if( !cases[j].isMethodAbrupted() ) {
-										has_unabrupted_case = true;
-										break;
-									}
+				for(int i=0; i < cases.length; i++) {
+					if( !cases[i].isMethodAbrupted() && cases[i].isAbrupted() ) {
+						has_unabrupted_case = true;
+						break;
+					}
+					else if( !cases[i].isAbrupted() ) {
+						for(int j = i+1; j < cases.length; j++) {
+							if( cases[j].isAbrupted()  ) {
+								if( !cases[j].isMethodAbrupted() ) {
+									has_unabrupted_case = true;
+									break;
 								}
 							}
 						}
 					}
-					if( tmpvar != null ) {
-						if( !has_unabrupted_case ) {
-							Type tp = tmpvar.getType();
-							//PizzaCaseAttr case_attr;
-							int caseno = 0;
-							Struct tpclz = tp.getStruct();
-							foreach (Struct sub; tpclz.sub_decls) {
-								if( sub.isPizzaCase() ) {
-									PizzaCase pcase = (PizzaCase)sub;
-									if (pcase.tag > caseno)
-										caseno = pcase.tag;
-								}
-							}
-							if( caseno == cases.length ) setMethodAbrupted(true);
+				}
+				if( !has_unabrupted_case ) {
+					Type tp = sel.getType();
+					int caseno = 0;
+					Struct tpclz = tp.getStruct();
+					foreach (Struct sub; tpclz.sub_decls) {
+						if (sub.isPizzaCase()) {
+							PizzaCase pcase = (PizzaCase)sub;
+							if (pcase.tag > caseno)
+								caseno = pcase.tag;
 						}
 					}
+					if( caseno == cases.length ) setMethodAbrupted(true);
 				}
 			} else {
 				if (!cases[cases.length-1].isAbrupted()) {
@@ -324,17 +345,7 @@ public static final view RSwitchStat of SwitchStat extends RENode {
 				if( !has_unabrupted_case ) setMethodAbrupted(true);
 			}
 		}
-		if( isMethodAbrupted() && defCase==null ) {
-			ENode thrErr = new ThrowStat(pos,new NewExpr(pos,Type.tpError,ENode.emptyArray));
-			CaseLabel dc = new CaseLabel(pos,null,new ENode[]{thrErr});
-			((SwitchStat)this).cases.insert(0,dc);
-			dc.resolve(Type.tpVoid);
-		}
-		if( mode == SwitchStat.ENUM_SWITCH ) {
-			Type tp = sel.getType();
-			sel = new CastExpr(pos,Type.tpInt,~sel);
-			sel.resolve(Type.tpInt);
-		}
+		RSwitchStat.getThrowForMethodAbrupted((SwitchStat)this);
 		setResolved(true);
 	}
 }

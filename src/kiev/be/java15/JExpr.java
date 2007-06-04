@@ -188,17 +188,26 @@ public view JCommaExpr of CommaExpr extends JENode {
 
 public view JBlock of Block extends JENode {
 	public:ro	JNode[]			stats;
-	public		CodeLabel		break_label;
+	public:ro	JLabel			lblbrk;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating Block");
 		code.setLinePos(this);
+		generateStats(code, reqType);
+	}
+	public void generateStats(Code code, Type reqType) {
 		JNode[] stats = this.stats;
-		break_label = code.newLabel();
+		JCaseLabel jcase = null;
 		for(int i=0; i < stats.length; i++) {
 			try {
 				JNode st = stats[i];
-				if (st instanceof JENode) {
+				if (st instanceof JCaseLabel) {
+					if (jcase != null)
+						jcase.removeVars(code);
+					jcase = (JCaseLabel)st;
+					jcase.generate(code,Type.tpVoid);
+				}
+				else if (st instanceof JENode) {
 					if (i < stats.length-1 || isGenVoidExpr())
 						st.generate(code,Type.tpVoid);
 					else
@@ -211,6 +220,8 @@ public view JBlock of Block extends JENode {
 				Kiev.reportError(stats[i],e);
 			}
 		}
+		if (jcase != null)
+			jcase.removeVars(code);
 		for(int j=stats.length-1; j >= 0; j--) {
 			JNode n = stats[j];
 			if (n instanceof JVar)
@@ -221,13 +232,14 @@ public view JBlock of Block extends JENode {
 		JNode p = this.jparent;
 		if( p instanceof JMethod && Kiev.debugOutputC && code.need_to_gen_post_cond && p.type.ret() ≢ Type.tpVoid)
 			code.stack_push(p.etype.ret().getJType());
-		code.addInstr(Instr.set_label,break_label);
+		if (lblbrk != null)
+			lblbrk.generate(code,null);
 	}
 
-	public CodeLabel getBreakLabel() throws RuntimeException {
-		if( break_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'break' label");
-		return break_label;
+	public JLabel getBrkLabel() {
+		if( lblbrk == null )
+			((Block)this).lblbrk = new Label();
+		return lblbrk;
 	}
 }
 

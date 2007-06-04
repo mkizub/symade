@@ -475,7 +475,7 @@ public class GotoStat extends ENode {
 			dest.delLink((GotoStat)this);
 			dest = null;
 		}
-		LabeledStat[] stats = resolveStat(this.ident,ctx_method.body, LabeledStat.emptyArray);
+		LabeledStat[] stats = resolveStat(this.ident,ctx_method.body);
 		if( stats.length == 0 ) {
 			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return false;
@@ -493,91 +493,22 @@ public class GotoStat extends ENode {
 		return false; // don't pre-resolve
 	}
 
-	public static LabeledStat[] resolveStat(String name, ASTNode st, LabeledStat[] stats) {
-		int i;
-		switch( st ) {
-		case SwitchStat:
-		{
-			SwitchStat bst = (SwitchStat)st;
-			for(int j=0; j < bst.cases.length; j++ ) {
-				CaseLabel cl = (CaseLabel)bst.cases[j];
-				for(i=0; i < cl.stats.length; i++ ) {
-					stats = resolveStat(name,cl.stats[i],stats);
+	public static LabeledStat[] resolveStat(String name, ASTNode st) {
+		Vector<LabeledStat> stats = new Vector<LabeledStat>();
+		st.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) {
+				if (n instanceof LabeledStat && n.lbl.sname == name) {
+					LabeledStat l = (LabeledStat)n;
+					if (!stats.contains(l))
+						stats.append(l);
+					return true; // can be nested
 				}
+				if (n instanceof DNode)
+					return false; // don't scan declarations, like inner classes
+				return true;
 			}
-		}
-			break;
-		case Block:
-		{
-			Block bst = (Block)st;
-			for(i=0; i < bst.stats.length; i++ ) {
-				stats = resolveStat(name,bst.stats[i],stats);
-			}
-		}
-			break;
-		case TryStat:
-		{
-			TryStat tst = (TryStat)st;
-			stats = resolveStat(name,tst.body,stats);
-			for(i=0; i < tst.catchers.length; i++) {
-				stats = resolveStat(name,((CatchInfo)tst.catchers[i]).body,stats);
-			}
-		}
-			break;
-		case WhileStat:
-		{
-			WhileStat wst = (WhileStat)st;
-			stats = resolveStat(name,wst.body,stats);
-		}
-			break;
-		case DoWhileStat:
-		{
-			DoWhileStat wst = (DoWhileStat)st;
-			stats = resolveStat(name,wst.body,stats);
-		}
-			break;
-		case ForStat:
-		{
-			ForStat wst = (ForStat)st;
-			stats = resolveStat(name,wst.body,stats);
-		}
-			break;
-		case ForEachStat:
-		{
-			ForEachStat wst = (ForEachStat)st;
-			stats = resolveStat(name,wst.body,stats);
-		}
-			break;
-		case IfElseStat:
-		{
-			IfElseStat wst = (IfElseStat)st;
-			stats = resolveStat(name,wst.thenSt,stats);
-			if( wst.elseSt != null )
-				stats = resolveStat(name,wst.elseSt,stats);
-		}
-			break;
-		case LabeledStat:
-		{
-			LabeledStat lst = (LabeledStat)st;
-			if( lst.lbl.sname == name ) {
-				stats = (LabeledStat[])Arrays.appendUniq(stats,lst);
-			}
-			stats = resolveStat(name,lst.stat,stats);
-		}
-			break;
-		case GotoStat:			break;
-		case GotoCaseStat:		break;
-		case ReturnStat:		break;
-		case ThrowStat:			break;
-		case ExprStat:			break;
-		case BreakStat:			break;
-		case ContinueStat:		break;
-		case DNode:				break;
-		case SNode:				break;
-		default:
-			Kiev.reportWarning(st,"Unknown statement in label lookup: "+st.getClass());
-		}
-		return stats;
+		});
+		return stats.toArray();
 	}
 }
 

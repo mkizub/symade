@@ -20,6 +20,17 @@
   <a-node class='kiev.vlang.Import'>
    <name>
     <a-node class='kiev.vlang.SymbolRef'>
+     <name>kiev&#31;stdlib&#31;Syntax</name>
+     <qualified>true</qualified>
+    </a-node>
+   </name>
+   <mode>IMPORT_SYNTAX</mode>
+   <star>false</star>
+   <of_method>false</of_method>
+  </a-node>
+  <a-node class='kiev.vlang.Import'>
+   <name>
+    <a-node class='kiev.vlang.SymbolRef'>
      <name>kiev&#31;vlang</name>
      <qualified>true</qualified>
     </a-node>
@@ -2667,6 +2678,17 @@
            </expected_types>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
+           <text>par:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>par</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SymbolRef</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
            <text>&gt;</text>
           </a-node>
          </elements>
@@ -2841,6 +2863,11 @@
           </a-node>
           <a-node class='kiev.fmt.SyntaxSubAttr'>
            <name>par</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SymbolRef</name>
+            </a-node>
+           </expected_types>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>in:</text>

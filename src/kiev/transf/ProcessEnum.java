@@ -89,24 +89,16 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			tome.pos = pos;
 			tome.params.append(new LVar(pos,nameEnumOrdinal,Type.tpInt, Var.PARAM_NORMAL,0));
 			tome.body = new Block(pos);
-			SwitchStat sw = new SwitchStat(pos,new LVarExpr(pos,tome.params[0]),CaseLabel.emptyArray);
+			SwitchStat sw = new SwitchStat(pos,new LVarExpr(pos,tome.params[0]));
 			//EnumAttr ea = (EnumAttr)clazz.getAttr(attrEnum);
 			//if( ea == null )
 			//	throw new RuntimeException("enum structure "+clazz+" without "+attrEnum+" attribute");
-			CaseLabel[] cases = new CaseLabel[eflds.length+1];
 			for(int i=0; i < eflds.length; i++) {
-				cases[i] = new CaseLabel(pos,
-					new ConstIntExpr(i),
-					new ENode[]{
-						new ReturnStat(pos,new SFldExpr(pos,eflds[i]))
-					});
+				sw.stats.add(new CaseLabel(pos, new ConstIntExpr(i)));
+				sw.stats.add(new ReturnStat(pos,new SFldExpr(pos,eflds[i])));
 			}
-			cases[cases.length-1] = new CaseLabel(pos,null,
-					new ENode[]{
-						new ThrowStat(pos,new NewExpr(pos,Type.tpCastException,ENode.emptyArray))
-					});
-			foreach (CaseLabel c; cases)
-				sw.cases.add(c);
+			sw.stats.add(new CaseLabel(pos,null));
+			sw.stats.add(new ThrowStat(pos,new NewExpr(pos,Type.tpCastException,ENode.emptyArray)));
 			tome.block.stats.add(sw);
 			foreach (Method m; clazz.members; m.sname == tome.sname) {
 				m.replaceWithNode(tome);
@@ -125,24 +117,16 @@ public class EnumFE_GenMembers extends TransfProcessor {
 			SwitchStat sw = new SwitchStat(pos,
 				new CallExpr(pos,	new ThisExpr(),
 					Type.tpEnum.tdecl.resolveMethod(nameEnumOrdinal, Type.tpInt),
-					ENode.emptyArray),
-				CaseLabel.emptyArray);
-			CaseLabel[] cases = new CaseLabel[eflds.length+1];
+					ENode.emptyArray));
 			for(int i=0; i < eflds.length; i++) {
 				Field f = eflds[i];
 				ConstStringExpr alt_id = (ConstStringExpr)Field.ALT_ENUM_ID_ATTR.get(f);
 				String str = (alt_id != null) ? alt_id.value : f.sname;
-				cases[i] = new CaseLabel(pos,new ConstIntExpr(i),
-					new ENode[]{
-						new ReturnStat(pos,new ConstStringExpr(str))
-					});
+				sw.stats.add(new CaseLabel(pos,new ConstIntExpr(i)));
+				sw.stats.add(new ReturnStat(pos,new ConstStringExpr(str)));
 			}
-			cases[cases.length-1] = new CaseLabel(pos,null,
-					new ENode[]{
-						new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,ENode.emptyArray))
-					});
-			foreach (CaseLabel c; cases)
-				sw.cases.add(c);
+			sw.stats.add(new CaseLabel(pos,null));
+			sw.stats.add(new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,ENode.emptyArray)));
 			tostr.block.stats.add(sw);
 			foreach (Method m; clazz.members; m.sname == tostr.sname) {
 				m.replaceWithNode(tostr);

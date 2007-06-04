@@ -197,6 +197,17 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return super.includeInDump(dump,attr,val);
 	}
 
+	public String qname() {
+		ANode p = parent();
+		while (p instanceof DeclGroup)
+			p = p.parent();
+		if (p == null || p instanceof Env)
+			return sname;
+		if (p instanceof GlobalDNode)
+			return (((GlobalDNode)p).qname()+'\u001f'+sname);
+		return sname;
+	}
+
 	public boolean preResolveIn() {
 		ENode init = this.init;
 		if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {

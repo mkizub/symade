@@ -530,12 +530,13 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="this:in", seq="true")	ENode[]		stats;
 	}
 
-	@virtual typedef This  = Block;
-	@virtual typedef JView = JBlock;
-	@virtual typedef RView = RBlock;
+	@virtual typedef This  ≤ Block;
+	@virtual typedef JView ≤ JBlock;
+	@virtual typedef RView ≤ RBlock;
 
 	@att public ASTNode[]			stats;
-	     public CodeLabel			break_label;
+	@att(copyable=false, ext_data=true)
+	     public Label				lblbrk;
 
 	public Block() {}
 
@@ -561,7 +562,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public boolean backendCleanup() {
-		this.break_label = null;
+		this.lblbrk = null;
 		return true;
 	}
 
@@ -576,6 +577,9 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 			info.checkNodeName(dn),
 			info.check(dn),
 			node ?= dn
+		;
+			n instanceof CaseLabel,
+			((CaseLabel)n).resolveNameR(node,info)
 		;
 			info.checkNodeName(n),
 			node ?= n
@@ -595,6 +599,9 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		{
 			n instanceof DeclGroup,
 			((DeclGroup)n).resolveMethodR(node, info, mt)
+		;
+			n instanceof CaseLabel,
+			((CaseLabel)n).resolveMethodR(node, info, mt)
 		;
 			n instanceof Var && ((Var)n).isForward(),
 			info.enterForward((Var)n) : info.leaveForward((Var)n),

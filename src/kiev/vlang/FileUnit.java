@@ -325,9 +325,9 @@ public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOf
 		TypeDecl td = srpkg.dnode;
 		if (td != null)
 			return td;
+		srpkg.open();
 		if (srpkg.name == "") {
 			td = Env.getRoot();
-			srpkg.open();
 			srpkg.symbol = td;
 		} else {
 			if (parent() != null && parent().ctx_name_space != null)

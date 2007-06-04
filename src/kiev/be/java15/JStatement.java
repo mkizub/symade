@@ -111,7 +111,7 @@ public final view JReturnStat of ReturnStat extends JENode {
 			code.removeVar(tmp_var);
 		}
 		if( code.need_to_gen_post_cond ) {
-			code.addInstr(Instr.op_goto,code.method.getBreakLabel());
+			code.addInstr(Instr.op_goto,code.method.getBrkLabel().getCodeLabel(code));
 			if( code.method.type.ret() ≢ Type.tpVoid )
 				code.stack_pop();
 		} else
@@ -307,7 +307,7 @@ public final view JBreakStat of BreakStat extends JENode {
 				}
 				else if( node instanceof JBlock && node.isBreakTarget() ){
 					JBlock t = (JBlock)node;
-					return (Object[])Arrays.append(cl,t.getBreakLabel());
+					return (Object[])Arrays.append(cl,t.getBrkLabel().getCodeLabel(code));
 				}
 			}
 			throw new RuntimeException("Break not within loop statement");
@@ -327,7 +327,7 @@ public final view JBreakStat of BreakStat extends JENode {
 					if( st instanceof BreakTarget )
 						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
 					else if (st instanceof JBlock)
-						return (Object[])Arrays.append(cl,st.getBreakLabel());
+						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
 					else
 						throw new RuntimeException("Label "+name+" does not refer to break target");
 				}
@@ -490,12 +490,8 @@ public final view JGotoCaseStat of GotoCaseStat extends JENode {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating GotoCaseStat");
 		code.setLinePos(this);
 		try {
-			if( !expr.isConstantExpr() ) {
-				if( sw.mode == SwitchStat.TYPE_SWITCH )
-					expr.generate(code,Type.tpVoid);
-				else
-					expr.generate(code,null);
-			}
+			if (!expr.isConstantExpr())
+				expr.generate(code,null);
 
 			JVar tmp_var = null;
 			for(JNode node = this.jparent; node != null; node = node.jparent) {
@@ -531,8 +527,9 @@ public final view JGotoCaseStat of GotoCaseStat extends JENode {
 				else
 					lb = sw.getBrkLabel().getCodeLabel(code);
 			}
-			else if( !expr.isConstantExpr() )
+			else if (!expr.isConstantExpr()) {
 				lb = sw.getCntLabel().getCodeLabel(code);
+			}
 			else {
 				int goto_value = ((Number)((JConstExpr)expr).getConstValue()).intValue();
 				foreach(JCaseLabel cl; sw.cases) {
@@ -551,7 +548,7 @@ public final view JGotoCaseStat of GotoCaseStat extends JENode {
 				}
 			}
 			code.addInstr(Instr.op_goto,lb);
-			if( !expr.isConstantExpr() && sw.mode != SwitchStat.TYPE_SWITCH )
+			if( !expr.isConstantExpr() && !(sw instanceof JSwitchTypeStat) )
 				code.stack_pop();
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);

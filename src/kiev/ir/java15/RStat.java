@@ -262,7 +262,7 @@ public final view RGotoStat of GotoStat extends RENode {
 			dest.delLink((GotoStat)this);
 			dest = null;
 		}
-		LabeledStat[] stats = GotoStat.resolveStat(this.ident, ctx_method.body, LabeledStat.emptyArray);
+		LabeledStat[] stats = GotoStat.resolveStat(this.ident, ctx_method.body);
 		if( stats.length == 0 ) {
 			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return;
@@ -299,17 +299,8 @@ public final view RGotoCaseStat of GotoCaseStat extends RENode {
 		}
 		if( this.sw == null )
 			throw new CompilerException(this,"goto case statement not within a switch statement");
-		if( expr != null ) {
-			if( sw.mode == SwitchStat.TYPE_SWITCH ) {
-				this.open();
-				expr = new AssignExpr(pos,Operator.Assign,
-					new LVarExpr(pos,sw.tmpvar.getVar()),~expr);
-				expr.resolve(Type.tpVoid);
-				expr.setGenVoidExpr(true);
-			} else {
-				expr.resolve(sw.sel.getType());
-			}
-		}
+		if( expr != null )
+			expr.resolve(sw.sel.getType());
 	}
 }
 

@@ -376,6 +376,7 @@ public class Compiler {
 	public static boolean javaMode				= false;
 	public static boolean javacerrors			= false;
 	public static boolean nowarn				= false;
+	public static boolean code_nowarn			= true;
 
 	public static KievBackend useBackend = KievBackend.Java15;
 
@@ -741,6 +742,11 @@ public class Compiler {
 					args[a] = null;
 					continue;
 				}
+				else if( args[a].equals("-codewarn")) {
+					Compiler.code_nowarn = !onoff;
+					args[a] = null;
+					continue;
+				}
 				else if( args[a].equals("-test")) {
 					args[a++] = null;
 					String[] errs = args[a].split(":");
@@ -954,6 +960,8 @@ public class Compiler {
 +"    types    var/field types\n"
 +"\n"
 +" -v or -verbose         Verbose operation.\n"
++" -warn                  Show warnings.\n"
++" -codewarn              Show codegeneration warnings.\n"
 +" -prompt                Interactive compilation.\n"
 +" -i or -incremental     Set incremental mode (autoset -make)\n"
 +" -pipe [host][:port]    Connect to server at host:port\n"

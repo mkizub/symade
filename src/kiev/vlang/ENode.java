@@ -213,6 +213,15 @@ public abstract class ENode extends ASTNode {
 			this.is_stat_auto_returnable = on;
 		}
 	}
+	// reachable by direct control flow, with no jumps into
+	public final boolean isDirectFlowReachable() {
+		return this.is_direct_flow_reachable;
+	}
+	public final void setDirectFlowReachable(boolean on) {
+		if (this.is_direct_flow_reachable != on) {
+			this.is_direct_flow_reachable = on;
+		}
+	}
 
 	private static void do_resolve(Type reqType, ASTNode node) {
 		try {

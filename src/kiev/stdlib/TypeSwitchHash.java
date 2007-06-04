@@ -47,6 +47,9 @@ public class TypeSwitchHash {
 		this.defindex = defindex;
 	}
 
+	public static int index(Object obj, TypeSwitchHash tsh) {
+		return tsh.index(obj);
+	}
 	public int index(Object obj) {
 		if( obj == null ) return defindex;
 		Class clazz = obj.getClass();

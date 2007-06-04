@@ -2,7 +2,7 @@ package test.h_wrappers;
 
 public interface test_002_i {
 
-	public virtual int i = 0;
+	public @virtual int i = 0;
 	
 	public int incr() {
 		return ++i;
@@ -16,13 +16,13 @@ public interface test_002_i {
 
 public class test_002_1 implements test_002_i {
 
-	public virtual int i;
+	public @virtual int i;
 
 }
 
 public class test_002_2 implements test_002_i {
 
-	public virtual int i;
+	public @virtual int i;
 
 }
 

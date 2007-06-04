@@ -16,6 +16,12 @@ import kiev.ir.java15.RCaseLabel;
 import kiev.be.java15.JCaseLabel;
 import kiev.ir.java15.RSwitchStat;
 import kiev.be.java15.JSwitchStat;
+import kiev.ir.java15.RSwitchEnumStat;
+import kiev.be.java15.JSwitchEnumStat;
+import kiev.ir.java15.RSwitchTypeStat;
+import kiev.be.java15.JSwitchTypeStat;
+import kiev.ir.java15.RMatchStat;
+import kiev.be.java15.JMatchStat;
 import kiev.ir.java15.RCatchInfo;
 import kiev.be.java15.JCatchInfo;
 import kiev.ir.java15.RFinallyInfo;
@@ -42,9 +48,8 @@ import syntax kiev.Syntax;
 @node(name="Case")
 public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
-	@dflow(in="this:in()", out="stats") private static class DFI {
+	@dflow(in="this:in()", out="pattern") private static class DFI {
 	@dflow(in="this:in", seq="true") Var[]		pattern;
-	@dflow(in="pattern", seq="true") ASTNode[]	stats;
 	}
 	
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
@@ -56,15 +61,13 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@att public ENode			val;
 	@ref public Type			type;
 	@att public Var[]			pattern;
-	@att public ASTNode[]		stats;
 	     public CodeLabel		case_label;
 
 	public CaseLabel() {}
 
-	public CaseLabel(int pos, ENode val, ASTNode[] stats) {
+	public CaseLabel(int pos, ENode val) {
 		this.pos = pos;
 		this.val = val;
-		this.stats.addAll(stats);
 	}
 
 	static class CaseLabelDFFuncIn extends DFFunc {
@@ -115,12 +118,6 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 		return "case "+val+':';
 	}
 
-	public ASTNode addStatement(int i, ASTNode st) {
-		if( st == null ) return null;
-		stats.insert(i,st);
-		return st;
-	}
-
 	public boolean backendCleanup() {
 		this.case_label = null;
 		return true;
@@ -128,25 +125,7 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info)
 		ASTNode@ n;
-		DNode@ dn;
 	{
-		n @= new SymbolIterator(this.stats, info.space_prev),
-		{
-			n instanceof DeclGroup,
-			dn @= ((DeclGroup)n).decls,
-			info.checkNodeName(dn),
-			info.check(dn),
-			node ?= dn
-		;
-			info.checkNodeName(n),
-			node ?= n
-		;
-			info.isForwardsAllowed(),
-			n instanceof Var && ((Var)n).isForward() && info.checkNodeName(n),
-			info.enterForward((Var)n) : info.leaveForward((Var)n),
-			n.getType().resolveNameAccessR(node,info)
-		}
-	;
 		n @= pattern,
 		info.checkNodeName(n),
 		node ?= n
@@ -155,17 +134,6 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public rule resolveMethodR(Method@ node, ResInfo info, CallType mt)
 		ASTNode@ n;
 	{
-		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this.stats, info.space_prev),
-		{
-			n instanceof DeclGroup,
-			((DeclGroup)n).resolveMethodR(node, info, mt)
-		;
-			n instanceof Var && ((Var)n).isForward(),
-			info.enterForward((Var)n) : info.leaveForward((Var)n),
-			((Var)n).getType().resolveCallAccessR(node,info,mt)
-		}
-	;
 		info.isForwardsAllowed(),
 		n @= pattern,
 		n instanceof Var && ((Var)n).isForward(),
@@ -176,54 +144,186 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 }
 
 @node(name="Switch")
-public class SwitchStat extends ENode {
+public class SwitchStat extends Block {
 	
 	@dflow(out="lblbrk") private static class DFI {
 	@dflow(in="this:in")			ENode			sel;
-	@dflow(in="sel", seq="false")	CaseLabel[]		cases;
-	@dflow(in="cases")				Label			lblcnt;
-	@dflow(in="cases")				Label			lblbrk;
+	@dflow(in="sel", seq="true")	ENode[]			stats;
+	@dflow(in="stats")				Label			lblcnt;
+	@dflow(in="stats")				Label			lblbrk;
 	}
 	
-	public static final int NORMAL_SWITCH = 0;
-	public static final int PIZZA_SWITCH = 1;
-	public static final int TYPE_SWITCH = 2;
-	public static final int ENUM_SWITCH = 3;
+	@virtual typedef This  ≤ SwitchStat;
+	@virtual typedef JView ≤ JSwitchStat;
+	@virtual typedef RView ≤ RSwitchStat;
 
-	@virtual typedef This  = SwitchStat;
-	@virtual typedef JView = JSwitchStat;
-	@virtual typedef RView = RSwitchStat;
-
-	                     public int mode; /* = NORMAL_SWITCH; */
-	@att                 public ENode					sel;
-	@att                 public CaseLabel[]			cases;
-	@att                 public LVarExpr				tmpvar;
-	@ref                 public CaseLabel				defCase;
-	@ref                 public Field					typehash; // needed for re-resolving
-	@att(copyable=false) public Label					lblcnt;
-	@att(copyable=false) public Label					lblbrk;
-	                     public CodeSwitch				cosw;
+	@att public ENode					sel;
+	@ref public CaseLabel[]				cases;
+	@ref public CaseLabel				defCase;
+	@att public ENode					sel_to_int;
+	@att(copyable=false, ext_data=true)
+	     public Label					lblcnt;
+	     public CodeSwitch				cosw;
 
 	public SwitchStat() {
 		setBreakTarget(true);
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
 	}
 
-	public SwitchStat(int pos, ENode sel, CaseLabel[] cases) {
+	public SwitchStat(int pos, ENode sel) {
 		this();
 		this.pos = pos;
 		this.sel = sel;
-		this.cases.addAll(cases);
-		defCase = null;
 	}
 
 	public String toString() { return "switch("+sel+")"; }
+	
+	public void preResolveOut() {
+		Vector<CaseLabel> labels = new Vector<CaseLabel>();
+		CaseLabel dflt = null;
+		foreach (CaseLabel l; stats) {
+			labels.append(l);
+			if (l.val == null) {
+				if (dflt != null)
+					Kiev.reportError(l, "Multiple 'default' cases.");
+				else
+					dflt = l;
+			}
+		}
+		if (dflt == defCase && labels.length == cases.length) {
+			for (int i=0; i < labels.length; i++) {
+				if (cases[i] != labels[i])
+					goto update;
+			}
+			return;
+		}
+	update:
+		this = this.open();
+		defCase = dflt;
+		cases.delAll();
+		foreach (CaseLabel l; labels)
+			cases += l;
+	}
+	
+	public void mainResolveOut() {
+		Type tp = sel.getType();
+		if (tp.meta_type.tdecl.isEnum()) {
+			SwitchEnumStat sw = new SwitchEnumStat();
+			sw.sel = ~this.sel;
+			foreach (ASTNode st; stats.delToArray())
+				sw.stats += st;
+			ANode.getVersion(this).replaceWithNodeReWalk(sw);
+		}
+		if (tp.isReference() && tp.getStruct().isHasCases()) {
+			MatchStat sw = new MatchStat();
+			sw.sel = ~this.sel;
+			foreach (ASTNode st; stats.delToArray())
+				sw.stats += st;
+			ANode.getVersion(this).replaceWithNodeReWalk(sw);
+		}
+		if (tp.isReference()) {
+			SwitchTypeStat sw = new SwitchTypeStat();
+			sw.sel = ~this.sel;
+			foreach (ASTNode st; stats.delToArray())
+				sw.stats += st;
+			ANode.getVersion(this).replaceWithNodeReWalk(sw);
+		}
+		if (tp.getAutoCastTo(Type.tpInt) ≢ Type.tpInt)
+			Kiev.reportError(this, "Type of switch selector must be int");
+	}
 
 	public boolean backendCleanup() {
 		this.cosw = null;
+		this.lblbrk = null;
+		this.lblcnt = null;
 		return true;
 	}
+}
+
+@node(name="SwitchEnum")
+public class SwitchEnumStat extends SwitchStat {
+	
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in")			ENode			sel;
+	@dflow(in="sel", seq="true")	ENode[]			stats;
+	@dflow(in="stats")				Label			lblcnt;
+	@dflow(in="stats")				Label			lblbrk;
+	}
+	
+	@virtual typedef This  = SwitchEnumStat;
+	@virtual typedef JView = JSwitchEnumStat;
+	@virtual typedef RView = RSwitchEnumStat;
+
+	public SwitchEnumStat() {
+	}
+
+	public SwitchEnumStat(int pos, ENode sel) {
+		this(pos, sel);
+	}
+
+	public String toString() { return "switch-enum("+sel+")"; }
+	
+	public void mainResolveOut() {
+		Type tp = sel.getType();
+		if (!tp.meta_type.tdecl.isEnum())
+			Kiev.reportError(this, "Expected enum value as selector");
+	}
+
+}
+
+@node(name="SwitchType")
+public class SwitchTypeStat extends SwitchStat {
+	
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in")			ENode			sel;
+	@dflow(in="sel", seq="true")	ENode[]			stats;
+	@dflow(in="stats")				Label			lblcnt;
+	@dflow(in="stats")				Label			lblbrk;
+	}
+	
+	@virtual typedef This  = SwitchTypeStat;
+	@virtual typedef JView = JSwitchTypeStat;
+	@virtual typedef RView = RSwitchTypeStat;
+
+	public SwitchTypeStat() {
+	}
+
+	public String toString() { return "switch-type("+sel+")"; }
+	
+	public void mainResolveOut() {
+		Type tp = sel.getType();
+		if (!tp.isReference())
+			Kiev.reportError(this, "Expected value of reference type as selector");
+	}
+
+}
+
+@node(name="Match")
+public class MatchStat extends SwitchStat {
+	
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in")			ENode			sel;
+	@dflow(in="sel", seq="true")	ENode[]			stats;
+	@dflow(in="stats")				Label			lblcnt;
+	@dflow(in="stats")				Label			lblbrk;
+	}
+	
+	@virtual typedef This  = MatchStat;
+	@virtual typedef JView = JMatchStat;
+	@virtual typedef RView = RMatchStat;
+
+	@att public Var					tmp_var;
+
+	public MatchStat() {
+	}
+
+	public String toString() { return "match("+sel+")"; }
+	
+	public void mainResolveOut() {
+		Type tp = sel.getType();
+		if (!tp.isReference() || !tp.getStruct().isHasCases())
+			Kiev.reportError(this, "Expected value of type with cases as selector");
+	}
+
 }
 
 @node(name="Catch")

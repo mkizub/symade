@@ -47,8 +47,8 @@ public final view JMethod of Method extends JDNode {
 	public JVar getTypeInfoParam(int kind) { return (JVar) ((Method)this).getTypeInfoParam(kind); }
 	public JVar getVarArgParam() { return (JVar) ((Method)this).getVarArgParam(); }
 	
-	public CodeLabel getBreakLabel() {
-		return block.getBreakLabel();
+	public JLabel getBrkLabel() {
+		return block.getBrkLabel();
 	}
 
 	public void generate(ConstPool constPool) {

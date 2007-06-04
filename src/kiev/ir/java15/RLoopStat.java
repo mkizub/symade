@@ -330,8 +330,11 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 		}
 		if (ce != null) {
 			var_init = ce; // to allow ce.getType()
+			Operator op = Operator.Assign;
+			if (var.getType().isReference())
+				op = Operator.Assign2;
 			if (ce.getType().isInstanceOf(var.getType())) {
-				var_init = new AssignExpr(var.pos,Operator.Assign2,new LVarExpr(var.pos,var),~ce);
+				var_init = new AssignExpr(var.pos,op,new LVarExpr(var.pos,var),~ce);
 			} else {
 				Var tmp = new LVar(var.pos, "tmp", ce.getType(), Var.VAR_LOCAL, ACC_FINAL);
 				tmp.init = ~ce;
@@ -343,7 +346,7 @@ public static final view RForEachStat of ForEachStat extends RLoopStat {
 					null
 				));
 				b.stats.add(
-					new AssignExpr(var.pos,Operator.Assign2,
+					new AssignExpr(var.pos,op,
 						new LVarExpr(var.pos,var),
 						new CastExpr(var.pos, var.getType(), new LVarExpr(tmp.pos,tmp))
 						)

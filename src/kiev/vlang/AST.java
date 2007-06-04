@@ -699,6 +699,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public @packed:1,compileflags,12 boolean is_stat_breaked;
 	public @packed:1,compileflags,13 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
 	public @packed:1,compileflags,14 boolean is_stat_auto_returnable;
+	public @packed:1,compileflags,15 boolean is_direct_flow_reachable; // reachable by direct control flow (with no jumps)
 
 	public @packed:1,compileflags,20 boolean is_stat_break_target;
 	public @packed:1,compileflags,21 boolean is_rewrite_target;

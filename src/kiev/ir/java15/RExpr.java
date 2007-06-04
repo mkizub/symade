@@ -373,13 +373,18 @@ public static view RBlock of Block extends RENode {
 
 	public static void resolveStats(Type reqType, SpacePtr stats) {
 		ENode self = (ENode)stats.node;
+		boolean directFlowReachable = self.isDirectFlowReachable();
+		if (self instanceof SwitchStat)
+			directFlowReachable = false;
 		int sz = stats.length;
 		for (int i=0; i < sz; i++) {
 			ASTNode st = (ASTNode)stats[i];
+			if (st instanceof ENode)
+				st.setDirectFlowReachable(directFlowReachable);
 			try {
 				if( (i == sz-1) && self.isAutoReturnable() && st instanceof ENode)
 					st.setAutoReturnable(true);
-				if( self.isAbrupted() && (st instanceof LabeledStat) )
+				if( self.isAbrupted() && (st instanceof LabeledStat || st instanceof CaseLabel) )
 					self.setAbrupted(false);
 				//if( self.isAbrupted() )
 				//	; //Kiev.reportWarning(stats[i].pos,"Possible unreachable statement");
@@ -400,6 +405,8 @@ public static view RBlock of Block extends RENode {
 				st = (ASTNode)stats[i];
 				if( st instanceof ENode && st.isAbrupted() && !self.isBreaked() ) self.setAbrupted(true);
 				if( st instanceof ENode && st.isMethodAbrupted() && !self.isBreaked() ) self.setMethodAbrupted(true);
+				if( st instanceof ENode && st.isAbrupted() ) directFlowReachable = false;
+				if( st instanceof LabeledStat || st instanceof CaseLabel ) directFlowReachable = true;
 			} catch(Exception e ) {
 				Kiev.reportError((ASTNode)stats[i],e);
 			}

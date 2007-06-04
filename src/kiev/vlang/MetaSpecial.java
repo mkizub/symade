@@ -29,6 +29,12 @@ public final class MetaUUID extends UserMeta {
 
 	public MetaUUID() { super("kiev\u001fstdlib\u001fmeta\u001fuuid"); }
 
+	public MetaUUID(boolean autogen) {
+		this();
+		if (autogen)
+			value = java.util.UUID.randomUUID().toString();
+	}
+
 	public void callbackAttached() { setFlag(true); super.callbackAttached(); }
 	public void callbackDetached() { setFlag(false); super.callbackDetached(); }
 	private void setFlag(boolean on) {
@@ -70,6 +76,8 @@ public final class MetaUUID extends UserMeta {
 	}
 	
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "this")
+			return true;
 		if (dump == "api" && attr.name == "values")
 			return false;
 		return super.includeInDump(dump, attr, val);

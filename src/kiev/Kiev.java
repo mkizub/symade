@@ -290,7 +290,7 @@ public final class Kiev {
 	}
 
 	public static void reportCodeWarning(Code code, String msg) {
-		if (nowarn)
+		if (Kiev.code_nowarn)
 			return;
 		if( debug && verbose) new Exception().printStackTrace(System.out);
 		report(code.last_lineno<<11, (FileUnit)code.clazz.jctx_file_unit, (TypeDecl)code.clazz, (Method)code.method, SeverError.Warning, msg);
@@ -398,6 +398,7 @@ public final class Kiev {
 	public static boolean javaMode				= Compiler.javaMode;
 	public static boolean javacerrors			= Compiler.javacerrors;
 	public static boolean nowarn				= Compiler.nowarn;
+	public static boolean code_nowarn			= Compiler.code_nowarn;
 	
 	public static CError testError				= Compiler.testError;
 	public static int    testErrorLine			= Compiler.testErrorLine;

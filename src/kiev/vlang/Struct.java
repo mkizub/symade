@@ -54,6 +54,10 @@ public class JavaInterface extends Struct {
 	public JavaInterface() {
 		this.meta.is_struct_interface = true;
 	}
+	public void cleanupOnReload() {
+		super.cleanupOnReload();
+		this.meta.is_struct_interface = true;
+	}
 }
 
 @node
@@ -67,11 +71,19 @@ public final class KievView extends Struct {
 	public KievView() {
 		this.meta.is_virtual = true;
 	}
+	public void cleanupOnReload() {
+		super.cleanupOnReload();
+		this.meta.is_virtual = true;
+	}
 }
 
 @node
 public final class JavaAnnotation extends JavaInterface {
 	public JavaAnnotation() {
+		this.meta.is_struct_annotation = true;
+	}
+	public void cleanupOnReload() {
+		super.cleanupOnReload();
 		this.meta.is_struct_annotation = true;
 	}
 }
@@ -103,6 +115,10 @@ public final class JavaEnum extends JavaClass {
 	@ref public DeclGroupEnumFields		group;
 
 	public JavaEnum() {
+		this.meta.is_enum = true;
+	}
+	public void cleanupOnReload() {
+		super.cleanupOnReload();
 		this.meta.is_enum = true;
 	}
 	public Field[] getEnumFields() {
@@ -362,6 +378,7 @@ public abstract class Struct extends TypeDecl {
 		}
 		if (parent() instanceof Struct || parent() instanceof NameSpace)
 			return true;
+		this = this.open();
 		if (ctx_method==null || ctx_method.isStatic())
 			this.setStatic(true);
 		this.setLocal(true);

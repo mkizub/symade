@@ -168,6 +168,9 @@ public static view RENode of ENode extends RNode {
 	// auto-returnable
 	public final boolean isAutoReturnable();
 	public final void setAutoReturnable(boolean on);
+	// reachable by direct control flow, with no jumps into
+	public final boolean isDirectFlowReachable();
+	public final void setDirectFlowReachable(boolean on);
 
 	public final void replaceWithNodeResolve(Type reqType, ENode node);
 	public final void replaceWithResolve(Type reqType, ()->ENode fnode);
