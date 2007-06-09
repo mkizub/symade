@@ -49,7 +49,8 @@ import syntax kiev.Syntax;
 public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(in="this:in()", out="pattern") private static class DFI {
-	@dflow(in="this:in", seq="true") Var[]		pattern;
+	@dflow(in="this:in")			ENode		val;
+	@dflow(in="val", seq="true")	Var[]		pattern;
 	}
 	
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
@@ -213,7 +214,7 @@ public class SwitchStat extends Block {
 				sw.stats += st;
 			ANode.getVersion(this).replaceWithNodeReWalk(sw);
 		}
-		if (tp.isReference() && tp.getStruct().isHasCases()) {
+		if (tp.isReference() && tp.meta_type.tdecl.isHasCases()) {
 			MatchStat sw = new MatchStat();
 			sw.sel = ~this.sel;
 			foreach (ASTNode st; stats.delToArray())
@@ -320,7 +321,7 @@ public class MatchStat extends SwitchStat {
 	
 	public void mainResolveOut() {
 		Type tp = sel.getType();
-		if (!tp.isReference() || !tp.getStruct().isHasCases())
+		if (!tp.isReference() || !tp.meta_type.tdecl.isHasCases())
 			Kiev.reportError(this, "Expected value of type with cases as selector");
 	}
 

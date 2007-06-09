@@ -77,6 +77,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 	}
 	
 	public void processSyntax(TypeDecl:ASTNode node) {
+		node.updatePackageClazz();
 		foreach (ASTNode n; node.members) {
 			try {
 				processSyntax(n);
@@ -183,6 +184,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 
 	public void processSyntax(Struct:ASTNode astn) {
 		Struct me = astn;
+		me.updatePackageClazz();
 		if (me.isAnnotation() || me.isEnum() || me.isSyntax()) {
 			if( me.args.length > 0 ) {
 				Kiev.reportError(me,"Type parameters are not allowed for "+me);
@@ -191,24 +193,24 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			me.setTypeUnerasable(false);
 		}
 		else if!(me.parent() instanceof NameSpace) {
-			if (!me.isStatic()) {
+			if (!me.isStatic() && me.isClazz()) {
 				TypeDecl pkg = me.package_clazz.dnode;
-				if (me.isClazz() && pkg.isClazz()) {
-					int n = 0;
-					for(TypeDecl p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz.dnode) n++;
-					String fldName = (nameThis+"$"+n).intern();
-					boolean found = false;
-					foreach (Field f; me.getAllFields(); f.sname == fldName)
-						found = true;
-					if (!found) {
-						TypeAssign td = new TypeAssign(	"outer$"+n+"$type", new TypeRef(pkg.xtype));
-						td.setSynthetic(true);
-						me.members.append(td);
-						me.ometa_tdef = td;
-						Field f = new Field(fldName,td.getAType(),ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC);
-						f.pos = me.pos;
-						me.members.append(f);
-					}
+				if (pkg.sname == nameIFaceImpl)
+					pkg = pkg.package_clazz.dnode;
+				int n = 0;
+				for(TypeDecl p=pkg; !p.isStatic(); p=p.package_clazz.dnode) n++;
+				String fldName = (nameThisDollar+n).intern();
+				boolean found = false;
+				foreach (Field f; me.getAllFields(); f.sname == fldName)
+					found = true;
+				if (!found) {
+					TypeAssign td = new TypeAssign(	"outer$"+n+"$type", new TypeRef(pkg.xtype));
+					td.setSynthetic(true);
+					me.members.append(td);
+					me.ometa_tdef = td;
+					Field f = new Field(fldName,td.getAType(),ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC);
+					f.pos = me.pos;
+					me.members.append(f);
 				}
 			}
 		}
@@ -269,6 +271,7 @@ public final class KievFE_Pass2 extends TransfProcessor {
 	public void doProcess(TypeDecl:ASTNode astn) {
 		try {
 			TypeDecl td = (TypeDecl)astn;
+			td.updatePackageClazz();
 			// Verify meta-data to the new structure
 			if (td.meta != null)
 				td.meta.verify();
@@ -313,17 +316,17 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				clazz.setStatic(true);
 				clazz.super_types.insert(0, new TypeRef(Type.tpEnum));
 			}
-			else if (clazz.isPizzaCase()) {
+			else if (clazz instanceof PizzaCase) {
 				clazz.setStatic(true);
 				Struct p = clazz.ctx_tdecl;
-				p.addCase(clazz);
+				p.addCase((PizzaCase)clazz);
 				getStructType(p, path);
 				TypeNameRef sup_ref = new TypeNameRef(p.qname());
 				sup_ref.symbol = p;
 			next_case_arg:
 				for(int i=0; i < p.args.length; i++) {
 					for(int j=0; j < clazz.args.length; j++) {
-						if (p.args[i].u_name == clazz.args[j].u_name) {
+						if (p.args[i].sname == clazz.args[j].sname) {
 							sup_ref.args.add(new TypeRef(clazz.args[j].getAType()));
 							continue next_case_arg;
 						}
@@ -475,7 +478,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 					m.setFinal(false);
 					m.setAbstract(true);
 				}
-				if( m.u_name == nameInit ) {
+				if( m instanceof Constructor ) {
 					m.setAbstract(false);
 					m.setSynchronized(false);
 					m.setFinal(false);
@@ -579,7 +582,7 @@ public final class KievFE_Pass3 extends TransfProcessor {
 				WBCCondition inv = (WBCCondition)me.members[i];
 				assert(inv.cond == WBCType.CondInvariant);
 				// TODO: check flags for fields
-				Method m = new MethodImpl(inv.u_name,Type.tpVoid,inv.meta.mflags);
+				Method m = new MethodImpl(inv.sname,Type.tpVoid,inv.meta.mflags);
 				m.setInvariantMethod(true);
 				m.body = new Block();
 				inv.replaceWithNode(m);
@@ -942,6 +945,88 @@ public final class KievME_PreGenartion extends BackendProcessor {
 				public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preGenerate(); return false; }
 			});
 		} finally { tr.leave(); }
+	}
+}
+
+
+////////////////////////////////////////////////////
+//	   PASS - bytecode names generation           //
+////////////////////////////////////////////////////
+
+@singleton
+public final class KievME_GenBytecodeNames extends BackendProcessor {
+	private KievME_GenBytecodeNames() { super(KievBackend.Java15); }
+	public String getDescr() { "Kiev bytecode name generation" }
+
+	public void process(ASTNode node, Transaction tr) {
+		if!(node instanceof FileUnit)
+			return;
+		FileUnit fu = (FileUnit)node;
+		try {
+			doProcess(fu);
+		} catch (Exception rte) { Kiev.reportError(rte); }
+	}
+
+	public void doProcess(ASTNode:ASTNode node) {
+		return;
+	}
+	
+	public void doProcess(FileUnit:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(Struct:ASTNode s) {
+		makeBytecodeName(s);
+		foreach (ASTNode dn; s.sub_decls)
+			this.doProcess(dn);
+	}
+	
+	private KString makeBytecodeName(TypeDecl s) {
+		if (s.bytecode_name != null)
+			return s.bytecode_name;
+		TypeDecl pkg = s.package_clazz.dnode;
+		KString pkg_bc_name = KString.Empty;
+		if!(pkg instanceof Env)
+			pkg_bc_name = makeBytecodeName(pkg);
+		String name = s.sname;
+		String bc_name = null;
+		if (s instanceof JavaAnonymouseClass) {
+			name = makeInnerIndex(pkg);
+		}
+		else if (!(s.parent() instanceof TypeDecl) && !(s.parent() instanceof NameSpace)) {
+			name = makeInnerIndex(pkg) + '$' + name;
+		}
+		
+		if (pkg instanceof Env) {
+			bc_name = name;
+		}
+		else if (pkg instanceof KievPackage) {
+			bc_name = pkg_bc_name + "/" + name;
+		}
+		else {
+			bc_name = pkg_bc_name + "$" + name;
+		}
+		s = s.open();
+		s.bytecode_name = KString.from(bc_name);
+		return s.bytecode_name;
+	}
+	
+	private String makeInnerIndex(TypeDecl pkg) {
+		while !(pkg.package_clazz.dnode instanceof KievPackage)
+			pkg = pkg.package_clazz.dnode;
+		Integer i = pkg.inner_counter;
+		if (i == null)
+			i = new Integer(0);
+		else
+			i = new Integer(i.intValue() + 1);
+		pkg.inner_counter = i;
+		return String.valueOf(i.intValue());
 	}
 }
 

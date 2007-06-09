@@ -66,7 +66,7 @@ public final view RStruct of Struct extends RTypeDecl {
 	public Struct addSubStruct(Struct sub);
 	public Method addMethod(Method m);
 	public Field addField(Field f);
-	public Struct addCase(Struct cas);
+	public PizzaCase addCase(PizzaCase cas);
 
 	public boolean instanceOf(TypeDecl cl);
 	public Field resolveField(String name);
@@ -89,7 +89,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					i++;
 				}
 			}
-			if (this.instanceOf(Type.tpTypeInfo.tdecl) && ctx_method != null && ctx_method.u_name == nameInit) {
+			if (this.instanceOf(Type.tpTypeInfo.tdecl) && ctx_method != null && ctx_method instanceof Constructor && !ctx_method.isStatic()) {
 				if (t instanceof ArgType)
 					return new ASTIdentifier(from.pos,t.name.toString());
 			}
@@ -125,13 +125,13 @@ public final view RStruct of Struct extends RTypeDecl {
 
 		// Special case for interfaces, that cannot have private fields,
 		// but need typeinfo in <clinit>
-		if ((from.ctx_method == null || from.ctx_method.u_name == nameClassInit) && from.ctx_tdecl.isInterface()) {
+		if ((from.ctx_method == null || from.ctx_method instanceof Constructor && from.ctx_method.isStatic()) && from.ctx_tdecl.isInterface()) {
 			return new TypeInfoExpr(from.pos, new TypeRef(t));
 		}
 		
 		// Lookup and create if need as $typeinfo$N
 		foreach(Field f; getAllFields(); f.isStatic()) {
-			if (f.init == null || !f.u_name.startsWith(nameTypeInfo) || f.u_name.equals(nameTypeInfo))
+			if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
 				continue;
 			if (((TypeInfoExpr)f.init).type.getType() ≈ t)
 				return new SFldExpr(from.pos,f);
@@ -151,7 +151,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			throw new RuntimeException("Ungenerated typeinfo for type "+t+" ("+t.getClass()+")");
 		int i = 0;
 		foreach(Field f; getAllFields(); f.isStatic()) {
-			if (f.init == null || !f.u_name.startsWith(nameTypeInfo) || f.u_name.equals(nameTypeInfo))
+			if (f.init == null || !f.sname.startsWith(nameTypeInfo) || f.sname.equals(nameTypeInfo))
 				continue;
 			i++;
 		}
@@ -161,7 +161,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		f.resolveDecl();
 		// Add initialization in <clinit>
 		Constructor class_init = getStruct().getClazzInitMethod();
-		if( ctx_method != null && ctx_method.u_name == nameClassInit ) {
+		if( ctx_method != null && ctx_method instanceof Constructor && ctx_method.isStatic() ) {
 			class_init.addstats.append(
 				new ExprStat(f.init.pos,
 					new AssignExpr(f.init.pos,Operator.Assign
@@ -483,7 +483,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				if (vte.overloader != null)
 				trace("            overloaded by "+vte.overloader.name+vte.overloader.etype);
 				foreach (Method m; vte.methods)
-					trace("        "+m.ctx_tdecl+"."+m.u_name+m.type);
+					trace("        "+m.ctx_tdecl+"."+m.sname+m.type);
 			}
 		}
 		
@@ -538,7 +538,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			if (m.isMethodBridge())
 				continue;
 			CallType etype = m.etype;
-			String name = m.u_name;
+			String name = m.sname;
 			boolean is_new = true;
 			foreach (VTableEntry vte; vtable) {
 				if (name == vte.name && etype ≈ vte.etype) {
@@ -559,7 +559,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					continue;
 				if (m.isMethodBridge())
 					continue;
-				if (m.u_name != vte.name || vte.methods.contains(m))
+				if (m.sname != vte.name || vte.methods.contains(m))
 					continue;
 				CallType mt = m.etype.toCallTypeRetAny();
 				if (mt ≈ et)
@@ -700,7 +700,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			Type[] params = m.type.params();
 			params = (Type[])Arrays.insert(params,m.ctx_tdecl.xtype,0);
 			CallType mt = new CallType(self.xtype,null,params,m.type.ret(),false);
-			foreach (Method dm; iface_impl.members; dm.u_name == m.u_name && dm.type ≈ mt) {
+			foreach (Method dm; iface_impl.members; dm.sname == m.sname && dm.type ≈ mt) {
 				fnd = dm;
 				break;
 			}
@@ -724,7 +724,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				Kiev.reportWarning(self,"Method "+vte.name+vte.etype+" is not implemented in "+self);
 			m = new MethodImpl(vte.name, vte.etype.ret(), ACC_ABSTRACT | ACC_PUBLIC | ACC_SYNTHETIC);
 			for (int i=0; i < vte.etype.arity; i++)
-				m.params.append(new LVar(0,def.params[i].u_name,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
+				m.params.append(new LVar(0,def.params[i].sname,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
 			((Struct)self).members.append(m);
 		} else {
 			// create a proxy call
@@ -759,13 +759,13 @@ public final view RStruct of Struct extends RTypeDecl {
 	next_m:
 		foreach (Method m; vte.methods; m.ctx_tdecl != self.getStruct()) {
 			// check this class have no such a method
-			foreach (Method x; self.members; x.u_name == m.u_name) {
+			foreach (Method x; self.members; x.sname == m.sname) {
 				if (x.etype ≈ vte.etype)
 					continue next_m;
 			}
-			Method bridge = new MethodImpl(m.u_name, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.meta.mflags);
+			Method bridge = new MethodImpl(m.sname, vte.etype.ret(), ACC_BRIDGE | ACC_SYNTHETIC | mo.meta.mflags);
 			for (int i=0; i < vte.etype.arity; i++)
-				bridge.params.append(new LVar(mo.pos,m.params[i].u_name,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
+				bridge.params.append(new LVar(mo.pos,m.params[i].sname,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
 			bridge.pos = mo.pos;
 			((Struct)self).members.append(bridge);
 			trace(Kiev.debug && Kiev.debugMultiMethod,"Created a bridge method "+self+"."+bridge+" for vtable entry "+vte.name+vte.etype);
@@ -791,7 +791,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				// Make inner class name$default
 				if( defaults == null ) {
 					defaults = Env.newStruct(nameIFaceImpl,true,
-						self.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT | ACC_FORWARD,
+						self.getStruct(),ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC | ACC_ABSTRACT | ACC_FORWARD,
 						new JavaClass(), true, null
 					);
 					((Struct)self).members.add(defaults);
@@ -806,7 +806,7 @@ public final view RStruct of Struct extends RTypeDecl {
 
 				// Now, non-static methods (templates)
 				// Make it static and add abstract method
-				Method def = new MethodImpl(m.u_name,m.type.ret(),m.getFlags()|ACC_STATIC);
+				Method def = new MethodImpl(m.sname,m.type.ret(),m.getFlags()|ACC_STATIC);
 				def.pos = m.pos;
 				def.params.addAll(m.params.delToArray()); // move, because the vars are resolved
 				m.params.copyFrom(def.params);
@@ -838,17 +838,17 @@ public final view RStruct of Struct extends RTypeDecl {
 			{
 				// create dispatch method
 				if (m.isRuleMethod())
-					mmm = new RuleMethod(m.u_name, m.meta.mflags | ACC_SYNTHETIC);
+					mmm = new RuleMethod(m.sname, m.meta.mflags | ACC_SYNTHETIC);
 				else
-					mmm = new MethodImpl(m.u_name, m.type.ret(), m.meta.mflags | ACC_SYNTHETIC);
+					mmm = new MethodImpl(m.sname, m.type.ret(), m.meta.mflags | ACC_SYNTHETIC);
 				mmm.setStatic(m.isStatic());
 				mmm.targs.copyFrom(m.targs);
 				foreach (Var fp; m.params) {
 					TypeRef stype = fp.stype;
 					if (stype != null)
-						mmm.params.add(new LVar(fp.pos,fp.u_name,stype.getType(),fp.kind,fp.meta.mflags));
+						mmm.params.add(new LVar(fp.pos,fp.sname,stype.getType(),fp.kind,fp.meta.mflags));
 					else
-						mmm.params.add(new LVar(fp.pos,fp.u_name,fp.type,fp.kind,fp.meta.mflags));
+						mmm.params.add(new LVar(fp.pos,fp.sname,fp.type,fp.kind,fp.meta.mflags));
 				}
 				((Struct)self).members.add(mmm);
 			}
@@ -864,7 +864,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				CallType type2 = mj.type.getErasedType(); // erase type, like X... -> X[]
 				CallType dtype2 = mj.dtype;
 				CallType etype2 = mj.etype;
-				if( mj.u_name != m.u_name || etype2.arity != etype1.arity )
+				if( mj.sname != m.sname || etype2.arity != etype1.arity )
 					continue;
 				if (etype1.isMultimethodSuper(etype2)) {
 					trace(Kiev.debug && Kiev.debugMultiMethod,"added dispatchable method "+mj);
@@ -973,8 +973,8 @@ public final view RStruct of Struct extends RTypeDecl {
 		if( mmret == null && mm != null ) mmret = mm;
 		trace(Kiev.debug && Kiev.debugMultiMethod,"lookup overwritten methods for "+base+"."+m+" in "+clazz);
 		foreach (Method mi; clazz.members) {
-			if( mi.isStatic() || mi.isPrivate() || mi.u_name == nameInit ) continue;
-			if( mi.u_name != m.u_name || mi.type.arity != m.type.arity ) {
+			if( mi.isStatic() || mi.isPrivate() || mi instanceof Constructor ) continue;
+			if( mi.sname != m.sname || mi.type.arity != m.type.arity ) {
 //				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
 				continue;
 			}
@@ -1272,7 +1272,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					if( m.isStatic() ) continue;
 					// Now, non-static methods (templates)
 					// Make it static and add abstract method
-					Method abstr = new MethodImpl(m.u_name,m.type.ret(),m.getFlags() | ACC_PUBLIC );
+					Method abstr = new MethodImpl(m.sname,m.type.ret(),m.getFlags() | ACC_PUBLIC );
 					abstr.pos = m.pos;
 					abstr.setStatic(false);
 					abstr.setAbstract(true);
@@ -1327,7 +1327,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						ASTIdentifier max_args = new ASTIdentifier(nameClosureMaxArgs);
 						call_super.args.add(max_args);
 					}
-					else if( package_clazz.dnode.isClazz() && isAnonymouse() ) {
+					else if (isAnonymouse()) {
 						int skip_args = 0;
 						if( !isStatic() ) skip_args++;
 						if( this.isTypeUnerasable() && super_types[0].getStruct().isTypeUnerasable() ) skip_args++;
@@ -1350,7 +1350,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					RStruct.runResolveOn(initbody.stats[0]);
 				}
 				int p = 1;
-				if( package_clazz.dnode.isClazz() && !isStatic() ) {
+				if (!isStatic()) {
 					initbody.stats.insert(p,
 						new ExprStat(pos,
 							new AssignExpr(pos,Operator.Assign,
@@ -1479,7 +1479,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						proxy_fields = (Field[])Arrays.append(proxy_fields,f);
 				}
 				if( proxy_fields.length > 0 ) {
-					foreach(Constructor m; members; m.u_name == nameInit) {
+					foreach(Constructor m; members; !m.isStatic()) {
 						for(int j=0; j < proxy_fields.length; j++) {
 							int par = m.params.length;
 							String nm = proxy_fields[j].sname;

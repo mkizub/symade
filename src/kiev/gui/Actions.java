@@ -855,7 +855,7 @@ public final class RenderActions implements Runnable {
 				System.out.println("Read error while syntax importing: "+e);
 			} finally { tr.close(); }
 
-			foreach (ATextSyntax stx; fu.members; stx.u_name == name) {
+			foreach (ATextSyntax stx; fu.members; stx.sname == name) {
 				this.uiv.setSyntax(stx);
 				return;
 			}

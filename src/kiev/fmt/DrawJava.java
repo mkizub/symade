@@ -118,8 +118,6 @@ public class DrawJavaAccess extends DrawTerm {
 @node(copyable=false)
 public class DrawJavaPackedField extends DrawTerm {
 
-	private String text;
-	
 	public DrawJavaPackedField(ANode node, SyntaxJavaPackedField syntax) {
 		super(node, syntax);
 	}
@@ -131,6 +129,21 @@ public class DrawJavaPackedField extends DrawTerm {
 			text += ","+mp.fld+","+mp.offset;
 		text += ")";
 		return text;
+	}
+}
+
+@node(copyable=false)
+public class DrawJavaConstructorName extends DrawTerm {
+
+	public DrawJavaConstructorName(ANode node, SyntaxJavaConstructorName syntax) {
+		super(node, syntax);
+	}
+
+	String makeText(Formatter fmt) {
+		TypeDecl tdecl = drnode.ctx_tdecl;
+		if (tdecl == null)
+			return "<constructor>";
+		return tdecl.sname;
 	}
 }
 

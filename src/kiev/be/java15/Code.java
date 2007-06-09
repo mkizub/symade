@@ -562,17 +562,19 @@ public final class Code implements JConstants {
 			}
 		}
 		KString sign;
-		JType ttt = Type.getRealType(tp,((JStruct)m.jparent).xtype).getJType();
+		JType ttt = Type.getRealType(tp,((JTypeDecl)m.jparent).xtype).getJType();
 		sign = m.etype.getJType().java_signature;
 		CP cpm;
 		if( m.jctx_tdecl.isInterface() )
-			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,KString.from(m.u_name),sign);
+			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,KString.from(m.sname),sign);
+		else if (m.isConstructor())
+			cpm = constPool.addMethodCP(ttt.java_signature,knameInit,sign);
 		else
-			cpm = constPool.addMethodCP(ttt.java_signature,KString.from(m.u_name),sign);
+			cpm = constPool.addMethodCP(ttt.java_signature,KString.from(m.sname),sign);
 		if( call_static ) {
 			add_opcode_and_CP(opc_invokestatic,cpm);
 		}
-		else if( ((JStruct)m.jparent).isInterface() ) {
+		else if( ((JTypeDecl)m.jparent).isInterface() ) {
 			add_opcode_and_CP(opc_invokeinterface,cpm);
 			int argslen = 1;
 			foreach(JType t; mtype.jargs) {
@@ -587,7 +589,7 @@ public final class Code implements JConstants {
 			add_opcode_and_CP(opc_invokespecial,cpm);
 		}
 		else {
-			assert (m.u_name != Constants.nameInit);
+			assert (!m.isConstructor());
 			add_opcode_and_CP(opc_invokevirtual,cpm);
 		}
 		for(int i=0; i < mtype.jargs.length; i++) stack_pop();
@@ -938,7 +940,7 @@ public final class Code implements JConstants {
 		JType t = v.type.getJType();
 		if( t==JType.tpLong || t==JType.tpDouble ) cur_locals++;
 		if( cur_locals > max_locals ) max_locals = cur_locals;
-		if( v.u_name != "") {
+		if( v.sname != "" && v.sname != null) {
 			lvta.addVar(vars[pos]);
 		}
 		trace(Kiev.debug && Kiev.debugInstrGen,"Code var "+v+" added to bc pos "+pos+" "+vars[pos]);
@@ -950,7 +952,7 @@ public final class Code implements JConstants {
 	public void removeVar(JVar v) {
 		trace(Kiev.debug && Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.bcpos+" "+vars[v.bcpos]);
 		JType t = v.type.getJType();
-		if( v.u_name != "" ) {
+		if( v.sname != "" && v.sname != null ) {
 			lvta.vars[vars[v.bcpos].index].end_pc = pc-1;
 		}
 		if( t==JType.tpLong || t==JType.tpDouble ) {
@@ -1217,7 +1219,7 @@ public final class Code implements JConstants {
 		JType ttt = Type.getRealType(tp.getErasedType(),f.jctx_tdecl.xtype).getJType();
 		KString struct_sig = ttt.java_signature;
 		KString field_sig = Type.getRealType(f.jctx_tdecl.xtype,f.type).getJType().java_signature;
-		FieldCP cpf = constPool.addFieldCP(struct_sig,KString.from(f.u_name),field_sig);
+		FieldCP cpf = constPool.addFieldCP(struct_sig,KString.from(f.sname),field_sig);
 	    switch(i) {
         case op_getstatic:
 			add_opcode_and_CP(opc_getstatic,cpf);

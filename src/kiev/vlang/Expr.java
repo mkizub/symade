@@ -354,6 +354,26 @@ public class BinaryExpr extends ENode {
 		}
 		m.normilizeExpr(this);
 	}
+
+	public boolean	isConstantExpr() {
+		if (!expr1.isConstantExpr())
+			return false;
+		if (!expr2.isConstantExpr())
+			return false;
+		DNode m = this.dnode;
+		if (m == null)
+			m = getOp().resolveMethod(this);
+		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
+			return false;
+		return true;
+	}
+	public Object	getConstValue() {
+		Method m = (Method)this.dnode;
+		if (m == null)
+			m = getOp().resolveMethod(this);
+		ConstExpr ce = ((CoreExpr)m.body).calc(this);
+		return ce.getConstValue();
+	}
 }
 
 @node(name="UnaryOp")
@@ -431,6 +451,23 @@ public class UnaryExpr extends ENode {
 			replaceWithNodeReWalk(ce);
 			return;
 		}
+	}
+	public boolean	isConstantExpr() {
+		if (!expr.isConstantExpr())
+			return false;
+		DNode m = this.dnode;
+		if (m == null)
+			m = getOp().resolveMethod(this);
+		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
+			return false;
+		return true;
+	}
+	public Object	getConstValue() {
+		Method m = (Method)this.dnode;
+		if (m == null)
+			m = getOp().resolveMethod(this);
+		ConstExpr ce = ((CoreExpr)m.body).calc(this);
+		return ce.getConstValue();
 	}
 }
 
@@ -655,12 +692,6 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 		return "{...}";
 	}
 
-	public ANode doRewrite(RewriteContext ctx) {
-		ANode res = null;
-		foreach (ASTNode stat; stats)
-			res = stat.doRewrite(ctx);
-		return res;
-	}
 }
 
 @node(name="IncrOp")

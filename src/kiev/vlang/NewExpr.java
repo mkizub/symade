@@ -34,7 +34,8 @@ public final class NewExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
 	@dflow(in="this:in")			ENode		outer;
-	@dflow(in="outer")				ENode		tpinfo;
+	@dflow(in="outer")				TypeRef		type;
+	@dflow(in="type")				ENode		tpinfo;
 	@dflow(in="tpinfo", seq="true")	ENode[]		args;
 	}
 
@@ -63,14 +64,12 @@ public final class NewExpr extends ENode {
 
 	public NewExpr(int pos, Type type, ENode[] args) {
 		this.pos = pos;
-		this.ident = nameInit;
 		this.type = new TypeRef(type);
 		foreach (ENode e; args) this.args.append(e);
 	}
 
 	public NewExpr(int pos, TypeRef type, ENode[] args) {
 		this.pos = pos;
-		this.ident = nameInit;
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
 	}

@@ -73,7 +73,6 @@ public view JDNode of DNode extends JNode {
 
 	public:ro	MetaSet		meta;
 	public:ro	String		sname;
-	public:ro	String		u_name;
 	public		Attr[]		jattrs;
 
 	public boolean hasName(String nm, boolean by_equals);
@@ -216,6 +215,7 @@ public view JTypeDecl of TypeDecl extends JDNode {
 	public final boolean isEnum();
 	public final boolean isSyntax()	;
 	public final boolean isLoadedFromBytecode();
+	public final boolean isTypeDeclNotLoaded();
 
 	public boolean checkResolved();
 	

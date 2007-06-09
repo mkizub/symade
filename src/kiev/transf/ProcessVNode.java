@@ -243,7 +243,7 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 			ctor.params.add(new LVar(0, "name", Type.tpString, Var.PARAM_NORMAL, ACC_FINAL));
 			ctor.params.add(new LVar(0, "typeinfo", Type.tpTypeInfo, Var.PARAM_NORMAL, ACC_FINAL));
 			s.members.add(ctor);
-			Constructor sctor = (Constructor)s.super_types[0].getStruct().resolveMethod(nameInit,Type.tpVoid,Type.tpString,Type.tpTypeInfo);
+			Constructor sctor = (Constructor)s.super_types[0].getStruct().resolveMethod(null,Type.tpVoid,Type.tpString,Type.tpTypeInfo);
 			CtorCallExpr ce = new CtorCallExpr(f.pos,
 					new SuperExpr(),
 					new ENode[]{
@@ -675,6 +675,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					if (isArr && !f.isAbstract()) {
 						TypeDecl N = f.getType().resolve(StdTypes.tpArrayArg).meta_type.tdecl;
 						Field emptyArray = N.resolveField("emptyArray", false);
+						f = f.open();
 						f.init = new ReinterpExpr(f.pos, f.getType(), new SFldExpr(f.pos, emptyArray));
 					}
 					if (f.isVirtual()) {

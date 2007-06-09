@@ -265,6 +265,26 @@ public class BinaryBoolExpr extends BoolExpr {
 	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
 
 	public String toString() { return getOp().toString(this); }
+
+	public boolean	isConstantExpr() {
+		if (!expr1.isConstantExpr())
+			return false;
+		if (!expr2.isConstantExpr())
+			return false;
+		DNode m = this.dnode;
+		if (m == null)
+			m = getOp().resolveMethod(this);
+		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
+			return false;
+		return true;
+	}
+	public Object	getConstValue() {
+		Method m = (Method)this.dnode;
+		if (m == null)
+			m = getOp().resolveMethod(this);
+		ConstExpr ce = ((CoreExpr)m.body).calc(this);
+		return ce.getConstValue();
+	}
 }
 
 @node(name="InstanceOf")

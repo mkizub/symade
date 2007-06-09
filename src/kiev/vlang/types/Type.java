@@ -460,6 +460,12 @@ public final class ASTNodeType extends Type {
 		return new ASTNodeType(ASTNodeMetaType.instance(clazz), TVarBld.emptySet);
 	}
 
+	public static ASTNodeType newASTNodeType(Class clazz)
+		alias lfy operator new
+	{
+		return new ASTNodeType(ASTNodeMetaType.instance(clazz), TVarBld.emptySet);
+	}
+
 	public static ASTNodeType newASTNodeType(RewritePattern rp)
 		alias lfy operator new
 	{
@@ -509,7 +515,7 @@ public final class ArgType extends Type {
 
 	public ArgType(ArgMetaType meta_type) {
 		super(meta_type, flReference | flValAppliable, TVar.emptyArray, TArg.emptyArray);
-		this.name = meta_type.tdecl.u_name;
+		this.name = meta_type.tdecl.sname;
 		if (definer.isTypeAbstract())   this.flags |= flAbstract | flArgAppliable;
 		if (definer.isTypeUnerasable()) this.flags |= flUnerasable;
 		if (definer.isTypeVirtual())    this.flags |= flVirtual;

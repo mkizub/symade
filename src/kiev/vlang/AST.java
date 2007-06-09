@@ -351,8 +351,11 @@ public abstract class ANode implements INode {
 	}
 
 	public final This ncopy() {
-		return (This)this.copy();
+		This t = (This)this.copy();
+		t.callbackCopied();
+		return t;
 	}
+	public void callbackCopied() {}
 	public abstract Object copy();
 
 	public Object copyTo(Object to$node) {
@@ -538,19 +541,43 @@ public abstract class ANode implements INode {
 			}
 			if (attr.is_space) {
 				ANode[] vals = (ANode[])val;
-				for (int i=0; i < vals.length; i++)
-					((SpaceAttrSlot)attr).add(rn,(ANode)ctx.fixup(attr,getVersion(vals[i]).doRewrite(ctx)));
+				for (int i=0; i < vals.length; i++) {
+					ANode n = getVersion(vals[i]).doRewrite(ctx);
+					if (n instanceof BlockRewr) {
+						foreach (ASTNode st; n.stats) {
+							n = (ANode)ctx.fixup(attr,st);
+							if (n != null)
+								((SpaceAttrSlot)attr).add(rn,n);
+						}
+					} else {
+						n = (ANode)ctx.fixup(attr,n);
+						if (n != null)
+							((SpaceAttrSlot)attr).add(rn,n);
+					}
+				}
 			}
-			else if (val instanceof ANode)
-				attr.set(rn,ctx.fixup(attr,getVersion((ANode)val).doRewrite(ctx)));
+			else if (attr.name == "meta" && val instanceof MetaSet) {
+				MetaSet ms = (MetaSet)ctx.fixup(attr,getVersion((ANode)val).doRewrite(ctx));
+				MetaSet rs = (MetaSet)attr.get(rn);
+				foreach (MNode mn; ms.metas.delToArray())
+					rs.setMeta(mn);
+			}
+			else if (val instanceof ANode) {
+				ANode rw = getVersion((ANode)val).doRewrite(ctx);
+				while (rw instanceof BlockRewr && rw.stats.length == 1)
+					rw = rw.stats[0];
+				attr.set(rn,ctx.fixup(attr,rw));
+			}
 			else
 				attr.set(rn,ctx.fixup(attr,val));
 		}
 		if (this.ext_data != null) {
 			foreach (DataAttachInfo ai; this.ext_data; ai.p_slot.is_attr && ai.p_slot.is_external) {
-				if (ai.p_data instanceof ANode)
-					this.setExtData(ctx.fixup(ai.p_slot,getVersion((ANode)ai.p_data).doRewrite(ctx)),ai.p_slot);
-				else
+				if (ai.p_data instanceof ANode) {
+					Object o = ctx.fixup(ai.p_slot,getVersion((ANode)ai.p_data).doRewrite(ctx));
+					if (o != null)
+						this.setExtData(o,ai.p_slot);
+				} else
 					this.setExtData(ctx.fixup(ai.p_slot,ai.p_data),ai.p_slot);
 			}
 		}

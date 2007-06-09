@@ -55,7 +55,8 @@ public final class ResInfo {
 		this(from, nm, 0);
 	}
 	public ResInfo(ASTNode from, String nm, int fl) {
-		this.name = nm.intern();
+		if (nm != null)
+			this.name = nm.intern();
 		this.flags = fl;
 		this.flags_stack = new int[16];
 		this.forwards_stack = new Object[16];
@@ -164,7 +165,7 @@ public final class ResInfo {
 				// check visibility of this or inner classes
 				TypeDecl s = from_scope;
 				TypeDecl p = n.ctx_tdecl;
-				while (s != null && s != p && s.package_clazz.dnode != null && s.package_clazz.dnode.isClazz())
+				while (s != null && s != p && s.package_clazz.dnode.isClazz())
 					s = s.package_clazz.dnode;
 				if (s == null || s != p)
 					return false;
@@ -181,9 +182,9 @@ public final class ResInfo {
 	
 	public ENode buildVarAccess(ASTNode at, Var var, boolean generated) {
 		ENode expr;
-		if (var.u_name == Constants.nameThis)
+		if (var.sname == Constants.nameThis)
 			expr = new ThisExpr(at.pos);
-		else if (var.u_name == Constants.nameSuper)
+		else if (var.sname == Constants.nameSuper)
 			expr = new SuperExpr(at.pos);
 		else
 			expr = new LVarExpr(at.pos, var);

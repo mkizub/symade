@@ -97,7 +97,7 @@ public class ASTIdentifier extends ENode {
 			if( ctx_method != null )
 				replaceWithNode(new ConstStringExpr(ctx_method.sname));
 			else
-				replaceWithNode(new ConstStringExpr(nameInit));
+				replaceWithNode(new ConstStringExpr("<constructor>"));
 			return;
 		}
 		else if( name == Constants.nameDEBUG ) {

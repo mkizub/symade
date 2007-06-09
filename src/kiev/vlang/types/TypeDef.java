@@ -34,7 +34,6 @@ public abstract class TypeDef extends TypeDecl {
 
 	public TypeDef(String name) {
 		super(name);
-		this.u_name = name;
 	}
 
 	public String qname() {

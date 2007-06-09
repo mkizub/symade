@@ -260,7 +260,7 @@ public class UserMeta extends MNode {
 		MetaValue val = retens.get("value");
 		if (val instanceof MetaValueScalar && val.value instanceof SFldExpr) {
 			Field f = ((SFldExpr)val.value).var;
-			if (f.u_name == "RUNTIME")
+			if (f.sname == "RUNTIME")
 				return true;
 		}
 		return false;
@@ -274,7 +274,7 @@ public class UserMeta extends MNode {
 		MetaValue val = retens.get("value");
 		if (val instanceof MetaValueScalar && val.value instanceof SFldExpr) {
 			Field f = ((SFldExpr)val.value).var;
-			if (f.u_name == "CLASS")
+			if (f.sname == "CLASS")
 				return true;
 		}
 		return false;

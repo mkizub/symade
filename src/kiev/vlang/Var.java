@@ -159,7 +159,6 @@ public abstract class Var extends DNode implements GlobalDNode {
 	{
 		this.sname = name;
 		this.kind = kind;
-		this.u_name = name;
 		this.vtype = vtype;
 		if (flags != 0) {
 			if ((flags & ACC_FINAL) == ACC_FINAL) setMeta(new MetaFinal());
@@ -183,7 +182,6 @@ public abstract class Var extends DNode implements GlobalDNode {
 	{
 		this.sname = name;
 		this.kind = kind;
-		this.u_name = name;
 		this.vtype = vtype;
 	}
 
@@ -209,6 +207,8 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 
 	public boolean preResolveIn() {
+		if (meta != null)
+			meta.verify();
 		ENode init = this.init;
 		if (init != null && init instanceof NewInitializedArrayExpr && init.type == null) {
 			Type tp = getType();
@@ -263,6 +263,12 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 
 	public Type	getType() { return type; }
+
+	public ANode doRewrite(RewriteContext ctx) {
+		if (getMeta("kiev\u001fstdlib\u001fmeta\u001fextern") != null)
+			return null;
+		return super.doRewrite(ctx);
+	}
 
 	static class VarDFFunc extends DFFunc {
 		final DFFunc f;

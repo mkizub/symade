@@ -2528,6 +2528,9 @@
              <name>SyntaxIdentAttr</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxJavaConstructorName</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxStrAttr</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
@@ -2605,6 +2608,9 @@
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxIdentAttr</name>
+            </a-node>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxJavaConstructorName</name>
             </a-node>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>SyntaxAutoParenth</name>
@@ -3503,6 +3509,71 @@
       </a-node>
      </elem>
      <sname>stx-def-java-expr-access</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>SyntaxJavaConstructorName</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxFolder'>
+       <folded_by_default>true</folded_by_default>
+       <folded>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>ctor-name</text>
+        </a-node>
+       </folded>
+       <unfolded>
+        <a-node class='kiev.fmt.SyntaxSet'>
+         <elements>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&lt;ctor-name:</text>
+           <funcs>
+            <a-node class='kiev.fmt.SyntaxFunctions'>
+             <funcs>
+              <a-node class='kiev.fmt.SyntaxFunction'>
+               <title>Add functions</title>
+               <act>kiev.gui.FuncNewElemOfNull</act>
+               <attr>funcs</attr>
+              </a-node>
+             </funcs>
+            </a-node>
+           </funcs>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>fmt:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>fmt</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SymbolRef</name>
+            </a-node>
+           </expected_types>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>funcs</name>
+           <expected_types>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>SyntaxFunctions</name>
+            </a-node>
+           </expected_types>
+           <empty>
+            <a-node class='kiev.fmt.SyntaxSpace'>
+            </a-node>
+           </empty>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>&gt;</text>
+          </a-node>
+         </elements>
+         <folded_by_default>false</folded_by_default>
+        </a-node>
+       </unfolded>
+      </a-node>
+     </elem>
+     <sname>stx-def-java-ctor-name</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>

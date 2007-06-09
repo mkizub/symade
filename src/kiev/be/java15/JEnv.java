@@ -48,7 +48,12 @@ public final class JEnv {
 
 	/** Actually load class from specified file and dir */
 	public TypeDecl loadClazz(Struct cl) {
-		return loadClazz(ClazzName.fromBytecodeName(((JStruct)cl).bname()));
+		KString bc_name = cl.bytecode_name;
+		if (bc_name != null)
+			return loadClazz(ClazzName.fromBytecodeName(bc_name));
+		if (cl.sname == null)
+			throw new RuntimeException("Anonymouse class cannot be loaded from bytecode");
+		return loadClazz(ClazzName.fromOuterAndName(cl.package_clazz.dnode, KString.from(cl.sname)));
 	}
 
 	/** Actually load class from specified file and dir */

@@ -56,7 +56,8 @@ public class Bytecoder implements JConstants {
 			assert (cl.getClass() == variant.getClass());
 		else
 			cl = variant;
-		cl.initStruct(clname.src_name.toString(), clname.unq_name.toString(), outer, bcclazz.flags);
+		cl.initStruct(clname.src_name.toString(), outer, bcclazz.flags);
+		cl.bytecode_name = clname.bytecode_name;
 
 		if (!cl.isAttached()) {
 			Struct pkg = outer;
@@ -169,15 +170,14 @@ public class Bytecoder implements JConstants {
 		{
 			int m_flags = bcm.flags;
 			KString m_name = bcm.getName(bcclazz);
-			String m_name_s = m_name.toString().intern();
 			KString m_type_java = bcm.getSignature(bcclazz);
 			KString m_type = m_type_java;
 			CallType mtype = (CallType)Signature.getType(m_type);
 			//CallType jtype = mtype;
-			if (m_name_s == nameInit || m_name_s == nameClassInit)
+			if (m_name == knameInit || m_name == knameClassInit)
 				m = new Constructor(m_flags);
 			else
-				m = new MethodImpl(m_name_s,mtype.ret(),m_flags);
+				m = new MethodImpl(m_name.toString(),mtype.ret(),m_flags);
 			cl.members.append(m);
 			for (int i=0; i < mtype.arity; i++) {
 				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
@@ -214,9 +214,9 @@ public class Bytecoder implements JConstants {
 		}
 		trace(Kiev.debug && Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 		if( m.isStatic()
-		 && m.u_name != nameClassInit
+		 && !(m instanceof Constructor)
 		 && cl.package_clazz.dnode.isInterface()
-		 && cl.u_name == nameIFaceImpl
+		 && cl.sname == nameIFaceImpl
 		)
 			m.setVirtualStatic(true);
 //		jclazz.addMember(new JMethod(m));
@@ -458,7 +458,7 @@ public class Bytecoder implements JConstants {
 		}
 		else if( name.equals(attrAnnotationDefault) ) {
 			kiev.bytecode.AnnotationDefault rva = (kiev.bytecode.AnnotationDefault)bca;
-			MetaValue mv = readAnnotationValue(clazz,rva.value,((Method)dn).u_name);
+			MetaValue mv = readAnnotationValue(clazz,rva.value,((Method)dn).sname);
 			((Method)dn).body = mv;
 			a = null;
 		}
@@ -729,7 +729,7 @@ public class Bytecoder implements JConstants {
 	public kiev.bytecode.Field writeField(Field f) {
 		kiev.bytecode.Field bcf = new kiev.bytecode.Field();
 		bcf.flags = f.getJavaFlags();
-		bcf.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(f.u_name).pos];
+		bcf.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(f.sname).pos];
 		JType tp = f.type.getJType();
 		bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
@@ -747,7 +747,16 @@ public class Bytecoder implements JConstants {
 		Struct jcl = cl;
 		kiev.bytecode.Method bcm = new kiev.bytecode.Method();
 		bcm.flags = m.getJavaFlags();
-		bcm.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.u_name).pos];
+		KString nm;
+		if (m instanceof Constructor) {
+			if (m.isStatic())
+				nm = knameClassInit;
+			else
+				nm = knameInit;
+		} else {
+			nm = KString.from(m.sname);
+		}
+		bcm.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(nm).pos];
 		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.etype.getJType().java_signature).pos];
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes

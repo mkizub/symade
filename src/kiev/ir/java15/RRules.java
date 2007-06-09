@@ -28,7 +28,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 	public boolean preGenerate() {
 		this.open();
 		Var penv = params[0];
-		assert(penv.u_name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
+		assert(penv.sname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 		if( body instanceof RuleBlock ) {
 			body.preGenerate();
 			Kiev.runProcessorsOn(body);
@@ -41,7 +41,7 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 		trace(Kiev.debug && Kiev.debugResolve,"Resolving rule "+this);
 		try {
 			Var penv = params[0];
-			assert(penv.u_name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
+			assert(penv.sname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			if( body != null ) {
 				if( type.ret() ≡ Type.tpVoid ) body.setAutoReturnable(true);
 				body.resolve(Type.tpVoid);
@@ -69,7 +69,10 @@ public final view RRuleBlock of RuleBlock extends RENode {
 		this.open();
 		rnode.rnResolve();
 		fields_buf = new StringBuffer();
-		rnode.resolve1(new JumpNodes(false,null,false,null,false));
+		rnode.resolve1(null,null,false);
+		((RuleBlock)this).testGenerate(null, null);
+		if (!isAttached())
+			return false;
 		StringBuffer sb = new StringBuffer(256);
 		sb.append("{ ");
 		// Declare private method frame class
@@ -83,7 +86,7 @@ public final view RRuleBlock of RuleBlock extends RENode {
 		// Local variables
 		foreach(Var v; rule_method.localvars) {
 			String tp = Kiev.reparseType(v.type);
-			sb.append(tp+' '+v.u_name+";\n");
+			sb.append(tp+' '+v.sname+";\n");
 		}
 		// tmp variables inserted here
 		sb.append(fields_buf.toString());

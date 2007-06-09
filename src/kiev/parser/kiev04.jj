@@ -1224,10 +1224,10 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			clazz = mkStruct(name, new KievView(), ACC_VIRTUAL, modifiers, parent);
 			KievView kview = (KievView)clazz;
 		}
+		args = ClazzArguments() { clazz.args.addAll(args); }
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of") })
 		<IDENTIFIER> // "of"
 		kview.view_of = NArrType()
-		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
 			"extends"
 			clazz.super_types += Type()

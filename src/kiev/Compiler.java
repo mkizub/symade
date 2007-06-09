@@ -144,6 +144,8 @@ public abstract class WorkerThread extends Thread {
 						Kiev.runProcessorsOn(fu);
 						foreach (ATextSyntax ts; fu.members)
 							Env.createProjectInfo(ts,this.curFile);
+						foreach (TypeDecl td; fu.members)
+							Env.createProjectInfo(td,this.curFile);
 					} else {
 						java.io.InputStreamReader file_reader = null;
 						char[] file_chars = new char[8196];

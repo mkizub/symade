@@ -39,6 +39,11 @@ public interface JConstants extends Constants {
     public static final int CONSTANT_INTERFACEMETHOD	= 11;
     public static final int CONSTANT_NAMEANDTYPE		= 12;
 
+	public final static String nameInit				= "<init>";
+	public final static String nameClassInit			= "<clinit>";
+	public final static KString knameInit				= KString.from(nameInit);
+	public final static KString knameClassInit			= KString.from(nameClassInit);
+
 	// Well known attributes
 	public final static KString attrCode				= KString.from("Code");
 	public final static KString attrSourceFile			= KString.from("SourceFile");

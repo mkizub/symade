@@ -88,21 +88,24 @@ class ClazzName implements Constants {
 		return new ClazzName(name,short_name,bytecode_name,short_name);
 	}
 
-	public static ClazzName fromOuterAndName(Struct outer, KString short_name) {
+	public static ClazzName fromOuterAndName(TypeDecl outer, KString short_name) {
 		if(short_name.equals(KString.Empty)) return Empty;
 		String delim = outer.isPackage() ? "/" : "$" ;
 		KString bytecode_name;
 		KString name;
 		if( outer.isPackage() ) {
 			if (outer.qname() != "") {
-				bytecode_name = KString.from(((JStruct)outer).bname()+delim+short_name);
+				bytecode_name = KString.from(outer.qname().replace('\u001f','/')+delim+short_name);
 				name = KString.from(outer.qname().replace('\u001f','.')+"."+short_name);
 			} else {
 				bytecode_name = short_name;
 				name = short_name;
 			}
 		} else {
-			bytecode_name = KString.from(((JStruct)outer).bname()+delim+short_name);
+			if (outer.bytecode_name == null)
+				bytecode_name = KString.from(outer.qname().replace('\u001f','/')+delim+short_name);
+			else
+				bytecode_name = KString.from(outer.bytecode_name+delim+short_name);
 			name = KString.from(outer.qname().replace('\u001f','.')+"."+short_name);
 		}
 		return new ClazzName(name,short_name,bytecode_name,short_name);

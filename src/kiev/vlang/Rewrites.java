@@ -13,6 +13,8 @@ package kiev.vlang;
 import kiev.ir.java15.RENode;
 import kiev.be.java15.JENode;
 
+import java.util.StringTokenizer;
+
 import syntax kiev.Syntax;
 
 /**
@@ -31,9 +33,60 @@ public final class RewriteContext {
 	}
 
 	public String replace(String s) {
+		if (s == null)
+			return null;
 		foreach (String k; args.keys())
 			s = s.replace('\''+k+'\'', String.valueOf(args.get(k)));
+		for(;;) {
+			int pS = s.indexOf('{');
+			if (pS < 0)
+				break;
+			int pE = s.indexOf('}', pS);
+			if (pE <= 0)
+				break;
+			s = s.substring(0,pS) + subst(s.substring(pS+1,pE)) + s.substring(pE+1);
+		}
 		return s;
+	}
+	private String subst(String qname) {
+		int pS = qname.indexOf('>');
+		if (pS < 0)
+			return String.valueOf(args.get(qname));
+		Object o = args.get(qname.substring(0,pS));
+		while (pS > 0) {
+			int pE = qname.indexOf('>',pS+1);
+			if (pE < 0) {
+				o = ((ASTNode)o).getVal(qname.substring(pS+1).intern());
+				break;
+			} else {
+				o = ((ASTNode)o).getVal(qname.substring(pS+1,pE).intern());
+				pS = pE;
+			}
+		}
+		return String.valueOf(o);
+	}
+	public ANode toANode(Object o) {
+		if (o == null)				return null;
+		if (o instanceof ANode)		return (ANode)o;
+		if (o instanceof Boolean)	return new ConstBoolExpr(o.booleanValue()); 
+		if (o instanceof String)	return new ConstStringExpr((String)o);
+		if (o instanceof Integer)	return new ConstIntExpr(o.intValue()); 
+		if (o instanceof Byte)		return new ConstByteExpr(o.byteValue()); 
+		if (o instanceof Short)		return new ConstShortExpr(o.shortValue()); 
+		if (o instanceof Float)		return new ConstFloatExpr(o.floatValue()); 
+		if (o instanceof Double)	return new ConstDoubleExpr(o.doubleValue()); 
+		if (o.getClass().isEnum())	return new ConstEnumExpr((Enum)o);
+		if (o instanceof ASTNode[]) {
+			BlockRewr bl = new BlockRewr();
+			foreach (ASTNode n; (ASTNode[])o) {
+				if (n.isAttached())
+					bl.stats += n.ncopy();
+				else
+					bl.stats += n;
+			}
+			return bl;
+		}
+		throw new ClassCastException("Cannot convert to ANode value "+o);
 	}
 	public Object fixup(AttrSlot attr, Object o) {
 		if (o instanceof ConstStringExpr) {
@@ -60,8 +113,18 @@ public final class RewriteContext {
 			else if (attr.clazz == ENode.class)
 				o = new TypeRef(o.xtype);
 		}
+		else if (o instanceof ASTNode[]) {
+			BlockRewr bl = new BlockRewr();
+			foreach (ASTNode n; (ASTNode[])o) {
+				if (n.isAttached())
+					bl.stats += n.ncopy();
+				else
+					bl.stats += n;
+			}
+			o = bl;
+		}
 		if (o instanceof ANode && attr.is_attr)
-			o = o.detach(); //assert(!o.isAttached());
+			o = o.ncopy(); //assert(!o.isAttached());
 		return o;
 	}
 }
@@ -87,7 +150,7 @@ public final class RewriteMatch extends ENode {
 		throw new CompilerException(ctx.root, "Cannot rewrite");
 	}
 
-	public ASTNode matchCase(ASTNode root) {
+	public ENode matchCase(ASTNode root) {
 		foreach (RewriteCase rc; cases; rc.var.match(root))
 			return rc;
 		throw new CompilerException(root, "Cannot rewrite");
@@ -289,6 +352,19 @@ public final class RewriteNodeArgArray extends ENode {
 	}
 }
 
+@node(name="BlockRewr")
+public class BlockRewr extends Block {
+	
+	@dflow(out="this:out()") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]		stats;
+	}
+
+	@virtual typedef This  ≤ BlockRewr;
+
+	public BlockRewr() {}
+
+}
+
 @node
 public class IfElseRewr extends ENode {
 	
@@ -316,14 +392,16 @@ public class IfElseRewr extends ENode {
 	}
 
 	public void postVerify() {
-		if (!cond.isConstantExpr())
-			throw new RuntimeException("Non-const 'if#' condition "+cond);
 		if (thenSt == null || elseSt == null)
 			throw new RuntimeException("Missed then or else part of 'if#'");
 	}
 
 	public ANode doRewrite(RewriteContext ctx) {
-		assert (cond.isConstantExpr());
+		ENode cond = this.cond;
+		if (!cond.isConstantExpr()) {
+			cond = (ENode)this.cond.doRewrite(ctx);
+			assert (cond.isConstantExpr());
+		}
 		Boolean b = (Boolean)cond.getConstValue();
 		if (b.booleanValue())
 			return thenSt.doRewrite(ctx);
@@ -332,5 +410,213 @@ public class IfElseRewr extends ENode {
 	}
 
 }
+
+@node(name="SwitchRewr")
+public class SwitchRewr extends SwitchStat {
+	
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in")			ENode			sel;
+	@dflow(in="sel", seq="true")	ENode[]			stats;
+	@dflow(in="stats")				Label			lblcnt;
+	@dflow(in="stats")				Label			lblbrk;
+	}
+	
+	@virtual typedef This  ≤ SwitchRewr;
+
+
+	public SwitchRewr() {}
+	
+	public void mainResolveOut() {
+		Type tp = sel.getType().getErasedType();
+		if (tp instanceof ASTNodeType) {
+			if (!((ASTNodeMetaType)tp.meta_type).clazz.isEnum())
+				Kiev.reportError(this, "Type of switch# selector must be primitive type or enum");
+		}
+		else if!(tp instanceof CoreType)
+			Kiev.reportError(this, "Type of switch# selector must be primitive type or enum");
+	}
+
+	public ANode doRewrite(RewriteContext ctx) {
+		Object sel = this.sel;
+		if (!sel.isConstantExpr())
+			sel = sel.doRewrite(ctx);
+		CaseLabel cl = null;
+		if (sel instanceof ConstEnumExpr)
+			cl = findEnumCase((ConstEnumExpr)sel);
+		else
+			Kiev.reportError(this, "Unsupported switch# selector "+sel);
+		if (cl == null)
+			return null;
+		BlockRewr bl = new BlockRewr();
+		ASTNode st = (ASTNode)ANode.getNextNode(cl);
+		while (st != null && !(st instanceof CaseLabel)) {
+			bl.stats += (ASTNode)st.doRewrite(ctx);
+			st = (ASTNode)ANode.getNextNode(st);
+		}
+		if (bl.stats.length == 0)
+			return null;
+		if (bl.stats.length == 1)
+			return ~bl.stats[0];
+		return bl;
+	}
+	
+	private CaseLabel findEnumCase(ConstEnumExpr e) {
+		int tag = e.value.ordinal();
+		String name = e.value.name().intern();
+		String type_name = e.value.getClass().getName().replace('.','\u001f').replace('$','\u001f');
+		foreach (CaseLabel cl; stats) {
+			ENode val = cl.val;
+			if (val instanceof ConstIntExpr && val.value == tag)
+				return cl;
+			if (val instanceof ConstStringExpr && val.value.equals(name))
+				return cl;
+			if (val instanceof ConstEnumExpr && val.value == e.value)
+				return cl;
+			if (val instanceof SFldExpr) {
+				if (type_name.equals(val.obj.getTypeDecl().qname()) && name == val.ident)
+					return cl;
+			}
+		}
+		return null;
+	}
+
+}
+
+@node(name="MacroAccess")
+public final class MacroAccessExpr extends ENode {
+	
+	@dflow(out="obj") private static class DFI {
+	@dflow(in="this:in")	ENode			obj;
+	}
+
+	@virtual typedef This  = MacroAccessExpr;
+
+	@att public ENode			obj;
+
+	public MacroAccessExpr() {}
+
+	public Operator getOp() { return Operator.MacroAccess; }
+
+	public Type getType() {
+		Type ot = obj.getType().getErasedType();
+		if!(ot instanceof ASTNodeType)
+			return StdTypes.tpVoid;
+		String name = ("attr$"+ident+"$type").intern();
+		foreach (TVar tv; ot.bindings().tvars; tv.var.name == name)
+			return ot.resolve(tv.var);
+		foreach (AttrSlot a; obj.values(); a.name == this.ident) {
+			if (a.clazz == Boolean.class) return StdTypes.tpBoolean;
+			if (a.clazz == String.class) return StdTypes.tpString;
+			if (a.clazz == Integer.class) return StdTypes.tpInt;
+			if (a.clazz == Byte.class) return StdTypes.tpByte;
+			if (a.clazz == Short.class) return StdTypes.tpShort;
+			if (a.clazz == Long.class) return StdTypes.tpLong;
+			if (a.clazz == Float.class) return StdTypes.tpFloat;
+			if (a.clazz == Double.class) return StdTypes.tpDouble;
+			if (a.clazz == Character.class) return StdTypes.tpChar;
+			if (a.clazz.isEnum()) return new ASTNodeType(a.clazz);
+			return new ASTNodeType(a.clazz);
+		}
+		return StdTypes.tpVoid;
+	}
+/*
+	public boolean	isConstantExpr() {
+		if( var.isFinal() ) {
+			if (var.init != null && var.init.isConstantExpr())
+				return true;
+			else if (var.const_value != null)
+				return true;
+		}
+		return false;
+	}
+*/
+	public Object	getConstValue() {
+		return obj.getVal(this.ident);
+	}
+
+	public String toString() {
+		if (obj == null)
+			return String.valueOf(ident);
+		if (obj.getPriority() < opAccessPriority)
+			return "("+obj.toString()+")>->"+ident;
+		else
+			return obj.toString()+">->"+ident;
+	}
+
+	public void mainResolveOut() {
+		ENode obj = this.obj;
+		Type tp = obj.getType().getErasedType();
+		if!(tp instanceof ASTNodeType)
+			throw new CompilerException(this, "Accessor must be an AST node");
+		Field@ v;
+		ResInfo info = new ResInfo(this,ident,ResInfo.noStatic | ResInfo.noImports | ResInfo.noForwards);
+		if!(tp.resolveNameAccessR(v,info)) {
+			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+			msg.append("\t").append(tp).append('\n');
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(this, msg.toString());
+		}
+	}
+
+	public ANode doRewrite(RewriteContext ctx) {
+		ANode obj = this.obj.doRewrite(ctx);
+		assert (obj != null);
+		return (ANode)ctx.toANode(obj.getVal(this.ident));
+	}
+}
+
+
+@node
+public class MacroSubstExpr extends ENode {
+	
+	@dflow(out="expr") private static class DFI {
+	@dflow(in="this:in")	ENode	expr;
+	}
+
+	@virtual typedef This  = MacroSubstExpr;
+	@virtual typedef JView = JENode;
+	@virtual typedef RView = RENode;
+
+	@att public ENode			expr;
+
+	public MacroSubstExpr() {}
+	
+	public ANode doRewrite(RewriteContext ctx) {
+		return (ANode)ctx.fixup(this.pslot(),expr.doRewrite(ctx));
+	}
+
+}
+
+@node
+public class MacroSubstTypeRef extends TypeRef {
+	
+	@dflow(out="type") private static class DFI {
+	@dflow(in="this:in")	ENode		type;
+	}
+
+	@virtual typedef This  = MacroSubstTypeRef;
+
+	@att public ENode			type;
+
+	public MacroSubstTypeRef() {}
+	
+	public ANode doRewrite(RewriteContext ctx) {
+		return (ANode)ctx.fixup(this.pslot(),type.doRewrite(ctx));
+	}
+	
+	public Type getType() {
+		return StdTypes.tpVoid;
+	}
+
+	public boolean preResolveIn() {
+		return true;
+	}
+
+	public boolean mainResolveIn() {
+		return true;
+	}
+
+}
+
 
 

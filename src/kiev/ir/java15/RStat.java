@@ -213,7 +213,7 @@ public final view RBreakStat of BreakStat extends RENode {
 		} else {
 	label_found:
 			for(p=(ASTNode)parent(); !(p instanceof Method) ; p=(ASTNode)p.parent() ) {
-				if (p instanceof LabeledStat && p.lbl.u_name.equals(this.ident))
+				if (p instanceof LabeledStat && p.lbl.sname == this.ident)
 					throw new RuntimeException("Label "+ident+" does not refer to break target");
 				if (!p.isBreakTarget()) continue;
 				ASTNode pp = p;
@@ -262,20 +262,16 @@ public final view RGotoStat of GotoStat extends RENode {
 			dest.delLink((GotoStat)this);
 			dest = null;
 		}
-		LabeledStat[] stats = GotoStat.resolveStat(this.ident, ctx_method.body);
-		if( stats.length == 0 ) {
+		Label[] labels = GotoStat.resolveStat(this.ident, ctx_method.body);
+		if( labels.length == 0 ) {
 			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return;
 		}
-		if( stats.length > 1 ) {
+		if( labels.length > 1 ) {
 			Kiev.reportError(this,"Umbigouse label "+ident+" in goto statement");
 		}
-		LabeledStat stat = stats[0];
-		if( stat == null ) {
-			Kiev.reportError(this,"Label "+ident+" unresolved");
-			return;
-		}
-		dest = stat.lbl;
+		Label label = labels[0];
+		dest = label;
 		dest.addLink((GotoStat)this);
 	}
 }

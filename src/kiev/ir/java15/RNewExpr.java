@@ -79,7 +79,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 			}
 		}
 		mt = (CallType)Type.getRealType(type,new CallType(type,null,ta,Type.tpVoid,false));
-		ResInfo info = new ResInfo(this,nameInit,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,m,info,mt) ) {
 			this.open();
 			this.symbol = m;
@@ -89,7 +89,7 @@ public static final view RNewExpr of NewExpr extends RENode {
 		}
 		else {
 			throw new CompilerException(this,"Can't find apropriative initializer for "+
-				Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
+				Method.toString("<constructor>",args,Type.tpVoid)+" for "+type);
 		}
 		setResolved(true);
 		if (isAutoReturnable())

@@ -65,6 +65,12 @@ public final class Label extends DNode {
 	@ref(copyable=false)	public ASTNode[]		links;
 							public CodeLabel		label;
 
+	public boolean preResolveIn() {
+		if (meta != null)
+			meta.verify();
+		return true;
+	}
+
 	public boolean preVerify() {
 		ASTNode root = this.ctx_root;
 		foreach (ASTNode lnk; links; lnk.ctx_root != root) {
@@ -73,6 +79,12 @@ public final class Label extends DNode {
 		}
 		return super.preVerify();
 	}	
+
+	public ANode doRewrite(RewriteContext ctx) {
+		if (getMeta("kiev\u001fstdlib\u001fmeta\u001fextern") != null)
+			return null;
+		return super.doRewrite(ctx);
+	}
 
 	public void addLink(ASTNode lnk) {
 		foreach (ASTNode l; links; l == lnk)

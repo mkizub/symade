@@ -24,6 +24,7 @@ import kiev.be.java15.JConstCharExpr;
 import kiev.be.java15.JConstFloatExpr;
 import kiev.be.java15.JConstDoubleExpr;
 import kiev.be.java15.JConstStringExpr;
+import kiev.be.java15.JConstEnumExpr;
 
 import syntax kiev.Syntax;
 
@@ -325,6 +326,32 @@ public final class ConstStringExpr extends ConstExpr {
 	}
 
 	public String	toString()			{ return '\"'+value.toString()+'\"'; }
+}
+
+@node
+public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
+	@virtual typedef This  = ConstEnumExpr;
+	@virtual typedef JView = JConstEnumExpr;
+
+	@att public E value;
+
+	public ConstEnumExpr() {}
+	public ConstEnumExpr(E value) { this.value = value; }
+
+	public Type		getType()			{ return new ASTNodeType(value.getClass()); }
+
+	public Object	getConstValue()		{ return value; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstEnumExpr)
+			return o.value == this.value;
+		return false;
+	}
+
+	public String	toString()			{ return getType() + "." + value.toString(); }
 }
 
 

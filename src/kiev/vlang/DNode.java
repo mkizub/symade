@@ -37,12 +37,9 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	@att public final			MetaSet			meta;
 	@att public					String			sname; // source code name, may be null for anonymouse symbols
 	@ref public					DeclGroup		group;
-	@virtual
-	     public:ro,rw,ro,rw		String			u_name; // unique name in scope, never null, usually equals to name
-	
 
-	@ref
-	public KString								b_name;	// java bytecode name
+	@ref(ext_data=true, copyable=false)
+	public KString								bytecode_name; // used by backend for anonymouse and inner declarations
 	@ref(ext_data=true)
 	public kiev.be.java15.Attr[]				jattrs; // array of java class attributes of this node
 
@@ -62,12 +59,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		if (this instanceof GlobalDNode)
 			return ((GlobalDNode)this).qname();
 		return this.sname;
-	}
-	@getter public String get$u_name() {
-		return this.u_name;
-	}
-	@setter public void set$u_name(String value) {
-		this.u_name = (value == null) ? null : value.intern();
 	}
 	
 	public final boolean isPublic()				{ return this.meta.is_access == MASK_ACC_PUBLIC || group != null && group.meta.is_access == MASK_ACC_PUBLIC; }
@@ -261,16 +252,8 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		this.group = null;
 		super.callbackDetached();
 	}
-	public void callbackChildChanged(AttrSlot attr) {
-		if (attr.name == "sname") {
-			if (this.u_name != this.sname) {
-				this = this.open();
-				this.u_name = this.sname;
-			}
-		}
-	}
 
-	public String toString() { return u_name; }
+	public String toString() { return sname; }
 
 	public final void resolveDecl() { ((RView)this).resolveDecl(); }
 
@@ -286,10 +269,8 @@ public abstract class DNode extends ASTNode implements ISymbol {
 
 	public boolean hasName(String nm, boolean by_equals) {
 		if (by_equals) {
-			if (this.u_name == nm) return true;
 			if (this.sname == nm) return true;
 		} else {
-			if (this.u_name != null && this.u_name.startsWith(nm)) return true;
 			if (this.sname != null && this.sname.startsWith(nm)) return true;
 		}
 		return false;
@@ -327,6 +308,15 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		this.jattrs = null;
 		return true;
 	}
+
+	public ANode doRewrite(RewriteContext ctx) {
+		DNode dn = (DNode)super.doRewrite(ctx);
+		String id = this.sname;
+		String rw = ctx.replace(id);
+		if (id != rw)
+			dn.sname = rw;
+		return dn;
+	}
 }
 
 @node
@@ -363,6 +353,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	@att public TypeRef[]					super_types;
 	@att public ASTNode[]					members;
 	@ref public DNode[]						sub_decls;
+	@ref public int							prefix_counter;	// for name_prefix auto-generation
 		 private MetaType[]					super_meta_types;
 	@ref private TypeDecl[]					direct_extenders;
 		 public int							type_decl_version;
@@ -370,8 +361,9 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		 public MetaType					xmeta_type;
 		 public Type						xtype;
 
-	@ref(ext_data=true) public WrapperMetaType		wmeta_type;
-	@ref(ext_data=true) public TypeAssign			ometa_tdef;
+	@ref(ext_data=true, copyable=false) public WrapperMetaType		wmeta_type;
+	@ref(ext_data=true, copyable=false) public TypeAssign			ometa_tdef;
+	@ref(ext_data=true, copyable=false) public Integer				inner_counter;
 
 	@getter public TypeDecl get$child_ctx_tdecl()	{ return this; }
 
@@ -434,6 +426,21 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public final void setLoadedFromBytecode(boolean on) {
 		assert(!locked);
 		this.is_struct_bytecode = on;
+	}
+
+	// a pizza case	
+	public final boolean isPizzaCase() {
+		return this instanceof PizzaCase;
+	}
+	// has pizza cases
+	public final boolean isHasCases() {
+		return this.is_struct_has_pizza_cases;
+	}
+	public final void setHasCases(boolean on) {
+		if (this.is_struct_has_pizza_cases != on) {
+			assert(!locked);
+			this.is_struct_has_pizza_cases = on;
+		}
 	}
 
 	// indicates that type of the structure was attached
@@ -503,9 +510,8 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			super.callbackChildChanged(attr);
 		}
 	}
-
-	public void callbackAttached() {
-		this = ANode.getVersion(this).open();
+	
+	public void updatePackageClazz() {
 		Struct pkg = null;
 		TypeDecl td = ctx_tdecl;
 		NameSpace ns;
@@ -513,12 +519,26 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			pkg = (Struct)td;
 		else if ((ns=ctx_name_space) != null)
 			pkg = ns.getPackage();
+		TypeDecl cur = this.package_clazz.dnode;
+		if (cur == pkg)
+			return;
+		this.package_clazz.open();
+		if (cur != null) {
+			int idx = cur.sub_decls.indexOf(this);
+			if (idx >= 0)
+				cur.sub_decls.del(idx);
+		}
+		this.package_clazz.symbol = pkg;
 		if (pkg != null) {
 			int idx = pkg.sub_decls.indexOf(this);
 			if (idx < 0)
 				pkg.sub_decls.append(this);
-			this.package_clazz.symbol = pkg;
 		}
+	}
+
+	public void callbackAttached() {
+		this = ANode.getVersion(this).open();
+		updatePackageClazz();
 		super.callbackAttached();
 	}
 	public void callbackDetached() {
@@ -527,10 +547,22 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 			int idx = package_clazz.dnode.sub_decls.indexOf(this);
 			if (idx >= 0)
 				package_clazz.dnode.sub_decls.del(idx);
+			package_clazz.open();
 			package_clazz.symbol = null;
 		}
 		super.callbackDetached();
 	}
+	public void callbackCopied() {
+		super.callbackCopied();
+		package_clazz.symbol = null;
+		super_meta_types = null;
+		direct_extenders.delAll();
+		type_decl_version = 1;
+		q_name = null;
+		xmeta_type = null;
+		xtype = null;
+	}
+
 
 	public TypeDecl(String name) {
 		package_clazz = new SymbolRef<TypeDecl>();
@@ -574,14 +606,26 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public String qname() {
 		if (q_name != null)
 			return q_name;
-		TypeDecl pkg = package_clazz.dnode;
-		if (pkg == null)
+		if (sname == null || sname == "")
 			return null;
-		q_name = (pkg.qname()+"\u001f"+u_name).intern();
+		ANode p = parent();
+		if (p instanceof NameSpace)
+			p = p.getPackage();
+		if (p == null)
+			p = package_clazz.dnode;
+		if (p instanceof Env || !(p instanceof TypeDecl))
+			q_name = sname;
+		else
+			q_name = (p.qname()+"\u001f"+sname).intern();
 		return q_name;
 	}
 
-	public String toString() { return package_clazz.dnode==null ? u_name : qname().replace('\u001f','.'); }
+	public String toString() {
+		String q = qname();
+		if (q == null)
+			return "<anonymouse>";
+		return q.replace('\u001f','.');
+	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		//if (dump == "api" && attr.name == "package_clazz")
@@ -829,5 +873,10 @@ public final class MetaTypeDecl extends TypeDecl {
 			this.xmeta_type = meta_type;
 			this.xtype = meta_type.make(TVarBld.emptySet);
 		}
+	}
+	public void callbackCopied() {
+		super.callbackCopied();
+		this.xmeta_type = new MetaType(this);
+		this.xtype = this.xmeta_type.make(TVarBld.emptySet);
 	}
 }

@@ -42,6 +42,10 @@ public final view JMethod of Method extends JDNode {
 	public final boolean isInlinedByDispatcherMethod();
 
 	@getter public JMethod get$child_jctx_method() { return this; }
+	
+	public boolean isConstructor() {
+		return ((Method)this) instanceof Constructor;
+	}
 
 	public JVar getOuterThisParam() { return (JVar) ((Method)this).getOuterThisParam(); }
 	public JVar getTypeInfoParam(int kind) { return (JVar) ((Method)this).getTypeInfoParam(kind); }
@@ -73,7 +77,7 @@ public final view JMethod of Method extends JDNode {
 							code.importCode(cond.code_attr);
 						foreach(JWBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							assert( cond.jparent instanceof JMethod && ((JMethod)cond.jparent).isInvariantMethod() );
-							if( u_name != nameInit && u_name != nameClassInit ) {
+							if( !isConstructor() ) {
 								if( !((JDNode)cond.jparent).isStatic() )
 									code.addInstrLoadThis();
 								code.addInstr(Instr.op_call,cond.jctx_method,false);
@@ -119,7 +123,7 @@ public final view JMethod of Method extends JDNode {
 						msg = KString.from("Compiled with errors");
 					constPool.addStringCP(msg);
 					code.addConst(msg);
-					JMethod func = Type.tpError.getJStruct().resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
+					JMethod func = Type.tpError.getJStruct().resolveMethod(null,KString.from("(Ljava/lang/String;)V"));
 					code.addInstr(Instr.op_call,func,true);
 					code.addInstr(Instr.op_throw);
 				}

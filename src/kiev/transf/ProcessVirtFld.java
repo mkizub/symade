@@ -54,7 +54,7 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 	}
 	
 	public void addAbstractFields(Struct s) {
-		foreach(Method m; s.members) {
+		foreach(Method m; s.members; m.sname != null) {
 			if (m.sname.startsWith(nameSet))
 				addSetterForAbstractField(s, m.sname.substring(nameSet.length()), m);
 			foreach (Symbol a; m.aliases; a.sname.startsWith(nameSet)) {

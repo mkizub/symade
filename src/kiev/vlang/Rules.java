@@ -13,6 +13,8 @@ package kiev.vlang;
 import kiev.ir.java15.RRuleMethod;
 import kiev.ir.java15.RRuleBlock;
 
+import kiev.fmt.ATextSyntax;
+
 import syntax kiev.Syntax;
 
 /**
@@ -179,26 +181,6 @@ public class RuleMethod extends Method {
 			pop state (pop out method's state) and return false
 */
 
-public /*immutable*/ class JumpNodes implements Cloneable {
-	public /*final*/ boolean		more_check;
-	public /*final*/ ASTRuleNode	next_check;
-	public /*final*/ boolean		more_back;
-	public /*final*/ ASTRuleNode	next_back;
-	public /*final*/ boolean		jump_to_back;
-
-	public JumpNodes(boolean mu, ASTRuleNode nu, boolean mbt, ASTRuleNode nbt, boolean jtb) {
-		more_check = mu;
-		next_check = nu;
-		more_back = mbt;
-		next_back = nbt;
-		jump_to_back = jtb;
-	}
-
-	public Object clone() {
-		return super.clone();
-	}
-}
-
 /*
 New scheme for prolog engine:
 
@@ -220,34 +202,46 @@ public abstract class ASTRuleNode extends ENode {
 
 	@virtual typedef This  ≤ ASTRuleNode;
 
-	public JumpNodes			jn;
-	public int					base;
-	public int					idx;
-	public int					depth = -1;
+	@virtual @final
+	@ref public:ro	boolean			more_check;
+	@ref public		ASTRuleNode		next_check;
+	@virtual @final
+	@ref public:ro	boolean			more_back;
+	@ref public		ASTRuleNode		next_back;
 
-	@getter public int get$base() {	return ((ASTRuleNode)this).base; }
-	@setter public void set$base(int b) { ((ASTRuleNode)this).base = b; }
+	@ref public		boolean			jump_to_back;
+	@ref public		int				depth;
+	@virtual
+	@ref public		int				base;
+	@virtual
+	@ref public		int				idx;
 
-	@getter public int get$idx() {	return ((ASTRuleNode)this).idx; }
-	@setter public void set$idx(int i) { ((ASTRuleNode)this).idx = i; }
+	@ref @getter public final boolean get$more_check() { return this.next_check != null; }
+	@ref @getter public final boolean get$more_back() { return this.next_back != null; }
+	@ref @getter public int get$idx()  { return this.idx; }
+	@ref @getter public int get$base() { return this.base; }
+	@ref @getter public int get$idx()  { return this.idx; }
 
-	public ASTRuleNode() {}
+	public ASTRuleNode() {
+		depth = -1;
+	}
 
-	public abstract 		void	createText(StringBuffer sb);
-	public abstract 		void	resolve1(JumpNodes jn);
+	public abstract void createText(StringBuffer sb);
 	public abstract void rnResolve();
+	public abstract void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back);
 
 	public String createTextUnification(LVarExpr var) {
 		return "if( "+createTextVarAccess(var)+".$is_bound ) goto bound$"+idx+";\n";
 	}
 
 	public String createTextBacktrack(boolean load) {
-		if (!jn.more_back)
+		if (next_back == null)
 			return "return null;\n";	// return false - no more solutions
 		assert( ((RuleMethod)ctx_method).base != 1 || load==false);
-		if (jn.next_back!=null && jn.jump_to_back) {
-			if (load) return "bt$ = $env.bt$"+depth+"; goto enter$"+jn.next_back.idx+";\n";
-			return "goto enter$"+jn.next_back.idx+";\n";
+		if (jump_to_back) {
+			assert (next_back.idx > 0);
+			if (load) return "bt$ = $env.bt$"+depth+"; goto enter$"+next_back.idx+";\n";
+			return "goto enter$"+next_back.idx+";\n";
 		}
 		if (load)
 			return "bt$ = $env.bt$"+depth+"; goto case bt$;\n"; // backtrack to saved address
@@ -258,10 +252,12 @@ public abstract class ASTRuleNode extends ENode {
 
 
 	public String createTextMoreCheck(boolean force_goto) {
-		if (!jn.more_check)
+		if (next_check == null)
 			return "$env.bt$=bt$; return $env;\n";				// return true - we've found a solution
-		if (force_goto || jn.next_check.idx != (idx+1))
-			return	"goto enter$"+jn.next_check.idx+";\n";		// jump to new check
+		if (force_goto || next_check.idx != (idx+1)) {
+			assert (next_check.idx > 0);
+			return	"goto enter$"+next_check.idx+";\n";		// jump to new check
+		}
 		return "";
 	}
 
@@ -269,6 +265,8 @@ public abstract class ASTRuleNode extends ENode {
 		if (v.getVar().kind != Var.VAR_RULE) return v.ident.toString();
 		return "$env."+v;
 	}
+	
+	public abstract void testGenerate(SpacePtr space, Struct frame);
 }
 
 
@@ -297,6 +295,37 @@ public final class RuleBlock extends ENode {
 			rnode.rnResolve();
     }
 
+	public void testGenerate(SpacePtr space, Struct frame) {
+		try {
+			TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+			if (tdecl == null)
+				return;
+			Method m = tdecl.resolveMethod("mkRuleBlock", StdTypes.tpVoid);
+			RewriteContext rctx = new RewriteContext(m.body, new Hashtable<String,Object>());
+			Block rn = (Block)m.body.doRewrite(rctx);
+			SwitchStat sw = null;
+			foreach (ASTNode n; rn.stats) {
+				if (n instanceof Struct)
+					frame = (Struct)n;
+				else if (n instanceof SwitchStat)
+					sw = (SwitchStat)n;
+			}
+			RuleMethod rule_method = (RuleMethod)ctx_method;
+			for (int i=0; i < rule_method.max_depth; i++)
+				frame.members += new Field("bt$"+i, StdTypes.tpInt, 0);
+			// Local variables
+			foreach(Var v; rule_method.localvars)
+				frame.members += new Field(v.sname, v.type, 0);
+			rnode.testGenerate(sw.getSpacePtr("stats"), frame);
+			if (Kiev.debug && Kiev.debugRules)
+				Env.dumpTextFile(rn, new java.io.File("testRuleBlock-"+rule_method.parent()+"-"+rule_method.sname+".txt"), (ATextSyntax)Env.resolveGlobalDNode("stx-fmt\u001fsyntax-for-java"));
+			this.replaceWithNode(rn);
+			frame.updatePackageClazz(); 
+		} catch (Throwable t) {
+			System.out.println("Error: test.txt dump");
+			t.printStackTrace(System.out);
+		}
+	}
 }
 
 
@@ -311,11 +340,8 @@ public final class RuleOrExpr extends ASTRuleNode {
 
 	@att public ASTRuleNode[]			rules;
 
-	public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base(); }
-	public void set$base(int b) {}
-
-	public int get$idx() {	return rules.length == 0 ? 0 : rules[0].get$idx(); }
-	public void set$idx(int i) {}
+	@ref @getter public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
+	@ref @getter public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
 
 	public RuleOrExpr() {}
 
@@ -333,26 +359,37 @@ public final class RuleOrExpr extends ASTRuleNode {
 			n.createText(sb);
 	}
 
+	public void testGenerate(SpacePtr space, Struct frame) {
+    	for(int i=0; i < rules.length; i++) {
+    		rules[i].testGenerate(space, frame);
+    	}
+	}
+
     public void rnResolve() {
     	for(int i=0; i < rules.length; i++) {
     		rules[i].rnResolve();
     	}
     }
 
-	public void resolve1(JumpNodes jn) {
+	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this = this.open();
-		this.jn = jn;
-		JumpNodes j;
+		this.next_check = next_check;
+		this.next_back = next_back;
+		this.jump_to_back = jump_to_back;
 		int depth = ((RuleMethod)ctx_method).state_depth;
 		int max_depth = depth;
 		for(int i=0; i < rules.length; i++ ) {
 			if( i < rules.length-1 ) {
-				j = new JumpNodes(jn.more_check, jn.next_check, true, rules[i+1], true);
+				next_check = this.next_check;
+				next_back = rules[i+1];
+				jump_to_back = true;
 			} else {
-				j = new JumpNodes(jn.more_check, jn.next_check, jn.more_back, jn.next_back, jn.jump_to_back);
+				next_check = this.next_check;
+				next_back = this.next_back;
+				jump_to_back = this.jump_to_back;
 			}
 			((RuleMethod)ctx_method).set_depth(depth);
-			rules[i].resolve1(j);
+			rules[i].resolve1(next_check, next_back, jump_to_back);
 			max_depth = Math.max(max_depth,((RuleMethod)ctx_method).state_depth);
 		}
 		((RuleMethod)ctx_method).set_depth(max_depth);
@@ -370,11 +407,8 @@ public final class RuleAndExpr extends ASTRuleNode {
 
 	@att public ASTRuleNode[]			rules;
 
-	public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base();	}
-	public void set$base(int b) {}
-
-	public int get$idx() {	return rules.length == 0 ? 0 : rules[0].get$idx(); }
-	public void set$idx(int i) {}
+	@ref @getter public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
+	@ref @getter public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
 
 	public RuleAndExpr() {}
 
@@ -390,6 +424,12 @@ public final class RuleAndExpr extends ASTRuleNode {
 	public void createText(StringBuffer sb) {
 		foreach( ASTRuleNode n; rules )
 			n.createText(sb);
+	}
+
+	public void testGenerate(SpacePtr space, Struct frame) {
+    	for(int i=0; i < rules.length; i++) {
+    		rules[i].testGenerate(space, frame);
+    	}
 	}
 
     public void rnResolve() {
@@ -417,39 +457,31 @@ public final class RuleAndExpr extends ASTRuleNode {
     		replaceWithNode(~rules[0]);
     }
 
-	public void resolve1(JumpNodes jn) {
+	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this = this.open();
-		this.jn = jn;
-		JumpNodes j;
-		boolean more_back = jn.more_back;
-		ASTRuleNode next_back = jn.next_back;
-		boolean jump_to_back = jn.jump_to_back;
-		for(int i=0; i < rules.length; i++ ) {
-			if( i < rules.length-1 ) {
-				j = new JumpNodes(true, rules[i+1], more_back, next_back, jump_to_back);
-				if (rules[i] instanceof RuleExpr) {
-					RuleExpr re = (RuleExpr)rules[i];
-					if (re.bt_expr != null) {
-						more_back = true;
-						next_back = rules[i];
-						jump_to_back = false;
-					}
-				}
-				else if (rules[i] instanceof RuleCutExpr) {
-					more_back = false;
-					next_back = null;
-					jump_to_back = false;
-				}
-				else {
-					more_back = true;
+		this.next_check = next_check;
+		this.next_back = next_back;
+		this.jump_to_back = jump_to_back;
+		for(int i=0; i < rules.length-1; i++ ) {
+			rules[i].resolve1(rules[i+1], next_back, jump_to_back);
+			if (rules[i] instanceof RuleExpr) {
+				RuleExpr re = (RuleExpr)rules[i];
+				if (re.bt_expr != null) {
 					next_back = rules[i];
 					jump_to_back = false;
 				}
-			} else {
-				j = new JumpNodes(jn.more_check, jn.next_check, more_back, next_back, jump_to_back);
 			}
-			rules[i].resolve1(j);
+			else if (rules[i] instanceof RuleCutExpr) {
+				next_back = null;
+				jump_to_back = false;
+			}
+			else {
+				next_back = rules[i];
+				jump_to_back = false;
+			}
 		}
+		if (rules.length > 0)
+			rules[rules.length-1].resolve1(this.next_check, next_back, jump_to_back);
 	}
 }
 
@@ -490,9 +522,11 @@ public final class RuleIstheExpr extends ASTRuleNode {
 		//expr.resolve(((CTimeType)var.var.getType()).getUnboxedType());
     }
 
-	public void resolve1(JumpNodes jn) {
+	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this = this.open();
-		this.jn = jn;
+		this.next_check = next_check;
+		this.next_back = next_back;
+		this.jump_to_back = jump_to_back;
 		idx = ++((RuleMethod)ctx_method).index;
 		base = ((RuleMethod)ctx_method).allocNewBase(1);
 		depth = ((RuleMethod)ctx_method).push();
@@ -522,6 +556,19 @@ public final class RuleIstheExpr extends ASTRuleNode {
 				createTextMoreCheck(false)							// check next
 		);
 	}
+
+	public void testGenerate(SpacePtr space, Struct frame) {
+		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		if (tdecl == null)
+			return;
+		Method m = tdecl.resolveMethod("mkRuleIstheExpr", StdTypes.tpVoid, new ASTNodeType(RuleIstheExpr.class));
+		Hashtable<String,Object> args = new Hashtable<String,Object>();
+		args.put("node", this);
+		RewriteContext rctx = new RewriteContext(m.body, args);
+		Block rn = (Block)m.body.doRewrite(rctx);
+		foreach (ASTNode n; rn.stats.delToArray())
+			space += n;
+	}
 }
 
 @node
@@ -531,18 +578,15 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	@dflow(in="this:in")	ENode	expr;
 	}
 
-	public static final int	ARRAY = 0;
-	public static final int	KENUM = 1;
-	public static final int	JENUM = 2;
-	public static final int	ELEMS = 3;
+	public enum IsoneofMode { ARRAY, KENUM, JENUM, ELEMS };
 
 	@virtual typedef This  = RuleIsoneofExpr;
 
-	@att public LVarExpr	var;		// variable of type PVar<...>
-	@att public ENode		expr;		// expression to check/unify
-	@att public int			iter_var;	// iterator var
-	     public Type		itype;
-	     public int			mode;
+	@att public LVarExpr		var;		// variable of type PVar<...>
+	@att public ENode			expr;		// expression to check/unify
+	@att public int				iter_var;	// iterator var
+	@att public IsoneofMode		mode;
+	@att public TypeRef			itype;
 
 	public RuleIsoneofExpr() {}
 
@@ -569,9 +613,11 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		//expr.resolve(null);
     }
 
-	public void resolve1(JumpNodes jn) {
+	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this = this.open();
-		this.jn = jn;
+		this.next_check = next_check;
+		this.next_back = next_back;
+		this.jump_to_back = jump_to_back;
 		idx = ++((RuleMethod)ctx_method).index;
 		base = ((RuleMethod)ctx_method).allocNewBase(2);
 		depth = ((RuleMethod)ctx_method).push();
@@ -579,27 +625,26 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		Type xtype = expr.getType();
 		Method@ elems;
 		if( xtype.isInstanceOf( Type.tpKievEnumeration) ) {
-			itype = xtype;
-			mode = KENUM;
+			itype = new TypeRef(xtype);
+			mode = IsoneofMode.KENUM;
 		} else if( xtype.isInstanceOf( Type.tpJavaEnumeration) ) {
-			itype = xtype;
-			mode = JENUM;
+			itype = new TypeRef(xtype);
+			mode = IsoneofMode.JENUM;
 		} else if( PassInfo.resolveBestMethodR(xtype,elems,
 				new ResInfo(this,nameElements,ResInfo.noStatic|ResInfo.noImports),
 				new CallType(xtype,null,null,Type.tpAny,false))
 		) {
-			itype = Type.getRealType(xtype,elems.type.ret());
-			mode = ELEMS;
+			itype = new TypeRef(Type.getRealType(xtype,elems.type.ret()));
+			mode = IsoneofMode.ELEMS;
 		} else if( xtype.isInstanceOf(Type.tpArray) ) {
 			TVarBld set = new TVarBld();
 			set.append(Type.tpArrayEnumerator.tdecl.args[0].getAType(), xtype.resolve(Type.tpArray.meta_type.tdecl.args[0].getAType()));
-			itype = Type.tpArrayEnumerator.meta_type.make(set);
-			mode = ARRAY;
+			itype = new TypeRef(Type.tpArrayEnumerator.meta_type.make(set));
+			mode = IsoneofMode.ARRAY;
 		} else {
 			throw new CompilerException(expr,"Container must be an array or an Enumeration "+
 				"or a class that implements 'Enumeration elements()' method, but "+xtype+" found");
 		}
-		this = this.open();
 		iter_var = ((RuleMethod)ctx_method).add_iterator_var();
 		ANode rb = this.parent();
 		while( rb!=null && !(rb instanceof RuleBlock)) {
@@ -622,16 +667,14 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	private String createTextNewIterator() {
 		switch( mode ) {
-		case ARRAY:
+		case IsoneofMode.ARRAY:
 			return "new "+itype+"("+Kiev.reparseExpr(expr,true)+")";
-		case KENUM:
+		case IsoneofMode.KENUM:
 			return Kiev.reparseExpr(expr,true);
-		case JENUM:
+		case IsoneofMode.JENUM:
 			return Kiev.reparseExpr(expr,true);
-		case ELEMS:
+		case IsoneofMode.ELEMS:
 			return "("+Kiev.reparseExpr(expr,true)+").elements()";
-		default:
-			throw new RuntimeException("Unknown mode of iterator "+mode);
 		}
 	}
 
@@ -654,16 +697,14 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	private String createTextContaince() {
 		switch( mode ) {
-		case ARRAY:
+		case IsoneofMode.ARRAY:
 			return "kiev.stdlib.ArrayEnumerator.contains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
-		case KENUM:
+		case IsoneofMode.KENUM:
 			return "kiev.stdlib.rule.contains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
-		case JENUM:
+		case IsoneofMode.JENUM:
 			return "kiev.stdlib.rule.jcontains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
-		case ELEMS:
+		case IsoneofMode.ELEMS:
 			return Kiev.reparseExpr(expr,true)+".contains("+var.ident+".$var)";
-		default:
-			throw new RuntimeException("Unknown mode of iterator "+mode);
 		}
 	}
 
@@ -696,6 +737,20 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 				createTextBacktrack(true)						// backtrack, bt$ may needs to be loaded
 		);
 	}
+
+	public void testGenerate(SpacePtr space, Struct frame) {
+		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		if (tdecl == null)
+			return;
+		Method m = tdecl.resolveMethod("mkRuleIsoneofExpr", StdTypes.tpVoid, new ASTNodeType(RuleIsoneofExpr.class));
+		Hashtable<String,Object> args = new Hashtable<String,Object>();
+		args.put("node", this);
+		RewriteContext rctx = new RewriteContext(m.body, args);
+		Block rn = (Block)m.body.doRewrite(rctx);
+		foreach (ASTNode n; rn.stats.delToArray())
+			space += n;
+		frame.members += new Field("$iter$"+iter_var,itype.getType(),0);
+	}
 }
 
 @node
@@ -713,9 +768,11 @@ public final class RuleCutExpr extends ASTRuleNode {
 
 	public void rnResolve() {}
 
-	public void resolve1(JumpNodes jn) {
+	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this = this.open();
-		this.jn = jn;
+		this.next_check = next_check;
+		this.next_back = next_back;
+		this.jump_to_back = jump_to_back;
 		idx = ++((RuleMethod)ctx_method).index;
 	}
 
@@ -726,6 +783,19 @@ public final class RuleCutExpr extends ASTRuleNode {
 				"bt$ = 0;\n"+								// backtracking, always fail state, state 0 is 'return null'
 				createTextMoreCheck(false)
 		);
+	}
+
+	public void testGenerate(SpacePtr space, Struct frame) {
+		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		if (tdecl == null)
+			return;
+		Method m = tdecl.resolveMethod("mkRuleCutExpr", StdTypes.tpVoid, new ASTNodeType(RuleCutExpr.class));
+		Hashtable<String,Object> args = new Hashtable<String,Object>();
+		args.put("node", this);
+		RewriteContext rctx = new RewriteContext(m.body, args);
+		Block rn = (Block)m.body.doRewrite(rctx);
+		foreach (ASTNode n; rn.stats.delToArray())
+			space += n;
 	}
 }
 
@@ -770,9 +840,11 @@ public final class RuleCallExpr extends ASTRuleNode {
 
 	public void rnResolve() {}
 
-	public void resolve1(JumpNodes jn) {
+	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this = this.open();
-		this.jn = jn;
+		this.next_check = next_check;
+		this.next_back = next_back;
+		this.jump_to_back = jump_to_back;
 		idx = ++((RuleMethod)ctx_method).index;
 		base = ((RuleMethod)ctx_method).allocNewBase(1);
 		depth = ((RuleMethod)ctx_method).push();
@@ -822,6 +894,21 @@ public final class RuleCallExpr extends ASTRuleNode {
 				"}\n"+
 				createTextMoreCheck(false)
 		);
+	}
+
+	public void testGenerate(SpacePtr space, Struct frame) {
+		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		if (tdecl == null)
+			return;
+		Method m = tdecl.resolveMethod("mkRuleCallExpr", StdTypes.tpVoid, new ASTNodeType(RuleCallExpr.class), StdTypes.tpBoolean);
+		Hashtable<String,Object> args = new Hashtable<String,Object>();
+		args.put("node", this);
+		args.put("is_super", Boolean.valueOf(this.isSuperExpr()));
+		RewriteContext rctx = new RewriteContext(m.body, args);
+		Block rn = (Block)m.body.doRewrite(rctx);
+		foreach (ASTNode n; rn.stats.delToArray())
+			space += n;
+		frame.members += new Field("$rc$frame$"+env_var,StdTypes.tpRule,0);
 	}
 }
 
@@ -889,9 +976,11 @@ public final class RuleWhileExpr extends RuleExprBase {
 		//	bt_expr.resolve(null);
 	}
 
-	public void resolve1(JumpNodes jn) {
+	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this = this.open();
-		this.jn = jn;
+		this.next_check = next_check;
+		this.next_back = next_back;
+		this.jump_to_back = jump_to_back;
 		idx = ++((RuleMethod)ctx_method).index;
 		base = ((RuleMethod)ctx_method).allocNewBase(1);
 		depth = ((RuleMethod)ctx_method).push();
@@ -913,6 +1002,20 @@ public final class RuleWhileExpr extends RuleExprBase {
 				"}\n"+
 				createTextMoreCheck(false)
 		);
+	}
+
+	public void testGenerate(SpacePtr space, Struct frame) {
+		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		if (tdecl == null)
+			return;
+		Method m = tdecl.resolveMethod("mkRuleWhile", StdTypes.tpVoid, new ASTNodeType(RuleWhileExpr.class), StdTypes.tpBoolean);
+		Hashtable<String,Object> args = new Hashtable<String,Object>();
+		args.put("node", this);
+		args.put("has_bt_expr", Boolean.valueOf(bt_expr != null));
+		RewriteContext rctx = new RewriteContext(m.body, args);
+		Block rn = (Block)m.body.doRewrite(rctx);
+		foreach (ASTNode n; rn.stats.delToArray())
+			space += n;
 	}
 }
 
@@ -949,9 +1052,11 @@ public final class RuleExpr extends RuleExprBase {
 		//	bt_expr.resolve(null);
 	}
 
-	public void resolve1(JumpNodes jn) {
+	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
 		this = this.open();
-		this.jn = jn;
+		this.next_check = next_check;
+		this.next_back = next_back;
+		this.jump_to_back = jump_to_back;
 		idx = ++((RuleMethod)ctx_method).index;
 		if (bt_expr != null) {
 			base = ((RuleMethod)ctx_method).allocNewBase(1);
@@ -981,6 +1086,21 @@ public final class RuleExpr extends RuleExprBase {
 					createTextBacktrack(true)						// backtrack, bt$ needs to be loaded
 				)
 		);
+	}
+
+	public void testGenerate(SpacePtr space, Struct frame) {
+		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
+		if (tdecl == null)
+			return;
+		Method m = tdecl.resolveMethod("mkRuleExpr", StdTypes.tpVoid, new ASTNodeType(RuleExpr.class), StdTypes.tpBoolean, StdTypes.tpBoolean);
+		Hashtable<String,Object> args = new Hashtable<String,Object>();
+		args.put("node", this);
+		args.put("has_bt_expr", Boolean.valueOf(bt_expr != null));
+		args.put("is_boolean", Boolean.valueOf(expr.getType() ≡ StdTypes.tpBoolean));
+		RewriteContext rctx = new RewriteContext(m.body, args);
+		Block rn = (Block)m.body.doRewrite(rctx);
+		foreach (ASTNode n; rn.stats.delToArray())
+			space += n;
 	}
 }
 

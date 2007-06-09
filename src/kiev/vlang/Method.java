@@ -46,11 +46,14 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	@att public WBCCondition[]	 	conditions;
 	@att(ext_data=true) public Var	ret_var;
 
-
-	@virtual public					CallType		type;
-	@virtual public					CallType		dtype;
-	@abstract
-	@virtual public:ro				CallType		etype;
+	private				CallType		_type;
+	private				CallType		_dtype;
+	@abstract @virtual
+	public:ro			CallType		type;
+	@abstract @virtual
+	public:ro			CallType		dtype;
+	@abstract @virtual
+	public:ro			CallType		etype;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (isAttached()) {
@@ -63,15 +66,15 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		} else {
 			super.callbackChildChanged(attr);
 		}
-		if (attr.name == "params" || attr.name == "meta") {
-			type = null;
-			dtype = null;
+		if (attr.name == "params" || attr.name == "type_ret" || attr.name == "dtype_ret" || attr.name == "meta") {
+			_type = null;
+			_dtype = null;
 		}
 	}
 
-	@getter public final CallType				get$type()	{ if (this.type == null) rebuildTypes(); return this.type; }
-	@getter public final CallType				get$dtype()	{ if (this.dtype == null) rebuildTypes(); return this.dtype; }
-	@getter public final CallType				get$etype()	{ if (this.dtype == null) rebuildTypes(); return (CallType)this.dtype.getErasedType(); }
+	@getter public final CallType				get$type()	{ if (this._type == null) rebuildTypes(); return this._type; }
+	@getter public final CallType				get$dtype()	{ if (this._dtype == null) rebuildTypes(); return this._dtype; }
+	@getter public final CallType				get$etype()	{ if (this._dtype == null) rebuildTypes(); return (CallType)this._dtype.getErasedType(); }
 
 	@getter public final Block					get$block()	{ return (Block)this.body; }
 
@@ -204,16 +207,16 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				assert(!this.isStatic());
 				assert(fp.isForward());
 				assert(fp.isFinal());
-				assert(fp.u_name == nameThisDollar);
-				assert(fp.type ≈ this.ctx_tdecl.package_clazz.dnode.xtype);
-				dargs.append(this.ctx_tdecl.package_clazz.dnode.xtype);
+				assert(fp.sname == nameThisDollar);
+				//assert(fp.type ≈ this.ctx_tdecl.package_clazz.dnode.xtype); // not true for View-s
+				dargs.append(fp.type);
 				break;
 			case Var.PARAM_RULE_ENV:
 				assert(this instanceof RuleMethod);
 				assert(fp.isForward());
 				assert(fp.isFinal());
 				assert(fp.type ≡ Type.tpRule);
-				assert(fp.u_name == namePEnv);
+				assert(fp.sname == namePEnv);
 				dargs.append(Type.tpRule);
 				break;
 			case Var.PARAM_TYPEINFO:
@@ -249,12 +252,12 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			tp_ret = Type.tpVoid;
 		else
 			tp_ret = type_ret.getType();
-		this.type = new CallType(type_set, args.toArray(), tp_ret, false);
+		this._type = new CallType(type_set, args.toArray(), tp_ret, false);
 		if (dtype_ret == null)
 			dtp_ret = tp_ret;
 		else
 			dtp_ret = dtype_ret.getType();
-		this.dtype = new CallType(dtype_set, dargs.toArray(), dtp_ret, false);
+		this._dtype = new CallType(dtype_set, dargs.toArray(), dtp_ret, false);
 	}
 
 	@getter public Method get$child_ctx_method() { return (Method)this; }
@@ -264,10 +267,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	public Method() {}
 	public Method(String name, TypeRef type_ret, int flags) {
 		this.sname = name;
-		assert (!(sname == nameInit || sname == nameClassInit) || this instanceof Constructor);
-		this.u_name = name;
 		this.type_ret = type_ret;
-		this.dtype_ret = type_ret.ncopy();
 		if (flags != 0) {
 			if ((flags & ACC_PUBLIC) == ACC_PUBLIC) setMeta(new MetaAccess("public"));
 			if ((flags & ACC_PROTECTED) == ACC_PROTECTED) setMeta(new MetaAccess("protected"));
@@ -306,14 +306,13 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 
 	public boolean hasName(String nm, boolean by_equals) {
-		if (by_equals) {
-			if (this.u_name == nm) return true;
-			if (this.sname == nm) return true;
+		String sname = this.sname;
+		if (by_equals || sname == null) {
+			if (sname == nm) return true;
 			foreach(Symbol s; aliases; s.sname == nm)
 				return true;
 		} else {
-			if (this.u_name != null && this.u_name.startsWith(nm)) return true;
-			if (this.sname != null && this.sname.startsWith(nm)) return true;
+			if (sname.startsWith(nm)) return true;
 			foreach(Symbol s; aliases; s.sname.startsWith(nm))
 				return true;
 		}
@@ -773,7 +772,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			int i = 0;
 			foreach (TypeDef td; targs) {
 				td.setTypeUnerasable(true);
-				LVar v = new LVar(td.pos,nameTypeInfo+"$"+td.u_name, Type.tpTypeInfo, Var.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
+				LVar v = new LVar(td.pos,nameTypeInfo+"$"+td.sname, Type.tpTypeInfo, Var.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
 				this = this.open();
 				params.add(v);
 			}
@@ -902,22 +901,13 @@ public final class Constructor extends Method {
 	public Constructor() {}
 
 	public Constructor(int fl) {
-		super( ((fl & ACC_STATIC)==0 ? nameInit:nameClassInit), new TypeRef(Type.tpVoid), fl);
+		super(null, new TypeRef(Type.tpVoid), fl);
 	}
 	
 	@getter @att public String get$sname() {
-		ANode p = parent();
-		if (p instanceof TypeDecl)
-			return p.sname;
-		return "<ctor>";
+		return null;
 	}
 	@setter public void set$sname(String value) {
-		// do nothing, constructors are anonymouse
-	}
-	@getter public String get$u_name() {
-		return isStatic() ? nameClassInit : nameInit;
-	}
-	@setter public void set$u_name(String value) {
 		// do nothing, constructors are anonymouse
 	}
 }

@@ -376,7 +376,7 @@ public final view JLVarExpr of LVarExpr extends JLvalueExpr {
 			} else {
 				for(int i=0; i < code.method.params.length; i++) {
 					JVar v = code.method.params[i];
-					if (v.u_name != var.u_name) continue;
+					if (v.sname != var.sname) continue;
 					assert( var.getType().equals(v.type), "Type of vars in overriden methods missmatch" );
 					var = v;
 					break;

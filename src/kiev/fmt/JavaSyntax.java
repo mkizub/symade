@@ -110,6 +110,18 @@ public class SyntaxJavaComment extends SyntaxElem {
 }
 
 @node
+public class SyntaxJavaConstructorName extends SyntaxElem {
+	@virtual typedef This  = SyntaxJavaConstructorName;
+
+	public SyntaxJavaConstructorName() {}
+
+	public Drawable makeDrawable(Formatter fmt, ANode node) {
+		Drawable dr = new DrawJavaConstructorName(node, this);
+		return dr;
+	}
+}
+
+@node
 public class KievTextSyntax extends ATextSyntax {
 	@virtual typedef This  = KievTextSyntax;
 

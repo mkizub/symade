@@ -32,7 +32,7 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 					this.open();
 					this.type = Type.getRealType(sw.sel.getType(),val.getType());
 					pizza_case = true;
-					Struct cas = this.type.getStruct();
+					TypeDecl cas = this.type.meta_type.tdecl;
 					if (cas.isPizzaCase()) {
 						if!(sw instanceof MatchStat)
 							throw new CompilerException(this,"Pizza case type in non-pizza switch");
@@ -127,14 +127,14 @@ public static view RSwitchStat of SwitchStat extends RBlock {
 			ExprStat st = new ExprStat(pos,~sel);
 			this.replaceWithNodeResolve(Type.tpVoid, st);
 		}
-		else if( cases.length == 1 && cases[0].pattern.length == 0) {
+		else if( cases.length == 1 && cases[0].pattern.length == 0 && cases[0].val == null) {
 			cases[0].resolve(Type.tpVoid);
 			CaseLabel cas = (CaseLabel)cases[0];
 			Block bl = new Block(cas.pos);
 			foreach (ASTNode n; ((SwitchStat)this).stats.delToArray(); !(n instanceof CaseLabel))
 				bl.stats += n;
 			bl.setBreakTarget(true);
-			if( ((CaseLabel)cas).val == null ) {
+			if( cas.val == null ) {
 				bl.stats.insert(0,new ExprStat(sel.pos,~sel));
 				this.replaceWithNodeResolve(Type.tpVoid, bl);
 				return;
@@ -281,7 +281,7 @@ public static final view RMatchStat of MatchStat extends RSwitchStat {
 		this.open();
 		sel.resolve(Type.tpObject);
 		Type tp = sel.getType();
-		if (!tp.isReference() || !tp.getStruct().isHasCases())
+		if (!tp.isReference() || !tp.meta_type.tdecl.isHasCases())
 			throw new CompilerException(this, "Pattern-match switch selector must be the type with cases");
 		this.open();
 		this.sel_to_int = new CallExpr(pos,
@@ -327,7 +327,7 @@ public static final view RMatchStat of MatchStat extends RSwitchStat {
 				if( !has_unabrupted_case ) {
 					Type tp = sel.getType();
 					int caseno = 0;
-					Struct tpclz = tp.getStruct();
+					TypeDecl tpclz = tp.meta_type.tdecl;
 					foreach (Struct sub; tpclz.sub_decls) {
 						if (sub.isPizzaCase()) {
 							PizzaCase pcase = (PizzaCase)sub;

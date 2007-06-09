@@ -187,8 +187,8 @@ public final view JCondStat of CondStat extends JENode {
 
 	public:n,n,n,rw void generateAssertName(Code code) {
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
-		if (wbc.u_name == null) return;
-		code.addConst(KString.from(wbc.u_name));
+		if (wbc.sname == null) return;
+		code.addConst(KString.from(wbc.sname));
 	}
 
 	public:n,n,n,rw JMethod getAssertMethod() {
@@ -201,7 +201,7 @@ public final view JCondStat of CondStat extends JENode {
 		default: fname = nameAssertMethod;
 		}
 		Method func;
-		if (wbc.sname == null || wbc.u_name == null)
+		if (wbc.sname == null)
 			func = Type.tpDebug.tdecl.resolveMethod(fname,Type.tpVoid,Type.tpString);
 		else
 			func = Type.tpDebug.tdecl.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);
@@ -407,14 +407,6 @@ public final view JGotoStat of GotoStat extends JENode {
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating GotoStat");
-//		JLabeledStat[] stats = resolveStat(ident, code.method.body, JLabeledStat.emptyArray);
-//		if( stats.length == 0 )
-//			throw new CompilerException(this,"Label "+ident+" unresolved");
-//		if( stats.length > 1 )
-//			throw new CompilerException(this,"Umbigouse label "+ident+" in goto statement");
-//		LabeledStat stat = stats[0];
-//		if( stat == null )
-//			throw new CompilerException(this,"Label "+ident+" unresolved");
 		code.setLinePos(this);
 		try {
 			Object[] lb = resolveLabelStat(code,(JLabeledStat)dest.jparent);

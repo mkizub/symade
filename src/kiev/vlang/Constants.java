@@ -30,8 +30,6 @@ public interface Constants extends AccessFlags {
 	public final static String nameUnderscore		= "_";
 	public final static String nameGetTypeInfo		= "getTypeInfoField";
 	public final static String nameSuper			= "super";
-	public final static String nameInit			= "<init>";
-	public final static String nameClassInit		= "<clinit>";
 	public final static String nameLength			= "length";
 	public final static String nameIFaceImpl		= "_Impl_";
 	public final static String nameElements		= "elements";

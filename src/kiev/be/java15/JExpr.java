@@ -142,7 +142,7 @@ public view JStringConcatExpr of StringConcatExpr extends JENode {
 		if( clazzStringBuffer == null )
 			throw new RuntimeException("Core class java.lang.StringBuffer not found");
 		clazzStringBufferToString = clazzStringBuffer.resolveMethod("toString",Type.tpString);
-		clazzStringBufferInit = clazzStringBuffer.resolveMethod("<init>",Type.tpVoid);
+		clazzStringBufferInit = clazzStringBuffer.resolveMethod(null,Type.tpVoid);
 		} catch(Exception e ) {
 			throw new RuntimeException("Can't initialize: "+e.getMessage());
 		}

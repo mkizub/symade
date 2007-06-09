@@ -415,7 +415,7 @@ public class CtorCallExpr extends ENode {
 			return;
 		}
 		
-		Method@ m;
+		Constructor@ m;
 		Type tp = ctx_tdecl.xtype;
 
 		Type[] ta = new Type[args.length];
@@ -425,9 +425,9 @@ public class CtorCallExpr extends ENode {
 
 		// constructor call "this(args)"
 		if (obj instanceof ThisExpr) {
-			ResInfo info = new ResInfo(this,nameInit,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			ResInfo info = new ResInfo(this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if (!PassInfo.resolveBestMethodR(tp,m,info,mt))
-				throw new CompilerException(this,"Constructor "+Method.toString(nameInit,args)+" unresolved");
+				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
 			this = this.open();
 			this.symbol = (Constructor)m;
 			return;
@@ -435,9 +435,9 @@ public class CtorCallExpr extends ENode {
 		// constructor call "super(args)"
 		if (obj instanceof SuperExpr) {
 			mt = new CallType(tp,null,ta,Type.tpVoid,false);
-			ResInfo info = new ResInfo(this,nameInit,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			ResInfo info = new ResInfo(this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if (!PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,mt))
-				throw new CompilerException(this,"Constructor "+Method.toString(nameInit,args)+" unresolved");
+				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
 			this = this.open();
 			this.symbol = (Constructor)m;
 			return;

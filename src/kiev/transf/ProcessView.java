@@ -160,7 +160,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		TypeRef view_of = kview.view_of;
 
 		// generate implementation
-		Struct impl = Env.newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
+		Struct impl = Env.newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
 		impl = impl.open();
 		impl.pos = clazz.pos;
 		if (clazz.isAbstract()) {
@@ -252,7 +252,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			CallType ct = m.type;
 			Method vm;
 			try {
-				vm = view_of.getStruct().resolveMethod(m.u_name, ct.ret(), ct.params());
+				vm = view_of.getStruct().resolveMethod(m.sname, ct.ret(), ct.params());
 			} catch (CompilerException e) {
 				Kiev.reportError(m, e.getMessage());
 				m.setAbstract(true);

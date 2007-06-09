@@ -51,7 +51,7 @@ public class TypeRef extends ENode {
 		alias lfy operator new
 	{
 		if (tp instanceof CoreType)
-			return new TypeRef((CoreType)tp);
+			return new TypeNameRef(tp.name, tp);
 		if (tp instanceof ASTNodeType) {
 			String name = ((ASTNodeMetaType)tp.meta_type).name;
 			if (name != null)
@@ -130,8 +130,8 @@ public class TypeRef extends ENode {
 	
 	public void toExpr(Type reqType) {
 		Type st = getType();
-		Struct s = st.getStruct();
-		if (s != null && s.isPizzaCase()) {
+		TypeDecl s = st.meta_type.tdecl;
+		if (s.isPizzaCase()) {
 			// Pizza case may be casted to int or to itself or super-class
 			PizzaCase pcase = (PizzaCase)s;
 			Type tp = Type.getRealType(reqType,st);
@@ -153,7 +153,7 @@ public class TypeRef extends ENode {
 			}
 			return;
 		}
-		if (s != null && s.isSingleton()) {
+		if (s.isSingleton()) {
 			replaceWithNodeResolve(reqType, new SFldExpr(pos, s.resolveField(nameInstance)));
 			return;
 		}

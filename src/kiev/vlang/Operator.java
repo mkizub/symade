@@ -104,6 +104,7 @@ public final class Operator implements Constants {
 	public static final Operator Mod;
 
 	public static final Operator Access;
+	public static final Operator MacroAccess;
 	public static final Operator Comma;
 	public static final Operator ElemAccess;
 	public static final Operator RuleIsThe;
@@ -180,6 +181,7 @@ public final class Operator implements Constants {
 		Mod = newOperator(opMulPriority, "Y % X");
 
 		Access = newOperator(opAccessPriority, "Y . I");
+		MacroAccess = newOperator(opAccessPriority, "Y \u21a3 I"); // ↣
 		Comma = newOperator(1, "Y , X");
 		ElemAccess = newOperator(opAccessPriority, "Y [ Z ]");
 

@@ -70,11 +70,15 @@ public final view JConstFloatExpr of ConstFloatExpr extends JConstExpr {
 }
 
 public final view JConstDoubleExpr of ConstDoubleExpr extends JConstExpr {
-	public:ro double		value;
+	public:ro double	value;
 }
 
 public final view JConstStringExpr of ConstStringExpr extends JConstExpr {
 	public:ro String	value;
+}
+
+public final view JConstEnumExpr of ConstEnumExpr extends JConstExpr {
+	public:ro Enum		value;
 }
 
 public abstract view JConstExpr of ConstExpr extends JENode {

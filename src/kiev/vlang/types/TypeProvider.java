@@ -197,7 +197,6 @@ public final class CoreMetaType extends MetaType {
 		super("kiev\u001fstdlib\u001f"+name);
 		MetaTypeDecl tdecl = new MetaTypeDecl(this);
 		this.descr = tdecl;
-		tdecl.u_name = name;
 		tdecl.sname = name;
 		tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 		tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
@@ -251,6 +250,14 @@ public final class ASTNodeMetaType extends MetaType {
 		allNodes.put("CBool",				ConstBoolExpr.class);
 		allNodes.put("CInt",				ConstIntExpr.class);
 		allNodes.put("CString",				ConstStringExpr.class);
+		allNodes.put("ASTRuleNode",			ASTRuleNode.class);
+		allNodes.put("RuleIstheExpr",		RuleIstheExpr.class);
+		allNodes.put("RuleIsoneofExpr",		RuleIsoneofExpr.class);
+		allNodes.put("RuleCutExpr",			RuleCutExpr.class);
+		allNodes.put("RuleCallExpr",		RuleCallExpr.class);
+		allNodes.put("RuleExpr",			RuleExpr.class);
+		allNodes.put("RuleWhileExpr",		RuleWhileExpr.class);
+		allNodes.put("MacroAccessExpr",		MacroAccessExpr.class);
 	}
 
 
@@ -378,11 +385,13 @@ public final class CompaundMetaType extends MetaType {
 	public static CompaundMetaType newCompaundMetaType(Struct clazz) alias lfy operator new {
 		if (clazz.xmeta_type != null)
 			return (CompaundMetaType)clazz.xmeta_type;
-		CompaundMetaType mt = compaundMetaTypes.get(clazz.qname());
-		if (mt != null)
-			return mt;
-		mt = new CompaundMetaType(clazz);
-		return mt;
+		String qname = clazz.qname();
+		if (qname != null) {
+			CompaundMetaType mt = compaundMetaTypes.get(clazz.qname());
+			if (mt != null)
+				return mt;
+		}
+		return new CompaundMetaType(clazz);
 	}
 	
 	private CompaundMetaType(String clazz_name) {
@@ -448,7 +457,6 @@ public final class ArrayMetaType extends MetaType {
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_array_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl(null);
-			tdecl.u_name = "_array_";
 			tdecl.sname = "_array_";
 			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
@@ -561,7 +569,6 @@ public class WrapperMetaType extends MetaType {
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_wrapper_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
-			tdecl.u_name = "_wrapper_";
 			tdecl.sname = "_wrapper_";
 			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;
@@ -675,7 +682,6 @@ public class CallMetaType extends MetaType {
 		MetaTypeDecl tdecl = (MetaTypeDecl)Env.resolveGlobalDNode("kiev\u001fstdlib\u001f_call_type_");
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
-			tdecl.u_name = "_call_type_";
 			tdecl.sname = "_call_type_";
 			tdecl.package_clazz.symbol = Env.newPackage("kiev\u001fstdlib");
 			tdecl.meta.mflags = ACC_MACRO|ACC_PUBLIC|ACC_FINAL;

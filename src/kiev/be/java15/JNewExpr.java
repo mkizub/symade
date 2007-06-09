@@ -166,7 +166,7 @@ public final view JNewClosure of NewClosure extends JENode {
 			JVar v = ((JLVarExpr)f.init).var;
 			code.addInstr(Instr.op_load,v);
 		}
-		JMethod func = clazz.resolveMethod(nameInit,KString.from("(I)V"));
+		JMethod func = clazz.resolveMethod(null,KString.from("(I)V"));
 		code.addInstr(op_call,func,true);
 	}
 }

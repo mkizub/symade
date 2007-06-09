@@ -24,7 +24,7 @@ import syntax kiev.Syntax;
 
 public final view JStruct of Struct extends JTypeDecl {
 
-	public		KString				b_name;
+	public:ro	KString				bytecode_name;
 	public:ro	SymbolRef<Struct>	package_clazz;
 	public:ro	JStruct				iface_impl;
 	public:ro	JDNode[]			sub_decls;
@@ -37,18 +37,12 @@ public final view JStruct of Struct extends JTypeDecl {
 	public final String qname();
 
 	public final KString bname() {
-		if (b_name != null)
-			return b_name;
-		JStruct pkg = (JStruct)package_clazz.dnode;
-		Struct s = (Struct)this;
-		s = s.open();
-		if (pkg == null || ((Struct)pkg) == Env.getRoot())
-			s.b_name = KString.from(u_name);
-		else if (pkg.isPackage())
-			s.b_name = KString.from(pkg.bname()+"/"+u_name);
-		else
-			s.b_name = KString.from(pkg.bname()+"$"+u_name);
-		return b_name;
+		if (bytecode_name == null) {
+			if (isTypeDeclNotLoaded())
+				return KString.from(qname().replace('\u001f', '/'));
+			throw new RuntimeException("Bytecode name is not generated for "+this);
+		}
+		return bytecode_name;
 	}
 
 	public JENode accessTypeInfoField(JNode from, Type t, boolean from_gen) {
@@ -173,7 +167,7 @@ public final view JStruct of Struct extends JTypeDecl {
 		for(int i=0; jattrs!=null && i < jattrs.length; i++)
 			jattrs[i].generate(constPool);
 		foreach (JField f; getAllFields()) {
-			constPool.addAsciiCP(f.u_name);
+			constPool.addAsciiCP(f.sname);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
 			if( f.isAccessedFromInner()) {
@@ -196,7 +190,14 @@ public final view JStruct of Struct extends JTypeDecl {
 			}
 		}
 		foreach (JMethod m; members) {
-			constPool.addAsciiCP(m.u_name);
+			if (m.isConstructor()) {
+				if (m.isStatic())
+					constPool.addAsciiCP(knameClassInit);
+				else
+					constPool.addAsciiCP(knameInit);
+			} else {
+				constPool.addAsciiCP(m.sname);
+			}
 			constPool.addAsciiCP(m.type.getJType().java_signature);
 			if( m.etype != null )
 				constPool.addAsciiCP(m.etype.getJType().java_signature);

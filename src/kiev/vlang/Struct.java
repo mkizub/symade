@@ -147,15 +147,8 @@ public abstract class Struct extends TypeDecl {
 	@virtual typedef JView = JStruct;
 	@virtual typedef RView = RStruct;
 
-	@abstract
-	@att public String						uniq_name;
-
-	@ref(ext_data=true) public Struct				typeinfo_clazz;
-	@ref(ext_data=true) public Struct				iface_impl;
-
-	@att
-	@getter public final String get$uniq_name() { return u_name; }
-	@setter public final void set$uniq_name(String val) { this.u_name = val; }
+	@ref(ext_data=true)		public Struct				typeinfo_clazz;
+	@ref(ext_data=true)		public Struct				iface_impl;
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (attr.name == "package_clazz")
@@ -165,34 +158,24 @@ public abstract class Struct extends TypeDecl {
 		else
 			super.callbackChildChanged(attr);
 	}
-	
-	private void resetNames() {
-		if (u_name != null) { // initialized!
-			q_name = null;
-			b_name = null;
-			foreach (Struct s; sub_decls)
-				s.resetNames();
+	public void callbackCopied() {
+		super.callbackCopied();
+		if !(this instanceof Env) {
+			this.xmeta_type = new CompaundMetaType(this);
+			this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
 		}
+	}
+
+	private void resetNames() {
+		q_name = null;
+		foreach (Struct s; sub_decls)
+			s.resetNames();
 	}
 	
 	public boolean isClazz() {
 		return !isPackage() && !isInterface() && !isSyntax();
 	}
 	
-	// a pizza case	
-	public final boolean isPizzaCase() {
-		return this instanceof PizzaCase;
-	}
-	// has pizza cases
-	public final boolean isHasCases() {
-		return this.is_struct_has_pizza_cases;
-	}
-	public final void setHasCases(boolean on) {
-		if (this.is_struct_has_pizza_cases != on) {
-			assert(!locked);
-			this.is_struct_has_pizza_cases = on;
-		}
-	}
 	// indicates that structure members were generated
 	public final boolean isMembersGenerated() {
 		return this.is_struct_fe_passed || this.is_struct_members_generated;
@@ -261,7 +244,7 @@ public abstract class Struct extends TypeDecl {
 			}
 		} else {
 			foreach (Method mm; members; mm != m) {
-				if (mm.u_name == m.u_name && mm.type.equals(m.type))
+				if (mm.sname == m.sname && mm.type.equals(m.type))
 					Kiev.reportError(m,"Method "+m+" already exists in class "+this);
 			}
 		}
@@ -282,21 +265,18 @@ public abstract class Struct extends TypeDecl {
 	}
 
 	/** Add information about new pizza case of this class */
-	public Struct addCase(Struct cas) {
+	public PizzaCase addCase(PizzaCase cas) {
 		setHasCases(true);
 		int caseno = 0;
-		foreach (Struct s; members; s.isPizzaCase()) {
-			PizzaCase pcase = (PizzaCase)s;
-			if (pcase.tag > caseno)
-				caseno = pcase.tag;
-		}
-		((PizzaCase)cas).tag = caseno + 1;
+		foreach (PizzaCase pcase; members; pcase.tag > caseno)
+			caseno = pcase.tag;
+		cas.tag = caseno + 1;
 		trace(Kiev.debug && Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+(caseno+1));
 		return cas;
 	}
 		
 	public Constructor getClazzInitMethod() {
-		foreach(Constructor n; members; n.u_name == nameClassInit)
+		foreach(Constructor n; members; n.isStatic())
 			return n;
 		Constructor class_init = new Constructor(ACC_STATIC);
 		class_init.pos = pos;
@@ -306,32 +286,20 @@ public abstract class Struct extends TypeDecl {
 		return class_init;
 	}
 
-	public final String qname() {
-		if (q_name != null)
-			return q_name;
-		TypeDecl pkg = package_clazz.dnode;
-		if (pkg == null || pkg instanceof Env)
-			q_name = u_name;
-		else
-			q_name = (pkg.qname()+"\u001f"+u_name).intern();
-		return q_name;
-	}
-
 	public Struct() {
-		super("");
-		this.u_name = "";
-		this.q_name = "";
-		this.b_name = KString.Empty;
+		super(null);
 		if !(this instanceof Env) {
 			this.xmeta_type = new CompaundMetaType(this);
 			this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
 		}
 	}
-	
-	public void initStruct(String name, String u_name, TypeDecl outer, int flags) {
+
+	public void initStruct(String name, TypeDecl outer, int flags) {
 		this.sname = name;
-		this.u_name = u_name;
 		this.package_clazz.symbol = outer;
+		int outer_idx = outer.sub_decls.indexOf(this);
+		if (outer_idx < 0)
+			outer.sub_decls += this;
 		this.xmeta_type = new CompaundMetaType(this);
 		this.xtype = new CompaundType((CompaundMetaType)this.xmeta_type, TVarBld.emptySet);
 		if (flags != 0) {
@@ -493,20 +461,20 @@ public abstract class Struct extends TypeDecl {
 			((RStruct)this).autoGenerateTypeinfoClazz();
 	
 			if( !isInterface() && !isPackage() ) {
+				updatePackageClazz();
 				// Default <init> method, if no one is declared
 				boolean init_found = false;
 				// Add outer hidden parameter to constructors for inner and non-static classes
-				foreach (Constructor m; members; m.u_name == nameInit) {
+				foreach (Constructor m; members; !m.isStatic()) {
 					init_found = true;
-					if (package_clazz.dnode != null)
-						package_clazz.dnode.checkResolved();
+					package_clazz.dnode.checkResolved();
 					if (!isInterface() && isTypeUnerasable())
 						m.params.insert(0,new LVar(m.pos,nameTypeInfo,typeinfo_clazz.xtype,Var.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
-					if (package_clazz.dnode != null && package_clazz.dnode.isClazz() && !isStatic())
+					if (!isStatic())
 						m.params.insert(0,new LVar(m.pos,nameThisDollar,package_clazz.dnode.xtype,Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 				}
 				if( !init_found ) {
-					trace(Kiev.debug && Kiev.debugResolve,nameInit+" not found in class "+this);
+					trace(Kiev.debug && Kiev.debugResolve,"Constructor not found in class "+this);
 					Constructor init = new Constructor(ACC_PUBLIC);
 					init.setAutoGenerated(true);
 					if (this != Type.tpClosureClazz && this.instanceOf(Type.tpClosureClazz)) {
@@ -517,13 +485,13 @@ public abstract class Struct extends TypeDecl {
 							init.params.append(new LVar(pos,"max$args",Type.tpInt,Var.PARAM_NORMAL,ACC_SYNTHETIC));
 						}
 					} else {
-						if( package_clazz.dnode != null && package_clazz.dnode.isClazz() && !isStatic() ) {
+						if (!isStatic()) {
 							init.params.append(new LVar(pos,nameThisDollar,package_clazz.dnode.xtype,Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 						}
 						if (!isInterface() && isTypeUnerasable()) {
 							init.params.append(new LVar(pos,nameTypeInfo,typeinfo_clazz.xtype,Var.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
 						}
-						if( isEnum() ) {
+						if (isEnum()) {
 							init.params.append(new LVar(pos,"name",Type.tpString,Var.PARAM_NORMAL,ACC_SYNTHETIC));
 							init.params.append(new LVar(pos,nameEnumOrdinal,Type.tpInt,Var.PARAM_NORMAL,ACC_SYNTHETIC));
 							//init.params.append(new LVar(pos,"text",Type.tpString,Var.PARAM_NORMAL,ACC_SYNTHETIC));

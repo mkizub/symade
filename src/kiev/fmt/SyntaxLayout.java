@@ -41,11 +41,11 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 			return q_name;
 		ANode p = parent();
 		if (p instanceof ATextSyntax)
-			q_name = (p.qname()+"\u001f"+u_name).intern();
+			q_name = (p.qname()+"\u001f"+sname).intern();
 		else if (p instanceof NameSpace)
-			q_name = (p.srpkg.name+"\u001f"+u_name).intern();
+			q_name = (p.srpkg.name+"\u001f"+sname).intern();
 		else
-			q_name = u_name;
+			q_name = sname;
 		return q_name;
 	}
 
@@ -78,7 +78,6 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	}
 
 	private void resetNames() {
-		u_name = sname;
 		q_name = null;
 		if (members != null) {
 			foreach (ATextSyntax s; members)
@@ -758,7 +757,7 @@ public abstract class SyntaxElem extends ASTNode {
 			LayoutSpace ls = new LayoutSpace();
 			if (sc.si.dnode != null) {
 				SpaceInfo si = (SpaceInfo)sc.si.dnode;
-				ls.name = si.u_name;
+				ls.name = si.sname;
 				if (si.kind == SP_NEW_LINE) ls.new_line = true;
 				ls.text_size = si.text_size;
 				ls.pixel_size = si.pixel_size;

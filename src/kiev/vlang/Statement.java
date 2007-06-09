@@ -475,32 +475,28 @@ public class GotoStat extends ENode {
 			dest.delLink((GotoStat)this);
 			dest = null;
 		}
-		LabeledStat[] stats = resolveStat(this.ident,ctx_method.body);
-		if( stats.length == 0 ) {
+		Label[] labels = resolveStat(this.ident,ctx_method.body);
+		if( labels.length == 0 ) {
 			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return false;
 		}
-		if( stats.length > 1 ) {
+		if( labels.length > 1 ) {
 			Kiev.reportError(this,"Umbigouse label "+ident+" in goto statement");
 		}
-		LabeledStat stat = stats[0];
-		if( stat == null ) {
-			Kiev.reportError(this,"Label "+ident+" unresolved");
-			return false;
-		}
-		dest = stat.lbl;
+		Label label = labels[0];
+		dest = label;
 		dest.addLink((GotoStat)this);
 		return false; // don't pre-resolve
 	}
 
-	public static LabeledStat[] resolveStat(String name, ASTNode st) {
-		Vector<LabeledStat> stats = new Vector<LabeledStat>();
+	public static Label[] resolveStat(String name, ASTNode st) {
+		Vector<Label> labels = new Vector<Label>();
 		st.walkTree(new TreeWalker() {
 			public boolean pre_exec(ANode n) {
-				if (n instanceof LabeledStat && n.lbl.sname == name) {
-					LabeledStat l = (LabeledStat)n;
-					if (!stats.contains(l))
-						stats.append(l);
+				if (n instanceof Label && n.sname == name) {
+					Label l = (Label)n;
+					if (!labels.contains(l))
+						labels.append(l);
 					return true; // can be nested
 				}
 				if (n instanceof DNode)
@@ -508,7 +504,7 @@ public class GotoStat extends ENode {
 				return true;
 			}
 		});
-		return stats.toArray();
+		return labels.toArray();
 	}
 }
 

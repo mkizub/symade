@@ -241,6 +241,8 @@ public final class IFldExpr extends LvalueExpr {
 
 	public Type getType() {
 		Type ot = obj.getType();
+		if (var == null)
+			return StdTypes.tpVoid;
 		if (ot.getErasedType() instanceof ASTNodeType) {
 			String name = ("attr$"+var.sname+"$type").intern();
 			foreach (TVar tv; ot.bindings().tvars; tv.var.name == name) {
@@ -360,7 +362,7 @@ public final class IFldExpr extends LvalueExpr {
 		Type ot = obj.getType();
 		if (ot.getErasedType() instanceof ASTNodeType) {
 			ANode obj = this.obj.doRewrite(ctx);
-			return (ANode)obj.getVal(this.ident);
+			return (ANode)ctx.toANode(obj.getVal(this.ident));
 		}
 		return super.doRewrite(ctx);
 	}
@@ -475,7 +477,7 @@ public final class ThisExpr extends LvalueExpr {
 		try {
 			if (ctx_tdecl == null)
 				return Type.tpVoid;
-			if (ctx_tdecl.u_name == nameIFaceImpl)
+			if (ctx_tdecl.sname == nameIFaceImpl)
 				return ctx_tdecl.package_clazz.dnode.xtype;
 			return ctx_tdecl.xtype;
 		} catch(Exception e) {
@@ -610,7 +612,7 @@ public final class LVarExpr extends LvalueExpr {
 	
 	public ANode doRewrite(RewriteContext ctx) {
 		if (ctx.args.containsKey(ident))
-			return (ANode)ctx.args.get(ident);
+			return ctx.toANode(ctx.args.get(ident));
 		return super.doRewrite(ctx); //throw new RuntimeException("doRewrite on unresolved var "+this);
 	}
 }
@@ -796,7 +798,7 @@ public final class OuterThisAccessExpr extends ENode {
 
 	public static Field outerOf(TypeDecl clazz) {
 		foreach (Field f; clazz.getAllFields()) {
-			if( f.u_name.startsWith(nameThisDollar) ) {
+			if( f.sname.startsWith(nameThisDollar) ) {
 				trace(Kiev.debug && Kiev.debugResolve,"Name of field "+f+" starts with this$");
 				return f;
 			}

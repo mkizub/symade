@@ -146,7 +146,7 @@ public static final view RThisExpr of ThisExpr extends RLvalueExpr {
 		while !(p instanceof Method || p instanceof Initializer || p instanceof Field)
 			p = p.parent();
 		DNode decl = (DNode)p;
-		if (decl.isStatic() && ctx_tdecl.u_name != nameIFaceImpl)
+		if (decl.isStatic() && ctx_tdecl.sname != nameIFaceImpl)
 			Kiev.reportError(this,"Access '"+parent()+"' in static context");
 		setResolved(true);
 		if (isAutoReturnable())
@@ -162,7 +162,7 @@ public static final view RSuperExpr of SuperExpr extends RENode {
 		while !(p instanceof Method || p instanceof Initializer || p instanceof Field)
 			p = p.parent();
 		DNode decl = (DNode)p;
-		if (decl.isStatic() && ctx_tdecl.u_name != nameIFaceImpl)
+		if (decl.isStatic() && ctx_tdecl.sname != nameIFaceImpl)
 			Kiev.reportError(this,"Access '"+parent()+"' in static context");
 		setResolved(true);
 		if (isAutoReturnable())

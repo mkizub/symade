@@ -306,6 +306,14 @@ public abstract class ENode extends ASTNode {
 		((RView)this).resolve(reqType);
 	}
 
+	public ANode doRewrite(RewriteContext ctx) {
+		ENode en = (ENode)super.doRewrite(ctx);
+		String id = this.ident;
+		String rw = ctx.replace(id);
+		if (id != rw)
+			en.ident = rw;
+		return en;
+	}
 }
 
 @node(name="NoOp")

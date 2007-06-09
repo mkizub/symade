@@ -89,7 +89,7 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 		if (func.getTypeInfoParam(Var.PARAM_TYPEINFO) != null) {
 			Method mmm = ctx_method;
 			Type tp = mmm.ctx_tdecl != func.ctx_tdecl ? ctx_tdecl.super_types[0].getType() : ctx_tdecl.xtype;
-			assert(ctx_method.u_name == nameInit);
+			assert(ctx_method instanceof Constructor && !ctx_method.isStatic());
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?
 			this.open();

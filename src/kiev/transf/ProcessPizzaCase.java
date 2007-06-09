@@ -55,7 +55,7 @@ public class PizzaFE_Pass3 extends TransfProcessor {
 		int p = 0;
 		foreach (Field f; pcase.group.decls) {
 			Var v = null;
-			foreach (Var fp; init.params; fp.u_name == f.u_name) {
+			foreach (Var fp; init.params; fp.sname == f.sname) {
 				init.block.stats.insert(
 					p++,
 					new ExprStat(
