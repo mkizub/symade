@@ -3493,6 +3493,9 @@
           </a-node>
          </expected_types>
         </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>?</text>
+        </a-node>
         <a-node class='kiev.fmt.SyntaxSubAttr'>
          <name>fld_elem</name>
          <expected_types>

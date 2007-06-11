@@ -227,7 +227,6 @@ public abstract class kiev040 {
 		modifiers.moveToNode(clazz.meta);
 		if (parent instanceof NameSpace) {
 			clazz.setLocal(false);
-			clazz.setStatic(true);
 			Env.createProjectInfo(clazz, String.valueOf(Kiev.getCurFile()));
 		}
 		else if (parent instanceof Struct)
@@ -1291,13 +1290,20 @@ void TypeBodyDeclaration(TypeDecl clazz) :
 }
 
 Field EnumFieldDeclaration(ASTModifiers modifiers) :
-{ Symbol id; Field f; ConstStringExpr text; }
+{ Symbol id; Field f; ConstStringExpr text; NewEnumExpr ne; }
 {
 	id = Name()
 	{ f = mkEnumField(id, modifiers); }
 	[
 		":"
 		text = StringConstExpression() { Field.ALT_ENUM_ID_ATTR.set(f, text); }
+	|
+		"("
+			{ ne = new NewEnumExpr(); f.init = ne; }
+			[	ne.args += ExpressionNT(null)
+				(	"," ne.args += ExpressionNT(null)	)*
+			]
+		")"
 	]
 	{ return f; }
 }

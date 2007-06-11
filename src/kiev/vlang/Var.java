@@ -42,8 +42,10 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public static final int PARAM_OUTER_THIS   = 7;
 	public static final int PARAM_RULE_ENV     = 8;
 	public static final int PARAM_TYPEINFO     = 9;
-	public static final int PARAM_VARARGS      = 10;
-	public static final int PARAM_LVAR_PROXY   = 11;
+	public static final int PARAM_ENUM_NAME    = 10;
+	public static final int PARAM_ENUM_ORD     = 11;
+	public static final int PARAM_VARARGS      = 12;
+	public static final int PARAM_LVAR_PROXY   = 13;
 	public static final int PARAM_TYPEINFO_N   = 128;
 
 	public int varflags;

@@ -186,6 +186,16 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				clazz.super_types.insert(0, new TypeRef(Type.tpObject));
 		}
 		clazz.members.append(impl);
+		
+		// generate constructor
+		{
+			Constructor ctor = new Constructor(ACC_PUBLIC);
+			ctor.pos = impl.pos;
+			ctor.params.append(new LVar(impl.pos,nameImpl,view_of.getType(),Var.PARAM_NORMAL,ACC_FINAL|ACC_SYNTHETIC));
+			ctor.body = new Block(impl.pos);
+			impl.members.add(ctor);
+		}
+
 		foreach (ASTNode dn; clazz.members) {
 			if (dn instanceof Method && !(dn instanceof Constructor) && dn.isPublic() && !dn.isStatic()) {
 				Method cm = dn;

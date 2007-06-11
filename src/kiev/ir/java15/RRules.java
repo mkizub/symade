@@ -32,7 +32,6 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 		if( body instanceof RuleBlock ) {
 			body.preGenerate();
 			Kiev.runProcessorsOn(body);
-			body.cleanDFlow();
 		}
 		return true;
 	}
@@ -57,7 +56,6 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 		} catch(Exception e ) {
 			Kiev.reportError(body,e);
 		}
-		((RuleMethod)this).cleanDFlow();
 	}
 }
 

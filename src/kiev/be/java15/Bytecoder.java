@@ -181,17 +181,17 @@ public class Bytecoder implements JConstants {
 			cl.members.append(m);
 			for (int i=0; i < mtype.arity; i++) {
 				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.arity-1) {
-					LVar fp = new LVar(0,"va_arg",mtype.arg(i),Var.PARAM_VARARGS,ACC_FINAL);
-					//if (mtype.arg(i) ≉ jtype.arg(i))
-					//	fp.stype = new TypeRef(jtype.arg(i));
-					m.params.add(fp);
+					m.params += new LVar(0,"va_arg",mtype.arg(i),Var.PARAM_VARARGS,ACC_FINAL);
 					break;
-				} else {
-					LVar fp = new LVar(0,"arg"+i,mtype.arg(i),Var.PARAM_NORMAL,0);
-					//if (mtype.arg(i) ≉ jtype.arg(i))
-					//	fp.stype = new TypeRef(jtype.arg(i));
-					m.params.add(fp);
 				}
+				//else if (m instanceof Constructor && cl.isEnum() && i < 2) {
+				//	if (i == 0)
+				//		m.params += new LVar(0,"enum$name",mtype.arg(i),Var.PARAM_ENUM_NAME,0);
+				//	else
+				//		m.params += new LVar(0,"enum$ordinal",mtype.arg(i),Var.PARAM_ENUM_ORD,0);
+				//}
+				else
+					m.params += new LVar(0,"arg"+i,mtype.arg(i),Var.PARAM_NORMAL,0);
 			}
 		}
 		for(int i=0; i < bcm.attrs.length; i++) {

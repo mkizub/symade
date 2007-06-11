@@ -209,6 +209,7 @@ public view RTypeDecl of TypeDecl extends RDNode {
 	public final String qname();
 	public boolean isClazz();
 	public final Field[] getAllFields();
+	public final boolean isStructInner();
 }
 
 

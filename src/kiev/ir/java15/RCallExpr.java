@@ -120,9 +120,10 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 				Type tp = mt.resolve(td.getAType());
 				ENode earg = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((CallExpr)this,tp,false);
 				((CtorCallExpr)this).eargs += earg;
-				earg.resolve(null);
 			}
 		}
+		foreach (ENode earg; eargs)
+			earg.resolve(null);
 		if !(func.parent() instanceof TypeDecl) {
 			ANode n = func.parent();
 			while !(n instanceof Constructor) n = n.parent();

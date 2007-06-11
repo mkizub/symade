@@ -13,7 +13,7 @@ package kiev;
 import kiev.stdlib.Arrays;
 import kiev.fmt.ATextSyntax;
 
-import java.util.Hashtable;
+import java.util.IdentityHashMap;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -47,7 +47,7 @@ public abstract class WorkerThread extends Thread {
 	public String	curFile = "";
 	public DirUnit.FileEnumerator	fileEnumerator;
 
-	public Hashtable		dataFlowInfos = new Hashtable();
+	public IdentityHashMap			dataFlowInfos = new IdentityHashMap(16*1024);
 
 	private boolean			busy;
 	private boolean			run_fe;
@@ -197,6 +197,7 @@ public abstract class WorkerThread extends Thread {
 		}
 
 stop:;
+		dataFlowInfos.clear();
 		Env.dumpProjectFile();
 		if (this.errCount > 0) {
 			run_be = false;
@@ -240,6 +241,7 @@ stop:;
 		}
 
 stop:;
+		dataFlowInfos.clear();
 		Kiev.lockNodeTree(root);
 		Env.dumpProjectFile();
 		Compiler.runGC(this);
@@ -305,6 +307,7 @@ stop:;
 				return;
 			Kiev.reportError(e);
 		} finally {
+			dataFlowInfos.clear();
 			tr_me.rollback(false);
 			((WorkerThread)Thread.currentThread()).fileEnumerator = null;
 		}

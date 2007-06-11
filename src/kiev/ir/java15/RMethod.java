@@ -90,7 +90,6 @@ public view RMethod of Method extends RDNode {
 		} catch(Exception e ) {
 			Kiev.reportError(self,e);
 		}
-		((Method)self).cleanDFlow();
 
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {

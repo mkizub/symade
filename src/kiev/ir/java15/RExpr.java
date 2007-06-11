@@ -657,7 +657,8 @@ public static final view RCastExpr of CastExpr extends RENode {
 		if( et.isReference() && type.isReference() && et.getStruct() != null
 		 && et.getStruct().package_clazz.dnode.isClazz()
 		 && !(et instanceof ArgType)
-		 && !et.getStruct().isStatic() && et.getStruct().package_clazz.dnode.xtype.getAutoCastTo(type) != null
+		 && (et.getStruct().isStructInner() && !et.getStruct().isStatic())
+		 && et.getStruct().package_clazz.dnode.xtype.getAutoCastTo(type) != null
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,

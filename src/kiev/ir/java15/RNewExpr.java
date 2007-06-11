@@ -43,7 +43,9 @@ public static final view RNewExpr of NewExpr extends RENode {
 		Struct s = type.getStruct();
 		if (s == null)
 			Kiev.reportWarning(this,"Instantiation of non-concrete type "+this.type+" ???");
-		if (outer == null && s.ometa_tdef != null) {
+		if (s.isEnum())
+			throw new CompilerException(this,"Forbidden enum value instantiation");
+		if (outer == null && s.isStructInner() && !s.isStatic() && s.ometa_tdef != null) {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
 			this.open();
@@ -78,6 +80,45 @@ public static final view RNewExpr of NewExpr extends RENode {
 				return;
 			}
 		}
+		mt = (CallType)Type.getRealType(type,new CallType(type,null,ta,Type.tpVoid,false));
+		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+		if( PassInfo.resolveBestMethodR(type,m,info,mt) ) {
+			this.open();
+			this.symbol = m;
+			m.makeArgs(args,type);
+			for(int i=0; i < args.length; i++)
+				args[i].resolve(mt.arg(i));
+		}
+		else {
+			throw new CompilerException(this,"Can't find apropriative initializer for "+
+				Method.toString("<constructor>",args,Type.tpVoid)+" for "+type);
+		}
+		setResolved(true);
+		if (isAutoReturnable())
+			ReturnStat.autoReturn(reqType, this);
+	}
+}
+
+public static final view RNewEnumExpr of NewEnumExpr extends RENode {
+	public:ro	Method				func;
+	public:ro	ENode[]				args;
+
+	public void resolve(Type reqType) {
+		if( isResolved() ) {
+			assert (func != null);
+			if (isAutoReturnable())
+				ReturnStat.autoReturn(reqType, this);
+			return;
+		}
+		this.open();
+		Type type = this.getType();
+		for(int i=0; i < args.length; i++)
+			args[i].resolve(null);
+		Type[] ta = new Type[args.length];
+		for (int i=0; i < ta.length; i++)
+			ta[i] = args[i].getType();
+		CallType mt = (CallType)Type.getRealType(type,new CallType(null,null,ta,type,false));
+		Constructor@ m;
 		mt = (CallType)Type.getRealType(type,new CallType(type,null,ta,Type.tpVoid,false));
 		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,m,info,mt) ) {

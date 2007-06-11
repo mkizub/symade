@@ -25,8 +25,8 @@ public final class ASTOperator extends ENode {
 
 	@virtual typedef This  = ASTOperator;
 
-	ASTOperator() {}
-	ASTOperator(Token t) {
+	public ASTOperator() {}
+	public ASTOperator(Token t) {
 		this.pos = t.getPos();
 		this.ident = t.image;
 	}

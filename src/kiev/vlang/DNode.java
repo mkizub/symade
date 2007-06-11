@@ -88,6 +88,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	public final boolean isTypeUnerasable()	{ return this.meta.is_type_unerasable || group != null && group.meta.is_type_unerasable; }
 	public final boolean isPackage()			{ return this instanceof KievPackage; }
 	public final boolean isSyntax()				{ return this instanceof KievSyntax; }
+	public final boolean isStructInner()		{ return !isPackage() && !isSyntax() && !(this.parent() instanceof NameSpace); }
 
 	public void setPublic() {
 		MetaAccess m = getMetaAccess();
@@ -600,7 +601,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public final boolean isTypeAbstract()		{ return this.isAbstract(); }
 	public final boolean isTypeVirtual()		{ return this.isVirtual(); }
 	public final boolean isTypeFinal()			{ return this.isFinal(); }
-	public final boolean isTypeStatic()		{ return this.isStatic(); }
+	public final boolean isTypeStatic()		{ return !this.isStructInner() || this.isStatic(); }
 	public final boolean isTypeForward()		{ return this.isForward(); }
 
 	public String qname() {

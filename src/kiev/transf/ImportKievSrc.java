@@ -193,12 +193,12 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			me.setTypeUnerasable(false);
 		}
 		else if!(me.parent() instanceof NameSpace) {
-			if (!me.isStatic() && me.isClazz()) {
+			if (me.isStructInner() && !me.isStatic() && me.isClazz()) {
 				TypeDecl pkg = me.package_clazz.dnode;
 				if (pkg.sname == nameIFaceImpl)
 					pkg = pkg.package_clazz.dnode;
 				int n = 0;
-				for(TypeDecl p=pkg; !p.isStatic(); p=p.package_clazz.dnode) n++;
+				for(TypeDecl p=pkg; p.isStructInner() && !p.isStatic(); p=p.package_clazz.dnode) n++;
 				String fldName = (nameThisDollar+n).intern();
 				boolean found = false;
 				foreach (Field f; me.getAllFields(); f.sname == fldName)
@@ -303,9 +303,6 @@ public final class KievFE_Pass2 extends TransfProcessor {
 		for (TypeDecl p = tdecl.package_clazz.dnode; p != null; p = p.package_clazz.dnode)
 			getStructType(ANode.getVersion(p), path);
 
-		if (tdecl.parent() instanceof NameSpace)
-			tdecl.setStatic(true);
-
 		if (tdecl instanceof Struct) {
 			Struct clazz = (Struct)tdecl;
 			if (clazz.isAnnotation()) {
@@ -313,7 +310,8 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				clazz.super_types.add(new TypeRef(Type.tpAnnotation));
 			}
 			else if (tdecl.isEnum()) {
-				clazz.setStatic(true);
+				if (tdecl.isStructInner())
+					clazz.setStatic(true);
 				clazz.super_types.insert(0, new TypeRef(Type.tpEnum));
 			}
 			else if (clazz instanceof PizzaCase) {
@@ -502,18 +500,8 @@ public final class KievFE_Pass3 extends TransfProcessor {
 					}
 					dg.setPublic();
 				}
-				int next_enum_val = 0;
-				foreach (Field f; dg.decls) {
+				foreach (Field f; dg.decls)
 					f.meta.verify();
-					if (f.isEnumField()) {
-						f = f.open();
-						f.init = new NewExpr(f.pos,me.xtype,new ENode[]{
-									new ConstStringExpr(f.sname),
-									new ConstIntExpr(next_enum_val)
-									});
-						next_enum_val++;
-					}
-				}
 			}
 			else if( me.members[i] instanceof Field ) {
 				Field fdecl = (Field)me.members[i];
@@ -746,34 +734,6 @@ public final class KievFE_SrcParse extends TransfProcessor {
 		long diff_time = System.currentTimeMillis() - curr_time;
 		if( Kiev.verbose )
 			Kiev.reportInfo("Parsed file    "+fu,diff_time);
-	}
-}
-
-////////////////////////////////////////////////////
-//	   PASS 4 - resolve meta and generate members //
-////////////////////////////////////////////////////
-
-@singleton
-public final class KievFE_GenMembers extends TransfProcessor {
-	private KievFE_GenMembers() { super(KievExt.JavaOnly); }
-	public String getDescr() { "Members generation" }
-
-	public void process(ASTNode node, Transaction tr) {
-		doProcess(node);
-	}
-	
-	public void doProcess(ASTNode:ASTNode node) {
-	}
-	public void doProcess(FileUnit:ASTNode fu) {
-		foreach(ASTNode n; fu.members)
-			doProcess(n);
-	}
-	public void doProcess(NameSpace:ASTNode fu) {
-		foreach(ASTNode n; fu.members)
-			doProcess(n);
-	}
-	public void doProcess(Struct:ASTNode clazz) {
-		clazz.autoGenerateMembers();
 	}
 }
 

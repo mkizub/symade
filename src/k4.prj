@@ -289,7 +289,6 @@ CLASS kievtransfExportBE_Generate kiev/transf/ExportBE_Generate kiev/transf/Im
 CLASS kievtransfKievBE_Cleanup kiev/transf/KievBE_Cleanup kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievBE_Generate kiev/transf/KievBE_Generate kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievBE_Resolve kiev/transf/KievBE_Resolve kiev/transf/ImportKievSrc.java
-CLASS kievtransfKievFE_GenMembers kiev/transf/KievFE_GenMembers kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievFE_MainResolve kiev/transf/KievFE_MainResolve kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievFE_MetaDecls kiev/transf/KievFE_MetaDecls kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievFE_MetaDefaults kiev/transf/KievFE_MetaDefaults kiev/transf/ImportKievSrc.java
@@ -587,6 +586,7 @@ CLASS kievvlangMethodImpl kiev/vlang/MethodImpl kiev/vlang/Method.java
 CLASS kievvlangNameSpace kiev/vlang/NameSpace kiev/vlang/FileUnit.java
 CLASS kievvlangNewArrayExpr kiev/vlang/NewArrayExpr kiev/vlang/NewExpr.java
 CLASS kievvlangNewClosure kiev/vlang/NewClosure kiev/vlang/NewExpr.java
+CLASS kievvlangNewEnumExpr kiev/vlang/NewEnumExpr kiev/vlang/NewExpr.java
 CLASS kievvlangNewExpr kiev/vlang/NewExpr kiev/vlang/NewExpr.java
 CLASS kievvlangNewInitializedArrayExpr kiev/vlang/NewInitializedArrayExpr kiev/vlang/NewExpr.java
 CLASS kievvlangNodeSpaceEnumerator kiev/vlang/NodeSpaceEnumerator kiev/vlang/MetaTypes.java
@@ -777,6 +777,7 @@ INTERFACE kievbejava15JMethod kiev/be/java15/JMethod kiev/be/java15/JMethod.j
 INTERFACE kievbejava15JNameSpace kiev/be/java15/JNameSpace kiev/be/java15/JFileUnit.java
 INTERFACE kievbejava15JNewArrayExpr kiev/be/java15/JNewArrayExpr kiev/be/java15/JNewExpr.java
 INTERFACE kievbejava15JNewClosure kiev/be/java15/JNewClosure kiev/be/java15/JNewExpr.java
+INTERFACE kievbejava15JNewEnumExpr kiev/be/java15/JNewEnumExpr kiev/be/java15/JNewExpr.java
 INTERFACE kievbejava15JNewExpr kiev/be/java15/JNewExpr kiev/be/java15/JNewExpr.java
 INTERFACE kievbejava15JNewInitializedArrayExpr kiev/be/java15/JNewInitializedArrayExpr kiev/be/java15/JNewExpr.java
 INTERFACE kievbejava15JNode kiev/be/java15/JNode kiev/be/java15/JNode.java
@@ -871,6 +872,7 @@ INTERFACE kievirjava15RMethod kiev/ir/java15/RMethod kiev/ir/java15/RMethod.j
 INTERFACE kievirjava15RNameSpace kiev/ir/java15/RNameSpace kiev/ir/java15/RFileUnit.java
 INTERFACE kievirjava15RNewArrayExpr kiev/ir/java15/RNewArrayExpr kiev/ir/java15/RNewExpr.java
 INTERFACE kievirjava15RNewClosure kiev/ir/java15/RNewClosure kiev/ir/java15/RNewExpr.java
+INTERFACE kievirjava15RNewEnumExpr kiev/ir/java15/RNewEnumExpr kiev/ir/java15/RNewExpr.java
 INTERFACE kievirjava15RNewExpr kiev/ir/java15/RNewExpr kiev/ir/java15/RNewExpr.java
 INTERFACE kievirjava15RNewInitializedArrayExpr kiev/ir/java15/RNewInitializedArrayExpr kiev/ir/java15/RNewExpr.java
 INTERFACE kievirjava15RNode kiev/ir/java15/RNode kiev/ir/java15/RNode.java

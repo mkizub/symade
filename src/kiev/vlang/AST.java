@@ -861,15 +861,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		this.is_bad = on;
 	}
 
-	public final void cleanDFlow() {
-		if!(Thread.currentThread() instanceof WorkerThread)
-			return;
-		java.util.Hashtable dftbl = ((WorkerThread)Thread.currentThread()).dataFlowInfos;
-		walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { dftbl.remove(n); return true; }
-		});
-	}
-	
 	public Type getType() { return Type.tpVoid; }
 
 	public ASTNode() {

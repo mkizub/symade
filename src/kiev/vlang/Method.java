@@ -219,6 +219,16 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				assert(fp.sname == namePEnv);
 				dargs.append(Type.tpRule);
 				break;
+			case Var.PARAM_ENUM_NAME:
+				assert(this instanceof Constructor && !this.isStatic());
+				assert(fp.type ≈ Type.tpString);
+				dargs.append(Type.tpString);
+				break;
+			case Var.PARAM_ENUM_ORD:
+				assert(this instanceof Constructor && !this.isStatic());
+				assert(fp.type ≈ Type.tpInt);
+				dargs.append(Type.tpInt);
+				break;
 			case Var.PARAM_TYPEINFO:
 				assert(this instanceof Constructor || (this.isStatic() && this.hasName(nameNewOp,true)));
 				assert(fp.isFinal());

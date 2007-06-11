@@ -163,6 +163,11 @@ public final view JCtorCallExpr of CtorCallExpr extends JENode {
 			// Insert our-generated typeinfo, or from childs class?
 			tpinfo.generate(code,null);
 		}
+		if (func.jparent instanceof JStruct && ((JStruct)func.jparent).isEnum()) {
+			assert (!func.isTypeUnerasable());
+			eargs[0].generate(code,null); // enum field name
+			eargs[1].generate(code,null); // enum field ordinal
+		}
 		if !(func.isVarArgs()) {
 			for(; i < args.length; i++)
 				args[i].generate(code,null);
