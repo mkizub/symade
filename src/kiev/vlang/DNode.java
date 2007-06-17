@@ -855,6 +855,19 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		return v.toArray();
 	}
 	
+	public String allocateAccessName() {
+		int x = 0;
+		foreach (Method m; members; m.sname != null && m.sname.startsWith("access$")) {
+			int v = Integer.parseInt(m.sname.substring(7),10);
+			if (x <= v)
+				x = v+1;
+		}
+		String name = String.valueOf(x);
+		while (name.length() < 3)
+			name = "0"+name;
+		return "access$"+name;
+	}
+
 }
 
 @node

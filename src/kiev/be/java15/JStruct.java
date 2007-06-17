@@ -170,10 +170,6 @@ public final view JStruct of Struct extends JTypeDecl {
 			constPool.addAsciiCP(f.sname);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
-			if( f.isAccessedFromInner()) {
-				f.openForEdit();
-				((Field)f).setPkgPrivate();
-			}
 			if (f.meta.hasRuntimeVisibles())
 				f.addAttr(new RVMetaAttr(f.meta));
 			if (f.meta.hasRuntimeInvisibles())
@@ -204,11 +200,6 @@ public final view JStruct of Struct extends JTypeDecl {
 
 			try {
 				m.generate(constPool);
-
-				if( m.isAccessedFromInner()) {
-					m.openForEdit();
-					((Method)m).setPkgPrivate();
-				}
 
 				JWBCCondition[] conditions = m.conditions;
 				for(int j=0; j < conditions.length; j++) {

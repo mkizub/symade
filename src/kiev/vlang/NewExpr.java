@@ -196,7 +196,7 @@ public final class NewExpr extends ENode {
 			Constructor@ c;
 			ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 			if( PassInfo.resolveBestMethodR(type,c,info,mt) ) {
-				this.open();
+				this = this.open();
 				this.symbol = c;
 				return;
 			}
@@ -267,7 +267,7 @@ public final class NewEnumExpr extends ENode {
 		Constructor@ c;
 		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,c,info,mt) ) {
-			this.open();
+			this = this.open();
 			this.symbol = c;
 			return;
 		}

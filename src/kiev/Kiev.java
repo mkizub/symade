@@ -579,6 +579,7 @@ public final class Kiev {
 		{
 			Vector<BackendProcessor> processors = new Vector<BackendProcessor>();
 			processors.append(KievBE_Resolve);
+			processors.append(InnerBE_Rewrite);
 			processors.append(VirtFldBE_Rewrite);
 			processors.append(PackedFldBE_Rewrite);
 			processors.append(KievBE_Generate);

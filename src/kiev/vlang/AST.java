@@ -33,9 +33,7 @@ public interface INode {
 	public:ro @virtual Method		ctx_method;
 
 	public boolean isAttached();
-	public void callbackAttached(ANode parent, AttAttrSlot slot);
-	public void callbackAttached(ANode parent, DataAttachInfo pinfo);
-	public void callbackAttachedToSpace(ANode parent, SpaceAttAttrSlot slot, ANode prv, ANode nxt);
+	public void callbackAttached(ANode parent, AttrSlot slot);
 	public void callbackAttached();
 	public void callbackDetached();
 	public void callbackChildChanged(AttrSlot attr);
@@ -68,7 +66,7 @@ public abstract class ANode implements INode {
 	public:ro @virtual @abstract Method		ctx_method;
 
 	private VersionInfo<This>		version_info;
-	private AttachInfo				p_info;
+	private AttrSlot				p_slot;
 	private ANode					p_parent;
 	private DataAttachInfo[]		ext_data;
 
@@ -79,67 +77,50 @@ public abstract class ANode implements INode {
 	}
 
 	public static <I extends INode> I getVersion(I node) {
-		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
+		if (Kiev.run_batch)
 			return node;
 		if (node == null || ((ANode)node).version_info == null)
 			return node;
+		if (Thread.currentThread() == CompilerThread)
+			return (I) ((ANode)node).version_info.cur_info.node;
 		return (I) ((ANode)node).version_info.cur_info.editor_node;
 	}
 
 	public static <V extends ANode> V getVersion(V node) {
-		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
+		if (Kiev.run_batch)
 			return node;
 		if (node == null || node.version_info == null)
 			return node;
+		if (Thread.currentThread() == CompilerThread)
+			return node.version_info.cur_info.node;
 		return node.version_info.cur_info.editor_node;
 	}
 
-	public final void callbackAttached(ANode parent, AttAttrSlot slot) {
-		//assert (slot.is_attr);
+	public final void callbackAttached(ANode parent, AttrSlot slot) {
+		assert (slot.is_attr);
 		assert(!isAttached());
 		assert(parent != null && parent != this);
+		assert(getVersion(parent) == parent);
 		this = this.open();
-		this.p_info = slot.simpleAttachInfo;
-		this.p_parent = parent;
-		this.callbackAttached();
-	}
-	public final void callbackAttached(ANode parent, DataAttachInfo pinfo) {
-		assert (pinfo.p_slot.is_attr);
-		assert(!isAttached());
-		assert(parent != null && parent != this);
-		assert(pinfo.p_data == this);
-		this = this.open();
-		this.p_info = pinfo;
-		this.p_parent = parent;
-		this.callbackAttached();
-	}
-	public final void callbackAttachedToSpace(ANode parent, SpaceAttAttrSlot slot, ANode prv, ANode nxt) {
-		assert(!isAttached());
-		assert(parent != null && parent != this);
-		this = this.open();
-		AttachInfo ai_prv = (prv == null ? null : prv.p_info);
-		AttachInfo ai_nxt = (nxt == null ? null : nxt.p_info);
-		this.p_info = new ListAttachInfo(this, slot, (ListAttachInfo)ai_prv, (ListAttachInfo)ai_nxt);
+		this.p_slot = slot;
 		this.p_parent = parent;
 		this.callbackAttached();
 	}
 	public void callbackAttached() {
 		// notify parent about the changed slot
-		parent().callbackChildChanged(p_info.p_slot);
+		parent().callbackChildChanged(this.p_slot);
 	}
 	public void callbackDetached() {
 		this = ANode.getVersion(this);
 		assert(isAttached());
 		this = this.open();
 		// do detcah
-		AttachInfo pinfo = this.p_info;
-		this.p_info = null;
+		AttrSlot slot = this.p_slot;
+		this.p_slot = null;
 		ANode parent = this.p_parent;
 		this.p_parent = null;
-		if (pinfo instanceof ListAttachInfo)
-			pinfo.unlinkInfo();
 		// notify parent about the changed slot
-		parent.callbackChildChanged(pinfo.p_slot);
+		parent.callbackChildChanged(slot);
 	}
 
 
@@ -152,18 +133,38 @@ public abstract class ANode implements INode {
 	public void callbackChildChanged(AttrSlot attr) { /* do nothing */ }
 
 	public final ANode parent() { return getVersion(this.p_parent); }
-	public final AttrSlot pslot() { return this.p_info.p_slot; }
+	public final AttrSlot pslot() { return this.p_slot; }
 
 	public static ANode getPrevNode(ANode node) {
-		AttachInfo ai = node.p_info;
-		if (ai instanceof ListAttachInfo)
-			return ai.prev();
+		node = getVersion(node);
+		AttrSlot slot = node.p_slot;
+		if (slot == null || !slot.is_space)
+			return null;
+		ANode[] arr = slot.get(node.parent());
+		for (int i=arr.length-1; i >= 0; i--) {
+			ANode n = getVersion(arr[i]);
+			if (n == node) {
+				if (i == 0)
+					return null;
+				return getVersion(arr[i-1]);
+			}
+		}
 		return null;
 	}
 	public static ANode getNextNode(ANode node) {
-		AttachInfo ai = node.p_info;
-		if (ai instanceof ListAttachInfo)
-			return ai.next();
+		node = getVersion(node);
+		AttrSlot slot = node.p_slot;
+		if (slot == null || !slot.is_space)
+			return null;
+		ANode[] arr = slot.get(node.parent());
+		for (int i=arr.length-1; i >= 0; i--) {
+			ANode n = getVersion(arr[i]);
+			if (n == node) {
+				if (i >= arr.length-1)
+					return null;
+				return getVersion(arr[i+1]);
+			}
+		}
 		return null;
 	}
 	
@@ -264,7 +265,7 @@ public abstract class ANode implements INode {
 						if (ai.p_data instanceof ANode)
 							((ANode)ai.p_data).callbackDetached();
 						if (d instanceof ANode)
-							d.callbackAttached(this, ext_data[i]);
+							d.callbackAttached(this, attr);
 					}
 					return;
 				}
@@ -276,12 +277,12 @@ public abstract class ANode implements INode {
 			tmp[sz] = new DataAttachInfo(d,attr);
 			ext_data = tmp;
 			if (attr.is_attr && d instanceof ANode)
-				d.callbackAttached(this, ext_data[sz]);
+				d.callbackAttached(this, attr);
 		} else {
 			this = this.open();
 			ext_data = new DataAttachInfo[]{new DataAttachInfo(d,attr)};
 			if (attr.is_attr && d instanceof ANode)
-				d.callbackAttached(this, ext_data[0]);
+				d.callbackAttached(this, attr);
 		}
 	}
 
@@ -367,7 +368,8 @@ public abstract class ANode implements INode {
 				DataAttachInfo ai = this.ext_data[i];
 				if (ai.p_slot.is_attr && ai.p_data instanceof ASTNode) {
 					ASTNode nd = ((ASTNode)ai.p_data).ncopy();
-					nd.callbackAttached(node, (node.ext_data[i] = new DataAttachInfo(nd,ai.p_slot)));
+					node.ext_data[i] = new DataAttachInfo(nd,ai.p_slot);
+					nd.callbackAttached(node, ai.p_slot);
 				} else {
 					node.ext_data[i] = ai;
 				}
@@ -407,7 +409,7 @@ public abstract class ANode implements INode {
 
 	public void setFrom(Object from$node) {
 		ANode node = (ANode)from$node;
-		this.p_info = node.p_info;
+		this.p_slot = node.p_slot;
 		this.p_parent = node.p_parent;
 		this.ext_data = node.ext_data;
 	}
@@ -598,44 +600,12 @@ public interface PreScanneable {
 	public boolean setBody(ENode body);
 }
 
-class AttachInfo {
+final class DataAttachInfo {
 	final   AttrSlot	p_slot;
-	AttachInfo(AttrSlot slot) {
-		this.p_slot = slot;
-	}
-}
-
-final class DataAttachInfo extends AttachInfo {
 	final   Object		p_data;
 	DataAttachInfo(Object data, AttrSlot slot) {
-		super(slot);
+		this.p_slot = slot;
 		this.p_data = data;
-	}
-}
-
-final class ListAttachInfo extends AttachInfo {
-	final   ANode			p_node;
-	private ListAttachInfo	p_prev;
-	private ListAttachInfo	p_next;
-	ListAttachInfo(ANode self, AttrSlot slot, ListAttachInfo prev, ListAttachInfo next) {
-		super(slot);
-		this.p_node = self;
-		if (prev != null) {
-			this.p_prev = prev;
-			prev.p_next = this;
-		}
-		if (next != null) {
-			next.p_prev = this;
-			this.p_next = next;
-		}
-	}
-	ANode next() { return p_next == null ? null : ANode.getVersion(p_next.p_node); }
-	ANode prev() { return p_prev == null ? null : ANode.getVersion(p_prev.p_node); }
-	void unlinkInfo() {
-		if (p_prev != null)
-			p_prev.p_next = p_next;
-		if (p_next != null)
-			p_next.p_prev = p_prev;
 	}
 }
 
@@ -750,8 +720,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public @packed:1,compileflags,18 boolean is_fld_packed;
 
 	// General flags
-	public @packed:1,compileflags,5 boolean is_rewrite_target;
-	public @packed:1,compileflags,4 boolean is_accessed_from_inner;
+	public @packed:1,compileflags,4 boolean is_rewrite_target;
 	public @packed:1,compileflags,3 boolean is_resolved;
 	public @packed:1,compileflags,2 boolean is_bad;
 	public @packed:1,compileflags,0 boolean locked;
@@ -831,13 +800,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public final void setRewriteTarget(boolean on) {
 		this.is_rewrite_target = on;
-	}
-	// the (private) field/method/struct is accessed from inner class (and needs proxy access)
-	@getter public final boolean isAccessedFromInner() {
-		return this.is_accessed_from_inner;
-	}
-	@setter public final void setAccessedFromInner(boolean on) {
-		this.is_accessed_from_inner = on;
 	}
 	// resolved
 	@getter public final boolean isResolved() {

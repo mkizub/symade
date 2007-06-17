@@ -170,10 +170,8 @@ public abstract class RefAttrSlot extends AttrSlot {
 }
 
 public abstract class AttAttrSlot extends AttrSlot {
-	public final AttachInfo simpleAttachInfo;
 	public AttAttrSlot(String name, TypeInfo typeinfo) {
 		super(name, true, false, typeinfo);
-		this.simpleAttachInfo = new AttachInfo(this);
 	}
 	public abstract void set(ANode parent, Object value);
 	public abstract Object get(ANode parent);
@@ -345,11 +343,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		ANode.getVersion(narr[idx]).callbackDetached();
 		narr[idx] = node;
 		set(parent,narr);
-		ANode prv = null;
-		ANode nxt = null;
-		if (idx > 0) prv = narr[idx-1];
-		if (idx+1 < narr.length) nxt = narr[idx+1];
-		node.callbackAttachedToSpace(parent, this, prv, nxt);
+		node.callbackAttached(parent, this);
 		return node;
 	}
 
@@ -364,9 +358,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 			tmp[i] = narr[i];
 		tmp[sz] = node;
 		set(parent,tmp);
-		ANode prv = null;
-		if (sz > 0) prv = tmp[sz-1];
-		node.callbackAttachedToSpace(parent, this, prv, null);
+		node.callbackAttached(parent, this);
 		return node;
 	}
 
@@ -399,11 +391,7 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		for (; i < sz; i++)
 			tmp[i+1] = narr[i];
 		set(parent,tmp);
-		ANode prv = null;
-		ANode nxt = null;
-		if (idx > 0) prv = tmp[idx-1];
-		if (idx+1 < tmp.length) nxt = tmp[idx+1];
-		node.callbackAttachedToSpace(parent, this, prv, nxt);
+		node.callbackAttached(parent, this);
 	}
 
 	public final void copyFrom(ANode parent, N[] arr) {

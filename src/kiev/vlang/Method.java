@@ -46,6 +46,9 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	@att public WBCCondition[]	 	conditions;
 	@att(ext_data=true) public Var	ret_var;
 
+	@ref(ext_data=true)
+	public Method		caller_from_inner;
+
 	private				CallType		_type;
 	private				CallType		_dtype;
 	@abstract @virtual
@@ -870,6 +873,33 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		this.body = body;
 		return true;
 	}
+	
+	public Method makeAccessor() {
+		assert(isPrivate());
+		if (caller_from_inner != null)
+			return caller_from_inner;
+		this = this.open();
+		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), type_ret.getType(), ACC_STATIC | ACC_SYNTHETIC);
+		m.body = new Block();
+		CallExpr ce;
+		if (isStatic()) {
+			ce = new CallExpr(pos, new TypeRef(ctx_tdecl.xtype), this, ENode.emptyArray);
+		} else {
+			Var self = new LVar(pos,Constants.nameThis,ctx_tdecl.xtype,Var.PARAM_NORMAL,0);
+			m.params += self;
+			ce = new CallExpr(pos, new LVarExpr(pos,self), this, ENode.emptyArray);
+		}
+		foreach (Var v; this.params) {
+			v = v.ncopy();
+			m.params += v;
+			ce.args += new LVarExpr(pos,v);
+		}
+		m.block.stats += ce;
+		ctx_tdecl.members += m;
+		Kiev.runProcessorsOn(m);
+		this.caller_from_inner = m;
+		return m;
+	}
 
 }
 
@@ -922,6 +952,27 @@ public final class Constructor extends Method {
 	@setter public void set$sname(String value) {
 		// do nothing, constructors are anonymouse
 	}
+
+	public Method makeAccessor() {
+		assert(isPrivate());
+		if (caller_from_inner != null)
+			return caller_from_inner;
+		this = this.open();
+		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), ctx_tdecl.xtype, ACC_STATIC | ACC_SYNTHETIC);
+		m.body = new Block();
+		NewExpr ne = new NewExpr(pos, new TypeRef(ctx_tdecl.xtype), ENode.emptyArray);
+		foreach (Var v; this.params) {
+			v = v.ncopy();
+			m.params += v;
+			ne.args += new LVarExpr(pos,v);
+		}
+		m.block.stats += ne;
+		ctx_tdecl.members += m;
+		Kiev.runProcessorsOn(m);
+		this.caller_from_inner = m;
+		return m;
+	}
+
 }
 
 @node(name="InitBlock")
@@ -982,7 +1033,7 @@ public final class WBCCondition extends DNode {
 	@att public WBCType				cond;
 	@att public ENode				body;
 	@ref public Method				definer;
-	@att public CodeAttr			code_attr;
+	     public CodeAttr			code_attr;
 
 	public WBCCondition() {}
 

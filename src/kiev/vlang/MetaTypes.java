@@ -138,8 +138,7 @@ public class NodeSpaceEnumerator<N extends ANode> implements Enumeration<N>
 		return arr != null && top < arr.length;
 	}
 	public N nextElement() {
-		int idx = top++;
-		return ANode.getVersion(arr, idx);
+		return ANode.getVersion(arr[top++]);
 	}
 	public static boolean contains(ANode[] ar, ANode val) {
 		if (val == null)

@@ -198,7 +198,6 @@ public final final view JWBCCondition of WBCCondition extends JDNode {
 				if( cond==WBCType.CondEnsure && m.type.ret() ≢ Type.tpVoid ) code.removeVar(m.getRetVar());
 				code.removeVars(m.params);
 				if( thisPar != null ) code.removeVar(thisPar);
-				this.openForEdit();
 				code.generateCode(this);
 			} catch(Exception e) {
 				Kiev.reportError(this,e);

@@ -433,7 +433,7 @@ public abstract class Struct extends TypeDecl {
 		trace(Kiev.debug && Kiev.debugResolve,"TypeDecl "+(cl != null ? cl+" found " : qn+" not found")+" in "+this);
 		return cl;
 	}
-
+	
 	static class StructDFFunc extends DFFunc {
 		final int res_idx;
 		StructDFFunc(DataFlowInfo dfi) {

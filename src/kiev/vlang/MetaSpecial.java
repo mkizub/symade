@@ -438,6 +438,22 @@ public final class MetaAccess extends MetaFlag {
 	public static void verifyWrite(JNode from, JNode n) { verifyAccess((ASTNode)from,(ASTNode)n,1); }
 	public static void verifyReadWrite(JNode from, JNode n) { verifyAccess((ASTNode)from,(ASTNode)n,3); }
 
+	public static boolean accessedFromInner(ASTNode from, DNode n) {
+		if (!n.isPrivate())
+			return false;
+		TypeDecl outer1 = getStructOf(from);
+		TypeDecl outer2 = getStructOf(n);
+		if (outer1 == outer2)
+			return false;
+		while (!outer1.package_clazz.dnode.isPackage())
+			outer1 = outer1.package_clazz.dnode;
+		while (!outer2.package_clazz.dnode.isPackage())
+			outer2 = outer2.package_clazz.dnode;
+		if (outer1 == outer2)
+			return true;
+		return false;
+	}
+
 	private static TypeDecl getStructOf(ASTNode n) {
 		if( n instanceof TypeDecl ) return (TypeDecl)n;
 		return n.ctx_tdecl;
@@ -475,7 +491,6 @@ public final class MetaAccess extends MetaFlag {
 				outer2 = outer2.package_clazz.dnode;
 			if (outer1 == outer2) {
 				if( (flags & acc) == acc ) {
-					n.setAccessedFromInner(true);
 					checkFinalWrite(from,n,acc);
 					return;
 				}

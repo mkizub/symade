@@ -29,7 +29,7 @@ public final view RCallExpr of CallExpr extends RENode {
 
 	public void resolve(Type reqType) {
 		obj.resolve(null);
-		Method func = func;
+		Method func = this.func;
 		CallType mt = this.getCallType();
 		func.makeArgs(args, mt);
 		assert (!(func instanceof Constructor));

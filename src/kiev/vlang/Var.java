@@ -346,6 +346,11 @@ public class Field extends Var {
 	@virtual typedef JView = JField;
 	@virtual typedef RView = RField;
 
+	@ref(ext_data=true)
+	public Method		getter_from_inner;
+	@ref(ext_data=true)
+	public Method		setter_from_inner;
+
 	public Field() { super(FIELD_NORMAL); }
 	
 	public Field(int kind) { super(kind); }
@@ -367,4 +372,47 @@ public class Field extends Var {
 			return isFinal() && const_value != null;
 		return super.includeInDump(dump,attr,val);
 	}
+
+	public Method makeReadAccessor() {
+		assert(isPrivate());
+		if (getter_from_inner != null)
+			return getter_from_inner;
+		this = this.open();
+		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), this.getType(), ACC_STATIC | ACC_SYNTHETIC);
+		m.body = new Block();
+		if (isStatic()) {
+			m.block.stats += new SFldExpr(pos,this);
+		} else {
+			Var self = new LVar(pos,Constants.nameThis,ctx_tdecl.xtype,Var.PARAM_NORMAL,0);
+			m.params += self;
+			m.block.stats += new IFldExpr(pos,new LVarExpr(pos,self),this);
+		}
+		ctx_tdecl.members += m;
+		Kiev.runProcessorsOn(m);
+		this.getter_from_inner = m;
+		return m;
+	}
+
+	public Method makeWriteAccessor() {
+		assert(isPrivate());
+		if (setter_from_inner != null)
+			return setter_from_inner;
+		this = this.open();
+		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), Type.tpVoid, ACC_STATIC | ACC_SYNTHETIC);
+		Var val = new LVar(pos,"value",this.getType(),Var.PARAM_NORMAL,0);
+		m.params += val;
+		m.body = new Block();
+		if (isStatic()) {
+			m.block.stats += new ExprStat(pos,new AssignExpr(pos,Operator.Assign,new SFldExpr(pos,this),new LVarExpr(pos,val)));
+		} else {
+			Var self = new LVar(pos,Constants.nameThis,ctx_tdecl.xtype,Var.PARAM_NORMAL,0);
+			m.params.insert(0,self);
+			m.block.stats += new ExprStat(pos,new AssignExpr(pos,Operator.Assign,new IFldExpr(pos,new LVarExpr(pos,self),this),new LVarExpr(pos,val)));
+		}
+		ctx_tdecl.members += m;
+		Kiev.runProcessorsOn(m);
+		this.setter_from_inner = m;
+		return m;
+	}
+
 }

@@ -286,6 +286,7 @@ CLASS kievstdlibrule kiev/stdlib/rule kiev/stdlib/PVar.java
 CLASS kievtransfBackendProcessor kiev/transf/BackendProcessor kiev/transf/BackendProcessor.java
 CLASS kievtransfEnumFE_GenMembers kiev/transf/EnumFE_GenMembers kiev/transf/ProcessEnum.java
 CLASS kievtransfExportBE_Generate kiev/transf/ExportBE_Generate kiev/transf/ImportKievSrc.java
+CLASS kievtransfInnerBE_Rewrite kiev/transf/InnerBE_Rewrite kiev/transf/ProcessInner.java
 CLASS kievtransfKievBE_Cleanup kiev/transf/KievBE_Cleanup kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievBE_Generate kiev/transf/KievBE_Generate kiev/transf/ImportKievSrc.java
 CLASS kievtransfKievBE_Resolve kiev/transf/KievBE_Resolve kiev/transf/ImportKievSrc.java
@@ -329,7 +330,6 @@ CLASS kievvlangAnyInstanceOf kiev/vlang/AnyInstanceOf kiev/vlang/CoreMethod.ja
 CLASS kievvlangAssertEnabledExpr kiev/vlang/AssertEnabledExpr kiev/vlang/Expr.java
 CLASS kievvlangAssignExpr kiev/vlang/AssignExpr kiev/vlang/Expr.java
 CLASS kievvlangAttAttrSlot kiev/vlang/AttAttrSlot kiev/vlang/Tree.java
-CLASS kievvlangAttachInfo kiev/vlang/AttachInfo kiev/vlang/AST.java
 CLASS kievvlangAttrPtr kiev/vlang/AttrPtr kiev/vlang/Tree.java
 CLASS kievvlangAttrSlot kiev/vlang/AttrSlot kiev/vlang/Tree.java
 CLASS kievvlangBinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev/vlang/BooleanExpr.java
@@ -514,7 +514,6 @@ CLASS kievvlangLVar kiev/vlang/LVar kiev/vlang/Var.java
 CLASS kievvlangLVarExpr kiev/vlang/LVarExpr kiev/vlang/LvalueExpr.java
 CLASS kievvlangLabel kiev/vlang/Label kiev/vlang/LoopStatement.java
 CLASS kievvlangLabeledStat kiev/vlang/LabeledStat kiev/vlang/Statement.java
-CLASS kievvlangListAttachInfo kiev/vlang/ListAttachInfo kiev/vlang/AST.java
 CLASS kievvlangLongADD kiev/vlang/LongADD kiev/vlang/CoreMethod.java
 CLASS kievvlangLongAssign kiev/vlang/LongAssign kiev/vlang/CoreMethod.java
 CLASS kievvlangLongAssignADD kiev/vlang/LongAssignADD kiev/vlang/CoreMethod.java
