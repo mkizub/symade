@@ -94,6 +94,7 @@ public final class Operator implements Constants {
 	public static final Operator LessEquals;
 	public static final Operator GreaterThen;
 	public static final Operator GreaterEquals;
+
 	public static final Operator LeftShift;
 	public static final Operator RightShift;
 	public static final Operator UnsignedRightShift;
@@ -136,6 +137,9 @@ public final class Operator implements Constants {
 	public static final Operator CastForce;
 	public static final Operator Reinterp;
 	
+	public static final Operator[] allAssignOperators;
+	public static final Operator[] allBoolOperators;
+	public static final Operator[] allMathOperators;
 
 	static {
 		// Assign operators
@@ -153,6 +157,11 @@ public final class Operator implements Constants {
 		AssignDiv					= newOperator(opAssignPriority, "X /= Y");
 		AssignMod					= newOperator(opAssignPriority, "X %= Y");
 		AssignElem					= newOperator(opAssignPriority, "X [ Z ] = Y");
+		
+		allAssignOperators = new Operator[]{Assign,Assign2,AssignBitOr,AssignBitXor,AssignBitAnd,
+			AssignLeftShift,AssignRightShift,AssignUnsignedRightShift,
+			AssignAdd,AssignSub,AssignMul,AssignDiv,AssignMod,AssignElem
+		};
 
 		// Binary operators
 		BooleanOr = newOperator(opBooleanOrPriority, "Y || X");
@@ -170,6 +179,10 @@ public final class Operator implements Constants {
 		GreaterThen = newOperator(opComparePriority, "X > X");
 		GreaterEquals = newOperator(opComparePriority, "X >= X");
 
+		allBoolOperators = new Operator[]{BooleanOr,BooleanAnd,BitOr,BitXor,BitAnd,
+			Equals,NotEquals,InstanceOf,LessThen,LessEquals,GreaterThen,GreaterEquals
+		};
+		
 		LeftShift = newOperator(opShiftPriority, "X << X");
 		RightShift = newOperator(opShiftPriority, "X >> X");
 		UnsignedRightShift = newOperator(opShiftPriority, "X >>> X");
@@ -180,6 +193,8 @@ public final class Operator implements Constants {
 		Div = newOperator(opMulPriority, "Y / X");
 		Mod = newOperator(opMulPriority, "Y % X");
 
+		allMathOperators = new Operator[]{Add,Sub,Mul,Div,Mod,LeftShift,RightShift,UnsignedRightShift};
+		
 		Access = newOperator(opAccessPriority, "Y . I");
 		MacroAccess = newOperator(opAccessPriority, "Y \u21a3 I"); // ↣
 		Comma = newOperator(1, "Y , X");

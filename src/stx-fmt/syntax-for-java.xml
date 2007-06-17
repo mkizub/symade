@@ -1568,6 +1568,9 @@
            <name>TypeConstr</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
+           <name>NameSpace</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
            <name>MetaTypeDecl</name>
           </a-node>
           <a-node class='kiev.vlang.SymbolRef'>
@@ -1600,9 +1603,71 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-file-unit</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>NameSpace</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>namespace</text>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxIdentAttr'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>ident-template</name>
+          </a-node>
+         </decl>
+         <name>srpkg</name>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-symbol</name>
+          </a-node>
+         </fmt>
+         <funcs>
+          <a-node class='kiev.fmt.SyntaxFunctions'>
+           <funcs>
+            <a-node class='kiev.fmt.SyntaxFunction'>
+             <title>Edit name</title>
+             <act>kiev.gui.TextEditor$Factory</act>
+             <attr>sname</attr>
+            </a-node>
+            <a-node class='kiev.fmt.SyntaxFunction'>
+             <title>Add arguments</title>
+             <act>kiev.gui.FuncNewElemOfEmptyList</act>
+             <attr>args</attr>
+            </a-node>
+           </funcs>
+          </a-node>
+         </funcs>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxElemRef'>
+         <decl>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-type-members</name>
+          </a-node>
+         </decl>
+         <text>{ members }</text>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
+      </a-node>
+     </elem>
+     <sname>stx-decl-namespace</sname>
     </a-node>
     <a-node class='kiev.fmt.TextSyntax'>
      <members>
@@ -1653,6 +1718,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-typename</sname>
@@ -1879,6 +1945,9 @@
        <name>stx-types-Macro</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>ASTIdentifier</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>ThisExpr</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
@@ -1950,9 +2019,6 @@
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
        <name>IfElseStat</name>
-      </a-node>
-      <a-node class='kiev.vlang.SymbolRef'>
-       <name>IfElseRewr</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
        <name>WhileStat</name>
@@ -2038,7 +2104,16 @@
        <name>MacroSubstTypeRef</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>MacroHasMetaExpr</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>IfElseRewr</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>SwitchRewr</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>ForEachRewr</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
        <name>BlockRewr</name>
@@ -2049,6 +2124,61 @@
       </a-node>
      </elem>
      <sname>stx-types-Macro</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxExpectedTemplate'>
+     <title>Meta Data</title>
+     <expected_types>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>UserMeta</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaAccess</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaUnerasable</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaSingleton</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaForward</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaVirtual</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaMacro</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaStatic</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaAbstract</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaFinal</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaBridge</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaVolatile</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaNative</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaSynchronized</name>
+      </a-node>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MetaTransient</name>
+      </a-node>
+     </expected_types>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxNode'>
+      </a-node>
+     </elem>
+     <sname>stx-types-Meta</sname>
     </a-node>
     <a-node class='kiev.fmt.PartialSyntaxElemDecl'>
      <elem>
@@ -2353,6 +2483,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-import</name>
@@ -2413,6 +2544,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-opdef</sname>
@@ -2458,6 +2590,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-type-op-def</sname>
@@ -2538,6 +2671,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-type-assign</sname>
@@ -2617,6 +2751,7 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </element>
          <folded_by_default>false</folded_by_default>
@@ -2659,6 +2794,7 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </element>
          <folded_by_default>false</folded_by_default>
@@ -2695,6 +2831,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-type-constr</sname>
@@ -2909,6 +3046,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-type-constr</sname>
@@ -3041,6 +3179,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-typedecl</sname>
@@ -3147,6 +3286,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-enum</sname>
@@ -3251,6 +3391,7 @@
                 </a-node>
                </elements>
                <folded_by_default>false</folded_by_default>
+               <nested_function_lookup>false</nested_function_lookup>
               </a-node>
              </opt_true>
             </a-node>
@@ -3274,6 +3415,7 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </elem>
          <sname>stx-decl-field-enum</sname>
@@ -3422,6 +3564,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-struct-case</sname>
@@ -3522,6 +3665,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-decl-field</sname>
@@ -3588,6 +3732,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-struct-syntax</sname>
@@ -3734,6 +3879,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-struct-view</sname>
@@ -3792,6 +3938,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-struct-annotation</sname>
@@ -3927,6 +4074,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-struct-interface</sname>
@@ -4061,6 +4209,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-struct-class</sname>
@@ -4197,6 +4346,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-field</sname>
@@ -4250,6 +4400,7 @@
               </a-node>
              </elements>
              <folded_by_default>false</folded_by_default>
+             <nested_function_lookup>false</nested_function_lookup>
             </a-node>
            </opt_true>
           </a-node>
@@ -4284,6 +4435,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-decl-var</sname>
@@ -4577,6 +4729,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-method</sname>
@@ -4892,6 +5045,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-rule-method</sname>
@@ -5114,6 +5268,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-constructor</sname>
@@ -5150,6 +5305,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-core-expr</sname>
@@ -5184,6 +5340,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-meta-scalar-value</sname>
@@ -5253,6 +5410,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-meta-array-value</sname>
@@ -5305,6 +5463,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-decl-alias-name</sname>
@@ -5344,6 +5503,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-decl-alias-operator</sname>
@@ -5384,6 +5544,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-initializer</sname>
@@ -5485,6 +5646,7 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </opt_true>
         </a-node>
@@ -5493,6 +5655,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-wbc-condition</sname>
@@ -5933,6 +6096,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-meta-throws</sname>
@@ -5986,6 +6150,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-meta-packed</sname>
@@ -6033,6 +6198,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-meta-uuid</sname>
@@ -6159,6 +6325,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-meta-end</name>
@@ -6189,49 +6356,7 @@
          <name>metas</name>
          <expected_types>
           <a-node class='kiev.vlang.SymbolRef'>
-           <name>UserMeta</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaAccess</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaUnerasable</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaSingleton</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaForward</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaVirtual</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaMacro</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaStatic</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaAbstract</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaFinal</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaBridge</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaVolatile</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaNative</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaSynchronized</name>
-          </a-node>
-          <a-node class='kiev.vlang.SymbolRef'>
-           <name>MetaTransient</name>
+           <name>stx-types-Meta</name>
           </a-node>
          </expected_types>
          <empty>
@@ -6300,6 +6425,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-meta-scalar-value</sname>
@@ -6384,6 +6510,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-meta-array-value</sname>
@@ -6442,6 +6569,7 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </opt_true>
         </a-node>
@@ -6535,6 +6663,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-type-name-ref</sname>
@@ -6591,6 +6720,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-type-closure-ref</sname>
@@ -6856,6 +6986,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-rule-block</sname>
@@ -6920,6 +7051,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-rule-expr-or</sname>
@@ -6958,6 +7090,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-rule-expr-and</sname>
@@ -7113,6 +7246,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-rule-call-expr</sname>
@@ -7189,11 +7323,13 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </opt_true>
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-rule-expr-while</sname>
@@ -7262,14 +7398,39 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </opt_true>
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-rule-expr</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>ASTIdentifier</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxIdentAttr'>
+       <decl>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>ident-template</name>
+        </a-node>
+       </decl>
+       <name>ident</name>
+       <fmt>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>fmt-symref</name>
+        </a-node>
+       </fmt>
+      </a-node>
+     </elem>
+     <sname>stx-expr-ident</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -7337,6 +7498,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-expr-this-outer</sname>
@@ -7405,6 +7567,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-expr-access</sname>
@@ -7651,6 +7814,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-expr-container</sname>
@@ -7685,6 +7849,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-expr-class</sname>
@@ -7719,6 +7884,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-expr-typeinfo</sname>
@@ -7825,6 +7991,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </fld_elem>
       </a-node>
@@ -7891,6 +8058,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-expr-call-ctor</sname>
@@ -7962,6 +8130,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-expr-call-closure</sname>
@@ -8173,6 +8342,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </fld_elem>
       </a-node>
@@ -8278,6 +8448,7 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </element>
          <folded_by_default>false</folded_by_default>
@@ -8295,6 +8466,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-expr-new-array</sname>
@@ -8369,6 +8541,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-expr-new-array-init</sname>
@@ -8441,6 +8614,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-expr-new-closure</sname>
@@ -8630,6 +8804,41 @@
       </a-node>
      </elem>
      <sname>stx-expr-bool-binary</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MacroBinaryBoolExpr</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxExpr'>
+       <attrs>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr1</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr2</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+       </attrs>
+       <template>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>expr-template</name>
+        </a-node>
+       </template>
+      </a-node>
+     </elem>
+     <sname>stx-macro-bool-binary</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -8905,6 +9114,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-label</sname>
@@ -9041,6 +9251,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
          <par>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>par-unindented</name>
@@ -9057,6 +9268,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-case-label</sname>
@@ -9122,6 +9334,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-catch</sname>
@@ -9158,6 +9371,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-finally</sname>
@@ -9330,6 +9544,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-var</sname>
@@ -9392,6 +9607,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-decl-var</sname>
@@ -9449,6 +9665,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-group</sname>
@@ -9479,6 +9696,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-decl-group</sname>
@@ -9585,6 +9803,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-decl-var</sname>
@@ -9684,6 +9903,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-decl-field</sname>
@@ -9738,6 +9958,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-decl-group</sname>
@@ -9797,6 +10018,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </elem>
        <sname>stx-decl-group</sname>
@@ -9906,6 +10128,7 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </elem>
          <sname>stx-decl-var</sname>
@@ -10013,6 +10236,7 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </elem>
          <sname>stx-decl-field</sname>
@@ -10084,6 +10308,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-expr</sname>
@@ -10138,6 +10363,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-return</sname>
@@ -10177,6 +10403,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-throw</sname>
@@ -10215,6 +10442,7 @@
             </a-node>
            </elements>
            <folded_by_default>false</folded_by_default>
+           <nested_function_lookup>false</nested_function_lookup>
           </a-node>
          </opt_true>
         </a-node>
@@ -10228,6 +10456,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-cond</sname>
@@ -10264,6 +10493,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-labeled</sname>
@@ -10303,6 +10533,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-break</sname>
@@ -10342,6 +10573,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-continue</sname>
@@ -10381,6 +10613,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-goto-label</sname>
@@ -10473,6 +10706,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-goto-case</sname>
@@ -10590,6 +10824,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-if-else</sname>
@@ -10683,6 +10918,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-if-else</sname>
@@ -10743,6 +10979,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-while</sname>
@@ -10811,6 +11048,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-do-while</sname>
@@ -10947,6 +11185,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-for</sname>
@@ -11069,9 +11308,137 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-foreach</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>ForEachRewr</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>foreach#</text>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </fmt>
+         <funcs>
+          <a-node class='kiev.fmt.SyntaxFunctions'>
+           <funcs>
+            <a-node class='kiev.fmt.SyntaxFunction'>
+             <title>Add filter</title>
+             <act>kiev.gui.FuncNewElemOfNull</act>
+             <attr>cond</attr>
+            </a-node>
+           </funcs>
+          </a-node>
+         </funcs>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>(</text>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-separator-cond-start</name>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>var</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>syntax-java-decl-group</name>
+          </a-node>
+         </in_syntax>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>LVar</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>in</text>
+         <kind>KEYWORD</kind>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>container</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxOptional'>
+         <calculator>
+          <a-node class='kiev.fmt.CalcOptionNotNull'>
+           <name>cond</name>
+          </a-node>
+         </calculator>
+         <opt_true>
+          <a-node class='kiev.fmt.SyntaxToken'>
+           <text>where</text>
+           <kind>KEYWORD</kind>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-keyword</name>
+            </a-node>
+           </fmt>
+          </a-node>
+         </opt_true>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>cond</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Macro</name>
+          </a-node>
+         </expected_types>
+         <empty>
+          <a-node class='kiev.fmt.SyntaxSpace'>
+          </a-node>
+         </empty>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>)</text>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-separator-cond-end</name>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>body</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Stat</name>
+          </a-node>
+         </expected_types>
+         <par>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>par-indented-block</name>
+          </a-node>
+         </par>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
+      </a-node>
+     </elem>
+     <sname>stx-macro-foreach</sname>
     </a-node>
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
@@ -11165,6 +11532,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-switch</sname>
@@ -11261,6 +11629,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-switch-enum</sname>
@@ -11357,6 +11726,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-switch-type</sname>
@@ -11453,6 +11823,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-match</sname>
@@ -11549,6 +11920,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-macro-switch</sname>
@@ -11636,6 +12008,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-try</sname>
@@ -11696,6 +12069,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-synchronized</sname>
@@ -11756,6 +12130,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-stat-with</sname>
@@ -11818,6 +12193,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-rwr-case</sname>
@@ -11895,6 +12271,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-rwr-pattern</sname>
@@ -11964,6 +12341,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-rwr-factory</sname>
@@ -12003,6 +12381,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-rwr-arg</sname>
@@ -12330,6 +12709,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-macro-access</sname>
@@ -12371,6 +12751,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-macro-subst-expr</sname>
@@ -12402,6 +12783,33 @@
          </expected_types>
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
+         <text>:</text>
+         <kind>SEPARATOR</kind>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-separator-eat-all</name>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>req_type</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-TypeRef</name>
+          </a-node>
+         </expected_types>
+         <empty>
+          <a-node class='kiev.fmt.SyntaxPlaceHolder'>
+           <text>any</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-placeholder</name>
+            </a-node>
+           </fmt>
+          </a-node>
+         </empty>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
          <text>&gt;</text>
          <kind>SEPARATOR</kind>
          <fmt>
@@ -12412,9 +12820,69 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-macro-subst-type</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>MacroHasMetaExpr</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSet'>
+       <elements>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>expr</name>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Macro</name>
+          </a-node>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Expr</name>
+          </a-node>
+         </expected_types>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>has</text>
+         <kind>KEYWORD</kind>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-keyword</name>
+          </a-node>
+         </fmt>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>meta</name>
+         <in_syntax>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>syntax-java-meta</name>
+          </a-node>
+         </in_syntax>
+         <expected_types>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>stx-types-Meta</name>
+          </a-node>
+         </expected_types>
+         <empty>
+          <a-node class='kiev.fmt.SyntaxPlaceHolder'>
+           <text>&lt;meta&gt;</text>
+           <fmt>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>fmt-placeholder-required</name>
+            </a-node>
+           </fmt>
+          </a-node>
+         </empty>
+        </a-node>
+       </elements>
+       <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
+      </a-node>
+     </elem>
+     <sname>stx-macro-has-meta</sname>
     </a-node>
    </members>
    <sname>syntax-for-java</sname>

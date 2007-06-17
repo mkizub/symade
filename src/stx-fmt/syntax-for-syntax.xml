@@ -652,6 +652,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-file-unit</sname>
@@ -680,6 +681,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-type-name-ref</sname>
@@ -752,6 +754,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-syntax-decl</sname>
@@ -824,6 +827,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-syntax-decl-java</sname>
@@ -896,6 +900,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-syntax-decl-tree</sname>
@@ -953,6 +958,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-nl-import</name>
@@ -1006,6 +1012,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-nl-space</name>
@@ -1059,6 +1066,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-nl-space</name>
@@ -1112,6 +1120,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-nl-space</name>
@@ -1161,6 +1170,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-nl-format</name>
@@ -1211,6 +1221,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-nl-format</name>
@@ -1281,6 +1292,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-space-cmd</sname>
@@ -1383,6 +1395,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-nl-format</name>
@@ -1476,6 +1489,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-partial</sname>
@@ -1585,6 +1599,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-syntax</sname>
@@ -1632,6 +1647,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -1702,6 +1718,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -1725,6 +1742,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -1789,6 +1807,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -1817,6 +1836,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -1940,6 +1960,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -1968,6 +1989,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -2063,6 +2085,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -2091,6 +2114,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -2138,6 +2162,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -2166,6 +2191,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -2213,6 +2239,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -2252,6 +2279,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -2459,6 +2487,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -2561,6 +2590,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -2673,6 +2703,12 @@
            </expected_types>
           </a-node>
           <a-node class='kiev.fmt.SyntaxToken'>
+           <text>func_lookup:</text>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxSubAttr'>
+           <name>nested_function_lookup</name>
+          </a-node>
+          <a-node class='kiev.fmt.SyntaxToken'>
            <text>fmt:</text>
           </a-node>
           <a-node class='kiev.fmt.SyntaxSubAttr'>
@@ -2699,6 +2735,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -2757,6 +2794,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -2822,6 +2860,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -2891,6 +2930,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -2944,6 +2984,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -2991,6 +3032,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -3074,6 +3116,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-ident-template</sname>
@@ -3146,6 +3189,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-expected-template</sname>
@@ -3211,6 +3255,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -3279,6 +3324,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-expr-template</sname>
@@ -3320,6 +3366,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-expr</sname>
@@ -3374,6 +3421,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-auto-parenth</sname>
@@ -3458,6 +3506,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-java-comment-template</sname>
@@ -3509,6 +3558,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-java-expr-access</sname>
@@ -3572,6 +3622,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -3600,6 +3651,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-def-java-comment</sname>
@@ -3675,6 +3727,7 @@
               </a-node>
              </elements>
              <folded_by_default>false</folded_by_default>
+             <nested_function_lookup>false</nested_function_lookup>
             </a-node>
            </opt_true>
           </a-node>
@@ -3683,6 +3736,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -3759,6 +3813,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -3815,6 +3870,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </folded>
        <unfolded>
@@ -3885,6 +3941,7 @@
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
+         <nested_function_lookup>false</nested_function_lookup>
         </a-node>
        </unfolded>
       </a-node>
@@ -3947,6 +4004,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-calc-option-hidden</sname>
@@ -3973,6 +4031,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-calc-option-not</sname>
@@ -4070,6 +4129,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-calc-option-class</sname>
@@ -4091,6 +4151,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-calc-option-api</sname>
@@ -4112,6 +4173,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-calc-option-has-meta-flag</sname>
@@ -4133,6 +4195,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-calc-option-has-meta-user</sname>
@@ -4154,6 +4217,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-calc-option-not-null</sname>
@@ -4175,6 +4239,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-calc-option-not-empty</sname>
@@ -4226,6 +4291,7 @@
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
+       <nested_function_lookup>false</nested_function_lookup>
       </a-node>
      </elem>
      <sname>stx-func</sname>

@@ -730,7 +730,7 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public @packed:1,compileflags,20 boolean is_stat_break_target;
 	public @packed:1,compileflags,21 boolean is_rewrite_target;
-	
+
 	// Method flags
 	public @packed:1,compileflags,8  boolean is_mth_need_fields_init;
 	public @packed:1,compileflags,9  boolean is_mth_dispatcher;

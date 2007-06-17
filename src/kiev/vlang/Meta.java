@@ -170,6 +170,25 @@ public class UserMeta extends MNode {
 	@att public SymbolRef<Struct>		decl;
 	@att public MetaValue[]				values;
 
+	public boolean equals(Object o) {
+		if!(o instanceof UserMeta)
+			return false;
+		UserMeta meta = (UserMeta)o;
+		if (qname != o.qname)
+			return false;
+		foreach (Method m; getTypeDecl().members) {
+			MetaValue v1 = this.get(m.sname);
+			MetaValue v2 = meta.get(m.sname);
+			if (v1 == null && v2 == null)
+				continue;
+			if (v1 == null || v2 == null)
+				return false;
+			if (!v1.equals(v2))
+				return false;
+		}
+		return true;
+	}
+
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (dump == "api") {
 			if (attr.name == "decl")

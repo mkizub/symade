@@ -214,6 +214,12 @@ public abstract class MetaFlag extends MNode {
 		return null;
 	}
 	abstract void setFlag(MetaSet dn, boolean on);
+	
+	public boolean equals(Object o) {
+		if (o == null)
+			return false;
+		return (o.getClass() == this.getClass());
+	}
 }
 
 @node
@@ -246,6 +252,12 @@ public final class MetaAccess extends MetaFlag {
 	}
 
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001faccess"; }
+
+	public boolean equals(Object o) {
+		if (o instanceof MetaAccess)
+			return this.simple == o.simple && this.flags == o.flags;
+		return false;
+	}
 
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
 		if (attr.name == "flags")

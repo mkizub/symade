@@ -39,42 +39,54 @@ public abstract class ENode extends ASTNode {
 	@ref @abstract public:ro DNode			dnode;
 	
 	@getter @att public final String get$ident() {
-		if (ident_or_symbol_or_type instanceof String)
-			return (String)ident_or_symbol_or_type;
-		if (ident_or_symbol_or_type instanceof ISymbol) {
+		Object id = this.ident_or_symbol_or_type;
+		if (id == null)
+			return null;
+		if (id instanceof String)
+			return (String)id;
+		if (id instanceof ISymbol) {
 			if (qualified)
-				return ((ISymbol)ident_or_symbol_or_type).qname;
-			return ((ISymbol)ident_or_symbol_or_type).sname;
+				return ((ISymbol)id).qname;
+			return ((ISymbol)id).sname;
 		}
-		if (ident_or_symbol_or_type instanceof Type) {
+		if (id instanceof Type) {
 			if (qualified)
-				return ((Type)ident_or_symbol_or_type).meta_type.qname();
-			return ((Type)ident_or_symbol_or_type).meta_type.tdecl.sname;
+				return ((Type)id).meta_type.qname();
+			return ((Type)id).meta_type.tdecl.sname;
 		}
 		return null;
 	}
 
 	@getter @ref public final ISymbol get$symbol() {
-		if (ident_or_symbol_or_type instanceof ISymbol)
-			return (ISymbol)ANode.getVersion((ANode)ident_or_symbol_or_type);
-		if (ident_or_symbol_or_type instanceof Type)
-			return ((Type)ident_or_symbol_or_type).meta_type.tdecl;
+		Object id = this.ident_or_symbol_or_type;
+		if (id == null)
+			return null;
+		if (id instanceof ISymbol)
+			return (ISymbol)ANode.getVersion((ANode)id);
+		if (id instanceof Type)
+			return ((Type)id).meta_type.tdecl;
 		return null;
 	}
 	
 	@getter @ref public final DNode get$dnode() {
-		if (ident_or_symbol_or_type instanceof DNode)
-			return ANode.getVersion((DNode)ident_or_symbol_or_type);
-		if (ident_or_symbol_or_type instanceof ISymbol)
-			return ANode.getVersion(((ISymbol)ident_or_symbol_or_type).dnode);
-		if (ident_or_symbol_or_type instanceof Type)
-			return ((Type)ident_or_symbol_or_type).meta_type.tdecl;
+		Object id = this.ident_or_symbol_or_type;
+		if (id == null)
+			return null;
+		if (id instanceof DNode)
+			return ANode.getVersion((DNode)id);
+		if (id instanceof ISymbol)
+			return ANode.getVersion(((ISymbol)id).dnode);
+		if (id instanceof Type)
+			return ((Type)id).meta_type.tdecl;
 		return null;
 	}
 	
-	@getter @ref public Type get$type_lnk() {
-		if (ident_or_symbol_or_type instanceof Type)
-			return (Type)ident_or_symbol_or_type;
+	@getter @ref public final Type get$type_lnk() {
+		Object id = this.ident_or_symbol_or_type;
+		if (id == null)
+			return null;
+		if (id instanceof Type)
+			return (Type)id;
 		return null;
 	}
 	

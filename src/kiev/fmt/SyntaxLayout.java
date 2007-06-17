@@ -1171,8 +1171,7 @@ public class SyntaxSet extends SyntaxElem {
 	@att public SyntaxElem		folded;
 	@att public SyntaxElem[]	elements;
 	@att public boolean			folded_by_default;
-
-	public SyntaxSet() {}
+	@att public boolean			nested_function_lookup;
 
 	public Drawable makeDrawable(Formatter fmt, ANode node) {
 		Drawable dr = new DrawNonTermSet(node, this);

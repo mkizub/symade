@@ -322,6 +322,8 @@ CLASS kievtransfVirtFldFE_GenMembers kiev/transf/VirtFldFE_GenMembers kiev/tra
 CLASS kievtransfVirtFldME_PreGenerate kiev/transf/VirtFldME_PreGenerate kiev/transf/ProcessVirtFld.java
 CLASS kievvlangANode kiev/vlang/ANode kiev/vlang/AST.java
 CLASS kievvlangASTNode kiev/vlang/ASTNode kiev/vlang/AST.java
+CLASS kievvlangASTNodeEQ kiev/vlang/ASTNodeEQ kiev/vlang/CoreMethod.java
+CLASS kievvlangASTNodeNE kiev/vlang/ASTNodeNE kiev/vlang/CoreMethod.java
 CLASS kievvlangASTRuleNode kiev/vlang/ASTRuleNode kiev/vlang/Rules.java
 CLASS kievvlangAccessExpr kiev/vlang/AccessExpr kiev/vlang/LvalueExpr.java
 CLASS kievvlangAnyInstanceOf kiev/vlang/AnyInstanceOf kiev/vlang/CoreMethod.java
@@ -452,6 +454,7 @@ CLASS kievvlangFloatMUL kiev/vlang/FloatMUL kiev/vlang/CoreMethod.java
 CLASS kievvlangFloatNEG kiev/vlang/FloatNEG kiev/vlang/CoreMethod.java
 CLASS kievvlangFloatPOS kiev/vlang/FloatPOS kiev/vlang/CoreMethod.java
 CLASS kievvlangFloatSUB kiev/vlang/FloatSUB kiev/vlang/CoreMethod.java
+CLASS kievvlangForEachRewr kiev/vlang/ForEachRewr kiev/vlang/Rewrites.java
 CLASS kievvlangForEachStat kiev/vlang/ForEachStat kiev/vlang/LoopStatement.java
 CLASS kievvlangForStat kiev/vlang/ForStat kiev/vlang/LoopStatement.java
 CLASS kievvlangGotoCaseStat kiev/vlang/GotoCaseStat kiev/vlang/Statement.java
@@ -553,6 +556,8 @@ CLASS kievvlangLoopStat kiev/vlang/LoopStat kiev/vlang/LoopStatement.java
 CLASS kievvlangLvalueExpr kiev/vlang/LvalueExpr kiev/vlang/LvalueExpr.java
 CLASS kievvlangMNode kiev/vlang/MNode kiev/vlang/Meta.java
 CLASS kievvlangMacroAccessExpr kiev/vlang/MacroAccessExpr kiev/vlang/Rewrites.java
+CLASS kievvlangMacroBinaryBoolExpr kiev/vlang/MacroBinaryBoolExpr kiev/vlang/Rewrites.java
+CLASS kievvlangMacroHasMetaExpr kiev/vlang/MacroHasMetaExpr kiev/vlang/Rewrites.java
 CLASS kievvlangMacroSubstExpr kiev/vlang/MacroSubstExpr kiev/vlang/Rewrites.java
 CLASS kievvlangMacroSubstTypeRef kiev/vlang/MacroSubstTypeRef kiev/vlang/Rewrites.java
 CLASS kievvlangMatchStat kiev/vlang/MatchStat kiev/vlang/ComplexStatement.java

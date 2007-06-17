@@ -335,18 +335,33 @@ public class Editor extends InfoView implements KeyListener {
 			if !(dr.parent() instanceof DrawNonTerm)
 				return null;
 			foreach (Drawable d; ((DrawNonTerm)dr.parent()).args) {
-				if (d.syntax instanceof SyntaxAttr && attr.equals(((SyntaxAttr)d.syntax).name)) {
-					dr = d;
-					continue next_attr;
-				}
-				if (d.attr_syntax instanceof SyntaxAttr && attr.equals(((SyntaxAttr)d.attr_syntax).name)) {
-					dr = d;
+				Drawable x = checkFunctionTarget(attr, d);
+				if (x != null) {
+					dr = x;
 					continue next_attr;
 				}
 			}
 			return null;
 		}
 		return dr;
+	}
+	private Drawable checkFunctionTarget(String attr, Drawable dr) {
+		if (dr == null)
+			return null;
+		SyntaxElem stx0 = dr.syntax;
+		SyntaxElem stx1 = dr.attr_syntax;
+		Drawable x;
+		if (stx0 instanceof SyntaxAttr && attr.equals(stx0.name))
+			return dr;
+		if (stx1 instanceof SyntaxAttr && attr.equals(stx1.name))
+			return dr;
+		if (stx0 instanceof SyntaxSet && stx0.nested_function_lookup) {
+			foreach (Drawable d; ((DrawNonTerm)dr).args; (x=checkFunctionTarget(attr, d)) != null)
+				return x;
+		}
+		if (dr instanceof DrawOptional && (x=checkFunctionTarget(attr, dr.arg)) != null)
+			return x;
+		return null;
 	}
 
 	public void startItemEditor(ANode obj, KeyListener item_editor) {
@@ -1054,10 +1069,10 @@ final class PasteElemHere implements Runnable {
 	}
 	public void run() {
 		ANode node = this.paste_node;
-		if (node.isAttached())
-			node = node.ncopy();
 		editor.changes.push(Transaction.open());
 		try {
+			if (node.isAttached())
+				node = node.ncopy();
 			if (pattr != null) {
 				pattr.node.open();
 				if (pattr.slot.is_space)
@@ -1119,10 +1134,10 @@ final class PasteElemNext implements Runnable {
 		Transferable content = editor.clipboard.getContents(null);
 		ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
 		ActionPoint ap = editor.getActionPoint(true);
-		if (node.isAttached())
-			node = node.ncopy();
 		editor.changes.push(Transaction.open());
 		try {
+			if (node.isAttached())
+				node = node.ncopy();
 			((SpaceAttrSlot)ap.slot).insert(ap.node,ap.index,node);
 		} finally {
 			editor.changes.peek().close();
@@ -1669,7 +1684,36 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 			// show all postfix type operators
 			foreach (Operator op; Operator.allOperatorNamesHash; op.name.startsWith("T "))
 				menu.add(new JMenuItem(new SetSyntaxAction(op)));
-		} else {
+		}
+		else if (expr.getArgs().length == 2) {
+			JMenu m_assign = new JMenu("Assign");
+			menu.add(m_assign);
+			foreach (Operator op; Operator.allAssignOperators; op.arity == 2)
+				m_assign.add(new JMenuItem(new SetSyntaxAction(op)));
+
+			JMenu m_bool   = new JMenu("Boolean");
+			menu.add(m_bool);
+			foreach (Operator op; Operator.allBoolOperators; op.arity == 2)
+				m_bool.add(new JMenuItem(new SetSyntaxAction(op)));
+
+			JMenu m_math   = new JMenu("Arithmetic");
+			menu.add(m_math);
+			foreach (Operator op; Operator.allMathOperators; op.arity == 2)
+				m_math.add(new JMenuItem(new SetSyntaxAction(op)));
+
+			JMenu m_others = new JMenu("Others");
+			menu.add(m_others);
+			foreach (Operator op; Operator.allOperatorNamesHash; op.arity == 2 && !op.name.startsWith("T ")) {
+				if (Arrays.contains(Operator.allAssignOperators, op))
+					continue;
+				if (Arrays.contains(Operator.allBoolOperators, op))
+					continue;
+				if (Arrays.contains(Operator.allMathOperators, op))
+					continue;
+				m_others.add(new JMenuItem(new SetSyntaxAction(op)));
+			}
+		}
+		else {
 			int arity = expr.getArgs().length;
 			foreach (Operator op; Operator.allOperatorNamesHash; op.arity == arity && !op.name.startsWith("T "))
 				menu.add(new JMenuItem(new SetSyntaxAction(op)));

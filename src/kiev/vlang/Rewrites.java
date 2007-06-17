@@ -54,6 +54,8 @@ public final class RewriteContext {
 			return String.valueOf(args.get(qname));
 		Object o = args.get(qname.substring(0,pS));
 		while (pS > 0) {
+			if (o == null)
+				return qname.substring(0,pS)+"=>null";
 			int pE = qname.indexOf('>',pS+1);
 			if (pE < 0) {
 				o = ((ASTNode)o).getVal(qname.substring(pS+1).intern());
@@ -482,6 +484,67 @@ public class SwitchRewr extends SwitchStat {
 
 }
 
+@node
+public class ForEachRewr extends ENode implements ScopeOfNames {
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")	Var			var;
+	@dflow(in="var")		ASTNode		container;
+	@dflow(in="container")	ASTNode		cond;
+	@dflow(in="cond")		ASTNode		body;
+	}
+
+	@virtual typedef This  = ForEachRewr;
+	@virtual typedef JView = JENode;
+	@virtual typedef RView = RENode;
+
+	@att public Var			var;
+	@att public ASTNode		container;
+	@att public ASTNode		cond;
+	@att public ASTNode		body;
+
+	public ForEachRewr() {}
+	
+	public ANode doRewrite(RewriteContext ctx) {
+		BlockRewr cont = (BlockRewr)this.container.doRewrite(ctx);
+		BlockRewr bl = new BlockRewr();
+		foreach (ASTNode n; cont.stats) {
+			Type tp = var.getType();
+			if (tp instanceof ASTNodeType) {
+				if (!((ASTNodeMetaType)tp.meta_type).clazz.isAssignableFrom(n.getClass()))
+					continue;
+			}
+			RewriteContext rc = new RewriteContext(this, (Hashtable<String,Object>)ctx.args.clone());
+			rc.args.put(var.sname, n);
+			if (this.cond != null) {
+				ANode c = this.cond.doRewrite(rc);
+				if!(c instanceof ENode)
+					continue;
+				ENode e = (ENode)c;
+				if (!e.isConstantExpr())
+					continue;
+				if (e.getConstValue() != Boolean.TRUE)
+					continue;
+			}
+			ASTNode r = (ASTNode)body.doRewrite(rc);
+			if (r instanceof BlockRewr) {
+				foreach (ASTNode st; r.stats.delToArray())
+					bl.stats += st;
+			} else {
+				bl.stats += r;
+			}
+		}
+		return bl;
+	}
+
+	public rule resolveNameR(ASTNode@ node, ResInfo path)
+	{
+		node ?= var,
+		path.checkNodeName(node)
+	}
+
+}
+
 @node(name="MacroAccess")
 public final class MacroAccessExpr extends ENode {
 	
@@ -560,7 +623,8 @@ public final class MacroAccessExpr extends ENode {
 
 	public ANode doRewrite(RewriteContext ctx) {
 		ANode obj = this.obj.doRewrite(ctx);
-		assert (obj != null);
+		if (obj == null)
+			return null;
 		return (ANode)ctx.toANode(obj.getVal(this.ident));
 	}
 }
@@ -592,11 +656,13 @@ public class MacroSubstTypeRef extends TypeRef {
 	
 	@dflow(out="type") private static class DFI {
 	@dflow(in="this:in")	ENode		type;
+	@dflow(in="type")		ENode		req_type;
 	}
 
 	@virtual typedef This  = MacroSubstTypeRef;
 
 	@att public ENode			type;
+	@att public TypeRef			req_type;
 
 	public MacroSubstTypeRef() {}
 	
@@ -605,7 +671,9 @@ public class MacroSubstTypeRef extends TypeRef {
 	}
 	
 	public Type getType() {
-		return StdTypes.tpVoid;
+		if (req_type != null)
+			return req_type.getType();
+		return StdTypes.tpAny;
 	}
 
 	public boolean preResolveIn() {
@@ -616,6 +684,115 @@ public class MacroSubstTypeRef extends TypeRef {
 		return true;
 	}
 
+}
+
+@node(name="CmpNode")
+public class MacroBinaryBoolExpr extends ENode {
+	
+	@dflow(out="expr2") private static class DFI {
+	@dflow(in="this:in")		ENode			expr1;
+	@dflow(in="expr1")			ENode			expr2;
+	}
+	
+	@virtual typedef This  = MacroBinaryBoolExpr;
+
+	@att public Operator		op;
+	@att public ENode			expr1;
+	@att public ENode			expr2;
+
+	public MacroBinaryBoolExpr() {}
+
+	public void initFrom(ENode node, Operator op, Method cm, ENode[] args) {
+		this.pos = node.pos;
+		this.op = op;
+		this.symbol = cm.getSymbol(op.name);
+		this.expr1 = args[0];
+		this.expr2 = args[1];
+	}
+	
+	public Operator getOp() { return op; }
+
+	public ENode[] getArgs() { return new ENode[]{expr1,expr2}; }
+
+	public String toString() { return getOp().toString(this); }
+
+	public Type getType() { return Type.tpBoolean; }
+
+	public ANode doRewrite(RewriteContext ctx) {
+		ANode e1 = expr1.doRewrite(ctx);
+		if (e1 instanceof ConstNullExpr) e1 = null;
+		ANode e2 = expr2.doRewrite(ctx);
+		if (e2 instanceof ConstNullExpr) e2 = null;
+		if (op == Operator.Equals) {
+			if (e1 == null && e2 == null)
+				return new ConstBoolExpr(true);
+			if (e1 == null || e2 == null)
+				return new ConstBoolExpr(false);
+			return new ConstBoolExpr(e1.equals(e2));
+		}
+		if (op == Operator.NotEquals) {
+			if (e1 == null && e2 == null)
+				return new ConstBoolExpr(false);
+			if (e1 == null || e2 == null)
+				return new ConstBoolExpr(true);
+			return new ConstBoolExpr(!e1.equals(e2));
+		}
+		return new ConstBoolExpr(false);
+	}
+	
+	public boolean	isConstantExpr() {
+		if (!expr1.isConstantExpr())
+			return false;
+		if (!expr2.isConstantExpr())
+			return false;
+		DNode m = this.dnode;
+		if (m == null)
+			m = getOp().resolveMethod(this);
+		if (!(m instanceof Method) || !(m.body instanceof CoreExpr))
+			return false;
+		return true;
+	}
+	public Object	getConstValue() {
+		Method m = (Method)this.dnode;
+		if (m == null)
+			m = getOp().resolveMethod(this);
+		ConstExpr ce = ((CoreExpr)m.body).calc(this);
+		return ce.getConstValue();
+	}
+}
+
+
+@node(name="HasMeta")
+public class MacroHasMetaExpr extends ENode {
+	
+	@dflow(out="meta") private static class DFI {
+	@dflow(in="this:in")		ENode			expr;
+	@dflow(in="expr")			MNode			meta;
+	}
+	
+	@virtual typedef This  = MacroHasMetaExpr;
+
+	@att public ENode			expr;
+	@att public MNode			meta;
+
+	public MacroHasMetaExpr() {}
+
+	public Type getType() { return Type.tpBoolean; }
+	
+	public int getPriority() { return opInstanceOfPriority; }
+
+	public ANode doRewrite(RewriteContext ctx) {
+		ANode expr = this.expr.doRewrite(ctx);
+		ANode meta = this.meta.doRewrite(ctx);
+		if!(expr instanceof DNode)
+			return new ConstBoolExpr(false);
+		if!(meta instanceof MNode)
+			return new ConstBoolExpr(false);
+		MNode m = ((DNode)expr).getMeta(meta.qname);
+		if (m == null)
+			return new ConstBoolExpr(false);
+		return new ConstBoolExpr(m.equals(meta));
+	}
 }
 
 

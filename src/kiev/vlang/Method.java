@@ -378,6 +378,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 */	}
 
 	public boolean preResolveIn() {
+		foreach (Var fp; params; fp.kind == Var.VAR_LOCAL)
+			fp.open().kind = Var.PARAM_NORMAL;
 		Type t = this.type; // rebuildTypes()
 		return true;
 	}

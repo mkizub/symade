@@ -138,8 +138,9 @@ public abstract class Type extends AType {
 		if( this ≡ tpRule && t ≡ tpBoolean ) return tpBoolean;
 		if( this.isBoolean() && t.isBoolean() ) return tpBoolean;
 		if( this.isReference() && !t.isReference() ) {
-			if( ((CoreType)t).getRefTypeForPrimitive() ≈ this ) return t;
-			else if( t ≡ Type.tpInt && this ≥ Type.tpEnum )
+			if !(t instanceof CoreType) return null;
+			if (((CoreType)t).getRefTypeForPrimitive() ≈ this) return t;
+			else if (t ≡ Type.tpInt && this ≥ Type.tpEnum)
 				return t;
 		}
 		if( this instanceof CTimeType || t instanceof CTimeType ) {

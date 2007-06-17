@@ -555,7 +555,10 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	}
 	public void callbackCopied() {
 		super.callbackCopied();
-		package_clazz.symbol = null;
+		if (package_clazz.symbol != null) {
+			package_clazz.open();
+			package_clazz.symbol = null;
+		}
 		super_meta_types = null;
 		direct_extenders.delAll();
 		type_decl_version = 1;

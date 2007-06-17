@@ -21,5 +21,17 @@ import syntax kiev.Syntax;
 
 public metatype Globals extends any {
 
+	@macro @native @CompilerNode("CmpNode")
+	public static boolean node_ref_eq(Any# o1, Any# o2) operator "V == V" ;
+
+	@macro @native @CompilerNode("CmpNode")
+	public static boolean node_ref_neq(Any# o1, Any# o2) operator "V != V" ;
+
+	@macro @native @CompilerNode("CmpNode")
+	public static boolean node_ref_eq_null(Any# o1, #id"null"# o2) operator "V == V" ;
+
+	@macro @native @CompilerNode("CmpNode")
+	public static boolean node_ref_neq_null(Any# o1, #id"null"# o2) operator "V != V" ;
+
 }
 

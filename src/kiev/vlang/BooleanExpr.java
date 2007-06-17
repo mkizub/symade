@@ -266,6 +266,21 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	public String toString() { return getOp().toString(this); }
 
+	public void mainResolveOut() {
+		Method m;
+		if (this.dnode == null) {
+			m = getOp().resolveMethod(this);
+			if (m == null) {
+				if (ctx_method == null || !ctx_method.isMacro())
+					Kiev.reportError(this, "Unresolved method for operator "+getOp());
+				return;
+			}
+		} else {
+			m = (Method)this.dnode;
+		}
+		m.normilizeExpr(this);
+	}
+
 	public boolean	isConstantExpr() {
 		if (!expr1.isConstantExpr())
 			return false;

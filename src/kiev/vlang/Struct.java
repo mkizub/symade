@@ -360,9 +360,12 @@ public abstract class Struct extends TypeDecl {
 	// verify resolved tree
 	public boolean preVerify() {
 		setFrontEndPassed();
-		foreach (TypeRef i; super_types) {
-			if (i.getStruct().isFinal())
-				Kiev.reportError(this, "Struct "+this+" extends final struct "+i);
+		foreach (TypeRef tr; super_types; !(tr instanceof MacroSubstTypeRef)) {
+			TypeDecl td = tr.getTypeDecl();
+			if (td == null)
+				Kiev.reportError(this, "Struct "+this+" extends unresolved type "+tr);
+			else if (td.isFinal())
+				Kiev.reportError(this, "Struct "+this+" extends final type "+tr);
 		}
 		if (isInterface() && !isStructView()) {
 			foreach (ASTNode n; members; n instanceof Field || n instanceof Initializer || n instanceof DeclGroup) {

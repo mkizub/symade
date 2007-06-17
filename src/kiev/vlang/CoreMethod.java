@@ -217,6 +217,11 @@ public abstract class CoreFunc {
 		coreFuncs.put("kiev.stdlib.GString:str_concat_as",  StringConcatAS);
 		coreFuncs.put("kiev.stdlib.GString:str_concat_sa",  StringConcatSA);
 		coreFuncs.put("kiev.stdlib.GString:str_assign_add", StringAssignADD);
+
+		coreFuncs.put("kiev.vlang.Globals:node_ref_eq",       ASTNodeEQ);
+		coreFuncs.put("kiev.vlang.Globals:node_ref_neq",      ASTNodeNE);
+		coreFuncs.put("kiev.vlang.Globals:node_ref_eq_null",  ASTNodeEQ);
+		coreFuncs.put("kiev.vlang.Globals:node_ref_neq_null", ASTNodeNE);
 	}
 	
 	public abstract void normilizeExpr(Method core_method, ENode expr);
@@ -1162,3 +1167,20 @@ class StringAssignADD extends BinaryFunc {
 }
 
 
+
+/////////////////////////////////////////////////
+//         ASTNodeType                         //
+/////////////////////////////////////////////////
+
+
+@singleton
+class ASTNodeEQ extends BinaryFunc {
+	public void normilizeExpr(Method core_method, ENode expr) { super.normilizeExpr(core_method, expr, MacroBinaryBoolExpr.class, Operator.Equals); }
+	protected ConstExpr doCalc(Object arg1, Object arg2) { new ConstBoolExpr(arg1 == arg2) }
+}
+
+@singleton
+class ASTNodeNE extends BinaryFunc {
+	public void normilizeExpr(Method core_method, ENode expr) { super.normilizeExpr(core_method, expr, MacroBinaryBoolExpr.class, Operator.NotEquals); }
+	protected ConstExpr doCalc(Object arg1, Object arg2) { new ConstBoolExpr(arg1 != arg2) }
+}
