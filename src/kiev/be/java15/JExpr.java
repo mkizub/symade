@@ -132,15 +132,15 @@ public view JUnaryExpr of UnaryExpr extends JENode {
 public view JStringConcatExpr of StringConcatExpr extends JENode {
 	public:ro	JENode[]			args;
 
-	public static Struct clazzStringBuffer;
-	public static Method clazzStringBufferToString;
-	public static Method clazzStringBufferInit;
+	public static final Struct clazzStringBuffer;
+	public static final Method clazzStringBufferToString;
+	public static final Method clazzStringBufferInit;
 
 	static {
 		try {
-		clazzStringBuffer = (Struct)Env.loadTypeDecl("java\u001flang\u001fStringBuffer");
+		clazzStringBuffer = (Struct)Env.loadTypeDecl("java\u001flang\u001fStringBuilder");
 		if( clazzStringBuffer == null )
-			throw new RuntimeException("Core class java.lang.StringBuffer not found");
+			throw new RuntimeException("Core class java.lang.StringBuilder not found");
 		clazzStringBufferToString = clazzStringBuffer.resolveMethod("toString",Type.tpString);
 		clazzStringBufferInit = clazzStringBuffer.resolveMethod(null,Type.tpVoid);
 		} catch(Exception e ) {

@@ -26,7 +26,6 @@ public final view RRuleMethod of RuleMethod extends RMethod {
 	public		int					index;		// index counter for RuleNode.idx
 
 	public boolean preGenerate() {
-		this.open();
 		Var penv = params[0];
 		assert(penv.sname == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 		if( body instanceof RuleBlock ) {
@@ -64,7 +63,6 @@ public final view RRuleBlock of RuleBlock extends RENode {
 	public StringBuffer		fields_buf;
 
 	public boolean preGenerate() {
-		this.open();
 		rnode.rnResolve();
 		fields_buf = new StringBuffer();
 		rnode.resolve1(null,null,false);

@@ -69,8 +69,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 
 	public InlineMethodStat(int pos, Method m, Method in) {
 		this.pos = pos;
-		method = m;
-		method.setInlinedByDispatcherMethod(true);
+		this.method = m;
 		assert(m.params.length == in.params.length);
 		params_redir = new ParamRedir[m.params.length];
 		for (int i=0; i < m.params.length; i++) {
@@ -246,6 +245,26 @@ public class IfElseStat extends ENode {
 		this.thenSt = thenSt;
 		this.elseSt = elseSt;
 	}
+	
+	public Type getType() {
+		if (thenSt == null || elseSt == null)
+			return StdTypes.tpVoid;
+		Type t1 = thenSt.getType();
+		Type t2 = elseSt.getType();
+		if (t1 ≡ StdTypes.tpVoid || t2 ≡ StdTypes.tpVoid)
+			return StdTypes.tpVoid;
+		if( t1.isReference() && t2.isReference() ) {
+			if( t1 ≡ t2 ) return t1;
+			if( t1 ≡ Type.tpNull ) return t2;
+			if( t2 ≡ Type.tpNull ) return t1;
+			return Type.leastCommonType(t1,t2);
+		}
+		if( t1.isNumber() && t2.isNumber() ) {
+			if( t1 ≡ t2 ) return t1;
+			return CoreType.upperCastNumbers(t1,t2);
+		}
+		return t1;
+	}
 }
 
 @node(name="CondSt")
@@ -304,11 +323,10 @@ public class BreakStat extends ENode {
 	@virtual typedef JView = JBreakStat;
 	@virtual typedef RView = RBreakStat;
 
-	@ref public Label		dest;
+	@ref(copyable=false) public Label		dest;
 
 	public boolean preVerify() {
 		if (dest != null && dest.ctx_root != this.ctx_root) {
-			this = this.open();
 			dest.delLink(this);
 			dest = null;
 		}
@@ -321,7 +339,6 @@ public class BreakStat extends ENode {
 
 	public boolean mainResolveIn() {
 		ASTNode p;
-		this = this.open();
 		if (dest != null) {
 			dest.delLink((BreakStat)this);
 			dest = null;
@@ -379,11 +396,10 @@ public class ContinueStat extends ENode {
 	@virtual typedef JView = JContinueStat;
 	@virtual typedef RView = RContinueStat;
 
-	@ref public Label		dest;
+	@ref(copyable=false) public Label		dest;
 
 	public boolean preVerify() {
 		if (dest != null && dest.ctx_root != this.ctx_root) {
-			this = this.open();
 			dest.delLink(this);
 			dest = null;
 		}
@@ -396,7 +412,6 @@ public class ContinueStat extends ENode {
 
 	public boolean mainResolveIn() {
 		ASTNode p;
-		this = this.open();
 		if (dest != null) {
 			dest.delLink((ContinueStat)this);
 			dest = null;
@@ -454,11 +469,10 @@ public class GotoStat extends ENode {
 	@virtual typedef JView = JGotoStat;
 	@virtual typedef RView = RGotoStat;
 
-	@ref public Label		dest;
+	@ref(copyable=false) public Label		dest;
 
 	public boolean preVerify() {
 		if (dest != null && dest.ctx_root != this.ctx_root) {
-			this = this.open();
 			dest.delLink(this);
 			dest = null;
 		}
@@ -470,7 +484,6 @@ public class GotoStat extends ENode {
 	}
 	
 	public boolean mainResolveIn() {
-		this = this.open();
 		if (dest != null) {
 			dest.delLink((GotoStat)this);
 			dest = null;

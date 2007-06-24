@@ -47,15 +47,15 @@ public abstract class DNode extends ASTNode implements ISymbol {
 		return (MetaAccess)this.getMeta("kiev\u001fstdlib\u001fmeta\u001faccess");
 	}
 
-	@getter final public DNode get$dnode() { return ANode.getVersion(this); }
+	@getter final public DNode get$dnode() { return this; }
 
-	@getter @att public String get$sname() {
+	@getter final public String get$sname() {
 		return this.sname;
 	}
-	@setter public void set$sname(String value) {
+	@setter final public void set$sname(String value) {
 		this.sname = (value == null) ? null : value.intern();
 	}
-	@getter @att public final String get$qname() {
+	@getter final public String get$qname() {
 		if (this instanceof GlobalDNode)
 			return ((GlobalDNode)this).qname();
 		return this.sname;
@@ -249,7 +249,6 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 	
 	public void callbackDetached() {
-		this = ANode.getVersion(this).open();
 		this.group = null;
 		super.callbackDetached();
 	}
@@ -372,10 +371,10 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		return false;
 	}
 	// resolved
-	@getter public final boolean isTypeDeclNotLoaded() {
+	public final boolean isTypeDeclNotLoaded() {
 		return this.meta.is_tdecl_not_loaded;
 	}
-	@setter public final void setTypeDeclNotLoaded(boolean on) {
+	public final void setTypeDeclNotLoaded(boolean on) {
 		if (this.meta.is_tdecl_not_loaded != on) {
 			this.meta.is_tdecl_not_loaded = on;
 		}
@@ -398,7 +397,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	}
 	public final void setLocal(boolean on) {
 		if (this.is_struct_local != on) {
-			assert(!locked);
 			this.is_struct_local = on;
 		}
 	}
@@ -408,7 +406,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	}
 	public final void setAnonymouse(boolean on) {
 		if (this.is_struct_anomymouse != on) {
-			assert(!locked);
 			this.is_struct_anomymouse = on;
 		}
 	}
@@ -425,7 +422,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		return this.is_struct_bytecode;
 	}
 	public final void setLoadedFromBytecode(boolean on) {
-		assert(!locked);
 		this.is_struct_bytecode = on;
 	}
 
@@ -439,7 +435,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	}
 	public final void setHasCases(boolean on) {
 		if (this.is_struct_has_pizza_cases != on) {
-			assert(!locked);
 			this.is_struct_has_pizza_cases = on;
 		}
 	}
@@ -451,7 +446,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public final void setTypeResolved(boolean on) {
 		assert (!this.is_struct_fe_passed);
 		if (this.is_struct_type_resolved != on) {
-			assert(!locked);
 			this.is_struct_type_resolved = on;
 		}
 	}
@@ -462,7 +456,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	public final void setArgsResolved(boolean on) {
 		assert (!this.is_struct_fe_passed);
 		if (this.is_struct_args_resolved != on) {
-			assert(!locked);
 			this.is_struct_args_resolved = on;
 		}
 	}
@@ -523,7 +516,6 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		TypeDecl cur = this.package_clazz.dnode;
 		if (cur == pkg)
 			return;
-		this.package_clazz.open();
 		if (cur != null) {
 			int idx = cur.sub_decls.indexOf(this);
 			if (idx >= 0)
@@ -538,27 +530,22 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 	}
 
 	public void callbackAttached() {
-		this = ANode.getVersion(this).open();
 		updatePackageClazz();
 		super.callbackAttached();
 	}
 	public void callbackDetached() {
-		this = ANode.getVersion(this).open();
 		if (package_clazz.dnode != null) {
 			int idx = package_clazz.dnode.sub_decls.indexOf(this);
 			if (idx >= 0)
 				package_clazz.dnode.sub_decls.del(idx);
-			package_clazz.open();
 			package_clazz.symbol = null;
 		}
 		super.callbackDetached();
 	}
 	public void callbackCopied() {
 		super.callbackCopied();
-		if (package_clazz.symbol != null) {
-			package_clazz.open();
+		if (package_clazz.symbol != null)
 			package_clazz.symbol = null;
-		}
 		super_meta_types = null;
 		direct_extenders.delAll();
 		type_decl_version = 1;
@@ -595,7 +582,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		this.sub_decls.delAll();
 		this.meta.metas.delAll();
 		this.meta.mflags = 0;
-		this.compileflags &= 1;
+		this.compileflags &= 3;
 	}
 
 	public Type getType() { return this.xtype == null ? Type.tpVoid : this.xtype; }

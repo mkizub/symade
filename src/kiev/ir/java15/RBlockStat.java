@@ -24,7 +24,6 @@ public final view RSynchronizedStat of SynchronizedStat extends RENode {
 
 	public void resolve(Type reqType) {
 		try {
-			this.open();
 			expr.resolve(null);
 			expr_var = new LVar(pos,"",Type.tpObject,Var.VAR_LOCAL,0);
 		} catch(Exception e ) { Kiev.reportError(this,e); }
@@ -43,7 +42,6 @@ public final view RWithStat of WithStat extends RENode {
 
 	public void resolve(Type reqType) {
 		try {
-			this.open();
 			expr.resolve(null);
 			ENode e = expr;
 			switch (e) {

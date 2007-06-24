@@ -506,7 +506,7 @@ public final class FileActions implements Runnable {
 			if (JFileChooser.APPROVE_OPTION != jfc.showOpenDialog(null))
 				return;
 			FileUnit fu = null;
-			Transaction tr = Transaction.open();
+			Transaction tr = Transaction.open("Actions.java:load-as");
 			try {
 				EditorThread thr = EditorThread;
 				fu = Env.loadFromXmlFile(jfc.getSelectedFile());
@@ -544,7 +544,7 @@ public final class FileActions implements Runnable {
 
 	private void runFrontEndCompiler(Editor editor, ANode root) {
 		System.out.println("Running frontend compiler...");
-		Transaction tr = Transaction.open();
+		Transaction tr = Transaction.open("Actions.java:runFrontEndCompiler()");
 		editor.changes.push(tr);
 		EditorThread thr = EditorThread;
 		try {
@@ -665,7 +665,7 @@ public final class EditActions implements Runnable {
 		}
 		else if (action == "cut" || action == "del") {
 			ANode node = editor.cur_elem.dr.drnode;
-			editor.changes.push(Transaction.open());
+			editor.changes.push(Transaction.open("Actions.java:cut"));
 			node.detach();
 			editor.changes.peek().close();
 			if (action == "cut") {
@@ -840,7 +840,7 @@ public final class RenderActions implements Runnable {
 		}
 		public void actionPerformed(ActionEvent e) {
 			FileUnit fu = null;
-			Transaction tr = Transaction.open();
+			Transaction tr = Transaction.open("Actions.java:LoadSyntaxAction()");
 			try {
 				EditorThread thr = EditorThread;
 				fu = Env.loadFromXmlFile(new File(this.file));

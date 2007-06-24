@@ -59,13 +59,13 @@ public class TypeExpr extends TypeRef {
 		this.pos = op.getPos();
 	}
 	
-	@getter @att public Operator get$op() {
+	@getter public Operator get$op() {
 		if (op_or_name instanceof Operator)
 			return (Operator)op_or_name;
 		return null;
 	}
 
-	@getter @att public String get$op_name() {
+	@getter public String get$op_name() {
 		if (op_or_name instanceof Operator)
 			return ((Operator)op_or_name).name;
 		return (String)op_or_name;
@@ -87,11 +87,18 @@ public class TypeExpr extends TypeRef {
 		return super.includeInDump(dump, attr, val);
 	}
 
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "arg" || attr.name == "op" || attr.name == "op_name") {
+			if (this.type_lnk != null)
+				this.type_lnk = null;
+		}
+		super.callbackChildChanged(attr);
+	}
+	
 	public Operator getOp() { return op; }
 	public void setOp(Operator op) {
 		if (!op.name.startsWith("T "))
 			throw new RuntimeException("Cannot set operator "+op+" in ENode "+getClass());
-		this = this.open();
 		this.type_lnk = null;
 		this.op = op;
 	}
@@ -101,7 +108,6 @@ public class TypeExpr extends TypeRef {
 	public Type getType() {
 		if (this.type_lnk != null)
 			return this.type_lnk;
-		this = this.open();
 		if (this.op == null) {
 			Operator op = Operator.getOperatorByName(this.op_name);
 			if (op == null)
@@ -136,9 +142,11 @@ public class TypeExpr extends TypeRef {
 		else
 			throw new CompilerException(this,"Typedef for type operator '"+op_name+"' not found");
 		t.checkResolved();
-		TVarBld set = new TVarBld(a, arg.getType());
+		Type arg_type = arg.getType();
+		TVarBld set = new TVarBld(a, arg_type);
 		Type tp = t.applay(set);
-		this.type_lnk = tp;
+		if (arg_type != StdTypes.tpVoid)
+			this.type_lnk = tp;
 		return tp;
 	}
 

@@ -48,12 +48,8 @@ public abstract class Var extends DNode implements GlobalDNode {
 	public static final int PARAM_LVAR_PROXY   = 13;
 	public static final int PARAM_TYPEINFO_N   = 128;
 
-	public int varflags;
-
 	@att
-	public @packed:8,varflags,0  int			kind;
-	public @packed:24,varflags,8 int			bcpos;
-
+	public int			kind;
 	@att
 	public TypeRef		vtype;
 	@att(ext_data=true)
@@ -67,6 +63,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	@ref(ext_data=true)
 	public ConstExpr	const_value;
 
+	public int bcpos;
 
 	@getter public Type get$type() { return this.vtype.getType(); }
 
@@ -75,10 +72,8 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return this.is_init_wrapper;
 	}
 	@setter public final void setInitWrapper(boolean on) {
-		if (this.is_init_wrapper != on) {
-			assert(!locked);
+		if (this.is_init_wrapper != on)
 			this.is_init_wrapper = on;
-		}
 	}
 	// need a proxy access 
 	@getter public final boolean isNeedProxy() {
@@ -98,20 +93,16 @@ public abstract class Var extends DNode implements GlobalDNode {
 		return this.is_fld_packer;
 	}
 	public final void setPackerField(boolean on) {
-		if (this.is_fld_packer != on) {
-			assert(!locked);
+		if (this.is_fld_packer != on)
 			this.is_fld_packer = on;
-		}
 	}
 	// packed field
 	public final boolean isPackedField() {
 		return this.is_fld_packed;
 	}
 	public final void setPackedField(boolean on) {
-		if (this.is_fld_packed != on) {
-			assert(!locked);
+		if (this.is_fld_packed != on)
 			this.is_fld_packed = on;
-		}
 	}
 	// field's initializer was already added to class initializer
 	public final boolean isAddedToInit() {
@@ -244,10 +235,8 @@ public abstract class Var extends DNode implements GlobalDNode {
 		if (this.init != null) {
 			if (isConstantExpr()) {
 				ConstExpr ce = ConstExpr.fromConst(getConstValue());
-				if (!ce.valueEquals(this.const_value)) {
-					this = this.open();
+				if (!ce.valueEquals(this.const_value))
 					this.const_value = ce;
-				}
 			}
 		} else {
 			if (this.const_value != null)
@@ -377,7 +366,6 @@ public class Field extends Var {
 		assert(isPrivate());
 		if (getter_from_inner != null)
 			return getter_from_inner;
-		this = this.open();
 		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), this.getType(), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		if (isStatic()) {
@@ -397,7 +385,6 @@ public class Field extends Var {
 		assert(isPrivate());
 		if (setter_from_inner != null)
 			return setter_from_inner;
-		this = this.open();
 		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), Type.tpVoid, ACC_STATIC | ACC_SYNTHETIC);
 		Var val = new LVar(pos,"value",this.getType(),Var.PARAM_NORMAL,0);
 		m.params += val;

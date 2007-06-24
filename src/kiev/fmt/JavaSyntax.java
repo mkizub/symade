@@ -89,10 +89,8 @@ public class SyntaxJavaComment extends SyntaxElem {
 			SyntaxJavaCommentTemplate@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
 				Kiev.reportError(template,"Unresolved java expression template "+template);
-			else if (template.symbol != d) {
-				template.open();
+			else if (template.symbol != d)
 				template.symbol = d;
-			}
 		}
 	}
 	
@@ -125,9 +123,7 @@ public class SyntaxJavaConstructorName extends SyntaxElem {
 public class KievTextSyntax extends ATextSyntax {
 	@virtual typedef This  = KievTextSyntax;
 
-	public KievTextSyntax() {
-		exprs = new Hashtable<Pair<Operator,Class>, SyntaxElem>();
-	}
+	public KievTextSyntax() {}
 
 	public SyntaxElem getSyntaxElem(ANode node) {
 		if (node != null) {
@@ -140,10 +136,10 @@ public class KievTextSyntax extends ATextSyntax {
 					Operator op = e.getOp();
 					if (op == null)
 						return se;
-					se = exprs.get(new Pair<Operator,Class>(op,node.getClass()));
+					se = allSyntaxExprs.get(new Pair<Operator,Class>(op,node.getClass()));
 					if (se == null) {
 						se = expr(op, (SyntaxExpr)sed.elem);
-						exprs.put(new Pair<Operator,Class>(op,node.getClass()), se);
+						allSyntaxExprs.put(new Pair<Operator,Class>(op,node.getClass()), se);
 					}
 					return se;
 				}

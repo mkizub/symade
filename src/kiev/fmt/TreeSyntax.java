@@ -33,10 +33,10 @@ public class TreeSyntax extends ATextSyntax {
 				Operator op = e.getOp();
 				if (op == null)
 					return se;
-				se = exprs.get(new Pair<Operator,Class>(op,node.getClass()));
+				se = allSyntaxExprs.get(new Pair<Operator,Class>(op,node.getClass()));
 				if (se == null) {
 					se = expr(op, (SyntaxExpr)sed.elem);
-					exprs.put(new Pair<Operator,Class>(op,node.getClass()), se);
+					allSyntaxExprs.put(new Pair<Operator,Class>(op,node.getClass()), se);
 				}
 			}
 			return se;

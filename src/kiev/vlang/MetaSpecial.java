@@ -64,7 +64,6 @@ public final class MetaUUID extends UserMeta {
 			if (value != null)
 				registeredNodes.remove(value);
 		}
-		this = this.open();
 		if (val != null)
 			val = val.intern();
 		value = val;
@@ -106,13 +105,11 @@ public final class MetaPacked extends UserMeta {
 	}
 
 	@setter public void set$size(int val) {
-		this = this.open();
 		size = val;
 		super.setI("size",val);
 	}
 	
 	@setter public void set$offset(int val) {
-		this = this.open();
 		offset = val;
 		super.setI("offset", val);
 	}
@@ -122,13 +119,10 @@ public final class MetaPacked extends UserMeta {
 			fld = val;
 		}
 		else if (val == null || val.name == null) {
-			this = this.open();
-			this.fld.open();
 			fld.name = null;
 			super.unset("in");
 		}
 		else {
-			this = this.open();
 			fld = val;
 			super.setS("in", fld.name);
 		}
@@ -151,7 +145,6 @@ public final class MetaPacker extends UserMeta {
 	}
 
 	@setter public void set$size(int val) {
-		this = this.open();
 		size = val;
 		super.setI("size",val);
 	}
@@ -173,7 +166,6 @@ public final class MetaThrows extends UserMeta {
 	}
 
 	public void add(TypeRef thr) {
-		this = this.open();
 		exceptions += thr;
 		if (values.length == 0)
 			values += new MetaValueArray(new SymbolRef("value"));
@@ -182,11 +174,11 @@ public final class MetaThrows extends UserMeta {
 		mva.values += thr;
 	}
 	
-	@getter @ref
+	@getter
 	public ASTNode[] get$exceptions() {
 		return getThrowns();
 	}
-	@setter @ref
+	@setter
 	public void set$exceptions(ASTNode[] val) {
 	}
 	public ASTNode[] getThrowns() {
@@ -277,7 +269,6 @@ public final class MetaAccess extends MetaFlag {
 	}
 	
 	public final void setSimple(String val) {
-		this = this.open();
 		this.simple = val;
 	}
 	@setter public final void set$simple(String val) {
@@ -288,7 +279,6 @@ public final class MetaAccess extends MetaFlag {
 	}
 
 	public final void setFlags(int val) {
-		this = this.open();
 		this.flags = val;
 	}
 	@setter public void set$flags(int val) {

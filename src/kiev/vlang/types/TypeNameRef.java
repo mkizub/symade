@@ -92,7 +92,7 @@ public final class TypeNameRef extends TypeRef {
 				Kiev.reportError(this,"Type "+tp+" has only "+a+" unbound type parameters");
 			tp = tp.meta_type.make(set);
 		}
-		getVersion(this).open().type_lnk = tp;
+		this.type_lnk = tp;
 		return tp;
 	}
 
@@ -141,7 +141,6 @@ public final class TypeNameRef extends TypeRef {
 				throw new CompilerException(this,"Unresolved identifier "+head+" in "+scope);
 			scope = td;
 		}
-		this = this.open();
 		this.symbol = scope;
 		return scope;
 	}

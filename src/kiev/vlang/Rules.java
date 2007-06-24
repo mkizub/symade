@@ -202,25 +202,30 @@ public abstract class ASTRuleNode extends ENode {
 
 	@virtual typedef This  ≤ ASTRuleNode;
 
-	@virtual @final
+	@virtual @final @abstract
 	@ref public:ro	boolean			more_check;
+	@UnVersioned
 	@ref public		ASTRuleNode		next_check;
-	@virtual @final
+	@virtual @final @abstract
 	@ref public:ro	boolean			more_back;
+	@UnVersioned
 	@ref public		ASTRuleNode		next_back;
 
+	@UnVersioned
 	@ref public		boolean			jump_to_back;
+	@UnVersioned
 	@ref public		int				depth;
+	@UnVersioned
 	@virtual
 	@ref public		int				base;
+	@UnVersioned
 	@virtual
 	@ref public		int				idx;
 
-	@ref @getter public final boolean get$more_check() { return this.next_check != null; }
-	@ref @getter public final boolean get$more_back() { return this.next_back != null; }
-	@ref @getter public int get$idx()  { return this.idx; }
-	@ref @getter public int get$base() { return this.base; }
-	@ref @getter public int get$idx()  { return this.idx; }
+	@getter public final boolean get$more_check() { return this.next_check != null; }
+	@getter public final boolean get$more_back() { return this.next_back != null; }
+	@getter public int get$idx()  { return this.idx; }
+	@getter public int get$base() { return this.base; }
 
 	public ASTRuleNode() {
 		depth = -1;
@@ -340,8 +345,8 @@ public final class RuleOrExpr extends ASTRuleNode {
 
 	@att public ASTRuleNode[]			rules;
 
-	@ref @getter public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
-	@ref @getter public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
+	@getter @ref public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
+	@getter @ref public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
 
 	public RuleOrExpr() {}
 
@@ -372,7 +377,6 @@ public final class RuleOrExpr extends ASTRuleNode {
     }
 
 	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
-		this = this.open();
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
@@ -407,8 +411,8 @@ public final class RuleAndExpr extends ASTRuleNode {
 
 	@att public ASTRuleNode[]			rules;
 
-	@ref @getter public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
-	@ref @getter public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
+	@getter @ref public int get$base() { return rules.length == 0 ? 0 : rules[0].get$base(); }
+	@getter @ref public int get$idx()  { return rules.length == 0 ? 0 : rules[0].get$idx(); }
 
 	public RuleAndExpr() {}
 
@@ -458,7 +462,6 @@ public final class RuleAndExpr extends ASTRuleNode {
     }
 
 	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
-		this = this.open();
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
@@ -523,7 +526,6 @@ public final class RuleIstheExpr extends ASTRuleNode {
     }
 
 	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
-		this = this.open();
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
@@ -614,7 +616,6 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
     }
 
 	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
-		this = this.open();
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
@@ -769,7 +770,6 @@ public final class RuleCutExpr extends ASTRuleNode {
 	public void rnResolve() {}
 
 	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
-		this = this.open();
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
@@ -841,7 +841,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 	public void rnResolve() {}
 
 	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
-		this = this.open();
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
@@ -977,7 +976,6 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 
 	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
-		this = this.open();
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
@@ -1053,7 +1051,6 @@ public final class RuleExpr extends RuleExprBase {
 	}
 
 	public void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back) {
-		this = this.open();
 		this.next_check = next_check;
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;

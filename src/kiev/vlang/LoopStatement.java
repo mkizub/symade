@@ -74,7 +74,6 @@ public final class Label extends DNode {
 	public boolean preVerify() {
 		ASTNode root = this.ctx_root;
 		foreach (ASTNode lnk; links; lnk.ctx_root != root) {
-			this = this.open();
 			links.detach(lnk);
 		}
 		return super.preVerify();
@@ -89,7 +88,6 @@ public final class Label extends DNode {
 	public void addLink(ASTNode lnk) {
 		foreach (ASTNode l; links; l == lnk)
 			return;
-		this = this.open();
 		links += lnk;
 	}
 

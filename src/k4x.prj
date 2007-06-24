@@ -955,6 +955,7 @@ INTERFACE kievvlangPreScanneable kiev/vlang/PreScanneable kiev/vlang/AST.java
 INTERFACE kievvlangScope kiev/vlang/Scope kiev/vlang/Resolving.java
 INTERFACE kievvlangScopeOfMethods kiev/vlang/ScopeOfMethods kiev/vlang/Resolving.java
 INTERFACE kievvlangScopeOfNames kiev/vlang/ScopeOfNames kiev/vlang/Resolving.java
+INTERFACE kievvlangUnVersioned kiev/vlang/UnVersioned kiev/vlang/Tree.java
 INTERFACE kievvlangatt kiev/vlang/att kiev/vlang/Tree.java
 INTERFACE kievvlangdflow kiev/vlang/dflow kiev/vlang/Tree.java
 INTERFACE kievvlangnode kiev/vlang/node kiev/vlang/Tree.java
@@ -982,6 +983,7 @@ METATYPE kievstdliblong kiev/stdlib/MetaTypes.java bad
 METATYPE kievstdlibnull kiev/stdlib/MetaTypes.java bad
 METATYPE kievstdlibshort kiev/stdlib/MetaTypes.java bad
 METATYPE kievstdlibvoid kiev/stdlib/MetaTypes.java bad
+METATYPE kievtransfTemplateVNode kiev/transf/TemplatVNode.xml bad
 METATYPE kievvlangGlobals kiev/vlang/Globals.java bad
 METATYPE kievvlangNodeSpace kiev/vlang/MetaTypes.java bad
 SYNTAX kievSyntax kiev/Syntax kiev/Syntax.java

@@ -62,7 +62,6 @@ public final view RCallExpr of CallExpr extends RENode {
 			ANode n = func.parent();
 			while !(n instanceof Method) n = n.parent();
 			assert (n.parent() instanceof TypeDecl);
-			this.open();
 			this.symbol = (Method)n;
 		}
 		setResolved(true);
@@ -92,7 +91,6 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 			assert(ctx_method instanceof Constructor && !ctx_method.isStatic());
 			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?
-			this.open();
 			if (mmm.getTypeInfoParam(Var.PARAM_TYPEINFO) != null)
 				tpinfo = new LVarExpr(pos,mmm.getTypeInfoParam(Var.PARAM_TYPEINFO));
 			else
@@ -128,7 +126,6 @@ public final view RCtorCallExpr of CtorCallExpr extends RENode {
 			ANode n = func.parent();
 			while !(n instanceof Constructor) n = n.parent();
 			assert (n.parent() instanceof TypeDecl);
-			this.open();
 			this.symbol = (Constructor)n;
 		}
 		setResolved(true);
@@ -151,7 +148,6 @@ public final view RClosureCallExpr of ClosureCallExpr extends RENode {
 		if !(extp instanceof CallType)
 			throw new CompilerException(expr,"Expression "+expr+" is not a closure");
 		CallType tp = (CallType)extp;
-		this.open();
 		if( reqType != null && reqType instanceof CallType )
 			is_a_call = Boolean.FALSE;
 		else if( (reqType == null || !(reqType instanceof CallType)) && tp.arity==args.length )

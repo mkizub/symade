@@ -103,7 +103,6 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 			Kiev.reportError(this,"Unresolved method "+Method.toString(name,mt)+" in "+scope);
 			return;
 		}
-		this.name.open();
 		this.name.symbol = (Method)v;
 	}
 
@@ -217,9 +216,9 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 
 	@virtual typedef This  = TypeOpDef;
 
+	@att public TypeDef			arg;
 	@att public ASTOperator		op;
 	@att public TypeRef			type;
-	@att public TypeDef			arg;
 
 	public TypeOpDef() { super(null); }
 	

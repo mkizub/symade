@@ -645,8 +645,7 @@ public final class Kiev {
 			public boolean pre_exec(ANode n) {
 				if (n instanceof ASTNode) {
 					ASTNode astn = (ASTNode)n;
-					astn.compileflags &= 0xFFFF0001;
-					astn.locked = true;
+					astn.compileflags = 3; // locked & versioned
 				}
 				return true;
 			}
@@ -761,7 +760,7 @@ public final class Kiev {
 		}
 		if (N < feProcessors.length)
 			return;
-		Transaction tr = Transaction.enter(Transaction.get());
+		Transaction tr = Transaction.enter(Transaction.get(),"Kiev.java:runProcessorsOn()");
 		try {
 			N = me_pass_no;
 			for (int i=0; i < N; i++) {

@@ -258,7 +258,7 @@ public abstract class Type extends AType {
 public final class XType extends Type {
 
 	@getter
-	public final TypeDecl get$tdecl() { return ANode.getVersion(meta_type.tdecl); }
+	public final TypeDecl get$tdecl() { return meta_type.tdecl; }
 
 	public XType(MetaType meta_type, TVarBld bindings) {
 		super(meta_type, 0, bindings);
@@ -573,7 +573,7 @@ public final class ArgType extends Type {
 
 public final class CompaundType extends Type {
 	@getter
-	public final TypeDecl get$tdecl() { return ANode.getVersion(meta_type.tdecl); }
+	public final TypeDecl get$tdecl() { return meta_type.tdecl; }
 
 	public CompaundType(CompaundMetaType meta_type, TVarBld bindings) {
 		super(meta_type, flReference, bindings);

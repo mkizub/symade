@@ -83,7 +83,7 @@ public class PizzaME_PreGenerate extends BackendProcessor {
 	public String getDescr() { "Pizza case pre-generation" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
+		tr = Transaction.enter(tr,"PizzaME_PreGenerate");
 		try {
 			doProcess(node);
 		} finally { tr.leave(); }
@@ -107,7 +107,6 @@ public class PizzaME_PreGenerate extends BackendProcessor {
 		foreach (Struct dn; clazz.members)
 			this.doProcess(dn);
 		if( clazz.isPizzaCase() ) {
-			clazz = clazz.open();
 			PizzaCase pcase = (PizzaCase)clazz;
 			Field ftag = clazz.addField(new Field(
 				nameCaseTag,Type.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
@@ -121,7 +120,6 @@ public class PizzaME_PreGenerate extends BackendProcessor {
 			clazz.addMethod(gettag);
 		}
 		else if( clazz.isHasCases() ) {
-			clazz = clazz.open();
 			// Add get$case$tag() method to itself
 			Method gettag = new MethodImpl(Constants.nameGetCaseTag,Type.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
 			gettag.body = new Block(gettag.pos);

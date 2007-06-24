@@ -46,7 +46,6 @@ public class CallExpr extends ENode {
 		return (Method)this.dnode;
 	}
 	@setter public void set$func(Method m) {
-		this = this.open();
 		this.symbol = m;
 	}
 
@@ -105,7 +104,9 @@ public class CallExpr extends ENode {
 				assert (func.isStatic() || func instanceof Constructor);
 				obj = new TypeRef(func.ctx_tdecl.xtype);
 			}
-			return;
+			if (func.ctx_root == this.ctx_root)
+				return;
+			this.ident = func.sname;
 		}
 		
 		// constructor call "this(args)" or "super(args)"
@@ -147,7 +148,6 @@ public class CallExpr extends ENode {
 			info.leaveSuper();
 			info.leaveForward(obj);
 			if( info.isEmpty() ) {
-				this = this.open();
 				this.symbol = m;
 				this.setSuperExpr(true);
 				return;
@@ -299,14 +299,13 @@ public class CallExpr extends ENode {
 			ENode e = res[si];
 			if (e != null) {
 				if (e instanceof UnresCallExpr && e.obj == this.obj) {
-					this = this.open();
 					this.symbol = e.func.symbol;
 					return;
 				}
 				e = e.closeBuild();
 				if (isPrimaryExpr())
 					e.setPrimaryExpr(true);
-				ANode.getVersion(this).replaceWithNodeReWalk(e);
+				this.replaceWithNodeReWalk(e);
 			}
 		}
 	}
@@ -380,7 +379,6 @@ public class CtorCallExpr extends ENode {
 		return (Method)this.dnode;
 	}
 	@setter public void set$func(Method m) {
-		this = this.open();
 		this.symbol = m;
 	}
 
@@ -412,7 +410,8 @@ public class CtorCallExpr extends ENode {
 	public void mainResolveOut() {
 		if (func != null) {
 			assert (func instanceof Constructor);
-			return;
+			if (func.ctx_root == this.ctx_root)
+				return;
 		}
 		
 		Constructor@ m;
@@ -428,7 +427,6 @@ public class CtorCallExpr extends ENode {
 			ResInfo info = new ResInfo(this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if (!PassInfo.resolveBestMethodR(tp,m,info,mt))
 				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
-			this = this.open();
 			this.symbol = (Constructor)m;
 			return;
 		}
@@ -438,7 +436,6 @@ public class CtorCallExpr extends ENode {
 			ResInfo info = new ResInfo(this,null,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if (!PassInfo.resolveBestMethodR(ctx_tdecl.super_types[0].getType(),m,info,mt))
 				throw new CompilerException(this,"Constructor "+Method.toString("<constructor>",args)+" unresolved");
-			this = this.open();
 			this.symbol = (Constructor)m;
 			return;
 		}

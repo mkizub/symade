@@ -29,7 +29,6 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 			if( val != null ) {
 				val.resolve(null);
 				if( val instanceof TypeRef ) {
-					this.open();
 					this.type = Type.getRealType(sw.sel.getType(),val.getType());
 					pizza_case = true;
 					TypeDecl cas = this.type.meta_type.tdecl;
@@ -37,7 +36,6 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 						if!(sw instanceof MatchStat)
 							throw new CompilerException(this,"Pizza case type in non-pizza switch");
 						PizzaCase pcase = (PizzaCase)cas;
-						this.open();
 						val = new ConstIntExpr(pcase.tag);
 						if( pattern.length > 0 ) {
 							PizzaCase pcase = (PizzaCase)cas;
@@ -51,7 +49,6 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 								Type tp = Type.getRealType(sw.sel.getType(),f.type);
 								if( !p.type.isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
 									throw new RuntimeException("Pattern variable "+p.sname+" has type "+p.type+" but type "+tp+" is expected");
-								p.open();
 								p.init = new IFldExpr(p.pos,
 										new CastExpr(p.pos,
 											Type.getRealType(sw.sel.getType(),cas.xtype),
@@ -65,7 +62,6 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 					} else {
 						if!(sw instanceof SwitchTypeStat)
 							throw new CompilerException(this,"Type case in non-type switch");
-						this.open();
 						if( val.getType() ≈ Type.tpObject ) {
 							val = null;
 							assert (sw.cases.indexOf(this) >= 0);
@@ -82,7 +78,6 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 						Type et = sw.sel.getType();
 						if( f.var.getType() ≢ et )
 							throw new CompilerException(this,"Case of type "+f.var.getType()+" do not match switch expression of type "+et);
-						this.open();
 						if (et.getStruct() != null && et.getStruct().isEnum())
 							val = new ConstIntExpr(((JavaEnum)et.getStruct()).getIndexOfEnumField((Field)f.var));
 						else
@@ -94,11 +89,9 @@ public static final view RCaseLabel of CaseLabel extends RENode {
 			} else {
 				if (sw.defCase != this) {
 					assert (sw.cases.indexOf(this) >= 0);
-					sw.open();
 					sw.defCase = (CaseLabel)this;
 				}
 				if ((sw instanceof SwitchTypeStat) && this.type ≉ Type.tpObject) {
-					this.open();
 					this.type = Type.tpObject;
 				}
 			}
@@ -139,7 +132,6 @@ public static view RSwitchStat of SwitchStat extends RBlock {
 				this.replaceWithNodeResolve(Type.tpVoid, bl);
 				return;
 			} else {
-				cas.open();
 				IfElseStat st = new IfElseStat(pos,
 						new BinaryBoolExpr(sel.pos,Operator.Equals,~sel,~cas.val),
 						bl,
@@ -181,7 +173,6 @@ public static final view RSwitchEnumStat of SwitchEnumStat extends RSwitchStat {
 		Type tp = sel.getType();
 		if (!tp.isReference() || !tp.getStruct().isEnum())
 			throw new CompilerException(this, "Enum switch selector must be the enum type");
-		this.open();
 		this.sel_to_int = new CallExpr(pos,
 				new NopExpr(),
 				Type.tpEnum.tdecl.resolveMethod("ordinal", Type.tpInt),
@@ -216,7 +207,6 @@ public static final view RSwitchTypeStat of SwitchTypeStat extends RSwitchStat {
 		Type tp = sel.getType();
 		if (!tp.isReference())
 			throw new CompilerException(this, "Type switch selector must be the reference type");
-		this.open();
 		Field typehash = new Field("fld$sel$"+Integer.toHexString(sel.hashCode()),
 			Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
 		ctx_tdecl.members.add(typehash);
@@ -278,12 +268,10 @@ public static final view RMatchStat of MatchStat extends RSwitchStat {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		this.open();
 		sel.resolve(Type.tpObject);
 		Type tp = sel.getType();
 		if (!tp.isReference() || !tp.meta_type.tdecl.isHasCases())
 			throw new CompilerException(this, "Pattern-match switch selector must be the type with cases");
-		this.open();
 		this.sel_to_int = new CallExpr(pos,
 				new NopExpr(),
 				tp.meta_type.tdecl.resolveMethod(nameGetCaseTag, Type.tpInt),

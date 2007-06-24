@@ -136,7 +136,6 @@ public final view RStruct of Struct extends RTypeDecl {
 			if (((TypeInfoExpr)f.init).type.getType() ≈ t)
 				return new SFldExpr(from.pos,f);
 		}
-		this.open();
 		TypeInfoExpr ti_expr = new TypeInfoExpr(pos, new TypeRef(t));
 		// check we can use a static field
 		TI_ATTR.set(from, ti_expr);
@@ -468,13 +467,15 @@ public final view RStruct of Struct extends RTypeDecl {
 			foreach (Constructor m; members; !m.isStatic()) {
 				init_found = true;
 				package_clazz.dnode.checkResolved();
-				if (!isInterface() && isTypeUnerasable())
+				if (!isInterface() && isTypeUnerasable() && m.getTypeInfoParam(Var.PARAM_TYPEINFO) == null)
 					m.params.insert(0,new LVar(m.pos,nameTypeInfo,typeinfo_clazz.xtype,Var.PARAM_TYPEINFO,ACC_FINAL|ACC_SYNTHETIC));
-				if (isStructInner() && !isStatic())
+				if (isStructInner() && !isStatic() && m.getOuterThisParam() == null)
 					m.params.insert(0,new LVar(m.pos,nameThisDollar,package_clazz.dnode.xtype,Var.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL|ACC_SYNTHETIC));
 				if (isEnum()) {
-					m.params.insert(0,new LVar(pos,"enum$name",Type.tpString,Var.PARAM_ENUM_NAME,ACC_SYNTHETIC));
-					m.params.insert(1,new LVar(pos,"enum$ordinal",Type.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
+					if (m.params.length < 1 || m.params[0].kind != Var.PARAM_ENUM_NAME)
+						m.params.insert(0,new LVar(pos,"enum$name",Type.tpString,Var.PARAM_ENUM_NAME,ACC_SYNTHETIC));
+					if (m.params.length < 2 || m.params[1].kind != Var.PARAM_ENUM_ORD)
+						m.params.insert(1,new LVar(pos,"enum$ordinal",Type.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
 				}
 			}
 			if( !init_found ) {
@@ -500,7 +501,7 @@ public final view RStruct of Struct extends RTypeDecl {
 						init.params.insert(1,new LVar(pos,"enum$ordinal",Type.tpInt,Var.PARAM_ENUM_ORD,ACC_SYNTHETIC));
 					}
 					if (isStructView()) {
-						KievView kview = (KievView)this;
+						KievView kview = (KievView)(Struct)this;
 						init.params.append(new LVar(pos,nameImpl,kview.view_of.getType(),Var.PARAM_NORMAL,ACC_FINAL|ACC_SYNTHETIC));
 					}
 				}
@@ -581,7 +582,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		}
 	}
 	
-	public:no,no,no,rw final void buildVTable(Vector<VTableEntry> vtable, List<Struct> processed) {
+	public final void buildVTable(Vector<VTableEntry> vtable, List<Struct> processed) {
 		if (processed.contains(this.getStruct()))
 			return;
 		processed = new List.Cons<Struct>(this.getStruct(), processed);
@@ -1224,10 +1225,8 @@ public final view RStruct of Struct extends RTypeDecl {
 				return;
 			if (f.isConstantExpr()) {
 				ConstExpr ce = ConstExpr.fromConst(f.getConstValue());
-				if (!ce.valueEquals(f.const_value)) {
-					f.open();
+				if (!ce.valueEquals(f.const_value))
 					f.const_value = ce;
-				}
 			}
 			if (f.init.isConstantExpr() && f.isStatic())
 				return;
@@ -1386,10 +1385,8 @@ public final view RStruct of Struct extends RTypeDecl {
 						int skip_args = 0;
 						if( isStructInner() && !isStatic() ) skip_args++;
 						if( this.isTypeUnerasable() && super_types[0].getStruct().isTypeUnerasable() ) skip_args++;
-						if( m.params.length > skip_args+1 ) {
-							for(int i=skip_args+1; i < m.params.length; i++) {
-								ctor_call.args.append( new LVarExpr(m.pos,m.params[i]));
-							}
+						for(int i=skip_args; i < m.params.length; i++) {
+							ctor_call.args.append( new LVarExpr(m.pos,m.params[i]));
 						}
 					}
 					else if (isEnum()) {

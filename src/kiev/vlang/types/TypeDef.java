@@ -26,8 +26,6 @@ public abstract class TypeDef extends TypeDecl {
 
 	@virtual typedef This  ≤ TypeDef;
 
-	public ArgMetaType ameta_type;
-	
 	@getter public TypeDecl get$child_ctx_tdecl() { return this.parent().get$child_ctx_tdecl(); }
 
 	public abstract TypeRef[] getLowerBounds();
@@ -48,12 +46,12 @@ public abstract class TypeDef extends TypeDecl {
 		return getAType();
 	}
 	public ArgType getAType() {
-		if (this.ameta_type != null)
-			return this.ameta_type.atype;
+		if (this.xtype != null)
+			return (ArgType)this.xtype;
 		if (this.meta != null)
 			this.meta.verify();
-		this.ameta_type = new ArgMetaType(this);
-		return this.ameta_type.atype;
+		this.xmeta_type = new ArgMetaType(this);
+		return (ArgType)this.xtype;
 	}
 
 	public abstract Struct getStruct();
@@ -73,13 +71,13 @@ public final class TypeAssign extends TypeDef {
 	@abstract @virtual
 	@ref public TypeRef type_ref;
 	
-	@getter @ref public TypeRef get$type_ref() {
+	@getter public final TypeRef get$type_ref() {
 		if (super_types.length == 0)
 			return null;
-		return ANode.getVersion(super_types[0]);
+		return super_types[0];
 	}
 	
-	@setter public void set$type_ref(TypeRef tr) {
+	@setter public final void set$type_ref(TypeRef tr) {
 		if (super_types.length == 0)
 			super_types.add(tr);
 		else

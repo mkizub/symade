@@ -31,7 +31,7 @@ public class MetaType implements Constants {
 			if (td != null)
 				descr = td;
 		}
-		return ANode.getVersion((TypeDecl)this.descr);
+		return (TypeDecl)this.descr;
 	}
 	
 	public String qname() {
@@ -252,6 +252,8 @@ public final class ASTNodeMetaType extends MetaType {
 		allNodes.put("CBool",				ConstBoolExpr.class);
 		allNodes.put("CInt",				ConstIntExpr.class);
 		allNodes.put("CString",				ConstStringExpr.class);
+		allNodes.put("EThis",				ThisExpr.class);
+		allNodes.put("ESuper",				SuperExpr.class);
 		allNodes.put("ASTRuleNode",			ASTRuleNode.class);
 		allNodes.put("RuleIstheExpr",		RuleIstheExpr.class);
 		allNodes.put("RuleIsoneofExpr",		RuleIsoneofExpr.class);

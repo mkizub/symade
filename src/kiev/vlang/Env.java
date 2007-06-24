@@ -88,7 +88,7 @@ public class Env extends KievPackage {
 
 	@att public DirUnit								rdir;
 	
-	public static Env getRoot() { return ANode.getVersion(root); }
+	public static Env getRoot() { return root; }
 	
 	/** Private class constructor -
 		really there may be no instances of this class
@@ -161,15 +161,13 @@ public class Env extends KievPackage {
 				cl.cleanupOnReload();
 				cl.meta.mflags = acces;
 				cl.package_clazz.symbol = outer;
-				outer = outer.open();
 				outer.sub_decls += cl;
 			}
-			outer = outer.open();
 			outer.addSubStruct((Struct)cl);
 			return cl;
 		}
 		cl.initStruct(sname,outer,acces);
-		ANode.getVersion(outer).addSubStruct(cl);
+		outer.addSubStruct(cl);
 		return cl;
 	}
 
@@ -193,7 +191,7 @@ public class Env extends KievPackage {
 		}
 		if (cl == null) {
 			cl = newStruct(sname,outer,0,new KievPackage());
-			ANode.getVersion(outer).members += cl;
+			outer.members += cl;
 			cl.setTypeDeclNotLoaded(false);
 		}
 		return cl;
@@ -208,7 +206,6 @@ public class Env extends KievPackage {
 			tdecl = pmt;
 			break;
 		}
-		pkg = pkg.open();
 		if (tdecl == null) {
 			tdecl = new MetaTypeDecl();
 			tdecl.pos = id.pos;
@@ -623,7 +620,6 @@ public class Env extends KievPackage {
 				}
 				else if (cl_name.equals("kiev.vlang.FileUnit")) {
 					FileUnit fu = FileUnit.makeFile(getRelativePath(file));
-					fu = fu.open();
 					root = fu;
 					fu.current_syntax = "stx-fmt\u001fsyntax-dump-full";
 					nodes.push(root);

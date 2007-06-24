@@ -46,8 +46,6 @@ public interface INode {
 	public void walkTree(TreeWalker walker);
 	public This ncopy();
 	public This detach() alias fy operator ~ ;
-	public This open();
-	public void rollback(boolean save_next);
 	public <N extends ANode> N replaceWithNode(N node);
 	public void initForEditor();
 }
@@ -65,43 +63,98 @@ public abstract class ANode implements INode {
 	public:ro @virtual @abstract TypeDecl		ctx_tdecl;
 	public:ro @virtual @abstract Method		ctx_method;
 
-	private VersionInfo<This>		version_info;
-	private AttrSlot				p_slot;
-	private ANode					p_parent;
-	private DataAttachInfo[]		ext_data;
+	AttrSlot				p_slot;
+	ANode					p_parent;
+	DataAttachInfo[]		ext_data;
 
+	public static class VVV implements Cloneable {
+		public static final int IS_LOCKED    = 1;
+		public static final int FOR_COMPILER = 2;
+		public static final int FOR_EDITOR   = 4;
+		int						vvv_flags;
+		ASTNode.VVV				vvv_prev;
+		ASTNode.VVV				vvv_next;
+		AttrSlot				p_slot;
+		ANode					p_parent;
+		DataAttachInfo[]		ext_data;
+		
+		public VVV(ANode node) {
+			this.p_slot = node.p_slot;
+			this.p_parent = node.p_parent;
+			this.ext_data = node.ext_data;
+		}
+		public Object clone() { super.clone() }
+	}
+	
+	@getter @ref final AttrSlot get$p_slot() {
+		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
+			return this.p_slot;
+		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
+			return ((ASTNode)this).v_editor.p_slot;
+		return this.p_slot;
+	}
+	
+	@setter @ref final void set$p_slot(AttrSlot value) {
+		if (Kiev.run_batch || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
+			this.p_slot = value;
+		else if (Thread.currentThread() == CompilerThread)
+			ASTNode.openCmp((ASTNode)this).p_slot = value;
+		else
+			ASTNode.openEdt((ASTNode)this).p_slot = value;
+	}
+	
+	@getter @ref final ANode get$p_parent() {
+		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
+			return this.p_parent;
+		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
+			return ((ASTNode)this).v_editor.p_parent;
+		return this.p_parent;
+	}
+	
+	@setter @ref final void set$p_parent(ANode value) {
+		if (Kiev.run_batch || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
+			this.p_parent = value;
+		else if (Thread.currentThread() == CompilerThread)
+			ASTNode.openCmp((ASTNode)this).p_parent = value;
+		else
+			ASTNode.openEdt((ASTNode)this).p_parent = value;
+	}
+	
+	@getter @ref final DataAttachInfo[] get$ext_data() {
+		if (Kiev.run_batch || Thread.currentThread() == CompilerThread)
+			return this.ext_data;
+		if (this instanceof ASTNode && ((ASTNode)this).v_editor != null)
+			return ((ASTNode)this).v_editor.ext_data;
+		return this.ext_data;
+	}
+	
+	@setter @ref final void set$ext_data(DataAttachInfo[] value) {
+		if (Kiev.run_batch || !(this instanceof ASTNode) || !((ASTNode)this).versioned)
+			this.ext_data = value;
+		else if (Thread.currentThread() == CompilerThread)
+			ASTNode.openCmp((ASTNode)this).ext_data = value;
+		else
+			ASTNode.openEdt((ASTNode)this).ext_data = value;
+	}
+	
 	public final boolean    isAttached()    { return parent() != null; }
 
 	public static <V extends ANode> V getVersion(V[] arr, int idx) {
-		return ANode.getVersion(arr[idx]);
+		return arr[idx];
 	}
 
 	public static <I extends INode> I getVersion(I node) {
-		if (Kiev.run_batch)
-			return node;
-		if (node == null || ((ANode)node).version_info == null)
-			return node;
-		if (Thread.currentThread() == CompilerThread)
-			return (I) ((ANode)node).version_info.cur_info.node;
-		return (I) ((ANode)node).version_info.cur_info.editor_node;
+		return node;
 	}
 
 	public static <V extends ANode> V getVersion(V node) {
-		if (Kiev.run_batch)
-			return node;
-		if (node == null || node.version_info == null)
-			return node;
-		if (Thread.currentThread() == CompilerThread)
-			return node.version_info.cur_info.node;
-		return node.version_info.cur_info.editor_node;
+		return node;
 	}
 
 	public final void callbackAttached(ANode parent, AttrSlot slot) {
 		assert (slot.is_attr);
 		assert(!isAttached());
 		assert(parent != null && parent != this);
-		assert(getVersion(parent) == parent);
-		this = this.open();
 		this.p_slot = slot;
 		this.p_parent = parent;
 		this.callbackAttached();
@@ -111,9 +164,7 @@ public abstract class ANode implements INode {
 		parent().callbackChildChanged(this.p_slot);
 	}
 	public void callbackDetached() {
-		this = ANode.getVersion(this);
 		assert(isAttached());
-		this = this.open();
 		// do detcah
 		AttrSlot slot = this.p_slot;
 		this.p_slot = null;
@@ -132,37 +183,35 @@ public abstract class ANode implements INode {
 	}
 	public void callbackChildChanged(AttrSlot attr) { /* do nothing */ }
 
-	public final ANode parent() { return getVersion(this.p_parent); }
+	public final ANode parent() { return this.p_parent; }
 	public final AttrSlot pslot() { return this.p_slot; }
 
 	public static ANode getPrevNode(ANode node) {
-		node = getVersion(node);
 		AttrSlot slot = node.p_slot;
 		if (slot == null || !slot.is_space)
 			return null;
 		ANode[] arr = slot.get(node.parent());
 		for (int i=arr.length-1; i >= 0; i--) {
-			ANode n = getVersion(arr[i]);
+			ANode n = arr[i];
 			if (n == node) {
 				if (i == 0)
 					return null;
-				return getVersion(arr[i-1]);
+				return arr[i-1];
 			}
 		}
 		return null;
 	}
 	public static ANode getNextNode(ANode node) {
-		node = getVersion(node);
 		AttrSlot slot = node.p_slot;
 		if (slot == null || !slot.is_space)
 			return null;
 		ANode[] arr = slot.get(node.parent());
 		for (int i=arr.length-1; i >= 0; i--) {
-			ANode n = getVersion(arr[i]);
+			ANode n = arr[i];
 			if (n == node) {
 				if (i >= arr.length-1)
 					return null;
-				return getVersion(arr[i+1]);
+				return arr[i+1];
 			}
 		}
 		return null;
@@ -223,12 +272,8 @@ public abstract class ANode implements INode {
 		foreach (AttrSlot a; this.values(); a.name == name)
 			return a.get(this);
 		if (ext_data != null) {
-			foreach (DataAttachInfo ai; ext_data; ai.p_slot.name == name) {
-				Object obj = ai.p_data;
-				if (obj instanceof ANode)
-					return ANode.getVersion((ANode)obj);
-				return obj;
-			}
+			foreach (DataAttachInfo ai; ext_data; ai.p_slot.name == name)
+				return ai.p_data;
 		}
 		throw new RuntimeException("No @att value \"" + name + "\" in "+getClass().getName());
 	}
@@ -238,12 +283,8 @@ public abstract class ANode implements INode {
 
 	public final Object getExtData(AttrSlot attr) {
 		if (ext_data != null) {
-			foreach (DataAttachInfo ai; ext_data; ai.p_slot.name == attr.name) {
-				Object obj = ai.p_data;
-				if (obj instanceof ANode)
-					return ANode.getVersion((ANode)obj);
-				return obj;
-			}
+			foreach (DataAttachInfo ai; ext_data; ai.p_slot.name == attr.name)
+				return ai.p_data;
 		}
 		return null;
 	}
@@ -258,7 +299,6 @@ public abstract class ANode implements INode {
 					assert(ai.p_slot == attr);
 					if (ai.p_data == d)
 						return;
-					this = this.open();
 					ext_data = (DataAttachInfo[])data.clone();
 					ext_data[i] = new DataAttachInfo(d,attr);
 					if (attr.is_attr) {
@@ -270,7 +310,6 @@ public abstract class ANode implements INode {
 					return;
 				}
 			}
-			this = this.open();
 			DataAttachInfo[] tmp = new DataAttachInfo[sz+1];
 			for (int i=0; i < sz; i++)
 				tmp[i] = data[i];
@@ -279,7 +318,6 @@ public abstract class ANode implements INode {
 			if (attr.is_attr && d instanceof ANode)
 				d.callbackAttached(this, attr);
 		} else {
-			this = this.open();
 			ext_data = new DataAttachInfo[]{new DataAttachInfo(d,attr)};
 			if (attr.is_attr && d instanceof ANode)
 				d.callbackAttached(this, attr);
@@ -294,7 +332,6 @@ public abstract class ANode implements INode {
 				DataAttachInfo ai = data[idx];
 				if (ai.p_slot.name == attr.name) {
 					assert(ai.p_slot == attr);
-					this = this.open();
 					if (sz == 0) {
 						this.ext_data = null;
 					} else {
@@ -314,7 +351,7 @@ public abstract class ANode implements INode {
 
 	public final void walkTree(TreeWalker walker) {
 		if (walker.pre_exec(this)) {
-			foreach (AttrSlot attr; this.values(); attr.is_attr) {
+			foreach (AttrSlot attr; this.values(); attr.is_child) {
 				Object val = attr.get(this);
 				if (val == null)
 					continue;
@@ -322,10 +359,9 @@ public abstract class ANode implements INode {
 					ANode[] vals = (ANode[])val;
 					for (int i=0; i < vals.length; i++) {
 						try {
-							getVersion(vals[i]).walkTree(walker);
+							vals[i].walkTree(walker);
 						} catch (ReWalkNodeException e) {
 							i--;
-							this = ANode.getVersion(this);
 							val = attr.get(this);
 							vals = (ANode[])val;
 						}
@@ -336,7 +372,6 @@ public abstract class ANode implements INode {
 					try {
 						val.walkTree(walker);
 					} catch (ReWalkNodeException e) {
-						this = ANode.getVersion(this);
 						val = attr.get(this);
 						if (val != null)
 							goto re_walk_node;
@@ -350,6 +385,19 @@ public abstract class ANode implements INode {
 		}
 		walker.post_exec(this);
 	}
+
+	public void setFrom(Object from) {
+		throw new Error(); // redundant code, method shell be removed
+	}
+	public ASTNode.VVV nodeBackup() {
+		throw new Error();
+	}
+	public void nodeRestore(ASTNode.VVV from) {
+		this.p_slot = from.p_slot;
+		this.p_parent = from.p_parent;
+		this.ext_data = from.ext_data;
+	}
+	
 
 	public final This ncopy() {
 		This t = (This)this.copy();
@@ -383,9 +431,7 @@ public abstract class ANode implements INode {
 	{
 		if (!isAttached())
 			return this;
-		this = this.open();
 		ANode parent = parent();
-		parent = parent.open();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot)
 			pslot.detach(parent, this);
@@ -407,110 +453,9 @@ public abstract class ANode implements INode {
 		throw new RuntimeException("No @att/@ref space '"+name+"' in "+getClass());
 	}
 
-	public void setFrom(Object from$node) {
-		ANode node = (ANode)from$node;
-		this.p_slot = node.p_slot;
-		this.p_parent = node.p_parent;
-		this.ext_data = node.ext_data;
-	}
-	
-	public final This open() {
-		if (Kiev.run_batch)
-			return this;
-		if!(this instanceof ASTNode)
-			return this;
-		if (!((ASTNode)this).locked)
-			return this;
-		return (This)open2((ASTNode)this);
-	}
-
-	private static <T extends ASTNode> T open2(T self) { 
-		if (Thread.currentThread() == CompilerThread)
-			self = openCmp(self);
-		else
-			self = openEdt(self);
-		Transaction tr = Transaction.current();
-		self.locked = false;
-		tr.add(self);
-		return self;
-	}
-	private static <T extends ASTNode> T openCmp(T self) {
-		CurrentVersionInfo<T> cvi = (CurrentVersionInfo<T>)self.version_info;
-		if (cvi == null)
-			self.version_info = cvi = new CurrentVersionInfo<T>(self);
-		ASTNode node = (ASTNode)self.clone();
-		node.version_info = new VersionInfo<T>(cvi,cvi.prev_node,node);
-		cvi.prev_node = node;
-		if (cvi.editor_node == self)
-			cvi.editor_node = node;
-		else if (cvi.editor_node.version_info.prev_node == self)
-			cvi.editor_node.version_info.prev_node = node;
-		return self;
-	}
-	private static <T extends ASTNode> T openEdt(T self) {
-		if (self.version_info == null)
-			self.version_info = new CurrentVersionInfo<T>(self);
-		VersionInfo<T> vi = self.version_info;
-		CurrentVersionInfo<T> cvi = vi.cur_info;
-		assert (cvi.editor_node == self);
-		T node = (T)self.clone();
-		node.version_info = new VersionInfo<T>(cvi,self,node);
-		cvi.editor_node = node;
-		return node;
-	}
-
-	public final void rollback(boolean save_next) {
-		if (this.version_info == null)
-			return;
-		if (Thread.currentThread() == CompilerThread) {
-			assert (this.version_info instanceof CurrentVersionInfo);
-			CurrentVersionInfo<This> cvi = (CurrentVersionInfo<This>)this.version_info;
-			ANode p = cvi.prev_node;
-			if (p == null)
-				return;
-			assert (((ASTNode)p).locked);
-			this.setFrom(p);
-			assert (this.version_info instanceof CurrentVersionInfo<This>);
-			cvi.prev_node = p.version_info.prev_node;
-		} else {
-			assert (this.version_info.cur_info.editor_node == this);
-			assert (this.version_info.prev_node != null);
-			this.version_info.cur_info.editor_node = this.version_info.prev_node;
-		}
-	}
-
-	public void mergeTree() {
-		// notify nodes about new root
-		this.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { n.merge(); return true; }
-		});
-	}
-
-	void merge() {
-		if (this.version_info == null)
-			return;
-		CurrentVersionInfo<This> cvi = this.version_info.cur_info;
-		This edt = cvi.editor_node;
-		VersionInfo<This> evi = edt.version_info;
-		if (cvi != evi) {
-			for (VersionInfo<This> vi=evi;;vi=vi.prev_node.version_info) {
-				if (vi == cvi) {
-					openCmp((ASTNode)cvi.node);
-					break;
-				}
-				if (vi.prev_node == null)
-					break;
-			}
-			cvi.node.setFrom(edt);
-		} else {
-			assert (cvi.editor_node == cvi.node);
-		}
-	}
-
 	public final <N extends ANode> N replaceWithNode(N node) {
 		assert(isAttached());
 		ANode parent = parent();
-		parent = parent.open();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot) {
 			assert(node != null);
@@ -544,7 +489,7 @@ public abstract class ANode implements INode {
 			if (attr.is_space) {
 				ANode[] vals = (ANode[])val;
 				for (int i=0; i < vals.length; i++) {
-					ANode n = getVersion(vals[i]).doRewrite(ctx);
+					ANode n = vals[i].doRewrite(ctx);
 					if (n instanceof BlockRewr) {
 						foreach (ASTNode st; n.stats) {
 							n = (ANode)ctx.fixup(attr,st);
@@ -559,13 +504,13 @@ public abstract class ANode implements INode {
 				}
 			}
 			else if (attr.name == "meta" && val instanceof MetaSet) {
-				MetaSet ms = (MetaSet)ctx.fixup(attr,getVersion((ANode)val).doRewrite(ctx));
+				MetaSet ms = (MetaSet)ctx.fixup(attr,val.doRewrite(ctx));
 				MetaSet rs = (MetaSet)attr.get(rn);
 				foreach (MNode mn; ms.metas.delToArray())
 					rs.setMeta(mn);
 			}
 			else if (val instanceof ANode) {
-				ANode rw = getVersion((ANode)val).doRewrite(ctx);
+				ANode rw = val.doRewrite(ctx);
 				while (rw instanceof BlockRewr && rw.stats.length == 1)
 					rw = rw.stats[0];
 				attr.set(rn,ctx.fixup(attr,rw));
@@ -576,7 +521,7 @@ public abstract class ANode implements INode {
 		if (this.ext_data != null) {
 			foreach (DataAttachInfo ai; this.ext_data; ai.p_slot.is_attr && ai.p_slot.is_external) {
 				if (ai.p_data instanceof ANode) {
-					Object o = ctx.fixup(ai.p_slot,getVersion((ANode)ai.p_data).doRewrite(ctx));
+					Object o = ctx.fixup(ai.p_slot,((ANode)ai.p_data).doRewrite(ctx));
 					if (o != null)
 						this.setExtData(o,ai.p_slot);
 				} else
@@ -609,26 +554,28 @@ final class DataAttachInfo {
 	}
 }
 
-class VersionInfo<N extends ANode> {
-	final CurrentVersionInfo		cur_info;
-	      N							prev_node;
-	      N							node;
-	VersionInfo(CurrentVersionInfo<N> cur_info, N prev_node, N node) {
+class VersionInfo {
+	final CurrentVersionInfo	cur_info;
+	final ANode					node;
+	      ANode					prev_node;
+	VersionInfo(CurrentVersionInfo cur_info, ANode prev_node, ANode node) {
 		this.cur_info = cur_info;
 		this.prev_node = prev_node;
 		this.node = node;
 	}
-	VersionInfo(N node) {
-		this.cur_info = (CurrentVersionInfo<N>)this;
+	VersionInfo(ANode node) {
+		this.cur_info = (CurrentVersionInfo)this;
 		this.prev_node = null;
 		this.node = node;
 	}
 }
 
-class CurrentVersionInfo<N extends ANode> extends VersionInfo<N> {
-	N editor_node;
-	CurrentVersionInfo(N node) {
+class CurrentVersionInfo extends VersionInfo {
+	ANode compiler_node;
+	ANode editor_node;
+	CurrentVersionInfo(ANode node) {
 		super(node);
+		compiler_node = node;
 		editor_node = node;
 	}
 }
@@ -658,16 +605,53 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	private static final AttrSlot[] $values = {/*nodeattr$this,*/nodeattr$parent};
 
+	@UnVersioned
+	public VVV						v_editor;
+	@UnVersioned
+	public int						transaction_id;
+	@UnVersioned
 	public int						pos;
-	public int						compileflags;
+	@UnVersioned
+	public int						compileflags;	// temporal flags for compilation process
+	
+	public int						nodeflags;		// presistent flags of the node
 	@ref @abstract
 	public:ro ANode					parent;
 	
-	@getter @ref public final ANode get$this()   { return this; }
-	@getter @ref public final ANode get$parent() { return parent(); }
+	public static class VVV extends ANode.VVV {
+		int						transaction_id;
+		int						compileflags;
+		int						nodeflags;
+
+		public VVV(ASTNode node) {
+			super(node);
+			this.compileflags = node.compileflags;
+			this.nodeflags = node.nodeflags;
+		}
+	}
+	
+	@setter public final void set$nodeflags(int value) {
+		if (Kiev.run_batch || !this.versioned)
+			this.nodeflags = value;
+		else if (Thread.currentThread() == CompilerThread)
+			ASTNode.openCmp(this).nodeflags = value;
+		else
+			ASTNode.openEdt(this).nodeflags = value;
+	}
+	
+	@getter public final int get$nodeflags() {
+		if (Kiev.run_batch || Thread.currentThread() == CompilerThread || this.v_editor == null)
+			return this.nodeflags;
+		return this.v_editor.nodeflags;
+	}
+	
+	@setter public final void set$pos(int value) { this.pos = value; }
+	@getter public final int get$pos() { return this.pos; }
+	
+	@getter public final ANode get$parent() { return parent(); }
 
 	// SymbolRef/ENode/ISymRef
-	public @packed:1,compileflags,24  boolean is_qualified; // qualified or simple name, names are separated by ASCII US (Unit Separator, 037, 0x1F)
+	public @packed:1,nodeflags,24  boolean is_qualified; // qualified or simple name, names are separated by ASCII US (Unit Separator, 037, 0x1F)
 	
 	// Structures	
 	public @packed:1,compileflags,8  boolean is_struct_type_resolved; // KievFE_Pass2
@@ -675,21 +659,21 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public @packed:1,compileflags,10 boolean is_struct_members_generated; // KievFE_Pass2
 	public @packed:1,compileflags,11 boolean is_struct_pre_generated; // KievME_PreGenartion
 
-	public @packed:1,compileflags,17 boolean is_struct_fe_passed;
-	public @packed:1,compileflags,18 boolean is_struct_local;
-	public @packed:1,compileflags,19 boolean is_struct_anomymouse;
-	public @packed:1,compileflags,20 boolean is_struct_has_pizza_cases;
-	public @packed:1,compileflags,21 boolean is_struct_bytecode;	// struct was loaded from bytecode
-	public @packed:1,compileflags,22 boolean is_struct_compiler_node;
+	public @packed:1,nodeflags,17 boolean is_struct_fe_passed;
+	public @packed:1,nodeflags,18 boolean is_struct_local;
+	public @packed:1,nodeflags,19 boolean is_struct_anomymouse;
+	public @packed:1,nodeflags,20 boolean is_struct_has_pizza_cases;
+	public @packed:1,nodeflags,21 boolean is_struct_bytecode;	// struct was loaded from bytecode
+	public @packed:1,nodeflags,22 boolean is_struct_compiler_node;
 	
 	// Expression/statement flags
 	public @packed:1,compileflags,8  boolean is_expr_gen_void;
 	public @packed:1,compileflags,9  boolean is_expr_for_wrapper;
 	public @packed:1,compileflags,10 boolean is_expr_cast_call;
 
-	public @packed:1,compileflags,17 boolean is_expr_as_field;
-	public @packed:1,compileflags,18 boolean is_expr_primary;
-	public @packed:1,compileflags,19 boolean is_expr_super;
+	public @packed:1,nodeflags,17 boolean is_expr_as_field;
+	public @packed:1,nodeflags,18 boolean is_expr_primary;
+	public @packed:1,nodeflags,19 boolean is_expr_super;
 
 	// Statement flags
 	public @packed:1,compileflags,11 boolean is_stat_abrupted;
@@ -698,17 +682,15 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public @packed:1,compileflags,14 boolean is_stat_auto_returnable;
 	public @packed:1,compileflags,15 boolean is_direct_flow_reachable; // reachable by direct control flow (with no jumps)
 
-	public @packed:1,compileflags,20 boolean is_stat_break_target;
-	public @packed:1,compileflags,21 boolean is_rewrite_target;
+	public @packed:1,nodeflags,20 boolean is_stat_break_target;
 
 	// Method flags
 	public @packed:1,compileflags,8  boolean is_mth_need_fields_init;
 	public @packed:1,compileflags,9  boolean is_mth_dispatcher;
-	public @packed:1,compileflags,10 boolean is_mth_inlined_by_dispatcher;
 
-	public @packed:1,compileflags,17 boolean is_mth_virtual_static;
-	public @packed:1,compileflags,18 boolean is_mth_operator;
-	public @packed:1,compileflags,19 boolean is_mth_invariant;
+	public @packed:1,nodeflags,17 boolean is_mth_virtual_static;
+	public @packed:1,nodeflags,18 boolean is_mth_operator;
+	public @packed:1,nodeflags,19 boolean is_mth_invariant;
 	
 	// Var/field
 	public @packed:1,compileflags,8  boolean is_need_proxy;
@@ -716,33 +698,38 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public @packed:1,compileflags,10 boolean is_fld_added_to_init;
 
 	// Field specific
-	public @packed:1,compileflags,17 boolean is_fld_packer;
-	public @packed:1,compileflags,18 boolean is_fld_packed;
+	public @packed:1,nodeflags,17 boolean is_fld_packer;
+	public @packed:1,nodeflags,18 boolean is_fld_packed;
 
 	// General flags
-	public @packed:1,compileflags,4 boolean is_rewrite_target;
+	public @packed:1,nodeflags,4 boolean is_rewrite_target;
 	public @packed:1,compileflags,3 boolean is_resolved;
 	public @packed:1,compileflags,2 boolean is_bad;
+	public @packed:1,compileflags,1 boolean versioned;
 	public @packed:1,compileflags,0 boolean locked;
 
-	public @packed:1,compileflags,16 boolean is_auto_generated;
+	public @packed:1,nodeflags,16 boolean is_auto_generated;
 
 	public AttrSlot[] values() {
 		return ASTNode.$values;
 	}
 
-	public Object copyTo(Object to$node) {
-		ASTNode node = (ASTNode)super.copyTo(to$node);
-		node.pos			= this.pos;
-		node.compileflags	= this.compileflags & 0xFFFF0000;
-		return node;
+	public ASTNode.VVV nodeBackup() {
+		return new ASTNode.VVV(this);
 	}
 
-	public void setFrom(Object from$node) {
-		ASTNode node = (ASTNode)from$node;
-		this.pos = node.pos;
-		this.compileflags = node.compileflags;
-		super.setFrom(node);
+	public void nodeRestore(ASTNode.VVV from) {
+		this.transaction_id = from.transaction_id;
+		this.compileflags = from.compileflags & ~3;
+		this.nodeflags = from.nodeflags;
+		super.nodeRestore(from);
+	}
+
+	public Object copyTo(Object to$node) {
+		ASTNode node = (ASTNode)super.copyTo(to$node);
+		node.compileflags	= 0;
+		node.nodeflags		= this.nodeflags;
+		return node;
 	}
 
 	public final int getPosLine() { return pos >>> 11; }
@@ -760,7 +747,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public final ASTNode replaceWith(()->ASTNode fnode) {
 		assert(isAttached());
 		ASTNode parent = parent();
-		parent = parent.open();
 		AttrSlot pslot = pslot();
 		if (pslot instanceof SpaceAttrSlot) {
 			int idx = pslot.indexOf(parent, this);
@@ -789,7 +775,6 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	}
 	public final void setBreakTarget(boolean on) {
 		if (this.is_stat_break_target != on) {
-			assert(!locked);
 			this.is_stat_break_target = on;
 		}
 	}
@@ -802,24 +787,24 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 		this.is_rewrite_target = on;
 	}
 	// resolved
-	@getter public final boolean isResolved() {
+	public final boolean isResolved() {
 		return this.is_resolved;
 	}
-	@setter public final void setResolved(boolean on) {
+	public final void setResolved(boolean on) {
 		this.is_resolved = on;
 	}
 	// hidden
-	@getter public final boolean isAutoGenerated() {
+	public final boolean isAutoGenerated() {
 		return this.is_auto_generated;
 	}
-	@setter public void setAutoGenerated(boolean on) {
+	public void setAutoGenerated(boolean on) {
 		this.is_auto_generated = on;
 	}
 	// bad
-	@getter public final boolean isBad() {
+	public final boolean isBad() {
 		return this.is_bad;
 	}
-	@setter public final void setBad(boolean on) {
+	public final void setBad(boolean on) {
 		this.is_bad = on;
 	}
 
@@ -827,8 +812,10 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public ASTNode() {
 		Transaction tr = Transaction.get();
-		if (tr != null)
+		if (tr != null) {
+			this.transaction_id = tr.version;
 			tr.add(this);
+		}
 	}
 
 	public abstract ASTNode getDummyNode();
@@ -853,6 +840,154 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public DNode[] findForResolve(String name, AttrSlot slot, boolean by_equals) {
 		return null;
+	}
+
+	public static <A extends ASTNode> A openCmp(A self) {
+		if (!self.locked)
+			return self;
+		ASTNode.openCmp2(self);
+		return self;
+	}
+	private static synchronized void openCmp2(ASTNode self) {
+		ASTNode.VVV v = self.nodeBackup();
+		v.transaction_id = self.transaction_id;
+		v.vvv_flags = VVV.IS_LOCKED|VVV.FOR_COMPILER;
+		if (self.v_editor == null) {
+			self.v_editor = v;
+		} else {
+			ASTNode.VVV n;
+			for (n = self.v_editor; n.vvv_next != null; n = n.vvv_next);
+			n.vvv_next = v;
+			v.vvv_prev = n;
+		}
+		self.locked = false;
+		Transaction tr = Transaction.get();
+		assert (tr != null);
+		self.transaction_id = tr.version;
+		tr.add(self);
+	}
+	public static ASTNode.VVV openEdt(ASTNode self) {
+		ASTNode.VVV ve = self.v_editor;
+		if (ve != null && (ve.vvv_flags & VVV.IS_LOCKED) == 0)
+			return ve;
+		openEdt2(self);
+		return self.v_editor;
+	}
+	private static synchronized void openEdt2(ASTNode self) {
+		ASTNode.VVV ve = self.v_editor;
+		if (ve != null) {
+			ve.vvv_flags |= VVV.FOR_EDITOR;
+			ASTNode.VVV v = (ASTNode.VVV)ve.clone();
+			ve.vvv_flags &= ~VVV.IS_LOCKED;
+			v.vvv_prev = ve;
+			v.vvv_next = ve.vvv_next;
+			ve.vvv_next = v;
+			if (v.vvv_next != null)
+				v.vvv_next.vvv_prev = v;
+			Transaction tr = Transaction.get();
+			if (tr != null)
+				v.transaction_id = tr.version;
+			self.v_editor = ve = v;
+		} else {
+			ve = self.nodeBackup();
+			ve.vvv_flags = VVV.FOR_EDITOR;
+			self.v_editor = ve;
+		}
+		Transaction tr = Transaction.get();
+		if (tr != null) {
+			ve.transaction_id = tr.version;
+			tr.add(self);
+		}
+	}
+
+	public final void rollback(Transaction tr, boolean save_next) {
+		if (this.v_editor == null)
+			return;
+		if (Thread.currentThread() == CompilerThread) {
+			assert (this.transaction_id == tr.version);
+			// scan back from the end of the list, find the latest saved
+			VVV v = this.v_editor;
+			while (v.vvv_next != null)
+				v = v.vvv_next;
+			while (v != null && (v.vvv_flags & VVV.FOR_COMPILER) == 0)
+				v = v.vvv_prev;
+			assert (v != null && (v.compileflags & 3) == 3); // backup is locked & versioned
+			this.versioned = false;
+			this.nodeRestore(v);
+			this.compileflags |= 3; // locked & versioned
+			v.vvv_flags &= ~VVV.FOR_COMPILER;
+			if ((v.vvv_flags & VVV.FOR_EDITOR) == 0) {
+				// delete unused VVV
+				if (v.vvv_prev != null)
+					v.vvv_prev.vvv_next = v.vvv_next;
+				if (v.vvv_next != null)
+					v.vvv_next.vvv_prev = v.vvv_prev;
+				// v_editor may point v, iff it's the last backup
+				if (this.v_editor == v) {
+					assert (v.vvv_prev == null && v.vvv_next == null);
+					this.v_editor = null;
+				}
+			}
+		} else {
+			// scan back from the current and find previous saved
+			VVV v = this.v_editor;
+			while (v != null) {
+				if ((v.vvv_flags & VVV.FOR_EDITOR) != 0 && v.transaction_id == tr.version)
+					break;
+				if ((v.vvv_flags & VVV.FOR_EDITOR) != 0)
+					System.out.println("Error: rolling back transaction "+tr.version+", but found backup of transaction "+v.transaction_id);
+				v = v.vvv_prev;
+			}
+			assert (v != null);
+			// delete unused VVV
+			if (v.vvv_prev != null)
+				v.vvv_prev.vvv_next = v.vvv_next;
+			if (v.vvv_next != null)
+				v.vvv_next.vvv_prev = v.vvv_prev;
+			if (this.v_editor == v) {
+				if (v.vvv_prev != null)
+					this.v_editor = v.vvv_prev;
+				else
+					this.v_editor = v.vvv_next;
+			}
+		}
+	}
+
+	public void mergeTree() {
+		// notify nodes about new root
+		this.walkTree(new TreeWalker() {
+			public boolean pre_exec(ANode n) { if (n instanceof ASTNode) n.merge(); return true; }
+		});
+	}
+
+	final void merge() {
+		VVV v = this.v_editor;
+		if (v == null)
+			return;
+		assert (this.versioned);
+		this.versioned = false;
+		this.nodeRestore(v);
+		this.compileflags |= 3; // locked & versioned
+		// remove all compiler's nodes
+		while (v.vvv_next != null)
+			v = v.vvv_next;
+		while (v != null) {
+			VVV prev = v.vvv_prev;
+			v.vvv_flags &= ~VVV.FOR_COMPILER;
+			if ((v.vvv_flags & VVV.FOR_EDITOR) == 0) {
+				// delete unused VVV
+				if (v.vvv_prev != null)
+					v.vvv_prev.vvv_next = v.vvv_next;
+				if (v.vvv_next != null)
+					v.vvv_next.vvv_prev = v.vvv_prev;
+				// v_editor may point v, iff it's the last backup
+				if (this.v_editor == v) {
+					assert (v.vvv_prev == null && v.vvv_next == null);
+					this.v_editor = null;
+				}
+			}
+			v = prev;
+		}
 	}
 }
 

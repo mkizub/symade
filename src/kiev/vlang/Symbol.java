@@ -72,14 +72,14 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 			this.sname = t.image;
 	}
 	
-	@getter @att public String get$sname() {
+	@getter public final String get$sname() {
 		return sname;
 	}
-	@setter public void set$sname(String value) {
+	@setter public final void set$sname(String value) {
 		this.sname = (value == null) ? null : value.intern();
 	}
 	
-	@getter @att public String get$qname() {
+	@getter public final String get$qname() {
 		ANode p = parent();
 		if (p instanceof GlobalDNode) {
 			String qn = ((GlobalDNode)p).qname();
@@ -163,7 +163,7 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 		this.symbol = symbol;
 	}
 
-	@getter @att public final boolean get$qualified() {
+	@getter public final boolean get$qualified() {
 		return is_qualified;
 	}
 
@@ -187,37 +187,40 @@ public final class SymbolRef<D extends DNode> extends ASTNode {
 			this.name = t.image;
 	}
 
-	@getter @att public final String get$name() {
-		if (ident_or_symbol_or_type instanceof String)
-			return (String)ident_or_symbol_or_type;
-		if (ident_or_symbol_or_type instanceof ISymbol) {
+	@getter public final String get$name() {
+		Object id = ident_or_symbol_or_type;
+		if (id instanceof String)
+			return (String)id;
+		if (id instanceof ISymbol) {
 			if (qualified)
-				return ((ISymbol)ident_or_symbol_or_type).qname;
-			return ((ISymbol)ident_or_symbol_or_type).sname;
+				return ((ISymbol)id).qname;
+			return ((ISymbol)id).sname;
 		}
-		if (ident_or_symbol_or_type instanceof Type) {
+		if (id instanceof Type) {
 			if (qualified)
-				return ((Type)ident_or_symbol_or_type).meta_type.qname();
-			return ((Type)ident_or_symbol_or_type).meta_type.tdecl.sname;
+				return ((Type)id).meta_type.qname();
+			return ((Type)id).meta_type.tdecl.sname;
 		}
 		return null;
 	}
 
-	@getter @ref public final ISymbol get$symbol() {
-		if (ident_or_symbol_or_type instanceof ISymbol)
-			return (ISymbol)ANode.getVersion((ANode)ident_or_symbol_or_type);
-		if (ident_or_symbol_or_type instanceof Type)
-			return ((Type)ident_or_symbol_or_type).meta_type.tdecl;
+	@getter public final ISymbol get$symbol() {
+		Object id = ident_or_symbol_or_type;
+		if (id instanceof ISymbol)
+			return (ISymbol)id;
+		if (id instanceof Type)
+			return ((Type)id).meta_type.tdecl;
 		return null;
 	}
 	
-	@getter @ref public final D get$dnode() {
-		if (ident_or_symbol_or_type instanceof DNode)
-			return ANode.getVersion((DNode)ident_or_symbol_or_type);
-		if (ident_or_symbol_or_type instanceof ISymbol)
-			return ANode.getVersion(((ISymbol)ident_or_symbol_or_type).dnode);
-		if (ident_or_symbol_or_type instanceof Type)
-			return ((Type)ident_or_symbol_or_type).meta_type.tdecl;
+	@getter public final D get$dnode() {
+		Object id = ident_or_symbol_or_type;
+		if (id instanceof DNode)
+			return (DNode)id;
+		if (id instanceof ISymbol)
+			return ((ISymbol)id).dnode;
+		if (id instanceof Type)
+			return ((Type)id).meta_type.tdecl;
 		return null;
 	}
 	

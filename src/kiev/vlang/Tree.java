@@ -54,6 +54,8 @@ public @interface ref {
 	boolean copyable() default true;
 	boolean ext_data() default false;
 }
+// the field of a node is not versioned and is present in compiler version only
+public @interface UnVersioned {}
 
 
 public final class AttrPtr {
@@ -63,8 +65,8 @@ public final class AttrPtr {
 		this.node = node;
 		this.slot = slot;
 	}
-	public Object get() { return slot.get(ANode.getVersion(node)); }
-	public void set(Object val) { return slot.set(ANode.getVersion(node), val); }
+	public Object get() { return slot.get(node); }
+	public void set(Object val) { return slot.set(node, val); }
 }
 
 public final class SpacePtr {
@@ -79,26 +81,26 @@ public final class SpacePtr {
 	public int size()
 		alias get$length
 	{
-		return slot.get(ANode.getVersion(node)).length;
+		return slot.get(node).length;
 	}
 
 	public ANode get(int idx)
 		alias xfy operator []
 	{
-		return slot.get(ANode.getVersion(node), idx);
+		return slot.get(node, idx);
 	}
 
 	public ANode set(int idx, ANode val)
 		alias lfy operator []
 	{
-		return slot.set(ANode.getVersion(node), idx, val);
+		return slot.set(node, idx, val);
 	}
 
 	public ANode add(ANode val)
 		alias append
 		alias lfy operator +=
 	{
-		return slot.add(ANode.getVersion(node), val);
+		return slot.add(node, val);
 	}
 }
 
@@ -108,6 +110,7 @@ public abstract class AttrSlot {
 	public final String   name; // field (property) name
 	public final boolean  is_attr; // @att or @ref
 	public final boolean  is_space; // if Node[]
+	public final boolean  is_child; // @att and Node
 	public final boolean  is_external; // not declared within the node (i.e., not listed in values())
 	public final Class    clazz; // type of the fields
 	public final TypeInfo typeinfo; // type of the fields
@@ -124,6 +127,12 @@ public abstract class AttrSlot {
 		this.is_external = is_external;
 		this.clazz = typeinfo.clazz;
 		this.typeinfo = typeinfo;
+		if (is_attr) {
+			if (is_space)
+				this.is_child = true;
+			else if (ANode.class.isAssignableFrom(typeinfo.clazz) || INode.class.isAssignableFrom(typeinfo.clazz))
+				this.is_child = true;
+		}
 		if (is_space) defaultValue = java.lang.reflect.Array.newInstance(clazz,0);
 		else if (clazz == Boolean.class) defaultValue = Boolean.FALSE;
 		else if (clazz == Character.class) defaultValue = new Character('\0');
@@ -210,11 +219,10 @@ public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 	}
 
 	public final int indexOf(ANode parent, ANode node) {
-		node = ANode.getVersion(node);
 		N[] narr = get(parent);
 		int sz = narr.length;
 		for (int i=0; i < sz; i++) {
-			if (ANode.getVersion(narr[i]) == node)
+			if (narr[i] == node)
 				return i;
 		}
 		return -1;
@@ -222,11 +230,10 @@ public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 
 	public final void detach(ANode parent, ANode old)
 	{
-		old = ANode.getVersion(old);
 		N[] narr = get(parent);
 		int sz = narr.length;
 		for (int i=0; i < sz; i++) {
-			if (ANode.getVersion(narr[i]) == old) {
+			if (narr[i] == old) {
 				this.del(parent,i);
 				return;
 			}
@@ -242,7 +249,7 @@ public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 
 	public final N get(ANode parent, int idx) {
 		N[] narr = get(parent);
-		return ANode.getVersion(narr[idx]);
+		return narr[idx];
 	}
 
 	public abstract N set(ANode parent, int idx, N node);
@@ -261,7 +268,6 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final N set(ANode parent, int idx, N node) {
-		parent = parent.open();
 		N[] narr = (N[])get(parent).clone();
 		narr[idx] = node;
 		set(parent,narr);
@@ -269,7 +275,6 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final N add(ANode parent, N node) {
-		parent = parent.open();
 		N[] narr = get(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
@@ -281,7 +286,6 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final void del(ANode parent, int idx) {
-		parent = parent.open();
 		N[] narr = get(parent);
 		int sz = narr.length-1;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz); //new N[sz];
@@ -294,7 +298,6 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final void insert(ANode parent, int idx, N node) {
-		parent = parent.open();
 		N[] narr = get(parent);
 		int sz = narr.length;
 		if (idx > sz) idx = sz;
@@ -317,16 +320,13 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		N[] narr = get(parent);
 		if (narr.length == 0)
 			return;
-		parent = parent.open();
-		set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+		set(parent,(N[])defaultValue);
 	}
 	
 	public final N[] delToArray(ANode parent) {
 		N[] narr = get(parent);
-		if (narr.length > 0) {
-			parent = parent.open();
-			set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
-		}
+		if (narr.length > 0)
+			set(parent,(N[])defaultValue);
 		return narr;
 	}
 }
@@ -338,9 +338,8 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 
 	public final N set(ANode parent, int idx, N node) {
 		assert(!node.isAttached());
-		parent = parent.open();
 		N[] narr = (N[])get(parent).clone();
-		ANode.getVersion(narr[idx]).callbackDetached();
+		narr[idx].callbackDetached();
 		narr[idx] = node;
 		set(parent,narr);
 		node.callbackAttached(parent, this);
@@ -350,7 +349,6 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	public final N add(ANode parent, N node) {
 		assert(!node.isAttached());
 		assert(indexOf(parent,node) < 0);
-		parent = parent.open();
 		N[] narr = get(parent);
 		int sz = narr.length;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz+1); //new N[sz+1];
@@ -363,9 +361,8 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final void del(ANode parent, int idx) {
-		parent = parent.open();
 		N[] narr = get(parent);
-		ANode.getVersion(narr[idx]).callbackDetached();
+		narr[idx].callbackDetached();
 		int sz = narr.length-1;
 		N[] tmp = (N[])java.lang.reflect.Array.newInstance(clazz,sz); //new N[sz];
 		int i;
@@ -379,7 +376,6 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	public final void insert(ANode parent, int idx, N node) {
 		assert(!node.isAttached());
 		assert(indexOf(parent,node) < 0);
-		parent = parent.open();
 		N[] narr = get(parent);
 		int sz = narr.length;
 		if (idx > sz) idx = sz;
@@ -403,19 +399,17 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 		N[] narr = get(parent);
 		if (narr.length == 0)
 			return;
-		parent = parent.open();
-		set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+		set(parent,(N[])defaultValue);
 		for (int i=0; i < narr.length; i++)
-			ANode.getVersion(narr[i]).callbackDetached();
+			narr[i].callbackDetached();
 	}
 	
 	public final N[] delToArray(ANode parent) {
 		N[] narr = get(parent);
 		if (narr.length > 0) {
-			parent = parent.open();
-			set(parent,(N[])java.lang.reflect.Array.newInstance(clazz,0));
+			set(parent,(N[])defaultValue);
 			for (int i=0; i < narr.length; i++)
-				ANode.getVersion(narr[i]).callbackDetached();
+				narr[i].callbackDetached();
 		}
 		return narr;
 	}
@@ -425,15 +419,15 @@ public final class Transaction {
 	private static int currentVersion;
 	private static Transaction currentTransaction;
 
-	public static Transaction open() {
+	public static Transaction open(String name) {
 		assert (currentTransaction == null);
-		currentTransaction = new Transaction();
+		currentTransaction = new Transaction(name);
 		return currentTransaction;
 	}
 
-	public static Transaction enter(Transaction tr) {
+	public static Transaction enter(Transaction tr, String name) {
 		if (tr == null)
-			return open();
+			return open(name);
 		tr.recursion_counter++;
 		return tr;
 	}
@@ -453,7 +447,7 @@ public final class Transaction {
 			ASTNode[] nodes = this.nodes;
 			int n = this.size;
 			for (int i=0; i < n; i++)
-				nodes[i].locked = true;
+				nodes[i].compileflags |= 3; // locked & versioned
 		}
 		currentTransaction = null;
 	}
@@ -468,7 +462,7 @@ public final class Transaction {
 			ASTNode[] nodes = this.nodes;
 			int n = this.size;
 			for (int i=0; i < n; i++)
-				nodes[i].rollback(save_next);
+				nodes[i].rollback(this,save_next);
 		}
 		if (currentTransaction == this)
 			currentTransaction = null;
@@ -478,13 +472,15 @@ public final class Transaction {
 		return size == 0;
 	}
 
-	public int version;
+	public final int version;
+	public final String name;
 	private int recursion_counter;
 	private int size;
 	private ASTNode[] nodes;
 
-	private Transaction() {
+	private Transaction(String name) {
 		this.version = ++currentVersion;
+		this.name = name;
 		this.recursion_counter = 1;
 		if (!Kiev.run_batch)
 			this.nodes = new ASTNode[64];

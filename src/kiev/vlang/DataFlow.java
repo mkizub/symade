@@ -406,7 +406,7 @@ public interface DataFlowSlots {
 	public final int FLS = 3;
 	public final int JMP = 4;
 	
-	public final boolean ASSERT_MORE = false;
+	public final boolean ASSERT_MORE = true;
 }
 
 public final class DataFlowInfo extends ANode implements DataFlowSlots {

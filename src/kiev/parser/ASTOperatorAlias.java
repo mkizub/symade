@@ -84,10 +84,8 @@ public final class ASTOperatorAlias extends Symbol<Method> {
     }
 	
 	private void setAliasName(String s) {
-		if (sname != s) {
-			this = this.open();
+		if (sname != s)
 			sname = s;
-		}
 	}
 
 	public void pass3() {

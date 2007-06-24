@@ -255,7 +255,6 @@ public final class RewriteNodeFactory extends ENode {
 			if (clazz != null) {
 				Hashtable<String,Class> allNodes = ASTNodeMetaType.allNodes;
 				foreach (String key; allNodes.keys(); clazz.equals(allNodes.get(key))) {
-					this = this.open();
 					this.ident = key;
 					return;
 				}

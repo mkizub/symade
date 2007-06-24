@@ -201,7 +201,6 @@ public abstract class Struct extends TypeDecl {
 	}
 	public final void setCompilerNode(boolean on) {
 		if (this.is_struct_compiler_node != on) {
-			assert(!locked);
 			this.is_struct_compiler_node = on;
 		}
 	}
@@ -346,7 +345,6 @@ public abstract class Struct extends TypeDecl {
 		}
 		if (parent() instanceof Struct || parent() instanceof NameSpace)
 			return true;
-		this = this.open();
 		if (ctx_method==null || ctx_method.isStatic())
 			this.setStatic(true);
 		this.setLocal(true);
@@ -387,19 +385,16 @@ public abstract class Struct extends TypeDecl {
 	private void verifyFieldInIface(Field n) {
 		if (!n.isStatic()) {
 			Kiev.reportError(n,"Non-static field "+n+" in interface "+this);
-			n = n.open();
 			n.setStatic(true);
 		}
 		if (!n.isFinal()) {
 			Kiev.reportError(n,"Non-final field "+n+" in interface "+this);
-			n = n.open();
 			n.setFinal(true);
 		}
 	}
 	private void verifyInitializerInIface(Initializer n) {
 		if (!n.isStatic()) {
 			Kiev.reportError(n,"Non-static initializer in interface "+this);
-			n = n.open();
 			n.setStatic(true);
 		}
 	}

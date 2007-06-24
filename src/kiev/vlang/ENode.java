@@ -38,7 +38,7 @@ public abstract class ENode extends ASTNode {
 	@ref @abstract public Type				type_lnk;
 	@ref @abstract public:ro DNode			dnode;
 	
-	@getter @att public final String get$ident() {
+	@getter public final String get$ident() {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
 			return null;
@@ -57,31 +57,31 @@ public abstract class ENode extends ASTNode {
 		return null;
 	}
 
-	@getter @ref public final ISymbol get$symbol() {
+	@getter public final ISymbol get$symbol() {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
 			return null;
 		if (id instanceof ISymbol)
-			return (ISymbol)ANode.getVersion((ANode)id);
+			return (ISymbol)id;
 		if (id instanceof Type)
 			return ((Type)id).meta_type.tdecl;
 		return null;
 	}
 	
-	@getter @ref public final DNode get$dnode() {
+	@getter public final DNode get$dnode() {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
 			return null;
 		if (id instanceof DNode)
-			return ANode.getVersion((DNode)id);
+			return (DNode)id;
 		if (id instanceof ISymbol)
-			return ANode.getVersion(((ISymbol)id).dnode);
+			return ((ISymbol)id).dnode;
 		if (id instanceof Type)
 			return ((Type)id).meta_type.tdecl;
 		return null;
 	}
 	
-	@getter @ref public final Type get$type_lnk() {
+	@getter public final Type get$type_lnk() {
 		Object id = this.ident_or_symbol_or_type;
 		if (id == null)
 			return null;
@@ -113,7 +113,7 @@ public abstract class ENode extends ASTNode {
 		return super.includeInDump(dump, attr, val);
 	}
 
-	@getter @att public final boolean get$qualified() {
+	@getter public final boolean get$qualified() {
 		return is_qualified;
 	}
 
@@ -158,7 +158,6 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setPrimaryExpr(boolean on) {
 		if (this.is_expr_primary != on) {
-			assert(!locked);
 			this.is_expr_primary = on;
 		}
 	}
@@ -168,7 +167,6 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setSuperExpr(boolean on) {
 		if (this.is_expr_super != on) {
-			assert(!locked);
 			this.is_expr_super = on;
 		}
 	}
@@ -178,7 +176,6 @@ public abstract class ENode extends ASTNode {
 	}
 	public final void setCastCall(boolean on) {
 		if (this.is_expr_cast_call != on) {
-			assert(!locked);
 			this.is_expr_cast_call = on;
 		}
 	}

@@ -61,7 +61,6 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 	public void resolve(Type reqType) {
 		if (isResolved())
 			return;
-		this.open();
 		Type type = this.type.getType();
 		Struct clazz = type.getStruct();
 		if (clazz == null) {
@@ -533,7 +532,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		throw new CompilerException(this,"Expression "+expr+" of type "+extp+" is not castable to "+type);
 	}
 
-	public:no,no,no,rw final boolean tryOverloadedCast(Type et) {
+	public final boolean tryOverloadedCast(Type et) {
 		Method@ v;
 		ResInfo info = new ResInfo(this,nameCastOp,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 		v.$unbind();
@@ -571,7 +570,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 		return false;
 	}
 
-	public:no,no,no,rw final void tryTypeArgCast(Type reqType, Type tp, Type et) {
+	public final void tryTypeArgCast(Type reqType, Type tp, Type et) {
 		if (tp instanceof ArgType && tp.isUnerasable()) {
 			replaceWithNodeResolve(reqType,
 				new ReinterpExpr(pos,tp,
@@ -596,7 +595,7 @@ public static final view RCastExpr of CastExpr extends RENode {
 //		}
 	}
 
-	public:no,no,no,rw final void resolve2(Type reqType) {
+	public final void resolve2(Type reqType) {
 		Type type = this.type.getType();
 		expr.resolve(type);
 		if (reqType ≡ Type.tpVoid) {

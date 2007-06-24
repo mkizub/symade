@@ -95,7 +95,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		if( m.isPublic() ) {
 			if !(acc.w_public & acc.w_protected & acc.w_default & acc.w_private) {
-				acc = acc.open();
 				acc.w_public = true;
 				acc.w_protected = true;
 				acc.w_default = true;
@@ -104,7 +103,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		else if( m.isPrivate() ) {
 			if !(!acc.w_public & !acc.w_protected & !acc.w_default & acc.w_private) {
-				acc = acc.open();
 				acc.w_public = false;
 				acc.w_protected = false;
 				acc.w_default = false;
@@ -113,7 +111,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		else if( m.isProtected() ) {
 			if !(!acc.w_public & acc.w_protected & acc.w_default & acc.w_private) {
-				acc = acc.open();
 				acc.w_public = false;
 				acc.w_protected = true;
 				acc.w_default = true;
@@ -122,7 +119,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		else {
 			if !(!acc.w_public & !acc.w_protected & acc.w_default & acc.w_private) {
-				acc = acc.open();
 				acc.w_public = false;
 				acc.w_protected = false;
 				acc.w_default = true;
@@ -159,7 +155,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		if( m.isPublic() ) {
 			if !(acc.r_public & acc.r_protected & acc.r_default & acc.r_private) {
-				acc = acc.open();
 				acc.r_public = true;
 				acc.r_protected = true;
 				acc.r_default = true;
@@ -168,7 +163,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		else if( m.isPrivate() ) {
 			if !(!acc.r_public & !acc.r_protected & !acc.r_default & acc.r_private) {
-				acc = acc.open();
 				acc.r_public = false;
 				acc.r_protected = false;
 				acc.r_default = false;
@@ -177,7 +171,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		else if( m.isProtected() ) {
 			if !(!acc.r_public & acc.r_protected & acc.r_default & acc.r_private) {
-				acc = acc.open();
 				acc.r_public = false;
 				acc.r_protected = true;
 				acc.r_default = true;
@@ -186,7 +179,6 @@ public final class VirtFldFE_GenMembers extends TransfProcessor {
 		}
 		else {
 			if !(!acc.r_public & !acc.r_protected & acc.r_default & acc.r_private) {
-				acc = acc.open();
 				acc.r_public = false;
 				acc.r_protected = false;
 				acc.r_default = true;
@@ -211,7 +203,7 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 	public String getDescr() { "Virtual fields pre-generation" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
+		tr = Transaction.enter(tr,"VirtFldME_PreGenerate");
 		try {
 			doProcess(node);
 		} finally { tr.leave(); }
@@ -288,7 +280,6 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			}
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
-				set_var= set_var.open();
 				set_var.body = body;
 				ENode fa;
 				if (f.isStatic())
@@ -320,7 +311,6 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 			get_var.setMeta(new UserMeta(nameMetaGetter)).resolve(null);
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
-				get_var = get_var.open();
 				get_var.body = body;
 				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 			}
@@ -346,7 +336,7 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 	public String getDescr() { "Virtual fields rewrite" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
+		tr = Transaction.enter(tr,"VirtFldBE_Rewrite");
 		try {
 			node.walkTree(new TreeWalker() {
 				public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return VirtFldBE_Rewrite.this.rewrite((ASTNode)n); return false; }
@@ -383,7 +373,6 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 			fa.setAsField(true);
 			return true;
 		}
-		fa = fa.open();
 		ENode ce = new CallExpr(fa.pos, ~fa.obj, getter, ENode.emptyArray);
 		fa.replaceWithNodeReWalk(ce);
 		throw new Error();
@@ -415,8 +404,6 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				fa.setAsField(true);
 				return true;
 			}
-			ae = ae.open();
-			fa = fa.open();
 			Type ae_tp = ae.isGenVoidExpr() ? Type.tpVoid : ae.getType();
 			Operator op = null;
 			if      (ae.op == Operator.AssignAdd)                  op = Operator.Add;
@@ -501,8 +488,6 @@ public class VirtFldBE_Rewrite extends BackendProcessor implements Constants {
 				return true;
 			}
 			ENode expr;
-			ie = ie.open();
-			fa = fa.open();
 			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
 			if (ie.isGenVoidExpr()) {
 				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {

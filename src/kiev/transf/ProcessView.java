@@ -124,7 +124,7 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 	////////////////////////////////////////////////////
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
+		tr = Transaction.enter(tr,"ViewME_PreGenerate");
 		try {
 			doProcess(node);
 		} finally { tr.leave(); }
@@ -154,14 +154,11 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		if (clazz.isForward() || getViewImpl(clazz) != null)
 			return;
 		
-		clazz = clazz.open();
-		
 		KievView kview = (KievView)clazz;
 		TypeRef view_of = kview.view_of;
 
 		// generate implementation
 		Struct impl = Env.newStruct(nameIFaceImpl,true,clazz,ACC_PUBLIC|ACC_STATIC|ACC_SYNTHETIC|ACC_FORWARD,new JavaClass(),true,null);
-		impl = impl.open();
 		impl.pos = clazz.pos;
 		if (clazz.isAbstract()) {
 			clazz.setAbstract(false);
@@ -196,20 +193,24 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 			impl.members.add(ctor);
 		}
 
+		Vector<Pair<Method.Method>> moved_methods = new Vector<Pair<Method.Method>>();
 		foreach (ASTNode dn; clazz.members) {
 			if (dn instanceof Method && !(dn instanceof Constructor) && dn.isPublic() && !dn.isStatic()) {
 				Method cm = dn;
-				ENode b = cm.body;
-				if (b != null)
-					~b;
-				Method m = cm.ncopy();
-				m.setFinal(false);
-				m.setPublic();
-				m.setAbstract(true);
-				impl.members.add(~cm);
-				clazz.addMethod(m);
-				if (b != null)
-					cm.body = b;
+				ASTNode body = cm.body;
+				if (body != null)
+					~body;
+				Method im = cm.ncopy();
+				Var[] cm_params = cm.params.delToArray();
+				Var[] im_params = im.params.delToArray();
+				im.params.addAll(cm_params);
+				cm.params.addAll(im_params);
+				impl.members.add(im);
+				cm.setFinal(false);
+				cm.setPublic();
+				cm.setAbstract(true);
+				im.body = body;
+				moved_methods.append(new Pair<Method,Method>(cm,im));
 				continue;
 			}
 			else if (dn instanceof DeclGroup && !(dn.meta.is_static && dn.meta.is_final)) {
@@ -219,12 +220,11 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 					dg.setPublic();
 				}
 				DeclGroup d = dg.ncopy();
-				foreach (Field f; d.decls)
+				foreach (Field f; dg.decls)
 					f.init = null;
-				d.setPublic();
-				d.setAbstract(true);
-				impl.members.add(~dg);
-				clazz.members.add(d);
+				dg.setPublic();
+				dg.setAbstract(true);
+				impl.members.add(d);
 				continue;
 			}
 			else if (dn instanceof Field && !(dn.isStatic() && dn.isFinal())) {
@@ -234,11 +234,10 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 					cf.setPublic();
 				}
 				Field f = cf.ncopy();
-				f.init = null;
-				f.setPublic();
-				f.setAbstract(true);
-				impl.members.add(~cf);
-				clazz.addField(f);
+				cf.init = null;
+				cf.setPublic();
+				cf.setAbstract(true);
+				impl.members.add(f);
 				continue;
 			}
 			if (dn instanceof Struct)
@@ -268,7 +267,6 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				m.setAbstract(true);
 				continue;
 			}
-			m = m.open();
 			m.body = new Block(m.pos);
 			CallExpr ce = new CallExpr(m.pos,
 				new CastExpr(m.pos, view_of.getType(),
@@ -286,10 +284,14 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		// generate getter/setter methods
 		foreach (Field f; impl.getAllFields()) {
 			Method mv_set = f.setter;
+			foreach (Pair<Method,Method> p; moved_methods; p.fst == mv_set) {
+				mv_set = p.snd;
+				f.setter = mv_set;
+				break;
+			}
 			if (mv_set != null && mv_set.isSynthetic()) {
 				Method set_var = mv_set;
 				Block body = new Block(f.pos);
-				set_var = set_var.open();
 				set_var.setFinal(true);
 				set_var.body = body;
 				Field view_fld = view_of.getType().getStruct().resolveField(f.sname);
@@ -316,10 +318,14 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 				set_var.setAbstract(false);
 			}
 			Method mv_get = f.getter;
+			foreach (Pair<Method,Method> p; moved_methods; p.fst == mv_get) {
+				mv_get = p.snd;
+				f.getter = mv_get;
+				break;
+			}
 			if (mv_get != null && mv_get.isSynthetic()) {
 				Method get_var = mv_get;
 				Block body = new Block(f.pos);
-				get_var = get_var.open();
 				get_var.setFinal(true);
 				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,
@@ -353,7 +359,6 @@ public class ViewME_PreGenerate extends BackendProcessor implements Constants {
 		foreach (Method dn; impl.members) {
 			if (dn.hasName(nameCastOp,true) && dn.type.ret() ≈ view_of.getType()) {
 				if (dn.isSynthetic()) {
-					dn = dn.open();
 					dn.setAbstract(false);
 					dn.body = new Block();
 					dn.block.stats.add(new ReturnStat(0, new CastExpr(0, view_of.getType(), new IFldExpr(0, new ThisExpr(), fview))));

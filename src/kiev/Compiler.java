@@ -253,7 +253,7 @@ stop:;
 
 	private void runBackEnd() {
 		long curr_time = 0L, diff_time = 0L;
-		Transaction tr_me = Transaction.open();
+		Transaction tr_me = Transaction.open("Compiler.java:runBackEnd(1)");
 		try {
 			////////////////////////////////////////////////////
 			//	                  Midend                      //
@@ -266,7 +266,7 @@ stop:;
 							ASTNode astn = (ASTNode)n;
 							if (!astn.locked)
 								System.out.println("Unlocked node "+n);
-							astn.compileflags &= 0xFFFF0001;
+							astn.compileflags = 3; // locked & versioned
 						}
 						return true;
 					}
@@ -288,7 +288,7 @@ stop:;
 				final int errCount = this.errCount;
 				if (fu.scanned_for_interface_only)
 					continue; // don't run back-end on interface (API) files
-				Transaction tr = Transaction.open();
+				Transaction tr = Transaction.open("Compiler.java:runBackEnd(2) on "+fu);
 				try {
 					Kiev.resetBackEndPass();
 					Kiev.openBackEndFileUnit(fu);

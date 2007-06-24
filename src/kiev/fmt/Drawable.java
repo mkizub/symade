@@ -29,7 +29,7 @@ public abstract class Drawable extends ANode {
 	
 	@getter
 	public ANode get$drnode() {
-		return ANode.getVersion(_node);
+		return _node;
 	}
 	
 	public Drawable(ANode node, SyntaxElem syntax) {

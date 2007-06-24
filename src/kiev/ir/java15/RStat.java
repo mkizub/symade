@@ -28,7 +28,6 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 		for (int i=0; i < params_redir.length; i++) {
 			types[i] = params_redir[i].new_var.getType();
 			if (params_redir[i].new_var.vtype.type_lnk != method.params[i].type) {
-				params_redir[i].new_var.vtype.open();
 				params_redir[i].new_var.vtype.type_lnk = method.params[i].type;
 			}
 		}
@@ -39,7 +38,6 @@ public final view RInlineMethodStat of InlineMethodStat extends RENode {
 		} finally {
 			for (int i=0; i < params_redir.length; i++) {
 				if (params_redir[i].new_var.vtype.type_lnk != types[i]) {
-					params_redir[i].new_var.vtype.open();
 					params_redir[i].new_var.vtype.type_lnk = types[i];
 				}
 			}
@@ -152,10 +150,8 @@ public final view RCondStat of CondStat extends RENode {
 
 	public void resolve(Type reqType) {
 		try {
-			if (enabled == null) {
-				this.open();
+			if (enabled == null)
 				enabled = new AssertEnabledExpr();
-			}
 			enabled.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(enabled);
 			cond.resolve(Type.tpBoolean);
@@ -192,7 +188,6 @@ public final view RBreakStat of BreakStat extends RENode {
 	public void resolve(Type reqType) {
 		setAbrupted(true);
 		ASTNode p;
-		this.open();
 		if (dest != null) {
 			dest.delLink((BreakStat)this);
 			dest = null;
@@ -257,7 +252,6 @@ public final view RGotoStat of GotoStat extends RENode {
 
 	public void resolve(Type reqType) {
 		setAbrupted(true);
-		this.open();
 		if (dest != null) {
 			dest.delLink((GotoStat)this);
 			dest = null;
@@ -284,10 +278,8 @@ public final view RGotoCaseStat of GotoCaseStat extends RENode {
 		setAbrupted(true);
 		for(ASTNode node = (ASTNode)this.parent(); node != null; node = (ASTNode)node.parent()) {
 			if (node instanceof SwitchStat) {
-				if (this.sw != node) {
-					this.open();
+				if (this.sw != node)
 					this.sw = (SwitchStat)node;
-				}
 				break;
 			}
 			if (node instanceof Method)

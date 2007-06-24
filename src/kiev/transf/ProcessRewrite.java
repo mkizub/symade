@@ -75,7 +75,7 @@ public class RewriteME_PreGenerate extends BackendProcessor {
 	}
 
 	private void doRewrite(ENode rewriter, ASTNode self, Hashtable<String,Object> args) {
-		Transaction tr = Transaction.enter(Transaction.get());
+		Transaction tr = Transaction.enter(Transaction.get(),"RewriteME_PreGenerate");
 		try {
 			if (rewriter instanceof RewriteMatch)
 				rewriter = rewriter.matchCase(self);

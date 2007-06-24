@@ -325,7 +325,7 @@ public final class Operator implements Constants {
 			{
 				if (eidx < exprs.length) {
 					ENode e = exprs[eidx++];
-					if (e.getPriority() < priority)
+					if (e == null || e.getPriority() < priority)
 						sb.append('(').append(e).append(')');
 					else
 						sb.append(e).append(' ');

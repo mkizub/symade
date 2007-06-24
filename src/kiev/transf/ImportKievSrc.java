@@ -120,7 +120,7 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			Kiev.reportError(astn,"Identifier "+name+" is not a syntax");
 		else {
 			assert (n != null);
-			astn.name.open().symbol = n;
+			astn.name.symbol = n;
 		}
 	}
 
@@ -135,13 +135,11 @@ public final class KievFE_Pass1 extends TransfProcessor {
 			if (op != null) {
 				if (prior != op.priority)
 					throw new CompilerException(astn,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
-				astn = astn.open();
 				astn.resolved = op;
 				return;
 			}
 			op = Operator.newOperator(prior, decl);
 			if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
-			astn = astn.open();
 			astn.resolved = op;
 			return;
 		}
@@ -175,7 +173,6 @@ public final class KievFE_Pass1 extends TransfProcessor {
 				op = Operator.newOperator(prior, decl);
 				if( Kiev.verbose ) System.out.println("Declared operator "+op+" with priority "+op.priority);
 			}
-			astn = astn.open();
 			astn.resolved = op;
 			astn.decl = op.decl;
 		}
@@ -282,7 +279,6 @@ public final class KievFE_Pass2 extends TransfProcessor {
 				foreach (DNode d; dn.decls)
 					d.meta.verify();
 			}
-			td = ANode.getVersion(td);
 			getStructType(td, new Stack<TypeDecl>());
 			foreach (TypeDecl s; td.members)
 				doProcess(s);
@@ -297,11 +293,10 @@ public final class KievFE_Pass2 extends TransfProcessor {
 		}
 		path.push(tdecl);
 		
-		tdecl = tdecl.open();
 		tdecl.setTypeResolved(true);
 		
 		for (TypeDecl p = tdecl.package_clazz.dnode; p != null; p = p.package_clazz.dnode)
-			getStructType(ANode.getVersion(p), path);
+			getStructType(p, path);
 
 		if (tdecl instanceof Struct) {
 			Struct clazz = (Struct)tdecl;
@@ -791,42 +786,6 @@ public final class KievFE_Verify extends TransfProcessor {
 	}
 }
 
-/*
-@singleton
-public final class KievBE_Lock extends BackendProcessor {
-	private KievBE_Lock() { super(KievBackend.Generic); }
-	public String getDescr() { "Lock nodes" }
-
-	public void process(ASTNode node, Transaction tr) {
-		if (Transaction.get() != null)
-			return;
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { n.locked = true; return true; }
-		});
-	}
-}
-
-
-@singleton
-public final class KievBE_CheckLock extends BackendProcessor {
-	private KievBE_CheckLock() { super(KievBackend.Generic); }
-	public String getDescr() { "Check nodes' locks" }
-
-	public void process(ASTNode node, Transaction tr) {
-		if (Transaction.get() != null)
-			return;
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) { if (!n.locked && n instanceof ASTNode) reportError(n); return true; }
-		});
-	}
-	
-	final static void reportError(ANode n) {
-		System.out.println("Unlocked node "+n);
-		assert(false);
-	}
-}
-*/
-
 ////////////////////////////////////////////////////
 //	   PASS - midend dump API as XML files        //
 ////////////////////////////////////////////////////
@@ -899,7 +858,7 @@ public final class KievME_PreGenartion extends BackendProcessor {
 	public String getDescr() { "Kiev pre-generation" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
+		tr = Transaction.enter(tr,"KievME_PreGenartion");
 		try {
 			node.walkTree(new TreeWalker() {
 				public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return n.preGenerate(); return false; }
@@ -972,7 +931,6 @@ public final class KievME_GenBytecodeNames extends BackendProcessor {
 		else {
 			bc_name = pkg_bc_name + "$" + name;
 		}
-		s = s.open();
 		s.bytecode_name = KString.from(bc_name);
 		return s.bytecode_name;
 	}
@@ -1001,7 +959,7 @@ public final class KievBE_Resolve extends BackendProcessor {
 	public String getDescr() { "Kiev resolve" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
+		tr = Transaction.enter(tr,"KievBE_Resolve");
 		try {
 			if (node instanceof ENode)
 				node.resolve(null);
@@ -1027,7 +985,7 @@ public final class KievBE_Generate extends BackendProcessor {
 			FileUnit fu = (FileUnit)node;
 			if (fu.scanned_for_interface_only)
 				return;
-			tr = Transaction.enter(tr);
+			tr = Transaction.enter(tr,"KievBE_Generate");
 			try {
 				try {
 					((JFileUnit)fu).generate();

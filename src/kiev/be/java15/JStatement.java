@@ -142,23 +142,28 @@ public final view JIfElseStat of IfElseStat extends JENode {
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debug && Kiev.debugStatGen,"\tgenerating IfElseStat");
 		code.setLinePos(this);
+		Type gen_tp;
+		if( reqType ≡ Type.tpVoid )
+			gen_tp = Type.tpVoid;
+		else
+			gen_tp = this.getType(); 
 		try {
 			if( cond.isConstantExpr() ) {
 				JENode cond = this.cond;
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					if( isAutoReturnable() )
 						thenSt.setAutoReturnable(true);
-					thenSt.generate(code,Type.tpVoid);
+					thenSt.generate(code,gen_tp);
 				}
 				else if( elseSt != null ) {
 					if( isAutoReturnable() )
 						elseSt.setAutoReturnable(true);
-					elseSt.generate(code,Type.tpVoid);
+					elseSt.generate(code,gen_tp);
 				}
 			} else {
 				CodeLabel else_label = code.newLabel();
 				JBoolExpr.gen_iffalse(code, cond, else_label);
-				thenSt.generate(code,Type.tpVoid);
+				thenSt.generate(code,gen_tp);
 				if( elseSt != null ) {
 					CodeLabel end_label = code.newLabel();
 					if( !thenSt.isMethodAbrupted() ) {
@@ -168,7 +173,7 @@ public final view JIfElseStat of IfElseStat extends JENode {
 							code.addInstr(Instr.op_goto,end_label);
 					}
 					code.addInstr(Instr.set_label,else_label);
-					elseSt.generate(code,Type.tpVoid);
+					elseSt.generate(code,gen_tp);
 					code.addInstr(Instr.set_label,end_label);
 				} else {
 					code.addInstr(Instr.set_label,else_label);
@@ -185,13 +190,13 @@ public final view JCondStat of CondStat extends JENode {
 	public:ro	JENode		cond;
 	public:ro	JENode		message;
 
-	public:n,n,n,rw void generateAssertName(Code code) {
+	public void generateAssertName(Code code) {
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
 		if (wbc.sname == null) return;
 		code.addConst(KString.from(wbc.sname));
 	}
 
-	public:n,n,n,rw JMethod getAssertMethod() {
+	public JMethod getAssertMethod() {
 		String fname;
 		JWBCCondition wbc = (JWBCCondition)jparent.jparent;
 		switch( wbc.cond ) {
@@ -285,7 +290,7 @@ public final view JBreakStat of BreakStat extends JENode {
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
-	public:n,n,n,rw Object[] resolveBreakLabel(Code code) {
+	public Object[] resolveBreakLabel(Code code) {
 		String name = this.ident;
 		Object[] cl = new Object[0];
 		if( name == null || name == "" ) {
@@ -361,7 +366,7 @@ public final view JContinueStat of ContinueStat extends JENode {
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
-	public:n,n,n,rw Object[] resolveContinueLabel(Code code) {
+	public Object[] resolveContinueLabel(Code code) {
 		String name = this.ident;
 		Object[] cl = new Object[0];
 		if( name == null || name == "" ) {
@@ -427,7 +432,7 @@ public final view JGotoStat of GotoStat extends JENode {
 		}
 	}
 
-	public:n,n,n,rw JNode getAsJNode(JNode jn) { return jn; }
+	public JNode getAsJNode(JNode jn) { return jn; }
 	
 	public Object[] resolveLabelStat(Code code, JLabeledStat stat) {
 		Object[] cl1 = new CodeLabel[0];

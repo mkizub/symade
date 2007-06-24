@@ -219,7 +219,7 @@ public class AssignExpr extends ENode {
 				if !(rm.isMacro() && rm.isNative()) {
 					ENode res = info.buildCall((ASTNode)this, cae.obj, m, null, new ENode[]{~cae.index,~value});
 					res = res.closeBuild();
-					ANode.getVersion(this).replaceWithNodeReWalk(res);
+					this.replaceWithNodeReWalk(res);
 				}
 			}
 		} else {
@@ -315,7 +315,6 @@ public class BinaryExpr extends ENode {
 	
 	public Operator getOp() { return op; }
 	public void setOp(Operator op) {
-		this = this.open();
 		this.symbol = null;
 		this.op = op;
 	}
@@ -332,7 +331,6 @@ public class BinaryExpr extends ENode {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			this = this.open();
 			this.symbol = m;
 		}
 		Type ret = m.type.ret();
@@ -407,7 +405,6 @@ public class UnaryExpr extends ENode {
 	
 	public Operator getOp() { return op; }
 	public void setOp(Operator op) {
-		this = this.open();
 		this.symbol = null;
 		this.op = op;
 	}
@@ -424,7 +421,6 @@ public class UnaryExpr extends ENode {
 			m = op.resolveMethod(this);
 			if (m == null)
 				return Type.tpVoid;
-			this = this.open();
 			this.symbol = m;
 		}
 		Type ret = m.type.ret();

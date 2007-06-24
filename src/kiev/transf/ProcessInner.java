@@ -28,7 +28,7 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 	public String getDescr() { "Inner classes access rewrite" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
+		tr = Transaction.enter(tr,"InnerBE_Rewrite");
 		try {
 			node.walkTree(new TreeWalker() {
 				public boolean pre_exec(ANode n) { if (n instanceof ASTNode) return InnerBE_Rewrite.this.rewrite((ASTNode)n); return false; }
@@ -51,7 +51,6 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 		if (!MetaAccess.accessedFromInner(fa,f))
 			return true;
 		Method getter = f.makeReadAccessor();
-		fa = fa.open();
 		ENode ce = new CallExpr(fa.pos, new TypeRef(getter.ctx_tdecl.xtype), getter, new ENode[]{ ~fa.obj });
 		fa.replaceWithNodeReWalk(ce);
 		throw new Error();
@@ -62,7 +61,6 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 		if (!MetaAccess.accessedFromInner(fa,f))
 			return true;
 		Method getter = f.makeReadAccessor();
-		fa = fa.open();
 		ENode ce = new CallExpr(fa.pos, new TypeRef(getter.ctx_tdecl.xtype), getter, ENode.emptyArray);
 		fa.replaceWithNodeReWalk(ce);
 		throw new Error();
@@ -73,7 +71,6 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 		if (func == null || !MetaAccess.accessedFromInner(ce,func))
 			return true;
 		Method m = func.makeAccessor();
-		ce = ce.open();
 		ce.symbol = m;
 		if (!func.isStatic()) {
 			ce.args.insert(0, ~ce.obj);
@@ -87,7 +84,6 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 		if (func == null || !MetaAccess.accessedFromInner(ne,func))
 			return true;
 		Method m = func.makeAccessor();
-		ne = ne.open();
 		CallExpr ce = new CallExpr(ne.pos, new TypeRef(m.ctx_tdecl.xtype), m, ne.args.delToArray());
 		ce.setGenVoidExpr(ne.isGenVoidExpr());
 		ne.replaceWithNodeReWalk(ce);
@@ -101,8 +97,6 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 			if (!MetaAccess.accessedFromInner(fa,f))
 				return true;
 
-			ae = ae.open();
-			fa = fa.open();
 			Type ae_tp = ae.isGenVoidExpr() ? Type.tpVoid : ae.getType();
 			Operator op = null;
 			if      (ae.op == Operator.AssignAdd)                  op = Operator.Add;
@@ -159,8 +153,6 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 			if (!MetaAccess.accessedFromInner(fa,f))
 				return true;
 
-			ae = ae.open();
-			fa = fa.open();
 			Type ae_tp = ae.isGenVoidExpr() ? Type.tpVoid : ae.getType();
 			Operator op = null;
 			if      (ae.op == Operator.AssignAdd)                  op = Operator.Add;
@@ -208,8 +200,6 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 			if (!MetaAccess.accessedFromInner(fa,f))
 				return true;
 			ENode expr;
-			ie = ie.open();
-			fa = fa.open();
 			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
 			if (ie.isGenVoidExpr()) {
 				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {
@@ -265,8 +255,6 @@ public class InnerBE_Rewrite extends BackendProcessor implements Constants {
 			if (!MetaAccess.accessedFromInner(fa,f))
 				return true;
 			ENode expr;
-			ie = ie.open();
-			fa = fa.open();
 			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
 			if (ie.isGenVoidExpr()) {
 				if (ie.op == Operator.PreIncr || ie.op == Operator.PostIncr) {

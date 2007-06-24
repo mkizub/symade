@@ -63,10 +63,8 @@ public class SyntaxExpr extends SyntaxElem {
 			SyntaxExprTemplate@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
 				Kiev.reportError(template,"Unresolved expression template "+template);
-			else if (template.symbol != d) {
-				template.open();
+			else if (template.symbol != d)
 				template.symbol = d;
-			}
 		}
 	}
 	
@@ -135,10 +133,8 @@ public class SyntaxAutoParenth extends SyntaxElem {
 			SyntaxExprTemplate@ d;
 			if (!PassInfo.resolveNameR(this,d,new ResInfo(this,template.name,ResInfo.noForwards)))
 				Kiev.reportError(template,"Unresolved expression template "+template);
-			else if (template.symbol != d) {
-				template.open();
+			else if (template.symbol != d)
 				template.symbol = d;
-			}
 		}
 	}
 	

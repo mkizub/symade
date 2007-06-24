@@ -231,7 +231,6 @@ public abstract class CoreFunc {
 abstract class BinaryFunc extends CoreFunc {
 	public void normilizeExpr(Method core_method, ENode expr, Class cls, Operator op) {
 		if (expr.getClass() == cls) {
-			expr = expr.open();
 			expr.symbol = core_method;
 			return;
 		}
@@ -244,7 +243,7 @@ abstract class BinaryFunc extends CoreFunc {
 		for (int i=0; i < args.length; i++)
 			args[i] = args[i].detach();
 		en.initFrom(expr, op, core_method, args);
-		ANode.getVersion(expr).replaceWithNodeReWalk(en);
+		expr.replaceWithNodeReWalk(en);
 	}
 	public ConstExpr calc(ENode expr) {
 		ENode[] args = expr.getArgs();
@@ -258,7 +257,6 @@ abstract class BinaryFunc extends CoreFunc {
 abstract class UnaryFunc extends CoreFunc {
 	public void normilizeExpr(Method core_method, ENode expr, Class cls, Operator op) {
 		if (expr.getClass() == cls) {
-			expr = expr.open();
 			expr.symbol = core_method;
 			return;
 		}
@@ -271,7 +269,7 @@ abstract class UnaryFunc extends CoreFunc {
 		for (int i=0; i < args.length; i++)
 			args[i] = args[i].detach();
 		en.initFrom(expr, op, core_method, args);
-		ANode.getVersion(expr).replaceWithNodeReWalk(en);
+		expr.replaceWithNodeReWalk(en);
 	}
 	public ConstExpr calc(ENode expr) {
 		ENode[] args = expr.getArgs();

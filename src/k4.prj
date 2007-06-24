@@ -948,6 +948,7 @@ INTERFACE kievvlangPreScanneable kiev/vlang/PreScanneable kiev/vlang/AST.java
 INTERFACE kievvlangScope kiev/vlang/Scope kiev/vlang/Resolving.java
 INTERFACE kievvlangScopeOfMethods kiev/vlang/ScopeOfMethods kiev/vlang/Resolving.java
 INTERFACE kievvlangScopeOfNames kiev/vlang/ScopeOfNames kiev/vlang/Resolving.java
+INTERFACE kievvlangUnVersioned kiev/vlang/UnVersioned kiev/vlang/Tree.java
 INTERFACE kievvlangatt kiev/vlang/att kiev/vlang/Tree.java
 INTERFACE kievvlangdflow kiev/vlang/dflow kiev/vlang/Tree.java
 INTERFACE kievvlangnode kiev/vlang/node kiev/vlang/Tree.java

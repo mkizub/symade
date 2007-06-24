@@ -37,7 +37,6 @@ public final view RFinallyInfo of FinallyInfo extends RENode {
 
 	public void resolve(Type reqType) {
 		if (ret_arg == null) {
-			this.open();
 			ret_arg = new LVar(pos,"",Type.tpObject,Var.VAR_LOCAL,0);
 		}
 		try {

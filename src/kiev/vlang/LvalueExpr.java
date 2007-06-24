@@ -170,7 +170,7 @@ public final class AccessExpr extends LvalueExpr {
 		ENode e = res[idx].closeBuild();
 		if (isPrimaryExpr())
 			e.setPrimaryExpr(true);
-		ANode.getVersion(this).replaceWithNodeReWalk(e);
+		this.replaceWithNodeReWalk(e);
 	}
 
 	public ANode doRewrite(RewriteContext ctx) {
@@ -201,7 +201,7 @@ public final class IFldExpr extends LvalueExpr {
 	@abstract
 	@ref public:ro Field		var;
 
-	@getter @ref public Field get$var() {
+	@getter public Field get$var() {
 		DNode sym = this.dnode;
 		if (sym instanceof Field)
 			return (Field)sym;
@@ -354,7 +354,6 @@ public final class IFldExpr extends LvalueExpr {
 			msg.append("while resolving ").append(this);
 			throw new CompilerException(this, msg.toString());
 		}
-		this = this.open();
 		this.symbol = res[idx];
 	}
 
@@ -379,7 +378,6 @@ public final class IFldExpr extends LvalueExpr {
 					Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
 				} else {
 					f = (Field)v;
-					this = this.open();
 					this.symbol = f;
 				}
 			} else {
@@ -490,7 +488,9 @@ public final class ThisExpr extends LvalueExpr {
 
 	public void mainResolveOut() {
 		Method m = ctx_method;
-		setRewriteTarget(m != null && m.isMacro());
+		boolean rt = (m != null && m.isMacro());
+		if (rt != isRewriteTarget())
+			setRewriteTarget(rt);
 	}
 
 	public ANode doRewrite(RewriteContext ctx) {
@@ -576,7 +576,6 @@ public final class LVarExpr extends LvalueExpr {
 		ResInfo info = new ResInfo(this,this.ident);
 		if( !PassInfo.resolveNameR((ASTNode)this,v,info) )
 			throw new CompilerException(this,"Unresolved var "+ident);
-		this = this.open();
 		this.symbol = v;
 		return (Var)v;
 	}
@@ -590,12 +589,20 @@ public final class LVarExpr extends LvalueExpr {
 	}
 	
 	public boolean preResolveIn() {
-		getVar(); // calls resolving
+		Var v = getVar(); // calls resolving
+		if (v.ctx_root != this.ctx_root) {
+			this.ident = v.sname;
+			getVar();
+		}
 		return false;
 	}
 
 	public boolean mainResolveIn() {
-		getVar(); // calls resolving
+		Var v = getVar(); // calls resolving
+		if (v.ctx_root != this.ctx_root) {
+			this.ident = v.sname;
+			getVar();
+		}
 		return false;
 	}
 
@@ -635,7 +642,6 @@ public final class SFldExpr extends LvalueExpr {
 		if (obj != null) {
 			Field f = obj.getType().meta_type.tdecl.resolveField(ident, false);
 			if (f != null && f.isStatic()) {
-				this = this.open();
 				this.symbol = f;
 				return f;
 			}
@@ -716,7 +722,6 @@ public final class SFldExpr extends LvalueExpr {
 		}
 		
 		if (this.obj == null) {
-			this = this.open();
 			this.obj = new TypeRef(Env.getRoot().xtype);
 		}
 		
@@ -729,7 +734,6 @@ public final class SFldExpr extends LvalueExpr {
 			throw new CompilerException(this, "Unresolved static field "+ident+" in "+tp);
 		if !(res instanceof Field || !res.isStatic())
 			throw new CompilerException(this, "Resolved "+ident+" in "+tp+" is not a static field");
-		this = this.open();
 		this.symbol = res;
 	}
 
@@ -745,7 +749,6 @@ public final class SFldExpr extends LvalueExpr {
 					Kiev.reportError(this, "Re-resolved field "+v+" does not match old field "+f);
 				} else {
 					f = (Field)v;
-					this = this.open();
 					this.symbol = f;
 				}
 			} else {

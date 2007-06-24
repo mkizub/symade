@@ -36,7 +36,6 @@ public static final view RField of Field extends RVar {
 		if (init instanceof TypeRef)
 			((TypeRef)init).toExpr(type);
 		if (tp instanceof CTimeType) {
-			this.open();
 			init = tp.makeInitExpr(this,init);
 			try {
 				Kiev.runProcessorsOn(init);
@@ -50,7 +49,6 @@ public static final view RField of Field extends RVar {
 				init.resolve(tp);
 				Type it = init.getType();
 				if( !it.isInstanceOf(tp) ) {
-					this.open();
 					init = new CastExpr(init.pos,tp,~init);
 					init.resolve(tp);
 				}

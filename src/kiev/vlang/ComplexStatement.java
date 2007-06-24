@@ -198,7 +198,6 @@ public class SwitchStat extends Block {
 			return;
 		}
 	update:
-		this = this.open();
 		defCase = dflt;
 		cases.delAll();
 		foreach (CaseLabel l; labels)
@@ -212,21 +211,21 @@ public class SwitchStat extends Block {
 			sw.sel = ~this.sel;
 			foreach (ASTNode st; stats.delToArray())
 				sw.stats += st;
-			ANode.getVersion(this).replaceWithNodeReWalk(sw);
+			this.replaceWithNodeReWalk(sw);
 		}
 		if (tp.isReference() && tp.meta_type.tdecl.isHasCases()) {
 			MatchStat sw = new MatchStat();
 			sw.sel = ~this.sel;
 			foreach (ASTNode st; stats.delToArray())
 				sw.stats += st;
-			ANode.getVersion(this).replaceWithNodeReWalk(sw);
+			this.replaceWithNodeReWalk(sw);
 		}
 		if (tp.isReference()) {
 			SwitchTypeStat sw = new SwitchTypeStat();
 			sw.sel = ~this.sel;
 			foreach (ASTNode st; stats.delToArray())
 				sw.stats += st;
-			ANode.getVersion(this).replaceWithNodeReWalk(sw);
+			this.replaceWithNodeReWalk(sw);
 		}
 		if (tp.getAutoCastTo(Type.tpInt) ≢ Type.tpInt)
 			Kiev.reportError(this, "Type of switch selector must be int");

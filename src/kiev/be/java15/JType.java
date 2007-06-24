@@ -31,6 +31,7 @@ public class JFakeMetaType extends MetaType {
 public class JBaseMetaType extends MetaType {
 
 	public final Struct clazz;
+	
 	JBaseMetaType(Struct clazz) {
 		super(clazz);
 		this.clazz = clazz;

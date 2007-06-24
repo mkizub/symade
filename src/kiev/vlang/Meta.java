@@ -220,7 +220,7 @@ public class UserMeta extends MNode {
 		this.decl = new SymbolRef<Struct>(name);
 	}
 	
-	@getter @att
+	@getter
 	public String get$qname() {
 		TypeDecl s = decl.dnode;
 		if (s != null)
@@ -242,7 +242,6 @@ public class UserMeta extends MNode {
 			Struct@ node;
 			if( !PassInfo.resolveNameR(this,node,new ResInfo(this,name,ResInfo.noForwards)) )
 				Kiev.reportError(this,"Unresolved annotation name "+name);
-			this.decl.open();
 			this.decl.symbol = (Struct)node;
 			node.checkResolved();
 			return (Struct)node;
@@ -265,7 +264,6 @@ public class UserMeta extends MNode {
 			}
 			scope = (Struct)node;
 		} while (dot > 0);
-		this.decl.open();
 		this.decl.symbol = scope;
 		scope.checkResolved();
 		return scope;
@@ -345,7 +343,6 @@ public class UserMeta extends MNode {
 			}
 			if (m == null)
 				throw new CompilerException(v, "Unresolved method "+v.ident+" in class "+tdecl);
-			v = v.open();
 			v.symbol = m;
 			Type t = m.type.ret();
 			if (t instanceof ArrayType) {
@@ -503,7 +500,6 @@ public class UserMeta extends MNode {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].ident == name) {
-				values[i].open();
 				((MetaValueScalar)values[i]).value = new ConstBoolExpr(val);
 				return values[i];
 			}
@@ -518,7 +514,6 @@ public class UserMeta extends MNode {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].ident == name) {
-				values[i].open();
 				((MetaValueScalar)values[i]).value = new ConstIntExpr(val);
 				return values[i];
 			}
@@ -533,7 +528,6 @@ public class UserMeta extends MNode {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].ident == name) {
-				values[i].open();
 				((MetaValueScalar)values[i]).value = new ConstStringExpr(val);
 				return values[i];
 			}
@@ -589,16 +583,12 @@ public abstract class MetaValue extends ENode {
 	public void verify() {
 		if (parent() instanceof Method && pslot().name == "body") {
 			Method m = (Method)parent();
-			if (this.dnode != m) {
-				this = this.open();
+			if (this.dnode != m)
 				this.symbol = m;
-			}
 		}
 		else if (ident == null) {
-			if (ident != "value") {
-				this = this.open();
+			if (ident != "value")
 				this.ident = "value";
-			}
 		}
 	}
 	

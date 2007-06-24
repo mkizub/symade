@@ -111,7 +111,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 	public final void setVirtualStatic(boolean on) {
 		if (this.is_mth_virtual_static != on) {
-			assert(!locked);
 			this.is_mth_virtual_static = on;
 			if (!isStatic()) this.setStatic(true);
 		}
@@ -122,7 +121,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 	public final void setVarArgs(boolean on) {
 		if (this.meta.is_mth_varargs != on) {
-			assert(!locked);
 			this.meta.is_mth_varargs = on;
 		}
 	}
@@ -136,7 +134,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 	public final void setOperatorMethod(boolean on) {
 		if (this.is_mth_operator != on) {
-			assert(!locked);
 			this.is_mth_operator = on;
 		}
 	}
@@ -155,7 +152,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 	public final void setInvariantMethod(boolean on) {
 		if (this.is_mth_invariant != on) {
-			assert(!locked);
 			this.is_mth_invariant = on;
 		}
 	}
@@ -165,18 +161,12 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 	}
 	public final void setDispatcherMethod(boolean on) {
 		if (this.is_mth_dispatcher != on) {
-			assert(!locked);
 			this.is_mth_dispatcher = on;
 		}
 	}
 	// a methood inlined bt dispatcher (for multimethods)	
 	public final boolean isInlinedByDispatcherMethod() {
-		return this.is_mth_inlined_by_dispatcher;
-	}
-	public final void setInlinedByDispatcherMethod(boolean on) {
-		if (this.is_mth_inlined_by_dispatcher != on) {
-			this.is_mth_inlined_by_dispatcher = on;
-		}
+		return this.parent() instanceof InlineMethodStat;
 	}
 
 	final void rebuildTypes() {
@@ -382,7 +372,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 	public boolean preResolveIn() {
 		foreach (Var fp; params; fp.kind == Var.VAR_LOCAL)
-			fp.open().kind = Var.PARAM_NORMAL;
+			fp.kind = Var.PARAM_NORMAL;
 		Type t = this.type; // rebuildTypes()
 		return true;
 	}
@@ -459,7 +449,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			((CoreExpr)body).core_func.normilizeExpr(this,expr);
 			return;
 		}
-		expr = expr.open();
 		if (expr.ident == null) {
 			Operator op = expr.getOp();
 			if (op != null)
@@ -757,38 +746,33 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			throw new CompilerException(this,"Method must be declared on class level only");
 		TypeDecl clazz = this.ctx_tdecl;
 		// TODO: check flags for methods
-		if( clazz.isPackage() && !isStatic() ) { this = this.open(); setStatic(true); }
-		if( isPrivate() && isFinal() ) { this = this.open(); setFinal(false); }
-		else if( clazz.isClazz() && clazz.isFinal() && !isFinal() ) { this = this.open(); setFinal(true); }
+		if( clazz.isPackage() && !isStatic() ) { setStatic(true); }
+		if( isPrivate() && isFinal() ) { setFinal(false); }
+		else if( clazz.isClazz() && clazz.isFinal() && !isFinal() ) { setFinal(true); }
 		else if( clazz.isInterface() && !isPublic() ) {
-			this = this.open();
 			setPublic();
 			if (body == null && !isAbstract()) setAbstract(true);
 		}
 
 		if (clazz.isAnnotation() && params.length != 0) {
 			Kiev.reportError(this, "Annotation methods may not have arguments");
-			this = this.open();
 			params.delAll();
 			setVarArgs(false);
 		}
 
 		if (clazz.isAnnotation() && body != null && !(body instanceof MetaValue)) {
 			Kiev.reportError(this, "Annotation methods may not have bodies");
-			this = this.open();
 			body = null;
 		}
 
 		if (isTypeUnerasable()) {
 			foreach (Var fp; params; fp.kind >= Var.PARAM_TYPEINFO_N) {
-				this = this.open();
 				fp.detach();
 			}
 			int i = 0;
 			foreach (TypeDef td; targs) {
 				td.setTypeUnerasable(true);
 				LVar v = new LVar(td.pos,nameTypeInfo+"$"+td.sname, Type.tpTypeInfo, Var.PARAM_TYPEINFO_N+i, ACC_FINAL|ACC_SYNTHETIC);
-				this = this.open();
 				params.add(v);
 			}
 		}
@@ -801,7 +785,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 			if (fp.meta != null)
 				fp.meta.verify();
 			if (fp.kind == Var.VAR_LOCAL)
-				fp.open().kind = Var.PARAM_NORMAL;
+				fp.kind = Var.PARAM_NORMAL;
 		}
 
 		Type t = this.type; // rebuildTypes()
@@ -812,10 +796,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		foreach(ASTOperatorAlias al; aliases) al.pass3();
 
 		foreach(WBCCondition cond; conditions) {
-			if (cond.definer != this) {
-				cond = cond.open();
+			if (cond.definer != this)
 				cond.definer = this;
-			}
 		}
 
 		if (isMacro() && isNative() && body == null) {
@@ -878,7 +860,6 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		assert(isPrivate());
 		if (caller_from_inner != null)
 			return caller_from_inner;
-		this = this.open();
 		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), type_ret.getType(), ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		CallExpr ce;
@@ -946,18 +927,19 @@ public final class Constructor extends Method {
 		super(null, new TypeRef(Type.tpVoid), fl);
 	}
 	
-	@getter @att public String get$sname() {
-		return null;
-	}
-	@setter public void set$sname(String value) {
-		// do nothing, constructors are anonymouse
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "sname") {
+			assert(this.sname == null);
+			if (this.sname != null)
+				this.sname = null; // constructors are anonymouse
+		} else
+			super.callbackChildChanged(attr);
 	}
 
 	public Method makeAccessor() {
 		assert(isPrivate());
 		if (caller_from_inner != null)
 			return caller_from_inner;
-		this = this.open();
 		MethodImpl m = new MethodImpl(ctx_tdecl.allocateAccessName(), ctx_tdecl.xtype, ACC_STATIC | ACC_SYNTHETIC);
 		m.body = new Block();
 		NewExpr ne = new NewExpr(pos, new TypeRef(ctx_tdecl.xtype), ENode.emptyArray);

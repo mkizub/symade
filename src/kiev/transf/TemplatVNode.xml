@@ -1,0 +1,532 @@
+<?xml version='1.1' encoding='UTF-8' standalone='yes'?>
+<!--
+ Copyright (c) 2005-2007 UAB "MAKSINETA".
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Common Public License Version 1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/cpl-v10.html
+ 
+ Contributors:
+     "Maxim Kizub" mkizub@symade.com - initial design and implementation
+-->
+<a-node class='kiev.vlang.FileUnit'>
+ <srpkg>
+  <a-node class='kiev.vlang.SymbolRef'>
+   <name>kiev&#31;transf</name>
+   <qualified>true</qualified>
+  </a-node>
+ </srpkg>
+ <members>
+  <a-node class='kiev.vlang.Import'>
+   <name>
+    <a-node class='kiev.vlang.SymbolRef'>
+     <name>kiev&#31;Syntax</name>
+     <qualified>true</qualified>
+    </a-node>
+   </name>
+   <mode>IMPORT_SYNTAX</mode>
+   <star>false</star>
+   <of_method>false</of_method>
+  </a-node>
+  <a-node class='kiev.vlang.MetaTypeDecl'>
+   <super_types>
+    <a-node class='kiev.vlang.types.TypeNameRef'>
+     <ident>any</ident>
+    </a-node>
+   </super_types>
+   <members>
+    <a-node class='kiev.vlang.JavaClass'>
+     <super_types>
+      <a-node class='kiev.vlang.types.TypeNameRef'>
+       <ident>java&#31;lang&#31;Object</ident>
+       <qualified>true</qualified>
+      </a-node>
+     </super_types>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+       <metas>
+        <a-node class='kiev.vlang.MetaStatic'>
+        </a-node>
+       </metas>
+      </a-node>
+     </meta>
+     <sname>VVV</sname>
+    </a-node>
+    <a-node class='kiev.vlang.MethodImpl'>
+     <type_ret>
+      <a-node class='kiev.vlang.types.TypeNameRef'>
+       <ident>void</ident>
+      </a-node>
+     </type_ret>
+     <body>
+      <a-node class='kiev.vlang.RewriteMatch'>
+       <cases>
+        <a-node class='kiev.vlang.RewriteCase'>
+         <var>
+          <a-node class='kiev.vlang.RewritePattern'>
+           <vars>
+            <a-node class='kiev.vlang.RewritePattern'>
+             <vars>
+              <a-node class='kiev.vlang.RewritePattern'>
+               <kind>4</kind>
+               <vtype>
+                <a-node class='kiev.vlang.types.TypeExpr'>
+                 <arg>
+                  <a-node class='kiev.vlang.types.TypeNameRef'>
+                   <ident>EThis</ident>
+                  </a-node>
+                 </arg>
+                 <op_name>T #</op_name>
+                 <ident>_astnode_</ident>
+                </a-node>
+               </vtype>
+               <sname>obj</sname>
+              </a-node>
+             </vars>
+             <kind>4</kind>
+             <vtype>
+              <a-node class='kiev.vlang.types.TypeExpr'>
+               <arg>
+                <a-node class='kiev.vlang.types.TypeNameRef'>
+                 <ident>IFld</ident>
+                </a-node>
+               </arg>
+               <op_name>T #</op_name>
+               <ident>_astnode_</ident>
+              </a-node>
+             </vtype>
+             <sname>lval</sname>
+            </a-node>
+           </vars>
+           <kind>4</kind>
+           <vtype>
+            <a-node class='kiev.vlang.types.TypeExpr'>
+             <arg>
+              <a-node class='kiev.vlang.types.TypeNameRef'>
+               <ident>Set</ident>
+              </a-node>
+             </arg>
+             <op_name>T #</op_name>
+             <ident>_astnode_</ident>
+            </a-node>
+           </vtype>
+           <sname>self</sname>
+          </a-node>
+         </var>
+         <stats>
+          <a-node class='kiev.vlang.IfElseStat'>
+           <cond>
+            <a-node class='kiev.vlang.BinaryExpr'>
+             <op>V || V</op>
+             <expr1>
+              <a-node class='kiev.vlang.SFldExpr'>
+               <obj>
+                <a-node class='kiev.vlang.types.TypeNameRef'>
+                 <ident>Kiev</ident>
+                </a-node>
+               </obj>
+               <ident>run_batch</ident>
+              </a-node>
+             </expr1>
+             <expr2>
+              <a-node class='kiev.vlang.UnaryExpr'>
+               <op>! V</op>
+               <expr>
+                <a-node class='kiev.vlang.AccessExpr'>
+                 <obj>
+                  <a-node class='kiev.vlang.MacroSubstExpr'>
+                   <expr>
+                    <a-node class='kiev.vlang.MacroAccessExpr'>
+                     <obj>
+                      <a-node class='kiev.vlang.MacroAccessExpr'>
+                       <obj>
+                        <a-node class='kiev.vlang.LVarExpr'>
+                         <ident>self</ident>
+                        </a-node>
+                       </obj>
+                       <ident>lval</ident>
+                      </a-node>
+                     </obj>
+                     <ident>obj</ident>
+                    </a-node>
+                   </expr>
+                  </a-node>
+                 </obj>
+                 <ident>versioned</ident>
+                </a-node>
+               </expr>
+              </a-node>
+             </expr2>
+            </a-node>
+           </cond>
+           <thenSt>
+            <a-node class='kiev.vlang.BinaryExpr'>
+             <op>V = V</op>
+             <expr1>
+              <a-node class='kiev.vlang.MacroSubstExpr'>
+               <expr>
+                <a-node class='kiev.vlang.MacroAccessExpr'>
+                 <obj>
+                  <a-node class='kiev.vlang.LVarExpr'>
+                   <ident>self</ident>
+                  </a-node>
+                 </obj>
+                 <ident>lval</ident>
+                </a-node>
+               </expr>
+              </a-node>
+             </expr1>
+             <expr2>
+              <a-node class='kiev.vlang.MacroSubstExpr'>
+               <expr>
+                <a-node class='kiev.vlang.MacroAccessExpr'>
+                 <obj>
+                  <a-node class='kiev.vlang.LVarExpr'>
+                   <ident>self</ident>
+                  </a-node>
+                 </obj>
+                 <ident>value</ident>
+                </a-node>
+               </expr>
+              </a-node>
+             </expr2>
+            </a-node>
+           </thenSt>
+           <elseSt>
+            <a-node class='kiev.vlang.IfElseStat'>
+             <cond>
+              <a-node class='kiev.vlang.BinaryBoolExpr'>
+               <op>V == V</op>
+               <expr1>
+                <a-node class='kiev.vlang.CallExpr'>
+                 <obj>
+                  <a-node class='kiev.vlang.types.TypeNameRef'>
+                   <ident>Thread</ident>
+                  </a-node>
+                 </obj>
+                 <ident>currentThread</ident>
+                </a-node>
+               </expr1>
+               <expr2>
+                <a-node class='kiev.vlang.types.TypeNameRef'>
+                 <ident>CompilerThread</ident>
+                </a-node>
+               </expr2>
+               <ident>ref_eq</ident>
+              </a-node>
+             </cond>
+             <thenSt>
+              <a-node class='kiev.vlang.BinaryExpr'>
+               <op>V = V</op>
+               <expr1>
+                <a-node class='kiev.vlang.AccessExpr'>
+                 <obj>
+                  <a-node class='kiev.vlang.CallExpr'>
+                   <obj>
+                    <a-node class='kiev.vlang.types.TypeNameRef'>
+                     <ident>ASTNode</ident>
+                    </a-node>
+                   </obj>
+                   <args>
+                    <a-node class='kiev.vlang.MacroSubstExpr'>
+                     <expr>
+                      <a-node class='kiev.vlang.MacroAccessExpr'>
+                       <obj>
+                        <a-node class='kiev.vlang.MacroAccessExpr'>
+                         <obj>
+                          <a-node class='kiev.vlang.LVarExpr'>
+                           <ident>self</ident>
+                          </a-node>
+                         </obj>
+                         <ident>lval</ident>
+                        </a-node>
+                       </obj>
+                       <ident>obj</ident>
+                      </a-node>
+                     </expr>
+                    </a-node>
+                   </args>
+                   <ident>openCmp</ident>
+                  </a-node>
+                 </obj>
+                 <ident>{self&gt;lval&gt;ident}</ident>
+                </a-node>
+               </expr1>
+               <expr2>
+                <a-node class='kiev.vlang.MacroSubstExpr'>
+                 <expr>
+                  <a-node class='kiev.vlang.MacroAccessExpr'>
+                   <obj>
+                    <a-node class='kiev.vlang.LVarExpr'>
+                     <ident>self</ident>
+                    </a-node>
+                   </obj>
+                   <ident>value</ident>
+                  </a-node>
+                 </expr>
+                </a-node>
+               </expr2>
+              </a-node>
+             </thenSt>
+             <elseSt>
+              <a-node class='kiev.vlang.BinaryExpr'>
+               <op>V = V</op>
+               <expr1>
+                <a-node class='kiev.vlang.AccessExpr'>
+                 <obj>
+                  <a-node class='kiev.vlang.CastExpr'>
+                   <type>
+                    <a-node class='kiev.vlang.types.TypeNameRef'>
+                     <ident>VVV</ident>
+                    </a-node>
+                   </type>
+                   <expr>
+                    <a-node class='kiev.vlang.CallExpr'>
+                     <obj>
+                      <a-node class='kiev.vlang.types.TypeNameRef'>
+                       <ident>ASTNode</ident>
+                      </a-node>
+                     </obj>
+                     <args>
+                      <a-node class='kiev.vlang.MacroSubstExpr'>
+                       <expr>
+                        <a-node class='kiev.vlang.MacroAccessExpr'>
+                         <obj>
+                          <a-node class='kiev.vlang.MacroAccessExpr'>
+                           <obj>
+                            <a-node class='kiev.vlang.LVarExpr'>
+                             <ident>self</ident>
+                            </a-node>
+                           </obj>
+                           <ident>lval</ident>
+                          </a-node>
+                         </obj>
+                         <ident>obj</ident>
+                        </a-node>
+                       </expr>
+                      </a-node>
+                     </args>
+                     <ident>openEdt</ident>
+                    </a-node>
+                   </expr>
+                  </a-node>
+                 </obj>
+                 <ident>{self&gt;lval&gt;ident}</ident>
+                </a-node>
+               </expr1>
+               <expr2>
+                <a-node class='kiev.vlang.MacroSubstExpr'>
+                 <expr>
+                  <a-node class='kiev.vlang.MacroAccessExpr'>
+                   <obj>
+                    <a-node class='kiev.vlang.LVarExpr'>
+                     <ident>self</ident>
+                    </a-node>
+                   </obj>
+                   <ident>value</ident>
+                  </a-node>
+                 </expr>
+                </a-node>
+               </expr2>
+              </a-node>
+             </elseSt>
+            </a-node>
+           </elseSt>
+          </a-node>
+         </stats>
+        </a-node>
+       </cases>
+      </a-node>
+     </body>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+       <metas>
+        <a-node class='kiev.vlang.MetaMacro'>
+        </a-node>
+        <a-node class='kiev.vlang.MetaStatic'>
+        </a-node>
+       </metas>
+      </a-node>
+     </meta>
+     <sname>codeSet</sname>
+    </a-node>
+    <a-node class='kiev.vlang.MethodImpl'>
+     <type_ret>
+      <a-node class='kiev.vlang.types.TypeNameRef'>
+       <ident>void</ident>
+      </a-node>
+     </type_ret>
+     <body>
+      <a-node class='kiev.vlang.RewriteMatch'>
+       <cases>
+        <a-node class='kiev.vlang.RewriteCase'>
+         <var>
+          <a-node class='kiev.vlang.RewritePattern'>
+           <vars>
+            <a-node class='kiev.vlang.RewritePattern'>
+             <kind>4</kind>
+             <vtype>
+              <a-node class='kiev.vlang.types.TypeExpr'>
+               <arg>
+                <a-node class='kiev.vlang.types.TypeNameRef'>
+                 <ident>EThis</ident>
+                </a-node>
+               </arg>
+               <op_name>T #</op_name>
+               <ident>_astnode_</ident>
+              </a-node>
+             </vtype>
+             <sname>obj</sname>
+            </a-node>
+           </vars>
+           <kind>4</kind>
+           <vtype>
+            <a-node class='kiev.vlang.types.TypeExpr'>
+             <arg>
+              <a-node class='kiev.vlang.types.TypeNameRef'>
+               <ident>IFld</ident>
+              </a-node>
+             </arg>
+             <op_name>T #</op_name>
+             <ident>_astnode_</ident>
+            </a-node>
+           </vtype>
+           <sname>self</sname>
+          </a-node>
+         </var>
+         <stats>
+          <a-node class='kiev.vlang.IfElseStat'>
+           <cond>
+            <a-node class='kiev.vlang.BinaryExpr'>
+             <op>V || V</op>
+             <expr1>
+              <a-node class='kiev.vlang.SFldExpr'>
+               <obj>
+                <a-node class='kiev.vlang.types.TypeNameRef'>
+                 <ident>Kiev</ident>
+                </a-node>
+               </obj>
+               <ident>run_batch</ident>
+              </a-node>
+             </expr1>
+             <expr2>
+              <a-node class='kiev.vlang.BinaryExpr'>
+               <op>V || V</op>
+               <expr1>
+                <a-node class='kiev.vlang.BinaryBoolExpr'>
+                 <op>V == V</op>
+                 <expr1>
+                  <a-node class='kiev.vlang.CallExpr'>
+                   <obj>
+                    <a-node class='kiev.vlang.types.TypeNameRef'>
+                     <ident>Thread</ident>
+                    </a-node>
+                   </obj>
+                   <ident>currentThread</ident>
+                  </a-node>
+                 </expr1>
+                 <expr2>
+                  <a-node class='kiev.vlang.types.TypeNameRef'>
+                   <ident>CompilerThread</ident>
+                  </a-node>
+                 </expr2>
+                 <ident>ref_eq</ident>
+                </a-node>
+               </expr1>
+               <expr2>
+                <a-node class='kiev.vlang.BinaryExpr'>
+                 <op>V == V</op>
+                 <expr1>
+                  <a-node class='kiev.vlang.AccessExpr'>
+                   <obj>
+                    <a-node class='kiev.vlang.MacroSubstExpr'>
+                     <expr>
+                      <a-node class='kiev.vlang.MacroAccessExpr'>
+                       <obj>
+                        <a-node class='kiev.vlang.LVarExpr'>
+                         <ident>self</ident>
+                        </a-node>
+                       </obj>
+                       <ident>obj</ident>
+                      </a-node>
+                     </expr>
+                    </a-node>
+                   </obj>
+                   <ident>v_editor</ident>
+                  </a-node>
+                 </expr1>
+                 <expr2>
+                  <a-node class='kiev.vlang.ConstNullExpr'>
+                  </a-node>
+                 </expr2>
+                </a-node>
+               </expr2>
+              </a-node>
+             </expr2>
+            </a-node>
+           </cond>
+           <thenSt>
+            <a-node class='kiev.vlang.MacroSubstExpr'>
+             <expr>
+              <a-node class='kiev.vlang.LVarExpr'>
+               <ident>self</ident>
+              </a-node>
+             </expr>
+            </a-node>
+           </thenSt>
+           <elseSt>
+            <a-node class='kiev.vlang.AccessExpr'>
+             <obj>
+              <a-node class='kiev.vlang.CastExpr'>
+               <type>
+                <a-node class='kiev.vlang.types.TypeNameRef'>
+                 <ident>VVV</ident>
+                </a-node>
+               </type>
+               <expr>
+                <a-node class='kiev.vlang.AccessExpr'>
+                 <obj>
+                  <a-node class='kiev.vlang.MacroSubstExpr'>
+                   <expr>
+                    <a-node class='kiev.vlang.MacroAccessExpr'>
+                     <obj>
+                      <a-node class='kiev.vlang.LVarExpr'>
+                       <ident>self</ident>
+                      </a-node>
+                     </obj>
+                     <ident>obj</ident>
+                    </a-node>
+                   </expr>
+                  </a-node>
+                 </obj>
+                 <ident>v_editor</ident>
+                </a-node>
+               </expr>
+              </a-node>
+             </obj>
+             <ident>{self&gt;ident}</ident>
+            </a-node>
+           </elseSt>
+          </a-node>
+         </stats>
+        </a-node>
+       </cases>
+      </a-node>
+     </body>
+     <meta>
+      <a-node class='kiev.vlang.MetaSet'>
+       <metas>
+        <a-node class='kiev.vlang.MetaMacro'>
+        </a-node>
+        <a-node class='kiev.vlang.MetaStatic'>
+        </a-node>
+       </metas>
+      </a-node>
+     </meta>
+     <sname>codeGet</sname>
+    </a-node>
+   </members>
+   <sname>TemplateVNode</sname>
+  </a-node>
+ </members>
+</a-node>

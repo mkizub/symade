@@ -249,7 +249,7 @@ public class Editor extends InfoView implements KeyListener {
 								int idx = ap.index + 1;
 								if (idx > ap.length)
 									idx = ap.length;
-								changes.push(Transaction.open());
+								changes.push(Transaction.open("Editor.java:Ctrl+A"));
 								try {
 									((SpaceAttrSlot)ap.slot).insert(ap.node,idx,node);
 								} finally {
@@ -280,15 +280,13 @@ public class Editor extends InfoView implements KeyListener {
 								else if (node instanceof DNode)
 									dn = (DNode)node;
 								if (dn != null) {
-									changes.push(Transaction.open());
+									changes.push(Transaction.open("Editor.java:Ctrl+V"));
 									try {
 										SymbolRef obj = (SymbolRef)pattr.get();
 										if (obj != null) {
-											obj=obj.open();
 											obj.name = dn.sname;
 											obj.symbol = dn;
 										} else {
-											pattr.node.open();
 											obj = (SymbolRef)pattr.slot.typeinfo.newInstance();
 											obj.symbol = dn;
 											pattr.set(obj);
@@ -306,7 +304,7 @@ public class Editor extends InfoView implements KeyListener {
 							if (node.isAttached())
 								node = node.ncopy();
 							if (ap.slot.typeinfo.$instanceof(node)) {
-								changes.push(Transaction.open());
+								changes.push(Transaction.open("Editor.java:Ctrl+V"));
 								try {
 									((SpaceAttrSlot)ap.slot).insert(ap.node,ap.index,node);
 								} finally {
@@ -367,8 +365,7 @@ public class Editor extends InfoView implements KeyListener {
 	public void startItemEditor(ANode obj, KeyListener item_editor) {
 		assert (this.item_editor == null);
 		this.item_editor = item_editor;
-		changes.push(Transaction.open());
-		obj.open();
+		changes.push(Transaction.open("Editor.java:startItemEditor"));
 		view_canvas.repaint();
 	}
 
@@ -928,7 +925,6 @@ abstract class NewElemEditor implements KeyListener, PopupMenuListener {
 		public void actionPerformed(ActionEvent e) {
 			if (menu != null)
 				editor.view_canvas.remove(menu);
-			node = ANode.getVersion(node).open();
 			foreach (AttrSlot a; node.values(); a.name == attr) {
 				try {
 					ANode obj = (ANode)Class.forName(cls.qname().replace('\u001f','.')).newInstance();
@@ -1069,14 +1065,13 @@ final class PasteElemHere implements Runnable {
 	}
 	public void run() {
 		ANode node = this.paste_node;
-		editor.changes.push(Transaction.open());
+		editor.changes.push(Transaction.open("Editor.java:PasteElemHere"));
 		try {
 			if (node.isAttached())
 				node = node.ncopy();
 			if (pattr != null) {
-				pattr.node.open();
 				if (pattr.slot.is_space)
-					((SpaceAttrSlot)pattr.slot).insert(ANode.getVersion(pattr.node), 0, node);
+					((SpaceAttrSlot)pattr.slot).insert(pattr.node, 0, node);
 				else
 					pattr.set(node);
 			}
@@ -1134,7 +1129,7 @@ final class PasteElemNext implements Runnable {
 		Transferable content = editor.clipboard.getContents(null);
 		ANode node = (ANode)content.getTransferData(TransferableANode.transferableANodeFlavor);
 		ActionPoint ap = editor.getActionPoint(true);
-		editor.changes.push(Transaction.open());
+		editor.changes.push(Transaction.open("Editor.java:PasteElemNext"));
 		try {
 			if (node.isAttached())
 				node = node.ncopy();
@@ -1370,7 +1365,7 @@ class TextEditor implements KeyListener, ComboBoxEditor, Runnable {
 		if (name == null || name.length() == 0)
 			return;
 		boolean qualified = name.indexOf('\u001f') > 0;
-		DNode[] decls = ANode.getVersion((ASTNode)pattr.node).findForResolve(name,pattr.slot,false);
+		DNode[] decls = ((ASTNode)pattr.node).findForResolve(name,pattr.slot,false);
 		if (decls == null)
 			return;
 		if (combo == null) {
@@ -1744,7 +1739,7 @@ class OperatorEditor implements KeyListener, PopupMenuListener, Runnable {
 		public void actionPerformed(ActionEvent e) {
 			editor.view_canvas.remove(menu);
 			try {
-				ENode expr = ANode.getVersion(expr);
+				ENode expr = this.expr;
 				expr.setOp(op);
 			} catch (Throwable t) {
 				editor.stopItemEditor(true);

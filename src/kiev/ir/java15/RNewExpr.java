@@ -32,7 +32,6 @@ public static final view RNewExpr of NewExpr extends RENode {
 				ReturnStat.autoReturn(reqType, this);
 			return;
 		}
-		this.open();
 		Type type;
 		if (this.clazz != null) {
 			this.clazz.resolveDecl();
@@ -48,7 +47,6 @@ public static final view RNewExpr of NewExpr extends RENode {
 		if (outer == null && s.isStructInner() && !s.isStatic() && s.ometa_tdef != null) {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
-			this.open();
 			outer = new ThisExpr(pos);
 		}
 		if (outer != null) {
@@ -56,12 +54,10 @@ public static final view RNewExpr of NewExpr extends RENode {
 			type = type.bind(new TVarBld(s.ometa_tdef.getAType(), outer.getType()));
 		}
 		if (s.isTypeUnerasable()) {
-			this.open();
 			tpinfo = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((NewExpr)this,type,false); // Create static field for this type typeinfo
 			tpinfo.resolve(null);
 		}
 		else if (tpinfo != null) {
-			this.open();
 			tpinfo = null;
 		}
 		for(int i=0; i < args.length; i++)
@@ -83,7 +79,6 @@ public static final view RNewExpr of NewExpr extends RENode {
 		mt = (CallType)Type.getRealType(type,new CallType(type,null,ta,Type.tpVoid,false));
 		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,m,info,mt) ) {
-			this.open();
 			this.symbol = m;
 			m.makeArgs(args,type);
 			for(int i=0; i < args.length; i++)
@@ -110,7 +105,6 @@ public static final view RNewEnumExpr of NewEnumExpr extends RENode {
 				ReturnStat.autoReturn(reqType, this);
 			return;
 		}
-		this.open();
 		Type type = this.getType();
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
@@ -122,7 +116,6 @@ public static final view RNewEnumExpr of NewEnumExpr extends RENode {
 		mt = (CallType)Type.getRealType(type,new CallType(type,null,ta,Type.tpVoid,false));
 		ResInfo info = new ResInfo(this,null,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 		if( PassInfo.resolveBestMethodR(type,m,info,mt) ) {
-			this.open();
 			this.symbol = m;
 			m.makeArgs(args,type);
 			for(int i=0; i < args.length; i++)
@@ -203,7 +196,6 @@ public static final view RNewInitializedArrayExpr of NewInitializedArrayExpr ext
 		if( this.type == null ) {
 			if( !reqType.isArray() )
 				throw new CompilerException(this,"Type "+reqType+" is not an array type");
-			this.open();
 			type = reqType;
 			Type art = reqType;
 			int dim = 0;
@@ -249,7 +241,6 @@ public final view RNewClosure of NewClosure extends RENode {
 	public boolean preGenerate() {
 		if (clazz != null)                                                    
 			return true;
-		this.open();
 		clazz = Env.newStruct(null,false,(Struct)ctx_tdecl,0,new JavaAnonymouseClass(),true,null);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
@@ -301,7 +292,6 @@ public final view RNewClosure of NewClosure extends RENode {
 				val = new CastExpr(v.pos,v.type,val);
 			else
 				val = new CastExpr(v.pos,((CoreType)v.type).getRefTypeForPrimitive(),val);
-			v.open();
 			v.init = val;
 			body.insertSymbol(v,i);
 			if( !v.type.isReference() )

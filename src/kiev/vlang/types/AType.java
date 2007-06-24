@@ -433,6 +433,8 @@ public abstract class AType implements StdTypes, TVSet {
 		sep[0] = st.nextToken();
 		if (!sep[0].equals("(")) {
 			assert (sep[0].equals(",")||sep[0].equals(")"));
+			if (tdecl instanceof TypeDef)
+				return tdecl.getAType();
 			return tdecl.xtype;
 		}
 		TVarBld set = new TVarBld();

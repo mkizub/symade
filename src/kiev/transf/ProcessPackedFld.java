@@ -69,7 +69,6 @@ public final class PackedFldFE_Verify extends TransfProcessor {
 				Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 				return;
 			}
-			mp.fld.open();
 			mp.fld.symbol = p;
 			assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 		}
@@ -83,7 +82,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 	public String getDescr() { "Packed fields pre-generation" }
 
 	public void process(ASTNode node, Transaction tr) {
-		tr = Transaction.enter(tr);
+		tr = Transaction.enter(tr,"PackedFldME_PreGenerate");
 		try {
 			doProcess(node);
 		} finally { tr.leave(); }
@@ -110,7 +109,6 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			// Locate or create nearest packer field that can hold this one
 			MetaPacked mp = f.getMetaPacked();
 			if( mp.fld.dnode == null ) {
-				mp.open();
 				String mp_in = mp.getS("in");
 				if( mp_in != null && mp_in.length() > 0 ) {
 					Field p = s.resolveField(mp_in,false);
@@ -124,13 +122,11 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 						~mp;
 						continue;
 					}
-					mp.fld.open();
 					mp.fld.symbol = p;
 					assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 				}
 				else if( locatePackerField(packer,mp.size,s) ) {
 					// Found
-					mp.fld.open();
 					mp.fld.symbol = packer;
 					MetaPacker mpr = packer.getMetaPacker();
 					mp.offset = mpr.size;
@@ -142,7 +138,6 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					MetaPacker mpr = new MetaPacker();
 					p.setMeta(mpr);
 					s.addField(p);
-					mp.fld.open();
 					mp.fld.symbol = p;
 					mp.offset = 0;
 					mpr.size += mp.size;
@@ -192,7 +187,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 	public String getDescr() { "Packed fields rewrite" }
 
 	public void process(ASTNode fu, Transaction tr) {
-		tr = Transaction.enter(tr);
+		tr = Transaction.enter(tr,"PackedFldBE_Rewrite");
 		try {
 			fu.walkTree(new TreeWalker() {
 				public boolean pre_exec(ANode n) { PackedFldBE_Rewrite.this.rewrite(n); return true; }
@@ -216,7 +211,6 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 		IFldExpr ae = fa.ncopy();
-		ae = ae.open();
 		ae.symbol = mp.fld.symbol;
 		ENode expr = ae;
 		if (mp.offset > 0) {
@@ -244,8 +238,6 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		Field f = fa.var;
 		if( !f.isPackedField() )
 			return;
-		ae = ae.open();
-		fa = fa.open();
 		Block be = new Block(ae.pos);
 		Object acc;
 		if (fa.obj instanceof ThisExpr || fa.obj instanceof SuperExpr) {
@@ -316,7 +308,6 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		Field f = fa.var;
 		if( !f.isPackedField() )
 			return;
-		ie = ie.open();
 		MetaPacked mp = f.getMetaPacked();
 		ENode expr;
 		if (ie.isGenVoidExpr()) {
