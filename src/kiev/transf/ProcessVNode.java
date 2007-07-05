@@ -622,7 +622,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				v.init = new CastExpr(0,s.xtype,cae);
 				copyV.block.addSymbol(v);
 			} else {
-				v.init = new CastExpr(0,s.xtype,new ASTIdentifier(0,"to$node"));
+				v.init = new CastExpr(0,s.xtype,new EToken(0,"to$node",EToken.IS_IDENTIFIER));
 				copyV.block.addSymbol(v);
 			}
 			foreach (Field f; s.getAllFields()) {
@@ -922,13 +922,13 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			if (f.type.isInstanceOf(VNode_Base.tpANode)) {
 				ENode p_st = new IfElseStat(0,
 						new BinaryBoolExpr(0, Operator.NotEquals,
-							new IFldExpr(0,new ThisExpr(),f,true),
+							new IFldExpr(0,new ThisExpr(),f),
 							new ConstNullExpr()
 						),
 						new Block(0,new ENode[]{
 							new ExprStat(0,
 								new CallExpr(0,
-									new IFldExpr(0,new ThisExpr(),f,true),
+									new IFldExpr(0,new ThisExpr(),f),
 									new SymbolRef<Method>("callbackDetached"),
 									null,
 									ENode.emptyArray

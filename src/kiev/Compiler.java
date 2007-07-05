@@ -378,7 +378,6 @@ public class Compiler {
 	public static String project_file			= "project";
 	public static String output_dir				= "classes";
 	public static String compiler_classpath	= null;
-	public static boolean javaMode				= false;
 	public static boolean javacerrors			= false;
 	public static boolean nowarn				= false;
 	public static boolean code_nowarn			= true;
@@ -527,17 +526,7 @@ public class Compiler {
 					onoff = false;
 				}
 
-				if( args[a].equals("-java")) {
-					Compiler.javaMode = onoff;
-					if (onoff) {
-						Compiler.verify = true;
-						Compiler.safe = true;
-						Compiler.project_file = null;
-						Compiler.output_dir = null;
-					}
-					args[a] = null;
-				}
-				else if( args[a].equals("-disable") ) {
+				if( args[a].equals("-disable") ) {
 					args[a] = null;
 					Compiler.setExtension(!onoff,args[++a]);
 					args[a] = null;
@@ -981,8 +970,6 @@ public class Compiler {
 +"                  variable is used.\n"
 +" -d               Output root directory.  Default: \"classes\".\n"
 +"\n"
-+" -java            Java source code input; Kiev-specific keywords\n"
-+"                  are treated as identifiers.\n"
 +" -verify          Generate verifiable code.\n"
 +" -safe            Do not generate class files with compiler errors.\n"
 +"\n"

@@ -217,7 +217,7 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 	@virtual typedef This  = TypeOpDef;
 
 	@att public TypeDef			arg;
-	@att public ASTOperator		op;
+	@att public String			op;
 	@att public TypeRef			type;
 
 	public TypeOpDef() { super(null); }
@@ -241,8 +241,8 @@ public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 	}
 
 	public boolean hasName(String nm, boolean by_equals) {
-		if (by_equals && op != null && op.ident != null && op.ident != "") {
-			return ("T "+op.ident).equals(nm);
+		if (by_equals && op != null && op != "") {
+			return ("T "+op).equals(nm);
 		}
 		return false;
 	}

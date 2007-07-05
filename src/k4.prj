@@ -212,6 +212,7 @@ CLASS kievguiDrawableTreeCellRenderer kiev/gui/DrawableTreeCellRenderer kiev/g
 CLASS kievguiEditActions kiev/gui/EditActions kiev/gui/Actions.java
 CLASS kievguiEditor kiev/gui/Editor kiev/gui/Editor.java
 CLASS kievguiEnumEditor kiev/gui/EnumEditor kiev/gui/Editor.java
+CLASS kievguiExprEditActions kiev/gui/ExprEditActions kiev/gui/Actions.java
 CLASS kievguiFileActions kiev/gui/FileActions kiev/gui/Actions.java
 CLASS kievguiFindDialog kiev/gui/FindDialog kiev/gui/Editor.java
 CLASS kievguiFolderTrigger kiev/gui/FolderTrigger kiev/gui/Editor.java
@@ -220,6 +221,7 @@ CLASS kievguiInfoView kiev/gui/InfoView kiev/gui/InfoView.java
 CLASS kievguiInputEventInfo kiev/gui/InputEventInfo kiev/gui/Actions.java
 CLASS kievguiIntEditor kiev/gui/IntEditor kiev/gui/Editor.java
 CLASS kievguiNavigateEditor kiev/gui/NavigateEditor kiev/gui/Actions.java
+CLASS kievguiNavigateNode kiev/gui/NavigateNode kiev/gui/Actions.java
 CLASS kievguiNavigateView kiev/gui/NavigateView kiev/gui/Actions.java
 CLASS kievguiNewElemEditor kiev/gui/NewElemEditor kiev/gui/Editor.java
 CLASS kievguiNewElemHere kiev/gui/NewElemHere kiev/gui/Editor.java
@@ -236,12 +238,11 @@ CLASS kievguiUIActionViewContext kiev/gui/UIActionViewContext kiev/gui/Actions
 CLASS kievguiUIView kiev/gui/UIView kiev/gui/UIView.java
 CLASS kievguiWindow kiev/gui/Window kiev/gui/Window.java
 CLASS kievparserASTExpression kiev/parser/ASTExpression kiev/parser/ASTExpression.java
-CLASS kievparserASTIdentifier kiev/parser/ASTIdentifier kiev/parser/ASTIdentifier.java
 CLASS kievparserASTModifiers kiev/parser/ASTModifiers kiev/parser/ASTModifiers.java
-CLASS kievparserASTOperator kiev/parser/ASTOperator kiev/parser/ASTOperator.java
 CLASS kievparserASTOperatorAlias kiev/parser/ASTOperatorAlias kiev/parser/ASTOperatorAlias.java
 CLASS kievparserASTPragma kiev/parser/ASTPragma kiev/parser/ASTPragma.java
 CLASS kievparserAccFldExpr kiev/parser/AccFldExpr kiev/parser/TempExpr.java
+CLASS kievparserEToken kiev/parser/EToken kiev/parser/EToken.java
 CLASS kievparserOpdef kiev/parser/Opdef kiev/parser/Opdef.java
 CLASS kievparserParseError kiev/parser/ParseError kiev/parser/ParseError.java
 CLASS kievparserParseException kiev/parser/ParseException kiev/parser/ParseException.java
@@ -253,6 +254,7 @@ CLASS kievparserTokenMgrError kiev/parser/TokenMgrError kiev/parser/TokenMgrEr
 CLASS kievparserUnresCallExpr kiev/parser/UnresCallExpr kiev/parser/TempExpr.java
 CLASS kievparserUnresExpr kiev/parser/UnresExpr kiev/parser/TempExpr.java
 CLASS kievparserUnresOpExpr kiev/parser/UnresOpExpr kiev/parser/TempExpr.java
+CLASS kievparserUnresSeqs kiev/parser/UnresSeqs kiev/parser/TempExpr.java
 CLASS kievparserkiev040 kiev/parser/kiev040 kiev/parser/kiev040.java
 CLASS kievparserkiev040TokenManager kiev/parser/kiev040TokenManager kiev/parser/kiev040TokenManager.java
 CLASS kievstdlibArrayEnumerator kiev/stdlib/ArrayEnumerator kiev/stdlib/ArrayEnumerator.java

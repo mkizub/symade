@@ -38,6 +38,12 @@ public final class TypeNameRef extends TypeRef {
 		this.type_lnk = tp;
 	}
 
+	public TypeNameRef(int pos, String nm, Type tp) {
+		this.pos = pos;
+		this.ident = nm;
+		this.type_lnk = tp;
+	}
+
 	public TypeNameRef(Type tp) {
 		String nm = tp.meta_type.qname();
 		this.ident = nm;

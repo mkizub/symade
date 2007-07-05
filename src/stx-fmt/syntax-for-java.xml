@@ -1766,6 +1766,7 @@
       </a-node>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>instanceof</text>
+       <kind>OPERATOR</kind>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-keyword</name>
@@ -1774,6 +1775,7 @@
       </a-node>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>$cast</text>
+       <kind>OPERATOR</kind>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-keyword</name>
@@ -1782,6 +1784,7 @@
       </a-node>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>$reinterp</text>
+       <kind>OPERATOR</kind>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-keyword</name>
@@ -1790,6 +1793,7 @@
       </a-node>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>DEFAULT</text>
+       <kind>OPERATOR</kind>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-operator</name>
@@ -1807,6 +1811,7 @@
      <l_paren>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>(</text>
+       <kind>SEPARATOR</kind>
       </a-node>
      </l_paren>
      <bad_op>
@@ -1818,11 +1823,13 @@
      <r_paren>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>)</text>
+       <kind>SEPARATOR</kind>
       </a-node>
      </r_paren>
      <operators>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>DEFAULT</text>
+       <kind>OPERATOR</kind>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-operator-type</name>
@@ -1945,7 +1952,7 @@
        <name>stx-types-Macro</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
-       <name>ASTIdentifier</name>
+       <name>EToken</name>
       </a-node>
       <a-node class='kiev.vlang.SymbolRef'>
        <name>ThisExpr</name>
@@ -2841,7 +2848,7 @@
       <a-node class='kiev.fmt.SyntaxElemDecl'>
        <rnode>
         <a-node class='kiev.vlang.SymbolRef'>
-         <name>ASTOperator</name>
+         <name>EToken</name>
         </a-node>
        </rnode>
        <elem>
@@ -7412,7 +7419,7 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
-       <name>ASTIdentifier</name>
+       <name>EToken</name>
       </a-node>
      </rnode>
      <elem>
@@ -7441,6 +7448,7 @@
      <elem>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>this</text>
+       <kind>KEYWORD</kind>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-keyword</name>
@@ -7459,6 +7467,7 @@
      <elem>
       <a-node class='kiev.fmt.SyntaxToken'>
        <text>super</text>
+       <kind>KEYWORD</kind>
        <fmt>
         <a-node class='kiev.vlang.SymbolRef'>
          <name>fmt-keyword</name>
@@ -7482,6 +7491,7 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>.</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator-eat-all</name>
@@ -7490,6 +7500,7 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>this</text>
+         <kind>KEYWORD</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-keyword</name>
@@ -7535,6 +7546,7 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>.</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator-eat-all</name>
@@ -7603,6 +7615,7 @@
        <separator>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>.</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator-eat-all</name>
@@ -7661,6 +7674,7 @@
        <separator>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>.</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator-eat-all</name>
@@ -7735,40 +7749,6 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
-       <name>ASTIdentifier</name>
-      </a-node>
-     </rnode>
-     <elem>
-      <a-node class='kiev.fmt.SyntaxIdentAttr'>
-       <decl>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>ident-template</name>
-        </a-node>
-       </decl>
-       <name>ident</name>
-       <fmt>
-        <a-node class='kiev.vlang.SymbolRef'>
-         <name>fmt-symref</name>
-        </a-node>
-       </fmt>
-       <funcs>
-        <a-node class='kiev.fmt.SyntaxFunctions'>
-         <funcs>
-          <a-node class='kiev.fmt.SyntaxFunction'>
-           <title>Edit name</title>
-           <act>kiev.gui.TextEditor$Factory</act>
-           <attr>ident</attr>
-          </a-node>
-         </funcs>
-        </a-node>
-       </funcs>
-      </a-node>
-     </elem>
-     <sname>stx-expr-ident</sname>
-    </a-node>
-    <a-node class='kiev.fmt.SyntaxElemDecl'>
-     <rnode>
-      <a-node class='kiev.vlang.SymbolRef'>
        <name>ContainerAccessExpr</name>
       </a-node>
      </rnode>
@@ -7795,6 +7775,7 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>[</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator-eat-all</name>
@@ -7806,6 +7787,7 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>]</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator-eat-all</name>
@@ -7833,6 +7815,7 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>.</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator-eat-all</name>
@@ -7841,6 +7824,7 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>class</text>
+         <kind>KEYWORD</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-keyword</name>
@@ -7868,6 +7852,7 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>.</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator-eat-all</name>
@@ -7876,6 +7861,7 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>type</text>
+         <kind>KEYWORD</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-keyword</name>
@@ -7923,6 +7909,7 @@
        <separator>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>.</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator-eat-all</name>
@@ -7954,6 +7941,7 @@
            <separator>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>,</text>
+             <kind>SEPARATOR</kind>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-separator-eat-left</name>
@@ -7964,6 +7952,7 @@
            <prefix>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>(</text>
+             <kind>SEPARATOR</kind>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-separator-eat-all</name>
@@ -7974,6 +7963,7 @@
            <sufix>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>)</text>
+             <kind>SEPARATOR</kind>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-separator-eat-left</name>
@@ -8026,6 +8016,7 @@
          <separator>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>,</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator</name>
@@ -8036,6 +8027,7 @@
          <prefix>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>(</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-all</name>
@@ -8046,6 +8038,7 @@
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>)</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-left</name>
@@ -8098,6 +8091,7 @@
          <separator>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>,</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator</name>
@@ -8108,6 +8102,7 @@
          <prefix>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>(</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-all</name>
@@ -8118,6 +8113,7 @@
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>)</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-left</name>
@@ -8160,6 +8156,7 @@
        <separator>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>+</text>
+         <kind>OPERATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-operator</name>
@@ -8203,6 +8200,7 @@
        <separator>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>,</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator</name>
@@ -8286,6 +8284,7 @@
            <separator>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>,</text>
+             <kind>SEPARATOR</kind>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-separator</name>
@@ -8325,6 +8324,7 @@
            <empty>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text> ()</text>
+             <kind>SEPARATOR</kind>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-separator-eat-left</name>
@@ -8364,6 +8364,7 @@
        <separator>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>,</text>
+         <kind>SEPARATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator</name>
@@ -8430,6 +8431,7 @@
            <elements>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>[</text>
+             <kind>SEPARATOR</kind>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-separator-eat-all</name>
@@ -8440,6 +8442,7 @@
             </a-node>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>]</text>
+             <kind>SEPARATOR</kind>
              <fmt>
               <a-node class='kiev.vlang.SymbolRef'>
                <name>fmt-separator-eat-all</name>
@@ -8456,6 +8459,7 @@
          <empty>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>[]</text>
+           <kind>OPERATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-all</name>
@@ -8499,6 +8503,7 @@
          <separator>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>,</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator</name>
@@ -8509,6 +8514,7 @@
          <prefix>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>{</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator</name>
@@ -8519,6 +8525,7 @@
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>}</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator</name>
@@ -8531,6 +8538,7 @@
          <empty>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>{}</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-all</name>
@@ -8557,6 +8565,7 @@
        <elements>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>fun</text>
+         <kind>KEYWORD</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-keyword</name>
@@ -8576,6 +8585,7 @@
          <separator>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>,</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator</name>
@@ -8586,6 +8596,7 @@
          <prefix>
           <a-node class='kiev.fmt.SyntaxToken'>
            <text>(</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-all</name>
@@ -8595,7 +8606,8 @@
          </prefix>
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>)-&gt;</text>
+           <text>)</text>
+           <kind>SEPARATOR</kind>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-all</name>
@@ -8605,6 +8617,15 @@
          </sufix>
          <folded_by_default>false</folded_by_default>
          <name>params</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>-&gt;</text>
+         <kind>OPERATOR</kind>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-separator-eat-all</name>
+          </a-node>
+         </fmt>
         </a-node>
         <a-node class='kiev.fmt.SyntaxSubAttr'>
          <name>type_ret</name>
@@ -12437,6 +12458,80 @@
     <a-node class='kiev.fmt.SyntaxElemDecl'>
      <rnode>
       <a-node class='kiev.vlang.SymbolRef'>
+       <name>ASTExpression</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxList'>
+       <element>
+        <a-node class='kiev.fmt.SyntaxNode'>
+        </a-node>
+       </element>
+       <separator>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text></text>
+        </a-node>
+       </separator>
+       <prefix>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text></text>
+         <kind>SEPARATOR</kind>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-separator</name>
+          </a-node>
+         </fmt>
+        </a-node>
+       </prefix>
+       <sufix>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text></text>
+         <kind>SEPARATOR</kind>
+         <fmt>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>fmt-separator</name>
+          </a-node>
+         </fmt>
+        </a-node>
+       </sufix>
+       <folded_by_default>false</folded_by_default>
+       <name>nodes</name>
+       <expected_types>
+        <a-node class='kiev.vlang.SymbolRef'>
+         <name>EToken</name>
+        </a-node>
+       </expected_types>
+      </a-node>
+     </elem>
+     <sname>stx-unparsed-expr</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
+       <name>EToken</name>
+      </a-node>
+     </rnode>
+     <elem>
+      <a-node class='kiev.fmt.SyntaxSubAttr'>
+       <name>ident</name>
+       <funcs>
+        <a-node class='kiev.fmt.SyntaxFunctions'>
+         <funcs>
+          <a-node class='kiev.fmt.SyntaxFunction'>
+           <title>Edit image</title>
+           <act>kiev.gui.TextEditor$Factory</act>
+           <attr>ident</attr>
+          </a-node>
+         </funcs>
+        </a-node>
+       </funcs>
+      </a-node>
+     </elem>
+     <sname>stx-unparsed-token</sname>
+    </a-node>
+    <a-node class='kiev.fmt.SyntaxElemDecl'>
+     <rnode>
+      <a-node class='kiev.vlang.SymbolRef'>
        <name>ConstBoolExpr</name>
       </a-node>
      </rnode>
@@ -12687,7 +12782,7 @@
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>↣</text>
-         <kind>SEPARATOR</kind>
+         <kind>OPERATOR</kind>
          <fmt>
           <a-node class='kiev.vlang.SymbolRef'>
            <name>fmt-separator-eat-all</name>

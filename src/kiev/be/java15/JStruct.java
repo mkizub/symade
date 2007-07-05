@@ -273,11 +273,9 @@ public final view JStruct of Struct extends JTypeDecl {
 
 	public void toBytecode(ConstPool constPool) {
 		String output_dir = Kiev.output_dir;
-		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
+		if( output_dir == null ) output_dir = "classes";
 		String out_file;
-		if( Kiev.javaMode && output_dir == null )
-			out_file = this.sname;
-		else if( this.isPackage() )
+		if( this.isPackage() )
 			out_file = (this.bname()+"/package").replace('/',File.separatorChar);
 		else
 			out_file = this.bname().replace('/',File.separatorChar).toString();

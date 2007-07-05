@@ -77,14 +77,14 @@ public abstract class JType {
 	public static final JPrimitiveType tpFloat		= new JPrimitiveType(StdTypes.tpFloat,   JConstants.sigFloat);
 	public static final JPrimitiveType tpDouble	= new JPrimitiveType(StdTypes.tpDouble,  JConstants.sigDouble);
 	
-	public static final JBaseType tpObject			= ($cast JBaseType)StdTypes.tpObject.getJType();
-	public static final JBaseType tpClass			= ($cast JBaseType)StdTypes.tpClass.getJType();
-	public static final JBaseType tpString			= ($cast JBaseType)StdTypes.tpString.getJType();
-	public static final JBaseType tpCloneable		= ($cast JBaseType)StdTypes.tpCloneable.getJType();
-	public static final JBaseType tpThrowable		= ($cast JBaseType)StdTypes.tpThrowable.getJType();
-	public static final JBaseType tpRule			= ($cast JBaseType)StdTypes.tpRule.getJType();
+	public static final JBaseType tpObject			= (JBaseType)StdTypes.tpObject.getJType();
+	public static final JBaseType tpClass			= (JBaseType)StdTypes.tpClass.getJType();
+	public static final JBaseType tpString			= (JBaseType)StdTypes.tpString.getJType();
+	public static final JBaseType tpCloneable		= (JBaseType)StdTypes.tpCloneable.getJType();
+	public static final JBaseType tpThrowable		= (JBaseType)StdTypes.tpThrowable.getJType();
+	public static final JBaseType tpRule			= (JBaseType)StdTypes.tpRule.getJType();
 	
-	public static final JArrayType tpArray			= ($cast JArrayType)StdTypes.tpArray.getJType();
+	public static final JArrayType tpArray			= (JArrayType)StdTypes.tpArray.getJType();
 
 	public final MetaType		jmeta_type;
 	public final KString		java_signature;

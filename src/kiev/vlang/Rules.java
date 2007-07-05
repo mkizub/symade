@@ -231,46 +231,9 @@ public abstract class ASTRuleNode extends ENode {
 		depth = -1;
 	}
 
-	public abstract void createText(StringBuffer sb);
 	public abstract void rnResolve();
 	public abstract void resolve1(ASTRuleNode next_check, ASTRuleNode next_back, boolean jump_to_back);
 
-	public String createTextUnification(LVarExpr var) {
-		return "if( "+createTextVarAccess(var)+".$is_bound ) goto bound$"+idx+";\n";
-	}
-
-	public String createTextBacktrack(boolean load) {
-		if (next_back == null)
-			return "return null;\n";	// return false - no more solutions
-		assert( ((RuleMethod)ctx_method).base != 1 || load==false);
-		if (jump_to_back) {
-			assert (next_back.idx > 0);
-			if (load) return "bt$ = $env.bt$"+depth+"; goto enter$"+next_back.idx+";\n";
-			return "goto enter$"+next_back.idx+";\n";
-		}
-		if (load)
-			return "bt$ = $env.bt$"+depth+"; goto case bt$;\n"; // backtrack to saved address
-		if (((RuleMethod)ctx_method).base == 1)
-			return "return null;\n";
-		return "goto case bt$;\n"; // backtrack to saved address
-	}
-
-
-	public String createTextMoreCheck(boolean force_goto) {
-		if (next_check == null)
-			return "$env.bt$=bt$; return $env;\n";				// return true - we've found a solution
-		if (force_goto || next_check.idx != (idx+1)) {
-			assert (next_check.idx > 0);
-			return	"goto enter$"+next_check.idx+";\n";		// jump to new check
-		}
-		return "";
-	}
-
-	public String createTextVarAccess(LVarExpr v) {
-		if (v.getVar().kind != Var.VAR_RULE) return v.ident.toString();
-		return "$env."+v;
-	}
-	
 	public abstract void testGenerate(SpacePtr space, Struct frame);
 }
 
@@ -286,7 +249,6 @@ public final class RuleBlock extends ENode {
 	@virtual typedef RView = RRuleBlock;
 
 	@att public ASTRuleNode		rnode;
-	     public StringBuffer	fields_buf;
 
 	public RuleBlock() {}
 
@@ -359,11 +321,6 @@ public final class RuleOrExpr extends ASTRuleNode {
 		this.rules.addAll(rules);
 	}
 
-	public void createText(StringBuffer sb) {
-		foreach( ASTRuleNode n; rules )
-			n.createText(sb);
-	}
-
 	public void testGenerate(SpacePtr space, Struct frame) {
     	for(int i=0; i < rules.length; i++) {
     		rules[i].testGenerate(space, frame);
@@ -423,11 +380,6 @@ public final class RuleAndExpr extends ASTRuleNode {
 	public RuleAndExpr(int pos, ASTRuleNode[] rules) {
 		this.pos = pos;
 		this.rules.addAll(rules);
-	}
-
-	public void createText(StringBuffer sb) {
-		foreach( ASTRuleNode n; rules )
-			n.createText(sb);
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
@@ -534,31 +486,6 @@ public final class RuleIstheExpr extends ASTRuleNode {
 		depth = ((RuleMethod)ctx_method).push();
 	}
 
-	public void createText(StringBuffer sb) {
-		sb.append(
-			"enter$"+idx+":;\n"+
-				createTextUnification(var)+
-
-			// Unbound
-				"if !( "+createTextVarAccess(var)+".$bind_chk("+Kiev.reparseExpr(expr,true)+") ) {\n"+
-					createTextBacktrack(false)+					// backtrack, bt$ already loaded
-				"}\n"+
-				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
-				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
-				createTextMoreCheck(true)+						// check next
-			"case "+base+":\n"+									// backtracking, always fail state
-				createTextVarAccess(var)+".$unbind();\n"+		// was binded here, unbind
-				createTextBacktrack(true)+						// backtrack, bt$ needs to be loaded
-
-			// Already bound
-			"bound$"+idx+":;\n"+
-				"if !( "+createTextVarAccess(var)+".equals("+Kiev.reparseExpr(expr,true)+") ) {\n"+	// check
-					createTextBacktrack(false)+					// backtrack, bt$ already loaded
-				"}\n"+
-				createTextMoreCheck(false)							// check next
-		);
-	}
-
 	public void testGenerate(SpacePtr space, Struct frame) {
 		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
 		if (tdecl == null)
@@ -654,89 +581,6 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		}
 		Debug.assert(rb != null);
 		Debug.assert(rb instanceof RuleBlock);
-		((RuleBlock)rb).fields_buf.append(itype)
-			.append(' ').append("$iter$").append(iter_var).append(";\n");
-	}
-
-	private String createTextCheckUnbinded() {
-		return "("+createTextVarAccess(var)+".$is_bound)";
-	}
-
-	private String createTextUnification() {
-		return createTextUnification(var);
-	}
-
-	private String createTextNewIterator() {
-		switch( mode ) {
-		case IsoneofMode.ARRAY:
-			return "new "+itype+"("+Kiev.reparseExpr(expr,true)+")";
-		case IsoneofMode.KENUM:
-			return Kiev.reparseExpr(expr,true);
-		case IsoneofMode.JENUM:
-			return Kiev.reparseExpr(expr,true);
-		case IsoneofMode.ELEMS:
-			return "("+Kiev.reparseExpr(expr,true)+").elements()";
-		}
-	}
-
-	private String createTextNewIterators() {
-		return "$env.$iter$"+iter_var+"="+createTextNewIterator()+";\n";
-	}
-
-	private String createTextUnbindVars() {
-		return "$env.$iter$"+iter_var+"=null;\n"+
-				createTextVarAccess(var)+".$unbind();\n";
-	}
-
-	private String createTextHasMore() {
-		return "$env.$iter$"+iter_var+".hasMoreElements()";
-	}
-
-	private String createTextCheckNext() {
-		return createTextVarAccess(var)+".$rebind_chk($env.$iter$"+iter_var+".nextElement())";
-	}
-
-	private String createTextContaince() {
-		switch( mode ) {
-		case IsoneofMode.ARRAY:
-			return "kiev.stdlib.ArrayEnumerator.contains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
-		case IsoneofMode.KENUM:
-			return "kiev.stdlib.rule.contains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
-		case IsoneofMode.JENUM:
-			return "kiev.stdlib.rule.jcontains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
-		case IsoneofMode.ELEMS:
-			return Kiev.reparseExpr(expr,true)+".contains("+var.ident+".$var)";
-		}
-	}
-
-	public void createText(StringBuffer sb) {
-		sb.append(
-			"enter$"+idx+":;\n"+
-				createTextUnification()+
-
-			// Bind here
-				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
-				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
-				createTextNewIterators()+						// create iterators
-			"case "+(base+0)+":\n"+								// backtracking, check next element
-				"while( "+createTextHasMore()+" ) {\n"+
-					"if !( "+createTextCheckNext()+" ) continue;\n"+
-					createTextMoreCheck(true)+
-				"}\n"+
-				createTextUnbindVars()+							// binded here, unbind
-				createTextBacktrack(true)+						// backtrack, bt$ may needs to be loaded
-				"\n"+
-
-			// Already binded
-			"bound$"+idx+":;\n"+
-				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
-				"bt$ = "+(base+1)+";\n"+						// set new backtrack state to point itself
-				"if( "+createTextContaince()+" ) {\n"+			// check
-					createTextMoreCheck(true)+
-				"}\n"+
-			"case "+(base+1)+":\n"+
-				createTextBacktrack(true)						// backtrack, bt$ may needs to be loaded
-		);
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
@@ -774,15 +618,6 @@ public final class RuleCutExpr extends ASTRuleNode {
 		this.next_back = next_back;
 		this.jump_to_back = jump_to_back;
 		idx = ++((RuleMethod)ctx_method).index;
-	}
-
-	public void createText(StringBuffer sb) {
-		sb.append(
-			// No unification need
-			"enter$"+idx+":;\n"+
-				"bt$ = 0;\n"+								// backtracking, always fail state, state 0 is 'return null'
-				createTextMoreCheck(false)
-		);
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
@@ -855,44 +690,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 		}
 		Debug.assert(rb != null);
 		Debug.assert(rb instanceof RuleBlock);
-		((RuleBlock)rb).fields_buf.append("rule $rc$frame$")
-			.append(env_var).append(";\n");
-	}
-
-	private String createTextCall() {
-		StringBuffer sb = new StringBuffer();
-		sb.append("($env.$rc$frame$").append(env_var).append("=");
-		if( obj != null ) {
-			if (this.isSuperExpr()) {
-				assert (obj instanceof SuperExpr);
-				sb.append("super.");
-			} else {
-				sb.append(Kiev.reparseExpr(obj,true)).append('.');
-			}
-		}
-		else if (this.isSuperExpr()) {
-			sb.append("super.");
-		}
-		sb.append(ident).append('(');
-		for(int i=0; i < args.length; i++) {
-			sb.append(Kiev.reparseExpr(args[i],true));
-			if( i < args.length-1) sb.append(',');
-		}
-		sb.append("))");
-		return sb.toString();
-	}
-
-	public void createText(StringBuffer sb) {
-		sb.append(
-			"enter$"+idx+":;\n"+
-				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
-				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
-			"case "+base+":\n"+
-				"if !( "+createTextCall()+" ) {\n"+
-					createTextBacktrack(true)+					// backtrack, bt$ may needs to be loaded
-				"}\n"+
-				createTextMoreCheck(false)
-		);
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {
@@ -984,24 +781,6 @@ public final class RuleWhileExpr extends RuleExprBase {
 		depth = ((RuleMethod)ctx_method).push();
 	}
 
-	public void createText(StringBuffer sb) {
-		sb.append(
-			// No unification need
-			"enter$"+idx+":;\n"+
-				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
-				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
-			"case "+base+":\n"+
-				(bt_expr == null ?
-					""
-				:	Kiev.reparseExpr(bt_expr,true)+";\n"
-				)+
-				"if !( "+Kiev.reparseExpr(expr,true)+" ) {\n"+
-					createTextBacktrack(true)+						// backtrack, bt$ may needs to be loaded
-				"}\n"+
-				createTextMoreCheck(false)
-		);
-	}
-
 	public void testGenerate(SpacePtr space, Struct frame) {
 		TypeDecl tdecl = (TypeDecl)Env.resolveGlobalDNode("kiev\u001fir\u001fRuleTemplates");
 		if (tdecl == null)
@@ -1059,30 +838,6 @@ public final class RuleExpr extends RuleExprBase {
 			base = ((RuleMethod)ctx_method).allocNewBase(1);
 			depth = ((RuleMethod)ctx_method).push();
 		}
-	}
-
-	public void createText(StringBuffer sb) {
-		sb.append(
-			// No unification need
-			"enter$"+idx+":;\n"+
-				( expr.getType().equals(Type.tpBoolean) ?
-					"if !( "+Kiev.reparseExpr(expr,true)+" ) {\n"+
-						createTextBacktrack(false)+					// backtrack, bt$ already loaded
-					"}\n"+
-					createTextMoreCheck(false)
-				: bt_expr == null ?
-					Kiev.reparseExpr(expr,true)+";\n"+
-					createTextMoreCheck(false)
-				:
-					"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
-					"bt$ = "+base+";\n"+							// set new backtrack state to point itself
-					Kiev.reparseExpr(expr,true)+";\n"+
-					createTextMoreCheck(true)+
-			"case "+base+":\n"+
-					Kiev.reparseExpr(bt_expr,true)+";\n"+
-					createTextBacktrack(true)						// backtrack, bt$ needs to be loaded
-				)
-		);
 	}
 
 	public void testGenerate(SpacePtr space, Struct frame) {

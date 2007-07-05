@@ -50,7 +50,6 @@ operator  ^          , yfx,  40;
 operator  &          , yfx,  50;
 operator  ==         , xfx,  60;
 operator  !=         , xfx,  60;
-operator  instanceof , xfx,  70;
 operator  >=         , xfx,  80;
 operator  <=         , xfx,  80;
 operator  >          , xfx,  80;
@@ -75,6 +74,13 @@ operator  !  ,  fy, 210;
 // postfix operators
 operator  ++ ,  xf, 210; // lf
 operator  -- ,  xf, 210; // lf
+
+// type operators
+operator  "X instanceof T",    70;
+operator  "( T ) Y",           180;
+operator  "( $cast T ) Y",     180;
+operator  "( $reinterp T ) Y", 180;
+operator  "T . class",         240;
 
 import static kiev.stdlib.#id"any"#._instanceof_(any, any);
 import static kiev.stdlib.GString.str_concat_ss(String, String); // string concatenation String + String

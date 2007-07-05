@@ -37,12 +37,12 @@ public final class ASTOperatorAlias extends Symbol<Method> {
 	
 	public void setImage(ASTNode n) {
 		this.pos = n.pos;
-		if( n instanceof ASTOperator ) {
-			image = ((ASTOperator)n).ident;
+		if( n instanceof EToken ) {
+			image = ((EToken)n).ident;
 			return;
 		}
-		else if( n instanceof ASTIdentifier ) {
-			image = ((ASTIdentifier)n).ident;
+		else if( n instanceof SymbolRef ) {
+			image = ((SymbolRef)n).name;
 			return;
 		}
 		throw new CompilerException(n,"Bad operator definition");

@@ -130,6 +130,14 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
 			menu.add(mi);
 
+			mi = new UIActionMenuItem(this, "Select Parent", KeyEvent.VK_P, new NavigateNode.NodeUp());
+			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_UP, ActionEvent.ALT_MASK));
+			menu.add(mi);
+
+			mi = new UIActionMenuItem(this, "Insert Mode", KeyEvent.VK_I, new NavigateNode.InsertMode());
+			mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
+			menu.add(mi);
+
 			menuBar.add(menu);
 		}
 		{

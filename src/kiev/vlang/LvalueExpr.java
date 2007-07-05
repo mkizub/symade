@@ -79,6 +79,12 @@ public final class AccessExpr extends LvalueExpr {
 			this.ident = ident.name;
 	}
 
+	public AccessExpr(int pos, ENode obj, String ident) {
+		this.pos = pos;
+		this.obj = obj;
+		this.ident = ident;
+	}
+
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public final ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {

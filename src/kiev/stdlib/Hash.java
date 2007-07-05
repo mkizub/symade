@@ -28,7 +28,7 @@ public class Hash<A extends Object> implements Cloneable {
     /**
      * The hash table data.
      */
-    protected HashEntry<A> table[];
+    protected HashEntry<A>[] table;
 
     /**
      * The total number of entries in the hash table.
@@ -114,7 +114,7 @@ public class Hash<A extends Object> implements Cloneable {
      * @see Hashtable#contains
      */
     public boolean contains(A elem) {
-	HashEntry<A> tab[] = table;
+	HashEntry<A>[] tab = table;
 	int hash = ((Object)elem).hashCode();
 	int index = (hash & 0x7FFFFFFF) % tab.length;
 	for (HashEntry<A> e = tab[index] ; e != null ; e = e.next) {
@@ -131,7 +131,7 @@ public class Hash<A extends Object> implements Cloneable {
      * @see Hashtable#contains
      */
     public A get(A elem) {
-	HashEntry<A> tab[] = table;
+	HashEntry<A>[] tab = table;
 	int hash = ((Object)elem).hashCode();
 	int index = (hash & 0x7FFFFFFF) % tab.length;
 	for (HashEntry<A> e = tab[index] ; e != null ; e = e.next) {
@@ -148,7 +148,7 @@ public class Hash<A extends Object> implements Cloneable {
      * @see Hashtable#contains
      */
     public A get(int hash, (A)->boolean cmp) {
-	HashEntry<A> tab[] = table;
+	HashEntry<A>[] tab = table;
 	int index = (hash & 0x7FFFFFFF) % tab.length;
 	for (HashEntry<A> e = tab[index] ; e != null ; e = e.next) {
 	    if ((e.hash == hash) && cmp(e.elem)) {
@@ -165,10 +165,10 @@ public class Hash<A extends Object> implements Cloneable {
      */
     protected void rehash() {
 	int oldCapacity = table.length;
-	HashEntry<A> oldTable[] = table;
+	HashEntry<A>[] oldTable = table;
 
 	int newCapacity = oldCapacity * 2 + 1;
-	HashEntry<A> newTable[] = new HashEntry<A>[newCapacity];
+	HashEntry<A>[] newTable = new HashEntry<A>[newCapacity];
 
 	threshold = (int)(newCapacity * loadFactor);
 	table = newTable;
@@ -192,7 +192,7 @@ public class Hash<A extends Object> implements Cloneable {
      */
     public void put(A elem) {
 	// Makes sure the elem is not already in the set.
-	HashEntry<A> tab[] = table;
+	HashEntry<A>[] tab = table;
 	int hash = ((Object)elem).hashCode();
 	int index = (hash & 0x7FFFFFFF) % tab.length;
 	for (HashEntry<A> e = tab[index] ; e != null ; e = e.next) {
@@ -219,7 +219,7 @@ public class Hash<A extends Object> implements Cloneable {
      * @param elem the elem that needs to be removed
      */
     public boolean remove(A elem) {
-	HashEntry<A> tab[] = table;
+	HashEntry<A>[] tab = table;
 	int hash = ((Object)elem).hashCode();
 	int index = (hash & 0x7FFFFFFF) % tab.length;
 	for (HashEntry<A> e = tab[index], prev = null ; e != null ; prev = e, e = e.next) {
@@ -240,7 +240,7 @@ public class Hash<A extends Object> implements Cloneable {
      * Clears the set so that it has no more elements in it.
      */
     public void clear() {
-	HashEntry<A> tab[] = table;
+	HashEntry<A>[] tab = table;
 	for (int index = tab.length; --index >= 0; )
 	    tab[index] = null;
 	count = 0;
@@ -306,10 +306,10 @@ public static class HashEntry<A extends Object> {
  */
 static class HashEnumerator<A extends Object> implements Enumeration<A>, Cloneable {
     int index;
-    HashEntry<A> table[];
+    HashEntry<A>[] table;
     HashEntry<A> entry;
 
-    HashEnumerator(HashEntry<A> table[]) {
+    HashEnumerator(HashEntry<A>[] table) {
 	this.table = table;
 	this.index = table.length;
     }

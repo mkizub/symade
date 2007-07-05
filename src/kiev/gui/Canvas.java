@@ -43,6 +43,7 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 
 	static final Color defaultTextColor = Color.BLACK;
 	static final Color autoGenTextColor = Color.GRAY;
+	static final Color selectedNodeColor = new Color(224,224,224);
 	static final Font defaultTextFont = new Font("Dialog", Font.PLAIN, 12);
 	
 	JScrollBar	verticalScrollBar;
@@ -51,6 +52,7 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 	
 	Drawable	root;
 	DrawTerm	current;
+	ANode		current_node;
 	int			first_line;
 	int			num_lines;
 	int			cursor_offset = -1;
@@ -64,8 +66,9 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 	int			translated_y;
 	int			drawed_x;
 	int			drawed_y;
+	int			bg_drawed_x;
+	int			bg_drawed_y;
 	boolean		selected;
-//	boolean		is_editable;
 	
 	Canvas() {
 		super(null,false);
@@ -149,6 +152,10 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 				first_visible = null;
 				last_visible = null;
 				translated_y = 0;
+				drawed_x = -1;
+				drawed_y = -1;
+				bg_drawed_x = -1;
+				bg_drawed_y = -1;
 				selected = false;
 				//is_editable = true;
 				paint(g, root);
@@ -177,23 +184,31 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 			return;
 		if (n instanceof DrawNonTerm) {
 			foreach(Drawable dr; n.args; !dr.isUnvisible()) {
-				if (dr instanceof DrawNonTerm) {
-					if (dr == current) {
-						selected = true;
-						paint(g, dr);
-						selected = false;
-					} else {
-						paint(g, dr);
-					}
-				} else {
-					paint(g, dr);
+				if (dr instanceof DrawNonTerm && current_node == dr.drnode) {
+					int lineno = this.lineno;
+					paintBg(g, dr);
+					this.lineno = lineno;
 				}
+				paint(g, dr);
 			}
 		}
 		else if (n instanceof DrawCtrl)
 			paint(g, n.arg);
 		else
 			paintLeaf(g, (DrawTerm)n);
+	}
+
+	private void paintBg(Graphics2D g, Drawable n) {
+		if (n == null || n.isUnvisible())
+			return;
+		if (n instanceof DrawNonTerm) {
+			foreach(Drawable dr; n.args; !dr.isUnvisible())
+				paintBg(g, dr);
+		}
+		else if (n instanceof DrawCtrl)
+			paintBg(g, n.arg);
+		else
+			paintLeafBg(g, (DrawTerm)n);
 	}
 
 	private void paintLeaf(Graphics2D g, DrawTerm leaf) {
@@ -225,13 +240,8 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		
 		last_visible = leaf;
 		
-//		if (is_editable && drawed_x < x && drawed_y == y) {
-//			g.setColor(Color.LIGHT_GRAY);
-//			g.fillRect(drawed_x, y, x-drawed_x, h);
-//		}
-
 		boolean set_white = false;
-		if ((selected || leaf == current) && cursor_offset < 0) {
+		if (leaf == current && cursor_offset < 0) {
 			g.setColor(Color.BLACK);
 			if (w > 0)
 				g.fillRect(x, y, w, h);
@@ -239,15 +249,9 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 				g.fillRect(x-1, y, 2, h);
 			set_white = true;
 		}
-//		else if (is_editable) {
-//			g.setColor(Color.LIGHT_GRAY);
-//			g.fillRect(x, y, w, h);
-//		}
+
 		drawed_x = x + w;
 		drawed_y = y;
-		
-//		if (leaf instanceof DrawSpace)
-//			return;
 		
 		Color color = leaf.syntax.lout.color;
 		Font  font  = leaf.syntax.lout.font;
@@ -283,6 +287,42 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 			TextLayout tl = new TextLayout(s, font, g.getFontRenderContext());
 			tl.draw(g, x, y+b);
 		}
+	}
+	
+	private void paintLeafBg(Graphics2D g, DrawTerm leaf) {
+		if (leaf == null || leaf.isUnvisible())
+			return;
+		if (lineno < first_line) {
+			if (leaf.do_newline)
+				lineno++;
+			return;
+		}
+		if (leaf.do_newline)
+			lineno++;
+		
+		int x = leaf.x;
+		int y = leaf.y;
+		int w = leaf.w;
+		int h = leaf.h;
+
+		if (!translated) {
+			translated_y = y;
+			g.translate(0, -y);
+			translated = true;
+		}
+		if (y + h - translated_y >= getHeight())
+			return;
+		
+		g.setColor(selectedNodeColor);
+
+		if (bg_drawed_x < x && bg_drawed_y == y)
+			g.fillRect(bg_drawed_x, y, x-bg_drawed_x+w, h);
+		else
+			g.fillRect(x, y, w, h);
+
+		bg_drawed_x = x + w;
+		bg_drawed_y = y;
+		
 	}
 	
 }

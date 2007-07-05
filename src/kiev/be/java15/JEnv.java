@@ -103,7 +103,7 @@ public final class JEnv {
 	private synchronized byte[] loadClazzFromClasspath(String name) {
 		trace(kiev.bytecode.Clazz.traceRules,"Loading data for clazz "+name);
 
-		byte data[] = Env.classpath.read(name);
+		byte[] data = Env.classpath.read(name);
 		trace(kiev.bytecode.Clazz.traceRules && data != null ,"Data for clazz "+name+" loaded");
 
 		if( data == null || data.length == 0 )

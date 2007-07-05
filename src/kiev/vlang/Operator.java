@@ -12,7 +12,9 @@ package kiev.vlang;
 
 import kiev.vlang.OpArg.EXPR;
 import kiev.vlang.OpArg.TYPE;
+import kiev.vlang.OpArg.IDNT;
 import kiev.vlang.OpArg.OPER;
+import kiev.vlang.OpArg.SEQS;
 
 import syntax kiev.Syntax;
 
@@ -24,28 +26,50 @@ import syntax kiev.Syntax;
 public abstract class OpArg {
 	public case EXPR(final int priority);
 	public case TYPE();
+	public case IDNT();
 	public case OPER(final String text);
+	public case SEQS(final OpArg el, final OPER sep, int min);
 	
 	public String toString() {
 		switch (this) {
 		case EXPR(int priority)	: return "EXPR/"+priority;
 		case TYPE()				: return "TYPE";
+		case IDNT()				: return "IDNT";
 		case OPER(String text)	: return "OPER "+text;
+		case SEQS(final OpArg el, final OPER sep, int min) : return "SEQS{"+el+" / "+sep+" / "+min+"}";
 		}
 	}
 
 	public static OpArg[] fromOpString(int pr, String nm) {
 		String[] names = nm.split("\\s+");
-		OpArg[] args = new OpArg[names.length];
-		for (int i=0; i < names.length; i++) {
-			String s = names[i];
-			if (s.equals("X")) { args[i] = new EXPR(pr+1); continue; }
-			if (s.equals("Y")) { args[i] = new EXPR(pr); continue; }
-			if (s.equals("Z")) { args[i] = new EXPR(0); continue; }
-			if (s.equals("T")) { args[i] = new TYPE(); continue; }
-			args[i] = new OPER(s.intern());
+		Stack<String> stk = new Stack<String>();
+		for (int i=names.length-1; i >= 0; i--)
+			stk.push(names[i]);
+		Vector<OpArg> args = new Vector<OpArg>();
+		while (!stk.isEmpty())
+			args.append(fromOpSymbol(pr,stk));
+		return args.toArray();
+	}
+	private static OpArg fromOpSymbol(int pr, Stack<String> names) {
+		String s = names.pop();
+		if (s.equals("X")) return new EXPR(pr+1);
+		if (s.equals("Y")) return new EXPR(pr);
+		if (s.equals("Z")) return new EXPR(0);
+		if (s.equals("T")) return new TYPE();
+		if (s.equals("I")) return new IDNT();
+		if (s.equals("{")) {
+			OpArg el  = fromOpSymbol(pr, names);
+			OPER sep = (OPER)fromOpSymbol(pr, names);
+			s = names.pop();
+			if (s.equals("}"))
+				return new SEQS(el,sep,2);
+			if (s.equals("}+"))
+				return new SEQS(el,sep,1);
+			if (s.equals("}*"))
+				return new SEQS(el,sep,0);
+			throw new RuntimeException("Bad operator format in syntax end: "+s);
 		}
-		return args;
+		return new OPER(s.intern());
 	}
 	public static String toOpName(OpArg[] args) {
 		StringBuffer sb = new StringBuffer();
@@ -53,7 +77,19 @@ public abstract class OpArg {
 			switch (a) {
 			case EXPR(_)			: sb.append("V "); break;
 			case TYPE()				: sb.append("T "); break;
+			case IDNT()				: sb.append("I "); break;
 			case OPER(String text)	: sb.append(text).append(' '); break;
+			case SEQS(final OpArg el, final OPER sep, int min) :
+				sb.append("{ ");
+				sb.append(toOpName(new OpArg[]{el}));
+				sb.append(' ').append(sep.text).append(' ');
+				if (min == 0)
+					sb.append("}* ");
+				else if (min == 1)
+					sb.append("}+ ");
+				else
+					sb.append("} ");
+				break;
 			}
 		}
 		return sb.toString().trim().intern();
@@ -79,7 +115,7 @@ public final class Operator implements Constants {
 	public static final Operator AssignMul;
 	public static final Operator AssignDiv;
 	public static final Operator AssignMod;
-	public static final Operator AssignElem;
+	//public static final Operator AssignElem;
 
 	// Binary operators
 	public static final Operator BooleanOr;
@@ -105,6 +141,9 @@ public final class Operator implements Constants {
 	public static final Operator Mod;
 
 	public static final Operator Access;
+	public static final Operator CallAccess;
+	public static final Operator NewAccess;
+	public static final Operator ClassAccess;
 	public static final Operator MacroAccess;
 	public static final Operator Comma;
 	public static final Operator ElemAccess;
@@ -118,11 +157,12 @@ public final class Operator implements Constants {
 	public static final Operator PreDecr;
 	public static final Operator BitNot;
 	public static final Operator BooleanNot;
-
-	// Unary postfix operators
 	public static final Operator PostIncr;
 	public static final Operator PostDecr;
+	public static final Operator Parenth;
 	
+	public static final Operator TypeAccess;
+	public static final Operator PostTypeArgs;
 	public static final Operator PostTypePVar;
 	public static final Operator PostTypeRef;
 	public static final Operator PostTypeAST;
@@ -136,6 +176,7 @@ public final class Operator implements Constants {
 	public static final Operator Cast;
 	public static final Operator CastForce;
 	public static final Operator Reinterp;
+	public static final Operator CallApplay;
 	
 	public static final Operator[] allAssignOperators;
 	public static final Operator[] allBoolOperators;
@@ -156,11 +197,11 @@ public final class Operator implements Constants {
 		AssignMul					= newOperator(opAssignPriority, "X *= Y");
 		AssignDiv					= newOperator(opAssignPriority, "X /= Y");
 		AssignMod					= newOperator(opAssignPriority, "X %= Y");
-		AssignElem					= newOperator(opAssignPriority, "X [ Z ] = Y");
+		//AssignElem					= newOperator(opAssignPriority, "X [ Z ] = Y");
 		
 		allAssignOperators = new Operator[]{Assign,Assign2,AssignBitOr,AssignBitXor,AssignBitAnd,
 			AssignLeftShift,AssignRightShift,AssignUnsignedRightShift,
-			AssignAdd,AssignSub,AssignMul,AssignDiv,AssignMod,AssignElem
+			AssignAdd,AssignSub,AssignMul,AssignDiv,AssignMod //,AssignElem
 		};
 
 		// Binary operators
@@ -196,34 +237,36 @@ public final class Operator implements Constants {
 		allMathOperators = new Operator[]{Add,Sub,Mul,Div,Mod,LeftShift,RightShift,UnsignedRightShift};
 		
 		Access = newOperator(opAccessPriority, "Y . I");
+		CallAccess = newOperator(opAccessPriority, "Y . I ( { Z , }* )");
+		NewAccess = newOperator(opAccessPriority, "Y . new T ( { Z , }* )");
+		ClassAccess = newOperator(opAccessPriority, "T . class");
 		MacroAccess = newOperator(opAccessPriority, "Y \u21a3 I"); // ↣
-		Comma = newOperator(1, "Y , X");
+		Comma = newOperator(1, "{ X , }");
 		ElemAccess = newOperator(opAccessPriority, "Y [ Z ]");
 
 		RuleIsThe = newOperator(opAssignPriority, "X ?= X");
 		RuleIsOneOf = newOperator(opAssignPriority, "X @= X");
 
-		// Unary prefix operators
+		// Unary operators
 		Pos = newOperator(opNegPriority, "+ Y");
 		Neg = newOperator(opNegPriority, "- Y");
-
 		PreIncr = newOperator(opIncrPriority, "++ X");
 		PreDecr = newOperator(opIncrPriority, "-- X");
-
 		BitNot = newOperator(opBitNotPriority, "~ Y");
 		BooleanNot = newOperator(opBooleanNotPriority, "! Y");
-
-		// Unary postfix operators
 		PostIncr = newOperator(opIncrPriority, "X ++");
 		PostDecr = newOperator(opIncrPriority, "X --");
+		Parenth = newOperator(255, "( Z )");
 
-		PostTypePVar    = newOperator(255, "T @");
-		PostTypeRef     = newOperator(255, "T &");
-		PostTypeAST     = newOperator(255, "T #");
-		PostTypeWrapper = newOperator(255, "T \u229b"); // ⊛
-		PostTypeArray   = newOperator(255, "T []");
-		PostTypeVararg  = newOperator(255, "T ...");
-		PostTypeSpace   = newOperator(255, "T \u2205"); // ∅
+		TypeAccess      = newOperator(255, "T . I");			TypeAccess.is_type_operator = true;
+		PostTypeArgs    = newOperator(255, "T < { T , }+ >");	PostTypeArgs.is_type_operator = true;
+		PostTypePVar    = newOperator(255, "T @");				PostTypePVar.is_type_operator = true;
+		PostTypeRef     = newOperator(255, "T &");				PostTypeRef.is_type_operator = true;
+		PostTypeAST     = newOperator(255, "T #");				PostTypeAST.is_type_operator = true;
+		PostTypeWrapper = newOperator(255, "T \u229b");		PostTypeWrapper.is_type_operator = true; // ⊛
+		PostTypeArray   = newOperator(255, "T []");			PostTypeArray.is_type_operator = true;
+		PostTypeVararg  = newOperator(255, "T ...");			PostTypeVararg.is_type_operator = true;
+		PostTypeSpace   = newOperator(255, "T \u2205");		PostTypeSpace.is_type_operator = true; // ∅
 
 		// Multi operators
 		Conditional = newOperator(opConditionalPriority, "X ? X : Y");
@@ -231,6 +274,7 @@ public final class Operator implements Constants {
 		Cast = newOperator(opCastPriority, "( T ) Y");
 		CastForce = newOperator(opCastPriority, "( $cast T ) Y");
 		Reinterp = newOperator(opCastPriority, "( $reinterp T ) Y");
+		CallApplay = newOperator(opAccessPriority, "I ( { Z , }* )");
 	}
 
 	public static Operator newOperator(int pr, String decl) {
@@ -244,27 +288,36 @@ public final class Operator implements Constants {
 		if( op != null )
 			throw new RuntimeException("Redeclaration of an operator from "+op.decl+" to "+decl);
 		int ar = 0;
+		int ma = 0;
 		foreach (OpArg a; args) {
 			switch (a) {
-			case EXPR(_)	: ar++; break;
-			case TYPE()		: ar++; break;
-			case OPER(_)	: break;
+			case EXPR(_)	: ar++; ma++; break;
+			case TYPE()		: ar++; ma++; break;
+			case IDNT()		: ar++; ma++; break;
+			case OPER(_)	: ma++; break;
+			case SEQS(_,_, int min):
+				if (min > 0)
+					ma = min*2 - 1;
+				 break;
 			}
 		}
-		return new Operator(args,pr,ar,name,decl);
+		return new Operator(args,pr,ar,ma,name,decl);
 	}
 
 	public final		OpArg[]		args;
 	public final		int			priority;
 	public final		int			arity;
+	public final		int			min_args;
 	public final		String		name;
 	public final		String		decl;
+	public				boolean		is_type_operator;
 	private				Method[]	methods;
 
-	private Operator(OpArg[] args, int pr, int ar, String name, String decl) {
+	private Operator(OpArg[] args, int pr, int ar, int ma, String name, String decl) {
 		this.args = args;
 		this.priority = pr;
 		this.arity = ar;
+		this.min_args = ma;
 		this.name = name.intern();
 		this.decl = decl.intern();
 		this.methods = new Method[0];

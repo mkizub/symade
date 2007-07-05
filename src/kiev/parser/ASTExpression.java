@@ -48,7 +48,7 @@ public class ASTExpression extends ENode {
 			e = e.closeBuild();
 			if (isPrimaryExpr())
 				e.setPrimaryExpr(true);
-			this.replaceWithNode(~e);
+			this.replaceWithNodeReWalk(~e);
 		}
 	}
 
@@ -80,7 +80,7 @@ public class ASTExpression extends ENode {
 			return null;
 		}
 		if (results.length() > 1) {
-			StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
+			StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be resolved as:\n");
 			foreach(ENode n; results)
 				msg.append(n).append("\n");
 			Kiev.reportError(this, msg.toString());
@@ -89,7 +89,7 @@ public class ASTExpression extends ENode {
 		return (ENode)results.head();
 	}
 
-	public rule resolveExpr(ENode@ ret, int priority)
+	private rule resolveExpr(ENode@ ret, int priority)
 		ENode@			expr;
 		Operator@		op;
 		ENode[]			opArgs;
@@ -98,27 +98,27 @@ public class ASTExpression extends ENode {
 
 		restLength() > 1,
 		op @= Operator.allOperatorNamesHash,
-		matchOpStart(op, priority),
+		matchOpStart(op, priority, false),
 		trace( Kiev.debug && Kiev.debugOperators, "resolveExpr: 2 for "+op),
 		opArgs = makeOpArgs(op) : popRes(),
 		resolveOpArg(expr, op, 1, opArgs),
 		resolveExprNext(ret, expr, priority)
 	;
 		restLength() > 0,
-		!(nodes[cur_pos] instanceof ASTOperator),
+		!isOper(nodes[cur_pos]),
 		nodes[cur_pos].getPriority() >= priority,
 		trace( Kiev.debug && Kiev.debugOperators, "resolveExpr: 3 res "+nodes[cur_pos]),
 		ret ?= nodes[cur_pos],
 		++cur_pos : --cur_pos
 	}
 	
-	public rule resolveExprNext(ENode@ ret, ENode prev, int priority)
+	private rule resolveExprNext(ENode@ ret, ENode prev, int priority)
 		ENode@			expr;
 		Operator@		op;
 		ENode[]			opArgs;
 	{
 		trace( Kiev.debug && Kiev.debugOperators, "resolveExprNext: 0 restLength "+restLength()+" priority "+priority+" prev: "+prev),
-		restLength() > 1,
+		restLength() >= 1,
 		op @= Operator.allOperatorNamesHash,
 		matchOpStart(op,prev,priority),
 		trace( Kiev.debug && Kiev.debugOperators, "resolveExprNext: 1 for "+prev+" "+op),
@@ -130,62 +130,202 @@ public class ASTExpression extends ENode {
 		ret ?= prev
 	}
 	
-	public rule resolveOpArg(ENode@ ret, Operator op, int pos, ENode[] result)
+	private rule resolveType(TypeRef@ ret)
+		ENode@			expr;
+		Operator@		op;
+		ENode[]			opArgs;
+	{
+		trace( Kiev.debug && Kiev.debugOperators, "resolveType: 0 restLength "+restLength()),
+
+		restLength() > 1,
+		op @= Operator.allOperatorNamesHash,
+		matchOpStart(op,0,true),
+		trace( Kiev.debug && Kiev.debugOperators, "resolveType: 2 for "+op),
+		opArgs = makeOpArgs(op) : popRes(),
+		resolveOpArg(expr, op, 1, opArgs),
+		resolveTypeNext(ret, expr)
+	;
+		restLength() > 0,
+		ret ?= asType(nodes[cur_pos]),
+		trace( Kiev.debug && Kiev.debugOperators, "resolveType: 3 res "+nodes[cur_pos]),
+		++cur_pos : --cur_pos
+	}
+	
+	private rule resolveTypeNext(TypeRef@ ret, ENode prev)
+		ENode@			expr;
+		Operator@		op;
+		ENode[]			opArgs;
+	{
+		trace( Kiev.debug && Kiev.debugOperators, "resolveTypeNext: 0 restLength "+restLength()+" prev: "+prev),
+		restLength() >= 1,
+		op @= Operator.allOperatorNamesHash,
+		matchTypeOpStart(op,prev),
+		trace( Kiev.debug && Kiev.debugOperators, "resolveTypeNext: 1 for "+prev+" "+op),
+		opArgs = makeOpArgs(op,prev) : popRes(),
+		resolveOpArg(expr, op, 2, opArgs),
+		resolveTypeNext(ret, expr)
+	;
+		ret ?= asType(prev),
+		trace( Kiev.debug && Kiev.debugOperators, "resolveTypeNext: 2 res "+prev)
+	}
+	
+	private rule resolveOpArg(ENode@ ret, Operator op, int pos, ENode[] result)
 		ENode@ expr;
+		TypeRef@ tref;
+		SeqRes seq_res;
 	{
 		trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 0 for pos "+pos+" as "+(op.args.length == pos? "END" : op.args[pos])),
 		op.args.length == pos,
 		$cut,
-		trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 1"),
-		ret ?= makeExpr(op,result)
+		ret ?= makeExpr(op,result),
+		trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 1 ret "+ret)
 	;
-		op.args[pos] instanceof OpArg.EXPR,
-		resolveExpr(expr,((OpArg.EXPR)op.args[pos]).priority),
-		result[pos] = expr,
-		trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 2 added "+expr),
-		resolveOpArg(ret, op, pos+1, result)
+		restLength() > 0,
+		{
+			op.args[pos] instanceof OpArg.EXPR,
+			resolveExpr(expr,((OpArg.EXPR)op.args[pos]).priority),
+			result[pos] = expr,
+			trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 2 added "+expr),
+			resolveOpArg(ret, op, pos+1, result)
+		;
+			op.args[pos] instanceof OpArg.TYPE,
+			resolveType(tref),
+			result[pos] = tref,
+			trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 3 added "+tref),
+			resolveOpArg(ret, op, pos+1, result)
+		;
+			op.args[pos] instanceof OpArg.IDNT,
+			isIdent(nodes[cur_pos]),
+			trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 4 added "+nodes[cur_pos]),
+			pushRes(result,pos) : popRes(),
+			resolveOpArg(ret, op, pos+1, result)
+		;
+			op.args[pos] instanceof OpArg.OPER,
+			isOperMatch(nodes[cur_pos], ((OpArg.OPER)op.args[pos]).text),
+			trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 5 added "+nodes[cur_pos]),
+			pushRes(result,pos) : popRes(),
+			resolveOpArg(ret, op, pos+1, result)
+		}
 	;
-		op.args[pos] instanceof OpArg.TYPE,
-		nodes[cur_pos] instanceof TypeRef,
-		trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 3 added "+nodes[cur_pos]),
-		pushRes(result,pos) : popRes(),
-		resolveOpArg(ret, op, pos+1, result)
-	;
-		op.args[pos] instanceof OpArg.OPER,
-		nodes[cur_pos] instanceof ASTOperator,
-		((OpArg.OPER)op.args[pos]).text == ((ASTOperator)nodes[cur_pos]).ident,
-		trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: 4 added "+nodes[cur_pos]),
-		pushRes(result,pos) : popRes(),
+		op.args[pos] instanceof OpArg.SEQS,
+		trace( Kiev.debug && Kiev.debugOperators, "resolveOpArg: seq "+op.args[pos]),
+		seq_res = parseSeq((OpArg.SEQS)op.args[pos]) : cur_pos = seq_res.save_cur_pos,
+		seq_res.exprs != null,
+		((OpArg.SEQS)op.args[pos]).min <= seq_res.exprs.length,
+		result[pos] = new UnresSeqs(((OpArg.SEQS)op.args[pos]).sep.text,seq_res.exprs),
 		resolveOpArg(ret, op, pos+1, result)
 	}
 	
-	private boolean matchOpStart(Operator op, int priority) {
-		if (op.priority < priority) return false;
-		if (restLength() < op.args.length) return false;
-		ENode en = nodes[cur_pos];
-		if (op.args[0] instanceof OpArg.OPER) return (en instanceof ASTOperator && en.ident == ((OpArg.OPER)op.args[0]).text);
-		if (op.args[0] instanceof OpArg.TYPE) return (en instanceof TypeRef);
-		if (op.args[0] instanceof OpArg.EXPR) {
-			if (en instanceof ASTOperator) return false;
-			if (en.getPriority() < ((OpArg.EXPR)op.args[0]).priority) return false;
-			if (op.args.length > 1 && op.args[1] instanceof OpArg.OPER) {
-				en = nodes[cur_pos+1];
-				if !(en instanceof ASTOperator && en.ident == ((OpArg.OPER)op.args[1]).text)
-					return false;
+	class SeqRes {
+		ENode[]	exprs;
+		int save_cur_pos;
+	}
+	private SeqRes parseSeq(OpArg.SEQS seq) {
+		SeqRes res = new SeqRes();
+		res.save_cur_pos = cur_pos;
+		Stack<ENode> seq_stk = new Stack<ENode>();
+		if (resolveSeqEl(seq.el, seq_stk)) {
+			trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 0 add "+seq_stk.peek());
+			while (nodes.length > cur_pos && isOperMatch(nodes[cur_pos], seq.sep.text)) {
+				trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 1 add "+seq.sep.text);
+				++cur_pos;
+				if (resolveSeqEl(seq.el, seq_stk)) {
+					trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 2 add "+seq_stk.peek());
+					continue;
+				}
+				trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 3 failed ");
+				cur_pos = res.save_cur_pos;
+				return res; // if there was the separator - there must be the next expression
 			}
-			return true;
+		}
+		res.exprs = seq_stk.toArray();
+		trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 4 success found "+res.exprs.length);
+		return res;
+	}
+
+	private rule resolveSeqEl(OpArg seq_el, Stack<ENode> seq_stk)
+		ENode@ expr;
+		TypeRef@ tref;
+	{
+		seq_el instanceof OpArg.EXPR,
+		resolveExpr(expr,((OpArg.EXPR)seq_el).priority),
+		seq_stk.push(expr) : seq_stk.pop()
+	;
+		seq_el instanceof OpArg.TYPE,
+		resolveType(tref),
+		seq_stk.push(tref) : seq_stk.pop()
+	;
+		seq_el instanceof OpArg.IDNT,
+		isIdent(nodes[cur_pos]),
+		pushElem(seq_stk) : popElem(seq_stk)
+	}
+
+	private boolean matchOpStart(Operator op, int priority, boolean tp_op) {
+		if (tp_op) {
+			if (!op.is_type_operator) return false;
+		} else {
+			if (op.priority < priority) return false;
+		}
+		if (restLength() < op.min_args) return false;
+		ENode en = nodes[cur_pos];
+		OpArg arg0 = op.args[0];
+		if (arg0 instanceof OpArg.OPER) {
+			return isOperMatch(en, arg0.text);
+		}
+		if (arg0 instanceof OpArg.TYPE) {
+			if (asType(en) != null)
+				goto check_second;
+			return false;
+		}
+		if (arg0 instanceof OpArg.IDNT) {
+			if (isIdent(en))
+				goto check_second;
+			return false;
+		}
+		if (arg0 instanceof OpArg.EXPR) {
+			if (isOper(en)) return false;
+			if (en.getPriority() < arg0.priority) return false;
+			goto check_second;
 		}
 		return false;
+	check_second:
+		if (op.args.length > 1 && op.args[1] instanceof OpArg.OPER) {
+			en = nodes[cur_pos+1];
+			if (!isOperMatch(en, ((OpArg.OPER)op.args[1]).text))
+				return false;
+		}
+		return true;
 	}
 	private boolean matchOpStart(Operator op, ENode prev, int priority) {
 		if (op.priority < priority) return false;
-		if (restLength() < op.args.length-1) return false;
+		if (restLength() < op.min_args-1) return false;
 		ENode en = nodes[cur_pos];
-		if!(op.args[0] instanceof OpArg.EXPR) return false;
-		if (((OpArg.EXPR)op.args[0]).priority > prev.getPriority()) return false;
-		if (op.args[1] instanceof OpArg.OPER) return (en instanceof ASTOperator && en.ident == ((OpArg.OPER)op.args[1]).text);
-		if (op.args[1] instanceof OpArg.TYPE) return (en instanceof TypeRef);
-		if (op.args[1] instanceof OpArg.EXPR) return !(en instanceof ASTOperator) && en.getPriority() >= ((OpArg.EXPR)op.args[1]).priority;
+		OpArg arg0 = op.args[0];
+		if (arg0 instanceof OpArg.EXPR) {
+			if (arg0.priority > prev.getPriority()) return false;
+		}
+		else if (arg0 instanceof OpArg.TYPE) {
+			if (255 > prev.getPriority()) return false;
+			if (asType(prev) == null)
+				return false;
+		}
+		else
+			return false;
+	check_second:;
+		OpArg arg1 = op.args[1];
+		if (arg1 instanceof OpArg.OPER) return isOperMatch(en, arg1.text);
+		if (arg1 instanceof OpArg.TYPE) return (asType(en) != null);
+		if (arg1 instanceof OpArg.EXPR) return !isOper(en) && en.getPriority() >= arg1.priority;
+		return false;
+	}
+	private boolean matchTypeOpStart(Operator op, ENode prev) {
+		if (!op.is_type_operator) return false;
+		if (restLength() < op.min_args-1) return false;
+		ENode en = nodes[cur_pos];
+		OpArg arg1 = op.args[1];
+		if (arg1 instanceof OpArg.OPER) return isOperMatch(en, arg1.text);
+		if (arg1 instanceof OpArg.TYPE) return (asType(en) != null);
+		if (arg1 instanceof OpArg.IDNT) return isIdent(en);
 		return false;
 	}
 	private int restLength() {
@@ -209,12 +349,112 @@ public class ASTExpression extends ENode {
 	private void popRes() {
 		--cur_pos;
 	}
+	private void pushElem(Stack<ENode> result) {
+		result.push(nodes[cur_pos]);
+		++cur_pos;
+	}
+	private void popElem(Stack<ENode> result) {
+		result.pop();
+		--cur_pos;
+	}
+	private boolean isIdent(ENode e) {
+		return (e instanceof EToken && e.isIdentifier());
+	}
+	private TypeRef asType(ENode e) {
+		if (e == null)
+			return null;
+		if (e instanceof TypeRef)
+			return (TypeRef)e;
+		if (e instanceof EToken)
+			return e.asType();
+		return null;
+	}
+	private boolean isOper(ENode e) {
+		return (e instanceof EToken && (e.isOperator() || e.asOperator() != null));
+	}
+	private EToken asOper(ENode e) {
+		if (e instanceof EToken)
+			return e.asOperator();
+		return null;
+	}
+	private boolean isOperMatch(ENode e, String text) {
+		if (isOper(e))
+			return e.ident == text;
+		return false;
+	}
 	private ENode makeExpr(Operator op, ENode[] result) {
 		int pos = this.pos;
-		foreach (ENode e; result; e.pos > 0) {
+		foreach (ENode e; result; e.pos != 0) {
 			pos = e.pos;
-			if (e instanceof ASTOperator)
+			if (pos != 0 && isOper(e))
 				break;
+		}
+		if (op.is_type_operator) {
+			TypeRef tr;
+			if (result[0] instanceof EToken)
+				tr = ((EToken)result[0]).asType();
+			else
+				tr = (TypeRef)result[0];
+			if (op == Operator.TypeAccess) {
+				EToken id = (EToken)result[2];
+				TypeDecl@ td;
+				if (!tr.getTypeDecl().resolveNameR(td,new ResInfo(id,id.ident,ResInfo.noImports|ResInfo.noForwards)))
+					return null;
+				if (td.package_clazz.dnode != tr.getTypeDecl())
+					return null;
+				TypeRef ret;
+				if (tr instanceof TypeNameRef && tr.args.length == 0) {
+					if (tr.outer != null)
+						ret = new TypeNameRef(tr.outer.ncopy(),tr.ident+"\u001f"+id.ident);
+					else
+						ret = new TypeNameRef(tr.ident+"\u001f"+id.ident);
+				} else {
+					ret = new TypeNameRef(tr.ncopy(),id.ident);
+				}
+				ret.symbol = (TypeDecl)td;
+				ret.pos = id.pos;
+				return ret;
+			}
+			if (op == Operator.PostTypeArgs) {
+				if (!(tr instanceof TypeNameRef) || ((TypeNameRef)tr).args.length > 0)
+					return null;
+				TypeNameRef tnr = (TypeNameRef)tr;
+				tnr = tnr.ncopy();
+				tnr.symbol = tr.symbol;
+				foreach (ENode e; ((UnresSeqs)result[2]).exprs) {
+					if (e instanceof EToken)
+						tnr.args += e.asType();
+					else
+						tnr.args += (TypeRef)e;
+				}
+				return tnr;
+			}
+			TypeExpr ret = new TypeExpr(tr.ncopy(), op);
+			ret.pos = pos;
+			return ret;
+		}
+		if (op == Operator.Access) {
+			TypeRef tr = null;
+			if (result[0] instanceof EToken)
+				tr = ((EToken)result[0]).asType();
+			else if (result[0] instanceof TypeRef)
+				tr = (TypeRef)result[0];
+			if (tr != null) {
+				EToken id = (EToken)result[2];
+				TypeDecl@ td;
+				if (tr.getTypeDecl().resolveNameR(td,new ResInfo(id,id.ident,ResInfo.noImports|ResInfo.noForwards))) {
+					if (td.package_clazz.dnode == tr.getTypeDecl())
+						return null;
+				}
+			}
+		}
+		// filter the result[] to convert EToken to TypeRef-s
+		OpArg[] op_args = op.args;
+		for (int i=0; i < result.length; i++) {
+			ENode e = result[i];
+			OpArg a = op_args[i];
+			if (a instanceof OpArg.TYPE)
+				result[i] = asType(e);
 		}
 		return new UnresOpExpr(pos, op, result);
 	}

@@ -665,7 +665,14 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 	public @packed:1,nodeflags,20 boolean is_struct_has_pizza_cases;
 	public @packed:1,nodeflags,21 boolean is_struct_bytecode;	// struct was loaded from bytecode
 	public @packed:1,nodeflags,22 boolean is_struct_compiler_node;
-	
+
+	// EToken (unresolved e-node tokens) flags
+	public @packed:1,compileflags,8  boolean is_token_ident;
+	public @packed:1,compileflags,9  boolean is_token_operator;
+	public @packed:1,compileflags,10 boolean is_token_keyword;
+	public @packed:1,compileflags,11 boolean is_token_constant;
+	public @packed:1,compileflags,12 boolean is_token_type_decl;
+
 	// Expression/statement flags
 	public @packed:1,compileflags,8  boolean is_expr_gen_void;
 	public @packed:1,compileflags,9  boolean is_expr_for_wrapper;

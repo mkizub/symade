@@ -240,7 +240,7 @@ public final class Kiev {
 		} else {
 			System.out.println(err+": "+msg);
 		}
-		if( cf != null && (verbose || Kiev.javaMode) && (pos >>> 11) != 0 ) {
+		if( cf != null && verbose && (pos >>> 11) != 0 ) {
 			File f = new File(cf.toString());
 			if( f.exists() && f.canRead() ) {
 				int lineno = pos>>>11;
@@ -395,7 +395,6 @@ public final class Kiev {
 	public static String output_dir				= Compiler.output_dir;
 	public static String compiler_classpath	= Compiler.compiler_classpath;
 
-	public static boolean javaMode				= Compiler.javaMode;
 	public static boolean javacerrors			= Compiler.javacerrors;
 	public static boolean nowarn				= Compiler.nowarn;
 	public static boolean code_nowarn			= Compiler.code_nowarn;
@@ -414,56 +413,6 @@ public final class Kiev {
 
 	public static Hashtable<String,Object> parserAddresses = new Hashtable<String,Object>();
 	private static int		parserAddrIdx;
-
-	private static String parserAddr(Object obj) {
-		String addr = Integer.toHexString(++parserAddrIdx);
-		while( addr.length() < 8 ) {
-			addr = '0'+addr;
-		}
-		Kiev.parserAddresses.put(addr,obj);
-		return addr;
-	}
-
-	public static String reparseExpr(ENode e, boolean copy) {
-		if (copy)
-			return "#expr"+parserAddr(e.ncopy())+"#".toLowerCase();
-		else
-			return "#expr"+parserAddr(e)+"#".toLowerCase();
-	}
-
-	public static String reparseStat(ENode s, boolean copy) {
-		if (copy)
-			return "#stat"+parserAddr(s.ncopy())+"#".toLowerCase();
-		else
-			return "#stat"+parserAddr(s)+"#".toLowerCase();
-	}
-
-	public static String reparseType(Type tp) {
-		return "#type"+parserAddr(tp)+"#".toLowerCase();
-	}
-
-	public static Block parseBlock(ASTNode from, StringBuffer sb) {
-		StringBufferInputStream is = new StringBufferInputStream(sb.toString());
-		FileUnit oldFileUnit = k.curFileUnit;
-		TypeDecl oldClazz = k.curClazz;
-		Method oldMethod = k.curMethod;
-		k.ReInit(is);
-		k.reparse_body = true;
-		k.reparse_pos = from.pos;
-		k.curFileUnit = from.ctx_file_unit;
-		k.curClazz = from.ctx_tdecl;
-		k.curMethod = from.ctx_method;
-		Block body = null;
-		try {
-			body = k.Block();
-		} finally {
-			k.reparse_body = false;
-			k.curFileUnit = oldFileUnit;
-			k.curClazz = oldClazz;
-			k.curMethod = oldMethod;
-		}
-		return body;
-	}
 
 	public static void parseFile(FileUnit f) {
 		InputStreamReader file_reader = null;

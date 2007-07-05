@@ -24,7 +24,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
     /**
      * The hash table data.
      */
-    protected HashtableEntry<A,B> table[];
+    protected HashtableEntry<A,B>[] table;
 
     /**
      * The total number of entries in the hash table.
@@ -110,7 +110,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      * @see Hashtable#containsKey
      */
     public synchronized boolean contains(B value) {
-	HashtableEntry<A,B> tab[] = table;
+	HashtableEntry<A,B>[] tab = table;
 	for (int i = tab.length ; i-- > 0 ;) {
 	    for (HashtableEntry<A,B> e = tab[i] ; e != null ; e = e.next) {
 		if (e.value.equals(value)) {
@@ -127,7 +127,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      * @see Hashtable#contains
      */
     public synchronized boolean containsKey(A key) {
-	HashtableEntry<A,B> tab[] = table;
+	HashtableEntry<A,B>[] tab = table;
 	int hash = key.hashCode();
 	int index = (hash & 0x7FFFFFFF) % tab.length;
 	for (HashtableEntry<A,B> e = tab[index] ; e != null ; e = e.next) {
@@ -147,7 +147,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      * @see Hashtable#put
      */
     public synchronized B get(A key) {
-	HashtableEntry<A,B> tab[] = table;
+	HashtableEntry<A,B>[] tab = table;
 	int hash = key.hashCode();
 	int index = (hash & 0x7FFFFFFF) % tab.length;
 	for (HashtableEntry<A,B> e = tab[index] ; e != null ; e = e.next) {
@@ -165,10 +165,10 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      */
     protected void rehash() {
 	int oldCapacity = table.length;
-	HashtableEntry<A,B> oldTable[] = table;
+	HashtableEntry<A,B>[] oldTable = table;
 
 	int newCapacity = oldCapacity * 2 + 1;
-	HashtableEntry<A,B> newTable[] = new HashtableEntry<A,B>[newCapacity];
+	HashtableEntry<A,B>[] newTable = new HashtableEntry<A,B>[newCapacity];
 
 	threshold = (int)(newCapacity * loadFactor);
 	table = newTable;
@@ -200,7 +200,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      */
     public synchronized B put(A key, B value) {
 	// Makes sure the key is not already in the hashtable.
-	HashtableEntry<A,B> tab[] = table;
+	HashtableEntry<A,B>[] tab = table;
 	int hash = key.hashCode();
 	int index = (hash & 0x7FFFFFFF) % tab.length;
 	for (HashtableEntry<A,B> e = tab[index] ; e != null ; e = e.next) {
@@ -230,7 +230,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      * @return the value of key, or null if the key was not found.
      */
     public synchronized B remove(A key) {
-	HashtableEntry<A,B> tab[] = table;
+	HashtableEntry<A,B>[] tab = table;
 	int hash = key.hashCode();
 	int index = (hash & 0x7FFFFFFF) % tab.length;
 	for (HashtableEntry<A,B> e = tab[index], prev = null ; e != null ; prev = e, e = e.next) {
@@ -251,7 +251,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      * Clears the hash table so that it has no more elements in it.
      */
     public synchronized void clear() {
-	HashtableEntry<A,B> tab[] = table;
+	HashtableEntry<A,B>[] tab = table;
 	for (int index = tab.length; --index >= 0; )
 	    tab[index] = null;
 	count = 0;
@@ -316,10 +316,10 @@ public static class HashtableEntry<A,B> {
  */
 static class KeyEnumerator<A,B> implements Enumeration<A> {
     int index;
-    HashtableEntry<A,B> table[];
+    HashtableEntry<A,B>[] table;
     HashtableEntry<A,B> entry;
 
-    KeyEnumerator(HashtableEntry<A,B> table[]) {
+    KeyEnumerator(HashtableEntry<A,B>[] table) {
 	this.table = table;
 	this.index = table.length;
     }
@@ -359,10 +359,10 @@ static class KeyEnumerator<A,B> implements Enumeration<A> {
  */
 static class ValueEnumerator<A,B> implements Enumeration<B>, Cloneable {
     int index;
-    HashtableEntry<A,B> table[];
+    HashtableEntry<A,B>[] table;
     HashtableEntry<A,B> entry;
 
-    ValueEnumerator(HashtableEntry<A,B> table[]) {
+    ValueEnumerator(HashtableEntry<A,B>[] table) {
 	this.table = table;
 	this.index = table.length;
     }

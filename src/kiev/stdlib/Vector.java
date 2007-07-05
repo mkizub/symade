@@ -22,7 +22,7 @@ import syntax kiev.stdlib.Syntax;
 public class Vector<A> implements Cloneable
 {
 
-	public A		data[];
+	public A[]		data;
 
 	public int		count;
 
@@ -46,7 +46,7 @@ public class Vector<A> implements Cloneable
 		count = v.count;
 	}
 
-	public synchronized void copyInto(A anArray[]) {
+	public synchronized void copyInto(A[] anArray) {
 		System.arraycopy(data,0,anArray,0,count);
 	}
 
@@ -62,7 +62,7 @@ public class Vector<A> implements Cloneable
 	public synchronized void trimToSize() {
 		int oldCapacity = data.length;
 		if (count < oldCapacity) {
-			A oldData[] = data;
+			A[] oldData = data;
 			data = new A[count];
 			System.arraycopy(oldData, 0, data, 0, count);
 		}
@@ -71,7 +71,7 @@ public class Vector<A> implements Cloneable
 	public synchronized void ensureCapacity(int minCapacity) {
 		int oldCapacity = data.length;
 		if (minCapacity > oldCapacity) {
-			A oldData[] = data;
+			A[] oldData = data;
 			int newCapacity = (capacityIncrement > 0) ?
 			(oldCapacity + capacityIncrement) : (oldCapacity * 2);
 			if (newCapacity < minCapacity) {

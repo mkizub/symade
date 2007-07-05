@@ -391,8 +391,7 @@ public class Convert {
 
 /** convert source bytes in source[offset..offset+len-1] to ascii.
  */
-    public static int source2ascii(byte source[], int offset, int len,
-                            byte ascii[]) {
+    public static int source2ascii(byte[] source, int offset, int len, byte[] ascii) {
         int j = 0;
         int i = 0;
         while (i < len) {
@@ -460,8 +459,8 @@ public class Convert {
 
 /** convert ascii bytes in ascii[offset..offset+len-1] to a string.
  */
-    public static String ascii2string(byte ascii[], int offset, int len) {
-        char cs[] = new char[len];
+    public static String ascii2string(byte[] ascii, int offset, int len) {
+        char[] cs = new char[len];
         int i = 0;
         int j = 0;
         while (i < len) {

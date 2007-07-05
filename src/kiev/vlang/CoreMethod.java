@@ -416,13 +416,13 @@ class ByteAssign extends BinaryFunc {
 @singleton
 class BytePOS extends UnaryFunc {
 	public void normilizeExpr(Method core_method, ENode expr) { super.normilizeExpr(core_method, expr, UnaryExpr.class, Operator.Pos); }
-	protected ConstExpr doCalc(Number:Object arg) { new ConstByteExpr( (byte) + arg.intValue()) }
+	protected ConstExpr doCalc(Number:Object arg) { new ConstByteExpr( ($cast byte) + arg.intValue()) }
 }
 
 @singleton
 class ByteNEG extends UnaryFunc {
 	public void normilizeExpr(Method core_method, ENode expr) { super.normilizeExpr(core_method, expr, UnaryExpr.class, Operator.Neg); }
-	protected ConstExpr doCalc(Number:Object arg) { new ConstByteExpr( (byte) - arg.intValue()) }
+	protected ConstExpr doCalc(Number:Object arg) { new ConstByteExpr( ($cast byte) - arg.intValue()) }
 }
 
 /////////////////////////////////////////////////
@@ -438,13 +438,13 @@ class ShortAssign extends BinaryFunc {
 @singleton
 class ShortPOS extends UnaryFunc {
 	public void normilizeExpr(Method core_method, Method core_method, ENode expr) { super.normilizeExpr(core_method, expr, UnaryExpr.class, Operator.Pos); }
-	protected ConstExpr doCalc(Number:Object arg) { new ConstShortExpr( (short) + arg.intValue()) }
+	protected ConstExpr doCalc(Number:Object arg) { new ConstShortExpr( ($cast short) + arg.intValue()) }
 }
 
 @singleton
 class ShortNEG extends UnaryFunc {
 	public void normilizeExpr(Method core_method, ENode expr) { super.normilizeExpr(core_method, expr, UnaryExpr.class, Operator.Neg); }
-	protected ConstExpr doCalc(Number:Object arg) { new ConstShortExpr( (short) - arg.intValue()) }
+	protected ConstExpr doCalc(Number:Object arg) { new ConstShortExpr( ($cast short) - arg.intValue()) }
 }
 
 /////////////////////////////////////////////////

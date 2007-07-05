@@ -617,14 +617,14 @@ public static final view RCastExpr of CastExpr extends RENode {
 		}
 		if( type.isBoolean() && et.isBoolean() )
 			return;
-		if( !Kiev.javaMode && type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
+		if( type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
 			if (type.isIntegerInCode())
 				return;
 			Method cm = ((CompaundType)type).tdecl.resolveMethod(nameCastOp,type,Type.tpInt);
 			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{~expr}));
 			return;
 		}
-		if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
+		if( type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
 			if (et.isIntegerInCode())
 				return;
 			Method cf = Type.tpEnum.tdecl.resolveMethod(nameEnumOrdinal, Type.tpInt);

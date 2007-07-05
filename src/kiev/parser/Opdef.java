@@ -73,8 +73,8 @@ public class Opdef extends SNode {
 	
 	public void setImage(ASTNode n) {
 		this.pos = n.pos;
-		if( n instanceof ASTOperator ) {
-			image = ((ASTOperator)n).ident;
+		if( n instanceof EToken ) {
+			image = ((EToken)n).ident;
 			return;
 		}
 		else if( n instanceof SymbolRef ) {

@@ -281,7 +281,7 @@ public interface JConstants extends Constants {
     public static final int opc_invokemethodref = 205;
 
     // names of opcodes
-    public static final String opcNames[] = {
+    public static final String[] opcNames = {
         "opc_nop", "opc_aconst_null", "opc_iconst_m1", "opc_iconst_0",
         "opc_iconst_1", "opc_iconst_2", "opc_iconst_3", "opc_iconst_4",
         "opc_iconst_5", "opc_lconst_0", "opc_lconst_1", "opc_fconst_0",
@@ -332,7 +332,7 @@ public interface JConstants extends Constants {
     };
 
     // and their lengths
-    public static final int opcLengths[] = {
+    public static final int[] opcLengths = {
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 2, 3, 3, 2, 2, 2, 2,
         2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

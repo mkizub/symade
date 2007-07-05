@@ -27,6 +27,7 @@ import syntax kiev.Syntax;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.InputEvent;
 
 import javax.swing.JFileChooser;
@@ -66,12 +67,13 @@ public final class InputEventInfo {
 }
 
 public class UIActionViewContext {
-	public final Window wnd;
-	public final UIView ui;
-	public final InfoView uiv;
-	public final Editor editor;
-	public final DrawTerm dt;
-	public Drawable dr;
+	public final Window		wnd;
+	public final UIView		ui;
+	public final InfoView	uiv;
+	public final Editor		editor;
+	public final DrawTerm	dt;
+	public final ANode		node;
+	public Drawable			dr;
 	public UIActionViewContext(Window wnd, UIView ui) {
 		this.wnd = wnd;
 		this.ui = ui;
@@ -81,6 +83,7 @@ public class UIActionViewContext {
 		if (ui instanceof Editor) {
 			this.editor = (Editor)ui;
 			this.dt = editor.cur_elem.dr;
+			this.node = editor.cur_elem.node;
 			this.dr = dt;
 		}
 	}
@@ -90,6 +93,7 @@ public class UIActionViewContext {
 		this.uiv = editor;
 		this.editor = editor;
 		this.dt = editor.cur_elem.dr;
+		this.node = editor.cur_elem.node;
 		this.dr = dr;
 	}
 }
@@ -243,10 +247,21 @@ public class NavigateEditor implements Runnable {
 	}
 
 	private void navigatePrev(Editor uiv, boolean repaint) {
-		DrawTerm prev = uiv.cur_elem.dr.getFirstLeaf().getPrevLeaf();
-		if (prev != null) {
-			uiv.cur_elem.set(prev);
-			uiv.cur_x = prev.x;
+		if (uiv.insert_mode && uiv.view_canvas.cursor_offset > 0) {
+			uiv.view_canvas.cursor_offset --;
+		} else {
+			DrawTerm prev = uiv.cur_elem.dr.getFirstLeaf().getPrevLeaf();
+			if (prev != null) {
+				uiv.cur_elem.set(prev);
+				uiv.cur_x = prev.x;
+				if (uiv.insert_mode) {
+					String text = prev.getText();
+					if (text != null)
+						uiv.view_canvas.cursor_offset = text.length();
+					else
+						uiv.view_canvas.cursor_offset = 0;
+				}
+			}
 		}
 		if (repaint) {
 			uiv.makeCurrentVisible();
@@ -254,10 +269,16 @@ public class NavigateEditor implements Runnable {
 		}
 	}
 	private void navigateNext(Editor uiv, boolean repaint) {
-		DrawTerm next = uiv.cur_elem.dr.getFirstLeaf().getNextLeaf();
-		if (next != null) {
-			uiv.cur_elem.set(next);
-			uiv.cur_x = next.x;
+		DrawTerm curr = uiv.cur_elem.dr;
+		if (curr != null && curr.getText() != null && uiv.insert_mode && uiv.view_canvas.cursor_offset < curr.getText().length()) {
+			uiv.view_canvas.cursor_offset ++;
+		} else {
+			DrawTerm next = uiv.cur_elem.dr.getFirstLeaf().getNextLeaf();
+			if (next != null) {
+				uiv.cur_elem.set(next);
+				uiv.cur_x = next.x;
+				uiv.view_canvas.cursor_offset = 0;
+			}
 		}
 		if (repaint) {
 			uiv.makeCurrentVisible();
@@ -377,6 +398,49 @@ public class NavigateEditor implements Runnable {
 		return;
 	}
 
+}
+
+public class NavigateNode implements Runnable {
+
+	final Editor uiv;
+	final String cmd;
+	
+	NavigateNode(Editor uiv, String cmd) {
+		this.uiv = uiv;
+		this.cmd = cmd;
+	}
+	
+	public void run() {
+		if (cmd == "select-up") {
+			uiv.cur_elem.nodeUp();
+			uiv.formatAndPaint(false);
+		}
+		else if (cmd == "insert-mode") {
+			uiv.insert_mode = !uiv.insert_mode;
+			uiv.formatAndPaint(false);
+		}
+	}
+
+	final static class NodeUp implements UIActionFactory {
+		public String getDescr() { "Select parent node" }
+		public boolean isForPopupMenu() { false }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor != null && context.editor.cur_elem.node != null && context.editor.cur_elem.node.parent() != null)
+				return new NavigateNode(context.editor, "select-up");
+			return null;
+		}
+	}
+
+	final static class InsertMode implements UIActionFactory {
+		public String getDescr() { "Change insert/command editor mode" }
+		public boolean isForPopupMenu() { false }
+		public Runnable getAction(UIActionViewContext context) {
+			if (context.editor != null)
+				return new NavigateNode(context.editor, "insert-mode");
+			return null;
+		}
+	}
+	
 }
 
 
@@ -664,7 +728,7 @@ public final class EditActions implements Runnable {
 			editor.formatAndPaint(true);
 		}
 		else if (action == "cut" || action == "del") {
-			ANode node = editor.cur_elem.dr.drnode;
+			ANode node = editor.cur_elem.node;
 			editor.changes.push(Transaction.open("Actions.java:cut"));
 			node.detach();
 			editor.changes.peek().close();
@@ -685,7 +749,7 @@ public final class EditActions implements Runnable {
 					tr = new StringSelection(String.valueOf(obj));
 				editor.clipboard.setContents(tr, (ClipboardOwner)tr);
 			} else {
-				Transferable tr = new TransferableANode(editor.cur_elem.dr.drnode);
+				Transferable tr = new TransferableANode(editor.cur_elem.node);
 				editor.clipboard.setContents(tr, (ClipboardOwner)tr);
 			}
 		}
@@ -922,3 +986,240 @@ public final class RenderActions implements Runnable {
 		}
 	}
 }
+
+public final class ExprEditActions implements Runnable, KeyListener {
+	
+	final Editor editor;
+	final UIActionViewContext context;
+	final String action;
+	
+	private ASTExpression expr;
+	
+	ExprEditActions(UIActionViewContext context, String action) {
+		this.editor = context.editor;
+		this.context = context;
+		this.action = action;
+	}
+	
+	public void run() {
+		if (action == "split") {
+			ENode en = context.node;
+			DrawNonTerm nt = (DrawNonTerm)context.dr.parent();
+			DrawTerm first = nt.getFirstLeaf();
+			DrawTerm last = nt.getLastLeaf().getNextLeaf();
+			expr = new ASTExpression();
+			for (DrawTerm dt = first; dt != null && dt != last; dt = dt.getNextLeaf()) {
+				if (dt.isUnvisible())
+					continue;
+				EToken et = null;
+				if (dt instanceof DrawToken) {
+					switch (((SyntaxToken)dt.syntax).kind) {
+					case SyntaxToken.TokenKind.UNKNOWN:
+						et = new EToken(0,dt.getText(),0);
+						break;
+					case SyntaxToken.TokenKind.KEYWORD:
+						et = new EToken(0,dt.getText(),EToken.IS_IDENTIFIER|EToken.IS_KEYWORD|EToken.IS_OPERATOR);
+						break;
+					case SyntaxToken.TokenKind.OPERATOR:
+						et = new EToken(0,dt.getText(),EToken.IS_OPERATOR);
+						break;
+					case SyntaxToken.TokenKind.SEPARATOR:
+						et = new EToken(0,dt.getText(),EToken.IS_OPERATOR);
+						break;
+					}
+				}
+				else if (dt instanceof DrawNodeTerm) {
+					if (dt.drnode instanceof ConstExpr)
+						et = new EToken(0,dt.getText(),EToken.IS_CONSTANT); //((ConstExpr)dt.drnode).ncopy();
+					else
+						et = new EToken(0,dt.getText(),0);
+				}
+				if (et != null) {
+					//et.guessKind();
+					expr.nodes += et;
+				}
+			}
+			editor.insert_mode = true;
+			editor.startItemEditor(this);
+			context.node.replaceWithNode(expr);
+			editor.formatAndPaint(true);
+		}
+	}
+
+	public void keyReleased(KeyEvent evt) {}
+	public void keyTyped(KeyEvent evt) {}
+	public void keyPressed(KeyEvent evt) {
+		int code = evt.getKeyCode();
+		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+		if (mask != 0 && mask != KeyEvent.SHIFT_DOWN_MASK)
+			return;
+		evt.consume();
+		switch (code) {
+		case KeyEvent.VK_DOWN:
+		case KeyEvent.VK_UP:
+			java.awt.Toolkit.getDefaultToolkit().beep();
+			return;
+		case KeyEvent.VK_HOME:
+			if (expr.nodes.length > 0)
+				editor.goToPath(makePathTo(expr.nodes[0]));
+			else
+				editor.goToPath(makePathTo(expr));
+			editor.view_canvas.cursor_offset = 0;
+			return;
+		case KeyEvent.VK_END:
+			if (expr.nodes.length > 0)
+				editor.goToPath(makePathTo(expr.nodes[expr.nodes.length-1]));
+			else
+				editor.goToPath(makePathTo(expr));
+			if (editor.cur_elem.dr != null && editor.cur_elem.dr.getText() != null)
+				editor.view_canvas.cursor_offset = editor.cur_elem.dr.getText().length();
+			else
+				editor.view_canvas.cursor_offset = 0;
+			return;
+		case KeyEvent.VK_LEFT:
+			new NavigateEditor(context.editor,-1).run();
+			return;
+		case KeyEvent.VK_RIGHT:
+			new NavigateEditor(context.editor,+1).run();
+			return;
+		case KeyEvent.VK_ENTER:
+			editor.insert_mode = true;
+			ASTNode e = expr;
+			try {
+				rewalk:
+				Kiev.runProcessorsOn(e);
+			}
+			catch (ReWalkNodeException t) { e = t.replacer; goto rewalk; }
+			catch (Throwable t) { t.printStackTrace(); }
+			editor.stopItemEditor(false);
+			return;
+		case KeyEvent.VK_ESCAPE:
+			editor.insert_mode = true;
+			editor.stopItemEditor(true);
+			return;
+		}
+		DrawTerm dt = editor.cur_elem.dr;
+		ANode n = editor.cur_elem.node;
+		if (n == null || (n != expr && n.parent() != expr) || dt == null || dt.drnode != n) {
+			java.awt.Toolkit.getDefaultToolkit().beep();
+			return;
+		}
+		String text = dt.getText();
+		if (text == null) { text = ""; }
+		int prefix_offset = dt.getPrefix().length();
+		int suffix_offset = dt.getSuffix().length();
+		text = text.substring(prefix_offset, text.length() - prefix_offset - suffix_offset);
+		int edit_offset = editor.view_canvas.cursor_offset - prefix_offset;
+		if (edit_offset < 0 || edit_offset > text.length()) {
+			java.awt.Toolkit.getDefaultToolkit().beep();
+			return;
+		}
+		switch (code) {
+		case KeyEvent.VK_DELETE:
+			if (edit_offset < text.length()) {
+				text = text.substring(0, edit_offset)+text.substring(edit_offset+1);
+				this.setText(text);
+			}
+			else if (edit_offset == 0 && text.length() == 0) {
+				this.setText(null);
+			}
+			break;
+		case KeyEvent.VK_BACK_SPACE:
+			if (edit_offset > 0) {
+				edit_offset--;
+				text = text.substring(0, edit_offset)+text.substring(edit_offset+1);
+				this.setText(text);
+			}
+			else if (edit_offset == 0 && text.length() == 0) {
+				this.setText(null);
+			}
+			break;
+		default:
+			if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
+				char ch = evt.getKeyChar();
+				if (ch == '.' && dt instanceof DrawIdent)
+					ch = '\u001f';
+				text = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
+				edit_offset++;
+				this.setText(text);
+			}
+		}
+		editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
+		editor.formatAndPaint(true);
+	}
+	
+	private void setText(String text) {
+		DrawTerm dt = editor.cur_elem.dr;
+		ANode n = editor.cur_elem.node;
+		if (n == null || (n != expr && n.parent() != expr) || dt == null || dt.drnode != n) {
+			java.awt.Toolkit.getDefaultToolkit().beep();
+			return;
+		}
+		if (text == null || text.length() == 0) {
+			if (n.parent() == expr) {
+				// delete current token
+				if (n instanceof EToken)
+					n.ident = "";
+				editor.cur_elem.set(dt.getPrevLeaf().getPrevLeaf());
+				n.detach();
+				return;
+			}
+		}
+		else if (dt instanceof DrawToken && dt.drnode == expr) {
+			// create new token
+			ActionPoint ap = editor.getActionPoint(false);
+			if (ap != null && ap.length >= 0) {
+				EToken et = new EToken(0,text,0);
+				expr.nodes.insert(ap.index, et);
+				et.guessKind();
+				editor.formatAndPaint(true);
+				editor.goToPath(makePathTo(et));
+				return;
+			}
+		}
+		else if (n instanceof EToken) {
+			if (n.parent() == expr) {
+				if (text.equals("\"") && (n.ident == null || n.ident == "")) {
+					n.ident = "\"\"";
+				}
+				else if (text.equals("\'") && (n.ident == null || n.ident == "")) {
+					n.ident = "\'\'";
+				}
+				else { 
+					n.ident = text;
+				}
+				n.guessKind();
+				return;
+			}
+		}
+		java.awt.Toolkit.getDefaultToolkit().beep();
+		return;
+	}
+	
+	private ANode[] makePathTo(ANode n) {
+		Vector<ANode> path = new Vector<ANode>();
+		path.append(n);
+		while (n.parent() != null) {
+			n = n.parent();
+			path.append(n);
+			if (n instanceof FileUnit)
+				break;
+		}
+		return path.toArray();
+	}
+
+	final static class Flatten implements UIActionFactory {
+		public String getDescr() { "Flatten expresison tree" }
+		public boolean isForPopupMenu() { true }
+		public Runnable getAction(UIActionViewContext context) {
+			ANode node = context.node;
+			Drawable dr = context.dr;
+			if (context.editor == null || node == null || dr == null)
+				return null;
+			if !(node instanceof ENode)
+				return null;
+			return new ExprEditActions(context, "split");
+		}
+	}
+}
+

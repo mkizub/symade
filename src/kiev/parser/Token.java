@@ -91,40 +91,19 @@ public class Token implements kiev040Constants {
 	public static final Token newToken(int ofKind)
 	{
 		Token t = new Token();
-		switch(ofKind) {
-//		case UNDERSCORE:
-		case FUNCTION:
-//		case RULE:
-		case PCUT:
-		case CAST:
-		case OPERATOR_ID:
-		case TYPEDEF:
-		case ENUM:
-			if( kiev.Kiev.javaMode )
-				t.kind = IDENTIFIER;
-		}
 		return t;
 	}
 
     public int getPos() {
-    	if( kiev.Kiev.k.reparse_body )
-    		return kiev.Kiev.k.reparse_pos;
-    	else
-	    	return (beginLine <<11) | (beginColumn & 0x3FF);
+    	return (beginLine <<11) | (beginColumn & 0x3FF);
     }
     public static int getPos(int beginLine, int beginColumn) {
     	return (beginLine <<11) | (beginColumn & 0x3FF);
     }
     public int getLinePos() {
-    	if( kiev.Kiev.k.reparse_body )
-    		return kiev.Kiev.k.reparse_pos >>> 11;
-    	else
-	    	return beginLine;
+    	return beginLine;
     }
     public int getColumnPos() {
-    	if( kiev.Kiev.k.reparse_body )
-    		return kiev.Kiev.k.reparse_pos & 0x3FF;
-    	else
-	    	return beginColumn;
+    	return beginColumn;
     }
 }

@@ -404,7 +404,7 @@ public class List<A>
  */
 	public List<Pair<A,A>> zip(List<A> ys) {
 		if( this == Nil || ys == Nil )
-			return (List<Pair<A,A>>)Nil;
+			return (List< Pair<A,A> >)Nil;
 		return new Cons<Pair<A,A>>(new Pair<A,A>(head(), ys.head()), tail().zip(ys.tail()));
 	}
 

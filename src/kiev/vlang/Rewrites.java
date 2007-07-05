@@ -36,7 +36,7 @@ public final class RewriteContext {
 		if (s == null)
 			return null;
 		foreach (String k; args.keys())
-			s = s.replace('\''+k+'\'', String.valueOf(args.get(k)));
+			s = s.replace('\'' + k + '\'', String.valueOf(args.get(k)));
 		for(;;) {
 			int pS = s.indexOf('{');
 			if (pS < 0)
@@ -363,6 +363,10 @@ public class BlockRewr extends Block {
 	@virtual typedef This  ≤ BlockRewr;
 
 	public BlockRewr() {}
+
+	public BlockRewr(ENode[] stats) {
+		this.stats.addAll(stats);
+	}
 
 }
 
