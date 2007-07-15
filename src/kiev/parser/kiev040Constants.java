@@ -126,17 +126,19 @@ public interface kiev040Constants {
   int COMMA = 126;
   int LT = 127;
   int GT = 128;
-  int ASSIGN = 129;
-  int ASSIGN2 = 130;
-  int IS_THE = 131;
-  int IS_ONE_OF = 132;
-  int ARROW = 133;
-  int OPERATOR_AT = 134;
-  int OPERATOR_SHARP = 135;
-  int OPERATOR_LRBRACKETS = 136;
-  int OPERATOR_UPPER_BOUND = 137;
-  int OPERATOR_LOWER_BOUND = 138;
-  int OPERATOR = 139;
+  int LANGLE = 129;
+  int RANGLE = 130;
+  int ASSIGN = 131;
+  int ASSIGN2 = 132;
+  int IS_THE = 133;
+  int IS_ONE_OF = 134;
+  int ARROW = 135;
+  int OPERATOR_AT = 136;
+  int OPERATOR_SHARP = 137;
+  int OPERATOR_LRBRACKETS = 138;
+  int OPERATOR_UPPER_BOUND = 139;
+  int OPERATOR_LOWER_BOUND = 140;
+  int OPERATOR = 141;
 
   int DEFAULT = 0;
   int IN_PRAGMA = 1;
@@ -275,6 +277,8 @@ public interface kiev040Constants {
     "\",\"",
     "\"<\"",
     "\">\"",
+    "\"<\\u0335\"",
+    "\">\\u0335\"",
     "\"=\"",
     "\":=\"",
     "\"?=\"",

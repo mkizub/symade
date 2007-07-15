@@ -83,6 +83,9 @@ operator  "( $reinterp T ) Y", 180;
 operator  "T . class",         240;
 
 import static kiev.stdlib.#id"any"#._instanceof_(any, any);
+//import static kiev.stdlib.#id"boolean"#.#id"false"#;
+//import static kiev.stdlib.#id"boolean"#.#id"true"#;
+//import static kiev.stdlib.#id"null"#.#id"null"#;
 import static kiev.stdlib.GString.str_concat_ss(String, String); // string concatenation String + String
 }
 

@@ -717,6 +717,7 @@ ENUM kievSeverError kiev/SeverError kiev/Errors.java
 ENUM kievbejava15Instr kiev/be/java15/Instr kiev/be/java15/Instr.java
 ENUM kievfmtSpaceAction kiev/fmt/SpaceAction kiev/fmt/SyntaxLayout.java
 ENUM kievfmtSpaceKind kiev/fmt/SpaceKind kiev/fmt/SyntaxLayout.java
+ENUM kievparserETokenKind kiev/parser/ETokenKind kiev/parser/EToken.java
 ENUM kievvlangIntRadix kiev/vlang/IntRadix kiev/vlang/ConstExpr.java
 ENUM kievvlangProjectFileType kiev/vlang/ProjectFileType kiev/vlang/Env.java
 ENUM kievvlangWBCType kiev/vlang/WBCType kiev/vlang/Method.java

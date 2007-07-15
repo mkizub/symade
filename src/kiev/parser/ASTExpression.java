@@ -224,12 +224,12 @@ public class ASTExpression extends ENode {
 		SeqRes res = new SeqRes();
 		res.save_cur_pos = cur_pos;
 		Stack<ENode> seq_stk = new Stack<ENode>();
-		if (resolveSeqEl(seq.el, seq_stk)) {
+		if (resolveLongestSeqEl(seq.el, seq_stk)) {
 			trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 0 add "+seq_stk.peek());
 			while (nodes.length > cur_pos && isOperMatch(nodes[cur_pos], seq.sep.text)) {
 				trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 1 add "+seq.sep.text);
 				++cur_pos;
-				if (resolveSeqEl(seq.el, seq_stk)) {
+				if (resolveLongestSeqEl(seq.el, seq_stk)) {
 					trace( Kiev.debug && Kiev.debugOperators, "parseSeq: 2 add "+seq_stk.peek());
 					continue;
 				}
@@ -243,21 +243,39 @@ public class ASTExpression extends ENode {
 		return res;
 	}
 
-	private rule resolveSeqEl(OpArg seq_el, Stack<ENode> seq_stk)
+	private boolean resolveLongestSeqEl(OpArg seq_el, Stack<ENode> seq_stk) {
+		int pos = this.cur_pos;
+		ENode res = null;
+		ENode@ en;
+		foreach (resolveSeqEl(seq_el, en)) {
+			if (this.cur_pos > pos) {
+				res = (ENode)en;
+				pos = this.cur_pos;
+			}
+		}
+		if (res == null)
+			return false;
+		seq_stk.push(res);
+		this.cur_pos = pos;
+		return true;
+	}
+
+	private rule resolveSeqEl(OpArg seq_el, ENode@ res)
 		ENode@ expr;
 		TypeRef@ tref;
 	{
 		seq_el instanceof OpArg.EXPR,
 		resolveExpr(expr,((OpArg.EXPR)seq_el).priority),
-		seq_stk.push(expr) : seq_stk.pop()
+		res ?= expr
 	;
 		seq_el instanceof OpArg.TYPE,
 		resolveType(tref),
-		seq_stk.push(tref) : seq_stk.pop()
+		res ?= tref
 	;
 		seq_el instanceof OpArg.IDNT,
 		isIdent(nodes[cur_pos]),
-		pushElem(seq_stk) : popElem(seq_stk)
+		res ?= nodes[cur_pos],
+		++cur_pos : --cur_pos
 	}
 
 	private boolean matchOpStart(Operator op, int priority, boolean tp_op) {
@@ -349,14 +367,6 @@ public class ASTExpression extends ENode {
 	private void popRes() {
 		--cur_pos;
 	}
-	private void pushElem(Stack<ENode> result) {
-		result.push(nodes[cur_pos]);
-		++cur_pos;
-	}
-	private void popElem(Stack<ENode> result) {
-		result.pop();
-		--cur_pos;
-	}
 	private boolean isIdent(ENode e) {
 		return (e instanceof EToken && e.isIdentifier());
 	}
@@ -415,7 +425,7 @@ public class ASTExpression extends ENode {
 				ret.pos = id.pos;
 				return ret;
 			}
-			if (op == Operator.PostTypeArgs) {
+			if (op == Operator.PostTypeArgs || op == Operator.PostTypeArgs2) {
 				if (!(tr instanceof TypeNameRef) || ((TypeNameRef)tr).args.length > 0)
 					return null;
 				TypeNameRef tnr = (TypeNameRef)tr;
@@ -425,7 +435,7 @@ public class ASTExpression extends ENode {
 					if (e instanceof EToken)
 						tnr.args += e.asType();
 					else
-						tnr.args += (TypeRef)e;
+						tnr.args += ((TypeRef)e).ncopy();
 				}
 				return tnr;
 			}

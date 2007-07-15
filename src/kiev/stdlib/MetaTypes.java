@@ -84,10 +84,19 @@ public metatype any {
 public metatype void {}
 
 @uuid("6c8cef01-5c38-36c3-aab0-bd16c23e817d")
-public metatype #id"null"# extends Object {}
+public metatype #id"null"# extends Object {
+
+	public static final #id"null"# #id"null"#;
+	
+}
 
 @uuid("9c517365-318e-307c-acdf-6682cf309b3f")
 public metatype boolean extends any {
+	
+	public static final boolean #id"false"# = ($reinterp boolean)0;
+	
+	public static final boolean #id"true"# = ($reinterp boolean)1;
+	
 	@macro @native @CompilerNode("Set")
 	public boolean assign(boolean val) alias lfy operator = ;
 

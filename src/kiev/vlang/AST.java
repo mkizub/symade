@@ -652,6 +652,8 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	// SymbolRef/ENode/ISymRef
 	public @packed:1,nodeflags,24  boolean is_qualified; // qualified or simple name, names are separated by ASCII US (Unit Separator, 037, 0x1F)
+	// EToken
+	public @packed:1,nodeflags,20  boolean is_explicit; // explicit or implicit kind of EToken
 	
 	// Structures	
 	public @packed:1,compileflags,8  boolean is_struct_type_resolved; // KievFE_Pass2

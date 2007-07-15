@@ -993,7 +993,8 @@ public final class ExprEditActions implements Runnable, KeyListener {
 	final UIActionViewContext context;
 	final String action;
 	
-	private ASTExpression expr;
+	private ASTExpression		expr;
+	private JPopupMenu			menu;
 	
 	ExprEditActions(UIActionViewContext context, String action) {
 		this.editor = context.editor;
@@ -1011,37 +1012,48 @@ public final class ExprEditActions implements Runnable, KeyListener {
 			for (DrawTerm dt = first; dt != null && dt != last; dt = dt.getNextLeaf()) {
 				if (dt.isUnvisible())
 					continue;
-				EToken et = null;
 				if (dt instanceof DrawToken) {
-					switch (((SyntaxToken)dt.syntax).kind) {
-					case SyntaxToken.TokenKind.UNKNOWN:
-						et = new EToken(0,dt.getText(),0);
-						break;
-					case SyntaxToken.TokenKind.KEYWORD:
-						et = new EToken(0,dt.getText(),EToken.IS_IDENTIFIER|EToken.IS_KEYWORD|EToken.IS_OPERATOR);
-						break;
-					case SyntaxToken.TokenKind.OPERATOR:
-						et = new EToken(0,dt.getText(),EToken.IS_OPERATOR);
-						break;
-					case SyntaxToken.TokenKind.SEPARATOR:
-						et = new EToken(0,dt.getText(),EToken.IS_OPERATOR);
-						break;
-					}
+					if (((SyntaxToken)dt.syntax).kind == SyntaxToken.TokenKind.UNKNOWN)
+						expr.nodes += new EToken(0,dt.getText(),ETokenKind.UNKNOWN,false);
+					else
+						expr.nodes += new EToken(0,dt.getText(),ETokenKind.OPERATOR,true);
 				}
 				else if (dt instanceof DrawNodeTerm) {
 					if (dt.drnode instanceof ConstExpr)
-						et = new EToken(0,dt.getText(),EToken.IS_CONSTANT); //((ConstExpr)dt.drnode).ncopy();
+						expr.nodes += new EToken((ConstExpr)dt.drnode);
 					else
-						et = new EToken(0,dt.getText(),0);
-				}
-				if (et != null) {
-					//et.guessKind();
-					expr.nodes += et;
+						expr.nodes += new EToken(0,dt.getText(),ETokenKind.UNKNOWN,false);
 				}
 			}
 			editor.insert_mode = true;
 			editor.startItemEditor(this);
 			context.node.replaceWithNode(expr);
+			foreach (EToken et; expr.nodes)
+				et.guessKind();
+			editor.formatAndPaint(true);
+		}
+	}
+	
+	class SetKindAction extends TextAction {
+		private EToken et;
+		private ETokenKind kind;
+		SetKindAction(EToken et, ETokenKind kind) {
+			super(String.valueOf(kind));
+			this.et = et;
+			this.kind = kind;
+		}
+		public void actionPerformed(ActionEvent e) {
+			if (menu != null)
+				editor.view_canvas.remove(menu);
+			menu = null;
+			if (kind == ETokenKind.UNKNOWN) {
+				et.base_kind = ETokenKind.UNKNOWN;
+				et.explicit = false;
+			} else {
+				et.base_kind = kind;
+				et.explicit = true;
+			}
+			et.guessKind();
 			editor.formatAndPaint(true);
 		}
 	}
@@ -1051,6 +1063,20 @@ public final class ExprEditActions implements Runnable, KeyListener {
 	public void keyPressed(KeyEvent evt) {
 		int code = evt.getKeyCode();
 		int mask = evt.getModifiersEx() & (KeyEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK|KeyEvent.ALT_DOWN_MASK);
+		if (code == KeyEvent.VK_F && mask == KeyEvent.CTRL_DOWN_MASK) {
+			DrawTerm dt = editor.cur_elem.dr;
+			ANode n = editor.cur_elem.node;
+			if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.drnode != n)
+				return;
+			EToken et = (EToken)n;
+			menu = new JPopupMenu();
+			foreach (ETokenKind k; ETokenKind.values())
+				menu.add(new SetKindAction(et, k));
+			int x = dt.x;
+			int y = dt.y + dt.h - editor.view_canvas.translated_y;
+			menu.show(editor.view_canvas, x, y);
+			return;
+		}
 		if (mask != 0 && mask != KeyEvent.SHIFT_DOWN_MASK)
 			return;
 		evt.consume();
@@ -1084,116 +1110,234 @@ public final class ExprEditActions implements Runnable, KeyListener {
 			return;
 		case KeyEvent.VK_ENTER:
 			editor.insert_mode = true;
-			ASTNode e = expr;
+			EditorThread thr = EditorThread;
 			try {
-				rewalk:
-				Kiev.runProcessorsOn(e);
-			}
-			catch (ReWalkNodeException t) { e = t.replacer; goto rewalk; }
-			catch (Throwable t) { t.printStackTrace(); }
+				thr.errCount = 0;
+				thr.warnCount = 0;
+				Compiler.runFrontEnd(thr,null,(ASTNode)expr.parent(),true);
+			} catch (Throwable t) { t.printStackTrace(); }
+			editor.insert_mode = false;
 			editor.stopItemEditor(false);
 			return;
 		case KeyEvent.VK_ESCAPE:
-			editor.insert_mode = true;
+			editor.insert_mode = false;
 			editor.stopItemEditor(true);
 			return;
 		}
 		DrawTerm dt = editor.cur_elem.dr;
 		ANode n = editor.cur_elem.node;
-		if (n == null || (n != expr && n.parent() != expr) || dt == null || dt.drnode != n) {
+		if (!(n instanceof EToken) || n.parent() != expr || dt == null || dt.drnode != n) {
 			java.awt.Toolkit.getDefaultToolkit().beep();
 			return;
 		}
+		EToken et = (EToken)n;
+		String prefix_text = dt.getPrefix();
+		String suffix_text = dt.getSuffix();
 		String text = dt.getText();
 		if (text == null) { text = ""; }
-		int prefix_offset = dt.getPrefix().length();
-		int suffix_offset = dt.getSuffix().length();
-		text = text.substring(prefix_offset, text.length() - prefix_offset - suffix_offset);
+		int prefix_offset = prefix_text.length();
+		int suffix_offset = suffix_text.length();
+		text = text.substring(prefix_offset, text.length() - suffix_offset);
 		int edit_offset = editor.view_canvas.cursor_offset - prefix_offset;
 		if (edit_offset < 0 || edit_offset > text.length()) {
 			java.awt.Toolkit.getDefaultToolkit().beep();
 			return;
 		}
+		if (code == KeyEvent.VK_SHIFT || code == KeyEvent.VK_ALT || code == KeyEvent.VK_CONTROL)
+			return;
 		switch (code) {
 		case KeyEvent.VK_DELETE:
-			if (edit_offset < text.length()) {
-				text = text.substring(0, edit_offset)+text.substring(edit_offset+1);
-				this.setText(text);
+			if (text.length() == 0) {
+				deleteNode(dt,et,false);
+				return;
 			}
-			else if (edit_offset == 0 && text.length() == 0) {
-				this.setText(null);
+			else if (edit_offset >= text.length()) {
+				joinNodes(dt,et,false);
+				return;
+			}
+			else if (edit_offset < text.length()) {
+				et.setText(text = text.substring(0, edit_offset)+text.substring(edit_offset+1));
 			}
 			break;
 		case KeyEvent.VK_BACK_SPACE:
-			if (edit_offset > 0) {
-				edit_offset--;
-				text = text.substring(0, edit_offset)+text.substring(edit_offset+1);
-				this.setText(text);
+			if (text.length() == 0) {
+				deleteNode(dt,et,true);
+				return;
 			}
-			else if (edit_offset == 0 && text.length() == 0) {
-				this.setText(null);
+			else if (edit_offset == 0) {
+				joinNodes(dt,et,true);
+				return;
+			}
+			else if (edit_offset > 0) {
+				edit_offset--;
+				et.setText(text = text.substring(0, edit_offset)+text.substring(edit_offset+1));
 			}
 			break;
+		case KeyEvent.VK_SPACE:
+			// split the node, if it's not a string/char expression
+			if (et.base_kind != ETokenKind.EXPR_STRING && et.base_kind != ETokenKind.EXPR_CHAR) {
+				if (et.explicit && edit_offset != 0 && edit_offset != text.length()) {
+					java.awt.Toolkit.getDefaultToolkit().beep();
+					return;
+				}
+				else if (edit_offset < 0 || edit_offset > text.length()) {
+					java.awt.Toolkit.getDefaultToolkit().beep();
+					return;
+				}
+				// split the node
+				splitNode(dt,et,text.substring(0,edit_offset),text.substring(edit_offset));
+				return;
+			} // fall through
 		default:
-			if (evt.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
+			if (evt.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
+				java.awt.Toolkit.getDefaultToolkit().beep();
+				return;
+			} else {
 				char ch = evt.getKeyChar();
-				if (ch == '.' && dt instanceof DrawIdent)
-					ch = '\u001f';
-				text = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
+				if (et.base_kind == ETokenKind.EXPR_STRING || et.base_kind == ETokenKind.EXPR_CHAR) {
+					text = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
+					edit_offset++;
+					et.setText(text);
+					break;
+				}
+				else if (et.base_kind == ETokenKind.EXPR_NUMBER) {
+					String s = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
+					if (EToken.patternIntConst.matcher(s).matches() || EToken.patternFloatConst.matcher(s).matches()) {
+						edit_offset++;
+						et.setText(s);
+					}
+					else if (edit_offset == 0) {
+						prependNode(dt,et,ch);
+						return;
+					}
+					else if (edit_offset >= text.length()) {
+						appendNode(dt,et,ch);
+						return;
+					}
+					else
+						java.awt.Toolkit.getDefaultToolkit().beep();
+					break;
+				}
+				else if (EToken.patternIdent.matcher(text).matches()) {
+					String s = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
+					if (EToken.patternIdent.matcher(s).matches()) {
+						edit_offset++;
+						et.setText(s);
+					}
+					else if (edit_offset == 0) {
+						prependNode(dt,et,ch);
+						return;
+					}
+					else if (edit_offset >= text.length()) {
+						appendNode(dt,et,ch);
+						return;
+					}
+					else
+						java.awt.Toolkit.getDefaultToolkit().beep();
+					break;
+				}
+				else if (EToken.patternOper.matcher(text).matches()) {
+					String s = text.substring(0, edit_offset)+ch+text.substring(edit_offset);
+					if (EToken.patternOper.matcher(s).matches()) {
+						edit_offset++;
+						et.setText(s);
+					}
+					else if (edit_offset == 0) {
+						prependNode(dt,et,ch);
+						return;
+					}
+					else if (edit_offset >= text.length()) {
+						appendNode(dt,et,ch);
+						return;
+					}
+					else
+						java.awt.Toolkit.getDefaultToolkit().beep();
+					break;
+				}
+				// unknown
+				et.setText(text.substring(0, edit_offset)+ch+text.substring(edit_offset));
 				edit_offset++;
-				this.setText(text);
+				break;
 			}
 		}
 		editor.view_canvas.cursor_offset = edit_offset+prefix_offset;
 		editor.formatAndPaint(true);
 	}
 	
-	private void setText(String text) {
-		DrawTerm dt = editor.cur_elem.dr;
-		ANode n = editor.cur_elem.node;
-		if (n == null || (n != expr && n.parent() != expr) || dt == null || dt.drnode != n) {
-			java.awt.Toolkit.getDefaultToolkit().beep();
-			return;
-		}
-		if (text == null || text.length() == 0) {
-			if (n.parent() == expr) {
-				// delete current token
-				if (n instanceof EToken)
-					n.ident = "";
-				editor.cur_elem.set(dt.getPrevLeaf().getPrevLeaf());
-				n.detach();
-				return;
+	private void deleteNode(DrawTerm dt, EToken et, boolean by_backspace) {
+		dt = (by_backspace ? dt.getPrevLeaf() : dt.getNextLeaf());
+		editor.cur_elem.set(dt);
+		if (by_backspace && dt != null && dt.getText() != null)
+			editor.view_canvas.cursor_offset = dt.getText().length();
+		else
+			editor.view_canvas.cursor_offset = 0;
+		et.detach();
+		editor.formatAndPaint(true);
+	}
+	private void joinNodes(DrawTerm dt, EToken et, boolean by_backspace) {
+		if (by_backspace) {
+			DrawTerm pt = dt.getPrevLeaf();
+			if (pt != null && pt.drnode instanceof EToken) {
+				EToken pe = (EToken)pt.drnode;
+				editor.cur_elem.set(pt);
+				editor.view_canvas.cursor_offset = pt.getText().length();
+				pe.setText(pe.ident + et.ident);
+				et.detach();
+			}
+		} else {
+			DrawTerm nt = dt.getNextLeaf();
+			if (nt != null && nt.drnode instanceof EToken) {
+				EToken pe = (EToken)nt.drnode;
+				et.setText(et.ident + pe.ident);
+				pe.detach();
 			}
 		}
-		else if (dt instanceof DrawToken && dt.drnode == expr) {
-			// create new token
-			ActionPoint ap = editor.getActionPoint(false);
-			if (ap != null && ap.length >= 0) {
-				EToken et = new EToken(0,text,0);
-				expr.nodes.insert(ap.index, et);
-				et.guessKind();
-				editor.formatAndPaint(true);
-				editor.goToPath(makePathTo(et));
-				return;
-			}
+		editor.formatAndPaint(true);
+	}
+	private void splitNode(DrawTerm dt, EToken et, String left, String right) {
+		if (left == null) left = "";
+		if (right == null) right = "";
+		EToken ne = new EToken();
+		SpaceAttrSlot sas = (SpaceAttrSlot)et.pslot();
+		int idx = sas.indexOf(et.parent(),et);
+		if (left.length() == 0) {
+			// insert a new node before
+			sas.insert(et.parent(),idx,ne);
+			ne.setText(left);
+			et.setText(right);
+		} else {
+			// insert new node after
+			sas.insert(et.parent(),idx+1,ne);
+			et.setText(left);
+			ne.setText(right);
 		}
-		else if (n instanceof EToken) {
-			if (n.parent() == expr) {
-				if (text.equals("\"") && (n.ident == null || n.ident == "")) {
-					n.ident = "\"\"";
-				}
-				else if (text.equals("\'") && (n.ident == null || n.ident == "")) {
-					n.ident = "\'\'";
-				}
-				else { 
-					n.ident = text;
-				}
-				n.guessKind();
-				return;
-			}
-		}
-		java.awt.Toolkit.getDefaultToolkit().beep();
-		return;
+		// set new node to be current
+		editor.view_canvas.cursor_offset = 0;
+		editor.formatAndPaint(true);
+		editor.goToPath(makePathTo(ne));
+		editor.formatAndPaint(false);
+	}
+	private void prependNode(DrawTerm dt, EToken et, char ch) {
+		EToken ne = new EToken();
+		SpaceAttrSlot sas = (SpaceAttrSlot)et.pslot();
+		int idx = sas.indexOf(et.parent(),et);
+		sas.insert(et.parent(),idx,ne);
+		ne.setText(String.valueOf(ch));
+		editor.formatAndPaint(true);
+		editor.goToPath(makePathTo(ne));
+		editor.view_canvas.cursor_offset = 1;
+		editor.formatAndPaint(false);
+	}
+	private void appendNode(DrawTerm dt, EToken et, char ch) {
+		EToken ne = new EToken();
+		SpaceAttrSlot sas = (SpaceAttrSlot)et.pslot();
+		int idx = sas.indexOf(et.parent(),et);
+		sas.insert(et.parent(),idx+1,ne);
+		ne.setText(String.valueOf(ch));
+		editor.formatAndPaint(true);
+		editor.goToPath(makePathTo(ne));
+		editor.view_canvas.cursor_offset = 1;
+		editor.formatAndPaint(false);
 	}
 	
 	private ANode[] makePathTo(ANode n) {

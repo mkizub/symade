@@ -311,10 +311,17 @@ public class DrawCharTerm extends DrawNodeTerm {
 	public String getPrefix() { return "'"; }	
 	public String getSuffix() { return "'"; }	
 	String makeText(Formatter fmt) {
-		Character ch = (Character)getAttrPtr().get();
-		if (!fmt.getHintEscapes())
-			return "'"+ch+"'";
-		return "'"+Convert.escape(ch.charValue())+"'";
+		Object o = getAttrPtr().get();
+		if (o instanceof String) {
+			return "'"+o+"'";
+		}
+		else if (o instanceof Character) {
+			Character ch = (Character)o;
+			if (!fmt.getHintEscapes())
+				return "'"+ch+"'";
+			return "'"+Convert.escape(ch.charValue())+"'";
+		}
+		return "'?'";
 	}
 }
 

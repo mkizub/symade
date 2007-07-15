@@ -622,7 +622,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 				v.init = new CastExpr(0,s.xtype,cae);
 				copyV.block.addSymbol(v);
 			} else {
-				v.init = new CastExpr(0,s.xtype,new EToken(0,"to$node",EToken.IS_IDENTIFIER));
+				v.init = new CastExpr(0,s.xtype,new EToken(0,"to$node",ETokenKind.IDENTIFIER,true));
 				copyV.block.addSymbol(v);
 			}
 			foreach (Field f; s.getAllFields()) {

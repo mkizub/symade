@@ -115,7 +115,7 @@ public final class Operator implements Constants {
 	public static final Operator AssignMul;
 	public static final Operator AssignDiv;
 	public static final Operator AssignMod;
-	//public static final Operator AssignElem;
+	public static final Operator AssignElem;
 
 	// Binary operators
 	public static final Operator BooleanOr;
@@ -163,6 +163,7 @@ public final class Operator implements Constants {
 	
 	public static final Operator TypeAccess;
 	public static final Operator PostTypeArgs;
+	public static final Operator PostTypeArgs2;
 	public static final Operator PostTypePVar;
 	public static final Operator PostTypeRef;
 	public static final Operator PostTypeAST;
@@ -197,7 +198,7 @@ public final class Operator implements Constants {
 		AssignMul					= newOperator(opAssignPriority, "X *= Y");
 		AssignDiv					= newOperator(opAssignPriority, "X /= Y");
 		AssignMod					= newOperator(opAssignPriority, "X %= Y");
-		//AssignElem					= newOperator(opAssignPriority, "X [ Z ] = Y");
+		AssignElem					= newOperator(256, "X [ Z ] = Y"); // 256 to disable usage in parsing
 		
 		allAssignOperators = new Operator[]{Assign,Assign2,AssignBitOr,AssignBitXor,AssignBitAnd,
 			AssignLeftShift,AssignRightShift,AssignUnsignedRightShift,
@@ -241,7 +242,7 @@ public final class Operator implements Constants {
 		NewAccess = newOperator(opAccessPriority, "Y . new T ( { Z , }* )");
 		ClassAccess = newOperator(opAccessPriority, "T . class");
 		MacroAccess = newOperator(opAccessPriority, "Y \u21a3 I"); // ↣
-		Comma = newOperator(1, "{ X , }");
+		Comma = newOperator(256, "{ X , }"); // 256 to disable usage in parsing
 		ElemAccess = newOperator(opAccessPriority, "Y [ Z ]");
 
 		RuleIsThe = newOperator(opAssignPriority, "X ?= X");
@@ -258,15 +259,16 @@ public final class Operator implements Constants {
 		PostDecr = newOperator(opIncrPriority, "X --");
 		Parenth = newOperator(255, "( Z )");
 
-		TypeAccess      = newOperator(255, "T . I");			TypeAccess.is_type_operator = true;
-		PostTypeArgs    = newOperator(255, "T < { T , }+ >");	PostTypeArgs.is_type_operator = true;
-		PostTypePVar    = newOperator(255, "T @");				PostTypePVar.is_type_operator = true;
-		PostTypeRef     = newOperator(255, "T &");				PostTypeRef.is_type_operator = true;
-		PostTypeAST     = newOperator(255, "T #");				PostTypeAST.is_type_operator = true;
-		PostTypeWrapper = newOperator(255, "T \u229b");		PostTypeWrapper.is_type_operator = true; // ⊛
-		PostTypeArray   = newOperator(255, "T []");			PostTypeArray.is_type_operator = true;
-		PostTypeVararg  = newOperator(255, "T ...");			PostTypeVararg.is_type_operator = true;
-		PostTypeSpace   = newOperator(255, "T \u2205");		PostTypeSpace.is_type_operator = true; // ∅
+		TypeAccess      = newOperator(255, "T . I");						TypeAccess.is_type_operator = true;
+		PostTypeArgs    = newOperator(255, "T < { T , }+ >");				PostTypeArgs.is_type_operator = true;
+		PostTypeArgs2   = newOperator(255, "T <\u0335 { T , }+ >\u0335");	PostTypeArgs2.is_type_operator = true; // T <̵ { T , }+ >̵
+		PostTypePVar    = newOperator(255, "T @");							PostTypePVar.is_type_operator = true;
+		PostTypeRef     = newOperator(255, "T &");							PostTypeRef.is_type_operator = true;
+		PostTypeAST     = newOperator(255, "T #");							PostTypeAST.is_type_operator = true;
+		PostTypeWrapper = newOperator(255, "T \u229b");					PostTypeWrapper.is_type_operator = true; // ⊛
+		PostTypeArray   = newOperator(255, "T []");						PostTypeArray.is_type_operator = true;
+		PostTypeVararg  = newOperator(255, "T ...");						PostTypeVararg.is_type_operator = true;
+		PostTypeSpace   = newOperator(255, "T \u2205");					PostTypeSpace.is_type_operator = true; // ∅
 
 		// Multi operators
 		Conditional = newOperator(opConditionalPriority, "X ? X : Y");

@@ -750,6 +750,8 @@ TOKEN : /* Special Operators */
 {
   < LT: "<" >
 | < GT: ">" >
+| < LANGLE: "<\u0335" > // <̵
+| < RANGLE: ">\u0335" > // >̵
 }
 
 <DEFAULT>
@@ -1198,14 +1200,14 @@ TypeConstr[] ClazzArguments() :
 { TypeConstr[] args = new TypeConstr[0]; TypeConstr arg; }
 {
 	[
-		"<"
+		("<" | <LANGLE>)
 			arg = ArgumentDeclaration()
 			{ args = (TypeConstr[])Arrays.append(args,arg); }
 			(	","
 				arg = ArgumentDeclaration()
 				{ args = (TypeConstr[])Arrays.append(args,arg); }
 			)*
-		">"
+		(">" | <RANGLE>)
 	]
 	{ return args; }
 }
@@ -2043,14 +2045,14 @@ TypeNameRef TypeWithArgs() :
 { TypeNameRef res, sub; }
 {
 	res = TypeQName()
-	[	LOOKAHEAD({ getToken(1).kind == LT })
-		"<"
+	[	LOOKAHEAD({ getToken(1).kind == LT || getToken(1).kind == LANGLE })
+		("<" | <LANGLE>)
 			res.args += Type()
 			(	LOOKAHEAD({ getToken(1).kind == COMMA })
 				","
 				res.args += Type()
 			)*
-		">"
+		(">" | <RANGLE>)
 		[	LOOKAHEAD("." <IDENTIFIER>)
 			"."
 			sub = TypeWithArgs() { sub.outer = res; res = sub; }
@@ -2141,7 +2143,7 @@ EToken Identifier() :
 {
 	t=<IDENTIFIER>
 	{
-		return new EToken(t,EToken.IS_IDENTIFIER);
+		return new EToken(t,ETokenKind.IDENTIFIER);
 	}
 }
 
@@ -2311,7 +2313,7 @@ EToken Operator() :
 				image = t.image;
 		}
 	)
-	{	return new EToken(pos, image, EToken.IS_OPERATOR);		}
+	{	return new EToken(pos, image, ETokenKind.OPERATOR, true);		}
 }
 
 ENode ExpressionColonComma() :
@@ -2320,9 +2322,9 @@ ENode ExpressionColonComma() :
 	(
 		ExpressionNoNo(e)
 	|
-		t=":"	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+		t=":"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 	|
-		t=","	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+		t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 	)+
 	{
 		if (e.nodes.length == 1)
@@ -2336,7 +2338,7 @@ ENode ExpressionColon() :
 	(
 		ExpressionNoNo(e)
 	|
-		t=":"	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+		t=":"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 	)+
 	{
 		if (e.nodes.length == 1)
@@ -2350,7 +2352,7 @@ ENode ExpressionComma() :
 	(
 		ExpressionNoNo(e)
 	|
-		t=","	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+		t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 	)+
 	{
 		if (e.nodes.length == 1)
@@ -2379,32 +2381,48 @@ void ExpressionNoNo(ASTExpression e) :
 	|
 		e.nodes += Identifier()
 	|
-		t="("	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+		t="("	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 		[
 			n = ExpressionColonComma() { expandExpr(e,n); }
 		]
-		t=")"	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+		t=")"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 	|
-		t="["	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+		t="["	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 		e.nodes += ExpressionColonComma()
-		t="]"	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+		t="]"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 	|
-		t=<OPERATOR_LRBRACKETS>	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
-	|
-		t="."	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+		t=<LANGLE>		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		e.nodes += Type()
 		(
-			t="class"	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+			t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); } 
+			e.nodes += Type()
+		)*
+		t=<RANGLE>		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+	|
+		t=<OPERATOR_LRBRACKETS>	{ e.nodes += new EToken(t.getPos(), "[]", ETokenKind.OPERATOR, true); }
+	|
+		t="."	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		(
+			t="class"	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 		|
-			t="new"		{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+			t="new"		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 			e.nodes += Type()
 		|
-			t="<"		{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+			t="<"		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 			e.nodes += Type()
 			(
-				t=","	{ e.nodes += new EToken(t, EToken.IS_OPERATOR); } 
+				t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); } 
 				e.nodes += Type()
 			)*
-			t=">"		{ e.nodes += new EToken(t, EToken.IS_OPERATOR); }
+			t=">"		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+		|
+			t=<LANGLE>		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
+			e.nodes += Type()
+			(
+				t=","	{ e.nodes += new EToken(t, ETokenKind.OPERATOR); } 
+				e.nodes += Type()
+			)*
+			t=<RANGLE>		{ e.nodes += new EToken(t, ETokenKind.OPERATOR); }
 		|
 			{}
 		)

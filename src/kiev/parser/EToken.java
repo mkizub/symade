@@ -15,11 +15,28 @@ import java.util.regex.Pattern;
 import syntax kiev.Syntax;
 
 /**
+ * EToken is an (unresolved) expression token used by ASTExpression in
+ * flattened expressions. EToken has it's base kind to be either a generic
+ * IDENTIFIER (as an identifier or a keyword), or a
+ * TYPE_DECL (as a type reference), or an
+ * OPERATOR (as a sequence of operator characters or a keyword), or a
+ * EXPR_IDENT (null, true & false and others named constants).
+ * EXPR_NUMBER (all kind of integer and float constants).
+ * EXPR_STRING (string constant).
+ * EXPR_CHAR (char constants).
+ *
+ * The EToken instance may have it's base type fixed (by editor) or auto-updated.
+ * Those base types may have additional specifications. For example, the
+ * EXPRESSION may have different types and formats. The format is stored as
+ * an interned string.
+ *
  * @author Maxim Kizub
  * @version $Revision: 0 $
  *
  */
 
+public static enum ETokenKind { UNKNOWN, IDENTIFIER, TYPE_DECL, OPERATOR, EXPR_IDENT, EXPR_NUMBER, EXPR_STRING, EXPR_CHAR };
+	
 @node(name="EToken")
 public final class EToken extends ENode {
 
@@ -28,48 +45,52 @@ public final class EToken extends ENode {
 	@virtual typedef This  = EToken;
 	
 	public static final Pattern patternIdent = Pattern.compile("[\\p{Alpha}_$][\\p{Alnum}_$]*");
-	public static final Pattern patternOper = Pattern.compile("[\\!\\#\\%\\-\\/\\:\\;\\<\\=\\>\\?\\[\\\\\\]\\^\\{\\|\\}\\~\\u2190-\\u22F1]+");
+	public static final Pattern patternOper = Pattern.compile("[\\!\\#\\%-\\/\\:\\;\\<\\=\\>\\?\\[\\\\\\]\\^\\{\\|\\}\\~\\u2190-\\u22F1]+");
 	public static final Pattern patternIntConst = Pattern.compile("\\p{Digit}+");
 	public static final Pattern patternFloatConst = Pattern.compile("\\p{Digit}+\\.\\p{Digit}*(?:[Ee][\\+\\-]?\\p{Digit}+)?");
 
-	public static final int IS_IDENTIFIER =  1;
-	public static final int IS_OPERATOR   =  2;
-	public static final int IS_KEYWORD    =  4;
-	public static final int IS_CONSTANT   =  8;
-	public static final int IS_TYPE_DECL  = 16;
+	@att public ETokenKind	base_kind;
+	@ref public ANode		value;
+	@abstract
+	@att public boolean		explicit;		// if the base type if explicitly set
 	
-	// temporary associated object, is
-	// Var, Field, etc for identifiers
-	// Opdef for operator
-	// null for keywords (will be StatDef)
-	// ConstExpr for constants
-	// TypeDecl for types (usually identifiers)
-	@UnVersioned
-	private Object pre_resolved;
-
-	@getter public boolean isIdentifier() { is_token_ident }
-	@getter public boolean isOperator()   { is_token_operator }
-	@getter public boolean isKeyword()    { is_token_keyword }
-	@getter public boolean isConstant()   { is_token_constant }
-	@getter public boolean isTypeDecl()   { is_token_type_decl }
+	@getter public final boolean get$explicit() { is_explicit }
+	@setter public final void set$explicit(boolean val) { is_explicit = val; }
 
 	public EToken() {}
-	public EToken(Token t, int is_kind) {
+	public EToken(Token t, ETokenKind kind) {
 		set(t);
-		setKind(is_kind);
+		this.base_kind = kind;
 	}
-	public EToken(int pos, String ident, int is_kind) {
+	public EToken(int pos, String ident, ETokenKind kind, boolean explicit) {
 		this.pos = pos;
 		this.ident = ident;
-		setKind(is_kind);
+		this.base_kind = kind;
+		this.explicit = explicit;
 	}
-	
-	private void setKind(int kind) {
-		this.is_token_ident     = (kind & IS_IDENTIFIER) != 0;
-		this.is_token_operator  = (kind & IS_OPERATOR) != 0;
-		this.is_token_keyword   = (kind & IS_KEYWORD) != 0;
-		this.is_token_constant  = (kind & IS_CONSTANT) != 0;
-		this.is_token_type_decl = (kind & IS_TYPE_DECL) != 0;
+	public EToken(ConstExpr ce) {
+		this.pos = ce.pos;
+		if (ce instanceof ConstStringExpr) {
+			this.base_kind = ETokenKind.EXPR_STRING;
+			this.ident = ce.value;
+		}
+		else if (ce instanceof ConstCharExpr) {
+			this.base_kind = ETokenKind.EXPR_CHAR;
+			this.ident = String.valueOf((char)ce.value);
+		}
+		else if (ce instanceof ConstLongExpr || ce instanceof ConstIntExpr || ce instanceof ConstShortExpr || ce instanceof ConstByteExpr) {
+			this.base_kind = ETokenKind.EXPR_NUMBER;
+			this.ident = String.valueOf(ce);
+		}
+		else if (ce instanceof ConstDoubleExpr || ce instanceof ConstFloatExpr) {
+			this.base_kind = ETokenKind.EXPR_NUMBER;
+			this.ident = String.valueOf(ce);
+		}
+		else {
+			this.base_kind = ETokenKind.EXPR_IDENT;
+			this.ident = String.valueOf(ce);
+		}
+		this.explicit = true;
 	}
 	
 	public String toString() {
@@ -80,69 +101,141 @@ public final class EToken extends ENode {
 
 	public void set(Token t) {
         pos = t.getPos();
-		if (t.image.startsWith("#id\""))
+		if (t.image.startsWith("#id\"")) {
 			this.ident = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
-		else
+			this.explicit = true;
+		} else {
 			this.ident = t.image;
+		}
 	}
 	
-	public TypeRef asType() {
-		if (pre_resolved == null)
+	public void setText(String text) {
+		this.value = null; 
+		this.ident = text;
+		this.guessKind();
+	}
+	
+	public boolean isIdentifier() {
+		if (base_kind == ETokenKind.UNKNOWN)
 			guessKind();
-		if (pre_resolved instanceof TypeDecl)
-			return new TypeNameRef(pos, ident, ((TypeDecl)pre_resolved).xtype);
+		return base_kind == ETokenKind.IDENTIFIER || base_kind == ETokenKind.TYPE_DECL;
+	}
+
+	public boolean isOperator()   {
+		if ((base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.IDENTIFIER) && value == null)
+			guessKind();
+		return base_kind == ETokenKind.OPERATOR;
+	}
+
+	public TypeRef asType() {
+		if ((base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.IDENTIFIER) && value == null)
+			guessKind();
+		if (base_kind == ETokenKind.TYPE_DECL && value instanceof TypeDecl)
+			return new TypeNameRef(pos, ident, ((TypeDecl)value).xtype);
 		return null;
 	}
 	
 	public EToken asOperator() {
-		if (pre_resolved == null)
+		if ((base_kind == ETokenKind.UNKNOWN || base_kind == ETokenKind.IDENTIFIER) && value == null)
 			guessKind();
-		if (pre_resolved instanceof Opdef)
+		if (base_kind == ETokenKind.OPERATOR && value instanceof Opdef)
 			return this;
 		return null;
 	}
 	
 	public void guessKind() {
-		pre_resolved = "";
+		if (explicit)
+			return;
+		if (base_kind == ETokenKind.EXPR_STRING || base_kind == ETokenKind.EXPR_CHAR)
+			return;
+		if (value == null)
+			value = NopExpr.dummyNode;
 		String ident = this.ident;
 		if (ident == null || ident == "") {
-			setKind(0);
+			if (base_kind != ETokenKind.UNKNOWN)
+				this.base_kind = ETokenKind.UNKNOWN;
 			return;
 		}
-		if (ident == Constants.nameThis || ident == Constants.nameSuper) {
-			setKind(IS_IDENTIFIER | IS_KEYWORD);
+		if (ident == "\"" || ident == "\"\"") {
+			if (base_kind != ETokenKind.EXPR_STRING)
+				this.base_kind = ETokenKind.EXPR_STRING;
+			this.ident = "";
+			return;
+		}
+		if (ident == "\'" || ident == "\'\'") {
+			if (base_kind != ETokenKind.EXPR_CHAR)
+				this.base_kind = ETokenKind.EXPR_CHAR;
+			this.ident = "";
+			return;
+		}
+		if (ident == Constants.nameThis) {
+			if (this.base_kind != ETokenKind.IDENTIFIER)
+				this.base_kind = ETokenKind.IDENTIFIER; // used for ThisExpr/SuperExpr and CtorCallExpr
+			if!(this.value instanceof ThisExpr)
+				this.value = new ThisExpr();
+			return;
+		}
+		if (ident == Constants.nameSuper) {
+			if (this.base_kind != ETokenKind.IDENTIFIER)
+				this.base_kind = ETokenKind.IDENTIFIER; // used for ThisExpr/SuperExpr and CtorCallExpr
+			if!(this.value instanceof SuperExpr)
+				this.value = new SuperExpr();
 			return;
 		}
 		if (ident == Constants.nameNull) {
-			setKind(IS_IDENTIFIER | IS_KEYWORD | IS_CONSTANT | IS_TYPE_DECL);
+			if (this.base_kind != ETokenKind.EXPR_IDENT)
+				this.base_kind = ETokenKind.EXPR_IDENT;
 			return;
 		}
-		if (ident == "true" || ident == "false") {
-			setKind(IS_IDENTIFIER | IS_KEYWORD | IS_CONSTANT);
+		if (ident == "true") {
+			if (this.base_kind != ETokenKind.EXPR_IDENT)
+				this.base_kind = ETokenKind.EXPR_IDENT;
 			return;
 		}
-		if (ident.charAt(0) == '\"' || ident.charAt(0) == '\'' || Character.isDigit(ident.charAt(0))) {
-			setKind(IS_CONSTANT);
+		if (ident == "false") {
+			if (this.base_kind != ETokenKind.EXPR_IDENT)
+				this.base_kind = ETokenKind.EXPR_IDENT;
 			return;
 		}
-		this.is_token_ident = patternIdent.matcher(ident).matches();
-		this.is_token_operator = patternOper.matcher(ident).matches();
+		if (patternIntConst.matcher(ident).matches()) {
+			if (this.base_kind != ETokenKind.EXPR_NUMBER)
+				this.base_kind = ETokenKind.EXPR_NUMBER;
+			return;
+		}
+		if (patternFloatConst.matcher(ident).matches()) {
+			if (this.base_kind != ETokenKind.EXPR_NUMBER)
+				this.base_kind = ETokenKind.EXPR_NUMBER;
+			return;
+		}
+		if (patternIdent.matcher(ident).matches())
+			this.base_kind = ETokenKind.IDENTIFIER; // used for ThisExpr/SuperExpr and CtorCallExpr
+		else if (patternOper.matcher(ident).matches())
+			this.base_kind = ETokenKind.OPERATOR;
 		// resolve in the path of scopes
 		ASTNode@ v;
 		ResInfo info = new ResInfo(this,ident);
 		if (PassInfo.resolveNameR(this,v,info)) {
 			if (v instanceof Opdef) {
-				this.is_token_operator = true;
-				pre_resolved = v.$var;
+				this.base_kind = ETokenKind.OPERATOR;
+				value = v.$var;
 			}
 			if (v instanceof TypeDecl) {
-				this.is_token_type_decl = true;
-				pre_resolved = v.$var;
+				this.base_kind = ETokenKind.TYPE_DECL;
+				value = v.$var;
 			}
 		}
 	}
 	
 	public boolean preResolveIn() {
+		if (base_kind == ETokenKind.UNKNOWN)
+			guessKind();
+		if (base_kind == ETokenKind.EXPR_STRING)
+			replaceWithNodeReWalk(new ConstStringExpr(ConstExpr.source2ascii(ident)));
+		if (base_kind == ETokenKind.EXPR_CHAR) {
+			if (ident.length() == 1)
+				replaceWithNodeReWalk(new ConstCharExpr(ident.charAt(0)));
+			replaceWithNodeReWalk(new ConstCharExpr(ConstExpr.source2ascii(ident).charAt(0)));
+		}
 		String ident = this.ident;
 		if (ident == null || ident == "")
 			throw new CompilerException(this,"Empty token");
@@ -158,21 +251,6 @@ public final class EToken extends ENode {
 			replaceWithNodeReWalk(new ConstBoolExpr(false));
 		char first_ch = ident.charAt(0);
 		int last_ch = ident.charAt(ident.length()-1);
-		if (first_ch == '\"') {
-			if (ident.length() < 3 || last_ch != '\"')
-				throw new CompilerException(this,"Bad string token");
-			replaceWithNodeReWalk(new ConstStringExpr(ConstExpr.source2ascii(ident.substring(1,ident.length()-1))));
-		}
-		if (first_ch == '\'') {
-			if (ident.length() < 3 || last_ch != '\'')
-				throw new CompilerException(this,"Bad char token");
-			char ch;
-			if (ident.length() == 3)
-				ch = ident.charAt(1);
-			else
-				ch = ConstExpr.source2ascii(ident.substring(1,ident.length()-1)).charAt(0);
-			replaceWithNodeReWalk(new ConstCharExpr(ch));
-		}
 		if (Character.isDigit(first_ch)) {
 			int tokenKind = ParserConstants.INTEGER_LITERAL;
 			if (last_ch == 'D' || last_ch == 'd')
@@ -232,13 +310,13 @@ public final class EToken extends ENode {
 			throw new CompilerException(this,"Unresolved token "+ident);
 		if( v instanceof Opdef ) {
 			this.is_token_operator = true;
-			pre_resolved = v.$var;
+			value = v.$var;
 			//replaceWithNodeReWalk(op);
 		}
 		else if( v instanceof TypeDecl ) {
 			this.is_token_type_decl = true;
-			pre_resolved = v.$var;
-			TypeDecl td = (TypeDecl)pre_resolved;
+			value = v.$var;
+			TypeDecl td = (TypeDecl)value;
 			//td.checkResolved();
 			replaceWithNodeReWalk(new TypeNameRef(pos, ident, td.xtype));
 		}

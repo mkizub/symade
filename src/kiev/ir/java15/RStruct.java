@@ -91,7 +91,7 @@ public final view RStruct of Struct extends RTypeDecl {
 			}
 			if (this.instanceOf(Type.tpTypeInfo.tdecl) && ctx_method != null && ctx_method instanceof Constructor && !ctx_method.isStatic()) {
 				if (t instanceof ArgType)
-					return new EToken(from.pos,t.name.toString(),EToken.IS_IDENTIFIER);
+					return new EToken(from.pos,t.name.toString(),ETokenKind.IDENTIFIER,true);
 			}
 			if (this.isTypeUnerasable()) {
 				ENode ti_access;
@@ -246,7 +246,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				Type t = at.applay(this.xtype);
 				ENode expr;
 				if (t instanceof ArgType)
-					expr = new EToken(pos,t.name.toString(),EToken.IS_IDENTIFIER);
+					expr = new EToken(pos,t.name.toString(),ETokenKind.IDENTIFIER,true);
 				else if (t.isUnerasable())
 					expr = new TypeInfoExpr(pos,new TypeRef(t));
 				else
@@ -1378,7 +1378,7 @@ public final view RStruct of Struct extends RTypeDecl {
 					m.setNeedFieldInits(true);
 					ctor_call = new CtorCallExpr(pos, new SuperExpr(), ENode.emptyArray);
 					if( super_types.length > 0 && super_types[0].getStruct() == Type.tpClosureClazz ) {
-						EToken max_args = new EToken(pos,nameClosureMaxArgs,EToken.IS_IDENTIFIER);
+						EToken max_args = new EToken(pos,nameClosureMaxArgs,ETokenKind.IDENTIFIER,true);
 						ctor_call.args.add(max_args);
 					}
 					else if (isAnonymouse()) {
@@ -1391,15 +1391,15 @@ public final view RStruct of Struct extends RTypeDecl {
 					}
 					else if (isEnum()) {
 						if (ctor_call.obj instanceof ThisExpr) {
-							ctor_call.eargs.insert(0,new EToken(pos, "enum$name", EToken.IS_IDENTIFIER));
-							ctor_call.eargs.insert(1,new EToken(pos, "enum$ordinal", EToken.IS_IDENTIFIER));
+							ctor_call.eargs.insert(0,new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
+							ctor_call.eargs.insert(1,new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
 						} else {
-							ctor_call.args.insert(0,new EToken(pos, "enum$name", EToken.IS_IDENTIFIER));
-							ctor_call.args.insert(1,new EToken(pos, "enum$ordinal", EToken.IS_IDENTIFIER));
+							ctor_call.args.insert(0,new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
+							ctor_call.args.insert(1,new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
 						}
 					}
 					else if (isForward() && package_clazz.dnode.isStructView() && super_types[0].getStruct().package_clazz.dnode.isStructView()) {
-						ctor_call.args.insert(0,new EToken(pos, nameImpl, EToken.IS_IDENTIFIER));
+						ctor_call.args.insert(0,new EToken(pos, nameImpl, ETokenKind.IDENTIFIER,true));
 					}
 					initbody.stats.insert(0,new ExprStat(ctor_call));
 					Kiev.runProcessorsOn(initbody.stats[0]);
@@ -1407,11 +1407,11 @@ public final view RStruct of Struct extends RTypeDecl {
 				} else {
 					if (isEnum()) {
 						if (ctor_call.obj instanceof ThisExpr) {
-							ctor_call.eargs.insert(0,new EToken(pos, "enum$name", EToken.IS_IDENTIFIER));
-							ctor_call.eargs.insert(1,new EToken(pos, "enum$ordinal", EToken.IS_IDENTIFIER));
+							ctor_call.eargs.insert(0,new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
+							ctor_call.eargs.insert(1,new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
 						} else {
-							ctor_call.args.insert(0,new EToken(pos, "enum$name", EToken.IS_IDENTIFIER));
-							ctor_call.args.insert(1,new EToken(pos, "enum$ordinal", EToken.IS_IDENTIFIER));
+							ctor_call.args.insert(0,new EToken(pos, "enum$name", ETokenKind.IDENTIFIER,true));
+							ctor_call.args.insert(1,new EToken(pos, "enum$ordinal", ETokenKind.IDENTIFIER,true));
 						}
 						Kiev.runProcessorsOn(ctor_call);
 						RStruct.runResolveOn(ctor_call);
