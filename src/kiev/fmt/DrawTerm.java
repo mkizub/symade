@@ -53,8 +53,8 @@ public abstract class DrawTerm extends Drawable {
 	public:r,r,r,rw		DrawTermLink	lnk_prev;
 	public:r,r,r,rw		DrawTermLink	lnk_next;
 
-	public DrawTerm(ANode node, SyntaxElem syntax) {
-		super(node, syntax);
+	public DrawTerm(ANode node, SyntaxElem syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 		text = _uninitialized_;
 	}
 	
@@ -209,8 +209,8 @@ public abstract class DrawTerm extends Drawable {
 @node(copyable=false)
 public final class DrawToken extends DrawTerm {
 
-	public DrawToken(ANode node, SyntaxToken syntax) {
-		super(node, syntax);
+	public DrawToken(ANode node, SyntaxToken syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	String makeText(Formatter fmt) { return ((SyntaxToken)this.syntax).text; } 
@@ -219,8 +219,8 @@ public final class DrawToken extends DrawTerm {
 @node(copyable=false)
 public final class DrawPlaceHolder extends DrawTerm {
 
-	public DrawPlaceHolder(ANode node, SyntaxPlaceHolder syntax) {
-		super(node, syntax);
+	public DrawPlaceHolder(ANode node, SyntaxPlaceHolder syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	String makeText(Formatter fmt) {
@@ -236,8 +236,8 @@ public class DrawNodeTerm extends DrawTerm {
 
 	String attr;
 
-	public DrawNodeTerm(ANode node, SyntaxElem syntax, String attr) {
-		super(node, syntax);
+	public DrawNodeTerm(ANode node, SyntaxElem syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax, String attr) {
+		super(node, syntax, attr_syntax, text_syntax);
 		this.attr = attr.intern();
 	}
 
@@ -263,8 +263,8 @@ public class DrawIdent extends DrawNodeTerm {
 
 	private boolean escaped;
 
-	public DrawIdent(ANode node, SyntaxIdentAttr syntax, String attr) {
-		super(node, syntax, attr);
+	public DrawIdent(ANode node, SyntaxIdentAttr syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax, String attr) {
+		super(node, syntax, attr_syntax, text_syntax, attr);
 	}
 
 	String makeText(Formatter fmt) {
@@ -304,8 +304,8 @@ public class DrawIdent extends DrawNodeTerm {
 @node(copyable=false)
 public class DrawCharTerm extends DrawNodeTerm {
 
-	public DrawCharTerm(ANode node, SyntaxElem syntax, String attr) {
-		super(node, syntax, attr);
+	public DrawCharTerm(ANode node, SyntaxElem syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax, String attr) {
+		super(node, syntax, attr_syntax, text_syntax, attr);
 	}
 
 	public String getPrefix() { return "'"; }	
@@ -328,8 +328,8 @@ public class DrawCharTerm extends DrawNodeTerm {
 @node(copyable=false)
 public class DrawStrTerm extends DrawNodeTerm {
 
-	public DrawStrTerm(ANode node, SyntaxElem syntax, String attr) {
-		super(node, syntax, attr);
+	public DrawStrTerm(ANode node, SyntaxElem syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax, String attr) {
+		super(node, syntax, attr_syntax, text_syntax, attr);
 	}
 
 	public String getPrefix() { return "\""; }	
@@ -348,8 +348,8 @@ public class DrawStrTerm extends DrawNodeTerm {
 @node(copyable=false)
 public class DrawXmlStrTerm extends DrawNodeTerm {
 
-	public DrawXmlStrTerm(ANode node, SyntaxElem syntax, String attr) {
-		super(node, syntax, attr);
+	public DrawXmlStrTerm(ANode node, SyntaxElem syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax, String attr) {
+		super(node, syntax, attr_syntax, text_syntax, attr);
 	}
 
 	final String escapeString(String str) {
@@ -389,8 +389,8 @@ public class DrawXmlStrTerm extends DrawNodeTerm {
 @node(copyable=false)
 public class DrawXmlTypeTerm extends DrawXmlStrTerm {
 
-	public DrawXmlTypeTerm(ANode node, SyntaxElem syntax, String attr) {
-		super(node, syntax, attr);
+	public DrawXmlTypeTerm(ANode node, SyntaxElem syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax, String attr) {
+		super(node, syntax, attr_syntax, text_syntax, attr);
 	}
 
 	String makeText(Formatter fmt) {

@@ -35,6 +35,8 @@ abstract class VNode_Base extends TransfProcessor {
 	public static final String nameSpaceAttAttrSlot	= "kiev\u001fvlang\u001fSpaceAttAttrSlot"; 
 	public static final String nameCopyable			= "copyable";
 	public static final String nameExtData				= "ext_data";
+	public static final String nameLanguageIface		= "kiev\u001fvlang\u001fLanguage"; 
+	public static final String nameLangName			= "lang";
 	
 	static Type tpINode;
 	static Type tpANode;
@@ -49,6 +51,7 @@ abstract class VNode_Base extends TransfProcessor {
 	static Type tpSpaceAttrSlot;
 	static Type tpSpaceRefAttrSlot;
 	static Type tpSpaceAttAttrSlot;
+	static Type tpLanguageIface;
 
 	VNode_Base() { super(KievExt.VNode); }
 
@@ -97,6 +100,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpSpaceAttrSlot = Env.loadTypeDecl(nameSpaceAttrSlot, true).xtype;
 			tpSpaceRefAttrSlot = Env.loadTypeDecl(nameSpaceRefAttrSlot, true).xtype;
 			tpSpaceAttAttrSlot = Env.loadTypeDecl(nameSpaceAttAttrSlot, true).xtype;
+			tpLanguageIface = Env.loadTypeDecl(nameLanguageIface, true).xtype;
 		}
 		foreach (ASTNode n; fu.members)
 			doProcess(n);
@@ -435,20 +439,58 @@ public final class VNodeFE_GenMembers extends VNode_Base {
 public final class VNodeFE_Verify extends VNode_Base {
 	public String getDescr() { "VNode verify" }
 
-	public void verify(ASTNode node) {
-		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ANode n) {
-				if (n instanceof DNode)
-					verifyDecl((DNode)n);
-				return true;
+	public void process(ASTNode node, Transaction tr) { doProcess(node); }
+	public void doProcess(ASTNode:ASTNode node) {}
+	public void doProcess(FileUnit:ASTNode fu) {
+		foreach (ASTNode n; fu.members)
+			doProcess(n);
+	}
+	public void doProcess(NameSpace:ASTNode fu) {
+		foreach (ASTNode dn; fu.members)
+			this.doProcess(dn);
+	}
+	
+	public void doProcess(Struct:ASTNode s) {
+		foreach (Struct sub; s.sub_decls)
+			doProcess(sub);
+		if!(isNodeKind(s))
+			return;
+		UserMeta m = s.getMeta(mnNode);
+		MetaValueScalar langValue = (MetaValueScalar)m.get(nameLangName);
+		TypeDecl td;
+		if (langValue.value instanceof TypeClassExpr)
+			td = ((TypeClassExpr)langValue.value).type.getTypeDecl();
+		else
+			td = ((TypeRef)langValue.value).getTypeDecl();
+		if (td.xtype ≡ StdTypes.tpVoid)
+			return;
+		if!(td instanceof Struct) {
+			Kiev.reportError(m,"Language '"+td+"' is not a class");
+			return;
+		}
+		Field nodeClasses = td.resolveField("nodeClasses", false);
+		if (nodeClasses == null) {
+			Kiev.reportError(m,"Language '"+td+"' has no field 'nodeClasses'");
+			return;
+		}
+		if!(nodeClasses.init instanceof NewInitializedArrayExpr) {
+			Kiev.reportError(m,"Language '"+td+"' has field 'nodeClasses' with wrong initializer (NewInitializedArrayExpr expected)");
+			return;
+		}
+		NewInitializedArrayExpr init = (NewInitializedArrayExpr)nodeClasses.init;
+		boolean found = false;
+		foreach (TypeClassExpr tce; init.args) {
+			if (tce.type.getStruct() == s) {
+				found = true;
+				break;
 			}
-		});
-		return;
+		}
+		if (!found) {
+			Kiev.reportError(m,"Language '"+td+"' has no reference to @node '"+s+"' in field 'nodeClasses'");
+			return;
+		}
 	}
-
-	void verifyDecl(DNode dn) {
-		return;
-	}
+	
 }
 
 @singleton

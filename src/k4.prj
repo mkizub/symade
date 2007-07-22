@@ -148,6 +148,7 @@ CLASS kievfmtDrawOptional kiev/fmt/DrawOptional kiev/fmt/DrawCtrl.java
 CLASS kievfmtDrawPlaceHolder kiev/fmt/DrawPlaceHolder kiev/fmt/DrawTerm.java
 CLASS kievfmtDrawSpace kiev/fmt/DrawSpace kiev/fmt/DrawCtrl.java
 CLASS kievfmtDrawStrTerm kiev/fmt/DrawStrTerm kiev/fmt/DrawTerm.java
+CLASS kievfmtDrawSyntaxSwitch kiev/fmt/DrawSyntaxSwitch kiev/fmt/DrawNonTerm.java
 CLASS kievfmtDrawTerm kiev/fmt/DrawTerm kiev/fmt/DrawTerm.java
 CLASS kievfmtDrawTermLink kiev/fmt/DrawTermLink kiev/fmt/DrawTerm.java
 CLASS kievfmtDrawToken kiev/fmt/DrawToken kiev/fmt/DrawTerm.java
@@ -186,6 +187,7 @@ CLASS kievfmtSyntaxJavaComment kiev/fmt/SyntaxJavaComment kiev/fmt/JavaSyntax.
 CLASS kievfmtSyntaxJavaCommentTemplate kiev/fmt/SyntaxJavaCommentTemplate kiev/fmt/JavaSyntax.java
 CLASS kievfmtSyntaxJavaConstructorName kiev/fmt/SyntaxJavaConstructorName kiev/fmt/JavaSyntax.java
 CLASS kievfmtSyntaxJavaPackedField kiev/fmt/SyntaxJavaPackedField kiev/fmt/JavaSyntax.java
+CLASS kievfmtSyntaxLang kiev/fmt/SyntaxLang kiev/fmt/Language.java
 CLASS kievfmtSyntaxList kiev/fmt/SyntaxList kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxNode kiev/fmt/SyntaxNode kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxOptional kiev/fmt/SyntaxOptional kiev/fmt/SyntaxLayout.java
@@ -194,6 +196,7 @@ CLASS kievfmtSyntaxSet kiev/fmt/SyntaxSet kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxSpace kiev/fmt/SyntaxSpace kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxStrAttr kiev/fmt/SyntaxStrAttr kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxSubAttr kiev/fmt/SyntaxSubAttr kiev/fmt/SyntaxLayout.java
+CLASS kievfmtSyntaxSwitch kiev/fmt/SyntaxSwitch kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxToken kiev/fmt/SyntaxToken kiev/fmt/SyntaxLayout.java
 CLASS kievfmtSyntaxXmlStrAttr kiev/fmt/SyntaxXmlStrAttr kiev/fmt/XmlDumpSyntax.java
 CLASS kievfmtSyntaxXmlTypeAttr kiev/fmt/SyntaxXmlTypeAttr kiev/fmt/XmlDumpSyntax.java
@@ -387,6 +390,7 @@ CLASS kievvlangContainerAccessExpr kiev/vlang/ContainerAccessExpr kiev/vlang/L
 CLASS kievvlangContinueStat kiev/vlang/ContinueStat kiev/vlang/Statement.java
 CLASS kievvlangCoreExpr kiev/vlang/CoreExpr kiev/vlang/CoreMethod.java
 CLASS kievvlangCoreFunc kiev/vlang/CoreFunc kiev/vlang/CoreMethod.java
+CLASS kievvlangCoreLang kiev/vlang/CoreLang kiev/vlang/Language.java
 CLASS kievvlangCtorCallExpr kiev/vlang/CtorCallExpr kiev/vlang/CallExpr.java
 CLASS kievvlangCurrentVersionInfo kiev/vlang/CurrentVersionInfo kiev/vlang/AST.java
 CLASS kievvlangDFFunc kiev/vlang/DFFunc kiev/vlang/DataFlow.java
@@ -516,6 +520,7 @@ CLASS kievvlangLVar kiev/vlang/LVar kiev/vlang/Var.java
 CLASS kievvlangLVarExpr kiev/vlang/LVarExpr kiev/vlang/LvalueExpr.java
 CLASS kievvlangLabel kiev/vlang/Label kiev/vlang/LoopStatement.java
 CLASS kievvlangLabeledStat kiev/vlang/LabeledStat kiev/vlang/Statement.java
+CLASS kievvlangLogicLang kiev/vlang/LogicLang kiev/vlang/Language.java
 CLASS kievvlangLongADD kiev/vlang/LongADD kiev/vlang/CoreMethod.java
 CLASS kievvlangLongAssign kiev/vlang/LongAssign kiev/vlang/CoreMethod.java
 CLASS kievvlangLongAssignADD kiev/vlang/LongAssignADD kiev/vlang/CoreMethod.java
@@ -558,6 +563,7 @@ CLASS kievvlangMNode kiev/vlang/MNode kiev/vlang/Meta.java
 CLASS kievvlangMacroAccessExpr kiev/vlang/MacroAccessExpr kiev/vlang/Rewrites.java
 CLASS kievvlangMacroBinaryBoolExpr kiev/vlang/MacroBinaryBoolExpr kiev/vlang/Rewrites.java
 CLASS kievvlangMacroHasMetaExpr kiev/vlang/MacroHasMetaExpr kiev/vlang/Rewrites.java
+CLASS kievvlangMacroLang kiev/vlang/MacroLang kiev/vlang/Language.java
 CLASS kievvlangMacroSubstExpr kiev/vlang/MacroSubstExpr kiev/vlang/Rewrites.java
 CLASS kievvlangMacroSubstTypeRef kiev/vlang/MacroSubstTypeRef kiev/vlang/Rewrites.java
 CLASS kievvlangMatchStat kiev/vlang/MatchStat kiev/vlang/ComplexStatement.java
@@ -947,6 +953,7 @@ INTERFACE kievvlangDataFlowSlots kiev/vlang/DataFlowSlots kiev/vlang/DataFlow.
 INTERFACE kievvlangGlobalDNode kiev/vlang/GlobalDNode kiev/vlang/DNode.java
 INTERFACE kievvlangINode kiev/vlang/INode kiev/vlang/AST.java
 INTERFACE kievvlangISymbol kiev/vlang/ISymbol kiev/vlang/Symbol.java
+INTERFACE kievvlangLanguage kiev/vlang/Language kiev/vlang/Language.java
 INTERFACE kievvlangPreScanneable kiev/vlang/PreScanneable kiev/vlang/AST.java
 INTERFACE kievvlangScope kiev/vlang/Scope kiev/vlang/Resolving.java
 INTERFACE kievvlangScopeOfMethods kiev/vlang/ScopeOfMethods kiev/vlang/Resolving.java
@@ -955,9 +962,6 @@ INTERFACE kievvlangUnVersioned kiev/vlang/UnVersioned kiev/vlang/Tree.java
 INTERFACE kievvlangatt kiev/vlang/att kiev/vlang/Tree.java
 INTERFACE kievvlangdflow kiev/vlang/dflow kiev/vlang/Tree.java
 INTERFACE kievvlangnode kiev/vlang/node kiev/vlang/Tree.java
-INTERFACE kievvlangnodeimpl kiev/vlang/nodeimpl kiev/vlang/Tree.java
-INTERFACE kievvlangnodeset kiev/vlang/nodeset kiev/vlang/Tree.java
-INTERFACE kievvlangnodeview kiev/vlang/nodeview kiev/vlang/Tree.java
 INTERFACE kievvlangref kiev/vlang/ref kiev/vlang/Tree.java
 INTERFACE kievvlangtypesStdTypes kiev/vlang/types/StdTypes kiev/vlang/types/StdTypes.java
 INTERFACE kievvlangtypesTVSet kiev/vlang/types/TVSet kiev/vlang/types/TVarBld.java

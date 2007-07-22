@@ -57,7 +57,7 @@ import javax.swing.text.TextAction;
 /**
  * @author mkizub
  */
-@node(copyable=false)
+
 public class Editor extends InfoView implements KeyListener {
 	
 	/** Symbols used by editor */
@@ -152,7 +152,7 @@ public class Editor extends InfoView implements KeyListener {
 			this.formatter.setHintEscapes(this.show_hint_escapes);
 			view_canvas.root = null;
 			if (the_root != null && full)
-				view_canvas.root = view_root = formatter.format(the_root, view_root);
+				view_canvas.root = view_root = formatter.format(the_root, view_root, getSyntax());
 			cur_elem.restore();
 		}
 		view_canvas.repaint();

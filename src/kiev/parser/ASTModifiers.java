@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=void)
 public final class ASTModifiers extends ASTNode {
 	
 	@virtual typedef This  = ASTModifiers;

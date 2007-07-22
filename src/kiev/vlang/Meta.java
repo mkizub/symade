@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  */
 
 // Meta information about a node
-@node(name="MetaSet")
+@node(name="MetaSet", lang=CoreLang)
 public final class MetaSet extends ASTNode {
 	
 	@virtual typedef This  = MetaSet;
@@ -146,7 +146,7 @@ public final class MetaSet extends ASTNode {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public abstract class MNode extends ASTNode {
 	@virtual typedef This  ≤ MNode;
 	
@@ -161,7 +161,7 @@ public abstract class MNode extends ASTNode {
 	public boolean isRuntimeInvisible() { return false; }
 }
 
-@node(name="UserMeta")
+@node(name="UserMeta", lang=CoreLang)
 public class UserMeta extends MNode {
 	@virtual typedef This  ≤ UserMeta;
 
@@ -563,7 +563,7 @@ public class UserMeta extends MNode {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public abstract class MetaValue extends ENode {
 	public static final MetaValue[] emptyArray = new MetaValue[0];
 
@@ -624,7 +624,7 @@ public abstract class MetaValue extends ENode {
 	}
 }
 
-@node(name="MetaVal")
+@node(name="MetaVal", lang=CoreLang)
 public final class MetaValueScalar extends MetaValue {
 
 	@virtual typedef This  = MetaValueScalar;
@@ -669,7 +669,7 @@ public final class MetaValueScalar extends MetaValue {
 	}
 }
 
-@node(name="MetaArr")
+@node(name="MetaArr", lang=CoreLang)
 public final class MetaValueArray extends MetaValue {
 
 	@virtual typedef This  = MetaValueArray;

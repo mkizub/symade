@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=LogicLang)
 public class RuleMethod extends Method {
 	
 	@dflow(in="root()") private static class DFI {
@@ -196,7 +196,7 @@ d) if rule is successive, it returns it's own frame
 object, if fails - returns null.
 */
 
-@node
+@node(lang=LogicLang)
 public abstract class ASTRuleNode extends ENode {
 	public static final ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
@@ -238,7 +238,7 @@ public abstract class ASTRuleNode extends ENode {
 }
 
 
-@node
+@node(lang=LogicLang)
 public final class RuleBlock extends ENode {
 	
 	@dflow(out="rnode") private static class DFI {
@@ -296,7 +296,7 @@ public final class RuleBlock extends ENode {
 }
 
 
-@node
+@node(lang=LogicLang)
 public final class RuleOrExpr extends ASTRuleNode {
 	
 	@dflow(out="rules") private static class DFI {
@@ -357,7 +357,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 	}
 }
 
-@node
+@node(lang=LogicLang)
 public final class RuleAndExpr extends ASTRuleNode {
 	
 	@dflow(out="rules") private static class DFI {
@@ -440,7 +440,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 	}
 }
 
-@node
+@node(lang=LogicLang)
 public final class RuleIstheExpr extends ASTRuleNode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -500,7 +500,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 }
 
-@node
+@node(lang=LogicLang)
 public final class RuleIsoneofExpr extends ASTRuleNode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -598,7 +598,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 }
 
-@node
+@node(lang=LogicLang)
 public final class RuleCutExpr extends ASTRuleNode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -634,7 +634,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	}
 }
 
-@node
+@node(lang=LogicLang)
 public final class RuleCallExpr extends ASTRuleNode {
 	
 	@dflow(out="args") private static class DFI {
@@ -708,7 +708,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 }
 
-@node
+@node(lang=LogicLang)
 public abstract class RuleExprBase extends ASTRuleNode {
 
 	@virtual typedef This  ≤ RuleExprBase;
@@ -743,7 +743,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 	}
 }
 
-@node
+@node(lang=LogicLang)
 public final class RuleWhileExpr extends RuleExprBase {
 	
 	@dflow(out="expr") private static class DFI {
@@ -796,7 +796,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 }
 
-@node
+@node(lang=LogicLang)
 public final class RuleExpr extends RuleExprBase {
 	
 	@dflow(out="expr") private static class DFI {

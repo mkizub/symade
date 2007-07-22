@@ -29,7 +29,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethods,PreScanneable,GlobalDNode {
 	@virtual typedef This  ≤ Method;
 	@virtual typedef JView = JMethod;
@@ -884,7 +884,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 
 }
 
-@node(name="Method")
+@node(name="Method", lang=CoreLang)
 public final class MethodImpl extends Method {
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in")	Block		body;
@@ -907,7 +907,7 @@ public final class MethodImpl extends Method {
 	}
 }
 
-@node(name="Ctor")
+@node(name="Ctor", lang=CoreLang)
 public final class Constructor extends Method {
 	
 	@dflow(in="root()") private static class DFI {
@@ -957,7 +957,7 @@ public final class Constructor extends Method {
 
 }
 
-@node(name="InitBlock")
+@node(name="InitBlock", lang=CoreLang)
 public final class Initializer extends DNode implements PreScanneable {
 	
 	@dflow(out="body") private static class DFI {
@@ -999,7 +999,7 @@ public enum WBCType {
 	CondInvariant;
 }
 
-@node
+@node(lang=CoreLang)
 public final class WBCCondition extends DNode {
 	
 	@dflow(out="body") private static class DFI {

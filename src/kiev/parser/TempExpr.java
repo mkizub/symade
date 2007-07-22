@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 /**
  * Base class to represent unresolved, temporary created expressions.
  */
-@node
+@node(lang=void)
 public abstract class UnresExpr extends ENode {
 
 	@virtual typedef This  ≤ UnresExpr;
@@ -47,7 +47,7 @@ public abstract class UnresExpr extends ENode {
  * 'expr' field is @ref to not change the owner of the expression.
  * The owner will be changed when concrete, resolved unary expression is created.
  */
-@node
+@node(lang=void)
 public final class UnresOpExpr extends UnresExpr {
 	
 	@virtual typedef This  = UnresOpExpr;
@@ -151,7 +151,7 @@ public final class UnresOpExpr extends UnresExpr {
 /**
  * Represents unresolved, temporary created list of expression.
  */
-@node
+@node(lang=void)
 public final class UnresSeqs extends UnresExpr {
 	
 	@virtual typedef This  = UnresSeqs;
@@ -195,7 +195,7 @@ public final class UnresSeqs extends UnresExpr {
  * 'exprs' field is @ref to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
-@node
+@node(lang=void)
 public final class UnresCallExpr extends UnresExpr {
 
 	@virtual typedef This  = UnresCallExpr;
@@ -264,7 +264,7 @@ public final class UnresCallExpr extends UnresExpr {
 /**
  * Represents unresolved, temporary created access expression.
  */
-@node
+@node(lang=void)
 public final class AccFldExpr extends UnresExpr {
 
 	@virtual typedef This  = AccFldExpr;

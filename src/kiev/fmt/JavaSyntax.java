@@ -16,7 +16,7 @@ import static kiev.fmt.SpaceKind.*;
 import syntax kiev.Syntax;
 
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxJavaCommentTemplate extends ASyntaxElemDecl {
 	@virtual typedef This  = SyntaxJavaCommentTemplate;
 
@@ -28,7 +28,7 @@ public class SyntaxJavaCommentTemplate extends ASyntaxElemDecl {
 
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxJavaAccessExpr extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaAccessExpr;
 
@@ -38,38 +38,38 @@ public class SyntaxJavaAccessExpr extends SyntaxElem {
 
 	public SyntaxJavaAccessExpr() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawJavaAccessExpr(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawJavaAccessExpr(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxJavaAccess extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaAccess;
 
 	public SyntaxJavaAccess() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawJavaAccess(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawJavaAccess(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxJavaPackedField extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaPackedField;
 
 	public SyntaxJavaPackedField() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawJavaPackedField(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawJavaPackedField(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 }
 
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxJavaComment extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaComment;
 
@@ -79,8 +79,8 @@ public class SyntaxJavaComment extends SyntaxElem {
 		this.template = new SymbolRef<SyntaxJavaCommentTemplate>();
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawJavaComment(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawJavaComment(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 
@@ -107,19 +107,19 @@ public class SyntaxJavaComment extends SyntaxElem {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxJavaConstructorName extends SyntaxElem {
 	@virtual typedef This  = SyntaxJavaConstructorName;
 
 	public SyntaxJavaConstructorName() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawJavaConstructorName(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawJavaConstructorName(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class KievTextSyntax extends ATextSyntax {
 	@virtual typedef This  = KievTextSyntax;
 

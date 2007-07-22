@@ -20,8 +20,8 @@ public abstract class DrawNonTerm extends Drawable {
 	@att public boolean		draw_folded;
 	     public int			max_layout;
 
-	public DrawNonTerm(ANode node, SyntaxElem syntax) {
-		super(node, syntax);
+	public DrawNonTerm(ANode node, SyntaxElem syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 	
 	public String getText() {
@@ -125,8 +125,8 @@ public final class DrawWrapList extends DrawNonTerm {
 	public boolean		draw_empty;
 	public AttrSlot		slst_attr;
 
-	public DrawWrapList(ANode node, SyntaxList syntax) {
-		super(node, syntax);
+	public DrawWrapList(ANode node, SyntaxList syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 		this.draw_folded = syntax.folded_by_default;
 		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
 			slst_attr = a;
@@ -144,7 +144,7 @@ public final class DrawWrapList extends DrawNonTerm {
 		ANode node = this.drnode;
 		
 		if (folded == null && slst.folded != null) {
-			folded = slst.folded.makeDrawable(cont.fmt, node);
+			folded = slst.folded.makeDrawable(cont.fmt, node, null, text_syntax);
 			if (draw_folded) {
 				folded.preFormat(cont,slst.folded,node);
 				return;
@@ -171,12 +171,12 @@ public final class DrawWrapList extends DrawNonTerm {
 			if (!draw_empty || args.length == 0) {
 				args.delAll();
 				if (slst.empty != null) {
-					args.append(slst.empty.makeDrawable(cont.fmt, node));
+					args.append(slst.empty.makeDrawable(cont.fmt, node, null, text_syntax));
 				} else {
 					if (slst.prefix != null)
-						args.append(slst.prefix.makeDrawable(cont.fmt, node));
+						args.append(slst.prefix.makeDrawable(cont.fmt, node, null, text_syntax));
 					if (slst.sufix != null)
-						args.append(slst.sufix.makeDrawable(cont.fmt, node));
+						args.append(slst.sufix.makeDrawable(cont.fmt, node, null, text_syntax));
 				}
 				draw_empty = true;
 			}
@@ -184,10 +184,10 @@ public final class DrawWrapList extends DrawNonTerm {
 			if (draw_empty) {
 				args.delAll();
 				if (slst.prefix != null)
-					args.append(slst.prefix.makeDrawable(cont.fmt, node));
-				args.append(new DrawNonTermList(this.drnode,(SyntaxList)this.syntax));
+					args.append(slst.prefix.makeDrawable(cont.fmt, node, null, text_syntax));
+				args.append(new DrawNonTermList(this.drnode,(SyntaxList)this.syntax,null,this.text_syntax));
 				if (slst.sufix != null)
-					args.append(slst.sufix.makeDrawable(cont.fmt, node));
+					args.append(slst.sufix.makeDrawable(cont.fmt, node, null, text_syntax));
 				draw_empty = false;
 			}
 		}
@@ -234,8 +234,8 @@ public final class DrawNonTermList extends DrawNonTerm {
 	private boolean show_ag;
 	public AttrSlot slst_attr;
 
-	public DrawNonTermList(ANode node, SyntaxList syntax) {
-		super(node, syntax);
+	public DrawNonTermList(ANode node, SyntaxList syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 		this.draw_folded = syntax.folded_by_default;
 		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
 			slst_attr = a;
@@ -249,7 +249,7 @@ public final class DrawNonTermList extends DrawNonTerm {
 		ANode node = this.drnode;
 		
 		if (folded == null && slst.folded != null) {
-			folded = slst.folded.makeDrawable(cont.fmt, node);
+			folded = slst.folded.makeDrawable(cont.fmt, node, null, text_syntax);
 			if (draw_folded) {
 				folded.preFormat(cont,slst.folded,node);
 				return;
@@ -276,13 +276,13 @@ public final class DrawNonTermList extends DrawNonTerm {
 				if (slst.filter != null && !slst.filter.calc(n))
 					continue;
 				if (need_sep && slst.separator != null)
-					args.append(slst.separator.makeDrawable(cont.fmt, null));
+					args.append(slst.separator.makeDrawable(cont.fmt, null, null, text_syntax));
 				foreach (Drawable dr; old_args; dr.drnode == n) {
 					args.append(dr);
 					need_sep = true;
 					continue next_node;
 				}
-				args.append(slst.element.makeDrawable(cont.fmt, n));
+				args.append(slst.element.makeDrawable(cont.fmt, n, null, text_syntax));
 				need_sep = true;
 			}
 		}
@@ -328,8 +328,8 @@ public final class DrawNonTermList extends DrawNonTerm {
 @node(copyable=false)
 public final class DrawNonTermSet extends DrawNonTerm {
 
-	public DrawNonTermSet(ANode node, SyntaxSet syntax) {
-		super(node, syntax);
+	public DrawNonTermSet(ANode node, SyntaxSet syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 		this.draw_folded = syntax.folded_by_default;
 	}
 
@@ -339,7 +339,7 @@ public final class DrawNonTermSet extends DrawNonTerm {
 		ANode node = this.drnode;
 
 		if (folded == null && sset.folded != null)
-			folded = sset.folded.makeDrawable(cont.fmt, node);
+			folded = sset.folded.makeDrawable(cont.fmt, node, null, text_syntax);
 		if (folded != null)
 			folded.preFormat(cont,sset.folded,node);
 			
@@ -347,7 +347,7 @@ public final class DrawNonTermSet extends DrawNonTerm {
 			if (args.length != sset.elements.length) {
 				args.delAll();
 				foreach (SyntaxElem se; sset.elements)
-					args.append(se.makeDrawable(cont.fmt, node));
+					args.append(se.makeDrawable(cont.fmt, node, null, text_syntax));
 			}
 			for (int i=0; i < args.length; i++) {
 				Drawable dr = args[i];
@@ -358,4 +358,28 @@ public final class DrawNonTermSet extends DrawNonTerm {
 	}
 }
 
+
+@node(copyable=false)
+public class DrawSyntaxSwitch extends DrawNonTerm {
+	
+	public DrawSyntaxSwitch(ANode node, SyntaxSwitch syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
+	}
+
+	public void preFormat(DrawContext cont) {
+		if (this.isUnvisible()) return;
+		SyntaxSwitch ssw = (SyntaxSwitch)this.syntax;
+		ANode node = this.drnode;
+		if (args.length == 0) {
+			args.append(ssw.prefix.makeDrawable(cont.fmt, node, null, text_syntax));
+			args.append(cont.fmt.getDrawable(node,null,null,ssw.target_syntax));
+			args.append(ssw.suffix.makeDrawable(cont.fmt, node, null, text_syntax));
+		}
+		assert(args.length == 3);
+		args[0].preFormat(cont,ssw.prefix,node);
+		args[1].preFormat(cont,args[1].syntax,node);
+		args[2].preFormat(cont,ssw.suffix,node);
+		calcMaxLayout();
+	}
+}
 

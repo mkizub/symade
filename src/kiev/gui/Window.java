@@ -325,7 +325,7 @@ public class UIActionMenuItem extends JMenuItem {
 	class UIActionButtonModel extends javax.swing.DefaultButtonModel {
 		public boolean isEnabled() {
 			try {
-				if (factory == null || !super.isEnabled()) return false;
+				if (UIActionMenuItem.this == null || factory == null || !super.isEnabled()) return false;
 				return factory.getAction(new UIActionViewContext(wnd, wnd.getCurrentView())) != null;
 			} catch (NullPointerException e) { return false; }
 		}

@@ -16,8 +16,8 @@ import syntax kiev.Syntax;
 @node(copyable=false)
 public class DrawAutoParenth extends DrawNonTerm {
 	
-	public DrawAutoParenth(ANode node, SyntaxAutoParenth syntax) {
-		super(node, syntax);
+	public DrawAutoParenth(ANode node, SyntaxAutoParenth syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
@@ -30,9 +30,9 @@ public class DrawAutoParenth extends DrawNonTerm {
 		else
 			node = (ENode)this.drnode.getVal(sp.attr.name);
 		if (args.length == 0) {
-			args.append(template.l_paren.makeDrawable(cont.fmt, node));
-			args.append(sp.attr.makeDrawable(cont.fmt, this.drnode));
-			args.append(template.r_paren.makeDrawable(cont.fmt, node));
+			args.append(template.l_paren.makeDrawable(cont.fmt, node, null, text_syntax));
+			args.append(sp.attr.makeDrawable(cont.fmt, this.drnode, null, text_syntax));
+			args.append(template.r_paren.makeDrawable(cont.fmt, node, null, text_syntax));
 		}
 		assert(args.length == 3);
 		args[0].preFormat(cont,template.l_paren,node);
@@ -45,8 +45,8 @@ public class DrawAutoParenth extends DrawNonTerm {
 @node(copyable=false)
 public class DrawLispExpr extends DrawNonTerm {
 	
-	public DrawLispExpr(ANode node, SyntaxExpr syntax) {
-		super(node, syntax);
+	public DrawLispExpr(ANode node, SyntaxExpr syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
@@ -57,11 +57,11 @@ public class DrawLispExpr extends DrawNonTerm {
 		ENode[] eargs = node.getArgs();
 		if (args.length != eargs.length + 3) {
 			args.delAll();
-			args.append(st.l_paren.makeDrawable(cont.fmt, node));
-			args.append(st.bad_op.makeDrawable(cont.fmt, node));
+			args.append(st.l_paren.makeDrawable(cont.fmt, node, null, text_syntax));
+			args.append(st.bad_op.makeDrawable(cont.fmt, node, null, text_syntax));
 			foreach (ENode ea; eargs)
-				args.append(st.elem.makeDrawable(cont.fmt, ea));
-			args.append(st.l_paren.makeDrawable(cont.fmt, node));
+				args.append(st.elem.makeDrawable(cont.fmt, ea, null, text_syntax));
+			args.append(st.l_paren.makeDrawable(cont.fmt, node, null, text_syntax));
 		}
 		int n = 0;
 		args[n++].preFormat(cont,st.l_paren,node);

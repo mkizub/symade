@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public class TypeClosureRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}

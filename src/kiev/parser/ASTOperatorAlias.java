@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 @unerasable
 public final class ASTOperatorAlias extends Symbol<Method> {
 

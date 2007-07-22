@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 /**
  * A node that is a declaration: class, formal parameters and vars, methods, fields, etc.
  */
-@node
+@node(lang=CoreLang)
 public abstract class DNode extends ASTNode implements ISymbol {
 
 	@virtual typedef This  ≤ DNode;
@@ -319,7 +319,7 @@ public abstract class DNode extends ASTNode implements ISymbol {
 	}
 }
 
-@node
+@node(lang=void)
 public final class DummyDNode extends DNode {
 	public static final DummyDNode dummyNode = new DummyDNode();
 
@@ -335,7 +335,7 @@ public interface GlobalDNode {
 }
 
 
-@node
+@node(lang=CoreLang)
 public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMethods, GlobalDNode {
 
 	@dflow(in="root()") private static class DFI {
@@ -857,7 +857,7 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 
 }
 
-@node
+@node(lang=CoreLang)
 public final class MetaTypeDecl extends TypeDecl {
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;

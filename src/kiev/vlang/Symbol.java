@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=void)
 public interface ISymbol extends INode {
 	@virtual typedef This  ≤ ISymbol;
 
@@ -27,7 +27,7 @@ public interface ISymbol extends INode {
 	@getter public DNode	get$dnode();
 }
 
-@node
+@node(lang=CoreLang)
 @unerasable
 public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 
@@ -117,8 +117,7 @@ public class Symbol<D extends DNode> extends ASTNode implements ISymbol {
 	}
 }
 
-@node
-//@unerasable
+@node(lang=CoreLang)
 public final class SymbolRef<D extends DNode> extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}

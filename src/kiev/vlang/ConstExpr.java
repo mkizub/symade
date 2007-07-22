@@ -39,7 +39,7 @@ enum IntRadix {
 	RADIX_OCT
 }
 
-@node
+@node(lang=CoreLang)
 public final class ConstBoolExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -65,7 +65,7 @@ public final class ConstBoolExpr extends ConstExpr {
 	public String	toString() { return String.valueOf(value); }
 }
 
-@node
+@node(lang=CoreLang)
 public final class ConstNullExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -88,7 +88,7 @@ public final class ConstNullExpr extends ConstExpr {
 	public String	toString()			{ return "null"; }
 }
 
-@node
+@node(lang=CoreLang)
 public final class ConstByteExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -121,7 +121,7 @@ public final class ConstByteExpr extends ConstExpr {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class ConstShortExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -154,7 +154,7 @@ public final class ConstShortExpr extends ConstExpr {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class ConstIntExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -187,7 +187,7 @@ public final class ConstIntExpr extends ConstExpr {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class ConstLongExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -220,7 +220,7 @@ public final class ConstLongExpr extends ConstExpr {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class ConstCharExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -247,7 +247,7 @@ public final class ConstCharExpr extends ConstExpr {
 }
 
 
-@node
+@node(lang=CoreLang)
 public final class ConstFloatExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -274,7 +274,7 @@ public final class ConstFloatExpr extends ConstExpr {
 }
 
 
-@node
+@node(lang=CoreLang)
 public final class ConstDoubleExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -300,7 +300,7 @@ public final class ConstDoubleExpr extends ConstExpr {
 	public String	toString()			{ return String.valueOf(value)+"D"; }
 }
 
-@node
+@node(lang=CoreLang)
 public final class ConstStringExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -328,7 +328,7 @@ public final class ConstStringExpr extends ConstExpr {
 	public String	toString()			{ return '\"'+value.toString()+'\"'; }
 }
 
-@node
+@node(lang=CoreLang)
 public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -355,7 +355,7 @@ public final class ConstEnumExpr<E extends Enum> extends ConstExpr {
 }
 
 
-@node
+@node(lang=CoreLang)
 public abstract class ConstExpr extends ENode {
 
 	@virtual typedef This  ≤ ConstExpr;

@@ -22,7 +22,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public class TypeRef extends ENode {
 
 	public static final TypeRef[] emptyArray = new TypeRef[0];
@@ -161,7 +161,7 @@ public class TypeRef extends ENode {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public class TypeDeclRef extends TypeRef {
 	@virtual typedef This  = TypeDeclRef;
 	

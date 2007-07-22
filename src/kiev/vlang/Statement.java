@@ -47,7 +47,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public class InlineMethodStat extends ENode implements ScopeOfNames {
 	
 	@dflow(in="root()", out="this:out()") private static class DFI {}
@@ -128,7 +128,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	}
 }
 
-@node(name="ExprSt")
+@node(name="ExprSt", lang=CoreLang)
 public class ExprStat extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -162,7 +162,7 @@ public class ExprStat extends ENode {
 	}
 }
 
-@node(name="Return")
+@node(name="Return", lang=CoreLang)
 public class ReturnStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
@@ -198,7 +198,7 @@ public class ReturnStat extends ENode {
 	}
 }
 
-@node(name="Throw")
+@node(name="Throw", lang=CoreLang)
 public class ThrowStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
@@ -220,7 +220,7 @@ public class ThrowStat extends ENode {
 	}
 }
 
-@node(name="If")
+@node(name="If", lang=CoreLang)
 public class IfElseStat extends ENode {
 	
 	@dflow(out="join thenSt elseSt") private static class DFI {
@@ -267,7 +267,7 @@ public class IfElseStat extends ENode {
 	}
 }
 
-@node(name="CondSt")
+@node(name="CondSt", lang=CoreLang)
 public class CondStat extends ENode {
 	
 	@dflow(out="cond:true") private static class DFI {
@@ -292,7 +292,7 @@ public class CondStat extends ENode {
 	}
 }
 
-@node(name="LblSt")
+@node(name="LblSt", lang=CoreLang)
 public class LabeledStat extends ENode {
 	
 	@dflow(out="stat") private static class DFI {
@@ -314,7 +314,7 @@ public class LabeledStat extends ENode {
 	}
 }
 
-@node(name="Break")
+@node(name="Break", lang=CoreLang)
 public class BreakStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -387,7 +387,7 @@ public class BreakStat extends ENode {
 	}
 }
 
-@node(name="Continue")
+@node(name="Continue", lang=CoreLang)
 public class ContinueStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -460,7 +460,7 @@ public class ContinueStat extends ENode {
 	}
 }
 
-@node(name="Goto")
+@node(name="Goto", lang=CoreLang)
 public class GotoStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
@@ -521,7 +521,7 @@ public class GotoStat extends ENode {
 	}
 }
 
-@node(name="GotoCase")
+@node(name="GotoCase", lang=CoreLang)
 public class GotoCaseStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {

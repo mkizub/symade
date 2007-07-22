@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=void)
 public final class PrescannedBody extends ENode {
 	
 	public static final int BlockMode			= 0;

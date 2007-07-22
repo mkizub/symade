@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public final class Import extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
@@ -209,7 +209,7 @@ public final class Import extends SNode implements Constants, ScopeOfNames, Scop
 
 }
 
-@node
+@node(lang=CoreLang)
 public final class TypeOpDef extends TypeDecl implements ScopeOfNames {
 
 	@dflow(out="this:in") private static class DFI {}

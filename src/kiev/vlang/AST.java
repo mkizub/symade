@@ -580,7 +580,7 @@ class CurrentVersionInfo extends VersionInfo {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	@virtual typedef This  ≤ ASTNode;

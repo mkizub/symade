@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
 
 public static enum ETokenKind { UNKNOWN, IDENTIFIER, TYPE_DECL, OPERATOR, EXPR_IDENT, EXPR_NUMBER, EXPR_STRING, EXPR_CHAR };
 	
-@node(name="EToken")
+@node(name="EToken", lang=CoreLang)
 public final class EToken extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}

@@ -21,7 +21,7 @@ import syntax kiev.Syntax;
  * A node that may be part of expression: statements, declarations, operators,
  * type reference, and expressions themselves
  */
-@node
+@node(lang=CoreLang)
 public abstract class ENode extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -325,7 +325,7 @@ public abstract class ENode extends ASTNode {
 	}
 }
 
-@node(name="NoOp")
+@node(name="NoOp", lang=CoreLang)
 public final class NopExpr extends ENode {
 
 	public static final ENode dummyNode = new NopExpr();

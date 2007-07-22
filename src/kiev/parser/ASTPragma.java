@@ -12,7 +12,7 @@ package kiev.parser;
 
 import syntax kiev.Syntax;
 
-@node
+@node(lang=CoreLang)
 public final class ASTPragma extends DNode {
 
 	@virtual typedef This  = ASTPragma;

@@ -16,17 +16,17 @@ import syntax kiev.Syntax;
 @node(copyable=false)
 public class DrawJavaAccessExpr extends DrawNonTerm {
 	
-	public DrawJavaAccessExpr(ANode node, SyntaxJavaAccessExpr syntax) {
-		super(node, syntax);
+	public DrawJavaAccessExpr(ANode node, SyntaxJavaAccessExpr syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
 		SyntaxJavaAccessExpr st = (SyntaxJavaAccessExpr)this.syntax;
 		ANode node = this.drnode;
 		if (args.length == 0) {
-			args.append(st.obj_elem.makeDrawable(cont.fmt, node));
-			args.append(st.separator.makeDrawable(cont.fmt, node));
-			args.append(st.fld_elem.makeDrawable(cont.fmt, node));
+			args.append(st.obj_elem.makeDrawable(cont.fmt, node, null, text_syntax));
+			args.append(st.separator.makeDrawable(cont.fmt, node, null, text_syntax));
+			args.append(st.fld_elem.makeDrawable(cont.fmt, node, null, text_syntax));
 		}
 		
 		args[0].preFormat(cont,st.obj_elem,node);
@@ -62,8 +62,8 @@ public class DrawJavaAccessExpr extends DrawNonTerm {
 @node(copyable=false)
 public class DrawJavaAccess extends DrawTerm {
 
-	public DrawJavaAccess(ANode node, SyntaxJavaAccess syntax) {
-		super(node, syntax);
+	public DrawJavaAccess(ANode node, SyntaxJavaAccess syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	String makeText(Formatter fmt) {
@@ -118,8 +118,8 @@ public class DrawJavaAccess extends DrawTerm {
 @node(copyable=false)
 public class DrawJavaPackedField extends DrawTerm {
 
-	public DrawJavaPackedField(ANode node, SyntaxJavaPackedField syntax) {
-		super(node, syntax);
+	public DrawJavaPackedField(ANode node, SyntaxJavaPackedField syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	String makeText(Formatter fmt) {
@@ -135,8 +135,8 @@ public class DrawJavaPackedField extends DrawTerm {
 @node(copyable=false)
 public class DrawJavaConstructorName extends DrawTerm {
 
-	public DrawJavaConstructorName(ANode node, SyntaxJavaConstructorName syntax) {
-		super(node, syntax);
+	public DrawJavaConstructorName(ANode node, SyntaxJavaConstructorName syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	String makeText(Formatter fmt) {
@@ -161,8 +161,8 @@ public class DrawJavaComment extends DrawNonTerm {
 
 	public String old_text;
 	
-	public DrawJavaComment(ANode node, SyntaxJavaComment syntax) {
-		super(node, syntax);
+	public DrawJavaComment(ANode node, SyntaxJavaComment syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
@@ -214,7 +214,7 @@ public class DrawJavaComment extends DrawNonTerm {
 		calcMaxLayout();
 	}
 	private void append(DrawContext cont, SyntaxElem se, ANode node) {
-		Drawable dr = se.makeDrawable(cont.fmt, node);
+		Drawable dr = se.makeDrawable(cont.fmt, node, null, text_syntax);
 		args.append(dr);
 		dr.preFormat(cont, se, node);
 	}

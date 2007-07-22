@@ -24,29 +24,29 @@ import syntax kiev.Syntax;
  */
 
 
-@node
+@node(lang=CoreLang)
 public class KievPackage extends Struct {
 }
 
-@node
+@node(lang=CoreLang)
 public final class KievSyntax extends Struct {
 }
 
-@node
+@node(lang=CoreLang)
 public class JavaClass extends Struct {
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class JavaAnonymouseClass extends JavaClass {
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public class JavaInterface extends Struct {
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -60,7 +60,7 @@ public class JavaInterface extends Struct {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class KievView extends Struct {
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -77,7 +77,7 @@ public final class KievView extends Struct {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class JavaAnnotation extends JavaInterface {
 	public JavaAnnotation() {
 		this.meta.is_struct_annotation = true;
@@ -88,7 +88,7 @@ public final class JavaAnnotation extends JavaInterface {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class PizzaCase extends Struct {
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -106,7 +106,7 @@ public final class PizzaCase extends Struct {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class JavaEnum extends JavaClass {
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
@@ -140,7 +140,7 @@ public final class JavaEnum extends JavaClass {
 
 }
 
-@node
+@node(lang=CoreLang)
 public abstract class Struct extends TypeDecl {
 	
 	@virtual typedef This  = Struct;
@@ -195,7 +195,7 @@ public abstract class Struct extends TypeDecl {
 			this.is_struct_pre_generated = on;
 		}
 	}
-	// a pizza case	
+	// a compiler node (@node)	
 	public final boolean isCompilerNode() {
 		return this.is_struct_compiler_node;
 	}

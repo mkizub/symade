@@ -25,7 +25,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(name="Var")
+@node(name="Var", lang=CoreLang)
 public abstract class Var extends DNode implements GlobalDNode {
 	
 	@virtual typedef This  ≤ Var;
@@ -286,7 +286,7 @@ public abstract class Var extends DNode implements GlobalDNode {
 	}
 }
 
-@node(name="LVar")
+@node(name="LVar", lang=CoreLang)
 public class LVar extends Var {
 	@dflow(out="this:out()") private static class DFI {
 	@dflow(in="this:in")	ENode			init;
@@ -319,7 +319,7 @@ public class LVar extends Var {
 	}
 }
 
-@node(name="Field")
+@node(name="Field", lang=CoreLang)
 public class Field extends Var {
 	public static final Field[]	emptyArray = new Field[0];
 	static final Field dummyNode = new Field();

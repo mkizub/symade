@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public abstract class TypeDef extends TypeDecl {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -61,7 +61,7 @@ public abstract class TypeDef extends TypeDecl {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class TypeAssign extends TypeDef {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -133,7 +133,7 @@ public final class TypeAssign extends TypeDef {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class TypeConstr extends TypeDef {
 
 	@dflow(out="this:in") private static class DFI {}

@@ -31,7 +31,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(name="New")
+@node(name="New", lang=CoreLang)
 public final class NewExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -223,7 +223,7 @@ public final class NewExpr extends ENode {
 	}
 }
 
-@node(name="NewEnum")
+@node(name="NewEnum", lang=CoreLang)
 public final class NewEnumExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -290,7 +290,7 @@ public final class NewEnumExpr extends ENode {
 	}
 }
 
-@node(name="NewArr")
+@node(name="NewArr", lang=CoreLang)
 public final class NewArrayExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -341,7 +341,7 @@ public final class NewArrayExpr extends ENode {
 	}
 }
 
-@node(name="NewArrInitialized")
+@node(name="NewArrInitialized", lang=CoreLang)
 public final class NewInitializedArrayExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -427,7 +427,7 @@ public final class NewInitializedArrayExpr extends ENode {
 	public int getElementsNumber(int i) { return dims[i]; }
 }
 
-@node(name="NewClosure")
+@node(name="NewClosure", lang=CoreLang)
 public final class NewClosure extends ENode implements ScopeOfNames {
 	
 	@dflow(out="this:in") private static class DFI {

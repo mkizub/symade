@@ -41,7 +41,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public abstract class LvalueExpr extends ENode {
 
 	@virtual typedef This  ≤ LvalueExpr;
@@ -51,7 +51,7 @@ public abstract class LvalueExpr extends ENode {
 	public LvalueExpr() {}
 }
 
-@node(name="Access")
+@node(name="Access", lang=CoreLang)
 public final class AccessExpr extends LvalueExpr {
 	
 	@dflow(out="obj") private static class DFI {
@@ -192,7 +192,7 @@ public final class AccessExpr extends LvalueExpr {
 	}
 }
 
-@node(name="IFld")
+@node(name="IFld", lang=CoreLang)
 public final class IFldExpr extends LvalueExpr {
 	
 	@dflow(out="obj") private static class DFI {
@@ -396,7 +396,7 @@ public final class IFldExpr extends LvalueExpr {
 	}
 }
 
-@node(name="SetAccess")
+@node(name="SetAccess", lang=CoreLang)
 public final class ContainerAccessExpr extends LvalueExpr {
 	
 	@dflow(out="index") private static class DFI {
@@ -461,7 +461,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	}
 }
 
-@node(name="This")
+@node(name="This", lang=CoreLang)
 public final class ThisExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -506,7 +506,7 @@ public final class ThisExpr extends LvalueExpr {
 	}
 }
 
-@node(name="Super")
+@node(name="Super", lang=CoreLang)
 public final class SuperExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -537,7 +537,7 @@ public final class SuperExpr extends ENode {
 	public String toString() { return "super"; }
 }
 
-@node(name="LVar")
+@node(name="LVar", lang=CoreLang)
 public final class LVarExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -630,7 +630,7 @@ public final class LVarExpr extends LvalueExpr {
 	}
 }
 
-@node(name="SFld")
+@node(name="SFld", lang=CoreLang)
 public final class SFldExpr extends LvalueExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -767,7 +767,7 @@ public final class SFldExpr extends LvalueExpr {
 	}
 }
 
-@node(name="OuterThis")
+@node(name="OuterThis", lang=CoreLang)
 public final class OuterThisAccessExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -832,7 +832,7 @@ public final class OuterThisAccessExpr extends ENode {
 	}
 }
 
-@node(name="Reinterp")
+@node(name="Reinterp", lang=CoreLang)
 public final class ReinterpExpr extends LvalueExpr {
 	
 	@dflow(out="expr") private static class DFI {

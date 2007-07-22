@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public final class CoreExpr extends ENode {
 	
 	@virtual typedef This  = CoreExpr;

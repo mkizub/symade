@@ -32,7 +32,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public abstract class BoolExpr extends ENode {
 
 	@virtual typedef This  ≤ BoolExpr;
@@ -80,7 +80,7 @@ public abstract class BoolExpr extends ENode {
 	
 }
 
-@node(name="Or")
+@node(name="Or", lang=CoreLang)
 public class BinaryBooleanOrExpr extends BoolExpr {
 
 	@dflow(tru="join expr1:true expr2:true", fls="expr2:false") private static class DFI {
@@ -154,7 +154,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 }
 
 
-@node(name="And")
+@node(name="And", lang=CoreLang)
 public class BinaryBooleanAndExpr extends BoolExpr {
 
 	@dflow(fls="join expr1:false expr2:false", tru="expr2:true") private static class DFI {
@@ -227,7 +227,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 }
 
-@node(name="Cmp")
+@node(name="Cmp", lang=CoreLang)
 public class BinaryBoolExpr extends BoolExpr {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -302,7 +302,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 }
 
-@node(name="InstanceOf")
+@node(name="InstanceOf", lang=CoreLang)
 public class InstanceofExpr extends BoolExpr {
 
 	@dflow(tru="this:tru()", fls="expr") private static class DFI {
@@ -388,7 +388,7 @@ public class InstanceofExpr extends BoolExpr {
 	}
 }
 
-@node(name="Not")
+@node(name="Not", lang=CoreLang)
 public class BooleanNotExpr extends BoolExpr {
 	
 	@dflow(fls="expr:true", tru="expr:false") private static class DFI {

@@ -48,7 +48,7 @@ import java.io.IOException;
 /**
  * @author Maxim Kizub
  */
-@node(copyable=false)
+
 public class InfoView extends UIView implements KeyListener, MouseWheelListener {
 
 	/** The canvas to show definition of current node */
@@ -81,7 +81,7 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 	public InfoView(Window window, ATextSyntax syntax, Canvas view_canvas) {
 		super(window, syntax);
 		this.view_canvas = view_canvas;
-		this.formatter = new GfxFormatter(syntax, (Graphics2D)view_canvas.getGraphics());
+		this.formatter = new GfxFormatter((Graphics2D)view_canvas.getGraphics());
 		view_canvas.addMouseListener(this);
 		view_canvas.addComponentListener(this);
 		view_canvas.addKeyListener(this);
@@ -90,7 +90,7 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 
 	public void setRoot(ANode root) {
 		this.the_root = root;
-		view_canvas.root = view_root = formatter.format(the_root, view_root);
+		view_canvas.root = view_root = formatter.format(the_root, view_root, getSyntax());
 	}
 	
 	public void formatAndPaint(boolean full) {
@@ -100,7 +100,7 @@ public class InfoView extends UIView implements KeyListener, MouseWheelListener 
 		this.formatter.setHintEscapes(this.show_hint_escapes);
 		view_canvas.root = null;
 		if (the_root != null && full)
-			view_canvas.root = view_root = formatter.format(the_root, view_root);
+			view_canvas.root = view_root = formatter.format(the_root, view_root, getSyntax());
 		view_canvas.repaint();
 	}
 

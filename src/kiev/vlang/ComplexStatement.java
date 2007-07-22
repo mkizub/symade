@@ -45,7 +45,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(name="Case")
+@node(name="Case", lang=CoreLang)
 public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(in="this:in()", out="pattern") private static class DFI {
@@ -144,7 +144,7 @@ public class CaseLabel extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 }
 
-@node(name="Switch")
+@node(name="Switch", lang=CoreLang)
 public class SwitchStat extends Block {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -239,7 +239,7 @@ public class SwitchStat extends Block {
 	}
 }
 
-@node(name="SwitchEnum")
+@node(name="SwitchEnum", lang=CoreLang)
 public class SwitchEnumStat extends SwitchStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -270,7 +270,7 @@ public class SwitchEnumStat extends SwitchStat {
 
 }
 
-@node(name="SwitchType")
+@node(name="SwitchType", lang=CoreLang)
 public class SwitchTypeStat extends SwitchStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -297,7 +297,7 @@ public class SwitchTypeStat extends SwitchStat {
 
 }
 
-@node(name="Match")
+@node(name="Match", lang=CoreLang)
 public class MatchStat extends SwitchStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -326,7 +326,7 @@ public class MatchStat extends SwitchStat {
 
 }
 
-@node(name="Catch")
+@node(name="Catch", lang=CoreLang)
 public class CatchInfo extends ENode implements ScopeOfNames {
 	
 	@dflow(out="body") private static class DFI {
@@ -376,7 +376,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	}
 }
 
-@node(name="Finally")
+@node(name="Finally", lang=CoreLang)
 public class FinallyInfo extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -413,7 +413,7 @@ public class FinallyInfo extends ENode {
 	}
 }
 
-@node(name="Try")
+@node(name="Try", lang=CoreLang)
 public class TryStat extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -455,7 +455,7 @@ public class TryStat extends ENode {
 	}
 }
 
-@node(name="Synchronized")
+@node(name="Synchronized", lang=CoreLang)
 public class SynchronizedStat extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -496,7 +496,7 @@ public class SynchronizedStat extends ENode {
 	}
 }
 
-@node(name="With")
+@node(name="With", lang=CoreLang)
 public class WithStat extends ENode {
 
 	@dflow(out="body") private static class DFI {

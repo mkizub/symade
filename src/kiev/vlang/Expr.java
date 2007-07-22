@@ -50,7 +50,7 @@ import syntax kiev.Syntax;
  */
 
 
-@node(name="Shadow")
+@node(name="Shadow", lang=CoreLang)
 public class Shadow extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -79,7 +79,7 @@ public class Shadow extends ENode {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public class TypeClassExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -106,7 +106,7 @@ public class TypeClassExpr extends ENode {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public class TypeInfoExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -140,7 +140,7 @@ public class TypeInfoExpr extends ENode {
 	}
 }
 
-@node(name="AssertEnabled")
+@node(name="AssertEnabled", lang=CoreLang)
 public class AssertEnabledExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
@@ -162,7 +162,7 @@ public class AssertEnabledExpr extends ENode {
 	}
 }
 
-@node(name="Set")
+@node(name="Set", lang=CoreLang)
 public class AssignExpr extends ENode {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -280,7 +280,7 @@ public class AssignExpr extends ENode {
 }
 
 
-@node(name="BinOp")
+@node(name="BinOp", lang=CoreLang)
 public class BinaryExpr extends ENode {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -374,7 +374,7 @@ public class BinaryExpr extends ENode {
 	}
 }
 
-@node(name="UnaryOp")
+@node(name="UnaryOp", lang=CoreLang)
 public class UnaryExpr extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -467,7 +467,7 @@ public class UnaryExpr extends ENode {
 	}
 }
 
-@node(name="StrConcat")
+@node(name="StrConcat", lang=CoreLang)
 public class StringConcatExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -521,7 +521,7 @@ public class StringConcatExpr extends ENode {
 	}
 }
 
-@node(name="Comma")
+@node(name="Comma", lang=CoreLang)
 public class CommaExpr extends ENode {
 	
 	@dflow(out="exprs") private static class DFI {
@@ -556,7 +556,7 @@ public class CommaExpr extends ENode {
 	}
 }
 
-@node(name="Block")
+@node(name="Block", lang=CoreLang)
 public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -690,7 +690,7 @@ public class Block extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 }
 
-@node(name="IncrOp")
+@node(name="IncrOp", lang=CoreLang)
 public class IncrementExpr extends ENode {
 	
 	@dflow(out="lval") private static class DFI {
@@ -739,7 +739,7 @@ public class IncrementExpr extends ENode {
 	}
 }
 
-@node(name="IfOp")
+@node(name="IfOp", lang=CoreLang)
 public class ConditionalExpr extends ENode {
 	
 	@dflow(out="join expr1 expr2") private static class DFI {
@@ -788,7 +788,7 @@ public class ConditionalExpr extends ENode {
 	}
 }
 
-@node(name="Cast")
+@node(name="Cast", lang=CoreLang)
 public class CastExpr extends ENode {
 
 	@dflow(out="expr") private static class DFI {

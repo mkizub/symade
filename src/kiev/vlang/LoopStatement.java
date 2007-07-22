@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public abstract class LoopStat extends ENode implements ContinueTarget {
 	@virtual typedef This  ≤ LoopStat;
 	@virtual typedef JView ≤ JLoopStat;
@@ -53,7 +53,7 @@ public abstract class LoopStat extends ENode implements ContinueTarget {
 }
 
 
-@node(name="Label")
+@node(name="Label", lang=CoreLang)
 public final class Label extends DNode {
 	
 	@dflow(out="this:out()") private static class DFI {}
@@ -133,7 +133,7 @@ public final class Label extends DNode {
 	}
 }
 
-@node(name="While")
+@node(name="While", lang=CoreLang)
 public class WhileStat extends LoopStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -171,7 +171,7 @@ public class WhileStat extends LoopStat {
 	}
 }
 
-@node(name="DoWhile")
+@node(name="DoWhile", lang=CoreLang)
 public class DoWhileStat extends LoopStat {
 
 	@dflow(out="lblbrk") private static class DFI {
@@ -209,7 +209,7 @@ public class DoWhileStat extends LoopStat {
 	}
 }
 
-@node(name="For")
+@node(name="For", lang=CoreLang)
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -279,7 +279,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
-@node(name="ForEach")
+@node(name="ForEach", lang=CoreLang)
 public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {

@@ -131,7 +131,7 @@ public final class RewriteContext {
 	}
 }
 
-@node
+@node(lang=MacroLang)
 public final class RewriteMatch extends ENode {
 
 	@dflow(out="this:in") private static class DFI {
@@ -160,7 +160,7 @@ public final class RewriteMatch extends ENode {
 
 }
 
-@node
+@node(lang=MacroLang)
 public final class RewritePattern extends Var {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -190,7 +190,7 @@ public final class RewritePattern extends Var {
 
 }
 
-@node
+@node(lang=MacroLang)
 public final class RewriteCase extends ENode implements ScopeOfNames {
 
 	@dflow(out="this:in") private static class DFI {
@@ -228,7 +228,7 @@ public final class RewriteCase extends ENode implements ScopeOfNames {
 
 }
 
-@node
+@node(lang=MacroLang)
 public final class RewriteNodeFactory extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {
@@ -296,7 +296,7 @@ public final class RewriteNodeFactory extends ENode {
 	}
 }
 
-@node
+@node(lang=MacroLang)
 public final class RewriteNodeArg extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {
@@ -327,7 +327,7 @@ public final class RewriteNodeArg extends ENode {
 	}
 }
 
-@node(name="NewArrInitialized")
+@node(lang=MacroLang)
 public final class RewriteNodeArgArray extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -353,7 +353,7 @@ public final class RewriteNodeArgArray extends ENode {
 	}
 }
 
-@node(name="BlockRewr")
+@node(name="BlockRewr", lang=MacroLang)
 public class BlockRewr extends Block {
 	
 	@dflow(out="this:out()") private static class DFI {
@@ -370,7 +370,7 @@ public class BlockRewr extends Block {
 
 }
 
-@node
+@node(lang=MacroLang)
 public class IfElseRewr extends ENode {
 	
 	@dflow(out="join thenSt elseSt") private static class DFI {
@@ -416,7 +416,7 @@ public class IfElseRewr extends ENode {
 
 }
 
-@node(name="SwitchRewr")
+@node(name="SwitchRewr", lang=MacroLang)
 public class SwitchRewr extends SwitchStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -487,7 +487,7 @@ public class SwitchRewr extends SwitchStat {
 
 }
 
-@node
+@node(lang=MacroLang)
 public class ForEachRewr extends ENode implements ScopeOfNames {
 	
 	@dflow(out="body") private static class DFI {
@@ -548,7 +548,7 @@ public class ForEachRewr extends ENode implements ScopeOfNames {
 
 }
 
-@node(name="MacroAccess")
+@node(name="MacroAccess", lang=MacroLang)
 public final class MacroAccessExpr extends ENode {
 	
 	@dflow(out="obj") private static class DFI {
@@ -633,7 +633,7 @@ public final class MacroAccessExpr extends ENode {
 }
 
 
-@node
+@node(lang=MacroLang)
 public class MacroSubstExpr extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
@@ -654,7 +654,7 @@ public class MacroSubstExpr extends ENode {
 
 }
 
-@node
+@node(lang=MacroLang)
 public class MacroSubstTypeRef extends TypeRef {
 	
 	@dflow(out="type") private static class DFI {
@@ -689,7 +689,7 @@ public class MacroSubstTypeRef extends TypeRef {
 
 }
 
-@node(name="CmpNode")
+@node(name="CmpNode", lang=MacroLang)
 public class MacroBinaryBoolExpr extends ENode {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -765,7 +765,7 @@ public class MacroBinaryBoolExpr extends ENode {
 }
 
 
-@node(name="HasMeta")
+@node(name="HasMeta", lang=MacroLang)
 public class MacroHasMetaExpr extends ENode {
 	
 	@dflow(out="meta") private static class DFI {

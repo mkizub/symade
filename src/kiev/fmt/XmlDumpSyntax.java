@@ -15,7 +15,7 @@ import static kiev.fmt.SpaceKind.*;
 
 import syntax kiev.Syntax;
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxXmlStrAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxXmlStrAttr;
 
@@ -24,13 +24,13 @@ public class SyntaxXmlStrAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawXmlStrTerm(node, this, name);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawXmlStrTerm(node, this, attr_syntax, text_syntax, name);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxXmlTypeAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxXmlTypeAttr;
 
@@ -39,13 +39,13 @@ public class SyntaxXmlTypeAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawXmlTypeTerm(node, this, name);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawXmlTypeTerm(node, this, attr_syntax, text_syntax, name);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class XmlDumpSyntax extends ATextSyntax {
 	@virtual typedef This  = XmlDumpSyntax;
 

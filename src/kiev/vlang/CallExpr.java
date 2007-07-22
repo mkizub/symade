@@ -25,7 +25,7 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-@node(name="Call")
+@node(name="Call", lang=CoreLang)
 public class CallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -356,7 +356,7 @@ public class CallExpr extends ENode {
 	}
 }
 
-@node(name="CtorCall")
+@node(name="CtorCall", lang=CoreLang)
 public class CtorCallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -455,7 +455,7 @@ public class CtorCallExpr extends ENode {
 	}
 }
 
-@node(name="CallClosure")
+@node(name="CallClosure", lang=CoreLang)
 public class ClosureCallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {

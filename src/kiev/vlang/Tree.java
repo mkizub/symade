@@ -34,16 +34,13 @@ public @interface dflow {
 }
 
 // syntax-tree node
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
 public @interface node {
 	String name() default "";
+	Class lang() default void;
 	boolean copyable() default true;
 }
-// syntax-tree node view
-public @interface nodeview {}
-// syntax-tree node set (ASTNode sub-classes)
-public @interface nodeset {}
-// syntax-tree node implementation
-public @interface nodeimpl {}
 // syntax-tree attribute field
 public @interface att {
 	boolean copyable() default true;

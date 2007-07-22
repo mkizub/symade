@@ -20,7 +20,7 @@ import java.awt.Font;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-@node
+@node(lang=SyntaxLang)
 public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalDNode {
 	@virtual typedef This  ≤ ATextSyntax;
 	
@@ -30,6 +30,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 
 	@att public SymbolRef<ATextSyntax>	parent_syntax;
 	@att public ASTNode[]				members;
+	@att public ASTNode[]				auto_generated_members;
 		 public String					q_name;	// qualified name
 
 	public ATextSyntax() {
@@ -102,6 +103,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 	}
 	
 	protected void cleanup() {
+		auto_generated_members.delAll();
 		allSyntax.clear();
 		badSyntax.clear();
 		allSyntaxExprs.clear();
@@ -184,6 +186,7 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		}
 		SyntaxSet set = new SyntaxSet();
 		set.elements.addAll(elems);
+		auto_generated_members.add(set);
 		return set;
 	}
 
@@ -203,20 +206,44 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 			se = badSyntax.get("<null>");
 			if (se == null) {
 				se = new SyntaxToken("(?null?)");
+				auto_generated_members.add(se);
 				badSyntax.put("<null>", se);
 			}
 		} else {
+			kiev.vlang.node node_data = (kiev.vlang.node)node.getClass().getAnnotation(kiev.vlang.node.class);
+			if (node_data != null) {
+				Class lng_class = node_data.lang();
+				if (lng_class != null && Language.class.isAssignableFrom(lng_class)) {
+					Language lng = (Language)lng_class.getField(nameInstance).get(null);
+					ATextSyntax stx = lng.getDefaultEditorSyntax();
+					if (stx != this) {
+						String text = lng.getClass().getName();
+						SyntaxSwitch ssw = (SyntaxSwitch)badSyntax.get(text);
+						if (ssw != null)
+							return ssw;
+						ssw = new SyntaxSwitch(
+							new SyntaxToken("#lang\""+text+"\"{"),
+							new SyntaxToken("}#"),
+							stx
+							);
+						badSyntax.put(text, ssw);
+						auto_generated_members.add(ssw);
+						return ssw;
+					}
+				}
+			}
 			String cl_name = node.getClass().getName();
 			se = badSyntax.get(cl_name);
 			if (se == null) {
 				se = new SyntaxToken("(?"+cl_name+"?)");
+				auto_generated_members.add(se);
 				badSyntax.put(cl_name, se);
 			}
 		}
 		return se;
 	}
 }
-@node
+@node(lang=SyntaxLang)
 public final class TextSyntax extends ATextSyntax {
 	@virtual typedef This  = TextSyntax;
 	
@@ -237,7 +264,7 @@ public enum SpaceAction {
 	SP_EAT
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SpaceInfo extends DNode {
 	@virtual typedef This  = SpaceInfo;
 
@@ -254,7 +281,7 @@ public class SpaceInfo extends DNode {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class SpaceCmd extends ASTNode {
 	@virtual typedef This  = SpaceCmd;
 
@@ -304,7 +331,7 @@ public final class SpaceCmd extends ASTNode {
 
 }
 
-@node
+@node(lang=SyntaxLang)
 public abstract class AParagraphLayout extends DNode {
 	@virtual typedef This  ≤ AParagraphLayout;
 
@@ -320,7 +347,7 @@ public abstract class AParagraphLayout extends DNode {
 	public boolean enabled(Drawable dr) { return true; }
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class ParagraphLayout extends AParagraphLayout {
 	@virtual typedef This  = ParagraphLayout;
 
@@ -332,7 +359,7 @@ public final class ParagraphLayout extends AParagraphLayout {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class ParagraphLayoutBlock extends AParagraphLayout {
 	@virtual typedef This  = ParagraphLayoutBlock;
 
@@ -365,7 +392,7 @@ public class ParagraphLayoutBlock extends AParagraphLayout {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class DrawColor extends DNode {
 	@virtual typedef This  = DrawColor;
 
@@ -379,7 +406,7 @@ public final class DrawColor extends DNode {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class DrawFont extends DNode {
 	@virtual typedef This  = DrawFont;
 
@@ -427,7 +454,7 @@ public final class DrawLayout {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public abstract class ASyntaxElemDecl extends DNode {
 	@virtual typedef This  ≤ ASyntaxElemDecl;
 
@@ -439,12 +466,12 @@ public abstract class ASyntaxElemDecl extends DNode {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class PartialSyntaxElemDecl extends ASyntaxElemDecl {
 	@virtual typedef This  = PartialSyntaxElemDecl;
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class SyntaxElemDecl extends ASyntaxElemDecl {
 	@virtual typedef This  = SyntaxElemDecl;
 
@@ -485,7 +512,7 @@ public final class SyntaxElemDecl extends ASyntaxElemDecl {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 	@virtual typedef This  = SyntaxIdentTemplate;
 
@@ -526,7 +553,7 @@ public class SyntaxIdentTemplate extends ASyntaxElemDecl {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 	@virtual typedef This  = SyntaxExpectedTemplate;
 
@@ -563,7 +590,7 @@ public class SyntaxExpectedTemplate extends ASyntaxElemDecl {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class SyntaxElemFormatDecl extends DNode {
 	@virtual typedef This  = SyntaxElemFormatDecl;
 
@@ -618,7 +645,7 @@ public final class SyntaxElemFormatDecl extends DNode {
 
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class SyntaxFunction extends ASTNode {
 	@virtual typedef This  = SyntaxFunction;
 
@@ -633,7 +660,7 @@ public final class SyntaxFunction extends ASTNode {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class SyntaxFunctions extends ASTNode {
 	@virtual typedef This  = SyntaxFunctions;
 
@@ -642,7 +669,7 @@ public final class SyntaxFunctions extends ASTNode {
 	public SyntaxFunctions() {}
 }
 
-@node
+@node(lang=SyntaxLang)
 public abstract class SyntaxElem extends ASTNode {
 	@virtual typedef This  ≤ SyntaxElem;
 
@@ -661,7 +688,7 @@ public abstract class SyntaxElem extends ASTNode {
 
 	public SyntaxElem() {}
 
-	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
+	public abstract Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax);
 	
 	public void preResolveOut() {
 		if (fmt != null && fmt.name != null && fmt.name != "") {
@@ -713,8 +740,8 @@ public abstract class SyntaxElem extends ASTNode {
 		return lout;
 	}
 	
-	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		if (current_stx != this || expected_node != current_node)
+	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
+		if (curr_dr.syntax != this || expected_node != curr_dr.drnode)
 			return false;
 		return true;
 	}
@@ -766,7 +793,7 @@ public abstract class SyntaxElem extends ASTNode {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class SyntaxElemRef extends SyntaxElem {
 	@virtual typedef This  = SyntaxElemRef;
 
@@ -780,12 +807,12 @@ public final class SyntaxElemRef extends SyntaxElem {
 		this.decl = new SymbolRef<ASyntaxElemDecl>(decl);
 	}
 	
-	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		return ((ASyntaxElemDecl)decl.dnode).elem.check(cont, current_stx, expected_node, current_node);
+	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
+		return ((ASyntaxElemDecl)decl.dnode).elem.check(cont, curr_dr, expected_node);
 	}
 	
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		return ((ASyntaxElemDecl)decl.dnode).elem.makeDrawable(fmt,node);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		return ((ASyntaxElemDecl)decl.dnode).elem.makeDrawable(fmt,node,attr_syntax,text_syntax);
 	}
 
 	public void preResolveOut() {
@@ -812,7 +839,7 @@ public final class SyntaxElemRef extends SyntaxElem {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class SyntaxToken extends SyntaxElem {
 	@virtual typedef This  = SyntaxToken;
 
@@ -837,8 +864,8 @@ public final class SyntaxToken extends SyntaxElem {
 		this.text = text;
 		this.kind = TokenKind.UNKNOWN;
 	}
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawToken(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawToken(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
@@ -848,7 +875,7 @@ public final class SyntaxToken extends SyntaxElem {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class SyntaxPlaceHolder extends SyntaxElem {
 	@virtual typedef This  = SyntaxPlaceHolder;
 
@@ -860,13 +887,13 @@ public final class SyntaxPlaceHolder extends SyntaxElem {
 	}
 	
 	public SyntaxPlaceHolder() {}
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawPlaceHolder(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawPlaceHolder(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public abstract class SyntaxAttr extends SyntaxElem {
 	@virtual typedef This  ≤ SyntaxAttr;
 
@@ -893,8 +920,6 @@ public abstract class SyntaxAttr extends SyntaxElem {
 		this.name = name;
 		this.in_syntax = new SymbolRef<ATextSyntax>(stx);
 	}
-
-	public abstract Drawable makeDrawable(Formatter fmt, ANode node);
 
 	public void preResolveOut() {
 		super.preResolveOut();
@@ -943,7 +968,7 @@ public abstract class SyntaxAttr extends SyntaxElem {
 
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxSubAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxSubAttr;
 
@@ -955,7 +980,7 @@ public class SyntaxSubAttr extends SyntaxAttr {
 		super(name,stx);
 	}
 
-	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
+	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
 		Object obj;
 		try {
 			obj = expected_node.getVal(name);
@@ -965,18 +990,18 @@ public class SyntaxSubAttr extends SyntaxAttr {
 		if (obj instanceof ANode) {
 			SyntaxElem se;
 			if (in_syntax.dnode != null)
-				se = ((ATextSyntax)in_syntax.dnode).getSyntaxElem((ANode)obj);
+				se = in_syntax.dnode.getSyntaxElem((ANode)obj);
 			else
-				se = cont.fmt.getSyntax().getSyntaxElem((ANode)obj);
-			return se.check(cont, current_stx, (ANode)obj, current_node);
+				se = curr_dr.text_syntax.getSyntaxElem((ANode)obj);
+			return se.check(cont, curr_dr, (ANode)obj);
 		}
 		else if (obj == null && this.empty != null) {
-			return this.empty.check(cont, current_stx, expected_node, current_node);
+			return this.empty.check(cont, curr_dr, expected_node);
 		}
-		return super.check(cont, current_stx, expected_node, current_node);
+		return super.check(cont, curr_dr, expected_node);
 	}
 	
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
 		Drawable dr;
 		Object obj;
 		try {
@@ -984,18 +1009,19 @@ public class SyntaxSubAttr extends SyntaxAttr {
 		} catch (RuntimeException e) {
 			obj = "<?error:"+name+"?>";
 		}
+		if (in_syntax.dnode != null)
+			text_syntax = in_syntax.dnode;
 		if (obj instanceof ANode)
-			dr = fmt.getDrawable((ANode)obj, null, (ATextSyntax)in_syntax.dnode);
+			dr = fmt.getDrawable((ANode)obj, null, this, text_syntax);
 		else if (obj == null && this.empty != null)
-			dr = this.empty.makeDrawable(fmt, node);
+			dr = this.empty.makeDrawable(fmt, node, this, text_syntax);
 		else
-			dr = new DrawNodeTerm(node, this, name);
-		dr.attr_syntax = this;
+			dr = new DrawNodeTerm(node, this, null, text_syntax, name);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxList extends SyntaxAttr {
 	@virtual typedef This  = SyntaxList;
 
@@ -1015,12 +1041,14 @@ public class SyntaxList extends SyntaxAttr {
 		this.folded = new SyntaxToken("{?"+name+"?}");
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		if (in_syntax.dnode != null)
+			text_syntax = in_syntax.dnode;
 		Drawable dr;
-		if (fmt.getSyntax() instanceof TreeSyntax || prefix == null && sufix == null && empty == null)
-			dr = new DrawNonTermList(node, this);
+		if (text_syntax instanceof TreeSyntax || prefix == null && sufix == null && empty == null)
+			dr = new DrawNonTermList(node, this, attr_syntax, text_syntax);
 		else
-			dr = new DrawWrapList(node, this);
+			dr = new DrawWrapList(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 
@@ -1036,7 +1064,7 @@ public class SyntaxList extends SyntaxAttr {
 	}	
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxIdentAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxIdentAttr;
 
@@ -1050,8 +1078,8 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 		this.decl = new SymbolRef<SyntaxIdentTemplate>(0,"ident-template");
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawIdent(node, this, name);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawIdent(node, this, attr_syntax, text_syntax, name);
 		return dr;
 	}
 
@@ -1104,7 +1132,7 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxCharAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxCharAttr;
 
@@ -1113,13 +1141,13 @@ public class SyntaxCharAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawCharTerm(node, this, name);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawCharTerm(node, this, attr_syntax, text_syntax, name);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxStrAttr extends SyntaxAttr {
 	@virtual typedef This  = SyntaxStrAttr;
 
@@ -1128,13 +1156,13 @@ public class SyntaxStrAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawStrTerm(node, this, name);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawStrTerm(node, this, attr_syntax, text_syntax, name);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxSet extends SyntaxElem {
 	@virtual typedef This  ≤ SyntaxSet;
 
@@ -1143,13 +1171,13 @@ public class SyntaxSet extends SyntaxElem {
 	@att public boolean			folded_by_default;
 	@att public boolean			nested_function_lookup;
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawNonTermSet(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawNonTermSet(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxNode extends SyntaxAttr {
 	@virtual typedef This  = SyntaxNode;
 
@@ -1161,35 +1189,80 @@ public class SyntaxNode extends SyntaxAttr {
 		this.in_syntax.symbol = stx;
 	}
 
-	public boolean check(DrawContext cont, SyntaxElem current_stx, ANode expected_node, ANode current_node) {
-		SyntaxElem se;
+	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
+		ATextSyntax text_syntax = curr_dr.text_syntax;
 		if (in_syntax.dnode != null)
-			se = ((ATextSyntax)in_syntax.dnode).getSyntaxElem(expected_node);
-		else
-			se = cont.fmt.getSyntax().getSyntaxElem(expected_node);
-		return se.check(cont, current_stx, expected_node, current_node);
+			text_syntax = in_syntax.dnode;
+		SyntaxElem se = text_syntax.getSyntaxElem(expected_node);
+		return se.check(cont, curr_dr, expected_node);
 	}
 	
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = fmt.getDrawable(node, null, (ATextSyntax)in_syntax.dnode);
-		dr.attr_syntax = this;
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		if (in_syntax.dnode != null)
+			text_syntax = in_syntax.dnode;
+		Drawable dr = fmt.getDrawable(node, null, this, text_syntax);
 		return dr;
 	}
 }
 
-@node
+@node(copyable=false,lang=SyntaxLang)
+public class SyntaxSwitch extends SyntaxElem {
+	@virtual typedef This  = SyntaxSwitch;
+
+	@att SyntaxToken	prefix;
+	@ref ATextSyntax	target_syntax;
+	@att SyntaxToken	suffix;
+	
+	SyntaxSwitch(SyntaxToken pr, SyntaxToken sf, ATextSyntax stx) {
+		this.prefix = pr;
+		this.suffix = sf;
+		this.target_syntax = stx;
+	}
+
+	private ATextSyntax getTargetSyntax(ANode for_node) {
+		kiev.vlang.node node_data = (kiev.vlang.node)for_node.getClass().getAnnotation(kiev.vlang.node.class);
+		Class lng_class = node_data.lang();
+		Language lng = (Language)lng_class.getField(nameInstance).get(null);
+		return lng.getDefaultEditorSyntax();
+	}
+	
+	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
+		if (expected_node != curr_dr.drnode)
+			return false;
+		if!(curr_dr instanceof DrawSyntaxSwitch)
+			return false;
+		DrawSyntaxSwitch curr_dss = (DrawSyntaxSwitch)curr_dr;
+		if (getTargetSyntax(expected_node) != target_syntax)
+			return false;
+		if (curr_dss.args.length == 0)
+			return true;
+		if (curr_dss.args.length != 3)
+			return false;
+		Drawable sub_dr = curr_dss.args[1];
+		if (sub_dr.text_syntax != target_syntax)
+			return false;
+		SyntaxElem expected_stx = target_syntax.getSyntaxElem(expected_node);
+		return expected_stx.check(cont,sub_dr,expected_node);
+	}
+	
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		return new DrawSyntaxSwitch(node,this,attr_syntax,text_syntax);
+	}
+}
+
+@node(lang=SyntaxLang)
 public class SyntaxSpace extends SyntaxElem {
 	@virtual typedef This  = SyntaxSpace;
 
 	public SyntaxSpace() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawSpace(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawSpace(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public abstract class CalcOption extends ASTNode {
 	@virtual typedef This  ≤ CalcOption;
 
@@ -1211,7 +1284,7 @@ public abstract class CalcOption extends ASTNode {
 	public abstract boolean calc(ANode node);
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class CalcOptionAnd extends CalcOption {
 	@virtual typedef This  = CalcOptionAnd;
 
@@ -1226,7 +1299,7 @@ public final class CalcOptionAnd extends CalcOption {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class CalcOptionOr extends CalcOption {
 	@virtual typedef This  = CalcOptionOr;
 
@@ -1241,7 +1314,7 @@ public final class CalcOptionOr extends CalcOption {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class CalcOptionNot extends CalcOption {
 	@virtual typedef This  = CalcOptionNot;
 
@@ -1256,7 +1329,7 @@ public final class CalcOptionNot extends CalcOption {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class CalcOptionNotNull extends CalcOption {
 	@virtual typedef This  = CalcOptionNotNull;
 
@@ -1278,7 +1351,7 @@ public final class CalcOptionNotNull extends CalcOption {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public final class CalcOptionNotEmpty implements CalcOption {
 	@virtual typedef This  = CalcOptionNotEmpty;
 
@@ -1297,7 +1370,7 @@ public final class CalcOptionNotEmpty implements CalcOption {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class CalcOptionTrue implements CalcOption {
 	@virtual typedef This  = CalcOptionTrue;
 
@@ -1314,7 +1387,7 @@ public class CalcOptionTrue implements CalcOption {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class CalcOptionClass implements CalcOption {
 	@virtual typedef This  = CalcOptionClass;
 
@@ -1339,7 +1412,7 @@ public class CalcOptionClass implements CalcOption {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class CalcOptionHasMeta implements CalcOption {
 	@virtual typedef This  = CalcOptionHasMeta;
 
@@ -1368,7 +1441,7 @@ public class CalcOptionHasMeta implements CalcOption {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class CalcOptionIsHidden implements CalcOption {
 	@virtual typedef This  = CalcOptionIsHidden;
 
@@ -1389,7 +1462,7 @@ public class CalcOptionIsHidden implements CalcOption {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class CalcOptionIncludeInDump implements CalcOption {
 	@virtual typedef This  = CalcOptionIncludeInDump;
 
@@ -1429,7 +1502,7 @@ public class CalcOptionIncludeInDump implements CalcOption {
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxOptional extends SyntaxElem {
 	@virtual typedef This  = SyntaxOptional;
 
@@ -1444,13 +1517,13 @@ public class SyntaxOptional extends SyntaxElem {
 		this.opt_false = opt_false;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawOptional(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawOptional(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxEnumChoice extends SyntaxAttr {
 	@virtual typedef This  = SyntaxEnumChoice;
 
@@ -1461,13 +1534,13 @@ public class SyntaxEnumChoice extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawEnumChoice(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawEnumChoice(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 }
 
-@node
+@node(lang=SyntaxLang)
 public class SyntaxFolder extends SyntaxElem {
 	@virtual typedef This  = SyntaxFolder;
 
@@ -1482,8 +1555,8 @@ public class SyntaxFolder extends SyntaxElem {
 		this.unfolded = unfolded;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node) {
-		Drawable dr = new DrawFolded(node, this);
+	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		Drawable dr = new DrawFolded(node, this, attr_syntax, text_syntax);
 		return dr;
 	}
 }

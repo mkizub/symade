@@ -17,8 +17,8 @@ public class DrawCtrl extends Drawable {
 	@att
 	public Drawable arg;
 	
-	public DrawCtrl(ANode node, SyntaxElem syntax) {
-		super(node, syntax);
+	public DrawCtrl(ANode node, SyntaxElem syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	public String getText() {
@@ -73,8 +73,8 @@ public class DrawCtrl extends Drawable {
 @node(copyable=false)
 public class DrawSpace extends DrawCtrl {
 
-	public DrawSpace(ANode node, SyntaxElem syntax) {
-		super(node, syntax);
+	public DrawSpace(ANode node, SyntaxElem syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
@@ -87,8 +87,8 @@ public class DrawOptional extends DrawCtrl {
 
 	private	boolean drawed_as_true;
 	
-	public DrawOptional(ANode node, SyntaxOptional syntax) {
-		super(node, syntax);
+	public DrawOptional(ANode node, SyntaxOptional syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 	}
 
 	public void preFormat(DrawContext cont) {
@@ -99,7 +99,7 @@ public class DrawOptional extends DrawCtrl {
 			if (!drawed_as_true || arg == null) {
 				drawed_as_true = true;
 				if (sc.opt_true != null) {
-					arg = sc.opt_true.makeDrawable(cont.fmt, node);
+					arg = sc.opt_true.makeDrawable(cont.fmt, node, null, text_syntax);
 				} else {
 					arg = null;
 				}
@@ -108,7 +108,7 @@ public class DrawOptional extends DrawCtrl {
 			if (drawed_as_true || arg == null) {
 				drawed_as_true = false;
 				if (sc.opt_false != null) {
-					arg = sc.opt_false.makeDrawable(cont.fmt, node);
+					arg = sc.opt_false.makeDrawable(cont.fmt, node, null, text_syntax);
 				} else {
 					arg = null;
 				}
@@ -129,8 +129,8 @@ public class DrawEnumChoice extends DrawCtrl {
 	private Object drawed_en;
 	private AttrSlot attr;
 
-	public DrawEnumChoice(ANode node, SyntaxEnumChoice syntax) {
-		super(node, syntax);
+	public DrawEnumChoice(ANode node, SyntaxEnumChoice syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 		foreach (AttrSlot a; node.values(); a.name == syntax.name) {
 			attr = a;
 			break;
@@ -153,7 +153,7 @@ public class DrawEnumChoice extends DrawCtrl {
 			if (ord < 0 || ord >= se.elements.length)
 				arg = null;
 			else
-				arg = se.elements[ord].makeDrawable(cont.fmt, node);
+				arg = se.elements[ord].makeDrawable(cont.fmt, node, null, text_syntax);
 			drawed_en = en;
 		}
 		if (arg != null)
@@ -168,8 +168,8 @@ public final class DrawFolded extends DrawCtrl {
 	public	boolean draw_folded;
 	private	boolean drawed_as_folded;
 	
-	public DrawFolded(ANode node, SyntaxFolder syntax) {
-		super(node, syntax);
+	public DrawFolded(ANode node, SyntaxFolder syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+		super(node, syntax, attr_syntax, text_syntax);
 		this.draw_folded = syntax.folded_by_default;
 	}
 
@@ -180,12 +180,12 @@ public final class DrawFolded extends DrawCtrl {
 		if (draw_folded) {
 			if (!drawed_as_folded || arg == null) {
 				drawed_as_folded = true;
-				arg = sc.folded.makeDrawable(cont.fmt, node);
+				arg = sc.folded.makeDrawable(cont.fmt, node, null, text_syntax);
 			}
 		} else {
 			if (drawed_as_folded || arg == null) {
 				drawed_as_folded = false;
-				arg = sc.unfolded.makeDrawable(cont.fmt, node);
+				arg = sc.unfolded.makeDrawable(cont.fmt, node, null, text_syntax);
 			}
 		}
 		if (drawed_as_folded)

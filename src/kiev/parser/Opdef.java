@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(lang=CoreLang)
 public class Opdef extends SNode {
 	@virtual typedef This  = Opdef;
 

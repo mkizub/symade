@@ -20,7 +20,7 @@ import syntax kiev.Syntax;
 /**
  * A node that is a syntax modifier: import, operator decl, separators, comments, etc.
  */
-@node
+@node(lang=CoreLang)
 public class SNode extends ASTNode {
 
 	@virtual typedef This  ≤ SNode;
@@ -41,7 +41,7 @@ public class SNode extends ASTNode {
 
 }
 
-@node(name="Comment")
+@node(name="Comment", lang=CoreLang)
 public final class Comment extends SNode {
 
 	@virtual typedef This  = Comment;
@@ -61,7 +61,7 @@ public final class Comment extends SNode {
 	public Comment() {}
 }
 
-@node
+@node(lang=CoreLang)
 public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMethods {
 	
 	@virtual typedef This  ≤ DeclGroup;
@@ -157,7 +157,7 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class DeclGroupFields extends DeclGroup {
 	@virtual typedef This  = DeclGroupFields;
 
@@ -168,7 +168,7 @@ public final class DeclGroupFields extends DeclGroup {
 	public DeclGroupFields() {}
 }
 
-@node
+@node(lang=CoreLang)
 public final class DeclGroupVars extends DeclGroup {
 	@virtual typedef This  = DeclGroupVars;
 
@@ -179,7 +179,7 @@ public final class DeclGroupVars extends DeclGroup {
 	public DeclGroupVars() {}
 }
 
-@node
+@node(lang=CoreLang)
 public final class DeclGroupEnumFields extends DeclGroup {
 	
 	@virtual typedef This  = DeclGroupEnumFields;
@@ -204,7 +204,7 @@ public final class DeclGroupEnumFields extends DeclGroup {
 	}
 }
 
-@node
+@node(lang=CoreLang)
 public final class DeclGroupCaseFields extends DeclGroup {
 	
 	@virtual typedef This  = DeclGroupCaseFields;

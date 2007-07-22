@@ -10,8 +10,6 @@
  *******************************************************************************/
 package kiev.vlang;
 
-import kiev.fmt.ATextSyntax;
-
 import java.io.*;
 
 import kiev.be.java15.JNode;
@@ -29,7 +27,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(name="FileUnit", copyable=false)
+@node(name="FileUnit", lang=CoreLang, copyable=false)
 public final class DirUnit extends SNode {
 
 	@virtual typedef This  = DirUnit;
@@ -174,7 +172,7 @@ public final class DirUnit extends SNode {
 
 }
 
-@node(name="FileUnit", copyable=false)
+@node(name="FileUnit", lang=CoreLang, copyable=false)
 public final class FileUnit extends NameSpace {
 
 	@virtual typedef This  = FileUnit;
@@ -298,7 +296,7 @@ public final class FileUnit extends NameSpace {
 }
 
 
-@node(name="NameSpace")
+@node(name="NameSpace", lang=CoreLang)
 public class NameSpace extends SNode implements Constants, ScopeOfNames, ScopeOfMethods {
 
 	@virtual typedef This  ≤ NameSpace;

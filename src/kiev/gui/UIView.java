@@ -34,7 +34,7 @@ import javax.swing.text.TextAction;
 /**
  * @author Maxim Kizub
  */
-@node(copyable=false)
+
 public abstract class UIView extends ANode implements MouseListener, ComponentListener  {
 
 	/** The workplace window */
@@ -42,17 +42,17 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	/** The formatter of the current view */
 	protected GfxFormatter	formatter;
 	/** The root node to display */
-	@ref public ANode		the_root;
+	public ANode		the_root;
 	/** The root node of document we edit - the whole program */
-	@ref public Drawable	view_root;
+	public Drawable	view_root;
 	/** The syntax in use */
-	@ref public ATextSyntax	syntax;
+	public ATextSyntax	syntax;
 	/** A flag to show auto-generated nodes */
-	@att public boolean		show_auto_generated;
+	public boolean		show_auto_generated;
 	/** A hint to show placeholders */
-	@att public boolean		show_placeholders;
+	public boolean		show_placeholders;
 	/** A hint to show escaped idents and strings */
-	@att public boolean		show_hint_escapes;
+	public boolean		show_hint_escapes;
 
 	public UIView(Window window, ATextSyntax syntax) {
 		this.parent_window = window;
@@ -64,7 +64,6 @@ public abstract class UIView extends ANode implements MouseListener, ComponentLi
 	public void setSyntax(ATextSyntax syntax) {
 		this.syntax = syntax;
 		view_root = null;
-		formatter.setSyntax(syntax);
 		formatAndPaint(true);
 	}
 	
