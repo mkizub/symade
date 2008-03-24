@@ -3,7 +3,6 @@ CLASS kievCompilerThread kiev/CompilerThread kiev/Compiler.java
 CLASS kievEditorThread kiev/EditorThread kiev/Compiler.java
 CLASS kievKiev kiev/Kiev kiev/Kiev.java
 CLASS kievMain kiev/Main kiev/Main.java
-CLASS kievSOPTest kiev/SOPTest kiev/SOPTest.java
 CLASS kievWorkerThread kiev/WorkerThread kiev/Compiler.java
 CLASS kievbejava15AsciiCP kiev/be/java15/AsciiCP kiev/be/java15/ConstPool.java
 CLASS kievbejava15AssignFunc kiev/be/java15/AssignFunc kiev/be/java15/CoreFunc.java
