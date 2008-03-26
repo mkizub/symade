@@ -770,6 +770,18 @@ public class Compiler {
 					args[a] = null;
 					continue;
 				}
+				else if( args[a].equals("-prop")) {
+					args[a] = null;
+					String fname = args[++a];
+					args[a] = null;
+					try {
+						InputStream inp = new FileInputStream(fname);
+						System.getProperties().load(new InputStreamReader(inp, "UTF-8"));
+					} catch( IOException e ) {
+						Kiev.reportError("Error opening property file: "+e);
+					}
+					continue;
+				}
 				else if( args[a].startsWith("@") ) {
 					String fname = args[a].substring(1);
 					args[a] = null;

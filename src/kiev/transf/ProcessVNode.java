@@ -17,26 +17,27 @@ import syntax kiev.Syntax;
  *
  */
 abstract class VNode_Base extends TransfProcessor {
-	public static final String mnNode					= "kiev\u001fvlang\u001fnode"; 
-	public static final String mnAtt					= "kiev\u001fvlang\u001fatt"; 
-	public static final String mnRef					= "kiev\u001fvlang\u001fref"; 
-	public static final String mnUnVersioned			= "kiev\u001fvlang\u001fUnVersioned"; 
-	public static final String nameINode				= "kiev\u001fvlang\u001fINode";
-	public static final String nameANode				= "kiev\u001fvlang\u001fANode";
-	public static final String nameNode				= "kiev\u001fvlang\u001fASTNode"; 
-	public static final String nameNodeSpace			= "kiev\u001fvlang\u001fNodeSpace"; 
-	public static final String nameAttrSlot			= "kiev\u001fvlang\u001fAttrSlot"; 
-	public static final String nameRefAttrSlot			= "kiev\u001fvlang\u001fRefAttrSlot"; 
-	public static final String nameAttAttrSlot			= "kiev\u001fvlang\u001fAttAttrSlot"; 
-	public static final String nameExtRefAttrSlot		= "kiev\u001fvlang\u001fExtRefAttrSlot"; 
-	public static final String nameExtAttAttrSlot		= "kiev\u001fvlang\u001fExtAttAttrSlot"; 
-	public static final String nameSpaceAttrSlot		= "kiev\u001fvlang\u001fSpaceAttrSlot"; 
-	public static final String nameSpaceRefAttrSlot	= "kiev\u001fvlang\u001fSpaceRefAttrSlot"; 
-	public static final String nameSpaceAttAttrSlot	= "kiev\u001fvlang\u001fSpaceAttAttrSlot"; 
-	public static final String nameCopyable			= "copyable";
-	public static final String nameExtData				= "ext_data";
-	public static final String nameLanguageIface		= "kiev\u001fvlang\u001fLanguage"; 
-	public static final String nameLangName			= "lang";
+	private static final String PROP_BASE				= "symade.transf.vnode";
+	public static final String mnNode					= getPropS(PROP_BASE,"mnNode","kiev\u001fvlang\u001fnode"); 
+	public static final String mnAtt					= getPropS(PROP_BASE,"mnAtt","kiev\u001fvlang\u001fatt"); 
+	public static final String mnRef					= getPropS(PROP_BASE,"mnRef","kiev\u001fvlang\u001fref"); 
+	public static final String mnUnVersioned			= getPropS(PROP_BASE,"mnUnVersioned","kiev\u001fvlang\u001fUnVersioned"); 
+	public static final String nameINode				= getPropS(PROP_BASE,"nameINode","kiev\u001fvlang\u001fINode");
+	public static final String nameANode				= getPropS(PROP_BASE,"nameANode","kiev\u001fvlang\u001fANode");
+	public static final String nameNode				= getPropS(PROP_BASE,"nameNode","kiev\u001fvlang\u001fASTNode"); 
+	public static final String nameNodeSpace			= getPropS(PROP_BASE,"nameNodeSpace","kiev\u001fvlang\u001fNodeSpace"); 
+	public static final String nameAttrSlot			= getPropS(PROP_BASE,"nameAttrSlot","kiev\u001fvlang\u001fAttrSlot"); 
+	public static final String nameRefAttrSlot			= getPropS(PROP_BASE,"nameRefAttrSlot","kiev\u001fvlang\u001fRefAttrSlot"); 
+	public static final String nameAttAttrSlot			= getPropS(PROP_BASE,"nameAttAttrSlot","kiev\u001fvlang\u001fAttAttrSlot"); 
+	public static final String nameExtRefAttrSlot		= getPropS(PROP_BASE,"nameExtRefAttrSlot","kiev\u001fvlang\u001fExtRefAttrSlot"); 
+	public static final String nameExtAttAttrSlot		= getPropS(PROP_BASE,"nameExtAttAttrSlot","kiev\u001fvlang\u001fExtAttAttrSlot"); 
+	public static final String nameSpaceAttrSlot		= getPropS(PROP_BASE,"nameSpaceAttrSlot","kiev\u001fvlang\u001fSpaceAttrSlot"); 
+	public static final String nameSpaceRefAttrSlot	= getPropS(PROP_BASE,"nameSpaceRefAttrSlot","kiev\u001fvlang\u001fSpaceRefAttrSlot"); 
+	public static final String nameSpaceAttAttrSlot	= getPropS(PROP_BASE,"nameSpaceAttAttrSlot","kiev\u001fvlang\u001fSpaceAttAttrSlot"); 
+	public static final String nameLanguageIface		= getPropS(PROP_BASE,"nameLanguageIface","kiev\u001fvlang\u001fLanguage"); 
+	public static final String nameCopyable			= getPropS(PROP_BASE,"nameCopyable","copyable");
+	public static final String nameExtData				= getPropS(PROP_BASE,"nameExtData","ext_data");
+	public static final String nameLangName			= getPropS(PROP_BASE,"nameLangName","lang");
 	
 	static Type tpINode;
 	static Type tpANode;
