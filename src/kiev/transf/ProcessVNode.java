@@ -35,6 +35,7 @@ abstract class VNode_Base extends TransfProcessor {
 	public static final String nameSpaceRefAttrSlot	= getPropS(PROP_BASE,"nameSpaceRefAttrSlot","kiev\u001fvlang\u001fSpaceRefAttrSlot"); 
 	public static final String nameSpaceAttAttrSlot	= getPropS(PROP_BASE,"nameSpaceAttAttrSlot","kiev\u001fvlang\u001fSpaceAttAttrSlot"); 
 	public static final String nameLanguageIface		= getPropS(PROP_BASE,"nameLanguageIface","kiev\u001fvlang\u001fLanguage"); 
+	public static final String nameCopyContext			= getPropS(PROP_BASE,"nameCopyContext","kiev\u001fvlang\u001fANode\u001fCopyContext"); 
 	public static final String nameCopyable			= getPropS(PROP_BASE,"nameCopyable","copyable");
 	public static final String nameExtData				= getPropS(PROP_BASE,"nameExtData","ext_data");
 	public static final String nameLangName			= getPropS(PROP_BASE,"nameLangName","lang");
@@ -53,6 +54,7 @@ abstract class VNode_Base extends TransfProcessor {
 	static Type tpSpaceRefAttrSlot;
 	static Type tpSpaceAttAttrSlot;
 	static Type tpLanguageIface;
+	static Type tpCopyContext;
 
 	VNode_Base() { super(KievExt.VNode); }
 
@@ -102,6 +104,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpSpaceRefAttrSlot = Env.loadTypeDecl(nameSpaceRefAttrSlot, true).xtype;
 			tpSpaceAttAttrSlot = Env.loadTypeDecl(nameSpaceAttAttrSlot, true).xtype;
 			tpLanguageIface = Env.loadTypeDecl(nameLanguageIface, true).xtype;
+			tpCopyContext = Env.loadTypeDecl(nameCopyContext, true).xtype;
 		}
 		foreach (ASTNode n; fu.members)
 			doProcess(n);
@@ -505,6 +508,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 	static Type tpNArray;
 	static Type tpAttrSlot;
 	static Type tpSpaceAttrSlot;
+	static Type tpCopyContext;
 	
 	static Method _codeSet;
 	static Method _codeGet;
@@ -535,6 +539,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			tpNArray = VNode_Base.tpNArray;
 			tpAttrSlot = VNode_Base.tpAttrSlot;
 			tpSpaceAttrSlot = VNode_Base.tpSpaceAttrSlot;
+			tpCopyContext = VNode_Base.tpCopyContext;
 		}
 		foreach (ASTNode dn; fu.members)
 			this.doProcess(dn);
@@ -632,21 +637,21 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 		}
 
 		// copy()
-		if (s.getMeta(VNode_Base.mnNode) != null && !((UserMeta)s.getMeta(VNode_Base.mnNode)).getZ(VNode_Base.nameCopyable) || s.isAbstract()) {
-			// node is not copyable
-		}
-		else if (hasMethod(s, "copy")) {
-			Kiev.reportWarning(s,"Method "+s+"."+"copy() already exists, @node member is not generated");
-		}
-		else {
-			Method copyV = new MethodImpl("copy",Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
-			s.addMethod(copyV);
-			copyV.body = new Block(0);
-			Var v = new LVar(0, "node",s.xtype,Var.VAR_LOCAL,0);
-			copyV.block.stats.append(new ReturnStat(0,new CallExpr(0,new ThisExpr(),
-				new SymbolRef<Method>("copyTo"), null, new ENode[]{new NewExpr(0,s.xtype,ENode.emptyArray)})));
-			Kiev.runProcessorsOn(copyV);
-		}
+		//if (s.getMeta(VNode_Base.mnNode) != null && !((UserMeta)s.getMeta(VNode_Base.mnNode)).getZ(VNode_Base.nameCopyable) || s.isAbstract()) {
+		//	// node is not copyable
+		//}
+		//else if (hasMethod(s, "copy")) {
+		//	Kiev.reportWarning(s,"Method "+s+"."+"copy() already exists, @node member is not generated");
+		//}
+		//else {
+		//	Method copyV = new MethodImpl("copy",Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
+		//	s.addMethod(copyV);
+		//	copyV.body = new Block(0);
+		//	Var v = new LVar(0, "node",s.xtype,Var.VAR_LOCAL,0);
+		//	copyV.block.stats.append(new ReturnStat(0,new CallExpr(0,new ThisExpr(),
+		//		new SymbolRef<Method>("copyTo"), null, new ENode[]{new NewExpr(0,s.xtype,ENode.emptyArray)})));
+		//	Kiev.runProcessorsOn(copyV);
+		//}
 		// copyTo(Object)
 		if (s.getMeta(VNode_Base.mnNode) != null && !((UserMeta)s.getMeta(VNode_Base.mnNode)).getZ(VNode_Base.nameCopyable)) {
 			// node is not copyable
@@ -655,13 +660,15 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			Kiev.reportWarning(s,"Method "+s+"."+"copyTo(...) already exists, @node member is not generated");
 		} else {
 			Method copyV = new MethodImpl("copyTo",Type.tpObject,ACC_PUBLIC | ACC_SYNTHETIC);
+			Var cc;
 			copyV.params.append(new LVar(0,"to$node", Type.tpObject, Var.PARAM_NORMAL, 0));
+			copyV.params.append(cc=new LVar(0,"in$context", tpCopyContext, Var.PARAM_NORMAL, 0));
 			s.addMethod(copyV);
 			copyV.body = new Block();
 			Var v = new LVar(0,"node",s.xtype,Var.VAR_LOCAL,0);
 			if (VNode_Base.isNodeKind(s.super_types[0].getStruct())) {
 				CallExpr cae = new CallExpr(0,new SuperExpr(),
-					new SymbolRef<Method>("copyTo"),null,new ENode[]{new LVarExpr(0,copyV.params[0])});
+					new SymbolRef<Method>("copyTo"),null,new ENode[]{new LVarExpr(0,copyV.params[0]), new LVarExpr(0,cc)});
 				v.init = new CastExpr(0,s.xtype,cae);
 				copyV.block.addSymbol(v);
 			} else {
@@ -686,7 +693,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 							new IFldExpr(0,new LVarExpr(0,v),f),
 							new SymbolRef<Method>("copyFrom"),
 							null,
-							new ENode[]{new IFldExpr(0,new ThisExpr(),f)});
+							new ENode[]{new IFldExpr(0,new ThisExpr(),f),new LVarExpr(0,cc)});
 						copyV.block.stats.append(new ExprStat(0,cae));
 					}
 					else if (f.isFinal()) {
@@ -697,7 +704,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 										new IFldExpr(0,new ThisExpr(),f),
 										new SymbolRef<Method>("copyTo"),
 										null,
-										new ENode[]{new IFldExpr(0,new LVarExpr(0,v),f)}
+										new ENode[]{new IFldExpr(0,new LVarExpr(0,v),f),new LVarExpr(0,cc)}
 									)
 								)
 							);
@@ -707,7 +714,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 							new IFldExpr(0, new ThisExpr(),f),
 							new SymbolRef<Method>("copy"),
 							null,
-							ENode.emptyArray);
+							new ENode[]{new LVarExpr(0,cc)});
 						copyV.block.stats.append( 
 							new IfElseStat(0,
 								new BinaryBoolExpr(0, Operator.NotEquals,

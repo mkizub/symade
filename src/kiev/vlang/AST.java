@@ -53,6 +53,8 @@ public interface INode {
 public abstract class ANode implements INode {
 
 	@virtual typedef This  ≤ ANode;
+	
+	public static final boolean USE_COPY_CONTEXT = Boolean.valueOf(System.getProperty("symade.vlang.anode.useCopyContext","false").trim()).booleanValue();
 
 	public static final ANode[] emptyArray = new ANode[0];
 	private static final AttrSlot[] $values = AttrSlot.emptyArray;
@@ -84,6 +86,53 @@ public abstract class ANode implements INode {
 			this.ext_data = node.ext_data;
 		}
 		public Object clone() { super.clone() }
+	}
+	
+	public static final class CopyContext {
+		public static final class SymbolInfo {
+			ISymbol sold; // old symbol
+			ISymbol snew; // new symbol, copied from sold
+			List<SymbolRef> srefs; // new symbol ref, to be changed to point from sold to snew
+			SymbolInfo(ISymbol sold, ISymbol snew) {
+				this.sold = sold;
+				this.snew = snew;
+				this.srefs = List.Nil;
+			}
+			SymbolInfo(SymbolRef sref) {
+				this.sold = sref.symbol;
+				this.snew = null;
+				this.srefs = List.newList(sref);
+			}
+		};
+		private Vector<SymbolInfo> infos;
+		void addSymbol(ISymbol sold, ISymbol snew) {
+			if (infos == null)
+				infos = new Vector<SymbolInfo>();
+			foreach (SymbolInfo si; infos; si.sold == sold) {
+				assert(si.snew == null);
+				si.snew = snew;
+				return;
+			}
+			infos.append(new SymbolInfo(sold, snew));
+		}
+		void addSymbolRef(SymbolRef sref) {
+			if (infos == null)
+				infos = new Vector<SymbolInfo>();
+			ISymbol sym = sref.symbol;
+			foreach (SymbolInfo si; infos; si.sold == sym) {
+				si.srefs = new List.Cons<SymbolRef>(sref, si.srefs);
+				return;
+			}
+			infos.append(new SymbolInfo(sref));
+		}
+		public void updateLinks() {
+			if (infos == null)
+				return;
+			foreach (SymbolInfo si; infos) {
+				foreach (SymbolRef sr; si.srefs; sr.symbol == si.sold && si.snew != null)
+					sr.symbol = si.snew;
+			}
+		}
 	}
 	
 	@getter @ref final AttrSlot get$p_slot() {
@@ -400,14 +449,50 @@ public abstract class ANode implements INode {
 	
 
 	public final This ncopy() {
-		This t = (This)this.copy();
+		if (USE_COPY_CONTEXT) {
+			CopyContext cc = new CopyContext();
+			This t = (This)this.copy(cc);
+			cc.updateLinks();
+			t.callbackCopied();
+			return t;
+		} else {
+			This t = (This)this.copy(null);
+			t.callbackCopied();
+			return t;
+		}
+	}
+	public final This ncopy(CopyContext cc) {
+		This t = (This)this.copy(cc);
 		t.callbackCopied();
 		return t;
 	}
 	public void callbackCopied() {}
-	public abstract Object copy();
+	public Object copy() {
+		if (USE_COPY_CONTEXT)
+			throw new Error();
+		return this.copy(null);
+	}
+	public final Object copy(CopyContext cc) {
+		if (cc != null) {
+			if (this instanceof TypeInfoInterface)
+				return this.copyTo(((TypeInfoInterface)this).getTypeInfoField().newInstance(), cc);
+			else
+				return this.copyTo(this.getClass().newInstance(), cc);
+		} else {
+			if (USE_COPY_CONTEXT)
+				throw new Error();
+			if (this instanceof TypeInfoInterface)
+				return this.copyTo(((TypeInfoInterface)this).getTypeInfoField().newInstance());
+			else
+				return this.copyTo(this.getClass().newInstance());
+		}
+	}
 
 	public Object copyTo(Object to$node) {
+		return copyTo(to$node, null);
+	}
+	
+	public Object copyTo(Object to$node, CopyContext cc) {
 		ANode node = (ANode)to$node;
 		if (this.ext_data != null) {
 			int N = this.ext_data.length;
@@ -415,13 +500,19 @@ public abstract class ANode implements INode {
 			for (int i=0; i < N; i++) {
 				DataAttachInfo ai = this.ext_data[i];
 				if (ai.p_slot.is_attr && ai.p_data instanceof ASTNode) {
-					ASTNode nd = ((ASTNode)ai.p_data).ncopy();
+					ASTNode nd = ((ASTNode)ai.p_data).ncopy(cc);
 					node.ext_data[i] = new DataAttachInfo(nd,ai.p_slot);
 					nd.callbackAttached(node, ai.p_slot);
 				} else {
 					node.ext_data[i] = ai;
 				}
 			}
+		}
+		if (cc != null) {
+			if (this instanceof ISymbol)
+				cc.addSymbol((ISymbol)this,(ISymbol)node);
+			else if (this instanceof SymbolRef)
+				cc.addSymbolRef((SymbolRef)node);
 		}
 		return node;
 	}
@@ -736,6 +827,13 @@ public abstract class ASTNode extends ANode implements Constants, Cloneable {
 
 	public Object copyTo(Object to$node) {
 		ASTNode node = (ASTNode)super.copyTo(to$node);
+		node.compileflags	= 0;
+		node.nodeflags		= this.nodeflags;
+		return node;
+	}
+
+	public Object copyTo(Object to$node, CopyContext in$context) {
+		ASTNode node = (ASTNode)super.copyTo(to$node, in$context);
 		node.compileflags	= 0;
 		node.nodeflags		= this.nodeflags;
 		return node;

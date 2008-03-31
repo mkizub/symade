@@ -254,6 +254,7 @@ public abstract class SpaceAttrSlot<N extends ANode> extends AttrSlot {
 	public abstract void del(ANode parent, int idx);
 	public abstract void insert(ANode parent, int idx, N node);
 	public abstract void copyFrom(ANode parent, N[] arr);
+	public abstract void copyFrom(ANode parent, N[] arr, ANode.CopyContext cc);
 	public abstract void delAll(ANode parent);
 	public abstract N[] delToArray(ANode parent);
 
@@ -309,6 +310,11 @@ public abstract class SpaceRefAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	}
 
 	public final void copyFrom(ANode parent, N[] arr) {
+		foreach (N n; arr)
+			add(parent, n);
+	}
+	
+	public final void copyFrom(ANode parent, N[] arr, ANode.CopyContext cc) {
 		foreach (N n; arr)
 			add(parent, n);
 	}
@@ -390,6 +396,11 @@ public abstract class SpaceAttAttrSlot<N extends ANode> extends SpaceAttrSlot<N>
 	public final void copyFrom(ANode parent, N[] arr) {
 		foreach (N n; arr)
 			add(parent, n.ncopy());
+	}
+	
+	public final void copyFrom(ANode parent, N[] arr, ANode.CopyContext cc) {
+		foreach (N n; arr)
+			add(parent, n.ncopy(cc));
 	}
 	
 	public final void delAll(ANode parent) {

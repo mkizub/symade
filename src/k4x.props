@@ -1,3 +1,4 @@
 symade.transf.vnode.mnNode = kiev\u001fvlang\u001fnode
 symade.transf.vnode.mnAtt = kiev\u001fvlang\u001fatt
 symade.transf.vnode.mnRef = kiev\u001fvlang\u001fref
+symade.vlang.anode.useCopyContext = true
