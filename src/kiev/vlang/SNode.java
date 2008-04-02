@@ -116,6 +116,14 @@ public abstract class DeclGroup extends SNode implements ScopeOfNames, ScopeOfMe
 		dn.getType().resolveCallAccessR(node,info,mt)
 	}
 
+	public boolean isPublic() {
+		MetaAccess m = getMetaAccess();
+		return (m != null && m.simple == "public");
+	}
+	public boolean isPrivate() {
+		MetaAccess m = getMetaAccess();
+		return (m != null && m.simple == "private");
+	}
 	public void setPublic() {
 		MetaAccess m = getMetaAccess();
 		if (m == null)

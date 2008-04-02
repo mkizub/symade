@@ -573,6 +573,13 @@ public final class MetaSingleton extends MetaFlag {
 }
 
 @node(lang=CoreLang)
+public final class MetaMixin extends MetaFlag {
+	@virtual typedef This  = MetaMixin;
+	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fmixin"; }
+	void setFlag(MetaSet dn, boolean on) { if (dn != null) dn.is_struct_mixin = on; }
+}
+
+@node(lang=CoreLang)
 public final class MetaForward extends MetaFlag {
 	@virtual typedef This  = MetaForward;
 	@getter public String get$qname() { return "kiev\u001fstdlib\u001fmeta\u001fforward"; }

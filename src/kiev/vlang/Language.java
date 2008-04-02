@@ -171,6 +171,7 @@ public final class CoreLang implements Language {
 				MetaAccess.class,		// access rights (public, private and so on)
 				MetaUnerasable.class,	// runtime type uneraseble nodes
 				MetaSingleton.class,
+				MetaMixin.class,
 				MetaForward.class,		// forward resolving for vars/fields
 				MetaVirtual.class,
 				MetaMacro.class,

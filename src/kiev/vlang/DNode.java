@@ -439,6 +439,19 @@ public abstract class TypeDecl extends DNode implements ScopeOfNames, ScopeOfMet
 		}
 	}
 
+	// an interface with methdos and fields (mixin)	
+	public final boolean isMixin() {
+		return this.meta.is_struct_mixin;
+	}
+	public final void setMixin(boolean on) {
+		MetaFlag m = this.getMeta("kiev\u001fstdlib\u001fmeta\u001fmixin");
+		if (m != null) {
+			if!(on) m.detach();
+		} else {
+			if (on) this.setMeta(new MetaMixin());
+		}
+	}
+
 	// indicates that type of the structure was attached
 	public final boolean isTypeResolved() {
 		return this.is_struct_fe_passed || this.is_struct_type_resolved;

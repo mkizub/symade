@@ -528,6 +528,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 
 | < META_INTERFACE:    "@interface"    >
 | < META_SINGLETON:    "@singleton"    >
+| < META_MIXIN:        "@mixin"        >
 | < META_FORWARD:      "@forward"      >
 | < META_UNERASABLE:   "@unerasable"   >
 | < META_VIRTUAL:      "@virtual"      >
@@ -1306,6 +1307,7 @@ void SpecialAnnotation(ASTModifiers modifiers) :
 { MetaPacked mp; MetaThrows mt; TypeNameRef thr; ConstIntExpr ice; ConstStringExpr cs; SymbolRef nr; }
 {
 	  "@singleton"		{ modifiers += new MetaSingleton(); }
+	| "@mixin"			{ modifiers += new MetaMixin(); }
 
 	| "@forward"		{ modifiers += new MetaForward(); }
 	| "@unerasable"		{ modifiers += new MetaUnerasable(); }

@@ -574,6 +574,7 @@ CLASS kievvlangMetaFinal kiev/vlang/MetaFinal kiev/vlang/MetaSpecial.java
 CLASS kievvlangMetaFlag kiev/vlang/MetaFlag kiev/vlang/MetaSpecial.java
 CLASS kievvlangMetaForward kiev/vlang/MetaForward kiev/vlang/MetaSpecial.java
 CLASS kievvlangMetaMacro kiev/vlang/MetaMacro kiev/vlang/MetaSpecial.java
+CLASS kievvlangMetaMixin kiev/vlang/MetaMixin kiev/vlang/MetaSpecial.java
 CLASS kievvlangMetaNative kiev/vlang/MetaNative kiev/vlang/MetaSpecial.java
 CLASS kievvlangMetaPacked kiev/vlang/MetaPacked kiev/vlang/MetaSpecial.java
 CLASS kievvlangMetaPacker kiev/vlang/MetaPacker kiev/vlang/MetaSpecial.java

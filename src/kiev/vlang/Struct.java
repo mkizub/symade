@@ -314,6 +314,7 @@ public abstract class Struct extends TypeDecl {
 			if ((flags & ACC_MACRO) == ACC_MACRO) setMeta(new MetaMacro());
 			if ((flags & ACC_TYPE_UNERASABLE) == ACC_TYPE_UNERASABLE) setMeta(new MetaUnerasable());
 			if ((flags & ACC_SINGLETON) == ACC_SINGLETON) setMeta(new MetaSingleton());
+			if ((flags & ACC_MIXIN) == ACC_MIXIN) setMeta(new MetaMixin());
 			this.meta.mflags = flags;
 		}
 	}
@@ -365,7 +366,7 @@ public abstract class Struct extends TypeDecl {
 			else if (td.isFinal())
 				Kiev.reportError(this, "Struct "+this+" extends final type "+tr);
 		}
-		if (isInterface() && !isStructView()) {
+		if (isInterface() && !isStructView() && !isMixin()) {
 			foreach (ASTNode n; members; n instanceof Field || n instanceof Initializer || n instanceof DeclGroup) {
 				if (n instanceof DeclGroup) {
 					foreach (Field f; n.decls; !f.isAbstract())
