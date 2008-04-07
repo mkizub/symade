@@ -43,6 +43,10 @@ public final class JEnv {
 			return loadClazz(ClazzName.fromToplevelName(KString.from(qname)));
 		String pname = qname.substring(0,p);
 		TypeDecl td = Env.loadTypeDecl(pname,true);
+		// maybe an inner class is already loaded by outer class
+		TypeDecl cl = (TypeDecl)Env.resolveGlobalDNode(qname);
+		if (cl != null && !cl.isTypeDeclNotLoaded())
+			return cl;
 		return loadClazz(ClazzName.fromOuterAndName((Struct)td, KString.from(qname.substring(p+1))));
 	}
 
@@ -85,7 +89,8 @@ public final class JEnv {
 		if ((td == null || td.isTypeDeclNotLoaded()) && clazz != null) {
 			if (td == null)
 				td = (Struct)Env.resolveGlobalDNode(name.name.toString().replace('.','\u001f'));
-			td = new Bytecoder((Struct)td,clazz,null).readClazz(name, pkg);
+			if (td == null || td.isTypeDeclNotLoaded())
+				td = new Bytecoder((Struct)td,clazz,null).readClazz(name, pkg);
 		}
 		if (td != null) {
 			diff_time = System.currentTimeMillis() - curr_time;

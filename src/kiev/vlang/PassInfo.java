@@ -78,7 +78,13 @@ public class PassInfo {
 		ASTNode@ p;
 		ParentEnumerator pe;
 	{
-		trace( Kiev.debug && Kiev.debugResolve, "PassInfo: resolving name "+path.getName()),
+		{
+			path.isSuperAllowed(),
+			path.enterMode(ResInfo.noSuper) : path.leaveMode(),
+			trace( Kiev.debug && Kiev.debugResolve, "PassInfo: resolving name "+path.getName()+" (no super)")
+		;
+			trace( Kiev.debug && Kiev.debugResolve, "PassInfo: resolving name "+path.getName())
+		},
 		pe = new ParentEnumerator(from),
 		p @= pe,
 		p instanceof ScopeOfNames,

@@ -52,10 +52,12 @@ public class Bytecoder implements JConstants {
 			if (tail.length() > 1 && tail.charAt(0) >= '0' && tail.charAt(0) >= '9')
 				variant = new JavaAnonymouseClass();
 		}
-		if (cl != null)
+		if (cl != null) {
 			assert (cl.getClass() == variant.getClass());
-		else
+			assert (cl.isTypeDeclNotLoaded());
+		} else {
 			cl = variant;
+		}
 		cl.initStruct(clname.src_name.toString(), outer, bcclazz.flags);
 		cl.bytecode_name = clname.bytecode_name;
 
@@ -82,6 +84,7 @@ public class Bytecoder implements JConstants {
 
 		// This class's superclass name (load if not loaded)
 		if (bcclazz.getSuperClazzName() != null) {
+			assert(cl.super_types.length == 0);
 			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
 			trace(Kiev.debug && Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
 			CompaundType st = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));

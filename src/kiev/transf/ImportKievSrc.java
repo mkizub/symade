@@ -825,7 +825,7 @@ public final class KievFE_Verify extends TransfProcessor {
 @singleton
 public final class KievME_DumpAPI extends BackendProcessor {
 
-	private ATextSyntax stx = new XmlDumpSyntax("api");
+	private ATextSyntax stx;
 
 	private KievME_DumpAPI() { super(KievBackend.Generic); }
 	public String getDescr() { "Dump API files" }
