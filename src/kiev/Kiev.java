@@ -522,7 +522,7 @@ public final class Kiev {
 			processors.append(PizzaME_PreGenerate);
 			processors.append(ViewME_PreGenerate);
 			processors.append(VNodeME_PreGenerate);
-			processors.append(KievME_GenBytecodeNames);
+			processors.append(KievME_PostGenerate);
 			meProcessors = processors.toArray();
 		}
 

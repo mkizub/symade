@@ -555,8 +555,7 @@ public final view RStruct of Struct extends RTypeDecl {
 		
 		if (isClazz()) {
 			// forward default implementation to interfaces
-			foreach (VTableEntry vte; vtable; vte.overloader == null)
-				autoProxyMixinMethods(this,vte);
+			autoCopyMixinMembers(this,vtable);
 			// generate bridge methods
 			foreach (VTableEntry vte; vtable)
 				autoBridgeMethods(this,vte);
@@ -666,153 +665,79 @@ public final view RStruct of Struct extends RTypeDecl {
 		}
 	}
 
-/*
-	private void createMethodDispatchers(VTableEntry vte) {
-		// get a set of overloaded methods that are not overriden
-		Vector<Method> mmset = new Vector<Method>();
-	next_m1:
-		foreach (Method m1; vte.methods) {
-			for (int i=0; i < mmset.length; i++) {
-				Method m2 = mmset[i];
-				if (m2.type ≉ m1.type)
-					continue; // different overloading
-				if (m2.ctx_tdecl.instanceOf(m1.ctx_tdecl))
-					continue next_m1; // m2 overrides m1
-				mmset[i] = m1; // m1 overrides m2
-				continue next_m1;
-			}
-			// new overloading
-			mmset.append(m1);
-		}
-		// check we have any new method in this class
-		Method found = null;
-		foreach (Method m; mmset) {
-			if (m.ctx_tdecl == this.getStruct()) {
-				found = m;
-				break;
-			}
-		}
-		if (found == null)
-			return; // no new methods in this class
-		// make the root dispatch method type
-		Method root = new MethodImpl(vte.name, vte.etype.ret(), ACC_PUBLIC | ACC_SYNTHETIC);
-		root.params.copyFrom(found.params);
-		root.pos = found.pos;
-		foreach (Var fp; root.params) {
-			fp.stype = new TypeRef(fp.dtype.getErasedType());
-			fp.vtype = new TypeRef(fp.dtype.getErasedType());
-		}
-		members.append(root);
-		// check if we already have this method in this class
-		foreach (Method m; mmset) {
-			if (m.ctx_tdecl == this && m.type.applay(this.xtype) ≈ root.type.applay(this.xtype)) {
-				members.detach(root);
-				root = found = m;
-				break;
-			}
-		}
-		if (found != root) {
-			vte.add(root);
-			mmset.append(root);
-		}
-		// check it's a multimethod entry
-		if (mmset.length <= 1)
-			return; // not a multimethod entry
-		// make multimethods to be static
-		int tmp = 1;
-		foreach (Method m; mmset; m != root) {
-			if (m.ctx_tdecl == this && !m.isVirtualStatic()) {
-				m.setVirtualStatic(true);
-				if (m.name.name == vte.name) {
-					String name = m.name.name;
-					m.name.name = (name+"$mm$"+tmp).intern();
-					m.name.addAlias(name);
+	private static void autoCopyMixinMembers(@forward RStruct self, Vector<VTableEntry> vtable) {
+		// make master-copy context
+		ASTNode.CopyContext cc = new ASTNode.CopyContext();
+		Struct me = (Struct)self;
+		Vector<DNode> to_copy = new Vector<DNode>();
+		// copy non-abstract fields
+		foreach (TypeRef tr; self.super_types) {
+			Struct ss = tr.getStruct();
+			if (ss == null || !ss.isInterface() || !ss.isMixin() || ss.iface_impl == me)
+				continue;
+			foreach (DNode dn; ss.members) {
+				if (dn instanceof DeclGroup || dn instanceof Field) {
+					if !(dn.isFinal() && dn.isStatic())
+						to_copy.append(dn.ncopy(cc));
 				}
 			}
 		}
-		
-		// create mmtree
-		MMTree mmt = new MMTree(root);
-		foreach (Method m; mmset; m != root)
-			mmt.add(m);
-
-		trace(Kiev.debug && Kiev.debugMultiMethod,"Dispatch tree "+this+"."+vte.name+vte.etype+" is:\n"+mmt);
-
-		if (root.body==null)
-			root.body = new Block(root.pos);
-		IfElseStat st = makeDispatchStat(root,mmt);
-		if (st != null)
-			root.block.stats.insert(0, st);
-	}
-*/
-	private static void autoProxyMixinMethods(@forward RStruct self, VTableEntry vte) {
-		// check we have a virtual method for this entry
-		foreach (Method m; vte.methods) {
-			if (m.ctx_tdecl.isInterface())
-				continue;
-			// found a virtual method, nothing to proxy here
-			return;
-		}
-		// all methods are from interfaces, check if we have a default implementation
-		Method def = null;
-		Struct def_iface = null;
-		foreach (Method m; vte.methods) {
-			// find default implementation class
-			if !(m.ctx_tdecl instanceof Struct)
-				continue;
-			Struct mtd = (Struct)m.ctx_tdecl;
-			if (mtd.iface_impl == null)
-				continue;
-			Method fnd = null;
-			Type[] params = m.type.params();
-			params = (Type[])Arrays.insert(params,mtd.xtype,0);
-			CallType mt = new CallType(null,null,params,m.type.ret(),false);
-			foreach (Method dm; mtd.iface_impl.members; dm.sname == m.sname && dm.type ≈ mt) {
-				fnd = dm;
-				break;
+	next_entry:
+	foreach (VTableEntry vte; vtable; vte.overloader == null) {
+			// check we have a virtual method for this entry
+			foreach (Method m; vte.methods) {
+				if (m.ctx_tdecl.isInterface())
+					continue;
+				// found a virtual method, nothing to proxy here
+				continue next_entry;
 			}
-			if (fnd == null)
-				continue;
-			else if (def == null) {
-				def = fnd; // first method found
-				def_iface = mtd;
+			// all methods are from interfaces, check if we have a default implementation
+			Method def = null;
+			Struct def_iface = null;
+			foreach (Method m; vte.methods; m.body != null) {
+				// find default implementation class
+				if !(m.ctx_tdecl instanceof Struct)
+					continue;
+				Struct mtd = (Struct)m.ctx_tdecl;
+				if (!mtd.isInterface() || mtd.isAnnotation())
+					continue;
+				if (def == null) {
+					def = m; // first method found
+					def_iface = mtd;
+				}
+				else if (mtd.instanceOf(def_iface)) {
+					def = m; // overriden default implementation
+					def_iface = mtd;
+				}
+				else if (def_iface.instanceOf(mtd))
+					; // just ignore
+				else
+					Kiev.reportWarning(me,"Umbigous default implementation for methods:\n"+
+						"    "+def_iface+"."+def+"\n"+
+						"    "+mtd+"."+m
+					);
 			}
-			else if (mtd.instanceOf(def_iface)) {
-				def = fnd; // overriden default implementation
-				def_iface = mtd;
+			Method m = null;
+			if (def == null) {
+				// create an abstract method
+				Method def = vte.methods.head();
+				if (!me.isAbstract())
+					Kiev.reportWarning(me,"Method "+vte.name+vte.etype+" is not implemented in "+me);
+				m = new MethodImpl(vte.name, vte.etype.ret(), ACC_ABSTRACT | ACC_PUBLIC | ACC_SYNTHETIC);
+				for (int i=0; i < vte.etype.arity; i++)
+					m.params.append(new LVar(0,def.params[i].sname,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
+			} else {
+				// create a proxy call
+				m = def.ncopy(cc);
 			}
-			else if (def_iface.instanceOf(mtd))
-				; // just ignore
-			else
-				Kiev.reportWarning(self,"Umbigous default implementation for methods:\n"+
-					"    "+def_iface+"."+def+"\n"+
-					"    "+mtd+"."+fnd
-				);
+			to_copy.append(m);
+			vte.add(m);
 		}
-		Method m = null;
-		if (def == null) {
-			// create an abstract method
-			Method def = vte.methods.head();
-			if (!self.isAbstract())
-				Kiev.reportWarning(self,"Method "+vte.name+vte.etype+" is not implemented in "+self);
-			m = new MethodImpl(vte.name, vte.etype.ret(), ACC_ABSTRACT | ACC_PUBLIC | ACC_SYNTHETIC);
-			for (int i=0; i < vte.etype.arity; i++)
-				m.params.append(new LVar(0,def.params[i].sname,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
-			((Struct)self).members.append(m);
-		} else {
-			// create a proxy call
-			m = new MethodImpl(vte.name, vte.etype.ret(), ACC_PUBLIC | ACC_BRIDGE | ACC_SYNTHETIC);
-			for (int i=0; i < vte.etype.arity; i++)
-				m.params.append(new LVar(0,"arg$"+i,vte.etype.arg(i),Var.PARAM_NORMAL,ACC_FINAL));
-			((Struct)self).members.append(m);
-			m.body = new Block();
-			if( m.type.ret() ≡ Type.tpVoid )
-				m.block.stats.add(new ExprStat(0,makeDispatchCall(self,0, m, def)));
-			else
-				m.block.stats.add(new ReturnStat(0,makeDispatchCall(self,0, m, def)));
-		}
-		vte.add(m);
-		Kiev.runProcessorsOn(m);
+		cc.updateLinks();
+		foreach (DNode dn; to_copy)
+			me.members += dn;
+		foreach (DNode dn; to_copy)
+			Kiev.runProcessorsOn(dn);
 	}
 
 	private static void autoBridgeMethods(@forward RStruct self, VTableEntry vte) {
@@ -977,68 +902,50 @@ public final view RStruct of Struct extends RTypeDecl {
 	}
 
 	private static void autoGenerateIdefault(@forward RStruct self) {
-		if (!isInterface() || isStructView())
+		if (!isInterface() || isStructView() || isAnnotation())
 			return;
 		Struct defaults = iface_impl;
 		if (defaults != null)
 			return;
-		foreach (Method m; members) {
-			if (!m.isAbstract()) {
-				if (m instanceof Constructor && m.isStatic())
-						continue; // ignore <clinit>
-
-				// Make inner class name$_Impl_
-				if( defaults == null )
-					defaults = makeImpl(self);
-				
-				if (m.isStatic() || m instanceof Constructor) {
-					defaults.members.add(~m);
-					continue;
-				}
-
-				// Now, non-static methods (templates)
-				// Make it static and add abstract method
-				Method def = new MethodImpl(m.sname,m.type.ret(),m.getFlags()|ACC_STATIC);
-				def.pos = m.pos;
-				def.params.addAll(m.params.delToArray()); // move, because the vars are resolved
-				m.params.copyFrom(def.params);
-				def.params.insert(0,new LVar(pos,Constants.nameThis,self.xtype,Var.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
-				defaults.members.add(def);
-				def.body = ~m.body;
-				def.setVirtualStatic(true);
-				Kiev.runProcessorsOn(def);
-				// add the virtual method proxy to the static method
-				Method virt = new MethodImpl(m.sname,m.type.ret(),m.getFlags());
-				virt.pos = m.pos;
-				virt.params.copyFrom(m.params);
-				virt.body = new Block();
-				defaults.members.add(virt);
-				if( virt.type.ret() ≡ Type.tpVoid )
-					virt.block.stats.add(new ExprStat(0,makeDispatchCall(self,0, virt, def)));
-				else
-					virt.block.stats.add(new ReturnStat(0,makeDispatchCall(self,0, virt, def)));
-				Kiev.runProcessorsOn(virt);
-				m.setAbstract(true);
-			}
-		}
-		if (self.isMixin()) {
-			// move mixin fields
-			foreach (DNode dn; members; dn instanceof DeclGroup || dn instanceof Field) {
-				if !(dn.isFinal() && dn.isStatic()) {
-					// Make inner class name$_Impl_
-					if( defaults == null )
-						defaults = makeImpl(self);
-					if (dn.isPublic()) {
-						defaults.members.add(dn.ncopy());
-						dn.setAbstract(true);
-					} else {
-						defaults.members.add(~dn);
+		Vector<DNode> to_copy = new Vector<DNode>();
+		foreach (DNode dn; members) {
+			if (dn instanceof Method) {
+				Method m = (Method)dn;
+				if (!m.isAbstract() || m.body != null) {
+					if (m instanceof Constructor) {
+						if (!m.isStatic())
+							to_copy.append(m);
+						continue;
 					}
+					to_copy.append(m);
 				}
 			}
+			else if (self.isMixin() && (dn instanceof DeclGroup || dn instanceof Field)) {
+				if !(dn.isFinal() && dn.isStatic())
+					to_copy.append(dn);
+			}
 		}
+		// Make inner class name$_Impl_
+		if (defaults == null && (isInterface() && isMixin() || to_copy.length > 0))
+			defaults = makeImpl(self);
 		if (defaults == null)
 			return;
+		ASTNode.CopyContext cc = new ASTNode.CopyContext();
+		foreach (DNode dn; to_copy) {
+			if (dn instanceof Constructor) {
+				if (dn.isStatic())
+					continue;
+				defaults.members += dn.ncopy(cc);
+			}
+			else if (dn instanceof Method) {
+				defaults.members += dn.ncopy(cc);
+			}
+			else if (dn instanceof DeclGroup || dn instanceof Field) {
+				defaults.members += dn.ncopy(cc);
+			}
+		}
+		cc.updateLinks();
+		Kiev.runProcessorsOn(defaults);
 		defaults.preGenerate();
 		boolean has_abstract_methods = false;
 		foreach (Method m; defaults.members; m.isAbstract()) {

@@ -40,8 +40,13 @@ public static final view RNewExpr of NewExpr extends RENode {
 			type = this.type.getType();
 		}
 		Struct s = type.getStruct();
-		if (s == null)
+		if (s == null || (s.isInterface() && !s.isMixin() && clazz == null))
 			Kiev.reportWarning(this,"Instantiation of non-concrete type "+this.type+" ???");
+		if (s.isInterface() && s.isMixin() && clazz == null) {
+			s = s.iface_impl;
+			this.type = new TypeNameRef(~this.type, s.sname);
+			type = this.type.getType();
+		}
 		if (s.isEnum())
 			throw new CompilerException(this,"Forbidden enum value instantiation");
 		if (outer == null && s.isStructInner() && !s.isStatic() && s.ometa_tdef != null) {

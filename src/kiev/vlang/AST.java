@@ -92,14 +92,14 @@ public abstract class ANode implements INode {
 		public static final class SymbolInfo {
 			ISymbol sold; // old symbol
 			ISymbol snew; // new symbol, copied from sold
-			List<SymbolRef> srefs; // new symbol ref, to be changed to point from sold to snew
+			List<ASTNode> srefs; // new symbol ref, to be changed to point from sold to snew
 			SymbolInfo(ISymbol sold, ISymbol snew) {
 				this.sold = sold;
 				this.snew = snew;
 				this.srefs = List.Nil;
 			}
-			SymbolInfo(SymbolRef sref) {
-				this.sold = sref.symbol;
+			SymbolInfo(ISymbol sold, ASTNode sref) {
+				this.sold = sold;
 				this.snew = null;
 				this.srefs = List.newList(sref);
 			}
@@ -115,22 +115,33 @@ public abstract class ANode implements INode {
 			}
 			infos.append(new SymbolInfo(sold, snew));
 		}
-		void addSymbolRef(SymbolRef sref) {
+		void addSymbolRef(ASTNode sref, ISymbol sold) {
+			if (sold == null)
+				return;
 			if (infos == null)
 				infos = new Vector<SymbolInfo>();
-			ISymbol sym = sref.symbol;
-			foreach (SymbolInfo si; infos; si.sold == sym) {
-				si.srefs = new List.Cons<SymbolRef>(sref, si.srefs);
+			foreach (SymbolInfo si; infos; si.sold == sold) {
+				si.srefs = new List.Cons<ASTNode>(sref, si.srefs);
 				return;
 			}
-			infos.append(new SymbolInfo(sref));
+			infos.append(new SymbolInfo(sold, sref));
 		}
 		public void updateLinks() {
 			if (infos == null)
 				return;
-			foreach (SymbolInfo si; infos) {
-				foreach (SymbolRef sr; si.srefs; sr.symbol == si.sold && si.snew != null)
-					sr.symbol = si.snew;
+			foreach (SymbolInfo si; infos; si.snew != null) {
+				foreach (ASTNode n; si.srefs) {
+					if (n instanceof SymbolRef) {
+						SymbolRef sr = (SymbolRef)n;
+						if (sr.symbol == si.sold)
+							sr.symbol = si.snew;
+					}
+					else if (n instanceof ENode) {
+						ENode en = (ENode)n;
+						if (en.symbol == si.sold)
+							en.symbol = si.snew;
+					}
+				}
 			}
 		}
 	}
@@ -512,7 +523,9 @@ public abstract class ANode implements INode {
 			if (this instanceof ISymbol)
 				cc.addSymbol((ISymbol)this,(ISymbol)node);
 			else if (this instanceof SymbolRef)
-				cc.addSymbolRef((SymbolRef)node);
+				cc.addSymbolRef((SymbolRef)node, ((SymbolRef)this).symbol);
+			else if (this instanceof ENode)
+				cc.addSymbolRef((ENode)node, ((ENode)this).symbol);
 		}
 		return node;
 	}

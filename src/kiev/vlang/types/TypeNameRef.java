@@ -116,15 +116,15 @@ public final class TypeNameRef extends TypeRef {
 		TypeDecl scope;
 		String name = this.ident;
 		String head;
-		int dot = name.indexOf('\u001f');
-		if (dot > 0) {
-			head = name.substring(0,dot).intern();
-			name = name.substring(dot+1);
-		} else {
-			head = name;
-			name = "";
-		}
 		if (this.outer == null) {
+			int dot = name.indexOf('\u001f');
+			if (dot > 0) {
+				head = name.substring(0,dot).intern();
+				name = name.substring(dot+1);
+			} else {
+				head = name;
+				name = "";
+			}
 			TypeDecl@ td;
 			if( !PassInfo.resolveNameR(this,td,new ResInfo(this,head,ResInfo.noForwards)) )
 				throw new CompilerException(this,"Unresolved type "+head);
@@ -134,7 +134,7 @@ public final class TypeNameRef extends TypeRef {
 			scope = outer.meta_type.tdecl;
 		}
 		while (name.length() > 0) {
-			dot = name.indexOf('\u001f');
+			int dot = name.indexOf('\u001f');
 			if (dot > 0) {
 				head = name.substring(0,dot).intern();
 				name = name.substring(dot+1);
