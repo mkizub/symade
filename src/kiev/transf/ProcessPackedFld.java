@@ -81,6 +81,18 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 	private PackedFldME_PreGenerate() { super(KievBackend.Java15); }
 	public String getDescr() { "Packed fields pre-generation" }
 
+	private static final int[] masks =
+		{	0,
+			0x1       ,0x3       ,0x7       ,0xF       ,
+			0x1F      ,0x3F      ,0x7F      ,0xFF      ,
+			0x1FF     ,0x3FF     ,0x7FF     ,0xFFF     ,
+			0x1FFF    ,0x3FFF    ,0x7FFF    ,0xFFFF    ,
+			0x1FFFF   ,0x3FFFF   ,0x7FFFF   ,0xFFFFF   ,
+			0x1FFFFF  ,0x3FFFFF  ,0x7FFFFF  ,0xFFFFFF  ,
+			0x1FFFFFF ,0x3FFFFFF ,0x7FFFFFF ,0xFFFFFFF ,
+			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
+		};
+
 	public void process(ASTNode node, Transaction tr) {
 		tr = Transaction.enter(tr,"PackedFldME_PreGenerate");
 		try {
@@ -108,7 +120,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
 			MetaPacked mp = f.getMetaPacked();
-			if( mp.fld.dnode == null ) {
+			if (mp.fld.dnode == null) {
 				String mp_in = mp.getS("in");
 				if( mp_in != null && mp_in.length() > 0 ) {
 					Field p = s.resolveField(mp_in,false);
@@ -125,7 +137,7 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					mp.fld.symbol = p;
 					assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 				}
-				else if( locatePackerField(packer,mp.size,s) ) {
+				else if (locatePackerField(packer,mp.size,s)) {
 					// Found
 					mp.fld.symbol = packer;
 					MetaPacker mpr = packer.getMetaPacker();
@@ -143,9 +155,90 @@ public class PackedFldME_PreGenerate extends BackendProcessor {
 					mpr.size += mp.size;
 				}
 			}
-			foreach(Struct n; s.members)
-				this.doProcess(n);
+			f.setVirtual(true);
+			String set_name = (nameSet+f.sname).intern();
+			String get_name = (nameGet+f.sname).intern();
+			// setter
+			if (!f.isFinal() && MetaAccess.writeable(f)) {
+				Method set_var = new MethodImpl(set_name,Type.tpVoid,f.getJavaFlags() | ACC_SYNTHETIC | ACC_FINAL);
+				if (s.isInterface())
+					set_var.setFinal(false);
+				s.addMethod(set_var);
+				set_var.setMeta(new UserMeta(VirtFldME_PreGenerate.nameMetaSetter)).resolve(null);
+				LVar value = new LVar(f.pos,"value",f.type,Var.PARAM_NORMAL,0);
+				set_var.params.add(value);
+				Block body = new Block(f.pos);
+				set_var.body = body;
+
+				Field mpfld = (Field)mp.fld.dnode;
+				Var fval = new LVar(0,"tmp$fldval",Type.tpInt,Var.VAR_LOCAL,0);
+				if (mpfld.isStatic())
+					fval.init = new SFldExpr(f.pos,mpfld);
+				else
+					fval.init = new IFldExpr(f.pos,new ThisExpr(0),mpfld);
+				body.addSymbol(fval);
+				Var tmp = new LVar(0,"tmp$val",Type.tpInt,Var.VAR_LOCAL,0);
+				if (f.type ≡ Type.tpBoolean)
+					tmp.init = new ReinterpExpr(f.pos, Type.tpInt, new LVarExpr(f.pos,value));
+				else
+					tmp.init = new LVarExpr(f.pos,value);
+				body.addSymbol(tmp);
+
+				ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
+				ENode expr_l = new BinaryExpr(f.pos, Operator.BitAnd, new LVarExpr(f.pos,tmp), mexpr);
+				if (mp.offset > 0) {
+					ConstExpr sexpr = new ConstIntExpr(mp.offset);
+					expr_l = new BinaryExpr(f.pos, Operator.LeftShift, expr_l, sexpr);
+				}
+				ConstExpr clear = new ConstIntExpr(~(masks[mp.size]<<mp.offset));
+				ENode expr_r = new BinaryExpr(f.pos, Operator.BitAnd, new LVarExpr(f.pos,fval), clear);
+				ENode expr = new BinaryExpr(f.pos, Operator.BitOr, expr_r, expr_l);
+				if (mpfld.isStatic())
+					expr = new AssignExpr(f.pos, Operator.Assign, new SFldExpr(f.pos,mpfld), expr);
+				else
+					expr = new AssignExpr(f.pos, Operator.Assign, new IFldExpr(f.pos,new ThisExpr(0),mpfld), expr);
+				body.stats.add(new ExprStat(f.pos, expr));
+
+				f.setter = set_var;
+			}
+			// getter
+			if(MetaAccess.readable(f)) {
+				Method get_var = new MethodImpl(get_name,f.type,f.getJavaFlags() | ACC_SYNTHETIC |ACC_FINAL);
+				if (s.isInterface())
+					get_var.setFinal(false);
+				s.addMethod(get_var);
+				get_var.setMeta(new UserMeta(VirtFldME_PreGenerate.nameMetaGetter)).resolve(null);
+				Block body = new Block(f.pos);
+				get_var.body = body;
+				
+				ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
+				Field mpfld = (Field)mp.fld.dnode;
+				ENode expr;
+				if (mpfld.isStatic())
+					expr = new SFldExpr(f.pos,mpfld);
+				else
+					expr = new IFldExpr(f.pos,new ThisExpr(0),mpfld);
+				if (mp.offset > 0) {
+					ConstExpr sexpr = new ConstIntExpr(mp.offset);
+					expr = new BinaryExpr(f.pos, Operator.UnsignedRightShift, expr, sexpr);
+				}
+				expr = new BinaryExpr(f.pos, Operator.BitAnd, expr, mexpr);
+				if( mp.size == 8 && f.type ≡ Type.tpByte )
+					expr = new CastExpr(f.pos, Type.tpByte, expr);
+				else if( mp.size == 16 && f.type ≡ Type.tpShort )
+					expr = new CastExpr(f.pos, Type.tpShort, expr);
+				else if( mp.size == 16 && f.type ≡ Type.tpChar )
+					expr = new ReinterpExpr(f.pos, Type.tpChar, expr);
+				else if( mp.size == 1 && f.type ≡ Type.tpBoolean )
+					expr = new ReinterpExpr(f.pos, Type.tpBoolean, expr);
+				
+				body.stats.add(new ReturnStat(f.pos,expr));
+				
+				f.getter = get_var;
+			}
 		}
+		foreach(Struct n; s.members)
+			this.doProcess(n);
 	}
 
 	private int countPackerFields(Struct s) {
@@ -199,6 +292,20 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		//System.out.println("ProcessPackedFld: rewrite "+(o==null?"null":o.getClass().getName())+" in "+id);
 	}
 
+	void rewrite(DNode:ASTNode dn) {
+		if (dn.isMacro())
+			return;
+		if (dn instanceof Field && dn.isPackedField()) {
+			Field f = (Field)dn;
+			Method getter = f.getter;
+			if (getter != null && !getter.isFinal())
+				getter.setFinal(true);
+			Method setter = f.setter;
+			if (setter != null && !setter.isFinal())
+				setter.setFinal(true);
+		}
+	}
+
 	void rewrite(IFldExpr:ANode fa) {
 		//System.out.println("ProcessPackedFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
 		Field f = fa.var;
@@ -212,6 +319,7 @@ public class PackedFldBE_Rewrite extends BackendProcessor {
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 		IFldExpr ae = fa.ncopy();
 		ae.symbol = mp.fld.symbol;
+		ae.setAsField(false);
 		ENode expr = ae;
 		if (mp.offset > 0) {
 			ConstExpr sexpr = new ConstIntExpr(mp.offset);

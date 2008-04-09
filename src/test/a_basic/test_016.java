@@ -35,7 +35,7 @@ class test_016 {
 			}
 		}
 
-		int arr[] = new int[6];
+		int[] arr = new int[6];
 		arr[0] = 1;
 		arr[1] = 89;
 		arr[2] = 15;

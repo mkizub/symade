@@ -77,8 +77,11 @@ public final view RTypeInfoExpr of TypeInfoExpr extends RENode {
 			}
 			cl_expr = new TypeClassExpr(pos,new TypeRef(clazz.xtype));
 			cl_expr.resolve(Type.tpClass);
-			foreach (ArgType at; ((RStruct)clazz).getTypeInfoArgs())
-				((TypeInfoExpr)this).cl_args.add(((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false));
+			foreach (ArgType at; ((RStruct)clazz).getTypeInfoArgs()) {
+				ENode tie = ((RStruct)(Struct)ctx_tdecl).accessTypeInfoField((TypeInfoExpr)this, type.resolve(at),false);
+				((TypeInfoExpr)this).cl_args.add(tie);
+				Kiev.runProcessorsWithRewalk(tie);
+			}
 			foreach (ENode tie; cl_args)
 				tie.resolve(null);
 		}

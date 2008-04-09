@@ -182,7 +182,7 @@ public static view RENode of ENode extends RNode {
 	public final Object	getConstValue();
 
 	public void resolve(Type reqType) {
-		throw new CompilerException(this,"Resolve call for e-node "+getClass());
+		throw new CompilerException(this,"Resolve call for e-node "+getClass()+" / "+((ENode)this).getClass());
 	}
 }
 

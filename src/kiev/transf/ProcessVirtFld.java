@@ -271,14 +271,8 @@ public class VirtFldME_PreGenerate extends BackendProcessor implements Constants
 				set_var.setFinal(true);
 			s.addMethod(set_var);
 			set_var.setMeta(new UserMeta(nameMetaSetter)).resolve(null);
-			LVar value;
-			if (f.isStatic()) {
-				value = new LVar(f.pos,"value",f.type,Var.PARAM_NORMAL,0);
-				set_var.params.add(value);
-			} else {
-				value = new LVar(f.pos,"value",f.type,Var.PARAM_NORMAL,0);
-				set_var.params.add(value);
-			}
+			LVar value = new LVar(f.pos,"value",f.type,Var.PARAM_NORMAL,0);
+			set_var.params.add(value);
 			if( !f.isAbstract() ) {
 				Block body = new Block(f.pos);
 				set_var.body = body;

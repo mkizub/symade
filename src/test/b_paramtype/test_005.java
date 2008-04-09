@@ -14,7 +14,7 @@ class test_005 {
 			System.out.print(s);
 		System.out.println("!");
 		
-		int arr1[] = new int[]{ 0,1,2,3,4,5,6,7,8,9 };
+		int[] arr1 = new int[]{ 0,1,2,3,4,5,6,7,8,9 };
 		foreach(int i; arr1; (i & 1) != 0 )
 			System.out.print(i + ", ");
 		System.out.println("!");

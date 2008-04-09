@@ -808,7 +808,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 					f.init = new ReinterpExpr(f.pos, f.getType(), new SFldExpr(f.pos, emptyArray));
 				}
 			}
-			if (f.isVirtual()) {
+			if (f.isVirtual() && !f.isPackedField()) {
 				fixSetterMethod(impl, f, fmatt, fmref);
 				fixGetterMethod(impl, f, fmatt, fmref);
 			}
@@ -964,7 +964,7 @@ public class VNodeME_PreGenerate extends BackendProcessor {
 			break;
 		}
 		if (value == null) {
-			Kiev.reportError(set_var,"Cannot fine a value to assign parameter");
+			Kiev.reportError(set_var,"Cannot find a value to assign parameter");
 			return;
 		}
 

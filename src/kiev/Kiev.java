@@ -517,8 +517,8 @@ public final class Kiev {
 			processors.append(KievME_DumpAPI);
 			processors.append(RewriteME_PreGenerate);
 			processors.append(KievME_PreGenartion);
-			processors.append(VirtFldME_PreGenerate);
 			processors.append(PackedFldME_PreGenerate);
+			processors.append(VirtFldME_PreGenerate);
 			processors.append(PizzaME_PreGenerate);
 			processors.append(ViewME_PreGenerate);
 			processors.append(VNodeME_PreGenerate);
@@ -531,7 +531,7 @@ public final class Kiev {
 			processors.append(KievBE_Resolve);
 			processors.append(InnerBE_Rewrite);
 			processors.append(VirtFldBE_Rewrite);
-			processors.append(PackedFldBE_Rewrite);
+			//processors.append(PackedFldBE_Rewrite);
 			processors.append(KievBE_Generate);
 			processors.append(ExportBE_Generate);
 			processors.append(KievBE_Cleanup);
@@ -727,6 +727,16 @@ public final class Kiev {
 					bp.process(node,tr);
 			}
 		} finally { tr.leave(); }
+	}
+
+	public static void runProcessorsWithRewalk(ASTNode node) {
+		assert(node.isAttached());
+		try {
+			Kiev.runProcessorsOn(node);
+		} catch (ReWalkNodeException e) {
+			runProcessorsWithRewalk(e.replacer);
+			return;
+		}
 	}
 
 }
