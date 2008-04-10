@@ -186,6 +186,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 		}
 		Vector<Type> args = new Vector<Type>();
 		Vector<Type> dargs = new Vector<Type>();
+		boolean is_varargs = false;
 		foreach (Var fp; params) {
 			TypeRef fpdtype = fp.stype;
 			if (fpdtype == null)
@@ -233,6 +234,7 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				assert(fp.type.isInstanceOf(Type.tpArray));
 				args.append(fp.type);
 				dargs.append(fp.type);
+				is_varargs = true;
 				break;
 			case Var.PARAM_LVAR_PROXY:
 				assert(this instanceof Constructor);
@@ -250,6 +252,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
 			}
 		}
+		if (is_varargs != this.isVarArgs())
+			this.setVarArgs(is_varargs);
 		Type tp_ret, dtp_ret;
 		if (type_ret == null)
 			tp_ret = Type.tpVoid;
@@ -500,10 +504,8 @@ public abstract class Method extends DNode implements ScopeOfNames,ScopeOfMethod
 				// array as va_arg
 			} else {
 				for(; i < args.length; i++) {
-					if !(args[i].getType().isInstanceOf(varg_tp)) {
-						CastExpr.autoCastToReference(args[i]);
-						CastExpr.autoCast(args[i],varg_tp);
-					}
+					if !(args[i].getType().isInstanceOf(varg_tp))
+						CastExpr.autoCast(CastExpr.autoCastToReference(args[i]),varg_tp);
 				}
 			}
 		} else {

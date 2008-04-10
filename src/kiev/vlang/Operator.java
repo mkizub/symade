@@ -142,6 +142,7 @@ public final class Operator implements Constants {
 
 	public static final Operator Access;
 	public static final Operator CallAccess;
+	public static final Operator CallTypesAccess;
 	public static final Operator NewAccess;
 	public static final Operator ClassAccess;
 	public static final Operator MacroAccess;
@@ -239,6 +240,7 @@ public final class Operator implements Constants {
 		
 		Access = newOperator(opAccessPriority, "Y . I");
 		CallAccess = newOperator(opAccessPriority, "Y . I ( { Z , }* )");
+		CallTypesAccess = newOperator(opAccessPriority, "Y . I < { T , }* > ( { Z , }* )");
 		NewAccess = newOperator(opAccessPriority, "Y . new T ( { Z , }* )");
 		ClassAccess = newOperator(opAccessPriority, "T . class");
 		MacroAccess = newOperator(opAccessPriority, "Y \u21a3 I"); // ↣

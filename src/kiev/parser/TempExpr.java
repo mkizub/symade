@@ -91,6 +91,19 @@ public final class UnresOpExpr extends UnresExpr {
 				args[i] = (ENode)stats[i];
 			ret = new CallExpr(id.pos,obj, new SymbolRef<Method>(id.ident),null,args);
 		}
+		else if (op == Operator.CallTypesAccess) {
+			ENode obj = exprs[0];
+			EToken id = (EToken)exprs[1];
+			ASTNode[] params = ((BlockRewr)exprs[2]).stats.delToArray();
+			ASTNode[] stats = ((BlockRewr)exprs[3]).stats.delToArray();
+			TypeRef[] types = new TypeRef[params.length];
+			for (int i=0; i < params.length; i++)
+				types[i] = (TypeRef)params[i];
+			ENode[] args = new ENode[stats.length];
+			for (int i=0; i < stats.length; i++)
+				args[i] = (ENode)stats[i];
+			ret = new CallExpr(id.pos,obj, new SymbolRef<Method>(id.ident),types,args);
+		}
 		else if (op == Operator.NewAccess) {
 			ENode obj = exprs[0];
 			TypeRef tr = (TypeRef)exprs[1];

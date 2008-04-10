@@ -855,10 +855,10 @@ public class CastExpr extends ENode {
 		}
 	}
 
-	public static void autoCastToReference(ENode ex) {
+	public static ENode autoCastToReference(ENode ex) {
 		assert(ex.isAttached());
 		Type tp = ex.getType();
-		if( tp.isReference() ) return;
+		if( tp.isReference() ) return ex;
 		Type ref;
 		if     ( tp ≡ Type.tpBoolean )	ref = Type.tpBooleanRef;
 		else if( tp ≡ Type.tpByte    )	ref = Type.tpByteRef;
@@ -870,43 +870,43 @@ public class CastExpr extends ENode {
 		else if( tp ≡ Type.tpChar    )	ref = Type.tpCharRef;
 		else
 			throw new RuntimeException("Unknown primitive type "+tp);
-		ex.replaceWith(fun ()->ENode {return new NewExpr(ex.pos,ref,new ENode[]{~ex});});
+		return (ENode)ex.replaceWith(fun ()->ENode {return new NewExpr(ex.pos,ref,new ENode[]{~ex});});
 	}
 
-	public static void autoCastToPrimitive(ENode ex) {
+	public static ENode autoCastToPrimitive(ENode ex) {
 		assert(ex.isAttached());
 		Type tp = ex.getType();
-		if( !tp.isReference() ) return;
+		if( !tp.isReference() ) return ex;
 		if( tp ≈ Type.tpBooleanRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpBooleanRef.tdecl.resolveMethod("booleanValue",Type.tpBoolean),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpByteRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpByteRef.tdecl.resolveMethod("byteValue",Type.tpByte),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpShortRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpShortRef.tdecl.resolveMethod("shortValue",Type.tpShort),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpIntRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpIntRef.tdecl.resolveMethod("intValue",Type.tpInt),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpLongRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpLongRef.tdecl.resolveMethod("longValue",Type.tpLong),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpFloatRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpFloatRef.tdecl.resolveMethod("floatValue",Type.tpFloat),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpDoubleRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpDoubleRef.tdecl.resolveMethod("doubleValue",Type.tpDouble),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpCharRef )
-			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
+			return (ENode)ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,~ex,
 				Type.tpCharRef.tdecl.resolveMethod("charValue",Type.tpChar),ENode.emptyArray
 			);});
 		else

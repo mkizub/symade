@@ -1124,7 +1124,7 @@ public final view RStruct of Struct extends RTypeDecl {
 				if( mmret == null && mm != null ) mmret = mm;
 				break;
 			} else {
-				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" does not overrides "+mi+" of type "+mit+" in class "+clazz);
+				trace(Kiev.debug && Kiev.debugMultiMethod,"Method "+m+" of type "+m.etype+" does not overrides "+mi+" of type "+mit+" in class "+clazz);
 			}
 		}
 		return mmret;
