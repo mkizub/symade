@@ -11,7 +11,7 @@ options {
   CACHE_TOKENS = true;
 }
 
-PARSER_BEGIN(kiev040)
+PARSER_BEGIN(kiev050)
 /*******************************************************************************
  * Copyright (c) 2005-2007 UAB "MAKSINETA".
  * All rights reserved. This program and the accompanying materials
@@ -34,16 +34,16 @@ import syntax kiev.Syntax;
 
 }*/ 
 
-public final class Parser extends kiev040 {
+public final class Parser extends kiev050 {
 	public Parser(Reader r) {
 		super(r,1,1);
 	}
 }
 
-public interface ParserConstants extends kiev040Constants {
+public interface ParserConstants extends kiev050Constants {
 }
 
-public abstract class kiev040 {
+public abstract class kiev050 {
 
 	public FileUnit			curFileUnit;
 	public TypeDecl			curClazz;
@@ -53,9 +53,9 @@ public abstract class kiev040 {
 
 	public boolean			declMode = true;
 
-	public kiev040(java.io.Reader stream, int line, int pos) {
+	public kiev050(java.io.Reader stream, int line, int pos) {
 		jj_input_stream = new SimpleCharStream(stream, line, pos);
-		token_source = new kiev040TokenManager(jj_input_stream, this);
+		token_source = new kiev050TokenManager(jj_input_stream, this);
 		token = new Token();
 		token.next = jj_nt = token_source.getNextToken();
 	}
@@ -415,13 +415,13 @@ public abstract class kiev040 {
 
 }
 
-PARSER_END(kiev040)
+PARSER_END(kiev050)
 
 
 TOKEN_MGR_DECLS :
 {
-	final kiev040 parser;
-	public kiev040TokenManager(SimpleCharStream stream, kiev040 parser)
+	final kiev050 parser;
+	public kiev050TokenManager(SimpleCharStream stream, kiev050 parser)
 	{
 		if (SimpleCharStream.staticFlag)
 			throw new Error("ERROR: Cannot use a static CharStream class with a non-static lexical analyzer.");

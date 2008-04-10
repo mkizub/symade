@@ -23,7 +23,7 @@ import syntax kiev.Syntax;
  * Describes the input token stream.
  */
 
-public class Token implements kiev040Constants {
+public class Token implements ParserConstants {
 
   /**
    * An integer that describes the kind of this token.  This numbering

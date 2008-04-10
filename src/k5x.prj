@@ -3,6 +3,7 @@ CLASS kievCompilerThread kiev/CompilerThread kiev/Compiler.java
 CLASS kievEditorThread kiev/EditorThread kiev/Compiler.java
 CLASS kievKiev kiev/Kiev kiev/Kiev.java
 CLASS kievMain kiev/Main kiev/Main.java
+CLASS kievSOPTest kiev/SOPTest kiev/SopTest.java
 CLASS kievWorkerThread kiev/WorkerThread kiev/Compiler.java
 CLASS kievbejava15AsciiCP kiev/be/java15/AsciiCP kiev/be/java15/ConstPool.java
 CLASS kievbejava15AssignFunc kiev/be/java15/AssignFunc kiev/be/java15/CoreFunc.java
@@ -249,7 +250,7 @@ CLASS kievparserEToken kiev/parser/EToken kiev/parser/EToken.java
 CLASS kievparserOpdef kiev/parser/Opdef kiev/parser/Opdef.java
 CLASS kievparserParseError kiev/parser/ParseError kiev/parser/ParseError.java
 CLASS kievparserParseException kiev/parser/ParseException kiev/parser/ParseException.java
-CLASS kievparserParser kiev/parser/Parser kiev/parser/kiev040.java
+CLASS kievparserParser kiev/parser/Parser kiev/parser/kiev050.java
 CLASS kievparserPrescannedBody kiev/parser/PrescannedBody kiev/parser/PrescannedBody.java
 CLASS kievparserSimpleCharStream kiev/parser/SimpleCharStream kiev/parser/SimpleCharStream.java
 CLASS kievparserToken kiev/parser/Token kiev/parser/Token.java
@@ -258,8 +259,8 @@ CLASS kievparserUnresCallExpr kiev/parser/UnresCallExpr kiev/parser/TempExpr.j
 CLASS kievparserUnresExpr kiev/parser/UnresExpr kiev/parser/TempExpr.java
 CLASS kievparserUnresOpExpr kiev/parser/UnresOpExpr kiev/parser/TempExpr.java
 CLASS kievparserUnresSeqs kiev/parser/UnresSeqs kiev/parser/TempExpr.java
-CLASS kievparserkiev040 kiev/parser/kiev040 kiev/parser/kiev040.java
-CLASS kievparserkiev040TokenManager kiev/parser/kiev040TokenManager kiev/parser/kiev040TokenManager.java
+CLASS kievparserkiev050 kiev/parser/kiev050 kiev/parser/kiev050.java
+CLASS kievparserkiev050TokenManager kiev/parser/kiev050TokenManager kiev/parser/kiev050TokenManager.java
 CLASS kievstdlibArrayEnumerator kiev/stdlib/ArrayEnumerator kiev/stdlib/ArrayEnumerator.java
 CLASS kievstdlibArrays kiev/stdlib/Arrays kiev/stdlib/Arrays.java
 CLASS kievstdlibAssertionFailedException kiev/stdlib/AssertionFailedException kiev/stdlib/Debug.java
@@ -728,6 +729,11 @@ ENUM kievparserETokenKind kiev/parser/ETokenKind kiev/parser/EToken.java
 ENUM kievvlangIntRadix kiev/vlang/IntRadix kiev/vlang/ConstExpr.java
 ENUM kievvlangProjectFileType kiev/vlang/ProjectFileType kiev/vlang/Env.java
 ENUM kievvlangWBCType kiev/vlang/WBCType kiev/vlang/Method.java
+FORMAT stx-fmtsyntax-dump-api stx-fmt/syntax-dump-api.xml bad
+FORMAT stx-fmtsyntax-dump-full stx-fmt/syntax-dump-full.xml bad
+FORMAT stx-fmtsyntax-for-java stx-fmt/syntax-for-java.xml bad
+FORMAT stx-fmtsyntax-for-project-tree stx-fmt/syntax-for-project-tree.xml bad
+FORMAT stx-fmtsyntax-for-syntax stx-fmt/syntax-for-syntax.xml bad
 INTERFACE kievbejava15IBoolExpr kiev/be/java15/IBoolExpr kiev/be/java15/JBoolExpr.java
 INTERFACE kievbejava15JAccessExpr kiev/be/java15/JAccessExpr kiev/be/java15/JLvalueExpr.java
 INTERFACE kievbejava15JAssignExpr kiev/be/java15/JAssignExpr kiev/be/java15/JExpr.java
@@ -917,9 +923,9 @@ INTERFACE kievirjava15RVar kiev/ir/java15/RVar kiev/ir/java15/RVar.java
 INTERFACE kievirjava15RWBCCondition kiev/ir/java15/RWBCCondition kiev/ir/java15/RMethod.java
 INTERFACE kievirjava15RWhileStat kiev/ir/java15/RWhileStat kiev/ir/java15/RLoopStat.java
 INTERFACE kievirjava15RWithStat kiev/ir/java15/RWithStat kiev/ir/java15/RBlockStat.java
-INTERFACE kievparserParserConstants kiev/parser/ParserConstants kiev/parser/kiev040.java
+INTERFACE kievparserParserConstants kiev/parser/ParserConstants kiev/parser/kiev050.java
 INTERFACE kievparserTokenManager kiev/parser/TokenManager kiev/parser/TokenManager.java
-INTERFACE kievparserkiev040Constants kiev/parser/kiev040Constants kiev/parser/kiev040Constants.java
+INTERFACE kievparserkiev050Constants kiev/parser/kiev050Constants kiev/parser/kiev050Constants.java
 INTERFACE kievstdlibAssertionHandler kiev/stdlib/AssertionHandler kiev/stdlib/Debug.java
 INTERFACE kievstdlibEnumeration kiev/stdlib/Enumeration kiev/stdlib/Enumeration.java
 INTERFACE kievstdlibTypeInfoInterface kiev/stdlib/TypeInfoInterface kiev/stdlib/TypeInfo.java
@@ -928,6 +934,7 @@ INTERFACE kievstdlibmetaabstract kiev/stdlib/meta/abstract kiev/stdlib/meta/a
 INTERFACE kievstdlibmetaaccess kiev/stdlib/meta/access kiev/stdlib/meta/access.java
 INTERFACE kievstdlibmetaalias kiev/stdlib/meta/alias kiev/stdlib/meta/alias.java
 INTERFACE kievstdlibmetabridge kiev/stdlib/meta/bridge kiev/stdlib/meta/bridge.java
+INTERFACE kievstdlibmetaextern kiev/stdlib/meta/extern kiev/stdlib/meta/extern.java
 INTERFACE kievstdlibmetafinal kiev/stdlib/meta/final kiev/stdlib/meta/final.java
 INTERFACE kievstdlibmetaforward kiev/stdlib/meta/forward kiev/stdlib/meta/forward.java
 INTERFACE kievstdlibmetagetter kiev/stdlib/meta/getter kiev/stdlib/meta/virtual.java
@@ -966,6 +973,7 @@ INTERFACE kievvlangnode kiev/vlang/node kiev/vlang/Tree.java
 INTERFACE kievvlangref kiev/vlang/ref kiev/vlang/Tree.java
 INTERFACE kievvlangtypesStdTypes kiev/vlang/types/StdTypes kiev/vlang/types/StdTypes.java
 INTERFACE kievvlangtypesTVSet kiev/vlang/types/TVSet kiev/vlang/types/TVarBld.java
+METATYPE kievirRuleTemplates kiev/ir/RuleTemplates.xml bad
 METATYPE kievstdlibGString kiev/stdlib/MetaTypes.java bad
 METATYPE kievstdlib_array_ kiev/stdlib/MetaTypesInternal.java bad
 METATYPE kievstdlib_astnode_ kiev/stdlib/MetaTypesInternal.java bad
@@ -983,6 +991,8 @@ METATYPE kievstdliblong kiev/stdlib/MetaTypes.java bad
 METATYPE kievstdlibnull kiev/stdlib/MetaTypes.java bad
 METATYPE kievstdlibshort kiev/stdlib/MetaTypes.java bad
 METATYPE kievstdlibvoid kiev/stdlib/MetaTypes.java bad
+METATYPE kievtransfTemplateVNode kiev/transf/TemplatVNode.xml bad
+METATYPE kievvlangGlobals kiev/vlang/Globals.java bad
 METATYPE kievvlangNodeSpace kiev/vlang/MetaTypes.java bad
 SYNTAX kievSyntax kiev/Syntax kiev/Syntax.java
 SYNTAX kievstdlibSyntax kiev/stdlib/Syntax kiev/stdlib/Syntax.java

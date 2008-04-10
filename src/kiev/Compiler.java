@@ -339,7 +339,7 @@ public class Compiler {
 	public static PrintStream		system_out = System.out;
 	public static PrintStream		system_err = System.err;
 
-	public static final String version = "SymADE (v 0.40), (C) UAB MAKSINETA, 1997-2007, http://symade.com";
+	public static final String version = "SymADE (v 0.50), (C) UAB MAKSINETA, 1997-2008, http://symade.com";
 
 	public static boolean debug					= false;
 	public static boolean debugStatGen			= false;

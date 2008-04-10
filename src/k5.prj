@@ -250,7 +250,7 @@ CLASS kievparserEToken kiev/parser/EToken kiev/parser/EToken.java
 CLASS kievparserOpdef kiev/parser/Opdef kiev/parser/Opdef.java
 CLASS kievparserParseError kiev/parser/ParseError kiev/parser/ParseError.java
 CLASS kievparserParseException kiev/parser/ParseException kiev/parser/ParseException.java
-CLASS kievparserParser kiev/parser/Parser kiev/parser/kiev040.java
+CLASS kievparserParser kiev/parser/Parser kiev/parser/kiev050.java
 CLASS kievparserPrescannedBody kiev/parser/PrescannedBody kiev/parser/PrescannedBody.java
 CLASS kievparserSimpleCharStream kiev/parser/SimpleCharStream kiev/parser/SimpleCharStream.java
 CLASS kievparserToken kiev/parser/Token kiev/parser/Token.java
@@ -259,8 +259,8 @@ CLASS kievparserUnresCallExpr kiev/parser/UnresCallExpr kiev/parser/TempExpr.j
 CLASS kievparserUnresExpr kiev/parser/UnresExpr kiev/parser/TempExpr.java
 CLASS kievparserUnresOpExpr kiev/parser/UnresOpExpr kiev/parser/TempExpr.java
 CLASS kievparserUnresSeqs kiev/parser/UnresSeqs kiev/parser/TempExpr.java
-CLASS kievparserkiev040 kiev/parser/kiev040 kiev/parser/kiev040.java
-CLASS kievparserkiev040TokenManager kiev/parser/kiev040TokenManager kiev/parser/kiev040TokenManager.java
+CLASS kievparserkiev050 kiev/parser/kiev050 kiev/parser/kiev050.java
+CLASS kievparserkiev050TokenManager kiev/parser/kiev050TokenManager kiev/parser/kiev050TokenManager.java
 CLASS kievstdlibArrayEnumerator kiev/stdlib/ArrayEnumerator kiev/stdlib/ArrayEnumerator.java
 CLASS kievstdlibArrays kiev/stdlib/Arrays kiev/stdlib/Arrays.java
 CLASS kievstdlibAssertionFailedException kiev/stdlib/AssertionFailedException kiev/stdlib/Debug.java
@@ -923,9 +923,9 @@ INTERFACE kievirjava15RVar kiev/ir/java15/RVar kiev/ir/java15/RVar.java
 INTERFACE kievirjava15RWBCCondition kiev/ir/java15/RWBCCondition kiev/ir/java15/RMethod.java
 INTERFACE kievirjava15RWhileStat kiev/ir/java15/RWhileStat kiev/ir/java15/RLoopStat.java
 INTERFACE kievirjava15RWithStat kiev/ir/java15/RWithStat kiev/ir/java15/RBlockStat.java
-INTERFACE kievparserParserConstants kiev/parser/ParserConstants kiev/parser/kiev040.java
+INTERFACE kievparserParserConstants kiev/parser/ParserConstants kiev/parser/kiev050.java
 INTERFACE kievparserTokenManager kiev/parser/TokenManager kiev/parser/TokenManager.java
-INTERFACE kievparserkiev040Constants kiev/parser/kiev040Constants kiev/parser/kiev040Constants.java
+INTERFACE kievparserkiev050Constants kiev/parser/kiev050Constants kiev/parser/kiev050Constants.java
 INTERFACE kievstdlibAssertionHandler kiev/stdlib/AssertionHandler kiev/stdlib/Debug.java
 INTERFACE kievstdlibEnumeration kiev/stdlib/Enumeration kiev/stdlib/Enumeration.java
 INTERFACE kievstdlibTypeInfoInterface kiev/stdlib/TypeInfoInterface kiev/stdlib/TypeInfo.java
