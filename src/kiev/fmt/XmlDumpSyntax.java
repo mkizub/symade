@@ -24,8 +24,8 @@ public class SyntaxXmlStrAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawXmlStrTerm(node, this, attr_syntax, text_syntax, name);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawXmlStrTerm(node, this, text_syntax, name);
 		return dr;
 	}
 }
@@ -39,8 +39,8 @@ public class SyntaxXmlTypeAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawXmlTypeTerm(node, this, attr_syntax, text_syntax, name);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawXmlTypeTerm(node, this, text_syntax, name);
 		return dr;
 	}
 }

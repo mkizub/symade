@@ -98,11 +98,6 @@ public final class DrawContext implements Cloneable {
 
 	public DrawContext pushDrawable(Drawable dr) {
 		SymbolRef<AParagraphLayout> pl = null;
-		if (dr.attr_syntax != null) {
-			pl = dr.attr_syntax.par;
-			if (pl != null && pl.dnode != null)
-				this = pushParagraph(dr, pl.dnode);
-		}
 		if (dr.syntax != null) {
 			if (dr.syntax instanceof SyntaxList) {
 				if (dr instanceof DrawWrapList)
@@ -128,11 +123,6 @@ public final class DrawContext implements Cloneable {
 			} else {
 				pl = dr.syntax.par;
 			}
-			if (pl != null && pl.dnode != null)
-				this = popParagraph(dr, pl.dnode, save);
-		}
-		if (dr.attr_syntax != null) {
-			pl = dr.attr_syntax.par;
 			if (pl != null && pl.dnode != null)
 				this = popParagraph(dr, pl.dnode, save);
 		}
@@ -266,28 +256,12 @@ public final class DrawContext implements Cloneable {
 			if (si.from_attempt <= 1)
 				collectSpaceInfo(si,space_infos_1);
 		}
-		if (dr.attr_syntax == null)
-			return;
-		foreach (LayoutSpace si; dr.attr_syntax.lout.spaces_before) {
-			if (si.from_attempt <= 0)
-				collectSpaceInfo(si,space_infos);
-			if (si.from_attempt <= 1)
-				collectSpaceInfo(si,space_infos_1);
-		}
 	}
 	
 	public void processSpaceAfter(Drawable dr) {
 		if (!update_spaces)
 			return;
 		foreach (LayoutSpace si; dr.syntax.lout.spaces_after) {
-			if (si.from_attempt <= 0)
-				collectSpaceInfo(si,space_infos);
-			if (si.from_attempt <= 1)
-				collectSpaceInfo(si,space_infos_1);
-		}
-		if (dr.attr_syntax == null)
-			return;
-		foreach (LayoutSpace si; dr.attr_syntax.lout.spaces_after) {
 			if (si.from_attempt <= 0)
 				collectSpaceInfo(si,space_infos);
 			if (si.from_attempt <= 1)

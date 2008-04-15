@@ -38,8 +38,8 @@ public class SyntaxJavaAccessExpr extends SyntaxElem {
 
 	public SyntaxJavaAccessExpr() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaAccessExpr(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawJavaAccessExpr(node, this, text_syntax);
 		return dr;
 	}
 }
@@ -50,8 +50,8 @@ public class SyntaxJavaAccess extends SyntaxElem {
 
 	public SyntaxJavaAccess() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaAccess(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawJavaAccess(node, this, text_syntax);
 		return dr;
 	}
 }
@@ -62,8 +62,8 @@ public class SyntaxJavaPackedField extends SyntaxElem {
 
 	public SyntaxJavaPackedField() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaPackedField(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawJavaPackedField(node, this, text_syntax);
 		return dr;
 	}
 }
@@ -79,8 +79,8 @@ public class SyntaxJavaComment extends SyntaxElem {
 		this.template = new SymbolRef<SyntaxJavaCommentTemplate>();
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaComment(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawJavaComment(node, this, text_syntax);
 		return dr;
 	}
 
@@ -113,8 +113,8 @@ public class SyntaxJavaConstructorName extends SyntaxElem {
 
 	public SyntaxJavaConstructorName() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawJavaConstructorName(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawJavaConstructorName(node, this, text_syntax);
 		return dr;
 	}
 }

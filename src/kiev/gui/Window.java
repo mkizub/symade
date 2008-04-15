@@ -65,6 +65,7 @@ public class Window extends JFrame implements ActionListener, FocusListener {
 	Component	cur_component;
 
 	public Window() {
+		super("SymADE");
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		JMenuBar menuBar = new JMenuBar();
 		JMenu menu;

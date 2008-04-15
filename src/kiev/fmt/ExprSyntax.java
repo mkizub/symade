@@ -52,10 +52,10 @@ public class SyntaxExpr extends SyntaxElem {
 			return true;
 		return false;
 	}
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
 		if (node instanceof ENode && node.getOp() != null)
-			return fmt.getDrawable(node, null, null, text_syntax);
-		return new DrawLispExpr(node, this, attr_syntax, text_syntax);
+			return fmt.getDrawable(node, null, text_syntax);
+		return new DrawLispExpr(node, this, text_syntax);
 	}
 
 	public void preResolveOut() {
@@ -112,7 +112,7 @@ public class SyntaxAutoParenth extends SyntaxElem {
 		return attr.check(cont, curr_dr, expected_node);
 	}
 	
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
 		Object obj;
 		if (attr instanceof SyntaxNode) {
 			obj = node;
@@ -123,9 +123,9 @@ public class SyntaxAutoParenth extends SyntaxElem {
 		}
 		if (obj instanceof ENode) {
 			if (obj.isPrimaryExpr() || obj.getPriority() < this.priority)
-				return new DrawAutoParenth(node, this, attr_syntax, text_syntax);
+				return new DrawAutoParenth(node, this, text_syntax);
 		}
-		return attr.makeDrawable(fmt, node, attr_syntax, text_syntax);
+		return attr.makeDrawable(fmt, node, text_syntax);
 	}
 
 	public void preResolveOut() {

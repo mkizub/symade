@@ -253,11 +253,8 @@ public class Editor extends InfoView implements KeyListener {
 		if (dr == null)
 			return null;
 		SyntaxElem stx0 = dr.syntax;
-		SyntaxElem stx1 = dr.attr_syntax;
 		Drawable x;
 		if (stx0 instanceof SyntaxAttr && attr.equals(stx0.name))
-			return dr;
-		if (stx1 instanceof SyntaxAttr && attr.equals(stx1.name))
 			return dr;
 		if (stx0 instanceof SyntaxSet && stx0.nested_function_lookup) {
 			foreach (Drawable d; ((DrawNonTerm)dr).args; (x=checkFunctionTarget(attr, d)) != null)
@@ -624,20 +621,10 @@ final class FunctionExecuter implements Runnable {
 							if (((Object[])dr.drnode.getVal(slst.name)).length == 0)
 								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, slst));
 						}
-						else if (dr.attr_syntax instanceof SyntaxList) {
-							SyntaxList slst = (SyntaxList)dr.attr_syntax;
-							if (((Object[])dr.drnode.getVal(slst.name)).length == 0)
-								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, slst));
-						}
 					}
 					else if ("kiev.gui.FuncNewElemOfNull".equals(sf.act)) {
 						if (dr.syntax instanceof SyntaxAttr) {
 							SyntaxAttr satr = (SyntaxAttr)dr.syntax;
-							if (dr.drnode.getVal(satr.name) == null)
-								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, satr));
-						}
-						else if (dr.attr_syntax instanceof SyntaxAttr) {
-							SyntaxAttr satr = (SyntaxAttr)dr.attr_syntax;
 							if (dr.drnode.getVal(satr.name) == null)
 								fe.actions.append(fe.new NewElemAction(sf.title, dr.drnode, satr));
 						}
@@ -651,10 +638,6 @@ final class FunctionExecuter implements Runnable {
 					else if ("kiev.gui.ChooseItemEditor".equals(sf.act)) {
 						if (dr.syntax instanceof SyntaxAttr) {
 							SyntaxAttr satr = (SyntaxAttr)dr.syntax;
-							fe.actions.append(fe.new EditElemAction(sf.title, dr));
-						}
-						else if (dr.attr_syntax instanceof SyntaxAttr) {
-							SyntaxAttr satr = (SyntaxAttr)dr.attr_syntax;
 							fe.actions.append(fe.new EditElemAction(sf.title, dr));
 						}
 					}

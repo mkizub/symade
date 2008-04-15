@@ -22,8 +22,6 @@ public abstract class Drawable extends ANode {
 	private final ANode			_node;
 	// syntax kind & draw layout
 	public final SyntaxElem		syntax;
-	// definer syntax (SyntaxAttr or SyntaxNode, etc) 
-	public final SyntaxElem		attr_syntax;
 	// syntax, which has produced this drawable, to get
 	// sub-nodes in the same syntax
 	public final ATextSyntax	text_syntax;
@@ -33,10 +31,9 @@ public abstract class Drawable extends ANode {
 		return _node;
 	}
 	
-	public Drawable(ANode node, SyntaxElem syntax, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+	public Drawable(ANode node, SyntaxElem syntax, ATextSyntax text_syntax) {
 		this._node = node;
 		this.syntax = syntax;
-		this.attr_syntax = attr_syntax;
 		this.text_syntax = text_syntax;
 	}
 	
@@ -51,7 +48,7 @@ public abstract class Drawable extends ANode {
 
 	public final void preFormat(DrawContext cont, SyntaxElem expected_stx, ANode expected_node) {
 		if (!expected_stx.check(cont, this, expected_node)) {
-			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node, attr_syntax, text_syntax);
+			Drawable dr = expected_stx.makeDrawable(cont.fmt, expected_node, text_syntax);
 			if (!this.isAttached())
 				throw new ChangeRootException(dr);
 			replaceWithNode(dr);

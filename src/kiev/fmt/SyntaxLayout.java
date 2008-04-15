@@ -688,7 +688,7 @@ public abstract class SyntaxElem extends ASTNode {
 
 	public SyntaxElem() {}
 
-	public abstract Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax);
+	public abstract Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax);
 	
 	public void preResolveOut() {
 		if (fmt != null && fmt.name != null && fmt.name != "") {
@@ -811,8 +811,8 @@ public final class SyntaxElemRef extends SyntaxElem {
 		return ((ASyntaxElemDecl)decl.dnode).elem.check(cont, curr_dr, expected_node);
 	}
 	
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		return ((ASyntaxElemDecl)decl.dnode).elem.makeDrawable(fmt,node,attr_syntax,text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		return ((ASyntaxElemDecl)decl.dnode).elem.makeDrawable(fmt,node,text_syntax);
 	}
 
 	public void preResolveOut() {
@@ -864,8 +864,8 @@ public final class SyntaxToken extends SyntaxElem {
 		this.text = text;
 		this.kind = TokenKind.UNKNOWN;
 	}
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawToken(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawToken(node, this, text_syntax);
 		return dr;
 	}
 	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
@@ -887,8 +887,8 @@ public final class SyntaxPlaceHolder extends SyntaxElem {
 	}
 	
 	public SyntaxPlaceHolder() {}
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawPlaceHolder(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawPlaceHolder(node, this, text_syntax);
 		return dr;
 	}
 }
@@ -980,44 +980,8 @@ public class SyntaxSubAttr extends SyntaxAttr {
 		super(name,stx);
 	}
 
-	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
-		Object obj;
-		try {
-			obj = expected_node.getVal(name);
-		} catch (RuntimeException e) {
-			obj = "";
-		}
-		if (obj instanceof ANode) {
-			SyntaxElem se;
-			if (in_syntax.dnode != null)
-				se = in_syntax.dnode.getSyntaxElem((ANode)obj);
-			else
-				se = curr_dr.text_syntax.getSyntaxElem((ANode)obj);
-			return se.check(cont, curr_dr, (ANode)obj);
-		}
-		else if (obj == null && this.empty != null) {
-			return this.empty.check(cont, curr_dr, expected_node);
-		}
-		return super.check(cont, curr_dr, expected_node);
-	}
-	
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr;
-		Object obj;
-		try {
-			obj = node.getVal(name);
-		} catch (RuntimeException e) {
-			obj = "<?error:"+name+"?>";
-		}
-		if (in_syntax.dnode != null)
-			text_syntax = in_syntax.dnode;
-		if (obj instanceof ANode)
-			dr = fmt.getDrawable((ANode)obj, null, this, text_syntax);
-		else if (obj == null && this.empty != null)
-			dr = this.empty.makeDrawable(fmt, node, this, text_syntax);
-		else
-			dr = new DrawNodeTerm(node, this, null, text_syntax, name);
-		return dr;
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		return new DrawSubAttr(node, this, text_syntax);
 	}
 }
 
@@ -1041,14 +1005,14 @@ public class SyntaxList extends SyntaxAttr {
 		this.folded = new SyntaxToken("{?"+name+"?}");
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
 		if (in_syntax.dnode != null)
 			text_syntax = in_syntax.dnode;
 		Drawable dr;
 		if (text_syntax instanceof TreeSyntax || prefix == null && sufix == null && empty == null)
-			dr = new DrawNonTermList(node, this, attr_syntax, text_syntax);
+			dr = new DrawNonTermList(node, this, text_syntax);
 		else
-			dr = new DrawWrapList(node, this, attr_syntax, text_syntax);
+			dr = new DrawWrapList(node, this, text_syntax);
 		return dr;
 	}
 
@@ -1078,8 +1042,8 @@ public class SyntaxIdentAttr extends SyntaxAttr {
 		this.decl = new SymbolRef<SyntaxIdentTemplate>(0,"ident-template");
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawIdent(node, this, attr_syntax, text_syntax, name);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawIdent(node, this, text_syntax, name);
 		return dr;
 	}
 
@@ -1141,8 +1105,8 @@ public class SyntaxCharAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawCharTerm(node, this, attr_syntax, text_syntax, name);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawCharTerm(node, this, text_syntax, name);
 		return dr;
 	}
 }
@@ -1156,8 +1120,8 @@ public class SyntaxStrAttr extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawStrTerm(node, this, attr_syntax, text_syntax, name);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawStrTerm(node, this, text_syntax, name);
 		return dr;
 	}
 }
@@ -1171,8 +1135,8 @@ public class SyntaxSet extends SyntaxElem {
 	@att public boolean			folded_by_default;
 	@att public boolean			nested_function_lookup;
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawNonTermSet(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawNonTermSet(node, this, text_syntax);
 		return dr;
 	}
 }
@@ -1189,19 +1153,8 @@ public class SyntaxNode extends SyntaxAttr {
 		this.in_syntax.symbol = stx;
 	}
 
-	public boolean check(DrawContext cont, Drawable curr_dr, ANode expected_node) {
-		ATextSyntax text_syntax = curr_dr.text_syntax;
-		if (in_syntax.dnode != null)
-			text_syntax = in_syntax.dnode;
-		SyntaxElem se = text_syntax.getSyntaxElem(expected_node);
-		return se.check(cont, curr_dr, expected_node);
-	}
-	
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		if (in_syntax.dnode != null)
-			text_syntax = in_syntax.dnode;
-		Drawable dr = fmt.getDrawable(node, null, this, text_syntax);
-		return dr;
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		return new DrawNode(node, this, text_syntax);
 	}
 }
 
@@ -1245,8 +1198,8 @@ public class SyntaxSwitch extends SyntaxElem {
 		return expected_stx.check(cont,sub_dr,expected_node);
 	}
 	
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		return new DrawSyntaxSwitch(node,this,attr_syntax,text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		return new DrawSyntaxSwitch(node,this,text_syntax);
 	}
 }
 
@@ -1256,8 +1209,8 @@ public class SyntaxSpace extends SyntaxElem {
 
 	public SyntaxSpace() {}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawSpace(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawSpace(node, this, text_syntax);
 		return dr;
 	}
 }
@@ -1517,8 +1470,8 @@ public class SyntaxOptional extends SyntaxElem {
 		this.opt_false = opt_false;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawOptional(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawOptional(node, this, text_syntax);
 		return dr;
 	}
 }
@@ -1534,8 +1487,8 @@ public class SyntaxEnumChoice extends SyntaxAttr {
 		super(name);
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawEnumChoice(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawEnumChoice(node, this, text_syntax);
 		return dr;
 	}
 }
@@ -1555,8 +1508,8 @@ public class SyntaxFolder extends SyntaxElem {
 		this.unfolded = unfolded;
 	}
 
-	public Drawable makeDrawable(Formatter fmt, ANode node, SyntaxElem attr_syntax, ATextSyntax text_syntax) {
-		Drawable dr = new DrawFolded(node, this, attr_syntax, text_syntax);
+	public Drawable makeDrawable(Formatter fmt, ANode node, ATextSyntax text_syntax) {
+		Drawable dr = new DrawFolded(node, this, text_syntax);
 		return dr;
 	}
 }

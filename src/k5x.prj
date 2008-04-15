@@ -141,6 +141,7 @@ CLASS kievfmtDrawJavaConstructorName kiev/fmt/DrawJavaConstructorName kiev/fmt
 CLASS kievfmtDrawJavaPackedField kiev/fmt/DrawJavaPackedField kiev/fmt/DrawJava.java
 CLASS kievfmtDrawLayout kiev/fmt/DrawLayout kiev/fmt/SyntaxLayout.java
 CLASS kievfmtDrawLispExpr kiev/fmt/DrawLispExpr kiev/fmt/DrawExpr.java
+CLASS kievfmtDrawNode kiev/fmt/DrawNode kiev/fmt/DrawCtrl.java
 CLASS kievfmtDrawNodeTerm kiev/fmt/DrawNodeTerm kiev/fmt/DrawTerm.java
 CLASS kievfmtDrawNonTerm kiev/fmt/DrawNonTerm kiev/fmt/DrawNonTerm.java
 CLASS kievfmtDrawNonTermList kiev/fmt/DrawNonTermList kiev/fmt/DrawNonTerm.java
@@ -149,6 +150,7 @@ CLASS kievfmtDrawOptional kiev/fmt/DrawOptional kiev/fmt/DrawCtrl.java
 CLASS kievfmtDrawPlaceHolder kiev/fmt/DrawPlaceHolder kiev/fmt/DrawTerm.java
 CLASS kievfmtDrawSpace kiev/fmt/DrawSpace kiev/fmt/DrawCtrl.java
 CLASS kievfmtDrawStrTerm kiev/fmt/DrawStrTerm kiev/fmt/DrawTerm.java
+CLASS kievfmtDrawSubAttr kiev/fmt/DrawSubAttr kiev/fmt/DrawCtrl.java
 CLASS kievfmtDrawSyntaxSwitch kiev/fmt/DrawSyntaxSwitch kiev/fmt/DrawNonTerm.java
 CLASS kievfmtDrawTerm kiev/fmt/DrawTerm kiev/fmt/DrawTerm.java
 CLASS kievfmtDrawTermLink kiev/fmt/DrawTermLink kiev/fmt/DrawTerm.java
