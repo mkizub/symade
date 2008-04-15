@@ -26,8 +26,8 @@ public final class DrawContext implements Cloneable {
 	public Graphics2D				gfx;
 	public int						width;
 	public int						x, y;
-	public int						cur_attempt, max_attempt;
-	public boolean					new_lines_first_parent;
+	public int						cur_attempt;
+	public boolean					parent_has_more_attempts;
 	public boolean					line_started;
 	public boolean					update_spaces;
 	public Vector<LayoutSpace>		space_infos;
@@ -49,11 +49,10 @@ public final class DrawContext implements Cloneable {
 		return super.clone();
 	}
 
-	public DrawContext pushState(int cur_attempt, int max_attempt) {
+	public DrawContext pushState(int cur_attempt) {
 		DrawContext ctx = (DrawContext)this.clone();
 		ctx.prev_ctx = this;
 		ctx.cur_attempt = cur_attempt;
-		ctx.max_attempt = max_attempt;
 		return ctx;
 	}
 	
@@ -112,7 +111,7 @@ public final class DrawContext implements Cloneable {
 		}
 		return this;
 	}
-	public DrawContext popDrawable(Drawable dr, boolean save) {
+	public DrawContext popDrawable(Drawable dr) {
 		SymbolRef<AParagraphLayout> pl = null;
 		if (dr.syntax != null) {
 			if (dr.syntax instanceof SyntaxList) {
@@ -124,17 +123,14 @@ public final class DrawContext implements Cloneable {
 				pl = dr.syntax.par;
 			}
 			if (pl != null && pl.dnode != null)
-				this = popParagraph(dr, pl.dnode, save);
+				this = popParagraph(dr, pl.dnode);
 		}
 		return this;
 	}
 	
 	private DrawContext pushParagraph(Drawable dp, AParagraphLayout pl) {
 		DrawContext ctx;
-		if (pl.new_lines_first_parent)
-			ctx = pushState(0,0);
-		else
-			ctx = pushState(cur_attempt,max_attempt);
+		ctx = pushState(cur_attempt);
 		if (pl.enabled(dp)) {
 			int indent = gfx==null ? pl.indent_text_size : pl.indent_pixel_size;
 			if (pl.indent_from_current_position && last_term != null)
@@ -142,21 +138,19 @@ public final class DrawContext implements Cloneable {
 			else
 				indent += this.indent;
 			ctx.indent = indent;
-			ctx.new_lines_first_parent = pl.new_lines_first_parent;
 		}
 		return ctx;
 	}
-	private DrawContext popParagraph(Drawable dp, AParagraphLayout pl, boolean save) {
-		return popState(save);
+	private DrawContext popParagraph(Drawable dp, AParagraphLayout pl) {
+		return popState(true);
 	}
 	
-	public boolean addLeaf(DrawTerm leaf) {
+	public void addLeaf(DrawTerm leaf) {
 		flushSpaceRequests(leaf);
 		leaf.x = x;
 		x += leaf.w;
 		line_started = false;
 		last_term = leaf;
-		return (x < width);
 	}
 	
 	private void flushSpaceRequests(DrawTerm leaf) {
@@ -169,27 +163,26 @@ public final class DrawContext implements Cloneable {
 		int max_space;
 		int max_nl;
 		if (cur_attempt == 0) {
-			max_space = lnk.space_size_0;
-			max_nl = lnk.newline_size_0;
+			max_space = (lnk.size_0 & 0xFFFF);
+			max_nl = (lnk.size_0 >>> 16);
 		} else {
-			max_space = lnk.space_size_1;
-			max_nl = lnk.newline_size_1;
+			max_space = (lnk.size_1 & 0xFFFF);
+			max_nl = (lnk.size_1 >>> 16);
 		}
 		if (this.line_started)
 			this.x = indent;
 		else
 			this.x += max_space;
 		if (max_nl > 0) {
-			lnk.size = max_nl;
-			if (last_term != null) {
-				last_term.do_newline = true;
-			}
+			lnk.the_size = max_nl;
+			lnk.do_newline = true;
 			if (!this.line_started) {
 				this.line_started = true;
 				this.x = indent;
 			}
 		} else {
-			lnk.size = max_space;
+			lnk.sp_nl_size = max_space;
+			lnk.do_newline = false;
 		}
 	}
 	
@@ -212,8 +205,7 @@ public final class DrawContext implements Cloneable {
 			else
 				max_space = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_space);
 		}
-		lnk.space_size_0 = max_space;
-		lnk.newline_size_0 = max_nl;
+		lnk.size_0 = (max_nl << 16) | (max_space & 0xFFFF);
 		space_infos.removeAllElements();
 
 		max_space = 0;
@@ -224,9 +216,10 @@ public final class DrawContext implements Cloneable {
 			else
 				max_space = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_space);
 		}
-		lnk.space_size_1 = max_space;
-		lnk.newline_size_1 = max_nl;
+		lnk.size_1 = (max_nl << 16) | (max_space & 0xFFFF);
 		space_infos_1.removeAllElements();
+		
+		lnk.sp_nl_size = 0;
 	}
 
 	private void collectSpaceInfo(LayoutSpace sc, Vector<LayoutSpace> space_infos) {

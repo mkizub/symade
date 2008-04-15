@@ -16,17 +16,17 @@ import syntax kiev.Syntax;
 public class DrawTermLink {
 	public final DrawTerm prev;
 	public final DrawTerm next;
-	public int space_size_0;
-	public int newline_size_0;
-	public int space_size_1;
-	public int newline_size_1;
+	public int size_0;
+	public int size_1;
 
-	public int size; // active newline or spacesize
+	public int sp_nl_size; // active newline or spacesize
+	@packed:30,sp_nl_size,0  public int the_size;
+	@packed: 1,sp_nl_size,30 public boolean do_newline;
 
 	DrawTermLink(DrawTerm prev, DrawTerm next) {
 		this.prev = prev;
 		this.next = next;
-		this.size = -1;
+		this.sp_nl_size = -1;
 	}
 }
 
@@ -44,8 +44,6 @@ public abstract class DrawTerm extends Drawable {
 	public		int		h;
 	@packed:8,_metric,20
 	public		int		b;
-	@packed:1,_metric,30
-	public		boolean	do_newline; // used by formatter to mark actual new-lines after a DrawTerm
 	@packed:1,_metric,31
 	public		boolean	hidden_as_auto_generated;
 	
@@ -58,6 +56,12 @@ public abstract class DrawTerm extends Drawable {
 		text = _uninitialized_;
 	}
 	
+	@getter public final boolean get$do_newline() {
+		if (lnk_prev != null)
+			return lnk_prev.do_newline;
+		return false;
+	}
+	
 	public boolean isUnvisible() {
 		return hidden_as_auto_generated;
 	}  
@@ -66,8 +70,7 @@ public abstract class DrawTerm extends Drawable {
 	public DrawTerm getLastLeaf()  { return isUnvisible() ? null : this; }
 
 	public final int getMaxLayout() {
-		int max_layout = syntax.lout.count;
-		return max_layout;
+		return syntax.lout.count;
 	}
 
 	private boolean textIsUpToDate(String txt) {
@@ -134,7 +137,7 @@ public abstract class DrawTerm extends Drawable {
 				// check we are linked correctly
 				assert(plnk != null && plnk.prev == prev && plnk.next == this);
 				// fill spaces if it's a new link
-				if (plnk.size < 0) {
+				if (plnk.sp_nl_size < 0) {
 					cont.processSpaceBefore(this);
 					cont.flushSpace(lnk_prev);
 				}
@@ -166,14 +169,15 @@ public abstract class DrawTerm extends Drawable {
 		}
 		plnk = this.lnk_next;
 		// fill spaces if it's a new link
-		if (plnk != null && plnk.size < 0) {
+		if (plnk != null && plnk.sp_nl_size < 0) {
 			cont.update_spaces = true;
 			cont.processSpaceAfter(this);
 		}
 	}
 	public static void lnkVerify(DrawTerm dt) {
-/*		assert(dt.getPrevLeaf() == null);
+		assert(dt.getPrevLeaf() == null);
 		assert(dt.lnk_prev == null);
+		assert(!dt.isUnvisible());
 		while (dt.getNextLeaf()!=null) {
 			assert(dt.lnk_next != null);
 			assert(dt.lnk_next.next != null);
@@ -182,20 +186,20 @@ public abstract class DrawTerm extends Drawable {
 			assert(dt.getNextLeaf() == dt.lnk_next.next);
 			assert(dt.lnk_next.next.getPrevLeaf() == dt);
 			dt = dt.getNextLeaf();
+			assert(!dt.isUnvisible());
 		}
 		assert(dt.lnk_next == null);
-*/	}
+	}
 
-	public final boolean postFormat(DrawContext context) {
-		this.do_newline = false;
+	public final void postFormat(DrawContext context) {
+		if (this.isUnvisible())
+			return;
 		context = context.pushDrawable(this);
-		boolean fits = true;
 		try {
 			context.addLeaf(this);
 		} finally {
-			context.popDrawable(this, fits);
+			context.popDrawable(this);
 		}
-		return fits;
 	}
 
 	public String getPrefix() { return ""; }	

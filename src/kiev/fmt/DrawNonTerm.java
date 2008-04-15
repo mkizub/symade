@@ -71,50 +71,44 @@ public abstract class DrawNonTerm extends Drawable {
 		cont.processSpaceAfter(this);
 	}
 
-	public final boolean postFormat(DrawContext context) {
+	public final void postFormat(DrawContext context) {
 		context = context.pushDrawable(this);
-		boolean fits = true;
 		try {
-			if (max_layout <= 0 || context.new_lines_first_parent) {
+			if (max_layout <= 0 || context.parent_has_more_attempts) {
 				for (int j=0; j < args.length; j++) {
 					Drawable dr = args[j];
 					if (dr.isUnvisible())
 						continue;
-					fits &= dr.postFormat(context);
+					dr.postFormat(context);
 				}
-				return fits;
 			} else {
-				// for each possible layout. assign it to all sub-components
-				// and try to layout them;
+				// for each possible layout. assign it to all sub-components and try to layout them
 			next_layout:
 				for (int i=0; i <= this.max_layout; i++) {
-					context = context.pushState(i, this.max_layout);
-					boolean save = false;
-					fits = true;
+					context = context.pushState(i);
+					boolean last = (i == this.max_layout);
+					if (!last && !context.parent_has_more_attempts)
+						context.parent_has_more_attempts = true;
 					try {
-						boolean last = (i == this.max_layout);
-						fits = (context.x < context.width);
 						for (int j=0; j < args.length; j++) {
 							Drawable dr = args[j];
 							if (dr.isUnvisible())
 								continue;
-							fits &= dr.postFormat(context);
-							if (!fits && !last)
+							dr.postFormat(context);
+							if (!last && context.x < context.width)
 								continue next_layout;
 						}
-						save = true;
+						last = true;
+						return;
 					} finally {
-						context = context.popState(save); 
+						context = context.popState(last); 
 					}
-					return fits;
 				}
 			}
 		} finally {
-			context.popDrawable(this, fits);
+			context.popDrawable(this);
 		}
-		return true;
 	}
-
 }
 
 @node(copyable=false)

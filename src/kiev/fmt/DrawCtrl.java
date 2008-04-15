@@ -39,10 +39,7 @@ public class DrawCtrl extends Drawable {
 	}
 
 	public final int getMaxLayout() {
-		int max_layout = syntax.lout.count;
-		if (arg != null)
-			max_layout = Math.max(max_layout, arg.getMaxLayout());
-		return max_layout;
+		return syntax.lout.count;
 	}
 
 	public void lnkFormat(DrawContext cont) {
@@ -54,16 +51,15 @@ public class DrawCtrl extends Drawable {
 		cont.processSpaceAfter(this);
 	}
 
-	public boolean postFormat(DrawContext context) {
-		context = context.pushDrawable(this);
-		boolean fits = true;
-		try {
-			if (arg != null)
-				fits = arg.postFormat(context);
-		} finally {
-			context.popDrawable(this, fits);
+	public void postFormat(DrawContext context) {
+		if (arg != null) {
+			context = context.pushDrawable(this);
+			try {
+				arg.postFormat(context);
+			} finally {
+				context.popDrawable(this);
+			}
 		}
-		return fits;
 	}
 
 }
