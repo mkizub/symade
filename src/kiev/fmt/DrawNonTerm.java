@@ -62,7 +62,7 @@ public abstract class DrawNonTerm extends Drawable {
 			max_layout = Math.max(max_layout, dr.getMaxLayout());
 	}
 
-	public final void lnkFormat(DrawContext cont) {
+	public final void lnkFormat(DrawLinkContext cont) {
 		if (this.isUnvisible())
 			return;
 		cont.processSpaceBefore(this);
@@ -71,39 +71,14 @@ public abstract class DrawNonTerm extends Drawable {
 		cont.processSpaceAfter(this);
 	}
 
-	public final void postFormat(DrawContext context) {
+	public final void postFormat(DrawLayoutBlock context) {
 		context = context.pushDrawable(this);
 		try {
-			if (max_layout <= 0 || context.parent_has_more_attempts) {
-				for (int j=0; j < args.length; j++) {
-					Drawable dr = args[j];
-					if (dr.isUnvisible())
-						continue;
-					dr.postFormat(context);
-				}
-			} else {
-				// for each possible layout. assign it to all sub-components and try to layout them
-			next_layout:
-				for (int i=0; i <= this.max_layout; i++) {
-					context = context.pushState(i);
-					boolean last = (i == this.max_layout);
-					if (!last && !context.parent_has_more_attempts)
-						context.parent_has_more_attempts = true;
-					try {
-						for (int j=0; j < args.length; j++) {
-							Drawable dr = args[j];
-							if (dr.isUnvisible())
-								continue;
-							dr.postFormat(context);
-							if (!last && context.x < context.width)
-								continue next_layout;
-						}
-						last = true;
-						return;
-					} finally {
-						context = context.popState(last); 
-					}
-				}
+			for (int j=0; j < args.length; j++) {
+				Drawable dr = args[j];
+				if (dr.isUnvisible())
+					continue;
+				dr.postFormat(context);
 			}
 		} finally {
 			context.popDrawable(this);

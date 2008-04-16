@@ -175,8 +175,7 @@ final class ANodeTreeModel implements TreeModel {
 		if (nt.draw_folded) {
 			nt.draw_folded = false;
 			//tree_view.formatter.format(nt.drnode, nt);
-			DrawContext ctx = new DrawContext(tree_view.formatter,null);
-			ctx.width = 1000;
+			DrawContext ctx = new DrawContext(tree_view.formatter,null,1000);
 			Drawable root = tree_view.formatter.getDrawable(nt.drnode, nt, tree_view.getSyntax());
 			root.preFormat(ctx, root.syntax, nt.drnode);
 		}

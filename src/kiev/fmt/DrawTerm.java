@@ -123,7 +123,7 @@ public abstract class DrawTerm extends Drawable {
 		lnk.prev.lnk_next = null;
 		lnk.next.lnk_prev = null;
 	}
-	public final void lnkFormat(DrawContext cont) {
+	public final void lnkFormat(DrawLinkContext cont) {
 		if (this.isUnvisible())
 			return;
 		DrawTermLink plnk = this.lnk_prev;
@@ -170,7 +170,7 @@ public abstract class DrawTerm extends Drawable {
 		plnk = this.lnk_next;
 		// fill spaces if it's a new link
 		if (plnk != null && plnk.sp_nl_size < 0) {
-			cont.update_spaces = true;
+			cont.requestSpacesUpdate();
 			cont.processSpaceAfter(this);
 		}
 	}
@@ -191,15 +191,10 @@ public abstract class DrawTerm extends Drawable {
 		assert(dt.lnk_next == null);
 	}
 
-	public final void postFormat(DrawContext context) {
+	public final void postFormat(DrawLayoutBlock context) {
 		if (this.isUnvisible())
 			return;
-		context = context.pushDrawable(this);
-		try {
-			context.addLeaf(this);
-		} finally {
-			context.popDrawable(this);
-		}
+		context.addLeaf(this);
 	}
 
 	public String getPrefix() { return ""; }	

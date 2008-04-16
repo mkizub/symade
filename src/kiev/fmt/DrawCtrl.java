@@ -42,7 +42,7 @@ public class DrawCtrl extends Drawable {
 		return syntax.lout.count;
 	}
 
-	public void lnkFormat(DrawContext cont) {
+	public void lnkFormat(DrawLinkContext cont) {
 		if (this.isUnvisible())
 			return;
 		cont.processSpaceBefore(this);
@@ -51,7 +51,7 @@ public class DrawCtrl extends Drawable {
 		cont.processSpaceAfter(this);
 	}
 
-	public void postFormat(DrawContext context) {
+	public void postFormat(DrawLayoutBlock context) {
 		if (arg != null) {
 			context = context.pushDrawable(this);
 			try {

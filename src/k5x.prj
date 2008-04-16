@@ -140,6 +140,8 @@ CLASS kievfmtDrawJavaComment kiev/fmt/DrawJavaComment kiev/fmt/DrawJava.java
 CLASS kievfmtDrawJavaConstructorName kiev/fmt/DrawJavaConstructorName kiev/fmt/DrawJava.java
 CLASS kievfmtDrawJavaPackedField kiev/fmt/DrawJavaPackedField kiev/fmt/DrawJava.java
 CLASS kievfmtDrawLayout kiev/fmt/DrawLayout kiev/fmt/SyntaxLayout.java
+CLASS kievfmtDrawLayoutBlock kiev/fmt/DrawLayoutBlock kiev/fmt/DrawContext.java
+CLASS kievfmtDrawLinkContext kiev/fmt/DrawLinkContext kiev/fmt/DrawContext.java
 CLASS kievfmtDrawLispExpr kiev/fmt/DrawLispExpr kiev/fmt/DrawExpr.java
 CLASS kievfmtDrawNode kiev/fmt/DrawNode kiev/fmt/DrawCtrl.java
 CLASS kievfmtDrawNodeTerm kiev/fmt/DrawNodeTerm kiev/fmt/DrawTerm.java

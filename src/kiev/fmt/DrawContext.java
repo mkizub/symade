@@ -22,24 +22,19 @@ import java.awt.geom.Rectangle2D;
 
 public final class DrawContext implements Cloneable {
 	
-	public Formatter				fmt;
-	public Graphics2D				gfx;
-	public int						width;
-	public int						x, y;
-	public int						cur_attempt;
-	public boolean					parent_has_more_attempts;
-	public boolean					line_started;
-	public boolean					update_spaces;
-	public Vector<LayoutSpace>		space_infos;
-	public Vector<LayoutSpace>		space_infos_1;
-	public int						indent;
-	private DrawTerm				last_term;
+	public final Formatter				fmt;
+	public final Graphics2D				gfx;
+	public final Font					default_font;
+	private int						width;
+	private int						x, y, max_x;
+	private boolean					parent_has_more_attempts;
+	private boolean					line_started;
 	private DrawContext				prev_ctx;
-	private Font					default_font;
 	
-	public DrawContext(Formatter fmt, Graphics2D gfx) {
+	public DrawContext(Formatter fmt, Graphics2D gfx, int width) {
 		this.fmt = fmt;
 		this.gfx = gfx;
+		this.width = width;
 		line_started = true;
 		if (gfx != null)
 			default_font = new Font("Dialog", Font.PLAIN, 12);
@@ -49,20 +44,20 @@ public final class DrawContext implements Cloneable {
 		return super.clone();
 	}
 
-	public DrawContext pushState(int cur_attempt) {
+	private DrawContext pushState() {
 		DrawContext ctx = (DrawContext)this.clone();
 		ctx.prev_ctx = this;
-		ctx.cur_attempt = cur_attempt;
+		ctx.max_x = this.x;
 		return ctx;
 	}
 	
-	public DrawContext popState(boolean save) {
+	private DrawContext popState(boolean save) {
 		DrawContext ctx = prev_ctx;
 		if (save) {
 			ctx.x = this.x;
 			ctx.y = this.y;
+			ctx.max_x = this.max_x;
 			ctx.line_started = this.line_started;
-			ctx.last_term = this.last_term;
 		}
 		return ctx;
 	}
@@ -95,65 +90,60 @@ public final class DrawContext implements Cloneable {
 		this.x += dr.w;
 	}
 
-	public DrawContext pushDrawable(Drawable dr) {
-		SymbolRef<AParagraphLayout> pl = null;
-		if (dr.syntax != null) {
-			if (dr.syntax instanceof SyntaxList) {
-				if (dr instanceof DrawWrapList)
-					pl = dr.syntax.par;
-				else
-					pl = ((SyntaxList)dr.syntax).elpar;
+	public void postFormat(DrawLayoutBlock dlb, int indent) {
+		AParagraphLayout pl = dlb.par;
+		if (pl != null) {
+			int pl_indent = gfx==null ? pl.indent_text_size : pl.indent_pixel_size;
+			if (pl.indent_from_current_position) {
+				indent = pl_indent + this.x;
 			} else {
-				pl = dr.syntax.par;
+				indent += pl_indent;
 			}
-			if (pl != null && pl.dnode != null)
-				this = pushParagraph(dr, pl.dnode);
 		}
-		return this;
-	}
-	public DrawContext popDrawable(Drawable dr) {
-		SymbolRef<AParagraphLayout> pl = null;
-		if (dr.syntax != null) {
-			if (dr.syntax instanceof SyntaxList) {
-				if (dr instanceof DrawWrapList)
-					pl = dr.syntax.par;
+		DrawContext ctx = null;
+	next_layot:
+		for (int i=0; i <= dlb.max_layout; i++) {
+			ctx = this.pushState();
+			boolean last = (i >= dlb.max_layout);
+			if (!last)
+				ctx.parent_has_more_attempts = true;
+			foreach (DrawLayoutBlock b; dlb.blocks) {
+				if (b.dr instanceof DrawTerm)
+					ctx.addLeaf((DrawTerm)b.dr, i, indent);
 				else
-					pl = ((SyntaxList)dr.syntax).elpar;
-			} else {
-				pl = dr.syntax.par;
+					ctx.postFormat(b, indent);
+				if (ctx.max_x >= ctx.width) {
+					if (this.parent_has_more_attempts) {
+						// overflow, try parent's next layout
+						break next_layot;
+					}
+					else if (!last) {
+						// overflow, try our's next layout
+						continue next_layot;
+					}
+					else if (last) {
+						// overflow, there are no more layouts in the parent and in this block
+						ctx.popState(true);
+						this.max_x = ctx.width - 1; // erase the overflow
+						continue;
+					}
+				}
 			}
-			if (pl != null && pl.dnode != null)
-				this = popParagraph(dr, pl.dnode);
+			break;
 		}
-		return this;
+		ctx.popState(true);
+		return;
 	}
-	
-	private DrawContext pushParagraph(Drawable dp, AParagraphLayout pl) {
-		DrawContext ctx;
-		ctx = pushState(cur_attempt);
-		if (pl.enabled(dp)) {
-			int indent = gfx==null ? pl.indent_text_size : pl.indent_pixel_size;
-			if (pl.indent_from_current_position && last_term != null)
-				indent += last_term.x + last_term.w;
-			else
-				indent += this.indent;
-			ctx.indent = indent;
-		}
-		return ctx;
-	}
-	private DrawContext popParagraph(Drawable dp, AParagraphLayout pl) {
-		return popState(true);
-	}
-	
-	public void addLeaf(DrawTerm leaf) {
-		flushSpaceRequests(leaf);
+
+	public void addLeaf(DrawTerm leaf, int cur_attempt, int indent) {
+		flushSpaceRequests(leaf, cur_attempt, indent);
 		leaf.x = x;
 		x += leaf.w;
+		max_x = Math.max(max_x, x);
 		line_started = false;
-		last_term = leaf;
 	}
 	
-	private void flushSpaceRequests(DrawTerm leaf) {
+	private void flushSpaceRequests(DrawTerm leaf, int cur_attempt, int indent) {
 		DrawTermLink lnk = leaf.lnk_prev;
 		if (lnk == null) {
 			this.x = indent;
@@ -185,6 +175,22 @@ public final class DrawContext implements Cloneable {
 			lnk.do_newline = false;
 		}
 	}
+}
+
+public final class DrawLinkContext {
+	
+	private final boolean					gfx;
+	private final Vector<LayoutSpace>		space_infos = new Vector<LayoutSpace>();
+	private final Vector<LayoutSpace>		space_infos_1 = new Vector<LayoutSpace>();
+	private boolean							update_spaces;
+	
+	public DrawLinkContext(boolean gfx) {
+		this.gfx = gfx;
+	}
+	
+	public void requestSpacesUpdate() {
+		update_spaces = true;
+	}
 	
 	// 
 	// calculate the space for DrawTermLink
@@ -201,9 +207,9 @@ public final class DrawContext implements Cloneable {
 		int max_nl = 0;
 		foreach (LayoutSpace csi; space_infos; !csi.eat) {
 			if (csi.new_line)
-				max_nl = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_nl);
+				max_nl = Math.max(gfx ? csi.text_size : csi.pixel_size, max_nl);
 			else
-				max_space = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_space);
+				max_space = Math.max(gfx ? csi.text_size : csi.pixel_size, max_space);
 		}
 		lnk.size_0 = (max_nl << 16) | (max_space & 0xFFFF);
 		space_infos.removeAllElements();
@@ -212,9 +218,9 @@ public final class DrawContext implements Cloneable {
 		max_nl = 0;
 		foreach (LayoutSpace csi; space_infos_1; !csi.eat) {
 			if (csi.new_line)
-				max_nl = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_nl);
+				max_nl = Math.max(gfx ? csi.text_size : csi.pixel_size, max_nl);
 			else
-				max_space = Math.max(gfx==null ? csi.text_size : csi.pixel_size, max_space);
+				max_space = Math.max(gfx ? csi.text_size : csi.pixel_size, max_space);
 		}
 		lnk.size_1 = (max_nl << 16) | (max_space & 0xFFFF);
 		space_infos_1.removeAllElements();
@@ -239,8 +245,6 @@ public final class DrawContext implements Cloneable {
 	}
 	
 	public void processSpaceBefore(Drawable dr) {
-		if (space_infos == null ) space_infos = new Vector<LayoutSpace>();
-		if (space_infos_1 == null ) space_infos_1 = new Vector<LayoutSpace>();
 		if (!update_spaces)
 			return;
 		foreach (LayoutSpace si; dr.syntax.lout.spaces_before) {
@@ -264,4 +268,82 @@ public final class DrawContext implements Cloneable {
 	
 }
 
+@node(copyable=false)
+public final class DrawLayoutBlock extends ANode {
+
+	public static final DrawLayoutBlock[] emptyArray = new DrawLayoutBlock[0];
+
+	@att
+	DrawLayoutBlock[]	blocks;
+	@ref
+	AParagraphLayout	par;
+	@ref
+	Drawable			dr;
+	int					max_layout;
+	
+	public DrawLayoutBlock pushDrawable(Drawable dr) {
+		SymbolRef<AParagraphLayout> pl = null;
+		if (dr.syntax != null) {
+			if (dr.syntax instanceof SyntaxList) {
+				if (dr instanceof DrawWrapList)
+					pl = dr.syntax.par;
+				else
+					pl = ((SyntaxList)dr.syntax).elpar;
+			} else {
+				pl = dr.syntax.par;
+			}
+			if (pl != null && pl.dnode != null)
+				this = pushParagraph(dr, pl.dnode);
+		}
+		return this;
+	}
+	public DrawLayoutBlock popDrawable(Drawable dr) {
+		SymbolRef<AParagraphLayout> pl = null;
+		if (dr.syntax != null) {
+			if (dr.syntax instanceof SyntaxList) {
+				if (dr instanceof DrawWrapList)
+					pl = dr.syntax.par;
+				else
+					pl = ((SyntaxList)dr.syntax).elpar;
+			} else {
+				pl = dr.syntax.par;
+			}
+			if (pl != null && pl.dnode != null)
+				this = popParagraph(dr, pl.dnode);
+		}
+		return this;
+	}
+	
+	private DrawLayoutBlock pushParagraph(Drawable dp, AParagraphLayout pl) {
+		if (pl.enabled(dp)) {
+			DrawLayoutBlock dlb = new DrawLayoutBlock();
+			this.blocks += dlb;
+			dlb.par = pl;
+			dlb.dr = dp;
+			return dlb;
+		}
+		return this;
+	}
+	private DrawLayoutBlock popParagraph(Drawable dp, AParagraphLayout pl) {
+		if (this.dr == dp) {
+			assert (pl.enabled(dp));
+			int max_layout = 0;
+			foreach (DrawLayoutBlock b; blocks)
+				max_layout = Math.max(max_layout, b.max_layout);
+			return (DrawLayoutBlock)parent();
+		}
+		assert (!pl.enabled(dp));
+		return this;
+	}
+	
+	public void addLeaf(DrawTerm leaf) {
+		DrawLayoutBlock dlb = new DrawLayoutBlock();
+		this.blocks += dlb;
+		dlb.dr = leaf;
+		if (leaf.syntax != null && leaf.syntax.par != null && leaf.syntax.par.dnode != null)
+			dlb.par = leaf.syntax.par.dnode;
+		dlb.max_layout = leaf.syntax.lout.count;
+	}
+	
+}
 

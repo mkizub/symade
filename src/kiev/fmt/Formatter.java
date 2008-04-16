@@ -89,29 +89,33 @@ public class TextFormatter extends AbstractFormatter {
 	public TextFormatter() {}
 
 	public Drawable format(ANode node, Drawable dr, ATextSyntax syntax) {
-		DrawContext ctx = new DrawContext(this,null);
-		ctx.width = 1000;
 		Drawable root = getDrawable(node, dr, syntax);
-		try {
-			root.preFormat(ctx, root.syntax, node);
-		} catch (ChangeRootException e) {
-			root = e.dr;
-			root.preFormat(ctx, root.syntax, node);
+		{
+			DrawContext ctx = new DrawContext(this,null,1000);
+			try {
+				root.preFormat(ctx, root.syntax, node);
+			} catch (ChangeRootException e) {
+				root = e.dr;
+				root.preFormat(ctx, root.syntax, node);
+			}
 		}
 		try {
 			// link nodes
-			ctx = new DrawContext(this,null);
-			ctx.width = 1000;
-			root.lnkFormat(ctx);
+			DrawLinkContext dlctx = new DrawLinkContext(false);
+			root.lnkFormat(dlctx);
 			DrawTerm first = root.getFirstLeaf();
 			if (first != null)
 				DrawTerm.lnkVerify(first);
 			else
 				assert(root.getLastLeaf() == null);
 		} catch (Throwable t) { t.printStackTrace(); }
-		ctx = new DrawContext(this,null);
-		ctx.width = 1000;
-		root.postFormat(ctx);
+		{
+			DrawLayoutBlock dlb = new DrawLayoutBlock();
+			root.postFormat(dlb);
+			DrawContext ctx = new DrawContext(this,null,1000);
+			ctx.postFormat(dlb, 0);
+			//root.postFormat(ctx);
+		}
 		
 		int lineno = 1;
 		int line_indent = 0;
@@ -168,29 +172,33 @@ public class GfxFormatter extends AbstractFormatter {
 	}
 
 	public Drawable format(ANode node, Drawable dr, ATextSyntax syntax) {
-		DrawContext ctx = new DrawContext(this,gfx);
-		ctx.width = this.width;
 		Drawable root = getDrawable(node, dr, syntax);
-		try {
-			root.preFormat(ctx, root.syntax, node);
-		} catch (ChangeRootException e) {
-			root = e.dr;
-			root.preFormat(ctx, root.syntax, node);
+		{
+			DrawContext ctx = new DrawContext(this,gfx,this.width);
+			try {
+				root.preFormat(ctx, root.syntax, node);
+			} catch (ChangeRootException e) {
+				root = e.dr;
+				root.preFormat(ctx, root.syntax, node);
+			}
 		}
 		try {
 			// link nodes
-			ctx = new DrawContext(this,gfx);
-			ctx.width = this.width;
-			root.lnkFormat(ctx);
+			DrawLinkContext dlctx = new DrawLinkContext(false);
+			root.lnkFormat(dlctx);
 			DrawTerm first = root.getFirstLeaf();
 			if (first != null)
 				DrawTerm.lnkVerify(first);
 			else
 				assert(root.getLastLeaf() == null);
 		} catch (Throwable t) { t.printStackTrace(); }
-		ctx = new DrawContext(this,gfx);
-		ctx.width = this.width;
-		root.postFormat(ctx);
+		{
+			DrawLayoutBlock dlb = new DrawLayoutBlock();
+			root.postFormat(dlb);
+			DrawContext ctx = new DrawContext(this,gfx,this.width);
+			ctx.postFormat(dlb, 0);
+			//root.postFormat(ctx);
+		}
 		
 		int lineno = 1;
 		int max_h = 10;
