@@ -141,14 +141,16 @@ final class ANodeTreeModel implements TreeModel {
 	void format(TreeView tree_view) {
 		this.tree_view = tree_view;
 		Drawable old_root = tree_view.view_root;
-		tree_view.view_root = tree_view.formatter.format(tree_view.the_root, tree_view.view_root, tree_view.getSyntax());
+		tree_view.formatter.format(tree_view.the_root, tree_view.view_root, tree_view.getSyntax());
+		tree_view.view_root = tree_view.formatter.getRootDrawable();
 		if (tree_view.view_root != old_root)
 			fireTreeStructureChanged(this, new TreePath(tree_view.view_root));
 	}
 
 	void setRoot(TreeView tree_view) {
 		this.tree_view = tree_view;
-		tree_view.view_root = tree_view.formatter.format(tree_view.the_root, null, tree_view.getSyntax());
+		tree_view.formatter.format(tree_view.the_root, null, tree_view.getSyntax());
+		tree_view.view_root = tree_view.formatter.getRootDrawable();
 		fireTreeStructureChanged(this, new TreePath(tree_view.view_root));
 	}
 

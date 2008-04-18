@@ -149,39 +149,34 @@
     <a-node class='kiev.fmt.ParagraphLayout'>
      <indent_text_size>2</indent_text_size>
      <indent_pixel_size>20</indent_pixel_size>
-     <indent_from_current_position>false</indent_from_current_position>
-     <align_right>false</align_right>
-     <align_rest_of_lines_right>false</align_rest_of_lines_right>
-     <new_lines_first_parent>false</new_lines_first_parent>
      <sname>par-indented</sname>
+    </a-node>
+    <a-node class='kiev.fmt.ParagraphLayout'>
+     <next_indent_text_size>4</next_indent_text_size>
+     <next_indent_pixel_size>40</next_indent_pixel_size>
+     <flow>true</flow>
+     <sname>par-indented-flow</sname>
+    </a-node>
+    <a-node class='kiev.fmt.ParagraphLayout'>
+     <indent_from_current_position>true</indent_from_current_position>
+     <flow>true</flow>
+     <sname>par-if-cond</sname>
     </a-node>
     <a-node class='kiev.fmt.ParagraphLayoutBlock'>
      <token_text>{ #{</token_text>
      <indent_text_size>2</indent_text_size>
      <indent_pixel_size>20</indent_pixel_size>
-     <indent_from_current_position>false</indent_from_current_position>
-     <align_right>false</align_right>
-     <align_rest_of_lines_right>false</align_rest_of_lines_right>
-     <new_lines_first_parent>false</new_lines_first_parent>
      <sname>par-indented-block</sname>
     </a-node>
     <a-node class='kiev.fmt.ParagraphLayoutBlock'>
      <token_text>{ if if# #{</token_text>
      <indent_text_size>2</indent_text_size>
      <indent_pixel_size>20</indent_pixel_size>
-     <indent_from_current_position>false</indent_from_current_position>
-     <align_right>false</align_right>
-     <align_rest_of_lines_right>false</align_rest_of_lines_right>
-     <new_lines_first_parent>false</new_lines_first_parent>
      <sname>par-indented-block-if</sname>
     </a-node>
     <a-node class='kiev.fmt.ParagraphLayout'>
      <indent_text_size>-2</indent_text_size>
      <indent_pixel_size>-20</indent_pixel_size>
-     <indent_from_current_position>false</indent_from_current_position>
-     <align_right>false</align_right>
-     <align_rest_of_lines_right>false</align_rest_of_lines_right>
-     <new_lines_first_parent>false</new_lines_first_parent>
      <sname>par-unindented</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawColor'>
@@ -3138,7 +3133,7 @@
          </separator>
          <prefix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;&#x335;</text>
+           <text>&lt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-all</name>
@@ -3148,7 +3143,7 @@
          </prefix>
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&gt;&#x335;</text>
+           <text>&gt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-left</name>
@@ -3510,7 +3505,7 @@
          </separator>
          <prefix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;&#x335;</text>
+           <text>&lt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-all</name>
@@ -3520,7 +3515,7 @@
          </prefix>
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&gt;&#x335;</text>
+           <text>&gt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-left</name>
@@ -4490,7 +4485,7 @@
          </separator>
          <prefix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;&#x335;</text>
+           <text>&lt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-right</name>
@@ -4500,7 +4495,7 @@
          </prefix>
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&gt;&#x335;</text>
+           <text>&gt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-left</name>
@@ -4781,7 +4776,7 @@
          </separator>
          <prefix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;&#x335;</text>
+           <text>&lt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-right</name>
@@ -4791,7 +4786,7 @@
          </prefix>
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&gt;&#x335;</text>
+           <text>&gt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-left</name>
@@ -5097,7 +5092,7 @@
          </separator>
          <prefix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;&#x335;</text>
+           <text>&lt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-right</name>
@@ -5107,7 +5102,7 @@
          </prefix>
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&gt;&#x335;</text>
+           <text>&gt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-left</name>
@@ -6632,7 +6627,7 @@
          </separator>
          <prefix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&lt;&#x335;</text>
+           <text>&lt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-all</name>
@@ -6642,7 +6637,7 @@
          </prefix>
          <sufix>
           <a-node class='kiev.fmt.SyntaxToken'>
-           <text>&gt;&#x335;</text>
+           <text>&gt;̵</text>
            <fmt>
             <a-node class='kiev.vlang.SymbolRef'>
              <name>fmt-separator-eat-all</name>
@@ -10313,6 +10308,11 @@
            </fmt>
           </a-node>
          </empty>
+         <par>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>par-indented-flow</name>
+          </a-node>
+         </par>
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>;</text>
@@ -10379,6 +10379,11 @@
           <a-node class='kiev.fmt.SyntaxSpace'>
           </a-node>
          </empty>
+         <par>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>par-indented-flow</name>
+          </a-node>
+         </par>
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>;</text>
@@ -10781,6 +10786,11 @@
            <name>stx-types-Expr</name>
           </a-node>
          </expected_types>
+         <par>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>par-if-cond</name>
+          </a-node>
+         </par>
         </a-node>
         <a-node class='kiev.fmt.SyntaxToken'>
          <text>)</text>

@@ -61,10 +61,6 @@
     <a-node class='kiev.fmt.ParagraphLayout'>
      <indent_text_size>1</indent_text_size>
      <indent_pixel_size>10</indent_pixel_size>
-     <indent_from_current_position>false</indent_from_current_position>
-     <align_right>false</align_right>
-     <align_rest_of_lines_right>false</align_rest_of_lines_right>
-     <new_lines_first_parent>false</new_lines_first_parent>
      <sname>par-indented</sname>
     </a-node>
    </members>

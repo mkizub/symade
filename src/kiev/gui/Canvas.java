@@ -29,6 +29,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextLayout;
 import java.awt.image.VolatileImage;
@@ -46,16 +47,17 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 	static final Color selectedNodeColor = new Color(224,224,224);
 	static final Font defaultTextFont = new Font("Dialog", Font.PLAIN, 12);
 	
-	JScrollBar	verticalScrollBar;
-	int			imgWidth;
-	int			imgHeight;
+	JScrollBar			verticalScrollBar;
+	int					imgWidth;
+	int					imgHeight;
 	
-	Drawable	root;
-	DrawTerm	current;
-	ANode		current_node;
-	int			first_line;
-	int			num_lines;
-	int			cursor_offset = -1;
+	Drawable			dr_root;
+	DrawLayoutBlock		dlb_root;
+	DrawTerm			current;
+	ANode				current_node;
+	int					first_line;
+	int					num_lines;
+	int					cursor_offset = -1;
 
 	transient VolatileImage vImg;
 	
@@ -108,7 +110,7 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 	}
 	
 	public void draw(Drawable root) {
-		this.root = root;
+		this.dr_root = root;
 	}
 	
 	public VolatileImage createVolatileImage(int w, int h) {
@@ -146,7 +148,7 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 			g.setColor(Color.WHITE);
 			g.fillRect(0, 0, getWidth(), getHeight());
 			//g.clearRect(0, 0, getWidth(), getHeight());
-			if (root != null) {
+			if (dlb_root != null || dr_root != null) {
 				lineno = 1;
 				translated = false;
 				first_visible = null;
@@ -158,7 +160,10 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 				bg_drawed_y = -1;
 				selected = false;
 				//is_editable = true;
-				paint(g, root);
+				if (dlb_root != null)
+					paint(g, dlb_root);
+				else
+					paint(g, dr_root);
 				num_lines = lineno;
 				int visa = 0;
 				if (first_visible != null && last_visible != null) {
@@ -179,6 +184,43 @@ public class Canvas extends JPanel implements DrawDevice, AdjustmentListener {
 		return true;
 	}
 	
+	private Rectangle calcBounds(DrawLayoutBlock n) {
+		if (n.dr instanceof DrawTerm) {
+			DrawTerm dt = (DrawTerm)n.dr;
+			if (dt.lineno < first_line)
+				return null;
+			return new Rectangle(dt.x, dt.y, dt.w, dt.h);
+		} else {
+			Rectangle res = null;
+			foreach (DrawLayoutBlock dlb; n.blocks) {
+				Rectangle r = calcBounds(dlb);
+				if (res == null)
+					res = r;
+				else if (r != null)
+					res = res.union(r);
+			}
+			return res;
+		}
+	}
+
+	private void paint(Graphics2D g, DrawLayoutBlock n) {
+		if (n == null)
+			return;
+		if (n.dr instanceof DrawTerm) {
+			paintLeaf(g, (DrawTerm)n.dr);
+		} else {
+			foreach (DrawLayoutBlock dlb; n.blocks) {
+				paint(g, dlb);
+			}
+			//Rectangle r = calcBounds(n);
+			//if (r != null) {
+			//	g.setColor(Color.BLACK);
+			//	g.drawRect(r.x, r.y, r.width, r.height);
+			//}
+		}
+	}
+
+
 	private void paint(Graphics2D g, Drawable n) {
 		if (n == null || n.isUnvisible())
 			return;

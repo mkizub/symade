@@ -108,29 +108,23 @@
     <a-node class='kiev.fmt.ParagraphLayout'>
      <indent_text_size>4</indent_text_size>
      <indent_pixel_size>20</indent_pixel_size>
-     <indent_from_current_position>false</indent_from_current_position>
-     <align_right>false</align_right>
-     <align_rest_of_lines_right>false</align_rest_of_lines_right>
-     <new_lines_first_parent>false</new_lines_first_parent>
      <sname>par-indent</sname>
     </a-node>
     <a-node class='kiev.fmt.ParagraphLayout'>
      <indent_text_size>4</indent_text_size>
      <indent_pixel_size>20</indent_pixel_size>
-     <indent_from_current_position>false</indent_from_current_position>
-     <align_right>false</align_right>
-     <align_rest_of_lines_right>false</align_rest_of_lines_right>
-     <new_lines_first_parent>false</new_lines_first_parent>
      <sname>par-syntax-body</sname>
     </a-node>
     <a-node class='kiev.fmt.ParagraphLayout'>
      <indent_text_size>4</indent_text_size>
      <indent_pixel_size>20</indent_pixel_size>
-     <indent_from_current_position>false</indent_from_current_position>
-     <align_right>false</align_right>
-     <align_rest_of_lines_right>false</align_rest_of_lines_right>
-     <new_lines_first_parent>false</new_lines_first_parent>
      <sname>par-list-body</sname>
+    </a-node>
+    <a-node class='kiev.fmt.ParagraphLayout'>
+     <next_indent_text_size>4</next_indent_text_size>
+     <next_indent_pixel_size>20</next_indent_pixel_size>
+     <flow>true</flow>
+     <sname>par-flow</sname>
     </a-node>
     <a-node class='kiev.fmt.DrawColor'>
      <rgb_color>16711680</rgb_color>
@@ -1052,6 +1046,9 @@
           </a-node>
          </fmt>
         </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>indent:</text>
+        </a-node>
         <a-node class='kiev.fmt.SyntaxSubAttr'>
          <name>indent_text_size</name>
         </a-node>
@@ -1061,8 +1058,29 @@
         <a-node class='kiev.fmt.SyntaxSubAttr'>
          <name>indent_pixel_size</name>
         </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>next:</text>
+        </a-node>
         <a-node class='kiev.fmt.SyntaxSubAttr'>
-         <name>new_lines_first_parent</name>
+         <name>next_indent_text_size</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>/</text>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>next_indent_pixel_size</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>flow:</text>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>flow</name>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxToken'>
+         <text>from_cur_pos:</text>
+        </a-node>
+        <a-node class='kiev.fmt.SyntaxSubAttr'>
+         <name>indent_from_current_position</name>
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>
@@ -2529,11 +2547,6 @@
            <sufix>
             <a-node class='kiev.fmt.SyntaxToken'>
              <text>}</text>
-             <fmt>
-              <a-node class='kiev.vlang.SymbolRef'>
-               <name>fmt-nl-1++</name>
-              </a-node>
-             </fmt>
             </a-node>
            </sufix>
            <elpar>
@@ -2587,6 +2600,11 @@
              <name>SyntaxEnumChoice</name>
             </a-node>
            </expected_types>
+           <par>
+            <a-node class='kiev.vlang.SymbolRef'>
+             <name>par-flow</name>
+            </a-node>
+           </par>
           </a-node>
          </elements>
          <folded_by_default>false</folded_by_default>
@@ -3186,6 +3204,11 @@
            <name>SymbolRef</name>
           </a-node>
          </expected_types>
+         <par>
+          <a-node class='kiev.vlang.SymbolRef'>
+           <name>par-flow</name>
+          </a-node>
+         </par>
         </a-node>
        </elements>
        <folded_by_default>false</folded_by_default>

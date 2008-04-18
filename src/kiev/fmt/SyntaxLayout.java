@@ -77,6 +77,12 @@ public abstract class ATextSyntax extends DNode implements ScopeOfNames, GlobalD
 		super.callbackDetached();
 	}
 
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "auto_generated_members")
+			return false;
+		return super.includeInDump(dump, attr, val);
+	}
+
 	private void resetNames() {
 		q_name = null;
 		if (members != null) {
@@ -337,14 +343,35 @@ public abstract class AParagraphLayout extends DNode {
 
 	@att int indent_text_size;
 	@att int indent_pixel_size;
+	@att int next_indent_text_size;
+	@att int next_indent_pixel_size;
 	@att boolean indent_from_current_position;
 	@att boolean align_right;
-	@att boolean align_rest_of_lines_right;
-	@att boolean new_lines_first_parent;
+	@att boolean flow;
 	
 	public AParagraphLayout() {}
 
 	public boolean enabled(Drawable dr) { return true; }
+
+	public boolean includeInDump(String dump, AttrSlot attr, Object val) {
+		if (attr.name == "indent_text_size" ||
+			attr.name == "indent_pixel_size" ||
+			attr.name == "next_indent_text_size" ||
+			attr.name == "next_indent_pixel_size"
+		) {
+			if (val instanceof Integer && val.intValue() == 0)
+				return false;
+		}
+		if (attr.name == "indent_from_current_position" ||
+			attr.name == "align_right" ||
+			attr.name == "flow"
+		) {
+			if (val instanceof Boolean && !val.booleanValue())
+				return false;
+		}
+		return super.includeInDump(dump, attr, val);
+	}
+
 }
 
 @node(lang=SyntaxLang)

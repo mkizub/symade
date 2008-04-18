@@ -859,7 +859,7 @@ public final class RenderActions implements Runnable {
 			uiv.setSyntax(uiv.syntax);
 			if (uiv instanceof Editor)
 				((Editor)uiv).cur_elem.set(uiv.view_root.getFirstLeaf());
-			uiv.view_canvas.root = uiv.view_root;
+			//uiv.view_canvas.root = uiv.view_root;
 			uiv.formatAndPaint(false);
 		}
 	}

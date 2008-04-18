@@ -25,11 +25,38 @@ public final class DrawContext implements Cloneable {
 	public final Formatter				fmt;
 	public final Graphics2D				gfx;
 	public final Font					default_font;
-	private int						width;
-	private int						x, y, max_x;
-	private boolean					parent_has_more_attempts;
-	private boolean					line_started;
-	private DrawContext				prev_ctx;
+	private boolean						parent_has_more_attempts;
+	private int							width;
+	private int							x;
+	private int							max_x;
+	private boolean						line_started;
+	private boolean						force_new_line;
+	private boolean						at_flow_break_point;
+	
+	static class Indents implements Cloneable {
+		int cur_indent;
+		int next_indent;
+		
+		Indents makeIndents(AParagraphLayout pl, int cur_x, boolean is_text) {
+			if (pl != null) {
+				Indents i = new Indents();
+				int pl_indent = is_text ? pl.indent_text_size : pl.indent_pixel_size;
+				int pl_next_indent = is_text ? pl.next_indent_text_size : pl.next_indent_pixel_size;
+				if (pl.indent_from_current_position) {
+					i.cur_indent = pl_indent + cur_x;
+					i.next_indent = pl_indent + pl_next_indent + cur_x;
+				} else {
+					i.cur_indent = this.cur_indent + pl_indent;
+					i.next_indent = this.cur_indent + pl_next_indent + pl_indent;
+				}
+				return i;
+			}
+			return this;
+		}
+		public Object clone() {
+			return super.clone();
+		}
+	}
 	
 	public DrawContext(Formatter fmt, Graphics2D gfx, int width) {
 		this.fmt = fmt;
@@ -46,20 +73,18 @@ public final class DrawContext implements Cloneable {
 
 	private DrawContext pushState() {
 		DrawContext ctx = (DrawContext)this.clone();
-		ctx.prev_ctx = this;
 		ctx.max_x = this.x;
 		return ctx;
 	}
 	
-	private DrawContext popState(boolean save) {
-		DrawContext ctx = prev_ctx;
-		if (save) {
-			ctx.x = this.x;
-			ctx.y = this.y;
-			ctx.max_x = this.max_x;
-			ctx.line_started = this.line_started;
+	private void popState(DrawContext prev) {
+		if (prev != null) {
+			prev.x = this.x;
+			prev.max_x = this.max_x;
+			prev.line_started = this.line_started;
+			prev.force_new_line = this.force_new_line;
+			prev.at_flow_break_point = this.at_flow_break_point;
 		}
-		return ctx;
 	}
 
 	public void formatAsText(DrawTerm dr) {
@@ -87,66 +112,130 @@ public final class DrawContext implements Cloneable {
 			dr.h = 1;
 			dr.b = 0;
 		}
-		this.x += dr.w;
 	}
 
-	public void postFormat(DrawLayoutBlock dlb, int indent) {
-		AParagraphLayout pl = dlb.par;
-		if (pl != null) {
-			int pl_indent = gfx==null ? pl.indent_text_size : pl.indent_pixel_size;
-			if (pl.indent_from_current_position) {
-				indent = pl_indent + this.x;
-			} else {
-				indent += pl_indent;
-			}
-		}
-		DrawContext ctx = null;
-	next_layot:
-		for (int i=0; i <= dlb.max_layout; i++) {
-			ctx = this.pushState();
-			boolean last = (i >= dlb.max_layout);
-			if (!last)
-				ctx.parent_has_more_attempts = true;
-			foreach (DrawLayoutBlock b; dlb.blocks) {
-				if (b.dr instanceof DrawTerm)
-					ctx.addLeaf((DrawTerm)b.dr, i, indent);
-				else
-					ctx.postFormat(b, indent);
-				if (ctx.max_x >= ctx.width) {
-					if (this.parent_has_more_attempts) {
-						// overflow, try parent's next layout
-						break next_layot;
-					}
-					else if (!last) {
-						// overflow, try our's next layout
-						continue next_layot;
-					}
-					else if (last) {
-						// overflow, there are no more layouts in the parent and in this block
-						ctx.popState(true);
-						this.max_x = ctx.width - 1; // erase the overflow
-						continue;
+	public void postFormat(DrawLayoutBlock dlb) {
+		this.postFormat(dlb, new Indents());
+	}
+	
+	private void postFormat(DrawLayoutBlock dlb, Indents indents) {
+		if (!dlb.is_flow) {
+		next_layot:
+			for (int i=0; i <= dlb.max_layout; i++) {
+				DrawContext ctx = this.pushState();
+				Indents ctx_indents = indents.makeIndents(dlb.par, this.x, gfx==null);
+				boolean last = (i >= dlb.max_layout);
+				if (!last)
+					ctx.parent_has_more_attempts = true;
+				foreach (DrawLayoutBlock b; dlb.blocks) {
+					if (b.dr instanceof DrawTerm)
+						ctx.addLeaf(b, i, ctx_indents);
+					else
+						ctx.postFormat(b, ctx_indents);
+					if (ctx.max_x >= ctx.width) {
+						if (this.parent_has_more_attempts) {
+							// overflow, try parent's next layout
+							ctx.popState(this);
+							return;
+						}
+						else if (!last) {
+							// overflow, try our's next layout
+							continue next_layot;
+						}
+						else if (last) {
+							// overflow, there are no more layouts in the parent and in this block
+							ctx.popState(this);
+							this.max_x = ctx.width - 1; // erase the overflow
+							continue;
+						}
 					}
 				}
+				ctx.popState(this);
+				break;
 			}
-			break;
+		} else {
+			// savepoint data
+			int save_idx = -1;
+			DrawContext ctx = this.pushState();
+			Indents ctx_indents = indents.makeIndents(dlb.par, this.x, gfx==null);
+			// work data between savepoints
+			DrawContext tmp = ctx.pushState();
+			Indents tmp_indents = (Indents)ctx_indents.clone();
+			// check if the start is a safe point
+			if (!line_started && this.at_flow_break_point) {
+				save_idx = 0;
+				tmp.parent_has_more_attempts = true;
+			}
+			int idx = 0;
+			do {
+				if (idx >= dlb.blocks.length) {
+					// end of scan, save result and return
+					tmp.popState(this);
+					return;
+				}
+				DrawLayoutBlock b = (DrawLayoutBlock)dlb.blocks[idx];
+				if (b.dr instanceof DrawTerm)
+					tmp.addLeaf(b, 0, tmp_indents);
+				else
+					tmp.postFormat(b, tmp_indents);
+				if (tmp.max_x >= tmp.width) {
+					if (this.parent_has_more_attempts) {
+						// overflow, try parent's next layout
+						tmp.popState(this);
+						return;
+					}
+					// if we have a save point behind - use it
+					if (save_idx >= 0) {
+						tmp = ctx.pushState();
+						tmp_indents = (Indents)ctx_indents.clone();
+						tmp.force_new_line = true;
+						idx = save_idx;
+						save_idx = -1; // we've used this savepoint, can't use it again
+						continue;
+					}
+					// erase overflow info and force newline to appear as soon as possible
+					tmp.max_x = tmp.width - 1;
+					tmp.force_new_line = true;
+					// if there was no safe point - continue with overflowed layout
+					idx += 1;
+					continue;
+				} else {
+					// not overflowed, check if this can be a new safe point
+					if (!line_started && tmp.at_flow_break_point) {
+						save_idx = idx + 1;
+						tmp.popState(ctx);
+						ctx_indents = (Indents)tmp_indents.clone();
+						tmp.parent_has_more_attempts = true;
+					}
+					idx += 1;
+					continue;
+				}
+			} while (true);
 		}
-		ctx.popState(true);
-		return;
 	}
 
-	public void addLeaf(DrawTerm leaf, int cur_attempt, int indent) {
-		flushSpaceRequests(leaf, cur_attempt, indent);
+	private void addLeaf(DrawLayoutBlock dlb, int cur_attempt, Indents indents) {
+		indents = indents.makeIndents(dlb.par, this.x, gfx==null);
+		DrawTerm leaf = (DrawTerm)dlb.dr;
+		flushSpaceRequests(leaf, cur_attempt, indents);
 		leaf.x = x;
 		x += leaf.w;
 		max_x = Math.max(max_x, x);
 		line_started = false;
+		indents.cur_indent = indents.next_indent;
+		// check flow break point
+		DrawTermLink lnk = leaf.lnk_next;
+		if (lnk != null) {
+			int max_space = (lnk.size_0 & 0xFFFF);
+			int max_nl = (lnk.size_0 >>> 16);
+			this.at_flow_break_point = (max_space > 0 && max_nl == 0);
+		}
 	}
 	
-	private void flushSpaceRequests(DrawTerm leaf, int cur_attempt, int indent) {
+	private void flushSpaceRequests(DrawTerm leaf, int cur_attempt, Indents indents) {
 		DrawTermLink lnk = leaf.lnk_prev;
 		if (lnk == null) {
-			this.x = indent;
+			this.x = indents.cur_indent;
 			return;
 		}
 		
@@ -160,16 +249,17 @@ public final class DrawContext implements Cloneable {
 			max_nl = (lnk.size_1 >>> 16);
 		}
 		if (this.line_started)
-			this.x = indent;
+			this.x = indents.cur_indent;
 		else
 			this.x += max_space;
-		if (max_nl > 0) {
-			lnk.the_size = max_nl;
+		if (max_nl > 0 || (this.force_new_line && max_space > 0)) {
 			lnk.do_newline = true;
-			if (!this.line_started) {
-				this.line_started = true;
-				this.x = indent;
-			}
+			this.x = indents.cur_indent;
+			this.force_new_line = false;
+			if (max_nl > 0)
+				lnk.the_size = max_nl;
+			else
+				lnk.the_size = 0;
 		} else {
 			lnk.sp_nl_size = max_space;
 			lnk.do_newline = false;
@@ -274,12 +364,13 @@ public final class DrawLayoutBlock extends ANode {
 	public static final DrawLayoutBlock[] emptyArray = new DrawLayoutBlock[0];
 
 	@att
-	DrawLayoutBlock[]	blocks;
+	public DrawLayoutBlock[]	blocks;
 	@ref
-	AParagraphLayout	par;
+	public AParagraphLayout		par;
 	@ref
-	Drawable			dr;
-	int					max_layout;
+	public Drawable				dr;
+	public int					max_layout;		// for block (alternative) layouts
+	public boolean				is_flow;		// for flow blocks
 	
 	public DrawLayoutBlock pushDrawable(Drawable dr) {
 		SymbolRef<AParagraphLayout> pl = null;
@@ -318,8 +409,9 @@ public final class DrawLayoutBlock extends ANode {
 		if (pl.enabled(dp)) {
 			DrawLayoutBlock dlb = new DrawLayoutBlock();
 			this.blocks += dlb;
-			dlb.par = pl;
 			dlb.dr = dp;
+			dlb.par = pl;
+			dlb.is_flow = pl.flow;
 			return dlb;
 		}
 		return this;
@@ -327,9 +419,12 @@ public final class DrawLayoutBlock extends ANode {
 	private DrawLayoutBlock popParagraph(Drawable dp, AParagraphLayout pl) {
 		if (this.dr == dp) {
 			assert (pl.enabled(dp));
-			int max_layout = 0;
-			foreach (DrawLayoutBlock b; blocks)
-				max_layout = Math.max(max_layout, b.max_layout);
+			if (!this.is_flow) {
+				int max_layout = 0;
+				foreach (DrawLayoutBlock b; blocks)
+					max_layout = Math.max(max_layout, b.max_layout);
+				this.max_layout = max_layout;
+			}
 			return (DrawLayoutBlock)parent();
 		}
 		assert (!pl.enabled(dp));
