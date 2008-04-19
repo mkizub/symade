@@ -330,8 +330,6 @@ CLASS kievtransfViewME_PreGenerate kiev/transf/ViewME_PreGenerate kiev/transf/
 CLASS kievtransfVirtFldBE_Rewrite kiev/transf/VirtFldBE_Rewrite kiev/transf/ProcessVirtFld.java
 CLASS kievtransfVirtFldFE_GenMembers kiev/transf/VirtFldFE_GenMembers kiev/transf/ProcessVirtFld.java
 CLASS kievtransfVirtFldME_PreGenerate kiev/transf/VirtFldME_PreGenerate kiev/transf/ProcessVirtFld.java
-CLASS kievvlangANode kiev/vlang/ANode kiev/vlang/AST.java
-CLASS kievvlangASTNode kiev/vlang/ASTNode kiev/vlang/AST.java
 CLASS kievvlangASTNodeEQ kiev/vlang/ASTNodeEQ kiev/vlang/CoreMethod.java
 CLASS kievvlangASTNodeNE kiev/vlang/ASTNodeNE kiev/vlang/CoreMethod.java
 CLASS kievvlangASTRuleNode kiev/vlang/ASTRuleNode kiev/vlang/Rules.java
@@ -339,9 +337,6 @@ CLASS kievvlangAccessExpr kiev/vlang/AccessExpr kiev/vlang/LvalueExpr.java
 CLASS kievvlangAnyInstanceOf kiev/vlang/AnyInstanceOf kiev/vlang/CoreMethod.java
 CLASS kievvlangAssertEnabledExpr kiev/vlang/AssertEnabledExpr kiev/vlang/Expr.java
 CLASS kievvlangAssignExpr kiev/vlang/AssignExpr kiev/vlang/Expr.java
-CLASS kievvlangAttAttrSlot kiev/vlang/AttAttrSlot kiev/vlang/Tree.java
-CLASS kievvlangAttrPtr kiev/vlang/AttrPtr kiev/vlang/Tree.java
-CLASS kievvlangAttrSlot kiev/vlang/AttrSlot kiev/vlang/Tree.java
 CLASS kievvlangBinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev/vlang/BooleanExpr.java
 CLASS kievvlangBinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev/vlang/BooleanExpr.java
 CLASS kievvlangBinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev/vlang/BooleanExpr.java
@@ -375,7 +370,6 @@ CLASS kievvlangCharAssign kiev/vlang/CharAssign kiev/vlang/CoreMethod.java
 CLASS kievvlangClosureCallExpr kiev/vlang/ClosureCallExpr kiev/vlang/CallExpr.java
 CLASS kievvlangCommaExpr kiev/vlang/CommaExpr kiev/vlang/Expr.java
 CLASS kievvlangComment kiev/vlang/Comment kiev/vlang/SNode.java
-CLASS kievvlangCompilerException kiev/vlang/CompilerException kiev/vlang/AST.java
 CLASS kievvlangCondStat kiev/vlang/CondStat kiev/vlang/Statement.java
 CLASS kievvlangConditionalExpr kiev/vlang/ConditionalExpr kiev/vlang/Expr.java
 CLASS kievvlangConstBoolExpr kiev/vlang/ConstBoolExpr kiev/vlang/ConstExpr.java
@@ -397,7 +391,6 @@ CLASS kievvlangCoreExpr kiev/vlang/CoreExpr kiev/vlang/CoreMethod.java
 CLASS kievvlangCoreFunc kiev/vlang/CoreFunc kiev/vlang/CoreMethod.java
 CLASS kievvlangCoreLang kiev/vlang/CoreLang kiev/vlang/Language.java
 CLASS kievvlangCtorCallExpr kiev/vlang/CtorCallExpr kiev/vlang/CallExpr.java
-CLASS kievvlangCurrentVersionInfo kiev/vlang/CurrentVersionInfo kiev/vlang/AST.java
 CLASS kievvlangDFFunc kiev/vlang/DFFunc kiev/vlang/DataFlow.java
 CLASS kievvlangDFLoopException kiev/vlang/DFLoopException kiev/vlang/DataFlow.java
 CLASS kievvlangDFSocket kiev/vlang/DFSocket kiev/vlang/DataFlow.java
@@ -407,7 +400,6 @@ CLASS kievvlangDFSocketSpaceSeq kiev/vlang/DFSocketSpaceSeq kiev/vlang/DataFlo
 CLASS kievvlangDFSocketSpaceUnknown kiev/vlang/DFSocketSpaceUnknown kiev/vlang/DataFlow.java
 CLASS kievvlangDFState kiev/vlang/DFState kiev/vlang/DataFlow.java
 CLASS kievvlangDNode kiev/vlang/DNode kiev/vlang/DNode.java
-CLASS kievvlangDataAttachInfo kiev/vlang/DataAttachInfo kiev/vlang/AST.java
 CLASS kievvlangDataFlowInfo kiev/vlang/DataFlowInfo kiev/vlang/DataFlow.java
 CLASS kievvlangDeclGroup kiev/vlang/DeclGroup kiev/vlang/SNode.java
 CLASS kievvlangDeclGroupCaseFields kiev/vlang/DeclGroupCaseFields kiev/vlang/SNode.java
@@ -439,9 +431,6 @@ CLASS kievvlangDummyDNode kiev/vlang/DummyDNode kiev/vlang/DNode.java
 CLASS kievvlangENode kiev/vlang/ENode kiev/vlang/ENode.java
 CLASS kievvlangEnv kiev/vlang/Env kiev/vlang/Env.java
 CLASS kievvlangExprStat kiev/vlang/ExprStat kiev/vlang/Statement.java
-CLASS kievvlangExtAttAttrSlot kiev/vlang/ExtAttAttrSlot kiev/vlang/Tree.java
-CLASS kievvlangExtAttrSlot kiev/vlang/ExtAttrSlot kiev/vlang/Tree.java
-CLASS kievvlangExtRefAttrSlot kiev/vlang/ExtRefAttrSlot kiev/vlang/Tree.java
 CLASS kievvlangField kiev/vlang/Field kiev/vlang/Var.java
 CLASS kievvlangFileUnit kiev/vlang/FileUnit kiev/vlang/FileUnit.java
 CLASS kievvlangFinallyInfo kiev/vlang/FinallyInfo kiev/vlang/ComplexStatement.java
@@ -621,8 +610,6 @@ CLASS kievvlangParentEnumerator kiev/vlang/ParentEnumerator kiev/vlang/PassInf
 CLASS kievvlangPassInfo kiev/vlang/PassInfo kiev/vlang/PassInfo.java
 CLASS kievvlangPizzaCase kiev/vlang/PizzaCase kiev/vlang/Struct.java
 CLASS kievvlangProjectFile kiev/vlang/ProjectFile kiev/vlang/Env.java
-CLASS kievvlangReWalkNodeException kiev/vlang/ReWalkNodeException kiev/vlang/AST.java
-CLASS kievvlangRefAttrSlot kiev/vlang/RefAttrSlot kiev/vlang/Tree.java
 CLASS kievvlangReinterpExpr kiev/vlang/ReinterpExpr kiev/vlang/LvalueExpr.java
 CLASS kievvlangResInfo kiev/vlang/ResInfo kiev/vlang/Resolving.java
 CLASS kievvlangReturnStat kiev/vlang/ReturnStat kiev/vlang/Statement.java
@@ -654,10 +641,6 @@ CLASS kievvlangShadow kiev/vlang/Shadow kiev/vlang/Expr.java
 CLASS kievvlangShortAssign kiev/vlang/ShortAssign kiev/vlang/CoreMethod.java
 CLASS kievvlangShortNEG kiev/vlang/ShortNEG kiev/vlang/CoreMethod.java
 CLASS kievvlangShortPOS kiev/vlang/ShortPOS kiev/vlang/CoreMethod.java
-CLASS kievvlangSpaceAttAttrSlot kiev/vlang/SpaceAttAttrSlot kiev/vlang/Tree.java
-CLASS kievvlangSpaceAttrSlot kiev/vlang/SpaceAttrSlot kiev/vlang/Tree.java
-CLASS kievvlangSpacePtr kiev/vlang/SpacePtr kiev/vlang/Tree.java
-CLASS kievvlangSpaceRefAttrSlot kiev/vlang/SpaceRefAttrSlot kiev/vlang/Tree.java
 CLASS kievvlangStringAssignADD kiev/vlang/StringAssignADD kiev/vlang/CoreMethod.java
 CLASS kievvlangStringConcat kiev/vlang/StringConcat kiev/vlang/CoreMethod.java
 CLASS kievvlangStringConcatAS kiev/vlang/StringConcatAS kiev/vlang/CoreMethod.java
@@ -676,8 +659,6 @@ CLASS kievvlangSymbolRef kiev/vlang/SymbolRef kiev/vlang/Symbol.java
 CLASS kievvlangSynchronizedStat kiev/vlang/SynchronizedStat kiev/vlang/ComplexStatement.java
 CLASS kievvlangThisExpr kiev/vlang/ThisExpr kiev/vlang/LvalueExpr.java
 CLASS kievvlangThrowStat kiev/vlang/ThrowStat kiev/vlang/Statement.java
-CLASS kievvlangTransaction kiev/vlang/Transaction kiev/vlang/Tree.java
-CLASS kievvlangTreeWalker kiev/vlang/TreeWalker kiev/vlang/AST.java
 CLASS kievvlangTryStat kiev/vlang/TryStat kiev/vlang/ComplexStatement.java
 CLASS kievvlangTypeClassExpr kiev/vlang/TypeClassExpr kiev/vlang/Expr.java
 CLASS kievvlangTypeDecl kiev/vlang/TypeDecl kiev/vlang/DNode.java
@@ -687,7 +668,6 @@ CLASS kievvlangUnaryExpr kiev/vlang/UnaryExpr kiev/vlang/Expr.java
 CLASS kievvlangUnaryFunc kiev/vlang/UnaryFunc kiev/vlang/CoreMethod.java
 CLASS kievvlangUserMeta kiev/vlang/UserMeta kiev/vlang/Meta.java
 CLASS kievvlangVar kiev/vlang/Var kiev/vlang/Var.java
-CLASS kievvlangVersionInfo kiev/vlang/VersionInfo kiev/vlang/AST.java
 CLASS kievvlangWBCCondition kiev/vlang/WBCCondition kiev/vlang/Method.java
 CLASS kievvlangWhileStat kiev/vlang/WhileStat kiev/vlang/LoopStatement.java
 CLASS kievvlangWithStat kiev/vlang/WithStat kiev/vlang/ComplexStatement.java
@@ -722,6 +702,26 @@ CLASS kievvlangtypesTypeRef kiev/vlang/types/TypeRef kiev/vlang/types/TypeRef
 CLASS kievvlangtypesWrapperMetaType kiev/vlang/types/WrapperMetaType kiev/vlang/types/TypeProvider.java
 CLASS kievvlangtypesWrapperType kiev/vlang/types/WrapperType kiev/vlang/types/Type.java
 CLASS kievvlangtypesXType kiev/vlang/types/XType kiev/vlang/types/Type.java
+CLASS kievvtreeANode kiev/vtree/ANode kiev/vtree/AST.java
+CLASS kievvtreeASTNode kiev/vtree/ASTNode kiev/vtree/AST.java
+CLASS kievvtreeAttAttrSlot kiev/vtree/AttAttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeAttrPtr kiev/vtree/AttrPtr kiev/vtree/Tree.java
+CLASS kievvtreeAttrSlot kiev/vtree/AttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeCompilerException kiev/vtree/CompilerException kiev/vtree/AST.java
+CLASS kievvtreeCurrentVersionInfo kiev/vtree/CurrentVersionInfo kiev/vtree/AST.java
+CLASS kievvtreeDataAttachInfo kiev/vtree/DataAttachInfo kiev/vtree/AST.java
+CLASS kievvtreeExtAttAttrSlot kiev/vtree/ExtAttAttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeExtAttrSlot kiev/vtree/ExtAttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeExtRefAttrSlot kiev/vtree/ExtRefAttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeReWalkNodeException kiev/vtree/ReWalkNodeException kiev/vtree/AST.java
+CLASS kievvtreeRefAttrSlot kiev/vtree/RefAttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeSpaceAttAttrSlot kiev/vtree/SpaceAttAttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeSpaceAttrSlot kiev/vtree/SpaceAttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeSpacePtr kiev/vtree/SpacePtr kiev/vtree/Tree.java
+CLASS kievvtreeSpaceRefAttrSlot kiev/vtree/SpaceRefAttrSlot kiev/vtree/Tree.java
+CLASS kievvtreeTransaction kiev/vtree/Transaction kiev/vtree/Tree.java
+CLASS kievvtreeTreeWalker kiev/vtree/TreeWalker kiev/vtree/AST.java
+CLASS kievvtreeVersionInfo kiev/vtree/VersionInfo kiev/vtree/AST.java
 ENUM kievCError kiev/CError kiev/Errors.java
 ENUM kievKievBackend kiev/KievBackend kiev/Kiev.java
 ENUM kievKievExt kiev/KievExt kiev/Kiev.java
@@ -963,16 +963,16 @@ INTERFACE kievvlangConstants kiev/vlang/Constants kiev/vlang/Constants.java
 INTERFACE kievvlangContinueTarget kiev/vlang/ContinueTarget kiev/vlang/PassInfo.java
 INTERFACE kievvlangDataFlowSlots kiev/vlang/DataFlowSlots kiev/vlang/DataFlow.java
 INTERFACE kievvlangGlobalDNode kiev/vlang/GlobalDNode kiev/vlang/DNode.java
-INTERFACE kievvlangINode kiev/vlang/INode kiev/vlang/AST.java
 INTERFACE kievvlangISymbol kiev/vlang/ISymbol kiev/vlang/Symbol.java
 INTERFACE kievvlangLanguage kiev/vlang/Language kiev/vlang/Language.java
-INTERFACE kievvlangPreScanneable kiev/vlang/PreScanneable kiev/vlang/AST.java
 INTERFACE kievvlangScope kiev/vlang/Scope kiev/vlang/Resolving.java
 INTERFACE kievvlangScopeOfMethods kiev/vlang/ScopeOfMethods kiev/vlang/Resolving.java
 INTERFACE kievvlangScopeOfNames kiev/vlang/ScopeOfNames kiev/vlang/Resolving.java
 INTERFACE kievvlangtypesStdTypes kiev/vlang/types/StdTypes kiev/vlang/types/StdTypes.java
 INTERFACE kievvlangtypesTVSet kiev/vlang/types/TVSet kiev/vlang/types/TVarBld.java
 INTERFACE kievvtreeDataFlowDefinition kiev/vtree/DataFlowDefinition kiev/vtree/metas.java
+INTERFACE kievvtreeINode kiev/vtree/INode kiev/vtree/AST.java
+INTERFACE kievvtreePreScanneable kiev/vtree/PreScanneable kiev/vtree/AST.java
 INTERFACE kievvtreeThisIsANode kiev/vtree/ThisIsANode kiev/vtree/metas.java
 INTERFACE kievvtreeUnVersioned kiev/vtree/UnVersioned kiev/vtree/metas.java
 INTERFACE kievvtreenodeAttr kiev/vtree/nodeAttr kiev/vtree/metas.java

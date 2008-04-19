@@ -467,7 +467,7 @@ public class ActionPoint {
 }
 
 public class TransferableANode implements Transferable, ClipboardOwner {
-	static DataFlavor transferableANodeFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+";class=kiev.vlang.ANode");
+	static DataFlavor transferableANodeFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+";class=kiev.vtree.ANode");
 	public final ANode node;
 	public TransferableANode(ANode node) {
 		this.node = node;

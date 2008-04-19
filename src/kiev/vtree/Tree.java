@@ -8,7 +8,7 @@
  * Contributors:
  *     "Maxim Kizub" mkizub@symade.com - initial design and implementation
  *******************************************************************************/
-package kiev.vlang;
+package kiev.vtree;
 
 import kiev.be.java15.JType;
 import kiev.be.java15.JNode;
