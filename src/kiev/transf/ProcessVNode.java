@@ -94,7 +94,7 @@ public final class VNodeFE_Pass3 extends VNode_Base {
 			tpANode = Env.loadTypeDecl(nameANode, true).xtype;
 			tpNode = Env.loadTypeDecl(nameNode, true).xtype;
 			tpNArray = new ArrayType(tpANode);
-			tpNodeSpace = Env.newMetaType(new Symbol<MetaTypeDecl>("NodeSpace"), Env.newPackage("kiev\u001fvlang"), false, null).xtype;
+			tpNodeSpace = Env.loadTypeDecl(nameNodeSpace).xtype;
 			tpAttrSlot = Env.loadTypeDecl(nameAttrSlot, true).xtype;
 			tpRefAttrSlot = Env.loadTypeDecl(nameRefAttrSlot, true).xtype;
 			tpAttAttrSlot = Env.loadTypeDecl(nameAttAttrSlot, true).xtype;
